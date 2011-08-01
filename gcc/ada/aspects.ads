@@ -73,9 +73,24 @@ package Aspects is
       Aspect_Warnings,
       Aspect_Write,
 
+      --  The following aspects correspond to library unit pragmas
+
+      Aspect_All_Calls_Remote,
+      Aspect_Compiler_Unit,                 -- GNAT
+      Aspect_Elaborate_Body,
+      Aspect_Preelaborate,
+      Aspect_Preelaborate_05,               -- GNAT
+      Aspect_Pure,
+      Aspect_Pure_05,                       -- GNAT
+      Aspect_Remote_Call_Interface,
+      Aspect_Remote_Types,
+      Aspect_Shared_Passive,
+      Aspect_Universal_Data,                -- GNAT
+
       --  Remaining aspects have a static boolean value that turns the aspect
       --  on or off. They all correspond to pragmas, and the flag Aspect_Cancel
-      --  is set on the pragma if the corresponding aspect is False.
+      --  is set on the pragma if the corresponding aspect is False. These are
+      --  also Boolean aspects as defined below.
 
       Aspect_Ada_2005,                      -- GNAT
       Aspect_Ada_2012,                      -- GNAT
@@ -109,6 +124,14 @@ package Aspects is
                         Aspect_Post          => True,
                         others               => False);
 
+   --  The following subtype defines aspects corresponding to library unit
+   --  pragmas, these can only validly appear as aspects for library units,
+   --  and result in a corresponding pragma being inserted immediately after
+   --  the occurrence of the aspect.
+
+   subtype Library_Unit_Aspects is
+     Aspect_Id range Aspect_All_Calls_Remote .. Aspect_Universal_Data;
+
    --  The following subtype defines aspects accepting an optional static
    --  boolean parameter indicating if the aspect should be active or
    --  cancelling. If the parameter is missing the effective value is True,
@@ -118,6 +141,9 @@ package Aspects is
 
    subtype Boolean_Aspects is
      Aspect_Id range Aspect_Ada_2005 .. Aspect_Id'Last;
+
+   subtype Pre_Post_Aspects is
+     Aspect_Id range Aspect_Post .. Aspect_Precondition;
 
    --  The following type is used for indicating allowed expression forms
 
@@ -158,6 +184,8 @@ package Aspects is
                         Aspect_Value_Size        => Expression,
                         Aspect_Warnings          => Name,
                         Aspect_Write             => Name,
+
+                        Library_Unit_Aspects     => Optional,
                         Boolean_Aspects          => Optional);
 
    -----------------------------------------
@@ -176,12 +204,15 @@ package Aspects is
      (Name_Ada_2012,                     Aspect_Ada_2012),
      (Name_Address,                      Aspect_Address),
      (Name_Alignment,                    Aspect_Alignment),
+     (Name_All_Calls_Remote,             Aspect_All_Calls_Remote),
      (Name_Atomic,                       Aspect_Atomic),
      (Name_Atomic_Components,            Aspect_Atomic_Components),
      (Name_Bit_Order,                    Aspect_Bit_Order),
+     (Name_Compiler_Unit,                Aspect_Compiler_Unit),
      (Name_Component_Size,               Aspect_Component_Size),
-     (Name_Dynamic_Predicate,            Aspect_Dynamic_Predicate),
      (Name_Discard_Names,                Aspect_Discard_Names),
+     (Name_Dynamic_Predicate,            Aspect_Dynamic_Predicate),
+     (Name_Elaborate_Body,               Aspect_Elaborate_Body),
      (Name_External_Tag,                 Aspect_External_Tag),
      (Name_Favor_Top_Level,              Aspect_Favor_Top_Level),
      (Name_Inline,                       Aspect_Inline),
@@ -199,9 +230,16 @@ package Aspects is
      (Name_Precondition,                 Aspect_Precondition),
      (Name_Predicate,                    Aspect_Predicate),
      (Name_Preelaborable_Initialization, Aspect_Preelaborable_Initialization),
+     (Name_Preelaborate,                 Aspect_Preelaborate),
+     (Name_Preelaborate_05,              Aspect_Preelaborate_05),
+     (Name_Pure,                         Aspect_Pure),
+     (Name_Pure_05,                      Aspect_Pure_05),
      (Name_Pure_Function,                Aspect_Pure_Function),
      (Name_Read,                         Aspect_Read),
+     (Name_Remote_Call_Interface,        Aspect_Remote_Call_Interface),
+     (Name_Remote_Types,                 Aspect_Remote_Types),
      (Name_Shared,                       Aspect_Shared),
+     (Name_Shared_Passive,               Aspect_Shared_Passive),
      (Name_Size,                         Aspect_Size),
      (Name_Static_Predicate,             Aspect_Static_Predicate),
      (Name_Storage_Pool,                 Aspect_Storage_Pool),
@@ -212,6 +250,7 @@ package Aspects is
      (Name_Type_Invariant,               Aspect_Type_Invariant),
      (Name_Unchecked_Union,              Aspect_Unchecked_Union),
      (Name_Universal_Aliasing,           Aspect_Universal_Aliasing),
+     (Name_Universal_Data,               Aspect_Universal_Data),
      (Name_Unmodified,                   Aspect_Unmodified),
      (Name_Unreferenced,                 Aspect_Unreferenced),
      (Name_Unreferenced_Objects,         Aspect_Unreferenced_Objects),

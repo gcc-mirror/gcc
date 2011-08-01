@@ -762,14 +762,10 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    -------------
 
    package Ch7 is
-      function P_Package
-        (Pf_Flags : Pf_Rec;
-         Decl     : Node_Id := Empty) return Node_Id;
+      function P_Package (Pf_Flags : Pf_Rec) return Node_Id;
       --  Scans out any construct starting with the keyword PACKAGE. The
       --  parameter indicates which possible kinds of construct (body, spec,
-      --  instantiation etc.) are permissible in the current context. Decl
-      --  is set in the specification case to request that if there are aspect
-      --  specifications present, they be associated with this declaration.
+      --  instantiation etc.) are permissible in the current context.
    end Ch7;
 
    -------------
@@ -863,19 +859,30 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  rather more generous in considering something ill-formed to be an
       --  attempt at an aspect specification. The default is more strict for
       --  Ada versions before Ada 2012 (where aspect specifications are not
-      --  permitted).
+      --  permitted). Note: this routine never checks the terminator token
+      --  for aspects so it does not matter whether the aspect speficiations
+      --  are terminated by semicolon or some other character
 
-      procedure P_Aspect_Specifications (Decl : Node_Id);
-      --  This subprogram is called with the current token pointing to either a
-      --  WITH keyword starting an aspect specification, or a semicolon. In the
-      --  former case, the aspect specifications are scanned out including the
-      --  terminating semicolon, the Has_Aspect_Specifications flag is set in
-      --  the given declaration node, and the list of aspect specifications is
-      --  constructed and associated with this declaration node using a call to
-      --  Set_Aspect_Specifications. If no WITH keyword is present, then this
-      --  call has no effect other than scanning out the semicolon. If Decl is
-      --  Error on entry, any scanned aspect specifications are ignored and a
-      --  message is output saying aspect specifications not permitted here.
+      procedure P_Aspect_Specifications
+        (Decl      : Node_Id;
+         Semicolon : Boolean := True);
+      --  This procedure scans out a series of aspect spefications. If argument
+      --  Semicolon is True, a terminating semicolon is also scanned. If this
+      --  argument is False, the scan pointer is left pointing past the aspects
+      --  and the caller must check for a proper terminator.
+      --  left pointing past the aspects, presumably pointing to a terminator.
+      --
+      --  P_Aspect_Specification is called with the current token pointing to
+      --  either a WITH keyword starting an aspect specification, or an
+      --  instance of the terminator token. In the former case, the aspect
+      --  specifications are scanned out including the terminator token if it
+      --  it is a semicolon, and the Has_Aspect_Specifications flag is set in
+      --  the given declaration node. A list of aspects is built and stored for
+      --  this declaration node using a call to Set_Aspect_Specifications. If
+      --  no WITH keyword is present, then this call has no effect other than
+      --  scanning out the terminator if it is a semicolon. If Decl is Error on
+      --  entry, any scanned aspect specifications are ignored and a message is
+      --  output saying aspect specifications not permitted here.
 
       function P_Code_Statement (Subtype_Mark : Node_Id) return Node_Id;
       --  Function to parse a code statement. The caller has scanned out

@@ -11228,6 +11228,38 @@ package body Sem_Util is
    end Set_Size_Info;
 
    --------------------
+   -- Static_Boolean --
+   --------------------
+
+   function Static_Boolean (N : Node_Id) return Uint is
+   begin
+      Analyze_And_Resolve (N, Standard_Boolean);
+
+      if N = Error
+        or else Error_Posted (N)
+        or else Etype (N) = Any_Type
+      then
+         return No_Uint;
+      end if;
+
+      if Is_Static_Expression (N) then
+         if not Raises_Constraint_Error (N) then
+            return Expr_Value (N);
+         else
+            return No_Uint;
+         end if;
+
+      elsif Etype (N) = Any_Type then
+         return No_Uint;
+
+      else
+         Flag_Non_Static_Expr
+           ("static boolean expression required here", N);
+         return No_Uint;
+      end if;
+   end Static_Boolean;
+
+   --------------------
    -- Static_Integer --
    --------------------
 

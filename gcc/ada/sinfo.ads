@@ -4773,8 +4773,7 @@ package Sinfo is
       ------------------------------
 
       --  PACKAGE_DECLARATION ::=
-      --    PACKAGE_SPECIFICATION
-      --      [ASPECT_SPECIFICATIONS];
+      --    PACKAGE_SPECIFICATION;
 
       --  Note: the activation chain entity for a package spec is used for
       --  all tasks declared in the package spec, or in the package body.
@@ -4791,7 +4790,9 @@ package Sinfo is
       --------------------------------
 
       --  PACKAGE_SPECIFICATION ::=
-      --    package DEFINING_PROGRAM_UNIT_NAME is
+      --    package DEFINING_PROGRAM_UNIT_NAME
+      --      [ASPECT_SPECIFICATIONS]
+      --    is
       --      {BASIC_DECLARATIVE_ITEM}
       --    [private
       --      {BASIC_DECLARATIVE_ITEM}]
@@ -4812,7 +4813,9 @@ package Sinfo is
       -----------------------
 
       --  PACKAGE_BODY ::=
-      --    package body DEFINING_PROGRAM_UNIT_NAME is
+      --    package body DEFINING_PROGRAM_UNIT_NAME
+      --      [ASPECT_SPECIFICATIONS]
+      --    is
       --      DECLARATIVE_PART
       --    [begin
       --      HANDLED_SEQUENCE_OF_STATEMENTS]
@@ -5023,8 +5026,8 @@ package Sinfo is
 
       --  TASK_TYPE_DECLARATION ::=
       --    task type DEFINING_IDENTIFIER [KNOWN_DISCRIMINANT_PART]
-      --      [is [new INTERFACE_LIST with] TASK_DEFINITION]
-      --        [ASPECT_SPECIFICATIONS];
+      --      [ASPECT_SPECIFICATIONS]
+      --    [is [new INTERFACE_LIST with] TASK_DEFINITION];
 
       --  N_Task_Type_Declaration
       --  Sloc points to TASK
@@ -5041,8 +5044,8 @@ package Sinfo is
 
       --  SINGLE_TASK_DECLARATION ::=
       --    task DEFINING_IDENTIFIER
-      --      [is [new INTERFACE_LIST with] TASK_DEFINITION]
-      --        [ASPECT_SPECIFICATIONS];
+      --      [ASPECT_SPECIFICATIONS]
+      --    [is [new INTERFACE_LIST with] TASK_DEFINITION];
 
       --  N_Single_Task_Declaration
       --  Sloc points to TASK
@@ -5086,7 +5089,9 @@ package Sinfo is
       --------------------
 
       --  TASK_BODY ::=
-      --    task body task_DEFINING_IDENTIFIER is
+      --    task body task_DEFINING_IDENTIFIER
+      --      [ASPECT_SPECIFICATIONS]
+      --    is
       --      DECLARATIVE_PART
       --    begin
       --      HANDLED_SEQUENCE_OF_STATEMENTS
@@ -5110,8 +5115,8 @@ package Sinfo is
 
       --  PROTECTED_TYPE_DECLARATION ::=
       --    protected type DEFINING_IDENTIFIER [KNOWN_DISCRIMINANT_PART]
-      --      is [new INTERFACE_LIST with] PROTECTED_DEFINITION
-      --        {ASPECT_SPECIFICATIONS];
+      --      [ASPECT_SPECIFICATIONS]
+      --    is [new INTERFACE_LIST with] PROTECTED_DEFINITION;
 
       --  Note: protected type declarations are not permitted in Ada 83 mode
 
@@ -5130,8 +5135,8 @@ package Sinfo is
 
       --  SINGLE_PROTECTED_DECLARATION ::=
       --    protected DEFINING_IDENTIFIER
-      --      is [new INTERFACE_LIST with] PROTECTED_DEFINITION
-      --        [ASPECT_SPECIFICATIONS];
+      --      [ASPECT_SPECIFICATIONS]
+      --    is [new INTERFACE_LIST with] PROTECTED_DEFINITION;
 
       --  Note: single protected declarations are not allowed in Ada 83 mode
 
@@ -5179,7 +5184,9 @@ package Sinfo is
       -------------------------
 
       --  PROTECTED_BODY ::=
-      --    protected body DEFINING_IDENTIFIER is
+      --    protected body DEFINING_IDENTIFIER
+      --      [ASPECT_SPECIFICATIONS];
+      --    is
       --      {PROTECTED_OPERATION_ITEM}
       --    end [protected_IDENTIFIER];
 

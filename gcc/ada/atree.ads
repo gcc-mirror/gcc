@@ -821,7 +821,7 @@ package Atree is
    pragma Inline (Is_Rewrite_Insertion);
    --  Tests whether the given node was marked using Mark_Rewrite_Insertion.
    --  This is used in reconstructing the original tree (where such nodes are
-   --  to be eliminated from the reconstructed tree).
+   --  to be eliminated).
 
    procedure Rewrite (Old_Node, New_Node : Node_Id);
    --  This is used when a complete subtree is to be replaced. Old_Node is the
@@ -889,8 +889,8 @@ package Atree is
 
    package Unchecked_Access is
 
-      --  Functions to allow interpretation of Union_Id values as Uint
-      --  and Ureal values
+      --  Functions to allow interpretation of Union_Id values as Uint and
+      --  Ureal values
 
       function To_Union is new Unchecked_Conversion (Uint,  Union_Id);
       function To_Union is new Unchecked_Conversion (Ureal, Union_Id);
@@ -898,8 +898,8 @@ package Atree is
       function From_Union is new Unchecked_Conversion (Union_Id, Uint);
       function From_Union is new Unchecked_Conversion (Union_Id, Ureal);
 
-      --  Functions to fetch contents of indicated field. It is an error
-      --  to attempt to read the value of a field which is not present.
+      --  Functions to fetch contents of indicated field. It is an error to
+      --  attempt to read the value of a field which is not present.
 
       function Field1 (N : Node_Id) return Union_Id;
       pragma Inline (Field1);
@@ -1150,10 +1150,10 @@ package Atree is
       function Str3 (N : Node_Id) return String_Id;
       pragma Inline (Str3);
 
-      --  Note: the following Uintnn functions have a special test for
-      --  the Field value being Empty. If an Empty value is found then
-      --  Uint_0 is returned. This avoids the rather tricky requirement
-      --  of initializing all Uint fields in nodes and entities.
+      --  Note: the following Uintnn functions have a special test for the
+      --  Field value being Empty. If an Empty value is found then Uint_0 is
+      --  returned. This avoids the rather tricky requirement of initializing
+      --  all Uint fields in nodes and entities.
 
       function Uint2 (N : Node_Id) return Uint;
       pragma Inline (Uint2);
@@ -3023,8 +3023,8 @@ package Atree is
       procedure Set_Flag254 (N : Node_Id; Val : Boolean);
       pragma Inline (Set_Flag254);
 
-      --  The following versions of Set_Noden also set the parent
-      --  pointer of the referenced node if it is non_Empty
+      --  The following versions of Set_Noden also set the parent pointer of
+      --  the referenced node if it is not Empty.
 
       procedure Set_Node1_With_Parent (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node1_With_Parent);
@@ -3042,8 +3042,7 @@ package Atree is
       pragma Inline (Set_Node5_With_Parent);
 
       --  The following versions of Set_Listn also set the parent pointer of
-      --  the referenced node if it is non_Empty. The procedures for List6
-      --  to List12 can only be applied to nodes which have an extension.
+      --  the referenced node if it is not Empty.
 
       procedure Set_List1_With_Parent (N : Node_Id; Val : List_Id);
       pragma Inline (Set_List1_With_Parent);

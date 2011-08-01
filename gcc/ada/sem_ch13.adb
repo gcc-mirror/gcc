@@ -843,6 +843,47 @@ package body Sem_Ch13 is
                      Set_Is_Delayed_Aspect (Aspect);
                   end if;
 
+               --  Library unit aspects. These are boolean aspects, but we
+               --  always evaluate the expression right away if it is present
+               --  and just ignore the aspect if the expression is False. We
+               --  never delay expression evaluation in this case.
+
+               when Library_Unit_Aspects =>
+                  if Present (Expr)
+                    and then Is_False (Static_Boolean (Expr))
+                  then
+                     goto Continue;
+                  end if;
+
+                  --  Build corresponding pragma node
+
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Argument_Associations => New_List (Ent),
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Chars (Id)));
+
+                  --  This requires special handling in the case of a package
+                  --  declaration, the pragma needs to be inserted in the list
+                  --  of declarations for the associated package. There is no
+                  --  issue of visibility delay for these aspects.
+
+                  if Nkind (N) = N_Package_Declaration then
+                     if Nkind (Parent (N)) /= N_Compilation_Unit then
+                        Error_Msg_N
+                          ("incorrect context for library unit aspect&", Id);
+                     else
+                        Prepend
+                          (Aitem, Visible_Declarations (Specification (N)));
+                     end if;
+
+                     goto Continue;
+                  end if;
+
+                  --  If not package declaration, no delay is required
+
+                  Delay_Required := False;
+
                --  Aspects corresponding to attribute definition clauses
 
                when Aspect_Address        |
@@ -932,11 +973,7 @@ package body Sem_Ch13 is
                --  required pragma placement. The processing for the pragmas
                --  takes care of the required delay.
 
-               when Aspect_Pre           |
-                    Aspect_Precondition  |
-                    Aspect_Post          |
-                    Aspect_Postcondition =>
-               declare
+               when Pre_Post_Aspects => declare
                   Pname : Name_Id;
 
                begin
@@ -1115,21 +1152,45 @@ package body Sem_Ch13 is
             --  If no delay required, insert the pragma/clause in the tree
 
             else
-               --  For Pre/Post cases, insert immediately after the entity
-               --  declaration, since that is the required pragma placement.
+               --  If this is a compilation unit, we will put the pragma in
+               --  the Pragmas_After list of the N_Compilation_Unit_Aux node.
 
-               if A_Id = Aspect_Pre          or else
-                  A_Id = Aspect_Post         or else
-                  A_Id = Aspect_Precondition or else
-                  A_Id = Aspect_Postcondition
-               then
-                  Insert_After (N, Aitem);
+               if Nkind (Parent (Ins_Node)) = N_Compilation_Unit then
+                  declare
+                     Aux : constant Node_Id :=
+                             Aux_Decls_Node (Parent (Ins_Node));
 
-               --  For all other cases, insert in sequence
+                  begin
+                     pragma Assert (Nkind (Aux) = N_Compilation_Unit_Aux);
+
+                     if No (Pragmas_After (Aux)) then
+                        Set_Pragmas_After (Aux, Empty_List);
+                     end if;
+
+                     --  For Pre_Post put at start of list, otherwise at end
+
+                     if A_Id in Pre_Post_Aspects then
+                        Prepend (Aitem, Pragmas_After (Aux));
+                     else
+                        Append (Aitem, Pragmas_After (Aux));
+                     end if;
+                  end;
+
+               --  Here if not compilation unit case
 
                else
-                  Insert_After (Ins_Node, Aitem);
-                  Ins_Node := Aitem;
+                  --  For Pre/Post cases, insert immediately after the entity
+                  --  declaration, since that is the required pragma placement.
+
+                  if A_Id in Pre_Post_Aspects then
+                     Insert_After (N, Aitem);
+
+                  --  For all other cases, insert in sequence
+
+                  else
+                     Insert_After (Ins_Node, Aitem);
+                     Ins_Node := Aitem;
+                  end if;
                end if;
             end if;
          end;
@@ -5083,6 +5144,11 @@ package body Sem_Ch13 is
          --  No_Aspect should be impossible
 
          when No_Aspect =>
+            raise Program_Error;
+
+         --  Library unit aspects should be impossible (never delayed)
+
+         when Library_Unit_Aspects =>
             raise Program_Error;
 
          --  Aspects taking an optional boolean argument. Note that we will

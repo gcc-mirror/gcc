@@ -183,11 +183,16 @@ package body Sprint is
    procedure Sprint_And_List (List : List_Id);
    --  Print the given list with items separated by vertical "and"
 
-   procedure Sprint_Aspect_Specifications (Node : Node_Id);
+   procedure Sprint_Aspect_Specifications
+     (Node      : Node_Id;
+      Semicolon : Boolean);
    --  Node is a declaration node that has aspect specifications (Has_Aspects
-   --  flag set True). It is called after outputting the terminating semicolon
-   --  for the related node. The effect is to remove the semicolon and print
-   --  the aspect specifications, followed by a terminating semicolon.
+   --  flag set True). It outputs the aspect specifications. For the case
+   --  of Semicolon = True, it is called after outputting the terminating
+   --  semicolon for the related node. The effect is to remove the semicolon
+   --  and print the aspect specifications followed by a terminating semicolon.
+   --  For the case of Semicolon False, no semicolon is removed or output, and
+   --  all the aspects are printed on a single line.
 
    procedure Sprint_Bar_List (List : List_Id);
    --  Print the given list with items separated by vertical bars
@@ -630,16 +635,24 @@ package body Sprint is
    -- Sprint_Aspect_Specifications --
    ----------------------------------
 
-   procedure Sprint_Aspect_Specifications (Node : Node_Id) is
+   procedure Sprint_Aspect_Specifications
+     (Node      : Node_Id;
+      Semicolon : Boolean)
+   is
       AS : constant List_Id := Aspect_Specifications (Node);
       A  : Node_Id;
 
    begin
-      Write_Erase_Char (';');
-      Indent := Indent + 2;
-      Write_Indent;
-      Write_Str ("with ");
-      Indent := Indent + 5;
+      if Semicolon then
+         Write_Erase_Char (';');
+         Indent := Indent + 2;
+         Write_Indent;
+         Write_Str ("with ");
+         Indent := Indent + 5;
+
+      else
+         Write_Str (" with ");
+      end if;
 
       A := First (AS);
       loop
@@ -658,11 +671,16 @@ package body Sprint is
 
          exit when No (A);
          Write_Char (',');
-         Write_Indent;
+
+         if Semicolon then
+            Write_Indent;
+         end if;
       end loop;
 
-      Indent := Indent - 7;
-      Write_Char (';');
+      if Semicolon then
+         Indent := Indent - 7;
+         Write_Char (';');
+      end if;
    end Sprint_Aspect_Specifications;
 
    ---------------------
@@ -2411,6 +2429,14 @@ package body Sprint is
          when N_Package_Specification =>
             Write_Str_With_Col_Check_Sloc ("package ");
             Sprint_Node (Defining_Unit_Name (Node));
+
+            if Nkind (Parent (Node)) = N_Package_Declaration
+              and then Has_Aspects (Parent (Node))
+            then
+               Sprint_Aspect_Specifications
+                 (Parent (Node), Semicolon => False);
+            end if;
+
             Write_Str (" is");
             Sprint_Indented_List (Visible_Declarations (Node));
 
@@ -3176,8 +3202,11 @@ package body Sprint is
             end if;
       end case;
 
-      if Has_Aspects (Node) then
-         Sprint_Aspect_Specifications (Node);
+      --  Print aspects, except for special case of package declaration,
+      --  where the aspects are printed inside the package specification.
+
+      if Has_Aspects (Node) and Nkind (Node) /= N_Package_Declaration then
+         Sprint_Aspect_Specifications (Node, Semicolon => True);
       end if;
 
       if Nkind (Node) in N_Subexpr

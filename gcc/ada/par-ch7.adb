@@ -92,14 +92,16 @@ package body Ch7 is
 
    --  Error recovery: cannot raise Error_Resync
 
-   function P_Package
-     (Pf_Flags : Pf_Rec;
-      Decl     : Node_Id := Empty) return Node_Id
-   is
+   function P_Package (Pf_Flags : Pf_Rec) return Node_Id is
       Package_Node       : Node_Id;
       Specification_Node : Node_Id;
       Name_Node          : Node_Id;
       Package_Sloc       : Source_Ptr;
+
+      Dummy_Node : constant Node_Id :=
+                     New_Node (N_Package_Specification, Token_Ptr);
+      --  Dummy node to attach aspect specifications to until we properly
+      --  figure out where they eventually belong.
 
    begin
       Push_Scope_Stack;
@@ -147,8 +149,6 @@ package body Ch7 is
             Parse_Decls_Begin_End (Package_Node);
          end if;
 
-         return Package_Node;
-
       --  Cases other than Package_Body
 
       else
@@ -174,9 +174,11 @@ package body Ch7 is
             No_Constraint;
             TF_Semicolon;
             Pop_Scope_Stack;
-            return Package_Node;
+
+         --  Generic package instantiation or package declaration
 
          else
+            P_Aspect_Specifications (Dummy_Node, Semicolon => False);
             TF_Is;
 
             --  Case of generic instantiation
@@ -190,12 +192,12 @@ package body Ch7 is
                Scan; -- past NEW
 
                Package_Node :=
-                  New_Node (N_Package_Instantiation, Package_Sloc);
+                 New_Node (N_Package_Instantiation, Package_Sloc);
                Set_Defining_Unit_Name (Package_Node, Name_Node);
                Set_Name (Package_Node, P_Qualified_Simple_Name);
                Set_Generic_Associations
                  (Package_Node, P_Generic_Actual_Part_Opt);
-               P_Aspect_Specifications (Package_Node);
+               P_Aspect_Specifications (Error);
                Pop_Scope_Stack;
 
             --  Case of package declaration or package specification
@@ -249,16 +251,13 @@ package body Ch7 is
                   Discard_Junk_List (P_Sequence_Of_Statements (SS_None));
                end if;
 
-               if Nkind (Package_Node) = N_Package_Declaration then
-                  End_Statements (Specification_Node, Package_Node);
-               else
-                  End_Statements (Specification_Node, Decl);
-               end if;
+               End_Statements (Specification_Node);
             end if;
-
-            return Package_Node;
          end if;
       end if;
+
+      Move_Aspects (From => Dummy_Node, To => Package_Node);
+      return Package_Node;
    end P_Package;
 
    ------------------------------

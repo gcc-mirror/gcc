@@ -381,7 +381,10 @@ package body Ch13 is
 
    --  Error recovery: cannot raise Error_Resync
 
-   procedure P_Aspect_Specifications (Decl : Node_Id) is
+   procedure P_Aspect_Specifications
+     (Decl      : Node_Id;
+      Semicolon : Boolean := True)
+   is
       Aspects : List_Id;
       Aspect  : Node_Id;
       A_Id    : Aspect_Id;
@@ -392,7 +395,10 @@ package body Ch13 is
       --  Check if aspect specification present
 
       if not Aspect_Specifications_Present then
-         TF_Semicolon;
+         if Semicolon then
+            TF_Semicolon;
+         end if;
+
          return;
       end if;
 
@@ -411,7 +417,11 @@ package body Ch13 is
 
          if Token /= Tok_Identifier then
             Error_Msg_SC ("aspect identifier expected");
-            Resync_Past_Semicolon;
+
+            if Semicolon then
+               Resync_Past_Semicolon;
+            end if;
+
             return;
          end if;
 
@@ -454,7 +464,10 @@ package body Ch13 is
                OK := False;
 
             else
-               Resync_Past_Semicolon;
+               if Semicolon then
+                  Resync_Past_Semicolon;
+               end if;
+
                return;
             end if;
 
@@ -495,7 +508,10 @@ package body Ch13 is
 
             --  Test case of missing aspect definition
 
-            if Token = Tok_Comma or else Token = Tok_Semicolon then
+            if Token = Tok_Comma
+              or else Token = Tok_Semicolon
+              or else (not Semicolon and then Token /= Tok_Arrow)
+            then
                if Aspect_Argument (A_Id) /= Optional then
                   Error_Msg_Node_1 := Aspect;
                   Error_Msg_AP ("aspect& requires an aspect definition");
@@ -527,8 +543,14 @@ package body Ch13 is
 
             if Token = Tok_Comma then
                Scan; -- past comma
+
+            --  Must be terminator character
+
             else
-               T_Semicolon;
+               if Semicolon then
+                  T_Semicolon;
+               end if;
+
                exit;
             end if;
          end if;
