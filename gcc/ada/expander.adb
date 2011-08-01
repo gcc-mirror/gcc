@@ -459,7 +459,6 @@ package body Expander is
          --  Deal with transient scopes
 
          if Scope_Is_Transient and then N = Node_To_Be_Wrapped then
-
             case Nkind (N) is
                when N_Statement_Other_Than_Procedure_Call |
                     N_Procedure_Call_Statement            =>

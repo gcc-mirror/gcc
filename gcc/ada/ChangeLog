@@ -1,5 +1,21 @@
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* aspects.ads, aspects.adb: Add Static_Predicate and Dynamic_Predicate.
+	* sem_ch13.adb (Analyze_Aspect_Specification): Add processing for
+	Static_Predicate and Dynamic_Predicate.
+	(Build_Predicate_Function): Add processing for Static_Predicate
+	and Dynamic_Predicate.
+	* sinfo.ads, sinfo.adb (From_Dynamic_Predicate): New flag
+	(From_Static_Predicate): New flag
+	* snames.ads-tmpl: Add Name_Static_Predicate and Name_Dynamic_Predicate
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* usage.adb: Documentation cleanup for Ada version modes in usage.
+	* expander.adb: Minor reformatting.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* atree.ads: Minor comment fix.
 	* a-stwifi.adb, a-stzfix.adb, a-strfix.adb, a-ztexio.ads, a-textio.ads,
 	a-witeio.ads, sem_prag.adb: Minor reformatting.
