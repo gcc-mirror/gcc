@@ -1,5 +1,25 @@
 2011-08-01  Yannick Moy  <moy@adacore.com>
 
+	* sem_util.adb (Enter_Name): issue error in formal mode on declaration
+	of homonym, unless the homonym is one of the cases allowed in SPARK
+	* par-ch5.adb (Parse_Decls_Begin_End): issue error in SPARK mode for
+	package declaration occurring after a body.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb, exp_ch4.adb: Minor reformatting.
+
+2011-08-01  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads (Access_Disp_Table): Fix documentation.
+	(Dispatch_Table_Wrappers): Fix documentation.
+
+2011-08-01  Pascal Obry  <obry@adacore.com>
+
+	* prj-env.adb, prj-env.ads: Minor reformatting.
+
+2011-08-01  Yannick Moy  <moy@adacore.com>
+
 	* sem_util.ads, sem_util.adb, par.adb, par_util.adb
 	(Formal_Error_Msg, Formal_Error_Msg_N, Formal_Error_Msg_SP): move
 	procedures out of these packages.

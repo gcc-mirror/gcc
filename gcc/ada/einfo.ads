@@ -338,18 +338,18 @@ package Einfo is
 --       statements referencing the same entry.
 
 --    Access_Disp_Table (Elist16) [implementation base type only]
---       Present in record types and subtypes. Set in tagged types to point to
---       the dispatch tables associated with the tagged type. The first two
---       entities correspond with the primary dispatch table: 1) primary
---       dispatch table with user-defined primitives, 2) primary dispatch table
---       with predefined primitives. For each interface type covered by the
---       tagged type we also have: 3) secondary dispatch table with thunks of
---       primitives covering user-defined interface primitives, 4) secondary
---       dispatch table with thunks of predefined primitives, 5) secondary
---       dispatch table with user-defined primitives, and 6) secondary dispatch
---       table with predefined primitives. The last entity of this list is an
---       access type declaration used to expand dispatching calls through the
---       primary dispatch table. For a non-tagged record, contains No_Elist.
+--       Present in E_Record_Type and E_Record_Subtype entities. Set in tagged
+--       types to point to their dispatch tables. The first two entities are
+--       associated with the primary dispatch table: 1) primary dispatch table
+--       with user-defined primitives 2) primary dispatch table with predefined
+--       primitives. For each interface type covered by the tagged type we also
+--       have: 3) secondary dispatch table with thunks of primitives covering
+--       user-defined interface primitives, 4) secondary dispatch table with
+--       thunks of predefined primitives, 5) secondary dispatch table with user
+--       defined primitives, and 6) secondary dispatch table with predefined
+--       primitives. The last entity of this list is an access type declaration
+--       used to expand dispatching calls through the primary dispatch table.
+--       For a non-tagged record, contains No_Elist.
 
 --    Actual_Subtype (Node17)
 --       Present in variables, constants, and formal parameters. This is the
@@ -855,10 +855,11 @@ package Einfo is
 --       index starting at 1 and ranging up to number of discriminants.
 
 --    Dispatch_Table_Wrappers (Elist26) [implementation base type only]
---       Present in record types and subtypes. Set in library level tagged type
---       entities if we are generating statically allocated dispatch tables.
---       Points to the list of dispatch table wrappers associated with the
---       tagged type. For a non-tagged record, contains No_Elist.
+--       Present in E_Record_Type and E_Record_Subtype entities. Set in library
+--       level tagged type entities if we are generating statically allocated
+--       dispatch tables. Points to the list of dispatch table wrappers
+--       associated with the tagged type. For a non-tagged record, contains
+--       No_Elist.
 
 --    DTC_Entity (Node16)
 --       Present in function and procedure entities. Set to Empty unless
