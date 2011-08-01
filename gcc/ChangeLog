@@ -1,3 +1,14 @@
+2011-08-01  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr.h (mcu_type_s): Add errata_skip field.
+	* config/avr/avr-devices.c (avr_mcu_types): Use it.
+	* config/avr/avr-mcus.def (AVR_MCU): Use it.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Use it to builtin
+	define __AVR_ERRATA_SKIP__ and __AVR_ERRATA_SKIP_JMP_CALL__.
+	* config/avr/libgcc.S (__mulshisi3, __ffshi2, __fmulsu_exit):
+	Use __AVR_ERRATA_SKIP_JMP_CALL__ instead of __AVR_HAVE_JMP_CALL__
+	to detect if XJMP must not be skipped.
+
 2011-08-02  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_save_toc_in_prologue_p): Delete.

@@ -91,6 +91,26 @@ struct mcu_type_s {
   /* Stack pointer have 8 bits width.  */
   int short_sp;
   
+  /* Some AVR devices have a core erratum when skipping a 2-word instruction.
+     Skip instructions are:  SBRC, SBRS, SBIC, SBIS, CPSE.
+     Problems will occur with return address is IRQ executes during the
+     skip sequence.
+
+     A support ticket from Atmel returned the following information:
+
+         Subject: (ATTicket:644469) On AVR skip-bug core Erratum
+         From: avr@atmel.com                    Date: 2011-07-27
+         (Please keep the subject when replying to this mail)
+
+         This errata exists only in AT90S8515 and ATmega103 devices.
+
+         For information please refer the following respective errata links
+            http://www.atmel.com/dyn/resources/prod_documents/doc2494.pdf
+            http://www.atmel.com/dyn/resources/prod_documents/doc1436.pdf  */
+
+  /* Core Erratum:  Must not skip 2-word instruction.  */
+  int errata_skip;
+  
   /* Start of data section.  */
   int data_section_start;
   
