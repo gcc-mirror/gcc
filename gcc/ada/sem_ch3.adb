@@ -1172,6 +1172,22 @@ package body Sem_Ch3 is
 
          begin
             F := First (Formals);
+
+            --  In ASIS mode, the access_to_subprogram may be analyzed twice,
+            --  when it is part of an unconstrained type and subtype expansion
+            --  is disabled.  To avoid back-end problems with shared profiles,
+            --  use previous subprogram type as the designated type.
+
+            if ASIS_Mode
+              and then Present (Scope (Defining_Identifier (F)))
+            then
+               Set_Etype                    (T_Name, T_Name);
+               Init_Size_Align              (T_Name);
+               Set_Directly_Designated_Type (T_Name,
+                 Scope (Defining_Identifier (F)));
+               return;
+            end if;
+
             while Present (F) loop
                if No (Parent (Defining_Identifier (F))) then
                   Set_Parent (Defining_Identifier (F), F);

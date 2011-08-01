@@ -3489,6 +3489,8 @@ description of the strict aliasing optimization, and the situations
 in which it must be suppressed, see @ref{Optimization and Strict
 Aliasing,,, gnat_ugn, @value{EDITION} User's Guide}.
 
+This pragma currently has no effects on access to unconstrained array types.
+
 @node Pragma Normalize_Scalars
 @unnumberedsec Pragma Normalize_Scalars
 @findex Normalize_Scalars

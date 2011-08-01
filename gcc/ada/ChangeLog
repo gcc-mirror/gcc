@@ -1,3 +1,17 @@
+2011-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_rm.texi: Document limitation of Pragma No_Strict_Aliasing.
+
+2011-08-01  Tristan Gingold  <gingold@adacore.com>
+
+	* seh_init.c: Fix SEH handler installation on win64.
+
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Declaration): in Asis mode, prevent
+	double analysis of an anonymous access to subprogram, because it can
+	lead to improper sharing of profiles and a back-end crash.
+
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* make.adb, sem_ch4.adb: Minor reformatting.
