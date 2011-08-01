@@ -192,6 +192,7 @@ Implementation Defined Pragmas
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
+* Pragma Static_Elaboration_Desired::
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
 * Pragma Subtitle::
@@ -817,6 +818,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
+* Pragma Static_Elaboration_Desired::
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
 * Pragma Subtitle::
@@ -4596,6 +4598,31 @@ source file is the one referred to.
 The second argument must be a string literal, it cannot be a static
 string expression other than a string literal.  This is because its value
 is needed for error messages issued by all phases of the compiler.
+
+@node Pragma Static_Elaboration_Desired
+@unnumberedsec Pragma Static_Elaboration_Desired
+@findex Static_Elaboration_Desired
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Static_Elaboration_Desired;
+@end smallexample
+
+@noindent
+This pragma is used to indicate the desire for objects declared in the library
+unit to which the pragma applies to be initialized statically. This means that
+if an object is initialized (either explicitly or by default initialization),
+then the object's value can be determined at compile time and it requires no
+code to initialize it. This generally allows the object to be allocated in
+read-only data space. A warning is issued if an object or aggregate declared
+at the top level of the package cannot be initialized statically. Additionally,
+use of this pragma will suppress the generation of loops to initialize named
+aggregates whose only choice is an others choice that specifies a component
+value known at compile time, so that it can be allocated as static data. This
+is limited to aggregates with a maximum of 100 components. (See also the
+restriction No_Implicit_Loops, which supports static allocation for larger
+aggregates.)
 
 @node Pragma Stream_Convert
 @unnumberedsec Pragma Stream_Convert

@@ -1,3 +1,14 @@
+2011-08-01  Pascal Obry  <obry@adacore.com>
+
+	* a-stzunb-shared.adb, a-strunb-shared.adb, a-stwiun-shared.adb:
+	Fix Replace_Slice when High is above current string size.
+	(Replace_Slice): Fix DL computation when High is above current
+	string length.
+
+2011-08-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_rm.texi: Add documentation for pragma Static_Elaboration_Desired.
+
 2011-08-01  Matthew Heaney  <heaney@adacore.com>
 
 	* a-rbtgbo.adb (Delete_Node_Sans_Free): Fixed assignment to left child
