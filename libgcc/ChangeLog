@@ -1,3 +1,9 @@
+2011-08-02  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/linux-unwind.h (frob_update_context <__powerpc64__>):
+	Restore for indirect call bcrtl from correct stack slot, and only
+	if cfa+40 isn't valid.
+
 2011-08-01  Julian Brown  <julian@codesourcery.com>
 
 	* config.host (arm*-*-linux*, arm*-*-uclinux*, arm*-*-eabi*)

@@ -1178,6 +1178,7 @@ static void rs6000_conditional_register_usage (void);
 static void rs6000_trampoline_init (rtx, tree, rtx);
 static bool rs6000_cannot_force_const_mem (enum machine_mode, rtx);
 static bool rs6000_legitimate_constant_p (enum machine_mode, rtx);
+static bool rs6000_save_toc_in_prologue_p (void);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -20478,14 +20479,12 @@ rs6000_emit_prologue (void)
       insn = emit_insn (generate_set_vrsave (reg, info, 0));
     }
 
-  if (TARGET_SINGLE_PIC_BASE)
-    return; /* Do not set PIC register */
-
   /* If we are using RS6000_PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */
-  if ((TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
-      || (DEFAULT_ABI == ABI_V4
-	  && (flag_pic == 1 || (flag_pic && TARGET_SECURE_PLT))
-	  && df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM)))
+  if (!TARGET_SINGLE_PIC_BASE
+      && ((TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
+	  || (DEFAULT_ABI == ABI_V4
+	      && (flag_pic == 1 || (flag_pic && TARGET_SECURE_PLT))
+	      && df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM))))
     {
       /* If emit_load_toc_table will use the link register, we need to save
 	 it.  We use R12 for this purpose because emit_load_toc_table
@@ -20513,7 +20512,8 @@ rs6000_emit_prologue (void)
     }
 
 #if TARGET_MACHO
-  if (DEFAULT_ABI == ABI_DARWIN
+  if (!TARGET_SINGLE_PIC_BASE
+      && DEFAULT_ABI == ABI_DARWIN
       && flag_pic && crtl->uses_pic_offset_table)
     {
       rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
@@ -20534,10 +20534,26 @@ rs6000_emit_prologue (void)
     }
 #endif
 
-  /* If we need to, save the TOC register after doing the stack setup.  */
+  /* If we need to, save the TOC register after doing the stack setup.
+     Do not emit eh frame info for this save.  The unwinder wants info,
+     conceptually attached to instructions in this function, about
+     register values in the caller of this function.  This R2 may have
+     already been changed from the value in the caller.
+     We don't attempt to write accurate DWARF EH frame info for R2
+     because code emitted by gcc for a (non-pointer) function call
+     doesn't save and restore R2.  Instead, R2 is managed out-of-line
+     by a linker generated plt call stub when the function resides in
+     a shared library.  This behaviour is costly to describe in DWARF,
+     both in terms of the size of DWARF info and the time taken in the
+     unwinder to interpret it.  R2 changes, apart from the
+     calls_eh_return case earlier in this function, are handled by
+     linux-unwind.h frob_update_context.  */ 
   if (rs6000_save_toc_in_prologue_p ())
-    emit_frame_save (sp_reg_rtx, sp_reg_rtx, reg_mode, TOC_REGNUM,
-		     5 * reg_size, info->total_size);
+    {
+      rtx addr = gen_rtx_PLUS (Pmode, sp_reg_rtx, GEN_INT (5 * reg_size));
+      rtx mem = gen_frame_mem (reg_mode, addr);
+      emit_move_insn (mem, gen_rtx_REG (reg_mode, TOC_REGNUM));
+    }
 }
 
 /* Write function prologue.  */
@@ -27795,10 +27811,7 @@ rs6000_call_indirect_aix (rtx value, rtx func_desc, rtx flag)
 
   /* Can we optimize saving the TOC in the prologue or do we need to do it at
      every call?  */
-  if (TARGET_SAVE_TOC_INDIRECT && !cfun->calls_alloca
-      && !cfun->calls_setjmp && !cfun->has_nonlocal_label
-      && !cfun->can_throw_non_call_exceptions
-      && ((flags_from_decl_or_type (cfun->decl) & ECF_NOTHROW) == ECF_NOTHROW))
+  if (TARGET_SAVE_TOC_INDIRECT && !cfun->calls_alloca)
     cfun->machine->save_toc_in_prologue = true;
 
   else
@@ -27834,13 +27847,12 @@ rs6000_call_indirect_aix (rtx value, rtx func_desc, rtx flag)
     insn = call_func (func_addr, flag, func_toc_mem, stack_toc_mem);
 
   emit_call_insn (insn);
-  return;
 }
 
 /* Return whether we need to always update the saved TOC pointer when we update
    the stack pointer.  */
 
-bool
+static bool
 rs6000_save_toc_in_prologue_p (void)
 {
   return (cfun && cfun->machine && cfun->machine->save_toc_in_prologue);
