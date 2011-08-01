@@ -7688,10 +7688,17 @@ package body Exp_Ch4 is
                Discr_Loop : while Present (Dcon) loop
                   Dval := Node (Dcon);
 
-                  --  Check if this is the matching discriminant
+                  --  Check if this is the matching discriminant and if the
+                  --  discriminant value is simple enough to make sense to
+                  --  copy. We don't want to copy complex expressions, and
+                  --  indeed to do so can cause trouble (before we put in
+                  --  this guard, a discriminant expression containing an
+                  --  AND THEN was copied, cause coverage problems
 
-                  if Disc = Entity (Selector_Name (N)) then
-
+                  if Disc = Entity (Selector_Name (N))
+                    and then (Is_Entity_Name (Dval)
+                               or else Is_Static_Expression (Dval))
+                  then
                      --  Here we have the matching discriminant. Check for
                      --  the case of a discriminant of a component that is
                      --  constrained by an outer discriminant, which cannot

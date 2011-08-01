@@ -1,5 +1,23 @@
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* freeze.adb (Freeze_Entity): Don't call Check_Aspect_At_Freeze_Point
+	here.
+	(Freeze_All_Ent): Fix error in handling inherited aspects.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Skip aspect that is
+	already analyzed, but don't skip entire processing of a declaration,
+	that's wrong in some cases of declarations being rewritten.
+	(Analyze_Aspect_Specification): Set Is_Delayed_Aspect in aspects.
+	Don't delay for integer, string literals
+	Treat predicates in usual manner for delay, remove special case code,
+	not needed.
+	(Analyze_Freeze_Entity): Make call to Check_Aspect_At_Freeze_Point
+	(Build_Predicate_Function): Update saved expression in aspect
+	(Build_Invariant_Procedure): Update saved expression in aspect
+	* exp_ch4.adb (Expand_N_Selected_Component): Only do the optimization
+	of replacement of discriminant references if the reference is simple.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* aspects.ads, aspects.adb: Add Static_Predicate and Dynamic_Predicate.
 	* sem_ch13.adb (Analyze_Aspect_Specification): Add processing for
 	Static_Predicate and Dynamic_Predicate.
