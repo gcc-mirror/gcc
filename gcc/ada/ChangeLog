@@ -1,5 +1,36 @@
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* atree.ads: Minor reformatting.
+
+2011-08-01  Emmanuel Briot  <briot@adacore.com>
+
+	* g-expect.adb (Get_Command_Output): Fix memory leak.
+
+2011-08-01  Geert Bosch  <bosch@adacore.com>
+
+	* cstand.adb (P_Float_Type): New procedure to print the definition of
+	predefined fpt types.
+	(P_Mixed_Name): New procedure to print a name using mixed case
+	(Print_Standard): Use P_Float_Type for printing floating point types
+	* einfo.adb (Machine_Emax_Value): Add preliminary support for quad
+	precision IEEE float.
+
+2011-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting.
+
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Parameterized_Expression): If the expression is
+	the completion of a generic function, insert the new body rather than
+	rewriting the original.
+
+2011-08-01  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads, errout.ads: Typos in comments.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* par-endh.adb: Minor reformatting.
 
 2011-08-01  Robert Dewar  <dewar@adacore.com>

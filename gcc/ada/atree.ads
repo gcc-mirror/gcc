@@ -890,7 +890,7 @@ package Atree is
    package Unchecked_Access is
 
       --  Functions to allow interpretation of Union_Id values as Uint and
-      --  Ureal values
+      --  Ureal values.
 
       function To_Union is new Unchecked_Conversion (Uint,  Union_Id);
       function To_Union is new Unchecked_Conversion (Ureal, Union_Id);

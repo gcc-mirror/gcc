@@ -1070,15 +1070,20 @@ package body Sem_Ch6 is
    --------------------------------------
 
    procedure Analyze_Parameterized_Expression (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      LocX : constant Source_Ptr := Sloc (Expression (N));
+      Loc      : constant Source_Ptr := Sloc (N);
+      LocX     : constant Source_Ptr := Sloc (Expression (N));
+      Def_Id   : constant Entity_Id := Defining_Entity (Specification (N));
+      Prev     : constant Entity_Id := Current_Entity_In_Scope (Def_Id);
+      --  If the expression is a completion, Prev is the entity whose
+      --  declaration is completed.
 
+      New_Body : Node_Id;
    begin
-      --  This is one of the occasions on which we write things during semantic
-      --  analysis. Transform the parameterized expression into an equivalent
-      --  subprogram body, and then analyze that.
+      --  This is one of the occasions on which we transform the tree during
+      --  semantic analysis. Transform the parameterized expression into an
+      --  equivalent subprogram body, and then analyze that.
 
-      Rewrite (N,
+      New_Body :=
         Make_Subprogram_Body (Loc,
           Specification              => Specification (N),
           Declarations               => Empty_List,
@@ -1086,8 +1091,27 @@ package body Sem_Ch6 is
             Make_Handled_Sequence_Of_Statements (LocX,
               Statements => New_List (
                 Make_Simple_Return_Statement (LocX,
-                  Expression => Expression (N))))));
-      Analyze (N);
+                  Expression => Expression (N)))));
+
+      if Present (Prev)
+        and then Ekind (Prev) = E_Generic_Function
+      then
+
+         --  If the expression completes a generic subprogram, we must create
+         --  a separate node for the body, because at instantiation the
+         --  original node of the generic copy must be a generic subprogram
+         --  body, and cannot be a parameterized expression. Otherwise we
+         --  just rewrite the expression with the non-generic body.
+
+         Insert_After (N, New_Body);
+         Rewrite (N, Make_Null_Statement (Loc));
+         Analyze (N);
+         Analyze (New_Body);
+
+      else
+         Rewrite (N, New_Body);
+         Analyze (N);
+      end if;
    end Analyze_Parameterized_Expression;
 
    ----------------------------

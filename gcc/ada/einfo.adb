@@ -6518,7 +6518,7 @@ package body Einfo is
             case Digs is
                when  1 ..  6 => return Uint_128;
                when  7 .. 15 => return 2**10;
-               when 16 .. 18 => return 2**14;
+               when 16 .. 33 => return 2**14;
                when others => return No_Uint;
             end case;
 

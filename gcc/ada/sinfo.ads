@@ -7447,7 +7447,7 @@ package Sinfo is
       N_Empty,
       N_Pragma_Argument_Association,
 
-      --  N_Has_Etype
+      --  N_Has_Etype, N_Has_Chars
 
       N_Error,
 
@@ -7680,7 +7680,7 @@ package Sinfo is
       N_Code_Statement,
       N_Conditional_Entry_Call,
 
-      --  N_Statement_Other_Than_Procedure_Call. N_Delay_Statement
+      --  N_Statement_Other_Than_Procedure_Call, N_Delay_Statement
 
       N_Delay_Relative_Statement,
       N_Delay_Until_Statement,

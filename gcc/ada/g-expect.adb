@@ -946,6 +946,7 @@ package body GNAT.Expect is
       end;
 
       if Last = 0 then
+         Free (Output);
          return "";
       end if;
 

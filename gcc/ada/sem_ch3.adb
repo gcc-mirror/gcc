@@ -3592,8 +3592,8 @@ package body Sem_Ch3 is
          Check_Restriction (No_Local_Timing_Events, N);
       end if;
 
-      <<Leave>>
-         Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+   <<Leave>>
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Object_Declaration;
 
    ---------------------------
