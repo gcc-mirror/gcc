@@ -5501,7 +5501,6 @@ package body Sem_Ch12 is
            and then Is_Private_Type (Designated_Type (T))
            and then not Has_Private_View (N)
            and then Present (Full_View (Designated_Type (T)))
-           and then Used_As_Generic_Actual (T)
          then
             Switch_View (Designated_Type (T));
 

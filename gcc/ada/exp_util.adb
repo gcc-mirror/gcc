@@ -2520,7 +2520,7 @@ package body Exp_Util is
                     (Last (Actions (P)), Ins_Actions);
                else
                   Set_Actions (P, Ins_Actions);
-                  Analyze_List (Then_Actions (P));
+                  Analyze_List (Actions (P));
                end if;
 
                return;

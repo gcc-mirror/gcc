@@ -654,7 +654,8 @@ package body Endh is
 
    procedure End_Statements
      (Parent : Node_Id := Empty;
-      Decl   : Node_Id := Empty) is
+      Decl   : Node_Id := Empty)
+   is
    begin
       --  This loop runs more than once in the case where Check_End rejects
       --  the END sequence, as indicated by Check_End returning False.

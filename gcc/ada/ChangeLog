@@ -1,3 +1,42 @@
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* par-endh.adb: Minor reformatting.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Add aspects for library unit pragmas
+	(Pre_Post_Aspects): New subtype.
+	* par-ch12.adb (P_Generic): New syntax for aspects in packages
+	* par-ch13.adb (P_Aspect_Specifications): Add Semicolon parameter
+	* par-ch7.adb (P_Package): Remove Decl parameter
+	(P_Package): Handle new syntax for aspects (before IS)
+	* par-ch9.adb (P_Protected_Definition): Remove Decl parameter, handle
+	new aspect syntax
+	(P_Task_Definition): Remove Decl parameter, handle new aspect syntax
+	* par.adb (P_Aspect_Specifications): Add Semicolon parameter
+	(P_Package): Remove Decl parameter
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Handle library unit
+	aspects
+	* sem_ch7.adb (Analyze_Package_Declaration): Analyze new format aspect
+	specs
+	* sem_util.ads, sem_util.adb (Static_Boolean): New function
+	* sinfo.ads: Document new syntax for aspects in packages etc.
+	* sprint.adb: Handle new syntax of aspects before IS in package
+
+2011-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* atree.ads: Minor reformatting.
+	* sem_prag.adb: Minor reformatting.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb (Insert_Actions): Fix error in handling Actions for
+	case expr alternative.
+
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Fix typo.
+
 2011-08-01  Geert Bosch  <bosch@adacore.com>
 
 	* sem_prag.adb (Check_No_Link_Name): New procedure.

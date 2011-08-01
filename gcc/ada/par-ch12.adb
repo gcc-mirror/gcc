@@ -202,7 +202,7 @@ package body Ch12 is
 
       if Token = Tok_Package then
          Gen_Decl := New_Node (N_Generic_Package_Declaration, Gen_Sloc);
-         Set_Specification (Gen_Decl, P_Package (Pf_Spcn, Gen_Decl));
+         Set_Specification (Gen_Decl, P_Package (Pf_Spcn));
 
       else
          Gen_Decl := New_Node (N_Generic_Subprogram_Declaration, Gen_Sloc);

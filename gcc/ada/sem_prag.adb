@@ -5689,10 +5689,10 @@ package body Sem_Prag is
       --  Preset arguments
 
       Arg_Count := 0;
-      Arg1 := Empty;
-      Arg2 := Empty;
-      Arg3 := Empty;
-      Arg4 := Empty;
+      Arg1      := Empty;
+      Arg2      := Empty;
+      Arg3      := Empty;
+      Arg4      := Empty;
 
       if Present (Pragma_Argument_Associations (N)) then
          Arg_Count := List_Length (Pragma_Argument_Associations (N));

@@ -760,6 +760,11 @@ package body Sem_Ch7 is
       --  True when this package declaration is not a nested declaration
 
    begin
+      --  Analye aspect specifications immediately, since we need to recognize
+      --  things like Pure early enough to diagnose violations during analysis.
+
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+
       --  Ada 2005 (AI-217): Check if the package has been erroneously named
       --  in a limited-with clause of its own context. In this case the error
       --  has been previously notified by Analyze_Context.
@@ -768,7 +773,7 @@ package body Sem_Ch7 is
       --     package Pkg is ...
 
       if From_With_Type (Id) then
-         goto Leave;
+         return;
       end if;
 
       if Debug_Flag_C then
@@ -842,9 +847,6 @@ package body Sem_Ch7 is
          Write_Location (Sloc (N));
          Write_Eol;
       end if;
-
-      <<Leave>>
-         Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Package_Declaration;
 
    -----------------------------------

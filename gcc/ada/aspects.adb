@@ -143,14 +143,18 @@ package body Aspects is
       N_Object_Declaration                     => True,
       N_Package_Declaration                    => True,
       N_Package_Instantiation                  => True,
+      N_Package_Specification                  => True,
       N_Private_Extension_Declaration          => True,
       N_Private_Type_Declaration               => True,
       N_Procedure_Instantiation                => True,
+      N_Protected_Body                         => True,
       N_Protected_Type_Declaration             => True,
       N_Single_Protected_Declaration           => True,
       N_Single_Task_Declaration                => True,
+      N_Subprogram_Body                        => True,
       N_Subprogram_Declaration                 => True,
       N_Subtype_Declaration                    => True,
+      N_Task_Body                              => True,
       N_Task_Type_Declaration                  => True,
       others                                   => False);
 
@@ -165,8 +169,8 @@ package body Aspects is
 
    --  Table used for Same_Aspect, maps aspect to canonical aspect
 
-   Canonical_Aspect : constant array (Aspect_Id) of Aspect_Id := (
-    No_Aspect                           => No_Aspect,
+   Canonical_Aspect : constant array (Aspect_Id) of Aspect_Id :=
+   (No_Aspect                           => No_Aspect,
     Aspect_Ada_2005                     => Aspect_Ada_2005,
     Aspect_Ada_2012                     => Aspect_Ada_2005,
     Aspect_Address                      => Aspect_Address,
@@ -181,6 +185,17 @@ package body Aspects is
     Aspect_Favor_Top_Level              => Aspect_Favor_Top_Level,
     Aspect_Inline                       => Aspect_Inline,
     Aspect_Inline_Always                => Aspect_Inline,
+    Aspect_All_Calls_Remote             => Aspect_All_Calls_Remote,
+    Aspect_Compiler_Unit                => Aspect_Compiler_Unit,
+    Aspect_Elaborate_Body               => Aspect_Elaborate_Body,
+    Aspect_Preelaborate                 => Aspect_Preelaborate,
+    Aspect_Preelaborate_05              => Aspect_Preelaborate_05,
+    Aspect_Pure                         => Aspect_Pure,
+    Aspect_Pure_05                      => Aspect_Pure_05,
+    Aspect_Remote_Call_Interface        => Aspect_Remote_Call_Interface,
+    Aspect_Remote_Types                 => Aspect_Remote_Types,
+    Aspect_Shared_Passive               => Aspect_Shared_Passive,
+    Aspect_Universal_Data               => Aspect_Universal_Data,
     Aspect_Input                        => Aspect_Input,
     Aspect_Invariant                    => Aspect_Invariant,
     Aspect_Machine_Radix                => Aspect_Machine_Radix,
