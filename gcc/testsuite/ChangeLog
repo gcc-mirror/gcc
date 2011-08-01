@@ -1,3 +1,7 @@
+2011-08-01  Julian Brown  <julian@codesourcery.com>
+
+	* gcc.target/arm/fixed-point-exec.c: New test.
+
 2011-07-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49920

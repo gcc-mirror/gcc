@@ -37,7 +37,8 @@ MD_INCLUDES= 	$(srcdir)/config/arm/arm-tune.md \
 		$(srcdir)/config/arm/iwmmxt.md \
 		$(srcdir)/config/arm/vfp.md \
 		$(srcdir)/config/arm/neon.md \
-		$(srcdir)/config/arm/thumb2.md
+		$(srcdir)/config/arm/thumb2.md \
+		$(srcdir)/config/arm/arm-fixed.md
 
 LIB1ASMSRC = arm/lib1funcs.asm
 LIB1ASMFUNCS = _thumb1_case_sqi _thumb1_case_uqi _thumb1_case_shi \

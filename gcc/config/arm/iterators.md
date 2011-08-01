@@ -140,7 +140,18 @@
 
 ;; Modes with 8-bit, 16-bit and 32-bit elements.
 (define_mode_iterator VU [V16QI V8HI V4SI])
- 
+
+;; Iterators used for fixed-point support.
+(define_mode_iterator FIXED [QQ HQ SQ UQQ UHQ USQ HA SA UHA USA])
+
+(define_mode_iterator ADDSUB [V4QQ V2HQ V2HA])
+
+(define_mode_iterator UQADDSUB [V4UQQ V2UHQ UQQ UHQ V2UHA UHA])
+
+(define_mode_iterator QADDSUB [V4QQ V2HQ QQ HQ V2HA HA SQ SA])
+
+(define_mode_iterator QMUL [HQ HA])
+
 ;;----------------------------------------------------------------------------
 ;; Code iterators
 ;;----------------------------------------------------------------------------
@@ -383,6 +394,12 @@
 				   (HI "nonimmediate_operand")
 				   (QI "nonimmediate_operand")])
 (define_mode_attr qhs_extenddi_cstr [(SI "r") (HI "rm") (QI "rm")])
+
+;; Mode attributes used for fixed-point support.
+(define_mode_attr qaddsub_suf [(V4UQQ "8") (V2UHQ "16") (UQQ "8") (UHQ "16")
+			       (V2UHA "16") (UHA "16")
+			       (V4QQ "8") (V2HQ "16") (QQ "8") (HQ "16")
+			       (V2HA "16") (HA "16") (SQ "") (SA "")])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes

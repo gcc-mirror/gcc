@@ -1,5 +1,11 @@
 2011-08-01  Julian Brown  <julian@codesourcery.com>
 
+	* config.host (arm*-*-linux*, arm*-*-uclinux*, arm*-*-eabi*)
+	(arm*-*-symbianelf*): Add t-fixedpoint-gnu-prefix makefile fragment.
+	* config/arm/bpabi-lib.h (LIBGCC2_FIXEDBIT_GNU_PREFIX): Define.
+
+2011-08-01  Julian Brown  <julian@codesourcery.com>
+
 	* Makefile.in (LIBGCC_VER_FIXEDPOINT_GNU_PREFIX): New.
 	(libgcc-std.ver.in): Use above.
 	* fixed-bit.h (LIBGCC2_FIXEDBIT_GNU_PREFIX): Define, if

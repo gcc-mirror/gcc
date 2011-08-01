@@ -227,6 +227,13 @@
 	    (match_code "ashift,ashiftrt,lshiftrt,rotatert"))
        (match_test "mode == GET_MODE (op)")))
 
+;; True for shift operators which can be used with saturation instructions.
+(define_special_predicate "sat_shift_operator"
+  (and (match_code "ashift,ashiftrt")
+       (match_test "GET_CODE (XEXP (op, 1)) == CONST_INT
+		    && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (op, 1)) <= 32)")
+       (match_test "mode == GET_MODE (op)")))
+
 ;; True for MULT, to identify which variant of shift_operator is in use.
 (define_special_predicate "mult_operator"
   (match_code "mult"))
