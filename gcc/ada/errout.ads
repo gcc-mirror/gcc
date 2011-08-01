@@ -767,8 +767,9 @@ package Errout is
    --  on each element of the list, see above).
 
    procedure Set_Error_Msg_Lang (To : String);
-   --  Set Error_Msg_Lang and Error_Msg_Langlen used for insertion character ~~
-   --  so that Error_Msg_Lang (1 .. Error_Msg_Langlen) = To.
+   --  Set Error_Msg_Lang/Error_Msg_Langlen used for insertion character ~~.
+   --  The argument is just the language name, e.g. "spark". The stored string
+   --  is of the form "(langname) ".
 
    procedure Set_Ignore_Errors (To : Boolean);
    --  Following a call to this procedure with To=True, all error calls are

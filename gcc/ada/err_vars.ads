@@ -150,7 +150,7 @@ package Err_Vars is
    --  Used if current message contains a ~ insertion character to indicate
    --  insertion of the string Error_Msg_String (1 .. Error_Msg_Strlen).
 
-   Error_Msg_Lang : String (1 .. 4096);
+   Error_Msg_Lang : String (1 .. 16);
    Error_Msg_Langlen : Natural;
    --  Used if current message contains a ~~ insertion character to indicate
    --  insertion of the string Error_Msg_Lang (1 .. Error_Msg_Langlen).

@@ -67,11 +67,6 @@ package body Sem_Ch4 is
    -- Local Subprograms --
    -----------------------
 
-   procedure Analyze_Concatenation_Operand (N : Node_Id);
-   --  Checks that concatenation operands are properly restricted in SPARK or
-   --  ALFA: each operand must be either a string literal, a static character
-   --  expression, or another concatenation.
-
    procedure Analyze_Concatenation_Rest (N : Node_Id);
    --  Does the "rest" of the work of Analyze_Concatenation, after the left
    --  operand has been analyzed. See Analyze_Concatenation for details.
@@ -1357,7 +1352,6 @@ package body Sem_Ch4 is
       --  First analyze L ...
 
       Analyze_Expression (L);
-      Analyze_Concatenation_Operand (L);
 
       --  ... then walk NN back up until we reach N (where we started), calling
       --  Analyze_Concatenation_Rest along the way.
@@ -1367,44 +1361,7 @@ package body Sem_Ch4 is
          exit when NN = N;
          NN := Parent (NN);
       end loop;
-
-      if Formal_Verification_Mode
-        and then Etype (N) /= Standard_String
-      then
-         Error_Msg_F ("|~~result of concatenation should have type String", N);
-      end if;
    end Analyze_Concatenation;
-
-   -----------------------------------
-   -- Analyze_Concatenation_Operand --
-   -----------------------------------
-
-   --  Concatenation is restricted in SPARK or ALFA: each operand must be
-   --  either a string literal, a static character expression, or another
-   --  concatenation. N cannot be a concatenation here as Analyze_Concatenation
-   --  and Analyze_Concatenation_Rest call Analyze_Concatenation_Operand
-   --  separately on each final operand, past concatenation operations.
-
-   procedure Analyze_Concatenation_Operand (N : Node_Id) is
-   begin
-      if Formal_Verification_Mode then
-         if Is_Character_Type (Etype (N)) then
-            if not Is_Static_Expression (N) then
-               Error_Msg_F ("|~~character operand for concatenation should be "
-                            & "static", N);
-            end if;
-         elsif Is_String_Type (Etype (N)) then
-            if Nkind (N) /= N_String_Literal then
-               Error_Msg_F ("|~~string operand for concatenation should be "
-                            & "a literal", N);
-            end if;
-
-         --  Do not issue error on an operand that is neither a character nor
-         --  a string, as the error is issued in Analyze_Concatenation_Rest.
-
-         end if;
-      end if;
-   end Analyze_Concatenation_Operand;
 
    --------------------------------
    -- Analyze_Concatenation_Rest --
@@ -1424,7 +1381,6 @@ package body Sem_Ch4 is
 
    begin
       Analyze_Expression (R);
-      Analyze_Concatenation_Operand (R);
 
       --  If the entity is present, the node appears in an instance, and
       --  denotes a predefined concatenation operation. The resulting type is

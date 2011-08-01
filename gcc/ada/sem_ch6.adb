@@ -1851,8 +1851,7 @@ package body Sem_Ch6 is
 
             if Formal_Verification_Mode then
                declare
-                  Stat : constant Node_Id :=
-                           Last_Source_Node_In_Sequence (Statements (HSS));
+                  Stat : constant Node_Id := Last_Source_Statement (HSS);
                begin
                   if Present (Stat)
                     and then not Nkind_In (Stat,

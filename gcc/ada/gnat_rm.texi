@@ -192,6 +192,7 @@ Implementation Defined Pragmas
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
+* Pragma SPARK_95::
 * Pragma Static_Elaboration_Desired::
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
@@ -818,6 +819,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
+* Pragma SPARK_95::
 * Pragma Static_Elaboration_Desired::
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
@@ -4600,6 +4602,32 @@ source file is the one referred to.
 The second argument must be a string literal, it cannot be a static
 string expression other than a string literal.  This is because its value
 is needed for error messages issued by all phases of the compiler.
+
+@node Pragma SPARK_95
+@unnumberedsec Pragma SPARK_95
+@findex SPARK_95
+@noindent
+Syntax:
+@smallexample @c ada
+pragma SPARK_95;
+@end smallexample
+
+@noindent
+A configuration pragma that establishes SPARK 95 mode for the unit to which
+it applies, regardless of the mode set by the command line switches.
+In this mode, the compiler rejects constructs outside the SPARK 95 subset of
+Ada, which provides a useful initial filter for those projects developed in
+SPARK. Syntax and semantic error messages related to SPARK restrictions have
+the form:
+
+@code{(spark) error message}.
+
+This is not a replacement for the semantic checks performed by the
+SPARK Examiner tool, as the compiler only deals currently with code,
+not at all with SPARK annotations, so it may well be the case that code which
+passes the compiler in SPARK 95 mode is rejected by the SPARK Examiner,
+e.g. due to the different visibility rules of the Examiner based on
+@code{inherit} SPARK annotations.
 
 @node Pragma Static_Elaboration_Desired
 @unnumberedsec Pragma Static_Elaboration_Desired

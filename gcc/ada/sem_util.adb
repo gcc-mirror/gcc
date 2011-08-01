@@ -7981,22 +7981,22 @@ package body Sem_Util is
       end case;
    end Known_To_Be_Assigned;
 
-   ----------------------------------
-   -- Last_Source_Node_In_Sequence --
-   ----------------------------------
+   ---------------------------
+   -- Last_Source_Statement --
+   ---------------------------
 
-   function Last_Source_Node_In_Sequence (List : List_Id) return Node_Id is
+   function Last_Source_Statement (HSS : Node_Id) return Node_Id is
       N : Node_Id;
 
    begin
-      N := Last (List);
+      N := Last (Statements (HSS));
       while Present (N) loop
          exit when Comes_From_Source (N);
-         N := Prev (N);
+         Prev (N);
       end loop;
 
       return N;
-   end Last_Source_Node_In_Sequence;
+   end Last_Source_Statement;
 
    -------------------
    -- May_Be_Lvalue --

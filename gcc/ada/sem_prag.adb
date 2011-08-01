@@ -12334,7 +12334,9 @@ package body Sem_Prag is
             Check_Arg_Count (0);
             Check_Valid_Configuration_Pragma;
             SPARK_Version := SPARK_95;
-            Set_Error_Msg_Lang ("(" & Formal_Language & ") ");
+            SPARK_Mode := True;
+            Formal_Verification_Mode := True;
+            Set_Error_Msg_Lang ("spark");
 
          --------------------------------
          -- Static_Elaboration_Desired --

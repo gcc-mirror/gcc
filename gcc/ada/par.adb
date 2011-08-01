@@ -1318,10 +1318,6 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 begin
    Compiler_State := Parsing;
 
-   if Formal_Verification_Mode then
-      Set_Error_Msg_Lang ("(" & Formal_Language & ") ");
-   end if;
-
    --  Deal with configuration pragmas case first
 
    if Configuration_Pragmas then
