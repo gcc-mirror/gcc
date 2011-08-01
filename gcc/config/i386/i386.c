@@ -11096,6 +11096,30 @@ ix86_live_on_entry (bitmap regs)
     }
 }
 
+/* Determine if op is suitable SUBREG RTX for address.  */
+
+static bool
+ix86_address_subreg_operand (rtx op)
+{
+  enum machine_mode mode;
+
+  if (!REG_P (op))
+    return false;
+
+  mode = GET_MODE (op);
+
+  if (GET_MODE_CLASS (mode) != MODE_INT)
+    return false;
+
+  /* Don't allow SUBREGs that span more than a word.  It can lead to spill
+     failures when the register is one word out of a two word structure.  */
+  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+    return false;
+
+  /* Allow only SUBREGs of non-eliminable hard registers.  */
+  return register_no_elim_operand (op, mode);
+}
+
 /* Extract the parts of an RTL expression that is a valid memory address
    for an instruction.  Return 0 if the structure of the address is
    grossly off.  Return -1 if the address contains ASHIFT, so it is not
@@ -11116,8 +11140,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
     base = addr;
   else if (GET_CODE (addr) == SUBREG)
     {
-      /* Allow only subregs of DImode hard regs.  */
-      if (register_no_elim_operand (SUBREG_REG (addr), DImode))
+      if (ix86_address_subreg_operand (SUBREG_REG (addr)))
 	base = addr;
       else
 	return 0;
@@ -11175,8 +11198,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	      break;
 
 	    case SUBREG:
-	      /* Allow only subregs of DImode hard regs in PLUS chains.  */
-	      if (!register_no_elim_operand (SUBREG_REG (op), DImode))
+	      if (!ix86_address_subreg_operand (SUBREG_REG (op)))
 		return 0;
 	      /* FALLTHRU */
 
@@ -11228,9 +11250,8 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
     {
       if (REG_P (index))
 	;
-      /* Allow only subregs of DImode hard regs.  */
       else if (GET_CODE (index) == SUBREG
-	       && register_no_elim_operand (SUBREG_REG (index), DImode))
+	       && ix86_address_subreg_operand (SUBREG_REG (index)))
 	;
       else
 	return 0;
@@ -11677,10 +11698,7 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
       if (REG_P (base))
   	reg = base;
       else if (GET_CODE (base) == SUBREG && REG_P (SUBREG_REG (base)))
-	{
-	  reg = SUBREG_REG (base);
-	  gcc_assert (register_no_elim_operand (reg, DImode));
-	}
+	reg = SUBREG_REG (base);
       else
 	/* Base is not a register.  */
 	return false;
@@ -11702,10 +11720,7 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
       if (REG_P (index))
   	reg = index;
       else if (GET_CODE (index) == SUBREG && REG_P (SUBREG_REG (index)))
-	{
-	  reg = SUBREG_REG (index);
-	  gcc_assert (register_no_elim_operand (reg, DImode));
-	}
+	reg = SUBREG_REG (index);
       else
 	/* Index is not a register.  */
 	return false;

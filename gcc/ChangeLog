@@ -1,3 +1,11 @@
+2011-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49927
+	* config/i386/i386.c (ix86_address_subreg_operand): New.
+	(ix86_decompose_address): Use ix86_address_subreg_operand.
+	(ix86_legitimate_address_p): Do not assert that subregs satisfy
+	register_no_elim_operand in DImode.
+
 2011-08-01  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49926
@@ -5,7 +13,7 @@
 	in a chain doesn't have uses both inside and outside the loop.
 
 2011-08-01  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/avr.h (mcu_type_s): Add errata_skip field.
 	* config/avr/avr-devices.c (avr_mcu_types): Use it.
 	* config/avr/avr-mcus.def (AVR_MCU): Use it.
@@ -17,7 +25,8 @@
 
 2011-08-02  Alan Modra  <amodra@gmail.com>
 
-	* config/rs6000/rs6000-protos.h (rs6000_save_toc_in_prologue_p): Delete.
+	* config/rs6000/rs6000-protos.h (rs6000_save_toc_in_prologue_p):
+	Delete.
 	* config/rs6000/rs6000.c (rs6000_save_toc_in_prologue_p): Make static.
 	(rs6000_emit_prologue): Don't prematurely return when
 	TARGET_SINGLE_PIC_BASE.  Don't emit eh_frame info in
@@ -40,13 +49,12 @@
 2011-08-01  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/49547
-	* config.gcc (i[34567]86-*-*): Replace abmintrin.h with
-	lzcntintrin.h.
+	* config.gcc (i[34567]86-*-*): Replace abmintrin.h with lzcntintrin.h.
 	(x86_64-*-*): Likewise.
 	* config/i386/i386.opt (mlzcnt): New.
 	* config/i386/abmintrin.h: File removed.
 	(__lzcnt_u16, __lzcnt, __lzcnt_u64): Moved to ...
-	* config/i386/lzcntintrin.h: ... here. New file.
+	* config/i386/lzcntintrin.h: ... here.  New file.
 	(__lzcnt): Rename to ...
 	(__lzcnt32): ... this.
 	* config/i386/bmiintrin.h (head): Update copyright year.
@@ -183,10 +191,10 @@
 	(*rep_stosdi_rex64): Disable when %eax, %ecx or %edi are fixed.
 	(*rep_stossi): Ditto.
 	(*rep_stosqi): Ditto.
+	(*strlenqi_1): Ditto.
 	(cmpstrnsi): Also fail when %ecx is fixed.
 	(*cmpstrnqi_nz_1): Disable when %ecx, %esi or %edi are fixed.
 	(*cmpstrnqi_1): Ditto.
-	(*strlenqi_1): Ditto.
 	(*strmovdi_rex_1): Disable when %esi or %edi are fixed.
 	(*strmovsi_1): Ditto.
 	(*strmovhi_1): Ditto.
