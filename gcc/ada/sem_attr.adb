@@ -3947,14 +3947,29 @@ package body Sem_Attr is
       ------------
 
       when Attribute_Result => Result : declare
-         CS : Entity_Id := Current_Scope;
-         PS : Entity_Id := Scope (CS);
+         CS : Entity_Id;
+         --  The enclosing scope, excluding loops for quantified expressions
+
+         PS : Entity_Id;
+         --  During analysis, CS is the postcondition subprogram and PS the
+         --  source subprogram to which the postcondition applies. During
+         --  pre-analysis, CS is the scope of the subprogram declaration.
 
       begin
+         --  Find enclosing scopes, excluding loops
+
+         CS := Current_Scope;
+         while Ekind (CS) = E_Loop loop
+            CS := Scope (CS);
+         end loop;
+
+         PS := Scope (CS);
+
          --  If the enclosing subprogram is always inlined, the enclosing
          --  postcondition will not be propagated to the expanded call.
 
-         if Has_Pragma_Inline_Always (PS)
+         if not In_Spec_Expression
+           and then Has_Pragma_Inline_Always (PS)
            and then Warn_On_Redundant_Constructs
          then
             Error_Msg_N
@@ -3994,9 +4009,7 @@ package body Sem_Attr is
          --  current one.
 
          else
-            while Present (CS)
-              and then CS /= Standard_Standard
-            loop
+            while Present (CS) and then CS /= Standard_Standard loop
                if Chars (CS) = Name_uPostconditions then
                   exit;
                else
@@ -4038,7 +4051,7 @@ package body Sem_Attr is
             else
                Error_Attr
                  ("% attribute can only appear" &
-                   "  in function Postcondition pragma", P);
+                   " in function Postcondition pragma", P);
             end if;
          end if;
       end Result;

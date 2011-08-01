@@ -1,3 +1,9 @@
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Result): Handle properly a
+	quantified expression that appears within a postcondition and uses the
+	Ada2012 'Result attribute.
+
 2011-07-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* init.c (__gnat_error_handler): Cast reason to int.
