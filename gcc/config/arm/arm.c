@@ -11261,6 +11261,15 @@ arm_pad_arg_upward (enum machine_mode mode, const_tree type)
   if (type && BYTES_BIG_ENDIAN && INTEGRAL_TYPE_P (type))
     return false;
 
+  /* Half-float values are only passed to libcalls, not regular functions.
+     They should be passed and returned as "short"s (see RTABI).  To achieve
+     that effect in big-endian mode, pad downwards so the value is passed in
+     the least-significant end of the register.  ??? This needs to be here
+     rather than in arm_pad_reg_upward due to peculiarity in the handling of
+     libcall arguments.  */
+  if (BYTES_BIG_ENDIAN && mode == HFmode)
+    return false;
+
   return true;
 }
 

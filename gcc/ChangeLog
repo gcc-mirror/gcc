@@ -1,3 +1,10 @@
+2011-08-01  Julian Brown  <julian@codesourcery.com>
+
+	* calls.c (emit_library_call_value_1): Support padding for libcall
+	arguments and return values.
+	* config/arm/arm.c (arm_pad_arg_upward): Pad half-float values
+	downwards in big-endian mode.
+
 2011-08-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR debug/49887
