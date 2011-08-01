@@ -46,8 +46,6 @@
 --  Note: do not introduce any pragma Inline statements into this unit, since
 --  otherwise the relinking and rebinding capability would be deactivated.
 
-with System.Aux_DEC;
-
 package System.Parameters is
    pragma Pure;
 
@@ -113,10 +111,13 @@ package System.Parameters is
    --  of all targets. For example, in OpenVMS long /= Long_Integer.
 
    ptr_bits  : constant := 32;
-   subtype C_Address is System.Short_Address;
-   --  Number of bits in Interaces.C pointers, normally a standard address,
+   subtype C_Address is System.Address
+     range -2 ** (ptr_bits - 1) .. 2 ** (ptr_bits - 1) - 1;
+   for C_Address'Object_Size use ptr_bits;
+   --  Number of bits in Interfaces.C pointers, normally a standard address,
    --  except on 64-bit VMS where they are 32-bit addresses, for compatibility
-   --  with legacy code.
+   --  with legacy code. System.Aux_DEC.Short_Address can't be used because of
+   --  elaboration circularity.
 
    C_Malloc_Linkname : constant String := "__gnat_malloc32";
    --  Name of runtime function used to allocate such a pointer

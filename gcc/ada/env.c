@@ -111,8 +111,7 @@ __gnat_setenv (char *name, char *value)
 {
 #if defined (VMS)
   struct dsc$descriptor_s name_desc;
-  /* Put in JOB table for now, so that the project stuff at least works.  */
-  $DESCRIPTOR (table_desc, "LNM$JOB");
+  $DESCRIPTOR (table_desc, "LNM$PROCESS");
   char *host_pathspec = value;
   char *copy_pathspec;
   int num_dirs_in_pathspec = 1;

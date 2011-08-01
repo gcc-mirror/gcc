@@ -563,6 +563,11 @@ package body Ch10 is
          then
             Name_Node := Defining_Unit_Name (Unit_Node);
 
+         elsif Nkind (Unit_Node) = N_Parameterized_Expression then
+            Error_Msg_SP
+              ("parameterized expression cannot be used as compilation unit");
+            return Comp_Unit_Node;
+
          --  Anything else is a serious error, abandon scan
 
          else
