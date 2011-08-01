@@ -3234,7 +3234,7 @@ package body Sem_Util is
         and then Comes_From_Source (C)
       then
          Error_Msg_Sloc := Sloc (C);
-         Formal_Error_Msg_N ("redeclaration of identifier &#", Def_Id);
+         Error_Msg_F ("|~~redeclaration of identifier &#", Def_Id);
       end if;
 
       --  Warn if new entity hides an old one

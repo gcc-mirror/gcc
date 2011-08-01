@@ -404,6 +404,7 @@ package Snames is
    Name_Short_Descriptors              : constant Name_Id := N + $; -- GNAT
    Name_Source_File_Name               : constant Name_Id := N + $; -- GNAT
    Name_Source_File_Name_Project       : constant Name_Id := N + $; -- GNAT
+   Name_SPARK_95                       : constant Name_Id := N + $; -- GNAT
    Name_Style_Checks                   : constant Name_Id := N + $; -- GNAT
    Name_Suppress                       : constant Name_Id := N + $;
    Name_Suppress_Exception_Locations   : constant Name_Id := N + $; -- GNAT
@@ -1517,6 +1518,7 @@ package Snames is
       Pragma_Short_Descriptors,
       Pragma_Source_File_Name,
       Pragma_Source_File_Name_Project,
+      Pragma_SPARK_95,
       Pragma_Style_Checks,
       Pragma_Suppress,
       Pragma_Suppress_Exception_Locations,

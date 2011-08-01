@@ -1167,6 +1167,22 @@ package Opt is
    --  GNAT
    --  Set True if a pragma Short_Descriptors applies to the current unit.
 
+   type SPARK_Version_Type is (SPARK_None, SPARK_95);
+   pragma Ordered (SPARK_Version_Type);
+   --  Versions of SPARK for SPARK_Version below. Note that these are ordered,
+   --  so that tests like SPARK_Version >= SPARK_95 are legitimate and useful.
+   --  Think twice before using "="; SPARK_Version >= SPARK_95 is more likely
+   --  what you want, because it will apply to future versions of the language.
+
+   SPARK_Version_Default : constant SPARK_Version_Type := SPARK_None;
+   --  GNAT
+   --  Default SPARK version if no switch given
+
+   SPARK_Version : SPARK_Version_Type := SPARK_Version_Default;
+   --  GNAT
+   --  Current SPARK version for compiler, as set by configuration pragmas or
+   --  compiler switches.
+
    Sprint_Line_Limit : Nat := 72;
    --  GNAT
    --  Limit values for chopping long lines in Sprint output, can be reset

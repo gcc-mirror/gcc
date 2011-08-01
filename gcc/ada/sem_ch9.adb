@@ -103,7 +103,7 @@ package body Sem_Ch9 is
       --  Abort statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("abort statement is not allowed", N);
+         Error_Msg_F ("|~~abort statement is not allowed", N);
          return;
       end if;
 
@@ -181,7 +181,7 @@ package body Sem_Ch9 is
       --  Accept statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("accept statement is not allowed", N);
+         Error_Msg_F ("|~~accept statement is not allowed", N);
          return;
       end if;
 
@@ -420,7 +420,7 @@ package body Sem_Ch9 is
       --  Select statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("select statement is not allowed", N);
+         Error_Msg_F ("|~~select statement is not allowed", N);
          return;
       end if;
 
@@ -474,7 +474,7 @@ package body Sem_Ch9 is
       --  Select statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("select statement is not allowed", N);
+         Error_Msg_F ("|~~select statement is not allowed", N);
          return;
       end if;
 
@@ -579,7 +579,7 @@ package body Sem_Ch9 is
       --  Delay statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("delay statement is not allowed", N);
+         Error_Msg_F ("|~~delay statement is not allowed", N);
          return;
       end if;
 
@@ -605,7 +605,7 @@ package body Sem_Ch9 is
       --  Delay statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("delay statement is not allowed", N);
+         Error_Msg_F ("|~~delay statement is not allowed", N);
          return;
       end if;
 
@@ -900,7 +900,7 @@ package body Sem_Ch9 is
       --  Entry call is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("entry call is not allowed", N);
+         Error_Msg_F ("|~~entry call is not allowed", N);
          return;
       end if;
 
@@ -1359,7 +1359,7 @@ package body Sem_Ch9 is
       --  Requeue statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("requeue statement is not allowed", N);
+         Error_Msg_F ("|~~requeue statement is not allowed", N);
          return;
       end if;
 
@@ -1641,7 +1641,7 @@ package body Sem_Ch9 is
       --  Select statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("select statement is not allowed", N);
+         Error_Msg_F ("|~~select statement is not allowed", N);
          return;
       end if;
 
@@ -2178,7 +2178,7 @@ package body Sem_Ch9 is
       --  Select statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("select statement is not allowed", N);
+         Error_Msg_F ("|~~select statement is not allowed", N);
          return;
       end if;
 

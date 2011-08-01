@@ -2065,8 +2065,8 @@ package body Sem_Attr is
         and then not In_Open_Scopes (Scope (P_Type))
         and then not In_Spec_Expression
       then
-         Formal_Error_Msg_NE
-           ("invisible attribute of}", N, First_Subtype (P_Type));
+         Error_Msg_FE
+           ("|~~invisible attribute of}", N, First_Subtype (P_Type));
       end if;
 
       --  Remaining processing depends on attribute

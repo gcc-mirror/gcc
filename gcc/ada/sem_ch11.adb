@@ -444,7 +444,7 @@ package body Sem_Ch11 is
       --  Raise statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("raise statement is not allowed", N);
+         Error_Msg_F ("|~~raise statement is not allowed", N);
       end if;
 
       --  Proceed with analysis
@@ -620,7 +620,7 @@ package body Sem_Ch11 is
       if Formal_Verification_Mode
         and then Comes_From_Source (N)
       then
-         Formal_Error_Msg_N ("raise statement is not allowed", N);
+         Error_Msg_F ("|~~raise statement is not allowed", N);
       end if;
 
       --  Proceed with analysis

@@ -263,7 +263,11 @@ package body Opt is
 
    function SPARK_Mode return Boolean is
    begin
-      return Debug.Debug_Flag_Dot_DD;
+      --  When dropping the debug flag in favor of a compiler option,
+      --  the option should implicitly set the SPARK_Version, so that this test
+      --  becomes simply SPARK_Version > SPARK_None.
+
+      return Debug.Debug_Flag_Dot_DD or else SPARK_Version > SPARK_None;
    end SPARK_Mode;
 
    ---------------

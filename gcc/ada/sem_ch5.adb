@@ -809,7 +809,7 @@ package body Sem_Ch5 is
       --  Block statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("block statement is not allowed", N);
+         Error_Msg_F ("|~~block statement is not allowed", N);
       end if;
 
       --  If no handled statement sequence is present, things are really
@@ -1106,8 +1106,8 @@ package body Sem_Ch5 is
         and then Others_Present
         and then List_Length (Alternatives (N)) = 1
       then
-         Formal_Error_Msg_N
-           ("OTHERS as unique case alternative is not allowed", N);
+         Error_Msg_F
+           ("|~~OTHERS as unique case alternative is not allowed", N);
       end if;
 
       if Exp_Type = Universal_Integer and then not Others_Present then
@@ -1184,8 +1184,8 @@ package body Sem_Ch5 is
          elsif Formal_Verification_Mode
            and then Has_Loop_In_Inner_Open_Scopes (U_Name)
          then
-            Formal_Error_Msg_N
-              ("exit label must name the closest enclosing loop", N);
+            Error_Msg_F
+              ("|~~exit label must name the closest enclosing loop", N);
             return;
          else
             Set_Has_Exit (U_Name);
@@ -1230,32 +1230,32 @@ package body Sem_Ch5 is
       if Formal_Verification_Mode then
          if Present (Cond) then
             if Nkind (Parent (N)) /= N_Loop_Statement then
-               Formal_Error_Msg_N
-                 ("exit with when clause must be directly in loop", N);
+               Error_Msg_F
+                 ("|~~exit with when clause must be directly in loop", N);
             end if;
 
          else
             if Nkind (Parent (N)) /= N_If_Statement then
                if Nkind (Parent (N)) = N_Elsif_Part then
-                  Formal_Error_Msg_N ("exit must be in IF without ELSIF", N);
+                  Error_Msg_F ("|~~exit must be in IF without ELSIF", N);
                else
-                  Formal_Error_Msg_N ("exit must be directly in IF", N);
+                  Error_Msg_F ("|~~exit must be directly in IF", N);
                end if;
 
             elsif Nkind (Parent (Parent (N))) /= N_Loop_Statement then
-               Formal_Error_Msg_N ("exit must be in IF directly in loop", N);
+               Error_Msg_F ("|~~exit must be in IF directly in loop", N);
 
             --  First test the presence of ELSE, so that an exit in an ELSE
             --  leads to an error mentioning the ELSE.
 
             elsif Present (Else_Statements (Parent (N))) then
-               Formal_Error_Msg_N ("exit must be in IF without ELSE", N);
+               Error_Msg_F ("|~~exit must be in IF without ELSE", N);
 
             --  An exit in an ELSIF does not reach here, as it would have been
             --  detected in the case (Nkind (Parent (N)) /= N_If_Statement).
 
             elsif Present (Elsif_Parts (Parent (N))) then
-               Formal_Error_Msg_N ("exit must be in IF without ELSIF", N);
+               Error_Msg_F ("|~~exit must be in IF without ELSIF", N);
             end if;
          end if;
       end if;
@@ -1287,7 +1287,7 @@ package body Sem_Ch5 is
       --  Goto statement is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("goto statement is not allowed", N);
+         Error_Msg_F ("|~~goto statement is not allowed", N);
       end if;
 
       --  Actual semantic checks
@@ -1873,8 +1873,8 @@ package body Sem_Ch5 is
                if Formal_Verification_Mode
                  and then Nkind (DS) = N_Range
                then
-                  Formal_Error_Msg_N ("loop parameter specification must "
-                                      & "include subtype mark", N);
+                  Error_Msg_F ("|~~loop parameter specification must "
+                               & "include subtype mark", N);
                end if;
 
                --  Now analyze the subtype definition. If it is a range, create
@@ -2437,8 +2437,8 @@ package body Sem_Ch5 is
                   --  Now issue the warning (or error in formal mode)
 
                   if Formal_Verification_Mode then
-                     Formal_Error_Msg
-                       ("unreachable code is not allowed", Error_Loc);
+                     Error_Msg
+                       ("|~~unreachable code is not allowed", Error_Loc);
                   else
                      Error_Msg ("?unreachable code!", Error_Loc);
                   end if;
