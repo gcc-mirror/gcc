@@ -2767,10 +2767,10 @@ package body Exp_Ch5 is
       I_Spec     : constant Node_Id    := Iterator_Specification (Isc);
       Id         : constant Entity_Id  := Defining_Identifier (I_Spec);
 
-      Container  : constant Node_Id    := Name (I_Spec);
-      --  An expression whose type is an array or a predefined container.
+      Container : constant Node_Id := Name (I_Spec);
+      --  An expression whose type is an array or a predefined container
 
-      Typ        : constant Entity_Id  := Etype (Container);
+      Typ : constant Entity_Id  := Etype (Container);
 
       Cursor   : Entity_Id;
       New_Loop : Node_Id;

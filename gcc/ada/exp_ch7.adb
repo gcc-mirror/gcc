@@ -729,15 +729,25 @@ package body Exp_Ch7 is
                Ref : constant Node_Id := New_Occurrence_Of (E, Sloc (Stmt));
 
             begin
+               --  If the current context is a function, the end of the
+               --  statement sequence is likely to be a return statement.
+               --  The cleanup code must be executed before the return.
+
+               if Ekind (Current_Scope) = E_Function
+                 and then Nkind (Stmt) = Sinfo.N_Return_Statement
+               then
+                  Stmt := Prev (Stmt);
+               end if;
+
                if Is_Simple_Protected_Type (Typ) then
-                  Append_To (Stmts, Cleanup_Protected_Object (N, Ref));
+                  Insert_After (Stmt, Cleanup_Protected_Object (N, Ref));
 
                elsif Has_Simple_Protected_Object (Typ) then
                   if Is_Record_Type (Typ) then
-                     Append_List_To (Stmts, Cleanup_Record (N, Ref, Typ));
+                     Insert_List_After (Stmt, Cleanup_Record (N, Ref, Typ));
 
                   elsif Is_Array_Type (Typ) then
-                     Append_List_To (Stmts, Cleanup_Array (N, Ref, Typ));
+                     Insert_List_After (Stmt, Cleanup_Array (N, Ref, Typ));
                   end if;
                end if;
             end;

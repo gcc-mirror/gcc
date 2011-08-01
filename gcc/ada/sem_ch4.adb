@@ -5691,12 +5691,10 @@ package body Sem_Ch4 is
                declare
                   U : constant Node_Id :=
                         Cunit (Get_Source_Unit (Candidate_Type));
-
                begin
                   if Unit_Is_Visible (U) then
                      Error_Msg_N -- CODEFIX
                        ("use clause would make operation legal!",  N);
-
                   else
                      Error_Msg_NE  --  CODEFIX
                        ("add with_clause and use_clause for&!",
@@ -6793,9 +6791,7 @@ package body Sem_Ch4 is
             --  to same.
 
             while Present (Hom) loop
-               if (Ekind (Hom) = E_Procedure
-                     or else
-                   Ekind (Hom) = E_Function)
+               if Ekind_In (Hom, E_Procedure, E_Function)
                  and then not Is_Hidden (Hom)
                  and then Scope (Hom) = Scope (Anc_Type)
                  and then Present (First_Formal (Hom))

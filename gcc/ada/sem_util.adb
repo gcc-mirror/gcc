@@ -11553,8 +11553,7 @@ package body Sem_Util is
       -- Unit_In_Parent_Context --
       ----------------------------
 
-      function Unit_In_Parent_Context (Par_Unit : Node_Id) return Boolean
-      is
+      function Unit_In_Parent_Context (Par_Unit : Node_Id) return Boolean is
       begin
          if Unit_In_Context (Par_Unit) then
             return True;
@@ -11585,8 +11584,8 @@ package body Sem_Util is
                --  looking for, eg. Text_IO which renames Ada.Text_IO.
 
                elsif
-                 Renamed_Entity (Entity (Name (Clause)))
-                   = Defining_Entity (Unit (U))
+                 Renamed_Entity (Entity (Name (Clause))) =
+                                                Defining_Entity (Unit (U))
                then
                   return True;
                end if;
@@ -11594,11 +11593,13 @@ package body Sem_Util is
 
             Next (Clause);
          end loop;
+
          return False;
       end Unit_In_Context;
 
-   begin
+   --  Start of processing for Unit_Is_Visible
 
+   begin
       --  The currrent unit is directly visible.
 
       if Curr = U then
@@ -11614,7 +11615,6 @@ package body Sem_Util is
           (Nkind (Unit (Curr)) = N_Subprogram_Body
             and then not Acts_As_Spec (Unit (Curr)))
       then
-
          if Unit_In_Context (Library_Unit (Curr)) then
             return True;
          end if;

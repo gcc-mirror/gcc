@@ -2933,13 +2933,15 @@ package body Make is
          end if;
 
          --  Make a deep copy of the arguments, because Normalize_Arguments
-         --  may deallocate some arguments.
-         --  Also strip target specific -mxxx switches in CodePeer mode.
+         --  may deallocate some arguments. Also strip target specific -mxxx
+         --  switches in CodePeer mode.
 
          declare
-            Index : Natural := Comp_Next;
+            Index : Natural;
             Last  : constant Natural := Comp_Last;
+
          begin
+            Index := Comp_Next;
             for J in Comp_Next .. Last loop
                declare
                   Str : String renames Args (Arg_Index).all;
