@@ -59,9 +59,6 @@ extern void mmix_asm_declare_register_global
   (FILE *, tree, int, const char *);
 extern void mmix_asm_output_addr_diff_elt (FILE *, rtx, int, int);
 extern void mmix_asm_output_addr_vec_elt (FILE *, int);
-extern enum reg_class mmix_preferred_reload_class (rtx, enum reg_class);
-extern enum reg_class mmix_preferred_output_reload_class
-  (rtx, enum reg_class);
 extern enum reg_class mmix_secondary_reload_class
   (enum reg_class, enum machine_mode, rtx, int);
 extern int mmix_const_ok_for_letter_p (HOST_WIDE_INT, int);

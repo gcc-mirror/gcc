@@ -452,12 +452,6 @@ enum reg_class
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) REGNO_OK_FOR_BASE_P (REGNO)
 
-#define PREFERRED_RELOAD_CLASS(X, CLASS) \
- mmix_preferred_reload_class (X, CLASS)
-
-#define PREFERRED_OUTPUT_RELOAD_CLASS(X, CLASS) \
- mmix_preferred_output_reload_class (X, CLASS)
-
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X) \
  mmix_secondary_reload_class (CLASS, MODE, X, 1)
 

@@ -129,6 +129,8 @@ static void mmix_emit_sp_add (HOST_WIDE_INT offset);
 static void mmix_target_asm_function_prologue (FILE *, HOST_WIDE_INT);
 static void mmix_target_asm_function_end_prologue (FILE *);
 static void mmix_target_asm_function_epilogue (FILE *, HOST_WIDE_INT);
+static reg_class_t mmix_preferred_reload_class (rtx, reg_class_t);
+static reg_class_t mmix_preferred_output_reload_class (rtx, reg_class_t);
 static bool mmix_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool mmix_legitimate_constant_p (enum machine_mode, rtx);
 static void mmix_reorg (void);
@@ -249,6 +251,11 @@ static void mmix_conditional_register_usage (void);
 #define TARGET_PASS_BY_REFERENCE mmix_pass_by_reference
 #undef TARGET_CALLEE_COPIES
 #define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
+
+#undef TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS mmix_preferred_reload_class
+#undef TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
+#define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS mmix_preferred_reload_class
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mmix_legitimate_address_p
@@ -409,23 +416,22 @@ mmix_local_regno (int regno)
   return regno <= MMIX_LAST_STACK_REGISTER_REGNUM && !call_used_regs[regno];
 }
 
-/* PREFERRED_RELOAD_CLASS.
+/* TARGET_PREFERRED_RELOAD_CLASS.
    We need to extend the reload class of REMAINDER_REG and HIMULT_REG.  */
 
-enum reg_class
-mmix_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, enum reg_class rclass)
+static reg_class_t
+mmix_preferred_reload_class (rtx x, reg_class_t rclass)
 {
   /* FIXME: Revisit.  */
   return GET_CODE (x) == MOD && GET_MODE (x) == DImode
     ? REMAINDER_REG : rclass;
 }
 
-/* PREFERRED_OUTPUT_RELOAD_CLASS.
+/* TARGET_PREFERRED_OUTPUT_RELOAD_CLASS.
    We need to extend the reload class of REMAINDER_REG and HIMULT_REG.  */
 
-enum reg_class
-mmix_preferred_output_reload_class (rtx x ATTRIBUTE_UNUSED,
-				    enum reg_class rclass)
+static reg_class_t
+mmix_preferred_output_reload_class (rtx x, reg_class_t rclass)
 {
   /* FIXME: Revisit.  */
   return GET_CODE (x) == MOD && GET_MODE (x) == DImode
