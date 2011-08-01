@@ -371,6 +371,17 @@ package body Endh is
                   Set_Comes_From_Source (End_Labl, False);
                   End_Labl_Present := False;
 
+                  --  In SPARK mode, no missing label is allowed
+
+                  if SPARK_Mode
+                    and then End_Type = E_Name
+                    and then Explicit_Start_Label (Scope.Last)
+                  then
+                     Error_Msg_Node_1 := Scope.Table (Scope.Last).Labl;
+                     Formal_Error_Msg_SP -- CODEFIX
+                       ("`END &` required");
+                  end if;
+
                   --  Do style check for missing label
 
                   if Style_Check

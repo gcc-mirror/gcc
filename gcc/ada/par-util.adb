@@ -377,6 +377,16 @@ package body Util is
       null;
    end Discard_Junk_Node;
 
+   -------------------------
+   -- Formal_Error_Msg_SP --
+   -------------------------
+
+   procedure Formal_Error_Msg_SP (Msg : String) is
+   begin
+      pragma Assert (Formal_Verification_Mode);
+      Error_Msg_SP ("(" & Formal_Language & ") " & Msg);
+   end Formal_Error_Msg_SP;
+
    ------------
    -- Ignore --
    ------------
