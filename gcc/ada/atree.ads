@@ -819,9 +819,9 @@ package Atree is
 
    function Is_Rewrite_Insertion (Node : Node_Id) return Boolean;
    pragma Inline (Is_Rewrite_Insertion);
-   --  Tests whether the given node was marked using Set_Rewrite_Insert. This
-   --  is used in reconstructing the original tree (where such nodes are to
-   --  be eliminated from the reconstructed tree).
+   --  Tests whether the given node was marked using Mark_Rewrite_Insertion.
+   --  This is used in reconstructing the original tree (where such nodes are
+   --  to be eliminated from the reconstructed tree).
 
    procedure Rewrite (Old_Node, New_Node : Node_Id);
    --  This is used when a complete subtree is to be replaced. Old_Node is the
