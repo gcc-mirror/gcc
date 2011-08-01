@@ -253,6 +253,7 @@ objects = $(filter %$(objext),$^)
 # Collect any host-specific information from Makefile fragments.
 
 LIBGCC_VER_GNU_PREFIX = __
+LIBGCC_VER_FIXEDPOINT_GNU_PREFIX = __
 LIBGCC_VER_SYMBOLS_PREFIX =
 
 tmake_file = @tmake_file@
@@ -837,7 +838,8 @@ mapfile = libgcc.map
 endif
 
 libgcc-std.ver: $(srcdir)/libgcc-std.ver.in
-	sed -e 's/__PFX__/$(LIBGCC_VER_GNU_PREFIX)/g' < $< > $@
+	sed -e 's/__PFX__/$(LIBGCC_VER_GNU_PREFIX)/g' \
+	    -e 's/__FIXPTPFX__/$(LIBGCC_VER_FIXEDPOINT_GNU_PREFIX)/g' < $< > $@
 
 libgcc_s$(SHLIB_EXT): $(libgcc-s-objects) $(extra-parts)
 	# @multilib_flags@ is still needed because this may use

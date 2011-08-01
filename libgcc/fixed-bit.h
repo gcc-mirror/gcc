@@ -25,6 +25,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef _FIXED_BIT_H
 #define _FIXED_BIT_H
 
+#ifdef LIBGCC2_GNU_PREFIX
+#define LIBGCC2_FIXEDBIT_GNU_PREFIX
+#endif
+
 /* To use this file we need to define one of the following:
    QQ_MODE, UQQ_MODE, HQ_MODE, UHQ_MODE, SQ_MODE, USQ_MODE, DQ_MODE, UDQ_MODE,
    TQ_MODE, UTQ_MODE, HA_MODE, UHA_MODE, SA_MODE, USA_MODE, DA_MODE, UDA_MODE,
@@ -445,7 +449,7 @@ typedef union
 #define IBITS		IBITS2(MODE_NAME)
 #define I_F_BITS	(FBITS + IBITS)
 
-#ifdef LIBGCC2_GNU_PREFIX
+#ifdef LIBGCC2_FIXEDBIT_GNU_PREFIX
 #define FIXED_OP(OP,MODE,NUM)	__gnu_ ## OP ## MODE ## NUM
 #else
 #define FIXED_OP(OP,MODE,NUM)	__ ## OP ## MODE ## NUM
@@ -1150,7 +1154,7 @@ extern FIXED_C_TYPE FIXED_USASHL (FIXED_C_TYPE, word_type);
 #define TO_HAVE_PADDING_BITS	(TO_PADDING_BITS > 0)
 #endif /* TO_TYPE == 4  */
 
-#ifdef LIBGCC2_GNU_PREFIX
+#ifdef LIBGCC2_FIXEDBIT_GNU_PREFIX
 #define FIXED_CONVERT_OP(OP,FROM,TO)	__gnu_ ## OP ## FROM ## TO
 #define FIXED_CONVERT_OP2(OP,FROM,TO)	__gnu_ ## OP ## FROM ## TO ## 2
 #else
