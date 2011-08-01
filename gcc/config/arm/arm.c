@@ -1038,6 +1038,49 @@ bit_count (unsigned long value)
   return count;
 }
 
+typedef struct
+{
+  enum machine_mode mode;
+  const char *name;
+} arm_fixed_mode_set;
+
+/* A small helper for setting fixed-point library libfuncs.  */
+
+static void
+arm_set_fixed_optab_libfunc (optab optable, enum machine_mode mode,
+			     const char *funcname, const char *modename,
+			     int num_suffix)
+{
+  char buffer[50];
+  
+  if (num_suffix == 0)
+    sprintf (buffer, "__gnu_%s%s", funcname, modename);
+  else
+    sprintf (buffer, "__gnu_%s%s%d", funcname, modename, num_suffix);
+  
+  set_optab_libfunc (optable, mode, buffer);
+}
+
+static void
+arm_set_fixed_conv_libfunc (convert_optab optable, enum machine_mode to,
+			    enum machine_mode from, const char *funcname,
+			    const char *toname, const char *fromname)
+{
+  char buffer[50];
+  char *maybe_suffix_2 = "";
+  
+  /* Follow the logic for selecting a "2" suffix in fixed-bit.h.  */
+  if (ALL_FIXED_POINT_MODE_P (from) && ALL_FIXED_POINT_MODE_P (to)
+      && UNSIGNED_FIXED_POINT_MODE_P (from) == UNSIGNED_FIXED_POINT_MODE_P (to)
+      && ALL_FRACT_MODE_P (from) == ALL_FRACT_MODE_P (to))
+    maybe_suffix_2 = "2";
+  
+  sprintf (buffer, "__gnu_%s%s%s%s", funcname, fromname, toname,
+	   maybe_suffix_2);
+
+  set_conv_libfunc (optable, to, from, buffer);
+}
+
 /* Set up library functions unique to ARM.  */
 
 static void
@@ -1182,6 +1225,137 @@ arm_init_libfuncs (void)
     default:
       break;
     }
+
+  /* Use names prefixed with __gnu_ for fixed-point helper functions.  */
+  {
+    const arm_fixed_mode_set fixed_arith_modes[] =
+      {
+	{ QQmode, "qq" },
+	{ UQQmode, "uqq" },
+	{ HQmode, "hq" },
+	{ UHQmode, "uhq" },
+	{ SQmode, "sq" },
+	{ USQmode, "usq" },
+	{ DQmode, "dq" },
+	{ UDQmode, "udq" },
+	{ TQmode, "tq" },
+	{ UTQmode, "utq" },
+	{ HAmode, "ha" },
+	{ UHAmode, "uha" },
+	{ SAmode, "sa" },
+	{ USAmode, "usa" },
+	{ DAmode, "da" },
+	{ UDAmode, "uda" },
+	{ TAmode, "ta" },
+	{ UTAmode, "uta" }
+      };
+    const arm_fixed_mode_set fixed_conv_modes[] =
+      {
+	{ QQmode, "qq" },
+	{ UQQmode, "uqq" },
+	{ HQmode, "hq" },
+	{ UHQmode, "uhq" },
+	{ SQmode, "sq" },
+	{ USQmode, "usq" },
+	{ DQmode, "dq" },
+	{ UDQmode, "udq" },
+	{ TQmode, "tq" },
+	{ UTQmode, "utq" },
+	{ HAmode, "ha" },
+	{ UHAmode, "uha" },
+	{ SAmode, "sa" },
+	{ USAmode, "usa" },
+	{ DAmode, "da" },
+	{ UDAmode, "uda" },
+	{ TAmode, "ta" },
+	{ UTAmode, "uta" },
+	{ QImode, "qi" },
+	{ HImode, "hi" },
+	{ SImode, "si" },
+	{ DImode, "di" },
+	{ TImode, "ti" },
+	{ SFmode, "sf" },
+	{ DFmode, "df" }
+      };
+    unsigned int i, j;
+
+    for (i = 0; i < ARRAY_SIZE (fixed_arith_modes); i++)
+      {
+	arm_set_fixed_optab_libfunc (add_optab, fixed_arith_modes[i].mode,
+				     "add", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (ssadd_optab, fixed_arith_modes[i].mode,
+				     "ssadd", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (usadd_optab, fixed_arith_modes[i].mode,
+				     "usadd", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (sub_optab, fixed_arith_modes[i].mode,
+				     "sub", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (sssub_optab, fixed_arith_modes[i].mode,
+				     "sssub", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (ussub_optab, fixed_arith_modes[i].mode,
+				     "ussub", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (smul_optab, fixed_arith_modes[i].mode,
+				     "mul", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (ssmul_optab, fixed_arith_modes[i].mode,
+				     "ssmul", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (usmul_optab, fixed_arith_modes[i].mode,
+				     "usmul", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (sdiv_optab, fixed_arith_modes[i].mode,
+				     "div", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (udiv_optab, fixed_arith_modes[i].mode,
+				     "udiv", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (ssdiv_optab, fixed_arith_modes[i].mode,
+				     "ssdiv", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (usdiv_optab, fixed_arith_modes[i].mode,
+				     "usdiv", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (neg_optab, fixed_arith_modes[i].mode,
+				     "neg", fixed_arith_modes[i].name, 2);
+	arm_set_fixed_optab_libfunc (ssneg_optab, fixed_arith_modes[i].mode,
+				     "ssneg", fixed_arith_modes[i].name, 2);
+	arm_set_fixed_optab_libfunc (usneg_optab, fixed_arith_modes[i].mode,
+				     "usneg", fixed_arith_modes[i].name, 2);
+	arm_set_fixed_optab_libfunc (ashl_optab, fixed_arith_modes[i].mode,
+				     "ashl", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (ashr_optab, fixed_arith_modes[i].mode,
+				     "ashr", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (lshr_optab, fixed_arith_modes[i].mode,
+				     "lshr", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (ssashl_optab, fixed_arith_modes[i].mode,
+				     "ssashl", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (usashl_optab, fixed_arith_modes[i].mode,
+				     "usashl", fixed_arith_modes[i].name, 3);
+	arm_set_fixed_optab_libfunc (cmp_optab, fixed_arith_modes[i].mode,
+				     "cmp", fixed_arith_modes[i].name, 2);
+      }
+
+    for (i = 0; i < ARRAY_SIZE (fixed_conv_modes); i++)
+      for (j = 0; j < ARRAY_SIZE (fixed_conv_modes); j++)
+	{
+	  if (i == j
+	      || (!ALL_FIXED_POINT_MODE_P (fixed_conv_modes[i].mode)
+		  && !ALL_FIXED_POINT_MODE_P (fixed_conv_modes[j].mode)))
+	    continue;
+
+	  arm_set_fixed_conv_libfunc (fract_optab, fixed_conv_modes[i].mode,
+				      fixed_conv_modes[j].mode, "fract",
+				      fixed_conv_modes[i].name,
+				      fixed_conv_modes[j].name);
+	  arm_set_fixed_conv_libfunc (satfract_optab,
+				      fixed_conv_modes[i].mode,
+				      fixed_conv_modes[j].mode, "satfract",
+				      fixed_conv_modes[i].name,
+				      fixed_conv_modes[j].name);
+	  arm_set_fixed_conv_libfunc (fractuns_optab,
+				      fixed_conv_modes[i].mode,
+				      fixed_conv_modes[j].mode, "fractuns",
+				      fixed_conv_modes[i].name,
+				      fixed_conv_modes[j].name);
+	  arm_set_fixed_conv_libfunc (satfractuns_optab,
+				      fixed_conv_modes[i].mode,
+				      fixed_conv_modes[j].mode, "satfractuns",
+				      fixed_conv_modes[i].name,
+				      fixed_conv_modes[j].name);
+	}
+  }
 
   if (TARGET_AAPCS_BASED)
     synchronize_libfunc = init_one_libfunc ("__sync_synchronize");
@@ -4203,6 +4377,10 @@ aapcs_allocate_return_reg (enum machine_mode mode, const_tree type,
 rtx
 aapcs_libcall_value (enum machine_mode mode)
 {
+  if (BYTES_BIG_ENDIAN && ALL_FIXED_POINT_MODE_P (mode)
+      && GET_MODE_SIZE (mode) <= 4)
+    mode = SImode;
+
   return aapcs_allocate_return_reg (mode, NULL_TREE, NULL_TREE);
 }
 
@@ -9252,8 +9430,9 @@ arm_return_in_msb (const_tree valtype)
 {
   return (TARGET_AAPCS_BASED
           && BYTES_BIG_ENDIAN
-          && (AGGREGATE_TYPE_P (valtype)
-              || TREE_CODE (valtype) == COMPLEX_TYPE));
+	  && (AGGREGATE_TYPE_P (valtype)
+	      || TREE_CODE (valtype) == COMPLEX_TYPE
+	      || FIXED_POINT_TYPE_P (valtype)));
 }
 
 /* Returns TRUE if INSN is an "LDR REG, ADDR" instruction.
@@ -11287,7 +11466,8 @@ arm_pad_reg_upward (enum machine_mode mode ATTRIBUTE_UNUSED,
 {
   if (TARGET_AAPCS_BASED
       && BYTES_BIG_ENDIAN
-      && (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE)
+      && (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE
+	  || FIXED_POINT_TYPE_P (type))
       && int_size_in_bytes (type) <= 4)
     return true;
 
@@ -19433,6 +19613,8 @@ arm_scalar_mode_supported_p (enum machine_mode mode)
 {
   if (mode == HFmode)
     return (arm_fp16_format != ARM_FP16_FORMAT_NONE);
+  else if (ALL_FIXED_POINT_MODE_P (mode))
+    return true;
   else
     return default_scalar_mode_supported_p (mode);
 }
@@ -22550,6 +22732,11 @@ arm_vector_mode_supported_p (enum machine_mode mode)
       && ((mode == V2SImode)
 	  || (mode == V4HImode)
 	  || (mode == V8QImode)))
+    return true;
+
+  if (TARGET_INT_SIMD && (mode == V4UQQmode || mode == V4QQmode
+      || mode == V2UHQmode || mode == V2HQmode || mode == V2UHAmode
+      || mode == V2HAmode))
     return true;
 
   return false;

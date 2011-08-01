@@ -70,6 +70,12 @@ VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI */
 VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */
 VECTOR_MODES (FLOAT, 16);     /*       V8HF V4SF V2DF */
 
+/* Fraction and accumulator vector modes.  */
+VECTOR_MODES (FRACT, 4);      /* V4QQ  V2HQ */
+VECTOR_MODES (UFRACT, 4);     /* V4UQQ V2UHQ */
+VECTOR_MODES (ACCUM, 4);      /*       V2HA */
+VECTOR_MODES (UACCUM, 4);     /*       V2UHA */
+
 /* Opaque integer modes for 3, 4, 6 or 8 Neon double registers (2 is
    TImode).  */
 INT_MODE (EI, 24);

@@ -1,5 +1,35 @@
 2011-08-01  Julian Brown  <julian@codesourcery.com>
 
+	* configure.ac (fixed-point): Add ARM support.
+	* configure: Regenerate.
+	* config/arm/arm.c (arm_fixed_mode_set): New struct.
+	(arm_set_fixed_optab_libfunc): New.
+	(arm_set_fixed_conv_libfunc): New.
+	(arm_init_libfuncs): Initialise fixed-point helper libfuncs with
+	ARM-specific names.
+	(aapcs_libcall_value): Return sub-word-size fixed-point libcall
+	return values in SImode.
+	(arm_return_in_msb): Return fixed-point types in the msb.
+	(arm_pad_reg_upwards, arm_pad_arg_upwards): Pad fixed-point types
+	upwards.
+	(arm_scalar_mode_supported_p): Support fixed-point modes.
+	(arm_vector_mode_supported_p): Support vector fixed-point modes.
+	* config/arm/arm.h (SHORT_FRACT_TYPE_SIZE, FRACT_TYPE_SIZE)
+	(LONG_FRACT_TYPE_SIZE, LONG_LONG_FRACT_TYPE_SIZE)
+	(SHORT_ACCUM_TYPE_SIZE, ACCUM_TYPE_SIZE, LONG_ACCUM_TYPE_SIZE)
+	(LONG_LONG_ACCUM_TYPE_SIZE, MAX_FIXED_MODE_SIZE): Define.
+	* config/arm/iterators.md (FIXED, ADDSUB, UQADDSUB, QADDSUB, QMUL):
+	New mode iterators.
+	(qaddsub_suf): New mode attribute.
+	* config/arm/arm-modes.def (FRACT, UFRACT, ACCUM, UACCUM): Declare
+	vector modes.
+	* config/arm/predicates.md (sat_shift_operator): New predicate.
+	* config/arm/arm-fixed.md: New.
+	* config/arm/arm.md: Include arm-fixed.md.
+	* config/arm/t-arm (MD_INCLUDES): Add arm-fixed.md.
+
+2011-08-01  Julian Brown  <julian@codesourcery.com>
+
 	* calls.c (emit_library_call_value_1): Support padding for libcall
 	arguments and return values.
 	* config/arm/arm.c (arm_pad_arg_upward): Pad half-float values

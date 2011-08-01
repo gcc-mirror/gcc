@@ -264,12 +264,15 @@ arm*-*-freebsd*)
 arm*-*-netbsdelf*)
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
+	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
 	;;
 arm*-*-uclinux*)		# ARM ucLinux
+	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
 	;;
 arm*-*-ecos-elf)
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* )
+	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
 	;;
 arm*-*-rtems*)
 	;;
