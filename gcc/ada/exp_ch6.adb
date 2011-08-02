@@ -5449,26 +5449,26 @@ package body Exp_Ch6 is
       Prot_Id   : Entity_Id;
 
    begin
-      --  In SPARK or ALFA, subprogram declarations are only allowed in
-      --  package specifications.
+      --  In SPARK, subprogram declarations are only allowed in package
+      --  specifications.
 
       if Nkind (Parent (N)) /= N_Package_Specification then
          if Nkind (Parent (N)) = N_Compilation_Unit then
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("subprogram declaration is not a library item", N);
 
          elsif Present (Next (N))
            and then Nkind (Next (N)) = N_Pragma
            and then Get_Pragma_Id (Pragma_Name (Next (N))) = Pragma_Import
          then
-            --  In SPARK or ALFA, subprogram declarations are also permitted in
+            --  In SPARK, subprogram declarations are also permitted in
             --  declarative parts when immediately followed by a corresponding
             --  pragma Import. We only check here that there is some pragma
             --  Import.
 
             null;
          else
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("subprogram declaration is not allowed here", N);
          end if;
       end if;

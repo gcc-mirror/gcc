@@ -3605,7 +3605,7 @@ package body Sem_Res is
 
                      begin
                         if not Is_SPARK_Object_Reference (Operand) then
-                           Check_Formal_Restriction
+                           Check_SPARK_Restriction
                              ("object required", Operand);
 
                         --  In formal mode, the only view conversions are those
@@ -3621,11 +3621,11 @@ package body Sem_Res is
                            if Ekind_In
                              (F, E_Out_Parameter, E_In_Out_Parameter)
                            then
-                              Check_Formal_Restriction
+                              Check_SPARK_Restriction
                                 ("ancestor conversion is the only permitted "
                                  & "view conversion", A);
                            else
-                              Check_Formal_Restriction
+                              Check_SPARK_Restriction
                                 ("ancestor conversion required", A);
                            end if;
 
@@ -3635,7 +3635,7 @@ package body Sem_Res is
                      end;
 
                   else
-                     Check_Formal_Restriction ("object required", A);
+                     Check_SPARK_Restriction ("object required", A);
                   end if;
 
                --  In formal mode, the only view conversions are those
@@ -3644,7 +3644,7 @@ package body Sem_Res is
                elsif Nkind (A) = N_Type_Conversion
                  and then Ekind_In (F, E_Out_Parameter, E_In_Out_Parameter)
                then
-                  Check_Formal_Restriction
+                  Check_SPARK_Restriction
                     ("ancestor conversion is the only permitted view "
                      & "conversion", A);
                end if;
@@ -4887,9 +4887,9 @@ package body Sem_Res is
       Generate_Operator_Reference (N, Typ);
       Eval_Arithmetic_Op (N);
 
-      --  In SPARK and ALFA, a multiplication or division with operands of
-      --  fixed point types shall be qualified or explicitly converted to
-      --  identify the result type.
+      --  In SPARK, a multiplication or division with operands of fixed point
+      --  types shall be qualified or explicitly converted to identify the
+      --  result type.
 
       if (Is_Fixed_Point_Type (Etype (L))
            or else Is_Fixed_Point_Type (Etype (R)))
@@ -4897,7 +4897,7 @@ package body Sem_Res is
         and then
           not Nkind_In (Parent (N), N_Qualified_Expression, N_Type_Conversion)
       then
-         Check_Formal_Restriction
+         Check_SPARK_Restriction
            ("operation should be qualified or explicitly converted", N);
       end if;
 
@@ -5960,16 +5960,16 @@ package body Sem_Res is
       Generate_Operator_Reference (N, T);
       Check_Low_Bound_Tested (N);
 
-      --  In SPARK or ALFA, ordering operators <, <=, >, >= are not defined
-      --  for Boolean types or array types except String.
+      --  In SPARK, ordering operators <, <=, >, >= are not defined for Boolean
+      --  types or array types except String.
 
       if Is_Boolean_Type (T) then
-         Check_Formal_Restriction
+         Check_SPARK_Restriction
            ("comparison is not defined on Boolean type", N);
       elsif Is_Array_Type (T)
         and then Base_Type (T) /= Standard_String
       then
-         Check_Formal_Restriction
+         Check_SPARK_Restriction
            ("comparison is not defined on array types other than String", N);
       else
          null;
@@ -6817,9 +6817,9 @@ package body Sem_Res is
          Resolve (L, T);
          Resolve (R, T);
 
-         --  In SPARK or ALFA, equality operators = and /= for array types
-         --  other than String are only defined when, for each index position,
-         --  the operands have equal static bounds.
+         --  In SPARK, equality operators = and /= for array types other than
+         --  String are only defined when, for each index position, the
+         --  operands have equal static bounds.
 
          if Is_Array_Type (T)
            and then Base_Type (T) /= Standard_String
@@ -6828,7 +6828,7 @@ package body Sem_Res is
            and then Etype (R) /= Any_Composite  --  or else R in error
            and then not Matching_Static_Array_Bounds (Etype (L), Etype (R))
          then
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("array types should have matching static bounds", N);
          end if;
 
@@ -7357,10 +7357,10 @@ package body Sem_Res is
       Generate_Operator_Reference (N, B_Typ);
       Eval_Logical_Op (N);
 
-      --  In SPARK or ALFA, logical operations AND, OR and XOR for arrays are
-      --  defined only when both operands have same static lower and higher
-      --  bounds. Of course the types have to match, so only check if operands
-      --  are compatible and the node itself has no errors.
+      --  In SPARK, logical operations AND, OR and XOR for arrays are defined
+      --  only when both operands have same static lower and higher bounds. Of
+      --  course the types have to match, so only check if operands are
+      --  compatible and the node itself has no errors.
 
       if Is_Array_Type (B_Typ)
         and then Nkind (N) in N_Binary_Op
@@ -7374,7 +7374,7 @@ package body Sem_Res is
               and then Right_Typ /= Any_Composite  --  or Right_Opnd in error
               and then not Matching_Static_Array_Bounds (Left_Typ, Right_Typ)
             then
-               Check_Formal_Restriction
+               Check_SPARK_Restriction
                  ("array types should have matching static bounds", N);
             end if;
          end;
@@ -7627,7 +7627,7 @@ package body Sem_Res is
       end loop;
 
       if Base_Type (Etype (N)) /= Standard_String then
-         Check_Formal_Restriction
+         Check_SPARK_Restriction
            ("result of concatenation should have type String", N);
       end if;
    end Resolve_Op_Concat;
@@ -7734,21 +7734,21 @@ package body Sem_Res is
          Resolve (Arg, Btyp);
       end if;
 
-      --  Concatenation is restricted in SPARK or ALFA: each operand must be
-      --  either a string literal, a static character expression, or another
+      --  Concatenation is restricted in SPARK: each operand must be either a
+      --  string literal, a static character expression, or another
       --  concatenation. Arg cannot be a concatenation here as callers of
       --  Resolve_Op_Concat_Arg call it separately on each final operand, past
       --  concatenation operations.
 
       if Is_Character_Type (Etype (Arg)) then
          if not Is_Static_Expression (Arg) then
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("character operand for concatenation should be static", N);
          end if;
 
       elsif Is_String_Type (Etype (Arg)) then
          if not Is_Static_Expression (Arg) then
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("string operand for concatenation should be static", N);
          end if;
 
@@ -8032,7 +8032,7 @@ package body Sem_Res is
         and then Etype (Expr) /= Any_Composite  --  or else Expr in error
         and then not Matching_Static_Array_Bounds (Target_Typ, Etype (Expr))
       then
-         Check_Formal_Restriction
+         Check_SPARK_Restriction
            ("array types should have matching static bounds", N);
       end if;
 
@@ -9150,15 +9150,15 @@ package body Sem_Res is
 
       Resolve (Operand);
 
-      --  In SPARK or ALFA, a type conversion between array types should be
-      --  restricted to types which have matching static bounds.
+      --  In SPARK, a type conversion between array types should be restricted
+      --  to types which have matching static bounds.
 
       if Is_Array_Type (Target_Typ)
         and then Is_Array_Type (Operand_Typ)
         and then Operand_Typ /= Any_Composite  --  or else Operand in error
         and then not Matching_Static_Array_Bounds (Target_Typ, Operand_Typ)
       then
-         Check_Formal_Restriction
+         Check_SPARK_Restriction
            ("array types should have matching static bounds", N);
       end if;
 
@@ -9172,7 +9172,7 @@ package body Sem_Res is
         and then Is_Ancestor (Target_Typ, Operand_Typ)
         and then not Is_SPARK_Object_Reference (Operand)
       then
-         Check_Formal_Restriction ("object required", Operand);
+         Check_SPARK_Restriction ("object required", Operand);
       end if;
 
       --  Note: we do the Eval_Type_Conversion call before applying the
@@ -9414,7 +9414,7 @@ package body Sem_Res is
    begin
       if Is_Modular_Integer_Type (Typ) and then Nkind (N) /= N_Op_Not then
          Error_Msg_Name_1 := Chars (Typ);
-         Check_Formal_Restriction
+         Check_SPARK_Restriction
            ("unary operator not defined for modular type%", N);
       end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,7 +121,7 @@ package body Debug is
    --  d.A  Read/write Aspect_Specifications hash table to tree
    --  d.B
    --  d.C  Generate concatenation call, do not generate inline code
-   --  d.D  Accept only the SPARK subset of Ada
+   --  d.D
    --  d.E  SPARK generation mode
    --  d.F  Why generation mode
    --  d.G
@@ -573,13 +573,6 @@ package body Debug is
 
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
-
-   --  d.D  Issue compiler errors on Ada input outside the SPARK subset of
-   --       Ada. This only deals currently with the Ada code, not SPARK
-   --       annotations, so it may well be the case that code which passes
-   --       the compiler with this flag is rejected by the SPARK Examiner,
-   --       e.g. due to the different visibility rules of the Examiner based
-   --       on 'inherit' SPARK annotations.
 
    --  d.E  SPARK generation mode. Generate intermediate code for the sake of
    --       formal verification through SPARK and the SPARK toolset.

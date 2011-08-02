@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -346,16 +346,6 @@ package Errout is
    --      inserted to replace the ~ character. The string is inserted in the
    --      literal form it appears, without any action on special characters.
 
-   --    Insertion character ~~ (Two tildes: insert language string)
-   --      Indicates that Error_Msg_Lang (1 .. Error_Msg_Langlen) is to be
-   --      inserted to replace the ~~ character. Typically the language string
-   --      will be inserted in parentheses as a prefix of the error message, as
-   --      in "(spark) error msg". The string is inserted in the literal form
-   --      it appears, without any action on special characters. Error_Msg_Lang
-   --      and Error_Msg_Langlen are expected to be set only once before
-   --      parsing starts, so that the caller to an error procedure does not
-   --      need to set them repeatedly.
-
    ----------------------------------------
    -- Specialization of Messages for VMS --
    ----------------------------------------
@@ -468,11 +458,6 @@ package Errout is
    Error_Msg_Strlen : Natural renames Err_Vars.Error_Msg_Strlen;
    --  Used if current message contains a ~ insertion character to indicate
    --  insertion of the string Error_Msg_String (1 .. Error_Msg_Strlen).
-
-   Error_Msg_Lang : String  renames Err_Vars.Error_Msg_Lang;
-   Error_Msg_Langlen : Natural renames Err_Vars.Error_Msg_Langlen;
-   --  Used if current message contains a ~~ insertion character to indicate
-   --  insertion of the string Error_Msg_Lang (1 .. Error_Msg_Langlen).
 
    -----------------------------------------------------
    -- Format of Messages and Manual Quotation Control --
@@ -764,11 +749,6 @@ package Errout is
    procedure Remove_Warning_Messages (L : List_Id);
    --  Remove warnings on all elements of a list (Calls Remove_Warning_Messages
    --  on each element of the list, see above).
-
-   procedure Set_Error_Msg_Lang (To : String);
-   --  Set Error_Msg_Lang/Error_Msg_Langlen used for insertion character ~~.
-   --  The argument is just the language name, e.g. "spark". The stored string
-   --  is of the form "(langname) ".
 
    procedure Set_Ignore_Errors (To : Boolean);
    --  Following a call to this procedure with To=True, all error calls are

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -369,7 +369,7 @@ package body Sem_Ch4 is
       C        : Node_Id;
 
    begin
-      Check_Formal_Restriction ("allocator is not allowed", N);
+      Check_SPARK_Restriction ("allocator is not allowed", N);
 
       --  Deal with allocator restrictions
 
@@ -818,7 +818,7 @@ package body Sem_Ch4 is
             case Nkind (Actual) is
                when N_Parameter_Association =>
                   if Named_Seen then
-                     Check_Formal_Restriction
+                     Check_SPARK_Restriction
                        ("named association cannot follow positional one",
                         Actual);
                      exit;
@@ -1506,7 +1506,7 @@ package body Sem_Ch4 is
          return;
       end if;
 
-      Check_Formal_Restriction ("conditional expression is not allowed", N);
+      Check_SPARK_Restriction ("conditional expression is not allowed", N);
 
       Else_Expr := Next (Then_Expr);
 
@@ -1706,7 +1706,7 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Explicit_Dereference
 
    begin
-      Check_Formal_Restriction ("explicit dereference is not allowed", N);
+      Check_SPARK_Restriction ("explicit dereference is not allowed", N);
 
       Analyze (P);
       Set_Etype (N, Any_Type);
@@ -2588,7 +2588,7 @@ package body Sem_Ch4 is
 
    procedure Analyze_Null (N : Node_Id) is
    begin
-      Check_Formal_Restriction ("null is not allowed", N);
+      Check_SPARK_Restriction ("null is not allowed", N);
 
       Set_Etype (N, Any_Access);
    end Analyze_Null;
@@ -3274,7 +3274,7 @@ package body Sem_Ch4 is
       Iterator : Node_Id;
 
    begin
-      Check_Formal_Restriction ("quantified expression is not allowed", N);
+      Check_SPARK_Restriction ("quantified expression is not allowed", N);
 
       Set_Etype  (Ent,  Standard_Void_Type);
       Set_Parent (Ent, N);
@@ -4302,7 +4302,7 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Slice
 
    begin
-      Check_Formal_Restriction ("slice is not allowed", N);
+      Check_SPARK_Restriction ("slice is not allowed", N);
 
       Analyze (P);
       Analyze (D);

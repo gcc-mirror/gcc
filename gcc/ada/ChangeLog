@@ -1,5 +1,13 @@
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
+	* sem_aggr.adb, err_vars.ads, sem_ch3.adb, sem_ch5.adb, sem_ch9.adb,
+	debug.adb, sem_util.adb, sem_res.adb, sem_attr.adb, gnat1drv.adb,
+	errout.adb, errout.ads, exp_ch6.adb, sem_ch4.adb, restrict.adb,
+	restrict.ads, sem_ch6.adb, sem_ch8.adb, sem_ch11.adb,
+	opt.ads: cleanup of SPARK mode
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
 	* cstand.adb (Create_Standard): sets Is_In_ALFA component of standard
 	types.
 	* einfo.adb, einfo.ads (Is_In_ALFA): add flag for all entities

@@ -529,7 +529,7 @@ package body Sem_Ch8 is
       Nam : constant Node_Id := Name (N);
 
    begin
-      Check_Formal_Restriction ("exception renaming is not allowed", N);
+      Check_SPARK_Restriction ("exception renaming is not allowed", N);
 
       Enter_Name (Id);
       Analyze (Nam);
@@ -626,7 +626,7 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      Check_Formal_Restriction ("generic renaming is not allowed", N);
+      Check_SPARK_Restriction ("generic renaming is not allowed", N);
 
       Generate_Definition (New_P);
 
@@ -718,7 +718,7 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      Check_Formal_Restriction ("object renaming is not allowed", N);
+      Check_SPARK_Restriction ("object renaming is not allowed", N);
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
       Enter_Name (Id);
@@ -1582,6 +1582,11 @@ package body Sem_Ch8 is
    procedure Analyze_Subprogram_Renaming (N : Node_Id) is
       Formal_Spec : constant Node_Id          := Corresponding_Formal_Spec (N);
       Is_Actual   : constant Boolean          := Present (Formal_Spec);
+
+      CW_Actual   : Boolean                   := False;
+      --  True if the renaming is for a defaulted formal subprogram when the
+      --  actual for a related formal type is class-wide. For AI05-0071.
+
       Inst_Node   : Node_Id                   := Empty;
       Nam         : constant Node_Id          := Name (N);
       New_S       : Entity_Id;
@@ -1734,6 +1739,7 @@ package body Sem_Ch8 is
          end loop;
 
          if Present (Formal_Type) then
+            CW_Actual := True;
 
             --  Create declaration and body for class-wide operation
 
@@ -2430,14 +2436,11 @@ package body Sem_Ch8 is
 
          elsif Ekind (Old_S) /= E_Operator then
 
-            --  If this is a default subprogram, it may be for a class-wide
-            --  actual, in which case there is no check for mode conformance,
-            --  given that the signatures do not match (the source mentions T,
-            --  but the actual mentions T'Class).
+            --  If this a defaulted subprogram for a class-wide actual there is
+            --  no check for mode conformance,  given that the signatures don't
+            --  match (the source mentions T but the actual mentions T'class).
 
-            if  Is_Actual
-              and then From_Default (N)
-            then
+            if  CW_Actual then
                null;
 
             else
@@ -2745,7 +2748,7 @@ package body Sem_Ch8 is
    --  Start of processing for Analyze_Use_Package
 
    begin
-      Check_Formal_Restriction ("use clause is not allowed", N);
+      Check_SPARK_Restriction ("use clause is not allowed", N);
 
       Set_Hidden_By_Use_Clause (N, No_Elist);
 
@@ -5551,12 +5554,12 @@ package body Sem_Ch8 is
 
       if SPARK_Mode or else Restriction_Check_Required (SPARK) then
          if Nkind (Selector_Name (N)) = N_Character_Literal then
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("character literal cannot be prefixed", N);
          elsif Nkind (Selector_Name (N)) = N_Operator_Symbol
            and then Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
          then
-            Check_Formal_Restriction ("operator symbol cannot be prefixed", N);
+            Check_SPARK_Restriction ("operator symbol cannot be prefixed", N);
          end if;
       end if;
 
@@ -5888,10 +5891,10 @@ package body Sem_Ch8 is
            and then (SPARK_Mode or else Restriction_Check_Required (SPARK))
          then
             if Is_Subprogram (P_Name) then
-               Check_Formal_Restriction
+               Check_SPARK_Restriction
                  ("prefix of expanded name cannot be a subprogram", P);
             elsif Ekind (P_Name) = E_Loop then
-               Check_Formal_Restriction
+               Check_SPARK_Restriction
                  ("prefix of expanded name cannot be a loop statement", P);
             end if;
          end if;
@@ -6044,7 +6047,7 @@ package body Sem_Ch8 is
 
          elsif Attribute_Name (N) = Name_Base then
             Error_Msg_Name_1 := Name_Base;
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("attribute% is only allowed as prefix of another attribute", N);
 
             if Ada_Version = Ada_83 and then Comes_From_Source (N) then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2185,19 +2185,6 @@ package body Errout is
       Set_Casing (Desired_Case);
    end Set_Identifier_Casing;
 
-   ------------------------
-   -- Set_Error_Msg_Lang --
-   ------------------------
-
-   procedure Set_Error_Msg_Lang (To : String) is
-   begin
-      Error_Msg_Lang (1) := '(';
-      Error_Msg_Lang (2 .. To'Length + 1) := To;
-      Error_Msg_Lang (To'Length + 2) := ')';
-      Error_Msg_Lang (To'Length + 3) := ' ';
-      Error_Msg_Langlen := To'Length + 3;
-   end Set_Error_Msg_Lang;
-
    -----------------------
    -- Set_Ignore_Errors --
    -----------------------
@@ -2716,12 +2703,7 @@ package body Errout is
                P := P + 1;
 
             when '~' =>
-               if P <= Text'Last and then Text (P) = '~' then
-                  P := P + 1;
-                  Set_Msg_Str (Error_Msg_Lang (1 .. Error_Msg_Langlen));
-               else
-                  Set_Msg_Str (Error_Msg_String (1 .. Error_Msg_Strlen));
-               end if;
+               Set_Msg_Str (Error_Msg_String (1 .. Error_Msg_Strlen));
 
             --  Upper case letter
 

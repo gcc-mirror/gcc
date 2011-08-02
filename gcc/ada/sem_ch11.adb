@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -443,7 +443,7 @@ package body Sem_Ch11 is
       P              : Node_Id;
 
    begin
-      Check_Formal_Restriction ("raise statement is not allowed", N);
+      Check_SPARK_Restriction ("raise statement is not allowed", N);
       Check_Unreachable_Code (N);
 
       --  Check exception restrictions on the original source
@@ -610,7 +610,7 @@ package body Sem_Ch11 is
    --  Start of processing for Analyze_Raise_xxx_Error
 
    begin
-      Check_Formal_Restriction ("raise statement is not allowed", N);
+      Check_SPARK_Restriction ("raise statement is not allowed", N);
 
       if No (Etype (N)) then
          Set_Etype (N, Standard_Void_Type);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -392,10 +392,6 @@ procedure Gnat1drv is
 
       --  Set switches for formal verification modes
 
-      if Debug_Flag_Dot_DD then
-         SPARK_Mode := True;
-      end if;
-
       if Debug_Flag_Dot_EE then
          ALFA_Through_SPARK_Mode := True;
       end if;
@@ -405,14 +401,6 @@ procedure Gnat1drv is
       end if;
 
       ALFA_Mode := ALFA_Through_SPARK_Mode or ALFA_Through_Why_Mode;
-
-      if ALFA_Mode then
-         Set_Error_Msg_Lang ("alfa");
-         Formal_Verification_Mode := True;
-      elsif SPARK_Mode then
-         Set_Error_Msg_Lang ("spark");
-         Formal_Verification_Mode := True;
-      end if;
    end Adjust_Global_Switches;
 
    --------------------

@@ -1179,7 +1179,7 @@ package body Sem_Util is
                      end if;
                   else
                      Error_Msg_Sloc := Body_Sloc;
-                     Check_Formal_Restriction
+                     Check_SPARK_Restriction
                        ("decl cannot appear after body#", Decl);
                   end if;
                end if;
@@ -3315,11 +3315,10 @@ package body Sem_Util is
       Append_Entity     (Def_Id, S);
       Set_Public_Status (Def_Id);
 
-      --  Declaring a homonym is not allowed in SPARK or ALFA ...
+      --  Declaring a homonym is not allowed in SPARK ...
 
       if Present (C)
-        and then (Restriction_Check_Required (SPARK)
-                   or else Formal_Verification_Mode)
+        and then Restriction_Check_Required (SPARK)
       then
 
          declare
@@ -3359,7 +3358,7 @@ package body Sem_Util is
               and then Comes_From_Source (C)
             then
                Error_Msg_Sloc := Sloc (C);
-               Check_Formal_Restriction
+               Check_SPARK_Restriction
                  ("redeclaration of identifier &#", Def_Id);
             end if;
          end;
@@ -10789,7 +10788,7 @@ package body Sem_Util is
            and then (Typ = 't' or else Ekind (Ent) = E_Package)
          then
             Error_Msg_Node_1 := Endl;
-            Check_Formal_Restriction ("`END &` required", Endl, Force => True);
+            Check_SPARK_Restriction ("`END &` required", Endl, Force => True);
          end if;
       end if;
 

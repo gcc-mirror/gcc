@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1869,9 +1869,6 @@ package Opt is
    -----------------------------------
 
    --  These modes are currently defined through debug flags
-
-   Formal_Verification_Mode : Boolean := False;
-   --  Set True if ALFA_Mode or SPARK_Mode
 
    ALFA_Mode : Boolean := False;
    --  Set True if ALFA_Through_SPARK_Mode or else ALFA_Through_Why_Mode
