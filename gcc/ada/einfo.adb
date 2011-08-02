@@ -5608,7 +5608,13 @@ package body Einfo is
    ---------------
 
    function Base_Type (Id : E) return E is
+      Is_Base_Type : Boolean;
    begin
+      --  Implementation note: this function shows up high in the profile.
+      --  We use a fully static case construct so as to make it easier for
+      --  the compiler to build a static table out of it, instead of using
+      --  a less efficient jump table.
+
       case Ekind (Id) is
          when E_Enumeration_Subtype          |
               E_Incomplete_Type              |
@@ -5628,11 +5634,17 @@ package body Einfo is
               E_Task_Subtype                 |
               E_String_Literal_Subtype       |
               E_Class_Wide_Subtype           =>
-            return Etype (Id);
+            Is_Base_Type := False;
 
          when others =>
-            return Id;
+            Is_Base_Type := True;
       end case;
+
+      if Is_Base_Type then
+         return Id;
+      end if;
+
+      return Etype (Id);
    end Base_Type;
 
    -------------------------
