@@ -1622,15 +1622,15 @@ package body Sem_Ch8 is
       --  class-wide operation whose body is a dispatching call. We replace the
       --  generated renaming declaration:
       --
-      --  procedure P (X : CT) renames P;
+      --    procedure P (X : CT) renames P;
       --
       --  by a different renaming and a class-wide operation:
       --
-      --  procedure Pr (X : T) renames P;   --  renames primitive operation
-      --  procedure P (X : CT);             --  class-wide operation
-      --  ...
-      --  procedure P (X : CT) is begin Pr (X); end;  -- dispatching call
-
+      --    procedure Pr (X : T) renames P;   --  renames primitive operation
+      --    procedure P (X : CT);             --  class-wide operation
+      --    ...
+      --    procedure P (X : CT) is begin Pr (X); end;  -- dispatching call
+      --
       --  This rule only applies if there is no explicit visible class-wide
       --  operation at the point of the instantiation.
 

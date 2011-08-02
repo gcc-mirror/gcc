@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4144,14 +4144,21 @@ package body Sem_Ch6 is
 
             --  Ada 2005 (AI-231): In case of anonymous access types check
             --  the null-exclusion and access-to-constant attributes must
-            --  match.
+            --  match. For null exclusion, we test the types rather than the
+            --  formals themselves, since the attribute is only set reliably
+            --  on the formals in the Ada 95 case, and we exclude the case
+            --  where Old_Formal is marked as controlling, to avoid errors
+            --  when matching completing bodies with dispatching declarations
+            --  (access formals in the bodies aren't marked Can_Never_Be_Null).
 
             if Ada_Version >= Ada_2005
               and then Ekind (Etype (Old_Formal)) = E_Anonymous_Access_Type
               and then Ekind (Etype (New_Formal)) = E_Anonymous_Access_Type
               and then
-                (Can_Never_Be_Null (Old_Formal) /=
-                 Can_Never_Be_Null (New_Formal)
+                ((Can_Never_Be_Null (Etype (Old_Formal)) /=
+                  Can_Never_Be_Null (Etype (New_Formal))
+                    and then
+                      not Is_Controlling_Formal (Old_Formal))
                    or else
                  Is_Access_Constant (Etype (Old_Formal)) /=
                  Is_Access_Constant (Etype (New_Formal)))
@@ -6250,11 +6257,11 @@ package body Sem_Ch6 is
 
                   if Nkind (N) = N_Subprogram_Body
                     and then Present (Homonym (E))
-                    and then not Fully_Conformant (E, Designator)
+                    and then not Fully_Conformant (Designator, E)
                   then
                      goto Next_Entity;
 
-                  elsif not Subtype_Conformant (E, Designator) then
+                  elsif not Subtype_Conformant (Designator, E) then
                      goto Next_Entity;
                   end if;
                end if;
