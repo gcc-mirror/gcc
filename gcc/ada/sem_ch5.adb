@@ -807,7 +807,12 @@ package body Sem_Ch5 is
       HSS   : constant Node_Id := Handled_Statement_Sequence (N);
 
    begin
-      Check_Formal_Restriction ("block statement is not allowed", N);
+      --  Only reject block statements that originate from a source block
+      --  statement, in formal mode.
+
+      if Nkind (Original_Node (N)) = N_Block_Statement then
+         Check_Formal_Restriction ("block statement is not allowed", N);
+      end if;
 
       --  If no handled statement sequence is present, things are really messed
       --  up, and we just return immediately (defence against previous errors).

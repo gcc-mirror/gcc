@@ -3359,7 +3359,7 @@ package body Sem_Util is
       then
          Call := Parent (Parnt);
 
-      elsif Nkind (Parnt) = N_Procedure_Call_Statement then
+      elsif Nkind_In (Parnt, N_Procedure_Call_Statement, N_Function_Call) then
          Call := Parnt;
 
       else
@@ -5883,6 +5883,18 @@ package body Sem_Util is
       end case;
    end Is_Actual_Parameter;
 
+   --------------------------------
+   -- Is_Actual_Tagged_Parameter --
+   --------------------------------
+
+   function Is_Actual_Tagged_Parameter (N : Node_Id) return Boolean is
+      Formal : Entity_Id;
+      Call   : Node_Id;
+   begin
+      Find_Actual (N, Formal, Call);
+      return Present (Formal) and then Is_Tagged_Type (Etype (Formal));
+   end Is_Actual_Tagged_Parameter;
+
    ---------------------
    -- Is_Aliased_View --
    ---------------------
@@ -6832,6 +6844,29 @@ package body Sem_Util is
          end case;
       end if;
    end Is_Object_Reference;
+
+   -------------------------------
+   -- Is_SPARK_Object_Reference --
+   -------------------------------
+
+   function Is_SPARK_Object_Reference (N : Node_Id) return Boolean is
+   begin
+      if Is_Entity_Name (N) then
+         return Present (Entity (N))
+           and then
+             (Ekind_In (Entity (N), E_Constant, E_Variable)
+              or else Ekind (Entity (N)) in Formal_Kind);
+
+      else
+         case Nkind (N) is
+            when N_Selected_Component =>
+               return Is_SPARK_Object_Reference (Prefix (N));
+
+            when others =>
+               return False;
+         end case;
+      end if;
+   end Is_SPARK_Object_Reference;
 
    -----------------------------------
    -- Is_OK_Variable_For_Out_Formal --

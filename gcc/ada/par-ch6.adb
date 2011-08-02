@@ -1492,25 +1492,25 @@ package body Ch6 is
    -- 6.4  Function Call --
    ------------------------
 
-   --  Parsed by P_Call_Or_Name (4.1)
+   --  Parsed by P_Name (4.1)
 
    --------------------------------
    -- 6.4  Actual Parameter Part --
    --------------------------------
 
-   --  Parsed by P_Call_Or_Name (4.1)
+   --  Parsed by P_Name (4.1)
 
    --------------------------------
    -- 6.4  Parameter Association --
    --------------------------------
 
-   --  Parsed by P_Call_Or_Name (4.1)
+   --  Parsed by P_Name (4.1)
 
    ------------------------------------
    -- 6.4  Explicit Actual Parameter --
    ------------------------------------
 
-   --  Parsed by P_Call_Or_Name (4.1)
+   --  Parsed by P_Name (4.1)
 
    ---------------------------
    -- 6.5  Return Statement --

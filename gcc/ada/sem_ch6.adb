@@ -325,9 +325,9 @@ package body Sem_Ch6 is
    ----------------------------
 
    procedure Analyze_Function_Call (N : Node_Id) is
-      P      : constant Node_Id := Name (N);
-      L      : constant List_Id := Parameter_Associations (N);
-      Actual : Node_Id;
+      P       : constant Node_Id := Name (N);
+      Actuals : constant List_Id := Parameter_Associations (N);
+      Actual  : Node_Id;
 
    begin
       Analyze (P);
@@ -353,8 +353,8 @@ package body Sem_Ch6 is
 
       --  Otherwise analyze the parameters
 
-      if Present (L) then
-         Actual := First (L);
+      if Present (Actuals) then
+         Actual := First (Actuals);
          while Present (Actual) loop
             Analyze (Actual);
             Check_Parameterless_Call (Actual);
