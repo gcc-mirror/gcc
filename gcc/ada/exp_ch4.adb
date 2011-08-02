@@ -8606,16 +8606,19 @@ package body Exp_Ch4 is
          --  Start of processing for Tagged_Conversion
 
          begin
-            if Is_Access_Type (Target_Type) then
+            --  Handle entities from the limited view
 
-               --  Handle entities from the limited view
-
+            if Is_Access_Type (Operand_Type) then
                Actual_Op_Typ :=
                  Available_View (Designated_Type (Operand_Type));
+            else
+               Actual_Op_Typ := Operand_Type;
+            end if;
+
+            if Is_Access_Type (Target_Type) then
                Actual_Targ_Typ :=
                  Available_View (Designated_Type (Target_Type));
             else
-               Actual_Op_Typ   := Operand_Type;
                Actual_Targ_Typ := Target_Type;
             end if;
 

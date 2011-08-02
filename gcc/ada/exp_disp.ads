@@ -186,6 +186,11 @@ package Exp_Disp is
    --  bodies they are added to the end of the list of declarations of the
    --  package body.
 
+   procedure Build_VM_TSDs (N : Entity_Id);
+   --  N is a library level package declaration, a library level package body
+   --  or a library level subprogram body. Build the runtime Type Specific
+   --  Data record of all the tagged types declared inside N.
+
    function Convert_Tag_To_Interface
      (Typ : Entity_Id; Expr : Node_Id) return Node_Id;
    pragma Inline (Convert_Tag_To_Interface);

@@ -607,6 +607,7 @@ package Rtsfind is
      RE_Type_Specific_Data,              -- Ada.Tags
      RE_Register_Interface_Offset,       -- Ada.Tags
      RE_Register_Tag,                    -- Ada.Tags
+     RE_Register_TSD,                    -- Ada.Tags
      RE_Transportable,                   -- Ada.Tags
      RE_Secondary_DT,                    -- Ada.Tags
      RE_Secondary_Tag,                   -- Ada.Tags
@@ -1786,6 +1787,7 @@ package Rtsfind is
      RE_Type_Specific_Data               => Ada_Tags,
      RE_Register_Interface_Offset        => Ada_Tags,
      RE_Register_Tag                     => Ada_Tags,
+     RE_Register_TSD                     => Ada_Tags,
      RE_Transportable                    => Ada_Tags,
      RE_Secondary_DT                     => Ada_Tags,
      RE_Secondary_Tag                    => Ada_Tags,

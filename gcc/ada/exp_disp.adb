@@ -83,6 +83,10 @@ package body Exp_Disp is
    --  Returns true if Prim is not a predefined dispatching primitive but it is
    --  an alias of a predefined dispatching primitive (i.e. through a renaming)
 
+   function Make_VM_TSD (Typ : Entity_Id) return List_Id;
+   --  Build the Type Specific Data record associated with tagged type Typ.
+   --  Invoked only when generating code for VM targets.
+
    function New_Value (From : Node_Id) return Node_Id;
    --  From is the original Expression. New_Value is equivalent to a call
    --  to Duplicate_Subexpr with an explicit dereference when From is an
@@ -464,6 +468,140 @@ package body Exp_Disp is
          Build_Dispatch_Tables (Target_List);
       end if;
    end Build_Static_Dispatch_Tables;
+
+   -------------------
+   -- Build_VM_TSDs --
+   -------------------
+
+   procedure Build_VM_TSDs (N : Entity_Id) is
+      Target_List : List_Id;
+
+      procedure Build_TSDs (List : List_Id);
+      --  Build the static dispatch table of tagged types found in the list of
+      --  declarations. The generated nodes are added at the end of Target_List
+
+      procedure Build_Package_TSDs (N : Node_Id);
+      --  Build static dispatch tables associated with package declaration N
+
+      ---------------------------
+      -- Build_Dispatch_Tables --
+      ---------------------------
+
+      procedure Build_TSDs (List : List_Id) is
+         D : Node_Id;
+
+      begin
+         D := First (List);
+         while Present (D) loop
+
+            --  Handle nested packages and package bodies recursively. The
+            --  generated code is placed on the Target_List established for
+            --  the enclosing compilation unit.
+
+            if Nkind (D) = N_Package_Declaration then
+               Build_Package_TSDs (D);
+
+            elsif Nkind_In (D, N_Package_Body,
+                               N_Subprogram_Body)
+            then
+               Build_TSDs (Declarations (D));
+
+            elsif Nkind (D) = N_Package_Body_Stub
+              and then Present (Library_Unit (D))
+            then
+               Build_TSDs
+                 (Declarations (Proper_Body (Unit (Library_Unit (D)))));
+
+            --  Handle full type declarations and derivations of library
+            --  level tagged types
+
+            elsif Nkind_In (D, N_Full_Type_Declaration,
+                               N_Derived_Type_Definition)
+              and then Ekind (Defining_Entity (D)) /= E_Record_Subtype
+              and then Is_Tagged_Type (Defining_Entity (D))
+              and then not Is_Private_Type (Defining_Entity (D))
+            then
+               --  Do not generate TSDs for the internal types created for
+               --  a type extension with unknown discriminants. The needed
+               --  information is shared with the source type.
+               --  See Expand_N_Record_Extension.
+
+               if Is_Underlying_Record_View (Defining_Entity (D))
+                 or else
+                  (not Comes_From_Source (Defining_Entity (D))
+                     and then
+                       Has_Unknown_Discriminants (Etype (Defining_Entity (D)))
+                     and then
+                       not Comes_From_Source
+                             (First_Subtype (Defining_Entity (D))))
+               then
+                  null;
+
+               else
+                  Append_List_To (Target_List,
+                    Make_VM_TSD (Defining_Entity (D)));
+               end if;
+            end if;
+
+            Next (D);
+         end loop;
+      end Build_TSDs;
+
+      ------------------------
+      -- Build_Package_TSDs --
+      ------------------------
+
+      procedure Build_Package_TSDs (N : Node_Id) is
+         Spec       : constant Node_Id   := Specification (N);
+         Vis_Decls  : constant List_Id   := Visible_Declarations (Spec);
+         Priv_Decls : constant List_Id   := Private_Declarations (Spec);
+
+      begin
+         if Present (Priv_Decls) then
+            Build_TSDs (Vis_Decls);
+            Build_TSDs (Priv_Decls);
+
+         elsif Present (Vis_Decls) then
+            Build_TSDs (Vis_Decls);
+         end if;
+      end Build_Package_TSDs;
+
+   --  Start of processing for Build_VM_TSDs
+
+   begin
+      if not Expander_Active or else No_Run_Time_Mode then
+         return;
+      end if;
+
+      if Nkind (N) = N_Package_Declaration then
+         declare
+            Spec       : constant Node_Id := Specification (N);
+            Vis_Decls  : constant List_Id := Visible_Declarations (Spec);
+            Priv_Decls : constant List_Id := Private_Declarations (Spec);
+
+         begin
+            Target_List := New_List;
+            Build_Package_TSDs (N);
+            Analyze_List (Target_List);
+
+            if Present (Priv_Decls)
+              and then Is_Non_Empty_List (Priv_Decls)
+            then
+               Append_List (Target_List, Priv_Decls);
+            else
+               Append_List (Target_List, Vis_Decls);
+            end if;
+         end;
+
+      elsif Nkind_In (N, N_Package_Body, N_Subprogram_Body) then
+         if Is_Non_Empty_List (Declarations (N)) then
+            Target_List := New_List;
+            Build_TSDs   (Declarations (N));
+            Analyze_List (Target_List);
+            Append_List  (Target_List, Declarations (N));
+         end if;
+      end if;
+   end Build_VM_TSDs;
 
    ------------------------------
    -- Convert_Tag_To_Interface --
@@ -6108,6 +6246,272 @@ package body Exp_Disp is
 
       return Result;
    end Make_DT;
+
+   -----------------
+   -- Make_VM_TSD --
+   -----------------
+
+   function Make_VM_TSD (Typ : Entity_Id) return List_Id is
+      Loc              : constant Source_Ptr := Sloc (Typ);
+      Result           : constant List_Id := New_List;
+      AI               : Elmt_Id;
+      I_Depth          : Nat := 0;
+      Iface_Table_Node : Node_Id;
+      Num_Ifaces       : Nat := 0;
+      TSD_Aggr_List    : List_Id;
+      Typ_Ifaces       : Elist_Id;
+      TSD_Tags_List    : List_Id;
+
+      Tname    : constant Name_Id := Chars (Typ);
+      Name_TSD : constant Name_Id :=
+                   New_External_Name (Tname, 'B', Suffix_Index => -1);
+      TSD      : constant Entity_Id :=
+                   Make_Defining_Identifier (Loc, Name_TSD);
+   begin
+      --  Generate code to create the storage for the type specific data object
+      --  with enough space to store the tags of the ancestors plus the tags
+      --  of all the implemented interfaces (as described in a-tags.ads).
+
+      --   TSD : Type_Specific_Data (I_Depth) :=
+      --           (Idepth                => I_Depth,
+      --            T                     => T'Tag,
+      --            Access_Level          => Type_Access_Level (Typ),
+      --            HT_Link               => null,
+      --            Type_Is_Abstract      => <<boolean-value>>,
+      --            Type_Is_Library_Level => <<boolean-value>>,
+      --            Interfaces_Table      => <<access-value>>
+      --            Tags_Table            => (0 => Typ'Tag,
+      --                                      1 => Parent'Tag
+      --                                      ...));
+
+      TSD_Aggr_List := New_List;
+
+      --  Idepth: Count ancestors to compute the inheritance depth. For private
+      --  extensions, always go to the full view in order to compute the real
+      --  inheritance depth.
+
+      declare
+         Current_Typ : Entity_Id;
+         Parent_Typ  : Entity_Id;
+
+      begin
+         I_Depth     := 0;
+         Current_Typ := Typ;
+         loop
+            Parent_Typ := Etype (Current_Typ);
+
+            if Is_Private_Type (Parent_Typ) then
+               Parent_Typ := Full_View (Base_Type (Parent_Typ));
+            end if;
+
+            exit when Parent_Typ = Current_Typ;
+
+            I_Depth := I_Depth + 1;
+            Current_Typ := Parent_Typ;
+         end loop;
+      end;
+
+      Append_To (TSD_Aggr_List,
+        Make_Integer_Literal (Loc, I_Depth));
+
+      --  Access_Level
+
+      Append_To (TSD_Aggr_List,
+        Make_Integer_Literal (Loc, Type_Access_Level (Typ)));
+
+      --  HT_Link
+
+      Append_To (TSD_Aggr_List,
+        Make_Null (Loc));
+
+      --  Type_Is_Abstract (Ada 2012: AI05-0173)
+
+      declare
+         Type_Is_Abstract : Entity_Id;
+
+      begin
+         Type_Is_Abstract :=
+           Boolean_Literals (Is_Abstract_Type (Typ));
+
+         Append_To (TSD_Aggr_List,
+            New_Occurrence_Of (Type_Is_Abstract, Loc));
+      end;
+
+      --  Type_Is_Library_Level
+
+      declare
+         Type_Is_Library_Level : Entity_Id;
+
+      begin
+         Type_Is_Library_Level :=
+           Boolean_Literals (Is_Library_Level_Entity (Typ));
+
+         Append_To (TSD_Aggr_List,
+            New_Occurrence_Of (Type_Is_Library_Level, Loc));
+      end;
+
+      --  Interfaces_Table (required for AI-405)
+
+      if RTE_Record_Component_Available (RE_Interfaces_Table) then
+
+         --  Count the number of interface types implemented by Typ
+
+         Collect_Interfaces (Typ, Typ_Ifaces);
+
+         AI := First_Elmt (Typ_Ifaces);
+         while Present (AI) loop
+            Num_Ifaces := Num_Ifaces + 1;
+            Next_Elmt (AI);
+         end loop;
+
+         if Num_Ifaces = 0 then
+            Iface_Table_Node := Make_Null (Loc);
+
+         --  Generate the Interface_Table object
+
+         else
+            declare
+               TSD_Ifaces_List : constant List_Id := New_List;
+               ITable          : Node_Id;
+
+            begin
+               AI := First_Elmt (Typ_Ifaces);
+               while Present (AI) loop
+                  Append_To (TSD_Ifaces_List,
+                     Make_Aggregate (Loc,
+                       Expressions => New_List (
+                         Make_Attribute_Reference (Loc,
+                           Prefix => New_Reference_To (Node (AI), Loc),
+                           Attribute_Name => Name_Tag)
+                        )));
+
+                  Next_Elmt (AI);
+               end loop;
+
+               ITable := Make_Temporary (Loc, 'I');
+
+               Append_To (Result,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => ITable,
+                   Aliased_Present     => True,
+                   Constant_Present    => True,
+                   Object_Definition   =>
+                     Make_Subtype_Indication (Loc,
+                       Subtype_Mark =>
+                         New_Reference_To (RTE (RE_Interface_Data), Loc),
+                       Constraint => Make_Index_Or_Discriminant_Constraint
+                         (Loc,
+                          Constraints => New_List (
+                            Make_Integer_Literal (Loc, Num_Ifaces)))),
+
+                   Expression => Make_Aggregate (Loc,
+                     Expressions => New_List (
+                       Make_Integer_Literal (Loc, Num_Ifaces),
+                       Make_Aggregate (Loc,
+                         Expressions => TSD_Ifaces_List)))));
+
+               Iface_Table_Node :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Reference_To (ITable, Loc),
+                   Attribute_Name => Name_Unchecked_Access);
+            end;
+         end if;
+
+         Append_To (TSD_Aggr_List, Iface_Table_Node);
+      end if;
+
+      --  Initialize the table of ancestor tags. In case of interface types
+      --  this table is not needed.
+
+      TSD_Tags_List := New_List;
+
+      --  Fill position 0 with Typ'Tag
+
+      Append_To (TSD_Tags_List,
+        Make_Attribute_Reference (Loc,
+          Prefix => New_Reference_To (Typ, Loc),
+          Attribute_Name => Name_Tag));
+
+      --  Fill the rest of the table with the tags of the ancestors
+
+      declare
+         Current_Typ : Entity_Id;
+         Parent_Typ  : Entity_Id;
+         Pos         : Nat;
+
+      begin
+         Pos := 1;
+         Current_Typ := Typ;
+
+         loop
+            Parent_Typ := Etype (Current_Typ);
+
+            if Is_Private_Type (Parent_Typ) then
+               Parent_Typ := Full_View (Base_Type (Parent_Typ));
+            end if;
+
+            exit when Parent_Typ = Current_Typ;
+
+            Append_To (TSD_Tags_List,
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Reference_To (Parent_Typ, Loc),
+                Attribute_Name => Name_Tag));
+
+            Pos := Pos + 1;
+            Current_Typ := Parent_Typ;
+         end loop;
+
+         pragma Assert (Pos = I_Depth + 1);
+      end;
+
+      Append_To (TSD_Aggr_List,
+        Make_Aggregate (Loc,
+          Expressions => TSD_Tags_List));
+
+      --  Build the TSD object
+
+      Append_To (Result,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => TSD,
+          Aliased_Present     => True,
+          Constant_Present    => True,
+          Object_Definition   =>
+            Make_Subtype_Indication (Loc,
+              Subtype_Mark => New_Reference_To (
+                RTE (RE_Type_Specific_Data), Loc),
+              Constraint =>
+                Make_Index_Or_Discriminant_Constraint (Loc,
+                  Constraints => New_List (
+                    Make_Integer_Literal (Loc, I_Depth)))),
+
+          Expression => Make_Aggregate (Loc,
+            Expressions => TSD_Aggr_List)));
+
+      --  Generate:
+      --     Check_TSD
+      --       (TSD => TSD'Unrestricted_Access);
+
+      Append_To (Result,
+        Make_Procedure_Call_Statement (Loc,
+          Name => New_Reference_To (RTE (RE_Check_TSD), Loc),
+          Parameter_Associations => New_List (
+            Make_Attribute_Reference (Loc,
+              Prefix => New_Reference_To (TSD, Loc),
+              Attribute_Name => Name_Unrestricted_Access))));
+
+      --  Generate:
+      --     Register_TSD (TSD'Unrestricted_Access);
+
+      Append_To (Result,
+        Make_Procedure_Call_Statement (Loc,
+          Name => New_Reference_To (RTE (RE_Register_TSD), Loc),
+          Parameter_Associations => New_List (
+            Make_Attribute_Reference (Loc,
+              Prefix => New_Reference_To (TSD, Loc),
+              Attribute_Name => Name_Unrestricted_Access))));
+
+      return Result;
+   end Make_VM_TSD;
 
    -------------------------------------
    -- Make_Select_Specific_Data_Table --
