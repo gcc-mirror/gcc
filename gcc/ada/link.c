@@ -37,7 +37,10 @@ extern "C" {
 #endif
 
 #include <string.h>
+
+#ifdef IN_GCC
 #include "auto-host.h"
+#endif
 
 /*  objlist_file_supported is set to 1 when the system linker allows        */
 /*  response file, that is a file that contains the list of object files.   */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,11 +89,13 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
 
    procedure Process_Restrictions_Or_Restriction_Warnings;
    --  Common processing for Restrictions and Restriction_Warnings pragmas.
-   --  This routine only processes the case of No_Obsolescent_Features, which
-   --  is the only restriction that has syntactic effects. No general error
-   --  checking is done, since this will be done in Sem_Prag. The other case
-   --  processed is pragma Restrictions No_Dependence, since otherwise this is
-   --  done too late.
+   --  This routine processes the cases of No_Obsolescent_Features and SPARK,
+   --  which are the only restriction that have syntactic effects. In the case
+   --  of SPARK, it controls whether the scanner generates a token
+   --  Tok_SPARK_Hide for HIDE directives formatted as Ada comments. No general
+   --  error checking is done, since this will be done in Sem_Prag. The other
+   --  case processed is pragma Restrictions No_Dependence, since otherwise
+   --  this is done too late.
 
    ----------
    -- Arg1 --
@@ -229,6 +231,10 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
                when No_Obsolescent_Features =>
                   Set_Restriction (No_Obsolescent_Features, Pragma_Node);
                   Restriction_Warnings (No_Obsolescent_Features) :=
+                    Prag_Id = Pragma_Restriction_Warnings;
+               when SPARK =>
+                  Set_Restriction (SPARK, Pragma_Node);
+                  Restriction_Warnings (SPARK) :=
                     Prag_Id = Pragma_Restriction_Warnings;
                when others =>
                   null;
