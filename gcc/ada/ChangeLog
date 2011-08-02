@@ -1,3 +1,14 @@
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Pre_Analyze_Range): new procedure extracted from
+	Process_Bounds, to perform analysis with expansion of a range or an
+	expression that is the iteration scheme for a loop.
+	(Analyze_Iterator_Specification): If domain of iteration is given by a
+	function call with a controlled result, as is the case if call returns
+	a predefined container, ensure that finalization actions are properly
+	generated.
+	* par-ch3.adb: accept Ada2012 iterator form in P_Discrete_Range.
+
 2011-08-02  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch5.adb (Analyze_Iteration_Scheme): Fix typo.
