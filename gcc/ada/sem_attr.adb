@@ -2064,7 +2064,7 @@ package body Sem_Attr is
       end if;
 
       --  In SPARK or ALFA, attributes of private types are only allowed if
-      --  the full type declaration is visible
+      --  the full type declaration is visible.
 
       if Formal_Verification_Mode
         and then Comes_From_Source (Original_Node (N))
