@@ -5067,6 +5067,12 @@ package body Exp_Ch9 is
       Insert_After (N, Decl1);
       Analyze (Decl1);
 
+      --  Associate the access to subprogram with its original access to
+      --  protected subprogram type. Needed by the backend to know that this
+      --  type corresponds with an access to protected subprogram type.
+
+      Set_Original_Access_Type (D_T2, T);
+
       --  Create Equivalent_Type, a record with two components for an access to
       --  object and an access to subprogram.
 

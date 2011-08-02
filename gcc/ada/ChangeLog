@@ -1,3 +1,20 @@
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): issue an error in formal
+	mode on initialization expression which does not respect SPARK
+	restrictions.
+	* sem_util.adb, sem_util.ads (Is_SPARK_Initialization_Expr): determines
+	if the tree referenced by its argument represents an initialization
+	expression in SPARK, suitable for initializing an object in an object
+	declaration.
+
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch9.adb (Expand_Access_Protected_Subprogram_Type): Link the
+	internally generated access to subprogram with its associated protected
+	subprogram type.
+	* einfo.ads, einfo.adb (Original_Access_Type): New attribute.
+
 2011-08-02  Geert Bosch  <bosch@adacore.com>
 
 	* cstand.adb (Register_Float_Type): Print information about type to

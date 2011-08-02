@@ -181,6 +181,7 @@ package body Einfo is
    --    Default_Expr_Function           Node21
    --    Discriminant_Constraint         Elist21
    --    Interface_Name                  Node21
+   --    Original_Access_Type            Node21
    --    Original_Array_Type             Node21
    --    Small_Value                     Ureal21
 
@@ -2352,6 +2353,12 @@ package body Einfo is
         (Is_Type (Id) or else Ekind_In (Id, E_Constant, E_Variable));
       return Flag242 (Id);
    end Optimize_Alignment_Time;
+
+   function Original_Access_Type (Id : E) return E is
+   begin
+      pragma Assert (Ekind (Id) = E_Access_Subprogram_Type);
+      return Node21 (Id);
+   end Original_Access_Type;
 
    function Original_Array_Type (Id : E) return E is
    begin
@@ -4851,6 +4858,12 @@ package body Einfo is
         (Is_Type (Id) or else Ekind_In (Id, E_Constant, E_Variable));
       Set_Flag242 (Id, V);
    end Set_Optimize_Alignment_Time;
+
+   procedure Set_Original_Access_Type (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind (Id) = E_Access_Subprogram_Type);
+      Set_Node21 (Id, V);
+   end Set_Original_Access_Type;
 
    procedure Set_Original_Array_Type (Id : E; V : E) is
    begin
@@ -8331,6 +8344,9 @@ package body Einfo is
 
          when Fixed_Point_Kind                             =>
             Write_Str ("Small_Value");
+
+         when E_Access_Subprogram_Type                     =>
+            Write_Str ("Original_Access_Type");
 
          when E_In_Parameter                               =>
             Write_Str ("Default_Expr_Function");

@@ -828,6 +828,11 @@ package Sem_Util is
    --  represent use of the N_Identifier node for a true identifier, when
    --  normally such nodes represent a direct name.
 
+   function Is_SPARK_Initialization_Expr (N : Node_Id) return Boolean;
+   --  Determines if the tree referenced by N represents an initialization
+   --  expression in SPARK, suitable for initializing an object in an object
+   --  declaration.
+
    function Is_SPARK_Object_Reference (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents an object in SPARK
 

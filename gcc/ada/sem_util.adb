@@ -7368,6 +7368,118 @@ package body Sem_Util is
       end if;
    end Is_Selector_Name;
 
+   ----------------------------------
+   -- Is_SPARK_Initialization_Expr --
+   ----------------------------------
+
+   function Is_SPARK_Initialization_Expr (N : Node_Id) return Boolean is
+      Is_Ok : Boolean;
+
+      Expr, Comp_Assn, Choice : Node_Id;
+   begin
+      Is_Ok := True;
+
+      pragma Assert (Nkind (N) in N_Subexpr);
+
+      case Nkind (N) is
+         when N_Character_Literal |
+              N_Integer_Literal   |
+              N_Real_Literal      |
+              N_String_Literal    |
+              N_Expanded_Name     |
+              N_Membership_Test   =>
+            null;
+
+         when N_Identifier =>
+            if Is_Entity_Name (N)
+              and then Present (Entity (N))  --  needed in some cases
+            then
+               case Ekind (Entity (N)) is
+                  when E_Constant            |
+                       E_Enumeration_Literal |
+                       E_Named_Integer       |
+                       E_Named_Real          =>
+                     null;
+                  when others =>
+                     Is_Ok := False;
+               end case;
+            end if;
+
+         when N_Qualified_Expression |
+              N_Type_Conversion      =>
+            Is_Ok := Is_SPARK_Initialization_Expr (Expression (N));
+
+         when N_Unary_Op =>
+            Is_Ok := Is_SPARK_Initialization_Expr (Right_Opnd (N));
+
+         when N_Binary_Op | N_Short_Circuit =>
+            Is_Ok := Is_SPARK_Initialization_Expr (Left_Opnd (N))
+              and then Is_SPARK_Initialization_Expr (Right_Opnd (N));
+
+         when N_Aggregate           |
+              N_Extension_Aggregate =>
+            if Nkind (N) = N_Extension_Aggregate then
+               Is_Ok := Is_SPARK_Initialization_Expr (Ancestor_Part (N));
+            end if;
+
+            Expr := First (Expressions (N));
+            while Present (Expr) loop
+               if not Is_SPARK_Initialization_Expr (Expr) then
+                  Is_Ok := False;
+                  goto Done;
+               end if;
+
+               Next (Expr);
+            end loop;
+
+            Comp_Assn := First (Component_Associations (N));
+            while Present (Comp_Assn) loop
+               Choice := First (Choices (Comp_Assn));
+               while Present (Choice) loop
+                  if Nkind (Choice) in N_Subexpr
+                    and then not Is_SPARK_Initialization_Expr (Choice)
+                  then
+                     Is_Ok := False;
+                     goto Done;
+                  end if;
+
+                  Next (Choice);
+               end loop;
+
+               Expr := Expression (Comp_Assn);
+               if Present (Expr)  --  needed for box association
+                 and then not Is_SPARK_Initialization_Expr (Expr)
+               then
+                  Is_Ok := False;
+                  goto Done;
+               end if;
+
+               Next (Comp_Assn);
+            end loop;
+
+         when N_Attribute_Reference =>
+            if Nkind (Prefix (N)) in N_Subexpr then
+               Is_Ok := Is_SPARK_Initialization_Expr (Prefix (N));
+            end if;
+
+            Expr := First (Expressions (N));
+            while Present (Expr) loop
+               if not Is_SPARK_Initialization_Expr (Expr) then
+                  Is_Ok := False;
+                  goto Done;
+               end if;
+
+               Next (Expr);
+            end loop;
+
+         when others =>
+            Is_Ok := False;
+      end case;
+
+      <<Done>>
+      return Is_Ok;
+   end Is_SPARK_Initialization_Expr;
+
    -------------------------------
    -- Is_SPARK_Object_Reference --
    -------------------------------
