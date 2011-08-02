@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -8695,14 +8695,41 @@ package body Exp_Ch9 is
          --      (Ada.Tags.Tag (Concval),
          --       <interface dispatch table position of Ename>)
 
-         Prepend_To (Params,
-           Make_Function_Call (Loc,
-             Name =>
-               New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+         if Tagged_Type_Expansion then
+            Prepend_To (Params,
+              Make_Function_Call (Loc,
+                Name =>
+                  New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
 
-             Parameter_Associations => New_List (
-               Unchecked_Convert_To (RTE (RE_Tag), Concval),
-               Make_Integer_Literal (Loc, DT_Position (Entity (Ename))))));
+                Parameter_Associations => New_List (
+                  Unchecked_Convert_To (RTE (RE_Tag), Concval),
+                  Make_Integer_Literal (Loc, DT_Position (Entity (Ename))))));
+
+         --  VM targets
+
+         else
+            Prepend_To (Params,
+              Make_Function_Call (Loc,
+                Name =>
+                  New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+
+                Parameter_Associations => New_List (
+                  --  Obj_Typ
+
+                  Make_Attribute_Reference (Loc,
+                    Prefix => Concval,
+                    Attribute_Name => Name_Tag),
+
+                  --  Tag_Typ
+
+                  Make_Attribute_Reference (Loc,
+                    Prefix => New_Reference_To (Etype (Concval), Loc),
+                    Attribute_Name => Name_Tag),
+
+                  --  Position
+
+                  Make_Integer_Literal (Loc, DT_Position (Entity (Ename))))));
+         end if;
 
          --  Specific actuals for protected to XXX requeue
 
@@ -10878,7 +10905,7 @@ package body Exp_Ch9 is
    --              Ada.Tags.Get_Tagged_Kind (Ada.Tags.Tag (<object>));
    --       M  : Integer :=...;
    --       P  : Parameters := (Param1 .. ParamN);
-   --       S  : Iteger;
+   --       S  : Integer;
 
    --    begin
    --       if K = Ada.Tags.TK_Limited_Tagged then

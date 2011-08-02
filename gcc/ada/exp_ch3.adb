@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -8405,12 +8405,10 @@ package body Exp_Ch3 is
       --    Disp_Requeue
       --    Disp_Timed_Select
 
-      --  These operations cannot be implemented on VM targets, so we simply
-      --  disable their generation in this case. Disable the generation of
-      --  these bodies if No_Dispatching_Calls, Ravenscar or ZFP is active.
+      --  Disable the generation of these bodies if No_Dispatching_Calls,
+      --  Ravenscar or ZFP is active.
 
       if Ada_Version >= Ada_2005
-        and then Tagged_Type_Expansion
         and then not Restriction_Active (No_Dispatching_Calls)
         and then not Restriction_Active (No_Select_Statements)
         and then RTE_Available (RE_Select_Specific_Data)
@@ -8454,12 +8452,22 @@ package body Exp_Ch3 is
          --  primitives to override the abstract primitives of the interface
          --  type.
 
+         --  In VM targets we define these primitives in all root tagged types
+         --  that are not interface types. Done because in VM targets we don't
+         --  have secondary dispatch tables and any derivation of Tag_Typ may
+         --  cover limited interfaces (which always have these primitives since
+         --  they may be ancestors of synchronized interface types).
+
          elsif (not Is_Interface (Tag_Typ)
                   and then Is_Interface (Etype (Tag_Typ))
                   and then Is_Limited_Record (Etype (Tag_Typ)))
              or else
                (Is_Concurrent_Record_Type (Tag_Typ)
                   and then Has_Interfaces (Tag_Typ))
+             or else
+               (not Tagged_Type_Expansion
+                  and then not Is_Interface (Tag_Typ)
+                  and then Tag_Typ = Root_Type (Tag_Typ))
          then
             Append_To (Res,
               Make_Subprogram_Declaration (Loc,
@@ -8923,18 +8931,26 @@ package body Exp_Ch3 is
 
       --  The interface versions will have null bodies
 
-      --  These operations cannot be implemented on VM targets, so we simply
-      --  disable their generation in this case. Disable the generation of
-      --  these bodies if No_Dispatching_Calls, Ravenscar or ZFP is active.
+      --  Disable the generation of these bodies if No_Dispatching_Calls,
+      --  Ravenscar or ZFP is active.
+
+      --  In VM targets we define these primitives in all root tagged types
+      --  that are not interface types. Done because in VM targets we don't
+      --  have secondary dispatch tables and any derivation of Tag_Typ may
+      --  cover limited interfaces (which always have these primitives since
+      --  they may be ancestors of synchronized interface types).
 
       if Ada_Version >= Ada_2005
-        and then Tagged_Type_Expansion
         and then not Is_Interface (Tag_Typ)
         and then
           ((Is_Interface (Etype (Tag_Typ))
               and then Is_Limited_Record (Etype (Tag_Typ)))
-           or else (Is_Concurrent_Record_Type (Tag_Typ)
-                      and then Has_Interfaces (Tag_Typ)))
+           or else
+             (Is_Concurrent_Record_Type (Tag_Typ)
+                and then Has_Interfaces (Tag_Typ))
+           or else
+             (not Tagged_Type_Expansion
+               and then Tag_Typ = Root_Type (Tag_Typ)))
         and then not Restriction_Active (No_Dispatching_Calls)
         and then not Restriction_Active (No_Select_Statements)
         and then RTE_Available (RE_Select_Specific_Data)

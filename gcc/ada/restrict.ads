@@ -174,6 +174,30 @@ package Restrict is
      Table_Increment      => 200,
      Table_Name           => "Name_No_Dependence");
 
+   -------------------------------
+   -- SPARK Restriction Control --
+   -------------------------------
+
+   --  SPARK HIDE directives allow turning off SPARK restriction for a
+   --  specified region of code, and the following tables are the data
+   --  structures used to keep track of these regions.
+
+   --  The table contains pairs of source locations, the first being the start
+   --  location for hidden region, and the second being the end location.
+
+   type SPARK_Hide_Entry is record
+      Start : Source_Ptr;
+      Stop  : Source_Ptr;
+   end record;
+
+   package SPARK_Hides is new Table.Table (
+     Table_Component_Type => SPARK_Hide_Entry,
+     Table_Index_Type     => Natural,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 100,
+     Table_Increment      => 200,
+     Table_Name           => "SPARK Hides");
+
    -----------------
    -- Subprograms --
    -----------------
@@ -289,6 +313,10 @@ package Restrict is
    --  identifier, and if so returns the corresponding Restriction_Id
    --  value, otherwise returns Not_A_Restriction_Id.
 
+   function Is_In_Hidden_Part_In_SPARK (Loc : Source_Ptr) return Boolean;
+   --  Determine if given location is covered by a hidden region range in the
+   --  SPARK hides table.
+
    function No_Exception_Handlers_Set return Boolean;
    --  Test to see if current restrictions settings specify that no exception
    --  handlers are present. This function is called by Gigi when it needs to
@@ -333,6 +361,9 @@ package Restrict is
    --  currently in effect (set by pragma Profile, or by an appropriate set
    --  of individual Restrictions pragmas). Returns True only if all the
    --  required restrictions are set.
+
+   procedure Set_Hidden_Part_In_SPARK (Loc1, Loc2 : Source_Ptr);
+   --  Insert a new hidden region range in the SPARK hides table
 
    procedure Set_Profile_Restrictions
      (P    : Profile_Name;

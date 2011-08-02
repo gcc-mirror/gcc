@@ -1770,70 +1770,75 @@ gnat_ugn, @value{EDITION} User's Guide}.
 Syntax:
 
 @smallexample @c ada
-pragma Eliminate (UNIT_NAME, ENTITY, Source_Location => SOURCE_TRACE)
-
-UNIT_NAME        ::= IDENTIFIER |
-                     SELECTED_COMPONENT,
-
-ENTITY           ::= IDENTIFIER |
-                     SELECTED_COMPONENT,
-
-SOURCE_TRACE     ::= SOURCE_REFERENCE |
-                     SOURCE_REFERENCE LBRACKET SOURCE_TRACE RBRACKET
-
-LBRACKET         ::= [
-RBRACKET         ::= ]
-
-SOURCE_REFERENCE ::= FILE_NAME : LINE_NUMBER
-
-FILE_NAME        ::= STRING_LITERAL
-LINE_NUMBER      ::= INTEGER_LITERAL
+pragma Eliminate ([Entity          =>] DEFINING_DESIGNATOR,
+                  [Source_Location =>] STRING_LITERAL);
 @end smallexample
 
 @noindent
-This pragma indicates that the given entity is not used in the program
-to be compiled and built. The entity must be an explicitly declared
-subprogram; this includes generic subprogram instances and
-subprograms declared in generic package instances. @code{Unit_Name}
-must be the name of the compilation unit in which the entity is declared.
+The string literal given for the source location is a string which
+specifies the line number of the occurrence of the entity, using
+the syntax for SOURCE_TRACE given below:
 
-The @code{Source_Location} argument is used to resolve overloading
-in case more then one callable entity with the same name is declared
-in the given compilation unit. Each file name must be the short name of the
-source file (with no directory information).
-If an entity is not declared in
-a generic instantiation (this includes generic subprogram instances),
-the source trace includes only one source
-reference. If an entity is declared inside a generic instantiation,
-its source trace starts from the source location in the instantiation and
-ends with the source location of the declaration of the corresponding
-entity in the generic
-unit. This approach is recursively used in case of nested instantiations:
-the leftmost element of the
-source trace is the location of the outermost instantiation, the next
-element is the location of the next (first nested) instantiation in the
-code of the corresponding generic unit, and so on.
+@smallexample @c ada
+ SOURCE_TRACE     ::= SOURCE_REFERENCE [LBRACKET SOURCE_TRACE RBRACKET]
 
-The effect of the pragma is to allow the compiler to eliminate
-the code or data associated with the named entity.  Any reference to
-an eliminated entity outside the compilation unit where it is defined
-causes a compile-time or link-time error.
+ LBRACKET         ::= [
+ RBRACKET         ::= ]
+
+ SOURCE_REFERENCE ::= FILE_NAME : LINE_NUMBER
+
+ LINE_NUMBER      ::= DIGIT @{DIGIT@}
+@end smallexample
+
+@noindent
+Spaces around the colon in a @code{Source_Reference} are optional.
+
+The @code{DEFINING_DESIGNATOR} matches the defining designator used in an
+explicit subprogram declaration, where the @code{entity} name in this
+designator appears on the source line specified by the source location.
+
+The source trace that is given as the @code{Source_Location} shall obey the
+following rules. The @code{FILE_NAME} is the short name (with no directory
+information) of an Ada source file, given using exactly the required syntax
+for the underlying file system (e.g. case is important if the underlying
+operating system is case sensitive). @code{LINE_NUMBER} gives the line
+number of the occurrence of the @code{entity}
+as a decimal literal without an exponent or point. If an @code{entity} is not
+declared in a generic instantiation (this includes generic subprogram
+instances), the source trace includes only one source reference. If an entity
+is declared inside a generic instantiation, its source trace (when parsing
+from left to right) starts with the source location of the declaration of the
+entity in the generic unit and ends with the source location of the
+instantiation (it is given in square brackets). This approach is recursively
+used in case of nested instantiations: the rightmost (nested most deeply in
+square brackets) element of the source trace is the location of the outermost
+instantiation, the next to left element is the location of the next (first
+nested) instantiation in the code of the corresponding generic unit, and so
+on, and the leftmost element (that is out of any square brackets) is the
+location of the declaration of the entity to eliminate in a generic unit.
+
+Note that the @code{Source_Location} argument specifies which of a set of
+similarly named entities is being eliminated, dealing both with overloading,
+and also appearence of the same entity name in different scopes.
+
+This pragma indicates that the given entity is not used in the program to be
+compiled and built. The effect of the pragma is to allow the compiler to
+eliminate the code or data associated with the named entity. Any reference to
+an eliminated entity causes a compile-time or link-time error.
 
 The intention of pragma @code{Eliminate} is to allow a program to be compiled
 in a system-independent manner, with unused entities eliminated, without
-needing to modify the source text.  Normally the required set
-of @code{Eliminate} pragmas is constructed automatically using the gnatelim
-tool. Elimination of unused entities local to a compilation unit is
-automatic, without requiring the use of pragma @code{Eliminate}.
+needing to modify the source text. Normally the required set of
+@code{Eliminate} pragmas is constructed automatically using the gnatelim tool.
 
 Any source file change that removes, splits, or
 adds lines may make the set of Eliminate pragmas invalid because their
 @code{Source_Location} argument values may get out of date.
 
-Pragma Eliminate may be used where the referenced entity is a
-dispatching operation. In this case all the subprograms to which the
-given operation can dispatch are considered to be unused (are never called
-as a result of a direct or a dispatching call).
+Pragma @code{Eliminate} may be used where the referenced entity is a dispatching
+operation. In this case all the subprograms to which the given operation can
+dispatch are considered to be unused (are never called as a result of a direct
+or a dispatching call).
 
 @node Pragma Export_Exception
 @unnumberedsec Pragma Export_Exception

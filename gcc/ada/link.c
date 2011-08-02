@@ -37,6 +37,7 @@ extern "C" {
 #endif
 
 #include <string.h>
+#include "auto-host.h"
 
 /*  objlist_file_supported is set to 1 when the system linker allows        */
 /*  response file, that is a file that contains the list of object files.   */
@@ -160,36 +161,6 @@ const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_default_libgcc_subdir = "lib";
 
-#elif defined (VMS)
-const char *__gnat_object_file_option = "";
-const char *__gnat_run_path_option = "";
-char __gnat_shared_libgnat_default = STATIC;
-char __gnat_shared_libgcc_default = STATIC;
-int __gnat_link_max = 2147483647;
-unsigned char __gnat_objlist_file_supported = 0;
-unsigned char __gnat_using_gnu_linker = 0;
-const char *__gnat_object_library_extension = ".olb";
-unsigned char __gnat_separate_run_path_options = 0;
-const char *__gnat_default_libgcc_subdir = "lib";
-
-#elif defined (sun)
-const char *__gnat_object_file_option = "";
-const char *__gnat_run_path_option = "-Wl,-R";
-char __gnat_shared_libgnat_default = STATIC;
-char __gnat_shared_libgcc_default = STATIC;
-int __gnat_link_max = 2147483647;
-unsigned char __gnat_objlist_file_supported = 0;
-unsigned char __gnat_using_gnu_linker = 0;
-const char *__gnat_object_library_extension = ".a";
-unsigned char __gnat_separate_run_path_options = 0;
-#if defined (__sparc_v9__) || defined (__sparcv9)
-const char *__gnat_default_libgcc_subdir = "lib/sparcv9";
-#elif defined (__x86_64)
-const char *__gnat_default_libgcc_subdir = "lib/amd64";
-#else
-const char *__gnat_default_libgcc_subdir = "lib";
-#endif
-
 #elif defined (__FreeBSD__)
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "-Wl,-rpath,";
@@ -226,6 +197,51 @@ const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
 #if defined (__x86_64)
 const char *__gnat_default_libgcc_subdir = "lib64";
+#else
+const char *__gnat_default_libgcc_subdir = "lib";
+#endif
+
+#elif (HAVE_GNU_LD)
+/*  These are the settings for all systems that use gnu ld. GNU style response
+    file is supported, the shared library default is STATIC.  */
+
+const char *__gnat_run_path_option = "";
+const char *__gnat_object_file_option = "";
+char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
+int __gnat_link_max = 8192;
+unsigned char __gnat_objlist_file_supported = 1;
+unsigned char __gnat_using_gnu_linker = 1;
+const char *__gnat_object_library_extension = ".a";
+unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
+
+#elif defined (VMS)
+const char *__gnat_object_file_option = "";
+const char *__gnat_run_path_option = "";
+char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
+int __gnat_link_max = 2147483647;
+unsigned char __gnat_objlist_file_supported = 0;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".olb";
+unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
+
+#elif defined (sun)
+const char *__gnat_object_file_option = "";
+const char *__gnat_run_path_option = "-Wl,-R";
+char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
+int __gnat_link_max = 2147483647;
+unsigned char __gnat_objlist_file_supported = 0;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".a";
+unsigned char __gnat_separate_run_path_options = 0;
+#if defined (__sparc_v9__) || defined (__sparcv9)
+const char *__gnat_default_libgcc_subdir = "lib/sparcv9";
+#elif defined (__x86_64)
+const char *__gnat_default_libgcc_subdir = "lib/amd64";
 #else
 const char *__gnat_default_libgcc_subdir = "lib";
 #endif

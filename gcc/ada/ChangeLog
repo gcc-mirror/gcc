@@ -1,3 +1,64 @@
+2011-08-02  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_rm.texi: Ramification of pragma Eliminate documentation
+	 - fix bugs in the description of Source_Trace;
+	 - get rid of UNIT_NAME;
+
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch9.adb
+	(Build_Dispatching_Requeue): Adding support for VM targets
+	since we cannot directly reference the Tag entity.
+	* exp_sel.adb (Build_K): Adding support for VM targets.
+	(Build_S_Assignment): Adding support for VM targets.
+	* exp_disp.adb
+	(Default_Prim_Op_Position): In VM targets do not restrict availability
+	of predefined interface primitives to compiling in Ada 2005 mode.
+	(Is_Predefined_Interface_Primitive): In VM targets this service is not
+	restricted to compiling in Ada 2005 mode.
+	(Make_VM_TSD): Generate code that declares and initializes the OSD
+	record. Needed to support dispatching calls through synchronized
+	interfaces.
+	* exp_ch3.adb
+	(Make_Predefined_Primitive_Specs): Enable generation of predefined
+	primitives associated with synchronized interfaces.
+	(Make_Predefined_Primitive_Bodies): Enable generation of predefined
+	primitives associated with synchronized interfaces.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* par-ch11.adb (P_Handled_Sequence_Of_Statements): mark a sequence of
+	statements hidden in SPARK if preceded by the HIDE directive
+	(Parse_Exception_Handlers): mark each exception handler in a sequence of
+	exception handlers as hidden in SPARK if preceded by the HIDE directive
+	* par-ch6.adb (P_Subprogram): mark a subprogram body hidden in SPARK
+	if starting with the HIDE directive
+	* par-ch7.adb (P_Package): mark a package body hidden in SPARK if
+	starting with the HIDE directive; mark the declarations in a private
+	part as hidden in SPARK if the private part starts with the HIDE
+	directive
+	* restrict.adb, restrict.ads
+	(Set_Hidden_Part_In_SPARK): record a range of slocs as hidden in SPARK
+	(Is_In_Hidden_Part_In_SPARK): new function which returns whether its
+	argument node belongs to a part which is hidden in SPARK
+	(Check_SPARK_Restriction): do not issue violations on nodes in hidden
+	parts in SPARK; protect the possibly costly call to
+	Is_In_Hidden_Part_In_SPARK by a check that the SPARK restriction is on
+	* scans.ads (Token_Type): new value Tok_SPARK_Hide in enumeration
+	* scng.adb (Accumulate_Token_Checksum_GNAT_6_3,
+	Accumulate_Token_Checksum_GNAT_5_03): add case for new token
+	Tok_SPARK_Hide.
+	(Scan): recognize special comment starting with '#' and followed by
+	SPARK keyword "hide" as a HIDE directive.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* types.ads, erroutc.ads: Minor reformatting.
+
+2011-08-02  Vincent Celier  <celier@adacore.com>
+
+	* link.c: Add response file support for cross platforms.
+
 2011-08-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aggr.adb (Resolve_Array_Aggregate): when copying the expression
