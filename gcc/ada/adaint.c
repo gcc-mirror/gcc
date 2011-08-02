@@ -2273,7 +2273,8 @@ __gnat_set_non_readable (char *name)
 }
 
 int
-__gnat_is_symbolic_link_attr (char* name, struct file_attributes* attr)
+__gnat_is_symbolic_link_attr (char* name ATTRIBUTE_UNUSED,
+                              struct file_attributes* attr)
 {
    if (attr->symbolic_link == ATTR_UNSET) {
 #if defined (__vxworks) || defined (__nucleus__)

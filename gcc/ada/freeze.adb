@@ -4536,33 +4536,34 @@ package body Freeze is
             --  is a statement or declaration and we can insert the freeze node
             --  before it.
 
-            when N_Package_Specification |
-                 N_Package_Body          |
-                 N_Subprogram_Body       |
-                 N_Task_Body             |
-                 N_Protected_Body        |
+            when N_Block_Statement       |
                  N_Entry_Body            |
-                 N_Block_Statement       => exit;
+                 N_Package_Body          |
+                 N_Package_Specification |
+                 N_Protected_Body        |
+                 N_Subprogram_Body       |
+                 N_Task_Body             => exit;
 
             --  The expander is allowed to define types in any statements list,
             --  so any of the following parent nodes also mark a freezing point
             --  if the actual node is in a list of statements or declarations.
 
-            when N_Exception_Handler          |
-                 N_If_Statement               |
-                 N_Elsif_Part                 |
+            when N_Abortable_Part             |
+                 N_Accept_Alternative         |
+                 N_And_Then                   |
                  N_Case_Statement_Alternative |
                  N_Compilation_Unit_Aux       |
-                 N_Selective_Accept           |
-                 N_Accept_Alternative         |
-                 N_Delay_Alternative          |
                  N_Conditional_Entry_Call     |
+                 N_Delay_Alternative          |
+                 N_Elsif_Part                 |
                  N_Entry_Call_Alternative     |
-                 N_Triggering_Alternative     |
-                 N_Abortable_Part             |
-                 N_And_Then                   |
+                 N_Exception_Handler          |
+                 N_Extended_Return_Statement  |
+                 N_Freeze_Entity              |
+                 N_If_Statement               |
                  N_Or_Else                    |
-                 N_Freeze_Entity              =>
+                 N_Selective_Accept           |
+                 N_Triggering_Alternative     =>
 
                exit when Is_List_Member (P);
 
