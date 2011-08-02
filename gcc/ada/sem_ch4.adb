@@ -350,6 +350,8 @@ package body Sem_Ch4 is
 
    procedure Analyze_Aggregate (N : Node_Id) is
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
+
       if No (Etype (N)) then
          Set_Etype (N, Any_Composite);
       end if;
@@ -369,6 +371,7 @@ package body Sem_Ch4 is
       C        : Node_Id;
 
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
       Check_SPARK_Restriction ("allocator is not allowed", N);
 
       --  Deal with allocator restrictions
@@ -982,6 +985,15 @@ package body Sem_Ch4 is
             return;
          end if;
 
+         --  If this is an indirect call, or the subprogram called is not in
+         --  ALFA, then the call is not in ALFA.
+
+         if not Is_Subprogram (Nam_Ent)
+           or else not Is_In_ALFA (Nam_Ent)
+         then
+            Current_Subprogram_Body_Is_Not_In_ALFA;
+         end if;
+
          Analyze_One_Call (N, Nam_Ent, True, Success);
 
          --  If this is an indirect call, the return type of the access_to
@@ -1358,6 +1370,8 @@ package body Sem_Ch4 is
       L  : Node_Id;
 
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
+
       Candidate_Type := Empty;
 
       --  The following code is equivalent to:
@@ -1506,6 +1520,7 @@ package body Sem_Ch4 is
          return;
       end if;
 
+      Current_Subprogram_Body_Is_Not_In_ALFA;
       Check_SPARK_Restriction ("conditional expression is not allowed", N);
 
       Else_Expr := Next (Then_Expr);
@@ -1706,6 +1721,7 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Explicit_Dereference
 
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
       Check_SPARK_Restriction ("explicit dereference is not allowed", N);
 
       Analyze (P);
@@ -2467,6 +2483,8 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Membership_Op
 
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
+
       Analyze_Expression (L);
 
       if No (R)
@@ -2588,6 +2606,7 @@ package body Sem_Ch4 is
 
    procedure Analyze_Null (N : Node_Id) is
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
       Check_SPARK_Restriction ("null is not allowed", N);
 
       Set_Etype (N, Any_Access);
@@ -3216,6 +3235,8 @@ package body Sem_Ch4 is
       T    : Entity_Id;
 
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
+
       Analyze_Expression (Expr);
 
       Set_Etype (N, Any_Type);
@@ -3274,6 +3295,7 @@ package body Sem_Ch4 is
       Iterator : Node_Id;
 
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
       Check_SPARK_Restriction ("quantified expression is not allowed", N);
 
       Set_Etype  (Ent,  Standard_Void_Type);
@@ -3439,6 +3461,8 @@ package body Sem_Ch4 is
       Acc_Type : Entity_Id;
 
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
+
       Analyze (P);
 
       --  An interesting error check, if we take the 'Reference of an object
@@ -4302,6 +4326,7 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Slice
 
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
       Check_SPARK_Restriction ("slice is not allowed", N);
 
       Analyze (P);
@@ -4346,6 +4371,8 @@ package body Sem_Ch4 is
       T    : Entity_Id;
 
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
+
       --  If Conversion_OK is set, then the Etype is already set, and the
       --  only processing required is to analyze the expression. This is
       --  used to construct certain "illegal" conversions which are not
@@ -4476,6 +4503,7 @@ package body Sem_Ch4 is
 
    procedure Analyze_Unchecked_Type_Conversion (N : Node_Id) is
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
       Find_Type (Subtype_Mark (N));
       Analyze_Expression (Expression (N));
       Set_Etype (N, Entity (Subtype_Mark (N)));

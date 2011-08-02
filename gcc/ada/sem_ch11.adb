@@ -443,6 +443,7 @@ package body Sem_Ch11 is
       P              : Node_Id;
 
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
       Check_SPARK_Restriction ("raise statement is not allowed", N);
       Check_Unreachable_Code (N);
 
@@ -610,6 +611,7 @@ package body Sem_Ch11 is
    --  Start of processing for Analyze_Raise_xxx_Error
 
    begin
+      Current_Subprogram_Body_Is_Not_In_ALFA;
       Check_SPARK_Restriction ("raise statement is not allowed", N);
 
       if No (Etype (N)) then

@@ -3030,10 +3030,13 @@ package body Sem_Ch3 is
 
       Act_T := T;
 
-      --  The object is in ALFA if-and-only-if its type is in ALFA
+      --  The object is in ALFA if-and-only-if its type is in ALFA and it is
+      --  not aliased.
 
-      if Is_In_ALFA (T) then
+      if Is_In_ALFA (T) and then not Aliased_Present (N) then
          Set_Is_In_ALFA (Id);
+      else
+         Current_Subprogram_Body_Is_Not_In_ALFA;
       end if;
 
       --  These checks should be performed before the initialization expression

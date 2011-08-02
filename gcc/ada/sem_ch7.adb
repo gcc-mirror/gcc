@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -875,9 +875,8 @@ package body Sem_Ch7 is
       --  package.
 
       procedure Check_One_Tagged_Type_Or_Extension_At_Most;
-      --  Issue an error in formal mode if a package specification contains
-      --  more than one tagged type or type extension. This is a restriction of
-      --  SPARK.
+      --  Issue an error in SPARK mode if a package specification contains
+      --  more than one tagged type or type extension.
 
       procedure Clear_Constants (Id : Entity_Id; FE : Entity_Id);
       --  Clears constant indications (Never_Set_In_Source, Constant_Value, and

@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
---                                                                         --
+--                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
@@ -485,6 +485,11 @@ package Einfo is
 --    Body_Entity (Node19)
 --       Present in package and generic package entities, points to the
 --       corresponding package body entity if one is present.
+
+--    Body_Is_In_ALFA (Flag251)
+--       Present in subprogram entities. Set for subprograms whose body belongs
+--       to the ALFA subset, which are eligible for formal verification through
+--       SPARK or Why tool-sets.
 
 --    Body_Needed_For_SAL (Flag40)
 --       Present in package and subprogram entities that are compilation
@@ -2273,7 +2278,9 @@ package Einfo is
 --    Is_In_ALFA (Flag151)
 --       Present in all entities. Set for entities that belong to the ALFA
 --       subset, which are eligible for formal verification through SPARK or
---       Why tool-sets.
+--       Why tool-sets. For a subprogram, this only means that a call to the
+--       subprogram can be formally analyzed. Another flag, Body_Is_In_ALFA,
+--       defines which subprograms can be formally analyzed.
 
 --    Is_Inlined (Flag11)
 --       Present in all entities. Set for functions and procedures which are
@@ -4336,7 +4343,7 @@ package Einfo is
    --  E_Anonymous_Access_Protected_Subprogram_Type
        E_Anonymous_Access_Type;
 
-   subtype Access_Subprogram_Kind is Entity_Kind range
+   subtype Access_Subprogram_Kind      is Entity_Kind range
        E_Access_Subprogram_Type ..
    --  E_Anonymous_Access_Subprogram_Type
    --  E_Access_Protected_Subprogram_Type
@@ -4536,7 +4543,7 @@ package Einfo is
    --  E_Floating_Point_Type
        E_Floating_Point_Subtype;
 
-   subtype Object_Kind                is Entity_Kind range
+   subtype Object_Kind                 is Entity_Kind range
        E_Component ..
    --  E_Constant
    --  E_Discriminant
@@ -5933,6 +5940,7 @@ package Einfo is
    function Barrier_Function                    (Id : E) return N;
    function Block_Node                          (Id : E) return N;
    function Body_Entity                         (Id : E) return E;
+   function Body_Is_In_ALFA                     (Id : E) return B;
    function Body_Needed_For_SAL                 (Id : E) return B;
    function CR_Discriminant                     (Id : E) return E;
    function C_Pass_By_Copy                      (Id : E) return B;
@@ -6519,6 +6527,7 @@ package Einfo is
    procedure Set_Barrier_Function                (Id : E; V : N);
    procedure Set_Block_Node                      (Id : E; V : N);
    procedure Set_Body_Entity                     (Id : E; V : E);
+   procedure Set_Body_Is_In_ALFA                 (Id : E; V : B := True);
    procedure Set_Body_Needed_For_SAL             (Id : E; V : B := True);
    procedure Set_CR_Discriminant                 (Id : E; V : E);
    procedure Set_C_Pass_By_Copy                  (Id : E; V : B := True);
@@ -7212,6 +7221,7 @@ package Einfo is
    pragma Inline (Barrier_Function);
    pragma Inline (Block_Node);
    pragma Inline (Body_Entity);
+   pragma Inline (Body_Is_In_ALFA);
    pragma Inline (Body_Needed_For_SAL);
    pragma Inline (CR_Discriminant);
    pragma Inline (C_Pass_By_Copy);
@@ -7653,6 +7663,7 @@ package Einfo is
    pragma Inline (Set_Barrier_Function);
    pragma Inline (Set_Block_Node);
    pragma Inline (Set_Body_Entity);
+   pragma Inline (Set_Body_Is_In_ALFA);
    pragma Inline (Set_Body_Needed_For_SAL);
    pragma Inline (Set_CR_Discriminant);
    pragma Inline (Set_C_Pass_By_Copy);

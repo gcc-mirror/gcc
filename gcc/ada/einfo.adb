@@ -518,7 +518,7 @@ package body Einfo is
    --    Is_Safe_To_Reevaluate           Flag249
    --    Has_Predicates                  Flag250
 
-   --    (unused)                        Flag251
+   --    Body_Is_In_ALFA                 Flag251
    --    (unused)                        Flag252
    --    (unused)                        Flag253
    --    (unused)                        Flag254
@@ -650,6 +650,12 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
       return Node19 (Id);
    end Body_Entity;
+
+   function Body_Is_In_ALFA (Id : E) return B is
+   begin
+      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
+      return Flag251 (Id);
+   end Body_Is_In_ALFA;
 
    function Body_Needed_For_SAL (Id : E) return B is
    begin
@@ -3097,6 +3103,12 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
       Set_Node19 (Id, V);
    end Set_Body_Entity;
+
+   procedure Set_Body_Is_In_ALFA (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
+      Set_Flag251 (Id, V);
+   end Set_Body_Is_In_ALFA;
 
    procedure Set_Body_Needed_For_SAL (Id : E; V : B := True) is
    begin
@@ -7349,6 +7361,7 @@ package body Einfo is
       end if;
 
       W ("Address_Taken",                   Flag104 (Id));
+      W ("Body_Is_In_ALFA",                 Flag251 (Id));
       W ("Body_Needed_For_SAL",             Flag40  (Id));
       W ("C_Pass_By_Copy",                  Flag125 (Id));
       W ("Can_Never_Be_Null",               Flag38  (Id));
