@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1440,11 +1440,17 @@ package body Sinfo is
    function Has_Dynamic_Length_Check
       (N : Node_Id) return Boolean is
    begin
+      pragma Assert (False
+        or else NT (N).Nkind in N_Subexpr);
       return Flag10 (N);
    end Has_Dynamic_Length_Check;
+
    function Has_Dynamic_Range_Check
       (N : Node_Id) return Boolean is
    begin
+      pragma Assert (False
+        or else NT (N).Nkind =  N_Subtype_Declaration
+        or else NT (N).Nkind in N_Subexpr);
       return Flag12 (N);
    end Has_Dynamic_Range_Check;
 
@@ -4484,12 +4490,17 @@ package body Sinfo is
    procedure Set_Has_Dynamic_Length_Check
       (N : Node_Id; Val : Boolean := True) is
    begin
+      pragma Assert (False
+        or else NT (N).Nkind in N_Subexpr);
       Set_Flag10 (N, Val);
    end Set_Has_Dynamic_Length_Check;
 
    procedure Set_Has_Dynamic_Range_Check
       (N : Node_Id; Val : Boolean := True) is
    begin
+      pragma Assert (False
+        or else NT (N).Nkind =  N_Subtype_Declaration
+        or else NT (N).Nkind in N_Subexpr);
       Set_Flag12 (N, Val);
    end Set_Has_Dynamic_Range_Check;
 

@@ -8698,9 +8698,7 @@ package body Exp_Ch9 is
          if Tagged_Type_Expansion then
             Prepend_To (Params,
               Make_Function_Call (Loc,
-                Name =>
-                  New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
-
+                Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
                 Parameter_Associations => New_List (
                   Unchecked_Convert_To (RTE (RE_Tag), Concval),
                   Make_Integer_Literal (Loc, DT_Position (Entity (Ename))))));
@@ -8710,20 +8708,20 @@ package body Exp_Ch9 is
          else
             Prepend_To (Params,
               Make_Function_Call (Loc,
-                Name =>
-                  New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+                Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
 
                 Parameter_Associations => New_List (
+
                   --  Obj_Typ
 
                   Make_Attribute_Reference (Loc,
-                    Prefix => Concval,
+                    Prefix         => Concval,
                     Attribute_Name => Name_Tag),
 
                   --  Tag_Typ
 
                   Make_Attribute_Reference (Loc,
-                    Prefix => New_Reference_To (Etype (Concval), Loc),
+                    Prefix         => New_Reference_To (Etype (Concval), Loc),
                     Attribute_Name => Name_Tag),
 
                   --  Position

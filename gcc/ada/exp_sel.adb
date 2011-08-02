@@ -156,7 +156,7 @@ package body Exp_Sel is
       else
          Tag_Node :=
            Make_Attribute_Reference (Loc,
-             Prefix => Obj,
+             Prefix         => Obj,
              Attribute_Name => Name_Tag);
       end if;
 
@@ -205,7 +205,7 @@ package body Exp_Sel is
       if Tagged_Type_Expansion then
          return
            Make_Assignment_Statement (Loc,
-             Name => New_Reference_To (S, Loc),
+             Name       => New_Reference_To (S, Loc),
              Expression =>
                Make_Function_Call (Loc,
                  Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
@@ -218,10 +218,11 @@ package body Exp_Sel is
       else
          return
            Make_Assignment_Statement (Loc,
-             Name => New_Reference_To (S, Loc),
+             Name       => New_Reference_To (S, Loc),
              Expression =>
                Make_Function_Call (Loc,
                  Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+
                  Parameter_Associations => New_List (
 
                      --  Obj_Typ

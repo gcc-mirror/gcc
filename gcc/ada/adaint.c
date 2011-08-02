@@ -2700,10 +2700,11 @@ __gnat_os_exit (int status)
   exit (status);
 }
 
-/* Locate a regular file, give a Path value.  */
+/* Locate file on path, that matches a predicate */
 
 char *
-__gnat_locate_regular_file (char *file_name, char *path_val)
+__gnat_locate_file_with_predicate
+   (char *file_name, char *path_val, int (*predicate)(char*))
 {
   char *ptr;
   char *file_path = (char *) alloca (strlen (file_name) + 1);
@@ -2733,7 +2734,7 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
 
   if (absolute)
     {
-     if (__gnat_is_regular_file (file_path))
+     if (predicate (file_path))
        return xstrdup (file_path);
 
       return 0;
@@ -2746,7 +2747,7 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
 
   if (*ptr != 0)
     {
-      if (__gnat_is_regular_file (file_name))
+      if (predicate (file_name))
         return xstrdup (file_name);
     }
 
@@ -2787,7 +2788,7 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
 
       strcpy (++ptr, file_name);
 
-      if (__gnat_is_regular_file (file_path))
+      if (predicate (file_path))
         return xstrdup (file_path);
 
       if (*path_val == 0)
@@ -2800,6 +2801,24 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
   }
 
   return 0;
+}
+
+/* Locate an executable file, give a Path value.  */
+
+char *
+__gnat_locate_executable_file (char *file_name, char *path_val)
+{
+   return __gnat_locate_file_with_predicate
+      (file_name, path_val, &__gnat_is_executable_file);
+}
+
+/* Locate a regular file, give a Path value.  */
+
+char *
+__gnat_locate_regular_file (char *file_name, char *path_val)
+{
+   return __gnat_locate_file_with_predicate
+      (file_name, path_val, &__gnat_is_regular_file);
 }
 
 /* Locate an executable given a Path argument. This routine is only used by
@@ -2818,14 +2837,14 @@ __gnat_locate_exec (char *exec_name, char *path_val)
 
       strcpy (full_exec_name, exec_name);
       strcat (full_exec_name, HOST_EXECUTABLE_SUFFIX);
-      ptr = __gnat_locate_regular_file (full_exec_name, path_val);
+      ptr = __gnat_locate_executable_file (full_exec_name, path_val);
 
       if (ptr == 0)
-         return __gnat_locate_regular_file (exec_name, path_val);
+         return __gnat_locate_executable_file (exec_name, path_val);
       return ptr;
     }
   else
-    return __gnat_locate_regular_file (exec_name, path_val);
+    return __gnat_locate_executable_file (exec_name, path_val);
 }
 
 /* Locate an executable using the Systems default PATH.  */
