@@ -1,3 +1,7 @@
+2011-08-02  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/tree-ssa/forwprop-15.c: New testcase.
+
 2011-08-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49932

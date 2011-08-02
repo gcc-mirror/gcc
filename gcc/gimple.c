@@ -3160,7 +3160,9 @@ canonicalize_cond_expr_cond (tree t)
 {
   /* Strip conversions around boolean operations.  */
   if (CONVERT_EXPR_P (t)
-      && truth_value_p (TREE_CODE (TREE_OPERAND (t, 0))))
+      && (truth_value_p (TREE_CODE (TREE_OPERAND (t, 0)))
+          || TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0)))
+	     == BOOLEAN_TYPE))
     t = TREE_OPERAND (t, 0);
 
   /* For !x use x == 0.  */

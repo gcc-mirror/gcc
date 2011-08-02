@@ -468,7 +468,9 @@ forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
   if (tmp)
     {
       gimple_assign_set_rhs_from_tree (gsi, tmp);
+      fold_stmt_inplace (stmt);
       update_stmt (stmt);
+
       if (TREE_CODE (rhs1) == SSA_NAME)
 	cfg_changed |= remove_prop_source_from_use (rhs1);
       if (TREE_CODE (rhs2) == SSA_NAME)
@@ -2407,7 +2409,8 @@ ssa_forward_propagate_and_combine (void)
 	    }
 	  else if (TREE_CODE_CLASS (code) == tcc_comparison)
 	    {
-	      forward_propagate_comparison (stmt);
+	      if (forward_propagate_comparison (stmt))
+	        cfg_changed = true;
 	      gsi_next (&gsi);
 	    }
 	  else

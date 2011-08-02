@@ -1,3 +1,12 @@
+2011-08-02  Kai Tietz  <ktietz@redhat.com>
+
+	* gimple.c (canonicalize_cond_expr_cond): Handle cast from
+	boolean-type.
+	(ssa_forward_propagate_and_combine): Interprete result of
+	forward_propagate_comparison.
+	* gcc/gimple-fold.c (fold_gimple_assign): Add canonicalization for
+	boolean-typed operands for comparisons.
+
 2011-08-02  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* config/avr/libgcc.S: Gather related function in the
