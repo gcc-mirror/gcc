@@ -141,6 +141,10 @@ package body Sem_Util is
    --  T is a derived tagged type. Check whether the type extension is null.
    --  If the parent type is fully initialized, T can be treated as such.
 
+   procedure Mark_Non_ALFA_Subprogram_Body_Unconditional;
+   --  Perform the action for Mark_Non_ALFA_Subprogram_Body, which allows the
+   --  latter to be small and inlined.
+
    ------------------------------
    --  Abstract_Interface_List --
    ------------------------------
@@ -2316,31 +2320,29 @@ package body Sem_Util is
    -----------------------------------
 
    procedure Mark_Non_ALFA_Subprogram_Body is
-
-      procedure Unconditional_Mark;
+   begin
       --  Isolate marking of the current subprogram body so that the body of
       --  Mark_Non_ALFA_Subprogram_Body is small and inlined.
 
-      ------------------------
-      -- Unconditional_Mark --
-      ------------------------
-
-      procedure Unconditional_Mark is
-         Cur_Subp : constant Entity_Id := Current_Subprogram;
-      begin
-         if Present (Cur_Subp)
-           and then (Is_Subprogram (Cur_Subp)
-                      or else Is_Generic_Subprogram (Cur_Subp))
-         then
-            Set_Body_Is_In_ALFA (Cur_Subp, False);
-         end if;
-      end Unconditional_Mark;
-
-   begin
       if ALFA_Mode then
-         Unconditional_Mark;
+         Mark_Non_ALFA_Subprogram_Body_Unconditional;
       end if;
    end Mark_Non_ALFA_Subprogram_Body;
+
+   -------------------------------------------------
+   -- Mark_Non_ALFA_Subprogram_Body_Unconditional --
+   -------------------------------------------------
+
+   procedure Mark_Non_ALFA_Subprogram_Body_Unconditional is
+      Cur_Subp : constant Entity_Id := Current_Subprogram;
+   begin
+      if Present (Cur_Subp)
+        and then (Is_Subprogram (Cur_Subp)
+                   or else Is_Generic_Subprogram (Cur_Subp))
+      then
+         Set_Body_Is_In_ALFA (Cur_Subp, False);
+      end if;
+   end Mark_Non_ALFA_Subprogram_Body_Unconditional;
 
    ---------------------
    -- Defining_Entity --

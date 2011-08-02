@@ -341,8 +341,10 @@ package body Exp_Ch9 is
       Actuals  : out List_Id;
       Formals  : out List_Id);
    --  Given a dispatching call, extract the entity of the name of the call,
-   --  its object parameter, its actual parameters and the formal parameters
-   --  of the overridden interface-level version.
+   --  its actual dispatching object, its actual parameters and the formal
+   --  parameters of the overridden interface-level version. If the type of
+   --  the dispatching object is an access type then an explicit dereference
+   --  is returned in Object.
 
    procedure Extract_Entry
      (N       : Node_Id;
@@ -11511,6 +11513,14 @@ package body Exp_Ch9 is
 
       if Present (Original_Node (Object)) then
          Object := Original_Node (Object);
+      end if;
+
+      --  If the type of the dispatching object is an access type then return
+      --  an explicit dereference
+
+      if Is_Access_Type (Etype (Object)) then
+         Object := Make_Explicit_Dereference (Sloc (N), Object);
+         Analyze (Object);
       end if;
    end Extract_Dispatching_Call;
 

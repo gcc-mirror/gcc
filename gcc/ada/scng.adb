@@ -28,6 +28,8 @@ with Err_Vars; use Err_Vars;
 with Hostparm; use Hostparm;
 with Namet;    use Namet;
 with Opt;      use Opt;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Scans;    use Scans;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
@@ -1762,7 +1764,12 @@ package body Scng is
                   return;
                end if;
 
-               if Source (Start_Of_Comment) = '#' then
+               --  Generate a token Tok_SPARK_Hide for a SPARK HIDE directive
+               --  only if the SPARK restriction is set for this unit.
+
+               if Restriction_Check_Required (SPARK)
+                 and then Source (Start_Of_Comment) = '#'
+               then
                   declare
                      Scan_SPARK_Ptr : Source_Ptr;
 

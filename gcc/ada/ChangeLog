@@ -1,3 +1,35 @@
+2011-08-02  Vincent Celier  <celier@adacore.com>
+
+	* link.c: Only import "auto-host.h" when building the gnattools.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb: Inter-unit inlining does not work for a subprogram
+	which calls a local subprogram, so extract subprogram
+	from Mark_Non_ALFA_Subprogram_Body.
+
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch9.adb
+	(Extract_Dispatching_Call): If the type of the dispatching object is an
+	access type then return an explicit dereference in the Object out-mode
+	parameter.
+
+2011-08-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Generate range
+	compatibility checks for all indexes of an array subtype, not just the
+	first. Reset Has_Dynamic_Range_Check on the subtype before each
+	potential check to ensure that Insert_Range_Checks will not elide any
+	of the dynamic checks.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* par-prag.ad (Process_Restrictions_Or_Restriction_Warnings): recognize
+	SPARK restriction at parsing time.
+	* scng.adb (Scan): Generate a token Tok_SPARK_Hide for a SPARK HIDE
+	directive only if the SPARK restriction is set for this unit.
+
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch3.adb, sem_ch5.adb, sem_ch9.adb, sem_util.adb, sem_util.ads,

@@ -4396,9 +4396,9 @@ package body Sem_Ch3 is
          Conditional_Delay (Id, T);
       end if;
 
-      --  Check that constraint_error is raised for a scalar subtype
-      --  indication when the lower or upper bound of a non-null range
-      --  lies outside the range of the type mark.
+      --  Check that Constraint_Error is raised for a scalar subtype indication
+      --  when the lower or upper bound of a non-null range lies outside the
+      --  range of the type mark.
 
       if Nkind (Subtype_Indication (N)) = N_Subtype_Indication then
          if Is_Scalar_Type (Etype (Id))
@@ -4410,38 +4410,69 @@ package body Sem_Ch3 is
               (Scalar_Range (Id),
                Etype (Subtype_Mark (Subtype_Indication (N))));
 
+         --  In the array case, check compatibility for each index
+
          elsif Is_Array_Type (Etype (Id))
            and then Present (First_Index (Id))
          then
             --  This really should be a subprogram that finds the indications
             --  to check???
 
-            if ((Nkind (First_Index (Id)) = N_Identifier
-                   and then Ekind (Entity (First_Index (Id))) in Scalar_Kind)
-                 or else Nkind (First_Index (Id)) = N_Subtype_Indication)
-              and then
-                Nkind (Scalar_Range (Etype (First_Index (Id)))) = N_Range
-            then
-               declare
-                  Target_Typ : constant Entity_Id :=
-                                 Etype
-                                   (First_Index (Etype
-                                     (Subtype_Mark (Subtype_Indication (N)))));
-               begin
-                  R_Checks :=
-                    Get_Range_Checks
-                      (Scalar_Range (Etype (First_Index (Id))),
-                       Target_Typ,
-                       Etype (First_Index (Id)),
-                       Defining_Identifier (N));
+            declare
+               Subt_Index   : Node_Id := First_Index (Id);
+               Target_Index : Node_Id :=
+                                First_Index (Etype
+                                  (Subtype_Mark (Subtype_Indication (N))));
+               Has_Dyn_Chk  : Boolean := Has_Dynamic_Range_Check (N);
 
-                  Insert_Range_Checks
-                    (R_Checks,
-                     N,
-                     Target_Typ,
-                     Sloc (Defining_Identifier (N)));
-               end;
-            end if;
+            begin
+               while Present (Subt_Index) loop
+                  if ((Nkind (Subt_Index) = N_Identifier
+                         and then Ekind (Entity (Subt_Index)) in Scalar_Kind)
+                       or else Nkind (Subt_Index) = N_Subtype_Indication)
+                    and then
+                      Nkind (Scalar_Range (Etype (Subt_Index))) = N_Range
+                  then
+                     declare
+                        Target_Typ : constant Entity_Id :=
+                                       Etype (Target_Index);
+                     begin
+                        R_Checks :=
+                          Get_Range_Checks
+                            (Scalar_Range (Etype (Subt_Index)),
+                             Target_Typ,
+                             Etype (Subt_Index),
+                             Defining_Identifier (N));
+
+                        --  Reset Has_Dynamic_Range_Check on the subtype to
+                        --  prevent elision of the index check due to a dynamic
+                        --  check generated for a preceding index (needed since
+                        --  Insert_Range_Checks tries to avoid generating
+                        --  redundant checks on a given declaration).
+
+                        Set_Has_Dynamic_Range_Check (N, False);
+
+                        Insert_Range_Checks
+                          (R_Checks,
+                           N,
+                           Target_Typ,
+                           Sloc (Defining_Identifier (N)));
+
+                        --  Record whether this index involved a dynamic check
+
+                        Has_Dyn_Chk :=
+                          Has_Dyn_Chk or else Has_Dynamic_Range_Check (N);
+                     end;
+                  end if;
+
+                  Next_Index (Subt_Index);
+                  Next_Index (Target_Index);
+               end loop;
+
+               --  Finally, mark whether the subtype involves dynamic checks
+
+               Set_Has_Dynamic_Range_Check (N, Has_Dyn_Chk);
+            end;
          end if;
       end if;
 
