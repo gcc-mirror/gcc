@@ -1,3 +1,14 @@
+2011-08-02  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-array.c (gfc_array_allocate): Pass token to
+	  gfc_allocate_allocatable for -fcoarray=lib.
+	* trans-stmt.c (gfc_trans_allocate): Update
+	gfc_allocate_allocatable call.
+	* trans.h (gfc_allocate_allocatable): Update prototype.
+	(gfc_allocate_using_lib): Remove.
+	* trans.c (gfc_allocate_using_lib): Make static, handle token.
+	(gfc_allocate_allocatable): Ditto.
+
 2011-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/46752

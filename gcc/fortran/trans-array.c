@@ -4409,6 +4409,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   tree tmp;
   tree pointer;
   tree offset = NULL_TREE;
+  tree token = NULL_TREE;
   tree size;
   tree msg;
   tree error = NULL_TREE;
@@ -4521,9 +4522,13 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   pointer = gfc_conv_descriptor_data_get (se->expr);
   STRIP_NOPS (pointer);
 
+  if (coarray && gfc_option.coarray == GFC_FCOARRAY_LIB)
+    token = gfc_build_addr_expr (NULL_TREE,
+				 gfc_conv_descriptor_token (se->expr));
+
   /* The allocatable variant takes the old pointer as first argument.  */
   if (allocatable)
-    gfc_allocate_allocatable (&elseblock, pointer, size,
+    gfc_allocate_allocatable (&elseblock, pointer, size, token,
 			      status, errmsg, errlen, expr);
   else
     gfc_allocate_using_malloc (&elseblock, pointer, size, status);
