@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -424,6 +424,8 @@ package Sinfo is
    --       Raises_Constraint_Error  (Flag7-Sem)  evaluation raises CE
    --       Must_Not_Freeze          (Flag8-Sem)  set if must not freeze
    --       Do_Range_Check           (Flag9-Sem)  set if a range check needed
+   --       Has_Dynamic_Length_Check (Flag10-Sem) set if length check inserted
+   --       Has_Dynamic_Range_Check  (Flag12-Sem) set if range check inserted
    --       Assignment_OK            (Flag15-Sem) set if modification is OK
    --       Is_Controlling_Actual    (Flag16-Sem) set for controlling argument
 
@@ -484,18 +486,6 @@ package Sinfo is
    --    referring to the same node. This flag is set if an error message
    --    refers to a node or is posted on its source location, and has the
    --    effect of inhibiting further messages involving this same node.
-
-   --  Has_Dynamic_Length_Check (Flag10-Sem)
-   --    This flag is present on all nodes. It is set to indicate that one of
-   --    the routines in unit Checks has generated a length check action which
-   --    has been inserted at the flagged node. This is used to avoid the
-   --    generation of duplicate checks.
-
-   --  Has_Dynamic_Range_Check (Flag12-Sem)
-   --    This flag is present on all nodes. It is set to indicate that one of
-   --    the routines in unit Checks has generated a range check action which
-   --    has been inserted at the flagged node. This is used to avoid the
-   --    generation of duplicate checks.
 
    ------------------------------------
    -- Description of Semantic Fields --
@@ -1124,6 +1114,19 @@ package Sinfo is
    --    handler list, and is used to delete this entry if the corresponding
    --    handler is deleted during optimization. For further details on why
    --    this is required, see Exp_Ch11.Remove_Handler_Entries.
+
+   --  Has_Dynamic_Length_Check (Flag10-Sem)
+   --    This flag is present on all expression nodes. It is set to indicate
+   --    that one of the routines in unit Checks has generated a length check
+   --    action which has been inserted at the flagged node. This is used to
+   --    avoid the generation of duplicate checks.
+
+   --  Has_Dynamic_Range_Check (Flag12-Sem)
+   --    This flag is present in N_Subtype_Declaration nodes and on all
+   --    expression nodes. It is set to indicate that one of the routines in
+   --    unit Checks has generated a range check action which has been inserted
+   --    at the flagged node. This is used to avoid the generation of duplicate
+   --    checks.
 
    --  Has_Local_Raise (Flag8-Sem)
    --    Present in exception handler nodes. Set if the handler can be entered
@@ -2217,6 +2220,7 @@ package Sinfo is
       --  Subtype_Indication (Node5)
       --  Generic_Parent_Type (Node4-Sem) (set for an actual derived type).
       --  Exception_Junk (Flag8-Sem)
+      --  Has_Dynamic_Range_Check (Flag12-Sem)
 
       -------------------------------
       -- 3.2.2  Subtype Indication --

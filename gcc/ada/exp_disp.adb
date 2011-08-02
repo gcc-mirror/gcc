@@ -6627,7 +6627,7 @@ package body Exp_Disp is
                            --  Iface_Tag
 
                          Make_Attribute_Reference (Loc,
-                           Prefix => New_Reference_To (Iface, Loc),
+                           Prefix         => New_Reference_To (Iface, Loc),
                            Attribute_Name => Name_Tag),
 
                            --  OSD
@@ -6648,7 +6648,7 @@ package body Exp_Disp is
                      Make_Subtype_Indication (Loc,
                        Subtype_Mark =>
                          New_Reference_To (RTE (RE_Interface_Data), Loc),
-                       Constraint => Make_Index_Or_Discriminant_Constraint
+                       Constraint   => Make_Index_Or_Discriminant_Constraint
                          (Loc,
                           Constraints => New_List (
                             Make_Integer_Literal (Loc, Num_Ifaces)))),

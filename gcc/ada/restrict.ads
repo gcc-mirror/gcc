@@ -185,6 +185,10 @@ package Restrict is
    --  The table contains pairs of source locations, the first being the start
    --  location for hidden region, and the second being the end location.
 
+   --  Note that the start location is included in the hidden region, while
+   --  the end location is excluded from it. (It typically corresponds to the
+   --  next token during scanning.)
+
    type SPARK_Hide_Entry is record
       Start : Source_Ptr;
       Stop  : Source_Ptr;
@@ -310,8 +314,8 @@ package Restrict is
    function Get_Restriction_Id
      (N : Name_Id) return Restriction_Id;
    --  Given an identifier name, determines if it is a valid restriction
-   --  identifier, and if so returns the corresponding Restriction_Id
-   --  value, otherwise returns Not_A_Restriction_Id.
+   --  identifier, and if so returns the corresponding Restriction_Id value,
+   --  otherwise returns Not_A_Restriction_Id.
 
    function Is_In_Hidden_Part_In_SPARK (Loc : Source_Ptr) return Boolean;
    --  Determine if given location is covered by a hidden region range in the
@@ -358,9 +362,9 @@ package Restrict is
 
    function Restricted_Profile return Boolean;
    --  Tests if set of restrictions corresponding to Profile (Restricted) is
-   --  currently in effect (set by pragma Profile, or by an appropriate set
-   --  of individual Restrictions pragmas). Returns True only if all the
-   --  required restrictions are set.
+   --  currently in effect (set by pragma Profile, or by an appropriate set of
+   --  individual Restrictions pragmas). Returns True only if all the required
+   --  restrictions are set.
 
    procedure Set_Hidden_Part_In_SPARK (Loc1, Loc2 : Source_Ptr);
    --  Insert a new hidden region range in the SPARK hides table
@@ -394,8 +398,8 @@ package Restrict is
      (Unit    : Node_Id;
       Warn    : Boolean;
       Profile : Profile_Name := No_Profile);
-   --  Sets given No_Dependence restriction in table if not there already.
-   --  Warn is True if from Restriction_Warnings, or for Restrictions if flag
+   --  Sets given No_Dependence restriction in table if not there already. Warn
+   --  is True if from Restriction_Warnings, or for Restrictions if the flag
    --  Treat_Restrictions_As_Warnings is set. False if from Restrictions and
    --  this flag is not set. Profile is set to a non-default value if the
    --  No_Dependence restriction comes from a Profile pragma.

@@ -8459,15 +8459,15 @@ package body Exp_Ch3 is
          --  they may be ancestors of synchronized interface types).
 
          elsif (not Is_Interface (Tag_Typ)
-                  and then Is_Interface (Etype (Tag_Typ))
-                  and then Is_Limited_Record (Etype (Tag_Typ)))
+                 and then Is_Interface (Etype (Tag_Typ))
+                 and then Is_Limited_Record (Etype (Tag_Typ)))
              or else
                (Is_Concurrent_Record_Type (Tag_Typ)
-                  and then Has_Interfaces (Tag_Typ))
+                 and then Has_Interfaces (Tag_Typ))
              or else
                (not Tagged_Type_Expansion
-                  and then not Is_Interface (Tag_Typ)
-                  and then Tag_Typ = Root_Type (Tag_Typ))
+                 and then not Is_Interface (Tag_Typ)
+                 and then Tag_Typ = Root_Type (Tag_Typ))
          then
             Append_To (Res,
               Make_Subprogram_Declaration (Loc,
@@ -8944,10 +8944,10 @@ package body Exp_Ch3 is
         and then not Is_Interface (Tag_Typ)
         and then
           ((Is_Interface (Etype (Tag_Typ))
-              and then Is_Limited_Record (Etype (Tag_Typ)))
+             and then Is_Limited_Record (Etype (Tag_Typ)))
            or else
              (Is_Concurrent_Record_Type (Tag_Typ)
-                and then Has_Interfaces (Tag_Typ))
+               and then Has_Interfaces (Tag_Typ))
            or else
              (not Tagged_Type_Expansion
                and then Tag_Typ = Root_Type (Tag_Typ)))
