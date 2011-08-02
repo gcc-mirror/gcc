@@ -3709,10 +3709,15 @@ package Einfo is
 --       elaboration, and it is set on variables when a warning is given to
 --       avoid multiple elaboration warnings for the same variable.
 
---    Suppress_Init_Proc (Flag105) [base type only]
---       Present in all type entities. Set to suppress the generation of
---       initialization procedures where they are known to be not needed.
---       For example, the enumeration image table entity uses this flag.
+--    Suppress_Initialization (Flag105)
+--       Present in all type and subtype entities. If set for the base type,
+--       then the generation of initialization procedures is suppressed for the
+--       type. Any other implicit initialiation (e.g. from the use of pragma
+--       Initialize_Scalars) is also suppressed if this flag is set either for
+--       the subtype in question, or for the base type. Set by use of pragma
+--       Suppress_Initialization and also for internal entities where we know
+--       that no initialization is required. For example, enumeration image
+--       table entities set it.
 
 --    Suppress_Style_Checks (Flag165)
 --       Present in all entities. Suppresses any style checks specifically
@@ -4849,7 +4854,7 @@ package Einfo is
    --    Size_Depends_On_Discriminant        (Flag177)
    --    Size_Known_At_Compile_Time          (Flag92)
    --    Strict_Alignment                    (Flag145)  (base type only)
-   --    Suppress_Init_Proc                  (Flag105)  (base type only)
+   --    Suppress_Initialization             (Flag105)
    --    Treat_As_Volatile                   (Flag41)
    --    Universal_Aliasing                  (Flag216)  (base type only)
 
@@ -6280,7 +6285,7 @@ package Einfo is
    function String_Literal_Low_Bound            (Id : E) return N;
    function Subprograms_For_Type                (Id : E) return E;
    function Suppress_Elaboration_Warnings       (Id : E) return B;
-   function Suppress_Init_Proc                  (Id : E) return B;
+   function Suppress_Initialization             (Id : E) return B;
    function Suppress_Style_Checks               (Id : E) return B;
    function Suppress_Value_Tracking_On_Call     (Id : E) return B;
    function Task_Body_Procedure                 (Id : E) return N;
@@ -6869,7 +6874,7 @@ package Einfo is
    procedure Set_String_Literal_Low_Bound        (Id : E; V : N);
    procedure Set_Subprograms_For_Type            (Id : E; V : E);
    procedure Set_Suppress_Elaboration_Warnings   (Id : E; V : B := True);
-   procedure Set_Suppress_Init_Proc              (Id : E; V : B := True);
+   procedure Set_Suppress_Initialization         (Id : E; V : B := True);
    procedure Set_Suppress_Style_Checks           (Id : E; V : B := True);
    procedure Set_Suppress_Value_Tracking_On_Call (Id : E; V : B := True);
    procedure Set_Task_Body_Procedure             (Id : E; V : N);
@@ -7603,7 +7608,7 @@ package Einfo is
    pragma Inline (String_Literal_Low_Bound);
    pragma Inline (Subprograms_For_Type);
    pragma Inline (Suppress_Elaboration_Warnings);
-   pragma Inline (Suppress_Init_Proc);
+   pragma Inline (Suppress_Initialization);
    pragma Inline (Suppress_Style_Checks);
    pragma Inline (Suppress_Value_Tracking_On_Call);
    pragma Inline (Task_Body_Procedure);
@@ -7998,7 +8003,7 @@ package Einfo is
    pragma Inline (Set_String_Literal_Low_Bound);
    pragma Inline (Set_Subprograms_For_Type);
    pragma Inline (Set_Suppress_Elaboration_Warnings);
-   pragma Inline (Set_Suppress_Init_Proc);
+   pragma Inline (Set_Suppress_Initialization);
    pragma Inline (Set_Suppress_Style_Checks);
    pragma Inline (Set_Suppress_Value_Tracking_On_Call);
    pragma Inline (Set_Task_Body_Procedure);

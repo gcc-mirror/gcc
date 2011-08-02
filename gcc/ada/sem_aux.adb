@@ -403,6 +403,16 @@ package body Sem_Aux is
       return Empty;
    end First_Tag_Component;
 
+   -------------------------------
+   -- Initialization_Suppressed --
+   -------------------------------
+
+   function Initialization_Suppressed (Typ : Entity_Id) return Boolean is
+   begin
+      return Suppress_Initialization (Typ)
+        or else Suppress_Initialization (Base_Type (Typ));
+   end Initialization_Suppressed;
+
    ----------------
    -- Initialize --
    ----------------

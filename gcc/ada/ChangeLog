@@ -1,5 +1,16 @@
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.ads, einfo.adb (Suppress_Initialization): Replaces
+	Suppress_Init_Procs.
+	* exp_ch3.adb, exp_disp.adb, freeze.adb: Use
+	Suppress_Initialization/Initialization_Suppressed.
+	* gnat_rm.texi: New documentation for pragma Suppress_Initialization
+	* sem_aux.ads, sem_aux.adb (Initialization_Suppressed): New function
+	* sem_dist.adb: Use Suppress_Initialization/Initialization_Suppressed
+	* sem_prag.adb: New processing for pragma Suppress_Initialization.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi, a-tags.ads, sem_prag.adb, sem_ch12.adb, exp_disp.adb:
 	Minor reformatting.
 

@@ -6728,7 +6728,7 @@ package body Exp_Disp is
             --  to simplify the expansion associated with dispatching calls.
 
             Analyze_List (Result);
-            Set_Suppress_Init_Proc (Base_Type (DT_Prims));
+            Set_Suppress_Initialization (Base_Type (DT_Prims));
 
             --  Disable backend optimizations based on assumptions about the
             --  aliasing status of objects designated by the access to the

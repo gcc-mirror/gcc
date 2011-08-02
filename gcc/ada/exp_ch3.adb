@@ -674,7 +674,7 @@ package body Exp_Ch3 is
       --    3. The type has CIL/JVM convention.
       --    4. An initialization already exists for the base type
 
-      if Suppress_Init_Proc (A_Type)
+      if Initialization_Suppressed (A_Type)
         or else Is_Value_Type (Comp_Type)
         or else Convention (A_Type) = Convention_CIL
         or else Convention (A_Type) = Convention_Java
@@ -3216,7 +3216,7 @@ package body Exp_Ch3 is
       begin
          --  Definitely do not need one if specifically suppressed
 
-         if Suppress_Init_Proc (Rec_Id) then
+         if Initialization_Suppressed (Rec_Id) then
             return False;
          end if;
 
@@ -4682,12 +4682,9 @@ package body Exp_Ch3 is
 
             and then not Is_Value_Type (Typ)
 
-            --  Suppress call if Suppress_Init_Proc set on the type. This is
-            --  needed for the derived type case, where Suppress_Initialization
-            --  may be set for the derived type, even if there is an init proc
-            --  defined for the root type.
+            --  Suppress call if initialization suppressed for the type
 
-            and then not Suppress_Init_Proc (Typ)
+            and then not Initialization_Suppressed (Typ)
          then
             --  Return without initializing when No_Default_Initialization
             --  applies. Note that the actual restriction check occurs later,
@@ -8536,6 +8533,12 @@ package body Exp_Ch3 is
                            or (Initialize_Scalars and Consider_IS);
 
    begin
+      --  Never need initialization if it is suppressed
+
+      if Initialization_Suppressed (T) then
+         return False;
+      end if;
+
       --  Check for private type, in which case test applies to the underlying
       --  type of the private type.
 
