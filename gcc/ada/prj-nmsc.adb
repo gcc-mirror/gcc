@@ -3724,10 +3724,11 @@ package body Prj.Nmsc is
 
                   else
                      --  For a virtual project extending a library project,
-                     --  inherit library directory.
+                     --  inherit library directory and library kind.
 
                      Project.Library_Dir := Project.Extends.Library_Dir;
                      Library_Directory_Present := True;
+                     Project.Library_Kind := Project.Extends.Library_Kind;
                   end if;
                end if;
             end if;
