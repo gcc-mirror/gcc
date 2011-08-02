@@ -18,3 +18,5 @@
          END DO
       ENDDO
       END
+
+! { dg-final { cleanup-modules "les3d_data" } }

@@ -27,4 +27,4 @@ contains
  end subroutine foo
 end module m
 
-
+! { dg-final { cleanup-modules "m" } }

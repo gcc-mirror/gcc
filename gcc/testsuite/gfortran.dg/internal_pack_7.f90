@@ -30,6 +30,6 @@ CONTAINS
      s2=0
   END FUNCTION S2
 END MODULE M1
-! { dg-final { cleanup-modules "M1" } }
+! { dg-final { cleanup-modules "m1" } }
 ! { dg-final { scan-tree-dump-times "pack" 0 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

@@ -56,4 +56,4 @@ contains
    end subroutine
 end
 
-! { dg-final { cleanup-modules "BAR_MODULE FOO_MODULE" } }
+! { dg-final { cleanup-modules "bar_module foo_module" } }

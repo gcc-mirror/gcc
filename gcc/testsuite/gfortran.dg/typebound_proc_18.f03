@@ -26,4 +26,4 @@ contains
 
 end module Merger_Trees
 
-! { dg-final { cleanup-modules "Merger_Trees" } }
+! { dg-final { cleanup-modules "merger_trees" } }

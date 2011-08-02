@@ -46,4 +46,4 @@ program TestProgram
   Table%RealData = 1
   Table%RealData(:,1) = Table%RealData(:,1) * CENTIMETER
 end program TestProgram
-! { dg-final { cleanup-modules "UnitValue_Module" } }
+! { dg-final { cleanup-modules "unitvalue_module" } }

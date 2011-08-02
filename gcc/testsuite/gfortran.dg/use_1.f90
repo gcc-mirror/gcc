@@ -6,4 +6,4 @@
       subroutine bar1
       usefoo
       end
-      ! { dg-final { cleanup-modules "iso_fortran_env" } }
+      ! { dg-final { cleanup-modules "foo" } }

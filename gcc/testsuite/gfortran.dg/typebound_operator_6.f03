@@ -70,4 +70,4 @@ PROGRAM TEST
   if (.NOT. NDA .LT. NDB) call abort()
 END
 
-! { dg-final { cleanup-modules "DAT_MOD NODE_MOD" } }
+! { dg-final { cleanup-modules "dat_mod node_mod" } }

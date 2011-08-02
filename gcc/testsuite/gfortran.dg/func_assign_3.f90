@@ -29,4 +29,4 @@ program bugTest
   testCatch = testObj%test(2,2)  ! This would cause an ICE
   if (any (testCatch .ne. dble (reshape ([(i, i = 1, 4)],[2,2])))) call abort
 end program bugTest
-! { dg-final { cleanup-modules "bugTestMod" } }
+! { dg-final { cleanup-modules "bugtestmod" } }

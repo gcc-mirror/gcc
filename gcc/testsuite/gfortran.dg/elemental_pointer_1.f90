@@ -10,4 +10,4 @@ CONTAINS
   END FUNCTION LL
 END MODULE Test
 
-! { dg-final { cleanup-modules "Test" } }
+! { dg-final { cleanup-modules "test" } }

@@ -29,4 +29,4 @@ contains
     ! mangled to __m2_mod_m2_MOD_m3
   end subroutine m3
 end module m2_MOD_m2
-! { dg-final { cleanup-modules "m1 m1__m2 m2 m2_MOD_m2" } }
+! { dg-final { cleanup-modules "m1 m1__m2 m2 m2_mod_m2" } }

@@ -42,4 +42,4 @@ END
 
 SUBROUTINE F()
 END SUBROUTINE
-! { dg-final { cleanup-modules "TEST TEST2" } }
+! { dg-final { cleanup-modules "test test2" } }

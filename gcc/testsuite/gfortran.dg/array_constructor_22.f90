@@ -25,3 +25,4 @@ program len_test
 
    write(*,*) my_string(x) 
 end program len_test
+! { dg-final { cleanup-modules "test" } }

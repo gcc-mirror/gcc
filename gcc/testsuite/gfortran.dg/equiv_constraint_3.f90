@@ -10,4 +10,4 @@ INTEGER :: L
 EQUIVALENCE(K,L) ! { dg-error "conflicts with USE ASSOCIATED attribute" }
 END
 
-! { dg-final { cleanup-modules "TEST" } }
+! { dg-final { cleanup-modules "test" } }

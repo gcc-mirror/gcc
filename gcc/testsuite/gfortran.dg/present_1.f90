@@ -17,4 +17,4 @@
   END SUBROUTINE S1
  END MODULE
  END
-! { dg-final { cleanup-modules "M1" } }
+! { dg-final { cleanup-modules "m1" } }

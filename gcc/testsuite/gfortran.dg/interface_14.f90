@@ -70,4 +70,4 @@
       call new (b)
       end
 
-! { dg-final { cleanup-modules "P_class S_Class T_Class D_Class poly_Class" } }
+! { dg-final { cleanup-modules "p_class s_class t_class d_class poly_class" } }

@@ -39,4 +39,4 @@ contains
 
 end module ThermoData
 
-! { dg-final { cleanup-modules "ModelParams ThermoData" } }
+! { dg-final { cleanup-modules "modelparams thermodata" } }

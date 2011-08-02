@@ -27,3 +27,5 @@ operator(.my.)=>operator(.op.),operator(.ops.)=>operator(.op.)
 implicit none
 if (.my.2 /= -2 .or. .op.3 /= -3 .or. .ops.7 /= -7) call abort()
 end
+
+! { dg-final { cleanup-modules "a" } }

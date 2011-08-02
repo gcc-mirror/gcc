@@ -27,3 +27,5 @@
       CALL S1(x)
       write(6,*) x%r
       END
+
+! { dg-final { cleanup-modules "m1 m2" } }

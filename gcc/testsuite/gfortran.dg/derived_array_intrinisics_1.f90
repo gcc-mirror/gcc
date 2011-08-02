@@ -29,3 +29,4 @@
   end
 ! { dg-final { scan-tree-dump-times "j = 50" 1 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
+! { dg-final { cleanup-modules "m" } }

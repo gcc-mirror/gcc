@@ -34,4 +34,4 @@
     CALL TEST(x)         ! { dg-error "Type mismatch in argument" }
   END
 
-! { dg-final { cleanup-modules "T1 T2" } }
+! { dg-final { cleanup-modules "t1 t2" } }

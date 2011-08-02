@@ -31,3 +31,5 @@ call bb(w(2:4))
 call bb(w((/3,2,1/))) ! { dg-error "vector subscript" }
 write(*,*)w
 end
+
+! { dg-final { cleanup-modules "mod" } }

@@ -33,4 +33,4 @@
           UDS0L = SEQ(RESHAPE ( (/ ((CA_T(J1,J2), J1 = 1, 1), J2 = 1, 2)/),(/2/)))
         END SUBROUTINE
       END
-! { dg-final { cleanup-modules "o_TYPE_DEFS TESTS" } }
+! { dg-final { cleanup-modules "o_type_defs tests" } }

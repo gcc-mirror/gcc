@@ -26,4 +26,4 @@ end subroutine nudata
   call nudata (nlibe_, a_, l_)
 end
 
-! { dg-final { cleanup-modules "data_C" } }
+! { dg-final { cleanup-modules "data_c" } }

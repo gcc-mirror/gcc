@@ -105,4 +105,4 @@ END
   call other
   call dominique
 end
-! { dg-final { cleanup-modules "demo M1" } }
+! { dg-final { cleanup-modules "demo m1" } }

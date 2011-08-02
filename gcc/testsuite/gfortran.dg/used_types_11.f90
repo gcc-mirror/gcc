@@ -35,4 +35,4 @@ end subroutine bar
   x => foo ()
   print *, associated (x)
 end
-! { dg-final { cleanup-modules "A B" } }
+! { dg-final { cleanup-modules "a b" } }

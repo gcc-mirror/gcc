@@ -81,7 +81,7 @@ end program main
 !      void * restrict caf_token.4, integer(kind=8) caf_offset.5,
 !      void * restrict caf_token.6, integer(kind=8) caf_offset.7)
 !
-! { dg-final { scan-tree-dump-times "sub \\(integer.kind=4. . restrict x1, integer.kind=4. . restrict x2, void . restrict caf_token.\[0-9\]+, integer.kind=.. caf_offset.\[0-9\]+, void . restrict caf_token.\[0-9\]+, integer.kind=.. caf_offset.\[0-9\]+\\)" 1 "original"} }
+! { dg-final { scan-tree-dump-times "sub \\(integer.kind=4. . restrict x1, integer.kind=4. . restrict x2, void . restrict caf_token.\[0-9\]+, integer.kind=.. caf_offset.\[0-9\]+, void . restrict caf_token.\[0-9\]+, integer.kind=.. caf_offset.\[0-9\]+\\)" 1 "original" } }
 !
 ! PROTOTYPE 2:
 !
@@ -89,27 +89,28 @@ end program main
 !       void * restrict caf_token.0, integer(kind=8) caf_offset.1,
 !       void * restrict caf_token.2, integer(kind=8) caf_offset.3)
 !
-! { dg-final { scan-tree-dump-times "sub2 \\(integer.kind=4. . restrict y1, integer.kind=4. . restrict y2, void . restrict caf_token.\[0-9\]+, integer.kind=.. caf_offset.\[0-9\]+, void . restrict caf_token.\[0-9\]+, integer.kind=.. caf_offset.\[0-9\]+\\)" 1 "original"} }
+! { dg-final { scan-tree-dump-times "sub2 \\(integer.kind=4. . restrict y1, integer.kind=4. . restrict y2, void . restrict caf_token.\[0-9\]+, integer.kind=.. caf_offset.\[0-9\]+, void . restrict caf_token.\[0-9\]+, integer.kind=.. caf_offset.\[0-9\]+\\)" 1 "original" } }
 !
 ! CALL 1
 !
 !  sub ((integer(kind=4) *) caf.data, &((struct t * restrict) caf_dt.data)->b,
 !       caf.token, 0, caf_dt.token, 4);
 !
-! { dg-final { scan-tree-dump-times "sub \\(\[^,\]*caf.data, &\[^,\]*caf_dt.data.->b, caf.token, 0, caf_dt.token, 4\\)" 1 "original"} }
+! { dg-final { scan-tree-dump-times "sub \\(\[^,\]*caf.data, &\[^,\]*caf_dt.data.->b, caf.token, 0, caf_dt.token, 4\\)" 1 "original" } }
 !
 !  sub2 ((integer(kind=4) *) x1, (integer(kind=4) *) x2,
 !        caf_token.4, NON_LVALUE_EXPR <caf_offset.5>,
 !        caf_token.6, NON_LVALUE_EXPR <caf_offset.7>);
 !
-! { dg-final { scan-tree-dump-times "sub2 \\(\[^,\]*x1, \[^,\]*x2, caf_token.\[0-9]+, \[^,\]*caf_offset\[^,\]*, caf_token.\[0-9\]+, \[^,\]*caf_offset\[^,\]*\\)" 1 "original"} }
+! { dg-final { scan-tree-dump-times "sub2 \\(\[^,\]*x1, \[^,\]*x2, caf_token.\[0-9]+, \[^,\]*caf_offset\[^,\]*, caf_token.\[0-9\]+, \[^,\]*caf_offset\[^,\]*\\)" 1 "original" } }
 !
 ! CALL 3
 !
-! { dg-final { scan-tree-dump-times "sub_opt \\(0B, 0B, 0\\)" 1 "original"} }
+! { dg-final { scan-tree-dump-times "sub_opt \\(0B, 0B, 0\\)" 1 "original" } }
 !
 ! CALL 4
 !
-! { dg-final { scan-tree-dump-times "sub_opt \\(.integer.kind=4. .. caf.data, caf.token, 0\\)" 1 "original"} }
+! { dg-final { scan-tree-dump-times "sub_opt \\(.integer.kind=4. .. caf.data, caf.token, 0\\)" 1 "original" } }
 !
 ! { dg-final { cleanup-tree-dump "original" } }
+! { dg-final { cleanup-modules "matrix_data" } }
