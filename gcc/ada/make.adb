@@ -3826,14 +3826,7 @@ package body Make is
                     Get_Name_String (Project.Directory.Display_Name);
 
                begin
-                  if Parent_Directory (Parent_Directory'Last) =
-                                                 Directory_Separator
-                  then
-                     return Parent_Directory & Path_Name;
-
-                  else
-                     return Parent_Directory & Directory_Separator & Path_Name;
-                  end if;
+                  return Parent_Directory & Path_Name;
                end;
             end if;
          end;
@@ -5203,13 +5196,6 @@ package body Make is
                   if not Is_Absolute_Path (Exec_File_Name) then
                      Get_Name_String
                        (Main_Project.Exec_Directory.Display_Name);
-
-                     if not
-                       Is_Directory_Separator (Name_Buffer (Name_Len))
-                     then
-                        Add_Char_To_Name_Buffer (Directory_Separator);
-                     end if;
-
                      Add_Str_To_Name_Buffer (Exec_File_Name);
                      Saved_Linker_Switches.Table (J + 1) :=
                        new String'(Name_Buffer (1 .. Name_Len));
@@ -5458,11 +5444,6 @@ package body Make is
             begin
                if not Is_Absolute_Path (Exec_File_Name) then
                   Get_Name_String (Main_Project.Exec_Directory.Display_Name);
-
-                  if Name_Buffer (Name_Len) /= Directory_Separator then
-                     Add_Char_To_Name_Buffer (Directory_Separator);
-                  end if;
-
                   Add_Str_To_Name_Buffer (Exec_File_Name);
                   Executable := Name_Find;
                end if;
@@ -6074,7 +6055,6 @@ package body Make is
                                (Get_Name_String
                                  (Library_Projs.Table
                                    (Index).Library_Dir.Display_Name) &
-                                Directory_Separator &
                                 "lib" &
                                 Get_Name_String
                                   (Library_Projs.Table (Index). Library_Name) &

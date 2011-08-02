@@ -1932,13 +1932,6 @@ package body Exp_Pakd is
       Arg   : Node_Id;
 
    begin
-      --  Disable this routine in CodePeer mode since the expansion of packed
-      --  arrays confuses the gnat2scil back end.
-
-      if CodePeer_Mode then
-         return;
-      end if;
-
       --  If not bit packed, we have the enumeration case, which is easily
       --  dealt with (just adjust the subscripts of the indexed component)
 

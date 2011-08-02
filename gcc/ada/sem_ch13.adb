@@ -7002,7 +7002,7 @@ package body Sem_Ch13 is
         and then No (Underlying_Type (T))
         and then
           (Nkind (N) /= N_Pragma
-             or else Get_Pragma_Id (N) /= Pragma_Import)
+            or else Get_Pragma_Id (N) /= Pragma_Import)
       then
          Error_Msg_N
            ("representation item must be after full type declaration", N);

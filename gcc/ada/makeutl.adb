@@ -417,12 +417,6 @@ package body Makeutl is
                           (ALI_Project.Object_Directory.Display_Name);
                      end if;
 
-                     if not
-                       Is_Directory_Separator (Name_Buffer (Name_Len))
-                     then
-                        Add_Char_To_Name_Buffer (Directory_Separator);
-                     end if;
-
                      Add_Str_To_Name_Buffer (ALI);
                      Add_Char_To_Name_Buffer (ASCII.LF);
 

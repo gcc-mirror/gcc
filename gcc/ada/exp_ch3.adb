@@ -4481,7 +4481,8 @@ package body Exp_Ch3 is
    --  table and the initialization procedure have to be deferred to this
    --  point, since we reference previously declared primitive subprograms.
 
-   --  For all types, we call an initialization procedure if there is one
+   --  The above comment is in the wrong place, it should be at the proper
+   --  point in this routine ???
 
    procedure Expand_N_Object_Declaration (N : Node_Id) is
       Def_Id   : constant Entity_Id  := Defining_Identifier (N);
@@ -4998,6 +4999,8 @@ package body Exp_Ch3 is
 
             return;
 
+         --  Comment needed here, what case is this???
+
          else
             --  In most cases, we must check that the initial value meets any
             --  constraint imposed by the declared type. However, there is one
@@ -5299,6 +5302,8 @@ package body Exp_Ch3 is
    ------------------------------
    -- Expand_Record_Controller --
    ------------------------------
+
+   --  Need some more comments in this body ???
 
    procedure Expand_Record_Controller (T : Entity_Id) is
       Def             : Node_Id := Type_Definition (Parent (T));
