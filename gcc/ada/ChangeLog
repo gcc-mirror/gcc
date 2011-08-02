@@ -1,3 +1,54 @@
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): under restriction
+	No_Dispatching_Calls, do not look for the Assign primitive, because
+	predefined primitives are not created in this case.
+
+2011-08-02  Bob Duff  <duff@adacore.com>
+
+	* stylesw.ads: Minor comment fixes.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Add_To_Result): New procedure.
+
+2011-08-02  Jose Ruiz  <ruiz@adacore.com>
+
+	* exp_attr.adb (Find_Stream_Subprogram): When using a configurable run
+	time, if the specific run-time routines for handling streams of strings
+	are not available, use the default mechanism.
+
+2011-08-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-regpat.ads: Fix typo.
+
+2011-08-02  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Get_Or_Create_Configuration_File): If On_Load_Config is
+	not null, call it to create the in memory config project file without
+	parsing an existing default config project file.
+
+2011-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* atree.adb (Allocate_Initialize_Node): Remove useless temporaries.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elim.adb: an abstract subprogram does not need an eliminate
+	pragma for its descendant to be eliminable.
+
+2011-08-02  Ed Falis  <falis@adacore.com>
+
+	* init.c: revert to handling before previous checkin for VxWorks
+	* s-intman-vxworks.adb: delete unnecessary declarations related to
+	using Ada interrupt facilities for handling signals.
+	Delete Initialize_Interrupts. Use __gnat_install_handler instead.
+	* s-intman-vxworks.ads: Import __gnat_install_handler as
+	Initialize_Interrupts.
+	* s-taprop-vxworks.adb: Delete Signal_Mask.
+	(Abort_Handler): change construction of mask to unblock exception
+	signals.
+
 2011-08-02  Jerome Guitton  <guitton@adacore.com>
 
 	* a-except-2005.adb (Raise_From_Signal_Handler): Call

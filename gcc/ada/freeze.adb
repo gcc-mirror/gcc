@@ -1502,13 +1502,18 @@ package body Freeze is
       Test_E : Entity_Id := E;
       Comp   : Entity_Id;
       F_Node : Node_Id;
-      Result : List_Id;
       Indx   : Node_Id;
       Formal : Entity_Id;
       Atype  : Entity_Id;
 
+      Result : List_Id := No_List;
+      --  List of freezing actions, left at No_List if none
+
       Has_Default_Initialization : Boolean := False;
       --  This flag gets set to true for a variable with default initialization
+
+      procedure Add_To_Result (N : Node_Id);
+      --  N is a freezing action to be appended to the Result
 
       procedure Check_Current_Instance (Comp_Decl : Node_Id);
       --  Check that an Access or Unchecked_Access attribute with a prefix
@@ -1527,6 +1532,19 @@ package body Freeze is
       procedure Freeze_Record_Type (Rec : Entity_Id);
       --  Freeze each component, handle some representation clauses, and freeze
       --  primitive operations if this is a tagged type.
+
+      -------------------
+      -- Add_To_Result --
+      -------------------
+
+      procedure Add_To_Result (N : Node_Id) is
+      begin
+         if No (Result) then
+            Result := New_List (N);
+         else
+            Append (N, Result);
+         end if;
+      end Add_To_Result;
 
       ----------------------------
       -- After_Last_Declaration --
@@ -1769,12 +1787,7 @@ package body Freeze is
                then
                   IR := Make_Itype_Reference (Sloc (Comp));
                   Set_Itype (IR, Desig);
-
-                  if No (Result) then
-                     Result := New_List (IR);
-                  else
-                     Append (IR, Result);
-                  end if;
+                  Add_To_Result (IR);
                end if;
 
             elsif Ekind (Typ) = E_Anonymous_Access_Subprogram_Type
@@ -2421,7 +2434,6 @@ package body Freeze is
 
       --  Here to freeze the entity
 
-      Result := No_List;
       Set_Is_Frozen (E);
 
       --  Case of entity being frozen is other than a type
@@ -3602,11 +3614,7 @@ package body Freeze is
 
                begin
                   Set_Itype (Ref, E);
-                  if No (Result) then
-                     Result := New_List (Ref);
-                  else
-                     Append (Ref, Result);
-                  end if;
+                  Add_To_Result (Ref);
                end;
             end if;
 
@@ -4052,12 +4060,7 @@ package body Freeze is
          end if;
 
          Set_Entity (F_Node, E);
-
-         if Result = No_List then
-            Result := New_List (F_Node);
-         else
-            Append (F_Node, Result);
-         end if;
+         Add_To_Result (F_Node);
 
          --  A final pass over record types with discriminants. If the type
          --  has an incomplete declaration, there may be constrained access
@@ -4134,6 +4137,8 @@ package body Freeze is
          --  If no address clause and not intrinsic, then for imported
          --  subprogram in main unit, generate descriptor if we are in
          --  Propagate_Exceptions mode.
+
+         --  This is very odd code, it makes a null result, why ???
 
          elsif Propagate_Exceptions
            and then Is_Imported (E)

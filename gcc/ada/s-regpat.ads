@@ -349,7 +349,7 @@ package System.Regpat is
    --                                                 12      3
    --     Matches (0) is for "a((b*)c+)(d+)" (the entire expression)
    --     Matches (1) is for "(b*)c+"
-   --     Matches (2) is for "c+"
+   --     Matches (2) is for "b*"
    --     Matches (3) is for "d+"
    --
    --  The number of parenthesis groups that can be retrieved is limited only
