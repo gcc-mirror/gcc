@@ -3865,7 +3865,8 @@ package body Sem_Prag is
 
       procedure Process_Import_Predefined_Type is
          Loc  : constant Source_Ptr := Sloc (N);
-         Ftyp : Node_Id := First (Predefined_Float_Types);
+         Elmt : Elmt_Id := First_Elmt (Predefined_Float_Types);
+         Ftyp : Node_Id := Empty;
          Decl : Node_Id;
          Def  : Node_Id;
          Nam  : Name_Id;
@@ -3873,9 +3874,11 @@ package body Sem_Prag is
          String_To_Name_Buffer (Strval (Expression (Arg3)));
          Nam := Name_Find;
 
-         while Present (Ftyp) and then Chars (Ftyp) /= Nam loop
-            Next (Ftyp);
+         while Present (Elmt) and then Chars (Node (Elmt)) /= Nam loop
+            Next_Elmt (Elmt);
          end loop;
+
+         Ftyp := Node (Elmt);
 
          if Present (Ftyp) then
             --  Don't build a derived type declaration, because predefined C

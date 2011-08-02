@@ -28,6 +28,7 @@ with Back_End; use Back_End;
 with Csets;    use Csets;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Layout;   use Layout;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -52,7 +53,7 @@ package body CStand is
    Staloc : constant Source_Ptr := Standard_ASCII_Location;
    --  Standard abbreviations used throughout this package
 
-   Back_End_Float_Types : List_Id := No_List;
+   Back_End_Float_Types : Elist_Id := No_Elist;
    --  List used for any floating point supported by the back end. This needs
    --  to be at the library level, because the call back procedures retrieving
    --  this information are at that level.
@@ -200,14 +201,15 @@ package body CStand is
    ------------------------
 
    function Find_Back_End_Float_Type (Name : String) return Entity_Id is
-      N    : Node_Id := First (Back_End_Float_Types);
+      N : Elmt_Id := First_Elmt (Back_End_Float_Types);
 
    begin
-      while Present (N) and then Get_Name_String (Chars (N)) /= Name loop
-         Next (N);
+      while Present (N) and then Get_Name_String (Chars (Node (N))) /= Name
+      loop
+         Next_Elmt (N);
       end loop;
 
-      return Entity_Id (N);
+      return Node (N);
    end Find_Back_End_Float_Type;
 
    -------------------------------
@@ -427,7 +429,7 @@ package body CStand is
 
       procedure Create_Back_End_Float_Types is
       begin
-         Back_End_Float_Types := No_List;
+         Back_End_Float_Types := No_Elist;
          Register_Back_End_Types (Register_Float_Type'Access);
       end Create_Back_End_Float_Types;
 
@@ -447,8 +449,10 @@ package body CStand is
          Copy_Float_Type (Standard_Long_Float,
            Find_Back_End_Float_Type ("double"));
 
-         Predefined_Float_Types := New_List
-           (Standard_Short_Float, Standard_Float, Standard_Long_Float);
+         Predefined_Float_Types := New_Elmt_List;
+         Append_Elmt (Standard_Short_Float, Predefined_Float_Types);
+         Append_Elmt (Standard_Float, Predefined_Float_Types);
+         Append_Elmt (Standard_Long_Float, Predefined_Float_Types);
 
          --  ??? For now, we don't have a good way to tell the widest float
          --  type with hardware support. Basically, GCC knows the size of that
@@ -464,21 +468,23 @@ package body CStand is
             LF_Digs     : constant Pos :=
                             UI_To_Int (Digits_Value (Standard_Long_Float));
             LLF : Entity_Id := Find_Back_End_Float_Type ("long double");
-            N   : Node_Id := First (Back_End_Float_Types);
+            E   : Elmt_Id := First_Elmt (Back_End_Float_Types);
+            N   : Node_Id;
 
          begin
             if Present (LLF) and then Digits_Value (LLF) > Max_HW_Digs then
                LLF := Empty;
             end if;
 
-            while No (LLF) and then Present (N) loop
+            while No (LLF) and then Present (E) loop
+               N := Node (E);
                if UI_To_Int (Digits_Value (N)) in LF_Digs + 1 .. Max_HW_Digs
                  and then Machine_Radix_Value (N) = Uint_2
                then
                   LLF := N;
                end if;
 
-               Next (N);
+               Next_Elmt (E);
             end loop;
 
             if No (LLF) then
@@ -487,10 +493,22 @@ package body CStand is
 
             Copy_Float_Type (Standard_Long_Long_Float, LLF);
 
-            Append (Standard_Long_Long_Float, Predefined_Float_Types);
+            Append_Elmt (Standard_Long_Long_Float, Predefined_Float_Types);
          end;
 
-         Append_List (Back_End_Float_Types, To => Predefined_Float_Types);
+         --  Any other back end types are appended at the end of the list of
+         --  predefined float types, and will only be selected if the none of
+         --  the types in Standard is suitable, or if a specific named type is
+         --  requested through a pragma Import.
+
+         while not Is_Empty_Elmt_List (Back_End_Float_Types) loop
+            declare
+               E : constant Elmt_Id := First_Elmt (Back_End_Float_Types);
+            begin
+               Append_Elmt (Node (E), To => Predefined_Float_Types);
+               Remove_Elmt (Back_End_Float_Types, E);
+            end;
+         end loop;
       end Create_Float_Types;
 
       ----------------------
@@ -2095,11 +2113,10 @@ package body CStand is
             Set_Alignment (Ent, UI_From_Int (Int (Alignment / 8)));
 
             if No (Back_End_Float_Types) then
-               Back_End_Float_Types := New_List (Ent);
-
-            else
-               Append (Ent, Back_End_Float_Types);
+               Back_End_Float_Types := New_Elmt_List;
             end if;
+
+            Append_Elmt (Ent, Back_End_Float_Types);
          end;
       end if;
    end Register_Float_Type;

@@ -343,7 +343,7 @@ package Stand is
    --  A zero-size subtype of Integer, used as the type of variables used
    --  to provide the debugger with name encodings for renaming declarations.
 
-   Predefined_Float_Types : List_Id;
+   Predefined_Float_Types : Elist_Id;
    --  Entities for predefined floating point types. These are used by
    --  the semantic phase to select appropriate types for floating point
    --  declarations. This list is ordered by preference. All types up to

@@ -983,6 +983,15 @@ package body Inline is
    end Cleanup_Scopes;
 
    --------------------------
+   -- Get_Code_Unit_Entity --
+   --------------------------
+
+   function Get_Code_Unit_Entity (E : Entity_Id) return Entity_Id is
+   begin
+      return Cunit_Entity (Get_Code_Unit (E));
+   end Get_Code_Unit_Entity;
+
+   --------------------------
    -- Has_Initialized_Type --
    --------------------------
 
@@ -1164,15 +1173,6 @@ package body Inline is
          J := J + 1;
       end loop;
    end Remove_Dead_Instance;
-
-   --------------------------
-   -- Get_Code_Unit_Entity --
-   --------------------------
-
-   function Get_Code_Unit_Entity (E : Entity_Id) return Entity_Id is
-   begin
-      return Cunit_Entity (Get_Code_Unit (E));
-   end Get_Code_Unit_Entity;
 
    ------------------------
    -- Scope_In_Main_Unit --

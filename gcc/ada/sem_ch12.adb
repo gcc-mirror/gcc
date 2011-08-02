@@ -2927,6 +2927,9 @@ package body Sem_Ch12 is
       Needs_Body       : Boolean;
       Inline_Now       : Boolean := False;
 
+      Save_Style_Check : constant Boolean := Style_Check;
+      --  Save style check mode for restore on exit
+
       procedure Delay_Descriptors (E : Entity_Id);
       --  Delay generation of subprogram descriptors for given entity
 
@@ -2974,8 +2977,6 @@ package body Sem_Ch12 is
 
          return False;
       end Might_Inline_Subp;
-
-      Save_Style_Check : constant Boolean := Style_Check;
 
    --  Start of processing for Analyze_Package_Instantiation
 
@@ -3958,6 +3959,9 @@ package body Sem_Ch12 is
       Parent_Installed : Boolean := False;
       Renaming_List    : List_Id;
 
+      Save_Style_Check : constant Boolean := Style_Check;
+      --  Save style check mode for restore on exit
+
       procedure Analyze_Instance_And_Renamings;
       --  The instance must be analyzed in a context that includes the mappings
       --  of generic parameters into actuals. We create a package declaration
@@ -4115,8 +4119,6 @@ package body Sem_Ch12 is
             Set_Body_Required (Parent (N), False);
          end if;
       end Analyze_Instance_And_Renamings;
-
-      Save_Style_Check : constant Boolean := Style_Check;
 
    --  Start of processing for Analyze_Subprogram_Instantiation
 
