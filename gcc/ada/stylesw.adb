@@ -530,6 +530,9 @@ package body Stylesw is
             when 'o' =>
                Style_Check_Order_Subprograms     := False;
 
+            when 'O' =>
+               Style_Check_Missing_Overriding    := False;
+
             when 'p' =>
                Style_Check_Pragma_Casing         := False;
 

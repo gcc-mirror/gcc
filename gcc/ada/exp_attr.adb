@@ -5355,7 +5355,6 @@ package body Exp_Attr is
            Attribute_Universal_Literal_String     |
            Attribute_Wchar_T_Size                 |
            Attribute_Word_Size                    =>
-
          raise Program_Error;
 
       --  The Asm_Input and Asm_Output attributes are not expanded at this
@@ -5364,9 +5363,7 @@ package body Exp_Attr is
 
       when Attribute_Asm_Input                    |
            Attribute_Asm_Output                   =>
-
          null;
-
       end case;
 
    exception
@@ -5523,6 +5520,14 @@ package body Exp_Attr is
       --  in the run time used. In the case of a configurable run time, it
       --  is normal that some subprograms are not there.
 
+      --  I don't understand this routine at all, why is this not just a
+      --  call to RTE_Available? And if for some reason we need a different
+      --  routine with different semantics, why is not in Rtsfind ???
+
+      ------------------
+      -- Is_Available --
+      ------------------
+
       function Is_Available (Entity : RE_Id) return Boolean is
       begin
          --  Assume that the unit will always be available when using a
@@ -5531,6 +5536,8 @@ package body Exp_Attr is
          return not Configurable_Run_Time_Mode
            or else RTE_Available (Entity);
       end Is_Available;
+
+   --  Start of processing for Find_Stream_Subprogram
 
    begin
       if Present (Ent) then
@@ -5550,11 +5557,12 @@ package body Exp_Attr is
       --  This is disabled for AAMP, to avoid creating dependences on files not
       --  supported in the AAMP library (such as s-fileio.adb).
 
-      --  In the case of using a configurable run time, it is very likely
+      --  Note: In the case of using a configurable run time, it is very likely
       --  that stream routines for string types are not present (they require
       --  file system support). In this case, the specific stream routines for
       --  strings are not used, relying on the regular stream mechanism
-      --  instead.
+      --  instead. That is why we include the test Is_Available when dealing
+      --  with these cases.
 
       if VM_Target /= JVM_Target
         and then not AAMP_On_Target

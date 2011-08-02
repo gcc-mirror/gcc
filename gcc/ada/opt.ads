@@ -1184,7 +1184,7 @@ package Opt is
    Style_Check : Boolean := False;
    --  GNAT
    --  Set True to perform style checks. Activates checks carried out in
-   --  package Style (see body of this package for details of checks) This
+   --  package Style (see body of this package for details of checks). This
    --  flag is set True by either the -gnatg or -gnaty switches.
 
    Suppress_All_Inlining : Boolean := False;

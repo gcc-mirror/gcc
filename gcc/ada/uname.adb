@@ -349,9 +349,7 @@ package body Uname is
          return N;
       end Get_Parent;
 
-   -------------------------------------------
-   -- Start of Processing for Get_Unit_Name --
-   -------------------------------------------
+   --  Start of processing for Get_Unit_Name
 
    begin
       Node := N;
