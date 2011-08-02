@@ -1553,7 +1553,15 @@ package body Exp_Ch7 is
          --  Build dispatch tables of library level tagged types
 
          if Is_Library_Level_Entity (Ent) then
-            Build_Static_Dispatch_Tables (N);
+            if Tagged_Type_Expansion then
+               Build_Static_Dispatch_Tables (N);
+
+            --  In VM targets there is no need to build dispatch tables but
+            --  we must generate the corresponding Type Specific Data record
+
+            elsif Unit (Cunit (Main_Unit)) = N then
+               Build_VM_TSDs (N);
+            end if;
          end if;
 
          Build_Task_Activation_Call (N);
@@ -1654,7 +1662,31 @@ package body Exp_Ch7 is
         or else (Is_Generic_Instance (Id)
                    and then Is_Library_Level_Entity (Id))
       then
-         Build_Static_Dispatch_Tables (N);
+         if Tagged_Type_Expansion then
+            Build_Static_Dispatch_Tables (N);
+
+         --  In VM targets there is no need to build dispatch tables but
+         --  we must generate the corresponding Type Specific Data record
+
+         elsif Unit (Cunit (Main_Unit)) = N then
+
+            --  Enter the scope of the package because the new declarations
+            --  are appended at the end of the package and must be analyzed
+            --  in that context.
+
+            Push_Scope (Id);
+
+            if Is_Generic_Instance (Main_Unit_Entity) then
+               if Package_Instantiation (Main_Unit_Entity) = N then
+                  Build_VM_TSDs (N);
+               end if;
+
+            else
+               Build_VM_TSDs (N);
+            end if;
+
+            Pop_Scope;
+         end if;
       end if;
 
       --  Note: it is not necessary to worry about generating a subprogram

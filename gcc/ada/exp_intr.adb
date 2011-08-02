@@ -234,23 +234,33 @@ package body Exp_Intr is
          if not Is_Ancestor (Etype (Result_Typ), Etype (Tag_Arg),
                              Use_Full_View => True)
          then
-            pragma Assert (not Is_Interface (Etype (Tag_Arg)));
+            --  Obtain the reference to the Ada.Tags service before generating
+            --  the Object_Declaration node to ensure that if this service is
+            --  not available in the runtime then we generate a clear error.
 
-            Iface_Tag :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Make_Temporary (Loc, 'V'),
-                Object_Definition   =>
-                  New_Reference_To (RTE (RE_Tag), Loc),
-                Expression          =>
-                  Make_Function_Call (Loc,
-                    Name => New_Reference_To (RTE (RE_Secondary_Tag), Loc),
-                    Parameter_Associations => New_List (
-                      Relocate_Node (Tag_Arg),
-                      New_Reference_To
-                        (Node (First_Elmt (Access_Disp_Table
-                                            (Etype (Etype (Act_Constr))))),
-                         Loc))));
-            Insert_Action (N, Iface_Tag);
+            declare
+               Fname : constant Node_Id :=
+                         New_Reference_To (RTE (RE_Secondary_Tag), Loc);
+
+            begin
+               pragma Assert (not Is_Interface (Etype (Tag_Arg)));
+
+               Iface_Tag :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Make_Temporary (Loc, 'V'),
+                   Object_Definition   =>
+                     New_Reference_To (RTE (RE_Tag), Loc),
+                   Expression          =>
+                     Make_Function_Call (Loc,
+                       Name => Fname,
+                       Parameter_Associations => New_List (
+                         Relocate_Node (Tag_Arg),
+                         New_Reference_To
+                           (Node (First_Elmt (Access_Disp_Table
+                                               (Etype (Etype (Act_Constr))))),
+                            Loc))));
+               Insert_Action (N, Iface_Tag);
+            end;
          end if;
       end if;
 
