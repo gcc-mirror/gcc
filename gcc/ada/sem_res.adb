@@ -5964,12 +5964,12 @@ package body Sem_Res is
       --  types or array types except String.
 
       if Is_Boolean_Type (T) then
-         Current_Subprogram_Body_Is_Not_In_ALFA;
+         Mark_Non_ALFA_Subprogram_Body;
          Check_SPARK_Restriction
            ("comparison is not defined on Boolean type", N);
 
       elsif Is_Array_Type (T) then
-         Current_Subprogram_Body_Is_Not_In_ALFA;
+         Mark_Non_ALFA_Subprogram_Body;
 
          if Base_Type (T) /= Standard_String then
             Check_SPARK_Restriction
@@ -6828,7 +6828,7 @@ package body Sem_Res is
          --  operands have equal static bounds.
 
          if Is_Array_Type (T) then
-            Current_Subprogram_Body_Is_Not_In_ALFA;
+            Mark_Non_ALFA_Subprogram_Body;
 
             --  Protect call to Matching_Static_Array_Bounds to avoid costly
             --  operation if not needed.
@@ -7378,7 +7378,7 @@ package body Sem_Res is
       if Is_Array_Type (B_Typ)
         and then Nkind (N) in N_Binary_Op
       then
-         Current_Subprogram_Body_Is_Not_In_ALFA;
+         Mark_Non_ALFA_Subprogram_Body;
 
          declare
             Left_Typ  : constant Node_Id := Etype (Left_Opnd (N));

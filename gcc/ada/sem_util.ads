@@ -277,7 +277,7 @@ package Sem_Util is
    --  Current_Scope is returned. The returned value is Empty if this is called
    --  from a library package which is not within any subprogram.
 
-   procedure Current_Subprogram_Body_Is_Not_In_ALFA;
+   procedure Mark_Non_ALFA_Subprogram_Body;
    --  If Current_Subprogram is not Empty, set its flag Body_Is_In_ALFA to
    --  False, otherwise do nothing.
 

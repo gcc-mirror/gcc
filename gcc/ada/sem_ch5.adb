@@ -1113,7 +1113,7 @@ package body Sem_Ch5 is
       if Others_Present
         and then List_Length (Alternatives (N)) = 1
       then
-         Current_Subprogram_Body_Is_Not_In_ALFA;
+         Mark_Non_ALFA_Subprogram_Body;
          Check_SPARK_Restriction
            ("OTHERS as unique case alternative is not allowed", N);
       end if;
@@ -1195,7 +1195,7 @@ package body Sem_Ch5 is
 
          else
             if Has_Loop_In_Inner_Open_Scopes (U_Name) then
-               Current_Subprogram_Body_Is_Not_In_ALFA;
+               Mark_Non_ALFA_Subprogram_Body;
                Check_SPARK_Restriction
                  ("exit label must name the closest enclosing loop", N);
             end if;
@@ -1242,14 +1242,14 @@ package body Sem_Ch5 is
 
       if Present (Cond) then
          if Nkind (Parent (N)) /= N_Loop_Statement then
-            Current_Subprogram_Body_Is_Not_In_ALFA;
+            Mark_Non_ALFA_Subprogram_Body;
             Check_SPARK_Restriction
               ("exit with when clause must be directly in loop", N);
          end if;
 
       else
          if Nkind (Parent (N)) /= N_If_Statement then
-            Current_Subprogram_Body_Is_Not_In_ALFA;
+            Mark_Non_ALFA_Subprogram_Body;
             if Nkind (Parent (N)) = N_Elsif_Part then
                Check_SPARK_Restriction
                  ("exit must be in IF without ELSIF", N);
@@ -1258,7 +1258,7 @@ package body Sem_Ch5 is
             end if;
 
          elsif Nkind (Parent (Parent (N))) /= N_Loop_Statement then
-            Current_Subprogram_Body_Is_Not_In_ALFA;
+            Mark_Non_ALFA_Subprogram_Body;
             Check_SPARK_Restriction
               ("exit must be in IF directly in loop", N);
 
@@ -1266,14 +1266,14 @@ package body Sem_Ch5 is
             --  leads to an error mentioning the ELSE.
 
          elsif Present (Else_Statements (Parent (N))) then
-            Current_Subprogram_Body_Is_Not_In_ALFA;
+            Mark_Non_ALFA_Subprogram_Body;
             Check_SPARK_Restriction ("exit must be in IF without ELSE", N);
 
             --  An exit in an ELSIF does not reach here, as it would have been
             --  detected in the case (Nkind (Parent (N)) /= N_If_Statement).
 
          elsif Present (Elsif_Parts (Parent (N))) then
-            Current_Subprogram_Body_Is_Not_In_ALFA;
+            Mark_Non_ALFA_Subprogram_Body;
             Check_SPARK_Restriction ("exit must be in IF without ELSIF", N);
          end if;
       end if;
@@ -1302,7 +1302,7 @@ package body Sem_Ch5 is
       Label_Ent   : Entity_Id;
 
    begin
-      Current_Subprogram_Body_Is_Not_In_ALFA;
+      Mark_Non_ALFA_Subprogram_Body;
       Check_SPARK_Restriction ("goto statement is not allowed", N);
 
       --  Actual semantic checks
