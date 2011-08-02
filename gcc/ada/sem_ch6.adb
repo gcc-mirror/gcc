@@ -1392,7 +1392,6 @@ package body Sem_Ch6 is
 
       if Result_Definition (N) /= Error then
          if Nkind (Result_Definition (N)) = N_Access_Definition then
-
             Check_Formal_Restriction
               ("access result is not allowed", Result_Definition (N));
 
@@ -1431,7 +1430,7 @@ package body Sem_Ch6 is
             then
                Check_Formal_Restriction
                  ("returning an unconstrained array is not allowed",
-                 Result_Definition (N));
+                  Result_Definition (N));
             end if;
 
             --  Ada 2005 (AI-231): Ensure proper usage of null exclusion
@@ -1861,16 +1860,15 @@ package body Sem_Ch6 is
          --  Special checks in formal mode
 
          if Nkind (Body_Spec) = N_Function_Specification then
-            --  In formal mode, the last statement of a function should be a
-            --  return statement.
+
+            --  In formal mode, last statement of a function should be a return
 
             declare
                Stat : constant Node_Id := Last_Source_Statement (HSS);
             begin
                if Present (Stat)
-                 and then not Nkind_In (Stat,
-                                        N_Simple_Return_Statement,
-                                        N_Extended_Return_Statement)
+                 and then not Nkind_In (Stat, N_Simple_Return_Statement,
+                                              N_Extended_Return_Statement)
                then
                   Check_Formal_Restriction
                     ("last statement in function should be RETURN", Stat);
@@ -8769,7 +8767,6 @@ package body Sem_Ch6 is
          Default := Expression (Param_Spec);
 
          if Present (Default) then
-
             Check_Formal_Restriction
               ("default expression is not allowed", Default);
 
