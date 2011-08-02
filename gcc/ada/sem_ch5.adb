@@ -1101,7 +1101,7 @@ package body Sem_Ch5 is
 
       Analyze_Choices (N, Exp_Type, Dont_Care, Others_Present);
 
-      --  A case statement with a single "others" alternative is not allowed
+      --  A case statement with a single OTHERS alternative is not allowed
       --  in SPARK or ALFA.
 
       if Formal_Verification_Mode

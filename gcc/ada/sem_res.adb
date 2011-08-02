@@ -7156,6 +7156,57 @@ package body Sem_Res is
       Set_Etype (N, B_Typ);
       Generate_Operator_Reference (N, B_Typ);
       Eval_Logical_Op (N);
+
+      --  In SPARK or ALFA, logical operations AND, OR and XOR for arrays are
+      --  defined only when both operands have same static lower and higher
+      --  bounds.
+
+      if Formal_Verification_Mode
+        and then Comes_From_Source (Original_Node (N))
+        and then Is_Array_Type (Etype (N))
+      then
+         declare
+            L_Index : Node_Id;
+            R_Index : Node_Id;
+            L_Low   : Node_Id;
+            L_High  : Node_Id;
+            R_Low   : Node_Id;
+            R_High  : Node_Id;
+
+            L_Typ : constant Node_Id := Etype (Left_Opnd (N));
+            R_Typ : constant Node_Id := Etype (Right_Opnd (N));
+
+         begin
+            L_Index := First_Index (L_Typ);
+            R_Index := First_Index (R_Typ);
+
+            Get_Index_Bounds (L_Index, L_Low, L_High);
+            Get_Index_Bounds (R_Index, R_Low, R_High);
+
+            --  Another error is issued for constrained array types with
+            --  non-static bounds elsewhere, so only deal with different
+            --  constrained types, or unconstrained types.
+
+            if L_Typ /= R_Typ or else not Is_Constrained (L_Typ) then
+               if not Is_Static_Expression (L_Low)
+                 or else not Is_Static_Expression (R_Low)
+                 or else Expr_Value (L_Low) /= Expr_Value (R_Low)
+               then
+                  Error_Msg_F ("|~~operation defined only when both operands "
+                               & "have the same static lower bound", N);
+               end if;
+
+               if not Is_Static_Expression (L_High)
+                 or else not Is_Static_Expression (R_High)
+                 or else Expr_Value (L_High) /= Expr_Value (R_High)
+               then
+                  Error_Msg_F ("|~~operation defined only when both operands "
+                               & "have the same static higher bound", N);
+               end if;
+            end if;
+         end;
+      end if;
+
    end Resolve_Logical_Op;
 
    ---------------------------

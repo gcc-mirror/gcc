@@ -49,6 +49,7 @@ with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Ttypes;   use Ttypes;
 with Sem;      use Sem;
+with Sem_Aggr; use Sem_Aggr;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Eval; use Sem_Eval;
@@ -4510,10 +4511,6 @@ package body Exp_Aggr is
          Obj_Lo  : Node_Id;
          Obj_Hi  : Node_Id;
 
-         function Is_Others_Aggregate (Aggr : Node_Id) return Boolean;
-         --  Aggregates that consist of a single Others choice are safe
-         --  if the single expression is.
-
          function Safe_Aggregate (Aggr : Node_Id) return Boolean;
          --  Check recursively that each component of a (sub)aggregate does
          --  not depend on the variable being assigned to.
@@ -4521,18 +4518,6 @@ package body Exp_Aggr is
          function Safe_Component (Expr : Node_Id) return Boolean;
          --  Verify that an expression cannot depend on the variable being
          --  assigned to. Room for improvement here (but less than before).
-
-         -------------------------
-         -- Is_Others_Aggregate --
-         -------------------------
-
-         function Is_Others_Aggregate (Aggr : Node_Id) return Boolean is
-         begin
-            return No (Expressions (Aggr))
-              and then Nkind
-                (First (Choices (First (Component_Associations (Aggr)))))
-                  = N_Others_Choice;
-         end Is_Others_Aggregate;
 
          --------------------
          -- Safe_Aggregate --

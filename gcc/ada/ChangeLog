@@ -1,3 +1,53 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor reformatting.
+	* sem_prag.adb: Minor reformatting.
+
+2011-08-02  Tristan Gingold  <gingold@adacore.com>
+
+	* vms_data.ads: Add VMS qualifier for -gnateP.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch13.adb (P_Aspect_Specification): New meaning of Decl = Empty
+	* par-ch7.adb (P_Package): Proper placement of aspects for package
+	decl/instantiation.
+	* par-endh.adb (Check_End): Ad Is_Sloc parameter
+	(End_Statements): Add Is_Sloc parameterr
+	* par.adb (P_Aspect_Specification): New meaning of Decl = Empty
+	(Check_End): Ad Is_Sloc parameter
+	(End_Statements): Add Is_Sloc parameterr
+
+2011-08-02  Vincent Celier  <celier@adacore.com>
+
+	* ug_words: Add VMS qualifier equivalent to -gnateP:
+	/SYMBOL_PREPROCESSING.
+
+2011-08-02  Jose Ruiz  <ruiz@adacore.com>
+
+	* gnat-style.texi: For hexadecimal numeric literals the typical
+	grouping of digits is 4 to represent 2 bytes.
+	A procedure spec which is split into several lines is indented two
+	characters.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* exp_aggr.adb (Is_Others_Aggregate): move function to other unit.
+	* sem_aggr.adb, sem_aggr.ads (Is_Others_Aggregate): move function here
+	(Resolve_Aggregate): issue errors in formal modes when aggregate is not
+	properly qualified
+	(Resolve_Array_Aggregate): issue errors in formal modes on non-static
+	choice in array aggregate
+	(Resolve_Extension_Aggregate): issue errors in formal modes on subtype
+	mark as ancestor
+	(Resolve_Record_Aggregate): issue errors in formal modes on mixed
+	positional and named aggregate for record, or others in record
+	aggregate, or multiple choice in record aggregate
+	* sem_res.adb (Resolve_Logical_Op): issue errors in formal mode when
+	array operands to logical operations AND, OR and XOR do not have the
+	same static lower and higher bounds
+	* sem_ch5.adb, sinfo.ads: Correct typos in comments
+
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.ads, sem_util.adb, sem_ch6.adb (Last_Source_Statement):

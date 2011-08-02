@@ -1293,6 +1293,19 @@ package VMS_Data is
    --   be sure that they are valid, and code is generated to allow for this
    --   possibility. The use of /ASSUME_VALID will improve the code.
 
+   S_GCC_CategW  : aliased constant S := "/CATEGORIZATION_WARNINGS "  &
+                                             "-gnateP";
+   --        /NO_CATEGORIZATION_WARNINGS (D)
+   --        /CATEGORIZATION_WARNINGS
+   --
+   --   Use to tell the compiler to disable categorization dependency errors.
+   --   Ada requires that units that WITH one another have compatible
+   --   categories, for example a Pure unit cannot WITH a Preelaborate unit.
+   --   If this switch is used, these errors become warnings (which can be
+   --   ignored, or suppressed in the usual manner). This can be useful in
+   --   some specialized circumstances such as the temporary use of special
+   --   test software.
+
    S_GCC_Checks  : aliased constant S := "/CHECKS="                        &
                                              "FULL "                       &
                                                 "-gnato,!-gnatE,!-gnatp "  &
@@ -3517,6 +3530,7 @@ package VMS_Data is
                      S_GCC_Add     'Access,
                      S_GCC_Asm     'Access,
                      S_GCC_AValid  'Access,
+                     S_GCC_CategW  'Access,
                      S_GCC_Checks  'Access,
                      S_GCC_ChecksX 'Access,
                      S_GCC_Compres 'Access,
