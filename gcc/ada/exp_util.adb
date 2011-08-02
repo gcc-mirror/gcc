@@ -1501,7 +1501,7 @@ package body Exp_Util is
         (not Is_Class_Wide_Type (Typ)
           and then Ekind (Typ) /= E_Incomplete_Type);
 
-      if Is_Ancestor (Iface, Typ) then
+      if Is_Ancestor (Iface, Typ, Use_Full_View => True) then
          return First_Elmt (Access_Disp_Table (Typ));
 
       else
@@ -1510,7 +1510,8 @@ package body Exp_Util is
          while Present (ADT)
            and then Present (Related_Type (Node (ADT)))
            and then Related_Type (Node (ADT)) /= Iface
-           and then not Is_Ancestor (Iface, Related_Type (Node (ADT)))
+           and then not Is_Ancestor (Iface, Related_Type (Node (ADT)),
+                                     Use_Full_View => True)
          loop
             Next_Elmt (ADT);
          end loop;
@@ -1576,7 +1577,9 @@ package body Exp_Util is
             while Present (AI_Elmt) loop
                AI := Node (AI_Elmt);
 
-               if AI = Iface or else Is_Ancestor (Iface, AI) then
+               if AI = Iface
+                 or else Is_Ancestor (Iface, AI, Use_Full_View => True)
+               then
                   Found := True;
                   return;
                end if;
@@ -1628,7 +1631,7 @@ package body Exp_Util is
       --  If the interface is an ancestor of the type, then it shared the
       --  primary dispatch table.
 
-      if Is_Ancestor (Iface, Typ) then
+      if Is_Ancestor (Iface, Typ, Use_Full_View => True) then
          pragma Assert (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
          return First_Tag_Component (Typ);
 

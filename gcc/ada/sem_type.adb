@@ -2564,7 +2564,11 @@ package body Sem_Type is
    -- Is_Ancestor --
    -----------------
 
-   function Is_Ancestor (T1, T2 : Entity_Id) return Boolean is
+   function Is_Ancestor
+     (T1            : Entity_Id;
+      T2            : Entity_Id;
+      Use_Full_View : Boolean := False) return Boolean
+   is
       BT1 : Entity_Id;
       BT2 : Entity_Id;
       Par : Entity_Id;
@@ -2624,14 +2628,14 @@ package body Sem_Type is
             then
                return True;
 
+            --  Climb to the ancestor type
+
             elsif Etype (Par) /= Par then
 
-               --  If this is a private type and its parent is an interface
-               --  then use the parent of the full view (which is a type that
-               --  implements such interface)
+               --  Use the full-view of private types (if allowed)
 
-               if Is_Private_Type (Par)
-                 and then Is_Interface (Etype (Par))
+               if Use_Full_View
+                 and then Is_Private_Type (Par)
                  and then Present (Full_View (Par))
                then
                   Par := Etype (Full_View (Par));

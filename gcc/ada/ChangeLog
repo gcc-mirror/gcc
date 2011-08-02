@@ -1,3 +1,29 @@
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_type.ads, sem_type.adb (Is_Ancestor): Addition of a new formal
+	(Use_Full_View) which permits this routine to climb through the
+	ancestors using the full-view of private parents.
+	* sem_util.adb (Collect_Interfaces_Info, Implements_Interface): Set
+	Use_Full_View to true in calls to Is_Ancestor.
+	* sem_disp.adb (Override_Dispatching_Operation): Set Use_Full_View to
+	true in call to Is_Ancestor.
+	* exp_ch3.adb (Build_Offset_To_Top_Functions, Initialize_Tag): Set
+	Use_Full_View to true in call to Is_Ancestor.
+	* exp_ch7.adb (Controller_Component): Set Use_Full_View to true in
+	call to Is_Ancestor.
+	* exp_ch4.adb (Expand_N_Type_Conversion, Tagged_Membership): Set
+	Use_Full_View to true in calls to Is_Ancestor.
+	* exp_disp.adb (Expand_Interface_Actuals, Make_Secondary_DT, Make_DT,
+	Make_Select_Specific_Data_Table, Register_Primitive,
+	Set_All_DT_Position): Set Use_Full_View to true in calls to Is_Ancestor.
+	* exp_intr.adb (Expand_Dispatching_Constructor_Call): Set Use_Full_View
+	to true in call to Is_Ancestor.
+	* exp_util.adb (Find_Interface_ADT, Find_Interface_Tag): Set
+	Use_Full_View to true in calls to Is_Ancestor.
+	* exp_cg.adb
+	(Write_Call_Info): Set Use_Full_View to true in call to Is_Ancestor.
+	(Write_Type_Info): Set Use_Full_View to true in call to Is_Ancestor.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Minor reformatting.
