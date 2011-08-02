@@ -20505,6 +20505,7 @@ rs6000_emit_prologue (void)
 	  rs6000_emit_load_toc_table (TRUE);
 
 	  insn = emit_move_insn (lr, frame_ptr_rtx);
+	  add_reg_note (insn, REG_CFA_RESTORE, lr);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
       else
