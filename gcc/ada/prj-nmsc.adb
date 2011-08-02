@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,12 +106,15 @@ package body Prj.Nmsc is
    --  exceptions specified in the project files.
 
    type File_Found is record
-      File     : File_Name_Type  := No_File;
-      Found    : Boolean         := False;
-      Location : Source_Ptr      := No_Location;
+      File      : File_Name_Type := No_File;
+      Excl_File : File_Name_Type := No_File;
+      Excl_Line : Natural        := 0;
+      Found     : Boolean        := False;
+      Location  : Source_Ptr     := No_Location;
    end record;
 
-   No_File_Found : constant File_Found := (No_File, False, No_Location);
+   No_File_Found : constant File_Found :=
+     (No_File, No_File, 0, False, No_Location);
 
    package Excluded_Sources_Htable is new GNAT.Dynamic_HTables.Simple_HTable
      (Header_Num => Header_Num,
@@ -521,6 +524,9 @@ package body Prj.Nmsc is
       Location : Source_Ptr;
       Project  : Project_Id);
    --  Emits either an error or warning message (or nothing), depending on Kind
+
+   function No_Space_Img (N : Natural) return String;
+   --  Image of a Natural without the initial space
 
    ----------------------
    -- Error_Or_Warning --
@@ -5507,6 +5513,16 @@ package body Prj.Nmsc is
       end if;
    end Get_Sources_From_File;
 
+   ------------------
+   -- No_Space_Img --
+   ------------------
+
+   function No_Space_Img (N : Natural) return String is
+      Image : constant String := N'Img;
+   begin
+      return Image (2 .. Image'Last);
+   end No_Space_Img;
+
    -----------------------
    -- Compute_Unit_Name --
    -----------------------
@@ -6045,7 +6061,8 @@ package body Prj.Nmsc is
             end if;
 
             Excluded_Sources_Htable.Set
-              (Project.Excluded, Name, (Name, False, Location));
+              (Project.Excluded, Name,
+               (Name, No_File, 0, False, Location));
             Current := Element.Next;
          end loop;
 
@@ -6053,10 +6070,14 @@ package body Prj.Nmsc is
          Location := Excluded_Source_List_File.Location;
 
          declare
+            Source_File_Name : constant File_Name_Type :=
+                                 File_Name_Type
+                                    (Excluded_Source_List_File.Value);
+            Source_File_Line : Natural := 0;
+
             Source_File_Path_Name : constant String :=
                                       Path_Name_Of
-                                        (File_Name_Type
-                                           (Excluded_Source_List_File.Value),
+                                        (Source_File_Name,
                                          Project.Project.Directory.Name);
 
          begin
@@ -6082,6 +6103,7 @@ package body Prj.Nmsc is
 
                   while not Prj.Util.End_Of_File (File) loop
                      Prj.Util.Get_Line (File, Line, Last);
+                     Source_File_Line := Source_File_Line + 1;
 
                      --  Non empty, non comment line should contain a file name
 
@@ -6110,7 +6132,10 @@ package body Prj.Nmsc is
                         end loop;
 
                         Excluded_Sources_Htable.Set
-                          (Project.Excluded, Name, (Name, False, Location));
+                          (Project.Excluded,
+                           Name,
+                           (Name, Source_File_Name, Source_File_Line,
+                            False, Location));
                      end if;
                   end loop;
 
@@ -7579,14 +7604,36 @@ package body Prj.Nmsc is
                Err_Vars.Error_Msg_File_1 := Excluded.File;
 
                if Src = No_Source then
-                  Error_Msg
+                  if Excluded.Excl_File = No_File then
+                     Error_Msg
+                       (Data.Flags,
+                        "unknown file {", Excluded.Location, Project.Project);
+
+                  else
+                     Error_Msg
                     (Data.Flags,
-                     "unknown file {", Excluded.Location, Project.Project);
+                     "in " &
+                     Get_Name_String (Excluded.Excl_File) & ":" &
+                     No_Space_Img (Excluded.Excl_Line) &
+                     ": unknown file {", Excluded.Location, Project.Project);
+                  end if;
+
                else
-                  Error_Msg
-                    (Data.Flags,
-                     "cannot remove a source from an imported project: {",
-                     Excluded.Location, Project.Project);
+                  if Excluded.Excl_File = No_File then
+                     Error_Msg
+                       (Data.Flags,
+                        "cannot remove a source from an imported project: {",
+                        Excluded.Location, Project.Project);
+
+                  else
+                     Error_Msg
+                       (Data.Flags,
+                        "in " &
+                        Get_Name_String (Excluded.Excl_File) & ":" &
+                          No_Space_Img (Excluded.Excl_Line) &
+                        ": cannot remove a source from an imported project: {",
+                        Excluded.Location, Project.Project);
+                  end if;
                end if;
             end if;
 

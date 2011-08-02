@@ -1559,11 +1559,7 @@ package body Exp_Ch7 is
             --  In VM targets there is no need to build dispatch tables but
             --  we must generate the corresponding Type Specific Data record.
 
-            --  Temporarily restrict this support to the .NET compiler???
-
-            elsif Unit (Cunit (Main_Unit)) = N
-              and then VM_Target = CLI_Target
-            then
+            elsif Unit (Cunit (Main_Unit)) = N then
                Build_VM_TSDs (N);
             end if;
          end if;
@@ -1672,11 +1668,8 @@ package body Exp_Ch7 is
          --  In VM targets there is no need to build dispatch tables, but we
          --  must generate the corresponding Type Specific Data record.
 
-         --  Temporarily restrict this support to the .NET compiler???
+         elsif Unit (Cunit (Main_Unit)) = N then
 
-         elsif Unit (Cunit (Main_Unit)) = N
-           and then VM_Target = CLI_Target
-         then
             --  Enter the scope of the package because the new declarations are
             --  appended at the end of the package and must be analyzed in that
             --  context.
