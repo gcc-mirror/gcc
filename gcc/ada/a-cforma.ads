@@ -44,10 +44,17 @@
 --    container. The operators "<" and ">" that could not be modified that way
 --    have been removed.
 
---    There are two new functions:
+--    There are four new functions:
 
+--      function Strict_Equal (Left, Right : Map) return Boolean;
+--      function Overlap (Left, Right : Map) return Boolean;
 --      function Left  (Container : Map; Position : Cursor) return Map;
 --      function Right (Container : Map; Position : Cursor) return Map;
+
+--      Strict_Equal returns True if the containers are physically equal,
+--      meaning that they are structurally equal (function "=" returns True)
+--      and that they have the same set of cursors. Overlap returns True if
+--      the containers have common keys.
 
 --      Left returns a container containing all elements preceding Position
 --      (excluded) in Container. Right returns a container containing all
