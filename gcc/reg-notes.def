@@ -201,3 +201,8 @@ REG_NOTE (CROSSING_JUMP)
 /* This kind of note is generated at each to `setjmp', and similar
    functions that can return twice.  */
 REG_NOTE (SETJMP)
+
+/* Indicates the cumulative offset of the stack pointer accounting
+   for pushed arguments.  This will only be generated when
+   ACCUMULATE_OUTGOING_ARGS is false.  */
+REG_NOTE (ARGS_SIZE)

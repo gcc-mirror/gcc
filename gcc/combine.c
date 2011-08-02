@@ -13273,6 +13273,16 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	    }
 	  break;
 
+	case REG_ARGS_SIZE:
+	  {
+	    /* ??? How to distribute between i3-i1.  Assume i3 contains the
+	       entire adjustment.  Assert i3 contains at least some adjust.  */
+	    int old_size, args_size = INTVAL (XEXP (note, 0));
+	    old_size = fixup_args_size_notes (PREV_INSN (i3), i3, args_size);
+	    gcc_assert (old_size != args_size);
+	  }
+	  break;
+
 	case REG_NORETURN:
 	case REG_SETJMP:
 	  /* These notes must remain with the call.  It should not be

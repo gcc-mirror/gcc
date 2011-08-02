@@ -3514,12 +3514,168 @@ push_block (rtx size, int extra, int below)
   return memory_address (GET_CLASS_NARROWEST_MODE (MODE_INT), temp);
 }
 
-#ifdef PUSH_ROUNDING
+/* A utility routine that returns the base of an auto-inc memory, or NULL.  */
 
+static rtx
+mem_autoinc_base (rtx mem)
+{
+  if (MEM_P (mem))
+    {
+      rtx addr = XEXP (mem, 0);
+      if (GET_RTX_CLASS (GET_CODE (addr)) == RTX_AUTOINC)
+	return XEXP (addr, 0);
+    }
+  return NULL;
+}
+
+/* A utility routine used here, in reload, and in try_split.  The insns
+   after PREV up to and including LAST are known to adjust the stack,
+   with a final value of END_ARGS_SIZE.  Iterate backward from LAST
+   placing notes as appropriate.  PREV may be NULL, indicating the
+   entire insn sequence prior to LAST should be scanned.
+
+   The set of allowed stack pointer modifications is small:
+     (1) One or more auto-inc style memory references (aka pushes),
+     (2) One or more addition/subtraction with the SP as destination,
+     (3) A single move insn with the SP as destination,
+     (4) A call_pop insn.
+
+   Insns in the sequence that do not modify the SP are ignored.
+
+   The return value is the amount of adjustment that can be trivially
+   verified, via immediate operand or auto-inc.  If the adjustment
+   cannot be trivially extracted, the return value is INT_MIN.  */
+
+int
+fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
+{
+  int args_size = end_args_size;
+  bool saw_unknown = false;
+  rtx insn;
+
+  for (insn = last; insn != prev; insn = PREV_INSN (insn))
+    {
+      rtx dest, set, pat;
+      HOST_WIDE_INT this_delta = 0;
+      int i;
+
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+      pat = PATTERN (insn);
+      set = NULL;
+
+      /* Look for a call_pop pattern.  */
+      if (CALL_P (insn))
+	{
+	  /* We're not supposed to see non-pop call patterns here.  */
+	  gcc_assert (GET_CODE (pat) == PARALLEL);
+
+	  /* All call_pop have a stack pointer adjust in the parallel.
+	     The call itself is always first, and the stack adjust is
+	     usually last, so search from the end.  */
+	  for (i = XVECLEN (pat, 0) - 1; i > 0; --i)
+	    {
+	      set = XVECEXP (pat, 0, i);
+	      if (GET_CODE (set) != SET)
+		continue;
+	      dest = SET_DEST (set);
+	      if (dest == stack_pointer_rtx)
+		break;
+	    }
+	  /* We'd better have found the stack pointer adjust.  */
+	  gcc_assert (i > 0);
+	  /* Fall through to process the extracted SET and DEST
+	     as if it was a standalone insn.  */
+	}
+      else if (GET_CODE (pat) == SET)
+	set = pat;
+      else if ((set = single_set (insn)) != NULL)
+	;
+      else if (GET_CODE (pat) == PARALLEL)
+	{
+	  /* ??? Some older ports use a parallel with a stack adjust
+	     and a store for a PUSH_ROUNDING pattern, rather than a
+	     PRE/POST_MODIFY rtx.  Don't force them to update yet...  */
+	  /* ??? See h8300 and m68k, pushqi1.  */
+	  for (i = XVECLEN (pat, 0) - 1; i >= 0; --i)
+	    {
+	      set = XVECEXP (pat, 0, i);
+	      if (GET_CODE (set) != SET)
+		continue;
+	      dest = SET_DEST (set);
+	      if (dest == stack_pointer_rtx)
+		break;
+
+	      /* We do not expect an auto-inc of the sp in the parallel.  */
+	      gcc_checking_assert (mem_autoinc_base (dest)
+				   != stack_pointer_rtx);
+	      gcc_checking_assert (mem_autoinc_base (SET_SRC (set))
+				   != stack_pointer_rtx);
+	    }
+	  if (i < 0)
+	    continue;
+	}
+      else
+	continue;
+      dest = SET_DEST (set);
+
+      /* Look for direct modifications of the stack pointer.  */
+      if (dest == stack_pointer_rtx)
+	{
+	  gcc_assert (!saw_unknown);
+	  /* Look for a trivial adjustment, otherwise assume nothing.  */
+	  if (GET_CODE (SET_SRC (set)) == PLUS
+	      && XEXP (SET_SRC (set), 0) == stack_pointer_rtx
+	      && CONST_INT_P (XEXP (SET_SRC (set), 1)))
+	    this_delta = INTVAL (XEXP (SET_SRC (set), 1));
+	  else
+	    saw_unknown = true;
+	}
+      /* Otherwise only think about autoinc patterns.  */
+      else if (mem_autoinc_base (dest) == stack_pointer_rtx)
+	{
+	  rtx addr = XEXP (dest, 0);
+	  gcc_assert (!saw_unknown);
+	  switch (GET_CODE (addr))
+	    {
+	    case PRE_INC:
+	    case POST_INC:
+	      this_delta = GET_MODE_SIZE (GET_MODE (dest));
+	      break;
+	    case PRE_DEC:
+	    case POST_DEC:
+	      this_delta = -GET_MODE_SIZE (GET_MODE (dest));
+	      break;
+	    case PRE_MODIFY:
+	    case POST_MODIFY:
+	      addr = XEXP (addr, 1);
+	      gcc_assert (GET_CODE (addr) == PLUS);
+	      gcc_assert (XEXP (addr, 0) == stack_pointer_rtx);
+	      gcc_assert (CONST_INT_P (XEXP (addr, 1)));
+	      this_delta = INTVAL (XEXP (addr, 1));
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+      else
+	continue;
+
+      add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (args_size));
+#ifdef STACK_GROWS_DOWNWARD
+      this_delta = -this_delta;
+#endif
+      args_size -= this_delta;
+    }
+
+  return saw_unknown ? INT_MIN : args_size;
+}
+
+#ifdef PUSH_ROUNDING
 /* Emit single push insn.  */
 
 static void
-emit_single_push_insn (enum machine_mode mode, rtx x, tree type)
+emit_single_push_insn_1 (enum machine_mode mode, rtx x, tree type)
 {
   rtx dest_addr;
   unsigned rounded_size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
@@ -3602,6 +3758,30 @@ emit_single_push_insn (enum machine_mode mode, rtx x, tree type)
 	set_mem_alias_set (dest, 0);
     }
   emit_move_insn (dest, x);
+}
+
+/* Emit and annotate a single push insn.  */
+
+static void
+emit_single_push_insn (enum machine_mode mode, rtx x, tree type)
+{
+  int delta, old_delta = stack_pointer_delta;
+  rtx prev = get_last_insn ();
+  rtx last;
+
+  emit_single_push_insn_1 (mode, x, type);
+
+  last = get_last_insn ();
+
+  /* Notice the common case where we emitted exactly one insn.  */
+  if (PREV_INSN (last) == prev)
+    {
+      add_reg_note (last, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
+      return;
+    }
+
+  delta = fixup_args_size_notes (prev, last, stack_pointer_delta);
+  gcc_assert (delta == INT_MIN || delta == old_delta);
 }
 #endif
 

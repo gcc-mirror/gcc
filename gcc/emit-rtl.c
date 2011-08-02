@@ -3614,6 +3614,10 @@ try_split (rtx pat, rtx trial, int last)
 	  break;
 #endif
 
+	case REG_ARGS_SIZE:
+	  fixup_args_size_notes (NULL_RTX, insn_last, INTVAL (XEXP (note, 0)));
+	  break;
+
 	default:
 	  break;
 	}
