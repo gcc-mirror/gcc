@@ -19,10 +19,10 @@
 -- additional permissions described in the GCC Runtime Library Exception,   --
 -- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- In particular,  you can freely  distribute your programs  built with the --
+-- GNAT Pro compiler, including any required library run-time units,  using --
+-- any licensing terms  of your choosing.  See the AdaCore Software License --
+-- for full details.                                                        --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
 -- Extensive contributions were provided by Ada Core Technologies, Inc.     --
@@ -93,11 +93,6 @@ package body System.Task_Primitives.Operations is
    pragma Import (C, Locking_Policy, "__gl_locking_policy");
 
    Mutex_Protocol : Priority_Type;
-
-   Signal_Mask : aliased sigset_t;
-   pragma Import (C, Signal_Mask, "__gnat_signal_mask");
-   --  Mask indicating that all exception signals are to be masked
-   --  when a signal is propagated.
 
    Single_RTS_Lock : aliased RTS_Lock;
    --  This is a lock to allow only one thread of control in the RTS at a
@@ -180,10 +175,13 @@ package body System.Task_Primitives.Operations is
    procedure Abort_Handler (signo : Signal) is
       pragma Unreferenced (signo);
 
-      Self_ID : constant Task_Id := Self;
-      Old_Set : aliased sigset_t;
-      Result : int;
+      Self_ID        : constant Task_Id := Self;
+      Old_Set        : aliased sigset_t;
+      Unblocked_Mask : aliased sigset_t;
+      Result         : int;
       pragma Warnings (Off, Result);
+
+      use System.Interrupt_Management;
 
    begin
       --  It is not safe to raise an exception when using ZCX and the GCC
@@ -201,10 +199,26 @@ package body System.Task_Primitives.Operations is
 
          --  Make sure signals used for RTS internal purposes are unmasked
 
+         Result := sigemptyset (Unblocked_Mask'Access);
+         pragma Assert (Result = 0);
+         Result :=
+           sigaddset
+           (Unblocked_Mask'Access,
+            Signal (Abort_Task_Interrupt));
+         pragma Assert (Result = 0);
+         Result := sigaddset (Unblocked_Mask'Access, SIGBUS);
+         pragma Assert (Result = 0);
+         Result := sigaddset (Unblocked_Mask'Access, SIGFPE);
+         pragma Assert (Result = 0);
+         Result := sigaddset (Unblocked_Mask'Access, SIGILL);
+         pragma Assert (Result = 0);
+         Result := sigaddset (Unblocked_Mask'Access, SIGSEGV);
+         pragma Assert (Result = 0);
+
          Result :=
            pthread_sigmask
              (SIG_UNBLOCK,
-              Signal_Mask'Access,
+              Unblocked_Mask'Access,
               Old_Set'Access);
          pragma Assert (Result = 0);
 

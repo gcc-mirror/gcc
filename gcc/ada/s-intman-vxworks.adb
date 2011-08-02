@@ -19,10 +19,10 @@
 -- additional permissions described in the GCC Runtime Library Exception,   --
 -- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- In particular,  you can freely  distribute your programs  built with the --
+-- GNAT Pro compiler, including any required library run-time units,  using --
+-- any licensing terms  of your choosing.  See the AdaCore Software License --
+-- for full details.                                                        --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
 -- Extensive contributions were provided by Ada Core Technologies, Inc.     --
@@ -38,27 +38,6 @@ package body System.Interrupt_Management is
 
    use System.OS_Interface;
    use type Interfaces.C.int;
-
-   type Signal_List is array (Signal_ID range <>) of Signal_ID;
-   Exception_Signals : constant Signal_List (1 .. 4) :=
-                         (SIGFPE, SIGILL, SIGSEGV, SIGBUS);
-
-   Exception_Action : aliased struct_sigaction;
-   --  Keep this a variable global so that it is initialized only once
-
-   Signal_Mask : aliased sigset_t;
-   pragma Import (C, Signal_Mask, "__gnat_signal_mask");
-   --  Mask indicating that all exception signals are to be masked
-   --  when a signal is propagated.
-
-   procedure Notify_Exception
-     (signo      : Signal;
-      siginfo    : System.Address;
-      sigcontext : System.Address);
-   pragma Import (C, Notify_Exception, "__gnat_error_handler");
-   --  Map a signal to Ada exception and raise it.  Different versions
-   --  of VxWorks need different mappings. This is addressed in init.c in
-   --  __gnat_map_signal.
 
    -----------------------
    -- Local Subprograms --
@@ -76,26 +55,6 @@ package body System.Interrupt_Management is
    --    'r'   Interrupt_State pragma set state to Runtime
    --    's'   Interrupt_State pragma set state to System (use "default"
    --           system handler)
-
-   ---------------------------
-   -- Initialize_Interrupts --
-   ---------------------------
-
-   --  Since there is no signal inheritance between VxWorks tasks, we need
-   --  to initialize signal handling in each task.
-
-   procedure Initialize_Interrupts is
-      Result  : int;
-      old_act : aliased struct_sigaction;
-   begin
-      for J in Exception_Signals'Range loop
-         Result :=
-           sigaction
-             (Signal (Exception_Signals (J)), Exception_Action'Access,
-              old_act'Unchecked_Access);
-         pragma Assert (Result = 0);
-      end loop;
-   end Initialize_Interrupts;
 
    ----------------
    -- Initialize --
@@ -117,12 +76,6 @@ package body System.Interrupt_Management is
       --  SIGTERM might be a good one.
 
       Abort_Task_Interrupt := SIGABRT;
-
-      --  Signal_Mask was initialized in __gnat_install_handler
-
-      Exception_Action.sa_handler := Notify_Exception'Address;
-      Exception_Action.sa_flags := SA_ONSTACK + SA_SIGINFO;
-      Exception_Action.sa_mask := Signal_Mask;
 
       --  Initialize hardware interrupt handling
 

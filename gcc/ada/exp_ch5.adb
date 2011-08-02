@@ -1943,13 +1943,17 @@ package body Exp_Ch5 is
                --  correspond to initializations, where we do want to copy the
                --  tag (No_Ctrl_Actions flag set True) by the expander and we
                --  do not need to mess with tags ever (Expand_Ctrl_Actions flag
-               --  is set True in this case).
+               --  is set True in this case). Finally, it is suppressed if the
+               --  restriction No_Dispatching_Calls is in force because in that
+               --  case predefined primitives are not generated.
 
                or else (Is_Tagged_Type (Typ)
                          and then not Is_Value_Type (Etype (Lhs))
                          and then Chars (Current_Scope) /= Name_uAssign
                          and then Expand_Ctrl_Actions
-                         and then not Discriminant_Checks_Suppressed (Empty))
+                         and then not Discriminant_Checks_Suppressed (Empty)
+                         and then
+                           not Restriction_Active (No_Dispatching_Calls))
             then
                --  Fetch the primitive op _assign and proper type to call it.
                --  Because of possible conflicts between private and full view,

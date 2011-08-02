@@ -282,6 +282,7 @@ package body Sem_Elim is
 
                   if Present (Overridden)
                     and then not Is_Eliminated (Overridden)
+                    and then not Is_Abstract_Subprogram (Overridden)
                   then
                      Error_Msg_Name_1 := Chars (E);
                      Error_Msg_N ("cannot eliminate subprogram %", E);

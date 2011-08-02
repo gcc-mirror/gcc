@@ -481,34 +481,25 @@ package body Atree is
      (Src            : Node_Id;
       With_Extension : Boolean) return Node_Id
    is
-      New_Id : Node_Id     := Src;
-      Nod    : Node_Record := Default_Node;
-      Ext1   : Node_Record := Default_Node_Extension;
-      Ext2   : Node_Record := Default_Node_Extension;
-      Ext3   : Node_Record := Default_Node_Extension;
-      Ext4   : Node_Record := Default_Node_Extension;
+      New_Id : Node_Id;
 
    begin
-      if Present (Src) then
-         Nod := Nodes.Table (Src);
-
-         if Has_Extension (Src) then
-            Ext1 := Nodes.Table (Src + 1);
-            Ext2 := Nodes.Table (Src + 2);
-            Ext3 := Nodes.Table (Src + 3);
-            Ext4 := Nodes.Table (Src + 4);
-         end if;
-      end if;
-
-      if not (Present (Src)
-               and then not Has_Extension (Src)
-               and then With_Extension
-               and then Src = Nodes.Last)
+      if Present (Src)
+        and then not Has_Extension (Src)
+        and then With_Extension
+        and then Src = Nodes.Last
       then
+         New_Id := Src;
+      else
          --  We are allocating a new node, or extending a node
          --  other than Nodes.Last.
 
-         Nodes.Append (Nod);
+         if Present (Src) then
+            Nodes.Append (Nodes.Table (Src));
+         else
+            Nodes.Append (Default_Node);
+         end if;
+
          New_Id := Nodes.Last;
          Orig_Nodes.Append (New_Id);
          Node_Count := Node_Count + 1;
@@ -524,10 +515,15 @@ package body Atree is
       --  Set extension nodes if required
 
       if With_Extension then
-         Nodes.Append (Ext1);
-         Nodes.Append (Ext2);
-         Nodes.Append (Ext3);
-         Nodes.Append (Ext4);
+         if Present (Src) and then Has_Extension (Src) then
+            for J in 1 .. 4 loop
+               Nodes.Append (Nodes.Table (Src + Node_Id (J)));
+            end loop;
+         else
+            for J in 1 .. 4 loop
+               Nodes.Append (Default_Node_Extension);
+            end loop;
+         end if;
       end if;
 
       Orig_Nodes.Set_Last (Nodes.Last);

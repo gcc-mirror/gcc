@@ -40,10 +40,10 @@ package Stylesw is
    --  options. The default values shown here correspond to no style checking.
 
    --  If any of these values is set to a non-default value, then
-   --  Opt.Style_Check is set True to active calls to this package.
+   --  Opt.Style_Check is set True to activate calls to this package.
 
    --  The actual mechanism for setting these switches to other than default
-   --  values is via the Set_Style_Check_Option procedure or through a call to
+   --  values is via the Set_Style_Check_Options procedure or through a call to
    --  Set_Default_Style_Check_Options. They should not be set directly in any
    --  other manner.
 
@@ -315,8 +315,8 @@ package Stylesw is
 
    procedure Set_Style_Check_Options (Options : String);
    --  Like the above procedure, but used when the Options string is known to
-   --  be valid. This is for example appropriate for calls where the string ==
-   --  was obtained by Save_Style_Check_Options.
+   --  be valid. This is for example appropriate for calls where the string was
+   --  obtained by Save_Style_Check_Options.
 
    procedure Reset_Style_Check_Options;
    --  Sets all style check options to off

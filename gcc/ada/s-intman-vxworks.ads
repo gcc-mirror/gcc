@@ -19,10 +19,10 @@
 -- additional permissions described in the GCC Runtime Library Exception,   --
 -- version 3.1, as published by the Free Software Foundation.               --
 --                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- In particular,  you can freely  distribute your programs  built with the --
+-- GNAT Pro compiler, including any required library run-time units,  using --
+-- any licensing terms  of your choosing.  See the AdaCore Software License --
+-- for full details.                                                        --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
 -- Extensive contributions were provided by Ada Core Technologies, Inc.     --
@@ -87,6 +87,7 @@ package System.Interrupt_Management is
    --  or used to implement time delays.
 
    procedure Initialize_Interrupts;
+   pragma Import (C, Initialize_Interrupts, "__gnat_install_handler");
    --  Under VxWorks, there is no signal inheritance between tasks.
    --  This procedure is used to initialize signal-to-exception mapping in
    --  each task.
