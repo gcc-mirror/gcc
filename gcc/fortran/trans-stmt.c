@@ -4867,7 +4867,7 @@ gfc_trans_allocate (gfc_code * code)
 
 	  /* Allocate - for non-pointers with re-alloc checking.  */
 	  if (gfc_expr_attr (expr).allocatable)
-	    gfc_allocate_allocatable (&se.pre, se.expr, memsz,
+	    gfc_allocate_allocatable (&se.pre, se.expr, memsz, NULL_TREE,
 				      stat, errmsg, errlen, expr);
 	  else
 	    gfc_allocate_using_malloc (&se.pre, se.expr, memsz, stat);

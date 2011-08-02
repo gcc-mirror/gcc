@@ -635,18 +635,20 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
    This function follows the following pseudo-code:
 
     void *
-    allocate (size_t size, integer_type stat)
+    allocate (size_t size, void** token, int *stat, char* errmsg, int errlen)
     {
       void *newmem;
-    
-      newmem = _caf_register ( size, regtype, NULL, &stat, NULL, NULL);
+
+      newmem = _caf_register (size, regtype, token, &stat, errmsg, errlen);
       return newmem;
     }  */
-void
+static void
 gfc_allocate_using_lib (stmtblock_t * block, tree pointer, tree size,
-			tree status, tree errmsg, tree errlen)
+			tree token, tree status, tree errmsg, tree errlen)
 {
   tree tmp, pstat;
+
+  gcc_assert (token != NULL_TREE);
 
   /* Evaluate size only once, and make sure it has the right type.  */
   size = gfc_evaluate_now (size, block);
@@ -673,8 +675,7 @@ gfc_allocate_using_lib (stmtblock_t * block, tree pointer, tree size,
 			      build_int_cst (size_type_node, 1)),
 	     build_int_cst (integer_type_node,
 			    GFC_CAF_COARRAY_ALLOC),
-	     null_pointer_node,  /* token  */
-	     pstat, errmsg, errlen);
+	     token, pstat, errmsg, errlen);
 
   tmp = fold_build2_loc (input_location, MODIFY_EXPR,
 			 TREE_TYPE (pointer), pointer,
@@ -706,8 +707,8 @@ gfc_allocate_using_lib (stmtblock_t * block, tree pointer, tree size,
     expr must be set to the original expression being allocated for its locus
     and variable name in case a runtime error has to be printed.  */
 void
-gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size, tree status,
-			  tree errmsg, tree errlen, gfc_expr* expr)
+gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size, tree token,
+			  tree status, tree errmsg, tree errlen, gfc_expr* expr)
 {
   stmtblock_t alloc_block;
   tree tmp, null_mem, alloc, error;
@@ -726,7 +727,7 @@ gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size, tree status,
 
   if (gfc_option.coarray == GFC_FCOARRAY_LIB
       && gfc_expr_attr (expr).codimension)
-    gfc_allocate_using_lib (&alloc_block, mem, size, status,
+    gfc_allocate_using_lib (&alloc_block, mem, size, token, status,
 			    errmsg, errlen);
   else
     gfc_allocate_using_malloc (&alloc_block, mem, size, status);
