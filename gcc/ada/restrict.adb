@@ -570,7 +570,7 @@ package body Restrict is
 
       for J in SPARK_Hides.First .. SPARK_Hides.Last loop
          if SPARK_Hides.Table (J).Start <= Loc
-           and then Loc <= SPARK_Hides.Table (J).Stop
+           and then Loc < SPARK_Hides.Table (J).Stop
          then
             return True;
          end if;
