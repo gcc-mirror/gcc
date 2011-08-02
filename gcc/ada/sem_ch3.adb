@@ -3168,6 +3168,15 @@ package body Sem_Ch3 is
 
          Apply_Scalar_Range_Check (E, T);
          Apply_Static_Length_Check (E, T);
+
+         if Nkind (Original_Node (N)) = N_Object_Declaration
+           and then Comes_From_Source (Original_Node (N))
+           and then Formal_Verification_Mode  --  only call test if needed
+           and then not Is_SPARK_Initialization_Expr (E)
+         then
+            Check_Formal_Restriction
+              ("initialization expression is not appropriate", E);
+         end if;
       end if;
 
       --  If the No_Streams restriction is set, check that the type of the
