@@ -41,6 +41,7 @@ with Nlists;   use Nlists;
 with Output;   use Output;
 with Opt;      use Opt;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
@@ -1099,6 +1100,61 @@ package body Sem_Util is
          end case;
       end if;
    end Cannot_Raise_Constraint_Error;
+
+   ---------------------------------------
+   -- Check_Later_Vs_Basic_Declarations --
+   ---------------------------------------
+
+   procedure Check_Later_Vs_Basic_Declarations
+     (Decls          : List_Id;
+      During_Parsing : Boolean)
+   is
+      Body_Sloc : Source_Ptr;
+      Decl      : Node_Id;
+   begin
+      Decl := First (Decls);
+
+      --  Loop through sequence of basic declarative items
+
+      Outer : while Present (Decl) loop
+         if Nkind (Decl) /= N_Subprogram_Body
+           and then Nkind (Decl) /= N_Package_Body
+           and then Nkind (Decl) /= N_Task_Body
+           and then Nkind (Decl) not in N_Body_Stub
+         then
+            Next (Decl);
+
+            --  Once a body is encountered, we only allow later declarative
+            --  items. The inner loop checks the rest of the list.
+
+         else
+            Body_Sloc := Sloc (Decl);
+
+            Inner : while Present (Decl) loop
+               if (Nkind (Decl) not in N_Later_Decl_Item
+                    or else (not During_Parsing
+                              and then
+                                Nkind (Decl) = N_Package_Declaration))
+                 and then Nkind (Decl) /= N_Pragma
+               then
+                  if During_Parsing then
+                     if Ada_Version = Ada_83 then
+                        Error_Msg_Sloc := Body_Sloc;
+                        Error_Msg_N
+                          ("(Ada 83) decl cannot appear after body#", Decl);
+                     end if;
+                  else
+                     Error_Msg_Sloc := Body_Sloc;
+                     Check_Formal_Restriction
+                       ("decl cannot appear after body#", Decl);
+                  end if;
+               end if;
+
+               Next (Decl);
+            end loop Inner;
+         end if;
+      end loop Outer;
+   end Check_Later_Vs_Basic_Declarations;
 
    -----------------------------------------
    -- Check_Dynamically_Tagged_Expression --
@@ -10478,7 +10534,7 @@ package body Sem_Util is
    procedure Process_End_Label
      (N   : Node_Id;
       Typ : Character;
-      Ent  : Entity_Id)
+      Ent : Entity_Id)
    is
       Loc  : Source_Ptr;
       Nam  : Node_Id;
@@ -10629,6 +10685,18 @@ package body Sem_Util is
 
          Get_Decoded_Name_String (Chars (Endl));
          Set_Sloc (Endl, Sloc (Endl) + Source_Ptr (Name_Len));
+
+      else
+         --  In SPARK mode, no missing label is allowed for packages and
+         --  subprogram bodies. Detect those cases by testing whether
+         --  Process_End_Label was called for a body (Typ = 't') or a package.
+
+         if (SPARK_Mode or else Restriction_Check_Required (SPARK))
+           and then (Typ = 't' or else Ekind (Ent) = E_Package)
+         then
+            Error_Msg_Node_1 := Endl;
+            Check_Formal_Restriction ("`END &` required", Endl, Force => True);
+         end if;
       end if;
 
       --  Now generate the e/t reference

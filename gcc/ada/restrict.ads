@@ -195,11 +195,13 @@ package Restrict is
    --  If a restriction exists post error message at the given node.
 
    procedure Check_Restriction
-     (R : Restriction_Id;
-      N : Node_Id;
-      V : Uint := Uint_Minus_1);
+     (Msg_Issued : out Boolean;
+      R          : Restriction_Id;
+      N          : Node_Id;
+      V          : Uint := Uint_Minus_1);
    --  Checks that the given restriction is not set, and if it is set, an
-   --  appropriate message is posted on the given node. Also records the
+   --  appropriate message is posted on the given node, in which case
+   --  Msg_Issued is set to True (and False otherwise). Also records the
    --  violation in the appropriate internal arrays. Note that it is mandatory
    --  to always use this routine to check if a restriction is violated. Such
    --  checks must never be done directly by the caller, since otherwise
@@ -207,6 +209,13 @@ package Restrict is
    --  value of V is relevant only for parameter restrictions, and in this case
    --  indicates the exact count for the violation. If the exact count is not
    --  known, V is left at its default of -1 which indicates an unknown count.
+
+   procedure Check_Restriction
+     (R          : Restriction_Id;
+      N          : Node_Id;
+      V          : Uint := Uint_Minus_1);
+   --  Wrapper on Check_Restriction with Msg_Issued, with the out-parameter
+   --  being ignored here.
 
    procedure Check_Restriction_No_Dependence (U : Node_Id; Err : Node_Id);
    --  Called when a dependence on a unit is created (either implicitly, or by
@@ -219,11 +228,14 @@ package Restrict is
    --  an elaboration routine. If elaboration code is not allowed, an error
    --  message is posted on the node given as argument.
 
-   procedure Check_Formal_Restriction (Msg : String; N : Node_Id);
+   procedure Check_Formal_Restriction
+     (Msg   : String;
+      N     : Node_Id;
+      Force : Boolean := False);
    --  Node N represents a construct not allowed in formal mode. If this is a
-   --  source node, then an error is issued on N (using Err_Msg_F), prepending
-   --  "|~~" (error not serious, language prepended). Call has no effect if
-   --  not in formal mode, or if N does not come originally from source.
+   --  source node, or if the restriction is forced (Force = True), and the
+   --  SPARK restriction is set, then an error is issued on N. Msg is appended
+   --  to the restriction failure message.
 
    procedure Check_Formal_Restriction (Msg1, Msg2 : String; N : Node_Id);
    --  Same as Check_Formal_Restriction except there is a continuation message

@@ -5345,13 +5345,26 @@ package body Sem_Ch8 is
 
       if Nkind (P) = N_Error then
          return;
+      end if;
+
+      --  Selector name cannot be a character literal or an operator symbol in
+      --  SPARK.
+
+      if SPARK_Mode or else Restriction_Check_Required (SPARK) then
+         if Nkind (Selector_Name (N)) = N_Character_Literal then
+            Check_Formal_Restriction
+              ("character literal cannot be prefixed", N);
+         elsif Nkind (Selector_Name (N)) = N_Operator_Symbol then
+            Check_Formal_Restriction ("operator symbol cannot be prefixed", N);
+         end if;
+      end if;
 
       --  If the selector already has an entity, the node has been constructed
       --  in the course of expansion, and is known to be valid. Do not verify
       --  that it is defined for the type (it may be a private component used
       --  in the expansion of record equality).
 
-      elsif Present (Entity (Selector_Name (N))) then
+      if Present (Entity (Selector_Name (N))) then
          if No (Etype (N))
            or else Etype (N) = Any_Type
          then
@@ -5474,13 +5487,13 @@ package body Sem_Ch8 is
 
          --  Selector name is restricted in SPARK
 
-         if SPARK_Mode then
+         if SPARK_Mode or else Restriction_Check_Required (SPARK) then
             if Is_Subprogram (P_Name) then
-               Error_Msg_F
-                 ("|~~prefix of expanded name cannot be a subprogram", P);
+               Check_Formal_Restriction
+                 ("prefix of expanded name cannot be a subprogram", P);
             elsif Ekind (P_Name) = E_Loop then
-               Error_Msg_F
-                 ("|~~prefix of expanded name cannot be a loop statement", P);
+               Check_Formal_Restriction
+                 ("prefix of expanded name cannot be a loop statement", P);
             end if;
          end if;
 

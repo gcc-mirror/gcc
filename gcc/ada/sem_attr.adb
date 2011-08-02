@@ -2071,16 +2071,15 @@ package body Sem_Attr is
       --  In SPARK or ALFA, attributes of private types are only allowed if
       --  the full type declaration is visible.
 
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (N))
-        and then Is_Entity_Name (P)
+      if Is_Entity_Name (P)
+        and then Present (Entity (P))  --  needed in some cases
         and then Is_Type (Entity (P))
         and then Is_Private_Type (P_Type)
         and then not In_Open_Scopes (Scope (P_Type))
         and then not In_Spec_Expression
       then
-         Error_Msg_FE
-           ("|~~invisible attribute of}", N, First_Subtype (P_Type));
+         Error_Msg_Node_1 := First_Subtype (P_Type);
+         Check_Formal_Restriction ("invisible attribute of}", N);
       end if;
 
       --  Remaining processing depends on attribute

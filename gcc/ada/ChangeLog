@@ -1,3 +1,84 @@
+2011-08-02  Pascal Obry  <obry@adacore.com>
+
+	* prj-proc.adb, make.adb, makeutl.adb: Minor reformatting.
+
+2011-08-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop): Code cleanup and reorganization.
+	Set the associated loop as the related expression of internally
+	generated cursors.
+	* exp_ch7.adb (Is_Container_Cursor): New routine.
+	(Wrap_Transient_Declaration): Supress the finalization of the list
+	controller when the declaration denotes a container cursor.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* opt.ads (SPARK_Mode): update comment, SPARK_Mode only set through
+	command line now.
+	* par-ch3.adb (P_Delta_Constraint): remove check in SPARK mode that the
+	expression is a simple expression. This check cannot be performed in
+	the semantics, so just drop it.
+	(P_Index_Or_Discriminant_Constraint): move check that the index or
+	discriminant is a subtype mark to Analyze_Subtype_Declaration in the
+	semantics. Other cases were previously checked in the semantics.
+	* par-ch4.adb (P_Name): move checks that a selector name is not
+	character literal or an operator symbol to Find_Selected_Component in
+	the semantics
+	* par-ch5.adb (Parse_Decls_Begin_End): move check that basic
+	declarations are not placed after later declarations in a separate
+	procedure in Sem_Util (possibly not the best choice?), to be used both
+	during parsing, for Ada 83 mode, and during semantic analysis, for
+	SPARK mode.
+	* par-endh.adb (Check_End): move check that end label is not missing
+	to Process_End_Label in the semantics
+	* par-prag.adb (Process_Restrictions_Or_Restriction_Warnings): remove
+	the special case for SPARK restriction
+	* par.adb: use and with Sem_Util, for use in Parse_Decls_Begin_End
+	* restrict.adb, restrict.ads (Check_Formal_Restriction): add a
+	parameter Force to issue the error message even on internal node (used
+	for generated end label). Call Check_Restriction to check when an error
+	must be issued. In SPARK mode, issue an error message even if the
+	restriction is not set.
+	(Check_Restriction): new procedure with an additional out parameter to
+	inform the caller that a message has been issued
+	* sem_aggr.adb: Minor modification of message
+	* sem_attr.adb (Analyze_Attribute): call Check_Formal_Restriction
+	instead of issuing an error message directly
+	* sem_ch3.adb (Analyze_Declarations): move here the check that basic
+	declarations are not placed after later declarations, by calling
+	Check_Later_Vs_Basic_Declarations
+	(Analyze_Subtype_Declaration): move here the check that an index or
+	discriminant constraint must be a subtype mark. Change the check that
+	a subtype of String must start at one so that it works on subtype marks.
+	* sem_ch4.adb (Analyze_Call): move here the check that a named
+	association cannot follow a positional one in a call
+	* sem_ch5.adb (Check_Unreachable_Code): call Check_Formal_Restriction
+	instead of issuing an error message directly
+	* sem_ch8.adb (Find_Selected_Component): move here the check that a
+	selector name is not a character literal or an operator symbol. Move
+	here the check that the prefix of an expanded name cannot be a
+	subprogram or a loop statement.
+	* sem_util.adb, sem_util.ads (Check_Later_Vs_Basic_Declarations): new
+	procedure called from parsing and semantics to check that basic
+	declarations are not placed after later declarations
+	(Process_End_Label): move here the check that end label is not missing
+
+2011-08-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Analyze_Enumeration_Representation_Clause): Ignore enum
+	representation clause in codepeer mode, since it confuses CodePeer and
+	does not bring useful info.
+
+2011-08-02  Ed Falis  <falis@adacore.com>
+
+	* init.c: initialize fp hw on MILS.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* errout.adb (First_Node): for bodies, return the node itself (small
+	optimization). For other nodes, do not check source_unit if the node
+	comes from Standard.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch3.adb: Minor comment additions.

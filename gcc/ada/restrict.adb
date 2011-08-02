@@ -109,24 +109,59 @@ package body Restrict is
    -- Check_Formal_Restriction --
    ------------------------------
 
-   procedure Check_Formal_Restriction (Msg : String; N : Node_Id) is
+   procedure Check_Formal_Restriction
+     (Msg   : String;
+      N     : Node_Id;
+      Force : Boolean := False)
+   is
+      Msg_Issued          : Boolean;
+      Save_Error_Msg_Sloc : Source_Ptr;
    begin
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (N))
-      then
-         Error_Msg_F ("|~~" & Msg, N);
+      if Force or else Comes_From_Source (Original_Node (N)) then
+
+         --  Since the call to Restriction_Msg from Check_Restriction may set
+         --  Error_Msg_Sloc to the location of the pragma restriction, save and
+         --  restore the previous value of the global variable around the call.
+
+         --  ??? N in call to Check_Restriction should be First_Node (N), but
+         --  this causes an exception to be raised when analyzing osint.adb.
+         --  To be modified.
+
+         Save_Error_Msg_Sloc := Error_Msg_Sloc;
+         Check_Restriction (Msg_Issued, SPARK, N);  --  N -> First_Node (N)
+         Error_Msg_Sloc := Save_Error_Msg_Sloc;
+
+         if Msg_Issued then
+            Error_Msg_F ("\\| " & Msg, N);
+         elsif SPARK_Mode then
+            Error_Msg_F ("|~~" & Msg, N);
+         end if;
       end if;
    end Check_Formal_Restriction;
 
    procedure Check_Formal_Restriction (Msg1, Msg2 : String; N : Node_Id) is
+      Msg_Issued          : Boolean;
+      Save_Error_Msg_Sloc : Source_Ptr;
    begin
       pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
 
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (N))
-      then
-         Error_Msg_F ("|~~" & Msg1, N);
-         Error_Msg_F (Msg2, N);
+      if Comes_From_Source (Original_Node (N)) then
+
+         --  Since the call to Restriction_Msg from Check_Restriction may set
+         --  Error_Msg_Sloc to the location of the pragma restriction, save and
+         --  restore the previous value of the global variable around the call.
+
+         Save_Error_Msg_Sloc := Error_Msg_Sloc;
+         Check_Restriction (Msg_Issued, SPARK, First_Node (N));
+         Error_Msg_Sloc := Save_Error_Msg_Sloc;
+
+         if Msg_Issued then
+            Error_Msg_F ("\\| " & Msg1, N);
+            Error_Msg_F (Msg2, N);
+         elsif SPARK_Mode then
+            Error_Msg_F ("|~~" & Msg1, N);
+            Error_Msg_F (Msg2, N);
+         end if;
       end if;
    end Check_Formal_Restriction;
 
@@ -256,6 +291,18 @@ package body Restrict is
       N : Node_Id;
       V : Uint := Uint_Minus_1)
    is
+      Msg_Issued : Boolean;
+      pragma Unreferenced (Msg_Issued);
+   begin
+      Check_Restriction (Msg_Issued, R, N, V);
+   end Check_Restriction;
+
+   procedure Check_Restriction
+     (Msg_Issued : out Boolean;
+      R          : Restriction_Id;
+      N          : Node_Id;
+      V          : Uint := Uint_Minus_1)
+   is
       VV : Integer;
       --  V converted to integer form. If V is greater than Integer'Last,
       --  it is reset to minus 1 (unknown value).
@@ -323,6 +370,8 @@ package body Restrict is
    --  Start of processing for Check_Restriction
 
    begin
+      Msg_Issued := False;
+
       --  In CodePeer mode, we do not want to check for any restriction, or set
       --  additional restrictions other than those already set in gnat1drv.adb
       --  so that we have consistency between each compilation.
@@ -386,6 +435,7 @@ package body Restrict is
                    and then Restrictions.Value (R) = 0)
         or else Restrictions.Count (R) > Restrictions.Value (R)
       then
+         Msg_Issued := True;
          Restriction_Msg (R, N);
       end if;
    end Check_Restriction;

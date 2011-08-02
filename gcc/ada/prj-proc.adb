@@ -2694,7 +2694,6 @@ package body Prj.Proc is
                          Virtual_Prefix
             then
                Project.Virtual := True;
-
             end if;
 
             Project.Path.Display_Name :=

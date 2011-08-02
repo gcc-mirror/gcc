@@ -1332,6 +1332,7 @@ package body Errout is
          --  best to just ignore this situation.
 
          if Loc < Eloc
+           and then Loc /= Standard_Location
            and then Get_Source_File_Index (Loc) = Sfile
          then
             Earliest := Original_Node (N);
@@ -1344,10 +1345,17 @@ package body Errout is
    --  Start of processing for First_Node
 
    begin
-      Earliest := Original_Node (C);
-      Eloc := Sloc (Earliest);
-      Search_Tree_First (Original_Node (C));
-      return Earliest;
+      if Nkind (C) in N_Unit_Body
+        or else Nkind (C) in N_Proper_Body
+      then
+         return C;
+
+      else
+         Earliest := Original_Node (C);
+         Eloc := Sloc (Earliest);
+         Search_Tree_First (Original_Node (C));
+         return Earliest;
+      end if;
    end First_Node;
 
    ----------------

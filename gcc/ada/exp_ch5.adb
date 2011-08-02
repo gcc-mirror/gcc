@@ -2859,13 +2859,10 @@ package body Exp_Ch5 is
          --  with the obvious replacements if "reverse" is specified.
 
          declare
-            Element_Type  : constant Entity_Id := Etype (Id);
-            Pack          : constant Entity_Id := Scope (Base_Type (Typ));
-            Name_Init     : Name_Id;
-            Name_Step     : Name_Id;
-            Cond          : Node_Id;
-            Cursor_Decl   : Node_Id;
-            Renaming_Decl : Node_Id;
+            Element_Type : constant Entity_Id := Etype (Id);
+            Pack         : constant Entity_Id := Scope (Base_Type (Typ));
+            Name_Init    : Name_Id;
+            Name_Step    : Name_Id;
 
          begin
             Stats := Statements (N);
@@ -2876,52 +2873,24 @@ package body Exp_Ch5 is
                Cursor := Id;
             end if;
 
+            --  Must verify that the container has a reverse iterator ???
+
             if Reverse_Present (I_Spec) then
-
-               --  Must verify that the container has a reverse iterator ???
-
                Name_Init := Name_Last;
                Name_Step := Name_Previous;
-
             else
                Name_Init := Name_First;
                Name_Step := Name_Next;
             end if;
 
-            --  C : Cursor_Type := Container.First;
-
-            Cursor_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Cursor,
-                Object_Definition   =>
-                  Make_Selected_Component (Loc,
-                    Prefix        => New_Occurrence_Of (Pack, Loc),
-                    Selector_Name => Make_Identifier (Loc, Name_Cursor)),
-                Expression =>
-                  Make_Selected_Component (Loc,
-                    Prefix        => Relocate_Node (Container),
-                    Selector_Name => Make_Identifier (Loc, Name_Init)));
-
-            Insert_Action (N, Cursor_Decl);
-
-            --  while C /= No_Element loop
-
-            Cond := Make_Op_Ne (Loc,
-                      Left_Opnd  => New_Occurrence_Of (Cursor, Loc),
-                      Right_Opnd => Make_Selected_Component (Loc,
-                         Prefix        => New_Occurrence_Of (Pack, Loc),
-                         Selector_Name =>
-                           Make_Identifier (Loc, Name_No_Element)));
+            --  The code below only handles containers where Element is not a
+            --  primitive operation of the container. This excludes for now the
+            --  Hi-Lite formal containers. Generate:
+            --
+            --    Id : Element_Type renames Container.Element (Cursor);
 
             if Of_Present (I_Spec) then
-
-               --  Id : Element_Type renames Container.Element (Cursor);
-
-               --  The code below only handles containers where Element is not
-               --  a primitive operation of the container. This excludes
-               --  for now the Hi-Lite formal containers.
-
-               Renaming_Decl :=
+               Prepend_To (Stats,
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
                    Subtype_Mark        =>
@@ -2934,9 +2903,7 @@ package body Exp_Ch5 is
                            Selector_Name =>
                              Make_Identifier (Loc, Chars => Name_Element)),
                        Expressions =>
-                         New_List (New_Occurrence_Of (Cursor, Loc))));
-
-               Prepend (Renaming_Decl, Stats);
+                         New_List (New_Occurrence_Of (Cursor, Loc)))));
             end if;
 
             --  For both iterator forms, add call to step operation (Next or
@@ -2951,11 +2918,52 @@ package body Exp_Ch5 is
                 Parameter_Associations =>
                   New_List (New_Occurrence_Of (Cursor, Loc))));
 
-            New_Loop := Make_Loop_Statement (Loc,
-              Iteration_Scheme =>
-                Make_Iteration_Scheme (Loc, Condition => Cond),
-              Statements       => Stats,
-              End_Label        => Empty);
+            --  Generate:
+            --    while Cursor /= No_Element loop
+            --       <Stats>
+            --    end loop;
+
+            New_Loop :=
+              Make_Loop_Statement (Loc,
+                Iteration_Scheme =>
+                  Make_Iteration_Scheme (Loc,
+                    Condition =>
+                      Make_Op_Ne (Loc,
+                        Left_Opnd =>
+                          New_Occurrence_Of (Cursor, Loc),
+                        Right_Opnd =>
+                          Make_Selected_Component (Loc,
+                            Prefix =>
+                              New_Occurrence_Of (Pack, Loc),
+                            Selector_Name =>
+                              Make_Identifier (Loc, Name_No_Element)))),
+                Statements => Stats,
+                End_Label  => Empty);
+
+            --  When the cursor is internally generated, associate it with the
+            --  loop statement.
+
+            if Of_Present (I_Spec) then
+               Set_Ekind (Cursor, E_Variable);
+               Set_Related_Expression (Cursor, New_Loop);
+            end if;
+
+            --  Create the declaration of the cursor and insert it before the
+            --  source loop. Generate:
+            --
+            --    C : Cursor_Type := Container.First;
+
+            Insert_Action (N,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Cursor,
+                Object_Definition   =>
+                  Make_Selected_Component (Loc,
+                    Prefix        => New_Occurrence_Of (Pack, Loc),
+                    Selector_Name => Make_Identifier (Loc, Name_Cursor)),
+                Expression =>
+                  Make_Selected_Component (Loc,
+                    Prefix        => Relocate_Node (Container),
+                    Selector_Name => Make_Identifier (Loc, Name_Init))));
 
             --  If the range of iteration is given by a function call that
             --  returns a container, the finalization actions have been saved

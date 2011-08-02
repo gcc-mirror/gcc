@@ -3173,7 +3173,7 @@ package body Sem_Aggr is
 
          if Present (Expressions (N)) then
             Check_Formal_Restriction
-              ("named association cannot follow positional association",
+              ("named association cannot follow positional one",
                First (Choices (First (Component_Associations (N)))));
          end if;
 

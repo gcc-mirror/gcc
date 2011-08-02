@@ -146,6 +146,16 @@ package Sem_Util is
    --  not necessarily mean that CE could be raised, but a response of True
    --  means that for sure CE cannot be raised.
 
+   procedure Check_Later_Vs_Basic_Declarations
+     (Decls          : List_Id;
+      During_Parsing : Boolean);
+   --  If During_Parsing is True, check for misplacement of later vs basic
+   --  declarations in Ada 83. If During_Parsing is False, and the SPARK
+   --  restriction is set, do the same: although SPARK 95 removes the
+   --  distinction between initial and later declarative items, the distinction
+   --  remains in the Examiner (JB01-005). Note that the Examiner does not
+   --  count package declarations in later declarative items.
+
    procedure Check_Dynamically_Tagged_Expression
      (Expr        : Node_Id;
       Typ         : Entity_Id;

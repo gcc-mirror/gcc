@@ -37,6 +37,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
@@ -2501,8 +2502,8 @@ package body Sem_Ch5 is
    ----------------------------
 
    procedure Check_Unreachable_Code (N : Node_Id) is
-      Error_Loc : Source_Ptr;
-      P         : Node_Id;
+      Error_Node : Node_Id;
+      P          : Node_Id;
 
    begin
       if Is_List_Member (N)
@@ -2518,7 +2519,10 @@ package body Sem_Ch5 is
             --  someone could branch to the label, so we just ignore it, unless
             --  we are in formal mode where goto statements are not allowed.
 
-            if Nkind (Nxt) = N_Label and then not Formal_Verification_Mode then
+            if Nkind (Nxt) = N_Label
+              and then not (Formal_Verification_Mode
+                             or else Restriction_Check_Required (SPARK))
+            then
                return;
 
             --  Otherwise see if we have a real statement following us
@@ -2539,7 +2543,7 @@ package body Sem_Ch5 is
                   --  at removing warnings in deleted code, and this is one
                   --  warning we would prefer NOT to have removed.
 
-                  Error_Loc := Sloc (Nxt);
+                  Error_Node := Nxt;
 
                   --  If we have unreachable code, analyze and remove the
                   --  unreachable code, since it is useless and we don't
@@ -2574,11 +2578,11 @@ package body Sem_Ch5 is
 
                   --  Now issue the warning (or error in formal mode)
 
-                  if Formal_Verification_Mode then
-                     Error_Msg
-                       ("|~~unreachable code is not allowed", Error_Loc);
+                  if SPARK_Mode or else Restriction_Check_Required (SPARK) then
+                     Check_Formal_Restriction
+                       ("unreachable code is not allowed", Error_Node);
                   else
-                     Error_Msg ("?unreachable code!", Error_Loc);
+                     Error_Msg ("?unreachable code!", Sloc (Error_Node));
                   end if;
                end if;
 

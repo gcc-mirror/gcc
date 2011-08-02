@@ -209,21 +209,8 @@ package body Ch4 is
          --  designator.
 
          if Token not in Token_Class_Desig then
-
-            --  Selector name cannot be a character literal in SPARK
-
-            if SPARK_Mode and then Token = Tok_Char_Literal then
-               Error_Msg_SC ("|~~character literal cannot be prefixed");
-            end if;
-
             goto Scan_Name_Extension_Dot;
          else
-            --  Selector name cannot be an operator symbol in SPARK
-
-            if SPARK_Mode and then Token = Tok_Operator_Symbol then
-               Error_Msg_SC ("|~~operator symbol cannot be prefixed");
-            end if;
-
             Prefix_Node := Name_Node;
             Name_Node := New_Node (N_Selected_Component, Prev_Token_Ptr);
             Set_Prefix (Name_Node, Prefix_Node);
@@ -682,11 +669,6 @@ package body Ch4 is
             --  Test for => (allow := as error substitute)
 
             if Token = Tok_Arrow or else Token = Tok_Colon_Equal then
-               if SPARK_Mode then
-                  Error_Msg_SP ("|~~no mixing of positional and named "
-                                & "parameter association");
-               end if;
-
                Restore_Scan_State (Scan_State); -- to Id
                goto LP_State_Call;
 

@@ -788,6 +788,10 @@ package body Sem_Ch4 is
       --  Flag indicates whether an interpretation of the prefix is a
       --  parameterless call that returns an access_to_subprogram.
 
+      procedure Check_Mixed_Parameter_And_Named_Associations;
+      --  Check that parameter and named associations are not mixed. This is
+      --  a restriction in SPARK mode.
+
       function Name_Denotes_Function return Boolean;
       --  If the type of the name is an access to subprogram, this may be the
       --  type of a name, or the return type of the function being called. If
@@ -797,6 +801,33 @@ package body Sem_Ch4 is
 
       procedure No_Interpretation;
       --  Output error message when no valid interpretation exists
+
+      --------------------------------------------------
+      -- Check_Mixed_Parameter_And_Named_Associations --
+      --------------------------------------------------
+
+      procedure Check_Mixed_Parameter_And_Named_Associations is
+         Actual     : Node_Id;
+         Named_Seen : Boolean;
+      begin
+         Actual := First (Actuals);
+         Named_Seen := False;
+         while Present (Actual) loop
+            case Nkind (Actual) is
+               when N_Parameter_Association =>
+                  if Named_Seen then
+                     Check_Formal_Restriction
+                       ("named association cannot follow positional one",
+                        Actual);
+                     exit;
+                  end if;
+               when others =>
+                  Named_Seen := True;
+            end case;
+
+            Next (Actual);
+         end loop;
+      end Check_Mixed_Parameter_And_Named_Associations;
 
       ---------------------------
       -- Name_Denotes_Function --
@@ -855,6 +886,10 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Call
 
    begin
+      if SPARK_Mode or else Restriction_Check_Required (SPARK) then
+         Check_Mixed_Parameter_And_Named_Associations;
+      end if;
+
       --  Initialize the type of the result of the call to the error type,
       --  which will be reset if the type is successfully resolved.
 
@@ -1887,8 +1922,7 @@ package body Sem_Ch4 is
       ---------------------------
 
       procedure Process_Function_Call is
-         Actual : Node_Id;
-
+         Actual     : Node_Id;
       begin
          Change_Node (N, N_Function_Call);
          Set_Name (N, P);
