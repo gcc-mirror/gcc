@@ -3519,6 +3519,7 @@ package body Sem_Res is
                      declare
                         Index : Interp_Index;
                         It    : Interp;
+
                      begin
                         Get_First_Interp (A, Index, It);
                         while Present (It.Typ) loop
