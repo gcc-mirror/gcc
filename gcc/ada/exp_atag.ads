@@ -40,6 +40,7 @@ package Exp_Atag is
       Stmts : List_Id);
    --  Ada 2005 (AI-345): Generate statements that are common between timed,
    --  asynchronous, and conditional select expansion.
+   --  Comments required saying what parameters mean ???
 
    procedure Build_CW_Membership
      (Loc          : Source_Ptr;
