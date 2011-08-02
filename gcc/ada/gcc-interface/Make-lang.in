@@ -333,6 +333,7 @@ GNAT_ADA_OBJS =	\
  ada/urealp.o	\
  ada/usage.o	\
  ada/validsw.o	\
+ ada/warnsw.o   \
  ada/widechar.o
 
 # Object files for gnat executables
@@ -1530,14 +1531,14 @@ ada/csets.o : ada/ada.ads ada/a-unccon.ads ada/a-uncdea.ads ada/csets.ads \
 
 ada/cstand.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
-   ada/atree.adb ada/casing.ads ada/checks.ads ada/csets.ads \
-   ada/cstand.ads ada/cstand.adb ada/debug.ads ada/einfo.ads ada/einfo.adb \
-   ada/elists.ads ada/err_vars.ads ada/errout.ads ada/errout.adb \
-   ada/erroutc.ads ada/erroutc.adb ada/exp_ch11.ads ada/exp_disp.ads \
-   ada/exp_tss.ads ada/exp_util.ads ada/fname.ads ada/freeze.ads \
-   ada/get_targ.ads ada/gnat.ads ada/g-htable.ads ada/gnatvsn.ads \
-   ada/hostparm.ads ada/interfac.ads ada/layout.ads ada/lib.ads \
-   ada/lib-xref.ads ada/namet.ads ada/namet.adb ada/nlists.ads \
+   ada/atree.adb ada/back_end.ads ada/casing.ads ada/checks.ads \
+   ada/csets.ads ada/cstand.ads ada/cstand.adb ada/debug.ads ada/einfo.ads \
+   ada/einfo.adb ada/elists.ads ada/err_vars.ads ada/errout.ads \
+   ada/errout.adb ada/erroutc.ads ada/erroutc.adb ada/exp_ch11.ads \
+   ada/exp_disp.ads ada/exp_tss.ads ada/exp_util.ads ada/fname.ads \
+   ada/freeze.ads ada/get_targ.ads ada/gnat.ads ada/g-htable.ads \
+   ada/gnatvsn.ads ada/hostparm.ads ada/interfac.ads ada/layout.ads \
+   ada/lib.ads ada/lib-xref.ads ada/namet.ads ada/namet.adb ada/nlists.ads \
    ada/nlists.adb ada/nmake.ads ada/nmake.adb ada/opt.ads ada/output.ads \
    ada/restrict.ads ada/rident.ads ada/rtsfind.ads ada/scans.ads \
    ada/scn.ads ada/scng.ads ada/scng.adb ada/sem.ads ada/sem_attr.ads \

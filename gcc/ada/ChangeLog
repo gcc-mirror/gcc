@@ -1,3 +1,14 @@
+2011-08-02  Geert Bosch  <bosch@adacore.com>
+
+	* gcc-interface/gigi.h, gcc-interface/misc.c (enumerate_modes): New
+	function.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2011-08-02  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Set the function
+	end_locus.
+
 2011-08-02  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Check_Anonymous_Access_Components): Create extra formals
