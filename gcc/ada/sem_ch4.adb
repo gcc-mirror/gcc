@@ -369,13 +369,7 @@ package body Sem_Ch4 is
       C        : Node_Id;
 
    begin
-      --  Allocator is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~allocator is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
+      Check_Formal_Restriction ("allocator is not allowed", N);
 
       --  Deal with allocator restrictions
 
@@ -1475,13 +1469,7 @@ package body Sem_Ch4 is
          return;
       end if;
 
-      --  Conditional expression is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~conditional expression is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
+      Check_Formal_Restriction ("conditional expression is not allowed", N);
 
       Else_Expr := Next (Then_Expr);
 
@@ -1681,13 +1669,7 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Explicit_Dereference
 
    begin
-      --  Explicit dereference is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~explicit dereference is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
+      Check_Formal_Restriction ("explicit dereference is not allowed", N);
 
       Analyze (P);
       Set_Etype (N, Any_Type);
@@ -2569,13 +2551,7 @@ package body Sem_Ch4 is
 
    procedure Analyze_Null (N : Node_Id) is
    begin
-      --  Null is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~null is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
+      Check_Formal_Restriction ("null is not allowed", N);
 
       Set_Etype (N, Any_Access);
    end Analyze_Null;
@@ -3261,13 +3237,7 @@ package body Sem_Ch4 is
       Iterator : Node_Id;
 
    begin
-      --  Quantified expression is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~quantified expression is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
+      Check_Formal_Restriction ("quantified expression is not allowed", N);
 
       Set_Etype  (Ent,  Standard_Void_Type);
       Set_Parent (Ent, N);
@@ -4295,13 +4265,7 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Slice
 
    begin
-      --  Slice is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~slice is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
+      Check_Formal_Restriction ("slice is not allowed", N);
 
       Analyze (P);
       Analyze (D);

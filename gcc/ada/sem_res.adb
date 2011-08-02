@@ -3560,9 +3560,7 @@ package body Sem_Res is
             --  In SPARK or ALFA, the only view conversions are those involving
             --  ancestor conversion of an extended type.
 
-            if Formal_Verification_Mode
-              and then Comes_From_Source (Original_Node (A))
-              and then Nkind (A) = N_Type_Conversion
+            if Nkind (A) = N_Type_Conversion
               and then Ekind_In (F, E_Out_Parameter, E_In_Out_Parameter)
             then
                declare
@@ -3577,8 +3575,9 @@ package body Sem_Res is
                            and then not Is_Class_Wide_Type (Operand_Typ)
                            and then Is_Ancestor (Target_Typ, Operand_Typ))
                   then
-                     Error_Msg_F ("|~~ancestor conversion is the only "
-                                  & "permitted view conversion", A);
+                     Check_Formal_Restriction
+                       ("ancestor conversion is the only permitted view "
+                        & "conversion", A);
                   end if;
                end;
             end if;
@@ -4827,15 +4826,14 @@ package body Sem_Res is
       --  fixed point types shall be qualified or explicitly converted to
       --  identify the result type.
 
-      if Formal_Verification_Mode
-        and then (Is_Fixed_Point_Type (Etype (L))
-                   or else Is_Fixed_Point_Type (Etype (R)))
+      if (Is_Fixed_Point_Type (Etype (L))
+           or else Is_Fixed_Point_Type (Etype (R)))
         and then Nkind_In (N, N_Op_Multiply, N_Op_Divide)
         and then
           not Nkind_In (Parent (N), N_Qualified_Expression, N_Type_Conversion)
       then
-         Error_Msg_F
-           ("|~~operation should be qualified or explicitly converted", N);
+         Check_Formal_Restriction
+           ("operation should be qualified or explicitly converted", N);
       end if;
 
       --  Set overflow and division checking bit. Much cleverer code needed
@@ -5842,18 +5840,16 @@ package body Sem_Res is
       --  In SPARK or ALFA, ordering operators <, <=, >, >= are not defined
       --  for Boolean types or array types except String.
 
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (N))
+      if Is_Boolean_Type (T) then
+         Check_Formal_Restriction
+           ("comparison is not defined on Boolean type", N);
+      elsif Is_Array_Type (T)
+        and then Base_Type (T) /= Standard_String
       then
-         if Is_Boolean_Type (T) then
-            Error_Msg_F ("|~~comparison is not defined on Boolean type", N);
-         elsif Is_Array_Type (T)
-           and then Base_Type (T) /= Standard_String
-         then
-            Error_Msg_F
-              ("|~~comparison is not defined on array types " &
-               "other than String", N);
-         end if;
+         Check_Formal_Restriction
+           ("comparison is not defined on array types other than String", N);
+      else
+         null;
       end if;
 
       --  Check comparison on unordered enumeration
@@ -6703,14 +6699,12 @@ package body Sem_Res is
          --  other than String are only defined when, for each index position,
          --  the operands have equal static bounds.
 
-         if Formal_Verification_Mode
-           and then Comes_From_Source (Original_Node (N))
-           and then Is_Array_Type (T)
+         if Is_Array_Type (T)
            and then Base_Type (T) /= Standard_String
            and then not Matching_Static_Array_Bounds (Etype (L), Etype (R))
          then
-            Error_Msg_F
-              ("|~~array types should have matching static bounds", N);
+            Check_Formal_Restriction
+              ("array types should have matching static bounds", N);
          end if;
 
          --  If the unique type is a class-wide type then it will be expanded
@@ -7239,13 +7233,12 @@ package body Sem_Res is
       --  defined only when both operands have same static lower and higher
       --  bounds.
 
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (N))
-        and then Is_Array_Type (B_Typ)
+      if Is_Array_Type (B_Typ)
         and then not Matching_Static_Array_Bounds (Etype (Left_Opnd (N)),
                                                    Etype (Right_Opnd (N)))
       then
-         Error_Msg_F ("|~~array types should have matching static bounds", N);
+         Check_Formal_Restriction
+           ("array types should have matching static bounds", N);
       end if;
 
    end Resolve_Logical_Op;
@@ -7495,10 +7488,9 @@ package body Sem_Res is
          NN := Parent (NN);
       end loop;
 
-      if Formal_Verification_Mode
-        and then Base_Type (Etype (N)) /= Standard_String
-      then
-         Error_Msg_F ("|~~result of concatenation should have type String", N);
+      if Base_Type (Etype (N)) /= Standard_String then
+         Check_Formal_Restriction
+           ("result of concatenation should have type String", N);
       end if;
    end Resolve_Op_Concat;
 
@@ -7609,25 +7601,23 @@ package body Sem_Res is
       --  Resolve_Op_Concat_Arg call it separately on each final operand, past
       --  concatenation operations.
 
-      if Formal_Verification_Mode then
-         if Is_Character_Type (Etype (Arg)) then
-            if not Is_Static_Expression (Arg) then
-               Error_Msg_F ("|~~character operand for concatenation should be "
-                            & "static", N);
-            end if;
+      if Is_Character_Type (Etype (Arg)) then
+         if not Is_Static_Expression (Arg) then
+            Check_Formal_Restriction
+              ("character operand for concatenation should be static", N);
+         end if;
 
-         elsif Is_String_Type (Etype (Arg)) then
-            if Nkind (Arg) /= N_String_Literal then
-               Error_Msg_F ("|~~string operand for concatenation should be "
-                            & "a literal", N);
-            end if;
+      elsif Is_String_Type (Etype (Arg)) then
+         if Nkind (Arg) /= N_String_Literal then
+            Check_Formal_Restriction
+              ("string operand for concatenation should be a literal", N);
+         end if;
 
          --  Do not issue error on an operand that is neither a character nor
          --  a string, as the error is issued in Resolve_Op_Concat.
 
-         else
-            null;
-         end if;
+      else
+         null;
       end if;
 
       Check_Unset_Reference (Arg);
@@ -7898,13 +7888,12 @@ package body Sem_Res is
    begin
       Resolve (Expr, Target_Typ);
 
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (N))
-        and then Is_Array_Type (Target_Typ)
+      if Is_Array_Type (Target_Typ)
         and then Is_Array_Type (Etype (Expr))
         and then not Matching_Static_Array_Bounds (Target_Typ, Etype (Expr))
       then
-         Error_Msg_F ("|~~array types should have matching static bounds", N);
+         Check_Formal_Restriction
+           ("array types should have matching static bounds", N);
       end if;
 
       --  A qualified expression requires an exact match of the type,
@@ -9024,13 +9013,12 @@ package body Sem_Res is
       --  In SPARK or ALFA, a type conversion between array types should be
       --  restricted to types which have matching static bounds.
 
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (N))
-        and then Is_Array_Type (Target_Typ)
+      if Is_Array_Type (Target_Typ)
         and then Is_Array_Type (Operand_Typ)
         and then not Matching_Static_Array_Bounds (Target_Typ, Operand_Typ)
       then
-         Error_Msg_F ("|~~array types should have matching static bounds", N);
+         Check_Formal_Restriction
+           ("array types should have matching static bounds", N);
       end if;
 
       --  Note: we do the Eval_Type_Conversion call before applying the

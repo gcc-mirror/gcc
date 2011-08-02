@@ -2067,6 +2067,7 @@ package body Sem_Attr is
       --  the full type declaration is visible
 
       if Formal_Verification_Mode
+        and then Comes_From_Source (Original_Node (N))
         and then Is_Entity_Name (P)
         and then Is_Type (Entity (P))
         and then Is_Private_Type (P_Type)

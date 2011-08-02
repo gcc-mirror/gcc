@@ -5409,11 +5409,12 @@ package body Exp_Ch6 is
       --  In SPARK or ALFA, subprogram declarations are only allowed in
       --  package specifications.
 
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (N))
-        and then Nkind (Parent (N)) /= N_Package_Specification
-      then
-         if Present (Next (N))
+      if Nkind (Parent (N)) /= N_Package_Specification then
+         if Nkind (Parent (N)) = N_Compilation_Unit then
+            Check_Formal_Restriction
+              ("subprogram declaration is not a library item", N);
+
+         elsif Present (Next (N))
            and then Nkind (Next (N)) = N_Pragma
            and then Get_Pragma_Id (Pragma_Name (Next (N))) = Pragma_Import
          then
@@ -5424,7 +5425,8 @@ package body Exp_Ch6 is
 
             null;
          else
-            Error_Msg_F ("|~~subprogram declaration is not allowed here", N);
+            Check_Formal_Restriction
+              ("subprogram declaration is not allowed here", N);
          end if;
       end if;
 
