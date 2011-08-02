@@ -7502,6 +7502,13 @@ package body Exp_Ch4 is
 
       Cond := Relocate_Node (Condition (N));
 
+      --  Reset flag analyzed in the condition to force its analysis. Required
+      --  since the previous analysis was done with expansion disabled (see
+      --  Resolve_Quantified_Expression) and hence checks were not inserted
+      --  and record comparisons have not been expanded.
+
+      Reset_Analyzed_Flags (Cond);
+
       if Is_Universal then
          Cond := Make_Op_Not (Loc, Cond);
       end if;

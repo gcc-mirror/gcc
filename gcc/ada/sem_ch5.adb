@@ -1602,7 +1602,7 @@ package body Sem_Ch5 is
             --  proper trace of the value, useful in optimizations that get rid
             --  of junk range checks.
 
-            if not Has_Call_Using_Secondary_Stack (N) then
+            if not Has_Call_Using_Secondary_Stack (Original_Bound) then
                Force_Evaluation (Original_Bound);
                return Original_Bound;
             end if;

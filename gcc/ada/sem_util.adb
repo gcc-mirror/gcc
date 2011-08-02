@@ -7508,14 +7508,11 @@ package body Sem_Util is
    -- Is_Variable --
    -----------------
 
-   function Is_Variable (N : Node_Id) return Boolean is
-
-      Orig_Node : constant Node_Id := Original_Node (N);
-      --  We do the test on the original node, since this is basically a test
-      --  of syntactic categories, so it must not be disturbed by whatever
-      --  rewriting might have occurred. For example, an aggregate, which is
-      --  certainly NOT a variable, could be turned into a variable by
-      --  expansion.
+   function Is_Variable
+     (N                 : Node_Id;
+      Use_Original_Node : Boolean := True) return Boolean
+   is
+      Orig_Node : Node_Id;
 
       function In_Protected_Function (E : Entity_Id) return Boolean;
       --  Within a protected function, the private components of the enclosing
@@ -7580,6 +7577,18 @@ package body Sem_Util is
    --  Start of processing for Is_Variable
 
    begin
+      --  Check if we perform the test on the original node since this may be a
+      --  test of syntactic categories which must not be disturbed by whatever
+      --  rewriting might have occurred. For example, an aggregate, which is
+      --  certainly NOT a variable, could be turned into a variable by
+      --  expansion.
+
+      if Use_Original_Node then
+         Orig_Node := Original_Node (N);
+      else
+         Orig_Node := N;
+      end if;
+
       --  Definitely OK if Assignment_OK is set. Since this is something that
       --  only gets set for expanded nodes, the test is on N, not Orig_Node.
 

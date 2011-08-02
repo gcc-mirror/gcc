@@ -866,13 +866,18 @@ package Sem_Util is
    --  object used to represent access-to-subprogram types. This is only
    --  relevant to CIL, will always return false for other targets.
 
-   function Is_Variable (N : Node_Id) return Boolean;
+   function Is_Variable
+     (N                 : Node_Id;
+      Use_Original_Node : Boolean := True) return Boolean;
    --  Determines if the tree referenced by N represents a variable, i.e. can
    --  appear on the left side of an assignment. There is one situation (formal
    --  parameters) in which non-tagged type conversions are also considered
    --  variables, but Is_Variable returns False for such cases, since it has
    --  no knowledge of the context. Note that this is the point at which
    --  Assignment_OK is checked, and True is returned for any tree thus marked.
+   --  Use_Original_Node is used to perform the test on Original_Node (N). By
+   --  default is True since this routine is commonly invoked as part of the
+   --  semantic analysis and it must not be disturbed by the rewriten nodes.
 
    function Is_Visibly_Controlled (T : Entity_Id) return Boolean;
    --  Check whether T is derived from a visibly controlled type. This is true
