@@ -2095,7 +2095,7 @@ package Sinfo is
       --  pragma has a local name argument (such as pragma Inline), it is
       --  resolved to point to the specific entity affected by the pragma.
 
-   --------------------------------------
+      --------------------------------------
       -- 2.8  Pragma Argument Association --
       --------------------------------------
 
@@ -4203,9 +4203,9 @@ package Sinfo is
       --  True. So after semantic analysis, the Identifier is always set,
       --  referencing an identifier whose entity has an Ekind of E_Loop.
 
-      --------------------------
-      -- 5.5 Iteration Scheme --
-      --------------------------
+      ---------------------------
+      -- 5.5  Iteration Scheme --
+      ---------------------------
 
       --  ITERATION_SCHEME ::=
       --    while CONDITION
@@ -4228,7 +4228,7 @@ package Sinfo is
       --  Loop_Parameter_Specification (Node4) (set to Empty if WHILE case)
 
       ---------------------------------------
-      -- 5.5  Loop parameter specification --
+      -- 5.5  Loop Parameter Specification --
       ---------------------------------------
 
       --  LOOP_PARAMETER_SPECIFICATION ::=
@@ -4240,9 +4240,9 @@ package Sinfo is
       --  Reverse_Present (Flag15)
       --  Discrete_Subtype_Definition (Node4)
 
-      ----------------------------------
-      -- 5.5.1 Iterator specification --
-      ----------------------------------
+      -----------------------------------
+      -- 5.5.1  Iterator Specification --
+      -----------------------------------
 
       --  ITERATOR_SPECIFICATION ::=
       --    DEFINING_IDENTIFIER in [reverse] NAME
@@ -4512,14 +4512,14 @@ package Sinfo is
       --  profile. Instead the information appears directly in the parent.
 
       ----------------------
-      -- 6.1  Formal part --
+      -- 6.1  Formal Part --
       ----------------------
 
       --  FORMAL_PART ::=
       --    (PARAMETER_SPECIFICATION {; PARAMETER_SPECIFICATION})
 
       ----------------------------------
-      -- 6.1  Parameter specification --
+      -- 6.1  Parameter Specification --
       ----------------------------------
 
       --  PARAMETER_SPECIFICATION ::=

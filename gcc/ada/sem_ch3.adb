@@ -3175,7 +3175,9 @@ package body Sem_Ch3 is
 
          if Nkind (Original_Node (N)) = N_Object_Declaration
            and then Comes_From_Source (Original_Node (N))
-           --  only call test if needed
+
+           --  Only call test if needed
+
            and then (Formal_Verification_Mode
                       or else Restriction_Check_Required (SPARK))
            and then not Is_SPARK_Initialization_Expr (E)

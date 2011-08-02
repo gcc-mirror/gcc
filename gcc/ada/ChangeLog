@@ -1,3 +1,40 @@
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Logical_Op): ensure N is a binary operator
+	before accessing operands.
+	* sem_util.adb (Is_SPARK_Initialization_Expr): follow original nodes to
+	decide whether an initialization expression respects SPARK rules, as
+	the plain node is the expanded one. This allows for more valid warnings
+	to be issued.
+	* gnat_rm.texi: Minor update.
+
+2011-08-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Analyze_Enumeration_Representation_Clause): Revert
+	previous change.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_ch4.adb: Minor reformatting.
+
+2011-08-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop): Reformatting. Wrap the original
+	loop statements and the element renaming declaration with a block when
+	the element type is controlled.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads: Minor formatting.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Add_Association): if the association has a box and no
+	expression, use the Sloc of the aggregate itself for the new
+	association.
+	* errout.adb (First_Node): Exclude nodes with no Sloc, and always use
+	the Original_Node.
+
 2011-08-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch5.adb (Expand_Iterator_Loop): Code cleanup and refactoring.

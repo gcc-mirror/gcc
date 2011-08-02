@@ -2770,13 +2770,12 @@ package body Exp_Ch5 is
       I_Spec : constant Node_Id    := Iterator_Specification (Isc);
       Id     : constant Entity_Id  := Defining_Identifier (I_Spec);
       Loc    : constant Source_Ptr := Sloc (N);
-      Stats  : constant List_Id    := Statements (N);
 
       Container     : constant Node_Id   := Name (I_Spec);
       Container_Typ : constant Entity_Id := Etype (Container);
-
-      Cursor   : Entity_Id;
-      New_Loop : Node_Id;
+      Cursor        : Entity_Id;
+      New_Loop      : Node_Id;
+      Stats         : List_Id := Statements (N);
 
    begin
       --  Processing for arrays
@@ -2839,25 +2838,32 @@ package body Exp_Ch5 is
       --  Processing for containers
 
       else
-         --  In both cases these require a cursor of the proper type
+         --  The for loop is expanded into a while loop which uses a container
+         --  specific cursor to examine each element.
 
          --    Cursor : Pack.Cursor := Container.First;
          --    while Cursor /= Pack.No_Element loop
-         --       Obj : Pack.Element_Type renames Element (Cursor);
-         --       --  for the "of" form
+         --       declare
+         --       --  the block is added when Element_Type is controlled
 
-         --       <original loop statements>
+         --          Obj : Pack.Element_Type := Element (Cursor);
+         --          --  for the "of" loop form
+         --       begin
+         --          <original loop statements>
+         --       end;
 
          --       Pack.Next (Cursor);
          --    end loop;
 
-         --  with the obvious replacements if "reverse" is specified. Pack is
-         --  the name of the package which instantiates the container.
+         --  If "reverse" is present, then the initialization of the cursor
+         --  uses Last and the step becomes Prev. Pack is the name of the
+         --  package which instantiates the container.
 
          declare
             Element_Type : constant Entity_Id := Etype (Id);
             Pack         : constant Entity_Id :=
                              Scope (Base_Type (Container_Typ));
+            Decl         : Node_Id;
             Cntr         : Node_Id;
             Name_Init    : Name_Id;
             Name_Step    : Name_Id;
@@ -2873,26 +2879,52 @@ package body Exp_Ch5 is
 
             --  The code below only handles containers where Element is not a
             --  primitive operation of the container. This excludes for now the
-            --  Hi-Lite formal containers. Generate:
-            --
-            --    Id : Element_Type renames Container.Element (Cursor);
+            --  Hi-Lite formal containers.
 
             if Of_Present (I_Spec) then
-               Prepend_To (Stats,
+
+               --  Generate:
+               --    Id : Element_Type := Pack.Element (Cursor);
+
+               Decl :=
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
                    Subtype_Mark =>
-                     New_Occurrence_Of (Element_Type, Loc),
+                     New_Reference_To (Element_Type, Loc),
                    Name =>
                      Make_Indexed_Component (Loc,
                        Prefix =>
                          Make_Selected_Component (Loc,
                            Prefix =>
-                             New_Occurrence_Of (Pack, Loc),
+                             New_Reference_To (Pack, Loc),
                            Selector_Name =>
                              Make_Identifier (Loc, Chars => Name_Element)),
                        Expressions => New_List (
-                         New_Occurrence_Of (Cursor, Loc)))));
+                         New_Reference_To (Cursor, Loc))));
+
+               --  When the container holds controlled objects, wrap the loop
+               --  statements and element renaming declaration with a block.
+               --  This ensures that the transient result of Element (Cursor)
+               --  is cleaned up after each iteration of the loop.
+
+               if Needs_Finalization (Element_Type) then
+
+                  --  Generate:
+                  --    declare
+                  --       Id : Element_Type := Pack.Element (Cursor);
+                  --    begin
+                  --       <original loop statments>
+                  --    end;
+
+                  Stats := New_List (
+                    Make_Block_Statement (Loc,
+                      Declarations => New_List (Decl),
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements => Stats)));
+               else
+                  Prepend_To (Stats, Decl);
+               end if;
             end if;
 
             --  Determine the advancement and initialization steps for the
@@ -2918,12 +2950,12 @@ package body Exp_Ch5 is
                 Name =>
                   Make_Selected_Component (Loc,
                     Prefix =>
-                      New_Occurrence_Of (Pack, Loc),
+                      New_Reference_To (Pack, Loc),
                     Selector_Name =>
                       Make_Identifier (Loc, Name_Step)),
 
                 Parameter_Associations => New_List (
-                  New_Occurrence_Of (Cursor, Loc))));
+                  New_Reference_To (Cursor, Loc))));
 
             --  Generate:
             --    while Cursor /= Pack.No_Element loop
@@ -2937,11 +2969,11 @@ package body Exp_Ch5 is
                     Condition =>
                       Make_Op_Ne (Loc,
                         Left_Opnd =>
-                          New_Occurrence_Of (Cursor, Loc),
+                          New_Reference_To (Cursor, Loc),
                         Right_Opnd =>
                           Make_Selected_Component (Loc,
                             Prefix =>
-                              New_Occurrence_Of (Pack, Loc),
+                              New_Reference_To (Pack, Loc),
                             Selector_Name =>
                               Make_Identifier (Loc, Name_No_Element)))),
                 Statements => Stats,
@@ -2985,7 +3017,7 @@ package body Exp_Ch5 is
                 Object_Definition =>
                   Make_Selected_Component (Loc,
                     Prefix =>
-                      New_Occurrence_Of (Pack, Loc),
+                      New_Reference_To (Pack, Loc),
                     Selector_Name =>
                       Make_Identifier (Loc, Name_Cursor)),
 

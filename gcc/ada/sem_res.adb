@@ -7324,22 +7324,23 @@ package body Sem_Res is
       --  bounds. Of course the types have to match, so only check if operands
       --  are compatible and the node itself has no errors.
 
-      declare
-         Left_Typ  : constant Node_Id := Etype (Left_Opnd (N));
-         Right_Typ : constant Node_Id := Etype (Right_Opnd (N));
-      begin
-         if Is_Array_Type (B_Typ)
-           and then Nkind (N) in N_Binary_Op
-           and then Base_Type (Left_Typ) = Base_Type (Right_Typ)
-           and then Left_Typ /= Any_Composite  --  or else Left_Opnd in error
-           and then Right_Typ /= Any_Composite  --  or else Right_Opnd in error
-           and then not Matching_Static_Array_Bounds (Left_Typ, Right_Typ)
-         then
-            Check_Formal_Restriction
-              ("array types should have matching static bounds", N);
-         end if;
-      end;
-
+      if Is_Array_Type (B_Typ)
+        and then Nkind (N) in N_Binary_Op
+      then
+         declare
+            Left_Typ  : constant Node_Id := Etype (Left_Opnd (N));
+            Right_Typ : constant Node_Id := Etype (Right_Opnd (N));
+         begin
+            if Base_Type (Left_Typ) = Base_Type (Right_Typ)
+              and then Left_Typ /= Any_Composite  --  or Left_Opnd in error
+              and then Right_Typ /= Any_Composite  --  or Right_Opnd in error
+              and then not Matching_Static_Array_Bounds (Left_Typ, Right_Typ)
+            then
+               Check_Formal_Restriction
+                 ("array types should have matching static bounds", N);
+            end if;
+         end;
+      end if;
    end Resolve_Logical_Op;
 
    ---------------------------

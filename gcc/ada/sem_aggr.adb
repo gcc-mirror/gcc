@@ -1171,6 +1171,17 @@ package body Sem_Aggr is
             end if;
 
             if not Aggr_Resolved then
+
+               --  A parenthesized expression may have been intended as an
+               --  aggregate, leading to a type error when analyzing the
+               --  component. This can also happen for a nested component
+               --  (see Analyze_Aggr_Expr).
+
+               if Paren_Count (N) > 0 then
+                  Error_Msg_N
+                    ("positional aggregate cannot have one component", N);
+               end if;
+
                Aggr_Subtyp := Any_Composite;
             else
                Aggr_Subtyp := Array_Aggr_Subtype (N, Typ);
@@ -1589,6 +1600,7 @@ package body Sem_Aggr is
                        ("\if single-component aggregate is intended,"
                         & " write e.g. (1 ='> ...)", Expr);
                   end if;
+
                   return Failure;
                end if;
             end if;
@@ -1740,6 +1752,31 @@ package body Sem_Aggr is
            ("OTHERS choice not allowed here",
             First (Choices (First (Component_Associations (N)))));
          return Failure;
+      end if;
+
+      if Others_Present
+        and then Nkind (Parent (N)) /= N_Component_Association
+        and then No (Expressions (N))
+        and then
+          Nkind (First (Choices (First (Component_Associations (N)))))
+            = N_Others_Choice
+        and then Is_Elementary_Type (Component_Typ)
+        and then False
+      then
+         declare
+            Assoc : constant Node_Id := First (Component_Associations (N));
+         begin
+            Rewrite (Assoc,
+              Make_Component_Association (Loc,
+                 Choices =>
+                   New_List (
+                     Make_Attribute_Reference (Loc,
+                       Prefix => New_Occurrence_Of (Index_Typ, Loc),
+                       Attribute_Name => Name_Range)),
+                 Expression => Relocate_Node (Expression (Assoc))));
+            return Resolve_Array_Aggregate
+              (N, Index, Index_Constr, Component_Typ, Others_Allowed);
+         end;
       end if;
 
       --  Protect against cascaded errors
@@ -2752,13 +2789,23 @@ package body Sem_Aggr is
          Assoc_List     : List_Id;
          Is_Box_Present : Boolean := False)
       is
+         Loc : Source_Ptr;
          Choice_List : constant List_Id := New_List;
          New_Assoc   : Node_Id;
 
       begin
-         Append (New_Occurrence_Of (Component, Sloc (Expr)), Choice_List);
+         --  If this is a box association the expression is missing, so
+         --  use the Sloc of the aggregate itself for the new association.
+
+         if Present (Expr) then
+            Loc := Sloc (Expr);
+         else
+            Loc := Sloc (N);
+         end if;
+
+         Append (New_Occurrence_Of (Component, Loc), Choice_List);
          New_Assoc :=
-           Make_Component_Association (Sloc (Expr),
+           Make_Component_Association (Loc,
              Choices     => Choice_List,
              Expression  => Expr,
              Box_Present => Is_Box_Present);

@@ -809,9 +809,11 @@ package body Sem_Ch4 is
       procedure Check_Mixed_Parameter_And_Named_Associations is
          Actual     : Node_Id;
          Named_Seen : Boolean;
+
       begin
-         Actual := First (Actuals);
          Named_Seen := False;
+
+         Actual := First (Actuals);
          while Present (Actual) loop
             case Nkind (Actual) is
                when N_Parameter_Association =>
@@ -1922,7 +1924,8 @@ package body Sem_Ch4 is
       ---------------------------
 
       procedure Process_Function_Call is
-         Actual     : Node_Id;
+         Actual : Node_Id;
+
       begin
          Change_Node (N, N_Function_Call);
          Set_Name (N, P);
