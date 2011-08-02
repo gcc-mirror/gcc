@@ -1,5 +1,14 @@
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch3.adb: Minor comment additions.
+	* sem_ch13.adb: Minor reformatting.
+
+2011-08-02  Pascal Obry  <obry@adacore.com>
+
+	* make.adb, makeutl.adb: Removes some superfluous directory separator.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
 	* sem_attr.adb: Minor reformatting.
 
 2011-08-02  Robert Dewar  <dewar@adacore.com>
@@ -62,11 +71,6 @@
 	which causes conflicts and breaks the generation of the .NET compiler.
 	(Interface_Name): Add missing documentation on JGNAT only uses of
 	this attribute.
-
-2011-08-02  Javier Miranda  <miranda@adacore.com>
-
-	* exp_pakd.adb (Expand_Packed_Element_Reference): Disable this routine
-	in CodePeer mode.
 
 2011-08-02  Geert Bosch  <bosch@adacore.com>
 
