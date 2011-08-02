@@ -2783,9 +2783,15 @@ package body Ch3 is
          Set_High_Bound (Range_Node, Expr_Node);
          return Range_Node;
 
-      --  Otherwise we must have a subtype mark
+      --  Otherwise we must have a subtype mark, or an Ada 2012 iterator
 
       elsif Expr_Form = EF_Simple_Name then
+         return Expr_Node;
+
+      --  The domain of iteration must be a name. Semantics will determine that
+      --  the expression has the proper form.
+
+      elsif Ada_Version >= Ada_2012 then
          return Expr_Node;
 
       --  If incorrect, complain that we expect ..
