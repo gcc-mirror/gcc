@@ -5964,13 +5964,19 @@ package body Sem_Res is
       --  types or array types except String.
 
       if Is_Boolean_Type (T) then
+         Current_Subprogram_Body_Is_Not_In_ALFA;
          Check_SPARK_Restriction
            ("comparison is not defined on Boolean type", N);
-      elsif Is_Array_Type (T)
-        and then Base_Type (T) /= Standard_String
-      then
-         Check_SPARK_Restriction
-           ("comparison is not defined on array types other than String", N);
+
+      elsif Is_Array_Type (T) then
+         Current_Subprogram_Body_Is_Not_In_ALFA;
+
+         if Base_Type (T) /= Standard_String then
+            Check_SPARK_Restriction
+              ("comparison is not defined on array types other than String",
+               N);
+         end if;
+
       else
          null;
       end if;
@@ -6821,15 +6827,18 @@ package body Sem_Res is
          --  String are only defined when, for each index position, the
          --  operands have equal static bounds.
 
-         if Is_Array_Type (T)
-           and then Base_Type (T) /= Standard_String
-           and then Base_Type (Etype (L)) = Base_Type (Etype (R))
-           and then Etype (L) /= Any_Composite  --  or else L in error
-           and then Etype (R) /= Any_Composite  --  or else R in error
-           and then not Matching_Static_Array_Bounds (Etype (L), Etype (R))
-         then
-            Check_SPARK_Restriction
-              ("array types should have matching static bounds", N);
+         if Is_Array_Type (T) then
+            Current_Subprogram_Body_Is_Not_In_ALFA;
+
+            if Base_Type (T) /= Standard_String
+              and then Base_Type (Etype (L)) = Base_Type (Etype (R))
+              and then Etype (L) /= Any_Composite  --  or else L in error
+              and then Etype (R) /= Any_Composite  --  or else R in error
+              and then not Matching_Static_Array_Bounds (Etype (L), Etype (R))
+            then
+               Check_SPARK_Restriction
+                 ("array types should have matching static bounds", N);
+            end if;
          end if;
 
          --  If the unique type is a class-wide type then it will be expanded
@@ -7365,6 +7374,8 @@ package body Sem_Res is
       if Is_Array_Type (B_Typ)
         and then Nkind (N) in N_Binary_Op
       then
+         Current_Subprogram_Body_Is_Not_In_ALFA;
+
          declare
             Left_Typ  : constant Node_Id := Etype (Left_Opnd (N));
             Right_Typ : constant Node_Id := Etype (Right_Opnd (N));

@@ -1,3 +1,24 @@
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* einfo.adb, einfo.ads (Body_Is_In_ALFA, Set_Body_Is_In_ALFA): get/set
+	for new flag denoting which subprogram bodies are in ALFA
+	* restrict.adb, sem_ch7.adb: Update comment
+	* sem_ch11.adb, sem_ch2.adb, sem_ch3.adb, sem_ch4.adb, sem_ch5.adb,
+	sem_ch9.adb, sem_res.adb: Add calls to
+	Current_Subprogram_Body_Is_Not_In_ALFA on unsupported constructs.
+	* sem_ch6.adb (Analyze_Function_Return): add calls to
+	Current_Subprogram_Body_Is_Not_In_ALFA on return statement in the
+	middle of the body, and extended return.
+	(Check_Missing_Return): add calls to Set_Body_Is_In_ALFA with argument
+	False when missing return.
+	(Analyze_Subprogram_Body_Helper): initialize the flag Body_Is_In_ALFA
+	to True for subprograms whose spec is in ALFA. Remove later on the flag
+	on the entity used for a subprogram body when there exists a separate
+	declaration.
+	* sem_util.adb, sem_util.ads (Current_Subprogram_Body_Is_Not_In_ALFA):
+	if Current_Subprogram is not Empty, set its flag Body_Is_In_ALFA to
+	False, otherwise do nothing.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* inline.adb, stand.ads, sem_ch6.adb, sem_ch8.adb: Minor reformatting.

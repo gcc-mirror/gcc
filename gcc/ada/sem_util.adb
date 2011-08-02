@@ -2311,6 +2311,21 @@ package body Sem_Util is
       end if;
    end Current_Subprogram;
 
+   --------------------------------------------
+   -- Current_Subprogram_Body_Is_Not_In_ALFA --
+   --------------------------------------------
+
+   procedure Current_Subprogram_Body_Is_Not_In_ALFA is
+      Cur_Subp : constant Entity_Id := Current_Subprogram;
+   begin
+      if Present (Cur_Subp)
+        and then (Is_Subprogram (Cur_Subp)
+                   or else Is_Generic_Subprogram (Cur_Subp))
+      then
+         Set_Body_Is_In_ALFA (Cur_Subp, False);
+      end if;
+   end Current_Subprogram_Body_Is_Not_In_ALFA;
+
    ---------------------
    -- Defining_Entity --
    ---------------------

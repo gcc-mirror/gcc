@@ -638,11 +638,13 @@ package body Sem_Ch6 is
              (Nkind (Parent (Parent (N))) /= N_Subprogram_Body
                or else Present (Next (N)))
          then
+            Current_Subprogram_Body_Is_Not_In_ALFA;
             Check_SPARK_Restriction
               ("RETURN should be the last statement in function", N);
          end if;
 
       else
+         Current_Subprogram_Body_Is_Not_In_ALFA;
          Check_SPARK_Restriction ("extended RETURN is not allowed", N);
 
          --  Analyze parts specific to extended_return_statement:
@@ -1909,6 +1911,7 @@ package body Sem_Ch6 is
                  and then not Nkind_In (Stat, N_Simple_Return_Statement,
                                               N_Extended_Return_Statement)
                then
+                  Set_Body_Is_In_ALFA (Id, False);
                   Check_SPARK_Restriction
                     ("last statement in function should be RETURN", Stat);
                end if;
@@ -1927,6 +1930,7 @@ package body Sem_Ch6 is
             --  borrow the Check_Returns procedure here ???
 
             if Return_Present (Id) then
+               Set_Body_Is_In_ALFA (Id, False);
                Check_SPARK_Restriction
                  ("procedure should not have RETURN", N);
             end if;
@@ -2236,6 +2240,24 @@ package body Sem_Ch6 is
          end if;
       end if;
 
+      --  By default, consider that the subprogram body is in ALFA if the spec
+      --  is in ALFA. This is reversed later if some expression or statement is
+      --  not in ALFA.
+
+      declare
+         Id : Entity_Id;
+      begin
+         if Present (Spec_Id) then
+            Id := Spec_Id;
+         else
+            Id := Body_Id;
+         end if;
+
+         if Is_In_ALFA (Id) then
+            Set_Body_Is_In_ALFA (Id);
+         end if;
+      end;
+
       --  Do not inline any subprogram that contains nested subprograms, since
       --  the backend inlining circuit seems to generate uninitialized
       --  references in this case. We know this happens in the case of front
@@ -2467,6 +2489,7 @@ package body Sem_Ch6 is
          Set_Ekind (Body_Id, E_Subprogram_Body);
          Set_Scope (Body_Id, Scope (Spec_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Spec_Id));
+         Set_Is_In_ALFA (Body_Id, False);
 
       --  Case of subprogram body with no previous spec
 

@@ -371,7 +371,7 @@ package body Restrict is
          return;
       end if;
 
-      --  In formal mode, issue an error for any use of class-wide, even if the
+      --  In SPARK mode, issue an error for any use of class-wide, even if the
       --  No_Dispatch restriction is not set.
 
       if R = No_Dispatch then
