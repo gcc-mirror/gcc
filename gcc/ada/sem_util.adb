@@ -7998,6 +7998,62 @@ package body Sem_Util is
       return N;
    end Last_Source_Statement;
 
+   ----------------------------------
+   -- Matching_Static_Array_Bounds --
+   ----------------------------------
+
+   function Matching_Static_Array_Bounds
+     (L_Typ : Node_Id;
+      R_Typ : Node_Id) return Boolean
+   is
+      L_Ndims : constant Nat := Number_Dimensions (L_Typ);
+      R_Ndims : constant Nat := Number_Dimensions (R_Typ);
+
+      L_Index : Node_Id;
+      R_Index : Node_Id;
+      L_Low   : Node_Id;
+      L_High  : Node_Id;
+      R_Low   : Node_Id;
+      R_High  : Node_Id;
+
+   begin
+      if L_Ndims /= R_Ndims then
+         return False;
+      end if;
+
+      --  Unconstrained types do not have static bounds
+
+      if not Is_Constrained (L_Typ) or else not Is_Constrained (R_Typ) then
+         return False;
+      end if;
+
+      L_Index := First_Index (L_Typ);
+      R_Index := First_Index (R_Typ);
+
+      for Indx in 1 .. L_Ndims loop
+         Get_Index_Bounds (L_Index, L_Low, L_High);
+         Get_Index_Bounds (R_Index, R_Low, R_High);
+
+         if         Is_OK_Static_Expression (L_Low)
+           and then Is_OK_Static_Expression (L_High)
+           and then Is_OK_Static_Expression (R_Low)
+           and then Is_OK_Static_Expression (R_High)
+           and then Expr_Value (L_Low)  = Expr_Value (R_Low)
+           and then Expr_Value (L_High) = Expr_Value (R_High)
+         then
+            Next (L_Index);
+            Next (R_Index);
+
+         else
+            return False;
+         end if;
+      end loop;
+
+      --  If we fall through the loop, all indexes matched
+
+      return True;
+   end Matching_Static_Array_Bounds;
+
    -------------------
    -- May_Be_Lvalue --
    -------------------

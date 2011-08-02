@@ -939,6 +939,13 @@ package Sem_Util is
    --  See Sinfo. We rename Make_Return_Statement to the correct Ada 2005
    --  terminology here. Clients should use Make_Simple_Return_Statement.
 
+   function Matching_Static_Array_Bounds
+     (L_Typ : Node_Id;
+      R_Typ : Node_Id) return Boolean;
+   --  L_Typ and R_Typ are two array types. Returns True when they have the
+   --  same number of dimensions, and the same static bounds for each index
+   --  position.
+
    Make_Return_Statement : constant := -2 ** 33;
    --  Attempt to prevent accidental uses of Make_Return_Statement. If this
    --  and the one in Nmake are both potentially use-visible, it will cause

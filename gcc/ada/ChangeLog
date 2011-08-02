@@ -1,3 +1,15 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb: Minor code reorganization, comment updates.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Matching_Static_Array_Bounds): Moved to Sem_Util
+	* sem_util.ads, sem_util.adb (Matching_Static_Array_Bounds): Moved
+	here from Sem_Res.
+	(Matching_Static_Array_Bounds): Use Is_Ok_Static_Expression
+	(Matching_Static_Array_Bounds): Moved here from Sem_Res
+
 2011-08-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* atree.h, atree.ads, atree.adb: New subprograms to manipulate Elist5.

@@ -2679,9 +2679,13 @@ package body Sem_Ch8 is
          Chain_Use_Clause (N);
       end if;
 
-      --  Commented needed???
+      --  If the Used_Operations list is already initialized, the clause has
+      --  been analyzed previously, and it is begin reinstalled, for example
+      --  when the clause appears in a package spec and we are compiling the
+      --  corresponding package body. In that case, make the entities on the
+      --  existing list use-visible.
 
-      if Used_Operations (N) /= No_Elist then
+      if Present (Used_Operations (N)) then
          declare
             Elmt : Elmt_Id;
          begin
@@ -2694,6 +2698,9 @@ package body Sem_Ch8 is
 
          return;
       end if;
+
+      --  Otherwise, create new list and attach to it the operations that
+      --  are made use-visible by the clause.
 
       Set_Used_Operations (N, New_Elmt_List);
       Id := First (Subtype_Marks (N));
