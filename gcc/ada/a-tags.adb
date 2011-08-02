@@ -303,6 +303,24 @@ package body Ada.Tags is
       return This - Offset_To_Top (This);
    end Base_Address;
 
+   ---------------
+   -- Check_TSD --
+   ---------------
+
+   procedure Check_TSD (TSD : Type_Specific_Data_Ptr) is
+      T : Tag;
+
+   begin
+      --  Verify that the external tag of this TSD is not registered in the
+      --  runtime hash table.
+
+      T := External_Tag_HTable.Get (To_Address (TSD.External_Tag));
+
+      if T /= null then
+         raise Program_Error with "duplicated external tag";
+      end if;
+   end Check_TSD;
+
    --------------------
    -- Descendant_Tag --
    --------------------

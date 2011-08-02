@@ -1,3 +1,16 @@
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Chain_PPC): Implement AI04-0230: null procedures can
+	only have inheritable classwide pre/postconditions.
+
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* a-tags.ads, a-tags.adb (Check_TSD): New subprogram.
+	* rtsfind.ads (RE_Check_TSD): New runtime entity.
+	* exp_disp.adb (Make_DT): Generate call to the new runtime routine that
+	checks if the external tag of a type is the same as the external tag
+	of some other declaration.
+
 2011-08-02  Thomas Quinot  <quinot@adacore.com>
 
 	* s-taskin.ads: Minor reformatting.

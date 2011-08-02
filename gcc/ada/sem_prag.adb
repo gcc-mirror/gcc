@@ -1595,6 +1595,19 @@ package body Sem_Prag is
                     ("aspect % requires ''Class for abstract subprogram");
                end if;
 
+            --  AI05-0230:  the same restriction applies to null procedures.
+            --  For compatibility with earlier uses of the Ada pragma, apply
+            --  this rule only to aspect specifications.
+
+            elsif Nkind (PO) = N_Subprogram_Declaration
+              and then Nkind (Specification (PO)) = N_Procedure_Specification
+              and then Null_Present (Specification (PO))
+              and then From_Aspect_Specification (N)
+              and then not Class_Present (N)
+            then
+               Error_Pragma
+                 ("aspect % requires ''Class for null procedure");
+
             elsif not Nkind_In (PO, N_Subprogram_Declaration,
                                     N_Generic_Subprogram_Declaration,
                                     N_Entry_Declaration)
