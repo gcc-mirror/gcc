@@ -355,10 +355,9 @@ package Sem_Util is
       Call   : out Node_Id);
    --  Determines if the node N is an actual parameter of a function of a
    --  procedure call. If so, then Formal points to the entity for the formal
-   --  (whose Ekind is one of E_In_Parameter, E_Out_Parameter,
-   --  E_In_Out_Parameter) and Call is set to the node for the corresponding
-   --  call. If the node N is not an actual parameter then Formal and Call are
-   --  set to Empty.
+   --  (Ekind is E_In_Parameter, E_Out_Parameter, or E_In_Out_Parameter) and
+   --  Call is set to the node for the corresponding call. If the node N is not
+   --  an actual parameter then Formal and Call are set to Empty.
 
    function Find_Corresponding_Discriminant
      (Id   : Node_Id;
@@ -768,7 +767,7 @@ package Sem_Util is
    --  variable and constant objects return True (compare Is_Variable).
 
    function Is_SPARK_Object_Reference (N : Node_Id) return Boolean;
-   --  Determines if the tree referenced by N represents an object in SPARK.
+   --  Determines if the tree referenced by N represents an object in SPARK
 
    function Is_OK_Variable_For_Out_Formal (AV : Node_Id) return Boolean;
    --  Used to test if AV is an acceptable formal for an OUT or IN OUT formal.

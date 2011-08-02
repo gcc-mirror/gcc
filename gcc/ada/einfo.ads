@@ -3233,7 +3233,11 @@ package Einfo is
 
 --    Overridden_Operation (Node26)
 --       Present in subprograms. For overriding operations, points to the
---       user-defined parent subprogram that is being overridden.
+--       user-defined parent subprogram that is being overridden. Note: this
+--       attribute uses the same field as Static_Initialization. The latter
+--       is only defined for internal initialization procedures, for which
+--       Overridden_Operation is irrelevant. Thus this attribute must not be
+--       set for init_procs.
 
 --    Package_Instantiation (Node26)
 --       Present in packages and generic packages. When present, this field
@@ -3649,7 +3653,9 @@ package Einfo is
 --       initialized statically. The value of this attribute is a positional
 --       aggregate whose components are compile-time static values. Used
 --       when available in object declarations to eliminate the call to the
---       initialization procedure, and to minimize elaboration code.
+--       initialization procedure, and to minimize elaboration code. Note:
+--       This attribute uses the same field as Overridden_Operation, which is
+--       irrelevant in init_procs.
 
 --    Stored_Constraint (Elist23)
 --       Present in entities that can have discriminants (concurrent types

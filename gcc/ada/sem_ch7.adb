@@ -925,6 +925,7 @@ package body Sem_Ch7 is
 
          procedure Check_Decls (Decls : List_Id) is
             Decl : Node_Id;
+
          begin
             Decl := First (Decls);
             while Present (Decl) loop
@@ -933,6 +934,7 @@ package body Sem_Ch7 is
                then
                   if No (Previous) then
                      Previous := Decl;
+
                   else
                      Error_Msg_Sloc := Sloc (Previous);
                      Check_Formal_Restriction

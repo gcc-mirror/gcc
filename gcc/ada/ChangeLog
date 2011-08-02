@@ -1,3 +1,12 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb, sem_ch7.adb, einfo.ads, sem_util.adb, sem_util.ads,
+	sem_res.adb, sem_ch6.adb: Minor reformatting.
+
+2011-08-02  Jerome Guitton  <guitton@adacore.com>
+
+	* a-except-2005.adb (Raise_Current_Excep): Remove obsolete dead code.
+
 2011-08-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (New_Overloaded_Entity, Check_Overriding_Indicator): Do

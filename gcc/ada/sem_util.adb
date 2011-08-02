@@ -6855,16 +6855,14 @@ package body Sem_Util is
          return Present (Entity (N))
            and then
              (Ekind_In (Entity (N), E_Constant, E_Variable)
-              or else Ekind (Entity (N)) in Formal_Kind);
+               or else Ekind (Entity (N)) in Formal_Kind);
 
       else
-         case Nkind (N) is
-            when N_Selected_Component =>
-               return Is_SPARK_Object_Reference (Prefix (N));
-
-            when others =>
-               return False;
-         end case;
+         if Nkind (N) = N_Selected_Component then
+            return Is_SPARK_Object_Reference (Prefix (N));
+         else
+            return False;
+         end if;
       end if;
    end Is_SPARK_Object_Reference;
 
