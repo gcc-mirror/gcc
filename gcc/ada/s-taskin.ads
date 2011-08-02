@@ -1057,7 +1057,7 @@ package System.Tasking is
       --  Protection: Self.L
 
       Serial_Number : Task_Serial_Number;
-      --  A growing number to provide some way to check locking  rules/ordering
+      --  Monotonic counter to provide some way to check locking rules/ordering
 
       Known_Tasks_Index : Integer := -1;
       --  Index in the System.Tasking.Debug.Known_Tasks array

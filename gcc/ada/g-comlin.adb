@@ -3176,6 +3176,10 @@ package body GNAT.Command_Line is
          return;
       end if;
 
+      if Config.Help /= null and then Config.Help.all /= "" then
+         Put_Line (Config.Help.all);
+      end if;
+
       if Config.Usage /= null then
          Put_Line ("Usage: "
                    & Base_Name
@@ -3183,10 +3187,6 @@ package body GNAT.Command_Line is
       else
          Put_Line ("Usage: " & Base_Name (Ada.Command_Line.Command_Name)
                    & " [switches] [arguments]");
-      end if;
-
-      if Config.Help /= null and then Config.Help.all /= "" then
-         Put_Line (Config.Help.all);
       end if;
 
       Display_Section_Help ("");

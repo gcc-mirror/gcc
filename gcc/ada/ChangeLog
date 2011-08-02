@@ -1,3 +1,32 @@
+2011-08-02  Thomas Quinot  <quinot@adacore.com>
+
+	* s-taskin.ads: Minor reformatting.
+
+2011-08-02  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Display_Help): swap the order in which it prints the
+	short help and the general usage.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): copy properly
+	the aspect declarations and attach them to the generic copy for
+	subsequent analysis.
+	(Analyze_Subprogram_Instantiation): copy explicitly the aspect
+	declarations of the generic tree to the new subprogram declarations.
+	* sem_attr.adb (Check_Precondition_Postcondition): recognize
+	conditions that apply to a subprogram instance.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Clarify doc on pragma Source_File_Name[_Project].
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Derived_Type_Declaration): When checking that a untagged
+	private type with a tagged full view is not derived in the immediate
+	scope of the partial view, (RM 7.3 (7)) use the scope of the base type.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb: Minor reformatting.
