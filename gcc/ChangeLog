@@ -1,3 +1,16 @@
+2011-08-02  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/libgcc.S: Gather related function in the
+	same input section.
+ 	(__mulqihi3, __mulqihi3, __divmodqi4, __divmodhi4, __udivmodsi4,
+	__divmodsi4): Use XCALL/XJMP instead of rcall/rjmp for external
+	references.
+	(__udivmodqi4, __divmodqi4, __udivmodhi4, __divmodhi4,
+	__udivmodsi4, __divmodsi4, __prologue_saves__,
+	__epilogue_restores__, _exit, __tablejump2__, __tablejump__,
+	__do_copy_data, __do_clear_bss, __do_global_ctors,
+	__do_global_dtors, __tablejump_elpm__): Enclose in DEFUN/ENDF.
+
 2011-08-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47766
