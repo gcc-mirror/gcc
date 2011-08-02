@@ -13902,7 +13902,6 @@ package body Sem_Ch3 is
       Indic        : constant Node_Id := Subtype_Indication (Def);
       Extension    : constant Node_Id := Record_Extension_Part (Def);
       Parent_Node  : Node_Id;
-      Parent_Scope : Entity_Id;
       Taggd        : Boolean;
 
    --  Start of processing for Derived_Type_Declaration
@@ -14225,25 +14224,18 @@ package body Sem_Ch3 is
          --  that it is not a Full_Type_Declaration (i.e. a private type or
          --  private extension declaration), to distinguish a partial view
          --  from  a derivation from a private type which also appears as
-         --  E_Private_Type.
+         --  E_Private_Type. If the parent base type is not declared in an
+         --  enclosing scope there is no need to check.
 
          elsif Present (Full_View (Parent_Type))
            and then Nkind (Parent (Parent_Type)) /= N_Full_Type_Declaration
            and then not Is_Tagged_Type (Parent_Type)
            and then Is_Tagged_Type (Full_View (Parent_Type))
+           and then In_Open_Scopes (Scope (Base_Type (Parent_Type)))
          then
-            Parent_Scope := Scope (T);
-            while Present (Parent_Scope)
-              and then Parent_Scope /= Standard_Standard
-            loop
-               if Parent_Scope = Scope (Parent_Type) then
-                  Error_Msg_N
-                    ("premature derivation from type with tagged full view",
-                     Indic);
-               end if;
-
-               Parent_Scope := Scope (Parent_Scope);
-            end loop;
+            Error_Msg_N
+              ("premature derivation from type with tagged full view",
+                Indic);
          end if;
       end if;
 

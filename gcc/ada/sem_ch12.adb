@@ -2794,6 +2794,20 @@ package body Sem_Ch12 is
       Set_Parent_Spec (New_N, Save_Parent);
       Rewrite (N, New_N);
 
+      --  The aspect specifications are not attached to the tree, and must
+      --  be copied and attached to the generic copy explicitly.
+
+      if Present (Aspect_Specifications (New_N)) then
+         declare
+            Aspects : constant List_Id := Aspect_Specifications (N);
+         begin
+            Set_Has_Aspects (N, False);
+            Move_Aspects (New_N, N);
+            Set_Has_Aspects (Original_Node (N), False);
+            Set_Aspect_Specifications (Original_Node (N), Aspects);
+         end;
+      end if;
+
       Spec := Specification (N);
       Id := Defining_Entity (Spec);
       Generate_Definition (Id);
@@ -2888,16 +2902,42 @@ package body Sem_Ch12 is
 
       Save_Global_References (Original_Node (N));
 
+      --  To capture global references, analyze the expressions of aspects,
+      --  and propagate information to original tree. Note that in this case
+      --  analysis of attributes is not delayed until the freeze point.
+      --  It seems very hard to recreate the proper visibility of the generic
+      --  subprogram at a later point because the analysis of an aspect may
+      --  create pragmas after the generic copies have been made ???
+
+      if Has_Aspects (N) then
+         declare
+            Aspect : Node_Id;
+
+         begin
+            Aspect := First (Aspect_Specifications (N));
+            while Present (Aspect) loop
+               if Get_Aspect_Id (Chars (Identifier (Aspect)))
+                  /= Aspect_Warnings
+               then
+                  Analyze (Expression (Aspect));
+               end if;
+               Next (Aspect);
+            end loop;
+
+            Aspect := First (Aspect_Specifications (Original_Node (N)));
+            while Present (Aspect) loop
+               Save_Global_References (Expression (Aspect));
+               Next (Aspect);
+            end loop;
+         end;
+      end if;
+
       End_Generic;
       End_Scope;
       Exit_Generic_Scope (Id);
       Generate_Reference_To_Formals (Id);
 
       List_Inherited_Pre_Post_Aspects (Id);
-
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
    end Analyze_Generic_Subprogram_Declaration;
 
    -----------------------------------
@@ -4262,6 +4302,12 @@ package body Sem_Ch12 is
            Make_Subprogram_Declaration (Sloc (Act_Spec),
              Specification => Act_Spec);
 
+         --  The aspects have been copied previously, but they have to be
+         --  linked explicitly to the new subprogram declaration.
+         --  Explicit pre/postconditions on the instance are analyzed below,
+         --  in a separate step.
+
+         Move_Aspects (Act_Tree, Act_Decl);
          Set_Categorization_From_Pragmas (Act_Decl);
 
          if Parent_Installed then

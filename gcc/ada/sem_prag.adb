@@ -1738,7 +1738,18 @@ package body Sem_Prag is
             --  Skip stuff not coming from source
 
             elsif not Comes_From_Source (PO) then
-               null;
+
+               --  The condition may apply to a subprogram instantiation.
+
+               if Nkind (PO) = N_Subprogram_Declaration
+                 and then Present (Generic_Parent (Specification (PO)))
+               then
+                  Chain_PPC (PO);
+                  return;
+
+               else
+                  null;
+               end if;
 
             --  Only remaining possibility is subprogram declaration
 
@@ -7554,6 +7565,7 @@ package body Sem_Prag is
                   then
                      Set_Elaborate_Present (Citem, True);
                      Set_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
+                     Generate_Reference (Entity (Name (Citem)), Citem);
 
                      --  With the pragma present, elaboration calls on
                      --  subprograms from the named unit need no further
