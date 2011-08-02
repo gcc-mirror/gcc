@@ -1,3 +1,9 @@
+2011-08-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47766
+	* doc/md.texi (stack_protect_set): The pattern moves ptr_mode value.
+	(stack_protect_test): The pattern compares ptr_mode value.
+
 2011-08-02  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Add REG_CFA_RESTORE
@@ -5,8 +11,7 @@
 
 2011-08-01  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/lzcntintrin.h (__lzcnt64): Replace long with
-	long long.
+	* config/i386/lzcntintrin.h (__lzcnt64): Replace long with long long.
 
 2011-08-01  Sebastian Pop  <sebastian.pop@amd.com>
 	    Joseph Myers  <joseph@codesourcery.com>
