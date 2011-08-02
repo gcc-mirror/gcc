@@ -1080,6 +1080,8 @@ package Opt is
    Preprocessing_Symbol_Defs : String_List_Access := new String_List (1 .. 4);
    --  An extensible array to temporarily stores symbol definitions specified
    --  on the command line with -gnateD switches.
+   --  What is this magic constant 4 ???
+   --  What is extensible about this fixed length array ???
 
    Preprocessing_Symbol_Last : Natural := 0;
    --  Index of last symbol definition in array Symbol_Definitions

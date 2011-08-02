@@ -15056,6 +15056,10 @@ package body Sem_Ch3 is
       --  Find if given digits value, and possibly a specified range, allows
       --  derivation from specified type
 
+      function Find_Base_Type return Entity_Id;
+      --  Find a predefined base type that Def can derive from, or generate
+      --  an error and substitute Long_Long_Float if none exists.
+
       ---------------------
       -- Can_Derive_From --
       ---------------------
@@ -15084,6 +15088,45 @@ package body Sem_Ch3 is
 
          return True;
       end Can_Derive_From;
+
+      --------------------
+      -- Find_Base_Type --
+      --------------------
+
+      function Find_Base_Type return Entity_Id is
+         Choice : Elmt_Id := First_Elmt (Predefined_Float_Types);
+
+      begin
+         --  Iterate over the predefined types in order, returning the first
+         --  one that Def can derive from.
+
+         while Present (Choice) loop
+            if Can_Derive_From (Node (Choice)) then
+               return Node (Choice);
+            end if;
+
+            Next_Elmt (Choice);
+         end loop;
+
+         --  If we can't derive from any existing type, use Long_Long_Float
+         --  and give appropriate message explaining the problem.
+
+         if Digs_Val > Max_Digs_Val then
+            --  It might be the case that there is a type with the requested
+            --  range, just not the combination of digits and range.
+
+            Error_Msg_N
+              ("no predefined type has requested range and precision",
+               Real_Range_Specification (Def));
+
+         else
+            Error_Msg_N
+              ("range too large for any predefined type",
+               Real_Range_Specification (Def));
+         end if;
+
+         return Standard_Long_Long_Float;
+      end Find_Base_Type;
 
    --  Start of processing for Floating_Point_Type_Declaration
 
@@ -15127,32 +15170,9 @@ package body Sem_Ch3 is
          end;
       end if;
 
-      Base_Typ := First (Predefined_Float_Types);
+      --  Find a suitable type to derive from or complain and use a substitute
 
-      while Present (Base_Typ) and then not Can_Derive_From (Base_Typ) loop
-         Next (Base_Typ);
-      end loop;
-
-      --  If we can't derive from any existing type, use Long_Long_Float
-      --  and give appropriate message explaining the problem.
-
-      if No (Base_Typ) then
-         Base_Typ := Standard_Long_Long_Float;
-
-         if Digs_Val > Max_Digs_Val then
-            --  It might be the case that there is a type with the requested
-            --  range, just not the combination of digits and range.
-
-            Error_Msg_N
-              ("no predefined type has requested range and precision",
-               Real_Range_Specification (Def));
-
-         else
-            Error_Msg_N
-              ("range too large for any predefined type",
-               Real_Range_Specification (Def));
-         end if;
-      end if;
+      Base_Typ := Find_Base_Type;
 
       --  If there are bounds given in the declaration use them as the bounds
       --  of the type, otherwise use the bounds of the predefined base type

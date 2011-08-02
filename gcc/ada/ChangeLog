@@ -1,3 +1,28 @@
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_pakd.adb (Expand_Packed_Element_Reference): Disable this routine
+	in CodePeer mode.
+
+2011-08-02  Geert Bosch  <bosch@adacore.com>
+
+	* cstand.adb (Back_End_Float_Types): Use Elist instead of Nlist
+	(Find_Back_End_Float_Type): Likewise
+	(Create_Back_End_Float_Types): Likewise
+	(Create_Float_Types): Likewise
+	(Register_Float_Type): Likewise
+	* sem_ch3.adb (Floating_Point_Type_Declaration): Use Elist instead of
+	Nlist and split out type selection in new local Find_Base_Type function.
+	* sem_prag.adb (Process_Import_Predefined_Type): Use Elist instead of
+	Nlist
+	* stand.ads (Predefined_Float_Types): Use Elist instead of Nlist
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* inline.adb: Minor code reorganization (put Get_Code_Unit_Entity in
+	alpha order).
+	* opt.ads: Minor comment change.
+	* sem_ch12.adb: Minor code reorganization.
+
 2011-08-02  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb (Complete_Private_Subtype): Don't append the private
