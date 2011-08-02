@@ -1,5 +1,9 @@
 2011-08-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49577
+	* typeck2.c (check_narrowing): Check unsigned mismatch.
+	* semantics.c (finish_compound_literal): check_narrowing.
+
 	PR c++/49593
 	* pt.c (find_parameter_packs_r): Handle CONSTRUCTOR.
 
