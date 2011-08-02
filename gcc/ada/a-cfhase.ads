@@ -43,10 +43,15 @@
 --    which is not possible if cursors encapsulate an access to the underlying
 --    container.
 
---    There are two new functions:
+--    There are three new functions:
 
+--      function Strict_Equal (Left, Right : Set) return Boolean;
 --      function Left  (Container : Set; Position : Cursor) return Set;
 --      function Right (Container : Set; Position : Cursor) return Set;
+
+--      Strict_Equal returns True if the containers are physically equal,
+--      meaning that they are structurally equal (function "=" returns True)
+--      and that they have the same set of cursors.
 
 --      Left returns a container containing all elements preceding Position
 --      (excluded) in Container. Right returns a container containing all

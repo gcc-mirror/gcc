@@ -4009,6 +4009,8 @@ package body Sem_Attr is
             --  Check OK prefix
 
             if Chars (CS) /= Chars (P) then
+               Error_Msg_Name_1 := Name_Result;
+
                Error_Msg_NE
                  ("incorrect prefix for % attribute, expected &", P, CS);
                Error_Attr;

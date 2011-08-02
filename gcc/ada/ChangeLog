@@ -1,3 +1,12 @@
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* a-cfdlli.ads, a-cfhase.ads, a-cforma.ads, a-cfhama.ads,
+	a-cforse.ads: Update comments.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: add attribute name when 'Result has the wrong prefix.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* a-cfdlli.ads, a-cfhase.ads, a-cforma.ads, a-cfhama.ads,
