@@ -1,3 +1,9 @@
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (New_Overloaded_Entity, Check_Overriding_Indicator): Do
+	not set Overridden_Operation if subprogram is an initialization
+	procedure.
+
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
 	* par-ch6.adb: Correct obsolete name in comments
