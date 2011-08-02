@@ -1,5 +1,12 @@
 2011-08-02  Javier Miranda  <miranda@adacore.com>
 
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Temporarily restrict the
+	generation of TSDs to the DOTNET compiler.
+	* exp_ch7.adb (Expand_N_Package_Body): Temporarily restrict the
+	generation of TSDs to the DOTNET compiler.
+
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
 	* exp_disp.ads (Build_VM_TSDs): Build the runtime Type Specific Data
 	record of all the tagged types declared inside library level package
 	declarations, library level package bodies or library level subprograms.

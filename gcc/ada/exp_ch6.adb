@@ -5125,8 +5125,11 @@ package body Exp_Ch6 is
       --  VM targets we generate now the Type Specific Data record of all the
       --  enclosing tagged type declarations
 
+      --  Temporarily restrict this support to the .NET compiler???
+
       if not Tagged_Type_Expansion
         and then Unit (Cunit (Main_Unit)) = N
+        and then VM_Target = CLI_Target
       then
          Build_VM_TSDs (N);
       end if;
