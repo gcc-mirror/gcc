@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010, Free Software Foundation, Inc.              --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -29,19 +29,21 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
---  The specification of this package is derived from the specification
---  of package Ada.Containers.Bounded_Hashed_Sets in the Ada 2012 RM.
---  The changes are
+--  This spec is derived from package Ada.Containers.Bounded_Hashed_Sets in the
+--  Ada 2012 RM. The modifications are to facilitate formal proofs by making it
+--  easier to express properties.
+
+--  The modifications are:
 
 --    A parameter for the container is added to every function reading the
---    content of a container: Element, Next, Query_Element, Has_Element,
---    Key, Iterate, Equivalent_Elements. This change is motivated by the
---    need to have cursors which are valid on different containers (typically
---    a container C and its previous version C'Old) for expressing properties,
+--    content of a container: Element, Next, Query_Element, Has_Element, Key,
+--    Iterate, Equivalent_Elements. This change is motivated by the need to
+--    have cursors which are valid on different containers (typically a
+--    container C and its previous version C'Old) for expressing properties,
 --    which is not possible if cursors encapsulate an access to the underlying
 --    container.
 
---    There are two new functions
+--    There are two new functions:
 
 --      function Left  (Container : Set; Position : Cursor) return Set;
 --      function Right (Container : Set; Position : Cursor) return Set;
@@ -230,7 +232,7 @@ package Ada.Containers.Formal_Hashed_Sets is
         (Container : in out Set;
          Position  : Cursor;
          Process   : not null access
-           procedure (Element : in out Element_Type));
+                       procedure (Element : in out Element_Type));
 
    end Generic_Keys;
 
@@ -251,9 +253,8 @@ private
          Has_Element : Boolean := False;
       end record;
 
-   package HT_Types is
-     new Ada.Containers.Hash_Tables.Generic_Bounded_Hash_Table_Types
-     (Node_Type);
+   package HT_Types is new
+     Ada.Containers.Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
 
    type HT_Access is access all HT_Types.Hash_Table_Type;
 
@@ -272,10 +273,9 @@ private
    use HT_Types;
    use Ada.Streams;
 
-   type Cursor is
-      record
-         Node      : Count_Type;
-      end record;
+   type Cursor is record
+      Node : Count_Type;
+   end record;
 
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010, Free Software Foundation, Inc.              --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -29,19 +29,20 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
---  The specification of this package is derived from the specification
---  of package Ada.Containers.Bounded_Hashed_Maps in the Ada 2012 RM.
---  The changes are
+--  This spec is derived from package Ada.Containers.Bounded_Hashed_Maps in the
+--  Ada 2012 RM. The modifications are to facilitate formal proofs by making it
+--  easier to express properties.
+
+--  The modifications are:
 
 --    A parameter for the container is added to every function reading the
---    content of a container: Key, Element, Next, Query_Element,
---    Has_Element, Iterate, Equivalent_Keys. This change is motivated by the
---    need to have cursors which are valid on different containers (typically
---    a container C and its previous version C'Old) for expressing properties,
---    which is not possible if cursors encapsulate an access to the underlying
---    container.
+--    contents of a container: Key, Element, Next, Query_Element, Has_Element,
+--    Iterate, Equivalent_Keys. This change is motivated by the need to have
+--    cursors which are valid on different containers (typically a container C
+--    and its previous version C'Old) for expressing properties, which is not
+--    possible if cursors encapsulate an access to the underlying container.
 
---    There are two new functions
+--    There are two new functions:
 
 --      function Left  (Container : Map; Position : Cursor) return Map;
 --      function Right (Container : Map; Position : Cursor) return Map;
@@ -70,6 +71,7 @@ package Ada.Containers.Formal_Hashed_Maps is
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is tagged private;
    --  pragma Preelaborable_Initialization (Map);
+   --  why is this commented out???
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
@@ -98,8 +100,9 @@ package Ada.Containers.Formal_Hashed_Maps is
    --  ???
    --  capacity=0 means use container.length as cap of tgt
    --  modulos=0 means use default_modulous(container.length)
-   function Copy (Source   : Map;
-                  Capacity : Count_Type := 0) return Map;
+   function Copy
+     (Source   : Map;
+      Capacity : Count_Type := 0) return Map;
 
    function Key (Container : Map; Position : Cursor) return Key_Type;
 
@@ -114,13 +117,13 @@ package Ada.Containers.Formal_Hashed_Maps is
      (Container : in out Map;
       Position  : Cursor;
       Process   : not null access
-        procedure (Key : Key_Type; Element : Element_Type));
+                    procedure (Key : Key_Type; Element : Element_Type));
 
    procedure Update_Element
      (Container : in out Map;
       Position  : Cursor;
       Process   : not null access
-        procedure (Key : Key_Type; Element : in out Element_Type));
+                    procedure (Key : Key_Type; Element : in out Element_Type));
 
    procedure Move (Target : in out Map; Source : in out Map);
 
@@ -190,8 +193,8 @@ package Ada.Containers.Formal_Hashed_Maps is
 
    procedure Iterate
      (Container : Map;
-      Process   :
-        not null access procedure (Container : Map; Position : Cursor));
+      Process   : not null access
+                    procedure (Container : Map; Position : Cursor));
 
    function Default_Modulus (Capacity : Count_Type) return Hash_Type;
 
@@ -259,10 +262,9 @@ private
    type Map_Access is access all Map;
    for Map_Access'Storage_Size use 0;
 
-   type Cursor is
-      record
-         Node      : Count_Type;
-      end record;
+   type Cursor is record
+      Node : Count_Type;
+   end record;
 
    procedure Read
      (Stream : not null access Root_Stream_Type'Class;

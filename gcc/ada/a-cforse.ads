@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010, Free Software Foundation, Inc.              --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -29,20 +29,22 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
---  The specification of this package is derived from the specification
---  of package Ada.Containers.Bounded_Ordered_Sets in the Ada 2012 RM.
---  The changes are
+--  This spec is derived from package Ada.Containers.Bounded_Ordered_Sets in
+--  the Ada 2012 RM. The modifications are to facilitate formal proofs by
+--  making it easier to express properties.
+
+--  The modifications are:
 
 --    A parameter for the container is added to every function reading the
 --    content of a container: Key, Element, Next, Query_Element, Previous,
---    Has_Element, Iterate, Reverse_Iterate. This change is
---    motivated by the need to have cursors which are valid on different
---    containers (typically a container C and its previous version C'Old) for
---    expressing properties, which is not possible if cursors encapsulate an
---    access to the underlying container. The operators "<" and ">" that could
---    not be modified that way have been removed.
+--    Has_Element, Iterate, Reverse_Iterate. This change is motivated by the
+--    need to have cursors which are valid on different containers (typically
+--    a container C and its previous version C'Old) for expressing properties,
+--    which is not possible if cursors encapsulate an access to the underlying
+--    container. The operators "<" and ">" that could not be modified that way
+--    have been removed.
 
---    There are two new functions
+--    There are two new functions:
 
 --      function Left  (Container : Set; Position : Cursor) return Set;
 --      function Right (Container : Set; Position : Cursor) return Set;
@@ -58,7 +60,6 @@ private with Ada.Containers.Red_Black_Trees;
 private with Ada.Streams;
 
 with Ada.Containers;
-use Ada.Containers;
 
 generic
    type Element_Type is private;
@@ -206,8 +207,8 @@ package Ada.Containers.Formal_Ordered_Sets is
 
    procedure Reverse_Iterate
      (Container : Set;
-      Process   :
-        not null access procedure (Container : Set; Position : Cursor));
+      Process   : not null access
+                    procedure (Container : Set; Position : Cursor));
 
    generic
       type Key_Type (<>) is private;
@@ -245,7 +246,7 @@ package Ada.Containers.Formal_Ordered_Sets is
         (Container : in out Set;
          Position  : Cursor;
          Process   : not null access
-           procedure (Element : in out Element_Type));
+                       procedure (Element : in out Element_Type));
 
    end Generic_Keys;
 
@@ -291,7 +292,7 @@ private
    for Set_Access'Storage_Size use 0;
 
    type Cursor is record
-      Node      : Count_Type;
+      Node : Count_Type;
    end record;
 
    procedure Write
@@ -320,7 +321,6 @@ private
 
    for Set'Read use Read;
 
-   Empty_Set : constant Set :=
-                 (Capacity => 0, others => <>);
+   Empty_Set : constant Set := (Capacity => 0, others => <>);
 
 end Ada.Containers.Formal_Ordered_Sets;
