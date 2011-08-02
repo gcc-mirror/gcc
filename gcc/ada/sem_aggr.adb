@@ -40,6 +40,7 @@ with Namet.Sp; use Namet.Sp;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
+with Restrict; use Restrict;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
@@ -1098,10 +1099,11 @@ package body Sem_Aggr is
       end if;
 
       --  An unqualified aggregate is restricted in SPARK or ALFA to:
-      --  * an 'aggregate item' inside an aggregate for a multi-dimensional
-      --    array.
-      --  * an expression being assigned to an unconstrained array, but only
-      --    if the aggregate specifies a value for OTHERS only.
+
+      --    An aggregate item inside an aggregate for a multi-dimensional array
+
+      --    An expression being assigned to an unconstrained array, but only if
+      --    the aggregate specifies a value for OTHERS only.
 
       if Nkind (Parent (N)) /= N_Qualified_Expression then
          if Is_Array_Type (Etype (N)) then
@@ -1114,7 +1116,7 @@ package body Sem_Aggr is
                end if;
 
                --  The following check is disabled until a proper place is
-               --  found where the type of the parent node can be inspected.
+               --  found where the type of the parent node can be inspected???
 
 --              elsif not (Nkind (Parent (N)) = N_Aggregate
 --                         and then Is_Array_Type (Etype (Parent (N)))
@@ -1130,10 +1132,12 @@ package body Sem_Aggr is
             Check_Formal_Restriction
               ("record aggregate should be qualified", N);
 
-            --  The type of aggregate is neither array nor record, so an error
-            --  must have occurred during resolution. Do not report an
-            --  additional message here.
+         --  The type of aggregate is neither array nor record, so an error
+         --  must have occurred during resolution. Do not report an additional
+         --  message here.
 
+         else
+            null;
          end if;
       end if;
 
@@ -1145,8 +1149,7 @@ package body Sem_Aggr is
       if Raises_Constraint_Error (N) then
          Aggr_Subtyp := Etype (N);
          Rewrite (N,
-           Make_Raise_Constraint_Error (Loc,
-             Reason => CE_Range_Check_Failed));
+           Make_Raise_Constraint_Error (Loc, Reason => CE_Range_Check_Failed));
          Set_Raises_Constraint_Error (N);
          Set_Etype (N, Aggr_Subtyp);
          Set_Analyzed (N);
@@ -3112,9 +3115,9 @@ package body Sem_Aggr is
 
    begin
       --  A record aggregate is restricted in SPARK or ALFA:
-      --  * each named association can have only a single choice.
-      --  * OTHERS cannot be used.
-      --  * positional and named associations cannot be mixed.
+      --    Each named association can have only a single choice.
+      --    OTHERS cannot be used.
+      --    Positional and named associations cannot be mixed.
 
       if Present (Component_Associations (N))
         and then Present (First (Component_Associations (N)))
@@ -3128,19 +3131,21 @@ package body Sem_Aggr is
 
          declare
             Assoc : Node_Id;
+
          begin
             Assoc := First (Component_Associations (N));
-
             while Present (Assoc) loop
                if List_Length (Choices (Assoc)) > 1 then
                   Check_Formal_Restriction
                     ("component association in record aggregate must "
                      & "contain a single choice", Assoc);
                end if;
+
                if Nkind (First (Choices (Assoc))) = N_Others_Choice then
                   Check_Formal_Restriction
                     ("record aggregate cannot contain OTHERS", Assoc);
                end if;
+
                Assoc := Next (Assoc);
             end loop;
          end;

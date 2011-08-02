@@ -4966,6 +4966,7 @@ package body Sem_Ch12 is
             else
                Check_Private_View (Subtype_Indication (Parent (E)));
             end if;
+
             Set_Is_Generic_Actual_Type (E, True);
             Set_Is_Hidden (E, False);
             Set_Is_Potentially_Use_Visible (E,
@@ -5052,6 +5053,63 @@ package body Sem_Ch12 is
            or else Is_Visible_Formal (E)
          then
             Set_Is_Hidden (E, False);
+         end if;
+
+         if Ekind (E) = E_Constant then
+
+            --  If the type of the actual is a private type declared in the
+            --  enclosing scope of the generic unit, the body of the generic
+            --  sees the full view of the type (because it has to appear in
+            --  the corresponding package body). If the type is private now,
+            --  exchange views to restore the proper visiblity in the instance.
+
+            declare
+               Typ          : constant Entity_Id := Base_Type (Etype (E));
+               --  The type of the actual
+
+               Gen_Id       : Entity_Id;
+               --  The generic unit
+
+               Parent_Scope : Entity_Id;
+               --  The enclosing scope of the generic unit
+
+            begin
+               if Is_Wrapper_Package (Instance) then
+                  Gen_Id :=
+                     Generic_Parent
+                       (Specification
+                         (Unit_Declaration_Node
+                           (Related_Instance (Instance))));
+               else
+                  Gen_Id :=
+                    Generic_Parent
+                      (Specification (Unit_Declaration_Node (Instance)));
+               end if;
+
+               Parent_Scope := Scope (Gen_Id);
+
+               --  The exchange is only needed if the generic is defined
+               --  within a package which is not a common ancestor of the
+               --  scope of the instance, and is not already in scope.
+
+               if Is_Private_Type (Typ)
+                 and then Scope (Typ) = Parent_Scope
+                 and then Scope (Instance) /= Parent_Scope
+                 and then Ekind (Parent_Scope) = E_Package
+                 and then not Is_Child_Unit (Gen_Id)
+               then
+                  Switch_View (Typ);
+
+                  --  If the type of the entity is a subtype, it may also
+                  --  have to be made visible, together with the base type
+                  --  of its full view, after exchange.
+
+                  if Is_Private_Type (Etype (E)) then
+                     Switch_View (Etype (E));
+                     Switch_View (Base_Type (Etype (E)));
+                  end if;
+               end if;
+            end;
          end if;
 
          Next_Entity (E);

@@ -1,7 +1,23 @@
-2011-08-02  Vincent Celier  <celier@adacore.com>
+2011-08-02  Yannick Moy  <moy@adacore.com>
 
-	* prj-nmsc.adb (Check_Library_Attributes): For virtual library project,
-	inherit library kind.
+	* errout.adb, errout.ads (Check_Formal_Restriction): move procedure
+	from here...
+	* restrict.adb, restrict.ads (Check_Formal_Restriction): ...to here
+	* sem_aggr.adb, sem_ch5.adb, sem_util.adb:
+	Add with/use clauses to make Check_Formal_Restriction visible
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Generic_Actuals): handle properly actual
+	in-parameters when type of the generic formal is private in the generic
+	spec and non-private in the body.
+
+2011-08-02  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.adb, a-cfdlli.ads, a-cfhase.adb, a-cfhase.ads, a-cfhama.adb,
+	a-cfhama.ads, a-cforse.adb, a-cforse.ads, a-cforma.adb, a-cforma.ads,
+	a-cofove.adb, a-cofove.ads: New files implementing formal containers.
+	* impunit.adb, Makefile.rtl: Take new files into account.
 
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 

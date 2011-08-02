@@ -512,7 +512,13 @@ package body Impunit is
      "a-cborse",    -- Ada.Containers.Bounded_Ordered_Sets
      "a-cborma",    -- Ada.Containers.Bounded_Ordered_Maps
      "a-cbhase",    -- Ada.Containers.Bounded_Hashed_Sets
-     "a-cbhama");   -- Ada.Containers.Bounded_Hashed_Maps
+     "a-cbhama",    -- Ada.Containers.Bounded_Hashed_Maps
+     "a-cofove",    -- Ada.Containers.Formal_Vectors
+     "a-cfdlli",    -- Ada.Containers.Formal_Doubly_Linked_Lists
+     "a-cforse",    -- Ada.Containers.Formal_Ordered_Sets
+     "a-cforma",    -- Ada.Containers.Formal_Ordered_Maps
+     "a-cfhase",    -- Ada.Containers.Formal_Hashed_Sets
+     "a-cfhama");   -- Ada.Containers.Formal_Hashed_Maps
 
    -----------------------
    -- Alternative Units --
