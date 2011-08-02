@@ -351,6 +351,9 @@ build_call_a (tree function, int n, tree *argarray)
   nothrow = ((decl && TREE_NOTHROW (decl))
 	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (function))));
 
+  if (!nothrow && at_function_scope_p () && cfun && cp_function_chain)
+    cp_function_chain->can_throw = 1;
+
   if (decl && TREE_THIS_VOLATILE (decl) && cfun && cp_function_chain)
     current_function_returns_abnormally = 1;
 
@@ -6457,11 +6460,6 @@ build_cxx_call (tree fn, int nargs, tree *argarray)
 
   /* If this call might throw an exception, note that fact.  */
   fndecl = get_callee_fndecl (fn);
-  if ((!fndecl || !TREE_NOTHROW (fndecl))
-      && at_function_scope_p ()
-      && cfun
-      && cp_function_chain)
-    cp_function_chain->can_throw = 1;
 
   /* Check that arguments to builtin functions match the expectations.  */
   if (fndecl

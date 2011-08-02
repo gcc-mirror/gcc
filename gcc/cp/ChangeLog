@@ -1,3 +1,9 @@
+2011-08-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49260
+	* call.c (build_call_a): Set cp_function_chain->can_throw here.
+	(build_cxx_call): Not here.
+
 2011-07-27  Jeffrey Yasskin  <jyasskin@google.com>
 
 	* pt.c (build_template_decl): Copy the function_decl's
