@@ -6066,8 +6066,8 @@ package body Make is
                      end loop;
 
                      for Index in 1 .. Library_Projs.Last loop
-                        if
-                          Library_Projs.Table (Index).Library_Kind = Static
+                        if Library_Projs.Table
+                            (Index).Library_Kind = Static
                         then
                            Linker_Switches.Increment_Last;
                            Linker_Switches.Table (Linker_Switches.Last) :=

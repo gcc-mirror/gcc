@@ -1,3 +1,32 @@
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Subprogram_Declaration): issue error in formal
+	mode on subprogram declaration outside of package specification, unless
+	it is followed by a pragma Import
+	* sem_ch3.adb (Access_Definition, Access_Subprogram_Declaration,
+	Access_Type_Declaration): issue error in formal mode on access type
+	(Analyze_Incomplete_Type_Decl): issue error in formal mode on
+	incomplete type
+	(Analyze_Object_Declaration): issue error in formal mode on object
+	declaration which does not respect SPARK restrictions
+	(Analyze_Subtype_Declaration): issue error in formal mode on subtype
+	declaration which does not respect SPARK restrictions
+	(Constrain_Decimal, Constrain_Float, Constrain_Ordinary_Fixed): issue
+	error in formal mode on digits or delta constraint
+	(Decimal_Fixed_Point_Type_Declaration): issue error in formal mode on
+	decimal fixed point type
+	(Derived_Type_Declaration): issue error in formal mode on derived type
+	other than type extensions of tagged record types
+	* sem_ch6.adb (Process_Formals): remove check in formal mode, redundant
+	with check on access definition
+	* sem_ch9.adb (Analyze_Protected_Definition): issue error in formal
+	mode on protected definition.
+	(Analyze_Task_Definition): issue error in formal mode on task definition
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb, sem_ch8.adb, s-inmaop-vxworks.adb: Minor reformatting.
+
 2011-08-02  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch6.adb (Can_Override_Operator): New function.

@@ -8785,14 +8785,6 @@ package body Sem_Ch6 is
          Set_Etype (Formal, Formal_Type);
          Default := Expression (Param_Spec);
 
-         --  Access parameter is not allowed in SPARK or ALFA
-
-         if Formal_Verification_Mode
-           and then Ekind (Formal_Type) = E_Anonymous_Access_Type
-         then
-            Error_Msg_F ("|~~access parameter is not allowed", Param_Spec);
-         end if;
-
          if Present (Default) then
             --  Default expression is not allowed in SPARK or ALFA
 
