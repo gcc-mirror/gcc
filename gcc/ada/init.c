@@ -2026,7 +2026,7 @@ __gnat_init_float (void)
      to get correct Ada semantics.  Note that for AE653 vThreads, the HW
      overflow settings are an OS configuration issue.  The instructions
      below have no effect.  */
-#if defined (_ARCH_PPC) && !defined (_SOFT_FLOAT) && (!defined (VTHREADS) || defined (__VXWORKSMILS__))
+#if defined (_ARCH_PPC) && !defined (_SOFT_FLOAT) && !defined (VTHREADS)
 #if defined (__SPE__)
   {
      const unsigned long spefscr_mask = 0xfffffff3;

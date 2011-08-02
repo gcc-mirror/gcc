@@ -1,3 +1,34 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb: Minor reformatting.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb (Has_Default_Aspect): Replaces Has_Default_Value
+	(Has_Default_Component_Value): Removed
+	* einfo.ads Comment updates
+	(Has_Default_Aspect): Replaces Has_Default_Value
+	(Has_Default_Component_Value): Removed
+	* exp_ch13.adb
+	(Expand_N_Freeze_Entity): Handle Default[_Component]_Value aspects
+	* exp_ch3.adb
+	(Build_Array_Init_Proc): Handle Default_[Component_]Value aspects
+	(Get_Simple_Init_Val): Handle Default_Value aspect
+	(Needs_Simple_Initialization): Handle Default_Value aspect
+	* exp_ch3.ads: Needs_Simple_Initialization
+	* freeze.adb (Freeze_Entity): Handle Default_[Component_]Value aspect
+	* par-prag.adb (Pragma_Default[_Component]Value) Removed
+	* sem_ch13.adb
+	(Analyze_Aspect_Specifications): Fix Default[_Component]_Value aspects
+	* sem_prag.adb (Pragma_Default[_Component]Value) Removed
+	* snames.ads-tmpl (Pragma_Default[_Component]Value) Removed
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): use base type to locate
+	package containing iteration primitives.
+	exp_ch5.adb (Expand_Iterator_Loop): ditto.
+
 2011-08-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Analyze_Iteration_Scheme): For an Ada2012 iterator with
@@ -181,11 +212,6 @@
 
 	* s-stusta.adb (Print): Make sure Pos is always initialized to a
 	suitable value.
-
-2011-08-02  Ed Falis  <falis@adacore.com>
-
-	* init.c: Fix conditional compilation so that the fp initialization is
-	peformed for the MILS VxWorks Guest OS.
 
 2011-08-02  Geert Bosch  <bosch@adacore.com>
 

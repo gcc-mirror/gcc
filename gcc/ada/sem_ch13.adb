@@ -536,7 +536,7 @@ package body Sem_Ch13 is
                      if Present (CC)
                        and then not Error_Posted (Last_Bit (CC))
                        and then Static_Integer (Last_Bit (CC)) <
-                                Max_Machine_Scalar_Size
+                                                    Max_Machine_Scalar_Size
                      then
                         Num_CC := Num_CC + 1;
                         Comps (Num_CC) := Comp;
@@ -984,29 +984,6 @@ package body Sem_Ch13 is
                --  Aspects corresponding to pragmas with two arguments, where
                --  the first argument is a local name referring to the entity,
                --  and the second argument is the aspect definition expression
-               --  which is an expression which must be delayed and analyzed.
-
-               when Aspect_Default_Component_Value |
-                    Aspect_Default_Value           =>
-
-                  --  Construct the pragma
-
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Argument_Associations => New_List (
-                        New_Occurrence_Of (E, Loc),
-                        Relocate_Node (Expr)),
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Chars (Id)));
-
-                  --  These aspects do require delaying
-
-                  Delay_Required := True;
-                  Set_Is_Delayed_Aspect (Aspect);
-
-               --  Aspects corresponding to pragmas with two arguments, where
-               --  the first argument is a local name referring to the entity,
-               --  and the second argument is the aspect definition expression
                --  which is an expression that does not get analyzed.
 
                when Aspect_Suppress   |
@@ -1048,6 +1025,45 @@ package body Sem_Ch13 is
                   --  values are ON/OFF which don't get analyzed anyway.
 
                   Delay_Required := False;
+
+               --  Default_Value and Default_Component_Value aspects. These
+               --  are specially handled because they have no corresponding
+               --  pragmas or attributes.
+
+               when Aspect_Default_Value | Aspect_Default_Component_Value =>
+                  Error_Msg_Name_1 := Chars (Id);
+
+                  if not Is_Type (E) then
+                     Error_Msg_N ("aspect% can only apply to a type", Id);
+                     goto Continue;
+
+                  elsif not Is_First_Subtype (E) then
+                     Error_Msg_N ("aspect% cannot apply to subtype", Id);
+                     goto Continue;
+
+                  elsif A_Id = Aspect_Default_Value
+                    and then not Is_Scalar_Type (E)
+                  then
+                     Error_Msg_N
+                       ("aspect% can only be applied to scalar type", Id);
+                     goto Continue;
+
+                  elsif A_Id = Aspect_Default_Component_Value then
+                     if not Is_Array_Type (E) then
+                        Error_Msg_N
+                          ("aspect% can only be applied to array type", Id);
+                        goto Continue;
+                     elsif not Is_Scalar_Type (Component_Type (E)) then
+                        Error_Msg_N
+                          ("aspect% requires scalar components", Id);
+                        goto Continue;
+                     end if;
+                  end if;
+
+                  Aitem := Empty;
+                  Delay_Required := True;
+                  Set_Is_Delayed_Aspect (Aspect);
+                  Set_Has_Default_Aspect (Base_Type (Entity (Ent)));
 
                --  Aspects Pre/Post generate Precondition/Postcondition pragmas
                --  with a first argument that is the expression, and a second
@@ -1218,23 +1234,27 @@ package body Sem_Ch13 is
                   Delay_Required := True;
             end case;
 
-            Set_From_Aspect_Specification (Aitem, True);
-
             --  If a delay is required, we delay the freeze (not much point in
             --  delaying the aspect if we don't delay the freeze!). The pragma
-            --  or clause is then attached to the aspect specification which
-            --  is placed in the rep item list.
+            --  or attribute clause if there is one is then attached to the
+            --  aspect specification which is placed in the rep item list.
 
             if Delay_Required then
+               if Present (Aitem) then
+                  Set_From_Aspect_Specification (Aitem, True);
+                  Set_Is_Delayed_Aspect (Aitem);
+                  Set_Aspect_Rep_Item (Aspect, Aitem);
+               end if;
+
                Ensure_Freeze_Node (E);
-               Set_Is_Delayed_Aspect (Aitem);
                Set_Has_Delayed_Aspects (E);
-               Set_Aspect_Rep_Item (Aspect, Aitem);
                Record_Rep_Item (E, Aspect);
 
             --  If no delay required, insert the pragma/clause in the tree
 
             else
+               Set_From_Aspect_Specification (Aitem, True);
+
                --  If this is a compilation unit, we will put the pragma in
                --  the Pragmas_After list of the N_Compilation_Unit_Aux node.
 
@@ -1278,8 +1298,8 @@ package body Sem_Ch13 is
             end if;
          end;
 
-         <<Continue>>
-            Next (Aspect);
+      <<Continue>>
+         Next (Aspect);
       end loop Aspect_Loop;
    end Analyze_Aspect_Specifications;
 
@@ -1333,8 +1353,16 @@ package body Sem_Ch13 is
       Attr  : constant Name_Id      := Chars (N);
       Expr  : constant Node_Id      := Expression (N);
       Id    : constant Attribute_Id := Get_Attribute_Id (Attr);
-      Ent   : Entity_Id;
+
+      Ent : Entity_Id;
+      --  The entity of Nam after it is analyzed. In the case of an incomplete
+      --  type, this is the underlying type.
+
       U_Ent : Entity_Id;
+      --  The underlying entity to which the attribute applies. Generally this
+      --  is the Underlying_Type of Ent, except in the case where the clause
+      --  applies to full view of incomplete type or private type in which case
+      --  U_Ent is just a copy of Ent.
 
       FOnly : Boolean := False;
       --  Reset to True for subtype specific attribute (Alignment, Size)
@@ -1366,6 +1394,7 @@ package body Sem_Ch13 is
          Pnam : Entity_Id;
 
          Is_Read : constant Boolean := (TSS_Nam = TSS_Stream_Read);
+         --  True for Read attribute, false for other attributes
 
          function Has_Good_Profile (Subp : Entity_Id) return Boolean;
          --  Return true if the entity is a subprogram with an appropriate
@@ -1528,6 +1557,16 @@ package body Sem_Ch13 is
    --  Start of processing for Analyze_Attribute_Definition_Clause
 
    begin
+      --  The following code is a defense against recursion. Not clear that
+      --  this can happen legitimately, but perhaps some error situations
+      --  can cause it, and we did see this recursion during testing.
+
+      if Analyzed (N) then
+         return;
+      else
+         Set_Analyzed (N, True);
+      end if;
+
       --  Process Ignore_Rep_Clauses option
 
       if Ignore_Rep_Clauses then
@@ -1558,13 +1597,13 @@ package body Sem_Ch13 is
             --  legality, e.g. failing to provide a stream attribute for a
             --  type may make a program illegal.
 
-            when Attribute_External_Tag   |
-                 Attribute_Input          |
-                 Attribute_Output         |
-                 Attribute_Read           |
-                 Attribute_Storage_Pool   |
-                 Attribute_Storage_Size   |
-                 Attribute_Write          =>
+            when Attribute_External_Tag            |
+                 Attribute_Input                   |
+                 Attribute_Output                  |
+                 Attribute_Read                    |
+                 Attribute_Storage_Pool            |
+                 Attribute_Storage_Size            |
+                 Attribute_Write                   =>
                null;
 
             --  Other cases are errors ("attribute& cannot be set with
@@ -1890,6 +1929,7 @@ package body Sem_Ch13 is
                   --  check till after code generation to take full advantage
                   --  of the annotation done by the back end. This entry is
                   --  only made if the address clause comes from source.
+
                   --  If the entity has a generic type, the check will be
                   --  performed in the instance if the actual type justifies
                   --  it, and we do not insert the clause in the table to
@@ -2253,7 +2293,6 @@ package body Sem_Ch13 is
                  ("size cannot be given for unconstrained array", Nam);
 
             elsif Size /= No_Uint then
-
                if VM_Target /= No_VM and then not GNAT_Mode then
 
                   --  Size clause is not handled properly on VM targets.
@@ -2443,9 +2482,10 @@ package body Sem_Ch13 is
             end if;
 
             --  The Stack_Bounded_Pool is used internally for implementing
-            --  access types with a Storage_Size. Since it only work
-            --  properly when used on one specific type, we need to check
-            --  that it is not hijacked improperly:
+            --  access types with a Storage_Size. Since it only work properly
+            --  when used on one specific type, we need to check that it is not
+            --  hijacked improperly:
+
             --    type T is access Integer;
             --    for T'Storage_Size use n;
             --    type Q is access Float;
@@ -2673,9 +2713,9 @@ package body Sem_Ch13 is
               ("attribute& cannot be set with definition clause", N);
       end case;
 
-      --  The test for the type being frozen must be performed after
-      --  any expression the clause has been analyzed since the expression
-      --  itself might cause freezing that makes the clause illegal.
+      --  The test for the type being frozen must be performed after any
+      --  expression the clause has been analyzed since the expression itself
+      --  might cause freezing that makes the clause illegal.
 
       if Rep_Item_Too_Late (U_Ent, N, FOnly) then
          return;
@@ -3198,11 +3238,12 @@ package body Sem_Ch13 is
          Build_Predicate_Function (E, N);
       end if;
 
-      --  If type has delayed aspects, this is where we do the preanalysis
-      --  at the freeze point, as part of the consistent visibility check.
-      --  Note that this must be done after calling Build_Predicate_Function,
-      --  since that call marks occurrences of the subtype name in the saved
-      --  expression so that they will not cause trouble in the preanalysis.
+      --  If type has delayed aspects, this is where we do the preanalysis at
+      --  the freeze point, as part of the consistent visibility check. Note
+      --  that this must be done after calling Build_Predicate_Function or
+      --  Build_Invariant_Procedure since these subprograms fix occurrences of
+      --  the subtype name in the saved expression so that they will not cause
+      --  trouble in the preanalysis.
 
       if Has_Delayed_Aspects (E) then
          declare
@@ -6959,7 +7000,9 @@ package body Sem_Ch13 is
 
       if Is_Incomplete_Or_Private_Type (T)
         and then No (Underlying_Type (T))
-        and then Get_Pragma_Id (N) /= Pragma_Import
+        and then
+          (Nkind (N) /= N_Pragma
+             or else Get_Pragma_Id (N) /= Pragma_Import)
       then
          Error_Msg_N
            ("representation item must be after full type declaration", N);
