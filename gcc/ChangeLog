@@ -1,6 +1,7 @@
 2011-08-02  Richard Henderson  <rth@redhat.com>
 
 	PR target/49864
+	PR target/49879
 	* reg-notes.def (REG_ARGS_SIZE): New.
 	* calls.c (emit_call_1): Emit REG_ARGS_SIZE for call_pop.
 	(expand_call): Add REG_ARGS_SIZE to emit_stack_restore.
