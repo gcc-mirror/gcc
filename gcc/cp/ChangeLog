@@ -1,3 +1,11 @@
+2011-08-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49834
+	* parser.c (build_range_temp): Split out from...
+	(cp_convert_range_for): ...here.
+	(do_range_for_auto_deduction): New.
+	(cp_parser_range_for): Use it.
+
 2011-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (finish_omp_atomic): Adjust prototype.
