@@ -1063,6 +1063,7 @@ package body Ch9 is
       Scope.Table (Scope.Last).Ecol := Start_Column;
       Scope.Table (Scope.Last).Lreq := False;
       Scope.Table (Scope.Last).Etyp := E_Name;
+      Scope.Table (Scope.Last).Sloc := Token_Ptr;
 
       Name_Node := P_Defining_Identifier;
       Set_Defining_Identifier (Entry_Node, Name_Node);

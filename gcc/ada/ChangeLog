@@ -1,3 +1,11 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch10.adb: Minor code reorganization (use Nkind_In).
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch9.adb: save location of entry for proper error message.
+
 2011-08-02  Javier Miranda  <miranda@adacore.com>
 
 	* sem_type.ads, sem_type.adb (Is_Ancestor): Addition of a new formal
