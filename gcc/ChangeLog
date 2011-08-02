@@ -1,3 +1,8 @@
+2011-08-02  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Add REG_CFA_RESTORE
+	note for save_LR_around_toc_setup sequence.
+
 2011-08-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/lzcntintrin.h (__lzcnt64): Replace long with
