@@ -6067,7 +6067,8 @@ package body Make is
 
                      for Index in 1 .. Library_Projs.Last loop
                         if Library_Projs.Table
-                            (Index).Library_Kind = Static
+                          (Index).Library_Kind = Static
+                          and then not Targparm.OpenVMS_On_Target
                         then
                            Linker_Switches.Increment_Last;
                            Linker_Switches.Table (Linker_Switches.Last) :=
@@ -6080,7 +6081,8 @@ package body Make is
                                 Get_Name_String
                                     (Library_Projs.Table (Index).
                                      Library_Name) &
-                                ".a");
+                                "." &
+                                MLib.Tgt.Archive_Ext);
 
                         else
                            --  Add the -L switch
