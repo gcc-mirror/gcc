@@ -45,10 +45,10 @@ __lzcnt32 (unsigned int __X)
 }
 
 #ifdef __x86_64__
-extern __inline unsigned long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lzcnt64 (unsigned long __X)
+extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+__lzcnt64 (unsigned long long __X)
 {
-  return __builtin_clzl (__X);
+  return __builtin_clzll (__X);
 }
 #endif
 
