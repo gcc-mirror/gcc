@@ -1,3 +1,14 @@
+2011-08-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Complete_Private_Subtype): Don't append the private
+	subtype's list of rep items to the list on the full subtype in the case
+	where the lists are the same.
+
+2011-08-02  Geert Bosch  <bosch@adacore.com>
+
+	* switch-c.adb (Free): New deallocation procedure to avoid implicitly
+	using the one from System.Strings, which also deallocates all strings.
+
 2011-08-02  Geert Bosch  <bosch@adacore.com>
 
 	* gcc-interface/gigi.h, gcc-interface/misc.c (enumerate_modes): New

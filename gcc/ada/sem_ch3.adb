@@ -10167,9 +10167,12 @@ package body Sem_Ch3 is
          if No (Item) then
             Set_First_Rep_Item (Full, First_Rep_Item (Priv));
 
-         --  Else search to end of items currently linked to the full subtype
+         --  Otherwise, search to the end of items currently linked to the full
+         --  subtype and append the private items to the end. However, if Priv
+         --  and Full already have the same list of rep items, then the append
+         --  is not done, as that would create a circularity.
 
-         else
+         elsif Item /= First_Rep_Item (Priv) then
             loop
                Next_Item := Next_Rep_Item (Item);
                exit when No (Next_Item);

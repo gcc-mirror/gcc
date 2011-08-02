@@ -35,6 +35,7 @@ with Validsw;  use Validsw;
 with Stylesw;  use Stylesw;
 with Warnsw;   use Warnsw;
 
+with Ada.Unchecked_Deallocation;
 with System.WCh_Con; use System.WCh_Con;
 
 package body Switch.C is
@@ -44,6 +45,10 @@ package body Switch.C is
 
    procedure Add_Symbol_Definition (Def : String);
    --  Add a symbol definition from the command line
+
+   procedure Free is
+      new Ada.Unchecked_Deallocation (String_List, String_List_Access);
+   --  Avoid using System.Strings.Free, which also frees the designated strings
 
    function Switch_Subsequently_Cancelled
      (C        : String;
