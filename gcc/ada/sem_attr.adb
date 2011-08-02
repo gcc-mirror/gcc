@@ -85,61 +85,61 @@ package body Sem_Attr is
    --  that are not included in Ada 95, but still get recognized in GNAT.
 
    Attribute_83 : constant Attribute_Class_Array := Attribute_Class_Array'(
-      Attribute_Address           |
-      Attribute_Aft               |
-      Attribute_Alignment         |
-      Attribute_Base              |
-      Attribute_Callable          |
-      Attribute_Constrained       |
-      Attribute_Count             |
-      Attribute_Delta             |
-      Attribute_Digits            |
-      Attribute_Emax              |
-      Attribute_Epsilon           |
-      Attribute_First             |
-      Attribute_First_Bit         |
-      Attribute_Fore              |
-      Attribute_Image             |
-      Attribute_Large             |
-      Attribute_Last              |
-      Attribute_Last_Bit          |
-      Attribute_Leading_Part      |
-      Attribute_Length            |
-      Attribute_Machine_Emax      |
-      Attribute_Machine_Emin      |
-      Attribute_Machine_Mantissa  |
-      Attribute_Machine_Overflows |
-      Attribute_Machine_Radix     |
-      Attribute_Machine_Rounds    |
-      Attribute_Mantissa          |
-      Attribute_Pos               |
-      Attribute_Position          |
-      Attribute_Pred              |
-      Attribute_Range             |
-      Attribute_Safe_Emax         |
-      Attribute_Safe_Large        |
-      Attribute_Safe_Small        |
-      Attribute_Size              |
-      Attribute_Small             |
-      Attribute_Storage_Size      |
-      Attribute_Succ              |
-      Attribute_Terminated        |
-      Attribute_Val               |
-      Attribute_Value             |
-      Attribute_Width             => True,
-      others                      => False);
+      Attribute_Address                |
+      Attribute_Aft                    |
+      Attribute_Alignment              |
+      Attribute_Base                   |
+      Attribute_Callable               |
+      Attribute_Constrained            |
+      Attribute_Count                  |
+      Attribute_Delta                  |
+      Attribute_Digits                 |
+      Attribute_Emax                   |
+      Attribute_Epsilon                |
+      Attribute_First                  |
+      Attribute_First_Bit              |
+      Attribute_Fore                   |
+      Attribute_Image                  |
+      Attribute_Large                  |
+      Attribute_Last                   |
+      Attribute_Last_Bit               |
+      Attribute_Leading_Part           |
+      Attribute_Length                 |
+      Attribute_Machine_Emax           |
+      Attribute_Machine_Emin           |
+      Attribute_Machine_Mantissa       |
+      Attribute_Machine_Overflows      |
+      Attribute_Machine_Radix          |
+      Attribute_Machine_Rounds         |
+      Attribute_Mantissa               |
+      Attribute_Pos                    |
+      Attribute_Position               |
+      Attribute_Pred                   |
+      Attribute_Range                  |
+      Attribute_Safe_Emax              |
+      Attribute_Safe_Large             |
+      Attribute_Safe_Small             |
+      Attribute_Size                   |
+      Attribute_Small                  |
+      Attribute_Storage_Size           |
+      Attribute_Succ                   |
+      Attribute_Terminated             |
+      Attribute_Val                    |
+      Attribute_Value                  |
+      Attribute_Width                  => True,
+      others                           => False);
 
    --  The following array is the list of attributes defined in the Ada 2005
    --  RM which are not defined in Ada 95. These are recognized in Ada 95 mode,
    --  but in Ada 95 they are considered to be implementation defined.
 
    Attribute_05 : constant Attribute_Class_Array := Attribute_Class_Array'(
-      Attribute_Machine_Rounding  |
-      Attribute_Mod               |
-      Attribute_Priority          |
-      Attribute_Stream_Size       |
-      Attribute_Wide_Wide_Width   => True,
-      others                      => False);
+      Attribute_Machine_Rounding       |
+      Attribute_Mod                    |
+      Attribute_Priority               |
+      Attribute_Stream_Size            |
+      Attribute_Wide_Wide_Width        => True,
+      others                           => False);
 
    --  The following array contains all attributes that imply a modification
    --  of their prefixes or result in an access value. Such prefixes can be
@@ -147,13 +147,13 @@ package body Sem_Attr is
 
    Attribute_Name_Implies_Lvalue_Prefix : constant Attribute_Class_Array :=
       Attribute_Class_Array'(
-      Attribute_Access              |
-      Attribute_Address             |
-      Attribute_Input               |
-      Attribute_Read                |
-      Attribute_Unchecked_Access    |
-      Attribute_Unrestricted_Access => True,
-      others                        => False);
+      Attribute_Access                 |
+      Attribute_Address                |
+      Attribute_Input                  |
+      Attribute_Read                   |
+      Attribute_Unchecked_Access       |
+      Attribute_Unrestricted_Access    => True,
+      others                           => False);
 
    -----------------------
    -- Local_Subprograms --
@@ -1870,9 +1870,7 @@ package body Sem_Attr is
          end if;
       end Validate_Non_Static_Attribute_Function_Call;
 
-   -----------------------------------------------
-   -- Start of Processing for Analyze_Attribute --
-   -----------------------------------------------
+   --   Start of processing for Analyze_Attribute
 
    begin
       --  Immediate return if unrecognized attribute (already diagnosed
@@ -1897,9 +1895,9 @@ package body Sem_Attr is
          end if;
       end if;
 
-      --  Deal with Ada 2005 issues
+      --  Deal with Ada 2005 attributes that are
 
-      if Attribute_05 (Attr_Id) and then Ada_Version <= Ada_95 then
+      if Attribute_05 (Attr_Id) and then Ada_Version < Ada_2005 then
          Check_Restriction (No_Implementation_Attributes, N);
       end if;
 
@@ -6016,13 +6014,6 @@ package body Sem_Attr is
            Eval_Fat.Copy_Sign
              (P_Root_Type, Expr_Value_R (E1), Expr_Value_R (E2)), Static);
 
-      -----------
-      -- Delta --
-      -----------
-
-      when Attribute_Delta =>
-         Fold_Ureal (N, Delta_Value (P_Type), True);
-
       --------------
       -- Definite --
       --------------
@@ -6031,6 +6022,13 @@ package body Sem_Attr is
          Rewrite (N, New_Occurrence_Of (
            Boolean_Literals (not Is_Indefinite_Subtype (P_Entity)), Loc));
          Analyze_And_Resolve (N, Standard_Boolean);
+
+      -----------
+      -- Delta --
+      -----------
+
+      when Attribute_Delta =>
+         Fold_Ureal (N, Delta_Value (P_Type), True);
 
       ------------
       -- Denorm --

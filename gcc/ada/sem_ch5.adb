@@ -2261,7 +2261,7 @@ package body Sem_Ch5 is
             --  Find the Element_Type in the package instance that defines the
             --  container type.
 
-            Ent := First_Entity (Scope (Typ));
+            Ent := First_Entity (Scope (Base_Type (Typ)));
             while Present (Ent) loop
                if Chars (Ent) = Name_Element_Type then
                   Set_Etype (Def_Id, Ent);
@@ -2274,7 +2274,7 @@ package body Sem_Ch5 is
          else
             --  Find the Cursor type in similar fashion
 
-            Ent := First_Entity (Scope (Typ));
+            Ent := First_Entity (Scope (Base_Type (Typ)));
             while Present (Ent) loop
                if Chars (Ent) = Name_Cursor then
                   Set_Etype (Def_Id, Ent);

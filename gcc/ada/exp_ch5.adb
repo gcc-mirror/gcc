@@ -2860,7 +2860,7 @@ package body Exp_Ch5 is
 
          declare
             Element_Type  : constant Entity_Id := Etype (Id);
-            Pack          : constant Entity_Id := Scope (Etype (Container));
+            Pack          : constant Entity_Id := Scope (Base_Type (Typ));
             Name_Init     : Name_Id;
             Name_Step     : Name_Id;
             Cond          : Node_Id;
@@ -2915,7 +2915,11 @@ package body Exp_Ch5 is
 
             if Of_Present (I_Spec) then
 
-               --  Id : Element_Type renames Pack.Element (Cursor);
+               --  Id : Element_Type renames Container.Element (Cursor);
+
+               --  The code below only handles containers where Element is not
+               --  a primitive operation of the container. This excludes
+               --  for now the Hi-Lite formal containers.
 
                Renaming_Decl :=
                  Make_Object_Renaming_Declaration (Loc,

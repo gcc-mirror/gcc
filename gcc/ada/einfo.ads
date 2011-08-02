@@ -462,15 +462,15 @@ package Einfo is
 --       the value of the entry barrier.
 
 --    Base_Type (synthesized)
---       Applies to all type entities. Returns the base type of a type or
---       subtype. The base type of a type is the type itself. The base type
---       of a subtype is the type that it constrains (which is always a type
---       entity, not some other subtype). Note that in the case of a subtype
---       of a private type, it is possible for the base type attribute to
---       return a private type, even if the subtype to which it applies is
---       non-private. See also Implementation_Base_Type. Note: it is allowed
---       to apply Base_Type to other than a type, in which case it simply
---       returns the entity unchanged.
+--       Applies to all type and subtype entities. Returns the base type of a
+--       type or subtype. The base type of a type is the type itself. The base
+--       type of a subtype is the type that it constrains (which is always
+--       a type entity, not some other subtype). Note that in the case of a
+--       subtype of a private type, it is possible for the base type attribute
+--       to return a private type, even if the subtype to which it applies is
+--       non-private. See also Implementation_Base_Type. Note: it is allowed to
+--       apply Base_Type to other than a type, in which case it simply returns
+--       the entity unchanged.
 
 --    Block_Node (Node11)
 --       Present in block entities. Points to the identifier in the
@@ -1407,10 +1407,10 @@ package Einfo is
 --       function of a tagged type which can dispatch on result.
 
 --    Has_Controlled_Component (Flag43) [base type only]
---       Present in all entities. Set only for composite type entities which
---       contain a component that either is a controlled type, or itself
---       contains controlled component (i.e. either Has_Controlled_Component
---       or Is_Controlled is set for at least one component).
+--       Present in all type and subtype entities. Set only for composite type
+--       entities which contain a component that either is a controlled type,
+--       or itself contains controlled component (i.e. either Is_Controlled or
+--       Has_Controlled_Component is set for at least one component).
 
 --    Has_Convention_Pragma (Flag119)
 --       Present in all entities. Set true for an entity for which a valid
@@ -1428,17 +1428,11 @@ package Einfo is
 --       node must be generated for the entity at its freezing point. See
 --       separate section ("Delayed Freezing and Elaboration") for details.
 
---    Has_Default_Component_Value (Flag151) [root type only]
---       Present in array types. Set on a base type to indicate that the base
---       type and all its subtypes have a Default_Component_Value aspect. If
---       this flag is True, then there will be a pragma Default_Component_Value
---       chained to the Rep_Item list for the base type.
-
---    Has_Default_Value (Flag39) [base type only]
---       Present in scalar types. Set on a base type to indicate that the base
---       type and all its subtypes have a Default_Value aspect. If this flag is
---       True, then there will always be a pragma Default_Value chained to the
---       Rep_Item list for the base type.
+--    Has_Default_Aspect (Flag39) [base type only]
+--       Present in entities for types and subtypes, set for scalar types with
+--       a Default_Value aspect and array types with a Default_Component_Value
+--       apsect. If this flag is set, then a corresponding aspect specification
+--       node will be present on the rep item chain for the entity.
 
 --    Has_Discriminants (Flag5)
 --       Present in all types and subtypes. For types that are allowed to have
@@ -1650,9 +1644,9 @@ package Einfo is
 --       case since we allow multiple occurrences of this pragma anyway.
 
 --    Has_Pragma_Pack (Flag121) [implementation base type only]
---       Present in all entities. If set, indicates that a valid pragma Pack
---       was given for the type. Note that this flag is not inherited by
---       derived type. See also the Is_Packed flag.
+--       Present in array and record type entities. If set, indicates that a
+--       valid pragma Pack was given for the type. Note that this flag is not
+--       inherited by derived type. See also the Is_Packed flag.
 
 --    Has_Pragma_Pure (Flag203)
 --       Present in all entities. If set, indicates that a valid pragma Pure
@@ -4690,7 +4684,6 @@ package Einfo is
    --    Checks_May_Be_Suppressed            (Flag31)
    --    Debug_Info_Off                      (Flag166)
    --    Has_Anon_Block_Suffix               (Flag201)
-   --    Has_Controlled_Component            (Flag43)   (base type only)
    --    Has_Convention_Pragma               (Flag119)
    --    Has_Delayed_Aspects                 (Flag200)
    --    Has_Delayed_Freeze                  (Flag18)
@@ -4701,7 +4694,6 @@ package Einfo is
    --    Has_Pragma_Elaborate_Body           (Flag150)
    --    Has_Pragma_Inline                   (Flag157)
    --    Has_Pragma_Inline_Always            (Flag230)
-   --    Has_Pragma_Pack                     (Flag121)  (base type only)
    --    Has_Pragma_Pure                     (Flag203)
    --    Has_Pragma_Pure_Function            (Flag179)
    --    Has_Pragma_Thread_Local_Storage     (Flag169)
@@ -4813,6 +4805,8 @@ package Einfo is
    --    Has_Completion_In_Body              (Flag71)
    --    Has_Complex_Representation          (Flag140)  (base type only)
    --    Has_Constrained_Partial_View        (Flag187)
+   --    Has_Controlled_Component            (Flag43)   (base type only)
+   --    Has_Default_Aspect                  (Flag39)   (base type only)
    --    Has_Discriminants                   (Flag5)
    --    Has_Inheritable_Invariants          (Flag248)
    --    Has_Invariants                      (Flag232)
@@ -4935,7 +4929,7 @@ package Einfo is
    --    Packed_Array_Type                   (Node23)
    --    Component_Alignment                 (special)  (base type only)
    --    Has_Component_Size_Clause           (Flag68)   (base type only)
-   --    Has_Default_Component_Value         (Flag151)  (base type only)
+   --    Has_Pragma_Pack                     (Flag121)  (impl base type only)
    --    Is_Aliased                          (Flag15)
    --    Is_Constrained                      (Flag12)
    --    Next_Index                          (synth)
@@ -5035,7 +5029,6 @@ package Einfo is
    --    Scalar_Range                        (Node20)
    --    Delta_Value                         (Ureal18)
    --    Small_Value                         (Ureal21)
-   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Has_Machine_Radix_Clause            (Flag83)
    --    Machine_Radix_10                    (Flag84)
    --    Aft_Value                           (synth)
@@ -5112,7 +5105,6 @@ package Einfo is
    --    Static_Predicate                    (List25)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Contiguous_Rep                  (Flag181)
-   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Has_Enumeration_Rep_Clause          (Flag66)
    --    Has_Pragma_Ordered                  (Flag198)  (base type only)
    --    Nonzero_Is_True                     (Flag162)  (base type only)
@@ -5140,7 +5132,6 @@ package Einfo is
    --    Digits_Value                        (Uint17)
    --    Float_Rep                           (Uint10)   (Float_Rep_Kind)
    --    Scalar_Range                        (Node20)
-   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Machine_Emax_Value                  (synth)
    --    Machine_Emin_Value                  (synth)
    --    Machine_Mantissa_Value              (synth)
@@ -5315,7 +5306,6 @@ package Einfo is
    --    Static_Predicate                    (List25)
    --    Non_Binary_Modulus                  (Flag58)   (base type only)
    --    Has_Biased_Representation           (Flag139)
-   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -5346,7 +5336,6 @@ package Einfo is
    --    Delta_Value                         (Ureal18)
    --    Scalar_Range                        (Node20)
    --    Small_Value                         (Ureal21)
-   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Has_Small_Clause                    (Flag67)
    --    Aft_Value                           (synth)
    --    Type_Low_Bound                      (synth)
@@ -5535,6 +5524,7 @@ package Einfo is
    --    C_Pass_By_Copy                      (Flag125)  (base type only)
    --    Has_Dispatch_Table                  (Flag220)  (base tagged type only)
    --    Has_External_Tag_Rep_Clause         (Flag110)
+   --    Has_Pragma_Pack                     (Flag121)  (impl base type only)
    --    Has_Record_Rep_Clause               (Flag65)   (base type only)
    --    Has_Static_Discriminants            (Flag211)  (subtype only)
    --    Is_Class_Wide_Equivalent_Type       (Flag35)
@@ -5583,7 +5573,6 @@ package Einfo is
    --    Scalar_Range                        (Node20)
    --    Static_Predicate                    (List25)
    --    Has_Biased_Representation           (Flag139)
-   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -6034,8 +6023,7 @@ package Einfo is
    function Has_Controlled_Component            (Id : E) return B;
    function Has_Controlling_Result              (Id : E) return B;
    function Has_Convention_Pragma               (Id : E) return B;
-   function Has_Default_Component_Value         (Id : E) return B;
-   function Has_Default_Value                   (Id : E) return B;
+   function Has_Default_Aspect                  (Id : E) return B;
    function Has_Delayed_Aspects                 (Id : E) return B;
    function Has_Delayed_Freeze                  (Id : E) return B;
    function Has_Discriminants                   (Id : E) return B;
@@ -6618,8 +6606,7 @@ package Einfo is
    procedure Set_Has_Controlled_Component        (Id : E; V : B := True);
    procedure Set_Has_Controlling_Result          (Id : E; V : B := True);
    procedure Set_Has_Convention_Pragma           (Id : E; V : B := True);
-   procedure Set_Has_Default_Component_Value     (Id : E; V : B := True);
-   procedure Set_Has_Default_Value               (Id : E; V : B := True);
+   procedure Set_Has_Default_Aspect              (Id : E; V : B := True);
    procedure Set_Has_Delayed_Aspects             (Id : E; V : B := True);
    procedure Set_Has_Delayed_Freeze              (Id : E; V : B := True);
    procedure Set_Has_Discriminants               (Id : E; V : B := True);
@@ -7311,8 +7298,7 @@ package Einfo is
    pragma Inline (Has_Controlled_Component);
    pragma Inline (Has_Controlling_Result);
    pragma Inline (Has_Convention_Pragma);
-   pragma Inline (Has_Default_Component_Value);
-   pragma Inline (Has_Default_Value);
+   pragma Inline (Has_Default_Aspect);
    pragma Inline (Has_Delayed_Aspects);
    pragma Inline (Has_Delayed_Freeze);
    pragma Inline (Has_Discriminants);
@@ -7751,8 +7737,7 @@ package Einfo is
    pragma Inline (Set_Has_Controlled_Component);
    pragma Inline (Set_Has_Controlling_Result);
    pragma Inline (Set_Has_Convention_Pragma);
-   pragma Inline (Set_Has_Default_Component_Value);
-   pragma Inline (Set_Has_Default_Value);
+   pragma Inline (Set_Has_Default_Aspect);
    pragma Inline (Set_Has_Delayed_Aspects);
    pragma Inline (Set_Has_Delayed_Freeze);
    pragma Inline (Set_Has_Discriminants);

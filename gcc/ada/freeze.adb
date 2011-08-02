@@ -2423,8 +2423,14 @@ package body Freeze is
                  and then Is_Delayed_Aspect (Ritem)
                then
                   Aitem := Aspect_Rep_Item (Ritem);
-                  Set_Parent (Aitem, Ritem);
-                  Analyze (Aitem);
+
+                  --  Skip if this is an aspect with no corresponding pragma
+                  --  or attribute definition node (such as Default_Value).
+
+                  if Present (Aitem) then
+                     Set_Parent (Aitem, Ritem);
+                     Analyze (Aitem);
+                  end if;
                end if;
 
                Next_Rep_Item (Ritem);
@@ -4018,11 +4024,11 @@ package body Freeze is
             end if;
          end if;
 
-         --  Remaining process is to set/verify the representation information,
-         --  in particular the size and alignment values. This processing is
-         --  not required for generic types, since generic types do not play
-         --  any part in code generation, and so the size and alignment values
-         --  for such types are irrelevant.
+         --  Now we set/verify the representation information, in particular
+         --  the size and alignment values. This processing is not required for
+         --  generic types, since generic types do not play any part in code
+         --  generation, and so the size and alignment values for such types
+         --  are irrelevant.
 
          if Is_Generic_Type (E) then
             return Result;
@@ -4031,6 +4037,42 @@ package body Freeze is
 
          else
             Layout_Type (E);
+         end if;
+
+         --  If the type has a Defaut_Value/Default_Component_Value aspect,
+         --  this is where we analye the expression (after the type is frozen,
+         --  since in the case of Default_Value, we are analyzing with the
+         --  type itself, and we treat Default_Component_Value similarly for
+         --  the sake of uniformity.
+
+         if Is_First_Subtype (E) and then Has_Default_Aspect (E) then
+            declare
+               Nam    : Name_Id;
+               Aspect : Node_Id;
+               Exp    : Node_Id;
+               Typ    : Entity_Id;
+
+            begin
+               if Is_Scalar_Type (E) then
+                  Nam := Name_Default_Value;
+                  Typ := E;
+               else
+                  Nam := Name_Default_Component_Value;
+                  Typ := Component_Type (E);
+               end if;
+
+               Aspect := Get_Rep_Item_For_Entity (E, Nam);
+               Exp := Expression (Aspect);
+               Analyze_And_Resolve (Exp, Typ);
+
+               if Etype (Exp) /= Any_Type then
+                  if not Is_Static_Expression (Exp) then
+                     Error_Msg_Name_1 := Nam;
+                     Flag_Non_Static_Expr
+                       ("aspect% requires static expression", Exp);
+                  end if;
+               end if;
+            end;
          end if;
 
          --  End of freeze processing for type entities

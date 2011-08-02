@@ -240,8 +240,14 @@ package body Exp_Ch13 is
                  and then Entity (Ritem) = E
                then
                   Aitem := Aspect_Rep_Item (Ritem);
-                  pragma Assert (Is_Delayed_Aspect (Aitem));
-                  Insert_Before (N, Aitem);
+
+                  --  Skip this for aspects (e.g. Current_Value) for which
+                  --  there is no corresponding pragma or attribute.
+
+                  if Present (Aitem) then
+                     pragma Assert (Is_Delayed_Aspect (Aitem));
+                     Insert_Before (N, Aitem);
+                  end if;
                end if;
 
                Next_Rep_Item (Ritem);

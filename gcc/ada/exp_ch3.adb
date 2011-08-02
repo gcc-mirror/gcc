@@ -583,11 +583,23 @@ package body Exp_Ch3 is
              Prefix      => Make_Identifier (Loc, Name_uInit),
              Expressions => Index_List);
 
-         if Needs_Simple_Initialization (Comp_Type) then
+         if Has_Default_Aspect (A_Type) then
             Set_Assignment_OK (Comp);
             return New_List (
               Make_Assignment_Statement (Loc,
-                Name => Comp,
+                Name       => Comp,
+                Expression =>
+                  Convert_To (Comp_Type,
+                    Expression
+                      (Get_Rep_Item_For_Entity
+                        (First_Subtype (A_Type),
+                         Name_Default_Component_Value)))));
+
+         elsif Needs_Simple_Initialization (Comp_Type) then
+            Set_Assignment_OK (Comp);
+            return New_List (
+              Make_Assignment_Statement (Loc,
+                Name       => Comp,
                 Expression =>
                   Get_Simple_Init_Val
                     (Comp_Type, Nod, Component_Size (A_Type))));
@@ -617,6 +629,7 @@ package body Exp_Ch3 is
          if not Has_Non_Null_Base_Init_Proc (Comp_Type)
            and then not Needs_Simple_Initialization (Comp_Type)
            and then not Has_Task (Comp_Type)
+           and then not Has_Default_Aspect (A_Type)
          then
             return New_List (Make_Null_Statement (Loc));
 
@@ -678,6 +691,7 @@ package body Exp_Ch3 is
       --    2. The component type needs simple initialization
       --    3. Tasks are present
       --    4. The type is marked as a public entity
+      --    5. The array type has a Default_Component_Value aspect
 
       --  The reason for the public entity test is to deal properly with the
       --  Initialize_Scalars pragma. This pragma can be set in the client and
@@ -695,7 +709,8 @@ package body Exp_Ch3 is
 
       Has_Default_Init := Has_Non_Null_Base_Init_Proc (Comp_Type)
                             or else Needs_Simple_Initialization (Comp_Type)
-                            or else Has_Task (Comp_Type);
+                            or else Has_Task (Comp_Type)
+                            or else Has_Default_Aspect (A_Type);
 
       if Has_Default_Init
         or else (not Restriction_Active (No_Initialize_Scalars)
@@ -777,7 +792,7 @@ package body Exp_Ch3 is
             Set_Is_Null_Init_Proc (Proc_Id);
 
          else
-            --  Try to build a static aggregate to initialize statically
+            --  Try to build a static aggregate to statically initialize
             --  objects of the type. This can only be done for constrained
             --  one-dimensional arrays with static bounds.
 
@@ -4831,11 +4846,11 @@ package body Exp_Ch3 is
 
                begin
                   --  If the original node of the expression was a conversion
-                  --  to this specific class-wide interface type then we
-                  --  restore the original node because we must copy the object
-                  --  before displacing the pointer to reference the secondary
-                  --  tag component. This code must be kept synchronized with
-                  --  the expansion done by routine Expand_Interface_Conversion
+                  --  to this specific class-wide interface type then restore
+                  --  the original node because we must copy the object before
+                  --  displacing the pointer to reference the secondary tag
+                  --  component. This code must be kept synchronized with the
+                  --  expansion done by routine Expand_Interface_Conversion
 
                   if not Comes_From_Source (Expr_N)
                     and then Nkind (Expr_N) = N_Explicit_Dereference
@@ -6885,8 +6900,17 @@ package body Exp_Ch3 is
 
          return Result;
 
-      --  For scalars, we must have normalize/initialize scalars case, or
-      --  if the node N is an 'Invalid_Value attribute node.
+      --  Scalars with Default_Value aspect
+
+      elsif Is_Scalar_Type (T) and then Has_Default_Aspect (T) then
+         return
+           Convert_To (T,
+             Expression
+               (Get_Rep_Item_For_Entity
+                 (First_Subtype (T), Name_Default_Value)));
+
+      --  Othersie, for scalars, we must have normalize/initialize scalars
+      --  case, or if the node N is an 'Invalid_Value attribute node.
 
       elsif Is_Scalar_Type (T) then
          pragma Assert (Init_Or_Norm_Scalars or IV_Attribute);
@@ -8521,6 +8545,11 @@ package body Exp_Ch3 is
                return False;
             end if;
          end;
+
+      --  Scalar type with Default_Value aspect requires initialization
+
+      elsif Is_Scalar_Type (T) and then Has_Default_Aspect (T) then
+         return True;
 
       --  Cases needing simple initialization are access types, and, if pragma
       --  Normalize_Scalars or Initialize_Scalars is in effect, then all scalar
