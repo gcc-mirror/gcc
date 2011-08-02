@@ -2,7 +2,7 @@
 --                                                                          --
 --                  GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
---                  SYSTEM.INTERRUPT_MANAGEMENT.OPERATIONS                  --
+--                   SYSTEM.INTERRUPT_MANAGEMENT.OPERATIONS                 --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --

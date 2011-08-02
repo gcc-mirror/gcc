@@ -506,9 +506,12 @@ package body Sem_Ch8 is
    --  re-installing use clauses of parent units. N is the use_clause that
    --  names P (and possibly other packages).
 
-   procedure Use_One_Type (Id : Node_Id);
+   procedure Use_One_Type (Id : Node_Id; Installed : Boolean := False);
    --  Id is the subtype mark from a use type clause. This procedure makes
-   --  the primitive operators of the type potentially use-visible.
+   --  the primitive operators of the type potentially use-visible. The
+   --  boolean flag Installed indicates that the clause is being reinstalled
+   --  after previous analysis, and primitive operations are already chained
+   --  on the Used_Operations list of the clause.
 
    procedure Write_Info;
    --  Write debugging information on entities declared in current scope
@@ -2693,11 +2696,8 @@ package body Sem_Ch8 is
          begin
             Mark := First (Subtype_Marks (N));
             while Present (Mark) loop
-               if not In_Use (Entity (Mark))
-                 and then not Is_Potentially_Use_Visible (Entity (Mark))
-               then
-                  Set_In_Use (Base_Type (Entity (Mark)));
-               end if;
+               Use_One_Type (Mark, Installed => True);
+
                Next (Mark);
             end loop;
 
@@ -7565,7 +7565,7 @@ package body Sem_Ch8 is
    -- Use_One_Type --
    ------------------
 
-   procedure Use_One_Type (Id : Node_Id) is
+   procedure Use_One_Type (Id : Node_Id; Installed : Boolean := False) is
       Elmt          : Elmt_Id;
       Is_Known_Used : Boolean;
       Op_List       : Elist_Id;
@@ -7719,40 +7719,46 @@ package body Sem_Ch8 is
          end if;
 
          Set_Current_Use_Clause (T, Parent (Id));
-         Op_List := Collect_Primitive_Operations (T);
 
          --  Iterate over primitive operations of the type. If an operation is
          --  already use_visible, it is the result of a previous use_clause,
-         --  and already appears on the corresponding entity chain.
+         --  and already appears on the corresponding entity chain. If the
+         --  clause is being reinstalled, operations are already use-visible.
 
-         Elmt := First_Elmt (Op_List);
-         while Present (Elmt) loop
-            if (Nkind (Node (Elmt)) = N_Defining_Operator_Symbol
-                 or else Chars (Node (Elmt)) in Any_Operator_Name)
-              and then not Is_Hidden (Node (Elmt))
-              and then not Is_Potentially_Use_Visible (Node (Elmt))
-            then
-               Set_Is_Potentially_Use_Visible (Node (Elmt));
-               Append_Elmt (Node (Elmt), Used_Operations (Parent (Id)));
+         if Installed then
+            null;
 
-            elsif Ada_Version >= Ada_2012
-              and then All_Present (Parent (Id))
-              and then not Is_Hidden (Node (Elmt))
-              and then not Is_Potentially_Use_Visible (Node (Elmt))
-            then
-               Set_Is_Potentially_Use_Visible (Node (Elmt));
-               Append_Elmt (Node (Elmt), Used_Operations (Parent (Id)));
-            end if;
+         else
+            Op_List := Collect_Primitive_Operations (T);
+            Elmt := First_Elmt (Op_List);
+            while Present (Elmt) loop
+               if (Nkind (Node (Elmt)) = N_Defining_Operator_Symbol
+                    or else Chars (Node (Elmt)) in Any_Operator_Name)
+                 and then not Is_Hidden (Node (Elmt))
+                 and then not Is_Potentially_Use_Visible (Node (Elmt))
+               then
+                  Set_Is_Potentially_Use_Visible (Node (Elmt));
+                  Append_Elmt (Node (Elmt), Used_Operations (Parent (Id)));
 
-            Next_Elmt (Elmt);
-         end loop;
-      end if;
+               elsif Ada_Version >= Ada_2012
+                 and then All_Present (Parent (Id))
+                 and then not Is_Hidden (Node (Elmt))
+                 and then not Is_Potentially_Use_Visible (Node (Elmt))
+               then
+                  Set_Is_Potentially_Use_Visible (Node (Elmt));
+                  Append_Elmt (Node (Elmt), Used_Operations (Parent (Id)));
+               end if;
 
-      if Ada_Version >= Ada_2012
-        and then All_Present (Parent (Id))
-        and then Is_Tagged_Type (T)
-      then
-         Use_Class_Wide_Operations (T);
+               Next_Elmt (Elmt);
+            end loop;
+         end if;
+
+         if Ada_Version >= Ada_2012
+           and then All_Present (Parent (Id))
+           and then Is_Tagged_Type (T)
+         then
+            Use_Class_Wide_Operations (T);
+         end if;
       end if;
 
       --  If warning on redundant constructs, check for unnecessary WITH

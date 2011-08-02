@@ -1158,6 +1158,14 @@ package body Sem_Ch9 is
    --  Start of processing for Analyze_Protected_Definition
 
    begin
+      --  Protected definition is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode then
+         Error_Msg_F ("|~~protected definition is not allowed", N);
+      end if;
+
+      --  Proceed with analysis
+
       Tasking_Used := True;
       Analyze_Declarations (Visible_Declarations (N));
 
@@ -2009,6 +2017,14 @@ package body Sem_Ch9 is
       L : Entity_Id;
 
    begin
+      --  Task definition is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode then
+         Error_Msg_F ("|~~task definition is not allowed", N);
+      end if;
+
+      --  Proceed with analysis
+
       Tasking_Used := True;
 
       if Present (Visible_Declarations (N)) then
