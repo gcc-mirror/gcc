@@ -227,7 +227,7 @@ package body Sem_Ch6 is
       Scop       : constant Entity_Id := Current_Scope;
 
    begin
-      Check_Formal_Restriction ("abstract subprogram is not allowed", N);
+      Check_SPARK_Restriction ("abstract subprogram is not allowed", N);
 
       Generate_Definition (Designator);
       Set_Is_Abstract_Subprogram (Designator);
@@ -631,20 +631,20 @@ package body Sem_Ch6 is
          Analyze_And_Resolve (Expr, R_Type);
          Check_Limited_Return (Expr);
 
-         --  The only RETURN allowed in SPARK or ALFA is as the last statement
-         --  of the function.
+         --  The only RETURN allowed in SPARK is as the last statement of the
+         --  function.
 
          if Nkind (Parent (N)) /= N_Handled_Sequence_Of_Statements
            and then
              (Nkind (Parent (Parent (N))) /= N_Subprogram_Body
                or else Present (Next (N)))
          then
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("RETURN should be the last statement in function", N);
          end if;
 
       else
-         Check_Formal_Restriction ("extended RETURN is not allowed", N);
+         Check_SPARK_Restriction ("extended RETURN is not allowed", N);
 
          --  Analyze parts specific to extended_return_statement:
 
@@ -1425,7 +1425,7 @@ package body Sem_Ch6 is
 
       if Result_Definition (N) /= Error then
          if Nkind (Result_Definition (N)) = N_Access_Definition then
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("access result is not allowed", Result_Definition (N));
 
             --  Ada 2005 (AI-254): Handle anonymous access to subprograms
@@ -1463,12 +1463,12 @@ package body Sem_Ch6 is
                Set_Is_In_ALFA (Designator, False);
             end if;
 
-            --  Unconstrained array as result is not allowed in SPARK or ALFA
+            --  Unconstrained array as result is not allowed in SPARK
 
             if Is_Array_Type (Typ)
               and then not Is_Constrained (Typ)
             then
-               Check_Formal_Restriction
+               Check_SPARK_Restriction
                  ("returning an unconstrained array is not allowed",
                   Result_Definition (N));
             end if;
@@ -1910,7 +1910,7 @@ package body Sem_Ch6 is
                  and then not Nkind_In (Stat, N_Simple_Return_Statement,
                                               N_Extended_Return_Statement)
                then
-                  Check_Formal_Restriction
+                  Check_SPARK_Restriction
                     ("last statement in function should be RETURN", Stat);
                end if;
             end;
@@ -1928,7 +1928,7 @@ package body Sem_Ch6 is
             --  borrow the Check_Returns procedure here ???
 
             if Return_Present (Id) then
-               Check_Formal_Restriction
+               Check_SPARK_Restriction
                  ("procedure should not have RETURN", N);
             end if;
          end if;
@@ -2866,12 +2866,12 @@ package body Sem_Ch6 is
    --  Start of processing for Analyze_Subprogram_Declaration
 
    begin
-      --  Null procedures are not allowed in SPARK or ALFA
+      --  Null procedures are not allowed in SPARK
 
       if Nkind (Specification (N)) = N_Procedure_Specification
         and then Null_Present (Specification (N))
       then
-         Check_Formal_Restriction ("null procedure is not allowed", N);
+         Check_SPARK_Restriction ("null procedure is not allowed", N);
       end if;
 
       --  For a null procedure, capture the profile before analysis, for
@@ -3118,13 +3118,12 @@ package body Sem_Ch6 is
 
       Set_Is_In_ALFA (Designator);
 
-      --  User-defined operator is not allowed in SPARK or ALFA, except as
-      --  a renaming.
+      --  User-defined operator is not allowed in SPARK, except as a renaming
 
       if Nkind (Defining_Unit_Name (N)) = N_Defining_Operator_Symbol
         and then Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
       then
-         Check_Formal_Restriction ("user-defined operator is not allowed", N);
+         Check_SPARK_Restriction ("user-defined operator is not allowed", N);
       end if;
 
       --  Proceed with analysis
@@ -8572,10 +8571,10 @@ package body Sem_Ch6 is
          Check_Overriding_Indicator
            (S, Overridden_Subp, Is_Primitive => Is_Primitive_Subp);
 
-         --  Overloading is not allowed in SPARK or ALFA
+         --  Overloading is not allowed in SPARK
 
          Error_Msg_Sloc := Sloc (Homonym (S));
-         Check_Formal_Restriction ("overloading not allowed with entity#", S);
+         Check_SPARK_Restriction ("overloading not allowed with entity#", S);
 
          --  If S is a derived operation for an untagged type then by
          --  definition it's not a dispatching operation (even if the parent
@@ -8853,7 +8852,7 @@ package body Sem_Ch6 is
          Default := Expression (Param_Spec);
 
          if Present (Default) then
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("default expression is not allowed", Default);
 
             if Out_Present (Param_Spec) then

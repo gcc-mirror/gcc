@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -149,10 +149,5 @@ package Err_Vars is
    Error_Msg_Strlen : Natural;
    --  Used if current message contains a ~ insertion character to indicate
    --  insertion of the string Error_Msg_String (1 .. Error_Msg_Strlen).
-
-   Error_Msg_Lang : String (1 .. 16);
-   Error_Msg_Langlen : Natural;
-   --  Used if current message contains a ~~ insertion character to indicate
-   --  insertion of the string Error_Msg_Lang (1 .. Error_Msg_Langlen).
 
 end Err_Vars;

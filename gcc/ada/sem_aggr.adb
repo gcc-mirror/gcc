@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -809,7 +809,7 @@ package body Sem_Aggr is
    begin
       if Level = 0 then
          if Nkind (Parent (Expr)) /= N_Qualified_Expression then
-            Check_Formal_Restriction ("aggregate should be qualified", Expr);
+            Check_SPARK_Restriction ("aggregate should be qualified", Expr);
          end if;
 
       else
@@ -978,7 +978,7 @@ package body Sem_Aggr is
          return;
       end if;
 
-      --  An unqualified aggregate is restricted in SPARK or ALFA to:
+      --  An unqualified aggregate is restricted in SPARK to:
 
       --    An aggregate item inside an aggregate for a multi-dimensional array
 
@@ -997,12 +997,12 @@ package body Sem_Aggr is
            and then not Is_Constrained (Etype (Name (Parent (N))))
          then
             if not Is_Others_Aggregate (N) then
-               Check_Formal_Restriction
+               Check_SPARK_Restriction
                  ("array aggregate should have only OTHERS", N);
             end if;
 
          elsif Is_Top_Level_Aggregate (N) then
-            Check_Formal_Restriction ("aggregate should be qualified", N);
+            Check_SPARK_Restriction ("aggregate should be qualified", N);
 
          --  The legality of this unqualified aggregate is checked by calling
          --  Check_Qualified_Aggregate from one of its enclosing aggregate,
@@ -1873,13 +1873,13 @@ package body Sem_Aggr is
 
                      Set_Do_Range_Check (Choice, False);
 
-                     --  In SPARK or ALFA, the choice must be static
+                     --  In SPARK, the choice must be static
 
                      if not (Is_Static_Expression (Choice)
                               or else (Nkind (Choice) = N_Range
                                         and then Is_Static_Range (Choice)))
                      then
-                        Check_Formal_Restriction
+                        Check_SPARK_Restriction
                           ("choice should be static", Choice);
                      end if;
                   end if;
@@ -2523,12 +2523,12 @@ package body Sem_Aggr is
       Analyze (A);
       Check_Parameterless_Call (A);
 
-      --  In SPARK or ALFA, the ancestor part cannot be a type mark
+      --  In SPARK, the ancestor part cannot be a type mark
 
       if Is_Entity_Name (A)
         and then Is_Type (Entity (A))
       then
-         Check_Formal_Restriction ("ancestor part cannot be a type mark", A);
+         Check_SPARK_Restriction ("ancestor part cannot be a type mark", A);
       end if;
 
       if not Is_Tagged_Type (Typ) then
@@ -3212,7 +3212,7 @@ package body Sem_Aggr is
    --  Start of processing for Resolve_Record_Aggregate
 
    begin
-      --  A record aggregate is restricted in SPARK or ALFA:
+      --  A record aggregate is restricted in SPARK:
       --    Each named association can have only a single choice.
       --    OTHERS cannot be used.
       --    Positional and named associations cannot be mixed.
@@ -3222,7 +3222,7 @@ package body Sem_Aggr is
       then
 
          if Present (Expressions (N)) then
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("named association cannot follow positional one",
                First (Choices (First (Component_Associations (N)))));
          end if;
@@ -3234,13 +3234,13 @@ package body Sem_Aggr is
             Assoc := First (Component_Associations (N));
             while Present (Assoc) loop
                if List_Length (Choices (Assoc)) > 1 then
-                  Check_Formal_Restriction
+                  Check_SPARK_Restriction
                     ("component association in record aggregate must "
                      & "contain a single choice", Assoc);
                end if;
 
                if Nkind (First (Choices (Assoc))) = N_Others_Choice then
-                  Check_Formal_Restriction
+                  Check_SPARK_Restriction
                     ("record aggregate cannot contain OTHERS", Assoc);
                end if;
 

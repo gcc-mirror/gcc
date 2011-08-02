@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,7 +228,7 @@ package Restrict is
    --  an elaboration routine. If elaboration code is not allowed, an error
    --  message is posted on the node given as argument.
 
-   procedure Check_Formal_Restriction
+   procedure Check_SPARK_Restriction
      (Msg   : String;
       N     : Node_Id;
       Force : Boolean := False);

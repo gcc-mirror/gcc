@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,7 +109,7 @@ package body Restrict is
    -- Check_Formal_Restriction --
    ------------------------------
 
-   procedure Check_Formal_Restriction
+   procedure Check_SPARK_Restriction
      (Msg   : String;
       N     : Node_Id;
       Force : Boolean := False)
@@ -129,11 +129,9 @@ package body Restrict is
 
          if Msg_Issued then
             Error_Msg_F ("\\| " & Msg, N);
-         elsif SPARK_Mode then
-            Error_Msg_F ("|~~" & Msg, N);
          end if;
       end if;
-   end Check_Formal_Restriction;
+   end Check_SPARK_Restriction;
 
    procedure Check_Formal_Restriction (Msg1, Msg2 : String; N : Node_Id) is
       Msg_Issued          : Boolean;
@@ -153,9 +151,6 @@ package body Restrict is
 
          if Msg_Issued then
             Error_Msg_F ("\\| " & Msg1, N);
-            Error_Msg_F (Msg2, N);
-         elsif SPARK_Mode then
-            Error_Msg_F ("|~~" & Msg1, N);
             Error_Msg_F (Msg2, N);
          end if;
       end if;
@@ -380,7 +375,7 @@ package body Restrict is
       --  No_Dispatch restriction is not set.
 
       if R = No_Dispatch then
-         Check_Formal_Restriction ("class-wide is not allowed", N);
+         Check_SPARK_Restriction ("class-wide is not allowed", N);
       end if;
 
       if UI_Is_In_Int_Range (V) then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1296,7 +1296,7 @@ package body Sem_Attr is
       procedure Check_Formal_Restriction_On_Attribute is
       begin
          Error_Msg_Name_1 := Aname;
-         Check_Formal_Restriction ("attribute % is not allowed", P);
+         Check_SPARK_Restriction ("attribute % is not allowed", P);
       end Check_Formal_Restriction_On_Attribute;
 
       ------------------------
@@ -2068,8 +2068,8 @@ package body Sem_Attr is
          end if;
       end if;
 
-      --  In SPARK or ALFA, attributes of private types are only allowed if
-      --  the full type declaration is visible.
+      --  In SPARK, attributes of private types are only allowed if the full
+      --  type declaration is visible.
 
       if Is_Entity_Name (P)
         and then Present (Entity (P))  --  needed in some cases
@@ -2079,7 +2079,7 @@ package body Sem_Attr is
         and then not In_Spec_Expression
       then
          Error_Msg_Node_1 := First_Subtype (P_Type);
-         Check_Formal_Restriction ("invisible attribute of}", N);
+         Check_SPARK_Restriction ("invisible attribute of}", N);
       end if;
 
       --  Remaining processing depends on attribute
@@ -2460,7 +2460,7 @@ package body Sem_Attr is
 
          if Nkind (Parent (N)) /= N_Attribute_Reference then
             Error_Msg_Name_1 := Aname;
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("attribute% is only allowed as prefix of another attribute", P);
          end if;
 
@@ -3877,7 +3877,7 @@ package body Sem_Attr is
          if Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("attribute% is not allowed for type%", P);
          end if;
 
@@ -3903,7 +3903,7 @@ package body Sem_Attr is
          if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("attribute% is not allowed for type%", P);
          end if;
 
@@ -4461,7 +4461,7 @@ package body Sem_Attr is
          if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("attribute% is not allowed for type%", P);
          end if;
 
@@ -4786,7 +4786,7 @@ package body Sem_Attr is
          if Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_Formal_Restriction
+            Check_SPARK_Restriction
               ("attribute% is not allowed for type%", P);
          end if;
 
