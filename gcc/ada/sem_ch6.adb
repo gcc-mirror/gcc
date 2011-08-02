@@ -227,13 +227,7 @@ package body Sem_Ch6 is
       Scop       : constant Entity_Id := Current_Scope;
 
    begin
-      --  Abstract subprogram is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~abstract subprogram is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
+      Check_Formal_Restriction ("abstract subprogram is not allowed", N);
 
       Generate_Definition (Designator);
       Set_Is_Abstract_Subprogram (Designator);
@@ -607,22 +601,17 @@ package body Sem_Ch6 is
          --  The only RETURN allowed in SPARK or ALFA is as the last statement
          --  of the function.
 
-         if Formal_Verification_Mode
-           and then Nkind (Parent (N)) /= N_Handled_Sequence_Of_Statements
+         if Nkind (Parent (N)) /= N_Handled_Sequence_Of_Statements
            and then
              (Nkind (Parent (Parent (N))) /= N_Subprogram_Body
                or else Present (Next (N)))
          then
-            Error_Msg_F
-              ("|~~RETURN should be the last statement in function", N);
+            Check_Formal_Restriction
+              ("RETURN should be the last statement in function", N);
          end if;
 
       else
-         --  Extended return is not allowed in SPARK or ALFA
-
-         if Formal_Verification_Mode then
-            Error_Msg_F ("|~~extended RETURN is not allowed", N);
-         end if;
+         Check_Formal_Restriction ("extended RETURN is not allowed", N);
 
          --  Analyze parts specific to extended_return_statement:
 
@@ -1404,12 +1393,8 @@ package body Sem_Ch6 is
       if Result_Definition (N) /= Error then
          if Nkind (Result_Definition (N)) = N_Access_Definition then
 
-            --  Access result is not allowed in SPARK or ALFA
-
-            if Formal_Verification_Mode then
-               Error_Msg_F
-                 ("|~~access result is not allowed", Result_Definition (N));
-            end if;
+            Check_Formal_Restriction
+              ("access result is not allowed", Result_Definition (N));
 
             --  Ada 2005 (AI-254): Handle anonymous access to subprograms
 
@@ -1441,12 +1426,11 @@ package body Sem_Ch6 is
 
             --  Unconstrained array as result is not allowed in SPARK or ALFA
 
-            if Formal_Verification_Mode
-              and then Is_Array_Type (Typ)
+            if Is_Array_Type (Typ)
               and then not Is_Constrained (Typ)
             then
-               Error_Msg_F
-                 ("|~~returning an unconstrained array is not allowed",
+               Check_Formal_Restriction
+                 ("returning an unconstrained array is not allowed",
                  Result_Definition (N));
             end if;
 
@@ -1851,24 +1835,7 @@ package body Sem_Ch6 is
                Id := Body_Id;
             end if;
 
-            --  In formal mode, the last statement of a function should be a
-            --  return statement.
-
-            if Formal_Verification_Mode then
-               declare
-                  Stat : constant Node_Id := Last_Source_Statement (HSS);
-               begin
-                  if Present (Stat)
-                    and then not Nkind_In (Stat,
-                                           N_Simple_Return_Statement,
-                                           N_Extended_Return_Statement)
-                  then
-                     Error_Msg_F ("|~~last statement in function should "
-                                  & "be RETURN", Stat);
-                  end if;
-               end;
-
-            elsif Return_Present (Id) then
+            if Return_Present (Id) then
                Check_Returns (HSS, 'F', Missing_Ret);
 
                if Missing_Ret then
@@ -1882,11 +1849,37 @@ package body Sem_Ch6 is
                Error_Msg_N ("missing RETURN statement in function body", N);
             end if;
 
+         --  If procedure with No_Return, check returns
+
+         elsif Nkind (Body_Spec) = N_Procedure_Specification
+           and then Present (Spec_Id)
+           and then No_Return (Spec_Id)
+         then
+            Check_Returns (HSS, 'P', Missing_Ret, Spec_Id);
+         end if;
+
+         --  Special checks in formal mode
+
+         if Nkind (Body_Spec) = N_Function_Specification then
+            --  In formal mode, the last statement of a function should be a
+            --  return statement.
+
+            declare
+               Stat : constant Node_Id := Last_Source_Statement (HSS);
+            begin
+               if Present (Stat)
+                 and then not Nkind_In (Stat,
+                                        N_Simple_Return_Statement,
+                                        N_Extended_Return_Statement)
+               then
+                  Check_Formal_Restriction
+                    ("last statement in function should be RETURN", Stat);
+               end if;
+            end;
+
          --  In formal mode, verify that a procedure has no return
 
-         elsif Formal_Verification_Mode
-           and then Nkind (Body_Spec) = N_Procedure_Specification
-         then
+         elsif Nkind (Body_Spec) = N_Procedure_Specification then
             if Present (Spec_Id) then
                Id := Spec_Id;
             else
@@ -1897,16 +1890,9 @@ package body Sem_Ch6 is
             --  borrow the Check_Returns procedure here ???
 
             if Return_Present (Id) then
-               Error_Msg_F ("|~~procedure should not have RETURN", N);
+               Check_Formal_Restriction
+                 ("procedure should not have RETURN", N);
             end if;
-
-         --  If procedure with No_Return, check returns
-
-         elsif Nkind (Body_Spec) = N_Procedure_Specification
-           and then Present (Spec_Id)
-           and then No_Return (Spec_Id)
-         then
-            Check_Returns (HSS, 'P', Missing_Ret, Spec_Id);
          end if;
       end Check_Missing_Return;
 
@@ -2844,11 +2830,10 @@ package body Sem_Ch6 is
    begin
       --  Null procedures are not allowed in SPARK or ALFA
 
-      if Formal_Verification_Mode
-        and then Nkind (Specification (N)) = N_Procedure_Specification
+      if Nkind (Specification (N)) = N_Procedure_Specification
         and then Null_Present (Specification (N))
       then
-         Error_Msg_F ("|~~null procedure not allowed", N);
+         Check_Formal_Restriction ("null procedure is not allowed", N);
       end if;
 
       --  For a null procedure, capture the profile before analysis, for
@@ -3092,11 +3077,8 @@ package body Sem_Ch6 is
    begin
       --  User-defined operator is not allowed in SPARK or ALFA
 
-      if Formal_Verification_Mode
-        and then Comes_From_Source (N)
-        and then Nkind (Defining_Unit_Name (N)) = N_Defining_Operator_Symbol
-      then
-         Error_Msg_F ("|~~user-defined operator is not allowed", N);
+      if Nkind (Defining_Unit_Name (N)) = N_Defining_Operator_Symbol then
+         Check_Formal_Restriction ("user-defined operator is not allowed", N);
       end if;
 
       --  Proceed with analysis
@@ -8525,12 +8507,8 @@ package body Sem_Ch6 is
 
          --  Overloading is not allowed in SPARK or ALFA
 
-         if Formal_Verification_Mode
-           and then Comes_From_Source (S)
-         then
-            Error_Msg_Sloc := Sloc (Homonym (S));
-            Error_Msg_F ("|~~overloading not allowed with entity#", S);
-         end if;
+         Error_Msg_Sloc := Sloc (Homonym (S));
+         Check_Formal_Restriction ("overloading not allowed with entity#", S);
 
          --  If S is a derived operation for an untagged type then by
          --  definition it's not a dispatching operation (even if the parent
@@ -8791,13 +8769,9 @@ package body Sem_Ch6 is
          Default := Expression (Param_Spec);
 
          if Present (Default) then
-            --  Default expression is not allowed in SPARK or ALFA
 
-            if Formal_Verification_Mode then
-               Error_Msg_F ("|~~default expression is not allowed", Default);
-            end if;
-
-            --  Proceed with analysis
+            Check_Formal_Restriction
+              ("default expression is not allowed", Default);
 
             if Out_Present (Param_Spec) then
                Error_Msg_N

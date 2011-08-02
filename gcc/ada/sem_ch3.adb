@@ -715,15 +715,7 @@ package body Sem_Ch3 is
       Enclosing_Prot_Type : Entity_Id := Empty;
 
    begin
-      --  Access type is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode
-        and then Comes_From_Source (N)
-      then
-         Error_Msg_F ("|~~access type is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
+      Check_Formal_Restriction ("access type is not allowed", N);
 
       if Is_Entry (Current_Scope)
         and then Is_Task_Type (Etype (Scope (Current_Scope)))
@@ -1037,13 +1029,7 @@ package body Sem_Ch3 is
    --  Start of processing for Access_Subprogram_Declaration
 
    begin
-      --  Access type is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode
-        and then Comes_From_Source (T_Def)
-      then
-         Error_Msg_F ("|~~access type is not allowed", T_Def);
-      end if;
+      Check_Formal_Restriction ("access type is not allowed", T_Def);
 
       --  Associate the Itype node with the inner full-type declaration or
       --  subprogram spec or entry body. This is required to handle nested
@@ -1297,13 +1283,7 @@ package body Sem_Ch3 is
       S : constant Node_Id := Subtype_Indication (Def);
       P : constant Node_Id := Parent (Def);
    begin
-      --  Access type is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Def)
-      then
-         Error_Msg_F ("|~~access type is not allowed", Def);
-      end if;
+      Check_Formal_Restriction ("access type is not allowed", Def);
 
       --  Check for permissible use of incomplete type
 
@@ -2058,12 +2038,11 @@ package body Sem_Ch3 is
          --  Package specification cannot contain a package declaration in
          --  SPARK or ALFA.
 
-         if Formal_Verification_Mode
-           and then Nkind (D) = N_Package_Declaration
+         if Nkind (D) = N_Package_Declaration
            and then Nkind (Parent (L)) = N_Package_Specification
          then
-            Error_Msg_F ("|~~package specification cannot contain "
-                         & "a package declaration", D);
+            Check_Formal_Restriction ("package specification cannot contain "
+                                      & "a package declaration", D);
          end if;
 
          --  Complete analysis of declaration
@@ -2281,10 +2260,16 @@ package body Sem_Ch3 is
          when N_Derived_Type_Definition =>
             null;
 
-         --  For record types, discriminants are allowed
+         --  For record types, discriminants are allowed, unless we are in
+         --  SPARK or ALFA.
 
          when N_Record_Definition =>
-            null;
+            if Present (Discriminant_Specifications (N)) then
+               Check_Formal_Restriction
+                 ("discriminant type is not allowed",
+                  Defining_Identifier
+                  (First (Discriminant_Specifications (N))));
+            end if;
 
          when others =>
             if Present (Discriminant_Specifications (N)) then
@@ -2386,19 +2371,10 @@ package body Sem_Ch3 is
          return;
       end if;
 
-      if Formal_Verification_Mode then
+      --  Controlled type is not allowed in SPARK and ALFA
 
-         --  Controlled type is not allowed in SPARK and ALFA
-
-         if Is_Visibly_Controlled (T) then
-            Error_Msg_F ("|~~controlled type is not allowed", N);
-         end if;
-
-         --  Discriminant type is not allowed in SPARK and ALFA
-
-         if Present (Discriminant_Specifications (N)) then
-            Error_Msg_F ("|~~discriminant type is not allowed", N);
-         end if;
+      if Is_Visibly_Controlled (T) then
+         Check_Formal_Restriction ("controlled type is not allowed", N);
       end if;
 
       --  Some common processing for all types
@@ -2507,15 +2483,7 @@ package body Sem_Ch3 is
       T : Entity_Id;
 
    begin
-      --  Incomplete type is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (N))
-      then
-         Error_Msg_F ("|~~incomplete type is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
+      Check_Formal_Restriction ("incomplete type is not allowed", N);
 
       Generate_Definition (Defining_Identifier (N));
 
@@ -3054,33 +3022,30 @@ package body Sem_Ch3 is
       --  is considered, so that the Object_Definition node is still the same
       --  as in source code.
 
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (N))
+      --  In SPARK or ALFA, the nominal subtype shall be given by a subtype
+      --  mark and shall not be unconstrained. (The only exception to this
+      --  is the admission of declarations of constants of type String.)
+
+      if not Nkind_In (Object_Definition (N),
+                       N_Identifier,
+                       N_Expanded_Name)
       then
-         --  In SPARK or ALFA, the nominal subtype shall be given by a subtype
-         --  mark and shall not be unconstrained. (The only exception to this
-         --  is the admission of declarations of constants of type String.)
+         Check_Formal_Restriction
+           ("subtype mark expected", Object_Definition (N));
+      elsif Is_Array_Type (T)
+        and then not Is_Constrained (T)
+        and then T /= Standard_String
+      then
+         Check_Formal_Restriction ("subtype mark of constrained type expected",
+                                   Object_Definition (N));
+      else
+         null;
+      end if;
 
-         if not Nkind_In (Object_Definition (N),
-                          N_Identifier,
-                          N_Expanded_Name)
-         then
-            Error_Msg_F ("|~~subtype mark expected", Object_Definition (N));
-         elsif Is_Array_Type (T)
-           and then not Is_Constrained (T)
-           and then T /= Standard_String
-         then
-            Error_Msg_F ("|~~subtype mark of constrained type expected",
-                         Object_Definition (N));
-         else
-            null;
-         end if;
+      --  There are no aliased objects in SPARK or ALFA
 
-         --  There are no aliased objects in SPARK or ALFA
-
-         if Aliased_Present (N) then
-            Error_Msg_F ("|~~aliased object is not allowed", N);
-         end if;
+      if Aliased_Present (N) then
+         Check_Formal_Restriction ("aliased object is not allowed", N);
       end if;
 
       --  Process initialization expression if present and not in error
@@ -4029,12 +3994,11 @@ package body Sem_Ch3 is
       --  Subtype of Boolean is not allowed to have a constraint in SPARK or
       --  ALFA.
 
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (N))
-        and then Is_Boolean_Type (T)
+      if Is_Boolean_Type (T)
         and then Nkind (Subtype_Indication (N)) = N_Subtype_Indication
       then
-         Error_Msg_F ("|~~subtype of Boolean cannot have constraint", N);
+         Check_Formal_Restriction
+           ("subtype of Boolean cannot have constraint", N);
       end if;
 
       --  In the case where there is no constraint given in the subtype
@@ -4047,16 +4011,12 @@ package body Sem_Ch3 is
          --  Subtype of unconstrained array without constraint is not allowed
          --  in SPARK or ALFA.
 
-         if Formal_Verification_Mode
-           and then Comes_From_Source (Original_Node (N))
-           and then Is_Array_Type (T)
+         if Is_Array_Type (T)
            and then not Is_Constrained (T)
          then
-            Error_Msg_F
-              ("|~~subtype of unconstrained array must have constraint", N);
+            Check_Formal_Restriction
+              ("subtype of unconstrained array must have constraint", N);
          end if;
-
-         --  Proceed with analysis
 
          case Ekind (T) is
             when Array_Kind =>
@@ -11254,15 +11214,7 @@ package body Sem_Ch3 is
       else
          pragma Assert (Nkind (C) = N_Digits_Constraint);
 
-         --  Digits constraint is not allowed in SPARK or ALFA
-
-         if Formal_Verification_Mode
-           and then Comes_From_Source (Original_Node (S))
-         then
-            Error_Msg_F ("|~~digits constraint is not allowed", S);
-         end if;
-
-         --  Proceed with analysis
+         Check_Formal_Restriction ("digits constraint is not allowed", S);
 
          Digits_Expr := Digits_Expression (C);
          Analyze_And_Resolve (Digits_Expr, Any_Integer);
@@ -11491,16 +11443,7 @@ package body Sem_Ch3 is
 
       if Nkind (C) = N_Digits_Constraint then
 
-         --  Digits constraint is not allowed in SPARK or ALFA
-
-         if Formal_Verification_Mode
-           and then Comes_From_Source (Original_Node (S))
-         then
-            Error_Msg_F ("|~~digits constraint is not allowed", S);
-         end if;
-
-         --  Proceed with analysis
-
+         Check_Formal_Restriction ("digits constraint is not allowed", S);
          Check_Restriction (No_Obsolescent_Features, C);
 
          if Warn_On_Obsolescent_Feature then
@@ -11721,16 +11664,8 @@ package body Sem_Ch3 is
       --  Delta constraint present
 
       if Nkind (C) = N_Delta_Constraint then
-         --  Delta constraint is not allowed in SPARK or ALFA
 
-         if Formal_Verification_Mode
-           and then Comes_From_Source (Original_Node (S))
-         then
-            Error_Msg_F ("|~~delta constraint is not allowed", S);
-         end if;
-
-         --  Proceed with analysis
-
+         Check_Formal_Restriction ("delta constraint is not allowed", S);
          Check_Restriction (No_Obsolescent_Features, C);
 
          if Warn_On_Obsolescent_Feature then
@@ -12387,17 +12322,8 @@ package body Sem_Ch3 is
       Bound_Val     : Ureal;
 
    begin
-      --  Decimal fixed point type is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode
-        and then Comes_From_Source (Original_Node (Def))
-      then
-         Error_Msg_F
-           ("|~~decimal fixed point type is not allowed", Def);
-      end if;
-
-      --  Proceed with analysis
-
+      Check_Formal_Restriction
+        ("decimal fixed point type is not allowed", Def);
       Check_Restriction (No_Fixed_Point, Def);
 
       --  Create implicit base type
@@ -14143,17 +14069,21 @@ package body Sem_Ch3 is
       end if;
 
       --  Only composite types other than array types are allowed to have
+      --  discriminants. In SPARK in ALFA, no types are allowed to have
       --  discriminants.
 
-      if Present (Discriminant_Specifications (N))
-        and then (Is_Elementary_Type (Parent_Type)
-                  or else Is_Array_Type (Parent_Type))
-        and then not Error_Posted (N)
-      then
-         Error_Msg_N
-           ("elementary or array type cannot have discriminants",
-            Defining_Identifier (First (Discriminant_Specifications (N))));
-         Set_Has_Discriminants (T, False);
+      if Present (Discriminant_Specifications (N)) then
+         if (Is_Elementary_Type (Parent_Type)
+              or else Is_Array_Type (Parent_Type))
+           and then not Error_Posted (N)
+         then
+            Error_Msg_N
+              ("elementary or array type cannot have discriminants",
+               Defining_Identifier (First (Discriminant_Specifications (N))));
+            Set_Has_Discriminants (T, False);
+         else
+            Check_Formal_Restriction ("discriminant type is not allowed", N);
+         end if;
       end if;
 
       --  In Ada 83, a derived type defined in a package specification cannot
@@ -14349,10 +14279,8 @@ package body Sem_Ch3 is
       --  In SPARK or ALFA, there are no derived type definitions other than
       --  type extensions of tagged record types.
 
-      if Formal_Verification_Mode
-        and then No (Extension)
-      then
-         Error_Msg_F ("|~~derived type is not allowed", N);
+      if No (Extension) then
+         Check_Formal_Restriction ("derived type is not allowed", N);
       end if;
    end Derived_Type_Declaration;
 

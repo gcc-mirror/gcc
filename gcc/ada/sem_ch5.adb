@@ -806,13 +806,7 @@ package body Sem_Ch5 is
       HSS   : constant Node_Id := Handled_Statement_Sequence (N);
 
    begin
-      --  Block statement is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode
-        and then Comes_From_Source (N)
-      then
-         Error_Msg_F ("|~~block statement is not allowed", N);
-      end if;
+      Check_Formal_Restriction ("block statement is not allowed", N);
 
       --  If no handled statement sequence is present, things are really
       --  messed up, and we just return immediately (this is a defence
@@ -1104,12 +1098,11 @@ package body Sem_Ch5 is
       --  A case statement with a single OTHERS alternative is not allowed
       --  in SPARK or ALFA.
 
-      if Formal_Verification_Mode
-        and then Others_Present
+      if Others_Present
         and then List_Length (Alternatives (N)) = 1
       then
-         Error_Msg_F
-           ("|~~OTHERS as unique case alternative is not allowed", N);
+         Check_Formal_Restriction
+           ("OTHERS as unique case alternative is not allowed", N);
       end if;
 
       if Exp_Type = Universal_Integer and then not Others_Present then
@@ -1183,16 +1176,14 @@ package body Sem_Ch5 is
          if not In_Open_Scopes (U_Name) or else Ekind (U_Name) /= E_Loop then
             Error_Msg_N ("invalid loop name in exit statement", N);
             return;
-         elsif Formal_Verification_Mode
-           and then Has_Loop_In_Inner_Open_Scopes (U_Name)
-         then
-            Error_Msg_F
-              ("|~~exit label must name the closest enclosing loop", N);
-            return;
          else
+            if Has_Loop_In_Inner_Open_Scopes (U_Name) then
+               Check_Formal_Restriction
+                 ("exit label must name the closest enclosing loop", N);
+            end if;
+
             Set_Has_Exit (U_Name);
          end if;
-
       else
          U_Name := Empty;
       end if;
@@ -1229,36 +1220,36 @@ package body Sem_Ch5 is
       --  In formal mode, verify that the exit statement respects the SPARK
       --  restrictions.
 
-      if Formal_Verification_Mode then
-         if Present (Cond) then
-            if Nkind (Parent (N)) /= N_Loop_Statement then
-               Error_Msg_F
-                 ("|~~exit with when clause must be directly in loop", N);
+      if Present (Cond) then
+         if Nkind (Parent (N)) /= N_Loop_Statement then
+            Check_Formal_Restriction
+              ("exit with when clause must be directly in loop", N);
+         end if;
+
+      else
+         if Nkind (Parent (N)) /= N_If_Statement then
+            if Nkind (Parent (N)) = N_Elsif_Part then
+               Check_Formal_Restriction
+                 ("exit must be in IF without ELSIF", N);
+            else
+               Check_Formal_Restriction ("exit must be directly in IF", N);
             end if;
 
-         else
-            if Nkind (Parent (N)) /= N_If_Statement then
-               if Nkind (Parent (N)) = N_Elsif_Part then
-                  Error_Msg_F ("|~~exit must be in IF without ELSIF", N);
-               else
-                  Error_Msg_F ("|~~exit must be directly in IF", N);
-               end if;
-
-            elsif Nkind (Parent (Parent (N))) /= N_Loop_Statement then
-               Error_Msg_F ("|~~exit must be in IF directly in loop", N);
+         elsif Nkind (Parent (Parent (N))) /= N_Loop_Statement then
+            Check_Formal_Restriction
+              ("exit must be in IF directly in loop", N);
 
             --  First test the presence of ELSE, so that an exit in an ELSE
             --  leads to an error mentioning the ELSE.
 
-            elsif Present (Else_Statements (Parent (N))) then
-               Error_Msg_F ("|~~exit must be in IF without ELSE", N);
+         elsif Present (Else_Statements (Parent (N))) then
+            Check_Formal_Restriction ("exit must be in IF without ELSE", N);
 
             --  An exit in an ELSIF does not reach here, as it would have been
             --  detected in the case (Nkind (Parent (N)) /= N_If_Statement).
 
-            elsif Present (Elsif_Parts (Parent (N))) then
-               Error_Msg_F ("|~~exit must be in IF without ELSIF", N);
-            end if;
+         elsif Present (Elsif_Parts (Parent (N))) then
+            Check_Formal_Restriction ("exit must be in IF without ELSIF", N);
          end if;
       end if;
 
@@ -1286,11 +1277,7 @@ package body Sem_Ch5 is
       Label_Ent   : Entity_Id;
 
    begin
-      --  Goto statement is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~goto statement is not allowed", N);
-      end if;
+      Check_Formal_Restriction ("goto statement is not allowed", N);
 
       --  Actual semantic checks
 
@@ -1872,11 +1859,9 @@ package body Sem_Ch5 is
                --  Loop parameter specification must include subtype mark in
                --  SPARK or ALFA.
 
-               if Formal_Verification_Mode
-                 and then Nkind (DS) = N_Range
-               then
-                  Error_Msg_F ("|~~loop parameter specification must "
-                               & "include subtype mark", N);
+               if Nkind (DS) = N_Range then
+                  Check_Formal_Restriction ("loop parameter specification "
+                                            & "must include subtype mark", N);
                end if;
 
                --  Now analyze the subtype definition. If it is a range, create

@@ -529,13 +529,7 @@ package body Sem_Ch8 is
       Nam : constant Node_Id := Name (N);
 
    begin
-      --  Exception renaming is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~exception renaming is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
+      Check_Formal_Restriction ("exception renaming is not allowed", N);
 
       Enter_Name (Id);
       Analyze (Nam);
@@ -628,17 +622,11 @@ package body Sem_Ch8 is
       Inst  : Boolean   := False; -- prevent junk warning
 
    begin
-      --  Generic renaming is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~generic renaming is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
-
       if Name (N) = Error then
          return;
       end if;
+
+      Check_Formal_Restriction ("generic renaming is not allowed", N);
 
       Generate_Definition (New_P);
 
@@ -726,17 +714,11 @@ package body Sem_Ch8 is
    --  Start of processing for Analyze_Object_Renaming
 
    begin
-      --  Object renaming is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~object renaming is not allowed", N);
-      end if;
-
-      --  Proceed with analysis
-
       if Nam = Error then
          return;
       end if;
+
+      Check_Formal_Restriction ("object renaming is not allowed", N);
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
       Enter_Name (Id);
@@ -2567,14 +2549,7 @@ package body Sem_Ch8 is
    --  Start of processing for Analyze_Use_Package
 
    begin
-      --  Use package is not allowed in SPARK or ALFA
-
-      if Formal_Verification_Mode then
-         Error_Msg_F ("|~~use clause is not allowed", N);
-         return;
-      end if;
-
-      --  Proceed with analysis
+      Check_Formal_Restriction ("use clause is not allowed", N);
 
       Set_Hidden_By_Use_Clause (N, No_Elist);
 

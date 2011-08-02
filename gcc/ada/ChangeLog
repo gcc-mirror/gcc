@@ -1,3 +1,23 @@
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb, errout.ads (Check_Formal_Restriction): new procedure
+	which issues an error in formal mode if its argument node is originally
+	from source
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): move test that a type
+	has a discriminant specification so that it does not include the case
+	of derived types
+	(Derived_Type_Declaration): move here the test that a derived type has a
+	discriminant specification
+	* sem_aggr.adb (Resolve_Record_Aggregate): test the presence of the
+	first element of a component association before accessing its choices
+	(presence of component association is not enough)
+	* exp_ch6.adb (Expand_N_Subprogram_Declaration): test if a subprogram
+	declaration is a library item before accessing the next element in a
+	list, as library items are not member of lists
+	* sem_attr.adb, sem_ch11.adb, sem_ch4.adb, sem_ch5.adb, sem_ch6.adb,
+	sem_ch8.adb, sem_ch9.adb, sem_res.adb, sem_util.adb: use
+	Check_Formal_Restriction whenever possible.
+
 2011-08-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Find_Type_Of_Object): In ASIS mode, create an itype

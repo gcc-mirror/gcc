@@ -3202,7 +3202,7 @@ package body Sem_Util is
 
       --  Declaring a homonym is not allowed in SPARK or ALFA ...
 
-      if Formal_Verification_Mode and then Present (C)
+      if Present (C)
 
         --  ... unless the new declaration is in a subprogram, and the visible
         --  declaration is a variable declaration or a parameter specification
@@ -3234,7 +3234,7 @@ package body Sem_Util is
         and then Comes_From_Source (C)
       then
          Error_Msg_Sloc := Sloc (C);
-         Error_Msg_F ("|~~redeclaration of identifier &#", Def_Id);
+         Check_Formal_Restriction ("redeclaration of identifier &#", Def_Id);
       end if;
 
       --  Warn if new entity hides an old one
@@ -8029,6 +8029,14 @@ package body Sem_Util is
 
       L_Index := First_Index (L_Typ);
       R_Index := First_Index (R_Typ);
+
+      --  There may not be an index available even if the type is constrained,
+      --  see for example 0100-C23 when this function is called from
+      --  Resolve_Qualified_Expression. Temporarily return False in that case.
+
+      if No (L_Index) or else No (R_Index) then
+         return False;
+      end if;
 
       for Indx in 1 .. L_Ndims loop
          Get_Index_Bounds (L_Index, L_Low, L_High);
