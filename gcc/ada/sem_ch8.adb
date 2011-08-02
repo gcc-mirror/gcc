@@ -5827,6 +5827,10 @@ package body Sem_Ch8 is
          --  Base attribute, not allowed in Ada 83
 
          elsif Attribute_Name (N) = Name_Base then
+            Error_Msg_Name_1 := Name_Base;
+            Check_Formal_Restriction
+              ("attribute% is only allowed as prefix of another attribute", N);
+
             if Ada_Version = Ada_83 and then Comes_From_Source (N) then
                Error_Msg_N
                  ("(Ada 83) Base attribute not allowed in subtype mark", N);

@@ -9292,6 +9292,12 @@ package body Sem_Res is
       Hi    : Uint;
 
    begin
+      if Is_Modular_Integer_Type (Typ) and then Nkind (N) /= N_Op_Not then
+         Error_Msg_Name_1 := Chars (Typ);
+         Check_Formal_Restriction
+           ("unary operator not defined for modular type%", N);
+      end if;
+
       --  Deal with intrinsic unary operators
 
       if Comes_From_Source (N)

@@ -584,8 +584,8 @@ package body Sem_Ch3 is
    --  given kind of type (index constraint to an array type, for example).
 
    procedure Modular_Type_Declaration (T : Entity_Id; Def : Node_Id);
-   --  Create new modular type. Verify that modulus is in bounds and is
-   --  a power of two (implementation restriction).
+   --  Create new modular type. Verify that modulus is in bounds
+   --  (implementation restriction).
 
    procedure New_Concatenation_Op (Typ : Entity_Id);
    --  Create an abbreviated declaration for an operator in order to
@@ -16373,6 +16373,7 @@ package body Sem_Ch3 is
          --  Non-binary case
 
          elsif M_Val < 2 ** Bits then
+            Check_Formal_Restriction ("modulus should be a power of 2", T);
             Set_Non_Binary_Modulus (T);
 
             if Bits > System_Max_Nonbinary_Modulus_Power then
@@ -17767,6 +17768,10 @@ package body Sem_Ch3 is
 
    begin
       Analyze_And_Resolve (R, Base_Type (T));
+
+      if not Is_Static_Range (R) then
+         Check_Formal_Restriction ("range should be static", R);
+      end if;
 
       if Nkind (R) = N_Range then
          Lo := Low_Bound (R);
