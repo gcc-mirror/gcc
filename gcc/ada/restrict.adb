@@ -123,18 +123,14 @@ package body Restrict is
          --  Error_Msg_Sloc to the location of the pragma restriction, save and
          --  restore the previous value of the global variable around the call.
 
-         --  ??? N in call to Check_Restriction should be First_Node (N), but
-         --  this causes an exception to be raised when analyzing osint.adb.
-         --  To be modified together with the calls to Error_Msg_N.
-
          Save_Error_Msg_Sloc := Error_Msg_Sloc;
-         Check_Restriction (Msg_Issued, SPARK, N);  --  N -> First_Node (N)
+         Check_Restriction (Msg_Issued, SPARK, First_Node (N));
          Error_Msg_Sloc := Save_Error_Msg_Sloc;
 
          if Msg_Issued then
-            Error_Msg_N ("\\| " & Msg, N);  --  Error_Msg_N -> Error_Msg_F
+            Error_Msg_F ("\\| " & Msg, N);
          elsif SPARK_Mode then
-            Error_Msg_N ("|~~" & Msg, N);  --  Error_Msg_N -> Error_Msg_F
+            Error_Msg_F ("|~~" & Msg, N);
          end if;
       end if;
    end Check_Formal_Restriction;
