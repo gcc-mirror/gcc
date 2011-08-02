@@ -1231,9 +1231,10 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
       /* Attempt to fold powi(arg0, abs(n/2)) into multiplies.  If not
          possible or profitable, give up.  Skip the degenerate case when
          n is 1 or -1, where the result is always 1.  */
-      if (abs (n) != 1)
+      if (abs_hwi (n) != 1)
 	{
-	  powi_x_ndiv2 = gimple_expand_builtin_powi (gsi, loc, arg0, abs(n/2));
+	  powi_x_ndiv2 = gimple_expand_builtin_powi (gsi, loc, arg0,
+						     abs_hwi (n / 2));
 	  if (!powi_x_ndiv2)
 	    return NULL_TREE;
 	}
@@ -1242,7 +1243,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
 	 result of the optimal multiply sequence just calculated.  */
       sqrt_arg0 = build_and_insert_call (gsi, loc, &target, sqrtfn, arg0);
 
-      if (abs (n) == 1)
+      if (abs_hwi (n) == 1)
 	result = sqrt_arg0;
       else
 	result = build_and_insert_binop (gsi, loc, target, MULT_EXPR,
@@ -1284,10 +1285,10 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
       /* Attempt to fold powi(arg0, abs(n/3)) into multiplies.  If not
          possible or profitable, give up.  Skip the degenerate case when
          abs(n) < 3, where the result is always 1.  */
-      if (abs (n) >= 3)
+      if (abs_hwi (n) >= 3)
 	{
 	  powi_x_ndiv3 = gimple_expand_builtin_powi (gsi, loc, arg0,
-						     abs (n / 3));
+						     abs_hwi (n / 3));
 	  if (!powi_x_ndiv3)
 	    return NULL_TREE;
 	}
@@ -1297,14 +1298,14 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
          either cbrt(x) or cbrt(x) * cbrt(x).  */
       cbrt_x = build_and_insert_call (gsi, loc, &target, cbrtfn, arg0);
 
-      if (abs (n) % 3 == 1)
+      if (abs_hwi (n) % 3 == 1)
 	powi_cbrt_x = cbrt_x;
       else
 	powi_cbrt_x = build_and_insert_binop (gsi, loc, target, MULT_EXPR,
 					      cbrt_x, cbrt_x);
 
       /* Multiply the two subexpressions, unless powi(x,abs(n)/3) = 1.  */
-      if (abs (n) < 3)
+      if (abs_hwi (n) < 3)
 	result = powi_cbrt_x;
       else
 	result = build_and_insert_binop (gsi, loc, target, MULT_EXPR,

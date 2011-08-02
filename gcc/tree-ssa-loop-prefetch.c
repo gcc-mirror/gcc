@@ -1,5 +1,6 @@
 /* Array prefetching.
-   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -794,7 +795,7 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
       prefetch_before = (hit_from - delta_r + step - 1) / step;
 
       /* Do not reduce prefetch_before if we meet beyond cache size.  */
-      if (prefetch_before > (unsigned) abs (L2_CACHE_SIZE_BYTES / step))
+      if (prefetch_before > (unsigned) abs_hwi (L2_CACHE_SIZE_BYTES / step))
         prefetch_before = PREFETCH_ALL;
       if (prefetch_before < ref->prefetch_before)
 	ref->prefetch_before = prefetch_before;
