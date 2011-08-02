@@ -624,8 +624,7 @@ package Errout is
    --       (parameters ....)
 
    --  Any message marked with this -- CODEFIX comment should not be modified
-   --  without appropriate coordination. If new messages are added which may
-   --  be susceptible to automatic codefix action, they are marked using:
+   --  without appropriate coordination.
 
    ------------------------------
    -- Error Output Subprograms --

@@ -69,20 +69,20 @@ package body Exp_Util is
       Id_Ref : Node_Id;
       A_Type : Entity_Id;
       Dyn    : Boolean := False) return Node_Id;
-   --  Build function to generate the image string for a task that is an
-   --  array component, concatenating the images of each index. To avoid
-   --  storage leaks, the string is built with successive slice assignments.
-   --  The flag Dyn indicates whether this is called for the initialization
-   --  procedure of an array of tasks, or for the name of a dynamically
-   --  created task that is assigned to an indexed component.
+   --  Build function to generate the image string for a task that is an array
+   --  component, concatenating the images of each index. To avoid storage
+   --  leaks, the string is built with successive slice assignments. The flag
+   --  Dyn indicates whether this is called for the initialization procedure of
+   --  an array of tasks, or for the name of a dynamically created task that is
+   --  assigned to an indexed component.
 
    function Build_Task_Image_Function
      (Loc   : Source_Ptr;
       Decls : List_Id;
       Stats : List_Id;
       Res   : Entity_Id) return Node_Id;
-   --  Common processing for Task_Array_Image and Task_Record_Image.
-   --  Build function body that computes image.
+   --  Common processing for Task_Array_Image and Task_Record_Image. Build
+   --  function body that computes image.
 
    procedure Build_Task_Image_Prefix
       (Loc    : Source_Ptr;
@@ -93,34 +93,34 @@ package body Exp_Util is
        Sum    : Node_Id;
        Decls  : List_Id;
        Stats  : List_Id);
-   --  Common processing for Task_Array_Image and Task_Record_Image.
-   --  Create local variables and assign prefix of name to result string.
+   --  Common processing for Task_Array_Image and Task_Record_Image. Create
+   --  local variables and assign prefix of name to result string.
 
    function Build_Task_Record_Image
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
       Dyn    : Boolean := False) return Node_Id;
-   --  Build function to generate the image string for a task that is a
-   --  record component. Concatenate name of variable with that of selector.
-   --  The flag Dyn indicates whether this is called for the initialization
-   --  procedure of record with task components, or for a dynamically
-   --  created task that is assigned to a selected component.
+   --  Build function to generate the image string for a task that is a record
+   --  component. Concatenate name of variable with that of selector. The flag
+   --  Dyn indicates whether this is called for the initialization procedure of
+   --  record with task components, or for a dynamically created task that is
+   --  assigned to a selected component.
 
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
       E : Node_Id) return Entity_Id;
    --  T is a class-wide type entity, E is the initial expression node that
-   --  constrains T in case such as: " X: T := E" or "new T'(E)"
-   --  This function returns the entity of the Equivalent type and inserts
-   --  on the fly the necessary declaration such as:
+   --  constrains T in case such as: " X: T := E" or "new T'(E)". This function
+   --  returns the entity of the Equivalent type and inserts on the fly the
+   --  necessary declaration such as:
    --
    --    type anon is record
    --       _parent : Root_Type (T); constrained with E discriminants (if any)
    --       Extension : String (1 .. expr to match size of E);
    --    end record;
    --
-   --  This record is compatible with any object of the class of T thanks
-   --  to the first field and has the same size as E thanks to the second.
+   --  This record is compatible with any object of the class of T thanks to
+   --  the first field and has the same size as E thanks to the second.
 
    function Make_Literal_Range
      (Loc         : Source_Ptr;
@@ -163,14 +163,14 @@ package body Exp_Util is
          Ti  : Entity_Id;
 
       begin
-         --  For now, we simply ignore a call where the argument has no
-         --  type (probably case of unanalyzed condition), or has a type
-         --  that is not Boolean. This is because this is a pretty marginal
-         --  piece of functionality, and violations of these rules are
-         --  likely to be truly marginal (how much code uses Fortran Logical
-         --  as the barrier to a protected entry?) and we do not want to
-         --  blow up existing programs. We can change this to an assertion
-         --  after 3.12a is released ???
+         --  For now, we simply ignore a call where the argument has no type
+         --  (probably case of unanalyzed condition), or has a type that is not
+         --  Boolean. This is because this is a pretty marginal piece of
+         --  functionality, and violations of these rules are likely to be
+         --  truly marginal (how much code uses Fortran Logical as the barrier
+         --  to a protected entry?) and we do not want to blow up existing
+         --  programs. We can change this to an assertion after 3.12a is
+         --  released ???
 
          if No (T) or else not Is_Boolean_Type (T) then
             return;
@@ -194,8 +194,8 @@ package body Exp_Util is
 
          --      ityp!(N) /= False'Enum_Rep
 
-         --  where ityp is an integer type with large enough size to hold
-         --  any value of type T.
+         --  where ityp is an integer type with large enough size to hold any
+         --  value of type T.
 
          if Nonzero_Is_True (T) or else Has_Non_Standard_Rep (T) then
             if Esize (T) <= Esize (Standard_Integer) then
@@ -262,8 +262,8 @@ package body Exp_Util is
             then
                return;
 
-            --  Otherwise we perform a conversion from the current type,
-            --  which must be Standard.Boolean, to the desired type.
+            --  Otherwise we perform a conversion from the current type, which
+            --  must be Standard.Boolean, to the desired type.
 
             else
                Set_Analyzed (N);
@@ -340,6 +340,7 @@ package body Exp_Util is
    --  of the components. The constructed image has the form of an indexed
    --  component, whose prefix is the outer variable of the array type.
    --  The n-dimensional array type has known indexes Index, Index2...
+
    --  Id_Ref is an indexed component form created by the enclosing init proc.
    --  Its successive indexes are Val1, Val2, ... which are the loop variables
    --  in the loops that call the individual task init proc on each component.
@@ -372,8 +373,8 @@ package body Exp_Util is
    --     return Res;
    --  end F;
    --
-   --  Needless to say, multidimensional arrays of tasks are rare enough
-   --  that the bulkiness of this code is not really a concern.
+   --  Needless to say, multidimensional arrays of tasks are rare enough that
+   --  the bulkiness of this code is not really a concern.
 
    function Build_Task_Array_Image
      (Loc    : Source_Ptr;
@@ -415,8 +416,8 @@ package body Exp_Util is
       Stats : constant List_Id := New_List;
 
    begin
-      --  For a dynamic task, the name comes from the target variable.
-      --  For a static one it is a formal of the enclosing init proc.
+      --  For a dynamic task, the name comes from the target variable. For a
+      --  static one it is a formal of the enclosing init proc.
 
       if Dyn then
          Get_Name_String (Chars (Entity (Prefix (Id_Ref))));
@@ -624,9 +625,9 @@ package body Exp_Util is
            or else Nkind (Id_Ref) = N_Defining_Identifier
          then
             --  For a simple variable, the image of the task is built from
-            --  the name of the variable. To avoid possible conflict with
-            --  the anonymous type created for a single protected object,
-            --  add a numeric suffix.
+            --  the name of the variable. To avoid possible conflict with the
+            --  anonymous type created for a single protected object, add a
+            --  numeric suffix.
 
             T_Id :=
               Make_Defining_Identifier (Loc,
@@ -694,8 +695,8 @@ package body Exp_Util is
         Defining_Unit_Name => Make_Temporary (Loc, 'F'),
         Result_Definition  => New_Occurrence_Of (Standard_String, Loc));
 
-      --  Calls to 'Image use the secondary stack, which must be cleaned
-      --  up after the task name is built.
+      --  Calls to 'Image use the secondary stack, which must be cleaned up
+      --  after the task name is built.
 
       return Make_Subprogram_Body (Loc,
          Specification => Spec,
@@ -1170,6 +1171,7 @@ package body Exp_Util is
    --  This function is applicable for both static and dynamic allocation of
    --  objects which are constrained by an initial expression. Basically it
    --  transforms an unconstrained subtype indication into a constrained one.
+
    --  The expression may also be transformed in certain cases in order to
    --  avoid multiple evaluation. In the static allocation case, the general
    --  scheme is:
@@ -1267,9 +1269,9 @@ package body Exp_Util is
          if Is_Itype (Exp_Typ) then
 
             --  Within an initialization procedure, a selected component
-            --  denotes a component of the enclosing record, and it appears
-            --  as an actual in a call to its own initialization procedure.
-            --  If this component depends on the outer discriminant, we must
+            --  denotes a component of the enclosing record, and it appears as
+            --  an actual in a call to its own initialization procedure. If
+            --  this component depends on the outer discriminant, we must
             --  generate the proper actual subtype for it.
 
             if Nkind (Exp) = N_Selected_Component
@@ -1301,10 +1303,10 @@ package body Exp_Util is
                 Defining_Identifier => T,
                 Subtype_Indication  => New_Reference_To (Exp_Typ, Loc)));
 
-            --  This type is marked as an itype even though it has an
-            --  explicit declaration because otherwise it can be marked
-            --  with Is_Generic_Actual_Type and generate spurious errors.
-            --  (see sem_ch8.Analyze_Package_Renaming and sem_type.covers)
+            --  This type is marked as an itype even though it has an explicit
+            --  declaration since otherwise Is_Generic_Actual_Type can get
+            --  set, resulting in the generation of spurious errors. (See
+            --  sem_ch8.Analyze_Package_Renaming and sem_type.covers)
 
             Set_Is_Itype (T);
             Set_Associated_Node_For_Itype (T, Exp);
@@ -2353,9 +2355,9 @@ package body Exp_Util is
 
       --  If the action derives from stuff inside a record, then the actions
       --  are attached to the current scope, to be inserted and analyzed on
-      --  exit from the scope. The reason for this is that we may also
-      --  be generating freeze actions at the same time, and they must
-      --  eventually be elaborated in the correct order.
+      --  exit from the scope. The reason for this is that we may also be
+      --  generating freeze actions at the same time, and they must eventually
+      --  be elaborated in the correct order.
 
       if Is_Record_Type (Current_Scope)
         and then not Is_Frozen (Current_Scope)
@@ -2375,18 +2377,18 @@ package body Exp_Util is
       end if;
 
       --  We now intend to climb up the tree to find the right point to
-      --  insert the actions. We start at Assoc_Node, unless this node is
-      --  a subexpression in which case we start with its parent. We do this
-      --  for two reasons. First it speeds things up. Second, if Assoc_Node
-      --  is itself one of the special nodes like N_And_Then, then we assume
-      --  that an initial request to insert actions for such a node does not
-      --  expect the actions to get deposited in the node for later handling
-      --  when the node is expanded, since clearly the node is being dealt
-      --  with by the caller. Note that in the subexpression case, N is
-      --  always the child we came from.
+      --  insert the actions. We start at Assoc_Node, unless this node is a
+      --  subexpression in which case we start with its parent. We do this for
+      --  two reasons. First it speeds things up. Second, if Assoc_Node is
+      --  itself one of the special nodes like N_And_Then, then we assume that
+      --  an initial request to insert actions for such a node does not expect
+      --  the actions to get deposited in the node for later handling when the
+      --  node is expanded, since clearly the node is being dealt with by the
+      --  caller. Note that in the subexpression case, N is always the child we
+      --  came from.
 
-      --  N_Raise_xxx_Error is an annoying special case, it is a statement
-      --  if it has type Standard_Void_Type, and a subexpression otherwise.
+      --  N_Raise_xxx_Error is an annoying special case, it is a statement if
+      --  it has type Standard_Void_Type, and a subexpression otherwise.
       --  otherwise. Procedure attribute references are also statements.
 
       if Nkind (Assoc_Node) in N_Subexpr
@@ -2400,8 +2402,8 @@ package body Exp_Util is
          P := Assoc_Node;             -- ??? does not agree with above!
          N := Parent (Assoc_Node);
 
-      --  Non-subexpression case. Note that N is initially Empty in this
-      --  case (N is only guaranteed Non-Empty in the subexpr case).
+      --  Non-subexpression case. Note that N is initially Empty in this case
+      --  (N is only guaranteed Non-Empty in the subexpr case).
 
       else
          P := Assoc_Node;
@@ -2649,11 +2651,11 @@ package body Exp_Util is
                elsif Nkind (Parent (P)) = N_Component_Association then
                   null;
 
-               --  Do not insert if the parent of P is either an N_Variant
-               --  node or an N_Record_Definition node, meaning in either
-               --  case that P is a member of a component list, and that
-               --  therefore the actions should be inserted outside the
-               --  complete record declaration.
+               --  Do not insert if the parent of P is either an N_Variant node
+               --  or an N_Record_Definition node, meaning in either case that
+               --  P is a member of a component list, and that therefore the
+               --  actions should be inserted outside the complete record
+               --  declaration.
 
                elsif Nkind (Parent (P)) = N_Variant
                  or else Nkind (Parent (P)) = N_Record_Definition
@@ -2666,8 +2668,8 @@ package body Exp_Util is
                --  loop is part of the elaboration procedure and is only
                --  elaborated during the second pass.
 
-               --  If the loop comes from source, or the entity is local to
-               --  the loop itself it must remain within.
+               --  If the loop comes from source, or the entity is local to the
+               --  loop itself it must remain within.
 
                elsif Nkind (Parent (P)) = N_Loop_Statement
                  and then not Comes_From_Source (Parent (P))
@@ -3157,8 +3159,8 @@ package body Exp_Util is
          return Is_Possibly_Unaligned_Object (Renamed_Object (Entity (N)));
       end if;
 
-      --  Tagged and controlled types and aliased types are always aligned,
-      --  as are concurrent types.
+      --  Tagged and controlled types and aliased types are always aligned, as
+      --  are concurrent types.
 
       if Is_Aliased (T)
         or else Has_Controlled_Component (T)
@@ -3186,9 +3188,9 @@ package body Exp_Util is
 
          begin
             --  If component reference is for an array with non-static bounds,
-            --  then it is always aligned: we can only process unaligned
-            --  arrays with static bounds (more accurately bounds known at
-            --  compile time).
+            --  then it is always aligned: we can only process unaligned arrays
+            --  with static bounds (more accurately bounds known at compile
+            --  time).
 
             if Is_Array_Type (T)
               and then not Compile_Time_Known_Bounds (T)
@@ -3355,9 +3357,9 @@ package body Exp_Util is
             if Nkind (Pref) = N_Indexed_Component then
                Ptyp := Etype (Prefix (Pref));
 
-               --  The only problematic case is when the array is packed,
-               --  in which case we really know nothing about the alignment
-               --  of individual components.
+               --  The only problematic case is when the array is packed, in
+               --  which case we really know nothing about the alignment of
+               --  individual components.
 
                if Is_Bit_Packed_Array (Ptyp) then
                   return True;
@@ -3370,8 +3372,8 @@ package body Exp_Util is
 
                --  We are definitely in trouble if the record in question
                --  has an alignment, and either we know this alignment is
-               --  inconsistent with the alignment of the slice, or we
-               --  don't know what the alignment of the slice should be.
+               --  inconsistent with the alignment of the slice, or we don't
+               --  know what the alignment of the slice should be.
 
                if Known_Alignment (Ptyp)
                  and then (Unknown_Alignment (Styp)
@@ -3407,8 +3409,8 @@ package body Exp_Util is
                   end if;
                end;
 
-            --  For cases other than selected or indexed components we
-            --  know we are OK, since no issues arise over alignment.
+            --  For cases other than selected or indexed components we know we
+            --  are OK, since no issues arise over alignment.
 
             else
                return False;
@@ -3624,8 +3626,8 @@ package body Exp_Util is
             Kill_Dead_Code (Private_Declarations (Specification (N)));
 
             --  ??? After this point, Delete_Tree has been called on all
-            --  declarations in Specification (N), so references to
-            --  entities therein look suspicious.
+            --  declarations in Specification (N), so references to entities
+            --  therein look suspicious.
 
             declare
                E : Entity_Id := First_Entity (Defining_Entity (N));
@@ -3639,8 +3641,8 @@ package body Exp_Util is
                end loop;
             end;
 
-         --  Recurse into composite statement to kill individual statements,
-         --  in particular instantiations.
+         --  Recurse into composite statement to kill individual statements in
+         --  particular instantiations.
 
          elsif Nkind (N) = N_If_Statement then
             Kill_Dead_Code (Then_Statements (N));
@@ -4003,8 +4005,8 @@ package body Exp_Util is
                   Component_Items => Comp_List,
                   Variant_Part    => Empty))));
 
-      --  Suppress all checks during the analysis of the expanded code
-      --  to avoid the generation of spurious warnings under ZFP run-time.
+      --  Suppress all checks during the analysis of the expanded code to avoid
+      --  the generation of spurious warnings under ZFP run-time.
 
       Insert_Actions (E, List_Def, Suppress => All_Checks);
       return Equiv_Type;
@@ -4247,11 +4249,11 @@ package body Exp_Util is
 
             if Expander_Active and then Tagged_Type_Expansion then
 
-               --  If this is the class_wide type of a completion that is
-               --  a record subtype, set the type of the class_wide type
-               --  to be the full base type, for use in the expanded code
-               --  for the equivalent type. Should this be done earlier when
-               --  the completion is analyzed ???
+               --  If this is the class_wide type of a completion that is a
+               --  record subtype, set the type of the class_wide type to be
+               --  the full base type, for use in the expanded code for the
+               --  equivalent type. Should this be done earlier when the
+               --  completion is analyzed ???
 
                if Is_Private_Type (Etype (Unc_Typ))
                  and then
@@ -4296,10 +4298,10 @@ package body Exp_Util is
    -- May_Generate_Large_Temp --
    -----------------------------
 
-   --  At the current time, the only types that we return False for (i.e.
-   --  where we decide we know they cannot generate large temps) are ones
-   --  where we know the size is 256 bits or less at compile time, and we
-   --  are still not doing a thorough job on arrays and records ???
+   --  At the current time, the only types that we return False for (i.e. where
+   --  we decide we know they cannot generate large temps) are ones where we
+   --  know the size is 256 bits or less at compile time, and we are still not
+   --  doing a thorough job on arrays and records ???
 
    function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean is
    begin
@@ -4331,21 +4333,21 @@ package body Exp_Util is
    is
    begin
 
-      --  If we have no initialization of any kind, then we don't need to
-      --  place any restrictions on the address clause, because the object
-      --  will be elaborated after the address clause is evaluated. This
-      --  happens if the declaration has no initial expression, or the type
-      --  has no implicit initialization, or the object is imported.
+      --  If we have no initialization of any kind, then we don't need to place
+      --  any restrictions on the address clause, because the object will be
+      --  elaborated after the address clause is evaluated. This happens if the
+      --  declaration has no initial expression, or the type has no implicit
+      --  initialization, or the object is imported.
 
-      --  The same holds for all initialized scalar types and all access
-      --  types. Packed bit arrays of size up to 64 are represented using a
-      --  modular type with an initialization (to zero) and can be processed
-      --  like other initialized scalar types.
+      --  The same holds for all initialized scalar types and all access types.
+      --  Packed bit arrays of size up to 64 are represented using a modular
+      --  type with an initialization (to zero) and can be processed like other
+      --  initialized scalar types.
 
       --  If the type is controlled, code to attach the object to a
-      --  finalization chain is generated at the point of declaration,
-      --  and therefore the elaboration of the object cannot be delayed:
-      --  the address expression must be a constant.
+      --  finalization chain is generated at the point of declaration, and
+      --  therefore the elaboration of the object cannot be delayed: the
+      --  address expression must be a constant.
 
       if No (Expression (Decl))
         and then not Needs_Finalization (Typ)
@@ -4369,8 +4371,8 @@ package body Exp_Util is
          --  the call to the initialization procedure (or the attach code) has
          --  to happen at the point of the declaration.
 
-         --  Actually the IP call has been moved to the freeze actions
-         --  anyway, so maybe we can relax this restriction???
+         --  Actually the IP call has been moved to the freeze actions anyway,
+         --  so maybe we can relax this restriction???
 
          return True;
       end if;
@@ -4653,6 +4655,7 @@ package body Exp_Util is
          --  The following test is the simplest way of solving a complex
          --  problem uncovered by BB08-010: Side effect on loop bound that
          --  is a subcomponent of a global variable:
+
          --    If a loop bound is a subcomponent of a global variable, a
          --    modification of that variable within the loop may incorrectly
          --    affect the execution of the loop.
@@ -4689,12 +4692,12 @@ package body Exp_Util is
 
          if Is_Entity_Name (N) then
 
-            --  If the entity is a constant, it is definitely side effect
-            --  free. Note that the test of Is_Variable (N) below might
-            --  be expected to catch this case, but it does not, because
-            --  this test goes to the original tree, and we may have
-            --  already rewritten a variable node with a constant as
-            --  a result of an earlier Force_Evaluation call.
+            --  If the entity is a constant, it is definitely side effect free.
+            --  Note that the test of Is_Variable (N) below might be expected
+            --  to catch this case, but it does not, because this test goes to
+            --  the original tree, and we may have already rewritten a variable
+            --  node with a constant as a result of an earlier Force_Evaluation
+            --  call.
 
             if Ekind_In (Entity (N), E_Constant, E_In_Parameter) then
                return True;
@@ -4709,7 +4712,12 @@ package body Exp_Util is
             --  If Name_Req is True then we can't help returning a name which
             --  effectively allows multiple references in any case.
 
-            elsif Is_Variable (N) then
+            --  Need comment for Is_True_Constant test below ???
+
+            elsif Is_Variable (N)
+               or else (Ekind (Entity (N)) = E_Variable
+                          and then not Is_True_Constant (Entity (N)))
+            then
                return not Variable_Ref
                  and then (not Is_Volatile_Reference (N) or else Name_Req);
 
@@ -4725,16 +4733,16 @@ package body Exp_Util is
          elsif Compile_Time_Known_Value (N) then
             return True;
 
-         --  A variable renaming is not side-effect free, because the
-         --  renaming will function like a macro in the front-end in
-         --  some cases, and an assignment can modify the component
-         --  designated by N, so we need to create a temporary for it.
+         --  A variable renaming is not side-effect free, because the renaming
+         --  will function like a macro in the front-end in some cases, and an
+         --  assignment can modify the component designated by N, so we need to
+         --  create a temporary for it.
 
-         --  The guard testing for Entity being present is needed at least
-         --  in the case of rewritten predicate expressions, and may be
+         --  The guard testing for Entity being present is needed at least in
+         --  the case of rewritten predicate expressions, and may well also be
          --  appropriate elsewhere. Obviously we can't go testing the entity
-         --  field if it does not exist, so it's reasonable to say that this
-         --  is not the renaming case if it does not exist.
+         --  field if it does not exist, so it's reasonable to say that this is
+         --  not the renaming case if it does not exist.
 
          elsif Is_Entity_Name (Original_Node (N))
            and then Present (Entity (Original_Node (N)))
@@ -4746,7 +4754,7 @@ package body Exp_Util is
          --  Remove_Side_Effects generates an object renaming declaration to
          --  capture the expression of a class-wide expression. In VM targets
          --  the frontend performs no expansion for dispatching calls to
-         --  class-wide types since they are handled by the VM. Hence, we must
+         --  class- wide types since they are handled by the VM. Hence, we must
          --  locate here if this node corresponds to a previous invocation of
          --  Remove_Side_Effects to avoid a never ending loop in the frontend.
 
@@ -4775,9 +4783,9 @@ package body Exp_Util is
                  and then (Is_Entity_Name (Prefix (N))
                             or else Side_Effect_Free (Prefix (N)));
 
-            --  A binary operator is side effect free if and both operands
-            --  are side effect free. For this purpose binary operators
-            --  include membership tests and short circuit forms
+            --  A binary operator is side effect free if and both operands are
+            --  side effect free. For this purpose binary operators include
+            --  membership tests and short circuit forms
 
             when N_Binary_Op | N_Membership_Test | N_Short_Circuit =>
                return Side_Effect_Free (Left_Opnd  (N))
@@ -4792,10 +4800,10 @@ package body Exp_Util is
 
             --  A call to _rep_to_pos is side effect free, since we generate
             --  this pure function call ourselves. Moreover it is critically
-            --  important to make this exception, since otherwise we can
-            --  have discriminants in array components which don't look
-            --  side effect free in the case of an array whose index type
-            --  is an enumeration type with an enumeration rep clause.
+            --  important to make this exception, since otherwise we can have
+            --  discriminants in array components which don't look side effect
+            --  free in the case of an array whose index type is an enumeration
+            --  type with an enumeration rep clause.
 
             --  All other function calls are not side effect free
 
@@ -4819,15 +4827,15 @@ package body Exp_Util is
             when N_Qualified_Expression =>
                return Side_Effect_Free (Expression (N));
 
-            --  A selected component is side effect free only if it is a
-            --  side effect free prefixed reference. If it designates a
-            --  component with a rep. clause it must be treated has having
-            --  a potential side effect, because it may be modified through
-            --  a renaming, and a subsequent use of the renaming as a macro
-            --  will yield the wrong value. This complex interaction between
-            --  renaming and removing side effects is a reminder that the
-            --  latter has become a headache to maintain, and that it should
-            --  be removed in favor of the gcc mechanism to capture values ???
+            --  A selected component is side effect free only if it is a side
+            --  effect free prefixed reference. If it designates a component
+            --  with a rep. clause it must be treated has having a potential
+            --  side effect, because it may be modified through a renaming, and
+            --  a subsequent use of the renaming as a macro will yield the
+            --  wrong value. This complex interaction between renaming and
+            --  removing side effects is a reminder that the latter has become
+            --  a headache to maintain, and that it should be removed in favor
+            --  of the gcc mechanism to capture values ???
 
             when N_Selected_Component =>
                if Nkind (Parent (N)) = N_Explicit_Dereference
@@ -4894,8 +4902,8 @@ package body Exp_Util is
          end case;
       end Side_Effect_Free;
 
-      --  A list is side effect free if all elements of the list are
-      --  side effect free.
+      --  A list is side effect free if all elements of the list are side
+      --  effect free.
 
       function Side_Effect_Free (L : List_Id) return Boolean is
          N : Node_Id;
@@ -4985,10 +4993,10 @@ package body Exp_Util is
          Set_Etype (Def_Id, Exp_Type);
          Res := New_Reference_To (Def_Id, Loc);
 
-         --  If the expression is a packed reference, it must be reanalyzed
-         --  and expanded, depending on context. This is the case for actuals
-         --  where a constraint check may capture the actual before expansion
-         --  of the call is complete.
+         --  If the expression is a packed reference, it must be reanalyzed and
+         --  expanded, depending on context. This is the case for actuals where
+         --  a constraint check may capture the actual before expansion of the
+         --  call is complete.
 
          if Nkind (Exp) = N_Indexed_Component
            and then Is_Packed (Etype (Prefix (Exp)))
@@ -5007,8 +5015,8 @@ package body Exp_Util is
          Set_Assignment_OK (E);
          Insert_Action (Exp, E);
 
-      --  If the expression has the form v.all then we can just capture
-      --  the pointer, and then do an explicit dereference on the result.
+      --  If the expression has the form v.all then we can just capture the
+      --  pointer, and then do an explicit dereference on the result.
 
       elsif Nkind (Exp) = N_Explicit_Dereference then
          Def_Id := Make_Temporary (Loc, 'R', Exp);
@@ -5023,8 +5031,8 @@ package body Exp_Util is
              Constant_Present    => True,
              Expression          => Relocate_Node (Prefix (Exp))));
 
-      --  Similar processing for an unchecked conversion of an expression
-      --  of the form v.all, where we want the same kind of treatment.
+      --  Similar processing for an unchecked conversion of an expression of
+      --  the form v.all, where we want the same kind of treatment.
 
       elsif Nkind (Exp) = N_Unchecked_Type_Conversion
         and then Nkind (Expression (Exp)) = N_Explicit_Dereference
@@ -5035,8 +5043,8 @@ package body Exp_Util is
 
       --  If this is a type conversion, leave the type conversion and remove
       --  the side effects in the expression. This is important in several
-      --  circumstances: for change of representations, and also when this is
-      --  a view conversion to a smaller object, where gigi can end up creating
+      --  circumstances: for change of representations, and also when this is a
+      --  view conversion to a smaller object, where gigi can end up creating
       --  its own temporary of the wrong size.
 
       elsif Nkind (Exp) = N_Type_Conversion then
@@ -5081,13 +5089,12 @@ package body Exp_Util is
          end if;
 
       --  For expressions that denote objects, we can use a renaming scheme.
-      --  This is needed for correctness in the case of a volatile object
-      --  of a non-volatile type because the Make_Reference call of the
-      --  "default" approach would generate an illegal access value (an access
-      --  value cannot designate such an object - see Analyze_Reference).
-      --  We skip using this scheme if we have an object of a volatile type
-      --  and we do not have Name_Req set true (see comments above for
-      --  Side_Effect_Free).
+      --  This is needed for correctness in the case of a volatile object of a
+      --  non-volatile type because the Make_Reference call of the "default"
+      --  approach would generate an illegal access value (an access value
+      --  cannot designate such an object - see Analyze_Reference). We skip
+      --  using this scheme if we have an object of a volatile type and we do
+      --  not have Name_Req set true (see comments above for Side_Effect_Free).
 
       elsif Is_Object_Reference (Exp)
         and then Nkind (Exp) /= N_Function_Call
@@ -5126,9 +5133,9 @@ package body Exp_Util is
                 Name                => Relocate_Node (Exp)));
          end if;
 
-         --  If this is a packed reference, or a selected component with a
-         --  non-standard representation, a reference to the temporary will
-         --  be replaced by a copy of the original expression (see
+         --  If this is a packed reference, or a selected component with
+         --  a non-standard representation, a reference to the temporary
+         --  will be replaced by a copy of the original expression (see
          --  Exp_Ch2.Expand_Renaming). Otherwise the temporary must be
          --  elaborated by gigi, and is of course not to be replaced in-line
          --  by the expression it renames, which would defeat the purpose of
@@ -5209,10 +5216,10 @@ package body Exp_Util is
 
             --  The expansion of nested aggregates is delayed until the
             --  enclosing aggregate is expanded. As aggregates are often
-            --  qualified, the predicate applies to qualified expressions
-            --  as well, indicating that the enclosing aggregate has not
-            --  been expanded yet. At this point the aggregate is part of
-            --  a stand-alone declaration, and must be fully expanded.
+            --  qualified, the predicate applies to qualified expressions as
+            --  well, indicating that the enclosing aggregate has not been
+            --  expanded yet. At this point the aggregate is part of a
+            --  stand-alone declaration, and must be fully expanded.
 
             if Nkind (E) = N_Qualified_Expression then
                Set_Expansion_Delayed (Expression (E), False);
@@ -5232,9 +5239,9 @@ package body Exp_Util is
              Expression          => New_Exp));
       end if;
 
-      --  Preserve the Assignment_OK flag in all copies, since at least
-      --  one copy may be used in a context where this flag must be set
-      --  (otherwise why would the flag be set in the first place).
+      --  Preserve the Assignment_OK flag in all copies, since at least one
+      --  copy may be used in a context where this flag must be set (otherwise
+      --  why would the flag be set in the first place).
 
       Set_Assignment_OK (Res, Assignment_OK (Exp));
 
@@ -5261,9 +5268,9 @@ package body Exp_Util is
    -- Safe_Unchecked_Type_Conversion --
    ------------------------------------
 
-   --  Note: this function knows quite a bit about the exact requirements
-   --  of Gigi with respect to unchecked type conversions, and its code
-   --  must be coordinated with any changes in Gigi in this area.
+   --  Note: this function knows quite a bit about the exact requirements of
+   --  Gigi with respect to unchecked type conversions, and its code must be
+   --  coordinated with any changes in Gigi in this area.
 
    --  The above requirements should be documented in Sinfo ???
 
@@ -5289,12 +5296,11 @@ package body Exp_Util is
       then
          return True;
 
-      --  If the expression is the prefix of an N_Selected_Component
-      --  we should also be OK because GCC knows to look inside the
-      --  conversion except if the type is discriminated. We assume
-      --  that we are OK anyway if the type is not set yet or if it is
-      --  controlled since we can't afford to introduce a temporary in
-      --  this case.
+      --  If the expression is the prefix of an N_Selected_Component we should
+      --  also be OK because GCC knows to look inside the conversion except if
+      --  the type is discriminated. We assume that we are OK anyway if the
+      --  type is not set yet or if it is controlled since we can't afford to
+      --  introduce a temporary in this case.
 
       elsif Nkind (Pexp) = N_Selected_Component
          and then Prefix (Pexp) = Exp
@@ -5308,9 +5314,9 @@ package body Exp_Util is
          end if;
       end if;
 
-      --  Set the output type, this comes from Etype if it is set, otherwise
-      --  we take it from the subtype mark, which we assume was already
-      --  fully analyzed.
+      --  Set the output type, this comes from Etype if it is set, otherwise we
+      --  take it from the subtype mark, which we assume was already fully
+      --  analyzed.
 
       if Present (Etype (Exp)) then
          Otyp := Etype (Exp);
@@ -5328,10 +5334,10 @@ package body Exp_Util is
       Oalign := No_Uint;
       Ialign := No_Uint;
 
-      --  Replace a concurrent type by its corresponding record type
-      --  and each type by its underlying type and do the tests on those.
-      --  The original type may be a private type whose completion is a
-      --  concurrent type, so find the underlying type first.
+      --  Replace a concurrent type by its corresponding record type and each
+      --  type by its underlying type and do the tests on those. The original
+      --  type may be a private type whose completion is a concurrent type, so
+      --  find the underlying type first.
 
       if Present (Underlying_Type (Otyp)) then
          Otyp := Underlying_Type (Otyp);
@@ -5365,22 +5371,22 @@ package body Exp_Util is
       then
          return True;
 
-      --  If the expression has an access type (object or subprogram) we
-      --  assume that the conversion is safe, because the size of the target
-      --  is safe, even if it is a record (which might be treated as having
-      --  unknown size at this point).
+      --  If the expression has an access type (object or subprogram) we assume
+      --  that the conversion is safe, because the size of the target is safe,
+      --  even if it is a record (which might be treated as having unknown size
+      --  at this point).
 
       elsif Is_Access_Type (Ityp) then
          return True;
 
-      --  If the size of output type is known at compile time, there is
-      --  never a problem.  Note that unconstrained records are considered
-      --  to be of known size, but we can't consider them that way here,
-      --  because we are talking about the actual size of the object.
+      --  If the size of output type is known at compile time, there is never
+      --  a problem. Note that unconstrained records are considered to be of
+      --  known size, but we can't consider them that way here, because we are
+      --  talking about the actual size of the object.
 
-      --  We also make sure that in addition to the size being known, we do
-      --  not have a case which might generate an embarrassingly large temp
-      --  in stack checking mode.
+      --  We also make sure that in addition to the size being known, we do not
+      --  have a case which might generate an embarrassingly large temp in
+      --  stack checking mode.
 
       elsif Size_Known_At_Compile_Time (Otyp)
         and then
@@ -5396,8 +5402,8 @@ package body Exp_Util is
       elsif Is_Tagged_Type (Otyp) or else Is_Tagged_Type (Ityp) then
          return True;
 
-      --  If either type is a limited record type, we cannot do a copy, so
-      --  say safe since there's nothing else we can do.
+      --  If either type is a limited record type, we cannot do a copy, so say
+      --  safe since there's nothing else we can do.
 
       elsif Is_Limited_Record (Otyp) or else Is_Limited_Record (Ityp) then
          return True;
@@ -5414,9 +5420,8 @@ package body Exp_Util is
       --  The only other cases known to be safe is if the input type's
       --  alignment is known to be at least the maximum alignment for the
       --  target or if both alignments are known and the output type's
-      --  alignment is no stricter than the input's.  We can use the alignment
-      --  of the component type of an array if a type is an unpacked
-      --  array type.
+      --  alignment is no stricter than the input's. We can use the component
+      --  type alignement for an array if a type is an unpacked array type.
 
       if Present (Alignment_Clause (Otyp)) then
          Oalign := Expr_Value (Expression (Alignment_Clause (Otyp)));
@@ -5491,17 +5496,17 @@ package body Exp_Util is
                   return;
                end if;
 
-               --  Here we have a case where the Current_Value field may
-               --  need to be set. We set it if it is not already set to a
-               --  compile time expression value.
+               --  Here we have a case where the Current_Value field may need
+               --  to be set. We set it if it is not already set to a compile
+               --  time expression value.
 
                --  Note that this represents a decision that one condition
-               --  blots out another previous one. That's certainly right
-               --  if they occur at the same level. If the second one is
-               --  nested, then the decision is neither right nor wrong (it
-               --  would be equally OK to leave the outer one in place, or
-               --  take the new inner one. Really we should record both, but
-               --  our data structures are not that elaborate.
+               --  blots out another previous one. That's certainly right if
+               --  they occur at the same level. If the second one is nested,
+               --  then the decision is neither right nor wrong (it would be
+               --  equally OK to leave the outer one in place, or take the new
+               --  inner one. Really we should record both, but our data
+               --  structures are not that elaborate.
 
                if Nkind (Current_Value (Ent)) not in N_Subexpr then
                   Set_Current_Value (Ent, Cnode);
@@ -5642,9 +5647,9 @@ package body Exp_Util is
    --  False op False = False, and True op True = True. For the XOR case,
    --  see Silly_Boolean_Array_Xor_Test.
 
-   --  Believe it or not, this was reported as a bug. Note that nearly
-   --  always, the test will evaluate statically to False, so the code will
-   --  be statically removed, and no extra overhead caused.
+   --  Believe it or not, this was reported as a bug. Note that nearly always,
+   --  the test will evaluate statically to False, so the code will be
+   --  statically removed, and no extra overhead caused.
 
    procedure Silly_Boolean_Array_Not_Test (N : Node_Id; T : Entity_Id) is
       Loc : constant Source_Ptr := Sloc (N);
@@ -5740,12 +5745,12 @@ package body Exp_Util is
    --------------------------
 
    Integer_Sized_Small : Ureal;
-   --  Set to 2.0 ** -(Integer'Size - 1) the first time that this
-   --  function is called (we don't want to compute it more than once!)
+   --  Set to 2.0 ** -(Integer'Size - 1) the first time that this function is
+   --  called (we don't want to compute it more than once!)
 
    Long_Integer_Sized_Small : Ureal;
-   --  Set to 2.0 ** -(Long_Integer'Size - 1) the first time that this
-   --  function is called (we don't want to compute it more than once)
+   --  Set to 2.0 ** -(Long_Integer'Size - 1) the first time that this function
+   --  is called (we don't want to compute it more than once)
 
    First_Time_For_THFO : Boolean := True;
    --  Set to False after first call (if Fractional_Fixed_Ops_On_Target)
@@ -5758,8 +5763,8 @@ package body Exp_Util is
       function Is_Fractional_Type (Typ : Entity_Id) return Boolean;
       --  Return True if the given type is a fixed-point type with a small
       --  value equal to 2 ** (-(T'Object_Size - 1)) and whose values have
-      --  an absolute value less than 1.0. This is currently limited
-      --  to fixed-point types that map to Integer or Long_Integer.
+      --  an absolute value less than 1.0. This is currently limited to
+      --  fixed-point types that map to Integer or Long_Integer.
 
       ------------------------
       -- Is_Fractional_Type --
@@ -5806,9 +5811,9 @@ package body Exp_Util is
               Rbase => 2);
       end if;
 
-      --  Return True if target supports fixed-by-fixed multiply/divide
-      --  for fractional fixed-point types (see Is_Fractional_Type) and
-      --  the operand and result types are equivalent fractional types.
+      --  Return True if target supports fixed-by-fixed multiply/divide for
+      --  fractional fixed-point types (see Is_Fractional_Type) and the operand
+      --  and result types are equivalent fractional types.
 
       return Is_Fractional_Type (Base_Type (Left_Typ))
         and then Is_Fractional_Type (Base_Type (Right_Typ))

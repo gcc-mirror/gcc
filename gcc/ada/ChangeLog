@@ -1,3 +1,34 @@
+2011-08-02  Jerome Guitton  <guitton@adacore.com>
+
+	* a-except-2005.adb (Raise_From_Signal_Handler): Call
+	Debug_Raise_Exception before propagation starts.
+
+2011-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Guard restriction checks with a call
+	to Restriction_Check_Required.
+	* sem_ch3.adb (Analyze_Object_Declaration): Likewise.
+	* sem_res.adb (Resolve_Call): Likewise.
+	* sem_attr.adb (Check_Stream_Attribute): Likewise.
+
+2011-08-02  Bob Duff  <duff@adacore.com>
+
+	* stylesw.ads: Update comment.
+	* style.adb: Minor: Use Error_Msg_NE instead of Error_Msg_N.
+	* errout.ads: Remove obsolete comment.
+
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads, einfo.adb (Is_Safe_To_Reevaluate): new function.
+	(Set_Is_Safe_To_Reevaluate): new procedure.
+	* sem_ch5.adb (Analyze_Assignment): Add one assertion to ensure that no
+	assignment is allowed on safe-to-reevaluate variables.
+	(Analyze_Iteration_Schine.Process_Bounds.One_Bound): Decorate the
+	temporary created to remove side effects in expressions that use
+	the secondary stack as safe-to-reevaluate.
+	* exp_util.adb (Side_Effect_Free): Add missing code to handle well
+	variables that are not true constants.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch5.adb, sem_ch7.adb, einfo.ads, sem_util.adb, sem_util.ads,

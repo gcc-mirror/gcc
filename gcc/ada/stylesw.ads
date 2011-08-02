@@ -174,8 +174,8 @@ package Stylesw is
 
    Style_Check_Missing_Overriding : Boolean := False;
    --  This can be set True by using the -gnatyO switch. If it is True, then
-   --  "[not] overriding" is required in subprogram declarations and bodies
-   --  where appropriate.
+   --  "overriding" is required in subprogram declarations and bodies where
+   --  appropriate. Note that "not overriding" is never required.
 
    Style_Check_Mode_In : Boolean := False;
    --  This can be set True by using -gnatyI. If True, it activates checking

@@ -257,6 +257,13 @@ package body Sem_Ch5 is
       Analyze (Rhs);
       Analyze (Lhs);
 
+      --  Ensure that we never do an assignment on a variable marked as
+      --  as Safe_To_Reevaluate.
+
+      pragma Assert (not Is_Entity_Name (Lhs)
+        or else Ekind (Entity (Lhs)) /= E_Variable
+        or else not Is_Safe_To_Reevaluate (Entity (Lhs)));
+
       --  Start type analysis for assignment
 
       T1 := Etype (Lhs);
@@ -1603,7 +1610,7 @@ package body Sem_Ch5 is
             Id := Make_Temporary (Loc, 'R', Original_Bound);
 
             --  Here we make a declaration with a separate assignment
-            --   statement, and insert before loop header.
+            --  statement, and insert before loop header.
 
             Decl :=
               Make_Object_Declaration (Loc,
@@ -1624,6 +1631,15 @@ package body Sem_Ch5 is
             Reset_Analyzed_Flags (Expression (Assign));
 
             Insert_Actions (Parent (N), New_List (Decl, Assign));
+
+            --  Now that this temporary variable is initialized we decorate it
+            --  as safe-to-reevaluate to inform to the backend that no further
+            --  asignment will be issued and hence it can be handled as side
+            --  effect free. Note that this decoration must be done when the
+            --  assignment has been analyzed because otherwise it will be
+            --  rejected (see Analyze_Assignment).
+
+            Set_Is_Safe_To_Reevaluate (Id);
 
             Rewrite (Original_Bound, New_Occurrence_Of (Id, Loc));
 

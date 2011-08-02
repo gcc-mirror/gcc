@@ -514,9 +514,9 @@ package body Einfo is
    --    Is_Underlying_Record_View       Flag246
    --    OK_To_Rename                    Flag247
    --    Has_Inheritable_Invariants      Flag248
+   --    Is_Safe_To_Reevaluate           Flag249
    --    Has_Predicates                  Flag250
 
-   --    (unused)                        Flag249
    --    (unused)                        Flag251
    --    (unused)                        Flag252
    --    (unused)                        Flag253
@@ -2057,6 +2057,11 @@ package body Einfo is
    begin
       return Flag209 (Id);
    end Is_Return_Object;
+
+   function Is_Safe_To_Reevaluate (Id : E) return B is
+   begin
+      return Flag249 (Id);
+   end Is_Safe_To_Reevaluate;
 
    function Is_Shared_Passive (Id : E) return B is
    begin
@@ -4541,6 +4546,12 @@ package body Einfo is
    begin
       Set_Flag209 (Id, V);
    end Set_Is_Return_Object;
+
+   procedure Set_Is_Safe_To_Reevaluate (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      Set_Flag249 (Id, V);
+   end Set_Is_Safe_To_Reevaluate;
 
    procedure Set_Is_Shared_Passive (Id : E; V : B := True) is
    begin
@@ -7501,6 +7512,7 @@ package body Einfo is
       W ("Is_Remote_Types",                 Flag61  (Id));
       W ("Is_Renaming_Of_Object",           Flag112 (Id));
       W ("Is_Return_Object",                Flag209 (Id));
+      W ("Is_Safe_To_Reevaluate",           Flag249 (Id));
       W ("Is_Shared_Passive",               Flag60  (Id));
       W ("Is_Statically_Allocated",         Flag28  (Id));
       W ("Is_Tag",                          Flag78  (Id));
