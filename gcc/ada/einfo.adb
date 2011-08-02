@@ -357,7 +357,7 @@ package body Einfo is
    --    Is_Called                       Flag102
    --    Is_Completely_Hidden            Flag103
    --    Address_Taken                   Flag104
-   --    Suppress_Init_Proc              Flag105
+   --    Suppress_Initialization         Flag105
    --    Is_Limited_Composite            Flag106
    --    Is_Private_Composite            Flag107
    --    Default_Expressions_Processed   Flag108
@@ -2686,10 +2686,11 @@ package body Einfo is
       return Flag148 (Id);
    end Suppress_Elaboration_Warnings;
 
-   function Suppress_Init_Proc (Id : E) return B is
+   function Suppress_Initialization (Id : E) return B is
    begin
-      return Flag105 (Base_Type (Id));
-   end Suppress_Init_Proc;
+      pragma Assert (Is_Type (Id));
+      return Flag105 (Id);
+   end Suppress_Initialization;
 
    function Suppress_Style_Checks (Id : E) return B is
    begin
@@ -5204,11 +5205,11 @@ package body Einfo is
       Set_Flag148 (Id, V);
    end Set_Suppress_Elaboration_Warnings;
 
-   procedure Set_Suppress_Init_Proc (Id : E; V : B := True) is
+   procedure Set_Suppress_Initialization (Id : E; V : B := True) is
    begin
-      pragma Assert (Id = Base_Type (Id));
+      pragma Assert (Is_Type (Id));
       Set_Flag105 (Id, V);
-   end Set_Suppress_Init_Proc;
+   end Set_Suppress_Initialization;
 
    procedure Set_Suppress_Style_Checks (Id : E; V : B := True) is
    begin
@@ -7567,7 +7568,7 @@ package body Einfo is
       W ("Static_Elaboration_Desired",      Flag77  (Id));
       W ("Strict_Alignment",                Flag145 (Id));
       W ("Suppress_Elaboration_Warnings",   Flag148 (Id));
-      W ("Suppress_Init_Proc",              Flag105 (Id));
+      W ("Suppress_Initialization",         Flag105 (Id));
       W ("Suppress_Style_Checks",           Flag165 (Id));
       W ("Suppress_Value_Tracking_On_Call", Flag217 (Id));
       W ("Treat_As_Volatile",               Flag41  (Id));

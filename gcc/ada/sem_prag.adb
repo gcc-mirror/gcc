@@ -6359,7 +6359,6 @@ package body Sem_Prag is
                  ("pragma% cannot be applied to function", Arg1);
 
             elsif Is_Remote_Access_To_Subprogram_Type (Nm) then
-
                   if Is_Record_Type (Nm) then
 
                   --  A record type that is the Equivalent_Type for a remote
@@ -12751,22 +12750,36 @@ package body Sem_Prag is
 
             E := Entity (E_Id);
 
-            if Is_Type (E) then
-               if Is_Incomplete_Or_Private_Type (E) then
-                  if No (Full_View (Base_Type (E))) then
-                     Error_Pragma_Arg
-                       ("argument of pragma% cannot be an incomplete type",
-                         Arg1);
-                  else
-                     Set_Suppress_Init_Proc (Full_View (Base_Type (E)));
-                  end if;
+            if not Is_Type (E) then
+               Error_Pragma_Arg ("pragma% requires type or subtype", Arg1);
+            end if;
+
+            if Rep_Item_Too_Early (E, N)
+                 or else
+               Rep_Item_Too_Late (E, N, FOnly => True)
+            then
+               return;
+            end if;
+
+            --  For incomplete/private type, set flag on full view
+
+            if Is_Incomplete_Or_Private_Type (E) then
+               if No (Full_View (Base_Type (E))) then
+                  Error_Pragma_Arg
+                    ("argument of pragma% cannot be an incomplete type", Arg1);
                else
-                  Set_Suppress_Init_Proc (Base_Type (E));
+                  Set_Suppress_Initialization (Full_View (Base_Type (E)));
                end if;
 
+            --  For first subtype, set flag on base type
+
+            elsif Is_First_Subtype (E) then
+               Set_Suppress_Initialization (Base_Type (E));
+
+            --  For other than first subtype, set flag on subtype itself
+
             else
-               Error_Pragma_Arg
-                 ("pragma% requires argument that is a type name", Arg1);
+               Set_Suppress_Initialization (E);
             end if;
          end Suppress_Init;
 

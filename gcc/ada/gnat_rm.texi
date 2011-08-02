@@ -4892,7 +4892,18 @@ pragma Suppress_Initialization ([Entity =>] type_Name);
 
 @noindent
 This pragma suppresses any implicit or explicit initialization
-associated with the given type name for all variables of this type.
+associated with the given type name for all variables of this type,
+including initialization resulting from the use of pragmas
+Normalize_Scalars or Initialize_Scalars.
+
+This is considered a representation item, so it cannot be given after
+the type is frozen. It applies to all subsequent object declarations,
+and also any allocator that creates objects of the type.
+
+If the pragma is given for the first subtype, then it is considered
+to apply to the base type and all its subtypes. If the pragma is given
+for other than a first subtype, then it applies only to the given subtype.
+The pragma may not be given after the type is frozen.
 
 @node Pragma Task_Info
 @unnumberedsec Pragma Task_Info

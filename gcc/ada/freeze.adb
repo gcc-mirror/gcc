@@ -2865,7 +2865,7 @@ package body Freeze is
                    ((Has_Non_Null_Base_Init_Proc (Etype (E))
                       and then not No_Initialization (Declaration_Node (E))
                       and then not Is_Value_Type (Etype (E))
-                      and then not Suppress_Init_Proc (Etype (E)))
+                      and then not Initialization_Suppressed (Etype (E)))
                     or else
                       (Needs_Simple_Initialization (Etype (E))
                         and then not Is_Internal (E)))

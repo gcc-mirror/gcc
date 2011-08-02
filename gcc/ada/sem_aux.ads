@@ -217,6 +217,12 @@ package Sem_Aux is
    function Number_Discriminants (Typ : Entity_Id) return Pos;
    --  Typ is a type with discriminants, yields number of discriminants in type
 
+   function Initialization_Suppressed (Typ : Entity_Id) return Boolean;
+   pragma Inline (Initialization_Suppressed);
+   --  Returns True if initialization should be suppressed for the given type
+   --  or subtype. This is true if Suppress_Initialization is set either for
+   --  the subtype itself, or for the corresponding base type.
+
    function Ultimate_Alias (Prim : Entity_Id) return Entity_Id;
    pragma Inline (Ultimate_Alias);
    --  Return the last entity in the chain of aliased entities of Prim. If Prim
