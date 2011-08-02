@@ -1062,8 +1062,15 @@ package body Sprint is
             Write_Str_Sloc (" and then ");
             Sprint_Right_Opnd (Node);
 
+         --  Note: the following code for N_Aspect_Specification is not
+         --  normally used, since we deal with aspects as part of a
+         --  declaration, but it is here in case we deliberately try
+         --  to print an N_Aspect_Speficiation node (e.g. from GDB).
+
          when N_Aspect_Specification =>
-            raise Program_Error;
+            Sprint_Node (Identifier (Node));
+            Write_Str (" => ");
+            Sprint_Node (Expression (Node));
 
          when N_Assignment_Statement =>
             Write_Indent;

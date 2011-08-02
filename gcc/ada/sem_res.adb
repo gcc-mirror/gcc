@@ -644,8 +644,8 @@ package body Sem_Res is
                                              N_Derived_Type_Definition)
               and then D = Constraint (P))
 
-         --  The constraint itself may be given by a subtype indication,
-         --  rather than by a more common discrete range.
+           --  The constraint itself may be given by a subtype indication,
+           --  rather than by a more common discrete range.
 
            or else (Nkind (P) = N_Subtype_Indication
                       and then
@@ -869,7 +869,7 @@ package body Sem_Res is
                   exit when Nkind (Nod) /= N_Raise_Statement
                     and then
                       (Nkind (Nod) not in N_Raise_xxx_Error
-                         or else Present (Condition (Nod)));
+                        or else Present (Condition (Nod)));
                end;
             end if;
 
@@ -1018,9 +1018,9 @@ package body Sem_Res is
          --  functions, this is never a parameterless call (RM 4.1.4(6)).
 
          if Nkind (Parent (N)) = N_Attribute_Reference
-            and then (Attribute_Name (Parent (N)) = Name_Address
-              or else Attribute_Name (Parent (N)) = Name_Code_Address
-              or else Attribute_Name (Parent (N)) = Name_Access)
+            and then (Attribute_Name (Parent (N)) = Name_Address      or else
+                      Attribute_Name (Parent (N)) = Name_Code_Address or else
+                      Attribute_Name (Parent (N)) = Name_Access)
          then
             return False;
          end if;
@@ -1900,9 +1900,9 @@ package body Sem_Res is
       --  a non-remote access-to-subprogram type.
 
       if Nkind (N) = N_Attribute_Reference
-        and then (Attribute_Name (N) = Name_Access
-                    or else Attribute_Name (N) = Name_Unrestricted_Access
-                    or else Attribute_Name (N) = Name_Unchecked_Access)
+        and then (Attribute_Name (N) = Name_Access              or else
+                  Attribute_Name (N) = Name_Unrestricted_Access or else
+                  Attribute_Name (N) = Name_Unchecked_Access)
         and then Comes_From_Source (N)
         and then Is_Entity_Name (Prefix (N))
         and then Is_Subprogram (Entity (Prefix (N)))
@@ -1922,8 +1922,7 @@ package body Sem_Res is
 
       if Nkind (N) = N_Attribute_Reference
         and then Comes_From_Source (N)
-        and then (Is_Remote_Call_Interface (Typ)
-                    or else Is_Remote_Types (Typ))
+        and then (Is_Remote_Call_Interface (Typ) or else Is_Remote_Types (Typ))
       then
          declare
             Attr      : constant Attribute_Id :=
@@ -1970,16 +1969,16 @@ package body Sem_Res is
                --   perform semantic checks against the corresponding
                --   remote entities.
 
-               if (Attr = Attribute_Access
-                    or else Attr = Attribute_Unchecked_Access
-                    or else Attr = Attribute_Unrestricted_Access)
+               if (Attr = Attribute_Access           or else
+                   Attr = Attribute_Unchecked_Access or else
+                   Attr = Attribute_Unrestricted_Access)
                  and then Expander_Active
                  and then Get_PCS_Name /= Name_No_DSA
                then
                   Check_Subtype_Conformant
                     (New_Id  => Entity (Prefix (N)),
                      Old_Id  => Designated_Type
-                       (Corresponding_Remote_Type (Typ)),
+                                  (Corresponding_Remote_Type (Typ)),
                      Err_Loc => N);
 
                   if Is_Remote then
@@ -2512,6 +2511,7 @@ package body Sem_Res is
                         --  Protected operation: retrieve operation name
 
                         Subp_Name := Selector_Name (Name (N));
+
                      else
                         raise Program_Error;
                      end if;
@@ -2542,6 +2542,7 @@ package body Sem_Res is
                   else
                      Error_Msg_N ("\use -gnatf for details", N);
                   end if;
+
                else
                   Wrong_Type (N, Typ);
                end if;
@@ -2565,11 +2566,11 @@ package body Sem_Res is
          --  types, rather than a specific type, propagate the actual type
          --  downward.
 
-         if Typ = Any_Integer
-           or else Typ = Any_Boolean
-           or else Typ = Any_Modular
-           or else Typ = Any_Real
-           or else Typ = Any_Discrete
+         if Typ = Any_Integer or else
+            Typ = Any_Boolean or else
+            Typ = Any_Modular or else
+            Typ = Any_Real    or else
+            Typ = Any_Discrete
          then
             Ctx_Type := Expr_Type;
 
@@ -2880,13 +2881,10 @@ package body Sem_Res is
          --  not come from source, or this warning is off.
 
          if not Warn_On_Parameter_Order
-           or else
-             No (Parameter_Associations (N))
-           or else
-             not Nkind_In (Original_Node (N), N_Procedure_Call_Statement,
-                                              N_Function_Call)
-           or else
-             not Comes_From_Source (N)
+           or else No (Parameter_Associations (N))
+           or else not Nkind_In (Original_Node (N), N_Procedure_Call_Statement,
+                                                    N_Function_Call)
+           or else not Comes_From_Source (N)
          then
             return;
          end if;
@@ -3299,6 +3297,7 @@ package body Sem_Res is
                  and then Ekind (F) /= E_In_Parameter
                then
                   Generate_Reference (Orig_A, A, 'm');
+
                elsif not Is_Overloaded (A) then
                   Generate_Reference (Orig_A, A);
                end if;
@@ -3307,8 +3306,7 @@ package body Sem_Res is
 
          if Present (A)
            and then (Nkind (Parent (A)) /= N_Parameter_Association
-                       or else
-                     Chars (Selector_Name (Parent (A))) = Chars (F))
+                      or else Chars (Selector_Name (Parent (A))) = Chars (F))
          then
             --  If style checking mode on, check match of formal name
 
@@ -3417,8 +3415,7 @@ package body Sem_Res is
               and then Is_Limited_Record (Etype (F))
               and then not Is_Constrained (Etype (F))
               and then Expander_Active
-              and then
-                (Is_Controlled (Etype (F)) or else Has_Task (Etype (F)))
+              and then (Is_Controlled (Etype (F)) or else Has_Task (Etype (F)))
             then
                Establish_Transient_Scope (A, False);
 
@@ -3624,7 +3621,7 @@ package body Sem_Res is
 
                if Is_Scalar_Type (A_Typ)
                  or else (Ekind (F) = E_In_Parameter
-                            and then not Is_Partially_Initialized_Type (A_Typ))
+                           and then not Is_Partially_Initialized_Type (A_Typ))
                then
                   Check_Unset_Reference (A);
                end if;
@@ -3722,7 +3719,7 @@ package body Sem_Res is
                  and then Has_Discriminants (F_Typ)
                  and then Is_Constrained (F_Typ)
                  and then (not Is_Derived_Type (F_Typ)
-                             or else Comes_From_Source (Nam))
+                            or else Comes_From_Source (Nam))
                then
                   Apply_Discriminant_Check (A, F_Typ);
 
@@ -3780,12 +3777,10 @@ package body Sem_Res is
                else
                   if Is_Scalar_Type (F_Typ) then
                      Apply_Scalar_Range_Check (A, A_Typ, F_Typ);
-
                   elsif Is_Array_Type (F_Typ)
                     and then Ekind (F) = E_Out_Parameter
                   then
                      Apply_Length_Check (A, F_Typ);
-
                   else
                      Apply_Range_Check (A, A_Typ, F_Typ);
                   end if;
@@ -4208,7 +4203,7 @@ package body Sem_Res is
          --  class-wide matching is not allowed.
 
          if (Is_Class_Wide_Type (Etype (Expression (E)))
-                 or else Is_Class_Wide_Type (Etype (E)))
+              or else Is_Class_Wide_Type (Etype (E)))
            and then Base_Type (Etype (Expression (E))) /= Base_Type (Etype (E))
          then
             Wrong_Type (Expression (E), Etype (E));
@@ -4593,7 +4588,6 @@ package body Sem_Res is
             Get_First_Interp (N, Index, It);
             while Present (It.Typ) loop
                if Base_Type (It.Typ) = Base_Type (Standard_Integer) then
-
                   if Analyzed (N) then
                      Error_Msg_N ("ambiguous operand in fixed operation", N);
                   else
@@ -4601,7 +4595,6 @@ package body Sem_Res is
                   end if;
 
                elsif Is_Fixed_Point_Type (It.Typ) then
-
                   if Analyzed (N) then
                      Error_Msg_N ("ambiguous operand in fixed operation", N);
                   else
@@ -5206,12 +5199,13 @@ package body Sem_Res is
       elsif (Needs_No_Actuals (Nam) or else Needs_One_Actual (Nam))
         and then
           ((Is_Array_Type (Etype (Nam))
-                   and then Covers (Typ, Component_Type (Etype (Nam))))
+             and then Covers (Typ, Component_Type (Etype (Nam))))
              or else (Is_Access_Type (Etype (Nam))
-                        and then Is_Array_Type (Designated_Type (Etype (Nam)))
-                        and then
-                          Covers (Typ,
-                            Component_Type (Designated_Type (Etype (Nam))))))
+                       and then Is_Array_Type (Designated_Type (Etype (Nam)))
+                       and then
+                         Covers
+                          (Typ,
+                           Component_Type (Designated_Type (Etype (Nam))))))
       then
          declare
             Index_Node : Node_Id;
@@ -5873,7 +5867,7 @@ package body Sem_Res is
    procedure Resolve_Conditional_Expression (N : Node_Id; Typ : Entity_Id) is
       Condition : constant Node_Id := First (Expressions (N));
       Then_Expr : constant Node_Id := Next (Condition);
-      Else_Expr : Node_Id := Next (Then_Expr);
+      Else_Expr : Node_Id          := Next (Then_Expr);
 
    begin
       Resolve (Condition, Any_Boolean);
@@ -6071,9 +6065,9 @@ package body Sem_Res is
       elsif Ekind (E) = E_Out_Parameter
         and then Ada_Version = Ada_83
         and then (Nkind (Parent (N)) in N_Op
-                    or else (Nkind (Parent (N)) = N_Assignment_Statement
-                              and then N = Expression (Parent (N)))
-                    or else Nkind (Parent (N)) = N_Explicit_Dereference)
+                   or else (Nkind (Parent (N)) = N_Assignment_Statement
+                             and then N = Expression (Parent (N)))
+                   or else Nkind (Parent (N)) = N_Explicit_Dereference)
       then
          Error_Msg_N ("(Ada 83) illegal reading of out parameter", N);
 
@@ -6188,9 +6182,7 @@ package body Sem_Res is
 
       begin
          if not Has_Discriminants (Tsk)
-           or else (not Is_Entity_Name (Lo)
-                     and then
-                    not Is_Entity_Name (Hi))
+           or else (not Is_Entity_Name (Lo) and then not Is_Entity_Name (Hi))
          then
             return Entry_Index_Type (E);
 
@@ -6413,8 +6405,10 @@ package body Sem_Res is
 
             or else (Is_Access_Type (Etype (Nam))
                       and then Is_Array_Type (Designated_Type (Etype (Nam)))
-                      and then Covers (Typ,
-                        Component_Type (Designated_Type (Etype (Nam))))))
+                      and then
+                        Covers
+                         (Typ,
+                          Component_Type (Designated_Type (Etype (Nam))))))
       then
          declare
             Index_Node : Node_Id;
@@ -6423,8 +6417,7 @@ package body Sem_Res is
             Index_Node :=
               Make_Indexed_Component (Loc,
                 Prefix =>
-                  Make_Function_Call (Loc,
-                    Name => Relocate_Node (Entry_Name)),
+                  Make_Function_Call (Loc, Name => Relocate_Node (Entry_Name)),
                 Expressions => Parameter_Associations (N));
 
             --  Since we are correcting a node classification error made by
@@ -6449,6 +6442,7 @@ package body Sem_Res is
          declare
             New_Call    : Node_Id;
             New_Actuals : List_Id;
+
          begin
             New_Actuals := New_List (Obj);
 
@@ -6654,9 +6648,9 @@ package body Sem_Res is
       end if;
 
       if T /= Any_Type then
-         if T = Any_String
-           or else T = Any_Composite
-           or else T = Any_Character
+         if T = Any_String    or else
+            T = Any_Composite or else
+            T = Any_Character
          then
             if T = Any_Character then
                Ambiguous_Character (L);
@@ -6701,6 +6695,7 @@ package body Sem_Res is
 
          if Is_Array_Type (T)
            and then Base_Type (T) /= Standard_String
+           and then Base_Type (Etype (L)) = Base_Type (Etype (R))
            and then not Matching_Static_Array_Bounds (Etype (L), Etype (R))
          then
             Check_Formal_Restriction
@@ -6739,7 +6734,7 @@ package body Sem_Res is
            or else Comes_From_Source (Entity (N))
            or else Ekind (Entity (N)) = E_Operator
            or else Is_Intrinsic_Subprogram
-             (Corresponding_Equality (Entity (N)))
+                     (Corresponding_Equality (Entity (N)))
          then
             Eval_Relational_Op (N);
 
@@ -6913,8 +6908,10 @@ package body Sem_Res is
                      and then Covers (Typ, Component_Type (It.Typ)))
                  or else (Is_Access_Type (It.Typ)
                             and then Is_Array_Type (Designated_Type (It.Typ))
-                            and then Covers
-                              (Typ, Component_Type (Designated_Type (It.Typ))))
+                            and then
+                              Covers
+                                (Typ,
+                                 Component_Type (Designated_Type (It.Typ))))
                then
                   if Found then
                      It := Disambiguate (P, I1, I, Any_Type);
@@ -7212,6 +7209,7 @@ package body Sem_Res is
            ("no modular type available in this context", N);
          Set_Etype (N, Any_Type);
          return;
+
       elsif Is_Modular_Integer_Type (Typ)
         and then Etype (Left_Opnd (N)) = Universal_Integer
         and then Etype (Right_Opnd (N)) = Universal_Integer
@@ -7231,9 +7229,14 @@ package body Sem_Res is
 
       --  In SPARK or ALFA, logical operations AND, OR and XOR for arrays are
       --  defined only when both operands have same static lower and higher
-      --  bounds.
+      --  bounds. Of course the types have to match, so only check if operands
+      --  are compatible and the node itself has no errors.
 
       if Is_Array_Type (B_Typ)
+        and then Nkind (N) in N_Binary_Op
+        and then
+          Base_Type (Etype (Left_Opnd (N)))
+            = Base_Type (Etype (Right_Opnd (N)))
         and then not Matching_Static_Array_Bounds (Etype (Left_Opnd (N)),
                                                    Etype (Right_Opnd (N)))
       then
@@ -7301,7 +7304,8 @@ package body Sem_Res is
 
       elsif not Is_Overloaded (R)
         and then
-          (Etype (R) = Universal_Integer or else
+          (Etype (R) = Universal_Integer
+             or else
            Etype (R) = Universal_Real)
         and then Is_Overloaded (L)
       then
@@ -7327,7 +7331,6 @@ package body Sem_Res is
         and then not Is_Interface (Etype (R))
       then
          return;
-
       else
          T := Intersect_Types (L, R);
       end if;
@@ -7560,13 +7563,14 @@ package body Sem_Res is
                   else
                      Error_Msg_N
                        ("ambiguous operand for concatenation!", Arg);
+
                      Get_First_Interp (Arg, I, It);
                      while Present (It.Nam) loop
                         Error_Msg_Sloc := Sloc (It.Nam);
 
                         if Base_Type (It.Typ) = Base_Type (Typ)
                           or else Base_Type (It.Typ) =
-                            Base_Type (Component_Type (Typ))
+                                  Base_Type (Component_Type (Typ))
                         then
                            Error_Msg_N -- CODEFIX
                              ("\\possible interpretation#", Arg);
@@ -9851,8 +9855,7 @@ package body Sem_Res is
             while Present (T2) loop
                if Is_Fixed_Point_Type (T2)
                  and then Scope (Base_Type (T2)) = Scop
-                 and then (Is_Potentially_Use_Visible (T2)
-                             or else In_Use (T2))
+                 and then (Is_Potentially_Use_Visible (T2) or else In_Use (T2))
                then
                   if Present (T1) then
                      Fixed_Point_Error;
@@ -9991,9 +9994,9 @@ package body Sem_Res is
                --  checks that must be applied to such conversions to prevent
                --  out-of-scope references.
 
-            elsif
-              Ekind_In (Target_Comp_Base, E_Anonymous_Access_Type,
-                                          E_Anonymous_Access_Subprogram_Type)
+            elsif Ekind_In
+                    (Target_Comp_Base, E_Anonymous_Access_Type,
+                                       E_Anonymous_Access_Subprogram_Type)
               and then Ekind (Opnd_Comp_Base) = Ekind (Target_Comp_Base)
               and then
                 Subtypes_Statically_Match (Target_Comp_Type, Opnd_Comp_Type)
@@ -10019,6 +10022,7 @@ package body Sem_Res is
                        "has deeper accessibility level than target", Operand);
                      return False;
                   end if;
+
                else
                   null;
                end if;

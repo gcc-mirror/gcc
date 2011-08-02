@@ -1,3 +1,44 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* mlib-prj.adb, restrict.ads, sem_aggr.adb, sem_ch12.adb: Minor
+	reformatting.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.adb: New aspects Default_Value and Default_Component_Value
+	New format of Aspect_Names table checks for omitted entries
+	* aspects.ads: Remove mention of Aspect_Cancel and add documentation on
+	handling of boolean aspects for derived types.
+	New aspects Default_Value and Default_Component_Value
+	New format of Aspect_Names table checks for omitted entries
+	* einfo.ads, einfo.adb (Has_Default_Component_Value): New flag
+	(Has_Default_Value): New flag
+	(Has_Default_Component_Value): New flag
+	(Has_Default_Value): New flag
+	* par-ch13.adb (P_Aspect_Specifications): New format of Aspect_Names
+	table.
+	* par-prag.adb: New pragmas Default_Value and Default_Component_Value
+	* sem_ch13.adb (Analyze_Aspect_Specifications): New aspects
+	Default_Value and Default_Component_Value
+	* sem_prag.adb: New pragmas Default_Value and Default_Component_Value
+	New aspects Default_Value and Default_Component_Value
+	* snames.ads-tmpl: New pragmas Default_Value and Default_Component_Value
+	* sprint.adb: Print N_Aspect_Specification node when called from gdb
+
+2011-08-02  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Library_Attributes): For virtual library project,
+	inherit library kind.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb: Add guards in calls to Matching_Static_Array_Bounds.
+	Minor reformatting.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* i-cstrin.ads: Updates to make Interfaces.C.Strings match RM
+
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
 	* sem_aggr.adb (Resolve_Aggregate): Fix thinko.

@@ -1142,6 +1142,8 @@ begin
            Pragma_Controlled                    |
            Pragma_Convention                    |
            Pragma_Debug_Policy                  |
+           Pragma_Default_Value                 |
+           Pragma_Default_Component_Value       |
            Pragma_Detect_Blocking               |
            Pragma_Default_Storage_Pool          |
            Pragma_Dimension                     |

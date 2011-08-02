@@ -45,8 +45,9 @@ package Interfaces.C.Strings is
    --  strict aliasing assumptions for this type.
 
    type chars_ptr is private;
+   pragma Preelaborable_Initialization (chars_ptr);
 
-   type chars_ptr_array is array (size_t range <>) of chars_ptr;
+   type chars_ptr_array is array (size_t range <>) of aliased chars_ptr;
 
    Null_Ptr : constant chars_ptr;
 

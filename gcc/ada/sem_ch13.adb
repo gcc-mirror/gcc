@@ -982,7 +982,31 @@ package body Sem_Ch13 is
 
                --  Aspects corresponding to pragmas with two arguments, where
                --  the first argument is a local name referring to the entity,
-               --  and the second argument is the aspect definition expression.
+               --  and the second argument is the aspect definition expression
+               --  which is an expression which must be delayed and analyzed.
+
+               when Aspect_Default_Component_Value |
+                    Aspect_Default_Value           =>
+
+                  --  Construct the pragma
+
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Argument_Associations => New_List (
+                        New_Occurrence_Of (E, Eloc),
+                        Relocate_Node (Expr)),
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Chars (Id)));
+
+                  --  These aspects do require delaying
+
+                  Delay_Required := True;
+                  Set_Is_Delayed_Aspect (Aspect);
+
+               --  Aspects corresponding to pragmas with two arguments, where
+               --  the first argument is a local name referring to the entity,
+               --  and the second argument is the aspect definition expression
+               --  which is an expression that does not get analyzed.
 
                when Aspect_Suppress   |
                     Aspect_Unsuppress =>
@@ -5209,20 +5233,25 @@ package body Sem_Ch13 is
          when Library_Unit_Aspects =>
             raise Program_Error;
 
-         --  Aspects taking an optional boolean argument. Note that we will
-         --  never be called with an empty expression, because such aspects
-         --  never need to be delayed anyway.
+         --  Aspects taking an optional boolean argument. Should be impossible
+         --  since these are never delayed.
 
          when Boolean_Aspects =>
-            pragma Assert (Present (Expression (ASN)));
-            T := Standard_Boolean;
+            raise Program_Error;
+
+         --  Default_Value and Default_Component_Value are resolved with
+         --  the entity, which is the type in question.
+
+         when Aspect_Default_Component_Value |
+              Aspect_Default_Value           =>
+            T := Entity (ASN);
 
          --  Aspects corresponding to attribute definition clauses
 
-         when Aspect_Address      =>
+         when Aspect_Address =>
             T := RTE (RE_Address);
 
-         when Aspect_Bit_Order    =>
+         when Aspect_Bit_Order =>
             T := RTE (RE_Bit_Order);
 
          when Aspect_External_Tag =>

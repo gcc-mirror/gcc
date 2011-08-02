@@ -179,6 +179,8 @@ package body Aspects is
     Aspect_Atomic_Components            => Aspect_Atomic_Components,
     Aspect_Bit_Order                    => Aspect_Bit_Order,
     Aspect_Component_Size               => Aspect_Component_Size,
+    Aspect_Default_Component_Value      => Aspect_Default_Component_Value,
+    Aspect_Default_Value                => Aspect_Default_Value,
     Aspect_Discard_Names                => Aspect_Discard_Names,
     Aspect_Dynamic_Predicate            => Aspect_Predicate,
     Aspect_External_Tag                 => Aspect_External_Tag,
@@ -289,7 +291,7 @@ package body Aspects is
 --  Package initialization sets up Aspect Id hash table
 
 begin
-   for J in Aspect_Names'Range loop
-      Aspect_Id_Hash_Table.Set (Aspect_Names (J).Nam, Aspect_Names (J).Asp);
+   for J in Aspect_Id loop
+      Aspect_Id_Hash_Table.Set (Aspect_Names (J), J);
    end loop;
 end Aspects;
