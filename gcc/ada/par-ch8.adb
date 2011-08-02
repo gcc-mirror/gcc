@@ -124,6 +124,7 @@ package body Ch8 is
       Use_Node := New_Node (N_Use_Type_Clause, Prev_Token_Ptr);
       Set_All_Present (Use_Node, All_Present);
       Set_Subtype_Marks (Use_Node, New_List);
+      Set_Used_Operations (Use_Node, No_Elist);
 
       if Ada_Version = Ada_83 then
          Error_Msg_SC ("(Ada 83) use type not allowed!");

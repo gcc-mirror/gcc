@@ -3078,6 +3078,14 @@ package body Sinfo is
       return List2 (N);
    end Visible_Declarations;
 
+   function Used_Operations
+     (N : Node_Id) return Elist_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Use_Type_Clause);
+      return Elist5 (N);
+   end Used_Operations;
+
    function Was_Originally_Stub
       (N : Node_Id) return Boolean is
    begin
@@ -6122,6 +6130,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Task_Definition);
       Set_List2_With_Parent (N, Val);
    end Set_Visible_Declarations;
+
+   procedure Set_Used_Operations
+     (N : Node_Id; Val :  Elist_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Use_Type_Clause);
+      Set_Elist5 (N, Val);
+   end Set_Used_Operations;
 
    procedure Set_Was_Originally_Stub
       (N : Node_Id; Val : Boolean := True) is

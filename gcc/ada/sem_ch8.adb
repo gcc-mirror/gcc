@@ -2679,6 +2679,23 @@ package body Sem_Ch8 is
          Chain_Use_Clause (N);
       end if;
 
+      --  Commented needed???
+
+      if Used_Operations (N) /= No_Elist then
+         declare
+            Elmt : Elmt_Id;
+         begin
+            Elmt := First_Elmt (Used_Operations (N));
+            while Present (Elmt) loop
+               Set_Is_Potentially_Use_Visible (Node (Elmt));
+               Next_Elmt (Elmt);
+            end loop;
+         end;
+
+         return;
+      end if;
+
+      Set_Used_Operations (N, New_Elmt_List);
       Id := First (Subtype_Marks (N));
       while Present (Id) loop
          Find_Type (Id);
@@ -3535,24 +3552,7 @@ package body Sem_Ch8 is
    procedure End_Use_Type (N : Node_Id) is
       Elmt    : Elmt_Id;
       Id      : Entity_Id;
-      Op_List : Elist_Id;
-      Op      : Entity_Id;
       T       : Entity_Id;
-
-      function May_Be_Used_Primitive_Of (T : Entity_Id) return Boolean;
-      --  An operator may be primitive in several types, if they are declared
-      --  in the same scope as the operator. To determine the use-visibility of
-      --  the operator in such cases we must examine all types in the profile.
-
-      ------------------------------
-      -- May_Be_Used_Primitive_Of --
-      ------------------------------
-
-      function May_Be_Used_Primitive_Of (T : Entity_Id) return Boolean is
-      begin
-         return Scope (Op) = Scope (T)
-           and then (In_Use (T) or else Is_Potentially_Use_Visible (T));
-      end May_Be_Used_Primitive_Of;
 
    --  Start of processing for End_Use_Type
 
@@ -3585,43 +3585,22 @@ package body Sem_Ch8 is
             Set_In_Use (Base_Type (T), False);
             Set_Current_Use_Clause (T, Empty);
             Set_Current_Use_Clause (Base_Type (T), Empty);
-            Op_List := Collect_Primitive_Operations (T);
-
-            Elmt := First_Elmt (Op_List);
-            while Present (Elmt) loop
-               Op := Node (Elmt);
-
-               if Nkind (Op) = N_Defining_Operator_Symbol then
-                  declare
-                     T_First : constant Entity_Id :=
-                                 Base_Type (Etype (First_Formal (Op)));
-                     T_Res   : constant Entity_Id := Base_Type (Etype (Op));
-                     T_Next  : Entity_Id;
-
-                  begin
-                     if Present (Next_Formal (First_Formal (Op))) then
-                        T_Next :=
-                          Base_Type (Etype (Next_Formal (First_Formal (Op))));
-                     else
-                        T_Next := T_First;
-                     end if;
-
-                     if not May_Be_Used_Primitive_Of (T_First)
-                       and then not May_Be_Used_Primitive_Of (T_Next)
-                       and then not May_Be_Used_Primitive_Of (T_Res)
-                     then
-                        Set_Is_Potentially_Use_Visible (Op, False);
-                     end if;
-                  end;
-               end if;
-
-               Next_Elmt (Elmt);
-            end loop;
          end if;
 
          <<Continue>>
-         Next (Id);
+            Next (Id);
       end loop;
+
+      if Is_Empty_Elmt_List (Used_Operations (N)) then
+         return;
+
+      else
+         Elmt := First_Elmt (Used_Operations (N));
+         while Present (Elmt) loop
+            Set_Is_Potentially_Use_Visible (Node (Elmt), False);
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
    end End_Use_Type;
 
    ----------------------
@@ -7578,6 +7557,11 @@ package body Sem_Ch8 is
       --  type clause is in the spec of the same package. Even though the spec
       --  was analyzed first, its context is reloaded when analysing the body.
 
+      procedure Use_Class_Wide_Operations (Typ : Entity_Id);
+      --  AI05-150: if the use_type_clause carries the "all" qualifier,
+      --  class-wide operations of ancestor types are use-visible if the
+      --  ancestor type is visible.
+
       ----------------------------
       -- Spec_Reloaded_For_Body --
       ----------------------------
@@ -7598,6 +7582,70 @@ package body Sem_Ch8 is
 
          return False;
       end Spec_Reloaded_For_Body;
+
+      -------------------------------
+      -- Use_Class_Wide_Operations --
+      -------------------------------
+
+      procedure Use_Class_Wide_Operations (Typ : Entity_Id) is
+         Scop : Entity_Id;
+         Ent  : Entity_Id;
+
+         function Is_Class_Wide_Operation_Of
+        (Op  : Entity_Id;
+         T   : Entity_Id) return Boolean;
+         --  Determine whether a subprogram has a class-wide parameter or
+         --  result that is T'Class.
+
+         ---------------------------------
+         --  Is_Class_Wide_Operation_Of --
+         ---------------------------------
+
+         function Is_Class_Wide_Operation_Of
+           (Op  : Entity_Id;
+            T   : Entity_Id) return Boolean
+         is
+            Formal : Entity_Id;
+
+         begin
+            Formal := First_Formal (Op);
+            while Present (Formal) loop
+               if Etype (Formal) = Class_Wide_Type (T) then
+                  return True;
+               end if;
+               Next_Formal (Formal);
+            end loop;
+
+            if Etype (Op) = Class_Wide_Type (T) then
+               return True;
+            end if;
+
+            return False;
+         end Is_Class_Wide_Operation_Of;
+
+      --  Start of processing for Use_Class_Wide_Operations
+
+      begin
+         Scop := Scope (Typ);
+         if not Is_Hidden (Scop) then
+            Ent := First_Entity (Scop);
+            while Present (Ent) loop
+               if Is_Overloadable (Ent)
+                 and then Is_Class_Wide_Operation_Of (Ent, Typ)
+                 and then not Is_Potentially_Use_Visible (Ent)
+               then
+                  Set_Is_Potentially_Use_Visible (Ent);
+                  Append_Elmt (Ent, Used_Operations (Parent (Id)));
+               end if;
+
+               Next_Entity (Ent);
+            end loop;
+         end if;
+
+         if Is_Derived_Type (Typ) then
+            Use_Class_Wide_Operations (Etype (Base_Type (Typ)));
+         end if;
+      end Use_Class_Wide_Operations;
 
    --  Start of processing for Use_One_Type;
 
@@ -7654,17 +7702,38 @@ package body Sem_Ch8 is
          Set_Current_Use_Clause (T, Parent (Id));
          Op_List := Collect_Primitive_Operations (T);
 
+         --  Iterate over primitive operations of the type. If an operation is
+         --  already use_visible, it is the result of a previous use_clause,
+         --  and already appears on the corresponding entity chain.
+
          Elmt := First_Elmt (Op_List);
          while Present (Elmt) loop
             if (Nkind (Node (Elmt)) = N_Defining_Operator_Symbol
                  or else Chars (Node (Elmt)) in Any_Operator_Name)
               and then not Is_Hidden (Node (Elmt))
+              and then not Is_Potentially_Use_Visible (Node (Elmt))
             then
                Set_Is_Potentially_Use_Visible (Node (Elmt));
+               Append_Elmt (Node (Elmt), Used_Operations (Parent (Id)));
+
+            elsif Ada_Version >= Ada_2012
+              and then All_Present (Parent (Id))
+              and then not Is_Hidden (Node (Elmt))
+              and then not Is_Potentially_Use_Visible (Node (Elmt))
+            then
+               Set_Is_Potentially_Use_Visible (Node (Elmt));
+               Append_Elmt (Node (Elmt), Used_Operations (Parent (Id)));
             end if;
 
             Next_Elmt (Elmt);
          end loop;
+      end if;
+
+      if Ada_Version >= Ada_2012
+        and then All_Present (Parent (Id))
+        and then Is_Tagged_Type (T)
+      then
+         Use_Class_Wide_Operations (T);
       end if;
 
       --  If warning on redundant constructs, check for unnecessary WITH
