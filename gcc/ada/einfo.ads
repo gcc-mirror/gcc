@@ -1428,6 +1428,18 @@ package Einfo is
 --       node must be generated for the entity at its freezing point. See
 --       separate section ("Delayed Freezing and Elaboration") for details.
 
+--    Has_Default_Component_Value (Flag151) [root type only]
+--       Present in array types. Set on a base type to indicate that the base
+--       type and all its subtypes have a Default_Component_Value aspect. If
+--       this flag is True, then there will be a pragma Default_Component_Value
+--       chained to the Rep_Item list for the base type.
+
+--    Has_Default_Value (Flag39) [base type only]
+--       Present in scalar types. Set on a base type to indicate that the base
+--       type and all its subtypes have a Default_Value aspect. If this flag is
+--       True, then there will always be a pragma Default_Value chained to the
+--       Rep_Item list for the base type.
+
 --    Has_Discriminants (Flag5)
 --       Present in all types and subtypes. For types that are allowed to have
 --       discriminants (record types and subtypes, task types and subtypes,
@@ -3099,12 +3111,12 @@ package Einfo is
 --       interpreted as true. Currently this is set true for derived Boolean
 --       types which have a convention of C, C++ or Fortran.
 
---    No_Pool_Assigned (Flag131) [root type only] Present in access types.
---       Set if a storage size clause applies to the variable with a static
---       expression value of zero. This flag is used to generate errors if any
---       attempt is made to allocate or free an instance of such an access
---       type. This is set only in the root type, since derived types must
---       have the same pool.
+--    No_Pool_Assigned (Flag131) [root type only]
+--       Present in access types. Set if a storage size clause applies to the
+--       variable with a static expression value of zero. This flag is used to
+--       generate errors if any attempt is made to allocate or free an instance
+--       of such an access type. This is set only in the root type, since
+--       derived types must have the same pool.
 
 --    No_Return (Flag113)
 --       Present in all entities. Always false except in the case of procedures
@@ -4902,6 +4914,7 @@ package Einfo is
    --    Packed_Array_Type                   (Node23)
    --    Component_Alignment                 (special)  (base type only)
    --    Has_Component_Size_Clause           (Flag68)   (base type only)
+   --    Has_Default_Component_Value         (Flag151)  (base type only)
    --    Is_Aliased                          (Flag15)
    --    Is_Constrained                      (Flag12)
    --    Next_Index                          (synth)
@@ -5001,6 +5014,7 @@ package Einfo is
    --    Scalar_Range                        (Node20)
    --    Delta_Value                         (Ureal18)
    --    Small_Value                         (Ureal21)
+   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Has_Machine_Radix_Clause            (Flag83)
    --    Machine_Radix_10                    (Flag84)
    --    Aft_Value                           (synth)
@@ -5077,6 +5091,7 @@ package Einfo is
    --    Static_Predicate                    (List25)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Contiguous_Rep                  (Flag181)
+   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Has_Enumeration_Rep_Clause          (Flag66)
    --    Has_Pragma_Ordered                  (Flag198)  (base type only)
    --    Nonzero_Is_True                     (Flag162)  (base type only)
@@ -5103,6 +5118,8 @@ package Einfo is
    --  E_Floating_Point_Subtype
    --    Digits_Value                        (Uint17)
    --    Float_Rep                           (Uint10)   (Float_Rep_Kind)
+   --    Scalar_Range                        (Node20)
+   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Machine_Emax_Value                  (synth)
    --    Machine_Emin_Value                  (synth)
    --    Machine_Mantissa_Value              (synth)
@@ -5114,7 +5131,6 @@ package Einfo is
    --    Safe_Emax_Value                     (synth)
    --    Safe_First_Value                    (synth)
    --    Safe_Last_Value                     (synth)
-   --    Scalar_Range                        (Node20)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    Vax_Float                           (synth)
@@ -5272,12 +5288,13 @@ package Einfo is
 
    --  E_Modular_Integer_Type
    --  E_Modular_Integer_Subtype
-   --    Modulus                             (Uint17)    (base type only)
+   --    Modulus                             (Uint17)   (base type only)
    --    Original_Array_Type                 (Node21)
    --    Scalar_Range                        (Node20)
    --    Static_Predicate                    (List25)
-   --    Non_Binary_Modulus                  (Flag58)    (base type only)
+   --    Non_Binary_Modulus                  (Flag58)   (base type only)
    --    Has_Biased_Representation           (Flag139)
+   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -5308,6 +5325,7 @@ package Einfo is
    --    Delta_Value                         (Ureal18)
    --    Scalar_Range                        (Node20)
    --    Small_Value                         (Ureal21)
+   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Has_Small_Clause                    (Flag67)
    --    Aft_Value                           (synth)
    --    Type_Low_Bound                      (synth)
@@ -5544,6 +5562,7 @@ package Einfo is
    --    Scalar_Range                        (Node20)
    --    Static_Predicate                    (List25)
    --    Has_Biased_Representation           (Flag139)
+   --    Has_Default_Value                   (Flag39)   (base type only)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -5993,6 +6012,8 @@ package Einfo is
    function Has_Controlled_Component            (Id : E) return B;
    function Has_Controlling_Result              (Id : E) return B;
    function Has_Convention_Pragma               (Id : E) return B;
+   function Has_Default_Component_Value         (Id : E) return B;
+   function Has_Default_Value                   (Id : E) return B;
    function Has_Delayed_Aspects                 (Id : E) return B;
    function Has_Delayed_Freeze                  (Id : E) return B;
    function Has_Discriminants                   (Id : E) return B;
@@ -6573,6 +6594,8 @@ package Einfo is
    procedure Set_Has_Controlled_Component        (Id : E; V : B := True);
    procedure Set_Has_Controlling_Result          (Id : E; V : B := True);
    procedure Set_Has_Convention_Pragma           (Id : E; V : B := True);
+   procedure Set_Has_Default_Component_Value     (Id : E; V : B := True);
+   procedure Set_Has_Default_Value               (Id : E; V : B := True);
    procedure Set_Has_Delayed_Aspects             (Id : E; V : B := True);
    procedure Set_Has_Delayed_Freeze              (Id : E; V : B := True);
    procedure Set_Has_Discriminants               (Id : E; V : B := True);
@@ -7262,6 +7285,8 @@ package Einfo is
    pragma Inline (Has_Controlled_Component);
    pragma Inline (Has_Controlling_Result);
    pragma Inline (Has_Convention_Pragma);
+   pragma Inline (Has_Default_Component_Value);
+   pragma Inline (Has_Default_Value);
    pragma Inline (Has_Delayed_Aspects);
    pragma Inline (Has_Delayed_Freeze);
    pragma Inline (Has_Discriminants);
@@ -7698,6 +7723,8 @@ package Einfo is
    pragma Inline (Set_Has_Controlled_Component);
    pragma Inline (Set_Has_Controlling_Result);
    pragma Inline (Set_Has_Convention_Pragma);
+   pragma Inline (Set_Has_Default_Component_Value);
+   pragma Inline (Set_Has_Default_Value);
    pragma Inline (Set_Has_Delayed_Aspects);
    pragma Inline (Set_Has_Delayed_Freeze);
    pragma Inline (Set_Has_Discriminants);

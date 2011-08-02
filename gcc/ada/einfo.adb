@@ -283,6 +283,7 @@ package body Einfo is
    --    Referenced_As_LHS               Flag36
    --    Is_Known_Non_Null               Flag37
    --    Can_Never_Be_Null               Flag38
+   --    Has_Default_Value               Flag39
    --    Body_Needed_For_SAL             Flag40
 
    --    Treat_As_Volatile               Flag41
@@ -406,6 +407,7 @@ package body Einfo is
    --    Is_Compilation_Unit             Flag149
    --    Has_Pragma_Elaborate_Body       Flag150
 
+   --    Has_Default_Component_Value     Flag151
    --    Entry_Accepted                  Flag152
    --    Is_Obsolescent                  Flag153
    --    Has_Per_Object_Constraint       Flag154
@@ -514,8 +516,6 @@ package body Einfo is
    --    Has_Inheritable_Invariants      Flag248
    --    Has_Predicates                  Flag250
 
-   --    (unused)                        Flag39
-   --    (unused)                        Flag151
    --    (unused)                        Flag249
    --    (unused)                        Flag251
    --    (unused)                        Flag252
@@ -1225,6 +1225,18 @@ package body Einfo is
    begin
       return Flag119 (Id);
    end Has_Convention_Pragma;
+
+   function Has_Default_Component_Value (Id : E) return B is
+   begin
+      pragma Assert (Is_Array_Type (Id));
+      return Flag151 (Base_Type (Id));
+   end Has_Default_Component_Value;
+
+   function Has_Default_Value (Id : E) return B is
+   begin
+      pragma Assert (Is_Scalar_Type (Id));
+      return Flag39 (Base_Type (Id));
+   end Has_Default_Value;
 
    function Has_Delayed_Aspects (Id : E) return B is
    begin
@@ -3662,6 +3674,18 @@ package body Einfo is
    begin
       Set_Flag119 (Id, V);
    end Set_Has_Convention_Pragma;
+
+   procedure Set_Has_Default_Component_Value (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Array_Type (Id) and then Is_Base_Type (Id));
+      Set_Flag151 (Id, V);
+   end Set_Has_Default_Component_Value;
+
+   procedure Set_Has_Default_Value (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Scalar_Type (Id) and then Is_Base_Type (Id));
+      Set_Flag39 (Id, V);
+   end Set_Has_Default_Value;
 
    procedure Set_Has_Delayed_Aspects (Id : E; V : B := True) is
    begin
@@ -7326,6 +7350,8 @@ package body Einfo is
       W ("Has_Controlled_Component",        Flag43  (Id));
       W ("Has_Controlling_Result",          Flag98  (Id));
       W ("Has_Convention_Pragma",           Flag119 (Id));
+      W ("Has_Default_Component_Value",     Flag151 (Id));
+      W ("Has_Default_Value",               Flag39  (Id));
       W ("Has_Delayed_Aspects",             Flag200 (Id));
       W ("Has_Delayed_Freeze",              Flag18  (Id));
       W ("Has_Discriminants",               Flag5   (Id));

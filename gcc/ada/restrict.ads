@@ -220,10 +220,10 @@ package Restrict is
    --  message is posted on the node given as argument.
 
    procedure Check_Formal_Restriction (Msg : String; N : Node_Id);
-   --  Provides a wrappper on Error_Msg_F which prepends the special characters
-   --  "|~~" (error not serious, language prepended) provided the current mode
-   --  is formal verification and the node N comes originally from source.
-   --  Otherwise, does nothing.
+   --  Node N represents a construct not allowed in formal mode. If this is a
+   --  source node, then an error is issued on N (using Err_Msg_F), prepending
+   --  "|~~" (error not serious, language prepended). Call has no effect if
+   --  not in formal mode, or if N does not come originally from source.
 
    procedure Check_Implicit_Dynamic_Code_Allowed (N : Node_Id);
    --  Tests to see if dynamic code generation (dynamically generated

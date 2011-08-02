@@ -5064,10 +5064,10 @@ package body Sem_Ch12 is
             --  exchange views to restore the proper visiblity in the instance.
 
             declare
-               Typ          : constant Entity_Id := Base_Type (Etype (E));
+               Typ : constant Entity_Id := Base_Type (Etype (E));
                --  The type of the actual
 
-               Gen_Id       : Entity_Id;
+               Gen_Id : Entity_Id;
                --  The generic unit
 
                Parent_Scope : Entity_Id;

@@ -805,11 +805,13 @@ package body Sem_Aggr is
    procedure Check_Qualified_Aggregate (Level : Nat; Expr : Node_Id) is
       Comp_Expr : Node_Id;
       Comp_Assn : Node_Id;
+
    begin
       if Level = 0 then
          if Nkind (Parent (Expr)) /= N_Qualified_Expression then
             Check_Formal_Restriction ("aggregate should be qualified", Expr);
          end if;
+
       else
          Comp_Expr := First (Expressions (Expr));
          while Present (Comp_Expr) loop
