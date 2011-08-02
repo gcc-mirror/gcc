@@ -219,6 +219,12 @@ package Restrict is
    --  an elaboration routine. If elaboration code is not allowed, an error
    --  message is posted on the node given as argument.
 
+   procedure Check_Formal_Restriction (Msg : String; N : Node_Id);
+   --  Provides a wrappper on Error_Msg_F which prepends the special characters
+   --  "|~~" (error not serious, language prepended) provided the current mode
+   --  is formal verification and the node N comes originally from source.
+   --  Otherwise, does nothing.
+
    procedure Check_Implicit_Dynamic_Code_Allowed (N : Node_Id);
    --  Tests to see if dynamic code generation (dynamically generated
    --  trampolines, in particular) is allowed by the current restrictions

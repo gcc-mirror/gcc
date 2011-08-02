@@ -740,13 +740,6 @@ package Errout is
    --  the given text. This text may contain insertion characters in the
    --  usual manner, and need not be the same length as the original text.
 
-   procedure Check_Formal_Restriction (Msg : String; N : Node_Id);
-   --  Provides a wrappper on Error_Msg_F which prepends the special characters
-   --  "|~~" (error not serious, language prepended) provided:
-   --  * the current mode is formal verification.
-   --  * the node N comes originally from source.
-   --  Otherwise, does nothing.
-
    function First_Node (C : Node_Id) return Node_Id;
    --  Given a construct C, finds the first node in the construct, i.e. the
    --  one with the lowest Sloc value. This is useful in placing error msgs.

@@ -105,6 +105,19 @@ package body Restrict is
       Check_Restriction (No_Elaboration_Code, N);
    end Check_Elaboration_Code_Allowed;
 
+   ------------------------------
+   -- Check_Formal_Restriction --
+   ------------------------------
+
+   procedure Check_Formal_Restriction (Msg : String; N : Node_Id) is
+   begin
+      if Formal_Verification_Mode
+        and then Comes_From_Source (Original_Node (N))
+      then
+         Error_Msg_F ("|~~" & Msg, N);
+      end if;
+   end Check_Formal_Restriction;
+
    -----------------------------------------
    -- Check_Implicit_Dynamic_Code_Allowed --
    -----------------------------------------

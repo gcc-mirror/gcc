@@ -36,6 +36,7 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Restrict; use Restrict;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
@@ -1860,8 +1861,9 @@ package body Sem_Ch5 is
                --  SPARK or ALFA.
 
                if Nkind (DS) = N_Range then
-                  Check_Formal_Restriction ("loop parameter specification "
-                                            & "must include subtype mark", N);
+                  Check_Formal_Restriction
+                    ("loop parameter specification must include subtype mark",
+                     N);
                end if;
 
                --  Now analyze the subtype definition. If it is a range, create

@@ -40,6 +40,7 @@ with Lib.Xref; use Lib.Xref;
 with Nlists;   use Nlists;
 with Output;   use Output;
 with Opt;      use Opt;
+with Restrict; use Restrict;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
