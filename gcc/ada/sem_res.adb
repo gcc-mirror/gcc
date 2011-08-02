@@ -3586,9 +3586,8 @@ package body Sem_Res is
             F_Typ := Etype (F);
 
             if Comes_From_Source (Original_Node (N))
-              and then Nkind_In (Original_Node (N),
-                                 N_Function_Call,
-                                 N_Procedure_Call_Statement)
+              and then Nkind_In (Original_Node (N), N_Function_Call,
+                                                    N_Procedure_Call_Statement)
             then
                --  In formal mode, check that actual parameters matching
                --  formals of tagged types are objects (or ancestor type

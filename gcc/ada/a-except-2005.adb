@@ -829,31 +829,6 @@ package body Ada.Exceptions is
    -------------------------
 
    procedure Raise_Current_Excep (E : Exception_Id) is
-
-      pragma Inspection_Point (E);
-      --  This is so the debugger can reliably inspect the parameter when
-      --  inserting a breakpoint at the start of this procedure.
-
-      --  To provide support for breakpoints on unhandled exceptions, the
-      --  debugger will also need to be able to inspect the value of E from
-      --  inner frames so we need to make sure that its value is also spilled
-      --  on stack.  We take the address and dereference using volatile local
-      --  objects for this purpose.
-
-      --  The pragma Warnings (Off) are needed because the compiler knows that
-      --  these locals are not referenced and that this use of pragma Volatile
-      --  is peculiar!
-
-      type EID_Access is access Exception_Id;
-
-      Access_To_E : EID_Access := E'Unrestricted_Access;
-      pragma Volatile (Access_To_E);
-      pragma Warnings (Off, Access_To_E);
-
-      Id : Exception_Id := Access_To_E.all;
-      pragma Volatile (Id);
-      pragma Warnings (Off, Id);
-
    begin
       Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
       Exception_Propagation.Propagate_Exception

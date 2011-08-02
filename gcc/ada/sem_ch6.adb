@@ -8367,6 +8367,15 @@ package body Sem_Ch6 is
                      then
                         Set_Overridden_Operation (S, Alias (E));
 
+                     --  Normal case of setting entity as overridden
+
+                     --  Note: Static_Initialization and Overridden_Operation
+                     --  attributes use the same field in subprogram entities.
+                     --  Static_Initialization is only defined for internal
+                     --  initialization procedures, where Overridden_Operation
+                     --  is irrelevant. Therefore the setting of this attribute
+                     --  must check whether the target is an init_proc.
+
                      elsif not Is_Init_Proc (S) then
                         Set_Overridden_Operation (S, E);
                      end if;
