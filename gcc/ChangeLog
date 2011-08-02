@@ -1,3 +1,49 @@
+2011-08-02  Richard Henderson  <rth@redhat.com>
+
+	PR target/49864
+	* reg-notes.def (REG_ARGS_SIZE): New.
+	* calls.c (emit_call_1): Emit REG_ARGS_SIZE for call_pop.
+	(expand_call): Add REG_ARGS_SIZE to emit_stack_restore.
+	* cfgcleanup.c (old_insns_match_p): Don't allow cross-jumping to
+	different stack levels.
+	* combine-stack-adj.c (adjust_frame_related_expr): Remove.
+	(maybe_move_args_size_note): New.
+	(combine_stack_adjustments_for_block): Use it.
+	* combine.c (distribute_notes): Place REG_ARGS_SIZE.
+	* dwarf2cfi.c (dw_cfi_row_struct): Remove args_size member.
+	(dw_trace_info): Add beg_true_args_size, end_true_args_size,
+	beg_delay_args_size, end_delay_args_size, eh_head, args_size_undefined.
+	(cur_cfa): New.
+	(queued_args_size): Remove.
+	(add_cfi_args_size): Assert size is non-negative.
+	(stack_adjust_offset, dwarf2out_args_size): Remove.
+	(dwarf2out_stack_adjust, dwarf2out_notice_stack_adjust): Remove.
+	(notice_args_size, notice_eh_throw): New.
+	(dwarf2out_frame_debug_def_cfa): Use cur_cfa.
+	(dwarf2out_frame_debug_adjust_cfa): Likewise.
+	(dwarf2out_frame_debug_cfa_offset): Likewise.
+	(dwarf2out_frame_debug_expr): Likewise.  Don't stack_adjust_offset.
+	(dwarf2out_frame_debug): Don't handle non-frame-related-p insns.
+	(change_cfi_row): Don't emit args_size.
+	(maybe_record_trace_start_abnormal): Split out from ...
+	(maybe_record_trace_start): Here.  Set args_size_undefined.
+	(create_trace_edges): Update to match.
+	(scan_trace): Handle REG_ARGS_SIZE.
+	(connect_traces): Connect args_size between EH insns.
+	* emit-rtl.c (try_split): Handle REG_ARGS_SIZE.
+	* explow.c (suppress_reg_args_size): New.
+	(adjust_stack_1): Split out from ...
+	(adjust_stack): ... here.
+	(anti_adjust_stack): Use it.
+	(allocate_dynamic_stack_space): Suppress REG_ARGS_SIZE.
+	* expr.c (mem_autoinc_base): New.
+	(fixup_args_size_notes): New.
+	(emit_single_push_insn_1): Rename from emit_single_push_insn.
+	(emit_single_push_insn): New.  Generate REG_ARGS_SIZE.
+	* recog.c (peep2_attempt): Handle REG_ARGS_SIZE.
+	* reload1.c (reload_as_needed): Likewise.
+	* rtl.h (fixup_args_size_notes): Declare.
+
 2011-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR bootstrap/49914

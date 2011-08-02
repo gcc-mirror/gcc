@@ -873,14 +873,45 @@ promote_decl_mode (const_tree decl, int *punsignedp)
 }
 
 
+/* Controls the behaviour of {anti_,}adjust_stack.  */
+static bool suppress_reg_args_size;
+
+/* A helper for adjust_stack and anti_adjust_stack.  */
+
+static void
+adjust_stack_1 (rtx adjust, bool anti_p)
+{
+  rtx temp, insn;
+
+#ifndef STACK_GROWS_DOWNWARD
+  /* Hereafter anti_p means subtract_p.  */
+  anti_p = !anti_p;
+#endif
+
+  temp = expand_binop (Pmode,
+		       anti_p ? sub_optab : add_optab,
+		       stack_pointer_rtx, adjust, stack_pointer_rtx, 0,
+		       OPTAB_LIB_WIDEN);
+
+  if (temp != stack_pointer_rtx)
+    insn = emit_move_insn (stack_pointer_rtx, temp);
+  else
+    {
+      insn = get_last_insn ();
+      temp = single_set (insn);
+      gcc_assert (temp != NULL && SET_DEST (temp) == stack_pointer_rtx);
+    }
+
+  if (!suppress_reg_args_size)
+    add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
+}
+
 /* Adjust the stack pointer by ADJUST (an rtx for a number of bytes).
    This pops when ADJUST is positive.  ADJUST need not be constant.  */
 
 void
 adjust_stack (rtx adjust)
 {
-  rtx temp;
-
   if (adjust == const0_rtx)
     return;
 
@@ -889,17 +920,7 @@ adjust_stack (rtx adjust)
   if (CONST_INT_P (adjust))
     stack_pointer_delta -= INTVAL (adjust);
 
-  temp = expand_binop (Pmode,
-#ifdef STACK_GROWS_DOWNWARD
-		       add_optab,
-#else
-		       sub_optab,
-#endif
-		       stack_pointer_rtx, adjust, stack_pointer_rtx, 0,
-		       OPTAB_LIB_WIDEN);
-
-  if (temp != stack_pointer_rtx)
-    emit_move_insn (stack_pointer_rtx, temp);
+  adjust_stack_1 (adjust, false);
 }
 
 /* Adjust the stack pointer by minus ADJUST (an rtx for a number of bytes).
@@ -908,8 +929,6 @@ adjust_stack (rtx adjust)
 void
 anti_adjust_stack (rtx adjust)
 {
-  rtx temp;
-
   if (adjust == const0_rtx)
     return;
 
@@ -918,17 +937,7 @@ anti_adjust_stack (rtx adjust)
   if (CONST_INT_P (adjust))
     stack_pointer_delta += INTVAL (adjust);
 
-  temp = expand_binop (Pmode,
-#ifdef STACK_GROWS_DOWNWARD
-		       sub_optab,
-#else
-		       add_optab,
-#endif
-		       stack_pointer_rtx, adjust, stack_pointer_rtx, 0,
-		       OPTAB_LIB_WIDEN);
-
-  if (temp != stack_pointer_rtx)
-    emit_move_insn (stack_pointer_rtx, temp);
+  adjust_stack_1 (adjust, true);
 }
 
 /* Round the size of a block to be pushed up to the boundary required
@@ -1416,14 +1425,18 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	}
 
       saved_stack_pointer_delta = stack_pointer_delta;
+      suppress_reg_args_size = true;
+
       if (flag_stack_check && STACK_CHECK_MOVING_SP)
 	anti_adjust_stack_and_probe (size, false);
       else
 	anti_adjust_stack (size);
+
       /* Even if size is constant, don't modify stack_pointer_delta.
 	 The constant size alloca should preserve
 	 crtl->preferred_stack_boundary alignment.  */
       stack_pointer_delta = saved_stack_pointer_delta;
+      suppress_reg_args_size = false;
 
 #ifdef STACK_GROWS_DOWNWARD
       emit_move_insn (target, virtual_stack_dynamic_rtx);

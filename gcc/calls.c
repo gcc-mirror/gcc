@@ -434,6 +434,8 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
       rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
       stack_pointer_delta -= n_popped;
 
+      add_reg_note (call_insn, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
+
       /* If popup is needed, stack realign must use DRAP  */
       if (SUPPORTS_STACK_ALIGNMENT)
         crtl->need_drap = true;
@@ -3126,8 +3128,19 @@ expand_call (tree exp, rtx target, int ignore)
 
       if (old_stack_level)
 	{
+	  rtx last, set;
+
 	  emit_stack_restore (SAVE_BLOCK, old_stack_level);
 	  stack_pointer_delta = old_stack_pointer_delta;
+
+	  /* ??? Is this assert warrented, given emit_stack_restore?
+	     or should we just mark the last insn no matter what?  */
+	  last = get_last_insn ();
+	  set = single_set (last);
+	  gcc_assert (set != NULL);
+	  gcc_assert (SET_DEST (set) == stack_pointer_rtx);
+	  add_reg_note (last, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
+
 	  pending_stack_adjust = old_pending_adj;
 	  old_stack_allocated = stack_pointer_delta - pending_stack_adjust;
 	  stack_arg_under_construction = old_stack_arg_under_construction;
