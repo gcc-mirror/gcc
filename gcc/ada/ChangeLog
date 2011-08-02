@@ -1,5 +1,9 @@
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
+	* sem_res.adb: Minor reformatting.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
 	* a-cfdlli.ads, a-cfhase.ads, a-cforma.ads, a-cfhama.ads,
 	a-cforse.ads: Remove unneeded with of Ada.Containers
 	Remove commented out pragma Inline's

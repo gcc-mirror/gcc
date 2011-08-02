@@ -84,11 +84,11 @@ package body Sem_Res is
    -----------------------
 
    --  Second pass (top-down) type checking and overload resolution procedures
-   --  Typ is the type required by context. These procedures propagate the
-   --  type information recursively to the descendants of N. If the node
-   --  is not overloaded, its Etype is established in the first pass. If
-   --  overloaded,  the Resolve routines set the correct type. For arith.
-   --  operators, the Etype is the base type of the context.
+   --  Typ is the type required by context. These procedures propagate the type
+   --  information recursively to the descendants of N. If the node is not
+   --  overloaded, its Etype is established in the first pass. If overloaded,
+   --  the Resolve routines set the correct type. For arith. operators, the
+   --  Etype is the base type of the context.
 
    --  Note that Resolve_Attribute is separated off in Sem_Attr
 
@@ -136,8 +136,8 @@ package body Sem_Res is
    --  the style check for Style_Check_Boolean_And_Or.
 
    function Is_Definite_Access_Type (E : Entity_Id) return Boolean;
-   --  Determine whether E is an access type declared by an access
-   --  declaration, and not an (anonymous) allocator type.
+   --  Determine whether E is an access type declared by an access declaration,
+   --  and not an (anonymous) allocator type.
 
    function Is_Predefined_Op (Nam : Entity_Id) return Boolean;
    --  Utility to check whether the entity for an operator is a predefined
@@ -226,11 +226,10 @@ package body Sem_Res is
    --  function with no arguments, and the return value is indexed.
 
    procedure Resolve_Intrinsic_Operator (N : Node_Id; Typ : Entity_Id);
-   --  A call to a user-defined intrinsic operator is rewritten as a call
-   --  to the corresponding predefined operator, with suitable conversions.
-   --  Note that this applies only for intrinsic operators that denote
-   --  predefined operators, not operators that are intrinsic imports of
-   --  back-end builtins.
+   --  A call to a user-defined intrinsic operator is rewritten as a call to
+   --  the corresponding predefined operator, with suitable conversions. Note
+   --  that this applies only for intrinsic operators that denote predefined
+   --  operators, not ones that are intrinsic imports of back-end builtins.
 
    procedure Resolve_Intrinsic_Unary_Operator (N : Node_Id; Typ : Entity_Id);
    --  Ditto, for unary operators (arithmetic ones and "not" on signed
@@ -270,19 +269,19 @@ package body Sem_Res is
    --  to integer conversion and Truncation attribute.
 
    function Unique_Fixed_Point_Type (N : Node_Id) return Entity_Id;
-   --  A universal_fixed expression in an universal context is unambiguous
-   --  if there is only one applicable fixed point type. Determining whether
-   --  there is only one requires a search over all visible entities, and
-   --  happens only in very pathological cases (see 6115-006).
+   --  A universal_fixed expression in an universal context is unambiguous if
+   --  there is only one applicable fixed point type. Determining whether there
+   --  is only one requires a search over all visible entities, and happens
+   --  only in very pathological cases (see 6115-006).
 
    function Valid_Conversion
      (N       : Node_Id;
       Target  : Entity_Id;
       Operand : Node_Id) return Boolean;
-   --  Verify legality rules given in 4.6 (8-23). Target is the target
-   --  type of the conversion, which may be an implicit conversion of
-   --  an actual parameter to an anonymous access type (in which case
-   --  N denotes the actual parameter and N = Operand).
+   --  Verify legality rules given in 4.6 (8-23). Target is the target type
+   --  of the conversion, which may be an implicit conversion of an actual
+   --  parameter to an anonymous access type (in which case N denotes the
+   --  actual parameter and N = Operand).
 
    -------------------------
    -- Ambiguous_Character --
@@ -365,11 +364,11 @@ package body Sem_Res is
       if Current_Scope /= Scop
         and then Scope_Is_Transient
       then
-         --  This can only happen if a transient scope was created
-         --  for an inner expression, which will be removed upon
-         --  completion of the analysis of an enclosing construct.
-         --  The transient scope must have the suppress status of
-         --  the enclosing environment, not of this Analyze call.
+         --  This can only happen if a transient scope was created for an inner
+         --  expression, which will be removed upon completion of the analysis
+         --  of an enclosing construct. The transient scope must have the
+         --  suppress status of the enclosing environment, not of this Analyze
+         --  call.
 
          Scope_Stack.Table (Scope_Stack.Last).Save_Scope_Suppress :=
            Scope_Suppress;
@@ -457,13 +456,12 @@ package body Sem_Res is
 
          elsif Nkind (P) = N_Index_Or_Discriminant_Constraint then
 
-            --  The following check catches the unusual case where
-            --  a discriminant appears within an index constraint
-            --  that is part of a larger expression within a constraint
-            --  on a component, e.g. "C : Int range 1 .. F (new A(1 .. D))".
-            --  For now we only check case of record components, and
-            --  note that a similar check should also apply in the
-            --  case of discriminant constraints below. ???
+            --  The following check catches the unusual case where a
+            --  discriminant appears within an index constraint that is part of
+            --  a larger expression within a constraint on a component, e.g. "C
+            --  : Int range 1 .. F (new A(1 .. D))". For now we only check case
+            --  of record components, and note that a similar check should also
+            --  apply in the case of discriminant constraints below. ???
 
             --  Note that the check for N_Subtype_Declaration below is to
             --  detect the valid use of discriminants in the constraints of a
@@ -505,9 +503,9 @@ package body Sem_Res is
                CB : Entity_Id;
 
                function Large_Storage_Type (T : Entity_Id) return Boolean;
-               --  Return True if type T has a large enough range that
-               --  any array whose index type covered the whole range of
-               --  the type would likely raise Storage_Error.
+               --  Return True if type T has a large enough range that any
+               --  array whose index type covered the whole range of the type
+               --  would likely raise Storage_Error.
 
                ------------------------
                -- Large_Storage_Type --
@@ -551,8 +549,8 @@ package body Sem_Res is
                   goto No_Danger;
                end if;
 
-               --  Check the array allows a large range at this bound.
-               --  First find the array
+               --  Check the array allows a large range at this bound. First
+               --  find the array
 
                SI := Parent (P);
 
@@ -619,8 +617,8 @@ package body Sem_Res is
 
          return;
 
-      --  Otherwise, context is an expression. It should not be within
-      --  (i.e. a subexpression of) a constraint for a component.
+      --  Otherwise, context is an expression. It should not be within (i.e. a
+      --  subexpression of) a constraint for a component.
 
       else
          D := PN;
@@ -634,10 +632,10 @@ package body Sem_Res is
             exit when No (P);
          end loop;
 
-         --  If the discriminant is used in an expression that is a bound
-         --  of a scalar type, an Itype is created and the bounds are attached
-         --  to its range,  not to the original subtype indication. Such use
-         --  is of course a double fault.
+         --  If the discriminant is used in an expression that is a bound of a
+         --  scalar type, an Itype is created and the bounds are attached to
+         --  its range, not to the original subtype indication. Such use is of
+         --  course a double fault.
 
          if (Nkind (P) = N_Subtype_Indication
               and then Nkind_In (Parent (P), N_Component_Definition,
@@ -731,8 +729,8 @@ package body Sem_Res is
       C : Node_Id;
 
       function Same_Argument_List return Boolean;
-      --  Check whether list of actuals is identical to list of formals
-      --  of called function (which is also the enclosing scope).
+      --  Check whether list of actuals is identical to list of formals of
+      --  called function (which is also the enclosing scope).
 
       ------------------------
       -- Same_Argument_List --
@@ -1111,8 +1109,8 @@ package body Sem_Res is
                                                               E_Procedure)
                          and then Is_Overloaded (Selector_Name (N)))))
 
-      --  If one of the above three conditions is met, rewrite as call.
-      --  Apply the rewriting only once.
+      --  If one of the above three conditions is met, rewrite as call. Apply
+      --  the rewriting only once.
 
       then
          if Nkind (Parent (N)) /= N_Function_Call
@@ -1556,11 +1554,11 @@ package body Sem_Res is
 
       if Is_Private_Type (Typ) then
          case Nkind (N) is
-            when N_Op_Add  | N_Op_Subtract | N_Op_Multiply | N_Op_Divide |
-            N_Op_Expon     | N_Op_Mod      | N_Op_Rem      =>
+            when N_Op_Add   | N_Op_Subtract | N_Op_Multiply | N_Op_Divide |
+                 N_Op_Expon | N_Op_Mod      | N_Op_Rem      =>
                Resolve_Intrinsic_Operator (N, Typ);
 
-            when N_Op_Plus | N_Op_Minus    | N_Op_Abs      =>
+            when N_Op_Plus  | N_Op_Minus    | N_Op_Abs      =>
                Resolve_Intrinsic_Unary_Operator (N, Typ);
 
             when others =>
@@ -1779,8 +1777,8 @@ package body Sem_Res is
       begin
          return
            Sloc (Nod) = Standard_Location
-             or else Is_Predefined_File_Name (Unit_File_Name (
-                       Get_Source_Unit (Sloc (Nod))));
+             or else Is_Predefined_File_Name
+                       (Unit_File_Name (Get_Source_Unit (Sloc (Nod))));
       end Comes_From_Predefined_Lib_Unit;
 
       --------------------
@@ -2215,9 +2213,9 @@ package body Sem_Res is
                         end if;
 
                      --  If this is an indirect call, use the subprogram_type
-                     --  in the message, to have a meaningful location.
-                     --  Also indicate if this is an inherited operation,
-                     --  created by a type declaration.
+                     --  in the message, to have a meaningful location. Also
+                     --  indicate if this is an inherited operation, created
+                     --  by a type declaration.
 
                      elsif Nkind (N) = N_Function_Call
                        and then Nkind (Name (N)) = N_Explicit_Dereference
@@ -2464,10 +2462,10 @@ package body Sem_Res is
                   procedure Check_Elmt (Aelmt : Node_Id) is
                   begin
                      --  If we have a nested aggregate, go inside it (to
-                     --  attempt a naked analyze-resolve of the aggregate
-                     --  can cause undesirable cascaded errors). Do not
-                     --  resolve expression if it needs a type from context,
-                     --  as for integer * fixed expression.
+                     --  attempt a naked analyze-resolve of the aggregate can
+                     --  cause undesirable cascaded errors). Do not resolve
+                     --  expression if it needs a type from context, as for
+                     --  integer * fixed expression.
 
                      if Nkind (Aelmt) = N_Aggregate then
                         Check_Aggr (Aelmt);
@@ -2492,9 +2490,8 @@ package body Sem_Res is
                end;
             end if;
 
-            --  If an error message was issued already, Found got reset
-            --  to True, so if it is still False, issue the standard
-            --  Wrong_Type message.
+            --  If an error message was issued already, Found got reset to
+            --  True, so if it is still False, issue standard Wrong_Type msg.
 
             if not Found then
                if Is_Overloaded (N)
@@ -2574,9 +2571,9 @@ package body Sem_Res is
          then
             Ctx_Type := Expr_Type;
 
-            --  Any_Fixed is legal in a real context only if a specific
-            --  fixed point type is imposed. If Norman Cohen can be
-            --  confused by this, it deserves a separate message.
+            --  Any_Fixed is legal in a real context only if a specific fixed-
+            --  point type is imposed. If Norman Cohen can be confused by this,
+            --  it deserves a separate message.
 
             if Typ = Any_Real
               and then Expr_Type = Any_Fixed
@@ -2770,16 +2767,16 @@ package body Sem_Res is
          --  Freeze expression type, entity if it is a name, and designated
          --  type if it is an allocator (RM 13.14(10,11,13)).
 
-         --  Now that the resolution of the type of the node is complete,
-         --  and we did not detect an error, we can expand this node. We
-         --  skip the expand call if we are in a default expression, see
-         --  section "Handling of Default Expressions" in Sem spec.
+         --  Now that the resolution of the type of the node is complete, and
+         --  we did not detect an error, we can expand this node. We skip the
+         --  expand call if we are in a default expression, see section
+         --  "Handling of Default Expressions" in Sem spec.
 
          Debug_A_Exit ("resolving  ", N, "  (done)");
 
          --  We unconditionally freeze the expression, even if we are in
-         --  default expression mode (the Freeze_Expression routine tests
-         --  this flag and only freezes static types if it is set).
+         --  default expression mode (the Freeze_Expression routine tests this
+         --  flag and only freezes static types if it is set).
 
          Freeze_Expression (N);
 
@@ -3111,10 +3108,10 @@ package body Sem_Res is
                then
                   Analyze_And_Resolve (Actval, Base_Type (Etype (Actval)));
 
-               --  Resolve entities with their own type, which may differ
-               --  from the type of a reference in a generic context (the
-               --  view swapping mechanism did not anticipate the re-analysis
-               --  of default values in calls).
+               --  Resolve entities with their own type, which may differ from
+               --  the type of a reference in a generic context (the view
+               --  swapping mechanism did not anticipate the re-analysis of
+               --  default values in calls).
 
                elsif Is_Entity_Name (Actval) then
                   Analyze_And_Resolve (Actval, Etype (Entity (Actval)));
@@ -3124,8 +3121,8 @@ package body Sem_Res is
                end if;
             end if;
 
-            --  If default is a tag indeterminate function call, propagate
-            --  tag to obtain proper dispatching.
+            --  If default is a tag indeterminate function call, propagate tag
+            --  to obtain proper dispatching.
 
             if Is_Controlling_Formal (F)
               and then Nkind (Default_Value (F)) = N_Function_Call
@@ -3136,10 +3133,10 @@ package body Sem_Res is
          end if;
 
          --  If the default expression raises constraint error, then just
-         --  silently replace it with an N_Raise_Constraint_Error node,
-         --  since we already gave the warning on the subprogram spec.
-         --  If node is already a Raise_Constraint_Error leave as is, to
-         --  prevent loops in the warnings removal machinery.
+         --  silently replace it with an N_Raise_Constraint_Error node, since
+         --  we already gave the warning on the subprogram spec. If node is
+         --  already a Raise_Constraint_Error leave as is, to prevent loops in
+         --  the warnings removal machinery.
 
          if Raises_Constraint_Error (Actval)
            and then Nkind (Actval) /= N_Raise_Constraint_Error
@@ -3226,8 +3223,8 @@ package body Sem_Res is
 
             when N_Op_Concat =>
 
-               --  Concatenation is static when both operands are static
-               --  and the concatenation operator is a predefined one.
+               --  Concatenation is static when both operands are static and
+               --  the concatenation operator is a predefined one.
 
                return Scope (Entity (N)) = Standard_Standard
                         and then
@@ -3283,8 +3280,7 @@ package body Sem_Res is
          --  If the actual is an entity, generate a reference to it now. We
          --  do this before the actual is resolved, because a formal of some
          --  protected subprogram, or a task discriminant, will be rewritten
-         --  during expansion, and the reference to the source entity may
-         --  be lost.
+         --  during expansion, and the source entity reference may be lost.
 
          if Present (A)
            and then Is_Entity_Name (A)
@@ -3521,7 +3517,7 @@ package body Sem_Res is
                   end if;
 
                   --  Tagged synchronized type (case 1): the actual is a
-                  --  concurrent type
+                  --  concurrent type.
 
                   if Is_Concurrent_Type (A_Typ)
                     and then Corresponding_Record_Type (A_Typ) = F_Typ
@@ -3532,7 +3528,7 @@ package body Sem_Res is
                      Resolve (A, Etype (F));
 
                   --  Tagged synchronized type (case 2): the formal is a
-                  --  concurrent type
+                  --  concurrent type.
 
                   elsif Ekind (Full_A_Typ) = E_Record_Type
                     and then Present
@@ -4375,9 +4371,9 @@ package body Sem_Res is
       if No_Pool_Assigned (Typ) then
          Error_Msg_N ("allocation from empty storage pool!", N);
 
-      --  If the context is an unchecked conversion, as may happen within
-      --  an inlined subprogram, the allocator is being resolved with its
-      --  own anonymous type. In that case, if the target type has a specific
+      --  If the context is an unchecked conversion, as may happen within an
+      --  inlined subprogram, the allocator is being resolved with its own
+      --  anonymous type. In that case, if the target type has a specific
       --  storage pool, it must be inherited explicitly by the allocator type.
 
       elsif Nkind (Parent (N)) = N_Unchecked_Type_Conversion
@@ -4663,12 +4659,11 @@ package body Sem_Res is
          Resolve_Intrinsic_Operator (N, Typ);
          return;
 
-      --  Special-case for mixed-mode universal expressions or fixed point
-      --  type operation: each argument is resolved separately. The same
-      --  treatment is required if one of the operands of a fixed point
-      --  operation is universal real, since in this case we don't do a
-      --  conversion to a specific fixed-point type (instead the expander
-      --  takes care of the case).
+      --  Special-case for mixed-mode universal expressions or fixed point type
+      --  operation: each argument is resolved separately. The same treatment
+      --  is required if one of the operands of a fixed point operation is
+      --  universal real, since in this case we don't do a conversion to a
+      --  specific fixed-point type (instead the expander handles the case).
 
       elsif (B_Typ = Universal_Integer or else B_Typ = Universal_Real)
         and then Present (Universal_Interpretation (L))
@@ -4692,8 +4687,8 @@ package body Sem_Res is
             Check_For_Visible_Operator (N, B_Typ);
          end if;
 
-         --  If context is a fixed type and one operand is integer, the
-         --  other is resolved with the type of the context.
+         --  If context is a fixed type and one operand is integer, the other
+         --  is resolved with the type of the context.
 
          if Is_Fixed_Point_Type (B_Typ)
            and then (Base_Type (TL) = Base_Type (Standard_Integer)
@@ -4747,7 +4742,9 @@ package body Sem_Res is
                end if;
 
                --  The expected type is "any real type" in contexts like
+
                --    type T is delta <universal_fixed-expression> ...
+
                --  in which case we need to set the type to Universal_Real
                --  so that static expression evaluation will work properly.
 
@@ -4768,8 +4765,8 @@ package body Sem_Res is
 
          elsif Etype (N) = Any_Fixed then
 
-            --  If no previous errors, this is only possible if one operand
-            --  is overloaded and the context is universal. Resolve as such.
+            --  If no previous errors, this is only possible if one operand is
+            --  overloaded and the context is universal. Resolve as such.
 
             Set_Etype (N, B_Typ);
          end if;
@@ -5617,7 +5614,7 @@ package body Sem_Res is
       then
          Generate_Reference (Nam, Subp, 'R');
 
-      --  Normal case, not a dispatching call. Generate a call reference.
+      --  Normal case, not a dispatching call: generate a call reference
 
       else
          Generate_Reference (Nam, Subp, 's');
@@ -5714,16 +5711,16 @@ package body Sem_Res is
       elsif B_Typ = Any_Character then
          return;
 
-      --  For Standard.Character or a type derived from it, check that
-      --  the literal is in range
+      --  For Standard.Character or a type derived from it, check that the
+      --  literal is in range.
 
       elsif Root_Type (B_Typ) = Standard_Character then
          if In_Character_Range (UI_To_CC (Char_Literal_Value (N))) then
             return;
          end if;
 
-      --  For Standard.Wide_Character or a type derived from it, check
-      --  that the literal is in range
+      --  For Standard.Wide_Character or a type derived from it, check that the
+      --  literal is in range.
 
       elsif Root_Type (B_Typ) = Standard_Wide_Character then
          if In_Wide_Character_Range (UI_To_CC (Char_Literal_Value (N))) then
@@ -5759,8 +5756,8 @@ package body Sem_Res is
       end if;
 
       --  If we fall through, then the literal does not match any of the
-      --  entries of the enumeration type. This isn't just a constraint
-      --  error situation, it is an illegality (see RM 4.2).
+      --  entries of the enumeration type. This isn't just a constraint error
+      --  situation, it is an illegality (see RM 4.2).
 
       Error_Msg_NE
         ("character not defined for }", N, First_Subtype (B_Typ));
@@ -5771,9 +5768,9 @@ package body Sem_Res is
    ---------------------------
 
    --  Context requires a boolean type, and plays no role in resolution.
-   --  Processing identical to that for equality operators. The result
-   --  type is the base type, which matters when pathological subtypes of
-   --  booleans with limited ranges are used.
+   --  Processing identical to that for equality operators. The result type is
+   --  the base type, which matters when pathological subtypes of booleans with
+   --  limited ranges are used.
 
    procedure Resolve_Comparison_Op (N : Node_Id; Typ : Entity_Id) is
       L : constant Node_Id := Left_Opnd (N);
@@ -5854,8 +5851,8 @@ package body Sem_Res is
          Error_Msg_N ("comparison on unordered enumeration type?", N);
       end if;
 
-      --  Evaluate the relation (note we do this after the above check
-      --  since this Eval call may change N to True/False.
+      --  Evaluate the relation (note we do this after the above check since
+      --  this Eval call may change N to True/False.
 
       Eval_Relational_Op (N);
    end Resolve_Comparison_Op;
@@ -5935,11 +5932,11 @@ package body Sem_Res is
             Set_Etype (N, Typ);
             Rewrite (Low_Bound (R),
               Make_Attribute_Reference (Sloc (Low_Bound (R)),
-                Prefix =>         New_Occurrence_Of (Typ, Sloc (R)),
+                Prefix         => New_Occurrence_Of (Typ, Sloc (R)),
                 Attribute_Name => Name_First));
             Rewrite (High_Bound (R),
               Make_Attribute_Reference (Sloc (High_Bound (R)),
-                Prefix =>         New_Occurrence_Of (Typ, Sloc (R)),
+                Prefix         => New_Occurrence_Of (Typ, Sloc (R)),
                 Attribute_Name => Name_First));
 
          else
@@ -6203,9 +6200,9 @@ package body Sem_Res is
    --  Start of processing of Resolve_Entry
 
    begin
-      --  Find name of entry being called, and resolve prefix of name
-      --  with its own type. The prefix can be overloaded, and the name
-      --  and signature of the entry must be taken into account.
+      --  Find name of entry being called, and resolve prefix of name with its
+      --  own type. The prefix can be overloaded, and the name and signature of
+      --  the entry must be taken into account.
 
       if Nkind (Entry_Name) = N_Indexed_Component then
 
@@ -6272,8 +6269,7 @@ package body Sem_Res is
         and then Is_Overloaded (Prefix (Entry_Name))
       then
          --  Use the entry name (which must be unique at this point) to find
-         --  the prefix that returns the corresponding task type or protected
-         --  type.
+         --  the prefix that returns the corresponding task/protected type.
 
          declare
             Pref : constant Node_Id := Prefix (Entry_Name);
@@ -6384,17 +6380,17 @@ package body Sem_Res is
          Was_Over := Is_Overloaded (Selector_Name (Prefix (Entry_Name)));
       end if;
 
-      --  We cannot in general check the maximum depth of protected entry
-      --  calls at compile time. But we can tell that any protected entry
-      --  call at all violates a specified nesting depth of zero.
+      --  We cannot in general check the maximum depth of protected entry calls
+      --  at compile time. But we can tell that any protected entry call at all
+      --  violates a specified nesting depth of zero.
 
       if Is_Protected_Type (Scope (Nam)) then
          Check_Restriction (Max_Entry_Queue_Length, N);
       end if;
 
       --  Use context type to disambiguate a protected function that can be
-      --  called without actuals and that returns an array type, and where
-      --  the argument list may be an indexing of the returned value.
+      --  called without actuals and that returns an array type, and where the
+      --  argument list may be an indexing of the returned value.
 
       if Ekind (Nam) = E_Function
         and then Needs_No_Actuals (Nam)
@@ -6420,8 +6416,8 @@ package body Sem_Res is
                   Make_Function_Call (Loc, Name => Relocate_Node (Entry_Name)),
                 Expressions => Parameter_Associations (N));
 
-            --  Since we are correcting a node classification error made by
-            --  the parser, we call Replace rather than Rewrite.
+            --  Since we are correcting a node classification error made by the
+            --  parser, we call Replace rather than Rewrite.
 
             Replace (N, Index_Node);
             Set_Etype (Prefix (N), Etype (Nam));
@@ -6436,8 +6432,8 @@ package body Sem_Res is
         and then Current_Scope /= PPC_Wrapper (Nam)
       then
          --  Rewrite as call to the precondition wrapper, adding the task
-         --  object to the list of actuals. If the call is to a member of
-         --  an entry family, include the index as well.
+         --  object to the list of actuals. If the call is to a member of an
+         --  entry family, include the index as well.
 
          declare
             New_Call    : Node_Id;
@@ -6464,8 +6460,8 @@ package body Sem_Res is
       end if;
 
       --  The operation name may have been overloaded. Order the actuals
-      --  according to the formals of the resolved entity, and set the
-      --  return type to that of the operation.
+      --  according to the formals of the resolved entity, and set the return
+      --  type to that of the operation.
 
       if Was_Over then
          Normalize_Actuals (N, Nam, False, Norm_OK);
@@ -7250,9 +7246,9 @@ package body Sem_Res is
    -- Resolve_Membership_Op --
    ---------------------------
 
-   --  The context can only be a boolean type, and does not determine
-   --  the arguments. Arguments should be unambiguous, but the preference
-   --  rule for universal types applies.
+   --  The context can only be a boolean type, and does not determine the
+   --  arguments. Arguments should be unambiguous, but the preference rule for
+   --  universal types applies.
 
    procedure Resolve_Membership_Op (N : Node_Id; Typ : Entity_Id) is
       pragma Warnings (Off, Typ);
@@ -7262,8 +7258,8 @@ package body Sem_Res is
       T : Entity_Id;
 
       procedure Resolve_Set_Membership;
-      --  Analysis has determined a unique type for the left operand.
-      --  Use it to resolve the disjuncts.
+      --  Analysis has determined a unique type for the left operand. Use it to
+      --  resolve the disjuncts.
 
       ----------------------------
       -- Resolve_Set_Membership --
@@ -7754,10 +7750,10 @@ package body Sem_Res is
       B_Typ : Entity_Id;
 
       function Parent_Is_Boolean return Boolean;
-      --  This function determines if the parent node is a boolean operator
-      --  or operation (comparison op, membership test, or short circuit form)
-      --  and the not in question is the left operand of this operation.
-      --  Note that if the not is in parens, then false is returned.
+      --  This function determines if the parent node is a boolean operator or
+      --  operation (comparison op, membership test, or short circuit form) and
+      --  the not in question is the left operand of this operation. Note that
+      --  if the not is in parens, then false is returned.
 
       -----------------------
       -- Parent_Is_Boolean --
@@ -7830,7 +7826,7 @@ package body Sem_Res is
          Set_Etype (N, Any_Type);
          return;
 
-      --  OK resolution of not
+      --  OK resolution of NOT
 
       else
          --  Warn if non-boolean types involved. This is a case like not a < b
@@ -7900,12 +7896,12 @@ package body Sem_Res is
            ("array types should have matching static bounds", N);
       end if;
 
-      --  A qualified expression requires an exact match of the type,
-      --  class-wide matching is not allowed. However, if the qualifying
-      --  type is specific and the expression has a class-wide type, it
-      --  may still be okay, since it can be the result of the expansion
-      --  of a call to a dispatching function, so we also have to check
-      --  class-wideness of the type of the expression's original node.
+      --  A qualified expression requires an exact match of the type, class-
+      --  wide matching is not allowed. However, if the qualifying type is
+      --  specific and the expression has a class-wide type, it may still be
+      --  okay, since it can be the result of the expansion of a call to a
+      --  dispatching function, so we also have to check class-wideness of the
+      --  type of the expression's original node.
 
       if (Is_Class_Wide_Type (Target_Typ)
            or else
@@ -8028,11 +8024,10 @@ package body Sem_Res is
          return;
       end if;
 
-      --  If bounds are static, constant-fold them, so size computations
-      --  are identical between front-end and back-end. Do not perform this
+      --  If bounds are static, constant-fold them, so size computations are
+      --  identical between front-end and back-end. Do not perform this
       --  transformation while analyzing generic units, as type information
-      --  would then be lost when reanalyzing the constant node in the
-      --  instance.
+      --  would be lost when reanalyzing the constant node in the instance.
 
       if Is_Discrete_Type (Typ) and then Expander_Active then
          if Is_OK_Static_Expression (L) then
@@ -8054,8 +8049,8 @@ package body Sem_Res is
 
    begin
       --  Special processing for fixed-point literals to make sure that the
-      --  value is an exact multiple of small where this is required. We
-      --  skip this for the universal real case, and also for generic types.
+      --  value is an exact multiple of small where this is required. We skip
+      --  this for the universal real case, and also for generic types.
 
       if Is_Fixed_Point_Type (Typ)
         and then Typ /= Universal_Fixed
@@ -8074,8 +8069,8 @@ package body Sem_Res is
 
             if Den /= 1 then
 
-               --  For a source program literal for a decimal fixed-point
-               --  type, this is statically illegal (RM 4.9(36)).
+               --  For a source program literal for a decimal fixed-point type,
+               --  this is statically illegal (RM 4.9(36)).
 
                if Is_Decimal_Fixed_Point_Type (Typ)
                  and then Actual_Typ = Universal_Real
@@ -8135,11 +8130,11 @@ package body Sem_Res is
 
       Resolve (P, Designated_Type (Etype (N)));
 
-      --  If we are taking the reference of a volatile entity, then treat
-      --  it as a potential modification of this entity. This is much too
-      --  conservative, but is necessary because remove side effects can
-      --  result in transformations of normal assignments into reference
-      --  sequences that otherwise fail to notice the modification.
+      --  If we are taking the reference of a volatile entity, then treat it as
+      --  a potential modification of this entity. This is too conservative,
+      --  but necessary because remove side effects can cause transformations
+      --  of normal assignments into reference sequences that otherwise fail to
+      --  notice the modification.
 
       if Is_Entity_Name (P) and then Treat_As_Volatile (Entity (P)) then
          Note_Possible_Modification (P, Sure => False);
@@ -8326,8 +8321,8 @@ package body Sem_Res is
 
       --  If the array type is atomic, and is packed, and we are in a left side
       --  context, then this is worth a warning, since we have a situation
-      --  where the access to the component may cause extra read/writes of
-      --  the atomic array object, which could be considered unexpected.
+      --  where the access to the component may cause extra read/writes of the
+      --  atomic array object, which could be considered unexpected.
 
       if Nkind (N) = N_Selected_Component
         and then (Is_Atomic (T)
@@ -8576,11 +8571,11 @@ package body Sem_Res is
          end;
 
       --  Maybe this should just be "else", instead of checking for the
-      --  specific case of slice??? This is needed for the case where
-      --  the prefix is an Image attribute, which gets expanded to a
-      --  slice, and so has a constrained subtype which we want to use
-      --  for the slice range check applied below (the range check won't
-      --  get done if the unconstrained subtype of the 'Image is used).
+      --  specific case of slice??? This is needed for the case where the
+      --  prefix is an Image attribute, which gets expanded to a slice, and so
+      --  has a constrained subtype which we want to use for the slice range
+      --  check applied below (the range check won't get done if the
+      --  unconstrained subtype of the 'Image is used).
 
       elsif Nkind (Name) = N_Slice then
          Array_Type := Etype (Name);
@@ -8816,8 +8811,8 @@ package body Sem_Res is
          --  has compile time known bounds. If yes we can directly check
          --  whether the evaluation of the string will raise constraint error.
          --  Otherwise we need to transform the string literal into the
-         --  corresponding character aggregate and let the aggregate
-         --  code do the checking.
+         --  corresponding character aggregate and let the aggregate code do
+         --  the checking.
 
          if Is_Standard_Character_Type (R_Typ) then
 
@@ -8886,6 +8881,7 @@ package body Sem_Res is
                P := P + 1;
 
             --  Should we have a call to Skip_Wide here ???
+
             --  ???     else
             --             Skip_Wide (P);
 
@@ -9114,13 +9110,13 @@ package body Sem_Res is
             then
                null;
 
-            --  Finally, if this type conversion occurs in a context that
-            --  requires a prefix, and the expression is a qualified expression
-            --  then the type conversion is not redundant, because a qualified
-            --  expression is not a prefix, whereas a type conversion is. For
-            --  example, "X := T'(Funx(...)).Y;" is illegal because a selected
-            --  component requires a prefix, but a type conversion makes it
-            --  legal: "X := T(T'(Funx(...))).Y;"
+            --  Finally, if this type conversion occurs in a context requiring
+            --  a prefix, and the expression is a qualified expression then the
+            --  type conversion is not redundant, since a qualified expression
+            --  is not a prefix, whereas a type conversion is. For example, "X
+            --  := T'(Funx(...)).Y;" is illegal because a selected component
+            --  requires a prefix, but a type conversion makes it legal: "X :=
+            --  T(T'(Funx(...))).Y;"
 
             --  In Ada 2012, a qualified expression is a name, so this idiom is
             --  no longer needed, but we still suppress the warning because it
@@ -9639,9 +9635,9 @@ package body Sem_Res is
 
       Set_Etype (N, Slice_Subtype);
 
-      --  For packed slice subtypes, freeze immediately (except in the
-      --  case of being in a "spec expression" where we never freeze
-      --  when we first see the expression).
+      --  For packed slice subtypes, freeze immediately (except in the case of
+      --  being in a "spec expression" where we never freeze when we first see
+      --  the expression).
 
       if Is_Packed (Slice_Subtype) and not In_Spec_Expression then
          Freeze_Itype (Slice_Subtype, N);
