@@ -1,5 +1,39 @@
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
+	* exp_util.adb, par-ch10.adb, par-ch6.adb, sem.adb, sem_ch6.adb,
+	sem_ch6.ads, sinfo.adb, sinfo.ads, sprint.adb: Change parameterized
+	expression to expression function.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb: transform simple Ada2012 membership into equality only
+	if types are compatible.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Matching_Static_Array_Bounds): new function which
+	returns True if its argument array types have same dimension and same
+	static bounds at each index.
+	(Resolve_Actuals): issue an error in formal mode on actuals passed as
+	OUT or IN OUT paramaters which are not view conversions in SPARK.
+	(Resolve_Arithmetic_Op): issue an error in formal mode on
+	multiplication or division with operands of fixed point types which are
+	not qualified or explicitly converted.
+	(Resolve_Comparison_Op): issue an error in formal mode on comparisons of
+	Boolean or array type (except String) operands.
+	(Resolve_Equality_Op): issue an error in formal mode on equality
+	operators for array types other than String with non-matching static
+	bounds.
+	(Resolve_Logical_Op): issue an error in formal mode on logical operators
+	for array types with non-matching static bounds. Factorize the code in
+	Matching_Static_Array_Bounds.
+	(Resolve_Qualified_Expression): issue an error in formal mode on
+	qualified expressions for array types with non-matching static bounds.
+	(Resolve_Type_Conversion): issue an error in formal mode on type
+	conversion for array types with non-matching static bounds
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
 	* par-ch10.adb: Minor code reorganization (use Nkind_In).
 
 2011-08-02  Ed Schonberg  <schonberg@adacore.com>

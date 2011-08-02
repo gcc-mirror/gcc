@@ -215,141 +215,6 @@ package body Sem_Ch6 is
    --  setting the proper validity status for this entity, which depends on
    --  the kind of parameter and the validity checking mode.
 
-   ------------------------------
-   -- Analyze_Return_Statement --
-   ------------------------------
-
-   procedure Analyze_Return_Statement (N : Node_Id) is
-
-      pragma Assert (Nkind_In (N, N_Simple_Return_Statement,
-                                  N_Extended_Return_Statement));
-
-      Returns_Object : constant Boolean :=
-                         Nkind (N) = N_Extended_Return_Statement
-                           or else
-                            (Nkind (N) = N_Simple_Return_Statement
-                              and then Present (Expression (N)));
-      --  True if we're returning something; that is, "return <expression>;"
-      --  or "return Result : T [:= ...]". False for "return;". Used for error
-      --  checking: If Returns_Object is True, N should apply to a function
-      --  body; otherwise N should apply to a procedure body, entry body,
-      --  accept statement, or extended return statement.
-
-      function Find_What_It_Applies_To return Entity_Id;
-      --  Find the entity representing the innermost enclosing body, accept
-      --  statement, or extended return statement. If the result is a callable
-      --  construct or extended return statement, then this will be the value
-      --  of the Return_Applies_To attribute. Otherwise, the program is
-      --  illegal. See RM-6.5(4/2).
-
-      -----------------------------
-      -- Find_What_It_Applies_To --
-      -----------------------------
-
-      function Find_What_It_Applies_To return Entity_Id is
-         Result : Entity_Id := Empty;
-
-      begin
-         --  Loop outward through the Scope_Stack, skipping blocks and loops
-
-         for J in reverse 0 .. Scope_Stack.Last loop
-            Result := Scope_Stack.Table (J).Entity;
-            exit when Ekind (Result) /= E_Block and then
-                      Ekind (Result) /= E_Loop;
-         end loop;
-
-         pragma Assert (Present (Result));
-         return Result;
-      end Find_What_It_Applies_To;
-
-      --  Local declarations
-
-      Scope_Id   : constant Entity_Id   := Find_What_It_Applies_To;
-      Kind       : constant Entity_Kind := Ekind (Scope_Id);
-      Loc        : constant Source_Ptr  := Sloc (N);
-      Stm_Entity : constant Entity_Id   :=
-                     New_Internal_Entity
-                       (E_Return_Statement, Current_Scope, Loc, 'R');
-
-   --  Start of processing for Analyze_Return_Statement
-
-   begin
-      Set_Return_Statement_Entity (N, Stm_Entity);
-
-      Set_Etype (Stm_Entity, Standard_Void_Type);
-      Set_Return_Applies_To (Stm_Entity, Scope_Id);
-
-      --  Place Return entity on scope stack, to simplify enforcement of 6.5
-      --  (4/2): an inner return statement will apply to this extended return.
-
-      if Nkind (N) = N_Extended_Return_Statement then
-         Push_Scope (Stm_Entity);
-      end if;
-
-      --  Check that pragma No_Return is obeyed. Don't complain about the
-      --  implicitly-generated return that is placed at the end.
-
-      if No_Return (Scope_Id) and then Comes_From_Source (N) then
-         Error_Msg_N ("RETURN statement not allowed (No_Return)", N);
-      end if;
-
-      --  Warn on any unassigned OUT parameters if in procedure
-
-      if Ekind (Scope_Id) = E_Procedure then
-         Warn_On_Unassigned_Out_Parameter (N, Scope_Id);
-      end if;
-
-      --  Check that functions return objects, and other things do not
-
-      if Kind = E_Function or else Kind = E_Generic_Function then
-         if not Returns_Object then
-            Error_Msg_N ("missing expression in return from function", N);
-         end if;
-
-      elsif Kind = E_Procedure or else Kind = E_Generic_Procedure then
-         if Returns_Object then
-            Error_Msg_N ("procedure cannot return value (use function)", N);
-         end if;
-
-      elsif Kind = E_Entry or else Kind = E_Entry_Family then
-         if Returns_Object then
-            if Is_Protected_Type (Scope (Scope_Id)) then
-               Error_Msg_N ("entry body cannot return value", N);
-            else
-               Error_Msg_N ("accept statement cannot return value", N);
-            end if;
-         end if;
-
-      elsif Kind = E_Return_Statement then
-
-         --  We are nested within another return statement, which must be an
-         --  extended_return_statement.
-
-         if Returns_Object then
-            Error_Msg_N
-              ("extended_return_statement cannot return value; " &
-               "use `""RETURN;""`", N);
-         end if;
-
-      else
-         Error_Msg_N ("illegal context for return statement", N);
-      end if;
-
-      if Ekind_In (Kind, E_Function, E_Generic_Function) then
-         Analyze_Function_Return (N);
-
-      elsif Ekind_In (Kind, E_Procedure, E_Generic_Procedure) then
-         Set_Return_Present (Scope_Id);
-      end if;
-
-      if Nkind (N) = N_Extended_Return_Statement then
-         End_Scope;
-      end if;
-
-      Kill_Current_Values (Last_Assignment_Only => True);
-      Check_Unreachable_Code (N);
-   end Analyze_Return_Statement;
-
    ---------------------------------------------
    -- Analyze_Abstract_Subprogram_Declaration --
    ---------------------------------------------
@@ -397,6 +262,55 @@ package body Sem_Ch6 is
       Check_Eliminated (Designator);
       Analyze_Aspect_Specifications (N, Designator, Aspect_Specifications (N));
    end Analyze_Abstract_Subprogram_Declaration;
+
+   ---------------------------------
+   -- Analyze_Expression_Function --
+   ---------------------------------
+
+   procedure Analyze_Expression_Function (N : Node_Id) is
+      Loc      : constant Source_Ptr := Sloc (N);
+      LocX     : constant Source_Ptr := Sloc (Expression (N));
+      Def_Id   : constant Entity_Id  := Defining_Entity (Specification (N));
+      New_Body : Node_Id;
+
+      Prev : constant Entity_Id := Current_Entity_In_Scope (Def_Id);
+      --  If the expression is a completion, Prev is the entity whose
+      --  declaration is completed.
+
+   begin
+      --  This is one of the occasions on which we transform the tree during
+      --  semantic analysis. Transform the expression function into an
+      --  equivalent subprogram body, and then analyze that.
+
+      New_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification              => Specification (N),
+          Declarations               => Empty_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (LocX,
+              Statements => New_List (
+                Make_Simple_Return_Statement (LocX,
+                  Expression => Expression (N)))));
+
+      if Present (Prev)
+        and then Ekind (Prev) = E_Generic_Function
+      then
+         --  If the expression completes a generic subprogram, we must create a
+         --  separate node for the body, because at instantiation the original
+         --  node of the generic copy must be a generic subprogram body, and
+         --  cannot be a expression function. Otherwise we just rewrite the
+         --  expression with the non-generic body.
+
+         Insert_After (N, New_Body);
+         Rewrite (N, Make_Null_Statement (Loc));
+         Analyze (N);
+         Analyze (New_Body);
+
+      else
+         Rewrite (N, New_Body);
+         Analyze (N);
+      end if;
+   end Analyze_Expression_Function;
 
    ----------------------------------------
    -- Analyze_Extended_Return_Statement  --
@@ -1095,55 +1009,6 @@ package body Sem_Ch6 is
       Analyze (Explicit_Actual_Parameter (N));
    end Analyze_Parameter_Association;
 
-   --------------------------------------
-   -- Analyze_Parameterized_Expression --
-   --------------------------------------
-
-   procedure Analyze_Parameterized_Expression (N : Node_Id) is
-      Loc      : constant Source_Ptr := Sloc (N);
-      LocX     : constant Source_Ptr := Sloc (Expression (N));
-      Def_Id   : constant Entity_Id  := Defining_Entity (Specification (N));
-      New_Body : Node_Id;
-
-      Prev : constant Entity_Id := Current_Entity_In_Scope (Def_Id);
-      --  If the expression is a completion, Prev is the entity whose
-      --  declaration is completed.
-
-   begin
-      --  This is one of the occasions on which we transform the tree during
-      --  semantic analysis. Transform the parameterized expression into an
-      --  equivalent subprogram body, and then analyze that.
-
-      New_Body :=
-        Make_Subprogram_Body (Loc,
-          Specification              => Specification (N),
-          Declarations               => Empty_List,
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (LocX,
-              Statements => New_List (
-                Make_Simple_Return_Statement (LocX,
-                  Expression => Expression (N)))));
-
-      if Present (Prev)
-        and then Ekind (Prev) = E_Generic_Function
-      then
-         --  If the expression completes a generic subprogram, we must create
-         --  a separate node for the body, because at instantiation the
-         --  original node of the generic copy must be a generic subprogram
-         --  body, and cannot be a parameterized expression. Otherwise we
-         --  just rewrite the expression with the non-generic body.
-
-         Insert_After (N, New_Body);
-         Rewrite (N, Make_Null_Statement (Loc));
-         Analyze (N);
-         Analyze (New_Body);
-
-      else
-         Rewrite (N, New_Body);
-         Analyze (N);
-      end if;
-   end Analyze_Parameterized_Expression;
-
    ----------------------------
    -- Analyze_Procedure_Call --
    ----------------------------
@@ -1371,6 +1236,141 @@ package body Sem_Ch6 is
          Error_Msg_N ("invalid procedure or entry call", N);
       end if;
    end Analyze_Procedure_Call;
+
+   ------------------------------
+   -- Analyze_Return_Statement --
+   ------------------------------
+
+   procedure Analyze_Return_Statement (N : Node_Id) is
+
+      pragma Assert (Nkind_In (N, N_Simple_Return_Statement,
+                                  N_Extended_Return_Statement));
+
+      Returns_Object : constant Boolean :=
+                         Nkind (N) = N_Extended_Return_Statement
+                           or else
+                            (Nkind (N) = N_Simple_Return_Statement
+                              and then Present (Expression (N)));
+      --  True if we're returning something; that is, "return <expression>;"
+      --  or "return Result : T [:= ...]". False for "return;". Used for error
+      --  checking: If Returns_Object is True, N should apply to a function
+      --  body; otherwise N should apply to a procedure body, entry body,
+      --  accept statement, or extended return statement.
+
+      function Find_What_It_Applies_To return Entity_Id;
+      --  Find the entity representing the innermost enclosing body, accept
+      --  statement, or extended return statement. If the result is a callable
+      --  construct or extended return statement, then this will be the value
+      --  of the Return_Applies_To attribute. Otherwise, the program is
+      --  illegal. See RM-6.5(4/2).
+
+      -----------------------------
+      -- Find_What_It_Applies_To --
+      -----------------------------
+
+      function Find_What_It_Applies_To return Entity_Id is
+         Result : Entity_Id := Empty;
+
+      begin
+         --  Loop outward through the Scope_Stack, skipping blocks and loops
+
+         for J in reverse 0 .. Scope_Stack.Last loop
+            Result := Scope_Stack.Table (J).Entity;
+            exit when Ekind (Result) /= E_Block and then
+                      Ekind (Result) /= E_Loop;
+         end loop;
+
+         pragma Assert (Present (Result));
+         return Result;
+      end Find_What_It_Applies_To;
+
+      --  Local declarations
+
+      Scope_Id   : constant Entity_Id   := Find_What_It_Applies_To;
+      Kind       : constant Entity_Kind := Ekind (Scope_Id);
+      Loc        : constant Source_Ptr  := Sloc (N);
+      Stm_Entity : constant Entity_Id   :=
+                     New_Internal_Entity
+                       (E_Return_Statement, Current_Scope, Loc, 'R');
+
+   --  Start of processing for Analyze_Return_Statement
+
+   begin
+      Set_Return_Statement_Entity (N, Stm_Entity);
+
+      Set_Etype (Stm_Entity, Standard_Void_Type);
+      Set_Return_Applies_To (Stm_Entity, Scope_Id);
+
+      --  Place Return entity on scope stack, to simplify enforcement of 6.5
+      --  (4/2): an inner return statement will apply to this extended return.
+
+      if Nkind (N) = N_Extended_Return_Statement then
+         Push_Scope (Stm_Entity);
+      end if;
+
+      --  Check that pragma No_Return is obeyed. Don't complain about the
+      --  implicitly-generated return that is placed at the end.
+
+      if No_Return (Scope_Id) and then Comes_From_Source (N) then
+         Error_Msg_N ("RETURN statement not allowed (No_Return)", N);
+      end if;
+
+      --  Warn on any unassigned OUT parameters if in procedure
+
+      if Ekind (Scope_Id) = E_Procedure then
+         Warn_On_Unassigned_Out_Parameter (N, Scope_Id);
+      end if;
+
+      --  Check that functions return objects, and other things do not
+
+      if Kind = E_Function or else Kind = E_Generic_Function then
+         if not Returns_Object then
+            Error_Msg_N ("missing expression in return from function", N);
+         end if;
+
+      elsif Kind = E_Procedure or else Kind = E_Generic_Procedure then
+         if Returns_Object then
+            Error_Msg_N ("procedure cannot return value (use function)", N);
+         end if;
+
+      elsif Kind = E_Entry or else Kind = E_Entry_Family then
+         if Returns_Object then
+            if Is_Protected_Type (Scope (Scope_Id)) then
+               Error_Msg_N ("entry body cannot return value", N);
+            else
+               Error_Msg_N ("accept statement cannot return value", N);
+            end if;
+         end if;
+
+      elsif Kind = E_Return_Statement then
+
+         --  We are nested within another return statement, which must be an
+         --  extended_return_statement.
+
+         if Returns_Object then
+            Error_Msg_N
+              ("extended_return_statement cannot return value; " &
+               "use `""RETURN;""`", N);
+         end if;
+
+      else
+         Error_Msg_N ("illegal context for return statement", N);
+      end if;
+
+      if Ekind_In (Kind, E_Function, E_Generic_Function) then
+         Analyze_Function_Return (N);
+
+      elsif Ekind_In (Kind, E_Procedure, E_Generic_Procedure) then
+         Set_Return_Present (Scope_Id);
+      end if;
+
+      if Nkind (N) = N_Extended_Return_Statement then
+         End_Scope;
+      end if;
+
+      Kill_Current_Values (Last_Assignment_Only => True);
+      Check_Unreachable_Code (N);
+   end Analyze_Return_Statement;
 
    -------------------------------------
    -- Analyze_Simple_Return_Statement --
@@ -2449,9 +2449,9 @@ package body Sem_Ch6 is
 
            and then not In_Instance
 
-           --  No warnings for parameterized expressions
+           --  No warnings for expression functions
 
-           and then Nkind (Original_Node (N)) /= N_Parameterized_Expression
+           and then Nkind (Original_Node (N)) /= N_Expression_Function
          then
             Style.Body_With_No_Spec (N);
          end if;

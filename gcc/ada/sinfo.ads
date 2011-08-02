@@ -4591,17 +4591,17 @@ package Sinfo is
       --  Has_Relative_Deadline_Pragma (Flag9-Sem)
       --  Has_Pragma_CPU (Flag14-Sem)
 
-      ------------------------------
-      -- Parameterized Expression --
-      ------------------------------
+      -------------------------
+      -- Expression Function --
+      -------------------------
 
       --  This is an Ada 2012 extension, we put it here for now, to be labeled
       --  and put in its proper section when we know exactly where that is!
 
-      --  PARAMETERIZED_EXPRESSION ::=
+      --  EXPRESSION_FUNCTION ::=
       --    FUNCTION SPECIFICATION IS (EXPRESSION);
 
-      --  N_Parameterized_Expression
+      --  N_Expression_Function
       --  Sloc points to FUNCTION
       --  Specification (Node1)
       --  Expression (Node3)
@@ -7591,6 +7591,7 @@ package Sinfo is
 
       N_Component_Declaration,
       N_Entry_Declaration,
+      N_Expression_Function,
       N_Formal_Object_Declaration,
       N_Formal_Type_Declaration,
       N_Full_Type_Declaration,
@@ -7598,7 +7599,6 @@ package Sinfo is
       N_Iterator_Specification,
       N_Loop_Parameter_Specification,
       N_Object_Declaration,
-      N_Parameterized_Expression,
       N_Protected_Type_Declaration,
       N_Private_Extension_Declaration,
       N_Private_Type_Declaration,
@@ -10818,7 +10818,7 @@ package Sinfo is
         4 => True,    --  Handled_Statement_Sequence (Node4)
         5 => False),  --  Corresponding_Spec (Node5-Sem)
 
-     N_Parameterized_Expression =>
+     N_Expression_Function =>
        (1 => True,    --  Specification (Node1)
         2 => False,   --  unused
         3 => True,    --  Expression (Node3)
@@ -12317,8 +12317,18 @@ package Sinfo is
    pragma Inline (Set_Withed_Body);
    pragma Inline (Set_Zero_Cost_Handling);
 
+   --------------
+   -- Synonyms --
+   --------------
+
+   --  These synonyms are to aid in transition, they should eventually be
+   --  removed when all remaining references to the obsolete name are gone.
+
    N_Simple_Return_Statement : constant Node_Kind := N_Return_Statement;
    --  Rename N_Return_Statement to be N_Simple_Return_Statement. Clients
    --  should refer to N_Simple_Return_Statement.
+
+   N_Parameterized_Expression : constant Node_Kind := N_Expression_Function;
+   --  Old name for expression functions (used during Ada 2012 transition)
 
 end Sinfo;

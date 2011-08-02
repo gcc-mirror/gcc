@@ -2475,7 +2475,8 @@ package body Sem_Ch4 is
          end if;
 
       --  If not a range, it can be a subtype mark, or else it is a degenerate
-      --  membership test with a singleton value, i.e. a test for equality.
+      --  membership test with a singleton value, i.e. a test for equality,
+      --  if the types are compatible.
 
       else
          Analyze (R);
@@ -2485,7 +2486,9 @@ package body Sem_Ch4 is
             Find_Type (R);
             Check_Fully_Declared (Entity (R), R);
 
-         elsif Ada_Version >= Ada_2012 then
+         elsif Ada_Version >= Ada_2012
+           and then Has_Compatible_Type (R, Etype (L))
+         then
             if Nkind (N) = N_In then
                Rewrite (N,
                  Make_Op_Eq (Loc,
@@ -2502,8 +2505,8 @@ package body Sem_Ch4 is
             return;
 
          else
-            --  In previous version of the language this is an error that will
-            --  be diagnosed below.
+            --  In all versions of the language, if we reach this point there
+            --  is a previous error that will be diagnosed below.
 
             Find_Type (R);
          end if;
