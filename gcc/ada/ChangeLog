@@ -1,3 +1,18 @@
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): new procedure
+	Check_Class_Wide_Actual, to implement AI05-0071, on defaulted
+	primitive operations of class-wide actuals.
+
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_atag.ads, exp_atag.adb
+	(Build_Common_Dispatching_Select_Statements): Remove argument Loc
+	since its value is implicitly passed in argument Typ.
+	* exp_disp.adb (Make_Disp_Conditional_Select_Body,
+	Make_Disp_Timed_Select_Body): Remove Loc in calls to routine
+	Build_Common_Dispatching_Select_Statements.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, exp_atag.ads, get_scos.adb, get_scos.ads,

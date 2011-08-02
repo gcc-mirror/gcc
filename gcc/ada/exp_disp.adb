@@ -2623,7 +2623,7 @@ package body Exp_Disp is
          --       return;
          --    end if;
 
-         Build_Common_Dispatching_Select_Statements (Loc, Typ, Stmts);
+         Build_Common_Dispatching_Select_Statements (Typ, Stmts);
 
          --  Generate:
          --    Bnn : Communication_Block;
@@ -3470,7 +3470,7 @@ package body Exp_Disp is
          --       return;
          --    end if;
 
-         Build_Common_Dispatching_Select_Statements (Loc, Typ, Stmts);
+         Build_Common_Dispatching_Select_Statements (Typ, Stmts);
 
          --  Generate:
          --    I := Get_Entry_Index (tag! (<type>VP), S);

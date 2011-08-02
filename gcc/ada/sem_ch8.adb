@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1614,6 +1614,179 @@ package body Sem_Ch8 is
       --  before the subprogram it completes is frozen, and renaming indirectly
       --  renames the subprogram itself.(Defect Report 8652/0027).
 
+      function Check_Class_Wide_Actual return Entity_Id;
+      --  AI05-0071: In an instance, if the actual for a formal type FT with
+      --  unknown discriminants is a class-wide type CT, and the generic has
+      --  a formal subprogram with a box for a primitive operation of FT,
+      --  then the corresponding actual subprogram denoted by the default is a
+      --  class-wide operation whose body is a dispatching call. We replace the
+      --  generated renaming declaration:
+      --
+      --  procedure P (X : CT) renames P;
+      --
+      --  by a different renaming and a class-wide operation:
+      --
+      --  procedure Pr (X : T) renames P;   --  renames primitive operation
+      --  procedure P (X : CT);             --  class-wide operation
+      --  ...
+      --  procedure P (X : CT) is begin Pr (X); end;  -- dispatching call
+
+      --  This rule only applies if there is no explicit visible class-wide
+      --  operation at the point of the instantiation.
+
+      -----------------------------
+      -- Check_Class_Wide_Actual --
+      -----------------------------
+
+      function Check_Class_Wide_Actual return Entity_Id is
+         Loc : constant Source_Ptr := Sloc (N);
+
+         F           : Entity_Id;
+         Formal_Type : Entity_Id;
+         Actual_Type : Entity_Id;
+         New_Body    : Node_Id;
+         New_Decl    : Node_Id;
+         Result      : Entity_Id;
+
+         function Make_Call (Prim_Op : Entity_Id) return Node_Id;
+         --  Build dispatching call for body of class-wide operation
+
+         function Make_Spec return Node_Id;
+         --  Create subprogram specification for declaration and body of
+         --  class-wide operation, using signature of renaming declaration.
+
+         ---------------
+         -- Make_Call --
+         ---------------
+
+         function Make_Call (Prim_Op : Entity_Id) return Node_Id is
+            Actuals : List_Id;
+            F       : Node_Id;
+
+         begin
+            Actuals := New_List;
+            F := First (Parameter_Specifications (Specification (New_Decl)));
+            while Present (F) loop
+               Append_To (Actuals,
+                 Make_Identifier (Loc, Chars (Defining_Identifier (F))));
+               Next (F);
+            end loop;
+
+            if Ekind (Prim_Op) = E_Function then
+               return Make_Simple_Return_Statement (Loc,
+                  Expression =>
+                    Make_Function_Call (Loc,
+                      Name => New_Occurrence_Of (Prim_Op, Loc),
+                      Parameter_Associations => Actuals));
+            else
+               return
+                 Make_Procedure_Call_Statement (Loc,
+                      Name => New_Occurrence_Of (Prim_Op, Loc),
+                      Parameter_Associations => Actuals);
+            end if;
+         end Make_Call;
+
+         ---------------
+         -- Make_Spec --
+         ---------------
+
+         function Make_Spec return Node_Id is
+            Param_Specs : constant List_Id := Copy_Parameter_List (New_S);
+
+         begin
+            if Ekind (New_S) = E_Procedure then
+               return
+                 Make_Procedure_Specification (Loc,
+                   Defining_Unit_Name =>
+                     Make_Defining_Identifier (Loc,
+                       Chars (Defining_Unit_Name (Spec))),
+                   Parameter_Specifications => Param_Specs);
+            else
+               return
+                  Make_Function_Specification (Loc,
+                    Defining_Unit_Name =>
+                      Make_Defining_Identifier (Loc,
+                        Chars (Defining_Unit_Name (Spec))),
+                    Parameter_Specifications => Param_Specs,
+                    Result_Definition =>
+                      New_Copy_Tree (Result_Definition (Spec)));
+            end if;
+         end Make_Spec;
+
+      --  Start of processing for Check_Class_Wide_Actual
+
+      begin
+         Result := Any_Id;
+         Formal_Type := Empty;
+         Actual_Type := Empty;
+
+         F := First_Formal (Formal_Spec);
+         while Present (F) loop
+            if Has_Unknown_Discriminants (Etype (F))
+              and then Is_Class_Wide_Type (Get_Instance_Of (Etype (F)))
+            then
+               Formal_Type := Etype (F);
+               Actual_Type := Etype (Get_Instance_Of (Formal_Type));
+               exit;
+            end if;
+
+            Next_Formal (F);
+         end loop;
+
+         if Present (Formal_Type) then
+
+            --  Create declaration and body for class-wide operation
+
+            New_Decl :=
+              Make_Subprogram_Declaration (Loc, Specification => Make_Spec);
+
+            New_Body :=
+              Make_Subprogram_Body (Loc,
+                Specification => Make_Spec,
+                Declarations => No_List,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc, New_List));
+
+            --  Modify Spec and create internal name for renaming of primitive
+            --  operation.
+
+            Set_Defining_Unit_Name (Spec, Make_Temporary (Loc, 'R'));
+            F := First (Parameter_Specifications (Spec));
+            while Present (F) loop
+               if Nkind (Parameter_Type (F)) = N_Identifier
+                 and then Is_Class_Wide_Type (Entity (Parameter_Type (F)))
+               then
+                  Set_Parameter_Type (F, New_Occurrence_Of (Actual_Type, Loc));
+               end if;
+               Next (F);
+            end loop;
+
+            New_S := Analyze_Subprogram_Specification (Spec);
+            Result :=  Find_Renamed_Entity (N, Name (N), New_S, Is_Actual);
+         end if;
+
+         if Result /= Any_Id then
+            Insert_Before (N, New_Decl);
+            Analyze (New_Decl);
+
+            --  Add dispatching call to body of class-wide operation
+
+            Append (Make_Call (Result),
+              Statements (Handled_Statement_Sequence (New_Body)));
+
+            --  The generated body does not freeze. It is analyzed when the
+            --  generated operation is frozen.
+
+            Append_Freeze_Action (Defining_Entity (New_Decl), New_Body);
+
+            Result := Defining_Entity (New_Decl);
+         end if;
+
+         --  Return the class-wide operation if one was created.
+
+         return Result;
+      end Check_Class_Wide_Actual;
+
       --------------------------
       -- Check_Null_Exclusion --
       --------------------------
@@ -2190,6 +2363,16 @@ package body Sem_Ch8 is
          end if;
       end if;
 
+      --  If no renamed entity was found, check whether the renaming is for
+      --  a defaulted actual subprogram with a class-wide actual.
+
+      if Old_S = Any_Id
+        and then Is_Actual
+        and then From_Default (N)
+      then
+         Old_S := Check_Class_Wide_Actual;
+      end if;
+
       if Old_S /= Any_Id then
          if Is_Actual
            and then From_Default (N)
@@ -2246,7 +2429,20 @@ package body Sem_Ch8 is
             end if;
 
          elsif Ekind (Old_S) /= E_Operator then
-            Check_Mode_Conformant (New_S, Old_S);
+
+            --  If this is a default subprogram, it may be for a class-wide
+            --  actual, in which case there is no check for mode conformance,
+            --  given that the signatures do not match (the source mentions T,
+            --  but the actual mentions T'Class).
+
+            if  Is_Actual
+              and then From_Default (N)
+            then
+               null;
+
+            else
+               Check_Mode_Conformant (New_S, Old_S);
+            end if;
 
             if Is_Actual
               and then Error_Posted (New_S)
@@ -5319,7 +5515,10 @@ package body Sem_Ch8 is
          end loop;
 
          Set_Entity (Nam, Old_S);
-         Set_Is_Overloaded (Nam, False);
+
+         if Old_S /= Any_Id then
+            Set_Is_Overloaded (Nam, False);
+         end if;
       end if;
 
       return Old_S;
