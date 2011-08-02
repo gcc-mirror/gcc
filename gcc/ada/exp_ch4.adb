@@ -8628,7 +8628,8 @@ package body Exp_Ch4 is
                if Is_Class_Wide_Type (Actual_Op_Typ)
                  and then Actual_Op_Typ /= Actual_Targ_Typ
                  and then Root_Op_Typ /= Actual_Targ_Typ
-                 and then Is_Ancestor (Root_Op_Typ, Actual_Targ_Typ)
+                 and then Is_Ancestor (Root_Op_Typ, Actual_Targ_Typ,
+                                       Use_Full_View => True)
                then
                   Make_Tag_Check (Class_Wide_Type (Actual_Targ_Typ));
                   Make_Conversion := True;
@@ -10461,7 +10462,8 @@ package body Exp_Ch4 is
          --    Obj1 in Iface'Class;  --  Compile time error
 
          if not Is_Class_Wide_Type (Left_Type)
-           and then (Is_Ancestor (Etype (Right_Type), Left_Type)
+           and then (Is_Ancestor (Etype (Right_Type), Left_Type,
+                                  Use_Full_View => True)
                        or else (Is_Interface (Etype (Right_Type))
                                  and then Interface_Present_In_Ancestor
                                            (Typ   => Left_Type,

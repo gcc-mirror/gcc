@@ -911,7 +911,9 @@ package body Exp_Ch7 is
 
             --  Otherwise record the outermost one and continue looking
 
-            elsif Res = Empty or else Is_Ancestor (Res_Scop, Comp_Scop) then
+            elsif Res = Empty
+              or else Is_Ancestor (Res_Scop, Comp_Scop, Use_Full_View => True)
+            then
                Res      := Comp;
                Res_Scop := Comp_Scop;
             end if;

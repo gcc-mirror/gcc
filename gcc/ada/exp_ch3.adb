@@ -2220,7 +2220,9 @@ package body Exp_Ch3 is
             --  If the interface is a parent of Rec_Type it shares the primary
             --  dispatch table and hence there is no need to build the function
 
-            if not Is_Ancestor (Related_Type (Iface_Comp), Rec_Type) then
+            if not Is_Ancestor (Related_Type (Iface_Comp), Rec_Type,
+                                Use_Full_View => True)
+            then
                Build_Offset_To_Top_Function (Iface_Comp);
             end if;
 
@@ -7297,7 +7299,7 @@ package body Exp_Ch3 is
          --  Initialize the pointer to the secondary DT associated with the
          --  interface.
 
-         if not Is_Ancestor (Iface, Typ) then
+         if not Is_Ancestor (Iface, Typ, Use_Full_View => True) then
             Append_To (Stmts_List,
               Make_Assignment_Statement (Loc,
                 Name =>
@@ -7394,7 +7396,7 @@ package body Exp_Ch3 is
             --  Don't need to set any value if this interface shares
             --  the primary dispatch table.
 
-            if not Is_Ancestor (Iface, Typ) then
+            if not Is_Ancestor (Iface, Typ, Use_Full_View => True) then
                Append_To (Stmts_List,
                  Build_Set_Static_Offset_To_Top (Loc,
                    Iface_Tag    => New_Reference_To (Iface_Tag, Loc),

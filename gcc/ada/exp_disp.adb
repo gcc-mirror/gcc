@@ -1435,7 +1435,9 @@ package body Exp_Disp is
             --  a parent of the type of the actual because in this case the
             --  interface primitives are located in the primary dispatch table.
 
-            elsif Is_Ancestor (Formal_Typ, Actual_Typ) then
+            elsif Is_Ancestor (Formal_Typ, Actual_Typ,
+                               Use_Full_View => True)
+            then
                null;
 
             --  Implicit conversion to the class-wide formal type to force
@@ -1494,7 +1496,9 @@ package body Exp_Disp is
             --  a parent of the type of the actual because in this case the
             --  interface primitives are located in the primary dispatch table.
 
-            elsif Is_Ancestor (Formal_DDT, Actual_DDT) then
+            elsif Is_Ancestor (Formal_DDT, Actual_DDT,
+                               Use_Full_View => True)
+            then
                null;
 
             else
@@ -4090,7 +4094,8 @@ package body Exp_Disp is
                      --  Tagged_Type. Otherwise the DT associated with the
                      --  interface is the primary DT.
 
-                    and then not Is_Ancestor (Iface, Typ)
+                    and then not Is_Ancestor (Iface, Typ,
+                                              Use_Full_View => True)
                   then
                      if not Build_Thunks then
                         Prim_Pos :=
@@ -5087,7 +5092,7 @@ package body Exp_Disp is
             begin
                AI := First_Elmt (Typ_Ifaces);
                while Present (AI) loop
-                  if Is_Ancestor (Node (AI), Typ) then
+                  if Is_Ancestor (Node (AI), Typ, Use_Full_View => True) then
                      Sec_DT_Tag :=
                        New_Reference_To (DT_Ptr, Loc);
                   else
@@ -5098,7 +5103,8 @@ package body Exp_Disp is
 
                      while Is_Tag (Node (Elmt))
                         and then not
-                          Is_Ancestor (Node (AI), Related_Type (Node (Elmt)))
+                          Is_Ancestor (Node (AI), Related_Type (Node (Elmt)),
+                                       Use_Full_View => True)
                      loop
                         pragma Assert (Has_Thunks (Node (Elmt)));
                         Next_Elmt (Elmt);
@@ -6182,7 +6188,8 @@ package body Exp_Disp is
             if Present (Interface_Alias (Prim))
               and then not
                 Is_Ancestor
-                  (Find_Dispatching_Type (Interface_Alias (Prim)), Typ)
+                  (Find_Dispatching_Type (Interface_Alias (Prim)), Typ,
+                   Use_Full_View => True)
               and then not Examined (UI_To_Int (DT_Position (Alias (Prim))))
             then
                Prim_Pos := DT_Position (Alias (Prim));
@@ -6983,7 +6990,7 @@ package body Exp_Disp is
          --  No action needed for interfaces that are ancestors of Typ because
          --  their primitives are located in the primary dispatch table.
 
-         if Is_Ancestor (Iface_Typ, Tag_Typ) then
+         if Is_Ancestor (Iface_Typ, Tag_Typ, Use_Full_View => True) then
             return L;
 
          --  No action needed for primitives located in the C++ part of the
@@ -6999,7 +7006,7 @@ package body Exp_Disp is
 
          Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code);
 
-         if not Is_Ancestor (Iface_Typ, Tag_Typ)
+         if not Is_Ancestor (Iface_Typ, Tag_Typ, Use_Full_View => True)
            and then Present (Thunk_Code)
          then
             --  Generate the code necessary to fill the appropriate entry of
@@ -7357,7 +7364,8 @@ package body Exp_Disp is
 
             elsif Present (Interface_Alias (Prim))
               and then Is_Ancestor
-                         (Find_Dispatching_Type (Interface_Alias (Prim)), Typ)
+                         (Find_Dispatching_Type (Interface_Alias (Prim)), Typ,
+                          Use_Full_View => True)
             then
                pragma Assert (DT_Position (Prim) = No_Uint
                  and then Present (DTC_Entity (Interface_Alias (Prim))));
@@ -7379,7 +7387,8 @@ package body Exp_Disp is
               and then Chars (Prim) = Chars (Alias (Prim))
               and then Find_Dispatching_Type (Alias (Prim)) /= Typ
               and then Is_Ancestor
-                         (Find_Dispatching_Type (Alias (Prim)), Typ)
+                         (Find_Dispatching_Type (Alias (Prim)), Typ,
+                          Use_Full_View => True)
               and then Present (DTC_Entity (Alias (Prim)))
             then
                E := Alias (Prim);
@@ -7445,7 +7454,8 @@ package body Exp_Disp is
             --  Check if this entry will be placed in the primary DT
 
             if Is_Ancestor
-                (Find_Dispatching_Type (Interface_Alias (Prim)), Typ)
+                 (Find_Dispatching_Type (Interface_Alias (Prim)), Typ,
+                  Use_Full_View => True)
             then
                pragma Assert (DT_Position (Alias (Prim)) /= No_Uint);
                Set_DT_Position (Prim, DT_Position (Alias (Prim)));

@@ -231,7 +231,9 @@ package body Exp_Intr is
          --  If the result type is not parent of Tag_Arg then we need to
          --  locate the tag of the secondary dispatch table.
 
-         if not Is_Ancestor (Etype (Result_Typ), Etype (Tag_Arg)) then
+         if not Is_Ancestor (Etype (Result_Typ), Etype (Tag_Arg),
+                             Use_Full_View => True)
+         then
             pragma Assert (not Is_Interface (Etype (Tag_Arg)));
 
             Iface_Tag :=

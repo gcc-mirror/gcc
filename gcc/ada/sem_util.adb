@@ -1687,7 +1687,7 @@ package body Sem_Util is
          --  Associate the primary tag component and the primary dispatch table
          --  with all the interfaces that are parents of T
 
-         if Is_Ancestor (Iface, T) then
+         if Is_Ancestor (Iface, T, Use_Full_View => True) then
             Append_Elmt (First_Tag_Component (T), Components_List);
             Append_Elmt (Node (First_Elmt (Access_Disp_Table (T))), Tags_List);
 
@@ -1700,7 +1700,7 @@ package body Sem_Util is
                Comp_Iface := Related_Type (Node (Comp_Elmt));
 
                if Comp_Iface = Iface
-                 or else Is_Ancestor (Iface, Comp_Iface)
+                 or else Is_Ancestor (Iface, Comp_Iface, Use_Full_View => True)
                then
                   Append_Elmt (Node (Comp_Elmt), Components_List);
                   Append_Elmt (Search_Tag (Comp_Iface), Tags_List);
@@ -5504,7 +5504,7 @@ package body Sem_Util is
 
       Elmt := First_Elmt (Ifaces_List);
       while Present (Elmt) loop
-         if Is_Ancestor (Node (Elmt), Typ)
+         if Is_Ancestor (Node (Elmt), Typ, Use_Full_View => True)
            and then Exclude_Parents
          then
             null;

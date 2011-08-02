@@ -217,9 +217,23 @@ package Sem_Type is
    --  but conceptually the resolution of the actual takes place in the
    --  enclosing context and no special disambiguation rules should be applied.
 
-   function Is_Ancestor (T1, T2 : Entity_Id) return Boolean;
+   function Is_Ancestor
+     (T1            : Entity_Id;
+      T2            : Entity_Id;
+      Use_Full_View : Boolean := False) return Boolean;
    --  T1 is a tagged type (not class-wide). Verify that it is one of the
-   --  ancestors of type T2 (which may or not be class-wide).
+   --  ancestors of type T2 (which may or not be class-wide). If Use_Full_View
+   --  is True then the full-view of private parents is used when climbing
+   --  through the parents of T2.
+   --
+   --  Note: For analysis purposes the flag Use_Full_View must be set to False
+   --  (otherwise we break the privacy contract since this routine returns true
+   --  for hidden ancestors of private types). For expansion purposes this flag
+   --  is generally set to True since the expander must know with precision the
+   --  ancestors of a tagged type. For example, if a private type derives from
+   --  an interface type then the interface may not be an ancestor of its full
+   --  view since the full-view is only required to cover the interface (RM 7.3
+   --  (7.3/2))) and this knowledge affects construction of dispatch tables.
 
    function Is_Progenitor
      (Iface : Entity_Id;

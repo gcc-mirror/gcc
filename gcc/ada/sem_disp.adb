@@ -2087,7 +2087,7 @@ package body Sem_Disp is
         and then Etype (Tagged_Type) /= Tagged_Type
         and then Is_Interface (Find_Dispatching_Type (Alias (Prev_Op)))
         and then not Is_Ancestor (Find_Dispatching_Type (Alias (Prev_Op)),
-                                  Tagged_Type)
+                                  Tagged_Type, Use_Full_View => True)
         and then not Implements_Interface
                        (Etype (Tagged_Type),
                         Find_Dispatching_Type (Alias (Prev_Op)))
