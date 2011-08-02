@@ -553,7 +553,7 @@ private
    type pthread_mutex_t is new System.Linux.pthread_mutex_t;
 
    type unsigned_long_long_t is mod 2 ** 64;
-   --  Interfaces.C.Extensions isn't preelaborated so cannot be with'ed
+   --  Local type only used to get it's 'Alignment below
 
    type pthread_cond_t is array (0 .. 47) of unsigned_char;
    pragma Convention (C, pthread_cond_t);

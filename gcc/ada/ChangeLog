@@ -1,3 +1,28 @@
+2011-08-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osinte-linux.ads: Minor comment update and reformatting.
+	* i-cexten.ads: Make this unit pure, as for its parent.
+	Will allow its usage in more contexts if needed.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* s-utf_32.ads: Minor comment fix.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): if the subprogram is a primitive
+	operation of a tagged synchronized type, handle the case where the
+	controlling argument is overloaded.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi, opt.ads, sem_prag.adb, snames.ads-tmpl:
+	Replace pragma SPARK_95 with pragma Restrictions (SPARK)
+	* par-prag.adb (Process_Restrictions_Or_Restriction_Warnings): set
+	SPARK mode and formal verification mode on processing SPARK restriction
+	* s-rident.ads (Restriction_Id): add SPARK restriction in those not
+	requiring consistency checking.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb: Minor reformatting.
