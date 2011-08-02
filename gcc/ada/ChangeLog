@@ -1,3 +1,14 @@
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6 (Analyze_Expression_Function): treat the function as
+	Inline_Always, and introduce a subprogram declaration for it when it is
+	not a completion.
+	* inline.adb (Add_Inlined_Body): recognize bodies that come from
+	expression functions, so that the back-end can determine whether they
+	can in fact be inlined.
+	* sem_util.adb (Is_Expression_Function): predicate to determine whether
+	a function body comes from an expression function.
+
 2011-08-02  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch6.adb (Check_Conformance): Revise the check for nonconforming

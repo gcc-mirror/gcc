@@ -6541,6 +6541,26 @@ package body Sem_Util is
       end if;
    end Is_Descendent_Of;
 
+   ----------------------------
+   -- Is_Expression_Function --
+   ----------------------------
+
+   function Is_Expression_Function (Subp : Entity_Id) return Boolean is
+      Decl : constant Node_Id := Unit_Declaration_Node (Subp);
+
+   begin
+      return Ekind (Subp) = E_Function
+        and then Nkind (Decl) = N_Subprogram_Declaration
+        and then
+          (Nkind (Original_Node (Decl)) = N_Expression_Function
+            or else
+              (Present (Corresponding_Body (Decl))
+                and then
+                  Nkind (Original_Node
+                     (Unit_Declaration_Node (Corresponding_Body (Decl))))
+                 = N_Expression_Function));
+   end Is_Expression_Function;
+
    --------------
    -- Is_False --
    --------------

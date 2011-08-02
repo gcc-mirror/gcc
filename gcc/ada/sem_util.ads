@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -740,6 +740,10 @@ package Sem_Util is
    function Is_Concurrent_Interface (T : Entity_Id) return Boolean;
    --  First determine whether type T is an interface and then check whether
    --  it is of protected, synchronized or task kind.
+
+   function Is_Expression_Function (Subp : Entity_Id) return Boolean;
+   --  Predicate to determine whether a function entity comes from a rewritten
+   --  expression function, and should be inlined unconditionally.
 
    function Is_False (U : Uint) return Boolean;
    pragma Inline (Is_False);

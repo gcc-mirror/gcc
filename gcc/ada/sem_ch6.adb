@@ -271,6 +271,7 @@ package body Sem_Ch6 is
       LocX     : constant Source_Ptr := Sloc (Expression (N));
       Def_Id   : constant Entity_Id  := Defining_Entity (Specification (N));
       New_Body : Node_Id;
+      New_Decl : Node_Id;
 
       Prev : constant Entity_Id := Current_Entity_In_Scope (Def_Id);
       --  If the expression is a completion, Prev is the entity whose
@@ -278,8 +279,13 @@ package body Sem_Ch6 is
 
    begin
       --  This is one of the occasions on which we transform the tree during
-      --  semantic analysis. Transform the expression function into an
-      --  equivalent subprogram body, and then analyze that.
+      --  semantic analysis. If this is a completion,  transform the expression
+      --  function into an equivalent subprogram body, and analyze it.
+
+      --  Expression functions are inlined unconditionally. The back-end will
+      --  determine whether this is possible.
+
+      Inline_Processing_Required := True;
 
       New_Body :=
         Make_Subprogram_Body (Loc,
@@ -304,10 +310,37 @@ package body Sem_Ch6 is
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze (N);
          Analyze (New_Body);
+         Set_Is_Inlined (Prev);
+
+      elsif Present (Prev) then
+         Rewrite (N, New_Body);
+         Set_Is_Inlined (Prev);
+         Analyze (N);
+
+      --  If this is not a completion, create both a declaration and a body,
+      --  so that the expression can be inlined whenever possible.
 
       else
-         Rewrite (N, New_Body);
+         New_Decl :=
+           Make_Subprogram_Declaration (Loc,
+             Specification => Specification (N));
+         Rewrite (N, New_Decl);
          Analyze (N);
+         Set_Is_Inlined (Defining_Entity (New_Decl));
+
+         --  Create new set of formals for specification in body.
+
+         Set_Specification (New_Body,
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name =>
+               Make_Defining_Identifier (Loc, Chars (Defining_Entity (N))),
+             Parameter_Specifications =>
+               Copy_Parameter_List (Defining_Entity (New_Decl)),
+             Result_Definition =>
+               New_Copy_Tree (Result_Definition (Specification (New_Decl)))));
+
+         Insert_After (N, New_Body);
+         Analyze (New_Body);
       end if;
    end Analyze_Expression_Function;
 
