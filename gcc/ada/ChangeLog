@@ -1,3 +1,16 @@
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iteration_Scheme): For an Ada2012 iterator with
+	"of", pre-analyze expression in case it is a function call with
+	finalization actions that must be placed ahead of the loop.
+	* exp_ch5.adb (Expand_Iterator_Loop): If condition_actions are present
+	on an Ada2012 iterator, insert them ahead of the rewritten loop.
+
+2011-08-02  Geert Bosch  <bosch@adacore.com>
+
+	* cstand.adb (Create_Float_Types): Only consider C's long double for
+	Long_Long_Float, in addition to double.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_ch5.adb, sem_type.adb, switch-c.adb, switch-c.ads,

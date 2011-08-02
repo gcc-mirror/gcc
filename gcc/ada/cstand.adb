@@ -466,29 +466,13 @@ package body CStand is
 
          declare
             Max_HW_Digs : constant := 18;
-            LF_Digs     : constant Pos :=
-                            UI_To_Int (Digits_Value (Standard_Long_Float));
+            --  Maximum hardware digits supported
+
             LLF : Entity_Id := Find_Back_End_Float_Type ("long double");
-            E   : Elmt_Id := First_Elmt (Back_End_Float_Types);
-            N   : Node_Id;
+            --  Entity for long double type
 
          begin
-            if Present (LLF) and then Digits_Value (LLF) > Max_HW_Digs then
-               LLF := Empty;
-            end if;
-
-            while No (LLF) and then Present (E) loop
-               N := Node (E);
-               if UI_To_Int (Digits_Value (N)) in LF_Digs + 1 .. Max_HW_Digs
-                 and then Machine_Radix_Value (N) = Uint_2
-               then
-                  LLF := N;
-               end if;
-
-               Next_Elmt (E);
-            end loop;
-
-            if No (LLF) then
+            if No (LLF) or else Digits_Value (LLF) > Max_HW_Digs then
                LLF := Standard_Long_Float;
             end if;
 

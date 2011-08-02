@@ -1919,7 +1919,11 @@ package body Sem_Ch5 is
             Set_Current_Value_Condition (N);
             return;
 
+         --  For an iterator specification with "of", pre-analyze range to
+         --  capture function calls that may require finalization actions.
+
          elsif Present (Iterator_Specification (N)) then
+            Pre_Analyze_Range (Name (Iterator_Specification (N)));
             Analyze_Iterator_Specification (Iterator_Specification (N));
 
          --  Else we have a FOR loop
@@ -1974,7 +1978,7 @@ package body Sem_Ch5 is
                then
                   Process_Bounds (DS);
 
-               --  Expander not active or else domain of iteration is a subtype
+               --  expander not active or else range of iteration is a subtype
                --  indication, an entity, or a function call that yields an
                --  aggregate or a container.
 
@@ -1989,7 +1993,8 @@ package body Sem_Ch5 is
                         and then not Is_Type (Entity (D_Copy)))
                   then
                      --  This is an iterator specification. Rewrite as such
-                     --  and analyze.
+                     --  and analyze, to capture function calls that may
+                     --  require finalization actions.
 
                      declare
                         I_Spec : constant Node_Id :=
@@ -1997,8 +2002,7 @@ package body Sem_Ch5 is
                                      Defining_Identifier =>
                                        Relocate_Node (Id),
                                      Name                => D_Copy,
-                                     Subtype_Indication  =>
-                                       Empty,
+                                     Subtype_Indication  => Empty,
                                      Reverse_Present     =>
                                        Reverse_Present (LP));
                      begin

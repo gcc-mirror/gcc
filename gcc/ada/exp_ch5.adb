@@ -2952,6 +2952,15 @@ package body Exp_Ch5 is
                 Make_Iteration_Scheme (Loc, Condition => Cond),
               Statements       => Stats,
               End_Label        => Empty);
+
+            --  If the range of iteration is given by a function call that
+            --  returns a container, the finalization actions have been saved
+            --  in the Condition_Actions of the iterator. Insert them now at
+            --  the head of the loop.
+
+            if Present (Condition_Actions (Isc)) then
+               Insert_List_Before (N, Condition_Actions (Isc));
+            end if;
          end;
       end if;
 
@@ -3158,6 +3167,7 @@ package body Exp_Ch5 is
 
       elsif Present (Isc)
         and then Present (Condition_Actions (Isc))
+        and then Present (Condition (Isc))
       then
          declare
             ES : Node_Id;
