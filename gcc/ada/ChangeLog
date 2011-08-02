@@ -1,3 +1,29 @@
+2011-08-02  Ed Falis  <falis@adacore.com>
+
+	* s-taprop-vxworks.adb, s-intman-vxworks.adb, s-intman-vxworks.ads:
+	Update header.
+
+2011-08-02  Bob Duff  <duff@adacore.com>
+
+	* opt.ads: Minor comment fix.
+
+2011-08-02  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation,
+	Analyze_Subprogram_Instantiation): Turn off style checking while
+	analyzing an instance. Whatever style checks that apply to the generic
+	unit should apply, so it makes no sense to apply them in an instance.
+	This was causing trouble when compiling an instance of a runtime
+	unit that violates the -gnatyO switch.
+	* stylesw.adb (Set_Style_Check_Options): "when 'O' =>" was missing from
+	one of the two case statements, causing spurious errors.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* uname.adb: Minor reformatting.
+	* gnatcmd.adb: Minor reformatting.
+	* exp_attr.adb: Minor reformatting.
+
 2011-08-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch5.adb (Expand_N_Assignment_Statement): under restriction

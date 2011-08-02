@@ -2975,6 +2975,8 @@ package body Sem_Ch12 is
          return False;
       end Might_Inline_Subp;
 
+      Save_Style_Check : constant Boolean := Style_Check;
+
    --  Start of processing for Analyze_Package_Instantiation
 
    begin
@@ -2986,6 +2988,12 @@ package body Sem_Ch12 is
       --  Make node global for error reporting
 
       Instantiation_Node := N;
+
+      --  Turn off style checking in instances. If the check is enabled on the
+      --  generic unit, a warning in an instance would just be noise. If not
+      --  enabled on the generic, then a warning in an instance is just wrong.
+
+      Style_Check := False;
 
       --  Case of instantiation of a generic package
 
@@ -3571,6 +3579,8 @@ package body Sem_Ch12 is
          Set_Defining_Identifier (N, Act_Decl_Id);
       end if;
 
+      Style_Check := Save_Style_Check;
+
    <<Leave>>
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
@@ -3585,6 +3595,8 @@ package body Sem_Ch12 is
          if Env_Installed then
             Restore_Env;
          end if;
+
+         Style_Check := Save_Style_Check;
    end Analyze_Package_Instantiation;
 
    --------------------------
@@ -4104,6 +4116,8 @@ package body Sem_Ch12 is
          end if;
       end Analyze_Instance_And_Renamings;
 
+      Save_Style_Check : constant Boolean := Style_Check;
+
    --  Start of processing for Analyze_Subprogram_Instantiation
 
    begin
@@ -4117,6 +4131,13 @@ package body Sem_Ch12 is
       --  Make node global for error reporting
 
       Instantiation_Node := N;
+
+      --  Turn off style checking in instances. If the check is enabled on the
+      --  generic unit, a warning in an instance would just be noise. If not
+      --  enabled on the generic, then a warning in an instance is just wrong.
+
+      Style_Check := False;
+
       Preanalyze_Actuals (N);
 
       Init_Env;
@@ -4352,6 +4373,8 @@ package body Sem_Ch12 is
          Generic_Renamings_HTable.Reset;
       end if;
 
+      Style_Check := Save_Style_Check;
+
    <<Leave>>
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
@@ -4366,6 +4389,8 @@ package body Sem_Ch12 is
          if Env_Installed then
             Restore_Env;
          end if;
+
+         Style_Check := Save_Style_Check;
    end Analyze_Subprogram_Instantiation;
 
    -------------------------

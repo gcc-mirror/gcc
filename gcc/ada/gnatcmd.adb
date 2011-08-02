@@ -1356,9 +1356,7 @@ procedure GNATCmd is
       New_Line;
    end Non_VMS_Usage;
 
-   -------------------------------------
-   -- Start of processing for GNATCmd --
-   -------------------------------------
+--  Start of processing for GNATCmd
 
 begin
    --  Initializations
