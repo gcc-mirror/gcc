@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010, Free Software Foundation, Inc.              --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -29,19 +29,21 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
---  The specification of this package is derived from the specification
---  of package Ada.Containers.Bounded_Ordered_Maps in the Ada 2012 RM.
---  The changes are
+--  This spec is derived from package Ada.Containers.Bounded_Vectors in the Ada
+--  2012 RM. The modifications are to facilitate formal proofs by making it
+--  easier to express properties.
+
+--  The modifications are:
 
 --    A parameter for the container is added to every function reading the
---    content of a container: Element, Next, Query_Element, Previous,
---    Has_Element, Iterate, Reverse_Iterate. This change is
---    motivated by the need to have cursors which are valid on different
---    containers (typically a container C and its previous version C'Old) for
---    expressing properties, which is not possible if cursors encapsulate an
---    access to the underlying container.
+--    content of a container: Element, Next, Query_Element, Previous, Iterate,
+--    Has_Element, Reverse_Iterate. This change is motivated by the need
+--    to have cursors which are valid on different containers (typically a
+--    container C and its previous version C'Old) for expressing properties,
+--    which is not possible if cursors encapsulate an access to the underlying
+--    container.
 
---    There are two new functions
+--    There are two new functions:
 
 --      function Left  (Container : Vector; Position : Cursor) return Vector;
 --      function Right (Container : Vector; Position : Cursor) return Vector;
@@ -323,13 +325,13 @@ package Ada.Containers.Formal_Vectors is
 
    procedure Iterate
      (Container : Vector;
-      Process   :
-        not null access procedure (Container : Vector; Position : Cursor));
+      Process   : not null access
+                    procedure (Container : Vector; Position : Cursor));
 
    procedure Reverse_Iterate
      (Container : Vector;
-      Process   :
-        not null access procedure (Container : Vector; Position : Cursor));
+      Process   : not null access
+                    procedure (Container : Vector; Position : Cursor));
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
@@ -397,8 +399,8 @@ private
    for Vector'Read use Read;
 
    type Cursor is record
-      Valid     : Boolean := True;
-      Index     : Index_Type := Index_Type'First;
+      Valid : Boolean := True;
+      Index : Index_Type := Index_Type'First;
    end record;
 
    procedure Write

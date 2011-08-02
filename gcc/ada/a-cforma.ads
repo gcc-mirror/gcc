@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010, Free Software Foundation, Inc.              --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -29,20 +29,22 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
---  The specification of this package is derived from the specification
---  of package Ada.Containers.Bounded_Ordered_Maps in the Ada 2012 RM.
---  The changes are
+--  This spec is derived from package Ada.Containers.Bounded_Ordered_Maps in
+--  the Ada 2012 RM. The modifications are to facilitate formal proofs by
+--  making it easier to express properties.
+
+--  The modifications are:
 
 --    A parameter for the container is added to every function reading the
 --    content of a container: Key, Element, Next, Query_Element, Previous,
---    Has_Element, Iterate, Reverse_Iterate. This change is
---    motivated by the need to have cursors which are valid on different
---    containers (typically a container C and its previous version C'Old) for
---    expressing properties, which is not possible if cursors encapsulate an
---    access to the underlying container. The operators "<" and ">" that could
---    not be modified that way have been removed.
+--    Has_Element, Iterate, Reverse_Iterate. This change is motivated by the
+--    need to have cursors which are valid on different containers (typically a
+--    container C and its previous version C'Old) for expressing properties,
+--    which is not possible if cursors encapsulate an access to the underlying
+--    container. The operators "<" and ">" that could not be modified that way
+--    have been removed.
 
---    There are two new functions
+--    There are two new functions:
 
 --      function Left  (Container : Map; Position : Cursor) return Map;
 --      function Right (Container : Map; Position : Cursor) return Map;
@@ -56,7 +58,7 @@
 
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Streams;
-with Ada.Containers; use Ada.Containers;
+with Ada.Containers;
 
 generic
    type Key_Type is private;
@@ -105,13 +107,13 @@ package Ada.Containers.Formal_Ordered_Maps is
      (Container : in out Map;
       Position  : Cursor;
       Process   : not null access
-        procedure (Key : Key_Type; Element : Element_Type));
+                    procedure (Key : Key_Type; Element : Element_Type));
 
    procedure Update_Element
      (Container : in out Map;
       Position  : Cursor;
       Process   : not null access
-        procedure (Key : Key_Type; Element : in out Element_Type));
+                    procedure (Key : Key_Type; Element : in out Element_Type));
 
    procedure Move (Target : in out Map; Source : in out Map);
 
@@ -192,8 +194,8 @@ package Ada.Containers.Formal_Ordered_Maps is
 
    procedure Reverse_Iterate
      (Container : Map;
-      Process   :
-        not null access procedure (Container : Map; Position : Cursor));
+      Process   : not null access
+                    procedure (Container : Map; Position : Cursor));
 
    function Strict_Equal (Left, Right : Map) return Boolean;
 
@@ -243,7 +245,7 @@ private
    for Map_Access'Storage_Size use 0;
 
    type Cursor is record
-      Node      : Node_Access;
+      Node : Node_Access;
    end record;
 
    procedure Write

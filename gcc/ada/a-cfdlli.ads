@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010, Free Software Foundation, Inc.              --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -29,19 +29,21 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
---  The specification of this package is derived from the specification
---  of package Ada.Containers.Bounded_Doubly_Linked_Lists in the Ada 2012 RM.
---  The changes are
+--  This spec is derived from Ada.Containers.Bounded_Doubly_Linked_Lists in the
+--  Ada 2012 RM. The modifications are to facilitate formal proofs by making it
+--  easier to express properties.
+
+--  The modifications are:
 
 --    A parameter for the container is added to every function reading the
---    content of a container: Element, Next, Previous, Query_Element,
---    Has_Element, Iterate, Reverse_Iterate. This change is motivated by the
---    need to have cursors which are valid on different containers (typically
---    a container C and its previous version C'Old) for expressing properties,
+--    contents of a container: Next, Previous, Query_Element, Has_Element,
+--    Iterate, Reverse_Iterate, Element. This change is motivated by the need
+--    to have cursors which are valid on different containers (typically a
+--    container C and its previous version C'Old) for expressing properties,
 --    which is not possible if cursors encapsulate an access to the underlying
 --    container.
 
---    There are two new functions
+--    There are two new functions:
 
 --      function Left  (Container : List; Position : Cursor) return List;
 --      function Right (Container : List; Position : Cursor) return List;
@@ -54,7 +56,7 @@
 --      scanned and Right the part not scanned yet.
 
 private with Ada.Streams;
-with Ada.Containers; use Ada.Containers;
+with Ada.Containers;
 
 generic
    type Element_Type is private;
@@ -288,10 +290,9 @@ private
 
    for List'Write use Write;
 
-   type Cursor is
-      record
-         Node      : Count_Type := 0;
-      end record;
+   type Cursor is record
+      Node : Count_Type := 0;
+   end record;
 
    procedure Read
      (Stream : not null access Root_Stream_Type'Class;
