@@ -375,6 +375,20 @@
   return op == stack_pointer_rtx;
 })
 
+;; False if X is anything that might eliminate to the stack pointer.
+
+(define_predicate "register_no_sp_elim_operand"
+  (match_operand 0 "register_operand")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  return !(op == stack_pointer_rtx
+	   || op == arg_pointer_rtx
+	   || op == frame_pointer_rtx
+	   || IN_RANGE (REGNO (op),
+			FIRST_PSEUDO_REGISTER, LAST_VIRTUAL_REGISTER));
+})
+
 ;; Return nonzero if X is a constant whose absolute value is greater
 ;; than 2.
 

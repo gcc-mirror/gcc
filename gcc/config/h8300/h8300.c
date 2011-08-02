@@ -5813,6 +5813,40 @@ h8300_hard_regno_mode_ok (int regno, enum machine_mode mode)
        goes.  */
     return regno == MAC_REG ? mode == SImode : 1;
 }
+
+/* Helper function for the move patterns.  Make sure a move is legitimate.  */
+
+bool
+h8300_move_ok (rtx dest, rtx src)
+{
+  rtx addr, other;
+
+  /* Validate that at least one operand is a register.  */
+  if (MEM_P (dest))
+    {
+      if (MEM_P (src) || CONSTANT_P (src))
+	return false;
+      addr = XEXP (dest, 0);
+      other = src;
+    }
+  else if (MEM_P (src))
+    {
+      addr = XEXP (src, 0);
+      other = dest;
+    }
+  else
+    return true;
+
+  /* Validate that auto-inc doesn't affect OTHER.  */
+  if (GET_RTX_CLASS (GET_CODE (addr)) != RTX_AUTOINC)
+    return true;
+  addr = XEXP (addr, 0);
+
+  if (addr == stack_pointer_rtx)
+    return register_no_sp_elim_operand (other, VOIDmode);
+  else
+    return !reg_overlap_mentioned_p(other, addr);
+}
 
 /* Perform target dependent optabs initialization.  */
 static void

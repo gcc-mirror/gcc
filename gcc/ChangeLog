@@ -1,5 +1,22 @@
 2011-08-02  Richard Henderson  <rth@redhat.com>
 
+	PR target/49878
+	* config/h8300/h8300.c (h8300_move_ok): New.
+	* config/h8300/h8300-protos.h: Declare it.
+	* config/h8300/h8300.md (P): New mode iterator.
+	(*movqi_h8300, *movqi_h8300hs, movqi): Use h8300_move_ok.
+	(*movqi_h8sx, *movhi_h8300, *movhi_h8300hs, movhi): Likewise.
+	(movsi, *movsi_h8300, *movsi_h8300hs): Likewise.
+	(*pushqi1_h8300): Rename from pushqi1_h8300; use PRE_MODIFY.
+	(*pushqi1_h8300hs_<P>): Macroize from pushqi1_h8300hs_advanced
+	and pushqi1_h8300hs_normal; use PRE_MODIFY and
+	register_no_sp_elim_operand.
+	(*pushhi1_h8300hs_<P>): Similarly.
+	(pushqi1, pushhi1, pushhi1_h8300): Remove.
+	* config/h8300/predicates.md (register_no_sp_elim_operand): New.
+
+2011-08-02  Richard Henderson  <rth@redhat.com>
+
 	PR target/49881
 	* config/avr/avr.md (push<MPUSH>1): Don't constrain the operand.
 
