@@ -1,3 +1,7 @@
+2011-08-02  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_call_a): Also check at_function_scope_p.
+
 2011-08-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49932
