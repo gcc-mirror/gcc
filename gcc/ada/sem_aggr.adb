@@ -2375,11 +2375,11 @@ package body Sem_Aggr is
    --  components of the given type mark.
 
    --  b) If the ancestor part is an expression, it must be unambiguous, and
-   --  once we have its type we can also compute the needed  components as in
+   --  once we have its type we can also compute the needed components as in
    --  the previous case. In both cases, if the ancestor type is not the
    --  immediate ancestor, we have to build this ancestor recursively.
 
-   --  In both cases discriminants of the ancestor type do not play a role in
+   --  In both cases, discriminants of the ancestor type do not play a role in
    --  the resolution of the needed components, because inherited discriminants
    --  cannot be used in a type extension. As a result we can compute
    --  independently the list of components of the ancestor type and of the
@@ -2483,13 +2483,12 @@ package body Sem_Aggr is
       Analyze (A);
       Check_Parameterless_Call (A);
 
-      --  In SPARK or ALFA, the ancestor part cannot be a subtype mark
+      --  In SPARK or ALFA, the ancestor part cannot be a type mark
 
       if Is_Entity_Name (A)
         and then Is_Type (Entity (A))
       then
-         Check_Formal_Restriction
-           ("ancestor part cannot be a subtype mark", A);
+         Check_Formal_Restriction ("ancestor part cannot be a type mark", A);
       end if;
 
       if not Is_Tagged_Type (Typ) then

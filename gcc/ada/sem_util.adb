@@ -6745,6 +6745,18 @@ package body Sem_Util is
                   and then Is_Derived_Type (Etype (E)));
    end Is_Inherited_Operation;
 
+   -------------------------------------
+   -- Is_Inherited_Operation_For_Type --
+   -------------------------------------
+
+   function Is_Inherited_Operation_For_Type
+     (E, Typ : Entity_Id) return Boolean
+   is
+   begin
+      return Is_Inherited_Operation (E)
+        and then Etype (Parent (E)) = Typ;
+   end Is_Inherited_Operation_For_Type;
+
    -----------------------------
    -- Is_Library_Level_Entity --
    -----------------------------
@@ -6844,27 +6856,6 @@ package body Sem_Util is
          end case;
       end if;
    end Is_Object_Reference;
-
-   -------------------------------
-   -- Is_SPARK_Object_Reference --
-   -------------------------------
-
-   function Is_SPARK_Object_Reference (N : Node_Id) return Boolean is
-   begin
-      if Is_Entity_Name (N) then
-         return Present (Entity (N))
-           and then
-             (Ekind_In (Entity (N), E_Constant, E_Variable)
-               or else Ekind (Entity (N)) in Formal_Kind);
-
-      else
-         if Nkind (N) = N_Selected_Component then
-            return Is_SPARK_Object_Reference (Prefix (N));
-         else
-            return False;
-         end if;
-      end if;
-   end Is_SPARK_Object_Reference;
 
    -----------------------------------
    -- Is_OK_Variable_For_Out_Formal --
@@ -7376,6 +7367,29 @@ package body Sem_Util is
          end;
       end if;
    end Is_Selector_Name;
+
+   -------------------------------
+   -- Is_SPARK_Object_Reference --
+   -------------------------------
+
+   function Is_SPARK_Object_Reference (N : Node_Id) return Boolean is
+   begin
+      if Is_Entity_Name (N) then
+         return Present (Entity (N))
+           and then
+             (Ekind_In (Entity (N), E_Constant, E_Variable)
+              or else Ekind (Entity (N)) in Formal_Kind);
+
+      else
+         case Nkind (N) is
+            when N_Selected_Component =>
+               return Is_SPARK_Object_Reference (Prefix (N));
+
+            when others =>
+               return False;
+         end case;
+      end if;
+   end Is_SPARK_Object_Reference;
 
    ------------------
    -- Is_Statement --

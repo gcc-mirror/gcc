@@ -331,6 +331,13 @@ package body Restrict is
          return;
       end if;
 
+      --  In formal mode, issue an error for any use of class-wide, even if the
+      --  No_Dispatch restriction is not set.
+
+      if R = No_Dispatch then
+         Check_Formal_Restriction ("class-wide is not allowed", N);
+      end if;
+
       if UI_Is_In_Int_Range (V) then
          VV := Integer (UI_To_Int (V));
       else

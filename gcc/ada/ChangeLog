@@ -1,3 +1,29 @@
+2011-08-02  Geert Bosch  <bosch@adacore.com>
+
+	* a-calfor.adb (Image): Simplify, removing unnecessary uses of 'Image.
+
+2011-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_type.adb (Covers): Move trivial case to the top and reuse the
+	computed value of Base_Type.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* restrict.adb (Check_Restriction): issue an error for any use of
+	class-wide, even if the No_Dispatch restriction is not set.
+	* sem_aggr.adb: Correct typos in comments and messages in formal mode
+	* sem_ch3.adb (Process_Full_View): issue an error in formal mode is,
+	when completing a private extension, the type named in the private part
+	is not the same as that named in the visible part.
+	* sem_res.adb (Resolve_Call): issue an error in formal mode on the use
+	of an inherited primitive operations of a tagged type or type extension
+	that returns the tagged type.
+	* sem_util.adb, sem_util.ads (Is_Inherited_Operation_For_Type): new
+	function which returns True for an implicit operation inherited by the
+	derived type declaration for the argument type.
+	(Is_SPARK_Object_Reference): move to appropriate place in alphabetic
+	order.
+
 2011-08-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Pre_Analyze_Range): new procedure extracted from

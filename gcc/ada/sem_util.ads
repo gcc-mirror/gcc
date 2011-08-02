@@ -748,7 +748,12 @@ package Sem_Util is
 
    function Is_Inherited_Operation (E : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
-   --  by a derived type declarations.
+   --  by a derived type declaration.
+
+   function Is_Inherited_Operation_For_Type
+     (E, Typ : Entity_Id) return Boolean;
+   --  E is a subprogram. Return True is E is an implicit operation inherited
+   --  by the derived type declaration for type Typ.
 
    function Is_LHS (N : Node_Id) return Boolean;
    --  Returns True iff N is used as Name in an assignment statement
@@ -765,9 +770,6 @@ package Sem_Util is
    function Is_Object_Reference (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents an object. Both
    --  variable and constant objects return True (compare Is_Variable).
-
-   function Is_SPARK_Object_Reference (N : Node_Id) return Boolean;
-   --  Determines if the tree referenced by N represents an object in SPARK
 
    function Is_OK_Variable_For_Out_Formal (AV : Node_Id) return Boolean;
    --  Used to test if AV is an acceptable formal for an OUT or IN OUT formal.
@@ -825,6 +827,9 @@ package Sem_Util is
    --  As described in Sinfo, Selector_Names are special because they
    --  represent use of the N_Identifier node for a true identifier, when
    --  normally such nodes represent a direct name.
+
+   function Is_SPARK_Object_Reference (N : Node_Id) return Boolean;
+   --  Determines if the tree referenced by N represents an object in SPARK
 
    function Is_Statement (N : Node_Id) return Boolean;
    pragma Inline (Is_Statement);
