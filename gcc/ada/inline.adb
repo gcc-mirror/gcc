@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -342,7 +342,9 @@ package body Inline is
                   null;
 
                elsif not Is_Inlined (Pack)
-                 and then not Has_Completion (E)
+                 and then
+                   (not Has_Completion (E)
+                      or else Is_Expression_Function (E))
                then
                   Set_Is_Inlined (Pack);
                   Inlined_Bodies.Increment_Last;
