@@ -1,3 +1,14 @@
+2011-08-02  Vincent Celier  <celier@adacore.com>
+
+	* adaint.c (file_names_case_sensitive_cache): New static int.
+	(__gnat_get_file_names_case_sensitive): Cache the return value in
+	file_names_case_sensitive_cache at the first invocation, to avoid
+	multiple calls to getenv.
+
+2011-08-02  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Implement AI05-0218-1.
+
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch3.adb, sem_ch5.adb, sem_ch9.adb, sem_prag.adb, sem.ads,
