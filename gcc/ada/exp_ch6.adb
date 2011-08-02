@@ -2936,12 +2936,15 @@ package body Exp_Ch6 is
 
       --  Check for violation of No_Abort_Statements
 
-      if Is_RTE (Subp, RE_Abort_Task) then
+      if Restriction_Check_Required (No_Abort_Statements)
+        and then Is_RTE (Subp, RE_Abort_Task)
+      then
          Check_Restriction (No_Abort_Statements, Call_Node);
 
       --  Check for violation of No_Dynamic_Attachment
 
-      elsif RTU_Loaded (Ada_Interrupts)
+      elsif Restriction_Check_Required (No_Dynamic_Attachment)
+        and then RTU_Loaded (Ada_Interrupts)
         and then (Is_RTE (Subp, RE_Is_Reserved)      or else
                   Is_RTE (Subp, RE_Is_Attached)      or else
                   Is_RTE (Subp, RE_Current_Handler)  or else

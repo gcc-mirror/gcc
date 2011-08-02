@@ -924,6 +924,7 @@ package body Ada.Exceptions is
    begin
       Exception_Data.Set_Exception_C_Msg (E, M);
       Abort_Defer.all;
+      Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
       Exception_Propagation.Propagate_Exception
         (E => E, From_Signal_Handler => True);
    end Raise_From_Signal_Handler;

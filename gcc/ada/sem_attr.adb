@@ -1646,9 +1646,10 @@ package body Sem_Attr is
          --  Check special case of Exception_Id and Exception_Occurrence which
          --  are not allowed for restriction No_Exception_Registration.
 
-         if Is_RTE (P_Type, RE_Exception_Id)
-              or else
-            Is_RTE (P_Type, RE_Exception_Occurrence)
+         if Restriction_Check_Required (No_Exception_Registration)
+           and then (Is_RTE (P_Type, RE_Exception_Id)
+                       or else
+                     Is_RTE (P_Type, RE_Exception_Occurrence))
          then
             Check_Restriction (No_Exception_Registration, P);
          end if;

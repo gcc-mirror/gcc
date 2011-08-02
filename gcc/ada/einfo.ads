@@ -2683,6 +2683,12 @@ package Einfo is
 --       Present in all object entities. True if the object is the return
 --       object of an extended_return_statement; False otherwise.
 
+--    Is_Safe_To_Reevaluate (Flag249)
+--       Present in all entities. Set in variables that are initialized by
+--       means of an assignment statement. When initialized their contents
+--       never change and hence they can be seen by the backend as constants.
+--       See also Is_True_Constant.
+
 --    Is_Scalar_Type (synthesized)
 --       Applies to all entities, true for scalar types and subtypes
 
@@ -2771,7 +2777,7 @@ package Einfo is
 --       treated as a constant by the code generator. For a constant, it means
 --       that the constant was not modified by generated code (e.g. to set a
 --       discriminant in an init proc). Assignments by user or generated code
---       will reset this flag.
+--       will reset this flag. See also Is_Safe_To_Reevaluate.
 
 --    Is_Type (synthesized)
 --       Applies to all entities, true for a type entity
@@ -5659,6 +5665,7 @@ package Einfo is
    --    Has_Volatile_Components             (Flag87)
    --    Is_Atomic                           (Flag85)
    --    Is_Eliminated                       (Flag124)
+   --    Is_Safe_To_Reevaluate               (Flag249)
    --    Is_Shared_Passive                   (Flag60)
    --    Is_True_Constant                    (Flag163)
    --    Is_Volatile                         (Flag16)
@@ -6165,6 +6172,7 @@ package Einfo is
    function Is_Remote_Types                     (Id : E) return B;
    function Is_Renaming_Of_Object               (Id : E) return B;
    function Is_Return_Object                    (Id : E) return B;
+   function Is_Safe_To_Reevaluate               (Id : E) return B;
    function Is_Shared_Passive                   (Id : E) return B;
    function Is_Statically_Allocated             (Id : E) return B;
    function Is_Tag                              (Id : E) return B;
@@ -6753,6 +6761,7 @@ package Einfo is
    procedure Set_Is_Remote_Types                 (Id : E; V : B := True);
    procedure Set_Is_Renaming_Of_Object           (Id : E; V : B := True);
    procedure Set_Is_Return_Object                (Id : E; V : B := True);
+   procedure Set_Is_Safe_To_Reevaluate           (Id : E; V : B := True);
    procedure Set_Is_Shared_Passive               (Id : E; V : B := True);
    procedure Set_Is_Statically_Allocated         (Id : E; V : B := True);
    procedure Set_Is_Tag                          (Id : E; V : B := True);
@@ -7480,6 +7489,7 @@ package Einfo is
    pragma Inline (Is_Remote_Types);
    pragma Inline (Is_Renaming_Of_Object);
    pragma Inline (Is_Return_Object);
+   pragma Inline (Is_Safe_To_Reevaluate);
    pragma Inline (Is_Scalar_Type);
    pragma Inline (Is_Shared_Passive);
    pragma Inline (Is_Signed_Integer_Type);
@@ -7882,6 +7892,7 @@ package Einfo is
    pragma Inline (Set_Is_Remote_Types);
    pragma Inline (Set_Is_Renaming_Of_Object);
    pragma Inline (Set_Is_Return_Object);
+   pragma Inline (Set_Is_Safe_To_Reevaluate);
    pragma Inline (Set_Is_Shared_Passive);
    pragma Inline (Set_Is_Statically_Allocated);
    pragma Inline (Set_Is_Tag);

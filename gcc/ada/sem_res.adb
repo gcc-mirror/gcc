@@ -5702,9 +5702,10 @@ package body Sem_Res is
       --  Check for violation of restriction No_Specific_Termination_Handlers
       --  and warn on a potentially blocking call to Abort_Task.
 
-      if Is_RTE (Nam, RE_Set_Specific_Handler)
-           or else
-         Is_RTE (Nam, RE_Specific_Handler)
+      if Restriction_Check_Required (No_Specific_Termination_Handlers)
+        and then (Is_RTE (Nam, RE_Set_Specific_Handler)
+                    or else
+                  Is_RTE (Nam, RE_Specific_Handler))
       then
          Check_Restriction (No_Specific_Termination_Handlers, N);
 
@@ -5717,7 +5718,8 @@ package body Sem_Res is
       --  need to check the second argument to determine whether it is an
       --  absolute or relative timing event.
 
-      if Is_RTE (Nam, RE_Set_Handler)
+      if Restriction_Check_Required (No_Relative_Delay)
+        and then Is_RTE (Nam, RE_Set_Handler)
         and then Is_RTE (Etype (Next_Actual (First_Actual (N))), RE_Time_Span)
       then
          Check_Restriction (No_Relative_Delay, N);

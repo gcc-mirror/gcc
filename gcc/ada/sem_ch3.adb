@@ -3671,8 +3671,9 @@ package body Sem_Ch3 is
 
       --  Check for violation of No_Local_Timing_Events
 
-      if Is_RTE (Etype (Id), RE_Timing_Event)
+      if Restriction_Check_Required (No_Local_Timing_Events)
         and then not Is_Library_Level_Entity (Id)
+        and then Is_RTE (Etype (Id), RE_Timing_Event)
       then
          Check_Restriction (No_Local_Timing_Events, N);
       end if;

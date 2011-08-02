@@ -236,18 +236,14 @@ package body Style is
 
    procedure Missing_Overriding (N : Node_Id; E : Entity_Id) is
    begin
-      --  Note that Error_Msg_NE, which would be more natural to use here,
-      --  is not visible from this generic unit ???
-
-      Error_Msg_Name_1 := Chars (E);
-
       if Style_Check_Missing_Overriding and then Comes_From_Source (N) then
          if Nkind (N) = N_Subprogram_Body then
-            Error_Msg_N -- CODEFIX
-              ("(style) missing OVERRIDING indicator in body of%", N);
+            Error_Msg_NE -- CODEFIX
+              ("(style) missing OVERRIDING indicator in body of&", N, E);
          else
-            Error_Msg_N -- CODEFIX
-              ("(style) missing OVERRIDING indicator in declaration of%", N);
+            Error_Msg_NE -- CODEFIX
+              ("(style) missing OVERRIDING indicator in declaration of&",
+               N, E);
          end if;
       end if;
    end Missing_Overriding;
