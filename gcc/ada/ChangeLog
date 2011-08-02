@@ -1,3 +1,10 @@
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): when copying the expression
+	in an association, set parent field of copy before partial analysis.
+	* sem_res.adb (Resolve_Slice): create reference to itype only when
+	expansion is enabled.
+
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
 	* einfo.adb, einfo.ads (Body_Is_In_ALFA, Set_Body_Is_In_ALFA): get/set
