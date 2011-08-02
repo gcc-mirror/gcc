@@ -1,3 +1,50 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Statement):  If the iteration scheme is an
+	Ada2012 iterator, the loop will be rewritten during expansion into a
+	while loop with a cursor and an element declaration. Do not analyze the
+	body in this case, because if the container is for indefinite types the
+	actual subtype of the elements will only be determined when the cursor
+	declaration is analyzed.
+
+2011-08-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Ignore
+	size/alignment related attributes in CodePeer_Mode.
+
+2011-08-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Check_Ops_From_Incomplete_Type): Remove call to
+	Prepend_Element, since this can result in the operation getting the
+	wrong slot in the full type's dispatch table if the full type has
+	inherited operations. The incomplete type's operation will get added
+	to the proper position in the full type's primitives
+	list later in Sem_Disp.Check_Operation_From_Incomplete_Type.
+	(Process_Incomplete_Dependents): Add Is_Primitive test when checking for
+	dispatching operations, since there are cases where nonprimitive
+	subprograms can get added to the list of incomplete dependents (such
+	as subprograms in nested packages).
+	* sem_ch6.adb (Process_Formals): First, remove test for being in a
+	private part when determining whether to add a primitive with a
+	parameter of a tagged incomplete type to the Private_Dependents list.
+	Such primitives can also occur in the visible part, and should not have
+	been excluded from being private dependents.
+	* sem_ch7.adb (Uninstall_Declarations): When checking the rule of
+	RM05-3.10.1(9.3/2), test that a subprogram in the Private_Dependents
+	list of a Taft-amendment incomplete type is a primitive before issuing
+	an error that the full type must appear in the same unit. There are
+	cases where nonprimitives can be in the list (such as subprograms in
+	nested packages).
+	* sem_disp.adb (Derives_From): Use correct condition for checking that
+	a formal's type is derived from the type of the corresponding formal in
+	the parent subprogram (the condition was completely wrong). Add
+	checking that was missing for controlling result types being derived
+	from the result type of the parent operation.
+
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
 	* errout.adb (First_Node): minor renaming

@@ -2190,9 +2190,12 @@ package body Sem_Ch3 is
                                     or else In_Package_Body (Current_Scope));
 
       procedure Check_Ops_From_Incomplete_Type;
-      --  If there is a tagged incomplete partial view of the type, transfer
-      --  its operations to the full view, and indicate that the type of the
-      --  controlling parameter (s) is this full view.
+      --  If there is a tagged incomplete partial view of the type, traverse
+      --  the primitives of the incomplete view and change the type of any
+      --  controlling formals and result to indicate the full view. The
+      --  primitives will be added to the full type's primitive operations
+      --  list later in Sem_Disp.Check_Operation_From_Incomplete_Type (which
+      --  is called from Process_Incomplete_Dependents).
 
       ------------------------------------
       -- Check_Ops_From_Incomplete_Type --
@@ -2212,7 +2215,6 @@ package body Sem_Ch3 is
             Elmt := First_Elmt (Primitive_Operations (Prev));
             while Present (Elmt) loop
                Op := Node (Elmt);
-               Prepend_Elmt (Op, Primitive_Operations (T));
 
                Formal := First_Formal (Op);
                while Present (Formal) loop
@@ -17844,17 +17846,17 @@ package body Sem_Ch3 is
 
          elsif Is_Overloadable (Priv_Dep) then
 
-            --  A protected operation is never dispatching: only its
-            --  wrapper operation (which has convention Ada) is.
+            --  If a subprogram in the incomplete dependents list is primitive
+            --  for a tagged full type then mark it as a dispatching operation,
+            --  check whether it overrides an inherited subprogram, and check
+            --  restrictions on its controlling formals. Note that a protected
+            --  operation is never dispatching: only its wrapper operation
+            --  (which has convention Ada) is.
 
             if Is_Tagged_Type (Full_T)
+              and then Is_Primitive (Priv_Dep)
               and then Convention (Priv_Dep) /= Convention_Protected
             then
-
-               --  Subprogram has an access parameter whose designated type
-               --  was incomplete. Reexamine declaration now, because it may
-               --  be a primitive operation of the full type.
-
                Check_Operation_From_Incomplete_Type (Priv_Dep, Inc_T);
                Set_Is_Dispatching_Operation (Priv_Dep);
                Check_Controlling_Formals (Full_T, Priv_Dep);

@@ -1567,9 +1567,10 @@ package body Sem_Ch13 is
          Set_Analyzed (N, True);
       end if;
 
-      --  Process Ignore_Rep_Clauses option
+      --  Process Ignore_Rep_Clauses option (we also ignore rep clauses in
+      --  CodePeer mode, since they are not relevant in that context).
 
-      if Ignore_Rep_Clauses then
+      if Ignore_Rep_Clauses or CodePeer_Mode then
          case Id is
 
             --  The following should be ignored. They do not affect legality
@@ -1584,12 +1585,22 @@ package body Sem_Ch13 is
                  Attribute_Machine_Radix  |
                  Attribute_Object_Size    |
                  Attribute_Size           |
-                 Attribute_Small          |
                  Attribute_Stream_Size    |
                  Attribute_Value_Size     =>
-
                Rewrite (N, Make_Null_Statement (Sloc (N)));
                return;
+
+            --  We do not want too ignore 'Small in CodePeer_Mode, since it
+            --  has an impact on the exact computations performed.
+
+            --  Perhaps 'Small should also not be ignored by
+            --  Ignore_Rep_Clauses ???
+
+            when Attribute_Small =>
+               if Ignore_Rep_Clauses then
+                  Rewrite (N, Make_Null_Statement (Sloc (N)));
+                  return;
+               end if;
 
             --  The following should not be ignored, because in the first place
             --  they are reasonably portable, and should not cause problems in
@@ -1597,13 +1608,13 @@ package body Sem_Ch13 is
             --  legality, e.g. failing to provide a stream attribute for a
             --  type may make a program illegal.
 
-            when Attribute_External_Tag            |
-                 Attribute_Input                   |
-                 Attribute_Output                  |
-                 Attribute_Read                    |
-                 Attribute_Storage_Pool            |
-                 Attribute_Storage_Size            |
-                 Attribute_Write                   =>
+            when Attribute_External_Tag |
+                 Attribute_Input        |
+                 Attribute_Output       |
+                 Attribute_Read         |
+                 Attribute_Storage_Pool |
+                 Attribute_Storage_Size |
+                 Attribute_Write        =>
                null;
 
             --  Other cases are errors ("attribute& cannot be set with

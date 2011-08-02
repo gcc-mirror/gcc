@@ -8655,7 +8655,6 @@ package body Sem_Ch6 is
 
                if Is_Tagged_Type (Formal_Type) then
                   if Ekind (Scope (Current_Scope)) = E_Package
-                    and then In_Private_Part (Scope (Current_Scope))
                     and then not From_With_Type (Formal_Type)
                     and then not Is_Class_Wide_Type (Formal_Type)
                   then
@@ -8666,6 +8665,14 @@ package body Sem_Ch6 is
                         Append_Elmt
                           (Current_Scope,
                              Private_Dependents (Base_Type (Formal_Type)));
+
+                        --  Freezing is delayed to ensure that Register_Prim
+                        --  will get called for this operation, which is needed
+                        --  in cases where static dispatch tables aren't built.
+                        --  (Note that the same is done for controlling access
+                        --  parameter cases in function Access_Definition.)
+
+                        Set_Has_Delayed_Freeze (Current_Scope);
                      end if;
                   end if;
 
