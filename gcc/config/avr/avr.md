@@ -221,7 +221,7 @@
    (SF "") (SC "")])
 
 (define_expand "push<mode>1"
-  [(match_operand:MPUSH 0 "general_operand" "")]
+  [(match_operand:MPUSH 0 "" "")]
   ""
 {
   int i;
