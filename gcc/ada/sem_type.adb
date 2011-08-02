@@ -737,22 +737,12 @@ package body Sem_Type is
          else
             raise Program_Error;
          end if;
+      end if;
 
-      else
-         BT1 := Base_Type (T1);
-         BT2 := Base_Type (T2);
+      --  Trivial case: same types are always compatible
 
-         --  Handle underlying view of records with unknown discriminants
-         --  using the original entity that motivated the construction of
-         --  this underlying record view (see Build_Derived_Private_Type).
-
-         if Is_Underlying_Record_View (BT1) then
-            BT1 := Underlying_Record_View (BT1);
-         end if;
-
-         if Is_Underlying_Record_View (BT2) then
-            BT2 := Underlying_Record_View (BT2);
-         end if;
+      if T1 = T2 then
+         return True;
       end if;
 
       --  First check for Standard_Void_Type, which is special. Subsequent
@@ -762,26 +752,38 @@ package body Sem_Type is
 
       if (T1 = Standard_Void_Type) /= (T2 = Standard_Void_Type) then
          return False;
+      end if;
 
-      --  Simplest case: same types are compatible, and types that have the
-      --  same base type and are not generic actuals are compatible. Generic
-      --  actuals  belong to their class but are not compatible with other
-      --  types of their class, and in particular with other generic actuals.
-      --  They are however compatible with their own subtypes, and itypes
-      --  with the same base are compatible as well. Similarly, constrained
-      --  subtypes obtained from expressions of an unconstrained nominal type
-      --  are compatible with the base type (may lead to spurious ambiguities
-      --  in obscure cases ???)
+      BT1 := Base_Type (T1);
+      BT2 := Base_Type (T2);
+
+      --  Handle underlying view of records with unknown discriminants
+      --  using the original entity that motivated the construction of
+      --  this underlying record view (see Build_Derived_Private_Type).
+
+      if Is_Underlying_Record_View (BT1) then
+         BT1 := Underlying_Record_View (BT1);
+      end if;
+
+      if Is_Underlying_Record_View (BT2) then
+         BT2 := Underlying_Record_View (BT2);
+      end if;
+
+      --  Simplest case: types that have the same base type and are not generic
+      --  actuals are compatible. Generic actuals belong to their class but are
+      --  not compatible with other types of their class, and in particular
+      --  with other generic actuals. They are however compatible with their
+      --  own subtypes, and itypes with the same base are compatible as well.
+      --  Similarly, constrained subtypes obtained from expressions of an
+      --  unconstrained nominal type are compatible with the base type (may
+      --  lead to spurious ambiguities in obscure cases ???)
 
       --  Generic actuals require special treatment to avoid spurious ambi-
       --  guities in an instance, when two formal types are instantiated with
       --  the same actual, so that different subprograms end up with the same
       --  signature in the instance.
 
-      elsif T1 = T2 then
-         return True;
-
-      elsif BT1 = BT2
+      if BT1 = BT2
         or else BT1 = T2
         or else BT2 = T1
       then
@@ -830,7 +832,7 @@ package body Sem_Type is
         and then Is_Interface (Etype (T1))
         and then Is_Concurrent_Type (T2)
         and then Interface_Present_In_Ancestor
-                   (Typ   => Base_Type (T2),
+                   (Typ   => BT2,
                     Iface => Etype (T1))
       then
          return True;
@@ -889,7 +891,7 @@ package body Sem_Type is
       elsif Is_Class_Wide_Type (T2)
         and then
           (Class_Wide_Type (T1) = T2
-             or else Base_Type (Root_Type (T2)) = Base_Type (T1))
+             or else Base_Type (Root_Type (T2)) = BT1)
       then
          return True;
 
@@ -1037,7 +1039,7 @@ package body Sem_Type is
 
       --  The actual type may be the result of a previous error
 
-      elsif Base_Type (T2) = Any_Type then
+      elsif BT2 = Any_Type then
          return True;
 
       --  A packed array type covers its corresponding non-packed type. This is

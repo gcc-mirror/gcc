@@ -17275,89 +17275,108 @@ package body Sem_Ch3 is
               ("parent of full type must descend from parent"
                   & " of private extension", Full_Indic);
 
-         --  Check the rules of 7.3(10): if the private extension inherits
-         --  known discriminants, then the full type must also inherit those
-         --  discriminants from the same (ancestor) type, and the parent
-         --  subtype of the full type must be constrained if and only if
-         --  the ancestor subtype of the private extension is constrained.
+         --  First check a formal restriction, and then proceed with checking
+         --  Ada rules. Since the formal restriction is not a serious error, we
+         --  don't prevent further error detection for this check, hence the
+         --  ELSE.
 
-         elsif No (Discriminant_Specifications (Parent (Priv_T)))
-           and then not Has_Unknown_Discriminants (Priv_T)
-           and then Has_Discriminants (Base_Type (Priv_Parent))
-         then
-            declare
-               Priv_Indic  : constant Node_Id :=
-                               Subtype_Indication (Parent (Priv_T));
+         else
 
-               Priv_Constr : constant Boolean :=
-                               Is_Constrained (Priv_Parent)
-                                 or else
-                                   Nkind (Priv_Indic) = N_Subtype_Indication
-                                 or else Is_Constrained (Entity (Priv_Indic));
+            --  In formal mode, when completing a private extension the type
+            --  named in the private part must be exactly the same as that
+            --  named in the visible part.
 
-               Full_Constr : constant Boolean :=
-                               Is_Constrained (Full_Parent)
-                                 or else
-                                   Nkind (Full_Indic) = N_Subtype_Indication
-                                 or else Is_Constrained (Entity (Full_Indic));
+            if Priv_Parent /= Full_Parent then
+               Error_Msg_Name_1 := Chars (Priv_Parent);
+               Check_Formal_Restriction ("% expected", Full_Indic);
+            end if;
 
-               Priv_Discr : Entity_Id;
-               Full_Discr : Entity_Id;
+            --  Check the rules of 7.3(10): if the private extension inherits
+            --  known discriminants, then the full type must also inherit those
+            --  discriminants from the same (ancestor) type, and the parent
+            --  subtype of the full type must be constrained if and only if
+            --  the ancestor subtype of the private extension is constrained.
 
-            begin
-               Priv_Discr := First_Discriminant (Priv_Parent);
-               Full_Discr := First_Discriminant (Full_Parent);
-               while Present (Priv_Discr) and then Present (Full_Discr) loop
-                  if Original_Record_Component (Priv_Discr) =
-                     Original_Record_Component (Full_Discr)
-                    or else
-                     Corresponding_Discriminant (Priv_Discr) =
-                     Corresponding_Discriminant (Full_Discr)
-                  then
-                     null;
-                  else
-                     exit;
+            if No (Discriminant_Specifications (Parent (Priv_T)))
+              and then not Has_Unknown_Discriminants (Priv_T)
+              and then Has_Discriminants (Base_Type (Priv_Parent))
+            then
+               declare
+                  Priv_Indic  : constant Node_Id :=
+                                  Subtype_Indication (Parent (Priv_T));
+
+                  Priv_Constr : constant Boolean :=
+                                  Is_Constrained (Priv_Parent)
+                                    or else
+                                      Nkind (Priv_Indic) = N_Subtype_Indication
+                                        or else
+                                          Is_Constrained (Entity (Priv_Indic));
+
+                  Full_Constr : constant Boolean :=
+                                  Is_Constrained (Full_Parent)
+                                    or else
+                                      Nkind (Full_Indic) = N_Subtype_Indication
+                                        or else
+                                          Is_Constrained (Entity (Full_Indic));
+
+                  Priv_Discr : Entity_Id;
+                  Full_Discr : Entity_Id;
+
+               begin
+                  Priv_Discr := First_Discriminant (Priv_Parent);
+                  Full_Discr := First_Discriminant (Full_Parent);
+                  while Present (Priv_Discr) and then Present (Full_Discr) loop
+                     if Original_Record_Component (Priv_Discr) =
+                       Original_Record_Component (Full_Discr)
+                       or else
+                         Corresponding_Discriminant (Priv_Discr) =
+                         Corresponding_Discriminant (Full_Discr)
+                     then
+                        null;
+                     else
+                        exit;
+                     end if;
+
+                     Next_Discriminant (Priv_Discr);
+                     Next_Discriminant (Full_Discr);
+                  end loop;
+
+                  if Present (Priv_Discr) or else Present (Full_Discr) then
+                     Error_Msg_N
+                       ("full view must inherit discriminants of the parent"
+                        & " type used in the private extension", Full_Indic);
+
+                  elsif Priv_Constr and then not Full_Constr then
+                     Error_Msg_N
+                       ("parent subtype of full type must be constrained",
+                        Full_Indic);
+
+                  elsif Full_Constr and then not Priv_Constr then
+                     Error_Msg_N
+                       ("parent subtype of full type must be unconstrained",
+                        Full_Indic);
                   end if;
+               end;
 
-                  Next_Discriminant (Priv_Discr);
-                  Next_Discriminant (Full_Discr);
-               end loop;
+               --  Check the rules of 7.3(12): if a partial view has neither
+               --  known or unknown discriminants, then the full type
+               --  declaration shall define a definite subtype.
 
-               if Present (Priv_Discr) or else Present (Full_Discr) then
-                  Error_Msg_N
-                    ("full view must inherit discriminants of the parent type"
-                     & " used in the private extension", Full_Indic);
+            elsif      not Has_Unknown_Discriminants (Priv_T)
+              and then not Has_Discriminants (Priv_T)
+              and then not Is_Constrained (Full_T)
+            then
+               Error_Msg_N
+                 ("full view must define a constrained type if partial view"
+                  & " has no discriminants", Full_T);
+            end if;
 
-               elsif Priv_Constr and then not Full_Constr then
-                  Error_Msg_N
-                    ("parent subtype of full type must be constrained",
-                     Full_Indic);
-
-               elsif Full_Constr and then not Priv_Constr then
-                  Error_Msg_N
-                    ("parent subtype of full type must be unconstrained",
-                     Full_Indic);
-               end if;
-            end;
-
-         --  Check the rules of 7.3(12): if a partial view has neither known
-         --  or unknown discriminants, then the full type declaration shall
-         --  define a definite subtype.
-
-         elsif      not Has_Unknown_Discriminants (Priv_T)
-           and then not Has_Discriminants (Priv_T)
-           and then not Is_Constrained (Full_T)
-         then
-            Error_Msg_N
-              ("full view must define a constrained type if partial view"
-                & " has no discriminants", Full_T);
+            --  ??????? Do we implement the following properly ?????
+            --  If the ancestor subtype of a private extension has constrained
+            --  discriminants, then the parent subtype of the full view shall
+            --  impose a statically matching constraint on those discriminants
+            --  [7.3(13)].
          end if;
-
-         --  ??????? Do we implement the following properly ?????
-         --  If the ancestor subtype of a private extension has constrained
-         --  discriminants, then the parent subtype of the full view shall
-         --  impose a statically matching constraint on those discriminants
-         --  [7.3(13)].
 
       else
          --  For untagged types, verify that a type without discriminants
