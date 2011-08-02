@@ -3030,6 +3030,12 @@ package body Sem_Ch3 is
 
       Act_T := T;
 
+      --  The object is in ALFA if-and-only-if its type is in ALFA
+
+      if Is_In_ALFA (T) then
+         Set_Is_In_ALFA (Id);
+      end if;
+
       --  These checks should be performed before the initialization expression
       --  is considered, so that the Object_Definition node is still the same
       --  as in source code.
@@ -3987,9 +3993,9 @@ package body Sem_Ch3 is
 
       if Skip
         or else (Present (Etype (Id))
-                   and then (Is_Private_Type (Etype (Id))
-                               or else Is_Task_Type (Etype (Id))
-                               or else Is_Rewrite_Substitution (N)))
+                  and then (Is_Private_Type (Etype (Id))
+                             or else Is_Task_Type (Etype (Id))
+                             or else Is_Rewrite_Substitution (N)))
       then
          null;
 
@@ -4017,7 +4023,7 @@ package body Sem_Ch3 is
 
       if Has_Predicates (T)
         or else (Present (Ancestor_Subtype (T))
-                   and then Has_Predicates (Ancestor_Subtype (T)))
+                  and then Has_Predicates (Ancestor_Subtype (T)))
       then
          Set_Has_Predicates (Id);
          Set_Has_Delayed_Freeze (Id);
@@ -7914,11 +7920,11 @@ package body Sem_Ch3 is
    begin
       --  Set common attributes
 
-      Set_Scope         (Derived_Type, Current_Scope);
+      Set_Scope          (Derived_Type, Current_Scope);
 
-      Set_Ekind         (Derived_Type, Ekind    (Parent_Base));
-      Set_Etype         (Derived_Type,           Parent_Base);
-      Set_Has_Task      (Derived_Type, Has_Task (Parent_Base));
+      Set_Ekind          (Derived_Type, Ekind    (Parent_Base));
+      Set_Etype          (Derived_Type,           Parent_Base);
+      Set_Has_Task       (Derived_Type, Has_Task (Parent_Base));
 
       Set_Size_Info      (Derived_Type,                 Parent_Type);
       Set_RM_Size        (Derived_Type, RM_Size        (Parent_Type));
@@ -11496,6 +11502,16 @@ package body Sem_Ch3 is
       C : constant Node_Id   := Constraint (S);
 
    begin
+      --  By default, consider that the enumeration subtype is in ALFA if the
+      --  entity of its subtype mark is in ALFA. This is reversed later if the
+      --  range of the subtype is not static.
+
+      if Nkind (Original_Node (Parent (Def_Id))) = N_Subtype_Declaration
+        and then Is_In_ALFA (T)
+      then
+         Set_Is_In_ALFA (Def_Id);
+      end if;
+
       Set_Ekind (Def_Id, E_Enumeration_Subtype);
 
       Set_First_Literal     (Def_Id, First_Literal (Base_Type (T)));
@@ -11718,6 +11734,16 @@ package body Sem_Ch3 is
       C : constant Node_Id   := Constraint (S);
 
    begin
+      --  By default, consider that the integer subtype is in ALFA if the
+      --  entity of its subtype mark is in ALFA. This is reversed later if the
+      --  range of the subtype is not static.
+
+      if Nkind (Original_Node (Parent (Def_Id))) = N_Subtype_Declaration
+        and then Is_In_ALFA (T)
+      then
+         Set_Is_In_ALFA (Def_Id);
+      end if;
+
       Set_Scalar_Range_For_Subtype (Def_Id, Range_Expression (C), T);
 
       if Is_Modular_Integer_Type (T) then
@@ -14468,6 +14494,12 @@ package body Sem_Ch3 is
       Set_RM_Size         (T, UI_From_Int (Minimum_Size (T)));
       Set_Enum_Esize      (T);
       Set_Enum_Pos_To_Rep (T, Empty);
+
+      --  Enumeration type is in ALFA only if it is not a character type
+
+      if not Is_Character_Type (T) then
+         Set_Is_In_ALFA (T);
+      end if;
 
       --  Set Discard_Names if configuration pragma set, or if there is
       --  a parameterless pragma in the current declarative region
@@ -17929,8 +17961,8 @@ package body Sem_Ch3 is
 
       if Nkind (R) = N_Range then
 
-         --  In SPARK/ALFA, all ranges should be static, with the exception of
-         --  the discrete type definition of a loop parameter specification.
+         --  In SPARK, all ranges should be static, with the exception of the
+         --  discrete type definition of a loop parameter specification.
 
          if not In_Iter_Schm
            and then not Is_Static_Range (R)
@@ -19387,6 +19419,14 @@ package body Sem_Ch3 is
       Set_Ekind (Def_Id, E_Void);
       Process_Range_Expr_In_Decl (R, Subt);
       Set_Ekind (Def_Id, Kind);
+
+      --  In ALFA, all subtypes should have a static range
+
+      if Nkind (R) = N_Range
+        and then not Is_Static_Range (R)
+      then
+         Set_Is_In_ALFA (Def_Id, False);
+      end if;
    end Set_Scalar_Range_For_Subtype;
 
    --------------------------------------------------------
@@ -19558,6 +19598,7 @@ package body Sem_Ch3 is
       Set_Scalar_Range   (T, Def);
       Set_RM_Size        (T, UI_From_Int (Minimum_Size (T)));
       Set_Is_Constrained (T);
+      Set_Is_In_ALFA     (T);
    end Signed_Integer_Type_Declaration;
 
 end Sem_Ch3;
