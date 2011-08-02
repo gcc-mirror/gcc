@@ -1,3 +1,8 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi, a-tags.ads, sem_prag.adb, sem_ch12.adb, exp_disp.adb:
+	Minor reformatting.
+
 2011-08-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Chain_PPC): Implement AI04-0230: null procedures can

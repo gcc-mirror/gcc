@@ -5995,6 +5995,8 @@ package body Exp_Disp is
 
       --     Check_TSD (TSD'Unrestricted_Access);
 
+      --  Seems wrong to restrict this BI to Ada 2012 ???
+
       if not No_Run_Time_Mode
         and then Ada_Version >= Ada_2012
         and then RTE_Available (RE_Check_TSD)

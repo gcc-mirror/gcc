@@ -4562,7 +4562,8 @@ Note that Source_File_Name pragmas should not be used if you are using
 project files. The reason for this rule is that the project manager is not
 aware of these pragmas, and so other tools that use the projet file would not
 be aware of the intended naming conventions. If you are using project files,
-file naming is controlled by Source_File_Name_Project pragmas. A pragma
+file naming is controlled by Source_File_Name_Project pragmas, which are
+usually supplied automatically by the project manager. A pragma
 Source_File_Name cannot appear after a @ref{Pragma Source_File_Name_Project}.
 
 For more details on the use of the @code{Source_File_Name} pragma,
