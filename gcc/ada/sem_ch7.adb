@@ -2463,7 +2463,11 @@ package body Sem_Ch7 is
                while Present (Elmt) loop
                   Subp := Node (Elmt);
 
-                  if Is_Overloadable (Subp) then
+                  --  Is_Primitive is tested because there can be cases where
+                  --  nonprimitive subprograms (in nested packages) are added
+                  --  to the Private_Dependents list.
+
+                  if Is_Overloadable (Subp) and then Is_Primitive (Subp) then
                      Error_Msg_NE
                        ("type& must be completed in the private part",
                          Parent (Subp), Id);

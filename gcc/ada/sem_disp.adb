@@ -1362,23 +1362,28 @@ package body Sem_Disp is
       Op1, Op2   : Elmt_Id;
       Prev       : Elmt_Id := No_Elmt;
 
-      function Derives_From (Proc : Entity_Id) return Boolean;
-      --  Check that Subp has the signature of an operation derived from Proc.
-      --  Subp has an access parameter that designates Typ.
+      function Derives_From (Parent_Subp : Entity_Id) return Boolean;
+      --  Check that Subp has profile of an operation derived from Parent_Subp.
+      --  Subp must have a parameter or result type that is Typ or an access
+      --  parameter or access result type that designates Typ.
 
       ------------------
       -- Derives_From --
       ------------------
 
-      function Derives_From (Proc : Entity_Id) return Boolean is
+      function Derives_From (Parent_Subp : Entity_Id) return Boolean is
          F1, F2 : Entity_Id;
 
       begin
-         if Chars (Proc) /= Chars (Subp) then
+         if Chars (Parent_Subp) /= Chars (Subp) then
             return False;
          end if;
 
-         F1 := First_Formal (Proc);
+         --  Check that the type of controlling formals is derived from the
+         --  parent subprogram's controlling formal type (or designated type
+         --  if the formal type is an anonymous access type).
+
+         F1 := First_Formal (Parent_Subp);
          F2 := First_Formal (Subp);
          while Present (F1) and then Present (F2) loop
             if Ekind (Etype (F1)) = E_Anonymous_Access_Type then
@@ -1393,13 +1398,44 @@ package body Sem_Disp is
             elsif Ekind (Etype (F2)) = E_Anonymous_Access_Type then
                return False;
 
-            elsif Etype (F1) /= Etype (F2) then
+            elsif Etype (F1) = Parent_Typ and then Etype (F2) /= Full then
                return False;
             end if;
 
             Next_Formal (F1);
             Next_Formal (F2);
          end loop;
+
+         --  Check that a controlling result type is derived from the parent
+         --  subprogram's result type (or designated type if the result type
+         --  is an anonymous access type).
+
+         if Ekind (Parent_Subp) = E_Function then
+            if Ekind (Subp) /= E_Function then
+               return False;
+
+            elsif Ekind (Etype (Parent_Subp)) = E_Anonymous_Access_Type then
+               if Ekind (Etype (Subp)) /= E_Anonymous_Access_Type then
+                  return False;
+
+               elsif Designated_Type (Etype (Parent_Subp)) = Parent_Typ
+                 and then Designated_Type (Etype (Subp)) /= Full
+               then
+                  return False;
+               end if;
+
+            elsif Ekind (Etype (Subp)) = E_Anonymous_Access_Type then
+               return False;
+
+            elsif Etype (Parent_Subp) = Parent_Typ
+              and then Etype (Subp) /= Full
+            then
+               return False;
+            end if;
+
+         elsif Ekind (Subp) = E_Function then
+            return False;
+         end if;
 
          return No (F1) and then No (F2);
       end Derives_From;

@@ -2387,7 +2387,33 @@ package body Sem_Ch5 is
       Kill_Current_Values;
       Push_Scope (Ent);
       Analyze_Iteration_Scheme (Iter);
-      Analyze_Statements (Statements (Loop_Statement));
+
+      --  Analyze the statements of the body except in the case of an Ada 2012
+      --  iterator with the expander active. In this case the expander will do
+      --  a rewrite of the loop into a while loop. We will then analyze the
+      --  loop body when we analyze this while loop.
+
+      --  We need to do this delay because if the container is for indefinite
+      --  types the actual subtype of the components will only be determined
+      --  when the cursor declaration is analyzed.
+
+      --  If the expander is not active, then we want to analyze the loop body
+      --  now even in the Ada 2012 iterator case, since the rewriting will not
+      --  be done.
+
+      if No (Iter)
+        or else No (Iterator_Specification (Iter))
+        or else not Expander_Active
+      then
+         Analyze_Statements (Statements (Loop_Statement));
+      end if;
+
+      --  Finish up processing for the loop. We kill all current values, since
+      --  in general we don't know if the statements in the loop have been
+      --  executed. We could do a bit better than this with a loop that we
+      --  know will execute at least once, but it's not worth the trouble and
+      --  the front end is not in the business of flow tracing.
+
       Process_End_Label (Loop_Statement, 'e', Ent);
       End_Scope;
       Kill_Current_Values;

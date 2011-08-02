@@ -6923,10 +6923,9 @@ package body Exp_Ch4 is
                Set_Entity (Right_Opnd (Neg), Corresponding_Equality (Ne));
             end if;
 
-            --  For navigation purposes, the inequality is treated as an
+            --  For navigation purposes, we want to treat the inequality as an
             --  implicit reference to the corresponding equality. Preserve the
-            --  Comes_From_ source flag so that the proper Xref entry is
-            --  generated.
+            --  Comes_From_ source flag to generate proper Xref entries.
 
             Preserve_Comes_From_Source (Neg, N);
             Preserve_Comes_From_Source (Right_Opnd (Neg), N);
