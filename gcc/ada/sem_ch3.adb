@@ -1782,7 +1782,7 @@ package body Sem_Ch3 is
       Enter_Name (Id);
 
       if Present (Typ) then
-         if Nkind (Typ) /= N_Identifier then
+         if not Nkind_In (Typ, N_Identifier, N_Expanded_Name) then
             Check_Formal_Restriction ("subtype mark required", Typ);
          end if;
 
@@ -2038,6 +2038,10 @@ package body Sem_Ch3 is
    --  Start of processing for Analyze_Declarations
 
    begin
+      if SPARK_Mode or else Restriction_Check_Required (SPARK) then
+         Check_Later_Vs_Basic_Declarations (L, During_Parsing => False);
+      end if;
+
       D := First (L);
       while Present (D) loop
 
@@ -3032,11 +3036,11 @@ package body Sem_Ch3 is
       --  mark and shall not be unconstrained. (The only exception to this
       --  is the admission of declarations of constants of type String.)
 
-      if not Nkind_In (Object_Definition (N), N_Identifier,
-                                              N_Expanded_Name)
+      if not
+        Nkind_In (Object_Definition (N), N_Identifier, N_Expanded_Name)
       then
          Check_Formal_Restriction
-           ("subtype mark expected", Object_Definition (N));
+           ("subtype mark required", Object_Definition (N));
 
       elsif Is_Array_Type (T)
         and then not Is_Constrained (T)
@@ -3171,7 +3175,9 @@ package body Sem_Ch3 is
 
          if Nkind (Original_Node (N)) = N_Object_Declaration
            and then Comes_From_Source (Original_Node (N))
-           and then Formal_Verification_Mode  --  only call test if needed
+           --  only call test if needed
+           and then (Formal_Verification_Mode
+                      or else Restriction_Check_Required (SPARK))
            and then not Is_SPARK_Initialization_Expr (E)
          then
             Check_Formal_Restriction
@@ -4015,34 +4021,45 @@ package body Sem_Ch3 is
            ("subtype of Boolean cannot have constraint", N);
       end if;
 
-      --  String subtype must have a lower bound of 1 in SPARK/ALFA. Note that
-      --  we do not need to test for the non-static case here, since that was
-      --  already taken care of in Process_Range_Expr_In_Decl.
-
-      if Base_Type (T) = Standard_String
-        and then Nkind (Subtype_Indication (N)) = N_Subtype_Indication
-      then
+      if Nkind (Subtype_Indication (N)) = N_Subtype_Indication then
          declare
-            Cstr   : constant Node_Id := Constraint (Subtype_Indication (N));
-            Drange : Node_Id;
-            Low    : Node_Id;
+            Cstr     : constant Node_Id := Constraint (Subtype_Indication (N));
+            One_Cstr : Node_Id;
+            Low      : Node_Id;
+            High     : Node_Id;
 
          begin
-            if Nkind (Cstr) = N_Index_Or_Discriminant_Constraint
-              and then List_Length (Constraints (Cstr)) = 1
-            then
-               Drange := First (Constraints (Cstr));
+            if Nkind (Cstr) = N_Index_Or_Discriminant_Constraint then
+               One_Cstr := First (Constraints (Cstr));
+               while Present (One_Cstr) loop
 
-               if Nkind (Drange) = N_Range then
-                  Low := Low_Bound (Drange);
+                  --  Index or discriminant constraint in SPARK or ALFA must be
+                  --  a subtype mark.
 
-                  if Is_OK_Static_Expression (Low)
-                    and then Expr_Value (Low) /= 1
+                  if not
+                    Nkind_In (One_Cstr, N_Identifier, N_Expanded_Name)
                   then
                      Check_Formal_Restriction
-                       ("String subtype must have lower bound of 1", N);
+                       ("subtype mark required", One_Cstr);
+
+                  --  String subtype must have a lower bound of 1 in SPARK.
+                  --  Note that we do not need to test for the non-static case
+                  --  here, since that was already taken care of in
+                  --  Process_Range_Expr_In_Decl.
+
+                  elsif Base_Type (T) = Standard_String then
+                     Get_Index_Bounds (One_Cstr, Low, High);
+
+                     if Is_OK_Static_Expression (Low)
+                       and then Expr_Value (Low) /= 1
+                     then
+                        Check_Formal_Restriction
+                          ("String subtype must have lower bound of 1", N);
+                     end if;
                   end if;
-               end if;
+
+                  Next (One_Cstr);
+               end loop;
             end if;
          end;
       end if;
@@ -4573,14 +4590,14 @@ package body Sem_Ch3 is
       --  as prefix.
 
       if No (T) then
-         Related_Id :=  Defining_Identifier (P);
+         Related_Id := Defining_Identifier (P);
       else
          Related_Id := T;
       end if;
 
       Nb_Index := 1;
       while Present (Index) loop
-         if Nkind (Index) /= N_Identifier then
+         if not Nkind_In (Index, N_Identifier, N_Expanded_Name) then
             Check_Formal_Restriction ("subtype mark required", Index);
          end if;
 
@@ -4655,7 +4672,7 @@ package body Sem_Ch3 is
       --  Process subtype indication if one is present
 
       if Present (Component_Typ) then
-         if Nkind (Component_Typ) /= N_Identifier then
+         if not Nkind_In (Component_Typ, N_Identifier, N_Expanded_Name) then
             Check_Formal_Restriction ("subtype mark required", Component_Typ);
          end if;
 

@@ -2544,11 +2544,6 @@ package body Ch3 is
       Expr_Node := P_Expression;
       Check_Simple_Expression_In_Ada_83 (Expr_Node);
 
-      if Expr_Form = EF_Non_Simple then
-         Check_Formal_Restriction
-           ("this expression must be parenthesized", Expr_Node);
-      end if;
-
       Set_Delta_Expression (Constraint_Node, Expr_Node);
 
       if Token = Tok_Range then
@@ -3081,12 +3076,6 @@ package body Ch3 is
          --  Otherwise scan out an expression and see what we have got
 
          Expr_Node := P_Expression_Or_Range_Attribute;
-
-         if Expr_Form /= EF_Simple_Name
-           and then Formal_Verification_Mode
-         then
-            Error_Msg_SC ("|~~subtype mark required");
-         end if;
 
          if Expr_Form = EF_Range_Attr then
             Append (Expr_Node, Constr_List);

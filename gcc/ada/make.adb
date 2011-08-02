@@ -3823,7 +3823,8 @@ package body Make is
             else
                declare
                   Parent_Directory : constant String :=
-                    Get_Name_String (Project.Directory.Display_Name);
+                                       Get_Name_String
+                                         (Project.Directory.Display_Name);
 
                begin
                   return Parent_Directory & Path_Name;

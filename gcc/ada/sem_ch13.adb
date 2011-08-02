@@ -2843,7 +2843,7 @@ package body Sem_Ch13 is
       --  Pointer to node for literal providing max value
 
    begin
-      if Ignore_Rep_Clauses then
+      if Ignore_Rep_Clauses or else CodePeer_Mode then
          return;
       end if;
 

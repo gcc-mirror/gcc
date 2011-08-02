@@ -41,6 +41,7 @@ with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Scans;    use Scans;
 with Scn;      use Scn;
+with Sem_Util; use Sem_Util;
 with Sinput;   use Sinput;
 with Sinput.L; use Sinput.L;
 with Sinfo;    use Sinfo;

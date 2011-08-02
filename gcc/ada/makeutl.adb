@@ -422,7 +422,7 @@ package body Makeutl is
 
                      declare
                         ALI_Path_Name : constant String :=
-                          Name_Buffer (1 .. Name_Len);
+                                          Name_Buffer (1 .. Name_Len);
 
                      begin
                         if Is_Regular_File

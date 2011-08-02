@@ -2049,9 +2049,7 @@ package body Ch5 is
 
    procedure Parse_Decls_Begin_End (Parent : Node_Id) is
       Body_Decl    : Node_Id;
-      Body_Sloc    : Source_Ptr;
       Decls        : List_Id;
-      Decl         : Node_Id;
       Parent_Nkind : Node_Kind;
       Spec_Node    : Node_Id;
       HSS          : Node_Id;
@@ -2110,55 +2108,8 @@ package body Ch5 is
    begin
       Decls := P_Declarative_Part;
 
-      --  Check for misplacement of later vs basic declarations in Ada 83.
-      --  The same is true for the SPARK mode: although SPARK 95 removes
-      --  the distinction between initial and later declarative items,
-      --  the distinction remains in the Examiner. (JB01-005)
-      --  Note that the Examiner does not count package declarations in later
-      --  declarative items.
-
-      if Ada_Version = Ada_83 or else SPARK_Mode then
-         Decl := First (Decls);
-
-         --  Loop through sequence of basic declarative items
-
-         Outer : while Present (Decl) loop
-            if Nkind (Decl) /= N_Subprogram_Body
-              and then Nkind (Decl) /= N_Package_Body
-              and then Nkind (Decl) /= N_Task_Body
-              and then Nkind (Decl) not in  N_Body_Stub
-            then
-               Next (Decl);
-
-            --  Once a body is encountered, we only allow later declarative
-            --  items. The inner loop checks the rest of the list.
-
-            else
-               Body_Sloc := Sloc (Decl);
-
-               Inner : while Present (Decl) loop
-                  if (Nkind (Decl) not in N_Later_Decl_Item
-                       or else (SPARK_Mode
-                                 and then
-                                   Nkind (Decl) = N_Package_Declaration))
-                    and then Nkind (Decl) /= N_Pragma
-                  then
-                     if Ada_Version = Ada_83 then
-                        Error_Msg_Sloc := Body_Sloc;
-                        Error_Msg_N
-                          ("(Ada 83) decl cannot appear after body#", Decl);
-                     else
-                        pragma Assert (SPARK_Mode);
-                        Error_Msg_Sloc := Body_Sloc;
-                        Error_Msg_F
-                          ("|~~decl cannot appear after body#", Decl);
-                     end if;
-                  end if;
-
-                  Next (Decl);
-               end loop Inner;
-            end if;
-         end loop Outer;
+      if Ada_Version = Ada_83 then
+         Check_Later_Vs_Basic_Declarations (Decls, During_Parsing => True);
       end if;
 
       --  Here is where we deal with the case of IS used instead of semicolon.

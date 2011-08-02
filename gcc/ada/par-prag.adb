@@ -89,11 +89,11 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
 
    procedure Process_Restrictions_Or_Restriction_Warnings;
    --  Common processing for Restrictions and Restriction_Warnings pragmas.
-   --  This routine only processes the cases of No_Obsolescent_Features and
-   --  SPARK, which are the only restrictions that have syntactic effects. No
-   --  general error checking is done, since this will be done in Sem_Prag. The
-   --  other case processed is pragma Restrictions No_Dependence, since
-   --  otherwise this is done too late.
+   --  This routine only processes the case of No_Obsolescent_Features, which
+   --  is the only restriction that has syntactic effects. No general error
+   --  checking is done, since this will be done in Sem_Prag. The other case
+   --  processed is pragma Restrictions No_Dependence, since otherwise this is
+   --  done too late.
 
    ----------
    -- Arg1 --
@@ -230,10 +230,6 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
                   Set_Restriction (No_Obsolescent_Features, Pragma_Node);
                   Restriction_Warnings (No_Obsolescent_Features) :=
                     Prag_Id = Pragma_Restriction_Warnings;
-               when SPARK =>
-                  SPARK_Mode := True;
-                  Set_Error_Msg_Lang ("spark");
-                  Formal_Verification_Mode := True;
                when others =>
                   null;
             end case;
