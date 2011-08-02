@@ -1442,7 +1442,6 @@ package body Bindgen is
             end if;
          end;
       end loop;
-
    end Gen_Elab_Calls_C;
 
    ----------------------
@@ -3030,6 +3029,10 @@ package body Bindgen is
       procedure Increment_Ubuf;
       --  Little procedure to increment the serial number
 
+      --------------------
+      -- Increment_Ubuf --
+      --------------------
+
       procedure Increment_Ubuf is
       begin
          for J in reverse Ubuf'Range loop
@@ -3081,7 +3084,6 @@ package body Bindgen is
             Write_Statement_Buffer;
          end if;
       end loop;
-
    end Gen_Versions_Ada;
 
    --------------------
@@ -3129,7 +3131,6 @@ package body Bindgen is
             Write_Statement_Buffer;
          end if;
       end loop;
-
    end Gen_Versions_C;
 
    ------------------------

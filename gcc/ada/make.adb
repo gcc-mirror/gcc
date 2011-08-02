@@ -2213,7 +2213,6 @@ package body Make is
             Check_File (Name_Find);
          end if;
       end loop;
-
    end Check_Linker_Options;
 
    -----------------
@@ -6066,21 +6065,19 @@ package body Make is
                      end loop;
 
                      for Index in 1 .. Library_Projs.Last loop
-                        if Library_Projs.Table
-                          (Index).Library_Kind = Static
+                        if Library_Projs.Table (Index).Library_Kind = Static
                           and then not Targparm.OpenVMS_On_Target
                         then
                            Linker_Switches.Increment_Last;
                            Linker_Switches.Table (Linker_Switches.Last) :=
                              new String'
                                (Get_Name_String
-                                    (Library_Projs.Table (Index).
-                                       Library_Dir.Display_Name) &
+                                 (Library_Projs.Table
+                                   (Index).Library_Dir.Display_Name) &
                                 Directory_Separator &
                                 "lib" &
                                 Get_Name_String
-                                    (Library_Projs.Table (Index).
-                                     Library_Name) &
+                                  (Library_Projs.Table (Index). Library_Name) &
                                 "." &
                                 MLib.Tgt.Archive_Ext);
 
@@ -6109,7 +6106,7 @@ package body Make is
                   if Libraries_Present then
 
                      --  If Path_Option is not null, create the switch
-                     --  ("-Wl,-rpath," or equivalent) with all the non static
+                     --  ("-Wl,-rpath," or equivalent) with all the non-static
                      --  library dirs plus the standard GNAT library dir.
                      --  We do that only if Run_Path_Option is True
                      --  (not disabled by -R switch).
@@ -6134,17 +6131,19 @@ package body Make is
                               loop
                                  Linker_Switches.Increment_Last;
                                  Linker_Switches.Table
-                                   (Linker_Switches.Last) := new String'
-                                   (Path_Option.all &
-                                    Library_Paths.Table (Index).all);
+                                   (Linker_Switches.Last) :=
+                                     new String'
+                                       (Path_Option.all &
+                                        Library_Paths.Table (Index).all);
                               end loop;
 
                               --  One switch for the standard GNAT library dir
 
                               Linker_Switches.Increment_Last;
                               Linker_Switches.Table
-                                (Linker_Switches.Last) := new String'
-                                (Path_Option.all & MLib.Utl.Lib_Directory);
+                                (Linker_Switches.Last) :=
+                                  new String'
+                                    (Path_Option.all & MLib.Utl.Lib_Directory);
 
                            else
                               --  We are going to create one switch of the form
@@ -6178,8 +6177,8 @@ package body Make is
                               loop
                                  Option
                                    (Current + 1 ..
-                                      Current +
-                                        Library_Paths.Table (Index)'Length) :=
+                                     Current +
+                                       Library_Paths.Table (Index)'Length) :=
                                    Library_Paths.Table (Index).all;
                                  Current :=
                                    Current +
@@ -6351,19 +6350,19 @@ package body Make is
                                                  not Unique_Compile);
 
                   The_Packages : constant Package_Id :=
-                    Main_Project.Decl.Packages;
+                                   Main_Project.Decl.Packages;
 
                   Binder_Package : constant Prj.Package_Id :=
-                               Prj.Util.Value_Of
-                                 (Name        => Name_Binder,
-                                  In_Packages => The_Packages,
-                                  In_Tree     => Project_Tree);
+                                     Prj.Util.Value_Of
+                                       (Name        => Name_Binder,
+                                        In_Packages => The_Packages,
+                                        In_Tree     => Project_Tree);
 
                   Linker_Package : constant Prj.Package_Id :=
-                               Prj.Util.Value_Of
-                                 (Name        => Name_Linker,
-                                  In_Packages => The_Packages,
-                                  In_Tree     => Project_Tree);
+                                     Prj.Util.Value_Of
+                                       (Name        => Name_Linker,
+                                        In_Packages => The_Packages,
+                                        In_Tree     => Project_Tree);
 
                begin
                   --  We fail if we cannot find the main source file

@@ -1,5 +1,21 @@
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
+	* sem_aggr.adb (Check_Qualified_Aggregate): new procedure which checks
+	qualification of aggregates in formal mode
+	(Is_Top_Level_Aggregate): returns True for an aggregate not contained in
+	another aggregate
+	(Resolve_Aggregate): complete the test that an aggregate is adequately
+	qualified in formal mode
+
+2011-08-02  Pascal Obry  <obry@adacore.com>
+
+	* make.adb, bindgen.adb, gnatbind.adb: Minor reformatting.
+	* mlib-prj.adb: Supress warning when compiling binder generated file.
+	(Build_Library): Supress all warnings when compiling the binder
+	generated file.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
 	* errout.adb, errout.ads (Check_Formal_Restriction): move procedure
 	from here...
 	* restrict.adb, restrict.ads (Check_Formal_Restriction): ...to here
