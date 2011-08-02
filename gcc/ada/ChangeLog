@@ -1,5 +1,14 @@
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
+	* sem_aggr.adb (Resolve_Aggregate): disable incorrectly placed check in
+	formal mode
+	* sem_util.adb (Matching_Static_Array_Bounds): proper detection of
+	matching static array bounds, taking into account the special case of
+	string literals
+	* sem_ch3.adb: Typo in comment.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
 	* errout.adb, errout.ads (Check_Formal_Restriction): new procedure
 	which issues an error in formal mode if its argument node is originally
 	from source

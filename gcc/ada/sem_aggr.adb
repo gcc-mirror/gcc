@@ -1112,12 +1112,16 @@ package body Sem_Aggr is
                   Check_Formal_Restriction
                     ("array aggregate should have only OTHERS", N);
                end if;
-            elsif not (Nkind (Parent (N)) = N_Aggregate
-                       and then Is_Array_Type (Etype (Parent (N)))
-                       and then Number_Dimensions (Etype (Parent (N))) > 1)
-            then
-               Check_Formal_Restriction
-                 ("array aggregate should be qualified", N);
+
+               --  The following check is disabled until a proper place is
+               --  found where the type of the parent node can be inspected.
+
+--              elsif not (Nkind (Parent (N)) = N_Aggregate
+--                         and then Is_Array_Type (Etype (Parent (N)))
+--                         and then Number_Dimensions (Etype (Parent (N))) > 1)
+--              then
+--                 Check_Formal_Restriction
+--                   ("array aggregate should be qualified", N);
             else
                null;
             end if;
