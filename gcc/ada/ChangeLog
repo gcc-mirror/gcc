@@ -1,3 +1,25 @@
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb, sem_ch5.adb, sem_ch9.adb, sem_prag.adb, sem.ads,
+	sem_util.adb, sem_util.ads, sem_res.adb, sem_ch2.adb, sem_ch4.adb,
+	sem_ch6.adb, sem_ch11.adb: Add semantic flag In_Pre_Post_Expression to
+	indicate that we are in a precondition or postcondition. This is used in
+	Mark_Non_ALFA_Subprogram (renaming of Mark_Non_ALFA_Subprogram_Body) to
+	decide whether to flag the spec or body of the current subprogram as
+	not in ALFA.
+
+2011-08-02  Fabien Chouteau  <chouteau@adacore.com>
+
+	* impunit.adb: Add Ada.Execution_Time.Interrupts in the Ada2012 package
+	list.
+	* a-extiin.ads: New file.
+
+2011-08-02  Bob Duff  <duff@adacore.com>
+
+	* a-direct.adb (Rename): Implement AI05-0231-1. In particular, Rename
+	now raises Name_Error instead of Use_Error in certain cases. The other
+	parts of this AI were already implemented properly.
+
 2011-08-02  Vincent Celier  <celier@adacore.com>
 
 	* link.c: Only import "auto-host.h" when building the gnattools.

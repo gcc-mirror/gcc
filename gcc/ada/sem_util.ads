@@ -277,9 +277,12 @@ package Sem_Util is
    --  Current_Scope is returned. The returned value is Empty if this is called
    --  from a library package which is not within any subprogram.
 
-   procedure Mark_Non_ALFA_Subprogram_Body;
-   --  If Current_Subprogram is not Empty, set its flag Body_Is_In_ALFA to
-   --  False, otherwise do nothing.
+   procedure Mark_Non_ALFA_Subprogram;
+   --  If Current_Subprogram is not Empty, mark either its specification or its
+   --  body as not being in ALFA. If called during the analysis of a
+   --  precondition or postcondition, as indicated by the flag
+   --  In_Pre_Post_Expression, mark the specification as not being in ALFA.
+   --  Otherwise, mark the body as not being in ALFA.
 
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the

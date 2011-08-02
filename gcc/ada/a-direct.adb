@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,7 @@ with Ada.Unchecked_Deallocation;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 
 with System.CRTL;    use System.CRTL;
+with System.OS_Constants;
 with System.OS_Lib;  use System.OS_Lib;
 with System.Regexp;  use System.Regexp;
 with System.File_IO; use System.File_IO;
@@ -1060,8 +1061,20 @@ package body Ada.Directories is
          Rename_File (Old_Name, New_Name, Success);
 
          if not Success then
-            raise Use_Error with
-              "file """ & Old_Name & """ could not be renamed";
+            --  AI05-0231-1: Name_Error should be raised in case a directory
+            --  component of New_Name does not exist (as in New_Name =>
+            --  "/no-such-dir/new-filename"). ENOENT indicates that. ENOENT
+            --  also indicate that the Old_Name does not exist, but we already
+            --  checked for that above. All other errors are Use_Error.
+
+            if Errno = System.OS_Constants.ENOENT then
+               raise Name_Error with
+                 "file """ & Containing_Directory (New_Name) & """ not found";
+
+            else
+               raise Use_Error with
+                 "file """ & Old_Name & """ could not be renamed";
+            end if;
          end if;
       end if;
    end Rename;

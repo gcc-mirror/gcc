@@ -3036,7 +3036,7 @@ package body Sem_Ch3 is
       if Is_In_ALFA (T) and then not Aliased_Present (N) then
          Set_Is_In_ALFA (Id);
       else
-         Mark_Non_ALFA_Subprogram_Body;
+         Mark_Non_ALFA_Subprogram;
       end if;
 
       --  These checks should be performed before the initialization expression
