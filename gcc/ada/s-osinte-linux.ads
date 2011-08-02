@@ -120,12 +120,12 @@ package System.OS_Interface is
    SIGLTHRDBG : constant := System.Linux.SIGLTHRDBG;
 
    SIGADAABORT : constant := SIGABRT;
-   --  Change this if you want to use another signal for task abort.
-   --  SIGTERM might be a good one.
+   --  Change this to use another signal for task abort. SIGTERM might be a
+   --  good one.
 
    type Signal_Set is array (Natural range <>) of Signal;
 
-   Unmasked    : constant Signal_Set := (
+   Unmasked : constant Signal_Set := (
       SIGTRAP,
       --  To enable debugging on multithreaded applications, mark SIGTRAP to
       --  be kept unmasked.
@@ -133,24 +133,22 @@ package System.OS_Interface is
       SIGBUS,
 
       SIGTTIN, SIGTTOU, SIGTSTP,
-      --  Keep these three signals unmasked so that background processes
-      --  and IO behaves as normal "C" applications
+      --  Keep these three signals unmasked so that background processes and IO
+      --  behaves as normal "C" applications
 
       SIGPROF,
       --  To avoid confusing the profiler
 
       SIGKILL, SIGSTOP,
-      --  These two signals actually cannot be masked;
-      --  POSIX simply won't allow it.
+      --  These two signals actually can't be masked (POSIX won't allow it)
 
       SIGLTHRRES, SIGLTHRCAN, SIGLTHRDBG);
-      --  These three signals are used by GNU/LinuxThreads starting from
-      --  glibc 2.1 (future 2.2).
+      --  These three signals are used by GNU/LinuxThreads starting from glibc
+      --  2.1 (future 2.2).
 
-   Reserved    : constant Signal_Set :=
-   --  I am not sure why the following two signals are reserved.
-   --  I guess they are not supported by this version of GNU/Linux.
-     (SIGVTALRM, SIGUNUSED);
+   Reserved : constant Signal_Set := (SIGVTALRM, SIGUNUSED);
+   --  Not clear why these two signals are reserved. Perhaps they are not
+   --  supported by this version of GNU/Linux ???
 
    type sigset_t is private;
 
@@ -268,10 +266,10 @@ package System.OS_Interface is
      Ada.Unchecked_Conversion (System.Address, Thread_Body);
 
    type pthread_t is new unsigned_long;
-   subtype Thread_Id        is pthread_t;
+   subtype Thread_Id is pthread_t;
 
-   function To_pthread_t is new Ada.Unchecked_Conversion
-     (unsigned_long, pthread_t);
+   function To_pthread_t is
+     new Ada.Unchecked_Conversion (unsigned_long, pthread_t);
 
    type pthread_mutex_t     is limited private;
    type pthread_cond_t      is limited private;
@@ -555,7 +553,7 @@ private
    type pthread_mutex_t is new System.Linux.pthread_mutex_t;
 
    type unsigned_long_long_t is mod 2 ** 64;
-   --  Interfaces.C.Extensions isn't preelaborated so cannot be with-ed
+   --  Interfaces.C.Extensions isn't preelaborated so cannot be with'ed
 
    type pthread_cond_t is array (0 .. 47) of unsigned_char;
    pragma Convention (C, pthread_cond_t);
