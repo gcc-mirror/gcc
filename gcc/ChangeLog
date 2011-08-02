@@ -1,3 +1,8 @@
+2011-08-02  Richard Henderson  <rth@redhat.com>
+
+	PR target/49881
+	* config/avr/avr.md (push<MPUSH>1): Don't constrain the operand.
+
 2011-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (enum c_parser_prec): New enum, moved from within
