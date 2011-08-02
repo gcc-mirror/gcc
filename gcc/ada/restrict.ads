@@ -178,9 +178,9 @@ package Restrict is
    -- SPARK Restriction Control --
    -------------------------------
 
-   --  SPARK HIDE directives allow turning off SPARK restriction for a
-   --  specified region of code, and the following tables are the data
-   --  structures used to keep track of these regions.
+   --  SPARK HIDE directives allow the effect of the SPARK restriction to be
+   --  turned off for a specified region of code, and the following tables are
+   --  the data structures used to keep track of these regions.
 
    --  The table contains pairs of source locations, the first being the start
    --  location for hidden region, and the second being the end location.

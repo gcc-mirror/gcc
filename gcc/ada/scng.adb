@@ -1764,8 +1764,8 @@ package body Scng is
                   return;
                end if;
 
-               --  Generate a token Tok_SPARK_Hide for a SPARK HIDE directive
-               --  only if the SPARK restriction is set for this unit.
+               --  If the SPARK restriction is set for this unit, then generate
+               --  a token Tok_SPARK_Hide for a SPARK HIDE directive.
 
                if Restriction_Check_Required (SPARK)
                  and then Source (Start_Of_Comment) = '#'

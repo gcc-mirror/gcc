@@ -89,13 +89,23 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
 
    procedure Process_Restrictions_Or_Restriction_Warnings;
    --  Common processing for Restrictions and Restriction_Warnings pragmas.
-   --  This routine processes the cases of No_Obsolescent_Features and SPARK,
-   --  which are the only restriction that have syntactic effects. In the case
-   --  of SPARK, it controls whether the scanner generates a token
-   --  Tok_SPARK_Hide for HIDE directives formatted as Ada comments. No general
-   --  error checking is done, since this will be done in Sem_Prag. The other
-   --  case processed is pragma Restrictions No_Dependence, since otherwise
-   --  this is done too late.
+   --  For the most part, restrictions need not be processed at parse time,
+   --  since they only affect semantic processing. This routine handles the
+   --  exceptions as follows
+   --
+   --    No_Obsolescent_Features must be processed at parse time, since there
+   --    are some obsolescent features (e.g. character replacements) which are
+   --    handled at parse time.
+   --
+   --    SPARK must be processed at parse time, since this restriction controls
+   --    whether the scanner recognizes a spark HIDE directive formatted as an
+   --    Ada comment (and generates a Tok_SPARK_Hide token for the directive).
+   --
+   --    No_Dependence must be processed at parse time, since otherwise it gets
+   --    handled too late.
+   --
+   --  Note that we don't need to do full error checking for badly formed cases
+   --  of restrictions, since these will be caught during semantic analysis.
 
    ----------
    -- Arg1 --
@@ -232,10 +242,12 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
                   Set_Restriction (No_Obsolescent_Features, Pragma_Node);
                   Restriction_Warnings (No_Obsolescent_Features) :=
                     Prag_Id = Pragma_Restriction_Warnings;
+
                when SPARK =>
                   Set_Restriction (SPARK, Pragma_Node);
                   Restriction_Warnings (SPARK) :=
                     Prag_Id = Pragma_Restriction_Warnings;
+
                when others =>
                   null;
             end case;

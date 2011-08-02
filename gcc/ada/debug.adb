@@ -133,7 +133,7 @@ package body Debug is
    --  d.M
    --  d.N
    --  d.O  Dump internal SCO tables
-   --  d.P
+   --  d.P  Previous (non-optimized) handling of length comparisons
    --  d.Q
    --  d.R
    --  d.S  Force Optimize_Alignment (Space)
@@ -596,6 +596,11 @@ package body Debug is
    --  d.O  Dump internal SCO tables. Before outputting the SCO information to
    --       the ALI file, the internal SCO tables (SCO_Table/SCO_Unit_Table)
    --       are dumped for debugging purposes.
+
+   --  d.P  Previous non-optimized handling of length comparisons. Setting this
+   --       flag inhibits the effect of Optimize_Length_Comparison in Exp_Ch4.
+   --       This is there in case we find a situation where the optimization
+   --       malfunctions, to provide a work around.
 
    --  d.S  Force Optimize_Alignment (Space) mode as the default
 

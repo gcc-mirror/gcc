@@ -279,10 +279,14 @@ package Sem_Util is
 
    procedure Mark_Non_ALFA_Subprogram;
    --  If Current_Subprogram is not Empty, mark either its specification or its
-   --  body as not being in ALFA. If called during the analysis of a
-   --  precondition or postcondition, as indicated by the flag
+   --  body as not being in ALFA. If this procedure is called during the
+   --  analysis of a precondition or postcondition, as indicated by the flag
    --  In_Pre_Post_Expression, mark the specification as not being in ALFA.
    --  Otherwise, mark the body as not being in ALFA.
+   --
+   --  I would really like to see more comments on this peculiar processing
+   --  for precondition/postcondition, the comment above says what is done
+   --  but not why???
 
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the

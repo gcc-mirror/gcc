@@ -1,3 +1,19 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* a-direct.adb, sinfo.ads, exp_ch9.adb, scng.adb, sem_util.adb,
+	sem_util.ads, restrict.ads, par-prag.adb: Minor reformatting and/or
+	code reorganization.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Debug flag d.P to suppress length comparison optimization
+	* exp_ch4.adb (Optimize_Length_Comparison): New routine to optimize
+	comparison of Length by comparing First/Last instead.
+
+2011-08-02  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cobove.ads: Code clean up.
+
 2011-08-02  Vincent Celier  <celier@adacore.com>
 
 	* adaint.c (file_names_case_sensitive_cache): New static int.

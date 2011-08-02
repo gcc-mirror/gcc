@@ -11516,7 +11516,7 @@ package body Exp_Ch9 is
       end if;
 
       --  If the type of the dispatching object is an access type then return
-      --  an explicit dereference
+      --  an explicit dereference.
 
       if Is_Access_Type (Etype (Object)) then
          Object := Make_Explicit_Dereference (Sloc (N), Object);

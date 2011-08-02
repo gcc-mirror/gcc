@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -201,6 +201,12 @@ package body Exp_Ch4 is
    --  the body are simple boolean operations. Note that Typ is always a
    --  constrained type (the caller has ensured this by using
    --  Convert_To_Actual_Subtype if necessary).
+
+   procedure Optimize_Length_Comparison (N : Node_Id);
+   --  Given an expression, if it is of the form X'Length op N (or the other
+   --  way round), where N is known at compile time to be 0 or 1, and X is a
+   --  simple entity, and op is a comparison operator, optimizes it into a
+   --  comparison of First and Last.
 
    procedure Rewrite_Comparison (N : Node_Id);
    --  If N is the node for a comparison whose outcome can be determined at
@@ -3197,9 +3203,9 @@ package body Exp_Ch4 is
          if Inside_A_Return_Statement (N)
            and then
              (Ekind (PtrT) = E_Anonymous_Access_Type
-                or else
-                  (Ekind (PtrT) = E_Access_Type
-                     and then No (Associated_Final_Chain (PtrT))))
+               or else
+                 (Ekind (PtrT) = E_Access_Type
+                   and then No (Associated_Final_Chain (PtrT))))
          then
             declare
                Decl    : Node_Id;
@@ -6055,6 +6061,8 @@ package body Exp_Ch4 is
          Expand_Vax_Comparison (N);
          return;
       end if;
+
+      Optimize_Length_Comparison (N);
    end Expand_N_Op_Eq;
 
    -----------------------
@@ -6415,6 +6423,8 @@ package body Exp_Ch4 is
          Expand_Vax_Comparison (N);
          return;
       end if;
+
+      Optimize_Length_Comparison (N);
    end Expand_N_Op_Ge;
 
    --------------------
@@ -6450,6 +6460,8 @@ package body Exp_Ch4 is
          Expand_Vax_Comparison (N);
          return;
       end if;
+
+      Optimize_Length_Comparison (N);
    end Expand_N_Op_Gt;
 
    --------------------
@@ -6485,6 +6497,8 @@ package body Exp_Ch4 is
          Expand_Vax_Comparison (N);
          return;
       end if;
+
+      Optimize_Length_Comparison (N);
    end Expand_N_Op_Le;
 
    --------------------
@@ -6520,6 +6534,8 @@ package body Exp_Ch4 is
          Expand_Vax_Comparison (N);
          return;
       end if;
+
+      Optimize_Length_Comparison (N);
    end Expand_N_Op_Lt;
 
    -----------------------
@@ -6935,6 +6951,8 @@ package body Exp_Ch4 is
             Analyze_And_Resolve (N, Standard_Boolean);
          end;
       end if;
+
+      Optimize_Length_Comparison (N);
    end Expand_N_Op_Ne;
 
    ---------------------
@@ -10156,6 +10174,397 @@ package body Exp_Ch4 is
 
       return Func_Body;
    end Make_Boolean_Array_Op;
+
+   --------------------------------
+   -- Optimize_Length_Comparison --
+   --------------------------------
+
+   procedure Optimize_Length_Comparison (N : Node_Id) is
+      Loc    : constant Source_Ptr := Sloc (N);
+      Typ    : constant Entity_Id  := Etype (N);
+      Result : Node_Id;
+
+      Left  : Node_Id;
+      Right : Node_Id;
+      --  First and Last attribute reference nodes, which end up as left and
+      --  right operands of the optimized result.
+
+      Is_Zero : Boolean;
+      --  True for comparison operand of zero
+
+      Comp : Node_Id;
+      --  Comparison operand, set only if Is_Zero is false
+
+      Ent : Entity_Id;
+      --  Entity whose length is being compared
+
+      Index : Node_Id;
+      --  Integer_Literal node for length attribute expression, or Empty
+      --  if there is no such expression present.
+
+      Ityp  : Entity_Id;
+      --  Type of array index to which 'Length is applied
+
+      Op : Node_Kind := Nkind (N);
+      --  Kind of comparison operator, gets flipped if operands backwards
+
+      function Is_Optimizable (N : Node_Id) return Boolean;
+      --  Tests N to see if it is an optimizable comparison value (defined
+      --  as constant zero or one, or something else where the value is known
+      --  to be in range of 32-bits, and where the corresponding Length value
+      --  is also known to be 32-bits. If result is true, sets Is_Zero, Ityp,
+      --  and Comp accordingly.
+
+      function Is_Entity_Length (N : Node_Id) return Boolean;
+      --  Tests if N is a length attribute applied to a simple entity. If so,
+      --  returns True, and sets Ent to the entity, and Index to the integer
+      --  literal provided as an attribute expression, or to Empty if none.
+      --  Also returns True if the expression is a generated type conversion
+      --  whose expression is of the desired form. This latter case arises
+      --  when Apply_Universal_Integer_Attribute_Check installs a conversion
+      --  to check for being in range, which is not needed in this context.
+      --  Returns False if neither condition holds.
+
+      function Prepare_64 (N : Node_Id) return Node_Id;
+      --  Given a discrete expression, returns a Long_Long_Integer typed
+      --  expression representing the underlying value of the expression.
+      --  This is done with an unchecked conversion to the result type. We
+      --  use unchecked conversion to handle the enumeration type case.
+
+      ----------------------
+      -- Is_Entity_Length --
+      ----------------------
+
+      function Is_Entity_Length (N : Node_Id) return Boolean is
+      begin
+         if Nkind (N) = N_Attribute_Reference
+           and then Attribute_Name (N) = Name_Length
+           and then Is_Entity_Name (Prefix (N))
+         then
+            Ent := Entity (Prefix (N));
+
+            if Present (Expressions (N)) then
+               Index := First (Expressions (N));
+            else
+               Index := Empty;
+            end if;
+
+            return True;
+
+         elsif Nkind (N) = N_Type_Conversion
+           and then not Comes_From_Source (N)
+         then
+            return Is_Entity_Length (Expression (N));
+
+         else
+            return False;
+         end if;
+      end Is_Entity_Length;
+
+      --------------------
+      -- Is_Optimizable --
+      --------------------
+
+      function Is_Optimizable (N : Node_Id) return Boolean is
+         Val  : Uint;
+         OK   : Boolean;
+         Lo   : Uint;
+         Hi   : Uint;
+         Indx : Node_Id;
+
+      begin
+         if Compile_Time_Known_Value (N) then
+            Val := Expr_Value (N);
+
+            if Val = Uint_0 then
+               Is_Zero := True;
+               Comp    := Empty;
+               return True;
+
+            elsif Val = Uint_1 then
+               Is_Zero := False;
+               Comp    := Empty;
+               return True;
+            end if;
+         end if;
+
+         --  Here we have to make sure of being within 32-bits
+
+         Determine_Range (N, OK, Lo, Hi, Assume_Valid => True);
+
+         if not OK
+           or else Lo < UI_From_Int (Int'First)
+           or else Hi > UI_From_Int (Int'Last)
+         then
+            return False;
+         end if;
+
+         --  Comparison value was within 32-bits, so now we must check the
+         --  index value to make sure it is also within 32-bits.
+
+         Indx := First_Index (Etype (Ent));
+
+         if Present (Index) then
+            for J in 2 .. UI_To_Int (Intval (Index)) loop
+               Next_Index (Indx);
+            end loop;
+         end if;
+
+         Ityp := Etype (Indx);
+
+         if Esize (Ityp) > 32 then
+            return False;
+         end if;
+
+         Is_Zero := False;
+         Comp := N;
+         return True;
+      end Is_Optimizable;
+
+      ----------------
+      -- Prepare_64 --
+      ----------------
+
+      function Prepare_64 (N : Node_Id) return Node_Id is
+      begin
+         return Unchecked_Convert_To (Standard_Long_Long_Integer, N);
+      end Prepare_64;
+
+   --  Start of processing for Optimize_Length_Comparison
+
+   begin
+      --  Nothing to do if not a comparison
+
+      if Op not in N_Op_Compare then
+         return;
+      end if;
+
+      --  Nothing to do if special -gnatd.P debug flag set
+
+      if Debug_Flag_Dot_PP then
+         return;
+      end if;
+
+      --  Ent'Length op 0/1
+
+      if Is_Entity_Length (Left_Opnd (N))
+        and then Is_Optimizable (Right_Opnd (N))
+      then
+         null;
+
+      --  0/1 op Ent'Length
+
+      elsif Is_Entity_Length (Right_Opnd (N))
+        and then Is_Optimizable (Left_Opnd (N))
+      then
+         --  Flip comparison to opposite sense
+
+         case Op is
+            when N_Op_Lt => Op := N_Op_Gt;
+            when N_Op_Le => Op := N_Op_Ge;
+            when N_Op_Gt => Op := N_Op_Lt;
+            when N_Op_Ge => Op := N_Op_Le;
+            when others  => null;
+         end case;
+
+      --  Else optimization not possible
+
+      else
+         return;
+      end if;
+
+      --  Fall through if we will do the optimization
+
+      --  Cases to handle:
+
+      --    X'Length = 0  => X'First > X'Last
+      --    X'Length = 1  => X'First = X'Last
+      --    X'Length = n  => X'First + (n - 1) = X'Last
+
+      --    X'Length /= 0 => X'First <= X'Last
+      --    X'Length /= 1 => X'First /= X'Last
+      --    X'Length /= n => X'First + (n - 1) /= X'Last
+
+      --    X'Length >= 0 => always true, warn
+      --    X'Length >= 1 => X'First <= X'Last
+      --    X'Length >= n => X'First + (n - 1) <= X'Last
+
+      --    X'Length > 0  => X'First <= X'Last
+      --    X'Length > 1  => X'First < X'Last
+      --    X'Length > n  => X'First + (n - 1) < X'Last
+
+      --    X'Length <= 0 => X'First > X'Last (warn, could be =)
+      --    X'Length <= 1 => X'First >= X'Last
+      --    X'Length <= n => X'First + (n - 1) >= X'Last
+
+      --    X'Length < 0  => always false (warn)
+      --    X'Length < 1  => X'First > X'Last
+      --    X'Length < n  => X'First + (n - 1) > X'Last
+
+      --  Note: for the cases of n (not constant 0,1), we require that the
+      --  corresponding index type be integer or shorter (i.e. not 64-bit),
+      --  and the same for the comparison value. Then we do the comparison
+      --  using 64-bit arithmetic (actually long long integer), so that we
+      --  cannot have overflow intefering with the result.
+
+      --  First deal with warning cases
+
+      if Is_Zero then
+         case Op is
+
+            --  X'Length >= 0
+
+            when N_Op_Ge =>
+               Rewrite (N,
+                 Convert_To (Typ, New_Occurrence_Of (Standard_True, Loc)));
+               Analyze_And_Resolve (N, Typ);
+               Warn_On_Known_Condition (N);
+               return;
+
+            --  X'Length < 0
+
+            when N_Op_Lt =>
+               Rewrite (N,
+                 Convert_To (Typ, New_Occurrence_Of (Standard_False, Loc)));
+               Analyze_And_Resolve (N, Typ);
+               Warn_On_Known_Condition (N);
+               return;
+
+            when N_Op_Le =>
+               if Constant_Condition_Warnings
+                 and then Comes_From_Source (Original_Node (N))
+               then
+                  Error_Msg_N ("could replace by ""'=""?", N);
+               end if;
+
+               Op := N_Op_Eq;
+
+            when others =>
+               null;
+         end case;
+      end if;
+
+      --  Build the First reference we will use
+
+      Left :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => New_Occurrence_Of (Ent, Loc),
+          Attribute_Name => Name_First);
+
+      if Present (Index) then
+         Set_Expressions (Left, New_List (New_Copy (Index)));
+      end if;
+
+      --  If general value case, then do the addition of (n - 1), and
+      --  also add the needed conversions to type Long_Long_Integer.
+
+      if Present (Comp) then
+         Left :=
+           Make_Op_Add (Loc,
+             Left_Opnd  => Prepare_64 (Left),
+             Right_Opnd =>
+               Make_Op_Subtract (Loc,
+                 Left_Opnd  => Prepare_64 (Comp),
+                 Right_Opnd => Make_Integer_Literal (Loc, 1)));
+      end if;
+
+      --  Build the Last reference we will use
+
+      Right :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => New_Occurrence_Of (Ent, Loc),
+          Attribute_Name => Name_Last);
+
+      if Present (Index) then
+         Set_Expressions (Right, New_List (New_Copy (Index)));
+      end if;
+
+      --  If general operand, convert Last reference to Long_Long_Integer
+
+      if Present (Comp) then
+         Right := Prepare_64 (Right);
+      end if;
+
+      --  Check for cases to optimize
+
+      --  X'Length = 0  => X'First > X'Last
+      --  X'Length < 1  => X'First > X'Last
+      --  X'Length < n  => X'First + (n - 1) > X'Last
+
+      if (Is_Zero and then Op = N_Op_Eq)
+        or else (not Is_Zero and then Op = N_Op_Lt)
+      then
+         Result :=
+           Make_Op_Gt (Loc,
+             Left_Opnd  => Left,
+             Right_Opnd => Right);
+
+      --  X'Length = 1  => X'First = X'Last
+      --  X'Length = n  => X'First + (n - 1) = X'Last
+
+      elsif not Is_Zero and then Op = N_Op_Eq then
+         Result :=
+           Make_Op_Eq (Loc,
+             Left_Opnd  => Left,
+             Right_Opnd => Right);
+
+      --  X'Length /= 0 => X'First <= X'Last
+      --  X'Length > 0  => X'First <= X'Last
+
+      elsif Is_Zero and (Op = N_Op_Ne or else Op = N_Op_Gt) then
+         Result :=
+           Make_Op_Le (Loc,
+             Left_Opnd  => Left,
+             Right_Opnd => Right);
+
+      --  X'Length /= 1 => X'First /= X'Last
+      --  X'Length /= n => X'First + (n - 1) /= X'Last
+
+      elsif not Is_Zero and then Op = N_Op_Ne then
+         Result :=
+           Make_Op_Ne (Loc,
+             Left_Opnd  => Left,
+             Right_Opnd => Right);
+
+      --  X'Length >= 1 => X'First <= X'Last
+      --  X'Length >= n => X'First + (n - 1) <= X'Last
+
+      elsif not Is_Zero and then Op = N_Op_Ge then
+         Result :=
+           Make_Op_Le (Loc,
+             Left_Opnd  => Left,
+                       Right_Opnd => Right);
+
+      --  X'Length > 1  => X'First < X'Last
+      --  X'Length > n  => X'First + (n = 1) < X'Last
+
+      elsif not Is_Zero and then Op = N_Op_Gt then
+         Result :=
+           Make_Op_Lt (Loc,
+             Left_Opnd  => Left,
+             Right_Opnd => Right);
+
+      --  X'Length <= 1 => X'First >= X'Last
+      --  X'Length <= n => X'First + (n - 1) >= X'Last
+
+      elsif not Is_Zero and then Op = N_Op_Le then
+         Result :=
+           Make_Op_Ge (Loc,
+             Left_Opnd  => Left,
+             Right_Opnd => Right);
+
+      --  Should not happen at this stage
+
+      else
+         raise Program_Error;
+      end if;
+
+      --  Rewrite and finish up
+
+      Rewrite (N, Result);
+      Analyze_And_Resolve (N, Typ);
+      return;
+   end Optimize_Length_Comparison;
 
    ------------------------
    -- Rewrite_Comparison --
