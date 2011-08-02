@@ -49,22 +49,10 @@
 --      function Left  (Container : Set; Position : Cursor) return Set;
 --      function Right (Container : Set; Position : Cursor) return Set;
 
---      Strict_Equal returns True if the containers are physically equal,
---      meaning that they are structurally equal (function "=" returns True)
---      and that they have the same set of cursors.
-
---      Left returns a container containing all elements preceding Position
---      (excluded) in Container. Right returns a container containing all
---      elements following Position (included) in Container. These two new
---      functions are useful to express invariant properties in loops which
---      iterate over containers. Left returns the part of the container already
---      scanned and Right the part not scanned yet.
+--    See detailed specifications for these subprograms
 
 private with Ada.Containers.Hash_Tables;
 private with Ada.Streams;
-
-with Ada.Containers;
-use Ada.Containers;
 
 generic
    type Element_Type is private;
@@ -242,10 +230,18 @@ package Ada.Containers.Formal_Hashed_Sets is
    end Generic_Keys;
 
    function Strict_Equal (Left, Right : Set) return Boolean;
+   --  Strict_Equal returns True if the containers are physically equal, i.e.
+   --  they are structurally equal (function "=" returns True) and that they
+   --  have the same set of cursors.
 
-   function Left (Container : Set; Position : Cursor) return Set;
-
+   function Left  (Container : Set; Position : Cursor) return Set;
    function Right (Container : Set; Position : Cursor) return Set;
+   --  Left returns a container containing all elements preceding Position
+   --  (excluded) in Container. Right returns a container containing all
+   --  elements following Position (included) in Container. These two new
+   --  functions can be used to express invariant properties in loops which
+   --  iterate over containers. Left returns the part of the container already
+   --  scanned and Right the part not scanned yet.
 
 private
 
