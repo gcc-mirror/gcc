@@ -421,6 +421,10 @@ private
    --  Ada 2005 (AI-251): Displace "This" to point to the base address of
    --  the object (that is, the address of the primary tag of the object).
 
+   procedure Check_TSD (TSD : Type_Specific_Data_Ptr);
+   --  Ada 2012 (AI-113): Raise Program_Error if the external tag of this TSD
+   --  is the same as the external tag for some other tagged type declaration.
+
    function Displace (This : System.Address; T : Tag) return System.Address;
    --  Ada 2005 (AI-251): Displace "This" to point to the secondary dispatch
    --  table of T.

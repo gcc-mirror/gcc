@@ -5990,6 +5990,24 @@ package body Exp_Disp is
          end if;
       end if;
 
+      --  Generate code to check if the external tag of this type is the same
+      --  as the external tag of some other declaration.
+
+      --     Check_TSD (TSD'Unrestricted_Access);
+
+      if not No_Run_Time_Mode
+        and then Ada_Version >= Ada_2012
+        and then RTE_Available (RE_Check_TSD)
+      then
+         Append_To (Elab_Code,
+           Make_Procedure_Call_Statement (Loc,
+             Name => New_Reference_To (RTE (RE_Check_TSD), Loc),
+             Parameter_Associations => New_List (
+               Make_Attribute_Reference (Loc,
+                 Prefix => New_Reference_To (TSD, Loc),
+                 Attribute_Name => Name_Unchecked_Access))));
+      end if;
+
       --  Generate code to register the Tag in the External_Tag hash table for
       --  the pure Ada type only.
 

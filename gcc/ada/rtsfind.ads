@@ -551,6 +551,7 @@ package Rtsfind is
      RE_Address_Array,                   -- Ada.Tags
      RE_Addr_Ptr,                        -- Ada.Tags
      RE_Base_Address,                    -- Ada.Tags
+     RE_Check_TSD,                       -- Ada.Tags
      RE_Cstring_Ptr,                     -- Ada.Tags
      RE_Descendant_Tag,                  -- Ada.Tags
      RE_Dispatch_Table,                  -- Ada.Tags
@@ -1729,6 +1730,7 @@ package Rtsfind is
      RE_Address_Array                    => Ada_Tags,
      RE_Addr_Ptr                         => Ada_Tags,
      RE_Base_Address                     => Ada_Tags,
+     RE_Check_TSD                        => Ada_Tags,
      RE_Cstring_Ptr                      => Ada_Tags,
      RE_Descendant_Tag                   => Ada_Tags,
      RE_Dispatch_Table                   => Ada_Tags,
