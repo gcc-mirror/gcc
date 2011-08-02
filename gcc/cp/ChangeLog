@@ -1,5 +1,8 @@
 2011-08-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43886
+	* parser.c (cp_parser_lambda_body): Clear local_variables_forbidden_p.
+
 	PR c++/49577
 	* typeck2.c (check_narrowing): Check unsigned mismatch.
 	* semantics.c (finish_compound_literal): check_narrowing.

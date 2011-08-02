@@ -1,5 +1,8 @@
 2011-08-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43886
+	* g++.dg/cpp0x/lambda/lambda-defarg2.C: New.
+
 	PR c++/49577
 	* g++.dg/cpp0x/initlist5.C: Add additional cases.
 
