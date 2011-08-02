@@ -1,3 +1,9 @@
+2011-08-02  Richard Henderson  <rth@redhat.com>
+
+	* config/h8300/h8300.c (push, pop): Return the insn.
+	(h8300_swap_into_er6): Generate correct unwind info.
+	(h8300_swap_out_of_er6): Likewise.
+
 2011-08-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Fix a typo.
