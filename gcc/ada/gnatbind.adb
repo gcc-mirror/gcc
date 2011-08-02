@@ -469,12 +469,11 @@ procedure Gnatbind is
    end Scan_Bind_Arg;
 
    procedure Check_Version_And_Help is
-      new Check_Version_And_Help_G (Bindusg.Display);
+     new Check_Version_And_Help_G (Bindusg.Display);
 
 --  Start of processing for Gnatbind
 
 begin
-
    --  Set default for Shared_Libgnat option
 
    declare
@@ -876,9 +875,8 @@ begin
                   -- Put_In_Sources --
                   --------------------
 
-                  function Put_In_Sources (S : File_Name_Type)
-                                           return Boolean
-                  is
+                  function Put_In_Sources
+                    (S : File_Name_Type) return Boolean is
                   begin
                      for J in 1 .. Closure_Sources.Last loop
                         if Closure_Sources.Table (J) = S then
@@ -978,5 +976,4 @@ begin
 
       null;
    end if;
-
 end Gnatbind;

@@ -98,6 +98,15 @@ package body Sem_Aggr is
    --  expressions allowed for a limited component association (namely, an
    --  aggregate, function call, or <> notation). Report error for violations.
 
+   procedure Check_Qualified_Aggregate (Level : Nat; Expr : Node_Id);
+   --  Given aggregate Expr, check that sub-aggregates of Expr that are nested
+   --  at Level are qualified. If Level = 0, this applies to Expr directly.
+   --  Only issue errors in formal verification mode.
+
+   function Is_Top_Level_Aggregate (Expr : Node_Id) return Boolean;
+   --  Return True of Expr is an aggregate not contained directly in another
+   --  aggregate.
+
    ------------------------------------------------------
    -- Subprograms used for RECORD AGGREGATE Processing --
    ------------------------------------------------------
@@ -789,6 +798,41 @@ package body Sem_Aggr is
       end if;
    end Check_Expr_OK_In_Limited_Aggregate;
 
+   -------------------------------
+   -- Check_Qualified_Aggregate --
+   -------------------------------
+
+   procedure Check_Qualified_Aggregate (Level : Nat; Expr : Node_Id) is
+      Comp_Expr : Node_Id;
+      Comp_Assn : Node_Id;
+   begin
+      if Level = 0 then
+         if Nkind (Parent (Expr)) /= N_Qualified_Expression then
+            Check_Formal_Restriction ("aggregate should be qualified", Expr);
+         end if;
+      else
+         Comp_Expr := First (Expressions (Expr));
+         while Present (Comp_Expr) loop
+            if Nkind (Comp_Expr) = N_Aggregate then
+               Check_Qualified_Aggregate (Level - 1, Comp_Expr);
+            end if;
+
+            Comp_Expr := Next (Comp_Expr);
+         end loop;
+
+         Comp_Assn := First (Component_Associations (Expr));
+         while Present (Comp_Assn) loop
+            Comp_Expr := Expression (Comp_Assn);
+
+            if Nkind (Comp_Expr) = N_Aggregate then
+               Check_Qualified_Aggregate (Level - 1, Comp_Expr);
+            end if;
+
+            Comp_Assn := Next (Comp_Assn);
+         end loop;
+      end if;
+   end Check_Qualified_Aggregate;
+
    ----------------------------------------
    -- Check_Static_Discriminated_Subtype --
    ----------------------------------------
@@ -861,6 +905,17 @@ package body Sem_Aggr is
             = N_Others_Choice;
    end Is_Others_Aggregate;
 
+   ----------------------------
+   -- Is_Top_Level_Aggregate --
+   ----------------------------
+
+   function Is_Top_Level_Aggregate (Expr : Node_Id) return Boolean is
+   begin
+      return Nkind (Parent (Expr)) /= N_Aggregate
+        and then (Nkind (Parent (Expr)) /= N_Component_Association
+                   or else Nkind (Parent (Parent (Expr))) /= N_Aggregate);
+   end Is_Top_Level_Aggregate;
+
    --------------------------------
    -- Make_String_Into_Aggregate --
    --------------------------------
@@ -919,6 +974,39 @@ package body Sem_Aggr is
         and then not Null_Record_Present (N)
       then
          return;
+      end if;
+
+      --  An unqualified aggregate is restricted in SPARK or ALFA to:
+
+      --    An aggregate item inside an aggregate for a multi-dimensional array
+
+      --    An expression being assigned to an unconstrained array, but only if
+      --    the aggregate specifies a value for OTHERS only.
+
+      if Nkind (Parent (N)) = N_Qualified_Expression then
+         if Is_Array_Type (Typ) then
+            Check_Qualified_Aggregate (Number_Dimensions (Typ), N);
+         else
+            Check_Qualified_Aggregate (1, N);
+         end if;
+      else
+         if Is_Array_Type (Typ)
+           and then Nkind (Parent (N)) = N_Assignment_Statement
+           and then not Is_Constrained (Etype (Name (Parent (N))))
+           and then not Is_Others_Aggregate (N)
+         then
+            Check_Formal_Restriction
+              ("array aggregate should have only OTHERS", N);
+         elsif Is_Top_Level_Aggregate (N) then
+            Check_Formal_Restriction ("aggregate should be qualified", N);
+
+         --  The legality of this unqualified aggregate is checked by calling
+         --  Check_Qualified_Aggregate from one of its enclosing aggregate,
+         --  unless one of these already causes an error to be issued.
+
+         else
+            null;
+         end if;
       end if;
 
       --  Check for aggregates not allowed in configurable run-time mode.
@@ -1096,49 +1184,6 @@ package body Sem_Aggr is
 
       else
          Error_Msg_N ("illegal context for aggregate", N);
-      end if;
-
-      --  An unqualified aggregate is restricted in SPARK or ALFA to:
-
-      --    An aggregate item inside an aggregate for a multi-dimensional array
-
-      --    An expression being assigned to an unconstrained array, but only if
-      --    the aggregate specifies a value for OTHERS only.
-
-      if Nkind (Parent (N)) /= N_Qualified_Expression then
-         if Is_Array_Type (Etype (N)) then
-            if Nkind (Parent (N)) = N_Assignment_Statement
-              and then not Is_Constrained (Etype (Name (Parent (N))))
-            then
-               if not Is_Others_Aggregate (N) then
-                  Check_Formal_Restriction
-                    ("array aggregate should have only OTHERS", N);
-               end if;
-
-               --  The following check is disabled until a proper place is
-               --  found where the type of the parent node can be inspected???
-
---              elsif not (Nkind (Parent (N)) = N_Aggregate
---                         and then Is_Array_Type (Etype (Parent (N)))
---                         and then Number_Dimensions (Etype (Parent (N))) > 1)
---              then
---                 Check_Formal_Restriction
---                   ("array aggregate should be qualified", N);
-            else
-               null;
-            end if;
-
-         elsif Is_Record_Type (Etype (N)) then
-            Check_Formal_Restriction
-              ("record aggregate should be qualified", N);
-
-         --  The type of aggregate is neither array nor record, so an error
-         --  must have occurred during resolution. Do not report an additional
-         --  message here.
-
-         else
-            null;
-         end if;
       end if;
 
       --  If we can determine statically that the evaluation of the aggregate

@@ -91,6 +91,9 @@ package body MLib.Prj is
    Compile_Switch_String : aliased String := "-c";
    Compile_Switch : constant String_Access := Compile_Switch_String'Access;
 
+   No_Warning_String : aliased String := "-gnatws";
+   No_Warning : constant String_Access := No_Warning_String'Access;
+
    Auto_Initialize : constant String := "-a";
 
    --  List of objects to put inside the library
@@ -1184,8 +1187,9 @@ package body MLib.Prj is
                Arguments := new String_List (1 .. Initial_Argument_Max);
             end if;
 
-            Argument_Number := 1;
+            Argument_Number := 2;
             Arguments (1) := Compile_Switch;
+            Arguments (2) := No_Warning;
 
             if OpenVMS_On_Target then
                B_Start := new String'("b__");
@@ -1258,7 +1262,7 @@ package body MLib.Prj is
 
             --  Process binder generated file for pragmas Linker_Options
 
-            Process_Binder_File (Arguments (2).all & ASCII.NUL);
+            Process_Binder_File (Arguments (3).all & ASCII.NUL);
          end if;
       end if;
 
