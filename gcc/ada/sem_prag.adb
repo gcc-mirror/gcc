@@ -1595,9 +1595,12 @@ package body Sem_Prag is
                     ("aspect % requires ''Class for abstract subprogram");
                end if;
 
-            --  AI05-0230:  the same restriction applies to null procedures.
-            --  For compatibility with earlier uses of the Ada pragma, apply
-            --  this rule only to aspect specifications.
+            --  AI05-0230: The same restriction applies to null procedures. For
+            --  compatibility with earlier uses of the Ada pragma, apply this
+            --  rule only to aspect specifications.
+
+            --  The above discrpency needs documentation. Robert is dubious
+            --  about whether it is a good idea ???
 
             elsif Nkind (PO) = N_Subprogram_Declaration
               and then Nkind (Specification (PO)) = N_Procedure_Specification
@@ -1752,13 +1755,15 @@ package body Sem_Prag is
 
             elsif not Comes_From_Source (PO) then
 
-               --  The condition may apply to a subprogram instantiation.
+               --  The condition may apply to a subprogram instantiation
 
                if Nkind (PO) = N_Subprogram_Declaration
                  and then Present (Generic_Parent (Specification (PO)))
                then
                   Chain_PPC (PO);
                   return;
+
+               --  For all other cases of non source code, do nothing
 
                else
                   null;

@@ -2905,6 +2905,7 @@ package body Sem_Ch12 is
       --  To capture global references, analyze the expressions of aspects,
       --  and propagate information to original tree. Note that in this case
       --  analysis of attributes is not delayed until the freeze point.
+
       --  It seems very hard to recreate the proper visibility of the generic
       --  subprogram at a later point because the analysis of an aspect may
       --  create pragmas after the generic copies have been made ???
@@ -4303,9 +4304,9 @@ package body Sem_Ch12 is
              Specification => Act_Spec);
 
          --  The aspects have been copied previously, but they have to be
-         --  linked explicitly to the new subprogram declaration.
-         --  Explicit pre/postconditions on the instance are analyzed below,
-         --  in a separate step.
+         --  linked explicitly to the new subprogram declaration. Explicit
+         --  pre/postconditions on the instance are analyzed below, in a
+         --  separate step.
 
          Move_Aspects (Act_Tree, Act_Decl);
          Set_Categorization_From_Pragmas (Act_Decl);
