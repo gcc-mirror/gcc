@@ -107,6 +107,12 @@ OMP_3.0 {
 	omp_unset_nest_lock_;
 } OMP_2.0;
 
+OMP_3.1 {
+  global:
+	omp_in_final;
+	omp_in_final_;
+} OMP_3.0;
+
 GOMP_1.0 {
   global:
 	GOMP_atomic_end;
@@ -173,3 +179,8 @@ GOMP_2.0 {
 	GOMP_loop_ull_static_next;
 	GOMP_loop_ull_static_start;
 } GOMP_1.0;
+
+GOMP_3.0 {
+  global:
+	GOMP_taskyield;
+} GOMP_2.0;

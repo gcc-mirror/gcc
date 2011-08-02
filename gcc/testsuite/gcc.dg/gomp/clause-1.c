@@ -84,7 +84,7 @@ foo (int x)
     ;
 #pragma omp p private (c) /* { dg-error "predetermined 'shared'" } */
     ;
-#pragma omp p firstprivate (c) /* { dg-error "predetermined 'shared'" } */
+#pragma omp p firstprivate (c)
     ;
 #pragma omp p for lastprivate (c) /* { dg-error "predetermined 'shared'" } */
   for (i = 0; i < 10; i++)

@@ -1,4 +1,5 @@
-/* Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -53,17 +54,36 @@ gomp_init_affinity (void)
     }
 
   CPU_ZERO (&cpusetnew);
-  for (widx = idx = 0; idx < gomp_cpu_affinity_len; idx++)
-    if (gomp_cpu_affinity[idx] < CPU_SETSIZE
-        && CPU_ISSET (gomp_cpu_affinity[idx], &cpuset))
-      {
-	if (! CPU_ISSET (gomp_cpu_affinity[idx], &cpusetnew))
+  if (gomp_cpu_affinity_len == 0)
+    {
+      unsigned long count = CPU_COUNT (&cpuset);
+      if (count >= 65536)
+	count = 65536;
+      gomp_cpu_affinity = malloc (count * sizeof (unsigned short));
+      if (gomp_cpu_affinity == NULL)
+	{
+	  gomp_error ("not enough memory to store CPU affinity list");
+	  return;
+	}
+      for (widx = idx = 0; widx < count && idx < 65536; idx++)
+	if (CPU_ISSET (idx, &cpuset))
 	  {
 	    cpus++;
-	    CPU_SET (gomp_cpu_affinity[idx], &cpusetnew);
+	    gomp_cpu_affinity[widx++] = idx;
 	  }
-	gomp_cpu_affinity[widx++] = gomp_cpu_affinity[idx];
-      }
+    }
+  else
+    for (widx = idx = 0; idx < gomp_cpu_affinity_len; idx++)
+      if (gomp_cpu_affinity[idx] < CPU_SETSIZE
+	  && CPU_ISSET (gomp_cpu_affinity[idx], &cpuset))
+	{
+	  if (! CPU_ISSET (gomp_cpu_affinity[idx], &cpusetnew))
+	    {
+	      cpus++;
+	      CPU_SET (gomp_cpu_affinity[idx], &cpusetnew);
+	    }
+	  gomp_cpu_affinity[widx++] = gomp_cpu_affinity[idx];
+	}
 
   if (widx == 0)
     {

@@ -526,6 +526,7 @@ decode_omp_directive (void)
       match ("do", gfc_match_omp_do, ST_OMP_DO);
       break;
     case 'e':
+      match ("end atomic", gfc_match_omp_eos, ST_OMP_END_ATOMIC);
       match ("end critical", gfc_match_omp_critical, ST_OMP_END_CRITICAL);
       match ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
       match ("end master", gfc_match_omp_eos, ST_OMP_END_MASTER);
@@ -567,6 +568,7 @@ decode_omp_directive (void)
     case 't':
       match ("task", gfc_match_omp_task, ST_OMP_TASK);
       match ("taskwait", gfc_match_omp_taskwait, ST_OMP_TASKWAIT);
+      match ("taskyield", gfc_match_omp_taskyield, ST_OMP_TASKYIELD);
       match ("threadprivate", gfc_match_omp_threadprivate,
 	     ST_OMP_THREADPRIVATE);
     case 'w':
@@ -957,9 +959,9 @@ next_statement (void)
   case ST_POINTER_ASSIGNMENT: case ST_EXIT: case ST_CYCLE: \
   case ST_ASSIGNMENT: case ST_ARITHMETIC_IF: case ST_WHERE: case ST_FORALL: \
   case ST_LABEL_ASSIGNMENT: case ST_FLUSH: case ST_OMP_FLUSH: \
-  case ST_OMP_BARRIER: case ST_OMP_TASKWAIT: case ST_ERROR_STOP: \
-  case ST_SYNC_ALL: case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: \
-  case ST_LOCK: case ST_UNLOCK
+  case ST_OMP_BARRIER: case ST_OMP_TASKWAIT: case ST_OMP_TASKYIELD: \
+  case ST_ERROR_STOP: case ST_SYNC_ALL: case ST_SYNC_IMAGES: \
+  case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK
 
 /* Statements that mark other executable statements.  */
 
@@ -1470,6 +1472,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_DO:
       p = "!$OMP DO";
       break;
+    case ST_OMP_END_ATOMIC:
+      p = "!$OMP END ATOMIC";
+      break;
     case ST_OMP_END_CRITICAL:
       p = "!$OMP END CRITICAL";
       break;
@@ -1541,6 +1546,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_TASKWAIT:
       p = "!$OMP TASKWAIT";
+      break;
+    case ST_OMP_TASKYIELD:
+      p = "!$OMP TASKYIELD";
       break;
     case ST_OMP_THREADPRIVATE:
       p = "!$OMP THREADPRIVATE";
@@ -3420,12 +3428,13 @@ parse_omp_do (gfc_statement omp_st)
 
 /* Parse the statements of OpenMP atomic directive.  */
 
-static void
+static gfc_statement
 parse_omp_atomic (void)
 {
   gfc_statement st;
   gfc_code *cp, *np;
   gfc_state_data s;
+  int count;
 
   accept_statement (ST_OMP_ATOMIC);
 
@@ -3434,21 +3443,35 @@ parse_omp_atomic (void)
   np = new_level (cp);
   np->op = cp->op;
   np->block = NULL;
+  count = 1 + (cp->ext.omp_atomic == GFC_OMP_ATOMIC_CAPTURE);
 
-  for (;;)
+  while (count)
     {
       st = next_statement ();
       if (st == ST_NONE)
 	unexpected_eof ();
       else if (st == ST_ASSIGNMENT)
-	break;
+	{
+	  accept_statement (st);
+	  count--;
+	}
       else
 	unexpected_statement (st);
     }
 
-  accept_statement (st);
-
   pop_state ();
+
+  st = next_statement ();
+  if (st == ST_OMP_END_ATOMIC)
+    {
+      gfc_clear_new_st ();
+      gfc_commit_symbols ();
+      gfc_warning_check ();
+      st = next_statement ();
+    }
+  else if (cp->ext.omp_atomic == GFC_OMP_ATOMIC_CAPTURE)
+    gfc_error ("Missing !$OMP END ATOMIC after !$OMP ATOMIC CAPTURE at %C");
+  return st;
 }
 
 
@@ -3558,8 +3581,8 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 		  continue;
 
 		case ST_OMP_ATOMIC:
-		  parse_omp_atomic ();
-		  break;
+		  st = parse_omp_atomic ();
+		  continue;
 
 		default:
 		  cycle = false;
@@ -3739,8 +3762,8 @@ parse_executable (gfc_statement st)
 	  continue;
 
 	case ST_OMP_ATOMIC:
-	  parse_omp_atomic ();
-	  break;
+	  st = parse_omp_atomic ();
+	  continue;
 
 	default:
 	  return st;

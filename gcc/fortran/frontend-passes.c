@@ -1235,6 +1235,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      if (co->ext.omp_clauses)
 		{
 		  WALK_SUBEXPR (co->ext.omp_clauses->if_expr);
+		  WALK_SUBEXPR (co->ext.omp_clauses->final_expr);
 		  WALK_SUBEXPR (co->ext.omp_clauses->num_threads);
 		  WALK_SUBEXPR (co->ext.omp_clauses->chunk_size);
 		}

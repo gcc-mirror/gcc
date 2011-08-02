@@ -1040,6 +1040,22 @@ DEFTREECODE (OMP_CRITICAL, "omp_critical", tcc_statement, 2)
 	build_fold_indirect_ref of the address.  */
 DEFTREECODE (OMP_ATOMIC, "omp_atomic", tcc_statement, 2)
 
+/* OpenMP - #pragma omp atomic read
+   Operand 0: The address at which the atomic operation is to be performed.
+	This address should be stabilized with save_expr.  */
+DEFTREECODE (OMP_ATOMIC_READ, "omp_atomic_read", tcc_statement, 1)
+
+/* OpenMP - #pragma omp atomic capture
+   Operand 0: The address at which the atomic operation is to be performed.
+	This address should be stabilized with save_expr.
+   Operand 1: The expression to evaluate.  When the old value of the object
+	at the address is used in the expression, it should appear as if
+	build_fold_indirect_ref of the address.
+   OMP_ATOMIC_CAPTURE_OLD returns the old memory content,
+   OMP_ATOMIC_CAPTURE_NEW the new value.  */
+DEFTREECODE (OMP_ATOMIC_CAPTURE_OLD, "omp_atomic_capture_old", tcc_statement, 2)
+DEFTREECODE (OMP_ATOMIC_CAPTURE_NEW, "omp_atomic_capture_new", tcc_statement, 2)
+
 /* OpenMP clauses.  */
 DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
 

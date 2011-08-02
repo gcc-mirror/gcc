@@ -8824,6 +8824,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OMP_SINGLE:
 	case EXEC_OMP_TASK:
 	case EXEC_OMP_TASKWAIT:
+	case EXEC_OMP_TASKYIELD:
 	case EXEC_OMP_WORKSHARE:
 	  break;
 
@@ -9390,6 +9391,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	case EXEC_OMP_SECTIONS:
 	case EXEC_OMP_SINGLE:
 	case EXEC_OMP_TASKWAIT:
+	case EXEC_OMP_TASKYIELD:
 	case EXEC_OMP_WORKSHARE:
 	  gfc_resolve_omp_directive (code, ns);
 	  break;

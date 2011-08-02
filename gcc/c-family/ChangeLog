@@ -1,3 +1,20 @@
+2011-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_atomic): Adjust prototype.
+	(c_finish_omp_taskyield): New prototype.
+	* c-omp.c (c_finish_omp_atomic): Add OPCODE, V, LHS1 and RHS1
+	arguments. Handle OMP_ATOMIC_READ, OMP_ATOMIC_CAPTURE_OLD and
+	OMP_ATOMIC_CAPTURE_NEW in addition to OMP_ATOMIC.  If LHS1
+	or RHS1 have side-effects, evaluate those too in the right spot,
+	if it is a decl and LHS is also a decl, error out if they
+	aren't the same.
+	(c_finish_omp_taskyield): New function.
+	* c-cppbuiltin.c (c_cpp_builtins): Change _OPENMP to 201107.
+	* c-pragma.c (omp_pragmas): Add taskyield.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_TASKYIELD.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_FINAL and
+	PRAGMA_OMP_CLAUSE_MERGEABLE.
+
 2011-07-25  Dodji Seketeli  <dodji@redhat.com>
 
 	* c-common.h (set_underlying_type): Remove parm name from

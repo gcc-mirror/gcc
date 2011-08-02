@@ -2210,7 +2210,9 @@ Clauses are represented by separate sub-codes defined in
 @code{OMP_CLAUSE_COPYPRIVATE}, @code{OMP_CLAUSE_IF},
 @code{OMP_CLAUSE_NUM_THREADS}, @code{OMP_CLAUSE_SCHEDULE},
 @code{OMP_CLAUSE_NOWAIT}, @code{OMP_CLAUSE_ORDERED},
-@code{OMP_CLAUSE_DEFAULT}, and @code{OMP_CLAUSE_REDUCTION}.  Each code
+@code{OMP_CLAUSE_DEFAULT}, @code{OMP_CLAUSE_REDUCTION},
+@code{OMP_CLAUSE_COLLAPSE}, @code{OMP_CLAUSE_UNTIED},
+@code{OMP_CLAUSE_FINAL}, and @code{OMP_CLAUSE_MERGEABLE}.  Each code
 represents the corresponding OpenMP clause.
 
 Clauses associated with the same directive are chained together

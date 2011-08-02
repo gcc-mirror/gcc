@@ -114,6 +114,7 @@ enum gf_mask {
     GF_OMP_RETURN_NOWAIT	= 1 << 0,
 
     GF_OMP_SECTION_LAST		= 1 << 0,
+    GF_OMP_ATOMIC_NEED_VALUE	= 1 << 0,
     GF_PREDICT_TAKEN		= 1 << 15
 };
 
@@ -1631,6 +1632,29 @@ gimple_omp_parallel_set_combined_p (gimple g, bool combined_p)
     g->gsbase.subcode |= GF_OMP_PARALLEL_COMBINED;
   else
     g->gsbase.subcode &= ~GF_OMP_PARALLEL_COMBINED;
+}
+
+
+/* Return true if OMP atomic load/store statement G has the
+   GF_OMP_ATOMIC_NEED_VALUE flag set.  */
+
+static inline bool
+gimple_omp_atomic_need_value_p (const_gimple g)
+{
+  if (gimple_code (g) != GIMPLE_OMP_ATOMIC_LOAD)
+    GIMPLE_CHECK (g, GIMPLE_OMP_ATOMIC_STORE);
+  return (gimple_omp_subcode (g) & GF_OMP_ATOMIC_NEED_VALUE) != 0;
+}
+
+
+/* Set the GF_OMP_ATOMIC_NEED_VALUE flag on G.  */
+
+static inline void
+gimple_omp_atomic_set_need_value (gimple g)
+{
+  if (gimple_code (g) != GIMPLE_OMP_ATOMIC_LOAD)
+    GIMPLE_CHECK (g, GIMPLE_OMP_ATOMIC_STORE);
+  g->gsbase.subcode |= GF_OMP_ATOMIC_NEED_VALUE;
 }
 
 

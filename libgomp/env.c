@@ -67,6 +67,7 @@ gomp_mutex_t gomp_remaining_threads_lock;
 #endif
 unsigned long gomp_available_cpus = 1, gomp_managed_threads = 1;
 unsigned long long gomp_spin_count_var, gomp_throttled_spin_count_var;
+unsigned long *gomp_nthreads_var_list, gomp_nthreads_var_list_len;
 
 /* Parse the OMP_SCHEDULE environment variable.  */
 
@@ -180,6 +181,95 @@ parse_unsigned_long (const char *name, unsigned long *pvalue, bool allow_zero)
   return true;
 
  invalid:
+  gomp_error ("Invalid value for environment variable %s", name);
+  return false;
+}
+
+/* Parse an unsigned long list environment variable.  Return true if one was
+   present and it was successfully parsed.  */
+
+static bool
+parse_unsigned_long_list (const char *name, unsigned long *p1stvalue,
+			  unsigned long **pvalues,
+			  unsigned long *pnvalues)
+{
+  char *env, *end;
+  unsigned long value, *values = NULL;
+
+  env = getenv (name);
+  if (env == NULL)
+    return false;
+
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (*env == '\0')
+    goto invalid;
+
+  errno = 0;
+  value = strtoul (env, &end, 10);
+  if (errno || (long) value <= 0)
+    goto invalid;
+
+  while (isspace ((unsigned char) *end))
+    ++end;
+  if (*end != '\0')
+    {
+      if (*end == ',')
+	{
+	  unsigned long nvalues = 0, nalloced = 0;
+
+	  do
+	    {
+	      env = end + 1;
+	      if (nvalues == nalloced)
+		{
+		  unsigned long *n;
+		  nalloced = nalloced ? nalloced * 2 : 16;
+		  n = realloc (values, nalloced * sizeof (unsigned long));
+		  if (n == NULL)
+		    {
+		      free (values);
+		      gomp_error ("Out of memory while trying to parse"
+				  " environment variable %s", name);
+		      return false;
+		    }
+		  values = n;
+		  if (nvalues == 0)
+		    values[nvalues++] = value;
+		}
+
+	      while (isspace ((unsigned char) *env))
+		++env;
+	      if (*env == '\0')
+		goto invalid;
+
+	      errno = 0;
+	      value = strtoul (env, &end, 10);
+	      if (errno || (long) value <= 0)
+		goto invalid;
+
+	      values[nvalues++] = value;
+	      while (isspace ((unsigned char) *end))
+		++end;
+	      if (*end == '\0')
+		break;
+	      if (*end != ',')
+		goto invalid;
+	    }
+	  while (1);
+	  *p1stvalue = values[0];
+	  *pvalues = values;
+	  *pnvalues = nvalues;
+	  return true;
+	}
+      goto invalid;
+    }
+
+  *p1stvalue = value;
+  return true;
+
+ invalid:
+  free (values);
   gomp_error ("Invalid value for environment variable %s", name);
   return false;
 }
@@ -481,6 +571,7 @@ initialize_env (void)
 {
   unsigned long stacksize;
   int wait_policy;
+  bool bind_var = false;
 
   /* Do a compile time check that mkomp_h.pl did good job.  */
   omp_check_defines ();
@@ -488,6 +579,7 @@ initialize_env (void)
   parse_schedule ();
   parse_boolean ("OMP_DYNAMIC", &gomp_global_icv.dyn_var);
   parse_boolean ("OMP_NESTED", &gomp_global_icv.nest_var);
+  parse_boolean ("OMP_PROC_BIND", &bind_var);
   parse_unsigned_long ("OMP_MAX_ACTIVE_LEVELS", &gomp_max_active_levels_var,
 		       true);
   parse_unsigned_long ("OMP_THREAD_LIMIT", &gomp_thread_limit_var, false);
@@ -498,10 +590,12 @@ initialize_env (void)
 #endif
   gomp_init_num_threads ();
   gomp_available_cpus = gomp_global_icv.nthreads_var;
-  if (!parse_unsigned_long ("OMP_NUM_THREADS", &gomp_global_icv.nthreads_var,
-			    false))
+  if (!parse_unsigned_long_list ("OMP_NUM_THREADS",
+				 &gomp_global_icv.nthreads_var,
+				 &gomp_nthreads_var_list,
+				 &gomp_nthreads_var_list_len))
     gomp_global_icv.nthreads_var = gomp_available_cpus;
-  if (parse_affinity ())
+  if (parse_affinity () || bind_var)
     gomp_init_affinity ();
   wait_policy = parse_wait_policy ();
   if (!parse_spincount ("GOMP_SPINCOUNT", &gomp_spin_count_var))

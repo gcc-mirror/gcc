@@ -1365,26 +1365,15 @@ cxx_omp_privatize_by_reference (const_tree decl)
   return is_invisiref_parm (decl);
 }
 
-/* True if OpenMP sharing attribute of DECL is predetermined.  */
-
-enum omp_clause_default_kind
-cxx_omp_predetermined_sharing (tree decl)
+/* Return true if DECL is const qualified var having no mutable member.  */
+bool
+cxx_omp_const_qual_no_mutable (tree decl)
 {
-  tree type;
-
-  /* Static data members are predetermined as shared.  */
-  if (TREE_STATIC (decl))
-    {
-      tree ctx = CP_DECL_CONTEXT (decl);
-      if (TYPE_P (ctx) && MAYBE_CLASS_TYPE_P (ctx))
-	return OMP_CLAUSE_DEFAULT_SHARED;
-    }
-
-  type = TREE_TYPE (decl);
+  tree type = TREE_TYPE (decl);
   if (TREE_CODE (type) == REFERENCE_TYPE)
     {
       if (!is_invisiref_parm (decl))
-	return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+	return false;
       type = TREE_TYPE (type);
 
       if (TREE_CODE (decl) == RESULT_DECL && DECL_NAME (decl))
@@ -1408,11 +1397,32 @@ cxx_omp_predetermined_sharing (tree decl)
     }
 
   if (type == error_mark_node)
-    return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+    return false;
 
   /* Variables with const-qualified type having no mutable member
      are predetermined shared.  */
   if (TYPE_READONLY (type) && !cp_has_mutable_p (type))
+    return true;
+
+  return false;
+}
+
+/* True if OpenMP sharing attribute of DECL is predetermined.  */
+
+enum omp_clause_default_kind
+cxx_omp_predetermined_sharing (tree decl)
+{
+  /* Static data members are predetermined shared.  */
+  if (TREE_STATIC (decl))
+    {
+      tree ctx = CP_DECL_CONTEXT (decl);
+      if (TYPE_P (ctx) && MAYBE_CLASS_TYPE_P (ctx))
+	return OMP_CLAUSE_DEFAULT_SHARED;
+    }
+
+  /* Const qualified vars having no mutable member are predetermined
+     shared.  */
+  if (cxx_omp_const_qual_no_mutable (decl))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;

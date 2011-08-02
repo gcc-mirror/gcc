@@ -1,3 +1,74 @@
+2011-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/42041
+	PR fortran/46752
+	* omp.h.in (omp_in_final): New prototype.
+	* omp_lib.f90.in (omp_in_final): New interface.
+	(omp_integer_kind, omp_logical_kind): Remove
+	and replace all its uses in the module with 4.
+	(openmp_version): Change to 201107.
+	* omp_lib.h.in (omp_sched_static, omp_sched_dynamic,
+	omp_sched_guided, omp_sched_auto): Use omp_sched_kind
+	kind for the parameters.
+	(omp_in_final): New external.
+	(openmp_version): Change to 201107.
+	* task.c (omp_in_final): New function.
+	(gomp_init_task): Initialize final_task.
+	(GOMP_task): Remove unused attribute from flags.  Handle final
+	tasks.
+	(GOMP_taskyield): New function.
+	(omp_in_final): Return true if if (false) or final (true) task
+	or descendant of final (true).
+	* fortran.c (omp_in_final_): New function.
+	* libgomp.map (OMP_3.1): Export omp_in_final and omp_in_final_.
+	(GOMP_3.0): Export GOMP_taskyield.
+	* env.c (gomp_nthreads_var_list, gomp_nthreads_var_list_len): New
+	variables.
+	(parse_unsigned_long_list): New function.
+	(initialize_env): Use it for OMP_NUM_THREADS.  Call parse_boolean
+	with "OMP_PROC_BIND".  If OMP_PROC_BIND=true, call gomp_init_affinity
+	even if parse_affinity returned false.
+	* config/linux/affinity.c (gomp_init_affinity): Handle
+	gomp_cpu_affinity_len == 0.
+	* libgomp_g.h (GOMP_taskyield): New prototype.
+	* libgomp.h (struct gomp_task): Add final_task field.
+	(gomp_nthreads_var_list, gomp_nthreads_var_list_len): New externs.
+	* team.c (gomp_team_start): Override new task's nthreads_var icv
+	if list form OMP_NUM_THREADS has been used and it has value for
+	the new nesting level.
+
+	* testsuite/libgomp.c/atomic-11.c: New test.
+	* testsuite/libgomp.c/atomic-12.c: New test.
+	* testsuite/libgomp.c/atomic-13.c: New test.
+	* testsuite/libgomp.c/atomic-14.c: New test.
+	* testsuite/libgomp.c/reduction-6.c: New test.
+	* testsuite/libgomp.c/task-5.c: New test.
+	* testsuite/libgomp.c++/atomic-2.C: New test.
+	* testsuite/libgomp.c++/atomic-3.C: New test.
+	* testsuite/libgomp.c++/atomic-4.C: New test.
+	* testsuite/libgomp.c++/atomic-5.C: New test.
+	* testsuite/libgomp.c++/atomic-6.C: New test.
+	* testsuite/libgomp.c++/atomic-7.C: New test.
+	* testsuite/libgomp.c++/atomic-8.C: New test.
+	* testsuite/libgomp.c++/atomic-9.C: New test.
+	* testsuite/libgomp.c++/task-8.C: New test.
+	* testsuite/libgomp.c++/reduction-4.C: New test.
+	* testsuite/libgomp.fortran/allocatable7.f90: New test.
+	* testsuite/libgomp.fortran/allocatable8.f90: New test.
+	* testsuite/libgomp.fortran/crayptr3.f90: New test.
+	* testsuite/libgomp.fortran/omp_atomic3.f90: New test.
+	* testsuite/libgomp.fortran/omp_atomic4.f90: New test.
+	* testsuite/libgomp.fortran/pointer1.f90: New test.
+	* testsuite/libgomp.fortran/pointer2.f90: New test.
+	* testsuite/libgomp.fortran/task4.f90: New test.
+
+2011-08-02  Tobias Burnus  <burnus@net-b.de>
+
+	* libgomp.texi: Update OpenMP spec references to 3.1.
+	(omp_in_final,OMP_PROC_BIND): New sections.
+	(OMP_NUM_THREADS): Document that the value can be now a list.
+	(GOMP_STACKSIZE,GOMP_CPU_AFFINITY): Update @ref.
+
 2011-08-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/linux/x86/futex.h: Check __x86_64__ instead of

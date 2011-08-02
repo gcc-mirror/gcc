@@ -158,11 +158,12 @@ extern void GOMP_ordered_end (void);
 extern void GOMP_parallel_start (void (*) (void *), void *, unsigned);
 extern void GOMP_parallel_end (void);
 
-/* team.c */
+/* task.c */
 
 extern void GOMP_task (void (*) (void *), void *, void (*) (void *, void *),
 		       long, long, bool, unsigned);
 extern void GOMP_taskwait (void);
+extern void GOMP_taskyield (void);
 
 /* sections.c */
 

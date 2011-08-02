@@ -208,6 +208,7 @@ gfc_free_statement (gfc_code *p)
     case EXEC_OMP_ORDERED:
     case EXEC_OMP_END_NOWAIT:
     case EXEC_OMP_TASKWAIT:
+    case EXEC_OMP_TASKYIELD:
       break;
 
     default:

@@ -421,6 +421,17 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
       pp_character (buffer, ')');
       break;
 
+    case OMP_CLAUSE_FINAL:
+      pp_string (buffer, "final(");
+      dump_generic_node (buffer, OMP_CLAUSE_FINAL_EXPR (clause),
+	  spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE_MERGEABLE:
+      pp_string (buffer, "mergeable");
+      break;
+
     default:
       /* Should never happen.  */
       dump_generic_node (buffer, clause, spc, flags, false);
@@ -2200,6 +2211,24 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case OMP_ATOMIC:
       pp_string (buffer, "#pragma omp atomic");
+      newline_and_indent (buffer, spc + 2);
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_space (buffer);
+      pp_character (buffer, '=');
+      pp_space (buffer);
+      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+      break;
+
+    case OMP_ATOMIC_READ:
+      pp_string (buffer, "#pragma omp atomic read");
+      newline_and_indent (buffer, spc + 2);
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_space (buffer);
+      break;
+
+    case OMP_ATOMIC_CAPTURE_OLD:
+    case OMP_ATOMIC_CAPTURE_NEW:
+      pp_string (buffer, "#pragma omp atomic capture");
       newline_and_indent (buffer, spc + 2);
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       pp_space (buffer);
