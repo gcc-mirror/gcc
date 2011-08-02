@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Back_End; use Back_End;
 with Csets;    use Csets;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -51,20 +52,36 @@ package body CStand is
    Staloc : constant Source_Ptr := Standard_ASCII_Location;
    --  Standard abbreviations used throughout this package
 
+   Back_End_Float_Types : List_Id := No_List;
+   --  List used for any floating point supported by the back end. This needs
+   --  to be at the library level, because the call back procedures retrieving
+   --  this information are at that level.
+
    -----------------------
    -- Local Subprograms --
    -----------------------
 
-   procedure Build_Float_Type (E : Entity_Id; Siz : Int; Digs : Int);
+   procedure Build_Float_Type
+     (E    : Entity_Id;
+      Siz  : Int;
+      Rep  : Float_Rep_Kind;
+      Digs : Int);
    --  Procedure to build standard predefined float base type. The first
-   --  parameter is the entity for the type, and the second parameter
-   --  is the size in bits. The third parameter is the digits value.
+   --  parameter is the entity for the type, and the second parameter is the
+   --  size in bits. The third parameter indicates the kind of representation
+   --  to be used. The fourth parameter is the digits value. Each type
+   --  is added to the list of predefined floating point types.
 
    procedure Build_Signed_Integer_Type (E : Entity_Id; Siz : Int);
    --  Procedure to build standard predefined signed integer subtype. The
    --  first parameter is the entity for the subtype. The second parameter
    --  is the size in bits. The corresponding base type is not built by
    --  this routine but instead must be built by the caller where needed.
+
+   procedure Copy_Float_Type (To : Entity_Id; From : Entity_Id);
+   --  Build a floating point type, copying representation details from From.
+   --  This is used to create predefined floating point types based on
+   --  available types in the back end.
 
    procedure Create_Operators;
    --  Make entries for each of the predefined operators in Standard
@@ -88,6 +105,12 @@ package body CStand is
    --  type. The point is that Integer and Integer'Base have identical
    --  bounds, but do not statically match, since a subtype with constraints
    --  never matches a subtype with no constraints.
+
+   function Find_Back_End_Float_Type (Name : String) return Entity_Id;
+   --  Return the first float type in Back_End_Float_Types with the given name.
+   --  Names of entities in back end types, are either type names of C
+   --  predefined types (all lower case), or mode names (upper case).
+   --  These are not generally valid identifier names.
 
    function Identifier_For (S : Standard_Entity_Type) return Node_Id;
    --  Returns an identifier node with the same name as the defining
@@ -121,6 +144,20 @@ package body CStand is
    procedure Print_Standard;
    --  Print representation of package Standard if switch set
 
+   procedure Register_Float_Type
+     (Name      : C_String; -- Nul-terminated string with name of type
+      Digs      : Natural;  -- Nr or digits for floating point, 0 otherwise
+      Complex   : Boolean;  -- True iff type has real and imaginary parts
+      Count     : Natural;  -- Number of elements in vector, 0 otherwise
+      Float_Rep : Float_Rep_Kind; -- Representation used for fpt type
+      Size      : Positive; -- Size of representation in bits
+      Alignment : Natural); -- Required alignment in bits
+   pragma Convention (C, Register_Float_Type);
+   --  Call back to allow the back end to register available types.
+   --  This call back currently creates predefined floating point base types
+   --  for any floating point types reported by the back end, and adds them
+   --  to the list of predefined float types.
+
    procedure Set_Integer_Bounds
      (Id  : Entity_Id;
       Typ : Entity_Id;
@@ -135,7 +172,12 @@ package body CStand is
    -- Build_Float_Type --
    ----------------------
 
-   procedure Build_Float_Type (E : Entity_Id; Siz : Int; Digs : Int) is
+   procedure Build_Float_Type
+     (E    : Entity_Id;
+      Siz  : Int;
+      Rep  : Float_Rep_Kind;
+      Digs : Int)
+   is
    begin
       Set_Type_Definition (Parent (E),
         Make_Floating_Point_Definition (Stloc,
@@ -143,13 +185,7 @@ package body CStand is
 
       Set_Ekind                      (E, E_Floating_Point_Type);
       Set_Etype                      (E, E);
-
-      if AAMP_On_Target then
-         Set_Float_Rep (E, AAMP);
-      else
-         Set_Float_Rep (E, IEEE_Binary);
-      end if;
-
+      Set_Float_Rep (E, Rep);
       Init_Size                      (E, Siz);
       Set_Elem_Alignment             (E);
       Init_Digits_Value              (E, Digs);
@@ -158,6 +194,21 @@ package body CStand is
       Set_Is_Public                  (E);
       Set_Size_Known_At_Compile_Time (E);
    end Build_Float_Type;
+
+   ------------------------
+   -- Find_Back_End_Float_Type --
+   ------------------------
+
+   function Find_Back_End_Float_Type (Name : String) return Entity_Id is
+      N    : Node_Id := First (Back_End_Float_Types);
+
+   begin
+      while Present (N) and then Get_Name_String (Chars (N)) /= Name loop
+         Next (N);
+      end loop;
+
+      return Entity_Id (N);
+   end Find_Back_End_Float_Type;
 
    -------------------------------
    -- Build_Signed_Integer_Type --
@@ -184,6 +235,16 @@ package body CStand is
       Set_Is_Known_Valid             (E);
       Set_Size_Known_At_Compile_Time (E);
    end Build_Signed_Integer_Type;
+
+   ---------------------
+   -- Copy_Float_Type --
+   ---------------------
+
+   procedure Copy_Float_Type (To : Entity_Id; From : Entity_Id) is
+   begin
+      Build_Float_Type (To, UI_To_Int (Esize (From)), Float_Rep (From),
+                        UI_To_Int (Digits_Value (From)));
+   end Copy_Float_Type;
 
    ----------------------
    -- Create_Operators --
@@ -306,10 +367,11 @@ package body CStand is
 
    --  The tree for the package Standard is prefixed to all compilations.
    --  Several entities required by semantic analysis are denoted by global
-   --  variables that are initialized to point to the corresponding
-   --  occurrences in STANDARD. The visible entities of STANDARD are
-   --  created here. The private entities defined in STANDARD are created
-   --  by Initialize_Standard in the semantics module.
+   --  variables that are initialized to point to the corresponding occurrences
+   --  in Standard. The visible entities of Standard are created here. Special
+   --  entities maybe created here as well or may be created from the semantics
+   --  module. By not adding them to the Decls list of Standard they will not
+   --  be visible to Ada programs.
 
    procedure Create_Standard is
       Decl_S : constant List_Id := New_List;
@@ -329,6 +391,14 @@ package body CStand is
 
       procedure Build_Exception (S : Standard_Entity_Type);
       --  Procedure to declare given entity as an exception
+
+      procedure Create_Back_End_Float_Types;
+      --  Initialize the Back_End_Float_Types list by having the back end
+      --  enumerate all available types and building type entities for them.
+
+      procedure Create_Float_Types;
+      --  Creates entities for all predefined floating point types, and
+      --  adds these to the Predefined_Float_Types list in package Standard.
 
       procedure Pack_String_Type (String_Type : Entity_Id);
       --  Generate proper tree for pragma Pack that applies to given type, and
@@ -350,6 +420,78 @@ package body CStand is
              Defining_Identifier => Standard_Entity (S));
          Append (Decl, Decl_S);
       end Build_Exception;
+
+      ---------------------------
+      -- Create_Back_End_Float_Types --
+      ---------------------------
+
+      procedure Create_Back_End_Float_Types is
+      begin
+         Back_End_Float_Types := No_List;
+         Register_Back_End_Types (Register_Float_Type'Access);
+      end Create_Back_End_Float_Types;
+
+      ------------------------
+      -- Create_Float_Types --
+      ------------------------
+
+      procedure Create_Float_Types is
+      begin
+         --  Create type definition nodes for predefined float types
+
+         Copy_Float_Type (Standard_Short_Float,
+           Find_Back_End_Float_Type ("float"));
+
+         Copy_Float_Type (Standard_Float, Standard_Short_Float);
+
+         Copy_Float_Type (Standard_Long_Float,
+           Find_Back_End_Float_Type ("double"));
+
+         Predefined_Float_Types := New_List
+           (Standard_Short_Float, Standard_Float, Standard_Long_Float);
+
+         --  ??? For now, we don't have a good way to tell the widest float
+         --  type with hardware support. Basically, GCC knows the size of that
+         --  type, but on x86-64 there often are two or three 128-bit types,
+         --  one double extended that has 18 decimal digits, a 128-bit quad
+         --  precision type with 33 digits and possibly a 128-bit decimal float
+         --  type with 34 digits. As a workaround, we define Long_Long_Float as
+         --  C's "long double" if that type exists and has at most 18 digits,
+         --  or otherwise the same as Long_Float.
+
+         declare
+            Max_HW_Digs : constant := 18;
+            LF_Digs     : constant Pos :=
+                            UI_To_Int (Digits_Value (Standard_Long_Float));
+            LLF : Entity_Id := Find_Back_End_Float_Type ("long double");
+            N   : Node_Id := First (Back_End_Float_Types);
+
+         begin
+            if Digits_Value (LLF) > Max_HW_Digs then
+               LLF := Empty;
+            end if;
+
+            while No (LLF) and then Present (N) loop
+               if UI_To_Int (Digits_Value (N)) in LF_Digs + 1 .. Max_HW_Digs
+                 and then Machine_Radix_Value (N) = Uint_2
+               then
+                  LLF := N;
+               end if;
+
+               Next (N);
+            end loop;
+
+            if No (LLF) then
+               LLF := Standard_Long_Float;
+            end if;
+
+            Copy_Float_Type (Standard_Long_Long_Float, LLF);
+
+            Append (Standard_Long_Long_Float, Predefined_Float_Types);
+         end;
+
+         Append_List (Back_End_Float_Types, To => Predefined_Float_Types);
+      end Create_Float_Types;
 
       ----------------------
       -- Pack_String_Type --
@@ -430,6 +572,8 @@ package body CStand is
          Set_Defining_Identifier (Decl, Standard_Entity (S));
          Append (Decl, Decl_S);
       end loop;
+
+      Create_Back_End_Float_Types;
 
       --  Create type definition node for type Boolean. The Size is set to
       --  1 as required by Ada 95 and current ARG interpretations for Ada/83.
@@ -539,27 +683,7 @@ package body CStand is
       Create_Unconstrained_Base_Type
         (Standard_Long_Long_Integer, E_Signed_Integer_Subtype);
 
-      --  Create type definition nodes for predefined float types
-
-      Build_Float_Type
-        (Standard_Short_Float,
-         Standard_Short_Float_Size,
-         Standard_Short_Float_Digits);
-
-      Build_Float_Type
-        (Standard_Float,
-         Standard_Float_Size,
-         Standard_Float_Digits);
-
-      Build_Float_Type
-        (Standard_Long_Float,
-         Standard_Long_Float_Size,
-         Standard_Long_Float_Digits);
-
-      Build_Float_Type
-        (Standard_Long_Long_Float,
-         Standard_Long_Long_Float_Size,
-         Standard_Long_Long_Float_Digits);
+      Create_Float_Types;
 
       --  Create type definition node for type Character. Note that we do not
       --  set the Literals field, since type Character is handled with special
@@ -1209,10 +1333,7 @@ package body CStand is
       Set_Defining_Identifier (Decl, Universal_Real);
       Make_Name (Universal_Real, "universal_real");
       Set_Scope (Universal_Real, Standard_Standard);
-      Build_Float_Type
-        (Universal_Real,
-         Standard_Long_Long_Float_Size,
-         Standard_Long_Long_Float_Digits);
+      Copy_Float_Type (Universal_Real, Standard_Long_Long_Float);
 
       --  Note: universal fixed, unlike universal integer and universal real,
       --  is never used at runtime, so it does not need to have bounds set.
@@ -1873,6 +1994,53 @@ package body CStand is
 
       P ("end Standard;");
    end Print_Standard;
+
+   -------------------------
+   -- Register_Float_Type --
+   -------------------------
+
+   procedure Register_Float_Type
+     (Name      : C_String;
+      Digs      : Natural;
+      Complex   : Boolean;
+      Count     : Natural;
+      Float_Rep : Float_Rep_Kind;
+      Size      : Positive;
+      Alignment : Natural)
+   is
+      Last : Natural := Name'First - 1;
+
+   begin
+      for J in Name'Range loop
+         if Name (J) = ASCII.NUL then
+            Last := J - 1;
+            exit;
+         end if;
+      end loop;
+
+      if Digs > 0 and then not Complex and then Count = 0 then
+         declare
+            Ent   : constant Entity_Id := New_Standard_Entity;
+            Esize : constant Pos := Pos ((Size + Alignment - 1)
+                                           / Alignment * Alignment);
+         begin
+            Set_Defining_Identifier
+              (New_Node (N_Full_Type_Declaration, Stloc), Ent);
+            Make_Name (Ent, String (Name (Name'First .. Last)));
+            Set_Scope (Ent, Standard_Standard);
+            Build_Float_Type (Ent, Esize, Float_Rep, Pos (Digs));
+            Set_RM_Size (Ent, UI_From_Int (Int (Size)));
+            Set_Alignment (Ent, UI_From_Int (Int (Alignment / 8)));
+
+            if No (Back_End_Float_Types) then
+               Back_End_Float_Types := New_List (Ent);
+
+            else
+               Append (Ent, Back_End_Float_Types);
+            end if;
+         end;
+      end if;
+   end Register_Float_Type;
 
    ----------------------
    -- Set_Float_Bounds --
