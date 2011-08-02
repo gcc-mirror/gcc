@@ -11,6 +11,9 @@
 	* config/h8300/h8300.c (push, pop): Return the insn.
 	(h8300_swap_into_er6): Generate correct unwind info.
 	(h8300_swap_out_of_er6): Likewise.
+	* dwarf2cfi.c (def_cfa_1): Clear cfa_cfi if we no longer have a
+	complex cfa expression.
+	(dwarf2out_frame_debug_def_cfa): Allow (plus (mem) (const_int)) too.
 
 2011-08-02  H.J. Lu  <hongjiu.lu@intel.com>
 
