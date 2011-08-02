@@ -14988,6 +14988,19 @@ package body Sem_Ch3 is
 
       else
          T := Process_Subtype (Obj_Def, Related_Nod);
+
+         --  If expansion is disabled an object definition that is an aggregate
+         --  will not get expanded and may lead to scoping problems in the back
+         --  end, if the object is referenced in an inner scope. In that case
+         --  create an itype reference for the object definition now. This
+         --  may be redundant in some cases, but harmless.
+
+         if Is_Itype (T)
+           and then Nkind (Related_Nod) = N_Object_Declaration
+           and then ASIS_Mode
+         then
+            Build_Itype_Reference (T, Related_Nod);
+         end if;
       end if;
 
       return T;

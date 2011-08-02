@@ -16424,10 +16424,10 @@ replace colons with semicolons in the assignments to these variables.
 @font@heightrm=cmr8
 @heightrm
 @end iftex
-# In this example, we create both ADA_INCLUDE_PATH and ADA_OBJECT_PATH.
+# In this example, we create both ADA_INCLUDE_PATH and ADA_OBJECTS_PATH.
 # This is the same thing as putting the -I arguments on the command line.
 # (the equivalent of using -aI on the command line would be to define
-#  only ADA_INCLUDE_PATH, the equivalent of -aO is ADA_OBJECT_PATH).
+#  only ADA_INCLUDE_PATH, the equivalent of -aO is ADA_OBJECTS_PATH).
 # You can of course have different values for these variables.
 #
 # Note also that we need to keep the previous values of these variables, since
@@ -16444,9 +16444,9 @@ space:=$@{empty@} $@{empty@}
 SOURCE_LIST := $@{subst $@{space@},:,$@{SOURCE_DIRS@}@}
 OBJECT_LIST := $@{subst $@{space@},:,$@{OBJECT_DIRS@}@}
 ADA_INCLUDE_PATH += $@{SOURCE_LIST@}
-ADA_OBJECT_PATH += $@{OBJECT_LIST@}
+ADA_OBJECTS_PATH += $@{OBJECT_LIST@}
 export ADA_INCLUDE_PATH
-export ADA_OBJECT_PATH
+export ADA_OBJECTS_PATH
 
 all:
         gnatmake main_unit

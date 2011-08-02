@@ -1,3 +1,18 @@
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Of_Object): In ASIS mode, create an itype
+	reference when needed.
+
+2011-08-02  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Fix typo.
+
+2011-08-02  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Gnatmake): Use MLib.Tgt.Archive_Ext as the extension of
+	archive file name. Do not use the full path name of archives for Open
+	VMS.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch12.adb, sem_ch11.adb: New calling sequence for
