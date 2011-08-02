@@ -4616,21 +4616,19 @@ package body Exp_Util is
 
          --  If the prefix is of an access type that is not access-to-constant,
          --  then this construct is a variable reference, which means it is to
-         --  be considered to have side effects if Variable_Ref is set True
-         --  Exception is an access to an entity that is a constant or an
-         --  in-parameter which does not come from source, and is the result
-         --  of a previous removal of side-effects.
+         --  be considered to have side effects if Variable_Ref is set True.
 
          elsif Is_Access_Type (Etype (Prefix (N)))
            and then not Is_Access_Constant (Etype (Prefix (N)))
            and then Variable_Ref
          then
-            if not Is_Entity_Name (Prefix (N)) then
-               return False;
-            else
-               return Ekind (Entity (Prefix (N))) = E_Constant
-                 or else Ekind (Entity (Prefix (N))) = E_In_Parameter;
-            end if;
+            --  Exception is a prefix that is the result of a previous removal
+            --  of side-effects.
+
+            return Is_Entity_Name (Prefix (N))
+              and then not Comes_From_Source (Prefix (N))
+              and then Ekind (Entity (Prefix (N))) = E_Constant
+              and then Is_Internal_Name (Chars (Entity (Prefix (N))));
 
          --  If the prefix is an explicit dereference then this construct is a
          --  variable reference, which means it is to be considered to have
@@ -4945,10 +4943,24 @@ package body Exp_Util is
    --  Start of processing for Remove_Side_Effects
 
    begin
-      --  If we are side effect free already or expansion is disabled,
-      --  there is nothing to do.
+      --  Handle cases in which there is nothing to do
 
-      if Side_Effect_Free (Exp) or else not Expander_Active then
+      if not Expander_Active then
+         return;
+
+      --  Cannot generate temporaries if the invocation to remove side effects
+      --  was issued too early and the type of the expression is not resolved
+      --  (this happens because routines Duplicate_Subexpr_XX implicitly invoke
+      --  Remove_Side_Effects).
+
+      elsif No (Exp_Type)
+        or else Ekind (Exp_Type) = E_Access_Attribute_Type
+      then
+         return;
+
+      --  No action needed for side-effect free expressions
+
+      elsif Side_Effect_Free (Exp) then
          return;
       end if;
 
