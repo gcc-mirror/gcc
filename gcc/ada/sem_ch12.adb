@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -9835,17 +9835,15 @@ package body Sem_Ch12 is
             end if;
          end if;
 
-         --  Perform atomic/volatile checks (RM C.6(12))
+         --  Perform atomic/volatile checks (RM C.6(12)). Note that AI05-0218-1
+         --  removes the second instance of the phrase "or allow pass by copy".
 
          if Is_Atomic (Act_T) and then not Is_Atomic (Ancestor) then
             Error_Msg_N
               ("cannot have atomic actual type for non-atomic formal type",
                Actual);
 
-         elsif Is_Volatile (Act_T)
-           and then not Is_Volatile (Ancestor)
-           and then Is_By_Reference_Type (Ancestor)
-         then
+         elsif Is_Volatile (Act_T) and then not Is_Volatile (Ancestor) then
             Error_Msg_N
               ("cannot have volatile actual type for non-volatile formal type",
                Actual);
