@@ -1345,16 +1345,13 @@ package body Errout is
    --  Start of processing for First_Node
 
    begin
-      if Nkind (C) in N_Unit_Body
-        or else Nkind (C) in N_Proper_Body
-      then
-         return C;
-
-      else
+      if Nkind (C) in N_Subexpr then
          Earliest := Original_Node (C);
          Eloc := Sloc (Earliest);
          Search_Tree_First (Original_Node (C));
          return Earliest;
+      else
+         return C;
       end if;
    end First_Node;
 

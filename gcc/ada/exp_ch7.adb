@@ -3427,36 +3427,6 @@ package body Exp_Ch7 is
       S              : Entity_Id;
       Uses_SS        : Boolean;
 
-      function Is_Container_Cursor (Decl : Node_Id) return Boolean;
-      --  Determine whether object declaration Decl is a cursor used to iterate
-      --  over an Ada 2005/12 container.
-
-      -------------------------
-      -- Is_Container_Cursor --
-      -------------------------
-
-      function Is_Container_Cursor (Decl : Node_Id) return Boolean is
-         Def_Id : constant Entity_Id := Defining_Identifier (Decl);
-         Expr   : constant Node_Id   := Expression (Decl);
-
-      begin
-         --  A cursor declaration appears in the following form:
-         --
-         --    Index : Pack.Cursor := First (...);
-
-         return
-           Chars (Etype (Def_Id)) = Name_Cursor
-             and then Present (Expr)
-             and then Nkind (Expr) = N_Function_Call
-             and then Chars (Name (Expr)) = Name_First
-             and then
-               (Nkind (Parent (Decl)) = N_Expression_With_Actions
-                  or else
-                Nkind (Related_Expression (Def_Id)) = N_Loop_Statement);
-      end Is_Container_Cursor;
-
-   --  Start of processing for Wrap_Transient_Declaration
-
    begin
       S := Current_Scope;
       Enclosing_S := Scope (S);
@@ -3531,27 +3501,6 @@ package body Exp_Ch7 is
            and then
              Needs_Finalization
                (Etype (Prefix (Renamed_Object (Defining_Identifier (N)))))
-         then
-            null;
-
-         --  The declaration of a container cursor is a special context where
-         --  the finalization of the list controller needs to be supressed. In
-         --  the following simplified example:
-         --
-         --    LC   : Simple_List_Controller;
-         --    Temp : Ptr_Typ := Container_Creator_Function'Reference;
-         --    Deep_Tag_Attach (Temp, LC);
-         --    Obj  : Pack.Cursor := First (Temp.all);
-         --    Finalize (LC);
-         --    <execute the loop>
-         --
-         --  the finalization of the list controller destroys the contents of
-         --  container Temp, and as a result Obj points to nothing. Note that
-         --  Temp will be finalized by the finalization list of the enclosing
-         --  scope.
-
-         elsif Ada_Version >= Ada_2012
-           and then Is_Container_Cursor (N)
          then
             null;
 

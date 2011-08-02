@@ -6786,6 +6786,8 @@ package body Sem_Res is
          if Is_Array_Type (T)
            and then Base_Type (T) /= Standard_String
            and then Base_Type (Etype (L)) = Base_Type (Etype (R))
+           and then Etype (L) /= Any_Composite  --  or else L in error
+           and then Etype (R) /= Any_Composite  --  or else R in error
            and then not Matching_Static_Array_Bounds (Etype (L), Etype (R))
          then
             Check_Formal_Restriction
@@ -7322,17 +7324,21 @@ package body Sem_Res is
       --  bounds. Of course the types have to match, so only check if operands
       --  are compatible and the node itself has no errors.
 
-      if Is_Array_Type (B_Typ)
-        and then Nkind (N) in N_Binary_Op
-        and then
-          Base_Type (Etype (Left_Opnd (N)))
-            = Base_Type (Etype (Right_Opnd (N)))
-        and then not Matching_Static_Array_Bounds (Etype (Left_Opnd (N)),
-                                                   Etype (Right_Opnd (N)))
-      then
-         Check_Formal_Restriction
-           ("array types should have matching static bounds", N);
-      end if;
+      declare
+         Left_Typ  : constant Node_Id := Etype (Left_Opnd (N));
+         Right_Typ : constant Node_Id := Etype (Right_Opnd (N));
+      begin
+         if Is_Array_Type (B_Typ)
+           and then Nkind (N) in N_Binary_Op
+           and then Base_Type (Left_Typ) = Base_Type (Right_Typ)
+           and then Left_Typ /= Any_Composite  --  or else Left_Opnd in error
+           and then Right_Typ /= Any_Composite  --  or else Right_Opnd in error
+           and then not Matching_Static_Array_Bounds (Left_Typ, Right_Typ)
+         then
+            Check_Formal_Restriction
+              ("array types should have matching static bounds", N);
+         end if;
+      end;
 
    end Resolve_Logical_Op;
 
@@ -7702,9 +7708,9 @@ package body Sem_Res is
          end if;
 
       elsif Is_String_Type (Etype (Arg)) then
-         if Nkind (Arg) /= N_String_Literal then
+         if not Is_Static_Expression (Arg) then
             Check_Formal_Restriction
-              ("string operand for concatenation should be a literal", N);
+              ("string operand for concatenation should be static", N);
          end if;
 
       --  Do not issue error on an operand that is neither a character nor a
@@ -7984,6 +7990,7 @@ package body Sem_Res is
 
       if Is_Array_Type (Target_Typ)
         and then Is_Array_Type (Etype (Expr))
+        and then Etype (Expr) /= Any_Composite  --  or else Expr in error
         and then not Matching_Static_Array_Bounds (Target_Typ, Etype (Expr))
       then
          Check_Formal_Restriction
@@ -9109,6 +9116,7 @@ package body Sem_Res is
 
       if Is_Array_Type (Target_Typ)
         and then Is_Array_Type (Operand_Typ)
+        and then Operand_Typ /= Any_Composite  --  or else Operand in error
         and then not Matching_Static_Array_Bounds (Target_Typ, Operand_Typ)
       then
          Check_Formal_Restriction

@@ -117,7 +117,7 @@ package body Restrict is
       Msg_Issued          : Boolean;
       Save_Error_Msg_Sloc : Source_Ptr;
    begin
-      if Force or else Comes_From_Source (Original_Node (N)) then
+      if Force or else Comes_From_Source (N) then
 
          --  Since the call to Restriction_Msg from Check_Restriction may set
          --  Error_Msg_Sloc to the location of the pragma restriction, save and
@@ -125,16 +125,16 @@ package body Restrict is
 
          --  ??? N in call to Check_Restriction should be First_Node (N), but
          --  this causes an exception to be raised when analyzing osint.adb.
-         --  To be modified.
+         --  To be modified together with the calls to Error_Msg_N.
 
          Save_Error_Msg_Sloc := Error_Msg_Sloc;
          Check_Restriction (Msg_Issued, SPARK, N);  --  N -> First_Node (N)
          Error_Msg_Sloc := Save_Error_Msg_Sloc;
 
          if Msg_Issued then
-            Error_Msg_F ("\\| " & Msg, N);
+            Error_Msg_N ("\\| " & Msg, N);  --  Error_Msg_N -> Error_Msg_F
          elsif SPARK_Mode then
-            Error_Msg_F ("|~~" & Msg, N);
+            Error_Msg_N ("|~~" & Msg, N);  --  Error_Msg_N -> Error_Msg_F
          end if;
       end if;
    end Check_Formal_Restriction;
@@ -145,7 +145,7 @@ package body Restrict is
    begin
       pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
 
-      if Comes_From_Source (Original_Node (N)) then
+      if Comes_From_Source (N) then
 
          --  Since the call to Restriction_Msg from Check_Restriction may set
          --  Error_Msg_Sloc to the location of the pragma restriction, save and

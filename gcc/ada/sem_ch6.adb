@@ -3073,9 +3073,12 @@ package body Sem_Ch6 is
    --  Start of processing for Analyze_Subprogram_Specification
 
    begin
-      --  User-defined operator is not allowed in SPARK or ALFA
+      --  User-defined operator is not allowed in SPARK or ALFA, except as
+      --  a renaming.
 
-      if Nkind (Defining_Unit_Name (N)) = N_Defining_Operator_Symbol then
+      if Nkind (Defining_Unit_Name (N)) = N_Defining_Operator_Symbol
+        and then Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
+      then
          Check_Formal_Restriction ("user-defined operator is not allowed", N);
       end if;
 

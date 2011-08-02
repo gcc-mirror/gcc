@@ -1838,7 +1838,10 @@ package body Sem_Aggr is
 
                      --  In SPARK or ALFA, the choice must be static
 
-                     if not Is_Static_Expression (Choice) then
+                     if not (Is_Static_Expression (Choice)
+                              or else (Nkind (Choice) = N_Range
+                                        and then Is_Static_Range (Choice)))
+                     then
                         Check_Formal_Restriction
                           ("choice should be static", Choice);
                      end if;

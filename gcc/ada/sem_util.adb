@@ -1111,6 +1111,45 @@ package body Sem_Util is
    is
       Body_Sloc : Source_Ptr;
       Decl      : Node_Id;
+
+      function Is_Later_Declarative_Item (Decl : Node_Id) return Boolean;
+      --  Return whether Decl is considered as a declarative item.
+      --  When During_Parsing is True, the semantics of Ada 83 is followed.
+      --  When During_Parsing is False, the semantics of SPARK is followed.
+
+      -------------------------------
+      -- Is_Later_Declarative_Item --
+      -------------------------------
+
+      function Is_Later_Declarative_Item (Decl : Node_Id) return Boolean is
+      begin
+         if Nkind (Decl) in N_Later_Decl_Item then
+            return True;
+
+         elsif Nkind (Decl) = N_Pragma then
+            return True;
+
+         elsif During_Parsing then
+            return False;
+
+         --  In SPARK, a package declaration is not considered as a later
+         --  declarative item.
+
+         elsif Nkind (Decl) = N_Package_Declaration then
+            return False;
+
+         --  In SPARK, a renaming is considered as a later declarative item
+
+         elsif Nkind (Decl) in N_Renaming_Declaration then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Is_Later_Declarative_Item;
+
+   --  Start of Check_Later_Vs_Basic_Declarations
+
    begin
       Decl := First (Decls);
 
@@ -1131,12 +1170,7 @@ package body Sem_Util is
             Body_Sloc := Sloc (Decl);
 
             Inner : while Present (Decl) loop
-               if (Nkind (Decl) not in N_Later_Decl_Item
-                    or else (not During_Parsing
-                              and then
-                                Nkind (Decl) = N_Package_Declaration))
-                 and then Nkind (Decl) /= N_Pragma
-               then
+               if not Is_Later_Declarative_Item (Decl) then
                   if During_Parsing then
                      if Ada_Version = Ada_83 then
                         Error_Msg_Sloc := Body_Sloc;
@@ -2896,6 +2930,30 @@ package body Sem_Util is
       return Current_Node;
    end Enclosing_Lib_Unit_Node;
 
+   -----------------------
+   -- Enclosing_Package --
+   -----------------------
+
+   function Enclosing_Package (E : Entity_Id) return Entity_Id is
+      Dynamic_Scope : constant Entity_Id := Enclosing_Dynamic_Scope (E);
+
+   begin
+      if Dynamic_Scope = Standard_Standard then
+         return Standard_Standard;
+
+      elsif Dynamic_Scope = Empty then
+         return Empty;
+
+      elsif Ekind_In (Dynamic_Scope, E_Package, E_Package_Body,
+                      E_Generic_Package)
+      then
+         return Dynamic_Scope;
+
+      else
+         return Enclosing_Package (Dynamic_Scope);
+      end if;
+   end Enclosing_Package;
+
    --------------------------
    -- Enclosing_Subprogram --
    --------------------------
@@ -3260,38 +3318,51 @@ package body Sem_Util is
       --  Declaring a homonym is not allowed in SPARK or ALFA ...
 
       if Present (C)
-
-        --  ... unless the new declaration is in a subprogram, and the visible
-        --  declaration is a variable declaration or a parameter specification
-        --  outside that subprogram.
-
-        and then not
-          (Nkind_In (Parent (Parent (Def_Id)), N_Subprogram_Body,
-                                               N_Function_Specification,
-                                               N_Procedure_Specification)
-           and then
-             Nkind_In (Parent (C), N_Object_Declaration,
-                                   N_Parameter_Specification))
-
-        --  ... or the new declaration is in a package, and the visible
-        --  declaration occurs outside that package.
-
-        and then not
-          Nkind_In (Parent (Parent (Def_Id)), N_Package_Specification,
-                                              N_Package_Body)
-
-        --  ... or the new declaration is a component declaration in a record
-        --  type definition.
-
-        and then Nkind (Parent (Def_Id)) /= N_Component_Declaration
-
-        --  Don't issue error for non-source entities
-
-        and then Comes_From_Source (Def_Id)
-        and then Comes_From_Source (C)
+        and then (Restriction_Check_Required (SPARK)
+                   or else Formal_Verification_Mode)
       then
-         Error_Msg_Sloc := Sloc (C);
-         Check_Formal_Restriction ("redeclaration of identifier &#", Def_Id);
+
+         declare
+            Enclosing_Subp : constant Node_Id := Enclosing_Subprogram (Def_Id);
+            Enclosing_Pack : constant Node_Id := Enclosing_Package (Def_Id);
+            Other_Scope    : constant Node_Id := Enclosing_Dynamic_Scope (C);
+         begin
+
+            --  ... unless the new declaration is in a subprogram, and the
+            --  visible declaration is a variable declaration or a parameter
+            --  specification outside that subprogram.
+
+            if Present (Enclosing_Subp)
+              and then Nkind_In (Parent (C), N_Object_Declaration,
+                                 N_Parameter_Specification)
+              and then not Scope_Within_Or_Same (Other_Scope, Enclosing_Subp)
+            then
+               null;
+
+            --  ... or the new declaration is in a package, and the visible
+            --  declaration occurs outside that package.
+
+            elsif Present (Enclosing_Pack)
+              and then not Scope_Within_Or_Same (Other_Scope, Enclosing_Pack)
+            then
+               null;
+
+            --  ... or the new declaration is a component declaration in a
+            --  record type definition.
+
+            elsif Nkind (Parent (Def_Id)) = N_Component_Declaration then
+               null;
+
+            --  Don't issue error for non-source entities
+
+            elsif Comes_From_Source (Def_Id)
+              and then Comes_From_Source (C)
+            then
+               Error_Msg_Sloc := Sloc (C);
+               Check_Formal_Restriction
+                 ("redeclaration of identifier &#", Def_Id);
+            end if;
+         end;
       end if;
 
       --  Warn if new entity hides an old one
@@ -7432,10 +7503,13 @@ package body Sem_Util is
       Is_Ok     : Boolean;
       Expr      : Node_Id;
       Comp_Assn : Node_Id;
-      Choice    : Node_Id;
 
    begin
       Is_Ok := True;
+
+      if not Comes_From_Source (N) then
+         goto Done;
+      end if;
 
       pragma Assert (Nkind (N) in N_Subexpr);
 
@@ -7443,12 +7517,11 @@ package body Sem_Util is
          when N_Character_Literal |
               N_Integer_Literal   |
               N_Real_Literal      |
-              N_String_Literal    |
-              N_Expanded_Name     |
-              N_Membership_Test   =>
+              N_String_Literal    =>
             null;
 
-         when N_Identifier =>
+         when N_Identifier    |
+              N_Expanded_Name =>
             if Is_Entity_Name (N)
               and then Present (Entity (N))  --  needed in some cases
             then
@@ -7459,7 +7532,11 @@ package body Sem_Util is
                        E_Named_Real          =>
                      null;
                   when others =>
-                     Is_Ok := False;
+                     if Is_Type (Entity (N)) then
+                        null;
+                     else
+                        Is_Ok := False;
+                     end if;
                end case;
             end if;
 
@@ -7470,7 +7547,9 @@ package body Sem_Util is
          when N_Unary_Op =>
             Is_Ok := Is_SPARK_Initialization_Expr (Right_Opnd (N));
 
-         when N_Binary_Op | N_Short_Circuit =>
+         when N_Binary_Op       |
+              N_Short_Circuit   |
+              N_Membership_Test =>
             Is_Ok := Is_SPARK_Initialization_Expr (Left_Opnd (N))
               and then Is_SPARK_Initialization_Expr (Right_Opnd (N));
 
@@ -7492,18 +7571,6 @@ package body Sem_Util is
 
             Comp_Assn := First (Component_Associations (N));
             while Present (Comp_Assn) loop
-               Choice := First (Choices (Comp_Assn));
-               while Present (Choice) loop
-                  if Nkind (Choice) in N_Subexpr
-                    and then not Is_SPARK_Initialization_Expr (Choice)
-                  then
-                     Is_Ok := False;
-                     goto Done;
-                  end if;
-
-                  Next (Choice);
-               end loop;
-
                Expr := Expression (Comp_Assn);
                if Present (Expr)  --  needed for box association
                  and then not Is_SPARK_Initialization_Expr (Expr)
@@ -7529,6 +7596,12 @@ package body Sem_Util is
 
                Next (Expr);
             end loop;
+
+         --  Selected components might be expanded named not yet resolved, so
+         --  default on the safe side. (Eg on sparklex.ads)
+
+         when N_Selected_Component =>
+            null;
 
          when others =>
             Is_Ok := False;
