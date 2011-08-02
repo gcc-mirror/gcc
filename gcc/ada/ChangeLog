@@ -1,3 +1,32 @@
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* par-ch6.adb: Correct obsolete name in comments
+	* restrict.adb, restrict.ads (Check_Formal_Restriction): new function
+	which takes two message arguments (existing function takes one), with
+	second message used for continuation.
+	* sem_ch5.adb (Analyze_Block_Statement): in formal mode, only reject
+	block statements that originate from a source block statement, not
+	generated block statements
+	* sem_ch6.adb (Analyze_Function_Call): rename L into Actuals, for
+	symmetry with procedure case
+	* sem_ch7.adb (Check_One_Tagged_Type_Or_Extension_At_Most): new
+	function to issue an error in formal mode if a package specification
+	contains more than one tagged type or type extension.
+	* sem_res.adb (Resolve_Actuals): in formal mode, check that actual
+	parameters matching formals of tagged types are objects (or ancestor
+	type conversions of objects), not general expressions. Issue an error
+	on view conversions that are not involving ancestor conversion of an
+	extended type.
+	(Resolve_Type_Conversion): in formal mode, issue an error on the
+	operand of an ancestor type conversion which is not an object
+	* sem_util.adb, sem_util.ads (Find_Actual): extend the behavior of the
+	procedure so that it works also for actuals of function calls
+	(Is_Actual_Tagged_Parameter): new function which determines if its
+	argument is an actual parameter of a formal of tagged type in a
+	subprogram call
+	(Is_SPARK_Object_Reference): new function which determines if the tree
+	referenced by its argument represents an object in SPARK
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb: Minor reformatting

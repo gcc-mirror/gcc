@@ -118,6 +118,18 @@ package body Restrict is
       end if;
    end Check_Formal_Restriction;
 
+   procedure Check_Formal_Restriction (Msg1, Msg2 : String; N : Node_Id) is
+   begin
+      pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
+
+      if Formal_Verification_Mode
+        and then Comes_From_Source (Original_Node (N))
+      then
+         Error_Msg_F ("|~~" & Msg1, N);
+         Error_Msg_F (Msg2, N);
+      end if;
+   end Check_Formal_Restriction;
+
    -----------------------------------------
    -- Check_Implicit_Dynamic_Code_Allowed --
    -----------------------------------------

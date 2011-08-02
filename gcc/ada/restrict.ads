@@ -225,6 +225,10 @@ package Restrict is
    --  "|~~" (error not serious, language prepended). Call has no effect if
    --  not in formal mode, or if N does not come originally from source.
 
+   procedure Check_Formal_Restriction (Msg1, Msg2 : String; N : Node_Id);
+   --  Same as Check_Formal_Restriction except there is a continuation message
+   --  Msg2 following the initial message Msg1.
+
    procedure Check_Implicit_Dynamic_Code_Allowed (N : Node_Id);
    --  Tests to see if dynamic code generation (dynamically generated
    --  trampolines, in particular) is allowed by the current restrictions

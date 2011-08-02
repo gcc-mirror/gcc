@@ -3585,29 +3585,70 @@ package body Sem_Res is
             A_Typ := Etype (A);
             F_Typ := Etype (F);
 
-            --  In SPARK or ALFA, the only view conversions are those involving
-            --  ancestor conversion of an extended type.
-
-            if Nkind (A) = N_Type_Conversion
-              and then Ekind_In (F, E_Out_Parameter, E_In_Out_Parameter)
+            if Comes_From_Source (Original_Node (N))
+              and then Nkind_In (Original_Node (N),
+                                 N_Function_Call,
+                                 N_Procedure_Call_Statement)
             then
-               declare
-                  Operand     : constant Node_Id   := Expression (A);
-                  Operand_Typ : constant Entity_Id := Etype (Operand);
-                  Target_Typ  : constant Entity_Id := A_Typ;
+               --  In formal mode, check that actual parameters matching
+               --  formals of tagged types are objects (or ancestor type
+               --  conversions of objects), not general expressions.
 
-               begin
-                  if not (Is_Tagged_Type (Target_Typ)
+               if Is_Actual_Tagged_Parameter (A) then
+                  if Is_SPARK_Object_Reference (A) then
+                     null;
+
+                  elsif Nkind (A) = N_Type_Conversion then
+                     declare
+                        Operand     : constant Node_Id   := Expression (A);
+                        Operand_Typ : constant Entity_Id := Etype (Operand);
+                        Target_Typ  : constant Entity_Id := A_Typ;
+
+                     begin
+                        if not Is_SPARK_Object_Reference (Operand) then
+                           Check_Formal_Restriction
+                             ("object required", Operand);
+
+                        --  In formal mode, the only view conversions are those
+                        --  involving ancestor conversion of an extended type.
+
+                        elsif not
+                          (Is_Tagged_Type (Target_Typ)
                            and then not Is_Class_Wide_Type (Target_Typ)
                            and then Is_Tagged_Type (Operand_Typ)
                            and then not Is_Class_Wide_Type (Operand_Typ)
                            and then Is_Ancestor (Target_Typ, Operand_Typ))
-                  then
-                     Check_Formal_Restriction
-                       ("ancestor conversion is the only permitted view "
-                        & "conversion", A);
+                        then
+                           if Ekind_In
+                             (F, E_Out_Parameter, E_In_Out_Parameter)
+                           then
+                              Check_Formal_Restriction
+                                ("ancestor conversion is the only permitted "
+                                 & "view conversion", A);
+                           else
+                              Check_Formal_Restriction
+                                ("ancestor conversion required", A);
+                           end if;
+
+                        else
+                           null;
+                        end if;
+                     end;
+
+                  else
+                     Check_Formal_Restriction ("object required", A);
                   end if;
-               end;
+
+               --  In formal mode, the only view conversions are those
+               --  involving ancestor conversion of an extended type.
+
+               elsif Nkind (A) = N_Type_Conversion
+                 and then Ekind_In (F, E_Out_Parameter, E_In_Out_Parameter)
+               then
+                  Check_Formal_Restriction
+                    ("ancestor conversion is the only permitted view "
+                     & "conversion", A);
+               end if;
             end if;
 
             --  Save actual for subsequent check on order dependence, and
@@ -9054,6 +9095,19 @@ package body Sem_Res is
       then
          Check_Formal_Restriction
            ("array types should have matching static bounds", N);
+      end if;
+
+      --  In formal mode, the operand of an ancestor type conversion must be an
+      --  object (not an expression).
+
+      if Is_Tagged_Type (Target_Typ)
+        and then not Is_Class_Wide_Type (Target_Typ)
+        and then Is_Tagged_Type (Operand_Typ)
+        and then not Is_Class_Wide_Type (Operand_Typ)
+        and then Is_Ancestor (Target_Typ, Operand_Typ)
+        and then not Is_SPARK_Object_Reference (Operand)
+      then
+         Check_Formal_Restriction ("object required", Operand);
       end if;
 
       --  Note: we do the Eval_Type_Conversion call before applying the
