@@ -4879,19 +4879,44 @@ package body Exp_Ch6 is
       --  Case where we do not build a block
 
       else
-         --  We're about to drop Return_Object_Declarations on the floor, so
-         --  we need to insert it, in case it got expanded into useful code.
          --  Remove side effects from expression, which may be duplicated in
          --  subsequent checks (see Expand_Simple_Function_Return).
 
-         Insert_List_Before (N, Return_Object_Declarations (N));
          Remove_Side_Effects (Exp);
 
          --  Build simple_return_statement that returns the expression directly
 
          Return_Stm := Make_Simple_Return_Statement (Loc, Expression => Exp);
 
-         Result := Return_Stm;
+         --  The expansion of the return expression may create a finalization
+         --  chain to service transient temporaries. The entity of the chain
+         --  appears as a semantic attribute of the return statement scope.
+         --  For the chain to be handled properly by Expand_Cleanup_Actions,
+         --  the return statement is wrapped in a block and reanalyzed.
+
+         if Present
+              (Finalization_Chain_Entity (Return_Statement_Entity (N)))
+         then
+            Result :=
+              Make_Block_Statement (Loc,
+                Declarations => Return_Object_Declarations (N),
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (Return_Stm)));
+
+            --  Propagate the return statement scope to the block in order to
+            --  preserve the various semantic fields.
+
+            Set_Identifier
+              (Result, New_Occurrence_Of (Return_Statement_Entity (N), Loc));
+         else
+            --  We're about to drop Return_Object_Declarations on the floor, so
+            --  we need to insert it, in case it got expanded into useful code.
+
+            Insert_List_Before (N, Return_Object_Declarations (N));
+
+            Result := Return_Stm;
+         end if;
       end if;
 
       --  Set the flag to prevent infinite recursion

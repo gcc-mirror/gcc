@@ -7836,9 +7836,14 @@ package body Sem_Ch3 is
 
       Set_Size_Info      (Derived_Type,                 Parent_Type);
       Set_RM_Size        (Derived_Type, RM_Size        (Parent_Type));
-      Set_Convention     (Derived_Type, Convention     (Parent_Type));
       Set_Is_Controlled  (Derived_Type, Is_Controlled  (Parent_Type));
       Set_Is_Tagged_Type (Derived_Type, Is_Tagged_Type (Parent_Type));
+
+      --  If the parent type is a private subtype, the convention on the base
+      --  type may be set in the private part, and not propagated to the
+      --  subtype until later, so we obtain the convention from the base type.
+
+      Set_Convention     (Derived_Type, Convention     (Parent_Base));
 
       --  Propagate invariant information. The new type has invariants if
       --  they are inherited from the parent type, and these invariants can
@@ -9918,9 +9923,10 @@ package body Sem_Ch3 is
       Set_Homonym     (Full, Save_Homonym);
       Set_Associated_Node_For_Itype (Full, Related_Nod);
 
-      --  Set common attributes for all subtypes
+      --  Set common attributes for all subtypes: kind, convention, etc.
 
       Set_Ekind (Full, Subtype_Kind (Ekind (Full_Base)));
+      Set_Convention (Full, Convention (Full_Base));
 
       --  The Etype of the full view is inconsistent. Gigi needs to see the
       --  structural full view,  which is what the current scheme gives:

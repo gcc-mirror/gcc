@@ -1,3 +1,35 @@
+2011-08-02  Thomas Quinot  <quinot@adacore.com>
+
+	* scos.ads: Update comments.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Type): Inherit the convention from the
+	base type, because the parent may be a subtype of a private type whose
+	convention is established in a private part.
+
+2011-08-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Wrap the return
+	statement in a block when the expansion of the return expression has
+	created a finalization chain.
+	* freeze.adb (Freeze_Expression): Alphabetize all choices associated
+	with the parent node.
+	Add N_Extended_Return_Statement to handle the case where a transient
+	object declaration appears in the Return_Object_Declarations list of
+	an extended return statement.
+
+2011-08-02  Matthew Gingell  <gingell@adacore.com>
+
+	* adaint.c (__gnat_is_symbolic_link_attr): Supress warning on possibly
+	unused parameter 'name'.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elim.adb (Set_Eliminated): If the overridden operation is an
+	inherited operation, check whether its alias, which is the source
+	operastion that it renames, has been marked eliminated.
+
 2011-08-02  Javier Miranda  <miranda@adacore.com>
 
 	* exp_util.adb (Safe_Prefixed_Reference): Do not consider safe an
