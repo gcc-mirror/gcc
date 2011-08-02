@@ -92,12 +92,6 @@ package body Sem_Res is
 
    --  Note that Resolve_Attribute is separated off in Sem_Attr
 
-   function Matching_Static_Array_Bounds
-     (L_Typ : Node_Id;
-      R_Typ : Node_Id) return Boolean;
-   --  L_Typ and R_Typ are two array types. Returns True when they have the
-   --  same dimension, and, for each index position, the same static bounds.
-
    function Bad_Unordered_Enumeration_Reference
      (N : Node_Id;
       T : Entity_Id) return Boolean;
@@ -1576,65 +1570,6 @@ package body Sem_Res is
          Resolve (N, Typ);
       end if;
    end Make_Call_Into_Operator;
-
-   ----------------------------------
-   -- Matching_Static_Array_Bounds --
-   ----------------------------------
-
-   function Matching_Static_Array_Bounds
-     (L_Typ : Node_Id;
-      R_Typ : Node_Id) return Boolean
-   is
-      L_Ndims : constant Nat := Number_Dimensions (L_Typ);
-      R_Ndims : constant Nat := Number_Dimensions (R_Typ);
-
-      L_Index : Node_Id;
-      R_Index : Node_Id;
-      L_Low   : Node_Id;
-      L_High  : Node_Id;
-      R_Low   : Node_Id;
-      R_High  : Node_Id;
-
-   begin
-      if L_Ndims /= R_Ndims then
-         return False;
-      end if;
-
-      --  Unconstrained types do not have static bounds
-
-      if not Is_Constrained (L_Typ) or else not Is_Constrained (R_Typ) then
-         return False;
-      end if;
-
-      L_Index := First_Index (L_Typ);
-      R_Index := First_Index (R_Typ);
-
-      for Indx in 1 .. L_Ndims loop
-         Get_Index_Bounds (L_Index, L_Low, L_High);
-         Get_Index_Bounds (R_Index, R_Low, R_High);
-
-         if True
-           and then Is_Static_Expression (L_Low)
-           and then Is_Static_Expression (L_High)
-           and then Is_Static_Expression (R_Low)
-           and then Is_Static_Expression (R_High)
-           and then Expr_Value (L_Low)  = Expr_Value (R_Low)
-           and then Expr_Value (L_High) = Expr_Value (R_High)
-         then
-            --  Matching so far, continue with next index
-
-            null;
-
-         else
-            return False;
-         end if;
-
-         Next (L_Index);
-         Next (R_Index);
-      end loop;
-
-      return True;
-   end Matching_Static_Array_Bounds;
 
    -------------------
    -- Operator_Kind --
@@ -3634,15 +3569,16 @@ package body Sem_Res is
                   Operand     : constant Node_Id   := Expression (A);
                   Operand_Typ : constant Entity_Id := Etype (Operand);
                   Target_Typ  : constant Entity_Id := A_Typ;
+
                begin
                   if not (Is_Tagged_Type (Target_Typ)
-                          and then not Is_Class_Wide_Type (Target_Typ)
-                          and then Is_Tagged_Type (Operand_Typ)
-                          and then not Is_Class_Wide_Type (Operand_Typ)
-                          and then Is_Ancestor (Target_Typ, Operand_Typ))
+                           and then not Is_Class_Wide_Type (Target_Typ)
+                           and then Is_Tagged_Type (Operand_Typ)
+                           and then not Is_Class_Wide_Type (Operand_Typ)
+                           and then Is_Ancestor (Target_Typ, Operand_Typ))
                   then
                      Error_Msg_F ("|~~ancestor conversion is the only "
-                                  & "view conversion", A);
+                                  & "permitted view conversion", A);
                   end if;
                end;
             end if;
@@ -4893,7 +4829,7 @@ package body Sem_Res is
 
       if Formal_Verification_Mode
         and then (Is_Fixed_Point_Type (Etype (L))
-                  or else Is_Fixed_Point_Type (Etype (R)))
+                   or else Is_Fixed_Point_Type (Etype (R)))
         and then Nkind_In (N, N_Op_Multiply, N_Op_Divide)
         and then
           not Nkind_In (Parent (N), N_Qualified_Expression, N_Type_Conversion)
@@ -4921,10 +4857,10 @@ package body Sem_Res is
 
             if Compile_Time_Known_Value (Rop)
               and then ((Is_Integer_Type (Etype (Rop))
-                           and then Expr_Value (Rop) = Uint_0)
-                          or else
-                        (Is_Real_Type (Etype (Rop))
-                           and then Expr_Value_R (Rop) = Ureal_0))
+                          and then Expr_Value (Rop) = Uint_0)
+                         or else
+                           (Is_Real_Type (Etype (Rop))
+                             and then Expr_Value_R (Rop) = Ureal_0))
             then
                --  Specialize the warning message according to the operation
 
@@ -5911,7 +5847,8 @@ package body Sem_Res is
            and then Base_Type (T) /= Standard_String
          then
             Error_Msg_F
-              ("|~~comparison is not defined on array type except String", N);
+              ("|~~comparison is not defined on array types " &
+               "other than String", N);
          end if;
       end if;
 
