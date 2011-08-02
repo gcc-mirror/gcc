@@ -51,21 +51,10 @@
 --      function Left  (Container : Map; Position : Cursor) return Map;
 --      function Right (Container : Map; Position : Cursor) return Map;
 
---      Strict_Equal returns True if the containers are physically equal,
---      meaning that they are structurally equal (function "=" returns True)
---      and that they have the same set of cursors. Overlap returns True if
---      the containers have common keys.
-
---      Left returns a container containing all elements preceding Position
---      (excluded) in Container. Right returns a container containing all
---      elements following Position (included) in Container. These two new
---      functions are useful to express invariant properties in loops which
---      iterate over containers. Left returns the part of the container already
---      scanned and Right the part not scanned yet.
+--    See detailed specifications for these subprograms
 
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Streams;
-with Ada.Containers;
 
 generic
    type Key_Type is private;
@@ -205,13 +194,21 @@ package Ada.Containers.Formal_Ordered_Maps is
                     procedure (Container : Map; Position : Cursor));
 
    function Strict_Equal (Left, Right : Map) return Boolean;
+   --  Strict_Equal returns True if the containers are physically equal, i.e.
+   --  they are structurally equal (function "=" returns True) and that they
+   --  have the same set of cursors.
 
-   function Left (Container : Map; Position : Cursor) return Map;
-
+   function Left  (Container : Map; Position : Cursor) return Map;
    function Right (Container : Map; Position : Cursor) return Map;
+   --  Left returns a container containing all elements preceding Position
+   --  (excluded) in Container. Right returns a container containing all
+   --  elements following Position (included) in Container. These two new
+   --  functions can be used to express invariant properties in loops which
+   --  iterate over containers. Left returns the part of the container already
+   --  scanned and Right the part not scanned yet.
 
    function Overlap (Left, Right : Map) return Boolean;
-
+   --  Overlap returns True if the containers have common keys
 private
 
    pragma Inline (Next);
