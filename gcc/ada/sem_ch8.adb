@@ -2697,7 +2697,6 @@ package body Sem_Ch8 is
             Mark := First (Subtype_Marks (N));
             while Present (Mark) loop
                Use_One_Type (Mark, Installed => True);
-
                Next (Mark);
             end loop;
 

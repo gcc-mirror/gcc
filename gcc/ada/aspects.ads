@@ -88,9 +88,11 @@ package Aspects is
       Aspect_Universal_Data,                -- GNAT
 
       --  Remaining aspects have a static boolean value that turns the aspect
-      --  on or off. They all correspond to pragmas, and the flag Aspect_Cancel
-      --  is set on the pragma if the corresponding aspect is False. These are
-      --  also Boolean aspects as defined below.
+      --  on or off. They all correspond to pragmas, but are only converted to
+      --  the pragmas where the value is True. A value of False normally means
+      --  that the aspect is ignored, except in the case of derived types where
+      --  the aspect value is inherited from the parent, in which case, we do
+      --  not allow False if we inherit a True value from the parent.
 
       Aspect_Ada_2005,                      -- GNAT
       Aspect_Ada_2012,                      -- GNAT

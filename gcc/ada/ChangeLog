@@ -1,3 +1,14 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb, aspects.ads: Minor reformatting.
+
+2011-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.ads (Analyze_Aspect_Specification): Add pragma Inline.
+	* sem_ch13.adb (Analyze_Non_Null_Aspect_Specifications): New procedure
+	extracted from...
+	(Analyze_Aspect_Specifications): ...here.  Call above procedure.
+
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
 	* exp_ch6.adb (Expand_N_Subprogram_Declaration): issue error in formal
