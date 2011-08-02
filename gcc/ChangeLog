@@ -1,3 +1,8 @@
+2011-08-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/lzcntintrin.h (__lzcnt64): Replace long with
+	long long.
+
 2011-08-01  Sebastian Pop  <sebastian.pop@amd.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
