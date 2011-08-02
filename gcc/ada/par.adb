@@ -38,6 +38,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
 with Par_SCO;  use Par_SCO;
+with Restrict; use Restrict;
 with Scans;    use Scans;
 with Scn;      use Scn;
 with Sinput;   use Sinput;

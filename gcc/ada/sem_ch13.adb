@@ -993,7 +993,7 @@ package body Sem_Ch13 is
                   Aitem :=
                     Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
-                        New_Occurrence_Of (E, Eloc),
+                        New_Occurrence_Of (E, Loc),
                         Relocate_Node (Expr)),
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Chars (Id)));
@@ -1016,7 +1016,7 @@ package body Sem_Ch13 is
                   Aitem :=
                     Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
-                        New_Occurrence_Of (E, Eloc),
+                        New_Occurrence_Of (E, Loc),
                         Relocate_Node (Expr)),
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Chars (Id)));
@@ -1038,7 +1038,7 @@ package body Sem_Ch13 is
                     Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
                         Relocate_Node (Expr),
-                        New_Occurrence_Of (E, Eloc)),
+                        New_Occurrence_Of (E, Loc)),
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Chars (Id)),
                       Class_Present                => Class_Present (Aspect));
@@ -5239,12 +5239,15 @@ package body Sem_Ch13 is
          when Boolean_Aspects =>
             raise Program_Error;
 
-         --  Default_Value and Default_Component_Value are resolved with
-         --  the entity, which is the type in question.
+         --  Default_Value is resolved with the type entity in question
 
-         when Aspect_Default_Component_Value |
-              Aspect_Default_Value           =>
+         when Aspect_Default_Value =>
             T := Entity (ASN);
+
+         --  Default_Component_Value is resolved with the component type
+
+         when Aspect_Default_Component_Value =>
+            T := Component_Type (Entity (ASN));
 
          --  Aspects corresponding to attribute definition clauses
 

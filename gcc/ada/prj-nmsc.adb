@@ -3915,17 +3915,23 @@ package body Prj.Nmsc is
 
             when Library =>
                if not Project.Library then
-                  if Project.Library_Dir = No_Path_Information then
-                     Error_Msg
-                       (Data.Flags,
-                        "\attribute Library_Dir not declared",
-                        Project.Location, Project);
-                  end if;
-
                   if Project.Library_Name = No_Name then
                      Error_Msg
                        (Data.Flags,
-                        "\attribute Library_Name not declared",
+                        "attribute Library_Name not declared",
+                        Project.Location, Project);
+
+                     if not Library_Directory_Present then
+                        Error_Msg
+                          (Data.Flags,
+                           "\attribute Library_Dir not declared",
+                           Project.Location, Project);
+                     end if;
+
+                  elsif Project.Library_Dir = No_Path_Information then
+                     Error_Msg
+                       (Data.Flags,
+                        "attribute Library_Dir not declared",
                         Project.Location, Project);
                   end if;
                end if;

@@ -5656,6 +5656,16 @@ package body Sem_Prag is
    --  Start of processing for Analyze_Pragma
 
    begin
+      --  The following code is a defense against recursion. Not clear that
+      --  this can happen legitimately, but perhaps some error situations
+      --  can cause it, and we did see this recursion during testing.
+
+      if Analyzed (N) then
+         return;
+      else
+         Set_Analyzed (N, True);
+      end if;
+
       --  Deal with unrecognized pragma
 
       if not Is_Pragma_Name (Pname) then

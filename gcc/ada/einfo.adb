@@ -5608,43 +5608,13 @@ package body Einfo is
    ---------------
 
    function Base_Type (Id : E) return E is
-      Is_Base_Type : Boolean;
    begin
-      --  Implementation note: this function shows up high in the profile.
-      --  We use a fully static case construct so as to make it easier for
-      --  the compiler to build a static table out of it, instead of using
-      --  a less efficient jump table.
-
-      case Ekind (Id) is
-         when E_Enumeration_Subtype          |
-              E_Incomplete_Type              |
-              E_Signed_Integer_Subtype       |
-              E_Modular_Integer_Subtype      |
-              E_Floating_Point_Subtype       |
-              E_Ordinary_Fixed_Point_Subtype |
-              E_Decimal_Fixed_Point_Subtype  |
-              E_Array_Subtype                |
-              E_String_Subtype               |
-              E_Record_Subtype               |
-              E_Private_Subtype              |
-              E_Record_Subtype_With_Private  |
-              E_Limited_Private_Subtype      |
-              E_Access_Subtype               |
-              E_Protected_Subtype            |
-              E_Task_Subtype                 |
-              E_String_Literal_Subtype       |
-              E_Class_Wide_Subtype           =>
-            Is_Base_Type := False;
-
-         when others =>
-            Is_Base_Type := True;
-      end case;
-
-      if Is_Base_Type then
+      if Is_Base_Type (Id) then
          return Id;
+      else
+         pragma Assert (Is_Type (Id));
+         return Etype (Id);
       end if;
-
-      return Etype (Id);
    end Base_Type;
 
    -------------------------
@@ -6206,9 +6176,32 @@ package body Einfo is
    -- Is_Base_Type --
    ------------------
 
+   --  Global flag table allowing rapid computation of this function
+
+   Entity_Is_Base_Type : constant array (Entity_Kind) of Boolean :=
+                           (E_Enumeration_Subtype          |
+                            E_Incomplete_Type              |
+                            E_Signed_Integer_Subtype       |
+                            E_Modular_Integer_Subtype      |
+                            E_Floating_Point_Subtype       |
+                            E_Ordinary_Fixed_Point_Subtype |
+                            E_Decimal_Fixed_Point_Subtype  |
+                            E_Array_Subtype                |
+                            E_String_Subtype               |
+                            E_Record_Subtype               |
+                            E_Private_Subtype              |
+                            E_Record_Subtype_With_Private  |
+                            E_Limited_Private_Subtype      |
+                            E_Access_Subtype               |
+                            E_Protected_Subtype            |
+                            E_Task_Subtype                 |
+                            E_String_Literal_Subtype       |
+                            E_Class_Wide_Subtype           => False,
+                            others                         => True);
+
    function Is_Base_Type (Id : E) return Boolean is
    begin
-      return Id = Base_Type (Id);
+      return Entity_Is_Base_Type (Ekind (Id));
    end Is_Base_Type;
 
    ---------------------
