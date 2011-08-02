@@ -9059,7 +9059,10 @@ the Ada mode for the unit, so a unit compiled in Ada 95 mode with SPARK
 restrictions will be checked for constructs forbidden in SPARK 95.
 Error messages related to SPARK restriction have the form:
 
-@code{(spark) error message}.
+@smallexample
+violation of restriction "Spark" at <file>
+ <error message>
+@end smallexample
 
 This is not a replacement for the semantic checks performed by the
 SPARK Examiner tool, as the compiler only deals currently with code,

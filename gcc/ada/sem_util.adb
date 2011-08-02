@@ -7503,17 +7503,18 @@ package body Sem_Util is
       Is_Ok     : Boolean;
       Expr      : Node_Id;
       Comp_Assn : Node_Id;
+      Orig_N    : constant Node_Id := Original_Node (N);
 
    begin
       Is_Ok := True;
 
-      if not Comes_From_Source (N) then
+      if not Comes_From_Source (Orig_N) then
          goto Done;
       end if;
 
-      pragma Assert (Nkind (N) in N_Subexpr);
+      pragma Assert (Nkind (Orig_N) in N_Subexpr);
 
-      case Nkind (N) is
+      case Nkind (Orig_N) is
          when N_Character_Literal |
               N_Integer_Literal   |
               N_Real_Literal      |
@@ -7522,17 +7523,17 @@ package body Sem_Util is
 
          when N_Identifier    |
               N_Expanded_Name =>
-            if Is_Entity_Name (N)
-              and then Present (Entity (N))  --  needed in some cases
+            if Is_Entity_Name (Orig_N)
+              and then Present (Entity (Orig_N))  --  needed in some cases
             then
-               case Ekind (Entity (N)) is
+               case Ekind (Entity (Orig_N)) is
                   when E_Constant            |
                        E_Enumeration_Literal |
                        E_Named_Integer       |
                        E_Named_Real          =>
                      null;
                   when others =>
-                     if Is_Type (Entity (N)) then
+                     if Is_Type (Entity (Orig_N)) then
                         null;
                      else
                         Is_Ok := False;
@@ -7542,24 +7543,24 @@ package body Sem_Util is
 
          when N_Qualified_Expression |
               N_Type_Conversion      =>
-            Is_Ok := Is_SPARK_Initialization_Expr (Expression (N));
+            Is_Ok := Is_SPARK_Initialization_Expr (Expression (Orig_N));
 
          when N_Unary_Op =>
-            Is_Ok := Is_SPARK_Initialization_Expr (Right_Opnd (N));
+            Is_Ok := Is_SPARK_Initialization_Expr (Right_Opnd (Orig_N));
 
          when N_Binary_Op       |
               N_Short_Circuit   |
               N_Membership_Test =>
-            Is_Ok := Is_SPARK_Initialization_Expr (Left_Opnd (N))
-              and then Is_SPARK_Initialization_Expr (Right_Opnd (N));
+            Is_Ok := Is_SPARK_Initialization_Expr (Left_Opnd (Orig_N))
+              and then Is_SPARK_Initialization_Expr (Right_Opnd (Orig_N));
 
          when N_Aggregate           |
               N_Extension_Aggregate =>
-            if Nkind (N) = N_Extension_Aggregate then
-               Is_Ok := Is_SPARK_Initialization_Expr (Ancestor_Part (N));
+            if Nkind (Orig_N) = N_Extension_Aggregate then
+               Is_Ok := Is_SPARK_Initialization_Expr (Ancestor_Part (Orig_N));
             end if;
 
-            Expr := First (Expressions (N));
+            Expr := First (Expressions (Orig_N));
             while Present (Expr) loop
                if not Is_SPARK_Initialization_Expr (Expr) then
                   Is_Ok := False;
@@ -7569,7 +7570,7 @@ package body Sem_Util is
                Next (Expr);
             end loop;
 
-            Comp_Assn := First (Component_Associations (N));
+            Comp_Assn := First (Component_Associations (Orig_N));
             while Present (Comp_Assn) loop
                Expr := Expression (Comp_Assn);
                if Present (Expr)  --  needed for box association
@@ -7583,11 +7584,11 @@ package body Sem_Util is
             end loop;
 
          when N_Attribute_Reference =>
-            if Nkind (Prefix (N)) in N_Subexpr then
-               Is_Ok := Is_SPARK_Initialization_Expr (Prefix (N));
+            if Nkind (Prefix (Orig_N)) in N_Subexpr then
+               Is_Ok := Is_SPARK_Initialization_Expr (Prefix (Orig_N));
             end if;
 
-            Expr := First (Expressions (N));
+            Expr := First (Expressions (Orig_N));
             while Present (Expr) loop
                if not Is_SPARK_Initialization_Expr (Expr) then
                   Is_Ok := False;
