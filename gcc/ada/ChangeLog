@@ -1,3 +1,23 @@
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Check_Formal_Restriction_On_Attribute): new procedure
+	to issue an error in formal mode on attribute not supported in this mode
+	(Analyze_Attribute): issue errors on standard attributes not supported
+	in formal mode.
+	* sem_ch3.adb (Modular_Type_Declaration): remove obsolete part of
+	comment, and issue error in formal mode on modulus which is not a power
+	of 2.
+	(Process_Range_Expr_In_Decl): issue error in formal mode on non-static
+	range.
+	* sem_ch8.adb (Find_Type): issue error in formal mode on 'Base in
+	subtype mark.
+	* sem_res.adb (Resolve_Unary_Op): issue error in formal mode on unary
+	operator on modular type (except 'not').
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor reformatting.
+
 2011-08-02  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-osinte-linux.ads: Minor comment update and reformatting.

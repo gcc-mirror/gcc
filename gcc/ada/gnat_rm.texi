@@ -9071,7 +9071,7 @@ passes the compiler in SPARK mode is rejected by the SPARK Examiner,
 e.g. due to the different visibility rules of the Examiner based on
 SPARK @code{inherit} annotations.
 
-SPARK restriction can be useful in providing an initial filter for
+This restriction can be useful in providing an initial filter for
 code developed using SPARK, or in examining legacy code to see how far
 it is from meeting SPARK restrictions.
 

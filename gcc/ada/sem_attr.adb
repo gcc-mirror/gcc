@@ -289,6 +289,9 @@ package body Sem_Attr is
       --  Common processing for attributes Definite and Has_Discriminants.
       --  Checks that prefix is generic indefinite formal type.
 
+      procedure Check_Formal_Restriction_On_Attribute;
+      --  Issue an error in formal mode because attribute N is allowed
+
       procedure Check_Integer_Type;
       --  Verify that prefix of attribute N is an integer type
 
@@ -565,14 +568,7 @@ package body Sem_Attr is
       --  Start of processing for Analyze_Access_Attribute
 
       begin
-         --  Access attribute is not allowed in SPARK or ALFA
-
-         if Formal_Verification_Mode and then Comes_From_Source (N) then
-            Error_Attr_P ("|~~% attribute is not allowed");
-         end if;
-
-         --  Proceed with analysis
-
+         Check_Formal_Restriction_On_Attribute;
          Check_E0;
 
          if Nkind (P) = N_Character_Literal then
@@ -1292,6 +1288,16 @@ package body Sem_Attr is
          Check_Floating_Point_Type;
          Check_E2;
       end Check_Floating_Point_Type_2;
+
+      -------------------------------------------
+      -- Check_Formal_Restriction_On_Attribute --
+      -------------------------------------------
+
+      procedure Check_Formal_Restriction_On_Attribute is
+      begin
+         Error_Msg_Name_1 := Aname;
+         Check_Formal_Restriction ("attribute % is not allowed", P);
+      end Check_Formal_Restriction_On_Attribute;
 
       ------------------------
       -- Check_Integer_Type --
@@ -2454,6 +2460,12 @@ package body Sem_Attr is
               ("?redundant attribute, & is its own base type", N, Typ);
          end if;
 
+         if Nkind (Parent (N)) /= N_Attribute_Reference then
+            Error_Msg_Name_1 := Aname;
+            Check_Formal_Restriction
+              ("attribute% is only allowed as prefix of another attribute", P);
+         end if;
+
          Set_Etype (N, Base_Type (Entity (P)));
          Set_Entity (N, Base_Type (Entity (P)));
          Rewrite (N, New_Reference_To (Entity (N), Loc));
@@ -3256,8 +3268,9 @@ package body Sem_Attr is
 
       when Attribute_Image => Image :
       begin
-         Set_Etype (N, Standard_String);
+         Check_Formal_Restriction_On_Attribute;
          Check_Scalar_Type;
+         Set_Etype (N, Standard_String);
 
          if Is_Real_Type (P_Type) then
             if Ada_Version = Ada_83 and then Comes_From_Source (N) then
@@ -3862,6 +3875,14 @@ package body Sem_Attr is
       when Attribute_Pos =>
          Check_Discrete_Type;
          Check_E1;
+
+         if Is_Boolean_Type (P_Type) then
+            Error_Msg_Name_1 := Aname;
+            Error_Msg_Name_2 := Chars (P_Type);
+            Check_Formal_Restriction
+              ("attribute% is not allowed for type%", P);
+         end if;
+
          Resolve (E1, P_Base_Type);
          Set_Etype (N, Universal_Integer);
 
@@ -3880,6 +3901,14 @@ package body Sem_Attr is
       when Attribute_Pred =>
          Check_Scalar_Type;
          Check_E1;
+
+         if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
+            Error_Msg_Name_1 := Aname;
+            Error_Msg_Name_2 := Chars (P_Type);
+            Check_Formal_Restriction
+              ("attribute% is not allowed for type%", P);
+         end if;
+
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
@@ -4414,6 +4443,14 @@ package body Sem_Attr is
       when Attribute_Succ =>
          Check_Scalar_Type;
          Check_E1;
+
+         if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
+            Error_Msg_Name_1 := Aname;
+            Error_Msg_Name_2 := Chars (P_Type);
+            Check_Formal_Restriction
+              ("attribute% is not allowed for type%", P);
+         end if;
+
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
@@ -4731,6 +4768,14 @@ package body Sem_Attr is
       begin
          Check_E1;
          Check_Discrete_Type;
+
+         if Is_Boolean_Type (P_Type) then
+            Error_Msg_Name_1 := Aname;
+            Error_Msg_Name_2 := Chars (P_Type);
+            Check_Formal_Restriction
+              ("attribute% is not allowed for type%", P);
+         end if;
+
          Resolve (E1, Any_Integer);
          Set_Etype (N, P_Base_Type);
 
@@ -4766,6 +4811,7 @@ package body Sem_Attr is
 
       when Attribute_Value => Value :
       begin
+         Check_Formal_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
 
@@ -4828,6 +4874,7 @@ package body Sem_Attr is
 
       when Attribute_Wide_Image => Wide_Image :
       begin
+         Check_Formal_Restriction_On_Attribute;
          Check_Scalar_Type;
          Set_Etype (N, Standard_Wide_String);
          Check_E1;
@@ -4854,6 +4901,7 @@ package body Sem_Attr is
 
       when Attribute_Wide_Value => Wide_Value :
       begin
+         Check_Formal_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
 
@@ -4894,6 +4942,7 @@ package body Sem_Attr is
       ----------------
 
       when Attribute_Wide_Width =>
+         Check_Formal_Restriction_On_Attribute;
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);
@@ -4903,6 +4952,7 @@ package body Sem_Attr is
       -----------
 
       when Attribute_Width =>
+         Check_Formal_Restriction_On_Attribute;
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);
