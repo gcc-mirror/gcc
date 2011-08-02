@@ -718,7 +718,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *avx = has_avx ? " -mavx" : " -mno-avx";
       const char *sse4_2 = has_sse4_2 ? " -msse4.2" : " -mno-sse4.2";
       const char *sse4_1 = has_sse4_1 ? " -msse4.1" : " -mno-sse4.1";
-      const char *lzcnt = has_lzcnt ? " -mlzcnt" : " -mnolzcnt";
+      const char *lzcnt = has_lzcnt ? " -mlzcnt" : " -mno-lzcnt";
 
       options = concat (options, cx16, sahf, movbe, ase, pclmul,
 			popcnt, abm, lwp, fma, fma4, xop, bmi, tbm,
