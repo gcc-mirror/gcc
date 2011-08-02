@@ -1,3 +1,21 @@
+2011-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Get_Code_Unit_Entity): New local function.  Returns the
+	entity node for the unit containing the parameter.
+	(Add_Inlined_Body): Use it to find the unit containing the subprogram.
+	(Add_Inlined_Subprogram): Likewise.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2011-08-02  Thomas Quinot  <quinot@adacore.com>
+
+	* s-stusta.adb (Print): Make sure Pos is always initialized to a
+	suitable value.
+
+2011-08-02  Ed Falis  <falis@adacore.com>
+
+	* init.c: Fix conditional compilation so that the fp initialization is
+	peformed for the MILS VxWorks Guest OS.
+
 2011-08-02  Geert Bosch  <bosch@adacore.com>
 
 	* a-calfor.adb (Image): Simplify, removing unnecessary uses of 'Image.

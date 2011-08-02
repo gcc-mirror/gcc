@@ -137,6 +137,10 @@ package body Inline is
    -- Local Subprograms --
    -----------------------
 
+   function Get_Code_Unit_Entity (E : Entity_Id) return Entity_Id;
+   pragma Inline (Get_Code_Unit_Entity);
+   --  Return the entity node for the unit containing E
+
    function Scope_In_Main_Unit (Scop : Entity_Id) return Boolean;
    --  Return True if Scop is in the main unit or its spec
 
@@ -317,7 +321,7 @@ package body Inline is
       if not Is_Abstract_Subprogram (E) and then not Is_Nested (E)
         and then Convention (E) /= Convention_Protected
       then
-         Pack := Scope (E);
+         Pack := Get_Code_Unit_Entity (E);
 
          if Must_Inline
            and then Ekind (Pack) = E_Package
@@ -352,7 +356,7 @@ package body Inline is
 
    procedure Add_Inlined_Subprogram (Index : Subp_Index) is
       E    : constant Entity_Id := Inlined.Table (Index).Name;
-      Pack : constant Entity_Id := Cunit_Entity (Get_Code_Unit (E));
+      Pack : constant Entity_Id := Get_Code_Unit_Entity (E);
       Succ : Succ_Index;
       Subp : Subp_Index;
 
@@ -1157,6 +1161,15 @@ package body Inline is
          J := J + 1;
       end loop;
    end Remove_Dead_Instance;
+
+   --------------------------
+   -- Get_Code_Unit_Entity --
+   --------------------------
+
+   function Get_Code_Unit_Entity (E : Entity_Id) return Entity_Id is
+   begin
+      return Cunit_Entity (Get_Code_Unit (E));
+   end Get_Code_Unit_Entity;
 
    ------------------------
    -- Scope_In_Main_Unit --
