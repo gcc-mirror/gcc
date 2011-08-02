@@ -1,3 +1,19 @@
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Safe_Prefixed_Reference): Do not consider safe an
+	in-mode parameter whose type is an access type since it can be used to
+	modify its designated object. Enforce code that handles as safe an
+	access type that is not access-to-constant but it is the result of a
+	previous removal of side-effects.
+	(Remove_Side_Effects): Minor code reorganization of cases which require
+	no action. Done to incorporate documentation on new cases uncovered
+	working in this ticket: no action needed if this routine was invoked
+	too early and the nodes are not yet decorated.
+	* sem_res.adb (Resolve_Slice): Minor code cleanup replacling two calls
+	to routine Remove_Side_Effects by calls to Force_Evaluation since they
+	were issued with actuals that are implicitly provided by
+	Force_Evaluation.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_res.adb: Minor reformatting.

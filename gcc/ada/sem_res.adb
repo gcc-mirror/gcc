@@ -8631,8 +8631,8 @@ package body Sem_Res is
 
             --  Ensure that side effects in the bounds are properly handled
 
-            Remove_Side_Effects (Low_Bound  (Drange), Variable_Ref => True);
-            Remove_Side_Effects (High_Bound (Drange), Variable_Ref => True);
+            Force_Evaluation (Low_Bound (Drange));
+            Force_Evaluation (High_Bound (Drange));
 
             --  Do not apply the range check to nodes associated with the
             --  frontend expansion of the dispatch table. We first check
