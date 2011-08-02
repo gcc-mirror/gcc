@@ -352,7 +352,7 @@ build_call_a (tree function, int n, tree *argarray)
   nothrow = ((decl && TREE_NOTHROW (decl))
 	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (function))));
 
-  if (!nothrow && cfun && cp_function_chain)
+  if (!nothrow && at_function_scope_p () && cfun && cp_function_chain)
     cp_function_chain->can_throw = 1;
 
   if (decl && TREE_THIS_VOLATILE (decl) && cfun && cp_function_chain)
