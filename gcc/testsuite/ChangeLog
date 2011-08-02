@@ -1,3 +1,8 @@
+2011-08-02  Kai Tietz  <ktietz@redhat.com>
+
+	PR middle-end/49947
+	* gcc.dg/tree-ssa/forwprop-15.c
+
 2011-08-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49834

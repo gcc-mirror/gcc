@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -fdump-tree-forwprop1" }  */
 
 _Bool
-foo (_Bool a, _Bool b, _Bool c
+foo (_Bool a, _Bool b, _Bool c)
 {
   _Bool r1 = a == 0 & b != 0;
   _Bool r2 = b != 0 & c == 0;
