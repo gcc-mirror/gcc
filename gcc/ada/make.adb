@@ -6066,24 +6066,41 @@ package body Make is
                      end loop;
 
                      for Index in 1 .. Library_Projs.Last loop
+                        if
+                          Library_Projs.Table (Index).Library_Kind = Static
+                        then
+                           Linker_Switches.Increment_Last;
+                           Linker_Switches.Table (Linker_Switches.Last) :=
+                             new String'
+                               (Get_Name_String
+                                    (Library_Projs.Table (Index).
+                                       Library_Dir.Display_Name) &
+                                Directory_Separator &
+                                "lib" &
+                                Get_Name_String
+                                    (Library_Projs.Table (Index).
+                                     Library_Name) &
+                                ".a");
 
-                        --  Add the -L switch
+                        else
+                           --  Add the -L switch
 
-                        Linker_Switches.Increment_Last;
-                        Linker_Switches.Table (Linker_Switches.Last) :=
-                          new String'("-L" &
-                                      Get_Name_String
-                                        (Library_Projs.Table (Index).
-                                            Library_Dir.Display_Name));
+                           Linker_Switches.Increment_Last;
+                           Linker_Switches.Table (Linker_Switches.Last) :=
+                             new String'("-L" &
+                               Get_Name_String
+                                 (Library_Projs.Table (Index).
+                                    Library_Dir.Display_Name));
 
-                        --  Add the -l switch
+                           --  Add the -l switch
 
-                        Linker_Switches.Increment_Last;
-                        Linker_Switches.Table (Linker_Switches.Last) :=
-                          new String'("-l" &
-                                      Get_Name_String
-                                        (Library_Projs.Table (Index).
-                                           Library_Name));
+                           Linker_Switches.Increment_Last;
+                           Linker_Switches.Table (Linker_Switches.Last) :=
+                             new String'("-l" &
+                               Get_Name_String
+                                 (Library_Projs.Table (Index).
+                                    Library_Name));
+                        end if;
                      end loop;
                   end if;
 

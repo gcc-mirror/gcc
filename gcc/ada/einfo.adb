@@ -8497,10 +8497,12 @@ package body Einfo is
 
          when E_Procedure                                  |
               E_Function                                   =>
-            if Is_Dispatching_Operation (Id) then
-               Write_Str ("Overridden_Operation");
-            else
+            if Ekind (Id) = E_Procedure
+              and then not Is_Dispatching_Operation (Id)
+            then
                Write_Str ("Static_Initialization");
+            else
+               Write_Str ("Overridden_Operation");
             end if;
 
          when E_Record_Type                                |

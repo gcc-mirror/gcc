@@ -5648,10 +5648,14 @@ package body Sem_Res is
          Check_Potentially_Blocking_Operation (N);
       end if;
 
-      --  A call to Ada.Real_Time.Timing_Events.Set_Handler violates
-      --  restriction No_Relative_Delay (AI-0211).
+      --  A call to Ada.Real_Time.Timing_Events.Set_Handler to set a relative
+      --  timing event violates restriction No_Relative_Delay (AI-0211). We
+      --  need to check the second argument to determine whether it is an
+      --  absolute or relative timing event.
 
-      if Is_RTE (Nam, RE_Set_Handler) then
+      if Is_RTE (Nam, RE_Set_Handler)
+        and then Is_RTE (Etype (Next_Actual (First_Actual (N))), RE_Time_Span)
+      then
          Check_Restriction (No_Relative_Delay, N);
       end if;
 

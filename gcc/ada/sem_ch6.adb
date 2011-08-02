@@ -128,6 +128,9 @@ package body Sem_Ch6 is
    --  If proper warnings are enabled and the subprogram contains a construct
    --  that cannot be inlined, the offending construct is flagged accordingly.
 
+   function Can_Override_Operator (Subp : Entity_Id) return Boolean;
+   --  Returns true if Subp can override a predefined operator.
+
    procedure Check_Conformance
      (New_Id                   : Entity_Id;
       Old_Id                   : Entity_Id;
@@ -2099,8 +2102,16 @@ package body Sem_Ch6 is
                   Body_Spec);
             end if;
 
-         elsif Style_Check --  ??? incorrect use of Style_Check!
+         elsif Style_Check
            and then Present (Overridden_Operation (Spec_Id))
+         then
+            pragma Assert (Unit_Declaration_Node (Body_Id) = N);
+            Style.Missing_Overriding (N, Body_Id);
+
+         elsif Style_Check
+           and then Can_Override_Operator (Spec_Id)
+           and then not Is_Predefined_File_Name
+                          (Unit_File_Name (Get_Source_Unit (Spec_Id)))
          then
             pragma Assert (Unit_Declaration_Node (Body_Id) = N);
             Style.Missing_Overriding (N, Body_Id);
@@ -4854,61 +4865,50 @@ package body Sem_Ch6 is
       --  explicit overridden operation.
 
       elsif Nkind (Subp) = N_Defining_Operator_Symbol then
-         declare
-            Typ : constant Entity_Id :=
-                    Base_Type (Etype (First_Formal (Subp)));
+         if Must_Not_Override (Spec) then
 
-            Can_Override : constant Boolean :=
-                             Operator_Matches_Spec (Subp, Subp)
-                               and then Scope (Subp) = Scope (Typ)
-                               and then not Is_Class_Wide_Type (Typ);
+            --  If this is not a primitive or a protected subprogram, then
+            --  "not overriding" is illegal.
 
-         begin
-            if Must_Not_Override (Spec) then
-
-               --  If this is not a primitive or a protected subprogram, then
-               --  "not overriding" is illegal.
-
-               if not Is_Primitive
-                 and then Ekind (Scope (Subp)) /= E_Protected_Type
-               then
-                  Error_Msg_N
-                    ("overriding indicator only allowed "
-                     & "if subprogram is primitive", Subp);
-
-               elsif Can_Override then
-                  Error_Msg_NE
-                    ("subprogram& overrides predefined operator ", Spec, Subp);
-               end if;
-
-            elsif Must_Override (Spec) then
-               if No (Overridden_Operation (Subp))
-                 and then not Can_Override
-               then
-                  Error_Msg_NE ("subprogram & is not overriding", Spec, Subp);
-               end if;
-
-            elsif not Error_Posted (Subp)
-              and then Style_Check
-              and then Can_Override
-              and then
-                not Is_Predefined_File_Name
-                      (Unit_File_Name (Get_Source_Unit (Subp)))
+            if not Is_Primitive
+              and then Ekind (Scope (Subp)) /= E_Protected_Type
             then
-               --  If style checks are enabled, indicate that the indicator is
-               --  missing. However, at the point of declaration, the type of
-               --  which this is a primitive operation may be private, in which
-               --  case the indicator would be premature.
+               Error_Msg_N
+                 ("overriding indicator only allowed "
+                  & "if subprogram is primitive", Subp);
 
-               if Has_Private_Declaration (Etype (Subp))
-                 or else Has_Private_Declaration (Etype (First_Formal (Subp)))
-               then
-                  null;
-               else
-                  Style.Missing_Overriding (Decl, Subp);
-               end if;
+            elsif Can_Override_Operator (Subp) then
+               Error_Msg_NE
+                 ("subprogram& overrides predefined operator ", Spec, Subp);
             end if;
-         end;
+
+         elsif Must_Override (Spec) then
+            if No (Overridden_Operation (Subp))
+              and then not Can_Override_Operator (Subp)
+            then
+               Error_Msg_NE ("subprogram & is not overriding", Spec, Subp);
+            end if;
+
+         elsif not Error_Posted (Subp)
+           and then Style_Check
+           and then Can_Override_Operator (Subp)
+           and then
+             not Is_Predefined_File_Name
+                   (Unit_File_Name (Get_Source_Unit (Subp)))
+         then
+            --  If style checks are enabled, indicate that the indicator is
+            --  missing. However, at the point of declaration, the type of
+            --  which this is a primitive operation may be private, in which
+            --  case the indicator would be premature.
+
+            if Has_Private_Declaration (Etype (Subp))
+              or else Has_Private_Declaration (Etype (First_Formal (Subp)))
+            then
+               null;
+            else
+               Style.Missing_Overriding (Decl, Subp);
+            end if;
+         end if;
 
       elsif Must_Override (Spec) then
          if Ekind (Subp) = E_Entry then
@@ -5441,6 +5441,25 @@ package body Sem_Ch6 is
       Check_Conformance
         (New_Id, Old_Id, Type_Conformant, True, Result, Err_Loc);
    end Check_Type_Conformant;
+
+   ---------------------------
+   -- Can_Override_Operator --
+   ---------------------------
+
+   function Can_Override_Operator (Subp : Entity_Id) return Boolean is
+      Typ : Entity_Id;
+   begin
+      if Nkind (Subp) /= N_Defining_Operator_Symbol then
+         return False;
+
+      else
+         Typ := Base_Type (Etype (First_Formal (Subp)));
+
+         return Operator_Matches_Spec (Subp, Subp)
+           and then Scope (Subp) = Scope (Typ)
+           and then not Is_Class_Wide_Type (Typ);
+      end if;
+   end Can_Override_Operator;
 
    ----------------------
    -- Conforming_Types --
