@@ -2335,6 +2335,7 @@ package body Sem_Util is
 
    procedure Mark_Non_ALFA_Subprogram_Unconditional is
       Cur_Subp : constant Entity_Id := Current_Subprogram;
+
    begin
       if Present (Cur_Subp)
         and then (Is_Subprogram (Cur_Subp)
@@ -2343,6 +2344,9 @@ package body Sem_Util is
          --  If the non-ALFA construct is in a precondition or postcondition,
          --  then mark the subprogram as not in ALFA. Otherwise, mark the
          --  subprogram body as not in ALFA.
+
+         --  This comment just says what is done, but not why ??? and it
+         --  just repeats what is in the spec ???
 
          if In_Pre_Post_Expression then
             Set_Is_In_ALFA (Cur_Subp, False);

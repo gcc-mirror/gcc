@@ -1116,7 +1116,7 @@ package Sinfo is
    --    this is required, see Exp_Ch11.Remove_Handler_Entries.
 
    --  Has_Dynamic_Length_Check (Flag10-Sem)
-   --    This flag is present on all expression nodes. It is set to indicate
+   --    This flag is present in all expression nodes. It is set to indicate
    --    that one of the routines in unit Checks has generated a length check
    --    action which has been inserted at the flagged node. This is used to
    --    avoid the generation of duplicate checks.
@@ -1126,7 +1126,8 @@ package Sinfo is
    --    expression nodes. It is set to indicate that one of the routines in
    --    unit Checks has generated a range check action which has been inserted
    --    at the flagged node. This is used to avoid the generation of duplicate
-   --    checks.
+   --    checks. Why does this occur on N_Subtype_Declaration nodes, what does
+   --    it mean in that context???
 
    --  Has_Local_Raise (Flag8-Sem)
    --    Present in exception handler nodes. Set if the handler can be entered
