@@ -1804,6 +1804,12 @@ package Sinfo is
    --    the body, so this flag is used to generate the proper message (see
    --    Sem_Util.Check_Unused_Withs for details)
 
+   --  Used_Operations (Elist5-Sem)
+   --    Present in N_Use_Type_Clause nodes. Holds the list of operations that
+   --    are made potentially use-visible by the clause. Simplifies processing
+   --    on exit from the scope of the use_type_clause, in particular in the
+   --    case of Use_All_Type, when those operations several scopes.
+
    --  Was_Originally_Stub (Flag13-Sem)
    --    This flag is set in the node for a proper body that replaces stub.
    --    During the analysis procedure, stubs in some situations get rewritten
@@ -4913,6 +4919,7 @@ package Sinfo is
       --  Subtype_Marks (List2)
       --  Next_Use_Clause (Node3-Sem)
       --  Hidden_By_Use_Clause (Elist4-Sem)
+      --  Used_Operations (Elist5-Sem)
       --  All_Present (Flag15)
 
       -------------------------------
@@ -8960,6 +8967,9 @@ package Sinfo is
    function Visible_Declarations
      (N : Node_Id) return List_Id;    -- List2
 
+   function Used_Operations
+     (N : Node_Id) return Elist_Id;   -- Elist5
+
    function Was_Originally_Stub
      (N : Node_Id) return Boolean;    -- Flag13
 
@@ -9931,6 +9941,9 @@ package Sinfo is
 
    procedure Set_Visible_Declarations
      (N : Node_Id; Val : List_Id);            -- List2
+
+   procedure Set_Used_Operations
+     (N : Node_Id; Val : Elist_Id);           -- Elist5
 
    procedure Set_Was_Originally_Stub
      (N : Node_Id; Val : Boolean := True);    -- Flag13
@@ -11993,6 +12006,7 @@ package Sinfo is
    pragma Inline (Variant_Part);
    pragma Inline (Variants);
    pragma Inline (Visible_Declarations);
+   pragma Inline (Used_Operations);
    pragma Inline (Was_Originally_Stub);
    pragma Inline (Withed_Body);
    pragma Inline (Zero_Cost_Handling);
@@ -12313,6 +12327,7 @@ package Sinfo is
    pragma Inline (Set_Variant_Part);
    pragma Inline (Set_Variants);
    pragma Inline (Set_Visible_Declarations);
+   pragma Inline (Set_Used_Operations);
    pragma Inline (Set_Was_Originally_Stub);
    pragma Inline (Set_Withed_Body);
    pragma Inline (Set_Zero_Cost_Handling);

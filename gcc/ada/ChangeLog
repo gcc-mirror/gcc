@@ -1,3 +1,14 @@
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* atree.h, atree.ads, atree.adb: New subprograms to manipulate Elist5.
+	* par_ch8.adb (P_Use_Type): initialize Used_Operations for node.
+	* sinfo.ads, sinfo.adb (Used_Operations): new attribute of
+	use_type_clauses, to handle more efficiently use_type and use_all_type
+	constructs.
+	* sem_ch8.adb: Rewrite Use_One_Type and End_Use_Type to handle the
+	Ada2012 Use_All_Type clause.
+	(Use_Class_Wide_Operations): new procedure.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* exp_util.adb, par-ch10.adb, par-ch6.adb, sem.adb, sem_ch6.adb,
