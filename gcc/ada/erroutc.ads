@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,11 +228,11 @@ package Erroutc is
    --------------------------
 
    --  Pragma Warnings allows warnings to be turned off for a specified
-   --  region of code, and the following tables are the data structure used
+   --  region of code, and the following tables are the data structures used
    --  to keep track of these regions.
 
    --  The first table is used for the basic command line control, and for
-   --  the forms of Warning with a single ON or OFF parameter
+   --  the forms of Warning with a single ON or OFF parameter.
 
    --  It contains pairs of source locations, the first being the start
    --  location for a warnings off region, and the second being the end

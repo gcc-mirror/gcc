@@ -759,7 +759,11 @@ package body Exp_Disp is
       elsif TSS_Name = TSS_Deep_Finalize then
          return Uint_10;
 
-      elsif Ada_Version >= Ada_2005 then
+      --  In VM targets unconditionally allow obtaining the position associated
+      --  with predefined interface primitives since in these platforms any
+      --  tagged type has these primitives.
+
+      elsif Ada_Version >= Ada_2005 or else not Tagged_Type_Expansion then
          if Chars (E) = Name_uDisp_Asynchronous_Select then
             return Uint_11;
 
@@ -2147,7 +2151,11 @@ package body Exp_Disp is
 
    function Is_Predefined_Interface_Primitive (E : Entity_Id) return Boolean is
    begin
-      return Ada_Version >= Ada_2005
+      --  In VM targets we don't restrict the functionality of this test to
+      --  compiling in Ada 2005 mode since in VM targets any tagged type has
+      --  these primitives
+
+      return (Ada_Version >= Ada_2005 or else not Tagged_Type_Expansion)
         and then (Chars (E) = Name_uDisp_Asynchronous_Select or else
                   Chars (E) = Name_uDisp_Conditional_Select  or else
                   Chars (E) = Name_uDisp_Get_Prim_Op_Kind    or else
@@ -6307,12 +6315,178 @@ package body Exp_Disp is
    -----------------
 
    function Make_VM_TSD (Typ : Entity_Id) return List_Id is
-      Loc              : constant Source_Ptr := Sloc (Typ);
-      Result           : constant List_Id := New_List;
+      Loc    : constant Source_Ptr := Sloc (Typ);
+      Result : constant List_Id := New_List;
+
+      function Count_Primitives (Typ : Entity_Id) return Nat;
+      --  Count the non-predefined primitive operations of Typ
+
+      ----------------------
+      -- Count_Primitives --
+      ----------------------
+
+      function Count_Primitives (Typ : Entity_Id) return Nat is
+         Nb_Prim   : Nat;
+         Prim_Elmt : Elmt_Id;
+         Prim      : Entity_Id;
+
+      begin
+         Nb_Prim := 0;
+
+         Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
+         while Present (Prim_Elmt) loop
+            Prim := Node (Prim_Elmt);
+
+            if Is_Predefined_Dispatching_Operation (Prim)
+              or else Is_Predefined_Dispatching_Alias (Prim)
+            then
+               null;
+
+            elsif Present (Interface_Alias (Prim)) then
+               null;
+
+            else
+               Nb_Prim := Nb_Prim + 1;
+            end if;
+
+            Next_Elmt (Prim_Elmt);
+         end loop;
+
+         return Nb_Prim;
+      end Count_Primitives;
+
+      --------------
+      -- Make_OSD --
+      --------------
+
+      function Make_OSD (Iface : Entity_Id) return Node_Id;
+      --  Generate the Object Specific Data table required to dispatch calls
+      --  through synchronized interfaces. Returns a node that references the
+      --  generated OSD object.
+
+      function Make_OSD (Iface : Entity_Id) return Node_Id is
+         Nb_Prim       : constant Nat := Count_Primitives (Iface);
+         OSD           : Entity_Id;
+         OSD_Aggr_List : List_Id;
+
+      begin
+         --  Generate
+         --   OSD : Ada.Tags.Object_Specific_Data (Nb_Prims) :=
+         --          (OSD_Table => (1 => <value>,
+         --                           ...
+         --                         N => <value>));
+
+         if Nb_Prim = 0
+           or else Is_Abstract_Type (Typ)
+           or else Is_Controlled (Typ)
+           or else Restriction_Active (No_Dispatching_Calls)
+           or else not Is_Limited_Type (Typ)
+           or else not Has_Interfaces (Typ)
+           or else not RTE_Record_Component_Available (RE_OSD_Table)
+         then
+            --  No OSD table required
+
+            return Make_Null (Loc);
+
+         else
+            OSD_Aggr_List := New_List;
+
+            declare
+               Prim_Table : array (Nat range 1 .. Nb_Prim) of Entity_Id;
+               Prim       : Entity_Id;
+               Prim_Alias : Entity_Id;
+               Prim_Elmt  : Elmt_Id;
+               E          : Entity_Id;
+               Count      : Nat := 0;
+               Pos        : Nat;
+
+            begin
+               Prim_Table := (others => Empty);
+               Prim_Alias := Empty;
+
+               Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
+               while Present (Prim_Elmt) loop
+                  Prim := Node (Prim_Elmt);
+
+                  if Present (Interface_Alias (Prim))
+                    and then Find_Dispatching_Type
+                               (Interface_Alias (Prim)) = Iface
+                  then
+                     Prim_Alias := Interface_Alias (Prim);
+                     E   := Ultimate_Alias (Prim);
+                     Pos := UI_To_Int (DT_Position (Prim_Alias));
+
+                     if Present (Prim_Table (Pos)) then
+                        pragma Assert (Prim_Table (Pos) = E);
+                        null;
+
+                     else
+                        Prim_Table (Pos) := E;
+
+                        Append_To (OSD_Aggr_List,
+                          Make_Component_Association (Loc,
+                            Choices => New_List (
+                              Make_Integer_Literal (Loc,
+                                DT_Position (Prim_Alias))),
+                            Expression =>
+                              Make_Integer_Literal (Loc,
+                                DT_Position (Alias (Prim)))));
+
+                        Count := Count + 1;
+                     end if;
+                  end if;
+
+                  Next_Elmt (Prim_Elmt);
+               end loop;
+               pragma Assert (Count = Nb_Prim);
+            end;
+
+            OSD := Make_Temporary (Loc, 'I');
+
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => OSD,
+                Aliased_Present     => True,
+                Constant_Present    => True,
+                Object_Definition   =>
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (RTE (RE_Object_Specific_Data), Loc),
+                    Constraint =>
+                      Make_Index_Or_Discriminant_Constraint (Loc,
+                        Constraints => New_List (
+                          Make_Integer_Literal (Loc, Nb_Prim)))),
+
+                Expression          =>
+                  Make_Aggregate (Loc,
+                    Component_Associations => New_List (
+                      Make_Component_Association (Loc,
+                        Choices => New_List (
+                          New_Occurrence_Of
+                            (RTE_Record_Component (RE_OSD_Num_Prims), Loc)),
+                        Expression =>
+                          Make_Integer_Literal (Loc, Nb_Prim)),
+
+                      Make_Component_Association (Loc,
+                        Choices => New_List (
+                          New_Occurrence_Of
+                            (RTE_Record_Component (RE_OSD_Table), Loc)),
+                        Expression => Make_Aggregate (Loc,
+                          Component_Associations => OSD_Aggr_List))))));
+
+            return
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Reference_To (OSD, Loc),
+                Attribute_Name => Name_Unchecked_Access);
+         end if;
+      end Make_OSD;
+
+      --  Local variables
+
+      Nb_Prim          : constant Nat := Count_Primitives (Typ);
       AI               : Elmt_Id;
       I_Depth          : Nat;
       Iface_Table_Node : Node_Id;
-      Nb_Prim          : Nat;
       Num_Ifaces       : Nat;
       TSD_Aggr_List    : List_Id;
       Typ_Ifaces       : Elist_Id;
@@ -6334,12 +6508,13 @@ package body Exp_Disp is
 
       --   TSD : Type_Specific_Data (I_Depth) :=
       --           (Idepth                => I_Depth,
-      --            T                     => T'Tag,
+      --            Tag_Kind              => <tag_kind-value>,
       --            Access_Level          => Type_Access_Level (Typ),
       --            HT_Link               => null,
       --            Type_Is_Abstract      => <<boolean-value>>,
       --            Type_Is_Library_Level => <<boolean-value>>,
       --            Interfaces_Table      => <<access-value>>
+      --            SSD                   => SSD_Table'Address
       --            Tags_Table            => (0 => Typ'Tag,
       --                                      1 => Parent'Tag
       --                                      ...));
@@ -6371,8 +6546,14 @@ package body Exp_Disp is
          end loop;
       end;
 
+      --  I_Depth
+
       Append_To (TSD_Aggr_List,
         Make_Integer_Literal (Loc, I_Depth));
+
+      --  Tag_Kind
+
+      Append_To (TSD_Aggr_List, Tagged_Kind (Typ));
 
       --  Access_Level
 
@@ -6431,17 +6612,27 @@ package body Exp_Disp is
          else
             declare
                TSD_Ifaces_List : constant List_Id := New_List;
+               Iface           : Entity_Id;
                ITable          : Node_Id;
 
             begin
                AI := First_Elmt (Typ_Ifaces);
                while Present (AI) loop
+                  Iface := Node (AI);
+
                   Append_To (TSD_Ifaces_List,
                      Make_Aggregate (Loc,
                        Expressions => New_List (
+
+                           --  Iface_Tag
+
                          Make_Attribute_Reference (Loc,
-                           Prefix => New_Reference_To (Node (AI), Loc),
-                           Attribute_Name => Name_Tag))));
+                           Prefix => New_Reference_To (Iface, Loc),
+                           Attribute_Name => Name_Tag),
+
+                           --  OSD
+
+                         Make_OSD (Iface))));
 
                   Next_Elmt (AI);
                end loop;
@@ -6481,28 +6672,6 @@ package body Exp_Disp is
       --  Generate the Select Specific Data table for synchronized types that
       --  implement synchronized interfaces. The size of the table is
       --  constrained by the number of non-predefined primitive operations.
-
-      --  Count the non-predefined primitive operations
-
-      Nb_Prim := 0;
-
-      declare
-         Prim_Elmt : Elmt_Id;
-         Prim      : Entity_Id;
-      begin
-         Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
-         while Present (Prim_Elmt) loop
-            Prim := Node (Prim_Elmt);
-
-            if not (Is_Predefined_Dispatching_Operation (Prim)
-                      or else Is_Predefined_Dispatching_Alias (Prim))
-            then
-               Nb_Prim := Nb_Prim + 1;
-            end if;
-
-            Next_Elmt (Prim_Elmt);
-         end loop;
-      end;
 
       if RTE_Record_Component_Available (RE_SSD) then
          if Ada_Version >= Ada_2005

@@ -119,6 +119,12 @@ package body Restrict is
    begin
       if Force or else Comes_From_Source (N) then
 
+         if Restriction_Check_Required (SPARK)
+           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
+         then
+            return;
+         end if;
+
          --  Since the call to Restriction_Msg from Check_Restriction may set
          --  Error_Msg_Sloc to the location of the pragma restriction, save and
          --  restore the previous value of the global variable around the call.
@@ -140,6 +146,12 @@ package body Restrict is
       pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
 
       if Comes_From_Source (N) then
+
+         if Restriction_Check_Required (SPARK)
+           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
+         then
+            return;
+         end if;
 
          --  Since the call to Restriction_Msg from Check_Restriction may set
          --  Error_Msg_Sloc to the location of the pragma restriction, save and
@@ -548,6 +560,25 @@ package body Restrict is
       return Not_A_Restriction_Id;
    end Get_Restriction_Id;
 
+   --------------------------------
+   -- Is_In_Hidden_Part_In_SPARK --
+   --------------------------------
+
+   function Is_In_Hidden_Part_In_SPARK (Loc : Source_Ptr) return Boolean is
+   begin
+      --  Loop through table of hidden ranges
+
+      for J in SPARK_Hides.First .. SPARK_Hides.Last loop
+         if SPARK_Hides.Table (J).Start <= Loc
+           and then Loc <= SPARK_Hides.Table (J).Stop
+         then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Is_In_Hidden_Part_In_SPARK;
+
    -------------------------------
    -- No_Exception_Handlers_Set --
    -------------------------------
@@ -839,6 +870,17 @@ package body Restrict is
          return False;
       end if;
    end Same_Unit;
+
+   ------------------------------
+   -- Set_Hidden_Part_In_SPARK --
+   ------------------------------
+
+   procedure Set_Hidden_Part_In_SPARK (Loc1, Loc2 : Source_Ptr) is
+   begin
+      SPARK_Hides.Increment_Last;
+      SPARK_Hides.Table (SPARK_Hides.Last).Start := Loc1;
+      SPARK_Hides.Table (SPARK_Hides.Last).Stop  := Loc2;
+   end Set_Hidden_Part_In_SPARK;
 
    ------------------------------
    -- Set_Profile_Restrictions --

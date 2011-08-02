@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,11 +56,28 @@ package body Ch11 is
    --  Error_Recovery : Cannot raise Error_Resync
 
    function P_Handled_Sequence_Of_Statements return Node_Id is
-      Handled_Stmt_Seq_Node : Node_Id;
+      Handled_Stmt_Seq_Node  : Node_Id;
+      Seq_Is_Hidden_In_SPARK : Boolean;
+      Hidden_Region_Start    : Source_Ptr;
 
    begin
       Handled_Stmt_Seq_Node :=
         New_Node (N_Handled_Sequence_Of_Statements, Token_Ptr);
+
+      --  In SPARK, a HIDE directive can be placed at the beginning of a
+      --  package initialization, thus hiding the sequence of statements (and
+      --  possible exception handlers) from SPARK tool-set. No violation of the
+      --  SPARK restriction should be issued on nodes in a hidden part, which
+      --  is obtained by marking such hidden parts.
+
+      if Token = Tok_SPARK_Hide then
+         Seq_Is_Hidden_In_SPARK := True;
+         Hidden_Region_Start    := Token_Ptr;
+         Scan; -- past HIDE directive
+      else
+         Seq_Is_Hidden_In_SPARK := False;
+      end if;
+
       Set_Statements
         (Handled_Stmt_Seq_Node, P_Sequence_Of_Statements (SS_Extm_Sreq));
 
@@ -68,6 +85,10 @@ package body Ch11 is
          Scan; -- past EXCEPTION
          Set_Exception_Handlers
            (Handled_Stmt_Seq_Node, Parse_Exception_Handlers);
+      end if;
+
+      if Seq_Is_Hidden_In_SPARK then
+         Set_Hidden_Part_In_SPARK (Hidden_Region_Start, Token_Ptr);
       end if;
 
       return Handled_Stmt_Seq_Node;
@@ -229,10 +250,26 @@ package body Ch11 is
    --  Error recovery: cannot raise Error_Resync
 
    function Parse_Exception_Handlers return List_Id is
-      Handler       : Node_Id;
-      Handlers_List : List_Id;
+      Handler                    : Node_Id;
+      Handlers_List              : List_Id;
+      Handler_Is_Hidden_In_SPARK : Boolean;
+      Hidden_Region_Start        : Source_Ptr;
 
    begin
+      --  In SPARK, a HIDE directive can be placed at the beginning of a
+      --  sequence of exception handlers for a subprogram implementation, thus
+      --  hiding the exception handlers from SPARK tool-set. No violation of
+      --  the SPARK restriction should be issued on nodes in a hidden part,
+      --  which is obtained by marking such hidden parts.
+
+      if Token = Tok_SPARK_Hide then
+         Handler_Is_Hidden_In_SPARK := True;
+         Hidden_Region_Start        := Token_Ptr;
+         Scan; -- past HIDE directive
+      else
+         Handler_Is_Hidden_In_SPARK := False;
+      end if;
+
       Handlers_List := New_List;
       P_Pragmas_Opt (Handlers_List);
 
@@ -251,6 +288,10 @@ package body Ch11 is
 
             exit when Token /= Tok_When;
          end loop;
+      end if;
+
+      if Handler_Is_Hidden_In_SPARK then
+         Set_Hidden_Part_In_SPARK (Hidden_Region_Start, Token_Ptr);
       end if;
 
       return Handlers_List;

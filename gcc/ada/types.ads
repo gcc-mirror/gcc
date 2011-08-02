@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -188,7 +188,7 @@ package Types is
    --  Special value used to indicate no column number
 
    subtype Source_Buffer is Text_Buffer;
-   --  Type used to store text of a source file . The buffer for the main
+   --  Type used to store text of a source file. The buffer for the main
    --  source (the source specified on the command line) has a lower bound
    --  starting at zero. Subsequent subsidiary sources have lower bounds
    --  which are one greater than the previous upper bound.
