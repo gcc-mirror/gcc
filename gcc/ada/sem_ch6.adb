@@ -1456,6 +1456,13 @@ package body Sem_Ch6 is
             Typ := Entity (Result_Definition (N));
             Set_Etype (Designator, Typ);
 
+            --  If the result type of a subprogram is not in ALFA, then the
+            --  subprogram is not in ALFA.
+
+            if not Is_In_ALFA (Typ) then
+               Set_Is_In_ALFA (Designator, False);
+            end if;
+
             --  Unconstrained array as result is not allowed in SPARK or ALFA
 
             if Is_Array_Type (Typ)
@@ -3106,6 +3113,11 @@ package body Sem_Ch6 is
    --  Start of processing for Analyze_Subprogram_Specification
 
    begin
+      --  By default, consider that the subprogram spec is in ALFA. This is
+      --  reversed later if some parameter or result is not in ALFA.
+
+      Set_Is_In_ALFA (Designator);
+
       --  User-defined operator is not allowed in SPARK or ALFA, except as
       --  a renaming.
 
@@ -8652,8 +8664,8 @@ package body Sem_Ch6 is
       begin
          return Is_Class_Wide_Type (Designated_Type (Etype (D)))
            or else (Nkind (D) =  N_Attribute_Reference
-                      and then Attribute_Name (D) = Name_Access
-                      and then Is_Class_Wide_Type (Etype (Prefix (D))));
+                     and then Attribute_Name (D) = Name_Access
+                     and then Is_Class_Wide_Type (Etype (Prefix (D))));
       end Is_Class_Wide_Default;
 
    --  Start of processing for Process_Formals
@@ -8828,6 +8840,16 @@ package body Sem_Ch6 is
          end if;
 
          Set_Etype (Formal, Formal_Type);
+
+         --  If the type of a subprogram's formal parameter is not in ALFA,
+         --  then the subprogram is not in ALFA.
+
+         if Nkind (Parent (First (T))) in N_Subprogram_Specification
+           and then not Is_In_ALFA (Formal_Type)
+         then
+            Set_Is_In_ALFA (Defining_Entity (Parent (First (T))), False);
+         end if;
+
          Default := Expression (Param_Spec);
 
          if Present (Default) then

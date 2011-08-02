@@ -2270,6 +2270,11 @@ package Einfo is
 --    Is_Incomplete_Type (synthesized)
 --       Applies to all entities, true for incomplete types and subtypes
 
+--    Is_In_ALFA (Flag151)
+--       Present in all entities. Set for entities that belong to the ALFA
+--       subset, which are eligible for formal verification through SPARK or
+--       Why tool-sets.
+
 --    Is_Inlined (Flag11)
 --       Present in all entities. Set for functions and procedures which are
 --       to be inlined. For subprograms created during expansion, this flag
@@ -6135,6 +6140,7 @@ package Einfo is
    function Is_Hidden_Open_Scope                (Id : E) return B;
    function Is_Immediately_Visible              (Id : E) return B;
    function Is_Imported                         (Id : E) return B;
+   function Is_In_ALFA                          (Id : E) return B;
    function Is_Inlined                          (Id : E) return B;
    function Is_Interface                        (Id : E) return B;
    function Is_Instantiated                     (Id : E) return B;
@@ -6723,6 +6729,7 @@ package Einfo is
    procedure Set_Is_Hidden_Open_Scope            (Id : E; V : B := True);
    procedure Set_Is_Immediately_Visible          (Id : E; V : B := True);
    procedure Set_Is_Imported                     (Id : E; V : B := True);
+   procedure Set_Is_In_ALFA                      (Id : E; V : B := True);
    procedure Set_Is_Inlined                      (Id : E; V : B := True);
    procedure Set_Is_Interface                    (Id : E; V : B := True);
    procedure Set_Is_Instantiated                 (Id : E; V : B := True);
@@ -7440,6 +7447,7 @@ package Einfo is
    pragma Inline (Is_Imported);
    pragma Inline (Is_Incomplete_Or_Private_Type);
    pragma Inline (Is_Incomplete_Type);
+   pragma Inline (Is_In_ALFA);
    pragma Inline (Is_Inlined);
    pragma Inline (Is_Interface);
    pragma Inline (Is_Instantiated);
@@ -7854,6 +7862,7 @@ package Einfo is
    pragma Inline (Set_Is_Hidden_Open_Scope);
    pragma Inline (Set_Is_Immediately_Visible);
    pragma Inline (Set_Is_Imported);
+   pragma Inline (Set_Is_In_ALFA);
    pragma Inline (Set_Is_Inlined);
    pragma Inline (Set_Is_Interface);
    pragma Inline (Set_Is_Instantiated);

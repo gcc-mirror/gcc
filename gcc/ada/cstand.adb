@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -568,6 +568,10 @@ package body CStand is
 
          else
             Decl := New_Node (N_Full_Type_Declaration, Stloc);
+         end if;
+
+         if Standard_Type_Is_In_ALFA (S) then
+            Set_Is_In_ALFA (Standard_Entity (S));
          end if;
 
          Set_Is_Frozen (Standard_Entity (S));

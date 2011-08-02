@@ -1,3 +1,26 @@
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* cstand.adb (Create_Standard): sets Is_In_ALFA component of standard
+	types.
+	* einfo.adb, einfo.ads (Is_In_ALFA): add flag for all entities
+	(Is_In_ALFA, Set_Is_In_ALFA): new subprograms to access flag Is_In_ALFA
+	* sem_ch3.adb
+	(Analyze_Object_Declaration): set Is_In_ALFA flag for objects
+	(Constrain_Enumeration): set Is_In_ALFA flag for enumeration subtypes
+	(Constrain_Integer): set Is_In_ALFA flag for integer subtypes
+	(Enumeration_Type_Declaration): set Is_In_ALFA flag for enumeration
+	types.
+	(Set_Scalar_Range_For_Subtype): unset Is_In_ALFA flag for subtypes with
+	non-static range.
+	* sem_ch6.adb (Analyze_Return_Type): unset Is_In_ALFA flag for
+	functions whose return type is not in ALFA.
+	(Analyze_Subprogram_Specification): set Is_In_ALFA flag for subprogram
+	specifications.
+	(Process_Formals): unset Is_In_ALFA flag for subprograms if a
+	parameter's type is not in ALFA.
+	* stand.ads (Standard_Type_Is_In_ALFA): array defines which standard
+	types are in ALFA.
+
 2011-08-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6 (Analyze_Expression_Function): treat the function as

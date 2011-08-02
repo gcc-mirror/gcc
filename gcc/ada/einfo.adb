@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -408,6 +408,7 @@ package body Einfo is
    --    Is_Compilation_Unit             Flag149
    --    Has_Pragma_Elaborate_Body       Flag150
 
+   --    Is_In_ALFA                      Flag151
    --    Entry_Accepted                  Flag152
    --    Is_Obsolescent                  Flag153
    --    Has_Per_Object_Constraint       Flag154
@@ -517,7 +518,6 @@ package body Einfo is
    --    Is_Safe_To_Reevaluate           Flag249
    --    Has_Predicates                  Flag250
 
-   --    (unused)                        Flag151
    --    (unused)                        Flag251
    --    (unused)                        Flag252
    --    (unused)                        Flag253
@@ -1843,6 +1843,11 @@ package body Einfo is
    begin
       return Flag24 (Id);
    end Is_Imported;
+
+   function Is_In_ALFA (Id : E) return B is
+   begin
+      return Flag151 (Id);
+   end Is_In_ALFA;
 
    function Is_Inlined (Id : E) return B is
    begin
@@ -4331,6 +4336,11 @@ package body Einfo is
    begin
       Set_Flag24 (Id, V);
    end Set_Is_Imported;
+
+   procedure Set_Is_In_ALFA (Id : E; V : B := True) is
+   begin
+      Set_Flag151 (Id, V);
+   end Set_Is_In_ALFA;
 
    procedure Set_Is_Inlined (Id : E; V : B := True) is
    begin
@@ -7476,6 +7486,7 @@ package body Einfo is
       W ("Is_Hidden_Open_Scope",            Flag171 (Id));
       W ("Is_Immediately_Visible",          Flag7   (Id));
       W ("Is_Imported",                     Flag24  (Id));
+      W ("Is_In_ALFA",                      Flag151 (Id));
       W ("Is_Inlined",                      Flag11  (Id));
       W ("Is_Instantiated",                 Flag126 (Id));
       W ("Is_Interface",                    Flag186 (Id));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -312,6 +312,34 @@ package Stand is
 
    Boolean_Literals : array (Boolean) of Entity_Id;
    --  Entities for the two boolean literals, used by the expander
+
+   --  Standard types which are in ALFA are associated to True
+   Standard_Type_Is_In_ALFA : array (S_Types) of Boolean :=
+     (S_Boolean             => True,
+
+      S_Short_Short_Integer => True,
+      S_Short_Integer       => True,
+      S_Integer             => True,
+      S_Long_Integer        => True,
+      S_Long_Long_Integer   => True,
+
+      S_Natural             => True,
+      S_Positive            => True,
+
+      S_Short_Float         => False,
+      S_Float               => False,
+      S_Long_Float          => False,
+      S_Long_Long_Float     => False,
+
+      S_Character           => False,
+      S_Wide_Character      => False,
+      S_Wide_Wide_Character => False,
+
+      S_String              => False,
+      S_Wide_String         => False,
+      S_Wide_Wide_String    => False,
+
+      S_Duration            => False);
 
    -------------------------------------
    -- Semantic Phase Special Entities --
