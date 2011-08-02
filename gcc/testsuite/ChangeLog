@@ -1,3 +1,8 @@
+2011-08-02  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/49885
+	* gfortran.dg/auto_char_dummy_array_3.f90: New test.
+
 2011-08-02  Kai Tietz  <ktietz@redhat.com>
 
 	PR middle-end/49947
