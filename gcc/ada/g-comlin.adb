@@ -673,15 +673,24 @@ package body GNAT.Command_Line is
                --  especially important when Concatenate is False, since
                --  otherwise the current argument first character is lost.
 
-               Set_Parameter
-                 (Parser.The_Switch,
-                  Arg_Num => Parser.Current_Argument,
-                  First   => Parser.Current_Index,
-                  Last    => Arg'Last,
-                  Extra   => Parser.Switch_Character);
-               Parser.Is_Switch (Parser.Current_Argument) := True;
-               Dummy := Goto_Next_Argument_In_Section (Parser);
-               return '*';
+               if Parser.Section (Parser.Current_Argument) = 0 then
+
+                  --  A section transition should not be returned to the user
+
+                  Dummy := Goto_Next_Argument_In_Section (Parser);
+                  goto Restart;
+
+               else
+                  Set_Parameter
+                    (Parser.The_Switch,
+                     Arg_Num => Parser.Current_Argument,
+                     First   => Parser.Current_Index,
+                     Last    => Arg'Last,
+                     Extra   => Parser.Switch_Character);
+                  Parser.Is_Switch (Parser.Current_Argument) := True;
+                  Dummy := Goto_Next_Argument_In_Section (Parser);
+                  return '*';
+               end if;
             end if;
 
             Set_Parameter
@@ -891,7 +900,14 @@ package body GNAT.Command_Line is
                Parser.Current_Section :=
                  Parser.Section (Parser.Current_Argument);
             end if;
-            return;
+
+            --  Until we have the start of another section
+
+            if Index = Parser.Section'Last
+               or else Parser.Section (Index + 1) /= 0
+            then
+               return;
+            end if;
          end if;
 
          Index := Index + 1;
@@ -1004,6 +1020,9 @@ package body GNAT.Command_Line is
                Delimiter_Found := True;
 
             elsif Parser.Section (Index) = 0 then
+
+               --  A previous section delimiter
+
                Delimiter_Found := False;
 
             elsif Delimiter_Found then
@@ -3186,14 +3205,14 @@ package body GNAT.Command_Line is
    procedure Getopt
      (Config   : Command_Line_Configuration;
       Callback : Switch_Handler := null;
-      Parser   : Opt_Parser := Command_Line_Parser)
+      Parser   : Opt_Parser     := Command_Line_Parser)
    is
       Getopt_Switches : String_Access;
-      C   : Character := ASCII.NUL;
+      C               : Character := ASCII.NUL;
 
-      Empty_Name : aliased constant String := "";
+      Empty_Name      : aliased constant String := "";
       Current_Section : Integer := -1;
-      Section_Name : not null access constant String := Empty_Name'Access;
+      Section_Name    : not null access constant String := Empty_Name'Access;
 
       procedure Simple_Callback
         (Simple_Switch : String;
@@ -3231,6 +3250,7 @@ package body GNAT.Command_Line is
                         Config.Switches (Index).Integer_Output.all :=
                           Integer'Value (Parameter);
                      end if;
+
                   exception
                      when Constraint_Error =>
                         raise Invalid_Parameter
