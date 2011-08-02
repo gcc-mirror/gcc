@@ -585,7 +585,6 @@ package body Sem_Ch3 is
 
    procedure Modular_Type_Declaration (T : Entity_Id; Def : Node_Id);
    --  Create new modular type. Verify that modulus is in bounds
-   --  (implementation restriction).
 
    procedure New_Concatenation_Op (Typ : Entity_Id);
    --  Create an abbreviated declaration for an operator in order to
@@ -17769,11 +17768,11 @@ package body Sem_Ch3 is
    begin
       Analyze_And_Resolve (R, Base_Type (T));
 
-      if not Is_Static_Range (R) then
-         Check_Formal_Restriction ("range should be static", R);
-      end if;
-
       if Nkind (R) = N_Range then
+         if not Is_Static_Range (R) then
+            Check_Formal_Restriction ("range should be static", R);
+         end if;
+
          Lo := Low_Bound (R);
          Hi := High_Bound (R);
 

@@ -1,3 +1,7 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_res.adb: Minor reformatting.
+
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
 	* sem_attr.adb (Check_Formal_Restriction_On_Attribute): new procedure
