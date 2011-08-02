@@ -1,5 +1,8 @@
 2011-08-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49924
+	* semantics.c (cxx_eval_vec_init_1): Fix logic.
+
 	PR c++/49260
 	* call.c (build_call_a): Set cp_function_chain->can_throw here.
 	(build_cxx_call): Not here.

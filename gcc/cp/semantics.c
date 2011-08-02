@@ -6589,6 +6589,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
   tree elttype = TREE_TYPE (atype);
   int max = tree_low_cst (array_type_nelts (atype), 0);
   VEC(constructor_elt,gc) *n = VEC_alloc (constructor_elt, gc, max + 1);
+  bool default_init = false;
   int i;
 
   /* For the default constructor, build up a call to the default
@@ -6607,6 +6608,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
       release_tree_vector (argvec);
       init = cxx_eval_constant_expression (call, init, allow_non_constant,
 					   addr, non_constant_p);
+      default_init = true;
     }
 
   if (*non_constant_p && !allow_non_constant)
@@ -6634,7 +6636,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
 	  eltinit = cxx_eval_constant_expression
 	    (call, eltinit, allow_non_constant, addr, non_constant_p);
 	}
-      else if (TREE_CODE (init) == CONSTRUCTOR)
+      else if (default_init)
 	{
 	  /* Initializing an element using the call to the default
 	     constructor we just built above.  */
