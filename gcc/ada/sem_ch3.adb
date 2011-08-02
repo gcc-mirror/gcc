@@ -1666,10 +1666,12 @@ package body Sem_Ch3 is
    -----------------------------------
 
    procedure Analyze_Component_Declaration (N : Node_Id) is
-      Id : constant Entity_Id := Defining_Identifier (N);
-      E  : constant Node_Id   := Expression (N);
-      T  : Entity_Id;
-      P  : Entity_Id;
+      Id  : constant Entity_Id := Defining_Identifier (N);
+      E   : constant Node_Id   := Expression (N);
+      Typ : constant Node_Id   :=
+              Subtype_Indication (Component_Definition (N));
+      T   : Entity_Id;
+      P   : Entity_Id;
 
       function Contains_POC (Constr : Node_Id) return Boolean;
       --  Determines whether a constraint uses the discriminant of a record
@@ -1772,8 +1774,6 @@ package body Sem_Ch3 is
             return False;
          end if;
       end Is_Known_Limited;
-
-      Typ : constant Node_Id := Subtype_Indication (Component_Definition (N));
 
    --  Start of processing for Analyze_Component_Declaration
 
@@ -4005,8 +4005,9 @@ package body Sem_Ch3 is
            ("subtype of Boolean cannot have constraint", N);
       end if;
 
-      --  Subtype of String shall have a lower index bound equal to 1 in SPARK
-      --  or ALFA.
+      --  String subtype must have a lower bound of 1 in SPARK/ALFA. Note that
+      --  we do not need to test for the non-static case here, since that was
+      --  already taken care of in Process_Range_Expr_In_Decl.
 
       if Base_Type (T) = Standard_String
         and then Nkind (Subtype_Indication (N)) = N_Subtype_Indication
@@ -4015,6 +4016,7 @@ package body Sem_Ch3 is
             Cstr   : constant Node_Id := Constraint (Subtype_Indication (N));
             Drange : Node_Id;
             Low    : Node_Id;
+
          begin
             if Nkind (Cstr) = N_Index_Or_Discriminant_Constraint
               and then List_Length (Constraints (Cstr)) = 1
@@ -4028,7 +4030,7 @@ package body Sem_Ch3 is
                     and then Expr_Value (Low) /= 1
                   then
                      Check_Formal_Restriction
-                       ("subtype of String must have 1 as lower bound", N);
+                       ("String subtype must have lower bound of 1", N);
                   end if;
                end if;
             end if;
@@ -19011,6 +19013,7 @@ package body Sem_Ch3 is
          declare
             Typ  : Node_Id;
             Ctxt : Node_Id;
+
          begin
             if Nkind (Parent (Def)) = N_Full_Type_Declaration then
                Typ := Parent (Def);
@@ -19027,14 +19030,12 @@ package body Sem_Ch3 is
             then
                Check_Formal_Restriction
                  ("type should be defined in package specification", Typ);
+
             elsif Nkind (Ctxt) /= N_Package_Specification
-              or else
-                Nkind (Parent (Parent (Ctxt))) /= N_Compilation_Unit
+              or else Nkind (Parent (Parent (Ctxt))) /= N_Compilation_Unit
             then
                Check_Formal_Restriction
                  ("type should be defined in library unit package", Typ);
-            else
-               null;
             end if;
          end;
       end if;
