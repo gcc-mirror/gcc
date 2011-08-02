@@ -305,6 +305,12 @@ The GNAT Library
 * Ada.Characters.Wide_Latin_9 (a-cwila9.ads)::
 * Ada.Characters.Wide_Wide_Latin_1 (a-chzla1.ads)::
 * Ada.Characters.Wide_Wide_Latin_9 (a-chzla9.ads)::
+* Ada.Containers.Formal_Doubly_Linked_Lists (a-cfdlli.ads)::
+* Ada.Containers.Formal_Hashed_Maps (a-cfhama.ads)::
+* Ada.Containers.Formal_Hashed_Sets (a-cfhase.ads)::
+* Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)::
+* Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)::
+* Ada.Containers.Formal_Vectors (a-cofove.ads)::
 * Ada.Command_Line.Environment (a-colien.ads)::
 * Ada.Command_Line.Remove (a-colire.ads)::
 * Ada.Command_Line.Response_File (a-clrefi.ads)::
@@ -13871,6 +13877,12 @@ of GNAT, and will generate a warning message.
 * Ada.Characters.Wide_Latin_9 (a-cwila9.ads)::
 * Ada.Characters.Wide_Wide_Latin_1 (a-chzla1.ads)::
 * Ada.Characters.Wide_Wide_Latin_9 (a-chzla9.ads)::
+* Ada.Containers.Formal_Doubly_Linked_Lists (a-cfdlli.ads)::
+* Ada.Containers.Formal_Hashed_Maps (a-cfhama.ads)::
+* Ada.Containers.Formal_Hashed_Sets (a-cfhase.ads)::
+* Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)::
+* Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)::
+* Ada.Containers.Formal_Vectors (a-cofove.ads)::
 * Ada.Command_Line.Environment (a-colien.ads)::
 * Ada.Command_Line.Remove (a-colire.ads)::
 * Ada.Command_Line.Response_File (a-clrefi.ads)::
@@ -14072,6 +14084,66 @@ types of the constants being @code{Wide_Wide_Character}
 instead of @code{Character}.  The provision of such a package
 is specifically authorized by the Ada Reference Manual
 (RM A.3.3(27)).
+
+@node Ada.Containers.Formal_Doubly_Linked_Lists (a-cfdlli.ads)
+@section @code{Ada.Containers.Formal_Doubly_Linked_Lists} (@file{a-cfdlli.ads})
+@cindex @code{Ada.Containers.Formal_Doubly_Linked_Lists} (@file{a-cfdlli.ads})
+@cindex Formal container for doubly linked lists
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for doubly linked lists, meant to facilitate formal verification of
+code using such containers.
+
+@node Ada.Containers.Formal_Hashed_Maps (a-cfhama.ads)
+@section @code{Ada.Containers.Formal_Hashed_Maps} (@file{a-cfhama.ads})
+@cindex @code{Ada.Containers.Formal_Hashed_Maps} (@file{a-cfhama.ads})
+@cindex Formal container for hashed maps
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for hashed maps, meant to facilitate formal verification of
+code using such containers.
+
+@node Ada.Containers.Formal_Hashed_Sets (a-cfhase.ads)
+@section @code{Ada.Containers.Formal_Hashed_Sets} (@file{a-cfhase.ads})
+@cindex @code{Ada.Containers.Formal_Hashed_Sets} (@file{a-cfhase.ads})
+@cindex Formal container for hashed sets
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for hashed sets, meant to facilitate formal verification of
+code using such containers.
+
+@node Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)
+@section @code{Ada.Containers.Formal_Ordered_Maps} (@file{a-cforma.ads})
+@cindex @code{Ada.Containers.Formal_Ordered_Maps} (@file{a-cforma.ads})
+@cindex Formal container for ordered maps
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for ordered maps, meant to facilitate formal verification of
+code using such containers.
+
+@node Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)
+@section @code{Ada.Containers.Formal_Ordered_Sets} (@file{a-cforse.ads})
+@cindex @code{Ada.Containers.Formal_Ordered_Sets} (@file{a-cforse.ads})
+@cindex Formal container for ordered sets
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for ordered sets, meant to facilitate formal verification of
+code using such containers.
+
+@node Ada.Containers.Formal_Vectors (a-cofove.ads)
+@section @code{Ada.Containers.Formal_Vectors} (@file{a-cofove.ads})
+@cindex @code{Ada.Containers.Formal_Vectors} (@file{a-cofove.ads})
+@cindex Formal container for vectors
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for vectors, meant to facilitate formal verification of
+code using such containers.
 
 @node Ada.Command_Line.Environment (a-colien.ads)
 @section @code{Ada.Command_Line.Environment} (@file{a-colien.ads})

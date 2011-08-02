@@ -29,6 +29,31 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
+--  The specification of this package is derived from the specification
+--  of package Ada.Containers.Bounded_Ordered_Sets in the Ada 2012 RM.
+--  The changes are
+
+--    A parameter for the container is added to every function reading the
+--    content of a container: Key, Element, Next, Query_Element, Previous,
+--    Has_Element, Iterate, Reverse_Iterate. This change is
+--    motivated by the need to have cursors which are valid on different
+--    containers (typically a container C and its previous version C'Old) for
+--    expressing properties, which is not possible if cursors encapsulate an
+--    access to the underlying container. The operators "<" and ">" that could
+--    not be modified that way have been removed.
+
+--    There are two new functions
+
+--      function Left  (Container : Set; Position : Cursor) return Set;
+--      function Right (Container : Set; Position : Cursor) return Set;
+
+--      Left returns a container containing all elements preceding Position
+--      (excluded) in Container. Right returns a container containing all
+--      elements following Position (included) in Container. These two new
+--      functions are useful to express invariant properties in loops which
+--      iterate over containers. Left returns the part of the container already
+--      scanned and Right the part not scanned yet.
+
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Streams;
 

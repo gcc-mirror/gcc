@@ -29,6 +29,30 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
+--  The specification of this package is derived from the specification
+--  of package Ada.Containers.Bounded_Hashed_Maps in the Ada 2012 RM.
+--  The changes are
+
+--    A parameter for the container is added to every function reading the
+--    content of a container: Key, Element, Next, Query_Element,
+--    Has_Element, Iterate, Equivalent_Keys. This change is motivated by the
+--    need to have cursors which are valid on different containers (typically
+--    a container C and its previous version C'Old) for expressing properties,
+--    which is not possible if cursors encapsulate an access to the underlying
+--    container.
+
+--    There are two new functions
+
+--      function Left  (Container : Map; Position : Cursor) return Map;
+--      function Right (Container : Map; Position : Cursor) return Map;
+
+--      Left returns a container containing all elements preceding Position
+--      (excluded) in Container. Right returns a container containing all
+--      elements following Position (included) in Container. These two new
+--      functions are useful to express invariant properties in loops which
+--      iterate over containers. Left returns the part of the container already
+--      scanned and Right the part not scanned yet.
+
 private with Ada.Containers.Hash_Tables;
 private with Ada.Streams;
 with Ada.Containers; use Ada.Containers;

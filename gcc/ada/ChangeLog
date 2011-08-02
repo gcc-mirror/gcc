@@ -1,3 +1,17 @@
+2011-08-02  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.ads, a-cfhase.ads, a-cforma.ads, a-cfhama.ads, a-cforse.ads,
+	a-cofove.ads: Add comments.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Document formal containers.
+
+2011-08-02  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Goto_Section, Getopt): fix handling of "*" when there
+	are empty sections.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* mlib-prj.adb, restrict.ads, sem_aggr.adb, sem_ch12.adb: Minor
