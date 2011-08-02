@@ -6750,7 +6750,7 @@ package body Sem_Util is
    -------------------------------------
 
    function Is_Inherited_Operation_For_Type
-     (E, Typ : Entity_Id) return Boolean
+     (E : Entity_Id; Typ : Entity_Id) return Boolean
    is
    begin
       return Is_Inherited_Operation (E)
@@ -7373,9 +7373,11 @@ package body Sem_Util is
    ----------------------------------
 
    function Is_SPARK_Initialization_Expr (N : Node_Id) return Boolean is
-      Is_Ok : Boolean;
+      Is_Ok     : Boolean;
+      Expr      : Node_Id;
+      Comp_Assn : Node_Id;
+      Choice    : Node_Id;
 
-      Expr, Comp_Assn, Choice : Node_Id;
    begin
       Is_Ok := True;
 
@@ -7476,7 +7478,7 @@ package body Sem_Util is
             Is_Ok := False;
       end case;
 
-      <<Done>>
+   <<Done>>
       return Is_Ok;
    end Is_SPARK_Initialization_Expr;
 

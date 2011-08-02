@@ -4046,6 +4046,22 @@ package body Sem_Attr is
                Error_Attr;
             end if;
 
+            --  The attribute reference is a primary. If expressions follow,
+            --  the attribute reference is really an indexable object, so
+            --  rewrite and analyze as an indexed component.
+
+            if Present (E1) then
+               Rewrite (N,
+                 Make_Indexed_Component (Loc,
+                   Prefix      =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Relocate_Node (Prefix (N)),
+                       Attribute_Name => Name_Result),
+                   Expressions => Expressions (N)));
+               Analyze (N);
+               return;
+            end if;
+
             Set_Etype (N, Etype (CS));
 
             --  If several functions with that name are visible,

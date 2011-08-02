@@ -234,8 +234,8 @@ package body System.Stack_Usage.Tasking is
 
    procedure Print (Obj : Stack_Usage_Result) is
       Pos : Positive := Obj.Task_Name'Last;
-   begin
 
+   begin
       --  Simply trim the string containing the task name
 
       for S in Obj.Task_Name'Range loop
@@ -246,8 +246,8 @@ package body System.Stack_Usage.Tasking is
       end loop;
 
       declare
-         T_Name : constant String := Obj.Task_Name
-                                       (Obj.Task_Name'First .. Pos);
+         T_Name : constant String :=
+                    Obj.Task_Name (Obj.Task_Name'First .. Pos);
       begin
          Put_Line
            ("| " & T_Name & " | " & Natural'Image (Obj.Max_Size) &

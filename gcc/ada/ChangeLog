@@ -1,3 +1,24 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_ch5.adb, sem_type.adb, switch-c.adb, switch-c.ads,
+	sem_prag.adb, sem_util.adb, sem_util.ads, sem_res.adb, warnsw.ads,
+	prepcomp.ads, cstand.adb, stand.ads, a-calfor.adb, s-stusta.adb:
+	Minor reformatting.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: handle properly 'Result when it is a prefix of an
+	indexed component.
+
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads, einfo.adb
+	(Original_Access_Type): Move this attribute to Node26 since there was
+	an undocumented use of Node21 in E_Access_Subprogram_Type entities
+	which causes conflicts and breaks the generation of the .NET compiler.
+	(Interface_Name): Add missing documentation on JGNAT only uses of
+	this attribute.
+
 2011-08-02  Javier Miranda  <miranda@adacore.com>
 
 	* exp_pakd.adb (Expand_Packed_Element_Reference): Disable this routine

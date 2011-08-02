@@ -3865,15 +3865,17 @@ package body Sem_Prag is
 
       procedure Process_Import_Predefined_Type is
          Loc  : constant Source_Ptr := Sloc (N);
-         Elmt : Elmt_Id := First_Elmt (Predefined_Float_Types);
+         Elmt : Elmt_Id;
          Ftyp : Node_Id := Empty;
          Decl : Node_Id;
          Def  : Node_Id;
          Nam  : Name_Id;
+
       begin
          String_To_Name_Buffer (Strval (Expression (Arg3)));
          Nam := Name_Find;
 
+         Elmt := First_Elmt (Predefined_Float_Types);
          while Present (Elmt) and then Chars (Node (Elmt)) /= Nam loop
             Next_Elmt (Elmt);
          end loop;
@@ -3881,6 +3883,7 @@ package body Sem_Prag is
          Ftyp := Node (Elmt);
 
          if Present (Ftyp) then
+
             --  Don't build a derived type declaration, because predefined C
             --  types have no declaration anywhere, so cannot really be named.
             --  Instead build a full type declaration, starting with an
@@ -3893,8 +3896,9 @@ package body Sem_Prag is
                    Make_Real_Literal (Loc, Realval (Type_Low_Bound (Ftyp))),
                    Make_Real_Literal (Loc, Realval (Type_High_Bound (Ftyp)))));
 
+            --  Should never have a predefined type we cannot handle
+
             else
-               --  Should never have a predefined type we cannot handle
                raise Program_Error;
             end if;
 

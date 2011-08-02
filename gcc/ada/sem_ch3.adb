@@ -15156,7 +15156,10 @@ package body Sem_Ch3 is
 
          declare
             Max_Base_Digits : constant Uint :=
-               Expr_Value (Expression (Parent (RTE (RE_Max_Base_Digits))));
+                                Expr_Value
+                                  (Expression
+                                     (Parent (RTE (RE_Max_Base_Digits))));
+
          begin
             if Digs_Val > Max_Base_Digits then
                Error_Msg_Uint_1 := Max_Base_Digits;
@@ -17366,15 +17369,15 @@ package body Sem_Ch3 is
                                   Is_Constrained (Priv_Parent)
                                     or else
                                       Nkind (Priv_Indic) = N_Subtype_Indication
-                                        or else
-                                          Is_Constrained (Entity (Priv_Indic));
+                                    or else
+                                      Is_Constrained (Entity (Priv_Indic));
 
                   Full_Constr : constant Boolean :=
                                   Is_Constrained (Full_Parent)
                                     or else
                                       Nkind (Full_Indic) = N_Subtype_Indication
-                                        or else
-                                          Is_Constrained (Entity (Full_Indic));
+                                    or else
+                                      Is_Constrained (Entity (Full_Indic));
 
                   Priv_Discr : Entity_Id;
                   Full_Discr : Entity_Id;
@@ -17384,7 +17387,7 @@ package body Sem_Ch3 is
                   Full_Discr := First_Discriminant (Full_Parent);
                   while Present (Priv_Discr) and then Present (Full_Discr) loop
                      if Original_Record_Component (Priv_Discr) =
-                       Original_Record_Component (Full_Discr)
+                        Original_Record_Component (Full_Discr)
                        or else
                          Corresponding_Discriminant (Priv_Discr) =
                          Corresponding_Discriminant (Full_Discr)

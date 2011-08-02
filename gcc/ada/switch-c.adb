@@ -82,8 +82,8 @@ package body Switch.C is
       end if;
 
       Preprocessing_Symbol_Last := Preprocessing_Symbol_Last + 1;
-      Preprocessing_Symbol_Defs (Preprocessing_Symbol_Last)
-         := new String'(Def);
+      Preprocessing_Symbol_Defs (Preprocessing_Symbol_Last) :=
+        new String'(Def);
    end Add_Symbol_Definition;
 
    -----------------------------

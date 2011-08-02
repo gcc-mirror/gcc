@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This unit contains the routines used to handle setting of warning options.
+--  This unit contains the routines used to handle setting of warning options
 
 package Warnsw is
 
