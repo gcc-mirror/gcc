@@ -6830,7 +6830,11 @@ package body Sem_Res is
          if Is_Array_Type (T) then
             Current_Subprogram_Body_Is_Not_In_ALFA;
 
-            if Base_Type (T) /= Standard_String
+            --  Protect call to Matching_Static_Array_Bounds to avoid costly
+            --  operation if not needed.
+
+            if Restriction_Check_Required (SPARK)
+              and then Base_Type (T) /= Standard_String
               and then Base_Type (Etype (L)) = Base_Type (Etype (R))
               and then Etype (L) /= Any_Composite  --  or else L in error
               and then Etype (R) /= Any_Composite  --  or else R in error
@@ -7380,7 +7384,11 @@ package body Sem_Res is
             Left_Typ  : constant Node_Id := Etype (Left_Opnd (N));
             Right_Typ : constant Node_Id := Etype (Right_Opnd (N));
          begin
-            if Base_Type (Left_Typ) = Base_Type (Right_Typ)
+            --  Protect call to Matching_Static_Array_Bounds to avoid costly
+            --  operation if not needed.
+
+            if Restriction_Check_Required (SPARK)
+              and then Base_Type (Left_Typ) = Base_Type (Right_Typ)
               and then Left_Typ /= Any_Composite  --  or Left_Opnd in error
               and then Right_Typ /= Any_Composite  --  or Right_Opnd in error
               and then not Matching_Static_Array_Bounds (Left_Typ, Right_Typ)
@@ -8038,7 +8046,11 @@ package body Sem_Res is
    begin
       Resolve (Expr, Target_Typ);
 
-      if Is_Array_Type (Target_Typ)
+      --  Protect call to Matching_Static_Array_Bounds to avoid costly
+      --  operation if not needed.
+
+      if Restriction_Check_Required (SPARK)
+        and then Is_Array_Type (Target_Typ)
         and then Is_Array_Type (Etype (Expr))
         and then Etype (Expr) /= Any_Composite  --  or else Expr in error
         and then not Matching_Static_Array_Bounds (Target_Typ, Etype (Expr))
@@ -9164,7 +9176,11 @@ package body Sem_Res is
       --  In SPARK, a type conversion between array types should be restricted
       --  to types which have matching static bounds.
 
-      if Is_Array_Type (Target_Typ)
+      --  Protect call to Matching_Static_Array_Bounds to avoid costly
+      --  operation if not needed.
+
+      if Restriction_Check_Required (SPARK)
+        and then Is_Array_Type (Target_Typ)
         and then Is_Array_Type (Operand_Typ)
         and then Operand_Typ /= Any_Composite  --  or else Operand in error
         and then not Matching_Static_Array_Bounds (Target_Typ, Operand_Typ)
