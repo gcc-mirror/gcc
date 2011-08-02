@@ -2268,7 +2268,7 @@ package body Sem_Ch3 is
                Check_Formal_Restriction
                  ("discriminant type is not allowed",
                   Defining_Identifier
-                  (First (Discriminant_Specifications (N))));
+                    (First (Discriminant_Specifications (N))));
             end if;
 
          when others =>
@@ -2276,7 +2276,7 @@ package body Sem_Ch3 is
                Error_Msg_N
                  ("elementary or array type cannot have discriminants",
                   Defining_Identifier
-                  (First (Discriminant_Specifications (N))));
+                    (First (Discriminant_Specifications (N))));
             end if;
       end case;
 
@@ -3026,20 +3026,19 @@ package body Sem_Ch3 is
       --  mark and shall not be unconstrained. (The only exception to this
       --  is the admission of declarations of constants of type String.)
 
-      if not Nkind_In (Object_Definition (N),
-                       N_Identifier,
-                       N_Expanded_Name)
+      if not Nkind_In (Object_Definition (N), N_Identifier,
+                                              N_Expanded_Name)
       then
          Check_Formal_Restriction
            ("subtype mark expected", Object_Definition (N));
+
       elsif Is_Array_Type (T)
         and then not Is_Constrained (T)
         and then T /= Standard_String
       then
-         Check_Formal_Restriction ("subtype mark of constrained type expected",
-                                   Object_Definition (N));
-      else
-         null;
+         Check_Formal_Restriction
+           ("subtype mark of constrained type expected",
+            Object_Definition (N));
       end if;
 
       --  There are no aliased objects in SPARK or ALFA
@@ -3062,8 +3061,8 @@ package body Sem_Ch3 is
              (Is_CPP_Class (Root_Type (Etype (Act_T)))
                or else
                  (Present (Full_View (Root_Type (Etype (Act_T))))
-                    and then
-                      Is_CPP_Class (Full_View (Root_Type (Etype (Act_T))))))
+                   and then
+                     Is_CPP_Class (Full_View (Root_Type (Etype (Act_T))))))
          then
             Error_Msg_N
               ("predefined assignment not available for 'C'P'P tagged types",
@@ -3991,8 +3990,7 @@ package body Sem_Ch3 is
          Set_Has_Delayed_Freeze (Id);
       end if;
 
-      --  Subtype of Boolean is not allowed to have a constraint in SPARK or
-      --  ALFA.
+      --  Subtype of Boolean cannot have a constraint in SPARK or ALFA
 
       if Is_Boolean_Type (T)
         and then Nkind (Subtype_Indication (N)) = N_Subtype_Indication
@@ -14069,7 +14067,7 @@ package body Sem_Ch3 is
       end if;
 
       --  Only composite types other than array types are allowed to have
-      --  discriminants. In SPARK in ALFA, no types are allowed to have
+      --  discriminants. In SPARK and in ALFA, no types are allowed to have
       --  discriminants.
 
       if Present (Discriminant_Specifications (N)) then
@@ -14111,10 +14109,10 @@ package body Sem_Ch3 is
         or else Has_Private_Component (Parent_Type)
       then
          --  The ancestor type of a formal type can be incomplete, in which
-         --  case only the operations of the partial view are available in
-         --  the generic. Subsequent checks may be required when the full
-         --  view is analyzed, to verify that derivation from a tagged type
-         --  has an extension.
+         --  case only the operations of the partial view are available in the
+         --  generic. Subsequent checks may be required when the full view is
+         --  analyzed to verify that a derivation from a tagged type has an
+         --  extension.
 
          if Nkind (Original_Node (N)) = N_Formal_Type_Declaration then
             null;
