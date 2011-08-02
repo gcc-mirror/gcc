@@ -4692,32 +4692,12 @@ package body Exp_Util is
 
          if Is_Entity_Name (N) then
 
-            --  If the entity is a constant, it is definitely side effect free.
-            --  Note that the test of Is_Variable (N) below might be expected
-            --  to catch this case, but it does not, because this test goes to
-            --  the original tree, and we may have already rewritten a variable
-            --  node with a constant as a result of an earlier Force_Evaluation
-            --  call.
-
-            if Ekind_In (Entity (N), E_Constant, E_In_Parameter) then
-               return True;
-
-            --  Functions are not side effect free
-
-            elsif Ekind (Entity (N)) = E_Function then
-               return False;
-
             --  Variables are considered to be a side effect if Variable_Ref
             --  is set or if we have a volatile reference and Name_Req is off.
             --  If Name_Req is True then we can't help returning a name which
             --  effectively allows multiple references in any case.
 
-            --  Need comment for Is_True_Constant test below ???
-
-            elsif Is_Variable (N)
-               or else (Ekind (Entity (N)) = E_Variable
-                          and then not Is_True_Constant (Entity (N)))
-            then
+            if Is_Variable (N, Use_Original_Node => False) then
                return not Variable_Ref
                  and then (not Is_Volatile_Reference (N) or else Name_Req);
 
