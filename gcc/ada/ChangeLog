@@ -1,5 +1,23 @@
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb: Minor reformatting
+	Minor comment addition
+	Minor error msg text change
+
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iteration_Scheme.Uses_Secondary_Stack): New
+	function. Used to be more precise when we generate a variable plus one
+	assignment to remove side effects in the evaluation of the Bound
+	expressions.
+	(Analyze_Iteration_Scheme): Clean attribute analyzed in all the nodes
+	of the bound expression to force its re-analysis and thus expand the
+	associated transient scope (if required). Code cleanup replacing the
+	previous code that declared the constant entity by an invocation to
+	routine Force_Evaluation which centralizes this work in the frontend.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.adb (Is_Base_Type): Improve efficiency by using a flag table
 	(Base_Type): Now uses improved Is_Base_Type function
 	* einfo.ads (Base_Type): Inline this function

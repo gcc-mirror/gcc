@@ -95,9 +95,9 @@ package body Sem_Ch5 is
       procedure Set_Assignment_Type
         (Opnd      : Node_Id;
          Opnd_Type : in out Entity_Id);
-      --  Opnd is either the Lhs or Rhs of the assignment, and Opnd_Type
-      --  is the nominal subtype. This procedure is used to deal with cases
-      --  where the nominal subtype must be replaced by the actual subtype.
+      --  Opnd is either the Lhs or Rhs of the assignment, and Opnd_Type is the
+      --  nominal subtype. This procedure is used to deal with cases where the
+      --  nominal subtype must be replaced by the actual subtype.
 
       -------------------------------
       -- Diagnose_Non_Variable_Lhs --
@@ -105,8 +105,8 @@ package body Sem_Ch5 is
 
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id) is
       begin
-         --  Not worth posting another error if left hand side already
-         --  flagged as being illegal in some respect.
+         --  Not worth posting another error if left hand side already flagged
+         --  as being illegal in some respect.
 
          if Error_Posted (N) then
             return;
@@ -130,8 +130,8 @@ package body Sem_Ch5 is
                elsif (Is_Prival (Ent)
                         and then
                           (Ekind (Current_Scope) = E_Function
-                             or else Ekind (Enclosing_Dynamic_Scope (
-                                       Current_Scope)) = E_Function))
+                             or else Ekind (Enclosing_Dynamic_Scope
+                                             (Current_Scope)) = E_Function))
                    or else
                      (Ekind (Ent) = E_Component
                         and then Is_Protected_Type (Scope (Ent)))
@@ -202,10 +202,10 @@ package body Sem_Ch5 is
          Require_Entity (Opnd);
 
          --  If the assignment operand is an in-out or out parameter, then we
-         --  get the actual subtype (needed for the unconstrained case).
-         --  If the operand is the actual in an entry declaration, then within
-         --  the accept statement it is replaced with a local renaming, which
-         --  may also have an actual subtype.
+         --  get the actual subtype (needed for the unconstrained case). If the
+         --  operand is the actual in an entry declaration, then within the
+         --  accept statement it is replaced with a local renaming, which may
+         --  also have an actual subtype.
 
          if Is_Entity_Name (Opnd)
            and then (Ekind (Entity (Opnd)) = E_Out_Parameter
@@ -344,8 +344,8 @@ package body Sem_Ch5 is
          end if;
       end if;
 
-      --  The resulting assignment type is T1, so now we will resolve the
-      --  left hand side of the assignment using this determined type.
+      --  The resulting assignment type is T1, so now we will resolve the left
+      --  hand side of the assignment using this determined type.
 
       Resolve (Lhs, T1);
 
@@ -353,8 +353,8 @@ package body Sem_Ch5 is
 
       if not Is_Variable (Lhs) then
 
-         --  Ada 2005 (AI-327): Check assignment to the attribute Priority of
-         --  a protected object.
+         --  Ada 2005 (AI-327): Check assignment to the attribute Priority of a
+         --  protected object.
 
          declare
             Ent : Entity_Id;
@@ -452,9 +452,9 @@ package body Sem_Ch5 is
            ("target of assignment operation must not be abstract", Lhs);
       end if;
 
-      --  Resolution may have updated the subtype, in case the left-hand
-      --  side is a private protected component. Use the correct subtype
-      --  to avoid scoping issues in the back-end.
+      --  Resolution may have updated the subtype, in case the left-hand side
+      --  is a private protected component. Use the correct subtype to avoid
+      --  scoping issues in the back-end.
 
       T1 := Etype (Lhs);
 
@@ -631,7 +631,7 @@ package body Sem_Ch5 is
          Apply_Scalar_Range_Check (Rhs, Etype (Lhs));
 
       --  For array types, verify that lengths match. If the right hand side
-      --  if a function call that has been inlined, the assignment has been
+      --  is a function call that has been inlined, the assignment has been
       --  rewritten as a block, and the constraint check will be applied to the
       --  assignment within the block.
 
@@ -648,8 +648,8 @@ package body Sem_Ch5 is
          --  side is a type conversion to an unconstrained type, a length check
          --  is performed on the expression itself during expansion. In rare
          --  cases, the redundant length check is computed on an index type
-         --  with a different representation, triggering incorrect code in
-         --  the back end.
+         --  with a different representation, triggering incorrect code in the
+         --  back end.
 
          Apply_Length_Check (Rhs, Etype (Lhs));
 
@@ -679,11 +679,11 @@ package body Sem_Ch5 is
 
          and then Same_Object (Lhs, Original_Node (Rhs))
 
-         --  But exclude the case where the right side was an operation
-         --  that got rewritten (e.g. JUNK + K, where K was known to be
-         --  zero). We don't want to warn in such a case, since it is
-         --  reasonable to write such expressions especially when K is
-         --  defined symbolically in some other package.
+         --  But exclude the case where the right side was an operation that
+         --  got rewritten (e.g. JUNK + K, where K was known to be zero). We
+         --  don't want to warn in such a case, since it is reasonable to write
+         --  such expressions especially when K is defined symbolically in some
+         --  other package.
 
         and then Nkind (Original_Node (Rhs)) not in N_Op
       then
@@ -722,11 +722,11 @@ package body Sem_Ch5 is
          Set_Referenced_Modified (Lhs, Out_Param => False);
       end if;
 
-      --  Final step. If left side is an entity, then we may be able to
-      --  reset the current tracked values to new safe values. We only have
-      --  something to do if the left side is an entity name, and expansion
-      --  has not modified the node into something other than an assignment,
-      --  and of course we only capture values if it is safe to do so.
+      --  Final step. If left side is an entity, then we may be able to reset
+      --  the current tracked values to new safe values. We only have something
+      --  to do if the left side is an entity name, and expansion has not
+      --  modified the node into something other than an assignment, and of
+      --  course we only capture values if it is safe to do so.
 
       if Is_Entity_Name (Lhs)
         and then Nkind (N) = N_Assignment_Statement
@@ -739,8 +739,8 @@ package body Sem_Ch5 is
 
                --  If simple variable on left side, warn if this assignment
                --  blots out another one (rendering it useless) and note
-               --  location of assignment in case no one references value.
-               --  We only do this for source assignments, otherwise we can
+               --  location of assignment in case no one references value. We
+               --  only do this for source assignments, otherwise we can
                --  generate bogus warnings when an assignment is rewritten as
                --  another assignment, and gets tied up with itself.
 
@@ -809,9 +809,8 @@ package body Sem_Ch5 is
    begin
       Check_Formal_Restriction ("block statement is not allowed", N);
 
-      --  If no handled statement sequence is present, things are really
-      --  messed up, and we just return immediately (this is a defence
-      --  against previous errors).
+      --  If no handled statement sequence is present, things are really messed
+      --  up, and we just return immediately (defence against previous errors).
 
       if No (HSS) then
          return;
@@ -843,10 +842,9 @@ package body Sem_Ch5 is
             Analyze (Id);
             Ent := Entity (Id);
 
-            --  An error defense. If we have an identifier, but no entity,
-            --  then something is wrong. If we have previous errors, then
-            --  just remove the identifier and continue, otherwise raise
-            --  an exception.
+            --  An error defense. If we have an identifier, but no entity, then
+            --  something is wrong. If previous errors, then just remove the
+            --  identifier and continue, otherwise raise an exception.
 
             if No (Ent) then
                if Total_Errors_Detected /= 0 then
@@ -887,9 +885,9 @@ package body Sem_Ch5 is
          Analyze (HSS);
          Process_End_Label (HSS, 'e', Ent);
 
-         --  If exception handlers are present, then we indicate that
-         --  enclosing scopes contain a block with handlers. We only
-         --  need to mark non-generic scopes.
+         --  If exception handlers are present, then we indicate that enclosing
+         --  scopes contain a block with handlers. We only need to mark non-
+         --  generic scopes.
 
          if Present (EH) then
             S := Scope (Ent);
@@ -932,17 +930,17 @@ package body Sem_Ch5 is
       --  Don't care about assigned values
 
       Statements_Analyzed : Boolean := False;
-      --  Set True if at least some statement sequences get analyzed.
-      --  If False on exit, means we had a serious error that prevented
-      --  full analysis of the case statement, and as a result it is not
-      --  a good idea to output warning messages about unreachable code.
+      --  Set True if at least some statement sequences get analyzed. If False
+      --  on exit, means we had a serious error that prevented full analysis of
+      --  the case statement, and as a result it is not a good idea to output
+      --  warning messages about unreachable code.
 
       Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
       --  Recursively save value of this global, will be restored on exit
 
       procedure Non_Static_Choice_Error (Choice : Node_Id);
-      --  Error routine invoked by the generic instantiation below when
-      --  the case statement has a non static choice.
+      --  Error routine invoked by the generic instantiation below when the
+      --  case statement has a non static choice.
 
       procedure Process_Statements (Alternative : Node_Id);
       --  Analyzes all the statements associated with a case alternative.
@@ -981,16 +979,16 @@ package body Sem_Ch5 is
          Statements_Analyzed := True;
 
          --  An interesting optimization. If the case statement expression
-         --  is a simple entity, then we can set the current value within
-         --  an alternative if the alternative has one possible value.
+         --  is a simple entity, then we can set the current value within an
+         --  alternative if the alternative has one possible value.
 
          --    case N is
          --      when 1      => alpha
          --      when 2 | 3  => beta
          --      when others => gamma
 
-         --  Here we know that N is initially 1 within alpha, but for beta
-         --  and gamma, we do not know anything more about the initial value.
+         --  Here we know that N is initially 1 within alpha, but for beta and
+         --  gamma, we do not know anything more about the initial value.
 
          if Is_Entity_Name (Exp) then
             Ent := Entity (Exp);
@@ -1080,10 +1078,10 @@ package body Sem_Ch5 is
          return;
       end if;
 
-      --  If the case expression is a formal object of mode in out, then
-      --  treat it as having a nonstatic subtype by forcing use of the base
-      --  type (which has to get passed to Check_Case_Choices below).  Also
-      --  use base type when the case expression is parenthesized.
+      --  If the case expression is a formal object of mode in out, then treat
+      --  it as having a nonstatic subtype by forcing use of the base type
+      --  (which has to get passed to Check_Case_Choices below). Also use base
+      --  type when the case expression is parenthesized.
 
       if Paren_Count (Exp) > 0
         or else (Is_Entity_Name (Exp)
@@ -1148,13 +1146,16 @@ package body Sem_Ch5 is
    ----------------------------
 
    --  If the exit includes a name, it must be the name of a currently open
-   --  loop. Otherwise there must be an innermost open loop on the stack,
-   --  to which the statement implicitly refers.
+   --  loop. Otherwise there must be an innermost open loop on the stack, to
+   --  which the statement implicitly refers.
 
    --  Additionally, in formal mode:
-   --  * the exit can only name the closest enclosing loop;
-   --  * an exit with a when clause must be directly contained in a loop;
-   --  * an exit without a when clause must be directly contained in an
+
+   --    The exit can only name the closest enclosing loop;
+
+   --    An exit with a when clause must be directly contained in a loop;
+
+   --    An exit without a when clause must be directly contained in an
    --    if-statement with no elsif or else, which is itself directly contained
    --    in a loop. The exit must be the last statement in the if-statement.
 
@@ -1177,6 +1178,7 @@ package body Sem_Ch5 is
          if not In_Open_Scopes (U_Name) or else Ekind (U_Name) /= E_Loop then
             Error_Msg_N ("invalid loop name in exit statement", N);
             return;
+
          else
             if Has_Loop_In_Inner_Open_Scopes (U_Name) then
                Check_Formal_Restriction
@@ -1185,6 +1187,7 @@ package body Sem_Ch5 is
 
             Set_Has_Exit (U_Name);
          end if;
+
       else
          U_Name := Empty;
       end if;
@@ -1194,7 +1197,8 @@ package body Sem_Ch5 is
          Kind := Ekind (Scope_Id);
 
          if Kind = E_Loop
-           and then (No (Target) or else Scope_Id = U_Name) then
+           and then (No (Target) or else Scope_Id = U_Name)
+         then
             Set_Has_Exit (Scope_Id);
             exit;
 
@@ -1339,15 +1343,14 @@ package body Sem_Ch5 is
 
    --  A special complication arises in the analysis of if statements
 
-   --  The expander has circuitry to completely delete code that it
-   --  can tell will not be executed (as a result of compile time known
-   --  conditions). In the analyzer, we ensure that code that will be
-   --  deleted in this manner is analyzed but not expanded. This is
-   --  obviously more efficient, but more significantly, difficulties
-   --  arise if code is expanded and then eliminated (e.g. exception
-   --  table entries disappear). Similarly, itypes generated in deleted
-   --  code must be frozen from start, because the nodes on which they
-   --  depend will not be available at the freeze point.
+   --  The expander has circuitry to completely delete code that it can tell
+   --  will not be executed (as a result of compile time known conditions). In
+   --  the analyzer, we ensure that code that will be deleted in this manner is
+   --  analyzed but not expanded. This is obviously more efficient, but more
+   --  significantly, difficulties arise if code is expanded and then
+   --  eliminated (e.g. exception table entries disappear). Similarly, itypes
+   --  generated in deleted code must be frozen from start, because the nodes
+   --  on which they depend will not be available at the freeze point.
 
    procedure Analyze_If_Statement (N : Node_Id) is
       E : Node_Id;
@@ -1358,13 +1361,13 @@ package body Sem_Ch5 is
       Save_In_Deleted_Code : Boolean;
 
       Del : Boolean := False;
-      --  This flag gets set True if a True condition has been found,
-      --  which means that remaining ELSE/ELSIF parts are deleted.
+      --  This flag gets set True if a True condition has been found, which
+      --  means that remaining ELSE/ELSIF parts are deleted.
 
       procedure Analyze_Cond_Then (Cnode : Node_Id);
-      --  This is applied to either the N_If_Statement node itself or
-      --  to an N_Elsif_Part node. It deals with analyzing the condition
-      --  and the THEN statements associated with it.
+      --  This is applied to either the N_If_Statement node itself or to an
+      --  N_Elsif_Part node. It deals with analyzing the condition and the THEN
+      --  statements associated with it.
 
       -----------------------
       -- Analyze_Cond_Then --
@@ -1390,8 +1393,8 @@ package body Sem_Ch5 is
          elsif Compile_Time_Known_Value (Cond) then
             Save_In_Deleted_Code := In_Deleted_Code;
 
-            --  If condition is True, then analyze the THEN statements
-            --  and set no expansion for ELSE and ELSIF parts.
+            --  If condition is True, then analyze the THEN statements and set
+            --  no expansion for ELSE and ELSIF parts.
 
             if Is_True (Expr_Value (Cond)) then
                Analyze_Statements (Tstm);
@@ -1419,9 +1422,9 @@ package body Sem_Ch5 is
    --  Start of Analyze_If_Statement
 
    begin
-      --  Initialize exit count for else statements. If there is no else
-      --  part, this count will stay non-zero reflecting the fact that the
-      --  uncovered else case is an unblocked exit.
+      --  Initialize exit count for else statements. If there is no else part,
+      --  this count will stay non-zero reflecting the fact that the uncovered
+      --  else case is an unblocked exit.
 
       Unblocked_Exit_Count := 1;
       Analyze_Cond_Then (N);
@@ -1481,9 +1484,8 @@ package body Sem_Ch5 is
    -- Analyze_Implicit_Label_Declaration --
    ----------------------------------------
 
-   --  An implicit label declaration is generated in the innermost
-   --  enclosing declarative part. This is done for labels as well as
-   --  block and loop names.
+   --  An implicit label declaration is generated in the innermost enclosing
+   --  declarative part. This is done for labels, and block and loop names.
 
    --  Note: any changes in this routine may need to be reflected in
    --  Analyze_Label_Entity.
@@ -1516,6 +1518,12 @@ package body Sem_Ch5 is
       --  that returns a controlled array, introduce an explicit declaration
       --  to capture the bounds, so that the function result can be finalized
       --  in timely fashion.
+
+      function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean;
+      --  N is the node for an arbitrary construct. This function searches the
+      --  construct N to see if any expressions within it contain function
+      --  calls that use the secondary stack, returning True if any such call
+      --  is found, and False otherwise.
 
       --------------------
       -- Process_Bounds --
@@ -1571,8 +1579,6 @@ package body Sem_Ch5 is
 
             Analyze_And_Resolve (Original_Bound, Typ);
 
-            Id := Make_Temporary (Loc, 'S', Original_Bound);
-
             --  Normally, the best approach is simply to generate a constant
             --  declaration that captures the bound. However, there is a nasty
             --  case where this is wrong. If the bound is complex, and has a
@@ -1584,32 +1590,12 @@ package body Sem_Ch5 is
             --  proper trace of the value, useful in optimizations that get rid
             --  of junk range checks.
 
-            --  Probably we want something like the Side_Effect_Free routine
-            --  in Exp_Util, but for now, we just optimize the cases of 'Last
-            --  and 'First applied to an entity, since these are the important
-            --  cases for range check optimizations.
-
-            if Nkind (Original_Bound) = N_Attribute_Reference
-              and then (Attribute_Name (Original_Bound) = Name_First
-                          or else
-                        Attribute_Name (Original_Bound) = Name_Last)
-              and then Is_Entity_Name (Prefix (Original_Bound))
-            then
-               Decl :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Id,
-                   Constant_Present    => True,
-                   Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                   Expression          => Relocate_Node (Original_Bound));
-
-               --  Insert declaration at proper place. If loop comes from an
-               --  enclosing quantified expression, the insertion point is
-               --  arbitrarily far up in the tree.
-
-               Insert_Action (Parent (N), Decl);
-               Rewrite (Original_Bound, New_Occurrence_Of (Id, Loc));
-               return Expression (Decl);
+            if not Has_Call_Using_Secondary_Stack (N) then
+               Force_Evaluation (Original_Bound);
+               return Original_Bound;
             end if;
+
+            Id := Make_Temporary (Loc, 'R', Original_Bound);
 
             --  Here we make a declaration with a separate assignment
             --   statement, and insert before loop header.
@@ -1623,6 +1609,14 @@ package body Sem_Ch5 is
               Make_Assignment_Statement (Loc,
                 Name        => New_Occurrence_Of (Id, Loc),
                 Expression  => Relocate_Node (Original_Bound));
+
+            --  We must recursively clean in the relocated expression the flag
+            --  analyzed to ensure that the expression is reanalyzed. Required
+            --  to ensure that the transient scope is established now (because
+            --  Establish_Transient_Scope discarded generating transient scopes
+            --  in the analysis of the iteration scheme).
+
+            Reset_Analyzed_Flags (Expression (Assign));
 
             Insert_Actions (Parent (N), New_List (Decl, Assign));
 
@@ -1638,11 +1632,11 @@ package body Sem_Ch5 is
       --  Start of processing for Process_Bounds
 
       begin
-         --  Determine expected type of range by analyzing separate copy
-         --  Do the analysis and resolution of the copy of the bounds with
-         --  expansion disabled, to prevent the generation of finalization
-         --  actions on each bound. This prevents memory leaks when the
-         --  bounds contain calls to functions returning controlled arrays.
+         --  Determine expected type of range by analyzing separate copy Do the
+         --  analysis and resolution of the copy of the bounds with expansion
+         --  disabled, to prevent the generation of finalization actions on
+         --  each bound. This prevents memory leaks when the bounds contain
+         --  calls to functions returning controlled arrays.
 
          Set_Parent (R_Copy, Parent (R));
          Save_Analysis := Full_Analysis;
@@ -1699,11 +1693,10 @@ package body Sem_Ch5 is
 
          Typ := Etype (R_Copy);
 
-         --  If the type of the discrete range is Universal_Integer, then
-         --  the bound's type must be resolved to Integer, and any object
-         --  used to hold the bound must also have type Integer, unless the
-         --  literal bounds are constant-folded expressions that carry a user-
-         --  defined type.
+         --  If the type of the discrete range is Universal_Integer, then the
+         --  bound's type must be resolved to Integer, and any object used to
+         --  hold the bound must also have type Integer, unless the literal
+         --  bounds are constant-folded expressions with a user-defined type.
 
          if Typ = Universal_Integer then
             if Nkind (Lo) = N_Integer_Literal
@@ -1789,12 +1782,70 @@ package body Sem_Ch5 is
          end if;
       end Check_Controlled_Array_Attribute;
 
+      ------------------------------------
+      -- Has_Call_Using_Secondary_Stack --
+      ------------------------------------
+
+      function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean is
+
+         function Check_Call (N : Node_Id) return Traverse_Result;
+         --  Check if N is a function call which uses the secondary stack
+
+         ----------------
+         -- Check_Call --
+         ----------------
+
+         function Check_Call (N : Node_Id) return Traverse_Result is
+            Nam        : Node_Id;
+            Subp       : Entity_Id;
+            Return_Typ : Entity_Id;
+
+         begin
+            if Nkind (N) = N_Function_Call then
+               Nam := Name (N);
+
+               --  Call using access to subprogram with explicit dereference
+
+               if Nkind (Nam) = N_Explicit_Dereference then
+                  Subp := Etype (Nam);
+
+               --  Normal case
+
+               else
+                  Subp := Entity (Nam);
+               end if;
+
+               Return_Typ := Etype (Subp);
+
+               if Is_Composite_Type (Return_Typ)
+                 and then not Is_Constrained (Return_Typ)
+               then
+                  return Abandon;
+
+               elsif Sec_Stack_Needed_For_Return (Subp) then
+                  return Abandon;
+               end if;
+            end if;
+
+            --  Continue traversing the tree
+
+            return OK;
+         end Check_Call;
+
+         function Check_Calls is new Traverse_Func (Check_Call);
+
+      --  Start of processing for Has_Call_Using_Secondary_Stack
+
+      begin
+         return Check_Calls (N) = Abandon;
+      end Has_Call_Using_Secondary_Stack;
+
    --  Start of processing for Analyze_Iteration_Scheme
 
    begin
-      --  If this is a rewritten quantified expression, the iteration
-      --  scheme has been analyzed already. Do no repeat analysis because
-      --  the loop variable is already declared.
+      --  If this is a rewritten quantified expression, the iteration scheme
+      --  has been analyzed already. Do no repeat analysis because the loop
+      --  variable is already declared.
 
       if Analyzed (N) then
          return;
@@ -1812,8 +1863,8 @@ package body Sem_Ch5 is
          Cond : constant Node_Id := Condition (N);
 
       begin
-         --  For WHILE loop, verify that the condition is a Boolean
-         --  expression and resolve and check it.
+         --  For WHILE loop, verify that the condition is a Boolean expression
+         --  and resolve and check it.
 
          if Present (Cond) then
             Analyze_And_Resolve (Cond, Any_Boolean);
@@ -1835,8 +1886,8 @@ package body Sem_Ch5 is
             begin
                Enter_Name (Id);
 
-               --  We always consider the loop variable to be referenced,
-               --  since the loop may be used just for counting purposes.
+               --  We always consider the loop variable to be referenced, since
+               --  the loop may be used just for counting purposes.
 
                Generate_Reference (Id, N, ' ');
 
@@ -2000,8 +2051,8 @@ package body Sem_Ch5 is
                         if not Inside_A_Generic
                           and then not In_Instance
                         then
-                           --  Specialize msg if invalid values could make
-                           --  the loop non-null after all.
+                           --  Specialize msg if invalid values could make the
+                           --  loop non-null after all.
 
                            if Compile_Time_Compare
                                 (L, H, Assume_Valid => False) = GT
@@ -2010,9 +2061,9 @@ package body Sem_Ch5 is
                                 ("?loop range is null, loop will not execute",
                                  DS);
 
-                              --  Since we know the range of the loop is
-                              --  null, set the appropriate flag to remove
-                              --  the loop entirely during expansion.
+                              --  Since we know the range of the loop is null,
+                              --  set the appropriate flag to remove the loop
+                              --  entirely during expansion.
 
                               Set_Is_Null_Loop (Parent (N));
 
@@ -2179,8 +2230,8 @@ package body Sem_Ch5 is
    begin
       if Present (Id) then
 
-         --  Make name visible, e.g. for use in exit statements. Loop
-         --  labels are always considered to be referenced.
+         --  Make name visible, e.g. for use in exit statements. Loop labels
+         --  are always considered to be referenced.
 
          Analyze (Id);
          Ent := Entity (Id);
@@ -2227,10 +2278,10 @@ package body Sem_Ch5 is
          Set_Parent (Ent, Loop_Statement);
       end if;
 
-      --  Kill current values on entry to loop, since statements in body of
-      --  loop may have been executed before the loop is entered. Similarly we
-      --  kill values after the loop, since we do not know that the body of the
-      --  loop was executed.
+      --  Kill current values on entry to loop, since statements in the body of
+      --  the loop may have been executed before the loop is entered. Similarly
+      --  we kill values after the loop, since we do not know that the body of
+      --  the loop was executed.
 
       Kill_Current_Values;
       Push_Scope (Ent);
@@ -2251,8 +2302,8 @@ package body Sem_Ch5 is
          Check_Infinite_Loop_Warning (N);
       end if;
 
-      --  Code after loop is unreachable if the loop has no WHILE or FOR
-      --  and contains no EXIT statements within the body of the loop.
+      --  Code after loop is unreachable if the loop has no WHILE or FOR and
+      --  contains no EXIT statements within the body of the loop.
 
       if No (Iter) and then not Has_Exit (Ent) then
          Check_Unreachable_Code (N);
@@ -2282,9 +2333,9 @@ package body Sem_Ch5 is
 
    begin
       --  The labels declared in the statement list are reachable from
-      --  statements in the list. We do this as a prepass so that any
-      --  goto statement will be properly flagged if its target is not
-      --  reachable. This is not required, but is nice behavior!
+      --  statements in the list. We do this as a prepass so that any goto
+      --  statement will be properly flagged if its target is not reachable.
+      --  This is not required, but is nice behavior!
 
       S := First (L);
       while Present (S) loop
@@ -2331,10 +2382,9 @@ package body Sem_Ch5 is
 
       Conditional_Statements_End;
 
-      --  Make labels unreachable. Visibility is not sufficient, because
-      --  labels in one if-branch for example are not reachable from the
-      --  other branch, even though their declarations are in the enclosing
-      --  declarative part.
+      --  Make labels unreachable. Visibility is not sufficient, because labels
+      --  in one if-branch for example are not reachable from the other branch,
+      --  even though their declarations are in the enclosing declarative part.
 
       S := First (L);
       while Present (S) loop
@@ -2365,9 +2415,8 @@ package body Sem_Ch5 is
             Nxt := Original_Node (Next (N));
 
             --  If a label follows us, then we never have dead code, since
-            --  someone could branch to the label, so we just ignore it,
-            --  unless we are in formal mode where goto statements are not
-            --  allowed.
+            --  someone could branch to the label, so we just ignore it, unless
+            --  we are in formal mode where goto statements are not allowed.
 
             if Nkind (Nxt) = N_Label and then not Formal_Verification_Mode then
                return;
@@ -2433,10 +2482,10 @@ package body Sem_Ch5 is
                   end if;
                end if;
 
-            --  If the unconditional transfer of control instruction is
-            --  the last statement of a sequence, then see if our parent
-            --  is one of the constructs for which we count unblocked exits,
-            --  and if so, adjust the count.
+            --  If the unconditional transfer of control instruction is the
+            --  last statement of a sequence, then see if our parent is one of
+            --  the constructs for which we count unblocked exits, and if so,
+            --  adjust the count.
 
             else
                P := Parent (N);
