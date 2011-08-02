@@ -778,8 +778,8 @@ def_cfa_1 (dw_cfa_location *new_cfa)
   if (cfi)
     {
       cur_row->cfa = *new_cfa;
-      if (cfi->dw_cfi_opc == DW_CFA_def_cfa_expression)
-        cur_row->cfa_cfi = cfi;
+      cur_row->cfa_cfi = (cfi->dw_cfi_opc == DW_CFA_def_cfa_expression
+			  ? cfi : NULL);
 
       add_cfi (cfi);
     }
@@ -1205,18 +1205,13 @@ dwarf2out_frame_debug_def_cfa (rtx pat)
 
   memset (&loc, 0, sizeof (loc));
 
-  switch (GET_CODE (pat))
+  if (GET_CODE (pat) == PLUS)
     {
-    case PLUS:
-      loc.reg = dwf_regno (XEXP (pat, 0));
       loc.offset = INTVAL (XEXP (pat, 1));
-      break;
-
-    case REG:
-      loc.reg = dwf_regno (pat);
-      break;
-
-    case MEM:
+      pat = XEXP (pat, 0);
+    }
+  if (MEM_P (pat))
+    {
       loc.indirect = 1;
       pat = XEXP (pat, 0);
       if (GET_CODE (pat) == PLUS)
@@ -1224,13 +1219,11 @@ dwarf2out_frame_debug_def_cfa (rtx pat)
 	  loc.base_offset = INTVAL (XEXP (pat, 1));
 	  pat = XEXP (pat, 0);
 	}
-      loc.reg = dwf_regno (pat);
-      break;
-
-    default:
-      /* Recurse and define an expression.  */
-      gcc_unreachable ();
     }
+  /* ??? If this fails, we could be calling into the _loc functions to
+     define a full expression.  So far no port does that.  */
+  gcc_assert (REG_P (pat));
+  loc.reg = dwf_regno (pat);
 
   def_cfa_1 (&loc);
 }

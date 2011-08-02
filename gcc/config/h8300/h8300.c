@@ -87,8 +87,6 @@ static int h8300_os_task_function_p (tree);
 static void h8300_emit_stack_adjustment (int, HOST_WIDE_INT, bool);
 static HOST_WIDE_INT round_frame_size (HOST_WIDE_INT);
 static unsigned int compute_saved_regs (void);
-static void push (int);
-static void pop (int);
 static const char *cond_string (enum rtx_code);
 static unsigned int h8300_asm_insn_count (const char *);
 static tree h8300_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
@@ -556,7 +554,7 @@ compute_saved_regs (void)
 
 /* Emit an insn to push register RN.  */
 
-static void
+static rtx
 push (int rn)
 {
   rtx reg = gen_rtx_REG (word_mode, rn);
@@ -570,11 +568,12 @@ push (int rn)
     x = gen_push_h8300hs_normal (reg);
   x = F (emit_insn (x), true);
   add_reg_note (x, REG_INC, stack_pointer_rtx);
+  return x;
 }
 
 /* Emit an insn to pop register RN.  */
 
-static void
+static rtx
 pop (int rn)
 {
   rtx reg = gen_rtx_REG (word_mode, rn);
@@ -588,6 +587,7 @@ pop (int rn)
     x = gen_pop_h8300hs_normal (reg);
   x = emit_insn (x);
   add_reg_note (x, REG_INC, stack_pointer_rtx);
+  return x;
 }
 
 /* Emit an instruction to push or pop NREGS consecutive registers
@@ -2678,7 +2678,16 @@ h8sx_emit_movmd (rtx dest, rtx src, rtx length,
 void
 h8300_swap_into_er6 (rtx addr)
 {
-  push (HARD_FRAME_POINTER_REGNUM);
+  rtx insn = push (HARD_FRAME_POINTER_REGNUM);
+  if (frame_pointer_needed)
+    add_reg_note (insn, REG_CFA_DEF_CFA,
+		  plus_constant (gen_rtx_MEM (Pmode, stack_pointer_rtx),
+				 2 * UNITS_PER_WORD));
+  else
+    add_reg_note (insn, REG_CFA_ADJUST_CFA,
+		  gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			       plus_constant (stack_pointer_rtx, 4)));
+
   emit_move_insn (hard_frame_pointer_rtx, addr);
   if (REGNO (addr) == SP_REG)
     emit_move_insn (hard_frame_pointer_rtx,
@@ -2692,9 +2701,20 @@ h8300_swap_into_er6 (rtx addr)
 void
 h8300_swap_out_of_er6 (rtx addr)
 {
+  rtx insn;
+
   if (REGNO (addr) != SP_REG)
     emit_move_insn (addr, hard_frame_pointer_rtx);
-  pop (HARD_FRAME_POINTER_REGNUM);
+
+  insn = pop (HARD_FRAME_POINTER_REGNUM);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  if (frame_pointer_needed)
+    add_reg_note (insn, REG_CFA_DEF_CFA,
+		  plus_constant (hard_frame_pointer_rtx, 2 * UNITS_PER_WORD));
+  else
+    add_reg_note (insn, REG_CFA_ADJUST_CFA,
+		  gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			       plus_constant (stack_pointer_rtx, -4)));
 }
 
 /* Return the length of mov instruction.  */
