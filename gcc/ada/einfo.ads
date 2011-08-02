@@ -2943,11 +2943,10 @@ package Einfo is
 --       used to reference tasks implementing such interface.
 
 --    Materialize_Entity (Flag168)
---       Present in all entities. Set only for constant or renamed entities
---       which should be materialized for debugging purposes. In the case of
---       a constant, a memory location should be allocated containing the
---       value. In the case of a renaming, a memory location containing the
---       renamed address should be allocated.
+--       Present in all entities. Set only for renamed obects which should be
+--       materialized for debugging purposes. This means that a memory location
+--       containing the renamed address should be allocated. This is needed so
+--       that the debugger can find the entity.
 
 --    Mechanism (Uint8) (returned as Mechanism_Type)
 --       Present in functions and non-generic formal parameters. Indicates

@@ -57,9 +57,19 @@ package System.Standard_Library is
    pragma Preelaborate_05;
    pragma Warnings (On);
 
-   type Big_String_Ptr is access all String (Positive);
+   subtype Big_String is String (1 .. Positive'Last);
+   pragma Suppress_Initialization (Big_String);
+   --  Type used to obtain string access to given address. Initialization is
+   --  suppressed, since we never want to have variables of this type, and
+   --  we never want to attempt initialiazation of virtual variables of this
+   --  type (e.g. when pragma Normalize_Scalars is used).
+
+   type Big_String_Ptr is access all Big_String;
    for Big_String_Ptr'Storage_Size use 0;
-   --  A non-fat pointer type for null terminated strings
+   --  We use this access type to pass a pointer to an area of storage to be
+   --  accessed as a string. Of course when this pointer is used, it is the
+   --  responsibility of the accessor to ensure proper bounds. The storage
+   --  size clause ensures we do not allocate variables of this type.
 
    function To_Ptr is
      new Ada.Unchecked_Conversion (System.Address, Big_String_Ptr);

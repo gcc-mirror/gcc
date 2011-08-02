@@ -5995,10 +5995,17 @@ package body Exp_Disp is
 
       --     Check_TSD (TSD'Unrestricted_Access);
 
-      --  Seems wrong to restrict this BI to Ada 2012 ???
+      --  This check is a consequence of AI05-0113-1/06, so it officially
+      --  applies to Ada 2005 (and Ada 2012). It might be argued that it is
+      --  a desirable check to add in Ada 95 mode, but we hesitate to make
+      --  this change, as it would be incompatible, and could conceivably
+      --  cause a problem in existing Aa 95 code.
+
+      --  We check for No_Run_Time_Mode here, because we do not want to pick
+      --  up the RE_Check_TSD entity and call it in No_Run_Time mode.
 
       if not No_Run_Time_Mode
-        and then Ada_Version >= Ada_2012
+        and then Ada_Version >= Ada_2005
         and then RTE_Available (RE_Check_TSD)
       then
          Append_To (Elab_Code,
