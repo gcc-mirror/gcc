@@ -7613,8 +7613,8 @@ package body Sem_Res is
               ("string operand for concatenation should be a literal", N);
          end if;
 
-         --  Do not issue error on an operand that is neither a character nor
-         --  a string, as the error is issued in Resolve_Op_Concat.
+      --  Do not issue error on an operand that is neither a character nor a
+      --  string, as the error is issued in Resolve_Op_Concat.
 
       else
          null;
