@@ -279,7 +279,7 @@ package body Sem_Ch6 is
 
    begin
       --  This is one of the occasions on which we transform the tree during
-      --  semantic analysis. If this is a completion,  transform the expression
+      --  semantic analysis. If this is a completion, transform the expression
       --  function into an equivalent subprogram body, and analyze it.
 
       --  Expression functions are inlined unconditionally. The back-end will
@@ -631,8 +631,7 @@ package body Sem_Ch6 is
          Analyze_And_Resolve (Expr, R_Type);
          Check_Limited_Return (Expr);
 
-         --  The only RETURN allowed in SPARK is as the last statement of the
-         --  function.
+         --  RETURN only allowed in SPARK is as the last statement function
 
          if Nkind (Parent (N)) /= N_Handled_Sequence_Of_Statements
            and then
