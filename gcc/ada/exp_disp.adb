@@ -474,7 +474,7 @@ package body Exp_Disp is
    -------------------
 
    procedure Build_VM_TSDs (N : Entity_Id) is
-      Target_List : List_Id;
+      Target_List : List_Id := No_List;
 
       procedure Build_TSDs (List : List_Id);
       --  Build the static dispatch table of tagged types found in the list of
@@ -538,6 +538,10 @@ package body Exp_Disp is
                   null;
 
                else
+                  if No (Target_List) then
+                     Target_List := New_List;
+                  end if;
+
                   Append_List_To (Target_List,
                     Make_VM_TSD (Defining_Entity (D)));
                end if;
@@ -552,9 +556,9 @@ package body Exp_Disp is
       ------------------------
 
       procedure Build_Package_TSDs (N : Node_Id) is
-         Spec       : constant Node_Id   := Specification (N);
-         Vis_Decls  : constant List_Id   := Visible_Declarations (Spec);
-         Priv_Decls : constant List_Id   := Private_Declarations (Spec);
+         Spec       : constant Node_Id := Specification (N);
+         Vis_Decls  : constant List_Id := Visible_Declarations (Spec);
+         Priv_Decls : constant List_Id := Private_Declarations (Spec);
 
       begin
          if Present (Priv_Decls) then
@@ -571,6 +575,7 @@ package body Exp_Disp is
    begin
       if not Expander_Active
         or else No_Run_Time_Mode
+        or else Tagged_Type_Expansion
         or else not RTE_Available (RE_Type_Specific_Data)
       then
          return;
@@ -583,25 +588,33 @@ package body Exp_Disp is
             Priv_Decls : constant List_Id := Private_Declarations (Spec);
 
          begin
-            Target_List := New_List;
             Build_Package_TSDs (N);
-            Analyze_List (Target_List);
 
-            if Present (Priv_Decls)
-              and then Is_Non_Empty_List (Priv_Decls)
-            then
-               Append_List (Target_List, Priv_Decls);
-            else
-               Append_List (Target_List, Vis_Decls);
+            if Present (Target_List) then
+               Analyze_List (Target_List);
+
+               if Present (Priv_Decls)
+                  and then Is_Non_Empty_List (Priv_Decls)
+               then
+                  Append_List (Target_List, Priv_Decls);
+               else
+                  Append_List (Target_List, Vis_Decls);
+               end if;
             end if;
          end;
 
       elsif Nkind_In (N, N_Package_Body, N_Subprogram_Body) then
          if Is_Non_Empty_List (Declarations (N)) then
-            Target_List := New_List;
-            Build_TSDs   (Declarations (N));
-            Analyze_List (Target_List);
-            Append_List  (Target_List, Declarations (N));
+            Build_TSDs (Declarations (N));
+
+            if Nkind (N) = N_Subprogram_Body then
+               Build_TSDs (Statements (Handled_Statement_Sequence (N)));
+            end if;
+
+            if Present (Target_List) then
+               Analyze_List (Target_List);
+               Append_List  (Target_List, Declarations (N));
+            end if;
          end if;
       end if;
    end Build_VM_TSDs;
@@ -2209,10 +2222,10 @@ package body Exp_Disp is
       Com_Block : Entity_Id;
       Conc_Typ  : Entity_Id           := Empty;
       Decls     : constant List_Id    := New_List;
-      DT_Ptr    : Entity_Id;
       Loc       : constant Source_Ptr := Sloc (Typ);
       Obj_Ref   : Node_Id;
       Stmts     : constant List_Id    := New_List;
+      Tag_Node  : Node_Id;
 
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
@@ -2231,8 +2244,6 @@ package body Exp_Disp is
                  New_List (Make_Null_Statement (Loc))));
       end if;
 
-      DT_Ptr := Node (First_Elmt (Access_Disp_Table (Typ)));
-
       if Is_Concurrent_Record_Type (Typ) then
          Conc_Typ := Corresponding_Concurrent_Type (Typ);
 
@@ -2242,6 +2253,18 @@ package body Exp_Disp is
 
          --  where I will be used to capture the entry index of the primitive
          --  wrapper at position S.
+
+         if Tagged_Type_Expansion then
+            Tag_Node :=
+              Unchecked_Convert_To (RTE (RE_Tag),
+                New_Reference_To
+                  (Node (First_Elmt (Access_Disp_Table (Typ))), Loc));
+         else
+            Tag_Node :=
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Reference_To (Typ, Loc),
+                Attribute_Name => Name_Tag);
+         end if;
 
          Append_To (Decls,
            Make_Object_Declaration (Loc,
@@ -2255,8 +2278,7 @@ package body Exp_Disp is
                    New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
                  Parameter_Associations =>
                    New_List (
-                     Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Reference_To (DT_Ptr, Loc)),
+                     Tag_Node,
                      Make_Identifier (Loc, Name_uS)))));
 
          if Ekind (Conc_Typ) = E_Protected_Type then
@@ -2553,9 +2575,9 @@ package body Exp_Disp is
       Blk_Nam  : Entity_Id;
       Conc_Typ : Entity_Id           := Empty;
       Decls    : constant List_Id    := New_List;
-      DT_Ptr   : Entity_Id;
       Obj_Ref  : Node_Id;
       Stmts    : constant List_Id    := New_List;
+      Tag_Node : Node_Id;
 
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
@@ -2573,8 +2595,6 @@ package body Exp_Disp is
                Make_Handled_Sequence_Of_Statements (Loc,
                  New_List (Make_Null_Statement (Loc))));
       end if;
-
-      DT_Ptr := Node (First_Elmt (Access_Disp_Table (Typ)));
 
       if Is_Concurrent_Record_Type (Typ) then
          Conc_Typ := Corresponding_Concurrent_Type (Typ);
@@ -2603,7 +2623,7 @@ package body Exp_Disp is
          --       return;
          --    end if;
 
-         Build_Common_Dispatching_Select_Statements (Loc, DT_Ptr, Stmts);
+         Build_Common_Dispatching_Select_Statements (Loc, Typ, Stmts);
 
          --  Generate:
          --    Bnn : Communication_Block;
@@ -2624,6 +2644,19 @@ package body Exp_Disp is
 
          --  I is the entry index and S is the dispatch table slot
 
+         if Tagged_Type_Expansion then
+            Tag_Node :=
+              Unchecked_Convert_To (RTE (RE_Tag),
+                New_Reference_To
+                  (Node (First_Elmt (Access_Disp_Table (Typ))), Loc));
+
+         else
+            Tag_Node :=
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Reference_To (Typ, Loc),
+                Attribute_Name => Name_Tag);
+         end if;
+
          Append_To (Stmts,
            Make_Assignment_Statement (Loc,
              Name => Make_Identifier (Loc, Name_uI),
@@ -2633,8 +2666,7 @@ package body Exp_Disp is
                    New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
                  Parameter_Associations =>
                    New_List (
-                     Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Reference_To (DT_Ptr, Loc)),
+                     Tag_Node,
                      Make_Identifier (Loc, Name_uS)))));
 
          if Ekind (Conc_Typ) = E_Protected_Type then
@@ -2848,8 +2880,8 @@ package body Exp_Disp is
    function Make_Disp_Get_Prim_Op_Kind_Body
      (Typ : Entity_Id) return Node_Id
    is
-      Loc    : constant Source_Ptr := Sloc (Typ);
-      DT_Ptr : Entity_Id;
+      Loc      : constant Source_Ptr := Sloc (Typ);
+      Tag_Node : Node_Id;
 
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
@@ -2866,13 +2898,24 @@ package body Exp_Disp is
                  New_List (Make_Null_Statement (Loc))));
       end if;
 
-      DT_Ptr := Node (First_Elmt (Access_Disp_Table (Typ)));
-
       --  Generate:
       --    C := get_prim_op_kind (tag! (<type>VP), S);
 
       --  where C is the out parameter capturing the call kind and S is the
       --  dispatch table slot number.
+
+      if Tagged_Type_Expansion then
+         Tag_Node :=
+           Unchecked_Convert_To (RTE (RE_Tag),
+             New_Reference_To
+              (Node (First_Elmt (Access_Disp_Table (Typ))), Loc));
+
+      else
+         Tag_Node :=
+           Make_Attribute_Reference (Loc,
+             Prefix => New_Reference_To (Typ, Loc),
+             Attribute_Name => Name_Tag);
+      end if;
 
       return
         Make_Subprogram_Body (Loc,
@@ -2891,9 +2934,8 @@ package body Exp_Disp is
                       Name =>
                         New_Reference_To (RTE (RE_Get_Prim_Op_Kind), Loc),
                       Parameter_Associations => New_List (
-                        Unchecked_Convert_To (RTE (RE_Tag),
-                          New_Reference_To (DT_Ptr, Loc)),
-                          Make_Identifier (Loc, Name_uS)))))));
+                        Tag_Node,
+                        Make_Identifier (Loc, Name_uS)))))));
    end Make_Disp_Get_Prim_Op_Kind_Body;
 
    -------------------------------------
@@ -3380,9 +3422,9 @@ package body Exp_Disp is
       Loc      : constant Source_Ptr := Sloc (Typ);
       Conc_Typ : Entity_Id           := Empty;
       Decls    : constant List_Id    := New_List;
-      DT_Ptr   : Entity_Id;
       Obj_Ref  : Node_Id;
       Stmts    : constant List_Id    := New_List;
+      Tag_Node : Node_Id;
 
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
@@ -3400,8 +3442,6 @@ package body Exp_Disp is
                Make_Handled_Sequence_Of_Statements (Loc,
                  New_List (Make_Null_Statement (Loc))));
       end if;
-
-      DT_Ptr := Node (First_Elmt (Access_Disp_Table (Typ)));
 
       if Is_Concurrent_Record_Type (Typ) then
          Conc_Typ := Corresponding_Concurrent_Type (Typ);
@@ -3430,12 +3470,25 @@ package body Exp_Disp is
          --       return;
          --    end if;
 
-         Build_Common_Dispatching_Select_Statements (Loc, DT_Ptr, Stmts);
+         Build_Common_Dispatching_Select_Statements (Loc, Typ, Stmts);
 
          --  Generate:
          --    I := Get_Entry_Index (tag! (<type>VP), S);
 
          --  I is the entry index and S is the dispatch table slot
+
+         if Tagged_Type_Expansion then
+            Tag_Node :=
+              Unchecked_Convert_To (RTE (RE_Tag),
+                New_Reference_To
+                  (Node (First_Elmt (Access_Disp_Table (Typ))), Loc));
+
+         else
+            Tag_Node :=
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Reference_To (Typ, Loc),
+                Attribute_Name => Name_Tag);
+         end if;
 
          Append_To (Stmts,
            Make_Assignment_Statement (Loc,
@@ -3446,8 +3499,7 @@ package body Exp_Disp is
                    New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
                  Parameter_Associations =>
                    New_List (
-                     Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Reference_To (DT_Ptr, Loc)),
+                     Tag_Node,
                      Make_Identifier (Loc, Name_uS)))));
 
          --  Protected case
@@ -6258,16 +6310,21 @@ package body Exp_Disp is
       Loc              : constant Source_Ptr := Sloc (Typ);
       Result           : constant List_Id := New_List;
       AI               : Elmt_Id;
-      I_Depth          : Nat := 0; -- why initialized here ???
+      I_Depth          : Nat;
       Iface_Table_Node : Node_Id;
-      Num_Ifaces       : Nat := 0; -- why initialized here ???
+      Nb_Prim          : Nat;
+      Num_Ifaces       : Nat;
       TSD_Aggr_List    : List_Id;
       Typ_Ifaces       : Elist_Id;
       TSD_Tags_List    : List_Id;
 
       Tname    : constant Name_Id := Chars (Typ);
+      Name_SSD : constant Name_Id :=
+                   New_External_Name (Tname, 'S', Suffix_Index => -1);
       Name_TSD : constant Name_Id :=
                    New_External_Name (Tname, 'B', Suffix_Index => -1);
+      SSD      : constant Entity_Id :=
+                   Make_Defining_Identifier (Loc, Name_SSD);
       TSD      : constant Entity_Id :=
                    Make_Defining_Identifier (Loc, Name_TSD);
    begin
@@ -6359,6 +6416,7 @@ package body Exp_Disp is
 
          Collect_Interfaces (Typ, Typ_Ifaces);
 
+         Num_Ifaces := 0;
          AI := First_Elmt (Typ_Ifaces);
          while Present (AI) loop
             Num_Ifaces := Num_Ifaces + 1;
@@ -6418,6 +6476,68 @@ package body Exp_Disp is
          end if;
 
          Append_To (TSD_Aggr_List, Iface_Table_Node);
+      end if;
+
+      --  Generate the Select Specific Data table for synchronized types that
+      --  implement synchronized interfaces. The size of the table is
+      --  constrained by the number of non-predefined primitive operations.
+
+      --  Count the non-predefined primitive operations
+
+      Nb_Prim := 0;
+
+      declare
+         Prim_Elmt : Elmt_Id;
+         Prim      : Entity_Id;
+      begin
+         Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
+         while Present (Prim_Elmt) loop
+            Prim := Node (Prim_Elmt);
+
+            if not (Is_Predefined_Dispatching_Operation (Prim)
+                      or else Is_Predefined_Dispatching_Alias (Prim))
+            then
+               Nb_Prim := Nb_Prim + 1;
+            end if;
+
+            Next_Elmt (Prim_Elmt);
+         end loop;
+      end;
+
+      if RTE_Record_Component_Available (RE_SSD) then
+         if Ada_Version >= Ada_2005
+           and then Has_DT (Typ)
+           and then Is_Concurrent_Record_Type (Typ)
+           and then Has_Interfaces (Typ)
+           and then Nb_Prim > 0
+           and then not Is_Abstract_Type (Typ)
+           and then not Is_Controlled (Typ)
+           and then not Restriction_Active (No_Dispatching_Calls)
+           and then not Restriction_Active (No_Select_Statements)
+         then
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => SSD,
+                Aliased_Present     => True,
+                Object_Definition   =>
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark => New_Reference_To (
+                      RTE (RE_Select_Specific_Data), Loc),
+                    Constraint   =>
+                      Make_Index_Or_Discriminant_Constraint (Loc,
+                        Constraints => New_List (
+                          Make_Integer_Literal (Loc, Nb_Prim))))));
+
+            --  This table is initialized by Make_Select_Specific_Data_Table,
+            --  which calls Set_Entry_Index and Set_Prim_Op_Kind.
+
+            Append_To (TSD_Aggr_List,
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Reference_To (SSD, Loc),
+                Attribute_Name => Name_Unchecked_Access));
+         else
+            Append_To (TSD_Aggr_List, Make_Null (Loc));
+         end if;
       end if;
 
       --  Initialize the table of ancestor tags. In case of interface types
@@ -6510,6 +6630,21 @@ package body Exp_Disp is
               Prefix => New_Reference_To (TSD, Loc),
               Attribute_Name => Name_Unrestricted_Access))));
 
+      --  Populate the two auxiliary tables used for dispatching asynchronous,
+      --  conditional and timed selects for synchronized types that implement
+      --  a limited interface. Skip this step in Ravenscar profile or when
+      --  general dispatching is forbidden.
+
+      if Ada_Version >= Ada_2005
+        and then Is_Concurrent_Record_Type (Typ)
+        and then Has_Interfaces (Typ)
+        and then not Restriction_Active (No_Dispatching_Calls)
+        and then not Restriction_Active (No_Select_Statements)
+      then
+         Append_List_To (Result,
+           Make_Select_Specific_Data_Table (Typ));
+      end if;
+
       return Result;
    end Make_VM_TSD;
 
@@ -6525,7 +6660,6 @@ package body Exp_Disp is
 
       Conc_Typ  : Entity_Id;
       Decls     : List_Id;
-      DT_Ptr    : Entity_Id;
       Prim      : Entity_Id;
       Prim_Als  : Entity_Id;
       Prim_Elmt : Elmt_Id;
@@ -6567,12 +6701,14 @@ package body Exp_Disp is
          return Uint_0;
       end Find_Entry_Index;
 
+      --  Local variables
+
+      Tag_Node : Node_Id;
+
    --  Start of processing for Make_Select_Specific_Data_Table
 
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
-
-      DT_Ptr := Node (First_Elmt (Access_Disp_Table (Typ)));
 
       if Present (Corresponding_Concurrent_Type (Typ)) then
          Conc_Typ := Corresponding_Concurrent_Type (Typ);
@@ -6631,11 +6767,23 @@ package body Exp_Disp is
                --  type. Generate:
                --    Ada.Tags.Set_Prim_Op_Kind (DT_Ptr, <position>, <kind>);
 
+               if Tagged_Type_Expansion then
+                  Tag_Node :=
+                    New_Reference_To
+                     (Node (First_Elmt (Access_Disp_Table (Typ))), Loc);
+
+               else
+                  Tag_Node :=
+                    Make_Attribute_Reference (Loc,
+                      Prefix => New_Reference_To (Typ, Loc),
+                      Attribute_Name => Name_Tag);
+               end if;
+
                Append_To (Assignments,
                  Make_Procedure_Call_Statement (Loc,
                    Name => New_Reference_To (RTE (RE_Set_Prim_Op_Kind), Loc),
                    Parameter_Associations => New_List (
-                     New_Reference_To (DT_Ptr, Loc),
+                     Tag_Node,
                      Make_Integer_Literal (Loc, Prim_Pos),
                      Prim_Op_Kind (Alias (Prim), Typ))));
 
@@ -6653,12 +6801,23 @@ package body Exp_Disp is
                   --    Ada.Tags.Set_Entry_Index
                   --      (DT_Ptr, <position>, <index>);
 
+                  if Tagged_Type_Expansion then
+                     Tag_Node :=
+                       New_Reference_To
+                        (Node (First_Elmt (Access_Disp_Table (Typ))), Loc);
+                  else
+                     Tag_Node :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix => New_Reference_To (Typ, Loc),
+                         Attribute_Name => Name_Tag);
+                  end if;
+
                   Append_To (Assignments,
                     Make_Procedure_Call_Statement (Loc,
                       Name =>
                         New_Reference_To (RTE (RE_Set_Entry_Index), Loc),
                       Parameter_Associations => New_List (
-                        New_Reference_To (DT_Ptr, Loc),
+                        Tag_Node,
                         Make_Integer_Literal (Loc, Prim_Pos),
                         Make_Integer_Literal (Loc,
                           Find_Entry_Index (Wrapped_Entity (Prim_Als))))));

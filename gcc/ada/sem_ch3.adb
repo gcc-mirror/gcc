@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3700,6 +3700,10 @@ package body Sem_Ch3 is
    <<Leave>>
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
+      end if;
+
+      if ALFA_Mode and then Present (Expression (Original_Node (N))) then
+         Generate_Reference (Id, Id, 'I');
       end if;
    end Analyze_Object_Declaration;
 

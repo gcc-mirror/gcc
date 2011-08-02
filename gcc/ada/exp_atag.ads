@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,9 +35,9 @@ package Exp_Atag is
    --  location used in constructing the corresponding nodes.
 
    procedure Build_Common_Dispatching_Select_Statements
-     (Loc    : Source_Ptr;
-      DT_Ptr : Entity_Id;
-      Stmts  : List_Id);
+     (Loc   : Source_Ptr;
+      Typ   : Entity_Id;
+      Stmts : List_Id);
    --  Ada 2005 (AI-345): Generate statements that are common between timed,
    --  asynchronous, and conditional select expansion.
 

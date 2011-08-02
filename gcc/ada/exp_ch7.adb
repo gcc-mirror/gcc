@@ -1560,7 +1560,15 @@ package body Exp_Ch7 is
             --  we must generate the corresponding Type Specific Data record.
 
             elsif Unit (Cunit (Main_Unit)) = N then
-               Build_VM_TSDs (N);
+
+               --  If the runtime package Ada_Tags has not been loaded then
+               --  this package does not have tagged type declarations and
+               --  there is no need to search for tagged types to generate
+               --  their TSDs.
+
+               if RTU_Loaded (Ada_Tags) then
+                  Build_VM_TSDs (N);
+               end if;
             end if;
          end if;
 
@@ -1670,22 +1678,29 @@ package body Exp_Ch7 is
 
          elsif Unit (Cunit (Main_Unit)) = N then
 
-            --  Enter the scope of the package because the new declarations are
-            --  appended at the end of the package and must be analyzed in that
-            --  context.
+            --  If the runtime package Ada_Tags has not been loaded then
+            --  this package does not have tagged types and there is no need
+            --  to search for tagged types to generate their TSDs.
 
-            Push_Scope (Id);
+            if RTU_Loaded (Ada_Tags) then
 
-            if Is_Generic_Instance (Main_Unit_Entity) then
-               if Package_Instantiation (Main_Unit_Entity) = N then
+               --  Enter the scope of the package because the new declarations
+               --  are appended at the end of the package and must be analyzed
+               --  in that context.
+
+               Push_Scope (Id);
+
+               if Is_Generic_Instance (Main_Unit_Entity) then
+                  if Package_Instantiation (Main_Unit_Entity) = N then
+                     Build_VM_TSDs (N);
+                  end if;
+
+               else
                   Build_VM_TSDs (N);
                end if;
 
-            else
-               Build_VM_TSDs (N);
+               Pop_Scope;
             end if;
-
-            Pop_Scope;
          end if;
       end if;
 

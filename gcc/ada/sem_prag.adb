@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -7816,7 +7816,7 @@ package body Sem_Prag is
             end if;
 
             if (Present (Parameter_Types)
-                       or else
+                  or else
                 Present (Result_Type))
               and then
                 Present (Source_Location)

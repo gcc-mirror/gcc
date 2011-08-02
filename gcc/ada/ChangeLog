@@ -1,3 +1,64 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb: Minor reformatting.
+	* sem_prag.adb: Minor reformatting.
+
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_atag.adb, exp_atags.ads
+	(Build_Common_Dispatching_Select_Statement): Replace argument DT_Ptr
+	by the tagged type Entity. Required to use this routine in the VM
+	targets since we do not have available the Tag entity in the VM
+	platforms.
+	* exp_ch6.adb
+	(Expand_N_Subprogram_Body): Do not invoke Build_VM_TSDs if package
+	Ada.Tags has not been previously loaded.
+	* exp_ch7.adb
+	(Expand_N_Package_Declaration, Expand_N_Package_Body): Do not invoke
+	Build_VM_TSDs if package Ada.Tags has not been previously loaded.
+	* sem_aux.adb
+	(Enclosing_Dynamic_Scope): Add missing support to handle the full
+	view of enclosing scopes. Required to handle enclosing scopes that
+	are synchronized types whose full view is a task type.
+	* exp_disp.adb
+	(Build_VM_TSDs): Minor code improvement to avoid generating and
+	analyzing lists with empty nodes.
+	(Make_Disp_Asynchronous_Select_Body): Add support for VM targets.
+	(Make_Disp_Conditional_Select_Body): Add support for VM targets.
+	(Make_Disp_Get_Prim_Op_Kind): Add support for VM targets.
+	(Make_Disp_Timed_Select_Body): Add support for VM targets.
+	(Make_Select_Specific_Data_Table): Add support for VM targets.
+	(Make_VM_TSD): Generate code to initialize the SSD structure of
+	the TSD.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* lib-writ.adb (Write_ALI): when ALFA mode is set, write local
+	cross-references section in ALI.
+	* lib-xref.adb, lib-xref.ads (Xref_Entry): add components Sub
+	(enclosing subprogram), Slc (location of Sub) and Sun (unit number of
+	Sub).
+	(Enclosing_Subprogram_Or_Package): new function to return the enclosing
+	subprogram or package entity of a node
+	(Is_Local_Reference_Type): new function returns True for references
+	selected in local cross-references.
+	(Lt): function extracted from Lt in Output_References
+	(Write_Entity_Name): function extracted from Output_References
+	(Generate_Definition): generate reference with type 'D' for definition
+	of objects (object declaration and parameter specification), with
+	appropriate locations and units, for use in local cross-references.
+	(Generate_Reference): update fields Sub, Slc and Sun. Keep newly created
+	references of type 'I' for initialization in object definition.
+	(Output_References): move part of function Lt and procedure
+	Write_Entity_Name outside of the body. Ignore references of types 'D'
+	and 'I' introduced for local cross-references.
+	(Output_Local_References): new procedure to output the local
+	cross-references sections.
+	(Lref_Entity_Status): new array defining whether an entity is a local
+	* sem_ch3.adb (Analyze_Object_Declaration): call Generate_Reference
+	with 'I' type when initialization expression is present.
+	* get_scos.adb, get_scos.ads: Correct comments and typos
+
 2011-08-02  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch6.adb (Expand_N_Subprogram_Body): Enable generation of TSDs in
