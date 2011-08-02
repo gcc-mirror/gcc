@@ -2553,10 +2553,9 @@ package body Sem_Ch8 is
 
       Set_Hidden_By_Use_Clause (N, No_Elist);
 
-      --  Use clause is not allowed in a spec of a predefined package
-      --  declaration except that packages whose file name starts a-n are OK
-      --  (these are children of Ada.Numerics, and such packages are never
-      --  loaded by Rtsfind).
+      --  Use clause not allowed in a spec of a predefined package declaration
+      --  except that packages whose file name starts a-n are OK (these are
+      --  children of Ada.Numerics, which are never loaded by Rtsfind).
 
       if Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
         and then Name_Buffer (1 .. 3) /= "a-n"
