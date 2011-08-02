@@ -976,7 +976,10 @@ package body Sem_Ch9 is
       end if;
 
       Generate_Reference_To_Formals (Def_Id);
-      Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Def_Id);
+      end if;
    end Analyze_Entry_Declaration;
 
    ---------------------------------------
@@ -1336,8 +1339,10 @@ package body Sem_Ch9 is
          end if;
       end if;
 
-      <<Leave>>
-         Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
+   <<Leave>>
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Def_Id);
+      end if;
    end Analyze_Protected_Type_Declaration;
 
    ---------------------
@@ -1806,7 +1811,10 @@ package body Sem_Ch9 is
       --  disastrous result.
 
       Analyze_Protected_Type_Declaration (N);
-      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Single_Protected_Declaration;
 
    -------------------------------------
@@ -1873,7 +1881,10 @@ package body Sem_Ch9 is
       --  disastrous result.
 
       Analyze_Task_Type_Declaration (N);
-      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Single_Task_Declaration;
 
    -----------------------
@@ -2152,7 +2163,9 @@ package body Sem_Ch9 is
          end if;
       end if;
 
-      Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Def_Id);
+      end if;
    end Analyze_Task_Type_Declaration;
 
    -----------------------------------

@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -263,7 +262,10 @@ package body Sem_Ch6 is
 
       Generate_Reference_To_Formals (Designator);
       Check_Eliminated (Designator);
-      Analyze_Aspect_Specifications (N, Designator, Aspect_Specifications (N));
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Designator);
+      end if;
    end Analyze_Abstract_Subprogram_Declaration;
 
    ---------------------------------
@@ -3067,7 +3069,10 @@ package body Sem_Ch6 is
       end if;
 
       List_Inherited_Pre_Post_Aspects (Designator);
-      Analyze_Aspect_Specifications (N, Designator, Aspect_Specifications (N));
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Designator);
+      end if;
    end Analyze_Subprogram_Declaration;
 
    --------------------------------------

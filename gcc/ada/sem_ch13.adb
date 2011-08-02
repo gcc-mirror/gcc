@@ -78,16 +78,6 @@ package body Sem_Ch13 is
    --  inherited from a derived type that is no longer appropriate for the
    --  new Esize value. In this case, we reset the Alignment to unknown.
 
-   procedure Analyze_Non_Null_Aspect_Specifications
-     (N : Node_Id;
-      E : Entity_Id;
-      L : List_Id);
-   --  This procedure is called to analyze aspect specifications for node N.
-   --  E is the corresponding entity declared by the declaration node N, and
-   --  L is the list of aspect specifications for this node. This procedure
-   --  does the real work, as opposed to Analyze_Aspect_Specifications which
-   --  is inlined to fast-track the common case.
-
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ,
    --  then either there are pragma Invariant entries on the rep chain for the
@@ -693,33 +683,12 @@ package body Sem_Ch13 is
    -- Analyze_Aspect_Specifications --
    -----------------------------------
 
-   procedure Analyze_Aspect_Specifications
-     (N : Node_Id;
-      E : Entity_Id;
-      L : List_Id)
-   is
-   begin
-      --  Return if no aspects
-
-      if L = No_List then
-         return;
-      end if;
-
-      Analyze_Non_Null_Aspect_Specifications (N, E, L);
-   end Analyze_Aspect_Specifications;
-
-   --------------------------------------------
-   -- Analyze_Non_Null_Aspect_Specifications --
-   --------------------------------------------
-
-   procedure Analyze_Non_Null_Aspect_Specifications
-     (N : Node_Id;
-      E : Entity_Id;
-      L : List_Id)
-   is
+   procedure Analyze_Aspect_Specifications (N : Node_Id; E : Entity_Id) is
       Aspect : Node_Id;
       Aitem  : Node_Id;
       Ent    : Node_Id;
+
+      L : constant List_Id := Aspect_Specifications (N);
 
       Ins_Node : Node_Id := N;
       --  Insert pragmas (except Pre/Post/Invariant/Predicate) after this node
@@ -744,10 +713,12 @@ package body Sem_Ch13 is
       --  Set True if delay is required
 
    begin
+      pragma Assert (Present (L));
+
       --  Loop through aspects
 
       Aspect := First (L);
-      while Present (Aspect) loop
+      Aspect_Loop : while Present (Aspect) loop
          declare
             Loc  : constant Source_Ptr := Sloc (Aspect);
             Id   : constant Node_Id    := Identifier (Aspect);
@@ -758,6 +729,72 @@ package body Sem_Ch13 is
 
             Eloc : Source_Ptr := Sloc (Expr);
             --  Source location of expression, modified when we split PPC's
+
+            procedure Check_False_Aspect_For_Derived_Type;
+            --  This procedure checks for the case of a false aspect for a
+            --  derived type, which improperly tries to cancel an aspect
+            --  inherited from the parent;
+
+            -----------------------------------------
+            -- Check_False_Aspect_For_Derived_Type --
+            -----------------------------------------
+
+            procedure Check_False_Aspect_For_Derived_Type is
+            begin
+               --  We are only checking derived types
+
+               if not Is_Derived_Type (E) then
+                  return;
+               end if;
+
+               case A_Id is
+                  when Aspect_Atomic | Aspect_Shared =>
+                     if not Is_Atomic (E) then
+                        return;
+                     end if;
+
+                  when Aspect_Atomic_Components =>
+                     if not Has_Atomic_Components (E) then
+                        return;
+                     end if;
+
+                  when Aspect_Discard_Names =>
+                     if not Discard_Names (E) then
+                        return;
+                     end if;
+
+                  when Aspect_Pack =>
+                     if not Is_Packed (E) then
+                        return;
+                     end if;
+
+                  when Aspect_Unchecked_Union =>
+                     if not Is_Unchecked_Union (E) then
+                        return;
+                     end if;
+
+                  when Aspect_Volatile =>
+                     if not Is_Volatile (E) then
+                        return;
+                     end if;
+
+                  when Aspect_Volatile_Components =>
+                     if not Has_Volatile_Components (E) then
+                        return;
+                     end if;
+
+                  when others =>
+                     return;
+               end case;
+
+               --  Fall through means we are canceling an inherited aspect
+
+               Error_Msg_Name_1 := Nam;
+               Error_Msg_NE
+                 ("derived type& inherits aspect%, cannot cancel", Expr, E);
+            end Check_False_Aspect_For_Derived_Type;
+
+         --  Start of processing for Aspect_Loop
 
          begin
             --  Skip aspect if already analyzed (not clear if this is needed)
@@ -837,14 +874,23 @@ package body Sem_Ch13 is
                   raise Program_Error;
 
                --  Aspects taking an optional boolean argument. For all of
-               --  these we just create a matching pragma and insert it. When
-               --  the aspect is processed to insert the pragma, the expression
-               --  is analyzed, setting Cancel_Aspect if the value is False.
+               --  these we just create a matching pragma and insert it, if
+               --  the expression is missing or set to True. If the expression
+               --  is False, we can ignore the aspect with the exception that
+               --  in the case of a derived type, we must check for an illegal
+               --  attempt to cancel an inherited aspect.
 
                when Boolean_Aspects =>
                   Set_Is_Boolean_Aspect (Aspect);
 
-                  --  Build corresponding pragma node
+                  if Present (Expr)
+                    and then Is_False (Static_Boolean (Expr))
+                  then
+                     Check_False_Aspect_For_Derived_Type;
+                     goto Continue;
+                  end if;
+
+                  --  If True, build corresponding pragma node
 
                   Aitem :=
                     Make_Pragma (Loc,
@@ -852,24 +898,13 @@ package body Sem_Ch13 is
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Chars (Id)));
 
-                  --  No delay required if no expression (nothing to delay!)
+                  --  Never need to delay for boolean aspects
 
-                  if No (Expr) then
-                     Delay_Required := False;
-
-                  --  Expression is present, delay is required. Note that
-                  --  even if the expression is "True", some idiot might
-                  --  define True as False before the freeze point!
-
-                  else
-                     Delay_Required := True;
-                     Set_Is_Delayed_Aspect (Aspect);
-                  end if;
+                  Delay_Required := False;
 
                --  Library unit aspects. These are boolean aspects, but we
-               --  always evaluate the expression right away if it is present
-               --  and just ignore the aspect if the expression is False. We
-               --  never delay expression evaluation in this case.
+               --  have to do special things with the insertion, since the
+               --  pragma belongs inside the declarations of a package.
 
                when Library_Unit_Aspects =>
                   if Present (Expr)
@@ -1220,8 +1255,8 @@ package body Sem_Ch13 is
 
          <<Continue>>
             Next (Aspect);
-      end loop;
-   end Analyze_Non_Null_Aspect_Specifications;
+      end loop Aspect_Loop;
+   end Analyze_Aspect_Specifications;
 
    -----------------------
    -- Analyze_At_Clause --

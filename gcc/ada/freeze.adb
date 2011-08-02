@@ -2395,10 +2395,6 @@ package body Freeze is
       --  is required to be delayed to the freeze point, so we evaluate the
       --  pragma or attribute definition clause in the tree at this point.
 
-      --  We also have to deal with the case of Boolean aspects, where the
-      --  value of the Boolean expression is represented by the setting of
-      --  the Aspect_Cancel flag on the pragma.
-
       if Has_Delayed_Aspects (E) then
          declare
             Ritem : Node_Id;
@@ -2415,34 +2411,6 @@ package body Freeze is
                then
                   Aitem := Aspect_Rep_Item (Ritem);
                   Set_Parent (Aitem, Ritem);
-
-                  --  Deal with Boolean case, if no expression, True, otherwise
-                  --  analyze the expression, check it is static, and if its
-                  --  value is False, set Aspect_Cancel for the related pragma.
-
-                  if Is_Boolean_Aspect (Ritem) then
-                     declare
-                        Expr : constant Node_Id := Expression (Ritem);
-
-                     begin
-                        if Present (Expr) then
-                           Analyze_And_Resolve (Expr, Standard_Boolean);
-
-                           if not Is_OK_Static_Expression (Expr) then
-                              Error_Msg_Name_1 := Chars (Identifier (Ritem));
-                              Error_Msg_N
-                                ("expression for % aspect must be static",
-                                 Expr);
-
-                           elsif Is_False (Expr_Value (Expr)) then
-                              Set_Aspect_Cancel (Aitem);
-                           end if;
-                        end if;
-                     end;
-                  end if;
-
-                  --  Analyze the pragma after possibly setting Aspect_Cancel
-
                   Analyze (Aitem);
                end if;
 
