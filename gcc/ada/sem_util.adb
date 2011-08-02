@@ -9,7 +9,7 @@
 --          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
--- terms of the  GNU Genconflieral Public License as published  by the Free Soft- --
+-- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
@@ -8013,8 +8013,10 @@ package body Sem_Util is
       R_Index : Node_Id;
       L_Low   : Node_Id;
       L_High  : Node_Id;
+      L_Len   : Uint;
       R_Low   : Node_Id;
       R_High  : Node_Id;
+      R_Len   : Uint;
 
    begin
       if L_Ndims /= R_Ndims then
@@ -8027,18 +8029,65 @@ package body Sem_Util is
          return False;
       end if;
 
-      L_Index := First_Index (L_Typ);
-      R_Index := First_Index (R_Typ);
+      --  First treat specially the first dimension, as the lower bound and
+      --  length of string literals are not stored like those of arrays.
 
-      --  There may not be an index available even if the type is constrained,
-      --  see for example 0100-C23 when this function is called from
-      --  Resolve_Qualified_Expression. Temporarily return False in that case.
+      if Ekind (L_Typ) = E_String_Literal_Subtype then
+         L_Low := String_Literal_Low_Bound (L_Typ);
+         L_Len := String_Literal_Length (L_Typ);
+      else
+         L_Index := First_Index (L_Typ);
+         Get_Index_Bounds (L_Index, L_Low, L_High);
 
-      if No (L_Index) or else No (R_Index) then
+         if         Is_OK_Static_Expression (L_Low)
+           and then Is_OK_Static_Expression (L_High)
+         then
+            if Expr_Value (L_High) < Expr_Value (L_Low) then
+               L_Len := Uint_0;
+            else
+               L_Len := (Expr_Value (L_High) - Expr_Value (L_Low)) + 1;
+            end if;
+         else
+            return False;
+         end if;
+      end if;
+
+      if Ekind (R_Typ) = E_String_Literal_Subtype then
+         R_Low := String_Literal_Low_Bound (R_Typ);
+         R_Len := String_Literal_Length (R_Typ);
+      else
+         R_Index := First_Index (R_Typ);
+         Get_Index_Bounds (R_Index, R_Low, R_High);
+
+         if         Is_OK_Static_Expression (R_Low)
+           and then Is_OK_Static_Expression (R_High)
+         then
+            if Expr_Value (R_High) < Expr_Value (R_Low) then
+               R_Len := Uint_0;
+            else
+               R_Len := (Expr_Value (R_High) - Expr_Value (R_Low)) + 1;
+            end if;
+         else
+            return False;
+         end if;
+      end if;
+
+      if         Is_OK_Static_Expression (L_Low)
+        and then Is_OK_Static_Expression (R_Low)
+        and then Expr_Value (L_Low) = Expr_Value (R_Low)
+        and then L_Len = R_Len
+      then
+         null;
+      else
          return False;
       end if;
 
-      for Indx in 1 .. L_Ndims loop
+      --  Then treat all other dimensions
+
+      for Indx in 2 .. L_Ndims loop
+         Next (L_Index);
+         Next (R_Index);
+
          Get_Index_Bounds (L_Index, L_Low, L_High);
          Get_Index_Bounds (R_Index, R_Low, R_High);
 
@@ -8049,9 +8098,7 @@ package body Sem_Util is
            and then Expr_Value (L_Low)  = Expr_Value (R_Low)
            and then Expr_Value (L_High) = Expr_Value (R_High)
          then
-            Next (L_Index);
-            Next (R_Index);
-
+            null;
          else
             return False;
          end if;

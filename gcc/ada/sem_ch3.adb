@@ -11515,7 +11515,7 @@ package body Sem_Ch3 is
           (Nkind (S) = N_Attribute_Reference
             and then Attribute_Name (S) = Name_Range)
       then
-         --  A Range attribute will transformed into N_Range by Resolve
+         --  A Range attribute will be transformed into N_Range by Resolve
 
          Analyze (S);
          Set_Etype (S, T);
