@@ -1,3 +1,11 @@
+2011-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR bootstrap/49914
+	* fold-const.c (fold_plusminus_mult_expr): Use abs_hwi instead
+	of abs.
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): Likewise.
+	* tree-ssa-loop-prefetch.c (prune_ref_by_group_reuse): Likewise.
+
 2011-08-02  Richard Henderson  <rth@redhat.com>
 
 	* config/h8300/h8300.c (push, pop): Return the insn.
