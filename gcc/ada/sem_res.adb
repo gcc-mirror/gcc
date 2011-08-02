@@ -3503,48 +3503,82 @@ package body Sem_Res is
                --   or because it is a generic actual, so use base type to
                --   locate concurrent type.
 
-               A_Typ := Base_Type (Etype (A));
                F_Typ := Base_Type (Etype (F));
 
-               declare
-                  Full_A_Typ : Entity_Id;
+               if Is_Tagged_Type (F_Typ)
+                 and then (Is_Concurrent_Type (F_Typ)
+                             or else Is_Concurrent_Record_Type (F_Typ))
+               then
+                  --  If the actual is overloaded, look for an interpretation
+                  --  that has a synchronized type.
 
-               begin
-                  if Present (Full_View (A_Typ)) then
-                     Full_A_Typ := Base_Type (Full_View (A_Typ));
+                  if not Is_Overloaded (A) then
+                     A_Typ := Base_Type (Etype (A));
+
                   else
-                     Full_A_Typ := A_Typ;
+                     declare
+                        Index : Interp_Index;
+                        It    : Interp;
+                     begin
+                        Get_First_Interp (A, Index, It);
+                        while Present (It.Typ) loop
+                           if Is_Concurrent_Type (It.Typ)
+                             or else Is_Concurrent_Record_Type (It.Typ)
+                           then
+                              A_Typ := Base_Type (It.Typ);
+                              exit;
+                           end if;
+
+                           Get_Next_Interp (Index, It);
+                        end loop;
+                     end;
                   end if;
 
-                  --  Tagged synchronized type (case 1): the actual is a
-                  --  concurrent type.
+                  declare
+                     Full_A_Typ : Entity_Id;
 
-                  if Is_Concurrent_Type (A_Typ)
-                    and then Corresponding_Record_Type (A_Typ) = F_Typ
-                  then
-                     Rewrite (A,
-                       Unchecked_Convert_To
-                         (Corresponding_Record_Type (A_Typ), A));
-                     Resolve (A, Etype (F));
+                  begin
+                     if Present (Full_View (A_Typ)) then
+                        Full_A_Typ := Base_Type (Full_View (A_Typ));
+                     else
+                        Full_A_Typ := A_Typ;
+                     end if;
 
-                  --  Tagged synchronized type (case 2): the formal is a
-                  --  concurrent type.
+                     --  Tagged synchronized type (case 1): the actual is a
+                     --  concurrent type.
 
-                  elsif Ekind (Full_A_Typ) = E_Record_Type
-                    and then Present
+                     if Is_Concurrent_Type (A_Typ)
+                       and then Corresponding_Record_Type (A_Typ) = F_Typ
+                     then
+                        Rewrite (A,
+                          Unchecked_Convert_To
+                            (Corresponding_Record_Type (A_Typ), A));
+                        Resolve (A, Etype (F));
+
+                     --  Tagged synchronized type (case 2): the formal is a
+                     --  concurrent type.
+
+                     elsif Ekind (Full_A_Typ) = E_Record_Type
+                       and then Present
                                (Corresponding_Concurrent_Type (Full_A_Typ))
-                    and then Is_Concurrent_Type (F_Typ)
-                    and then Present (Corresponding_Record_Type (F_Typ))
-                    and then Full_A_Typ = Corresponding_Record_Type (F_Typ)
-                  then
-                     Resolve (A, Corresponding_Record_Type (F_Typ));
+                       and then Is_Concurrent_Type (F_Typ)
+                       and then Present (Corresponding_Record_Type (F_Typ))
+                       and then Full_A_Typ = Corresponding_Record_Type (F_Typ)
+                     then
+                        Resolve (A, Corresponding_Record_Type (F_Typ));
 
-                  --  Common case
+                     --  Common case
 
-                  else
-                     Resolve (A, Etype (F));
-                  end if;
-               end;
+                     else
+                        Resolve (A, Etype (F));
+                     end if;
+                  end;
+               else
+
+                  --  not a synchronized operation.
+
+                  Resolve (A, Etype (F));
+               end if;
             end if;
 
             A_Typ := Etype (A);
