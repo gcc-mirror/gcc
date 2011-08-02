@@ -1,3 +1,30 @@
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Check_Anonymous_Access_Components): Create extra formals
+	associated with anonymous access to subprograms.
+
+2011-08-02  Geert Bosch  <bosch@adacore.com>
+
+	* opt.ads
+	(Preprocessing_Symbol_Defs): Move from Prepcomp.Symbol_Definitions.
+	(Preprocessing_Symbol_Last): Move from Prepcomp.Last_Definition.
+	* prepcomp.adb (Symbol_Definitions, Last_Definition): Move to opt.ads
+	(Add_Symbol_Definition): Move to switch-c.adb
+	(Process_Command_Line_Symbol_Definitions): Adjust references to above.
+	* prepcomp.ads: Remove dependency on Ada.Unchecked_Deallocation.
+	(Add_Symbol_Definition): Move to switch-c.adb.
+	* sem_ch13.adb, sem_prag.adb: Add dependency on Warnsw.
+	* sem_warn.adb
+	(Set_Dot_Warning_Switch, Set_GNAT_Mode_Warnings, Set_Warning_Switch):
+	Move to warnsw.adb.
+	* sem_warn.ads (Warn_On_Record_Holes, Warn_On_Overridden_Size,
+	Set_Dot_Warning_Switch, Set_GNAT_Mode_Warnings, Set_Warning_Switch):
+	Move to warnsw.adb.
+	* switch-c.adb: Replace dependency on Prepcomp and Sem_Warn by Warnsw.
+	(Add_Symbol_Definition): Moved from Prepcomp.
+	* switch-c.ads: Update copyright notice. Use String_List instead of
+	Argument_List, removing dependency on System.OS_Lib.
+
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): issue an error in formal

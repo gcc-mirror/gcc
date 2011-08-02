@@ -18760,7 +18760,7 @@ package body Sem_Ch3 is
             --  an access_to_object or an access_to_subprogram.
 
             if Present (Acc_Def) then
-               if Nkind  (Acc_Def) = N_Access_Function_Definition then
+               if Nkind (Acc_Def) = N_Access_Function_Definition then
                   Type_Def :=
                     Make_Access_Function_Definition (Loc,
                       Parameter_Specifications =>
@@ -18799,10 +18799,15 @@ package body Sem_Ch3 is
             Insert_Before (Typ_Decl, Decl);
             Analyze (Decl);
 
-            --  If an access to object, Preserve entity of designated type,
+            --  If an access to subprogram, create the extra formals
+
+            if Present (Acc_Def) then
+               Create_Extra_Formals (Designated_Type (Anon_Access));
+
+            --  If an access to object, preserve entity of designated type,
             --  for ASIS use, before rewriting the component definition.
 
-            if No (Acc_Def) then
+            else
                declare
                   Desig : Entity_Id;
 

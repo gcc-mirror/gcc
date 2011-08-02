@@ -33,26 +33,6 @@ with Types; use Types;
 
 package Sem_Warn is
 
-   -------------------
-   -- Warning Flags --
-   -------------------
-
-   --  These flags are activated or deactivated by -gnatw switches and control
-   --  whether warnings of a given class will be generated or not.
-
-   --  Note: most of these flags are still in opt, but the plan is to move them
-   --  here as time goes by.
-
-   Warn_On_Record_Holes : Boolean := False;
-   --  Warn when explicit record component clauses leave uncovered holes (gaps)
-   --  in a record layout. Off by default, set by -gnatw.h (but not -gnatwa).
-
-   Warn_On_Overridden_Size : Boolean := False;
-   --  Warn when explicit record component clause or array component_size
-   --  clause specifies a size that overrides a size for the type which was
-   --  set with an explicit size clause. Off by default, set by -gnatw.s (but
-   --  not -gnatwa).
-
    ------------------------
    -- Warnings Off Table --
    ------------------------
@@ -84,22 +64,6 @@ package Sem_Warn is
 
    procedure Initialize;
    --  Initialize this package for new compilation
-
-   function Set_Warning_Switch (C : Character) return Boolean;
-   --  This function sets the warning switch or switches corresponding to the
-   --  given character. It is used to process a -gnatw switch on the command
-   --  line, or a character in a string literal in pragma Warnings. Returns
-   --  True for valid warning character C, False for invalid character.
-
-   function Set_Dot_Warning_Switch (C : Character) return Boolean;
-   --  This function sets the warning switch or switches corresponding to the
-   --  given character preceded by a dot. Used to process a -gnatw. switch on
-   --  the command line or .C in a string literal in pragma Warnings. Returns
-   --  True for valid warning character C, False for invalid character.
-
-   procedure Set_GNAT_Mode_Warnings;
-   --  This is called in -gnatg mode to set the warnings for gnat mode. It is
-   --  also used to set the proper warning statuses for -gnatw.g.
 
    ------------------------------------------
    -- Routines to Handle Unused References --
