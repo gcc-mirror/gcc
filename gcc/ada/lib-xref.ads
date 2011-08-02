@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ package Lib.Xref is
    --        This header precedes xref information (entities/references from
    --        the unit), identified by dependency number and file name. The
    --        dependency number is the index into the generated D lines and
-   --        is ones origin (i.e. 2 = reference to second generated D line).
+   --        its origin is one (i.e. 2 = reference to second generated D line).
 
    --        Note that the filename here will reflect the original name if
    --        a Source_Reference pragma was encountered (since all line number
@@ -52,7 +52,7 @@ package Lib.Xref is
 
    --  The lines following the header look like
 
-   --  line type col level entity renameref instref typeref overref ref  ref
+   --  line type col level entity renameref instref typeref overref ref ref
 
    --        line is the line number of the referenced entity. The name of
    --        the entity starts in column col. Columns are numbered from one,
@@ -69,7 +69,7 @@ package Lib.Xref is
 
    --        level is a single character that separates the col and
    --        entity fields. It is an asterisk (*) for a top level library
-   --        entity that is publicly visible, as well for an entity declared
+   --        entity that is publicly visible, as well as for an entity declared
    --        in the visible part of a generic package, the plus sign (+) for
    --        a C/C++ static entity, and space otherwise.
 
@@ -172,9 +172,11 @@ package Lib.Xref is
    --              b = body entity
    --              c = completion of private or incomplete type
    --              d = discriminant of type
+   --              D = object definition
    --              e = end of spec
    --              H = abstract type
    --              i = implicit reference
+   --              I = object definition with initialization
    --              k = implicit reference to parent unit in child unit
    --              l = label on END line
    --              m = modification
@@ -567,6 +569,134 @@ package Lib.Xref is
    --    y     abstract function               entry or entry family
    --    z     generic formal parameter        (unused)
 
+   -------------------------------------------------------------
+   -- Format of Local Cross-Reference Information in ALI File --
+   -------------------------------------------------------------
+
+   --  Local cross-reference sections follow the cross-reference section in an
+   --  ALI file, so that they need not be read by gnatbind, gnatmake etc.
+
+   --  A local cross-reference section has a header of the form
+
+   --     S line type col entity
+
+   --        These precisely define a subprogram or package, with the same
+   --        components as described for cross-reference sections.
+
+   --  These sections are grouped in chapters for each unit introduced by
+
+   --     F dependency-number filename
+
+   --  Each section groups a number of cross-reference sub-sections introduced
+   --  by
+
+   --     X dependency-number filename
+
+   --  Inside each cross-reference sub-section, there are a number of
+   --  references like
+
+   --     line type col entity ref ref ...
+
+   -----------------------------------
+   -- Local-Reference Entity Filter --
+   -----------------------------------
+
+   Lref_Entity_Status : array (Entity_Kind) of Boolean :=
+     (E_Void                                       => False,
+      E_Variable                                   => True,
+      E_Component                                  => False,
+      E_Constant                                   => True,
+      E_Discriminant                               => False,
+
+      E_Loop_Parameter                             => True,
+      E_In_Parameter                               => True,
+      E_Out_Parameter                              => True,
+      E_In_Out_Parameter                           => True,
+      E_Generic_In_Out_Parameter                   => False,
+
+      E_Generic_In_Parameter                       => False,
+      E_Named_Integer                              => False,
+      E_Named_Real                                 => False,
+      E_Enumeration_Type                           => False,
+      E_Enumeration_Subtype                        => False,
+
+      E_Signed_Integer_Type                        => False,
+      E_Signed_Integer_Subtype                     => False,
+      E_Modular_Integer_Type                       => False,
+      E_Modular_Integer_Subtype                    => False,
+      E_Ordinary_Fixed_Point_Type                  => False,
+
+      E_Ordinary_Fixed_Point_Subtype               => False,
+      E_Decimal_Fixed_Point_Type                   => False,
+      E_Decimal_Fixed_Point_Subtype                => False,
+      E_Floating_Point_Type                        => False,
+      E_Floating_Point_Subtype                     => False,
+
+      E_Access_Type                                => False,
+      E_Access_Subtype                             => False,
+      E_Access_Attribute_Type                      => False,
+      E_Allocator_Type                             => False,
+      E_General_Access_Type                        => False,
+
+      E_Access_Subprogram_Type                     => False,
+      E_Access_Protected_Subprogram_Type           => False,
+      E_Anonymous_Access_Subprogram_Type           => False,
+      E_Anonymous_Access_Protected_Subprogram_Type => False,
+      E_Anonymous_Access_Type                      => False,
+
+      E_Array_Type                                 => False,
+      E_Array_Subtype                              => False,
+      E_String_Type                                => False,
+      E_String_Subtype                             => False,
+      E_String_Literal_Subtype                     => False,
+
+      E_Class_Wide_Type                            => False,
+      E_Class_Wide_Subtype                         => False,
+      E_Record_Type                                => False,
+      E_Record_Subtype                             => False,
+      E_Record_Type_With_Private                   => False,
+
+      E_Record_Subtype_With_Private                => False,
+      E_Private_Type                               => False,
+      E_Private_Subtype                            => False,
+      E_Limited_Private_Type                       => False,
+      E_Limited_Private_Subtype                    => False,
+
+      E_Incomplete_Type                            => False,
+      E_Incomplete_Subtype                         => False,
+      E_Task_Type                                  => False,
+      E_Task_Subtype                               => False,
+      E_Protected_Type                             => False,
+
+      E_Protected_Subtype                          => False,
+      E_Exception_Type                             => False,
+      E_Subprogram_Type                            => False,
+      E_Enumeration_Literal                        => False,
+      E_Function                                   => True,
+
+      E_Operator                                   => True,
+      E_Procedure                                  => True,
+      E_Entry                                      => False,
+      E_Entry_Family                               => False,
+      E_Block                                      => False,
+
+      E_Entry_Index_Parameter                      => False,
+      E_Exception                                  => False,
+      E_Generic_Function                           => False,
+      E_Generic_Package                            => False,
+      E_Generic_Procedure                          => False,
+
+      E_Label                                      => False,
+      E_Loop                                       => False,
+      E_Return_Statement                           => False,
+      E_Package                                    => False,
+
+      E_Package_Body                               => False,
+      E_Protected_Object                           => False,
+      E_Protected_Body                             => False,
+      E_Task_Body                                  => False,
+      E_Subprogram_Body                            => False);
+
    --------------------------------------
    -- Handling of Imported Subprograms --
    --------------------------------------
@@ -611,17 +741,8 @@ package Lib.Xref is
    --  This procedure is called to record a reference. N is the location
    --  of the reference and E is the referenced entity. Typ is one of:
    --
-   --    'b'  body entity
-   --    'c'  completion of incomplete or private type (see below)
-   --    'e'  end of construct
-   --    'i'  implicit reference
-   --    'l'  label on end line
-   --    'm'  modification
-   --    'p'  primitive operation
-   --    'r'  standard reference
-   --    't'  end of body
-   --    'x'  type extension
-   --    ' '  dummy reference (see below)
+   --    a character already described in the description of ref entries above
+   --    ' ' for dummy reference (see below)
    --
    --  Note: all references to incomplete or private types are to the
    --  original (incomplete or private type) declaration. The full
@@ -674,6 +795,9 @@ package Lib.Xref is
 
    procedure Output_References;
    --  Output references to the current ali file
+
+   procedure Output_Local_References;
+   --  Output references in each subprogram of the current ali file
 
    procedure Initialize;
    --  Initialize internal tables

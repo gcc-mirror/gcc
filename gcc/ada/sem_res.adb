@@ -5751,9 +5751,9 @@ package body Sem_Res is
 --         Check_Formal_Restriction ("function not inherited", N);
 --      end if;
 
-      --  Implement rule in 12.5.1 (23.3/2) : in an instance, if the actual
-      --  is class-wide and the call dispatches on result in a context that
-      --  does not provide a tag, the call raises Program_Error.
+      --  Implement rule in 12.5.1 (23.3/2): In an instance, if the actual is
+      --  class-wide and the call dispatches on result in a context that does
+      --  not provide a tag, the call raises Program_Error.
 
       if Nkind (N) = N_Function_Call
         and then In_Instance
@@ -5762,11 +5762,10 @@ package body Sem_Res is
         and then Has_Controlling_Result (Nam)
         and then Nkind (Parent (N)) = N_Object_Declaration
       then
-
-         --  verify that none of the formals are controlling.
+         --  Verify that none of the formals are controlling
 
          declare
-            Call_OK :  Boolean := False;
+            Call_OK : Boolean := False;
             F       : Entity_Id;
 
          begin
@@ -5776,6 +5775,7 @@ package body Sem_Res is
                   Call_OK := True;
                   exit;
                end if;
+
                Next_Formal (F);
             end loop;
 

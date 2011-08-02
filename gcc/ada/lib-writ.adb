@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1299,6 +1299,13 @@ package body Lib.Writ is
 
       if Generate_SCO then
          SCO_Output;
+      end if;
+
+      --  Output references by subprogram
+
+      if ALFA_Mode then
+         Write_Info_EOL;
+         Output_Local_References;
       end if;
 
       --  Output final blank line and we are done. This final blank line is

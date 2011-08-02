@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -180,10 +180,16 @@ package body Sem_Aux is
          if No (S) then
             return Standard_Standard;
 
-         --  Quit if we get to standard or a dynamic scope
+         --  Quit if we get to standard or a dynamic scope. We must also
+         --  handle enclosing scopes that have a full view; required to
+         --  locate enclosing scopes that are synchronized private types
+         --  whose full view is a task type.
 
          elsif S = Standard_Standard
            or else Is_Dynamic_Scope (S)
+           or else (Is_Private_Type (S)
+                     and then Present (Full_View (S))
+                     and then Is_Dynamic_Scope (Full_View (S)))
          then
             return S;
 
