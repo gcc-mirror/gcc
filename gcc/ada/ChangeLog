@@ -1,3 +1,21 @@
+2011-08-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Check_Conformance): Revise the check for nonconforming
+	null exclusions to test Can_Never_Be_Null on the anonymous access types
+	of the formals rather than testing the formals themselves. Exclude this
+	check in cases where the Old_Formal is marked as a controlling formal,
+	to avoid issuing spurious errors for bodies completing dispatching
+	operations (due to the flag not getting set on controlling access
+	formals in body specs).
+	(Find_Corresponding_Spec): When checking full and subtype conformance of
+	subprogram bodies in instances, pass Designated and E in that order, for
+	consistency with the expected order of the formals (New_Id followed by
+	Old_Id).
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb: Minor reformatting.
+
 2011-08-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Analyze_Subprogram_Renaming): new procedure
