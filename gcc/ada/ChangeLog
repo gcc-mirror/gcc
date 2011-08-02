@@ -1,5 +1,15 @@
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
+	* sem_ch3.adb, sem_ch5.adb, sem_ch9.adb, sem_util.adb, sem_util.ads,
+	sem_res.adb, sem_ch2.adb, sem_ch4.adb, sem_ch6.adb,
+	sem_ch11.adb: Protect call to Current_Subprogram which might be costly
+	when repeated. Rename Current_Subprogram_Is_Not_In_ALFA into
+	Mark_Non_ALFA_Subprogram_Body.
+	Split body of Mark_Non_ALFA_Subprogram_Body to get body small and
+	inlined.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
 	* sem_res.adb: Protect calls to Matching_Static_Array_Bounds which
 	might be costly.
 
