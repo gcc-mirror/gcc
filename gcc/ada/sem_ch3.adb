@@ -1782,12 +1782,12 @@ package body Sem_Ch3 is
       Enter_Name (Id);
 
       if Present (Typ) then
+         T := Find_Type_Of_Object
+                (Subtype_Indication (Component_Definition (N)), N);
+
          if not Nkind_In (Typ, N_Identifier, N_Expanded_Name) then
             Check_Formal_Restriction ("subtype mark required", Typ);
          end if;
-
-         T := Find_Type_Of_Object
-                (Subtype_Indication (Component_Definition (N)), N);
 
       --  Ada 2005 (AI-230): Access Definition case
 
@@ -4597,11 +4597,11 @@ package body Sem_Ch3 is
 
       Nb_Index := 1;
       while Present (Index) loop
+         Analyze (Index);
+
          if not Nkind_In (Index, N_Identifier, N_Expanded_Name) then
             Check_Formal_Restriction ("subtype mark required", Index);
          end if;
-
-         Analyze (Index);
 
          --  Add a subtype declaration for each index of private array type
          --  declaration whose etype is also private. For example:
@@ -4672,11 +4672,11 @@ package body Sem_Ch3 is
       --  Process subtype indication if one is present
 
       if Present (Component_Typ) then
+         Element_Type := Process_Subtype (Component_Typ, P, Related_Id, 'C');
+
          if not Nkind_In (Component_Typ, N_Identifier, N_Expanded_Name) then
             Check_Formal_Restriction ("subtype mark required", Component_Typ);
          end if;
-
-         Element_Type := Process_Subtype (Component_Typ, P, Related_Id, 'C');
 
       --  Ada 2005 (AI-230): Access Definition case
 
@@ -16140,7 +16140,8 @@ package body Sem_Ch3 is
      (I            : Node_Id;
       Related_Nod  : Node_Id;
       Related_Id   : Entity_Id := Empty;
-      Suffix_Index : Nat := 1)
+      Suffix_Index : Nat := 1;
+      In_Iter_Schm : Boolean := False)
    is
       R      : Node_Id;
       T      : Entity_Id;
@@ -16252,7 +16253,7 @@ package body Sem_Ch3 is
          end if;
 
          R := I;
-         Process_Range_Expr_In_Decl (R, T);
+         Process_Range_Expr_In_Decl (R, T, In_Iter_Schm => In_Iter_Schm);
 
       elsif Nkind (I) = N_Subtype_Indication then
 
@@ -16269,7 +16270,8 @@ package body Sem_Ch3 is
          R := Range_Expression (Constraint (I));
 
          Resolve (R, T);
-         Process_Range_Expr_In_Decl (R, Entity (Subtype_Mark (I)));
+         Process_Range_Expr_In_Decl
+           (R, Entity (Subtype_Mark (I)), In_Iter_Schm => In_Iter_Schm);
 
       elsif Nkind (I) = N_Attribute_Reference then
 
@@ -17908,10 +17910,11 @@ package body Sem_Ch3 is
    --------------------------------
 
    procedure Process_Range_Expr_In_Decl
-     (R           : Node_Id;
-      T           : Entity_Id;
-      Check_List  : List_Id := Empty_List;
-      R_Check_Off : Boolean := False)
+     (R            : Node_Id;
+      T            : Entity_Id;
+      Check_List   : List_Id := Empty_List;
+      R_Check_Off  : Boolean := False;
+      In_Iter_Schm : Boolean := False)
    is
       Lo, Hi      : Node_Id;
       R_Checks    : Check_Result;
@@ -17922,7 +17925,13 @@ package body Sem_Ch3 is
       Analyze_And_Resolve (R, Base_Type (T));
 
       if Nkind (R) = N_Range then
-         if not Is_Static_Range (R) then
+
+         --  In SPARK/ALFA, all ranges should be static, with the exception of
+         --  the discrete type definition of a loop parameter specification.
+
+         if not In_Iter_Schm
+           and then not Is_Static_Range (R)
+         then
             Check_Formal_Restriction ("range should be static", R);
          end if;
 

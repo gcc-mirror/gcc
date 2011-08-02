@@ -339,6 +339,10 @@ package Sem_Util is
    --  Returns the enclosing N_Compilation_Unit Node that is the root of a
    --  subtree containing N.
 
+   function Enclosing_Package (E : Entity_Id) return Entity_Id;
+   --  Utility function to return the Ada entity of the package enclosing
+   --  the entity E, if any. Returns Empty if no enclosing package.
+
    function Enclosing_Subprogram (E : Entity_Id) return Entity_Id;
    --  Utility function to return the Ada entity of the subprogram enclosing
    --  the entity E, if any. Returns Empty if no enclosing subprogram.

@@ -5348,13 +5348,15 @@ package body Sem_Ch8 is
       end if;
 
       --  Selector name cannot be a character literal or an operator symbol in
-      --  SPARK.
+      --  SPARK, except for the operator symbol in a renaming.
 
       if SPARK_Mode or else Restriction_Check_Required (SPARK) then
          if Nkind (Selector_Name (N)) = N_Character_Literal then
             Check_Formal_Restriction
               ("character literal cannot be prefixed", N);
-         elsif Nkind (Selector_Name (N)) = N_Operator_Symbol then
+         elsif Nkind (Selector_Name (N)) = N_Operator_Symbol
+           and then Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
+         then
             Check_Formal_Restriction ("operator symbol cannot be prefixed", N);
          end if;
       end if;
@@ -5484,18 +5486,6 @@ package body Sem_Ch8 is
 
       elsif Is_Entity_Name (P) then
          P_Name := Entity (P);
-
-         --  Selector name is restricted in SPARK
-
-         if SPARK_Mode or else Restriction_Check_Required (SPARK) then
-            if Is_Subprogram (P_Name) then
-               Check_Formal_Restriction
-                 ("prefix of expanded name cannot be a subprogram", P);
-            elsif Ekind (P_Name) = E_Loop then
-               Check_Formal_Restriction
-                 ("prefix of expanded name cannot be a loop statement", P);
-            end if;
-         end if;
 
          --  The prefix may denote an enclosing type which is the completion
          --  of an incomplete type declaration.
@@ -5690,6 +5680,20 @@ package body Sem_Ch8 is
             else
                Error_Msg_N (
                 "invalid prefix in selected component", P);
+            end if;
+         end if;
+
+         --  Selector name is restricted in SPARK
+
+         if Nkind (N) = N_Expanded_Name
+           and then (SPARK_Mode or else Restriction_Check_Required (SPARK))
+         then
+            if Is_Subprogram (P_Name) then
+               Check_Formal_Restriction
+                 ("prefix of expanded name cannot be a subprogram", P);
+            elsif Ekind (P_Name) = E_Loop then
+               Check_Formal_Restriction
+                 ("prefix of expanded name cannot be a loop statement", P);
             end if;
          end if;
 

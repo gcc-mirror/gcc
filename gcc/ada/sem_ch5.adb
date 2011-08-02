@@ -2060,7 +2060,7 @@ package body Sem_Ch5 is
 
                Check_Controlled_Array_Attribute (DS);
 
-               Make_Index (DS, LP);
+               Make_Index (DS, LP, In_Iter_Schm => True);
 
                Set_Ekind (Id, E_Loop_Parameter);
 

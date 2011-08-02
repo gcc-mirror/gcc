@@ -1,3 +1,54 @@
+2011-08-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop): Code cleanup and refactoring.
+	When a container is provided via a function call, generate a renaming
+	of the function result. This avoids the creation of a transient scope
+	and the premature finalization of the container.
+	* exp_ch7.adb (Is_Container_Cursor): Removed.
+	(Wrap_Transient_Declaration): Remove the supression of the finalization
+	of the list controller when the declaration denotes a container cursor,
+	it is not needed.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* restrict.adb (Check_Formal_Restriction): only issue a warning if the
+	node is from source, instead of the original node being from source.
+	* sem_aggr.adb
+	(Resolve_Array_Aggregate): refine the check for a static expression, to
+	recognize also static ranges
+	* sem_ch3.adb, sem_ch3.ads (Analyze_Component_Declaration,
+	Array_Type_Declaration): postpone the test for the type being a subtype
+	mark after the type has been resolved, so that component-selection and
+	expanded-name are discriminated.
+	(Make_Index, Process_Range_Expr_In_Decl): add a parameter In_Iter_Schm
+	to distinguish the case of an iteration scheme, so that an error is
+	issed on a non-static range in SPARK except in an iteration scheme.
+	* sem_ch5.adb (Analyze_Iteration_Scheme): call Make_Index with
+	In_Iter_Schm = True.
+	* sem_ch6.adb (Analyze_Subprogram_Specification): refine the check for
+	user-defined operators so that they are allowed in renaming
+	* sem_ch8.adb
+	(Find_Selected_Component): refine the check for prefixing of operators
+	so that they are allowed in renaming. Move the checks for restrictions
+	on selector name after analysis discriminated between
+	component-selection and expanded-name.
+	* sem_res.adb (Resolve_Op_Concat_Arg): do not issue a warning on
+	concatenation argument of string type if it is static.
+	* sem_util.adb, sem_util.ads
+	(Check_Later_Vs_Basic_Declarations): add a new function
+	Is_Later_Declarative_Item to decice which declarations are allowed as
+	later items, in the two different modes Ada 83 and SPARK. In the SPARK
+	mode, add that renamings are considered as later items.
+	(Enclosing_Package): new function to return the enclosing package
+	(Enter_Name): correct the rule for homonyms in SPARK
+	(Is_SPARK_Initialization_Expr): default to returning True on nodes not
+	from source (result of expansion) to avoid issuing wrong warnings.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* errout.adb: On anything but an expression First_Node returns its
+	argument.
+
 2011-08-02  Pascal Obry  <obry@adacore.com>
 
 	* prj-proc.adb, make.adb, makeutl.adb: Minor reformatting.
