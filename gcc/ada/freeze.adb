@@ -2455,8 +2455,7 @@ package body Freeze is
            and then Nkind (Parent (E)) = N_Object_Declaration
            and then Present (Expression (Parent (E)))
            and then Nkind (Expression (Parent (E))) = N_Aggregate
-           and then
-             Is_Atomic_Aggregate (Expression (Parent (E)), Etype (E))
+           and then Is_Atomic_Aggregate (Expression (Parent (E)), Etype (E))
          then
             null;
          end if;
