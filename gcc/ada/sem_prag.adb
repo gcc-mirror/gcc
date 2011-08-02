@@ -659,6 +659,11 @@ package body Sem_Prag is
       procedure Process_Import_Or_Interface;
       --  Common processing for Import of Interface
 
+      procedure Process_Import_Predefined_Type;
+      --  Processing for completing a type with pragma Import. This is used
+      --  to declare types that match predefined C types, especially for cases
+      --  without corresponding Ada predefined type.
+
       procedure Process_Inline (Active : Boolean);
       --  Common processing for Inline and Inline_Always. The parameter
       --  indicates if the inline pragma is active, i.e. if it should actually
@@ -2875,7 +2880,9 @@ package body Sem_Prag is
             Set_Convention (E, C);
             Set_Has_Convention_Pragma (E);
 
-            if Is_Incomplete_Or_Private_Type (E) then
+            if Is_Incomplete_Or_Private_Type (E)
+              and then Present (Underlying_Type (E))
+            then
                Set_Convention            (Underlying_Type (E), C);
                Set_Has_Convention_Pragma (Underlying_Type (E), True);
             end if;
@@ -3033,7 +3040,8 @@ package body Sem_Prag is
            or else Rep_Item_Too_Early (E, N)
          then
             raise Pragma_Exit;
-         else
+
+         elsif Present (Underlying_Type (E)) then
             E := Underlying_Type (E);
          end if;
 
@@ -3850,6 +3858,58 @@ package body Sem_Prag is
          end loop;
       end Process_Generic_List;
 
+      ------------------------------------
+      -- Process_Import_Predefined_Type --
+      ------------------------------------
+
+      procedure Process_Import_Predefined_Type is
+         Loc  : constant Source_Ptr := Sloc (N);
+         Ftyp : Node_Id := First (Predefined_Float_Types);
+         Decl : Node_Id;
+         Def  : Node_Id;
+         Nam  : Name_Id;
+      begin
+         String_To_Name_Buffer (Strval (Expression (Arg3)));
+         Nam := Name_Find;
+
+         while Present (Ftyp) and then Chars (Ftyp) /= Nam loop
+            Next (Ftyp);
+         end loop;
+
+         if Present (Ftyp) then
+            --  Don't build a derived type declaration, because predefined C
+            --  types have no declaration anywhere, so cannot really be named.
+            --  Instead build a full type declaration, starting with an
+            --  appropriate type definition is built
+
+            if Is_Floating_Point_Type (Ftyp) then
+               Def := Make_Floating_Point_Definition (Loc,
+                 Make_Integer_Literal (Loc, Digits_Value (Ftyp)),
+                 Make_Real_Range_Specification (Loc,
+                   Make_Real_Literal (Loc, Realval (Type_Low_Bound (Ftyp))),
+                   Make_Real_Literal (Loc, Realval (Type_High_Bound (Ftyp)))));
+
+            else
+               --  Should never have a predefined type we cannot handle
+               raise Program_Error;
+            end if;
+
+            --  Build and insert a Full_Type_Declaration, which will be
+            --  analyzed as soon as this list entry has been analyzed.
+
+            Decl := Make_Full_Type_Declaration (Loc,
+              Make_Defining_Identifier (Loc, Chars (Expression (Arg2))),
+              Type_Definition => Def);
+
+            Insert_After (N, Decl);
+            Mark_Rewrite_Insertion (Decl);
+
+         else
+            Error_Pragma_Arg ("no matching type found for pragma%",
+            Arg2);
+         end if;
+      end Process_Import_Predefined_Type;
+
       ---------------------------------
       -- Process_Import_Or_Interface --
       ---------------------------------
@@ -4118,9 +4178,17 @@ package body Sem_Prag is
                end if;
             end;
 
+         elsif Nkind (Parent (Def_Id)) = N_Incomplete_Type_Declaration then
+            Check_No_Link_Name;
+            Check_Arg_Count (3);
+            Check_Arg_Is_Static_Expression (Arg3, Standard_String);
+
+            Process_Import_Predefined_Type;
+
          else
             Error_Pragma_Arg
-              ("second argument of pragma% must be object or subprogram",
+              ("second argument of pragma% must be object, subprogram" &
+               " or incomplete type",
                Arg2);
          end if;
 

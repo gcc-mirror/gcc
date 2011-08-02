@@ -467,7 +467,7 @@ package body CStand is
             N   : Node_Id := First (Back_End_Float_Types);
 
          begin
-            if Digits_Value (LLF) > Max_HW_Digs then
+            if Present (LLF) and then Digits_Value (LLF) > Max_HW_Digs then
                LLF := Empty;
             end if;
 
@@ -2008,15 +2008,77 @@ package body CStand is
       Size      : Positive;
       Alignment : Natural)
    is
-      Last : Natural := Name'First - 1;
+      T    : String (1 .. Name'Length);
+      Last : Natural := 0;
+
+      procedure Dump;
+      --  Dump information given by the back end for the type to register
+
+      procedure Dump is
+      begin
+         Write_Str ("type " & T (1 .. Last) & " is ");
+
+         if Count > 0 then
+            Write_Str ("array (1 .. ");
+            Write_Int (Int (Count));
+
+            if Complex then
+               Write_Str (", 1 .. 2");
+            end if;
+
+            Write_Str (") of ");
+
+         elsif Complex then
+            Write_Str ("array (1 .. 2) of ");
+         end if;
+
+         if Digs > 0 then
+            Write_Str ("digits ");
+            Write_Int (Int (Digs));
+            Write_Line (";");
+
+            Write_Str ("pragma Float_Representation (");
+
+            case Float_Rep is
+               when IEEE_Binary =>  Write_Str ("IEEE");
+               when VAX_Native =>
+                  case Digs is
+                     when  6 =>     Write_Str ("VAXF");
+                     when  9 =>     Write_Str ("VAXD");
+                     when 15 =>     Write_Str ("VAXG");
+                     when others => Write_Str ("VAX_"); Write_Int (Int (Digs));
+                  end case;
+               when AAMP =>         Write_Str ("AAMP");
+            end case;
+            Write_Line (", " & T & ");");
+
+         else
+            Write_Str ("mod 2**");
+            Write_Int (Int (Size / Positive'Max (1, Count)));
+            Write_Line (";");
+         end if;
+
+         Write_Str ("for " & T & "'Size use ");
+         Write_Int (Int (Size));
+         Write_Line (";");
+
+         Write_Str ("for " & T & "'Alignment use ");
+         Write_Int (Int (Alignment / 8));
+         Write_Line (";");
+      end Dump;
 
    begin
-      for J in Name'Range loop
-         if Name (J) = ASCII.NUL then
+      for J in T'Range loop
+         T (J) := Name (Name'First + J - 1);
+         if T (J) = ASCII.NUL then
             Last := J - 1;
             exit;
          end if;
       end loop;
+
+      if Debug_Flag_Dot_B then
+         Dump;
+      end if;
 
       if Digs > 0 and then not Complex and then Count = 0 then
          declare
@@ -2026,7 +2088,7 @@ package body CStand is
          begin
             Set_Defining_Identifier
               (New_Node (N_Full_Type_Declaration, Stloc), Ent);
-            Make_Name (Ent, String (Name (Name'First .. Last)));
+            Make_Name (Ent, T (1 .. Last));
             Set_Scope (Ent, Standard_Standard);
             Build_Float_Type (Ent, Esize, Float_Rep, Pos (Digs));
             Set_RM_Size (Ent, UI_From_Int (Int (Size)));

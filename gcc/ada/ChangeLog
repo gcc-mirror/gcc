@@ -1,3 +1,24 @@
+2011-08-02  Geert Bosch  <bosch@adacore.com>
+
+	* cstand.adb (Register_Float_Type): Print information about type to
+	register, if the Debug_Flag_Dot_B is set.
+	* debug.adb (Debug_Flag_Dot_B): Document d.b debug option.
+	* rtsfind.ads (RE_Max_Base_Digits): New run time entity.
+	* sem_ch3.adb (Floating_Point_Type_Declaration): Allow declarations
+	with a requested precision of more than Max_Digits digits and no more
+	than Max_Base_Digits digits, if a range specification is present and the
+	Predefined_Float_Types list has a suitable type to derive from.
+	* sem_ch3.adb (Rep_Item_Too_Early): Avoid generating error in the
+	case of type completion with pragma Import
+	* sem_prag.adb
+	(Process_Import_Predefined_Type): Processing to complete a type
+	with pragma Import. Currently supports floating point types only.
+	(Set_Convention_From_Pragma): Do nothing without underlying type.
+	(Process_Convention): Guard against absence of underlying type,
+	which may happen when importing incomplete types.
+	(Process_Import_Or_Interface): Handle case of importing predefined
+	types. Tweak error message.
+
 2011-08-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* inline.adb (Add_Inlined_Body): Adjust check for library-level inlined
