@@ -71,10 +71,10 @@ package body Exp_Atag is
    ------------------------------------------------
 
    procedure Build_Common_Dispatching_Select_Statements
-     (Loc    : Source_Ptr;
-      Typ    : Entity_Id;
+     (Typ    : Entity_Id;
       Stmts  : List_Id)
    is
+      Loc      : constant Source_Ptr := Sloc (Typ);
       Tag_Node : Node_Id;
 
    begin
