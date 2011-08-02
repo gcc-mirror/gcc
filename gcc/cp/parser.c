@@ -1629,6 +1629,8 @@ static tree cp_parser_c_for
   (cp_parser *, tree, tree);
 static tree cp_parser_range_for
   (cp_parser *, tree, tree, tree);
+static void do_range_for_auto_deduction
+  (tree, tree);
 static tree cp_parser_perform_range_for_lookup
   (tree, tree *, tree *);
 static tree cp_parser_range_for_member_function
@@ -8673,6 +8675,7 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl)
     {
       stmt = begin_range_for_stmt (scope, init);
       finish_range_for_decl (stmt, range_decl, range_expr);
+      do_range_for_auto_deduction (range_decl, range_expr);
     }
   else
     {
@@ -8680,6 +8683,52 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl)
       stmt = cp_convert_range_for (stmt, range_decl, range_expr);
     }
   return stmt;
+}
+
+/* Subroutine of cp_convert_range_for: given the initializer expression,
+   builds up the range temporary.  */
+
+static tree
+build_range_temp (tree range_expr)
+{
+  tree range_type, range_temp;
+
+  /* Find out the type deduced by the declaration
+     `auto &&__range = range_expr'.  */
+  range_type = cp_build_reference_type (make_auto (), true);
+  range_type = do_auto_deduction (range_type, range_expr,
+				  type_uses_auto (range_type));
+
+  /* Create the __range variable.  */
+  range_temp = build_decl (input_location, VAR_DECL,
+			   get_identifier ("__for_range"), range_type);
+  TREE_USED (range_temp) = 1;
+  DECL_ARTIFICIAL (range_temp) = 1;
+
+  return range_temp;
+}
+
+/* Used by cp_parser_range_for in template context: we aren't going to
+   do a full conversion yet, but we still need to resolve auto in the
+   type of the for-range-declaration if present.  This is basically
+   a shortcut version of cp_convert_range_for.  */
+
+static void
+do_range_for_auto_deduction (tree decl, tree range_expr)
+{
+  tree auto_node = type_uses_auto (TREE_TYPE (decl));
+  if (auto_node)
+    {
+      tree begin_dummy, end_dummy, range_temp, iter_type, iter_decl;
+      range_temp = convert_from_reference (build_range_temp (range_expr));
+      iter_type = (cp_parser_perform_range_for_lookup
+		   (range_temp, &begin_dummy, &end_dummy));
+      iter_decl = build_decl (input_location, VAR_DECL, NULL_TREE, iter_type);
+      iter_decl = build_x_indirect_ref (iter_decl, RO_NULL,
+					tf_warning_or_error);
+      TREE_TYPE (decl) = do_auto_deduction (TREE_TYPE (decl),
+					    iter_decl, auto_node);
+    }
 }
 
 /* Converts a range-based for-statement into a normal
@@ -8720,7 +8769,6 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl)
 tree
 cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
 {
-  tree range_type, range_temp;
   tree begin, end;
   tree iter_type, begin_expr, end_expr;
   tree condition, expression;
@@ -8731,17 +8779,7 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
     begin_expr = end_expr = iter_type = error_mark_node;
   else
     {
-      /* Find out the type deduced by the declaration
-         `auto &&__range = range_expr'.  */
-      range_type = cp_build_reference_type (make_auto (), true);
-      range_type = do_auto_deduction (range_type, range_expr,
-				      type_uses_auto (range_type));
-
-      /* Create the __range variable.  */
-      range_temp = build_decl (input_location, VAR_DECL,
-			       get_identifier ("__for_range"), range_type);
-      TREE_USED (range_temp) = 1;
-      DECL_ARTIFICIAL (range_temp) = 1;
+      tree range_temp = build_range_temp (range_expr);
       pushdecl (range_temp);
       cp_finish_decl (range_temp, range_expr,
 		      /*is_constant_init*/false, NULL_TREE,
