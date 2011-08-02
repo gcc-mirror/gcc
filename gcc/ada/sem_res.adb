@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5750,6 +5750,44 @@ package body Sem_Res is
 --      then
 --         Check_Formal_Restriction ("function not inherited", N);
 --      end if;
+
+      --  Implement rule in 12.5.1 (23.3/2) : in an instance, if the actual
+      --  is class-wide and the call dispatches on result in a context that
+      --  does not provide a tag, the call raises Program_Error.
+
+      if Nkind (N) = N_Function_Call
+        and then In_Instance
+        and then Is_Generic_Actual_Type (Typ)
+        and then Is_Class_Wide_Type (Typ)
+        and then Has_Controlling_Result (Nam)
+        and then Nkind (Parent (N)) = N_Object_Declaration
+      then
+
+         --  verify that none of the formals are controlling.
+
+         declare
+            Call_OK :  Boolean := False;
+            F       : Entity_Id;
+
+         begin
+            F := First_Formal (Nam);
+            while Present (F) loop
+               if Is_Controlling_Formal (F) then
+                  Call_OK := True;
+                  exit;
+               end if;
+               Next_Formal (F);
+            end loop;
+
+            if not Call_OK then
+               Error_Msg_N ("!? cannot determine tag of result", N);
+               Error_Msg_N ("!? Program_Error will be raised", N);
+               Insert_Action (N,
+                 Make_Raise_Program_Error (Sloc (N),
+                    Reason => PE_Explicit_Raise));
+            end if;
+         end;
+      end if;
 
       --  All done, evaluate call and deal with elaboration issues
 

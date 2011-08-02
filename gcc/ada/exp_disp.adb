@@ -569,7 +569,10 @@ package body Exp_Disp is
    --  Start of processing for Build_VM_TSDs
 
    begin
-      if not Expander_Active or else No_Run_Time_Mode then
+      if not Expander_Active
+        or else No_Run_Time_Mode
+        or else not RTE_Available (RE_Type_Specific_Data)
+      then
          return;
       end if;
 
