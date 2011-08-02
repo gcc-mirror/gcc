@@ -814,6 +814,47 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 					     gimple_assign_rhs1 (stmt),
 					     gimple_assign_rhs2 (stmt));
 	}
+      /* Try to canonicalize for boolean-typed X the comparisons
+	 X == 0, X == 1, X != 0, and X != 1.  */
+      else if (gimple_assign_rhs_code (stmt) == EQ_EXPR
+               || gimple_assign_rhs_code (stmt) == NE_EXPR)
+        {
+	  tree lhs = gimple_assign_lhs (stmt);
+	  tree op1 = gimple_assign_rhs1 (stmt);
+	  tree op2 = gimple_assign_rhs2 (stmt);
+	  tree type = TREE_TYPE (op1);
+
+	  /* Check whether the comparison operands are of the same boolean
+	     type as the result type is.
+	     Check that second operand is an integer-constant with value
+	     one or zero.  */
+	  if (TREE_CODE (op2) == INTEGER_CST
+	      && (integer_zerop (op2) || integer_onep (op2))
+	      && useless_type_conversion_p (TREE_TYPE (lhs), type))
+	    {
+	      enum tree_code cmp_code = gimple_assign_rhs_code (stmt);
+	      bool is_logical_not = false;
+
+	      /* X == 0 and X != 1 is a logical-not.of X
+	         X == 1 and X != 0 is X  */
+	      if ((cmp_code == EQ_EXPR && integer_zerop (op2))
+	          || (cmp_code == NE_EXPR && integer_onep (op2)))
+	        is_logical_not = true;
+
+	      if (is_logical_not == false)
+	        result = op1;
+	      /* Only for one-bit precision typed X the transformation
+	         !X -> ~X is valied.  */
+	      else if (TYPE_PRECISION (type) == 1)
+		result = build1_loc (gimple_location (stmt), BIT_NOT_EXPR,
+				     type, op1);
+	      /* Otherwise we use !X -> X ^ 1.  */
+	      else
+	        result = build2_loc (gimple_location (stmt), BIT_XOR_EXPR,
+				     type, op1, build_int_cst (type, 1));
+	     
+	    }
+	}
 
       if (!result)
         result = fold_binary_loc (loc, subcode,
