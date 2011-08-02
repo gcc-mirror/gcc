@@ -993,10 +993,12 @@ package body Sem_Aggr is
          if Is_Array_Type (Typ)
            and then Nkind (Parent (N)) = N_Assignment_Statement
            and then not Is_Constrained (Etype (Name (Parent (N))))
-           and then not Is_Others_Aggregate (N)
          then
-            Check_Formal_Restriction
-              ("array aggregate should have only OTHERS", N);
+            if not Is_Others_Aggregate (N) then
+               Check_Formal_Restriction
+                 ("array aggregate should have only OTHERS", N);
+            end if;
+
          elsif Is_Top_Level_Aggregate (N) then
             Check_Formal_Restriction ("aggregate should be qualified", N);
 

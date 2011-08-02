@@ -1,5 +1,13 @@
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
+	* sem_aggr.adb (Resolve_Aggregate): Fix thinko.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.adb: Add comment.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
 	* sem_aggr.adb (Check_Qualified_Aggregate): new procedure which checks
 	qualification of aggregates in formal mode
 	(Is_Top_Level_Aggregate): returns True for an aggregate not contained in

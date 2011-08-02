@@ -513,6 +513,11 @@ package body Impunit is
      "a-cborma",    -- Ada.Containers.Bounded_Ordered_Maps
      "a-cbhase",    -- Ada.Containers.Bounded_Hashed_Sets
      "a-cbhama",    -- Ada.Containers.Bounded_Hashed_Maps
+
+   -----------------------------------------
+   -- GNAT Defined Additions to Ada 20012 --
+   -----------------------------------------
+
      "a-cofove",    -- Ada.Containers.Formal_Vectors
      "a-cfdlli",    -- Ada.Containers.Formal_Doubly_Linked_Lists
      "a-cforse",    -- Ada.Containers.Formal_Ordered_Sets
