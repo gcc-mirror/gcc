@@ -4406,6 +4406,10 @@ package body Sem_Prag is
                else
                   Make_Inline (Subp);
 
+                  --  For the pragma case, climb homonym chain. This is
+                  --  what implements allowing the pragma in the renaming
+                  --  case, with the result applying to the ancestors.
+
                   if not From_Aspect_Specification (N) then
                      while Present (Homonym (Subp))
                        and then Scope (Homonym (Subp)) = Current_Scope

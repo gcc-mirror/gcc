@@ -196,7 +196,7 @@ readability.
 
 @smallexample
       1_000_000
-      16#8000_000#
+      16#8000_0000#
       3.14159_26535_89793_23846
 @end smallexample
 @end itemize
@@ -637,10 +637,10 @@ the colons, as in:
 @smallexample @c adanocomment
 @group
      procedure Set_Heading
-        (Source : String;
-         Count  : Natural;
-         Pad    : Character := Space;
-         Fill   : Boolean   := True);
+       (Source : String;
+        Count  : Natural;
+        Pad    : Character := Space;
+        Fill   : Boolean   := True);
 @end group
 @end smallexample
 

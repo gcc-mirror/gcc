@@ -4613,21 +4613,27 @@ pragma SPARK_95;
 @end smallexample
 
 @noindent
-A configuration pragma that establishes SPARK 95 mode for the unit to which
+This is a configuration pragma that establishes SPARK 95 mode
+for the unit to which
 it applies, regardless of the mode set by the command line switches.
-In this mode, the compiler rejects constructs outside the SPARK 95 subset of
-Ada, which provides a useful initial filter for those projects developed in
-SPARK. Syntax and semantic error messages related to SPARK restrictions have
-the form:
+In this mode, the compiler rejects constructs not permitted by SPARK 95.
+Error messages related to SPARK restrictions have the form:
 
 @code{(spark) error message}.
 
 This is not a replacement for the semantic checks performed by the
 SPARK Examiner tool, as the compiler only deals currently with code,
-not at all with SPARK annotations, so it may well be the case that code which
+not at all with SPARK annotations and does not guarantee catching all
+cases of constructs forbidden by SPARK 95.
+
+Thus it may well be the case that code which
 passes the compiler in SPARK 95 mode is rejected by the SPARK Examiner,
 e.g. due to the different visibility rules of the Examiner based on
-@code{inherit} SPARK annotations.
+SPARK @code{inherit} annotations.
+
+SPARK 95 mode can be useful in providing an initial filter for
+code developed using SPARK 95, or in examining legacy code to see how far
+it is from meeting SPARK 95 restrictions.
 
 @node Pragma Static_Elaboration_Desired
 @unnumberedsec Pragma Static_Elaboration_Desired

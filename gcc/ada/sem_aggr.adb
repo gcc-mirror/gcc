@@ -848,6 +848,18 @@ package body Sem_Aggr is
       Set_Size_Known_At_Compile_Time (T);
    end Check_Static_Discriminated_Subtype;
 
+   -------------------------
+   -- Is_Others_Aggregate --
+   -------------------------
+
+   function Is_Others_Aggregate (Aggr : Node_Id) return Boolean is
+   begin
+      return No (Expressions (Aggr))
+        and then
+          Nkind (First (Choices (First (Component_Associations (Aggr)))))
+            = N_Others_Choice;
+   end Is_Others_Aggregate;
+
    --------------------------------
    -- Make_String_Into_Aggregate --
    --------------------------------
@@ -1083,6 +1095,45 @@ package body Sem_Aggr is
 
       else
          Error_Msg_N ("illegal context for aggregate", N);
+      end if;
+
+      if Formal_Verification_Mode and then Comes_From_Source (N) then
+
+         --  An unqualified aggregate is restricted in SPARK or ALFA to:
+         --    An 'aggregate item' inside an multi-dimensional aggregate
+         --    An expression being assigned to an unconstrained array, but only
+         --    if the aggregate specifies a value for OTHERS only.
+
+         if Nkind (Parent (N)) /= N_Qualified_Expression then
+            if Is_Array_Type (Etype (N)) then
+               if Nkind (Parent (N)) = N_Assignment_Statement
+                 and then not Is_Constrained (Etype (Name (Parent (N))))
+               then
+                  if not Is_Others_Aggregate (N) then
+                     Error_Msg_F
+                       ("|~~array aggregate should have only OTHERS", N);
+                  end if;
+
+               elsif not (Nkind (Parent (N)) = N_Aggregate
+                           and then Is_Array_Type (Etype (Parent (N)))
+                           and then Number_Dimensions (Etype (Parent (N))) > 1)
+               then
+                  Error_Msg_F ("|~~array aggregate should be qualified", N);
+               else
+                  null;
+               end if;
+
+            elsif Is_Record_Type (Etype (N)) then
+               Error_Msg_F ("|~~record aggregate should be qualified", N);
+
+            --  The type of aggregate is neither array nor record, so an error
+            --  must have occurred during resolution. Do not report an
+            --  additional message here.
+
+            else
+               null;
+            end if;
+         end if;
       end if;
 
       --  If we can determine statically that the evaluation of the aggregate
@@ -1731,6 +1782,15 @@ package body Sem_Aggr is
                      --  bounds of the array aggregate are within range.
 
                      Set_Do_Range_Check (Choice, False);
+
+                     --  In SPARK or ALFA, the choice must be static
+
+                     if Formal_Verification_Mode
+                       and then Comes_From_Source (Original_Node (Choice))
+                       and then not Is_Static_Expression (Choice)
+                     then
+                        Error_Msg_F ("|~~choice should be static", Choice);
+                     end if;
                   end if;
 
                   --  If we could not resolve the discrete choice stop here
@@ -2371,6 +2431,16 @@ package body Sem_Aggr is
 
       Analyze (A);
       Check_Parameterless_Call (A);
+
+      --  In SPARK or ALFA, the ancestor part cannot be a subtype mark
+
+      if Formal_Verification_Mode
+        and then Comes_From_Source (N)
+        and then Is_Entity_Name (A)
+        and then Is_Type (Entity (A))
+      then
+         Error_Msg_F ("|~~ancestor part cannot be a subtype mark", A);
+      end if;
 
       if not Is_Tagged_Type (Typ) then
          Error_Msg_N ("type of extension aggregate must be tagged", N);
@@ -3043,6 +3113,43 @@ package body Sem_Aggr is
    --  Start of processing for Resolve_Record_Aggregate
 
    begin
+      --  A record aggregate is restricted in SPARK or ALFA:
+      --    Each named association can have only a single choice.
+      --    OTHERS cannot be used.
+      --    Positional and named associations cannot be mixed.
+
+      if Formal_Verification_Mode
+        and then Comes_From_Source (N)
+        and then Present (Component_Associations (N))
+      then
+         if Present (Expressions (N)) then
+            Error_Msg_F
+              ("|~~named association cannot follow positional association",
+               First (Choices (First (Component_Associations (N)))));
+         end if;
+
+         declare
+            Assoc : Node_Id;
+
+         begin
+            Assoc := First (Component_Associations (N));
+            while Present (Assoc) loop
+               if List_Length (Choices (Assoc)) > 1 then
+                  Error_Msg_F
+                    ("|~~component association in record aggregate must "
+                     & "contain a single choice", Assoc);
+               end if;
+
+               if Nkind (First (Choices (Assoc))) = N_Others_Choice then
+                  Error_Msg_F
+                    ("|~~record aggregate cannot contain OTHERS", Assoc);
+               end if;
+
+               Assoc := Next (Assoc);
+            end loop;
+         end;
+      end if;
+
       --  We may end up calling Duplicate_Subexpr on expressions that are
       --  attached to New_Assoc_List. For this reason we need to attach it
       --  to the tree by setting its parent pointer to N. This parent point

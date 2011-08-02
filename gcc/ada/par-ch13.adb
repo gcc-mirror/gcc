@@ -556,11 +556,23 @@ package body Ch13 is
          end if;
       end loop;
 
-      --  If aspects scanned, store them
+      --  Here if aspects present
 
       if Is_Non_Empty_List (Aspects) then
-         if Decl = Error then
+
+         --  If Decl is Empty, we just ignore the aspects (the caller in this
+         --  case has always issued an appropriate error message).
+
+         if Decl = Empty then
+            null;
+
+         --  If Decl is Error, we ignore the aspects, and issue a message
+
+         elsif Decl = Error then
             Error_Msg ("aspect specifications not allowed here", Ptr);
+
+         --  Here aspects are allowed, and we store them
+
          else
             Set_Parent (Aspects, Decl);
             Set_Aspect_Specifications (Decl, Aspects);
