@@ -1620,6 +1620,16 @@ package body Sprint is
             Indent_End;
             Write_Indent;
 
+         when N_Expression_Function =>
+            Write_Indent;
+            Sprint_Node_Sloc (Specification (Node));
+            Write_Str (" is");
+            Indent_Begin;
+            Write_Indent;
+            Sprint_Node (Expression (Node));
+            Write_Char (';');
+            Indent_End;
+
          when N_Extended_Return_Statement =>
             Write_Indent_Str_Sloc ("return ");
             Sprint_Node_List (Return_Object_Declarations (Node));
@@ -2487,17 +2497,6 @@ package body Sprint is
             else
                Write_Str (", ");
             end if;
-
-         when N_Parameterized_Expression =>
-            Write_Indent;
-            Sprint_Node_Sloc (Specification (Node));
-
-            Write_Str (" is");
-            Indent_Begin;
-            Write_Indent;
-            Sprint_Node (Expression (Node));
-            Write_Char (';');
-            Indent_End;
 
          when N_Pop_Constraint_Error_Label =>
             Write_Indent_Str ("%pop_constraint_error_label");

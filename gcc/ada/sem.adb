@@ -223,6 +223,9 @@ package body Sem is
          when N_Explicit_Dereference =>
             Analyze_Explicit_Dereference (N);
 
+         when N_Expression_Function =>
+            Analyze_Expression_Function (N);
+
          when N_Expression_With_Actions =>
             Analyze_Expression_With_Actions (N);
 
@@ -438,9 +441,6 @@ package body Sem is
 
          when N_Parameter_Association =>
             Analyze_Parameter_Association (N);
-
-         when N_Parameterized_Expression =>
-            Analyze_Parameterized_Expression (N);
 
          when N_Pragma =>
             Analyze_Pragma (N);

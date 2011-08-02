@@ -92,6 +92,12 @@ package body Sem_Res is
 
    --  Note that Resolve_Attribute is separated off in Sem_Attr
 
+   function Matching_Static_Array_Bounds
+     (L_Typ : Node_Id;
+      R_Typ : Node_Id) return Boolean;
+   --  L_Typ and R_Typ are two array types. Returns True when they have the
+   --  same dimension, and, for each index position, the same static bounds.
+
    function Bad_Unordered_Enumeration_Reference
      (N : Node_Id;
       T : Entity_Id) return Boolean;
@@ -1571,6 +1577,65 @@ package body Sem_Res is
       end if;
    end Make_Call_Into_Operator;
 
+   ----------------------------------
+   -- Matching_Static_Array_Bounds --
+   ----------------------------------
+
+   function Matching_Static_Array_Bounds
+     (L_Typ : Node_Id;
+      R_Typ : Node_Id) return Boolean
+   is
+      L_Ndims : constant Nat := Number_Dimensions (L_Typ);
+      R_Ndims : constant Nat := Number_Dimensions (R_Typ);
+
+      L_Index : Node_Id;
+      R_Index : Node_Id;
+      L_Low   : Node_Id;
+      L_High  : Node_Id;
+      R_Low   : Node_Id;
+      R_High  : Node_Id;
+
+   begin
+      if L_Ndims /= R_Ndims then
+         return False;
+      end if;
+
+      --  Unconstrained types do not have static bounds
+
+      if not Is_Constrained (L_Typ) or else not Is_Constrained (R_Typ) then
+         return False;
+      end if;
+
+      L_Index := First_Index (L_Typ);
+      R_Index := First_Index (R_Typ);
+
+      for Indx in 1 .. L_Ndims loop
+         Get_Index_Bounds (L_Index, L_Low, L_High);
+         Get_Index_Bounds (R_Index, R_Low, R_High);
+
+         if True
+           and then Is_Static_Expression (L_Low)
+           and then Is_Static_Expression (L_High)
+           and then Is_Static_Expression (R_Low)
+           and then Is_Static_Expression (R_High)
+           and then Expr_Value (L_Low)  = Expr_Value (R_Low)
+           and then Expr_Value (L_High) = Expr_Value (R_High)
+         then
+            --  Matching so far, continue with next index
+
+            null;
+
+         else
+            return False;
+         end if;
+
+         Next (L_Index);
+         Next (R_Index);
+      end loop;
+
+      return True;
+   end Matching_Static_Array_Bounds;
+
    -------------------
    -- Operator_Kind --
    -------------------
@@ -1582,6 +1647,8 @@ package body Sem_Res is
       Kind : Node_Kind;
 
    begin
+      --  Use CASE statement or array???
+
       if Is_Binary then
          if    Op_Name =  Name_Op_And      then
             Kind := N_Op_And;
@@ -3555,6 +3622,31 @@ package body Sem_Res is
             A_Typ := Etype (A);
             F_Typ := Etype (F);
 
+            --  In SPARK or ALFA, the only view conversions are those involving
+            --  ancestor conversion of an extended type.
+
+            if Formal_Verification_Mode
+              and then Comes_From_Source (Original_Node (A))
+              and then Nkind (A) = N_Type_Conversion
+              and then Ekind_In (F, E_Out_Parameter, E_In_Out_Parameter)
+            then
+               declare
+                  Operand     : constant Node_Id   := Expression (A);
+                  Operand_Typ : constant Entity_Id := Etype (Operand);
+                  Target_Typ  : constant Entity_Id := A_Typ;
+               begin
+                  if not (Is_Tagged_Type (Target_Typ)
+                          and then not Is_Class_Wide_Type (Target_Typ)
+                          and then Is_Tagged_Type (Operand_Typ)
+                          and then not Is_Class_Wide_Type (Operand_Typ)
+                          and then Is_Ancestor (Target_Typ, Operand_Typ))
+                  then
+                     Error_Msg_F ("|~~ancestor conversion is the only "
+                                  & "view conversion", A);
+                  end if;
+               end;
+            end if;
+
             --  Save actual for subsequent check on order dependence, and
             --  indicate whether actual is modifiable. For AI05-0144-2.
 
@@ -4795,6 +4887,21 @@ package body Sem_Res is
       Generate_Operator_Reference (N, Typ);
       Eval_Arithmetic_Op (N);
 
+      --  In SPARK and ALFA, a multiplication or division with operands of
+      --  fixed point types shall be qualified or explicitly converted to
+      --  identify the result type.
+
+      if Formal_Verification_Mode
+        and then (Is_Fixed_Point_Type (Etype (L))
+                  or else Is_Fixed_Point_Type (Etype (R)))
+        and then Nkind_In (N, N_Op_Multiply, N_Op_Divide)
+        and then
+          not Nkind_In (Parent (N), N_Qualified_Expression, N_Type_Conversion)
+      then
+         Error_Msg_F
+           ("|~~operation should be qualified or explicitly converted", N);
+      end if;
+
       --  Set overflow and division checking bit. Much cleverer code needed
       --  here eventually and perhaps the Resolve routines should be separated
       --  for the various arithmetic operations, since they will need
@@ -5792,6 +5899,22 @@ package body Sem_Res is
       Generate_Operator_Reference (N, T);
       Check_Low_Bound_Tested (N);
 
+      --  In SPARK or ALFA, ordering operators <, <=, >, >= are not defined
+      --  for Boolean types or array types except String.
+
+      if Formal_Verification_Mode
+        and then Comes_From_Source (Original_Node (N))
+      then
+         if Is_Boolean_Type (T) then
+            Error_Msg_F ("|~~comparison is not defined on Boolean type", N);
+         elsif Is_Array_Type (T)
+           and then Base_Type (T) /= Standard_String
+         then
+            Error_Msg_F
+              ("|~~comparison is not defined on array type except String", N);
+         end if;
+      end if;
+
       --  Check comparison on unordered enumeration
 
       if Comes_From_Source (N)
@@ -6635,6 +6758,20 @@ package body Sem_Res is
          Resolve (L, T);
          Resolve (R, T);
 
+         --  In SPARK or ALFA, equality operators = and /= for array types
+         --  other than String are only defined when, for each index position,
+         --  the operands have equal static bounds.
+
+         if Formal_Verification_Mode
+           and then Comes_From_Source (Original_Node (N))
+           and then Is_Array_Type (T)
+           and then Base_Type (T) /= Standard_String
+           and then not Matching_Static_Array_Bounds (Etype (L), Etype (R))
+         then
+            Error_Msg_F
+              ("|~~array types should have matching static bounds", N);
+         end if;
+
          --  If the unique type is a class-wide type then it will be expanded
          --  into a dispatching call to the predefined primitive. Therefore we
          --  check here for potential violation of such restriction.
@@ -7163,48 +7300,11 @@ package body Sem_Res is
 
       if Formal_Verification_Mode
         and then Comes_From_Source (Original_Node (N))
-        and then Is_Array_Type (Etype (N))
+        and then Is_Array_Type (B_Typ)
+        and then not Matching_Static_Array_Bounds (Etype (Left_Opnd (N)),
+                                                   Etype (Right_Opnd (N)))
       then
-         declare
-            L_Index : Node_Id;
-            R_Index : Node_Id;
-            L_Low   : Node_Id;
-            L_High  : Node_Id;
-            R_Low   : Node_Id;
-            R_High  : Node_Id;
-
-            L_Typ : constant Node_Id := Etype (Left_Opnd (N));
-            R_Typ : constant Node_Id := Etype (Right_Opnd (N));
-
-         begin
-            L_Index := First_Index (L_Typ);
-            R_Index := First_Index (R_Typ);
-
-            Get_Index_Bounds (L_Index, L_Low, L_High);
-            Get_Index_Bounds (R_Index, R_Low, R_High);
-
-            --  Another error is issued for constrained array types with
-            --  non-static bounds elsewhere, so only deal with different
-            --  constrained types, or unconstrained types.
-
-            if L_Typ /= R_Typ or else not Is_Constrained (L_Typ) then
-               if not Is_Static_Expression (L_Low)
-                 or else not Is_Static_Expression (R_Low)
-                 or else Expr_Value (L_Low) /= Expr_Value (R_Low)
-               then
-                  Error_Msg_F ("|~~operation defined only when both operands "
-                               & "have the same static lower bound", N);
-               end if;
-
-               if not Is_Static_Expression (L_High)
-                 or else not Is_Static_Expression (R_High)
-                 or else Expr_Value (L_High) /= Expr_Value (R_High)
-               then
-                  Error_Msg_F ("|~~operation defined only when both operands "
-                               & "have the same static higher bound", N);
-               end if;
-            end if;
-         end;
+         Error_Msg_F ("|~~array types should have matching static bounds", N);
       end if;
 
    end Resolve_Logical_Op;
@@ -7856,6 +7956,15 @@ package body Sem_Res is
 
    begin
       Resolve (Expr, Target_Typ);
+
+      if Formal_Verification_Mode
+        and then Comes_From_Source (Original_Node (N))
+        and then Is_Array_Type (Target_Typ)
+        and then Is_Array_Type (Etype (Expr))
+        and then not Matching_Static_Array_Bounds (Target_Typ, Etype (Expr))
+      then
+         Error_Msg_F ("|~~array types should have matching static bounds", N);
+      end if;
 
       --  A qualified expression requires an exact match of the type,
       --  class-wide matching is not allowed. However, if the qualifying
@@ -8970,6 +9079,18 @@ package body Sem_Res is
       end if;
 
       Resolve (Operand);
+
+      --  In SPARK or ALFA, a type conversion between array types should be
+      --  restricted to types which have matching static bounds.
+
+      if Formal_Verification_Mode
+        and then Comes_From_Source (Original_Node (N))
+        and then Is_Array_Type (Target_Typ)
+        and then Is_Array_Type (Operand_Typ)
+        and then not Matching_Static_Array_Bounds (Target_Typ, Operand_Typ)
+      then
+         Error_Msg_F ("|~~array types should have matching static bounds", N);
+      end if;
 
       --  Note: we do the Eval_Type_Conversion call before applying the
       --  required checks for a subtype conversion. This is important, since
