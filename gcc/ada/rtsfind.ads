@@ -650,6 +650,7 @@ package Rtsfind is
      RE_Interrupt_Priority,              -- System
      RE_Lib_Stop,                        -- System
      RE_Low_Order_First,                 -- System
+     RE_Max_Base_Digits,                 -- System
      RE_Max_Priority,                    -- System
      RE_Null_Address,                    -- System
      RE_Priority,                        -- System
@@ -1827,6 +1828,7 @@ package Rtsfind is
      RE_Interrupt_Priority               => System,
      RE_Lib_Stop                         => System,
      RE_Low_Order_First                  => System,
+     RE_Max_Base_Digits                  => System,
      RE_Max_Priority                     => System,
      RE_Null_Address                     => System,
      RE_Priority                         => System,

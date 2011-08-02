@@ -15034,13 +15034,15 @@ package body Sem_Ch3 is
 
    procedure Floating_Point_Type_Declaration (T : Entity_Id; Def : Node_Id) is
       Digs          : constant Node_Id := Digits_Expression (Def);
+      Max_Digs_Val  : constant Uint := Digits_Value (Standard_Long_Long_Float);
       Digs_Val      : Uint;
       Base_Typ      : Entity_Id;
       Implicit_Base : Entity_Id;
       Bound         : Node_Id;
 
       function Can_Derive_From (E : Entity_Id) return Boolean;
-      --  Find if given digits value allows derivation from specified type
+      --  Find if given digits value, and possibly a specified range, allows
+      --  derivation from specified type
 
       ---------------------
       -- Can_Derive_From --
@@ -15091,24 +15093,47 @@ package body Sem_Ch3 is
 
       Process_Real_Range_Specification (Def);
 
-      if Can_Derive_From (Standard_Short_Float) then
-         Base_Typ := Standard_Short_Float;
-      elsif Can_Derive_From (Standard_Float) then
-         Base_Typ := Standard_Float;
-      elsif Can_Derive_From (Standard_Long_Float) then
-         Base_Typ := Standard_Long_Float;
-      elsif Can_Derive_From (Standard_Long_Long_Float) then
-         Base_Typ := Standard_Long_Long_Float;
+      --  Check that requested number of digits is not too high.
 
-      --  If we can't derive from any existing type, use long_long_float
+      if Digs_Val > Max_Digs_Val then
+         --  The check for Max_Base_Digits may be somewhat expensive, as it
+         --  requires reading System, so only do it when necessary.
+
+         declare
+            Max_Base_Digits : constant Uint :=
+               Expr_Value (Expression (Parent (RTE (RE_Max_Base_Digits))));
+         begin
+            if Digs_Val > Max_Base_Digits then
+               Error_Msg_Uint_1 := Max_Base_Digits;
+               Error_Msg_N ("digits value out of range, maximum is ^", Digs);
+
+            elsif No (Real_Range_Specification (Def)) then
+               Error_Msg_Uint_1 := Max_Digs_Val;
+               Error_Msg_N ("types with more than ^ digits need range spec "
+                 & "('R'M 3.5.7(6))", Digs);
+            end if;
+         end;
+      end if;
+
+      Base_Typ := First (Predefined_Float_Types);
+
+      while Present (Base_Typ) and then not Can_Derive_From (Base_Typ) loop
+         Next (Base_Typ);
+      end loop;
+
+      --  If we can't derive from any existing type, use Long_Long_Float
       --  and give appropriate message explaining the problem.
 
-      else
+      if No (Base_Typ) then
          Base_Typ := Standard_Long_Long_Float;
 
-         if Digs_Val >= Digits_Value (Standard_Long_Long_Float) then
-            Error_Msg_Uint_1 := Digits_Value (Standard_Long_Long_Float);
-            Error_Msg_N ("digits value out of range, maximum is ^", Digs);
+         if Digs_Val > Max_Digs_Val then
+            --  It might be the case that there is a type with the requested
+            --  range, just not the combination of digits and range.
+
+            Error_Msg_N
+              ("no predefined type has requested range and precision",
+               Real_Range_Specification (Def));
 
          else
             Error_Msg_N

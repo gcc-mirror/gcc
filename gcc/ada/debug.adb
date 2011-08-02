@@ -92,7 +92,7 @@ package body Debug is
    --  dZ   Generate listing showing the contents of the dispatch tables
 
    --  d.a  Force Target_Strict_Alignment mode to True
-   --  d.b
+   --  d.b  Dump backend types
    --  d.c  Generate inline concatenation, do not call procedure
    --  d.d
    --  d.e
@@ -499,6 +499,9 @@ package body Debug is
    --  d.a  Force Target_Strict_Alignment to True, even on targets where it
    --       would normally be false. Can be used for testing strict alignment
    --       circuitry in the compiler.
+
+   --  d.b  Dump back end types. During Create_Standard, the back end is
+   --       queried for all available types. This option shows them.
 
    --  d.c  Generate inline concatenation, instead of calling one of the
    --       System.Concat_n.Str_Concat_n routines in cases where the latter

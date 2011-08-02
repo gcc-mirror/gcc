@@ -6958,6 +6958,7 @@ package body Sem_Ch13 is
 
       if Is_Incomplete_Or_Private_Type (T)
         and then No (Underlying_Type (T))
+        and then Get_Pragma_Id (N) /= Pragma_Import
       then
          Error_Msg_N
            ("representation item must be after full type declaration", N);
