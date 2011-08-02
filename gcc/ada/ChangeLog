@@ -1,3 +1,28 @@
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Generate call to Check_TSD in Ada 2005 mode.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* s-imenne.ads: Minor reformatting.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* a-stunau.ads: Add pragma Suppress_Initialization for Big_String
+	* freeze.adb (Warn_Overlay): Don't warn if initialization suppressed
+	* s-stalib.ads: Add pragma Suppress_Initialization for Big_String
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads (Materialize_Entity): Document this is only for renamings
+	* exp_ch3.adb (Expand_N_Object_Declaration): Make sure we generate
+	required debug information in the case where we transform the object
+	declaration into a renaming declaration.
+	* exp_ch4.adb (Expand_Concatenate): Generate debug info for result
+	object
+	* exp_dbug.ads (Debug_Renaming_Declaration): Document setting of
+	Materialize_Entity.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads, einfo.adb (Suppress_Initialization): Replaces

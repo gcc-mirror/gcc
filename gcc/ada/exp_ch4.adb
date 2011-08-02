@@ -2875,10 +2875,12 @@ package body Exp_Ch4 is
 
       --  Now we construct an array object with appropriate bounds. We mark
       --  the target as internal to prevent useless initialization when
-      --  Initialize_Scalars is enabled.
+      --  Initialize_Scalars is enabled. Also since this is the actual result
+      --  entity, we make sure we have debug information for the result.
 
       Ent := Make_Temporary (Loc, 'S');
       Set_Is_Internal (Ent);
+      Set_Needs_Debug_Info (Ent);
 
       --  If the bound is statically known to be out of range, we do not want
       --  to abort, we want a warning and a runtime constraint error. Note that
