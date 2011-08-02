@@ -141,7 +141,7 @@ package body Sem_Util is
    --  T is a derived tagged type. Check whether the type extension is null.
    --  If the parent type is fully initialized, T can be treated as such.
 
-   procedure Mark_Non_ALFA_Subprogram_Body_Unconditional;
+   procedure Mark_Non_ALFA_Subprogram_Unconditional;
    --  Perform the action for Mark_Non_ALFA_Subprogram_Body, which allows the
    --  latter to be small and inlined.
 
@@ -2315,34 +2315,42 @@ package body Sem_Util is
       end if;
    end Current_Subprogram;
 
-   -----------------------------------
-   -- Mark_Non_ALFA_Subprogram_Body --
-   -----------------------------------
+   ------------------------------
+   -- Mark_Non_ALFA_Subprogram --
+   ------------------------------
 
-   procedure Mark_Non_ALFA_Subprogram_Body is
+   procedure Mark_Non_ALFA_Subprogram is
    begin
       --  Isolate marking of the current subprogram body so that the body of
-      --  Mark_Non_ALFA_Subprogram_Body is small and inlined.
+      --  Mark_Non_ALFA_Subprogram is small and inlined.
 
       if ALFA_Mode then
-         Mark_Non_ALFA_Subprogram_Body_Unconditional;
+         Mark_Non_ALFA_Subprogram_Unconditional;
       end if;
-   end Mark_Non_ALFA_Subprogram_Body;
+   end Mark_Non_ALFA_Subprogram;
 
-   -------------------------------------------------
-   -- Mark_Non_ALFA_Subprogram_Body_Unconditional --
-   -------------------------------------------------
+   --------------------------------------------
+   -- Mark_Non_ALFA_Subprogram_Unconditional --
+   --------------------------------------------
 
-   procedure Mark_Non_ALFA_Subprogram_Body_Unconditional is
+   procedure Mark_Non_ALFA_Subprogram_Unconditional is
       Cur_Subp : constant Entity_Id := Current_Subprogram;
    begin
       if Present (Cur_Subp)
         and then (Is_Subprogram (Cur_Subp)
                    or else Is_Generic_Subprogram (Cur_Subp))
       then
-         Set_Body_Is_In_ALFA (Cur_Subp, False);
+         --  If the non-ALFA construct is in a precondition or postcondition,
+         --  then mark the subprogram as not in ALFA. Otherwise, mark the
+         --  subprogram body as not in ALFA.
+
+         if In_Pre_Post_Expression then
+            Set_Is_In_ALFA (Cur_Subp, False);
+         else
+            Set_Body_Is_In_ALFA (Cur_Subp, False);
+         end if;
       end if;
-   end Mark_Non_ALFA_Subprogram_Body_Unconditional;
+   end Mark_Non_ALFA_Subprogram_Unconditional;
 
    ---------------------
    -- Defining_Entity --

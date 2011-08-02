@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -239,6 +239,14 @@ package Sem is
    --  processing of an Address attribute reference). When this switch is True
    --  then Full_Analysis above must be False. You should really regard this as
    --  a read only flag.
+
+   In_Pre_Post_Expression : Boolean := False;
+   --  Switch to indicate that we are in a precondition or postcondition. The
+   --  analysis is not expected to process a precondition or a postcondition as
+   --  a sub-analysis for another precondition or postcondition, so this switch
+   --  needs not be saved for recursive calls. When this switch is True then
+   --  In_Spec_Expression above must be True also. You should really regard
+   --  this as a read only flag.
 
    In_Deleted_Code : Boolean := False;
    --  If the condition in an if-statement is statically known, the branch
