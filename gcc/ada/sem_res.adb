@@ -9817,9 +9817,10 @@ package body Sem_Res is
       --  so that the itype is frozen at the proper place in the tree (i.e. at
       --  the point where actions for the slice are analyzed). Note that this
       --  is different from freezing the itype immediately, which might be
-      --  premature (e.g. if the slice is within a transient scope).
+      --  premature (e.g. if the slice is within a transient scope). This needs
+      --  to be done only if expansion is enabled.
 
-      else
+      elsif Expander_Active then
          Ensure_Defined (Typ => Slice_Subtype, N => N);
       end if;
    end Set_Slice_Subtype;

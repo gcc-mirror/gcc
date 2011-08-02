@@ -1974,6 +1974,11 @@ package body Sem_Aggr is
                   begin
                      Expander_Mode_Save_And_Set (False);
                      Full_Analysis := False;
+
+                     --  Analyze the expression, making sure it is properly
+                     --  attached to the tree before we do the analysis.
+
+                     Set_Parent (Expr, Parent (Expression (Assoc)));
                      Analyze (Expr);
 
                      --  If the expression is a literal, propagate this info
