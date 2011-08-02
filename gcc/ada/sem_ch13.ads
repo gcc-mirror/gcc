@@ -46,6 +46,7 @@ package Sem_Ch13 is
    --  the call is ignored. Note that we can't use a simpler interface of just
    --  passing the node N, since the analysis of the node may cause it to be
    --  rewritten to a node not permitting aspect specifications.
+   pragma Inline (Analyze_Aspect_Specifications);
 
    procedure Adjust_Record_For_Reverse_Bit_Order (R : Entity_Id);
    --  Called from Freeze where R is a record entity for which reverse bit

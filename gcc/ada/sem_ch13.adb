@@ -78,6 +78,16 @@ package body Sem_Ch13 is
    --  inherited from a derived type that is no longer appropriate for the
    --  new Esize value. In this case, we reset the Alignment to unknown.
 
+   procedure Analyze_Non_Null_Aspect_Specifications
+     (N : Node_Id;
+      E : Entity_Id;
+      L : List_Id);
+   --  This procedure is called to analyze aspect specifications for node N.
+   --  E is the corresponding entity declared by the declaration node N, and
+   --  L is the list of aspect specifications for this node. This procedure
+   --  does the real work, as opposed to Analyze_Aspect_Specifications which
+   --  is inlined to fast-track the common case.
+
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ,
    --  then either there are pragma Invariant entries on the rep chain for the
@@ -688,6 +698,25 @@ package body Sem_Ch13 is
       E : Entity_Id;
       L : List_Id)
    is
+   begin
+      --  Return if no aspects
+
+      if L = No_List then
+         return;
+      end if;
+
+      Analyze_Non_Null_Aspect_Specifications (N, E, L);
+   end Analyze_Aspect_Specifications;
+
+   --------------------------------------------
+   -- Analyze_Non_Null_Aspect_Specifications --
+   --------------------------------------------
+
+   procedure Analyze_Non_Null_Aspect_Specifications
+     (N : Node_Id;
+      E : Entity_Id;
+      L : List_Id)
+   is
       Aspect : Node_Id;
       Aitem  : Node_Id;
       Ent    : Node_Id;
@@ -715,12 +744,6 @@ package body Sem_Ch13 is
       --  Set True if delay is required
 
    begin
-      --  Return if no aspects
-
-      if L = No_List then
-         return;
-      end if;
-
       --  Loop through aspects
 
       Aspect := First (L);
@@ -1198,7 +1221,7 @@ package body Sem_Ch13 is
          <<Continue>>
             Next (Aspect);
       end loop;
-   end Analyze_Aspect_Specifications;
+   end Analyze_Non_Null_Aspect_Specifications;
 
    -----------------------
    -- Analyze_At_Clause --
