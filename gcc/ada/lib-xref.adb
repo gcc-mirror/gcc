@@ -330,12 +330,12 @@ package body Lib.Xref is
          return;
       end if;
 
-      --  Ada 2005 (AI-345): For synchronized types generate reference
-      --  to the wrapper that allow us to dispatch calls through their
-      --  implemented abstract interface types.
+      --  Ada 2005 (AI-345): For synchronized types generate reference to the
+      --  wrapper that allow us to dispatch calls through their implemented
+      --  abstract interface types.
 
-      --  The check for Present here is to protect against previously
-      --  reported critical errors.
+      --  The check for Present here is to protect against previously reported
+      --  critical errors.
 
       Prim_List := Primitive_Operations (Base_T);
 
@@ -1042,8 +1042,11 @@ package body Lib.Xref is
 
    function Is_Local_Reference_Type (Typ : Character) return Boolean is
    begin
-      return Typ = 'r' or else Typ = 'm' or else Typ = 's'
-        or else Typ = 'I' or else Typ = 'D';
+      return Typ = 'r' or else
+             Typ = 'm' or else
+             Typ = 's' or else
+             Typ = 'I' or else
+             Typ = 'D';
    end Is_Local_Reference_Type;
 
    --------
@@ -1321,8 +1324,8 @@ package body Lib.Xref is
          return;
       end if;
 
-      --  First we add references to the primitive operations of tagged
-      --  types declared in the main unit.
+      --  First we add references to the primitive operations of tagged types
+      --  declared in the main unit.
 
       Handle_Prim_Ops : declare
          Ent  : Entity_Id;
@@ -1990,16 +1993,16 @@ package body Lib.Xref is
                --  specs.
 
                  or else (XE.Loc = XE.Def
-                            and then
-                              (XE.Typ /= 'b'
-                                or else not Is_Subprogram (XE.Ent)))
+                           and then
+                             (XE.Typ /= 'b'
+                               or else not Is_Subprogram (XE.Ent)))
 
                --  Also suppress definitions of body formals (we only
                --  treat these as references, and the references were
                --  separately recorded).
 
                  or else (Is_Formal (XE.Ent)
-                            and then Present (Spec_Entity (XE.Ent)))
+                           and then Present (Spec_Entity (XE.Ent)))
                then
                   null;
 
@@ -2400,11 +2403,10 @@ package body Lib.Xref is
       --  not suitable for local cross-references.
 
       Rnums : array (0 .. Nrefs) of Nat;
-      --  This array contains numbers of references in the Xrefs table.
-      --  This list is sorted in output order. The extra 0'th entry is
-      --  convenient for the call to sort. When we sort the table, we
-      --  move the entries in Rnums around, but we do not move the
-      --  original table entries.
+      --  This array contains numbers of references in the Xrefs table. This
+      --  list is sorted in output order. The extra 0'th entry is convenient
+      --  for the call to sort. When we sort the table, we move the entries in
+      --  Rnums around, but we do not move the original table entries.
 
       Curxu : Unit_Number_Type;
       --  Current xref unit
@@ -2555,9 +2557,9 @@ package body Lib.Xref is
       begin
          --  Eliminate duplicate entries
 
-         --  We need this test for NR because if we force ALI file
-         --  generation in case of errors detected, it may be the case
-         --  that Nrefs is 0, so we should not reset it here
+         --  We need this test for NR because if we force ALI file generation
+         --  in case of errors detected, it may be the case that Nrefs is zero,
+         --  so we should not reset it here.
 
          if Nrefs >= 2 then
             NR    := Nrefs;
@@ -2602,6 +2604,7 @@ package body Lib.Xref is
       for Refno in 1 .. Nrefs loop
          Output_One_Ref : declare
             Ent : Entity_Id;
+
             XE  : Xref_Entry renames Xrefs.Table (Rnums (Refno));
             --  The current entry to be accessed
 
@@ -2644,8 +2647,8 @@ package body Lib.Xref is
                Write_Info_Char (' ');
                Write_Entity_Name (XE.Sub, Cursrc);
 
-               --  Indicate that the entity is in the unit of the current
-               --  local xref section.
+               --  Indicate that the entity is in the unit of the current local
+               --  xref section.
 
                Curru := Cursu;
 
@@ -2676,17 +2679,15 @@ package body Lib.Xref is
                Curru := Cursu;
             end if;
 
-            --  Start new Entity line if new entity. Note that we
-            --  consider two entities the same if they have the same
-            --  name and source location. This causes entities in
-            --  instantiations to be treated as though they referred
-            --  to the template.
+            --  Start new Entity line if new entity. Note that we consider two
+            --  entities the same if they have the same name and source
+            --  location. This causes entities in instantiations to be treated
+            --  as though they referred to the template.
 
             if No (Curent)
               or else
                 (XE.Ent /= Curent
-                 and then
-                   (Name_Change (XE.Ent) or else XE.Def /= Curdef))
+                  and then (Name_Change (XE.Ent) or else XE.Def /= Curdef))
             then
                Curent := XE.Ent;
                Curdef := XE.Def;
@@ -2715,14 +2716,14 @@ package body Lib.Xref is
                Crloc := No_Location;
             end if;
 
-            --  Output the reference if it is not as the same location
-            --  as the previous one, or it is a read-reference that
-            --  indicates that the entity is an in-out actual in a call.
+            --  Output the reference if it is not as the same location as the
+            --  previous one, or it is a read-reference that indicates that the
+            --  entity is an in-out actual in a call.
 
             if XE.Loc /= No_Location
               and then
                 (XE.Loc /= Crloc
-                 or else (Prevt = 'm' and then XE.Typ = 'r'))
+                  or else (Prevt = 'm' and then XE.Typ = 'r'))
             then
                Crloc := XE.Loc;
                Prevt := XE.Typ;
@@ -2804,10 +2805,9 @@ package body Lib.Xref is
             end if;
          end loop;
 
-         --  Write out the identifier by copying the exact
-         --  source characters used in its declaration. Note
-         --  that this means wide characters will be in their
-         --  original encoded form.
+         --  Write out the identifier by copying the exact source characters
+         --  used in its declaration. Note that this means wide characters will
+         --  be in their original encoded form.
 
          for J in
            Original_Location (Sloc (E)) .. P - 1

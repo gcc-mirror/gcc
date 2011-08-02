@@ -1,5 +1,11 @@
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb, exp_atag.ads, get_scos.adb, get_scos.ads,
+	exp_disp.adb, lib-xref.adb, lib-xref.ads: Update comments.
+	Minor reformatting.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
 	* sem_res.adb: Minor reformatting.
 	* sem_prag.adb: Minor reformatting.
 

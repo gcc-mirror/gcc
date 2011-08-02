@@ -594,7 +594,7 @@ package body Exp_Disp is
                Analyze_List (Target_List);
 
                if Present (Priv_Decls)
-                  and then Is_Non_Empty_List (Priv_Decls)
+                 and then Is_Non_Empty_List (Priv_Decls)
                then
                   Append_List (Target_List, Priv_Decls);
                else
@@ -6804,7 +6804,7 @@ package body Exp_Disp is
                   if Tagged_Type_Expansion then
                      Tag_Node :=
                        New_Reference_To
-                        (Node (First_Elmt (Access_Disp_Table (Typ))), Loc);
+                         (Node (First_Elmt (Access_Disp_Table (Typ))), Loc);
                   else
                      Tag_Node :=
                        Make_Attribute_Reference (Loc,
