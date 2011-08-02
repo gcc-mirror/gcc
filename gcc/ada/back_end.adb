@@ -325,4 +325,16 @@ package body Back_End is
          Next_Arg := Next_Arg + 1;
       end loop;
    end Scan_Compiler_Arguments;
+
+   -----------------------------
+   -- Register_Back_End_Types --
+   -----------------------------
+
+   procedure Register_Back_End_Types (Call_Back : Register_Type_Proc) is
+      procedure Enumerate_Modes (Call_Back : Register_Type_Proc);
+      pragma Import (C, Enumerate_Modes, "enumerate_modes");
+
+   begin
+      Enumerate_Modes (Call_Back);
+   end Register_Back_End_Types;
 end Back_End;

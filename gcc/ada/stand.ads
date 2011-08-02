@@ -229,9 +229,9 @@ package Stand is
    type Standard_Entity_Array_Type is array (Standard_Entity_Type) of Node_Id;
 
    Standard_Entity : Standard_Entity_Array_Type;
-   --  This array contains pointers to the Defining Identifier nodes
-   --  for each of the entities defined in Standard_Entities_Type. It
-   --  is initialized by the Create_Standard procedure.
+   --  This array contains pointers to the Defining Identifier nodes for
+   --  each of the visible entities defined in Standard_Entities_Type. It is
+   --  initialized by the Create_Standard procedure.
 
    Standard_Package_Node : Node_Id;
    --  Points to the N_Package_Declaration node for standard. Also
@@ -342,6 +342,14 @@ package Stand is
    Standard_Debug_Renaming_Type : Entity_Id;
    --  A zero-size subtype of Integer, used as the type of variables used
    --  to provide the debugger with name encodings for renaming declarations.
+
+   Predefined_Float_Types : List_Id;
+   --  Entities for predefined floating point types. These are used by
+   --  the semantic phase to select appropriate types for floating point
+   --  declarations. This list is ordered by preference. All types up to
+   --  Long_Long_Float_Type are considered for plain "digits N" declarations,
+   --  while selection of later types requires a range specification and
+   --  possibly other attributes or pragmas.
 
    --  The entities labeled Any_xxx are used in situations where the full
    --  characteristics of an entity are not yet known, e.g. Any_Character

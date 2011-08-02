@@ -236,7 +236,6 @@ package body Inline is
    ----------------------
 
    procedure Add_Inlined_Body (E : Entity_Id) is
-      Pack : Entity_Id;
 
       function Must_Inline return Boolean;
       --  Inlining is only done if the call statement N is in the main unit,
@@ -318,35 +317,39 @@ package body Inline is
       --  no enclosing package to retrieve. In this case, it is the body of
       --  the function that will have to be loaded.
 
-      if not Is_Abstract_Subprogram (E) and then not Is_Nested (E)
+      if not Is_Abstract_Subprogram (E)
+        and then not Is_Nested (E)
         and then Convention (E) /= Convention_Protected
+        and then Must_Inline
       then
-         Pack := Get_Code_Unit_Entity (E);
+         declare
+            Pack : constant Entity_Id := Get_Code_Unit_Entity (E);
 
-         if Must_Inline
-           and then Ekind (Pack) = E_Package
-         then
-            Set_Is_Called (E);
-
-            if Pack = Standard_Standard then
+         begin
+            if Pack = E then
 
                --  Library-level inlined function. Add function itself to
                --  list of needed units.
 
+               Set_Is_Called (E);
                Inlined_Bodies.Increment_Last;
                Inlined_Bodies.Table (Inlined_Bodies.Last) := E;
 
-            elsif Is_Generic_Instance (Pack) then
-               null;
+            elsif Ekind (Pack) = E_Package then
+               Set_Is_Called (E);
 
-            elsif not Is_Inlined (Pack)
-              and then not Has_Completion (E)
-            then
-               Set_Is_Inlined (Pack);
-               Inlined_Bodies.Increment_Last;
-               Inlined_Bodies.Table (Inlined_Bodies.Last) := Pack;
+               if Is_Generic_Instance (Pack) then
+                  null;
+
+               elsif not Is_Inlined (Pack)
+                 and then not Has_Completion (E)
+               then
+                  Set_Is_Inlined (Pack);
+                  Inlined_Bodies.Increment_Last;
+                  Inlined_Bodies.Table (Inlined_Bodies.Last) := Pack;
+               end if;
             end if;
-         end if;
+         end;
       end if;
    end Add_Inlined_Body;
 

@@ -1,5 +1,30 @@
 2011-08-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* inline.adb (Add_Inlined_Body): Adjust check for library-level inlined
+	functions to previous change.  Reorganize code slightly.
+
+2011-08-02  Geert Bosch  <bosch@adacore.com>
+
+	* back_end.ads (Register_Type_Proc): New call back procedure type for
+	allowing the back end to provide information about available types.
+	(Register_Back_End_Types): New procedure to register back end types.
+	* back_end.adb (Register_Back_End_Types): Call the back end to enumerate
+	available types.
+	* cstand.adb (Back_End_Float_Types): New list for floating point types
+	supported by the back end.
+	(Build_Float_Type): Add extra parameter for Float_Rep_Kind.
+	(Copy_Float_Type): New procedure to make new copies of predefined types.
+	(Register_Float_Type): New call back procedure to populate the BEFT list
+	(Find_Back_End_Float_Type): New procedure to find a BEFT by name
+	(Create_Back_End_Float_Types): New procedure to populate the BEFT list.
+	(Create_Float_Types): New procedure to create entities for floating
+	point types predefined in Standard, and put these and any remaining
+	BEFTs on the Predefined_Float_Types list.
+	* stand.ads (Predefined_Float_Types): New list for predefined floating
+	point types that do not have declarations in package Standard.
+
+2011-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* inline.adb (Get_Code_Unit_Entity): New local function.  Returns the
 	entity node for the unit containing the parameter.
 	(Add_Inlined_Body): Use it to find the unit containing the subprogram.
