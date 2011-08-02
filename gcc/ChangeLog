@@ -1,3 +1,8 @@
+2011-08-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/md.texi (stack_protect_set): The pattern moves ptr_mode value.
+	(stack_protect_test): The pattern compares ptr_mode value.
+
 2011-07-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49920
@@ -10,10 +15,10 @@
 	(*rep_stosdi_rex64): Disable when %eax, %ecx or %edi are fixed.
 	(*rep_stossi): Ditto.
 	(*rep_stosqi): Ditto.
+	(*strlenqi_1): Ditto.
 	(cmpstrnsi): Also fail when %ecx is fixed.
 	(*cmpstrnqi_nz_1): Disable when %ecx, %esi or %edi are fixed.
 	(*cmpstrnqi_1): Ditto.
-	(*strlenqi_1): Ditto.
 	(*strmovdi_rex_1): Disable when %esi or %edi are fixed.
 	(*strmovsi_1): Ditto.
 	(*strmovhi_1): Ditto.

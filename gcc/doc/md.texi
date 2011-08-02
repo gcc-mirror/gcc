@@ -5510,7 +5510,7 @@ will be emitted, followed by a store of the value to the memory operand.
 @cindex @code{stack_protect_set} instruction pattern
 @item @samp{stack_protect_set}
 
-This pattern, if defined, moves a @code{Pmode} value from the memory
+This pattern, if defined, moves a @code{ptr_mode} value from the memory
 in operand 1 to the memory in operand 0 without leaving the value in
 a register afterward.  This is to avoid leaking the value some place
 that an attacker might use to rewrite the stack guard slot after
@@ -5521,7 +5521,7 @@ If this pattern is not defined, then a plain move pattern is generated.
 @cindex @code{stack_protect_test} instruction pattern
 @item @samp{stack_protect_test}
 
-This pattern, if defined, compares a @code{Pmode} value from the
+This pattern, if defined, compares a @code{ptr_mode} value from the
 memory in operand 1 with the memory in operand 0 without leaving the
 value in a register afterward and branches to operand 2 if the values
 weren't equal.
