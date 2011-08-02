@@ -1,3 +1,43 @@
+2011-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Can_Override_Operator): New function.
+	(Verify_Overriding_Indicator): Add missing code to check overriding
+	indicator in operators. Fixes regression.
+	(Check_Overriding_Indicator): Minor reformating after replacing the
+	code that evaluates if the subprogram can override an operator by
+	invocations to the above new function.
+	* einfo.adb
+	(Write_Field26_Name): Add missing code to ensure that, following
+	the documentation in einfo.ads, this field is not shown as attribute
+	"Static_Initialization" on non-dispatching functions.
+
+2011-08-02  Jose Ruiz  <ruiz@adacore.com>
+
+	* sem_res.adb (Resolve_Call): A call to
+	Ada.Real_Time.Timing_Events.Set_Handler violates restriction
+	No_Relative_Delay (AI-0211) only when it sets a relative timing event,
+	i.e., when the second parameter is of type Time_Span.
+
+2011-08-02  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Gnatmake): use <library dir>/lib<library name>.a to link
+	with an archive instead of -L<library dir> -l<library name>.
+
+2011-08-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Use_Type): If the clause is being re-analyzed,
+	mark the base types In_Use in addition to making the operations
+	use_visible.
+
+2011-08-02  Ed Falis  <falis@adacore.com>
+
+	* init.c: add and setup __gnat_signal_mask for the exception signals
+	* s-inmaop-vxworks.adb: new file.
+	* s-intman-vxworks.adb: remove unnecessary initializations and
+	simplify remaining
+	* s-intman-vxworks.ads: remove unnecessary variable
+	* s-taprop-vxworks.adb: simplify signal initialization
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch8.adb: Minor code reorganization, comment updates.

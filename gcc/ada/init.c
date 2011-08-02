@@ -1975,20 +1975,23 @@ __gnat_map_signal (int sig)
 /* Tasking and Non-tasking signal handler.  Map SIGnal to Ada exception
    propagation after the required low level adjustments.  */
 
+sigset_t __gnat_signal_mask;
+
+  /* VxWorks will always mask out the signal during the signal handler and
+     will reenable it on a longjmp.  GNAT does not generate a longjmp to
+     return from a signal handler so exception signals will still be masked
+     unless we unmask it. __gnat_signal mask tells sigaction to block the
+     exception signals and sigprocmask to unblock them. */
+
 void
 __gnat_error_handler (int sig,
 		      void *si ATTRIBUTE_UNUSED,
 		      struct sigcontext *sc ATTRIBUTE_UNUSED)
 {
-  sigset_t mask;
 
-  /* VxWorks will always mask out the signal during the signal handler and
-     will reenable it on a longjmp.  GNAT does not generate a longjmp to
-     return from a signal handler so the signal will still be masked unless
-     we unmask it.  */
-  sigprocmask (SIG_SETMASK, NULL, &mask);
-  sigdelset (&mask, sig);
-  sigprocmask (SIG_SETMASK, &mask, NULL);
+  /* This routine handles the exception signals for all tasks */
+
+  sigprocmask (SIG_UNBLOCK, &__gnat_signal_mask, NULL);
 
   __gnat_map_signal (sig);
 }
@@ -2000,14 +2003,24 @@ __gnat_install_handler (void)
 
   /* Setup signal handler to map synchronous signals to appropriate
      exceptions.  Make sure that the handler isn't interrupted by another
-     signal that might cause a scheduling event!  */
+     signal that might cause a scheduling event! This routine is called
+     only once, for the environment task. Other tasks are set up in the
+     System.Interrupt_Manager package. */
+
+  sigemptyset (&__gnat_signal_mask);
+  sigaddset (SIGBUS, &__gnat_signal_mask);
+  sigaddset (SIGFPE, &__gnat_signal_mask);
+  sigaddset (SIGILL, &__gnat_signal_mask);
+  sigaddset (SIGSEGV, &__gnat_signal_mask);
 
   act.sa_handler = __gnat_error_handler;
   act.sa_flags = SA_SIGINFO | SA_ONSTACK;
-  sigemptyset (&act.sa_mask);
+  act.sa_mask = __gnat_signal_mask;
 
-  /* For VxWorks, install all signal handlers, since pragma Interrupt_State
-     applies to vectored hardware interrupts, not signals.  */
+  /* For VxWorks, unconditionally install the exception signal handlers, since
+     pragma Interrupt_State applies to vectored hardware interrupts, not
+     signals.  */
+
   sigaction (SIGFPE,  &act, NULL);
   sigaction (SIGILL,  &act, NULL);
   sigaction (SIGSEGV, &act, NULL);
@@ -2027,6 +2040,7 @@ __gnat_init_float (void)
      below have no effect.  */
 #if defined (_ARCH_PPC) && !defined (_SOFT_FLOAT) && !defined (VTHREADS)
 #if defined (__SPE__)
+  /* VxWorks 6 */
   {
      const unsigned long spefscr_mask = 0xfffffff3;
      unsigned long spefscr;
@@ -2035,6 +2049,7 @@ __gnat_init_float (void)
      asm ("mtspr 512, %0\n\tisync" : : "r" (spefscr));
   }
 #else
+  /* all except VxWorks 653 and MILS */
   asm ("mtfsb0 25");
   asm ("mtfsb0 26");
 #endif
@@ -2042,7 +2057,7 @@ __gnat_init_float (void)
 
 #if (defined (__i386__) || defined (i386)) && !defined (VTHREADS)
   /* This is used to properly initialize the FPU on an x86 for each
-     process thread.  */
+     process thread. For all except VxWorks 653 */
   asm ("finit");
 #endif
 

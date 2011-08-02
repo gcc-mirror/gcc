@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,8 @@
 
 --  This is the VxWorks version of this package
 
---  Make a careful study of all signals available under the OS, to see which
---  need to be reserved, kept always unmasked, or kept always unmasked. Be on
---  the lookout for special signals that may be used by the thread library.
+--  It is simpler than other versions because the Ada interrupt handling
+--  mechanisms are used for hardware interrupts rather than signals.
 
 package body System.Interrupt_Management is
 
@@ -45,15 +44,21 @@ package body System.Interrupt_Management is
                          (SIGFPE, SIGILL, SIGSEGV, SIGBUS);
 
    Exception_Action : aliased struct_sigaction;
-   --  Keep this variable global so that it is initialized only once
+   --  Keep this a variable global so that it is initialized only once
+
+   Signal_Mask : aliased sigset_t;
+   pragma Import (C, Signal_Mask, "__gnat_signal_mask");
+   --  Mask indicating that all exception signals are to be masked
+   --  when a signal is propagated.
 
    procedure Notify_Exception
      (signo      : Signal;
       siginfo    : System.Address;
       sigcontext : System.Address);
    pragma Import (C, Notify_Exception, "__gnat_error_handler");
-   --  Map signal to Ada exception and raise it.  Different versions
-   --  of VxWorks need different mappings.
+   --  Map a signal to Ada exception and raise it.  Different versions
+   --  of VxWorks need different mappings. This is addressed in init.c in
+   --  __gnat_map_signal.
 
    -----------------------
    -- Local Subprograms --
@@ -62,7 +67,7 @@ package body System.Interrupt_Management is
    function State (Int : Interrupt_ID) return Character;
    pragma Import (C, State, "__gnat_get_interrupt_state");
    --  Get interrupt state. Defined in init.c The input argument is the
-   --  interrupt number, and the result is one of the following:
+   --  hardware interrupt number, and the result is one of the following:
 
    Runtime : constant Character := 'r';
    Default : constant Character := 's';
@@ -100,8 +105,6 @@ package body System.Interrupt_Management is
    --  Set to True once Initialize is called, further calls have no effect
 
    procedure Initialize is
-      mask   : aliased sigset_t;
-      Result : int;
 
    begin
       if Initialized then
@@ -115,17 +118,11 @@ package body System.Interrupt_Management is
 
       Abort_Task_Interrupt := SIGABRT;
 
+      --  Signal_Mask was initialized in __gnat_install_handler
+
       Exception_Action.sa_handler := Notify_Exception'Address;
       Exception_Action.sa_flags := SA_ONSTACK + SA_SIGINFO;
-      Result := sigemptyset (mask'Access);
-      pragma Assert (Result = 0);
-
-      for J in Exception_Signals'Range loop
-         Result := sigaddset (mask'Access, Signal (Exception_Signals (J)));
-         pragma Assert (Result = 0);
-      end loop;
-
-      Exception_Action.sa_mask := mask;
+      Exception_Action.sa_mask := Signal_Mask;
 
       --  Initialize hardware interrupt handling
 
@@ -139,15 +136,6 @@ package body System.Interrupt_Management is
          end if;
       end loop;
 
-      --  Add exception signals to the set of unmasked signals
-
-      for J in Exception_Signals'Range loop
-         Keep_Unmasked (Exception_Signals (J)) := True;
-      end loop;
-
-      --  The abort signal must also be unmasked
-
-      Keep_Unmasked (Abort_Task_Interrupt) := True;
    end Initialize;
 
 end System.Interrupt_Management;

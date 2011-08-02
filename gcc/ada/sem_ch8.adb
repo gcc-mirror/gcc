@@ -2683,12 +2683,24 @@ package body Sem_Ch8 is
       --  been analyzed previously, and it is begin reinstalled, for example
       --  when the clause appears in a package spec and we are compiling the
       --  corresponding package body. In that case, make the entities on the
-      --  existing list use-visible.
+      --  existing list use_visible, and mark the corresponding types In_Use.
 
       if Present (Used_Operations (N)) then
          declare
+            Mark : Node_Id;
             Elmt : Elmt_Id;
+
          begin
+            Mark := First (Subtype_Marks (N));
+            while Present (Mark) loop
+               if not In_Use (Entity (Mark))
+                 and then not Is_Potentially_Use_Visible (Entity (Mark))
+               then
+                  Set_In_Use (Base_Type (Entity (Mark)));
+               end if;
+               Next (Mark);
+            end loop;
+
             Elmt := First_Elmt (Used_Operations (N));
             while Present (Elmt) loop
                Set_Is_Potentially_Use_Visible (Node (Elmt));
