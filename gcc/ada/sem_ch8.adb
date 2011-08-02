@@ -1580,10 +1580,10 @@ package body Sem_Ch8 is
    ---------------------------------
 
    procedure Analyze_Subprogram_Renaming (N : Node_Id) is
-      Formal_Spec : constant Node_Id          := Corresponding_Formal_Spec (N);
-      Is_Actual   : constant Boolean          := Present (Formal_Spec);
+      Formal_Spec : constant Node_Id := Corresponding_Formal_Spec (N);
+      Is_Actual   : constant Boolean := Present (Formal_Spec);
 
-      CW_Actual   : Boolean                   := False;
+      CW_Actual : Boolean := False;
       --  True if the renaming is for a defaulted formal subprogram when the
       --  actual for a related formal type is class-wide. For AI05-0071.
 
@@ -2440,9 +2440,8 @@ package body Sem_Ch8 is
             --  no check for mode conformance,  given that the signatures don't
             --  match (the source mentions T but the actual mentions T'class).
 
-            if  CW_Actual then
+            if CW_Actual then
                null;
-
             else
                Check_Mode_Conformant (New_S, Old_S);
             end if;

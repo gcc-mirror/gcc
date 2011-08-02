@@ -313,7 +313,8 @@ package Stand is
    Boolean_Literals : array (Boolean) of Entity_Id;
    --  Entities for the two boolean literals, used by the expander
 
-   --  Standard types which are in ALFA are associated to True
+   --  Standard types which are in ALFA are associated set to True
+
    Standard_Type_Is_In_ALFA : array (S_Types) of Boolean :=
      (S_Boolean             => True,
 
