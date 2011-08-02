@@ -423,7 +423,7 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
+  s-inmaop.adb<s-inmaop-vxworks.adb \
   s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
@@ -468,7 +468,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
+  s-inmaop.adb<s-inmaop-vxworks.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
   s-osinte.ads<s-osinte-vxworks.ads \
@@ -564,7 +564,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   a-numaux.ads<a-numaux-vxworks.ads \
   g-io.adb<g-io-vxworks-ppc-cert.adb \
   g-io.ads<g-io-vxworks-ppc-cert.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
+  s-inmaop.adb<s-inmaop-vxworks.adb \
   s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
@@ -625,7 +625,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksmils,$(targ))),)
   a-numaux.ads<a-numaux-vxworks.ads \
   g-io.adb<g-io-vxworks-ppc-cert.adb \
   g-io.ads<g-io-vxworks-ppc-cert.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
+  s-inmaop.adb<s-inmaop-vxworks.adb \
   s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
@@ -682,7 +682,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(targ))),)
   g-bytswa.adb<g-bytswa-x86.adb \
   g-io.adb<g-io-vxworks-ppc-cert.adb \
   g-io.ads<g-io-vxworks-ppc-cert.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
+  s-inmaop.adb<s-inmaop-vxworks.adb \
   s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
@@ -737,7 +737,7 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
+  s-inmaop.adb<s-inmaop-vxworks.adb \
   s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
@@ -777,7 +777,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
   i-vxwork.ads<i-vxwork-x86.ads \
   s-osinte.adb<s-osinte-vxworks.adb \
   s-osinte.ads<s-osinte-vxworks.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
+  s-inmaop.adb<s-inmaop-vxworks.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
   a-numaux.adb<a-numaux-x86.adb \
@@ -867,7 +867,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
+  s-inmaop.adb<s-inmaop-vxworks.adb \
   s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
@@ -905,7 +905,7 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
+  s-inmaop.adb<s-inmaop-vxworks.adb \
   s-interr.adb<s-interr-hwint.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \

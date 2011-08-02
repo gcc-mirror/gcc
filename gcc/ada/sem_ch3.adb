@@ -1773,13 +1773,19 @@ package body Sem_Ch3 is
          end if;
       end Is_Known_Limited;
 
+      Typ : constant Node_Id := Subtype_Indication (Component_Definition (N));
+
    --  Start of processing for Analyze_Component_Declaration
 
    begin
       Generate_Definition (Id);
       Enter_Name (Id);
 
-      if Present (Subtype_Indication (Component_Definition (N))) then
+      if Present (Typ) then
+         if Nkind (Typ) /= N_Identifier then
+            Check_Formal_Restriction ("subtype mark required", Typ);
+         end if;
+
          T := Find_Type_Of_Object
                 (Subtype_Indication (Component_Definition (N)), N);
 
@@ -1833,6 +1839,7 @@ package body Sem_Ch3 is
       --  package Sem).
 
       if Present (E) then
+         Check_Formal_Restriction ("default expression is not allowed", E);
          Preanalyze_Spec_Expression (E, T);
          Check_Initialization (T, E);
 
@@ -3998,6 +4005,36 @@ package body Sem_Ch3 is
            ("subtype of Boolean cannot have constraint", N);
       end if;
 
+      --  Subtype of String shall have a lower index bound equal to 1 in SPARK
+      --  or ALFA.
+
+      if Base_Type (T) = Standard_String
+        and then Nkind (Subtype_Indication (N)) = N_Subtype_Indication
+      then
+         declare
+            Cstr   : constant Node_Id := Constraint (Subtype_Indication (N));
+            Drange : Node_Id;
+            Low    : Node_Id;
+         begin
+            if Nkind (Cstr) = N_Index_Or_Discriminant_Constraint
+              and then List_Length (Constraints (Cstr)) = 1
+            then
+               Drange := First (Constraints (Cstr));
+
+               if Nkind (Drange) = N_Range then
+                  Low := Low_Bound (Drange);
+
+                  if Is_OK_Static_Expression (Low)
+                    and then Expr_Value (Low) /= 1
+                  then
+                     Check_Formal_Restriction
+                       ("subtype of String must have 1 as lower bound", N);
+                  end if;
+               end if;
+            end if;
+         end;
+      end if;
+
       --  In the case where there is no constraint given in the subtype
       --  indication, Process_Subtype just returns the Subtype_Mark, so its
       --  semantic attributes must be established here.
@@ -4503,6 +4540,7 @@ package body Sem_Ch3 is
 
    procedure Array_Type_Declaration (T : in out Entity_Id; Def : Node_Id) is
       Component_Def : constant Node_Id := Component_Definition (Def);
+      Component_Typ : constant Node_Id := Subtype_Indication (Component_Def);
       Element_Type  : Entity_Id;
       Implicit_Base : Entity_Id;
       Index         : Node_Id;
@@ -4530,6 +4568,10 @@ package body Sem_Ch3 is
 
       Nb_Index := 1;
       while Present (Index) loop
+         if Nkind (Index) /= N_Identifier then
+            Check_Formal_Restriction ("subtype mark required", Index);
+         end if;
+
          Analyze (Index);
 
          --  Add a subtype declaration for each index of private array type
@@ -4600,10 +4642,12 @@ package body Sem_Ch3 is
 
       --  Process subtype indication if one is present
 
-      if Present (Subtype_Indication (Component_Def)) then
-         Element_Type :=
-           Process_Subtype
-             (Subtype_Indication (Component_Def), P, Related_Id, 'C');
+      if Present (Component_Typ) then
+         if Nkind (Component_Typ) /= N_Identifier then
+            Check_Formal_Restriction ("subtype mark required", Component_Typ);
+         end if;
+
+         Element_Type := Process_Subtype (Component_Typ, P, Related_Id, 'C');
 
       --  Ada 2005 (AI-230): Access Definition case
 
@@ -4711,6 +4755,8 @@ package body Sem_Ch3 is
       Set_Packed_Array_Type (T, Empty);
 
       if Aliased_Present (Component_Definition (Def)) then
+         Check_Formal_Restriction
+           ("aliased is not allowed", Component_Definition (Def));
          Set_Has_Aliased_Components (Etype (T));
       end if;
 
@@ -13832,6 +13878,8 @@ package body Sem_Ch3 is
       --  parent is also an interface.
 
       if Interface_Present (Def) then
+         Check_Formal_Restriction ("interface is not allowed", Def);
+
          if not Is_Interface (Parent_Type) then
             Diagnose_Interface (Indic, Parent_Type);
 
@@ -18789,6 +18837,14 @@ package body Sem_Ch3 is
       if Ada_Version < Ada_2005
         or else not Interface_Present (Def)
       then
+         if Limited_Present (Def) then
+            Check_Formal_Restriction ("limited is not allowed", N);
+         end if;
+
+         if Abstract_Present (Def) then
+            Check_Formal_Restriction ("abstract is not allowed", N);
+         end if;
+
          --  The flag Is_Tagged_Type might have already been set by
          --  Find_Type_Name if it detected an error for declaration T. This
          --  arises in the case of private tagged types where the full view
@@ -18808,6 +18864,8 @@ package body Sem_Ch3 is
                                       or else Abstract_Present (Def));
 
       else
+         Check_Formal_Restriction ("interface is not allowed", N);
+
          Is_Tagged := True;
          Analyze_Interface_Declaration (T, Def);
 
@@ -18946,6 +19004,41 @@ package body Sem_Ch3 is
          T := Prev_T;
       end if;
 
+      --  In SPARK or ALFA, tagged types and type extensions may only be
+      --  declared in the specification of library unit packages.
+
+      if Present (Def) and then Is_Tagged_Type (T) then
+         declare
+            Typ  : Node_Id;
+            Ctxt : Node_Id;
+         begin
+            if Nkind (Parent (Def)) = N_Full_Type_Declaration then
+               Typ := Parent (Def);
+            else
+               pragma Assert
+                 (Nkind (Parent (Def)) = N_Derived_Type_Definition);
+               Typ := Parent (Parent (Def));
+            end if;
+
+            Ctxt := Parent (Typ);
+
+            if Nkind (Ctxt) = N_Package_Body
+              and then Nkind (Parent (Ctxt)) = N_Compilation_Unit
+            then
+               Check_Formal_Restriction
+                 ("type should be defined in package specification", Typ);
+            elsif Nkind (Ctxt) /= N_Package_Specification
+              or else
+                Nkind (Parent (Parent (Ctxt))) /= N_Compilation_Unit
+            then
+               Check_Formal_Restriction
+                 ("type should be defined in library unit package", Typ);
+            else
+               null;
+            end if;
+         end;
+      end if;
+
       Final_Storage_Only := not Is_Controlled (T);
 
       --  Ada 2005: check whether an explicit Limited is present in a derived
@@ -18968,12 +19061,15 @@ package body Sem_Ch3 is
         or else No (Component_List (Def))
         or else Null_Present (Component_List (Def))
       then
-         null;
+         if not Is_Tagged_Type (T) then
+            Check_Formal_Restriction ("non-tagged record cannot be null", Def);
+         end if;
 
       else
          Analyze_Declarations (Component_Items (Component_List (Def)));
 
          if Present (Variant_Part (Component_List (Def))) then
+            Check_Formal_Restriction ("variant part is not allowed", Def);
             Analyze (Variant_Part (Component_List (Def)));
          end if;
       end if;

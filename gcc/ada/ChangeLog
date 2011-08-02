@@ -1,3 +1,55 @@
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb (Is_Base_Type): Improve efficiency by using a flag table
+	(Base_Type): Now uses improved Is_Base_Type function
+	* einfo.ads (Base_Type): Inline this function
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Defend against infinite recursion
+	(Analyze_Aspect_Specifications): Fix Sloc values for constructed pragmas
+
+2011-08-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+	* gcc-interface/Makefile.in: Use s-inmapop-vxworks.adb for all VxWorks
+	targets.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
+	* par-ch3.adb (P_Delta_Constraint): issue an error in formal mode on
+	non-simple expression used in delta constraint
+	(P_Index_Or_Discriminant_Constraint): issue an error in formal mode on
+	index constraint which is not a subtype mark
+	* par.adb: With and use Restrict
+	* sem_ch3.adb (Analyze_Component_Declaration): issue an error in formal
+	mode on component type which is not a subtype mark and default
+	expression on component
+	(Analyze_Subtype_Declaration): issue an error in formal mode on subtype
+	of string which does not have a lower index bound equal to 1
+	(Array_Type_Declaration): issue an error in formal mode on index or
+	component type which is not a subtype mark, and on aliased keyword on
+	component
+	(Derived_Type_Declaration): issue an error in formal mode on interface,
+	limited or abstract type
+	(Record_Type_Declaration): issue an error in formal mode on interface
+	(Record_Type_Definition): issue an error in formal mode on tagged types
+	and type extensions not declared in the specification of a library unit
+	package; on null non-tagged record; on variant part
+
+2011-08-02  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Library_Attributes): Do not report Library_Dir
+	not declared for qualified library project when Library_Name is not
+	declared, but Library_Dir is.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specification): Fix slocs on generated
+	pragmas (affects aspects [Component_]Default_Value
+	(Check_Aspect_At_Freeze_Point): For Component_Default_Value, use
+	component type for the resolution
+
 2011-08-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* einfo.adb (Base_Type): Tune implementation for speed.
