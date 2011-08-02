@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -2016,7 +2015,10 @@ package body Sem_Ch3 is
       end if;
 
       Set_Original_Record_Component (Id, Id);
-      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Component_Declaration;
 
    --------------------------
@@ -2491,7 +2493,9 @@ package body Sem_Ch3 is
       Set_Optimize_Alignment_Flags (Def_Id);
       Check_Eliminated (Def_Id);
 
-      Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Def_Id);
+      end if;
    end Analyze_Full_Type_Declaration;
 
    ----------------------------------
@@ -3704,7 +3708,9 @@ package body Sem_Ch3 is
       end if;
 
    <<Leave>>
-      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Object_Declaration;
 
    ---------------------------
@@ -3943,8 +3949,10 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      <<Leave>>
-         Analyze_Aspect_Specifications (N, T, Aspect_Specifications (N));
+   <<Leave>>
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, T);
+      end if;
    end Analyze_Private_Extension_Declaration;
 
    ---------------------------------
@@ -4413,7 +4421,9 @@ package body Sem_Ch3 is
       Check_Eliminated (Id);
 
    <<Leave>>
-      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Subtype_Declaration;
 
    --------------------------------

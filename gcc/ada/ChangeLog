@@ -1,5 +1,29 @@
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch12.adb, sem_ch11.adb: New calling sequence for
+	Analyze_Aspect_Specifications
+	* sem_ch13.adb
+	(Analyze_Aspect_Specifications): New handling for boolean aspects
+	* sem_ch13.ads (Analyze_Aspect_Specifications): New calling sequence
+	* sem_ch3.adb, sem_ch6.adb, sem_ch7.adb, sem_ch9.adb: New calling
+	sequence for Analyze_Aspect_Specifications
+	* sem_prag.adb (Analyze_Pragma): Remove use of Aspect_Cancel entirely
+	* sinfo.ads, sinfo.adb (Aspect_Cancel): Remove, no longer used
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Remove handling of delayed boolean
+	aspects, since these no longer exist.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch13.adb (Aspect_Specifications_Present): Always return false on
+	semicolon, do not try to see if there are aspects following it.
+	* par-ch3.adb (P_Declarative_Items): Better message for unexpected
+	aspect spec.
+
+2011-08-02  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch8.adb, aspects.ads: Minor reformatting.
 
 2011-08-02  Eric Botcazou  <ebotcazou@adacore.com>

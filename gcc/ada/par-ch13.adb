@@ -46,30 +46,18 @@ package body Ch13 is
       Result     : Boolean;
 
    begin
-      Save_Scan_State (Scan_State);
-
-      --  If we have a semicolon, test for semicolon followed by Aspect
-      --  Specifications, in which case we decide the semicolon is accidental.
-
-      if Token = Tok_Semicolon then
-         Scan; -- past semicolon
-
-         --  The recursive test is set Strict, since we already have one
-         --  error (the unexpected semicolon), so we will ignore that semicolon
-         --  only if we absolutely definitely have an aspect specification
-         --  following it.
-
-         if Aspect_Specifications_Present (Strict => True) then
-            Error_Msg_SP ("|extra "";"" ignored");
-            return True;
-
-         else
-            Restore_Scan_State (Scan_State);
-            return False;
-         end if;
-      end if;
-
       --  Definitely must have WITH to consider aspect specs to be present
+
+      --  Note that this means that if we have a semicolon, we immediately
+      --  return False. There is a case in which this is not optimal, namely
+      --  something like
+
+      --    type R is new Integer;
+      --      with bla bla;
+
+      --  where the semicolon is redundant, but scanning forward for it would
+      --  be too expensive. Instead we pick up the aspect specifications later
+      --  as a bogus declaration, and diagnose the semicolon at that point.
 
       if Token /= Tok_With then
          return False;

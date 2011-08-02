@@ -28,7 +28,6 @@
 --  handling of private and full declarations, and the construction of dispatch
 --  tables for tagged types.
 
-with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -763,7 +762,9 @@ package body Sem_Ch7 is
       --  Analye aspect specifications immediately, since we need to recognize
       --  things like Pure early enough to diagnose violations during analysis.
 
-      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
 
       --  Ada 2005 (AI-217): Check if the package has been erroneously named
       --  in a limited-with clause of its own context. In this case the error
@@ -1405,7 +1406,10 @@ package body Sem_Ch7 is
 
       New_Private_Type (N, Id, N);
       Set_Depends_On_Private (Id);
-      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Private_Type_Declaration;
 
    ----------------------------------

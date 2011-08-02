@@ -584,14 +584,6 @@ package Sinfo is
    --    is used for translation of the at end handler into a normal exception
    --    handler.
 
-   --  Aspect_Cancel (Flag11-Sem)
-   --    Processing of aspect specifications typically generates pragmas and
-   --    attribute definition clauses that are inserted into the tree after
-   --    the declaration node to get the desired aspect effect. In the case
-   --    of Boolean aspects that use "=> False" to cancel the effect of an
-   --    aspect (i.e. turn if off), the generated pragma has the Aspect_Cancel
-   --    flag set to indicate that the pragma operates in the opposite sense.
-
    --  Aspect_Rep_Item (Node2-Sem)
    --    Present in N_Aspect_Specification nodes. Points to the corresponding
    --    pragma/attribute definition node used to process the aspect.
@@ -2085,7 +2077,6 @@ package Sinfo is
       --  From_Aspect_Specification (Flag13-Sem)
       --  Is_Delayed_Aspect (Flag14-Sem)
       --  Import_Interface_Present (Flag16-Sem)
-      --  Aspect_Cancel (Flag11-Sem)
       --  Split_PPC (Flag17) set if corresponding aspect had Split_PPC set
       --  Class_Present (Flag6) set if from Aspect with 'Class
       --  From_Dynamic_Predicate (Flag7-Sem) Set if Dynamic_Predicate aspect
@@ -8076,9 +8067,6 @@ package Sinfo is
    function Array_Aggregate
      (N : Node_Id) return Node_Id;    -- Node3
 
-   function Aspect_Cancel
-     (N : Node_Id) return Boolean;    -- Flag11
-
    function Aspect_Rep_Item
      (N : Node_Id) return Node_Id;    -- Node2
 
@@ -9053,9 +9041,6 @@ package Sinfo is
 
    procedure Set_Array_Aggregate
      (N : Node_Id; Val : Node_Id);            -- Node3
-
-   procedure Set_Aspect_Cancel
-     (N : Node_Id; Val : Boolean := True);    -- Flag11
 
    procedure Set_Aspect_Rep_Item
      (N : Node_Id; Val : Node_Id);            -- Node2
@@ -11709,7 +11694,6 @@ package Sinfo is
    pragma Inline (Alternatives);
    pragma Inline (Ancestor_Part);
    pragma Inline (Array_Aggregate);
-   pragma Inline (Aspect_Cancel);
    pragma Inline (Aspect_Rep_Item);
    pragma Inline (Assignment_OK);
    pragma Inline (Associated_Node);
@@ -12032,7 +12016,6 @@ package Sinfo is
    pragma Inline (Set_Alternatives);
    pragma Inline (Set_Ancestor_Part);
    pragma Inline (Set_Array_Aggregate);
-   pragma Inline (Set_Aspect_Cancel);
    pragma Inline (Set_Aspect_Rep_Item);
    pragma Inline (Set_Assignment_OK);
    pragma Inline (Set_Associated_Node);

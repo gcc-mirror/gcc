@@ -4274,8 +4274,42 @@ package body Ch3 is
 
          when Tok_With =>
             Check_Bad_Layout;
-            Error_Msg_SC ("WITH can only appear in context clause");
-            raise Error_Resync;
+
+            if Aspect_Specifications_Present then
+
+               --  If we are after a semicolon, complain that it was ignored.
+               --  But we don't really ignore it, since we dump the aspects,
+               --  so we make the error message a normal fatal message which
+               --  will inhibit semantic analysis anyway).
+
+               if Prev_Token = Tok_Semicolon then
+                  Error_Msg_SP -- CODEFIX
+                    ("extra "";"" ignored");
+
+               --  If not just past semicolon, just complain that aspects are
+               --  not allowed at this point.
+
+               else
+                  Error_Msg_SC ("aspect specifications not allowed here");
+               end if;
+
+               declare
+                  Dummy_Node : constant Node_Id :=
+                                 New_Node (N_Package_Specification, Token_Ptr);
+                  pragma Warnings (Off, Dummy_Node);
+                  --  Dummy node to attach aspect specifications to. We will
+                  --  then throw them away.
+
+               begin
+                  P_Aspect_Specifications (Dummy_Node, Semicolon => True);
+               end;
+
+            --  Here if not aspect specifications case
+
+            else
+               Error_Msg_SC ("WITH can only appear in context clause");
+               raise Error_Resync;
+            end if;
 
          --  BEGIN terminates the scan of a sequence of declarations unless
          --  there is a missing subprogram body, see section on handling

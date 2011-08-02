@@ -270,13 +270,6 @@ package body Sem_Prag is
       Pname   : constant Name_Id    := Pragma_Name (N);
       Prag_Id : Pragma_Id;
 
-      Sense : constant Boolean := not Aspect_Cancel (N);
-      --  Sense is True if we have the normal case of a pragma that is active
-      --  and turns the corresponding aspect on. It is false only for the case
-      --  of a pragma coming from an aspect which is explicitly turned off by
-      --  using aspect => False. If Sense is False, the effect of the pragma
-      --  is to turn the corresponding aspect off.
-
       Pragma_Exit : exception;
       --  This exception is used to exit pragma processing completely. It is
       --  used when an error is detected, and no further processing is
@@ -2461,9 +2454,9 @@ package body Sem_Prag is
 
          procedure Set_Atomic (E : Entity_Id) is
          begin
-            Set_Is_Atomic (E, Sense);
+            Set_Is_Atomic (E);
 
-            if Sense and then not Has_Alignment_Clause (E) then
+            if not Has_Alignment_Clause (E) then
                Set_Alignment (E, Uint_0);
             end if;
          end Set_Atomic;
@@ -2510,11 +2503,11 @@ package body Sem_Prag is
             --  Attribute belongs on the base type. If the view of the type is
             --  currently private, it also belongs on the underlying type.
 
-            Set_Is_Volatile (Base_Type (E), Sense);
-            Set_Is_Volatile (Underlying_Type (E), Sense);
+            Set_Is_Volatile (Base_Type (E));
+            Set_Is_Volatile (Underlying_Type (E));
 
-            Set_Treat_As_Volatile (E, Sense);
-            Set_Treat_As_Volatile (Underlying_Type (E), Sense);
+            Set_Treat_As_Volatile (E);
+            Set_Treat_As_Volatile (Underlying_Type (E));
 
          elsif K = N_Object_Declaration
            or else (K = N_Component_Declaration
@@ -2525,7 +2518,7 @@ package body Sem_Prag is
             end if;
 
             if Prag_Id /= Pragma_Volatile then
-               Set_Is_Atomic (E, Sense);
+               Set_Is_Atomic (E);
 
                --  If the object declaration has an explicit initialization, a
                --  temporary may have to be created to hold the expression, to
@@ -2533,7 +2526,6 @@ package body Sem_Prag is
 
                if Nkind (Parent (E)) = N_Object_Declaration
                  and then Present (Expression (Parent (E)))
-                 and then Sense
                then
                   Set_Has_Delayed_Freeze (E);
                end if;
@@ -2554,7 +2546,7 @@ package body Sem_Prag is
                    Get_Source_File_Index (Sloc (E)) =
                    Get_Source_File_Index (Sloc (Underlying_Type (Etype (E))))
                then
-                  Set_Is_Atomic (Underlying_Type (Etype (E)), Sense);
+                  Set_Is_Atomic (Underlying_Type (Etype (E)));
                end if;
             end if;
 
@@ -4155,7 +4147,10 @@ package body Sem_Prag is
          Subp_Id   : Node_Id;
          Subp      : Entity_Id;
          Applies   : Boolean;
+
          Effective : Boolean := False;
+         --  Set True if inline has some effect, i.e. if there is at least one
+         --  subprogram set as inlined as a result of the use of the pragma.
 
          procedure Make_Inline (Subp : Entity_Id);
          --  Subp is the defining unit name of the subprogram declaration. Set
@@ -4299,11 +4294,6 @@ package body Sem_Prag is
             --  entity (if declared in the same unit) is inlined.
 
             if Is_Subprogram (Subp) then
-
-               if not Sense then
-                  return;
-               end if;
-
                Inner_Subp := Ultimate_Alias (Inner_Subp);
 
                if In_Same_Source_Unit (Subp, Inner_Subp) then
@@ -4364,16 +4354,16 @@ package body Sem_Prag is
          procedure Set_Inline_Flags (Subp : Entity_Id) is
          begin
             if Active then
-               Set_Is_Inlined (Subp, Sense);
+               Set_Is_Inlined (Subp);
             end if;
 
             if not Has_Pragma_Inline (Subp) then
-               Set_Has_Pragma_Inline (Subp, Sense);
+               Set_Has_Pragma_Inline (Subp);
                Effective := True;
             end if;
 
             if Prag_Id = Pragma_Inline_Always then
-               Set_Has_Pragma_Inline_Always (Subp, Sense);
+               Set_Has_Pragma_Inline_Always (Subp);
             end if;
          end Set_Inline_Flags;
 
@@ -5846,12 +5836,7 @@ package body Sem_Prag is
 
                --  Now set appropriate Ada mode
 
-               if Sense then
-                  Ada_Version := Ada_2005;
-               else
-                  Ada_Version := Ada_Version_Default;
-               end if;
-
+               Ada_Version          := Ada_2005;
                Ada_Version_Explicit := Ada_2005;
             end if;
          end;
@@ -5899,12 +5884,7 @@ package body Sem_Prag is
 
                --  Now set appropriate Ada mode
 
-               if Sense then
-                  Ada_Version := Ada_2012;
-               else
-                  Ada_Version := Ada_Version_Default;
-               end if;
-
+               Ada_Version          := Ada_2012;
                Ada_Version_Explicit := Ada_2012;
             end if;
          end;
@@ -6378,10 +6358,10 @@ package body Sem_Prag is
                   E := Base_Type (E);
                end if;
 
-               Set_Has_Volatile_Components (E, Sense);
+               Set_Has_Volatile_Components (E);
 
                if Prag_Id = Pragma_Atomic_Components then
-                  Set_Has_Atomic_Components (E, Sense);
+                  Set_Has_Atomic_Components (E);
                end if;
 
             else
@@ -7398,7 +7378,7 @@ package body Sem_Prag is
                   --  defined in the current declarative part, and recursively
                   --  to any nested scope.
 
-                  Set_Discard_Names (Current_Scope, Sense);
+                  Set_Discard_Names (Current_Scope);
                   return;
 
                else
@@ -7419,7 +7399,7 @@ package body Sem_Prag is
                         (Is_Enumeration_Type (E) or else Is_Tagged_Type (E)))
                     or else Ekind (E) = E_Exception
                   then
-                     Set_Discard_Names (E, Sense);
+                     Set_Discard_Names (E);
                   else
                      Error_Pragma_Arg
                        ("inappropriate entity for pragma%", Arg1);
@@ -8256,9 +8236,7 @@ package body Sem_Prag is
             --  subtype), set the flag on that type.
 
             if Is_Access_Subprogram_Type (Named_Entity) then
-               if Sense then
-                  Set_Can_Use_Internal_Rep (Named_Entity, False);
-               end if;
+               Set_Can_Use_Internal_Rep (Named_Entity, False);
 
             --  Otherwise it's an error (name denotes the wrong sort of entity)
 
@@ -10928,43 +10906,11 @@ package body Sem_Prag is
 
                   else
                      if not Ignore then
-                        Set_Is_Packed            (Base_Type (Typ), Sense);
-                        Set_Has_Non_Standard_Rep (Base_Type (Typ), Sense);
+                        Set_Is_Packed            (Base_Type (Typ));
+                        Set_Has_Non_Standard_Rep (Base_Type (Typ));
                      end if;
 
-                     Set_Has_Pragma_Pack (Base_Type (Typ), Sense);
-
-                     --  Complete reset action for Aspect_Cancel case
-
-                     if Sense = False then
-
-                        --  Cancel size unless explicitly set
-
-                        if not Has_Size_Clause (Typ)
-                           and then not Has_Object_Size_Clause (Typ)
-                        then
-                           Set_Esize     (Typ, Uint_0);
-                           Set_RM_Size   (Typ, Uint_0);
-                           Set_Alignment (Typ, Uint_0);
-                           Set_Packed_Array_Type (Typ, Empty);
-                        end if;
-
-                        --  Reset component size unless explicitly set
-
-                        if not Has_Component_Size_Clause (Typ) then
-                           if Known_Static_Esize (Ctyp)
-                             and then Known_Static_RM_Size (Ctyp)
-                             and then Esize (Ctyp) = RM_Size (Ctyp)
-                             and then Addressable (Esize (Ctyp))
-                           then
-                              Set_Component_Size
-                                (Base_Type (Typ), Esize (Ctyp));
-                           else
-                              Set_Component_Size
-                                (Base_Type (Typ), Uint_0);
-                           end if;
-                        end if;
-                     end if;
+                     Set_Has_Pragma_Pack (Base_Type (Typ));
                   end if;
                end if;
 
@@ -10985,23 +10931,9 @@ package body Sem_Prag is
                   --  Normal case of pack request active
 
                   else
-                     Set_Is_Packed            (Base_Type (Typ), Sense);
-                     Set_Has_Pragma_Pack      (Base_Type (Typ), Sense);
-                     Set_Has_Non_Standard_Rep (Base_Type (Typ), Sense);
-
-                     --  Complete reset action for Aspect_Cancel case
-
-                     if Sense = False then
-
-                        --  Cancel size if not explicitly given
-
-                        if not Has_Size_Clause (Typ)
-                          and then not Has_Object_Size_Clause (Typ)
-                        then
-                           Set_Esize     (Typ, Uint_0);
-                           Set_Alignment (Typ, Uint_0);
-                        end if;
-                     end if;
+                     Set_Is_Packed            (Base_Type (Typ));
+                     Set_Has_Pragma_Pack      (Base_Type (Typ));
+                     Set_Has_Non_Standard_Rep (Base_Type (Typ));
                   end if;
                end if;
             end if;
@@ -11145,13 +11077,11 @@ package body Sem_Prag is
 
                Check_Duplicate_Pragma (Ent);
 
-               if Sense then
-                  Prag :=
-                    Make_Linker_Section_Pragma
-                      (Ent, Sloc (N), ".persistent.bss");
-                  Insert_After (N, Prag);
-                  Analyze (Prag);
-               end if;
+               Prag :=
+                 Make_Linker_Section_Pragma
+                   (Ent, Sloc (N), ".persistent.bss");
+               Insert_After (N, Prag);
+               Analyze (Prag);
 
             --  Case of use as configuration pragma with no arguments
 
@@ -11310,11 +11240,11 @@ package body Sem_Prag is
 
             if Present (Ent)
               and then not (Pk = N_Package_Specification
-                              and then Present (Generic_Parent (Pa)))
+                             and then Present (Generic_Parent (Pa)))
             then
                if not Debug_Flag_U then
-                  Set_Is_Preelaborated (Ent, Sense);
-                  Set_Suppress_Elaboration_Warnings (Ent, Sense);
+                  Set_Is_Preelaborated (Ent);
+                  Set_Suppress_Elaboration_Warnings (Ent);
                end if;
             end if;
          end Preelaborate;
@@ -11897,11 +11827,11 @@ package body Sem_Prag is
                        ("pragma% requires a function name", Arg1);
                   end if;
 
-                  Set_Is_Pure (Def_Id, Sense);
+                  Set_Is_Pure (Def_Id);
 
                   if not Has_Pragma_Pure_Function (Def_Id) then
-                     Set_Has_Pragma_Pure_Function (Def_Id, Sense);
-                     Effective := Sense;
+                     Set_Has_Pragma_Pure_Function (Def_Id);
+                     Effective := True;
                   end if;
 
                   exit when From_Aspect_Specification (N);
@@ -11909,7 +11839,7 @@ package body Sem_Prag is
                   exit when No (E) or else Scope (E) /= Current_Scope;
                end loop;
 
-               if Sense and then not Effective
+               if not Effective
                  and then Warn_On_Redundant_Constructs
                then
                   Error_Msg_NE
@@ -12685,7 +12615,7 @@ package body Sem_Prag is
             Check_Arg_Count (1);
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Arg_Is_Local_Name (Arg1);
-            Set_Debug_Info_Off (Entity (Get_Pragma_Arg (Arg1)), Sense);
+            Set_Debug_Info_Off (Entity (Get_Pragma_Arg (Arg1)));
 
          ----------------------------------
          -- Suppress_Exception_Locations --
@@ -13129,14 +13059,10 @@ package body Sem_Prag is
                end loop;
             end if;
 
-            Set_Is_Unchecked_Union  (Typ, Sense);
-
-            if Sense then
-               Set_Convention (Typ, Convention_C);
-            end if;
-
-            Set_Has_Unchecked_Union (Base_Type (Typ), Sense);
-            Set_Is_Unchecked_Union  (Base_Type (Typ), Sense);
+            Set_Is_Unchecked_Union  (Typ);
+            Set_Convention (Typ, Convention_C);
+            Set_Has_Unchecked_Union (Base_Type (Typ));
+            Set_Is_Unchecked_Union  (Base_Type (Typ));
          end Unchecked_Union;
 
          ------------------------
@@ -13195,7 +13121,7 @@ package body Sem_Prag is
                Error_Pragma_Arg ("pragma% requires type", Arg1);
             end if;
 
-            Set_Universal_Aliasing (Implementation_Base_Type (E_Id), Sense);
+            Set_Universal_Aliasing (Implementation_Base_Type (E_Id));
          end Universal_Alias;
 
          --------------------
@@ -13263,7 +13189,7 @@ package body Sem_Prag is
                        ("pragma% can only be applied to a variable",
                         Arg_Expr);
                   else
-                     Set_Has_Pragma_Unmodified (Arg_Ent, Sense);
+                     Set_Has_Pragma_Unmodified (Arg_Ent);
                   end if;
                end if;
 
@@ -13358,7 +13284,7 @@ package body Sem_Prag is
                         Generate_Reference (Arg_Ent, N);
                      end if;
 
-                     Set_Has_Pragma_Unreferenced (Arg_Ent, Sense);
+                     Set_Has_Pragma_Unreferenced (Arg_Ent);
                   end if;
 
                   Next (Arg_Node);
@@ -13393,7 +13319,7 @@ package body Sem_Prag is
                     ("argument for pragma% must be type or subtype", Arg_Node);
                end if;
 
-               Set_Has_Pragma_Unreferenced_Objects (Entity (Arg_Expr), Sense);
+               Set_Has_Pragma_Unreferenced_Objects (Entity (Arg_Expr));
                Next (Arg_Node);
             end loop;
          end Unreferenced_Objects;

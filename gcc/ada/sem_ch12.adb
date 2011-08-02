@@ -1925,7 +1925,9 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Formal_Object_Declaration;
 
    ----------------------------------------------
@@ -2280,8 +2282,10 @@ package body Sem_Ch12 is
       Set_Scope (Pack_Id, Scope (Formal));
       Set_Has_Completion (Pack_Id, True);
 
-      <<Leave>>
-         Analyze_Aspect_Specifications (N, Pack_Id, Aspect_Specifications (N));
+   <<Leave>>
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Pack_Id);
+      end if;
    end Analyze_Formal_Package_Declaration;
 
    ---------------------------------
@@ -2501,8 +2505,11 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      <<Leave>>
-         Analyze_Aspect_Specifications (N, Nam, Aspect_Specifications (N));
+   <<Leave>>
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Nam);
+      end if;
+
    end Analyze_Formal_Subprogram_Declaration;
 
    -------------------------------------
@@ -2576,7 +2583,10 @@ package body Sem_Ch12 is
       end case;
 
       Set_Is_Generic_Type (T);
-      Analyze_Aspect_Specifications (N, T, Aspect_Specifications (N));
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, T);
+      end if;
    end Analyze_Formal_Type_Declaration;
 
    ------------------------------------
@@ -2754,7 +2764,9 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Generic_Package_Declaration;
 
    --------------------------------------------
@@ -2882,7 +2894,10 @@ package body Sem_Ch12 is
       Generate_Reference_To_Formals (Id);
 
       List_Inherited_Pre_Post_Aspects (Id);
-      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Generic_Subprogram_Declaration;
 
    -----------------------------------
@@ -3556,9 +3571,10 @@ package body Sem_Ch12 is
          Set_Defining_Identifier (N, Act_Decl_Id);
       end if;
 
-      <<Leave>>
-         Analyze_Aspect_Specifications
-           (N, Act_Decl_Id, Aspect_Specifications (N));
+   <<Leave>>
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Act_Decl_Id);
+      end if;
 
    exception
       when Instantiation_Error =>
@@ -4336,9 +4352,10 @@ package body Sem_Ch12 is
          Generic_Renamings_HTable.Reset;
       end if;
 
-      <<Leave>>
-         Analyze_Aspect_Specifications
-           (N, Act_Decl_Id, Aspect_Specifications (N));
+   <<Leave>>
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Act_Decl_Id);
+      end if;
 
    exception
       when Instantiation_Error =>
