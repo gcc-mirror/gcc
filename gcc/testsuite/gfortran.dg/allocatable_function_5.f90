@@ -46,3 +46,5 @@ contains
     bar = carg(1:12)
   end function
 end
+
+! { dg-final { cleanup-modules "m" } }

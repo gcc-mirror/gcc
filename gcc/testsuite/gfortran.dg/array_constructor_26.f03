@@ -16,4 +16,4 @@ MODULE WinData
   END TYPE TWindowData
 END MODULE WinData
 
-! { dg-final { cleanup-modules "WinData" } }
+! { dg-final { cleanup-modules "windata" } }

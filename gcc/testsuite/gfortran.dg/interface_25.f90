@@ -43,3 +43,5 @@ CONTAINS
     end if
   END FUNCTION recSum
 END PROGRAM test
+
+! { dg-final { cleanup-modules "funcs" } }

@@ -26,4 +26,4 @@ CONTAINS
   end function lenf
 END MODULE B1
 
-! { dg-final { cleanup-modules "B1" } }
+! { dg-final { cleanup-modules "b1" } }

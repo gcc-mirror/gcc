@@ -31,3 +31,5 @@ contains
 end module mod
 
 end
+
+! { dg-final { cleanup-modules "mod" } }

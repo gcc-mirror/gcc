@@ -31,5 +31,5 @@ program bugTest
   if (sum(testObj%test(3,3))/=9) call abort()
 end program bugTest
 
-! { dg-final { cleanup-modules "bugTestMod" } }
+! { dg-final { cleanup-modules "bugtestmod" } }
 

@@ -44,4 +44,4 @@
     solveCConvert = (/(real(i), i = 1, anzKomponenten)/)
   END FUNCTION solveCConvert
 
-! { dg-final { cleanup-modules "MODULE_CONC MODULE_THERMOCALC" } }
+! { dg-final { cleanup-modules "module_conc module_thermocalc" } }

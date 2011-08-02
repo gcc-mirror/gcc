@@ -35,4 +35,4 @@
      END SUBROUTINE
      END MODULE tests2
 
-! { dg-final { cleanup-modules "TESTS" } }
+! { dg-final { cleanup-modules "tests" } }

@@ -2,7 +2,6 @@
 ! { dg-options "-O -fdump-tree-original" }
 ! PR 47065 - replace trim with substring expressions even with references.
 program main
-  use foo
   implicit none
   type t
      character(len=2) :: x

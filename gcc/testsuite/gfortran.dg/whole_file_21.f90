@@ -24,4 +24,4 @@ CONTAINS
 END MODULE mod
 END
 
-! { dg-final { cleanup-modules "m" } }
+! { dg-final { cleanup-modules "mod" } }

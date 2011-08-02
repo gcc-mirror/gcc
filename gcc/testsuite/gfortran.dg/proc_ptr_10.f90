@@ -27,4 +27,4 @@ program myProg
   call proc4( p )
 end program myProg
  
-! { dg-final { cleanup-modules "myMod" } }
+! { dg-final { cleanup-modules "mymod" } }

@@ -27,4 +27,4 @@ PROGRAM P
   PRINT *, A%PT .LT. B%PT
 END
 
-! { dg-final { cleanup-modules "DEF1" } }
+! { dg-final { cleanup-modules "def1" } }

@@ -26,5 +26,5 @@ program bugTest
   if (sum(pp2(3,2))/=6) call abort()
 end program bugTest
 
-! { dg-final { cleanup-modules "bugTestMod" } }
+! { dg-final { cleanup-modules "bugtestmod" } }
 

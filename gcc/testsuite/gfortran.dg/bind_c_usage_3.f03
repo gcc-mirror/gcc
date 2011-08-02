@@ -17,3 +17,4 @@ module test
   type(foo), bind(c) :: cp ! { dg-error "is not C interoperable" }
   real(c_double), pointer,bind(c) :: p ! { dg-error "cannot have both the POINTER and BIND.C." }
 end module test
+! { dg-final { cleanup-modules "test" } }

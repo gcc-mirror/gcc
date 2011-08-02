@@ -18,3 +18,5 @@ contains
     print *, x(1)%i
   end subroutine s
 end module m
+
+! { dg-final { cleanup-modules "m" } }

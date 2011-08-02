@@ -48,5 +48,5 @@ end subroutine bar
   end subroutine
 end module test
 
-! { dg-final { cleanup-modules "m" } }
+! { dg-final { cleanup-modules "m test" } }
 
