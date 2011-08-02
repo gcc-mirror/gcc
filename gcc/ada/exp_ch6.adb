@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5121,9 +5121,9 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_N_Subprogram_Body
 
    begin
-      --  If this is the main compilation unit and we are generating code for
-      --  VM targets we generate now the Type Specific Data record of all the
-      --  enclosing tagged type declarations
+      --  If this is the main compilation unit, and we are generating code for
+      --  VM targets, we now generate the Type Specific Data record of all the
+      --  enclosing tagged type declarations.
 
       --  Temporarily restrict this support to the .NET compiler???
 

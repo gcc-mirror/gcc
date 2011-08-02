@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1557,7 +1557,7 @@ package body Exp_Ch7 is
                Build_Static_Dispatch_Tables (N);
 
             --  In VM targets there is no need to build dispatch tables but
-            --  we must generate the corresponding Type Specific Data record
+            --  we must generate the corresponding Type Specific Data record.
 
             --  Temporarily restrict this support to the .NET compiler???
 
@@ -1664,23 +1664,22 @@ package body Exp_Ch7 is
 
       if Is_Compilation_Unit (Id)
         or else (Is_Generic_Instance (Id)
-                   and then Is_Library_Level_Entity (Id))
+                  and then Is_Library_Level_Entity (Id))
       then
          if Tagged_Type_Expansion then
             Build_Static_Dispatch_Tables (N);
 
-         --  In VM targets there is no need to build dispatch tables but
-         --  we must generate the corresponding Type Specific Data record
+         --  In VM targets there is no need to build dispatch tables, but we
+         --  must generate the corresponding Type Specific Data record.
 
          --  Temporarily restrict this support to the .NET compiler???
 
          elsif Unit (Cunit (Main_Unit)) = N
            and then VM_Target = CLI_Target
          then
-
-            --  Enter the scope of the package because the new declarations
-            --  are appended at the end of the package and must be analyzed
-            --  in that context.
+            --  Enter the scope of the package because the new declarations are
+            --  appended at the end of the package and must be analyzed in that
+            --  context.
 
             Push_Scope (Id);
 
@@ -1721,7 +1720,7 @@ package body Exp_Ch7 is
       R   : Node_Id;
 
    begin
-      --  If the restriction No_Finalization applies, then there's not any
+      --  If the restriction No_Finalization applies, then there isn't a
       --  finalization list available to return, so return Empty.
 
       if Restriction_Active (No_Finalization) then
