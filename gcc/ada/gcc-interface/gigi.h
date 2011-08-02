@@ -929,11 +929,6 @@ extern bool default_pass_by_ref (tree gnu_type);
    if it should be passed by reference.  */
 extern bool must_pass_by_ref (tree gnu_type);
 
-/* This function is called by the front-end to enumerate all the supported
-   modes for the machine, as well as some predefined C types.  */
-extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
-                                        int));
-
 /* Return the size of the FP mode with precision PREC.  */
 extern int fp_prec_to_size (int prec);
 
@@ -969,6 +964,11 @@ extern Nat get_bits_be (void);
 extern Nat get_target_strict_alignment (void);
 extern Nat get_target_double_float_alignment (void);
 extern Nat get_target_double_scalar_alignment (void);
+
+/* This function is called by the front-end to enumerate all the supported
+   modes for the machine, as well as some predefined C types.  */
+extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
+                                        int));
 
 #ifdef __cplusplus
 }

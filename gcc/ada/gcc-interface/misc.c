@@ -637,10 +637,6 @@ must_pass_by_ref (tree gnu_type)
 	      && TREE_CODE (TYPE_SIZE (gnu_type)) != INTEGER_CST));
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* This function is called by the front-end to enumerate all the supported
    modes for the machine, as well as some predefined C types.  F is a function
    which is called back with the parameters as listed below, first a string,
@@ -758,11 +754,6 @@ enumerate_modes (void (*f) (const char *, int, int, int, int, int, int))
 	   GET_MODE_PRECISION (i), GET_MODE_ALIGNMENT (i));
     }
 }
-
-#ifdef __cplusplus
-}
-#endif
-
 
 /* Return the size of the FP mode with precision PREC.  */
 
