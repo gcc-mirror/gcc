@@ -247,7 +247,9 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_ORDERED  */
   0, /* OMP_CLAUSE_DEFAULT  */
   3, /* OMP_CLAUSE_COLLAPSE  */
-  0  /* OMP_CLAUSE_UNTIED   */
+  0, /* OMP_CLAUSE_UNTIED   */
+  1, /* OMP_CLAUSE_FINAL  */
+  0  /* OMP_CLAUSE_MERGEABLE  */
 };
 
 const char * const omp_clause_code_name[] =
@@ -267,7 +269,9 @@ const char * const omp_clause_code_name[] =
   "ordered",
   "default",
   "collapse",
-  "untied"
+  "untied",
+  "final",
+  "mergeable"
 };
 
 
@@ -10546,6 +10550,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE_COPYPRIVATE:
+	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_SCHEDULE:
@@ -10556,6 +10561,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_UNTIED:
+	case OMP_CLAUSE_MERGEABLE:
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_LASTPRIVATE:

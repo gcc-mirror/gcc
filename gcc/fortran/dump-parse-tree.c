@@ -1039,6 +1039,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_SINGLE: name = "SINGLE"; break;
     case EXEC_OMP_TASK: name = "TASK"; break;
     case EXEC_OMP_TASKWAIT: name = "TASKWAIT"; break;
+    case EXEC_OMP_TASKYIELD: name = "TASKYIELD"; break;
     case EXEC_OMP_WORKSHARE: name = "WORKSHARE"; break;
     default:
       gcc_unreachable ();
@@ -1071,6 +1072,7 @@ show_omp_node (int level, gfc_code *c)
       return;
     case EXEC_OMP_BARRIER:
     case EXEC_OMP_TASKWAIT:
+    case EXEC_OMP_TASKYIELD:
       return;
     default:
       break;
@@ -1083,6 +1085,12 @@ show_omp_node (int level, gfc_code *c)
 	{
 	  fputs (" IF(", dumpfile);
 	  show_expr (omp_clauses->if_expr);
+	  fputc (')', dumpfile);
+	}
+      if (omp_clauses->final_expr)
+	{
+	  fputs (" FINAL(", dumpfile);
+	  show_expr (omp_clauses->final_expr);
 	  fputc (')', dumpfile);
 	}
       if (omp_clauses->num_threads)
@@ -1130,6 +1138,8 @@ show_omp_node (int level, gfc_code *c)
 	fputs (" ORDERED", dumpfile);
       if (omp_clauses->untied)
 	fputs (" UNTIED", dumpfile);
+      if (omp_clauses->mergeable)
+	fputs (" MERGEABLE", dumpfile);
       if (omp_clauses->collapse)
 	fprintf (dumpfile, " COLLAPSE(%d)", omp_clauses->collapse);
       for (list_type = 0; list_type < OMP_LIST_NUM; list_type++)
@@ -2167,6 +2177,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_SINGLE:
     case EXEC_OMP_TASK:
     case EXEC_OMP_TASKWAIT:
+    case EXEC_OMP_TASKYIELD:
     case EXEC_OMP_WORKSHARE:
       show_omp_node (level, c);
       break;

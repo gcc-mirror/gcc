@@ -1,3 +1,33 @@
+2011-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (finish_omp_atomic): Adjust prototype.
+	(cxx_omp_const_qual_no_mutable): New prototype.
+	(finish_omp_taskyield): New prototype.
+	* parser.c (cp_parser_omp_atomic): (cp_parser_omp_atomic): Handle
+	parsing OpenMP 3.1 atomics.  Adjust finish_omp_atomic caller.
+	(cp_parser_omp_clause_name): Handle final and mergeable clauses.
+	(cp_parser_omp_clause_final, cp_parser_omp_clause_mergeable): New
+	functions.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_FINAL
+	and PRAGMA_OMP_CLAUSE_MERGEABLE.
+	(OMP_TASK_CLAUSE_MASK): Allow final and mergeable clauses.
+	(cp_parser_omp_taskyield): New function.
+	(cp_parser_pragma): Handle PRAGMA_OMP_TASKYIELD.
+	(cp_parser_omp_clause_reduction): Handle min and max.
+	* pt.c (tsubst_expr) <case OMP_ATOMIC>: Handle OpenMP 3.1 atomics.
+	(tsubst_omp_clauses): Handle OMP_CLAUSE_FINAL and
+	OMP_CLAUSE_MERGEABLE.
+	* semantics.c (finish_omp_atomic): Add OPCODE, V, LHS1 and RHS1
+	arguments.  Handle OpenMP 3.1 atomics.  Adjust c_finish_omp_atomic
+	caller.
+	(finish_omp_clauses): Don't complain about const qualified
+	predetermined vars and static data members in firstprivate clause.
+	Handle OMP_CLAUSE_FINAL and OMP_CLAUSE_MERGEABLE. Handle MIN_EXPR
+	and MAX_EXPR.
+	(finish_omp_taskyield): New function.
+	* cp-gimplify.c (cxx_omp_const_qual_no_mutable): New function.
+	(cxx_omp_predetermined_sharing): Use it.
+
 2011-08-02  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_call_a): Also check at_function_scope_p.

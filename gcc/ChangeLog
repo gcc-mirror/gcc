@@ -1,3 +1,60 @@
+2011-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (enum c_parser_prec): New enum, moved from within
+	c_parser_binary_expression.
+	(c_parser_binary_expression): Add PREC argument.  Stop parsing
+	if operator has lower or equal precedence than PREC.
+	(c_parser_conditional_expression, c_parser_omp_for_loop): Adjust
+	callers.
+	(c_parser_omp_atomic): Handle parsing OpenMP 3.1 atomics.
+	Adjust c_finish_omp_atomic caller.
+	(c_parser_omp_taskyield): New function.
+	(c_parser_pragma): Handle PRAGMA_OMP_TASKYIELD.
+	(c_parser_omp_clause_name): Handle final and mergeable clauses.
+	(c_parser_omp_clause_final, c_parser_omp_clause_mergeable): New
+	functions.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_FINAL
+	and PRAGMA_OMP_CLAUSE_MERGEABLE.
+	(OMP_TASK_CLAUSE_MASK): Allow final and mergeable clauses.
+	(c_parser_omp_clause_reduction): Handle min and max.
+	* c-typeck.c (c_finish_omp_clauses): Don't complain about
+	const qualified predetermined vars in firstprivate clause.
+	andle OMP_CLAUSE_FINAL and OMP_CLAUSE_MERGEABLE.
+	Handle MIN_EXPR and MAX_EXPR.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE_FINAL
+	and OMP_CLAUSE_MERGEABLE.
+	(dump_generic_node): Handle OMP_ATOMIC_READ, OMP_ATOMIC_CAPTURE_OLD
+	and OMP_ATOMIC_CAPTURE_NEW.
+	* tree.c (omp_clause_num_ops): Add OMP_CLAUSE_FINAL and
+	OMP_CLAUSE_MERGEABLE.
+	(omp_clause_code_name): Likewise.
+	(walk_tree_1): Handle OMP_CLAUSE_FINAL and OMP_CLAUSE_MERGEABLE.
+	* tree.h (enum omp_clause_code): Add OMP_CLAUSE_FINAL
+	and OMP_CLAUSE_MERGEABLE.
+	(OMP_CLAUSE_FINAL_EXPR): Define.
+	* omp-low.c (scan_sharing_clauses): Handle OMP_CLAUSE_FINAL and
+	OMP_CLAUSE_MERGEABLE.
+	(expand_task_call): Likewise.
+	(expand_omp_atomic_load, expand_omp_atomic_store): New functions.
+	(expand_omp_atomic_fetch_op): Handle cases where old or new
+	value is needed afterwards.
+	(expand_omp_atomic): Call expand_omp_atomic_load resp.
+	expand_omp_atomic_store.
+	* gimplify.c (gimplify_omp_atomic, gimplify_expr): Handle
+	OMP_ATOMIC_READ, OMP_ATOMIC_CAPTURE_OLD and OMP_ATOMIC_CAPTURE_NEW.
+	(gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses): Handle
+	OMP_CLAUSE_FINAL and OMP_CLAUSE_MERGEABLE.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Likewise.
+	* tree.def (OMP_ATOMIC_READ, OMP_ATOMIC_CAPTURE_OLD,
+	OMP_ATOMIC_CAPTURE_NEW): New.
+	* gimple.h (GF_OMP_ATOMIC_NEED_VALUE): New.
+	(gimple_omp_atomic_need_value_p, gimple_omp_atomic_set_need_value):
+	New inlines.
+	* omp-builtins.def (BUILT_IN_GOMP_TASKYIELD): New builtin.
+	* doc/generic.texi: Mention OMP_CLAUSE_COLLAPSE,
+	OMP_CLAUSE_UNTIED, OMP_CLAUSE_FINAL and OMP_CLAUSE_MERGEABLE.
+
 2011-08-02  Kai Tietz  <ktietz@redhat.com>
 
 	* gimple.c (canonicalize_cond_expr_cond): Handle cast from

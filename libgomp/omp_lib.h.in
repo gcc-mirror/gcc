@@ -1,4 +1,4 @@
-!  Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+!  Copyright (C) 2005, 2007, 2008, 2009, 2011 Free Software Foundation, Inc.
 !  Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 !  This file is part of the GNU OpenMP Library (libgomp).
@@ -23,16 +23,17 @@
 !  <http://www.gnu.org/licenses/>.
 
       integer omp_lock_kind, omp_nest_lock_kind, openmp_version
-      integer omp_sched_kind, omp_sched_static, omp_sched_dynamic
-      integer omp_sched_guided, omp_sched_auto
       parameter (omp_lock_kind = @OMP_LOCK_KIND@)
       parameter (omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@)
+      integer omp_sched_kind
       parameter (omp_sched_kind = 4)
+      integer (omp_sched_kind) omp_sched_static, omp_sched_dynamic
+      integer (omp_sched_kind) omp_sched_guided, omp_sched_auto
       parameter (omp_sched_static = 1)
       parameter (omp_sched_dynamic = 2)
       parameter (omp_sched_guided = 3)
       parameter (omp_sched_auto = 4)
-      parameter (openmp_version = 200805)
+      parameter (openmp_version = 201107)
 
       external omp_init_lock, omp_init_nest_lock
       external omp_destroy_lock, omp_destroy_nest_lock
@@ -64,3 +65,6 @@
       integer(4) omp_get_thread_limit, omp_get_max_active_levels
       integer(4) omp_get_level, omp_get_ancestor_thread_num
       integer(4) omp_get_team_size, omp_get_active_level
+
+      external omp_in_final
+      logical(4) omp_in_final

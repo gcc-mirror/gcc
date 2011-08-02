@@ -5932,6 +5932,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    }
 	  break;
 
+	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_IF:
 	  OMP_CLAUSE_OPERAND (c, 0)
 	    = gimple_boolify (OMP_CLAUSE_OPERAND (c, 0));
@@ -5948,6 +5949,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
+	case OMP_CLAUSE_MERGEABLE:
 	  break;
 
 	case OMP_CLAUSE_DEFAULT:
@@ -6088,6 +6090,8 @@ gimplify_adjust_omp_clauses (tree *list_p)
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
+	case OMP_CLAUSE_FINAL:
+	case OMP_CLAUSE_MERGEABLE:
 	  break;
 
 	default:
@@ -6490,24 +6494,45 @@ static enum gimplify_status
 gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
 {
   tree addr = TREE_OPERAND (*expr_p, 0);
-  tree rhs = TREE_OPERAND (*expr_p, 1);
+  tree rhs = TREE_CODE (*expr_p) == OMP_ATOMIC_READ
+	     ? NULL : TREE_OPERAND (*expr_p, 1);
   tree type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (addr)));
   tree tmp_load;
+  gimple loadstmt, storestmt;
 
-   tmp_load = create_tmp_reg (type, NULL);
-   if (goa_stabilize_expr (&rhs, pre_p, addr, tmp_load) < 0)
-     return GS_ERROR;
+  tmp_load = create_tmp_reg (type, NULL);
+  if (rhs && goa_stabilize_expr (&rhs, pre_p, addr, tmp_load) < 0)
+    return GS_ERROR;
 
-   if (gimplify_expr (&addr, pre_p, NULL, is_gimple_val, fb_rvalue)
-       != GS_ALL_DONE)
-     return GS_ERROR;
+  if (gimplify_expr (&addr, pre_p, NULL, is_gimple_val, fb_rvalue)
+      != GS_ALL_DONE)
+    return GS_ERROR;
 
-   gimplify_seq_add_stmt (pre_p, gimple_build_omp_atomic_load (tmp_load, addr));
-   if (gimplify_expr (&rhs, pre_p, NULL, is_gimple_val, fb_rvalue)
-       != GS_ALL_DONE)
-     return GS_ERROR;
-   gimplify_seq_add_stmt (pre_p, gimple_build_omp_atomic_store (rhs));
-   *expr_p = NULL;
+  loadstmt = gimple_build_omp_atomic_load (tmp_load, addr);
+  gimplify_seq_add_stmt (pre_p, loadstmt);
+  if (rhs && gimplify_expr (&rhs, pre_p, NULL, is_gimple_val, fb_rvalue)
+      != GS_ALL_DONE)
+    return GS_ERROR;
+
+  if (TREE_CODE (*expr_p) == OMP_ATOMIC_READ)
+    rhs = tmp_load;
+  storestmt = gimple_build_omp_atomic_store (rhs);
+  gimplify_seq_add_stmt (pre_p, storestmt);
+  switch (TREE_CODE (*expr_p))
+    {
+    case OMP_ATOMIC_READ:
+    case OMP_ATOMIC_CAPTURE_OLD:
+      *expr_p = tmp_load;
+      gimple_omp_atomic_set_need_value (loadstmt);
+      break;
+    case OMP_ATOMIC_CAPTURE_NEW:
+      *expr_p = rhs;
+      gimple_omp_atomic_set_need_value (storestmt);
+      break;
+    default:
+      *expr_p = NULL;
+      break;
+    }
 
    return GS_ALL_DONE;
 }
@@ -7230,6 +7255,9 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 
 	case OMP_ATOMIC:
+	case OMP_ATOMIC_READ:
+	case OMP_ATOMIC_CAPTURE_OLD:
+	case OMP_ATOMIC_CAPTURE_NEW:
 	  ret = gimplify_omp_atomic (expr_p, pre_p);
 	  break;
 

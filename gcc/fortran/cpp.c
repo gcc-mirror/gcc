@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -166,7 +166,7 @@ cpp_define_builtins (cpp_reader *pfile)
   cpp_define (pfile, "_LANGUAGE_FORTRAN=1");
 
   if (gfc_option.gfc_flag_openmp)
-    cpp_define (pfile, "_OPENMP=200805");
+    cpp_define (pfile, "_OPENMP=201107");
 
   /* The defines below are necessary for the TARGET_* macros.
 

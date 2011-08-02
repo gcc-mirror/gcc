@@ -1,3 +1,60 @@
+2011-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46752
+	* cpp.c (cpp_define_builtins): Change _OPENMP to 201107.
+	* openmp.c (gfc_free_omp_clauses): Free also final_expr.
+	(OMP_CLAUSE_FINAL, OMP_CLAUSE_MERGEABLE): Define.
+	(gfc_match_omp_clauses): Handle parsing final and mergeable
+	clauses.
+	(OMP_TASK_CLAUSES): Allow final and mergeable clauses.
+	(gfc_match_omp_taskyield): New function.
+	(resolve_omp_clauses): Resolve final clause.  Allow POINTERs and
+	Cray pointers in clauses other than REDUCTION.
+	(gfc_match_omp_atomic): Match optional
+	read/write/update/capture keywords after !$omp atomic.
+	(resolve_omp_atomic): Handle all OpenMP 3.1 atomic forms.
+	* dump-parse-tree.c (show_omp_node): Handle EXEC_OMP_TASKYIELD,
+	print final and mergeable clauses.
+	(show_code_node): Handle EXEC_OMP_TASKYIELD.
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle final and
+	mergeable clauses.
+	(gfc_trans_omp_taskyield): New function.
+	(gfc_trans_omp_directive): Handle EXEC_OMP_TASKYIELD.
+	(gfc_trans_omp_atomic): Handle all OpenMP 3.1 atomic forms.
+	(gfc_omp_clause_copy_ctor): Handle non-allocated allocatable.
+	(gfc_omp_predetermined_sharing): Adjust comment.
+	* gfortran.h (gfc_statement): Add ST_OMP_TASKYIELD and
+	ST_OMP_END_ATOMIC.
+	(gfc_omp_clauses): Add final_expr and mergeable fields.
+	(gfc_exec_op): Add EXEC_OMP_TASKYIELD.
+	(gfc_omp_atomic_op): New enum typedef.
+	(struct gfc_code): Add ext.omp_atomic.
+	* trans.c (trans_code): Handle EXEC_OMP_TASKYIELD.
+	* frontend-passes.c (gfc_code_walker): Also walk final_expr.
+	* resolve.c (gfc_resolve_blocks, resolve_code): Handle
+	EXEC_OMP_TASKYIELD.
+	* st.c (gfc_free_statement): Likewise.
+	* match.h (gfc_match_omp_taskyield): New prototype.
+	* parse.c (decode_omp_directive): Handle taskyield directive.
+	Handle !$omp end atomic.
+	(case_executable): Add ST_OMP_TASKYIELD case.
+	(gfc_ascii_statement): Handle ST_OMP_TASKYIELD.
+	(parse_omp_atomic): Return gfc_statement instead of void.
+	For !$omp atomic capture parse two assignments instead of
+	just one and require !$omp end atomic afterwards, for
+	other !$omp atomic forms just allow !$omp end atomic at the
+	end.
+	(parse_omp_structured_block, parse_executable): Adjust
+	parse_omp_atomic callers.
+
+2011-08-02  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.c (OMP_LIB): Updated openmp_version's
+	value to 201107.
+	* gfortran.texi (OpenMP): Update ref to OpenMP 3.1.
+	* intrinsic.texi (OpenMP Modules): Update ref to OpenMP 3.1;
+	remove deleted omp_integer_kind and omp_logical_kind constants.
+
 2011-07-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49112

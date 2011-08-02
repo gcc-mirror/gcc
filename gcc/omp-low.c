@@ -1443,6 +1443,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  ctx->default_kind = OMP_CLAUSE_DEFAULT_KIND (c);
 	  break;
 
+	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_SCHEDULE:
@@ -1454,6 +1455,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_UNTIED:
+	case OMP_CLAUSE_MERGEABLE:
 	  break;
 
 	default:
@@ -1504,6 +1506,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_UNTIED:
+	case OMP_CLAUSE_FINAL:
+	case OMP_CLAUSE_MERGEABLE:
 	  break;
 
 	default:
@@ -3081,7 +3085,7 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 static void
 expand_task_call (basic_block bb, gimple entry_stmt)
 {
-  tree t, t1, t2, t3, flags, cond, c, clauses;
+  tree t, t1, t2, t3, flags, cond, c, c2, clauses;
   gimple_stmt_iterator gsi;
   location_t loc = gimple_location (entry_stmt);
 
@@ -3094,7 +3098,19 @@ expand_task_call (basic_block bb, gimple entry_stmt)
     cond = boolean_true_node;
 
   c = find_omp_clause (clauses, OMP_CLAUSE_UNTIED);
-  flags = build_int_cst (unsigned_type_node, (c ? 1 : 0));
+  c2 = find_omp_clause (clauses, OMP_CLAUSE_MERGEABLE);
+  flags = build_int_cst (unsigned_type_node,
+			 (c ? 1 : 0) + (c2 ? 4 : 0));
+
+  c = find_omp_clause (clauses, OMP_CLAUSE_FINAL);
+  if (c)
+    {
+      c = gimple_boolify (OMP_CLAUSE_FINAL_EXPR (c));
+      c = fold_build3_loc (loc, COND_EXPR, unsigned_type_node, c,
+			   build_int_cst (unsigned_type_node, 2),
+			   build_int_cst (unsigned_type_node, 0));
+      flags = fold_build2_loc (loc, PLUS_EXPR, unsigned_type_node, flags, c);
+    }
 
   gsi = gsi_last_bb (bb);
   t = gimple_omp_task_data_arg (entry_stmt);
@@ -4945,6 +4961,31 @@ expand_omp_synch (struct omp_region *region)
 }
 
 /* A subroutine of expand_omp_atomic.  Attempt to implement the atomic
+   operation as a normal volatile load.  */
+
+static bool
+expand_omp_atomic_load (basic_block load_bb, tree addr, tree loaded_val)
+{
+  /* FIXME */
+  (void) load_bb;
+  (void) addr;
+  (void) loaded_val;
+  return false;
+}
+
+/* A subroutine of expand_omp_atomic.  Attempt to implement the atomic
+   operation as a normal volatile store.  */
+
+static bool
+expand_omp_atomic_store (basic_block load_bb, tree addr)
+{
+  /* FIXME */
+  (void) load_bb;
+  (void) addr;
+  return false;
+}
+
+/* A subroutine of expand_omp_atomic.  Attempt to implement the atomic
    operation as a __sync_fetch_and_op builtin.  INDEX is log2 of the
    size of the data type, and thus usable to find the index of the builtin
    decl.  Returns false if the expression is not of the proper form.  */
@@ -4954,14 +4995,15 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
 			    tree addr, tree loaded_val,
 			    tree stored_val, int index)
 {
-  enum built_in_function base;
+  enum built_in_function oldbase, newbase;
   tree decl, itype, call;
-  direct_optab optab;
-  tree rhs;
+  direct_optab optab, oldoptab, newoptab;
+  tree lhs, rhs;
   basic_block store_bb = single_succ (load_bb);
   gimple_stmt_iterator gsi;
   gimple stmt;
   location_t loc;
+  bool need_old, need_new;
 
   /* We expect to find the following sequences:
 
@@ -4985,6 +5027,9 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   gsi_next (&gsi);
   if (gimple_code (gsi_stmt (gsi)) != GIMPLE_OMP_ATOMIC_STORE)
     return false;
+  need_new = gimple_omp_atomic_need_value_p (gsi_stmt (gsi));
+  need_old = gimple_omp_atomic_need_value_p (last_stmt (load_bb));
+  gcc_checking_assert (!need_old || !need_new);
 
   if (!operand_equal_p (gimple_assign_lhs (stmt), stored_val, 0))
     return false;
@@ -4994,24 +5039,39 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
     {
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
-      base = BUILT_IN_SYNC_FETCH_AND_ADD_N;
+      oldbase = BUILT_IN_SYNC_FETCH_AND_ADD_N;
+      newbase = BUILT_IN_SYNC_ADD_AND_FETCH_N;
       optab = sync_add_optab;
+      oldoptab = sync_old_add_optab;
+      newoptab = sync_new_add_optab;
       break;
     case MINUS_EXPR:
-      base = BUILT_IN_SYNC_FETCH_AND_SUB_N;
+      oldbase = BUILT_IN_SYNC_FETCH_AND_SUB_N;
+      newbase = BUILT_IN_SYNC_SUB_AND_FETCH_N;
       optab = sync_add_optab;
+      oldoptab = sync_old_add_optab;
+      newoptab = sync_new_add_optab;
       break;
     case BIT_AND_EXPR:
-      base = BUILT_IN_SYNC_FETCH_AND_AND_N;
+      oldbase = BUILT_IN_SYNC_FETCH_AND_AND_N;
+      newbase = BUILT_IN_SYNC_AND_AND_FETCH_N;
       optab = sync_and_optab;
+      oldoptab = sync_old_and_optab;
+      newoptab = sync_new_and_optab;
       break;
     case BIT_IOR_EXPR:
-      base = BUILT_IN_SYNC_FETCH_AND_OR_N;
+      oldbase = BUILT_IN_SYNC_FETCH_AND_OR_N;
+      newbase = BUILT_IN_SYNC_OR_AND_FETCH_N;
       optab = sync_ior_optab;
+      oldoptab = sync_old_ior_optab;
+      newoptab = sync_new_ior_optab;
       break;
     case BIT_XOR_EXPR:
-      base = BUILT_IN_SYNC_FETCH_AND_XOR_N;
+      oldbase = BUILT_IN_SYNC_FETCH_AND_XOR_N;
+      newbase = BUILT_IN_SYNC_XOR_AND_FETCH_N;
       optab = sync_xor_optab;
+      oldoptab = sync_old_xor_optab;
+      newoptab = sync_new_xor_optab;
       break;
     default:
       return false;
@@ -5025,20 +5085,49 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   else
     return false;
 
-  decl = built_in_decls[base + index + 1];
+  decl = built_in_decls[(need_new ? newbase : oldbase) + index + 1];
   if (decl == NULL_TREE)
     return false;
   itype = TREE_TYPE (TREE_TYPE (decl));
 
-  if (direct_optab_handler (optab, TYPE_MODE (itype)) == CODE_FOR_nothing)
+  if (need_new)
+    {
+      /* expand_sync_fetch_operation can always compensate when interested
+	 in the new value.  */
+      if (direct_optab_handler (newoptab, TYPE_MODE (itype))
+	  == CODE_FOR_nothing
+	  && direct_optab_handler (oldoptab, TYPE_MODE (itype))
+	     == CODE_FOR_nothing)
+	return false;
+    }
+  else if (need_old)
+    {
+      /* When interested in the old value, expand_sync_fetch_operation
+	 can compensate only if the operation is reversible.  AND and OR
+	 are not reversible.  */
+      if (direct_optab_handler (oldoptab, TYPE_MODE (itype))
+	  == CODE_FOR_nothing
+	  && (oldbase == BUILT_IN_SYNC_FETCH_AND_AND_N
+	      || oldbase == BUILT_IN_SYNC_FETCH_AND_OR_N
+	      || direct_optab_handler (newoptab, TYPE_MODE (itype))
+		 == CODE_FOR_nothing))
+	return false;
+    }
+  else if (direct_optab_handler (optab, TYPE_MODE (itype)) == CODE_FOR_nothing)
     return false;
 
   gsi = gsi_last_bb (load_bb);
   gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_ATOMIC_LOAD);
-  call = build_call_expr_loc (loc,
-			  decl, 2, addr,
-			  fold_convert_loc (loc, itype, rhs));
-  call = fold_convert_loc (loc, void_type_node, call);
+  call = build_call_expr_loc (loc, decl, 2, addr,
+			      fold_convert_loc (loc, itype, rhs));
+  if (need_old || need_new)
+    {
+      lhs = need_old ? loaded_val : stored_val;
+      call = fold_convert_loc (loc, TREE_TYPE (lhs), call);
+      call = build2_loc (loc, MODIFY_EXPR, void_type_node, lhs, call);
+    }
+  else
+    call = fold_convert_loc (loc, void_type_node, call);
   force_gimple_operand_gsi (&gsi, call, true, NULL_TREE, true, GSI_SAME_STMT);
   gsi_remove (&gsi, true);
 
@@ -5319,6 +5408,25 @@ expand_omp_atomic (struct omp_region *region)
       /* __sync builtins require strict data alignment.  */
       if (exact_log2 (align) >= index)
 	{
+	  /* Atomic load.  FIXME: have some target hook signalize what loads
+	     are actually atomic?  */
+	  if (loaded_val == stored_val
+	      && (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT
+		  || GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT)
+	      && GET_MODE_BITSIZE (TYPE_MODE (type)) <= BITS_PER_WORD
+	      && expand_omp_atomic_load (load_bb, addr, loaded_val))
+	    return;
+
+	  /* Atomic store.  FIXME: have some target hook signalize what
+	     stores are actually atomic?  */
+	  if ((GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT
+	       || GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT)
+	      && GET_MODE_BITSIZE (TYPE_MODE (type)) <= BITS_PER_WORD
+	      && store_bb == single_succ (load_bb)
+	      && first_stmt (store_bb) == store
+	      && expand_omp_atomic_store (load_bb, addr))
+	    return;
+
 	  /* When possible, use specialized atomic update functions.  */
 	  if ((INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
 	      && store_bb == single_succ (load_bb))

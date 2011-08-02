@@ -1,4 +1,5 @@
-/* Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2006, 2007, 2008, 2009, 2011
+   Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -260,6 +261,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   struct gomp_thread_pool *pool;
   unsigned i, n, old_threads_used = 0;
   pthread_attr_t thread_attr, *attr;
+  unsigned long nthreads_var;
 
   thr = gomp_thread ();
   nested = thr->ts.team != NULL;
@@ -289,7 +291,12 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 #endif
   thr->ts.static_trip = 0;
   thr->task = &team->implicit_task[0];
+  nthreads_var = icv->nthreads_var;
+  if (__builtin_expect (gomp_nthreads_var_list != NULL, 0)
+      && thr->ts.level < gomp_nthreads_var_list_len)
+    nthreads_var = gomp_nthreads_var_list[thr->ts.level];
   gomp_init_task (thr->task, task, icv);
+  team->implicit_task[0].icv.nthreads_var = nthreads_var;
 
   if (nthreads == 1)
     return;
@@ -342,6 +349,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 	  nthr->ts.static_trip = 0;
 	  nthr->task = &team->implicit_task[i];
 	  gomp_init_task (nthr->task, task, icv);
+	  team->implicit_task[i].icv.nthreads_var = nthreads_var;
 	  nthr->fn = fn;
 	  nthr->data = data;
 	  team->ordered_release[i] = &nthr->release;
@@ -413,6 +421,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       start_data->ts.static_trip = 0;
       start_data->task = &team->implicit_task[i];
       gomp_init_task (start_data->task, task, icv);
+      team->implicit_task[i].icv.nthreads_var = nthreads_var;
       start_data->thread_pool = pool;
       start_data->nested = nested;
 

@@ -13072,7 +13072,7 @@ Both are equivalent to the value @code{NULL} in C.
 @section OpenMP Modules @code{OMP_LIB} and @code{OMP_LIB_KINDS}
 @table @asis
 @item @emph{Standard}:
-OpenMP Application Program Interface v3.0
+OpenMP Application Program Interface v3.1
 @end table
 
 
@@ -13085,15 +13085,13 @@ the named constants defined in the modules are listed
 below.
 
 For details refer to the actual
-@uref{http://www.openmp.org/mp-documents/spec30.pdf,
-OpenMP Application Program Interface v3.0}.
+@uref{http://www.openmp.org/mp-documents/spec31.pdf,
+OpenMP Application Program Interface v3.1}.
 
 @code{OMP_LIB_KINDS} provides the following scalar default-integer
 named constants:
 
 @table @asis
-@item @code{omp_integer_kind}
-@item @code{omp_logical_kind}
 @item @code{omp_lock_kind}
 @item @code{omp_nest_lock_kind}
 @item @code{omp_sched_kind}
@@ -13102,7 +13100,7 @@ named constants:
 @code{OMP_LIB} provides the scalar default-integer
 named constant @code{openmp_version} with a value of the form
 @var{yyyymm}, where @code{yyyy} is the year and @var{mm} the month
-of the OpenMP version; for OpenMP v3.0 the value is @code{200805}.
+of the OpenMP version; for OpenMP v3.1 the value is @code{201107}.
 
 And the following scalar integer named constants of the
 kind @code{omp_sched_kind}:

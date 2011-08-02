@@ -1,4 +1,4 @@
-/* Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2007, 2008, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -41,6 +41,7 @@ gomp_init_task (struct gomp_task *task, struct gomp_task *parent_task,
   task->kind = GOMP_TASK_IMPLICIT;
   task->in_taskwait = false;
   task->in_tied_task = false;
+  task->final_task = false;
   task->children = NULL;
   gomp_sem_init (&task->taskwait_sem, 0);
 }
@@ -77,8 +78,7 @@ gomp_clear_parent (struct gomp_task *children)
 
 void
 GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
-	   long arg_size, long arg_align, bool if_clause,
-	   unsigned flags __attribute__((unused)))
+	   long arg_size, long arg_align, bool if_clause, unsigned flags)
 {
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
@@ -95,12 +95,14 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 #endif
 
   if (!if_clause || team == NULL
+      || (thr->task && thr->task->final_task)
       || team->task_count > 64 * team->nthreads)
     {
       struct gomp_task task;
 
       gomp_init_task (&task, thr->task, gomp_icv (false));
       task.kind = GOMP_TASK_IFFALSE;
+      task.final_task = (thr->task && thr->task->final_task) || (flags & 2);
       if (thr->task)
 	task.in_tied_task = thr->task->in_tied_task;
       thr->task = &task;
@@ -145,6 +147,7 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
       task->fn = fn;
       task->fn_data = arg;
       task->in_tied_task = true;
+      task->final_task = (flags & 2) >> 1;
       gomp_mutex_lock (&team->task_lock);
       if (parent->children)
 	{
@@ -362,3 +365,20 @@ GOMP_taskwait (void)
 	}
     }
 }
+
+/* Called when encountering a taskyield directive.  */
+
+void
+GOMP_taskyield (void)
+{
+  /* Nothing at the moment.  */
+}
+
+int
+omp_in_final (void)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  return thr->task && thr->task->final_task;
+}
+
+ialias (omp_in_final)
