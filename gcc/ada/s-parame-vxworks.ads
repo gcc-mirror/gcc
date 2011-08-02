@@ -114,7 +114,7 @@ package System.Parameters is
 
    ptr_bits  : constant := Standard'Address_Size;
    subtype C_Address is System.Address;
-   --  Number of bits in Interaces.C pointers, normally a standard address,
+   --  Number of bits in Interfaces.C pointers, normally a standard address,
    --  except on 64-bit VMS where they are 32-bit addresses, for compatibility
    --  with legacy code.
 
