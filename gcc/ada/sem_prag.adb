@@ -84,6 +84,7 @@ with Uintp;    use Uintp;
 with Uname;    use Uname;
 with Urealp;   use Urealp;
 with Validsw;  use Validsw;
+with Warnsw;   use Warnsw;
 
 package body Sem_Prag is
 

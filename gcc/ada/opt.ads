@@ -1077,6 +1077,13 @@ package Opt is
    --  GNAT
    --  Set by switch -gnatep=. The file name of the preprocessing data file.
 
+   Preprocessing_Symbol_Defs : String_List_Access := new String_List (1 .. 4);
+   --  An extensible array to temporarily stores symbol definitions specified
+   --  on the command line with -gnateD switches.
+
+   Preprocessing_Symbol_Last : Natural := 0;
+   --  Index of last symbol definition in array Symbol_Definitions
+
    Print_Generated_Code : Boolean := False;
    --  GNAT
    --  Set to True to enable output of generated code in source form. This

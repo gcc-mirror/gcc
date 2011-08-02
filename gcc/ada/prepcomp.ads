@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,10 +32,6 @@ package Prepcomp is
    procedure Add_Dependencies;
    --  Add dependencies on the preprocessing data file and the
    --  preprocessing definition files, if any.
-
-   procedure Add_Symbol_Definition (Def : String);
-   --  Add a symbol definition from the command line.
-   --  Fail if definition is illegal.
 
    procedure Check_Symbols;
    --  Check if there are preprocessing symbols on the command line and

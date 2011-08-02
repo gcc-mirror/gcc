@@ -60,6 +60,7 @@ with Targparm; use Targparm;
 with Ttypes;   use Ttypes;
 with Tbuild;   use Tbuild;
 with Urealp;   use Urealp;
+with Warnsw;   use Warnsw;
 
 with GNAT.Heap_Sort_G;
 

@@ -23,16 +23,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package is for switch processing and should not depend on higher level
+--  packages such as those for the scanner, parser, etc. Doing so may cause
+--  circularities, especially for back ends using Adabkend.
+
 with Debug;    use Debug;
 with Lib;      use Lib;
 with Osint;    use Osint;
 with Opt;      use Opt;
-with Prepcomp; use Prepcomp;
 with Validsw;  use Validsw;
-with Sem_Warn; use Sem_Warn;
 with Stylesw;  use Stylesw;
+with Warnsw;   use Warnsw;
 
-with System.Strings;
 with System.WCh_Con; use System.WCh_Con;
 
 package body Switch.C is
@@ -40,9 +42,12 @@ package body Switch.C is
    RTS_Specified : String_Access := null;
    --  Used to detect multiple use of --RTS= flag
 
+   procedure Add_Symbol_Definition (Def : String);
+   --  Add a symbol definition from the command line
+
    function Switch_Subsequently_Cancelled
      (C        : String;
-      Args     : Argument_List;
+      Args     : String_List;
       Arg_Rank : Positive) return Boolean;
    --  This function is called from Scan_Front_End_Switches. It determines if
    --  the switch currently being scanned is followed by a switch of the form
@@ -50,13 +55,39 @@ package body Switch.C is
    --  and Scan_Front_End_Switches will cancel the effect of the switch. If
    --  no such switch is found, False is returned.
 
+   ---------------------------
+   -- Add_Symbol_Definition --
+   ---------------------------
+
+   procedure Add_Symbol_Definition (Def : String) is
+   begin
+      --  If Preprocessor_Symbol_Defs is not large enough, double its size
+
+      if Preprocessing_Symbol_Last = Preprocessing_Symbol_Defs'Last then
+         declare
+            New_Symbol_Definitions : constant String_List_Access :=
+              new String_List (1 .. 2 * Preprocessing_Symbol_Last);
+
+         begin
+            New_Symbol_Definitions (Preprocessing_Symbol_Defs'Range) :=
+              Preprocessing_Symbol_Defs.all;
+            Free (Preprocessing_Symbol_Defs);
+            Preprocessing_Symbol_Defs := New_Symbol_Definitions;
+         end;
+      end if;
+
+      Preprocessing_Symbol_Last := Preprocessing_Symbol_Last + 1;
+      Preprocessing_Symbol_Defs (Preprocessing_Symbol_Last)
+         := new String'(Def);
+   end Add_Symbol_Definition;
+
    -----------------------------
    -- Scan_Front_End_Switches --
    -----------------------------
 
    procedure Scan_Front_End_Switches
      (Switch_Chars : String;
-      Args         : Argument_List;
+      Args         : String_List;
       Arg_Rank     : Positive)
    is
       First_Switch : Boolean := True;
@@ -1157,11 +1188,9 @@ package body Switch.C is
 
    function Switch_Subsequently_Cancelled
      (C        : String;
-      Args     : Argument_List;
+      Args     : String_List;
       Arg_Rank : Positive) return Boolean
    is
-      use type System.Strings.String_Access;
-
    begin
       --  Loop through arguments following the current one
 
