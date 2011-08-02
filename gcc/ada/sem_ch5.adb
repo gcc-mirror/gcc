@@ -2008,11 +2008,10 @@ package body Sem_Ch5 is
                         return;
                      end;
 
+                  --  Domain of iteration is not a function call, and is
+                  --  side-effect free.
+
                   else
-
-                     --  Domain of iteration is not a function call, and is
-                     --  side-effect free.
-
                      Analyze (DS);
                   end if;
                end if;
@@ -2210,6 +2209,7 @@ package body Sem_Ch5 is
       then
          declare
             Id : constant Entity_Id := Make_Temporary (Loc, 'R', Container);
+
             Decl   : Node_Id;
             Assign : Node_Id;
 
@@ -2223,8 +2223,8 @@ package body Sem_Ch5 is
 
             Assign :=
               Make_Assignment_Statement (Loc,
-                 Name        => New_Occurrence_Of (Id, Loc),
-                 Expression  => Relocate_Node (Container));
+                Name        => New_Occurrence_Of (Id, Loc),
+                Expression  => Relocate_Node (Container));
 
             Insert_Actions (Parent (N), New_List (Decl, Assign));
          end;

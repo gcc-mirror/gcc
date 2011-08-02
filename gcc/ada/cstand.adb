@@ -196,14 +196,15 @@ package body CStand is
       Set_Size_Known_At_Compile_Time (E);
    end Build_Float_Type;
 
-   ------------------------
+   ------------------------------
    -- Find_Back_End_Float_Type --
-   ------------------------
+   ------------------------------
 
    function Find_Back_End_Float_Type (Name : String) return Entity_Id is
-      N : Elmt_Id := First_Elmt (Back_End_Float_Types);
+      N : Elmt_Id;
 
    begin
+      N := First_Elmt (Back_End_Float_Types);
       while Present (N) and then Get_Name_String (Chars (Node (N))) /= Name
       loop
          Next_Elmt (N);

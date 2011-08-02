@@ -5739,13 +5739,14 @@ package body Sem_Res is
 
       --  Commented out as the call to Is_Inherited_Operation_For_Type may
       --  cause an error because the type entity of the parent node of
-      --  Entity (Name (N) may not be set.
+      --  Entity (Name (N) may not be set. ???
+      --  So why not just add a guard ???
 
 --      if Nkind (N) = N_Function_Call
 --        and then Is_Tagged_Type (Etype (N))
 --        and then Is_Entity_Name (Name (N))
 --        and then Is_Inherited_Operation_For_Type
---         (Entity (Name (N)), Etype (N))
+--                   (Entity (Name (N)), Etype (N))
 --      then
 --         Check_Formal_Restriction ("function not inherited", N);
 --      end if;

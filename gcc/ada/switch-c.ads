@@ -24,10 +24,11 @@
 ------------------------------------------------------------------------------
 
 --  This package scans front end switches. Note that the body of Usage must be
---  coordinated with the switches that are recognized by this package.
---  The Usage package also acts as the official documentation for the
---  switches that are recognized. In addition, package Debug documents
---  the otherwise undocumented debug switches that are also recognized.
+--  be coordinated with the switches that are recognized by this package.
+
+--  The Usage package also acts as the official documentation for the switches
+--  that are recognized. In addition, package Debug documents the otherwise
+--  undocumented debug switches that are also recognized.
 
 with System.Strings; use System.Strings;
 

@@ -197,7 +197,7 @@ package body Ada.Calendar.Formatting is
       Include_Time_Fraction : Boolean := False;
       Time_Zone             : Time_Zones.Time_Offset := 0) return String
    is
-      To_Char    : constant array (0 .. 9) of Character := "0123456789";
+      To_Char : constant array (0 .. 9) of Character := "0123456789";
 
       Year        : Year_Number;
       Month       : Month_Number;
@@ -212,8 +212,8 @@ package body Ada.Calendar.Formatting is
       --  The result length depends on whether fractions are requested.
 
       Result : String := "0000-00-00 00:00:00.00";
-      Last   : constant Positive
-                 := Result'Last - (if Include_Time_Fraction then 0 else 3);
+      Last   : constant Positive :=
+                 Result'Last - (if Include_Time_Fraction then 0 else 3);
 
    begin
       Split (Date, Year, Month, Day,
@@ -347,7 +347,7 @@ package body Ada.Calendar.Formatting is
    begin
       --  Validity checks
 
-      if not Hour'Valid
+      if        not Hour'Valid
         or else not Minute'Valid
         or else not Second'Valid
         or else not Sub_Second'Valid

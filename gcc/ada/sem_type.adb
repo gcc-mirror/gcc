@@ -832,13 +832,12 @@ package body Sem_Type is
         and then Is_Interface (Etype (T1))
         and then Is_Concurrent_Type (T2)
         and then Interface_Present_In_Ancestor
-                   (Typ   => BT2,
-                    Iface => Etype (T1))
+                   (Typ => BT2, Iface => Etype (T1))
       then
          return True;
 
       --  Ada 2005 (AI-251): A class-wide abstract interface type T1 covers an
-      --  object T2 implementing T1
+      --  object T2 implementing T1.
 
       elsif Ada_Version >= Ada_2005
         and then Is_Class_Wide_Type (T1)

@@ -734,8 +734,8 @@ package Sem_Util is
    --  if it is False (i.e. zero).
 
    function Is_Fixed_Model_Number (U : Ureal; T : Entity_Id) return Boolean;
-   --  Returns True iff the number U is a model number of the fixed-
-   --  point type T, i.e. if it is an exact multiple of Small.
+   --  Returns True iff the number U is a model number of the fixed-point type
+   --  T, i.e. if it is an exact multiple of Small.
 
    function Is_Fully_Initialized_Type (Typ : Entity_Id) return Boolean;
    --  Typ is a type entity. This function returns true if this type is fully
@@ -751,7 +751,7 @@ package Sem_Util is
    --  by a derived type declaration.
 
    function Is_Inherited_Operation_For_Type
-     (E, Typ : Entity_Id) return Boolean;
+     (E : Entity_Id; Typ : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
    --  by the derived type declaration for type Typ.
 

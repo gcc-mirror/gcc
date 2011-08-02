@@ -181,7 +181,6 @@ package body Einfo is
    --    Default_Expr_Function           Node21
    --    Discriminant_Constraint         Elist21
    --    Interface_Name                  Node21
-   --    Original_Access_Type            Node21
    --    Original_Array_Type             Node21
    --    Small_Value                     Ureal21
 
@@ -221,6 +220,7 @@ package body Einfo is
 
    --    Dispatch_Table_Wrappers         Elist26
    --    Last_Assignment                 Node26
+   --    Original_Access_Type            Node26
    --    Overridden_Operation            Node26
    --    Package_Instantiation           Node26
    --    Relative_Deadline_Variable      Node26
@@ -2357,7 +2357,7 @@ package body Einfo is
    function Original_Access_Type (Id : E) return E is
    begin
       pragma Assert (Ekind (Id) = E_Access_Subprogram_Type);
-      return Node21 (Id);
+      return Node26 (Id);
    end Original_Access_Type;
 
    function Original_Array_Type (Id : E) return E is
@@ -4862,7 +4862,7 @@ package body Einfo is
    procedure Set_Original_Access_Type (Id : E; V : E) is
    begin
       pragma Assert (Ekind (Id) = E_Access_Subprogram_Type);
-      Set_Node21 (Id, V);
+      Set_Node26 (Id, V);
    end Set_Original_Access_Type;
 
    procedure Set_Original_Array_Type (Id : E; V : E) is
@@ -8345,9 +8345,6 @@ package body Einfo is
          when Fixed_Point_Kind                             =>
             Write_Str ("Small_Value");
 
-         when E_Access_Subprogram_Type                     =>
-            Write_Str ("Original_Access_Type");
-
          when E_In_Parameter                               =>
             Write_Str ("Default_Expr_Function");
 
@@ -8550,6 +8547,9 @@ package body Einfo is
    procedure Write_Field26_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Access_Subprogram_Type                     =>
+            Write_Str ("Original_Access_Type");
+
          when E_Generic_Package                            |
               E_Package                                    =>
             Write_Str ("Package_Instantiation");
