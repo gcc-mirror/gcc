@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -478,7 +478,7 @@ package body Exp_Disp is
 
       procedure Build_TSDs (List : List_Id);
       --  Build the static dispatch table of tagged types found in the list of
-      --  declarations. The generated nodes are added at the end of Target_List
+      --  declarations. Add the generated nodes to the end of Target_List.
 
       procedure Build_Package_TSDs (N : Node_Id);
       --  Build static dispatch tables associated with package declaration N
@@ -6255,9 +6255,9 @@ package body Exp_Disp is
       Loc              : constant Source_Ptr := Sloc (Typ);
       Result           : constant List_Id := New_List;
       AI               : Elmt_Id;
-      I_Depth          : Nat := 0;
+      I_Depth          : Nat := 0; -- why initialized here ???
       Iface_Table_Node : Node_Id;
-      Num_Ifaces       : Nat := 0;
+      Num_Ifaces       : Nat := 0; -- why initialized here ???
       TSD_Aggr_List    : List_Id;
       Typ_Ifaces       : Elist_Id;
       TSD_Tags_List    : List_Id;
@@ -6341,11 +6341,9 @@ package body Exp_Disp is
 
       declare
          Type_Is_Library_Level : Entity_Id;
-
       begin
          Type_Is_Library_Level :=
            Boolean_Literals (Is_Library_Level_Entity (Typ));
-
          Append_To (TSD_Aggr_List,
             New_Occurrence_Of (Type_Is_Library_Level, Loc));
       end;
@@ -6382,8 +6380,7 @@ package body Exp_Disp is
                        Expressions => New_List (
                          Make_Attribute_Reference (Loc,
                            Prefix => New_Reference_To (Node (AI), Loc),
-                           Attribute_Name => Name_Tag)
-                        )));
+                           Attribute_Name => Name_Tag))));
 
                   Next_Elmt (AI);
                end loop;
