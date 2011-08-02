@@ -1,5 +1,11 @@
 2011-08-02  Yannick Moy  <moy@adacore.com>
 
+	* errout.adb (First_Node): minor renaming
+	* restrict.adb (Check_Formal_Restriction): put restriction warning on
+	first node.
+
+2011-08-02  Yannick Moy  <moy@adacore.com>
+
 	* sem_res.adb (Resolve_Logical_Op): ensure N is a binary operator
 	before accessing operands.
 	* sem_util.adb (Is_SPARK_Initialization_Expr): follow original nodes to

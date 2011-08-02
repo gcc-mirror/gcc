@@ -1307,9 +1307,9 @@ package body Errout is
    ----------------
 
    function First_Node (C : Node_Id) return Node_Id is
-      L        : constant Source_Ptr        := Sloc (Original_Node (C));
       Orig     : constant Node_Id           := Original_Node (C);
-      Sfile    : constant Source_File_Index := Get_Source_File_Index (L);
+      Loc      : constant Source_Ptr        := Sloc (Orig);
+      Sfile    : constant Source_File_Index := Get_Source_File_Index (Loc);
       Earliest : Node_Id;
       Eloc     : Source_Ptr;
 
@@ -1324,20 +1324,26 @@ package body Errout is
       ------------------
 
       function Test_Earlier (N : Node_Id) return Traverse_Result is
-         Loc : constant Source_Ptr := Sloc (Original_Node (N));
+         Norig : constant Node_Id    := Original_Node (N);
+         Loc   : constant Source_Ptr := Sloc (Norig);
 
       begin
-         --  Check for earlier. The tests for being in the same file ensures
-         --  against strange cases of foreign code somehow being present. We
-         --  don't want wild placement of messages if that happens, so it is
-         --  best to just ignore this situation.
+         --  Check for earlier
 
          if Loc < Eloc
+
+           --  Ignore nodes with no useful location information
+
            and then Loc /= Standard_Location
            and then Loc /= No_Location
+
+           --  Ignore nodes from a different file. This ensures against cases
+           --  of strange foreign code somehow being present. We don't want
+           --  wild placement of messages if that happens.
+
            and then Get_Source_File_Index (Loc) = Sfile
          then
-            Earliest := Original_Node (N);
+            Earliest := Norig;
             Eloc     := Loc;
          end if;
 
@@ -1349,7 +1355,7 @@ package body Errout is
    begin
       if Nkind (Orig) in N_Subexpr then
          Earliest := Orig;
-         Eloc := Sloc (Earliest);
+         Eloc := Loc;
          Search_Tree_First (Orig);
          return Earliest;
 
