@@ -1170,7 +1170,7 @@ package body Clean is
                   Executable :=
                     Executable_Of
                       (Main_Project,
-                       Project_Tree,
+                       Project_Tree.Shared,
                        Main_Source_File,
                        Current_File_Index);
 
@@ -1425,7 +1425,7 @@ package body Clean is
          --  Add source directories and object directories to the search paths
 
          Add_Source_Directories (Main_Project, Project_Tree);
-         Add_Object_Directories (Main_Project);
+         Add_Object_Directories (Main_Project, Project_Tree);
       end if;
 
       Osint.Add_Default_Search_Dirs;
@@ -1440,7 +1440,7 @@ package body Clean is
             Value : String_List_Id := Main_Project.Mains;
          begin
             while Value /= Prj.Nil_String loop
-               Main := Project_Tree.String_Elements.Table (Value);
+               Main := Project_Tree.Shared.String_Elements.Table (Value);
                Osint.Add_File
                  (File_Name => Get_Name_String (Main.Value),
                   Index     => Main.Index);

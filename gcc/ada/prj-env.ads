@@ -88,6 +88,7 @@ package Prj.Env is
 
    function Ada_Objects_Path
      (Project             : Project_Id;
+      In_Tree             : Project_Tree_Ref;
       Including_Libraries : Boolean := True) return String_Access;
    --  Get the ADA_OBJECTS_PATH of a Project file. For the first call, compute
    --  it and cache it. When Including_Libraries is False, do not include the
@@ -149,7 +150,9 @@ package Prj.Env is
 
    generic
       with procedure Action (Path : String);
-   procedure For_All_Object_Dirs (Project : Project_Id);
+   procedure For_All_Object_Dirs
+     (Project : Project_Id;
+      Tree    : Project_Tree_Ref);
    --  Iterate through all the object directories of a project, including those
    --  of imported or modified projects.
 

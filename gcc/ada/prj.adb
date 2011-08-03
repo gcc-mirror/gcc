@@ -404,6 +404,7 @@ package body Prj is
 
    procedure For_Every_Project_Imported
      (By                 : Project_Id;
+      Tree               : Project_Tree_Ref;
       With_State         : in out State;
       Include_Aggregated : Boolean := True;
       Imported_First     : Boolean := False)
@@ -411,7 +412,8 @@ package body Prj is
       use Project_Boolean_Htable;
       Seen : Project_Boolean_Htable.Instance := Project_Boolean_Htable.Nil;
 
-      procedure Recursive_Check (Project : Project_Id);
+      procedure Recursive_Check
+        (Project : Project_Id; Tree : Project_Tree_Ref);
       --  Check if a project has already been seen. If not seen, mark it as
       --  Seen, Call Action, and check all its imported projects.
 
@@ -419,29 +421,34 @@ package body Prj is
       -- Recursive_Check --
       ---------------------
 
-      procedure Recursive_Check (Project : Project_Id) is
+      procedure Recursive_Check
+        (Project : Project_Id; Tree : Project_Tree_Ref)
+      is
          List : Project_List;
          Agg  : Aggregated_Project_List;
 
       begin
          if not Get (Seen, Project) then
+            --  Even if a project is aggregated multiple times, we will only
+            --  return it once.
+
             Set (Seen, Project, True);
 
             if not Imported_First then
-               Action (Project, With_State);
+               Action (Project, Tree, With_State);
             end if;
 
             --  Visit all extended projects
 
             if Project.Extends /= No_Project then
-               Recursive_Check (Project.Extends);
+               Recursive_Check (Project.Extends, Tree);
             end if;
 
             --  Visit all imported projects
 
             List := Project.Imported_Projects;
             while List /= null loop
-               Recursive_Check (List.Project);
+               Recursive_Check (List.Project, Tree);
                List := List.Next;
             end loop;
 
@@ -453,13 +460,13 @@ package body Prj is
                Agg := Project.Aggregated_Projects;
                while Agg /= null loop
                   pragma Assert (Agg.Project /= No_Project);
-                  Recursive_Check (Agg.Project);
+                  Recursive_Check (Agg.Project, Agg.Tree);
                   Agg := Agg.Next;
                end loop;
             end if;
 
             if Imported_First then
-               Action (Project, With_State);
+               Action (Project, Tree, With_State);
             end if;
          end if;
       end Recursive_Check;
@@ -467,7 +474,7 @@ package body Prj is
    --  Start of processing for For_Every_Project_Imported
 
    begin
-      Recursive_Check (Project => By);
+      Recursive_Check (Project => By, Tree => Tree);
       Reset (Seen);
    end For_Every_Project_Imported;
 
@@ -484,18 +491,25 @@ package body Prj is
    is
       Result : Source_Id  := No_Source;
 
-      procedure Look_For_Sources (Proj : Project_Id; Src : in out Source_Id);
+      procedure Look_For_Sources
+        (Proj : Project_Id;
+         Tree : Project_Tree_Ref;
+         Src  : in out Source_Id);
       --  Look for Base_Name in the sources of Proj
 
       ----------------------
       -- Look_For_Sources --
       ----------------------
 
-      procedure Look_For_Sources (Proj : Project_Id; Src : in out Source_Id) is
+      procedure Look_For_Sources
+        (Proj : Project_Id;
+         Tree : Project_Tree_Ref;
+         Src  : in out Source_Id)
+      is
          Iterator : Source_Iterator;
 
       begin
-         Iterator := For_Each_Source (In_Tree => In_Tree, Project => Proj);
+         Iterator := For_Each_Source (In_Tree => Tree, Project => Proj);
          while Element (Iterator) /= No_Source loop
             if Element (Iterator).File = Base_Name then
                Src := Element (Iterator);
@@ -517,22 +531,23 @@ package body Prj is
       if In_Extended_Only then
          Proj := Project;
          while Proj /= No_Project loop
-            Look_For_Sources (Proj, Result);
+            Look_For_Sources (Proj, In_Tree, Result);
             exit when Result /= No_Source;
 
             Proj := Proj.Extends;
          end loop;
 
       elsif In_Imported_Only then
-         Look_For_Sources (Project, Result);
+         Look_For_Sources (Project, In_Tree, Result);
 
          if Result = No_Source then
             For_Imported_Projects
               (By         => Project,
+               Tree       => In_Tree,
                With_State => Result);
          end if;
       else
-         Look_For_Sources (No_Project, Result);
+         Look_For_Sources (No_Project, In_Tree, Result);
       end if;
 
       return Result;
@@ -604,12 +619,9 @@ package body Prj is
 
          Prj.Attr.Initialize;
 
-         Set_Name_Table_Byte
-           (Name_Project,          Token_Type'Pos (Tok_Project));
-         Set_Name_Table_Byte
-           (Name_Extends,          Token_Type'Pos (Tok_Extends));
-         Set_Name_Table_Byte
-           (Name_External,         Token_Type'Pos (Tok_External));
+         Set_Name_Table_Byte (Name_Project,  Token_Type'Pos (Tok_Project));
+         Set_Name_Table_Byte (Name_Extends,  Token_Type'Pos (Tok_Extends));
+         Set_Name_Table_Byte (Name_External, Token_Type'Pos (Tok_External));
          Set_Name_Table_Byte
            (Name_External_As_List, Token_Type'Pos (Tok_External_As_List));
       end if;
@@ -716,6 +728,9 @@ package body Prj is
    begin
       while List /= null loop
          Tmp := List.Next;
+
+         Free (List.Tree);
+
          Unchecked_Free (List);
          List := Tmp;
       end loop;
@@ -731,6 +746,7 @@ package body Prj is
       Project.Aggregated_Projects := new Aggregated_Project'
         (Path    => Path,
          Project => No_Project,
+         Tree    => null,
          Next    => Project.Aggregated_Projects);
    end Add_Aggregated_Project;
 
@@ -888,13 +904,16 @@ package body Prj is
 
    begin
       if Tree /= null then
-         Name_List_Table.Free (Tree.Name_Lists);
-         Number_List_Table.Free (Tree.Number_Lists);
-         String_Element_Table.Free (Tree.String_Elements);
-         Variable_Element_Table.Free (Tree.Variable_Elements);
-         Array_Element_Table.Free (Tree.Array_Elements);
-         Array_Table.Free (Tree.Arrays);
-         Package_Table.Free (Tree.Packages);
+         if Tree.Is_Root_Tree then
+            Name_List_Table.Free (Tree.Shared.Name_Lists);
+            Number_List_Table.Free (Tree.Shared.Number_Lists);
+            String_Element_Table.Free (Tree.Shared.String_Elements);
+            Variable_Element_Table.Free (Tree.Shared.Variable_Elements);
+            Array_Element_Table.Free (Tree.Shared.Array_Elements);
+            Array_Table.Free (Tree.Shared.Arrays);
+            Package_Table.Free (Tree.Shared.Packages);
+         end if;
+
          Source_Paths_Htable.Reset (Tree.Source_Paths_HT);
          Source_Files_Htable.Reset (Tree.Source_Files_HT);
 
@@ -917,13 +936,21 @@ package body Prj is
    begin
       --  Visible tables
 
-      Name_List_Table.Init          (Tree.Name_Lists);
-      Number_List_Table.Init        (Tree.Number_Lists);
-      String_Element_Table.Init     (Tree.String_Elements);
-      Variable_Element_Table.Init   (Tree.Variable_Elements);
-      Array_Element_Table.Init      (Tree.Array_Elements);
-      Array_Table.Init              (Tree.Arrays);
-      Package_Table.Init            (Tree.Packages);
+      if Tree.Is_Root_Tree then
+         --  We cannot use 'Access here:
+         --    "illegal attribute for discriminant-dependent component"
+         --  However, we know this is valid since Shared and Shared_Data have
+         --  the same lifetime and will always exist concurrently.
+         Tree.Shared := Tree.Shared_Data'Unrestricted_Access;
+         Name_List_Table.Init          (Tree.Shared.Name_Lists);
+         Number_List_Table.Init        (Tree.Shared.Number_Lists);
+         String_Element_Table.Init     (Tree.Shared.String_Elements);
+         Variable_Element_Table.Init   (Tree.Shared.Variable_Elements);
+         Array_Element_Table.Init      (Tree.Shared.Array_Elements);
+         Array_Table.Init              (Tree.Shared.Arrays);
+         Package_Table.Init            (Tree.Shared.Packages);
+      end if;
+
       Source_Paths_Htable.Reset     (Tree.Source_Paths_HT);
       Source_Files_Htable.Reset     (Tree.Source_Files_HT);
       Replaced_Source_HTable.Reset  (Tree.Replaced_Sources);
@@ -1110,7 +1137,10 @@ package body Prj is
    procedure Compute_All_Imported_Projects (Tree : Project_Tree_Ref) is
       Project : Project_Id;
 
-      procedure Recursive_Add (Prj : Project_Id; Dummy : in out Boolean);
+      procedure Recursive_Add
+        (Prj   : Project_Id;
+         Tree  : Project_Tree_Ref;
+         Dummy : in out Boolean);
       --  Recursively add the projects imported by project Project, but not
       --  those that are extended.
 
@@ -1118,8 +1148,12 @@ package body Prj is
       -- Recursive_Add --
       -------------------
 
-      procedure Recursive_Add (Prj : Project_Id; Dummy : in out Boolean) is
-         pragma Unreferenced (Dummy);
+      procedure Recursive_Add
+        (Prj   : Project_Id;
+         Tree  : Project_Tree_Ref;
+         Dummy : in out Boolean)
+      is
+         pragma Unreferenced (Dummy, Tree);
          List    : Project_List;
          Prj2    : Project_Id;
 
@@ -1163,7 +1197,7 @@ package body Prj is
       while List /= null loop
          Project := List.Project;
          Free_List (Project.All_Imported_Projects, Free_Project => False);
-         For_All_Projects (Project, Dummy);
+         For_All_Projects (Project, Tree, Dummy, Include_Aggregated => False);
          List := List.Next;
       end loop;
    end Compute_All_Imported_Projects;

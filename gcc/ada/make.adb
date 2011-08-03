@@ -1288,7 +1288,8 @@ package body Make is
 
             Switch_List := Switches.Values;
             while Switch_List /= Nil_String loop
-               Element := Project_Tree.String_Elements.Table (Switch_List);
+               Element :=
+                 Project_Tree.Shared.String_Elements.Table (Switch_List);
                Get_Name_String (Element.Value);
 
                if Name_Len > 0 then
@@ -2301,7 +2302,7 @@ package body Make is
                  Prj.Util.Value_Of
                    (Name        => Name_Compiler,
                     In_Packages => Arguments_Project.Decl.Packages,
-                    In_Tree     => Project_Tree);
+                    Shared      => Project_Tree.Shared);
 
                if Compiler_Package /= No_Package then
 
@@ -2332,7 +2333,7 @@ package body Make is
 
                      begin
                         while Current /= Nil_String loop
-                           Element := Project_Tree.String_Elements.
+                           Element := Project_Tree.Shared.String_Elements.
                                         Table (Current);
                            Number  := Number + 1;
                            Current := Element.Next;
@@ -2348,7 +2349,7 @@ package body Make is
                            Current := Switches.Values;
 
                            for Index in New_Args'Range loop
-                              Element := Project_Tree.String_Elements.
+                              Element := Project_Tree.Shared.String_Elements.
                                            Table (Current);
                               Get_Name_String (Element.Value);
 
@@ -3851,14 +3852,14 @@ package body Make is
         Prj.Util.Value_Of
           (Name        => Name_Builder,
            In_Packages => The_Packages,
-           In_Tree     => Project_Tree);
+           Shared      => Project_Tree.Shared);
 
       if Gnatmake /= No_Package then
          Global_Attribute := Prj.Util.Value_Of
            (Variable_Name => Name_Global_Configuration_Pragmas,
-            In_Variables  => Project_Tree.Packages.Table
+            In_Variables  => Project_Tree.Shared.Packages.Table
                                (Gnatmake).Decl.Attributes,
-            In_Tree       => Project_Tree);
+            Shared        => Project_Tree.Shared);
          Global_Attribute_Present :=
            Global_Attribute /= Nil_Variable_Value
            and then Get_Name_String (Global_Attribute.Value) /= "";
@@ -3894,14 +3895,14 @@ package body Make is
         Prj.Util.Value_Of
           (Name        => Name_Compiler,
            In_Packages => The_Packages,
-           In_Tree     => Project_Tree);
+           Shared      => Project_Tree.Shared);
 
       if Compiler /= No_Package then
          Local_Attribute := Prj.Util.Value_Of
            (Variable_Name => Name_Local_Configuration_Pragmas,
-            In_Variables  => Project_Tree.Packages.Table
+            In_Variables  => Project_Tree.Shared.Packages.Table
                                (Compiler).Decl.Attributes,
-            In_Tree       => Project_Tree);
+            Shared        => Project_Tree.Shared);
          Local_Attribute_Present :=
            Local_Attribute /= Nil_Variable_Value
            and then Get_Name_String (Local_Attribute.Value) /= "";
@@ -4183,7 +4184,7 @@ package body Make is
       if Main_Project = No_Project then
          GNAT.OS_Lib.Spawn (Globalizer_Path.all, Globalizer_Args, Success);
       else
-         Globalize_Dirs (Main_Project);
+         Globalize_Dirs (Main_Project, Project_Tree);
       end if;
    end Globalize;
 
@@ -4535,7 +4536,7 @@ package body Make is
                                    Prj.Util.Value_Of
                                      (Name_Languages,
                                       Main_Project.Decl.Attributes,
-                                      Project_Tree);
+                                      Project_Tree.Shared);
 
                      Current : String_List_Id;
                      Element : String_Element;
@@ -4551,7 +4552,7 @@ package body Make is
                         Current := Languages.Values;
                         Look_For_Foreign :
                         while Current /= Nil_String loop
-                           Element := Project_Tree.String_Elements.
+                           Element := Project_Tree.Shared.String_Elements.
                                         Table (Current);
                            Get_Name_String (Element.Value);
                            To_Lower (Name_Buffer (1 .. Name_Len));
@@ -4574,12 +4575,13 @@ package body Make is
                         --  line.
 
                         Get_Name_String
-                          (Project_Tree.String_Elements.Table (Value).Value);
+                          (Project_Tree.Shared.String_Elements.Table
+                             (Value).Value);
 
                         declare
                            Main_Name : constant String :=
                               Get_Name_String
-                               (Project_Tree.String_Elements.Table
+                               (Project_Tree.Shared.String_Elements.Table
                                     (Value).Value);
                            Proj : constant Project_Id :=
                              Prj.Env.Project_Of
@@ -4591,10 +4593,10 @@ package body Make is
                               At_Least_One_Main := True;
                               Osint.Add_File
                                 (Get_Name_String
-                                   (Project_Tree.String_Elements.Table
+                                   (Project_Tree.Shared.String_Elements.Table
                                       (Value).Value),
                                  Index =>
-                                   Project_Tree.String_Elements.Table
+                                   Project_Tree.Shared.String_Elements.Table
                                      (Value).Index);
 
                            elsif not Foreign_Language then
@@ -4605,7 +4607,7 @@ package body Make is
                            end if;
                         end;
 
-                        Value := Project_Tree.String_Elements.Table
+                        Value := Project_Tree.Shared.String_Elements.Table
                                    (Value).Next;
                      end loop;
 
@@ -4765,19 +4767,19 @@ package body Make is
                                 Prj.Util.Value_Of
                                   (Name        => Name_Builder,
                                    In_Packages => The_Packages,
-                                   In_Tree     => Project_Tree);
+                                   Shared      => Project_Tree.Shared);
 
             Binder_Package : constant Prj.Package_Id :=
                                Prj.Util.Value_Of
                                  (Name        => Name_Binder,
                                   In_Packages => The_Packages,
-                                  In_Tree     => Project_Tree);
+                                  Shared      => Project_Tree.Shared);
 
             Linker_Package : constant Prj.Package_Id :=
                                Prj.Util.Value_Of
                                  (Name        => Name_Linker,
                                   In_Packages => The_Packages,
-                                  In_Tree     => Project_Tree);
+                                  Shared      => Project_Tree.Shared);
 
             Default_Switches_Array : Array_Id;
 
@@ -4832,20 +4834,20 @@ package body Make is
 
                Global_Compilation_Array := Prj.Util.Value_Of
                  (Name      => Name_Global_Compilation_Switches,
-                  In_Arrays => Project_Tree.Packages.Table
+                  In_Arrays => Project_Tree.Shared.Packages.Table
                     (Builder_Package).Decl.Arrays,
-                  In_Tree   => Project_Tree);
+                  Shared    => Project_Tree.Shared);
 
                Default_Switches_Array :=
-                 Project_Tree.Packages.Table
+                 Project_Tree.Shared.Packages.Table
                    (Builder_Package).Decl.Arrays;
 
                while Default_Switches_Array /= No_Array and then
-               Project_Tree.Arrays.Table (Default_Switches_Array).Name /=
-                 Name_Default_Switches
+                 Project_Tree.Shared.Arrays.Table (Default_Switches_Array).Name
+                 /= Name_Default_Switches
                loop
-                  Default_Switches_Array :=
-                    Project_Tree.Arrays.Table (Default_Switches_Array).Next;
+                  Default_Switches_Array := Project_Tree.Shared.Arrays.Table
+                    (Default_Switches_Array).Next;
                end loop;
 
                if Global_Compilation_Array /= No_Array_Element and then
@@ -4854,7 +4856,7 @@ package body Make is
                   Errutil.Error_Msg
                     ("Default_Switches forbidden in presence of " &
                      "Global_Compilation_Switches. Use Switches instead.",
-                     Project_Tree.Arrays.Table
+                     Project_Tree.Shared.Arrays.Table
                        (Default_Switches_Array).Location);
                   Errutil.Finalize;
                   Make_Failed
@@ -4899,15 +4901,15 @@ package body Make is
                                        Name_Default_Switches,
                                      In_Package              =>
                                        Builder_Package,
-                                     In_Tree                 => Project_Tree);
+                                     Shared            => Project_Tree.Shared);
 
                      Switches : constant Array_Element_Id :=
                                   Prj.Util.Value_Of
                                     (Name      => Name_Switches,
                                      In_Arrays =>
-                                       Project_Tree.Packages.Table
+                                       Project_Tree.Shared.Packages.Table
                                          (Builder_Package).Decl.Arrays,
-                                     In_Tree   => Project_Tree);
+                                     Shared    => Project_Tree.Shared);
 
                      Other_Switches : constant Variable_Value :=
                                         Prj.Util.Value_Of
@@ -4916,13 +4918,13 @@ package body Make is
                                            Attribute_Or_Array_Name
                                                        => Name_Switches,
                                            In_Package  => Builder_Package,
-                                           In_Tree     => Project_Tree);
+                                           Shared      => Project_Tree.Shared);
 
                   begin
                      if Other_Switches /= Nil_Variable_Value then
                         if not Quiet_Output
                           and then Switches /= No_Array_Element
-                          and then Project_Tree.Array_Elements.Table
+                          and then Project_Tree.Shared.Array_Elements.Table
                                      (Switches).Next /= No_Array_Element
                         then
                            Write_Line
@@ -4977,7 +4979,7 @@ package body Make is
                begin
                   while Global_Compilation_Array /= No_Array_Element loop
                      Global_Compilation_Elem :=
-                       Project_Tree.Array_Elements.Table
+                       Project_Tree.Shared.Array_Elements.Table
                          (Global_Compilation_Array);
 
                      Get_Name_String (Global_Compilation_Elem.Index);
@@ -4999,7 +5001,8 @@ package body Make is
 
                            while List /= Nil_String loop
                               Elem :=
-                                Project_Tree.String_Elements.Table (List);
+                                Project_Tree.Shared.String_Elements.Table
+                                  (List);
 
                               if Elem.Value /= No_Name then
                                  Add_Switch
@@ -5431,7 +5434,8 @@ package body Make is
 
                Executable :=
                  Prj.Util.Executable_Of
-                   (Main_Project, Project_Tree, Main_Source_File, Main_Index);
+                   (Main_Project, Project_Tree.Shared,
+                    Main_Source_File, Main_Index);
             end if;
          end if;
 
@@ -6337,13 +6341,13 @@ package body Make is
                                      Prj.Util.Value_Of
                                        (Name        => Name_Binder,
                                         In_Packages => The_Packages,
-                                        In_Tree     => Project_Tree);
+                                        Shared      => Project_Tree.Shared);
 
                   Linker_Package : constant Prj.Package_Id :=
                                      Prj.Util.Value_Of
                                        (Name        => Name_Linker,
                                         In_Packages => The_Packages,
-                                        In_Tree     => Project_Tree);
+                                        Shared      => Project_Tree.Shared);
 
                begin
                   --  We fail if we cannot find the main source file
@@ -6848,7 +6852,7 @@ package body Make is
          --  has its own directories anyway
 
          Add_Source_Directories (Main_Project, Project_Tree);
-         Add_Object_Directories (Main_Project);
+         Add_Object_Directories (Main_Project, Project_Tree);
 
          Recursive_Compute_Depth (Main_Project);
          Compute_All_Imported_Projects (Project_Tree);
@@ -8457,7 +8461,7 @@ package body Make is
         (Source_File  => Source_File,
          Source_Lang  => Name_Ada,
          Source_Prj   => Project,
-         Pkg_Name     => Project_Tree.Packages.Table (In_Package).Name,
+         Pkg_Name     => Project_Tree.Shared.Packages.Table (In_Package).Name,
          Project_Tree => Project_Tree,
          Value        => Switches,
          Is_Default   => Is_Default,

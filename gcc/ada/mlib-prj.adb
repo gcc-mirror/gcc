@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2010, AdaCore                     --
+--                     Copyright (C) 2001-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -901,7 +901,7 @@ package body MLib.Prj is
                                   Value_Of
                                     (Name        => Name_Binder,
                                      In_Packages => For_Project.Decl.Packages,
-                                     In_Tree     => In_Tree);
+                                     Shared      => In_Tree.Shared);
 
             begin
                if Binder_Package /= No_Package then
@@ -910,9 +910,9 @@ package body MLib.Prj is
                                   Value_Of
                                     (Name      => Name_Default_Switches,
                                      In_Arrays =>
-                                       In_Tree.Packages.Table
+                                       In_Tree.Shared.Packages.Table
                                          (Binder_Package).Decl.Arrays,
-                                     In_Tree   => In_Tree);
+                                     Shared    => In_Tree.Shared);
 
                      Switches : Variable_Value := Nil_Variable_Value;
                      Switch   : String_List_Id := Nil_String;
@@ -924,7 +924,7 @@ package body MLib.Prj is
                             (Index     => Name_Ada,
                              Src_Index => 0,
                              In_Array  => Defaults,
-                             In_Tree   => In_Tree);
+                             Shared    => In_Tree.Shared);
 
                         if not Switches.Default then
                            Switch := Switches.Values;
@@ -932,9 +932,9 @@ package body MLib.Prj is
                            while Switch /= Nil_String loop
                               Add_Argument
                                 (Get_Name_String
-                                   (In_Tree.String_Elements.Table
+                                   (In_Tree.Shared.String_Elements.Table
                                       (Switch).Value));
-                              Switch := In_Tree.String_Elements.
+                              Switch := In_Tree.Shared.String_Elements.
                                           Table (Switch).Next;
                            end loop;
                         end if;
@@ -1277,7 +1277,8 @@ package body MLib.Prj is
          --  If attribute Library_Options was specified, add these options
 
          Library_Options := Value_Of
-           (Name_Library_Options, For_Project.Decl.Attributes, In_Tree);
+           (Name_Library_Options, For_Project.Decl.Attributes,
+            In_Tree.Shared);
 
          if not Library_Options.Default then
             declare
@@ -1287,7 +1288,7 @@ package body MLib.Prj is
             begin
                Current := Library_Options.Values;
                while Current /= Nil_String loop
-                  Element := In_Tree.String_Elements.Table (Current);
+                  Element := In_Tree.Shared.String_Elements.Table (Current);
                   Get_Name_String (Element.Value);
 
                   if Name_Len /= 0 then
@@ -1756,12 +1757,12 @@ package body MLib.Prj is
                while Iface /= Nil_String loop
                   ALI :=
                     File_Name_Type
-                      (In_Tree.String_Elements.Table (Iface).Value);
+                      (In_Tree.Shared.String_Elements.Table (Iface).Value);
                   Interface_ALIs.Set (ALI, True);
                   Get_Name_String
-                    (In_Tree.String_Elements.Table (Iface).Value);
+                    (In_Tree.Shared.String_Elements.Table (Iface).Value);
                   Add_Argument (Name_Buffer (1 .. Name_Len));
-                  Iface := In_Tree.String_Elements.Table (Iface).Next;
+                  Iface := In_Tree.Shared.String_Elements.Table (Iface).Next;
                end loop;
 
                Iface := For_Project.Lib_Interface_ALIs;
@@ -1775,9 +1776,10 @@ package body MLib.Prj is
                   while Iface /= Nil_String loop
                      ALI :=
                        File_Name_Type
-                         (In_Tree.String_Elements.Table (Iface).Value);
+                         (In_Tree.Shared.String_Elements.Table (Iface).Value);
                      Process (ALI);
-                     Iface := In_Tree.String_Elements.Table (Iface).Next;
+                     Iface :=
+                       In_Tree.Shared.String_Elements.Table (Iface).Next;
                   end loop;
                end if;
             end;

@@ -72,7 +72,7 @@ package Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
-      Reset_Tree             : Boolean       := True);
+      Reset_Tree             : Boolean := True);
    --  Performs the two phases of the processing
 
 end Prj.Proc;

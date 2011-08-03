@@ -1,3 +1,19 @@
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* gnatcmd.adb, prj-proc.adb, prj-proc.ads, make.adb, mlib-prj.adb,
+	prj.adb, prj.ads, makeutl.adb, makeutl.ads, clean.adb, prj-nmsc.adb,
+	prj-util.adb, prj-util.ads, prj-conf.adb, prj-conf.ads, prj-env.adb,
+	prj-env.ads (Shared_Project_Tree_Data): new type
+	An aggregate project and its aggregated trees need to share the common
+	data structures used for lists of strings, packages,... This makes the
+	code simpler since otherwise we have to pass the root tree (also used
+	for the configuration file data) in addition to the current project
+	tree. This also avoids ambiguities as to which tree should be used.
+	And finally this saves a bit of memory.
+	(For_Every_Project_Imported): new parameter Tree.
+	Since aggregated projects are using a different tree, we need to let
+	the caller know which tree to use to manipulate the returned project.
+
 2011-08-03  Robert Dewar  <dewar@adacore.com>
 
 	* prj-proc.adb, exp_util.ads, exp_ch9.adb, make.adb, prj-ext.adb,

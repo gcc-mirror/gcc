@@ -1094,6 +1094,7 @@ package Prj is
    type Aggregated_Project_List is access all Aggregated_Project;
    type Aggregated_Project is record
       Path    : Path_Name_Type;
+      Tree    : Project_Tree_Ref;
       Project : Project_Id;
       Next    : Aggregated_Project_List;
    end record;
@@ -1400,41 +1401,68 @@ package Prj is
    type Private_Project_Tree_Data is private;
    --  Data for a project tree that is used only by the Project Manager
 
-   type Project_Tree_Data is
-      record
-         Name_Lists        : Name_List_Table.Instance;
-         Number_Lists      : Number_List_Table.Instance;
-         String_Elements   : String_Element_Table.Instance;
-         Variable_Elements : Variable_Element_Table.Instance;
-         Array_Elements    : Array_Element_Table.Instance;
-         Arrays            : Array_Table.Instance;
-         Packages          : Package_Table.Instance;
-         Projects          : Project_List;
+   type Shared_Project_Tree_Data is record
+      Name_Lists        : Name_List_Table.Instance;
+      Number_Lists      : Number_List_Table.Instance;
+      String_Elements   : String_Element_Table.Instance;
+      Variable_Elements : Variable_Element_Table.Instance;
+      Array_Elements    : Array_Element_Table.Instance;
+      Arrays            : Array_Table.Instance;
+      Packages          : Package_Table.Instance;
+   end record;
+   type Shared_Project_Tree_Data_Access is access all Shared_Project_Tree_Data;
+   --  The data that is shared among multiple trees, when these trees are
+   --  loaded through the same aggregate project.
+   --  To avoid ambiguities, limit the number of parameters to the
+   --  subprograms (we would have to parse the "root project tree" since this
+   --  is where the configuration file was loaded, in addition to the project's
+   --  own tree) and make the comparison of projects easier, all trees store
+   --  the lists in the same tables.
 
-         Replaced_Sources : Replaced_Source_HTable.Instance;
-         --  The list of sources that have been replaced by sources with
-         --  different file names.
+   type Project_Tree_Data (Is_Root_Tree : Boolean := True) is record
+      --  The root tree is the one loaded by the user from the command line.
+      --  Is_Root_Tree is only false for projects aggregated within a root
+      --  aggregate project.
 
-         Replaced_Source_Number : Natural := 0;
-         --  The number of entries in Replaced_Sources
+      Projects : Project_List;
+      --  List of projects in this tree
 
-         Units_HT : Units_Htable.Instance;
-         --  Unit name to Unit_Index (and from there to Source_Id)
+      Replaced_Sources : Replaced_Source_HTable.Instance;
+      --  The list of sources that have been replaced by sources with
+      --  different file names.
 
-         Source_Files_HT : Source_Files_Htable.Instance;
-         --  Base source file names to Source_Id list.
+      Replaced_Source_Number : Natural := 0;
+      --  The number of entries in Replaced_Sources
 
-         Source_Paths_HT : Source_Paths_Htable.Instance;
-         --  Full path to Source_Id
+      Units_HT : Units_Htable.Instance;
+      --  Unit name to Unit_Index (and from there to Source_Id)
 
-         Source_Info_File_Name : String_Access := null;
-         --  The name of the source info file, if specified by the builder
+      Source_Files_HT : Source_Files_Htable.Instance;
+      --  Base source file names to Source_Id list.
 
-         Source_Info_File_Exists : Boolean := False;
-         --  True when a source info file has been successfully read
+      Source_Paths_HT : Source_Paths_Htable.Instance;
+      --  Full path to Source_Id
 
-         Private_Part : Private_Project_Tree_Data;
-      end record;
+      Source_Info_File_Name : String_Access := null;
+      --  The name of the source info file, if specified by the builder
+
+      Source_Info_File_Exists : Boolean := False;
+      --  True when a source info file has been successfully read
+
+      Private_Part : Private_Project_Tree_Data;
+
+      Shared : Shared_Project_Tree_Data_Access;
+      --  The shared data for this tree and all aggregated trees.
+
+      case Is_Root_Tree is
+         when True =>
+            Shared_Data : aliased Shared_Project_Tree_Data;
+            --  Do not access directly, only through Shared.
+
+         when False =>
+            null;
+      end case;
+   end record;
    --  Data for a project tree
 
    procedure Expect (The_Token : Token_Type; Token_Image : String);
@@ -1463,9 +1491,11 @@ package Prj is
       type State is limited private;
       with procedure Action
         (Project    : Project_Id;
+         Tree       : Project_Tree_Ref;
          With_State : in out State);
    procedure For_Every_Project_Imported
      (By                 : Project_Id;
+      Tree               : Project_Tree_Ref;
       With_State         : in out State;
       Include_Aggregated : Boolean := True;
       Imported_First     : Boolean := False);
@@ -1488,6 +1518,9 @@ package Prj is
    --  If Include_Aggregated is True, then an aggregate project will recurse
    --  into the projects it aggregates. Otherwise, the latter are never
    --  returned
+   --
+   --  The Tree argument passed to the callback is required in the case of
+   --  aggregated projects, since they might not be using the same tree as 'By'
 
    function Extend_Name
      (File        : File_Name_Type;
