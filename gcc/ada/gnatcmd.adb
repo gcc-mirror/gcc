@@ -58,6 +58,7 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 procedure GNATCmd is
    Project_Node_Tree : Project_Node_Tree_Ref;
+   Root_Environment  : Prj.Tree.Environment;
    Project_File      : String_Access;
    Project           : Prj.Project_Id;
    Current_Verbosity : Prj.Verbosity := Prj.Default;
@@ -245,9 +246,6 @@ procedure GNATCmd is
    procedure Get_Closure;
    --  Get the sources in the closure of the ASIS_Main and add them to the
    --  list of arguments.
-
-   function Index (Char : Character; Str : String) return Natural;
-   --  Returns first occurrence of Char in Str, returns 0 if Char not in Str
 
    procedure Non_VMS_Usage;
    --  Display usage for platforms other than VMS
@@ -922,21 +920,6 @@ procedure GNATCmd is
       end if;
    end Get_Closure;
 
-   -----------
-   -- Index --
-   -----------
-
-   function Index (Char : Character; Str : String) return Natural is
-   begin
-      for Index in Str'Range loop
-         if Str (Index) = Char then
-            return Index;
-         end if;
-      end loop;
-
-      return 0;
-   end Index;
-
    ------------------
    -- Mapping_File --
    ------------------
@@ -1364,10 +1347,11 @@ begin
    Csets.Initialize;
    Snames.Initialize;
 
-   Project_Node_Tree := new Project_Node_Tree_Data;
+   Prj.Tree.Initialize (Root_Environment, Gnatmake_Flags);
    Prj.Env.Initialize_Default_Project_Path
-      (Project_Node_Tree.Project_Path, Target_Name => "");
+      (Root_Environment.Project_Path, Target_Name => "");
 
+   Project_Node_Tree := new Project_Node_Tree_Data;
    Prj.Tree.Initialize (Project_Node_Tree);
 
    Prj.Initialize (Project_Tree);
@@ -1725,7 +1709,7 @@ begin
                     and then Argv (Argv'First + 1 .. Argv'First + 2) = "aP"
                   then
                      Prj.Env.Add_Directories
-                       (Project_Node_Tree.Project_Path,
+                       (Root_Environment.Project_Path,
                         Argv (Argv'First + 3 .. Argv'Last));
 
                      Remove_Switch (Arg_Num);
@@ -1813,25 +1797,12 @@ begin
                   elsif Argv'Length >= 5
                     and then Argv (Argv'First + 1) = 'X'
                   then
-                     declare
-                        Equal_Pos : constant Natural :=
-                                      Index
-                                        ('=',
-                                         Argv (Argv'First + 2 .. Argv'Last));
-                     begin
-                        if Equal_Pos >= Argv'First + 3
-                          and then Equal_Pos /= Argv'Last
-                        then
-                           Add (Project_Node_Tree.External,
-                                External_Name =>
-                                  Argv (Argv'First + 2 .. Equal_Pos - 1),
-                                Value => Argv (Equal_Pos + 1 .. Argv'Last));
-                        else
-                           Fail
-                             (Argv.all
+                     if not Check (Root_Environment.External,
+                                    Argv (Argv'First + 2 .. Argv'Last))
+                     then
+                        Fail (Argv.all
                               & " is not a valid external assignment.");
-                        end if;
-                     end;
+                     end if;
 
                      Remove_Switch (Arg_Num);
 
@@ -1884,7 +1855,7 @@ begin
             In_Tree           => Project_Tree,
             In_Node_Tree      => Project_Node_Tree,
             Project_File_Name => Project_File.all,
-            Flags             => Gnatmake_Flags,
+            Env               => Root_Environment,
             Packages_To_Check => Packages_To_Check);
 
          if Project = Prj.No_Project then

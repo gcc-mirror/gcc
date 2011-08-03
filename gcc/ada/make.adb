@@ -645,7 +645,7 @@ package body Make is
    --  directory of the ultimate extending project. If it is not, we ignore
    --  the fact that this ALI file is read-only.
 
-   procedure Process_Multilib (Project_Node_Tree : Project_Node_Tree_Ref);
+   procedure Process_Multilib (Env : in out Prj.Tree.Environment);
    --  Add appropriate --RTS argument to handle multilib
 
    ----------------------------------------------------
@@ -723,7 +723,8 @@ package body Make is
       Index                            : Int;
       Program                          : Make_Program_Type;
       Unknown_Switches_To_The_Compiler : Boolean := True;
-      Project_Node_Tree                : Project_Node_Tree_Ref);
+      Project_Node_Tree                : Project_Node_Tree_Ref;
+      Env                              : in out Prj.Tree.Environment);
    procedure Add_Switch
      (S             : String_Access;
       Program       : Make_Program_Type;
@@ -1021,7 +1022,9 @@ package body Make is
    --  Call the CodePeer globalizer on all the project's object directories,
    --  or on the current directory if no projects.
 
-   procedure Initialize (Project_Node_Tree : out Project_Node_Tree_Ref);
+   procedure Initialize
+      (Project_Node_Tree : out Project_Node_Tree_Ref;
+       Env               : out Prj.Tree.Environment);
    --  Performs default and package initialization. Therefore,
    --  Compile_Sources can be called by an external unit.
 
@@ -1034,7 +1037,7 @@ package body Make is
    --  succeeded or not.
 
    procedure Scan_Make_Arg
-     (Project_Node_Tree : Project_Node_Tree_Ref;
+     (Env               : in out Prj.Tree.Environment;
       Argv              : String;
       And_Save          : Boolean);
    --  Scan make arguments. Argv is a single argument to be processed.
@@ -1262,7 +1265,8 @@ package body Make is
       Index                            : Int;
       Program                          : Make_Program_Type;
       Unknown_Switches_To_The_Compiler : Boolean := True;
-      Project_Node_Tree                : Project_Node_Tree_Ref)
+      Project_Node_Tree                : Project_Node_Tree_Ref;
+      Env                              : in out Prj.Tree.Environment)
    is
       Switches    : Variable_Value;
       Switch_List : String_List_Id;
@@ -1303,8 +1307,7 @@ package body Make is
                         Write_Line (Argv);
                      end if;
 
-                     Scan_Make_Arg
-                       (Project_Node_Tree, Argv, And_Save => False);
+                     Scan_Make_Arg (Env, Argv, And_Save => False);
 
                      if not Gnatmake_Switch_Found
                        and then not Switch_May_Be_Passed_To_The_Compiler
@@ -4234,6 +4237,7 @@ package body Make is
       --  The path name of the mapping file
 
       Project_Node_Tree : Project_Node_Tree_Ref;
+      Root_Environment  : Prj.Tree.Environment;
 
       Discard : Boolean;
       pragma Warnings (Off, Discard);
@@ -4397,7 +4401,7 @@ package body Make is
 
       Obsoleted.Reset;
 
-      Make.Initialize (Project_Node_Tree);
+      Make.Initialize (Project_Node_Tree, Root_Environment);
 
       Bind_Shared := No_Shared_Switch'Access;
       Link_With_Shared_Libgcc := No_Shared_Libgcc_Switch'Access;
@@ -4880,6 +4884,7 @@ package body Make is
 
                   Add_Switches
                     (Project_Node_Tree                => Project_Node_Tree,
+                     Env                              => Root_Environment,
                      File_Name                        => Main_Unit_File_Name,
                      Index                            => Main_Index,
                      The_Package                      => Builder_Package,
@@ -4936,6 +4941,7 @@ package body Make is
 
                         Add_Switches
                           (Project_Node_Tree              => Project_Node_Tree,
+                           Env                            => Root_Environment,
                            File_Name                        => " ",
                            Index                            => 0,
                            The_Package                      => Builder_Package,
@@ -4953,6 +4959,7 @@ package body Make is
 
                         Add_Switches
                           (Project_Node_Tree => Project_Node_Tree,
+                           Env               => Root_Environment,
                            File_Name   => " ",
                            Index       => 0,
                            The_Package => Builder_Package,
@@ -5045,6 +5052,7 @@ package body Make is
 
                Add_Switches
                  (Project_Node_Tree => Project_Node_Tree,
+                  Env               => Root_Environment,
                   File_Name         => Main_Unit_File_Name,
                   Index             => Main_Index,
                   The_Package       => Binder_Package,
@@ -5062,6 +5070,7 @@ package body Make is
 
                Add_Switches
                  (Project_Node_Tree => Project_Node_Tree,
+                  Env               => Root_Environment,
                   File_Name         => Main_Unit_File_Name,
                   Index             => Main_Index,
                   The_Package       => Linker_Package,
@@ -6401,6 +6410,7 @@ package body Make is
 
                      Add_Switches
                        (Project_Node_Tree => Project_Node_Tree,
+                        Env               => Root_Environment,
                         File_Name         => Main_Unit_File_Name,
                         Index             => Main_Index,
                         The_Package       => Binder_Package,
@@ -6419,6 +6429,7 @@ package body Make is
 
                      Add_Switches
                        (Project_Node_Tree => Project_Node_Tree,
+                        Env               => Root_Environment,
                         File_Name         => Main_Unit_File_Name,
                         Index             => Main_Index,
                         The_Package       => Linker_Package,
@@ -6623,8 +6634,10 @@ package body Make is
    -- Initialize --
    ----------------
 
-   procedure Initialize (Project_Node_Tree : out Project_Node_Tree_Ref) is
-
+   procedure Initialize
+      (Project_Node_Tree : out Project_Node_Tree_Ref;
+       Env               : out Prj.Tree.Environment)
+   is
       procedure Check_Version_And_Help is
          new Check_Version_And_Help_G (Makeusg);
 
@@ -6635,10 +6648,11 @@ package body Make is
       --  references, project path and other attributes that can be impacted by
       --  the command line switches
 
-      Project_Node_Tree := new Project_Node_Tree_Data;
+      Prj.Tree.Initialize (Env, Gnatmake_Flags);
       Prj.Env.Initialize_Default_Project_Path
-         (Project_Node_Tree.Project_Path, Target_Name => "");
+         (Env.Project_Path, Target_Name => "");
 
+      Project_Node_Tree := new Project_Node_Tree_Data;
       Prj.Tree.Initialize (Project_Node_Tree);
 
       --  Override default initialization of Check_Object_Consistency since
@@ -6721,12 +6735,11 @@ package body Make is
       --  do not include --version or --help.
 
       Scan_Args : for Next_Arg in 1 .. Argument_Count loop
-         Scan_Make_Arg
-           (Project_Node_Tree, Argument (Next_Arg), And_Save => True);
+         Scan_Make_Arg (Env, Argument (Next_Arg), And_Save => True);
       end loop Scan_Args;
 
       if N_M_Switch > 0 and RTS_Specified = null then
-         Process_Multilib (Project_Node_Tree);
+         Process_Multilib (Env);
       end if;
 
       if Commands_To_Stdout then
@@ -6811,7 +6824,7 @@ package body Make is
             In_Tree           => Project_Tree,
             Project_File_Name => Project_File_Name.all,
             Packages_To_Check => Packages_To_Check_By_Gnatmake,
-            Flags             => Gnatmake_Flags,
+            Env               => Env,
             In_Node_Tree      => Project_Node_Tree);
 
          --  The parsing of project files may have changed the current output
@@ -7347,9 +7360,7 @@ package body Make is
    -- Process_Multilib --
    ----------------------
 
-   procedure Process_Multilib
-     (Project_Node_Tree : Project_Node_Tree_Ref)
-   is
+   procedure Process_Multilib (Env : in out Prj.Tree.Environment) is
       Output_FD         : File_Descriptor;
       Output_Name       : String_Access;
       Arg_Index         : Natural := 0;
@@ -7450,9 +7461,8 @@ package body Make is
 
       --  Otherwise add -margs --RTS=output
 
-      Scan_Make_Arg (Project_Node_Tree, "-margs", And_Save => True);
-      Scan_Make_Arg
-        (Project_Node_Tree, "--RTS=" & Line (1 .. N_Read), And_Save => True);
+      Scan_Make_Arg (Env, "-margs", And_Save => True);
+      Scan_Make_Arg (Env, "--RTS=" & Line (1 .. N_Read), And_Save => True);
    end Process_Multilib;
 
    -----------
@@ -7839,7 +7849,7 @@ package body Make is
    -------------------
 
    procedure Scan_Make_Arg
-     (Project_Node_Tree : Project_Node_Tree_Ref;
+     (Env               : in out Prj.Tree.Environment;
       Argv              : String;
       And_Save          : Boolean)
    is
@@ -8129,7 +8139,7 @@ package body Make is
                 (Argv (Create_Map_File_Switch'Length + 2 .. Argv'Last));
 
          else
-            Scan_Make_Switches (Project_Node_Tree, Argv, Success);
+            Scan_Make_Switches (Env, Argv, Success);
          end if;
 
       --  If we have seen a regular switch process it
@@ -8265,7 +8275,7 @@ package body Make is
                  ("-D cannot be used in conjunction with a project file");
 
             else
-               Scan_Make_Switches (Project_Node_Tree, Argv, Success);
+               Scan_Make_Switches (Env, Argv, Success);
             end if;
 
          --  -d
@@ -8280,13 +8290,13 @@ package body Make is
                Make_Failed
                  ("-i cannot be used in conjunction with a project file");
             else
-               Scan_Make_Switches (Project_Node_Tree, Argv, Success);
+               Scan_Make_Switches (Env, Argv, Success);
             end if;
 
          --  -j (need to save the result)
 
          elsif Argv (2) = 'j' then
-            Scan_Make_Switches (Project_Node_Tree, Argv, Success);
+            Scan_Make_Switches (Env, Argv, Success);
 
             if And_Save then
                Saved_Maximum_Processes := Maximum_Processes;
@@ -8371,7 +8381,7 @@ package body Make is
          --  -Xext=val  (External assignment)
 
          elsif Argv (2) = 'X'
-           and then Is_External_Assignment (Project_Node_Tree, Argv)
+           and then Is_External_Assignment (Env, Argv)
          then
             --  Is_External_Assignment has side effects when it returns True
 
@@ -8419,8 +8429,7 @@ package body Make is
          --  is passed to the compiler.
 
          else
-            Scan_Make_Switches
-              (Project_Node_Tree, Argv, Gnatmake_Switch_Found);
+            Scan_Make_Switches (Env, Argv, Gnatmake_Switch_Found);
 
             if not Gnatmake_Switch_Found then
                Add_Switch (Argv, Compiler, And_Save => And_Save);

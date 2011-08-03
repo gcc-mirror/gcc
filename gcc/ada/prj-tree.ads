@@ -41,7 +41,7 @@ package Prj.Tree is
    -----------------
 
    type Environment is record
-      External : Prj.Ext.External_References;
+      External     : Prj.Ext.External_References;
       --  External references are stored in this hash table (and manipulated
       --  through subprograms in prj-ext.ads). External references are
       --  project-tree specific so that one can load the same tree twice but
@@ -52,15 +52,25 @@ package Prj.Tree is
       --  simultaneously multiple projects, each with its own search path, in
       --  particular when using different compilers with different default
       --  search directories.
+
+      Flags        : Prj.Processing_Flags;
+      --  Configure errors and warnings
    end record;
    --  This record contains the context in which projects are parsed and
    --  processed (finding importing project, resolving external values,...)
 
-   procedure Initialize (Self : in out Environment);
+   procedure Initialize (Self : in out Environment; Flags : Processing_Flags);
    --  Initialize a new environment
 
    procedure Free (Self : in out Environment);
    --  Free the memory used by Self
+
+   procedure Override_Flags
+     (Self : in out Environment; Flags : Prj.Processing_Flags);
+   --  Override the subprogram called in case there are parsing errors. This
+   --  is needed in applications that do their own error handling, since the
+   --  error handler is likely to be a local subprogram in this case (which
+   --  can't be stored when the flags are created).
 
    -------------------
    -- Project nodes --
@@ -130,8 +140,7 @@ package Prj.Tree is
    pragma Inline (No);
    --  Return True if Node = Empty_Node
 
-   procedure Initialize (Tree : Project_Node_Tree_Ref;
-                         Env : in out Environment);
+   procedure Initialize (Tree : Project_Node_Tree_Ref);
    --  Initialize the Project File tree: empty the Project_Nodes table
    --  and reset the Projects_Htable.
 
@@ -1490,8 +1499,7 @@ package Prj.Tree is
       Projects_HT   : Tree_Private_Part.Projects_Htable.Instance;
    end record;
 
-   procedure Free (Proj : in out Project_Node_Tree_Ref;
-                   Env : in out Environment);
+   procedure Free (Proj : in out Project_Node_Tree_Ref);
    --  Free memory used by Prj
 
 private

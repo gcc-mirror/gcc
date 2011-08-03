@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ with Prj.Tree;
 package Switch.M is
 
    procedure Scan_Make_Switches
-     (Project_Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+     (Env               : in out Prj.Tree.Environment;
       Switch_Chars      : String;
       Success           : out Boolean);
    --  Scan a gnatmake switch and act accordingly. For switches that are

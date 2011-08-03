@@ -1,5 +1,12 @@
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
+	* gnatcmd.adb, prj-proc.adb, prj-proc.ads, make.adb, prj-part.adb,
+	prj-part.ads, switch-m.adb, switch-m.ads, prj-makr.adb, clean.adb,
+	prj-pars.adb, prj-pars.ads, prj-conf.adb, prj-conf.ads, prj-tree.adb,
+	prj-tree.ads (Prj.Tree.Environment): new type.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
 	* prj-proc.adb, prj.ads, makeutl.adb, makeutl.ads, prj-conf.adb,
 	prj-tree.adb, prj-tree.ads (Environment): new type.
 

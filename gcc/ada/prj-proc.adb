@@ -104,9 +104,9 @@ package body Prj.Proc is
    function Expression
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
-      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
+      Env                    : Prj.Tree.Environment;
       Pkg                    : Package_Id;
       First_Term             : Project_Node_Id;
       Kind                   : Variable_Kind) return Variable_Value;
@@ -127,9 +127,9 @@ package body Prj.Proc is
    procedure Process_Declarative_Items
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
-      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
       Node_Tree              : Project_Node_Tree_Ref;
+      Env                    : Prj.Tree.Environment;
       Pkg                    : Package_Id;
       Item                   : Project_Node_Id);
    --  Process declarative items starting with From_Project_Node, and put them
@@ -139,9 +139,9 @@ package body Prj.Proc is
    procedure Recursive_Process
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
-      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
+      Env                    : in out Prj.Tree.Environment;
       Extended_By            : Project_Id);
    --  Process project with node From_Project_Node in the tree. Do nothing if
    --  From_Project_Node is Empty_Node. If project has already been processed,
@@ -502,9 +502,9 @@ package body Prj.Proc is
    function Expression
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
-      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
+      Env                    : Prj.Tree.Environment;
       Pkg                    : Package_Id;
       First_Term             : Project_Node_Id;
       Kind                   : Variable_Kind) return Variable_Value
@@ -607,9 +607,9 @@ package body Prj.Proc is
                      Value := Expression
                        (Project                => Project,
                         In_Tree                => In_Tree,
-                        Flags                  => Flags,
                         From_Project_Node      => From_Project_Node,
                         From_Project_Node_Tree => From_Project_Node_Tree,
+                        Env                    => Env,
                         Pkg                    => Pkg,
                         First_Term             =>
                           Tree.First_Term
@@ -657,9 +657,9 @@ package body Prj.Proc is
                           Expression
                             (Project                => Project,
                              In_Tree                => In_Tree,
-                             Flags                  => Flags,
                              From_Project_Node      => From_Project_Node,
                              From_Project_Node_Tree => From_Project_Node_Tree,
+                             Env                    => Env,
                              Pkg                    => Pkg,
                              First_Term             =>
                                Tree.First_Term
@@ -1044,9 +1044,9 @@ package body Prj.Proc is
                      Def_Var := Expression
                        (Project                => Project,
                         In_Tree                => In_Tree,
-                        Flags                  => Flags,
                         From_Project_Node      => From_Project_Node,
                         From_Project_Node_Tree => From_Project_Node_Tree,
+                        Env                    => Env,
                         Pkg                    => Pkg,
                         First_Term             =>
                           Tree.First_Term
@@ -1063,9 +1063,7 @@ package body Prj.Proc is
                                 From_Project_Node_Tree) = List;
 
                   if Ext_List then
-                     Value :=
-                       Prj.Ext.Value_Of
-                         (From_Project_Node_Tree.External, Name, No_Name);
+                     Value := Prj.Ext.Value_Of (Env.External, Name, No_Name);
 
                      if Value /= No_Name then
                         declare
@@ -1169,14 +1167,12 @@ package body Prj.Proc is
                   else
                      --  Get the value
 
-                     Value :=
-                       Prj.Ext.Value_Of
-                         (From_Project_Node_Tree.External, Name, Default);
+                     Value := Prj.Ext.Value_Of (Env.External, Name, Default);
 
                      if Value = No_Name then
                         if not Quiet_Output then
                            Error_Msg
-                             (Flags, "?undefined external reference",
+                             (Env.Flags, "?undefined external reference",
                               Location_Of
                                 (The_Current_Term, From_Project_Node_Tree),
                               Project);
@@ -1387,7 +1383,7 @@ package body Prj.Proc is
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
-      Flags                  : Processing_Flags;
+      Env                    : in out Prj.Tree.Environment;
       Reset_Tree             : Boolean       := True)
    is
    begin
@@ -1397,7 +1393,7 @@ package body Prj.Proc is
          Success                => Success,
          From_Project_Node      => From_Project_Node,
          From_Project_Node_Tree => From_Project_Node_Tree,
-         Flags                  => Flags,
+         Env                    => Env,
          Reset_Tree             => Reset_Tree);
 
       if Project_Qualifier_Of (From_Project_Node, From_Project_Node_Tree) /=
@@ -1409,7 +1405,7 @@ package body Prj.Proc is
             Success                => Success,
             From_Project_Node      => From_Project_Node,
             From_Project_Node_Tree => From_Project_Node_Tree,
-            Flags                  => Flags);
+            Env                    => Env);
       end if;
    end Process;
 
@@ -1420,9 +1416,9 @@ package body Prj.Proc is
    procedure Process_Declarative_Items
      (Project                : Project_Id;
       In_Tree                : Project_Tree_Ref;
-      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
-      Node_Tree : Project_Node_Tree_Ref;
+      Node_Tree              : Project_Node_Tree_Ref;
+      Env                    : Prj.Tree.Environment;
       Pkg                    : Package_Id;
       Item                   : Project_Node_Id)
    is
@@ -1470,12 +1466,14 @@ package body Prj.Proc is
          if Value.Value = Empty_String then
             Error_Msg_Name_1 := Name_Of (Declaration, Node_Tree);
 
-            case Flags.Allow_Invalid_External is
+            case Env.Flags.Allow_Invalid_External is
                when Error =>
-                  Error_Msg (Flags, "no value defined for %%", Loc, Project);
+                  Error_Msg
+                    (Env.Flags, "no value defined for %%", Loc, Project);
                when Warning =>
                   Reset_Value := True;
-                  Error_Msg (Flags, "?no value defined for %%", Loc, Project);
+                  Error_Msg
+                    (Env.Flags, "?no value defined for %%", Loc, Project);
                when Silent =>
                   Reset_Value := True;
             end case;
@@ -1501,14 +1499,14 @@ package body Prj.Proc is
                Error_Msg_Name_1 := Value.Value;
                Error_Msg_Name_2 := Name_Of (Declaration, Node_Tree);
 
-               case Flags.Allow_Invalid_External is
+               case Env.Flags.Allow_Invalid_External is
                   when Error =>
                      Error_Msg
-                       (Flags, "value %% is illegal for typed string %%",
+                       (Env.Flags, "value %% is illegal for typed string %%",
                         Loc, Project);
                   when Warning =>
                      Error_Msg
-                       (Flags, "?value %% is illegal for typed string %%",
+                       (Env.Flags, "?value %% is illegal for typed string %%",
                         Loc, Project);
                      Reset_Value := True;
                   when Silent =>
@@ -1618,9 +1616,9 @@ package body Prj.Proc is
                Process_Declarative_Items
                  (Project                => Project,
                   In_Tree                => In_Tree,
-                  Flags                  => Flags,
                   From_Project_Node      => From_Project_Node,
-                  Node_Tree => Node_Tree,
+                  Node_Tree              => Node_Tree,
+                  Env                    => Env,
                   Pkg                    => New_Pkg,
                   Item                   =>
                     First_Declarative_Item_Of (Current_Item, Node_Tree));
@@ -1778,7 +1776,7 @@ package body Prj.Proc is
 
          if Orig_Array = No_Array then
             Error_Msg
-              (Flags,
+              (Env.Flags,
                "associative array value not found",
                Location_Of (Current_Item, Node_Tree),
                Project);
@@ -2085,9 +2083,9 @@ package body Prj.Proc is
            Expression
              (Project                => Project,
               In_Tree                => In_Tree,
-              Flags                  => Flags,
               From_Project_Node      => From_Project_Node,
               From_Project_Node_Tree => Node_Tree,
+              Env                    => Env,
               Pkg                    => Pkg,
               First_Term             =>
                 Tree.First_Term
@@ -2275,9 +2273,9 @@ package body Prj.Proc is
             Process_Declarative_Items
               (Project                => Project,
                In_Tree                => In_Tree,
-               Flags                  => Flags,
                From_Project_Node      => From_Project_Node,
                Node_Tree              => Node_Tree,
+               Env                    => Env,
                Pkg                    => Pkg,
                Item                   => Decl_Item);
          end if;
@@ -2330,7 +2328,7 @@ package body Prj.Proc is
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
-      Flags                  : Processing_Flags;
+      Env                    : in out Prj.Tree.Environment;
       Reset_Tree             : Boolean := True)
    is
    begin
@@ -2351,9 +2349,9 @@ package body Prj.Proc is
       Recursive_Process
         (Project                => Project,
          In_Tree                => In_Tree,
-         Flags                  => Flags,
          From_Project_Node      => From_Project_Node,
          From_Project_Node_Tree => From_Project_Node_Tree,
+         Env                    => Env,
          Extended_By            => No_Project);
 
       Success :=
@@ -2377,7 +2375,7 @@ package body Prj.Proc is
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
-      Flags                  : Processing_Flags)
+      Env                    : Environment)
    is
       Obj_Dir    : Path_Name_Type;
       Extending  : Project_Id;
@@ -2392,7 +2390,7 @@ package body Prj.Proc is
       Debug_Increase_Indent ("Process tree, phase 2");
 
       if Project /= No_Project then
-         Check (In_Tree, Project, From_Project_Node_Tree, Flags);
+         Check (In_Tree, Project, From_Project_Node_Tree, Env.Flags);
       end if;
 
       --  If main project is an extending all project, set object directory of
@@ -2441,7 +2439,7 @@ package body Prj.Proc is
                      if Extending2.Virtual then
                         Error_Msg_Name_1 := Prj.Project.Display_Name;
                         Error_Msg
-                          (Flags,
+                          (Env.Flags,
                            "project %% cannot be extended by a virtual" &
                            " project with the same object directory",
                            Prj.Project.Location, Project);
@@ -2450,11 +2448,11 @@ package body Prj.Proc is
                         Error_Msg_Name_1 := Extending2.Display_Name;
                         Error_Msg_Name_2 := Prj.Project.Display_Name;
                         Error_Msg
-                          (Flags,
+                          (Env.Flags,
                            "project %% cannot extend project %%",
                            Extending2.Location, Project);
                         Error_Msg
-                          (Flags,
+                          (Env.Flags,
                            "\they share the same object directory",
                            Extending2.Location, Project);
                      end if;
@@ -2485,9 +2483,9 @@ package body Prj.Proc is
    procedure Recursive_Process
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
-      Flags                  : Processing_Flags;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
+      Env                    : in out Prj.Tree.Environment;
       Extended_By            : Project_Id)
    is
       procedure Process_Imported_Projects
@@ -2537,11 +2535,11 @@ package body Prj.Proc is
                Recursive_Process
                  (In_Tree                => In_Tree,
                   Project                => New_Project,
-                  Flags                  => Flags,
                   From_Project_Node      =>
                     Project_Node_Of
                       (With_Clause, From_Project_Node_Tree),
                   From_Project_Node_Tree => From_Project_Node_Tree,
+                  Env                    => Env,
                   Extended_By            => No_Project);
 
                --  Imported is the id of the last imported project. If
@@ -2585,7 +2583,7 @@ package body Prj.Proc is
            (Tree         => In_Tree,
             Project      => Project,
             Node_Tree    => From_Project_Node_Tree,
-            Flags        => Flags);
+            Flags        => Env.Flags);
 
          List := Project.Aggregated_Projects;
          while Success and then List /= null loop
@@ -2596,7 +2594,7 @@ package body Prj.Proc is
                Errout_Handling   => Prj.Part.Never_Finalize,
                Current_Directory => Get_Name_String (Project.Directory.Name),
                Is_Config_File    => False,
-               Flags             => Flags);
+               Env               => Env);
 
             Success := not Prj.Tree.No (Loaded_Tree);
 
@@ -2604,9 +2602,9 @@ package body Prj.Proc is
                Recursive_Process
                  (In_Tree                => In_Tree,
                   Project                => List.Project,
-                  Flags                  => Flags,
                   From_Project_Node      => Loaded_Tree,
                   From_Project_Node_Tree => From_Project_Node_Tree,
+                  Env                    => Env,
                   Extended_By            => No_Project);
             else
                Debug_Output ("Failed to parse", Name_Id (List.Path));
@@ -2812,18 +2810,18 @@ package body Prj.Proc is
             Recursive_Process
               (In_Tree                => In_Tree,
                Project                => Project.Extends,
-               Flags                  => Flags,
                From_Project_Node      => Extended_Project_Of
                  (Declaration_Node, From_Project_Node_Tree),
                From_Project_Node_Tree => From_Project_Node_Tree,
+               Env                    => Env,
                Extended_By            => Project);
 
             Process_Declarative_Items
               (Project                => Project,
                In_Tree                => In_Tree,
-               Flags                  => Flags,
                From_Project_Node      => From_Project_Node,
                Node_Tree              => From_Project_Node_Tree,
+               Env                    => Env,
                Pkg                    => No_Package,
                Item                   => First_Declarative_Item_Of
                  (Declaration_Node, From_Project_Node_Tree));
