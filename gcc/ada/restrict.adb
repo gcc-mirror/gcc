@@ -715,9 +715,10 @@ package body Restrict is
 
       procedure Id_Case (S : String; Quotes : Boolean := True);
       --  Given a string S, case it according to current identifier casing,
-      --  and store in Error_Msg_String. Then append `~` to the message buffer
-      --  to output the string unchanged surrounded in quotes. The quotes are
-      --  suppressed if Quotes = False.
+      --  except for SPARK (an acronym) which is set all upper case, and store
+      --  in Error_Msg_String. Then append `~` to the message buffer to output
+      --  the string unchanged surrounded in quotes. The quotes are suppressed
+      --  if Quotes = False.
 
       --------------
       -- Add_Char --
@@ -747,7 +748,13 @@ package body Restrict is
       begin
          Name_Buffer (1 .. S'Last) := S;
          Name_Len := S'Length;
-         Set_Casing (Identifier_Casing (Get_Source_File_Index (Sloc (N))));
+
+         if R = SPARK then
+            Set_All_Upper_Case;
+         else
+            Set_Casing (Identifier_Casing (Get_Source_File_Index (Sloc (N))));
+         end if;
+
          Error_Msg_Strlen := Name_Len;
          Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
 

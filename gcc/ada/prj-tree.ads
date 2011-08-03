@@ -1464,10 +1464,6 @@ package Prj.Tree is
       --  project-tree specific so that one can load the same tree twice but
       --  have two views of it, for instance.
 
-      Target_Name : String_Access := null;
-      --  The target name, if any, specified with the gprbuild or gprclean
-      --  switch --target=.
-
       Project_Path : aliased Prj.Env.Project_Search_Path;
       --  The project path is tree specific, since we might want to load
       --  simultaneously multiple projects, each with its own search path, in
