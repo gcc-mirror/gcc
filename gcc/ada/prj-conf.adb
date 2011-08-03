@@ -573,6 +573,7 @@ package body Prj.Conf is
      (Project                    : Project_Id;
       Project_Tree               : Project_Tree_Ref;
       Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
+      Env                        : Prj.Tree.Environment;
       Allow_Automatic_Generation : Boolean;
       Config_File_Name           : String := "";
       Autoconf_Specified         : Boolean;
@@ -1061,7 +1062,7 @@ package body Prj.Conf is
       Config_Project_Node : Project_Node_Id := Empty_Node;
 
    begin
-      pragma Assert (Prj.Env.Is_Initialized (Project_Node_Tree.Project_Path));
+      pragma Assert (Prj.Env.Is_Initialized (Env.Project_Path));
 
       Free (Config_File_Path);
       Config := No_Project;

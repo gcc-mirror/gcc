@@ -36,6 +36,36 @@ with Prj.Ext;
 
 package Prj.Tree is
 
+   -----------------
+   -- Environment --
+   -----------------
+
+   type Environment is record
+      External : Prj.Ext.External_References;
+      --  External references are stored in this hash table (and manipulated
+      --  through subprograms in prj-ext.ads). External references are
+      --  project-tree specific so that one can load the same tree twice but
+      --  have two views of it, for instance.
+
+      Project_Path : aliased Prj.Env.Project_Search_Path;
+      --  The project path is tree specific, since we might want to load
+      --  simultaneously multiple projects, each with its own search path, in
+      --  particular when using different compilers with different default
+      --  search directories.
+   end record;
+   --  This record contains the context in which projects are parsed and
+   --  processed (finding importing project, resolving external values,...)
+
+   procedure Initialize (Self : in out Environment);
+   --  Initialize a new environment
+
+   procedure Free (Self : in out Environment);
+   --  Free the memory used by Self
+
+   -------------------
+   -- Project nodes --
+   -------------------
+
    type Project_Node_Tree_Data;
    type Project_Node_Tree_Ref is access all Project_Node_Tree_Data;
    --  Type to designate a project node tree, so that several project node
@@ -100,7 +130,8 @@ package Prj.Tree is
    pragma Inline (No);
    --  Return True if Node = Empty_Node
 
-   procedure Initialize (Tree : Project_Node_Tree_Ref);
+   procedure Initialize (Tree : Project_Node_Tree_Ref;
+                         Env : in out Environment);
    --  Initialize the Project File tree: empty the Project_Nodes table
    --  and reset the Projects_Htable.
 
@@ -1457,21 +1488,10 @@ package Prj.Tree is
    type Project_Node_Tree_Data is record
       Project_Nodes : Tree_Private_Part.Project_Node_Table.Instance;
       Projects_HT   : Tree_Private_Part.Projects_Htable.Instance;
-
-      External : Prj.Ext.External_References;
-      --  External references are stored in this hash table (and manipulated
-      --  through subprograms in prj-ext.ads). External references are
-      --  project-tree specific so that one can load the same tree twice but
-      --  have two views of it, for instance.
-
-      Project_Path : aliased Prj.Env.Project_Search_Path;
-      --  The project path is tree specific, since we might want to load
-      --  simultaneously multiple projects, each with its own search path, in
-      --  particular when using different compilers with different default
-      --  search directories.
    end record;
 
-   procedure Free (Proj : in out Project_Node_Tree_Ref);
+   procedure Free (Proj : in out Project_Node_Tree_Ref;
+                   Env : in out Environment);
    --  Free memory used by Prj
 
 private

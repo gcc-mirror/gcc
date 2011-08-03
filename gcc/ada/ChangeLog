@@ -1,5 +1,10 @@
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-proc.adb, prj.ads, makeutl.adb, makeutl.ads, prj-conf.adb,
+	prj-tree.adb, prj-tree.ads (Environment): new type.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
 	* prj-tree.ads: Remove unused variable.
 
 2011-08-03  Yannick Moy  <moy@adacore.com>

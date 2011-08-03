@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -113,7 +113,7 @@ package Makeutl is
    --  if everything is still valid.
 
    function Is_External_Assignment
-     (Tree : Prj.Tree.Project_Node_Tree_Ref;
+     (Env  : Prj.Tree.Environment;
       Argv : String) return Boolean;
    --  Verify that an external assignment switch is syntactically correct
    --

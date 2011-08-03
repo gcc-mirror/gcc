@@ -701,7 +701,7 @@ package body Makeutl is
    ----------------------------
 
    function Is_External_Assignment
-     (Tree : Prj.Tree.Project_Node_Tree_Ref;
+     (Env  : Prj.Tree.Environment;
       Argv : String) return Boolean
    is
       Start     : Positive := 3;
@@ -724,7 +724,7 @@ package body Makeutl is
       end if;
 
       return Prj.Ext.Check
-        (Self        => Tree.External,
+        (Self        => Env.External,
          Declaration => Argv (Start .. Finish));
    end Is_External_Assignment;
 

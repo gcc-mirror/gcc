@@ -982,17 +982,26 @@ package body Prj.Tree is
    -- Initialize --
    ----------------
 
-   procedure Initialize (Tree : Project_Node_Tree_Ref) is
+   procedure Initialize
+     (Tree : Project_Node_Tree_Ref; Env : in out Environment) is
    begin
       Project_Node_Table.Init (Tree.Project_Nodes);
       Projects_Htable.Reset (Tree.Projects_HT);
+      Initialize (Env);
+   end Initialize;
 
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize (Self : in out Environment) is
+   begin
       --  Do not reset the external references, in case we are reloading a
       --  project, since we want to preserve the current environment.
       --  But we still need to ensure that the external references are properly
       --  initialized.
 
-      Prj.Ext.Initialize (Tree.External);
+      Prj.Ext.Initialize (Self.External);
       --  Prj.Ext.Reset (Tree.External);
    end Initialize;
 
@@ -1000,17 +1009,29 @@ package body Prj.Tree is
    -- Free --
    ----------
 
-   procedure Free (Proj : in out Project_Node_Tree_Ref) is
+   procedure Free (Self : in out Environment) is
+   begin
+      Prj.Ext.Free (Self.External);
+      Free (Self.Project_Path);
+   end Free;
+
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free
+     (Proj : in out Project_Node_Tree_Ref;
+      Env  : in out Environment)
+   is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Project_Node_Tree_Data, Project_Node_Tree_Ref);
    begin
       if Proj /= null then
          Project_Node_Table.Free (Proj.Project_Nodes);
          Projects_Htable.Reset (Proj.Projects_HT);
-         Prj.Ext.Free (Proj.External);
-         Free (Proj.Project_Path);
          Unchecked_Free (Proj);
       end if;
+      Free (Env);
    end Free;
 
    -------------------------------

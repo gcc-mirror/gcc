@@ -1321,6 +1321,8 @@ package Prj is
       case Qualifier is
          when Aggregate =>
             Aggregated_Projects : Aggregated_Project_List := null;
+            --  List of aggregated projects (which could themselves be
+            --  aggregate projects).
 
          when others =>
             null;
