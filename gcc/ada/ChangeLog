@@ -1,3 +1,12 @@
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-tree.ads: Remove unused variable.
+
+2011-08-03  Yannick Moy  <moy@adacore.com>
+
+	* restrict.adb (Restriction_Msg): set "SPARK" all in upper case for
+	issuing messages related to SPARK restriction violation.
+
 2011-08-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb: guard against error nodes in return statements.
