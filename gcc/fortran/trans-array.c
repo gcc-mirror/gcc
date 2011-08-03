@@ -4722,7 +4722,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
   gcc_assert (GFC_ARRAY_TYPE_P (type));
   onstack = TREE_CODE (type) != POINTER_TYPE;
 
-  gfc_start_block (&init);
+  gfc_init_block (&init);
 
   /* Evaluate character string length.  */
   if (sym->ts.type == BT_CHARACTER
