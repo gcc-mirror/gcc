@@ -43,6 +43,7 @@ class Typed_identifier_list;
 class Bexpression;
 class Bstatement;
 class Bvariable;
+class Ast_dump_context;
 
 // This class is used to traverse assignments made by a statement
 // which makes assignments.
@@ -374,6 +375,10 @@ class Statement
   Bstatement*
   get_backend(Translate_context*);
 
+  // Dump AST representation of a statement to a dump context.
+  void
+  dump_statement(Ast_dump_context*) const;
+
  protected:
   // Implemented by child class: traverse the tree.
   virtual int
@@ -413,6 +418,10 @@ class Statement
   // Implemented by child class: convert to backend representation.
   virtual Bstatement*
   do_get_backend(Translate_context*) = 0;
+
+  // Implemented by child class: dump ast representation.
+  virtual void
+  do_dump_statement(Ast_dump_context*) const = 0;
 
   // Traverse an expression in a statement.
   int
@@ -507,6 +516,9 @@ class Temporary_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*);
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   // The type of the temporary variable.
   Type* type_;
@@ -543,6 +555,9 @@ class Variable_declaration_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   Named_object* var_;
@@ -581,6 +596,9 @@ class Return_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*);
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   // Return values.  This may be NULL.
   Expression_list* vals_;
@@ -616,6 +634,9 @@ class Send_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The channel on which to send the value.
@@ -677,6 +698,10 @@ class Select_clauses
   // Convert to the backend representation.
   Bstatement*
   get_backend(Translate_context*, Unnamed_label* break_label, source_location);
+
+  // Dump AST representation.
+  void
+  dump_clauses(Ast_dump_context*) const;
 
  private:
   // A single clause.
@@ -747,6 +772,10 @@ class Select_clauses
     // Convert the statements to the backend representation.
     Bstatement*
     get_statements_backend(Translate_context*);
+
+    // Dump AST representation.
+    void
+    dump_clause(Ast_dump_context*) const;
 
    private:
     // The channel.
@@ -825,6 +854,9 @@ class Select_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*);
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   // The select clauses.
   Select_clauses* clauses_;
@@ -844,7 +876,7 @@ class Thunk_statement : public Statement
 
   // Return the call expression.
   Expression*
-  call()
+  call() const
   { return this->call_; }
 
   // Simplify a go or defer statement so that it only uses a single
@@ -914,6 +946,9 @@ class Go_statement : public Thunk_statement
  protected:
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 };
 
 // A defer statement.
@@ -928,6 +963,9 @@ class Defer_statement : public Thunk_statement
  protected:
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 };
 
 // A label statement.
@@ -951,6 +989,9 @@ class Label_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The label.
@@ -1004,6 +1045,9 @@ class For_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The initialization statements.  This may be NULL.
@@ -1062,6 +1106,9 @@ class For_range_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   Expression*
@@ -1167,6 +1214,10 @@ class Case_clauses
 	      std::vector<std::vector<Bexpression*> >* all_cases,
 	      std::vector<Bstatement*>* all_statements) const;
 
+  // Dump the AST representation to a dump context.
+  void
+  dump_clauses(Ast_dump_context*) const;
+  
  private:
   // For a constant switch we need to keep a record of constants we
   // have already seen.
@@ -1237,6 +1288,10 @@ class Case_clauses
     get_backend(Translate_context*, Unnamed_label* break_label,
 		Case_constants*, std::vector<Bexpression*>* cases) const;
 
+    // Dump the AST representation to a dump context.
+    void
+    dump_clause(Ast_dump_context*) const;
+  
    private:
     // The list of case expressions.
     Expression_list* cases_;
@@ -1292,6 +1347,9 @@ class Switch_statement : public Statement
   do_get_backend(Translate_context*)
   { go_unreachable(); }
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   // The value to switch on.  This may be NULL.
   Expression* val_;
@@ -1342,6 +1400,10 @@ class Type_case_clauses
   lower(Block*, Temporary_statement* descriptor_temp,
 	Unnamed_label* break_label) const;
 
+  // Dump the AST representation to a dump context.
+  void
+  dump_clauses(Ast_dump_context*) const;
+
  private:
   // One type case clause.
   class Type_case_clause
@@ -1381,6 +1443,10 @@ class Type_case_clauses
     void
     lower(Block*, Temporary_statement* descriptor_temp,
 	  Unnamed_label* break_label, Unnamed_label** stmts_label) const;
+
+    // Dump the AST representation to a dump context.
+    void
+    dump_clause(Ast_dump_context*) const;
 
    private:
     // The type for this type clause.
@@ -1437,6 +1503,9 @@ class Type_switch_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The variable holding the value we are switching on.

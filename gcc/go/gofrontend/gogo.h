@@ -422,6 +422,10 @@ class Gogo
   void
   simplify_thunk_statements();
 
+  // Dump AST if -fgo-dump-ast is set 
+  void
+  dump_ast(const char* basename);
+
   // Convert named types to the backend representation.
   void
   convert_named_types();
@@ -511,7 +515,6 @@ class Gogo
   static tree
   receive_as_64bit_integer(tree type, tree channel, bool blocking,
 			   bool for_select);
-
 
   // Make a trampoline which calls FNADDR passing CLOSURE.
   tree

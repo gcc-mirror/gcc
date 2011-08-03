@@ -42,6 +42,7 @@ class Export;
 class Import;
 class Temporary_statement;
 class Label;
+class Ast_dump_context;
 
 // The base class for all expressions.
 
@@ -635,6 +636,10 @@ class Expression
   static tree
   check_bounds(tree val, tree bound_type, tree sofar, source_location);
 
+  // Dump an expression to a dump constext.
+  void
+  dump_expression(Ast_dump_context*) const;
+
  protected:
   // May be implemented by child class: traverse the expressions.
   virtual int
@@ -730,6 +735,10 @@ class Expression
   // For children to call to report an error conveniently.
   void
   report_error(const char*);
+
+  // Child class implements dumping to a dump context.
+  virtual void
+  do_dump_expression(Ast_dump_context*) const = 0;
 
  private:
   // Convert to the desired statement classification, or return NULL.
@@ -934,6 +943,9 @@ class Var_expression : public Expression
   tree
   do_get_tree(Translate_context*);
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   // The variable we are referencing.
   Named_object* variable_;
@@ -977,6 +989,9 @@ class Temporary_reference_expression : public Expression
 
   tree
   do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The statement where the temporary variable is defined.
@@ -1030,6 +1045,9 @@ class String_expression : public Expression
 
   void
   do_export(Export*) const;
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The string value.  This is immutable.
@@ -1153,6 +1171,9 @@ class Binary_expression : public Expression
 
   void
   do_export(Export*) const;
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The binary operator to apply.
@@ -1290,6 +1311,9 @@ class Call_expression : public Expression
   bool
   determining_types();
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   bool
   check_argument_type(int, const Type*, const Type*, source_location, bool);
@@ -1384,6 +1408,9 @@ class Func_expression : public Expression
   tree
   do_get_tree(Translate_context*);
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   // The function itself.
   Named_object* function_;
@@ -1432,6 +1459,9 @@ class Unknown_expression : public Parser_expression
   do_copy()
   { return new Unknown_expression(this->named_object_, this->location()); }
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+  
  private:
   // The unknown name.
   Named_object* named_object_;
@@ -1456,6 +1486,12 @@ class Index_expression : public Parser_expression
   set_is_lvalue()
   { this->is_lvalue_ = true; }
 
+  // Dump an index expression, i.e. an expression of the form
+  // expr[expr] or expr[expr:expr], to a dump context.
+  static void
+  dump_index_expression(Ast_dump_context*, const Expression* expr, 
+                        const Expression* start, const Expression* end);
+
  protected:
   int
   do_traverse(Traverse*);
@@ -1472,6 +1508,9 @@ class Index_expression : public Parser_expression
 				 : this->end_->copy()),
 				this->location());
   }
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The expression being indexed.
@@ -1572,6 +1611,9 @@ class Map_index_expression : public Expression
   tree
   do_get_tree(Translate_context*);
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   // The map we are looking into.
   Expression* map_;
@@ -1640,6 +1682,9 @@ class Bound_method_expression : public Expression
 
   tree
   do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The object used to find the method.  This is passed to the method
@@ -1712,6 +1757,9 @@ class Field_reference_expression : public Expression
   tree
   do_get_tree(Translate_context*);
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   // The expression we are looking into.  This should have a type of
   // struct.
@@ -1777,6 +1825,9 @@ class Interface_field_reference_expression : public Expression
   tree
   do_get_tree(Translate_context*);
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   // The expression for the interface object.  This should have a type
   // of interface or pointer to interface.
@@ -1829,6 +1880,9 @@ class Type_guard_expression : public Expression
 
   tree
   do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The expression to convert.
@@ -1888,6 +1942,9 @@ class Receive_expression : public Expression
 
   tree
   do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The channel from which we are receiving.

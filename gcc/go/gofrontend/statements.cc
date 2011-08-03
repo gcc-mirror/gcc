@@ -15,6 +15,7 @@
 #include "runtime.h"
 #include "backend.h"
 #include "statements.h"
+#include "ast-dump.h"
 
 // Class Statement.
 
@@ -142,6 +143,14 @@ Statement::get_backend(Translate_context* context)
   return this->do_get_backend(context);
 }
 
+// Dump AST representation for a statement to a dump context.
+
+void
+Statement::dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  this->do_dump_statement(ast_dump_context);
+}
+
 // Note that this statement is erroneous.  This is called by children
 // when they discover an error.
 
@@ -178,7 +187,19 @@ class Error_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 };
+
+// Dump the AST representation for an error statement.
+
+void
+Error_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "Error statement" << std::endl;
+}
 
 // Make an error statement.
 
@@ -278,6 +299,30 @@ Variable_declaration_statement::do_get_backend(Translate_context* context)
     stats.push_back(set);
   stats.push_back(sinit);
   return context->backend()->statement_list(stats);
+}
+
+// Dump the AST representation for a variable declaration.
+
+void
+Variable_declaration_statement::do_dump_statement(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  
+  go_assert(var_->is_variable());
+  ast_dump_context->ostream() << "var " << this->var_->name() <<  " ";
+  Variable* var = this->var_->var_value();
+  if (var->has_type()) 
+    {
+      ast_dump_context->dump_type(var->type());
+      ast_dump_context->ostream() << " ";
+    }
+  if (var->init() != NULL)
+    {
+      ast_dump_context->ostream() <<  "= ";
+      ast_dump_context->dump_expression(var->init());
+    }
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a variable declaration.
@@ -422,6 +467,27 @@ Temporary_statement::get_backend_variable(Translate_context* context) const
   return this->bvariable_;
 }
 
+// Dump the AST represemtation for a temporary statement
+
+void
+Temporary_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_temp_variable_name(this);
+  if (this->type_ != NULL)
+    {
+      ast_dump_context->ostream() << " ";
+      ast_dump_context->dump_type(this->type_);
+      
+    }
+  if (this->init_ != NULL)
+    {
+      ast_dump_context->ostream() << " = ";
+      ast_dump_context->dump_expression(this->init_);
+    }
+  ast_dump_context->ostream() << std::endl;
+}
+
 // Make and initialize a temporary variable in BLOCK.
 
 Temporary_statement*
@@ -457,6 +523,9 @@ class Assignment_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // Left hand side--the lvalue.
@@ -542,6 +611,19 @@ Assignment_statement::do_get_backend(Translate_context* context)
 						  this->location());
 }
 
+// Dump the AST representation for an assignment statement.
+
+void
+Assignment_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
+    const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_expression(this->lhs_);
+  ast_dump_context->ostream() << " = " ;
+  ast_dump_context->dump_expression(this->rhs_);
+  ast_dump_context->ostream() << std::endl;
+}
+
 // Make an assignment statement.
 
 Statement*
@@ -613,6 +695,9 @@ class Assignment_operation_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The operator (OPERATOR_PLUSEQ, etc.).
@@ -704,6 +789,19 @@ Assignment_operation_statement::do_lower(Gogo*, Named_object*,
     }
 }
 
+// Dump the AST representation for an assignment operation statement
+
+void
+Assignment_operation_statement::do_dump_statement(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_expression(this->lhs_);
+  ast_dump_context->dump_operator(this->op_); 
+  ast_dump_context->dump_expression(this->rhs_);
+  ast_dump_context->ostream() << std::endl;
+}
+
 // Make an assignment operation statement.
 
 Statement*
@@ -741,6 +839,9 @@ class Tuple_assignment_statement : public Statement
   do_get_backend(Translate_context*)
   { go_unreachable(); }
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   // Left hand side--a list of lvalues.
   Expression_list* lhs_;
@@ -768,7 +869,7 @@ Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
   source_location loc = this->location();
 
   Block* b = new Block(enclosing, loc);
-  
+
   // First move out any subexpressions on the left hand side.  The
   // right hand side will be evaluated in the required order anyhow.
   Move_ordered_evals moe(b);
@@ -832,6 +933,19 @@ Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
   return Statement::make_block_statement(b, loc);
 }
 
+// Dump the AST representation for a tuple assignment statement.
+
+void
+Tuple_assignment_statement::do_dump_statement(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_expression_list(this->lhs_);
+  ast_dump_context->ostream() << " = ";
+  ast_dump_context->dump_expression_list(this->rhs_);
+  ast_dump_context->ostream()  << std::endl;
+}
+
 // Make a tuple assignment statement.
 
 Statement*
@@ -868,6 +982,9 @@ public:
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // Lvalue which receives the value from the map.
@@ -960,6 +1077,21 @@ Tuple_map_assignment_statement::do_lower(Gogo*, Named_object*,
   return Statement::make_block_statement(b, loc);
 }
 
+// Dump the AST representation for a tuple map assignment statement.
+
+void
+Tuple_map_assignment_statement::do_dump_statement(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_expression(this->val_);
+  ast_dump_context->ostream() << ", ";
+  ast_dump_context->dump_expression(this->present_);
+  ast_dump_context->ostream() << " = ";
+  ast_dump_context->dump_expression(this->map_index_);
+  ast_dump_context->ostream() << std::endl;
+}
+
 // Make a map assignment statement which returns a pair of values.
 
 Statement*
@@ -997,6 +1129,9 @@ class Map_assignment_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // A reference to the map index which should be set or deleted.
@@ -1076,6 +1211,21 @@ Map_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
   return Statement::make_block_statement(b, loc);
 }
 
+// Dump the AST representation for a map assignment statement.
+
+void
+Map_assignment_statement::do_dump_statement(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_expression(this->map_index_);
+  ast_dump_context->ostream() << " = ";
+  ast_dump_context->dump_expression(this->val_);
+  ast_dump_context->ostream() << ", ";
+  ast_dump_context->dump_expression(this->should_set_);
+  ast_dump_context->ostream() << std::endl;
+}
+
 // Make a statement which assigns a pair of entries to a map.
 
 Statement*
@@ -1112,6 +1262,9 @@ class Tuple_receive_assignment_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // Lvalue which receives the value from the channel.
@@ -1200,6 +1353,21 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
   return Statement::make_block_statement(b, loc);
 }
 
+// Dump the AST representation for a tuple receive statement.
+
+void
+Tuple_receive_assignment_statement::do_dump_statement(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_expression(this->val_);
+  ast_dump_context->ostream() << ", ";
+  ast_dump_context->dump_expression(this->closed_);
+  ast_dump_context->ostream() << " <- ";
+  ast_dump_context->dump_expression(this->channel_);
+  ast_dump_context->ostream() << std::endl;
+}
+
 // Make a nonblocking receive statement.
 
 Statement*
@@ -1239,6 +1407,9 @@ class Tuple_type_guard_assignment_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   Call_expression*
@@ -1375,6 +1546,23 @@ Tuple_type_guard_assignment_statement::lower_to_object_type(
   b->add_statement(s);
 }
 
+// Dump the AST representation for a tuple type guard statement.
+
+void 
+Tuple_type_guard_assignment_statement::do_dump_statement(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_expression(this->val_);
+  ast_dump_context->ostream() << ", ";
+  ast_dump_context->dump_expression(this->ok_);
+  ast_dump_context->ostream() << " = ";
+  ast_dump_context->dump_expression(this->expr_);
+  ast_dump_context->ostream() << " . ";
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream()  << std::endl;
+}
+
 // Make an assignment from a type guard to a pair of variables.
 
 Statement*
@@ -1414,6 +1602,9 @@ class Expression_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context* context);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   Expression* expr_;
@@ -1459,6 +1650,17 @@ Expression_statement::do_get_backend(Translate_context* context)
   return context->backend()->expression_statement(tree_to_expr(expr_tree));
 }
 
+// Dump the AST representation for an expression statement
+
+void 
+Expression_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
+    const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_expression(expr_);
+  ast_dump_context->ostream() << std::endl;
+}
+
 // Make an expression statement from an Expression.
 
 Statement*
@@ -1494,6 +1696,9 @@ class Block_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context* context);
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   Block* block_;
 };
@@ -1505,6 +1710,14 @@ Block_statement::do_get_backend(Translate_context* context)
 {
   Bblock* bblock = this->block_->get_backend(context);
   return context->backend()->block_statement(bblock);
+}
+
+// Dump the AST for a block statement
+
+void
+Block_statement::do_dump_statement(Ast_dump_context*) const
+{
+  // block statement braces are dumped when traversing.
 }
 
 // Make a block statement.
@@ -1541,6 +1754,9 @@ class Inc_dec_statement : public Statement
   do_get_backend(Translate_context*)
   { go_unreachable(); }
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   // The l-value to increment or decrement.
   Expression* expr_;
@@ -1562,6 +1778,16 @@ Inc_dec_statement::do_lower(Gogo*, Named_object*, Block*, Statement_inserter*)
 
   Operator op = this->is_inc_ ? OPERATOR_PLUSEQ : OPERATOR_MINUSEQ;
   return Statement::make_assignment_operation(op, this->expr_, oexpr, loc);
+}
+
+// Dump the AST representation for a inc/dec statement.
+
+void
+Inc_dec_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_expression(expr_);
+  ast_dump_context->ostream() << (is_inc_? "++": "--") << std::endl;
 }
 
 // Make an increment statement.
@@ -2233,6 +2459,17 @@ Go_statement::do_get_backend(Translate_context* context)
   return context->backend()->expression_statement(call_bexpr);
 }
 
+// Dump the AST representation for go statement.
+
+void
+Go_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "go ";
+  ast_dump_context->dump_expression(this->call());
+  ast_dump_context->ostream() << std::endl;
+}
+
 // Make a go statement.
 
 Statement*
@@ -2259,6 +2496,17 @@ Defer_statement::do_get_backend(Translate_context* context)
   tree call_tree = call->get_tree(context);
   Bexpression* call_bexpr = tree_to_expr(call_tree);
   return context->backend()->expression_statement(call_bexpr);
+}
+
+// Dump the AST representation for defer statement.
+
+void
+Defer_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "defer ";
+  ast_dump_context->dump_expression(this->call());
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a defer statement.
@@ -2445,6 +2693,17 @@ Return_statement::do_get_backend(Translate_context* context)
 					      retvals, loc);
 }
 
+// Dump the AST representation for a return statement.
+
+void
+Return_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "return " ;
+  ast_dump_context->dump_expression_list(this->vals_);
+  ast_dump_context->ostream() << std::endl;
+}
+
 // Make a return statement.
 
 Statement*
@@ -2481,12 +2740,30 @@ class Bc_statement : public Statement
   do_get_backend(Translate_context* context)
   { return this->label_->get_goto(context, this->location()); }
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   // The label that this branches to.
   Unnamed_label* label_;
   // True if this is "break", false if it is "continue".
   bool is_break_;
 };
+
+// Dump the AST representation for a break/continue statement
+
+void
+Bc_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << (this->is_break_ ? "break" : "continue");
+  if (this->label_ != NULL) 
+    {
+      ast_dump_context->ostream() << " "; 
+      ast_dump_context->dump_label_name(this->label_);
+    }
+  ast_dump_context->ostream() << std::endl; 
+}
 
 // Make a break statement.
 
@@ -2530,6 +2807,9 @@ class Goto_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*);
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   Label* label_;
 };
@@ -2555,6 +2835,15 @@ Goto_statement::do_get_backend(Translate_context* context)
 {
   Blabel* blabel = this->label_->get_backend_label(context);
   return context->backend()->goto_statement(blabel, this->location());
+}
+
+// Dump the AST representation for a goto statement.
+
+void
+Goto_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "goto " << this->label_->name() << std::endl;
 }
 
 // Make a goto statement.
@@ -2588,9 +2877,24 @@ class Goto_unnamed_statement : public Statement
   do_get_backend(Translate_context* context)
   { return this->label_->get_goto(context, this->location()); }
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   Unnamed_label* label_;
 };
+
+// Dump the AST representation for an unnamed goto statement
+
+void
+Goto_unnamed_statement::do_dump_statement(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "goto ";
+  ast_dump_context->dump_label_name(this->label_);
+  ast_dump_context->ostream() << std::endl;
+}
 
 // Make a goto statement to an unnamed label.
 
@@ -2621,6 +2925,15 @@ Label_statement::do_get_backend(Translate_context* context)
   return context->backend()->label_definition_statement(blabel);
 }
 
+// Dump the AST for a label definition statement.
+
+void
+Label_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << this->label_->name() << ":" << std::endl;
+}
+
 // Make a label statement.
 
 Statement*
@@ -2648,10 +2961,24 @@ class Unnamed_label_statement : public Statement
   do_get_backend(Translate_context* context)
   { return this->label_->get_definition(context); }
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   // The label.
   Unnamed_label* label_;
 };
+
+// Dump the AST representation for an unnamed label definition statement.
+
+void
+Unnamed_label_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
+    const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_label_name(this->label_);
+  ast_dump_context->ostream() << ":" << std::endl;
+}
 
 // Make an unnamed label statement.
 
@@ -2687,6 +3014,9 @@ class If_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   Expression* cond_;
@@ -2757,6 +3087,24 @@ If_statement::do_get_backend(Translate_context* context)
 			: this->else_block_->get_backend(context));
   return context->backend()->if_statement(cond_expr, then_block,
 					  else_block, this->location());
+}
+
+// Dump the AST representation for an if statement
+
+void
+If_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "if ";
+  ast_dump_context->dump_expression(this->cond_);
+  ast_dump_context->ostream() << std::endl;
+  ast_dump_context->dump_block(this->then_block_);
+  if (this->else_block_ != NULL) 
+    {
+      ast_dump_context->print_indent();
+      ast_dump_context->ostream() << "else" << std::endl;
+      ast_dump_context->dump_block(this->else_block_);
+    }
 }
 
 // Make an if statement.
@@ -3050,6 +3398,31 @@ Case_clauses::Case_clause::get_backend(Translate_context* context,
     return context->backend()->compound_statement(statements, break_stat);
 }
 
+// Dump the AST representation for a case clause
+
+void
+Case_clauses::Case_clause::dump_clause(Ast_dump_context* ast_dump_context) 
+    const
+{
+  ast_dump_context->print_indent();
+  if (this->is_default_)
+    {
+      ast_dump_context->ostream() << "default:";
+    }
+  else
+    {
+      ast_dump_context->ostream() << "case ";
+      ast_dump_context->dump_expression_list(this->cases_);
+      ast_dump_context->ostream() << ":" ;
+    }
+  ast_dump_context->dump_block(this->statements_);
+  if (this->is_fallthrough_)
+    {
+      ast_dump_context->print_indent();
+      ast_dump_context->ostream() <<  " (fallthrough)" << std::endl;
+    }
+}
+
 // Class Case_clauses.
 
 // Traversal.
@@ -3212,6 +3585,17 @@ Case_clauses::get_backend(Translate_context* context,
     }
 }
 
+// Dump the AST representation for case clauses (from a switch statement)
+
+void
+Case_clauses::dump_clauses(Ast_dump_context* ast_dump_context) const
+{
+  for (Clauses::const_iterator p = this->clauses_.begin();
+       p != this->clauses_.end();
+       ++p)    
+    p->dump_clause(ast_dump_context);
+}
+
 // A constant switch statement.  A Switch_statement is lowered to this
 // when all the cases are constants.
 
@@ -3240,6 +3624,9 @@ class Constant_switch_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The value to switch on.
@@ -3320,6 +3707,20 @@ Constant_switch_statement::do_get_backend(Translate_context* context)
   return context->backend()->compound_statement(switch_statement, ldef);
 }
 
+// Dump the AST representation for a constant switch statement.
+
+void
+Constant_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
+    const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "switch ";
+  ast_dump_context->dump_expression(this->val_);
+  ast_dump_context->ostream() << " {" << std::endl;
+  this->clauses_->dump_clauses(ast_dump_context);
+  ast_dump_context->ostream() << "}" << std::endl;
+}
+
 // Class Switch_statement.
 
 // Traversal.
@@ -3393,6 +3794,24 @@ Switch_statement::break_label()
   if (this->break_label_ == NULL)
     this->break_label_ = new Unnamed_label(this->location());
   return this->break_label_;
+}
+
+// Dump the AST representation for a switch statement.
+
+void
+Switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "switch ";
+  if (this->val_ != NULL)
+    {
+      ast_dump_context->dump_expression(this->val_);
+      ast_dump_context->ostream() << " ";
+    }
+  ast_dump_context->ostream() << "{" << std::endl;
+  this->clauses_->dump_clauses(ast_dump_context);
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "}" << std::endl;
 }
 
 // Make a switch statement.
@@ -3519,6 +3938,31 @@ Type_case_clauses::Type_case_clause::lower(Block* b,
     }
 }
 
+// Dump the AST representation for a type case clause
+
+void
+Type_case_clauses::Type_case_clause::dump_clause(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  if (this->is_default_)
+    {
+      ast_dump_context->ostream() << "default:";
+    }
+  else
+    {
+      ast_dump_context->ostream() << "case "; 
+      ast_dump_context->dump_type(this->type_);
+      ast_dump_context->ostream() << ":" ;
+    }
+  ast_dump_context->dump_block(this->statements_);
+  if (this->is_fallthrough_)
+    {
+      ast_dump_context->print_indent();
+      ast_dump_context->ostream() <<  " (fallthrough)" << std::endl;
+    }
+}
+
 // Class Type_case_clauses.
 
 // Traversal.
@@ -3587,6 +4031,17 @@ Type_case_clauses::lower(Block* b, Temporary_statement* descriptor_temp,
 
   if (default_case != NULL)
     default_case->lower(b, descriptor_temp, break_label, NULL);
+}
+
+// Dump the AST representation for case clauses (from a switch statement)
+
+void
+Type_case_clauses::dump_clauses(Ast_dump_context* ast_dump_context) const
+{
+  for (Type_clauses::const_iterator p = this->clauses_.begin();
+       p != this->clauses_.end();
+       ++p)    
+    p->dump_clause(ast_dump_context);
 }
 
 // Class Type_switch_statement.
@@ -3690,6 +4145,20 @@ Type_switch_statement::break_label()
   if (this->break_label_ == NULL)
     this->break_label_ = new Unnamed_label(this->location());
   return this->break_label_;
+}
+
+// Dump the AST representation for a type switch statement
+
+void
+Type_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context) 
+    const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "switch " << this->var_->name() << " = ";
+  ast_dump_context->dump_expression(this->expr_);
+  ast_dump_context->ostream() << " .(type) {" << std::endl;
+  this->clauses_->dump_clauses(ast_dump_context);
+  ast_dump_context->ostream() << "}" << std::endl;
 }
 
 // Make a type switch statement.
@@ -3860,6 +4329,18 @@ Send_statement::do_get_backend(Translate_context* context)
     return s;
   else
     return context->backend()->compound_statement(btemp, s);
+}
+
+// Dump the AST representation for a send statement
+
+void
+Send_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->dump_expression(this->channel_);
+  ast_dump_context->ostream() << " <- ";
+  ast_dump_context->dump_expression(this->val_);
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a send statement.
@@ -4051,6 +4532,48 @@ Select_clauses::Select_clause::get_statements_backend(
     return NULL;
   Bblock* bblock = this->statements_->get_backend(context);
   return context->backend()->block_statement(bblock);
+}
+
+// Dump the AST representation for a select case clause
+
+void
+Select_clauses::Select_clause::dump_clause(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  if (this->is_default_)
+    {
+      ast_dump_context->ostream() << "default:";
+    }
+  else
+    {
+      ast_dump_context->ostream() << "case "  ;
+      if (this->is_send_)
+        {
+          ast_dump_context->dump_expression(this->channel_);
+          ast_dump_context->ostream() << " <- " ;
+          ast_dump_context->dump_expression(this->val_);
+        }
+      else 
+        {
+	  if (this->val_ != NULL)
+	    ast_dump_context->dump_expression(this->val_);
+          if (this->closed_ != NULL)
+            {
+	      // FIXME: can val_ == NULL and closed_ ! = NULL?
+              ast_dump_context->ostream() << " , " ;
+              ast_dump_context->dump_expression(this->closed_);
+            }
+          if (this->closedvar_ != NULL ||
+              this->var_ != NULL)
+            ast_dump_context->ostream() << " := " ;
+            
+          ast_dump_context->ostream() << " <- " ;
+          ast_dump_context->dump_expression(this->channel_);
+        }
+      ast_dump_context->ostream() << ":" ;
+    }
+  ast_dump_context->dump_block(this->statements_);
 }
 
 // Class Select_clauses.
@@ -4326,6 +4849,17 @@ Select_clauses::add_clause_backend(
     (*clauses)[index] = context->backend()->compound_statement(s, g);
 }
 
+// Dump the AST representation for select clauses.
+
+void
+Select_clauses::dump_clauses(Ast_dump_context* ast_dump_context) const
+{
+  for (Clauses::const_iterator p = this->clauses_.begin();
+       p != this->clauses_.end();
+       ++p)    
+    p->dump_clause(ast_dump_context);
+}
+
 // Class Select_statement.
 
 // Return the break label for this switch statement, creating it if
@@ -4364,6 +4898,17 @@ Select_statement::do_get_backend(Translate_context* context)
 {
   return this->clauses_->get_backend(context, this->break_label(),
 				     this->location());
+}
+
+// Dump the AST representation for a select statement.
+
+void 
+Select_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "select {" << std::endl;
+  this->clauses_->dump_clauses(ast_dump_context);
+  ast_dump_context->ostream() << "}" << std::endl;
 }
 
 // Make a select statement.
@@ -4499,6 +5044,38 @@ For_statement::set_break_continue_labels(Unnamed_label* break_label,
   go_assert(this->break_label_ == NULL && this->continue_label_ == NULL);
   this->break_label_ = break_label;
   this->continue_label_ = continue_label;
+}
+
+// Dump the AST representation for a for statement.
+
+void
+For_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  if (this->init_ != NULL)
+    {
+      ast_dump_context->print_indent();
+      ast_dump_context->indent();
+      ast_dump_context->ostream() << "// INIT  " << std::endl;
+      ast_dump_context->dump_block(this->init_);
+      ast_dump_context->unindent();
+    }
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "for ";
+  if (this->cond_ != NULL)
+    ast_dump_context->dump_expression(this->cond_);
+  ast_dump_context->ostream() << " {" << std::endl;
+  ast_dump_context->indent();
+
+  ast_dump_context->dump_block(this->statements_);
+  if (this->init_ != NULL)
+    {
+      ast_dump_context->print_indent();
+      ast_dump_context->ostream() << "// POST " << std::endl;
+      ast_dump_context->dump_block(this->post_);
+    }
+  ast_dump_context->unindent();
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "}" << std::endl;
 }
 
 // Make a for statement.
@@ -5117,6 +5694,33 @@ For_range_statement::continue_label()
   if (this->continue_label_ == NULL)
     this->continue_label_ = new Unnamed_label(this->location());
   return this->continue_label_;
+}
+
+// Dump the AST representation for a for range statement.
+
+void
+For_range_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
+{
+  
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "for ";
+  ast_dump_context->dump_expression(this->index_var_);
+  if (this->value_var_ != NULL)
+    {
+      ast_dump_context->ostream() << ", ";
+      ast_dump_context->dump_expression(this->value_var_);
+    }
+    
+  ast_dump_context->ostream() << " = range ";      
+  ast_dump_context->dump_expression(this->range_);
+  ast_dump_context->ostream() << " {" << std::endl;
+  ast_dump_context->indent();
+
+  ast_dump_context->dump_block(this->statements_);
+
+  ast_dump_context->unindent();
+  ast_dump_context->print_indent();
+  ast_dump_context->ostream() << "}" << std::endl;
 }
 
 // Make a for statement with a range clause.
