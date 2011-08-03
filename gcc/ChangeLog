@@ -1,3 +1,13 @@
+2011-08-03  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32c/m32c.c (class_sizes): Remove.
+	(reduce_class): Change arguments and return type to reg_class_t.
+	Change type cc var to HARD_REG_SET. Change type best var to
+	reg_class_t. Change type best_size var to unsigned int. Remove
+	initialization class_sizes var. Use reg_class_size array instead
+	of class_sizes. Use reg_class_contents array instead
+	of class_contents.
+
 2011-08-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/49958
