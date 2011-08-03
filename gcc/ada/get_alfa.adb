@@ -254,10 +254,12 @@ begin
 
          when 'S' =>
             declare
-               Scope : Nat;
-               Line  : Nat;
-               Col   : Nat;
-               Typ   : Character;
+               Spec_File  : Nat;
+               Spec_Scope : Nat;
+               Scope      : Nat;
+               Line       : Nat;
+               Col        : Nat;
+               Typ        : Character;
 
             begin
                --  Scan out location
@@ -279,21 +281,36 @@ begin
 
                Skip_Spaces;
                Get_Name;
+               Skip_Spaces;
+
+               if Nextc = '-' then
+                  Skipc;
+                  Check ('>');
+                  Skip_Spaces;
+                  Spec_File := Get_Nat;
+                  Check ('.');
+                  Spec_Scope := Get_Nat;
+               else
+                  Spec_File  := 0;
+                  Spec_Scope := 0;
+               end if;
 
                --  Make new scope table entry (will fill in From_Xref and
                --  To_Xref later). Initial range (From_Xref .. To_Xref) is
                --  empty for scopes without entities.
 
                ALFA_Scope_Table.Append (
-                 (Scope_Entity => Empty,
-                  Scope_Name   => new String'(Name_Str (1 .. Name_Len)),
-                  File_Num     => Cur_File,
-                  Scope_Num    => Cur_Scope,
-                  Line         => Line,
-                  Stype        => Typ,
-                  Col          => Col,
-                  From_Xref    => 1,
-                  To_Xref      => 0));
+                 (Scope_Entity   => Empty,
+                  Scope_Name     => new String'(Name_Str (1 .. Name_Len)),
+                  File_Num       => Cur_File,
+                  Scope_Num      => Cur_Scope,
+                  Spec_File_Num  => Spec_File,
+                  Spec_Scope_Num => Spec_Scope,
+                  Line           => Line,
+                  Stype          => Typ,
+                  Col            => Col,
+                  From_Xref      => 1,
+                  To_Xref        => 0));
             end;
 
             --  Update counter for scopes

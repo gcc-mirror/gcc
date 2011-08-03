@@ -161,13 +161,20 @@ package Makeutl is
       Pkg_Name     : Name_Id;
       Project_Tree : Project_Tree_Ref;
       Value        : out Variable_Value;
-      Is_Default   : out Boolean);
+      Is_Default   : out Boolean;
+      Test_Without_Suffix : Boolean := False;
+      Check_ALI_Suffix    : Boolean := False);
    --  Compute the switches (Compilation switches for instance) for the given
    --  file. This checks various attributes to see if there are file specific
    --  switches, or else defaults on the switches for the corresponding
    --  language. Is_Default is set to False if there were file-specific
    --  switches Source_File can be set to No_File to force retrieval of
    --  the default switches.
+   --  If Test_Without_Suffix is True, and there is no
+   --  " for Switches(Source_File) use", then this procedure also tests without
+   --  the extension of the filename.
+   --  If Test_Without_Suffix is True and Check_ALI_Suffix is True, then we
+   --  also replace the file extension with ".ali" when testing.
 
    function Linker_Options_Switches
      (Project  : Project_Id;

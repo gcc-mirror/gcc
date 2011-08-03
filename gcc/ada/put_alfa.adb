@@ -78,6 +78,16 @@ begin
                   Write_Info_Char (S.Scope_Name (N));
                end loop;
 
+               if S.Spec_File_Num /= 0 then
+                  Write_Info_Char (' ');
+                  Write_Info_Char ('-');
+                  Write_Info_Char ('>');
+                  Write_Info_Char (' ');
+                  Write_Info_Nat (S.Spec_File_Num);
+                  Write_Info_Char ('.');
+                  Write_Info_Nat (S.Spec_Scope_Num);
+               end if;
+
                Write_Info_Terminate;
             end;
 

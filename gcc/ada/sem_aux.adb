@@ -33,6 +33,7 @@
 with Atree;  use Atree;
 with Einfo;  use Einfo;
 with Namet;  use Namet;
+with Opt;    use Opt;
 with Sinfo;  use Sinfo;
 with Snames; use Snames;
 with Stand;  use Stand;
@@ -783,6 +784,18 @@ package body Sem_Aux is
          return False;
       end if;
    end Is_Limited_Type;
+
+   --------------------------
+   -- Is_VM_By_Copy_Actual --
+   --------------------------
+
+   function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean is
+   begin
+      return not Tagged_Type_Expansion
+        and then Nkind (N) = N_Identifier
+        and then Present (Renamed_Object (Entity (N)))
+        and then Nkind (Renamed_Object (Entity (N))) = N_Slice;
+   end Is_VM_By_Copy_Actual;
 
    ----------------------
    -- Nearest_Ancestor --

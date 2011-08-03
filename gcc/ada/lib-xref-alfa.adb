@@ -140,6 +140,9 @@ package body ALFA is
       's' => True,
       others => False);
 
+   type Entity_Hashed_Range is range 0 .. 255;
+   --  Size of hash table headers
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -154,6 +157,9 @@ package body ALFA is
    procedure Add_ALFA_Xrefs;
    --  Filter table Xrefs to add all references used in ALFA to the table
    --  ALFA_Xref_Table.
+
+   function Entity_Hash (E : Entity_Id) return Entity_Hashed_Range;
+   --  Hash function for hash table
 
    procedure Traverse_Declarations_Or_Statements  (L : List_Id);
    procedure Traverse_Handled_Statement_Sequence  (N : Node_Id);
@@ -339,15 +345,17 @@ package body ALFA is
       --  filled even later, but are initialized to represent an empty range.
 
       ALFA_Scope_Table.Append (
-        (Scope_Name   => new String'(Exact_Source_Name (Sloc (E))),
-         File_Num     => 0,
-         Scope_Num    => 0,
-         Line         => Nat (Get_Logical_Line_Number (Loc)),
-         Stype        => Typ,
-         Col          => Nat (Get_Column_Number (Loc)),
-         From_Xref    => 1,
-         To_Xref      => 0,
-         Scope_Entity => E));
+        (Scope_Name     => new String'(Exact_Source_Name (Sloc (E))),
+         File_Num       => 0,
+         Scope_Num      => 0,
+         Spec_File_Num  => 0,
+         Spec_Scope_Num => 0,
+         Line           => Nat (Get_Logical_Line_Number (Loc)),
+         Stype          => Typ,
+         Col            => Nat (Get_Column_Number (Loc)),
+         From_Xref      => 1,
+         To_Xref        => 0,
+         Scope_Entity   => E));
    end Add_ALFA_Scope;
 
    --------------------
@@ -367,35 +375,36 @@ package body ALFA is
          procedure Set_Scope_Num (N : Entity_Id; Num : Nat);
       end Scopes;
 
+      ------------
+      -- Scopes --
+      ------------
+
       package body Scopes is
          type Scope is record
             Num    : Nat;
             Entity : Entity_Id;
          end record;
 
-         type Scope_Hashed is range 0 .. 255;
-
-         function Scope_Hash (E : Entity_Id) return Scope_Hashed;
-
-         function Scope_Hash (E : Entity_Id) return Scope_Hashed is
-            Value  : constant Int := Int (E);
-            Modulo : constant Int := Int (Scope_Hashed'Last) + 1;
-         begin
-            return Scope_Hashed (Value - (Value / Modulo) * Modulo);
-         end Scope_Hash;
-
          package Scopes is new GNAT.HTable.Simple_HTable
-           (Header_Num => Scope_Hashed,
+           (Header_Num => Entity_Hashed_Range,
             Element    => Scope,
             No_Element => (Num => No_Scope, Entity => Empty),
             Key        => Entity_Id,
-            Hash       => Scope_Hash,
+            Hash       => Entity_Hash,
             Equal      => "=");
+
+         -------------------
+         -- Get_Scope_Num --
+         -------------------
 
          function Get_Scope_Num (N : Entity_Id) return Nat is
          begin
             return Scopes.Get (N).Num;
          end Get_Scope_Num;
+
+         -------------------
+         -- Set_Scope_Num --
+         -------------------
 
          procedure Set_Scope_Num (N : Entity_Id; Num : Nat) is
          begin
@@ -782,10 +791,82 @@ package body ALFA is
          end if;
       end loop;
 
+      --  Fill in the spec information when relevant
+
+      declare
+         package Entity_Hash_Table is new
+           GNAT.HTable.Simple_HTable
+             (Header_Num => Entity_Hashed_Range,
+              Element    => Scope_Index,
+              No_Element => 0,
+              Key        => Entity_Id,
+              Hash       => Entity_Hash,
+              Equal      => "=");
+
+      begin
+         --  Fill in the hash-table
+
+         for S in ALFA_Scope_Table.First .. ALFA_Scope_Table.Last loop
+            declare
+               Srec : ALFA_Scope_Record renames ALFA_Scope_Table.Table (S);
+            begin
+               Entity_Hash_Table.Set (Srec.Scope_Entity, S);
+            end;
+         end loop;
+
+         --  Use the hash-table to locate spec entities
+
+         for S in ALFA_Scope_Table.First .. ALFA_Scope_Table.Last loop
+            declare
+               Srec : ALFA_Scope_Record renames ALFA_Scope_Table.Table (S);
+               Body_Entity : Entity_Id;
+               Spec_Entity : Entity_Id;
+               Spec_Scope  : Scope_Index;
+            begin
+               if Ekind (Srec.Scope_Entity) = E_Subprogram_Body then
+                  Body_Entity := Parent (Parent (Srec.Scope_Entity));
+               elsif Ekind (Srec.Scope_Entity) = E_Package_Body then
+                  Body_Entity := Parent (Srec.Scope_Entity);
+               else
+                  Body_Entity := Empty;
+               end if;
+
+               if Present (Body_Entity) then
+                  if Nkind (Body_Entity) = N_Defining_Program_Unit_Name then
+                     Body_Entity := Parent (Body_Entity);
+                  end if;
+
+                  Spec_Entity := Corresponding_Spec (Body_Entity);
+                  Spec_Scope := Entity_Hash_Table.Get (Spec_Entity);
+
+                  --  Spec of generic may be missing
+
+                  if Spec_Scope /= 0 then
+                     Srec.Spec_File_Num :=
+                       ALFA_Scope_Table.Table (Spec_Scope).File_Num;
+                     Srec.Spec_Scope_Num :=
+                       ALFA_Scope_Table.Table (Spec_Scope).Scope_Num;
+                  end if;
+               end if;
+            end;
+         end loop;
+
+      end;
+
       --  Generate cross reference ALFA information
 
       Add_ALFA_Xrefs;
    end Collect_ALFA;
+
+   -----------------
+   -- Entity_Hash --
+   -----------------
+
+   function Entity_Hash (E : Entity_Id) return Entity_Hashed_Range is
+   begin
+      return Entity_Hashed_Range
+        (E mod (Entity_Id (Entity_Hashed_Range'Last) + 1));
+   end Entity_Hash;
 
    -----------------------------------------
    -- Traverse_Declarations_Or_Statements --
