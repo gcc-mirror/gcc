@@ -14360,12 +14360,14 @@ McCabe cyclomatic complexity;
 McCabe essential complexity;
 
 @item
-maximal loop nesting level
+maximal loop nesting level;
 
+@item
+extra exit points (for subprograms);
 @end itemize
 
 @noindent
-The McCabe complexity metrics are defined
+The McCabe cyclomatic complexity metric is defined
 in @url{http://www.mccabe.com/pdf/mccabe-nist235r.pdf}
 
 According to McCabe, both control statements and short-circuit control forms
@@ -14386,6 +14388,34 @@ cyclomatic complexity, which is the sum of these two values.
 @end itemize
 
 @noindent
+
+The origin of cyclomatic complexity metric is the need to estimate the number
+of independent paths in the control flow graph that in turn gives the number
+of tests needed to satisfy paths coverage testing completeness criterion.
+Considered from the testing point of view, a static Ada @code{loop} (that is,
+the @code{loop} statement having static subtype in loop parameter
+specification) does not add to cyclomatic complexity. By providing
+@option{^--no-static-loop^NO_STATIC_LOOP^} option a user
+may specify that such loops should not be counted when computing the
+cyclomatic complexity metric
+
+The Ada essential complexity metric is a McCabe cyclomatic complexity metric
+counted for the code that is reduced by excluding all the pure structural Ada
+control statements. An compound statement is considered as a non-structural
+if it contains a @code{raise} or @code{return} statement as it subcomponent,
+or if it contains a @code{goto} statement that transfers the control outside
+the operator. A selective accept statement with @code{terminate} alternative
+is considered as non-structural statement. When computing this metric,
+@code{exit} statements are treated in the same way as @code{goto}
+statements unless @option{^-ne^NO_EXITS_AS_GOTOS^} option is specified.
+
+The Ada essential complexity metric defined here is intended to quantify
+the extent to which the software is unstructured. It is adapted from
+the McCabe essential complexity metric defined in
+http://www.mccabe.com/pdf/nist235r.pdf but is modified to be more
+suitable for typical Ada usage. For example, short circuit forms
+are not penalized as unstructured in the Ada essential complexity metric.
+
 When computing cyclomatic and essential complexity, @command{gnatmetric} skips
 the code in the exception handlers and in all the nested program units.
 
@@ -14438,6 +14468,10 @@ bodies, task bodies, entry bodies and statement sequences in package bodies
 @item ^-ne^/NO_EXITS_AS_GOTOS^
 Do not consider @code{exit} statements as @code{goto}s when
 computing Essential Complexity
+
+@cindex @option{^--no-static-loop^/NO_STATIC_LOOP^} (@command{gnatmetric})
+@item ^--no-static-loop^/NO_STATIC_LOOP^
+Do not consider static loops when computing cyclomatic complexity
 
 @item ^--extra-exit-points^/EXTRA_EXIT_POINTS^
 Report the extra exit points for subprogram bodies. As an exit point, this

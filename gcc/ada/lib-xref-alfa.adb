@@ -224,25 +224,47 @@ package body ALFA is
 
       --  Update scope numbers
 
-      for S in From .. ALFA_Scope_Table.Last loop
-         declare
-            E : Entity_Id renames ALFA_Scope_Table.Table (S).Scope_Entity;
-         begin
-            if Lib.Get_Source_Unit (E) = U then
-               ALFA_Scope_Table.Table (S).Scope_Num := Int (S - From) + 1;
-               ALFA_Scope_Table.Table (S).File_Num  := D;
+      declare
+         Count : Nat;
 
-            else
-               --  Remove scope S which is not located in unit U, for example
-               --  for scope inside generics that get instantiated.
+      begin
+         Count := 1;
+         for S in From .. ALFA_Scope_Table.Last loop
+            declare
+               E : Entity_Id renames ALFA_Scope_Table.Table (S).Scope_Entity;
+            begin
+               if Lib.Get_Source_Unit (E) = U then
+                  ALFA_Scope_Table.Table (S).Scope_Num := Count;
+                  ALFA_Scope_Table.Table (S).File_Num  := D;
+                  Count                                := Count + 1;
 
-               for J in S .. ALFA_Scope_Table.Last - 1 loop
-                  ALFA_Scope_Table.Table (J) := ALFA_Scope_Table.Table (J + 1);
-               end loop;
-               ALFA_Scope_Table.Set_Last (ALFA_Scope_Table.Last - 1);
+               else
+                  --  Mark for removal a scope S which is not located in unit
+                  --  U, for example for scope inside generics that get
+                  --  instantiated.
+
+                  ALFA_Scope_Table.Table (S).Scope_Num := 0;
+               end if;
+            end;
+         end loop;
+      end;
+
+      declare
+         Snew : Scope_Index;
+
+      begin
+         Snew := From;
+         for S in From .. ALFA_Scope_Table.Last loop
+            --  Remove those scopes previously marked for removal
+
+            if ALFA_Scope_Table.Table (S).Scope_Num /= 0 then
+               ALFA_Scope_Table.Table (Snew) := ALFA_Scope_Table.Table (S);
+               Snew := Snew + 1;
             end if;
-         end;
-      end loop;
+         end loop;
+
+         ALFA_Scope_Table.Set_Last (Snew - 1);
+      end;
 
       --  Make entry for new file in file table
 

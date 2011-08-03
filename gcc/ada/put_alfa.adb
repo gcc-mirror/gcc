@@ -141,8 +141,6 @@ begin
                   Write_Info_Char (S.Scope_Name (N));
                end loop;
 
-               File        := F.File_Num;
-               Scope       := S.Scope_Num;
                Entity_Line := 0;
                Entity_Col  := 0;
 
@@ -175,6 +173,8 @@ begin
 
                         Entity_Line := R.Entity_Line;
                         Entity_Col  := R.Entity_Col;
+                        File        := F.File_Num;
+                        Scope       := S.Scope_Num;
                      end if;
 
                      if Write_Info_Col > 72 then
