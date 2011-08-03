@@ -1751,15 +1751,26 @@ package body Sem_Type is
          --  case the resolution was to the explicit declaration in the
          --  generic, and remains so in the instance.
 
+         --  The same sort of disambiguation needed for calls is also required
+         --  for the name given in a subprogram renaming, and that case is
+         --  handled here as well. We test Comes_From_Source to exclude this
+         --  treatment for implicit renamings created for formal subprograms.
+
          elsif In_Instance
            and then not In_Generic_Actual (N)
          then
             if Nkind (N) = N_Function_Call
               or else Nkind (N) = N_Procedure_Call_Statement
+              or else
+                (Nkind (N) in N_Has_Entity
+                  and then
+                    Nkind (Parent (N)) = N_Subprogram_Renaming_Declaration
+                  and then Comes_From_Source (Parent (N)))
             then
                declare
                   Actual  : Node_Id;
                   Formal  : Entity_Id;
+                  Renam   : Entity_Id        := Empty;
                   Is_Act1 : constant Boolean := Is_Actual_Subprogram (Nam1);
                   Is_Act2 : constant Boolean := Is_Actual_Subprogram (Nam2);
 
@@ -1781,14 +1792,32 @@ package body Sem_Type is
                      return It1;
                   end if;
 
-                  Actual := First_Actual (N);
+                  --  In the case of a renamed subprogram, pick up the entity
+                  --  of the renaming declaration so we can traverse its
+                  --  formal parameters.
+
+                  if Nkind (N) in N_Has_Entity then
+                     Renam := Defining_Unit_Name (Specification (Parent (N)));
+                  end if;
+
+                  if Present (Renam) then
+                     Actual := First_Formal (Renam);
+                  else
+                     Actual := First_Actual (N);
+                  end if;
+
                   Formal := First_Formal (Nam1);
                   while Present (Actual) loop
                      if Etype (Actual) /= Etype (Formal) then
                         return It2;
                      end if;
 
-                     Next_Actual (Actual);
+                     if Present (Renam) then
+                        Next_Formal (Actual);
+                     else
+                        Next_Actual (Actual);
+                     end if;
+
                      Next_Formal (Formal);
                   end loop;
 

@@ -1,3 +1,39 @@
+2011-08-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Find_Corresponding_Spec): When in an instance, skip
+	conforming subprogram renamings that appear to be completions if they
+	are not fully conformant.
+	Such renamings are homographs but not completions.
+	* sem_type.adb (Disambiguate): Handle disambiguation of overloaded
+	names in a subprogram renaming that appears in an instance.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Expand_Subtype_From_Expr): if the type is limited but
+	not immutably limited, build actual subtype from expression to provide
+	proper bounds to caller.
+
+2011-08-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch8.adb: Minor comment correction.
+
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_strm.adb (Build_Array_Input_Function): In Ada 2005 mode, when
+	returning a limited array, use an extended return statement.
+
+2011-08-03  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Initialize): If --subdirs= is used, but no project file is
+	specified, attempt to create the specify subdir if it does not already
+	exist and use it as the object directory as if -D had been specified.
+
+2011-08-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tpopsp-vms.adb: New file.
+	* s-taprop-vms.adb: Put back ATCB_Key, since needed by this file on VMS.
+	* gcc-interfaces/Makefile.in: Use s-taprop-vms.adb on VMS.
+
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
 	* make.adb, makeutl.adb, makeutl.ads, clean.adb (Makeutl.Queue): new

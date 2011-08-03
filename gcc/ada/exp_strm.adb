@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -149,7 +149,9 @@ package body Exp_Strm is
       Decls  : List_Id;
       Ranges : List_Id;
       Stms   : List_Id;
+      Rstmt  : Node_Id;
       Indx   : Node_Id;
+      Odecl  : Node_Id;
 
    begin
       Decls := New_List;
@@ -197,13 +199,13 @@ package body Exp_Strm is
       --  build a subtype indication with the proper bounds.
 
       if Is_Constrained (Stream_Base_Type (Typ)) then
-         Append_To (Decls,
+         Odecl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
              Object_Definition =>
-               New_Occurrence_Of (Stream_Base_Type (Typ), Loc)));
+               New_Occurrence_Of (Stream_Base_Type (Typ), Loc));
       else
-         Append_To (Decls,
+         Odecl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
              Object_Definition =>
@@ -212,19 +214,34 @@ package body Exp_Strm is
                    New_Occurrence_Of (Stream_Base_Type (Typ), Loc),
                  Constraint =>
                    Make_Index_Or_Discriminant_Constraint (Loc,
-                     Constraints => Ranges))));
+                     Constraints => Ranges)));
       end if;
 
-      Stms := New_List (
-         Make_Attribute_Reference (Loc,
-           Prefix => New_Occurrence_Of (Typ, Loc),
-           Attribute_Name => Name_Read,
-           Expressions => New_List (
-             Make_Identifier (Loc, Name_S),
-             Make_Identifier (Loc, Name_V))),
+      Rstmt := Make_Attribute_Reference (Loc,
+                 Prefix         => New_Occurrence_Of (Typ, Loc),
+                 Attribute_Name => Name_Read,
+                 Expressions    => New_List (
+                   Make_Identifier (Loc, Name_S),
+                   Make_Identifier (Loc, Name_V)));
 
-         Make_Simple_Return_Statement (Loc,
-           Expression => Make_Identifier (Loc, Name_V)));
+      if Ada_Version >= Ada_2005 then
+         Stms := New_List (
+            Make_Extended_Return_Statement (Loc,
+              Return_Object_Declarations => New_List (Odecl),
+              Handled_Statement_Sequence =>
+                Make_Handled_Sequence_Of_Statements (Loc,
+                  New_List (Rstmt))));
+      else
+         --  pragma Assert (not Is_Limited_Type (Typ));
+         --  Returning a local object, shouldn't happen in the case of a
+         --  limited type, but currently occurs in DSA stubs in Ada 95 mode???
+
+         Stms := New_List (
+                   Odecl,
+                   Rstmt,
+                   Make_Simple_Return_Statement (Loc,
+                     Expression => Make_Identifier (Loc, Name_V)));
+      end if;
 
       Fnam :=
         Make_Defining_Identifier (Loc,

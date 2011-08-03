@@ -61,17 +61,18 @@ pragma Warnings (On);
 
 with Switch;   use Switch;
 with Switch.M; use Switch.M;
-with Targparm; use Targparm;
 with Table;
+with Targparm; use Targparm;
 with Tempdir;
 with Types;    use Types;
 
-with Ada.Exceptions;            use Ada.Exceptions;
 with Ada.Command_Line;          use Ada.Command_Line;
+with Ada.Directories;
+with Ada.Exceptions;            use Ada.Exceptions;
 
+with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Dynamic_HTables;      use GNAT.Dynamic_HTables;
-with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 package body Make is
@@ -5898,6 +5899,10 @@ package body Make is
 
                   Prj.Env.Set_Ada_Paths
                     (Main_Project, Project_Tree, Use_Include_Path_File);
+                  --  (Project => Main_Project,
+                  --   In_Tree => Project_Tree,
+                  --   Including_Libraries => True,
+                  --   Include_Path => Use_Include_Path_File);
 
                   --  If switch -C was specified, create a binder mapping file
 
@@ -6727,6 +6732,38 @@ package body Make is
 
       if Object_Directory_Path /= null and then In_Place_Mode then
          Make_Failed ("-i and -D cannot be used simultaneously");
+      end if;
+
+      --  If --subdirs= is specified, but not -P, this is equivalent to -D,
+      --  except that the directory is created if it does not exist.
+
+      if Prj.Subdirs /= null and then Project_File_Name = null then
+         if Object_Directory_Path /= null then
+            Make_Failed ("--subdirs and -D cannot be used simultaneously");
+
+         elsif In_Place_Mode then
+            Make_Failed ("--subdirs and -i cannot be used simultaneously");
+
+         else
+            if not Is_Directory (Prj.Subdirs.all) then
+               begin
+                  Ada.Directories.Create_Path (Prj.Subdirs.all);
+               exception
+                  when others =>
+                     Make_Failed ("unable to create object directory " &
+                                  Prj.Subdirs.all);
+               end;
+            end if;
+
+            Object_Directory_Present := True;
+
+            declare
+               Argv : constant String (1 .. Prj.Subdirs'Length) :=
+                        Prj.Subdirs.all;
+            begin
+               Scan_Make_Arg (Env, Argv, And_Save => False);
+            end;
+         end if;
       end if;
 
       --  Deal with -C= switch

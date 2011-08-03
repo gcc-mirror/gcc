@@ -6332,7 +6332,13 @@ package body Sem_Ch6 is
                if In_Instance then
                   Set_Convention (Designator, Convention (E));
 
-                  if Nkind (N) = N_Subprogram_Body
+                  --  Skip past subprogram bodies and subprogram renamings that
+                  --  may appear to have a matching spec, but that aren't fully
+                  --  conformant with it. That can occur in cases where an
+                  --  actual type causes unrelated homographs in the instance.
+
+                  if Nkind_In (N, N_Subprogram_Body,
+                                  N_Subprogram_Renaming_Declaration)
                     and then Present (Homonym (E))
                     and then not Fully_Conformant (Designator, E)
                   then
