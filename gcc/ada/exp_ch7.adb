@@ -316,7 +316,7 @@ package body Exp_Ch7 is
    --          Save_Occurrence (E_Id, Get_Current_Excep.all.all);
    --       end if;
    --
-   --  If flag For_Library is set:
+   --  If flag For_Library is set (and not in restricted profile):
    --
    --    when others =>
    --       if not Raised_Id then
@@ -769,7 +769,7 @@ package body Exp_Ch7 is
                   Prefix =>
                     New_Reference_To (RTE (RE_Get_Current_Excep), Loc)))));
 
-      if For_Library then
+      if For_Library and then not Restricted_Profile then
          Proc_To_Call := RTE (RE_Save_Library_Occurrence);
 
       else
@@ -2922,8 +2922,15 @@ package body Exp_Ch7 is
       Raise_Id : Entity_Id;
 
    begin
-      if VM_Target = No_VM then
+      if VM_Target /= No_VM then
+         Raise_Id := RTE (RE_Reraise_Occurrence);
+
+      --  Standard run-time library
+      elsif RTE_Available (RE_Raise_From_Controlled_Operation) then
          Raise_Id := RTE (RE_Raise_From_Controlled_Operation);
+
+      --  Restricted runtime: exception messages are not supported and hence
+      --  Raise_From_Controlled_Operation is not supported.
       else
          Raise_Id := RTE (RE_Reraise_Occurrence);
       end if;
@@ -3166,12 +3173,21 @@ package body Exp_Ch7 is
       Loc : constant Source_Ptr := Sloc (N);
 
    begin
-      return
-        Make_Procedure_Call_Statement (Loc,
-          Name =>
-            New_Reference_To (RTE (RE_Finalize_Protection), Loc),
-          Parameter_Associations =>
-            New_List (Concurrent_Ref (Ref)));
+      --  For restricted run-time libraries (Ravenscar), tasks are
+      --  non-terminating, and protected objects can only appear at library
+      --  level, so we do not want finalization of protected objects.
+
+      if Restricted_Profile then
+         return Empty;
+
+      else
+         return
+           Make_Procedure_Call_Statement (Loc,
+             Name =>
+               New_Reference_To (RTE (RE_Finalize_Protection), Loc),
+             Parameter_Associations =>
+               New_List (Concurrent_Ref (Ref)));
+      end if;
    end Cleanup_Protected_Object;
 
    ------------------
@@ -3184,12 +3200,21 @@ package body Exp_Ch7 is
    is
       Loc  : constant Source_Ptr := Sloc (N);
    begin
-      return
-        Make_Procedure_Call_Statement (Loc,
-          Name =>
-            New_Reference_To (RTE (RE_Free_Task), Loc),
-          Parameter_Associations =>
-            New_List (Concurrent_Ref (Ref)));
+      --  For restricted run-time libraries (Ravenscar), tasks are
+      --  non-terminating and they can only appear at library level, so we do
+      --  not want finalization of task objects.
+
+      if Restricted_Profile then
+         return Empty;
+
+      else
+         return
+           Make_Procedure_Call_Statement (Loc,
+             Name =>
+               New_Reference_To (RTE (RE_Free_Task), Loc),
+             Parameter_Associations =>
+               New_List (Concurrent_Ref (Ref)));
+      end if;
    end Cleanup_Task;
 
    ------------------------------

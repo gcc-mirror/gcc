@@ -7787,7 +7787,10 @@ package body Exp_Ch6 is
 
             Preserve_Comes_From_Source
               (Object_Decl, Original_Node (Object_Decl));
-            Set_Comes_From_Source (Obj_Def_Id, True);
+
+            Preserve_Comes_From_Source
+              (Obj_Def_Id, Original_Node (Object_Decl));
+
             Set_Comes_From_Source (Renaming_Def_Id, False);
          end;
       end if;

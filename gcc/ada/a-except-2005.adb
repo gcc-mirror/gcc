@@ -880,7 +880,7 @@ package body Ada.Exceptions is
    procedure Raise_From_Controlled_Operation
      (X : Ada.Exceptions.Exception_Occurrence)
    is
-      Prev_Exc  : constant EOA := Get_Current_Excep.all;
+      Prev_Exc : constant EOA := Get_Current_Excep.all;
 
    begin
       --  We're raising an exception during finalization. If the finalization
@@ -906,7 +906,7 @@ package body Ada.Exceptions is
               (Orig_Msg'First .. Orig_Msg'First + Orig_Prefix_Length - 1);
 
          begin
-            --  Message already has the proper prefix, just re-reraise
+            --  Message already has the proper prefix, just re-raise
 
             if Orig_Prefix = Prefix then
                Raise_Exception_No_Defer

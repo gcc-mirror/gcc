@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2425,9 +2425,19 @@ package body Sem_Warn is
                               Pack :=
                                 Find_Package_Renaming
                                   (Spec_Entity (Munite), Lunit);
+                           else
+                              Pack := Empty;
                            end if;
 
-                           if Unreferenced_In_Spec (Item) then
+                           --  If a renaming is present in the spec do not warn
+                           --  because the body or child unit may depend on it.
+
+                           if Present (Pack)
+                             and then Renamed_Entity (Pack) = Lunit
+                           then
+                              exit;
+
+                           elsif Unreferenced_In_Spec (Item) then
                               Error_Msg_N -- CODEFIX
                                 ("?unit& is not referenced in spec!",
                                  Name (Item));
@@ -3367,10 +3377,15 @@ package body Sem_Warn is
                               Error_Msg_FE
                                 ("`IN OUT` prefix overlaps with actual for&?",
                                  Act1, Form);
+
                            else
+
+                              --  For greater clarity, give name of formal.
+
+                              Error_Msg_Node_2 := Form;
                               Error_Msg_FE
-                                ("writable actual overlaps with actual for&?",
-                                 Act1, Form);
+                                ("writable actual for & overlaps with"
+                                  & "  actual for&?", Act1, Form);
                            end if;
 
                         else

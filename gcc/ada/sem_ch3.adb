@@ -8354,14 +8354,11 @@ package body Sem_Ch3 is
                      Error_Msg_N ("& does not match any discriminant", Id);
                      return New_Elmt_List;
 
-                  --  The following is only useful for the benefit of generic
-                  --  instances but it does not interfere with other
-                  --  processing for the non-generic case so we do it in all
-                  --  cases (for generics this statement is executed when
-                  --  processing the generic definition, see comment at the
-                  --  beginning of this if statement).
+                  --  If the parent type is a generic formal, preserve the
+                  --  name of the discriminant for subsequent instances.
+                  --  see comment at the beginning of this if statement.
 
-                  else
+                  elsif Is_Generic_Type (Root_Type (T)) then
                      Set_Original_Discriminant (Id, Discr);
                   end if;
                end if;

@@ -3020,6 +3020,12 @@ package body Exp_Ch5 is
                     Selector_Name =>
                       Make_Identifier (Loc, Name_Init))));
 
+            --  The cursor is not modified in the source, but of course will
+            --  be updated in the generated code. Indicate that it is actually
+            --  set to prevent spurious warnings.
+
+            Set_Never_Set_In_Source (Cursor, False);
+
             --  If the range of iteration is given by a function call that
             --  returns a container, the finalization actions have been saved
             --  in the Condition_Actions of the iterator. Insert them now at
