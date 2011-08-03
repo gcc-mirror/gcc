@@ -1,3 +1,8 @@
+2011-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49948
+	* gcc.dg/pr49948.c: New test.
+
 2011-08-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/47383

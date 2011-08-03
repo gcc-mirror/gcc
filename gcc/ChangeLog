@@ -1,3 +1,8 @@
+2011-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49948
+	* gimple.c (walk_stmt_load_store_addr_ops): Walk CONSTRUCTOR elements.
+
 2011-08-03  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/m32c/m32c.c (class_sizes): Remove.
