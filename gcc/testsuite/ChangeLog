@@ -1,5 +1,9 @@
 2011-08-03  Arnaud Charlet  <charlet@adacore.com>
 
+	* gnat.dg/specs/debug1.ads: Add missing -margs switch.
+
+2011-08-03  Arnaud Charlet  <charlet@adacore.com>
+
 	* lib/gnat-dg.exp: Use gnatmake -c -u to compile a single file.
 
 2011-08-03  H.J. Lu  <hongjiu.lu@intel.com>

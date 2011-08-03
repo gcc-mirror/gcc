@@ -1,5 +1,5 @@
 -- { dg-do compile { target *-*-linux* } }
--- { dg-options "-gdwarf-2 -cargs -dA" }
+-- { dg-options "-gdwarf-2 -cargs -dA -margs" }
 
 package Debug1 is
 
