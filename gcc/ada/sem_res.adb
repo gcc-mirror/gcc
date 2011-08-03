@@ -5860,6 +5860,10 @@ package body Sem_Res is
          Append_To (Expressions (N), Error);
       end if;
 
+      if Root_Type (Typ) /= Standard_Boolean then
+         Mark_Non_ALFA_Subprogram;
+      end if;
+
       Set_Etype (N, Typ);
       Eval_Conditional_Expression (N);
    end Resolve_Conditional_Expression;

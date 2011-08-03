@@ -1524,14 +1524,20 @@ package body Sem_Ch4 is
 
       Else_Expr := Next (Then_Expr);
 
-      --  In ALFA, conditional expressions are allowed:
+      --  In ALFA, boolean conditional expressions are allowed:
       --    * if they have no ELSE part, in which case the expression is
       --      equivalent to
+
       --        NOT Condition OR ELSE Then_Expr
+
       --    * in pre- and postconditions, where the Condition cannot have side-
       --      effects (in ALFA) and thus the expression is equivalent to
+
       --        (Condition AND THEN Then_Expr)
       --          and (NOT Condition AND THEN Then_Expr)
+
+      --  Non-boolean conditional expressions are marked as not in ALFA during
+      --  resolution.
 
       if Present (Else_Expr) and then not In_Pre_Post_Expression then
          Mark_Non_ALFA_Subprogram;

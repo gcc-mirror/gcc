@@ -25,6 +25,8 @@
 
 with ALI;      use ALI;
 with Debug;
+with Err_Vars; use Err_Vars;
+with Errutil;
 with Fname;
 with Hostparm;
 with Osint;    use Osint;
@@ -32,6 +34,7 @@ with Output;   use Output;
 with Opt;      use Opt;
 with Prj.Ext;
 with Prj.Util;
+with Sinput.P;
 with Snames;   use Snames;
 with Table;
 with Tempdir;
@@ -580,6 +583,58 @@ package body Makeutl is
       end;
    end Executable_Prefix_Path;
 
+   ------------------
+   -- Fail_Program --
+   ------------------
+
+   procedure Fail_Program
+     (Project_Tree   : Project_Tree_Ref;
+      S              : String;
+      Flush_Messages : Boolean := True)
+   is
+   begin
+      if Flush_Messages then
+         if Total_Errors_Detected /= 0 or else Warnings_Detected /= 0 then
+            Errutil.Finalize;
+         end if;
+      end if;
+
+      Finish_Program (Project_Tree, E_Fatal, S => S);
+   end Fail_Program;
+
+   --------------------
+   -- Finish_Program --
+   --------------------
+
+   procedure Finish_Program
+     (Project_Tree : Project_Tree_Ref;
+      Exit_Code    : Osint.Exit_Code_Type := Osint.E_Success;
+      S            : String := "")
+   is
+   begin
+      if not Debug.Debug_Flag_N then
+         Delete_Temp_Config_Files (Project_Tree);
+
+         if Project_Tree /= null then
+            Delete_All_Temp_Files (Project_Tree.Shared);
+         end if;
+      end if;
+
+      if S'Length > 0 then
+         if Exit_Code /= E_Success then
+            Osint.Fail (S);
+         else
+            Write_Str (S);
+         end if;
+      end if;
+
+      --  Output Namet statistics
+
+      Namet.Finalize;
+
+      Exit_Program (Exit_Code);
+   end Finish_Program;
+
    --------------------------
    -- File_Not_A_Source_Of --
    --------------------------
@@ -819,6 +874,169 @@ package body Makeutl is
       Write_Eol;
    end Inform;
 
+   ------------------------------
+   -- Initialize_Source_Record --
+   ------------------------------
+
+   procedure Initialize_Source_Record (Source : Prj.Source_Id) is
+      procedure Set_Object_Project
+        (Obj_Dir : String; Obj_Proj : Project_Id; Obj_Path : Path_Name_Type;
+         Stamp   : Time_Stamp_Type);
+      --  Update information about object file, switches file,...
+
+      ------------------------
+      -- Set_Object_Project --
+      ------------------------
+
+      procedure Set_Object_Project
+        (Obj_Dir : String; Obj_Proj : Project_Id; Obj_Path : Path_Name_Type;
+         Stamp   : Time_Stamp_Type) is
+      begin
+         Source.Object_Project := Obj_Proj;
+         Source.Object_Path    := Obj_Path;
+         Source.Object_TS      := Stamp;
+
+         if Source.Language.Config.Dependency_Kind /= None then
+            declare
+               Dep_Path : constant String :=
+                 Normalize_Pathname
+                   (Name          => Get_Name_String (Source.Dep_Name),
+                    Resolve_Links => Opt.Follow_Links_For_Files,
+                    Directory     => Obj_Dir);
+            begin
+               Source.Dep_Path := Create_Name (Dep_Path);
+               Source.Dep_TS   := Osint.Unknown_Attributes;
+            end;
+         end if;
+
+         --  Get the path of the switches file, even if Opt.Check_Switches is
+         --  not set, as switch -s may be in the Builder switches that have not
+         --  been scanned yet.
+
+         declare
+            Switches_Path : constant String :=
+              Normalize_Pathname
+                (Name          => Get_Name_String (Source.Switches),
+                 Resolve_Links => Opt.Follow_Links_For_Files,
+                 Directory     => Obj_Dir);
+         begin
+            Source.Switches_Path := Create_Name (Switches_Path);
+
+            if Stamp /= Empty_Time_Stamp then
+               Source.Switches_TS := File_Stamp (Source.Switches_Path);
+            end if;
+         end;
+      end Set_Object_Project;
+
+      Obj_Proj : Project_Id;
+
+   begin
+      --  Nothing to do if source record has already been fully initialized
+
+      if Source.Initialized then
+         return;
+      end if;
+
+      --  Systematically recompute the time stamp
+
+      Source.Source_TS := File_Stamp (Source.Path.Display_Name);
+
+      --  Parse the source file to check whether we have a subunit
+
+      if Source.Language.Config.Kind = Unit_Based
+        and then Source.Kind = Impl
+        and then Is_Subunit (Source)
+      then
+         Source.Kind := Sep;
+      end if;
+
+      if Source.Language.Config.Object_Generated
+        and then Is_Compilable (Source)
+      then
+         --  First, get the correct object file name and dependency file name
+         --  if the source is in a multi-unit file.
+
+         if Source.Index /= 0 then
+            Source.Object :=
+              Object_Name
+                (Source_File_Name   => Source.File,
+                 Source_Index       => Source.Index,
+                 Index_Separator    =>
+                   Source.Language.Config.Multi_Unit_Object_Separator,
+                 Object_File_Suffix =>
+                   Source.Language.Config.Object_File_Suffix);
+
+            Source.Dep_Name :=
+              Dependency_Name
+                (Source.Object, Source.Language.Config.Dependency_Kind);
+         end if;
+
+         --  Find the object file for that source. It could be either in
+         --  the current project or in an extended project (it might actually
+         --  not exist yet in the ultimate extending project, but if not found
+         --  elsewhere that's where we'll expect to find it).
+
+         Obj_Proj := Source.Project;
+         while Obj_Proj /= No_Project loop
+            declare
+               Dir  : constant String := Get_Name_String
+                 (Obj_Proj.Object_Directory.Display_Name);
+
+               Object_Path     : constant String :=
+                                   Normalize_Pathname
+                                     (Name          =>
+                                        Get_Name_String (Source.Object),
+                                      Resolve_Links =>
+                                        Opt.Follow_Links_For_Files,
+                                      Directory     => Dir);
+
+               Obj_Path : constant Path_Name_Type := Create_Name (Object_Path);
+               Stamp : Time_Stamp_Type := Empty_Time_Stamp;
+
+            begin
+               --  For specs, we do not check object files if there is a body.
+               --  This saves a system call. On the other hand, we do need to
+               --  know the object_path, in case the user has passed the .ads
+               --  on the command line to compile the spec only
+
+               if Source.Kind /= Spec
+                 or else Source.Unit = No_Unit_Index
+                 or else Source.Unit.File_Names (Impl) = No_Source
+               then
+                  Stamp := File_Stamp (Obj_Path);
+               end if;
+
+               if Stamp /= Empty_Time_Stamp
+                 or else (Obj_Proj.Extended_By = No_Project
+                          and then Source.Object_Project = No_Project)
+               then
+                  Set_Object_Project (Dir, Obj_Proj, Obj_Path, Stamp);
+               end if;
+
+               Obj_Proj := Obj_Proj.Extended_By;
+            end;
+         end loop;
+
+      elsif Source.Language.Config.Dependency_Kind = Makefile then
+         declare
+            Object_Dir : constant String :=
+                           Get_Name_String
+                             (Source.Project.Object_Directory.Display_Name);
+            Dep_Path   : constant String :=
+                           Normalize_Pathname
+                             (Name        => Get_Name_String (Source.Dep_Name),
+                              Resolve_Links =>
+                                Opt.Follow_Links_For_Files,
+                              Directory     => Object_Dir);
+         begin
+            Source.Dep_Path := Create_Name (Dep_Path);
+            Source.Dep_TS   := Osint.Unknown_Attributes;
+         end;
+      end if;
+
+      Source.Initialized := True;
+   end Initialize_Source_Record;
+
    ----------------------------
    -- Is_External_Assignment --
    ----------------------------
@@ -850,6 +1068,36 @@ package body Makeutl is
         (Self        => Env.External,
          Declaration => Argv (Start .. Finish));
    end Is_External_Assignment;
+
+   ----------------
+   -- Is_Subunit --
+   ----------------
+
+   function Is_Subunit (Source : Prj.Source_Id) return Boolean is
+      Src_Ind : Source_File_Index;
+   begin
+      if Source.Kind = Sep then
+         return True;
+
+      --  A Spec, a file based language source or a body with a spec cannot be
+      --  a subunit.
+
+      elsif Source.Kind = Spec or else
+        Source.Unit = No_Unit_Index or else
+        Other_Part (Source) /= No_Source
+      then
+         return False;
+      end if;
+
+      --  Here, we are assuming that the language is Ada, as it is the only
+      --  unit based language that we know.
+
+      Src_Ind :=
+        Sinput.P.Load_Project_File
+          (Get_Name_String (Source.Path.Display_Name));
+
+      return Sinput.P.Source_File_Is_Subunit (Src_Ind);
+   end Is_Subunit;
 
    -----------------------------
    -- Linker_Options_Switches --
@@ -963,14 +1211,8 @@ package body Makeutl is
 
    package body Mains is
 
-      type File_And_Loc is record
-         File_Name : File_Name_Type;
-         Index     : Int := 0;
-         Location  : Source_Ptr := No_Location;
-      end record;
-
       package Names is new Table.Table
-        (Table_Component_Type => File_And_Loc,
+        (Table_Component_Type => Main_Info,
          Table_Index_Type     => Integer,
          Table_Low_Bound      => 1,
          Table_Initial        => 10,
@@ -985,13 +1227,45 @@ package body Makeutl is
       -- Add_Main --
       --------------
 
-      procedure Add_Main (Name : String) is
+      procedure Add_Main
+        (Name     : String;
+         Index    : Int := 0;
+         Location : Source_Ptr := No_Location)
+      is
       begin
          Name_Len := 0;
          Add_Str_To_Name_Buffer (Name);
+         Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+
          Names.Increment_Last;
-         Names.Table (Names.Last) := (Name_Find, 0, No_Location);
+         Names.Table (Names.Last) := (Name_Find, Index, Location, No_Source);
       end Add_Main;
+
+      --------------------------
+      -- Set_Multi_Unit_Index --
+      --------------------------
+
+      procedure Set_Multi_Unit_Index
+        (Project_Tree : Project_Tree_Ref := null;
+         Index        : Int := 0) is
+      begin
+         if Index /= 0 then
+            if Names.Last = 0 then
+               Fail_Program
+                 (Project_Tree,
+                  "cannot specify a multi-unit index but no main " &
+                  "on the command line");
+
+            elsif Names.Last > 1 then
+               Fail_Program
+                 (Project_Tree,
+                  "cannot specify several mains with a multi-unit index");
+
+            else
+               Names.Table (Names.Last).Index := Index;
+            end if;
+         end if;
+      end Set_Multi_Unit_Index;
 
       ------------
       -- Delete --
@@ -1003,43 +1277,167 @@ package body Makeutl is
          Mains.Reset;
       end Delete;
 
-      ---------------
-      -- Get_Index --
-      ---------------
+      -----------------------
+      -- FIll_From_Project --
+      -----------------------
 
-      function Get_Index return Int is
+      procedure Fill_From_Project
+        (Root_Project : Project_Id;
+         Project_Tree : Project_Tree_Ref) is
       begin
-         if Current in Names.First .. Names.Last then
-            return Names.Table (Current).Index;
-         else
-            return 0;
-         end if;
-      end Get_Index;
+         if Number_Of_Mains = 0 then
+            declare
+               List    : String_List_Id := Root_Project.Mains;
+               Element : String_Element;
 
-      ------------------
-      -- Get_Location --
-      ------------------
+            begin
+               if List /= Prj.Nil_String then
+                  --  The attribute Main is not an empty list.
+                  --  Get the mains in the list
 
-      function Get_Location return Source_Ptr is
-      begin
-         if Current in Names.First .. Names.Last then
-            return Names.Table (Current).Location;
-         else
-            return No_Location;
+                  while List /= Prj.Nil_String loop
+                     Element :=
+                       Project_Tree.Shared.String_Elements.Table (List);
+
+                     Add_Main (Name     => Get_Name_String (Element.Value),
+                               Index    => Element.Index,
+                               Location => Element.Location);
+                     List := Element.Next;
+                  end loop;
+               end if;
+            end;
          end if;
-      end Get_Location;
+
+         --  If there are mains, check that they are sources of the main
+         --  project
+
+         if Mains.Number_Of_Mains > 0 then
+            for J in Names.First .. Names.Last loop
+               declare
+                  File       : constant Main_Info := Names.Table (J);
+                  Main_Id    : File_Name_Type := File.File;
+                  Main       : constant String := Get_Name_String (Main_Id);
+                  Project    : Project_Id;
+                  Source     : Prj.Source_Id := No_Source;
+                  Suffix     : File_Name_Type;
+                  Iter       : Source_Iterator;
+
+               begin
+                  if Base_Name (Main) /= Main then
+                     if Is_Absolute_Path (Main) then
+                        Main_Id := Create_Name (Base_Name (Main));
+
+                     else
+                        Fail_Program
+                          (Project_Tree,
+                           "mains cannot include directory information (""" &
+                           Main & """)");
+                     end if;
+                  end if;
+
+                  --  First, look for the main as specified.
+
+                  Source := Find_Source
+                    (In_Tree   => Project_Tree,
+                     Project   => Project,
+                     Base_Name => File.File,
+                     Index     => File.Index);
+
+                  if Source = No_Source then
+                     --  Now look for the main with a body suffix
+
+                     declare
+                        --  Main already has a canonical casing
+                        Main : constant String := Get_Name_String (Main_Id);
+                     begin
+                        Project := Root_Project;
+                        while Source = No_Source
+                          and then Project /= No_Project
+                        loop
+                           Iter := For_Each_Source (Project_Tree, Project);
+                           loop
+                              Source := Prj.Element (Iter);
+                              exit when Source = No_Source;
+
+                              --  Only consider bodies
+
+                              if Source.Kind = Impl then
+                                 Get_Name_String (Source.File);
+
+                                 if Name_Len > Main'Length
+                                   and then
+                                     Name_Buffer (1 .. Main'Length) = Main
+                                 then
+                                    Suffix :=
+                                      Source.Language
+                                        .Config.Naming_Data.Body_Suffix;
+
+                                    exit when Suffix /= No_File and then
+                                      Name_Buffer (Main'Length + 1 .. Name_Len)
+                                      = Get_Name_String (Suffix);
+                                 end if;
+                              end if;
+
+                              Next (Iter);
+                           end loop;
+
+                           Project := Project.Extends;
+                        end loop;
+                     end;
+                  end if;
+
+                  if Source /= No_Source then
+                     Names.Table (J).File := Source.File;
+                     Names.Table (J).Source := Source;
+
+                  elsif File.Location /= No_Location then
+                     --  If the main is declared in package Builder of the
+                     --  main project, report an error. If the main is on
+                     --  the command line, it may be a main from another
+                     --  project, so do nothing: if the main does not exist
+                     --  in another project, an error will be reported
+                     --  later.
+
+                     Error_Msg_File_1 := Main_Id;
+                     Error_Msg_Name_1 := Root_Project.Name;
+                     Errutil.Error_Msg ("{ is not a source of project %%",
+                                        File.Location);
+                  end if;
+               end;
+            end loop;
+         end if;
+
+         if Total_Errors_Detected > 0 then
+            Fail_Program (Project_Tree, "problems with main sources");
+         end if;
+      end Fill_From_Project;
 
       ---------------
       -- Next_Main --
       ---------------
 
       function Next_Main return String is
+         Info : Main_Info;
       begin
-         if Current >= Names.Last then
+         Info := Next_Main;
+         if Info = No_Main_Info then
             return "";
          else
+            return Get_Name_String (Info.File);
+         end if;
+      end Next_Main;
+
+      ---------------
+      -- Next_Main --
+      ---------------
+
+      function Next_Main return Main_Info is
+      begin
+         if Current >= Names.Last then
+            return No_Main_Info;
+         else
             Current := Current + 1;
-            return Get_Name_String (Names.Table (Current).File_Name);
+            return Names.Table (Current);
          end if;
       end Next_Main;
 
@@ -1060,41 +1458,6 @@ package body Makeutl is
       begin
          Current := 0;
       end Reset;
-
-      ---------------
-      -- Set_Index --
-      ---------------
-
-      procedure Set_Index (Index : Int) is
-      begin
-         if Names.Last > 0 then
-            Names.Table (Names.Last).Index := Index;
-         end if;
-      end Set_Index;
-
-      ------------------
-      -- Set_Location --
-      ------------------
-
-      procedure Set_Location (Location : Source_Ptr) is
-      begin
-         if Names.Last > 0 then
-            Names.Table (Names.Last).Location := Location;
-         end if;
-      end Set_Location;
-
-      -----------------
-      -- Update_Main --
-      -----------------
-
-      procedure Update_Main (Name : String) is
-      begin
-         if Current in Names.First .. Names.Last then
-            Name_Len := 0;
-            Add_Str_To_Name_Buffer (Name);
-            Names.Table (Current).File_Name := Name_Find;
-         end if;
-      end Update_Main;
    end Mains;
 
    -----------------------
@@ -1726,6 +2089,144 @@ package body Makeutl is
       begin
          Marks.Reset;
       end Remove_Marks;
+
+      ----------------------------
+      -- Insert_Project_Sources --
+      ----------------------------
+
+      procedure Insert_Project_Sources
+        (Project      : Project_Id;
+         Project_Tree : Project_Tree_Ref;
+         All_Projects : Boolean;
+         Unit_Based   : Boolean)
+      is
+         Iter   : Source_Iterator;
+         Source : Prj.Source_Id;
+      begin
+         Iter := For_Each_Source (Project_Tree);
+         loop
+            Source := Prj.Element (Iter);
+            exit when Source = No_Source;
+
+            if Is_Compilable (Source)
+              and then
+                (All_Projects
+                 or else Is_Extending (Project, Source.Project))
+              and then not Source.Locally_Removed
+              and then Source.Replaced_By = No_Source
+              and then
+                (not Source.Project.Externally_Built
+                 or else
+                   (Is_Extending (Project, Source.Project)
+                    and then not Project.Externally_Built))
+              and then Source.Kind /= Sep
+              and then Source.Path /= No_Path_Information
+            then
+               if Source.Kind = Impl
+                 or else (Source.Unit /= No_Unit_Index
+                          and then Source.Kind = Spec
+                          and then (Other_Part (Source) = No_Source
+                                    or else
+                                      Other_Part (Source).Locally_Removed))
+               then
+                  if (Unit_Based
+                      or else Source.Unit = No_Unit_Index
+                      or else Source.Project.Library)
+                    and then not Is_Subunit (Source)
+                  then
+                     Queue.Insert
+                       (Source => (Format => Format_Gprbuild,
+                                   Id     => Source));
+                  end if;
+               end if;
+            end if;
+
+            Next (Iter);
+         end loop;
+      end Insert_Project_Sources;
+
+      -------------------------------
+      -- Insert_Withed_Sources_For --
+      -------------------------------
+
+      procedure Insert_Withed_Sources_For
+        (The_ALI               : ALI.ALI_Id;
+         Project_Tree          : Project_Tree_Ref;
+         Excluding_Shared_SALs : Boolean := False)
+      is
+         Sfile     : File_Name_Type;
+         Afile     : File_Name_Type;
+         Src_Id    : Prj.Source_Id;
+
+      begin
+         --  Insert in the queue the unmarked source files (i.e. those which
+         --  have never been inserted in the queue and hence never considered).
+
+         for J in ALI.ALIs.Table (The_ALI).First_Unit ..
+           ALI.ALIs.Table (The_ALI).Last_Unit
+         loop
+            for K in ALI.Units.Table (J).First_With ..
+              ALI.Units.Table (J).Last_With
+            loop
+               Sfile := ALI.Withs.Table (K).Sfile;
+
+               --  Skip generics
+
+               if Sfile /= No_File then
+                  Afile := ALI.Withs.Table (K).Afile;
+                  Src_Id := Source_Files_Htable.Get
+                    (Project_Tree.Source_Files_HT, Sfile);
+
+                  while Src_Id /= No_Source loop
+                     Initialize_Source_Record (Src_Id);
+
+                     if Is_Compilable (Src_Id)
+                       and then Src_Id.Dep_Name = Afile
+                     then
+                        case Src_Id.Kind is
+                        when Spec =>
+                           declare
+                              Bdy : constant Prj.Source_Id :=
+                                Other_Part (Src_Id);
+                           begin
+                              if Bdy /= No_Source
+                                and then not Bdy.Locally_Removed
+                              then
+                                 Src_Id := Other_Part (Src_Id);
+                              end if;
+                           end;
+
+                        when Impl =>
+                           if Is_Subunit (Src_Id) then
+                              Src_Id := No_Source;
+                           end if;
+
+                        when Sep =>
+                           Src_Id := No_Source;
+                        end case;
+
+                        exit;
+                     end if;
+
+                     Src_Id := Src_Id.Next_With_File_Name;
+                  end loop;
+
+                  --  If Excluding_Shared_SALs is True, do not insert in the
+                  --  queue the sources of a shared Stand-Alone Library.
+
+                  if Src_Id /= No_Source and then
+                    (not Excluding_Shared_SALs or else
+                       not Src_Id.Project.Standalone_Library or else
+                         Src_Id.Project.Library_Kind = Static)
+                  then
+                     Queue.Insert
+                       (Source => (Format => Format_Gprbuild,
+                                   Id     => Src_Id));
+                  end if;
+               end if;
+            end loop;
+         end loop;
+      end Insert_Withed_Sources_For;
 
    end Queue;
 

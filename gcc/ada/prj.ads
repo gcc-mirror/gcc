@@ -1380,11 +1380,13 @@ package Prj is
       Project          : Project_Id;
       In_Imported_Only : Boolean := False;
       In_Extended_Only : Boolean := False;
-      Base_Name        : File_Name_Type) return Source_Id;
+      Base_Name        : File_Name_Type;
+      Index            : Int := 0) return Source_Id;
    --  Find the first source file with the given name either in the whole tree
    --  (if In_Imported_Only is False) or in the projects imported or extended
    --  by Project otherwise. In_Extended_Only implies In_Imported_Only, and
-   --  will only look in Project and the projects it extends
+   --  will only look in Project and the projects it extends.
+   --  If Index is specified, this only search for a source with that index.
 
    -----------------------
    -- Project_Tree_Data --
@@ -1646,6 +1648,12 @@ package Prj is
      (Shared : Shared_Project_Tree_Data_Access);
    --  Delete all recorded temporary files.
    --  Does nothing if Debug.Debug_Flag_N is set
+
+   procedure Delete_Temp_Config_Files (Project_Tree : Project_Tree_Ref);
+   --  Delete all temporary config files.
+   --  Does nothing if Debug.Debug_Flag_N is set or if Project_Tree is null.
+   --  This initially came from gnatmake
+   --  ??? Should this be combined with Delete_All_Temp_Files above
 
    procedure Delete_Temporary_File
      (Shared : Shared_Project_Tree_Data_Access := null;

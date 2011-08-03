@@ -1,5 +1,39 @@
 2011-08-03  Yannick Moy  <moy@adacore.com>
 
+	* sem_ch4.adb (Analyze_Conditional_Expression): only allow boolean
+	conditional expression in ALFA.
+	* sem_res.adb (Resolve_Conditional_Expression): mark non-boolean
+	expressions as not in ALFA.
+
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
+	* a-cofove.adb: Minor reformatting.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb, prj.adb, prj.ads, makeutl.adb, makeutl.ads
+	(Insert_Project_Sources, Insert_withed_Sources_For): moved from the
+	gprbuild sources.
+	These packages are more logically placed in the Queue package, since
+	they manipulate the queue. It is also likely that they can be adapted
+	for gnatmake, thus sharing more code.
+	(Finish_Program, Fail_Program): moved from the gprbuild sources, so
+	that we could move the above.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* errutil.adb (Finalize): clean up the list of error messages on exit.
+	Calling this subprogram multiple times will no longer show duplicate
+	error messages on stderr.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb, g-comlin.ads (Set_Command_Line): ignore the parameter
+	Getopt_Switches when we have already define a command line
+	configuration.
+
+2011-08-03  Yannick Moy  <moy@adacore.com>
+
 	* sem_ch11.adb (Analyze_Raise_xxx_Error): do not mark such nodes as not
 	in ALFA. Instead, they are considered as assertions to prove.
 	* sem_ch4.adb (Analyze_Conditional_Expression): do not always mark such
