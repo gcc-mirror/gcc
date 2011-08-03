@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1308,10 +1308,7 @@ package body Prj.Part is
       end if;
 
       if Current_Verbosity >= Medium then
-         Write_Str  ("Parsing """);
-         Write_Str  (Path_Name);
-         Write_Char ('"');
-         Write_Eol;
+         Debug_Increase_Indent ("Parsing """ & Path_Name & '"');
       end if;
 
       Project_Directory :=
@@ -1882,6 +1879,8 @@ package body Prj.Part is
       --  And restore the comment state that was saved
 
       Tree.Restore_And_Free (Project_Comment_State);
+
+      Debug_Decrease_Indent ("Done parsing project");
    end Parse_Single_Project;
 
    -----------------------
@@ -1899,9 +1898,7 @@ package body Prj.Part is
 
    begin
       if Current_Verbosity = High then
-         Write_Str ("Project_Name_From (""");
-         Write_Str (Canonical);
-         Write_Line (""")");
+         Debug_Output ("Project_Name_From (""" & Canonical & """)");
       end if;
 
       --  If the path name is empty, return No_Name to indicate failure

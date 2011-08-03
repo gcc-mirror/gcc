@@ -624,10 +624,7 @@ package body Prj.Nmsc is
    procedure Write_Attr (Name, Value : String) is
    begin
       if Current_Verbosity = High then
-         Write_Str  ("  " & Name & " = """);
-         Write_Str  (Value);
-         Write_Char ('"');
-         Write_Eol;
+         Debug_Output (Name & " = """ & Value & '"');
       end if;
    end Write_Attr;
 
@@ -804,6 +801,7 @@ package body Prj.Nmsc is
       Id := new Source_Data;
 
       if Current_Verbosity = High then
+         Debug_Indent;
          Write_Str ("Adding source File: ");
          Write_Str (Get_Name_String (Display_File));
 
@@ -939,11 +937,13 @@ package body Prj.Nmsc is
                            Data.Tree);
 
       procedure Found_Project_File (Path : Path_Information; Rank : Natural);
-      --  Comments required ???
+      --  Called for each project file aggregated by Project
 
       procedure Expand_Project_Files is
         new Expand_Subdirectory_Pattern (Callback => Found_Project_File);
-      --  Comments required ???
+      --  Search for all project files referenced by the patterns given in
+      --  parameter.
+      --  Calls Found_Project_File for each of them
 
       ------------------------
       -- Found_Project_File --
@@ -952,10 +952,8 @@ package body Prj.Nmsc is
       procedure Found_Project_File (Path : Path_Information; Rank : Natural) is
          pragma Unreferenced (Rank);
       begin
-         if Current_Verbosity = High then
-            Write_Str ("  Aggregates:");
-            Write_Line (Get_Name_String (Path.Display_Name));
-         end if;
+         Debug_Output ("Aggregates: ", Name_Id (Path.Display_Name));
+
       end Found_Project_File;
 
    --  Start of processing for Check_Aggregate_Project
@@ -982,7 +980,6 @@ package body Prj.Nmsc is
          Ignore        => Nil_String,
          Search_For    => Search_Files,
          Resolve_Links => Opt.Follow_Links_For_Files);
-
    end Check_Aggregate_Project;
 
    ----------------------------
@@ -1040,6 +1037,8 @@ package body Prj.Nmsc is
       Prj_Data  : Project_Processing_Data;
 
    begin
+      Debug_Increase_Indent ("Check ", Project.Name);
+
       Initialize (Prj_Data, Project);
 
       Check_If_Externally_Built   (Project, Data);
@@ -1079,6 +1078,8 @@ package body Prj.Nmsc is
       end if;
 
       Free (Prj_Data);
+
+      Debug_Decrease_Indent ("Done Check");
    end Check;
 
    --------------------
@@ -1125,12 +1126,7 @@ package body Prj.Nmsc is
            and then Name not in Ada_2005_Reserved_Words
          then
             Unit := No_Name;
-
-            if Current_Verbosity = High then
-               Write_Str (The_Name);
-               Write_Line (" is an Ada reserved word.");
-            end if;
-
+            Debug_Output ("Ada reserved word: ", Name);
             return True;
 
          else
@@ -1183,6 +1179,7 @@ package body Prj.Nmsc is
                OK := False;
 
                if Current_Verbosity = High then
+                  Debug_Indent;
                   Write_Int  (Types.Int (Index));
                   Write_Str  (": '");
                   Write_Char (The_Name (Index));
@@ -1201,6 +1198,7 @@ package body Prj.Nmsc is
             OK := False;
 
             if Current_Verbosity = High then
+               Debug_Indent;
                Write_Int  (Types.Int (Index));
                Write_Str  (": '");
                Write_Char (The_Name (Index));
@@ -1235,6 +1233,7 @@ package body Prj.Nmsc is
                OK := False;
 
                if Current_Verbosity = High then
+                  Debug_Indent;
                   Write_Int  (Types.Int (Index));
                   Write_Str  (": '");
                   Write_Char (The_Name (Index));
@@ -2682,14 +2681,10 @@ package body Prj.Nmsc is
          Project.Externally_Built := Project.Extends.Externally_Built;
       end if;
 
-      if Current_Verbosity = High then
-         Write_Str ("Project is ");
-
-         if not Project.Externally_Built then
-            Write_Str ("not ");
-         end if;
-
-         Write_Line ("externally built.");
+      if Project.Externally_Built then
+         Debug_Output ("Project is externally built");
+      else
+         Debug_Output ("Project is not externally built");
       end if;
    end Check_If_Externally_Built;
 
@@ -2766,10 +2761,8 @@ package body Prj.Nmsc is
                            Other.Declared_In_Interfaces := True;
                         end if;
 
-                        if Current_Verbosity = High then
-                           Write_Str ("   interface: ");
-                           Write_Line (Get_Name_String (Source.Path.Name));
-                        end if;
+                        Debug_Output
+                          ("interface: ", Name_Id (Source.Path.Name));
                      end if;
 
                      exit Big_Loop;
@@ -2845,10 +2838,8 @@ package body Prj.Nmsc is
                            Other.Declared_In_Interfaces := True;
                         end if;
 
-                        if Current_Verbosity = High then
-                           Write_Str ("   interface: ");
-                           Write_Line (Get_Name_String (Source.Path.Name));
-                        end if;
+                        Debug_Output
+                          ("interface: ", Name_Id (Source.Path.Name));
                      end if;
 
                      exit Big_Loop_2;
@@ -3497,12 +3488,9 @@ package body Prj.Nmsc is
             --  If language was not found in project or the projects it extends
 
             if Lang = null then
-               if Current_Verbosity = High then
-                  Write_Line
-                    ("Ignoring spec naming data for "
-                     & Get_Name_String (Lang_Name)
-                     & " since language is not defined for this project");
-               end if;
+               Debug_Output
+                 ("Ignoring spec naming data (lang. not in project): ",
+                  Lang_Name);
 
             else
                Value := Data.Tree.Array_Elements.Table (Specs).Value;
@@ -3523,12 +3511,9 @@ package body Prj.Nmsc is
                 (Project, Name => Get_Name_String (Lang_Name));
 
             if Lang = null then
-               if Current_Verbosity = High then
-                  Write_Line
-                    ("Ignoring impl naming data for "
-                     & Get_Name_String (Lang_Name)
-                     & " since language is not defined for this project");
-               end if;
+               Debug_Output
+                 ("Ignoring impl naming data (lang. not in project): ",
+                  Lang_Name);
             else
                Value := Data.Tree.Array_Elements.Table (Impls).Value;
 
@@ -3555,14 +3540,10 @@ package body Prj.Nmsc is
         and then Project.Qualifier /= Configuration
       then
          Naming := Data.Tree.Packages.Table (Naming_Id);
-
-         if Current_Verbosity = High then
-            Write_Line ("Checking package Naming for project "
-                        & Get_Name_String (Project.Name));
-         end if;
-
+         Debug_Increase_Indent ("Checking package Naming for ", Project.Name);
          Initialize_Naming_Data;
          Check_Naming;
+         Debug_Decrease_Indent ("Done checking package naming");
       end if;
    end Check_Package_Naming;
 
@@ -3747,6 +3728,7 @@ package body Prj.Nmsc is
          if Current_Verbosity = High
            and then Project.Library_Name = No_Name
          then
+            Debug_Indent;
             Write_Line ("No library name");
          end if;
 
@@ -3758,16 +3740,14 @@ package body Prj.Nmsc is
 
       if Project.Library_Name /= No_Name then
          if Current_Verbosity = High then
-            Write_Attr
-              ("Library name", Get_Name_String (Project.Library_Name));
+            Write_Attr ("Library name: ",
+                        Get_Name_String (Project.Library_Name));
          end if;
 
          pragma Assert (Lib_Dir.Kind = Single);
 
          if not Library_Directory_Present then
-            if Current_Verbosity = High then
-               Write_Line ("No library directory");
-            end if;
+            Debug_Output ("No library directory");
 
          else
             --  Find path name (unless inherited), check that it is a directory
@@ -3960,10 +3940,7 @@ package body Prj.Nmsc is
 
          else
             if Lib_ALI_Dir.Value = Empty_String then
-               if Current_Verbosity = High then
-                  Write_Line ("No library ALI directory specified");
-               end if;
-
+               Debug_Output ("No library ALI directory specified");
                Project.Library_ALI_Dir := Project.Library_Dir;
 
             else
@@ -4101,9 +4078,7 @@ package body Prj.Nmsc is
             pragma Assert (Lib_Version.Kind = Single);
 
             if Lib_Version.Value = Empty_String then
-               if Current_Verbosity = High then
-                  Write_Line ("No library version specified");
-               end if;
+               Debug_Output ("No library version specified");
 
             else
                Project.Lib_Internal_Name := Lib_Version.Value;
@@ -4112,9 +4087,7 @@ package body Prj.Nmsc is
             pragma Assert (The_Lib_Kind.Kind = Single);
 
             if The_Lib_Kind.Value = Empty_String then
-               if Current_Verbosity = High then
-                  Write_Line ("No library kind specified");
-               end if;
+               Debug_Output ("No library kind specified");
 
             else
                Get_Name_String (The_Lib_Kind.Value);
@@ -4199,9 +4172,7 @@ package body Prj.Nmsc is
             end if;
 
             if Project.Library then
-               if Current_Verbosity = High then
-                  Write_Line ("This is a library project file");
-               end if;
+               Debug_Output ("This is a library project file");
 
                Check_Library (Project.Extends, Extends => True);
 
@@ -5080,10 +5051,7 @@ package body Prj.Nmsc is
          --  The directory is in the list if List is not Nil_String
 
          if not Remove_Source_Dirs and then List = Nil_String then
-            if Current_Verbosity = High then
-               Write_Str  ("   Adding Source Dir=");
-               Write_Line (Get_Name_String (Path.Display_Name));
-            end if;
+            Debug_Output ("Adding source dir=", Name_Id (Path.Display_Name));
 
             String_Element_Table.Increment_Last (Data.Tree.String_Elements);
             Element :=
@@ -5162,9 +5130,7 @@ package body Prj.Nmsc is
    --  Start of processing for Get_Directories
 
    begin
-      if Current_Verbosity = High then
-         Write_Line ("Starting to look for directories");
-      end if;
+      Debug_Output ("Starting to look for directories");
 
       --  Set the object directory to its default which may be nil, if there
       --  is no sources in the project.
@@ -5283,19 +5249,17 @@ package body Prj.Nmsc is
 
       if Current_Verbosity = High then
          if Project.Exec_Directory = No_Path_Information then
-            Write_Line ("No exec directory");
+            Debug_Output ("No exec directory");
          else
-            Write_Str ("Exec directory: """);
-            Write_Str (Get_Name_String (Project.Exec_Directory.Display_Name));
-            Write_Line ("""");
+            Debug_Output
+              ("Exec directory: ",
+               Name_Id (Project.Exec_Directory.Display_Name));
          end if;
       end if;
 
       --  Look for the source directories
 
-      if Current_Verbosity = High then
-         Write_Line ("Starting to look for source directories");
-      end if;
+      Debug_Output ("Starting to look for source directories");
 
       pragma Assert (Source_Dirs.Kind = List, "Source_Dirs is not a list");
 
@@ -5355,9 +5319,7 @@ package body Prj.Nmsc is
             Resolve_Links   => Opt.Follow_Links_For_Dirs);
       end if;
 
-      if Current_Verbosity = High then
-         Write_Line ("Putting source directories in canonical cases");
-      end if;
+      Debug_Output ("Putting source directories in canonical cases");
 
       declare
          Current : String_List_Id := Project.Source_Dirs;
@@ -5446,9 +5408,7 @@ package body Prj.Nmsc is
 
    begin
       if Current_Verbosity = High then
-         Write_Str  ("Opening """);
-         Write_Str  (Path);
-         Write_Line (""".");
+         Debug_Output ("Opening """ & Path & '"');
       end if;
 
       --  Open the file
@@ -5556,10 +5516,7 @@ package body Prj.Nmsc is
       end if;
 
       if Naming.Dot_Replacement = No_File then
-         if Current_Verbosity = High then
-            Write_Line ("  No dot_replacement specified");
-         end if;
-
+         Debug_Output ("No dot_replacement specified");
          return;
       end if;
 
@@ -5592,10 +5549,7 @@ package body Prj.Nmsc is
       end if;
 
       if Last = Filename'Last then
-         if Current_Verbosity = High then
-            Write_Line ("     no matching suffix");
-         end if;
-
+         Debug_Output ("no matching suffix");
          return;
       end if;
 
@@ -5608,10 +5562,7 @@ package body Prj.Nmsc is
                   if Is_Letter (Filename (J))
                     and then not Is_Lower (Filename (J))
                   then
-                     if Current_Verbosity = High then
-                        Write_Line ("  Invalid casing");
-                     end if;
-
+                     Debug_Output ("Invalid casing");
                      return;
                   end if;
                end loop;
@@ -5621,10 +5572,7 @@ package body Prj.Nmsc is
                   if Is_Letter (Filename (J))
                     and then not Is_Upper (Filename (J))
                   then
-                     if Current_Verbosity = High then
-                        Write_Line ("  Invalid casing");
-                     end if;
-
+                     Debug_Output ("Invalid casing");
                      return;
                   end if;
                end loop;
@@ -5645,10 +5593,7 @@ package body Prj.Nmsc is
          if Dot_Repl /= "." then
             for Index in Filename'First .. Last loop
                if Filename (Index) = '.' then
-                  if Current_Verbosity = High then
-                     Write_Line ("   Invalid name, contains dot");
-                  end if;
-
+                  Debug_Output ("Invalid name, contains dot");
                   return;
                end if;
             end loop;
@@ -5731,6 +5676,7 @@ package body Prj.Nmsc is
 
          if Masked then
             if Current_Verbosity = High then
+               Debug_Indent;
                Write_Str ("   """ & Filename & """ contains the ");
 
                if Kind = Spec then
@@ -5752,12 +5698,10 @@ package body Prj.Nmsc is
         and then Current_Verbosity = High
       then
          case Kind is
-            when Spec => Write_Str ("   spec of ");
-            when Impl => Write_Str ("   body of ");
-            when Sep  => Write_Str ("   sep of ");
+            when Spec => Debug_Output ("spec of", Unit);
+            when Impl => Debug_Output ("body of", Unit);
+            when Sep  => Debug_Output ("sep of", Unit);
          end case;
-
-         Write_Line (Get_Name_String (Unit));
       end if;
    end Compute_Unit_Name;
 
@@ -5869,9 +5813,10 @@ package body Prj.Nmsc is
       The_Name := Name_Find;
 
       if Current_Verbosity = High then
+         Debug_Indent;
          Write_Str ("Locate_Directory (""");
          Write_Str (Get_Name_String (The_Name));
-         Write_Str (""", """);
+         Write_Str (""", in """);
          Write_Str (The_Parent);
          Write_Line (""")");
       end if;
@@ -6411,6 +6356,7 @@ package body Prj.Nmsc is
                      Source.Path := Path;
 
                      if Current_Verbosity = High then
+                        Debug_Indent;
                         if Source.Path /= No_Path_Information then
                            Write_Line ("Setting full path for "
                                        & Get_Name_String (Source.File)
@@ -6562,16 +6508,12 @@ package body Prj.Nmsc is
             Kind     := Impl;
             Language := Tmp_Lang;
 
-            if Current_Verbosity = High then
-               Write_Str ("     implementation of language ");
-               Write_Line (Get_Name_String (Display_Language_Name));
-            end if;
+            Debug_Output
+              ("Implementation of language ", Display_Language_Name);
 
          elsif Suffix_Matches (Filename, Config.Naming_Data.Spec_Suffix) then
-            if Current_Verbosity = High then
-               Write_Str ("     header of language ");
-               Write_Line (Get_Name_String (Display_Language_Name));
-            end if;
+            Debug_Output
+              ("Header of language ", Display_Language_Name);
 
             if Header_File then
                Alternate_Languages := new Language_List_Element'
@@ -6600,8 +6542,8 @@ package body Prj.Nmsc is
       Tmp_Lang := Project.Project.Languages;
       while Tmp_Lang /= No_Language_Index loop
          if Current_Verbosity = High then
-            Write_Line
-              ("     Testing language "
+            Debug_Output
+              ("Testing language "
                & Get_Name_String (Tmp_Lang.Name)
                & " Header_File=" & Header_File'Img);
          end if;
@@ -6639,10 +6581,8 @@ package body Prj.Nmsc is
          Tmp_Lang := Tmp_Lang.Next;
       end loop;
 
-      if Language = No_Language_Index
-        and then Current_Verbosity = High
-      then
-         Write_Line ("     not a source of any language");
+      if Language = No_Language_Index then
+         Debug_Output ("not a source of any language");
       end if;
    end Check_File_Naming_Schemes;
 
@@ -6674,9 +6614,9 @@ package body Prj.Nmsc is
       if Current_Verbosity = High
         and then Source.File /= No_File
       then
-         Write_Line ("Override kind for "
-                     & Get_Name_String (Source.File)
-                     & " kind=" & Source.Kind'Img);
+         Debug_Output ("Override kind for "
+                       & Get_Name_String (Source.File)
+                       & " kind=" & Source.Kind'Img);
       end if;
 
       if Source.Kind in Spec_Or_Body and then Source.Unit /= null then
@@ -6714,11 +6654,9 @@ package body Prj.Nmsc is
 
    begin
       if Current_Verbosity = High then
-         Write_Line ("Checking file:");
-         Write_Str ("   Path = ");
-         Write_Line (Get_Name_String (Path));
-         Write_Str ("   Rank =");
-         Write_Line (Source_Dir_Rank'Img);
+         Debug_Increase_Indent
+           ("Checking file (rank=" & Source_Dir_Rank'Img & ")",
+            Name_Id (Path));
       end if;
 
       if Name_Loc = No_Name_Location then
@@ -6825,6 +6763,8 @@ package body Prj.Nmsc is
             end if;
          end if;
       end if;
+
+      Debug_Decrease_Indent;
    end Check_File;
 
    ---------------------------------
@@ -6938,11 +6878,7 @@ package body Prj.Nmsc is
          Success : Boolean := False;
 
       begin
-         if Current_Verbosity = High then
-            Write_Str ("  Looking for subdirs of """);
-            Write_Str (Path_Str);
-            Write_Line ("""");
-         end if;
+         Debug_Output ("Looking for subdirs of ", Name_Id (Path.Display_Name));
 
          if Recursive_Dirs.Get (Visited, Path.Name) then
             return Success;
@@ -7038,11 +6974,7 @@ package body Prj.Nmsc is
          Success     : Boolean;
 
       begin
-         if Current_Verbosity = High then
-            Write_Str ("Expand_Subdirectory_Pattern (""");
-            Write_Str (Pattern);
-            Write_Line (""")");
-         end if;
+         Debug_Increase_Indent ("Find_Pattern", Pattern_Id);
 
          --  If we are looking for files, find the pattern for the files
 
@@ -7063,9 +6995,10 @@ package body Prj.Nmsc is
             end if;
 
             if Current_Verbosity = High then
-               Write_Str ("  file pattern=");
-               Write_Line (Pattern (Pattern_End + 1 .. Pattern'Last));
-               Write_Str ("  Expand directory pattern=");
+               Debug_Indent;
+               Write_Str ("file_pattern=");
+               Write_Str (Pattern (Pattern_End + 1 .. Pattern'Last));
+               Write_Str (" dir_pattern=");
                Write_Line (Pattern (Pattern'First .. Pattern_End));
             end if;
 
@@ -7138,6 +7071,8 @@ package body Prj.Nmsc is
                end case;
             end if;
          end if;
+
+         Debug_Decrease_Indent ("Done Find_Pattern");
       end Find_Pattern;
 
       --  Local variables
@@ -7179,9 +7114,7 @@ package body Prj.Nmsc is
       Display_File_Name : File_Name_Type;
 
    begin
-      if Current_Verbosity = High then
-         Write_Line ("Looking for sources:");
-      end if;
+      Debug_Increase_Indent ("Looking for sources");
 
       --  Loop through subdirectories
 
@@ -7213,10 +7146,10 @@ package body Prj.Nmsc is
 
                begin
                   if Current_Verbosity = High then
-                     Write_Attr
-                       ("Source_Dir",
-                        Source_Directory (Source_Directory'First .. Dir_Last));
-                     Write_Line (Num_Nod.Number'Img);
+                     Debug_Increase_Indent
+                       ("Source_Dir (node=" & Num_Nod.Number'Img & ") """
+                        & Source_Directory (Source_Directory'First .. Dir_Last)
+                        & '"');
                   end if;
 
                   --  We look to every entry in the source directory
@@ -7238,11 +7171,6 @@ package body Prj.Nmsc is
                        or else Is_Regular_File
                                  (Display_Source_Directory & Name (1 .. Last))
                      then
-                        if Current_Verbosity = High then
-                           Write_Str  ("   Checking ");
-                           Write_Line (Name (1 .. Last));
-                        end if;
-
                         Name_Len := Last;
                         Name_Buffer (1 .. Name_Len) := Name (1 .. Last);
                         Display_File_Name := Name_Find;
@@ -7291,12 +7219,9 @@ package body Prj.Nmsc is
                                  Excluded_Sources_Htable.Set
                                    (Project.Excluded, File_Name, FF);
 
-                                 if Current_Verbosity = High then
-                                    Write_Str ("     excluded source """);
-                                    Write_Str
-                                      (Get_Name_String (Display_File_Name));
-                                    Write_Line ("""");
-                                 end if;
+                                 Debug_Output
+                                   ("Excluded source ",
+                                    Name_Id (Display_File_Name));
 
                                  --  Will mark the file as removed, but we
                                  --  still need to add it to the list: if we
@@ -7327,9 +7252,15 @@ package body Prj.Nmsc is
                               Display_File_Name => Display_File_Name,
                               For_All_Sources   => For_All_Sources);
                         end;
+
+                     else
+                        if Current_Verbosity = High then
+                           Debug_Output ("Ignore " & Name (1 .. Last));
+                        end if;
                      end if;
                   end loop;
 
+                  Debug_Decrease_Indent;
                   Close (Dir);
                end;
             end if;
@@ -7343,9 +7274,7 @@ package body Prj.Nmsc is
          Src_Dir_Rank := Num_Nod.Next;
       end loop;
 
-      if Current_Verbosity = High then
-         Write_Line ("end Looking for sources.");
-      end if;
+      Debug_Decrease_Indent ("end Looking for sources.");
    end Search_Directories;
 
    ----------------------------
@@ -7377,11 +7306,9 @@ package body Prj.Nmsc is
                No_Location, Project.Project);
          end if;
 
-         if Current_Verbosity = High then
-            Write_Str ("Naming exception: Putting source file ");
-            Write_Str (Get_Name_String (Source.File));
-            Write_Line (" in Source_Names");
-         end if;
+         Debug_Output
+           ("Naming exception: adding source file to source_Names: ",
+            Name_Id (Source.File));
 
          Source_Names_Htable.Set
            (Project.Source_Names,
@@ -7568,6 +7495,7 @@ package body Prj.Nmsc is
                      Source.In_Interfaces   := False;
 
                      if Current_Verbosity = High then
+                        Debug_Indent;
                         Write_Str ("Removing file ");
                         Write_Line
                           (Get_Name_String (Excluded.File)
@@ -7875,6 +7803,7 @@ package body Prj.Nmsc is
 
    begin
       if Current_Verbosity = High then
+         Debug_Indent;
          Write_Str ("Removing source ");
          Write_Str (Get_Name_String (Id.File));
 
@@ -7978,7 +7907,7 @@ package body Prj.Nmsc is
       Element : String_Element;
 
    begin
-      Write_Line ("Source_Dirs:");
+      Debug_Increase_Indent ("Source_Dirs:");
 
       Current := Project.Source_Dirs;
       while Current /= Nil_String loop
@@ -7988,7 +7917,7 @@ package body Prj.Nmsc is
          Current := Element.Next;
       end loop;
 
-      Write_Line ("end Source_Dirs.");
+      Debug_Decrease_Indent ("end Source_Dirs.");
    end Show_Source_Dirs;
 
    ---------------------------

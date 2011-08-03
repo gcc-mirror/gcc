@@ -7226,14 +7226,18 @@ package body Sem_Ch3 is
          Analyze (N);
 
          --  Derivation of subprograms must be delayed until the full subtype
-         --  has been established to ensure proper overriding of subprograms
+         --  has been established, to ensure proper overriding of subprograms
          --  inherited by full types. If the derivations occurred as part of
          --  the call to Build_Derived_Type above, then the check for type
          --  conformance would fail because earlier primitive subprograms
          --  could still refer to the full type prior the change to the new
          --  subtype and hence would not match the new base type created here.
+         --  Subprograms are not derived, however, when Derive_Subps is False
+         --  (since otherwise there could be redundant derivations).
 
-         Derive_Subprograms (Parent_Type, Derived_Type);
+         if Derive_Subps then
+            Derive_Subprograms (Parent_Type, Derived_Type);
+         end if;
 
          --  For tagged types the Discriminant_Constraint of the new base itype
          --  is inherited from the first subtype so that no subtype conformance

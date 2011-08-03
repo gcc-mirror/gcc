@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -849,16 +849,6 @@ package Prj is
       Hash       => Hash,
       Equal      => "=");
 
-   type Verbosity is (Default, Medium, High);
-   pragma Ordered (Verbosity);
-   --  Verbosity when parsing GNAT Project Files
-   --    Default is default (very quiet, if no errors).
-   --    Medium is more verbose.
-   --    High is extremely verbose.
-
-   Current_Verbosity : Verbosity := Default;
-   --  The current value of the verbosity the project files are parsed with
-
    type Lib_Kind is (Static, Dynamic, Relocatable);
 
    type Policy is (Autonomous, Compliant, Controlled, Restricted, Direct);
@@ -1593,6 +1583,35 @@ package Prj is
    Virtual_Prefix : constant String := "v$";
    --  The prefix for virtual extending projects. Because of the '$', which is
    --  normally forbidden for project names, there cannot be any name clash.
+
+   -----------
+   -- Debug --
+   -----------
+
+   type Verbosity is (Default, Medium, High);
+   pragma Ordered (Verbosity);
+   --  Verbosity when parsing GNAT Project Files
+   --    Default is default (very quiet, if no errors).
+   --    Medium is more verbose.
+   --    High is extremely verbose.
+
+   Current_Verbosity : Verbosity := Default;
+   --  The current value of the verbosity the project files are parsed with
+
+   procedure Debug_Indent;
+   --  Inserts a series of blanks depending on the current indentation level
+
+   procedure Debug_Output (Str : String);
+   procedure Debug_Output (Str : String; Str2 : Name_Id);
+   --  If Current_Verbosity is not Default, outputs Str.
+   --  This indents Str based on the current indentation level for traces
+   --  Debug_Error is intended to be used to report an error in the traces.
+
+   procedure Debug_Increase_Indent
+     (Str : String := ""; Str2 : Name_Id := No_Name);
+   procedure Debug_Decrease_Indent (Str : String := "");
+   --  Increase or decrease the indentation level for debug traces.
+   --  This indentation level only affects output done through Debug_Output.
 
 private
 

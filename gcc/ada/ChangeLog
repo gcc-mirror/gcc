@@ -1,3 +1,28 @@
+2011-08-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Test the Derive_Subps formal
+	as a condition for the delayed call to Derived_Subprograms done for the
+	case of the rewriting of a derived type that constrains the
+	discriminants of its parent type.
+	Avoids redundant subprogram derivations for private subtype derivations.
+
+2011-08-03  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Init_Hidden_Discriminants): New subprogram of
+	Build_Record_Aggr_Code.
+	(Build_Record_Aggr_Code): Add missing support to initialize hidden
+	discriminants in extension aggregates.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-pp.adb (Print): also output project qualifiers, since in
+	particular "aggregate" is mandatory in an aggregate project.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-part.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-env.adb:
+	(Debug_Output): new function.
+
 2011-08-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat_ugn.texi: Document -Wstack-usage.
