@@ -1,3 +1,32 @@
+2011-08-03  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb, sem_aux.adb, exp_util.ads, sem_aux.ads:
+	Move routine Is_VM_By_Copy_Actual from sem_aux to exp_util.
+
+2011-08-03  Bob Duff  <duff@adacore.com>
+
+	* sem_ch8.adb (Is_Primitive_Operator_In_Use): Always check In_Use on
+	the Base_Type.
+
+2011-08-03  Joel Brobecker  <brobecker@adacore.com brobecker>
+
+	* g-sha256.ads, g-sha512.ads, g-sha1.ads, g-sha224.ads, g-sha384.ads,
+	g-sehash.ads: Fix typo. Update header.
+
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Remove Ada_2005 guard on build-in-place
+	expansion.
+
+2011-08-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb (Analyze_Overloaded_Selected_Component): Consider
+	prefixes of private types along with records, since the selector may be
+	a discriminant.
+	* sem_res.adb (Resolve_Selected_Component): Consider prefixes of
+	private types along with records, since the selector may be a
+	discriminant.
+
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-pp.adb (Pretty_Print): remove trailing blank line in the file

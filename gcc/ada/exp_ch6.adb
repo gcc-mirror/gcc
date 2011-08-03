@@ -1472,9 +1472,7 @@ package body Exp_Ch6 is
             --  functions that are treated as build-in-place to include other
             --  composite result types.
 
-            if Ada_Version >= Ada_2005
-              and then Is_Build_In_Place_Function_Call (Actual)
-            then
+            if Is_Build_In_Place_Function_Call (Actual) then
                Make_Build_In_Place_Call_In_Anonymous_Context (Actual);
             end if;
 

@@ -186,10 +186,6 @@ package Sem_Aux is
    --  composite containing a limited component, or a subtype of any of
    --  these types).
 
-   function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean;
-   --  Returns True if we are compiling on VM targets and N is a node that
-   --  requires to be passed by copy in these targets.
-
    function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id;
    --  Given a subtype Typ, this function finds out the nearest ancestor from
    --  which constraints and predicates are inherited. There is no simple link
