@@ -1,3 +1,37 @@
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Optimize_Length_Check): Fix bad handling of case where
+	comparison operand is variable, and turns out to be zero or negative.
+
+2011-08-03  Javier Miranda  <miranda@adacore.com>
+
+	* exp_intr.adb
+	(Expand_Dispatching_Constructor_Call): Disable expansion of
+	code required for native targets. Done to avoid generating
+	references to unavailable runtime entities in VM targets.
+	* exp_ch3.adb
+	(Expand_N_Object_Declaration): Add missing support to handle
+	the explicit initialization of class-wide interface objects.
+	Fix documentation.
+
+2011-08-03  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cobove.adb (Merge): Move source onto target, instead of using Assign
+
+2011-08-03  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cbdlli.adb (Splice): move source items from first to last
+
+2011-08-03  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.ads: comment added.
+
+2011-08-03  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb
+	(Expand_Record_Aggregate): In VM targets disable the expansion into
+	assignments of aggregates whose type is not known at compile time.
+
 2011-08-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch9.adb (Build_Renamed_Formal_Declaration): common procedure for
