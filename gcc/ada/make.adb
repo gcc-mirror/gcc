@@ -71,7 +71,6 @@ with Ada.Command_Line;          use Ada.Command_Line;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Dynamic_HTables;      use GNAT.Dynamic_HTables;
-with GNAT.HTable;
 with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
@@ -171,56 +170,6 @@ package body Make is
 
    N_M_Switch : Natural := 0;
    --  Used to count -mxxx switches that can affect multilib
-
-   package Queue is
-      ---------------------------------
-      -- Queue Manipulation Routines --
-      ---------------------------------
-
-      procedure Initialize (Queue_Per_Obj_Dir : Boolean);
-      --  Initialize the queue
-
-      function Is_Empty return Boolean;
-      --  Returns True if the queue is empty
-
-      function Is_Virtually_Empty return Boolean;
-      --  Returns True if the queue is empty or if all object directories are
-      --  busy.
-
-      procedure Insert
-        (Source_File_Name : File_Name_Type;
-         Project          : Project_Id;
-         Source_Unit      : Unit_Name_Type := No_Unit_Name;
-         Index            : Int            := 0);
-      --  Insert source in the queue
-
-      procedure Extract
-        (Source_File_Name  : out File_Name_Type;
-         Source_Unit       : out Unit_Name_Type;
-         Source_Index      : out Int);
-      --  Get the first source that can be compiled from the queue. If no
-      --  source may be compiled, return No_File/No_Source.
-
-      function Size return Natural;
-      --  Return the total size of the queue, including the sources already
-      --  extracted.
-
-      function Processed return Natural;
-      --  Return the number of source in the queue that have already been
-      --  processed.
-
-      procedure Set_Obj_Dir_Busy (Obj_Dir : Path_Name_Type);
-      --  Indicate that this object directory is busy, so that when
-      --  One_Compilation_Per_Obj_Dir is True no other compilation occurs in
-      --  this object directory.
-
-      procedure Set_Obj_Dir_Free (Obj_Dir : Path_Name_Type);
-      --  Indicate that there is no compilation for this object directory
-
-      function Element (Rank : Positive) return File_Name_Type;
-      --  Get the file name for element of index Rank in the queue
-
-   end Queue;
 
    --  The 3 following packages are used to store gcc, gnatbind and gnatlink
    --  switches found in the project files.
@@ -2736,14 +2685,16 @@ package body Make is
                end if;
 
                if Add_It then
-                  if Is_Marked (Sfile) then
+                  if not Queue.Insert
+                       ((Format  => Format_Gnatmake,
+                         File    => Sfile,
+                         Unit    => No_Unit_Name,
+                         Project => No_Project,
+                         Index   => 0))
+                  then
                      if Is_In_Obsoleted (Sfile) then
                         Executable_Obsolete := True;
                      end if;
-
-                  else
-                     Queue.Insert (Sfile, Project => No_Project, Index => 0);
-                     Mark (Sfile, Index => 0);
                   end if;
                end if;
             end;
@@ -3168,21 +3119,18 @@ package body Make is
                      else
                         Source_Index := Unit_Index_Of (Withs.Table (K).Afile);
 
-                        if Is_Marked (Sfile, Source_Index) then
-                           Debug_Msg ("Skipping marked file:", Sfile);
-
-                        elsif not (Check_Readonly_Files or Must_Compile)
+                        if not (Check_Readonly_Files or Must_Compile)
                           and then Is_Internal_File_Name (Sfile, False)
                         then
                            Debug_Msg ("Skipping internal file:", Sfile);
 
                         else
                            Queue.Insert
-                             (Sfile,
-                              ALI_P.Project,
-                              Withs.Table (K).Uname,
-                              Source_Index);
-                           Mark (Sfile, Source_Index);
+                             ((Format  => Format_Gnatmake,
+                               File    => Sfile,
+                               Project => ALI_P.Project,
+                               Unit    => Withs.Table (K).Uname,
+                               Index   => Source_Index));
                         end if;
                      end if;
                   end loop;
@@ -3306,14 +3254,10 @@ package body Make is
          Pid             : Process_Id;
          Process_Created : Boolean;
 
-         Source_File      : File_Name_Type;
+         Source           : Queue.Source_Info;
          Full_Source_File : File_Name_Type;
          Source_File_Attr : aliased File_Attributes;
          --  The full name of the source file and its attributes (size, ...)
-
-         Source_Unit  : Unit_Name_Type;
-         Source_Index : Int;
-         --  Index of the current unit in the current source file
 
          Lib_File      : File_Name_Type;
          Full_Lib_File : File_Name_Type;
@@ -3326,18 +3270,20 @@ package body Make is
          Obj_Stamp : Time_Stamp_Type;
          --  The object file
 
+         Found : Boolean;
+
       begin
          if not Queue.Is_Virtually_Empty and then
             Outstanding_Compiles < Max_Process
          then
-            Queue.Extract (Source_File, Source_Unit, Source_Index);
+            Queue.Extract (Found, Source);
 
             Osint.Full_Source_Name
-              (Source_File,
+              (Source.File,
                Full_File => Full_Source_File,
                Attr      => Source_File_Attr'Access);
 
-            Lib_File := Osint.Lib_File_Name (Source_File, Source_Index);
+            Lib_File := Osint.Lib_File_Name (Source.File, Source.Index);
 
             --  ??? This call could be avoided when using projects, since we
             --  know where the ALI file is supposed to be. That would avoid
@@ -3352,7 +3298,7 @@ package body Make is
 
             --  If source has already been compiled, executable is obsolete
 
-            if Is_In_Obsoleted (Source_File) then
+            if Is_In_Obsoleted (Source.File) then
                Executable_Obsolete := True;
             end if;
 
@@ -3390,7 +3336,7 @@ package body Make is
                --  directory of a project being extended must not be skipped).
 
             elsif Read_Only
-              and then Is_In_Object_Directory (Source_File, Full_Lib_File)
+              and then Is_In_Object_Directory (Source.File, Full_Lib_File)
             then
                Verbose_Msg
                  (Lib_File,
@@ -3401,19 +3347,19 @@ package body Make is
                --  The source file that we are checking cannot be located
 
             elsif Full_Source_File = No_File then
-               Record_Failure (Source_File, Source_Unit, False);
+               Record_Failure (Source.File, Source.Unit, False);
 
                --  Source and library files can be located but are internal
                --  files.
 
             elsif not (Check_Readonly_Files or else Must_Compile)
               and then Full_Lib_File /= No_File
-              and then Is_Internal_File_Name (Source_File, False)
+              and then Is_Internal_File_Name (Source.File, False)
             then
                if Force_Compilations then
                   Fail
                     ("not allowed to compile """ &
-                     Get_Name_String (Source_File) &
+                     Get_Name_String (Source.File) &
                      """; use -a switch, or compile file with " &
                      """-gnatg"" switch");
                end if;
@@ -3428,7 +3374,7 @@ package body Make is
 
             else
                Collect_Arguments
-                  (Source_File, Source_File = Main_Source, Args);
+                  (Source.File, Source.File = Main_Source, Args);
 
                --  Do nothing if project of source is externally built
 
@@ -3442,9 +3388,9 @@ package body Make is
                   Need_To_Compile := Force_Compilations;
 
                   if not Force_Compilations then
-                     Check (Source_File    => Source_File,
-                            Source_Index   => Source_Index,
-                            Is_Main_Source => Source_File = Main_Source,
+                     Check (Source_File    => Source.File,
+                            Source_Index   => Source.Index,
+                            Is_Main_Source => Source.File = Main_Source,
                             The_Args       => Args,
                             Lib_File       => Lib_File,
                             Full_Lib_File  => Full_Lib_File,
@@ -3482,7 +3428,7 @@ package body Make is
                        and then not External_Unit_Compilation_Allowed
                      then
                         Make_Failed ("external source ("
-                                     & Get_Name_String (Source_File)
+                                     & Get_Name_String (Source.File)
                                      & ") is not part of any project;"
                                      & " cannot be compiled without"
                                      & " gnatmake switch -x");
@@ -3514,7 +3460,7 @@ package body Make is
 
                            Lib_File :=
                              Osint.Lib_File_Name
-                               (Full_Source_File, Source_Index);
+                               (Full_Source_File, Source.Index);
                            Full_Lib_File := Lib_File;
 
                         else
@@ -3532,7 +3478,7 @@ package body Make is
                      Collect_Arguments_And_Compile
                        (Full_Source_File => Full_Source_File,
                         Lib_File         => Lib_File,
-                        Source_Index     => Source_Index,
+                        Source_Index     => Source.Index,
                         Pid              => Pid,
                         Process_Created  => Process_Created);
 
@@ -3584,13 +3530,13 @@ package body Make is
 
                      if Process_Created then
                         if Pid = Invalid_Pid then
-                           Record_Failure (Full_Source_File, Source_Unit);
+                           Record_Failure (Full_Source_File, Source.Unit);
                         else
                            Add_Process
                              (Pid           => Pid,
                               Sfile         => Full_Source_File,
                               Afile         => Lib_File,
-                              Uname         => Source_Unit,
+                              Uname         => Source.Unit,
                               Mfile         => Mfile,
                               Full_Lib_File => Full_Lib_File,
                               Lib_File_Attr => Lib_File_Attr);
@@ -3727,13 +3673,12 @@ package body Make is
       Check_Source_Files := True;
       All_Sources        := False;
 
-      --  Only insert in the Q if it is not already done, to avoid simultaneous
-      --  compilations if -jnnn is used.
-
-      if not Is_Marked (Main_Source, Main_Index) then
-         Queue.Insert (Main_Source, Main_Project, Index => Main_Index);
-         Mark (Main_Source, Main_Index);
-      end if;
+      Queue.Insert
+        ((Format  => Format_Gnatmake,
+          File    => Main_Source,
+          Project => Main_Project,
+          Unit    => No_Unit_Name,
+          Index   => Main_Index));
 
       First_Compiled_File   := No_File;
       Most_Recent_Obj_File  := No_File;
@@ -6497,10 +6442,7 @@ package body Make is
             end if;
          end if;
 
-         --  Remove all marks to be sure to check sources for all executables,
-         --  as the switches may be different and -s may be in use.
-
-         Delete_All_Marks;
+         Queue.Remove_Marks;
       end loop Multiple_Main_Loop;
 
       if Do_Codepeer_Globalize_Step then
@@ -7033,17 +6975,13 @@ package body Make is
                  (Main_Project /= No_Project and then
                   One_Compilation_Per_Obj_Dir);
 
-         --  And of course, only insert in the Q if the source is not marked
-
-         if Sfile /= No_File and then not Is_Marked (Sfile, Index) then
-            if Verbose_Mode then
-               Write_Str ("Adding """);
-               Write_Str (Get_Name_String (Sfile));
-               Write_Line (""" to the queue");
-            end if;
-
-            Queue.Insert (Sfile, Project, Index => Index);
-            Mark (Sfile, Index);
+         if Sfile /= No_File then
+            Queue.Insert
+              ((Format   => Format_Gnatmake,
+                File     => Sfile,
+                Project  => Project,
+                Unit     => No_Unit_Name,
+                Index    => Index));
          end if;
 
          if not Put_In_Q and then Sfile /= No_File then
@@ -7476,290 +7414,6 @@ package body Make is
       Scan_Make_Arg (Env, "-margs", And_Save => True);
       Scan_Make_Arg (Env, "--RTS=" & Line (1 .. N_Read), And_Save => True);
    end Process_Multilib;
-
-   -----------
-   -- Queue --
-   -----------
-
-   package body Queue is
-
-      type Q_Record is record
-         File      : File_Name_Type;
-         Unit      : Unit_Name_Type;
-         Index     : Int;
-         Project   : Project_Id;
-         Processed : Boolean;
-      end record;
-      --  File is the name of the file to compile. Unit is for gnatdist use in
-      --  order to easily get the unit name of a file to compile when its name
-      --  is krunched or declared in gnat.adc. Index, when not 0, is the index
-      --  of the unit in a multi-unit source.
-
-      package Q is new Table.Table
-        (Table_Component_Type => Q_Record,
-         Table_Index_Type     => Positive,
-         Table_Low_Bound      => 1,
-         Table_Initial        => 4000,
-         Table_Increment      => 100,
-         Table_Name           => "Make.Queue.Q");
-      --  This is the actual Q
-
-      package Busy_Obj_Dirs is new GNAT.HTable.Simple_HTable
-        (Header_Num => Prj.Header_Num,
-         Element    => Boolean,
-         No_Element => False,
-         Key        => Path_Name_Type,
-         Hash       => Hash,
-         Equal      => "=");
-
-      Q_First : Natural := 1;
-      --  Points to the first valid element in the queue
-
-      Q_Processed           : Natural := 0;
-      One_Queue_Per_Obj_Dir : Boolean := False;
-      Q_Initialized         : Boolean := False;
-
-      -------------
-      -- Element --
-      -------------
-
-      function Element (Rank : Positive) return File_Name_Type is
-      begin
-         if Rank <= Q.Last then
-            return Q.Table (Rank).File;
-         else
-            return No_File;
-         end if;
-      end Element;
-
-      -------------
-      -- Extract --
-      -------------
-
-      --  This body needs commenting ???
-
-      procedure Extract
-        (Source_File_Name : out File_Name_Type;
-         Source_Unit      : out Unit_Name_Type;
-         Source_Index     : out Int)
-      is
-         Found : Boolean := False;
-
-      begin
-         if One_Queue_Per_Obj_Dir then
-            for J in Q_First .. Q.Last loop
-               if not Q.Table (J).Processed
-                 and then (Q.Table (J).Project = No_Project
-                            or else not
-                              Busy_Obj_Dirs.Get
-                                (Q.Table (J).Project.Object_Directory.Name))
-               then
-                  Found := True;
-                  Source_File_Name := Q.Table (J).File;
-                  Source_Unit      := Q.Table (J).Unit;
-                  Source_Index     := Q.Table (J).Index;
-                  Q.Table (J).Processed := True;
-
-                  if J = Q_First then
-                     while Q_First <= Q.Last
-                       and then Q.Table (Q_First).Processed
-                     loop
-                        Q_First := Q_First + 1;
-                     end loop;
-                  end if;
-
-                  exit;
-               end if;
-            end loop;
-
-         elsif Q_First <= Q.Last then
-            Source_File_Name := Q.Table (Q_First).File;
-            Source_Unit      := Q.Table (Q_First).Unit;
-            Source_Index     := Q.Table (Q_First).Index;
-            Q.Table (Q_First).Processed := True;
-            Q_First := Q_First + 1;
-            Found := True;
-         end if;
-
-         if Found then
-            Q_Processed := Q_Processed + 1;
-         else
-            Source_File_Name := No_File;
-            Source_Unit      := No_Unit_Name;
-            Source_Index     := 0;
-         end if;
-
-         if Found and then Debug.Debug_Flag_Q then
-            Write_Str ("   Q := Q - [ ");
-            Write_Name (Source_File_Name);
-
-            if Source_Index /= 0 then
-               Write_Str (", ");
-               Write_Int (Source_Index);
-            end if;
-
-            Write_Str (" ]");
-            Write_Eol;
-
-            Write_Str ("   Q_First =");
-            Write_Int (Int (Q_First));
-            Write_Eol;
-
-            Write_Str ("   Q.Last =");
-            Write_Int (Int (Q.Last));
-            Write_Eol;
-         end if;
-      end Extract;
-
-      ----------------
-      -- Initialize --
-      ----------------
-
-      procedure Initialize (Queue_Per_Obj_Dir : Boolean) is
-      begin
-         if not Q_Initialized then
-            One_Queue_Per_Obj_Dir := Queue_Per_Obj_Dir;
-            Q.Init;
-            Q_Initialized := True;
-            Q_Processed   := 0;
-            Q_First       := 1;
-         end if;
-      end Initialize;
-
-      ------------
-      -- Insert --
-      ------------
-
-      --  This body needs commenting ???
-
-      procedure Insert
-        (Source_File_Name : File_Name_Type;
-         Project          : Project_Id;
-         Source_Unit      : Unit_Name_Type := No_Unit_Name;
-         Index            : Int            := 0)
-      is
-      begin
-         Q.Append
-           ((File      => Source_File_Name,
-             Project   => Project,
-             Unit      => Source_Unit,
-             Index     => Index,
-             Processed => False));
-
-         if Debug.Debug_Flag_Q then
-            Write_Str ("   Q := Q + [ ");
-            Write_Name (Source_File_Name);
-
-            if Index /= 0 then
-               Write_Str (", ");
-               Write_Int (Index);
-            end if;
-
-            Write_Str (" ] ");
-            Write_Eol;
-
-            Write_Str ("   Q_First =");
-            Write_Int (Int (Q_First));
-            Write_Eol;
-
-            Write_Str ("   Q.Last =");
-            Write_Int (Int (Q.Last));
-            Write_Eol;
-         end if;
-      end Insert;
-
-      --------------
-      -- Is_Empty --
-      --------------
-
-      function Is_Empty return Boolean is
-      begin
-         if Debug.Debug_Flag_P then
-            Write_Str ("   Q := [");
-
-            for J in Q_First .. Q.Last loop
-               if not Q.Table (J).Processed then
-                  Write_Str (" ");
-                  Write_Name (Q.Table (J).File);
-                  Write_Eol;
-                  Write_Str ("         ");
-               end if;
-            end loop;
-
-            Write_Str ("]");
-            Write_Eol;
-         end if;
-
-         return Q_First > Q.Last;
-      end Is_Empty;
-
-      ------------------------
-      -- Is_Virtually_Empty --
-      ------------------------
-
-      function Is_Virtually_Empty return Boolean is
-      begin
-         if One_Queue_Per_Obj_Dir then
-            for J in Q_First .. Q.Last loop
-               if not Q.Table (J).Processed
-                 and then
-                   (Q.Table (J).Project = No_Project
-                     or else not
-                       Busy_Obj_Dirs.Get
-                         (Q.Table (J).Project.Object_Directory.Name))
-               then
-                  return False;
-               end if;
-            end loop;
-
-            return True;
-
-         else
-            return Is_Empty;
-         end if;
-      end Is_Virtually_Empty;
-
-      ---------------
-      -- Processed --
-      ---------------
-
-      function Processed return Natural is
-      begin
-         return Q_Processed;
-      end Processed;
-
-      ----------------------
-      -- Set_Obj_Dir_Busy --
-      ----------------------
-
-      procedure Set_Obj_Dir_Busy (Obj_Dir : Path_Name_Type) is
-      begin
-         if One_Queue_Per_Obj_Dir then
-            Busy_Obj_Dirs.Set (Obj_Dir, True);
-         end if;
-      end Set_Obj_Dir_Busy;
-
-      ----------------------
-      -- Set_Obj_Dir_Free --
-      ----------------------
-
-      procedure Set_Obj_Dir_Free (Obj_Dir : Path_Name_Type) is
-      begin
-         if One_Queue_Per_Obj_Dir then
-            Busy_Obj_Dirs.Set (Obj_Dir, False);
-         end if;
-      end Set_Obj_Dir_Free;
-
-      ----------
-      -- Size --
-      ----------
-
-      function Size return Natural is
-      begin
-         return Q.Last;
-      end Size;
-
-   end Queue;
 
    -----------------------------
    -- Recursive_Compute_Depth --

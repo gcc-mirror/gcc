@@ -250,21 +250,86 @@ package Makeutl is
 
    end Mains;
 
-   ----------------------
-   -- Marking Routines --
-   ----------------------
+   -----------
+   -- Queue --
+   -----------
 
-   procedure Mark (Source_File : File_Name_Type; Index : Int := 0);
-   --  Mark a unit, identified by its source file and, when Index is not 0, the
-   --  index of the unit in the source file. Marking is used to signal that the
-   --  unit has already been inserted in the Q.
+   type Source_Info_Format is (Format_Gprbuild, Format_Gnatmake);
 
-   function Is_Marked
-     (Source_File : File_Name_Type;
-      Index       : Int := 0) return Boolean;
-   --  Returns True if the unit was previously marked
+   package Queue is
+      --  The queue of sources to be checked for compilation.
+      --  There can be a single such queue per application.
 
-   procedure Delete_All_Marks;
-   --  Remove all file/index couples marked
+      type Source_Info (Format : Source_Info_Format := Format_Gprbuild) is
+         record
+            case Format is
+            when Format_Gprbuild =>
+               Id : Source_Id := null;
+
+            when Format_Gnatmake =>
+               File      : File_Name_Type := No_File;
+               Unit      : Unit_Name_Type := No_Unit_Name;
+               Index     : Int := 0;
+               Project   : Project_Id := No_Project;
+            end case;
+         end record;
+      --  Information about files stored in the queue. The exact information
+      --  depends on the builder, and in particular whether it only supports
+      --  project-based files (in which case we have a full Source_Id record).
+
+      procedure Initialize
+        (Queue_Per_Obj_Dir : Boolean;
+         Force : Boolean := False);
+      --  Initialize the queue.
+      --  Queue_Per_Obj_Dir matches the --single-compile-per-obj-dir switch:
+      --  when True, there cannot be simultaneous compilations with the object
+      --  files in the same object directory when project files are used.
+      --
+      --  Nothing is done if Force is False and the queue was already
+      --  initialized.
+
+      procedure Remove_Marks;
+      --  Remove all marks set for the files.
+      --  This means that the files will be handed to the compiler if they are
+      --  added to the queue, and is mostly useful when recompiling several
+      --  executables in non-project mode, as the switches may be different
+      --  and -s may be in use.
+
+      function Is_Empty return Boolean;
+      --  Returns True if the queue is empty
+
+      function Is_Virtually_Empty return Boolean;
+      --  Returns True if the queue is empty or if all object directories are
+      --  busy.
+
+      procedure Insert (Source  : Source_Info);
+      function Insert (Source  : Source_Info) return Boolean;
+      --  Insert source in the queue.
+      --  The second version returns False if the Source was already marked in
+      --  the queue.
+
+      procedure Extract
+        (Found  : out Boolean;
+         Source : out Source_Info);
+      --  Get the first source that can be compiled from the queue. If no
+      --  source may be compiled, sets Found to False. In this case, the value
+      --  for Source is undefined.
+
+      function Size return Natural;
+      --  Return the total size of the queue, including the sources already
+      --  extracted.
+
+      function Processed return Natural;
+      --  Return the number of source in the queue that have aready been
+      --  processed.
+
+      procedure Set_Obj_Dir_Busy (Obj_Dir : Path_Name_Type);
+      procedure Set_Obj_Dir_Free (Obj_Dir : Path_Name_Type);
+      --  Mark Obj_Dir as busy or free (see the parameter to Initialize)
+
+      function Element (Rank : Positive) return File_Name_Type;
+      --  Get the file name for element of index Rank in the queue
+
+   end Queue;
 
 end Makeutl;

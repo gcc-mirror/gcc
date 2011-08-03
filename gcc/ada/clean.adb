@@ -141,34 +141,6 @@ package body Clean is
    --  Table to store all the source files of a library unit: spec, body and
    --  subunits, to detect .dg files and delete them.
 
-   ----------------------------
-   -- Queue (Q) manipulation --
-   ----------------------------
-
-   procedure Init_Q;
-   --  Must be called to initialize the Q
-
-   procedure Insert_Q (Lib_File  : File_Name_Type);
-   --  If Lib_File is not marked, inserts it at the end of Q and mark it
-
-   function Empty_Q return Boolean;
-   --  Returns True if Q is empty
-
-   procedure Extract_From_Q (Lib_File : out File_Name_Type);
-   --  Extracts the first element from the Q
-
-   Q_Front : Natural;
-   --  Points to the first valid element in the Q
-
-   package Q is new Table.Table (
-     Table_Component_Type => File_Name_Type,
-     Table_Index_Type     => Natural,
-     Table_Low_Bound      => 0,
-     Table_Initial        => 4000,
-     Table_Increment      => 100,
-     Table_Name           => "Clean.Q");
-   --  This is the actual queue
-
    -----------------------------
    -- Other local subprograms --
    -----------------------------
@@ -399,8 +371,11 @@ package body Clean is
       Text    : Text_Buffer_Ptr;
       The_ALI : ALI_Id;
 
+      Found : Boolean;
+      Source : Queue.Source_Info;
+
    begin
-      Init_Q;
+      Queue.Initialize (Queue_Per_Obj_Dir => False);
 
       --  It does not really matter if there is or not an object file
       --  corresponding to an ALI file: if there is one, it will be deleted.
@@ -414,12 +389,23 @@ package body Clean is
       for N_File in 1 .. Osint.Number_Of_Files loop
          Main_Source_File := Next_Main_Source;
          Main_Lib_File := Osint.Lib_File_Name
-                             (Main_Source_File, Current_File_Index);
-         Insert_Q (Main_Lib_File);
+           (Main_Source_File, Current_File_Index);
 
-         while not Empty_Q loop
+         if Main_Lib_File /= No_File then
+            Queue.Insert
+              ((Format  => Format_Gnatmake,
+                File    => Main_Lib_File,
+                Unit    => No_Unit_Name,
+                Index   => 0,
+                Project => No_Project));
+         end if;
+
+         while not Queue.Is_Empty loop
             Sources.Set_Last (0);
-            Extract_From_Q (Lib_File);
+            Queue.Extract (Found, Source);
+            pragma Assert (Found);
+            pragma Assert (Source.File /= No_File);
+            Lib_File := Source.File;
             Full_Lib_File := Osint.Full_Lib_File_Name (Lib_File);
 
             --  If we have existing ALI file that is not read-only, process it
@@ -448,7 +434,14 @@ package body Clean is
                         for K in ALI.Units.Table (J).First_With ..
                           ALI.Units.Table (J).Last_With
                         loop
-                           Insert_Q (Withs.Table (K).Afile);
+                           if Withs.Table (K).Afile /= No_File then
+                              Queue.Insert
+                                ((Format  => Format_Gnatmake,
+                                  File    => Withs.Table (K).Afile,
+                                  Unit    => No_Unit_Name,
+                                  Index   => 0,
+                                  Project => No_Project));
+                           end if;
                         end loop;
                      end loop;
 
@@ -1348,26 +1341,6 @@ package body Clean is
       end if;
    end Display_Copyright;
 
-   -------------
-   -- Empty_Q --
-   -------------
-
-   function Empty_Q return Boolean is
-   begin
-      return Q_Front >= Q.Last;
-   end Empty_Q;
-
-   --------------------
-   -- Extract_From_Q --
-   --------------------
-
-   procedure Extract_From_Q (Lib_File : out File_Name_Type) is
-      Lib : constant File_Name_Type := Q.Table (Q_Front);
-   begin
-      Q_Front  := Q_Front + 1;
-      Lib_File := Lib;
-   end Extract_From_Q;
-
    ---------------
    -- Gnatclean --
    ---------------
@@ -1535,16 +1508,6 @@ package body Clean is
       return False;
    end In_Extension_Chain;
 
-   ------------
-   -- Init_Q --
-   ------------
-
-   procedure Init_Q is
-   begin
-      Q_Front := Q.First;
-      Q.Set_Last (Q.First);
-   end Init_Q;
-
    ----------------
    -- Initialize --
    ----------------
@@ -1595,24 +1558,6 @@ package body Clean is
       Main_Project := Prj.No_Project;
       All_Projects := False;
    end Initialize;
-
-   --------------
-   -- Insert_Q --
-   --------------
-
-   procedure Insert_Q (Lib_File : File_Name_Type) is
-   begin
-      --  Do not insert an empty name or an already marked source
-
-      if Lib_File /= No_File and then not Makeutl.Is_Marked (Lib_File) then
-         Q.Table (Q.Last) := Lib_File;
-         Q.Increment_Last;
-
-         --  Mark the source that has been just added to the Q
-
-         Makeutl.Mark (Lib_File);
-      end if;
-   end Insert_Q;
 
    ----------------------
    -- Object_File_Name --

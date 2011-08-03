@@ -5550,6 +5550,69 @@ package body Sem_Util is
       end if;
    end Has_Private_Component;
 
+   -----------------------------
+   -- Has_Static_Array_Bounds --
+   -----------------------------
+
+   function Has_Static_Array_Bounds (Typ : Node_Id) return Boolean is
+      Ndims : constant Nat := Number_Dimensions (Typ);
+
+      Index : Node_Id;
+      Low   : Node_Id;
+      High  : Node_Id;
+
+   begin
+      --  Unconstrained types do not have static bounds
+
+      if not Is_Constrained (Typ) then
+         return False;
+      end if;
+
+      --  First treat specially string literals, as the lower bound and length
+      --  of string literals are not stored like those of arrays.
+
+      --  A string literal always has static bounds
+
+      if Ekind (Typ) = E_String_Literal_Subtype then
+         return True;
+      end if;
+
+      --  Treat all dimensions in turn
+
+      Index := First_Index (Typ);
+      for Indx in 1 .. Ndims loop
+
+         --  In case of an erroneous index which is not a discrete type, return
+         --  that the type is not static.
+
+         if not Is_Discrete_Type (Etype (Index))
+           or else Etype (Index) = Any_Type
+         then
+            return False;
+         end if;
+
+         Get_Index_Bounds (Index, Low, High);
+
+         if Error_Posted (Low) or else Error_Posted (High) then
+            return False;
+         end if;
+
+         if         Is_OK_Static_Expression (Low)
+           and then Is_OK_Static_Expression (High)
+         then
+            null;
+         else
+            return False;
+         end if;
+
+         Next (Index);
+      end loop;
+
+      --  If we fall through the loop, all indexes matched
+
+      return True;
+   end Has_Static_Array_Bounds;
+
    ----------------
    -- Has_Stream --
    ----------------

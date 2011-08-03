@@ -624,6 +624,9 @@ package Sem_Util is
    --  Check if a type has a (sub)component of a private type that has not
    --  yet received a full declaration.
 
+   function Has_Static_Array_Bounds (Typ : Node_Id) return Boolean;
+   --  Return whether an array type has static bounds
+
    function Has_Stream (T : Entity_Id) return Boolean;
    --  Tests if type T is derived from Ada.Streams.Root_Stream_Type, or in the
    --  case of a composite type, has a component for which this predicate is

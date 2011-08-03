@@ -1,3 +1,15 @@
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb, makeutl.adb, makeutl.ads, clean.adb (Makeutl.Queue): new
+	package.
+
+2011-08-03  Yannick Moy  <moy@adacore.com>
+
+	* cstand.adb (Create_Standard): select Universal_Integer as an ALFA type
+	* sem_ch3.adb (Array_Type_Declaration): detect array types in ALFA
+	* sem_util.adb, sem_util.ads (Has_Static_Array_Bounds): new function to
+	detect that an array has static bounds.
+
 2011-08-03  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_dist.adb: Minor reformatting.
