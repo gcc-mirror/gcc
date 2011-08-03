@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -708,6 +708,13 @@ package Lib.Writ is
 
    --  The Source Coverage Obligation (SCO) information follows the cross-
    --  reference data. See the spec of Par_SCO for full details of the format.
+
+   ----------------------
+   -- ALFA Information --
+   ----------------------
+
+   --  The ALFA information follows the SCO information. See the spec of Alfa
+   --  for full details of the format.
 
    ----------------------
    -- Global Variables --

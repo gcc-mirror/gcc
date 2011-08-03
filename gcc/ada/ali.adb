@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,6 +55,8 @@ package body ALI is
       'X'    => True,   -- xref
       'S'    => True,   -- specific dispatching
       'Y'    => True,   -- limited_with
+      'C'    => True,   -- SCO information
+      'F'    => True,   -- ALFA information
       others => False);
 
    --------------------
@@ -2436,9 +2438,10 @@ package body ALI is
 
       --  Here after dealing with xref sections
 
-      if C /= EOF and then C /= 'X' then
-         Fatal_Error;
-      end if;
+      --  Ignore remaining lines, which belong to an additional section of the
+      --  ALI file not considered here (like SCO or ALFA).
+
+      Check_Unknown_Line;
 
       return Id;
 

@@ -4156,24 +4156,18 @@ package body Sem_Prag is
          elsif Is_Record_Type (Def_Id)
            and then C = Convention_CPP
          then
-            --  Types treated as CPP classes are treated as limited, but we
-            --  don't require them to be declared this way. A warning is issued
-            --  to encourage the user to declare them as limited. This is not
-            --  an error, for compatibility reasons, because these types have
-            --  been supported this way for some time.
+            --  Types treated as CPP classes must be declared limited (note:
+            --  this used to be a warning but there is no real benefit to it
+            --  since we did effectively intend to treat the type as limited
+            --  anyway).
 
             if not Is_Limited_Type (Def_Id) then
                Error_Msg_N
-                 ("imported 'C'P'P type should be " &
-                    "explicitly declared limited?",
-                  Get_Pragma_Arg (Arg2));
-               Error_Msg_N
-                 ("\type will be considered limited",
+                 ("imported 'C'P'P type must be limited",
                   Get_Pragma_Arg (Arg2));
             end if;
 
             Set_Is_CPP_Class (Def_Id);
-            Set_Is_Limited_Record (Def_Id);
 
             --  Imported CPP types must not have discriminants (because C++
             --  classes do not have discriminants).
@@ -7053,24 +7047,18 @@ package body Sem_Prag is
                Error_Pragma_Arg ("pragma% applicable to tagged types ", Arg1);
             end if;
 
-            --  Types treated as CPP classes are treated as limited, but we
-            --  don't require them to be declared this way. A warning is issued
-            --  to encourage the user to declare them as limited. This is not
-            --  an error, for compatibility reasons, because these types have
-            --  been supported this way for some time.
+            --  Types treated as CPP classes must be declared limited (note:
+            --  this used to be a warning but there is no real benefit to it
+            --  since we did effectively intend to treat the type as limited
+            --  anyway).
 
             if not Is_Limited_Type (Typ) then
                Error_Msg_N
-                 ("imported 'C'P'P type should be " &
-                    "explicitly declared limited?",
-                  Get_Pragma_Arg (Arg1));
-               Error_Msg_N
-                 ("\type will be considered limited",
+                 ("imported 'C'P'P type must be limited",
                   Get_Pragma_Arg (Arg1));
             end if;
 
             Set_Is_CPP_Class      (Typ);
-            Set_Is_Limited_Record (Typ);
             Set_Convention        (Typ, Convention_CPP);
 
             --  Imported CPP types must not have discriminants (because C++

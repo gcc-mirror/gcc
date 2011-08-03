@@ -14793,7 +14793,7 @@ package body Sem_Ch3 is
                Error_Msg_NE ("invalid redeclaration of }", Id, Prev);
             end if;
 
-            Set_Full_View (Prev,  Id);
+            Set_Full_View (Prev, Id);
             Append_Entity (Id, Current_Scope);
             Set_Is_Public (Id, Is_Public (Prev));
             Set_Is_Internal (Id);

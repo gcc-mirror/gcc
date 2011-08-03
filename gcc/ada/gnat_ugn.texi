@@ -4006,7 +4006,7 @@ See @ref{Stack Overflow Checking} for details.
 @item -fstack-usage
 @cindex @option{-fstack-usage} (@command{gcc})
 Makes the compiler output stack usage information for the program, on a
-per-function basis. See @ref{Static Stack Usage Analysis} for details.
+per-subprogram basis. See @ref{Static Stack Usage Analysis} for details.
 
 @item -fcallgraph-info@r{[}=su@r{]}
 @cindex @option{-fcallgraph-info} (@command{gcc})
@@ -5823,9 +5823,14 @@ Similarly, @option{^-Wuninitialized^WARNINGS=UNINITIALIZED^} activates
 the back end warning for uninitialized variables. This switch must be
 used in conjunction with an optimization level greater than zero.
 
+@item -Wstack-usage=@var{len}
+@cindex @option{-Wstack-usage}
+Warn if the stack usage of a subprogram might be larger than @var{len} bytes.
+See @ref{Static Stack Usage Analysis} for details.
+
 @item ^-Wall^/ALL_BACK_END_WARNINGS^
 @cindex @option{-Wall}
-This switch enables all the above warnings from the @option{GCC} back end.
+This switch enables most warnings from the @option{GCC} back end.
 The code generator detects a number of warning situations that are missed
 by the @option{GNAT} front end, and this switch can be used to activate them.
 The use of this switch also sets the default front end warning mode to
@@ -17169,6 +17174,10 @@ qualifier appears alone, the second field is not a reliable measure
 of the function stack analysis. When it is qualified with  @code{bounded}, it
 means that the second field is a reliable maximum of the function stack
 utilization.
+
+A unit compiled with @option{-Wstack-usage} will issue a warning for each
+subprogram whose stack usage might be larger than the specified amount of
+bytes.  The wording is in keeping with the qualifier documented above.
 
 @node Dynamic Stack Usage Analysis
 @section Dynamic Stack Usage Analysis

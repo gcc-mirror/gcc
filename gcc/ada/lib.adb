@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,16 +33,18 @@ pragma Style_Checks (All_Checks);
 --  Subprogram ordering not enforced in this unit
 --  (because of some logical groupings).
 
-with Atree;   use Atree;
-with Einfo;   use Einfo;
-with Fname;   use Fname;
-with Output;  use Output;
-with Sinfo;   use Sinfo;
-with Sinput;  use Sinput;
-with Stand;   use Stand;
-with Stringt; use Stringt;
-with Tree_IO; use Tree_IO;
-with Uname;   use Uname;
+with Atree;    use Atree;
+with Csets;    use Csets;
+with Einfo;    use Einfo;
+with Fname;    use Fname;
+with Output;   use Output;
+with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
+with Stand;    use Stand;
+with Stringt;  use Stringt;
+with Tree_IO;  use Tree_IO;
+with Uname;    use Uname;
+with Widechar; use Widechar;
 
 package body Lib is
 
@@ -477,6 +479,62 @@ package body Lib is
    begin
       return Check_Same_Extended_Unit (S1, S2) = Yes_Before;
    end Earlier_In_Extended_Unit;
+
+   -----------------------
+   -- Exact_Source_Name --
+   -----------------------
+
+   function Exact_Source_Name (Loc : Source_Ptr) return String is
+      U    : constant Unit_Number_Type  := Get_Source_Unit (Loc);
+      Buf  : constant Source_Buffer_Ptr := Source_Text (Source_Index (U));
+      Orig : constant Source_Ptr        := Original_Location (Loc);
+      P    : Source_Ptr;
+
+      WC   : Char_Code;
+      Err  : Boolean;
+      pragma Warnings (Off, WC);
+      pragma Warnings (Off, Err);
+
+   begin
+      --  Entity is character literal
+
+      if Buf (Orig) = ''' then
+         return String (Buf (Orig .. Orig + 2));
+
+      --  Entity is operator symbol
+
+      elsif Buf (Orig) = '"' or else Buf (Orig) = '%' then
+         P := Orig;
+
+         loop
+            P := P + 1;
+            exit when Buf (P) = Buf (Orig);
+         end loop;
+
+         return String (Buf (Orig .. P));
+
+      --  Entity is identifier
+
+      else
+         P := Orig;
+
+         loop
+            if Is_Start_Of_Wide_Char (Buf, P) then
+               Scan_Wide (Buf, P, WC, Err);
+            elsif not Identifier_Char (Buf (P)) then
+               exit;
+            else
+               P := P + 1;
+            end if;
+         end loop;
+
+         --  Write out the identifier by copying the exact source characters
+         --  used in its declaration. Note that this means wide characters will
+         --  be in their original encoded form.
+
+         return String (Buf (Orig .. P - 1));
+      end if;
+   end Exact_Source_Name;
 
    ----------------------------
    -- Entity_Is_In_Main_Unit --

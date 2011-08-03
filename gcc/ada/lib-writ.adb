@@ -32,6 +32,7 @@ with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Lib.Util; use Lib.Util;
 with Lib.Xref; use Lib.Xref;
+               use Lib.Xref.ALFA;
 with Nlists;   use Nlists;
 with Gnatvsn;  use Gnatvsn;
 with Opt;      use Opt;
@@ -1293,7 +1294,9 @@ package body Lib.Writ is
 
       --  Output cross-references
 
-      Output_References;
+      if Opt.Xref_Active then
+         Output_References;
+      end if;
 
       --  Output SCO information if present
 
@@ -1301,11 +1304,12 @@ package body Lib.Writ is
          SCO_Output;
       end if;
 
-      --  Output references by subprogram
+      --  Output ALFA information if needed
 
-      if ALFA_Mode then
-         Write_Info_EOL;
-         Output_Local_References;
+      if Opt.Xref_Active and then ALFA_Mode then
+         Collect_ALFA (Sdep_Table => Sdep_Table,
+                       Num_Sdep   => Num_Sdep);
+         Output_ALFA;
       end if;
 
       --  Output final blank line and we are done. This final blank line is
