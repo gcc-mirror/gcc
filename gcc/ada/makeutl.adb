@@ -695,7 +695,7 @@ package body Makeutl is
                   Prj.Util.Value_Of
                     (Name        => Pkg_Name,
                      In_Packages => Project.Decl.Packages,
-                     In_Tree     => Project_Tree);
+                     Shared      => Project_Tree.Shared);
       Lang : Language_Ptr;
 
    begin
@@ -706,7 +706,7 @@ package body Makeutl is
            (Name                    => Name_Id (Source_File),
             Attribute_Or_Array_Name => Name_Switches,
             In_Package              => Pkg,
-            In_Tree                 => Project_Tree,
+            Shared                  => Project_Tree.Shared,
             Allow_Wildcards         => True);
       end if;
 
@@ -756,7 +756,7 @@ package body Makeutl is
                     (Name                    => Name_Find,
                      Attribute_Or_Array_Name => Name_Switches,
                      In_Package              => Pkg,
-                     In_Tree                 => Project_Tree,
+                     Shared                  => Project_Tree.Shared,
                      Allow_Wildcards         => True);
                end if;
 
@@ -776,7 +776,7 @@ package body Makeutl is
                     (Name                    => Name_Find,
                      Attribute_Or_Array_Name => Name_Switches,
                      In_Package              => Pkg,
-                     In_Tree                 => Project_Tree,
+                     Shared                  => Project_Tree.Shared,
                      Allow_Wildcards         => True);
                end if;
             end;
@@ -790,7 +790,7 @@ package body Makeutl is
              (Name                    => Source_Lang,
               Attribute_Or_Array_Name => Name_Switches,
               In_Package              => Pkg,
-              In_Tree                 => Project_Tree,
+              Shared                  => Project_Tree.Shared,
               Force_Lower_Case_Index  => True);
       end if;
 
@@ -800,7 +800,7 @@ package body Makeutl is
              (Name                    => All_Other_Names,
               Attribute_Or_Array_Name => Name_Switches,
               In_Package              => Pkg,
-              In_Tree                 => Project_Tree,
+              Shared                  => Project_Tree.Shared,
               Force_Lower_Case_Index  => True);
       end if;
 
@@ -810,7 +810,7 @@ package body Makeutl is
              (Name                    => Source_Lang,
               Attribute_Or_Array_Name => Name_Default_Switches,
               In_Package              => Pkg,
-              In_Tree                 => Project_Tree);
+              Shared                  => Project_Tree.Shared);
       end if;
    end Get_Switches;
 
@@ -910,14 +910,21 @@ package body Makeutl is
      (Project  : Project_Id;
       In_Tree  : Project_Tree_Ref) return String_List
    is
-      procedure Recursive_Add (Proj : Project_Id; Dummy : in out Boolean);
+      procedure Recursive_Add
+        (Proj    : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         Dummy   : in out Boolean);
       --  The recursive routine used to add linker options
 
       -------------------
       -- Recursive_Add --
       -------------------
 
-      procedure Recursive_Add (Proj : Project_Id; Dummy : in out Boolean) is
+      procedure Recursive_Add
+        (Proj    : Project_Id;
+         In_Tree : Project_Tree_Ref;
+         Dummy   : in out Boolean)
+      is
          pragma Unreferenced (Dummy);
 
          Linker_Package : Package_Id;
@@ -928,7 +935,7 @@ package body Makeutl is
            Prj.Util.Value_Of
              (Name        => Name_Linker,
               In_Packages => Proj.Decl.Packages,
-              In_Tree     => In_Tree);
+              Shared      => In_Tree.Shared);
 
          Options :=
            Prj.Util.Value_Of
@@ -936,7 +943,7 @@ package body Makeutl is
               Index                   => 0,
               Attribute_Or_Array_Name => Name_Linker_Options,
               In_Package              => Linker_Package,
-              In_Tree                 => In_Tree);
+              Shared                  => In_Tree.Shared);
 
          --  If attribute is present, add the project with
          --  the attribute to table Linker_Opts.
@@ -958,7 +965,7 @@ package body Makeutl is
    begin
       Linker_Opts.Init;
 
-      For_All_Projects (Project, Dummy, Imported_First => True);
+      For_All_Projects (Project, In_Tree, Dummy, Imported_First => True);
 
       Last_Linker_Option := 0;
 
@@ -974,7 +981,7 @@ package body Makeutl is
          begin
             Options := Linker_Opts.Table (Index).Options;
             while Options /= Nil_String loop
-               Option := In_Tree.String_Elements.Table (Options).Value;
+               Option := In_Tree.Shared.String_Elements.Table (Options).Value;
                Get_Name_String (Option);
 
                --  Do not consider empty linker options
@@ -991,7 +998,7 @@ package body Makeutl is
                      Including_L_Switch => True);
                end if;
 
-               Options := In_Tree.String_Elements.Table (Options).Next;
+               Options := In_Tree.Shared.String_Elements.Table (Options).Next;
             end loop;
          end;
       end loop;

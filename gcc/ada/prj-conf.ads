@@ -162,17 +162,6 @@ package Prj.Conf is
    --  processed (and Packages_To_Check is used to indicate which packages
    --  should be processed)
 
-   procedure Apply_Config_File
-     (Config_File  : Prj.Project_Id;
-      Project_Tree : Prj.Project_Tree_Ref);
-   --  Apply the configuration file settings to all the projects in the
-   --  project tree. The Project_Tree must have been parsed first, and
-   --  processed through the first phase so that all its projects are known.
-   --
-   --  Currently, this will add new attributes and packages in the various
-   --  projects, so that when the second phase of the processing is performed
-   --  these attributes are automatically taken into account.
-
    procedure Add_Default_GNAT_Naming_Scheme
      (Config_File  : in out Prj.Tree.Project_Node_Id;
       Project_Tree : Prj.Tree.Project_Node_Tree_Ref);

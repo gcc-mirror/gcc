@@ -255,6 +255,7 @@ procedure GNATCmd is
 
    procedure Set_Library_For
      (Project           : Project_Id;
+      Tree              : Project_Tree_Ref;
       Libraries_Present : in out Boolean);
    --  If Project is a library project, add the correct -L and -l switches to
    --  the linker invocation.
@@ -445,7 +446,7 @@ procedure GNATCmd is
                               B_Start.all                            &
                               MLib.Fil.Ext_To
                                 (Get_Name_String
-                                   (Project_Tree.String_Elements.Table
+                                   (Project_Tree.Shared.String_Elements.Table
                                       (Main).Value),
                                  "ci"));
 
@@ -463,13 +464,13 @@ procedure GNATCmd is
                                  "b__"                                  &
                                  MLib.Fil.Ext_To
                                    (Get_Name_String
-                                      (Project_Tree.String_Elements.Table
-                                         (Main).Value),
+                                      (Project_Tree.Shared
+                                       .String_Elements.Table (Main).Value),
                                     "ci"));
                            end if;
 
-                           Main :=
-                             Project_Tree.String_Elements.Table (Main).Next;
+                           Main := Project_Tree.Shared.String_Elements.Table
+                             (Main).Next;
                         end loop;
 
                         if Proj.Project.Library then
@@ -960,7 +961,7 @@ procedure GNATCmd is
       --  Check if there are library project files
 
       if MLib.Tgt.Support_For_Libraries /= None then
-         Set_Libraries (Project, Libraries_Present);
+         Set_Libraries (Project, Project_Tree, Libraries_Present);
       end if;
 
       --  If there are, add the necessary additional switches
@@ -1236,8 +1237,10 @@ procedure GNATCmd is
 
    procedure Set_Library_For
      (Project           : Project_Id;
+      Tree              : Project_Tree_Ref;
       Libraries_Present : in out Boolean)
    is
+      pragma Unreferenced (Tree);
       Path_Option : constant String_Access :=
                       MLib.Linker_Library_Path_Option;
 
@@ -1870,7 +1873,7 @@ begin
                     Prj.Util.Value_Of
                       (Name        => Tool_Package_Name,
                        In_Packages => Project.Decl.Packages,
-                       In_Tree     => Project_Tree);
+                       Shared      => Project_Tree.Shared);
 
             Element : Package_Element;
 
@@ -1884,7 +1887,7 @@ begin
 
          begin
             if Pkg /= No_Package then
-               Element := Project_Tree.Packages.Table (Pkg);
+               Element := Project_Tree.Shared.Packages.Table (Pkg);
 
                --  Packages Gnatls and Gnatstack have a single attribute
                --  Switches, that is not an associative array.
@@ -1894,7 +1897,7 @@ begin
                     Prj.Util.Value_Of
                     (Variable_Name => Snames.Name_Switches,
                      In_Variables  => Element.Decl.Attributes,
-                     In_Tree       => Project_Tree);
+                     Shared        => Project_Tree.Shared);
 
                --  Packages Binder (for gnatbind), Cross_Reference (for
                --  gnatxref), Linker (for gnatlink), Finder (for gnatfind),
@@ -1926,14 +1929,14 @@ begin
                        Prj.Util.Value_Of
                          (Name      => Name_Switches,
                           In_Arrays => Element.Decl.Arrays,
-                          In_Tree   => Project_Tree);
+                          Shared    => Project_Tree.Shared);
                      Name_Len := 0;
                      Add_Str_To_Name_Buffer (Main.all);
                      The_Switches := Prj.Util.Value_Of
                        (Index     => Name_Find,
                         Src_Index => 0,
                         In_Array  => Switches_Array,
-                        In_Tree   => Project_Tree);
+                        Shared    => Project_Tree.Shared);
                   end if;
 
                   if The_Switches.Kind = Prj.Undefined then
@@ -1941,12 +1944,12 @@ begin
                        Prj.Util.Value_Of
                          (Name      => Name_Default_Switches,
                           In_Arrays => Element.Decl.Arrays,
-                          In_Tree   => Project_Tree);
+                          Shared    => Project_Tree.Shared);
                      The_Switches := Prj.Util.Value_Of
                        (Index     => Name_Ada,
                         Src_Index => 0,
                         In_Array  => Switches_Array,
-                        In_Tree   => Project_Tree);
+                        Shared    => Project_Tree.Shared);
                   end if;
                end if;
 
@@ -1973,7 +1976,7 @@ begin
                   when Prj.List =>
                      Current := The_Switches.Values;
                      while Current /= Prj.Nil_String loop
-                        The_String := Project_Tree.String_Elements.
+                        The_String := Project_Tree.Shared.String_Elements.
                                         Table (Current);
 
                         declare
@@ -2024,7 +2027,7 @@ begin
                         Prj.Util.Value_Of
                           (Name        => Name_Compiler,
                            In_Packages => Project.Decl.Packages,
-                           In_Tree     => Project_Tree);
+                           Shared      => Project_Tree.Shared);
 
                Element : Package_Element;
 
@@ -2054,7 +2057,7 @@ begin
                      end if;
                   end loop;
 
-                  Element := Project_Tree.Packages.Table (Pkg);
+                  Element := Project_Tree.Shared.Packages.Table (Pkg);
 
                   --  If there is a single main and there is compilation
                   --  switches specified in the project file, use them.
@@ -2069,12 +2072,12 @@ begin
                        Prj.Util.Value_Of
                          (Name      => Name_Switches,
                           In_Arrays => Element.Decl.Arrays,
-                          In_Tree   => Project_Tree);
+                          Shared    => Project_Tree.Shared);
                      The_Switches := Prj.Util.Value_Of
                        (Index     => Main_Id,
                         Src_Index => 0,
                         In_Array  => Switches_Array,
-                        In_Tree   => Project_Tree);
+                        Shared    => Project_Tree.Shared);
                   end if;
 
                   --  Otherwise, get the Default_Switches ("Ada")
@@ -2084,12 +2087,12 @@ begin
                        Prj.Util.Value_Of
                          (Name      => Name_Default_Switches,
                           In_Arrays => Element.Decl.Arrays,
-                          In_Tree   => Project_Tree);
+                          Shared    => Project_Tree.Shared);
                      The_Switches := Prj.Util.Value_Of
                        (Index     => Name_Ada,
                         Src_Index => 0,
                         In_Array  => Switches_Array,
-                        In_Tree   => Project_Tree);
+                        Shared    => Project_Tree.Shared);
                   end if;
 
                   --  If there are switches specified, put them in the
@@ -2112,8 +2115,8 @@ begin
                      when Prj.List =>
                         Current := The_Switches.Values;
                         while Current /= Prj.Nil_String loop
-                           The_String :=
-                             Project_Tree.String_Elements.Table (Current);
+                           The_String := Project_Tree.Shared.String_Elements
+                             .Table (Current);
 
                            declare
                               Switch : constant String :=
@@ -2244,7 +2247,7 @@ begin
                               Prj.Util.Value_Of
                                 (Name        => Name_Builder,
                                  In_Packages => Project.Decl.Packages,
-                                 In_Tree     => Project_Tree);
+                                 Shared      => Project_Tree.Shared);
 
                      Variable : Variable_Value :=
                                   Prj.Util.Value_Of
@@ -2252,7 +2255,7 @@ begin
                                      Attribute_Or_Array_Name =>
                                        Name_Global_Configuration_Pragmas,
                                      In_Package              => Pkg,
-                                     In_Tree                 => Project_Tree);
+                                     Shared            => Project_Tree.Shared);
 
                   begin
                      if (Variable = Nil_Variable_Value
@@ -2265,7 +2268,7 @@ begin
                              Attribute_Or_Array_Name =>
                                Name_Global_Config_File,
                              In_Package              => Pkg,
-                             In_Tree                 => Project_Tree);
+                             Shared                  => Project_Tree.Shared);
                      end if;
 
                      if Variable /= Nil_Variable_Value
@@ -2283,7 +2286,7 @@ begin
                                 Prj.Util.Value_Of
                                   (Name        => Name_Compiler,
                                    In_Packages => Project.Decl.Packages,
-                                   In_Tree     => Project_Tree);
+                                   Shared      => Project_Tree.Shared);
 
                         Variable : Variable_Value :=
                                      Prj.Util.Value_Of
@@ -2291,7 +2294,7 @@ begin
                                         Attribute_Or_Array_Name =>
                                           Name_Local_Configuration_Pragmas,
                                         In_Package  => Pkg,
-                                        In_Tree     => Project_Tree);
+                                        Shared      => Project_Tree.Shared);
 
                      begin
                         if (Variable = Nil_Variable_Value
@@ -2304,7 +2307,7 @@ begin
                                 Attribute_Or_Array_Name =>
                                   Name_Local_Config_File,
                                 In_Package              => Pkg,
-                                In_Tree                 => Project_Tree);
+                                Shared                 => Project_Tree.Shared);
                         end if;
 
                         if Variable /= Nil_Variable_Value
