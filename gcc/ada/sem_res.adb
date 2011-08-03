@@ -7774,10 +7774,10 @@ package body Sem_Res is
       end if;
 
       --  Concatenation is restricted in SPARK: each operand must be either a
-      --  string literal, a static character expression, or another
-      --  concatenation. Arg cannot be a concatenation here as callers of
-      --  Resolve_Op_Concat_Arg call it separately on each final operand, past
-      --  concatenation operations.
+      --  string literal, the name of a string constant, a static character or
+      --  string expression, or another concatenation. Arg cannot be a
+      --  concatenation here as callers of Resolve_Op_Concat_Arg call it
+      --  separately on each final operand, past concatenation operations.
 
       if Is_Character_Type (Etype (Arg)) then
          if not Is_Static_Expression (Arg) then
@@ -7786,7 +7786,10 @@ package body Sem_Res is
          end if;
 
       elsif Is_String_Type (Etype (Arg)) then
-         if not Is_Static_Expression (Arg) then
+         if not (Nkind_In (Arg, N_Identifier, N_Expanded_Name)
+                  and then Is_Constant_Object (Entity (Arg)))
+           and then not Is_Static_Expression (Arg)
+         then
             Check_SPARK_Restriction
               ("string operand for concatenation should be static", N);
          end if;
