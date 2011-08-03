@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2010, AdaCore                     --
+--                     Copyright (C) 2000-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,11 +28,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-pragma Ada_95;
---  This is needed because the pragmas Warnings (Off) in Current_Session and
---  Default_Session (see below) do not work when compiling clients of this
---  package that instantiate generic units herein.
 
 with Ada.Exceptions;
 with Ada.Text_IO;
@@ -735,30 +730,18 @@ package body GNAT.AWK is
    -- Current_Session --
    ---------------------
 
-   function Current_Session return Session_Type is
+   function Current_Session return not null access Session_Type is
    begin
-      pragma Warnings (Off);
-      return Cur_Session;
-      --  ???The above return statement violates the Ada 2005 rule forbidding
-      --  copying of limited objects (see RM-7.5(2.8/2)). When compiled with
-      --  -gnatg, the compiler gives a warning instead of an error, so we can
-      --  turn it off.
-      pragma Warnings (On);
+      return Cur_Session.Self;
    end Current_Session;
 
    ---------------------
    -- Default_Session --
    ---------------------
 
-   function Default_Session return Session_Type is
+   function Default_Session return not null access Session_Type is
    begin
-      pragma Warnings (Off);
-      return Def_Session;
-      --  ???The above return statement violates the Ada 2005 rule forbidding
-      --  copying of limited objects (see RM-7.5(2.8/2)). When compiled with
-      --  -gnatg, the compiler gives a warning instead of an error, so we can
-      --  turn it off.
-      pragma Warnings (On);
+      return Def_Session.Self;
    end Default_Session;
 
    --------------------

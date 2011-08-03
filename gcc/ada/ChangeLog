@@ -1,3 +1,17 @@
+2011-08-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Create_Finalizer): Treat freeze nodes in similar fashion
+	to packages. This ensures that the finalizer body will not end up
+	inside the freeze node.
+	(Process_Declarations): Add code to detect whether a freeze node has a
+	nested finalization collection.
+
+2011-08-03  Pascal Obry  <obry@adacore.com>
+
+	* g-awk.adb, g-awk.ads: Make GNAT.AWK API compatible with Ada 2005.
+	(Current_Session): Return a not null access to Session_Type.
+	(Default_Session): Likewise.
+
 2011-08-03  Robert Dewar  <dewar@adacore.com>
 
 	* a-cfdlli.adb, bindgen.adb, exp_ch4.adb, exp_ch13.adb, sem_warn.adb,

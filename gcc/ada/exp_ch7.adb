@@ -1756,10 +1756,12 @@ package body Exp_Ch7 is
                Set_Is_Frozen (Fin_Id);
 
                --  In the case where the last construct to contain a controlled
-               --  object is either a nested package or instantiation, the body
-               --  must be inserted directly after the construct.
+               --  object is either a nested package, an instantiation or a
+               --  freeze node, the body must be inserted directly after the
+               --  construct.
 
                if Nkind_In (Last_Top_Level_Ctrl_Construct,
+                              N_Freeze_Entity,
                               N_Package_Declaration,
                               N_Package_Body)
                then
@@ -1988,7 +1990,24 @@ package body Exp_Ch7 is
                   (Is_Type (Typ)
                      and then Needs_Finalization (Typ))
                then
+                  Old_Counter_Val := Counter_Val;
+
+                  --  Freeze nodes are considered to be identical to packages
+                  --  and blocks in terms of nesting. The difference is that
+                  --  a finalization collection created inside the freeze node
+                  --  is at the same nesting level as the node itself.
+
                   Process_Declarations (Actions (Decl), Preprocess);
+
+                  --  The freeze node contains a finalization collection
+
+                  if Preprocess
+                    and then Top_Level
+                    and then No (Last_Top_Level_Ctrl_Construct)
+                    and then Counter_Val > Old_Counter_Val
+                  then
+                     Last_Top_Level_Ctrl_Construct := Decl;
+                  end if;
                end if;
 
             --  Nested package declarations, avoid generics
