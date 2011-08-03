@@ -4639,6 +4639,7 @@ package body Sem_Ch3 is
       Nb_Index      : Nat;
       P             : constant Node_Id := Parent (Def);
       Priv          : Entity_Id;
+      T_In_ALFA     : Boolean := True;
 
    begin
       if Nkind (Def) = N_Constrained_Array_Definition then
@@ -4663,6 +4664,12 @@ package body Sem_Ch3 is
 
          if not Nkind_In (Index, N_Identifier, N_Expanded_Name) then
             Check_SPARK_Restriction ("subtype mark required", Index);
+         end if;
+
+         if Present (Etype (Index))
+           and then not Is_In_ALFA (Etype (Index))
+         then
+            T_In_ALFA := False;
          end if;
 
          --  Add a subtype declaration for each index of private array type
@@ -4740,9 +4747,17 @@ package body Sem_Ch3 is
             Check_SPARK_Restriction ("subtype mark required", Component_Typ);
          end if;
 
+         if Present (Element_Type)
+           and then not Is_In_ALFA (Element_Type)
+         then
+            T_In_ALFA := False;
+         end if;
+
       --  Ada 2005 (AI-230): Access Definition case
 
       else pragma Assert (Present (Access_Definition (Component_Def)));
+
+         T_In_ALFA := False;
 
          --  Indicate that the anonymous access type is created by the
          --  array type declaration.
@@ -4820,6 +4835,12 @@ package body Sem_Ch3 is
                                (Implicit_Base, Finalize_Storage_Only
                                                         (Element_Type));
 
+         --  Final check for static bounds on array
+
+         if not Has_Static_Array_Bounds (T) then
+            T_In_ALFA := False;
+         end if;
+
       --  Unconstrained array case
 
       else
@@ -4844,6 +4865,7 @@ package body Sem_Ch3 is
 
       Set_Component_Type (Base_Type (T), Element_Type);
       Set_Packed_Array_Type (T, Empty);
+      Set_Is_In_ALFA (T, T_In_ALFA);
 
       if Aliased_Present (Component_Definition (Def)) then
          Check_SPARK_Restriction

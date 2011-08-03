@@ -44,30 +44,6 @@ with GNAT.HTable;
 
 package body Makeutl is
 
-   type Mark_Key is record
-      File  : File_Name_Type;
-      Index : Int;
-   end record;
-   --  Identify either a mono-unit source (when Index = 0) or a specific unit
-   --  (index = 1's origin index of unit) in a multi-unit source.
-
-   --  There follow many global undocumented declarations, comments needed ???
-
-   Max_Mask_Num : constant := 2048;
-
-   subtype Mark_Num is Union_Id range 0 .. Max_Mask_Num - 1;
-
-   function Hash (Key : Mark_Key) return Mark_Num;
-
-   package Marks is new GNAT.HTable.Simple_HTable
-     (Header_Num => Mark_Num,
-      Element    => Boolean,
-      No_Element => False,
-      Key        => Mark_Key,
-      Hash       => Hash,
-      Equal      => "=");
-   --  A hash table to keep tracks of the marked units
-
    type Linker_Options_Data is record
       Project : Project_Id;
       Options : String_List_Id;
@@ -520,15 +496,6 @@ package body Makeutl is
       return Name_Find;
    end Create_Name;
 
-   ----------------------
-   -- Delete_All_Marks --
-   ----------------------
-
-   procedure Delete_All_Marks is
-   begin
-      Marks.Reset;
-   end Delete_All_Marks;
-
    ----------------------------
    -- Executable_Prefix_Path --
    ----------------------------
@@ -817,15 +784,6 @@ package body Makeutl is
       end if;
    end Get_Switches;
 
-   ----------
-   -- Hash --
-   ----------
-
-   function Hash (Key : Mark_Key) return Mark_Num is
-   begin
-      return Union_Id (Key.File) mod Max_Mask_Num;
-   end Hash;
-
    ------------
    -- Inform --
    ------------
@@ -892,18 +850,6 @@ package body Makeutl is
         (Self        => Env.External,
          Declaration => Argv (Start .. Finish));
    end Is_External_Assignment;
-
-   ---------------
-   -- Is_Marked --
-   ---------------
-
-   function Is_Marked
-     (Source_File : File_Name_Type;
-      Index       : Int := 0) return Boolean
-   is
-   begin
-      return Marks.Get (K => (File => Source_File, Index => Index));
-   end Is_Marked;
 
    -----------------------------
    -- Linker_Options_Switches --
@@ -1151,15 +1097,6 @@ package body Makeutl is
       end Update_Main;
    end Mains;
 
-   ----------
-   -- Mark --
-   ----------
-
-   procedure Mark (Source_File : File_Name_Type; Index : Int := 0) is
-   begin
-      Marks.Set (K => (File => Source_File, Index => Index), E => True);
-   end Mark;
-
    -----------------------
    -- Path_Or_File_Name --
    -----------------------
@@ -1363,6 +1300,10 @@ package body Makeutl is
       Write_Eol;
    end Verbose_Msg;
 
+   -----------------
+   -- Verbose_Msg --
+   -----------------
+
    procedure Verbose_Msg
      (N1                : File_Name_Type;
       S1                : String;
@@ -1375,5 +1316,415 @@ package body Makeutl is
       Verbose_Msg
         (Name_Id (N1), S1, Name_Id (N2), S2, Prefix, Minimum_Verbosity);
    end Verbose_Msg;
+
+   -----------
+   -- Queue --
+   -----------
+
+   package body Queue is
+      type Q_Record is record
+         Info      : Source_Info;
+         Processed : Boolean;
+      end record;
+
+      package Q is new Table.Table
+        (Table_Component_Type => Q_Record,
+         Table_Index_Type     => Natural,
+         Table_Low_Bound      => 1,
+         Table_Initial        => 1000,
+         Table_Increment      => 100,
+         Table_Name           => "Makeutl.Queue.Q");
+      --  This is the actual Queue
+
+      package Busy_Obj_Dirs is new GNAT.HTable.Simple_HTable
+        (Header_Num => Prj.Header_Num,
+         Element    => Boolean,
+         No_Element => False,
+         Key        => Path_Name_Type,
+         Hash       => Hash,
+         Equal      => "=");
+
+      type Mark_Key is record
+         File  : File_Name_Type;
+         Index : Int;
+      end record;
+      --  Identify either a mono-unit source (when Index = 0) or a specific
+      --  unit (index = 1's origin index of unit) in a multi-unit source.
+
+      Max_Mask_Num : constant := 2048;
+      subtype Mark_Num is Union_Id range 0 .. Max_Mask_Num - 1;
+
+      function Hash (Key : Mark_Key) return Mark_Num;
+
+      package Marks is new GNAT.HTable.Simple_HTable
+        (Header_Num => Mark_Num,
+         Element    => Boolean,
+         No_Element => False,
+         Key        => Mark_Key,
+         Hash       => Hash,
+         Equal      => "=");
+      --  A hash table to keep tracks of the marked units.
+      --  These are the units that have already been processed, when using the
+      --  gnatmake format. When using the gprbuild format, we can directly
+      --  store in the source_id whether the file has already been processed.
+
+      procedure Mark (Source_File : File_Name_Type; Index : Int := 0);
+      --  Mark a unit, identified by its source file and, when Index is not 0,
+      --  the index of the unit in the source file. Marking is used to signal
+      --  that the unit has already been inserted in the Q.
+
+      function Is_Marked
+        (Source_File : File_Name_Type;
+         Index       : Int := 0) return Boolean;
+      --  Returns True if the unit was previously marked
+
+      Q_Processed           : Natural := 0;
+      Q_Initialized         : Boolean := False;
+
+      Q_First               : Natural := 1;
+      --  Points to the first valid element in the queue
+
+      One_Queue_Per_Obj_Dir : Boolean := False;
+      --  See parameter to Initialize
+
+      function Available_Obj_Dir (S : Source_Info) return Boolean;
+      --  Whether the object directory for S is available for a build
+
+      procedure Debug_Display (S : Source_Info);
+      --  A debug display for S
+
+      function Was_Processed (S : Source_Info) return Boolean;
+      --  Whether S has already been processed. This marks the source as
+      --  processed, if it hasn't already been processed.
+
+      -------------------
+      -- Was_Processed --
+      -------------------
+
+      function Was_Processed (S : Source_Info) return Boolean is
+      begin
+         case S.Format is
+            when Format_Gprbuild =>
+               if S.Id.In_The_Queue then
+                  return True;
+               end if;
+               S.Id.In_The_Queue := True;
+
+            when Format_Gnatmake =>
+               if Is_Marked (S.File, S.Index) then
+                  return True;
+               end if;
+               Mark (S.File, Index => S.Index);
+         end case;
+
+         return False;
+      end Was_Processed;
+
+      -----------------------
+      -- Available_Obj_Dir --
+      -----------------------
+
+      function Available_Obj_Dir (S : Source_Info) return Boolean is
+      begin
+         case S.Format is
+            when Format_Gprbuild =>
+               return not Busy_Obj_Dirs.Get
+                 (S.Id.Project.Object_Directory.Name);
+
+            when Format_Gnatmake =>
+               return S.Project = No_Project
+                 or else
+                   not Busy_Obj_Dirs.Get (S.Project.Object_Directory.Name);
+         end case;
+      end Available_Obj_Dir;
+
+      -------------------
+      -- Debug_Display --
+      -------------------
+
+      procedure Debug_Display (S : Source_Info) is
+      begin
+         case S.Format is
+            when Format_Gprbuild =>
+               Write_Name (S.Id.File);
+
+               if S.Id.Index /= 0 then
+                  Write_Str (", ");
+                  Write_Int (S.Id.Index);
+               end if;
+
+            when Format_Gnatmake =>
+               Write_Name (S.File);
+
+               if S.Index /= 0 then
+                  Write_Str (", ");
+                  Write_Int (S.Index);
+               end if;
+         end case;
+      end Debug_Display;
+
+      ----------
+      -- Hash --
+      ----------
+
+      function Hash (Key : Mark_Key) return Mark_Num is
+      begin
+         return Union_Id (Key.File) mod Max_Mask_Num;
+      end Hash;
+
+      ---------------
+      -- Is_Marked --
+      ---------------
+
+      function Is_Marked
+        (Source_File : File_Name_Type;
+         Index       : Int := 0) return Boolean is
+      begin
+         return Marks.Get (K => (File => Source_File, Index => Index));
+      end Is_Marked;
+
+      ----------
+      -- Mark --
+      ----------
+
+      procedure Mark (Source_File : File_Name_Type; Index : Int := 0) is
+      begin
+         Marks.Set (K => (File => Source_File, Index => Index), E => True);
+      end Mark;
+
+      -------------
+      -- Extract --
+      -------------
+
+      procedure Extract
+        (Found  : out Boolean;
+         Source : out Source_Info) is
+      begin
+         Found := False;
+
+         if One_Queue_Per_Obj_Dir then
+            for J in Q_First .. Q.Last loop
+               if not Q.Table (J).Processed
+                 and then Available_Obj_Dir (Q.Table (J).Info)
+               then
+                  Found := True;
+                  Source := Q.Table (J).Info;
+                  Q.Table (J).Processed := True;
+
+                  if J = Q_First then
+                     while Q_First <= Q.Last
+                       and then Q.Table (Q_First).Processed
+                     loop
+                        Q_First := Q_First + 1;
+                     end loop;
+                  end if;
+
+                  exit;
+               end if;
+            end loop;
+
+         elsif Q_First <= Q.Last then
+            Source := Q.Table (Q_First).Info;
+            Q.Table (Q_First).Processed := True;
+            Q_First := Q_First + 1;
+            Found := True;
+         end if;
+
+         if Found then
+            Q_Processed := Q_Processed + 1;
+         end if;
+
+         if Found and then Debug.Debug_Flag_Q then
+            Write_Str ("   Q := Q - [ ");
+            Debug_Display (Source);
+            Write_Str (" ]");
+            Write_Eol;
+
+            Write_Str ("   Q_First =");
+            Write_Int (Int (Q_First));
+            Write_Eol;
+
+            Write_Str ("   Q.Last =");
+            Write_Int (Int (Q.Last));
+            Write_Eol;
+         end if;
+      end Extract;
+
+      ---------------
+      -- Processed --
+      ---------------
+
+      function Processed return Natural is
+      begin
+         return Q_Processed;
+      end Processed;
+
+      ----------------
+      -- Initialize --
+      ----------------
+
+      procedure Initialize
+        (Queue_Per_Obj_Dir : Boolean;
+         Force : Boolean := False) is
+      begin
+         if Force or else not Q_Initialized then
+            Q_Initialized := True;
+
+            for J in 1 .. Q.Last loop
+               case Q.Table (J).Info.Format is
+               when Format_Gprbuild =>
+                  Q.Table (J).Info.Id.In_The_Queue := False;
+               when Format_Gnatmake =>
+                  null;
+               end case;
+            end loop;
+
+            Q.Init;
+            Q_Processed := 0;
+            Q_First     := 1;
+            One_Queue_Per_Obj_Dir := Queue_Per_Obj_Dir;
+         end if;
+      end Initialize;
+
+      ------------
+      -- Insert --
+      ------------
+
+      function Insert (Source  : Source_Info) return Boolean is
+      begin
+         --  Only insert in the Q if it is not already done, to avoid
+         --  simultaneous compilations if -jnnn is used.
+
+         if Was_Processed (Source) then
+            return False;
+         end if;
+
+         if Current_Verbosity = High then
+            Write_Str ("Adding """);
+            Debug_Display (Source);
+            Write_Line (" to the queue");
+         end if;
+
+         Q.Append (New_Val => (Info => Source, Processed => False));
+
+         if Debug.Debug_Flag_Q then
+            Write_Str ("   Q := Q + [ ");
+            Debug_Display (Source);
+            Write_Str (" ] ");
+            Write_Eol;
+
+            Write_Str ("   Q_First =");
+            Write_Int (Int (Q_First));
+            Write_Eol;
+
+            Write_Str ("   Q.Last =");
+            Write_Int (Int (Q.Last));
+            Write_Eol;
+         end if;
+
+         return True;
+      end Insert;
+
+      ------------
+      -- Insert --
+      ------------
+
+      procedure Insert (Source : Source_Info) is
+         Tmp : Boolean;
+         pragma Unreferenced (Tmp);
+      begin
+         Tmp := Insert (Source);
+      end Insert;
+
+      --------------
+      -- Is_Empty --
+      --------------
+
+      function Is_Empty return Boolean is
+      begin
+         return Q_Processed >= Q.Last;
+      end Is_Empty;
+
+      ------------------------
+      -- Is_Virtually_Empty --
+      ------------------------
+
+      function Is_Virtually_Empty return Boolean is
+      begin
+         if One_Queue_Per_Obj_Dir then
+            for J in Q_First .. Q.Last loop
+               if not Q.Table (J).Processed
+                 and then Available_Obj_Dir (Q.Table (J).Info)
+               then
+                  return False;
+               end if;
+            end loop;
+
+            return True;
+
+         else
+            return Is_Empty;
+         end if;
+      end Is_Virtually_Empty;
+
+      ----------------------
+      -- Set_Obj_Dir_Busy --
+      ----------------------
+
+      procedure Set_Obj_Dir_Busy (Obj_Dir : Path_Name_Type) is
+      begin
+         if One_Queue_Per_Obj_Dir then
+            Busy_Obj_Dirs.Set (Obj_Dir, True);
+         end if;
+      end Set_Obj_Dir_Busy;
+
+      ----------------------
+      -- Set_Obj_Dir_Free --
+      ----------------------
+
+      procedure Set_Obj_Dir_Free (Obj_Dir : Path_Name_Type) is
+      begin
+         if One_Queue_Per_Obj_Dir then
+            Busy_Obj_Dirs.Set (Obj_Dir, False);
+         end if;
+      end Set_Obj_Dir_Free;
+
+      ----------
+      -- Size --
+      ----------
+
+      function Size return Natural is
+      begin
+         return Q.Last;
+      end Size;
+
+      -------------
+      -- Element --
+      -------------
+
+      function Element (Rank : Positive) return File_Name_Type is
+      begin
+         if Rank <= Q.Last then
+            case Q.Table (Rank).Info.Format is
+               when Format_Gprbuild =>
+                  return Q.Table (Rank).Info.Id.File;
+               when Format_Gnatmake =>
+                  return Q.Table (Rank).Info.File;
+            end case;
+         else
+            return No_File;
+         end if;
+      end Element;
+
+      ------------------
+      -- Remove_Marks --
+      ------------------
+
+      procedure Remove_Marks is
+      begin
+         Marks.Reset;
+      end Remove_Marks;
+
+   end Queue;
 
 end Makeutl;
