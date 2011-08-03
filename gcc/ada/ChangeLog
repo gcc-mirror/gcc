@@ -1,3 +1,25 @@
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-part.adb, prj-part.ads, prj-makr.adb, prj-pars.adb, prj-conf.adb,
+	prj-env.adb (Prj.Part.Parse): change parameter Always_Errout_Finalize
+	to Errout_Handling.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-dect.adb (Parse_Attribute_Declaration): make sure we can use
+	"external" as an attribute name in aggregate projects.
+
+2011-08-03  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-taprop-vxworks.adb: (Create_Task, Initialize): Ada 2012 pragma CPU
+	uses CPU numbers starting 1, while VxWorks uses CPU numbers starting
+	from 0, so we need to adjust.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb, prj-ext.adb, prj-ext.ads, makeutl.adb, prj-tree.adb,
+	prj-tree.ads, gnatcmd.adb, clean.adb (External_References): new type.
+
 2011-08-03  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch6.adb (New_Overloaded_Entity): only issue error for SPARK

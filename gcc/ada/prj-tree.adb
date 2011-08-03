@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -988,8 +988,12 @@ package body Prj.Tree is
       Projects_Htable.Reset (Tree.Projects_HT);
 
       --  Do not reset the external references, in case we are reloading a
-      --  project, since we want to preserve the current environment
-      --  Name_To_Name_HTable.Reset (Tree.External_References);
+      --  project, since we want to preserve the current environment.
+      --  But we still need to ensure that the external references are properly
+      --  initialized.
+
+      Prj.Ext.Initialize (Tree.External);
+      --  Prj.Ext.Reset (Tree.External);
    end Initialize;
 
    ----------
@@ -1003,7 +1007,7 @@ package body Prj.Tree is
       if Proj /= null then
          Project_Node_Table.Free (Proj.Project_Nodes);
          Projects_Htable.Reset (Proj.Projects_HT);
-         Name_To_Name_HTable.Reset (Proj.External_References);
+         Prj.Ext.Free (Proj.External);
          Free (Proj.Project_Path);
          Unchecked_Free (Proj);
       end if;

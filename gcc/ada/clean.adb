@@ -1886,7 +1886,7 @@ package body Clean is
 
                            if OK then
                               Prj.Ext.Add
-                                (Project_Node_Tree,
+                                (Project_Node_Tree.External,
                                  External_Name =>
                                    Ext_Asgn (Start .. Equal_Pos - 1),
                                  Value         =>

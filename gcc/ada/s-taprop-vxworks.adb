@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -954,8 +954,13 @@ package body System.Task_Primitives.Operations is
       --  Set processor affinity
 
       if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+         --  Ada 2012 pragma CPU uses CPU numbers starting from 1, while
+         --  on VxWorks the first CPU is identified by a 0, so we need to
+         --  adjust.
+
          Result :=
-           taskCpuAffinitySet (T.Common.LL.Thread, int (T.Common.Base_CPU));
+           taskCpuAffinitySet
+             (T.Common.LL.Thread, int (T.Common.Base_CPU) - 1);
 
       elsif T.Common.Task_Info /= Unspecified_Task_Info then
          Result :=
@@ -1412,10 +1417,14 @@ package body System.Task_Primitives.Operations is
       if Environment_Task.Common.Base_CPU /=
          System.Multiprocessors.Not_A_Specific_CPU
       then
+         --  Ada 2012 pragma CPU uses CPU numbers starting from 1, while
+         --  on VxWorks the first CPU is identified by a 0, so we need to
+         --  adjust.
+
          Result :=
            taskCpuAffinitySet
              (Environment_Task.Common.LL.Thread,
-              int (Environment_Task.Common.Base_CPU));
+              int (Environment_Task.Common.Base_CPU) - 1);
          pragma Assert (Result /= -1);
       end if;
    end Initialize;

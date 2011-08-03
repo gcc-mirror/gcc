@@ -1065,7 +1065,7 @@ package body Prj.Proc is
                   if Ext_List then
                      Value :=
                        Prj.Ext.Value_Of
-                         (From_Project_Node_Tree, Name, No_Name);
+                         (From_Project_Node_Tree.External, Name, No_Name);
 
                      if Value /= No_Name then
                         declare
@@ -1171,7 +1171,7 @@ package body Prj.Proc is
 
                      Value :=
                        Prj.Ext.Value_Of
-                         (From_Project_Node_Tree, Name, Default);
+                         (From_Project_Node_Tree.External, Name, Default);
 
                      if Value = No_Name then
                         if not Quiet_Output then

@@ -29,11 +29,19 @@ with Prj.Tree;  use Prj.Tree;
 
 package Prj.Part is
 
+   type Errout_Mode is
+     (Always_Finalize,
+      Finalize_If_Error,
+      Never_Finalize);
+   --  Whether Parse should call Errout.Finalize (which prints the error
+   --  messages on stdout). When Never_Finalize is used, Errout is not reset
+   --  either at the beginning of Parse.
+
    procedure Parse
      (In_Tree                : Project_Node_Tree_Ref;
       Project                : out Project_Node_Id;
       Project_File_Name      : String;
-      Always_Errout_Finalize : Boolean;
+      Errout_Handling        : Errout_Mode := Always_Finalize;
       Packages_To_Check      : String_List_Access := All_Packages;
       Store_Comments         : Boolean := False;
       Current_Directory      : String := "";

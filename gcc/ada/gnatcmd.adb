@@ -1822,7 +1822,7 @@ begin
                         if Equal_Pos >= Argv'First + 3
                           and then Equal_Pos /= Argv'Last
                         then
-                           Add (Project_Node_Tree,
+                           Add (Project_Node_Tree.External,
                                 External_Name =>
                                   Argv (Argv'First + 2 .. Equal_Pos - 1),
                                 Value => Argv (Equal_Pos + 1 .. Argv'Last));

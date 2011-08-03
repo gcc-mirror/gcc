@@ -863,7 +863,7 @@ package body Prj.Makr is
               (In_Tree                => Tree,
                Project                => Project_Node,
                Project_File_Name      => Output_Name.all,
-               Always_Errout_Finalize => False,
+               Errout_Handling        => Part.Finalize_If_Error,
                Store_Comments         => True,
                Is_Config_File         => False,
                Flags                  => Flags,
