@@ -7940,8 +7940,11 @@ static void
 cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 {
   bool nested = (current_function_decl != NULL_TREE);
+  bool local_variables_forbidden_p = parser->local_variables_forbidden_p;
   if (nested)
     push_function_context ();
+  /* Clear this in case we're in the middle of a default argument.  */
+  parser->local_variables_forbidden_p = false;
 
   /* Finish the function call operator
      - class_specifier
@@ -8028,6 +8031,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
     expand_or_defer_fn (finish_function (/*inline*/2));
   }
 
+  parser->local_variables_forbidden_p = local_variables_forbidden_p;
   if (nested)
     pop_function_context();
 }

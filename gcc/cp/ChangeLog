@@ -1,5 +1,8 @@
 2011-08-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43886
+	* parser.c (cp_parser_lambda_body): Clear local_variables_forbidden_p.
+
 	PR c++/49593
 	* pt.c (find_parameter_packs_r): Handle CONSTRUCTOR.
 
