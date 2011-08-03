@@ -713,6 +713,10 @@ enumerate_modes (void (*f) (const char *, int, int, int, int, int, int))
 	{
 	  const struct real_format *fmt = REAL_MODE_FORMAT (inner_mode);
 
+	  /* ??? Cope with the ghost XFmode of the ARM port.  */
+	  if (!fmt)
+	    continue;
+
 	  if (fmt->b == 2)
 	    digs = (fmt->p - 1) * 1233 / 4096; /* scale by log (2) */
 

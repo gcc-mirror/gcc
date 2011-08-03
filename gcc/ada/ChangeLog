@@ -1,3 +1,71 @@
+2011-08-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Document -Wstack-usage.
+	* gcc-interface/misc.c (enumerate_modes): Add guard for ghost FP modes.
+
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb Issue an error (not a warning) when a C++ type does not
+	have keyword LIMITED.
+
+2011-08-03  Yannick Moy  <moy@adacore.com>
+
+	* alfa.adb, alfa.ads, alfa_test.adb: New files.
+	* ali.adb (Known_ALI_Lines): add 'C' lines (SCO) and 'F' lines (ALFA)
+	(Scan_ALI): do not issue a fatal error if parsing known lines after Xref
+	section (does not happen in compiler, only if code directly calls
+	Scan_ALI).
+	* get_alfa.adb, get_alfa.ads: New files.
+	* lib-writ.adb, lib-writ.ads (Write_ALI): output ALFA information if
+	needed.
+	* lib-xref-alfa.adb: New file.
+	* lib-xref.adb, lib-xref.ads
+	(Xref_Entry): redefine information needed in cross-references for ALFA.
+	Push ALFA treatments in separated local package.
+	(Enclosing_Subpragram_Or_Package): treat specially subprogram
+	identifiers. Return entity of package body instead of spec. Return
+	Empty for a scope with no location.
+	(Generate_Reference): adapt to new components for ALFA information.
+	Remove the need for D references on definitions.
+	(Is_Local_Reference): moved to ALFA local package
+	(Output_References): extract subfunction as Extract_Source_Name
+	(Output_Local_References): remove procedure, replaced by filtering of
+	cross-references in package ALFA and printing in Put_ALFA.
+	(Write_Entity_Name): remove procedure
+	* lib.adb, lib.ads (Extract_Source_Name): extract here function to
+	print exact name of entity as it appears in source file
+	(Unit_Ref_Table): make type public for use in Lib.Xref.ALFA
+	* put_alfa.adb, put_alfa.ads: New files.
+	* xref_lib.adb (Search_Xref): protect read of cross-references against
+	reading other sections of the ALI file, in gnatxref
+	(Search): protect read of cross-references against reading other
+	sections of the ALI file, in gnatfind.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting.
+
+2011-08-03  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-inmaop-vxworks.adb (Setup_Interrupt_Mask): Do nothing instead of
+	raising an exception.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Set_String_Literal_Subtype): if index type is an integer
+	type, always use 1 as the lower bound or string, even if lower bound of
+	context is not static, to handle properly null strings in a non-static
+	context.
+
+2011-08-03  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (Resolve_Aggregate): An array aggregate with 'others' is
+	always legal on the right-hand side of an assignment statement; there
+	is always an applicable index constraint in this case. Therefore, the
+	check for Pkind = N_Assignment_Statement is now unconditional -- it
+	doesn't depend on whether Is_Constrained (Typ).
+
 2011-08-03  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, sem_prag.adb, exp_ch4.adb: Minor reformatting.

@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -247,9 +247,15 @@ package body System.Interrupt_Management.Operations is
 
    procedure Setup_Interrupt_Mask is
    begin
-      Raise_Exception
-        (Program_Error'Identity,
-         "Setup_Interrupt_Mask unimplemented");
+      --  Nothing to be done. Ada interrupt facilities on VxWorks do not use
+      --  signals but hardware interrupts. Therefore, interrupt management does
+      --  not need anything related to signal masking. Note that this procedure
+      --  cannot raise an exception (as some others in this package) because
+      --  the generic implementation of the Timer_Server and timing events make
+      --  explicit calls to this routine to make ensure proper signal masking
+      --  on targets needed that.
+
+      null;
    end Setup_Interrupt_Mask;
 
 end System.Interrupt_Management.Operations;

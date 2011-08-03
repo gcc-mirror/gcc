@@ -9906,13 +9906,23 @@ package body Sem_Res is
             Index         : Node_Id;
 
          begin
-            Set_String_Literal_Low_Bound
-              (Subtype_Id,
-               Make_Attribute_Reference (Loc,
-                 Attribute_Name => Name_First,
-                 Prefix         =>
-                   New_Occurrence_Of (Base_Type (Index_Type), Loc)));
-            Set_Etype (String_Literal_Low_Bound (Subtype_Id), Index_Type);
+            if Is_Integer_Type (Index_Type) then
+               Set_String_Literal_Low_Bound
+                 (Subtype_Id, Make_Integer_Literal (Loc, 1));
+
+            else
+               --  If the index type is an enumeration type, build bounds
+               --  expression with attributes.
+
+               Set_String_Literal_Low_Bound
+                 (Subtype_Id,
+                  Make_Attribute_Reference (Loc,
+                    Attribute_Name => Name_First,
+                    Prefix         =>
+                      New_Occurrence_Of (Base_Type (Index_Type), Loc)));
+               Set_Etype (String_Literal_Low_Bound (Subtype_Id), Index_Type);
+            end if;
+
             Analyze_And_Resolve (String_Literal_Low_Bound (Subtype_Id));
 
             --  Build bona fide subtype for the string, and wrap it in an

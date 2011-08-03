@@ -1108,7 +1108,9 @@ package body Sem_Aggr is
             --  allowed inside the array aggregate. The test checks the context
             --  in which the array aggregate occurs. If the context does not
             --  permit it, or the aggregate type is unconstrained, an OTHERS
-            --  choice is not allowed.
+            --  choice is not allowed (except that it is always allowed on the
+            --  right-hand side of an assignment statement; in this case the
+            --  constrainedness of the type doesn't matter).
 
             --  If expansion is disabled (generic context, or semantics-only
             --  mode) actual subtypes cannot be constructed, and the type of an
@@ -1125,21 +1127,21 @@ package body Sem_Aggr is
 
             Set_Etype (N, Aggr_Typ);  --  May be overridden later on
 
-            if Is_Constrained (Typ) and then
-              (Pkind = N_Assignment_Statement      or else
-               Pkind = N_Parameter_Association     or else
-               Pkind = N_Function_Call             or else
-               Pkind = N_Procedure_Call_Statement  or else
-               Pkind = N_Generic_Association       or else
-               Pkind = N_Formal_Object_Declaration or else
-               Pkind = N_Simple_Return_Statement   or else
-               Pkind = N_Object_Declaration        or else
-               Pkind = N_Component_Declaration     or else
-               Pkind = N_Parameter_Specification   or else
-               Pkind = N_Qualified_Expression      or else
-               Pkind = N_Aggregate                 or else
-               Pkind = N_Extension_Aggregate       or else
-               Pkind = N_Component_Association)
+            if Pkind = N_Assignment_Statement or else
+              (Is_Constrained (Typ) and then
+                 (Pkind = N_Parameter_Association     or else
+                  Pkind = N_Function_Call             or else
+                  Pkind = N_Procedure_Call_Statement  or else
+                  Pkind = N_Generic_Association       or else
+                  Pkind = N_Formal_Object_Declaration or else
+                  Pkind = N_Simple_Return_Statement   or else
+                  Pkind = N_Object_Declaration        or else
+                  Pkind = N_Component_Declaration     or else
+                  Pkind = N_Parameter_Specification   or else
+                  Pkind = N_Qualified_Expression      or else
+                  Pkind = N_Aggregate                 or else
+                  Pkind = N_Extension_Aggregate       or else
+                  Pkind = N_Component_Association))
             then
                Aggr_Resolved :=
                  Resolve_Array_Aggregate
