@@ -911,15 +911,14 @@ package body Prj is
    begin
       if Tree /= null then
          if Tree.Is_Root_Tree then
-            Name_List_Table.Free (Tree.Shared.Name_Lists);
-            Number_List_Table.Free (Tree.Shared.Number_Lists);
-            String_Element_Table.Free (Tree.Shared.String_Elements);
+            Name_List_Table.Free        (Tree.Shared.Name_Lists);
+            Number_List_Table.Free      (Tree.Shared.Number_Lists);
+            String_Element_Table.Free   (Tree.Shared.String_Elements);
             Variable_Element_Table.Free (Tree.Shared.Variable_Elements);
-            Array_Element_Table.Free (Tree.Shared.Array_Elements);
-            Array_Table.Free (Tree.Shared.Arrays);
-            Package_Table.Free (Tree.Shared.Packages);
-
-            Temp_Files_Table.Free (Tree.Shared.Private_Part.Temp_Files);
+            Array_Element_Table.Free    (Tree.Shared.Array_Elements);
+            Array_Table.Free            (Tree.Shared.Arrays);
+            Package_Table.Free          (Tree.Shared.Packages);
+            Temp_Files_Table.Free       (Tree.Shared.Private_Part.Temp_Files);
          end if;
 
          Source_Paths_Htable.Reset (Tree.Source_Paths_HT);

@@ -1,3 +1,77 @@
+2011-08-03  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Process_Interface_Name): Allow duplicated export names
+	in Java since they are always enclosed in a namespace that
+	differentiates them, and overloaded entities are supported by the VM.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Determine_Range): If a computed bound of an operation is
+	outside the range of the base type of the expression, and overflow
+	checks are enabled, the result is unknown and cannot be used for any
+	subsequent constant folding.
+	* sem_eval.adb (Compile_Time_Compare): if the bounds of one operand are
+	unknown, so is the result of the comparison.
+
+2011-08-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-except-2005.adb (Raise_From_Controlled_Operation): Add new formal
+	From_Abort. When finalization was triggered by an abort, propagate
+	Standard'Abort_Signal rather than Program_Error.
+	* a-except-2005.ads (Raise_From_Controlled_Operation): Add new formal
+	From_Abort.
+	* a-except.adb (Raise_From_Controlled_Operation): Add new formal
+	From_Abort. When finalization was triggered by an abort, propagate
+	Standard'Abort_Signal rather than Program_Error.
+	* a-except.ads:(Raise_From_Controlled_Operation): Add new formal
+	From_Abort.
+	* exp_ch7.adb:(Build_Adjust_Or_Finalize_Statements): New local variable
+	Abort_Id. Update the calls to Build_Object_Declarations and
+	Build_Raise_Statement to include Abort_Id.
+	(Build_Adjust_Statements): New local variable Abort_Id. Update the
+	calls to Build_Object_Declarations and Build_Raise_Statement to include
+	Abort_Id.
+	(Build_Finalize_Statements): New local variable Abort_Id. Update the
+	calls to Build_Object_Declarations and Build_Raise_Statement to include
+	Abort_Id.
+	(Build_Components): Create an entity for Abort_Id when exceptions are
+	allowed on the target.
+	(Build_Finalizer): New local variable Abort_Id.
+	(Build_Initialize_Statements): New local variable Abort_Id. Update the
+	calls to Build_Object_Declarations and Build_Raise_Statement to include
+	Abort_Id.
+	(Build_Object_Declarations): Add new formal Abort_Id. Create the
+	declaration of flag Abort_Id to preserve the original abort status
+	before finalization code is executed.
+	(Build_Raise_Statement): Add new formal Abort_Id. Pass Abort_Id to
+	runtime routine Raise_From_Controlled_Operation.
+	(Create_Finalizer): Update the call to Build_Raise_Statement to include
+	Abort_Id. Update the call to Build_Object_Declarations to include
+	Abort_Id. Update the layout of the finalizer body.
+	(Make_Handler_For_Ctrl_Operation): Add an actual for From_Abort.
+	(Process_Transient_Objects): New local variable Abort_Id. Remove the
+	clunky code to create all flags and objects related to
+	exception propagation and replace it with a call to
+	Build_Object_Declarations. Update the call to Build_Raise_Statement to
+	include Abort_Id.
+	* exp_ch7.ads (Build_Object_Declarations): Moved from body to spec.
+	Add new formal Abort_Id and associated comment on its use.
+	(Build_Raise_Statement): Add new formal Abort_Id and associated comment
+	on its use.
+	* exp_intr.adb (Expand_Unc_Deallocation): New local variable Abort_Id.
+	Remove the clunky code to create all flags and objects related to
+	exception propagation and replace it with a call to
+	Build_Object_Declarations. Update the call to Build_Raise_Statement.
+
+2011-08-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-tassta.adb: Fix minor typos.
+
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
+	* rtsfind.ads, makeutl.ads, prj.ads, prj.adb, make.adb,
+	lib-writ.adb, makeutl.adb, s-soflin.ads, clean.adb: Minor reformatting.
+
 2011-08-03  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Create_Finalizer): Treat freeze nodes in similar fashion

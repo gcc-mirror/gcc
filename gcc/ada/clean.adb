@@ -370,9 +370,8 @@ package body Clean is
 
       Text    : Text_Buffer_Ptr;
       The_ALI : ALI_Id;
-
-      Found : Boolean;
-      Source : Queue.Source_Info;
+      Found   : Boolean;
+      Source  : Queue.Source_Info;
 
    begin
       Queue.Initialize (Queue_Per_Obj_Dir => False);
@@ -388,8 +387,8 @@ package body Clean is
 
       for N_File in 1 .. Osint.Number_Of_Files loop
          Main_Source_File := Next_Main_Source;
-         Main_Lib_File := Osint.Lib_File_Name
-           (Main_Source_File, Current_File_Index);
+         Main_Lib_File :=
+           Osint.Lib_File_Name (Main_Source_File, Current_File_Index);
 
          if Main_Lib_File /= No_File then
             Queue.Insert

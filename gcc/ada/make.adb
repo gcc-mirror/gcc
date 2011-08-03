@@ -2313,8 +2313,8 @@ package body Make is
                                    new String'(Name_Buffer (1 .. Name_Len));
                                  Test_If_Relative_Path
                                    (New_Args (Last_New),
-                                    Do_Fail => Make_Failed'Access,
-                                    Parent => Dir_Path,
+                                    Do_Fail              => Make_Failed'Access,
+                                    Parent               => Dir_Path,
                                     Including_Non_Switch => False);
                               end if;
 
@@ -2322,10 +2322,9 @@ package body Make is
                            end loop;
 
                            Add_Arguments
-                             (Configuration_Pragmas_Switch
-                                (Arguments_Project) &
-                              New_Args (1 .. Last_New) &
-                              The_Saved_Gcc_Switches.all);
+                             (Configuration_Pragmas_Switch (Arguments_Project)
+                              & New_Args (1 .. Last_New)
+                              & The_Saved_Gcc_Switches.all);
                         end;
                      end;
 
@@ -2341,8 +2340,8 @@ package body Make is
                                             (Name_Buffer (1 .. Name_Len)));
                         Dir_Path : constant String :=
                                      Get_Name_String
-                                      (Arguments_Project.
-                                       Directory.Display_Name);
+                                       (Arguments_Project.
+                                        Directory.Display_Name);
 
                      begin
                         Test_If_Relative_Path
@@ -2687,11 +2686,11 @@ package body Make is
 
                if Add_It then
                   if not Queue.Insert
-                       ((Format  => Format_Gnatmake,
-                         File    => Sfile,
-                         Unit    => No_Unit_Name,
-                         Project => No_Project,
-                         Index   => 0))
+                           ((Format  => Format_Gnatmake,
+                             File    => Sfile,
+                             Unit    => No_Unit_Name,
+                             Project => No_Project,
+                             Index   => 0))
                   then
                      if Is_In_Obsoleted (Sfile) then
                         Executable_Obsolete := True;
@@ -5901,10 +5900,10 @@ package body Make is
                   --  except those of library projects.
 
                   Prj.Env.Set_Ada_Paths
-                    (Project => Main_Project,
-                     In_Tree => Project_Tree,
+                    (Project             => Main_Project,
+                     In_Tree             => Project_Tree,
                      Including_Libraries => False,
-                     Include_Path => Use_Include_Path_File);
+                     Include_Path        => Use_Include_Path_File);
 
                   --  If switch -C was specified, create a binder mapping file
 
@@ -6051,9 +6050,9 @@ package body Make is
                               Linker_Switches.Increment_Last;
                               Linker_Switches.Table (Linker_Switches.Last) :=
                                 new String'("-l" &
-                                  Get_Name_String
-                                    (Library_Projs.Table (Index).
-                                       Library_Name));
+                                            Get_Name_String
+                                              (Library_Projs.Table (Index).
+                                                Library_Name));
                            end if;
                         end if;
                      end loop;
@@ -6421,22 +6420,23 @@ package body Make is
                         Test_If_Relative_Path
                           (Binder_Switches.Table (J),
                            Do_Fail => Make_Failed'Access,
-                           Parent => Dir_Path, Including_L_Switch => False);
+                           Parent  => Dir_Path, Including_L_Switch => False);
                      end loop;
 
                      for
                        J in Last_Linker_Switch + 1 .. Linker_Switches.Last
                      loop
                         Test_If_Relative_Path
-                          (Linker_Switches.Table (J), Parent => Dir_Path,
+                          (Linker_Switches.Table (J),
+                           Parent  => Dir_Path,
                            Do_Fail => Make_Failed'Access);
                      end loop;
                   end;
 
                   --  We now put in the Binder_Switches and Linker_Switches
                   --  tables, the binder and linker switches of the command
-                  --  line that have been put in the Saved_ tables.
-                  --  These switches will follow the project file switches.
+                  --  line that have been put in the Saved_ tables. These
+                  --  switches will follow the project file switches.
 
                   for J in 1 .. Saved_Binder_Switches.Last loop
                      Add_Switch
@@ -6461,6 +6461,7 @@ package body Make is
       if Do_Codepeer_Globalize_Step then
          declare
             Success : Boolean := False;
+
          begin
             Globalize (Success);
 
@@ -6732,7 +6733,8 @@ package body Make is
       --  Test for trailing -D switch
 
       elsif Object_Directory_Present
-        and then not Object_Directory_Seen then
+        and then not Object_Directory_Seen
+      then
          Make_Failed ("object directory missing after -D");
       end if;
 
@@ -7382,6 +7384,7 @@ package body Make is
       for Next_Arg in 1 .. Argument_Count loop
          declare
             Argv : constant String := Argument (Next_Arg);
+
          begin
             if Argv'Length > 2
               and then Argv (1) = '-'
@@ -7678,8 +7681,8 @@ package body Make is
 
       elsif Program_Args /= None then
 
-         --  Check to see if we are reading -I switches in order
-         --  to take into account in the src & lib search directories.
+         --  Check to see if we are reading -I switches in order to take into
+         --  account in the src & lib search directories.
 
          if Argv'Length > 2 and then Argv (1 .. 2) = "-I" then
             if Argv (3 .. Argv'Last) = "-" then

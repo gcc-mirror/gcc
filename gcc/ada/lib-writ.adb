@@ -461,8 +461,7 @@ package body Lib.Writ is
          Write_Info_Str (" O");
          Write_Info_Char (OA_Setting (Unit_Num));
 
-         if (Ekind (Uent) = E_Package
-               or else Ekind (Uent) = E_Package_Body)
+         if Ekind_In (Uent, E_Package, E_Package_Body)
            and then Present (Finalizer (Uent))
          then
             Write_Info_Str (" PF");

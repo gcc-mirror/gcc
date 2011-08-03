@@ -230,7 +230,8 @@ private
    --  system to return here rather than to the original location.
 
    procedure Raise_From_Controlled_Operation
-     (X : Ada.Exceptions.Exception_Occurrence);
+     (X          : Ada.Exceptions.Exception_Occurrence;
+      From_Abort : Boolean);
    pragma No_Return (Raise_From_Controlled_Operation);
    pragma Export
      (Ada, Raise_From_Controlled_Operation,

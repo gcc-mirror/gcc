@@ -850,21 +850,15 @@ package body Ada.Exceptions is
    -------------------------------------
 
    procedure Raise_From_Controlled_Operation
-     (X : Ada.Exceptions.Exception_Occurrence)
+     (X          : Ada.Exceptions.Exception_Occurrence;
+      From_Abort : Boolean)
    is
-      Prev_Exc  : constant EOA := Get_Current_Excep.all;
-
    begin
-      --  We're raising an exception during finalization. If the finalization
-      --  was triggered by an abort, as indicated by Not_Handled_By_Others,
-      --  then we don't want to raise Program_Error; we want to continue with
-      --  the Abort_Signal exception. Note that the original exception
-      --  occurrence that triggered the finalization is saved before calling
-      --  the Finalize procedures, and then restored afterward, so in the case
-      --  of abort, the original Abort_Signal will be the current one.
+      --  When finalization was triggered by an abort, keep propagating the
+      --  abort signal rather than raising Program_Error.
 
-      if Prev_Exc.Id /= null and then Prev_Exc.Id.Not_Handled_By_Others then
-         Raise_Current_Excep (Prev_Exc.Id);
+      if From_Abort then
+         raise Standard'Abort_Signal;
 
       --  Otherwise, raise Program_Error
 
@@ -873,9 +867,11 @@ package body Ada.Exceptions is
             Prefix             : constant String := "adjust/finalize raised ";
             Orig_Msg           : constant String := Exception_Message (X);
             Orig_Prefix_Length : constant Natural :=
-              Integer'Min (Prefix'Length, Orig_Msg'Length);
+                                   Integer'Min
+                                     (Prefix'Length, Orig_Msg'Length);
             Orig_Prefix        : String renames Orig_Msg
-              (Orig_Msg'First .. Orig_Msg'First + Orig_Prefix_Length - 1);
+                                   (Orig_Msg'First ..
+                                    Orig_Msg'First + Orig_Prefix_Length - 1);
 
          begin
             --  Message already has proper prefix, just re-reraise

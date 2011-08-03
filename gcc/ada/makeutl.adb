@@ -180,8 +180,8 @@ package body Makeutl is
    ------------------------------
 
    function Check_Source_Info_In_ALI
-     (The_ALI      : ALI_Id;
-      Tree         : Project_Tree_Ref) return Boolean
+     (The_ALI : ALI_Id;
+      Tree    : Project_Tree_Ref) return Boolean
    is
       Unit_Name : Name_Id;
 
@@ -943,8 +943,8 @@ package body Makeutl is
                   --  paths must be converted to absolute paths.
 
                   Test_If_Relative_Path
-                    (Switch => Linker_Options_Buffer (Last_Linker_Option),
-                     Parent => Dir_Path,
+                    (Switch  => Linker_Options_Buffer (Last_Linker_Option),
+                     Parent  => Dir_Path,
                      Do_Fail => Do_Fail,
                      Including_L_Switch => True);
                end if;
@@ -1498,7 +1498,8 @@ package body Makeutl is
 
       procedure Extract
         (Found  : out Boolean;
-         Source : out Source_Info) is
+         Source : out Source_Info)
+      is
       begin
          Found := False;
 
@@ -1565,7 +1566,8 @@ package body Makeutl is
 
       procedure Initialize
         (Queue_Per_Obj_Dir : Boolean;
-         Force : Boolean := False) is
+         Force             : Boolean := False)
+      is
       begin
          if Force or else not Q_Initialized then
             Q_Initialized := True;
@@ -1630,10 +1632,10 @@ package body Makeutl is
       ------------
 
       procedure Insert (Source : Source_Info) is
-         Tmp : Boolean;
-         pragma Unreferenced (Tmp);
+         Discard : Boolean;
+         pragma Unreferenced (Discard);
       begin
-         Tmp := Insert (Source);
+         Discard := Insert (Source);
       end Insert;
 
       --------------
