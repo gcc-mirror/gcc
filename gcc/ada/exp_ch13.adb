@@ -35,6 +35,8 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch7;  use Sem_Ch7;
@@ -215,10 +217,16 @@ package body Exp_Ch13 is
       Typ  : Entity_Id := Etype (Expr);
 
    begin
+      --  Certain run-time configurations and targets do not provide support
+      --  for controlled types.
+
+      if Restriction_Active (No_Finalization) then
+         return;
+
       --  Do not create a specialized Deallocate since .NET/JVM compilers do
       --  not support pools and address arithmetic.
 
-      if VM_Target /= No_VM then
+      elsif VM_Target /= No_VM then
          return;
       end if;
 

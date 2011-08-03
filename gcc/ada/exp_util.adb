@@ -5367,19 +5367,26 @@ package body Exp_Util is
    --  Start of processing for Needs_Finalization
 
    begin
-      --  Class-wide types must be treated as controlled because they may
-      --  contain an extension that has controlled components
+      --  Certain run-time configurations and targets do not provide support
+      --  for controlled types.
 
-      --  We can skip this if finalization is not available
+      if Restriction_Active (No_Finalization) then
+         return False;
 
-      return (Is_Class_Wide_Type (T)
-                and then not Restriction_Active (No_Finalization))
-        or else Is_Controlled (T)
-        or else Has_Controlled_Component (T)
-        or else Has_Some_Controlled_Component (T)
-        or else (Is_Concurrent_Type (T)
+      else
+         --  Class-wide types are treated as controlled because derivations
+         --  from the root type can introduce controlled components.
+
+         return
+           Is_Class_Wide_Type (T)
+             or else Is_Controlled (T)
+             or else Has_Controlled_Component (T)
+             or else Has_Some_Controlled_Component (T)
+             or else
+               (Is_Concurrent_Type (T)
                   and then Present (Corresponding_Record_Type (T))
                   and then Needs_Finalization (Corresponding_Record_Type (T)));
+      end if;
    end Needs_Finalization;
 
    ----------------------------

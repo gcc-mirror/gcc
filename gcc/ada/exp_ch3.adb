@@ -5574,11 +5574,17 @@ package body Exp_Ch3 is
    --  Start of processing for Expand_Freeze_Class_Wide_Type
 
    begin
+      --  Certain run-time configurations and targets do not provide support
+      --  for controlled types.
+
+      if Restriction_Active (No_Finalization) then
+         return;
+
       --  Do not create TSS routine Finalize_Address for concurrent class-wide
       --  types. Ignore C, C++, CIL and Java types since it is assumed that the
       --  non-Ada side will handle their destruction.
 
-      if Is_Concurrent_Type (Root)
+      elsif Is_Concurrent_Type (Root)
         or else Is_C_Derivation (Root)
         or else Convention (Typ) = Convention_CIL
         or else Convention (Typ) = Convention_CPP
