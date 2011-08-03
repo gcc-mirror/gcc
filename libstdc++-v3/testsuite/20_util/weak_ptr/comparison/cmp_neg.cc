@@ -51,7 +51,7 @@ main()
 // { dg-warning "note" "" { target *-*-* } 485 }
 // { dg-warning "note" "" { target *-*-* } 479 }
 // { dg-warning "note" "" { target *-*-* } 468 }
-// { dg-warning "note" "" { target *-*-* } 813 }
+// { dg-warning "note" "" { target *-*-* } 829 }
 // { dg-warning "note" "" { target *-*-* } 1055 }
 // { dg-warning "note" "" { target *-*-* } 1049 }
 // { dg-warning "note" "" { target *-*-* } 341 }

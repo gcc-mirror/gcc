@@ -114,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _UHead, typename = typename
 	       enable_if<!is_convertible<_UHead,
 	                                 __uses_alloc_base>::value>::type>
-        _Head_base(_UHead&& __h)
+        constexpr _Head_base(_UHead&& __h)
 	: _Head(std::forward<_UHead>(__h)) { }
 
       _Head_base(__uses_alloc0)
@@ -140,8 +140,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Head_base(__uses_alloc2<_Alloc> __a, _UHead&& __uhead)
 	: _Head(std::forward<_UHead>(__uhead), *__a._M_a) { }
 
-      _Head&       _M_head() noexcept       { return *this; }
-      const _Head& _M_head() const noexcept { return *this; }
+      _Head&       
+      _M_head() noexcept { return *this; }
+
+      const _Head& 
+      _M_head() const noexcept { return *this; }
     };
 
   template<std::size_t _Idx, typename _Head>
@@ -156,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _UHead, typename = typename
 	       enable_if<!is_convertible<_UHead,
 	                                 __uses_alloc_base>::value>::type>
-        _Head_base(_UHead&& __h)
+        constexpr _Head_base(_UHead&& __h)
 	: _M_head_impl(std::forward<_UHead>(__h)) { }
 
       _Head_base(__uses_alloc0)
@@ -183,8 +186,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Head_base(__uses_alloc2<_Alloc> __a, _UHead&& __uhead)
 	: _M_head_impl(std::forward<_UHead>(__uhead), *__a._M_a) { }
 
-      _Head&       _M_head() noexcept       { return _M_head_impl; }
-      const _Head& _M_head() const noexcept { return _M_head_impl; }        
+      _Head&       
+      _M_head() noexcept { return _M_head_impl; }
+
+      const _Head& 
+      _M_head() const noexcept { return _M_head_impl; }        
 
       _Head _M_head_impl; 
     };
@@ -239,11 +245,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tuple_impl<_Idx + 1, _Tail...> _Inherited;
       typedef _Head_base<_Idx, _Head, std::is_empty<_Head>::value> _Base;
 
-      _Head&            _M_head() noexcept       { return _Base::_M_head(); }
-      const _Head&      _M_head() const noexcept { return _Base::_M_head(); }
+      _Head&            
+      _M_head() noexcept { return _Base::_M_head(); }
 
-      _Inherited&       _M_tail() noexcept       { return *this; }
-      const _Inherited& _M_tail() const noexcept { return *this; }
+      const _Head&      
+      _M_head() const noexcept { return _Base::_M_head(); }
+
+      _Inherited&       
+      _M_tail() noexcept { return *this; }
+
+      const _Inherited& 
+      _M_tail() const noexcept { return *this; }
 
       constexpr _Tuple_impl()
       : _Inherited(), _Base() { }
@@ -255,7 +267,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _UHead, typename... _UTail, typename = typename
                enable_if<sizeof...(_Tail) == sizeof...(_UTail)>::type> 
         explicit
-        _Tuple_impl(_UHead&& __head, _UTail&&... __tail)
+        constexpr _Tuple_impl(_UHead&& __head, _UTail&&... __tail)
 	: _Inherited(std::forward<_UTail>(__tail)...),
 	  _Base(std::forward<_UHead>(__head)) { }
 
@@ -371,7 +383,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-  /// tuple
+  /// Primary class template, tuple
   template<typename... _Elements> 
     class tuple : public _Tuple_impl<0, _Elements...>
     {
@@ -392,10 +404,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					   __conv_types<_Elements...>>
 			 >::value>::type>
 	explicit
-        tuple(_UElements&&... __elements)
+        constexpr tuple(_UElements&&... __elements)
 	: _Inherited(std::forward<_UElements>(__elements)...) {	}
 
       constexpr tuple(const tuple&) = default;
+
       tuple(tuple&&) = default;
 
       template<typename... _UElements, typename = typename
@@ -417,7 +430,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         tuple(tuple<_UElements...>&& __in)
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
-      // allocator-extended constructors
+      // Allocator-extended constructors.
 
       template<typename _Alloc>
 	tuple(allocator_arg_t __tag, const _Alloc& __a)
@@ -503,6 +516,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _Inherited::_M_swap(__in); }
     };
 
+  // Explicit specialization, zero-element tuple.
   template<>  
     class tuple<>
     {
@@ -510,7 +524,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void swap(tuple&) noexcept { /* no-op */ }
     };
 
-  /// tuple (2-element), with construction and assignment from a pair.
+  /// Partial specialization, 2-element tuple.
+  /// Includes construction and assignment from a pair.
   template<typename _T1, typename _T2>
     class tuple<_T1, _T2> : public _Tuple_impl<0, _T1, _T2>
     {
@@ -528,10 +543,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       enable_if<__and_<is_convertible<_U1, _T1>,
 				is_convertible<_U2, _T2>>::value>::type>
         explicit
-        tuple(_U1&& __a1, _U2&& __a2)
+        constexpr tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
 
       constexpr tuple(const tuple&) = default;
+
       tuple(tuple&&) = default;
 
       template<typename _U1, typename _U2, typename = typename
@@ -549,7 +565,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _U1, typename _U2, typename = typename
 	enable_if<__and_<is_convertible<const _U1&, _T1>,
 			 is_convertible<const _U2&, _T2>>::value>::type>
-        tuple(const pair<_U1, _U2>& __in)
+        constexpr tuple(const pair<_U1, _U2>& __in)
 	: _Inherited(__in.first, __in.second) { }
 
       template<typename _U1, typename _U2, typename = typename
@@ -559,7 +575,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Inherited(std::forward<_U1>(__in.first),
 		     std::forward<_U2>(__in.second)) { }
 
-      // allocator-extended constructors
+      // Allocator-extended constructors.
 
       template<typename _Alloc>
 	tuple(allocator_arg_t __tag, const _Alloc& __a)

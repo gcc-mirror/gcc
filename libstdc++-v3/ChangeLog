@@ -1,3 +1,18 @@
+2011-08-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/tuple: Mark more constructors constexpr.
+	* testsuite/20_util/tuple/cons/constexpr.cc: Split into and extend as:
+	* testsuite/20_util/tuple/cons/constexpr-2.cc: ...this.
+	* testsuite/20_util/tuple/cons/constexpr-3.cc: ... and this.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust line numbers.
+
+2011-08-03  Benjamin Kosnik  <bkoz@redhat.com>
+	    François Dumont  <francois.cppdevs@free.fr>
+
+	* testsuite/23_containers/array/at_neg.cc: Move...
+	* testsuite/23_containers/array/at.cc: ...here. Remove
+	-fno-exceptions, call const at member function.
+
 2011-08-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Generated.
