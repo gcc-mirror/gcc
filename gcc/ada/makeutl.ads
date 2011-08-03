@@ -245,15 +245,21 @@ package Makeutl is
       File      : File_Name_Type;  --  Always canonical casing
       Index     : Int := 0;
       Location  : Source_Ptr := No_Location;
+
       Source    : Prj.Source_Id := No_Source;
+      Project   : Project_Id;
+      Tree      : Project_Tree_Ref;
    end record;
-   No_Main_Info : constant Main_Info := (No_File, 0, No_Location, No_Source);
+   No_Main_Info : constant Main_Info :=
+     (No_File, 0, No_Location, No_Source, No_Project, null);
 
    package Mains is
       procedure Add_Main
         (Name     : String;
          Index    : Int := 0;
-         Location : Source_Ptr := No_Location);
+         Location : Source_Ptr := No_Location;
+         Project  : Project_Id := No_Project;
+         Tree     : Project_Tree_Ref := null);
       --  Add one main to the table.
       --  This is in general used to add the main files specified on the
       --  command line.
@@ -261,6 +267,10 @@ package Makeutl is
       --  within the source is concerned.
       --  Location is the location within the project file (if a project file
       --  is used).
+      --  Project and Tree indicate to which project the main should belong.
+      --  In particular, for aggregate projects, this isn't necessarily the
+      --  main project tree. These can be set to No_Project and null when not
+      --  using projects.
 
       procedure Delete;
       --  Empty the table
@@ -290,8 +300,7 @@ package Makeutl is
          Project_Tree : Project_Tree_Ref);
       --  If no main was already added (presumably from the command line), add
       --  the main units from root_project (or in the case of an aggregate
-      --  project from all the
-      --  aggregated projects).
+      --  project from all the aggregated projects).
       --
       --  If some main units were already added from the command line, check
       --  that they all belong to the root project, and that they are full
@@ -314,7 +323,8 @@ package Makeutl is
          record
             case Format is
             when Format_Gprbuild =>
-               Id : Source_Id := null;
+               Tree : Project_Tree_Ref := null;
+               Id   : Source_Id := null;
 
             when Format_Gnatmake =>
                File      : File_Name_Type := No_File;
@@ -352,11 +362,18 @@ package Makeutl is
       --  Returns True if the queue is empty or if all object directories are
       --  busy.
 
-      procedure Insert (Source  : Source_Info);
-      function Insert (Source  : Source_Info) return Boolean;
+      procedure Insert (Source  : Source_Info; With_Roots : Boolean := False);
+      function Insert
+        (Source  : Source_Info; With_Roots : Boolean := False) return Boolean;
       --  Insert source in the queue.
       --  The second version returns False if the Source was already marked in
       --  the queue.
+      --  If With_Roots is True and the source is in Format_Gprbuild mode (ie
+      --  with a project), this procedure also includes the "Roots" for this
+      --  main, ie all the other files that must be included in the library or
+      --  binary (in particular to combine Ada and C files connected through
+      --  pragma Export/Import). When the roots are computed, they are also
+      --  stored in the corresponding Source_Id for later reuse by the binder.
 
       procedure Insert_Project_Sources
         (Project      : Project_Id;
