@@ -1,5 +1,17 @@
 2011-08-03  Robert Dewar  <dewar@adacore.com>
 
+	* sem_util.ads, exp_aggr.adb, exp_ch3.adb: Minor reformatting.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): if a constant object of an
+	unconstrained type with discriminants is initialized with an aggregate,
+	use the constrained subtype of the aggregate as the type of the object,
+	because it is immutable, and this allows the back-end to generate no
+	code for the object declaration.
+
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch4.adb (Optimize_Length_Check): Fix bad handling of case where
 	comparison operand is variable, and turns out to be zero or negative.
 
