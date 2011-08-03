@@ -4477,14 +4477,6 @@ package body Exp_Ch3 is
    -- Expand_N_Object_Declaration --
    ---------------------------------
 
-   --  First we do special processing for objects of a tagged type where this
-   --  is the point at which the type is frozen. The creation of the dispatch
-   --  table and the initialization procedure have to be deferred to this
-   --  point, since we reference previously declared primitive subprograms.
-
-   --  The above comment is in the wrong place, it should be at the proper
-   --  point in this routine ???
-
    procedure Expand_N_Object_Declaration (N : Node_Id) is
       Def_Id   : constant Entity_Id  := Defining_Identifier (N);
       Expr     : constant Node_Id    := Expression (N);
@@ -4527,6 +4519,12 @@ package body Exp_Ch3 is
       if No (Expr) and Constant_Present (N) then
          return;
       end if;
+
+      --  First we do special processing for objects of a tagged type where
+      --  this is the point at which the type is frozen. The creation of the
+      --  dispatch table and the initialization procedure have to be deferred
+      --  to this point, since we reference previously declared primitive
+      --  subprograms.
 
       --  Force construction of dispatch tables of library level tagged types
 
@@ -4993,11 +4991,33 @@ package body Exp_Ch3 is
                   Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
                   Exchange_Entities (Defining_Identifier (N), Def_Id);
                end;
+
+            --  Handle initialization of class-wide interface object in VM
+            --  targets
+
+            elsif not Tagged_Type_Expansion then
+
+               --  Replace
+               --     CW : I'Class := Obj;
+               --  by
+               --     CW : I'Class;
+               --     CW := I'Class (Obj); [1]
+
+               --  The assignment [1] is later expanded in a dispatching
+               --  call to _assign
+
+               Set_Expression (N, Empty);
+
+               Insert_Action (N,
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Reference_To (Def_Id, Loc),
+                   Expression => Convert_To (Typ,
+                                   Relocate_Node (Expr))));
             end if;
 
             return;
 
-         --  Comment needed here, what case is this???
+         --  Common case of explicit object initialization
 
          else
             --  In most cases, we must check that the initial value meets any

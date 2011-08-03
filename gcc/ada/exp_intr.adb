@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -233,6 +233,7 @@ package body Exp_Intr is
 
          if not Is_Ancestor (Etype (Result_Typ), Etype (Tag_Arg),
                              Use_Full_View => True)
+           and then Tagged_Type_Expansion
          then
             --  Obtain the reference to the Ada.Tags service before generating
             --  the Object_Declaration node to ensure that if this service is

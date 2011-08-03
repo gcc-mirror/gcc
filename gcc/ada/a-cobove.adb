@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -762,7 +762,7 @@ package body Ada.Containers.Bounded_Vectors is
 
       begin
          if Target.Is_Empty then
-            Target.Assign (Source);
+            Move (Target => Target, Source => Source);
             return;
          end if;
 

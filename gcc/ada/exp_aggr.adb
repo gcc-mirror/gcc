@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5649,7 +5649,9 @@ package body Exp_Aggr is
       --  Gigi doesn't handle properly temporaries of variable size
       --  so we generate it in the front-end
 
-      elsif not Size_Known_At_Compile_Time (Typ) then
+      elsif not Size_Known_At_Compile_Time (Typ)
+        and then Tagged_Type_Expansion
+      then
          Convert_To_Assignments (N, Typ);
 
       --  Temporaries for controlled aggregates need to be attached to a

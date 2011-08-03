@@ -10209,11 +10209,11 @@ package body Exp_Ch4 is
       --  Kind of comparison operator, gets flipped if operands backwards
 
       function Is_Optimizable (N : Node_Id) return Boolean;
-      --  Tests N to see if it is an optimizable comparison value (defined
-      --  as constant zero or one, or something else where the value is known
-      --  to be in range of 32-bits, and where the corresponding Length value
-      --  is also known to be 32-bits. If result is true, sets Is_Zero, Ityp,
-      --  and Comp accordingly.
+      --  Tests N to see if it is an optimizable comparison value (defined as
+      --  constant zero or one, or something else where the value is known to
+      --  be positive and in the range of 32-bits, and where the corresponding
+      --  Length value is also known to be 32-bits. If result is true, sets
+      --  Is_Zero, Ityp, and Comp accordingly.
 
       function Is_Entity_Length (N : Node_Id) return Boolean;
       --  Tests if N is a length attribute applied to a simple entity. If so,
@@ -10293,14 +10293,14 @@ package body Exp_Ch4 is
          Determine_Range (N, OK, Lo, Hi, Assume_Valid => True);
 
          if not OK
-           or else Lo < UI_From_Int (Int'First)
+           or else Lo < Uint_1
            or else Hi > UI_From_Int (Int'Last)
          then
             return False;
          end if;
 
-         --  Comparison value was within 32-bits, so now we must check the
-         --  index value to make sure it is also within 32-bits.
+         --  Comparison value was within range, so now we must check the index
+         --  value to make sure it is also within 32-bits.
 
          Indx := First_Index (Etype (Ent));
 
