@@ -1,3 +1,8 @@
+2011-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49948
+	* gcc.dg/pr49948.c: New test.
+
 2011-08-03  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/49885

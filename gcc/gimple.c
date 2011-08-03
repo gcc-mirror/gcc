@@ -4943,6 +4943,20 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 		   && TREE_CODE (OBJ_TYPE_REF_OBJECT (rhs)) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (OBJ_TYPE_REF_OBJECT (rhs),
 						   0), data);
+	  else if (TREE_CODE (rhs) == CONSTRUCTOR)
+	    {
+	      unsigned int ix;
+	      tree val;
+
+	      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), ix, val)
+		if (TREE_CODE (val) == ADDR_EXPR)
+		  ret |= visit_addr (stmt, TREE_OPERAND (val, 0), data);
+		else if (TREE_CODE (val) == OBJ_TYPE_REF
+			 && TREE_CODE (OBJ_TYPE_REF_OBJECT (val)) == ADDR_EXPR)
+		  ret |= visit_addr (stmt,
+				     TREE_OPERAND (OBJ_TYPE_REF_OBJECT (val),
+						   0), data);
+	    }
           lhs = gimple_assign_lhs (stmt);
 	  if (TREE_CODE (lhs) == TARGET_MEM_REF
               && TREE_CODE (TMR_BASE (lhs)) == ADDR_EXPR)

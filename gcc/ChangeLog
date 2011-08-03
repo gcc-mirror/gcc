@@ -1,3 +1,8 @@
+2011-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49948
+	* gimple.c (walk_stmt_load_store_addr_ops): Walk CONSTRUCTOR elements.
+
 2011-08-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/md.texi (stack_protect_set): The pattern moves ptr_mode value.
