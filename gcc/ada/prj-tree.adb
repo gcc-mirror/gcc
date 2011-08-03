@@ -1005,7 +1005,8 @@ package body Prj.Tree is
    ----------------
 
    procedure Initialize
-     (Self : in out Environment; Flags : Processing_Flags) is
+     (Self      : out Environment;
+      Flags     : Processing_Flags) is
    begin
       --  Do not reset the external references, in case we are reloading a
       --  project, since we want to preserve the current environment. But we
@@ -1017,6 +1018,19 @@ package body Prj.Tree is
 
       Self.Flags := Flags;
    end Initialize;
+
+   -------------------------
+   -- Initialize_And_Copy --
+   -------------------------
+
+   procedure Initialize_And_Copy
+     (Self      : out Environment;
+      Copy_From : Environment) is
+   begin
+      Self.Flags := Copy_From.Flags;
+      Prj.Ext.Initialize (Self.External, Copy_From => Copy_From.External);
+      Prj.Env.Copy (From => Copy_From.Project_Path, To => Self.Project_Path);
+   end Initialize_And_Copy;
 
    ----------
    -- Free --

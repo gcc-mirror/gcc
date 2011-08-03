@@ -2197,4 +2197,18 @@ package body Prj.Env is
       Projects_Paths.Reset (Self.Cache);
    end Free;
 
+   ----------
+   -- Copy --
+   ----------
+
+   procedure Copy (From : Project_Search_Path; To : out Project_Search_Path) is
+   begin
+      Free (To);
+      if From.Path /= null then
+         To.Path := new String'(From.Path.all);
+      end if;
+
+      --  No need to copy the Cache, it will be recomputed as needed.
+   end Copy;
+
 end Prj.Env;

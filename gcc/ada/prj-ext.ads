@@ -54,11 +54,25 @@ package Prj.Ext is
    procedure Free (Self : in out External_References);
    --  Free memory used by Self
 
+   type External_Source is
+     (From_Command_Line,
+      From_Environment,
+      From_External_Attribute);
+   --  Where was the value of an external reference defined ?
+   --  They are prioritized in that order, so that a user can always use the
+   --  command line to override a value coming from his environment, or an
+   --  environment variable to override a value defined in an aggregate project
+   --  through the "for External()..." attribute.
+
    procedure Add
      (Self          : External_References;
       External_Name : String;
-      Value         : String);
-   --  Add an external reference (or modify an existing one)
+      Value         : String;
+      Source        : External_Source := External_Source'First);
+   --  Add an external reference (or modify an existing one).
+   --  No overriding is done if the Source's priority is less than the one
+   --  used to previously set the value of the variable. The default for Source
+   --  is such that overriding always occurs.
 
    function Value_Of
      (Self          : External_References;
@@ -88,9 +102,10 @@ private
    type Name_To_Name;
    type Name_To_Name_Ptr is access all Name_To_Name;
    type Name_To_Name is record
-      Key   : Name_Id;
-      Value : Name_Id;
-      Next  : Name_To_Name_Ptr;
+      Key    : Name_Id;
+      Value  : Name_Id;
+      Source : External_Source;
+      Next   : Name_To_Name_Ptr;
    end record;
 
    procedure Set_Next (E : Name_To_Name_Ptr; Next : Name_To_Name_Ptr);

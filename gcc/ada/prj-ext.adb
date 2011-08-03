@@ -46,9 +46,11 @@ package body Prj.Ext is
          if Copy_From.Refs /= null then
             N := Name_To_Name_HTable.Get_First (Copy_From.Refs.all);
             while N /= null loop
-               N2 := new Name_To_Name;
-               N2.Key := N.Key;
-               N2.Value := N.Value;
+               N2 := new Name_To_Name'
+                 (Key    => N.Key,
+                  Value  => N.Value,
+                  Source => N.Source,
+                  Next   => null);
                Name_To_Name_HTable.Set (Self.Refs.all, N2);
                N := Name_To_Name_HTable.Get_Next (Copy_From.Refs.all);
             end loop;
@@ -63,24 +65,47 @@ package body Prj.Ext is
    procedure Add
      (Self          : External_References;
       External_Name : String;
-      Value         : String)
+      Value         : String;
+      Source        : External_Source := External_Source'First)
    is
-      N : Name_To_Name_Ptr;
+      Key : Name_Id;
+      N   : Name_To_Name_Ptr;
 
    begin
-      N := new Name_To_Name;
-
-      Name_Len := Value'Length;
-      Name_Buffer (1 .. Name_Len) := Value;
-      N.Value := Name_Find;
-
       Name_Len := External_Name'Length;
       Name_Buffer (1 .. Name_Len) := External_Name;
       Canonical_Case_Env_Var_Name (Name_Buffer (1 .. Name_Len));
-      N.Key := Name_Find;
+      Key := Name_Find;
+
+      --  Check whether the value is already defined, to properly respect the
+      --  overriding order.
+
+      if Source /= External_Source'First then
+         N := Name_To_Name_HTable.Get (Self.Refs.all, Key);
+         if N /= null then
+            if External_Source'Pos (N.Source) <
+              External_Source'Pos (Source)
+            then
+               if Current_Verbosity = High then
+                  Debug_Output
+                    ("Not overridding existing variable '" & External_Name
+                     & "', value was defined in " & N.Source'Img);
+               end if;
+               return;
+            end if;
+         end if;
+      end if;
+
+      Name_Len := Value'Length;
+      Name_Buffer (1 .. Name_Len) := Value;
+      N := new Name_To_Name'
+        (Key    => Key,
+         Source => Source,
+         Value  => Name_Find,
+         Next   => null);
 
       if Current_Verbosity = High then
-         Debug_Output ("Add (" & External_Name & ") is", N.Value);
+         Debug_Output ("Add external (" & External_Name & ") is", N.Value);
       end if;
 
       Name_To_Name_HTable.Set (Self.Refs.all, N);
@@ -103,7 +128,8 @@ package body Prj.Ext is
                External_Name =>
                  Declaration (Declaration'First .. Equal_Pos - 1),
                Value         =>
-                 Declaration (Equal_Pos + 1 .. Declaration'Last));
+                 Declaration (Equal_Pos + 1 .. Declaration'Last),
+               Source        => From_Command_Line);
             return True;
          end if;
       end loop;
@@ -146,6 +172,7 @@ package body Prj.Ext is
          Value := Name_To_Name_HTable.Get (Self.Refs.all, Name_Find);
 
          if Value /= null then
+            Debug_Output ("Value_Of (" & Name & ") is in cache", Value.Value);
             return Value.Value;
          end if;
       end if;
@@ -162,14 +189,15 @@ package body Prj.Ext is
             Val := Name_Find;
 
             if Current_Verbosity = High then
-               Debug_Output ("Value_Of (" & Get_Name_String (External_Name)
-                             & ") is", Val);
+               Debug_Output ("Value_Of (" & Name & ") is", Val);
             end if;
 
             if Self.Refs /= null then
-               Value := new Name_To_Name;
-               Value.Key := External_Name;
-               Value.Value := Val;
+               Value := new Name_To_Name'
+                 (Key    => External_Name,
+                  Value  => Val,
+                  Source => From_Environment,
+                  Next   => null);
                Name_To_Name_HTable.Set (Self.Refs.all, Value);
             end if;
 
@@ -178,8 +206,8 @@ package body Prj.Ext is
 
          else
             if Current_Verbosity = High then
-               Debug_Output ("Value_Of (" & Get_Name_String (External_Name)
-                             & ") is default", With_Default);
+               Debug_Output
+                 ("Value_Of (" & Name & ") is default", With_Default);
             end if;
 
             Free (Env_Value);
