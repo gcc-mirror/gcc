@@ -102,8 +102,8 @@ package body Prj.Conf is
    --  Raises exception Invalid_Config with given message
 
    procedure Apply_Config_File
-     (Config_File       : Prj.Project_Id;
-      Project_Tree      : Prj.Project_Tree_Ref);
+     (Config_File  : Prj.Project_Id;
+      Project_Tree : Prj.Project_Tree_Ref);
    --  Apply the configuration file settings to all the projects in the
    --  project tree. The Project_Tree must have been parsed first, and
    --  processed through the first phase so that all its projects are known.
@@ -174,8 +174,8 @@ package body Prj.Conf is
 
                   String_Element_Table.Increment_Last
                     (Shared.String_Elements);
-                  New_List := String_Element_Table.Last
-                    (Shared.String_Elements);
+                  New_List :=
+                    String_Element_Table.Last (Shared.String_Elements);
 
                   --  Value of attribute is new list
 
@@ -183,11 +183,10 @@ package body Prj.Conf is
                   Shared.Variable_Elements.Table (User_Attr_Id) := User_Attr;
 
                   loop
-
                      --  Get each element of configuration list
 
                      Conf_Elem := Shared.String_Elements.Table (Conf_List);
-                     New_Elem := Conf_Elem;
+                     New_Elem  := Conf_Elem;
                      Conf_List := Conf_Elem.Next;
 
                      if Conf_List = Nil_String then
@@ -240,9 +239,9 @@ package body Prj.Conf is
             User_Decl.Arrays := Array_Table.Last (Shared.Arrays);
             Shared.Arrays.Table (User_Decl.Arrays) := User_Array;
 
-         else
-            --  Otherwise, check each array element
+         --  Otherwise, check each array element
 
+         else
             Conf_Array_Elem_Id := Conf_Array.Value;
             while Conf_Array_Elem_Id /= No_Array_Element loop
                Conf_Array_Elem :=
@@ -256,9 +255,8 @@ package body Prj.Conf is
                   User_Array_Elem_Id := User_Array_Elem.Next;
                end loop;
 
-               --  If the array element does not exist in the user array,
-               --  insert a shallow copy of the conf array element in the
-               --  user array.
+               --  If the array element doesn't exist in the user array, insert
+               --  a shallow copy of the conf array element in the user array.
 
                if User_Array_Elem_Id = No_Array_Element then
                   Array_Element_Table.Increment_Last (Shared.Array_Elements);
@@ -270,8 +268,8 @@ package body Prj.Conf is
                     User_Array_Elem;
                   Shared.Arrays.Table (User_Array_Id) := User_Array;
 
-               --  Otherwise, if the value is a string list, prepend the
-               --  user array element with the conf array element value.
+               --  Otherwise, if the value is a string list, prepend the conf
+               --  array element value to the array element.
 
                elsif Conf_Array_Elem.Value.Kind = List then
                   Conf_List := Conf_Array_Elem.Value.Values;
@@ -351,12 +349,13 @@ package body Prj.Conf is
          Index : String := "";
          Pkg   : Project_Node_Id := Empty_Node)
       is
-         Attr       : Project_Node_Id;
+         Attr : Project_Node_Id;
          pragma Unreferenced (Attr);
 
          Expr   : Name_Id         := No_Name;
          Val    : Name_Id         := No_Name;
          Parent : Project_Node_Id := Config_File;
+
       begin
          if Index /= "" then
             Name_Len := Index'Length;
@@ -456,10 +455,11 @@ package body Prj.Conf is
    -----------------------
 
    procedure Apply_Config_File
-     (Config_File       : Prj.Project_Id;
-      Project_Tree      : Prj.Project_Tree_Ref)
+     (Config_File  : Prj.Project_Id;
+      Project_Tree : Prj.Project_Tree_Ref)
    is
       Shared : constant Shared_Project_Tree_Data_Access := Project_Tree.Shared;
+
       Conf_Decl    : constant Declarations := Config_File.Decl;
       Conf_Pack_Id : Package_Id;
       Conf_Pack    : Package_Element;

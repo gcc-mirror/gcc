@@ -2841,6 +2841,7 @@ package body Sem_Ch13 is
       Choice   : Node_Id;
       Val      : Uint;
       Err      : Boolean := False;
+      --  Set True to avoid cascade errors and crashes on incorrect source code
 
       Lo : constant Uint := Expr_Value (Type_Low_Bound (Universal_Integer));
       Hi : constant Uint := Expr_Value (Type_High_Bound (Universal_Integer));
@@ -2985,45 +2986,51 @@ package body Sem_Ch13 is
 
             else
                Analyze_And_Resolve (Choice, Enumtype);
-
-               if Is_Entity_Name (Choice)
-                 and then Is_Type (Entity (Choice))
-               then
-                  Error_Msg_N ("subtype name not allowed here", Choice);
+               if Error_Posted (Choice) then
                   Err := True;
-                  --  ??? should allow static subtype with zero/one entry
+               end if;
 
-               elsif Etype (Choice) = Base_Type (Enumtype) then
-                  if not Is_Static_Expression (Choice) then
-                     Flag_Non_Static_Expr
-                       ("non-static expression used for choice!", Choice);
+               if not Err then
+                  if Is_Entity_Name (Choice)
+                    and then Is_Type (Entity (Choice))
+                  then
+                     Error_Msg_N ("subtype name not allowed here", Choice);
                      Err := True;
+                     --  ??? should allow static subtype with zero/one entry
 
-                  else
-                     Elit := Expr_Value_E (Choice);
-
-                     if Present (Enumeration_Rep_Expr (Elit)) then
-                        Error_Msg_Sloc := Sloc (Enumeration_Rep_Expr (Elit));
-                        Error_Msg_NE
-                          ("representation for& previously given#",
-                           Choice, Elit);
+                  elsif Etype (Choice) = Base_Type (Enumtype) then
+                     if not Is_Static_Expression (Choice) then
+                        Flag_Non_Static_Expr
+                          ("non-static expression used for choice!", Choice);
                         Err := True;
+
+                     else
+                        Elit := Expr_Value_E (Choice);
+
+                        if Present (Enumeration_Rep_Expr (Elit)) then
+                           Error_Msg_Sloc :=
+                             Sloc (Enumeration_Rep_Expr (Elit));
+                           Error_Msg_NE
+                             ("representation for& previously given#",
+                              Choice, Elit);
+                           Err := True;
+                        end if;
+
+                        Set_Enumeration_Rep_Expr (Elit, Expression (Assoc));
+
+                        Expr := Expression (Assoc);
+                        Val := Static_Integer (Expr);
+
+                        if Val = No_Uint then
+                           Err := True;
+
+                        elsif Val < Lo or else Hi < Val then
+                           Error_Msg_N ("value outside permitted range", Expr);
+                           Err := True;
+                        end if;
+
+                        Set_Enumeration_Rep (Elit, Val);
                      end if;
-
-                     Set_Enumeration_Rep_Expr (Elit, Expression (Assoc));
-
-                     Expr := Expression (Assoc);
-                     Val := Static_Integer (Expr);
-
-                     if Val = No_Uint then
-                        Err := True;
-
-                     elsif Val < Lo or else Hi < Val then
-                        Error_Msg_N ("value outside permitted range", Expr);
-                        Err := True;
-                     end if;
-
-                     Set_Enumeration_Rep (Elit, Val);
                   end if;
                end if;
             end if;

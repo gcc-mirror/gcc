@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -639,6 +639,9 @@ package Rtsfind is
      RE_Current_Task,                    -- Ada.Task_Identification
      RO_AT_Task_Id,                      -- Ada.Task_Identification
 
+     RE_Integer_8,                       -- Interfaces
+     RE_Integer_16,                      -- Interfaces
+     RE_Integer_32,                      -- Interfaces
      RE_Integer_64,                      -- Interfaces
      RE_Unsigned_8,                      -- Interfaces
      RE_Unsigned_16,                     -- Interfaces
@@ -1210,19 +1213,17 @@ package Rtsfind is
      RE_FA_B,                            -- System.Partition_Interface
      RE_FA_C,                            -- System.Partition_Interface
      RE_FA_F,                            -- System.Partition_Interface
-     RE_FA_I,                            -- System.Partition_Interface
+     RE_FA_I8,                           -- System.Partition_Interface
+     RE_FA_I16,                          -- System.Partition_Interface
+     RE_FA_I32,                          -- System.Partition_Interface
+     RE_FA_I64,                          -- System.Partition_Interface
      RE_FA_LF,                           -- System.Partition_Interface
-     RE_FA_LI,                           -- System.Partition_Interface
      RE_FA_LLF,                          -- System.Partition_Interface
-     RE_FA_LLI,                          -- System.Partition_Interface
-     RE_FA_LLU,                          -- System.Partition_Interface
-     RE_FA_LU,                           -- System.Partition_Interface
      RE_FA_SF,                           -- System.Partition_Interface
-     RE_FA_SI,                           -- System.Partition_Interface
-     RE_FA_SSI,                          -- System.Partition_Interface
-     RE_FA_SSU,                          -- System.Partition_Interface
-     RE_FA_SU,                           -- System.Partition_Interface
-     RE_FA_U,                            -- System.Partition_Interface
+     RE_FA_U8,                           -- System.Partition_Interface
+     RE_FA_U16,                          -- System.Partition_Interface
+     RE_FA_U32,                          -- System.Partition_Interface
+     RE_FA_U64,                          -- System.Partition_Interface
      RE_FA_WC,                           -- System.Partition_Interface
      RE_FA_WWC,                          -- System.Partition_Interface
      RE_FA_String,                       -- System.Partition_Interface
@@ -1232,19 +1233,17 @@ package Rtsfind is
      RE_TA_B,                            -- System.Partition_Interface
      RE_TA_C,                            -- System.Partition_Interface
      RE_TA_F,                            -- System.Partition_Interface
-     RE_TA_I,                            -- System.Partition_Interface
+     RE_TA_I8,                           -- System.Partition_Interface
+     RE_TA_I16,                          -- System.Partition_Interface
+     RE_TA_I32,                          -- System.Partition_Interface
+     RE_TA_I64,                          -- System.Partition_Interface
      RE_TA_LF,                           -- System.Partition_Interface
-     RE_TA_LI,                           -- System.Partition_Interface
      RE_TA_LLF,                          -- System.Partition_Interface
-     RE_TA_LLI,                          -- System.Partition_Interface
-     RE_TA_LLU,                          -- System.Partition_Interface
-     RE_TA_LU,                           -- System.Partition_Interface
      RE_TA_SF,                           -- System.Partition_Interface
-     RE_TA_SI,                           -- System.Partition_Interface
-     RE_TA_SSI,                          -- System.Partition_Interface
-     RE_TA_SSU,                          -- System.Partition_Interface
-     RE_TA_SU,                           -- System.Partition_Interface
-     RE_TA_U,                            -- System.Partition_Interface
+     RE_TA_U8,                           -- System.Partition_Interface
+     RE_TA_U16,                          -- System.Partition_Interface
+     RE_TA_U32,                          -- System.Partition_Interface
+     RE_TA_U64,                          -- System.Partition_Interface
      RE_TA_WC,                           -- System.Partition_Interface
      RE_TA_WWC,                          -- System.Partition_Interface
      RE_TA_String,                       -- System.Partition_Interface
@@ -1260,19 +1259,17 @@ package Rtsfind is
      RE_TC_B,                            -- System.Partition_Interface
      RE_TC_C,                            -- System.Partition_Interface
      RE_TC_F,                            -- System.Partition_Interface
-     RE_TC_I,                            -- System.Partition_Interface
+     RE_TC_I8,                           -- System.Partition_Interface
+     RE_TC_I16,                          -- System.Partition_Interface
+     RE_TC_I32,                          -- System.Partition_Interface
+     RE_TC_I64,                          -- System.Partition_Interface
      RE_TC_LF,                           -- System.Partition_Interface
-     RE_TC_LI,                           -- System.Partition_Interface
      RE_TC_LLF,                          -- System.Partition_Interface
-     RE_TC_LLI,                          -- System.Partition_Interface
-     RE_TC_LLU,                          -- System.Partition_Interface
-     RE_TC_LU,                           -- System.Partition_Interface
      RE_TC_SF,                           -- System.Partition_Interface
-     RE_TC_SI,                           -- System.Partition_Interface
-     RE_TC_SSI,                          -- System.Partition_Interface
-     RE_TC_SSU,                          -- System.Partition_Interface
-     RE_TC_SU,                           -- System.Partition_Interface
-     RE_TC_U,                            -- System.Partition_Interface
+     RE_TC_U8,                           -- System.Partition_Interface
+     RE_TC_U16,                          -- System.Partition_Interface
+     RE_TC_U32,                          -- System.Partition_Interface
+     RE_TC_U64,                          -- System.Partition_Interface
      RE_TC_Void,                         -- System.Partition_Interface
      RE_TC_Opaque,                       -- System.Partition_Interface
      RE_TC_WC,                           -- System.Partition_Interface
@@ -1819,6 +1816,9 @@ package Rtsfind is
      RE_Current_Task                     => Ada_Task_Identification,
      RO_AT_Task_Id                       => Ada_Task_Identification,
 
+     RE_Integer_8                        => Interfaces,
+     RE_Integer_16                       => Interfaces,
+     RE_Integer_32                       => Interfaces,
      RE_Integer_64                       => Interfaces,
      RE_Unsigned_8                       => Interfaces,
      RE_Unsigned_16                      => Interfaces,
@@ -2381,19 +2381,17 @@ package Rtsfind is
      RE_FA_B                             => System_Partition_Interface,
      RE_FA_C                             => System_Partition_Interface,
      RE_FA_F                             => System_Partition_Interface,
-     RE_FA_I                             => System_Partition_Interface,
+     RE_FA_I8                            => System_Partition_Interface,
+     RE_FA_I16                           => System_Partition_Interface,
+     RE_FA_I32                           => System_Partition_Interface,
+     RE_FA_I64                           => System_Partition_Interface,
      RE_FA_LF                            => System_Partition_Interface,
-     RE_FA_LI                            => System_Partition_Interface,
      RE_FA_LLF                           => System_Partition_Interface,
-     RE_FA_LLI                           => System_Partition_Interface,
-     RE_FA_LLU                           => System_Partition_Interface,
-     RE_FA_LU                            => System_Partition_Interface,
      RE_FA_SF                            => System_Partition_Interface,
-     RE_FA_SI                            => System_Partition_Interface,
-     RE_FA_SSI                           => System_Partition_Interface,
-     RE_FA_SSU                           => System_Partition_Interface,
-     RE_FA_SU                            => System_Partition_Interface,
-     RE_FA_U                             => System_Partition_Interface,
+     RE_FA_U8                            => System_Partition_Interface,
+     RE_FA_U16                           => System_Partition_Interface,
+     RE_FA_U32                           => System_Partition_Interface,
+     RE_FA_U64                           => System_Partition_Interface,
      RE_FA_WC                            => System_Partition_Interface,
      RE_FA_WWC                           => System_Partition_Interface,
      RE_FA_String                        => System_Partition_Interface,
@@ -2403,19 +2401,17 @@ package Rtsfind is
      RE_TA_B                             => System_Partition_Interface,
      RE_TA_C                             => System_Partition_Interface,
      RE_TA_F                             => System_Partition_Interface,
-     RE_TA_I                             => System_Partition_Interface,
+     RE_TA_I8                            => System_Partition_Interface,
+     RE_TA_I16                           => System_Partition_Interface,
+     RE_TA_I32                           => System_Partition_Interface,
+     RE_TA_I64                           => System_Partition_Interface,
      RE_TA_LF                            => System_Partition_Interface,
-     RE_TA_LI                            => System_Partition_Interface,
      RE_TA_LLF                           => System_Partition_Interface,
-     RE_TA_LLI                           => System_Partition_Interface,
-     RE_TA_LLU                           => System_Partition_Interface,
-     RE_TA_LU                            => System_Partition_Interface,
      RE_TA_SF                            => System_Partition_Interface,
-     RE_TA_SI                            => System_Partition_Interface,
-     RE_TA_SSI                           => System_Partition_Interface,
-     RE_TA_SSU                           => System_Partition_Interface,
-     RE_TA_SU                            => System_Partition_Interface,
-     RE_TA_U                             => System_Partition_Interface,
+     RE_TA_U8                            => System_Partition_Interface,
+     RE_TA_U16                           => System_Partition_Interface,
+     RE_TA_U32                           => System_Partition_Interface,
+     RE_TA_U64                           => System_Partition_Interface,
      RE_TA_WC                            => System_Partition_Interface,
      RE_TA_WWC                           => System_Partition_Interface,
      RE_TA_String                        => System_Partition_Interface,
@@ -2431,19 +2427,17 @@ package Rtsfind is
      RE_TC_B                             => System_Partition_Interface,
      RE_TC_C                             => System_Partition_Interface,
      RE_TC_F                             => System_Partition_Interface,
-     RE_TC_I                             => System_Partition_Interface,
+     RE_TC_I8                            => System_Partition_Interface,
+     RE_TC_I16                           => System_Partition_Interface,
+     RE_TC_I32                           => System_Partition_Interface,
+     RE_TC_I64                           => System_Partition_Interface,
      RE_TC_LF                            => System_Partition_Interface,
-     RE_TC_LI                            => System_Partition_Interface,
      RE_TC_LLF                           => System_Partition_Interface,
-     RE_TC_LLI                           => System_Partition_Interface,
-     RE_TC_LLU                           => System_Partition_Interface,
-     RE_TC_LU                            => System_Partition_Interface,
      RE_TC_SF                            => System_Partition_Interface,
-     RE_TC_SI                            => System_Partition_Interface,
-     RE_TC_SSI                           => System_Partition_Interface,
-     RE_TC_SSU                           => System_Partition_Interface,
-     RE_TC_SU                            => System_Partition_Interface,
-     RE_TC_U                             => System_Partition_Interface,
+     RE_TC_U8                            => System_Partition_Interface,
+     RE_TC_U16                           => System_Partition_Interface,
+     RE_TC_U32                           => System_Partition_Interface,
+     RE_TC_U64                           => System_Partition_Interface,
      RE_TC_Void                          => System_Partition_Interface,
      RE_TC_Opaque                        => System_Partition_Interface,
      RE_TC_WC                            => System_Partition_Interface,

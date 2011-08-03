@@ -208,6 +208,7 @@ package body Prj.Env is
          Dummy   : in out Boolean)
       is
          pragma Unreferenced (Dummy, In_Tree);
+
          Path : constant Path_Name_Type :=
                   Get_Object_Directory
                     (Project,
@@ -509,6 +510,7 @@ package body Prj.Env is
          State   : in out Integer)
       is
          pragma Unreferenced (State, In_Tree);
+
          Lang   : constant Language_Ptr :=
                     Get_Language_From_Name (Project, "ada");
          Naming : Lang_Naming_Data;
@@ -821,6 +823,7 @@ package body Prj.Env is
          State   : in out Integer)
       is
          pragma Unreferenced (State);
+
          Source : Source_Id;
          Suffix : File_Name_Type;
          Iter   : Source_Iterator;
@@ -1224,6 +1227,7 @@ package body Prj.Env is
          Dummy : in out Integer)
       is
          pragma Unreferenced (Dummy, Tree);
+
       begin
          --  ??? Set_Ada_Paths has a different behavior for library project
          --  files, should we have the same ?
@@ -1268,6 +1272,7 @@ package body Prj.Env is
          Dummy   : in out Integer)
       is
          pragma Unreferenced (Dummy);
+
          Current    : String_List_Id := Prj.Source_Dirs;
          The_String : String_Element;
 

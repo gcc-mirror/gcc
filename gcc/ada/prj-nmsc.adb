@@ -150,20 +150,9 @@ package body Prj.Nmsc is
    --  information which is only useful while processing the project, and can
    --  be discarded as soon as we have finished processing the project
 
-   package Files_Htable is new GNAT.Dynamic_HTables.Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Source_Id,
-      No_Element => No_Source,
-      Key        => File_Name_Type,
-      Hash       => Hash,
-      Equal      => "=");
-   --  Mapping from base file names to Source_Id (containing full info about
-   --  the source).
-
    type Tree_Processing_Data is record
       Tree           : Project_Tree_Ref;
       Node_Tree      : Prj.Tree.Project_Node_Tree_Ref;
-      File_To_Source : Files_Htable.Instance;
       Flags          : Prj.Processing_Flags;
    end record;
    --  Temporary data which is needed while parsing a project. It does not need
@@ -673,7 +662,8 @@ package body Prj.Nmsc is
          Source := Prev_Unit.File_Names (Kind);
 
       else
-         Source  := Files_Htable.Get (Data.File_To_Source, File_Name);
+         Source := Source_Files_Htable.Get
+           (Data.Tree.Source_Files_HT, File_Name);
 
          if Source /= No_Source
            and then Source.Index = Index
@@ -900,8 +890,6 @@ package body Prj.Nmsc is
          Data.Tree.Replaced_Source_Number :=
            Data.Tree.Replaced_Source_Number - 1;
       end if;
-
-      Files_Htable.Set (Data.File_To_Source, File_Name, Id);
    end Add_Source;
 
    ------------------------------
@@ -932,7 +920,6 @@ package body Prj.Nmsc is
       Data : Tree_Processing_Data :=
                (Tree           => Tree,
                 Node_Tree      => Node_Tree,
-                File_To_Source => Files_Htable.Nil,
                 Flags          => Flags);
 
       Project_Files : constant Prj.Variable_Value :=
@@ -6366,7 +6353,6 @@ package body Prj.Nmsc is
          Source : Source_Id;
          Iter   : Source_Iterator;
          Found  : Boolean := False;
-         Path   : Path_Information;
 
       begin
          Iter := For_Each_Source (Data.Tree, Project.Project);
@@ -6374,23 +6360,45 @@ package body Prj.Nmsc is
             Source := Prj.Element (Iter);
             exit when Source = No_Source;
 
+            --  If the full source path is unknown for this source_id, there
+            --  could be several reasons:
+            --    * we simply did not find the file itself, this is an error
+            --    * we have a multi-unit source file. Another Source_Id from
+            --      the same file has received the full path, so we need to
+            --      propagate it.
+
             if Source.Naming_Exception
               and then Source.Path = No_Path_Information
             then
                if Source.Unit /= No_Unit_Index then
                   Found := False;
 
-                  --  For multi-unit source files, source_id gets duplicated
-                  --  once for every unit. Only the first source_id got its
-                  --  full path set.
+                  if Source.Index /= 0 then  --  Only multi-unit files
+                     declare
+                        S : Source_Id :=
+                          Source_Files_Htable.Get
+                            (Data.Tree.Source_Files_HT, Source.File);
+                     begin
+                        while S /= null loop
+                           if S.Path /= No_Path_Information then
+                              Source.Path := S.Path;
+                              Found := True;
 
-                  if Source.Index /= 0 then
-                     Path := Files_Htable.Get
-                       (Data.File_To_Source, Source.File).Path;
+                              if Current_Verbosity = High then
+                                 Debug_Output
+                                   ("Setting full path for "
+                                    & Get_Name_String (Source.File)
+                                    & " at" & Source.Index'Img
+                                    & " to "
+                                    & Get_Name_String (Source.Path.Name));
+                              end if;
 
-                     if Path /= No_Path_Information then
-                        Found := True;
-                     end if;
+                              exit;
+                           end if;
+
+                           S := S.Next_With_File_Name;
+                        end loop;
+                     end;
                   end if;
 
                   if not Found then
@@ -6400,21 +6408,6 @@ package body Prj.Nmsc is
                        (Data.Flags, Data.Flags.Missing_Source_Files,
                         "source file %% for unit %% not found",
                         No_Location, Project.Project);
-
-                  else
-                     Source.Path := Path;
-
-                     if Current_Verbosity = High then
-                        Debug_Indent;
-
-                        if Source.Path /= No_Path_Information then
-                           Write_Line ("Setting full path for "
-                                       & Get_Name_String (Source.File)
-                                       & " at" & Source.Index'Img
-                                       & " to "
-                                       & Get_Name_String (Path.Name));
-                        end if;
-                     end if;
                   end if;
                end if;
 
@@ -6472,7 +6465,6 @@ package body Prj.Nmsc is
       Flags     : Prj.Processing_Flags)
    is
    begin
-      Files_Htable.Reset (Data.File_To_Source);
       Data.Tree      := Tree;
       Data.Node_Tree := Node_Tree;
       Data.Flags     := Flags;
@@ -6483,8 +6475,9 @@ package body Prj.Nmsc is
    ----------
 
    procedure Free (Data : in out Tree_Processing_Data) is
+      pragma Unreferenced (Data);
    begin
-      Files_Htable.Reset (Data.File_To_Source);
+      null;
    end Free;
 
    ----------------
@@ -6666,6 +6659,7 @@ package body Prj.Nmsc is
       then
          Debug_Output ("Override kind for "
                        & Get_Name_String (Source.File)
+                       & " idx=" & Source.Index'Img
                        & " kind=" & Source.Kind'Img);
       end if;
 
@@ -6736,12 +6730,20 @@ package body Prj.Nmsc is
                Check_Name := True;
 
             else
+               --  Set the full path for the source_id (which might have been
+               --  created when parsing the naming exceptions, and therefore
+               --  might not have the full path).
+               --  We only set this for this source_id, but not for other
+               --  source_id in the same file (case of multi-unit source files)
+               --  For the latter, they will be set in Find_Sources when we
+               --  check that all source_id have known full paths.
+               --  Doing this later saves one htable lookup per file in the
+               --  common case where the user is not using multi-unit files.
+
                Name_Loc.Source.Path := (Path, Display_Path);
 
                Source_Paths_Htable.Set
-                 (Data.Tree.Source_Paths_HT,
-                  Path,
-                  Name_Loc.Source);
+                 (Data.Tree.Source_Paths_HT, Path, Name_Loc.Source);
 
                --  Check if this is a subunit
 
@@ -6755,9 +6757,6 @@ package body Prj.Nmsc is
                      Override_Kind (Name_Loc.Source, Sep);
                   end if;
                end if;
-
-               Files_Htable.Set
-                 (Data.File_To_Source, File_Name, Name_Loc.Source);
             end if;
          end if;
       end if;
@@ -7427,7 +7426,7 @@ package body Prj.Nmsc is
 
       procedure Get_Sources_From_Source_Info;
       --  Get the source information from the tables that were created when a
-      --  source info fie was read.
+      --  source info file was read.
 
       ---------------------------
       -- Check_Missing_Sources --
@@ -7720,7 +7719,6 @@ package body Prj.Nmsc is
 
             Id.Language            := Lang_Id;
             Id.Kind                := Src.Kind;
-
             Id.Index               := Src.Index;
 
             Id.Path :=
@@ -7782,8 +7780,6 @@ package body Prj.Nmsc is
 
             Id.Next_In_Lang := Id.Language.First_Source;
             Id.Language.First_Source := Id;
-
-            Files_Htable.Set (Data.File_To_Source, Id.File, Id);
 
             Next (Iter);
          end loop;

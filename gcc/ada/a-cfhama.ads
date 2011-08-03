@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -66,8 +66,7 @@ package Ada.Containers.Formal_Hashed_Maps is
    pragma Pure;
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is tagged private;
-   --  pragma Preelaborable_Initialization (Map);
-   --  why is this commented out???
+   pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
@@ -232,19 +231,10 @@ private
 
    package HT_Types is new
      Ada.Containers.Hash_Tables.Generic_Bounded_Hash_Table_Types
-     (Node_Type);
+       (Node_Type);
 
-   type HT_Access is access all HT_Types.Hash_Table_Type;
-
-   type Kind is (Plain, Part);
-
-   type Map (Capacity : Count_Type; Modulus : Hash_Type) is tagged record
-      HT     : HT_Access := new HT_Types.Hash_Table_Type (Capacity, Modulus);
-      K      : Kind := Plain;
-      Length : Count_Type := 0;
-      First  : Count_Type := 0;
-      Last   : Count_Type := 0;
-   end record;
+   type Map (Capacity : Count_Type; Modulus : Hash_Type) is
+      new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
 
    use HT_Types;
    use Ada.Streams;

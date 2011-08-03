@@ -413,7 +413,8 @@ package body Prj is
       Seen : Project_Boolean_Htable.Instance := Project_Boolean_Htable.Nil;
 
       procedure Recursive_Check
-        (Project : Project_Id; Tree : Project_Tree_Ref);
+        (Project : Project_Id;
+         Tree    : Project_Tree_Ref);
       --  Check if a project has already been seen. If not seen, mark it as
       --  Seen, Call Action, and check all its imported projects.
 
@@ -422,7 +423,8 @@ package body Prj is
       ---------------------
 
       procedure Recursive_Check
-        (Project : Project_Id; Tree : Project_Tree_Ref)
+        (Project : Project_Id;
+         Tree    : Project_Tree_Ref)
       is
          List : Project_List;
          Agg  : Aggregated_Project_List;
@@ -937,23 +939,25 @@ package body Prj is
       --  Visible tables
 
       if Tree.Is_Root_Tree then
+
          --  We cannot use 'Access here:
          --    "illegal attribute for discriminant-dependent component"
          --  However, we know this is valid since Shared and Shared_Data have
          --  the same lifetime and will always exist concurrently.
+
          Tree.Shared := Tree.Shared_Data'Unrestricted_Access;
-         Name_List_Table.Init          (Tree.Shared.Name_Lists);
-         Number_List_Table.Init        (Tree.Shared.Number_Lists);
-         String_Element_Table.Init     (Tree.Shared.String_Elements);
-         Variable_Element_Table.Init   (Tree.Shared.Variable_Elements);
-         Array_Element_Table.Init      (Tree.Shared.Array_Elements);
-         Array_Table.Init              (Tree.Shared.Arrays);
-         Package_Table.Init            (Tree.Shared.Packages);
+         Name_List_Table.Init        (Tree.Shared.Name_Lists);
+         Number_List_Table.Init      (Tree.Shared.Number_Lists);
+         String_Element_Table.Init   (Tree.Shared.String_Elements);
+         Variable_Element_Table.Init (Tree.Shared.Variable_Elements);
+         Array_Element_Table.Init    (Tree.Shared.Array_Elements);
+         Array_Table.Init            (Tree.Shared.Arrays);
+         Package_Table.Init          (Tree.Shared.Packages);
       end if;
 
-      Source_Paths_Htable.Reset     (Tree.Source_Paths_HT);
-      Source_Files_Htable.Reset     (Tree.Source_Files_HT);
-      Replaced_Source_HTable.Reset  (Tree.Replaced_Sources);
+      Source_Paths_Htable.Reset    (Tree.Source_Paths_HT);
+      Source_Files_Htable.Reset    (Tree.Source_Files_HT);
+      Replaced_Source_HTable.Reset (Tree.Replaced_Sources);
 
       Tree.Replaced_Source_Number := 0;
 
@@ -962,7 +966,7 @@ package body Prj is
 
       --  Private part table
 
-      Temp_Files_Table.Init       (Tree.Private_Part.Temp_Files);
+      Temp_Files_Table.Init (Tree.Private_Part.Temp_Files);
 
       Tree.Private_Part.Current_Source_Path_File := No_Path;
       Tree.Private_Part.Current_Object_Path_File := No_Path;

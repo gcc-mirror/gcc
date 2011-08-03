@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010, Free Software Foundation, Inc.              --
+--          Copyright (C) 2010-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,21 +83,16 @@ package body Ada.Containers.Formal_Ordered_Sets is
      (Tree : in out Tree_Types.Tree_Type'Class;
       Node : out Count_Type);
 
-   procedure Assign (Target : in out Tree_Types.Tree_Type;
-                     Source : Tree_Types.Tree_Type);
-
-   procedure Clear (Container : in out Tree_Types.Tree_Type);
-
-   procedure Free (Tree : in out Tree_Types.Tree_Type; X : Count_Type);
+   procedure Free (Tree : in out Set; X : Count_Type);
 
    procedure Insert_Sans_Hint
-     (Container : in out Tree_Types.Tree_Type;
+     (Container : in out Set;
       New_Item  : Element_Type;
       Node      : out Count_Type;
       Inserted  : out Boolean);
 
    procedure Insert_With_Hint
-     (Dst_Set  : in out Tree_Types.Tree_Type;
+     (Dst_Set  : in out Set;
       Dst_Hint : Count_Type;
       Src_Node : Node_Type;
       Dst_Node : out Count_Type);
@@ -115,18 +110,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
    function Is_Less_Node_Node (L, R : Node_Type) return Boolean;
    pragma Inline (Is_Less_Node_Node);
 
-   generic
-      with procedure Process (Node : Count_Type) is <>;
-   procedure Iterate_Between (Tree : Tree_Types.Tree_Type;
-                              From : Count_Type;
-                              To   : Count_Type);
-
-   function Next_Unchecked
-     (Container : Set;
-      Position  : Count_Type) return Count_Type;
-
    procedure Replace_Element
-     (Tree : in out Tree_Types.Tree_Type;
+     (Tree : in out Set;
       Node : Count_Type;
       Item : Element_Type);
 
@@ -152,7 +137,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
    package Set_Ops is
      new Red_Black_Trees.Generic_Bounded_Set_Operations
        (Tree_Operations  => Tree_Operations,
-        Set_Type         => Tree_Types.Tree_Type,
+        Set_Type         => Set,
         Assign           => Assign,
         Insert_With_Hint => Insert_With_Hint,
         Is_Less          => Is_Less_Node_Node);
@@ -175,15 +160,15 @@ package body Ada.Containers.Formal_Ordered_Sets is
          return True;
       end if;
 
-      Lst := Next (Left.Tree.all, Last (Left).Node);
+      Lst := Next (Left, Last (Left).Node);
       while Node /= Lst loop
-         ENode := Find (Right, Left.Tree.Nodes (Node).Element).Node;
+         ENode := Find (Right, Left.Nodes (Node).Element).Node;
          if ENode = 0 or else
-           Left.Tree.Nodes (Node).Element /= Right.Tree.Nodes (ENode).Element
+           Left.Nodes (Node).Element /= Right.Nodes (ENode).Element
          then
             return False;
          end if;
-         Node := Next (Left.Tree.all, Node);
+         Node := Next (Left, Node);
       end loop;
 
       return True;
@@ -194,8 +179,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
    -- Assign --
    ------------
 
-   procedure Assign (Target : in out Tree_Types.Tree_Type;
-                     Source : Tree_Types.Tree_Type) is
+   procedure Assign (Target : in out Set; Source : Set) is
       procedure Append_Element (Source_Node : Count_Type);
 
       procedure Append_Elements is
@@ -277,145 +261,30 @@ package body Ada.Containers.Formal_Ordered_Sets is
       Append_Elements (Source);
    end Assign;
 
-   procedure Assign (Target : in out Set; Source : Set) is
-      X : Count_Type;
-   begin
-      if Target.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
-
-      if Target'Address = Source'Address then
-         return;
-      end if;
-
-      if Target.Capacity < Length (Source) then
-         raise Storage_Error with "not enough capacity";  -- SE or CE? ???
-      end if;
-
-      if Source.K = Plain then
-         Assign (Target => Target.Tree.all, Source => Source.Tree.all);
-      else
-         declare
-            procedure Append_Element (Source_Node : Count_Type);
-
-            procedure Append_Element (Source_Node : Count_Type) is
-               SN : Node_Type renames Source.Tree.Nodes (Source_Node);
-
-               procedure Set_Element (Node : in out Node_Type);
-               pragma Inline (Set_Element);
-
-               function New_Node return Count_Type;
-               pragma Inline (New_Node);
-
-               procedure Insert_Post is
-                 new Element_Keys.Generic_Insert_Post (New_Node);
-
-               procedure Unconditional_Insert_Sans_Hint is
-                 new Element_Keys.Generic_Unconditional_Insert (Insert_Post);
-
-               procedure Unconditional_Insert_Avec_Hint is
-                 new Element_Keys.Generic_Unconditional_Insert_With_Hint
-                   (Insert_Post,
-                    Unconditional_Insert_Sans_Hint);
-
-               procedure Allocate is
-                 new Generic_Allocate (Set_Element);
-
-               --------------
-               -- New_Node --
-               --------------
-
-               function New_Node return Count_Type is
-                  Result : Count_Type;
-
-               begin
-                  Allocate (Target.Tree.all, Result);
-                  return Result;
-               end New_Node;
-
-               -----------------
-               -- Set_Element --
-               -----------------
-
-               procedure Set_Element (Node : in out Node_Type) is
-               begin
-                  Node.Element := SN.Element;
-               end Set_Element;
-
-               Target_Node : Count_Type;
-
-               --  Start of processing for Append_Element
-
-            begin
-               Unconditional_Insert_Avec_Hint
-                 (Tree  => Target.Tree.all,
-                  Hint  => 0,
-                  Key   => SN.Element,
-                  Node  => Target_Node);
-            end Append_Element;
-         begin
-            Tree_Operations.Clear_Tree (Target.Tree.all);
-            X := Source.First;
-            while X /= Next (Source.Tree.all, Source.Last) loop
-               Append_Element (X);
-               X := Next (Source.Tree.all, X);
-            end loop;
-         end;
-      end if;
-   end Assign;
-
    -------------
    -- Ceiling --
    -------------
 
    function Ceiling (Container : Set; Item : Element_Type) return Cursor is
+
+      Node : constant Count_Type := Element_Keys.Ceiling (Container, Item);
+
    begin
-
-      if Container.K = Part then
-         if Container.Length = 0 then
-            return No_Element;
-         end if;
-
-         if Item < Container.Tree.Nodes (Container.First).Element then
-            return (Node => Container.First);
-         end if;
-
-         if Container.Tree.Nodes (Container.Last).Element < Item then
-            return No_Element;
-         end if;
+      if Node = 0 then
+         return No_Element;
       end if;
 
-      declare
-         Node : constant Count_Type :=
-           Element_Keys.Ceiling (Container.Tree.all, Item);
+      return (Node => Node);
 
-      begin
-         if Node = 0 then
-            return No_Element;
-         end if;
-
-         return (Node => Node);
-      end;
    end Ceiling;
 
    -----------
    -- Clear --
    -----------
 
-   procedure Clear (Container : in out Tree_Types.Tree_Type) is
-   begin
-      Tree_Operations.Clear_Tree (Container);
-   end Clear;
-
    procedure Clear (Container : in out Set) is
    begin
-      if Container.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
-
-      Clear (Container.Tree.all);
+      Tree_Operations.Clear_Tree (Container);
    end Clear;
 
    -----------
@@ -446,56 +315,36 @@ package body Ada.Containers.Formal_Ordered_Sets is
    function Copy (Source : Set; Capacity : Count_Type := 0) return Set is
       Node : Count_Type := 1;
       N    : Count_Type;
-      Cu   : Cursor;
       Target : Set (Count_Type'Max (Source.Capacity, Capacity));
    begin
       if Length (Source) > 0 then
-         Target.Tree.Length := Source.Tree.Length;
-         Target.Tree.Root := Source.Tree.Root;
-         Target.Tree.First := Source.Tree.First;
-         Target.Tree.Last := Source.Tree.Last;
-         Target.Tree.Free := Source.Tree.Free;
+         Target.Length := Source.Length;
+         Target.Root := Source.Root;
+         Target.First := Source.First;
+         Target.Last := Source.Last;
+         Target.Free := Source.Free;
 
          while Node <= Source.Capacity loop
-            Target.Tree.Nodes (Node).Element :=
-              Source.Tree.Nodes (Node).Element;
-            Target.Tree.Nodes (Node).Parent :=
-              Source.Tree.Nodes (Node).Parent;
-            Target.Tree.Nodes (Node).Left :=
-              Source.Tree.Nodes (Node).Left;
-            Target.Tree.Nodes (Node).Right :=
-              Source.Tree.Nodes (Node).Right;
-            Target.Tree.Nodes (Node).Color :=
-              Source.Tree.Nodes (Node).Color;
-            Target.Tree.Nodes (Node).Has_Element :=
-              Source.Tree.Nodes (Node).Has_Element;
+            Target.Nodes (Node).Element :=
+              Source.Nodes (Node).Element;
+            Target.Nodes (Node).Parent :=
+              Source.Nodes (Node).Parent;
+            Target.Nodes (Node).Left :=
+              Source.Nodes (Node).Left;
+            Target.Nodes (Node).Right :=
+              Source.Nodes (Node).Right;
+            Target.Nodes (Node).Color :=
+              Source.Nodes (Node).Color;
+            Target.Nodes (Node).Has_Element :=
+              Source.Nodes (Node).Has_Element;
             Node := Node + 1;
          end loop;
 
          while Node <= Target.Capacity loop
             N := Node;
-            Formal_Ordered_Sets.Free (Tree => Target.Tree.all, X => N);
+            Formal_Ordered_Sets.Free (Tree => Target, X => N);
             Node := Node + 1;
          end loop;
-
-         if Source.K = Part then
-            Node := Target.Tree.First;
-            while Node /= Source.First loop
-               Cu := (Node => Node);
-               Node := Next (Target.Tree.all, Node);
-               Delete (Target, Cu);
-            end loop;
-
-            Node := Next (Target.Tree.all, Source.Last);
-
-            while Node /= 0 loop
-               Cu := (Node => Node);
-               Node := Next (Target.Tree.all, Node);
-               Delete (Target, Cu);
-            end loop;
-         end if;
-         Node := 1;
-
       end if;
       return Target;
    end Copy;
@@ -506,39 +355,31 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    procedure Delete (Container : in out Set; Position : in out Cursor) is
    begin
-      if Container.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
 
       if not Has_Element (Container, Position) then
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      pragma Assert (Vet (Container.Tree.all, Position.Node),
+      pragma Assert (Vet (Container, Position.Node),
                      "bad cursor in Delete");
 
-      Tree_Operations.Delete_Node_Sans_Free (Container.Tree.all,
+      Tree_Operations.Delete_Node_Sans_Free (Container,
                                              Position.Node);
-      Formal_Ordered_Sets.Free (Container.Tree.all, Position.Node);
+      Formal_Ordered_Sets.Free (Container, Position.Node);
       Position := No_Element;
    end Delete;
 
    procedure Delete (Container : in out Set; Item : Element_Type) is
-      X : constant Count_Type := Element_Keys.Find (Container.Tree.all, Item);
+      X : constant Count_Type := Element_Keys.Find (Container, Item);
 
    begin
-      if Container.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
 
       if X = 0 then
          raise Constraint_Error with "attempt to delete element not in set";
       end if;
 
-      Tree_Operations.Delete_Node_Sans_Free (Container.Tree.all, X);
-      Formal_Ordered_Sets.Free (Container.Tree.all, X);
+      Tree_Operations.Delete_Node_Sans_Free (Container, X);
+      Formal_Ordered_Sets.Free (Container, X);
    end Delete;
 
    ------------------
@@ -546,18 +387,13 @@ package body Ada.Containers.Formal_Ordered_Sets is
    ------------------
 
    procedure Delete_First (Container : in out Set) is
-      Tree : Tree_Types.Tree_Type renames Container.Tree.all;
-      X    : constant Count_Type := Tree.First;
+      X    : constant Count_Type := Container.First;
 
    begin
-      if Container.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
 
       if X /= 0 then
-         Tree_Operations.Delete_Node_Sans_Free (Tree, X);
-         Formal_Ordered_Sets.Free (Tree, X);
+         Tree_Operations.Delete_Node_Sans_Free (Container, X);
+         Formal_Ordered_Sets.Free (Container, X);
       end if;
    end Delete_First;
 
@@ -566,18 +402,13 @@ package body Ada.Containers.Formal_Ordered_Sets is
    -----------------
 
    procedure Delete_Last (Container : in out Set) is
-      Tree : Tree_Types.Tree_Type renames Container.Tree.all;
-      X    : constant Count_Type := Tree.Last;
+      X    : constant Count_Type := Container.Last;
 
    begin
-      if Container.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
 
       if X /= 0 then
-         Tree_Operations.Delete_Node_Sans_Free (Tree, X);
-         Formal_Ordered_Sets.Free (Tree, X);
+         Tree_Operations.Delete_Node_Sans_Free (Container, X);
+         Formal_Ordered_Sets.Free (Container, X);
       end if;
    end Delete_Last;
 
@@ -587,68 +418,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    procedure Difference (Target : in out Set; Source : Set) is
    begin
-      if Target.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
+      Set_Ops.Set_Difference (Target, Source);
 
-      if Source.K = Plain then
-         Set_Ops.Set_Difference (Target.Tree.all, Source.Tree.all);
-      else
-         declare
-            Tgt : Count_Type := Target.Tree.First;
-            Src : Count_Type := Source.First;
-         begin
-            if Target'Address = Source'Address then
-               if Target.Tree.Busy > 0 then
-                  raise Program_Error with
-                    "attempt to tamper with cursors (container is busy)";
-               end if;
-
-               Clear (Target.Tree.all);
-               return;
-            end if;
-
-            if Source.Length = 0 then
-               return;
-            end if;
-
-            if Target.Tree.Busy > 0 then
-               raise Program_Error with
-                 "attempt to tamper with cursors (container is busy)";
-            end if;
-
-            loop
-               if Tgt = 0 then
-                  return;
-               end if;
-
-               if Src = Next (Source.Tree.all, Source.Last) then
-                  return;
-               end if;
-
-               if Target.Tree.Nodes (Tgt).Element <
-                 Source.Tree.Nodes (Src).Element then
-                  Tgt := Next (Target.Tree.all, Tgt);
-
-               elsif Source.Tree.Nodes (Src).Element <
-                 Target.Tree.Nodes (Tgt).Element then
-                  Src := Next (Source.Tree.all, Src);
-
-               else
-                  declare
-                     X : constant Count_Type := Tgt;
-                  begin
-                     Tgt := Next (Target.Tree.all, Tgt);
-                     Delete_Node_Sans_Free (Target.Tree.all, X);
-                     Formal_Ordered_Sets.Free (Target.Tree.all, X);
-                  end;
-
-                  Src := Next (Source.Tree.all, Src);
-               end if;
-            end loop;
-         end;
-      end if;
    end Difference;
 
    function Difference (Left, Right : Set) return Set is
@@ -666,65 +437,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       return S : Set (Length (Left)) do
-         if Left.K = Plain and Right.K = Plain then
-            Assign (S.Tree.all,
-                    Set_Ops.Set_Difference (Left.Tree.all, Right.Tree.all));
-         else
-            declare
-               Tree : Tree_Types.Tree_Type renames S.Tree.all;
+            Assign (S,
+                    Set_Ops.Set_Difference (Left, Right));
 
-               L_Node : Count_Type := First (Left).Node;
-               R_Node : Count_Type := First (Right).Node;
-
-               L_Last : constant Count_Type := Next (Left.Tree.all,
-                                                     Last (Left).Node);
-               R_Last : constant Count_Type := Next (Right.Tree.all,
-                                                     Last (Right).Node);
-
-               Dst_Node : Count_Type;
-
-            begin
-               loop
-                  if L_Node = L_Last then
-                     return;
-                  end if;
-
-                  if R_Node = R_Last then
-                     while L_Node /= L_Last loop
-                        Insert_With_Hint
-                          (Dst_Set  => Tree,
-                           Dst_Hint => 0,
-                           Src_Node => Left.Tree.Nodes (L_Node),
-                           Dst_Node => Dst_Node);
-
-                        L_Node := Next (Left.Tree.all, L_Node);
-
-                     end loop;
-
-                     return;
-                  end if;
-
-                  if Left.Tree.Nodes (L_Node).Element <
-                    Right.Tree.Nodes (R_Node).Element then
-                     Insert_With_Hint
-                       (Dst_Set  => Tree,
-                        Dst_Hint => 0,
-                        Src_Node => Left.Tree.Nodes (L_Node),
-                        Dst_Node => Dst_Node);
-
-                     L_Node := Next (Left.Tree.all, L_Node);
-
-                  elsif Right.Tree.Nodes (R_Node).Element <
-                    Left.Tree.Nodes (L_Node).Element then
-                     R_Node := Next (Right.Tree.all, R_Node);
-
-                  else
-                     L_Node := Next (Left.Tree.all, L_Node);
-                     R_Node := Next (Right.Tree.all, R_Node);
-                  end if;
-               end loop;
-            end;
-         end if;
       end return;
    end Difference;
 
@@ -738,11 +453,11 @@ package body Ada.Containers.Formal_Ordered_Sets is
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      pragma Assert (Vet (Container.Tree.all, Position.Node),
+      pragma Assert (Vet (Container, Position.Node),
                      "bad cursor in Element");
 
       declare
-         N : Tree_Types.Nodes_Type renames Container.Tree.Nodes;
+         N : Tree_Types.Nodes_Type renames Container.Nodes;
       begin
          return N (Position.Node).Element;
       end;
@@ -793,44 +508,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       --  Start of processing for Equivalent_Sets
 
    begin
-      if Left.K = Plain and Right.K = Plain then
-         return Is_Equivalent (Left.Tree.all, Right.Tree.all);
-      end if;
-
-      if Left'Address = Right'Address then
-         return True;
-      end if;
-
-      if Length (Left) /= Length (Right) then
-         return False;
-      end if;
-
-      if Length (Left) = 0 then
-         return True;
-      end if;
-
-      declare
-         L_Node : Count_Type;
-         R_Node : Count_Type;
-
-         L_Last : constant Count_Type := Next (Left.Tree.all,
-                                               Last (Left).Node);
-      begin
-
-         L_Node := First (Left).Node;
-         R_Node := First (Right).Node;
-         while L_Node /= L_Last loop
-            if not Is_Equivalent_Node_Node (Left.Tree.Nodes (L_Node),
-                                            Right.Tree.Nodes (R_Node)) then
-               return False;
-            end if;
-
-            L_Node := Next (Left.Tree.all, L_Node);
-            R_Node := Next (Right.Tree.all, R_Node);
-         end loop;
-
-         return True;
-      end;
+      return Is_Equivalent (Left, Right);
    end Equivalent_Sets;
 
    -------------
@@ -838,17 +516,13 @@ package body Ada.Containers.Formal_Ordered_Sets is
    -------------
 
    procedure Exclude (Container : in out Set; Item : Element_Type) is
-      X : constant Count_Type := Element_Keys.Find (Container.Tree.all, Item);
+      X : constant Count_Type := Element_Keys.Find (Container, Item);
 
    begin
-      if Container.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
 
       if X /= 0 then
-         Tree_Operations.Delete_Node_Sans_Free (Container.Tree.all, X);
-         Formal_Ordered_Sets.Free (Container.Tree.all, X);
+         Tree_Operations.Delete_Node_Sans_Free (Container, X);
+         Formal_Ordered_Sets.Free (Container, X);
       end if;
    end Exclude;
 
@@ -857,30 +531,17 @@ package body Ada.Containers.Formal_Ordered_Sets is
    ----------
 
    function Find (Container : Set; Item : Element_Type) return Cursor is
+
+      Node : constant Count_Type :=
+        Element_Keys.Find (Container, Item);
+
    begin
-
-      if Container.K = Part then
-         if Container.Length = 0 then
-            return No_Element;
-         end if;
-
-         if Item < Container.Tree.Nodes (Container.First).Element or
-           Container.Tree.Nodes (Container.Last).Element < Item then
-            return No_Element;
-         end if;
+      if Node = 0 then
+         return No_Element;
       end if;
 
-      declare
-         Node : constant Count_Type :=
-           Element_Keys.Find (Container.Tree.all, Item);
+      return (Node => Node);
 
-      begin
-         if Node = 0 then
-            return No_Element;
-         end if;
-
-         return (Node => Node);
-      end;
    end Find;
 
    -----------
@@ -893,11 +554,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
          return No_Element;
       end if;
 
-      if Container.K = Plain then
-         return (Node => Container.Tree.First);
-      else
-         return (Node => Container.First);
-      end if;
+      return (Node => Container.First);
 
    end First;
 
@@ -913,7 +570,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       declare
-         N : Tree_Types.Nodes_Type renames Container.Tree.Nodes;
+         N : Tree_Types.Nodes_Type renames Container.Nodes;
       begin
          return N (Fst).Element;
       end;
@@ -926,23 +583,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
    function Floor (Container : Set; Item : Element_Type) return Cursor is
    begin
 
-      if Container.K = Part then
-         if Container.Length = 0 then
-            return No_Element;
-         end if;
-
-         if Item < Container.Tree.Nodes (Container.First).Element then
-            return No_Element;
-         end if;
-
-         if Container.Tree.Nodes (Container.Last).Element < Item then
-            return (Node => Container.Last);
-         end if;
-      end if;
-
       declare
          Node : constant Count_Type :=
-           Element_Keys.Floor (Container.Tree.all, Item);
+           Element_Keys.Floor (Container, Item);
 
       begin
          if Node = 0 then
@@ -958,7 +601,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
    ----------
 
    procedure Free
-     (Tree : in out Tree_Types.Tree_Type;
+     (Tree : in out Set;
       X  : Count_Type)
    is
    begin
@@ -1019,35 +662,15 @@ package body Ada.Containers.Formal_Ordered_Sets is
       -------------
 
       function Ceiling (Container : Set; Key : Key_Type) return Cursor is
+         Node : constant Count_Type :=
+           Key_Keys.Ceiling (Container, Key);
+
       begin
-
-         if Container.K = Part then
-            if Container.Length = 0 then
-               return No_Element;
-            end if;
-
-            if Key < Generic_Keys.Key
-              (Container.Tree.Nodes (Container.First).Element) then
-               return (Node => Container.First);
-            end if;
-
-            if Generic_Keys.Key
-              (Container.Tree.Nodes (Container.Last).Element) < Key then
-               return No_Element;
-            end if;
+         if Node = 0 then
+            return No_Element;
          end if;
 
-         declare
-            Node : constant Count_Type :=
-              Key_Keys.Ceiling (Container.Tree.all, Key);
-
-         begin
-            if Node = 0 then
-               return No_Element;
-            end if;
-
-            return (Node => Node);
-         end;
+         return (Node => Node);
       end Ceiling;
 
       --------------
@@ -1064,23 +687,16 @@ package body Ada.Containers.Formal_Ordered_Sets is
       ------------
 
       procedure Delete (Container : in out Set; Key : Key_Type) is
+
+         X : constant Count_Type := Key_Keys.Find (Container, Key);
+
       begin
-         if Container.K /= Plain then
-            raise Constraint_Error
-              with "Can't modify part of container";
+         if X = 0 then
+            raise Constraint_Error with "attempt to delete key not in set";
          end if;
 
-         declare
-            X : constant Count_Type := Key_Keys.Find (Container.Tree.all, Key);
-
-         begin
-            if X = 0 then
-               raise Constraint_Error with "attempt to delete key not in set";
-            end if;
-
-            Delete_Node_Sans_Free (Container.Tree.all, X);
-            Formal_Ordered_Sets.Free (Container.Tree.all, X);
-         end;
+         Delete_Node_Sans_Free (Container, X);
+         Formal_Ordered_Sets.Free (Container, X);
       end Delete;
 
       -------------
@@ -1088,32 +704,18 @@ package body Ada.Containers.Formal_Ordered_Sets is
       -------------
 
       function Element (Container : Set; Key : Key_Type) return Element_Type is
-      begin
+         Node : constant Count_Type :=
+           Key_Keys.Find (Container, Key);
 
-         if Container.K = Part then
-            if Container.Length = 0 or else
-              (Key < Generic_Keys.Key
-                 (Container.Tree.Nodes (Container.First).Element) or
-                 Generic_Keys.Key
-                   (Container.Tree.Nodes (Container.Last).Element) < Key) then
-               raise Constraint_Error with "key not in set";
-            end if;
+      begin
+         if Node = 0 then
+            raise Constraint_Error with "key not in set";
          end if;
 
          declare
-            Node : constant Count_Type :=
-              Key_Keys.Find (Container.Tree.all, Key);
-
+            N : Tree_Types.Nodes_Type renames Container.Nodes;
          begin
-            if Node = 0 then
-               raise Constraint_Error with "key not in set";
-            end if;
-
-            declare
-               N : Tree_Types.Nodes_Type renames Container.Tree.Nodes;
-            begin
-               return N (Node).Element;
-            end;
+            return N (Node).Element;
          end;
       end Element;
 
@@ -1137,22 +739,14 @@ package body Ada.Containers.Formal_Ordered_Sets is
       -------------
 
       procedure Exclude (Container : in out Set; Key : Key_Type) is
+
+         X : constant Count_Type := Key_Keys.Find (Container, Key);
+
       begin
-         if Container.K /= Plain then
-            raise Constraint_Error
-              with "Can't modify part of container";
+         if X /= 0 then
+            Delete_Node_Sans_Free (Container, X);
+            Formal_Ordered_Sets.Free (Container, X);
          end if;
-
-         declare
-
-            X : constant Count_Type := Key_Keys.Find (Container.Tree.all, Key);
-
-         begin
-            if X /= 0 then
-               Delete_Node_Sans_Free (Container.Tree.all, X);
-               Formal_Ordered_Sets.Free (Container.Tree.all, X);
-            end if;
-         end;
       end Exclude;
 
       ----------
@@ -1160,30 +754,15 @@ package body Ada.Containers.Formal_Ordered_Sets is
       ----------
 
       function Find (Container : Set; Key : Key_Type) return Cursor is
-      begin
 
-         if Container.K = Part then
-            if Container.Length = 0 or else
-              (Key < Generic_Keys.Key
-                 (Container.Tree.Nodes (Container.First).Element) or
-                 Generic_Keys.Key
-                   (Container.Tree.Nodes (Container.Last).Element) < Key) then
-               return No_Element;
-            end if;
+         Node : constant Count_Type := Key_Keys.Find (Container, Key);
+
+      begin
+         if Node = 0 then
+            return No_Element;
          end if;
 
-         declare
-
-            Node : constant Count_Type := Key_Keys.Find (Container.Tree.all,
-                                                         Key);
-
-         begin
-            if Node = 0 then
-               return No_Element;
-            end if;
-
-            return (Node => Node);
-         end;
+         return (Node => Node);
       end Find;
 
       -----------
@@ -1191,31 +770,17 @@ package body Ada.Containers.Formal_Ordered_Sets is
       -----------
 
       function Floor (Container : Set; Key : Key_Type) return Cursor is
-      begin
-         if Container.K = Part then
-            if Container.Length = 0 or else
-              Key < Generic_Keys.Key
-                (Container.Tree.Nodes (Container.First).Element) then
-               return No_Element;
-            end if;
 
-            if Generic_Keys.Key
-              (Container.Tree.Nodes (Container.Last).Element) < Key then
-               return (Node => Container.Last);
-            end if;
+         Node : constant Count_Type :=
+           Key_Keys.Floor (Container, Key);
+
+      begin
+         if Node = 0 then
+            return No_Element;
          end if;
 
-         declare
-            Node : constant Count_Type :=
-              Key_Keys.Floor (Container.Tree.all, Key);
+         return (Node => Node);
 
-         begin
-            if Node = 0 then
-               return No_Element;
-            end if;
-
-            return (Node => Node);
-         end;
       end Floor;
 
       -------------------------
@@ -1253,11 +818,11 @@ package body Ada.Containers.Formal_Ordered_Sets is
               "Position cursor has no element";
          end if;
 
-         pragma Assert (Vet (Container.Tree.all, Position.Node),
+         pragma Assert (Vet (Container, Position.Node),
                         "bad cursor in Key");
 
          declare
-            N : Tree_Types.Nodes_Type renames Container.Tree.Nodes;
+            N : Tree_Types.Nodes_Type renames Container.Nodes;
          begin
             return Key (N (Position.Node).Element);
          end;
@@ -1272,20 +837,16 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Key       : Key_Type;
          New_Item  : Element_Type)
       is
-         Node : constant Count_Type := Key_Keys.Find (Container.Tree.all, Key);
+         Node : constant Count_Type := Key_Keys.Find (Container, Key);
 
       begin
-         if Container.K /= Plain then
-            raise Constraint_Error
-              with "Can't modify part of container";
-         end if;
 
          if not Has_Element (Container, (Node => Node)) then
             raise Constraint_Error with
               "attempt to replace key not in set";
          end if;
 
-         Replace_Element (Container.Tree.all, Node, New_Item);
+         Replace_Element (Container, Node, New_Item);
       end Replace;
 
       -----------------------------------
@@ -1297,30 +858,24 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Position  : Cursor;
          Process   : not null access procedure (Element : in out Element_Type))
       is
-         Tree : Tree_Types.Tree_Type renames Container.Tree.all;
-
       begin
-         if Container.K /= Plain then
-            raise Constraint_Error
-              with "Can't modify part of container";
-         end if;
 
          if not Has_Element (Container, Position) then
             raise Constraint_Error with
               "Position cursor has no element";
          end if;
 
-         pragma Assert (Vet (Container.Tree.all, Position.Node),
+         pragma Assert (Vet (Container, Position.Node),
                         "bad cursor in Update_Element_Preserving_Key");
 
          declare
-            N : Tree_Types.Nodes_Type renames Container.Tree.Nodes;
+            N : Tree_Types.Nodes_Type renames Container.Nodes;
 
             E : Element_Type renames N (Position.Node).Element;
             K : constant Key_Type := Key (E);
 
-            B : Natural renames Tree.Busy;
-            L : Natural renames Tree.Lock;
+            B : Natural renames Container.Busy;
+            L : Natural renames Container.Lock;
 
          begin
             B := B + 1;
@@ -1346,8 +901,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
          declare
             X : constant Count_Type := Position.Node;
          begin
-            Tree_Operations.Delete_Node_Sans_Free (Tree, X);
-            Formal_Ordered_Sets.Free (Tree, X);
+            Tree_Operations.Delete_Node_Sans_Free (Container, X);
+            Formal_Ordered_Sets.Free (Container, X);
          end;
 
          raise Program_Error with "key was modified";
@@ -1365,26 +920,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
          return False;
       end if;
 
-      if not Container.Tree.Nodes (Position.Node).Has_Element then
-         return False;
-      end if;
-
-      if Container.K = Plain then
-         return True;
-      end if;
-
-      declare
-         Elt : constant Element_Type :=
-           Container.Tree.Nodes (Position.Node).Element;
-      begin
-
-         if Elt < Container.Tree.Nodes (Container.First).Element or
-           Container.Tree.Nodes (Container.Last).Element < Elt then
-            return False;
-         end if;
-
-         return True;
-      end;
+      return Container.Nodes (Position.Node).Has_Element;
    end Has_Element;
 
    -------------
@@ -1399,13 +935,13 @@ package body Ada.Containers.Formal_Ordered_Sets is
       Insert (Container, New_Item, Position, Inserted);
 
       if not Inserted then
-         if Container.Tree.Lock > 0 then
+         if Container.Lock > 0 then
             raise Program_Error with
               "attempt to tamper with cursors (set is locked)";
          end if;
 
          declare
-            N : Tree_Types.Nodes_Type renames Container.Tree.Nodes;
+            N : Tree_Types.Nodes_Type renames Container.Nodes;
          begin
             N (Position.Node).Element := New_Item;
          end;
@@ -1423,13 +959,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
       Inserted  : out Boolean)
    is
    begin
-      if Container.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
 
       Insert_Sans_Hint
-        (Container.Tree.all,
+        (Container,
          New_Item,
          Position.Node,
          Inserted);
@@ -1457,7 +989,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
    ----------------------
 
    procedure Insert_Sans_Hint
-     (Container : in out Tree_Types.Tree_Type;
+     (Container : in out Set;
       New_Item  : Element_Type;
       Node      : out Count_Type;
       Inserted  : out Boolean)
@@ -1513,7 +1045,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
    ----------------------
 
    procedure Insert_With_Hint
-     (Dst_Set  : in out Tree_Types.Tree_Type;
+     (Dst_Set  : in out Set;
       Dst_Hint : Count_Type;
       Src_Node : Node_Type;
       Dst_Node : out Count_Type)
@@ -1578,70 +1110,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    procedure Intersection (Target : in out Set; Source : Set) is
    begin
-      if Target.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
-
-      if Source.K = Plain then
-         Set_Ops.Set_Intersection (Target.Tree.all, Source.Tree.all);
-      else
-         declare
-            Tgt : Count_Type := Target.First;
-            Src : Count_Type := Source.First;
-
-            S_Last : constant Count_Type :=
-              Next (Source.Tree.all, Source.Last);
-
-         begin
-            if Target'Address = Source'Address then
-               return;
-            end if;
-
-            if Target.Tree.Busy > 0 then
-               raise Program_Error with
-                 "attempt to tamper with cursors (container is busy)";
-            end if;
-
-            if Source.Length = 0 then
-               Clear (Target);
-               return;
-            end if;
-
-            while Tgt /= 0
-              and then Src /= S_Last
-            loop
-               if Target.Tree.Nodes (Tgt).Element <
-                 Source.Tree.Nodes (Src).Element then
-                  declare
-                     X : constant Count_Type := Tgt;
-                  begin
-                     Tgt := Next (Target.Tree.all, Tgt);
-                     Delete_Node_Sans_Free (Target.Tree.all, X);
-                     Formal_Ordered_Sets.Free (Target.Tree.all, X);
-                  end;
-
-               elsif Source.Tree.Nodes (Src).Element <
-                 Target.Tree.Nodes (Tgt).Element then
-                  Src := Next (Source.Tree.all, Src);
-
-               else
-                  Tgt := Next (Target.Tree.all, Tgt);
-                  Src := Next (Source.Tree.all, Src);
-               end if;
-            end loop;
-
-            while Tgt /= 0 loop
-               declare
-                  X : constant Count_Type := Tgt;
-               begin
-                  Tgt := Next (Target.Tree.all, Tgt);
-                  Delete_Node_Sans_Free (Target.Tree.all, X);
-                  Formal_Ordered_Sets.Free (Target.Tree.all, X);
-               end;
-            end loop;
-         end;
-      end if;
+      Set_Ops.Set_Intersection (Target, Source);
    end Intersection;
 
    function Intersection (Left, Right : Set) return Set is
@@ -1651,55 +1120,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       return S : Set (Count_Type'Min (Length (Left), Length (Right))) do
-         if Left.K = Plain and Right.K = Plain then
-            Assign (S.Tree.all, Set_Ops.Set_Intersection
-                    (Left.Tree.all, Right.Tree.all));
-            return;
-         end if;
-
-         if Length (Left) = 0 or Length (Right) = 0 then
-            return;
-         end if;
-
-         declare
-
-            L_Node : Count_Type := First (Left).Node;
-            R_Node : Count_Type := First (Right).Node;
-
-            L_Last : constant Count_Type :=
-              Next (Left.Tree.all, Last (Left).Node);
-            R_Last : constant Count_Type :=
-              Next (Right.Tree.all, Last (Right).Node);
-
-            Dst_Node : Count_Type;
-
-         begin
-            loop
-
-               if L_Node = L_Last or R_Node = R_Last then
-                  return;
-               end if;
-
-               if Left.Tree.Nodes (L_Node).Element <
-                 Right.Tree.Nodes (R_Node).Element then
-                  L_Node := Next (Left.Tree.all, L_Node);
-
-               elsif Right.Tree.Nodes (R_Node).Element <
-                 Left.Tree.Nodes (L_Node).Element then
-                  R_Node := Next (Right.Tree.all, R_Node);
-
-               else
-                  Insert_With_Hint
-                    (Dst_Set  => S.Tree.all,
-                     Dst_Hint => 0,
-                     Src_Node => Left.Tree.Nodes (L_Node),
-                     Dst_Node => Dst_Node);
-
-                  L_Node := Next (Left.Tree.all, L_Node);
-                  R_Node := Next (Right.Tree.all, R_Node);
-               end if;
-            end loop;
-         end;
+            Assign (S, Set_Ops.Set_Intersection
+                    (Left, Right));
       end return;
    end Intersection;
 
@@ -1753,52 +1175,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
    begin
-      if Subset.K = Plain and Of_Set.K = Plain then
-         return Set_Ops.Set_Subset (Subset.Tree.all,
-                                    Of_Set => Of_Set.Tree.all);
-      end if;
-
-      if Subset'Address = Of_Set'Address then
-         return True;
-      end if;
-
-      if Length (Subset) > Length (Of_Set) then
-         return False;
-      end if;
-
-      declare
-         Subset_Node : Count_Type := First (Subset).Node;
-         Set_Node    : Count_Type := First (Of_Set).Node;
-
-         Subset_Last : constant Count_Type :=
-           Next (Subset.Tree.all, Last (Subset).Node);
-         Set_Last    : constant Count_Type :=
-           Next (Of_Set.Tree.all, Last (Of_Set).Node);
-
-      begin
-         loop
-            if Set_Node = Set_Last then
-               return Subset_Node = 0;
-            end if;
-
-            if Subset_Node = Subset_Last then
-               return True;
-            end if;
-
-            if Subset.Tree.Nodes (Subset_Node).Element <
-              Of_Set.Tree.Nodes (Set_Node).Element then
-               return False;
-            end if;
-
-            if Of_Set.Tree.Nodes (Set_Node).Element <
-              Subset.Tree.Nodes (Subset_Node).Element then
-               Set_Node := Next (Of_Set.Tree.all, Set_Node);
-            else
-               Set_Node := Next (Of_Set.Tree.all, Set_Node);
-               Subset_Node := Next (Subset.Tree.all, Subset_Node);
-            end if;
-         end loop;
-      end;
+      return Set_Ops.Set_Subset (Subset,
+                                 Of_Set => Of_Set);
    end Is_Subset;
 
    -------------
@@ -1816,9 +1194,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       procedure Local_Iterate is
         new Tree_Operations.Generic_Iteration (Process_Node);
 
-      procedure Local_Iterate_Between is
-        new Iterate_Between (Process_Node);
-
       ------------------
       -- Process_Node --
       ------------------
@@ -1828,8 +1203,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Process (Container, (Node => Node));
       end Process_Node;
 
-      T : Tree_Types.Tree_Type renames Container.Tree.all;
-      B : Natural renames T.Busy;
+      B : Natural renames Container'Unrestricted_Access.Busy;
 
       --  Start of prccessing for Iterate
 
@@ -1837,17 +1211,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       B := B + 1;
 
       begin
-         if Container.K = Plain then
-            Local_Iterate (T);
-            return;
-         end if;
-
-         if Container.Length = 0 then
-            return;
-         end if;
-
-         Local_Iterate_Between (T, Container.First, Container.Last);
-
+         Local_Iterate (Container);
       exception
          when others =>
             B := B - 1;
@@ -1856,42 +1220,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
       B := B - 1;
    end Iterate;
-
-   ---------------------
-   -- Iterate_Between --
-   ---------------------
-
-   procedure Iterate_Between (Tree : Tree_Types.Tree_Type;
-                              From : Count_Type;
-                              To   : Count_Type) is
-
-      FElt : constant Element_Type := Tree.Nodes (From).Element;
-      TElt : constant Element_Type := Tree.Nodes (To).Element;
-      procedure Iterate (P : Count_Type);
-
-      -------------
-      -- Iterate --
-      -------------
-
-      procedure Iterate (P : Count_Type) is
-         X : Count_Type := P;
-      begin
-         while X /= 0 loop
-            if Tree.Nodes (X).Element < FElt then
-               X := Tree.Nodes (X).Right;
-            elsif TElt < Tree.Nodes (X).Element then
-               X := Tree.Nodes (X).Left;
-            else
-               Iterate (Tree.Nodes (X).Left);
-               Process (X);
-               X := Tree.Nodes (X).Right;
-            end if;
-         end loop;
-      end Iterate;
-
-   begin
-      Iterate (Tree.Root);
-   end Iterate_Between;
 
    ----------
    -- Last --
@@ -1903,11 +1231,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
          return No_Element;
       end if;
 
-      if Container.K = Plain then
-         return (Node => Container.Tree.Last);
-      end if;
-
       return (Node => Container.Last);
+
    end Last;
 
    ------------------
@@ -1921,7 +1246,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       declare
-         N : Tree_Types.Nodes_Type renames Container.Tree.Nodes;
+         N : Tree_Types.Nodes_Type renames Container.Nodes;
       begin
          return N (Last (Container).Node).Element;
       end;
@@ -1932,35 +1257,24 @@ package body Ada.Containers.Formal_Ordered_Sets is
    ----------
 
    function Left (Container : Set; Position : Cursor) return Set is
-      Lst : Count_Type;
-      Fst : constant Count_Type := First (Container).Node;
-      L   : Count_Type := 0;
-      C   : Count_Type := Fst;
+      Curs : Cursor := Position;
+      C : Set (Container.Capacity) :=
+        Copy (Container, Container.Capacity);
+      Node : Count_Type;
    begin
-      while C /= Position.Node loop
-         if C = Last (Container).Node or C = 0 then
-            raise Constraint_Error with
-              "Position cursor has no element";
-         end if;
-         Lst := C;
-         C := Next (Container.Tree.all, C);
-         L := L + 1;
-      end loop;
-      if L = 0 then
-         return (Capacity => Container.Capacity,
-                 K        => Part,
-                 Tree     => Container.Tree,
-                 Length   => 0,
-                 First    => 0,
-                 Last     => 0);
-      else
-         return (Capacity => Container.Capacity,
-                 K        => Part,
-                 Tree     => Container.Tree,
-                 Length   => L,
-                 First    => Fst,
-                 Last     => Lst);
+      if Curs = No_Element then
+         return C;
       end if;
+      if not Has_Element (Container, Curs) then
+         raise Constraint_Error;
+      end if;
+
+      while Curs.Node /= 0 loop
+         Node := Curs.Node;
+         Delete (C, Curs);
+         Curs := Next (Container, (Node => Node));
+      end loop;
+      return C;
    end Left;
 
    --------------
@@ -1978,11 +1292,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    function Length (Container : Set) return Count_Type is
    begin
-      if Container.K = Plain then
-         return Container.Tree.Length;
-      else
-         return Container.Length;
-      end if;
+      return Container.Length;
    end Length;
 
    ----------
@@ -1990,15 +1300,10 @@ package body Ada.Containers.Formal_Ordered_Sets is
    ----------
 
    procedure Move (Target : in out Set; Source : in out Set) is
-      S : Tree_Types.Tree_Type renames Source.Tree.all;
-      N : Tree_Types.Nodes_Type renames S.Nodes;
+      N : Tree_Types.Nodes_Type renames Source.Nodes;
       X : Count_Type;
 
    begin
-      if Target.K /= Plain or Source.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
 
       if Target'Address = Source'Address then
          return;
@@ -2009,7 +1314,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
            "Source length exceeds Target capacity";
       end if;
 
-      if S.Busy > 0 then
+      if Source.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with cursors of Source (list is busy)";
       end if;
@@ -2017,32 +1322,19 @@ package body Ada.Containers.Formal_Ordered_Sets is
       Clear (Target);
 
       loop
-         X := S.First;
+         X := Source.First;
          exit when X = 0;
 
          Insert (Target, N (X).Element);  -- optimize???
 
-         Tree_Operations.Delete_Node_Sans_Free (S, X);
-         Formal_Ordered_Sets.Free (S, X);
+         Tree_Operations.Delete_Node_Sans_Free (Source, X);
+         Formal_Ordered_Sets.Free (Source, X);
       end loop;
    end Move;
 
    ----------
    -- Next --
    ----------
-
-   function Next_Unchecked
-     (Container : Set;
-      Position  : Count_Type) return Count_Type is
-   begin
-
-      if Container.K = Part and then
-        (Container.Length = 0 or Position = Container.Last) then
-         return 0;
-      end if;
-
-      return Tree_Operations.Next (Container.Tree.all, Position);
-   end Next_Unchecked;
 
    function Next (Container : Set; Position : Cursor) return Cursor is
    begin
@@ -2054,9 +1346,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
          raise Constraint_Error;
       end if;
 
-      pragma Assert (Vet (Container.Tree.all, Position.Node),
+      pragma Assert (Vet (Container, Position.Node),
                      "bad cursor in Next");
-      return (Node => Next_Unchecked (Container, Position.Node));
+      return (Node => Tree_Operations.Next (Container, Position.Node));
    end Next;
 
    procedure Next (Container : Set; Position : in out Cursor) is
@@ -2070,49 +1362,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    function Overlap (Left, Right : Set) return Boolean is
    begin
-      if Left.K = Plain and Right.K = Plain then
-         return Set_Ops.Set_Overlap (Left.Tree.all, Right.Tree.all);
-      end if;
+      return Set_Ops.Set_Overlap (Left, Right);
 
-      if Length (Left) = 0 or Length (Right) = 0 then
-         return False;
-      end if;
-
-      declare
-
-         L_Node : Count_Type := First (Left).Node;
-         R_Node : Count_Type := First (Right).Node;
-
-         L_Last : constant Count_Type :=
-           Next (Left.Tree.all, Last (Left).Node);
-         R_Last : constant Count_Type :=
-           Next (Right.Tree.all, Last (Right).Node);
-
-      begin
-         if Left'Address = Right'Address then
-            return True;
-         end if;
-
-         loop
-            if L_Node = L_Last
-              or else R_Node = R_Last
-            then
-               return False;
-            end if;
-
-            if Left.Tree.Nodes (L_Node).Element <
-              Right.Tree.Nodes (R_Node).Element then
-               L_Node := Next (Left.Tree.all, L_Node);
-
-            elsif Right.Tree.Nodes (R_Node).Element <
-              Left.Tree.Nodes (L_Node).Element then
-               R_Node := Next (Right.Tree.all, R_Node);
-
-            else
-               return True;
-            end if;
-         end loop;
-      end;
    end Overlap;
 
    ------------
@@ -2138,18 +1389,12 @@ package body Ada.Containers.Formal_Ordered_Sets is
          raise Constraint_Error;
       end if;
 
-      pragma Assert (Vet (Container.Tree.all, Position.Node),
+      pragma Assert (Vet (Container, Position.Node),
                      "bad cursor in Previous");
 
-      if Container.K = Part and then
-        (Container.Length = 0 or Position.Node = Container.First) then
-         return No_Element;
-      end if;
-
       declare
-         Tree : Tree_Types.Tree_Type renames Container.Tree.all;
          Node : constant Count_Type :=
-           Tree_Operations.Previous (Tree, Position.Node);
+           Tree_Operations.Previous (Container, Position.Node);
 
       begin
          if Node = 0 then
@@ -2175,30 +1420,25 @@ package body Ada.Containers.Formal_Ordered_Sets is
       Process   : not null access procedure (Element : Element_Type))
    is
    begin
-      if Container.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
 
       if not Has_Element (Container, Position) then
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      pragma Assert (Vet (Container.Tree.all, Position.Node),
+      pragma Assert (Vet (Container, Position.Node),
                      "bad cursor in Query_Element");
 
       declare
-         T : Tree_Types.Tree_Type renames Container.Tree.all;
 
-         B : Natural renames T.Busy;
-         L : Natural renames T.Lock;
+         B : Natural renames Container.Busy;
+         L : Natural renames Container.Lock;
 
       begin
          B := B + 1;
          L := L + 1;
 
          begin
-            Process (T.Nodes (Position.Node).Element);
+            Process (Container.Nodes (Position.Node).Element);
          exception
             when others =>
                L := L - 1;
@@ -2238,20 +1478,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end Read_Element;
 
       --  Start of processing for Read
-      Result : Tree_Type_Access;
    begin
-      if Container.K /= Plain then
-         raise Constraint_Error;
-      end if;
 
-      if Container.Tree = null then
-         Result := new Tree_Types.Tree_Type (Container.Capacity);
-      else
-         Result := Container.Tree;
-      end if;
-
-      Read_Elements (Stream, Result.all);
-      Container.Tree := Result;
+      Read_Elements (Stream, Container);
    end Read;
 
    procedure Read
@@ -2267,29 +1496,22 @@ package body Ada.Containers.Formal_Ordered_Sets is
    -------------
 
    procedure Replace (Container : in out Set; New_Item : Element_Type) is
+
+      Node : constant Count_Type :=
+        Element_Keys.Find (Container, New_Item);
+
    begin
-      if Container.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
+      if Node = 0 then
+         raise Constraint_Error with
+           "attempt to replace element not in set";
       end if;
 
-      declare
-         Node : constant Count_Type :=
-           Element_Keys.Find (Container.Tree.all, New_Item);
+      if Container.Lock > 0 then
+         raise Program_Error with
+           "attempt to tamper with cursors (set is locked)";
+      end if;
 
-      begin
-         if Node = 0 then
-            raise Constraint_Error with
-              "attempt to replace element not in set";
-         end if;
-
-         if Container.Tree.Lock > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors (set is locked)";
-         end if;
-
-         Container.Tree.Nodes (Node).Element := New_Item;
-      end;
+      Container.Nodes (Node).Element := New_Item;
    end Replace;
 
    ---------------------
@@ -2297,7 +1519,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
    ---------------------
 
    procedure Replace_Element
-     (Tree : in out Tree_Types.Tree_Type;
+     (Tree : in out Set;
       Node : Count_Type;
       Item : Element_Type)
    is
@@ -2398,20 +1620,16 @@ package body Ada.Containers.Formal_Ordered_Sets is
       New_Item  : Element_Type)
    is
    begin
-      if Container.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
 
       if not Has_Element (Container, Position) then
          raise Constraint_Error with
            "Position cursor has no element";
       end if;
 
-      pragma Assert (Vet (Container.Tree.all, Position.Node),
+      pragma Assert (Vet (Container, Position.Node),
                      "bad cursor in Replace_Element");
 
-      Replace_Element (Container.Tree.all, Position.Node, New_Item);
+      Replace_Element (Container, Position.Node, New_Item);
    end Replace_Element;
 
    ---------------------
@@ -2438,8 +1656,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Process (Container, (Node => Node));
       end Process_Node;
 
-      T : Tree_Types.Tree_Type renames Container.Tree.all;
-      B : Natural renames T.Busy;
+      B : Natural renames Container'Unrestricted_Access.Busy;
 
       --  Start of processing for Reverse_Iterate
 
@@ -2447,29 +1664,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       B := B + 1;
 
       begin
-         if Container.K = Plain then
-            Local_Reverse_Iterate (T);
-            return;
-         end if;
-
-         if Container.Length = 0 then
-            return;
-         end if;
-
-         declare
-            Node  : Count_Type := Container.Last;
-            First : constant Count_Type :=
-              Previous (Container.Tree.all, Container.First);
-
-         begin
-
-            while Node /= First loop
-               Process_Node (Node);
-               Node := Previous (Container.Tree.all, Node);
-            end loop;
-
-         end;
-
+         Local_Reverse_Iterate (Container);
       exception
          when others =>
             B := B - 1;
@@ -2484,46 +1679,25 @@ package body Ada.Containers.Formal_Ordered_Sets is
    -----------
 
    function Right (Container : Set; Position : Cursor) return Set is
-      Lst : Count_Type;
-      L   : Count_Type := 0;
-      C   : Count_Type := Position.Node;
+      Curs : Cursor := First (Container);
+      C : Set (Container.Capacity) :=
+        Copy (Container, Container.Capacity);
+      Node : Count_Type;
    begin
-
-      if C = 0 then
-         return (Capacity => Container.Capacity,
-                 K        => Part,
-                 Tree     => Container.Tree,
-                 Length   => 0,
-                 First    => 0,
-                 Last     => 0);
+      if Curs = No_Element then
+         Clear (C);
+         return C;
+      end if;
+      if Position /= No_Element and not Has_Element (Container, Position) then
+         raise Constraint_Error;
       end if;
 
-      if Container.K = Plain then
-         Lst := 0;
-      else
-         Lst := Next (Container.Tree.all, Container.Last);
-      end if;
-
-      if C = Lst then
-         raise Constraint_Error with
-           "Position cursor has no element";
-      end if;
-
-      while C /= Lst loop
-         if C = 0 then
-            raise Constraint_Error with
-              "Position cursor has no element";
-         end if;
-         C := Next (Container.Tree.all, C);
-         L := L + 1;
+      while Curs.Node /= Position.Node loop
+         Node := Curs.Node;
+         Delete (C, Curs);
+         Curs := Next (Container, (Node => Node));
       end loop;
-
-      return (Capacity => Container.Capacity,
-              K        => Part,
-              Tree     => Container.Tree,
-              Length   => L,
-              First    => Position.Node,
-              Last     => Last (Container).Node);
+      return C;
    end Right;
 
    ---------------
@@ -2591,13 +1765,13 @@ package body Ada.Containers.Formal_Ordered_Sets is
             return True;
          end if;
 
-         if Left.Tree.Nodes (LNode).Element /=
-           Right.Tree.Nodes (RNode).Element then
+         if Left.Nodes (LNode).Element /=
+           Right.Nodes (RNode).Element then
             exit;
          end if;
 
-         LNode := Next_Unchecked (Left, LNode);
-         RNode := Next_Unchecked (Right, RNode);
+         LNode := Next (Left, LNode);
+         RNode := Next (Right, RNode);
       end loop;
       return False;
 
@@ -2609,86 +1783,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    procedure Symmetric_Difference (Target : in out Set; Source : Set) is
    begin
-      if Target.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
-
-      if Source.K = Plain then
-         Set_Ops.Set_Symmetric_Difference (Target.Tree.all, Source.Tree.all);
-         return;
-      end if;
-
-      if Source.Length = 0 then
-         return;
-      end if;
-
-      declare
-
-         Tgt : Count_Type := Target.First;
-         Src : Count_Type := Source.First;
-
-         SLast : constant Count_Type := Next (Source.Tree.all, Source.Last);
-
-         New_Tgt_Node : Count_Type;
-
-      begin
-         if Target.Tree.Busy > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors (container is busy)";
-         end if;
-
-         if Target'Address = Source'Address then
-            Clear (Target);
-            return;
-         end if;
-
-         loop
-            if Tgt = 0 then
-               while Src /= SLast loop
-                  Insert_With_Hint
-                    (Dst_Set  => Target.Tree.all,
-                     Dst_Hint => 0,
-                     Src_Node => Source.Tree.Nodes (Src),
-                     Dst_Node => New_Tgt_Node);
-
-                  Src := Next (Source.Tree.all, Src);
-               end loop;
-
-               return;
-            end if;
-
-            if Src = SLast then
-               return;
-            end if;
-
-            if Target.Tree.Nodes (Tgt).Element <
-              Source.Tree.Nodes (Src).Element then
-               Tgt := Next (Target.Tree.all, Tgt);
-
-            elsif Source.Tree.Nodes (Src).Element <
-              Target.Tree.Nodes (Tgt).Element then
-               Insert_With_Hint
-                 (Dst_Set  => Target.Tree.all,
-                  Dst_Hint => Tgt,
-                  Src_Node => Source.Tree.Nodes (Src),
-                  Dst_Node => New_Tgt_Node);
-
-               Src := Next (Source.Tree.all, Src);
-
-            else
-               declare
-                  X : constant Count_Type := Tgt;
-               begin
-                  Tgt := Next (Target.Tree.all, Tgt);
-                  Delete_Node_Sans_Free (Target.Tree.all, X);
-                  Formal_Ordered_Sets.Free (Target.Tree.all, X);
-               end;
-
-               Src := Next (Source.Tree.all, Src);
-            end if;
-         end loop;
-      end;
+      Set_Ops.Set_Symmetric_Difference (Target, Source);
    end Symmetric_Difference;
 
    function Symmetric_Difference (Left, Right : Set) return Set is
@@ -2706,84 +1801,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       return S : Set (Length (Left) + Length (Right)) do
-         if Left.K = Plain and Right.K = Plain then
-            Assign (S.Tree.all,
-              Set_Ops.Set_Symmetric_Difference (Left.Tree.all,
-                Right.Tree.all));
-            return;
-         end if;
-
-         declare
-
-            Tree : Tree_Types.Tree_Type renames S.Tree.all;
-
-            L_Node : Count_Type := First (Left).Node;
-            R_Node : Count_Type := First (Right).Node;
-
-            L_Last : constant Count_Type :=
-              Next (Left.Tree.all, Last (Left).Node);
-            R_Last : constant Count_Type :=
-              Next (Right.Tree.all, Last (Right).Node);
-
-            Dst_Node : Count_Type;
-
-         begin
-            loop
-               if L_Node = L_Last then
-                  while R_Node /= R_Last loop
-                     Insert_With_Hint
-                       (Dst_Set  => Tree,
-                        Dst_Hint => 0,
-                        Src_Node => Right.Tree.Nodes (R_Node),
-                        Dst_Node => Dst_Node);
-
-                     R_Node := Next (Right.Tree.all, R_Node);
-                  end loop;
-
-                  return;
-               end if;
-
-               if R_Node = R_Last then
-                  while L_Node /= L_Last  loop
-                     Insert_With_Hint
-                       (Dst_Set  => Tree,
-                        Dst_Hint => 0,
-                        Src_Node => Left.Tree.Nodes (L_Node),
-                        Dst_Node => Dst_Node);
-
-                     L_Node := Next (Left.Tree.all, L_Node);
-                  end loop;
-
-                  return;
-               end if;
-
-               if Left.Tree.Nodes (L_Node).Element <
-                 Right.Tree.Nodes (R_Node).Element then
-                  Insert_With_Hint
-                    (Dst_Set  => Tree,
-                     Dst_Hint => 0,
-                     Src_Node => Left.Tree.Nodes (L_Node),
-                     Dst_Node => Dst_Node);
-
-                  L_Node := Next (Left.Tree.all, L_Node);
-
-               elsif Right.Tree.Nodes (R_Node).Element <
-                 Left.Tree.Nodes (L_Node).Element then
-                  Insert_With_Hint
-                    (Dst_Set  => Tree,
-                     Dst_Hint => 0,
-                     Src_Node => Right.Tree.Nodes (R_Node),
-                     Dst_Node => Dst_Node);
-
-                  R_Node := Next (Right.Tree.all, R_Node);
-
-               else
-                  L_Node := Next (Left.Tree.all, L_Node);
-                  R_Node := Next (Right.Tree.all, R_Node);
-               end if;
-            end loop;
-         end;
-
+            Assign (S,
+              Set_Ops.Set_Symmetric_Difference (Left,
+                Right));
       end return;
    end Symmetric_Difference;
 
@@ -2797,7 +1817,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    begin
       return S : Set (Capacity => 1) do
-         Insert_Sans_Hint (S.Tree.all, New_Item, Node, Inserted);
+         Insert_Sans_Hint (S, New_Item, Node, Inserted);
          pragma Assert (Inserted);
       end return;
    end To_Set;
@@ -2808,55 +1828,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    procedure Union (Target : in out Set; Source : Set) is
    begin
-      if Target.K /= Plain then
-         raise Constraint_Error
-           with "Can't modify part of container";
-      end if;
-
-      if Source.K = Plain then
-         Set_Ops.Set_Union (Target.Tree.all, Source.Tree.all);
-         return;
-      end if;
-
-      if Source.Length = 0 then
-         return;
-      end if;
-
-      declare
-         Hint : Count_Type := 0;
-
-         procedure Process (Node : Count_Type);
-         pragma Inline (Process);
-
-         procedure Iterate is new Iterate_Between (Process);
-
-         -------------
-         -- Process --
-         -------------
-
-         procedure Process (Node : Count_Type) is
-         begin
-            Insert_With_Hint
-              (Dst_Set  => Target.Tree.all,
-               Dst_Hint => Hint,
-               Src_Node => Source.Tree.Nodes (Node),
-               Dst_Node => Hint);
-         end Process;
-
-         --  Start of processing for Union
-
-      begin
-         if Target'Address = Source'Address then
-            return;
-         end if;
-
-         if Target.Tree.Busy > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors (container is busy)";
-         end if;
-
-         Iterate (Source.Tree.all, Source.First, Source.Last);
-      end;
+      Set_Ops.Set_Union (Target, Source);
    end Union;
 
    function Union (Left, Right : Set) return Set is
@@ -2910,7 +1882,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       --  Start of processing for Write
 
    begin
-      Write_Elements (Stream, Container.Tree.all);
+      Write_Elements (Stream, Container);
    end Write;
 
    procedure Write

@@ -36,12 +36,13 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 package Makeutl is
 
    type Fail_Proc is access procedure (S : String);
+
    Do_Fail : Fail_Proc := Osint.Fail'Access;
    --  Failing procedure called from procedure Test_If_Relative_Path below. May
    --  be redirected.
 
    Project_Tree : constant Project_Tree_Ref :=
-     new Project_Tree_Data (Is_Root_Tree => True);
+                    new Project_Tree_Data (Is_Root_Tree => True);
    --  The project tree
 
    Source_Info_Option : constant String := "--source-info=";

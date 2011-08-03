@@ -1304,8 +1304,8 @@ package body MLib.Prj is
 
          Lib_Dirpath  :=
            new String'(Get_Name_String (For_Project.Library_Dir.Display_Name));
-         Lib_Filename := new String'
-           (Get_Name_String (For_Project.Library_Name));
+         Lib_Filename :=
+           new String'(Get_Name_String (For_Project.Library_Name));
 
          case For_Project.Library_Kind is
             when Static =>

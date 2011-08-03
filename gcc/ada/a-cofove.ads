@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -366,22 +366,11 @@ private
    type Elements_Array is array (Count_Type range <>) of Element_Type;
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
-   type Kind is (Plain, Part);
-
-   type Plain_Vector (Capacity : Capacity_Subtype) is record
+   type Vector (Capacity : Capacity_Subtype) is tagged record
       Elements : Elements_Array (1 .. Capacity);
       Last     : Extended_Index := No_Index;
       Busy     : Natural := 0;
       Lock     : Natural := 0;
-   end record;
-
-   type Plain_Access is access all Plain_Vector;
-
-   type Vector (Capacity : Capacity_Subtype) is tagged record
-      Plain : Plain_Access := new Plain_Vector (Capacity);
-      K     : Kind := Formal_Vectors.Plain;
-      First : Count_Type := 0;
-      Last  : Index_Type'Base := No_Index;
    end record;
 
    use Ada.Streams;

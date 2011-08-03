@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -265,27 +265,18 @@ private
 
    type Node_Type is record
       Has_Element : Boolean := False;
-      Parent  : Count_Type;
-      Left    : Count_Type;
-      Right   : Count_Type;
+      Parent  : Count_Type := 0;
+      Left    : Count_Type := 0;
+      Right   : Count_Type := 0;
       Color   : Red_Black_Trees.Color_Type;
       Element : Element_Type;
    end record;
 
-   type Kind is (Plain, Part);
-
    package Tree_Types is
      new Red_Black_Trees.Generic_Bounded_Tree_Types (Node_Type);
 
-   type Tree_Type_Access is access all Tree_Types.Tree_Type;
-
-   type Set (Capacity : Count_Type) is tagged record
-      Tree   : Tree_Type_Access := new Tree_Types.Tree_Type (Capacity);
-      K      : Kind := Plain;
-      Length : Count_Type := 0;
-      First  : Count_Type := 0;
-      Last   : Count_Type := 0;
-   end record;
+   type Set (Capacity : Count_Type) is
+      new Tree_Types.Tree_Type (Capacity) with null record;
 
    use Red_Black_Trees;
    use Ada.Streams;

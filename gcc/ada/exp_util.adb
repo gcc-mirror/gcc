@@ -3568,9 +3568,12 @@ package body Exp_Util is
    function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean is
    begin
       return VM_Target /= No_VM
-        and then Nkind (N) = N_Identifier
-        and then Present (Renamed_Object (Entity (N)))
-        and then Nkind (Renamed_Object (Entity (N))) = N_Slice;
+        and then (Nkind (N) = N_Slice
+                    or else
+                      (Nkind (N) = N_Identifier
+                         and then Present (Renamed_Object (Entity (N)))
+                         and then Nkind (Renamed_Object (Entity (N)))
+                                    = N_Slice));
    end Is_VM_By_Copy_Actual;
 
    --------------------
