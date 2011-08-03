@@ -131,10 +131,17 @@ package body Prj.Proc is
       Node_Tree         : Project_Node_Tree_Ref;
       Env               : Prj.Tree.Environment;
       Pkg               : Package_Id;
-      Item              : Project_Node_Id);
+      Item              : Project_Node_Id;
+      Child_Env         : in out Prj.Tree.Environment;
+      Can_Modify_Child_Env : Boolean);
    --  Process declarative items starting with From_Project_Node, and put them
    --  in declarations Decl. This is a recursive procedure; it calls itself for
    --  a package declaration or a case construction.
+   --  Child_Env is the modified environment after seeing declarations like
+   --  "for External(...) use" or "for Project_Path use" in aggregate projects.
+   --  It should have been initialized first. This environment can only be
+   --  modified if Can_Modify_Child_Env is True, otherwise all the above
+   --  attributes simply have no effect.
 
    procedure Recursive_Process
      (In_Tree                : Project_Tree_Ref;
@@ -142,13 +149,22 @@ package body Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
-      Extended_By            : Project_Id);
+      Extended_By            : Project_Id;
+      Child_Env              : in out Prj.Tree.Environment;
+      Is_Root_Project        : Boolean);
    --  Process project with node From_Project_Node in the tree. Do nothing if
    --  From_Project_Node is Empty_Node. If project has already been processed,
    --  simply return its project id. Otherwise create a new project id, mark it
    --  as processed, call itself recursively for all imported projects and a
    --  extended project, if any. Then process the declarative items of the
    --  project.
+   --  Child_Env is the environment created from an aggregate project (new
+   --  external values or project path), and should be initialized before the
+   --  call.
+   --  Is_Root_Project should be true only for the project that the user
+   --  explicitly loaded. In the context of aggregate projects, only that
+   --  project is allowed to modify the environment that will be used to load
+   --  projects (Child_Env).
 
    function Get_Attribute_Index
      (Tree  : Project_Node_Tree_Ref;
@@ -1392,7 +1408,9 @@ package body Prj.Proc is
       Node_Tree              : Project_Node_Tree_Ref;
       Env                    : Prj.Tree.Environment;
       Pkg                    : Package_Id;
-      Item                   : Project_Node_Id)
+      Item                   : Project_Node_Id;
+      Child_Env              : in out Prj.Tree.Environment;
+      Can_Modify_Child_Env   : Boolean)
    is
       procedure Check_Or_Set_Typed_Variable
         (Value       : in out Variable_Value;
@@ -1597,7 +1615,9 @@ package body Prj.Proc is
                   Env                    => Env,
                   Pkg                    => New_Pkg,
                   Item                   =>
-                    First_Declarative_Item_Of (Current_Item, Node_Tree));
+                    First_Declarative_Item_Of (Current_Item, Node_Tree),
+                  Child_Env              => Child_Env,
+                  Can_Modify_Child_Env   => Can_Modify_Child_Env);
             end;
          end if;
       end Process_Package_Declaration;
@@ -1949,9 +1969,26 @@ package body Prj.Proc is
          end if;
 
          if Name = Snames.Name_External then
+            if Can_Modify_Child_Env then
+               Add (Child_Env.External,
+                    External_Name => Get_Name_String (Index_Name),
+                    Value         => Get_Name_String (New_Value.Value),
+                    Source        => From_External_Attribute);
+               Add (Env.External,
+                    External_Name => Get_Name_String (Index_Name),
+                    Value         => Get_Name_String (New_Value.Value),
+                    Source        => From_External_Attribute);
+            else
+               if Current_Verbosity = High then
+                  Debug_Output
+                    ("'for External' has no effect except in root aggregate ("
+                     & Get_Name_String (Index_Name) & ")", New_Value.Value);
+               end if;
+            end if;
+
+         elsif Name = Snames.Name_Project_Path then
             Debug_Output
-              ("Defined external value ("
-               & Get_Name_String (Index_Name) & ")", New_Value.Value);
+              ("Defined project path");
          end if;
       end Process_Expression_For_Associative_Array;
 
@@ -2236,7 +2273,9 @@ package body Prj.Proc is
                Node_Tree              => Node_Tree,
                Env                    => Env,
                Pkg                    => Pkg,
-               Item                   => Decl_Item);
+               Item                   => Decl_Item,
+               Child_Env              => Child_Env,
+               Can_Modify_Child_Env   => Can_Modify_Child_Env);
          end if;
       end Process_Case_Construction;
 
@@ -2291,6 +2330,7 @@ package body Prj.Proc is
       Env                    : in out Prj.Tree.Environment;
       Reset_Tree             : Boolean := True)
    is
+      Child_Env : Prj.Tree.Environment;
    begin
       if Reset_Tree then
 
@@ -2306,13 +2346,19 @@ package body Prj.Proc is
 
       Debug_Increase_Indent ("Process tree, phase 1");
 
+      Initialize_And_Copy (Child_Env, Copy_From => Env);
+
       Recursive_Process
         (Project                => Project,
          In_Tree                => In_Tree,
          From_Project_Node      => From_Project_Node,
          From_Project_Node_Tree => From_Project_Node_Tree,
          Env                    => Env,
-         Extended_By            => No_Project);
+         Extended_By            => No_Project,
+         Child_Env              => Child_Env,
+         Is_Root_Project        => True);
+
+      Free (Child_Env);
 
       Success :=
         Total_Errors_Detected = 0
@@ -2448,7 +2494,9 @@ package body Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
-      Extended_By            : Project_Id)
+      Extended_By            : Project_Id;
+      Child_Env              : in out Prj.Tree.Environment;
+      Is_Root_Project        : Boolean)
    is
       procedure Process_Imported_Projects
         (Imported     : in out Project_List;
@@ -2501,7 +2549,9 @@ package body Prj.Proc is
                       (With_Clause, From_Project_Node_Tree),
                   From_Project_Node_Tree => From_Project_Node_Tree,
                   Env                    => Env,
-                  Extended_By            => No_Project);
+                  Extended_By            => No_Project,
+                  Child_Env              => Child_Env,
+                  Is_Root_Project        => False);
 
                --  Imported is the id of the last imported project. If
                --  it is nil, then this imported project is our first.
@@ -2555,7 +2605,7 @@ package body Prj.Proc is
                Errout_Handling   => Prj.Part.Never_Finalize,
                Current_Directory => Get_Name_String (Project.Directory.Name),
                Is_Config_File    => False,
-               Env               => Env);
+               Env               => Child_Env);
 
             Success := not Prj.Tree.No (Loaded_Tree);
 
@@ -2565,8 +2615,10 @@ package body Prj.Proc is
                   Project                => List.Project,
                   From_Project_Node      => Loaded_Tree,
                   From_Project_Node_Tree => From_Project_Node_Tree,
-                  Env                    => Env,
-                  Extended_By            => No_Project);
+                  Env                    => Child_Env,
+                  Extended_By            => No_Project,
+                  Child_Env              => Child_Env,
+                  Is_Root_Project        => False);
             else
                Debug_Output ("Failed to parse", Name_Id (List.Path));
             end if;
@@ -2768,7 +2820,9 @@ package body Prj.Proc is
                  (Declaration_Node, From_Project_Node_Tree),
                From_Project_Node_Tree => From_Project_Node_Tree,
                Env                    => Env,
-               Extended_By            => Project);
+               Extended_By            => Project,
+               Child_Env              => Child_Env,
+               Is_Root_Project        => False);
 
             Process_Declarative_Items
               (Project                => Project,
@@ -2778,7 +2832,9 @@ package body Prj.Proc is
                Env                    => Env,
                Pkg                    => No_Package,
                Item                   => First_Declarative_Item_Of
-                 (Declaration_Node, From_Project_Node_Tree));
+                 (Declaration_Node, From_Project_Node_Tree),
+               Child_Env              => Child_Env,
+               Can_Modify_Child_Env   => Is_Root_Project);
 
             if Project.Extends /= No_Project then
                Process_Extended_Project;

@@ -1,3 +1,9 @@
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb, prj-ext.adb, prj-ext.ads, prj-env.adb, prj-env.ads,
+	prj-tree.adb, prj-tree.ads (Initialize_And_Copy, Copy): new subprograms
+	(Process_Declarative_Items): new parameter Child_Env.
+
 2011-08-03  Yannick Moy  <moy@adacore.com>
 
 	* alfa.ads Update format of ALFA section in ALI file in order to add a

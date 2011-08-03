@@ -162,6 +162,8 @@ package Prj.Env is
    --  to search for projects on the path (and caches the results to improve
    --  efficiency).
 
+   No_Project_Search_Path : constant Project_Search_Path;
+
    procedure Initialize_Default_Project_Path
      (Self        : in out Project_Search_Path;
       Target_Name : String);
@@ -169,6 +171,9 @@ package Prj.Env is
    --  given target (including directories specified by the environment
    --  variables ADA_PROJECT_PATH and GPR_PROJECT_PATH). This does nothing if
    --  Self has already been initialized.
+
+   procedure Copy (From : Project_Search_Path; To : out Project_Search_Path);
+   --  Copy From into To
 
    procedure Initialize_Empty (Self : in out Project_Search_Path);
    --  Initialize self with an empty list of directories. If Self had already
@@ -234,4 +239,9 @@ private
 
       Cache : Projects_Paths.Instance;
    end record;
+
+   No_Project_Search_Path : constant Project_Search_Path :=
+     (Path  => null,
+      Cache => Projects_Paths.Nil);
+
 end Prj.Env;

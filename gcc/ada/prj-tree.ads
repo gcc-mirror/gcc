@@ -60,8 +60,15 @@ package Prj.Tree is
       --  Configure errors and warnings
    end record;
 
-   procedure Initialize (Self : in out Environment; Flags : Processing_Flags);
+   procedure Initialize
+     (Self      : out Environment;
+      Flags     : Processing_Flags);
    --  Initialize a new environment
+
+   procedure Initialize_And_Copy
+     (Self      : out Environment;
+      Copy_From : Environment);
+   --  Initialize a new environment, copying its values from Copy_From
 
    procedure Free (Self : in out Environment);
    --  Free the memory used by Self
