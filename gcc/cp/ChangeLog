@@ -1,5 +1,9 @@
 2011-08-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49803
+	* init.c (sort_mem_initializers): Initialize uses_unions_p here.
+	(build_field_list): Not here.
+
 	PR c++/49924
 	* semantics.c (cxx_eval_vec_init_1): Fix logic.
 

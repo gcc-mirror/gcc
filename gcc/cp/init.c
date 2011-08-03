@@ -627,8 +627,6 @@ build_field_list (tree t, tree list, int *uses_unions_p)
 {
   tree fields;
 
-  *uses_unions_p = 0;
-
   /* Note whether or not T is a union.  */
   if (TREE_CODE (t) == UNION_TYPE)
     *uses_unions_p = 1;
@@ -682,7 +680,7 @@ sort_mem_initializers (tree t, tree mem_inits)
   tree next_subobject;
   VEC(tree,gc) *vbases;
   int i;
-  int uses_unions_p;
+  int uses_unions_p = 0;
 
   /* Build up a list of initializations.  The TREE_PURPOSE of entry
      will be the subobject (a FIELD_DECL or BINFO) to initialize.  The

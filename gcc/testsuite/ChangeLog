@@ -1,5 +1,8 @@
 2011-08-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49803
+	* g++.dg/cpp0x/union5.C: New.
+
 	PR c++/49924
 	* g++.dg/cpp0x/constexpr-array4.C: New.
 
