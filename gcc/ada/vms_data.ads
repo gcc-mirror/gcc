@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5456,6 +5456,14 @@ package VMS_Data is
    --   Do not count EXIT statements as GOTOs when computing the Essential
    --   Complexity.
 
+   S_Metric_No_Static_Loop : aliased constant S := "/NO_STATIC_LOOP " &
+                                                   "--no-static-loop";
+   --        /STATIC_LOOP (D)
+   --        /NO_STATIC_LOOP
+   --
+   --   Do not count static FOR loop statements when computing the Cyclomatic
+   --   Complexity.
+
    S_Metric_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="      &
                                              "DEFAULT "                    &
                                                 "-vP0 "                    &
@@ -5554,6 +5562,7 @@ package VMS_Data is
                         S_Metric_Mess             'Access,
                         S_Metric_No_Exits_As_Gotos'Access,
                         S_Metric_No_Local         'Access,
+                        S_Metric_No_Static_Loop   'Access,
                         S_Metric_Project          'Access,
                         S_Metric_Quiet            'Access,
                         S_Metric_Suffix           'Access,

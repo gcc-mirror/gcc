@@ -1,3 +1,23 @@
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_cat.adb (Validate_RCI_Subprogram_Declaration): Reject a remote
+	subprogram with a limited formal that does not support external
+	streaming.
+
+2011-08-03  Yannick Moy  <moy@adacore.com>
+
+	* get_alfa.adb (Get_ALFA): add missing Skip_Spaces at start of
+	continuation line
+	* lib-xref-alfa.adb (Add_ALFA_File): split removal of scopes that are
+	not from current unit in two phases, because it is not possible to
+	change the table while iterating over its content.
+	* put_alfa.adb (Put_ALFA): reset current file/scope at each new entity
+
+2011-08-03  Sergey Rybin  <rybin@adacore.com>
+
+	* vms_data.ads: Add qualifier for gnatmetric --no-static-loop option
+	* gnat_ugn.texi: Update description of complexity metrics (gnatmetric)
+
 2011-08-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Op_Concat_Arg): if the argument is an aggregate
@@ -22,7 +42,6 @@
 	discriminants.
 	* sem_type.adb (Disambiguate): an immediately visible operator hides a
 	user-defined function that is only use-visible.
-	* inline.adb: init procs are inlineable.
 
 2011-08-03  Robert Dewar  <dewar@adacore.com>
 

@@ -393,6 +393,7 @@ begin
                         Skip_EOL;
                         exit when Nextc /= '.';
                         Skipc;
+                        Skip_Spaces;
                      end if;
 
                      if Nextc = '.' then
