@@ -1,3 +1,11 @@
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Build_Renamed_Formal_Declaration): common procedure for
+	protected entries and task entries, to build the proper renaming
+	declaration for entry formals, used in debugging.
+	* exp_ch2.adb (Expand_Entry_Parameter): handle task and entry
+	parameters in the same way.
+
 2011-08-02  Robert Dewar  <dewar@adacore.com>
 
 	* a-direct.adb, sinfo.ads, exp_ch9.adb, scng.adb, sem_util.adb,
