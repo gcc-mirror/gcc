@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -494,11 +494,16 @@ package body Prj.Dect is
 
       Scan (In_Tree);
 
-      --  Body may be an attribute name
+      --  Body or External may be an attribute name
 
       if Token = Tok_Body then
          Token := Tok_Identifier;
          Token_Name := Snames.Name_Body;
+      end if;
+
+      if Token = Tok_External then
+         Token := Tok_Identifier;
+         Token_Name := Snames.Name_External;
       end if;
 
       Expect (Tok_Identifier, "identifier");

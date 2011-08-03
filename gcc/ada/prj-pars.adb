@@ -72,7 +72,7 @@ package body Prj.Pars is
         (In_Tree                => Project_Node_Tree,
          Project                => Project_Node,
          Project_File_Name      => Project_File_Name,
-         Always_Errout_Finalize => False,
+         Errout_Handling        => Prj.Part.Finalize_If_Error,
          Packages_To_Check      => Packages_To_Check,
          Current_Directory      => Current_Dir,
          Flags                  => Flags,

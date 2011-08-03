@@ -443,7 +443,7 @@ package body Prj.Part is
      (In_Tree                : Project_Node_Tree_Ref;
       Project                : out Project_Node_Id;
       Project_File_Name      : String;
-      Always_Errout_Finalize : Boolean;
+      Errout_Handling        : Errout_Mode := Always_Finalize;
       Packages_To_Check      : String_List_Access := All_Packages;
       Store_Comments         : Boolean := False;
       Current_Directory      : String := "";
@@ -477,7 +477,10 @@ package body Prj.Part is
                     Path              => Path_Name_Id);
       Free (Real_Project_File_Name);
 
-      Prj.Err.Initialize;
+      if Errout_Handling /= Never_Finalize then
+         Prj.Err.Initialize;
+      end if;
+
       Prj.Err.Scanner.Set_Comment_As_Token (Store_Comments);
       Prj.Err.Scanner.Set_End_Of_Line_As_Token (Store_Comments);
 
@@ -607,13 +610,22 @@ package body Prj.Part is
          Project := Empty_Node;
       end if;
 
-      if No (Project) or else Always_Errout_Finalize then
-         Prj.Err.Finalize;
+      case Errout_Handling is
+         when Always_Finalize =>
+            Prj.Err.Finalize;
 
-         --  Reinitialize to avoid duplicate warnings later on
+            --  Reinitialize to avoid duplicate warnings later on
+            Prj.Err.Initialize;
 
-         Prj.Err.Initialize;
-      end if;
+         when Finalize_If_Error =>
+            if No (Project) then
+               Prj.Err.Finalize;
+               Prj.Err.Initialize;
+            end if;
+
+         when Never_Finalize =>
+            null;
+      end case;
 
    exception
       when X : others =>

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@ with Table;
 
 with Prj.Attr; use Prj.Attr;
 with Prj.Env;
+with Prj.Ext;
 
 package Prj.Tree is
 
@@ -1453,21 +1454,11 @@ package Prj.Tree is
 
    end Tree_Private_Part;
 
-   package Name_To_Name_HTable is new GNAT.Dynamic_HTables.Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Name_Id,
-      No_Element => No_Name,
-      Key        => Name_Id,
-      Hash       => Hash,
-      Equal      => "=");
-   --  General type for htables associating name_id to name_id. This is in
-   --  particular used to store the values of external references.
-
    type Project_Node_Tree_Data is record
       Project_Nodes : Tree_Private_Part.Project_Node_Table.Instance;
       Projects_HT   : Tree_Private_Part.Projects_Htable.Instance;
 
-      External_References : Name_To_Name_HTable.Instance;
+      External : Prj.Ext.External_References;
       --  External references are stored in this hash table (and manipulated
       --  through subprograms in prj-ext.ads). External references are
       --  project-tree specific so that one can load the same tree twice but
