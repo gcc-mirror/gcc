@@ -58,21 +58,21 @@ package Prj.Ext is
      (From_Command_Line,
       From_Environment,
       From_External_Attribute);
-   --  Where was the value of an external reference defined ?
-   --  They are prioritized in that order, so that a user can always use the
-   --  command line to override a value coming from his environment, or an
-   --  environment variable to override a value defined in an aggregate project
-   --  through the "for External()..." attribute.
+   --  Indicates where was the value of an external reference defined. They are
+   --  prioritized in that order, so that a user can always use the command
+   --  line to override a value coming from his environment, or an environment
+   --  variable to override a value defined in an aggregate project through the
+   --  "for External()..." attribute.
 
    procedure Add
      (Self          : External_References;
       External_Name : String;
       Value         : String;
       Source        : External_Source := External_Source'First);
-   --  Add an external reference (or modify an existing one).
-   --  No overriding is done if the Source's priority is less than the one
-   --  used to previously set the value of the variable. The default for Source
-   --  is such that overriding always occurs.
+   --  Add an external reference (or modify an existing one). No overriding is
+   --  done if the Source's priority is less than the one used to previously
+   --  set the value of the variable. The default for Source is such that
+   --  overriding always occurs.
 
    function Value_Of
      (Self          : External_References;
@@ -92,7 +92,6 @@ package Prj.Ext is
    --  and free any allocated memory.
 
 private
-
    --  Use a Static_HTable, rather than a Simple_HTable
 
    --  The issue is that we need to be able to copy the contents of the table

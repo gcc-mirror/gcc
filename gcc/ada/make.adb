@@ -2311,10 +2311,10 @@ package body Make is
 
                   Switches :=
                     Switches_Of
-                      (Source_File      => Source_File,
-                       Project          => Arguments_Project,
-                       In_Package       => Compiler_Package,
-                       Allow_ALI        => False);
+                      (Source_File => Source_File,
+                       Project     => Arguments_Project,
+                       In_Package  => Compiler_Package,
+                       Allow_ALI   => False);
 
                end if;
 

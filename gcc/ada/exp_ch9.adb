@@ -3797,7 +3797,7 @@ package body Exp_Ch9 is
                     Prefix =>
                       New_Reference_To (Defining_Identifier (N_Node), Loc)));
 
-               --  If it is a vm_by_copy_actual, copy it to a new variable
+               --  If it is a VM_By_Copy_Actual, copy it to a new variable
 
                elsif Is_VM_By_Copy_Actual (Actual) then
                   N_Node :=

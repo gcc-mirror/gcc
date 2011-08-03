@@ -1,3 +1,10 @@
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
+	* prj-proc.adb, exp_util.ads, exp_ch9.adb, make.adb, prj-ext.adb,
+	prj-ext.ads, alfa.ads, sem_ch4.adb, makeutl.adb, makeutl.ads,
+	lib-xref-alfa.adb, sem_cat.adb, exp_dist.adb, get_alfa.adb,
+	prj-env.adb, prj-env.ads, prj-tree.adb, alfa.ads: Minor reformatting.
+
 2011-08-03  Javier Miranda  <miranda@adacore.com>
 
 	* exp_util.adb, sem_aux.adb, exp_util.ads, sem_aux.ads:

@@ -125,18 +125,19 @@ package body Prj.Proc is
    --  Find the package of Project whose name is With_Name
 
    procedure Process_Declarative_Items
-     (Project           : Project_Id;
-      In_Tree           : Project_Tree_Ref;
-      From_Project_Node : Project_Node_Id;
-      Node_Tree         : Project_Node_Tree_Ref;
-      Env               : Prj.Tree.Environment;
-      Pkg               : Package_Id;
-      Item              : Project_Node_Id;
-      Child_Env         : in out Prj.Tree.Environment;
+     (Project              : Project_Id;
+      In_Tree              : Project_Tree_Ref;
+      From_Project_Node    : Project_Node_Id;
+      Node_Tree            : Project_Node_Tree_Ref;
+      Env                  : Prj.Tree.Environment;
+      Pkg                  : Package_Id;
+      Item                 : Project_Node_Id;
+      Child_Env            : in out Prj.Tree.Environment;
       Can_Modify_Child_Env : Boolean);
    --  Process declarative items starting with From_Project_Node, and put them
    --  in declarations Decl. This is a recursive procedure; it calls itself for
    --  a package declaration or a case construction.
+   --
    --  Child_Env is the modified environment after seeing declarations like
    --  "for External(...) use" or "for Project_Path use" in aggregate projects.
    --  It should have been initialized first. This environment can only be
@@ -158,9 +159,11 @@ package body Prj.Proc is
    --  as processed, call itself recursively for all imported projects and a
    --  extended project, if any. Then process the declarative items of the
    --  project.
+   --
    --  Child_Env is the environment created from an aggregate project (new
    --  external values or project path), and should be initialized before the
    --  call.
+   --
    --  Is_Root_Project should be true only for the project that the user
    --  explicitly loaded. In the context of aggregate projects, only that
    --  project is allowed to modify the environment that will be used to load
@@ -2267,15 +2270,15 @@ package body Prj.Proc is
 
          if Present (Decl_Item) then
             Process_Declarative_Items
-              (Project                => Project,
-               In_Tree                => In_Tree,
-               From_Project_Node      => From_Project_Node,
-               Node_Tree              => Node_Tree,
-               Env                    => Env,
-               Pkg                    => Pkg,
-               Item                   => Decl_Item,
-               Child_Env              => Child_Env,
-               Can_Modify_Child_Env   => Can_Modify_Child_Env);
+              (Project              => Project,
+               In_Tree              => In_Tree,
+               From_Project_Node    => From_Project_Node,
+               Node_Tree            => Node_Tree,
+               Env                  => Env,
+               Pkg                  => Pkg,
+               Item                 => Decl_Item,
+               Child_Env            => Child_Env,
+               Can_Modify_Child_Env => Can_Modify_Child_Env);
          end if;
       end Process_Case_Construction;
 
@@ -2331,6 +2334,7 @@ package body Prj.Proc is
       Reset_Tree             : Boolean := True)
    is
       Child_Env : Prj.Tree.Environment;
+
    begin
       if Reset_Tree then
 

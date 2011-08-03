@@ -7263,8 +7263,8 @@ package body Sem_Ch4 is
 
               or else
                 (Ekind (Typ) = E_Anonymous_Access_Type
-                 and then
-                   Base_Type (Designated_Type (Typ)) = Base_Type (Corr_Type));
+                  and then
+                    Base_Type (Designated_Type (Typ)) = Base_Type (Corr_Type));
          end Valid_First_Argument_Of;
 
       --  Start of processing for Try_Primitive_Operation

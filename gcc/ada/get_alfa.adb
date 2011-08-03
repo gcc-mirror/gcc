@@ -290,6 +290,7 @@ begin
                   Spec_File := Get_Nat;
                   Check ('.');
                   Spec_Scope := Get_Nat;
+
                else
                   Spec_File  := 0;
                   Spec_Scope := 0;

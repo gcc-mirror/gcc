@@ -2270,8 +2270,7 @@ package body Prj.Tree is
    begin
       pragma Assert
         (Present (Node)
-          and then
-             In_Tree.Project_Nodes.Table (Node).Kind = N_With_Clause);
+          and then In_Tree.Project_Nodes.Table (Node).Kind = N_With_Clause);
       In_Tree.Project_Nodes.Table (Node).Flag1 := True;
    end Set_Is_Not_Last_In_List;
 

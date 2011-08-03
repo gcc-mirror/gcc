@@ -241,7 +241,7 @@ private
    end record;
 
    No_Project_Search_Path : constant Project_Search_Path :=
-     (Path  => null,
-      Cache => Projects_Paths.Nil);
+                              (Path  => null,
+                               Cache => Projects_Paths.Nil);
 
 end Prj.Env;

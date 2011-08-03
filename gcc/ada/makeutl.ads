@@ -155,26 +155,25 @@ package Makeutl is
       Value        : out Variable_Value;
       Is_Default   : out Boolean);
    procedure Get_Switches
-     (Source_File  : File_Name_Type;
-      Source_Lang  : Name_Id;
-      Source_Prj   : Project_Id;
-      Pkg_Name     : Name_Id;
-      Project_Tree : Project_Tree_Ref;
-      Value        : out Variable_Value;
-      Is_Default   : out Boolean;
+     (Source_File         : File_Name_Type;
+      Source_Lang         : Name_Id;
+      Source_Prj          : Project_Id;
+      Pkg_Name            : Name_Id;
+      Project_Tree        : Project_Tree_Ref;
+      Value               : out Variable_Value;
+      Is_Default          : out Boolean;
       Test_Without_Suffix : Boolean := False;
       Check_ALI_Suffix    : Boolean := False);
    --  Compute the switches (Compilation switches for instance) for the given
    --  file. This checks various attributes to see if there are file specific
    --  switches, or else defaults on the switches for the corresponding
    --  language. Is_Default is set to False if there were file-specific
-   --  switches Source_File can be set to No_File to force retrieval of
-   --  the default switches.
-   --  If Test_Without_Suffix is True, and there is no
-   --  " for Switches(Source_File) use", then this procedure also tests without
-   --  the extension of the filename.
-   --  If Test_Without_Suffix is True and Check_ALI_Suffix is True, then we
-   --  also replace the file extension with ".ali" when testing.
+   --  switches Source_File can be set to No_File to force retrieval of the
+   --  default switches. If Test_Without_Suffix is True, and there is no " for
+   --  Switches(Source_File) use", then this procedure also tests without the
+   --  extension of the filename. If Test_Without_Suffix is True and
+   --  Check_ALI_Suffix is True, then we also replace the file extension with
+   --  ".ali" when testing.
 
    function Linker_Options_Switches
      (Project  : Project_Id;
@@ -182,10 +181,6 @@ package Makeutl is
    --  Collect the options specified in the Linker'Linker_Options attributes
    --  of project Project, in project tree In_Tree, and in the projects that
    --  it imports directly or indirectly, and returns the result.
-
-   --  Package Mains is used to store the mains specified on the command line
-   --  and to retrieve them when a project file is used, to verify that the
-   --  files exist and that they belong to a project file.
 
    function Unit_Index_Of (ALI_File : File_Name_Type) return Int;
    --  Find the index of a unit in a source file. Return zero if the file is
@@ -210,6 +205,10 @@ package Makeutl is
    -----------
    -- Mains --
    -----------
+
+   --  Package Mains is used to store the mains specified on the command line
+   --  and to retrieve them when a project file is used, to verify that the
+   --  files exist and that they belong to a project file.
 
    --  Mains are stored in a table. An index is used to retrieve the mains
    --  from the table.

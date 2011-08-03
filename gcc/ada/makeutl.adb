@@ -679,13 +679,13 @@ package body Makeutl is
    ------------------
 
    procedure Get_Switches
-     (Source_File  : File_Name_Type;
-      Source_Lang  : Name_Id;
-      Source_Prj   : Project_Id;
-      Pkg_Name     : Name_Id;
-      Project_Tree : Project_Tree_Ref;
-      Value        : out Variable_Value;
-      Is_Default   : out Boolean;
+     (Source_File         : File_Name_Type;
+      Source_Lang         : Name_Id;
+      Source_Prj          : Project_Id;
+      Pkg_Name            : Name_Id;
+      Project_Tree        : Project_Tree_Ref;
+      Value               : out Variable_Value;
+      Is_Default          : out Boolean;
       Test_Without_Suffix : Boolean := False;
       Check_ALI_Suffix    : Boolean := False)
    is
@@ -697,6 +697,7 @@ package body Makeutl is
                      In_Packages => Project.Decl.Packages,
                      In_Tree     => Project_Tree);
       Lang : Language_Ptr;
+
    begin
       Is_Default := False;
 
@@ -724,6 +725,7 @@ package body Makeutl is
                Spec_Suffix : String   := Get_Name_String (Naming.Spec_Suffix);
                Body_Suffix : String   := Get_Name_String (Naming.Body_Suffix);
                Truncated   : Boolean  := False;
+
             begin
                Canonical_Case_File_Name (Spec_Suffix);
                Canonical_Case_File_Name (Body_Suffix);
