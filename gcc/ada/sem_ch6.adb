@@ -8881,13 +8881,12 @@ package body Sem_Ch6 is
 
          Set_Etype (Formal, Formal_Type);
 
-         --  If the type of a subprogram's formal parameter is not in ALFA,
-         --  then the subprogram is not in ALFA.
+         --  The parameter is in ALFA if-and-only-if its type is in ALFA
 
-         if Nkind (Parent (First (T))) in N_Subprogram_Specification
-           and then not Is_In_ALFA (Formal_Type)
-         then
-            Set_Is_In_ALFA (Defining_Entity (Parent (First (T))), False);
+         if Is_In_ALFA (Formal_Type) then
+            Set_Is_In_ALFA (Formal);
+         else
+            Mark_Non_ALFA_Subprogram;
          end if;
 
          Default := Expression (Param_Spec);

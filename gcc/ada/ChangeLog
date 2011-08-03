@@ -1,3 +1,17 @@
+2011-08-03  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch11.adb (Analyze_Raise_xxx_Error): do not mark such nodes as not
+	in ALFA. Instead, they are considered as assertions to prove.
+	* sem_ch4.adb (Analyze_Conditional_Expression): do not always mark such
+	nodes as not in ALFA. Instead, include conditional expressions in ALFA
+	if they have no ELSE part, or if they occur in pre- and postconditions,
+	where the Condition cannot have side-effects in ALFA
+	(Analyze_Membership_Op): do not mark such nodes as not in ALFA
+	(Analyze_Type_Conversion): do not always mark such nodes as not in ALFA.
+	Instead, include type conversion between scalar types in ALFA.
+	* sem_ch6.adb (Process_Formals): correctly mark a parameter in ALFA
+	if-and-only-if its type is in ALFA.
+
 2011-08-03  Thomas Quinot  <quinot@adacore.com>
 
 	* scos.adb, get_scos.adb, put_scos.adb
