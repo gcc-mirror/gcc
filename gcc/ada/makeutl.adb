@@ -685,7 +685,9 @@ package body Makeutl is
       Pkg_Name     : Name_Id;
       Project_Tree : Project_Tree_Ref;
       Value        : out Variable_Value;
-      Is_Default   : out Boolean)
+      Is_Default   : out Boolean;
+      Test_Without_Suffix : Boolean := False;
+      Check_ALI_Suffix    : Boolean := False)
    is
       Project : constant Project_Id :=
                   Ultimate_Extending_Project_Of (Source_Prj);
@@ -694,6 +696,7 @@ package body Makeutl is
                     (Name        => Pkg_Name,
                      In_Packages => Project.Decl.Packages,
                      In_Tree     => Project_Tree);
+      Lang : Language_Ptr;
    begin
       Is_Default := False;
 
@@ -706,8 +709,79 @@ package body Makeutl is
             Allow_Wildcards         => True);
       end if;
 
+      if Value = Nil_Variable_Value
+        and then Test_Without_Suffix
+      then
+         Lang :=
+           Get_Language_From_Name (Project, Get_Name_String (Source_Lang));
+
+         if Lang /= null then
+            declare
+               Naming      : Lang_Naming_Data renames Lang.Config.Naming_Data;
+               SF_Name     : constant String := Get_Name_String (Source_File);
+               Last        : Positive := SF_Name'Length;
+               Name        : String (1 .. Last + 3);
+               Spec_Suffix : String   := Get_Name_String (Naming.Spec_Suffix);
+               Body_Suffix : String   := Get_Name_String (Naming.Body_Suffix);
+               Truncated   : Boolean  := False;
+            begin
+               Canonical_Case_File_Name (Spec_Suffix);
+               Canonical_Case_File_Name (Body_Suffix);
+               Name (1 .. Last) := SF_Name;
+
+               if Last > Body_Suffix'Length
+                 and then Name (Last - Body_Suffix'Length + 1 .. Last) =
+                   Body_Suffix
+               then
+                  Truncated := True;
+                  Last := Last - Body_Suffix'Length;
+               end if;
+
+               if not Truncated
+                 and then Last > Spec_Suffix'Length
+                 and then Name (Last - Spec_Suffix'Length + 1 .. Last) =
+                   Spec_Suffix
+               then
+                  Truncated := True;
+                  Last := Last - Spec_Suffix'Length;
+               end if;
+
+               if Truncated then
+                  Name_Len := 0;
+                  Add_Str_To_Name_Buffer (Name (1 .. Last));
+
+                  Value := Prj.Util.Value_Of
+                    (Name                    => Name_Find,
+                     Attribute_Or_Array_Name => Name_Switches,
+                     In_Package              => Pkg,
+                     In_Tree                 => Project_Tree,
+                     Allow_Wildcards         => True);
+               end if;
+
+               if Value = Nil_Variable_Value
+                 and then Check_ALI_Suffix
+               then
+                  Last := SF_Name'Length;
+                  while Name (Last) /= '.' loop
+                     Last := Last - 1;
+                  end loop;
+
+                  Name_Len := 0;
+                  Add_Str_To_Name_Buffer (Name (1 .. Last));
+                  Add_Str_To_Name_Buffer ("ali");
+
+                  Value := Prj.Util.Value_Of
+                    (Name                    => Name_Find,
+                     Attribute_Or_Array_Name => Name_Switches,
+                     In_Package              => Pkg,
+                     In_Tree                 => Project_Tree,
+                     Allow_Wildcards         => True);
+               end if;
+            end;
+         end if;
+      end if;
+
       if Value = Nil_Variable_Value then
-         Is_Default := True;
          Is_Default := True;
          Value :=
            Prj.Util.Value_Of

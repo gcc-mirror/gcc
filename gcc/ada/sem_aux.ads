@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,6 +185,10 @@ package Sem_Aux is
    --  private type, limited interface type, task type, protected type,
    --  composite containing a limited component, or a subtype of any of
    --  these types).
+
+   function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean;
+   --  Returns True if we are compiling on VM targets and N is a node that
+   --  requires to be passed by copy in these targets.
 
    function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id;
    --  Given a subtype Typ, this function finds out the nearest ancestor from

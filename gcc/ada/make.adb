@@ -625,8 +625,6 @@ package body Make is
 
    function Switches_Of
      (Source_File      : File_Name_Type;
-      Source_File_Name : String;
-      Source_Index     : Int;
       Project          : Project_Id;
       In_Package       : Package_Id;
       Allow_ALI        : Boolean) return Variable_Value;
@@ -780,7 +778,6 @@ package body Make is
 
    procedure Collect_Arguments
      (Source_File    : File_Name_Type;
-      Source_Index   : Int;
       Is_Main_Source : Boolean;
       Args           : Argument_List);
    --  Collect all arguments for a source to be compiled, including those
@@ -1282,8 +1279,6 @@ package body Make is
          Switches :=
            Switches_Of
              (Source_File      => Name_Find,
-              Source_File_Name => File_Name,
-              Source_Index     => Index,
               Project          => Main_Project,
               In_Package       => The_Package,
               Allow_ALI        => Program = Binder or else Program = Linker);
@@ -1707,8 +1702,7 @@ package body Make is
 
             --  First, collect all the switches
 
-            Collect_Arguments
-              (Source_File, Source_Index, Is_Main_Source, The_Args);
+            Collect_Arguments (Source_File, Is_Main_Source, The_Args);
 
             Prev_Switch := Dummy_Switch;
 
@@ -2246,7 +2240,6 @@ package body Make is
 
    procedure Collect_Arguments
      (Source_File    : File_Name_Type;
-      Source_Index   : Int;
       Is_Main_Source : Boolean;
       Args           : Argument_List)
    is
@@ -2319,8 +2312,6 @@ package body Make is
                   Switches :=
                     Switches_Of
                       (Source_File      => Source_File,
-                       Source_File_Name => Source_File_Name,
-                       Source_Index     => Source_Index,
                        Project          => Arguments_Project,
                        In_Package       => Compiler_Package,
                        Allow_ALI        => False);
@@ -3429,8 +3420,8 @@ package body Make is
                --  The source file that we are checking can be located
 
             else
-               Collect_Arguments (Source_File, Source_Index,
-                                  Source_File = Main_Source, Args);
+               Collect_Arguments
+                  (Source_File, Source_File = Main_Source, Args);
 
                --  Do nothing if project of source is externally built
 
@@ -8454,153 +8445,24 @@ package body Make is
 
    function Switches_Of
      (Source_File      : File_Name_Type;
-      Source_File_Name : String;
-      Source_Index     : Int;
       Project          : Project_Id;
       In_Package       : Package_Id;
       Allow_ALI        : Boolean) return Variable_Value
    is
-      Lang : constant Language_Ptr := Get_Language_From_Name (Project, "ada");
-
       Switches : Variable_Value;
-
-      Defaults : constant Array_Element_Id :=
-                   Prj.Util.Value_Of
-                     (Name      => Name_Default_Switches,
-                      In_Arrays =>
-                        Project_Tree.Packages.Table
-                          (In_Package).Decl.Arrays,
-                      In_Tree   => Project_Tree);
-
-      Switches_Array : constant Array_Element_Id :=
-                         Prj.Util.Value_Of
-                           (Name      => Name_Switches,
-                            In_Arrays =>
-                              Project_Tree.Packages.Table
-                                (In_Package).Decl.Arrays,
-                            In_Tree   => Project_Tree);
+      Is_Default : Boolean;
 
    begin
-      --  First, try Switches (<file name>)
-
-      Switches :=
-        Prj.Util.Value_Of
-          (Index           => Name_Id (Source_File),
-           Src_Index       => Source_Index,
-           In_Array        => Switches_Array,
-           In_Tree         => Project_Tree,
-           Allow_Wildcards => True);
-
-      --  Check also without the suffix
-
-      if Switches = Nil_Variable_Value
-        and then Lang /= null
-      then
-         declare
-            Naming      : Lang_Naming_Data renames Lang.Config.Naming_Data;
-            Name        : String (1 .. Source_File_Name'Length + 3);
-            Last        : Positive := Source_File_Name'Length;
-            Spec_Suffix : String   := Get_Name_String (Naming.Spec_Suffix);
-            Body_Suffix : String   := Get_Name_String (Naming.Body_Suffix);
-            Truncated   : Boolean  := False;
-
-         begin
-            Canonical_Case_File_Name (Spec_Suffix);
-            Canonical_Case_File_Name (Body_Suffix);
-            Name (1 .. Last) := Source_File_Name;
-
-            if Last > Body_Suffix'Length
-               and then Name (Last - Body_Suffix'Length + 1 .. Last) =
-                                                                  Body_Suffix
-            then
-               Truncated := True;
-               Last := Last - Body_Suffix'Length;
-            end if;
-
-            if not Truncated
-              and then Last > Spec_Suffix'Length
-              and then Name (Last - Spec_Suffix'Length + 1 .. Last) =
-                                                                 Spec_Suffix
-            then
-               Truncated := True;
-               Last := Last - Spec_Suffix'Length;
-            end if;
-
-            if Truncated then
-               Name_Len := 0;
-               Add_Str_To_Name_Buffer (Name (1 .. Last));
-               Switches :=
-                 Prj.Util.Value_Of
-                   (Index           => Name_Find,
-                    Src_Index       => 0,
-                    In_Array        => Switches_Array,
-                    In_Tree         => Project_Tree,
-                    Allow_Wildcards => True);
-
-               if Switches = Nil_Variable_Value and then Allow_ALI then
-                  Last := Source_File_Name'Length;
-
-                  while Name (Last) /= '.' loop
-                     Last := Last - 1;
-                  end loop;
-
-                  Name_Len := 0;
-                  Add_Str_To_Name_Buffer (Name (1 .. Last));
-                  Add_Str_To_Name_Buffer ("ali");
-
-                  Switches :=
-                    Prj.Util.Value_Of
-                      (Index     => Name_Find,
-                       Src_Index => 0,
-                       In_Array  => Switches_Array,
-                       In_Tree   => Project_Tree);
-               end if;
-            end if;
-         end;
-      end if;
-
-      --  Next, try Switches ("Ada")
-
-      if Switches = Nil_Variable_Value then
-         Switches :=
-           Prj.Util.Value_Of
-             (Index                  => Name_Ada,
-              Src_Index              => 0,
-              In_Array               => Switches_Array,
-              In_Tree                => Project_Tree,
-              Force_Lower_Case_Index => True);
-
-         if Switches /= Nil_Variable_Value then
-            Switch_May_Be_Passed_To_The_Compiler := False;
-         end if;
-      end if;
-
-      --  Next, try Switches (others)
-
-      if Switches = Nil_Variable_Value then
-         Switches :=
-           Prj.Util.Value_Of
-             (Index     => All_Other_Names,
-              Src_Index => 0,
-              In_Array  => Switches_Array,
-              In_Tree   => Project_Tree);
-
-         if Switches /= Nil_Variable_Value then
-            Switch_May_Be_Passed_To_The_Compiler := False;
-         end if;
-      end if;
-
-      --  And finally, Default_Switches ("Ada")
-
-      if Switches = Nil_Variable_Value then
-         Switches :=
-           Prj.Util.Value_Of
-             (Index     => Name_Ada,
-              Src_Index => 0,
-              In_Array  => Defaults,
-              In_Tree   => Project_Tree);
-      end if;
-
+      Makeutl.Get_Switches
+        (Source_File  => Source_File,
+         Source_Lang  => Name_Ada,
+         Source_Prj   => Project,
+         Pkg_Name     => Project_Tree.Packages.Table (In_Package).Name,
+         Project_Tree => Project_Tree,
+         Value        => Switches,
+         Is_Default   => Is_Default,
+         Test_Without_Suffix => True,
+         Check_ALI_Suffix => Allow_ALI);
       return Switches;
    end Switches_Of;
 

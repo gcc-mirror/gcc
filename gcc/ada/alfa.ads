@@ -89,7 +89,7 @@ package ALFA is
    --      reading of the ALFA information, and means that the ALFA information
    --      can stand on its own without needing other parts of the ALI file.
 
-   --    FS . scope line type col entity
+   --    FS . scope line type col entity (-> spec-file . spec-scope)?
 
    --      scope is the ones-origin scope number for the current file (e.g. 2 =
    --      reference to the second FS line in this FD block).
@@ -112,6 +112,9 @@ package ALFA is
 
    --      entity is the name of the scope entity, with casing in the canonical
    --      casing for the source file where it is defined.
+
+   --      spec-file and spec-scope are respectively the file and scope for the
+   --      spec corresponding to the current body scope, when they differ.
 
    --  ------------------
    --  -- Xref Section --
@@ -233,6 +236,14 @@ package ALFA is
 
       Scope_Num : Nat;
       --  Set to the scope number for the scope
+
+      Spec_File_Num : Nat;
+      --  Set to the file dependency number for the scope corresponding to the
+      --  spec of the current scope entity, if different, or else 0.
+
+      Spec_Scope_Num : Nat;
+      --  Set to the scope number for the scope corresponding to the spec of
+      --  the current scope entity, if different, or else 0.
 
       Line : Nat;
       --  Line number for the scope

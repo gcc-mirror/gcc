@@ -1011,11 +1011,9 @@ package body Prj.Tree is
       --  project, since we want to preserve the current environment. But we
       --  still need to ensure that the external references are properly
       --  initialized.
+      --  Prj.Ext.Reset (Tree.External);
 
       Prj.Ext.Initialize (Self.External);
-
-      --  Why is this line commented out ???
-      --  Prj.Ext.Reset (Tree.External);
 
       Self.Flags := Flags;
    end Initialize;
