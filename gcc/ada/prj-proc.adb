@@ -2814,8 +2814,7 @@ package body Prj.Proc is
                Project                => Project.Extends,
                Flags                  => Flags,
                From_Project_Node      => Extended_Project_Of
-                                          (Declaration_Node,
-                                           From_Project_Node_Tree),
+                 (Declaration_Node, From_Project_Node_Tree),
                From_Project_Node_Tree => From_Project_Node_Tree,
                Extended_By            => Project);
 
@@ -2824,11 +2823,10 @@ package body Prj.Proc is
                In_Tree                => In_Tree,
                Flags                  => Flags,
                From_Project_Node      => From_Project_Node,
-               Node_Tree => From_Project_Node_Tree,
+               Node_Tree              => From_Project_Node_Tree,
                Pkg                    => No_Package,
                Item                   => First_Declarative_Item_Of
-                                          (Declaration_Node,
-                                           From_Project_Node_Tree));
+                 (Declaration_Node, From_Project_Node_Tree));
 
             if Project.Extends /= No_Project then
                Process_Extended_Project;
