@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,27 +21,40 @@
 #include <memory>
 #include <testsuite_common_types.h>
 
+#include <iostream>
+
+// 3 element tuple
 int main()
 {
+  typedef std::tuple<int, int, int> tuple_type;
+
+  // 01: default ctor
   __gnu_test::constexpr_default_constructible test1;
-  test1.operator()<std::tuple<int, int>>();
+  test1.operator()<tuple_type>();
 
+  // 02: default copy ctor
   __gnu_test::constexpr_single_value_constructible test2;
-  test2.operator()<std::tuple<int, int>, std::tuple<int, int>>();
-  //  test2.operator()<std::tuple<int, int>, std::pair<short, short>>();
-  //  test2.operator()<std::tuple<int>, std::tuple<short>>();
-  //  test2.operator()<std::tuple<int, int>, std::tuple<short, short>>();
+  test2.operator()<tuple_type, tuple_type>();
 
-  // test 3
-  const int i1(129);
-  const int i2(6);
-  constexpr std::tuple<int, int> p3(i1, i2);
+  // 03: element move ctor, single element
+  const int i1(415);
+  constexpr tuple_type t2 { 44, 55, std::move(i1) };
 
-  // test 4
-  const int i3(415);
-  const int i4(550);
-  const int i5(6414);
-  constexpr std::tuple<int, int, int, int, int> p4(i1, i2, i3, i4, i5);
+  // 04: element move ctor, three element
+  const int i2(510);
+  const int i3(408);
+  const int i4(650);
+  constexpr tuple_type t4 { std::move(i2), std::move(i3), std::move(i4) };
+
+  // 05: value-type conversion constructor
+  const int i5(310);
+  const int i6(310);
+  const int i7(310);
+  constexpr tuple_type t8(i5, i6, i7);
+
+  // 06: different-tuple-type conversion constructor
+  // test2.operator()<tuple_type, std::tuple<short, short, short>>();
+  // test2.operator()<std::tuple<short, short, short>, tuple_type>();
 
   return 0;
 }

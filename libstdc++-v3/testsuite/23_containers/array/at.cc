@@ -1,5 +1,5 @@
 // { dg-do run { xfail *-*-* } }
-// { dg-options "-std=gnu++0x -fno-exceptions" }
+// { dg-options "-std=gnu++0x" }
 
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //
@@ -22,7 +22,10 @@
 
 int main()
 {
-  std::array<int, 3> a{{1, 2, 3}};
-  auto i = a.at(4); // expected behavior is to either throw or abort
+  // Expected behavior is to either throw and have the uncaught
+  // exception end up in a terminate handler which eventually exits,
+  // or abort. (Depending on -fno-exceptions.)
+  constexpr std::array<int, 3> a{{1, 2, 3}};
+  auto i = a.at(4); 
   return 0;
 }
