@@ -8298,7 +8298,9 @@ package body Sem_Ch3 is
                --  the point of instantiation, we want to find the discriminant
                --  that corresponds to D in Rec, i.e. X.
 
-               if Present (Original_Discriminant (Id)) then
+               if Present (Original_Discriminant (Id))
+                 and then In_Instance
+               then
                   Discr := Find_Corresponding_Discriminant (Id, T);
                   Found := True;
 

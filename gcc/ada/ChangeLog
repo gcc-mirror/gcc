@@ -1,3 +1,42 @@
+2011-08-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Analyze_Array_Aggregate): When checking the discrete
+	choices of a named array aggregate, bail out when any choices are
+	marked as Errors_Posted.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch13.adb (Expand_N_Freeze_Entity): cleanup determination of scope
+	in which entity is frozen, to handle properly loop variables in
+	iterators.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Set_String_Literal_Subtype): if the lower bound of the
+	subtype is not static, compute the upper bound using attributes, to
+	handle properly index types that are not integer types.
+
+2011-08-03  Bob Duff  <duff@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi: Fix some dangling URLs.
+	Update copyright notice.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Discriminant_Constraints): Only use
+	Original_Discriminant if within an instance.
+	* sem_ch4.adb (Analyze_Selected_Component): Ditto.
+
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Check_Premature_Freezing): diagnose the presence of a
+	composite type with an unfrozen subcomponent, in the profile of a
+	primitive operation.
+
 2011-08-03  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.ads, exp_aggr.adb, exp_ch3.adb: Minor reformatting.

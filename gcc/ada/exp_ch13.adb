@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,6 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
-with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Validsw;  use Validsw;
@@ -213,7 +212,6 @@ package body Exp_Ch13 is
    procedure Expand_N_Freeze_Entity (N : Node_Id) is
       E              : constant Entity_Id := Entity (N);
       E_Scope        : Entity_Id;
-      S              : Entity_Id;
       In_Other_Scope : Boolean;
       In_Outer_Scope : Boolean;
       Decl           : Node_Id;
@@ -306,13 +304,18 @@ package body Exp_Ch13 is
          E_Scope := Corresponding_Spec (Unit_Declaration_Node (E_Scope));
       end if;
 
-      S := Current_Scope;
-      while S /= Standard_Standard and then S /= E_Scope loop
-         S := Scope (S);
-      end loop;
+      --  If the scope of the entity is in open scopes, it is the current one
+      --  or an enclosing one, including a loop, a block, or a subprogram.
 
-      In_Other_Scope := not (S = E_Scope);
-      In_Outer_Scope := (not In_Other_Scope) and then (S /= Current_Scope);
+      if In_Open_Scopes (E_Scope) then
+         In_Other_Scope := False;
+         In_Outer_Scope := E_Scope /= Current_Scope;
+
+      --  Otherwise it is a local package or a different compilation unit.
+      else
+         In_Other_Scope := True;
+         In_Outer_Scope := False;
+      end if;
 
       --  If the entity being frozen is defined in a scope that is not
       --  currently on the scope stack, we must establish the proper

@@ -4285,9 +4285,8 @@ Integrity Systems}, and has been approved by ISO/IEC/SC22/WG9 for inclusion in
 the next revision of the standard. The formal definition given by
 the Ada Rapporteur Group (ARG) can be found in two Ada Issues (AI-249 and
 AI-305) available at
-@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs/AI-00249.TXT} and
-@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs/AI-00305.TXT}
-respectively.
+@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/ais/ai-00249.txt} and
+@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/ais/ai-00305.txt}.
 
 The above set is a superset of the restrictions provided by pragma
 @code{Profile (Restricted)}, it includes six additional restrictions

@@ -2426,11 +2426,11 @@ package Einfo is
 --       Thus this flag has no meaning to the back end.
 
 --    Is_Limited_Composite (Flag106)
---       Present in all entities. Set for composite types that have a
---       limited component. Used to enforce the rule that operations on
---       the composite type that depend on the full view of the component
---       do not become visible until the immediate scope of the composite
---       type itself (RM 7.3.1 (5)).
+--       Present in all entities. Set for composite types that have a limited
+--       component. Used to enforce the rule that operations on the composite
+--       type that depend on the full view of the component do not become
+--       visible until the immediate scope of the composite type itself
+--       (RM 7.3.1 (5)).
 
 --    Is_Limited_Interface (Flag197)
 --       Present in record types and subtypes. True for interface types, if

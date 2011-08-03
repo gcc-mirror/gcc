@@ -3754,6 +3754,7 @@ package body Sem_Ch4 is
       --  be done transitively, so note the new original discriminant.
 
       if Nkind (Sel) = N_Identifier
+        and then In_Instance
         and then Present (Original_Discriminant (Sel))
       then
          Comp := Find_Corresponding_Discriminant (Sel, Prefix_Type);
