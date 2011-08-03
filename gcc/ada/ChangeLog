@@ -1,3 +1,23 @@
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb, sem_ch3.adb, lib.ads, gnatcmd.adb, prj-proc.adb,
+	make.adb, lib-writ.adb, prj-part.adb, prj-part.ads, prj-ext.adb,
+	fname-uf.adb, prj-ext.ads, prj.adb, prj.ads, sem_attr.adb, alfa.adb,
+	prj-makr.adb, errout.adb, makeutl.adb, makeutl.ads, restrict.ads,
+	sem_ch6.adb, g-pehage.adb, clean.adb, put_alfa.adb, lib-xref-alfa.adb,
+	prj-nmsc.adb, prj-nmsc.ads, sem_ch8.adb, prj-pars.ads, exp_aggr.adb,
+	prj-attr.ads, sem_ch13.adb, get_alfa.adb, prj-env.adb, prj-env.ads,
+	alfa_test.adb, prj-tree.adb, prj-tree.ads, einfo.ads: Minor reformatting
+
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
+	* repinfo.adb (List_Mechanism): Add handling of
+	Convention_Ada_Pass_By_XXX.
+	* sem_mech.adb (Set_Mechanism): Ditto.
+	* sem_prag.adb (Process_Convention): Add entries for
+	Convention_Ada_Pass_By_XXX.
+	* snames.adb-tmpl, snames.ads-tmpl: Ditto.
+
 2011-08-03  Pascal Obry  <obry@adacore.com>
 
 	* makeutl.adb: Minor reformatting.

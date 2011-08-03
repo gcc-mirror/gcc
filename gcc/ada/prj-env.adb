@@ -1784,7 +1784,7 @@ package body Prj.Env is
    begin
       return Self.Path /= null
         and then (Self.Path'Length = 0
-                  or else Self.Path (Self.Path'First) /= '#');
+                   or else Self.Path (Self.Path'First) /= '#');
    end Is_Initialized;
 
    ----------------------
@@ -1802,7 +1802,8 @@ package body Prj.Env is
    -------------------------------------
 
    procedure Initialize_Default_Project_Path
-     (Self : in out Project_Search_Path; Target_Name : String)
+     (Self        : in out Project_Search_Path;
+      Target_Name : String)
    is
       Add_Default_Dir : Boolean := True;
       First           : Positive;
@@ -1984,9 +1985,7 @@ package body Prj.Env is
    -- Get_Path --
    --------------
 
-   procedure Get_Path
-     (Self        : Project_Search_Path;
-      Path        : out String_Access) is
+   procedure Get_Path (Self : Project_Search_Path; Path : out String_Access) is
    begin
       pragma Assert (Is_Initialized (Self));
       Path := Self.Path;
@@ -1996,8 +1995,7 @@ package body Prj.Env is
    -- Set_Path --
    --------------
 
-   procedure Set_Path
-     (Self : in out Project_Search_Path; Path : String) is
+   procedure Set_Path (Self : in out Project_Search_Path; Path : String) is
    begin
       Free (Self.Path);
       Self.Path := new String'(Path);

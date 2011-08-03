@@ -909,10 +909,11 @@ package body GNAT.Perfect_Hash_Generators is
          New_Line (Output);
       end if;
 
-      --  Deallocate all the WT components (both initial and reduced
-      --  ones) to avoid memory leaks.
+      --  Deallocate all the WT components (both initial and reduced ones) to
+      --  avoid memory leaks.
 
       for W in 0 .. WT.Last loop
+
          --  Note: WT.Table (NK) is a temporary variable, do not free it since
          --  this would cause a double free.
 

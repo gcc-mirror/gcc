@@ -752,7 +752,8 @@ package body Errout is
             null;
 
          --  If the main unit has not been read yet. the warning must be on
-         --  a configuration file: gnat.adc or user-defined.
+         --  a configuration file: gnat.adc or user-defined. This means we
+         --  are not parsing the main unit yet, so skip following checks.
 
          elsif No (Cunit (Main_Unit)) then
             null;

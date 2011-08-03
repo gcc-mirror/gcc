@@ -1289,16 +1289,6 @@ package body Sem_Attr is
          Check_E2;
       end Check_Floating_Point_Type_2;
 
-      ------------------------------------------
-      -- Check_SPARK_Restriction_On_Attribute --
-      ------------------------------------------
-
-      procedure Check_SPARK_Restriction_On_Attribute is
-      begin
-         Error_Msg_Name_1 := Aname;
-         Check_SPARK_Restriction ("attribute % is not allowed", P);
-      end Check_SPARK_Restriction_On_Attribute;
-
       ------------------------
       -- Check_Integer_Type --
       ------------------------
@@ -1539,6 +1529,16 @@ package body Sem_Attr is
             Error_Attr_P ("prefix of % attribute must be scalar type");
          end if;
       end Check_Scalar_Type;
+
+      ------------------------------------------
+      -- Check_SPARK_Restriction_On_Attribute --
+      ------------------------------------------
+
+      procedure Check_SPARK_Restriction_On_Attribute is
+      begin
+         Error_Msg_Name_1 := Aname;
+         Check_SPARK_Restriction ("attribute % is not allowed", P);
+      end Check_SPARK_Restriction_On_Attribute;
 
       ---------------------------
       -- Check_Standard_Prefix --

@@ -3014,6 +3014,38 @@ package body Sem_Prag is
 
          Ent := E;
 
+         --  Ada_Pass_By_Copy special checking
+
+         if C = Convention_Ada_Pass_By_Copy then
+            if not Is_First_Subtype (E) then
+               Error_Pragma_Arg
+                 ("convention `Ada_Pass_By_Copy` only "
+                  & "allowed for types", Arg2);
+            end if;
+
+            if Is_By_Reference_Type (E) then
+               Error_Pragma_Arg
+                 ("convention `Ada_Pass_By_Copy` not allowed for "
+                  & "by-reference type", Arg1);
+            end if;
+         end if;
+
+         --  Ada_Pass_By_Reference special checking
+
+         if C = Convention_Ada_Pass_By_Reference then
+            if not Is_First_Subtype (E) then
+               Error_Pragma_Arg
+                 ("convention `Ada_Pass_By_Reference` only "
+                  & "allowed for types", Arg2);
+            end if;
+
+            if Is_By_Copy_Type (E) then
+               Error_Pragma_Arg
+                 ("convention `Ada_Pass_By_Reference` not allowed for "
+                  & "by-copy type", Arg1);
+            end if;
+         end if;
+
          --  Go to renamed subprogram if present, since convention applies to
          --  the actual renamed entity, not to the renaming entity. If the
          --  subprogram is inherited, go to parent subprogram.

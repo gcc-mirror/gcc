@@ -555,8 +555,10 @@ package Lib is
    --  called after Sprint has been called with -gnatD set.
 
    function Exact_Source_Name (Loc : Source_Ptr) return String;
-   --  Return the name of an entity at location Loc exactly as written in the
-   --  source.
+   --  Return name of entity at location Loc exactly as written in the source.
+   --  this includes copying the wide character encodings exactly as they were
+   --  used in the source, so the caller must be aware of the possibility of
+   --  such encodings.
 
    function Compilation_Switches_Last return Nat;
    --  Return the count of stored compilation switches

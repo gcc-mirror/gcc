@@ -154,18 +154,19 @@ package Prj.Attr is
    --  Attribute is Empty_Attribute.
    --
    --  To use this function, the following code should be used:
+   --
    --      Pkg : constant Package_Node_Id :=
-   --        Prj.Attr.Package_Node_Id_Of (Name => <package name>);
+   --              Prj.Attr.Package_Node_Id_Of (Name => <package name>);
    --      Att : constant Attribute_Node_Id :=
-   --        Prj.Attr.Attribute_Node_Id_Of
-   --          (Name => <attribute name>,
-   --           Starting_At => First_Attribute_Of (Pkg));
+   --              Prj.Attr.Attribute_Node_Id_Of
+   --                (Name        => <attribute name>,
+   --                 Starting_At => First_Attribute_Of (Pkg));
    --      Kind : constant Attribute_Kind := Attribute_Kind_Of (Att);
    --
-   --  However, you should not use this function once you have an already
-   --  parsed project tree. Instead, given a Project_Node_Id corresponding to
-   --  the attribute declaration ("for Attr (index) use ..."), it is simpler to
-   --  use
+   --  However, do not use this function once you have an already parsed
+   --  project tree. Instead, given a Project_Node_Id corresponding to the
+   --  attribute declaration ("for Attr (index) use ..."), use for example:
+   --
    --      if Case_Insensitive (Attr, Tree) then ...
 
    procedure Set_Attribute_Kind_Of

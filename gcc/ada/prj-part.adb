@@ -440,16 +440,16 @@ package body Prj.Part is
    -----------
 
    procedure Parse
-     (In_Tree                : Project_Node_Tree_Ref;
-      Project                : out Project_Node_Id;
-      Project_File_Name      : String;
-      Errout_Handling        : Errout_Mode := Always_Finalize;
-      Packages_To_Check      : String_List_Access := All_Packages;
-      Store_Comments         : Boolean := False;
-      Current_Directory      : String := "";
-      Is_Config_File         : Boolean;
-      Env                    : in out Prj.Tree.Environment;
-      Target_Name            : String := "")
+     (In_Tree           : Project_Node_Tree_Ref;
+      Project           : out Project_Node_Id;
+      Project_File_Name : String;
+      Errout_Handling   : Errout_Mode := Always_Finalize;
+      Packages_To_Check : String_List_Access := All_Packages;
+      Store_Comments    : Boolean := False;
+      Current_Directory : String := "";
+      Is_Config_File    : Boolean;
+      Env               : in out Prj.Tree.Environment;
+      Target_Name       : String := "")
    is
       Dummy : Boolean;
       pragma Warnings (Off, Dummy);

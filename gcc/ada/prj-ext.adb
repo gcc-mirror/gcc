@@ -23,8 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Unchecked_Deallocation;
 with Osint;    use Osint;
+
+with Ada.Unchecked_Deallocation;
 
 package body Prj.Ext is
 
@@ -65,6 +66,7 @@ package body Prj.Ext is
       Value         : String)
    is
       N : Name_To_Name_Ptr;
+
    begin
       N := new Name_To_Name;
 
@@ -179,6 +181,7 @@ package body Prj.Ext is
                Debug_Output ("Value_Of (" & Get_Name_String (External_Name)
                              & ") is default", With_Default);
             end if;
+
             Free (Env_Value);
             return With_Default;
          end if;

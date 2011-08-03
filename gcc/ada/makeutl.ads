@@ -163,12 +163,11 @@ package Makeutl is
       Value        : out Variable_Value;
       Is_Default   : out Boolean);
    --  Compute the switches (Compilation switches for instance) for the given
-   --  file. This checks various attributes to see whether there are file
-   --  specific switches, or else defaults on the switches for the
-   --  corresponding language.
-   --  Is_Default is set to False if there were file-specific switches
-   --  Source_File can be set to No_File to force retrieval of the default
-   --  switches.
+   --  file. This checks various attributes to see if there are file specific
+   --  switches, or else defaults on the switches for the corresponding
+   --  language. Is_Default is set to False if there were file-specific
+   --  switches Source_File can be set to No_File to force retrieval of
+   --  the default switches.
 
    function Linker_Options_Switches
      (Project  : Project_Id;

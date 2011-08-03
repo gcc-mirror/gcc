@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -323,6 +323,14 @@ package body Sem_Mech is
                   else
                      null;
                   end if;
+
+               --  Special Ada conventions specifying passing mechanism
+
+               when Convention_Ada_Pass_By_Copy =>
+                  Set_Mechanism (Formal, By_Copy);
+
+               when Convention_Ada_Pass_By_Reference =>
+                  Set_Mechanism (Formal, By_Reference);
 
                -------
                -- C --

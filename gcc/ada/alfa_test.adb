@@ -117,6 +117,7 @@ begin
 
       procedure Put_Char (F : File_Type; C : Character) is
          Item : Stream_Element_Array (1 .. 1);
+
       begin
          if C /= CR and then C /= EOF then
             if C = LF then
@@ -157,6 +158,7 @@ begin
 
       function Nextc return Character is
          C : Character;
+
       begin
          C := Get_Char (Infile);
 

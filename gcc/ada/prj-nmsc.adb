@@ -197,8 +197,8 @@ package body Prj.Nmsc is
    --  Free the memory occupied by Data
 
    procedure Check
-     (Project      : Project_Id;
-      Data         : in out Tree_Processing_Data);
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data);
    --  Process the naming scheme for a single project
 
    procedure Initialize
@@ -241,12 +241,15 @@ package body Prj.Nmsc is
    --  directories that match the globbing patterns found in Patterns (for
    --  instance "**/*.adb"). Typically, Patterns will be the value of the
    --  Source_Dirs or Excluded_Source_Dirs attributes.
+   --
    --  Every time such a file or directory is found, the callback is called.
    --  Resolve_Links indicates whether we should resolve links while
    --  normalizing names.
+   --
    --  In the callback, Pattern_Index is the index within Patterns where the
    --  expanded pattern was found (1 for the first element of Patterns and
    --  all its matching directories, then 2,...).
+   --
    --  We use a generic and not an access-to-subprogram because in some cases
    --  this code is compiled with the restriction No_Implicit_Dynamic_Code.
    --  An error message is raised if a pattern does not match any file.
@@ -269,15 +272,12 @@ package body Prj.Nmsc is
       Location            : Source_Ptr       := No_Location);
    --  Add a new source to the different lists: list of all sources in the
    --  project tree, list of source of a project and list of sources of a
-   --  language.
-   --
-   --  If Path is specified, the file is also added to Source_Paths_HT.
-   --
-   --  Location is used for error messages
+   --  language. If Path is specified, the file is also added to
+   --  Source_Paths_HT. Location is used for error messages
 
    function Canonical_Case_File_Name (Name : Name_Id) return File_Name_Type;
    --  Same as Osint.Canonical_Case_File_Name but applies to Name_Id.
-   --  This alters Name_Buffer
+   --  This alters Name_Buffer.
 
    function Suffix_Matches
      (Filename : String;
@@ -924,16 +924,16 @@ package body Prj.Nmsc is
    ---------------------------------
 
    procedure Process_Aggregated_Projects
-     (Tree         : Project_Tree_Ref;
-      Project      : Project_Id;
-      Node_Tree    : Prj.Tree.Project_Node_Tree_Ref;
-      Flags        : Processing_Flags)
+     (Tree      : Project_Tree_Ref;
+      Project   : Project_Id;
+      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Flags     : Processing_Flags)
    is
       Data : Tree_Processing_Data :=
-        (Tree           => Tree,
-         Node_Tree      => Node_Tree,
-         File_To_Source => Files_Htable.Nil,
-         Flags          => Flags);
+               (Tree           => Tree,
+                Node_Tree      => Node_Tree,
+                File_To_Source => Files_Htable.Nil,
+                Flags          => Flags);
 
       Project_Files : constant Prj.Variable_Value :=
                         Prj.Util.Value_Of
@@ -949,8 +949,7 @@ package body Prj.Nmsc is
       procedure Expand_Project_Files is
         new Expand_Subdirectory_Pattern (Callback => Found_Project_File);
       --  Search for all project files referenced by the patterns given in
-      --  parameter.
-      --  Calls Found_Project_File for each of them
+      --  parameter. Calls Found_Project_File for each of them.
 
       ------------------------
       -- Found_Project_File --
@@ -966,6 +965,7 @@ package body Prj.Nmsc is
          --  can only do this when processing the aggregate project, since the
          --  exact list of project files or project directories can depend on
          --  scenario variables.
+         --
          --  We only load the projects explicitly here, but do not process
          --  them. For the processing, Prj.Proc will take care of processing
          --  them, within the same call to Recursive_Process (thus avoiding the
@@ -1065,7 +1065,7 @@ package body Prj.Nmsc is
      (Project : Project_Id;
       Data    : in out Tree_Processing_Data)
    is
-      Prj_Data  : Project_Processing_Data;
+      Prj_Data : Project_Processing_Data;
 
    begin
       Debug_Increase_Indent ("Check", Project.Name);
@@ -6387,6 +6387,7 @@ package body Prj.Nmsc is
 
                      if Current_Verbosity = High then
                         Debug_Indent;
+
                         if Source.Path /= No_Path_Information then
                            Write_Line ("Setting full path for "
                                        & Get_Name_String (Source.File)

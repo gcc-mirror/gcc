@@ -29,7 +29,7 @@ with Types; use Types;
 with Ada.IO_Exceptions; use Ada.IO_Exceptions;
 
 procedure Get_ALFA is
-   C    : Character;
+   C : Character;
 
    use ASCII;
    --  For CR/LF
@@ -56,9 +56,8 @@ procedure Get_ALFA is
    -----------------------
 
    function At_EOL return Boolean;
-   --  Skips any spaces, then checks if we are the end of a line. If so,
-   --  returns True (but does not skip over the EOL sequence). If not,
-   --  then returns False.
+   --  Skips any spaces, then checks if at the end of a line. If so, returns
+   --  True (but does not skip the EOL sequence). If not, then returns False.
 
    procedure Check (C : Character);
    --  Checks that file is positioned at given character, and if so skips past
@@ -72,8 +71,8 @@ procedure Get_ALFA is
 
    procedure Get_Name;
    --  On entry the file is positioned to a name. On return, the file is
-   --  positioned past the last character, and the name scanned is returned in
-   --  Name_Str (1 .. Name_Len).
+   --  positioned past the last character, and the name scanned is returned
+   --  in Name_Str (1 .. Name_Len).
 
    procedure Skip_EOL;
    --  Called with the current character about to be read being LF or CR. Skips
@@ -355,10 +354,10 @@ begin
                XR_Entity_Line : Nat;
                XR_Entity_Col  : Nat;
 
-               XR_File        : Nat;
+               XR_File : Nat;
                --  Keeps track of the current file (changed by nn|)
 
-               XR_Scope       : Nat;
+               XR_Scope : Nat;
                --  Keeps track of the current scope (changed by nn:)
 
             begin
@@ -413,9 +412,10 @@ begin
                            Rtype := Getc;
                            Col   := Get_Nat;
 
-                           pragma Assert         (Rtype = 'r'
-                                          or else Rtype = 'm'
-                                          or else Rtype = 's');
+                           pragma Assert
+                             (Rtype = 'r' or else
+                              Rtype = 'm' or else
+                              Rtype = 's');
 
                            ALFA_Xref_Table.Append (
                              (Entity_Name => XR_Entity,
@@ -438,16 +438,14 @@ begin
             raise Data_Error;
       end case;
 
-      --  For cross reference lines, the end-of-line character has been skipped
-      --  already.
+      --  For cross reference lines, the EOL character has been skipped already
 
       if C /= ' ' then
          Skip_EOL;
       end if;
    end loop;
 
-   --  Here with all Xrefs stored, complete last entries in File and Scope
-   --  tables.
+   --  Here with all Xrefs stored, complete last entries in File/Scope tables
 
    if ALFA_File_Table.Last /= 0 then
       ALFA_File_Table.Table (ALFA_File_Table.Last).To_Scope :=

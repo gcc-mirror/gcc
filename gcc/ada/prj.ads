@@ -1102,7 +1102,8 @@ package Prj is
    --  Free the memory used for List
 
    procedure Add_Aggregated_Project
-     (Project : Project_Id; Path : Path_Name_Type);
+     (Project : Project_Id;
+      Path    : Path_Name_Type);
    --  Add a new aggregated project in Project.
    --  The aggregated project has not been processed yet. This procedure should
    --  the called while processing the aggregate project, and as a result
@@ -1111,6 +1112,7 @@ package Prj is
    ------------------
    -- Project_Data --
    ------------------
+
    --  The following record describes a project file representation
 
    type Project_Data (Qualifier : Project_Qualifier := Unspecified) is record
@@ -1314,9 +1316,10 @@ package Prj is
       --  in the project tree.
 
       -----------------------------
-      -- qualifier-specific data --
+      -- Qualifier-Specific data --
       -----------------------------
-      --  The following fields are only valid for specific types of projects.
+
+      --  The following fields are only valid for specific types of projects
 
       case Qualifier is
          when Aggregate =>
@@ -1462,10 +1465,10 @@ package Prj is
         (Project    : Project_Id;
          With_State : in out State);
    procedure For_Every_Project_Imported
-     (By             : Project_Id;
-      With_State     : in out State;
+     (By                 : Project_Id;
+      With_State         : in out State;
       Include_Aggregated : Boolean := True;
-      Imported_First : Boolean := False);
+      Imported_First     : Boolean := False);
    --  Call Action for each project imported directly or indirectly by project
    --  By, as well as extended projects.
    --

@@ -2174,7 +2174,7 @@ package body Exp_Aggr is
       begin
          Btype := Base_Type (Typ);
          while Is_Derived_Type (Btype)
-            and then Present (Stored_Constraint (Btype))
+           and then Present (Stored_Constraint (Btype))
          loop
             Parent_Type := Etype (Btype);
 

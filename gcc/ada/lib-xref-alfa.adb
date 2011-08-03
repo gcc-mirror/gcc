@@ -35,7 +35,8 @@ package body ALFA is
    -- Local Constants --
    ---------------------
 
-   --  True for each entity kind used in ALFA
+   --  Table of ALFA_Entities, True for each entity kind used in ALFA
+
    ALFA_Entities : constant array (Entity_Kind) of Boolean :=
      (E_Void                                       => False,
       E_Variable                                   => True,
@@ -171,6 +172,7 @@ package body ALFA is
       From : Scope_Index;
 
       S : constant Source_File_Index := Source_Index (U);
+
    begin
       --  Source file could be inexistant as a result of an error, if option
       --  gnatQ is used.
@@ -409,11 +411,11 @@ package body ALFA is
          T2 : constant Xref_Entry := Xrefs.Table (Rnums (Nat (Op2)));
 
       begin
-         --  First test: if entity is in different unit, sort by unit. Notice
+         --  First test: if entity is in different unit, sort by unit. Note:
          --  that we use Ent_Scope_File rather than Eun, as Eun may refer to
-         --  the file where the generic scope is defined, and it may be
-         --  different from the file where the enclosing scope is defined. It
-         --  is the latter which matters for a correct order here.
+         --  the file where the generic scope is defined, which may differ from
+         --  the file where the enclosing scope is defined. It is the latter
+         --  which matters for a correct order here.
 
          if T1.Ent_Scope_File /= T2.Ent_Scope_File then
             return Dependency_Num (T1.Ent_Scope_File) <
@@ -472,12 +474,11 @@ package body ALFA is
          elsif T1.Loc /= T2.Loc then
             return T1.Loc < T2.Loc;
 
-         --  Finally, for two locations at the same address, we prefer the one
-         --  that does NOT have the type 'r' so that a modification or
-         --  extension takes preference, when there are more than one reference
-         --  at the same location. As a result, in the case of entities that
-         --  are in-out actuals, the read reference follows the modify
-         --  reference.
+         --  Finally, for two locations at the same address prefer the one that
+         --  does NOT have the type 'r', so that a modification or extension
+         --  takes preference, when there are more than one reference at the
+         --  same location. As a result, in the case of entities that are
+         --  in-out actuals, the read reference follows the modify reference.
 
          else
             return T2.Typ = 'r';
@@ -507,10 +508,9 @@ package body ALFA is
          Rnums (J) := J;
       end loop;
 
-      --  Eliminate entries not appropriate for ALFA. Should be prior to
-      --  sorting cross-references, as it discards useless references which do
-      --  not have a proper format for the comparison function (like no
-      --  location).
+      --  Eliminate entries not appropriate for ALFA. Done prior to sorting
+      --  cross-references, as it discards useless references which do not have
+      --  a proper format for the comparison function (like no location).
 
       Eliminate_Before_Sort : declare
          NR : Nat;
@@ -553,7 +553,7 @@ package body ALFA is
       Sorting.Sort (Integer (Nrefs));
 
       Eliminate_After_Sort : declare
-         NR    : Nat;
+         NR : Nat;
 
          Crloc : Source_Ptr;
          --  Current reference location
@@ -583,8 +583,8 @@ package body ALFA is
          end if;
 
          --  Eliminate the reference if it is at the same location as the
-         --  previous one, unless it is a read-reference that indicates that
-         --  the entity is an in-out actual in a call.
+         --  previous one, unless it is a read-reference indicating that the
+         --  entity is an in-out actual in a call.
 
          NR    := Nrefs;
          Nrefs := 0;
@@ -625,8 +625,8 @@ package body ALFA is
             -----------------------
 
             function Cur_Scope return Node_Id;
-            --  Return the scope entity which corresponds to index
-            --  Cur_Scope_Idx in table ALFA_Scope_Table.
+            --  Return scope entity which corresponds to index Cur_Scope_Idx in
+            --  table ALFA_Scope_Table.
 
             function Is_Future_Scope_Entity (E : Entity_Id) return Boolean;
             --  Check whether entity E is in ALFA_Scope_Table at index
@@ -688,10 +688,10 @@ package body ALFA is
             XE  : Xref_Entry renames Xrefs.Table (Rnums (Refno));
 
          begin
-            --  If this assertion fails, this means that the scope which we
-            --  are looking for is not in ALFA scope table, which reveals
-            --  either a problem in the construction of the scope table, or an
-            --  erroneous scope for the current cross-reference.
+            --  If this assertion fails, the scope which we are looking for is
+            --  not in ALFA scope table, which reveals either a problem in the
+            --  construction of the scope table, or an erroneous scope for the
+            --  current cross-reference.
 
             pragma Assert (Is_Future_Scope_Entity (XE.Ent_Scope));
 

@@ -32,7 +32,6 @@ begin
    for J in 1 .. ALFA_File_Table.Last loop
       declare
          F     : ALFA_File_Record renames ALFA_File_Table.Table (J);
-
          Start : Scope_Index;
          Stop  : Scope_Index;
 
@@ -92,10 +91,8 @@ begin
    for J in 1 .. ALFA_File_Table.Last loop
       declare
          F           : ALFA_File_Record renames ALFA_File_Table.Table (J);
-
          Start       : Scope_Index;
          Stop        : Scope_Index;
-
          File        : Nat;
          Scope       : Nat;
          Entity_Line : Nat;

@@ -579,6 +579,8 @@ package Snames is
 
    First_Convention_Name               : constant Name_Id := N + $;
    Name_Ada                            : constant Name_Id := N + $;
+   Name_Ada_Pass_By_Copy               : constant Name_Id := N + $;
+   Name_Ada_Pass_By_Reference          : constant Name_Id := N + $;
    Name_Assembler                      : constant Name_Id := N + $;
    Name_CIL                            : constant Name_Id := N + $;
    Name_COBOL                          : constant Name_Id := N + $;
@@ -1424,6 +1426,12 @@ package Snames is
       Convention_Protected,
       Convention_Stubbed,
 
+      --  The following conventions are equivalent to Ada for all purposes
+      --  except controlling the way parameters are passed.
+
+      Convention_Ada_Pass_By_Copy,
+      Convention_Ada_Pass_By_Reference,
+
       --  The remaining conventions are foreign language conventions
 
       Convention_Assembler,  --  also Asm, Assembly
@@ -1435,10 +1443,10 @@ package Snames is
       Convention_Java,
       Convention_Stdcall);   --  also DLL, Win32
 
-      --  Note: Convention C_Pass_By_Copy is allowed only for record
-      --  types (where it is treated like C except that the appropriate
-      --  flag is set in the record type). Recognizing this convention
-      --  is specially handled in Sem_Prag.
+      --  Note: Convention C_Pass_By_Copy is allowed only for record types
+      --  (where it is treated like C except that the appropriate flag is set
+      --  in the record type). Recognizing this convention is specially handled
+      --  in Sem_Prag.
 
    for Convention_Id'Size use 8;
    --  Plenty of space for expansion

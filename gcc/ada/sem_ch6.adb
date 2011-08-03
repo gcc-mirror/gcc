@@ -629,8 +629,8 @@ package body Sem_Ch6 is
       if Nkind (N) = N_Simple_Return_Statement then
          Expr := Expression (N);
 
-         --  Guard against a malformed expression. The parser may have
-         --  tried to recover but the node is not analyzable.
+         --  Guard against a malformed expression. The parser may have tried to
+         --  recover but the node is not analyzable.
 
          if Nkind (Expr) = N_Error then
             Set_Etype (Expr, Any_Type);
@@ -8614,8 +8614,8 @@ package body Sem_Ch6 is
 
          --  If S is a derived operation for an untagged type then by
          --  definition it's not a dispatching operation (even if the parent
-         --  operation was dispatching), so we don't call
-         --  Check_Dispatching_Operation in that case.
+         --  operation was dispatching), so Check_Dispatching_Operation is not
+         --  called in that case.
 
          if No (Derived_Type)
            or else Is_Tagged_Type (Derived_Type)
