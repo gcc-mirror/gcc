@@ -318,44 +318,31 @@ reg_push_size (int regno)
     }
 }
 
-static int *class_sizes = 0;
-
 /* Given two register classes, find the largest intersection between
    them.  If there is no intersection, return RETURNED_IF_EMPTY
    instead.  */
-static int
-reduce_class (int original_class, int limiting_class, int returned_if_empty)
+static reg_class_t
+reduce_class (reg_class_t original_class, reg_class_t limiting_class,
+	      reg_class_t returned_if_empty)
 {
-  int cc = class_contents[original_class][0];
-  int i, best = NO_REGS;
-  int best_size = 0;
+  HARD_REG_SET cc;
+  int i;
+  reg_class_t best = NO_REGS;
+  unsigned int best_size = 0;
 
   if (original_class == limiting_class)
     return original_class;
 
-  if (!class_sizes)
-    {
-      int r;
-      class_sizes = (int *) xmalloc (LIM_REG_CLASSES * sizeof (int));
-      for (i = 0; i < LIM_REG_CLASSES; i++)
-	{
-	  class_sizes[i] = 0;
-	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
-	    if (class_contents[i][0] & (1 << r))
-	      class_sizes[i]++;
-	}
-    }
+  cc = reg_class_contents[original_class];
+  AND_HARD_REG_SET (cc, reg_class_contents[limiting_class]);
 
-  cc &= class_contents[limiting_class][0];
   for (i = 0; i < LIM_REG_CLASSES; i++)
     {
-      int ic = class_contents[i][0];
-
-      if ((~cc & ic) == 0)
-	if (best_size < class_sizes[i])
+      if (hard_reg_set_subset_p (reg_class_contents[i], cc))
+	if (best_size < reg_class_size[i])
 	  {
-	    best = i;
-	    best_size = class_sizes[i];
+	    best = (reg_class_t) i;
+	    best_size = reg_class_size[i];
 	  }
 
     }
