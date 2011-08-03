@@ -1,3 +1,13 @@
+2011-08-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/proc.h: New.
+	* config/linux/proc.c: Include "proc.h".  Do not include <sched.h>.
+	(gomp_cpuset_popcount): Rename from cpuset_popcount.  No more static.
+	(gomp_init_num_threads): Update call to cpuset_popcount.
+	(get_num_procs): Ditto.
+	* config/linux/affinity.c (gomp_init_affinity): Call
+	gomp_cpuset_popcount.
+
 2011-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/42041
