@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             P U T _ S C O S                               --
+--                             P U T _ S C O S                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -142,7 +142,7 @@ begin
 
                   --  Decision
 
-                  when 'I' | 'E' | 'P' | 'W' | 'X' =>
+                  when 'I' | 'E' | 'G' | 'P' | 'W' | 'X' =>
                      Start := Start + 1;
 
                      --  For disabled pragma, skip decision output

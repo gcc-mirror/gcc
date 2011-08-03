@@ -77,6 +77,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
    -- Local Subprograms --
    -----------------------
 
+   --  Comments needed???
+
    generic
       with procedure Set_Element (Node : in out Node_Type);
    procedure Generic_Allocate
@@ -122,8 +124,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
    package Tree_Operations is
      new Red_Black_Trees.Generic_Bounded_Operations
        (Tree_Types,
-        Left      => Left_Son,
-        Right     => Right_Son);
+        Left  => Left_Son,
+        Right => Right_Son);
 
    use Tree_Operations;
 
@@ -148,10 +150,10 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    function "=" (Left, Right : Set) return Boolean is
       Lst   : Count_Type;
-      Node  : Count_Type := First (Left).Node;
+      Node  : Count_Type;
       ENode : Count_Type;
-   begin
 
+   begin
       if Length (Left) /= Length (Right) then
          return False;
       end if;
@@ -161,18 +163,20 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       Lst := Next (Left, Last (Left).Node);
+
+      Node := First (Left).Node;
       while Node /= Lst loop
          ENode := Find (Right, Left.Nodes (Node).Element).Node;
-         if ENode = 0 or else
-           Left.Nodes (Node).Element /= Right.Nodes (ENode).Element
+         if ENode = 0
+           or else Left.Nodes (Node).Element /= Right.Nodes (ENode).Element
          then
             return False;
          end if;
+
          Node := Next (Left, Node);
       end loop;
 
       return True;
-
    end "=";
 
    ------------
@@ -206,11 +210,10 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
          procedure Unconditional_Insert_Avec_Hint is
            new Element_Keys.Generic_Unconditional_Insert_With_Hint
-             (Insert_Post,
-              Unconditional_Insert_Sans_Hint);
+                 (Insert_Post,
+                  Unconditional_Insert_Sans_Hint);
 
-         procedure Allocate is
-           new Generic_Allocate (Set_Element);
+         procedure Allocate is new Generic_Allocate (Set_Element);
 
          --------------
          -- New_Node --
@@ -218,7 +221,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
          function New_Node return Count_Type is
             Result : Count_Type;
-
          begin
             Allocate (Target, Result);
             return Result;
@@ -233,9 +235,11 @@ package body Ada.Containers.Formal_Ordered_Sets is
             Node.Element := SN.Element;
          end Set_Element;
 
+         --  Local variables
+
          Target_Node : Count_Type;
 
-         --  Start of processing for Append_Element
+      --  Start of processing for Append_Element
 
       begin
          Unconditional_Insert_Avec_Hint
@@ -266,7 +270,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
    -------------
 
    function Ceiling (Container : Set; Item : Element_Type) return Cursor is
-
       Node : constant Count_Type := Element_Keys.Ceiling (Container, Item);
 
    begin
@@ -275,7 +278,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       return (Node => Node);
-
    end Ceiling;
 
    -----------
@@ -313,17 +315,19 @@ package body Ada.Containers.Formal_Ordered_Sets is
    ----------
 
    function Copy (Source : Set; Capacity : Count_Type := 0) return Set is
-      Node : Count_Type := 1;
-      N    : Count_Type;
+      Node   : Count_Type;
+      N      : Count_Type;
       Target : Set (Count_Type'Max (Source.Capacity, Capacity));
+
    begin
       if Length (Source) > 0 then
          Target.Length := Source.Length;
-         Target.Root := Source.Root;
-         Target.First := Source.First;
-         Target.Last := Source.Last;
-         Target.Free := Source.Free;
+         Target.Root   := Source.Root;
+         Target.First  := Source.First;
+         Target.Last   := Source.Last;
+         Target.Free   := Source.Free;
 
+         Node := 1;
          while Node <= Source.Capacity loop
             Target.Nodes (Node).Element :=
               Source.Nodes (Node).Element;
@@ -346,6 +350,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
             Node := Node + 1;
          end loop;
       end if;
+
       return Target;
    end Copy;
 
@@ -355,7 +360,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    procedure Delete (Container : in out Set; Position : in out Cursor) is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -373,7 +377,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       X : constant Count_Type := Element_Keys.Find (Container, Item);
 
    begin
-
       if X = 0 then
          raise Constraint_Error with "attempt to delete element not in set";
       end if;
@@ -388,9 +391,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    procedure Delete_First (Container : in out Set) is
       X    : constant Count_Type := Container.First;
-
    begin
-
       if X /= 0 then
          Tree_Operations.Delete_Node_Sans_Free (Container, X);
          Formal_Ordered_Sets.Free (Container, X);
@@ -403,9 +404,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    procedure Delete_Last (Container : in out Set) is
       X    : constant Count_Type := Container.Last;
-
    begin
-
       if X /= 0 then
          Tree_Operations.Delete_Node_Sans_Free (Container, X);
          Formal_Ordered_Sets.Free (Container, X);
@@ -419,7 +418,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
    procedure Difference (Target : in out Set; Source : Set) is
    begin
       Set_Ops.Set_Difference (Target, Source);
-
    end Difference;
 
    function Difference (Left, Right : Set) return Set is
@@ -437,9 +435,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       return S : Set (Length (Left)) do
-            Assign (S,
-                    Set_Ops.Set_Difference (Left, Right));
-
+            Assign (S, Set_Ops.Set_Difference (Left, Right));
       end return;
    end Difference;
 
@@ -484,7 +480,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
       function Is_Equivalent_Node_Node
-        (L, R        : Node_Type) return Boolean;
+        (L, R : Node_Type) return Boolean;
       pragma Inline (Is_Equivalent_Node_Node);
 
       function Is_Equivalent is
@@ -505,7 +501,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
          end if;
       end Is_Equivalent_Node_Node;
 
-      --  Start of processing for Equivalent_Sets
+   --  Start of processing for Equivalent_Sets
 
    begin
       return Is_Equivalent (Left, Right);
@@ -517,9 +513,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    procedure Exclude (Container : in out Set; Item : Element_Type) is
       X : constant Count_Type := Element_Keys.Find (Container, Item);
-
    begin
-
       if X /= 0 then
          Tree_Operations.Delete_Node_Sans_Free (Container, X);
          Formal_Ordered_Sets.Free (Container, X);
@@ -531,9 +525,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
    ----------
 
    function Find (Container : Set; Item : Element_Type) return Cursor is
-
-      Node : constant Count_Type :=
-        Element_Keys.Find (Container, Item);
+      Node : constant Count_Type := Element_Keys.Find (Container, Item);
 
    begin
       if Node = 0 then
@@ -541,7 +533,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       return (Node => Node);
-
    end Find;
 
    -----------
@@ -555,7 +546,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       return (Node => Container.First);
-
    end First;
 
    -------------------
@@ -582,10 +572,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    function Floor (Container : Set; Item : Element_Type) return Cursor is
    begin
-
       declare
-         Node : constant Count_Type :=
-           Element_Keys.Floor (Container, Item);
+         Node : constant Count_Type := Element_Keys.Floor (Container, Item);
 
       begin
          if Node = 0 then
@@ -600,10 +588,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
    -- Free --
    ----------
 
-   procedure Free
-     (Tree : in out Set;
-      X  : Count_Type)
-   is
+   procedure Free (Tree : in out Set; X : Count_Type) is
    begin
       Tree.Nodes (X).Has_Element := False;
       Tree_Operations.Free (Tree, X);
@@ -617,10 +602,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
      (Tree : in out Tree_Types.Tree_Type'Class;
       Node : out Count_Type)
    is
-
       procedure Allocate is
         new Tree_Operations.Generic_Allocate (Set_Element);
-
    begin
       Allocate (Tree, Node);
       Tree.Nodes (Node).Has_Element := True;
@@ -662,8 +645,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       -------------
 
       function Ceiling (Container : Set; Key : Key_Type) return Cursor is
-         Node : constant Count_Type :=
-           Key_Keys.Ceiling (Container, Key);
+         Node : constant Count_Type := Key_Keys.Ceiling (Container, Key);
 
       begin
          if Node = 0 then
@@ -687,7 +669,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       ------------
 
       procedure Delete (Container : in out Set; Key : Key_Type) is
-
          X : constant Count_Type := Key_Keys.Find (Container, Key);
 
       begin
@@ -704,8 +685,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       -------------
 
       function Element (Container : Set; Key : Key_Type) return Element_Type is
-         Node : constant Count_Type :=
-           Key_Keys.Find (Container, Key);
+         Node : constant Count_Type := Key_Keys.Find (Container, Key);
 
       begin
          if Node = 0 then
@@ -739,9 +719,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       -------------
 
       procedure Exclude (Container : in out Set; Key : Key_Type) is
-
          X : constant Count_Type := Key_Keys.Find (Container, Key);
-
       begin
          if X /= 0 then
             Delete_Node_Sans_Free (Container, X);
@@ -754,15 +732,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
       ----------
 
       function Find (Container : Set; Key : Key_Type) return Cursor is
-
          Node : constant Count_Type := Key_Keys.Find (Container, Key);
-
       begin
-         if Node = 0 then
-            return No_Element;
-         end if;
-
-         return (Node => Node);
+         return (if Node = 0 then No_Element else (Node => Node));
       end Find;
 
       -----------
@@ -770,17 +742,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
       -----------
 
       function Floor (Container : Set; Key : Key_Type) return Cursor is
-
-         Node : constant Count_Type :=
-           Key_Keys.Floor (Container, Key);
-
+         Node : constant Count_Type := Key_Keys.Floor (Container, Key);
       begin
-         if Node = 0 then
-            return No_Element;
-         end if;
-
-         return (Node => Node);
-
+         return (if Node = 0 then No_Element else (Node => Node));
       end Floor;
 
       -------------------------
@@ -838,15 +802,13 @@ package body Ada.Containers.Formal_Ordered_Sets is
          New_Item  : Element_Type)
       is
          Node : constant Count_Type := Key_Keys.Find (Container, Key);
-
       begin
-
          if not Has_Element (Container, (Node => Node)) then
             raise Constraint_Error with
               "attempt to replace key not in set";
+         else
+            Replace_Element (Container, Node, New_Item);
          end if;
-
-         Replace_Element (Container, Node, New_Item);
       end Replace;
 
       -----------------------------------
@@ -859,7 +821,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Process   : not null access procedure (Element : in out Element_Type))
       is
       begin
-
          if not Has_Element (Container, Position) then
             raise Constraint_Error with
               "Position cursor has no element";
@@ -918,9 +879,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
    begin
       if Position.Node = 0 then
          return False;
+      else
+         return Container.Nodes (Position.Node).Has_Element;
       end if;
-
-      return Container.Nodes (Position.Node).Has_Element;
    end Has_Element;
 
    -------------
@@ -959,13 +920,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       Inserted  : out Boolean)
    is
    begin
-
-      Insert_Sans_Hint
-        (Container,
-         New_Item,
-         Position.Node,
-         Inserted);
-
+      Insert_Sans_Hint (Container, New_Item, Position.Node, Inserted);
    end Insert;
 
    procedure Insert
@@ -994,7 +949,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       Node      : out Count_Type;
       Inserted  : out Boolean)
    is
-
       procedure Set_Element (Node : in out Node_Type);
 
       function New_Node return Count_Type;
@@ -1006,8 +960,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       procedure Conditional_Insert_Sans_Hint is
         new Element_Keys.Generic_Conditional_Insert (Insert_Post);
 
-      procedure Allocate is
-        new Generic_Allocate (Set_Element);
+      procedure Allocate is new Generic_Allocate (Set_Element);
 
       --------------
       -- New_Node --
@@ -1015,7 +968,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
       function New_Node return Count_Type is
          Result : Count_Type;
-
       begin
          Allocate (Container, Result);
          return Result;
@@ -1030,7 +982,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Node.Element := New_Item;
       end Set_Element;
 
-      --  Start of processing for Insert_Sans_Hint
+   --  Start of processing for Insert_Sans_Hint
 
    begin
       Conditional_Insert_Sans_Hint
@@ -1066,11 +1018,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
       procedure Local_Insert_With_Hint is
         new Element_Keys.Generic_Conditional_Insert_With_Hint
-          (Insert_Post,
-           Insert_Sans_Hint);
+              (Insert_Post, Insert_Sans_Hint);
 
-      procedure Allocate is
-        new Generic_Allocate (Set_Element);
+      procedure Allocate is new Generic_Allocate (Set_Element);
 
       --------------
       -- New_Node --
@@ -1078,7 +1028,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
       function New_Node return Count_Type is
          Result : Count_Type;
-
       begin
          Allocate (Dst_Set, Result);
          return Result;
@@ -1093,7 +1042,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Node.Element := Src_Node.Element;
       end Set_Element;
 
-      --  Start of processing for Insert_With_Hint
+   --  Start of processing for Insert_With_Hint
 
    begin
       Local_Insert_With_Hint
@@ -1120,8 +1069,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       return S : Set (Count_Type'Min (Length (Left), Length (Right))) do
-            Assign (S, Set_Ops.Set_Intersection
-                    (Left, Right));
+            Assign (S, Set_Ops.Set_Intersection (Left, Right));
       end return;
    end Intersection;
 
@@ -1175,8 +1123,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
    begin
-      return Set_Ops.Set_Subset (Subset,
-                                 Of_Set => Of_Set);
+      return Set_Ops.Set_Subset (Subset, Of_Set => Of_Set);
    end Is_Subset;
 
    -------------
@@ -1185,8 +1132,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    procedure Iterate
      (Container : Set;
-      Process   :
-      not null access procedure (Container : Set; Position : Cursor))
+      Process   : not null access procedure (Container : Set;
+                                             Position : Cursor))
    is
       procedure Process_Node (Node : Count_Type);
       pragma Inline (Process_Node);
@@ -1203,9 +1150,11 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Process (Container, (Node => Node));
       end Process_Node;
 
+      --  Local variables
+
       B : Natural renames Container'Unrestricted_Access.Busy;
 
-      --  Start of prccessing for Iterate
+   --  Start of prccessing for Iterate
 
    begin
       B := B + 1;
@@ -1227,12 +1176,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    function Last (Container : Set) return Cursor is
    begin
-      if Length (Container) = 0 then
-         return No_Element;
-      end if;
-
-      return (Node => Container.Last);
-
+      return (if Length (Container) = 0
+              then No_Element
+              else (Node => Container.Last));
    end Last;
 
    ------------------
@@ -1258,13 +1204,14 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    function Left (Container : Set; Position : Cursor) return Set is
       Curs : Cursor := Position;
-      C : Set (Container.Capacity) :=
-        Copy (Container, Container.Capacity);
+      C    : Set (Container.Capacity) := Copy (Container, Container.Capacity);
       Node : Count_Type;
+
    begin
       if Curs = No_Element then
          return C;
       end if;
+
       if not Has_Element (Container, Curs) then
          raise Constraint_Error;
       end if;
@@ -1274,6 +1221,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Delete (C, Curs);
          Curs := Next (Container, (Node => Node));
       end loop;
+
       return C;
    end Left;
 
@@ -1304,7 +1252,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       X : Count_Type;
 
    begin
-
       if Target'Address = Source'Address then
          return;
       end if;
@@ -1363,7 +1310,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
    function Overlap (Left, Right : Set) return Boolean is
    begin
       return Set_Ops.Set_Overlap (Left, Right);
-
    end Overlap;
 
    ------------
@@ -1394,14 +1340,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
       declare
          Node : constant Count_Type :=
-           Tree_Operations.Previous (Container, Position.Node);
-
+                  Tree_Operations.Previous (Container, Position.Node);
       begin
-         if Node = 0 then
-            return No_Element;
-         end if;
-
-         return (Node => Node);
+         return (if Node = 0 then No_Element else (Node => Node));
       end;
    end Previous;
 
@@ -1420,7 +1361,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       Process   : not null access procedure (Element : Element_Type))
    is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -1429,7 +1369,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
                      "bad cursor in Query_Element");
 
       declare
-
          B : Natural renames Container.Busy;
          L : Natural renames Container.Lock;
 
@@ -1477,9 +1416,9 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Element_Type'Read (Stream, Node.Element);
       end Read_Element;
 
-      --  Start of processing for Read
-   begin
+   --  Start of processing for Read
 
+   begin
       Read_Elements (Stream, Container);
    end Read;
 
@@ -1496,9 +1435,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
    -------------
 
    procedure Replace (Container : in out Set; New_Item : Element_Type) is
-
-      Node : constant Count_Type :=
-        Element_Keys.Find (Container, New_Item);
+      Node : constant Count_Type := Element_Keys.Find (Container, New_Item);
 
    begin
       if Node = 0 then
@@ -1547,14 +1484,12 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
       function New_Node return Count_Type is
          N  : Node_Type renames NN (Node);
-
       begin
          N.Element := Item;
-         N.Color := Red;
-         N.Parent := 0;
-         N.Right := 0;
-         N.Left := 0;
-
+         N.Color   := Red;
+         N.Parent  := 0;
+         N.Right   := 0;
+         N.Left    := 0;
          return Node;
       end New_Node;
 
@@ -1562,7 +1497,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       Result    : Count_Type;
       Inserted  : Boolean;
 
-      --  Start of processing for Insert
+   --  Start of processing for Insert
 
    begin
       if Item < NN (Node).Element
@@ -1620,7 +1555,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       New_Item  : Element_Type)
    is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with
            "Position cursor has no element";
@@ -1638,8 +1572,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    procedure Reverse_Iterate
      (Container : Set;
-      Process   :
-      not null access procedure (Container : Set; Position : Cursor))
+      Process   : not null access procedure (Container : Set;
+                                             Position : Cursor))
    is
       procedure Process_Node (Node : Count_Type);
       pragma Inline (Process_Node);
@@ -1658,7 +1592,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
       B : Natural renames Container'Unrestricted_Access.Busy;
 
-      --  Start of processing for Reverse_Iterate
+   --  Start of processing for Reverse_Iterate
 
    begin
       B := B + 1;
@@ -1680,14 +1614,15 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    function Right (Container : Set; Position : Cursor) return Set is
       Curs : Cursor := First (Container);
-      C : Set (Container.Capacity) :=
-        Copy (Container, Container.Capacity);
+      C    : Set (Container.Capacity) := Copy (Container, Container.Capacity);
       Node : Count_Type;
+
    begin
       if Curs = No_Element then
          Clear (C);
          return C;
       end if;
+
       if Position /= No_Element and not Has_Element (Container, Position) then
          raise Constraint_Error;
       end if;
@@ -1697,6 +1632,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Delete (C, Curs);
          Curs := Next (Container, (Node => Node));
       end loop;
+
       return C;
    end Right;
 
@@ -1755,6 +1691,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
    function Strict_Equal (Left, Right : Set) return Boolean is
       LNode : Count_Type := First (Left).Node;
       RNode : Count_Type := First (Right).Node;
+
    begin
       if Length (Left) /= Length (Right) then
          return False;
@@ -1773,8 +1710,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
          LNode := Next (Left, LNode);
          RNode := Next (Right, RNode);
       end loop;
-      return False;
 
+      return False;
    end Strict_Equal;
 
    --------------------------
@@ -1801,9 +1738,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       return S : Set (Length (Left) + Length (Right)) do
-            Assign (S,
-              Set_Ops.Set_Symmetric_Difference (Left,
-                Right));
+         Assign (S, Set_Ops.Set_Symmetric_Difference (Left, Right));
       end return;
    end Symmetric_Difference;
 
@@ -1814,7 +1749,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
    function To_Set (New_Item : Element_Type) return Set is
       Node     : Count_Type;
       Inserted : Boolean;
-
    begin
       return S : Set (Capacity => 1) do
          Insert_Sans_Hint (S, New_Item, Node, Inserted);
@@ -1879,7 +1813,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
          Element_Type'Write (Stream, Node.Element);
       end Write_Element;
 
-      --  Start of processing for Write
+   --  Start of processing for Write
 
    begin
       Write_Elements (Stream, Container);

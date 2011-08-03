@@ -43,8 +43,8 @@ package body Ada.Containers.Formal_Ordered_Maps is
    --  These subprograms provide a functional interface to access fields
    --  of a node, and a procedural interface for modifying these values.
 
-   function Color (Node : Node_Type)
-                   return Ada.Containers.Red_Black_Trees.Color_Type;
+   function Color
+     (Node : Node_Type) return Ada.Containers.Red_Black_Trees.Color_Type;
    pragma Inline (Color);
 
    function Left_Son (Node : Node_Type) return Count_Type;
@@ -74,6 +74,8 @@ package body Ada.Containers.Formal_Ordered_Maps is
    -- Local Subprograms --
    -----------------------
 
+   --  All need comments ???
+
    generic
       with procedure Set_Element (Node : in out Node_Type);
    procedure Generic_Allocate
@@ -99,8 +101,8 @@ package body Ada.Containers.Formal_Ordered_Maps is
    package Tree_Operations is
      new Red_Black_Trees.Generic_Bounded_Operations
        (Tree_Types => Tree_Types,
-        Left      => Left_Son,
-        Right     => Right_Son);
+        Left       => Left_Son,
+        Right      => Right_Son);
 
    use Tree_Operations;
 
@@ -117,10 +119,10 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
    function "=" (Left, Right : Map) return Boolean is
       Lst   : Count_Type;
-      Node  : Count_Type := First (Left).Node;
+      Node  : Count_Type;
       ENode : Count_Type;
-   begin
 
+   begin
       if Length (Left) /= Length (Right) then
          return False;
       end if;
@@ -130,18 +132,21 @@ package body Ada.Containers.Formal_Ordered_Maps is
       end if;
 
       Lst := Next (Left, Last (Left).Node);
+
+      Node := First (Left).Node;
       while Node /= Lst loop
          ENode := Find (Right, Left.Nodes (Node).Key).Node;
+
          if ENode = 0 or else
            Left.Nodes (Node).Element /= Right.Nodes (ENode).Element
          then
             return False;
          end if;
+
          Node := Next (Left, Node);
       end loop;
 
       return True;
-
    end "=";
 
    ------------
@@ -167,19 +172,17 @@ package body Ada.Containers.Formal_Ordered_Maps is
          function New_Node return Count_Type;
          pragma Inline (New_Node);
 
-         procedure Insert_Post is
-            new Key_Ops.Generic_Insert_Post (New_Node);
+         procedure Insert_Post is new Key_Ops.Generic_Insert_Post (New_Node);
 
          procedure Unconditional_Insert_Sans_Hint is
-            new Key_Ops.Generic_Unconditional_Insert (Insert_Post);
+           new Key_Ops.Generic_Unconditional_Insert (Insert_Post);
 
          procedure Unconditional_Insert_Avec_Hint is
-            new Key_Ops.Generic_Unconditional_Insert_With_Hint
-              (Insert_Post,
-               Unconditional_Insert_Sans_Hint);
+           new Key_Ops.Generic_Unconditional_Insert_With_Hint
+             (Insert_Post,
+              Unconditional_Insert_Sans_Hint);
 
-         procedure Allocate is
-            new Generic_Allocate (Set_Element);
+         procedure Allocate is new Generic_Allocate (Set_Element);
 
          --------------
          -- New_Node --
@@ -187,7 +190,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
          function New_Node return Count_Type is
             Result : Count_Type;
-
          begin
             Allocate (Target, Result);
             return Result;
@@ -218,7 +220,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
    --  Start of processing for Assign
 
    begin
-
       if Target'Address = Source'Address then
          return;
       end if;
@@ -236,9 +237,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
    -------------
 
    function Ceiling (Container : Map; Key : Key_Type) return Cursor is
-
-      Node : constant Count_Type :=
-        Key_Ops.Ceiling (Container, Key);
+      Node : constant Count_Type := Key_Ops.Ceiling (Container, Key);
 
    begin
       if Node = 0 then
@@ -254,7 +253,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
    procedure Clear (Container : in out Map) is
    begin
-
       Tree_Operations.Clear_Tree (Container);
    end Clear;
 
@@ -283,6 +281,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
    function Copy (Source : Map; Capacity : Count_Type := 0) return Map is
       Node : Count_Type := 1;
       N    : Count_Type;
+
    begin
       return Target : Map (Count_Type'Max (Source.Capacity, Capacity)) do
          if Length (Source) > 0 then
@@ -325,7 +324,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
    procedure Delete (Container : in out Map; Position : in out Cursor) is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with
            "Position cursor of Delete has no element";
@@ -340,7 +338,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
    end Delete;
 
    procedure Delete (Container : in out Map; Key : Key_Type) is
-
       X : constant Node_Access := Key_Ops.Find (Container, Key);
 
    begin
@@ -358,9 +355,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
    procedure Delete_First (Container : in out Map) is
       X : constant Node_Access := First (Container).Node;
-
    begin
-
       if X /= 0 then
          Tree_Operations.Delete_Node_Sans_Free (Container, X);
          Formal_Ordered_Maps.Free (Container, X);
@@ -373,9 +368,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
    procedure Delete_Last (Container : in out Map) is
       X : constant Node_Access := Last (Container).Node;
-
    begin
-
       if X /= 0 then
          Tree_Operations.Delete_Node_Sans_Free (Container, X);
          Formal_Ordered_Maps.Free (Container, X);
@@ -432,9 +425,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
    procedure Exclude (Container : in out Map; Key : Key_Type) is
       X : constant Node_Access := Key_Ops.Find (Container, Key);
-
    begin
-
       if X /= 0 then
          Tree_Operations.Delete_Node_Sans_Free (Container, X);
          Formal_Ordered_Maps.Free (Container, X);
@@ -446,9 +437,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
    ----------
 
    function Find (Container : Map; Key : Key_Type) return Cursor is
-
-      Node : constant Count_Type :=
-        Key_Ops.Find (Container, Key);
+      Node : constant Count_Type := Key_Ops.Find (Container, Key);
 
    begin
       if Node = 0 then
@@ -469,7 +458,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
       end if;
 
       return (Node => Container.First);
-
    end First;
 
    -------------------
@@ -503,9 +491,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
    -----------
 
    function Floor (Container : Map; Key : Key_Type) return Cursor is
-
-      Node : constant Count_Type :=
-        Key_Ops.Floor (Container, Key);
+      Node : constant Count_Type := Key_Ops.Floor (Container, Key);
 
    begin
       if Node = 0 then
@@ -536,10 +522,8 @@ package body Ada.Containers.Formal_Ordered_Maps is
      (Tree : in out Tree_Types.Tree_Type'Class;
       Node : out Count_Type)
    is
-
       procedure Allocate is
         new Tree_Operations.Generic_Allocate (Set_Element);
-
    begin
       Allocate (Tree, Node);
       Tree.Nodes (Node).Has_Element := True;
@@ -596,6 +580,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
       Inserted  : out Boolean)
    is
       function New_Node return Node_Access;
+      --  Comment ???
 
       procedure Insert_Post is
         new Key_Ops.Generic_Insert_Post (New_Node);
@@ -624,7 +609,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
          return X;
       end New_Node;
 
-      --  Start of processing for Insert
+   --  Start of processing for Insert
 
    begin
       Insert_Sans_Hint
@@ -676,6 +661,10 @@ package body Ada.Containers.Formal_Ordered_Maps is
          procedure Initialize (Node : in out Node_Type);
          procedure Allocate_Node is new Generic_Allocate (Initialize);
 
+         ----------------
+         -- Initialize --
+         ----------------
+
          procedure Initialize (Node : in out Node_Type) is
          begin
             Node.Key := Key;
@@ -683,19 +672,17 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
          X : Node_Access;
 
+      --  Start of processing for New_Node
+
       begin
          Allocate_Node (Container, X);
          return X;
       end New_Node;
 
-      --  Start of processing for Insert
+   --  Start of processing for Insert
 
    begin
-      Insert_Sans_Hint
-        (Container,
-         Key,
-         Position.Node,
-         Inserted);
+      Insert_Sans_Hint (Container, Key, Position.Node, Inserted);
    end Insert;
 
    --------------
@@ -801,6 +788,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
       if Length (Container) = 0 then
          return No_Element;
       end if;
+
       return (Node => Container.Last);
    end Last;
 
@@ -836,13 +824,14 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
    function Left (Container : Map; Position : Cursor) return Map is
       Curs : Cursor := Position;
-      C : Map (Container.Capacity) :=
-        Copy (Container, Container.Capacity);
+      C    : Map (Container.Capacity) := Copy (Container, Container.Capacity);
       Node : Count_Type;
+
    begin
       if Curs = No_Element then
          return C;
       end if;
+
       if not Has_Element (Container, Curs) then
          raise Constraint_Error;
       end if;
@@ -852,6 +841,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
          Delete (C, Curs);
          Curs := Next (Container, (Node => Node));
       end loop;
+
       return C;
    end Left;
 
@@ -882,7 +872,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
       X  : Node_Access;
 
    begin
-
       if Target'Address = Source'Address then
          return;
       end if;
@@ -904,7 +893,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
          exit when X = 0;
 
          --  Here we insert a copy of the source element into the target, and
-         --  then delete the element from the source.  Another possibility is
+         --  then delete the element from the source. Another possibility is
          --  that delete it first (and hang onto its index), then insert it.
          --  ???
 
@@ -946,20 +935,15 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
    function Overlap (Left, Right : Map) return Boolean is
    begin
-
       if Length (Left) = 0 or Length (Right) = 0 then
          return False;
       end if;
 
       declare
-
-         L_Node : Count_Type := First (Left).Node;
-         R_Node : Count_Type := First (Right).Node;
-
-         L_Last : constant Count_Type :=
-                    Next (Left, Last (Left).Node);
-         R_Last : constant Count_Type :=
-                    Next (Right, Last (Right).Node);
+         L_Node : Count_Type          := First (Left).Node;
+         R_Node : Count_Type          := First (Right).Node;
+         L_Last : constant Count_Type := Next (Left, Last (Left).Node);
+         R_Last : constant Count_Type := Next (Right, Last (Right).Node);
 
       begin
          if Left'Address = Right'Address then
@@ -973,11 +957,10 @@ package body Ada.Containers.Formal_Ordered_Maps is
                return False;
             end if;
 
-            if Left.Nodes (L_Node).Key
-              < Right.Nodes (R_Node).Key then
+            if Left.Nodes (L_Node).Key < Right.Nodes (R_Node).Key then
                L_Node := Next (Left, L_Node);
-            elsif Right.Nodes (R_Node).Key
-              < Left.Nodes (L_Node).Key then
+
+            elsif Right.Nodes (R_Node).Key < Left.Nodes (L_Node).Key then
                R_Node := Next (Right, R_Node);
 
             else
@@ -1052,7 +1035,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
                      "Position cursor of Query_Element is bad");
 
       declare
-
          B : Natural renames Container.Busy;
          L : Natural renames Container.Lock;
 
@@ -1106,9 +1088,9 @@ package body Ada.Containers.Formal_Ordered_Maps is
          Element_Type'Read (Stream, Node.Element);
       end Read_Element;
 
-      --  Start of processing for Read
-   begin
+   --  Start of processing for Read
 
+   begin
       Read_Elements (Stream, Container);
    end Read;
 
@@ -1130,7 +1112,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
       New_Item  : Element_Type)
    is
    begin
-
       declare
          Node : constant Node_Access := Key_Ops.Find (Container, Key);
 
@@ -1163,7 +1144,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
       New_Item  : Element_Type)
    is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with
            "Position cursor of Replace_Element has no element";
@@ -1186,8 +1166,8 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
    procedure Reverse_Iterate
      (Container : Map;
-      Process   :
-        not null access procedure (Container : Map; Position : Cursor))
+      Process   : not null access procedure (Container : Map;
+                                             Position : Cursor))
    is
       procedure Process_Node (Node : Node_Access);
       pragma Inline (Process_Node);
@@ -1206,14 +1186,13 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
       B : Natural renames Container'Unrestricted_Access.Busy;
 
-      --  Start of processing for Reverse_Iterate
+   --  Start of processing for Reverse_Iterate
 
    begin
       B := B + 1;
 
       begin
          Local_Reverse_Iterate (Container);
-
       exception
          when others =>
             B := B - 1;
@@ -1229,13 +1208,14 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
    function Right (Container : Map; Position : Cursor) return Map is
       Curs : Cursor := First (Container);
-      C : Map (Container.Capacity) :=
-        Copy (Container, Container.Capacity);
+      C    : Map (Container.Capacity) := Copy (Container, Container.Capacity);
       Node : Count_Type;
+
    begin
       if Curs = No_Element then
          Clear (C);
          return C;
+
       end if;
       if Position /= No_Element and not Has_Element (Container, Position) then
          raise Constraint_Error;
@@ -1246,6 +1226,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
          Delete (C, Curs);
          Curs := Next (Container, (Node => Node));
       end loop;
+
       return C;
    end Right;
 
@@ -1262,10 +1243,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
    -- Set_Color --
    ---------------
 
-   procedure Set_Color
-     (Node  : in out Node_Type;
-      Color : Color_Type)
-   is
+   procedure Set_Color (Node  : in out Node_Type; Color : Color_Type) is
    begin
       Node.Color := Color;
    end Set_Color;
@@ -1304,6 +1282,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
    function Strict_Equal (Left, Right : Map) return Boolean is
       LNode : Count_Type := First (Left).Node;
       RNode : Count_Type := First (Right).Node;
+
    begin
       if Length (Left) /= Length (Right) then
          return False;
@@ -1314,15 +1293,16 @@ package body Ada.Containers.Formal_Ordered_Maps is
             return True;
          end if;
 
-         if Left.Nodes (LNode).Element /=
-           Right.Nodes (RNode).Element or
-           Left.Nodes (LNode).Key /= Right.Nodes (RNode).Key then
+         if Left.Nodes (LNode).Element /= Right.Nodes (RNode).Element
+           or else Left.Nodes (LNode).Key /= Right.Nodes (RNode).Key
+         then
             exit;
          end if;
 
          LNode := Next (Left, LNode);
          RNode := Next (Right, RNode);
       end loop;
+
       return False;
    end Strict_Equal;
 
@@ -1337,7 +1317,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
                                              Element : in out Element_Type))
    is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with
            "Position cursor of Update_Element has no element";
@@ -1347,7 +1326,6 @@ package body Ada.Containers.Formal_Ordered_Maps is
                      "Position cursor of Update_Element is bad");
 
       declare
-
          B : Natural renames Container.Busy;
          L : Natural renames Container.Lock;
 

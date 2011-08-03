@@ -68,6 +68,7 @@ package Ada.Containers.Formal_Hashed_Sets is
    pragma Pure;
 
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is tagged private;
+   --  why is this commented out ???
    --  pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;
