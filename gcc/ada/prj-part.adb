@@ -1870,7 +1870,7 @@ package body Prj.Part is
 
       Tree.Restore_And_Free (Project_Comment_State);
 
-      Debug_Decrease_Indent ("Done parsing project");
+      Debug_Decrease_Indent;
    end Parse_Single_Project;
 
    -----------------------

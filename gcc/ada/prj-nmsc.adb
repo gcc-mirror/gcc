@@ -30,6 +30,7 @@ with Output;   use Output;
 with Prj.Com;
 with Prj.Env;  use Prj.Env;
 with Prj.Err;  use Prj.Err;
+with Prj.Tree; use Prj.Tree;
 with Prj.Util; use Prj.Util;
 with Sinput.P;
 with Snames;   use Snames;
@@ -196,8 +197,8 @@ package body Prj.Nmsc is
    --  Free the memory occupied by Data
 
    procedure Check
-     (Project     : Project_Id;
-      Data        : in out Tree_Processing_Data);
+     (Project      : Project_Id;
+      Data         : in out Tree_Processing_Data);
    --  Process the naming scheme for a single project
 
    procedure Initialize
@@ -247,7 +248,8 @@ package body Prj.Nmsc is
    --  expanded pattern was found (1 for the first element of Patterns and
    --  all its matching directories, then 2,...).
    --  We use a generic and not an access-to-subprogram because in some cases
-   --  this code is compiled with the restriction No_Implicit_Dynamic_Code
+   --  this code is compiled with the restriction No_Implicit_Dynamic_Code.
+   --  An error message is raised if a pattern does not match any file.
 
    procedure Add_Source
      (Id                  : out Source_Id;
@@ -321,12 +323,6 @@ package body Prj.Nmsc is
       Data    : in out Tree_Processing_Data);
    --  Check the library attributes of project Project in project tree
    --  and modify its data Data accordingly.
-
-   procedure Check_Aggregate_Project
-     (Project : Project_Id;
-      Data    : in out Tree_Processing_Data);
-   --  Check aggregate projects attributes, and find the list of aggregated
-   --  projects. They are stored as a "project_files" language in Project.
 
    procedure Check_Abstract_Project
      (Project : Project_Id;
@@ -923,19 +919,27 @@ package body Prj.Nmsc is
       end if;
    end Canonical_Case_File_Name;
 
-   -----------------------------
-   -- Check_Aggregate_Project --
-   -----------------------------
+   ---------------------------------
+   -- Process_Aggregated_Projects --
+   ---------------------------------
 
-   procedure Check_Aggregate_Project
-     (Project : Project_Id;
-      Data    : in out Tree_Processing_Data)
+   procedure Process_Aggregated_Projects
+     (Tree         : Project_Tree_Ref;
+      Project      : Project_Id;
+      Node_Tree    : Prj.Tree.Project_Node_Tree_Ref;
+      Flags        : Processing_Flags)
    is
+      Data : Tree_Processing_Data :=
+        (Tree           => Tree,
+         Node_Tree      => Node_Tree,
+         File_To_Source => Files_Htable.Nil,
+         Flags          => Flags);
+
       Project_Files : constant Prj.Variable_Value :=
                         Prj.Util.Value_Of
                           (Snames.Name_Project_Files,
                            Project.Decl.Attributes,
-                           Data.Tree);
+                           Tree);
 
       Project_Path_For_Aggregate : Prj.Env.Project_Search_Path;
 
@@ -954,7 +958,6 @@ package body Prj.Nmsc is
 
       procedure Found_Project_File (Path : Path_Information; Rank : Natural) is
          pragma Unreferenced (Rank);
-         Full_Path : Path_Name_Type;
       begin
          Debug_Output ("Aggregates: ", Name_Id (Path.Display_Name));
 
@@ -963,29 +966,36 @@ package body Prj.Nmsc is
          --  can only do this when processing the aggregate project, since the
          --  exact list of project files or project directories can depend on
          --  scenario variables.
+         --  We only load the projects explicitly here, but do not process
+         --  them. For the processing, Prj.Proc will take care of processing
+         --  them, within the same call to Recursive_Process (thus avoiding the
+         --  processing of a given project multiple times).
          --
          --  ??? We might already have loaded the project
 
-         Prj.Env.Find_Project
-           (Self              => Project_Path_For_Aggregate,
-            Project_File_Name => Get_Name_String (Path.Name),
-            Directory         => Get_Name_String (Project.Path.Name),
-            Path              => Full_Path);
+         Add_Aggregated_Project (Project, Path => Path.Name);
       end Found_Project_File;
 
    --  Start of processing for Check_Aggregate_Project
 
    begin
+      pragma Assert (Project.Qualifier = Aggregate);
+
       if Project_Files.Default then
          Error_Msg_Name_1 := Snames.Name_Project_Files;
          Error_Msg
-           (Data.Flags,
+           (Flags,
             "Attribute %% must be specified in aggregate project",
             Project.Location, Project);
          return;
       end if;
 
+      --  The aggregated projects are only searched relative to the directory
+      --  of the aggregate project, not in the default project path.
+
       Initialize_Empty (Project_Path_For_Aggregate);
+
+      Free (Project.Aggregated_Projects);
 
       --  Look for aggregated projects. For similarity with source files and
       --  dirs, the aggregated project files are not searched for on the
@@ -1001,7 +1011,7 @@ package body Prj.Nmsc is
          Resolve_Links => Opt.Follow_Links_For_Files);
 
       Free (Project_Path_For_Aggregate);
-   end Check_Aggregate_Project;
+   end Process_Aggregated_Projects;
 
    ----------------------------
    -- Check_Abstract_Project --
@@ -1058,7 +1068,7 @@ package body Prj.Nmsc is
       Prj_Data  : Project_Processing_Data;
 
    begin
-      Debug_Increase_Indent ("Check ", Project.Name);
+      Debug_Increase_Indent ("Check", Project.Name);
 
       Initialize (Prj_Data, Project);
 
@@ -1074,7 +1084,6 @@ package body Prj.Nmsc is
       end if;
 
       case Project.Qualifier is
-         when Aggregate => Check_Aggregate_Project (Project, Data);
          when Dry       => Check_Abstract_Project  (Project, Data);
          when others    => null;
       end case;
@@ -5222,7 +5231,7 @@ package body Prj.Nmsc is
 
       if Current_Verbosity = High then
          if Project.Object_Directory = No_Path_Information then
-            Write_Line ("No object directory");
+            Debug_Output ("No object directory");
          else
             Write_Attr
               ("Object directory",
@@ -7928,17 +7937,20 @@ package body Prj.Nmsc is
       Element : String_Element;
 
    begin
-      Debug_Increase_Indent ("Source_Dirs:");
+      if Project.Source_Dirs = Nil_String then
+         Debug_Output ("No source dirs");
+      else
+         Debug_Increase_Indent ("Source_Dirs:");
 
-      Current := Project.Source_Dirs;
-      while Current /= Nil_String loop
-         Element := In_Tree.String_Elements.Table (Current);
-         Write_Str  ("   ");
-         Write_Line (Get_Name_String (Element.Display_Value));
-         Current := Element.Next;
-      end loop;
+         Current := Project.Source_Dirs;
+         while Current /= Nil_String loop
+            Element := In_Tree.String_Elements.Table (Current);
+            Debug_Output (Get_Name_String (Element.Display_Value));
+            Current := Element.Next;
+         end loop;
 
-      Debug_Decrease_Indent ("end Source_Dirs.");
+         Debug_Decrease_Indent ("end Source_Dirs.");
+      end if;
    end Show_Source_Dirs;
 
    ---------------------------

@@ -289,7 +289,7 @@ package body Sem_Attr is
       --  Common processing for attributes Definite and Has_Discriminants.
       --  Checks that prefix is generic indefinite formal type.
 
-      procedure Check_Formal_Restriction_On_Attribute;
+      procedure Check_SPARK_Restriction_On_Attribute;
       --  Issue an error in formal mode because attribute N is allowed
 
       procedure Check_Integer_Type;
@@ -568,7 +568,7 @@ package body Sem_Attr is
       --  Start of processing for Analyze_Access_Attribute
 
       begin
-         Check_Formal_Restriction_On_Attribute;
+         Check_SPARK_Restriction_On_Attribute;
          Check_E0;
 
          if Nkind (P) = N_Character_Literal then
@@ -1289,15 +1289,15 @@ package body Sem_Attr is
          Check_E2;
       end Check_Floating_Point_Type_2;
 
-      -------------------------------------------
-      -- Check_Formal_Restriction_On_Attribute --
-      -------------------------------------------
+      ------------------------------------------
+      -- Check_SPARK_Restriction_On_Attribute --
+      ------------------------------------------
 
-      procedure Check_Formal_Restriction_On_Attribute is
+      procedure Check_SPARK_Restriction_On_Attribute is
       begin
          Error_Msg_Name_1 := Aname;
          Check_SPARK_Restriction ("attribute % is not allowed", P);
-      end Check_Formal_Restriction_On_Attribute;
+      end Check_SPARK_Restriction_On_Attribute;
 
       ------------------------
       -- Check_Integer_Type --
@@ -3266,7 +3266,7 @@ package body Sem_Attr is
 
       when Attribute_Image => Image :
       begin
-         Check_Formal_Restriction_On_Attribute;
+         Check_SPARK_Restriction_On_Attribute;
          Check_Scalar_Type;
          Set_Etype (N, Standard_String);
 
@@ -4825,7 +4825,7 @@ package body Sem_Attr is
 
       when Attribute_Value => Value :
       begin
-         Check_Formal_Restriction_On_Attribute;
+         Check_SPARK_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
 
@@ -4888,7 +4888,7 @@ package body Sem_Attr is
 
       when Attribute_Wide_Image => Wide_Image :
       begin
-         Check_Formal_Restriction_On_Attribute;
+         Check_SPARK_Restriction_On_Attribute;
          Check_Scalar_Type;
          Set_Etype (N, Standard_Wide_String);
          Check_E1;
@@ -4915,7 +4915,7 @@ package body Sem_Attr is
 
       when Attribute_Wide_Value => Wide_Value :
       begin
-         Check_Formal_Restriction_On_Attribute;
+         Check_SPARK_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
 
@@ -4956,7 +4956,7 @@ package body Sem_Attr is
       ----------------
 
       when Attribute_Wide_Width =>
-         Check_Formal_Restriction_On_Attribute;
+         Check_SPARK_Restriction_On_Attribute;
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);
@@ -4966,7 +4966,7 @@ package body Sem_Attr is
       -----------
 
       when Attribute_Width =>
-         Check_Formal_Restriction_On_Attribute;
+         Check_SPARK_Restriction_On_Attribute;
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);

@@ -5748,7 +5748,7 @@ package body Sem_Res is
 --        and then Is_Inherited_Operation_For_Type
 --                   (Entity (Name (N)), Etype (N))
 --      then
---         Check_Formal_Restriction ("function not inherited", N);
+--         Check_SPARK_Restriction ("function not inherited", N);
 --      end if;
 
       --  Implement rule in 12.5.1 (23.3/2): In an instance, if the actual is

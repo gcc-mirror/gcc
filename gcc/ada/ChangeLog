@@ -1,3 +1,26 @@
+2011-08-03  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (New_Overloaded_Entity): only issue error for SPARK
+	restriction on overloaded entity if the entity is not an operator.
+
+2011-08-03  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch7.adb, sem_res.adb, sem_attr.adb, restrict.adb,
+	restrict.ads: Rename remaining Check_Formal_Restriction* into
+	Check_SPARK_Restriction*.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb, prj-part.adb, prj.adb, prj.ads, prj-nmsc.adb,
+	prj-nmsc.ads, prj-err.adb (Project_Data): now discriminated on its
+	qualifier.
+	(Project_Empty): removed
+	(Empty_Project): new parameter Qualifier
+	This is used to have fields specific to aggregate projects, cleaner
+	New field to store the list of aggregated projects.
+	(Check_Aggregate_Project): removed
+	(Process_Aggregated_Projects, Free): new subprograms.
+
 2011-08-03  Olivier Hainque  <hainque@adacore.com>
 
 	* tracebak.c (STOP_FRAME ppc AIX): Stop at null return address as well.

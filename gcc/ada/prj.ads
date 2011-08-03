@@ -1086,13 +1086,34 @@ package Prj is
                                Lib_Maj_Min_Id_Supported      => False,
                                Auto_Init_Supported           => False);
 
+   -------------------------
+   -- Aggregated projects --
+   -------------------------
+
+   type Aggregated_Project;
+   type Aggregated_Project_List is access all Aggregated_Project;
+   type Aggregated_Project is record
+      Path    : Path_Name_Type;
+      Project : Project_Id;
+      Next    : Aggregated_Project_List;
+   end record;
+
+   procedure Free (List : in out Aggregated_Project_List);
+   --  Free the memory used for List
+
+   procedure Add_Aggregated_Project
+     (Project : Project_Id; Path : Path_Name_Type);
+   --  Add a new aggregated project in Project.
+   --  The aggregated project has not been processed yet. This procedure should
+   --  the called while processing the aggregate project, and as a result
+   --  Prj.Proc.Process will then automatically process the aggregated projects
+
+   ------------------
+   -- Project_Data --
+   ------------------
    --  The following record describes a project file representation
 
-   --  Note that it is not specified if the path names of directories (source,
-   --  object, library or exec directories) end with or without a directory
-   --  separator.
-
-   type Project_Data is record
+   type Project_Data (Qualifier : Project_Qualifier := Unspecified) is record
 
       -------------
       -- General --
@@ -1103,9 +1124,6 @@ package Prj is
 
       Display_Name : Name_Id := No_Name;
       --  The name of the project with the spelling of its declaration
-
-      Qualifier : Project_Qualifier := Unspecified;
-      --  The eventual qualifier for this project
 
       Externally_Built : Boolean := False;
       --  True if the project is externally built. In such case, the Project
@@ -1152,10 +1170,10 @@ package Prj is
       --  The declarations (variables, attributes and packages) of this project
       --  file.
 
-      Imported_Projects : Project_List;
+      Imported_Projects : Project_List := null;
       --  The list of all directly imported projects, if any
 
-      All_Imported_Projects : Project_List;
+      All_Imported_Projects : Project_List := null;
       --  The list of all projects imported directly or indirectly, if any.
       --  This does not include the project itself.
 
@@ -1295,9 +1313,21 @@ package Prj is
       --  True if there are comments in the project sources that cannot be kept
       --  in the project tree.
 
+      -----------------------------
+      -- qualifier-specific data --
+      -----------------------------
+      --  The following fields are only valid for specific types of projects.
+
+      case Qualifier is
+         when Aggregate =>
+            Aggregated_Projects : Aggregated_Project_List := null;
+
+         when others =>
+            null;
+      end case;
    end record;
 
-   function Empty_Project return Project_Data;
+   function Empty_Project (Qualifier : Project_Qualifier) return  Project_Data;
    --  Return the representation of an empty project
 
    function Is_Extending
@@ -1432,6 +1462,7 @@ package Prj is
    procedure For_Every_Project_Imported
      (By             : Project_Id;
       With_State     : in out State;
+      Include_Aggregated : Boolean := True;
       Imported_First : Boolean := False);
    --  Call Action for each project imported directly or indirectly by project
    --  By, as well as extended projects.
@@ -1448,6 +1479,10 @@ package Prj is
    --
    --  With_State may be used by Action to choose a behavior or to report some
    --  global result.
+   --
+   --  If Include_Aggregated is True, then an aggregate project will recurse
+   --  into the projects it aggregates. Otherwise, the latter are never
+   --  returned
 
    function Extend_Name
      (File        : File_Name_Type;
