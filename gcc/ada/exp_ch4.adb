@@ -427,9 +427,15 @@ package body Exp_Ch4 is
    --  Start of processing for Complete_Controlled_Allocation
 
    begin
+      --  Certain run-time configurations and targets do not provide support
+      --  for controlled types.
+
+      if Restriction_Active (No_Finalization) then
+         return;
+
       --  Do nothing if the access type may never allocate an object
 
-      if No_Pool_Assigned (Ptr_Typ) then
+      elsif No_Pool_Assigned (Ptr_Typ) then
          return;
 
       --  Access-to-controlled types are not supported on .NET/JVM

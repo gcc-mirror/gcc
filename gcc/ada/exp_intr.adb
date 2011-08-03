@@ -31,6 +31,7 @@ with Errout;   use Errout;
 with Exp_Atag; use Exp_Atag;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch7;  use Exp_Ch7;
+with Exp_Ch11; use Exp_Ch11;
 with Exp_Code; use Exp_Code;
 with Exp_Fixd; use Exp_Fixd;
 with Exp_Util; use Exp_Util;
@@ -883,7 +884,7 @@ package body Exp_Intr is
       Pool    : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
       Stmts   : constant List_Id    := New_List;
 
-      Blk          : Node_Id;
+      Blk          : Node_Id := Empty;
       Deref        : Node_Id;
       Exc_Occ_Decl : Node_Id;
       Exc_Occ_Id   : Entity_Id := Empty;
@@ -1279,6 +1280,14 @@ package body Exp_Intr is
 
       Rewrite (N, Gen_Code);
       Analyze (N);
+
+      --  If we generated a block with an At_End_Proc, expand the exception
+      --  handler. We need to wait until after everything else is analyzed.
+
+      if Present (Blk) then
+         Expand_At_End_Handler
+           (Handled_Statement_Sequence (Blk), Entity (Identifier (Blk)));
+      end if;
    end Expand_Unc_Deallocation;
 
    -----------------------

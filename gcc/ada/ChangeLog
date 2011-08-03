@@ -1,3 +1,22 @@
+2011-08-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch13.adb: Add with and use clauses for Restrict and Rident.
+	(Expand_N_Free_Statement): Add a guard to protect against run-times
+	which do not support controlled types.
+	* exp_ch3.adb (Expand_Freeze_Class_Wide_Type): Add a guard to protect
+	against run-times which do not support controlled types.
+	* exp_ch4.adb (Complete_Controlled_Allocation): Add a guard to protect
+	against run-times which do not support controlled types.
+	* exp_ch7.adb (Build_Finalization_Collection): Add a guard to protect
+	against run-times which do not support controlled types.
+	* exp_util.adb (Needs_Finalization): Code reformatting. Add a guard to
+	protect against run-times which do not support controlled types.
+
+2011-08-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_intr.adb: Put back with and use clauses for Exp_Ch11.
+	(Expand_Unc_Deallocation): Expand the AT_END handler at the very end.
+
 2011-08-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch5.adb (Expand_Iterator_Loop): indicate that the cursor is

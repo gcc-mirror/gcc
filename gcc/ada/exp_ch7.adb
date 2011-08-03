@@ -855,7 +855,16 @@ package body Exp_Ch7 is
    --  Start of processing for Build_Finalization_Collection
 
    begin
-      if Present (Associated_Collection (Typ)) then
+      --  Certain run-time configurations and targets do not provide support
+      --  for controlled types.
+
+      if Restriction_Active (No_Finalization) then
+         return;
+
+      --  Various machinery such as freezing may have already created a
+      --  collection.
+
+      elsif Present (Associated_Collection (Typ)) then
          return;
 
       --  Do not process types that return on the secondary stack
@@ -2077,6 +2086,7 @@ package body Exp_Ch7 is
          Is_Protected : Boolean := False)
       is
          Obj_Id    : constant Entity_Id := Defining_Identifier (Decl);
+         Loc       : constant Source_Ptr := Sloc (Decl);
          Body_Ins  : Node_Id;
          Count_Ins : Node_Id;
          Fin_Call  : Node_Id;
@@ -2926,11 +2936,13 @@ package body Exp_Ch7 is
          Raise_Id := RTE (RE_Reraise_Occurrence);
 
       --  Standard run-time library
+
       elsif RTE_Available (RE_Raise_From_Controlled_Operation) then
          Raise_Id := RTE (RE_Raise_From_Controlled_Operation);
 
       --  Restricted runtime: exception messages are not supported and hence
       --  Raise_From_Controlled_Operation is not supported.
+
       else
          Raise_Id := RTE (RE_Reraise_Occurrence);
       end if;
