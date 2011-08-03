@@ -7662,25 +7662,46 @@ package body Sem_Res is
       Is_Comp : Boolean)
    is
       Btyp : constant Entity_Id := Base_Type (Typ);
+      Ctyp : constant Entity_Id := Component_Type (Typ);
 
    begin
       if In_Instance then
          if Is_Comp
            or else (not Is_Overloaded (Arg)
                      and then Etype (Arg) /= Any_Composite
-                     and then Covers (Component_Type (Typ), Etype (Arg)))
+                     and then Covers (Ctyp, Etype (Arg)))
          then
-            Resolve (Arg, Component_Type (Typ));
+            Resolve (Arg, Ctyp);
          else
             Resolve (Arg, Btyp);
          end if;
 
-      elsif Has_Compatible_Type (Arg, Component_Type (Typ)) then
+      --  If both Array & Array and Array & Component are visible, there is a
+      --  potential ambiguity that must be reported.
+
+      elsif Has_Compatible_Type (Arg, Ctyp) then
          if Nkind (Arg) = N_Aggregate
-           and then Is_Composite_Type (Component_Type (Typ))
+           and then Is_Composite_Type (Ctyp)
          then
-            if Is_Private_Type (Component_Type (Typ)) then
+            if Is_Private_Type (Ctyp) then
                Resolve (Arg, Btyp);
+
+            --  If the operation is user-defined and not overloaded use its
+            --  profile. The operation may be a renaming, in which case it has
+            --  been rewritten, and we want the original profile.
+
+            elsif not Is_Overloaded (N)
+              and then Comes_From_Source (Entity (Original_Node (N)))
+              and then Ekind (Entity (Original_Node (N))) = E_Function
+            then
+               Resolve (Arg,
+                 Etype
+                   (Next_Formal (First_Formal (Entity (Original_Node (N))))));
+               return;
+
+            --  Otherwise an aggregate may match both the array type and the
+            --  component type.
+
             else
                Error_Msg_N ("ambiguous aggregate must be qualified", Arg);
                Set_Etype (Arg, Any_Type);
@@ -7715,16 +7736,15 @@ package body Sem_Res is
                          Arg, Component_Type (Typ));
 
                   else
-                     Error_Msg_N
-                       ("ambiguous operand for concatenation!", Arg);
+                     Error_Msg_N ("ambiguous operand for concatenation!", Arg);
 
                      Get_First_Interp (Arg, I, It);
                      while Present (It.Nam) loop
                         Error_Msg_Sloc := Sloc (It.Nam);
 
-                        if Base_Type (It.Typ) = Base_Type (Typ)
-                          or else Base_Type (It.Typ) =
-                                  Base_Type (Component_Type (Typ))
+                        if Base_Type (It.Typ) = Btyp
+                             or else
+                           Base_Type (It.Typ) = Base_Type (Ctyp)
                         then
                            Error_Msg_N -- CODEFIX
                              ("\\possible interpretation#", Arg);
