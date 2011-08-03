@@ -43,7 +43,7 @@ package Prj.Env is
    --  corresponding to a source.
 
    procedure Create_Temp_File
-     (In_Tree   : Project_Tree_Ref;
+     (Shared    : Shared_Project_Tree_Data_Access;
       Path_FD   : out File_Descriptor;
       Path_Name : out Path_Name_Type;
       File_Use  : String);
@@ -71,7 +71,7 @@ package Prj.Env is
    --  individual units.
 
    procedure Create_New_Path_File
-     (In_Tree   : Project_Tree_Ref;
+     (Shared    : Shared_Project_Tree_Data_Access;
       Path_FD   : out File_Descriptor;
       Path_Name : out Path_Name_Type);
    --  Create a new temporary path file, placing file name in Path_Name

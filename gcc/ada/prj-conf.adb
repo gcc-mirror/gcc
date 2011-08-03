@@ -987,7 +987,7 @@ package body Prj.Conf is
 
                   begin
                      Prj.Env.Create_Temp_File
-                       (In_Tree   => Project_Tree,
+                       (Shared    => Project_Tree.Shared,
                         Path_FD   => Path_FD,
                         Path_Name => Path_Name,
                         File_Use  => "configuration file");

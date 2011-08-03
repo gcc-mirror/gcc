@@ -6556,7 +6556,7 @@ package body Exp_Dist is
                Make_Aggregate (Loc,
                  Component_Associations => New_List (
                    Make_Component_Association (Loc,
-                     Choices => New_List (Make_Identifier (Loc, Name_Ras)),
+                     Choices    => New_List (Make_Identifier (Loc, Name_Ras)),
                      Expression =>
                        PolyORB_Support.Helpers.Build_From_Any_Call (
                          Underlying_RACW_Type (RAS_Type),
@@ -9054,8 +9054,8 @@ package body Exp_Dist is
                      if Nkind (Datum) /= N_Attribute_Reference then
 
                         --  We ignore the value of the length of each
-                        --  dimension, since the target array has already
-                        --  been constrained anyway.
+                        --  dimension, since the target array has already been
+                        --  constrained anyway.
 
                         if Etype (Datum) /= RTE (RE_Any) then
                            Set_Expression (Assignment,

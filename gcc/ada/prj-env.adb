@@ -901,7 +901,7 @@ package body Prj.Env is
    --  Start of processing for Create_Mapping_File
 
    begin
-      Create_Temp_File (In_Tree, File, Name, "mapping");
+      Create_Temp_File (In_Tree.Shared, File, Name, "mapping");
 
       if Current_Verbosity = High then
          Debug_Increase_Indent ("Create mapping file ", Name_Id (Name));
@@ -937,7 +937,7 @@ package body Prj.Env is
    ----------------------
 
    procedure Create_Temp_File
-     (In_Tree   : Project_Tree_Ref;
+     (Shared    : Shared_Project_Tree_Data_Access;
       Path_FD   : out File_Descriptor;
       Path_Name : out Path_Name_Type;
       File_Use  : String)
@@ -951,7 +951,7 @@ package body Prj.Env is
                         & Get_Name_String (Path_Name));
          end if;
 
-         Record_Temp_File (In_Tree, Path_Name);
+         Record_Temp_File (Shared, Path_Name);
 
       else
          Prj.Com.Fail
@@ -964,12 +964,12 @@ package body Prj.Env is
    --------------------------
 
    procedure Create_New_Path_File
-     (In_Tree   : Project_Tree_Ref;
+     (Shared    : Shared_Project_Tree_Data_Access;
       Path_FD   : out File_Descriptor;
       Path_Name : out Path_Name_Type)
    is
    begin
-      Create_Temp_File (In_Tree, Path_FD, Path_Name, "path file");
+      Create_Temp_File (Shared, Path_FD, Path_Name, "path file");
    end Create_New_Path_File;
 
    ------------------------------------
@@ -1392,8 +1392,8 @@ package body Prj.Env is
 
    procedure Initialize (In_Tree : Project_Tree_Ref) is
    begin
-      In_Tree.Private_Part.Current_Source_Path_File := No_Path;
-      In_Tree.Private_Part.Current_Object_Path_File := No_Path;
+      In_Tree.Shared.Private_Part.Current_Source_Path_File := No_Path;
+      In_Tree.Shared.Private_Part.Current_Object_Path_File := No_Path;
    end Initialize;
 
    -------------------
@@ -1573,6 +1573,8 @@ package body Prj.Env is
       Objects_Path        : Boolean := True)
 
    is
+      Shared : constant Shared_Project_Tree_Data_Access := In_Tree.Shared;
+
       Source_Paths : Source_Path_Table.Instance;
       Object_Paths : Object_Path_Table.Instance;
       --  List of source or object dirs. Only computed the first time this
@@ -1609,7 +1611,7 @@ package body Prj.Env is
          In_Tree : Project_Tree_Ref;
          Dummy   : in out Boolean)
       is
-         pragma Unreferenced (Dummy);
+         pragma Unreferenced (Dummy, In_Tree);
 
          Path : Path_Name_Type;
 
@@ -1622,8 +1624,7 @@ package body Prj.Env is
             --  Ada sources.
 
             if Has_Ada_Sources (Project) then
-               Add_To_Source_Path
-                 (Project.Source_Dirs, In_Tree.Shared, Source_Paths);
+               Add_To_Source_Path (Project.Source_Dirs, Shared, Source_Paths);
             end if;
          end if;
 
@@ -1653,8 +1654,7 @@ package body Prj.Env is
       if Include_Path and then Project.Include_Path_File = No_Path then
          Source_Path_Table.Init (Source_Paths);
          Process_Source_Dirs := True;
-         Create_New_Path_File
-           (In_Tree, Source_FD, Project.Include_Path_File);
+         Create_New_Path_File (Shared, Source_FD, Project.Include_Path_File);
       end if;
 
       --  For the object path, we make a distinction depending on
@@ -1665,7 +1665,7 @@ package body Prj.Env is
             Object_Path_Table.Init (Object_Paths);
             Process_Object_Dirs := True;
             Create_New_Path_File
-              (In_Tree, Object_FD, Project.Objects_Path_File_With_Libs);
+              (Shared, Object_FD, Project.Objects_Path_File_With_Libs);
          end if;
 
       elsif Objects_Path then
@@ -1673,7 +1673,7 @@ package body Prj.Env is
             Object_Path_Table.Init (Object_Paths);
             Process_Object_Dirs := True;
             Create_New_Path_File
-              (In_Tree, Object_FD, Project.Objects_Path_File_Without_Libs);
+              (Shared, Object_FD, Project.Objects_Path_File_Without_Libs);
          end if;
       end if;
 
@@ -1743,39 +1743,39 @@ package body Prj.Env is
       --  corresponding flags.
 
       if Include_Path and then
-         In_Tree.Private_Part.Current_Source_Path_File /=
-           Project.Include_Path_File
+        Shared.Private_Part.Current_Source_Path_File /=
+          Project.Include_Path_File
       then
-         In_Tree.Private_Part.Current_Source_Path_File :=
+         Shared.Private_Part.Current_Source_Path_File :=
            Project.Include_Path_File;
          Set_Path_File_Var
            (Project_Include_Path_File,
-            Get_Name_String (In_Tree.Private_Part.Current_Source_Path_File));
+            Get_Name_String (Shared.Private_Part.Current_Source_Path_File));
       end if;
 
       if Objects_Path then
          if Including_Libraries then
-            if In_Tree.Private_Part.Current_Object_Path_File /=
+            if Shared.Private_Part.Current_Object_Path_File /=
               Project.Objects_Path_File_With_Libs
             then
-               In_Tree.Private_Part.Current_Object_Path_File :=
+               Shared.Private_Part.Current_Object_Path_File :=
                  Project.Objects_Path_File_With_Libs;
                Set_Path_File_Var
                  (Project_Objects_Path_File,
                   Get_Name_String
-                    (In_Tree.Private_Part.Current_Object_Path_File));
+                    (Shared.Private_Part.Current_Object_Path_File));
             end if;
 
          else
-            if In_Tree.Private_Part.Current_Object_Path_File /=
+            if Shared.Private_Part.Current_Object_Path_File /=
               Project.Objects_Path_File_Without_Libs
             then
-               In_Tree.Private_Part.Current_Object_Path_File :=
+               Shared.Private_Part.Current_Object_Path_File :=
                  Project.Objects_Path_File_Without_Libs;
                Set_Path_File_Var
                  (Project_Objects_Path_File,
                   Get_Name_String
-                    (In_Tree.Private_Part.Current_Object_Path_File));
+                    (Shared.Private_Part.Current_Object_Path_File));
             end if;
          end if;
       end if;

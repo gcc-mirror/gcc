@@ -1409,6 +1409,8 @@ package Prj is
       Array_Elements    : Array_Element_Table.Instance;
       Arrays            : Array_Table.Instance;
       Packages          : Package_Table.Instance;
+
+      Private_Part      : Private_Project_Tree_Data;
    end record;
    type Shared_Project_Tree_Data_Access is access all Shared_Project_Tree_Data;
    --  The data that is shared among multiple trees, when these trees are
@@ -1450,8 +1452,6 @@ package Prj is
 
       Source_Info_File_Exists : Boolean := False;
       --  True when a source info file has been successfully read
-
-      Private_Part : Private_Project_Tree_Data;
 
       Shared : Shared_Project_Tree_Data_Access;
       --  The shared data for this tree and all aggregated trees.
@@ -1638,18 +1638,19 @@ package Prj is
    ----------------
 
    procedure Record_Temp_File
-     (Tree : Project_Tree_Ref;
-      Path : Path_Name_Type);
+     (Shared : Shared_Project_Tree_Data_Access;
+      Path   : Path_Name_Type);
    --  Record the path of a newly created temporary file, so that it can be
    --  deleted later.
 
-   procedure Delete_All_Temp_Files (Tree : Project_Tree_Ref);
+   procedure Delete_All_Temp_Files
+     (Shared : Shared_Project_Tree_Data_Access);
    --  Delete all recorded temporary files.
    --  Does nothing if Debug.Debug_Flag_N is set
 
    procedure Delete_Temporary_File
-     (Tree : Project_Tree_Ref;
-      Path : Path_Name_Type);
+     (Shared : Shared_Project_Tree_Data_Access := null;
+      Path   : Path_Name_Type);
    --  Delete a temporary file from the disk. The file is also removed from the
    --  list of temporary files to delete at the end of the program, in case
    --  another program running on the same machine has recreated it.

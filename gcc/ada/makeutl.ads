@@ -23,27 +23,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with ALI;
-with Namet; use Namet;
-with Opt;
-with Osint;
-with Prj;   use Prj;
-with Prj.Tree;
-with Types; use Types;
+--  This package contains various subprograms used by the builders, in
+--  particular those subprograms related to project management and build
+--  queue management.
 
+with ALI;
 with GNAT.OS_Lib; use GNAT.OS_Lib;
+with Namet;       use Namet;
+with Opt;
+with Prj;         use Prj;
+with Prj.Tree;
+with Types;       use Types;
 
 package Makeutl is
 
    type Fail_Proc is access procedure (S : String);
-
-   Do_Fail : Fail_Proc := Osint.Fail'Access;
-   --  Failing procedure called from procedure Test_If_Relative_Path below. May
-   --  be redirected.
-
-   Project_Tree : constant Project_Tree_Ref :=
-                    new Project_Tree_Data (Is_Root_Tree => True);
-   --  The project tree
 
    Source_Info_Option : constant String := "--source-info=";
    --  Switch to indicate the source info file
@@ -75,7 +69,8 @@ package Makeutl is
       Last   : in out Natural);
    --  Add a string to a list of strings
 
-   function Create_Binder_Mapping_File return Path_Name_Type;
+   function Create_Binder_Mapping_File
+     (Project_Tree : Project_Tree_Ref) return Path_Name_Type;
    --  Create a binder mapping file and returns its path name
 
    function Create_Name (Name : String) return File_Name_Type;
@@ -101,15 +96,16 @@ package Makeutl is
    --  Prints out the program name followed by a colon, N and S
 
    function File_Not_A_Source_Of
-     (Uname : Name_Id;
-      Sfile : File_Name_Type) return Boolean;
+     (Project_Tree : Project_Tree_Ref;
+      Uname        : Name_Id;
+      Sfile        : File_Name_Type) return Boolean;
    --  Check that file name Sfile is one of the source of unit Uname. Returns
    --  True if the unit is in one of the project file, but the file name is not
    --  one of its source. Returns False otherwise.
 
    function Check_Source_Info_In_ALI
-     (The_ALI : ALI.ALI_Id;
-      Tree    : Project_Tree_Ref) return Boolean;
+     (The_ALI      : ALI.ALI_Id;
+      Tree         : Project_Tree_Ref) return Boolean;
    --  Check whether all file references in ALI are still valid (i.e. the
    --  source files are still associated with the same units). Return True
    --  if everything is still valid.
@@ -179,6 +175,7 @@ package Makeutl is
 
    function Linker_Options_Switches
      (Project  : Project_Id;
+      Do_Fail  : Fail_Proc;
       In_Tree  : Project_Tree_Ref) return String_List;
    --  Collect the options specified in the Linker'Linker_Options attributes
    --  of project Project, in project tree In_Tree, and in the projects that
@@ -191,6 +188,7 @@ package Makeutl is
    procedure Test_If_Relative_Path
      (Switch               : in out String_Access;
       Parent               : String;
+      Do_Fail              : Fail_Proc;
       Including_L_Switch   : Boolean := True;
       Including_Non_Switch : Boolean := True;
       Including_RTS        : Boolean := False);
@@ -200,6 +198,8 @@ package Makeutl is
    --  switches, Including_L_Switch is False, because the argument of the -L
    --  switch is not a path. If Including_RTS is True, process also switches
    --  --RTS=.
+   --  Do_Fail is called in case of error. Using Osing.Fail might be
+   --  appropriate.
 
    function Path_Or_File_Name (Path : Path_Name_Type) return String;
    --  Returns a file name if -df is used, otherwise return a path name

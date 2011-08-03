@@ -1,3 +1,18 @@
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb: Minor reformatting.
+
+2011-08-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taprop-irix.adb, s-taprop-hpux-dce.adb, s-taprop-vms.adb
+	(ATCB_Key): Removed, not always used.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* gnatcmd.adb, make.adb, prj.adb, prj.ads, makeutl.adb, makeutl.ads,
+	clean.adb, prj-conf.adb, prj-env.adb, prj-env.ads (Makeutl): remove
+	most remaining global variables.
+
 2011-08-03  Robert Dewar  <dewar@adacore.com>
 
 	* gnatcmd.adb, prj-proc.adb, mlib-prj.adb, prj.adb, makeutl.ads,

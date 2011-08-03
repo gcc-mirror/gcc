@@ -204,8 +204,8 @@ package body Makeutl is
    ------------------------------
 
    function Check_Source_Info_In_ALI
-     (The_ALI : ALI_Id;
-      Tree    : Project_Tree_Ref) return Boolean
+     (The_ALI      : ALI_Id;
+      Tree         : Project_Tree_Ref) return Boolean
    is
       Unit_Name : Name_Id;
 
@@ -221,7 +221,7 @@ package body Makeutl is
          Name_Len  := Name_Len - 2;
          Unit_Name := Name_Find;
 
-         if File_Not_A_Source_Of (Unit_Name, Units.Table (U).Sfile) then
+         if File_Not_A_Source_Of (Tree, Unit_Name, Units.Table (U).Sfile) then
             return False;
          end if;
 
@@ -237,7 +237,7 @@ package body Makeutl is
                   Name_Len  := Name_Len - 2;
                   Unit_Name := Name_Find;
 
-                  if File_Not_A_Source_Of (Unit_Name, WR.Sfile) then
+                  if File_Not_A_Source_Of (Tree, Unit_Name, WR.Sfile) then
                      return False;
                   end if;
                end if;
@@ -289,7 +289,7 @@ package body Makeutl is
                --  (and then will be for the same unit).
 
                if Find_Source
-                    (In_Tree   => Project_Tree,
+                    (In_Tree   => Tree,
                      Project   => No_Project,
                      Base_Name => SD.Sfile) = No_Source
                then
@@ -326,7 +326,9 @@ package body Makeutl is
    -- Create_Binder_Mapping_File --
    --------------------------------
 
-   function Create_Binder_Mapping_File return Path_Name_Type is
+   function Create_Binder_Mapping_File
+     (Project_Tree : Project_Tree_Ref) return Path_Name_Type
+   is
       Mapping_Path : Path_Name_Type := No_Path;
 
       Mapping_FD : File_Descriptor := Invalid_FD;
@@ -350,7 +352,7 @@ package body Makeutl is
 
    begin
       Tempdir.Create_Temp_File (Mapping_FD, Mapping_Path);
-      Record_Temp_File (Project_Tree, Mapping_Path);
+      Record_Temp_File (Project_Tree.Shared, Mapping_Path);
 
       if Mapping_FD /= Invalid_FD then
          OK := True;
@@ -616,8 +618,9 @@ package body Makeutl is
    --------------------------
 
    function File_Not_A_Source_Of
-     (Uname : Name_Id;
-      Sfile : File_Name_Type) return Boolean
+     (Project_Tree : Project_Tree_Ref;
+      Uname        : Name_Id;
+      Sfile        : File_Name_Type) return Boolean
    is
       Unit : constant Unit_Index :=
                Units_Htable.Get (Project_Tree.Units_HT, Uname);
@@ -908,6 +911,7 @@ package body Makeutl is
 
    function Linker_Options_Switches
      (Project  : Project_Id;
+      Do_Fail  : Fail_Proc;
       In_Tree  : Project_Tree_Ref) return String_List
    is
       procedure Recursive_Add
@@ -995,6 +999,7 @@ package body Makeutl is
                   Test_If_Relative_Path
                     (Switch => Linker_Options_Buffer (Last_Linker_Option),
                      Parent => Dir_Path,
+                     Do_Fail => Do_Fail,
                      Including_L_Switch => True);
                end if;
 
@@ -1176,6 +1181,7 @@ package body Makeutl is
    procedure Test_If_Relative_Path
      (Switch               : in out String_Access;
       Parent               : String;
+      Do_Fail              : Fail_Proc;
       Including_L_Switch   : Boolean := True;
       Including_Non_Switch : Boolean := True;
       Including_RTS        : Boolean := False)

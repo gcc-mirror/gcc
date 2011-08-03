@@ -118,8 +118,8 @@ package body Prj is
    ---------------------------
 
    procedure Delete_Temporary_File
-     (Tree : Project_Tree_Ref;
-      Path : Path_Name_Type)
+     (Shared : Shared_Project_Tree_Data_Access := null;
+      Path   : Path_Name_Type)
    is
       Dont_Care : Boolean;
       pragma Warnings (Off, Dont_Care);
@@ -132,13 +132,15 @@ package body Prj is
 
          Delete_File (Get_Name_String (Path), Dont_Care);
 
-         for Index in
-           1 .. Temp_Files_Table.Last (Tree.Private_Part.Temp_Files)
-         loop
-            if Tree.Private_Part.Temp_Files.Table (Index) = Path then
-               Tree.Private_Part.Temp_Files.Table (Index) := No_Path;
-            end if;
-         end loop;
+         if Shared /= null then
+            for Index in
+              1 .. Temp_Files_Table.Last (Shared.Private_Part.Temp_Files)
+            loop
+               if Shared.Private_Part.Temp_Files.Table (Index) = Path then
+                  Shared.Private_Part.Temp_Files.Table (Index) := No_Path;
+               end if;
+            end loop;
+         end if;
       end if;
    end Delete_Temporary_File;
 
@@ -146,7 +148,9 @@ package body Prj is
    -- Delete_All_Temp_Files --
    ---------------------------
 
-   procedure Delete_All_Temp_Files (Tree : Project_Tree_Ref) is
+   procedure Delete_All_Temp_Files
+     (Shared : Shared_Project_Tree_Data_Access)
+   is
       Dont_Care : Boolean;
       pragma Warnings (Off, Dont_Care);
 
@@ -155,9 +159,9 @@ package body Prj is
    begin
       if not Debug.Debug_Flag_N then
          for Index in
-           1 .. Temp_Files_Table.Last (Tree.Private_Part.Temp_Files)
+           1 .. Temp_Files_Table.Last (Shared.Private_Part.Temp_Files)
          loop
-            Path := Tree.Private_Part.Temp_Files.Table (Index);
+            Path := Shared.Private_Part.Temp_Files.Table (Index);
 
             if Path /= No_Path then
                if Current_Verbosity = High then
@@ -169,8 +173,8 @@ package body Prj is
             end if;
          end loop;
 
-         Temp_Files_Table.Free (Tree.Private_Part.Temp_Files);
-         Temp_Files_Table.Init (Tree.Private_Part.Temp_Files);
+         Temp_Files_Table.Free (Shared.Private_Part.Temp_Files);
+         Temp_Files_Table.Init (Shared.Private_Part.Temp_Files);
       end if;
 
       --  If any of the environment variables ADA_PRJ_INCLUDE_FILE or
@@ -178,11 +182,11 @@ package body Prj is
       --  the empty string. On VMS, this has the effect of deassigning
       --  the logical names.
 
-      if Tree.Private_Part.Current_Source_Path_File /= No_Path then
+      if Shared.Private_Part.Current_Source_Path_File /= No_Path then
          Setenv (Project_Include_Path_File, "");
       end if;
 
-      if Tree.Private_Part.Current_Object_Path_File /= No_Path then
+      if Shared.Private_Part.Current_Object_Path_File /= No_Path then
          Setenv (Project_Objects_Path_File, "");
       end if;
    end Delete_All_Temp_Files;
@@ -712,11 +716,11 @@ package body Prj is
    ----------------------
 
    procedure Record_Temp_File
-     (Tree : Project_Tree_Ref;
-      Path : Path_Name_Type)
+     (Shared : Shared_Project_Tree_Data_Access;
+      Path   : Path_Name_Type)
    is
    begin
-      Temp_Files_Table.Append (Tree.Private_Part.Temp_Files, Path);
+      Temp_Files_Table.Append (Shared.Private_Part.Temp_Files, Path);
    end Record_Temp_File;
 
    ----------
@@ -914,6 +918,8 @@ package body Prj is
             Array_Element_Table.Free (Tree.Shared.Array_Elements);
             Array_Table.Free (Tree.Shared.Arrays);
             Package_Table.Free (Tree.Shared.Packages);
+
+            Temp_Files_Table.Free (Tree.Shared.Private_Part.Temp_Files);
          end if;
 
          Source_Paths_Htable.Reset (Tree.Source_Paths_HT);
@@ -921,10 +927,6 @@ package body Prj is
 
          Free_List (Tree.Projects, Free_Project => True);
          Free_Units (Tree.Units_HT);
-
-         --  Private part
-
-         Temp_Files_Table.Free  (Tree.Private_Part.Temp_Files);
 
          Unchecked_Free (Tree);
       end if;
@@ -953,6 +955,13 @@ package body Prj is
          Array_Element_Table.Init    (Tree.Shared.Array_Elements);
          Array_Table.Init            (Tree.Shared.Arrays);
          Package_Table.Init          (Tree.Shared.Packages);
+
+         --  Private part table
+
+         Temp_Files_Table.Init (Tree.Shared.Private_Part.Temp_Files);
+
+         Tree.Shared.Private_Part.Current_Source_Path_File := No_Path;
+         Tree.Shared.Private_Part.Current_Object_Path_File := No_Path;
       end if;
 
       Source_Paths_Htable.Reset    (Tree.Source_Paths_HT);
@@ -963,13 +972,6 @@ package body Prj is
 
       Free_List (Tree.Projects, Free_Project => True);
       Free_Units (Tree.Units_HT);
-
-      --  Private part table
-
-      Temp_Files_Table.Init (Tree.Private_Part.Temp_Files);
-
-      Tree.Private_Part.Current_Source_Path_File := No_Path;
-      Tree.Private_Part.Current_Object_Path_File := No_Path;
    end Reset;
 
    -------------------
