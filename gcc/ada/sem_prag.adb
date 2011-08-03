@@ -4729,7 +4729,6 @@ package body Sem_Prag is
          if Is_Generic_Instance (Subprogram_Def) then
             Set_Encoded_Interface_Name
               (Alias (Get_Base_Subprogram (Subprogram_Def)), Link_Nam);
-
          else
             Set_Encoded_Interface_Name
               (Get_Base_Subprogram (Subprogram_Def), Link_Nam);

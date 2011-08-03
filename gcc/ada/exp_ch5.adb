@@ -1934,13 +1934,13 @@ package body Exp_Ch5 is
 
                --  If the type is tagged, we may as well use the predefined
                --  primitive assignment. This avoids inlining a lot of code
-               --  and in the class-wide case, the assignment is replaced by a
-               --  dispatching call to _assign. It is suppressed in the case of
-               --  assignments created by the expander that correspond to
-               --  initializations, where we do want to copy the tag
-               --  (Expand_Ctrl_Actions flag is set True in this case).
-               --  It is also suppressed if restriction No_Dispatching_Calls is
-               --  in force because in that case predefined primitives are not
+               --  and in the class-wide case, the assignment is replaced
+               --  by a dispatching call to _assign. It is suppressed in the
+               --  case of assignments created by the expander that correspond
+               --  to initializations, where we do want to copy the tag
+               --  (Expand_Ctrl_Actions flag is set True in this case). It is
+               --  also suppressed if restriction No_Dispatching_Calls is in
+               --  force because in that case predefined primitives are not
                --  generated.
 
                or else (Is_Tagged_Type (Typ)

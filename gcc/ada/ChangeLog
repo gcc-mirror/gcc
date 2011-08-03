@@ -1,5 +1,19 @@
 2011-08-03  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch5.adb, sem_prag.adb, exp_ch4.adb: Minor reformatting.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Itype_Reference): do not create an itype reference
+	for an itype created within a generic unit.
+
+2011-08-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi (Switches for gcc): Make it clearer that -fno-inline
+	suppresses all inlining.
+
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, sem_res.adb, exp_ch13.adb, exp_disp.adb,
 	exp_aggr.adb: Minor reformatting.
 

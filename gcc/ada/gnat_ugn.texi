@@ -3961,10 +3961,9 @@ and @command{gcc} cannot be used to run the GNAT binder.
 
 @item -fno-inline
 @cindex @option{-fno-inline} (@command{gcc})
-Suppresses all back-end inlining, even if other optimization or inlining
-switches are set.
-This includes suppression of inlining that results
-from the use of the pragma @code{Inline_Always}.
+Suppresses all inlining, even if other optimization or inlining
+switches are set.  This includes suppression of inlining that
+results from the use of the pragma @code{Inline_Always}.
 Any occurrences of pragma @code{Inline} or @code{Inline_Always}
 are ignored, and @option{-gnatn} and @option{-gnatN} have no
 effect if this switch is present.
