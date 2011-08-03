@@ -458,41 +458,19 @@ package body Prj.Proc is
    -------------------------
 
    function Get_Attribute_Index
-     (Tree  : Project_Node_Tree_Ref;
-      Attr  : Project_Node_Id;
-      Index : Name_Id) return Name_Id
-   is
-      Lower : Boolean;
-
+     (Tree   : Project_Node_Tree_Ref;
+      Attr   : Project_Node_Id;
+      Index  : Name_Id) return Name_Id is
    begin
-      if Index = All_Other_Names then
+      if Index = All_Other_Names
+        or else not Case_Insensitive (Attr, Tree)
+      then
          return Index;
       end if;
 
       Get_Name_String (Index);
-      Lower := Case_Insensitive (Attr, Tree);
-
-      --  The index is always case insensitive if it does not include any dot.
-      --  ??? Why not use the properties from prj-attr, simply, maybe because
-      --  we don't know whether we have a file as an index?
-
-      if not Lower then
-         Lower := True;
-
-         for J in 1 .. Name_Len loop
-            if Name_Buffer (J) = '.' then
-               Lower := False;
-               exit;
-            end if;
-         end loop;
-      end if;
-
-      if Lower then
-         To_Lower (Name_Buffer (1 .. Name_Len));
-         return Name_Find;
-      else
-         return Index;
-      end if;
+      To_Lower (Name_Buffer (1 .. Name_Len));
+      return Name_Find;
    end Get_Attribute_Index;
 
    ----------------
@@ -1440,7 +1418,7 @@ package body Prj.Proc is
       procedure Process_Expression
         (Current : Project_Node_Id);
       procedure Process_Expression_For_Associative_Array
-        (Current_Item : Project_Node_Id;
+        (Current : Project_Node_Id;
          New_Value    : Variable_Value);
       procedure Process_Expression_Variable_Decl
         (Current_Item : Project_Node_Id;
@@ -1869,29 +1847,25 @@ package body Prj.Proc is
       ----------------------------------------------
 
       procedure Process_Expression_For_Associative_Array
-        (Current_Item : Project_Node_Id;
-         New_Value    : Variable_Value)
+        (Current   : Project_Node_Id;
+         New_Value : Variable_Value)
       is
-         Current_Item_Name : constant Name_Id :=
-           Name_Of (Current_Item, Node_Tree);
+         Name : constant Name_Id := Name_Of (Current, Node_Tree);
          Current_Location : constant Source_Ptr :=
-           Location_Of (Current_Item, Node_Tree);
+           Location_Of (Current, Node_Tree);
 
          Index_Name : Name_Id :=
-           Associative_Array_Index_Of (Current_Item, Node_Tree);
+           Associative_Array_Index_Of (Current, Node_Tree);
 
          Source_Index : constant Int :=
-           Source_Index_Of (Current_Item, Node_Tree);
+           Source_Index_Of (Current, Node_Tree);
 
-         The_Array         : Array_Id;
-         The_Array_Element : Array_Element_Id := No_Array_Element;
+         The_Array : Array_Id;
+         Elem      : Array_Element_Id := No_Array_Element;
 
       begin
          if Index_Name /= All_Other_Names then
-            Index_Name := Get_Attribute_Index
-              (Node_Tree,
-               Current_Item,
-               Associative_Array_Index_Of (Current_Item, Node_Tree));
+            Index_Name := Get_Attribute_Index (Node_Tree, Current, Index_Name);
          end if;
 
          --  Look for the array in the appropriate list
@@ -1903,7 +1877,7 @@ package body Prj.Proc is
          end if;
 
          while The_Array /= No_Array
-           and then In_Tree.Arrays.Table (The_Array).Name /= Current_Item_Name
+           and then In_Tree.Arrays.Table (The_Array).Name /= Name
          loop
             The_Array := In_Tree.Arrays.Table (The_Array).Next;
          end loop;
@@ -1919,7 +1893,7 @@ package body Prj.Proc is
 
             if Pkg /= No_Package then
                In_Tree.Arrays.Table (The_Array) :=
-                 (Name     => Current_Item_Name,
+                 (Name     => Name,
                   Location => Current_Location,
                   Value    => No_Array_Element,
                   Next     => In_Tree.Packages.Table (Pkg).Decl.Arrays);
@@ -1928,7 +1902,7 @@ package body Prj.Proc is
 
             else
                In_Tree.Arrays.Table (The_Array) :=
-                 (Name     => Current_Item_Name,
+                 (Name     => Name,
                   Location => Current_Location,
                   Value    => No_Array_Element,
                   Next     => Project.Decl.Arrays);
@@ -1936,54 +1910,52 @@ package body Prj.Proc is
                Project.Decl.Arrays := The_Array;
             end if;
 
-            --  Otherwise initialize The_Array_Element as the
-            --  head of the element list.
-
          else
-            The_Array_Element := In_Tree.Arrays.Table (The_Array).Value;
+            Elem := In_Tree.Arrays.Table (The_Array).Value;
          end if;
 
          --  Look in the list, if any, to find an element
          --  with the same index and same source index.
 
-         while The_Array_Element /= No_Array_Element
+         while Elem /= No_Array_Element
            and then
-             (In_Tree.Array_Elements.Table (The_Array_Element).Index /=
-                Index_Name
+             (In_Tree.Array_Elements.Table (Elem).Index /= Index_Name
               or else
-                In_Tree.Array_Elements.Table (The_Array_Element).Src_Index /=
-                Source_Index)
+                In_Tree.Array_Elements.Table (Elem).Src_Index /= Source_Index)
          loop
-            The_Array_Element :=
-              In_Tree.Array_Elements.Table (The_Array_Element).Next;
+            Elem := In_Tree.Array_Elements.Table (Elem).Next;
          end loop;
 
          --  If no such element were found, create a new one
          --  and insert it in the element list, with the
          --  proper value.
 
-         if The_Array_Element = No_Array_Element then
+         if Elem = No_Array_Element then
             Array_Element_Table.Increment_Last (In_Tree.Array_Elements);
-            The_Array_Element :=
-              Array_Element_Table.Last (In_Tree.Array_Elements);
+            Elem := Array_Element_Table.Last (In_Tree.Array_Elements);
 
             In_Tree.Array_Elements.Table
-              (The_Array_Element) :=
+              (Elem) :=
               (Index                => Index_Name,
                Src_Index            => Source_Index,
                Index_Case_Sensitive =>
-                  not Case_Insensitive (Current_Item, Node_Tree),
+                  not Case_Insensitive (Current, Node_Tree),
                Value                => New_Value,
                Next                 => In_Tree.Arrays.Table (The_Array).Value);
 
-            In_Tree.Arrays.Table (The_Array).Value := The_Array_Element;
+            In_Tree.Arrays.Table (The_Array).Value := Elem;
 
+         else
             --  An element with the same index already exists,
             --  just replace its value with the new one.
 
-         else
-            In_Tree.Array_Elements.Table (The_Array_Element).Value :=
-              New_Value;
+            In_Tree.Array_Elements.Table (Elem).Value := New_Value;
+         end if;
+
+         if Name = Snames.Name_External then
+            Debug_Output
+              ("Defined external value ("
+               & Get_Name_String (Index_Name) & ")", New_Value.Value);
          end if;
       end Process_Expression_For_Associative_Array;
 
@@ -1995,80 +1967,74 @@ package body Prj.Proc is
         (Current_Item : Project_Node_Id;
          New_Value    : Variable_Value)
       is
-         Current_Item_Name : constant Name_Id :=
-           Name_Of (Current_Item, Node_Tree);
-         The_Variable : Variable_Id := No_Variable;
+         Name : constant Name_Id := Name_Of (Current_Item, Node_Tree);
+         Var : Variable_Id := No_Variable;
+         Is_Attribute : constant Boolean :=
+           Kind_Of (Current_Item, Node_Tree) = N_Attribute_Declaration;
 
       begin
          --  First, find the list where to find the variable or attribute.
 
-         if Kind_Of (Current_Item, Node_Tree) =
-           N_Attribute_Declaration
-         then
+         if Is_Attribute then
             if Pkg /= No_Package then
-               The_Variable := In_Tree.Packages.Table (Pkg).Decl.Attributes;
+               Var := In_Tree.Packages.Table (Pkg).Decl.Attributes;
             else
-               The_Variable := Project.Decl.Attributes;
+               Var := Project.Decl.Attributes;
             end if;
 
          else
             if Pkg /= No_Package then
-               The_Variable := In_Tree.Packages.Table (Pkg).Decl.Variables;
+               Var := In_Tree.Packages.Table (Pkg).Decl.Variables;
             else
-               The_Variable := Project.Decl.Variables;
+               Var := Project.Decl.Variables;
             end if;
          end if;
 
          --  Loop through the list, to find if it has already been declared.
 
-         while The_Variable /= No_Variable
-           and then In_Tree.Variable_Elements.Table (The_Variable).Name /=
-              Current_Item_Name
+         while Var /= No_Variable
+           and then In_Tree.Variable_Elements.Table (Var).Name /= Name
          loop
-            The_Variable :=
-              In_Tree.Variable_Elements.Table (The_Variable).Next;
+            Var := In_Tree.Variable_Elements.Table (Var).Next;
          end loop;
 
          --  If it has not been declared, create a new entry
          --  in the list.
 
-         if The_Variable = No_Variable then
+         if Var = No_Variable then
 
             --  All single string attribute should already have
             --  been declared with a default empty string value.
 
             pragma Assert
-              (Kind_Of (Current_Item, Node_Tree) /=
-                 N_Attribute_Declaration,
-               "illegal attribute declaration for "
-               & Get_Name_String (Current_Item_Name));
+              (not Is_Attribute,
+               "illegal attribute declaration for " & Get_Name_String (Name));
 
             Variable_Element_Table.Increment_Last (In_Tree.Variable_Elements);
-            The_Variable := Variable_Element_Table.Last
-              (In_Tree.Variable_Elements);
+            Var := Variable_Element_Table.Last (In_Tree.Variable_Elements);
 
             --  Put the new variable in the appropriate list
 
             if Pkg /= No_Package then
-               In_Tree.Variable_Elements.Table (The_Variable) :=
+               In_Tree.Variable_Elements.Table (Var) :=
                  (Next   => In_Tree.Packages.Table (Pkg).Decl.Variables,
-                  Name   => Current_Item_Name,
+                  Name   => Name,
                   Value  => New_Value);
-               In_Tree.Packages.Table (Pkg).Decl.Variables := The_Variable;
+               In_Tree.Packages.Table (Pkg).Decl.Variables := Var;
 
             else
-               In_Tree.Variable_Elements.Table (The_Variable) :=
+               In_Tree.Variable_Elements.Table (Var) :=
                  (Next   => Project.Decl.Variables,
-                  Name   => Current_Item_Name,
+                  Name   => Name,
                   Value  => New_Value);
-               Project.Decl.Variables := The_Variable;
+               Project.Decl.Variables := Var;
             end if;
 
             --  If the variable/attribute has already been
             --  declared, just change the value.
 
          else
-            In_Tree.Variable_Elements.Table (The_Variable).Value := New_Value;
+            In_Tree.Variable_Elements.Table (Var).Value := New_Value;
          end if;
       end Process_Expression_Variable_Decl;
 

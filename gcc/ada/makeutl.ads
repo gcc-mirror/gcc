@@ -148,6 +148,28 @@ package Makeutl is
    --  is printed last. Both N1 and N2 are printed in quotation marks. The two
    --  forms differ only in taking Name_Id or File_name_Type arguments.
 
+   procedure Get_Switches
+     (Source       : Source_Id;
+      Pkg_Name     : Name_Id;
+      Project_Tree : Project_Tree_Ref;
+      Value        : out Variable_Value;
+      Is_Default   : out Boolean);
+   procedure Get_Switches
+     (Source_File  : File_Name_Type;
+      Source_Lang  : Name_Id;
+      Source_Prj   : Project_Id;
+      Pkg_Name     : Name_Id;
+      Project_Tree : Project_Tree_Ref;
+      Value        : out Variable_Value;
+      Is_Default   : out Boolean);
+   --  Compute the switches (Compilation switches for instance) for the given
+   --  file. This checks various attributes to see whether there are file
+   --  specific switches, or else defaults on the switches for the
+   --  corresponding language.
+   --  Is_Default is set to False if there were file-specific switches
+   --  Source_File can be set to No_File to force retrieval of the default
+   --  switches.
+
    function Linker_Options_Switches
      (Project  : Project_Id;
       In_Tree  : Project_Tree_Ref) return String_List;

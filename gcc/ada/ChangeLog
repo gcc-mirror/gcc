@@ -1,5 +1,17 @@
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-proc.adb, prj-attr.adb, prj-attr.ads (Get_Attribute_Index): do
+	not systematically lower case attribute indexes that contain no "."
+	Fix definition of several Naming attributes, which take
+	a unit name as index and therefore should be case insensitive.
+	Minor refactoring (reduce length of variable names).
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* makeutl.adb, makeutl.ads (Get_Switches): new subprogram.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
 	* gnatcmd.adb, prj-proc.adb, prj-proc.ads, make.adb, prj-part.adb,
 	prj-part.ads, switch-m.adb, switch-m.ads, prj-makr.adb, clean.adb,
 	prj-pars.adb, prj-pars.ads, prj-conf.adb, prj-conf.ads, prj-tree.adb,
