@@ -365,6 +365,7 @@ package body Sem_Cat is
       Component : Entity_Id;
       Comp_Type : Entity_Id;
       U_Typ     : constant Entity_Id := Underlying_Type (Typ);
+
    begin
       if No (U_Typ) then
          return False;
@@ -628,11 +629,13 @@ package body Sem_Cat is
 
    function No_External_Streaming (E : Entity_Id) return Boolean is
       U_E : constant Entity_Id := Underlying_Type (E);
+
    begin
       if No (U_E) then
          return False;
 
       elsif Has_Read_Write_Attributes (E) then
+
          --  Note: availability of stream attributes is tested on E, not U_E.
          --  There may be stream attributes defined on U_E that are not visible
          --  at the place where support of external streaming is tested.

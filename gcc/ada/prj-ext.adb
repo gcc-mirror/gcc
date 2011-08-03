@@ -47,10 +47,10 @@ package body Prj.Ext is
             N := Name_To_Name_HTable.Get_First (Copy_From.Refs.all);
             while N /= null loop
                N2 := new Name_To_Name'
-                 (Key    => N.Key,
-                  Value  => N.Value,
-                  Source => N.Source,
-                  Next   => null);
+                           (Key    => N.Key,
+                            Value  => N.Value,
+                            Source => N.Source,
+                            Next   => null);
                Name_To_Name_HTable.Set (Self.Refs.all, N2);
                N := Name_To_Name_HTable.Get_Next (Copy_From.Refs.all);
             end loop;
@@ -82,9 +82,10 @@ package body Prj.Ext is
 
       if Source /= External_Source'First then
          N := Name_To_Name_HTable.Get (Self.Refs.all, Key);
+
          if N /= null then
             if External_Source'Pos (N.Source) <
-              External_Source'Pos (Source)
+               External_Source'Pos (Source)
             then
                if Current_Verbosity = High then
                   Debug_Output
@@ -99,10 +100,10 @@ package body Prj.Ext is
       Name_Len := Value'Length;
       Name_Buffer (1 .. Name_Len) := Value;
       N := new Name_To_Name'
-        (Key    => Key,
-         Source => Source,
-         Value  => Name_Find,
-         Next   => null);
+                 (Key    => Key,
+                  Source => Source,
+                  Value  => Name_Find,
+                  Next   => null);
 
       if Current_Verbosity = High then
          Debug_Output ("Add external (" & External_Name & ") is", N.Value);

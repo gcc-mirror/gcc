@@ -539,7 +539,7 @@ package Exp_Util is
 
    function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean;
    --  Returns True if we are compiling on VM targets and N is a node that
-   --  requires to be passed by copy in these targets.
+   --  requires pass-by-copy in these targets.
 
    procedure Kill_Dead_Code (N : Node_Id; Warn : Boolean := False);
    --  N represents a node for a section of code that is known to be dead. Any

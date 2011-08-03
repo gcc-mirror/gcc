@@ -238,6 +238,7 @@ package body ALFA is
          for S in From .. ALFA_Scope_Table.Last loop
             declare
                E : Entity_Id renames ALFA_Scope_Table.Table (S).Scope_Entity;
+
             begin
                if Lib.Get_Source_Unit (E) = U then
                   ALFA_Scope_Table.Table (S).Scope_Num := Count;
@@ -819,9 +820,11 @@ package body ALFA is
          for S in ALFA_Scope_Table.First .. ALFA_Scope_Table.Last loop
             declare
                Srec : ALFA_Scope_Record renames ALFA_Scope_Table.Table (S);
+
                Body_Entity : Entity_Id;
                Spec_Entity : Entity_Id;
                Spec_Scope  : Scope_Index;
+
             begin
                if Ekind (Srec.Scope_Entity) = E_Subprogram_Body then
                   Body_Entity := Parent (Parent (Srec.Scope_Entity));
@@ -850,7 +853,6 @@ package body ALFA is
                end if;
             end;
          end loop;
-
       end;
 
       --  Generate cross reference ALFA information
@@ -864,8 +866,8 @@ package body ALFA is
 
    function Entity_Hash (E : Entity_Id) return Entity_Hashed_Range is
    begin
-      return Entity_Hashed_Range
-        (E mod (Entity_Id (Entity_Hashed_Range'Last) + 1));
+      return
+        Entity_Hashed_Range (E mod (Entity_Id (Entity_Hashed_Range'Last) + 1));
    end Entity_Hash;
 
    -----------------------------------------

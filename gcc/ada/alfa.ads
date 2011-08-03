@@ -91,6 +91,9 @@ package ALFA is
 
    --    FS . scope line type col entity (-> spec-file . spec-scope)?
 
+   --      What is the ? marke here, is it part of the actual syntax, or is
+   --      it a query about a problem, in which case it should be ???
+
    --      scope is the ones-origin scope number for the current file (e.g. 2 =
    --      reference to the second FS line in this FD block).
 

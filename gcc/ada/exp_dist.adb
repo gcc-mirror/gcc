@@ -1030,6 +1030,10 @@ package body Exp_Dist is
          pragma Warnings (Off, Subp_Str);
 
       begin
+         --  Disable expansion of stubs if serious errors have been diagnosed,
+         --  because otherwise some illegal remote subprogram declarations
+         --  could cause cascaded errors in stubs.
+
          if Serious_Errors_Detected /= 0 then
             return;
          end if;
@@ -3841,6 +3845,10 @@ package body Exp_Dist is
             pragma Warnings (Off, Subp_Val);
 
          begin
+            --  Disable expansion of stubs if serious errors have been
+            --  diagnosed, because otherwise some illegal remote subprogram
+            --  declarations could cause cascaded errors in stubs.
+
             if Serious_Errors_Detected /= 0 then
                return;
             end if;
@@ -6849,6 +6857,10 @@ package body Exp_Dist is
             Proxy_Obj_Addr : Entity_Id;
 
          begin
+            --  Disable expansion of stubs if serious errors have been
+            --  diagnosed, because otherwise some illegal remote subprogram
+            --  declarations could cause cascaded errors in stubs.
+
             if Serious_Errors_Detected /= 0 then
                return;
             end if;
