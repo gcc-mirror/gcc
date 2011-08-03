@@ -3825,6 +3825,8 @@ package body Exp_Aggr is
          Lov : Uint;
          Hiv : Uint;
 
+         Others_Present : Boolean := False;
+
       begin
          if Nkind (Original_Node (N)) = N_String_Literal then
             return True;
@@ -3839,8 +3841,44 @@ package body Exp_Aggr is
          Lov := Expr_Value (Lo);
          Hiv := Expr_Value (Hi);
 
+         --  Check if there is an others choice
+
+         if Present (Component_Associations (N)) then
+            declare
+               Assoc   : Node_Id;
+               Choice  : Node_Id;
+
+            begin
+               Assoc := First (Component_Associations (N));
+               while Present (Assoc) loop
+                  Choice := First (Choices (Assoc));
+
+                  while Present (Choice) loop
+                     if Nkind (Choice) = N_Others_Choice then
+                        Others_Present := True;
+                     end if;
+
+                     Next (Choice);
+                  end loop;
+
+                  Next (Assoc);
+               end loop;
+            end;
+         end if;
+
+         --  If the low bound is not known at compile time and others is not
+         --  present we can proceed since the bounds can be obtained from the
+         --  aggregate.
+
+         --  Note: This case is required in VM platforms since their backends
+         --  normalize array indexes in the range 0 .. N-1. Hence, if we do
+         --  not flat an array whose bounds cannot be obtained from the type
+         --  of the index the backend has no way to properly generate the code.
+         --  See ACATS c460010 for an example.
+
          if Hiv < Lov
-           or else not Compile_Time_Known_Value (Blo)
+           or else (not Compile_Time_Known_Value (Blo)
+                     and then Others_Present)
          then
             return False;
          end if;

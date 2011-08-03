@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,10 +76,7 @@ package System.Task_Info is
    ------------------
 
    subtype Task_Info_Type is Interfaces.C.int;
-   --  This is a CPU number (positive)
-
-   Any_CPU : constant Task_Info_Type := 0;
-   --  Allow task to run on any CPU
+   --  This is a CPU number (natural - CPUs are 0-indexed on VxWorks)
 
    use type Interfaces.C.int;
 
