@@ -948,10 +948,6 @@ package body Prj.PP is
       end if;
 
       Print (Project, 0);
-
-      if W_Char = null or else W_Str = null then
-         Output.Write_Eol;
-      end if;
    end Pretty_Print;
 
    -----------------------

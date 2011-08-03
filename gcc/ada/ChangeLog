@@ -1,5 +1,20 @@
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-pp.adb (Pretty_Print): remove trailing blank line in the file
+
+2011-08-03  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aux.adb (Is_VM_By_Copy_Actual): Fix wrong use of
+	Tagged_Type_Expansion.
+
+2011-08-03  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb
+	(Resolve_Op_Concat_Arg): do not issue a SPARK violation when argument of
+	concatenation is the name of a constant
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
 	* prj-proc.adb, prj-ext.adb, prj-ext.ads, prj-env.adb, prj-env.ads,
 	prj-tree.adb, prj-tree.ads (Initialize_And_Copy, Copy): new subprograms
 	(Process_Declarative_Items): new parameter Child_Env.

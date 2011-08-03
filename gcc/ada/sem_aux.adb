@@ -33,10 +33,10 @@
 with Atree;  use Atree;
 with Einfo;  use Einfo;
 with Namet;  use Namet;
-with Opt;    use Opt;
 with Sinfo;  use Sinfo;
 with Snames; use Snames;
 with Stand;  use Stand;
+with Targparm; use Targparm;
 
 package body Sem_Aux is
 
@@ -791,7 +791,7 @@ package body Sem_Aux is
 
    function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean is
    begin
-      return not Tagged_Type_Expansion
+      return VM_Target /= No_VM
         and then Nkind (N) = N_Identifier
         and then Present (Renamed_Object (Entity (N)))
         and then Nkind (Renamed_Object (Entity (N))) = N_Slice;
