@@ -28,12 +28,13 @@
 --  queue management.
 
 with ALI;
-with GNAT.OS_Lib; use GNAT.OS_Lib;
-with Namet;       use Namet;
+with Namet;    use Namet;
 with Opt;
-with Prj;         use Prj;
+with Prj;      use Prj;
 with Prj.Tree;
-with Types;       use Types;
+with Types;    use Types;
+
+with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package Makeutl is
 
@@ -192,13 +193,12 @@ package Makeutl is
       Including_L_Switch   : Boolean := True;
       Including_Non_Switch : Boolean := True;
       Including_RTS        : Boolean := False);
-   --  Test if Switch is a relative search path switch. If it is, fail if
-   --  Parent is the empty string, otherwise prepend the path with Parent.
-   --  This subprogram is only called when using project files. For gnatbind
-   --  switches, Including_L_Switch is False, because the argument of the -L
-   --  switch is not a path. If Including_RTS is True, process also switches
-   --  --RTS=.
-   --  Do_Fail is called in case of error. Using Osing.Fail might be
+   --  Test if Switch is a relative search path switch. If so, fail if Parent
+   --  is the empty string, otherwise prepend the path with Parent. This
+   --  subprogram is only used when using project files. For gnatbind switches,
+   --  Including_L_Switch is False, because the argument of the -L switch is
+   --  not a path. If Including_RTS is True, process also switches --RTS=.
+   --  Do_Fail is called in case of error. Using Osint.Fail might be
    --  appropriate.
 
    function Path_Or_File_Name (Path : Path_Name_Type) return String;

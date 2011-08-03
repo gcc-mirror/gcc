@@ -359,17 +359,6 @@ package body Exp_Ch7 is
    --  an exception handler, the statements will be wrapped in a block to avoid
    --  unwanted interaction with the new At_End handler.
 
-   function Build_Object_Declarations
-     (Loc       : Source_Ptr;
-      E_Id      : Entity_Id;
-      Raised_Id : Entity_Id) return List_Id;
-   --  Subsidiary to Make_Deep_Array_Body and Make_Deep_Record_Body. Return a
-   --  list containing the object declarations of the exception occurrence E_Id
-   --  and boolean flag Raised_Id.
-   --
-   --    E_Id      : Exception_Occurrence;
-   --    Raised_Id : Boolean := False;
-
    procedure Build_Record_Deep_Procs (Typ : Entity_Id);
    --  Build the deep Initialize/Adjust/Finalize for a record Typ with
    --  Has_Component_Component set and store them using the TSS mechanism.
@@ -1088,10 +1077,15 @@ package body Exp_Ch7 is
       --  structures right from the start. Entities and lists are created once
       --  it has been established that N has at least one controlled object.
 
+      Abort_Id : Entity_Id := Empty;
+      --  Entity of local flag. The flag is set when finalization is triggered
+      --  by an abort.
+
       Components_Built : Boolean := False;
       --  A flag used to avoid double initialization of entities and lists. If
       --  the flag is set then the following variables have been initialized:
       --
+      --    Abort_Id
       --    Counter_Id
       --    E_Id
       --    Finalizer_Decls
@@ -1237,6 +1231,7 @@ package body Exp_Ch7 is
             Counter_Typ := Make_Temporary (Loc, 'T');
 
             if Exceptions_OK then
+               Abort_Id  := Make_Temporary (Loc, 'A');
                E_Id      := Make_Temporary (Loc, 'E');
                Raised_Id := Make_Temporary (Loc, 'R');
             end if;
@@ -1322,7 +1317,6 @@ package body Exp_Ch7 is
 
       procedure Create_Finalizer is
          Conv_Name  : Name_Id;
-         E_Decl     : Node_Id;
          Fin_Body   : Node_Id;
          Fin_Spec   : Node_Id;
          Jump_Block : Node_Id;
@@ -1514,14 +1508,14 @@ package body Exp_Ch7 is
             --  level finalizers. Generate:
             --
             --    if Raised then
-            --       Raise_From_Controlled_Operation (E);
+            --       Raise_From_Controlled_Operation (E, Abort);
             --    end if;
 
             if not For_Package
               and then Exceptions_OK
             then
                Append_To (Finalizer_Stmts,
-                 Build_Raise_Statement (Loc, E_Id, Raised_Id));
+                 Build_Raise_Statement (Loc, Abort_Id, E_Id, Raised_Id));
             end if;
 
             --  Create the jump block which controls the finalization flow
@@ -1587,11 +1581,18 @@ package body Exp_Ch7 is
 
          --  Generate:
          --    procedure Fin_Id is
+         --       Abort  : constant Boolean :=
+         --                  Exception_Occurrence (Get_Current_Excep.all.all) =
+         --                    Standard'Abort_Signal'Identity;
+         --         <or>
+         --       Abort  : constant Boolean := False;  --  no abort
+
          --       E      : Exception_Occurrence;  --  All added if flag
          --       Raised : Boolean := False;      --  Has_Ctrl_Objs is set
          --       L0     : label;
          --       ...
          --       Lnn    : label;
+
          --    begin
          --       Abort_Defer;               --  Added if abort is allowed
          --       <call to Prev_At_End>      --  Added if exists
@@ -1605,28 +1606,8 @@ package body Exp_Ch7 is
          if Has_Ctrl_Objs
            and then Exceptions_OK
          then
-            --  Generate:
-            --    Raised : Boolean := False;
-
-            Prepend_To (Finalizer_Decls,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Raised_Id,
-                Object_Definition =>
-                  New_Reference_To (Standard_Boolean, Loc),
-                Expression =>
-                  New_Reference_To (Standard_False, Loc)));
-
-            --  Generate:
-            --    E : Exception_Occurrence;
-
-            E_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => E_Id,
-                Object_Definition =>
-                  New_Reference_To (RTE (RE_Exception_Occurrence), Loc));
-            Set_No_Initialization (E_Decl);
-
-            Prepend_To (Finalizer_Decls, E_Decl);
+            Prepend_List_To (Finalizer_Decls,
+              Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id));
          end if;
 
          --  Create the body of the finalizer
@@ -2910,9 +2891,11 @@ package body Exp_Ch7 is
 
    function Build_Object_Declarations
      (Loc       : Source_Ptr;
+      Abort_Id  : Entity_Id;
       E_Id      : Entity_Id;
       Raised_Id : Entity_Id) return List_Id
    is
+      A_Expr : Node_Id;
       E_Decl : Node_Id;
 
    begin
@@ -2920,8 +2903,42 @@ package body Exp_Ch7 is
          return Empty_List;
       end if;
 
+      pragma Assert (Present (Abort_Id));
       pragma Assert (Present (E_Id));
       pragma Assert (Present (Raised_Id));
+
+      --  Generate:
+      --    Exception_Identity (Get_Current_Excep.all.all) =
+      --      Standard'Abort_Signal'Identity;
+
+      if Abort_Allowed then
+         A_Expr :=
+           Make_Op_Eq (Loc,
+             Left_Opnd =>
+               Make_Function_Call (Loc,
+                 Name =>
+                   New_Reference_To (RTE (RE_Exception_Identity), Loc),
+               Parameter_Associations => New_List (
+                 Make_Explicit_Dereference (Loc,
+                   Prefix =>
+                     Make_Function_Call (Loc,
+                       Name =>
+                         Make_Explicit_Dereference (Loc,
+                           Prefix =>
+                             New_Reference_To
+                               (RTE (RE_Get_Current_Excep), Loc)))))),
+
+             Right_Opnd =>
+               Make_Attribute_Reference (Loc,
+                 Prefix =>
+                   New_Reference_To (Stand.Abort_Signal, Loc),
+                 Attribute_Name => Name_Identity));
+      else
+         A_Expr := New_Reference_To (Standard_False, Loc);
+      end if;
+
+      --  Generate:
+      --    E_Id : Exception_Occurrence;
 
       E_Decl :=
         Make_Object_Declaration (Loc,
@@ -2930,13 +2947,30 @@ package body Exp_Ch7 is
             New_Reference_To (RTE (RE_Exception_Occurrence), Loc));
       Set_No_Initialization (E_Decl);
 
-      return New_List (E_Decl,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Raised_Id,
-          Object_Definition =>
-            New_Reference_To (Standard_Boolean, Loc),
-          Expression =>
-            New_Reference_To (Standard_False, Loc)));
+      return
+        New_List (
+
+         --  Abort_Id
+
+          Make_Object_Declaration (Loc,
+            Defining_Identifier => Abort_Id,
+            Constant_Present => True,
+            Object_Definition =>
+              New_Reference_To (Standard_Boolean, Loc),
+            Expression => A_Expr),
+
+         --  E_Id
+
+          E_Decl,
+
+         --  Raised_Id
+
+          Make_Object_Declaration (Loc,
+            Defining_Identifier => Raised_Id,
+            Object_Definition =>
+              New_Reference_To (Standard_Boolean, Loc),
+            Expression =>
+              New_Reference_To (Standard_False, Loc)));
    end Build_Object_Declarations;
 
    ---------------------------
@@ -2944,44 +2978,53 @@ package body Exp_Ch7 is
    ---------------------------
 
    function Build_Raise_Statement
-     (Loc  : Source_Ptr;
-      E_Id : Entity_Id;
-      R_Id : Entity_Id) return Node_Id
+     (Loc       : Source_Ptr;
+      Abort_Id  : Entity_Id;
+      E_Id      : Entity_Id;
+      Raised_Id : Entity_Id) return Node_Id
    is
-      Raise_Id : Entity_Id;
+      Params  : List_Id;
+      Proc_Id : Entity_Id;
 
    begin
-      if VM_Target /= No_VM then
-         Raise_Id := RTE (RE_Reraise_Occurrence);
+      --  The default parameter is the local exception occurrence
 
-      --  Standard run-time library
+      Params := New_List (New_Reference_To (E_Id, Loc));
+
+      --  .NET/JVM
+
+      if VM_Target /= No_VM then
+         Proc_Id := RTE (RE_Reraise_Occurrence);
+
+      --  Standard run-time library, this case handles finalization exceptions
+      --  raised during an abort.
 
       elsif RTE_Available (RE_Raise_From_Controlled_Operation) then
-         Raise_Id := RTE (RE_Raise_From_Controlled_Operation);
+         Proc_Id := RTE (RE_Raise_From_Controlled_Operation);
+         Append_To (Params, New_Reference_To (Abort_Id, Loc));
 
       --  Restricted runtime: exception messages are not supported and hence
       --  Raise_From_Controlled_Operation is not supported.
 
       else
-         Raise_Id := RTE (RE_Reraise_Occurrence);
+         Proc_Id := RTE (RE_Reraise_Occurrence);
       end if;
 
       --  Generate:
-      --    if R_Id then
-      --       <Raise_Id> (E_Id);
+      --    if Raised_Id then
+      --       <Proc_Id> (<Params>);
       --    end if;
 
       return
         Make_If_Statement (Loc,
           Condition =>
-            New_Reference_To (R_Id, Loc),
+            New_Reference_To (Raised_Id, Loc),
 
           Then_Statements => New_List (
             Make_Procedure_Call_Statement (Loc,
               Name =>
-                New_Reference_To (Raise_Id, Loc),
-              Parameter_Associations => New_List (
-                New_Reference_To (E_Id, Loc)))));
+                New_Reference_To (Proc_Id, Loc),
+              Parameter_Associations => Params)));
    end Build_Raise_Statement;
 
    -----------------------------
@@ -4158,9 +4201,9 @@ package body Exp_Ch7 is
          Last_Object   : Node_Id;
          Related_Node  : Node_Id)
       is
+         Abort_Id  : Entity_Id;
          Built     : Boolean := False;
          Desig     : Entity_Id;
-         E_Decl    : Node_Id;
          E_Id      : Entity_Id;
          Fin_Block : Node_Id;
          Last_Fin  : Node_Id := Empty;
@@ -4202,32 +4245,13 @@ package body Exp_Ch7 is
                --  time around.
 
                if not Built then
-
-                  --  Generate:
-                  --    Enn : Exception_Occurrence;
-
-                  E_Id := Make_Temporary (Loc, 'E');
-
-                  E_Decl :=
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => E_Id,
-                      Object_Definition =>
-                        New_Reference_To (RTE (RE_Exception_Occurrence), Loc));
-                  Set_No_Initialization (E_Decl);
-                  Insert_Before_And_Analyze (First_Object, E_Decl);
-
-                  --  Generate:
-                  --    Rnn : Boolean := False;
-
+                  Abort_Id  := Make_Temporary (Loc, 'A');
+                  E_Id      := Make_Temporary (Loc, 'E');
                   Raised_Id := Make_Temporary (Loc, 'R');
 
-                  Insert_Before_And_Analyze (First_Object,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Raised_Id,
-                      Object_Definition =>
-                        New_Reference_To (Standard_Boolean, Loc),
-                      Expression =>
-                        New_Reference_To (Standard_False, Loc)));
+                  Insert_List_Before_And_Analyze (First_Object,
+                    Build_Object_Declarations
+                      (Loc, Abort_Id, E_Id, Raised_Id));
 
                   Built := True;
                end if;
@@ -4292,14 +4316,14 @@ package body Exp_Ch7 is
 
          --  Generate:
          --    if Rnn then
-         --       Raise_From_Controlled_Operation (Enn);
+         --       Raise_From_Controlled_Operation (E, Abort);
          --    end if;
 
          if Built
            and then Present (Last_Fin)
          then
             Insert_After_And_Analyze (Last_Fin,
-              Build_Raise_Statement (Loc, E_Id, Raised_Id));
+              Build_Raise_Statement (Loc, Abort_Id, E_Id, Raised_Id));
          end if;
       end Process_Transient_Objects;
 
@@ -4576,6 +4600,12 @@ package body Exp_Ch7 is
       --  controlled elements. Generate:
 
       --    declare
+      --       Abort  : constant Boolean :=
+      --                  Exception_Identity (Get_Current_Excep.all) =
+      --                    Standard'Abort_Signal'Identity;
+      --         <or>
+      --       Abort  : constant Boolean := False;  --  no abort
+
       --       E      : Exception_Occurrence;
       --       Raised : Boolean := False;
 
@@ -4599,7 +4629,7 @@ package body Exp_Ch7 is
       --       end loop;
 
       --       if Raised then
-      --          Raise_From_Controlled_Operation (E);
+      --          Raise_From_Controlled_Operation (E, Abort);
       --       end if;
       --    end;
 
@@ -4623,6 +4653,11 @@ package body Exp_Ch7 is
       --             exception
       --                when others =>
       --                   declare
+      --                      Abort  : constant Boolean :=
+      --                        Exception_Identity (Get_Current_Excep.all) =
+      --                          Standard'Abort_Signal'Identity;
+      --                        <or>
+      --                      Abort  : constant Boolean := False; --  no abort
       --                      E      : Exception_Occurence;
       --                      Raised : Boolean := False;
 
@@ -4657,7 +4692,7 @@ package body Exp_Ch7 is
       --                   end;
 
       --                   if Raised then
-      --                      Raise_From_Controlled_Operation (E);
+      --                      Raise_From_Controlled_Operation (E, Abort);
       --                   end if;
 
       --                   raise;
@@ -4683,6 +4718,7 @@ package body Exp_Ch7 is
          Index_List : constant List_Id    := New_List;
          Loc        : constant Source_Ptr := Sloc (Typ);
          Num_Dims   : constant Int        := Number_Dimensions (Typ);
+         Abort_Id   : Entity_Id := Empty;
          Call       : Node_Id;
          Comp_Ref   : Node_Id;
          Core_Loop  : Node_Id;
@@ -4720,6 +4756,7 @@ package body Exp_Ch7 is
          Build_Indices;
 
          if Exceptions_OK then
+            Abort_Id  := Make_Temporary (Loc, 'A');
             E_Id      := Make_Temporary (Loc, 'E');
             Raised_Id := Make_Temporary (Loc, 'R');
          end if;
@@ -4819,9 +4856,16 @@ package body Exp_Ch7 is
          end loop;
 
          --  Generate the block which contains the core loop, the declarations
-         --  of the flag and exception occurrence and the conditional raise:
+         --  of the abort flag, the exception occurrence, the raised flag and
+         --  the conditional raise:
 
          --    declare
+         --       Abort  : constant Boolean :=
+         --                  Exception_Occurrence (Get_Current_Excep.all.all) =
+         --                    Standard'Abort_Signal'Identity;
+         --         <or>
+         --       Abort  : constant Boolean := False;  --  no abort
+
          --       E      : Exception_Occurrence;
          --       Raised : Boolean := False;
 
@@ -4829,21 +4873,22 @@ package body Exp_Ch7 is
          --       <core loop>
 
          --       if Raised then  --  Expection handlers allowed
-         --          Raise_From_Controlled_Operation (E);
+         --          Raise_From_Controlled_Operation (E, Abort);
          --       end if;
          --    end;
 
          Stmts := New_List (Core_Loop);
 
          if Exceptions_OK then
-            Append_To (Stmts, Build_Raise_Statement (Loc, E_Id, Raised_Id));
+            Append_To (Stmts,
+              Build_Raise_Statement (Loc, Abort_Id, E_Id, Raised_Id));
          end if;
 
          return
            New_List (
              Make_Block_Statement (Loc,
                Declarations =>
-                 Build_Object_Declarations (Loc, E_Id, Raised_Id),
+                 Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id),
                Handled_Statement_Sequence =>
                  Make_Handled_Sequence_Of_Statements (Loc,
                    Statements => Stmts)));
@@ -4859,6 +4904,7 @@ package body Exp_Ch7 is
          Index_List  : constant List_Id    := New_List;
          Loc         : constant Source_Ptr := Sloc (Typ);
          Num_Dims    : constant Int        := Number_Dimensions (Typ);
+         Abort_Id    : Entity_Id;
          Counter_Id  : Entity_Id;
          Dim         : Int;
          E_Id        : Entity_Id := Empty;
@@ -5024,6 +5070,7 @@ package body Exp_Ch7 is
          Counter_Id := Make_Temporary (Loc, 'C');
 
          if Exceptions_OK then
+            Abort_Id  := Make_Temporary (Loc, 'A');
             E_Id      := Make_Temporary (Loc, 'E');
             Raised_Id := Make_Temporary (Loc, 'R');
          end if;
@@ -5125,10 +5172,17 @@ package body Exp_Ch7 is
             Dim := Dim - 1;
          end loop;
 
-         --  Generate the block which houses the finalization failure flag,
-         --  all the finalization loops and the exception raise.
+         --  Generate the block which contains the finalization loops, the
+         --  declarations of the abort flag, the exception occurrence, the
+         --  raised flag and the conditional raise.
 
          --    declare
+         --       Abort  : constant Boolean :=
+         --                  Exception_Occurrence (Get_Current_Excep.all.all) =
+         --                    Standard'Abort_Signal'Identity;
+         --         <or>
+         --       Abort  : constant Boolean := False;  --  no abort
+
          --       E      : Exception_Occurrence;
          --       Raised : Boolean := False;
 
@@ -5141,7 +5195,7 @@ package body Exp_Ch7 is
          --       <final loop>
 
          --       if Raised then  --  Exception handlers allowed
-         --          Raise_From_Controlled_Operation (E);
+         --          Raise_From_Controlled_Operation (E, Abort);
          --       end if;
 
          --       raise;          --  Exception handlers allowed
@@ -5150,14 +5204,15 @@ package body Exp_Ch7 is
          Stmts := New_List (Build_Counter_Assignment, Final_Loop);
 
          if Exceptions_OK then
-            Append_To (Stmts, Build_Raise_Statement (Loc, E_Id, Raised_Id));
+            Append_To (Stmts,
+              Build_Raise_Statement (Loc, Abort_Id, E_Id, Raised_Id));
             Append_To (Stmts, Make_Raise_Statement (Loc));
          end if;
 
          Final_Block :=
            Make_Block_Statement (Loc,
              Declarations =>
-               Build_Object_Declarations (Loc, E_Id, Raised_Id),
+               Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id),
 
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
@@ -5449,7 +5504,7 @@ package body Exp_Ch7 is
       --       end if;
 
       --       if Raised then
-      --          Raise_From_Controlled_Object (E);
+      --          Raise_From_Controlled_Object (E, Abort);
       --       end if;
       --    end;
 
@@ -5458,6 +5513,11 @@ package body Exp_Ch7 is
       --  may have discriminants and contain variant parts. Generate:
 
       --    declare
+      --       Abort  : constant Boolean :=
+      --                  Exception_Identity (Get_Current_Excep.all) =
+      --                    Standard'Abort_Signal'Identity;
+      --         <or>
+      --       Abort  : constant Boolean := False;  --  no abort
       --       E      : Exception_Occurence;
       --       Raised : Boolean := False;
 
@@ -5532,7 +5592,7 @@ package body Exp_Ch7 is
       --       Root_Controlled (V).Finalized := True;
 
       --       if Raised then
-      --          Raise_From_Controlled_Object (E);
+      --          Raise_From_Controlled_Object (E, Abort);
       --       end if;
       --    end;
 
@@ -5555,6 +5615,7 @@ package body Exp_Ch7 is
       function Build_Adjust_Statements (Typ : Entity_Id) return List_Id is
          Loc       : constant Source_Ptr := Sloc (Typ);
          Typ_Def   : constant Node_Id := Type_Definition (Parent (Typ));
+         Abort_Id  : Entity_Id := Empty;
          Bod_Stmts : List_Id;
          E_Id      : Entity_Id := Empty;
          Raised_Id : Entity_Id := Empty;
@@ -5765,6 +5826,7 @@ package body Exp_Ch7 is
 
       begin
          if Exceptions_OK then
+            Abort_Id  := Make_Temporary (Loc, 'A');
             E_Id      := Make_Temporary (Loc, 'E');
             Raised_Id := Make_Temporary (Loc, 'R');
          end if;
@@ -5942,6 +6004,12 @@ package body Exp_Ch7 is
 
          --  Generate:
          --    declare
+         --       Abort  : constant Boolean :=
+         --                  Exception_Occurrence (Get_Current_Excep.all.all) =
+         --                    Standard'Abort_Signal'Identity;
+         --         <or>
+         --       Abort  : constant Boolean := False;  --  no abort
+
          --       E      : Exception_Occurence;
          --       Raised : Boolean := False;
 
@@ -5951,21 +6019,21 @@ package body Exp_Ch7 is
          --       <adjust statements>
 
          --       if Raised then
-         --          Raise_From_Controlled_Operation (E);
+         --          Raise_From_Controlled_Operation (E, Abort);
          --       end if;
          --    end;
 
          else
             if Exceptions_OK then
                Append_To (Bod_Stmts,
-                 Build_Raise_Statement (Loc, E_Id, Raised_Id));
+                 Build_Raise_Statement (Loc, Abort_Id, E_Id, Raised_Id));
             end if;
 
             return
               New_List (
                 Make_Block_Statement (Loc,
                   Declarations =>
-                    Build_Object_Declarations (Loc, E_Id, Raised_Id),
+                    Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id),
 
                   Handled_Statement_Sequence =>
                     Make_Handled_Sequence_Of_Statements (Loc,
@@ -5980,6 +6048,7 @@ package body Exp_Ch7 is
       function Build_Finalize_Statements (Typ : Entity_Id) return List_Id is
          Loc       : constant Source_Ptr := Sloc (Typ);
          Typ_Def   : constant Node_Id := Type_Definition (Parent (Typ));
+         Abort_Id  : Entity_Id := Empty;
          Bod_Stmts : List_Id;
          Counter   : Int := 0;
          E_Id      : Entity_Id := Empty;
@@ -6358,6 +6427,7 @@ package body Exp_Ch7 is
 
       begin
          if Exceptions_OK then
+            Abort_Id  := Make_Temporary (Loc, 'A');
             E_Id      := Make_Temporary (Loc, 'E');
             Raised_Id := Make_Temporary (Loc, 'R');
          end if;
@@ -6535,6 +6605,12 @@ package body Exp_Ch7 is
 
          --  Generate:
          --    declare
+         --       Abort  : constant Boolean :=
+         --                  Exception_Occurrence (Get_Current_Excep.all.all) =
+         --                    Standard'Abort_Signal'Identity;
+         --         <or>
+         --       Abort  : constant Boolean := False;  --  no abort
+
          --       E      : Exception_Occurence;
          --       Raised : Boolean := False;
 
@@ -6547,21 +6623,21 @@ package body Exp_Ch7 is
          --       V.Finalized := True;
 
          --       if Raised then
-         --          Raise_From_Controlled_Operation (E);
+         --          Raise_From_Controlled_Operation (E, Abort);
          --       end if;
          --    end;
 
          else
             if Exceptions_OK then
                Append_To (Bod_Stmts,
-                 Build_Raise_Statement (Loc, E_Id, Raised_Id));
+                 Build_Raise_Statement (Loc, Abort_Id, E_Id, Raised_Id));
             end if;
 
             return
               New_List (
                 Make_Block_Statement (Loc,
                   Declarations =>
-                    Build_Object_Declarations (Loc, E_Id, Raised_Id),
+                    Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id),
 
                   Handled_Statement_Sequence =>
                     Make_Handled_Sequence_Of_Statements (Loc,
@@ -7110,7 +7186,7 @@ package body Exp_Ch7 is
    --  Generate:
 
    --    when E : others =>
-   --      Raise_From_Controlled_Operation (X => E);
+   --      Raise_From_Controlled_Operation (E, False);
 
    --  or:
 
@@ -7150,10 +7226,11 @@ package body Exp_Ch7 is
          Raise_Node :=
            Make_Procedure_Call_Statement (Loc,
              Name =>
-               New_Reference_To (
-                 RTE (RE_Raise_From_Controlled_Operation), Loc),
+               New_Reference_To
+                 (RTE (RE_Raise_From_Controlled_Operation), Loc),
              Parameter_Associations => New_List (
-               New_Reference_To (E_Occ, Loc)));
+               New_Reference_To (E_Occ, Loc),
+               New_Reference_To (Standard_False, Loc)));
 
       --  Restricted runtime: exception messages are not supported
 

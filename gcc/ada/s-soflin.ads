@@ -62,7 +62,7 @@ package System.Soft_Links is
    pragma Suppress_Initialization (No_Param_Proc);
    --  Some uninitialized objects of that type are initialized by the Binder
    --  so it is important that such objects are not reset to null during
-   --  elaboration
+   --  elaboration.
 
    type Addr_Param_Proc   is access procedure (Addr : Address);
    pragma Favor_Top_Level (Addr_Param_Proc);
@@ -226,7 +226,7 @@ package System.Soft_Links is
    Finalize_Library_Objects : No_Param_Proc;
    pragma Export (C, Finalize_Library_Objects,
                   "__gnat_finalize_library_objects");
-   --  will be initialized by the binder
+   --  Will be initialized by the binder
 
    Adafinal : No_Param_Proc := Adafinal_NT'Access;
    --  Performs the finalization of the Ada Runtime

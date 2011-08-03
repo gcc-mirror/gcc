@@ -2011,10 +2011,10 @@ package body System.Tasking.Stages is
 --  Package elaboration code
 
 begin
-   --  Establish the Adafinal oftlink
+   --  Establish the Adafinal softlink
 
    --  This is not done inside the central RTS initialization routine
-   --  to avoid with-ing this package from System.Tasking.Initialization.
+   --  to avoid with'ing this package from System.Tasking.Initialization.
 
    SSL.Adafinal := Finalize_Global_Tasks'Access;
 

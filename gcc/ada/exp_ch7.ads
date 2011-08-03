@@ -57,19 +57,39 @@ package Exp_Ch7 is
    --  Build one controlling procedure when a late body overrides one of
    --  the controlling operations.
 
+   function Build_Object_Declarations
+     (Loc       : Source_Ptr;
+      Abort_Id  : Entity_Id;
+      E_Id      : Entity_Id;
+      Raised_Id : Entity_Id) return List_Id;
+   --  Subsidiary to Make_Deep_Array_Body and Make_Deep_Record_Body. Return a
+   --  list containing the object declarations of boolean flag Abort_Id, the
+   --  exception occurrence E_Id and boolean flag Raised_Id.
+   --
+   --    Abort_Id  : constant Boolean :=
+   --                  Exception_Identity (Get_Current_Excep.all) =
+   --                    Standard'Abort_Signal'Identity;
+   --      <or>
+   --    Abort_Id  : constant Boolean := False;  --  no abort
+   --
+   --    E_Id      : Exception_Occurrence;
+   --    Raised_Id : Boolean := False;
+
    function Build_Raise_Statement
-     (Loc  : Source_Ptr;
-      E_Id : Entity_Id;
-      R_Id : Entity_Id) return Node_Id;
+     (Loc       : Source_Ptr;
+      Abort_Id  : Entity_Id;
+      E_Id      : Entity_Id;
+      Raised_Id : Entity_Id) return Node_Id;
    --  Subsidiary to routines Build_Finalizer, Make_Deep_Array_Body and Make_
    --  Deep_Record_Body. Generate the following conditional raise statement:
    --
-   --    if R_Id then
-   --       Raise_From_Controlled_Operation (E_Id);
+   --    if Raised_Id then
+   --       Raise_From_Controlled_Operation (E_Id, Abort_Id);
    --    end if;
    --
-   --  E_Id denotes the defining identifier of a local exception occurrence,
-   --  R_Id is the entity of a local boolean flag.
+   --  Abort_Id is a local boolean flag which is set when the finalization was
+   --  triggered by an abort, E_Id denotes the defining identifier of a local
+   --  exception occurrence, Raised_Id is the entity of a local boolean flag.
 
    function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean;
    --  True if T is a class-wide type, or if it has controlled parts ("part"

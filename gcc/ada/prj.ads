@@ -1409,7 +1409,6 @@ package Prj is
       Array_Elements    : Array_Element_Table.Instance;
       Arrays            : Array_Table.Instance;
       Packages          : Package_Table.Instance;
-
       Private_Part      : Private_Project_Tree_Data;
    end record;
    type Shared_Project_Tree_Data_Access is access all Shared_Project_Tree_Data;

@@ -112,7 +112,7 @@ package Rtsfind is
       --  package see declarations in the runtime entity table below.
 
       RTU_Null,
-      --  Used as a null entry. Will cause an error if referenced.
+      --  Used as a null entry (will cause an error if referenced)
 
       --  Children of Ada
 

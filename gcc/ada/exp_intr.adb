@@ -884,16 +884,15 @@ package body Exp_Intr is
       Pool    : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
       Stmts   : constant List_Id    := New_List;
 
-      Blk          : Node_Id := Empty;
-      Deref        : Node_Id;
-      Exc_Occ_Decl : Node_Id;
-      Exc_Occ_Id   : Entity_Id := Empty;
-      Final_Code   : List_Id;
-      Free_Arg     : Node_Id;
-      Free_Node    : Node_Id;
-      Gen_Code     : Node_Id;
-      Raised_Decl  : Node_Id;
-      Raised_Id    : Entity_Id := Empty;
+      Abort_Id   : Entity_Id := Empty;
+      Blk        : Node_Id := Empty;
+      Deref      : Node_Id;
+      E_Id       : Entity_Id := Empty;
+      Final_Code : List_Id;
+      Free_Arg   : Node_Id;
+      Free_Node  : Node_Id;
+      Gen_Code   : Node_Id;
+      Raised_Id  : Entity_Id := Empty;
 
       Arg_Known_Non_Null : constant Boolean := Known_Non_Null (N);
       --  This captures whether we know the argument to be non-null so that
@@ -942,38 +941,29 @@ package body Exp_Intr is
          --  the later raise.
          --
          --  Generate:
-         --    Raised  : Boolean := False;
-         --    Exc_Occ : Exception_Occurrence;
+         --    Abort  : constant Boolean :=
+         --               Exception_Occurrence (Get_Current_Excep.all.all) =
+         --                 Standard'Abort_Signal'Identity;
+         --      <or>
+         --    Abort  : constant Boolean := False;  --  no abort
+
+         --    E      : Exception_Occurrence;
+         --    Raised : Boolean := False;
          --
          --    begin
          --       [Deep_]Finalize (Obj);
          --    exception
          --       when others =>
          --          Raised := True;
-         --          Save_Occurrence (Exc_Occ, Get_Current_Excep.all.all);
+         --          Save_Occurrence (E, Get_Current_Excep.all.all);
          --    end;
 
-         Exc_Occ_Id := Make_Temporary (Loc, 'E');
-         Raised_Id  := Make_Temporary (Loc, 'R');
+         Abort_Id  := Make_Temporary (Loc, 'A');
+         E_Id      := Make_Temporary (Loc, 'E');
+         Raised_Id := Make_Temporary (Loc, 'R');
 
-         Raised_Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Raised_Id,
-             Object_Definition =>
-               New_Reference_To (Standard_Boolean, Loc),
-             Expression =>
-               New_Reference_To (Standard_False, Loc));
-
-         Append_To (Stmts, Raised_Decl);
-
-         Exc_Occ_Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Exc_Occ_Id,
-           Object_Definition =>
-             New_Reference_To (RTE (RE_Exception_Occurrence), Loc));
-         Set_No_Initialization (Exc_Occ_Decl);
-
-         Append_To (Stmts, Exc_Occ_Decl);
+         Append_List_To (Stmts,
+            Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id));
 
          Final_Code := New_List (
            Make_Block_Statement (Loc,
@@ -997,7 +987,7 @@ package body Exp_Intr is
                          Name =>
                            New_Reference_To (RTE (RE_Save_Occurrence), Loc),
                          Parameter_Associations => New_List (
-                           New_Reference_To (Exc_Occ_Id, Loc),
+                           New_Reference_To (E_Id, Loc),
                            Make_Explicit_Dereference (Loc,
                              Prefix =>
                                Make_Function_Call (Loc,
@@ -1243,14 +1233,15 @@ package body Exp_Intr is
       --
       --  Generate:
       --    if Raised then
-      --       Reraise_Occurrence (Exc_Occ);               --  for .NET and
-      --                                                   --  restricted RTS
+      --       Reraise_Occurrence (E);                      --  for .NET and
+      --                                                    --  restricted RTS
       --         <or>
-      --       Raise_From_Controlled_Operation (Exc_Occ);  --  all other cases
+      --       Raise_From_Controlled_Operation (E, Abort);  --  all other cases
       --    end if;
 
       if Present (Raised_Id) then
-         Append_To (Stmts, Build_Raise_Statement (Loc, Exc_Occ_Id, Raised_Id));
+         Append_To (Stmts,
+           Build_Raise_Statement (Loc, Abort_Id, E_Id, Raised_Id));
       end if;
 
       --  If we know the argument is non-null, then make a block statement

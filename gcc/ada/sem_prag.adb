@@ -4760,11 +4760,13 @@ package body Sem_Prag is
               (Get_Base_Subprogram (Subprogram_Def), Link_Nam);
          end if;
 
-         --  We allow duplicated export names in CIL, as they are always
+         --  We allow duplicated export names in CIL/Java, as they are always
          --  enclosed in a namespace that differentiates them, and overloaded
          --  entities are supported by the VM.
 
-         if Convention (Subprogram_Def) /= Convention_CIL then
+         if Convention (Subprogram_Def) /= Convention_CIL
+           and then Convention (Subprogram_Def) /= Convention_Java
+         then
             Check_Duplicated_Export_Name (Link_Nam);
          end if;
       end Process_Interface_Name;
