@@ -1,3 +1,11 @@
+2011-08-03  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/49941
+	* jump.c (mark_jump_label): Comment.
+	(mark_jump_label_1): Set JUMP_LABEL for return jumps.
+	* emit-rtl.c (copy_rtx_if_shared_1, copy_insn_1): Leave RETURN shared.
+	(mark_used_flags): Don't mark RETURN.
+
 2011-08-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49938
@@ -176,10 +184,10 @@
 	boolean-typed operands for comparisons.
 
 2011-08-02  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/libgcc.S: Gather related function in the
 	same input section.
- 	(__mulqihi3, __mulqihi3, __divmodqi4, __divmodhi4, __udivmodsi4,
+	(__mulqihi3, __mulqihi3, __divmodqi4, __divmodhi4, __udivmodsi4,
 	__divmodsi4): Use XCALL/XJMP instead of rcall/rjmp for external
 	references.
 	(__udivmodqi4, __divmodqi4, __udivmodhi4, __divmodhi4,
@@ -21337,7 +21345,7 @@
 	to cselib_lookup.
 	(add_uses): Likewise, also to cselib_subst_to_values.
 	(add_stores): Likewise.
-	* sched-deps.c 	(add_insn_mem_dependence): Pass mode to
+	* sched-deps.c (add_insn_mem_dependence): Pass mode to
 	cselib_subst_to_values.
 	(sched_analyze_1, sched_analyze_2): Likewise.  Adjusted.
 	* gcse.c (do_local_cprop): Adjusted.

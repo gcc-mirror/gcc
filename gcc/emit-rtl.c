@@ -2724,6 +2724,7 @@ repeat:
     case CODE_LABEL:
     case PC:
     case CC0:
+    case RETURN:
     case SCRATCH:
       /* SCRATCH must be shared because they represent distinct values.  */
       return;
@@ -2843,6 +2844,7 @@ repeat:
     case CODE_LABEL:
     case PC:
     case CC0:
+    case RETURN:
       return;
 
     case DEBUG_INSN:
@@ -5261,6 +5263,7 @@ copy_insn_1 (rtx orig)
     case CODE_LABEL:
     case PC:
     case CC0:
+    case RETURN:
       return orig;
     case CLOBBER:
       if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER)
