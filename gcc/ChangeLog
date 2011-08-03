@@ -1,3 +1,18 @@
+2011-08-03  Revital Eres  <revital.eres@linaro.org>
+
+	* modulo-sched.c (calculate_stage_count,
+	calculate_must_precede_follow, get_sched_window,
+	try_scheduling_node_in_cycle, remove_node_from_ps): Add
+	declaration.
+	(update_node_sched_params, set_must_precede_follow, optimize_sc):
+	New functions.
+	(reset_sched_times): Call update_node_sched_params.
+	(sms_schedule): Call optimize_sc.
+	(get_sched_window): Change function arguments.
+	(sms_schedule_by_order): Update call to get_sched_window.
+	Call set_must_precede_follow.
+	(calculate_stage_count): Add function argument.
+
 2011-08-02  Richard Henderson  <rth@redhat.com>
 
 	PR target/49864
