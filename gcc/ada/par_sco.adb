@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -126,7 +126,8 @@ package body Par_SCO is
    procedure Traverse_Handled_Statement_Sequence  (N : Node_Id);
    procedure Traverse_Package_Body                (N : Node_Id);
    procedure Traverse_Package_Declaration         (N : Node_Id);
-   procedure Traverse_Subprogram_Body             (N : Node_Id);
+   procedure Traverse_Protected_Body              (N : Node_Id);
+   procedure Traverse_Subprogram_Or_Task_Body     (N : Node_Id);
    procedure Traverse_Subprogram_Declaration      (N : Node_Id);
    --  Traverse the corresponding construct, generating SCO table entries
 
@@ -439,6 +440,9 @@ package body Par_SCO is
       -------------------
 
       procedure Output_Header (T : Character) is
+         Loc   : Source_Ptr := No_Location;
+         --  Node whose sloc is used for the decision
+
       begin
          case T is
             when 'I' | 'E' | 'W' =>
@@ -446,55 +450,47 @@ package body Par_SCO is
                --  For IF, EXIT, WHILE, the token SLOC can be found from
                --  the SLOC of the parent of the expression.
 
-               Set_Table_Entry
-                 (C1   => T,
-                  C2   => ' ',
-                  From => Sloc (Parent (N)),
-                  To   => No_Location,
-                  Last => False);
+               Loc := Sloc (Parent (N));
 
-            when 'P' =>
+            when 'G' | 'P' =>
 
+               --  For entry, the token sloc is from the N_Entry_Body.
                --  For PRAGMA, we must get the location from the pragma node.
                --  Argument N is the pragma argument, and we have to go up two
                --  levels (through the pragma argument association) to get to
                --  the pragma node itself.
 
-               declare
-                  Loc : constant Source_Ptr := Sloc (Parent (Parent (N)));
-
-               begin
-                  Set_Table_Entry
-                    (C1   => 'P',
-                     C2   => 'd',
-                     From => Loc,
-                     To   => No_Location,
-                     Last => False);
-
-                  --  For pragmas we also must make an entry in the hash table
-                  --  for later access by Set_SCO_Pragma_Enabled. We set the
-                  --  pragma as disabled above, the call will change C2 to 'e'
-                  --  to enable the pragma header entry.
-
-                  Condition_Pragma_Hash_Table.Set (Loc, SCO_Table.Last);
-               end;
+               Loc := Sloc (Parent (Parent (N)));
 
             when 'X' =>
 
                --  For an expression, no Sloc
 
-               Set_Table_Entry
-                 (C1   => 'X',
-                  C2   => ' ',
-                  From => No_Location,
-                  To   => No_Location,
-                  Last => False);
+               null;
 
             --  No other possibilities
 
             when others =>
                raise Program_Error;
          end case;
+
+         Set_Table_Entry
+           (C1   => T,
+            C2   => ' ',
+            From => Loc,
+            To   => No_Location,
+            Last => False);
+
+         if T = 'P' then
+            --  For pragmas we also must make an entry in the hash table
+            --  for later access by Set_SCO_Pragma_Enabled. We set the
+            --  pragma as disabled now, the call will change C2 to 'e'
+            --  to enable the pragma header entry.
+
+            SCO_Table.Table (SCO_Table.Last).C2 := 'd';
+            Condition_Pragma_Hash_Table.Set (Loc, SCO_Table.Last);
+         end if;
+
       end Output_Header;
 
       ------------------------------
@@ -773,30 +769,34 @@ package body Par_SCO is
 
       --  Traverse the unit
 
-      if Nkind (Lu) = N_Subprogram_Body then
-         Traverse_Subprogram_Body (Lu);
+      case Nkind (Lu) is
+         when N_Protected_Body =>
+            Traverse_Protected_Body (Lu);
 
-      elsif Nkind (Lu) = N_Subprogram_Declaration then
-         Traverse_Subprogram_Declaration (Lu);
+         when N_Subprogram_Body | N_Task_Body =>
+            Traverse_Subprogram_Or_Task_Body (Lu);
 
-      elsif Nkind (Lu) = N_Package_Declaration then
-         Traverse_Package_Declaration (Lu);
+         when N_Subprogram_Declaration =>
+            Traverse_Subprogram_Declaration (Lu);
 
-      elsif Nkind (Lu) = N_Package_Body then
-         Traverse_Package_Body (Lu);
+         when N_Package_Declaration =>
+            Traverse_Package_Declaration (Lu);
 
-      elsif Nkind (Lu) = N_Generic_Package_Declaration then
-         Traverse_Generic_Package_Declaration (Lu);
+         when N_Package_Body =>
+            Traverse_Package_Body (Lu);
 
-      elsif Nkind (Lu) in N_Generic_Instantiation then
-         Traverse_Generic_Instantiation (Lu);
+         when N_Generic_Package_Declaration =>
+            Traverse_Generic_Package_Declaration (Lu);
 
-      --  All other cases of compilation units (e.g. renamings), generate
-      --  no SCO information.
+         when N_Generic_Instantiation =>
+            Traverse_Generic_Instantiation (Lu);
 
-      else
-         null;
-      end if;
+         when others =>
+            --  All other cases of compilation units (e.g. renamings), generate
+            --  no SCO information.
+
+            null;
+      end case;
 
       --  Make entry for new unit in unit tables, we will fill in the file
       --  name and dependency numbers later.
@@ -1144,11 +1144,31 @@ package body Par_SCO is
                     (Parameter_Specifications (Specification (N)), 'X');
                   Set_Statement_Entry;
 
-               --  Subprogram_Body
+               --  Task or subprogram body
 
-               when N_Subprogram_Body =>
+               when N_Task_Body | N_Subprogram_Body =>
                   Set_Statement_Entry;
-                  Traverse_Subprogram_Body (N);
+                  Traverse_Subprogram_Or_Task_Body (N);
+
+               --  Entry body
+
+               when N_Entry_Body =>
+                  declare
+                     Cond : constant Node_Id :=
+                              Condition (Entry_Body_Formal_Part (N));
+                  begin
+                     Set_Statement_Entry;
+                     if Present (Cond) then
+                        Process_Decisions_Defer (Cond, 'G');
+                     end if;
+                     Traverse_Subprogram_Or_Task_Body (N);
+                  end;
+
+               --  Protected body
+
+               when N_Protected_Body =>
+                  Set_Statement_Entry;
+                  Traverse_Protected_Body (N);
 
                --  Exit statement, which is an exit statement in the SCO sense,
                --  so it is included in the current statement sequence, but
@@ -1485,15 +1505,24 @@ package body Par_SCO is
       Traverse_Declarations_Or_Statements (Private_Declarations (Spec));
    end Traverse_Package_Declaration;
 
-   ------------------------------
-   -- Traverse_Subprogram_Body --
-   ------------------------------
+   -----------------------------
+   -- Traverse_Protected_Body --
+   -----------------------------
 
-   procedure Traverse_Subprogram_Body (N : Node_Id) is
+   procedure Traverse_Protected_Body (N : Node_Id) is
+   begin
+      Traverse_Declarations_Or_Statements (Declarations (N));
+   end Traverse_Protected_Body;
+
+   --------------------------------------
+   -- Traverse_Subprogram_Or_Task_Body --
+   --------------------------------------
+
+   procedure Traverse_Subprogram_Or_Task_Body (N : Node_Id) is
    begin
       Traverse_Declarations_Or_Statements (Declarations (N));
       Traverse_Handled_Statement_Sequence (Handled_Statement_Sequence (N));
-   end Traverse_Subprogram_Body;
+   end Traverse_Subprogram_Or_Task_Body;
 
    -------------------------------------
    -- Traverse_Subprogram_Declaration --

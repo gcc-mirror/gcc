@@ -67,6 +67,7 @@ package Ada.Containers.Formal_Ordered_Sets is
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
 
    type Set (Capacity : Count_Type) is tagged private;
+   --  why is this commented out ???
    --  pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;
@@ -276,7 +277,7 @@ private
      new Red_Black_Trees.Generic_Bounded_Tree_Types (Node_Type);
 
    type Set (Capacity : Count_Type) is
-      new Tree_Types.Tree_Type (Capacity) with null record;
+     new Tree_Types.Tree_Type (Capacity) with null record;
 
    use Red_Black_Trees;
    use Ada.Streams;

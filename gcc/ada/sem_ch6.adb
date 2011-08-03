@@ -9550,6 +9550,9 @@ package body Sem_Ch6 is
                   Make_Handled_Sequence_Of_Statements (Loc,
                     Statements => Plist)));
 
+            Set_Ekind (Post_Proc, E_Procedure);
+            Set_Is_Postcondition_Proc (Post_Proc);
+
             --  If this is a procedure, set the Postcondition_Proc attribute on
             --  the proper defining entity for the subprogram.
 

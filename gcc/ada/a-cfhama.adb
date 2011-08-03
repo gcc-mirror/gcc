@@ -41,6 +41,8 @@ package body Ada.Containers.Formal_Hashed_Maps is
    -- Local Subprograms --
    -----------------------
 
+   --  All local subprograms require comments ???
+
    function Equivalent_Keys
      (Key  : Key_Type;
       Node : Node_Type) return Boolean;
@@ -73,10 +75,10 @@ package body Ada.Containers.Formal_Hashed_Maps is
 
    package HT_Ops is
      new Hash_Tables.Generic_Bounded_Operations
-       (HT_Types        => HT_Types,
-        Hash_Node       => Hash_Node,
-        Next            => Next,
-        Set_Next        => Set_Next);
+       (HT_Types  => HT_Types,
+        Hash_Node => Hash_Node,
+        Next      => Next,
+        Set_Next  => Set_Next);
 
    package Key_Ops is
      new Hash_Tables.Generic_Bounded_Keys
@@ -93,7 +95,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
 
    function "=" (Left, Right : Map) return Boolean is
    begin
-
       if Length (Left) /= Length (Right) then
          return False;
       end if;
@@ -103,13 +104,15 @@ package body Ada.Containers.Formal_Hashed_Maps is
       end if;
 
       declare
-         Node  : Count_Type := Left.First.Node;
+         Node  : Count_Type;
          ENode : Count_Type;
-      begin
 
+      begin
+         Node := Left.First.Node;
          while Node /= 0 loop
             ENode := Find (Container => Right,
                            Key       => Left.Nodes (Node).Key).Node;
+
             if ENode = 0 or else
               Right.Nodes (ENode).Element /= Left.Nodes (Node).Element
             then
@@ -120,9 +123,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
          end loop;
 
          return True;
-
       end;
-
    end "=";
 
    ------------
@@ -149,7 +150,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       --  Start of processing for Assign
 
    begin
-
       if Target'Address = Source'Address then
          return;
       end if;
@@ -159,7 +159,9 @@ package body Ada.Containers.Formal_Hashed_Maps is
            "Source length exceeds Target capacity";
       end if;
 
-      Clear (Target);  -- checks busy bits
+      --  Check busy bits
+
+      Clear (Target);
 
       Insert_Elements (Source);
    end Assign;
@@ -201,27 +203,33 @@ package body Ada.Containers.Formal_Hashed_Maps is
    is
       C      : constant Count_Type :=
                  Count_Type'Max (Capacity, Source.Capacity);
-      H      : Hash_Type := 1;
-      N      : Count_Type := 1;
+      H      : Hash_Type;
+      N      : Count_Type;
       Target : Map (C, Source.Modulus);
       Cu     : Cursor;
-   begin
 
+   begin
       Target.Length := Source.Length;
       Target.Free := Source.Free;
+
+      H := 1;
       while H <= Source.Modulus loop
          Target.Buckets (H) := Source.Buckets (H);
          H := H + 1;
       end loop;
+
+      N := 1;
       while N <= Source.Capacity loop
          Target.Nodes (N) := Source.Nodes (N);
          N := N + 1;
       end loop;
+
       while N <= C loop
          Cu := (Node => N);
          Free (Target, Cu.Node);
          N := N + 1;
       end loop;
+
       return Target;
    end Copy;
 
@@ -242,7 +250,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       X : Count_Type;
 
    begin
-
       Key_Ops.Delete_Key_Sans_Free (Container, Key, X);
 
       if X = 0 then
@@ -254,7 +261,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
 
    procedure Delete (Container : in out Map; Position : in out Cursor) is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with
            "Position cursor of Delete has no element";
@@ -306,14 +312,18 @@ package body Ada.Containers.Formal_Hashed_Maps is
 
    function Equivalent_Keys
      (Key  : Key_Type;
-      Node : Node_Type) return Boolean is
+      Node : Node_Type) return Boolean
+   is
    begin
       return Equivalent_Keys (Key, Node.Key);
    end Equivalent_Keys;
 
-   function Equivalent_Keys (Left  : Map; CLeft : Cursor;
-                             Right : Map; CRight : Cursor)
-                             return Boolean is
+   function Equivalent_Keys
+     (Left   : Map;
+      CLeft  : Cursor;
+      Right  : Map;
+      CRight : Cursor) return Boolean
+   is
    begin
       if not Has_Element (Left, CLeft) then
          raise Constraint_Error with
@@ -331,10 +341,8 @@ package body Ada.Containers.Formal_Hashed_Maps is
                      "Right cursor of Equivalent_Keys is bad");
 
       declare
-
          LN : Node_Type renames Left.Nodes (CLeft.Node);
          RN : Node_Type renames Right.Nodes (CRight.Node);
-
       begin
          return Equivalent_Keys (LN.Key, RN.Key);
       end;
@@ -343,7 +351,8 @@ package body Ada.Containers.Formal_Hashed_Maps is
    function Equivalent_Keys
      (Left  : Map;
       CLeft : Cursor;
-      Right : Key_Type) return Boolean is
+      Right : Key_Type) return Boolean
+   is
    begin
       if not Has_Element (Left, CLeft) then
          raise Constraint_Error with
@@ -355,7 +364,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
 
       declare
          LN : Node_Type renames Left.Nodes (CLeft.Node);
-
       begin
          return Equivalent_Keys (LN.Key, Right);
       end;
@@ -364,7 +372,8 @@ package body Ada.Containers.Formal_Hashed_Maps is
    function Equivalent_Keys
      (Left   : Key_Type;
       Right  : Map;
-      CRight : Cursor) return Boolean is
+      CRight : Cursor) return Boolean
+   is
    begin
       if Has_Element (Right, CRight) then
          raise Constraint_Error with
@@ -399,7 +408,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
 
    function Find (Container : Map; Key : Key_Type) return Cursor is
       Node : constant Count_Type :=
-        Key_Ops.Find (Container, Key);
+               Key_Ops.Find (Container, Key);
 
    begin
       if Node = 0 then
@@ -422,17 +431,13 @@ package body Ada.Containers.Formal_Hashed_Maps is
       end if;
 
       return (Node => Node);
-
    end First;
 
    ----------
    -- Free --
    ----------
 
-   procedure Free
-     (HT : in out Map;
-      X  : Count_Type)
-   is
+   procedure Free (HT : in out Map; X : Count_Type) is
    begin
       HT.Nodes (X).Has_Element := False;
       HT_Ops.Free (HT, X);
@@ -442,10 +447,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
    -- Generic_Allocate --
    ----------------------
 
-   procedure Generic_Allocate
-     (HT   : in out Map;
-      Node : out Count_Type)
-   is
+   procedure Generic_Allocate (HT : in out Map; Node : out Count_Type) is
 
       procedure Allocate is
         new HT_Ops.Generic_Allocate (Set_Element);
@@ -465,6 +467,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
         not Container.Nodes (Position.Node).Has_Element then
          return False;
       end if;
+
       return True;
    end Has_Element;
 
@@ -472,8 +475,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
    -- Hash_Node --
    ---------------
 
-   function Hash_Node
-     (Node : Node_Type) return Hash_Type is
+   function Hash_Node (Node : Node_Type) return Hash_Type is
    begin
       return Hash (Node.Key);
    end Hash_Node;
@@ -537,6 +539,8 @@ package body Ada.Containers.Formal_Hashed_Maps is
       procedure Assign_Key (Node : in out Node_Type) is
       begin
          Node.Key := Key;
+
+         --  What is following commented out line doing here ???
          --  Node.Element := New_Item;
       end Assign_Key;
 
@@ -551,7 +555,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
          return Result;
       end New_Node;
 
-      --  Start of processing for Insert
+   --  Start of processing for Insert
 
    begin
 
@@ -598,10 +602,9 @@ package body Ada.Containers.Formal_Hashed_Maps is
          return Result;
       end New_Node;
 
-      --  Start of processing for Insert
+   --  Start of processing for Insert
 
    begin
-
       Local_Insert (Container, Key, Position.Node, Inserted);
    end Insert;
 
@@ -639,8 +642,8 @@ package body Ada.Containers.Formal_Hashed_Maps is
 
    procedure Iterate
      (Container : Map;
-      Process   :
-        not null access procedure (Container : Map; Position : Cursor))
+      Process   : not null
+                    access procedure (Container : Map; Position : Cursor))
    is
       procedure Process_Node (Node : Count_Type);
       pragma Inline (Process_Node);
@@ -658,7 +661,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
 
       B : Natural renames Container'Unrestricted_Access.Busy;
 
-      --  Start of processing for Iterate
+   --  Start of processing for Iterate
 
    begin
       B := B + 1;
@@ -695,14 +698,18 @@ package body Ada.Containers.Formal_Hashed_Maps is
    ----------
 
    function Left (Container : Map; Position : Cursor) return Map is
-      Curs : Cursor := Position;
-      C : Map (Container.Capacity, Container.Modulus) :=
-        Copy (Container, Container.Capacity);
+      Curs : Cursor;
+      C    : Map (Container.Capacity, Container.Modulus) :=
+               Copy (Container, Container.Capacity);
       Node : Count_Type;
+
    begin
+      Curs := Position;
+
       if Curs = No_Element then
          return C;
       end if;
+
       if not Has_Element (Container, Curs) then
          raise Constraint_Error;
       end if;
@@ -712,6 +719,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
          Delete (C, Curs);
          Curs := Next (Container, (Node => Node));
       end loop;
+
       return C;
    end Left;
 
@@ -736,7 +744,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       X, Y : Count_Type;
 
    begin
-
       if Target'Address = Source'Address then
          return;
       end if;
@@ -816,6 +823,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
    function Overlap (Left, Right : Map) return Boolean is
       Left_Node  : Count_Type;
       Left_Nodes : Nodes_Type renames Left.Nodes;
+
    begin
       if Length (Right) = 0 or Length (Left) = 0 then
          return False;
@@ -826,12 +834,10 @@ package body Ada.Containers.Formal_Hashed_Maps is
       end if;
 
       Left_Node := First (Left).Node;
-
       while Left_Node /= 0 loop
          declare
             N : Node_Type renames Left_Nodes (Left_Node);
             E : Key_Type renames N.Key;
-
          begin
             if Find (Right, E).Node /= 0 then
                return True;
@@ -852,10 +858,9 @@ package body Ada.Containers.Formal_Hashed_Maps is
      (Container : in out Map;
       Position  : Cursor;
       Process   : not null access
-        procedure (Key : Key_Type; Element : Element_Type))
+                    procedure (Key : Key_Type; Element : Element_Type))
    is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with
            "Position cursor of Query_Element has no element";
@@ -864,8 +869,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
       pragma Assert (Vet (Container, Position), "bad cursor in Query_Element");
 
       declare
-         N  : Node_Type renames Container.Nodes (Position.Node);
-
+         N : Node_Type renames Container.Nodes (Position.Node);
          B : Natural renames Container.Busy;
          L : Natural renames Container.Lock;
 
@@ -876,7 +880,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
          declare
             K : Key_Type renames N.Key;
             E : Element_Type renames N.Element;
-
          begin
             Process (K, E);
          exception
@@ -909,8 +912,8 @@ package body Ada.Containers.Formal_Hashed_Maps is
       -- Read_Node --
       ---------------
 
-      function Read_Node (Stream : not null access Root_Stream_Type'Class)
-                          return Count_Type
+      function Read_Node
+        (Stream : not null access Root_Stream_Type'Class) return Count_Type
       is
          procedure Read_Element (Node : in out Node_Type);
          pragma Inline (Read_Element);
@@ -925,14 +928,15 @@ package body Ada.Containers.Formal_Hashed_Maps is
 
          Node : Count_Type;
 
-         --  Start of processing for Read_Node
+      --  Start of processing for Read_Node
 
       begin
          Allocate (Container, Node);
          return Node;
       end Read_Node;
 
-      --  Start of processing for Read
+   --  Start of processing for Read
+
    begin
       Read_Nodes (Stream, Container);
    end Read;
@@ -957,7 +961,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       Node : constant Count_Type := Key_Ops.Find (Container, Key);
 
    begin
-
       if Node = 0 then
          raise Constraint_Error with
            "attempt to replace key not in map";
@@ -986,7 +989,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       New_Item  : Element_Type)
    is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with
            "Position cursor of Replace_Element has no element";
@@ -1012,7 +1014,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       Capacity  : Count_Type)
    is
    begin
-
       if Capacity > Container.Capacity then
          raise Capacity_Error with "requested capacity is too large";
       end if;
@@ -1024,14 +1025,16 @@ package body Ada.Containers.Formal_Hashed_Maps is
 
    function Right (Container : Map; Position : Cursor) return Map is
       Curs : Cursor := First (Container);
-      C : Map (Container.Capacity, Container.Modulus) :=
-        Copy (Container, Container.Capacity);
+      C    : Map (Container.Capacity, Container.Modulus) :=
+               Copy (Container, Container.Capacity);
       Node : Count_Type;
+
    begin
       if Curs = No_Element then
          Clear (C);
          return C;
       end if;
+
       if Position /= No_Element and not Has_Element (Container, Position) then
          raise Constraint_Error;
       end if;
@@ -1041,6 +1044,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
          Delete (C, Curs);
          Curs := Next (Container, (Node => Node));
       end loop;
+
       return C;
    end Right;
 
@@ -1060,6 +1064,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
    function Strict_Equal (Left, Right : Map) return Boolean is
       CuL : Cursor := First (Left);
       CuR : Cursor := First (Right);
+
    begin
       if Length (Left) /= Length (Right) then
          return False;
@@ -1073,6 +1078,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
               Right.Nodes (CuR.Node).Key) then
             return False;
          end if;
+
          CuL := Next (Left, CuL);
          CuR := Next (Right, CuR);
       end loop;
@@ -1173,7 +1179,9 @@ package body Ada.Containers.Formal_Hashed_Maps is
             end if;
 
             if X = Container.Nodes (X).Next then
-               --  to prevent unnecessary looping
+
+               --  Prevent unnecessary looping
+
                return False;
             end if;
 

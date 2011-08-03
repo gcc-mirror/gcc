@@ -41,6 +41,8 @@ package body Ada.Containers.Formal_Hashed_Sets is
    -- Local Subprograms --
    -----------------------
 
+   --  All need comments ???
+
    procedure Difference
      (Left, Right : Set;
       Target      : in out Set);
@@ -117,7 +119,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
    function "=" (Left, Right : Set) return Boolean is
    begin
-
       if Length (Left) /= Length (Right) then
          return False;
       end if;
@@ -127,14 +128,15 @@ package body Ada.Containers.Formal_Hashed_Sets is
       end if;
 
       declare
-         Node  : Count_Type := First (Left).Node;
+         Node  : Count_Type;
          ENode : Count_Type;
-      begin
 
+      begin
+         Node  := First (Left).Node;
          while Node /= 0 loop
             ENode := Find (Container => Right,
                            Item      => Left.Nodes (Node).Element).Node;
-            if ENode = 0  or else
+            if ENode = 0 or else
               Right.Nodes (ENode).Element /= Left.Nodes (Node).Element
             then
                return False;
@@ -173,10 +175,9 @@ package body Ada.Containers.Formal_Hashed_Sets is
          pragma Assert (B);
       end Insert_Element;
 
-      --  Start of processing for Assign
+   --  Start of processing for Assign
 
    begin
-
       if Target'Address = Source'Address then
          return;
       end if;
@@ -204,7 +205,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
    procedure Clear (Container : in out Set) is
    begin
-
       HT_Ops.Clear (Container);
    end Clear;
 
@@ -226,28 +226,34 @@ package body Ada.Containers.Formal_Hashed_Sets is
       Capacity : Count_Type := 0) return Set
    is
       C      : constant Count_Type :=
-        Count_Type'Max (Capacity, Source.Capacity);
-      H      : Hash_Type := 1;
-      N      : Count_Type := 1;
+                 Count_Type'Max (Capacity, Source.Capacity);
+      H      : Hash_Type;
+      N      : Count_Type;
       Target : Set (C, Source.Modulus);
       Cu     : Cursor;
-   begin
 
+   begin
       Target.Length := Source.Length;
       Target.Free := Source.Free;
+
+      H := 1;
       while H <= Source.Modulus loop
          Target.Buckets (H) := Source.Buckets (H);
          H := H + 1;
       end loop;
+
+      N := 1;
       while N <= Source.Capacity loop
          Target.Nodes (N) := Source.Nodes (N);
          N := N + 1;
       end loop;
+
       while N <= C loop
          Cu := (Node => N);
          Free (Target, Cu.Node);
          N := N + 1;
       end loop;
+
       return Target;
    end Copy;
 
@@ -271,12 +277,12 @@ package body Ada.Containers.Formal_Hashed_Sets is
       X : Count_Type;
 
    begin
-
       Element_Keys.Delete_Key_Sans_Free (Container, Item, X);
 
       if X = 0 then
          raise Constraint_Error with "attempt to delete element not in set";
       end if;
+
       Free (Container, X);
    end Delete;
 
@@ -285,7 +291,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
       Position  : in out Cursor)
    is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -317,7 +322,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
       SN : Nodes_Type renames Source.Nodes;
 
    begin
-
       if Target'Address = Source'Address then
          Clear (Target);
          return;
@@ -337,8 +341,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
       if Src_Length >= Target.Length then
          Tgt_Node := HT_Ops.First (Target);
          while Tgt_Node /= 0 loop
-            if Element_Keys.Find (Source,
-                                  TN (Tgt_Node).Element) /= 0 then
+            if Element_Keys.Find (Source, TN (Tgt_Node).Element) /= 0 then
                declare
                   X : constant Count_Type := Tgt_Node;
                begin
@@ -346,10 +349,12 @@ package body Ada.Containers.Formal_Hashed_Sets is
                   HT_Ops.Delete_Node_Sans_Free (Target, X);
                   Free (Target, X);
                end;
+
             else
                Tgt_Node := HT_Ops.Next (Target, Tgt_Node);
             end if;
          end loop;
+
          return;
       else
          Src_Node := HT_Ops.First (Source);
@@ -357,8 +362,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
       end if;
 
       while Src_Node /= Src_Last loop
-         Tgt_Node := Element_Keys.Find
-           (Target, SN (Src_Node).Element);
+         Tgt_Node := Element_Keys.Find (Target, SN (Src_Node).Element);
 
          if Tgt_Node /= 0 then
             HT_Ops.Delete_Node_Sans_Free (Target, Tgt_Node);
@@ -386,7 +390,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
          E : Element_Type renames Left.Nodes (L_Node).Element;
          X : Count_Type;
          B : Boolean;
-
       begin
          if Find (Right, E).Node = 0 then
             Insert (Target, E, X, B);
@@ -394,7 +397,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
          end if;
       end Process;
 
-      --  Start of processing for Difference
+   --  Start of processing for Difference
 
    begin
       Iterate (Left);
@@ -403,6 +406,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
    function Difference (Left, Right : Set) return Set is
       C : Count_Type;
       H : Hash_Type;
+
    begin
       if Left'Address = Right'Address then
          return Empty_Set;
@@ -418,6 +422,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
       C := Length (Left);
       H := Default_Modulus (C);
+
       return S : Set (C, H) do
          Difference (Left, Right, Target => S);
       end return;
@@ -429,7 +434,8 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
    function Element
      (Container : Set;
-      Position  : Cursor) return Element_Type is
+      Position  : Cursor) return Element_Type
+   is
    begin
       if not Has_Element (Container, Position) then
          raise Constraint_Error with "Position cursor equals No_Element";
@@ -464,10 +470,8 @@ package body Ada.Containers.Formal_Hashed_Sets is
          L_Node : Node_Type) return Boolean
       is
          R_Index : constant Hash_Type :=
-           Element_Keys.Index (R_HT, L_Node.Element);
-
+                     Element_Keys.Index (R_HT, L_Node.Element);
          R_Node  : Count_Type := R_HT.Buckets (R_Index);
-
          RN      : Nodes_Type renames R_HT.Nodes;
 
       begin
@@ -485,7 +489,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
          end loop;
       end Find_Equivalent_Key;
 
-      --  Start of processing of Equivalent_Sets
+   --  Start of processing of Equivalent_Sets
 
    begin
       return Is_Equivalent (Left, Right);
@@ -495,9 +499,12 @@ package body Ada.Containers.Formal_Hashed_Sets is
    -- Equivalent_Elements --
    -------------------------
 
-   function Equivalent_Elements (Left  : Set; CLeft : Cursor;
-                                 Right : Set; CRight : Cursor)
-                                 return Boolean is
+   function Equivalent_Elements
+     (Left  : Set;
+      CLeft : Cursor;
+      Right  : Set;
+      CRight : Cursor) return Boolean
+   is
    begin
       if not Has_Element (Left, CLeft) then
          raise Constraint_Error with
@@ -525,7 +532,8 @@ package body Ada.Containers.Formal_Hashed_Sets is
    function Equivalent_Elements
      (Left  : Set;
       CLeft : Cursor;
-      Right : Element_Type) return Boolean is
+      Right : Element_Type) return Boolean
+   is
    begin
       if not Has_Element (Left, CLeft) then
          raise Constraint_Error with
@@ -545,7 +553,8 @@ package body Ada.Containers.Formal_Hashed_Sets is
    function Equivalent_Elements
      (Left   : Element_Type;
       Right  : Set;
-      CRight : Cursor) return Boolean is
+      CRight : Cursor) return Boolean
+   is
    begin
       if not Has_Element (Right, CRight) then
          raise Constraint_Error with
@@ -563,14 +572,17 @@ package body Ada.Containers.Formal_Hashed_Sets is
       end;
    end Equivalent_Elements;
 
+   --  What does the following comment signify???
    --  NOT MODIFIED
 
    ---------------------
    -- Equivalent_Keys --
    ---------------------
 
-   function Equivalent_Keys (Key : Element_Type; Node : Node_Type)
-                             return Boolean is
+   function Equivalent_Keys
+     (Key  : Element_Type;
+      Node : Node_Type) return Boolean
+   is
    begin
       return Equivalent_Elements (Key, Node.Element);
    end Equivalent_Keys;
@@ -597,15 +609,14 @@ package body Ada.Containers.Formal_Hashed_Sets is
      (Container : Set;
       Item      : Element_Type) return Cursor
    is
-      Node : constant Count_Type :=
-        Element_Keys.Find (Container, Item);
+      Node : constant Count_Type := Element_Keys.Find (Container, Item);
 
    begin
       if Node = 0 then
          return No_Element;
       end if;
-      return (Node => Node);
 
+      return (Node => Node);
    end Find;
 
    -----------
@@ -614,13 +625,13 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
    function First (Container : Set) return Cursor is
       Node : constant Count_Type := HT_Ops.First (Container);
+
    begin
       if Node = 0 then
          return No_Element;
       end if;
 
       return (Node => Node);
-
    end First;
 
    ----------
@@ -644,10 +655,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
      (HT   : in out Set;
       Node : out Count_Type)
    is
-
-      procedure Allocate is
-        new HT_Ops.Generic_Allocate (Set_Element);
-
+      procedure Allocate is new HT_Ops.Generic_Allocate (Set_Element);
    begin
       Allocate (HT, Node);
       HT.Nodes (Node).Has_Element := True;
@@ -659,10 +667,12 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
    function Has_Element (Container : Set; Position : Cursor) return Boolean is
    begin
-      if Position.Node = 0 or else
-        not Container.Nodes (Position.Node).Has_Element then
+      if Position.Node = 0
+        or else not Container.Nodes (Position.Node).Has_Element
+      then
          return False;
       end if;
+
       return True;
    end Has_Element;
 
@@ -767,12 +777,10 @@ package body Ada.Containers.Formal_Hashed_Sets is
          return Result;
       end New_Node;
 
-      --  Start of processing for Insert
+   --  Start of processing for Insert
 
    begin
-
       Local_Insert (Container, New_Item, Node, Inserted);
-
    end Insert;
 
    ------------------
@@ -787,7 +795,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
       TN       : Nodes_Type renames Target.Nodes;
 
    begin
-
       if Target'Address = Source'Address then
          return;
       end if;
@@ -845,7 +852,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
          end if;
       end Process;
 
-      --  Start of processing for Intersection
+   --  Start of processing for Intersection
 
    begin
       Iterate (Left);
@@ -862,6 +869,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
       C := Count_Type'Min (Length (Left), Length (Right));  -- ???
       H := Default_Modulus (C);
+
       return S : Set (C, H) do
          if Length (Left) /= 0 and Length (Right) /= 0 then
                Intersection (Left, Right, Target => S);
@@ -882,8 +890,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
    -- Is_In --
    -----------
 
-   function Is_In (HT : Set;
-                   Key : Node_Type) return Boolean is
+   function Is_In (HT : Set; Key : Node_Type) return Boolean is
    begin
       return Element_Keys.Find (HT, Key.Element) /= 0;
    end Is_In;
@@ -895,6 +902,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
       Subset_Node  : Count_Type;
       Subset_Nodes : Nodes_Type renames Subset.Nodes;
+
    begin
       if Subset'Address = Of_Set'Address then
          return True;
@@ -905,7 +913,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
       end if;
 
       Subset_Node := First (Subset).Node;
-
       while Subset_Node /= 0 loop
          declare
             N : Node_Type renames Subset_Nodes (Subset_Node);
@@ -949,7 +956,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
       B : Natural renames Container'Unrestricted_Access.Busy;
 
-      --  Start of processing for Iterate
+   --  Start of processing for Iterate
 
    begin
       B := B + 1;
@@ -971,13 +978,15 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
    function Left (Container : Set; Position : Cursor) return Set is
       Curs : Cursor := Position;
-      C : Set (Container.Capacity, Container.Modulus) :=
-        Copy (Container, Container.Capacity);
+      C    : Set (Container.Capacity, Container.Modulus) :=
+               Copy (Container, Container.Capacity);
       Node : Count_Type;
+
    begin
       if Curs = No_Element then
          return C;
       end if;
+
       if not Has_Element (Container, Curs) then
          raise Constraint_Error;
       end if;
@@ -987,6 +996,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
          Delete (C, Curs);
          Curs := Next (Container, (Node => Node));
       end loop;
+
       return C;
    end Left;
 
@@ -1003,12 +1013,13 @@ package body Ada.Containers.Formal_Hashed_Sets is
    -- Move --
    ----------
 
+   --  Comments???
+
    procedure Move (Target : in out Set; Source : in out Set) is
       NN   : HT_Types.Nodes_Type renames Source.Nodes;
       X, Y : Count_Type;
 
    begin
-
       if Target'Address = Source'Address then
          return;
       end if;
@@ -1079,6 +1090,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
    function Overlap (Left, Right : Set) return Boolean is
       Left_Node  : Count_Type;
       Left_Nodes : Nodes_Type renames Left.Nodes;
+
    begin
       if Length (Right) = 0 or Length (Left) = 0 then
          return False;
@@ -1089,12 +1101,10 @@ package body Ada.Containers.Formal_Hashed_Sets is
       end if;
 
       Left_Node := First (Left).Node;
-
       while Left_Node /= 0 loop
          declare
             N : Node_Type renames Left_Nodes (Left_Node);
             E : Element_Type renames N.Element;
-
          begin
             if Find (Right, E).Node /= 0 then
                return True;
@@ -1125,7 +1135,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
       pragma Assert (Vet (Container, Position), "bad cursor in Query_Element");
 
       declare
-
          B : Natural renames Container.Busy;
          L : Natural renames Container.Lock;
 
@@ -1171,8 +1180,11 @@ package body Ada.Containers.Formal_Hashed_Sets is
          procedure Read_Element (Node : in out Node_Type);
          pragma Inline (Read_Element);
 
-         procedure Allocate is
-           new Generic_Allocate (Read_Element);
+         procedure Allocate is new Generic_Allocate (Read_Element);
+
+         ------------------
+         -- Read_Element --
+         ------------------
 
          procedure Read_Element (Node : in out Node_Type) is
          begin
@@ -1181,16 +1193,16 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
          Node : Count_Type;
 
-         --  Start of processing for Read_Node
+      --  Start of processing for Read_Node
 
       begin
          Allocate (Container, Node);
          return Node;
       end Read_Node;
 
-      --  Start of processing for Read
-   begin
+   --  Start of processing for Read
 
+   begin
       Read_Nodes (Stream, Container);
    end Read;
 
@@ -1210,11 +1222,9 @@ package body Ada.Containers.Formal_Hashed_Sets is
      (Container : in out Set;
       New_Item  : Element_Type)
    is
-      Node : constant Count_Type :=
-        Element_Keys.Find (Container, New_Item);
+      Node : constant Count_Type := Element_Keys.Find (Container, New_Item);
 
    begin
-
       if Node = 0 then
          raise Constraint_Error with
            "attempt to replace element not in set";
@@ -1238,7 +1248,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
       New_Item  : Element_Type)
    is
    begin
-
       if not Has_Element (Container, Position) then
          raise Constraint_Error with
            "Position cursor equals No_Element";
@@ -1270,14 +1279,16 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
    function Right (Container : Set; Position : Cursor) return Set is
       Curs : Cursor := First (Container);
-      C : Set (Container.Capacity, Container.Modulus) :=
-        Copy (Container, Container.Capacity);
+      C    : Set (Container.Capacity, Container.Modulus) :=
+               Copy (Container, Container.Capacity);
       Node : Count_Type;
+
    begin
       if Curs = No_Element then
          Clear (C);
          return C;
       end if;
+
       if Position /= No_Element and not Has_Element (Container, Position) then
          raise Constraint_Error;
       end if;
@@ -1287,6 +1298,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
          Delete (C, Curs);
          Curs := Next (Container, (Node => Node));
       end loop;
+
       return C;
    end Right;
 
@@ -1315,17 +1327,20 @@ package body Ada.Containers.Formal_Hashed_Sets is
    function Strict_Equal (Left, Right : Set) return Boolean is
       CuL : Cursor := First (Left);
       CuR : Cursor := First (Right);
+
    begin
       if Length (Left) /= Length (Right) then
          return False;
       end if;
 
       while CuL.Node /= 0 or CuR.Node /= 0 loop
-         if CuL.Node /= CuR.Node or else
-           Left.Nodes (CuL.Node).Element /=
-           Right.Nodes (CuR.Node).Element then
+         if CuL.Node /= CuR.Node
+           or else Left.Nodes (CuL.Node).Element /=
+                   Right.Nodes (CuR.Node).Element
+         then
             return False;
          end if;
+
          CuL := Next (Left, CuL);
          CuR := Next (Right, CuR);
       end loop;
@@ -1344,8 +1359,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
       procedure Process (Source_Node : Count_Type);
       pragma Inline (Process);
 
-      procedure Iterate is
-        new HT_Ops.Generic_Iteration (Process);
+      procedure Iterate is new HT_Ops.Generic_Iteration (Process);
 
       -------------
       -- Process --
@@ -1355,7 +1369,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
          N : Node_Type renames Source.Nodes (Source_Node);
          X : Count_Type;
          B : Boolean;
-
       begin
          if Is_In (Target, N) then
             Delete (Target, N.Element);
@@ -1365,10 +1378,9 @@ package body Ada.Containers.Formal_Hashed_Sets is
          end if;
       end Process;
 
-      --  Start of processing for Symmetric_Difference
+   --  Start of processing for Symmetric_Difference
 
    begin
-
       if Target'Address = Source'Address then
          Clear (Target);
          return;
@@ -1383,8 +1395,8 @@ package body Ada.Containers.Formal_Hashed_Sets is
          raise Program_Error with
            "attempt to tamper with elements (set is busy)";
       end if;
-      Iterate (Source);
 
+      Iterate (Source);
    end Symmetric_Difference;
 
    function Symmetric_Difference (Left, Right : Set) return Set is
@@ -1406,6 +1418,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
       C := Length (Left) + Length (Right);
       H := Default_Modulus (C);
+
       return S : Set (C, H) do
          Difference (Left, Right, S);
          Difference (Right, Left, S);
@@ -1523,8 +1536,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
             return False;
          end if;
 
-         X := S.Buckets (Element_Keys.Index (S,
-           N (Position.Node).Element));
+         X := S.Buckets (Element_Keys.Index (S, N (Position.Node).Element));
 
          for J in 1 .. S.Length loop
             if X = Position.Node then
@@ -1684,7 +1696,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
       is
          X : Count_Type;
       begin
-
          Key_Keys.Delete_Key_Sans_Free (Container, Key, X);
          Free (Container, X);
       end Exclude;
@@ -1697,16 +1708,9 @@ package body Ada.Containers.Formal_Hashed_Sets is
         (Container : Set;
          Key       : Key_Type) return Cursor
       is
-         Node : constant Count_Type :=
-           Key_Keys.Find (Container, Key);
-
+         Node : constant Count_Type := Key_Keys.Find (Container, Key);
       begin
-         if Node = 0 then
-            return No_Element;
-         end if;
-
-         return (Node => Node);
-
+         return (if Node = 0 then No_Element else (Node => Node));
       end Find;
 
       ---------
@@ -1720,8 +1724,8 @@ package body Ada.Containers.Formal_Hashed_Sets is
               "Position cursor has no element";
          end if;
 
-         pragma Assert (Vet (Container, Position),
-                        "bad cursor in function Key");
+         pragma Assert
+           (Vet (Container, Position), "bad cursor in function Key");
 
          declare
             N  : Node_Type renames Container.Nodes (Position.Node);
@@ -1739,8 +1743,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
          Key       : Key_Type;
          New_Item  : Element_Type)
       is
-         Node : constant Count_Type :=
-           Key_Keys.Find (Container, Key);
+         Node : constant Count_Type := Key_Keys.Find (Container, Key);
 
       begin
          if Node = 0 then
@@ -1759,7 +1762,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
         (Container : in out Set;
          Position  : Cursor;
          Process   : not null access
-           procedure (Element : in out Element_Type))
+                       procedure (Element : in out Element_Type))
       is
          Indx : Hash_Type;
          N    : Nodes_Type renames Container.Nodes;
@@ -1775,13 +1778,13 @@ package body Ada.Containers.Formal_Hashed_Sets is
            (Vet (Container, Position),
             "bad cursor in Update_Element_Preserving_Key");
 
-         --  Record bucket now, in case key is changed.
+      --  Record bucket now, in case key is changed
+
          Indx := HT_Ops.Index (Container.Buckets, N (Position.Node));
 
          declare
             E : Element_Type renames N (Position.Node).Element;
             K : constant Key_Type := Key (E);
-
             B : Natural renames Container.Busy;
             L : Natural renames Container.Lock;
 
@@ -1807,7 +1810,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
             end if;
          end;
 
-         --  Key was modified, so remove this node from set.
+         --  Key was modified, so remove this node from set
 
          if Container.Buckets (Indx) = Position.Node then
             Container.Buckets (Indx) := N (Position.Node).Next;

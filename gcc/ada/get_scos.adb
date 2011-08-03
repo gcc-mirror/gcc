@@ -307,7 +307,7 @@ begin
 
          --  Decision entry
 
-         when 'I' | 'E' | 'P' | 'W' | 'X' =>
+         when 'I' | 'E' | 'G' | 'P' | 'W' | 'X' =>
             Dtyp := C;
             Skip_Spaces;
 

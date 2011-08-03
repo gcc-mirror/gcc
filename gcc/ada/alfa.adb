@@ -23,8 +23,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Atree;    use Atree;
 with Output;   use Output;
 with Put_ALFA;
+with Sinfo;    use Sinfo;
 
 package body ALFA is
 
@@ -152,6 +154,74 @@ package body ALFA is
       ALFA_Scope_Table.Init;
       ALFA_Xref_Table.Init;
    end Initialize_ALFA_Tables;
+
+   -------------------------
+   -- Get_Entity_For_Decl --
+   -------------------------
+
+   function Get_Entity_For_Decl (N : Node_Id) return Entity_Id is
+      E : Entity_Id := Empty;
+
+   begin
+      case Nkind (N) is
+         when N_Subprogram_Declaration |
+              N_Subprogram_Body        |
+              N_Package_Declaration    =>
+            E := Defining_Unit_Name (Specification (N));
+
+         when N_Package_Body =>
+            E := Defining_Unit_Name (N);
+
+         when N_Object_Declaration =>
+            E := Defining_Identifier (N);
+
+         when others =>
+            null;
+      end case;
+
+      if Nkind (E) = N_Defining_Program_Unit_Name then
+         E := Defining_Identifier (E);
+      end if;
+
+      return E;
+   end Get_Entity_For_Decl;
+
+   --------------------------------
+   -- Get_Unique_Entity_For_Decl --
+   --------------------------------
+
+   function Get_Unique_Entity_For_Decl (N : Node_Id) return Entity_Id is
+      E : Entity_Id := Empty;
+
+   begin
+      case Nkind (N) is
+         when N_Subprogram_Declaration |
+              N_Package_Declaration    =>
+            E := Defining_Unit_Name (Specification (N));
+
+         when N_Package_Body =>
+            E := Corresponding_Spec (N);
+
+         when N_Subprogram_Body =>
+            if Acts_As_Spec (N) then
+               E := Defining_Unit_Name (Specification (N));
+            else
+               E := Corresponding_Spec (N);
+            end if;
+
+         when N_Object_Declaration =>
+            E := Defining_Identifier (N);
+
+         when others =>
+            null;
+      end case;
+
+      if Nkind (E) = N_Defining_Program_Unit_Name then
+         E := Defining_Identifier (E);
+      end if;
+
+      return E;
+   end Get_Unique_Entity_For_Decl;
 
    -----------
    -- palfa --
