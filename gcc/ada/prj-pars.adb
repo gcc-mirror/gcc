@@ -28,7 +28,6 @@ with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 with Output;   use Output;
 with Prj.Conf; use Prj.Conf;
-with Prj.Env;
 with Prj.Err;  use Prj.Err;
 with Prj.Part;
 with Prj.Tree; use Prj.Tree;
@@ -45,9 +44,9 @@ package body Prj.Pars is
       Project           : out Project_Id;
       Project_File_Name : String;
       Packages_To_Check : String_List_Access := All_Packages;
-      Flags             : Processing_Flags;
       Reset_Tree        : Boolean := True;
-      In_Node_Tree      : Prj.Tree.Project_Node_Tree_Ref := null)
+      In_Node_Tree      : Prj.Tree.Project_Node_Tree_Ref := null;
+      Env               : in out Prj.Tree.Environment)
    is
       Project_Node            : Project_Node_Id := Empty_Node;
       The_Project             : Project_Id      := No_Project;
@@ -61,8 +60,6 @@ package body Prj.Pars is
       if Project_Node_Tree = null then
          Project_Node_Tree := new Project_Node_Tree_Data;
          Prj.Tree.Initialize (Project_Node_Tree);
-         Prj.Env.Initialize_Default_Project_Path
-            (Project_Node_Tree.Project_Path, Target_Name => "");
       end if;
 
       --  Parse the main project file into a tree
@@ -75,7 +72,7 @@ package body Prj.Pars is
          Errout_Handling        => Prj.Part.Finalize_If_Error,
          Packages_To_Check      => Packages_To_Check,
          Current_Directory      => Current_Dir,
-         Flags                  => Flags,
+         Env                    => Env,
          Is_Config_File         => False);
 
       --  If there were no error, process the tree
@@ -97,7 +94,7 @@ package body Prj.Pars is
                Allow_Automatic_Generation => False,
                Automatically_Generated    => Automatically_Generated,
                Config_File_Path           => Config_File_Path,
-               Flags                      => Flags,
+               Env                        => Env,
                Normalized_Hostname        => "",
                On_Load_Config             =>
                  Add_Default_GNAT_Naming_Scheme'Access,

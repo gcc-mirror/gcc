@@ -573,7 +573,7 @@ package body Prj.Conf is
      (Project                    : Project_Id;
       Project_Tree               : Project_Tree_Ref;
       Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
-      Env                        : Prj.Tree.Environment;
+      Env                        : in out Prj.Tree.Environment;
       Allow_Automatic_Generation : Boolean;
       Config_File_Name           : String := "";
       Autoconf_Specified         : Boolean;
@@ -583,7 +583,6 @@ package body Prj.Conf is
       Config                     : out Prj.Project_Id;
       Config_File_Path           : out String_Access;
       Automatically_Generated    : out Boolean;
-      Flags                      : Processing_Flags;
       On_Load_Config             : Config_File_Hook := null)
    is
 
@@ -933,13 +932,13 @@ package body Prj.Conf is
             end if;
 
             if not Is_Directory (Obj_Dir) then
-               case Flags.Require_Obj_Dirs is
+               case Env.Flags.Require_Obj_Dirs is
                   when Error =>
                      Raise_Invalid_Config
                        ("object directory " & Obj_Dir & " does not exist");
                   when Warning =>
                      Prj.Err.Error_Msg
-                       (Flags,
+                       (Env.Flags,
                         "?object directory " & Obj_Dir & " does not exist");
                      Obj_Dir_Exists := False;
                   when Silent =>
@@ -1124,7 +1123,7 @@ package body Prj.Conf is
             Packages_To_Check      => Packages_To_Check,
             Current_Directory      => Current_Directory,
             Is_Config_File         => True,
-            Flags                  => Flags);
+            Env                    => Env);
       else
          Config_Project_Node := Empty_Node;
       end if;
@@ -1136,7 +1135,7 @@ package body Prj.Conf is
             Success                => Success,
             From_Project_Node      => Config_Project_Node,
             From_Project_Node_Tree => Project_Node_Tree,
-            Flags                  => Flags,
+            Env                    => Env,
             Reset_Tree             => False);
       end if;
 
@@ -1190,17 +1189,17 @@ package body Prj.Conf is
       Project_File_Name          : String;
       Project_Tree               : Prj.Project_Tree_Ref;
       Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
+      Env                        : in out Prj.Tree.Environment;
       Packages_To_Check          : String_List_Access;
       Allow_Automatic_Generation : Boolean := True;
       Automatically_Generated    : out Boolean;
       Config_File_Path           : out String_Access;
       Target_Name                : String := "";
       Normalized_Hostname        : String;
-      Flags                      : Processing_Flags;
       On_Load_Config             : Config_File_Hook := null)
    is
    begin
-      pragma Assert (Prj.Env.Is_Initialized (Project_Node_Tree.Project_Path));
+      pragma Assert (Prj.Env.Is_Initialized (Env.Project_Path));
 
       --  Parse the user project tree
 
@@ -1217,7 +1216,7 @@ package body Prj.Conf is
          Packages_To_Check      => Packages_To_Check,
          Current_Directory      => Current_Directory,
          Is_Config_File         => False,
-         Flags                  => Flags);
+         Env                    => Env);
 
       if User_Project_Node = Empty_Node then
          User_Project_Node := Empty_Node;
@@ -1231,13 +1230,13 @@ package body Prj.Conf is
          Autoconf_Specified         => Autoconf_Specified,
          Project_Tree               => Project_Tree,
          Project_Node_Tree          => Project_Node_Tree,
+         Env                        => Env,
          Packages_To_Check          => Packages_To_Check,
          Allow_Automatic_Generation => Allow_Automatic_Generation,
          Automatically_Generated    => Automatically_Generated,
          Config_File_Path           => Config_File_Path,
          Target_Name                => Target_Name,
          Normalized_Hostname        => Normalized_Hostname,
-         Flags                      => Flags,
          On_Load_Config             => On_Load_Config);
    end Parse_Project_And_Apply_Config;
 
@@ -1252,13 +1251,13 @@ package body Prj.Conf is
       Autoconf_Specified         : Boolean;
       Project_Tree               : Prj.Project_Tree_Ref;
       Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
+      Env                        : in out Prj.Tree.Environment;
       Packages_To_Check          : String_List_Access;
       Allow_Automatic_Generation : Boolean := True;
       Automatically_Generated    : out Boolean;
       Config_File_Path           : out String_Access;
       Target_Name                : String := "";
       Normalized_Hostname        : String;
-      Flags                      : Processing_Flags;
       On_Load_Config             : Config_File_Hook := null;
       Reset_Tree                 : Boolean := True)
    is
@@ -1275,7 +1274,7 @@ package body Prj.Conf is
          Success                => Success,
          From_Project_Node      => User_Project_Node,
          From_Project_Node_Tree => Project_Node_Tree,
-         Flags                  => Flags,
+         Env                    => Env,
          Reset_Tree             => Reset_Tree);
 
       if not Success then
@@ -1326,6 +1325,7 @@ package body Prj.Conf is
          Project                    => Main_Project,
          Project_Tree               => Project_Tree,
          Project_Node_Tree          => Project_Node_Tree,
+         Env                        => Env,
          Allow_Automatic_Generation => Allow_Automatic_Generation,
          Config_File_Name           => Config_File_Name,
          Autoconf_Specified         => Autoconf_Specified,
@@ -1334,7 +1334,6 @@ package body Prj.Conf is
          Packages_To_Check          => Packages_To_Check,
          Config_File_Path           => Config_File_Path,
          Automatically_Generated    => Automatically_Generated,
-         Flags                      => Flags,
          On_Load_Config             => On_Load_Config);
 
       Apply_Config_File (Main_Config_Project, Project_Tree);
@@ -1347,7 +1346,7 @@ package body Prj.Conf is
          Success                    => Success,
          From_Project_Node          => User_Project_Node,
          From_Project_Node_Tree     => Project_Node_Tree,
-         Flags                      => Flags);
+         Env                        => Env);
 
       if Success then
          if Project_Tree.Source_Info_File_Name /= null and then

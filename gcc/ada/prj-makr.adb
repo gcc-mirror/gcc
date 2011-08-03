@@ -61,6 +61,8 @@ package body Prj.Makr is
    Tree : constant Project_Node_Tree_Ref := new Project_Node_Tree_Data;
    --  The project tree where the project file is parsed
 
+   Root_Environment : Prj.Tree.Environment;
+
    Args : Argument_List_Access;
    --  The list of arguments for calls to the compiler to get the unit names
    --  and kinds (spec or body) in the Ada sources.
@@ -795,10 +797,14 @@ package body Prj.Makr is
 
       Csets.Initialize;
       Snames.Initialize;
+
       Prj.Initialize (No_Project_Tree);
-      Prj.Tree.Initialize (Tree);
+
+      Prj.Tree.Initialize (Root_Environment, Flags);
       Prj.Env.Initialize_Default_Project_Path
-         (Tree.Project_Path, Target_Name => "");
+         (Root_Environment.Project_Path, Target_Name => "");
+
+      Prj.Tree.Initialize (Tree);
 
       Sources.Set_Last (0);
       Source_Directories.Set_Last (0);
@@ -866,7 +872,7 @@ package body Prj.Makr is
                Errout_Handling        => Part.Finalize_If_Error,
                Store_Comments         => True,
                Is_Config_File         => False,
-               Flags                  => Flags,
+               Env                    => Root_Environment,
                Current_Directory      => Get_Current_Dir,
                Packages_To_Check      => Packages_To_Check_By_Gnatname);
 

@@ -93,6 +93,8 @@ package body Clean is
 
    Project_Node_Tree : Project_Node_Tree_Ref;
 
+   Root_Environment : Prj.Tree.Environment;
+
    Main_Project : Prj.Project_Id := Prj.No_Project;
 
    All_Projects : Boolean := False;
@@ -1400,15 +1402,12 @@ package body Clean is
          --  Parse the project file. If there is an error, Main_Project
          --  will still be No_Project.
 
-         Prj.Env.Initialize_Default_Project_Path
-            (Project_Node_Tree.Project_Path, Target_Name => "");
-
          Prj.Pars.Parse
            (Project           => Main_Project,
             In_Tree           => Project_Tree,
             In_Node_Tree      => Project_Node_Tree,
             Project_File_Name => Project_File_Name.all,
-            Flags             => Gnatmake_Flags,
+            Env               => Root_Environment,
             Packages_To_Check => Packages_To_Check_By_Gnatmake);
 
          if Main_Project = No_Project then
@@ -1561,6 +1560,10 @@ package body Clean is
          Csets.Initialize;
          Snames.Initialize;
 
+         Prj.Tree.Initialize (Root_Environment, Gnatmake_Flags);
+         Prj.Env.Initialize_Default_Project_Path
+            (Root_Environment.Project_Path, Target_Name => "");
+
          Project_Node_Tree := new Project_Node_Tree_Data;
          Prj.Tree.Initialize (Project_Node_Tree);
 
@@ -1696,7 +1699,7 @@ package body Clean is
 
                         elsif Arg (3) = 'P' then
                            Prj.Env.Add_Directories
-                             (Project_Node_Tree.Project_Path,
+                             (Root_Environment.Project_Path,
                               Arg (4 .. Arg'Last));
 
                         else
@@ -1858,7 +1861,6 @@ package body Clean is
                            Ext_Asgn  : constant String := Arg (3 .. Arg'Last);
                            Start     : Positive := Ext_Asgn'First;
                            Stop      : Natural  := Ext_Asgn'Last;
-                           Equal_Pos : Natural;
                            OK        : Boolean  := True;
 
                         begin
@@ -1872,27 +1874,11 @@ package body Clean is
                               end if;
                            end if;
 
-                           Equal_Pos := Start;
-
-                           while Equal_Pos <= Stop
-                             and then Ext_Asgn (Equal_Pos) /= '='
-                           loop
-                              Equal_Pos := Equal_Pos + 1;
-                           end loop;
-
-                           if Equal_Pos = Start or else Equal_Pos > Stop then
-                              OK := False;
-                           end if;
-
-                           if OK then
-                              Prj.Ext.Add
-                                (Project_Node_Tree.External,
-                                 External_Name =>
-                                   Ext_Asgn (Start .. Equal_Pos - 1),
-                                 Value         =>
-                                   Ext_Asgn (Equal_Pos + 1 .. Stop));
-
-                           else
+                           if not OK
+                              or else not Prj.Ext.Check
+                                (Root_Environment.External,
+                                 Ext_Asgn (Start .. Stop))
+                           then
                               Fail
                                 ("illegal external assignment '"
                                  & Ext_Asgn

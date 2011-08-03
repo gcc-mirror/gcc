@@ -46,7 +46,7 @@ package Prj.Part is
       Store_Comments         : Boolean := False;
       Current_Directory      : String := "";
       Is_Config_File         : Boolean;
-      Flags                  : Processing_Flags;
+      Env                    : in out Prj.Tree.Environment;
       Target_Name            : String := "");
    --  Parse project file and all its imported project files and create a tree.
    --  Return the node for the project (or Empty_Node if parsing failed). If
