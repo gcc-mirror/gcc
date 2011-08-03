@@ -470,7 +470,7 @@ procedure GNATCmd is
                            end if;
 
                            Main := Project_Tree.Shared.String_Elements.Table
-                             (Main).Next;
+                                     (Main).Next;
                         end loop;
 
                         if Proj.Project.Library then
@@ -1241,6 +1241,7 @@ procedure GNATCmd is
       Libraries_Present : in out Boolean)
    is
       pragma Unreferenced (Tree);
+
       Path_Option : constant String_Access :=
                       MLib.Linker_Library_Path_Option;
 
@@ -2307,7 +2308,8 @@ begin
                                 Attribute_Or_Array_Name =>
                                   Name_Local_Config_File,
                                 In_Package              => Pkg,
-                                Shared                 => Project_Tree.Shared);
+                                Shared                  =>
+                                  Project_Tree.Shared);
                         end if;
 
                         if Variable /= Nil_Variable_Value

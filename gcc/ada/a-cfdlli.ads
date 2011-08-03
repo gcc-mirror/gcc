@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -251,33 +251,14 @@ private
    type Node_Array is array (Count_Type range <>) of Node_Type;
    function "=" (L, R : Node_Array) return Boolean is abstract;
 
-   type List_Access is access all List;
-   for List_Access'Storage_Size use 0;
-
-   type Kind is (Plain, Part);
-
-   type Plain_List (Capacity : Count_Type) is record
+   type List (Capacity : Count_Type) is tagged record
       Nodes  : Node_Array (1 .. Capacity) := (others => <>);
       Free   : Count_Type'Base := -1;
       Busy   : Natural := 0;
       Lock   : Natural := 0;
-   end record;
-
-   type PList_Access is access Plain_List;
-
-   type Part_List is record
-      LLength : Count_Type := 0;
-      LFirst  : Count_Type := 0;
-      LLast   : Count_Type := 0;
-   end record;
-
-   type List (Capacity : Count_Type) is tagged record
-      K      : Kind := Plain;
       Length : Count_Type := 0;
       First  : Count_Type := 0;
       Last   : Count_Type := 0;
-      Part   : Part_List;
-      Plain  : PList_Access := new Plain_List'(Capacity, others => <>);
    end record;
 
    use Ada.Streams;

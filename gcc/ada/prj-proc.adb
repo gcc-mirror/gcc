@@ -154,6 +154,7 @@ package body Prj.Proc is
    --  as processed, call itself recursively for all imported projects and a
    --  extended project, if any. Then process the declarative items of the
    --  project.
+   --
    --  Is_Root_Project should be true only for the project that the user
    --  explicitly loaded. In the context of aggregate projects, only that
    --  project is allowed to modify the environment that will be used to load
@@ -268,8 +269,9 @@ package body Prj.Proc is
                  (Next  => Decl.Attributes,
                   Name  => Attribute_Name_Of (The_Attribute),
                   Value => New_Attribute);
-               Decl.Attributes := Variable_Element_Table.Last
-                 (Shared.Variable_Elements);
+               Decl.Attributes :=
+                 Variable_Element_Table.Last
+                   (Shared.Variable_Elements);
             end;
          end if;
 
@@ -610,16 +612,17 @@ package body Prj.Proc is
                         --  This literal string list is the first term in a
                         --  string list expression
 
-                        Result.Values := String_Element_Table.Last
-                          (Shared.String_Elements);
+                        Result.Values :=
+                          String_Element_Table.Last
+                            (Shared.String_Elements);
 
                      else
                         Shared.String_Elements.Table (Last).Next :=
                           String_Element_Table.Last (Shared.String_Elements);
                      end if;
 
-                     Last := String_Element_Table.Last
-                       (Shared.String_Elements);
+                     Last :=
+                       String_Element_Table.Last (Shared.String_Elements);
 
                      Shared.String_Elements.Table (Last) :=
                        (Value    => Value.Value,
@@ -706,8 +709,8 @@ package body Prj.Proc is
 
                      The_Name :=
                        Name_Of (Term_Package, From_Project_Node_Tree);
-                     The_Package := The_Project.Decl.Packages;
 
+                     The_Package := The_Project.Decl.Packages;
                      while The_Package /= No_Package
                        and then Shared.Packages.Table (The_Package).Name /=
                           The_Name
@@ -760,10 +763,11 @@ package body Prj.Proc is
 
                         while The_Variable_Id /= No_Variable
                           and then Shared.Variable_Elements.Table
-                            (The_Variable_Id).Name /= The_Name
+                                     (The_Variable_Id).Name /= The_Name
                         loop
-                           The_Variable_Id := Shared.Variable_Elements.Table
-                             (The_Variable_Id).Next;
+                           The_Variable_Id :=
+                             Shared.Variable_Elements.Table
+                               (The_Variable_Id).Next;
                         end loop;
 
                      end if;
@@ -808,15 +812,15 @@ package body Prj.Proc is
 
                      begin
                         if The_Package /= No_Package then
-                           The_Array := Shared.Packages.Table
-                             (The_Package).Decl.Arrays;
+                           The_Array :=
+                             Shared.Packages.Table (The_Package).Decl.Arrays;
                         else
                            The_Array := The_Project.Decl.Arrays;
                         end if;
 
                         while The_Array /= No_Array
                           and then Shared.Arrays.Table (The_Array).Name /=
-                          The_Name
+                                                                    The_Name
                         loop
                            The_Array := Shared.Arrays.Table (The_Array).Next;
                         end loop;
@@ -835,19 +839,18 @@ package body Prj.Proc is
                                         (The_Element).Index /= Array_Index
                            loop
                               The_Element :=
-                                Shared.Array_Elements.Table
-                                  (The_Element).Next;
+                                Shared.Array_Elements.Table (The_Element).Next;
                            end loop;
 
                         end if;
 
                         if The_Element /= No_Array_Element then
-                           The_Variable := Shared.Array_Elements.Table
-                             (The_Element).Value;
+                           The_Variable :=
+                             Shared.Array_Elements.Table (The_Element).Value;
 
                         else
                            if Expression_Kind_Of
-                             (The_Current_Term, From_Project_Node_Tree) =
+                                (The_Current_Term, From_Project_Node_Tree) =
                                                                         List
                            then
                               The_Variable :=
@@ -1085,12 +1088,13 @@ package body Prj.Proc is
                            end if;
 
                            if not Done then
-                              --  Count the number of string
+
+                              --  Count the number of strings
 
                               declare
                                  Saved : constant Positive := First;
-                              begin
 
+                              begin
                                  Nmb := 1;
                                  loop
                                     Lst :=
@@ -1479,11 +1483,13 @@ package body Prj.Proc is
                      Error_Msg
                        (Env.Flags, "value %% is illegal for typed string %%",
                         Loc, Project);
+
                   when Warning =>
                      Error_Msg
                        (Env.Flags, "?value %% is illegal for typed string %%",
                         Loc, Project);
                      Reset_Value := True;
+
                   when Silent =>
                      Reset_Value := True;
                end case;

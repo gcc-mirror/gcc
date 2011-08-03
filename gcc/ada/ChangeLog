@@ -1,3 +1,61 @@
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
+	* gnatcmd.adb, prj-proc.adb, mlib-prj.adb, prj.adb, makeutl.ads,
+	prj-util.adb, prj-util.ads, prj-conf.adb, prj-env.adb: Minor
+	reformatting.
+
+2011-08-03  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Is_VM_By_Copy_Actual): Include N_Slide nodes as actuals
+	that must be passed by copy in VM targets.
+
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.ads, prj-nmsc.adb (Files_Htable): removed this htable, which
+	duplicates a similar htable now in the project tree.
+
+2011-08-03  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.adb, a-cfhama.adb, a-cfhase.adb, a-cforma.adb, a-cforse.adb,
+	a-cofove.adb ("=", Length, Is_Empty, Clear, Assign, Copy, Element,
+	Replace_Element, Query_Element, Update_Element, Move, Insert, Prepend,
+	Append, Delete, Delete_First, Delete_Last, Reverse_Element, Swap,
+	Splice, First, First_Element, Last, Last_Element, Next, Previous, Find,
+	Reverse_Find, Contains, Has_Element, Iterate, Reverse_Iterate, Capacity,
+	Reserve_Length, Length, Strict_Equal, Left, Right): Data-structure
+	update.
+
+2011-08-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taprop-posix.adb, s-taprop-linux.adb, s-taprop-tru64.adb
+	(ATCB_Key): Removed, not always used.
+	* s-tpopsp-posix.adb, s-tpopsp-posix-foreign.adb (ATCB_Key): Moved from
+	s-taprop-posix.adb.
+	* s-tpopsp-tls.adb: New file.
+	* gcc-interface/Makefile.in: Use TLS implementation of s-tpopsp.adb on
+	x86/x64/ia64/powerpc/sparc Linux.
+
+2011-08-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* system-aix.ads, system-aix64.ads: Set ZCX_By_Default to True.
+	* gcc-interface/Makefile.in: Switch to ZCX by default on AIX ports.
+
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* rtsfind.ads, exp_dist.adb, exp_dist.ads
+	(Build_From_Any_Call, Build_To_Any_Call, Build_TypeCode_Call):
+	Fix type selection for mapping integer types to PolyORB types.
+
+2011-08-03  Bob Duff  <duff@adacore.com>
+
+	* sem_ch7.adb: Minor comment clarification.
+
+2011-08-03  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Analyze_Enumeration_Representation_Clause): If we get
+	an error analyzing a choice, skip further processing. Further
+	processing could cause a crash or cascade errors.
+
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
 	* gnatcmd.adb, prj-proc.adb, prj-proc.ads, make.adb, mlib-prj.adb,

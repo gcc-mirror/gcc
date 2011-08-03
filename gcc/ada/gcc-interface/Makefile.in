@@ -529,6 +529,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
         s-vxwext.adb<s-vxwext-kernel-smp.adb \
         system.ads<system-vxworks-ppc-kernel.ads
 
+        EH_MECHANISM=-gcc
         EXTRA_GNATRTL_TASKING_OBJS=affinity.o
       else
         LIBGNAT_TARGET_PAIRS += \
@@ -536,6 +537,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
         s-tpopsp.adb<s-tpopsp-vxworks.adb
 
         ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
+          EH_MECHANISM=-gcc
           LIBGNAT_TARGET_PAIRS += \
           s-vxwext.ads<s-vxwext-kernel.ads \
           s-vxwext.adb<s-vxwext-kernel.adb \
@@ -1072,7 +1074,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   g-bytswa.adb<g-bytswa-x86.adb \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
-  s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+  s-tpopsp.adb<s-tpopsp-tls.adb \
   g-sercom.adb<g-sercom-linux.adb
 
   ifeq ($(strip $(filter-out marte,$(THREAD_KIND))),)
@@ -1383,7 +1385,7 @@ ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
   endif
 
   THREADSLIB = -lpthreads
-
+  EH_MECHANISM=-gcc
   TOOLS_TARGET_PAIRS = \
   mlib-tgt-specific.adb<mlib-tgt-specific-aix.adb \
   indepsw.adb<indepsw-aix.adb
@@ -1800,7 +1802,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
   s-intman.adb<s-intman-posix.adb \
   s-linux.ads<s-linux.ads \
   s-osinte.adb<s-osinte-posix.adb \
-  s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+  s-tpopsp.adb<s-tpopsp-tls.adb \
   g-sercom.adb<g-sercom-linux.adb \
   $(ATOMICS_TARGET_PAIRS)
 
@@ -1898,7 +1900,7 @@ ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
   s-tasinf.ads<s-tasinf-linux.ads \
   s-tasinf.adb<s-tasinf-linux.adb \
   s-taspri.ads<s-taspri-posix-noaltstack.ads \
-  s-tpopsp.adb<s-tpopsp-posix-foreign.adb
+  s-tpopsp.adb<s-tpopsp-tls.adb
 
   LIBGNAT_TARGET_PAIRS_32 = \
   g-trasym.ads<g-trasym-unimplemented.ads \
@@ -2002,7 +2004,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   s-taprop.adb<s-taprop-linux.adb \
   s-tasinf.ads<s-tasinf-linux.ads \
   s-tasinf.adb<s-tasinf-linux.adb \
-  s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+  s-tpopsp.adb<s-tpopsp-tls.adb \
   s-taspri.ads<s-taspri-posix-noaltstack.ads \
   g-sercom.adb<g-sercom-linux.adb \
   system.ads<system-linux-ia64.ads \
@@ -2094,7 +2096,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   s-taprop.adb<s-taprop-linux.adb \
   s-tasinf.ads<s-tasinf-linux.ads \
   s-tasinf.adb<s-tasinf-linux.adb \
-  s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+  s-tpopsp.adb<s-tpopsp-tls.adb \
   s-taspri.ads<s-taspri-posix.ads \
   g-sercom.adb<g-sercom-linux.adb \
   system.ads<system-linux-x86_64.ads \

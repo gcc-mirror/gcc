@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,9 @@
 
 separate (System.Task_Primitives.Operations)
 package body Specific is
+
+   ATCB_Key : aliased pthread_key_t;
+   --  Key used to find the Ada Task_Id associated with a thread
 
    ----------------
    -- Initialize --

@@ -1516,8 +1516,8 @@ package body Sem_Ch7 is
    procedure Declare_Inherited_Private_Subprograms (Id : Entity_Id) is
 
       function Is_Primitive_Of (T : Entity_Id; S : Entity_Id) return Boolean;
-      --  Check whether an inherited subprogram is an operation of an untagged
-      --  derived type.
+      --  Check whether an inherited subprogram S is an operation of an
+      --  untagged derived type T.
 
       ---------------------
       -- Is_Primitive_Of --

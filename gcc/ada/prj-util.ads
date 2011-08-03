@@ -141,7 +141,7 @@ package Prj.Util is
    function Value_Of
      (Variable_Name : Name_Id;
       In_Variables  : Variable_Id;
-      Shared      : Shared_Project_Tree_Data_Access) return Variable_Value;
+      Shared        : Shared_Project_Tree_Data_Access) return Variable_Value;
    --  Returns a specified variable in a variable list. Returns null if
    --  In_Variables is null or if Variable_Name is not the name of a
    --  variable in In_Variables. Caller must ensure that Name is lower case.

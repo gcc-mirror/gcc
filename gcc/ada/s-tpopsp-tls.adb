@@ -29,26 +29,22 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a POSIX version of this package where foreign threads are
+--  This is a version of this package using TLS and where foreign threads are
 --  recognized.
 
 separate (System.Task_Primitives.Operations)
 package body Specific is
 
-   ATCB_Key : aliased pthread_key_t;
-   --  Key used to find the Ada Task_Id associated with a thread
+   ATCB : aliased Task_Id := null;
+   pragma Thread_Local_Storage (ATCB);
 
    ----------------
    -- Initialize --
    ----------------
 
    procedure Initialize (Environment_Task : Task_Id) is
-      pragma Warnings (Off, Environment_Task);
-      Result : Interfaces.C.int;
-
    begin
-      Result := pthread_key_create (ATCB_Key'Access, null);
-      pragma Assert (Result = 0);
+      ATCB := Environment_Task;
    end Initialize;
 
    -------------------
@@ -57,7 +53,7 @@ package body Specific is
 
    function Is_Valid_Task return Boolean is
    begin
-      return pthread_getspecific (ATCB_Key) /= System.Null_Address;
+      return ATCB /= null;
    end Is_Valid_Task;
 
    ---------
@@ -65,10 +61,8 @@ package body Specific is
    ---------
 
    procedure Set (Self_Id : Task_Id) is
-      Result : Interfaces.C.int;
    begin
-      Result := pthread_setspecific (ATCB_Key, To_Address (Self_Id));
-      pragma Assert (Result = 0);
+      ATCB := Self_Id;
    end Set;
 
    ----------
@@ -89,16 +83,13 @@ package body Specific is
    --  tasks.
 
    function Self return Task_Id is
-      Result : System.Address;
-
+      Result : constant Task_Id := ATCB;
    begin
-      Result := pthread_getspecific (ATCB_Key);
-
-      --  If the key value is Null then it is a non-Ada task
-
-      if Result /= System.Null_Address then
-         return To_Task_Id (Result);
+      if Result /= null then
+         return Result;
       else
+         --  If the value is Null then it is a non-Ada task
+
          return Register_Foreign_Thread;
       end if;
    end Self;

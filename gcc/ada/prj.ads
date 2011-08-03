@@ -1442,6 +1442,8 @@ package Prj is
 
       Source_Paths_HT : Source_Paths_Htable.Instance;
       --  Full path to Source_Id
+      --  ??? What is behavior for multi-unit source files, where there are
+      --  several source_id per file ?
 
       Source_Info_File_Name : String_Access := null;
       --  The name of the source info file, if specified by the builder
