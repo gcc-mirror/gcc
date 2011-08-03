@@ -2149,7 +2149,8 @@ __gnat_is_executable_file_attr (char* name, struct file_attributes* attr)
 	 TCHAR *l, *last = _tcsstr(wname, _T(".exe"));
 
 	 /* look for last .exe */
-	 while (l = _tcsstr(last+1, _T(".exe"))) last = l;
+	 if (last)
+	   while (l = _tcsstr(last+1, _T(".exe"))) last = l;
 
 	 attr->executable = GetFileAttributes (wname) != INVALID_FILE_ATTRIBUTES
 	   && last - wname == (int) (_tcslen (wname) - 4);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -7292,7 +7292,16 @@ package body Sem_Ch13 is
            and then Known_Component_Size (T2)
            and then Component_Size (T1) = Component_Size (T2)
          then
-            return True;
+            if VM_Target = No_VM then
+               return True;
+
+            --  In VM targets the representation of arrays with aliased
+            --  components differs from arrays with non-aliased components
+
+            else
+               return Has_Aliased_Components (Base_Type (T1))
+                 = Has_Aliased_Components (Base_Type (T2));
+            end if;
          end if;
       end if;
 
