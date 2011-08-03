@@ -660,14 +660,13 @@ package body Exp_Ch4 is
               Make_Raise_Program_Error (Loc,
                 Condition =>
                   Make_Op_Gt (Loc,
-                    Left_Opnd =>
+                    Left_Opnd  =>
                       Build_Get_Access_Level (Loc,
                         Make_Attribute_Reference (Loc,
-                          Prefix => Ref_Node,
+                          Prefix         => Ref_Node,
                           Attribute_Name => Name_Tag)),
                     Right_Opnd =>
-                      Make_Integer_Literal (Loc,
-                        Type_Access_Level (PtrT))),
+                      Make_Integer_Literal (Loc, Type_Access_Level (PtrT))),
                 Reason => PE_Accessibility_Check_Failed));
          end if;
       end Apply_Accessibility_Check;
@@ -974,11 +973,9 @@ package body Exp_Ch4 is
 
                New_Decl :=
                  Make_Object_Declaration (Loc,
-                   Defining_Identifier =>
-                     Make_Temporary (Loc, 'P'),
-                   Object_Definition =>
-                     New_Reference_To (PtrT, Loc),
-                   Expression =>
+                   Defining_Identifier => Make_Temporary (Loc, 'P'),
+                   Object_Definition   => New_Reference_To (PtrT, Loc),
+                   Expression          =>
                      Unchecked_Convert_To (PtrT,
                        New_Reference_To (Temp, Loc)));
 
@@ -1085,10 +1082,10 @@ package body Exp_Ch4 is
               and then Present (Associated_Collection (PtrT))
             then
                Insert_Action (N,
-                 Make_Set_Finalize_Address_Ptr_Call (
-                   Loc     => Loc,
-                   Typ     => T,
-                   Ptr_Typ => PtrT));
+                 Make_Set_Finalize_Address_Ptr_Call
+                   (Loc     => Loc,
+                    Typ     => T,
+                    Ptr_Typ => PtrT));
             end if;
          end if;
 
@@ -1111,8 +1108,7 @@ package body Exp_Ch4 is
              Object_Definition   => New_Reference_To (PtrT, Loc),
              Expression          =>
                Make_Allocator (Loc,
-                 Expression =>
-                   New_Reference_To (Etype (Exp), Loc)));
+                 Expression => New_Reference_To (Etype (Exp), Loc)));
 
          --  Copy the Comes_From_Source flag for the allocator we just built,
          --  since logically this allocator is a replacement of the original
@@ -1138,10 +1134,9 @@ package body Exp_Ch4 is
            and then Present (Associated_Collection (PtrT))
          then
             Insert_Action (N,
-              Make_Attach_Call (
-                Obj_Ref =>
-                  New_Reference_To (Temp, Loc),
-                Ptr_Typ => PtrT));
+              Make_Attach_Call
+                (Obj_Ref => New_Reference_To (Temp, Loc),
+                 Ptr_Typ => PtrT));
          end if;
 
          Rewrite (N, New_Reference_To (Temp, Loc));
@@ -1215,8 +1210,7 @@ package body Exp_Ch4 is
                Insert_Action (Exp,
                  Make_Subtype_Declaration (Loc,
                    Defining_Identifier => ConstrT,
-                   Subtype_Indication  =>
-                     Make_Subtype_From_Expr (Exp, T)));
+                   Subtype_Indication  => Make_Subtype_From_Expr (Exp, T)));
                Freeze_Itype (ConstrT, Exp);
                Rewrite (Exp, OK_Convert_To (ConstrT, Internal_Exp));
             end;
@@ -3269,9 +3263,8 @@ package body Exp_Ch4 is
          Temp_Decl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp_Id,
-             Aliased_Present => True,
-             Object_Definition =>
-               New_Occurrence_Of (Etyp, Loc));
+             Aliased_Present     => True,
+             Object_Definition   => New_Occurrence_Of (Etyp, Loc));
 
          if Nkind (Expression (N)) = N_Qualified_Expression then
             Set_Expression (Temp_Decl, Expression (Expression (N)));
@@ -3294,8 +3287,7 @@ package body Exp_Ch4 is
 
          Rewrite (N,
            Make_Attribute_Reference (Loc,
-             Prefix =>
-               New_Occurrence_Of (Temp_Id, Loc),
+             Prefix         => New_Occurrence_Of (Temp_Id, Loc),
              Attribute_Name => Name_Unrestricted_Access));
 
          Analyze_And_Resolve (N, PtrT);
@@ -3332,8 +3324,7 @@ package body Exp_Ch4 is
                  Make_Attribute_Reference (Loc,
                    Prefix         => New_Occurrence_Of (E, Loc),
                    Attribute_Name => Name_Length,
-                   Expressions    => New_List (
-                     Make_Integer_Literal (Loc, J)));
+                   Expressions    => New_List (Make_Integer_Literal (Loc, J)));
 
                if J = 1 then
                   Res := Len;
@@ -3400,8 +3391,8 @@ package body Exp_Ch4 is
       if Is_Access_Constant (PtrT)
         and then Nkind (Expression (N)) = N_Qualified_Expression
         and then Compile_Time_Known_Value (Expression (Expression (N)))
-        and then Size_Known_At_Compile_Time (Etype (Expression
-                                                    (Expression (N))))
+        and then Size_Known_At_Compile_Time
+                   (Etype (Expression (Expression (N))))
         and then not Is_Record_Type (Current_Scope)
       then
          --  Here we can do the optimization. For the allocator
@@ -3436,7 +3427,7 @@ package body Exp_Ch4 is
 
          Rewrite (N,
            Make_Attribute_Reference (Loc,
-             Prefix => New_Occurrence_Of (Temp, Loc),
+             Prefix         => New_Occurrence_Of (Temp, Loc),
              Attribute_Name => Name_Unrestricted_Access));
 
          Analyze_And_Resolve (N, PtrT);
@@ -3488,8 +3479,7 @@ package body Exp_Ch4 is
                   Make_Op_Gt (Loc,
                     Left_Opnd  => Size_In_Storage_Elements (Etyp),
                     Right_Opnd =>
-                      Make_Integer_Literal (Loc,
-                        Intval => Uint_7 * (Uint_2 ** 29))),
+                      Make_Integer_Literal (Loc, Uint_7 * (Uint_2 ** 29))),
                 Reason    => SE_Object_Too_Large));
          end if;
       end if;
@@ -3603,8 +3593,7 @@ package body Exp_Ch4 is
                --  type whose definition is a concurrent type, the first
                --  argument in the Init routine has to be unchecked conversion
                --  to the corresponding record type. If the designated type is
-               --  a derived type, we also convert the argument to its root
-               --  type.
+               --  a derived type, also convert the argument to its root type.
 
                if Is_Concurrent_Type (T) then
                   Init_Arg1 :=
@@ -3672,8 +3661,8 @@ package body Exp_Ch4 is
                                 New_Occurrence_Of
                                   (Entity (Nam), Sloc (Nam)), T);
 
-                        elsif Nkind_In
-                          (Nam, N_Indexed_Component, N_Selected_Component)
+                        elsif Nkind_In (Nam, N_Indexed_Component,
+                                             N_Selected_Component)
                           and then Is_Entity_Name (Prefix (Nam))
                         then
                            Decls :=
@@ -3821,8 +3810,7 @@ package body Exp_Ch4 is
                else
                   Insert_Action (N,
                     Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To (Init, Loc),
+                      Name                   => New_Reference_To (Init, Loc),
                       Parameter_Associations => Args));
                end if;
 
@@ -3832,9 +3820,9 @@ package body Exp_Ch4 is
                   --    [Deep_]Initialize (Init_Arg1);
 
                   Insert_Action (N,
-                    Make_Init_Call (
-                      Obj_Ref => New_Copy_Tree (Init_Arg1),
-                      Typ     => T));
+                    Make_Init_Call
+                      (Obj_Ref => New_Copy_Tree (Init_Arg1),
+                       Typ     => T));
 
                   if Present (Associated_Collection (PtrT)) then
 
@@ -3849,9 +3837,9 @@ package body Exp_Ch4 is
                      if VM_Target /= No_VM then
                         if Is_Controlled (T) then
                            Insert_Action (N,
-                             Make_Attach_Call (
-                               Obj_Ref => New_Copy_Tree (Init_Arg1),
-                               Ptr_Typ => PtrT));
+                             Make_Attach_Call
+                               (Obj_Ref => New_Copy_Tree (Init_Arg1),
+                                Ptr_Typ => PtrT));
                         end if;
 
                      --  Default case, generate:
@@ -3861,10 +3849,10 @@ package body Exp_Ch4 is
 
                      else
                         Insert_Action (N,
-                          Make_Set_Finalize_Address_Ptr_Call (
-                            Loc     => Loc,
-                            Typ     => T,
-                            Ptr_Typ => PtrT));
+                          Make_Set_Finalize_Address_Ptr_Call
+                            (Loc     => Loc,
+                             Typ     => T,
+                             Ptr_Typ => PtrT));
                      end if;
                   end if;
                end if;
@@ -4135,9 +4123,8 @@ package body Exp_Ch4 is
                Make_Temporary (Loc, 'A'),
              Type_Definition =>
                Make_Access_To_Object_Definition (Loc,
-                 All_Present => True,
-                 Subtype_Indication =>
-                   New_Reference_To (Typ, Loc)));
+                 All_Present        => True,
+                 Subtype_Indication => New_Reference_To (Typ, Loc)));
 
          Insert_Action (N, P_Decl);
 
@@ -4153,19 +4140,19 @@ package body Exp_Ch4 is
 
              Then_Statements => New_List (
                Make_Assignment_Statement (Sloc (Thenx),
-                 Name => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                 Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
                  Expression =>
                    Make_Attribute_Reference (Loc,
                      Attribute_Name => Name_Unrestricted_Access,
-                     Prefix =>  Relocate_Node (Thenx)))),
+                     Prefix         =>  Relocate_Node (Thenx)))),
 
              Else_Statements => New_List (
                Make_Assignment_Statement (Sloc (Elsex),
-                 Name => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                 Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
                  Expression =>
                    Make_Attribute_Reference (Loc,
                      Attribute_Name => Name_Unrestricted_Access,
-                     Prefix => Relocate_Node (Elsex)))));
+                     Prefix         => Relocate_Node (Elsex)))));
 
          New_N :=
            Make_Explicit_Dereference (Loc,
@@ -9209,7 +9196,6 @@ package body Exp_Ch4 is
 
       Result := New_Reference_To (Standard_True, Loc);
       C := Suitable_Element (First_Entity (Typ));
-
       while Present (C) loop
          declare
             New_Lhs : Node_Id;

@@ -841,10 +841,10 @@ package body Exp_Ch3 is
               Make_Object_Declaration (Loc,
                 Defining_Identifier =>
                   Make_Defining_Identifier (Loc, Name_uMaster),
-                Constant_Present => True,
-                Object_Definition =>
+                Constant_Present    => True,
+                Object_Definition   =>
                   New_Reference_To (Standard_Integer, Loc),
-                Expression =>
+                Expression          =>
                   Make_Explicit_Dereference (Loc,
                     New_Reference_To (RTE (RE_Current_Master), Loc)));
 
@@ -1659,9 +1659,9 @@ package body Exp_Ch3 is
       then
          if Chars (Selector_Name (Id_Ref)) /= Name_uParent then
             Append_To (Res,
-              Make_Init_Call (
-                Obj_Ref => New_Copy_Tree (First_Arg),
-                Typ     => Typ));
+              Make_Init_Call
+                (Obj_Ref => New_Copy_Tree (First_Arg),
+                 Typ     => Typ));
          end if;
       end if;
 
@@ -1852,7 +1852,7 @@ package body Exp_Ch3 is
          then
             Exp :=
               Make_Attribute_Reference (Loc,
-                Prefix =>
+                Prefix         =>
                   Make_Identifier (Loc, Name_uInit),
                 Attribute_Name => Name_Unrestricted_Access);
          end if;
@@ -1880,9 +1880,9 @@ package body Exp_Ch3 is
          then
             Append_To (Res,
               Make_Assignment_Statement (Loc,
-                Name =>
+                Name       =>
                   Make_Selected_Component (Loc,
-                    Prefix =>
+                    Prefix        =>
                       New_Copy_Tree (Lhs, New_Scope => Proc_Id),
                     Selector_Name =>
                       New_Reference_To (First_Tag_Component (Typ), Loc)),
@@ -1908,9 +1908,9 @@ package body Exp_Ch3 is
            and then not Is_Immutably_Limited_Type (Typ)
          then
             Append_To (Res,
-              Make_Adjust_Call (
-                Obj_Ref => New_Copy_Tree (Lhs),
-                Typ     => Etype (Id)));
+              Make_Adjust_Call
+                (Obj_Ref => New_Copy_Tree (Lhs),
+                 Typ     => Etype (Id)));
          end if;
 
          return Res;
@@ -2069,7 +2069,7 @@ package body Exp_Ch3 is
          Res :=
            New_List (
              Make_Procedure_Call_Statement (Loc,
-               Name =>
+               Name                   =>
                  New_Occurrence_Of (Parent_Proc, Loc),
                Parameter_Associations => Args));
 
@@ -2111,8 +2111,8 @@ package body Exp_Ch3 is
               Make_Parameter_Specification (Loc,
                 Defining_Identifier =>
                   Make_Defining_Identifier (Loc, Name_uO),
-                In_Present => True,
-                Parameter_Type =>
+                In_Present          => True,
+                Parameter_Type      =>
                   New_Reference_To (Rec_Type, Loc))));
             Set_Result_Definition (Spec_Node,
               New_Reference_To (RTE (RE_Storage_Offset), Loc));
@@ -2128,7 +2128,7 @@ package body Exp_Ch3 is
             Set_Declarations (Body_Node, New_List);
             Set_Handled_Statement_Sequence (Body_Node,
               Make_Handled_Sequence_Of_Statements (Loc,
-                Statements => New_List (
+                Statements     => New_List (
                   Make_Simple_Return_Statement (Loc,
                     Expression =>
                       Make_Attribute_Reference (Loc,
@@ -2684,14 +2684,11 @@ package body Exp_Ch3 is
 
             Append_To (Stmts,
               Make_Assignment_Statement (Loc,
-                Name =>
-                  New_Reference_To (Counter_Id, Loc),
+                Name       => New_Reference_To (Counter_Id, Loc),
                 Expression =>
                   Make_Op_Add (Loc,
-                    Left_Opnd =>
-                      New_Reference_To (Counter_Id, Loc),
-                    Right_Opnd =>
-                      Make_Integer_Literal (Loc, 1))));
+                    Left_Opnd  => New_Reference_To (Counter_Id, Loc),
+                    Right_Opnd => Make_Integer_Literal (Loc, 1))));
          end Increment_Counter;
 
          ------------------
@@ -2716,9 +2713,9 @@ package body Exp_Ch3 is
             Append_To (Decls,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Counter_Id,
-                Object_Definition =>
+                Object_Definition   =>
                   New_Reference_To (Standard_Integer, Loc),
-                Expression =>
+                Expression          =>
                   Make_Integer_Literal (Loc, 0)));
          end Make_Counter;
 
@@ -2831,10 +2828,8 @@ package body Exp_Ch3 is
                     Build_Initialization_Call
                       (Loc,
                        Make_Selected_Component (Loc,
-                         Prefix =>
-                           Make_Identifier (Loc, Name_uInit),
-                         Selector_Name =>
-                           New_Occurrence_Of (Id, Loc)),
+                         Prefix        => Make_Identifier (Loc, Name_uInit),
+                         Selector_Name => New_Occurrence_Of (Id, Loc)),
                        Typ,
                        In_Init_Proc => True,
                        Enclos_Type  => Rec_Type,
@@ -2896,13 +2891,13 @@ package body Exp_Ch3 is
             if Restricted_Profile then
                Append_To (Stmts,
                  Make_Assignment_Statement (Loc,
-                   Name =>
+                   Name       =>
                      Make_Selected_Component (Loc,
                        Prefix        => Make_Identifier (Loc, Name_uInit),
                        Selector_Name => Make_Identifier (Loc, Name_uTask_Id)),
                    Expression =>
                      Make_Attribute_Reference (Loc,
-                       Prefix =>
+                       Prefix         =>
                          Make_Selected_Component (Loc,
                            Prefix        => Make_Identifier (Loc, Name_uInit),
                            Selector_Name => Make_Identifier (Loc, Name_uATCB)),
@@ -3245,7 +3240,6 @@ package body Exp_Ch3 is
 
          De := First_Discriminant (Rec_Ent);
          Dp := First_Discriminant (Etype (Rec_Ent));
-
          while Present (De) loop
             pragma Assert (Present (Dp));
 
@@ -4657,9 +4651,9 @@ package body Exp_Ch3 is
            or else not Comes_From_Source (N)
          then
             Insert_Action_After (Init_After,
-              Make_Init_Call (
-                Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
-                Typ     => Base_Type (Typ)));
+              Make_Init_Call
+                (Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
+                 Typ     => Base_Type (Typ)));
 
          --  Abort allowed
 
@@ -4680,9 +4674,9 @@ package body Exp_Ch3 is
 
             declare
                L   : constant List_Id := New_List (
-                       Make_Init_Call (
-                         Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
-                         Typ     => Base_Type (Typ)));
+                       Make_Init_Call
+                         (Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
+                          Typ     => Base_Type (Typ)));
 
                Blk : constant Node_Id :=
                        Make_Block_Statement (Loc,
@@ -4748,11 +4742,13 @@ package body Exp_Ch3 is
             declare
                Init_Expr : constant Node_Id :=
                              Static_Initialization (Base_Init_Proc (Typ));
+
             begin
                if Present (Init_Expr) then
                   Set_Expression
                     (N, New_Copy_Tree (Init_Expr, New_Scope => Current_Scope));
                   return;
+
                else
                   Initialization_Warning (Id_Ref);
 
@@ -6647,11 +6643,11 @@ package body Exp_Ch3 is
                null;
 
             elsif (Needs_Finalization (Desig_Type)
-                     and then Convention (Desig_Type) /= Convention_Java
-                     and then Convention (Desig_Type) /= Convention_CIL)
+                    and then Convention (Desig_Type) /= Convention_Java
+                    and then Convention (Desig_Type) /= Convention_CIL)
               or else
                 (Is_Incomplete_Or_Private_Type (Desig_Type)
-                   and then No (Full_View (Desig_Type))
+                  and then No (Full_View (Desig_Type))
 
                   --  An exception is made for types defined in the run-time
                   --  because Ada.Tags.Tag itself is such a type and cannot
@@ -6670,8 +6666,8 @@ package body Exp_Ch3 is
 
               or else
                 (Is_Array_Type (Desig_Type)
-                   and then not Is_Frozen (Desig_Type)
-                   and then Needs_Finalization (Component_Type (Desig_Type)))
+                  and then not Is_Frozen (Desig_Type)
+                  and then Needs_Finalization (Component_Type (Desig_Type)))
             then
                Build_Finalization_Collection (Def_Id);
             end if;
@@ -8533,12 +8529,10 @@ package body Exp_Ch3 is
 
       Formals := New_List (
         Make_Parameter_Specification (Loc,
-          Defining_Identifier =>
-            Make_Defining_Identifier (Loc, Name_V),
-          In_Present  => True,
-          Out_Present => True,
-          Parameter_Type =>
-            New_Reference_To (Tag_Typ, Loc)));
+          Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
+          In_Present          => True,
+          Out_Present         => True,
+          Parameter_Type      => New_Reference_To (Tag_Typ, Loc)));
 
       --  F : Boolean := True
 
@@ -8547,12 +8541,9 @@ package body Exp_Ch3 is
       then
          Append_To (Formals,
            Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_F),
-             Parameter_Type =>
-               New_Reference_To (Standard_Boolean, Loc),
-             Expression =>
-               New_Reference_To (Standard_True, Loc)));
+             Defining_Identifier => Make_Defining_Identifier (Loc, Name_F),
+             Parameter_Type      => New_Reference_To (Standard_Boolean, Loc),
+             Expression          => New_Reference_To (Standard_True, Loc)));
       end if;
 
       return
@@ -8607,8 +8598,7 @@ package body Exp_Ch3 is
            Make_Function_Specification (Loc,
              Defining_Unit_Name       => Id,
              Parameter_Specifications => Profile,
-             Result_Definition        =>
-               New_Reference_To (Ret_Type, Loc));
+             Result_Definition        => New_Reference_To (Ret_Type, Loc));
       end if;
 
       if Is_Interface (Tag_Typ) then
@@ -8658,12 +8648,14 @@ package body Exp_Ch3 is
          Ret_Type := Empty;
       end if;
 
-      return Predef_Spec_Or_Body (Loc,
-        Name     => Make_TSS_Name (Tag_Typ, Name),
-        Tag_Typ  => Tag_Typ,
-        Profile  => Build_Stream_Attr_Profile (Loc, Tag_Typ, Name),
-        Ret_Type => Ret_Type,
-        For_Body => For_Body);
+      return
+        Predef_Spec_Or_Body
+          (Loc,
+           Name     => Make_TSS_Name (Tag_Typ, Name),
+           Tag_Typ  => Tag_Typ,
+           Profile  => Build_Stream_Attr_Profile (Loc, Tag_Typ, Name),
+           Ret_Type => Ret_Type,
+           For_Body => For_Body);
    end Predef_Stream_Attr_Spec;
 
    ---------------------------------
@@ -8931,14 +8923,13 @@ package body Exp_Ch3 is
             Set_Handled_Statement_Sequence (Decl,
               Make_Handled_Sequence_Of_Statements (Loc,
                 Statements => New_List (
-                  Make_Final_Call (
-                    Obj_Ref => Make_Identifier (Loc, Name_V),
-                    Typ     => Tag_Typ))));
+                  Make_Final_Call
+                    (Obj_Ref => Make_Identifier (Loc, Name_V),
+                     Typ     => Tag_Typ))));
          else
             Set_Handled_Statement_Sequence (Decl,
               Make_Handled_Sequence_Of_Statements (Loc,
-                Statements => New_List (
-                  Make_Null_Statement (Loc))));
+                Statements => New_List (Make_Null_Statement (Loc))));
          end if;
 
          Append_To (Res, Decl);
@@ -8954,7 +8945,7 @@ package body Exp_Ch3 is
    function Predefined_Primitive_Freeze
      (Tag_Typ : Entity_Id) return List_Id
    is
-      Res     : constant List_Id    := New_List;
+      Res     : constant List_Id := New_List;
       Prim    : Elmt_Id;
       Frnodes : List_Id;
 

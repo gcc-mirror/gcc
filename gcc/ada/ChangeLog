@@ -1,3 +1,26 @@
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
+	* a-cfdlli.adb, bindgen.adb, exp_ch4.adb, exp_ch13.adb, sem_warn.adb,
+	exp_ch3.adb, exp_ch3.ads: Minor reformatting.
+
+2011-08-03  Pascal Obry  <obry@adacore.com>
+
+	* g-awk.ads: Minor comment fix.
+
+2011-08-03  Sergey Rybin  <rybin@adacore.com>
+
+	* tree_io.ads (ASIS_Version_Number): Update because of the changes in
+	the tree structure related to discriminant constraints.
+	Original_Discriminant cannot be used any more for computing the
+	defining name for the reference to a discriminant.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Is_Tag_Indeterminate): If the return type of the
+	function is not visibly tagged, this is not a dispatching call and
+	therfore is not Tag_Indeterminate, even if the function is marked as
+	dispatching on result.
+
 2011-08-03  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch13.adb: Add with and use clauses for Restrict and Rident.

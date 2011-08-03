@@ -234,6 +234,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       C : constant Count_Type := Count_Type'Max (Source.Capacity, Capacity);
       N : Count_Type := 1;
       P : List (C);
+
    begin
       while N <= Source.Capacity loop
          P.Nodes (N).Prev := Source.Nodes (N).Prev;
@@ -241,10 +242,12 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          P.Nodes (N).Element := Source.Nodes (N).Element;
          N := N + 1;
       end loop;
+
       P.Free := Source.Free;
       P.Length := Source.Length;
       P.First := Source.First;
       P.Last := Source.Last;
+
       if P.Free >= 0 then
          N := Source.Capacity + 1;
          while N <= C loop
@@ -252,6 +255,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
             N := N + 1;
          end loop;
       end if;
+
       return P;
    end Copy;
 
@@ -269,7 +273,8 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
    begin
       if not Has_Element (Container => Container,
-                          Position  => Position) then
+                          Position  => Position)
+      then
          raise Constraint_Error with
            "Position cursor has no element";
       end if;
@@ -349,7 +354,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
            "attempt to tamper with elements (list is busy)";
       end if;
 
-      for I in 1 .. Count loop
+      for J in 1 .. Count loop
          X := Container.First;
          pragma Assert (N (N (X).Next).Prev = Container.First);
 
@@ -388,7 +393,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
            "attempt to tamper with elements (list is busy)";
       end if;
 
-      for I in 1 .. Count loop
+      for J in 1 .. Count loop
          X := Container.Last;
          pragma Assert (N (N (X).Prev).Next = Container.Last);
 
@@ -407,7 +412,8 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
    function Element
      (Container : List;
-      Position  : Cursor) return Element_Type is
+      Position  : Cursor) return Element_Type
+   is
    begin
       if not Has_Element (Container => Container, Position  => Position) then
          raise Constraint_Error with
@@ -427,15 +433,19 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       Position  : Cursor := No_Element) return Cursor
    is
       From : Count_Type := Position.Node;
+
    begin
       if From = 0 and Container.Length = 0 then
          return No_Element;
       end if;
+
       if From = 0 then
          From := Container.First;
       end if;
+
       if Position.Node /= 0 and then
-        not Has_Element (Container, Position) then
+        not Has_Element (Container, Position)
+      then
          raise Constraint_Error with
            "Position cursor has no element";
       end if;
@@ -444,6 +454,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          if Container.Nodes (From).Element = Item then
             return (Node => From);
          end if;
+
          From := Container.Nodes (From).Next;
       end loop;
 
@@ -459,6 +470,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       if Container.First = 0 then
          return No_Element;
       end if;
+
       return (Node => Container.First);
    end First;
 
@@ -507,8 +519,8 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
             Container.Free := 0;
 
          else
-            for I in Container.Free .. Container.Capacity - 1 loop
-               N (I).Next := I + 1;
+            for J in Container.Free .. Container.Capacity - 1 loop
+               N (J).Next := J + 1;
             end loop;
 
             N (Container.Capacity).Next := 0;
@@ -532,6 +544,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       function Is_Sorted (Container : List) return Boolean is
          Nodes : Node_Array renames Container.Nodes;
          Node  : Count_Type := Container.First;
+
       begin
          for I in 2 .. Container.Length loop
             if Nodes (Nodes (Node).Next).Element < Nodes (Node).Element then
@@ -618,9 +631,10 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          ---------------
 
          procedure Partition (Pivot, Back : Count_Type) is
-            Node : Count_Type := N (Pivot).Next;
+            Node : Count_Type;
 
          begin
+            Node := N (Pivot).Next;
             while Node /= Back loop
                if N (Node).Element < N (Pivot).Element then
                   declare
@@ -709,6 +723,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       if Position.Node = 0 then
          return False;
       end if;
+
       return Container.Nodes (Position.Node).Prev /= -1;
    end Has_Element;
 
@@ -763,7 +778,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       Count     : Count_Type := 1)
    is
       Position : Cursor;
-
    begin
       Insert (Container, Before, New_Item, Position, Count);
    end Insert;
@@ -893,6 +907,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
             Process (Container, (Node => Node));
             Node := Container.Nodes (Node).Next;
          end loop;
+
       exception
          when others =>
             B := B - 1;
@@ -934,12 +949,14 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
    function Left (Container : List; Position : Cursor) return List is
       Curs : Cursor := Position;
-      C : List (Container.Capacity) := Copy (Container, Container.Capacity);
+      C    : List (Container.Capacity) := Copy (Container, Container.Capacity);
       Node : Count_Type;
+
    begin
       if Curs = No_Element then
          return C;
       end if;
+
       if not Has_Element (Container, Curs) then
          raise Constraint_Error;
       end if;
@@ -949,6 +966,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          Delete (C, Curs);
          Curs := Next (Container, (Node => Node));
       end loop;
+
       return C;
    end Left;
 
@@ -1015,9 +1033,11 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       if Position.Node = 0 then
          return No_Element;
       end if;
+
       if not Has_Element (Container, Position) then
          raise Program_Error with "Position cursor has no element";
       end if;
+
       return (Node => Container.Nodes (Position.Node).Next);
    end Next;
 
@@ -1052,6 +1072,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       if not Has_Element (Container, Position) then
          raise Program_Error with "Position cursor has no element";
       end if;
+
       return (Node => Container.Nodes (Position.Node).Prev);
    end Previous;
 
@@ -1316,13 +1337,15 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
    function Right (Container : List; Position : Cursor) return List is
       Curs : Cursor := First (Container);
-      C : List (Container.Capacity) := Copy (Container, Container.Capacity);
+      C    : List (Container.Capacity) := Copy (Container, Container.Capacity);
       Node : Count_Type;
+
    begin
       if Curs = No_Element then
          Clear (C);
          return C;
       end if;
+
       if Position /= No_Element and not Has_Element (Container, Position) then
          raise Constraint_Error;
       end if;
@@ -1332,6 +1355,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          Delete (C, Curs);
          Curs := Next (Container, (Node => Node));
       end loop;
+
       return C;
    end Right;
 
@@ -1537,15 +1561,19 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
    function Strict_Equal (Left, Right : List) return Boolean is
       CL : Count_Type := Left.First;
       CR : Count_Type := Right.First;
+
    begin
       while CL /= 0 or CR /= 0 loop
          if CL /= CR or else
-           Left.Nodes (CL).Element /= Right.Nodes (CL).Element then
+           Left.Nodes (CL).Element /= Right.Nodes (CL).Element
+         then
             return False;
          end if;
+
          CL := Left.Nodes (CL).Next;
          CR := Right.Nodes (CR).Next;
       end loop;
+
       return True;
    end Strict_Equal;
 
@@ -1558,7 +1586,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       I, J      : Cursor)
    is
    begin
-
       if I.Node = 0 then
          raise Constraint_Error with "I cursor has no element";
       end if;
@@ -1603,7 +1630,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       I_Next, J_Next : Cursor;
 
    begin
-
       if I.Node = 0 then
          raise Constraint_Error with "I cursor has no element";
       end if;
@@ -1653,7 +1679,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       Process   : not null access procedure (Element : in out Element_Type))
    is
    begin
-
       if Position.Node = 0 then
          raise Constraint_Error with "Position cursor has no element";
       end if;

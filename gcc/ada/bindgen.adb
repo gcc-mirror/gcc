@@ -2125,7 +2125,8 @@ package body Bindgen is
 
    procedure Gen_Main_C is
       Needs_Library_Finalization : constant Boolean :=
-        not Configurable_Run_Time_On_Target and then Has_Finalizer;
+                                     not Configurable_Run_Time_On_Target
+                                       and then Has_Finalizer;
       --  For restricted run-time libraries (ZFP and Ravenscar) tasks are
       --  non-terminating, so we do not want library-level finalization.
 
@@ -2649,7 +2650,8 @@ package body Bindgen is
       --  function Get_Ada_Main_Name for details on the form of the name.
 
       Needs_Library_Finalization : constant Boolean :=
-        not Configurable_Run_Time_On_Target and then Has_Finalizer;
+                                     not Configurable_Run_Time_On_Target
+                                       and then Has_Finalizer;
       --  For restricted run-time libraries (ZFP and Ravenscar) tasks are
       --  non-terminating, so we do not want finalization.
 
@@ -3004,7 +3006,9 @@ package body Bindgen is
    procedure Gen_Output_File_C (Filename : String) is
 
       Needs_Library_Finalization : constant Boolean :=
-        not Configurable_Run_Time_On_Target and then Has_Finalizer;
+                                     not Configurable_Run_Time_On_Target
+                                       and then Has_Finalizer;
+      --  ??? seems like we repeat this cantation often, should it be global?
 
       Bfile : Name_Id;
       pragma Warnings (Off, Bfile);
