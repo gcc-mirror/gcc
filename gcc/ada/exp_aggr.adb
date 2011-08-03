@@ -1854,6 +1854,11 @@ package body Exp_Aggr is
       --  to finalization list F. Init_Pr conditions the call to the init proc
       --  since it may already be done due to ancestor initialization.
 
+      procedure Init_Hidden_Discriminants (Typ : Entity_Id; List : List_Id);
+      --  If Typ is derived, and constrains discriminants of the parent type,
+      --  these discriminants are not components of the aggregate, and must be
+      --  initialized. The assignments are appended to List.
+
       function Is_Int_Range_Bounds (Bounds : Node_Id) return Boolean;
       --  Check whether Bounds is a range node and its lower and higher bounds
       --  are integers literals.
@@ -2155,6 +2160,56 @@ package body Exp_Aggr is
 
          return L;
       end Init_Controller;
+
+      -------------------------------
+      -- Init_Hidden_Discriminants --
+      -------------------------------
+
+      procedure Init_Hidden_Discriminants (Typ : Entity_Id; List : List_Id) is
+         Btype       : Entity_Id;
+         Parent_Type : Entity_Id;
+         Disc        : Entity_Id;
+         Discr_Val   : Elmt_Id;
+
+      begin
+         Btype := Base_Type (Typ);
+         while Is_Derived_Type (Btype)
+            and then Present (Stored_Constraint (Btype))
+         loop
+            Parent_Type := Etype (Btype);
+
+            Disc := First_Discriminant (Parent_Type);
+            Discr_Val := First_Elmt (Stored_Constraint (Base_Type (Typ)));
+            while Present (Discr_Val) loop
+
+               --  Only those discriminants of the parent that are not
+               --  renamed by discriminants of the derived type need to
+               --  be added explicitly.
+
+               if not Is_Entity_Name (Node (Discr_Val))
+                 or else Ekind (Entity (Node (Discr_Val))) /= E_Discriminant
+               then
+                  Comp_Expr :=
+                    Make_Selected_Component (Loc,
+                      Prefix        => New_Copy_Tree (Target),
+                      Selector_Name => New_Occurrence_Of (Disc, Loc));
+
+                  Instr :=
+                    Make_OK_Assignment_Statement (Loc,
+                      Name       => Comp_Expr,
+                      Expression => New_Copy_Tree (Node (Discr_Val)));
+
+                  Set_No_Ctrl_Actions (Instr);
+                  Append_To (List, Instr);
+               end if;
+
+               Next_Discriminant (Disc);
+               Next_Elmt (Discr_Val);
+            end loop;
+
+            Btype := Base_Type (Parent_Type);
+         end loop;
+      end Init_Hidden_Discriminants;
 
       -------------------------
       -- Is_Int_Range_Bounds --
@@ -2741,6 +2796,17 @@ package body Exp_Aggr is
             end if;
          end;
 
+         --  Generate assignments of hidden assignments. If the base type is an
+         --  unchecked union, the discriminants are unknown to the back-end and
+         --  absent from a value of the type, so assignments for them are not
+         --  emitted.
+
+         if Has_Discriminants (Typ)
+           and then not Is_Unchecked_Union (Base_Type (Typ))
+         then
+            Init_Hidden_Discriminants (Typ, L);
+         end if;
+
       --  Normal case (not an extension aggregate)
 
       else
@@ -2752,59 +2818,7 @@ package body Exp_Aggr is
          if Has_Discriminants (Typ)
            and then not Is_Unchecked_Union (Base_Type (Typ))
          then
-            --  If the type is derived, and constrains discriminants of the
-            --  parent type, these discriminants are not components of the
-            --  aggregate, and must be initialized explicitly. They are not
-            --  visible components of the object, but can become visible with
-            --  a view conversion to the ancestor.
-
-            declare
-               Btype      : Entity_Id;
-               Parent_Type : Entity_Id;
-               Disc        : Entity_Id;
-               Discr_Val   : Elmt_Id;
-
-            begin
-               Btype := Base_Type (Typ);
-               while Is_Derived_Type (Btype)
-                  and then Present (Stored_Constraint (Btype))
-               loop
-                  Parent_Type := Etype (Btype);
-
-                  Disc := First_Discriminant (Parent_Type);
-                  Discr_Val :=
-                    First_Elmt (Stored_Constraint (Base_Type (Typ)));
-                  while Present (Discr_Val) loop
-
-                     --  Only those discriminants of the parent that are not
-                     --  renamed by discriminants of the derived type need to
-                     --  be added explicitly.
-
-                     if not Is_Entity_Name (Node (Discr_Val))
-                       or else
-                         Ekind (Entity (Node (Discr_Val))) /= E_Discriminant
-                     then
-                        Comp_Expr :=
-                          Make_Selected_Component (Loc,
-                            Prefix        => New_Copy_Tree (Target),
-                            Selector_Name => New_Occurrence_Of (Disc, Loc));
-
-                        Instr :=
-                          Make_OK_Assignment_Statement (Loc,
-                            Name       => Comp_Expr,
-                            Expression => New_Copy_Tree (Node (Discr_Val)));
-
-                        Set_No_Ctrl_Actions (Instr);
-                        Append_To (L, Instr);
-                     end if;
-
-                     Next_Discriminant (Disc);
-                     Next_Elmt (Discr_Val);
-                  end loop;
-
-                  Btype := Base_Type (Parent_Type);
-               end loop;
-            end;
+            Init_Hidden_Discriminants (Typ, L);
 
             --  Generate discriminant init values for the visible discriminants
 

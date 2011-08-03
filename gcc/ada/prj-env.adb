@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -782,13 +782,12 @@ package body Prj.Env is
 
       procedure Put_Name_Buffer is
       begin
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := ASCII.LF;
-
          if Current_Verbosity = High then
-            Write_Str ("Mapping file: " & Name_Buffer (1 .. Name_Len));
+            Debug_Output (Name_Buffer (1 .. Name_Len));
          end if;
 
+         Name_Len := Name_Len + 1;
+         Name_Buffer (Name_Len) := ASCII.LF;
          Add_To_Buffer (Name_Buffer (1 .. Name_Len), Buffer, Buffer_Last);
       end Put_Name_Buffer;
 
@@ -875,6 +874,12 @@ package body Prj.Env is
    --  Start of processing for Create_Mapping_File
 
    begin
+      Create_Temp_File (In_Tree, File, Name, "mapping");
+
+      if Current_Verbosity = High then
+         Debug_Increase_Indent ("Create mapping file ", Name_Id (Name));
+      end if;
+
       For_Every_Imported_Project (Project, Dummy);
 
       declare
@@ -882,8 +887,6 @@ package body Prj.Env is
          Status : Boolean := False;
 
       begin
-         Create_Temp_File (In_Tree, File, Name, "mapping");
-
          if File /= Invalid_FD then
             Last := Write (File, Buffer (1)'Address, Buffer_Last);
 
@@ -898,6 +901,8 @@ package body Prj.Env is
       end;
 
       Free (Buffer);
+
+      Debug_Decrease_Indent ("Done create mapping file");
    end Create_Mapping_File;
 
    ----------------------
@@ -2021,8 +2026,7 @@ package body Prj.Env is
 
       begin
          if Current_Verbosity = High then
-            Write_Str  ("   Trying ");
-            Write_Line (Path);
+            Debug_Output ("Trying " & Path);
          end if;
 
          if Is_Absolute_Path (Path) then
@@ -2064,8 +2068,7 @@ package body Prj.Env is
                Add_Str_To_Name_Buffer (Path);
 
                if Current_Verbosity = High then
-                  Write_Str  ("   Testing file ");
-                  Write_Line (Name_Buffer (1 .. Name_Len));
+                  Debug_Output ("Testing file " & Name_Buffer (1 .. Name_Len));
                end if;
 
                if Is_Regular_File (Name_Buffer (1 .. Name_Len)) then
@@ -2092,11 +2095,9 @@ package body Prj.Env is
       Initialize_Project_Path (Self, Target_Name);
 
       if Current_Verbosity = High then
-         Write_Str  ("Searching for project (""");
-         Write_Str  (File);
-         Write_Str  (""", """);
-         Write_Str  (Directory);
-         Write_Line (""");");
+         Debug_Increase_Indent
+           ("Searching for project """ & File & """ in """
+            & Directory & '"');
       end if;
 
       --  Check the project cache
@@ -2107,6 +2108,7 @@ package body Prj.Env is
       Path := Projects_Paths.Get (Self.Cache, Key);
 
       if Path /= No_Path then
+         Debug_Decrease_Indent;
          return;
       end if;
 
@@ -2176,6 +2178,8 @@ package body Prj.Env is
             Projects_Paths.Set (Self.Cache, Key, Path);
          end;
       end if;
+
+      Debug_Decrease_Indent;
    end Find_Project;
 
    ----------

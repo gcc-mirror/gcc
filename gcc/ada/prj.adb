@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,9 @@ package body Prj is
    --  Initial size for extensible buffer used in Add_To_Buffer
 
    The_Empty_String : Name_Id := No_Name;
+
+   Debug_Level : Integer := 0;
+   --  Current indentation level for debug traces.
 
    type Cst_String_Access is access constant String;
 
@@ -1299,6 +1302,77 @@ package body Prj is
 
       return Count;
    end Length;
+
+   ------------------
+   -- Debug_Output --
+   ------------------
+
+   procedure Debug_Output (Str : String) is
+   begin
+      if Current_Verbosity > Default then
+         Write_Line ((1 .. Debug_Level * 2 => ' ') & Str);
+      end if;
+   end Debug_Output;
+
+   ------------------
+   -- Debug_Indent --
+   ------------------
+
+   procedure Debug_Indent is
+   begin
+      if Current_Verbosity = High then
+         Write_Str ((1 .. Debug_Level * 2 => ' '));
+      end if;
+   end Debug_Indent;
+
+   ------------------
+   -- Debug_Output --
+   ------------------
+
+   procedure Debug_Output (Str : String; Str2 : Name_Id) is
+   begin
+      if Current_Verbosity = High then
+         Debug_Indent;
+         Write_Str (Str);
+
+         if Str2 = No_Name then
+            Write_Line (" <no_name>");
+         else
+            Write_Line (" """ & Get_Name_String (Str2) & '"');
+         end if;
+      end if;
+   end Debug_Output;
+
+   ---------------------------
+   -- Debug_Increase_Indent --
+   ---------------------------
+
+   procedure Debug_Increase_Indent
+     (Str : String := ""; Str2 : Name_Id := No_Name)
+   is
+   begin
+      if Str2 /= No_Name then
+         Debug_Output (Str, Str2);
+      else
+         Debug_Output (Str);
+      end if;
+      Debug_Level := Debug_Level + 1;
+   end Debug_Increase_Indent;
+
+   ---------------------------
+   -- Debug_Decrease_Indent --
+   ---------------------------
+
+   procedure Debug_Decrease_Indent (Str : String := "") is
+   begin
+      if Debug_Level > 0 then
+         Debug_Level := Debug_Level - 1;
+      end if;
+
+      if Str /= "" then
+         Debug_Output (Str);
+      end if;
+   end Debug_Decrease_Indent;
 
 begin
    --  Make sure that the standard config and user project file extensions are
