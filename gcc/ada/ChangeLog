@@ -1,3 +1,13 @@
+2011-08-03  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Gnatmake): Add to table Library_Projs only library projects
+	that are not extended. Do not check if a library project that is
+	extended should be regenerated. Do not add to table Library_Paths the
+	libraries that are in extended projects. Link only with libraries that
+	are in libray projects that are not extended.
+	* prj-nmsc.adb (Check_Library_Attributes): Do not reset flag Library
+	for a library project that is extended.
+
 2011-08-03  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch6.adb (Find_Corresponding_Spec): When in an instance, skip

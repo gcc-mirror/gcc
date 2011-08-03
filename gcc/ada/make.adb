@@ -5530,17 +5530,19 @@ package body Make is
 
                      Proj1 := Project_Tree.Projects;
                      while Proj1 /= null loop
-                        if Proj1.Project.Standalone_Library then
-                           Stand_Alone_Libraries := True;
-                        end if;
+                        if Proj1.Project.Extended_By = No_Project then
+                           if Proj1.Project.Standalone_Library then
+                              Stand_Alone_Libraries := True;
+                           end if;
 
-                        if Proj1.Project.Library then
-                           MLib.Prj.Check_Library
-                             (Proj1.Project, Project_Tree);
-                        end if;
+                           if Proj1.Project.Library then
+                              MLib.Prj.Check_Library
+                                (Proj1.Project, Project_Tree);
+                           end if;
 
-                        if Proj1.Project.Need_To_Build_Lib then
-                           Add_To_Library_Projs (Proj1.Project);
+                           if Proj1.Project.Need_To_Build_Lib then
+                              Add_To_Library_Projs (Proj1.Project);
+                           end if;
                         end if;
 
                         Proj1 := Proj1.Next;
@@ -5553,6 +5555,7 @@ package body Make is
                      Proj1 := Project_Tree.Projects;
                      while Proj1 /= null loop
                         if Proj1.Project.Library
+                          and then Proj1.Project.Extended_By = No_Project
                           and then Proj1.Project.Library_Kind /= Static
                           and then not Proj1.Project.Need_To_Build_Lib
                           and then not Proj1.Project.Externally_Built
@@ -5898,11 +5901,10 @@ package body Make is
                   --  except those of library projects.
 
                   Prj.Env.Set_Ada_Paths
-                    (Main_Project, Project_Tree, Use_Include_Path_File);
-                  --  (Project => Main_Project,
-                  --   In_Tree => Project_Tree,
-                  --   Including_Libraries => True,
-                  --   Include_Path => Use_Include_Path_File);
+                    (Project => Main_Project,
+                     In_Tree => Project_Tree,
+                     Including_Libraries => False,
+                     Include_Path => Use_Include_Path_File);
 
                   --  If switch -C was specified, create a binder mapping file
 
@@ -6000,6 +6002,7 @@ package body Make is
                            --  is set, add it to the Library_Paths table.
 
                            if Proj1.Project.Library_Kind /= Static
+                             and then Proj1.Project.Extended_By = No_Project
                              and then Path_Option /= null
                            then
                               Library_Paths.Increment_Last;
@@ -6014,39 +6017,44 @@ package body Make is
                      end loop;
 
                      for Index in 1 .. Library_Projs.Last loop
-                        if Library_Projs.Table (Index).Library_Kind = Static
-                          and then not Targparm.OpenVMS_On_Target
+                        if
+                          Library_Projs.Table (Index).Extended_By = No_Project
                         then
-                           Linker_Switches.Increment_Last;
-                           Linker_Switches.Table (Linker_Switches.Last) :=
-                             new String'
-                               (Get_Name_String
-                                 (Library_Projs.Table
-                                   (Index).Library_Dir.Display_Name) &
-                                "lib" &
-                                Get_Name_String
-                                  (Library_Projs.Table (Index). Library_Name) &
-                                "." &
-                                MLib.Tgt.Archive_Ext);
+                           if Library_Projs.Table (Index).Library_Kind = Static
+                             and then not Targparm.OpenVMS_On_Target
+                           then
+                              Linker_Switches.Increment_Last;
+                              Linker_Switches.Table (Linker_Switches.Last) :=
+                                new String'
+                                  (Get_Name_String
+                                       (Library_Projs.Table
+                                            (Index).Library_Dir.Display_Name) &
+                                   "lib" &
+                                   Get_Name_String
+                                     (Library_Projs.Table
+                                        (Index).Library_Name) &
+                                   "." &
+                                   MLib.Tgt.Archive_Ext);
 
-                        else
-                           --  Add the -L switch
+                           else
+                              --  Add the -L switch
 
-                           Linker_Switches.Increment_Last;
-                           Linker_Switches.Table (Linker_Switches.Last) :=
-                             new String'("-L" &
-                               Get_Name_String
-                                 (Library_Projs.Table (Index).
-                                    Library_Dir.Display_Name));
+                              Linker_Switches.Increment_Last;
+                              Linker_Switches.Table (Linker_Switches.Last) :=
+                                new String'("-L" &
+                                  Get_Name_String
+                                    (Library_Projs.Table (Index).
+                                       Library_Dir.Display_Name));
 
-                           --  Add the -l switch
+                              --  Add the -l switch
 
-                           Linker_Switches.Increment_Last;
-                           Linker_Switches.Table (Linker_Switches.Last) :=
-                             new String'("-l" &
-                               Get_Name_String
-                                 (Library_Projs.Table (Index).
-                                    Library_Name));
+                              Linker_Switches.Increment_Last;
+                              Linker_Switches.Table (Linker_Switches.Last) :=
+                                new String'("-l" &
+                                  Get_Name_String
+                                    (Library_Projs.Table (Index).
+                                       Library_Name));
+                           end if;
                         end if;
                      end loop;
                   end if;
@@ -6080,9 +6088,9 @@ package body Make is
                                  Linker_Switches.Increment_Last;
                                  Linker_Switches.Table
                                    (Linker_Switches.Last) :=
-                                     new String'
-                                       (Path_Option.all &
-                                        Library_Paths.Table (Index).all);
+                                   new String'
+                                     (Path_Option.all &
+                                      Library_Paths.Table (Index).all);
                               end loop;
 
                               --  One switch for the standard GNAT library dir
