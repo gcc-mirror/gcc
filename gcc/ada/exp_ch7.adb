@@ -896,9 +896,13 @@ package body Exp_Ch7 is
       then
          return;
 
-      --  Do not process access-to-controlled types on .NET/JVM targets
+      --  For .NET/JVM targets, allow the processing of access-to-controlled
+      --  types where the designated type is explicitly derived from [Limited_]
+      --  Controlled.
 
-      elsif VM_Target /= No_VM then
+      elsif VM_Target /= No_VM
+        and then not Is_Controlled (Desig_Typ)
+      then
          return;
       end if;
 
@@ -933,47 +937,54 @@ package body Exp_Ch7 is
              Object_Definition =>
                New_Reference_To (RTE (RE_Finalization_Collection), Loc)));
 
-         --  If the access type has a user-defined pool, use it as the base
-         --  storage medium for the finalization pool.
+         --  Storage pool selection and attribute decoration of the generated
+         --  collection. Since .NET/JVM compilers do not support pools, this
+         --  step is skipped.
 
-         if Present (Associated_Storage_Pool (Typ)) then
-            Pool_Id := Associated_Storage_Pool (Typ);
+         if VM_Target = No_VM then
 
-         --  Access subtypes must use the storage pool of their base type
+            --  If the access type has a user-defined pool, use it as the base
+            --  storage medium for the finalization pool.
 
-         elsif Ekind (Typ) = E_Access_Subtype then
-            declare
-               Base_Typ : constant Entity_Id := Base_Type (Typ);
+            if Present (Associated_Storage_Pool (Typ)) then
+               Pool_Id := Associated_Storage_Pool (Typ);
 
-            begin
-               if No (Associated_Storage_Pool (Base_Typ)) then
-                  Pool_Id := RTE (RE_Global_Pool_Object);
-                  Set_Associated_Storage_Pool (Base_Typ, Pool_Id);
-               else
-                  Pool_Id := Associated_Storage_Pool (Base_Typ);
-               end if;
-            end;
+            --  Access subtypes must use the storage pool of their base type
 
-         --  The default choice is the global pool
+            elsif Ekind (Typ) = E_Access_Subtype then
+               declare
+                  Base_Typ : constant Entity_Id := Base_Type (Typ);
 
-         else
-            Pool_Id := RTE (RE_Global_Pool_Object);
-            Set_Associated_Storage_Pool (Typ, Pool_Id);
+               begin
+                  if No (Associated_Storage_Pool (Base_Typ)) then
+                     Pool_Id := RTE (RE_Global_Pool_Object);
+                     Set_Associated_Storage_Pool (Base_Typ, Pool_Id);
+                  else
+                     Pool_Id := Associated_Storage_Pool (Base_Typ);
+                  end if;
+               end;
+
+            --  The default choice is the global pool
+
+            else
+               Pool_Id := RTE (RE_Global_Pool_Object);
+               Set_Associated_Storage_Pool (Typ, Pool_Id);
+            end if;
+
+            --  Generate:
+            --    Set_Storage_Pool_Ptr (Fnn, Pool_Id'Unchecked_Access);
+
+            Append_To (Actions,
+              Make_Procedure_Call_Statement (Loc,
+                Name =>
+                  New_Reference_To (RTE (RE_Set_Storage_Pool_Ptr), Loc),
+                Parameter_Associations => New_List (
+                  New_Reference_To (Coll_Id, Loc),
+                  Make_Attribute_Reference (Loc,
+                    Prefix =>
+                      New_Reference_To (Pool_Id, Loc),
+                    Attribute_Name => Name_Unrestricted_Access))));
          end if;
-
-         --  Generate:
-         --    Set_Storage_Pool_Ptr (Fnn, Pool_Id'Unchecked_Access);
-
-         Append_To (Actions,
-           Make_Procedure_Call_Statement (Loc,
-             Name =>
-               New_Reference_To (RTE (RE_Set_Storage_Pool_Ptr), Loc),
-             Parameter_Associations => New_List (
-               New_Reference_To (Coll_Id, Loc),
-               Make_Attribute_Reference (Loc,
-                 Prefix =>
-                   New_Reference_To (Pool_Id, Loc),
-                 Attribute_Name => Name_Unrestricted_Access))));
 
          Set_Associated_Collection (Typ, Coll_Id);
 
@@ -2585,6 +2596,8 @@ package body Exp_Ch7 is
             --  The generated code effectively detaches the temporary from the
             --  caller finalization chain and deallocates the object. This is
             --  disabled on .NET/JVM because pools are not supported.
+
+            --  H505-021 This needs to be revisited on .NET/JVM
 
             if VM_Target = No_VM
               and then Is_Return_Object (Obj_Id)
@@ -4428,6 +4441,42 @@ package body Exp_Ch7 is
          return Empty;
       end if;
    end Make_Adjust_Call;
+
+   ----------------------
+   -- Make_Attach_Call --
+   ----------------------
+
+   function Make_Attach_Call
+     (Obj_Ref : Node_Id;
+      Ptr_Typ : Entity_Id) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (Obj_Ref);
+
+   begin
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name =>
+            New_Reference_To (RTE (RE_Attach), Loc),
+          Parameter_Associations => New_List (
+            New_Reference_To (Associated_Collection (Ptr_Typ), Loc),
+            Unchecked_Convert_To (RTE (RE_Root_Controlled_Ptr), Obj_Ref)));
+   end Make_Attach_Call;
+
+   ----------------------
+   -- Make_Detach_Call --
+   ----------------------
+
+   function Make_Detach_Call (Obj_Ref : Node_Id) return Node_Id is
+      Loc : constant Source_Ptr := Sloc (Obj_Ref);
+
+   begin
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name =>
+            New_Reference_To (RTE (RE_Detach), Loc),
+          Parameter_Associations => New_List (
+            Unchecked_Convert_To (RTE (RE_Root_Controlled_Ptr), Obj_Ref)));
+   end Make_Detach_Call;
 
    ---------------
    -- Make_Call --

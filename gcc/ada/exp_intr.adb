@@ -53,6 +53,7 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
@@ -1008,6 +1009,16 @@ package body Exp_Intr is
                                        New_Reference_To
                                          (RTE (RE_Get_Current_Excep),
                                           Loc))))))))))));
+
+         --  For .NET/JVM, detach the object from the containing finalization
+         --  collection before finalizing it.
+
+         if VM_Target /= No_VM
+           and then Is_Controlled (Desig_T)
+         then
+            Prepend_To (Final_Code,
+              Make_Detach_Call (New_Copy_Tree (Arg)));
+         end if;
 
          --  If aborts are allowed, then the finalization code must be
          --  protected by an abort defer/undefer pair.

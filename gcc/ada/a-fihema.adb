@@ -37,6 +37,7 @@ with GNAT.IO;                 use GNAT.IO;
 
 with System;                  use System;
 with System.Address_Image;
+with System.Soft_Links;       use System.Soft_Links;
 with System.Storage_Elements; use System.Storage_Elements;
 with System.Storage_Pools;    use System.Storage_Pools;
 
@@ -135,10 +136,18 @@ package body Ada.Finalization.Heap_Management is
 
    procedure Attach (N : Node_Ptr; L : Node_Ptr) is
    begin
+      Lock_Task.all;
+
       L.Next.Prev := N;
       N.Next := L.Next;
       L.Next := N;
       N.Prev := L;
+
+      Unlock_Task.all;
+   exception
+      when others =>
+         Unlock_Task.all;
+         raise;
    end Attach;
 
    ---------------
@@ -209,6 +218,8 @@ package body Ada.Finalization.Heap_Management is
 
    procedure Detach (N : Node_Ptr) is
    begin
+      Lock_Task.all;
+
       if N.Prev /= null
         and then N.Next /= null
       then
@@ -217,6 +228,12 @@ package body Ada.Finalization.Heap_Management is
          N.Prev := null;
          N.Next := null;
       end if;
+
+      Unlock_Task.all;
+   exception
+      when others =>
+         Unlock_Task.all;
+         raise;
    end Detach;
 
    --------------

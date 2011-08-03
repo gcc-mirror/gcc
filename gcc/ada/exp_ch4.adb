@@ -840,6 +840,22 @@ package body Exp_Ch4 is
                Complete_Controlled_Allocation (Temp_Decl);
                Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
 
+               --  Attach the object to the associated finalization collection.
+               --  This is done manually on .NET/JVM since those compilers do
+               --  no support pools and can't benefit from internally generated
+               --  Allocate / Deallocate procedures.
+
+               if VM_Target /= No_VM
+                 and then Is_Controlled (DesigT)
+                 and then Present (Associated_Collection (PtrT))
+               then
+                  Insert_Action (N,
+                    Make_Attach_Call (
+                      Obj_Ref =>
+                        New_Reference_To (Temp, Loc),
+                      Ptr_Typ => PtrT));
+               end if;
+
             else
                Node := Relocate_Node (N);
                Set_Analyzed (Node);
@@ -853,6 +869,22 @@ package body Exp_Ch4 is
 
                Insert_Action (N, Temp_Decl);
                Complete_Controlled_Allocation (Temp_Decl);
+
+               --  Attach the object to the associated finalization collection.
+               --  This is done manually on .NET/JVM since those compilers do
+               --  no support pools and can't benefit from internally generated
+               --  Allocate / Deallocate procedures.
+
+               if VM_Target /= No_VM
+                 and then Is_Controlled (DesigT)
+                 and then Present (Associated_Collection (PtrT))
+               then
+                  Insert_Action (N,
+                    Make_Attach_Call (
+                      Obj_Ref =>
+                        New_Reference_To (Temp, Loc),
+                      Ptr_Typ => PtrT));
+               end if;
             end if;
 
          --  Ada 2005 (AI-251): Handle allocators whose designated type is an
@@ -1040,7 +1072,12 @@ package body Exp_Ch4 is
             --    Set_Finalize_Address_Ptr
             --      (Collection, <Finalize_Address>'Unrestricted_Access)
 
-            if Present (Associated_Collection (PtrT)) then
+            --  Since .NET/JVM compilers do not support address arithmetic,
+            --  this call is skipped.
+
+            if VM_Target = No_VM
+              and then Present (Associated_Collection (PtrT))
+            then
                Insert_Action (N,
                  Make_Set_Finalize_Address_Ptr_Call (
                    Loc     => Loc,
@@ -1084,6 +1121,22 @@ package body Exp_Ch4 is
 
          Complete_Controlled_Allocation (Temp_Decl);
          Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
+
+         --  Attach the object to the associated finalization collection. This
+         --  is done manually on .NET/JVM since those compilers do no support
+         --  pools and cannot benefit from internally generated Allocate and
+         --  Deallocate procedures.
+
+         if VM_Target /= No_VM
+           and then Is_Controlled (DesigT)
+           and then Present (Associated_Collection (PtrT))
+         then
+            Insert_Action (N,
+              Make_Attach_Call (
+                Obj_Ref =>
+                  New_Reference_To (Temp, Loc),
+                Ptr_Typ => PtrT));
+         end if;
 
          Rewrite (N, New_Reference_To (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
@@ -3477,9 +3530,12 @@ package body Exp_Ch4 is
          if No_Initialization (N) then
 
             --  Even though this might be a simple allocation, create a custom
-            --  Allocate if the context requires it.
+            --  Allocate if the context requires it. Since .NET/JVM compilers
+            --  do not support pools, this step is skipped.
 
-            if Present (Associated_Collection (PtrT)) then
+            if VM_Target = No_VM
+              and then Present (Associated_Collection (PtrT))
+            then
                Build_Allocate_Deallocate_Proc
                  (N           => Parent (N),
                   Is_Allocate => True);
@@ -3759,7 +3815,8 @@ package body Exp_Ch4 is
                else
                   Insert_Action (N,
                     Make_Procedure_Call_Statement (Loc,
-                      Name                   => New_Reference_To (Init, Loc),
+                      Name =>
+                        New_Reference_To (Init, Loc),
                       Parameter_Associations => Args));
                end if;
 
@@ -3773,16 +3830,36 @@ package body Exp_Ch4 is
                       Obj_Ref => New_Copy_Tree (Init_Arg1),
                       Typ     => T));
 
-                  --  Generate:
-                  --    Set_Finalize_Address_Ptr
-                  --      (Pool, <Finalize_Address>'Unrestricted_Access)
-
                   if Present (Associated_Collection (PtrT)) then
-                     Insert_Action (N,
-                       Make_Set_Finalize_Address_Ptr_Call (
-                         Loc     => Loc,
-                         Typ     => T,
-                         Ptr_Typ => PtrT));
+
+                     --  Special processing for .NET/JVM, the allocated object
+                     --  is attached to the finalization collection. Generate:
+
+                     --    Attach (<PtrT>FC, Root_Controlled_Ptr (Init_Arg1));
+
+                     --  Types derived from [Limited_]Controlled are the only
+                     --  ones considered since they have fields Prev and Next.
+
+                     if VM_Target /= No_VM then
+                        if Is_Controlled (T) then
+                           Insert_Action (N,
+                             Make_Attach_Call (
+                               Obj_Ref => New_Copy_Tree (Init_Arg1),
+                               Ptr_Typ => PtrT));
+                        end if;
+
+                     --  Default case, generate:
+
+                     --    Set_Finalize_Address_Ptr
+                     --      (Pool, <Finalize_Address>'Unrestricted_Access)
+
+                     else
+                        Insert_Action (N,
+                          Make_Set_Finalize_Address_Ptr_Call (
+                            Loc     => Loc,
+                            Typ     => T,
+                            Ptr_Typ => PtrT));
+                     end if;
                   end if;
                end if;
 

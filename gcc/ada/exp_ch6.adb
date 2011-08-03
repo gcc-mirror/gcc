@@ -2015,7 +2015,8 @@ package body Exp_Ch6 is
 
       --  Local variables
 
-      Remote        : constant Boolean := Is_Remote_Call (Call_Node);
+      Curr_S        : constant Entity_Id := Current_Scope;
+      Remote        : constant Boolean   := Is_Remote_Call (Call_Node);
       Actual        : Node_Id;
       Formal        : Entity_Id;
       Orig_Subp     : Entity_Id := Empty;
@@ -2103,6 +2104,52 @@ package body Exp_Ch6 is
          if Ekind (Subp) = E_Entry then
             Parent_Subp := Empty;
          end if;
+      end if;
+
+      --  Detect the following code in Ada.Finalization.Heap_Management only
+      --  on .NET/JVM targets:
+      --
+      --    procedure Finalize (Collection : in out Finalization_Collection) is
+      --    begin
+      --       . . .
+      --       begin
+      --          Finalize (Curr_Ptr.all);
+      --
+      --  Since .NET/JVM compilers lack address arithmetic and Deep_Finalize
+      --  cannot be named in library or user code, the compiler has to install
+      --  a kludge and transform the call to Finalize into Deep_Finalize.
+
+      if VM_Target /= No_VM
+        and then Chars (Subp) = Name_Finalize
+        and then Ekind (Curr_S) = E_Block
+        and then Ekind (Scope (Curr_S)) = E_Procedure
+        and then Chars (Scope (Curr_S)) = Name_Finalize
+        and then Etype (First_Formal (Scope (Curr_S))) =
+                   RTE (RE_Finalization_Collection)
+      then
+         declare
+            Deep_Fin : constant Entity_Id :=
+                         Find_Prim_Op (RTE (RE_Root_Controlled),
+                                       TSS_Deep_Finalize);
+         begin
+            --  Since Root_Controlled is a tagged type, the compiler should
+            --  always generate Deep_Finalize for it.
+
+            pragma Assert (Present (Deep_Fin));
+
+            --  Generate:
+            --    Deep_Finalize (Curr_Ptr.all);
+
+            Rewrite (N,
+              Make_Procedure_Call_Statement (Loc,
+                Name =>
+                  New_Reference_To (Deep_Fin, Loc),
+                Parameter_Associations =>
+                  New_Copy_List_Tree (Parameter_Associations (N))));
+
+            Analyze (N);
+            return;
+         end;
       end if;
 
       --  Ada 2005 (AI-345): We have a procedure call as a triggering

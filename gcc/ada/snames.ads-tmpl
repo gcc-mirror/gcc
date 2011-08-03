@@ -195,6 +195,8 @@ package Snames is
    Name_Adjust                         : constant Name_Id := N + $;
    Name_Finalize                       : constant Name_Id := N + $;
    Name_Finalize_Address               : constant Name_Id := N + $;
+   Name_Next                           : constant Name_Id := N + $;
+   Name_Prev                           : constant Name_Id := N + $;
 
    --  Names of allocation routines, also needed by expander
 
@@ -1202,7 +1204,6 @@ package Snames is
    Name_Cursor                           : constant Name_Id := N + $;
    Name_Element                          : constant Name_Id := N + $;
    Name_Element_Type                     : constant Name_Id := N + $;
-   Name_Next                             : constant Name_Id := N + $;
    Name_No_Element                       : constant Name_Id := N + $;
    Name_Previous                         : constant Name_Id := N + $;
 

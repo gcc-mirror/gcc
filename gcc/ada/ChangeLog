@@ -1,5 +1,52 @@
 2011-08-03  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_ch13.adb: Add with and use clause for Targparm;
+	(Expand_N_Free_Statement): Prevent the generation of a custom
+	Deallocate on .NET/JVM targets since this requires pools and address
+	arithmetic.
+	* exp_ch4.adb (Expand_Allocator_Expression): When compiling for
+	.NET/JVM targets, attach the newly allocated object to the access
+	type's finalization collection. Do not generate a call to
+	Set_Finalize_Address_Ptr on .NET/JVM because this routine does not
+	exist in the runtime.
+	(Expand_N_Allocator): When compiling for .NET/JVM targets, do not
+	create a custom Allocate for object that do not require initialization.
+	Attach a newly allocated object to the access type's finalization
+	collection on .NET/JVM.
+	* exp_ch5.adb (Make_Tag_Ctrl_Assignment): Add special processing for
+	assignment of controlled types on .NET/JVM. The two hidden pointers
+	Prev and Next and stored and later restored after the assignment takes
+	place.
+	* exp_ch6.adb (Expand_Call): Add local constant Curr_S. Add specialized
+	kludge for .NET/JVM to recognize a particular piece of code coming from
+	Heap_Management and change the call to Finalize into Deep_Finalize.
+	* exp_ch7.adb (Build_Finalization_Collection): Allow the creation of
+	finalization collections on .NET/JVM only for types derived from
+	Controlled. Separate the association of storage pools with a collection
+	and only allow it on non-.NET/JVM targets.
+	(Make_Attach_Call): New routine.
+	(Make_Detach_Call): New routine.
+	(Process_Object_Declarations): Suppress the generation of
+	build-in-place return object clean up code on .NET/JVM since it uses
+	pools.
+	* exp_ch7.ads (Make_Attach_Call): New routine.
+	(Make_Detach_Call): New routine.
+	* exp_intr.adb Add with and use clause for Targparm.
+	(Expand_Unc_Deallocation): Detach a controlled object from a collection
+	on .NET/JVM targets.
+	* rtsfind.ads: Add entries RE_Attach, RE_Detach and
+	RE_Root_Controlled_Ptr to tables RE_Id and RE_Unit_Table.
+	* snames.ads-tmpl: Add name Name_Prev. Move Name_Prev to the special
+	names used in finalization.
+
+2011-08-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-fihema.adb: Add with and use clauses for System.Soft_Links.
+	(Attach, Detach): Lock the current task when chaining an object onto a
+	collection.
+
+2011-08-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* a-except.adb, a-except-2005.adb (Raise_From_Controlled_Operation):
 	Rewritten to create the message strings when the exception is not
 	raised by an abort during finalization.

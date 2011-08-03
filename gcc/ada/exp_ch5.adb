@@ -3496,7 +3496,9 @@ package body Exp_Ch5 is
       --  Tags are not saved and restored when VM_Target because VM tags are
       --  represented implicitly in objects.
 
-      Tag_Tmp : Entity_Id;
+      Next_Id : Entity_Id;
+      Prev_Id : Entity_Id;
+      Tag_Id  : Entity_Id;
 
    begin
       --  Finalize the target of the assignment when controlled
@@ -3535,14 +3537,14 @@ package body Exp_Ch5 is
              Typ     => Etype (L)));
       end if;
 
-      --  Save the Tag in a local variable Tag_Tmp
+      --  Save the Tag in a local variable Tag_Id
 
       if Save_Tag then
-         Tag_Tmp := Make_Temporary (Loc, 'A');
+         Tag_Id := Make_Temporary (Loc, 'A');
 
          Append_To (Res,
            Make_Object_Declaration (Loc,
-             Defining_Identifier => Tag_Tmp,
+             Defining_Identifier => Tag_Id,
              Object_Definition =>
                New_Reference_To (RTE (RE_Tag), Loc),
              Expression =>
@@ -3552,10 +3554,52 @@ package body Exp_Ch5 is
                  Selector_Name =>
                    New_Reference_To (First_Tag_Component (T), Loc))));
 
-      --  Otherwise Tag_Tmp not used
+      --  Otherwise Tag_Id is not used
 
       else
-         Tag_Tmp := Empty;
+         Tag_Id := Empty;
+      end if;
+
+      --  Save the Prev and Next fields on .NET/JVM. This is not needed on non
+      --  VM targets since the fields are not part of the object.
+
+      if VM_Target /= No_VM
+        and then Is_Controlled (T)
+      then
+         Prev_Id := Make_Temporary (Loc, 'P');
+         Next_Id := Make_Temporary (Loc, 'N');
+
+         --  Generate:
+         --    Pnn : Root_Controlled_Ptr := Root_Controlled (L).Prev;
+
+         Append_To (Res,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Prev_Id,
+             Object_Definition =>
+               New_Reference_To (RTE (RE_Root_Controlled_Ptr), Loc),
+             Expression =>
+               Make_Selected_Component (Loc,
+                 Prefix =>
+                   Unchecked_Convert_To
+                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
+                 Selector_Name =>
+                   Make_Identifier (Loc, Name_Prev))));
+
+         --  Generate:
+         --    Nnn : Root_Controlled_Ptr := Root_Controlled (L).Next;
+
+         Append_To (Res,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Next_Id,
+             Object_Definition =>
+               New_Reference_To (RTE (RE_Root_Controlled_Ptr), Loc),
+             Expression =>
+               Make_Selected_Component (Loc,
+                 Prefix =>
+                   Unchecked_Convert_To
+                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
+                 Selector_Name =>
+                   Make_Identifier (Loc, Name_Next))));
       end if;
 
       --  If the tagged type has a full rep clause, expand the assignment into
@@ -3577,10 +3621,48 @@ package body Exp_Ch5 is
            Make_Assignment_Statement (Loc,
              Name =>
                Make_Selected_Component (Loc,
-                 Prefix        => Duplicate_Subexpr_No_Checks (L),
-                 Selector_Name => New_Reference_To (First_Tag_Component (T),
-                                                    Loc)),
-             Expression => New_Reference_To (Tag_Tmp, Loc)));
+                 Prefix =>
+                   Duplicate_Subexpr_No_Checks (L),
+                 Selector_Name =>
+                   New_Reference_To (First_Tag_Component (T), Loc)),
+             Expression =>
+               New_Reference_To (Tag_Id, Loc)));
+      end if;
+
+      --  Restore the Prev and Next fields on .NET/JVM
+
+      if VM_Target /= No_VM
+        and then Is_Controlled (T)
+      then
+         --  Generate:
+         --    Root_Controlled (L).Prev := Prev_Id;
+
+         Append_To (Res,
+           Make_Assignment_Statement (Loc,
+             Name =>
+               Make_Selected_Component (Loc,
+                 Prefix =>
+                   Unchecked_Convert_To
+                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
+                 Selector_Name =>
+                   Make_Identifier (Loc, Name_Prev)),
+             Expression =>
+               New_Reference_To (Prev_Id, Loc)));
+
+         --  Generate:
+         --    Root_Controlled (L).Next := Next_Id;
+
+         Append_To (Res,
+           Make_Assignment_Statement (Loc,
+             Name =>
+               Make_Selected_Component (Loc,
+                 Prefix =>
+                   Unchecked_Convert_To
+                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
+                 Selector_Name =>
+                   Make_Identifier (Loc, Name_Next)),
+             Expression =>
+               New_Reference_To (Next_Id, Loc)));
       end if;
 
       --  Adjust the target after the assignment when controlled (not in the
