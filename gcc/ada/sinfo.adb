@@ -410,14 +410,6 @@ package body Sinfo is
       return Flag6 (N);
    end Class_Present;
 
-   function Coextensions
-      (N : Node_Id) return Elist_Id is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Allocator);
-      return Elist4 (N);
-   end Coextensions;
-
    function Comes_From_Extended_Return_Statement
      (N : Node_Id) return Boolean is
    begin
@@ -3468,14 +3460,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Pragma);
       Set_Flag6 (N, Val);
    end Set_Class_Present;
-
-   procedure Set_Coextensions
-      (N : Node_Id; Val : Elist_Id) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Allocator);
-      Set_Elist4 (N, Val);
-   end Set_Coextensions;
 
    procedure Set_Comes_From_Extended_Return_Statement
      (N : Node_Id; Val : Boolean := True) is

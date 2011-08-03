@@ -461,6 +461,13 @@ package body Lib.Writ is
          Write_Info_Str (" O");
          Write_Info_Char (OA_Setting (Unit_Num));
 
+         if (Ekind (Uent) = E_Package
+               or else Ekind (Uent) = E_Package_Body)
+           and then Present (Finalizer (Uent))
+         then
+            Write_Info_Str (" PF");
+         end if;
+
          if Is_Preelaborated (Uent) then
             Write_Info_Str (" PR");
          end if;

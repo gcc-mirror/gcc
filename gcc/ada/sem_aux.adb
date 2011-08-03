@@ -216,13 +216,9 @@ package body Sem_Aux is
 
       --  The discriminants are not necessarily contiguous, because access
       --  discriminants will generate itypes. They are not the first entities
-      --  either, because tag and controller record must be ahead of them.
+      --  either because the tag must be ahead of them.
 
       if Chars (Ent) = Name_uTag then
-         Ent := Next_Entity (Ent);
-      end if;
-
-      if Chars (Ent) = Name_uController then
          Ent := Next_Entity (Ent);
       end if;
 
@@ -289,17 +285,11 @@ package body Sem_Aux is
          Ent := Next_Entity (Ent);
       end if;
 
-      if Chars (Ent) = Name_uController then
-         Ent := Next_Entity (Ent);
-      end if;
-
       if Has_Completely_Hidden_Discriminant (Ent) then
-
          while Present (Ent) loop
             exit when Is_Completely_Hidden (Ent);
             Ent := Next_Entity (Ent);
          end loop;
-
       end if;
 
       pragma Assert (Ekind (Ent) = E_Discriminant);

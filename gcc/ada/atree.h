@@ -440,6 +440,7 @@ extern Node_Id Current_Error_Node;
 #define Elist18(N)    Field18 (N)
 #define Elist21(N)    Field21 (N)
 #define Elist23(N)    Field23 (N)
+#define Elist24(N)    Field24 (N)
 #define Elist25(N)    Field25 (N)
 #define Elist26(N)    Field26 (N)
 

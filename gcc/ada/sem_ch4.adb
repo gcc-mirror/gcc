@@ -2897,9 +2897,9 @@ package body Sem_Ch4 is
          Actual := First_Actual (N);
          Formal := First_Formal (Nam);
 
-         --  If we are analyzing a call rewritten from object notation,
-         --  skip first actual, which may be rewritten later as an
-         --  explicit dereference.
+         --  If we are analyzing a call rewritten from object notation, skip
+         --  first actual, which may be rewritten later as an explicit
+         --  dereference.
 
          if Must_Skip then
             Next_Actual (Actual);
@@ -3914,7 +3914,7 @@ package body Sem_Ch4 is
             --  which can appear in expanded code in a tag check.
 
             if Ekind (Type_To_Use) = E_Record_Type_With_Private
-              and then  Chars (Selector_Name (N)) /= Name_uTag
+              and then Chars (Selector_Name (N)) /= Name_uTag
             then
                exit when Comp = Last_Entity (Type_To_Use);
             end if;

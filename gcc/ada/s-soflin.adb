@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,9 +95,11 @@ package body System.Soft_Links is
 
       Task_Termination_Handler.all (Ada.Exceptions.Null_Occurrence);
 
-      --  Finalize the global list for controlled objects if needed
+      --  Finalize all library-level controlled objects if needed
 
-      Finalize_Global_List.all;
+      if Finalize_Library_Objects /=  null then
+         Finalize_Library_Objects.all;
+      end if;
    end Adafinal_NT;
 
    ---------------------------
@@ -243,14 +245,19 @@ package body System.Soft_Links is
       return NT_TSD.Pri_Stack_Info'Access;
    end Get_Stack_Info_NT;
 
-   -------------------------------
-   -- Null_Finalize_Global_List --
-   -------------------------------
+   -----------------------------
+   -- Save_Library_Occurrence --
+   -----------------------------
 
-   procedure Null_Finalize_Global_List is
+   procedure Save_Library_Occurrence
+     (E : Ada.Exceptions.Exception_Occurrence)
+   is
    begin
-      null;
-   end Null_Finalize_Global_List;
+      if not Library_Exception_Set then
+         Library_Exception_Set := True;
+         Ada.Exceptions.Save_Occurrence (Library_Exception, E);
+      end if;
+   end Save_Library_Occurrence;
 
    ---------------------------
    -- Set_Jmpbuf_Address_NT --

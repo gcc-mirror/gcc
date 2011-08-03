@@ -1,3 +1,553 @@
+2011-08-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-except.adb, a-except-2005.adb (Raise_From_Controlled_Operation):
+	Rewritten to create the message strings when the exception is not
+	raised by an abort during finalization.
+	* a-except.ads, a-except-2005.ads: Add pragma Export for procedure
+	Raise_From_Controlled_Operation and update its associated comment.
+	* a-fihema.ads, a-fihema.adb: New GNAT unit.
+	Ada.Finalization.Heap_Management provides key functionality
+	associated with controlled objects on the heap, their creation,
+	finalization and reclamation. Type Finalization_Collection is
+	effectively a wrapper which sits ontop of a storage pool and performs
+	all necessary bookkeeping for all the objects it contains. Each
+	access-to-controlled or access-to-class-wide type receives a collection
+	as part of its expansion. The compiler generates buffer code and
+	invokes Allocate / Deallocate to create and destroy allocated
+	controlled objects.
+	* a-finali.adb ("="): Removed.
+	* a-finali.ads ("="): Removed. Controlled types no longer carry hidden
+	fields Prev and Next.
+	* ali.adb (Scan_ALI): Add parsing code to process PF / Has_Finalizer.
+	A library unit with at least one controlled object on the library level
+	has a special finalizer which is invoked by the binder. To signal this,
+	ali files carry field PF.
+	* ali.ads: New field in type Unit_Record called Has_Finalizer. Add
+	associated comment on field usage.
+	* a-tags.adb (Get_RC_Offset): Removed.
+	(Needs_Finalization): New routine.
+	* a-tags.ads: Update the structure of the GNAT dispatch tables.
+	Dispatch tables now carry field Needs_Finalization which provides
+	runtime indication whether a type is controlled or has controlled
+	components or both. Remove field RC_Offset.
+	(Get_RC_Offset): Removed along with its associated pragma Export.
+	Since tagged types with controlled components no longer carry hidden
+	field _controller, the special mechanism to retrieve its location is no
+	longer needed.
+	(Needs_Finalization): New routine.
+	* atree.ads, atree.adb (Elist24): New routine.
+	(Set_Elist24): New routine.
+	* atree.h: Add a define clause for Elist24.
+	* bindgen.adb New library-level variable Lib_Final_Built.
+	(Gen_Adafinal_Ada): Reimplemented. Depending on the restrictions or the
+	presence of a VM target, the routine generates calls to the proper
+	library finalization routine.
+	(Gen_Adainit_Ada): Import Finalize_Library_Objects only on non-VM
+	targets. Set the correct library finalization routine depending on
+	whether the library has controlled objects or this is a VM compilation.
+	(Gen_Finalize_Library_Ada): New routine. This procedure generates calls
+	to library-level finalizers of compiled units in reverse order of
+	elaboration. It also produces exception management code and reraises a
+	potential exception after all units have been finalized.
+	(Gen_Finalize_Library_C): New routine. This procedure generates calls to
+	library-level finalizers of compiled units in reverse order of
+	elaboration.
+	(Gen_Finalize_Library_Defs_C): New routine. This procedure generates the
+	definitions of all library-level finalizers available to the compilation
+	(Gen_Main_Ada): Directly call Adafinal which now contails all target
+	dependent code.
+	(Gen_Main_C): Add new local constant Needs_Library_Finalization. Call
+	System.Standard_Library.Adafinal directly. If the library needs
+	finalization actions, create the sequence of finalization calls.
+	(Gen_Output_File_Ada): Alphabetize local variables and constants.
+	Generate a with clause for System.Soft_Links when compiling for a VM.
+	Remove the code which imports System.Standard_Library.Adafinal as
+	Do_Finalize. Generate the library finalization routine.
+	(Gen_Output_File_C): Add new local constant Needs_Library_Finalization.
+	If the library needs finalization actions, create all the definitions
+	of library- level finalizers.
+	(Has_Finalizer): New routine. Determines whether at least one compiled
+	unit has a library-level finalizer.
+	Add type Qualification_Mode.
+	(Set_Unit_Name): Add a formal which controls the replacement of a dot.
+	* einfo.adb: New usage of field 15 as Return_Flag.
+	Remove Finalization_Chain_Entity from the usages of field 19.
+	Remove Associated_Final_Chain from the usages of field 23.
+	New usage of field 23 as Associated_Collection.
+	New usage of field 24 as Finalizer.
+	New usage of flag 252 as Is_Processed_Transient.
+	(Associated_Final_Chain): Removed.
+	(Associated_Collection): New routine.
+	(Finalization_Chain_Entity): Removed.
+	(Finalizer): New routine.
+	(Is_Finalizer): New routine.
+	(Is_Processed_Transient): New routine.
+	(Return_Flag): New routine.
+	(Set_Associated_Final_Chain): Removed.
+	(Set_Associated_Collection): New routine.
+	(Set_Finalization_Chain_Entity): Removed.
+	(Set_Finalizer): New routine.
+	(Set_Is_Processed_Transient): New routine.
+	(Set_Return_Flag): New routine.
+	(Write_Entity_Flags): Include Is_Processed_Transient to the list of
+	displayed flags.
+	(Write_Field8_Name): Alphabetize the output.
+	(Write_Field11_Name): Alphabetize the output.
+	(Write_Field12_Name): Alphabetize the output.
+	(Write_Field13_Name): Alphabetize the output.
+	(Write_Field14_Name): Alphabetize the output.
+	(Write_Field15_Name): Alphabetize the output.
+	(Write_Field16_Name): Alphabetize the output.
+	(Write_Field17_Name): Alphabetize the output.
+	(Write_Field18_Name): Alphabetize the output.
+	(Write_Field19_Name): Alphabetize the output. Remove the output of
+	Finalization_Chain_Entity.
+	(Write_Field20_Name): Alphabetize the output.
+	(Write_Field21_Name): Alphabetize the output.
+	(Write_Field22_Name): Alphabetize the output.
+	(Write_Field23_Name): Alphabetize the output. Remove the output of
+	Associated_Final_Chain. Add output for Associated_Collection.
+	(Write_Field24_Name): Alphabetize the output.
+	(Write_Field25_Name): Add output for Finalizer.
+	(Write_Field26_Name): Alphabetize the output.
+	(Write_Field27_Name): Alphabetize the output.
+	(Write_Field28_Name): Alphabetize the output.
+	* einfo.ads: Add new field description for Associated_Collection and
+	its uses in nodes.
+	Remove Associated_Final_Chain and its uses in nodes.
+	Remove Finalization_Chain_Entity and its uses in nodes.
+	Add new field description for Finalizer and its uses in nodes.
+	Add new synthesized attribute Is_Finalizer.
+	Add new flag description for Is_Processed_Transient and its uses in
+	nodes.
+	Add new field description for Return_Flag and its uses in nodes.
+	(Associated_Final_Chain): Removed along with its pragma Inline.
+	(Associated_Collection): New routine and pragma Inline.
+	(Finalization_Chain_Entity): Removed along with its pragma Inline.
+	(Finalizer): New routine and pragma Inline.
+	(Is_Finalizer): New routine and pragma Inline.
+	(Is_Processed_Transient): New routine and pragma Inline.
+	(Return_Flag): New routine and pragma Inline.
+	(Set_Associated_Final_Chain): Removed along with its pragma Inline.
+	(Set_Associated_Collection): New routine and pragma Inline.
+	(Set_Finalization_Chain_Entity): Removed along with its pragma Inline.
+	(Set_Finalizer): New routine and pragma Inline.
+	(Set_Is_Processed_Transient): New routine and pragma Inline.
+	(Set_Return_Flag): New routine and pragma Inline.
+	* exp_aggr.adb: Alphabetize subprograms.
+	(Build_Array_Aggr_Code): Remove formal Flist and its associated comment.
+	(Build_Record_Aggr_Code): Remove formals Flist and Obj along with their
+	associated comments. Remove local variables External_Final_List and
+	Attach.
+	Rename Ctrl_Stuff_Done to Finalization_Done. Rename local variable A to
+	Ancestor. Remove the retrieval of finalization lists. Update the call to
+	Make_Adjust_Call.
+	(Convert_Aggr_In_Allocator): Remove the retrieval of finalization
+	lists. Update the call to Late_Expansion.
+	(Convert_Aggr_In_Assignment): Update the call to Late_Expansion.
+	(Convert_Aggr_In_Object_Decl): Update the call to Late_Expansion.
+	(Gen_Assign): Remove the retrieval of the finalization list used to
+	build the assignment. Update the calls to Make_Init_Call and
+	Make_Adjust_Call.
+	(Gen_Ctrl_Actions_For_Aggr): Renamed to Generate_Finalization_Actions.
+	Remove the mechanism to determine attachment levels and finalization
+	list retrieval. Remove the processing for coextensions.
+	(Init_Controller): Removed. Controllers no longer exist.
+	(Late_Expansion): Remove formals Flist and Obj along with their
+	associated comments. Update the calls to Build_Record_Aggr_Code and
+	Build_Array_Aggr_Code.
+	* exp_ch13.adb (Expand_N_Free_Statement): New routine.
+	(Expand_N_Freeze_Entity): Add special processing for finalizers which
+	appear in entry bodies, protected subprograms and task bodies.
+	* exp_ch13.ads (Expand_N_Free_Statement): New routine.
+	* exp_ch3.adb (Add_Final_Chain): Removed.
+	(Build_Array_Init_Proc): Alphabetize local variables.
+	(Build_Assignment): Alphabetize local variables. Update the call to
+	Maked_Adjust_Call.
+	(Build_Class_Wide_Master): Rename local variables to better reflect
+	their role.
+	(Build_Discriminant_Assignments): Code reformatting.
+	(Build_Init_Call_Thru): Code reformatting.
+	(Build_Init_Procedure): Code reformatting. Generate a special version
+	of Deep_Finalize which is capable of finalizing all initialized
+	components and ignore the rest.
+	(Build_Init_Statements): Rename local variables to better reflect their
+	role.
+	Reimplement the mechanism to include the creation and update of an index
+	variable called a "counter". It is used as a bookmark for tracing
+	initialized and non-initialized components.
+	(Build_Initialization_Call): Remove local variable Controller_Typ.
+	Alphabetize all local variables. Remove the initialization of the
+	record controller and update the call to Make_Init_Call.
+	(Build_Record_Init_Proc): Rename formal Pe to Rec_Ent.
+	New local variable Counter.
+	(Constrain_Array): Alphabetize.
+	(Expand_Freeze_Array_Type): Create a collection instead of a
+	finalization list.
+	(Expand_Freeze_Class_Wide_Type): New routine. Creates TSS primitive
+	Finalize_Address which is used in conjunction with allocated controlled
+	objects.
+	(Expand_N_Object_Declaration): Remove the creation of a finalization
+	list for anonymous access types. Update the calls to Make_Init_Call and
+	Make_Adjust_Call.
+	(Expand_Freeze_Record_Type): Remove local variable Flist. Remove the
+	retrieval of finalization lists. Remove the expansion of the record
+	controller. Create TSS primitive Finalize_Address used in conjunction
+	with controlled objects on the heap. Create finalization collections
+	for access-to-controlled record components.
+	(Expand_Record_Controller): Removed.
+	(Freeze_Type): Remove the freezing of record controllers. Freezing of
+	class-wide types now requires additional processing. Create
+	finalization collections for access-to-controlled types.
+	(Increment_Counter): New routine.
+	(Make_Counter): New routine.
+	(Make_Eq_If): Remove the mention of Name_uController.
+	(Make_Predefined_Primitive_Specs): There is no longer need to skip
+	types coming from System.Finalization_Root.
+	(Predef_Deep_Spec): Reimplemented to reflect the new parameter profiles.
+	(Predefined_Primitive_Bodies): There is no longer need to skip types
+	coming from System.Finalization_Root.
+	(Stream_Operation_OK): Do not generate stream routines for
+	type Ada.Finalization.Heap_Management.Finalization_Collection.
+	* exp_ch3.ads: Alphabetize subprograms.
+	* exp_ch4.adb: Remove with and use clause for Sem_Ch8.
+	Add with and use clause for Lib.
+	(Complete_Coextension_Finalization): Removed.
+	(Complete_Controlled_Allocation): New routine. Create a finalization
+	collection for anonymous access-to-controlled types. Create a custom
+	Allocate which interfaces with the back end and the machinery in
+	Heap_Management.
+	(Expand_Allocator_Expression): Add necessary calls to
+	Complete_Controlled_Allocation. Remove the retrieval of finalization
+	lists. Update the calls to Make_Adjust_Call. Generate a call to
+	Ada.Finalization.Heap_Management.Set_Finalize_Address_Ptr to decorate
+	the associated collection.
+	(Expand_N_Allocator): Remove the processing for dynamic coextensions.
+	Code clean up. Remove the retrieval of finalization lists and
+	attachment levels.
+	Update the call to Make_Init_Call. Generate a call to
+	Ada.Finalization.Heap_Management.Set_Finalize_Address_Ptr to decorate
+	the associated collection.
+	(Get_Allocator_Final_List): Removed. Finalization lists are not
+	available.
+	(Suitable_Element): Remove the mention of Name_uController.
+	* exp_ch5.adb: Remove with and use clauses for Ttypes and Uintp.
+	(Make_Tag_Ctrl_Assignment): Rewritten to simply do a finalization of
+	the left hand side, carry out the assignment and adjust the left hand
+	side.
+	* exp_ch6.adb (Add_Final_List_Actual_To_Build_In_Place_Call): Removed.
+	(Add_Collection_Actual_To_Build_In_Place_Call): New routine.
+	(BIP_Formal_Suffix): Rename BIP_Final_List and BIPfinallist to
+	BIP_Collection and BIPcollection.
+	(Build_Heap_Allocator): New routine used to allocate the return object
+	of a build-in-place function onto a collection.
+	(Expand_Ctrl_Function_Call): Moved from Exp_Ch7.
+	(Expand_Call): Do not replace direct calls to Deep routines with their
+	aliases.
+	(Expand_N_Extended_Return_Statement): Give all variables shorter names
+	and update their occurrences. Add a special return flag to monitor the
+	[ab]normal execution of the function. The flag is set right before the
+	return statement.
+	Rewrite the mechanism used to allocate a build-in-place return object
+	on the heap or on a storage pool.
+	(Is_Direct_Deep_Call): New routine.
+	(Make_Build_In_Place_Call_In_Allocator): Add a collection to a
+	build-in-place function call instead of a final list. Build a call to
+	Set_Finalize_Address_Ptr to decorate the associated collection.
+	(Make_Build_In_Place_Call_In_Anonymous_Context): Create a temporary in
+	order to name the build-in-place function call's result for later
+	finalization. Add a collection to a build-in-place function call
+	instead of a final list.
+	(Make_Build_In_Place_Call_In_Assignment): Add a collection to a
+	build-in-place function call instead of a final list. Remove the code
+	which moves one final list and transforms it into the actual in a
+	nested build-in-place call.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Add a collection to a
+	build-in-place function call instead of a final list.
+	(Move_Final_List): Removed.
+	(Needs_BIP_Collection): New routine.
+	(Needs_BIP_Final_List): Removed.
+	* exp_ch6.ads: Replace BIP_Final_List with BIP_Collection in
+	enumeration type BIP_Formal_Kind.
+	Update the related comment.
+	(Needs_BIP_Collection): New routine.
+	(Needs_BIP_Final_List): Removed.
+	* exp_ch7.adb: Add with and use clauses for Elists, Exp_Ch6, Stringt
+	and Ttypes. Remove with and use clauses for Sem_Type. Alphabetize the
+	majority of subprograms in this unit. Add Name_Finalize_Address to
+	array Name_Of and TSS_Finalize_Address to array Deep_Name_Of.
+	(Build_Adjust_Or_Finalize_Statements): Create the adjust or finalization
+	statements for an array type.
+	(Build_Adjust_Statements): Create the adjust statements for a record
+	type.
+	(Build_Cleanup_Statements): New routine. A procedure which given any
+	construct containing asynchronous calls, references to _master, or is a
+	task body, a task allocation or a protected body produces the necessary
+	runtime calls to clean up these constructs.
+	(Build_Exception_Handler): New routine.
+	(Build_Final_List): Removed.
+	(Build_Finalization_Collection): New routine. A core procedure which
+	creates a collection to service heap allocated controlled objects
+	associated with an access-to-controlled type.
+	(Build_Finalize_Statements): Create the finalization statements for a
+	record types.
+	(Build_Finalizer): New routine. A core procedure which given any
+	construct with declarations and/or statements detects all objects which
+	need any type of clean up (controlled objects, protected objects) and
+	generates all necessary code to clean up the said objects in the proper
+	order.
+	(Build_Finalizer_Call): New routine.
+	(Build_Initialize_Statements): Create the initialization statements for
+	an array type. The generated routine contains code to finalize partially
+	initialized arrays.
+	(Build_Object_Declarations): New routine.
+	(Build_Raise_Statement): New routine.
+	(Clean_Simple_Protected_Objects): Removed.
+	(Controller_Component): Removed.
+	(Enclosing_Function): New routine.
+	(Expand_Cleanup_Actions): Create a finalizer for a construct which has
+	either declarations or statements or both.
+	(Expand_N_Package_Body): Create a finalizer for a non-generic package.
+	(Expand_N_Package_Declaration): Create a finalizer for a non-generic
+	package.
+	(Find_Final_List): Removed.
+	(Global_Flist_Ref): Removed.
+	(In_Finalization_Root): Removed.
+	(Insert_Actions_In_Scope_Around): Determine the range of the transient
+	scope in terms of tree nodes. Process all transient variables within
+	that range.
+	(Make_Adjust_Call): Rewritten. There is no longer an attach call
+	generated after the adjust.
+	(Make_Attach_Call): Removed.
+	(Make_Call): New routine.
+	(Make_Clean): Removed.
+	(Make_Deep_Array_Body): Rewritten to simply invoke the appropriate
+	build routines.
+	(Make_Deep_Proc): Rewritten to generate the new profile signature used
+	in Deep routines.
+	(Make_Deep_Record_Body): Rewritten to simply invoke the appropriate
+	build routines.
+	(Make_Final_Call): Modified to simply create a call to either
+	Deep_Finalize or Finalize.
+	(Make_Finalize_Address_Body): New routine.
+	(Make_Finalize_Address_Stmts): New routine. A function which produces
+	TSS primitive Finalize_Address used in conjunction with heap allocated
+	controlled objects.
+	(Make_Handler_For_Ctrl_Operation): Add specialized code for .NET/JVM.
+	(Make_Init_Call): Rewritten. There is no longer an attach call
+	generated after initialization.
+	(Make_Local_Deep_Finalize): New routine.
+	(Make_Set_Finalize_Address_Ptr_Call): New routine.
+	(Make_Transient_Block): Remove the finalization list retrieval and
+	manipulation.
+	(Needs_Finalization): Moved to Exp_Util.
+	(Parent_Field_Type): New routine.
+	(Preprocess_Components): New routine.
+	(Process_Transient_Objects): New routine.
+	(Wrap_HSS_In_Block): New routine.
+	(Wrap_Transient_Declaration): Remove finalization list management and
+	controller insertion.
+	(Wrap_Transient_Expression): Code reformatting.
+	(Wrap_Transient_Statement): Code reformatting.
+	* exp_ch7.ads (Build_Final_List): Removed.
+	(Build_Finalization_Collection): New routine.
+	(Build_Raise_Statement): New routine.
+	(Controller_Component): Removed.
+	(Expand_Ctrl_Function_Call): Moved to Exp_Ch6.
+	(Find_Final_List): Removed.
+	(In_Finalization_Root): Removed.
+	(Is_Simple_Protected_Type): Update related comment.
+	(Make_Adjust_Call): New parameter profile and associated comments.
+	(Make_Attach_Call): Removed.
+	(Make_Final_Call): New parameter profile and associated comments.
+	(Make_Finalize_Address_Body): New routine.
+	(Make_Init_Call): New parameter profile and associated comments.
+	(Make_Local_Deep_Finalize): New routine.
+	(Make_Set_Finalize_Address_Ptr_Call): New routine.
+	(Needs_Finalization): Moved to Exp_Util.
+	* exp_ch9.adb (Add_Object_Pointer): Code reformatting.
+	(Expand_N_Protected_Body): Remove the handling of finalization lists.
+	(Find_Protection_Type): Moved to Exp_Util.
+	* exp_disp.adb: Remove with and use clauses for Exp_Ch7.
+	(Make_DT): Update sequence of dispatch table initialization. Remove the
+	initialization of field RC_Offset. Add initialization of field Needs_
+	Finalization.
+	* exp_intr.adb (Expand_Unc_Deallocation): Code reformatting.
+	Reimplement how an object is first finalized, then deallocated.
+	* exp_strm.adb (Build_Record_Or_Elementary_Input_Function):
+	Code reformatting.
+	* exp_tss.ads: Add special suffix for TSS primitive Finalize_Address.
+	Register TSS_Finalize_Address with type TSS_Names.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): New routine. This core
+	procedure provides the interface between an allocation / deallocation
+	and the support machinery in Ada.Finalization.Heap_Management.
+	(Find_Init_Call): Code reformatting.
+	(Find_Init_Call_In_List): Code reformatting.
+	(Find_Protection_Type): Moved from Exp_Ch9.
+	(Find_Prim_Op): Reimplement to add preference of recovered primitive.
+	(Has_Controlled_Coextensions): Removed.
+	(Has_Controlled_Objects): New routine.
+	(In_Library_Level_Package_Body): New routine.
+	(Insert_Action_After): New routine.
+	(Is_Finalizable_Transient): New routine. This predicate determines
+	whether an object declaration is one of the many variants of controlled
+	transients.
+	(Is_Null_Access_BIP_Func_Call): New routine.
+	(Is_Non_BIP_Func_Call): New routine.
+	(Is_Related_To_Func_Return): New routine.
+	(Needs_Finalization): Moved from Exp_Ch7.
+	* exp_util.ads (Build_Allocate_Deallocate_Proc): New routine.
+	(Find_Protection_Type): Moved from Exp_Ch9.
+	(Has_Controlled_Coextensions): Removed.
+	(Has_Controlled_Objects): New routine.
+	(In_Library_Level_Package_Body): New routine.
+	(Insert_Action_After): New routine.
+	(Is_Finalizable_Transient): New routine.
+	(Is_Null_Access_BIP_Func_Call): New routine.
+	(Is_Non_BIP_Func_Call): New routine.
+	(Is_Related_To_Func_Return): New routine.
+	(Needs_Finalization): Moved from Exp_ch7.
+	* expander.adb (Expand): Add a case for N_Free_Statement.
+	* freeze.adb (Freeze_All): Replace the generation of a finalization
+	list with a collection for access-to-controlled types.
+	(Freeze_Entity): Code reformatting.
+	(Freeze_Record_Type): Remove the freezing of a record controller
+	component.
+	(Freeze_Subprogram): Code reformatting.
+	* inline.adb (Cleanup_Scopes): Remove the reset of the scope
+	finalization list.
+	* lib-writ.adb (Write_Unit_Information): Output "PF" when a package
+	has a library-level finalizer.
+	* lib-writ.ads: Add "PF" to the sequence of unit attributes.
+	* a-filico.ads, a-filico.adb, s-finimp.ads, s-finimp.adb: Removed.
+	* Makefile.rtl: Remove a-filico and s-finimp from the list of object
+	files. Add a-fihema to the list of object files.
+	* par-ch4.adb:
+	Alphabetize the associations in type Is_Parameterless_Attribute.
+	* rtsfind.ads: Ada.Finalization_List.Controller and
+	System.Finalization_Implementation are no longer a GNAT unit.
+	Update the range of type Ada_Finalization_Child. Remove the following
+	recoverable entities:
+	
+	   RE_Attach_To_Final_List
+	   RE_Deep_Tag_Attach
+	   RE_Finalize_List
+	   RE_Finalize_One
+	   RE_Finalizable_Ptr_Ptr
+	   RE_Global_Final_List
+	   RE_Limited_Record_Controller
+	   RE_List_Controller
+	   RE_Move_Final_List
+	   RE_Record_Controller
+	   RE_Simple_List_Controller
+	
+	Add the following recoverable entities:
+	
+	   RE_Add_Offset_To_Address
+	   RE_Allocate
+	   RE_Base_Pool
+	   RE_Deallocate
+	   RE_Exception_Identity
+	   RE_Finalization_Collection
+	   RE_Finalization_Collection_Ptr
+	   RE_Needs_Finalization
+	   RE_Save_Library_Occurrence
+	   RE_Set_Finalize_Address_Ptr
+	   RE_Set_Storage_Pool_Ptr
+	   RE_Storage_Count
+	* sem_aggr.adb (Resolve_Record_Aggregate): Remove mention of
+	Name_uController.
+	* sem_aux.adb (First_Discriminant): Remove mention of Name_uController.
+	(First_Stored_Discriminant): Remove the mention of Name_uController.
+	* sem_aux.ads: Comment reformatting.
+	* sem_ch10.adb (Build_Chain): Signal the class-wide creation machinery
+	to redecorate an already existing class-wide type.
+	(Decorate_Tagged_Type): New parameter profile and associated comment.
+	Create a "shadow class-wide type" for a shadow entity.
+	* sem_ch11.adb (Analyze_Exception_Handlers): Remove the dubious setting
+	of the final chain along with the associated comment.
+	* sem_ch3.adb (Access_Type_Declaration): Add new local variable
+	Full_Desig and set it to the full view of the designated type.
+	Initialize the finalization collection to empty.
+	(Build_Derived_Record_Type): Alphabetize local variables. Code
+	reformatting.
+	(Collect_Fixed_Components): Remove the mention of Name_uController.
+	(Create_Constrained_Components): Remove the mention of Name_uController.
+	(Make_Class_Wide_Type): Add specialized code to redecorate an existing
+	class-wide type of a shadow entity.
+	(Process_Full_View): Update the machinery which marks type
+	Limited_Controlled's entity as limited.
+	* sem_ch4.adb (Analyze_One_Call): Code reformatting.
+	* sem_ch6.adb (Create_Extra_Formals): Do not generate a finalization
+	list, instead make a collection build-in-place formal.
+	* sem_ch8.adb (Analyze_Object_Renaming): Look at the available view of
+	a designated type in order to establish a match between the renaming
+	and the renamed entity.
+	(Find_Selected_Component): Add guard to prevent spurious exceptions
+	from being raised on .NET/JVM.
+	* sem_disp.adb (Check_Dispatching_Operation): Include Finalize_Address
+	to the list of primitive that need special processing. Update arrays
+	C_Names and D_Names.
+	(Replace_Types): Handle class-wide types.
+	* sem_elab.adb (Check_A_Call): Since Deep_Initialize now has a
+	different parameter profile, look at the first formal.
+	* sem_prag.adb: Remove with and use clauses for Exp_Ch7. Add with and
+	use clauses for Exp_Util.
+	* sem_res.adb: Remove with and use clauses for Elists.
+	(Propagate_Coextensions): Removed.
+	(Resolve_Allocator): Do not propagate the list of coextensions from one
+	allocator to another.
+	* sem_util.adb (Build_Actual_Subtype_Of_Component): Rename variable
+	Deaccessed_T to Desig_Typ.
+	(Enter_Name): Remove the mention of Name_uController.
+	(Gather_Components): Remove the mention of Name_uController.
+	(Incomplete_Or_Private_View): New routine.
+	(Is_Coextension_Root): Removed.
+	(Is_Fully_Initialized_Type): Remove the mention of Name_uController.
+	* sem_util.ads (Incomplete_Or_Private_View): New routine.
+	(Is_Coextension_Root): Removed.
+	* s-finroo.ads: Remove with clause for Ada.Unchecked_Conversion.
+	Controlled types are now derived from a null tagged record. Remove
+	types Finalizable_Ptr, Finalizable and Empty_Root_Controlled.
+	* sinfo.adb (Coextensions): Removed.
+	(Set_Coextensions): Removed.
+	* sinfo.ads: Remove Coextensions from the explanation of node fields
+	and its uses in nodes.
+	Update the field usage of N_Allocator.
+	(Coextensions): Removed along with its pragma Inline.
+	(Set_Coextensions): Removed along with its pragma Inline.
+	* snames.ads-tmpl: Remove names
+	
+	  Name_uClean
+	  Name_uController
+	  Name_uFinal_List
+	  Name_uLocal_Final_List
+	  Name_Finalization_Root
+	  Name_Next
+	  Name_Prev
+	
+	Add names
+	
+	  Name_uFinalizer
+	  Name_Finalize_Address
+	* s-pooglo.adb (Allocate): Add overriding indicator.
+	(Deallocate): Add overriding indicator.
+	(Storage_Size): Add overriding indicator.
+	* s-soflin.adb (Adafinal_NT): Invoke Finalize_Library_Objects rather
+	than Finalize_Global_List.
+	(Null_Finalize_Global_List): Removed.
+	(Save_Library_Occurrence): New routine.
+	* s-soflin.ads: Remove variable Finalize_Global_List along with its
+	initialization. Add variable Finalize_Library_Objects along with its
+	pragma Export. Add variables Library_Exception and
+	Library_Exception_Set along with their pragma Export.
+	(Null_Finalize_Global_List): Removed.
+	(Save_Library_Occurrence): New routine.
+	* s-tassta.adb (Finalize_Global_Tasks): Call Finalize_Library_Objects
+	rather than Finalize_Global_List.
+	* tbuild.adb (Unchecked_Convert_To): Capture and set the parent field
+	of the constructed node.
+
 2011-08-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* link.c: Include "auto-host.h" before system headers.

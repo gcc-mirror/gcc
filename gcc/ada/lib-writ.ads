@@ -497,6 +497,8 @@ package Lib.Writ is
    --              units in this file. All files in the partition that specify
    --              a default must specify the same default.
    --
+   --         PF  The unit has a library-level (package) finalizer
+   --
    --         PK  Unit is package, rather than a subprogram
    --
    --         PU  Unit has pragma Pure

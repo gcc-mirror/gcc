@@ -312,6 +312,320 @@ package body Exp_Util is
       end if;
    end Append_Freeze_Actions;
 
+   ------------------------------------
+   -- Build_Allocate_Deallocate_Proc --
+   ------------------------------------
+
+   procedure Build_Allocate_Deallocate_Proc
+     (N           : Node_Id;
+      Is_Allocate : Boolean)
+   is
+      Expr      : constant Node_Id   := Expression (N);
+      Ptr_Typ   : constant Entity_Id := Etype (Expr);
+      Desig_Typ : constant Entity_Id :=
+                    Available_View (Designated_Type (Ptr_Typ));
+
+      function Find_Object (E : Node_Id) return Node_Id;
+      --  Given an arbitrary expression of an allocator, try to find an object
+      --  reference in it, otherwise return the original expression.
+
+      function Is_Allocate_Deallocate_Proc (Subp : Entity_Id) return Boolean;
+      --  Determine whether subprogram Subp denotes a custom allocate or
+      --  deallocate.
+
+      -----------------
+      -- Find_Object --
+      -----------------
+
+      function Find_Object (E : Node_Id) return Node_Id is
+         Expr   : Node_Id := E;
+         Change : Boolean := True;
+
+      begin
+         pragma Assert (Is_Allocate);
+
+         while Change loop
+            Change := False;
+
+            if Nkind_In (Expr, N_Qualified_Expression,
+                               N_Unchecked_Type_Conversion)
+            then
+               Expr   := Expression (Expr);
+               Change := True;
+
+            elsif Nkind (Expr) = N_Explicit_Dereference then
+               Expr   := Prefix (Expr);
+               Change := True;
+            end if;
+         end loop;
+
+         return Expr;
+      end Find_Object;
+
+      ---------------------------------
+      -- Is_Allocate_Deallocate_Proc --
+      ---------------------------------
+
+      function Is_Allocate_Deallocate_Proc (Subp : Entity_Id) return Boolean is
+      begin
+         --  Look for a subprogram body with only one statement which is a
+         --  call to one of the Allocate / Deallocate routines in package
+         --  Ada.Finalization.Heap_Management.
+
+         if Ekind (Subp) = E_Procedure
+           and then Nkind (Parent (Parent (Subp))) = N_Subprogram_Body
+         then
+            declare
+               HSS  : constant Node_Id :=
+                        Handled_Statement_Sequence (Parent (Parent (Subp)));
+               Proc : Entity_Id;
+
+            begin
+               if Present (Statements (HSS))
+                 and then Nkind (First (Statements (HSS))) =
+                            N_Procedure_Call_Statement
+               then
+                  Proc := Entity (Name (First (Statements (HSS))));
+
+                  return
+                    Is_RTE (Proc, RE_Allocate)
+                      or else Is_RTE (Proc, RE_Deallocate);
+               end if;
+            end;
+         end if;
+
+         return False;
+      end Is_Allocate_Deallocate_Proc;
+
+   --  Start of processing for Build_Allocate_Deallocate_Proc
+
+   begin
+      --  The allocation / deallocation of a non-controlled object does not
+      --  need the machinery created by this routine.
+
+      if not Needs_Finalization (Desig_Typ) then
+         return;
+
+      --  The allocator or free statmenet has already been expanded and already
+      --  has a custom Allocate / Deallocate routine.
+
+      elsif Nkind (Expr) = N_Allocator
+        and then Present (Procedure_To_Call (Expr))
+        and then Is_Allocate_Deallocate_Proc (Procedure_To_Call (Expr))
+      then
+         return;
+      end if;
+
+      declare
+         Loc     : constant Source_Ptr := Sloc (N);
+         Addr_Id : constant Entity_Id := Make_Temporary (Loc, 'A');
+         Alig_Id : constant Entity_Id := Make_Temporary (Loc, 'L');
+         Proc_Id : constant Entity_Id := Make_Temporary (Loc, 'P');
+         Size_Id : constant Entity_Id := Make_Temporary (Loc, 'S');
+
+         Actuals      : List_Id;
+         Collect_Act  : Node_Id;
+         Collect_Id   : Entity_Id;
+         Collect_Typ  : Entity_Id;
+         Proc_To_Call : Entity_Id;
+
+      begin
+         --  When dealing with an access subtype, use the collection of the
+         --  base type.
+
+         if Ekind (Ptr_Typ) = E_Access_Subtype then
+            Collect_Typ := Base_Type (Ptr_Typ);
+         else
+            Collect_Typ := Ptr_Typ;
+         end if;
+
+         Collect_Id  := Associated_Collection (Collect_Typ);
+         Collect_Act := New_Reference_To (Collect_Id, Loc);
+
+         --  Handle the case where the collection is actually a pointer to a
+         --  collection. This case arises in build-in-place functions.
+
+         if Is_Access_Type (Etype (Collect_Id)) then
+            Collect_Act :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => Collect_Act);
+         end if;
+
+         --  Create the actuals for the call to Allocate / Deallocate
+
+         Actuals := New_List (
+           Collect_Act,
+           New_Reference_To (Addr_Id, Loc),
+           New_Reference_To (Size_Id, Loc),
+           New_Reference_To (Alig_Id, Loc));
+
+         --  Generate a run-time check to determine whether a class-wide object
+         --  is truly controlled.
+
+         if Is_Class_Wide_Type (Desig_Typ)
+           or else Is_Generic_Actual_Type (Desig_Typ)
+         then
+            declare
+               Flag_Id   : constant Entity_Id := Make_Temporary (Loc, 'F');
+               Flag_Expr : Node_Id;
+               Param     : Node_Id;
+               Temp      : Node_Id;
+
+            begin
+               if Is_Allocate then
+                  Temp := Find_Object (Expression (Expr));
+               else
+                  Temp := Expr;
+               end if;
+
+               --  Processing for generic actuals
+
+               if Is_Generic_Actual_Type (Desig_Typ) then
+                  Flag_Expr :=
+                    New_Reference_To (Boolean_Literals
+                      (Needs_Finalization (Base_Type (Desig_Typ))), Loc);
+
+               --  Processing for subtype indications
+
+               elsif Nkind (Temp) in N_Has_Entity
+                 and then Is_Type (Entity (Temp))
+               then
+                  Flag_Expr :=
+                    New_Reference_To (Boolean_Literals
+                      (Needs_Finalization (Entity (Temp))), Loc);
+
+               --  Generate a runtime check to test the controlled state of an
+               --  object for the purposes of allocation / deallocation.
+
+               else
+                  --  The following case arises when allocating through an
+                  --  interface class-wide type, generate:
+                  --
+                  --    Temp.all
+
+                  if Is_RTE (Etype (Temp), RE_Tag_Ptr) then
+                     Param :=
+                       Make_Explicit_Dereference (Loc,
+                         Prefix =>
+                           Relocate_Node (Temp));
+
+                  --  Generate:
+                  --    Temp'Tag
+
+                  else
+                     Param :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix =>
+                           Relocate_Node (Temp),
+                         Attribute_Name => Name_Tag);
+                  end if;
+
+                  --  Generate:
+                  --    Needs_Finalization (Param)
+
+                  Flag_Expr :=
+                    Make_Function_Call (Loc,
+                      Name =>
+                        New_Reference_To (RTE (RE_Needs_Finalization), Loc),
+                      Parameter_Associations => New_List (Param));
+               end if;
+
+               --  Create the temporary which represents the finalization state
+               --  of the expression. Generate:
+               --
+               --    F : constant Boolean := <Flag_Expr>;
+
+               Insert_Action (N,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Flag_Id,
+                   Constant_Present => True,
+                   Object_Definition =>
+                     New_Reference_To (Standard_Boolean, Loc),
+                   Expression => Flag_Expr));
+
+               --  The flag acts as the fifth actual
+
+               Append_To (Actuals, New_Reference_To (Flag_Id, Loc));
+            end;
+         end if;
+
+         --  Select the proper routine to call
+
+         if Is_Allocate then
+            Proc_To_Call := RTE (RE_Allocate);
+         else
+            Proc_To_Call := RTE (RE_Deallocate);
+         end if;
+
+         --  Create a custom Allocate / Deallocate routine which has identical
+         --  profile to that of System.Storage_Pools.
+
+         Insert_Action (N,
+           Make_Subprogram_Body (Loc,
+             Specification =>
+
+               --  procedure Pnn
+
+               Make_Procedure_Specification (Loc,
+                 Defining_Unit_Name => Proc_Id,
+                 Parameter_Specifications => New_List (
+
+                  --  P : Root_Storage_Pool
+
+                   Make_Parameter_Specification (Loc,
+                     Defining_Identifier =>
+                       Make_Temporary (Loc, 'P'),
+                     Parameter_Type =>
+                       New_Reference_To (RTE (RE_Root_Storage_Pool), Loc)),
+
+                  --  A : [out] Address
+
+                   Make_Parameter_Specification (Loc,
+                     Defining_Identifier => Addr_Id,
+                     Out_Present => Is_Allocate,
+                     Parameter_Type =>
+                       New_Reference_To (RTE (RE_Address), Loc)),
+
+                  --  S : Storage_Count
+
+                   Make_Parameter_Specification (Loc,
+                     Defining_Identifier => Size_Id,
+                     Parameter_Type =>
+                       New_Reference_To (RTE (RE_Storage_Count), Loc)),
+
+                  --  L : Storage_Count
+
+                   Make_Parameter_Specification (Loc,
+                     Defining_Identifier => Alig_Id,
+                     Parameter_Type =>
+                       New_Reference_To (RTE (RE_Storage_Count), Loc)))),
+
+             Declarations => No_List,
+
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (
+
+                  --  Allocate / Deallocate
+                  --    (<Ptr_Typ collection>, A, S, L[, F]);
+
+                   Make_Procedure_Call_Statement (Loc,
+                     Name =>
+                       New_Reference_To (Proc_To_Call, Loc),
+                     Parameter_Associations => Actuals)))));
+
+         --  The newly generated Allocate / Deallocate becomes the default
+         --  procedure to call when the back end processes the allocation /
+         --  deallocation.
+
+         if Is_Allocate then
+            Set_Procedure_To_Call (Expr, Proc_Id);
+         else
+            Set_Procedure_To_Call (N, Proc_Id);
+         end if;
+      end;
+   end Build_Allocate_Deallocate_Proc;
+
    ------------------------
    -- Build_Runtime_Call --
    ------------------------
@@ -1351,13 +1665,17 @@ package body Exp_Util is
 
       --  Renamings of class-wide interface types require no equivalent
       --  constrained type declarations because we only need to reference
-      --  the tag component associated with the interface.
+      --  the tag component associated with the interface. The same is
+      --  presumably true for class-wide types in general, so this test
+      --  is broadened to include all class-wide renamings, which also
+      --  avoids cases of unbounded recursion in Remove_Side_Effects.
+      --  (Is this really correct, or are there some cases of class-wide
+      --  renamings that require action in this procedure???)
 
       elsif Present (N)
         and then Nkind (N) = N_Object_Renaming_Declaration
-        and then Is_Interface (Unc_Type)
+        and then Is_Class_Wide_Type (Unc_Type)
       then
-         pragma Assert (Is_Class_Wide_Type (Unc_Type));
          null;
 
       --  In Ada95 nothing to be done if the type of the expression is limited,
@@ -1428,11 +1746,12 @@ package body Exp_Util is
 
          while Present (Init_Call) and then Init_Call /= Rep_Clause loop
             if Nkind (Init_Call) = N_Procedure_Call_Statement
-                 and then Is_Entity_Name (Name (Init_Call))
-                 and then Entity (Name (Init_Call)) = Init_Proc
+              and then Is_Entity_Name (Name (Init_Call))
+              and then Entity (Name (Init_Call)) = Init_Proc
             then
                return Init_Call;
             end if;
+
             Next (Init_Call);
          end loop;
 
@@ -1461,8 +1780,8 @@ package body Exp_Util is
       --  applying to Var).
 
       if No (Init_Call) and then Present (Freeze_Node (Var)) then
-         Init_Call := Find_Init_Call_In_List
-                        (First (Actions (Freeze_Node (Var))));
+         Init_Call :=
+           Find_Init_Call_In_List (First (Actions (Freeze_Node (Var))));
       end if;
 
       return Init_Call;
@@ -1701,8 +2020,11 @@ package body Exp_Util is
      (T    : Entity_Id;
       Name : TSS_Name_Type) return Entity_Id
    is
-      Prim : Elmt_Id;
-      Typ  : Entity_Id := T;
+      Inher_Op  : Entity_Id := Empty;
+      Own_Op    : Entity_Id := Empty;
+      Prim_Elmt : Elmt_Id;
+      Prim_Id   : Entity_Id;
+      Typ       : Entity_Id := T;
 
    begin
       if Is_Class_Wide_Type (Typ) then
@@ -1711,18 +2033,31 @@ package body Exp_Util is
 
       Typ := Underlying_Type (Typ);
 
-      Prim := First_Elmt (Primitive_Operations (Typ));
-      while not Is_TSS (Node (Prim), Name) loop
-         Next_Elmt (Prim);
+      --  This search is based on the assertion that the dispatching version
+      --  of the TSS routine always precedes the real primitive.
 
-         --  Raise program error if no primitive found
+      Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
+      while Present (Prim_Elmt) loop
+         Prim_Id := Node (Prim_Elmt);
 
-         if No (Prim) then
-            raise Program_Error;
+         if Is_TSS (Prim_Id, Name) then
+            if Present (Alias (Prim_Id)) then
+               Inher_Op := Prim_Id;
+            else
+               Own_Op := Prim_Id;
+            end if;
          end if;
+
+         Next_Elmt (Prim_Elmt);
       end loop;
 
-      return Node (Prim);
+      if Present (Own_Op) then
+         return Own_Op;
+      elsif Present (Inher_Op) then
+         return Inher_Op;
+      else
+         raise Program_Error;
+      end if;
    end Find_Prim_Op;
 
    ----------------------------
@@ -1752,6 +2087,34 @@ package body Exp_Util is
 
       raise Program_Error;
    end Find_Protection_Object;
+
+   --------------------------
+   -- Find_Protection_Type --
+   --------------------------
+
+   function Find_Protection_Type (Conc_Typ : Entity_Id) return Entity_Id is
+      Comp : Entity_Id;
+      Typ  : Entity_Id := Conc_Typ;
+
+   begin
+      if Is_Concurrent_Type (Typ) then
+         Typ := Corresponding_Record_Type (Typ);
+      end if;
+
+      Comp := First_Component (Typ);
+      while Present (Comp) loop
+         if Chars (Comp) = Name_uObject then
+            return Base_Type (Etype (Comp));
+         end if;
+
+         Next_Component (Comp);
+      end loop;
+
+      --  The corresponding record of a protected type should always have an
+      --  _object field.
+
+      raise Program_Error;
+   end Find_Protection_Type;
 
    ----------------------
    -- Force_Evaluation --
@@ -2190,45 +2553,254 @@ package body Exp_Util is
       end if;
    end Get_Stream_Size;
 
-   ---------------------------------
-   -- Has_Controlled_Coextensions --
-   ---------------------------------
+   ---------------------------
+   -- Has_Access_Constraint --
+   ---------------------------
 
-   function Has_Controlled_Coextensions (Typ : Entity_Id) return Boolean is
-      D_Typ : Entity_Id;
-      Discr : Entity_Id;
+   function Has_Access_Constraint (E : Entity_Id) return Boolean is
+      Disc : Entity_Id;
+      T    : constant Entity_Id := Etype (E);
 
    begin
-      --  Only consider record types
+      if Has_Per_Object_Constraint (E)
+        and then Has_Discriminants (T)
+      then
+         Disc := First_Discriminant (T);
+         while Present (Disc) loop
+            if Is_Access_Type (Etype (Disc)) then
+               return True;
+            end if;
 
-      if not Ekind_In (Typ, E_Record_Type, E_Record_Subtype) then
+            Next_Discriminant (Disc);
+         end loop;
+
+         return False;
+      else
+         return False;
+      end if;
+   end Has_Access_Constraint;
+
+   ----------------------------
+   -- Has_Controlled_Objects --
+   ----------------------------
+
+   function Has_Controlled_Objects (N : Node_Id) return Boolean is
+      For_Pkg : constant Boolean :=
+                  Nkind_In (N, N_Package_Body, N_Package_Specification);
+
+   begin
+      case Nkind (N) is
+         when N_Accept_Statement      |
+              N_Block_Statement       |
+              N_Entry_Body            |
+              N_Package_Body          |
+              N_Protected_Body        |
+              N_Subprogram_Body       |
+              N_Task_Body             =>
+            return Has_Controlled_Objects (Declarations (N), For_Pkg)
+                     or else
+
+                  --  An expanded sequence of statements may introduce
+                  --  controlled objects.
+
+                  (Present (Handled_Statement_Sequence (N))
+                     and then
+                   Has_Controlled_Objects
+                     (Statements (Handled_Statement_Sequence (N)), For_Pkg));
+
+         when N_Package_Specification =>
+            return Has_Controlled_Objects (Visible_Declarations (N), For_Pkg)
+                     or else
+                   Has_Controlled_Objects (Private_Declarations (N), For_Pkg);
+
+         when others                  =>
+            return False;
+      end case;
+   end Has_Controlled_Objects;
+
+   ----------------------------
+   -- Has_Controlled_Objects --
+   ----------------------------
+
+   function Has_Controlled_Objects
+     (L           : List_Id;
+      For_Package : Boolean) return Boolean
+   is
+      Decl    : Node_Id;
+      Expr    : Node_Id;
+      Obj_Id  : Entity_Id;
+      Obj_Typ : Entity_Id;
+      Pack_Id : Entity_Id;
+      Typ     : Entity_Id;
+
+   begin
+      if No (L)
+        or else Is_Empty_List (L)
+      then
          return False;
       end if;
 
-      if Has_Discriminants (Typ) then
-         Discr := First_Discriminant (Typ);
-         while Present (Discr) loop
-            D_Typ := Etype (Discr);
+      Decl := First (L);
+      while Present (Decl) loop
 
-            if Ekind (D_Typ) = E_Anonymous_Access_Type
+         --  Regular object declarations
+
+         if Nkind (Decl) = N_Object_Declaration then
+            Obj_Id  := Defining_Identifier (Decl);
+            Obj_Typ := Base_Type (Etype (Obj_Id));
+            Expr    := Expression (Decl);
+
+            --  Bypass any form of processing for objects which have their
+            --  finalization disabled. This applies only to objects at the
+            --  library level.
+
+            if For_Package
+              and then Finalize_Storage_Only (Obj_Typ)
+            then
+               null;
+
+            --  Transient variables are treated separately in order to minimize
+            --  the size of the generated code. See Exp_Ch7.Process_Transient_
+            --  Objects.
+
+            elsif Is_Processed_Transient (Obj_Id) then
+               null;
+
+            --  The object is of the form:
+            --    Obj : Typ [:= Expr];
+            --
+            --  Do not process the incomplete view of a deferred constant
+
+            elsif not Is_Imported (Obj_Id)
+              and then Needs_Finalization (Obj_Typ)
+              and then not (Ekind (Obj_Id) = E_Constant
+                              and then not Has_Completion (Obj_Id))
+            then
+               return True;
+
+            --  The object is of the form:
+            --    Obj : Access_Typ := Non_BIP_Function_Call'reference;
+            --
+            --    Obj : Access_Typ :=
+            --            BIP_Function_Call
+            --              (..., BIPaccess => null, ...)'reference;
+
+            elsif Is_Access_Type (Obj_Typ)
+              and then Needs_Finalization
+                         (Available_View (Designated_Type (Obj_Typ)))
+              and then Present (Expr)
               and then
-                (Is_Controlled (Designated_Type (D_Typ))
+                (Is_Null_Access_BIP_Func_Call (Expr)
                    or else
-                 Is_Concurrent_Type (Designated_Type (D_Typ)))
+                (Is_Non_BIP_Func_Call (Expr)
+                   and then not Is_Related_To_Func_Return (Obj_Id)))
+            then
+               return True;
+
+            --  Simple protected objects which use type System.Tasking.
+            --  Protected_Objects.Protection to manage their locks should be
+            --  treated as controlled since they require manual cleanup.
+
+            elsif Ekind (Obj_Id) = E_Variable
+              and then
+                (Is_Simple_Protected_Type (Obj_Typ)
+                   or else Has_Simple_Protected_Object (Obj_Typ))
             then
                return True;
             end if;
 
-            Next_Discriminant (Discr);
-         end loop;
-      end if;
+         --  Specific cases of object renamings
+
+         elsif Nkind (Decl) = N_Object_Renaming_Declaration
+           and then Nkind (Name (Decl)) = N_Explicit_Dereference
+           and then Nkind (Prefix (Name (Decl))) = N_Identifier
+         then
+            Obj_Id  := Defining_Identifier (Decl);
+            Obj_Typ := Base_Type (Etype (Obj_Id));
+
+            --  Bypass any form of processing for objects which have their
+            --  finalization disabled. This applies only to objects at the
+            --  library level.
+
+            if For_Package
+              and then Finalize_Storage_Only (Obj_Typ)
+            then
+               null;
+
+            --  Return object of a build-in-place function. This case is
+            --  recognized and marked by the expansion of an extended return
+            --  statement (see Expand_N_Extended_Return_Statement).
+
+            elsif Needs_Finalization (Obj_Typ)
+              and then Is_Return_Object (Obj_Id)
+              and then Present (Return_Flag (Obj_Id))
+            then
+               return True;
+            end if;
+
+         --  Inspect the freeze node of an access-to-controlled type and
+         --  look for a delayed finalization collection. This case arises
+         --  when the freeze actions are inserted at a later time than the
+         --  expansion of the context. Since Build_Finalizer is never called
+         --  on a single construct twice, the collection will be ultimately
+         --  left out and never finalized. This is also needed for freeze
+         --  actions of designated types themselves, since in some cases the
+         --  finalization collection is associated with a designated type's
+         --  freeze node rather than that of the access type (see handling
+         --  for freeze actions in Build_Finalization_Collection).
+
+         elsif Nkind (Decl) = N_Freeze_Entity
+           and then Present (Actions (Decl))
+         then
+            Typ := Entity (Decl);
+
+            if (Is_Access_Type (Typ)
+                  and then not Is_Access_Subprogram_Type (Typ)
+                  and then Needs_Finalization
+                             (Available_View (Designated_Type (Typ))))
+              or else
+               (Is_Type (Typ)
+                  and then Needs_Finalization (Typ))
+            then
+               return True;
+            end if;
+
+         --  Nested package declarations
+
+         elsif Nkind (Decl) = N_Package_Declaration then
+            Pack_Id := Defining_Unit_Name (Specification (Decl));
+
+            if Nkind (Pack_Id) = N_Defining_Program_Unit_Name then
+               Pack_Id := Defining_Identifier (Pack_Id);
+            end if;
+
+            if Ekind (Pack_Id) /= E_Generic_Package
+              and then Has_Controlled_Objects (Specification (Decl))
+            then
+               return True;
+            end if;
+
+         --  Nested package bodies
+
+         elsif Nkind (Decl) = N_Package_Body then
+            Pack_Id := Corresponding_Spec (Decl);
+
+            if Ekind (Pack_Id) /= E_Generic_Package
+              and then Has_Controlled_Objects (Decl)
+            then
+               return True;
+            end if;
+         end if;
+
+         Next (Decl);
+      end loop;
 
       return False;
-   end Has_Controlled_Coextensions;
+   end Has_Controlled_Objects;
 
-   ------------------------
-   -- Has_Address_Clause --
-   ------------------------
+   ----------------------------------
+   -- Has_Following_Address_Clause --
+   ----------------------------------
 
    --  Should this function check the private part in a package ???
 
@@ -2278,6 +2850,27 @@ package body Exp_Util is
 
       return Count;
    end Homonym_Number;
+
+   -----------------------------------
+   -- In_Library_Level_Package_Body --
+   -----------------------------------
+
+   function In_Library_Level_Package_Body (Id : Entity_Id) return Boolean is
+   begin
+      --  First determine whether the entity appears at the library level, then
+      --  look at the containing unit.
+
+      if Is_Library_Level_Entity (Id) then
+         declare
+            Container : constant Node_Id := Cunit (Get_Source_Unit (Id));
+
+         begin
+            return Nkind (Unit (Container)) = N_Package_Body;
+         end;
+      end if;
+
+      return False;
+   end In_Library_Level_Package_Body;
 
    ------------------------------
    -- In_Unconditional_Context --
@@ -2329,6 +2922,18 @@ package body Exp_Util is
    begin
       Insert_Actions (Assoc_Node, New_List (Ins_Action), Suppress);
    end Insert_Action;
+
+   -------------------------
+   -- Insert_Action_After --
+   -------------------------
+
+   procedure Insert_Action_After
+     (Assoc_Node : Node_Id;
+      Ins_Action : Node_Id)
+   is
+   begin
+      Insert_Actions_After (Assoc_Node, New_List (Ins_Action));
+   end Insert_Action_After;
 
    --------------------
    -- Insert_Actions --
@@ -3098,6 +3703,277 @@ package body Exp_Util is
       return True;
    end Is_All_Null_Statements;
 
+   ------------------------------
+   -- Is_Finalizable_Transient --
+   ------------------------------
+
+   function Is_Finalizable_Transient
+     (Decl     : Node_Id;
+      Rel_Node : Node_Id) return Boolean
+   is
+      Obj_Id   : constant Entity_Id := Defining_Identifier (Decl);
+      Obj_Typ  : constant Entity_Id := Base_Type (Etype (Obj_Id));
+      Desig    : Entity_Id := Obj_Typ;
+      Has_Rens : Boolean   := True;
+      Ren_Obj  : Entity_Id;
+
+      function Initialized_By_Access (Trans_Id : Entity_Id) return Boolean;
+      --  Determine whether transient object Trans_Id is initialized either
+      --  by a function call which returns an access type or simply renames
+      --  another pointer.
+
+      function Initialized_By_Aliased_BIP_Func_Call
+        (Trans_Id : Entity_Id) return Boolean;
+      --  Determine whether transient object Trans_Id is initialized by a
+      --  build-in-place function call where the BIPalloc parameter is of
+      --  value 1 and BIPaccess is not null. This case creates an aliasing
+      --  between the returned value and the value denoted by BIPaccess.
+
+      function Is_Allocated (Trans_Id : Entity_Id) return Boolean;
+      --  Determine whether transient object Trans_Id is allocated on the heap
+
+      function Is_Renamed
+        (Trans_Id   : Entity_Id;
+         First_Stmt : Node_Id) return Boolean;
+      --  Determine whether transient object Trans_Id has been renamed in the
+      --  statement list starting from First_Stmt.
+
+      ---------------------------
+      -- Initialized_By_Access --
+      ---------------------------
+
+      function Initialized_By_Access (Trans_Id : Entity_Id) return Boolean is
+         Expr : constant Node_Id := Expression (Parent (Trans_Id));
+
+      begin
+         return
+           Present (Expr)
+             and then Nkind (Expr) /= N_Reference
+             and then Is_Access_Type (Etype (Expr));
+      end Initialized_By_Access;
+
+      ------------------------------------------
+      -- Initialized_By_Aliased_BIP_Func_Call --
+      ------------------------------------------
+
+      function Initialized_By_Aliased_BIP_Func_Call
+        (Trans_Id : Entity_Id) return Boolean
+      is
+         Call : Node_Id := Expression (Parent (Trans_Id));
+
+      begin
+         --  Build-in-place calls usually appear in 'reference format
+
+         if Nkind (Call) = N_Reference then
+            Call := Prefix (Call);
+         end if;
+
+         if Is_Build_In_Place_Function_Call (Call) then
+            declare
+               Access_Nam : Name_Id := No_Name;
+               Access_OK  : Boolean := False;
+               Actual     : Node_Id;
+               Alloc_Nam  : Name_Id := No_Name;
+               Alloc_OK   : Boolean := False;
+               Formal     : Node_Id;
+               Func_Id    : Entity_Id;
+               Param      : Node_Id;
+
+            begin
+               --  Examine all parameter associations of the function call
+
+               Param := First (Parameter_Associations (Call));
+               while Present (Param) loop
+                  if Nkind (Param) = N_Parameter_Association
+                    and then Nkind (Selector_Name (Param)) = N_Identifier
+                  then
+                     Actual := Explicit_Actual_Parameter (Param);
+                     Formal := Selector_Name (Param);
+
+                     --  Construct the names of formals BIPaccess and BIPalloc
+                     --  using the function name retrieved from an arbitrary
+                     --  formal.
+
+                     if Access_Nam = No_Name
+                       and then Alloc_Nam = No_Name
+                       and then Present (Entity (Formal))
+                     then
+                        Func_Id := Scope (Entity (Formal));
+
+                        Access_Nam :=
+                          New_External_Name (Chars (Func_Id),
+                            BIP_Formal_Suffix (BIP_Object_Access));
+
+                        Alloc_Nam :=
+                          New_External_Name (Chars (Func_Id),
+                            BIP_Formal_Suffix (BIP_Alloc_Form));
+                     end if;
+
+                     --  A match for BIPaccess => Temp has been found
+
+                     if Chars (Formal) = Access_Nam
+                       and then Nkind (Actual) /= N_Null
+                     then
+                        Access_OK := True;
+                     end if;
+
+                     --  A match for BIPalloc => 1 has been found
+
+                     if Chars (Formal) = Alloc_Nam
+                       and then Nkind (Actual) = N_Integer_Literal
+                       and then Intval (Actual) = Uint_1
+                     then
+                        Alloc_OK := True;
+                     end if;
+                  end if;
+
+                  Next (Param);
+               end loop;
+
+               return Access_OK and then Alloc_OK;
+            end;
+         end if;
+
+         return False;
+      end Initialized_By_Aliased_BIP_Func_Call;
+
+      ------------------
+      -- Is_Allocated --
+      ------------------
+
+      function Is_Allocated (Trans_Id : Entity_Id) return Boolean is
+         Expr : constant Node_Id := Expression (Parent (Trans_Id));
+
+      begin
+         return
+           Is_Access_Type (Etype (Trans_Id))
+             and then Present (Expr)
+             and then Nkind (Expr) = N_Allocator;
+      end Is_Allocated;
+
+      ----------------
+      -- Is_Renamed --
+      ----------------
+
+      function Is_Renamed
+        (Trans_Id   : Entity_Id;
+         First_Stmt : Node_Id) return Boolean
+      is
+         Stmt : Node_Id;
+
+         function Extract_Renamed_Object
+           (Ren_Decl : Node_Id) return Entity_Id;
+         --  Given an object renaming declaration, retrieve the entity of the
+         --  renamed name. Return Empty if the renamed name is anything other
+         --  than a variable or a constant.
+
+         ----------------------------
+         -- Extract_Renamed_Object --
+         ----------------------------
+
+         function Extract_Renamed_Object
+           (Ren_Decl : Node_Id) return Entity_Id
+         is
+            Change  : Boolean;
+            Ren_Obj : Node_Id;
+
+         begin
+            Change  := True;
+            Ren_Obj := Renamed_Object (Defining_Identifier (Ren_Decl));
+
+            while Change loop
+               Change := False;
+
+               if Nkind_In (Ren_Obj, N_Explicit_Dereference,
+                                     N_Indexed_Component,
+                                     N_Selected_Component)
+               then
+                  Ren_Obj := Prefix (Ren_Obj);
+                  Change := True;
+               end if;
+            end loop;
+
+            if Nkind (Ren_Obj) in N_Has_Entity then
+               return Entity (Ren_Obj);
+            end if;
+
+            return Empty;
+         end Extract_Renamed_Object;
+
+      --  Start of processing for Is_Renamed
+
+      begin
+         --  If a previous invocation of this routine has determined that a
+         --  list has no renamings, there is no point in repeating the same
+         --  scan.
+
+         if not Has_Rens then
+            return False;
+         end if;
+
+         --  Assume that the statement list does not have a renaming. This is a
+         --  minor optimization.
+
+         Has_Rens := False;
+
+         Stmt := First_Stmt;
+         while Present (Stmt) loop
+            if Nkind (Stmt) = N_Object_Renaming_Declaration then
+               Has_Rens := True;
+               Ren_Obj  := Extract_Renamed_Object (Stmt);
+
+               if Present (Ren_Obj)
+                 and then Ren_Obj = Trans_Id
+               then
+                  return True;
+               end if;
+            end if;
+
+            Next (Stmt);
+         end loop;
+
+         return False;
+      end Is_Renamed;
+
+   --  Start of processing for Is_Finalizable_Transient
+
+   begin
+      --  Handle access types
+
+      if Is_Access_Type (Desig) then
+         Desig := Available_View (Designated_Type (Desig));
+      end if;
+
+      return
+        Ekind_In (Obj_Id, E_Constant, E_Variable)
+          and then Needs_Finalization (Desig)
+          and then Requires_Transient_Scope (Desig)
+          and then Nkind (Rel_Node) /= N_Simple_Return_Statement
+
+         --  Do not consider transient objects allocated on the heap since they
+         --  are attached to a finalization collection.
+
+          and then not Is_Allocated (Obj_Id)
+
+         --  Do not consider renamed transient objects because the act of
+         --  renaming extends the object's lifetime.
+
+          and then not Is_Renamed (Obj_Id, Decl)
+
+         --  If the transient object is a pointer, check that it is not
+         --  initialized by a function which returns a pointer or acts as a
+         --  renaming of another pointer.
+
+          and then
+            (not Is_Access_Type (Obj_Typ)
+               or else not Initialized_By_Access (Obj_Id))
+
+         --  Do not consider transient objects which act as indirect aliases of
+         --  build-in-place function results.
+
+          and then not Initialized_By_Aliased_BIP_Func_Call (Obj_Id);
+   end Is_Finalizable_Transient;
+
    ---------------------------------
    -- Is_Fully_Repped_Tagged_Type --
    ---------------------------------
@@ -3144,6 +4020,90 @@ package body Exp_Util is
       return Is_Tagged_Type (Typ)
         and then Is_Library_Level_Entity (Typ);
    end Is_Library_Level_Tagged_Type;
+
+   ----------------------------------
+   -- Is_Null_Access_BIP_Func_Call --
+   ----------------------------------
+
+   function Is_Null_Access_BIP_Func_Call (Expr : Node_Id) return Boolean is
+      Call : Node_Id := Expr;
+
+   begin
+      --  Build-in-place calls usually appear in 'reference format
+
+      if Nkind (Call) = N_Reference then
+         Call := Prefix (Call);
+      end if;
+
+      if Nkind_In (Call, N_Qualified_Expression,
+                         N_Unchecked_Type_Conversion)
+      then
+         Call := Expression (Call);
+      end if;
+
+      if Is_Build_In_Place_Function_Call (Call) then
+         declare
+            Access_Nam : Name_Id := No_Name;
+            Actual     : Node_Id;
+            Param      : Node_Id;
+            Formal     : Node_Id;
+
+         begin
+            --  Examine all parameter associations of the function call
+
+            Param := First (Parameter_Associations (Call));
+            while Present (Param) loop
+               if Nkind (Param) = N_Parameter_Association
+                 and then Nkind (Selector_Name (Param)) = N_Identifier
+               then
+                  Formal := Selector_Name (Param);
+                  Actual := Explicit_Actual_Parameter (Param);
+
+                  --  Construct the name of formal BIPaccess. It is much easier
+                  --  to extract the name of the function using an arbitrary
+                  --  formal's scope rather than the Name field of Call.
+
+                  if Access_Nam = No_Name
+                    and then Present (Entity (Formal))
+                  then
+                     Access_Nam :=
+                       New_External_Name
+                         (Chars (Scope (Entity (Formal))),
+                          BIP_Formal_Suffix (BIP_Object_Access));
+                  end if;
+
+                  --  A match for BIPaccess => null has been found
+
+                  if Chars (Formal) = Access_Nam
+                    and then Nkind (Actual) = N_Null
+                  then
+                     return True;
+                  end if;
+               end if;
+
+               Next (Param);
+            end loop;
+         end;
+      end if;
+
+      return False;
+   end Is_Null_Access_BIP_Func_Call;
+
+   --------------------------
+   -- Is_Non_BIP_Func_Call --
+   --------------------------
+
+   function Is_Non_BIP_Func_Call (Expr : Node_Id) return Boolean is
+   begin
+      --  The expected call is of the format
+      --
+      --    Func_Call'reference
+
+      return
+        Nkind (Expr) = N_Reference
+          and then Nkind (Prefix (Expr)) = N_Function_Call
+          and then not Is_Build_In_Place_Function_Call (Prefix (Expr));
+   end Is_Non_BIP_Func_Call;
 
    ----------------------------------
    -- Is_Possibly_Unaligned_Object --
@@ -3426,6 +4386,20 @@ package body Exp_Util is
          end loop;
       end;
    end Is_Possibly_Unaligned_Slice;
+
+   -------------------------------
+   -- Is_Related_To_Func_Return --
+   -------------------------------
+
+   function Is_Related_To_Func_Return (Id : Entity_Id) return Boolean is
+      Expr : constant Node_Id := Related_Expression (Id);
+
+   begin
+      return
+        Present (Expr)
+          and then Nkind (Expr) = N_Explicit_Dereference
+          and then Nkind (Parent (Expr)) = N_Simple_Return_Statement;
+   end Is_Related_To_Func_Return;
 
    --------------------------------
    -- Is_Ref_To_Bit_Packed_Array --
@@ -4340,6 +5314,73 @@ package body Exp_Util is
          return True;
       end if;
    end May_Generate_Large_Temp;
+
+   ------------------------
+   -- Needs_Finalization --
+   ------------------------
+
+   function Needs_Finalization (T : Entity_Id) return Boolean is
+      function Has_Some_Controlled_Component (Rec : Entity_Id) return Boolean;
+      --  If type is not frozen yet, check explicitly among its components,
+      --  because the Has_Controlled_Component flag is not necessarily set.
+
+      -----------------------------------
+      -- Has_Some_Controlled_Component --
+      -----------------------------------
+
+      function Has_Some_Controlled_Component
+        (Rec : Entity_Id) return Boolean
+      is
+         Comp : Entity_Id;
+
+      begin
+         if Has_Controlled_Component (Rec) then
+            return True;
+
+         elsif not Is_Frozen (Rec) then
+            if Is_Record_Type (Rec) then
+               Comp := First_Entity (Rec);
+
+               while Present (Comp) loop
+                  if not Is_Type (Comp)
+                    and then Needs_Finalization (Etype (Comp))
+                  then
+                     return True;
+                  end if;
+
+                  Next_Entity (Comp);
+               end loop;
+
+               return False;
+
+            elsif Is_Array_Type (Rec) then
+               return Needs_Finalization (Component_Type (Rec));
+
+            else
+               return Has_Controlled_Component (Rec);
+            end if;
+         else
+            return False;
+         end if;
+      end Has_Some_Controlled_Component;
+
+   --  Start of processing for Needs_Finalization
+
+   begin
+      --  Class-wide types must be treated as controlled because they may
+      --  contain an extension that has controlled components
+
+      --  We can skip this if finalization is not available
+
+      return (Is_Class_Wide_Type (T)
+                and then not Restriction_Active (No_Finalization))
+        or else Is_Controlled (T)
+        or else Has_Controlled_Component (T)
+        or else Has_Some_Controlled_Component (T)
+        or else (Is_Concurrent_Type (T)
+                  and then Present (Corresponding_Record_Type (T))
+                  and then Needs_Finalization (Corresponding_Record_Type (T)));
+   end Needs_Finalization;
 
    ----------------------------
    -- Needs_Constant_Address --

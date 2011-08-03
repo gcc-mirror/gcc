@@ -505,9 +505,9 @@ package body Sem_Util is
       P         : constant Node_Id    := Prefix (N);
       D         : Elmt_Id;
       Id        : Node_Id;
-      Indx_Type : Entity_Id;
+      Index_Typ : Entity_Id;
 
-      Deaccessed_T : Entity_Id;
+      Desig_Typ : Entity_Id;
       --  This is either a copy of T, or if T is an access type, then it is
       --  the directly designated type of this access type.
 
@@ -533,7 +533,7 @@ package body Sem_Util is
          Old_Lo      : Node_Id;
 
       begin
-         Indx := First_Index (Deaccessed_T);
+         Indx := First_Index (Desig_Typ);
          while Present (Indx) loop
             Old_Lo := Type_Low_Bound  (Etype (Indx));
             Old_Hi := Type_High_Bound (Etype (Indx));
@@ -584,7 +584,7 @@ package body Sem_Util is
          D_Val       : Node_Id;
 
       begin
-         D := First_Elmt (Discriminant_Constraint (Deaccessed_T));
+         D := First_Elmt (Discriminant_Constraint (Desig_Typ));
          while Present (D) loop
             if Denotes_Discriminant (Node (D)) then
                D_Val :=  Make_Selected_Component (Loc,
@@ -636,19 +636,19 @@ package body Sem_Util is
       end if;
 
       if Ekind (T) = E_Access_Subtype then
-         Deaccessed_T := Designated_Type (T);
+         Desig_Typ := Designated_Type (T);
       else
-         Deaccessed_T := T;
+         Desig_Typ := T;
       end if;
 
-      if Ekind (Deaccessed_T) = E_Array_Subtype then
-         Id := First_Index (Deaccessed_T);
+      if Ekind (Desig_Typ) = E_Array_Subtype then
+         Id := First_Index (Desig_Typ);
          while Present (Id) loop
-            Indx_Type := Underlying_Type (Etype (Id));
+            Index_Typ := Underlying_Type (Etype (Id));
 
-            if Denotes_Discriminant (Type_Low_Bound  (Indx_Type))
+            if Denotes_Discriminant (Type_Low_Bound  (Index_Typ))
                  or else
-               Denotes_Discriminant (Type_High_Bound (Indx_Type))
+               Denotes_Discriminant (Type_High_Bound (Index_Typ))
             then
                Remove_Side_Effects (P);
                return
@@ -659,11 +659,17 @@ package body Sem_Util is
             Next_Index (Id);
          end loop;
 
-      elsif Is_Composite_Type (Deaccessed_T)
-        and then Has_Discriminants (Deaccessed_T)
-        and then not Has_Unknown_Discriminants (Deaccessed_T)
+      elsif Is_Composite_Type (Desig_Typ)
+        and then Has_Discriminants (Desig_Typ)
+        and then not Has_Unknown_Discriminants (Desig_Typ)
       then
-         D := First_Elmt (Discriminant_Constraint (Deaccessed_T));
+         if Is_Private_Type (Desig_Typ)
+           and then No (Discriminant_Constraint (Desig_Typ))
+         then
+            Desig_Typ := Full_View (Desig_Typ);
+         end if;
+
+         D := First_Elmt (Discriminant_Constraint (Desig_Typ));
          while Present (D) loop
             if Denotes_Discriminant (Node (D)) then
                Remove_Side_Effects (P);
@@ -3114,12 +3120,6 @@ package body Sem_Util is
          then
             null;
 
-         --  A controller component for a type extension overrides the
-         --  inherited component.
-
-         elsif Chars (E) = Name_uController then
-            null;
-
          --  Case of an implicit operation or derived literal. The new entity
          --  hides the implicit one,  which is removed from all visibility,
          --  i.e. the entity list of its scope, and homonym chain of its name.
@@ -3898,7 +3898,6 @@ package body Sem_Util is
             begin
                if not Is_Tag (Comp)
                  and then Chars (Comp) /= Name_uParent
-                 and then Chars (Comp) /= Name_uController
                then
                   Append_Elmt (Comp, Into);
                end if;
@@ -5970,6 +5969,118 @@ package body Sem_Util is
           and then not In_Private_Part (Scope_Id);
    end In_Visible_Part;
 
+   --------------------------------
+   -- Incomplete_Or_Private_View --
+   --------------------------------
+
+   function Incomplete_Or_Private_View (Typ : Entity_Id) return Entity_Id is
+      function Inspect_Decls
+        (Decls : List_Id;
+         Taft  : Boolean := False) return Entity_Id;
+      --  Check whether a declarative region contains the incomplete or private
+      --  view of Typ.
+
+      -------------------
+      -- Inspect_Decls --
+      -------------------
+
+      function Inspect_Decls
+        (Decls : List_Id;
+         Taft  : Boolean := False) return Entity_Id
+      is
+         Decl  : Node_Id;
+         Match : Node_Id;
+
+      begin
+         Decl := First (Decls);
+         while Present (Decl) loop
+            Match := Empty;
+
+            if Taft then
+               if Nkind (Decl) = N_Incomplete_Type_Declaration then
+                  Match := Defining_Identifier (Decl);
+               end if;
+            else
+               if Nkind_In (Decl, N_Private_Extension_Declaration,
+                                  N_Private_Type_Declaration)
+               then
+                  Match := Defining_Identifier (Decl);
+               end if;
+            end if;
+
+            if Present (Match)
+              and then Present (Full_View (Match))
+              and then Full_View (Match) = Typ
+            then
+               return Match;
+            end if;
+
+            Next (Decl);
+         end loop;
+
+         return Empty;
+      end Inspect_Decls;
+
+      Prev : Entity_Id;
+
+   --  Start of processing for Incomplete_Or_Partial_View
+
+   begin
+      --  Incomplete type case
+
+      Prev := Current_Entity_In_Scope (Typ);
+
+      if Present (Prev)
+        and then Is_Incomplete_Type (Prev)
+        and then Present (Full_View (Prev))
+        and then Full_View (Prev) = Typ
+      then
+         return Prev;
+      end if;
+
+      --  Private or Taft amendment type case
+
+      declare
+         Pkg      : constant Entity_Id := Scope (Typ);
+         Pkg_Decl : Node_Id := Pkg;
+
+      begin
+         if Ekind (Pkg) = E_Package then
+            while Nkind (Pkg_Decl) /= N_Package_Specification loop
+               Pkg_Decl := Parent (Pkg_Decl);
+            end loop;
+
+            --  It is knows that Typ has a private view, look for it in the
+            --  visible declarations of the enclosing scope. A special case
+            --  of this is when the two views have been exchanged - the full
+            --  appears earlier than the private.
+
+            if Has_Private_Declaration (Typ) then
+               Prev := Inspect_Decls (Visible_Declarations (Pkg_Decl));
+
+               --  Exchanged view case, look in the private declarations
+
+               if No (Prev) then
+                  Prev := Inspect_Decls (Private_Declarations (Pkg_Decl));
+               end if;
+
+               return Prev;
+
+            --  Otherwise if this is the package body, then Typ is a potential
+            --  Taft amendment type. The incomplete view should be located in
+            --  the private declarations of the enclosing scope.
+
+            elsif In_Package_Body (Pkg) then
+               return Inspect_Decls (Private_Declarations (Pkg_Decl), True);
+            end if;
+         end if;
+      end;
+
+      --  The type has no incomplete or private view
+
+      return Empty;
+   end Incomplete_Or_Private_View;
+
    ---------------------------------
    -- Insert_Explicit_Dereference --
    ---------------------------------
@@ -6293,23 +6404,6 @@ package body Sem_Util is
          return False;
       end if;
    end Is_Atomic_Object;
-
-   -------------------------
-   -- Is_Coextension_Root --
-   -------------------------
-
-   function Is_Coextension_Root (N : Node_Id) return Boolean is
-   begin
-      return
-        Nkind (N) = N_Allocator
-          and then Present (Coextensions (N))
-
-         --  Anonymous access discriminants carry a list of all nested
-         --  controlled coextensions.
-
-          and then not Is_Dynamic_Coextension (N)
-          and then not Is_Static_Coextension (N);
-   end Is_Coextension_Root;
 
    -----------------------------
    -- Is_Concurrent_Interface --
@@ -6819,10 +6913,7 @@ package body Sem_Util is
          begin
             Ent := First_Entity (Typ);
             while Present (Ent) loop
-               if Chars (Ent) = Name_uController then
-                  null;
-
-               elsif Ekind (Ent) = E_Component
+               if Ekind (Ent) = E_Component
                  and then (No (Parent (Ent))
                              or else No (Expression (Parent (Ent))))
                  and then not Is_Fully_Initialized_Type (Etype (Ent))

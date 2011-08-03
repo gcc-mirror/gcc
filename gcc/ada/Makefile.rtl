@@ -150,7 +150,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-envvar$(objext) \
   a-except$(objext) \
   a-exctra$(objext) \
-  a-filico$(objext) \
+  a-fihema$(objext) \
   a-finali$(objext) \
   a-flteio$(objext) \
   a-fwteio$(objext) \
@@ -490,7 +490,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-ficobl$(objext) \
   s-fileio$(objext) \
   s-filofl$(objext) \
-  s-finimp$(objext) \
   s-finroo$(objext) \
   s-fishfl$(objext) \
   s-fore$(objext)   \

@@ -875,20 +875,24 @@ package body Exp_Intr is
    --  structures to find and terminate those components.
 
    procedure Expand_Unc_Deallocation (N : Node_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
-      Arg   : constant Node_Id    := First_Actual (N);
-      Typ   : constant Entity_Id  := Etype (Arg);
-      Stmts : constant List_Id    := New_List;
-      Rtyp  : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
-      Pool  : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
+      Arg     : constant Node_Id    := First_Actual (N);
+      Loc     : constant Source_Ptr := Sloc (N);
+      Typ     : constant Entity_Id  := Etype (Arg);
+      Desig_T : constant Entity_Id  := Designated_Type (Typ);
+      Rtyp    : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
+      Pool    : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
+      Stmts   : constant List_Id    := New_List;
 
-      Desig_T   : constant Entity_Id := Designated_Type (Typ);
-      Gen_Code  : Node_Id;
-      Free_Node : Node_Id;
-      Deref     : Node_Id;
-      Free_Arg  : Node_Id;
-      Free_Cod  : List_Id;
-      Blk       : Node_Id;
+      Blk          : Node_Id;
+      Deref        : Node_Id;
+      Exc_Occ_Decl : Node_Id;
+      Exc_Occ_Id   : Entity_Id := Empty;
+      Final_Code   : List_Id;
+      Free_Arg     : Node_Id;
+      Free_Node    : Node_Id;
+      Gen_Code     : Node_Id;
+      Raised_Decl  : Node_Id;
+      Raised_Id    : Entity_Id := Empty;
 
       Arg_Known_Non_Null : constant Boolean := Known_Non_Null (N);
       --  This captures whether we know the argument to be non-null so that
@@ -929,20 +933,93 @@ package body Exp_Intr is
             Set_Etype (Deref, Desig_T);
          end if;
 
-         Free_Cod :=
-           Make_Final_Call
-            (Ref         => Deref,
-             Typ         => Desig_T,
-             With_Detach => New_Reference_To (Standard_True, Loc));
+         --  The finalization call is expanded wrapped in a block to catch any
+         --  possible exception. If an exception does occur, then Program_Error
+         --  must be raised following the freeing of the object and its removal
+         --  from the finalization collection's list. We set a flag to record
+         --  that an exception was raised, and save its occurrence for use in
+         --  the later raise.
+         --
+         --  Generate:
+         --    Raised  : Boolean := False;
+         --    Exc_Occ : Exception_Occurrence;
+         --
+         --    begin
+         --       [Deep_]Finalize (Obj);
+         --    exception
+         --       when others =>
+         --          Raised := True;
+         --          Save_Occurrence (Exc_Occ, Get_Current_Excep.all.all);
+         --    end;
+
+         Exc_Occ_Id := Make_Temporary (Loc, 'E');
+         Raised_Id  := Make_Temporary (Loc, 'R');
+
+         Raised_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Raised_Id,
+             Object_Definition =>
+               New_Reference_To (Standard_Boolean, Loc),
+             Expression =>
+               New_Reference_To (Standard_False, Loc));
+
+         Append_To (Stmts, Raised_Decl);
+         Analyze (Raised_Decl);
+
+         Exc_Occ_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Exc_Occ_Id,
+           Object_Definition =>
+             New_Reference_To (RTE (RE_Exception_Occurrence), Loc));
+         Set_No_Initialization (Exc_Occ_Decl);
+
+         Append_To (Stmts, Exc_Occ_Decl);
+         Analyze (Exc_Occ_Decl);
+
+         Final_Code := New_List (
+           Make_Block_Statement (Loc,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (
+                   Make_Final_Call (
+                     Obj_Ref => Deref,
+                     Typ     => Desig_T)),
+                 Exception_Handlers => New_List (
+                   Make_Exception_Handler (Loc,
+                     Exception_Choices => New_List (
+                       Make_Others_Choice (Loc)),
+                     Statements => New_List (
+                       Make_Assignment_Statement (Loc,
+                         Name =>
+                           New_Reference_To (Raised_Id, Loc),
+                         Expression =>
+                           New_Reference_To (Standard_True, Loc)),
+                       Make_Procedure_Call_Statement (Loc,
+                         Name =>
+                           New_Reference_To (RTE (RE_Save_Occurrence), Loc),
+                         Parameter_Associations => New_List (
+                           New_Reference_To (Exc_Occ_Id, Loc),
+                           Make_Explicit_Dereference (Loc,
+                             Prefix =>
+                               Make_Function_Call (Loc,
+                                 Name =>
+                                   Make_Explicit_Dereference (Loc,
+                                     Prefix =>
+                                       New_Reference_To
+                                         (RTE (RE_Get_Current_Excep),
+                                          Loc))))))))))));
+
+         --  If aborts are allowed, then the finalization code must be
+         --  protected by an abort defer/undefer pair.
 
          if Abort_Allowed then
-            Prepend_To (Free_Cod,
+            Prepend_To (Final_Code,
               Build_Runtime_Call (Loc, RE_Abort_Defer));
 
             Blk :=
               Make_Block_Statement (Loc, Handled_Statement_Sequence =>
                 Make_Handled_Sequence_Of_Statements (Loc,
-                  Statements  => Free_Cod,
+                  Statements  => Final_Code,
                   At_End_Proc =>
                     New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc)));
 
@@ -962,7 +1039,7 @@ package body Exp_Intr is
             Kill_Current_Values;
 
          else
-            Append_List_To (Stmts, Free_Cod);
+            Append_List_To (Stmts, Final_Code);
          end if;
       end if;
 
@@ -1165,6 +1242,21 @@ package body Exp_Intr is
                 Name       => Lhs,
                 Expression => Make_Null (Loc)));
          end;
+      end if;
+
+      --  Generate a test of whether any earlier finalization raised an
+      --  exception, and in that case raise Program_Error with the previous
+      --  exception occurrence.
+      --
+      --  Generate:
+      --    if Raised then
+      --       Reraise_Occurrence (Exc_Occ);               --  for .NET
+      --         <or>
+      --       Raise_From_Controlled_Operation (Exc_Occ);  --  all other cases
+      --    end if;
+
+      if Present (Raised_Id) then
+         Append_To (Stmts, Build_Raise_Statement (Loc, Exc_Occ_Id, Raised_Id));
       end if;
 
       --  If we know the argument is non-null, then make a block statement

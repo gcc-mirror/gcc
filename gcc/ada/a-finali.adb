@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,18 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Finalization_Root; use System.Finalization_Root;
-
 package body Ada.Finalization is
-
-   ---------
-   -- "=" --
-   ---------
-
-   overriding function "=" (A, B : Controlled) return Boolean is
-   begin
-      return Empty_Root_Controlled (A) = Empty_Root_Controlled (B);
-   end "=";
 
    ------------
    -- Adjust --

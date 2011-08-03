@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1190,7 +1190,6 @@ package body Freeze is
 
          Set_Expression (Par, New_Occurrence_Of (Temp, Loc));
          return True;
-
       else
          return False;
       end if;
@@ -1303,7 +1302,7 @@ package body Freeze is
                   Subp : Entity_Id;
 
                begin
-                  Prim  := First_Elmt (Prim_List);
+                  Prim := First_Elmt (Prim_List);
                   while Present (Prim) loop
                      Subp := Node (Prim);
 
@@ -1448,13 +1447,27 @@ package body Freeze is
                end loop;
             end;
 
+         --  We add finalization collections to access types whose designated
+         --  types require finalization. This is normally done when freezing
+         --  the type, but this misses recursive type definitions where the
+         --  later members of the recursion introduce controlled components
+         --  (such as can happen when incomplete types are involved), as well
+         --  cases where a component type is private and the controlled full
+         --  type occurs after the access type is frozen. Cases that don't
+         --  need a finalization collection are generic formal types (the
+         --  actual type will have it) and types with Java and CIL conventions,
+         --  since those are used for API bindings. (Are there any other cases
+         --  that should be excluded here???)
+
          elsif Is_Access_Type (E)
            and then Comes_From_Source (E)
-           and then Ekind (Directly_Designated_Type (E)) = E_Incomplete_Type
+           and then not Is_Generic_Type (E)
            and then Needs_Finalization (Designated_Type (E))
-           and then No (Associated_Final_Chain (E))
+           and then No (Associated_Collection (E))
+           and then Convention (Designated_Type (E)) /= Convention_Java
+           and then Convention (Designated_Type (E)) /= Convention_CIL
          then
-            Build_Final_List (Parent (E), E);
+            Build_Finalization_Collection (E);
          end if;
 
          Next_Entity (E);
@@ -1800,40 +1813,6 @@ package body Freeze is
       --  Start of processing for Freeze_Record_Type
 
       begin
-         --  If this is a subtype of a controlled type, declared without a
-         --  constraint, the _controller may not appear in the component list
-         --  if the parent was not frozen at the point of subtype declaration.
-         --  Inherit the _controller component now.
-
-         if Rec /= Base_Type (Rec)
-           and then Has_Controlled_Component (Rec)
-         then
-            if Nkind (Parent (Rec)) = N_Subtype_Declaration
-              and then Is_Entity_Name (Subtype_Indication (Parent (Rec)))
-            then
-               Set_First_Entity (Rec, First_Entity (Base_Type (Rec)));
-
-            --  If this is an internal type without a declaration, as for
-            --  record component, the base type may not yet be frozen, and its
-            --  controller has not been created. Add an explicit freeze node
-            --  for the itype, so it will be frozen after the base type. This
-            --  freeze node is used to communicate with the expander, in order
-            --  to create the controller for the enclosing record, and it is
-            --  deleted afterwards (see exp_ch3). It must not be created when
-            --  expansion is off, because it might appear in the wrong context
-            --  for the back end.
-
-            elsif Is_Itype (Rec)
-              and then Has_Delayed_Freeze (Base_Type (Rec))
-              and then
-                Nkind (Associated_Node_For_Itype (Rec)) =
-                                                     N_Component_Declaration
-              and then Expander_Active
-            then
-               Ensure_Freeze_Node (Rec);
-            end if;
-         end if;
-
          --  Freeze components and embedded subtypes
 
          Comp := First_Entity (Rec);
@@ -2747,23 +2726,24 @@ package body Freeze is
 
                      if Has_Foreign_Convention (E)
 
-                       --  We are looking for a return of unconstrained array
+                        --  We are looking for a return of unconstrained array
 
                        and then Is_Array_Type (R_Type)
                        and then not Is_Constrained (R_Type)
 
-                       --  Exclude imported routines, the warning does not
-                       --  belong on the import, but on the routine definition.
+                        --  Exclude imported routines, the warning does not
+                        --  belong on the import, but rather on the routine
+                        --  definition.
 
                        and then not Is_Imported (E)
 
-                       --  Exclude VM case, since both .NET and JVM can handle
-                       --  return of unconstrained arrays without a problem.
+                        --  Exclude VM case, since both .NET and JVM can handle
+                        --  return of unconstrained arrays without a problem.
 
                        and then VM_Target = No_VM
 
-                       --  Check that general warning is enabled, and that it
-                       --  is not suppressed for this particular case.
+                        --  Check that general warning is enabled, and that it
+                        --  is not suppressed for this particular case.
 
                        and then Warn_On_Export_Import
                        and then not Has_Warnings_Off (E)
@@ -3940,7 +3920,7 @@ package body Freeze is
 
             if Is_Pure_Unit_Access_Type (E)
               and then (Ada_Version < Ada_2005
-                         or else not No_Pool_Assigned (E))
+                          or else not No_Pool_Assigned (E))
             then
                Error_Msg_N ("named access type not allowed in pure unit", E);
 
@@ -5469,13 +5449,13 @@ package body Freeze is
             elsif Is_Array_Type (Retype)
               and then not Is_Constrained (Retype)
 
-              --  Exclude cases where descriptor mechanism is set, since the
-              --  VMS descriptor mechanisms allow such unconstrained returns.
+               --  Exclude cases where descriptor mechanism is set, since the
+               --  VMS descriptor mechanisms allow such unconstrained returns.
 
               and then Mechanism (E) not in Descriptor_Codes
 
-              --  Check appropriate warning is enabled (should we check for
-              --  Warnings (Off) on specific entities here, probably so???)
+               --  Check appropriate warning is enabled (should we check for
+               --  Warnings (Off) on specific entities here, probably so???)
 
               and then Warn_On_Export_Import
 
@@ -5745,11 +5725,10 @@ package body Freeze is
                    Declarations => New_List (
                      Make_Object_Declaration (Loc,
                        Defining_Identifier =>
-                         Make_Defining_Identifier (Loc,
-                           New_Internal_Name ('T')),
-                         Object_Definition =>
-                           New_Occurrence_Of (Etype (Formal), Loc),
-                         Expression => New_Copy_Tree (Dcopy))),
+                         Make_Temporary (Loc, 'T'),
+                       Object_Definition =>
+                         New_Occurrence_Of (Etype (Formal), Loc),
+                       Expression => New_Copy_Tree (Dcopy))),
 
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,

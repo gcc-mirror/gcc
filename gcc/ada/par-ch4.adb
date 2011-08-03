@@ -35,13 +35,13 @@ package body Ch4 is
    --  Attributes that cannot have arguments
 
    Is_Parameterless_Attribute : constant Attribute_Class_Array :=
-     (Attribute_Body_Version => True,
+     (Attribute_Base         => True,
+      Attribute_Body_Version => True,
+      Attribute_Class        => True,
       Attribute_External_Tag => True,
       Attribute_Img          => True,
-      Attribute_Version      => True,
-      Attribute_Base         => True,
-      Attribute_Class        => True,
       Attribute_Stub_Type    => True,
+      Attribute_Version      => True,
       Attribute_Type_Key     => True,
       others                 => False);
    --  This map contains True for parameterless attributes that return a

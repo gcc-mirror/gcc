@@ -6,7 +6,7 @@
 --                                                                          --
 --                             T e m p l a t e                              --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,15 +154,13 @@ package Snames is
    Name_uAssign                        : constant Name_Id := N + $;
    Name_uATCB                          : constant Name_Id := N + $;
    Name_uChain                         : constant Name_Id := N + $;
-   Name_uClean                         : constant Name_Id := N + $;
    Name_uController                    : constant Name_Id := N + $;
    Name_uCPU                           : constant Name_Id := N + $;
    Name_uEntry_Bodies                  : constant Name_Id := N + $;
    Name_uExpunge                       : constant Name_Id := N + $;
-   Name_uFinal_List                    : constant Name_Id := N + $;
+   Name_uFinalizer                     : constant Name_Id := N + $;
    Name_uIdepth                        : constant Name_Id := N + $;
    Name_uInit                          : constant Name_Id := N + $;
-   Name_uLocal_Final_List              : constant Name_Id := N + $;
    Name_uMaster                        : constant Name_Id := N + $;
    Name_uObject                        : constant Name_Id := N + $;
    Name_uPostconditions                : constant Name_Id := N + $;
@@ -191,17 +189,12 @@ package Snames is
    Name_uDisp_Requeue                  : constant Name_Id := N + $;
    Name_uDisp_Timed_Select             : constant Name_Id := N + $;
 
-   --  Names of routines in Ada.Finalization, needed by expander
+   --  Names of routines and fields in Ada.Finalization, needed by expander
 
    Name_Initialize                     : constant Name_Id := N + $;
    Name_Adjust                         : constant Name_Id := N + $;
    Name_Finalize                       : constant Name_Id := N + $;
-
-   --  Names of fields declared in System.Finalization_Implementation,
-   --  needed by the expander when generating code for finalization.
-
-   Name_Next                           : constant Name_Id := N + $;
-   Name_Prev                           : constant Name_Id := N + $;
+   Name_Finalize_Address               : constant Name_Id := N + $;
 
    --  Names of allocation routines, also needed by expander
 
@@ -240,7 +233,6 @@ package Snames is
 
    Name_Exception_Traces               : constant Name_Id := N + $;
    Name_Finalization                   : constant Name_Id := N + $;
-   Name_Finalization_Root              : constant Name_Id := N + $;
    Name_Interfaces                     : constant Name_Id := N + $;
    Name_Most_Recent_Exception          : constant Name_Id := N + $;
    Name_Standard                       : constant Name_Id := N + $;
@@ -1205,11 +1197,12 @@ package Snames is
 
    Name_Unaligned_Valid                  : constant Name_Id := N + $;
 
-   --  Names used to implement iterators over predefined  containers
+   --  Names used to implement iterators over predefined containers
 
    Name_Cursor                           : constant Name_Id := N + $;
    Name_Element                          : constant Name_Id := N + $;
    Name_Element_Type                     : constant Name_Id := N + $;
+   Name_Next                             : constant Name_Id := N + $;
    Name_No_Element                       : constant Name_Id := N + $;
    Name_Previous                         : constant Name_Id := N + $;
 

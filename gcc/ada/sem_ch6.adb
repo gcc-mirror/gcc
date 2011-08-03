@@ -1970,6 +1970,10 @@ package body Sem_Ch6 is
             while Present (Formal) loop
                Formal_Typ := Etype (Formal);
 
+               if Is_Class_Wide_Type (Formal_Typ) then
+                  Formal_Typ := Root_Type (Formal_Typ);
+               end if;
+
                --  From concurrent type to corresponding record
 
                if To_Corresponding then
@@ -2061,6 +2065,10 @@ package body Sem_Ch6 is
             Formal_Typ := Etype (First_Formal (Subp_Id));
 
             if Is_Concurrent_Record_Type (Formal_Typ) then
+               if Is_Class_Wide_Type (Formal_Typ) then
+                  Formal_Typ := Root_Type (Formal_Typ);
+               end if;
+
                Formal_Typ := Corresponding_Concurrent_Type (Formal_Typ);
             end if;
 
@@ -6057,24 +6065,15 @@ package body Sem_Ch6 is
                     E, BIP_Formal_Suffix (BIP_Alloc_Form));
             end if;
 
-            --  For functions whose result type has controlled parts, we have
-            --  an extra formal of type System.Finalization_Implementation.
-            --  Finalizable_Ptr_Ptr. That is, we are passing a pointer to a
-            --  finalization list (which is itself a pointer). This extra
-            --  formal is then passed along to Move_Final_List in case of
-            --  successful completion of a return statement. We cannot pass an
-            --  'in out' parameter, because we need to update the finalization
-            --  list during an abort-deferred region, rather than using
-            --  copy-back after the function returns. This is true even if we
-            --  are able to get away with having 'in out' parameters, which are
-            --  normally illegal for functions. This formal is also needed when
-            --  the function has a tagged result.
+            --  In the case of functions whose result type needs finalization,
+            --  add an extra formal of type Ada.Finalization.Heap_Management.
+            --  Finalization_Collection_Ptr.
 
-            if Needs_BIP_Final_List (E) then
+            if Needs_BIP_Collection (E) then
                Discard :=
                  Add_Extra_Formal
-                   (E, RTE (RE_Finalizable_Ptr_Ptr),
-                    E, BIP_Formal_Suffix (BIP_Final_List));
+                   (E, RTE (RE_Finalization_Collection_Ptr),
+                    E, BIP_Formal_Suffix (BIP_Collection));
             end if;
 
             --  If the result type contains tasks, we have two extra formals:
