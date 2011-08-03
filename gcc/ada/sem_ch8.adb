@@ -688,8 +688,54 @@ package body Sem_Ch8 is
       T   : Entity_Id;
       T2  : Entity_Id;
 
+      procedure Check_Constrained_Object;
+      --  If the nominal type is unconstrained but the renamed object is
+      --  constrained, as can happen with renaming an explicit dereference or
+      --  a function return, build a constrained subtype from the object. If
+      --  the renaming is for a formal in an accept statement, the analysis
+      --  has already established its actual subtype. This is only relevant
+      --  if the renamed object is an explicit dereference.
+
       function In_Generic_Scope (E : Entity_Id) return Boolean;
       --  Determine whether entity E is inside a generic cope
+
+      ------------------------------
+      -- Check_Constrained_Object --
+      ------------------------------
+
+      procedure Check_Constrained_Object is
+         Loc  : constant Source_Ptr := Sloc (N);
+         Subt : Entity_Id;
+
+      begin
+         if (Nkind (Nam) = N_Function_Call
+              or else Nkind (Nam) = N_Explicit_Dereference)
+           and then Is_Composite_Type (Etype (Nam))
+           and then not Is_Constrained (Etype (Nam))
+           and then not Has_Unknown_Discriminants (Etype (Nam))
+           and then Expander_Active
+         then
+            --  If Actual_Sbutype is already set, nothing to do.
+
+            if (Ekind (Id) = E_Variable
+                 or else Ekind (Id) = E_Constant)
+              and then Present (Actual_Subtype (Id))
+            then
+               null;
+
+            else
+               Subt := Make_Temporary (Loc, 'T');
+               Remove_Side_Effects (Nam);
+               Insert_Action (N,
+                 Make_Subtype_Declaration (Loc,
+                   Defining_Identifier => Subt,
+                   Subtype_Indication  =>
+                     Make_Subtype_From_Expr (Nam, Etype (Nam))));
+               Rewrite (Subtype_Mark (N), New_Occurrence_Of (Subt, Loc));
+               Set_Etype (Nam, Subt);
+            end if;
+         end if;
+      end Check_Constrained_Object;
 
       ----------------------
       -- In_Generic_Scope --
@@ -910,32 +956,10 @@ package body Sem_Ch8 is
                      Nam);
                end if;
 
-               --  If the function call returns an unconstrained type, we must
-               --  build a constrained subtype for the new entity, in a way
-               --  similar to what is done for an object declaration with an
-               --  unconstrained nominal type.
-
-               if Is_Composite_Type (Etype (Nam))
-                 and then not Is_Constrained (Etype (Nam))
-                 and then not Has_Unknown_Discriminants (Etype (Nam))
-                 and then Expander_Active
-               then
-                  declare
-                     Loc  : constant Source_Ptr := Sloc (N);
-                     Subt : constant Entity_Id  := Make_Temporary (Loc, 'T');
-                  begin
-                     Remove_Side_Effects (Nam);
-                     Insert_Action (N,
-                       Make_Subtype_Declaration (Loc,
-                         Defining_Identifier => Subt,
-                         Subtype_Indication  =>
-                           Make_Subtype_From_Expr (Nam, Etype (Nam))));
-                     Rewrite (Subtype_Mark (N), New_Occurrence_Of (Subt, Loc));
-                     Set_Etype (Nam, Subt);
-                  end;
-               end if;
          end case;
       end if;
+
+      Check_Constrained_Object;
 
       --  An object renaming requires an exact match of the type. Class-wide
       --  matching is not allowed.

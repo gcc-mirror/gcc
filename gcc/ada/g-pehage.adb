@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2010, AdaCore                     --
+--                     Copyright (C) 2002-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -103,7 +103,7 @@ package body GNAT.Perfect_Hash_Generators is
    No_Table  : constant Table_Id  := -1;
 
    type Word_Type is new String_Access;
-   procedure Free_Word (W : in out Word_Type);
+   procedure Free_Word (W : in out Word_Type) renames Free;
    function New_Word (S : String) return Word_Type;
 
    procedure Resize_Word (W : in out Word_Type; Len : Natural);
@@ -913,8 +913,14 @@ package body GNAT.Perfect_Hash_Generators is
       --  ones) to avoid memory leaks.
 
       for W in 0 .. WT.Last loop
-         Free_Word (WT.Table (W));
+         --  Note: WT.Table (NK) is a temporary variable, do not free it since
+         --  this would cause a double free.
+
+         if W /= NK then
+            Free_Word (WT.Table (W));
+         end if;
       end loop;
+
       WT.Release;
       IT.Release;
 
@@ -947,17 +953,6 @@ package body GNAT.Perfect_Hash_Generators is
       Max_Key_Len := 0;
       Min_Key_Len := 0;
    end Finalize;
-
-   ---------------
-   -- Free_Word --
-   ---------------
-
-   procedure Free_Word (W : in out Word_Type) is
-   begin
-      if W /= null then
-         Free (W);
-      end if;
-   end Free_Word;
 
    ----------------------------
    -- Generate_Mapping_Table --
@@ -1258,6 +1253,11 @@ package body GNAT.Perfect_Hash_Generators is
       --  explicitly initialized to null.
 
       WT.Set_Last (Reduced (NK - 1));
+
+      --  Note: Reduced (0) = NK + 1
+
+      WT.Table (NK) := null;
+
       for W in 0 .. NK - 1 loop
          WT.Table (Reduced (W)) := null;
       end loop;

@@ -1,3 +1,35 @@
+2011-08-03  Olivier Hainque  <hainque@adacore.com>
+
+	* tracebak.c (STOP_FRAME ppc AIX): Stop at null return address as well.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): if the renamed object is an
+	explicit dereference of an unconstrained type, create a constrained
+	subtype for it, as is done for function calls that return an
+	unconstrained type.
+
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* g-pehage.adb (Finalize): Avoid possible double-free.
+
+2011-08-03  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Don't expand
+	Elab_Spec/Body attrs in CodePeer_Mode.
+
+2011-08-03  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Flatten): Convert to positional form aggregates whose
+	low bound is not known at compile time but they have no others choice.
+	Done because in this case the bounds can be obtained directly from the
+	aggregate.
+
+2011-08-03  Ed Falis  <falis@adacore.com>
+
+	* s-tasinf-vxworks.ads: Update comment to reflect 0 indexing of CPUs
+	on VxWorks SMP. Remove unusable constant ANY_CPU.
+
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
 	* gnatcmd.adb, make.adb, prj-part.adb, prj-part.ads, prj-makr.adb,
