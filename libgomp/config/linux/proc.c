@@ -30,7 +30,7 @@
 #define _GNU_SOURCE 1
 #endif
 #include "libgomp.h"
-#include <sched.h>
+#include "proc.h"
 #include <stdlib.h>
 #include <unistd.h>
 #ifdef HAVE_GETLOADAVG
@@ -40,8 +40,8 @@
 #endif
 
 #ifdef HAVE_PTHREAD_AFFINITY_NP
-static unsigned long
-cpuset_popcount (cpu_set_t *cpusetp)
+unsigned long
+gomp_cpuset_popcount (cpu_set_t *cpusetp)
 {
 #ifdef CPU_COUNT
   /* glibc 2.6 and above provide a macro for this.  */
@@ -76,7 +76,7 @@ gomp_init_num_threads (void)
   if (pthread_getaffinity_np (pthread_self (), sizeof (cpuset), &cpuset) == 0)
     {
       /* Count only the CPUs this process can use.  */
-      gomp_global_icv.nthreads_var = cpuset_popcount (&cpuset);
+      gomp_global_icv.nthreads_var = gomp_cpuset_popcount (&cpuset);
       if (gomp_global_icv.nthreads_var == 0)
 	gomp_global_icv.nthreads_var = 1;
       return;
@@ -99,7 +99,7 @@ get_num_procs (void)
       if (pthread_getaffinity_np (pthread_self (), sizeof (cpuset),
 				  &cpuset) == 0)
 	{
-	  int ret = cpuset_popcount (&cpuset);
+	  int ret = gomp_cpuset_popcount (&cpuset);
 	  return ret != 0 ? ret : 1;
 	}
     }

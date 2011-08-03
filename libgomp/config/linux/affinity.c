@@ -29,7 +29,7 @@
 #define _GNU_SOURCE 1
 #endif
 #include "libgomp.h"
-#include <sched.h>
+#include "proc.h"
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -56,7 +56,7 @@ gomp_init_affinity (void)
   CPU_ZERO (&cpusetnew);
   if (gomp_cpu_affinity_len == 0)
     {
-      unsigned long count = CPU_COUNT (&cpuset);
+      unsigned long count = gomp_cpuset_popcount (&cpuset);
       if (count >= 65536)
 	count = 65536;
       gomp_cpu_affinity = malloc (count * sizeof (unsigned short));
