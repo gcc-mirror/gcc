@@ -1,7 +1,7 @@
 2011-08-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/47383
-	* gcc.dg/torture/pr47383.c: Likewise.
+	* gcc.dg/torture/pr47383.c: New.
 
 2011-08-03  Arnaud Charlet  <charlet@adacore.com>
 
