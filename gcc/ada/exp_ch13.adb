@@ -214,7 +214,7 @@ package body Exp_Ch13 is
 
    procedure Expand_N_Free_Statement (N : Node_Id) is
       Expr : constant Node_Id := Expression (N);
-      Typ  : Entity_Id := Etype (Expr);
+      Typ  : Entity_Id;
 
    begin
       --  Certain run-time configurations and targets do not provide support
@@ -231,6 +231,8 @@ package body Exp_Ch13 is
       end if;
 
       --  Use the base type to perform the collection check
+
+      Typ := Etype (Expr);
 
       if Ekind (Typ) = E_Access_Subtype then
          Typ := Etype (Typ);

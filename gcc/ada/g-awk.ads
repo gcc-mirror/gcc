@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2010, AdaCore                     --
+--                     Copyright (C) 2000-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -215,7 +215,7 @@ package GNAT.AWK is
    --  a full AWK run. The state comprises a list of files, the current file,
    --  the number of line processed, the current line, the number of fields in
    --  the current line... A default session is provided (see Set_Current,
-   --  Current_Session and Default_Session above).
+   --  Current_Session and Default_Session below).
 
    ----------------------------
    -- Package initialization --

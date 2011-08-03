@@ -1500,17 +1500,16 @@ package body Sem_Disp is
          if Present (Tagged_Type) and then Is_Tagged_Type (Tagged_Type) then
             Append_Unique_Elmt (Old_Subp, Primitive_Operations (Tagged_Type));
 
-            --  If Old_Subp isn't already marked as dispatching then
-            --  this is the case of an operation of an untagged private
-            --  type fulfilled by a tagged type that overrides an
-            --  inherited dispatching operation, so we set the necessary
-            --  dispatching attributes here.
+            --  If Old_Subp isn't already marked as dispatching then this is
+            --  the case of an operation of an untagged private type fulfilled
+            --  by a tagged type that overrides an inherited dispatching
+            --  operation, so we set the necessary dispatching attributes here.
 
             if not Is_Dispatching_Operation (Old_Subp) then
 
                --  If the untagged type has no discriminants, and the full
-               --  view is constrained, there will be a spurious mismatch
-               --  of subtypes on the controlling arguments, because the tagged
+               --  view is constrained, there will be a spurious mismatch of
+               --  subtypes on the controlling arguments, because the tagged
                --  type is the internal base type introduced in the derivation.
                --  Use the original type to verify conformance, rather than the
                --  base type.
@@ -1758,9 +1757,9 @@ package body Sem_Disp is
 
             begin
                --  The original corresponding operation of Prim must be an
-               --  operation of a visible ancestor of the dispatching type
-               --  S, and the original corresponding operation of S2 must
-               --  be visible.
+               --  operation of a visible ancestor of the dispatching type S,
+               --  and the original corresponding operation of S2 must be
+               --  visible.
 
                Orig_Prim := Original_Corresponding_Operation (Prim);
 
@@ -2026,6 +2025,14 @@ package body Sem_Disp is
          if not Has_Controlling_Result (Nam) then
             return False;
 
+         --  The function may have a controlling result, but if the return type
+         --  is not visibly tagged, then this is not tag-indeterminate.
+
+         elsif Is_Access_Type (Etype (Nam))
+           and then not Is_Tagged_Type (Designated_Type (Etype (Nam)))
+         then
+            return False;
+
          --  An explicit dereference means that the call has already been
          --  expanded and there is no tag to propagate.
 
@@ -2043,7 +2050,9 @@ package body Sem_Disp is
                if Is_Controlling_Actual (Actual)
                  and then not Is_Tag_Indeterminate (Actual)
                then
-                  return False; -- one operand is dispatching
+                  --  One operand is dispatching
+
+                  return False;
                end if;
 
                Next_Actual (Actual);
@@ -2066,9 +2075,9 @@ package body Sem_Disp is
       then
          return True;
 
-      --  In Ada 2005 a function that returns an anonymous access type can
-      --  dispatching, and the dereference of a call to such a function
-      --  is also tag-indeterminate.
+      --  In Ada 2005, a function that returns an anonymous access type can be
+      --  dispatching, and the dereference of a call to such a function can
+      --  also be tag-indeterminate if the call itself is.
 
       elsif Nkind (Orig_Node) = N_Explicit_Dereference
         and then Ada_Version >= Ada_2005

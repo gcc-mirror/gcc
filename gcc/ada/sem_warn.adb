@@ -3379,7 +3379,6 @@ package body Sem_Warn is
                                  Act1, Form);
 
                            else
-
                               --  For greater clarity, give name of formal.
 
                               Error_Msg_Node_2 := Form;
