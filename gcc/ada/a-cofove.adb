@@ -44,8 +44,8 @@ package body Ada.Containers.Formal_Vectors is
    function "&" (Left, Right : Vector) return Vector is
       LN : constant Count_Type := Length (Left);
       RN : constant Count_Type := Length (Right);
-   begin
 
+   begin
       if LN = 0 then
          if RN = 0 then
             return Empty_Vector;
@@ -53,22 +53,19 @@ package body Ada.Containers.Formal_Vectors is
 
          declare
             E : constant Elements_Array (1 .. Length (Right)) :=
-              Right.Elements (1 .. RN);
+                  Right.Elements (1 .. RN);
          begin
-            return (Length (Right), E,
-                    Last => Right.Last, others => <>);
+            return (Length (Right), E, Last => Right.Last, others => <>);
          end;
       end if;
 
       if RN = 0 then
          declare
             E : constant Elements_Array (1 .. Length (Left)) :=
-              Left.Elements (1 .. LN);
+                  Left.Elements (1 .. LN);
          begin
-            return (Length (Left), E,
-                    Last => Left.Last, others => <>);
+            return (Length (Left), E, Last => Left.Last, others => <>);
          end;
-
       end if;
 
       declare
@@ -91,16 +88,13 @@ package body Ada.Containers.Formal_Vectors is
          declare
             Last : constant Index_Type := Index_Type (Last_As_Int);
 
-            LE : constant Elements_Array (1 .. LN) :=
-              Left.Elements (1 .. LN);
-
+            LE : constant Elements_Array (1 .. LN) := Left.Elements (1 .. LN);
             RE : Elements_Array renames Right.Elements (1 .. RN);
 
             Capacity : constant Count_Type := Length (Left) + Length (Right);
 
          begin
-            return (Capacity, LE & RE,
-                    Last => Last, others => <>);
+            return (Capacity, LE & RE, Last => Last, others => <>);
          end;
       end;
    end "&";
@@ -111,8 +105,7 @@ package body Ada.Containers.Formal_Vectors is
 
    begin
       if LN = 0 then
-         return (1, (1 .. 1 => Right),
-                 Index_Type'First, others => <>);
+         return (1, (1 .. 1 => Right), Index_Type'First, others => <>);
       end if;
 
       if Int (Index_Type'First) > Int'Last - Int (LN) then
@@ -127,17 +120,13 @@ package body Ada.Containers.Formal_Vectors is
 
       declare
          Last : constant Index_Type := Index_Type (Last_As_Int);
-
-         LE : constant Elements_Array (1 .. LN) :=
-           Left.Elements (1 .. LN);
+         LE   : constant Elements_Array (1 .. LN) := Left.Elements (1 .. LN);
 
          Capacity : constant Count_Type := Length (Left) + 1;
 
       begin
-         return (Capacity, LE & Right,
-                 Last => Last, others => <>);
+         return (Capacity, LE & Right, Last => Last, others => <>);
       end;
-
    end "&";
 
    function "&" (Left  : Element_Type; Right : Vector) return Vector is
@@ -161,15 +150,11 @@ package body Ada.Containers.Formal_Vectors is
       end if;
 
       declare
-         Last : constant Index_Type := Index_Type (Last_As_Int);
-
-         RE : Elements_Array renames Right.Elements (1 .. RN);
-
+         Last     : constant Index_Type := Index_Type (Last_As_Int);
+         RE       : Elements_Array renames Right.Elements (1 .. RN);
          Capacity : constant Count_Type := 1 + Length (Right);
-
       begin
-         return (Capacity, Left & RE,
-                 Last => Last, others => <>);
+         return (Capacity, Left & RE, Last => Last, others => <>);
       end;
    end "&";
 
@@ -181,10 +166,8 @@ package body Ada.Containers.Formal_Vectors is
 
       declare
          Last : constant Index_Type := Index_Type'First + 1;
-
       begin
-         return (2, (Left, Right),
-                 Last => Last, others => <>);
+         return (2, (Left, Right), Last => Last, others => <>);
       end;
    end "&";
 
@@ -217,7 +200,6 @@ package body Ada.Containers.Formal_Vectors is
 
    procedure Append (Container : in out Vector; New_Item : Vector) is
    begin
-
       if Is_Empty (New_Item) then
          return;
       end if;
@@ -226,10 +208,7 @@ package body Ada.Containers.Formal_Vectors is
          raise Constraint_Error with "vector is already at its maximum length";
       end if;
 
-      Insert
-        (Container,
-         Container.Last + 1,
-         New_Item);
+      Insert (Container, Container.Last + 1, New_Item);
    end Append;
 
    procedure Append
@@ -238,7 +217,6 @@ package body Ada.Containers.Formal_Vectors is
       Count     : Count_Type := 1)
    is
    begin
-
       if Count = 0 then
          return;
       end if;
@@ -249,11 +227,7 @@ package body Ada.Containers.Formal_Vectors is
 
       --  TODO: should check whether length > max capacity (cnt_t'last)  ???
 
-      Insert
-        (Container,
-         Container.Last + 1,
-         New_Item,
-         Count);
+      Insert (Container, Container.Last + 1, New_Item, Count);
    end Append;
 
    ------------
@@ -262,8 +236,8 @@ package body Ada.Containers.Formal_Vectors is
 
    procedure Assign (Target : in out Vector; Source : Vector) is
       LS : constant Count_Type := Length (Source);
-   begin
 
+   begin
       if Target'Address = Source'Address then
          return;
       end if;
@@ -274,10 +248,8 @@ package body Ada.Containers.Formal_Vectors is
 
       Target.Clear;
 
-         Target.Elements (1 .. LS) :=
-           Source.Elements (1 .. LS);
-         Target.Last := Source.Last;
-
+      Target.Elements (1 .. LS) := Source.Elements (1 .. LS);
+      Target.Last := Source.Last;
    end Assign;
 
    --------------
@@ -295,7 +267,6 @@ package body Ada.Containers.Formal_Vectors is
 
    procedure Clear (Container : in out Vector) is
    begin
-
       if Container.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with elements (vector is busy)";
@@ -330,19 +301,15 @@ package body Ada.Containers.Formal_Vectors is
    begin
       if Capacity = 0 then
          C := LS;
-
       elsif Capacity >= LS then
          C := Capacity;
-
       else
          raise Constraint_Error;
       end if;
 
-      return Target                   : Vector (C) do
-         Target.Elements (1 .. LS) :=
-           Source.Elements (1 .. LS);
+      return Target : Vector (C) do
+         Target.Elements (1 .. LS) := Source.Elements (1 .. LS);
          Target.Last := Source.Last;
-
       end return;
    end Copy;
 
@@ -356,7 +323,6 @@ package body Ada.Containers.Formal_Vectors is
       Count     : Count_Type := 1)
    is
    begin
-
       if Index < Index_Type'First then
          raise Constraint_Error with "Index is out of range (too small)";
       end if;
@@ -380,8 +346,7 @@ package body Ada.Containers.Formal_Vectors is
 
       declare
          I_As_Int        : constant Int := Int (Index);
-         Old_Last_As_Int : constant Int :=
-                             Index_Type'Pos (Container.Last);
+         Old_Last_As_Int : constant Int := Index_Type'Pos (Container.Last);
 
          Count1 : constant Int'Base := Count_Type'Pos (Count);
          Count2 : constant Int'Base := Old_Last_As_Int - I_As_Int + 1;
@@ -424,7 +389,6 @@ package body Ada.Containers.Formal_Vectors is
       Count     : Count_Type := 1)
    is
    begin
-
       if not Position.Valid then
          raise Constraint_Error with "Position cursor has no element";
       end if;
@@ -446,7 +410,6 @@ package body Ada.Containers.Formal_Vectors is
       Count     : Count_Type := 1)
    is
    begin
-
       if Count = 0 then
          return;
       end if;
@@ -470,7 +433,6 @@ package body Ada.Containers.Formal_Vectors is
       Index : Int'Base;
 
    begin
-
       if Count = 0 then
          return;
       end if;
@@ -505,9 +467,7 @@ package body Ada.Containers.Formal_Vectors is
       declare
          II : constant Int'Base := Int (Index) - Int (No_Index);
          I  : constant Count_Type := Count_Type (II);
-
       begin
-
          return Get_Element (Container, I);
       end;
    end Element;
@@ -517,6 +477,7 @@ package body Ada.Containers.Formal_Vectors is
       Position  : Cursor) return Element_Type
    is
       Lst : constant Index_Type := Last_Index (Container);
+
    begin
       if not Position.Valid then
          raise Constraint_Error with "Position cursor has no element";
@@ -529,9 +490,7 @@ package body Ada.Containers.Formal_Vectors is
       declare
          II : constant Int'Base := Int (Position.Index) - Int (No_Index);
          I  : constant Count_Type := Count_Type (II);
-
       begin
-
          return Get_Element (Container, I);
       end;
    end Element;
@@ -549,7 +508,6 @@ package body Ada.Containers.Formal_Vectors is
       Last : constant Index_Type := Last_Index (Container);
 
    begin
-
       if Position.Valid then
          if Position.Index > Last_Index (Container) then
             raise Program_Error with "Position index is out of range";
@@ -562,11 +520,11 @@ package body Ada.Containers.Formal_Vectors is
          if Get_Element (Container, K) = Item then
             return Cursor'(Index => J, others => <>);
          end if;
+
          K := K + 1;
       end loop;
 
       return No_Element;
-
    end Find;
 
    ----------------
@@ -588,6 +546,7 @@ package body Ada.Containers.Formal_Vectors is
          if Get_Element (Container, K) = Item then
             return Indx;
          end if;
+
          K := K + 1;
       end loop;
 
@@ -642,8 +601,8 @@ package body Ada.Containers.Formal_Vectors is
 
       function Is_Sorted (Container : Vector) return Boolean is
          Last : constant Index_Type := Last_Index (Container);
-      begin
 
+      begin
          if Container.Last <= Last then
             return True;
          end if;
@@ -651,10 +610,10 @@ package body Ada.Containers.Formal_Vectors is
          declare
             L : constant Capacity_Subtype := Length (Container);
          begin
-
             for J in Count_Type range 1 .. L - 1 loop
-               if Get_Element (Container, J + 1)
-                 < Get_Element (Container, J) then
+               if Get_Element (Container, J + 1) <
+                  Get_Element (Container, J)
+               then
                   return False;
                end if;
             end loop;
@@ -692,6 +651,7 @@ package body Ada.Containers.Formal_Vectors is
             end if;
 
             --  I think we're missing this check in a-convec.adb...  ???
+
             if Target.Busy > 0 then
                raise Program_Error with
                  "attempt to tamper with elements (vector is busy)";
@@ -717,8 +677,7 @@ package body Ada.Containers.Formal_Vectors is
                   return;
                end if;
 
-               pragma Assert (I <= 1
-                              or else not (TA (I) < TA (I - 1)));
+               pragma Assert (I <= 1 or else not (TA (I) < TA (I - 1)));
 
                if SA (Length (Source)) < TA (I) then
                   TA (J) := TA (I);
@@ -746,8 +705,8 @@ package body Ada.Containers.Formal_Vectors is
               Element_Type => Element_Type,
               Array_Type   => Elements_Array,
               "<"          => "<");
-      begin
 
+      begin
          if Container.Last <= Index_Type'First then
             return;
          end if;
@@ -768,11 +727,10 @@ package body Ada.Containers.Formal_Vectors is
 
    function Get_Element
      (Container : Vector;
-      Position  : Count_Type) return Element_Type is
+      Position  : Count_Type) return Element_Type
+   is
    begin
-
       return Container.Elements (Position);
-
    end Get_Element;
 
    -----------------
@@ -781,13 +739,14 @@ package body Ada.Containers.Formal_Vectors is
 
    function Has_Element
      (Container : Vector;
-      Position  : Cursor) return Boolean is
+      Position  : Cursor) return Boolean
+   is
    begin
       if not Position.Valid then
          return False;
+      else
+         return Position.Index <= Last_Index (Container);
       end if;
-
-      return Position.Index <= Last_Index (Container);
    end Has_Element;
 
    ------------
@@ -809,7 +768,6 @@ package body Ada.Containers.Formal_Vectors is
       Max_Length      : constant UInt := UInt (Container.Capacity);
 
    begin
-
       if Before < Index_Type'First then
          raise Constraint_Error with
            "Before index is out of range (too small)";
@@ -870,7 +828,6 @@ package body Ada.Containers.Formal_Vectors is
             declare
                II : constant Int'Base := BB + N;
                I  : constant Count_Type := Count_Type (II);
-
             begin
                EA (I .. L) := EA (B .. Length (Container));
                EA (B .. I - 1) := (others => New_Item);
@@ -892,7 +849,6 @@ package body Ada.Containers.Formal_Vectors is
       N : constant Count_Type := Length (New_Item);
 
    begin
-
       if Before < Index_Type'First then
          raise Constraint_Error with
            "Before index is out of range (too small)";
@@ -921,11 +877,8 @@ package body Ada.Containers.Formal_Vectors is
          B  : constant Count_Type := Count_Type (BB);
 
       begin
-
          if Container'Address /= New_Item'Address then
-            Container.Elements (B .. Dst_Last) :=
-              New_Item.Elements (1 .. N);
-
+            Container.Elements (B .. Dst_Last) := New_Item.Elements (1 .. N);
             return;
          end if;
 
@@ -948,8 +901,7 @@ package body Ada.Containers.Formal_Vectors is
 
          declare
             Src : Elements_Array renames
-                    Container.Elements
-                      (Dst_Last + 1 .. Length (Container));
+                    Container.Elements (Dst_Last + 1 .. Length (Container));
 
             Index_As_Int : constant Int'Base :=
                              Dst_Last_As_Int - Src'Length + 1;
@@ -973,7 +925,6 @@ package body Ada.Containers.Formal_Vectors is
       Index : Index_Type'Base;
 
    begin
-
       if Is_Empty (New_Item) then
          return;
       end if;
@@ -1004,7 +955,6 @@ package body Ada.Containers.Formal_Vectors is
       Index : Index_Type'Base;
 
    begin
-
       if Is_Empty (New_Item) then
          if not Before.Valid
            or else Before.Index > Container.Last
@@ -1045,7 +995,6 @@ package body Ada.Containers.Formal_Vectors is
       Index : Index_Type'Base;
 
    begin
-
       if Count = 0 then
          return;
       end if;
@@ -1077,7 +1026,6 @@ package body Ada.Containers.Formal_Vectors is
       Index : Index_Type'Base;
 
    begin
-
       if Count = 0 then
          if not Before.Valid
            or else Before.Index > Container.Last
@@ -1129,7 +1077,6 @@ package body Ada.Containers.Formal_Vectors is
    is
       New_Item : Element_Type;  -- Default-initialized value
       pragma Warnings (Off, New_Item);
-
    begin
       Insert (Container, Before, New_Item, Position, Count);
    end Insert;
@@ -1152,7 +1099,6 @@ package body Ada.Containers.Formal_Vectors is
       Max_Length      : constant UInt := UInt (Count_Type'Last);
 
    begin
-
       if Before < Index_Type'First then
          raise Constraint_Error with
            "Before index is out of range (too small)";
@@ -1213,7 +1159,6 @@ package body Ada.Containers.Formal_Vectors is
             declare
                II : constant Int'Base := BB + N;
                I  : constant Count_Type := Count_Type (II);
-
             begin
                EA (I .. L) := EA (B .. Length (Container));
             end;
@@ -1232,7 +1177,6 @@ package body Ada.Containers.Formal_Vectors is
       Index : Index_Type'Base;
 
    begin
-
       if Count = 0 then
          if not Before.Valid
            or else Before.Index > Container.Last
@@ -1354,12 +1298,13 @@ package body Ada.Containers.Formal_Vectors is
    ----------
 
    function Left (Container : Vector; Position : Cursor) return Vector is
-      C : Vector (Container.Capacity) :=
-        Copy (Container, Container.Capacity);
+      C : Vector (Container.Capacity) := Copy (Container, Container.Capacity);
+
    begin
       if Position = No_Element then
          return C;
       end if;
+
       if not Has_Element (Container, Position) then
          raise Constraint_Error;
       end if;
@@ -1640,7 +1585,6 @@ package body Ada.Containers.Formal_Vectors is
       declare
          II : constant Int'Base := Int (Position.Index) - Int (No_Index);
          I  : constant Count_Type := Count_Type (II);
-
       begin
          Container.Elements (I) := New_Item;
       end;
@@ -1655,7 +1599,6 @@ package body Ada.Containers.Formal_Vectors is
       Capacity  : Capacity_Subtype)
    is
    begin
-
       if Capacity > Container.Capacity then
          raise Constraint_Error;  -- ???
       end if;
@@ -1667,7 +1610,6 @@ package body Ada.Containers.Formal_Vectors is
 
    procedure Reverse_Elements (Container : in out Vector) is
    begin
-
       if Length (Container) <= 1 then
          return;
       end if;
@@ -1687,7 +1629,6 @@ package body Ada.Containers.Formal_Vectors is
          while I < J loop
             declare
                EI : constant Element_Type := E (I);
-
             begin
                E (I) := E (J);
                E (J) := EI;
@@ -1712,7 +1653,6 @@ package body Ada.Containers.Formal_Vectors is
       K    : Count_Type;
 
    begin
-
       if not Position.Valid
         or else Position.Index > Last_Index (Container)
       then
@@ -1726,6 +1666,7 @@ package body Ada.Containers.Formal_Vectors is
          if Get_Element (Container, K) = Item then
             return (True, Indx);
          end if;
+
          K := K - 1;
       end loop;
 
@@ -1756,6 +1697,7 @@ package body Ada.Containers.Formal_Vectors is
          if Get_Element (Container, K) = Item then
             return Indx;
          end if;
+
          K := K - 1;
       end loop;
 
@@ -1768,8 +1710,8 @@ package body Ada.Containers.Formal_Vectors is
 
    procedure Reverse_Iterate
      (Container : Vector;
-      Process   :
-        not null access procedure (Container : Vector; Position : Cursor))
+      Process   : not null access procedure (Container : Vector;
+                                             Position : Cursor))
    is
       V : Vector renames Container'Unrestricted_Access.all;
       B : Natural renames V.Busy;
@@ -1795,13 +1737,14 @@ package body Ada.Containers.Formal_Vectors is
    -----------
 
    function Right (Container : Vector; Position : Cursor) return Vector is
-      C : Vector (Container.Capacity) :=
-        Copy (Container, Container.Capacity);
+      C : Vector (Container.Capacity) := Copy (Container, Container.Capacity);
+
    begin
       if Position = No_Element then
          Clear (C);
          return C;
       end if;
+
       if not Has_Element (Container, Position) then
          raise Constraint_Error;
       end if;
@@ -1809,6 +1752,7 @@ package body Ada.Containers.Formal_Vectors is
       while C.Last /= Container.Last - Position.Index + 1 loop
          Delete_First (C);
       end loop;
+
       return C;
    end Right;
 
@@ -1821,7 +1765,6 @@ package body Ada.Containers.Formal_Vectors is
       Length    : Capacity_Subtype)
    is
    begin
-
       if Length = Formal_Vectors.Length (Container) then
          return;
       end if;
@@ -1849,7 +1792,6 @@ package body Ada.Containers.Formal_Vectors is
 
    procedure Swap (Container : in out Vector; I, J : Index_Type) is
    begin
-
       if I > Container.Last then
          raise Constraint_Error with "I index is out of range";
       end if;
@@ -1884,7 +1826,6 @@ package body Ada.Containers.Formal_Vectors is
 
    procedure Swap (Container : in out Vector; I, J : Cursor) is
    begin
-
       if not I.Valid then
          raise Constraint_Error with "I cursor has no element";
       end if;

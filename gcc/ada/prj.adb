@@ -144,6 +144,39 @@ package body Prj is
       end if;
    end Delete_Temporary_File;
 
+   ------------------------------
+   -- Delete_Temp_Config_Files --
+   ------------------------------
+
+   procedure Delete_Temp_Config_Files (Project_Tree : Project_Tree_Ref) is
+      Success : Boolean;
+      Proj    : Project_List;
+      pragma Warnings (Off, Success);
+
+   begin
+      if not Debug.Debug_Flag_N then
+         if Project_Tree /= null then
+            Proj := Project_Tree.Projects;
+            while Proj /= null loop
+               if Proj.Project.Config_File_Temp then
+                  Delete_Temporary_File
+                    (Project_Tree.Shared, Proj.Project.Config_File_Name);
+
+                  --  Make sure that we don't have a config file for this
+                  --  project, in case there are several mains. In this case,
+                  --  we will recreate another config file: we cannot reuse the
+                  --  one that we just deleted!
+
+                  Proj.Project.Config_Checked   := False;
+                  Proj.Project.Config_File_Name := No_Path;
+                  Proj.Project.Config_File_Temp := False;
+               end if;
+               Proj := Proj.Next;
+            end loop;
+         end if;
+      end if;
+   end Delete_Temp_Config_Files;
+
    ---------------------------
    -- Delete_All_Temp_Files --
    ---------------------------
@@ -493,7 +526,8 @@ package body Prj is
       Project          : Project_Id;
       In_Imported_Only : Boolean := False;
       In_Extended_Only : Boolean := False;
-      Base_Name        : File_Name_Type) return Source_Id
+      Base_Name        : File_Name_Type;
+      Index            : Int := 0) return Source_Id
    is
       Result : Source_Id  := No_Source;
 
@@ -517,7 +551,9 @@ package body Prj is
       begin
          Iterator := For_Each_Source (In_Tree => Tree, Project => Proj);
          while Element (Iterator) /= No_Source loop
-            if Element (Iterator).File = Base_Name then
+            if Element (Iterator).File = Base_Name
+              and then (Index = 0 or else Element (Iterator).Index = Index)
+            then
                Src := Element (Iterator);
                return;
             end if;

@@ -30,7 +30,8 @@
 with ALI;
 with Namet;    use Namet;
 with Opt;
-with Prj;      use Prj;
+with Osint;
+with Prj;         use Prj;
 with Prj.Tree;
 with Types;    use Types;
 
@@ -110,6 +111,13 @@ package Makeutl is
    --  Check whether all file references in ALI are still valid (i.e. the
    --  source files are still associated with the same units). Return True
    --  if everything is still valid.
+
+   function Is_Subunit (Source : Source_Id) return Boolean;
+   --  Return True if source is a subunit
+
+   procedure Initialize_Source_Record (Source : Source_Id);
+   --  Get information either about the source file, the object and
+   --  dependency file, as well as their timestamps. This includes timestamps.
 
    function Is_External_Assignment
      (Env  : Prj.Tree.Environment;
@@ -204,6 +212,24 @@ package Makeutl is
    function Path_Or_File_Name (Path : Path_Name_Type) return String;
    --  Returns a file name if -df is used, otherwise return a path name
 
+   -------------------------
+   -- Program termination --
+   -------------------------
+
+   procedure Fail_Program
+     (Project_Tree   : Project_Tree_Ref;
+      S              : String;
+      Flush_Messages : Boolean := True);
+   --  Terminate program with a message and a fatal status code
+
+   procedure Finish_Program
+     (Project_Tree : Project_Tree_Ref;
+      Exit_Code    : Osint.Exit_Code_Type := Osint.E_Success;
+      S            : String := "");
+   --  Terminate program, with or without a message, setting the status code
+   --  according to Fatal.
+   --  This properly removes all temporary files
+
    -----------
    -- Mains --
    -----------
@@ -215,38 +241,62 @@ package Makeutl is
    --  Mains are stored in a table. An index is used to retrieve the mains
    --  from the table.
 
+   type Main_Info is record
+      File      : File_Name_Type;  --  Always canonical casing
+      Index     : Int := 0;
+      Location  : Source_Ptr := No_Location;
+      Source    : Prj.Source_Id := No_Source;
+   end record;
+   No_Main_Info : constant Main_Info := (No_File, 0, No_Location, No_Source);
+
    package Mains is
-
-      procedure Add_Main (Name : String);
-      --  Add one main to the table
-
-      procedure Set_Index (Index : Int);
-
-      procedure Set_Location (Location : Source_Ptr);
-      --  Set the location of the last main added. By default, the location is
-      --  No_Location.
+      procedure Add_Main
+        (Name     : String;
+         Index    : Int := 0;
+         Location : Source_Ptr := No_Location);
+      --  Add one main to the table.
+      --  This is in general used to add the main files specified on the
+      --  command line.
+      --  Index is used for multi-unit source files, and indicates which unit
+      --  within the source is concerned.
+      --  Location is the location within the project file (if a project file
+      --  is used).
 
       procedure Delete;
       --  Empty the table
 
       procedure Reset;
-      --  Reset the index to the beginning of the table
+      --  Reset the cursor to the beginning of the table
+
+      procedure Set_Multi_Unit_Index
+        (Project_Tree : Project_Tree_Ref := null;
+         Index        : Int := 0);
+      --  If a single main file was defined, this subprogram indicates which
+      --  unit inside it is the main (case of a multi-unit source files).
+      --  Errors are raised if zero or more than one main file was defined,
+      --  and Index is not 0.
+      --  This subprogram is used for the handling of the command line switch.
 
       function Next_Main return String;
-      --  Increase the index and return the next main. If table is exhausted,
-      --  return an empty string.
-
-      function Get_Index return Int;
-
-      function Get_Location return Source_Ptr;
-      --  Get the location of the current main
-
-      procedure Update_Main (Name : String);
-      --  Update the file name of the current main
+      function Next_Main return Main_Info;
+      --  Moves the cursor forward and returns the new current entry.
+      --  Returns No_File_And_Loc if there are no more mains in the table.
 
       function Number_Of_Mains return Natural;
-      --  Returns the number of mains added with Add_Main since the last call
-      --  to Delete.
+      --  Returns the number of mains in the table.
+
+      procedure Fill_From_Project
+        (Root_Project : Project_Id;
+         Project_Tree : Project_Tree_Ref);
+      --  If no main was already added (presumably from the command line), add
+      --  the main units from root_project (or in the case of an aggregate
+      --  project from all the
+      --  aggregated projects).
+      --
+      --  If some main units were already added from the command line, check
+      --  that they all belong to the root project, and that they are full
+      --  full paths rather than (partial) base names (e.g. no body suffix was
+      --  specified).
 
    end Mains;
 
@@ -307,6 +357,26 @@ package Makeutl is
       --  Insert source in the queue.
       --  The second version returns False if the Source was already marked in
       --  the queue.
+
+      procedure Insert_Project_Sources
+        (Project      : Project_Id;
+         Project_Tree : Project_Tree_Ref;
+         All_Projects : Boolean;
+         Unit_Based   : Boolean);
+      --  Insert all the compilable sources of the project in the queue. If
+      --  All_Project is true, then all sources from imported projects are also
+      --  inserted.
+      --  When Unit_Based is True, put in the queue all compilable sources
+      --  including the unit based (Ada) one. When Unit_Based is False, put the
+      --  Ada sources only when they are in a library project.
+
+      procedure Insert_Withed_Sources_For
+        (The_ALI               : ALI.ALI_Id;
+         Project_Tree          : Project_Tree_Ref;
+         Excluding_Shared_SALs : Boolean := False);
+      --  Insert in the queue those sources withed by The_ALI, if there are not
+      --  already in the queue and Only_Interfaces is False or they are part of
+      --  the interfaces of their project.
 
       procedure Extract
         (Found  : out Boolean;

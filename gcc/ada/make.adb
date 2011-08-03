@@ -411,6 +411,8 @@ package body Make is
    --  Delete all temp files created by Gnatmake and call Osint.Fail, with the
    --  parameter S (see osint.ads). This is called from the Prj hierarchy and
    --  the MLib hierarchy.
+   --  This subprogram also prints current error messages on stdout (ie
+   --  finalizes errout)
 
    --------------------------
    -- Obsolete Executables --
@@ -794,15 +796,6 @@ package body Make is
    --  Create a new temporary mapping file, and fill it with the project file
    --  mappings, when using project file(s). The out parameter File_Index is
    --  the index to the name of the file in the array The_Mapping_File_Names.
-
-   procedure Delete_Temp_Config_Files;
-   --  Delete all temporary config files. Must not be called if Debug_Flag_N
-   --  is False.
-
-   procedure Delete_All_Temp_Files;
-   --  Delete all temp files (config files, mapping files, path files), unless
-   --  Debug_Flag_N is True (in which case all temp files are left for user
-   --  examination).
 
    -------------------------------------------------
    -- Subprogram declarations moved from the spec --
@@ -1267,7 +1260,6 @@ package body Make is
                            """ is not a gnatmake switch. Consider moving " &
                            "it to Global_Compilation_Switches.",
                            Element.Location);
-                        Errutil.Finalize;
                         Make_Failed ("*** illegal switch """ & Argv & """");
                      end if;
                   end;
@@ -3719,7 +3711,7 @@ package body Make is
       --  Delete any temporary configuration pragma file
 
       if not Debug.Debug_Flag_N then
-         Delete_Temp_Config_Files;
+         Delete_Temp_Config_Files (Project_Tree);
       end if;
    end Compile_Sources;
 
@@ -3910,53 +3902,6 @@ package body Make is
    begin
       Debug_Msg (S, Name_Id (N));
    end Debug_Msg;
-
-   ---------------------------
-   -- Delete_All_Temp_Files --
-   ---------------------------
-
-   procedure Delete_All_Temp_Files is
-   begin
-      if not Debug.Debug_Flag_N then
-         Delete_Temp_Config_Files;
-         Prj.Delete_All_Temp_Files (Project_Tree.Shared);
-      end if;
-   end Delete_All_Temp_Files;
-
-   ------------------------------
-   -- Delete_Temp_Config_Files --
-   ------------------------------
-
-   procedure Delete_Temp_Config_Files is
-      Success : Boolean;
-      Proj    : Project_List;
-      pragma Warnings (Off, Success);
-
-   begin
-      --  The caller is responsible for ensuring that Debug_Flag_N is False
-
-      pragma Assert (not Debug.Debug_Flag_N);
-
-      if Main_Project /= No_Project then
-         Proj := Project_Tree.Projects;
-         while Proj /= null loop
-            if Proj.Project.Config_File_Temp then
-               Delete_Temporary_File
-                 (Project_Tree.Shared, Proj.Project.Config_File_Name);
-
-               --  Make sure that we don't have a config file for this project,
-               --  in case there are several mains. In this case, we will
-               --  recreate another config file: we cannot reuse the one that
-               --  we just deleted!
-
-               Proj.Project.Config_Checked   := False;
-               Proj.Project.Config_File_Name := No_Path;
-               Proj.Project.Config_File_Temp := False;
-            end if;
-            Proj := Proj.Next;
-         end loop;
-      end if;
-   end Delete_Temp_Config_Files;
 
    -------------
    -- Display --
@@ -4470,8 +4415,7 @@ package body Make is
                            Write_Line (": no sources to compile");
                         end if;
 
-                        Delete_All_Temp_Files;
-                        Exit_Program (E_Success);
+                        Finish_Program (Project_Tree, E_Success);
                      end if;
                   end if;
 
@@ -4619,8 +4563,7 @@ package body Make is
                Bind          => Bind_Only,
                Link          => Link_Only);
 
-            Delete_All_Temp_Files;
-            Exit_Program (E_Success);
+            Finish_Program (Project_Tree, E_Success);
 
          else
             --  Call Get_Target_Parameters to ensure that VM_Target and
@@ -4631,7 +4574,7 @@ package body Make is
             --  Output usage information if no files to compile
 
             Usage;
-            Exit_Program (E_Fatal);
+            Finish_Program (Project_Tree, E_Success);
          end if;
       end if;
 
@@ -4809,7 +4752,6 @@ package body Make is
                      "Global_Compilation_Switches. Use Switches instead.",
                      Project_Tree.Shared.Arrays.Table
                        (Default_Switches_Array).Location);
-                  Errutil.Finalize;
                   Make_Failed
                     ("*** illegal combination of Builder attributes");
                end if;
@@ -6505,14 +6447,7 @@ package body Make is
          Report_Compilation_Failed;
       end if;
 
-      --  Delete the temporary mapping file that was created if we are
-      --  using project files.
-
-      Delete_All_Temp_Files;
-
-      --  Output Namet statistics
-
-      Namet.Finalize;
+      Finish_Program (Project_Tree, E_Success);
 
    exception
       when X : others =>
@@ -7292,8 +7227,7 @@ package body Make is
 
    procedure Make_Failed (S : String) is
    begin
-      Delete_All_Temp_Files;
-      Osint.Fail (S);
+      Fail_Program (Project_Tree, S);
    end Make_Failed;
 
    --------------------
@@ -7531,8 +7465,7 @@ package body Make is
 
    procedure Report_Compilation_Failed is
    begin
-      Delete_All_Temp_Files;
-      Exit_Program (E_Fatal);
+      Fail_Program (Project_Tree, "");
    end Report_Compilation_Failed;
 
    ------------------------
@@ -7552,10 +7485,7 @@ package body Make is
          Kill (Running_Compile (J).Pid, SIGINT, 1);
       end loop;
 
-      Delete_All_Temp_Files;
-      OS_Exit (1);
-      --  ??? OS_Exit (1) is equivalent to Exit_Program (E_No_Compile),
-      --  shouldn't that be Exit_Program (E_Abort) instead?
+      Finish_Program (Project_Tree, E_No_Compile);
    end Sigint_Intercepted;
 
    -------------------
