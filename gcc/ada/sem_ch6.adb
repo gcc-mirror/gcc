@@ -628,8 +628,19 @@ package body Sem_Ch6 is
 
       if Nkind (N) = N_Simple_Return_Statement then
          Expr := Expression (N);
-         Analyze_And_Resolve (Expr, R_Type);
-         Check_Limited_Return (Expr);
+
+         --  Guard against a malformed expression. The parser may have
+         --  tried to recover but the node is not analyzable.
+
+         if Nkind (Expr) = N_Error then
+            Set_Etype (Expr, Any_Type);
+            Expander_Mode_Save_And_Set (False);
+            return;
+
+         else
+            Analyze_And_Resolve (Expr, R_Type);
+            Check_Limited_Return (Expr);
+         end if;
 
          --  RETURN only allowed in SPARK is as the last statement function
 

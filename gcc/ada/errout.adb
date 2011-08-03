@@ -751,6 +751,12 @@ package body Errout is
          if In_Extended_Main_Source_Unit (Sptr) then
             null;
 
+         --  If the main unit has not been read yet. the warning must be on
+         --  a configuration file: gnat.adc or user-defined.
+
+         elsif No (Cunit (Main_Unit)) then
+            null;
+
          --  If the flag location is not in the main extended source unit, then
          --  we want to eliminate the warning, unless it is in the extended
          --  main code unit and we want warnings on the instance.

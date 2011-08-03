@@ -4998,7 +4998,7 @@ package body Exp_Attr is
       -- Value --
       -----------
 
-      --  Value attribute is handled in separate unti Exp_Imgv
+      --  Value attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Value =>
          Exp_Imgv.Expand_Value_Attribute (N);

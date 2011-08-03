@@ -1,3 +1,25 @@
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: guard against error nodes in return statements.
+
+2011-08-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): the main unit has not been read yet,
+	a warning can only appear on a configuration file, so emit warning
+	without further checks.
+
+2011-08-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-interr.ads: add overriding keyword.
+
+2011-08-03  Geert Bosch  <bosch@adacore.com>
+
+	* exp_attr.adb: Fix minor typo.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch4.adb: improve error recovery.
+
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-part.adb, prj-part.ads, prj-makr.adb, prj-pars.adb, prj-conf.adb,
