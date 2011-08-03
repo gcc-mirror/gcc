@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006-2010, Free Software Foundation, Inc.       --
+--            Copyright (C) 2006-2011, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1061,6 +1061,8 @@ package body Prj.Conf is
       Config_Project_Node : Project_Node_Id := Empty_Node;
 
    begin
+      pragma Assert (Prj.Env.Is_Initialized (Project_Node_Tree.Project_Path));
+
       Free (Config_File_Path);
       Config := No_Project;
 
@@ -1121,8 +1123,7 @@ package body Prj.Conf is
             Packages_To_Check      => Packages_To_Check,
             Current_Directory      => Current_Directory,
             Is_Config_File         => True,
-            Flags                  => Flags,
-            Target_Name            => Target_Name);
+            Flags                  => Flags);
       else
          Config_Project_Node := Empty_Node;
       end if;
@@ -1198,6 +1199,8 @@ package body Prj.Conf is
       On_Load_Config             : Config_File_Hook := null)
    is
    begin
+      pragma Assert (Prj.Env.Is_Initialized (Project_Node_Tree.Project_Path));
+
       --  Parse the user project tree
 
       Prj.Initialize (Project_Tree);
@@ -1213,8 +1216,7 @@ package body Prj.Conf is
          Packages_To_Check      => Packages_To_Check,
          Current_Directory      => Current_Directory,
          Is_Config_File         => False,
-         Flags                  => Flags,
-         Target_Name            => Target_Name);
+         Flags                  => Flags);
 
       if User_Project_Node = Empty_Node then
          User_Project_Node := Empty_Node;

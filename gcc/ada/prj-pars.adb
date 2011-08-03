@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@ with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 with Output;   use Output;
 with Prj.Conf; use Prj.Conf;
+with Prj.Env;
 with Prj.Err;  use Prj.Err;
 with Prj.Part;
 with Prj.Tree; use Prj.Tree;
@@ -60,6 +61,8 @@ package body Prj.Pars is
       if Project_Node_Tree = null then
          Project_Node_Tree := new Project_Node_Tree_Data;
          Prj.Tree.Initialize (Project_Node_Tree);
+         Prj.Env.Initialize_Default_Project_Path
+            (Project_Node_Tree.Project_Path, Target_Name => "");
       end if;
 
       --  Parse the main project file into a tree
@@ -73,8 +76,7 @@ package body Prj.Pars is
          Packages_To_Check      => Packages_To_Check,
          Current_Directory      => Current_Dir,
          Flags                  => Flags,
-         Is_Config_File         => False,
-         Target_Name            => "");
+         Is_Config_File         => False);
 
       --  If there were no error, process the tree
 

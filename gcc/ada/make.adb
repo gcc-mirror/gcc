@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6636,6 +6636,9 @@ package body Make is
       --  the command line switches
 
       Project_Node_Tree := new Project_Node_Tree_Data;
+      Prj.Env.Initialize_Default_Project_Path
+         (Project_Node_Tree.Project_Path, Target_Name => "");
+
       Prj.Tree.Initialize (Project_Node_Tree);
 
       --  Override default initialization of Check_Object_Consistency since
