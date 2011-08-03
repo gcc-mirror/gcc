@@ -665,10 +665,11 @@ package body Bindgen is
               """__gnat_handler_installed"");");
 
          --  The import of the soft link which performs library-level object
-         --  finalization is not needed for VM targets. Regular Ada is used in
-         --  that case.
+         --  finalization is not needed for VM targets; regular Ada is used in
+         --  that case. For restricted run-time libraries (ZFP and Ravenscar)
+         --  tasks are non-terminating, so we do not want finalization.
 
-         if VM_Target = No_VM then
+         if VM_Target = No_VM and then not Configurable_Run_Time_On_Target then
             WBI ("");
             WBI ("      type No_Param_Proc is access procedure;");
             WBI ("      Finalize_Library_Objects : No_Param_Proc;");
@@ -926,32 +927,38 @@ package body Bindgen is
          WBI ("      Initialize_Stack_Limit;");
       end if;
 
-      --  Attach Finalize_Library to the right softlink
+      --  Attach Finalize_Library to the right soft link. Do it only when not
+      --  using a restricted run time, in which case tasks are
+      --  non-terminating, so we do not want library-level finalization.
 
-      if not Suppress_Standard_Library_On_Target then
-         WBI ("");
+      if not Configurable_Run_Time_On_Target then
+         if not Suppress_Standard_Library_On_Target then
+            WBI ("");
 
-         if VM_Target = No_VM then
-            if Lib_Final_Built then
-               Set_String ("      Finalize_Library_Objects := ");
-               Set_String ("Finalize_Library'access;");
+            if VM_Target = No_VM then
+               if Lib_Final_Built then
+                  Set_String ("      Finalize_Library_Objects := ");
+                  Set_String ("Finalize_Library'access;");
+               else
+                  Set_String ("      Finalize_Library_Objects := null;");
+               end if;
+
+            --  On VM targets use regular Ada to set the soft link
+
             else
-               Set_String ("      Finalize_Library_Objects := null;");
+               if Lib_Final_Built then
+                  Set_String
+                    ("      System.Soft_Links.Finalize_Library_Objects");
+                  Set_String (" := Finalize_Library'access;");
+               else
+                  Set_String
+                    ("      System.Soft_Links.Finalize_Library_Objects");
+                  Set_String (" := null;");
+               end if;
             end if;
 
-         --  On VM targets use regular Ada to set the soft link
-
-         else
-            if Lib_Final_Built then
-               Set_String ("      System.Soft_Links.Finalize_Library_Objects");
-               Set_String (" := Finalize_Library'access;");
-            else
-               Set_String ("      System.Soft_Links.Finalize_Library_Objects");
-               Set_String (" := null;");
-            end if;
+            Write_Statement_Buffer;
          end if;
-
-         Write_Statement_Buffer;
       end if;
 
       --  Generate elaboration calls
@@ -2117,7 +2124,10 @@ package body Bindgen is
    ----------------
 
    procedure Gen_Main_C is
-      Needs_Library_Finalization : constant Boolean := Has_Finalizer;
+      Needs_Library_Finalization : constant Boolean :=
+        not Configurable_Run_Time_On_Target and then Has_Finalizer;
+      --  For restricted run-time libraries (ZFP and Ravenscar) tasks are
+      --  non-terminating, so we do not want library-level finalization.
 
    begin
       if Exit_Status_Supported_On_Target then
@@ -2638,7 +2648,10 @@ package body Bindgen is
       --  Name to be used for generated Ada main program. See the body of
       --  function Get_Ada_Main_Name for details on the form of the name.
 
-      Needs_Library_Finalization : constant Boolean := Has_Finalizer;
+      Needs_Library_Finalization : constant Boolean :=
+        not Configurable_Run_Time_On_Target and then Has_Finalizer;
+      --  For restricted run-time libraries (ZFP and Ravenscar) tasks are
+      --  non-terminating, so we do not want finalization.
 
       Bfiles : Name_Id;
       --  Name of generated bind file (spec)
@@ -2990,7 +3003,8 @@ package body Bindgen is
 
    procedure Gen_Output_File_C (Filename : String) is
 
-      Needs_Library_Finalization : constant Boolean := Has_Finalizer;
+      Needs_Library_Finalization : constant Boolean :=
+        not Configurable_Run_Time_On_Target and then Has_Finalizer;
 
       Bfile : Name_Id;
       pragma Warnings (Off, Bfile);

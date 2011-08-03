@@ -31,7 +31,6 @@ with Errout;   use Errout;
 with Exp_Atag; use Exp_Atag;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch11; use Exp_Ch11;
 with Exp_Code; use Exp_Code;
 with Exp_Fixd; use Exp_Fixd;
 with Exp_Util; use Exp_Util;
@@ -965,7 +964,6 @@ package body Exp_Intr is
                New_Reference_To (Standard_False, Loc));
 
          Append_To (Stmts, Raised_Decl);
-         Analyze (Raised_Decl);
 
          Exc_Occ_Decl :=
            Make_Object_Declaration (Loc,
@@ -975,7 +973,6 @@ package body Exp_Intr is
          Set_No_Initialization (Exc_Occ_Decl);
 
          Append_To (Stmts, Exc_Occ_Decl);
-         Analyze (Exc_Occ_Decl);
 
          Final_Code := New_List (
            Make_Block_Statement (Loc,
@@ -1034,21 +1031,7 @@ package body Exp_Intr is
                   At_End_Proc =>
                     New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc)));
 
-            --  We now expand the exception (at end) handler. We set a
-            --  temporary parent pointer since we have not attached Blk
-            --  to the tree yet.
-
-            Set_Parent (Blk, N);
-            Analyze (Blk);
-            Expand_At_End_Handler
-              (Handled_Statement_Sequence (Blk), Entity (Identifier (Blk)));
             Append (Blk, Stmts);
-
-            --  We kill saved current values, since analyzing statements not
-            --  properly attached to the tree can set wrong current values.
-
-            Kill_Current_Values;
-
          else
             Append_List_To (Stmts, Final_Code);
          end if;
@@ -1129,7 +1112,7 @@ package body Exp_Intr is
       Append_To (Stmts, Free_Node);
       Set_Storage_Pool (Free_Node, Pool);
 
-      --  Attach to tree before analysis of generated subtypes below.
+      --  Attach to tree before analysis of generated subtypes below
 
       Set_Parent (Stmts, Parent (N));
 
@@ -1142,17 +1125,15 @@ package body Exp_Intr is
          if Is_RTE (Pool, RE_SS_Pool) then
             null;
 
+         --  Case of a class-wide pool type: make a dispatching call to
+         --  Deallocate through the class-wide Deallocate_Any.
+
          elsif Is_Class_Wide_Type (Etype (Pool)) then
+            Set_Procedure_To_Call (Free_Node, RTE (RE_Deallocate_Any));
 
-            --  Case of a class-wide pool type: make a dispatching call
-            --  to Deallocate through the class-wide Deallocate_Any.
-
-            Set_Procedure_To_Call (Free_Node,
-              RTE (RE_Deallocate_Any));
+         --  Case of a specific pool type: make a statically bound call
 
          else
-            --  Case of a specific pool type: make a statically bound call
-
             Set_Procedure_To_Call (Free_Node,
               Find_Prim_Op (Etype (Pool), Name_Deallocate));
          end if;
@@ -1261,7 +1242,8 @@ package body Exp_Intr is
       --
       --  Generate:
       --    if Raised then
-      --       Reraise_Occurrence (Exc_Occ);               --  for .NET
+      --       Reraise_Occurrence (Exc_Occ);               --  for .NET and
+      --                                                   --  restricted RTS
       --         <or>
       --       Raise_From_Controlled_Operation (Exc_Occ);  --  all other cases
       --    end if;

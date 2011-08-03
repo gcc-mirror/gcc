@@ -1,3 +1,45 @@
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop): indicate that the cursor is
+	modified in the source, to prevent spurious warnings when compiling
+	with -gnatg.
+
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* a-except-2005.adb: Minor reformatting.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Check_One_Unit): if the only mention of a withed unit
+	is a renaming declaration in the private part of a package, do not emit
+	a warning that the with_clause could be moved because the renaming may
+	be used in the body or in a child unit.
+
+2011-08-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration):
+	Propagate the Comes_From_Source attribute from the original return
+	object to the renaming.
+
+2011-08-03  Jose Ruiz  <ruiz@adacore.com>
+
+	* exp_ch7.adb (Build_Raise_Statement): Do not call
+	Raise_From_Controlled_Operation when this routine is not present in
+	the run-time library.
+	(Cleanup_Protected_Object, Cleanup_Task): For restricted run-time
+	libraries (Ravenscar), tasks are non-terminating, and protected objects
+	and tasks can only appear at library level, so we do not want
+	finalization of protected objects nor tasks.
+	* exp_intr.adb: Minor clarification in comment.
+	bindgen.adb (Gen_Adainit_Ada, Gen_Main_C, Gen_Output_File_Ada,
+	Gen_Output_File_C): Remove references to finalization of library-level
+	objects when using restricted run-time libraries.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Discriminant_Constraints): Set
+	Original_Discriminant only if the parent type is a generic formal.
+
 2011-08-03  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch13.adb: Add with and use clause for Targparm;
