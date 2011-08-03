@@ -708,17 +708,15 @@ package body Sem_Ch8 is
          Subt : Entity_Id;
 
       begin
-         if (Nkind (Nam) = N_Function_Call
-              or else Nkind (Nam) = N_Explicit_Dereference)
+         if Nkind_In (Nam, N_Function_Call, N_Explicit_Dereference)
            and then Is_Composite_Type (Etype (Nam))
            and then not Is_Constrained (Etype (Nam))
            and then not Has_Unknown_Discriminants (Etype (Nam))
            and then Expander_Active
          then
-            --  If Actual_Sbutype is already set, nothing to do.
+            --  If Actual_Subtype is already set, nothing to do
 
-            if (Ekind (Id) = E_Variable
-                 or else Ekind (Id) = E_Constant)
+            if Ekind_In (Id, E_Variable, E_Constant)
               and then Present (Actual_Subtype (Id))
             then
                null;

@@ -1127,21 +1127,22 @@ package body Sem_Aggr is
 
             Set_Etype (N, Aggr_Typ);  --  May be overridden later on
 
-            if Pkind = N_Assignment_Statement or else
-              (Is_Constrained (Typ) and then
-                 (Pkind = N_Parameter_Association     or else
-                  Pkind = N_Function_Call             or else
-                  Pkind = N_Procedure_Call_Statement  or else
-                  Pkind = N_Generic_Association       or else
-                  Pkind = N_Formal_Object_Declaration or else
-                  Pkind = N_Simple_Return_Statement   or else
-                  Pkind = N_Object_Declaration        or else
-                  Pkind = N_Component_Declaration     or else
-                  Pkind = N_Parameter_Specification   or else
-                  Pkind = N_Qualified_Expression      or else
-                  Pkind = N_Aggregate                 or else
-                  Pkind = N_Extension_Aggregate       or else
-                  Pkind = N_Component_Association))
+            if Pkind = N_Assignment_Statement
+              or else (Is_Constrained (Typ)
+                        and then
+                          (Pkind = N_Parameter_Association     or else
+                           Pkind = N_Function_Call             or else
+                           Pkind = N_Procedure_Call_Statement  or else
+                           Pkind = N_Generic_Association       or else
+                           Pkind = N_Formal_Object_Declaration or else
+                           Pkind = N_Simple_Return_Statement   or else
+                           Pkind = N_Object_Declaration        or else
+                           Pkind = N_Component_Declaration     or else
+                           Pkind = N_Parameter_Specification   or else
+                           Pkind = N_Qualified_Expression      or else
+                           Pkind = N_Aggregate                 or else
+                           Pkind = N_Extension_Aggregate       or else
+                           Pkind = N_Component_Association))
             then
                Aggr_Resolved :=
                  Resolve_Array_Aggregate
@@ -1185,6 +1186,7 @@ package body Sem_Aggr is
                end if;
 
                Aggr_Subtyp := Any_Composite;
+
             else
                Aggr_Subtyp := Array_Aggr_Subtype (N, Typ);
             end if;

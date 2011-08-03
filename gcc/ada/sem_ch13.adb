@@ -7300,7 +7300,8 @@ package body Sem_Ch13 is
 
             else
                return Has_Aliased_Components (Base_Type (T1))
-                 = Has_Aliased_Components (Base_Type (T2));
+                        =
+                      Has_Aliased_Components (Base_Type (T2));
             end if;
          end if;
       end if;

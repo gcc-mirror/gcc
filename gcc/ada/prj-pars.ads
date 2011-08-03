@@ -42,6 +42,7 @@ package Prj.Pars is
       Env               : in out Prj.Tree.Environment);
    --  Parse and process a project files and all its imported project files, in
    --  the project tree In_Tree.
+   --
    --  All the project files are parsed (through Prj.Tree) to create a tree in
    --  memory. That tree is then processed (through Prj.Proc) to create a
    --  expanded representation of the tree based on the current external

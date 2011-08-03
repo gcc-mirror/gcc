@@ -43,10 +43,10 @@ private package Prj.Nmsc is
    --  information is only valid while the external references are preserved.
 
    procedure Process_Aggregated_Projects
-     (Tree         : Project_Tree_Ref;
-      Project      : Project_Id;
-      Node_Tree    : Prj.Tree.Project_Node_Tree_Ref;
-      Flags        : Processing_Flags);
+     (Tree      : Project_Tree_Ref;
+      Project   : Project_Id;
+      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Flags     : Processing_Flags);
    --  Assuming Project is an aggregate project, find out (based on the
    --  current external references) what are the projects it aggregates.
    --  This has to be done in phase 1 of the processing, so that we know the

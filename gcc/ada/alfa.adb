@@ -194,7 +194,7 @@ package body ALFA is
 
       procedure Debug_Put_ALFA is new Put_ALFA;
 
-      --  Start of processing for palfa
+   --  Start of processing for palfa
 
    begin
       Debug_Put_ALFA;

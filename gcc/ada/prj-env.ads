@@ -163,16 +163,16 @@ package Prj.Env is
    --  efficiency).
 
    procedure Initialize_Default_Project_Path
-     (Self : in out Project_Search_Path; Target_Name : String);
-   --  Initialize Self.
-   --  It will then contain the default project path on the given target
-   --  (including directories specified by the environment variables
-   --  ADA_PROJECT_PATH and GPR_PROJECT_PATH).
-   --  This does nothing if Self has already been initialized.
+     (Self        : in out Project_Search_Path;
+      Target_Name : String);
+   --  Initialize Self. It will then contain the default project path on the
+   --  given target (including directories specified by the environment
+   --  variables ADA_PROJECT_PATH and GPR_PROJECT_PATH). This does nothing if
+   --  Self has already been initialized.
 
    procedure Initialize_Empty (Self : in out Project_Search_Path);
-   --  Initialize self with an empty list of directories.
-   --  If Self had already been set, it is reset.
+   --  Initialize self with an empty list of directories. If Self had already
+   --  been set, it is reset.
 
    function Is_Initialized (Self : Project_Search_Path) return Boolean;
    --  Whether Self has been initialized
@@ -191,19 +191,16 @@ package Prj.Env is
    --  Calls to this subprogram must be performed before the first call to
    --  Find_Project below, or PATH will be added at the end of the search path.
 
-   procedure Get_Path
-     (Self        : Project_Search_Path;
-      Path        : out String_Access);
+   procedure Get_Path (Self : Project_Search_Path; Path : out String_Access);
    --  Return the current value of the project path, either the value set
    --  during elaboration of the package or, if procedure Set_Project_Path has
    --  been called, the value set by the last call to Set_Project_Path. The
    --  returned value must not be modified.
    --  Self must have been initialized first.
 
-   procedure Set_Path
-     (Self : in out Project_Search_Path; Path : String);
+   procedure Set_Path (Self : in out Project_Search_Path; Path : String);
    --  Override the value of the project path. This also removes the implicit
-   --  default search directories
+   --  default search directories.
 
    procedure Find_Project
      (Self               : in out Project_Search_Path;
@@ -213,9 +210,7 @@ package Prj.Env is
    --  Search for a project with the given name either in Directory (which
    --  often will be the directory contain the project we are currently parsing
    --  and which we found a reference to another project), or in the project
-   --  path Self.
-   --
-   --  Self must have been initialized first.
+   --  path Self. Self must have been initialized first.
    --
    --  Project_File_Name can optionally contain directories, and the extension
    --  (.gpr) for the file name is optional.

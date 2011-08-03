@@ -38,16 +38,16 @@ package Prj.Part is
    --  either at the beginning of Parse.
 
    procedure Parse
-     (In_Tree                : Project_Node_Tree_Ref;
-      Project                : out Project_Node_Id;
-      Project_File_Name      : String;
-      Errout_Handling        : Errout_Mode := Always_Finalize;
-      Packages_To_Check      : String_List_Access := All_Packages;
-      Store_Comments         : Boolean := False;
-      Current_Directory      : String := "";
-      Is_Config_File         : Boolean;
-      Env                    : in out Prj.Tree.Environment;
-      Target_Name            : String := "");
+     (In_Tree           : Project_Node_Tree_Ref;
+      Project           : out Project_Node_Id;
+      Project_File_Name : String;
+      Errout_Handling   : Errout_Mode := Always_Finalize;
+      Packages_To_Check : String_List_Access := All_Packages;
+      Store_Comments    : Boolean := False;
+      Current_Directory : String := "";
+      Is_Config_File    : Boolean;
+      Env               : in out Prj.Tree.Environment;
+      Target_Name       : String := "");
    --  Parse project file and all its imported project files and create a tree.
    --  Return the node for the project (or Empty_Node if parsing failed). If
    --  Always_Errout_Finalize is True, Errout.Finalize is called in all cases,

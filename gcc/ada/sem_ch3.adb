@@ -8636,7 +8636,7 @@ package body Sem_Ch3 is
       IR : constant Node_Id := Make_Itype_Reference (Sloc (Nod));
    begin
 
-      --  Itype references are only created for use by the back-end.
+      --  Itype references are only created for use by the back-end
 
       if Inside_A_Generic then
          return;

@@ -1875,9 +1875,9 @@ package body Clean is
                            end if;
 
                            if not OK
-                              or else not Prj.Ext.Check
-                                (Root_Environment.External,
-                                 Ext_Asgn (Start .. Stop))
+                             or else not
+                               Prj.Ext.Check (Root_Environment.External,
+                                              Ext_Asgn (Start .. Stop))
                            then
                               Fail
                                 ("illegal external assignment '"

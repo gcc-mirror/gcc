@@ -79,7 +79,8 @@ package Prj.Ext is
 
 private
 
-   --  Use a Static_HTable, not a Simple_HTable.
+   --  Use a Static_HTable, rather than a Simple_HTable
+
    --  The issue is that we need to be able to copy the contents of the table
    --  (in Initialize), but this isn't doable for Simple_HTable for which
    --  iterators do not return the key.

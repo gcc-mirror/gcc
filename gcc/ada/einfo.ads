@@ -2940,11 +2940,11 @@ package Einfo is
 --       are suppressed.
 
 --    Machine_Radix_10 (Flag84)
---       Present in decimal types and subtypes, set if the Machine_Radix
---       is 10, as the result of the specification of a machine radix
---       representation clause. Note that it is possible for this flag
---       to be set without having Has_Machine_Radix_Clause True. This
---       happens when a type is derived from a type with a clause present.
+--       Present in decimal types and subtypes, set if the Machine_Radix is 10,
+--       as the result of the specification of a machine radix representation
+--       clause. Note that it is possible for this flag to be set without
+--       having Has_Machine_Radix_Clause True. This happens when a type is
+--       derived from a type with a clause present.
 
 --    Master_Id (Node17)
 --       Present in access types and subtypes. Empty unless Has_Task is
@@ -2968,18 +2968,17 @@ package Einfo is
 --       entity but not used in this context.
 
 --    Modulus (Uint17) [base type only]
---       Present in modular types. Contains the modulus. For the binary
---       case, this will be a power of 2, but if Non_Binary_Modulus is
---       set, then it will not be a power of 2.
+--       Present in modular types. Contains the modulus. For the binary case,
+--       this will be a power of 2, but if Non_Binary_Modulus is set, then it
+--       will not be a power of 2.
 
 --    Must_Be_On_Byte_Boundary (Flag183)
---       Present in entities for types and subtypes. Set if objects of
---       the type must always be allocated on a byte boundary (more
---       accurately a storage unit boundary). The front end checks that
---       component clauses respect this rule, and the back end ensures
---       that record packing does not violate this rule. Currently the
---       flag is set only for packed arrays longer than 64 bits where
---       the component size is not a power of 2.
+--       Present in entities for types and subtypes. Set if objects of the type
+--       must always be allocated on a byte boundary (more accurately a storage
+--       unit boundary). The front end checks that component clauses respect
+--       this rule, and the back end ensures that record packing does not
+--       violate this rule. Currently the flag is set only for packed arrays
+--       longer than 64 bits where the component size is not a power of 2.
 
 --    Must_Have_Preelab_Init (Flag208)
 --       Present in entities for types and subtypes. Set in the full type of a

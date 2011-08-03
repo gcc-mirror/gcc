@@ -1307,8 +1307,7 @@ package body Lib.Writ is
       --  Output ALFA information if needed
 
       if Opt.Xref_Active and then ALFA_Mode then
-         Collect_ALFA (Sdep_Table => Sdep_Table,
-                       Num_Sdep   => Num_Sdep);
+         Collect_ALFA (Sdep_Table => Sdep_Table, Num_Sdep => Num_Sdep);
          Output_ALFA;
       end if;
 

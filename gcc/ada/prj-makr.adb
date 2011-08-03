@@ -802,7 +802,7 @@ package body Prj.Makr is
 
       Prj.Tree.Initialize (Root_Environment, Flags);
       Prj.Env.Initialize_Default_Project_Path
-         (Root_Environment.Project_Path, Target_Name => "");
+        (Root_Environment.Project_Path, Target_Name => "");
 
       Prj.Tree.Initialize (Tree);
 

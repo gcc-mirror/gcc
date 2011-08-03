@@ -49,7 +49,7 @@ package body Prj is
    The_Empty_String : Name_Id := No_Name;
 
    Debug_Level : Integer := 0;
-   --  Current indentation level for debug traces.
+   --  Current indentation level for debug traces
 
    type Cst_String_Access is access constant String;
 
@@ -222,12 +222,14 @@ package body Prj is
    -------------------
 
    function Empty_Project
-     (Qualifier : Project_Qualifier) return Project_Data is
+     (Qualifier : Project_Qualifier) return Project_Data
+   is
    begin
       Prj.Initialize (Tree => No_Project_Tree);
 
       declare
          Data : Project_Data (Qualifier => Qualifier);
+
       begin
          --  Only the fields for which no default value could be provided in
          --  prj.ads are initialized below
@@ -253,7 +255,9 @@ package body Prj is
    procedure Expect (The_Token : Token_Type; Token_Image : String) is
    begin
       if Token /= The_Token then
+
          --  ??? Should pass user flags here instead
+
          Error_Msg (Gnatmake_Flags, Token_Image & " expected", Token_Ptr);
       end if;
    end Expect;
@@ -399,10 +403,10 @@ package body Prj is
    --------------------------------
 
    procedure For_Every_Project_Imported
-     (By             : Project_Id;
-      With_State     : in out State;
+     (By                 : Project_Id;
+      With_State         : in out State;
       Include_Aggregated : Boolean := True;
-      Imported_First : Boolean := False)
+      Imported_First     : Boolean := False)
    is
       use Project_Boolean_Htable;
       Seen : Project_Boolean_Htable.Instance := Project_Boolean_Htable.Nil;

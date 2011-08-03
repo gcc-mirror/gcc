@@ -993,7 +993,9 @@ package body Prj.Tree is
    --------------------
 
    procedure Override_Flags
-     (Self : in out Environment; Flags : Prj.Processing_Flags) is
+     (Self  : in out Environment;
+      Flags : Prj.Processing_Flags)
+   is
    begin
       Self.Flags := Flags;
    end Override_Flags;
@@ -1006,11 +1008,13 @@ package body Prj.Tree is
      (Self : in out Environment; Flags : Processing_Flags) is
    begin
       --  Do not reset the external references, in case we are reloading a
-      --  project, since we want to preserve the current environment.
-      --  But we still need to ensure that the external references are properly
+      --  project, since we want to preserve the current environment. But we
+      --  still need to ensure that the external references are properly
       --  initialized.
 
       Prj.Ext.Initialize (Self.External);
+
+      --  Why is this line commented out ???
       --  Prj.Ext.Reset (Tree.External);
 
       Self.Flags := Flags;

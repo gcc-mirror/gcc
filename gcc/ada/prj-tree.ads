@@ -40,8 +40,11 @@ package Prj.Tree is
    -- Environment --
    -----------------
 
+   --  The following record contains the context in which projects are parsed
+   --  and processed (finding importing project, resolving external values,..).
+
    type Environment is record
-      External     : Prj.Ext.External_References;
+      External : Prj.Ext.External_References;
       --  External references are stored in this hash table (and manipulated
       --  through subprograms in prj-ext.ads). External references are
       --  project-tree specific so that one can load the same tree twice but
@@ -53,11 +56,9 @@ package Prj.Tree is
       --  particular when using different compilers with different default
       --  search directories.
 
-      Flags        : Prj.Processing_Flags;
+      Flags : Prj.Processing_Flags;
       --  Configure errors and warnings
    end record;
-   --  This record contains the context in which projects are parsed and
-   --  processed (finding importing project, resolving external values,...)
 
    procedure Initialize (Self : in out Environment; Flags : Processing_Flags);
    --  Initialize a new environment
