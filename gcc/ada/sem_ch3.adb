@@ -3401,6 +3401,18 @@ package body Sem_Ch3 is
          --  It is unclear why this should make it acceptable to gcc. ???
 
          Remove_Side_Effects (E);
+
+      elsif not Is_Constrained (T)
+        and then Has_Discriminants (T)
+        and then Constant_Present (N)
+        and then not Has_Unchecked_Union (T)
+        and then Nkind (E) = N_Aggregate
+      then
+         --  If this is a constant declaration of an unconstrained type and
+         --  the initialization is an aggregate, we can use the subtype of the
+         --  aggregate for the declared entity because it is immutable.
+
+         Act_T := Etype (E);
       end if;
 
       --  Check No_Wide_Characters restriction

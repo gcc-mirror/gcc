@@ -5011,8 +5011,7 @@ package body Exp_Ch3 is
                Insert_Action (N,
                  Make_Assignment_Statement (Loc,
                    Name       => New_Reference_To (Def_Id, Loc),
-                   Expression => Convert_To (Typ,
-                                   Relocate_Node (Expr))));
+                   Expression => Convert_To (Typ, Relocate_Node (Expr))));
             end if;
 
             return;

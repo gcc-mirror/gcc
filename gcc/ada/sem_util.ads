@@ -279,15 +279,15 @@ package Sem_Util is
 
    procedure Mark_Non_ALFA_Subprogram;
    --  If Current_Subprogram is not Empty, mark either its specification or its
-   --  body as not being in ALFA. This procedure may be called either during
-   --  the analysis of a precondition or postcondition, as indicated by the
-   --  flag In_Pre_Post_Expression, or during the analysis of a subprogram's
-   --  body. In the first case, the specification of Current_Subprogram must be
+   --  body as not being in ALFA. This procedure may be called during the
+   --  analysis of a precondition or postcondition, as indicated by the flag
+   --  In_Pre_Post_Expression, or during the analysis of a subprogram's body.
+   --  In the first case, the specification of Current_Subprogram must be
    --  marked as not being in ALFA, as the contract is considered to be part of
    --  the specification, so that calls to this subprogram are not in ALFA. In
    --  the second case, mark the body as not being in ALFA, which does not
-   --  prevent the subprogram's specification, and calls to the subprogram, to
-   --  be in ALFA.
+   --  prevent the subprogram's specification, and calls to the subprogram,
+   --  from being in ALFA.
 
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the

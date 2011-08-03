@@ -308,23 +308,21 @@ package body Exp_Aggr is
       Lov  : Uint;
       Hiv  : Uint;
 
-      --  The following constant determines the maximum size of an
-      --  array aggregate produced by converting named to positional
-      --  notation (e.g. from others clauses). This avoids running
-      --  away with attempts to convert huge aggregates, which hit
-      --  memory limits in the backend.
+      --  The following constant determines the maximum size of an array
+      --  aggregate produced by converting named to positional notation (e.g.
+      --  from others clauses). This avoids running away with attempts to
+      --  convert huge aggregates, which hit memory limits in the backend.
 
-      --  The normal limit is 5000, but we increase this limit to
-      --  2**24 (about 16 million) if Restrictions (No_Elaboration_Code)
-      --  or Restrictions (No_Implicit_Loops) is specified, since in
-      --  either case, we are at risk of declaring the program illegal
-      --  because of this limit.
+      --  The normal limit is 5000, but we increase this limit to 2**24 (about
+      --  16 million) if Restrictions (No_Elaboration_Code) or Restrictions
+      --  (No_Implicit_Loops) is specified, since in either case, we are at
+      --  risk of declaring the program illegal because of this limit.
 
       Max_Aggr_Size : constant Nat :=
                         5000 + (2 ** 24 - 5000) *
                           Boolean'Pos
                             (Restriction_Active (No_Elaboration_Code)
-                               or else
+                              or else
                              Restriction_Active (No_Implicit_Loops));
 
       function Component_Count (T : Entity_Id) return Int;
@@ -5458,10 +5456,11 @@ package body Exp_Aggr is
                 New_Occurrence_Of
                   (Node (First_Elmt (Access_Disp_Table (Typ))), Loc),
               Parent_Expr => A);
+
+         --  No tag is needed in the case of a VM
+
          else
-            --  No tag is needed in the case of a VM
-            Expand_Record_Aggregate (N,
-              Parent_Expr => A);
+            Expand_Record_Aggregate (N, Parent_Expr => A);
          end if;
       end if;
 
@@ -5646,17 +5645,17 @@ package body Exp_Aggr is
             Set_Expansion_Delayed (N, False);
          end if;
 
-      --  Gigi doesn't handle properly temporaries of variable size
-      --  so we generate it in the front-end
+      --  Gigi doesn't properly handle temporaries of variable size so we
+      --  generate it in the front-end
 
       elsif not Size_Known_At_Compile_Time (Typ)
         and then Tagged_Type_Expansion
       then
          Convert_To_Assignments (N, Typ);
 
-      --  Temporaries for controlled aggregates need to be attached to a
-      --  final chain in order to be properly finalized, so it has to
-      --  be created in the front-end
+      --  Temporaries for controlled aggregates need to be attached to a final
+      --  chain in order to be properly finalized, so it has to be created in
+      --  the front-end
 
       elsif Is_Controlled (Typ)
         or else Has_Controlled_Component (Base_Type (Typ))
@@ -5695,9 +5694,14 @@ package body Exp_Aggr is
       --  If some components are mutable, the size of the aggregate component
       --  may be distinct from the default size of the type component, so
       --  we need to expand to insure that the back-end copies the proper
-      --  size of the data.
+      --  size of the data. However, if the aggregate is the initial value of
+      --  a constant, the target is immutable and may be built statically.
 
-      elsif Has_Mutable_Components (Typ) then
+      elsif Has_Mutable_Components (Typ)
+        and then
+          (Nkind (Parent (N)) /= N_Object_Declaration
+             or else not Constant_Present (Parent (N)))
+      then
          Convert_To_Assignments (N, Typ);
 
       --  If the type involved has any non-bit aligned components, then we are
