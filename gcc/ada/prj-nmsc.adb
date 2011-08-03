@@ -4271,8 +4271,6 @@ package body Prj.Nmsc is
                exit;
             end if;
          end loop;
-
-         Project.Extends.Library := False;
       end if;
 
       if Project.Library and then not Lib_Name.Default then
