@@ -1,7 +1,7 @@
 /* Optimize jump instructions, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1039,6 +1039,7 @@ sets_cc0_p (const_rtx x)
    notes.  If INSN is an INSN or a CALL_INSN or non-target operands of
    a JUMP_INSN, and there is at least one CODE_LABEL referenced in
    INSN, add a REG_LABEL_OPERAND note containing that label to INSN.
+   For returnjumps, the JUMP_LABEL will also be set as appropriate.
 
    Note that two labels separated by a loop-beginning note
    must be kept distinct if we have not yet done loop-optimization,
@@ -1079,6 +1080,14 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
     case CONST_DOUBLE:
     case CLOBBER:
     case CALL:
+      return;
+
+    case RETURN:
+      if (is_target)
+	{
+	  gcc_assert (JUMP_LABEL (insn) == NULL || JUMP_LABEL (insn) == x);
+	  JUMP_LABEL (insn) = x;
+	}
       return;
 
     case MEM:
