@@ -71,6 +71,10 @@ package body Clean is
    --  Prefix of binder generated file, and number of actual characters used.
    --  Changed to "b__" for VMS in the body of the package.
 
+   Project_Tree : constant Project_Tree_Ref :=
+                    new Project_Tree_Data (Is_Root_Tree => True);
+   --  The project tree
+
    Object_Directory_Path : String_Access := null;
    --  The path name of the object directory, set with switch -D
 

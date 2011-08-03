@@ -67,6 +67,10 @@ procedure GNATCmd is
    B_Start : String_Ptr    := new String'("b~");
    --  Prefix of binder generated file, changed to b__ for VMS
 
+   Project_Tree : constant Project_Tree_Ref :=
+                    new Project_Tree_Data (Is_Root_Tree => True);
+   --  The project tree
+
    Old_Project_File_Used : Boolean := False;
    --  This flag indicates a switch -p (for gnatxref and gnatfind) for
    --  an old fashioned project file. -p cannot be used in conjunction
@@ -766,7 +770,7 @@ procedure GNATCmd is
          while Proj /= null loop
             if Proj.Project.Config_File_Temp then
                Delete_Temporary_File
-                 (Project_Tree, Proj.Project.Config_File_Name);
+                 (Project_Tree.Shared, Proj.Project.Config_File_Name);
             end if;
 
             Proj := Proj.Next;
@@ -777,7 +781,7 @@ procedure GNATCmd is
       --  has been created, delete this temporary file.
 
       if Temp_File_Name /= No_Path then
-         Delete_Temporary_File (Project_Tree, Temp_File_Name);
+         Delete_Temporary_File (Project_Tree.Shared, Temp_File_Name);
       end if;
    end Delete_Temp_Config_Files;
 
@@ -1286,7 +1290,9 @@ procedure GNATCmd is
    is
    begin
       Makeutl.Test_If_Relative_Path
-        (Switch, Parent, Including_Non_Switch => False, Including_RTS => True);
+        (Switch, Parent,
+         Do_Fail => Osint.Fail'Access,
+         Including_Non_Switch => False, Including_RTS => True);
    end Test_If_Relative_Path;
 
    -------------------
@@ -2598,7 +2604,7 @@ begin
 exception
    when Error_Exit =>
       if not Keep_Temporary_Files then
-         Prj.Delete_All_Temp_Files (Project_Tree);
+         Prj.Delete_All_Temp_Files (Project_Tree.Shared);
          Delete_Temp_Config_Files;
       end if;
 
@@ -2606,7 +2612,7 @@ exception
 
    when Normal_Exit =>
       if not Keep_Temporary_Files then
-         Prj.Delete_All_Temp_Files (Project_Tree);
+         Prj.Delete_All_Temp_Files (Project_Tree.Shared);
          Delete_Temp_Config_Files;
       end if;
 

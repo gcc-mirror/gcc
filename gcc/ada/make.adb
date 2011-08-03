@@ -158,6 +158,10 @@ package body Make is
    --  True if gnatmake is invoked with -f -u and one or several mains on the
    --  command line.
 
+   Project_Tree : constant Project_Tree_Ref :=
+                    new Project_Tree_Data (Is_Root_Tree => True);
+   --  The project tree
+
    Main_On_Command_Line : Boolean := False;
    --  True if gnatmake is invoked with one or several mains on the command
    --  line.
@@ -2359,6 +2363,7 @@ package body Make is
                                    new String'(Name_Buffer (1 .. Name_Len));
                                  Test_If_Relative_Path
                                    (New_Args (Last_New),
+                                    Do_Fail => Make_Failed'Access,
                                     Parent => Dir_Path,
                                     Including_Non_Switch => False);
                               end if;
@@ -2392,6 +2397,7 @@ package body Make is
                      begin
                         Test_If_Relative_Path
                           (New_Args (1),
+                           Do_Fail              => Make_Failed'Access,
                            Parent               => Dir_Path,
                            Including_Non_Switch => False);
                         Add_Arguments
@@ -3968,7 +3974,7 @@ package body Make is
    begin
       if not Debug.Debug_Flag_N then
          Delete_Temp_Config_Files;
-         Prj.Delete_All_Temp_Files (Project_Tree);
+         Prj.Delete_All_Temp_Files (Project_Tree.Shared);
       end if;
    end Delete_All_Temp_Files;
 
@@ -3991,7 +3997,7 @@ package body Make is
          while Proj /= null loop
             if Proj.Project.Config_File_Temp then
                Delete_Temporary_File
-                 (Project_Tree, Proj.Project.Config_File_Name);
+                 (Project_Tree.Shared, Proj.Project.Config_File_Name);
 
                --  Make sure that we don't have a config file for this project,
                --  in case there are several mains. In this case, we will
@@ -5222,29 +5228,34 @@ package body Make is
             for J in 1 .. Binder_Switches.Last loop
                Test_If_Relative_Path
                  (Binder_Switches.Table (J),
+                  Do_Fail => Make_Failed'Access,
                   Parent => Dir_Path, Including_L_Switch => False);
             end loop;
 
             for J in 1 .. Saved_Binder_Switches.Last loop
                Test_If_Relative_Path
                  (Saved_Binder_Switches.Table (J),
+                  Do_Fail => Make_Failed'Access,
                   Parent => Current_Work_Dir.all, Including_L_Switch => False);
             end loop;
 
             for J in 1 .. Linker_Switches.Last loop
                Test_If_Relative_Path
-                 (Linker_Switches.Table (J), Parent => Dir_Path);
+                 (Linker_Switches.Table (J), Parent => Dir_Path,
+                  Do_Fail => Make_Failed'Access);
             end loop;
 
             for J in 1 .. Saved_Linker_Switches.Last loop
                Test_If_Relative_Path
                  (Saved_Linker_Switches.Table (J),
+                  Do_Fail => Make_Failed'Access,
                   Parent => Current_Work_Dir.all);
             end loop;
 
             for J in 1 .. Gcc_Switches.Last loop
                Test_If_Relative_Path
                  (Gcc_Switches.Table (J),
+                  Do_Fail => Make_Failed'Access,
                   Parent               => Dir_Path,
                   Including_Non_Switch => False);
             end loop;
@@ -5253,6 +5264,7 @@ package body Make is
                Test_If_Relative_Path
                  (Saved_Gcc_Switches.Table (J),
                   Parent               => Current_Work_Dir.all,
+                  Do_Fail => Make_Failed'Access,
                   Including_Non_Switch => False);
             end loop;
          end;
@@ -5945,7 +5957,7 @@ package body Make is
                   --  If switch -C was specified, create a binder mapping file
 
                   if Create_Mapping_File then
-                     Mapping_Path := Create_Binder_Mapping_File;
+                     Mapping_Path := Create_Binder_Mapping_File (Project_Tree);
 
                      if Mapping_Path /= No_Path then
                         Last_Arg := Last_Arg + 1;
@@ -5966,7 +5978,8 @@ package body Make is
                      --  Delete the temporary mapping file if one was created
 
                      if Mapping_Path /= No_Path then
-                        Delete_Temporary_File (Project_Tree, Mapping_Path);
+                        Delete_Temporary_File
+                           (Project_Tree.Shared, Mapping_Path);
                      end if;
 
                      --  And reraise the exception
@@ -5978,7 +5991,7 @@ package body Make is
                --  if one was created.
 
                if Mapping_Path /= No_Path then
-                  Delete_Temporary_File (Project_Tree, Mapping_Path);
+                  Delete_Temporary_File (Project_Tree.Shared, Mapping_Path);
                end if;
             end Bind_Step;
          end if;
@@ -6203,7 +6216,9 @@ package body Make is
                   declare
                      Linker_Options : constant String_List :=
                                         Linker_Options_Switches
-                                          (Main_Project, Project_Tree);
+                                          (Main_Project,
+                                           Do_Fail => Make_Failed'Access,
+                                           In_Tree => Project_Tree);
                   begin
                      for Option in Linker_Options'Range loop
                         Linker_Switches.Increment_Last;
@@ -6447,6 +6462,7 @@ package body Make is
                      loop
                         Test_If_Relative_Path
                           (Binder_Switches.Table (J),
+                           Do_Fail => Make_Failed'Access,
                            Parent => Dir_Path, Including_L_Switch => False);
                      end loop;
 
@@ -6454,7 +6470,8 @@ package body Make is
                        J in Last_Linker_Switch + 1 .. Linker_Switches.Last
                      loop
                         Test_If_Relative_Path
-                          (Linker_Switches.Table (J), Parent => Dir_Path);
+                          (Linker_Switches.Table (J), Parent => Dir_Path,
+                           Do_Fail => Make_Failed'Access);
                      end loop;
                   end;
 
@@ -6609,7 +6626,7 @@ package body Make is
 
          else
             Record_Temp_File
-              (Project_Tree,
+              (Project_Tree.Shared,
                Data.Mapping_File_Names (Data.Last_Mapping_File_Names));
          end if;
 
@@ -8487,5 +8504,4 @@ begin
 
    Prj.Com.Fail    := Make_Failed'Access;
    MLib.Fail       := Make_Failed'Access;
-   Makeutl.Do_Fail := Make_Failed'Access;
 end Make;
