@@ -1,3 +1,9 @@
+2011-08-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49938
+	* tree-scalar-evolution.c (interpret_loop_phi): Gracefully
+	deal with a POLYNOMIAL_CHREC.
+
 2011-08-03  Revital Eres  <revital.eres@linaro.org>
 
 	* modulo-sched.c (calculate_stage_count,
