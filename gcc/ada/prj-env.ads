@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,6 +162,21 @@ package Prj.Env is
    --  to search for projects on the path (and caches the results to improve
    --  efficiency).
 
+   procedure Initialize_Default_Project_Path
+     (Self : in out Project_Search_Path; Target_Name : String);
+   --  Initialize Self.
+   --  It will then contain the default project path on the given target
+   --  (including directories specified by the environment variables
+   --  ADA_PROJECT_PATH and GPR_PROJECT_PATH).
+   --  This does nothing if Self has already been initialized.
+
+   procedure Initialize_Empty (Self : in out Project_Search_Path);
+   --  Initialize self with an empty list of directories.
+   --  If Self had already been set, it is reset.
+
+   function Is_Initialized (Self : Project_Search_Path) return Boolean;
+   --  Whether Self has been initialized
+
    procedure Free (Self : in out Project_Search_Path);
    --  Free the memory used by Self
 
@@ -177,13 +192,13 @@ package Prj.Env is
    --  Find_Project below, or PATH will be added at the end of the search path.
 
    procedure Get_Path
-     (Self        : in out Project_Search_Path;
-      Path        : out String_Access;
-      Target_Name : String := "");
+     (Self        : Project_Search_Path;
+      Path        : out String_Access);
    --  Return the current value of the project path, either the value set
    --  during elaboration of the package or, if procedure Set_Project_Path has
    --  been called, the value set by the last call to Set_Project_Path. The
    --  returned value must not be modified.
+   --  Self must have been initialized first.
 
    procedure Set_Path
      (Self : in out Project_Search_Path; Path : String);
@@ -194,12 +209,13 @@ package Prj.Env is
      (Self               : in out Project_Search_Path;
       Project_File_Name  : String;
       Directory          : String;
-      Path               : out Namet.Path_Name_Type;
-      Target_Name        : String);
+      Path               : out Namet.Path_Name_Type);
    --  Search for a project with the given name either in Directory (which
    --  often will be the directory contain the project we are currently parsing
    --  and which we found a reference to another project), or in the project
-   --  path. Extra_Project_Path contains additional directories to search.
+   --  path Self.
+   --
+   --  Self must have been initialized first.
    --
    --  Project_File_Name can optionally contain directories, and the extension
    --  (.gpr) for the file name is optional.

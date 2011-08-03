@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@ with Output;
 with Osint;    use Osint;
 with Prj;      use Prj;
 with Prj.Com;
+with Prj.Env;
 with Prj.Part;
 with Prj.PP;
 with Prj.Tree; use Prj.Tree;
@@ -796,6 +797,8 @@ package body Prj.Makr is
       Snames.Initialize;
       Prj.Initialize (No_Project_Tree);
       Prj.Tree.Initialize (Tree);
+      Prj.Env.Initialize_Default_Project_Path
+         (Tree.Project_Path, Target_Name => "");
 
       Sources.Set_Last (0);
       Source_Directories.Set_Last (0);
@@ -865,8 +868,7 @@ package body Prj.Makr is
                Is_Config_File         => False,
                Flags                  => Flags,
                Current_Directory      => Get_Current_Dir,
-               Packages_To_Check      => Packages_To_Check_By_Gnatname,
-               Target_Name            => "");
+               Packages_To_Check      => Packages_To_Check_By_Gnatname);
 
             --  Fail if parsing was not successful
 

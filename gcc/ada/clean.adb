@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1399,6 +1399,9 @@ package body Clean is
 
          --  Parse the project file. If there is an error, Main_Project
          --  will still be No_Project.
+
+         Prj.Env.Initialize_Default_Project_Path
+            (Project_Node_Tree.Project_Path, Target_Name => "");
 
          Prj.Pars.Parse
            (Project           => Main_Project,

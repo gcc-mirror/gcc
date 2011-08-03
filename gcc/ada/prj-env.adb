@@ -110,12 +110,6 @@ package body Prj.Env is
    --  Return a project that is either Project or an extended ancestor of
    --  Project that itself is not extended.
 
-   procedure Initialize_Project_Path
-     (Self        : in out Project_Search_Path;
-      Target_Name : String);
-   --  Initialize Current_Project_Path. Does nothing if the path has already
-   --  been initialized properly.
-
    ----------------------
    -- Ada_Include_Path --
    ----------------------
@@ -1782,13 +1776,33 @@ package body Prj.Env is
       end if;
    end Add_Directories;
 
-   -----------------------------
-   -- Initialize_Project_Path --
-   -----------------------------
+   --------------------
+   -- Is_Initialized --
+   --------------------
 
-   procedure Initialize_Project_Path
-     (Self        : in out Project_Search_Path;
-      Target_Name : String)
+   function Is_Initialized (Self : Project_Search_Path) return Boolean is
+   begin
+      return Self.Path /= null
+        and then (Self.Path'Length = 0
+                  or else Self.Path (Self.Path'First) /= '#');
+   end Is_Initialized;
+
+   ----------------------
+   -- Initialize_Empty --
+   ----------------------
+
+   procedure Initialize_Empty (Self : in out Project_Search_Path) is
+   begin
+      Free (Self.Path);
+      Self.Path := new String'("");
+   end Initialize_Empty;
+
+   -------------------------------------
+   -- Initialize_Default_Project_Path --
+   -------------------------------------
+
+   procedure Initialize_Default_Project_Path
+     (Self : in out Project_Search_Path; Target_Name : String)
    is
       Add_Default_Dir : Boolean := True;
       First           : Positive;
@@ -1808,11 +1822,7 @@ package body Prj.Env is
       --  May be empty.
 
    begin
-      --  If already initialized, nothing else to do
-
-      if Self.Path /= null
-        and then Self.Path (Self.Path'First) /= '#'
-      then
+      if Is_Initialized (Self) then
          return;
       end if;
 
@@ -1968,19 +1978,17 @@ package body Prj.Env is
       if Self.Path = null then
          Self.Path := new String'(Name_Buffer (1 .. Name_Len));
       end if;
-   end Initialize_Project_Path;
+   end Initialize_Default_Project_Path;
 
    --------------
    -- Get_Path --
    --------------
 
    procedure Get_Path
-     (Self        : in out Project_Search_Path;
-      Path        : out String_Access;
-      Target_Name : String := "")
-   is
+     (Self        : Project_Search_Path;
+      Path        : out String_Access) is
    begin
-      Initialize_Project_Path (Self, Target_Name);
+      pragma Assert (Is_Initialized (Self));
       Path := Self.Path;
    end Get_Path;
 
@@ -2004,8 +2012,7 @@ package body Prj.Env is
      (Self               : in out Project_Search_Path;
       Project_File_Name  : String;
       Directory          : String;
-      Path               : out Namet.Path_Name_Type;
-      Target_Name        : String)
+      Path               : out Namet.Path_Name_Type)
    is
       File : constant String := Project_File_Name;
       --  Have to do a copy, in case the parameter is Name_Buffer, which we
@@ -2092,7 +2099,7 @@ package body Prj.Env is
    --  Start of processing for Find_Project
 
    begin
-      Initialize_Project_Path (Self, Target_Name);
+      pragma Assert (Is_Initialized (Self));
 
       if Current_Verbosity = High then
          Debug_Increase_Indent

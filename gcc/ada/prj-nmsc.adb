@@ -28,6 +28,7 @@ with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Com;
+with Prj.Env;  use Prj.Env;
 with Prj.Err;  use Prj.Err;
 with Prj.Util; use Prj.Util;
 with Sinput.P;
@@ -936,6 +937,8 @@ package body Prj.Nmsc is
                            Project.Decl.Attributes,
                            Data.Tree);
 
+      Project_Path_For_Aggregate : Prj.Env.Project_Search_Path;
+
       procedure Found_Project_File (Path : Path_Information; Rank : Natural);
       --  Called for each project file aggregated by Project
 
@@ -951,9 +954,23 @@ package body Prj.Nmsc is
 
       procedure Found_Project_File (Path : Path_Information; Rank : Natural) is
          pragma Unreferenced (Rank);
+         Full_Path : Path_Name_Type;
       begin
          Debug_Output ("Aggregates: ", Name_Id (Path.Display_Name));
 
+         --  For usual "with" statement, this phase will have been done when
+         --  parsing the project itself. However, for aggregate projects, we
+         --  can only do this when processing the aggregate project, since the
+         --  exact list of project files or project directories can depend on
+         --  scenario variables.
+         --
+         --  ??? We might already have loaded the project
+
+         Prj.Env.Find_Project
+           (Self              => Project_Path_For_Aggregate,
+            Project_File_Name => Get_Name_String (Path.Name),
+            Directory         => Get_Name_String (Project.Path.Name),
+            Path              => Full_Path);
       end Found_Project_File;
 
    --  Start of processing for Check_Aggregate_Project
@@ -968,6 +985,8 @@ package body Prj.Nmsc is
          return;
       end if;
 
+      Initialize_Empty (Project_Path_For_Aggregate);
+
       --  Look for aggregated projects. For similarity with source files and
       --  dirs, the aggregated project files are not searched for on the
       --  project path, and are only found through the path specified in
@@ -980,6 +999,8 @@ package body Prj.Nmsc is
          Ignore        => Nil_String,
          Search_For    => Search_Files,
          Resolve_Links => Opt.Follow_Links_For_Files);
+
+      Free (Project_Path_For_Aggregate);
    end Check_Aggregate_Project;
 
    ----------------------------
