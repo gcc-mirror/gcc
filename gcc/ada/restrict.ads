@@ -265,8 +265,8 @@ package Restrict is
    --  SPARK restriction is set, then an error is issued on N. Msg is appended
    --  to the restriction failure message.
 
-   procedure Check_Formal_Restriction (Msg1, Msg2 : String; N : Node_Id);
-   --  Same as Check_Formal_Restriction except there is a continuation message
+   procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id);
+   --  Same as Check_SPARK_Restriction except there is a continuation message
    --  Msg2 following the initial message Msg1.
 
    procedure Check_Implicit_Dynamic_Code_Allowed (N : Node_Id);

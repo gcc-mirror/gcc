@@ -62,55 +62,6 @@ package body Prj is
                           All_Upper_Case => All_Upper_Case_Image'Access,
                           Mixed_Case     => Mixed_Case_Image'Access);
 
-   Project_Empty : constant Project_Data :=
-                     (Qualifier                      => Unspecified,
-                      Externally_Built               => False,
-                      Config                         => Default_Project_Config,
-                      Name                           => No_Name,
-                      Display_Name                   => No_Name,
-                      Path                           => No_Path_Information,
-                      Virtual                        => False,
-                      Location                       => No_Location,
-                      Mains                          => Nil_String,
-                      Directory                      => No_Path_Information,
-                      Library                        => False,
-                      Library_Dir                    => No_Path_Information,
-                      Library_Src_Dir                => No_Path_Information,
-                      Library_ALI_Dir                => No_Path_Information,
-                      Library_Name                   => No_Name,
-                      Library_Kind                   => Static,
-                      Lib_Internal_Name              => No_Name,
-                      Standalone_Library             => False,
-                      Lib_Interface_ALIs             => Nil_String,
-                      Lib_Auto_Init                  => False,
-                      Libgnarl_Needed                => Unknown,
-                      Symbol_Data                    => No_Symbols,
-                      Interfaces_Defined             => False,
-                      Source_Dirs                    => Nil_String,
-                      Source_Dir_Ranks               => No_Number_List,
-                      Object_Directory               => No_Path_Information,
-                      Library_TS                     => Empty_Time_Stamp,
-                      Exec_Directory                 => No_Path_Information,
-                      Extends                        => No_Project,
-                      Extended_By                    => No_Project,
-                      Languages                      => No_Language_Index,
-                      Decl                           => No_Declarations,
-                      Imported_Projects              => null,
-                      Include_Path_File              => No_Path,
-                      All_Imported_Projects          => null,
-                      Ada_Include_Path               => null,
-                      Ada_Objects_Path               => null,
-                      Objects_Path                   => null,
-                      Objects_Path_File_With_Libs    => No_Path,
-                      Objects_Path_File_Without_Libs => No_Path,
-                      Config_File_Name               => No_Path,
-                      Config_File_Temp               => False,
-                      Config_Checked                 => False,
-                      Need_To_Build_Lib              => False,
-                      Has_Multi_Unit_Sources         => False,
-                      Depth                          => 0,
-                      Unkept_Comments                => False);
-
    procedure Free (Project : in out Project_Id);
    --  Free memory allocated for Project
 
@@ -270,10 +221,20 @@ package body Prj is
    -- Empty_Project --
    -------------------
 
-   function Empty_Project return Project_Data is
+   function Empty_Project
+     (Qualifier : Project_Qualifier) return Project_Data is
    begin
       Prj.Initialize (Tree => No_Project_Tree);
-      return Project_Empty;
+
+      declare
+         Data : Project_Data (Qualifier => Qualifier);
+      begin
+         --  Only the fields for which no default value could be provided in
+         --  prj.ads are initialized below
+
+         Data.Config := Default_Project_Config;
+         return Data;
+      end;
    end Empty_Project;
 
    ------------------
@@ -440,6 +401,7 @@ package body Prj is
    procedure For_Every_Project_Imported
      (By             : Project_Id;
       With_State     : in out State;
+      Include_Aggregated : Boolean := True;
       Imported_First : Boolean := False)
    is
       use Project_Boolean_Htable;
@@ -455,6 +417,7 @@ package body Prj is
 
       procedure Recursive_Check (Project : Project_Id) is
          List : Project_List;
+         Agg  : Aggregated_Project_List;
 
       begin
          if not Get (Seen, Project) then
@@ -464,19 +427,32 @@ package body Prj is
                Action (Project, With_State);
             end if;
 
-            --  Visited all extended projects
+            --  Visit all extended projects
 
             if Project.Extends /= No_Project then
                Recursive_Check (Project.Extends);
             end if;
 
-            --  Visited all imported projects
+            --  Visit all imported projects
 
             List := Project.Imported_Projects;
             while List /= null loop
                Recursive_Check (List.Project);
                List := List.Next;
             end loop;
+
+            --  Visit all aggregated projects
+
+            if Include_Aggregated
+              and then Project.Qualifier = Aggregate
+            then
+               Agg := Project.Aggregated_Projects;
+               while Agg /= null loop
+                  pragma Assert (Agg.Project /= No_Project);
+                  Recursive_Check (Agg.Project);
+                  Agg := Agg.Next;
+               end loop;
+            end if;
 
             if Imported_First then
                Action (Project, With_State);
@@ -729,6 +705,35 @@ package body Prj is
    -- Free --
    ----------
 
+   procedure Free (List : in out Aggregated_Project_List) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Aggregated_Project, Aggregated_Project_List);
+      Tmp : Aggregated_Project_List;
+   begin
+      while List /= null loop
+         Tmp := List.Next;
+         Unchecked_Free (List);
+         List := Tmp;
+      end loop;
+   end Free;
+
+   ----------------------------
+   -- Add_Aggregated_Project --
+   ----------------------------
+
+   procedure Add_Aggregated_Project
+     (Project : Project_Id; Path : Path_Name_Type) is
+   begin
+      Project.Aggregated_Projects := new Aggregated_Project'
+        (Path    => Path,
+         Project => No_Project,
+         Next    => Project.Aggregated_Projects);
+   end Add_Aggregated_Project;
+
+   ----------
+   -- Free --
+   ----------
+
    procedure Free (Project : in out Project_Id) is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Project_Data, Project_Id);
@@ -741,6 +746,14 @@ package body Prj is
          Free_List (Project.Imported_Projects, Free_Project => False);
          Free_List (Project.All_Imported_Projects, Free_Project => False);
          Free_List (Project.Languages);
+
+         case Project.Qualifier is
+            when Aggregate =>
+               Free (Project.Aggregated_Projects);
+
+            when others =>
+               null;
+         end case;
 
          Unchecked_Free (Project);
       end if;

@@ -105,9 +105,9 @@ package body Restrict is
       Check_Restriction (No_Elaboration_Code, N);
    end Check_Elaboration_Code_Allowed;
 
-   ------------------------------
-   -- Check_Formal_Restriction --
-   ------------------------------
+   -----------------------------
+   -- Check_SPARK_Restriction --
+   -----------------------------
 
    procedure Check_SPARK_Restriction
      (Msg   : String;
@@ -139,7 +139,7 @@ package body Restrict is
       end if;
    end Check_SPARK_Restriction;
 
-   procedure Check_Formal_Restriction (Msg1, Msg2 : String; N : Node_Id) is
+   procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id) is
       Msg_Issued          : Boolean;
       Save_Error_Msg_Sloc : Source_Ptr;
    begin
@@ -166,7 +166,7 @@ package body Restrict is
             Error_Msg_F (Msg2, N);
          end if;
       end if;
-   end Check_Formal_Restriction;
+   end Check_SPARK_Restriction;
 
    -----------------------------------------
    -- Check_Implicit_Dynamic_Code_Allowed --

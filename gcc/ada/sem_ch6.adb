@@ -8593,10 +8593,13 @@ package body Sem_Ch6 is
          Check_Overriding_Indicator
            (S, Overridden_Subp, Is_Primitive => Is_Primitive_Subp);
 
-         --  Overloading is not allowed in SPARK
+         --  Overloading is not allowed in SPARK, except for operators
 
-         Error_Msg_Sloc := Sloc (Homonym (S));
-         Check_SPARK_Restriction ("overloading not allowed with entity#", S);
+         if Nkind (S) /= N_Defining_Operator_Symbol then
+            Error_Msg_Sloc := Sloc (Homonym (S));
+            Check_SPARK_Restriction
+              ("overloading not allowed with entity#", S);
+         end if;
 
          --  If S is a derived operation for an untagged type then by
          --  definition it's not a dispatching operation (even if the parent
