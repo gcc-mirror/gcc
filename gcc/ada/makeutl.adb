@@ -44,6 +44,7 @@ with Ada.Command_Line; use Ada.Command_Line;
 with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.HTable;
+with GNAT.Regexp;               use GNAT.Regexp;
 
 package body Makeutl is
 
@@ -1230,7 +1231,9 @@ package body Makeutl is
       procedure Add_Main
         (Name     : String;
          Index    : Int := 0;
-         Location : Source_Ptr := No_Location)
+         Location : Source_Ptr := No_Location;
+         Project  : Project_Id := No_Project;
+         Tree     : Project_Tree_Ref := null)
       is
       begin
          Name_Len := 0;
@@ -1238,7 +1241,8 @@ package body Makeutl is
          Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
 
          Names.Increment_Last;
-         Names.Table (Names.Last) := (Name_Find, Index, Location, No_Source);
+         Names.Table (Names.Last) :=
+           (Name_Find, Index, Location, No_Source, Project, Tree);
       end Add_Main;
 
       --------------------------
@@ -1283,29 +1287,52 @@ package body Makeutl is
 
       procedure Fill_From_Project
         (Root_Project : Project_Id;
-         Project_Tree : Project_Tree_Ref) is
+         Project_Tree : Project_Tree_Ref)
+      is
+         procedure Add_Mains_From_Project
+           (Project : Project_Id; Tree    : Project_Tree_Ref);
+         --  Add the main units from this project into Mains
+
+         procedure Add_Mains_From_Project
+           (Project : Project_Id;
+            Tree    : Project_Tree_Ref)
+         is
+            List    : String_List_Id;
+            Element : String_Element;
+            Agg     : Aggregated_Project_List;
+         begin
+            Debug_Output ("Add_Mains_From_Project", Project.Name);
+            case Project.Qualifier is
+               when Aggregate =>
+                  Agg := Project.Aggregated_Projects;
+                  while Agg /= null loop
+                     Add_Mains_From_Project (Agg.Project, Agg.Tree);
+                     Agg := Agg.Next;
+                  end loop;
+
+               when others =>
+                  List := Project.Mains;
+                  if List /= Prj.Nil_String then
+                     --  The attribute Main is not an empty list.
+                     --  Get the mains in the list
+
+                     while List /= Prj.Nil_String loop
+                        Element := Tree.Shared.String_Elements.Table (List);
+                        Debug_Output ("Add_Main", Element.Value);
+                        Add_Main (Name     => Get_Name_String (Element.Value),
+                                  Index    => Element.Index,
+                                  Location => Element.Location,
+                                  Project  => Project,
+                                  Tree     => Tree);
+                        List := Element.Next;
+                     end loop;
+                  end if;
+            end case;
+         end Add_Mains_From_Project;
+
       begin
          if Number_Of_Mains = 0 then
-            declare
-               List    : String_List_Id := Root_Project.Mains;
-               Element : String_Element;
-
-            begin
-               if List /= Prj.Nil_String then
-                  --  The attribute Main is not an empty list.
-                  --  Get the mains in the list
-
-                  while List /= Prj.Nil_String loop
-                     Element :=
-                       Project_Tree.Shared.String_Elements.Table (List);
-
-                     Add_Main (Name     => Get_Name_String (Element.Value),
-                               Index    => Element.Index,
-                               Location => Element.Location);
-                     List := Element.Next;
-                  end loop;
-               end if;
-            end;
+            Add_Mains_From_Project (Root_Project, Project_Tree);
          end if;
 
          --  If there are mains, check that they are sources of the main
@@ -1314,7 +1341,7 @@ package body Makeutl is
          if Mains.Number_Of_Mains > 0 then
             for J in Names.First .. Names.Last loop
                declare
-                  File       : constant Main_Info := Names.Table (J);
+                  File       : Main_Info := Names.Table (J);
                   Main_Id    : File_Name_Type := File.File;
                   Main       : constant String := Get_Name_String (Main_Id);
                   Project    : Project_Id;
@@ -1335,11 +1362,25 @@ package body Makeutl is
                      end if;
                   end if;
 
+                  --  If no project or tree was specified for the main, it came
+                  --  from the command line. In this case, it needs to belong
+                  --  to the root project.
+                  --  Note that the assignments below will not modify inside
+                  --  the table itself.
+
+                  if File.Project = null then
+                     File.Project := Root_Project;
+                  end if;
+
+                  if File.Tree = null then
+                     File.Tree := Project_Tree;
+                  end if;
+
                   --  First, look for the main as specified.
 
                   Source := Find_Source
-                    (In_Tree   => Project_Tree,
-                     Project   => Project,
+                    (In_Tree   => File.Tree,
+                     Project   => File.Project,
                      Base_Name => File.File,
                      Index     => File.Index);
 
@@ -1350,11 +1391,11 @@ package body Makeutl is
                         --  Main already has a canonical casing
                         Main : constant String := Get_Name_String (Main_Id);
                      begin
-                        Project := Root_Project;
+                        Project := File.Project;
                         while Source = No_Source
                           and then Project /= No_Project
                         loop
-                           Iter := For_Each_Source (Project_Tree, Project);
+                           Iter := For_Each_Source (File.Tree, Project);
                            loop
                               Source := Prj.Element (Iter);
                               exit when Source = No_Source;
@@ -1387,8 +1428,10 @@ package body Makeutl is
                   end if;
 
                   if Source /= No_Source then
-                     Names.Table (J).File := Source.File;
-                     Names.Table (J).Source := Source;
+                     Names.Table (J).File    := Source.File;
+                     Names.Table (J).Project := File.Project;
+                     Names.Table (J).Tree    := File.Tree;
+                     Names.Table (J).Source  := Source;
 
                   elsif File.Location /= No_Location then
                      --  If the main is declared in package Builder of the
@@ -1760,6 +1803,9 @@ package body Makeutl is
       --  Whether S has already been processed. This marks the source as
       --  processed, if it hasn't already been processed.
 
+      function Insert_No_Roots (Source  : Source_Info) return Boolean;
+      --  Insert Source, but do not look for its roots (see doc for Insert).
+
       -------------------
       -- Was_Processed --
       -------------------
@@ -1951,12 +1997,16 @@ package body Makeutl is
          end if;
       end Initialize;
 
-      ------------
-      -- Insert --
-      ------------
+      ---------------------
+      -- Insert_No_Roots --
+      ---------------------
 
-      function Insert (Source  : Source_Info) return Boolean is
+      function Insert_No_Roots (Source  : Source_Info) return Boolean is
       begin
+         pragma Assert
+           (Source.Format = Format_Gnatmake
+            or else Source.Id /= No_Source);
+
          --  Only insert in the Q if it is not already done, to avoid
          --  simultaneous compilations if -jnnn is used.
 
@@ -1988,17 +2038,216 @@ package body Makeutl is
          end if;
 
          return True;
+      end Insert_No_Roots;
+
+      ------------
+      -- Insert --
+      ------------
+
+      function Insert
+        (Source  : Source_Info; With_Roots : Boolean := False) return Boolean
+      is
+         Root_Arr     : Array_Element_Id;
+         Roots        : Variable_Value;
+         List         : String_List_Id;
+         Elem         : String_Element;
+         Unit_Name    : Name_Id;
+         Pat_Root     : Boolean;
+         Root_Pattern : Regexp;
+         Root_Found   : Boolean;
+         Roots_Found  : Boolean;
+         Dummy        : Boolean;
+         Root_Source  : Prj.Source_Id;
+         Iter         : Source_Iterator;
+         pragma Unreferenced (Dummy);
+
+      begin
+         if not Insert_No_Roots (Source) then
+            --  Was already in the queue
+            return False;
+         end if;
+
+         if With_Roots and then Source.Format = Format_Gprbuild then
+            Debug_Output ("Looking for roots of", Name_Id (Source.Id.File));
+
+            Root_Arr :=
+              Prj.Util.Value_Of
+                (Name      => Name_Roots,
+                 In_Arrays => Source.Id.Project.Decl.Arrays,
+                 Shared    => Source.Tree.Shared);
+
+            Roots :=
+              Prj.Util.Value_Of
+                (Index     => Name_Id (Source.Id.File),
+                 Src_Index => 0,
+                 In_Array  => Root_Arr,
+                 Shared    => Source.Tree.Shared);
+
+            --  If there is no roots for the specific main, try the language
+
+            if Roots = Nil_Variable_Value then
+               Roots :=
+                 Prj.Util.Value_Of
+                   (Index                  => Source.Id.Language.Name,
+                    Src_Index              => 0,
+                    In_Array               => Root_Arr,
+                    Shared                 => Source.Tree.Shared,
+                    Force_Lower_Case_Index => True);
+            end if;
+
+            --  Then try "*"
+
+            if Roots = Nil_Variable_Value then
+               Name_Len := 1;
+               Name_Buffer (1) := '*';
+
+               Roots :=
+                 Prj.Util.Value_Of
+                   (Index                  => Name_Find,
+                    Src_Index              => 0,
+                    In_Array               => Root_Arr,
+                    Shared                 => Source.Tree.Shared,
+                    Force_Lower_Case_Index => True);
+            end if;
+
+            if Roots = Nil_Variable_Value then
+               Debug_Output ("   -> no roots declared");
+            else
+               List := Roots.Values;
+
+               Pattern_Loop :
+               while List /= Nil_String loop
+                  Elem := Source.Tree.Shared.String_Elements.Table (List);
+                  Get_Name_String (Elem.Value);
+                  To_Lower (Name_Buffer (1 .. Name_Len));
+                  Unit_Name := Name_Find;
+
+                  --  Check if it is a unit name or a pattern
+
+                  Pat_Root := False;
+
+                  for J in 1 .. Name_Len loop
+                     if Name_Buffer (J) not in 'a' .. 'z'
+                       and then Name_Buffer (J) not in '0' .. '9'
+                       and then Name_Buffer (J) /= '_'
+                       and then Name_Buffer (J) /= '.'
+                     then
+                        Pat_Root := True;
+                        exit;
+                     end if;
+                  end loop;
+
+                  if Pat_Root then
+                     begin
+                        Root_Pattern :=
+                          Compile
+                            (Pattern => Name_Buffer (1 .. Name_Len),
+                             Glob    => True);
+
+                     exception
+                        when Error_In_Regexp =>
+                           Err_Vars.Error_Msg_Name_1 := Unit_Name;
+                           Errutil.Error_Msg
+                             ("invalid pattern %", Roots.Location);
+                           exit Pattern_Loop;
+                     end;
+                  end if;
+
+                  Roots_Found := False;
+                  Iter        := For_Each_Source (Source.Tree);
+
+                  Source_Loop :
+                  loop
+                     Root_Source := Prj.Element (Iter);
+                     exit Source_Loop when Root_Source = No_Source;
+
+                     Root_Found := False;
+                     if Pat_Root then
+                        Root_Found := Root_Source.Unit /= No_Unit_Index
+                          and then Match
+                            (Get_Name_String (Root_Source.Unit.Name),
+                             Root_Pattern);
+
+                     else
+                        Root_Found :=
+                          Root_Source.Unit /= No_Unit_Index
+                          and then Root_Source.Unit.Name = Unit_Name;
+                     end if;
+
+                     if Root_Found then
+                        case Root_Source.Kind is
+                        when Impl =>
+                           null;
+
+                        when Spec =>
+                           Root_Found := Other_Part (Root_Source) = No_Source;
+
+                        when Sep =>
+                           Root_Found := False;
+                        end case;
+                     end if;
+
+                     if Root_Found then
+                        Roots_Found := True;
+                        Debug_Output
+                          ("   -> ", Name_Id (Root_Source.Display_File));
+                        Dummy := Queue.Insert_No_Roots
+                          (Source => (Format => Format_Gprbuild,
+                                      Tree   => Source.Tree,
+                                      Id     => Root_Source));
+
+                        Initialize_Source_Record (Root_Source);
+
+                        if Other_Part (Root_Source) /= No_Source then
+                           Initialize_Source_Record (Other_Part (Root_Source));
+                        end if;
+
+                        --  Save the root for the binder.
+
+                        Source.Id.Roots := new Source_Roots'
+                          (Root => Root_Source,
+                           Next => Source.Id.Roots);
+
+                        exit Source_Loop when not Pat_Root;
+                     end if;
+
+                     Next (Iter);
+                  end loop Source_Loop;
+
+                  if not Roots_Found then
+                     if Pat_Root then
+                        if not Quiet_Output then
+                           Error_Msg_Name_1 := Unit_Name;
+                           Errutil.Error_Msg
+                             ("?no unit matches pattern %", Roots.Location);
+                        end if;
+
+                     else
+                        Errutil.Error_Msg
+                          ("Unit " & Get_Name_String (Unit_Name)
+                           & " does not exist", Roots.Location);
+                     end if;
+                  end if;
+
+                  List := Elem.Next;
+               end loop Pattern_Loop;
+            end if;
+         end if;
+
+         return True;
       end Insert;
 
       ------------
       -- Insert --
       ------------
 
-      procedure Insert (Source : Source_Info) is
+      procedure Insert
+        (Source  : Source_Info; With_Roots : Boolean := False)
+      is
          Discard : Boolean;
          pragma Unreferenced (Discard);
       begin
-         Discard := Insert (Source);
+         Discard := Insert (Source, With_Roots);
       end Insert;
 
       --------------
@@ -2136,6 +2385,7 @@ package body Makeutl is
                   then
                      Queue.Insert
                        (Source => (Format => Format_Gprbuild,
+                                   Tree   => Project_Tree,
                                    Id     => Source));
                   end if;
                end if;
@@ -2221,6 +2471,7 @@ package body Makeutl is
                   then
                      Queue.Insert
                        (Source => (Format => Format_Gprbuild,
+                                   Tree   => Project_Tree,
                                    Id     => Src_Id));
                   end if;
                end if;

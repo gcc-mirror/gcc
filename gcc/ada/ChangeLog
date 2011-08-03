@@ -1,3 +1,14 @@
+2011-08-03  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.ads, makeutl.adb, makeutl.ads (Queue.Insert): now also inserts
+	the "roots" for a main.
+	(Fill_From_Project): add support for aggregate projects. Main units
+	in aggregated projects are now automatically added in the list of
+	files to build (although this fails later on in gprbuild, because
+	these files are not using the root proejct tree, so this needs
+	further cleanup)
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2011-08-03  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch4.adb (Analyze_Conditional_Expression): only allow boolean

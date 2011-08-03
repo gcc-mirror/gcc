@@ -660,6 +660,17 @@ package Prj is
    No_Unit_Index : constant Unit_Index := null;
    --  Used to indicate a null entry for no unit
 
+   type Source_Roots;
+   type Roots_Access is access Source_Roots;
+   type Source_Roots is record
+      Root : Source_Id;
+      Next : Roots_Access;
+   end record;
+   --  A list to store the roots associated with a main unit. These are the
+   --  files that need to linked along with the main (for instance a C file
+   --  corresponding to an Ada file). In general, these are dependencies that
+   --  cannot be computed automatically by the builder.
+
    --  Structure to define source data
 
    type Source_Data is record
@@ -784,6 +795,9 @@ package Prj is
       Next_With_File_Name : Source_Id := No_Source;
       --  Link to another source with the same base file name
 
+      Roots : Roots_Access := null;
+      --  The roots for a main unit
+
    end record;
 
    No_Source_Data : constant Source_Data :=
@@ -821,7 +835,8 @@ package Prj is
                        Naming_Exception       => False,
                        Duplicate_Unit         => False,
                        Next_In_Lang           => No_Source,
-                       Next_With_File_Name    => No_Source);
+                       Next_With_File_Name    => No_Source,
+                       Roots                  => null);
 
    package Source_Files_Htable is new Simple_HTable
      (Header_Num => Header_Num,
