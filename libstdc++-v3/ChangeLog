@@ -944,13 +944,6 @@
 
 2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-	* testsuite/tr1/6_containers/tuple/creation_functions/tie2.cc: Fix for
-	C++0x mode.
-	* testsuite/25_algorithms/sort/35588.cc: Likewise.
-	* testsuite/26_numerics/headers/complex/synopsis.cc: Likewise.
-
-2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
-
 	* include/ext/extptr_allocator.h (construct, destroy): Fix for C++0x
 	mode by overloading to take allocator's pointer type.
 	* testsuite/23_containers/vector/ext_pointer/types/2.cc: New.
