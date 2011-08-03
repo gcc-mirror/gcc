@@ -7764,9 +7764,8 @@ package body Exp_Ch4 is
 
                   if Disc = Entity (Selector_Name (N))
                     and then (Is_Entity_Name (Dval)
-                               or else Nkind (Dval) = N_Integer_Literal
-                               or else Is_Subtype_Declaration
-                               or else Is_Static_Expression (Dval))
+                               or else Compile_Time_Known_Value (Dval)
+                               or else Is_Subtype_Declaration)
                   then
                      --  Here we have the matching discriminant. Check for
                      --  the case of a discriminant of a component that is

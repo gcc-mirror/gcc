@@ -344,6 +344,7 @@ package body Inline is
                elsif not Is_Inlined (Pack)
                  and then
                    (not Has_Completion (E)
+                     or else Is_Init_Proc (E)
                      or else Is_Expression_Function (E))
                then
                   Set_Is_Inlined (Pack);

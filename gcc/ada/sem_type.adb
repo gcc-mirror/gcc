@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1907,6 +1907,25 @@ package body Sem_Type is
                      return Remove_Conversions;
                   end if;
                end;
+
+            --  An immediately visible operator hides a use-visible user-
+            --  defined operation. This disambiguation cannot take place
+            --  earlier because the visibility of the predefined operator
+            --  can only be established when operand types are known.
+
+            elsif Ekind (User_Subp) = E_Function
+              and then Ekind (Predef_Subp) = E_Operator
+              and then Nkind (N) in N_Op
+              and then not Is_Overloaded (Right_Opnd (N))
+              and then
+                Is_Immediately_Visible (Base_Type (Etype (Right_Opnd (N))))
+              and then Is_Potentially_Use_Visible (User_Subp)
+            then
+               if It2.Nam = Predef_Subp then
+                  return It1;
+               else
+                  return It2;
+               end if;
 
             else
                return No_Interp;

@@ -1,5 +1,24 @@
 2011-08-03  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch4.adb: Minor code cleanup.
+
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb: Do not generate distribution stubs if serious errors
+	have been diagnosed.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Primitive_Operation): when checking the validity of
+	the first formal of a primitive operation, go to the base type to
+	handle properly an access to a derived type with constrained
+	discriminants.
+	* sem_type.adb (Disambiguate): an immediately visible operator hides a
+	user-defined function that is only use-visible.
+	* inline.adb: init procs are inlineable.
+
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
 	* sem_aggr.adb, sem_ch3.adb, lib.ads, gnatcmd.adb, prj-proc.adb,
 	make.adb, lib-writ.adb, prj-part.adb, prj-part.ads, prj-ext.adb,
 	fname-uf.adb, prj-ext.ads, prj.adb, prj.ads, sem_attr.adb, alfa.adb,

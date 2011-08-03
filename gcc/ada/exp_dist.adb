@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Errout;   use Errout;
 with Exp_Atag; use Exp_Atag;
 with Exp_Disp; use Exp_Disp;
 with Exp_Strm; use Exp_Strm;
@@ -1029,6 +1030,10 @@ package body Exp_Dist is
          pragma Warnings (Off, Subp_Str);
 
       begin
+         if Serious_Errors_Detected /= 0 then
+            return;
+         end if;
+
          Assign_Subprogram_Identifier
            (Defining_Unit_Name (Spec), Current_Subprogram_Number, Subp_Str);
 
@@ -3836,6 +3841,10 @@ package body Exp_Dist is
             pragma Warnings (Off, Subp_Val);
 
          begin
+            if Serious_Errors_Detected /= 0 then
+               return;
+            end if;
+
             --  Build receiving stub
 
             Current_Stubs :=
@@ -6840,6 +6849,10 @@ package body Exp_Dist is
             Proxy_Obj_Addr : Entity_Id;
 
          begin
+            if Serious_Errors_Detected /= 0 then
+               return;
+            end if;
+
             --  Build receiving stub
 
             Current_Stubs :=
