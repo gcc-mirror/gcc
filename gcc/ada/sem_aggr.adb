@@ -1823,6 +1823,9 @@ package body Sem_Aggr is
             --  Used to keep track of the number of discrete choices in the
             --  current association.
 
+            Errors_Posted_On_Choices : Boolean := False;
+            --  Keeps track of whether any choices have semantic errors
+
          begin
             --  STEP 2 (A): Check discrete choices validity
 
@@ -1866,6 +1869,14 @@ package body Sem_Aggr is
                      Resolve (Choice, Index_Base);
                      Check_Unset_Reference (Choice);
                      Check_Non_Static_Context (Choice);
+
+                     --  If semantic errors were posted on the choice, then
+                     --  record that for possible early return from later
+                     --  processing (see handling of enumeration choices).
+
+                     if Error_Posted (Choice) then
+                        Errors_Posted_On_Choices := True;
+                     end if;
 
                      --  Do not range check a choice. This check is redundant
                      --  since this test is already done when we check that the
@@ -2144,13 +2155,12 @@ package body Sem_Aggr is
                     and then Compile_Time_Known_Value (Choices_Low)
                     and then Compile_Time_Known_Value (Choices_High)
                   then
-                     --  If the bounds have semantic errors, do not attempt
-                     --  further resolution to prevent cascaded errors.
+                     --  If any of the expressions or range bounds in choices
+                     --  have semantic errors, then do not attempt further
+                     --  resolution, to prevent cascaded errors.
 
-                     if Error_Posted (Choices_Low)
-                       or else Error_Posted (Choices_High)
-                     then
-                        return False;
+                     if Errors_Posted_On_Choices then
+                        return Failure;
                      end if;
 
                      declare

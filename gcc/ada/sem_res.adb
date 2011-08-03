@@ -9873,29 +9873,49 @@ package body Sem_Res is
          Set_String_Literal_Low_Bound (Subtype_Id, Low_Bound);
 
       else
-         Set_String_Literal_Low_Bound
-           (Subtype_Id, Make_Integer_Literal (Loc, 1));
-         Set_Etype (String_Literal_Low_Bound (Subtype_Id), Standard_Positive);
-
-         --  Build bona fide subtype for the string, and wrap it in an
-         --  unchecked conversion, because the backend expects the
-         --  String_Literal_Subtype to have a static lower bound.
+         --  If the lower bound is not static we create a range for the string
+         --  literal, using the index type and the known length of the literal.
+         --  The index type is not necessarily Positive, so the upper bound is
+         --  computed as  T'Val (T'Pos (Low_Bound) + L - 1)
 
          declare
             Index_List    : constant List_Id    := New_List;
             Index_Type    : constant Entity_Id := Etype (First_Index (Typ));
             High_Bound    : constant Node_Id :=
-                               Make_Op_Add (Loc,
-                                  Left_Opnd => New_Copy_Tree (Low_Bound),
-                                  Right_Opnd =>
-                                    Make_Integer_Literal (Loc,
-                                      String_Length (Strval (N)) - 1));
+              Make_Attribute_Reference (Loc,
+                Attribute_Name => Name_Val,
+                Prefix => New_Occurrence_Of (Index_Type, Loc),
+                Expressions =>
+                New_List (
+                  Make_Op_Add (Loc,
+                    Left_Opnd =>
+                      Make_Attribute_Reference (Loc,
+                        Attribute_Name => Name_Pos,
+                        Prefix => New_Occurrence_Of (Index_Type, Loc),
+                        Expressions => New_List (New_Copy_Tree (Low_Bound))),
+                      Right_Opnd =>
+                            Make_Integer_Literal (Loc,
+                              String_Length (Strval (N)) - 1))));
+
             Array_Subtype : Entity_Id;
             Index_Subtype : Entity_Id;
             Drange        : Node_Id;
             Index         : Node_Id;
 
          begin
+            Set_String_Literal_Low_Bound
+              (Subtype_Id,
+               Make_Attribute_Reference (Loc,
+                 Attribute_Name => Name_First,
+                 Prefix         =>
+                   New_Occurrence_Of (Base_Type (Index_Type), Loc)));
+            Set_Etype (String_Literal_Low_Bound (Subtype_Id), Index_Type);
+            Analyze_And_Resolve (String_Literal_Low_Bound (Subtype_Id));
+
+            --  Build bona fide subtype for the string, and wrap it in an
+            --  unchecked conversion, because the backend expects the
+            --  String_Literal_Subtype to have a static lower bound.
+
             Index_Subtype :=
               Create_Itype (Subtype_Kind (Ekind (Index_Type)), N);
             Drange := Make_Range (Loc, New_Copy_Tree (Low_Bound), High_Bound);

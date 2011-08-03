@@ -3764,7 +3764,10 @@ package body Exp_Disp is
       DT_Aggr : constant Elist_Id := New_Elmt_List;
       --  Entities marked with attribute Is_Dispatch_Table_Entity
 
-      procedure Check_Premature_Freezing (Subp : Entity_Id; Typ : Entity_Id);
+      procedure Check_Premature_Freezing
+        (Subp        : Entity_Id;
+         Tagged_Type : Entity_Id;
+         Typ         : Entity_Id);
       --  Verify that all non-tagged types in the profile of a subprogram
       --  are frozen at the point the subprogram is frozen. This enforces
       --  the rule on RM 13.14 (14) as modified by AI05-019. At the point a
@@ -3775,6 +3778,8 @@ package body Exp_Disp is
       --  Typical violation of the rule involves an object declaration that
       --  freezes a tagged type, when one of its primitive operations has a
       --  type in its profile whose full view has not been analyzed yet.
+      --  More complex cases involve composite types that have one private
+      --  unfrozen subcomponent.
 
       procedure Export_DT (Typ : Entity_Id; DT : Entity_Id; Index : Nat := 0);
       --  Export the dispatch table DT of tagged type Typ. Required to generate
@@ -3814,10 +3819,15 @@ package body Exp_Disp is
       -- Check_Premature_Freezing --
       ------------------------------
 
-      procedure Check_Premature_Freezing (Subp : Entity_Id; Typ : Entity_Id) is
+      procedure Check_Premature_Freezing
+        (Subp        : Entity_Id;
+         Tagged_Type : Entity_Id;
+         Typ         : Entity_Id)
+      is
+         Comp : Entity_Id;
       begin
          if Present (N)
-           and then  Is_Private_Type (Typ)
+           and then Is_Private_Type (Typ)
            and then No (Full_View (Typ))
            and then not Is_Generic_Type (Typ)
            and then not Is_Tagged_Type (Typ)
@@ -3828,8 +3838,26 @@ package body Exp_Disp is
               ("declaration must appear after completion of type &", N, Typ);
             Error_Msg_NE
               ("\which is an untagged type in the profile of"
-               & " primitive operation & declared#",
-               N, Subp);
+               & " primitive operation & declared#", N, Subp);
+
+         else
+            Comp := Private_Component (Typ);
+
+            if not Is_Tagged_Type (Typ)
+              and then Present (Comp)
+              and then not Is_Frozen (Comp)
+            then
+               Error_Msg_Sloc := Sloc (Subp);
+               Error_Msg_Node_2 := Subp;
+               Error_Msg_Name_1 := Chars (Tagged_Type);
+               Error_Msg_NE
+                 ("declaration must appear after completion of type &",
+                   N, Comp);
+               Error_Msg_NE
+                 ("\which is a component of untagged type& in the profile of"
+               & " primitive & of type % that is frozen by the declaration ",
+                   N, Typ);
+            end if;
          end if;
       end Check_Premature_Freezing;
 
@@ -4587,11 +4615,11 @@ package body Exp_Disp is
                begin
                   F := First_Formal (Prim);
                   while Present (F) loop
-                     Check_Premature_Freezing (Prim, Etype (F));
+                     Check_Premature_Freezing (Prim, Typ, Etype (F));
                      Next_Formal (F);
                   end loop;
 
-                  Check_Premature_Freezing (Prim, Etype (Prim));
+                  Check_Premature_Freezing (Prim, Typ, Etype (Prim));
                end;
 
                if Present (Frnodes) then
