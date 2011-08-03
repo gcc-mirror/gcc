@@ -1,3 +1,10 @@
+2011-08-02  Roberto Lublinerman  <rluble@gmail.com>
+
+	* Make-lang.in (GO_OBJS): Add go/ast-dump.o.
+	(go/ast-dump.o): New target.
+	(go/expressions.o): Depend on go/gofrontend/ast-dump.h.
+	(go/statements.o): Likewise.
+
 2011-07-06  Richard Guenther  <rguenther@suse.de>
 
 	* go-lang.c (go_langhook_init):
