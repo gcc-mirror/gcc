@@ -72,6 +72,9 @@ package body System.Task_Primitives.Operations is
    --  a time; it is used to execute in mutual exclusion from all other tasks.
    --  Used mainly in Single_Lock mode, but also to protect All_Tasks_List
 
+   ATCB_Key : aliased pthread_key_t;
+   --  Key used to find the Ada Task_Id associated with a thread
+
    Environment_Task_Id : Task_Id;
    --  A variable to hold Task_Id for the environment task
 

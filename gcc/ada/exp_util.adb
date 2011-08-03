@@ -1371,8 +1371,11 @@ package body Exp_Util is
 
       --  If the type is class-wide, the expression is dynamically tagged and
       --  we do not create an actual subtype either. Ditto for an interface.
+      --  For now this applies only if the type is immutably limited, and the
+      --  function being called is build-in-place. This will have to be revised
+      --  when build-in-place functions are generalized to other types.
 
-      elsif Is_Limited_Type (Exp_Typ)
+      elsif Is_Immutably_Limited_Type (Exp_Typ)
         and then
          (Is_Class_Wide_Type (Exp_Typ)
            or else Is_Interface (Exp_Typ)

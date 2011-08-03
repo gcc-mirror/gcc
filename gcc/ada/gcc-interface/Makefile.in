@@ -1520,7 +1520,7 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
     s-taprop.adb<s-taprop-vms.adb \
     s-tasdeb.adb<s-tasdeb-vms.adb \
     s-taspri.ads<s-taspri-vms.ads \
-    s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+    s-tpopsp.adb<s-tpopsp-vms.adb \
     s-tpopde.adb<s-tpopde-vms.adb \
     s-tpopde.ads<s-tpopde-vms.ads
 

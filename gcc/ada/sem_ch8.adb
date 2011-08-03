@@ -5461,7 +5461,7 @@ package body Sem_Ch8 is
          return Old_S;
       end Report_Overload;
 
-   --  Start of processing for Find_Renamed_Entry
+   --  Start of processing for Find_Renamed_Entity
 
    begin
       Old_S := Any_Id;
