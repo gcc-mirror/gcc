@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3560,6 +3560,18 @@ package body Exp_Util is
          return False;
       end if;
    end Is_Volatile_Reference;
+
+   --------------------------
+   -- Is_VM_By_Copy_Actual --
+   --------------------------
+
+   function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean is
+   begin
+      return VM_Target /= No_VM
+        and then Nkind (N) = N_Identifier
+        and then Present (Renamed_Object (Entity (N)))
+        and then Nkind (Renamed_Object (Entity (N))) = N_Slice;
+   end Is_VM_By_Copy_Actual;
 
    --------------------
    -- Kill_Dead_Code --

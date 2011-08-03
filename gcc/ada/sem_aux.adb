@@ -36,7 +36,6 @@ with Namet;  use Namet;
 with Sinfo;  use Sinfo;
 with Snames; use Snames;
 with Stand;  use Stand;
-with Targparm; use Targparm;
 
 package body Sem_Aux is
 
@@ -784,18 +783,6 @@ package body Sem_Aux is
          return False;
       end if;
    end Is_Limited_Type;
-
-   --------------------------
-   -- Is_VM_By_Copy_Actual --
-   --------------------------
-
-   function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean is
-   begin
-      return VM_Target /= No_VM
-        and then Nkind (N) = N_Identifier
-        and then Present (Renamed_Object (Entity (N)))
-        and then Nkind (Renamed_Object (Entity (N))) = N_Slice;
-   end Is_VM_By_Copy_Actual;
 
    ----------------------
    -- Nearest_Ancestor --

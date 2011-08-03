@@ -3639,11 +3639,9 @@ package body Sem_Ch8 is
         (Op : Entity_Id;
          F  : Entity_Id) return Boolean
       is
-         T : constant Entity_Id := Etype (F);
+         T : constant Entity_Id := Base_Type (Etype (F));
       begin
-         return (In_Use (T)
-                  or else Present (Current_Use_Clause (Base_Type (T))))
-           and then Scope (T) = Scope (Op);
+         return In_Use (T) and then Scope (T) = Scope (Op);
       end Is_Primitive_Operator_In_Use;
 
    --  Start of processing for End_Use_Package

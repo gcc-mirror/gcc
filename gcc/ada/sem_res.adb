@@ -8378,7 +8378,10 @@ package body Sem_Res is
                T := It.Typ;
             end if;
 
-            if Is_Record_Type (T) then
+            --  Locate selected component. For a private prefix the selector
+            --  can denote a discriminant.
+
+            if Is_Record_Type (T) or else Is_Private_Type (T) then
 
                --  The visible components of a class-wide type are those of
                --  the root type.

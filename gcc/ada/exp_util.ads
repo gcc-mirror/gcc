@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -536,6 +536,10 @@ package Exp_Util is
    --  indexed/selected component where the prefix is treated as volatile,
    --  or has Volatile_Components set. A slice of a volatile variable is
    --  also volatile.
+
+   function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean;
+   --  Returns True if we are compiling on VM targets and N is a node that
+   --  requires to be passed by copy in these targets.
 
    procedure Kill_Dead_Code (N : Node_Id; Warn : Boolean := False);
    --  N represents a node for a section of code that is known to be dead. Any
