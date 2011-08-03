@@ -1520,10 +1520,22 @@ package body Sem_Ch4 is
          return;
       end if;
 
-      Mark_Non_ALFA_Subprogram;
       Check_SPARK_Restriction ("conditional expression is not allowed", N);
 
       Else_Expr := Next (Then_Expr);
+
+      --  In ALFA, conditional expressions are allowed:
+      --    * if they have no ELSE part, in which case the expression is
+      --      equivalent to
+      --        NOT Condition OR ELSE Then_Expr
+      --    * in pre- and postconditions, where the Condition cannot have side-
+      --      effects (in ALFA) and thus the expression is equivalent to
+      --        (Condition AND THEN Then_Expr)
+      --          and (NOT Condition AND THEN Then_Expr)
+
+      if Present (Else_Expr) and then not In_Pre_Post_Expression then
+         Mark_Non_ALFA_Subprogram;
+      end if;
 
       if Comes_From_Source (N) then
          Check_Compiler_Unit (N);
@@ -2483,8 +2495,6 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Membership_Op
 
    begin
-      Mark_Non_ALFA_Subprogram;
-
       Analyze_Expression (L);
 
       if No (R)
@@ -4375,8 +4385,6 @@ package body Sem_Ch4 is
       T    : Entity_Id;
 
    begin
-      Mark_Non_ALFA_Subprogram;
-
       --  If Conversion_OK is set, then the Etype is already set, and the
       --  only processing required is to analyze the expression. This is
       --  used to construct certain "illegal" conversions which are not
@@ -4397,6 +4405,13 @@ package body Sem_Ch4 is
       Check_Fully_Declared (T, N);
       Analyze_Expression (Expr);
       Validate_Remote_Type_Type_Conversion (N);
+
+      --  Type conversion between scalar types are allowed in ALFA. All other
+      --  type conversions are not allowed.
+
+      if not (Is_Scalar_Type (Etype (Expr)) and then Is_Scalar_Type (T)) then
+         Mark_Non_ALFA_Subprogram;
+      end if;
 
       --  Only remaining step is validity checks on the argument. These
       --  are skipped if the conversion does not come from the source.

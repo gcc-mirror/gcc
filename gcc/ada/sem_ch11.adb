@@ -602,7 +602,6 @@ package body Sem_Ch11 is
    --  Start of processing for Analyze_Raise_xxx_Error
 
    begin
-      Mark_Non_ALFA_Subprogram;
       Check_SPARK_Restriction ("raise statement is not allowed", N);
 
       if No (Etype (N)) then
