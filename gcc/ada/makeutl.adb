@@ -652,6 +652,92 @@ package body Makeutl is
       return False;
    end File_Not_A_Source_Of;
 
+   ------------------
+   -- Get_Switches --
+   ------------------
+
+   procedure Get_Switches
+     (Source       : Prj.Source_Id;
+      Pkg_Name     : Name_Id;
+      Project_Tree : Project_Tree_Ref;
+      Value        : out Variable_Value;
+      Is_Default   : out Boolean)
+   is
+   begin
+      Get_Switches
+        (Source_File  => Source.File,
+         Source_Lang  => Source.Language.Name,
+         Source_Prj   => Source.Project,
+         Pkg_Name     => Pkg_Name,
+         Project_Tree => Project_Tree,
+         Value        => Value,
+         Is_Default   => Is_Default);
+   end Get_Switches;
+
+   ------------------
+   -- Get_Switches --
+   ------------------
+
+   procedure Get_Switches
+     (Source_File  : File_Name_Type;
+      Source_Lang  : Name_Id;
+      Source_Prj   : Project_Id;
+      Pkg_Name     : Name_Id;
+      Project_Tree : Project_Tree_Ref;
+      Value        : out Variable_Value;
+      Is_Default   : out Boolean)
+   is
+      Project       : constant Project_Id :=
+        Ultimate_Extending_Project_Of (Source_Prj);
+      Pkg : constant Package_Id :=
+        Prj.Util.Value_Of
+          (Name        => Pkg_Name,
+           In_Packages => Project.Decl.Packages,
+           In_Tree     => Project_Tree);
+   begin
+      Is_Default := False;
+
+      if Source_File /= No_File then
+         Value := Prj.Util.Value_Of
+           (Name                    => Name_Id (Source_File),
+            Attribute_Or_Array_Name => Name_Switches,
+            In_Package              => Pkg,
+            In_Tree                 => Project_Tree,
+            Allow_Wildcards         => True);
+      end if;
+
+      if Value = Nil_Variable_Value then
+         Is_Default := True;
+         Is_Default := True;
+         Value :=
+           Prj.Util.Value_Of
+             (Name                    => Source_Lang,
+              Attribute_Or_Array_Name => Name_Switches,
+              In_Package              => Pkg,
+              In_Tree                 => Project_Tree,
+              Force_Lower_Case_Index  => True);
+      end if;
+
+      if Value = Nil_Variable_Value then
+         Value :=
+           Prj.Util.Value_Of
+             (Name                    => All_Other_Names,
+              Attribute_Or_Array_Name => Name_Switches,
+              In_Package              => Pkg,
+              In_Tree                 => Project_Tree,
+              Force_Lower_Case_Index  => True);
+      end if;
+
+      if Value = Nil_Variable_Value then
+         Value :=
+           Prj.Util.Value_Of
+             (Name                    => Source_Lang,
+              Attribute_Or_Array_Name => Name_Default_Switches,
+              In_Package              => Pkg,
+              In_Tree                 => Project_Tree);
+      end if;
+   end Get_Switches;
+
    ----------
    -- Hash --
    ----------
