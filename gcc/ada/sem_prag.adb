@@ -4723,8 +4723,17 @@ package body Sem_Prag is
                 Strval => End_String);
          end if;
 
-         Set_Encoded_Interface_Name
-           (Get_Base_Subprogram (Subprogram_Def), Link_Nam);
+         --  Set the interface name. If the entity is a generic instance, use
+         --  its alias, which is the callable entity.
+
+         if Is_Generic_Instance (Subprogram_Def) then
+            Set_Encoded_Interface_Name
+              (Alias (Get_Base_Subprogram (Subprogram_Def)), Link_Nam);
+
+         else
+            Set_Encoded_Interface_Name
+              (Get_Base_Subprogram (Subprogram_Def), Link_Nam);
+         end if;
 
          --  We allow duplicated export names in CIL, as they are always
          --  enclosed in a namespace that differentiates them, and overloaded
@@ -13890,9 +13899,8 @@ package body Sem_Prag is
       Result := Def_Id;
       while Is_Subprogram (Result)
         and then
-          (Is_Generic_Instance (Result)
-            or else Nkind (Parent (Declaration_Node (Result))) =
-                                         N_Subprogram_Renaming_Declaration)
+          Nkind (Parent (Declaration_Node (Result))) =
+                                         N_Subprogram_Renaming_Declaration
         and then Present (Alias (Result))
       loop
          Result := Alias (Result);

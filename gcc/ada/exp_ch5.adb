@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1934,24 +1934,19 @@ package body Exp_Ch5 is
 
                --  If the type is tagged, we may as well use the predefined
                --  primitive assignment. This avoids inlining a lot of code
-               --  and in the class-wide case, the assignment is replaced by
-               --  dispatch call to _assign. Note that this cannot be done when
-               --  discriminant checks are locally suppressed (as in extension
-               --  aggregate expansions) because otherwise the discriminant
-               --  check will be performed within the _assign call. It is also
-               --  suppressed for assignments created by the expander that
-               --  correspond to initializations, where we do want to copy the
-               --  tag (No_Ctrl_Actions flag set True) by the expander and we
-               --  do not need to mess with tags ever (Expand_Ctrl_Actions flag
-               --  is set True in this case). Finally, it is suppressed if the
-               --  restriction No_Dispatching_Calls is in force because in that
-               --  case predefined primitives are not generated.
+               --  and in the class-wide case, the assignment is replaced by a
+               --  dispatching call to _assign. It is suppressed in the case of
+               --  assignments created by the expander that correspond to
+               --  initializations, where we do want to copy the tag
+               --  (Expand_Ctrl_Actions flag is set True in this case).
+               --  It is also suppressed if restriction No_Dispatching_Calls is
+               --  in force because in that case predefined primitives are not
+               --  generated.
 
                or else (Is_Tagged_Type (Typ)
                          and then not Is_Value_Type (Etype (Lhs))
                          and then Chars (Current_Scope) /= Name_uAssign
                          and then Expand_Ctrl_Actions
-                         and then not Discriminant_Checks_Suppressed (Empty)
                          and then
                            not Restriction_Active (No_Dispatching_Calls))
             then

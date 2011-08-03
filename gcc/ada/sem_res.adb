@@ -9881,21 +9881,24 @@ package body Sem_Res is
          declare
             Index_List    : constant List_Id    := New_List;
             Index_Type    : constant Entity_Id := Etype (First_Index (Typ));
-            High_Bound    : constant Node_Id :=
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Val,
-                Prefix => New_Occurrence_Of (Index_Type, Loc),
-                Expressions =>
-                New_List (
-                  Make_Op_Add (Loc,
-                    Left_Opnd =>
-                      Make_Attribute_Reference (Loc,
-                        Attribute_Name => Name_Pos,
-                        Prefix => New_Occurrence_Of (Index_Type, Loc),
-                        Expressions => New_List (New_Copy_Tree (Low_Bound))),
-                      Right_Opnd =>
-                            Make_Integer_Literal (Loc,
-                              String_Length (Strval (N)) - 1))));
+
+            High_Bound : constant Node_Id :=
+                           Make_Attribute_Reference (Loc,
+                             Attribute_Name => Name_Val,
+                             Prefix         =>
+                               New_Occurrence_Of (Index_Type, Loc),
+                             Expressions    => New_List (
+                               Make_Op_Add (Loc,
+                                 Left_Opnd  =>
+                                   Make_Attribute_Reference (Loc,
+                                     Attribute_Name => Name_Pos,
+                                     Prefix         =>
+                                       New_Occurrence_Of (Index_Type, Loc),
+                                     Expressions    =>
+                                       New_List (New_Copy_Tree (Low_Bound))),
+                                 Right_Opnd =>
+                                   Make_Integer_Literal (Loc,
+                                     String_Length (Strval (N)) - 1))));
 
             Array_Subtype : Entity_Id;
             Index_Subtype : Entity_Id;

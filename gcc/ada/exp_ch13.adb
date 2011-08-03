@@ -311,7 +311,8 @@ package body Exp_Ch13 is
          In_Other_Scope := False;
          In_Outer_Scope := E_Scope /= Current_Scope;
 
-      --  Otherwise it is a local package or a different compilation unit.
+      --  Otherwise it is a local package or a different compilation unit
+
       else
          In_Other_Scope := True;
          In_Outer_Scope := False;

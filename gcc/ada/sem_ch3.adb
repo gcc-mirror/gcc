@@ -3402,16 +3402,16 @@ package body Sem_Ch3 is
 
          Remove_Side_Effects (E);
 
+      --  If this is a constant declaration of an unconstrained type and
+      --  the initialization is an aggregate, we can use the subtype of the
+      --  aggregate for the declared entity because it is immutable.
+
       elsif not Is_Constrained (T)
         and then Has_Discriminants (T)
         and then Constant_Present (N)
         and then not Has_Unchecked_Union (T)
         and then Nkind (E) = N_Aggregate
       then
-         --  If this is a constant declaration of an unconstrained type and
-         --  the initialization is an aggregate, we can use the subtype of the
-         --  aggregate for the declared entity because it is immutable.
-
          Act_T := Etype (E);
       end if;
 
@@ -3419,9 +3419,9 @@ package body Sem_Ch3 is
 
       Check_Wide_Character_Restriction (T, Object_Definition (N));
 
-      --  Indicate this is not set in source. Certainly true for constants,
-      --  and true for variables so far (will be reset for a variable if and
-      --  when we encounter a modification in the source).
+      --  Indicate this is not set in source. Certainly true for constants, and
+      --  true for variables so far (will be reset for a variable if and when
+      --  we encounter a modification in the source).
 
       Set_Never_Set_In_Source (Id, True);
 
@@ -3435,9 +3435,9 @@ package body Sem_Ch3 is
          Set_Ekind (Id, E_Variable);
 
          --  A variable is set as shared passive if it appears in a shared
-         --  passive package, and is at the outer level. This is not done
-         --  for entities generated during expansion, because those are
-         --  always manipulated locally.
+         --  passive package, and is at the outer level. This is not done for
+         --  entities generated during expansion, because those are always
+         --  manipulated locally.
 
          if Is_Shared_Passive (Current_Scope)
            and then Is_Library_Level_Entity (Id)
