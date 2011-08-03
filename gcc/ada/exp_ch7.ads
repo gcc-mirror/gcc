@@ -93,6 +93,24 @@ package Exp_Ch7 is
    --  adjusted. Typ is the expected type of Obj_Ref. Flag For_Parent must be
    --  set when an adjustment call is being created for field _parent.
 
+   function Make_Attach_Call
+     (Obj_Ref : Node_Id;
+      Ptr_Typ : Entity_Id) return Node_Id;
+   --  Create a call to prepend an object to a finalization collection. Obj_Ref
+   --  is the object, Ptr_Typ is the access type that owns the collection.
+   --  Generate the following:
+
+   --    Ada.Finalization.Heap_Managment.Attach
+   --      (<Ptr_Typ>FC,
+   --       System.Finalization_Root.Root_Controlled_Ptr (Obj_Ref));
+
+   function Make_Detach_Call (Obj_Ref : Node_Id) return Node_Id;
+   --  Create a call to unhook an object from an arbitrary list. Obj_Ref is the
+   --  object. Generate the following:
+
+   --    Ada.Finalization.Heap_Management.Detach
+   --      (System.Finalization_Root.Root_Controlled_Ptr (Obj_Ref));
+
    function Make_Final_Call
      (Obj_Ref    : Node_Id;
       Typ        : Entity_Id;

@@ -517,8 +517,10 @@ package Rtsfind is
 
      RE_Add_Offset_To_Address,           -- Ada.Finalization.Heap_Management
      RE_Allocate,                        -- Ada.Finalization.Heap_Management
+     RE_Attach,                          -- Ada.Finalization.Heap_Management
      RE_Base_Pool,                       -- Ada.Finalization.Heap_Management
      RE_Deallocate,                      -- Ada.Finalization.Heap_Management
+     RE_Detach,                          -- Ada.Finalization.Heap_Management
      RE_Finalization_Collection,         -- Ada.Finalization.Heap_Management
      RE_Finalization_Collection_Ptr,     -- Ada.Finalization.Heap_Management
      RE_Set_Finalize_Address_Ptr,        -- Ada.Finalization.Heap_Management
@@ -796,8 +798,7 @@ package Rtsfind is
      RE_Fat_VAX_G,                       -- System.Fat_VAX_G_Float
 
      RE_Root_Controlled,                 -- System.Finalization_Root
-     RE_Finalizable,                     -- System.Finalization_Root
-     RE_Finalizable_Ptr,                 -- System.Finalization_Root
+     RE_Root_Controlled_Ptr,             -- System.Finalization_Root
 
      RE_Fore,                            -- System.Fore
 
@@ -1694,8 +1695,10 @@ package Rtsfind is
 
      RE_Add_Offset_To_Address            => Ada_Finalization_Heap_Management,
      RE_Allocate                         => Ada_Finalization_Heap_Management,
+     RE_Attach                           => Ada_Finalization_Heap_Management,
      RE_Base_Pool                        => Ada_Finalization_Heap_Management,
      RE_Deallocate                       => Ada_Finalization_Heap_Management,
+     RE_Detach                           => Ada_Finalization_Heap_Management,
      RE_Finalization_Collection          => Ada_Finalization_Heap_Management,
      RE_Finalization_Collection_Ptr      => Ada_Finalization_Heap_Management,
      RE_Set_Finalize_Address_Ptr         => Ada_Finalization_Heap_Management,
@@ -1973,8 +1976,7 @@ package Rtsfind is
      RE_Fat_VAX_G                        => System_Fat_VAX_G_Float,
 
      RE_Root_Controlled                  => System_Finalization_Root,
-     RE_Finalizable                      => System_Finalization_Root,
-     RE_Finalizable_Ptr                  => System_Finalization_Root,
+     RE_Root_Controlled_Ptr              => System_Finalization_Root,
 
      RE_Fore                             => System_Fore,
 
