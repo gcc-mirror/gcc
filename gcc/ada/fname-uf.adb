@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -469,10 +469,15 @@ package body Fname.UF is
                      --  the default GNAT naming scheme. The file does
                      --  not exist, but there is no point doing the
                      --  second search, because we will end up with the
-                     --  same file name. Just return the file name.
+                     --  same file name. Just return the file name, or No_File
+                     --  if May_Fail is True.
 
                      elsif SFN_Patterns.Last = 2 then
-                        return Fnam;
+                        if May_Fail then
+                           return No_File;
+                        else
+                           return Fnam;
+                        end if;
 
                      --  The file does not exist, but there may be other
                      --  naming scheme. Keep on searching.

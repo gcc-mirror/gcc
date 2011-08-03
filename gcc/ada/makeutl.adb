@@ -23,6 +23,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Command_Line;          use Ada.Command_Line;
+
+with GNAT.Case_Util;            use GNAT.Case_Util;
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+with GNAT.HTable;
+
 with ALI;      use ALI;
 with Debug;
 with Fname;
@@ -35,12 +41,6 @@ with Prj.Util;
 with Snames;   use Snames;
 with Table;
 with Tempdir;
-
-with Ada.Command_Line;  use Ada.Command_Line;
-
-with GNAT.Case_Util;            use GNAT.Case_Util;
-with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.HTable;
 
 package body Makeutl is
 
@@ -687,13 +687,13 @@ package body Makeutl is
       Value        : out Variable_Value;
       Is_Default   : out Boolean)
    is
-      Project       : constant Project_Id :=
-        Ultimate_Extending_Project_Of (Source_Prj);
-      Pkg : constant Package_Id :=
-        Prj.Util.Value_Of
-          (Name        => Pkg_Name,
-           In_Packages => Project.Decl.Packages,
-           In_Tree     => Project_Tree);
+      Project : constant Project_Id :=
+                  Ultimate_Extending_Project_Of (Source_Prj);
+      Pkg     : constant Package_Id :=
+                  Prj.Util.Value_Of
+                    (Name        => Pkg_Name,
+                     In_Packages => Project.Decl.Packages,
+                     In_Tree     => Project_Tree);
    begin
       Is_Default := False;
 

@@ -1,3 +1,25 @@
+2011-08-03  Pascal Obry  <obry@adacore.com>
+
+	* makeutl.adb: Minor reformatting.
+
+2011-08-03  Vincent Celier  <celier@adacore.com>
+
+	* fname-uf.adb
+	(Get_File_Name) If the file cannot be found when there are no config
+	pragmas file and May_Fail is True, return No_File instead of the file
+	name, to be consistent.
+
+2011-08-03  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_is_executable_file_attr): Avoid access
+	to null pointer.
+
+2011-08-03  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb
+	(Same_Representation): In VM targets the representation of arrays with
+	aliased components differs from arrays with non-aliased components.
+
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-proc.adb, prj-attr.adb, prj-attr.ads (Get_Attribute_Index): do
