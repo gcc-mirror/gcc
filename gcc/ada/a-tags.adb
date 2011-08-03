@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -529,19 +529,6 @@ package body Ada.Tags is
       end if;
    end Get_Offset_Index;
 
-   -------------------
-   -- Get_RC_Offset --
-   -------------------
-
-   function Get_RC_Offset (T : Tag) return SSE.Storage_Offset is
-      TSD_Ptr : constant Addr_Ptr :=
-                  To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
-      TSD     : constant Type_Specific_Data_Ptr :=
-                  To_Type_Specific_Data_Ptr (TSD_Ptr.all);
-   begin
-      return TSD.RC_Offset;
-   end Get_RC_Offset;
-
    ---------------------
    -- Get_Tagged_Kind --
    ---------------------
@@ -768,6 +755,19 @@ package body Ada.Tags is
          return Curr_DT.Offset_To_Top;
       end if;
    end Offset_To_Top;
+
+   ------------------------
+   -- Needs_Finalization --
+   ------------------------
+
+   function Needs_Finalization (T : Tag) return Boolean is
+      TSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+      TSD     : constant Type_Specific_Data_Ptr :=
+                  To_Type_Specific_Data_Ptr (TSD_Ptr.all);
+   begin
+      return TSD.Needs_Finalization;
+   end Needs_Finalization;
 
    -----------------
    -- Parent_Size --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -893,17 +893,17 @@ package body Sem_Disp is
            and then Is_Dispatching_Operation (Old_Subp)
          then
             pragma Assert
-             ((Ekind (Subp) = E_Function
-                and then Is_Dispatching_Operation (Old_Subp)
-                and then Is_Null_Extension (Base_Type (Etype (Subp))))
-               or else
-                (Ekind (Subp) = E_Procedure
+              ((Ekind (Subp) = E_Function
+                  and then Is_Dispatching_Operation (Old_Subp)
+                  and then Is_Null_Extension (Base_Type (Etype (Subp))))
+              or else
+               (Ekind (Subp) = E_Procedure
                   and then Is_Dispatching_Operation (Old_Subp)
                   and then Present (Alias (Old_Subp))
                   and then Is_Null_Interface_Primitive
                              (Ultimate_Alias (Old_Subp)))
-               or else Get_TSS_Name (Subp) = TSS_Stream_Read
-               or else Get_TSS_Name (Subp) = TSS_Stream_Write);
+              or else Get_TSS_Name (Subp) = TSS_Stream_Read
+              or else Get_TSS_Name (Subp) = TSS_Stream_Write);
 
             Check_Controlling_Formals (Tagged_Type, Subp);
             Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);
@@ -1283,7 +1283,9 @@ package body Sem_Disp is
             or else
           Chars (Subp) = Name_Adjust
             or else
-          Chars (Subp) = Name_Finalize)
+          Chars (Subp) = Name_Finalize
+            or else
+          Chars (Subp) = Name_Finalize_Address)
       then
          declare
             F_Node   : constant Node_Id := Freeze_Node (Tagged_Type);
@@ -1292,15 +1294,17 @@ package body Sem_Disp is
             Old_Bod  : Node_Id;
             Old_Spec : Entity_Id;
 
-            C_Names : constant array (1 .. 3) of Name_Id :=
+            C_Names : constant array (1 .. 4) of Name_Id :=
                         (Name_Initialize,
                          Name_Adjust,
-                         Name_Finalize);
+                         Name_Finalize,
+                         Name_Finalize_Address);
 
-            D_Names : constant array (1 .. 3) of TSS_Name_Type :=
+            D_Names : constant array (1 .. 4) of TSS_Name_Type :=
                         (TSS_Deep_Initialize,
                          TSS_Deep_Adjust,
-                         TSS_Deep_Finalize);
+                         TSS_Deep_Finalize,
+                         TSS_Finalize_Address);
 
          begin
             --  Remove previous controlled function which was constructed and

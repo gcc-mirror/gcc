@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -658,11 +658,9 @@ package body Sem_Elab is
          if Body_Acts_As_Spec then
             if Is_TSS (Ent, TSS_Deep_Initialize) then
                declare
-                  Typ  : Entity_Id;
+                  Typ  : constant Entity_Id := Etype (First_Formal (Ent));
                   Init : Entity_Id;
                begin
-                  Typ  := Etype (Next_Formal (First_Formal (Ent)));
-
                   if not Is_Controlled (Typ) then
                      return;
                   else

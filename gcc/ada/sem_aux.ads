@@ -106,7 +106,7 @@ package Sem_Aux is
 
    function Enclosing_Dynamic_Scope (Ent : Entity_Id) return Entity_Id;
    --  For any entity, Ent, returns the closest dynamic scope in which the
-   --  entity is declared or Standard_Standard for library-level entities
+   --  entity is declared or Standard_Standard for library-level entities.
 
    function First_Discriminant (Typ : Entity_Id) return Entity_Id;
    --  Typ is a type with discriminants. The discriminants are the first

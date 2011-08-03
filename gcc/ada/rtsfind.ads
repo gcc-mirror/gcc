@@ -112,7 +112,7 @@ package Rtsfind is
       --  package see declarations in the runtime entity table below.
 
       RTU_Null,
-      --  Used as a null entry. Will cause an error if referenced
+      --  Used as a null entry. Will cause an error if referenced.
 
       --  Children of Ada
 
@@ -138,7 +138,7 @@ package Rtsfind is
 
       --  Children of Ada.Finalization
 
-      Ada_Finalization_List_Controller,
+      Ada_Finalization_Heap_Management,
 
       --  Children of Ada.Interrupts
 
@@ -245,7 +245,6 @@ package Rtsfind is
       System_Fat_VAX_D_Float,
       System_Fat_VAX_F_Float,
       System_Fat_VAX_G_Float,
-      System_Finalization_Implementation,
       System_Finalization_Root,
       System_Fore,
       System_Img_Bool,
@@ -400,7 +399,7 @@ package Rtsfind is
    --  Range of values for children of Ada.Dispatching
 
    subtype Ada_Finalization_Child is Ada_Child range
-     Ada_Finalization_List_Controller .. Ada_Finalization_List_Controller;
+     Ada_Finalization_Heap_Management .. Ada_Finalization_Heap_Management;
    --  Range of values for children of Ada.Finalization
 
    subtype Ada_Interrupts_Child is Ada_Child range
@@ -500,6 +499,7 @@ package Rtsfind is
      RE_Code_Loc,                        -- Ada.Exceptions
      RE_Current_Target_Exception,        -- Ada.Exceptions (JGNAT use only)
      RE_Exception_Id,                    -- Ada.Exceptions
+     RE_Exception_Identity,              -- Ada.Exceptions
      RE_Exception_Information,           -- Ada.Exceptions
      RE_Exception_Message,               -- Ada.Exceptions
      RE_Exception_Name_Simple,           -- Ada.Exceptions
@@ -515,8 +515,14 @@ package Rtsfind is
      RE_Reraise_Occurrence_No_Defer,     -- Ada.Exceptions
      RE_Save_Occurrence,                 -- Ada.Exceptions
 
-     RE_Simple_List_Controller,          -- Ada.Finalization.List_Controller
-     RE_List_Controller,                 -- Ada.Finalization.List_Controller
+     RE_Add_Offset_To_Address,           -- Ada.Finalization.Heap_Management
+     RE_Allocate,                        -- Ada.Finalization.Heap_Management
+     RE_Base_Pool,                       -- Ada.Finalization.Heap_Management
+     RE_Deallocate,                      -- Ada.Finalization.Heap_Management
+     RE_Finalization_Collection,         -- Ada.Finalization.Heap_Management
+     RE_Finalization_Collection_Ptr,     -- Ada.Finalization.Heap_Management
+     RE_Set_Finalize_Address_Ptr,        -- Ada.Finalization.Heap_Management
+     RE_Set_Storage_Pool_Ptr,            -- Ada.Finalization.Heap_Management
 
      RE_Interrupt_ID,                    -- Ada.Interrupts
      RE_Is_Reserved,                     -- Ada.Interrupts
@@ -576,6 +582,7 @@ package Rtsfind is
      RE_Interface_Tag,                   -- Ada.Tags
      RE_IW_Membership,                   -- Ada.Tags
      RE_Max_Predef_Prims,                -- Ada.Tags
+     RE_Needs_Finalization,              -- Ada.Tags
      RE_No_Dispatch_Table_Wrapper,       -- Ada.Tags
      RE_NDT_Prims_Ptr,                   -- Ada.Tags
      RE_NDT_TSD,                         -- Ada.Tags
@@ -787,16 +794,6 @@ package Rtsfind is
 
      RE_Attr_VAX_G_Float,                -- System.Fat_VAX_G_Float
      RE_Fat_VAX_G,                       -- System.Fat_VAX_G_Float
-
-     RE_Attach_To_Final_List,            -- System.Finalization_Implementation
-     RE_Finalizable_Ptr_Ptr,             -- System.Finalization_Implementation
-     RE_Move_Final_List,                 -- System.Finalization_Implementation
-     RE_Finalize_List,                   -- System.Finalization_Implementation
-     RE_Finalize_One,                    -- System.Finalization_Implementation
-     RE_Global_Final_List,               -- System.Finalization_Implementation
-     RE_Record_Controller,               -- System.Finalization_Implementation
-     RE_Limited_Record_Controller,       -- System.Finalization_Implementation
-     RE_Deep_Tag_Attach,                 -- System.Finalization_Implementation
 
      RE_Root_Controlled,                 -- System.Finalization_Root
      RE_Finalizable,                     -- System.Finalization_Root
@@ -1314,8 +1311,9 @@ package Rtsfind is
      RE_Exception_Data_Ptr,              -- System.Standard_Library
 
      RE_Integer_Address,                 -- System.Storage_Elements
-     RE_Storage_Offset,                  -- System.Storage_Elements
      RE_Storage_Array,                   -- System.Storage_Elements
+     RE_Storage_Count,                   -- System.Storage_Elements
+     RE_Storage_Offset,                  -- System.Storage_Elements
      RE_To_Address,                      -- System.Storage_Elements
 
      RE_Root_Storage_Pool,               -- System.Storage_Pools
@@ -1439,6 +1437,7 @@ package Rtsfind is
      RE_Enter_Master,                    -- System.Soft_Links
      RE_Get_Current_Excep,               -- System.Soft_Links
      RE_Get_GNAT_Exception,              -- System.Soft_Links
+     RE_Save_Library_Occurrence,         -- System.Soft_Links
      RE_Update_Exception,                -- System.Soft_Links
 
      RE_Bits_1,                          -- System.Unsigned_Types
@@ -1677,6 +1676,7 @@ package Rtsfind is
      RE_Code_Loc                         => Ada_Exceptions,
      RE_Current_Target_Exception         => Ada_Exceptions, -- of JGNAT
      RE_Exception_Id                     => Ada_Exceptions,
+     RE_Exception_Identity               => Ada_Exceptions,
      RE_Exception_Information            => Ada_Exceptions,
      RE_Exception_Message                => Ada_Exceptions,
      RE_Exception_Name_Simple            => Ada_Exceptions,
@@ -1692,8 +1692,14 @@ package Rtsfind is
      RE_Reraise_Occurrence_No_Defer      => Ada_Exceptions,
      RE_Save_Occurrence                  => Ada_Exceptions,
 
-     RE_Simple_List_Controller           => Ada_Finalization_List_Controller,
-     RE_List_Controller                  => Ada_Finalization_List_Controller,
+     RE_Add_Offset_To_Address            => Ada_Finalization_Heap_Management,
+     RE_Allocate                         => Ada_Finalization_Heap_Management,
+     RE_Base_Pool                        => Ada_Finalization_Heap_Management,
+     RE_Deallocate                       => Ada_Finalization_Heap_Management,
+     RE_Finalization_Collection          => Ada_Finalization_Heap_Management,
+     RE_Finalization_Collection_Ptr      => Ada_Finalization_Heap_Management,
+     RE_Set_Finalize_Address_Ptr         => Ada_Finalization_Heap_Management,
+     RE_Set_Storage_Pool_Ptr             => Ada_Finalization_Heap_Management,
 
      RE_Interrupt_ID                     => Ada_Interrupts,
      RE_Is_Reserved                      => Ada_Interrupts,
@@ -1753,6 +1759,7 @@ package Rtsfind is
      RE_Interface_Tag                    => Ada_Tags,
      RE_IW_Membership                    => Ada_Tags,
      RE_Max_Predef_Prims                 => Ada_Tags,
+     RE_Needs_Finalization               => Ada_Tags,
      RE_No_Dispatch_Table_Wrapper        => Ada_Tags,
      RE_NDT_Prims_Ptr                    => Ada_Tags,
      RE_NDT_TSD                          => Ada_Tags,
@@ -1964,16 +1971,6 @@ package Rtsfind is
 
      RE_Attr_VAX_G_Float                 => System_Fat_VAX_G_Float,
      RE_Fat_VAX_G                        => System_Fat_VAX_G_Float,
-
-     RE_Attach_To_Final_List             => System_Finalization_Implementation,
-     RE_Finalizable_Ptr_Ptr              => System_Finalization_Implementation,
-     RE_Move_Final_List                  => System_Finalization_Implementation,
-     RE_Finalize_List                    => System_Finalization_Implementation,
-     RE_Finalize_One                     => System_Finalization_Implementation,
-     RE_Global_Final_List                => System_Finalization_Implementation,
-     RE_Record_Controller                => System_Finalization_Implementation,
-     RE_Limited_Record_Controller        => System_Finalization_Implementation,
-     RE_Deep_Tag_Attach                  => System_Finalization_Implementation,
 
      RE_Root_Controlled                  => System_Finalization_Root,
      RE_Finalizable                      => System_Finalization_Root,
@@ -2491,8 +2488,9 @@ package Rtsfind is
      RE_Exception_Data_Ptr               => System_Standard_Library,
 
      RE_Integer_Address                  => System_Storage_Elements,
-     RE_Storage_Offset                   => System_Storage_Elements,
      RE_Storage_Array                    => System_Storage_Elements,
+     RE_Storage_Count                    => System_Storage_Elements,
+     RE_Storage_Offset                   => System_Storage_Elements,
      RE_To_Address                       => System_Storage_Elements,
 
      RE_Root_Storage_Pool                => System_Storage_Pools,
@@ -2616,6 +2614,7 @@ package Rtsfind is
      RE_Enter_Master                     => System_Soft_Links,
      RE_Get_Current_Excep                => System_Soft_Links,
      RE_Get_GNAT_Exception               => System_Soft_Links,
+     RE_Save_Library_Occurrence          => System_Soft_Links,
      RE_Update_Exception                 => System_Soft_Links,
 
      RE_Bits_1                           => System_Unsigned_Types,

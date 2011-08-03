@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -766,8 +766,9 @@ package body Tbuild is
      (Typ  : Entity_Id;
       Expr : Node_Id) return Node_Id
    is
-      Loc    : constant Source_Ptr := Sloc (Expr);
-      Result : Node_Id;
+      Loc         : constant Source_Ptr := Sloc (Expr);
+      Result      : Node_Id;
+      Expr_Parent : Node_Id;
 
    begin
       --  If the expression is already of the correct type, then nothing
@@ -797,10 +798,18 @@ package body Tbuild is
       --  All other cases
 
       else
+         --  Capture the parent of the expression before relocating it and
+         --  creating the conversion, so the conversion's parent can be set
+         --  to the original parent below.
+
+         Expr_Parent := Parent (Expr);
+
          Result :=
            Make_Unchecked_Type_Conversion (Loc,
              Subtype_Mark => New_Occurrence_Of (Typ, Loc),
              Expression   => Relocate_Node (Expr));
+
+         Set_Parent (Result, Expr_Parent);
       end if;
 
       Set_Etype (Result, Typ);

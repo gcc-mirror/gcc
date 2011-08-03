@@ -914,7 +914,8 @@ package body Sem_Ch8 is
               (Designated_Type (T), Designated_Type (Etype (Nam)));
 
          elsif not Subtypes_Statically_Match
-                     (Designated_Type (T), Designated_Type (Etype (Nam)))
+                     (Designated_Type (T),
+                      Available_View (Designated_Type (Etype (Nam))))
          then
             Error_Msg_N
               ("subtype of renamed object does not statically match", N);
@@ -5629,18 +5630,21 @@ package body Sem_Ch8 is
                then
                   --  Do not build the subtype when referencing components of
                   --  dispatch table wrappers. Required to avoid generating
-                  --  elaboration code with HI runtimes.
+                  --  elaboration code with HI runtimes. JVM and .NET use a
+                  --  modified version of Ada.Tags which does not contain RE_
+                  --  Dispatch_Table_Wrapper and RE_No_Dispatch_Table_Wrapper.
+                  --  Avoid raising RE_Not_Available exception in those cases.
 
-                  if RTU_Loaded (Ada_Tags)
-                    and then RTE_Available (RE_Dispatch_Table_Wrapper)
-                    and then Scope (Selector) = RTE (RE_Dispatch_Table_Wrapper)
-                  then
-                     C_Etype := Empty;
-
-                  elsif RTU_Loaded (Ada_Tags)
-                    and then RTE_Available (RE_No_Dispatch_Table_Wrapper)
-                    and then Scope (Selector)
-                               = RTE (RE_No_Dispatch_Table_Wrapper)
+                  if VM_Target = No_VM
+                    and then RTU_Loaded (Ada_Tags)
+                    and then
+                      ((RTE_Available (RE_Dispatch_Table_Wrapper)
+                          and then Scope (Selector) =
+                                     RTE (RE_Dispatch_Table_Wrapper))
+                      or else
+                       (RTE_Available (RE_No_Dispatch_Table_Wrapper)
+                          and then Scope (Selector) =
+                                     RTE (RE_No_Dispatch_Table_Wrapper)))
                   then
                      C_Etype := Empty;
 

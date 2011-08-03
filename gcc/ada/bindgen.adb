@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,6 +70,8 @@ package body Bindgen is
    --  information in the body of the binder generated file (we do not want
    --  to do this unconditionally, since it drags in the System.Restrictions
    --  unit unconditionally, which is unpleasand, especially for ZFP etc.)
+
+   Lib_Final_Built : Boolean := False;
 
    ----------------------------------
    -- Interface_State Pragma Table --
@@ -249,13 +251,22 @@ package body Bindgen is
    --  Generate sequence of elaboration calls (C code case)
 
    procedure Gen_Elab_Order_Ada;
-   --  Generate comments showing elaboration order chosen (Ada case)
+   --  Generate comments showing elaboration order chosen (Ada code case)
 
    procedure Gen_Elab_Order_C;
-   --  Generate comments showing elaboration order chosen (C case)
+   --  Generate comments showing elaboration order chosen (C code case)
 
    procedure Gen_Elab_Defs_C;
    --  Generate sequence of definitions for elaboration routines (C code case)
+
+   procedure Gen_Finalize_Library_Ada;
+   --  Generate a sequence of finalization calls to elaborated packages (Ada)
+
+   procedure Gen_Finalize_Library_C;
+   --  Generate a sequence of finalization calls to elaborated packages (C)
+
+   procedure Gen_Finalize_Library_Defs_C;
+   --  Generate a sequence of defininitions for package finalizers (C case)
 
    procedure Gen_Main_Ada;
    --  Generate procedure main (Ada code case)
@@ -309,6 +320,10 @@ package body Bindgen is
    --  the encoding method used for the main program source. If there is no
    --  main program source (-z switch used), returns brackets ('b').
 
+   function Has_Finalizer return Boolean;
+   --  Determine whether the current unit has at least one library-level
+   --  finalizer.
+
    function Lt_Linker_Option (Op1, Op2 : Natural) return Boolean;
    --  Compare linker options, when sorting, first according to
    --  Is_Internal_File (internal files come later) and then by
@@ -358,10 +373,13 @@ package body Bindgen is
    --  the characters of S. The caller must ensure that these characters do
    --  in fact exist in the Statement_Buffer.
 
-   procedure Set_Unit_Name;
-   --  Given a unit name in the Name_Buffer, copies it to Statement_Buffer,
-   --  starting at the Last + 1 position, and updating last past the value.
-   --  changing periods to double underscores, and updating Last appropriately.
+   type Qualification_Mode is (Dollar_Sign, Dot, Double_Underscores);
+
+   procedure Set_Unit_Name (Mode : Qualification_Mode := Double_Underscores);
+   --  Given a unit name in the Name_Buffer, copy it into Statement_Buffer,
+   --  starting at the Last + 1 position and update Last past the value.
+   --  Depending on parameter Mode, a dot (.) can be qualified into double
+   --  underscores (__), a dollar sign ($) or left as is.
 
    procedure Set_Unit_Number (U : Unit_Id);
    --  Sets unit number (first unit is 1, leading zeroes output to line
@@ -401,25 +419,33 @@ package body Bindgen is
 
    procedure Gen_Adafinal_Ada is
    begin
-      WBI ("");
       WBI ("   procedure " & Ada_Final_Name.all & " is");
-      WBI ("   begin");
 
-      --  If compiling for the JVM, we directly call Adafinal because
-      --  we don't import it via Do_Finalize (see Gen_Output_File_Ada).
+      --  Do nothing if finalization is disabled
 
-      if VM_Target /= No_VM then
-         WBI ("      System.Standard_Library.Adafinal;");
-
-      --  If there is no finalization, there is nothing to do
-
-      elsif Cumulative_Restrictions.Set (No_Finalization) then
+      if Cumulative_Restrictions.Set (No_Finalization) then
+         WBI ("   begin");
          WBI ("      null;");
+
+      --  General case
+
+      elsif VM_Target = No_VM then
+         WBI ("      procedure s_stalib_adafinal;");
+         WBI ("      pragma Import (C, s_stalib_adafinal, " &
+              """system__standard_library__adafinal"");");
+         WBI ("   begin");
+         WBI ("      s_stalib_adafinal;");
+
+      --  Pragma Import C cannot be used on virtual machine targets, therefore
+      --  call the runtime finalization routine directly.
+
       else
-         WBI ("      Do_Finalize;");
+         WBI ("   begin");
+         WBI ("      System.Standard_Library.Adafinal;");
       end if;
 
       WBI ("   end " & Ada_Final_Name.all & ";");
+      WBI ("");
    end Gen_Adafinal_Ada;
 
    --------------------
@@ -637,6 +663,18 @@ package body Bindgen is
          WBI ("      Handler_Installed : Integer;");
          WBI ("      pragma Import (C, Handler_Installed, " &
               """__gnat_handler_installed"");");
+
+         --  The import of the soft link which performs library-level object
+         --  finalization is not needed for VM targets. Regular Ada is used in
+         --  that case.
+
+         if VM_Target = No_VM then
+            WBI ("");
+            WBI ("      type No_Param_Proc is access procedure;");
+            WBI ("      Finalize_Library_Objects : No_Param_Proc;");
+            WBI ("      pragma Import (C, Finalize_Library_Objects, " &
+                 """__gnat_finalize_library_objects"");");
+         end if;
 
          --  Import entry point for environment feature enable/disable
          --  routine, and indication that it's been called previously.
@@ -888,6 +926,34 @@ package body Bindgen is
          WBI ("      Initialize_Stack_Limit;");
       end if;
 
+      --  Attach Finalize_Library to the right softlink
+
+      if not Suppress_Standard_Library_On_Target then
+         WBI ("");
+
+         if VM_Target = No_VM then
+            if Lib_Final_Built then
+               Set_String ("      Finalize_Library_Objects := ");
+               Set_String ("Finalize_Library'access;");
+            else
+               Set_String ("      Finalize_Library_Objects := null;");
+            end if;
+
+         --  On VM targets use regular Ada to set the soft link
+
+         else
+            if Lib_Final_Built then
+               Set_String ("      System.Soft_Links.Finalize_Library_Objects");
+               Set_String (" := Finalize_Library'access;");
+            else
+               Set_String ("      System.Soft_Links.Finalize_Library_Objects");
+               Set_String (" := null;");
+            end if;
+         end if;
+
+         Write_Statement_Buffer;
+      end if;
+
       --  Generate elaboration calls
 
       WBI ("");
@@ -913,6 +979,7 @@ package body Bindgen is
       end if;
 
       WBI ("   end " & Ada_Init_Name.all & ";");
+      WBI ("");
    end Gen_Adainit_Ada;
 
    -------------------
@@ -1200,6 +1267,7 @@ package body Bindgen is
       WBI ("");
       Gen_Elab_Calls_C;
       WBI ("}");
+      WBI ("");
    end Gen_Adainit_C;
 
    ------------------------
@@ -1450,6 +1518,8 @@ package body Bindgen is
 
    procedure Gen_Elab_Defs_C is
    begin
+      WBI ("/* BEGIN ELABORATION DEFINITIONS */");
+
       for E in Elab_Order.First .. Elab_Order.Last loop
 
          --  Generate declaration of elaboration procedure if elaboration
@@ -1464,9 +1534,7 @@ package body Bindgen is
             Set_String (" (void);");
             Write_Statement_Buffer;
          end if;
-
       end loop;
-
       WBI ("");
    end Gen_Elab_Defs_C;
 
@@ -1476,7 +1544,6 @@ package body Bindgen is
 
    procedure Gen_Elab_Order_Ada is
    begin
-      WBI ("");
       WBI ("   --  BEGIN ELABORATION ORDER");
 
       for J in Elab_Order.First .. Elab_Order.Last loop
@@ -1487,6 +1554,7 @@ package body Bindgen is
       end loop;
 
       WBI ("   --  END ELABORATION ORDER");
+      WBI ("");
    end Gen_Elab_Order_Ada;
 
    ----------------------
@@ -1495,7 +1563,6 @@ package body Bindgen is
 
    procedure Gen_Elab_Order_C is
    begin
-      WBI ("");
       WBI ("/* BEGIN ELABORATION ORDER");
 
       for J in Elab_Order.First .. Elab_Order.Last loop
@@ -1505,7 +1572,312 @@ package body Bindgen is
       end loop;
 
       WBI ("   END ELABORATION ORDER */");
+      WBI ("");
    end Gen_Elab_Order_C;
+
+   ------------------------------
+   -- Gen_Finalize_Library_Ada --
+   ------------------------------
+
+   procedure Gen_Finalize_Library_Ada is
+      Count : Int := 1;
+      U     : Unit_Record;
+      Uspec : Unit_Record;
+      Unum  : Unit_Id;
+
+   begin
+      for E in reverse Elab_Order.First .. Elab_Order.Last loop
+         Unum := Elab_Order.Table (E);
+         U    := Units.Table (Unum);
+
+         --  We are only interested in non-generic packages
+
+         if U.Unit_Kind = 'p'
+           and then U.Has_Finalizer
+           and then not U.Is_Generic
+           and then not U.No_Elab
+         then
+            if not Lib_Final_Built then
+               Lib_Final_Built := True;
+
+               WBI ("   procedure Finalize_Library is");
+
+               --  The following flag is used to check for library-level
+               --  exceptions raised during finalization. The symbol comes
+               --  from System.Soft_Links. VM targets use regular Ada to
+               --  reference the entity.
+
+               if VM_Target = No_VM then
+                  WBI ("      LE_Set : Boolean;");
+
+                  Set_String ("      pragma Import (Ada, LE_Set, ");
+                  Set_String ("""__gnat_library_exception_set"");");
+                  Write_Statement_Buffer;
+               end if;
+
+               WBI ("   begin");
+            end if;
+
+            --  Generate:
+            --    declare
+            --       procedure F<Count>;
+
+            Set_String ("      declare");
+            Write_Statement_Buffer;
+
+            Set_String ("         procedure F");
+            Set_Int    (Count);
+            Set_Char   (';');
+            Write_Statement_Buffer;
+
+            --  Generate:
+            --    pragma Import (CIL, F<Count>, "xx.yy_pkg.Finalize[B/S]");
+            --    --  for .NET targets
+
+            --    pragma Import (Java, F<Count>, "xx$yy.Finalize[B/S]");
+            --    --  for JVM targets
+
+            --    pragma Import (Ada, F<Count>, "xx__yy__Finalize[B/S]");
+            --    --  for default targets
+
+            if VM_Target = CLI_Target then
+               Set_String ("         pragma Import (CIL, F");
+            elsif VM_Target = JVM_Target then
+               Set_String ("         pragma Import (Java, F");
+            else
+               Set_String ("         pragma Import (Ada, F");
+            end if;
+
+            Set_Int (Count);
+            Set_String (", """);
+
+            --  Dealing with package bodies is a little complicated. In such
+            --  cases we must retrieve the package spec since it contains the
+            --  spec of the body finalizer.
+
+            if U.Utype = Is_Body then
+               Unum  := Unum + 1;
+               Uspec := Units.Table (Unum);
+            else
+               Uspec := U;
+            end if;
+
+            Get_Name_String (Uspec.Uname);
+
+            --  Perform name construction
+
+            --  .NET   xx.yy_pkg.finalize
+
+            if VM_Target = CLI_Target then
+               Set_Unit_Name (Mode => Dot);
+               Set_String ("_pkg.finalize");
+
+            --  JVM   xx$yy.finalize
+
+            elsif VM_Target = JVM_Target then
+               Set_Unit_Name (Mode => Dollar_Sign);
+               Set_String (".finalize");
+
+            --  Default   xx__yy__finalize
+
+            else
+               Set_Unit_Name;
+               Set_String ("__finalize");
+            end if;
+
+            --  Package spec processing
+
+            if U.Utype = Is_Spec
+              or else U.Utype = Is_Spec_Only
+            then
+               Set_Char ('S');
+
+            --  Package body processing
+
+            else
+               Set_Char ('B');
+            end if;
+
+            Set_String (""");");
+            Write_Statement_Buffer;
+
+            WBI ("      begin");
+
+            --  Generate:
+            --       F<Count>;
+            --    end;
+
+            Set_String ("         F");
+            Set_Int    (Count);
+            Set_Char   (';');
+            Write_Statement_Buffer;
+            WBI ("      end;");
+
+            Count := Count + 1;
+         end if;
+      end loop;
+
+      if Lib_Final_Built then
+
+         --  It is possible that the finalization of a library-level object
+         --  raised an exception. In that case import the actual exception
+         --  and the routine necessary to raise it.
+
+         if VM_Target = No_VM then
+            WBI ("      if LE_Set then");
+            WBI ("         declare");
+            WBI ("            LE : Ada.Exceptions.Exception_Occurrence;");
+
+            Set_String ("            pragma Import (Ada, LE, ");
+            Set_String ("""__gnat_library_exception"");");
+            Write_Statement_Buffer;
+
+            Set_String ("            procedure Raise_Controlled ");
+            Set_String ("(E : Ada.Exceptions.Exception_Occurrence);");
+            Write_Statement_Buffer;
+
+            Set_String ("            pragma Import (Ada, Raise_Controlled, ");
+            Set_String ("""__gnat_raise_from_controlled_operation"");");
+            Write_Statement_Buffer;
+
+            WBI ("         begin");
+            WBI ("            Raise_Controlled (LE);");
+            WBI ("         end;");
+
+         --  VM-specific code, use regular Ada to produce the desired behavior
+
+         else
+            WBI ("      if System.Soft_Links.Library_Exception_Set then");
+
+            Set_String ("         Ada.Exceptions.Reraise_Occurrence (");
+            Set_String ("System.Soft_Links.Library_Exception);");
+            Write_Statement_Buffer;
+         end if;
+
+         WBI ("      end if;");
+         WBI ("   end Finalize_Library;");
+         WBI ("");
+      end if;
+   end Gen_Finalize_Library_Ada;
+
+   ----------------------------
+   -- Gen_Finalize_Library_C --
+   ----------------------------
+
+   procedure Gen_Finalize_Library_C is
+      U     : Unit_Record;
+      Uspec : Unit_Record;
+      Unum  : Unit_Id;
+
+   begin
+      WBI ("   /* BEGIN FINALIZE */");
+
+      for E in reverse Elab_Order.First .. Elab_Order.Last loop
+         Unum := Elab_Order.Table (E);
+         U    := Units.Table (Unum);
+
+         --  We are only interested in non-generic packages
+
+         if U.Unit_Kind = 'p'
+           and then U.Has_Finalizer
+           and then not U.Is_Generic
+           and then not U.No_Elab
+         then
+            Set_String ("   ");
+
+            --  Dealing with package bodies is a little complicated. In such
+            --  cases we must retrieve the package spec since it contains the
+            --  spec of the body finalizer.
+
+            if U.Utype = Is_Body then
+               Unum  := Unum + 1;
+               Uspec := Units.Table (Unum);
+            else
+               Uspec := U;
+            end if;
+
+            Get_Name_String (Uspec.Uname);
+            Set_Unit_Name;
+            Set_String ("__finalize");
+
+            --  Package spec processing
+
+            if U.Utype = Is_Spec
+              or else U.Utype = Is_Spec_Only
+            then
+               Set_Char ('S');
+
+            --  Package body processing
+
+            else
+               Set_Char ('B');
+            end if;
+
+            Set_String (" ();");
+
+            Write_Statement_Buffer;
+         end if;
+      end loop;
+
+      WBI ("   /* END FINALIZE */");
+      WBI ("");
+   end Gen_Finalize_Library_C;
+
+   ---------------------------------
+   -- Gen_Finalize_Library_Defs_C --
+   ---------------------------------
+
+   procedure Gen_Finalize_Library_Defs_C is
+      U     : Unit_Record;
+      Uspec : Unit_Record;
+      Unum  : Unit_Id;
+
+   begin
+      WBI ("/* BEGIN FINALIZE DEFINITIONS */");
+
+      for E in reverse Elab_Order.First .. Elab_Order.Last loop
+         Unum := Elab_Order.Table (E);
+         U    := Units.Table (Unum);
+
+         --  We are only interested in non-generic packages
+
+         if U.Unit_Kind = 'p'
+           and then U.Has_Finalizer
+           and then not U.Is_Generic
+           and then not U.No_Elab
+         then
+            --  Dealing with package bodies is a little complicated. In such
+            --  cases we must retrieve the package spec since it contains the
+            --  spec of the body finalizer.
+
+            if U.Utype = Is_Body then
+               Unum  := Unum + 1;
+               Uspec := Units.Table (Unum);
+            else
+               Uspec := U;
+            end if;
+
+            Set_String ("extern void ");
+            Get_Name_String (Uspec.Uname);
+            Set_Unit_Name;
+            Set_String ("__finalize");
+
+            if U.Utype = Is_Spec
+              or else U.Utype = Is_Spec_Only
+            then
+               Set_Char ('S');
+            else
+               Set_Char ('B');
+            end if;
+
+            Set_String (" (void);");
+            Write_Statement_Buffer;
+         end if;
+      end loop;
+
+      WBI ("/* END FINALIZE DEFINITIONS */");
+      WBI ("");
+   end Gen_Finalize_Library_Defs_C;
 
    ------------------
    -- Gen_Main_Ada --
@@ -1513,8 +1885,6 @@ package body Bindgen is
 
    procedure Gen_Main_Ada is
    begin
-      WBI ("");
-
       if Exit_Status_Supported_On_Target then
          Set_String ("   function ");
       else
@@ -1558,11 +1928,11 @@ package body Bindgen is
       --  Initialize and Finalize
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
-         WBI ("      procedure initialize (Addr : System.Address);");
-         WBI ("      pragma Import (C, initialize, ""__gnat_initialize"");");
+         WBI ("      procedure Initialize (Addr : System.Address);");
+         WBI ("      pragma Import (C, Initialize, ""__gnat_initialize"");");
          WBI ("");
-         WBI ("      procedure finalize;");
-         WBI ("      pragma Import (C, finalize, ""__gnat_finalize"");");
+         WBI ("      procedure Finalize;");
+         WBI ("      pragma Import (C, Finalize, ""__gnat_finalize"");");
       end if;
 
       --  If we want to analyze the stack, we have to import corresponding
@@ -1711,15 +2081,7 @@ package body Bindgen is
       --  Adafinal call is skipped if no finalization
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
-
-         --  If compiling for the JVM, we directly call Adafinal because
-         --  we don't import it via Do_Finalize (see Gen_Output_File_Ada).
-
-         if VM_Target = No_VM then
-            WBI ("      Do_Finalize;");
-         else
-            WBI ("      System.Standard_Library.Adafinal;");
-         end if;
+         WBI ("      adafinal;");
       end if;
 
       --  Prints the result of static stack analysis
@@ -1747,6 +2109,7 @@ package body Bindgen is
       end if;
 
       WBI ("   end;");
+      WBI ("");
    end Gen_Main_Ada;
 
    ----------------
@@ -1754,6 +2117,8 @@ package body Bindgen is
    ----------------
 
    procedure Gen_Main_C is
+      Needs_Library_Finalization : constant Boolean := Has_Finalizer;
+
    begin
       if Exit_Status_Supported_On_Target then
          WBI ("#include <stdlib.h>");
@@ -1890,9 +2255,10 @@ package body Bindgen is
 
       --  Call adafinal if finalization active
 
-      if not Cumulative_Restrictions.Set (No_Finalization) then
-         WBI (" ");
-         WBI ("   system__standard_library__adafinal ();");
+      if not Cumulative_Restrictions.Set (No_Finalization)
+        and then Needs_Library_Finalization
+      then
+         Gen_Finalize_Library_C;
       end if;
 
       --  Outputs the dynamic stack measurement if needed
@@ -1943,6 +2309,7 @@ package body Bindgen is
       end if;
 
       WBI ("}");
+      WBI ("");
    end Gen_Main_C;
 
    ------------------------------
@@ -2013,7 +2380,6 @@ package body Bindgen is
    --  Start of processing for Gen_Object_Files_Options
 
    begin
-      WBI ("");
       Write_Info_Ada_C ("-- ", "/* ", " BEGIN Object file/option list");
 
       if Object_List_Filename /= null then
@@ -2268,15 +2634,17 @@ package body Bindgen is
 
    procedure Gen_Output_File_Ada (Filename : String) is
 
+      Ada_Main : constant String := Get_Ada_Main_Name;
+      --  Name to be used for generated Ada main program. See the body of
+      --  function Get_Ada_Main_Name for details on the form of the name.
+
+      Needs_Library_Finalization : constant Boolean := Has_Finalizer;
+
       Bfiles : Name_Id;
       --  Name of generated bind file (spec)
 
       Bfileb : Name_Id;
       --  Name of generated bind file (body)
-
-      Ada_Main : constant String := Get_Ada_Main_Name;
-      --  Name to be used for generated Ada main program. See the body of
-      --  function Get_Ada_Main_Name for details on the form of the name.
 
    begin
       --  Create spec first
@@ -2327,15 +2695,14 @@ package body Bindgen is
 
       Resolve_Binder_Options;
 
-      if VM_Target /= No_VM then
-         if not Suppress_Standard_Library_On_Target then
+      --  Usually, adafinal is called using a pragma Import C. Since Import C
+      --  doesn't have the same semantics for JGNAT, we use standard Ada.
 
-            --  Usually, adafinal is called using a pragma Import C. Since
-            --  Import C doesn't have the same semantics for JGNAT, we use
-            --  standard Ada.
-
-            WBI ("with System.Standard_Library;");
-         end if;
+      if VM_Target /= No_VM
+        and then not Suppress_Standard_Library_On_Target
+      then
+         WBI ("with System.Soft_Links;");
+         WBI ("with System.Standard_Library;");
       end if;
 
       WBI ("package " & Ada_Main & " is");
@@ -2544,26 +2911,13 @@ package body Bindgen is
          WBI ("with System.Restrictions;");
       end if;
 
+      if Needs_Library_Finalization then
+         WBI ("with Ada.Exceptions;");
+      end if;
+
       WBI ("");
       WBI ("package body " & Ada_Main & " is");
       WBI ("   pragma Warnings (Off);");
-
-      --  Import the finalization procedure only if finalization active
-
-      if not Cumulative_Restrictions.Set (No_Finalization) then
-
-         --  In the Java case, pragma Import C cannot be used, so the standard
-         --  Ada constructs will be used instead.
-
-         if VM_Target = No_VM then
-            WBI ("");
-            WBI ("   procedure Do_Finalize;");
-            WBI
-              ("   pragma Import (C, Do_Finalize, " &
-               """system__standard_library__adafinal"");");
-            WBI ("");
-         end if;
-      end if;
 
       if not Suppress_Standard_Library_On_Target then
 
@@ -2592,13 +2946,17 @@ package body Bindgen is
          WBI ("");
       end if;
 
-      Gen_Adainit_Ada;
-
       --  Generate the adafinal routine unless there is no finalization to do
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
          Gen_Adafinal_Ada;
+
+         if Needs_Library_Finalization then
+            Gen_Finalize_Library_Ada;
+         end if;
       end if;
+
+      Gen_Adainit_Ada;
 
       if Bind_Main_Program and then VM_Target = No_VM then
 
@@ -2631,6 +2989,9 @@ package body Bindgen is
    -----------------------
 
    procedure Gen_Output_File_C (Filename : String) is
+
+      Needs_Library_Finalization : constant Boolean := Has_Finalizer;
+
       Bfile : Name_Id;
       pragma Warnings (Off, Bfile);
       --  Name of generated bind file (not referenced)
@@ -2721,6 +3082,10 @@ package body Bindgen is
       WBI ("");
 
       Gen_Elab_Defs_C;
+
+      if Needs_Library_Finalization then
+         Gen_Finalize_Library_Defs_C;
+      end if;
 
       --  Imported variables used only when we have a runtime
 
@@ -3283,6 +3648,33 @@ package body Bindgen is
       end if;
    end Get_WC_Encoding;
 
+   -------------------
+   -- Has_Finalizer --
+   -------------------
+
+   function Has_Finalizer return Boolean is
+      U     : Unit_Record;
+      Unum  : Unit_Id;
+
+   begin
+      for E in reverse Elab_Order.First .. Elab_Order.Last loop
+         Unum := Elab_Order.Table (E);
+         U    := Units.Table (Unum);
+
+         --  We are only interested in non-generic packages
+
+         if U.Unit_Kind = 'p'
+           and then U.Has_Finalizer
+           and then not U.Is_Generic
+           and then not U.No_Elab
+         then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Has_Finalizer;
+
    ----------------------
    -- Lt_Linker_Option --
    ----------------------
@@ -3508,13 +3900,19 @@ package body Bindgen is
    -- Set_Unit_Name --
    -------------------
 
-   procedure Set_Unit_Name is
+   procedure Set_Unit_Name (Mode : Qualification_Mode := Double_Underscores) is
    begin
       for J in 1 .. Name_Len - 2 loop
-         if Name_Buffer (J) /= '.' then
-            Set_Char (Name_Buffer (J));
+         if Name_Buffer (J) = '.' then
+            if Mode = Double_Underscores then
+               Set_String ("__");
+            elsif Mode = Dot then
+               Set_Char ('.');
+            else
+               Set_Char ('$');
+            end if;
          else
-            Set_String ("__");
+            Set_Char (Name_Buffer (J));
          end if;
       end loop;
    end Set_Unit_Name;

@@ -657,10 +657,6 @@ package Sinfo is
    --    attribute definition clause is given, rather than testing this at the
    --    freeze point.
 
-   --  Coextensions (Elist4-Sem)
-   --    Present in allocators nodes. Points to list of allocators for the
-   --    access discriminants of the allocated object.
-
    --  Comes_From_Extended_Return_Statement (Flag18-Sem)
    --    Present in N_Simple_Return_Statement nodes. True if this node was
    --    constructed as part of the N_Extended_Return_Statement expansion.
@@ -1663,10 +1659,9 @@ package Sinfo is
    --    Points to an E_Return_Statement representing the return statement.
 
    --  Return_Object_Declarations (List3)
-   --    Present in N_Extended_Return_Statement.
-   --    Points to a list initially containing a single
-   --    N_Object_Declaration representing the return object.
-   --    We use a list (instead of just a pointer to the object decl)
+   --    Present in N_Extended_Return_Statement. Points to a list initially
+   --    containing a single N_Object_Declaration representing the return
+   --    object. We use a list (instead of just a pointer to the object decl)
    --    because Analyze wants to insert extra actions on this list.
 
    --  Rounded_Result (Flag18-Sem)
@@ -3959,7 +3954,6 @@ package Sinfo is
       --  Expression (Node3) subtype indication or qualified expression
       --  Storage_Pool (Node1-Sem)
       --  Procedure_To_Call (Node2-Sem)
-      --  Coextensions (Elist4-Sem)
       --  Null_Exclusion_Present (Flag11)
       --  No_Initialization (Flag13-Sem)
       --  Is_Static_Coextension (Flag14-Sem)
@@ -8126,9 +8120,6 @@ package Sinfo is
    function Class_Present
      (N : Node_Id) return Boolean;    -- Flag6
 
-   function Coextensions
-      (N : Node_Id) return Elist_Id;  -- Elist4
-
    function Comes_From_Extended_Return_Statement
      (N : Node_Id) return Boolean;    -- Flag18
 
@@ -9100,9 +9091,6 @@ package Sinfo is
 
    procedure Set_Class_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag6
-
-   procedure Set_Coextensions
-     (N : Node_Id; Val : Elist_Id);           -- Elist4
 
    procedure Set_Comes_From_Extended_Return_Statement
      (N : Node_Id; Val : Boolean := True);    -- Flag18
@@ -10636,7 +10624,7 @@ package Sinfo is
        (1 => False,   --  Storage_Pool (Node1-Sem)
         2 => False,   --  Procedure_To_Call (Node2-Sem)
         3 => True,    --  Expression (Node3)
-        4 => False,   --  Coextensions (Elist4-Sem)
+        4 => False,   --  unused
         5 => False),  --  Etype (Node5-Sem)
 
      N_Null_Statement =>
@@ -11717,7 +11705,6 @@ package Sinfo is
    pragma Inline (Choice_Parameter);
    pragma Inline (Choices);
    pragma Inline (Class_Present);
-   pragma Inline (Coextensions);
    pragma Inline (Comes_From_Extended_Return_Statement);
    pragma Inline (Compile_Time_Known_Aggregate);
    pragma Inline (Component_Associations);
@@ -12039,7 +12026,6 @@ package Sinfo is
    pragma Inline (Set_Choice_Parameter);
    pragma Inline (Set_Choices);
    pragma Inline (Set_Class_Present);
-   pragma Inline (Set_Coextensions);
    pragma Inline (Set_Comes_From_Extended_Return_Statement);
    pragma Inline (Set_Compile_Time_Known_Aggregate);
    pragma Inline (Set_Component_Associations);

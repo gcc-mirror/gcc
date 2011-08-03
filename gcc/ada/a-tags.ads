@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -108,7 +108,7 @@ private
    --                                    +-------------------+
    --                                    |  type_is_abstract |
    --                                    +-------------------+
-   --                                    | rec ctrler offset |
+   --                                    | needs finalization|
    --                                    +-------------------+
    --                                    |   Ifaces_Table   ---> Interface Data
    --                                    +-------------------+   +------------+
@@ -288,9 +288,8 @@ private
       Type_Is_Abstract : Boolean;
       --  True if the type is abstract (Ada 2012: AI05-0173)
 
-      RC_Offset : SSE.Storage_Offset;
-      --  Controller Offset: Used to give support to tagged controlled objects
-      --  (see Get_Deep_Controller at s-finimp)
+      Needs_Finalization : Boolean;
+      --  Used to dynamically check whether an object is controlled or not
 
       Size_Func : Size_Ptr;
       --  Pointer to the subprogram computing the _size of the object. Used by
@@ -455,15 +454,6 @@ private
    --  Ada 2005 (AI-251): Return a primitive operation's kind given a dispatch
    --  table T and a position of a primitive operation in T.
 
-   function Get_RC_Offset (T : Tag) return SSE.Storage_Offset;
-   --  Return the Offset of the implicit record controller when the object
-   --  has controlled components, returns zero if no controlled components.
-
-   pragma Export (Ada, Get_RC_Offset, "ada__tags__get_rc_offset");
-   --  This procedure is used in s-finimp to compute the deep routines. It is
-   --  exported manually in order to avoid completely changing the organization
-   --  of the run time.
-
    function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
    --  Ada 2005 (AI-345): Given a pointer to either a primary or a secondary
    --  dispatch table, return the tagged kind of a type in the context of
@@ -489,6 +479,11 @@ private
    --  component available in the prologue of the dispatch table. If the parent
    --  of the tagged type has discriminants this value is stored in a record
    --  component just immediately after the tag component.
+
+   function Needs_Finalization (T : Tag) return Boolean;
+   --  A helper routine used in conjunction with finalization collections which
+   --  service class-wide types. The function dynamically determines whether an
+   --  object is controlled or has controlled components.
 
    function Parent_Size
      (Obj : System.Address;

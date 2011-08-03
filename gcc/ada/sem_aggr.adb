@@ -4197,7 +4197,6 @@ package body Sem_Aggr is
 
                   elsif Chars (Selectr) /= Name_uTag
                     and then Chars (Selectr) /= Name_uParent
-                    and then Chars (Selectr) /= Name_uController
                   then
                      if not Has_Discriminants (Typ) then
                         Error_Msg_Node_2 := Typ;

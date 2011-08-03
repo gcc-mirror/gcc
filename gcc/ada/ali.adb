@@ -1443,6 +1443,7 @@ package body ALI is
             UL.Body_Needed_For_SAL      := False;
             UL.Elaborate_Body_Desirable := False;
             UL.Optimize_Alignment       := 'O';
+            UL.Has_Finalizer            := False;
 
             if Debug_Flag_U then
                Write_Str (" ----> reading unit ");
@@ -1628,12 +1629,14 @@ package body ALI is
                   Fatal_Error_Ignore;
                end if;
 
-            --  PR/PU/PK parameters
+            --  PF/PR/PU/PK parameters
 
             elsif C = 'P' then
                C := Getc;
 
-               if C = 'R' then
+               if C = 'F' then
+                  Units.Table (Units.Last).Has_Finalizer := True;
+               elsif C = 'R' then
                   Units.Table (Units.Last).Preelab := True;
                elsif C = 'U' then
                   Units.Table (Units.Last).Pure := True;

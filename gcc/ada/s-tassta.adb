@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,8 +56,8 @@ with System.Soft_Links;
 --  These are procedure pointers to non-tasking routines that use task
 --  specific data. In the absence of tasking, these routines refer to global
 --  data. In the presence of tasking, they must be replaced with pointers to
---  task-specific versions. Also used for Create_TSD, Destroy_TSD,
---  Get_Current_Excep, Finalize_Global_List, Task_Termination, Handler.
+--  task-specific versions. Also used for Create_TSD, Destroy_TSD, Get_Current
+--  _Excep, Finalize_Library_Objects, Task_Termination, Handler.
 
 with System.Tasking.Initialization;
 pragma Elaborate_All (System.Tasking.Initialization);
@@ -854,9 +854,11 @@ package body System.Tasking.Stages is
 
       SSL.Task_Termination_Handler.all (Ada.Exceptions.Null_Occurrence);
 
-      --  Finalize the global list for controlled objects if needed
+      --  Finalize all library-level controlled objects
 
-      SSL.Finalize_Global_List.all;
+      if not SSL."=" (SSL.Finalize_Library_Objects, null) then
+         SSL.Finalize_Library_Objects.all;
+      end if;
 
       --  Reset the soft links to non-tasking
 

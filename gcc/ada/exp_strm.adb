@@ -1198,13 +1198,14 @@ package body Exp_Strm is
              Return_Object_Declarations => New_List (Obj_Decl),
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 New_List (Make_Attribute_Reference (Loc,
-                             Prefix => New_Occurrence_Of (Typ, Loc),
-                             Attribute_Name => Name_Read,
-                             Expressions => New_List (
-                               Make_Identifier (Loc, Name_S),
-                               Make_Identifier (Loc, Name_V)))))));
-
+                 Statements => New_List (
+                   Make_Attribute_Reference (Loc,
+                     Prefix =>
+                       New_Occurrence_Of (Typ, Loc),
+                     Attribute_Name => Name_Read,
+                     Expressions => New_List (
+                       Make_Identifier (Loc, Name_S),
+                       Make_Identifier (Loc, Name_V)))))));
       else
          Append_To (Decls, Obj_Decl);
 

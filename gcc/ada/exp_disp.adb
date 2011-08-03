@@ -31,7 +31,6 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Atag; use Exp_Atag;
 with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
 with Exp_CG;   use Exp_CG;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Tss;  use Exp_Tss;
@@ -4901,7 +4900,7 @@ package body Exp_Disp is
       --            HT_Link            => HT_Link'Address,
       --            Transportable      => <<boolean-value>>,
       --            Type_Is_Abstract   => <<boolean-value>>,
-      --            RC_Offset          => <<integer-value>>,
+      --            Needs_Finalization => <<boolean-value>>,
       --            [ Size_Func         => Size_Prim'Access ]
       --            [ Interfaces_Table  => <<access-value>> ]
       --            [ SSD               => SSD_Table'Address ]
@@ -5183,62 +5182,15 @@ package body Exp_Disp is
          end;
       end if;
 
-      --  RC_Offset: These are the valid values and their meaning:
-
-      --   >0: For simple types with controlled components is
-      --         type._record_controller'position
-
-      --    0: For types with no controlled components
-
-      --   -1: For complex types with controlled components where the position
-      --       of the record controller is not statically computable but there
-      --       are controlled components at this level. The _Controller field
-      --       is available right after the _parent.
-
-      --   -2: There are no controlled components at this level. We need to
-      --       get the position from the parent.
+      --  Needs_Finalization: Set if the type is controlled or has controlled
+      --  components.
 
       declare
-         RC_Offset_Node : Node_Id;
+         Needs_Fin : Entity_Id;
 
       begin
-         if not Has_Controlled_Component (Typ) then
-            RC_Offset_Node := Make_Integer_Literal (Loc, 0);
-
-         elsif Etype (Typ) /= Typ
-           and then Has_Discriminants (Parent_Typ)
-         then
-            if Has_New_Controlled_Component (Typ) then
-               RC_Offset_Node := Make_Integer_Literal (Loc, -1);
-            else
-               RC_Offset_Node := Make_Integer_Literal (Loc, -2);
-            end if;
-         else
-            RC_Offset_Node :=
-              Make_Attribute_Reference (Loc,
-                Prefix =>
-                  Make_Selected_Component (Loc,
-                    Prefix => New_Reference_To (Typ, Loc),
-                    Selector_Name =>
-                      New_Reference_To (Controller_Component (Typ), Loc)),
-                Attribute_Name => Name_Position);
-
-            --  This is not proper Ada code to use the attribute 'Position
-            --  on something else than an object but this is supported by
-            --  the back end (see comment on the Bit_Component attribute in
-            --  sem_attr). So we avoid semantic checking here.
-
-            --  Is this documented in sinfo.ads??? it should be!
-
-            Set_Analyzed (RC_Offset_Node);
-            Set_Etype (Prefix (RC_Offset_Node), RTE (RE_Record_Controller));
-            Set_Etype (Prefix (Prefix (RC_Offset_Node)), Typ);
-            Set_Etype (Selector_Name (Prefix (RC_Offset_Node)),
-              RTE (RE_Record_Controller));
-            Set_Etype (RC_Offset_Node, RTE (RE_Storage_Offset));
-         end if;
-
-         Append_To (TSD_Aggr_List, RC_Offset_Node);
+         Needs_Fin := Boolean_Literals (Needs_Finalization (Typ));
+         Append_To (TSD_Aggr_List, New_Occurrence_Of (Needs_Fin, Loc));
       end;
 
       --  Size_Func

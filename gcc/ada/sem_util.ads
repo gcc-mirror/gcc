@@ -395,15 +395,15 @@ package Sem_Util is
    --  discriminant at the same position in this new type.
 
    procedure Find_Overlaid_Entity
-     (N   : Node_Id;
+     (N : Node_Id;
       Ent : out Entity_Id;
       Off : out Boolean);
-   --  The node N should be an address representation clause. Determines if the
-   --  target expression is the address of an entity with an optional offset.
-   --  If so, Ent is set to the entity and, if there is an offset, Off is set
-   --  to True, otherwise to False. If N is not an address representation
+   --  The node N should be an address representation clause. Determines if
+   --  the target expression is the address of an entity with an optional
+   --  offset. If so, set Ent to the entity and, if there is an offset, set
+   --  Off to True, otherwise to False. If N is not an address representation
    --  clause, or if it is not possible to determine that the address is of
-   --  this form, then Ent is set to Empty, and Off is set to False.
+   --  this form, then set Ent to Empty.
 
    function Find_Parameter_Type (Param : Node_Id) return Entity_Id;
    --  Return the type of formal parameter Param as determined by its
@@ -689,6 +689,11 @@ package Sem_Util is
    --  package specification. The package must be on the scope stack, and the
    --  corresponding private part must not.
 
+   function Incomplete_Or_Private_View (Typ : Entity_Id) return Entity_Id;
+   --  Given the entity of a type, retrieve the incomplete or private view of
+   --  the same type. Note that Typ may not have a partial view to begin with,
+   --  in that case the function returns Empty.
+
    procedure Insert_Explicit_Dereference (N : Node_Id);
    --  In a context that requires a composite or subprogram type and where a
    --  prefix is an access type, rewrite the access type node N (which is the
@@ -721,10 +726,6 @@ package Sem_Util is
    function Is_Atomic_Object (N : Node_Id) return Boolean;
    --  Determines if the given node denotes an atomic object in the sense of
    --  the legality checks described in RM C.6(12).
-
-   function Is_Coextension_Root (N : Node_Id) return Boolean;
-   --  Determine whether node N is an allocator which acts as a coextension
-   --  root.
 
    function Is_Controlling_Limited_Procedure
      (Proc_Nam : Entity_Id) return Boolean;
@@ -1209,11 +1210,11 @@ package Sem_Util is
    --  previous errors (particularly in -gnatq mode).
 
    function Requires_Transient_Scope (Id : Entity_Id) return Boolean;
-   --  E is a type entity. The result is True when temporaries of this
-   --  type need to be wrapped in a transient scope to be reclaimed
-   --  properly when a secondary stack is in use. Examples of types
-   --  requiring such wrapping are controlled types and variable-sized
-   --  types including unconstrained arrays
+   --  E is a type entity. The result is True when temporaries of this type
+   --  need to be wrapped in a transient scope to be reclaimed properly when a
+   --  secondary stack is in use. Examples of types requiring such wrapping are
+   --  controlled types and variable-sized types including unconstrained
+   --  arrays.
 
    procedure Reset_Analyzed_Flags (N : Node_Id);
    --  Reset the Analyzed flags in all nodes of the tree whose root is N
