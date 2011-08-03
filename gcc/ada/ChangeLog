@@ -1,3 +1,44 @@
+2011-08-03  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_res.adb, exp_ch13.adb, exp_disp.adb,
+	exp_aggr.adb: Minor reformatting.
+
+2011-08-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Do not force inlining of
+	tagged assignment when discriminant checks are suppressed. This is
+	useless and extremely costly in terms of static stack usage.
+
+2011-08-03  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (Get_Base_Subprogram): Do not follow Alias for instances
+	of generics, because this leads to the wrong entity in the wrong scope,
+	causing (e.g.) pragma Export_Procedure to get an error if the entity is
+	an instance.
+	(Process_Interface_Name): Follow Alias for instances of generics, to
+	correct for the above change.
+
+2011-08-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Selected_Component): If the discriminant value
+	is an integer literal it is always safe to replace the reference. In
+	addition, if the reference appears in the generated code for an object
+	declaration it is necessary to copy because otherwise the reference
+	might be to the uninitilized value of the discriminant of the object
+	itself.
+
+2011-08-03  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_is_executable_file_attr): Fix Win32 circuitry when no
+	ACL used, in this case we want to check for ending .exe, not .exe
+	anywhere in the path.
+
+2011-08-03  Sergey Rybin  <rybin@adacore.com>
+
+	* tree_io.ads (ASIS_Version_Number): Update because of the changes in
+	the tree structure (semantic decoration of references to record
+	discriminants).
+
 2011-08-03  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_aggr.adb (Analyze_Array_Aggregate): When checking the discrete

@@ -3808,12 +3808,12 @@ package body Exp_Disp is
       --  calls through interface types; the latter secondary table is
       --  generated when Build_Thunks is False, and provides support for
       --  Generic Dispatching Constructors that dispatch calls through
-      --  interface types. When constructing this latter table the value
-      --  of Suffix_Index is -1 to indicate that there is no need to export
-      --  such table when building statically allocated dispatch tables; a
-      --  positive value of Suffix_Index must match the Suffix_Index value
-      --  assigned to this secondary dispatch table by Make_Tags when its
-      --  unique external name was generated.
+      --  interface types. When constructing this latter table the value of
+      --  Suffix_Index is -1 to indicate that there is no need to export such
+      --  table when building statically allocated dispatch tables; a positive
+      --  value of Suffix_Index must match the Suffix_Index value assigned to
+      --  this secondary dispatch table by Make_Tags when its unique external
+      --  name was generated.
 
       ------------------------------
       -- Check_Premature_Freezing --
@@ -3825,6 +3825,7 @@ package body Exp_Disp is
          Typ         : Entity_Id)
       is
          Comp : Entity_Id;
+
       begin
          if Present (N)
            and then Is_Private_Type (Typ)

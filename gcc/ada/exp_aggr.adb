@@ -5700,7 +5700,7 @@ package body Exp_Aggr is
       elsif Has_Mutable_Components (Typ)
         and then
           (Nkind (Parent (N)) /= N_Object_Declaration
-             or else not Constant_Present (Parent (N)))
+            or else not Constant_Present (Parent (N)))
       then
          Convert_To_Assignments (N, Typ);
 

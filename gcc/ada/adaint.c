@@ -2145,8 +2145,15 @@ __gnat_is_executable_file_attr (char* name, struct file_attributes* attr)
            __gnat_check_OWNER_ACL (wname, FILE_EXECUTE, GenericMapping);
        }
      else
-       attr->executable = GetFileAttributes (wname) != INVALID_FILE_ATTRIBUTES
-         && _tcsstr (wname, _T(".exe")) - wname == (int) (_tcslen (wname) - 4);
+       {
+	 TCHAR *l, *last = _tcsstr(wname, _T(".exe"));
+
+	 /* look for last .exe */
+	 while (l = _tcsstr(last+1, _T(".exe"))) last = l;
+
+	 attr->executable = GetFileAttributes (wname) != INVALID_FILE_ATTRIBUTES
+	   && last - wname == (int) (_tcslen (wname) - 4);
+       }
 #else
      __gnat_stat_to_attr (-1, name, attr);
 #endif
