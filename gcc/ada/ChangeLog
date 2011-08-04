@@ -1,3 +1,30 @@
+2011-08-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.adb (Layout_Type): For composite types, do not set Esize.
+	* freeze.adb (Set_Small_Size): Remove test on alignment and do not
+	set Esize.
+	(Size_Known): Look at the RM size of components instead of the Esize.
+	(Freeze_Record_Type): Look at the RM size instead of the Esize to
+	issue warning and activate Implicit_Packing.
+	(Freeze_Entity): Likewise.  Do not issue a warning for alias/atomic
+	if the Esize is not known.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause) <Size>: Set Esize
+	for elementary types only.
+	(Analyze_Record_Representation_Clause): Look at the RM size instead
+	of the Esize to issue errors.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not set Esize if it
+	is not known.
+	<E_Record_Type>: Look at the RM size instead of the Esize.  Remove
+	obsolete block.  
+	Look at the RM size instead of the Esize for types if the latter is
+	not known.
+	(gnat_to_gnu_field): Use Known_Esize instead of Known_Static_Esize.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb: proper handling of equality not involving anonymous
+	access types.
+
 2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Create_Finalizer): Remove local variables Spec_Nod and
