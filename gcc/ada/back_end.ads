@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,5 +81,9 @@ package Back_End is
    --
    --  Any processed switches that influence the result of a compilation must
    --  be added to the Compilation_Arguments table.
+
+   procedure Gen_Or_Update_Object_File;
+   --  Is used to generate the object file, or update it so that its timestamp
+   --  is updated.
 
 end Back_End;

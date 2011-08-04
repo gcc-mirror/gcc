@@ -1823,16 +1823,19 @@ package body Bindgen is
             Set_String ("""__gnat_library_exception"");");
             Write_Statement_Buffer;
 
-            Set_String ("            procedure Raise_Controlled ");
-            Set_String ("(E : Ada.Exceptions.Exception_Occurrence);");
+            Set_String ("            procedure Raise_From_Controlled_");
+            Set_String ("Operation ");
+            Set_String ("(X : Ada.Exceptions.Exception_Occurrence; ");
+            Set_String (" From_Abort : Boolean);");
             Write_Statement_Buffer;
 
-            Set_String ("            pragma Import (Ada, Raise_Controlled, ");
+            Set_String ("            pragma Import (Ada, Raise_From_");
+            Set_String ("Controlled_Operation, ");
             Set_String ("""__gnat_raise_from_controlled_operation"");");
             Write_Statement_Buffer;
 
             WBI ("         begin");
-            WBI ("            Raise_Controlled (LE);");
+            WBI ("            Raise_From_Controlled_Operation (LE, False);");
             WBI ("         end;");
 
          --  VM-specific code, use regular Ada to produce the desired behavior

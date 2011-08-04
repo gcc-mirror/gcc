@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -337,4 +337,14 @@ package body Back_End is
    begin
       Enumerate_Modes (Call_Back);
    end Register_Back_End_Types;
+
+   -------------------------------
+   -- Gen_Or_Update_Object_File --
+   -------------------------------
+
+   procedure Gen_Or_Update_Object_File is
+   begin
+      null;
+   end Gen_Or_Update_Object_File;
+
 end Back_End;

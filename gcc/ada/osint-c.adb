@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,12 +45,6 @@ package body Osint.C is
    --  Create_Debug_File. Src is the file name used to create the required
    --  output file and Suffix is the desired suffix (dg/rep/xxx for debug/
    --  repinfo/list file where xxx is specified extension.
-
-   procedure Set_Library_Info_Name;
-   --  Sets a default ALI file name from the main compiler source name.
-   --  This is used by Create_Output_Library_Info, and by the version of
-   --  Read_Library_Info that takes a default file name. The name is in
-   --  Name_Buffer (with length in Name_Len) on return from the call.
 
    ----------------------
    -- Close_Debug_File --
