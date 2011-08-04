@@ -5468,7 +5468,6 @@ package body Exp_Util is
 
       function Are_Wrapped (L : List_Id) return Boolean is
          Stmt : constant Node_Id := First (L);
-
       begin
          return
            Present (Stmt)
@@ -5494,15 +5493,14 @@ package body Exp_Util is
 
    begin
       case Nkind (N) is
-         when N_Elsif_Part                 |
-              N_If_Statement               |
-              N_Conditional_Entry_Call     |
-              N_Selective_Accept           =>
+         when N_Elsif_Part             |
+              N_If_Statement           |
+              N_Conditional_Entry_Call |
+              N_Selective_Accept       =>
 
             --  Check the "then statements" for elsif parts and if statements
 
-            if Nkind_In (N, N_Elsif_Part,
-                            N_If_Statement)
+            if Nkind_In (N, N_Elsif_Part, N_If_Statement)
               and then not Is_Empty_List (Then_Statements (N))
               and then not Are_Wrapped (Then_Statements (N))
               and then Requires_Cleanup_Actions

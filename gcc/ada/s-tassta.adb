@@ -1115,7 +1115,7 @@ package body System.Tasking.Stages is
 
       if System.Stack_Usage.Is_Enabled then
          declare
-            Guard_Page_Size      : constant := 12 * 1024;
+            Guard_Page_Size : constant := 12 * 1024;
             --  Part of the stack used as a guard page. This is an OS dependent
             --  value, so we need to use the maximum. This value is only used
             --  when the stack address is known, that is currently Windows.
@@ -1125,9 +1125,9 @@ package body System.Tasking.Stages is
             --  smaller values resulted in segmentation faults from dynamic
             --  stack analysis.
 
-            Big_Overflow_Guard   : constant := 16 * 1024;
-            Small_Stack_Limit    : constant := 64 * 1024;
-            --  ??? These three values are experimental, and seems to work on
+            Big_Overflow_Guard : constant := 16 * 1024;
+            Small_Stack_Limit  : constant := 64 * 1024;
+            --  ??? These three values are experimental, and seem to work on
             --  most platforms. They still need to be analyzed further. They
             --  also need documentation, what are they???
 
@@ -1137,22 +1137,27 @@ package body System.Tasking.Stages is
 
             Stack_Base : Address;
             --  Address of the base of the stack
+
          begin
             Stack_Base := Self_ID.Common.Compiler_Data.Pri_Stack_Info.Base;
             if Stack_Base = Null_Address then
+
                --  On many platforms, we don't know the real stack base
                --  address. Estimate it using an address in the frame.
+
                Stack_Base := Bottom_Of_Stack'Address;
 
                --  Also reduce the size of the stack to take into account the
                --  secondary stack array declared in this frame. This is for
                --  sure very conservative.
+
                if not Parameters.Sec_Stack_Dynamic then
                   Pattern_Size :=
                     Pattern_Size - Natural (Secondary_Stack_Size);
                end if;
 
                --  Adjustments for inner frames
+
                Pattern_Size := Pattern_Size -
                  (if Pattern_Size < Small_Stack_Limit
                     then Small_Overflow_Guard

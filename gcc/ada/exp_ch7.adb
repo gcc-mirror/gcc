@@ -3936,8 +3936,8 @@ package body Exp_Ch7 is
 
       if Tagged_Type_Expansion
         and then (Is_Compilation_Unit (Id)
-                    or else (Is_Generic_Instance (Id)
-                               and then Is_Library_Level_Entity (Id)))
+                   or else (Is_Generic_Instance (Id)
+                             and then Is_Library_Level_Entity (Id)))
       then
          Build_Static_Dispatch_Tables (N);
       end if;

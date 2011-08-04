@@ -4357,16 +4357,16 @@ package body Make is
                   end if;
                end;
             end if;
-
          end if;
 
          --  Put the object directories in ADA_OBJECTS_PATH
+         --  Ditto for source directories in ADA_INCLUDE_PATH in CodePeer mode
 
          Prj.Env.Set_Ada_Paths
            (Main_Project,
             Project_Tree,
             Including_Libraries => False,
-            Include_Path        => False);
+            Include_Path        => CodePeer_Mode);
 
          --  Check for attributes Linker'Linker_Options in projects other than
          --  the main project
@@ -4581,7 +4581,6 @@ package body Make is
                  new String'("-F=" & Get_Name_String (Mapping_Path));
             end if;
          end if;
-
       end if;
 
       begin

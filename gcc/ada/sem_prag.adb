@@ -426,7 +426,9 @@ package body Sem_Prag is
       --  Checks that the given argument has an identifier, and if so, requires
       --  it to match one of the given identifier names. If there is no
       --  identifier, or a non-matching identifier, then an error message is
-      --  given and Pragma_Exit is raised.
+      --  given and Pragma_Exit is raised. ??? why is this needed, why isnt
+      --  Check_Arg_Is_One_Of good enough. At the very least explain this
+      --  odd apparent redundancy
 
       procedure Check_In_Main_Program;
       --  Common checks for pragmas that appear within a main program
@@ -6843,9 +6845,9 @@ package body Sem_Prag is
          -- Check --
          -----------
 
-         --  pragma Check ([Name    =>] Identifier,
-         --                [Check   =>] Boolean_Expression
-         --              [,[Message =>] String_Expression]);
+         --  pragma Check ([Name    =>] IDENTIFIER,
+         --                [Check   =>] Boolean_EXPRESSION
+         --              [,[Message =>] String_EXPRESSION]);
 
          when Pragma_Check => Check : declare
             Expr : Node_Id;
@@ -11527,8 +11529,8 @@ package body Sem_Prag is
          -- Postcondition --
          -------------------
 
-         --  pragma Postcondition ([Check   =>] Boolean_Expression
-         --                      [,[Message =>] String_Expression]);
+         --  pragma Postcondition ([Check   =>] Boolean_EXPRESSION
+         --                      [,[Message =>] String_EXPRESSION]);
 
          when Pragma_Postcondition => Postcondition : declare
             In_Body : Boolean;
@@ -11550,8 +11552,8 @@ package body Sem_Prag is
          -- Precondition --
          ------------------
 
-         --  pragma Precondition ([Check   =>] Boolean_Expression
-         --                     [,[Message =>] String_Expression]);
+         --  pragma Precondition ([Check   =>] Boolean_EXPRESSION
+         --                     [,[Message =>] String_EXPRESSION]);
 
          when Pragma_Precondition => Precondition : declare
             In_Body : Boolean;
@@ -13262,10 +13264,14 @@ package body Sem_Prag is
          -- Test_Case --
          ---------------
 
-         --  pragma Test_Case ([Name     =>] String_Expression
+         --  pragma Test_Case ([Name     =>] String_EXPRESSION
          --                   ,[Mode     =>] (Normal | Robustness)
-         --                  [, Requires =>  Boolean_Expression]
-         --                  [, Ensures  =>  Boolean_Expression]);
+         --                  [, Requires =>  Boolean_EXPRESSION]
+         --                  [, Ensures  =>  Boolean_EXPRESSION]);
+
+         --  ??? Why is Name not static_string_EXPRESSION??? Seems very
+         --  weird to require it to be a string literal, and if we DO want
+         --  that restriction the grammar should make this clear.
 
          when Pragma_Test_Case => Test_Case : declare
 
@@ -13280,10 +13286,14 @@ package body Sem_Prag is
             Check_Arg_Is_String_Literal (Arg1);
             Check_Optional_Identifier (Arg2, Name_Mode);
             Check_Arg_Is_One_Of (Arg2, Name_Normal, Name_Robustness);
+
             if Arg_Count = 4 then
                Check_Identifier (Arg3, Name_Requires);
                Check_Identifier (Arg4, Name_Ensures);
             else
+               --  ??? why not Check_Arg_Is_One_Of, very odd!!! At the very
+               --  least needs an explanation!
+
                Check_Identifier_Is_One_Of (Arg3, Name_Requires, Name_Ensures);
             end if;
 

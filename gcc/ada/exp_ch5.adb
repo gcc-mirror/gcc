@@ -2462,7 +2462,6 @@ package body Exp_Ch5 is
            and then Nkind (Alt) = N_Case_Statement_Alternative
          loop
             Process_Statements_For_Controlled_Objects (Alt);
-
             Next (Alt);
          end loop;
       end;
