@@ -1454,6 +1454,28 @@ op_with_constant_singleton_value_range (tree op)
   return NULL_TREE;
 }
 
+/* Return true if op is in a boolean [0, 1] value-range.  */
+
+static bool
+op_with_boolean_value_range_p (tree op)
+{
+  value_range_t *vr;
+
+  if (TYPE_PRECISION (TREE_TYPE (op)) == 1)
+    return true;
+
+  if (integer_zerop (op)
+      || integer_onep (op))
+    return true;
+
+  if (TREE_CODE (op) != SSA_NAME)
+    return false;
+
+  vr = get_value_range (op);
+  return (vr->type == VR_RANGE
+	  && integer_zerop (vr->min)
+	  && integer_onep (vr->max));
+}
 
 /* Extract value range information from an ASSERT_EXPR EXPR and store
    it in *VR_P.  */
@@ -6753,115 +6775,64 @@ static bool
 simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
-  tree val = NULL;
-  tree op0, op1;
-  value_range_t *vr;
-  bool sop = false;
+  tree lhs, op0, op1;
   bool need_conversion;
 
   /* We handle only !=/== case here.  */
   gcc_assert (rhs_code == EQ_EXPR || rhs_code == NE_EXPR);
 
   op0 = gimple_assign_rhs1 (stmt);
-  if (TYPE_PRECISION (TREE_TYPE (op0)) != 1)
-    {
-      if (TREE_CODE (op0) != SSA_NAME)
-	return false;
-      vr = get_value_range (op0);
-
-      val = compare_range_with_value (GE_EXPR, vr, integer_zero_node, &sop);
-      if (!val || !integer_onep (val))
-        return false;
-
-      val = compare_range_with_value (LE_EXPR, vr, integer_one_node, &sop);
-      if (!val || !integer_onep (val))
-        return false;
-    }
+  if (!op_with_boolean_value_range_p (op0))
+    return false;
 
   op1 = gimple_assign_rhs2 (stmt);
+  if (!op_with_boolean_value_range_p (op1))
+    return false;
 
-  /* Reduce number of cases to handle.  */
-  if (is_gimple_min_invariant (op1))
+  /* Reduce number of cases to handle to NE_EXPR.  As there is no
+     BIT_XNOR_EXPR we cannot replace A == B with a single statement.  */
+  if (rhs_code == EQ_EXPR)
     {
-      if (!integer_zerop (op1)
-	  && !integer_onep (op1)
-	  && !integer_all_onesp (op1))
-	return false;
-
-      /* Limit the number of cases we have to consider.  */
-      if (rhs_code == EQ_EXPR)
-	{
-	  rhs_code = NE_EXPR;
-	  /* OP1 is a constant.  */
-	  op1 = fold_unary (TRUTH_NOT_EXPR, TREE_TYPE (op1), op1);
-	}
-    }
-  else
-    {
-      /* Punt on A == B as there is no BIT_XNOR_EXPR.  */
-      if (rhs_code == EQ_EXPR)
-	return false;
-
-      if (TYPE_PRECISION (TREE_TYPE (op1)) != 1)
-	{
-	  vr = get_value_range (op1);
-	  val = compare_range_with_value (GE_EXPR, vr, integer_zero_node, &sop);
-	  if (!val || !integer_onep (val))
-	    return false;
-
-	  val = compare_range_with_value (LE_EXPR, vr, integer_one_node, &sop);
-	  if (!val || !integer_onep (val))
-	    return false;
-	}
-    }
-
-  if (sop && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_MISC))
-    {
-      location_t location;
-
-      if (!gimple_has_location (stmt))
-	location = input_location;
+      if (TREE_CODE (op1) == INTEGER_CST)
+	op1 = int_const_binop (BIT_XOR_EXPR, op1, integer_one_node);
       else
-	location = gimple_location (stmt);
-
-      warning_at (location, OPT_Wstrict_overflow,
-		  _("assuming signed overflow does not occur when "
-		    "simplifying ==, != or ! to identity or ^"));
+	return false;
     }
 
-  need_conversion =
-    !useless_type_conversion_p (TREE_TYPE (gimple_assign_lhs (stmt)),
-			        TREE_TYPE (op0));
+  lhs = gimple_assign_lhs (stmt);
+  need_conversion
+    = !useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (op0));
 
-  /* Make sure to not sign-extend -1 as a boolean value.  */
+  /* Make sure to not sign-extend a 1-bit 1 when converting the result.  */
   if (need_conversion
       && !TYPE_UNSIGNED (TREE_TYPE (op0))
-      && TYPE_PRECISION (TREE_TYPE (op0)) == 1)
+      && TYPE_PRECISION (TREE_TYPE (op0)) == 1
+      && TYPE_PRECISION (TREE_TYPE (lhs)) > 1)
     return false;
 
-  switch (rhs_code)
+  /* For A != 0 we can substitute A itself.  */
+  if (integer_zerop (op1))
+    gimple_assign_set_rhs_with_ops (gsi,
+				    need_conversion
+				    ? NOP_EXPR : TREE_CODE (op0),
+				    op0, NULL_TREE);
+  /* For A != B we substitute A ^ B.  Either with conversion.  */
+  else if (need_conversion)
     {
-    case NE_EXPR:
-      if (integer_zerop (op1))
-	{
-	  gimple_assign_set_rhs_with_ops (gsi,
-					  need_conversion ? NOP_EXPR : SSA_NAME,
-					  op0, NULL);
-	  update_stmt (gsi_stmt (*gsi));
-	  return true;
-	}
-
-      rhs_code = BIT_XOR_EXPR;
-      break;
-    default:
-      gcc_unreachable ();
+      gimple newop;
+      tree tem = create_tmp_reg (TREE_TYPE (op0), NULL);
+      newop = gimple_build_assign_with_ops (BIT_XOR_EXPR, tem, op0, op1);
+      tem = make_ssa_name (tem, newop);
+      gimple_assign_set_lhs (newop, tem);
+      gsi_insert_before (gsi, newop, GSI_SAME_STMT);
+      update_stmt (newop);
+      gimple_assign_set_rhs_with_ops (gsi, NOP_EXPR, tem, NULL_TREE);
     }
-
-  if (need_conversion)
-    return false;
-
-  gimple_assign_set_rhs_with_ops (gsi, rhs_code, op0, op1);
+  /* Or without.  */
+  else
+    gimple_assign_set_rhs_with_ops (gsi, BIT_XOR_EXPR, op0, op1);
   update_stmt (gsi_stmt (*gsi));
+
   return true;
 }
 
