@@ -4178,20 +4178,20 @@ the ceiling priority of the corresponding protected object.
 plus the following set of restrictions:
 
 @table @code
-@item Max_Entry_Queue_Length = 1
+@item Max_Entry_Queue_Length => 1
 Defines the maximum number of calls that are queued on a (protected) entry.
 Note that this restrictions is checked at run time. Violation of this
 restriction results in the raising of Program_Error exception at the point of
 the call. For the Profile (Ravenscar) the value of Max_Entry_Queue_Length is
 always 1 and hence no task can be queued on a protected entry.
 
-@item Max_Protected_Entries = 1
+@item Max_Protected_Entries => 1
 [RM D.7] Specifies the maximum number of entries per protected type. The
 bounds of every entry family of a protected unit shall be static, or shall be
 defined by a discriminant of a subtype whose corresponding bound is static.
 For the Profile (Ravenscar) the value of Max_Protected_Entries is always 1.
 
-@item Max_Task_Entries = 0
+@item Max_Task_Entries => 0
 [RM D.7] Specifies the maximum number of entries
 per task.  The bounds of every entry family
 of a task unit shall be static, or shall be
@@ -4204,13 +4204,6 @@ the Profile (Ravenscar), the value of Max_Task_Entries is always
 @item No_Abort_Statements
 [RM D.7] There are no abort_statements, and there are
 no calls to Task_Identification.Abort_Task.
-
-@item No_Asynchronous_Control
-There are no semantic dependences on the package
-Asynchronous_Task_Control.
-
-@item No_Calendar
-There are no semantic dependencies on the package Ada.Calendar.
 
 @item No_Dynamic_Attachment
 There is no call to any of the operations defined in package Ada.Interrupts
@@ -4252,9 +4245,6 @@ or to Ada.Task_Termination.Specific_Handler.
 [RM D.7] There are no allocators for task types
 or types containing task subcomponents.
 
-@item No_Task_Attributes_Package
-There are no semantic dependencies on the Ada.Task_Attributes package.
-
 @item No_Task_Hierarchy
 [RM D.7] All (non-environment) tasks depend
 directly on the environment task of the partition.
@@ -4262,19 +4252,35 @@ directly on the environment task of the partition.
 @item No_Task_Termination
 Tasks which terminate are erroneous.
 
+@item Simple_Barriers
+Entry barrier condition expressions shall be either static
+boolean expressions or boolean objects which are declared in
+the protected type which contains the entry.
+
 @item No_Unchecked_Conversion
 There are no semantic dependencies on the Ada.Unchecked_Conversion package.
 
 @item No_Unchecked_Deallocation
 There are no semantic dependencies on the Ada.Unchecked_Deallocation package.
 
-@item Simple_Barriers
-Entry barrier condition expressions shall be either static
-boolean expressions or boolean objects which are declared in
-the protected type which contains the entry.
 @end table
-
 @noindent
+
+The Ravenscar profile also includes the following restrictions that specify
+that there are no semantic dependences on the corresponding predefined
+packages:
+
+@table
+@item No_Dependence => Ada.Asynchronous_Task_Control
+@item No_Dependence => Ada.Calendar
+@item No_Dependence => Ada.Execution_Time.Group_Budget
+@item No_Dependence => Ada.Execution_Time.Timers
+@item No_Dependence => Ada.Task_Attributes
+@item No_Dependence => System.Multiprocessors.Dispatching_Domains
+
+@end table
+@noindent
+
 This set of configuration pragmas and restrictions correspond to the
 definition of the ``Ravenscar Profile'' for limited tasking, devised and
 published by the @cite{International Real-Time Ada Workshop}, 1997,
@@ -17943,7 +17949,7 @@ A complete description of the AIs may be found in
 
 @item
 @emph{AI-0216 No_Task_Hierarchy forbids local tasks (0000-00-00)}
-@cindex AI-0216 (Ada 2012 feature)
+@cindex AI05-0216 (Ada 2012 feature)
 
 @noindent
   It is clearly the intention that @code{No_Task_Hierarchy} is intended to

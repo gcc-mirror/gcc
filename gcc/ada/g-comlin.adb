@@ -2138,10 +2138,10 @@ package body GNAT.Command_Line is
       Success    : out Boolean)
    is
       procedure Add_Simple_Switch
-        (Simple    : String;
-         Sepa      : String;
-         Param     : String;
-         Index     : Integer);
+        (Simple : String;
+         Sepa   : String;
+         Param  : String;
+         Index  : Integer);
       --  Add a new switch that has had all its aliases expanded, and switches
       --  ungrouped. We know there are no more aliases in Switches.
 
@@ -2150,10 +2150,10 @@ package body GNAT.Command_Line is
       -----------------------
 
       procedure Add_Simple_Switch
-        (Simple    : String;
-         Sepa      : String;
-         Param     : String;
-         Index     : Integer)
+        (Simple : String;
+         Sepa   : String;
+         Param  : String;
+         Index  : Integer)
       is
          Sep : Character;
 

@@ -1,3 +1,31 @@
+2011-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* debug.adb: Update comment.
+
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb, exp_util.adb, make.adb, a-tags.adb, sem_prag.adb,
+	sem_util.adb, sem_attr.adb, exp_ch4.adb, g-comlin.adb, g-comlin.ads,
+	exp_ch6.adb: Minor reformatting.
+
+2011-08-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_ugn.texi: Add sentence about the case of compile-time-detected
+	checks for -gnateE.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat_rm.texi: update Ravenscar desription to reflect Ada2012 RM.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads: Minor reformatting.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* makeutl.adb, makeutl.ads, prj-nmsc.adb (Complete_Mains): report error
+	even if there is no location.
+
 2011-08-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb, sem_ch4.adb: move check for restriction

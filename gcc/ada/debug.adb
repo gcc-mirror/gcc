@@ -429,7 +429,7 @@ package body Debug is
    --       especially in the predefined library units.
 
    --  dQ   Eliminate check for duplicate external tags. This check was added
-   --       for GNAT 6.4.1, and causes some backward compatibility problems.
+   --       as per AI 0113, and causes some backward compatibility problems.
    --       It is never legitimate to have duplicate external tags, so the
    --       check is certainly valid, but this debug switch can be useful for
    --       enabling previous behavior of ignoring this problem.

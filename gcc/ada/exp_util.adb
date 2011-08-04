@@ -2712,7 +2712,7 @@ package body Exp_Util is
             elsif Ekind (Obj_Id) = E_Variable
               and then
                 (Is_Simple_Protected_Type (Obj_Typ)
-                   or else Has_Simple_Protected_Object (Obj_Typ))
+                  or else Has_Simple_Protected_Object (Obj_Typ))
             then
                return True;
             end if;

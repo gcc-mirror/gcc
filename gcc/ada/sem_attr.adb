@@ -4035,8 +4035,9 @@ package body Sem_Attr is
             --  Check in postcondition of function
 
             Prag := N;
-            while not Nkind_In (Prag, N_Pragma, N_Function_Specification,
-                                N_Subprogram_Body)
+            while not Nkind_In (Prag, N_Pragma,
+                                      N_Function_Specification,
+                                      N_Subprogram_Body)
             loop
                Prag := Parent (Prag);
             end loop;

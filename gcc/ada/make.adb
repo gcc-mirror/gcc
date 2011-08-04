@@ -1622,7 +1622,7 @@ package body Make is
 
          if Operating_Mode = Check_Semantics then
             declare
-               File_Name : String := Get_Name_String (Source_File);
+               File_Name : String  := Get_Name_String (Source_File);
                OK        : Boolean := False;
 
             begin

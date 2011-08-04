@@ -4319,7 +4319,7 @@ package body Exp_Ch4 is
       ------------------------------
 
       procedure Process_Transient_Object (Decl : Node_Id) is
-         Ins_Nod   : constant Node_Id    := Parent (N);
+         Ins_Nod : constant Node_Id := Parent (N);
          --  To avoid the insertion of generated code in the list of Actions,
          --  Insert_Action must look at the parent field of the EWA.
 
@@ -4353,10 +4353,9 @@ package body Exp_Ch4 is
              Defining_Identifier => Ptr_Id,
                Type_Definition =>
                  Make_Access_To_Object_Definition (Loc,
-                   All_Present =>
+                   All_Present        =>
                      Ekind (Obj_Typ) = E_General_Access_Type,
-                   Subtype_Indication =>
-                     New_Reference_To (Desig_Typ, Loc)));
+                   Subtype_Indication => New_Reference_To (Desig_Typ, Loc)));
 
          Insert_Action (Ins_Nod, Ptr_Decl);
          Analyze (Ptr_Decl);
@@ -4389,8 +4388,7 @@ package body Exp_Ch4 is
          else
             Expr :=
               Make_Attribute_Reference (Loc,
-                Prefix =>
-                  New_Reference_To (Obj_Id, Loc),
+                Prefix         => New_Reference_To (Obj_Id, Loc),
                 Attribute_Name => Name_Unrestricted_Access);
          end if;
 
