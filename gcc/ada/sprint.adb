@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1347,6 +1347,12 @@ package body Sprint is
             Write_Str (" of ");
 
             Sprint_Node (Component_Definition (Node));
+
+         --  A contract node should not appear in the tree. It is a semantic
+         --  node attached to entry and [generic] subprogram entities.
+
+         when N_Contract =>
+            raise Program_Error;
 
          when N_Decimal_Fixed_Point_Definition =>
             Write_Str_With_Col_Check_Sloc (" delta ");

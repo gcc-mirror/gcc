@@ -1009,6 +1009,11 @@ package Einfo is
 --       accept statement for a member of the family, and in the prefix of
 --       'COUNT when it applies to a family member.
 
+--    Contract (Node24)
+--       Present in entries, and in subprogram and generic subprogram entities.
+--       Points to the contract of the entity, holding both pre- and
+--       postconditions as well as test-cases.
+
 --    Entry_Parameters_Type (Node15)
 --       Present in entries. Points to the access-to-record type that is
 --       constructed by the expander to hold a reference to the parameter
@@ -3641,14 +3646,6 @@ package Einfo is
 --       case where there is a separate spec, where this field references
 --       the corresponding parameter entities in the spec.
 
---    Spec_PPC_List (Node24)
---       Present in entries, and in subprogram and generic subprogram entities.
---       Points to a list of Precondition and Postcondition pragma nodes for
---       preconditions and postconditions declared in the spec. The last pragma
---       encountered is at the head of this list, so it is in reverse order of
---       textual appearance. Note that this includes precondition/postcondition
---       pragmas generated to correspond to Pre/Post aspects.
-
 --    Static_Predicate (List25)
 --       Present in discrete types/subtypes with predicates (Has_Predicates
 --       set True). Points to a list of expression and N_Range nodes that
@@ -5126,7 +5123,7 @@ package Einfo is
    --    Accept_Address                      (Elist21)
    --    Scope_Depth_Value                   (Uint22)
    --    Protection_Object                   (Node23)   (protected kind)
-   --    Spec_PPC_List                       (Node24)   (for entry only)
+   --    Contract                            (Node24)   (for entry only)
    --    PPC_Wrapper                         (Node25)
    --    Default_Expressions_Processed       (Flag108)
    --    Entry_Accepted                      (Flag152)
@@ -5226,7 +5223,7 @@ package Einfo is
    --    Generic_Renamings                   (Elist23)  (for an instance)
    --    Inner_Instances                     (Elist23)  (generic case only)
    --    Protection_Object                   (Node23)   (for concurrent kind)
-   --    Spec_PPC_List                       (Node24)
+   --    Contract                            (Node24)
    --    Interface_Alias                     (Node25)
    --    Overridden_Operation                (Node26)
    --    Wrapped_Entity                      (Node27)   (non-generic case only)
@@ -5490,7 +5487,7 @@ package Einfo is
    --    Generic_Renamings                   (Elist23)  (for an instance)
    --    Inner_Instances                     (Elist23)  (generic case only)
    --    Protection_Object                   (Node23)   (for concurrent kind)
-   --    Spec_PPC_List                       (Node24)
+   --    Contract                            (Node24)
    --    Interface_Alias                     (Node25)
    --    Static_Initialization               (Node26)   (init_proc only)
    --    Overridden_Operation                (Node26)   (never for init proc)
@@ -6039,6 +6036,7 @@ package Einfo is
    function Entry_Formal                        (Id : E) return E;
    function Entry_Index_Constant                (Id : E) return E;
    function Entry_Index_Type                    (Id : E) return E;
+   function Contract                            (Id : E) return N;
    function Entry_Parameters_Type               (Id : E) return E;
    function Enum_Pos_To_Rep                     (Id : E) return E;
    function Enumeration_Pos                     (Id : E) return U;
@@ -6333,7 +6331,6 @@ package Einfo is
    function Size_Depends_On_Discriminant        (Id : E) return B;
    function Small_Value                         (Id : E) return R;
    function Spec_Entity                         (Id : E) return E;
-   function Spec_PPC_List                       (Id : E) return N;
    function Static_Predicate                    (Id : E) return S;
    function Storage_Size_Variable               (Id : E) return E;
    function Static_Elaboration_Desired          (Id : E) return B;
@@ -6626,6 +6623,7 @@ package Einfo is
    procedure Set_Entry_Component                 (Id : E; V : E);
    procedure Set_Entry_Formal                    (Id : E; V : E);
    procedure Set_Entry_Index_Constant            (Id : E; V : E);
+   procedure Set_Contract                        (Id : E; V : N);
    procedure Set_Entry_Parameters_Type           (Id : E; V : E);
    procedure Set_Enum_Pos_To_Rep                 (Id : E; V : E);
    procedure Set_Enumeration_Pos                 (Id : E; V : U);
@@ -6926,7 +6924,6 @@ package Einfo is
    procedure Set_Size_Known_At_Compile_Time      (Id : E; V : B := True);
    procedure Set_Small_Value                     (Id : E; V : R);
    procedure Set_Spec_Entity                     (Id : E; V : E);
-   procedure Set_Spec_PPC_List                   (Id : E; V : N);
    procedure Set_Static_Predicate                (Id : E; V : S);
    procedure Set_Storage_Size_Variable           (Id : E; V : E);
    procedure Set_Static_Elaboration_Desired      (Id : E; V : B);
@@ -7280,6 +7277,7 @@ package Einfo is
    pragma Inline (Component_Clause);
    pragma Inline (Component_Size);
    pragma Inline (Component_Type);
+   pragma Inline (Contract);
    pragma Inline (Corresponding_Concurrent_Type);
    pragma Inline (Corresponding_Discriminant);
    pragma Inline (Corresponding_Equality);
@@ -7664,7 +7662,6 @@ package Einfo is
    pragma Inline (Size_Known_At_Compile_Time);
    pragma Inline (Small_Value);
    pragma Inline (Spec_Entity);
-   pragma Inline (Spec_PPC_List);
    pragma Inline (Static_Predicate);
    pragma Inline (Storage_Size_Variable);
    pragma Inline (Static_Elaboration_Desired);
@@ -7724,6 +7721,7 @@ package Einfo is
    pragma Inline (Set_Component_Clause);
    pragma Inline (Set_Component_Size);
    pragma Inline (Set_Component_Type);
+   pragma Inline (Set_Contract);
    pragma Inline (Set_Corresponding_Concurrent_Type);
    pragma Inline (Set_Corresponding_Discriminant);
    pragma Inline (Set_Corresponding_Equality);
@@ -8063,7 +8061,6 @@ package Einfo is
    pragma Inline (Set_Size_Known_At_Compile_Time);
    pragma Inline (Set_Small_Value);
    pragma Inline (Set_Spec_Entity);
-   pragma Inline (Set_Spec_PPC_List);
    pragma Inline (Set_Static_Predicate);
    pragma Inline (Set_Storage_Size_Variable);
    pragma Inline (Set_Static_Elaboration_Desired);

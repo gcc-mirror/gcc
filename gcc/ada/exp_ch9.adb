@@ -1660,7 +1660,7 @@ package body Exp_Ch9 is
          P : Node_Id;
 
       begin
-         P := Spec_PPC_List (E);
+         P := Spec_PPC_List (Contract (E));
          if No (P) then
             return;
          end if;
@@ -10871,7 +10871,7 @@ package body Exp_Ch9 is
          Ent := First_Entity (Tasktyp);
          while Present (Ent) loop
             if Ekind_In (Ent, E_Entry, E_Entry_Family)
-              and then Present (Spec_PPC_List (Ent))
+              and then Present (Spec_PPC_List (Contract (Ent)))
             then
                Build_PPC_Wrapper (Ent, N);
             end if;

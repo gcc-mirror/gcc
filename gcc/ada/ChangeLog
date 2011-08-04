@@ -1,3 +1,61 @@
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Document new pragma and aspect.
+	* aspects.adb, aspects.ads (Aspect_Id): new value Aspect_Test_Case
+	(No_Duplicates_Allowed): new constant array defining whether duplicates
+	aspects of each kind can appear on the same declaration.
+	* einfo.adb, einfo.ads (Spec_PPC_List): replace field with Contract
+	field, which points to a node holding the previous Spec_PPC_List.
+	* exp_ch9.adb, sem_ch6.adb, sem_prag.adb: Reach to Spec_PPC_List
+	through the indirection with Contract.
+	* exp_util.adb (Insert_Actions): raise Program_Error on N_Contract node
+	* par-prag.adb (Prag): do nothing on Test_Case pragma
+	* sem.adb (Analyze): abort on N_Contract, on which Analyze should not
+	be called directly.
+	* sem_attr.adb (Analyze_Attribute): allow attribute 'Result in
+	component Ensures of Test_Case.
+	* sem_ch12.adb, sem_ch6.adb, sem_ch9.adb
+	(Analyze_Generic_Subprogram_Declaration,
+	Analyze_Subprogram_Instantiation,
+	Analyze_Abstract_Subprogram_Declaration,
+	Analyze_Subprogram_Body_Helper,
+	Analyze_Subprogram_Specification, Analyze_Entry_Declaration):
+	insert contract in subprogram node at point of definition
+	* sem_ch13.adb
+	(Aspect_Loop): do not raise error on duplicate Test_Case aspect
+	(Analyze_Aspect_Specifications): analyze Test_Case aspect and create
+	corresponding pragma
+	(Check_Aspect_At_Freeze_Point): raise Program_Error on Test_Case aspect
+	* sem_ch3.adb (Analyze_Declarations): insert analysis of test-cases,
+	similar to the analysis of pre/post
+	(Derive_Subprogram): insert contract in subprogram node at point of
+	derivation.
+	* sem_prag.adb, sem_prag.ads
+	(Check_Arg_Is_String_Literal, Check_Identifier):
+	new checking procedures to be called in treatment of pragmas
+	(Check_Test_Case): new procedure to check that a Test_Case aspect or
+	pragma is well-formed. This does not check currently that 'Result is
+	used only in the Ensures component of a Test_Case.
+	(Analyze_Pragma): add case for Test_Case
+	(Analyze_TC_In_Decl_Part): pre-analyze the Requires and Ensures
+	components of a Test_Case.
+	(Preanalyze_TC_Args): new procedure to preanalyze the boolean
+	expressions in the 3rd (and 4th if present) arguments of a Test_Case
+	pragma, treated as spec expressions.
+	(Sig_Flags): add value -1 for Test_Case.
+	* sem_util.adb, sem_util.ads (Get_Ensures_From_Test_Case_Pragma,
+	Get_Requires_From_Test_Case_Pragma): getters for both expression
+	components of a Test_Case.
+	* sinfo.adb, sinfo.ads (N_Contract): new kind of node used as
+	indirection between an entry or [generic] subprogram entity and its
+	pre/post + test-cases.
+	(Spec_PPC_List, Spec_TC_List, Set_Spec_PPC_List, Set_Spec_TC_List):
+	get/set for fields of an N_Contract node.
+	* snames.ads-tmpl (Name_Test_Case, Name_Ensures, Name_Mode,
+	Name_Normal, Name_Requires, Name_Robustness, Pragma_Test_Case): new
+	names and pragma for Test_Case.
+	* sprint.adb (Sprint_Node): raise Program_Error on N_Contract node
+
 2011-08-04  Vincent Celier  <celier@adacore.com>
 
 	* gnat_ugn.texi: Improve documentation of gnatmake switch

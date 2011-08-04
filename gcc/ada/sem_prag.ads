@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,14 @@ package Sem_Prag is
 
    procedure Analyze_Pragma (N : Node_Id);
    --  Analyze procedure for pragma reference node N
+
+   procedure Analyze_TC_In_Decl_Part (N : Node_Id; S : Entity_Id);
+   --  Special analyze routine for test-case pragma that appears within a
+   --  declarative part where the pragma is associated with a subprogram
+   --  specification. N is the pragma node, and S is the entity for the related
+   --  subprogram. This procedure does a preanalysis of the expressions in the
+   --  pragma as "spec expressions" (see section in Sem "Handling of Default
+   --  and Per-Object Expressions...").
 
    function Check_Enabled (Nam : Name_Id) return Boolean;
    --  This function is used in connection with pragmas Assertion, Check,

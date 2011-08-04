@@ -484,6 +484,9 @@ package Sem_Util is
    --  If expression N references a part of an object, return this object.
    --  Otherwise return Empty. Expression N should have been resolved already.
 
+   function Get_Ensures_From_Test_Case_Pragma (N : Node_Id) return Node_Id;
+   --  Return the Ensures components of Test_Case pragma N, or Empty otherwise
+
    function Get_Generic_Entity (N : Node_Id) return Entity_Id;
    --  Returns the true generic entity in an instantiation. If the name in the
    --  instantiation is a renaming, the function returns the renamed generic.
@@ -529,6 +532,9 @@ package Sem_Util is
    --  returns the ultimately renamed entity if this is a renaming. If this is
    --  not a renamed entity, returns its argument. It is an error to call this
    --  with any other kind of entity.
+
+   function Get_Requires_From_Test_Case_Pragma (N : Node_Id) return Node_Id;
+   --  Return the Requires components of Test_Case pragma N, or Empty otherwise
 
    function Get_Subprogram_Entity (Nod : Node_Id) return Entity_Id;
    --  Nod is either a procedure call statement, or a function call, or an

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2010, Free Software Foundation, Inc.            --
+--         Copyright (C) 2010-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,6 +69,7 @@ package Aspects is
       Aspect_Storage_Size,
       Aspect_Stream_Size,
       Aspect_Suppress,
+      Aspect_Test_Case,                     -- GNAT
       Aspect_Type_Invariant,
       Aspect_Unsuppress,
       Aspect_Value_Size,                    -- GNAT
@@ -128,6 +129,13 @@ package Aspects is
                         Aspect_Post          => True,
                         others               => False);
 
+   --  The following array indicates aspects for which multiple occurrences of
+   --  the same aspect attached to the same declaration are allowed.
+
+   No_Duplicates_Allowed : constant array (Aspect_Id) of Boolean :=
+                             (Aspect_Test_Case => False,
+                              others           => True);
+
    --  The following subtype defines aspects corresponding to library unit
    --  pragmas, these can only validly appear as aspects for library units,
    --  and result in a corresponding pragma being inserted immediately after
@@ -185,6 +193,7 @@ package Aspects is
                         Aspect_Storage_Size            => Expression,
                         Aspect_Stream_Size             => Expression,
                         Aspect_Suppress                => Name,
+                        Aspect_Test_Case               => Expression,
                         Aspect_Type_Invariant          => Expression,
                         Aspect_Unsuppress              => Name,
                         Aspect_Value_Size              => Expression,
@@ -252,6 +261,7 @@ package Aspects is
      Aspect_Stream_Size                  => Name_Stream_Size,
      Aspect_Suppress                     => Name_Suppress,
      Aspect_Suppress_Debug_Info          => Name_Suppress_Debug_Info,
+     Aspect_Test_Case                    => Name_Test_Case,
      Aspect_Type_Invariant               => Name_Type_Invariant,
      Aspect_Unchecked_Union              => Name_Unchecked_Union,
      Aspect_Universal_Aliasing           => Name_Universal_Aliasing,

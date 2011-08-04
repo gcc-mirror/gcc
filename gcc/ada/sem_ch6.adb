@@ -230,6 +230,7 @@ package body Sem_Ch6 is
       Check_SPARK_Restriction ("abstract subprogram is not allowed", N);
 
       Generate_Definition (Designator);
+      Set_Contract (Designator, Make_Contract (Sloc (Designator)));
       Set_Is_Abstract_Subprogram (Designator);
       New_Overloaded_Entity (Designator);
       Check_Delayed_Subprogram (Designator);
@@ -2539,6 +2540,7 @@ package body Sem_Ch6 is
          if Nkind (N) /= N_Subprogram_Body_Stub then
             Set_Acts_As_Spec (N);
             Generate_Definition (Body_Id);
+            Set_Contract (Body_Id, Make_Contract (Sloc (Body_Id)));
             Generate_Reference
               (Body_Id, Body_Id, 'b', Set_Ref => False, Force => True);
             Generate_Reference_To_Formals (Body_Id);
@@ -2981,6 +2983,7 @@ package body Sem_Ch6 is
 
       Designator := Analyze_Subprogram_Specification (Specification (N));
       Generate_Definition (Designator);
+      --  ??? why this call, already in Analyze_Subprogram_Specification
 
       if Debug_Flag_C then
          Write_Str ("==> subprogram spec ");
@@ -3170,6 +3173,7 @@ package body Sem_Ch6 is
       --  Proceed with analysis
 
       Generate_Definition (Designator);
+      Set_Contract (Designator, Make_Contract (Sloc (Designator)));
 
       if Nkind (N) = N_Function_Specification then
          Set_Ekind (Designator, E_Function);
@@ -7300,7 +7304,8 @@ package body Sem_Ch6 is
 
          begin
             for J in Inherited'Range loop
-               P := Spec_PPC_List (Inherited (J));
+               P := Spec_PPC_List (Contract (Inherited (J)));
+
                while Present (P) loop
                   Error_Msg_Sloc := Sloc (P);
 
@@ -9193,7 +9198,7 @@ package body Sem_Ch6 is
          --  the body will be analyzed and converted when we scan the body
          --  declarations below.
 
-         Prag := Spec_PPC_List (Spec_Id);
+         Prag := Spec_PPC_List (Contract (Spec_Id));
          while Present (Prag) loop
             if Pragma_Name (Prag) = Name_Precondition then
 
@@ -9222,7 +9227,7 @@ package body Sem_Ch6 is
          --  Now deal with inherited preconditions
 
          for J in Inherited'Range loop
-            Prag := Spec_PPC_List (Inherited (J));
+            Prag := Spec_PPC_List (Contract (Inherited (J)));
 
             while Present (Prag) loop
                if Pragma_Name (Prag) = Name_Precondition
@@ -9402,7 +9407,7 @@ package body Sem_Ch6 is
 
                --  Loop through PPC pragmas from spec
 
-               Prag := Spec_PPC_List (Spec);
+               Prag := Spec_PPC_List (Contract (Spec));
                loop
                   if Pragma_Name (Prag) = Name_Postcondition
                     and then (not Class or else Class_Present (Prag))
@@ -9427,14 +9432,14 @@ package body Sem_Ch6 is
          --  Start of processing for Spec_Postconditions
 
          begin
-            if Present (Spec_PPC_List (Spec_Id)) then
+            if Present (Spec_PPC_List (Contract (Spec_Id))) then
                Process_Post_Conditions (Spec_Id, Class => False);
             end if;
 
             --  Process inherited postconditions
 
             for J in Inherited'Range loop
-               if Present (Spec_PPC_List (Inherited (J))) then
+               if Present (Spec_PPC_List (Contract (Inherited (J)))) then
                   Process_Post_Conditions (Inherited (J), Class => True);
                end if;
             end loop;

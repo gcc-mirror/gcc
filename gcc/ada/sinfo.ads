@@ -1694,12 +1694,12 @@ package Sinfo is
    --    which gigi must do size validation for.
 
    --  Split_PPC (Flag17)
-   --     When a Pre or Postaspect specification is processed, it is broken
-   --     into AND THEN sections. The left most section has Split_PPC set to
-   --     False, indicating that it is the original specification (e.g. for
-   --     posting errors). For other sections, Split_PPC is set to True.
-   --     This flag is set in both the N_Aspect_Specification node itself,
-   --     and in the pragma which is generated from this node.
+   --    When a Pre or Post aspect specification is processed, it is broken
+   --    into AND THEN sections. The left most section has Split_PPC set to
+   --    False, indicating that it is the original specification (e.g. for
+   --    posting errors). For other sections, Split_PPC is set to True.
+   --    This flag is set in both the N_Aspect_Specification node itself,
+   --    and in the pragma which is generated from this node.
 
    --  Static_Processing_OK (Flag4-Sem)
    --    Present in N_Aggregate nodes. When the Compile_Time_Known_Aggregate
@@ -6894,6 +6894,39 @@ package Sinfo is
       --  Is_Elsif (Flag13) (set if comes from ELSIF)
       --  plus fields for expression
 
+      --------------
+      -- Contract --
+      --------------
+
+      --  This node is used to hold the various parts of an entry or subprogram
+      --  contract, consisting in pre- and postconditions on the one hand, and
+      --  test-cases on the other hand.
+
+      --  It is referenced from an entry, a subprogram or a generic subprogram
+      --  entity.
+
+      --  Sprint syntax:  <none> as the node should not appear in the tree, but
+      --                  only attached to an entry or [generic] subprogram
+      --                  entity.
+
+      --  N_Contract
+      --  Sloc points to the subprogram's name
+      --  Spec_PPC_List (Node1) (set to Empty if none)
+      --  Spec_TC_List (Node2) (set to Empty if none)
+
+      --  Spec_PPC_List points to a list of Precondition and Postcondition
+      --  pragma nodes for preconditions and postconditions declared in the
+      --  spec of the entry/subprogram. The last pragma encountered is at the
+      --  head of this list, so it is in reverse order of textual appearance.
+      --  Note that this includes precondition/postcondition pragmas generated
+      --  to correspond to Pre/Post aspects.
+
+      --  Spec_TC_List points to a list of Test_Case pragma nodes for
+      --  test-cases declared in the spec of the entry/subprogram. The last
+      --  pragma encountered is at the head of this list, so it is in reverse
+      --  order of textual appearance. Note that this includes test-case
+      --  pragmas generated to correspond to Test_Case aspects.
+
       -------------------
       -- Expanded_Name --
       -------------------
@@ -7746,6 +7779,7 @@ package Sinfo is
       N_Component_Association,
       N_Component_Definition,
       N_Component_List,
+      N_Contract,
       N_Derived_Type_Definition,
       N_Decimal_Fixed_Point_Definition,
       N_Defining_Program_Unit_Name,
@@ -8850,6 +8884,12 @@ package Sinfo is
    function Source_Type
      (N : Node_Id) return Entity_Id;  -- Node1
 
+   function Spec_PPC_List
+     (N : Node_Id) return Node_Id;    -- Node1
+
+   function Spec_TC_List
+     (N : Node_Id) return Node_Id;    -- Node2
+
    function Specification
      (N : Node_Id) return Node_Id;    -- Node1
 
@@ -9812,6 +9852,12 @@ package Sinfo is
 
    procedure Set_Source_Type
      (N : Node_Id; Val : Entity_Id);          -- Node1
+
+   procedure Set_Spec_PPC_List
+     (N : Node_Id; Val : Node_Id);            -- Node1
+
+   procedure Set_Spec_TC_List
+     (N : Node_Id; Val : Node_Id);            -- Node2
 
    procedure Set_Specification
      (N : Node_Id; Val : Node_Id);            -- Node1
@@ -11447,6 +11493,13 @@ package Sinfo is
         4 => False,   --  unused
         5 => False),  --  Etype (Node5-Sem)
 
+     N_Contract =>
+       (1 => False,   --  Spec_PPC_List (Node1)
+        2 => False,   --  Spec_TC_List (Node2)
+        3 => False,   --  unused
+        4 => False,   --  unused
+        5 => False),  --  unused
+
      N_Expanded_Name =>
        (1 => True,    --  Chars (Name1)
         2 => True,    --  Selector_Name (Node2)
@@ -11931,6 +11984,8 @@ package Sinfo is
    pragma Inline (Selector_Names);
    pragma Inline (Shift_Count_OK);
    pragma Inline (Source_Type);
+   pragma Inline (Spec_PPC_List);
+   pragma Inline (Spec_TC_List);
    pragma Inline (Specification);
    pragma Inline (Split_PPC);
    pragma Inline (Statements);
@@ -12248,6 +12303,8 @@ package Sinfo is
    pragma Inline (Set_Selector_Names);
    pragma Inline (Set_Shift_Count_OK);
    pragma Inline (Set_Source_Type);
+   pragma Inline (Set_Spec_PPC_List);
+   pragma Inline (Set_Spec_TC_List);
    pragma Inline (Set_Specification);
    pragma Inline (Set_Split_PPC);
    pragma Inline (Set_Statements);
