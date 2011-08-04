@@ -47,7 +47,7 @@ END MODULE M1
   cell%h = reshape ([(real(i), i = 1, 9)], [3, 3])
   call s1 (cell)
 end
-! { dg-final { cleanup-modules "m1" } }
+! { dg-final { cleanup-modules "m1 m2" } }
 ! { dg-final { scan-tree-dump-times "&a" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "pack" 0 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

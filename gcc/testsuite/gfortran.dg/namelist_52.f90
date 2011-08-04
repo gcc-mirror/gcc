@@ -30,3 +30,5 @@ read(31,nml=info_adjoint)
 if (adjoint%solver_type /= 'direct') call abort
 if (adjoint%screen_io_fs_ntime%begin /= 42) call abort
 end program gfortran_error_2
+
+! { dg-final { cleanup-modules "mod1" } }

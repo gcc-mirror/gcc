@@ -1,3 +1,13 @@
+2011-08-04  Mikael Morin  <mikael.morin@sfr.fr>
+
+	* gfortran.dg/dependency_26.f90: Add a module to the cleanup directive.
+	* gfortran.dg/trim_optimize_2.f90: Add a module cleanup directive.
+	* gfortran.dg/ldist-pr43023.f90: Ditto.
+	* gfortran.dg/namelist_52.f90: Ditto.
+	* gfortran.dg/interface_proc_end.f90: Ditto.
+	* gfortran.dg/vector_subscript_bound_1.f90: Ditto.
+	* gfortran.dg/generic_typebound_operator_1.f90: Ditto.
+
 2011-08-04  Ira Rosen  <ira.rosen@linaro.org>
 
 	* gcc.dg/vect/vect-over-widen-1.c: New test.
