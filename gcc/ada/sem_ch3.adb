@@ -13647,7 +13647,8 @@ package body Sem_Ch3 is
                      Type_Conformant (Subp, Act_Subp,
                                       Skip_Controlling_Formals => True)))
             then
-               pragma Assert (not Is_Ancestor (Parent_Base, Generic_Actual));
+               pragma Assert (not Is_Ancestor (Parent_Base, Generic_Actual,
+                                               Use_Full_View => True));
 
                --  Remember that we need searching for all pending primitives
 

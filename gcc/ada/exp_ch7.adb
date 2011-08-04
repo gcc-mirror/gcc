@@ -1562,38 +1562,23 @@ package body Exp_Ch7 is
 
             --  If the package spec has private declarations, the finalizer
             --  body must be added to the end of the list in order to have
-            --  visibility of all private controlled objects. The spec is
-            --  inserted at the top of the visible declarations.
+            --  visibility of all private controlled objects.
 
             if For_Package_Spec then
-               Prepend_To (Decls, Fin_Spec);
-
                if Present (Priv_Decls) then
+                  Append_To (Priv_Decls, Fin_Spec);
                   Append_To (Priv_Decls, Fin_Body);
                else
+                  Append_To (Decls, Fin_Spec);
                   Append_To (Decls, Fin_Body);
                end if;
 
-            --  For package bodies, the finalizer body is added to the
-            --  declarative region of the body and finalizer spec goes
-            --  on the visible declarations of the package spec.
+            --  For package bodies, both the finalizer spec and body are
+            --  inserted at the end of the package declarations.
 
             else
-               declare
-                  Spec_Nod  : Node_Id;
-                  Vis_Decls : List_Id;
-
-               begin
-                  Spec_Nod := Spec_Id;
-                  while Nkind (Spec_Nod) /= N_Package_Specification loop
-                     Spec_Nod := Parent (Spec_Nod);
-                  end loop;
-
-                  Vis_Decls := Visible_Declarations (Spec_Nod);
-
-                  Prepend_To (Vis_Decls, Fin_Spec);
-                  Append_To  (Decls, Fin_Body);
-               end;
+               Append_To (Decls, Fin_Spec);
+               Append_To (Decls, Fin_Body);
             end if;
 
             --  Push the name of the package
