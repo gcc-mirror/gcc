@@ -1,3 +1,8 @@
+2011-08-04  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/i386.c (setup_incoming_varargs_ms_64): Set
+	ix86_varargs_gpr_size and ix86_varargs_fpr_size to zero.
+
 2011-08-04  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vectorizer.h (struct _stmt_vec_info): Add new field for

@@ -7502,6 +7502,11 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 static void
 setup_incoming_varargs_ms_64 (CUMULATIVE_ARGS *cum)
 {
+  /* Reset to zero, as there might be a sysv vaarg used
+     before.  */
+  ix86_varargs_gpr_size = 0;
+  ix86_varargs_fpr_size = 0;
+  
   alias_set_type set = get_varargs_alias_set ();
   int i;
 
