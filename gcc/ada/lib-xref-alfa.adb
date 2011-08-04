@@ -738,7 +738,7 @@ package body ALFA is
 
             if XE.Ent /= Cur_Entity then
                Cur_Entity_Name :=
-                 new String'(Exact_Source_Name (Sloc (XE.Ent)));
+                 new String'(Unique_Name (XE.Ent));
             end if;
 
             ALFA_Xref_Table.Append (

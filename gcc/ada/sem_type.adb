@@ -1196,6 +1196,17 @@ package body Sem_Type is
       --  Determine whether one of the candidates is an operation inherited by
       --  a type that is derived from an actual in an instantiation.
 
+      function In_Same_Declaration_List
+        (Typ     : Entity_Id;
+         Op_Decl : Entity_Id) return Boolean;
+      --  AI05-0020: a spurious ambiguity may arise when equality on anonymous
+      --  access types is declared on the partial view of a designated type, so
+      --  that the type declaration and equality are not in the same list of
+      --  declarations. This AI gives a preference rule for the user-defined
+      --  operation. Same rule applies for arithmetic operations on private
+      --  types completed with fixed-point types: the predefined operation is
+      --  hidden;  this is already handled properly in GNAT.
+
       function Is_Actual_Subprogram (S : Entity_Id) return Boolean;
       --  Determine whether a subprogram is an actual in an enclosing instance.
       --  An overloading between such a subprogram and one declared outside the
@@ -1254,6 +1265,26 @@ package body Sem_Type is
                  Entity (Subtype_Indication (Type_Definition (Par))));
          end if;
       end Inherited_From_Actual;
+
+      ------------------------------
+      -- In_Same_Declaration_List --
+      ------------------------------
+
+      function In_Same_Declaration_List
+        (Typ     : Entity_Id;
+         Op_Decl : Entity_Id) return Boolean
+      is
+         Scop : constant Entity_Id := Scope (Typ);
+
+      begin
+         return In_Same_List (Parent (Typ), Op_Decl)
+           or else
+             (Ekind_In (Scop, E_Package, E_Generic_Package)
+                and then List_Containing (Op_Decl) =
+                  Visible_Declarations (Parent (Scop))
+                and then List_Containing (Parent (Typ)) =
+                  Private_Declarations (Parent (Scop)));
+      end In_Same_Declaration_List;
 
       --------------------------
       -- Is_Actual_Subprogram --
@@ -1934,8 +1965,9 @@ package body Sem_Type is
               and then Etype (User_Subp) = Standard_Boolean
               and then Ekind (Operand_Type) = E_Anonymous_Access_Type
               and then
-                In_Same_List (Parent (Designated_Type (Operand_Type)),
-                              Unit_Declaration_Node (User_Subp))
+                In_Same_Declaration_List
+                  (Designated_Type (Operand_Type),
+                     Unit_Declaration_Node (User_Subp))
             then
                if It2.Nam = Predef_Subp then
                   return It1;

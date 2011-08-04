@@ -1,3 +1,70 @@
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Improve documentation of gnatmake switch
+	--source-info-file=.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Make_Final_Call): Add local variable Atyp (assertion
+	type). Initialize Atyp to the appropriate type which is later checked
+	for completion. Rewrite the assertion associated with private type
+	completion.
+
+2011-08-04  Ed Falis  <falis@adacore.com>
+
+	* adaint.c: Add call to vxCpuConfiguredGet for VxWorks SMP to
+	initialize the number of CPUs.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Disambiguate): New subsidiary routine
+	In_Same_Declaration_List, to implement AI05-0020: a user-defined
+	equality on an anonymous access type whose designated type is private
+	does not lead to an ambiguity with the universal access equality
+	operator in the body or child units of the defining package. The same
+	is true for a multiplication operator on a private type completed with
+	a fixed-point-type.
+
+2011-08-04  Javier Miranda  <miranda@adacore.com>
+
+	* opt.ads (Init_Or_Norm_Scalars_Config): Removed.
+	(Normalize_Scalars_Config): Removed.
+	* opt.adb
+	(Register_Opt_Config_Switches): Remove registering config values of
+	Init_Or_Norm_Scalars_Config and Normalize_Scalars_Config.
+	(Restore_Opt_Config_Switches): Remove code which restores the values of
+	Init_Or_Norm_Scalars and Normalize_Scalars. Recalculate value of
+	Init_Or_Norm_Scalars.
+	(Save_Opt_Config_Switches): Remove code which saves values of
+	Init_Or_Norm_Scalars and Normalize_Scalars.
+	(Set_Opt_Config_Switches): Remove code which restores config values of
+	Init_Or_Norm_Scalars and Normalize_Scalars. Recalculate value of
+	Init_Or_Norm_Scalars.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* frontend.adb (Frontend): remove previous patch to avoid full
+	qualification in ALFA mode.
+	* lib-xref-alfa.adb (Add_ALFA_Xrefs): use unique name for variables.
+	* sem_util.adb, sem_util.ads (Unique_Name): new function to define a
+	unique name for an entity, which could be used to identify the entity
+	across compilation units.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* prj-env.adb
+	(Initialize_Default_Project_Path): Add target specific directory
+	($prefix/$target/lib/gnat) in front of project path in all cases
+	(making gnatmake's behaviour consistent with gprbuild).
+	* gnatcmd.adb, make.adb, prj-makr.adb, clean.adb:
+	Pass target name from Sdefault to project subsystem.
+	* gnatls.adb: Show new target specific default project directory.
+
+2011-08-04  Johannes Kanig  <kanig@adacore.com>
+
+	* cstand.adb: Add Information to Identifier in Standard
+	(Identifer_For): Set Entity to the corresponding entity
+
 2011-08-04  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi: Update doc on gnatcheck.

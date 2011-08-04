@@ -9389,7 +9389,9 @@ to process the project files, especially when looking for sources that take a
 long time. If the source info file exists but cannot be parsed successfully,
 the Project Manager will attempt to recreate it. If the Project Manager fails
 to create the source info file, a message is issued, but gnatmake does not
-fail.
+fail. @command{gnatmake} "trusts" the source info file. This means that
+if the source files have changed (addition, deletion, moving to a different
+source directory), then the source info file need to be deleted and recreated.
 
 @ifclear vms
 @item --create-map-file

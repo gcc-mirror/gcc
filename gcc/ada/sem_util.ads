@@ -1372,6 +1372,10 @@ package Sem_Util is
    --  Return the entity which represents declaration N, so that matching
    --  declaration and body have the same entity.
 
+   function Unique_Name (E : Entity_Id) return String;
+   --  Return a unique name for entity E, which could be used to identify E
+   --  across compilation units.
+
    function Unit_Declaration_Node (Unit_Id : Entity_Id) return Node_Id;
    --  Unit_Id is the simple name of a program unit, this function returns the
    --  corresponding xxx_Declaration node for the entity. Also applies to the

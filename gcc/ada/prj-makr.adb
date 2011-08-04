@@ -34,6 +34,7 @@ with Prj.Part;
 with Prj.PP;
 with Prj.Tree; use Prj.Tree;
 with Prj.Util; use Prj.Util;
+with Sdefault;
 with Snames;   use Snames;
 with Table;    use Table;
 
@@ -802,7 +803,8 @@ package body Prj.Makr is
 
       Prj.Tree.Initialize (Root_Environment, Flags);
       Prj.Env.Initialize_Default_Project_Path
-        (Root_Environment.Project_Path, Target_Name => "");
+        (Root_Environment.Project_Path,
+         Target_Name => Sdefault.Target_Name.all);
 
       Prj.Tree.Initialize (Tree);
 

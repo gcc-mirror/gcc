@@ -1651,6 +1651,7 @@ package body CStand is
    begin
       Ident_Node := New_Node (N_Identifier, Stloc);
       Set_Chars (Ident_Node, Chars (Standard_Entity (S)));
+      Set_Entity (Ident_Node, Standard_Entity (S));
       return Ident_Node;
    end Identifier_For;
 

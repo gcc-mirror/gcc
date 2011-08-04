@@ -51,6 +51,11 @@ extern "C" {
 #include "cacheLib.h"
 #endif /* __mips_vxworks */
 
+/* If SMP, access vxCpuConfiguredGet */
+#ifdef _WRS_CONFIG_SMP
+#include <vxCpuLib.h>
+#endif /* _WRS_CONFIG_SMP */
+
 #endif /* VxWorks */
 
 #if (defined (__mips) && defined (__sgi)) || defined (__APPLE__)
@@ -2442,6 +2447,12 @@ __gnat_number_of_cpus (void)
   status = LIB$GETSYI (&code, &res);
   if ((status & 1) != 0)
     cores = res;
+
+#elif defined (__WRS_CONFIG_SMP)
+  unsigned int vxCpuConfiguredGet (void);
+
+  cores = vxCpuConfiguredGet ();
+
 #endif
 
   return cores;
