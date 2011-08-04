@@ -62,7 +62,7 @@ package body Exp_Ch12 is
                  Right_Opnd =>
                    Make_Attribute_Reference (Loc,
                      Attribute_Name => Name_Elaborated,
-                     Prefix => New_Occurrence_Of (Ent, Loc))),
+                     Prefix         => New_Occurrence_Of (Ent, Loc))),
              Reason => PE_Access_Before_Elaboration));
       end if;
    end Expand_N_Generic_Instantiation;

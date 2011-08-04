@@ -956,17 +956,14 @@ package body Sem_Util is
 
       --  Create elaboration flag
 
-      Elab_Ent :=
-        Make_Defining_Identifier (Loc, Chars => Name_Find);
+      Elab_Ent := Make_Defining_Identifier (Loc, Chars => Name_Find);
       Set_Elaboration_Entity (Spec_Id, Elab_Ent);
 
       Decl :=
-         Make_Object_Declaration (Loc,
-           Defining_Identifier => Elab_Ent,
-           Object_Definition   =>
-             New_Occurrence_Of (Standard_Integer, Loc),
-           Expression          =>
-             Make_Integer_Literal (Loc, Uint_0));
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Elab_Ent,
+          Object_Definition   => New_Occurrence_Of (Standard_Integer, Loc),
+          Expression          => Make_Integer_Literal (Loc, Uint_0));
 
       Push_Scope (Standard_Standard);
       Add_Global_Declaration (Decl);
@@ -5567,7 +5564,7 @@ package body Sem_Util is
          return False;
       end if;
 
-      --  First treat specially string literals, as the lower bound and length
+      --  First treat string literals specially, as the lower bound and length
       --  of string literals are not stored like those of arrays.
 
       --  A string literal always has static bounds
@@ -5596,8 +5593,9 @@ package body Sem_Util is
             return False;
          end if;
 
-         if         Is_OK_Static_Expression (Low)
-           and then Is_OK_Static_Expression (High)
+         if Is_OK_Static_Expression (Low)
+              and then
+            Is_OK_Static_Expression (High)
          then
             null;
          else
@@ -6000,6 +5998,7 @@ package body Sem_Util is
                if Nkind (Decl) = N_Incomplete_Type_Declaration then
                   Match := Defining_Identifier (Decl);
                end if;
+
             else
                if Nkind_In (Decl, N_Private_Extension_Declaration,
                                   N_Private_Type_Declaration)
@@ -6020,6 +6019,8 @@ package body Sem_Util is
 
          return Empty;
       end Inspect_Decls;
+
+      --  Local variables
 
       Prev : Entity_Id;
 

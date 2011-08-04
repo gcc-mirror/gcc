@@ -1210,7 +1210,7 @@ package Sem_Util is
    --  previous errors (particularly in -gnatq mode).
 
    function Requires_Transient_Scope (Id : Entity_Id) return Boolean;
-   --  E is a type entity. The result is True when temporaries of this type
+   --  Id is a type entity. The result is True when temporaries of this type
    --  need to be wrapped in a transient scope to be reclaimed properly when a
    --  secondary stack is in use. Examples of types requiring such wrapping are
    --  controlled types and variable-sized types including unconstrained

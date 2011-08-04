@@ -3538,9 +3538,9 @@ package body Exp_Ch5 is
 
       else
          Append_To (Res,
-           Make_Final_Call (
-             Obj_Ref => Duplicate_Subexpr_No_Checks (L),
-             Typ     => Etype (L)));
+           Make_Final_Call
+             (Obj_Ref => Duplicate_Subexpr_No_Checks (L),
+              Typ     => Etype (L)));
       end if;
 
       --  Save the Tag in a local variable Tag_Id
@@ -3551,12 +3551,10 @@ package body Exp_Ch5 is
          Append_To (Res,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Tag_Id,
-             Object_Definition =>
-               New_Reference_To (RTE (RE_Tag), Loc),
-             Expression =>
+             Object_Definition   => New_Reference_To (RTE (RE_Tag), Loc),
+             Expression          =>
                Make_Selected_Component (Loc,
-                 Prefix =>
-                   Duplicate_Subexpr_No_Checks (L),
+                 Prefix        => Duplicate_Subexpr_No_Checks (L),
                  Selector_Name =>
                    New_Reference_To (First_Tag_Component (T), Loc))));
 
@@ -3581,11 +3579,11 @@ package body Exp_Ch5 is
          Append_To (Res,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Prev_Id,
-             Object_Definition =>
+             Object_Definition   =>
                New_Reference_To (RTE (RE_Root_Controlled_Ptr), Loc),
-             Expression =>
+             Expression          =>
                Make_Selected_Component (Loc,
-                 Prefix =>
+                 Prefix        =>
                    Unchecked_Convert_To
                      (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
                  Selector_Name =>
@@ -3597,11 +3595,11 @@ package body Exp_Ch5 is
          Append_To (Res,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Next_Id,
-             Object_Definition =>
+             Object_Definition   =>
                New_Reference_To (RTE (RE_Root_Controlled_Ptr), Loc),
-             Expression =>
+             Expression          =>
                Make_Selected_Component (Loc,
-                 Prefix =>
+                 Prefix        =>
                    Unchecked_Convert_To
                      (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
                  Selector_Name =>
@@ -3625,14 +3623,12 @@ package body Exp_Ch5 is
       if Save_Tag then
          Append_To (Res,
            Make_Assignment_Statement (Loc,
-             Name =>
+             Name       =>
                Make_Selected_Component (Loc,
-                 Prefix =>
-                   Duplicate_Subexpr_No_Checks (L),
+                 Prefix        => Duplicate_Subexpr_No_Checks (L),
                  Selector_Name =>
                    New_Reference_To (First_Tag_Component (T), Loc)),
-             Expression =>
-               New_Reference_To (Tag_Id, Loc)));
+             Expression => New_Reference_To (Tag_Id, Loc)));
       end if;
 
       --  Restore the Prev and Next fields on .NET/JVM
@@ -3645,30 +3641,27 @@ package body Exp_Ch5 is
 
          Append_To (Res,
            Make_Assignment_Statement (Loc,
-             Name =>
+             Name       =>
                Make_Selected_Component (Loc,
-                 Prefix =>
+                 Prefix        =>
                    Unchecked_Convert_To
                      (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
                  Selector_Name =>
                    Make_Identifier (Loc, Name_Prev)),
-             Expression =>
-               New_Reference_To (Prev_Id, Loc)));
+             Expression => New_Reference_To (Prev_Id, Loc)));
 
          --  Generate:
          --    Root_Controlled (L).Next := Next_Id;
 
          Append_To (Res,
            Make_Assignment_Statement (Loc,
-             Name =>
+             Name       =>
                Make_Selected_Component (Loc,
-                 Prefix =>
+                 Prefix        =>
                    Unchecked_Convert_To
                      (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Name_Next)),
-             Expression =>
-               New_Reference_To (Next_Id, Loc)));
+                 Selector_Name => Make_Identifier (Loc, Name_Next)),
+             Expression => New_Reference_To (Next_Id, Loc)));
       end if;
 
       --  Adjust the target after the assignment when controlled (not in the
@@ -3676,14 +3669,15 @@ package body Exp_Ch5 is
 
       if Ctrl_Act then
          Append_To (Res,
-           Make_Adjust_Call (
-             Obj_Ref => Duplicate_Subexpr_Move_Checks (L),
-             Typ     => Etype (L)));
+           Make_Adjust_Call
+             (Obj_Ref => Duplicate_Subexpr_Move_Checks (L),
+              Typ     => Etype (L)));
       end if;
 
       return Res;
 
    exception
+
       --  Could use comment here ???
 
       when RE_Not_Available =>

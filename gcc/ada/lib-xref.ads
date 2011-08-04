@@ -591,6 +591,11 @@ package Lib.Xref is
 
    package ALFA is
 
+      type Node_Processing is access procedure (N : Node_Id);
+
+      procedure Traverse_All_Compilation_Units (Process : Node_Processing);
+      --  Call Process on all declarations through all compilation units
+
       procedure Collect_ALFA (Sdep_Table : Unit_Ref_Table; Num_Sdep : Nat);
       --  Collect ALFA information from library units (for files and scopes)
       --  and from cross-references. Fill in the tables in library package

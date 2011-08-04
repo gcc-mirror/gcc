@@ -410,9 +410,8 @@ package body Make is
    procedure Make_Failed (S : String);
    --  Delete all temp files created by Gnatmake and call Osint.Fail, with the
    --  parameter S (see osint.ads). This is called from the Prj hierarchy and
-   --  the MLib hierarchy.
-   --  This subprogram also prints current error messages on stdout (ie
-   --  finalizes errout)
+   --  the MLib hierarchy. This subprogram also prints current error messages
+   --  on stdout (ie finalizes errout)
 
    --------------------------
    -- Obsolete Executables --
@@ -424,8 +423,8 @@ package body Make is
    --  compiled, or has already been compiled for another executable.
 
    Max_Header : constant := 200;
-   --  This needs a proper comment, it used to say "arbitrary"
-   --  that's not an adequate comment ???
+   --  This needs a proper comment, it used to say "arbitrary" that's not an
+   --  adequate comment ???
 
    type Header_Num is range 1 .. Max_Header;
    --  Header_Num for the hash table Obsoleted below

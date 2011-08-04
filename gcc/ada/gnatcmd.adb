@@ -1291,8 +1291,9 @@ procedure GNATCmd is
    begin
       Makeutl.Test_If_Relative_Path
         (Switch, Parent,
-         Do_Fail => Osint.Fail'Access,
-         Including_Non_Switch => False, Including_RTS => True);
+         Do_Fail              => Osint.Fail'Access,
+         Including_Non_Switch => False,
+         Including_RTS        => True);
    end Test_If_Relative_Path;
 
    -------------------

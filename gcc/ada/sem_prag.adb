@@ -4765,7 +4765,8 @@ package body Sem_Prag is
          --  entities are supported by the VM.
 
          if Convention (Subprogram_Def) /= Convention_CIL
-           and then Convention (Subprogram_Def) /= Convention_Java
+              and then
+            Convention (Subprogram_Def) /= Convention_Java
          then
             Check_Duplicated_Export_Name (Link_Nam);
          end if;

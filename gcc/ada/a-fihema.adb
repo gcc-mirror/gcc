@@ -45,6 +45,7 @@ package body Ada.Finalization.Heap_Management is
 
    Header_Size   : constant Storage_Count  := Node'Size / Storage_Unit;
    Header_Offset : constant Storage_Offset := Header_Size;
+   --  Comments needed???
 
    function Address_To_Node_Ptr is
      new Ada.Unchecked_Conversion (Address, Node_Ptr);
@@ -144,6 +145,7 @@ package body Ada.Finalization.Heap_Management is
       N.Prev := L;
 
       Unlock_Task.all;
+
    exception
       when others =>
          Unlock_Task.all;
@@ -230,6 +232,7 @@ package body Ada.Finalization.Heap_Management is
       end if;
 
       Unlock_Task.all;
+
    exception
       when others =>
          Unlock_Task.all;

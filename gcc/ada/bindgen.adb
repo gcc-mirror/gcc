@@ -1224,16 +1224,16 @@ package body Bindgen is
 
             if U.Set_Elab_Entity
 
-            --  Don't generate reference for stand alone library
+              --  Don't generate reference for stand alone library
 
               and then not U.SAL_Interface
 
-            --  Don't generate reference for predefined file in No_Run_Time
-            --  mode, since we don't include the object files in this case
+              --  Don't generate reference for predefined file in No_Run_Time
+              --  mode, since we don't include the object files in this case
 
               and then not
                 (No_Run_Time_Mode
-                   and then Is_Predefined_File_Name (U.Sfile))
+                  and then Is_Predefined_File_Name (U.Sfile))
             then
                Set_String ("   ");
                Set_String ("E");
@@ -1309,16 +1309,16 @@ package body Bindgen is
 
             if U.Set_Elab_Entity
 
-            --  Don't generate reference for stand alone library
+              --  Don't generate reference for stand alone library
 
               and then not U.SAL_Interface
 
-            --  Don't generate reference for predefined file in No_Run_Time
-            --  mode, since we don't include the object files in this case
+              --  Don't generate reference for predefined file in No_Run_Time
+              --  mode, since we don't include the object files in this case
 
               and then not
                 (No_Run_Time_Mode
-                   and then Is_Predefined_File_Name (U.Sfile))
+                  and then Is_Predefined_File_Name (U.Sfile))
             then
                Set_String ("extern int ");
                Get_Name_String (U.Uname);
@@ -1403,9 +1403,9 @@ package body Bindgen is
             --  since it will be done when we process the body.
 
             else
-               if Force_Checking_Of_Elaboration_Flags or
-                  Interface_Library_Unit or
-                  (not Bind_Main_Program)
+               if Force_Checking_Of_Elaboration_Flags
+                 or Interface_Library_Unit
+                 or not Bind_Main_Program
                then
                   Set_String ("      if E");
                   Set_Unit_Number (Unum_Spec);
@@ -1445,9 +1445,9 @@ package body Bindgen is
                Set_Char (';');
                Write_Statement_Buffer;
 
-               if Force_Checking_Of_Elaboration_Flags or
-                  Interface_Library_Unit or
-                  (not Bind_Main_Program)
+               if Force_Checking_Of_Elaboration_Flags
+                 or Interface_Library_Unit
+                 or not Bind_Main_Program
                then
                   WBI ("      end if;");
                end if;
@@ -1537,9 +1537,9 @@ package body Bindgen is
             else
                Get_Name_String (U.Uname);
 
-               if Force_Checking_Of_Elaboration_Flags or
-                  Interface_Library_Unit or
-                  (not Bind_Main_Program)
+               if Force_Checking_Of_Elaboration_Flags
+                 or Interface_Library_Unit
+                 or not Bind_Main_Program
                then
                   Set_String ("   if (");
                   Set_Unit_Name;
@@ -1783,7 +1783,7 @@ package body Bindgen is
             Set_String (" - 1;");
             Write_Statement_Buffer;
 
-            if Interface_Library_Unit or (not Bind_Main_Program) then
+            if Interface_Library_Unit or not Bind_Main_Program then
                Set_String ("         if E");
                Set_Unit_Number (Unum);
                Set_String (" = 0 then");
@@ -1796,7 +1796,7 @@ package body Bindgen is
             Set_Char   (';');
             Write_Statement_Buffer;
 
-            if Interface_Library_Unit or (not Bind_Main_Program) then
+            if Interface_Library_Unit or not Bind_Main_Program then
                WBI ("         end if;");
             end if;
 
@@ -1907,7 +1907,7 @@ package body Bindgen is
             Set_String ("_E--;");
             Write_Statement_Buffer;
 
-            if Interface_Library_Unit or (not Bind_Main_Program) then
+            if Interface_Library_Unit or not Bind_Main_Program then
                Set_String ("   if (");
                Set_Unit_Name;
                Set_String ("_E == 0)");
@@ -2509,7 +2509,7 @@ package body Bindgen is
          --  If not spec that has an associated body, then generate a comment
          --  giving the name of the corresponding object file.
 
-         if (not Units.Table (Elab_Order.Table (E)).SAL_Interface)
+         if not Units.Table (Elab_Order.Table (E)).SAL_Interface
            and then Units.Table (Elab_Order.Table (E)).Utype /= Is_Spec
          then
             Get_Name_String
@@ -3535,8 +3535,9 @@ package body Bindgen is
 
       WBI ("   type Version_32 is mod 2 ** 32;");
       for U in Units.First .. Units.Last loop
-         if not Units.Table (U).SAL_Interface and then
-           ((not Bind_For_Library) or else Units.Table (U).Directly_Scanned)
+         if not Units.Table (U).SAL_Interface
+           and then
+             (not Bind_For_Library or else Units.Table (U).Directly_Scanned)
          then
             Increment_Ubuf;
             WBI ("   " & Ubuf & " : constant Version_32 := 16#" &
@@ -3586,8 +3587,9 @@ package body Bindgen is
    procedure Gen_Versions_C is
    begin
       for U in Units.First .. Units.Last loop
-         if not Units.Table (U).SAL_Interface and then
-           ((not Bind_For_Library) or else Units.Table (U).Directly_Scanned)
+         if not Units.Table (U).SAL_Interface
+           and then
+             (not Bind_For_Library or else Units.Table (U).Directly_Scanned)
          then
             Set_String ("unsigned ");
 

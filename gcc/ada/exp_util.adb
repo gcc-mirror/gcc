@@ -338,24 +338,23 @@ package body Exp_Util is
       -----------------
 
       function Find_Object (E : Node_Id) return Node_Id is
-         Expr   : Node_Id := E;
-         Change : Boolean := True;
+         Expr : Node_Id;
 
       begin
          pragma Assert (Is_Allocate);
 
-         while Change loop
-            Change := False;
-
+         Expr := E;
+         loop
             if Nkind_In (Expr, N_Qualified_Expression,
                                N_Unchecked_Type_Conversion)
             then
-               Expr   := Expression (Expr);
-               Change := True;
+               Expr := Expression (Expr);
 
             elsif Nkind (Expr) = N_Explicit_Dereference then
-               Expr   := Prefix (Expr);
-               Change := True;
+               Expr := Prefix (Expr);
+
+            else
+               exit;
             end if;
          end loop;
 
@@ -4393,7 +4392,6 @@ package body Exp_Util is
 
    function Is_Related_To_Func_Return (Id : Entity_Id) return Boolean is
       Expr : constant Node_Id := Related_Expression (Id);
-
    begin
       return
         Present (Expr)

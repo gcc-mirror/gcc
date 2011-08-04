@@ -6558,10 +6558,10 @@ package body Exp_Dist is
                    Make_Component_Association (Loc,
                      Choices    => New_List (Make_Identifier (Loc, Name_Ras)),
                      Expression =>
-                       PolyORB_Support.Helpers.Build_From_Any_Call (
-                         Underlying_RACW_Type (RAS_Type),
-                         New_Occurrence_Of (Any_Parameter, Loc),
-                         No_List))))));
+                       PolyORB_Support.Helpers.Build_From_Any_Call
+                         (Underlying_RACW_Type (RAS_Type),
+                          New_Occurrence_Of (Any_Parameter, Loc),
+                          No_List))))));
 
          Func_Spec :=
            Make_Function_Specification (Loc,
@@ -10321,7 +10321,8 @@ package body Exp_Dist is
             begin
                Append_To (Parameter_List,
                  Make_Function_Call (Loc,
-                   Name => New_Occurrence_Of (RTE (RE_TA_I32), Loc),
+                   Name                   =>
+                     New_Occurrence_Of (RTE (RE_TA_I32), Loc),
                    Parameter_Associations => New_List (Expr_Node)));
             end Add_Long_Parameter;
 

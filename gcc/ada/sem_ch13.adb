@@ -2840,7 +2840,8 @@ package body Sem_Ch13 is
       Assoc    : Node_Id;
       Choice   : Node_Id;
       Val      : Uint;
-      Err      : Boolean := False;
+
+      Err : Boolean := False;
       --  Set True to avoid cascade errors and crashes on incorrect source code
 
       Lo : constant Uint := Expr_Value (Type_Low_Bound (Universal_Integer));
@@ -2980,12 +2981,15 @@ package body Sem_Ch13 is
                Err := True;
 
             elsif Nkind (Choice) = N_Range then
+
                --  ??? should allow zero/one element range here
+
                Error_Msg_N ("range not allowed here", Choice);
                Err := True;
 
             else
                Analyze_And_Resolve (Choice, Enumtype);
+
                if Error_Posted (Choice) then
                   Err := True;
                end if;
@@ -2996,6 +3000,7 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_N ("subtype name not allowed here", Choice);
                      Err := True;
+
                      --  ??? should allow static subtype with zero/one entry
 
                   elsif Etype (Choice) = Base_Type (Enumtype) then

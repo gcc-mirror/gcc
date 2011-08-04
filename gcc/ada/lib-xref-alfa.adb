@@ -158,23 +158,38 @@ package body ALFA is
    --  Filter table Xrefs to add all references used in ALFA to the table
    --  ALFA_Xref_Table.
 
+   procedure Detect_And_Add_ALFA_Scope (N : Node_Id);
+   --  Call Add_ALFA_Scope on scopes
+
    function Entity_Hash (E : Entity_Id) return Entity_Hashed_Range;
    --  Hash function for hash table
 
-   procedure Traverse_Declarations_Or_Statements  (L : List_Id);
-   procedure Traverse_Handled_Statement_Sequence  (N : Node_Id);
-   procedure Traverse_Package_Body                (N : Node_Id);
-   procedure Traverse_Package_Declaration         (N : Node_Id);
-   procedure Traverse_Subprogram_Body             (N : Node_Id);
-   --  Traverse the corresponding construct, generating ALFA scope table
-   --  entries.
+   procedure Traverse_Compilation_Unit
+     (CU      : Node_Id;
+      Process : Node_Processing);
+   procedure Traverse_Declarations_Or_Statements
+     (L       : List_Id;
+      Process : Node_Processing);
+   procedure Traverse_Handled_Statement_Sequence
+     (N       : Node_Id;
+      Process : Node_Processing);
+   procedure Traverse_Package_Body
+     (N       : Node_Id;
+      Process : Node_Processing);
+   procedure Traverse_Package_Declaration
+     (N       : Node_Id;
+      Process : Node_Processing);
+   procedure Traverse_Subprogram_Body
+     (N       : Node_Id;
+      Process : Node_Processing);
+   --  Traverse the corresponding constructs, calling Process on all
+   --  declarations.
 
    -------------------
    -- Add_ALFA_File --
    -------------------
 
    procedure Add_ALFA_File (U : Unit_Number_Type; D : Nat) is
-      Lu   : Node_Id;
       From : Scope_Index;
 
       S : constant Source_File_Index := Source_Index (U);
@@ -189,44 +204,7 @@ package body ALFA is
 
       From := ALFA_Scope_Table.Last + 1;
 
-      --  Get Unit (checking case of subunit)
-
-      Lu := Unit (Cunit (U));
-
-      if Nkind (Lu) = N_Subunit then
-         Lu := Proper_Body (Lu);
-      end if;
-
-      --  Traverse the unit
-
-      if Nkind (Lu) = N_Subprogram_Body then
-         Traverse_Subprogram_Body (Lu);
-
-      elsif Nkind (Lu) = N_Subprogram_Declaration then
-         Add_ALFA_Scope (Lu);
-
-      elsif Nkind (Lu) = N_Package_Declaration then
-         Traverse_Package_Declaration (Lu);
-
-      elsif Nkind (Lu) = N_Package_Body then
-         Traverse_Package_Body (Lu);
-
-      --  ??? TBD
-
-      elsif Nkind (Lu) = N_Generic_Package_Declaration then
-         null;
-
-      --  ??? TBD
-
-      elsif Nkind (Lu) in N_Generic_Instantiation then
-         null;
-
-      --  All other cases of compilation units (e.g. renamings), generate
-      --  no ALFA information.
-
-      else
-         null;
-      end if;
+      Traverse_Compilation_Unit (Cunit (U), Detect_And_Add_ALFA_Scope'Access);
 
       --  Update scope numbers
 
@@ -860,6 +838,21 @@ package body ALFA is
       Add_ALFA_Xrefs;
    end Collect_ALFA;
 
+   -------------------------------
+   -- Detect_And_Add_ALFA_Scope --
+   -------------------------------
+
+   procedure Detect_And_Add_ALFA_Scope (N : Node_Id) is
+   begin
+      if Nkind_In (N, N_Subprogram_Declaration,
+                      N_Subprogram_Body,
+                      N_Package_Declaration,
+                      N_Package_Body)
+      then
+         Add_ALFA_Scope (N);
+      end if;
+   end Detect_And_Add_ALFA_Scope;
+
    -----------------
    -- Entity_Hash --
    -----------------
@@ -870,11 +863,84 @@ package body ALFA is
         Entity_Hashed_Range (E mod (Entity_Id (Entity_Hashed_Range'Last) + 1));
    end Entity_Hash;
 
+   ------------------------------------
+   -- Traverse_All_Compilation_Units --
+   ------------------------------------
+
+   procedure Traverse_All_Compilation_Units (Process : Node_Processing) is
+   begin
+      for U in Units.First .. Last_Unit loop
+         Traverse_Compilation_Unit (Cunit (U), Process);
+      end loop;
+   end Traverse_All_Compilation_Units;
+
+   -------------------------------
+   -- Traverse_Compilation_Unit --
+   -------------------------------
+
+   procedure Traverse_Compilation_Unit
+     (CU      : Node_Id;
+      Process : Node_Processing)
+   is
+      Lu : Node_Id;
+
+   begin
+      --  Get Unit (checking case of subunit)
+
+      Lu := Unit (CU);
+
+      if Nkind (Lu) = N_Subunit then
+         Lu := Proper_Body (Lu);
+      end if;
+
+      --  Call Process on all declarations
+
+      if Nkind (Lu) in N_Declaration
+        or else Nkind (Lu) in N_Later_Decl_Item
+      then
+         Process (Lu);
+      end if;
+
+      --  Traverse the unit
+
+      if Nkind (Lu) = N_Subprogram_Body then
+         Traverse_Subprogram_Body (Lu, Process);
+
+      elsif Nkind (Lu) = N_Subprogram_Declaration then
+         null;
+
+      elsif Nkind (Lu) = N_Package_Declaration then
+         Traverse_Package_Declaration (Lu, Process);
+
+      elsif Nkind (Lu) = N_Package_Body then
+         Traverse_Package_Body (Lu, Process);
+
+      --  ??? TBD
+
+      elsif Nkind (Lu) = N_Generic_Package_Declaration then
+         null;
+
+      --  ??? TBD
+
+      elsif Nkind (Lu) in N_Generic_Instantiation then
+         null;
+
+      --  All other cases of compilation units (e.g. renamings), are not
+      --  declarations.
+
+      else
+         null;
+      end if;
+   end Traverse_Compilation_Unit;
+
    -----------------------------------------
    -- Traverse_Declarations_Or_Statements --
    -----------------------------------------
 
-   procedure Traverse_Declarations_Or_Statements (L : List_Id) is
+   procedure Traverse_Declarations_Or_Statements
+     (L       : List_Id;
+      Process : Node_Processing)
+   is
       N : Node_Id;
 
    begin
@@ -882,12 +948,21 @@ package body ALFA is
 
       N := First (L);
       while Present (N) loop
+         --  Call Process on all declarations
+
+         if Nkind (N) in N_Declaration
+              or else
+            Nkind (N) in N_Later_Decl_Item
+         then
+            Process (N);
+         end if;
+
          case Nkind (N) is
 
             --  Package declaration
 
             when N_Package_Declaration =>
-               Traverse_Package_Declaration (N);
+               Traverse_Package_Declaration (N, Process);
 
             --  Generic package declaration ??? TBD
 
@@ -898,13 +973,13 @@ package body ALFA is
 
             when N_Package_Body =>
                if Ekind (Defining_Entity (N)) /= E_Generic_Package then
-                  Traverse_Package_Body (N);
+                  Traverse_Package_Body (N, Process);
                end if;
 
             --  Subprogram declaration
 
             when N_Subprogram_Declaration =>
-               Add_ALFA_Scope (N);
+               null;
 
             --  Generic subprogram declaration ??? TBD
 
@@ -915,21 +990,22 @@ package body ALFA is
 
             when N_Subprogram_Body =>
                if not Is_Generic_Subprogram (Defining_Entity (N)) then
-                  Traverse_Subprogram_Body (N);
+                  Traverse_Subprogram_Body (N, Process);
                end if;
 
             --  Block statement
 
             when N_Block_Statement =>
-               Traverse_Declarations_Or_Statements (Declarations (N));
+               Traverse_Declarations_Or_Statements (Declarations (N), Process);
                Traverse_Handled_Statement_Sequence
-                 (Handled_Statement_Sequence (N));
+                 (Handled_Statement_Sequence (N), Process);
 
             when N_If_Statement =>
 
                --  Traverse the statements in the THEN part
 
-               Traverse_Declarations_Or_Statements (Then_Statements (N));
+               Traverse_Declarations_Or_Statements
+                 (Then_Statements (N), Process);
 
                --  Loop through ELSIF parts if present
 
@@ -940,7 +1016,7 @@ package body ALFA is
                   begin
                      while Present (Elif) loop
                         Traverse_Declarations_Or_Statements
-                          (Then_Statements (Elif));
+                          (Then_Statements (Elif), Process);
                         Next (Elif);
                      end loop;
                   end;
@@ -948,7 +1024,8 @@ package body ALFA is
 
                --  Finally traverse the ELSE statements if present
 
-               Traverse_Declarations_Or_Statements (Else_Statements (N));
+               Traverse_Declarations_Or_Statements
+                 (Else_Statements (N), Process);
 
             --  Case statement
 
@@ -961,7 +1038,8 @@ package body ALFA is
                begin
                   Alt := First (Alternatives (N));
                   while Present (Alt) loop
-                     Traverse_Declarations_Or_Statements (Statements (Alt));
+                     Traverse_Declarations_Or_Statements
+                       (Statements (Alt), Process);
                      Next (Alt);
                   end loop;
                end;
@@ -970,12 +1048,12 @@ package body ALFA is
 
             when N_Extended_Return_Statement =>
                Traverse_Handled_Statement_Sequence
-                 (Handled_Statement_Sequence (N));
+                 (Handled_Statement_Sequence (N), Process);
 
             --  Loop
 
             when N_Loop_Statement =>
-               Traverse_Declarations_Or_Statements (Statements (N));
+               Traverse_Declarations_Or_Statements (Statements (N), Process);
 
             when others =>
                null;
@@ -989,17 +1067,21 @@ package body ALFA is
    -- Traverse_Handled_Statement_Sequence --
    -----------------------------------------
 
-   procedure Traverse_Handled_Statement_Sequence (N : Node_Id) is
+   procedure Traverse_Handled_Statement_Sequence
+     (N       : Node_Id;
+      Process : Node_Processing)
+   is
       Handler : Node_Id;
 
    begin
       if Present (N) then
-         Traverse_Declarations_Or_Statements (Statements (N));
+         Traverse_Declarations_Or_Statements (Statements (N), Process);
 
          if Present (Exception_Handlers (N)) then
             Handler := First (Exception_Handlers (N));
             while Present (Handler) loop
-               Traverse_Declarations_Or_Statements (Statements (Handler));
+               Traverse_Declarations_Or_Statements
+                 (Statements (Handler), Process);
                Next (Handler);
             end loop;
          end if;
@@ -1010,34 +1092,42 @@ package body ALFA is
    -- Traverse_Package_Body --
    ---------------------------
 
-   procedure Traverse_Package_Body (N : Node_Id) is
+   procedure Traverse_Package_Body
+     (N       : Node_Id;
+      Process : Node_Processing) is
    begin
-      Add_ALFA_Scope (N);
-      Traverse_Declarations_Or_Statements (Declarations (N));
-      Traverse_Handled_Statement_Sequence (Handled_Statement_Sequence (N));
+      Traverse_Declarations_Or_Statements (Declarations (N), Process);
+      Traverse_Handled_Statement_Sequence
+        (Handled_Statement_Sequence (N), Process);
    end Traverse_Package_Body;
 
    ----------------------------------
    -- Traverse_Package_Declaration --
    ----------------------------------
 
-   procedure Traverse_Package_Declaration (N : Node_Id) is
+   procedure Traverse_Package_Declaration
+     (N       : Node_Id;
+      Process : Node_Processing)
+   is
       Spec : constant Node_Id := Specification (N);
    begin
-      Add_ALFA_Scope (N);
-      Traverse_Declarations_Or_Statements (Visible_Declarations (Spec));
-      Traverse_Declarations_Or_Statements (Private_Declarations (Spec));
+      Traverse_Declarations_Or_Statements
+        (Visible_Declarations (Spec), Process);
+      Traverse_Declarations_Or_Statements
+        (Private_Declarations (Spec), Process);
    end Traverse_Package_Declaration;
 
    ------------------------------
    -- Traverse_Subprogram_Body --
    ------------------------------
 
-   procedure Traverse_Subprogram_Body (N : Node_Id) is
+   procedure Traverse_Subprogram_Body
+     (N       : Node_Id;
+      Process : Node_Processing) is
    begin
-      Add_ALFA_Scope (N);
-      Traverse_Declarations_Or_Statements (Declarations (N));
-      Traverse_Handled_Statement_Sequence (Handled_Statement_Sequence (N));
+      Traverse_Declarations_Or_Statements (Declarations (N), Process);
+      Traverse_Handled_Statement_Sequence
+        (Handled_Statement_Sequence (N), Process);
    end Traverse_Subprogram_Body;
 
 end ALFA;
