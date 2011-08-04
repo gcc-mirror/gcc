@@ -178,9 +178,9 @@ package body Bindgen is
    --  policy name, or 'F' (for FIFO_Within_Priorities) as the default value
    --  for those priority ranges not specified.
 
-   --  Num_Specific_Dispatching is the length of the
-   --  Priority_Specific_Dispatching string. It will be set to zero if no
-   --  Priority_Specific_Dispatching pragmas are present.
+   --  Num_Specific_Dispatching is length of the Priority_Specific_Dispatching
+   --  string. It will be set to zero if no Priority_Specific_Dispatching
+   --  pragmas are present.
 
    --  Restrictions is the address of a null-terminated string specifying the
    --  restrictions information for the partition. The format is identical to
@@ -226,58 +226,58 @@ package body Bindgen is
    --  Main_CPU is the processor set by pragma CPU in the main program. If no
    --  such pragma is present, the value is -1.
 
+   procedure WBI (Info : String) renames Osint.B.Write_Binder_Info;
+   --  Convenient shorthand used throughout
+
    -----------------------
    -- Local Subprograms --
    -----------------------
-
-   procedure WBI (Info : String) renames Osint.B.Write_Binder_Info;
-   --  Convenient shorthand used throughout
 
    procedure Check_System_Restrictions_Used;
    --  Sets flag System_Restrictions_Used (Set to True if and only if the unit
    --  System.Restrictions is present in the partition, otherwise False).
 
-   procedure Gen_Adainit_Ada;
-   --  Generates the Adainit procedure (Ada code case)
+   procedure Gen_Adainit;
+   --  Generates the Adainit procedure
 
-   procedure Gen_Adafinal_Ada;
-   --  Generate the Adafinal procedure (Ada code case)
-
-   procedure Gen_Elab_Externals_Ada;
-   --  Generate sequence of external declarations for elaboration (Ada)
-
-   procedure Gen_Elab_Calls_Ada;
-   --  Generate sequence of elaboration calls (Ada code case)
-
-   procedure Gen_Elab_Order_Ada;
-   --  Generate comments showing elaboration order chosen (Ada code case)
-
-   procedure Gen_Finalize_Library_Ada;
-   --  Generate a sequence of finalization calls to elaborated packages (Ada)
+   procedure Gen_Adafinal;
+   --  Generate the Adafinal procedure
 
    procedure Gen_CodePeer_Wrapper;
    --  For CodePeer, generate wrapper which calls user-defined main subprogram
 
-   procedure Gen_Main_Ada;
-   --  Generate procedure main (Ada code case)
+   procedure Gen_Elab_Calls;
+   --  Generate sequence of elaboration calls
+
+   procedure Gen_Elab_Externals;
+   --  Generate sequence of external declarations for elaboration
+
+   procedure Gen_Elab_Order;
+   --  Generate comments showing elaboration order chosen
+
+   procedure Gen_Finalize_Library;
+   --  Generate a sequence of finalization calls to elaborated packages
+
+   procedure Gen_Main;
+   --  Generate procedure main
 
    procedure Gen_Object_Files_Options;
    --  Output comments containing a list of the full names of the object
    --  files to be linked and the list of linker options supplied by
-   --  Linker_Options pragmas in the source. (C and Ada code case)
+   --  Linker_Options pragmas in the source.
 
    procedure Gen_Output_File_Ada (Filename : String);
-   --  Generate output file (Ada code case)
+   --  Generate Ada output file
 
-   procedure Gen_Restrictions_Ada;
-   --  Generate initialization of restrictions variable (Ada code case)
+   procedure Gen_Restrictions;
+   --  Generate initialization of restrictions variable
 
-   procedure Gen_Versions_Ada;
-   --  Output series of definitions for unit versions (Ada code case)
+   procedure Gen_Versions;
+   --  Output series of definitions for unit versions
 
    function Get_Ada_Main_Name return String;
-   --  This function is used in the Ada main output case to compute a usable
-   --  name for the generated main program. The normal main program name is
+   --  This function is used for the Ada main output to compute a usable name
+   --  for the generated main program. The normal main program name is
    --  Ada_Main, but this won't work if the user has a unit with this name.
    --  This function tries Ada_Main first, and if there is such a clash, then
    --  it tries Ada_Name_01, Ada_Name_02 ... Ada_Name_99 in sequence.
@@ -286,11 +286,11 @@ package body Bindgen is
    --  Return the main unit name corresponding to S by replacing '.' with '_'
 
    function Get_Main_Name return String;
-   --  This function is used in the Ada main output case to compute the
-   --  correct external main program. It is "main" by default, unless the
-   --  flag Use_Ada_Main_Program_Name_On_Target is set, in which case it
-   --  is the name of the Ada main name without the "_ada". This default
-   --  can be overridden explicitly using the -Mname binder switch.
+   --  This function is used in the main output case to compute the correct
+   --  external main program. It is "main" by default, unless the flag
+   --  Use_Ada_Main_Program_Name_On_Target is set, in which case it is the name
+   --  of the Ada main name without the "_ada". This default can be overridden
+   --  explicitly using the -Mname binder switch.
 
    function Get_WC_Encoding return Character;
    --  Return wide character encoding method to set as WC_Encoding in output.
@@ -387,11 +387,11 @@ package body Bindgen is
       System_Restrictions_Used := False;
    end Check_System_Restrictions_Used;
 
-   ----------------------
-   -- Gen_Adafinal_Ada --
-   ----------------------
+   ------------------
+   -- Gen_Adafinal --
+   ------------------
 
-   procedure Gen_Adafinal_Ada is
+   procedure Gen_Adafinal is
    begin
       WBI ("   procedure " & Ada_Final_Name.all & " is");
 
@@ -436,13 +436,13 @@ package body Bindgen is
 
       WBI ("   end " & Ada_Final_Name.all & ";");
       WBI ("");
-   end Gen_Adafinal_Ada;
+   end Gen_Adafinal;
 
-   ---------------------
-   -- Gen_Adainit_Ada --
-   ---------------------
+   -----------------
+   -- Gen_Adainit --
+   -----------------
 
-   procedure Gen_Adainit_Ada is
+   procedure Gen_Adainit is
       Main_Priority : Int renames ALIs.Table (ALIs.First).Main_Priority;
       Main_CPU      : Int renames ALIs.Table (ALIs.First).Main_CPU;
 
@@ -709,7 +709,7 @@ package body Bindgen is
          Set_String ("';");
          Write_Statement_Buffer;
 
-         Gen_Restrictions_Ada;
+         Gen_Restrictions;
 
          WBI ("      Priority_Specific_Dispatching :=");
          WBI ("        Local_Priority_Specific_Dispatching'Address;");
@@ -898,7 +898,7 @@ package body Bindgen is
          WBI ("");
       end if;
 
-      Gen_Elab_Calls_Ada;
+      Gen_Elab_Calls;
 
       --  Case of main program is CIL function or procedure
 
@@ -921,102 +921,45 @@ package body Bindgen is
 
       WBI ("   end " & Ada_Init_Name.all & ";");
       WBI ("");
-   end Gen_Adainit_Ada;
+   end Gen_Adainit;
 
-   ----------------------------
-   -- Gen_Elab_Externals_Ada --
-   ----------------------------
+   --------------------------
+   -- Gen_CodePeer_Wrapper --
+   --------------------------
 
-   procedure Gen_Elab_Externals_Ada is
+   procedure Gen_CodePeer_Wrapper is
    begin
-      if CodePeer_Mode then
-         return;
-      end if;
+      Get_Name_String (Units.Table (First_Unit_Entry).Uname);
 
-      for E in Elab_Order.First .. Elab_Order.Last loop
-         declare
-            Unum : constant Unit_Id := Elab_Order.Table (E);
-            U    : Unit_Record renames Units.Table (Unum);
+      declare
+         --  Bypass Ada_Main_Program; its Import pragma confuses CodePeer
 
-         begin
-            --  Check for Elab_Entity to be set for this unit
+         Callee_Name : String renames Name_Buffer (1 .. Name_Len - 2);
+         --  Strip trailing "%b"
 
-            if U.Set_Elab_Entity
+      begin
+         if ALIs.Table (ALIs.First).Main_Program = Proc then
+            WBI ("   procedure " & CodePeer_Wrapper_Name & " is ");
+            WBI ("   begin");
+            WBI ("      " & Callee_Name & ";");
 
-              --  Don't generate reference for stand alone library
+         else
+            WBI
+              ("   function " & CodePeer_Wrapper_Name & " return Integer is");
+            WBI ("   begin");
+            WBI ("      return " & Callee_Name & ";");
+         end if;
+      end;
 
-              and then not U.SAL_Interface
-
-              --  Don't generate reference for predefined file in No_Run_Time
-              --  mode, since we don't include the object files in this case
-
-              and then not
-                (No_Run_Time_Mode
-                  and then Is_Predefined_File_Name (U.Sfile))
-            then
-               Set_String ("   ");
-               Set_String ("E");
-               Set_Unit_Number (Unum);
-
-               case VM_Target is
-                  when No_VM | JVM_Target =>
-                     Set_String (" : Short_Integer; pragma Import (Ada, ");
-                  when CLI_Target =>
-                     Set_String (" : Short_Integer; pragma Import (CIL, ");
-               end case;
-
-               Set_String ("E");
-               Set_Unit_Number (Unum);
-               Set_String (", """);
-               Get_Name_String (U.Uname);
-
-               --  In the case of JGNAT we need to emit an Import name that
-               --  includes the class name (using '$' separators in the case
-               --  of a child unit name).
-
-               if VM_Target /= No_VM then
-                  for J in 1 .. Name_Len - 2 loop
-                     if VM_Target = CLI_Target
-                       or else Name_Buffer (J) /= '.'
-                     then
-                        Set_Char (Name_Buffer (J));
-                     else
-                        Set_String ("$");
-                     end if;
-                  end loop;
-
-                  if VM_Target /= CLI_Target or else U.Unit_Kind = 's' then
-                     Set_String (".");
-                  else
-                     Set_String ("_pkg.");
-                  end if;
-
-                  --  If the unit name is very long, then split the
-                  --  Import link name across lines using "&" (occurs
-                  --  in some C2 tests).
-
-                  if 2 * Name_Len + 60 > Hostparm.Max_Line_Length then
-                     Set_String (""" &");
-                     Write_Statement_Buffer;
-                     Set_String ("         """);
-                  end if;
-               end if;
-
-               Set_Unit_Name;
-               Set_String ("_E"");");
-               Write_Statement_Buffer;
-            end if;
-         end;
-      end loop;
-
+      WBI ("   end " & CodePeer_Wrapper_Name & ";");
       WBI ("");
-   end Gen_Elab_Externals_Ada;
+   end Gen_CodePeer_Wrapper;
 
-   ------------------------
-   -- Gen_Elab_Calls_Ada --
-   ------------------------
+   --------------------
+   -- Gen_Elab_Calls --
+   --------------------
 
-   procedure Gen_Elab_Calls_Ada is
+   procedure Gen_Elab_Calls is
       Check_Elab_Flag : Boolean;
 
    begin
@@ -1151,13 +1094,102 @@ package body Bindgen is
             end if;
          end;
       end loop;
-   end Gen_Elab_Calls_Ada;
+   end Gen_Elab_Calls;
 
    ------------------------
-   -- Gen_Elab_Order_Ada --
+   -- Gen_Elab_Externals --
    ------------------------
 
-   procedure Gen_Elab_Order_Ada is
+   procedure Gen_Elab_Externals is
+   begin
+      if CodePeer_Mode then
+         return;
+      end if;
+
+      for E in Elab_Order.First .. Elab_Order.Last loop
+         declare
+            Unum : constant Unit_Id := Elab_Order.Table (E);
+            U    : Unit_Record renames Units.Table (Unum);
+
+         begin
+            --  Check for Elab_Entity to be set for this unit
+
+            if U.Set_Elab_Entity
+
+              --  Don't generate reference for stand alone library
+
+              and then not U.SAL_Interface
+
+              --  Don't generate reference for predefined file in No_Run_Time
+              --  mode, since we don't include the object files in this case
+
+              and then not
+                (No_Run_Time_Mode
+                  and then Is_Predefined_File_Name (U.Sfile))
+            then
+               Set_String ("   ");
+               Set_String ("E");
+               Set_Unit_Number (Unum);
+
+               case VM_Target is
+                  when No_VM | JVM_Target =>
+                     Set_String (" : Short_Integer; pragma Import (Ada, ");
+                  when CLI_Target =>
+                     Set_String (" : Short_Integer; pragma Import (CIL, ");
+               end case;
+
+               Set_String ("E");
+               Set_Unit_Number (Unum);
+               Set_String (", """);
+               Get_Name_String (U.Uname);
+
+               --  In the case of JGNAT we need to emit an Import name that
+               --  includes the class name (using '$' separators in the case
+               --  of a child unit name).
+
+               if VM_Target /= No_VM then
+                  for J in 1 .. Name_Len - 2 loop
+                     if VM_Target = CLI_Target
+                       or else Name_Buffer (J) /= '.'
+                     then
+                        Set_Char (Name_Buffer (J));
+                     else
+                        Set_String ("$");
+                     end if;
+                  end loop;
+
+                  if VM_Target /= CLI_Target or else U.Unit_Kind = 's' then
+                     Set_String (".");
+                  else
+                     Set_String ("_pkg.");
+                  end if;
+
+                  --  If the unit name is very long, then split the
+                  --  Import link name across lines using "&" (occurs
+                  --  in some C2 tests).
+
+                  if 2 * Name_Len + 60 > Hostparm.Max_Line_Length then
+                     Set_String (""" &");
+                     Write_Statement_Buffer;
+                     Set_String ("         """);
+                  end if;
+               end if;
+
+               Set_Unit_Name;
+               Set_String ("_E"");");
+               Write_Statement_Buffer;
+            end if;
+         end;
+      end loop;
+
+      WBI ("");
+   end Gen_Elab_Externals;
+
+   --------------------
+   -- Gen_Elab_Order --
+   --------------------
+
+   procedure Gen_Elab_Order is
    begin
       WBI ("   --  BEGIN ELABORATION ORDER");
 
@@ -1170,13 +1202,13 @@ package body Bindgen is
 
       WBI ("   --  END ELABORATION ORDER");
       WBI ("");
-   end Gen_Elab_Order_Ada;
+   end Gen_Elab_Order;
 
-   ------------------------------
-   -- Gen_Finalize_Library_Ada --
-   ------------------------------
+   --------------------------
+   -- Gen_Finalize_Library --
+   --------------------------
 
-   procedure Gen_Finalize_Library_Ada is
+   procedure Gen_Finalize_Library is
       Count : Int := 1;
       U     : Unit_Record;
       Uspec : Unit_Record;
@@ -1193,10 +1225,9 @@ package body Bindgen is
       begin
          WBI ("   procedure finalize_library is");
 
-         --  The following flag is used to check for library-level
-         --  exceptions raised during finalization. The symbol comes
-         --  from System.Soft_Links. VM targets use regular Ada to
-         --  reference the entity.
+         --  The following flag is used to check for library-level exceptions
+         --  raised during finalization. Symbol comes from System.Soft_Links.
+         --  VM targets use regular Ada to reference the entity.
 
          if VM_Target = No_VM then
             WBI ("      LE_Set : Boolean;");
@@ -1209,7 +1240,7 @@ package body Bindgen is
          WBI ("   begin");
       end Gen_Header;
 
-   --  Start of processing for Gen_Finalize_Library_Ada
+   --  Start of processing for Gen_Finalize_Library
 
    begin
       if CodePeer_Mode then
@@ -1442,44 +1473,13 @@ package body Bindgen is
          WBI ("   end finalize_library;");
          WBI ("");
       end if;
-   end Gen_Finalize_Library_Ada;
+   end Gen_Finalize_Library;
 
-   --------------------------
-   -- Gen_CodePeer_Wrapper --
-   --------------------------
+   --------------
+   -- Gen_Main --
+   --------------
 
-   procedure Gen_CodePeer_Wrapper is
-   begin
-      Get_Name_String (Units.Table (First_Unit_Entry).Uname);
-
-      declare
-         --  Bypass Ada_Main_Program; its Import pragma confuses CodePeer
-
-         Callee_Name : String renames Name_Buffer (1 .. Name_Len - 2);
-         --  Strip trailing "%b"
-
-      begin
-         if ALIs.Table (ALIs.First).Main_Program = Proc then
-            WBI ("   procedure " & CodePeer_Wrapper_Name & " is ");
-            WBI ("   begin");
-            WBI ("      " & Callee_Name & ";");
-         else
-            WBI
-              ("   function " & CodePeer_Wrapper_Name & " return Integer is");
-            WBI ("   begin");
-            WBI ("      return " & Callee_Name & ";");
-         end if;
-      end;
-
-      WBI ("   end " & CodePeer_Wrapper_Name & ";");
-      WBI ("");
-   end Gen_CodePeer_Wrapper;
-
-   ------------------
-   -- Gen_Main_Ada --
-   ------------------
-
-   procedure Gen_Main_Ada is
+   procedure Gen_Main is
    begin
       if Exit_Status_Supported_On_Target then
          Set_String ("   function ");
@@ -1533,8 +1533,7 @@ package body Bindgen is
          WBI ("      pragma Import (C, Finalize, ""__gnat_finalize"");");
       end if;
 
-      --  If we want to analyze the stack, we have to import corresponding
-      --  symbols
+      --  If we want to analyze the stack, we must import corresponding symbols
 
       if Dynamic_Stack_Measurement then
          WBI ("");
@@ -1679,7 +1678,6 @@ package body Bindgen is
       WBI ("      " & Ada_Init_Name.all & ";");
 
       if not No_Main_Subprogram then
-
          if CodePeer_Mode then
             if ALIs.Table (ALIs.First).Main_Program = Proc then
                WBI ("      " & CodePeer_Wrapper_Name & ";");
@@ -1729,7 +1727,7 @@ package body Bindgen is
 
       WBI ("   end;");
       WBI ("");
-   end Gen_Main_Ada;
+   end Gen_Main;
 
    ------------------------------
    -- Gen_Object_Files_Options --
@@ -2061,7 +2059,7 @@ package body Bindgen is
 
       --  We always compile the binder file in Ada 95 mode so that we properly
       --  handle use of Ada 2005 keywords as identifiers in Ada 95 mode. None
-      --  of the Ada 2005 constructs are needed by the binder file.
+      --  of the Ada 2005 or Ada 2012 constructs are needed by the binder file.
 
       WBI ("pragma Ada_95;");
 
@@ -2104,8 +2102,7 @@ package body Bindgen is
       Resolve_Binder_Options;
 
       --  Usually, adafinal is called using a pragma Import C. Since Import C
-      --  doesn't have the same semantics for VMs or CodePeer, use standard
-      --  Ada.
+      --  doesn't have the same semantics for VMs or CodePeer use standard Ada.
 
       if not Suppress_Standard_Library_On_Target then
          if CodePeer_Mode then
@@ -2257,8 +2254,8 @@ package body Bindgen is
            Get_Main_Name & """);");
       end if;
 
-      Gen_Versions_Ada;
-      Gen_Elab_Order_Ada;
+      Gen_Versions;
+      Gen_Elab_Order;
 
       --  Spec is complete
 
@@ -2272,7 +2269,7 @@ package body Bindgen is
 
       --  We always compile the binder file in Ada 95 mode so that we properly
       --  handle use of Ada 2005 keywords as identifiers in Ada 95 mode. None
-      --  of the Ada 2005 constructs are needed by the binder file.
+      --  of the Ada 2005/2012 constructs are needed by the binder file.
 
       WBI ("pragma Ada_95;");
 
@@ -2331,7 +2328,7 @@ package body Bindgen is
 
       --  Generate externals for elaboration entities
 
-      Gen_Elab_Externals_Ada;
+      Gen_Elab_Externals;
 
       if not CodePeer_Mode then
          if not Suppress_Standard_Library_On_Target then
@@ -2373,13 +2370,13 @@ package body Bindgen is
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
          if Needs_Library_Finalization then
-            Gen_Finalize_Library_Ada;
+            Gen_Finalize_Library;
          end if;
 
-         Gen_Adafinal_Ada;
+         Gen_Adafinal;
       end if;
 
-      Gen_Adainit_Ada;
+      Gen_Adainit;
 
       if Bind_Main_Program and then VM_Target = No_VM then
 
@@ -2389,7 +2386,7 @@ package body Bindgen is
             Gen_CodePeer_Wrapper;
          end if;
 
-         Gen_Main_Ada;
+         Gen_Main;
       end if;
 
       --  Output object file list and the Ada body is complete
@@ -2402,11 +2399,11 @@ package body Bindgen is
       Close_Binder_Output;
    end Gen_Output_File_Ada;
 
-   --------------------------
-   -- Gen_Restrictions_Ada --
-   --------------------------
+   ----------------------
+   -- Gen_Restrictions --
+   ----------------------
 
-   procedure Gen_Restrictions_Ada is
+   procedure Gen_Restrictions is
       Count : Integer;
 
    begin
@@ -2482,11 +2479,11 @@ package body Bindgen is
       Set_String_Replace ("))");
       Set_String (";");
       Write_Statement_Buffer;
-   end Gen_Restrictions_Ada;
+   end Gen_Restrictions;
 
-   ----------------------
-   -- Gen_Versions_Ada --
-   ----------------------
+   ------------------
+   -- Gen_Versions --
+   ------------------
 
    --  This routine generates lines such as:
 
@@ -2497,7 +2494,7 @@ package body Bindgen is
    --  body or spec, with dots replaced by double underscores, and hhhhhhhh is
    --  the version number, and nnnnn is a 5-digits serial number.
 
-   procedure Gen_Versions_Ada is
+   procedure Gen_Versions is
       Ubuf : String (1 .. 6) := "u00000";
 
       procedure Increment_Ubuf;
@@ -2516,7 +2513,7 @@ package body Bindgen is
          end loop;
       end Increment_Ubuf;
 
-   --  Start of processing for Gen_Versions_Ada
+   --  Start of processing for Gen_Versions
 
    begin
       WBI ("");
@@ -2559,7 +2556,7 @@ package body Bindgen is
             Write_Statement_Buffer;
          end if;
       end loop;
-   end Gen_Versions_Ada;
+   end Gen_Versions;
 
    ------------------------
    -- Get_Main_Unit_Name --

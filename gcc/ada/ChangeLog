@@ -1,3 +1,29 @@
+2011-08-04  Nicolas Roche  <roche@adacore.com>
+
+	* alfa_test.adb: Not all ali files are containing alfa information even
+	if compiled with -gnatd.F. So suppress warning about missing ALFA
+	information.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Add_ALFA_Scope): use non-empty unique name for
+	scope.
+	* put_alfa.adb: Check that scope name is not empty.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Stream_Operation_Ok): new predicate
+	Needs_Elementary_Stream_Operation, to determine whether user-defined
+	Read and Write attributes are available for the elementary components
+	of the given type. If only the predefined attributes are available,
+	then when restriction No_Default_Stream_Attributes is active the
+	predefined stream attributes for the composite type cannot be created.
+
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* bindgen.adb: Fix obsolete comments and names from Ada/C days.
+	Put routines in alpha order
+
 2011-08-04  Jose Ruiz  <ruiz@adacore.com>
 
 	* gcc-interface/Makefile.in: Remove xenomai specific versions of system.

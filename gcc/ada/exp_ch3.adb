@@ -8964,7 +8964,60 @@ package body Exp_Ch3 is
    is
       Has_Predefined_Or_Specified_Stream_Attribute : Boolean := False;
 
+      function Needs_Elementary_Stream_Operation
+        (T : Entity_Id) return Boolean;
+      --  AI05-0161 : if the restriction No_Default_Stream_Attributes is active
+      --  then we can generate stream subprograms for records that have scalar
+      --  subcomponents only if those subcomponents have user-defined stream
+      --  subprograms. For elementary types only 'Read and 'Write are needed.
+
+      ---------------------------------------
+      -- Needs_Elementary_Stream_Operation --
+      ---------------------------------------
+
+      function Needs_Elementary_Stream_Operation
+        (T : Entity_Id) return Boolean
+      is
+      begin
+         if not Restriction_Active (No_Default_Stream_Attributes) then
+            return False;
+
+         elsif Is_Elementary_Type (T) then
+            return No (TSS (T, TSS_Stream_Read))
+              or else No (TSS (T, TSS_Stream_Write));
+
+         elsif Is_Array_Type (T) then
+            return Needs_Elementary_Stream_Operation (Component_Type (T));
+
+         elsif Is_Record_Type (T) then
+            declare
+               Comp : Entity_Id;
+
+            begin
+               Comp := First_Component (T);
+               while Present (Comp) loop
+                  if Needs_Elementary_Stream_Operation (Etype (Comp)) then
+                     return True;
+                  end if;
+                  Next_Component (Comp);
+               end loop;
+               return False;
+            end;
+
+         elsif Is_Private_Type (T)
+           and then Present (Full_View (T))
+         then
+            return Needs_Elementary_Stream_Operation (Full_View (T));
+
+         else
+            return False;
+         end if;
+      end Needs_Elementary_Stream_Operation;
+
+   --  Start processing for Stream_Operation_OK
+
    begin
+
       --  Special case of a limited type extension: a default implementation
       --  of the stream attributes Read or Write exists if that attribute
       --  has been specified or is available for an ancestor type; a default
@@ -9057,6 +9110,7 @@ package body Exp_Ch3 is
         and then not Restriction_Active (No_Dispatch)
         and then not No_Run_Time_Mode
         and then RTE_Available (RE_Tag)
+        and then not Needs_Elementary_Stream_Operation (Typ)
         and then RTE_Available (RE_Root_Stream_Type)
         and then not Is_RTE (Typ, RE_Finalization_Collection);
    end Stream_Operation_OK;
