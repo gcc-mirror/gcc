@@ -954,7 +954,7 @@ package body Sem_Util is
       Name_Buffer (Name_Len + 2) := 'E';
       Name_Len := Name_Len + 2;
 
-      --  Create elaboration flag
+      --  Create elaboration counter
 
       Elab_Ent := Make_Defining_Identifier (Loc, Chars => Name_Find);
       Set_Elaboration_Entity (Spec_Id, Elab_Ent);
@@ -962,8 +962,10 @@ package body Sem_Util is
       Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Elab_Ent,
-          Object_Definition   => New_Occurrence_Of (Standard_Integer, Loc),
-          Expression          => Make_Integer_Literal (Loc, Uint_0));
+          Object_Definition   =>
+            New_Occurrence_Of (Standard_Short_Integer, Loc),
+          Expression          =>
+            Make_Integer_Literal (Loc, Uint_0));
 
       Push_Scope (Standard_Standard);
       Add_Global_Declaration (Decl);

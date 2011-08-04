@@ -1,3 +1,18 @@
+2011-08-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_elab.adb (Check_Internal_Call_Continue): Change the type of the
+	elaboration counter to Standard_Short_Integer.
+	* sem_util.adb (Build_Elaboration_Entity): Likewise.
+	* bindgen.adb (Gen_Elab_Externals_Ada): Adjust to above change.
+	(Gen_Elab_Externals_C): Likewise.
+
+2011-08-04  Ed Falis  <falis@adacore.com>
+
+	* system-vxworks-arm.ads, system-vxworks-sparcv9.ads,
+	system-vxworks-ppc.ads, system-vxworks-m68k.ads,
+	system-vxworks-mips.ads, system-vxworks-x86.ads
+	(Always_Compatible_Rep): set to False for all VxWorks targets.
+
 2011-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* par_sco.adb, prj-proc.adb, make.adb, bindgen.adb, prj.adb, prj.ads,
