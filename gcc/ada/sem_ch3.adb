@@ -11592,9 +11592,7 @@ package body Sem_Ch3 is
       --  entity of its subtype mark is in ALFA. This is reversed later if the
       --  range of the subtype is not static.
 
-      if Nkind (Original_Node (Parent (Def_Id))) = N_Subtype_Declaration
-        and then Is_In_ALFA (T)
-      then
+      if Is_In_ALFA (T) then
          Set_Is_In_ALFA (Def_Id);
       end if;
 
@@ -11824,9 +11822,7 @@ package body Sem_Ch3 is
       --  entity of its subtype mark is in ALFA. This is reversed later if the
       --  range of the subtype is not static.
 
-      if Nkind (Original_Node (Parent (Def_Id))) = N_Subtype_Declaration
-        and then Is_In_ALFA (T)
-      then
+      if Is_In_ALFA (T) then
          Set_Is_In_ALFA (Def_Id);
       end if;
 
