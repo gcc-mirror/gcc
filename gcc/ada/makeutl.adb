@@ -1351,25 +1351,30 @@ package body Makeutl is
 
                for J in reverse Names.First .. Names.Last loop
                   declare
-                     File        : Main_Info       := Names.Table (J);
-                     Main_Id     : File_Name_Type  := File.File;
-                     Main        : constant String :=
-                                     Get_Name_String (Main_Id);
-                     Source      : Prj.Source_Id   := No_Source;
+                     File       : Main_Info       := Names.Table (J);
+                     Main_Id    : File_Name_Type  := File.File;
+                     Main       : constant String := Get_Name_String (Main_Id);
+                     Source     : Prj.Source_Id   := No_Source;
+                     Suffix     : File_Name_Type;
+                     Iter       : Source_Iterator;
                      Is_Absolute : Boolean         := False;
-                     Suffix      : File_Name_Type;
-                     Iter        : Source_Iterator;
 
                   begin
-                     if Base_Name (Main) /= Main then
+                     if Base /= Main then
                         if Is_Absolute_Path (Main) then
-                           Main_Id := Create_Name (Base_Name (Main));
+                           Main_Id := Create_Name (Base);
                            Is_Absolute := True;
                         else
-                           Fail_Program
-                             (Tree,
-                              "mains cannot include directory information ("""
-                              & Main & """)");
+                           declare
+                              Absolute : constant String :=
+                                Normalize_Pathname
+                                  (Name           => Main,
+                                   Directory      => "",
+                                   Resolve_Links  => False);
+                           begin
+                              File.File := Create_Name (Absolute);
+                              Main_Id := Create_Name (Base);
+                           end;
                         end if;
                      end if;
 
@@ -1466,6 +1471,22 @@ package body Makeutl is
                                  Source := No_Source;
                               end if;
                            end if;
+                        end if;
+
+                        if Source = No_Source then
+                           --  Still not found ? Maybe we have a unit name
+                           declare
+                              Unit : constant Unit_Index :=
+                                Units_Htable.Get
+                                  (File.Tree.Units_HT, Name_Id (Main_Id));
+                           begin
+                              if Unit /= No_Unit_Index then
+                                 Source := Unit.File_Names (Impl);
+                                 if Source = No_Source then
+                                    Source := Unit.File_Names (Spec);
+                                 end if;
+                              end if;
+                           end;
                         end if;
 
                         if Source /= No_Source then

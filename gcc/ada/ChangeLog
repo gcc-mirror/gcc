@@ -1,3 +1,9 @@
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb, makeutl.adb (Complete_Mains): if a main specified on the
+	command line is not a file name, also check whether it could be a unit
+	name.
+
 2011-08-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* bindgen.adb (Gen_Finalize_Library_Ada): Factor out code to generate
