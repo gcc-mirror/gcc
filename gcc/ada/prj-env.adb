@@ -1982,7 +1982,6 @@ package body Prj.Env is
       if Add_Default_Dir then
          declare
             Prefix : String_Ptr;
-            Add_Prefix_Share_Gpr : Boolean;
 
          begin
             if Sdefault.Search_Dir_Prefix = null then
@@ -1990,7 +1989,6 @@ package body Prj.Env is
                --  gprbuild case
 
                Prefix := new String'(Executable_Prefix_Path);
-               Add_Prefix_Share_Gpr := True;
 
             else
                Prefix := new String'(Sdefault.Search_Dir_Prefix.all
@@ -1998,7 +1996,6 @@ package body Prj.Env is
                                      & ".." & Dir_Separator
                                      & ".." & Dir_Separator
                                      & ".." & Dir_Separator);
-               Add_Prefix_Share_Gpr := False;
             end if;
 
             if Prefix.all /= "" then
@@ -2021,14 +2018,11 @@ package body Prj.Env is
                     ("lib" & Directory_Separator & "gnat");
                end if;
 
-               if Add_Prefix_Share_Gpr then
+               --  $prefix/share/gpr
 
-                  --  $prefix/share/gpr
-
-                  Add_Str_To_Name_Buffer
-                    (Path_Separator & Prefix.all &
-                     "share" & Directory_Separator & "gpr");
-               end if;
+               Add_Str_To_Name_Buffer
+                 (Path_Separator & Prefix.all &
+                  "share" & Directory_Separator & "gpr");
 
                --  $prefix/lib/gnat
 

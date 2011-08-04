@@ -1721,11 +1721,19 @@ begin
                  (To_Host_Dir_Spec (Name_Buffer (1 .. Name_Len), True).all);
 
                Name_Len := Prefix_Name_Len;
+               Add_Str_To_Name_Buffer ("share" & Directory_Separator
+                                       & "gpr" & Directory_Separator);
+               Write_Str ("   ");
+               Write_Line
+                 (To_Host_Dir_Spec (Name_Buffer (1 .. Name_Len), True).all);
+
+               Name_Len := Prefix_Name_Len;
                Add_Str_To_Name_Buffer ("lib" & Directory_Separator
                                        & "gnat" & Directory_Separator);
                Write_Str ("   ");
                Write_Line
                  (To_Host_Dir_Spec (Name_Buffer (1 .. Name_Len), True).all);
+
             end if;
          end if;
       end;

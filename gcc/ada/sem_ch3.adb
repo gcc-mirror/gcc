@@ -2064,14 +2064,14 @@ package body Sem_Ch3 is
       D := First (L);
       while Present (D) loop
 
-         --  Package specification cannot contain a package declaration in
-         --  SPARK.
+         --  Package spec cannot contain a package declaration in SPARK
 
          if Nkind (D) = N_Package_Declaration
            and then Nkind (Parent (L)) = N_Package_Specification
          then
-            Check_SPARK_Restriction ("package specification cannot contain "
-                                      & "a package declaration", D);
+            Check_SPARK_Restriction
+              ("package specification cannot contain a package declaration",
+               D);
          end if;
 
          --  Complete analysis of declaration

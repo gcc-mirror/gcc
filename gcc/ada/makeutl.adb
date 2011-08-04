@@ -1389,12 +1389,12 @@ package body Makeutl is
                   if Name_Len > Base_Main'Length
                     and then Name_Buffer (1 .. Base_Main'Length) = Base_Main
                   then
-                     Suffix :=
-                       Source.Language.Config.Naming_Data.Spec_Suffix;
+                     Suffix := Source.Language.Config.Naming_Data.Spec_Suffix;
 
                      if Suffix /= No_File then
                         declare
                            Suffix_Str : String := Get_Name_String (Suffix);
+
                         begin
                            Canonical_Case_File_Name (Suffix_Str);
 

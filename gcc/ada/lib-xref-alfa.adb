@@ -550,9 +550,9 @@ package body ALFA is
               and then Ekind_In (Scope (E), E_Package, E_Package_Body);
          end Is_Global_Constant;
 
-         --  Start of processing for Eliminate_Before_Sort
-      begin
+      --  Start of processing for Eliminate_Before_Sort
 
+      begin
          NR    := Nrefs;
          Nrefs := 0;
 

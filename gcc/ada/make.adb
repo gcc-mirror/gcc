@@ -4359,8 +4359,8 @@ package body Make is
             end if;
          end if;
 
-         --  Put the object directories in ADA_OBJECTS_PATH
-         --  Ditto for source directories in ADA_INCLUDE_PATH in CodePeer mode
+         --  Put the object directories in ADA_OBJECTS_PATH. Same treatment for
+         --  source directories in ADA_INCLUDE_PATH if in CodePeer mode.
 
          Prj.Env.Set_Ada_Paths
            (Main_Project,

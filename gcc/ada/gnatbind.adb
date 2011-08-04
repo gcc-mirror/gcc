@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -568,20 +568,12 @@ begin
          Last   : constant Natural := Output_File_Name'Last;
 
       begin
-         if Ada_Bind_File then
-            if Length <= 4
-              or else Output_File_Name (Last - 3 .. Last) /= ".adb"
-            then
-               Fail ("output file name should have .adb extension");
-            end if;
-
-         else
-            if Length <= 2
-              or else Output_File_Name (Last - 1 .. Last) /= ".c"
-            then
-               Fail ("output file name should have .c extension");
-            end if;
+         if Length <= 4
+           or else Output_File_Name (Last - 3 .. Last) /= ".adb"
+         then
+            Fail ("output file name should have .adb extension");
          end if;
+
       end Check_Extensions;
    end if;
 

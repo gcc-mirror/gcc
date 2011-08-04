@@ -26,7 +26,6 @@
 with Debug;  use Debug;
 with Osint;  use Osint;
 with Opt;    use Opt;
-with Output; use Output;
 
 with System.WCh_Con; use System.WCh_Con;
 
@@ -165,14 +164,6 @@ package body Switch.B is
          when 'c' =>
             Ptr := Ptr + 1;
             Check_Only := True;
-
-         --  Processing for C switch
-
-         when 'C' =>
-            Ptr := Ptr + 1;
-            Ada_Bind_File := False;
-
-            Write_Line ("warning: gnatbind switch -C is obsolescent");
 
          --  Processing for d switch
 

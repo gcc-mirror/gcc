@@ -1,3 +1,51 @@
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, make.adb, a-cohata.ads, sem_prag.adb, makeutl.adb,
+	lib-xref-alfa.adb: Minor reformatting.
+
+2011-08-04  Marc Sango  <sango@adacore.com>
+
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration,
+	Analyze_Generic_Subprogram_Declaration, Analyze_Package_Instantiation,
+	Analyze_Subprogram_Instantiation): Check absence of generic in SPARK
+	mode.
+
+2011-08-04  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb (Gen_Adainit_C): Remove.
+	(Gen_Adafinal_C): Ditto.
+	(Gen_Elab_Externals_C): Ditto.
+	(Gen_Elab_Calls_C): Ditto.
+	(Gen_Elab_Order_C): Ditto.
+	(Gen_Elab_Defs_C): Ditto.
+	(Gen_Finalize_Library_C): Ditto.
+	(Gen_Finalize_Library_Defs_C): Ditto.
+	(Gen_Main_C): Ditto.
+	(Gen_Output_File_C): Ditto.
+	(Gen_Restrictions_C): Ditto.
+	(Gen_Versions_C): Ditto.
+	(Write_Info_Ada_C): Ditto.
+	(Gen_Object_Files_Options): Call WBI instead of Write_Info_Ada_C
+	(Gen_Output_File): Do not force Ada_Bind_File anymore.
+	Always call Gen_Output_File_Ada.
+	* gnatlink.adb (Begin_Info): Now a constant.
+	(End_Info): Ditto.
+	(Ada_Bind_File): Remove
+	(Process_Args): Do not handle -A/-C.  Remove not Ada_Bind_File cases.
+	* switch-b.adb (Scan_Binder_Switches): Do not handle -C.
+	* gnatbind.adb (Gnatbind): Remove not Ada_Bind_File cases.
+	* opt.ads (Ada_Bind_File): Remove.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* projects.texi: Document target-specific directory in default project
+	path for gnatmake.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* gnatls.adb, prj-env.adb: Add $prefix/share/gpr to default project
+	path in all cases .
+
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch3.adb, sem_ch5.adb, sem_util.adb, sem_ch4.adb, sem_ch8.adb,
