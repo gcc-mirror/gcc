@@ -316,10 +316,12 @@ void __gnat_clearenv (void) {
     /* create a string that contains "name" */
     size++;
     {
-      char expression[size];
+      char *expression;
+      expression = (char *) xmalloc (size * sizeof (char));
       strncpy (expression, env[0], size);
       expression[size - 1] = 0;
       __gnat_unsetenv (expression);
+      free (expression);
     }
   }
 #else

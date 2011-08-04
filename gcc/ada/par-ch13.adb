@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,9 +89,9 @@ package body Ch13 is
             Result := Token = Tok_Arrow;
          end if;
 
-      --  If earlier than Ada 2012, check for valid aspect identifier followed
-      --  by an arrow, and consider that this is still an aspect specification
-      --  so we give an appropriate message.
+      --  If earlier than Ada 2012, check for valid aspect identifier (possibly
+      --  completed with 'CLASS) followed by an arrow, and consider that this
+      --  is still an aspect specification so we give an appropriate message.
 
       else
          if Get_Aspect_Id (Token_Name) = No_Aspect then
@@ -100,10 +100,26 @@ package body Ch13 is
          else
             Scan; -- past aspect name
 
-            if Token /= Tok_Arrow then
-               Result := False;
+            Result := False;
 
-            else
+            if Token = Tok_Arrow then
+               Result := True;
+
+            elsif Token = Tok_Apostrophe then
+               Scan; -- past apostrophe
+
+               if Token = Tok_Identifier
+                 and then Token_Name = Name_Class
+               then
+                  Scan; -- past CLASS
+
+                  if Token = Tok_Arrow then
+                     Result := True;
+                  end if;
+               end if;
+            end if;
+
+            if Result then
                Restore_Scan_State (Scan_State);
                Error_Msg_SC ("|aspect specification is an Ada 2012 feature");
                Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");

@@ -5261,6 +5261,9 @@ package body Sem_Res is
                      --  decrease false positives, without losing too many good
                      --  warnings. The idea is that these previous statements
                      --  may affect global variables the procedure depends on.
+                     --  We also exclude raise statements, that may arise from
+                     --  constraint checks and are probably unrelated to the
+                     --  intended control flow.
 
                      if Nkind (N) = N_Procedure_Call_Statement
                        and then Is_List_Member (N)
@@ -5270,7 +5273,10 @@ package body Sem_Res is
                         begin
                            P := Prev (N);
                            while Present (P) loop
-                              if Nkind (P) /= N_Assignment_Statement then
+                              if not Nkind_In (P,
+                                N_Assignment_Statement,
+                                N_Raise_Constraint_Error)
+                              then
                                  exit Scope_Loop;
                               end if;
 
@@ -7026,6 +7032,28 @@ package body Sem_Res is
       Arg1    : Node_Id;
       Arg2    : Node_Id;
 
+      function Convert_Operand (Opnd : Node_Id) return Node_Id;
+      --  If the operand is a literal, it cannot be the expression in a
+      --  conversion. Use a qualified expression instead.
+
+      function Convert_Operand (Opnd : Node_Id) return Node_Id is
+         Loc : constant Source_Ptr := Sloc (Opnd);
+         Res : Node_Id;
+      begin
+         if Nkind_In (Opnd, N_Integer_Literal, N_Real_Literal) then
+            Res :=
+              Make_Qualified_Expression (Loc,
+                Subtype_Mark => New_Occurrence_Of (Btyp, Loc),
+                Expression   => Relocate_Node (Opnd));
+            Analyze (Res);
+
+         else
+            Res := Unchecked_Convert_To (Btyp, Opnd);
+         end if;
+
+         return Res;
+      end Convert_Operand;
+
    begin
       --  We must preserve the original entity in a generic setting, so that
       --  the legality of the operation can be verified in an instance.
@@ -7048,12 +7076,13 @@ package body Sem_Res is
       --  type.
 
       if Is_Private_Type (Typ) then
-         Arg1 := Unchecked_Convert_To (Btyp, Left_Opnd  (N));
+         Arg1 := Convert_Operand (Left_Opnd (N));
+         --  Unchecked_Convert_To (Btyp, Left_Opnd  (N));
 
          if Nkind (N) = N_Op_Expon then
             Arg2 := Unchecked_Convert_To (Standard_Integer, Right_Opnd (N));
          else
-            Arg2 := Unchecked_Convert_To (Btyp, Right_Opnd (N));
+            Arg2 := Convert_Operand (Right_Opnd (N));
          end if;
 
          if Nkind (Arg1) = N_Type_Conversion then
