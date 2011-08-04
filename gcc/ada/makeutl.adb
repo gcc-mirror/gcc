@@ -1491,7 +1491,8 @@ package body Makeutl is
                           (In_Tree   => File.Tree,
                            Project   => File.Project,
                            Base_Name => Main_Id,
-                           Index     => File.Index);
+                           Index     => File.Index,
+                           In_Imported_Only => True);
 
                         if Source = No_Source then
                            Source := Find_File_Add_Extension
