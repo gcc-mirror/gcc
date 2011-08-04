@@ -1452,7 +1452,8 @@ package body Makeutl is
                                            Normalize_Pathname
                                              (Name           => Main,
                                               Directory      => "",
-                                              Resolve_Links  => False);
+                                              Resolve_Links  => False,
+                                              Case_Sensitive => False);
                            begin
                               File.File := Create_Name (Absolute);
                               Main_Id := Create_Name (Base);

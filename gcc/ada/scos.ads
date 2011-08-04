@@ -355,8 +355,9 @@ package SCOs is
       Last : Boolean;
 
       Pragma_Sloc : Source_Ptr := No_Location;
-      --  For a SCO nested with a pragma Debug/Assert/PPC, location of pragma
-      --  (used for control of SCO output, value not recorded in ALI file).
+      --  For the statement SCO for a pragma, or for any expression SCO nested
+      --  in a pragma Debug/Assert/PPC, location of PRAGMA token (used for
+      --  control of SCO output, value not recorded in ALI file).
    end record;
 
    package SCO_Table is new GNAT.Table (
