@@ -1,3 +1,8 @@
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb, sem_ch4.adb: move check for restriction
+	No_Task_Hierarchy to resolve_allocator.
+
 2011-08-04  Thomas Quinot  <quinot@adacore.com>
 
 	* sinfo.adb, sinfo.ads, sem_prag.adb, sem_ch12.adb (Pragma_Enabled):

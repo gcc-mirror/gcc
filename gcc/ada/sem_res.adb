@@ -4307,6 +4307,15 @@ package body Sem_Res is
          Check_Restriction (No_Anonymous_Allocators, N);
       end if;
 
+      --  Check that an allocator with task parts isn't for a nested access
+      --  type when restriction No_Task_Hierarchy applies.
+
+      if not Is_Library_Level_Entity (Base_Type (Typ))
+        and then Has_Task (Base_Type (Designated_Type (Typ)))
+      then
+         Check_Restriction (No_Task_Hierarchy, N);
+      end if;
+
       --  An erroneous allocator may be rewritten as a raise Program_Error
       --  statement.
 
