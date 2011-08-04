@@ -386,11 +386,9 @@ package body Make is
    --  with the switches -c, -b and -l. These flags are reset to True for
    --  each invocation of procedure Gnatmake.
 
-   Do_Codepeer_Globalize_Step : Boolean := False;
-   --  Flag to indicate whether the CodePeer globalizer should be called
-
    Shared_String           : aliased String := "-shared";
    Force_Elab_Flags_String : aliased String := "-F";
+   CodePeer_Mode_String    : aliased String := "-P";
 
    No_Shared_Switch : aliased Argument_List := (1 .. 0 => null);
    Shared_Switch    : aliased Argument_List := (1 => Shared_String'Access);
@@ -2927,7 +2925,7 @@ package body Make is
             then
                --  If we compile with -gnatC, enable CodePeer globalize step
 
-               Do_Codepeer_Globalize_Step := True;
+               CodePeer_Mode := True;
             end if;
          end loop;
 
@@ -2968,7 +2966,7 @@ package body Make is
                declare
                   Str : String renames Args (Arg_Index).all;
                begin
-                  if Do_Codepeer_Globalize_Step
+                  if CodePeer_Mode
                     and then Str'Length > 2
                     and then Str (Str'First .. Str'First + 1) = "-m"
                   then
@@ -4399,7 +4397,13 @@ package body Make is
          end;
       end if;
 
-      --  Add switch -M to gnatlink if buider switch --create-map-file
+      if CodePeer_Mode then
+         Linker_Switches.Increment_Last;
+         Linker_Switches.Table (Linker_Switches.Last) :=
+           new String'(CodePeer_Mode_String);
+      end if;
+
+      --  Add switch -M to gnatlink if builder switch --create-map-file
       --  has been specified.
 
       if Map_File /= null then
@@ -4558,6 +4562,11 @@ package body Make is
       if Stand_Alone_Libraries then
          Last_Arg := Last_Arg + 1;
          Args (Last_Arg) := Force_Elab_Flags_String'Access;
+      end if;
+
+      if CodePeer_Mode then
+         Last_Arg := Last_Arg + 1;
+         Args (Last_Arg) := CodePeer_Mode_String'Access;
       end if;
 
       if Main_Project /= No_Project then
@@ -6313,10 +6322,9 @@ package body Make is
          end if;
       end loop Multiple_Main_Loop;
 
-      if Do_Codepeer_Globalize_Step then
+      if CodePeer_Mode then
          declare
             Success : Boolean := False;
-
          begin
             Globalize (Success);
 
@@ -7962,9 +7970,14 @@ package body Make is
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Operating_Mode           := Check_Semantics;
             Check_Object_Consistency := False;
-            Compile_Only             := True;
-            Do_Bind_Step             := False;
-            Do_Link_Step             := False;
+
+            if not CodePeer_Mode
+              and then (Argv'Last < 7 or else Argv (7) /= 'C')
+            then
+               Compile_Only := True;
+               Do_Bind_Step := False;
+               Do_Link_Step := False;
+            end if;
 
          elsif Argv (2 .. Argv'Last) = "nostdlib" then
 

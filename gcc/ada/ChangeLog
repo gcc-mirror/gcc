@@ -1,3 +1,21 @@
+2011-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* make.adb (Do_Codepeer_Globalize_Step): Removed. Use CodePeer_Mode
+	instead.
+	(CodePeer_Mode_String): New.
+	(Linking_Phase, Binding_Phase): Call gnatlink with -P switch in
+	CodePeer mode.
+	(Scan_Make_Arg): Do not disable binding/linking phase in CodePeer mode.
+	* bindgen.adb (Gen_Elab_Calls_Ada): Ignore subprograms in CodePeer
+	mode, since no useful elaboration subprogram is needed by CodePeer.
+	* gnatlink.adb (Gnatlink): Add support for -P switch (CodePeer mode).
+	In this mode, compile binder file with -gnatC and do stop after this
+	step.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* exp_ch7.adb: Minor comment fix.
+
 2011-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch7.adb, make.adb, sem_ch10.adb, bindgen.adb, sem_res.adb,
