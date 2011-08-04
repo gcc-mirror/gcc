@@ -2180,9 +2180,16 @@ package body Sem_Ch3 is
             if Nkind (Original_Node (Decl)) = N_Subprogram_Declaration then
                Spec := Specification (Original_Node (Decl));
                Sent := Defining_Unit_Name (Spec);
-               Prag := Spec_PPC_List (Sent);
+
+               Prag := Spec_PPC_List (Contract (Sent));
                while Present (Prag) loop
                   Analyze_PPC_In_Decl_Part (Prag, Sent);
+                  Prag := Next_Pragma (Prag);
+               end loop;
+
+               Prag := Spec_TC_List (Contract (Sent));
+               while Present (Prag) loop
+                  Analyze_TC_In_Decl_Part (Prag, Sent);
                   Prag := Next_Pragma (Prag);
                end loop;
             end if;
@@ -13001,6 +13008,7 @@ package body Sem_Ch3 is
       New_Subp :=
          New_Entity (Nkind (Parent_Subp), Sloc (Derived_Type));
       Set_Ekind (New_Subp, Ekind (Parent_Subp));
+      Set_Contract (New_Subp, Make_Contract (Sloc (New_Subp)));
 
       --  Check whether the inherited subprogram is a private operation that
       --  should be inherited but not yet made visible. Such subprograms can

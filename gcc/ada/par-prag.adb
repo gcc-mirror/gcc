@@ -1239,6 +1239,7 @@ begin
            Pragma_Task_Info                     |
            Pragma_Task_Name                     |
            Pragma_Task_Storage                  |
+           Pragma_Test_Case                     |
            Pragma_Thread_Local_Storage          |
            Pragma_Time_Slice                    |
            Pragma_Title                         |

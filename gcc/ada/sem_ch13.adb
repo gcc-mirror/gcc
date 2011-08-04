@@ -812,53 +812,56 @@ package body Sem_Ch13 is
             --  test allows duplicate Pre/Post's that we generate internally
             --  to escape being flagged here.
 
-            Anod := First (L);
-            while Anod /= Aspect loop
-               if Same_Aspect (A_Id, Get_Aspect_Id (Chars (Identifier (Anod))))
-                 and then Comes_From_Source (Aspect)
-               then
-                  Error_Msg_Name_1 := Nam;
-                  Error_Msg_Sloc := Sloc (Anod);
+            if No_Duplicates_Allowed (A_Id) then
+               Anod := First (L);
+               while Anod /= Aspect loop
+                  if Same_Aspect
+                      (A_Id, Get_Aspect_Id (Chars (Identifier (Anod))))
+                    and then Comes_From_Source (Aspect)
+                  then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_Sloc := Sloc (Anod);
 
-                  --  Case of same aspect specified twice
+                     --  Case of same aspect specified twice
 
-                  if Class_Present (Anod) = Class_Present (Aspect) then
-                     if not Class_Present (Anod) then
-                        Error_Msg_NE
-                          ("aspect% for & previously given#",
-                           Id, E);
-                     else
-                        Error_Msg_NE
-                          ("aspect `%''Class` for & previously given#",
-                           Id, E);
+                     if Class_Present (Anod) = Class_Present (Aspect) then
+                        if not Class_Present (Anod) then
+                           Error_Msg_NE
+                             ("aspect% for & previously given#",
+                              Id, E);
+                        else
+                           Error_Msg_NE
+                             ("aspect `%''Class` for & previously given#",
+                              Id, E);
+                        end if;
+
+                        --  Case of Pre and Pre'Class both specified
+
+                     elsif Nam = Name_Pre then
+                        if Class_Present (Aspect) then
+                           Error_Msg_NE
+                             ("aspect `Pre''Class` for & is not allowed here",
+                              Id, E);
+                           Error_Msg_NE
+                             ("\since aspect `Pre` previously given#",
+                              Id, E);
+
+                        else
+                           Error_Msg_NE
+                             ("aspect `Pre` for & is not allowed here",
+                              Id, E);
+                           Error_Msg_NE
+                             ("\since aspect `Pre''Class` previously given#",
+                              Id, E);
+                        end if;
                      end if;
 
-                  --  Case of Pre and Pre'Class both specified
-
-                  elsif Nam = Name_Pre then
-                     if Class_Present (Aspect) then
-                        Error_Msg_NE
-                          ("aspect `Pre''Class` for & is not allowed here",
-                           Id, E);
-                        Error_Msg_NE
-                          ("\since aspect `Pre` previously given#",
-                           Id, E);
-
-                     else
-                        Error_Msg_NE
-                          ("aspect `Pre` for & is not allowed here",
-                           Id, E);
-                        Error_Msg_NE
-                          ("\since aspect `Pre''Class` previously given#",
-                           Id, E);
-                     end if;
+                     --  Allowed case of X and X'Class both specified
                   end if;
 
-                  --  Allowed case of X and X'Class both specified
-               end if;
-
-               Next (Anod);
-            end loop;
+                  Next (Anod);
+               end loop;
+            end if;
 
             --  Copy expression for later processing by the procedures
             --  Check_Aspect_At_[Freeze_Point | End_Of_Declarations]
@@ -1219,7 +1222,7 @@ package body Sem_Ch13 is
                     Aspect_Static_Predicate  =>
 
                   --  Construct the pragma (always a pragma Predicate, with
-                  --  flags recording whether
+                  --  flags recording whether it is static/dynamic).
 
                   Aitem :=
                     Make_Pragma (Loc,
@@ -1255,6 +1258,64 @@ package body Sem_Ch13 is
                   Ensure_Freeze_Node (E);
                   Set_Is_Delayed_Aspect (Aspect);
                   Delay_Required := True;
+
+               when Aspect_Test_Case => declare
+                  Args      : List_Id;
+                  Comp_Expr : Node_Id;
+                  Comp_Assn : Node_Id;
+
+               begin
+                  Args := New_List;
+
+                  if Nkind (Expr) /= N_Aggregate then
+                     Error_Msg_NE
+                       ("wrong syntax for aspect `Test_Case` for &", Id, E);
+                     goto Continue;
+                  end if;
+
+                  Comp_Expr := First (Expressions (Expr));
+                  while Present (Comp_Expr) loop
+                     Append (Relocate_Node (Comp_Expr), Args);
+                     Next (Comp_Expr);
+                  end loop;
+
+                  Comp_Assn := First (Component_Associations (Expr));
+                  while Present (Comp_Assn) loop
+                     if List_Length (Choices (Comp_Assn)) /= 1
+                       or else
+                         Nkind (First (Choices (Comp_Assn))) /= N_Identifier
+                     then
+                        Error_Msg_NE
+                          ("wrong syntax for aspect `Test_Case` for &", Id, E);
+                        goto Continue;
+                     end if;
+
+                     Append (Make_Pragma_Argument_Association (
+                       Sloc       => Sloc (Comp_Assn),
+                       Chars      => Chars (First (Choices (Comp_Assn))),
+                       Expression => Relocate_Node (Expression (Comp_Assn))),
+                       Args);
+                     Next (Comp_Assn);
+                  end loop;
+
+                  --  Build the test-case pragma
+
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Test_Case),
+                      Pragma_Argument_Associations =>
+                        Args);
+
+                  Set_From_Aspect_Specification (Aitem, True);
+                  Set_Is_Delayed_Aspect (Aspect);
+
+                  --  Insert immediately after the entity declaration
+
+                  Insert_After (N, Aitem);
+
+                  goto Continue;
+               end;
             end case;
 
             --  If a delay is required, we delay the freeze (not much point in
@@ -5330,6 +5391,12 @@ package body Sem_Ch13 is
          when Boolean_Aspects =>
             raise Program_Error;
 
+         --  Test_Case aspect applies to entries and subprograms, hence should
+         --  never be delayed.
+
+         when Aspect_Test_Case =>
+            raise Program_Error;
+
          --  Default_Value is resolved with the type entity in question
 
          when Aspect_Default_Value =>
@@ -5354,8 +5421,7 @@ package body Sem_Ch13 is
          when Aspect_Storage_Pool =>
             T := Class_Wide_Type (RTE (RE_Root_Storage_Pool));
 
-         when
-              Aspect_Alignment      |
+         when Aspect_Alignment      |
               Aspect_Component_Size |
               Aspect_Machine_Radix  |
               Aspect_Object_Size    |
@@ -5375,7 +5441,7 @@ package body Sem_Ch13 is
             Analyze (Expression (ASN));
             return;
 
-         --  Suppress/Unsupress/Warnings should never be delayed
+         --  Suppress/Unsuppress/Warnings should never be delayed
 
          when Aspect_Suppress   |
               Aspect_Unsuppress |

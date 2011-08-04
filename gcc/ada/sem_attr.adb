@@ -4046,9 +4046,29 @@ package body Sem_Attr is
                Prag := Parent (Prag);
             end loop;
 
-            if Nkind (Prag) /= N_Pragma
-              or else Get_Pragma_Id (Prag) /= Pragma_Postcondition
-            then
+            if Nkind (Prag) /= N_Pragma then
+               Error_Attr
+                 ("% attribute can only appear in postcondition of function",
+                  P);
+
+            elsif Get_Pragma_Id (Prag) = Pragma_Test_Case then
+               declare
+                  Arg_Ens : constant Node_Id :=
+                              Get_Ensures_From_Test_Case_Pragma (Prag);
+                  Arg     : Node_Id;
+
+               begin
+                  Arg := N;
+                  while Arg /= Prag and Arg /= Arg_Ens loop
+                     Arg := Parent (Arg);
+                  end loop;
+
+                  if Arg /= Arg_Ens then
+                     Error_Attr ("% attribute misplaced inside Test_Case", P);
+                  end if;
+               end;
+
+            elsif Get_Pragma_Id (Prag) /= Pragma_Postcondition then
                Error_Attr
                  ("% attribute can only appear in postcondition of function",
                   P);

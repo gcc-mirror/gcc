@@ -209,7 +209,7 @@ package body Einfo is
 
    --    Finalizer                       Node24
    --    Related_Expression              Node24
-   --    Spec_PPC_List                   Node24
+   --    Contract                        Node24
 
    --    Interface_Alias                 Node25
    --    Interfaces                      Elist25
@@ -981,6 +981,15 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Entry_Index_Parameter);
       return Node18 (Id);
    end Entry_Index_Constant;
+
+   function Contract (Id : E) return N is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Entry, E_Entry_Family)
+          or else Is_Subprogram (Id)
+          or else Is_Generic_Subprogram (Id));
+      return Node24 (Id);
+   end Contract;
 
    function Entry_Parameters_Type (Id : E) return E is
    begin
@@ -2650,15 +2659,6 @@ package body Einfo is
       return Node19 (Id);
    end Spec_Entity;
 
-   function Spec_PPC_List (Id : E) return N is
-   begin
-      pragma Assert
-        (Ekind_In (Id,  E_Entry, E_Entry_Family)
-          or else Is_Subprogram (Id)
-          or else Is_Generic_Subprogram (Id));
-      return Node24 (Id);
-   end Spec_PPC_List;
-
    function Static_Predicate (Id : E) return S is
    begin
       pragma Assert (Is_Discrete_Type (Id));
@@ -3450,6 +3450,15 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Entry_Index_Parameter);
       Set_Node18 (Id, V);
    end Set_Entry_Index_Constant;
+
+   procedure Set_Contract (Id : E; V : N) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Entry, E_Entry_Family, E_Void)
+          or else Is_Subprogram (Id)
+          or else Is_Generic_Subprogram (Id));
+      Set_Node24 (Id, V);
+   end Set_Contract;
 
    procedure Set_Entry_Parameters_Type (Id : E; V : E) is
    begin
@@ -5188,15 +5197,6 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Package_Body or else Is_Formal (Id));
       Set_Node19 (Id, V);
    end Set_Spec_Entity;
-
-   procedure Set_Spec_PPC_List (Id : E; V : N) is
-   begin
-      pragma Assert
-        (Ekind_In (Id, E_Entry, E_Entry_Family, E_Void)
-          or else Is_Subprogram (Id)
-          or else Is_Generic_Subprogram (Id));
-      Set_Node24 (Id, V);
-   end Set_Spec_PPC_List;
 
    procedure Set_Static_Predicate (Id : E; V : S) is
    begin
@@ -8534,8 +8534,11 @@ package body Einfo is
               Type_Kind                                    =>
             Write_Str ("Related_Expression");
 
-         when Subprogram_Kind                              =>
-            Write_Str ("Spec_PPC_List");
+         when E_Entry                                      |
+              E_Entry_Family                               |
+              Subprogram_Kind                              |
+              Generic_Subprogram_Kind                      =>
+            Write_Str ("Contract");
 
          when others                                       =>
             Write_Str ("Field24???");

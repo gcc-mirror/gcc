@@ -4223,6 +4223,28 @@ package body Sem_Util is
       end if;
    end Get_Enum_Lit_From_Pos;
 
+   ---------------------------------------
+   -- Get_Ensures_From_Test_Case_Pragma --
+   ---------------------------------------
+
+   function Get_Ensures_From_Test_Case_Pragma (N : Node_Id) return Node_Id is
+      Args : constant List_Id := Pragma_Argument_Associations (N);
+      Res  : Node_Id;
+
+   begin
+      if List_Length (Args) = 4 then
+         Res := Pick (Args, 4);
+
+      else
+         Res := Pick (Args, 3);
+         if Chars (Res) /= Name_Ensures then
+            Res := Empty;
+         end if;
+      end if;
+
+      return Res;
+   end Get_Ensures_From_Test_Case_Pragma;
+
    ------------------------
    -- Get_Generic_Entity --
    ------------------------
@@ -4351,6 +4373,23 @@ package body Sem_Util is
 
       return R;
    end Get_Renamed_Entity;
+
+   ----------------------------------------
+   -- Get_Requires_From_Test_Case_Pragma --
+   ----------------------------------------
+
+   function Get_Requires_From_Test_Case_Pragma (N : Node_Id) return Node_Id is
+      Args : constant List_Id := Pragma_Argument_Associations (N);
+      Res  : Node_Id;
+
+   begin
+      Res := Pick (Args, 3);
+      if Chars (Res) /= Name_Requires then
+         Res := Empty;
+      end if;
+
+      return Res;
+   end Get_Requires_From_Test_Case_Pragma;
 
    -------------------------
    -- Get_Subprogram_Body --

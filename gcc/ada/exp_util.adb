@@ -3186,6 +3186,11 @@ package body Exp_Util is
                      null;
                   end if;
 
+            --  A contract node should not belong to the tree
+
+            when N_Contract =>
+               raise Program_Error;
+
             --  For all other node types, keep climbing tree
 
             when

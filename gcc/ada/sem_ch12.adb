@@ -2839,6 +2839,7 @@ package body Sem_Ch12 is
       Spec := Specification (N);
       Id := Defining_Entity (Spec);
       Generate_Definition (Id);
+      Set_Contract (Id, Make_Contract (Sloc (Id)));
 
       if Nkind (Id) = N_Defining_Operator_Symbol then
          Error_Msg_N
@@ -4367,6 +4368,8 @@ package body Sem_Ch12 is
          end if;
 
          Generate_Definition (Act_Decl_Id);
+         Set_Contract (Anon_Id, Make_Contract (Sloc (Anon_Id))); -- ??? needed?
+         Set_Contract (Act_Decl_Id, Make_Contract (Sloc (Act_Decl_Id)));
 
          Set_Is_Inlined (Act_Decl_Id, Is_Inlined (Gen_Unit));
          Set_Is_Inlined (Anon_Id,     Is_Inlined (Gen_Unit));

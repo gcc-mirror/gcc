@@ -885,6 +885,7 @@ package body Sem_Ch9 is
 
    begin
       Generate_Definition (Def_Id);
+      Set_Contract (Def_Id, Make_Contract (Sloc (Def_Id)));
       Tasking_Used := True;
 
       --  Case of no discrete subtype definition

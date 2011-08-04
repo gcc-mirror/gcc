@@ -544,6 +544,7 @@ package Snames is
    Name_Suppress_Debug_Info            : constant Name_Id := N + $; -- GNAT
    Name_Suppress_Initialization        : constant Name_Id := N + $; -- GNAT
    Name_System_Name                    : constant Name_Id := N + $; -- Ada 83
+   Name_Test_Case                      : constant Name_Id := N + $; -- GNAT
    Name_Task_Info                      : constant Name_Id := N + $; -- GNAT
    Name_Task_Name                      : constant Name_Id := N + $; -- GNAT
    Name_Task_Storage                   : constant Name_Id := N + $; -- VMS
@@ -624,6 +625,7 @@ package Snames is
    Name_Descriptor                     : constant Name_Id := N + $;
    Name_Dot_Replacement                : constant Name_Id := N + $;
    Name_Dynamic                        : constant Name_Id := N + $;
+   Name_Ensures                        : constant Name_Id := N + $;
    Name_Entity                         : constant Name_Id := N + $;
    Name_Entry_Count                    : constant Name_Id := N + $;
    Name_External_Name                  : constant Name_Id := N + $;
@@ -646,6 +648,7 @@ package Snames is
    Name_Mechanism                      : constant Name_Id := N + $;
    Name_Message                        : constant Name_Id := N + $;
    Name_Mixedcase                      : constant Name_Id := N + $;
+   Name_Mode                           : constant Name_Id := N + $;
    Name_Modified_GPL                   : constant Name_Id := N + $;
    Name_Name                           : constant Name_Id := N + $;
    Name_NCA                            : constant Name_Id := N + $;
@@ -657,13 +660,16 @@ package Snames is
    Name_No_Requeue_Statements          : constant Name_Id := N + $;
    Name_No_Task_Attributes             : constant Name_Id := N + $;
    Name_No_Task_Attributes_Package     : constant Name_Id := N + $;
+   Name_Normal                         : constant Name_Id := N + $;
    Name_On                             : constant Name_Id := N + $;
    Name_Policy                         : constant Name_Id := N + $;
    Name_Parameter_Types                : constant Name_Id := N + $;
    Name_Reference                      : constant Name_Id := N + $;
+   Name_Requires                       : constant Name_Id := N + $;
    Name_Restricted                     : constant Name_Id := N + $;
    Name_Result_Mechanism               : constant Name_Id := N + $;
    Name_Result_Type                    : constant Name_Id := N + $;
+   Name_Robustness                     : constant Name_Id := N + $;
    Name_Runtime                        : constant Name_Id := N + $;
    Name_SB                             : constant Name_Id := N + $;
    Name_Secondary_Stack_Size           : constant Name_Id := N + $;
@@ -1634,6 +1640,7 @@ package Snames is
       Pragma_Suppress_Debug_Info,
       Pragma_Suppress_Initialization,
       Pragma_System_Name,
+      Pragma_Test_Case,
       Pragma_Task_Info,
       Pragma_Task_Name,
       Pragma_Task_Storage,
