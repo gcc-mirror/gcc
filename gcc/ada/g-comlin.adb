@@ -1917,25 +1917,19 @@ package body GNAT.Command_Line is
                   end if;
 
                when Parameter_With_Optional_Space =>
-                  if Parameter /= "" then
-                     Callback (Switch, " ", Parameter, Index => Index);
-                     Found_In_Config := True;
-                     return False;
-                  end if;
+                  Callback (Switch, " ", Parameter, Index => Index);
+                  Found_In_Config := True;
+                  return False;
 
                when Parameter_With_Space_Or_Equal =>
-                  if Parameter /= "" then
-                     Callback (Switch, "=", Parameter, Index => Index);
-                     Found_In_Config := True;
-                     return False;
-                  end if;
+                  Callback (Switch, "=", Parameter, Index => Index);
+                  Found_In_Config := True;
+                  return False;
 
                when Parameter_No_Space =>
-                  if Parameter /= "" then
-                     Callback (Switch, "", Parameter, Index);
-                     Found_In_Config := True;
-                     return False;
-                  end if;
+                  Callback (Switch, "", Parameter, Index);
+                  Found_In_Config := True;
+                  return False;
 
                when Parameter_Optional =>
                   Callback (Switch, "", Parameter, Index);

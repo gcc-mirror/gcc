@@ -793,6 +793,13 @@ package body Sem_Ch3 is
       --  the corresponding semantic routine
 
       if Present (Access_To_Subprogram_Definition (N)) then
+
+         --  Compiler runtime units are compiled in Ada 2005 mode when building
+         --  the runtime library but must also be compilable in Ada 95 mode
+         --  (when bootstrapping the compiler).
+
+         Check_Compiler_Unit (N);
+
          Access_Subprogram_Declaration
            (T_Name => Anon_Type,
             T_Def  => Access_To_Subprogram_Definition (N));

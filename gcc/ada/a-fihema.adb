@@ -33,10 +33,9 @@ with Ada.Exceptions;          use Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 
-with GNAT.IO;                 use GNAT.IO;
-
 with System;                  use System;
 with System.Address_Image;
+with System.IO;               use System.IO;
 with System.Soft_Links;       use System.Soft_Links;
 with System.Storage_Elements; use System.Storage_Elements;
 with System.Storage_Pools;    use System.Storage_Pools;
