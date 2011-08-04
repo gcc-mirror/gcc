@@ -435,7 +435,10 @@ package body Bindgen is
    begin
       WBI ("   procedure " & Ada_Final_Name.all & " is");
 
-      if VM_Target = No_VM and then Bind_Main_Program then
+      if VM_Target = No_VM
+        and Bind_Main_Program
+        and not CodePeer_Mode
+      then
          WBI ("      procedure s_stalib_adafinal;");
          Set_String ("      pragma Import (C, s_stalib_adafinal, ");
          Set_String ("""system__standard_library__adafinal"");");
@@ -443,15 +446,18 @@ package body Bindgen is
       end if;
 
       WBI ("   begin");
-      WBI ("      if not Is_Elaborated then");
-      WBI ("         return;");
-      WBI ("      end if;");
-      WBI ("      Is_Elaborated := False;");
+
+      if not CodePeer_Mode then
+         WBI ("      if not Is_Elaborated then");
+         WBI ("         return;");
+         WBI ("      end if;");
+         WBI ("      Is_Elaborated := False;");
+      end if;
 
       --  On non-virtual machine targets, finalization is done differently
       --  depending on whether this is the main program or a library.
 
-      if VM_Target = No_VM then
+      if VM_Target = No_VM and then not CodePeer_Mode then
          if Bind_Main_Program then
             WBI ("      s_stalib_adafinal;");
          elsif Lib_Final_Built then
@@ -462,6 +468,7 @@ package body Bindgen is
 
       --  Pragma Import C cannot be used on virtual machine targets, therefore
       --  call the runtime finalization routine directly.
+      --  Similarly in CodePeer mode, where imported functions are ignored.
 
       else
          WBI ("      System.Standard_Library.Adafinal;");
@@ -516,6 +523,7 @@ package body Bindgen is
 
       if not Suppress_Standard_Library_On_Target
         and then VM_Target = No_VM
+        and then not CodePeer_Mode
         and then not Configurable_Run_Time_On_Target
       then
          WBI ("   type No_Param_Proc is access procedure;");
@@ -524,11 +532,17 @@ package body Bindgen is
 
       WBI ("   procedure " & Ada_Init_Name.all & " is");
 
+      --  In CodePeer mode, simplify adainit procedure by only calling
+      --  elaboration procedures.
+
+      if CodePeer_Mode then
+         WBI ("   begin");
+
       --  If the standard library is suppressed, then the only global variables
       --  that might be needed (by the Ravenscar profile) are the priority and
       --  the processor for the environment task.
 
-      if Suppress_Standard_Library_On_Target then
+      elsif Suppress_Standard_Library_On_Target then
          if Main_Priority /= No_Main_Priority then
             WBI ("      Main_Priority : Integer;");
             WBI ("      pragma Import (C, Main_Priority," &
@@ -717,7 +731,6 @@ package body Bindgen is
          end if;
 
          WBI ("   begin");
-
          WBI ("      if Is_Elaborated then");
          WBI ("         return;");
          WBI ("      end if;");
@@ -904,12 +917,17 @@ package body Bindgen is
          WBI ("      Initialize_Stack_Limit;");
       end if;
 
+      --  On CodePeer, the finalization of library objects is not relevant
+
+      if CodePeer_Mode then
+         null;
+
       --  On virtual machine targets, or on non-virtual machine ones if this
       --  is the main program case, attach finalize_library to the soft link.
       --  Do it only when not using a restricted run time, in which case tasks
       --  are non-terminating, so we do not want library-level finalization.
 
-      if (VM_Target /= No_VM or else Bind_Main_Program)
+      elsif (VM_Target /= No_VM or else Bind_Main_Program)
         and then not Configurable_Run_Time_On_Target
         and then not Suppress_Standard_Library_On_Target
       then
@@ -942,7 +960,10 @@ package body Bindgen is
 
       --  Generate elaboration calls
 
-      WBI ("");
+      if not CodePeer_Mode then
+         WBI ("");
+      end if;
+
       Gen_Elab_Calls_Ada;
 
       --  Case of main program is CIL function or procedure
@@ -1257,6 +1278,10 @@ package body Bindgen is
 
    procedure Gen_Elab_Externals_Ada is
    begin
+      if CodePeer_Mode then
+         return;
+      end if;
+
       for E in Elab_Order.First .. Elab_Order.Last loop
          declare
             Unum : constant Unit_Id := Elab_Order.Table (E);
@@ -1380,6 +1405,7 @@ package body Bindgen is
    ------------------------
 
    procedure Gen_Elab_Calls_Ada is
+      Check_Elab_Flag : Boolean;
    begin
       for E in Elab_Order.First .. Elab_Order.Last loop
          declare
@@ -1420,6 +1446,7 @@ package body Bindgen is
 
                if U.Utype = Is_Body
                  and then Units.Table (Unum_Spec).Set_Elab_Entity
+                 and then not CodePeer_Mode
                then
                   Set_String ("      E");
                   Set_Unit_Number (Unum_Spec);
@@ -1449,10 +1476,13 @@ package body Bindgen is
             --  elaboration subprogram is needed by CodePeer.
 
             elsif U.Unit_Kind /= 's' or else not CodePeer_Mode then
-               if Force_Checking_Of_Elaboration_Flags
-                 or Interface_Library_Unit
-                 or not Bind_Main_Program
-               then
+               Check_Elab_Flag :=
+                 not CodePeer_Mode
+                 and then (Force_Checking_Of_Elaboration_Flags
+                            or Interface_Library_Unit
+                            or not Bind_Main_Program);
+
+               if Check_Elab_Flag then
                   Set_String ("      if E");
                   Set_Unit_Number (Unum_Spec);
                   Set_String (" = 0 then");
@@ -1491,14 +1521,13 @@ package body Bindgen is
                Set_Char (';');
                Write_Statement_Buffer;
 
-               if Force_Checking_Of_Elaboration_Flags
-                 or Interface_Library_Unit
-                 or not Bind_Main_Program
-               then
+               if Check_Elab_Flag then
                   WBI ("      end if;");
                end if;
 
-               if U.Utype /= Is_Spec then
+               if U.Utype /= Is_Spec
+                 and then not CodePeer_Mode
+               then
                   Set_String ("      E");
                   Set_Unit_Number (Unum_Spec);
                   Set_String (" := E");
@@ -1717,6 +1746,10 @@ package body Bindgen is
    --  Start of processing for Gen_Finalize_Library_Ada
 
    begin
+      if CodePeer_Mode then
+         return;
+      end if;
+
       for E in reverse Elab_Order.First .. Elab_Order.Last loop
          Unum := Elab_Order.Table (E);
          U    := Units.Table (Unum);
@@ -2211,7 +2244,9 @@ package body Bindgen is
 
       --  Initialize and Finalize
 
-      if not Cumulative_Restrictions.Set (No_Finalization) then
+      if not CodePeer_Mode
+        and then not Cumulative_Restrictions.Set (No_Finalization)
+      then
          WBI ("      procedure Initialize (Addr : System.Address);");
          WBI ("      pragma Import (C, Initialize, ""__gnat_initialize"");");
          WBI ("");
@@ -2238,44 +2273,50 @@ package body Bindgen is
       --  Deal with declarations for main program case
 
       if not No_Main_Subprogram then
-
-         --  To call the main program, we declare it using a pragma Import
-         --  Ada with the right link name.
-
-         --  It might seem more obvious to "with" the main program, and call
-         --  it in the normal Ada manner. We do not do this for three reasons:
-
-         --    1. It is more efficient not to recompile the main program
-         --    2. We are not entitled to assume the source is accessible
-         --    3. We don't know what options to use to compile it
-
-         --  It is really reason 3 that is most critical (indeed we used
-         --  to generate the "with", but several regression tests failed).
-
-         WBI ("");
-
-         if ALIs.Table (ALIs.First).Main_Program = Func then
-            WBI ("      Result : Integer;");
-            WBI ("");
-            WBI ("      function Ada_Main_Program return Integer;");
-
+         if CodePeer_Mode then
+            if ALIs.Table (ALIs.First).Main_Program = Func then
+               WBI ("      Result : Integer;");
+            end if;
          else
-            WBI ("      procedure Ada_Main_Program;");
-         end if;
+            --  To call the main program, we declare it using a pragma Import
+            --  Ada with the right link name.
 
-         Set_String ("      pragma Import (Ada, Ada_Main_Program, """);
-         Get_Name_String (Units.Table (First_Unit_Entry).Uname);
-         Set_Main_Program_Name;
-         Set_String (""");");
+            --  It might seem more obvious to "with" the main program, and call
+            --  it in the normal Ada manner. We do not do this for three
+            --  reasons:
 
-         Write_Statement_Buffer;
-         WBI ("");
+            --    1. It is more efficient not to recompile the main program
+            --    2. We are not entitled to assume the source is accessible
+            --    3. We don't know what options to use to compile it
 
-         if Bind_Main_Program
-           and then not Suppress_Standard_Library_On_Target
-         then
-            WBI ("      SEH : aliased array (1 .. 2) of Integer;");
+            --  It is really reason 3 that is most critical (indeed we used
+            --  to generate the "with", but several regression tests failed).
+
             WBI ("");
+
+            if ALIs.Table (ALIs.First).Main_Program = Func then
+               WBI ("      Result : Integer;");
+               WBI ("");
+               WBI ("      function Ada_Main_Program return Integer;");
+
+            else
+               WBI ("      procedure Ada_Main_Program;");
+            end if;
+
+            Set_String ("      pragma Import (Ada, Ada_Main_Program, """);
+            Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+            Set_Main_Program_Name;
+            Set_String (""");");
+
+            Write_Statement_Buffer;
+            WBI ("");
+
+            if Bind_Main_Program
+              and then not Suppress_Standard_Library_On_Target
+            then
+               WBI ("      SEH : aliased array (1 .. 2) of Integer;");
+               WBI ("");
+            end if;
          end if;
       end if;
 
@@ -2289,7 +2330,7 @@ package body Bindgen is
       --  with a pragma Volatile in order to tell the compiler to preserve
       --  this variable at any level of optimization.
 
-      if Bind_Main_Program then
+      if Bind_Main_Program and then not CodePeer_Mode then
          WBI
            ("      Ensure_Reference : aliased System.Address := " &
             "Ada_Main_Program_Name'Address;");
@@ -2301,7 +2342,10 @@ package body Bindgen is
 
       --  Acquire command line arguments if present on target
 
-      if Command_Line_Args_On_Target then
+      if CodePeer_Mode then
+         null;
+
+      elsif Command_Line_Args_On_Target then
          WBI ("      gnat_argc := argc;");
          WBI ("      gnat_argv := argv;");
          WBI ("      gnat_envp := envp;");
@@ -2339,7 +2383,9 @@ package body Bindgen is
          Write_Statement_Buffer;
       end if;
 
-      if not Cumulative_Restrictions.Set (No_Finalization) then
+      if not Cumulative_Restrictions.Set (No_Finalization)
+        and then not CodePeer_Mode
+      then
          if not No_Main_Subprogram
            and then Bind_Main_Program
            and then not Suppress_Standard_Library_On_Target
@@ -2383,7 +2429,9 @@ package body Bindgen is
 
       --  Finalize is only called if we have a run time
 
-      if not Cumulative_Restrictions.Set (No_Finalization) then
+      if not Cumulative_Restrictions.Set (No_Finalization)
+        and then not CodePeer_Mode
+      then
          WBI ("      Finalize;");
       end if;
 
@@ -2986,13 +3034,16 @@ package body Bindgen is
       Resolve_Binder_Options;
 
       --  Usually, adafinal is called using a pragma Import C. Since Import C
-      --  doesn't have the same semantics for JGNAT, we use standard Ada.
+      --  doesn't have the same semantics for VMs or CodePeer, use standard
+      --  Ada.
 
-      if VM_Target /= No_VM
-        and then not Suppress_Standard_Library_On_Target
-      then
-         WBI ("with System.Soft_Links;");
-         WBI ("with System.Standard_Library;");
+      if not Suppress_Standard_Library_On_Target then
+         if CodePeer_Mode then
+            WBI ("with System.Standard_Library;");
+         elsif VM_Target /= No_VM then
+            WBI ("with System.Soft_Links;");
+            WBI ("with System.Standard_Library;");
+         end if;
       end if;
 
       WBI ("package " & Ada_Main & " is");
@@ -3212,38 +3263,41 @@ package body Bindgen is
 
       Gen_Elab_Externals_Ada;
 
-      if not Suppress_Standard_Library_On_Target then
+      if not CodePeer_Mode then
+         if not Suppress_Standard_Library_On_Target then
 
-         --  Generate Priority_Specific_Dispatching pragma string
+            --  Generate Priority_Specific_Dispatching pragma string
 
-         Set_String
-           ("   Local_Priority_Specific_Dispatching : constant String := """);
+            Set_String
+              ("   Local_Priority_Specific_Dispatching : " &
+               "constant String := """);
 
-         for J in 0 .. PSD_Pragma_Settings.Last loop
-            Set_Char (PSD_Pragma_Settings.Table (J));
-         end loop;
+            for J in 0 .. PSD_Pragma_Settings.Last loop
+               Set_Char (PSD_Pragma_Settings.Table (J));
+            end loop;
 
-         Set_String (""";");
-         Write_Statement_Buffer;
+            Set_String (""";");
+            Write_Statement_Buffer;
 
-         --  Generate Interrupt_State pragma string
+            --  Generate Interrupt_State pragma string
 
-         Set_String ("   Local_Interrupt_States : constant String := """);
+            Set_String ("   Local_Interrupt_States : constant String := """);
 
-         for J in 0 .. IS_Pragma_Settings.Last loop
-            Set_Char (IS_Pragma_Settings.Table (J));
-         end loop;
+            for J in 0 .. IS_Pragma_Settings.Last loop
+               Set_Char (IS_Pragma_Settings.Table (J));
+            end loop;
 
-         Set_String (""";");
-         Write_Statement_Buffer;
+            Set_String (""";");
+            Write_Statement_Buffer;
+            WBI ("");
+         end if;
+
+         --  The B.1 (39) implementation advice says that the adainit/adafinal
+         --  routines should be idempotent. Generate a flag to ensure that.
+
+         WBI ("   Is_Elaborated : Boolean := False;");
          WBI ("");
       end if;
-
-      --  The B.1 (39) implementation advice says that the adainit/adafinal
-      --  routines should be idempotent. Generate a flag to ensure that.
-
-      WBI ("   Is_Elaborated : Boolean := False;");
-      WBI ("");
 
       --  Generate the adafinal routine unless there is no finalization to do
 

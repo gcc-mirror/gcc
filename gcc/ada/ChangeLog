@@ -1,3 +1,42 @@
+2011-08-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch7.adb (Expand_N_Package_Body, Expand_N_Package_Declaration):
+	Remove code which takes care of building TSDs.
+	* rtsfind.ads (RE_Check_Interface_Conversion): New entity.
+	* exp_ch4.adb (Apply_Accessibility_Check): Add support for generating
+	the accessibility check in VM targets.
+	* exp_disp.adb (Make_VM_TSD): Spec moved to exp_disp.ads
+	(Building_Static_DT): Now returns false for VM targets.
+	(Build_VM_TSDs): Removed.
+	(Expand_Interface_Conversion): Generate missing runtime check for
+	conversions to interface types whose target type is unknown at compile
+	time.
+	(Make_VM_TSD): Add missing code to disable the generation of calls to
+	Check_TSD if the tagged type is not defined at library level, or not
+	has a representation clause specifying its external tag, or -gnatdQ is
+	active.
+	* exp_disp.ads (Build_VM_TSDs): Removed.
+	(Make_VM_TSDs): Spec relocated from exp_disp.adb
+	* sem_disp.adb (Check_Dispatching_Operation): No code required to
+	register primitives in the dispatch tables in VM targets.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Remove wrong expansion of
+	initialization of class-wide interface objects in VM targets.
+	(Expand_Freeze_Record_Type): For VM targets call Make_VM_TSD (instead
+	of Make_DT).
+
+2011-08-04  Jerome Lambourg  <lambourg@adacore.com>
+
+	* gnatlink.adb (Gnatlink): Correct missleading error message displayed
+	when dotnet-ld cannot be found.
+
+2011-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* bindgen.adb: Simplify significantly generation of binder body file in
+	CodePeer mode.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Prevent assert failure
+	when compiling binder generated file in CodePeer mode (xxx'Elab_Spec
+	not expanded).
+
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb, sem.ads: Code cleanup.

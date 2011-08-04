@@ -61,6 +61,7 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
 with SCIL_LL;  use SCIL_LL;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -81,10 +82,6 @@ package body Exp_Disp is
    function Is_Predefined_Dispatching_Alias (Prim : Entity_Id) return Boolean;
    --  Returns true if Prim is not a predefined dispatching primitive but it is
    --  an alias of a predefined dispatching primitive (i.e. through a renaming)
-
-   function Make_VM_TSD (Typ : Entity_Id) return List_Id;
-   --  Build the Type Specific Data record associated with tagged type Typ.
-   --  Invoked only when generating code for VM targets.
 
    function New_Value (From : Node_Id) return Node_Id;
    --  From is the original Expression. New_Value is equivalent to a call
@@ -298,6 +295,7 @@ package body Exp_Disp is
 
       return Static_Dispatch_Tables
         and then Is_Library_Level_Tagged_Type (Typ)
+        and then VM_Target = No_VM
 
          --  If the type is derived from a CPP class we cannot statically
          --  build the dispatch tables because we must inherit primitives
@@ -467,156 +465,6 @@ package body Exp_Disp is
          Build_Dispatch_Tables (Target_List);
       end if;
    end Build_Static_Dispatch_Tables;
-
-   -------------------
-   -- Build_VM_TSDs --
-   -------------------
-
-   procedure Build_VM_TSDs (N : Entity_Id) is
-      Target_List : List_Id := No_List;
-
-      procedure Build_TSDs (List : List_Id);
-      --  Build the static dispatch table of tagged types found in the list of
-      --  declarations. Add the generated nodes to the end of Target_List.
-
-      procedure Build_Package_TSDs (N : Node_Id);
-      --  Build static dispatch tables associated with package declaration N
-
-      ---------------------------
-      -- Build_Dispatch_Tables --
-      ---------------------------
-
-      procedure Build_TSDs (List : List_Id) is
-         D : Node_Id;
-
-      begin
-         D := First (List);
-         while Present (D) loop
-
-            --  Handle nested packages and package bodies recursively. The
-            --  generated code is placed on the Target_List established for
-            --  the enclosing compilation unit.
-
-            if Nkind (D) = N_Package_Declaration then
-               Build_Package_TSDs (D);
-
-            elsif Nkind_In (D, N_Package_Body,
-                               N_Subprogram_Body)
-            then
-               Build_TSDs (Declarations (D));
-
-            elsif Nkind (D) = N_Package_Body_Stub
-              and then Present (Library_Unit (D))
-            then
-               Build_TSDs
-                 (Declarations (Proper_Body (Unit (Library_Unit (D)))));
-
-            --  Handle full type declarations and derivations of library
-            --  level tagged types
-
-            elsif Nkind_In (D, N_Full_Type_Declaration,
-                               N_Derived_Type_Definition)
-              and then Ekind (Defining_Entity (D)) /= E_Record_Subtype
-              and then Is_Tagged_Type (Defining_Entity (D))
-              and then not Is_Private_Type (Defining_Entity (D))
-            then
-               --  Do not generate TSDs for the internal types created for
-               --  a type extension with unknown discriminants. The needed
-               --  information is shared with the source type.
-               --  See Expand_N_Record_Extension.
-
-               if Is_Underlying_Record_View (Defining_Entity (D))
-                 or else
-                  (not Comes_From_Source (Defining_Entity (D))
-                     and then
-                       Has_Unknown_Discriminants (Etype (Defining_Entity (D)))
-                     and then
-                       not Comes_From_Source
-                             (First_Subtype (Defining_Entity (D))))
-               then
-                  null;
-
-               else
-                  if No (Target_List) then
-                     Target_List := New_List;
-                  end if;
-
-                  Append_List_To (Target_List,
-                    Make_VM_TSD (Defining_Entity (D)));
-               end if;
-            end if;
-
-            Next (D);
-         end loop;
-      end Build_TSDs;
-
-      ------------------------
-      -- Build_Package_TSDs --
-      ------------------------
-
-      procedure Build_Package_TSDs (N : Node_Id) is
-         Spec       : constant Node_Id := Specification (N);
-         Vis_Decls  : constant List_Id := Visible_Declarations (Spec);
-         Priv_Decls : constant List_Id := Private_Declarations (Spec);
-
-      begin
-         if Present (Priv_Decls) then
-            Build_TSDs (Vis_Decls);
-            Build_TSDs (Priv_Decls);
-
-         elsif Present (Vis_Decls) then
-            Build_TSDs (Vis_Decls);
-         end if;
-      end Build_Package_TSDs;
-
-   --  Start of processing for Build_VM_TSDs
-
-   begin
-      if not Expander_Active
-        or else No_Run_Time_Mode
-        or else Tagged_Type_Expansion
-        or else not RTE_Available (RE_Type_Specific_Data)
-      then
-         return;
-      end if;
-
-      if Nkind (N) = N_Package_Declaration then
-         declare
-            Spec       : constant Node_Id := Specification (N);
-            Vis_Decls  : constant List_Id := Visible_Declarations (Spec);
-            Priv_Decls : constant List_Id := Private_Declarations (Spec);
-
-         begin
-            Build_Package_TSDs (N);
-
-            if Present (Target_List) then
-               Analyze_List (Target_List);
-
-               if Present (Priv_Decls)
-                 and then Is_Non_Empty_List (Priv_Decls)
-               then
-                  Append_List (Target_List, Priv_Decls);
-               else
-                  Append_List (Target_List, Vis_Decls);
-               end if;
-            end if;
-         end;
-
-      elsif Nkind_In (N, N_Package_Body, N_Subprogram_Body) then
-         if Is_Non_Empty_List (Declarations (N)) then
-            Build_TSDs (Declarations (N));
-
-            if Nkind (N) = N_Subprogram_Body then
-               Build_TSDs (Statements (Handled_Statement_Sequence (N)));
-            end if;
-
-            if Present (Target_List) then
-               Analyze_List (Target_List);
-               Append_List  (Target_List, Declarations (N));
-            end if;
-         end if;
-      end if;
-   end Build_VM_TSDs;
 
    ------------------------------
    -- Convert_Tag_To_Interface --
@@ -1278,11 +1126,37 @@ package body Exp_Disp is
                   and then Is_Interface (Iface_Typ)));
 
       if not Tagged_Type_Expansion then
+         if VM_Target /= No_VM then
+            if Is_Access_Type (Operand_Typ) then
+               Operand_Typ := Designated_Type (Operand_Typ);
+            end if;
 
-         --  For VM, just do a conversion ???
+            if Is_Class_Wide_Type (Operand_Typ) then
+               Operand_Typ := Root_Type (Operand_Typ);
+            end if;
 
-         Rewrite (N, Unchecked_Convert_To (Etype (N), N));
-         Analyze (N);
+            if not Is_Static
+              and then Operand_Typ /= Iface_Typ
+            then
+               Insert_Action (N,
+                 Make_Procedure_Call_Statement (Loc,
+                   Name => New_Occurrence_Of
+                            (RTE (RE_Check_Interface_Conversion), Loc),
+                   Parameter_Associations => New_List (
+                     Make_Attribute_Reference (Loc,
+                       Prefix => Duplicate_Subexpr (Expression (N)),
+                       Attribute_Name => Name_Tag),
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Reference_To (Iface_Typ, Loc),
+                       Attribute_Name => Name_Tag))));
+            end if;
+
+            --  Just do a conversion ???
+
+            Rewrite (N, Unchecked_Convert_To (Etype (N), N));
+            Analyze (N);
+         end if;
+
          return;
       end if;
 
@@ -6764,13 +6638,20 @@ package body Exp_Disp is
       --     Check_TSD
       --       (TSD => TSD'Unrestricted_Access);
 
-      Append_To (Result,
-        Make_Procedure_Call_Statement (Loc,
-          Name => New_Reference_To (RTE (RE_Check_TSD), Loc),
-          Parameter_Associations => New_List (
-            Make_Attribute_Reference (Loc,
-              Prefix => New_Reference_To (TSD, Loc),
-              Attribute_Name => Name_Unrestricted_Access))));
+      if Ada_Version >= Ada_2005
+        and then Is_Library_Level_Entity (Typ)
+        and then Has_External_Tag_Rep_Clause (Typ)
+        and then RTE_Available (RE_Check_TSD)
+        and then not Debug_Flag_QQ
+      then
+         Append_To (Result,
+           Make_Procedure_Call_Statement (Loc,
+             Name => New_Reference_To (RTE (RE_Check_TSD), Loc),
+             Parameter_Associations => New_List (
+               Make_Attribute_Reference (Loc,
+                 Prefix => New_Reference_To (TSD, Loc),
+                 Attribute_Name => Name_Unrestricted_Access))));
+      end if;
 
       --  Generate:
       --     Register_TSD (TSD'Unrestricted_Access);
@@ -7653,6 +7534,7 @@ package body Exp_Disp is
 
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
+      pragma Assert (VM_Target = No_VM);
 
       --  Do not register in the dispatch table eliminated primitives
 

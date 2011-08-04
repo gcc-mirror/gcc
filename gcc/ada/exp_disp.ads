@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -186,11 +186,6 @@ package Exp_Disp is
    --  bodies they are added to the end of the list of declarations of the
    --  package body.
 
-   procedure Build_VM_TSDs (N : Entity_Id);
-   --  N is a library level package declaration, a library level package body
-   --  or a library level subprogram body. Build the runtime Type Specific
-   --  Data record of all the tagged types declared inside N.
-
    function Convert_Tag_To_Interface
      (Typ : Entity_Id; Expr : Node_Id) return Node_Id;
    pragma Inline (Convert_Tag_To_Interface);
@@ -352,6 +347,10 @@ package Exp_Disp is
    --  Typ and fill the contents of Access_Disp_Table. In case of library level
    --  tagged types this routine imports the forward declaration of the tag
    --  entity, that will be declared and exported by Make_DT.
+
+   function Make_VM_TSD (Typ : Entity_Id) return List_Id;
+   --  Build the Type Specific Data record associated with tagged type Typ.
+   --  Invoked only when generating code for VM targets.
 
    function Register_Primitive
      (Loc     : Source_Ptr;

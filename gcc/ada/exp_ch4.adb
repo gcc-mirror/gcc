@@ -629,14 +629,10 @@ package body Exp_Ch4 is
         (Ref            : Node_Id;
          Built_In_Place : Boolean := False)
       is
-         Ref_Node : Node_Id;
+         New_Node : Node_Id;
 
       begin
-         --  Note: we skip the accessibility check for the VM case, since
-         --  there does not seem to be any practical way of implementing it.
-
          if Ada_Version >= Ada_2005
-           and then Tagged_Type_Expansion
            and then Is_Class_Wide_Type (DesigT)
            and then not Scope_Suppress (Accessibility_Check)
            and then
@@ -652,20 +648,37 @@ package body Exp_Ch4 is
             --  address of the allocated object.
 
             if Built_In_Place then
-               Ref_Node := New_Copy (Ref);
+               New_Node := New_Copy (Ref);
             else
-               Ref_Node := New_Reference_To (Ref, Loc);
+               New_Node := New_Reference_To (Ref, Loc);
+            end if;
+
+            New_Node :=
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Node,
+                Attribute_Name => Name_Tag);
+
+            if Tagged_Type_Expansion then
+               New_Node :=
+                 Build_Get_Access_Level (Loc, New_Node);
+
+            elsif VM_Target /= No_VM then
+               New_Node :=
+                 Make_Function_Call (Loc,
+                   Name => New_Reference_To (RTE (RE_Get_Access_Level), Loc),
+                   Parameter_Associations => New_List (New_Node));
+
+            --  Cannot generate the runtime check
+
+            else
+               return;
             end if;
 
             Insert_Action (N,
               Make_Raise_Program_Error (Loc,
                 Condition =>
                   Make_Op_Gt (Loc,
-                    Left_Opnd  =>
-                      Build_Get_Access_Level (Loc,
-                        Make_Attribute_Reference (Loc,
-                          Prefix         => Ref_Node,
-                          Attribute_Name => Name_Tag)),
+                    Left_Opnd  => New_Node,
                     Right_Opnd =>
                       Make_Integer_Literal (Loc, Type_Access_Level (PtrT))),
                 Reason => PE_Accessibility_Check_Failed));
@@ -2593,6 +2606,8 @@ package body Exp_Ch4 is
       J        : Nat;
       Clen     : Node_Id;
       Set      : Boolean;
+
+   --  Start of processing for Expand_Concatenate
 
    begin
       --  Choose an appropriate computational type

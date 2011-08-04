@@ -2849,7 +2849,8 @@ package body Sem_Ch6 is
                      --  raises an exception, but in any case it is not coming
                      --  back here, so turn on the flag.
 
-                     if Ekind (Ent) = E_Procedure
+                     if Present (Ent)
+                       and then Ekind (Ent) = E_Procedure
                        and then No_Return (Ent)
                      then
                         Set_Trivial_Subprogram (Stm);
