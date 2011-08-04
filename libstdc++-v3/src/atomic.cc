@@ -1,6 +1,6 @@
 // Support for atomic operations -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010
+// Copyright (C) 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -56,7 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __atomic0
   {
     bool
-    atomic_flag::test_and_set(memory_order)
+    atomic_flag::test_and_set(memory_order) noexcept
     {
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
       lock_guard<mutex> __lock(get_atomic_mutex());
@@ -67,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     void
-    atomic_flag::clear(memory_order)
+    atomic_flag::clear(memory_order) noexcept
     {
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
       lock_guard<mutex> __lock(get_atomic_mutex());
