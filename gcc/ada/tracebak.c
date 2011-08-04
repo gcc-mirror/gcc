@@ -339,7 +339,8 @@ struct layout
 #define STOP_FRAME(CURRENT, TOP_STACK) \
   (IS_BAD_PTR((long)(CURRENT)) \
    || IS_BAD_PTR((long)(CURRENT)->return_address) \
-   || (CURRENT)->return_address == 0|| (CURRENT)->next == 0  \
+   || (CURRENT)->return_address == 0 \
+   || (void *) ((CURRENT)->next) < (TOP_STACK)  \
    || (void *) (CURRENT) < (TOP_STACK))
 
 #define BASE_SKIP (1+FRAME_LEVEL)

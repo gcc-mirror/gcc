@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2009, AdaCore                     --
+--                     Copyright (C) 2002-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,12 +83,17 @@ procedure VxAddr2Line is
 
    --  All supported architectures
    type Architecture is
-     (SOLARIS_I586,
-      WINDOWS_POWERPC,
+     (DEC_ALPHA,
+      LINUX_E500V2,
+      LINUX_I586,
+      LINUX_POWERPC,
+      WINDOWS_E500V2,
       WINDOWS_I586,
       WINDOWS_M68K,
-      SOLARIS_POWERPC,
-      DEC_ALPHA);
+      WINDOWS_POWERPC,
+      SOLARIS_E500V2,
+      SOLARIS_I586,
+      SOLARIS_POWERPC);
 
    type Arch_Record is record
       Addr2line_Binary : String_Access;
@@ -114,12 +119,42 @@ procedure VxAddr2Line is
 
    --  Configuration for each of the architectures
    Arch_List : array (Architecture'Range) of Arch_Record :=
-     (WINDOWS_POWERPC =>
+     (DEC_ALPHA =>
+        (Addr2line_Binary    => null,
+         Nm_Binary           => null,
+         Addr_Digits_To_Skip => 8,
+         Bt_Offset_From_Call => 0),
+      LINUX_E500V2 =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
          Bt_Offset_From_Call => -4),
-      WINDOWS_M68K =>
+      LINUX_I586 =>
+        (Addr2line_Binary    => null,
+         Nm_Binary           => null,
+         Addr_Digits_To_Skip => 0,
+         Bt_Offset_From_Call => -2),
+      LINUX_POWERPC =>
+        (Addr2line_Binary    => null,
+         Nm_Binary           => null,
+         Addr_Digits_To_Skip => 0,
+         Bt_Offset_From_Call => -4),
+      SOLARIS_E500V2 =>
+        (Addr2line_Binary    => null,
+         Nm_Binary           => null,
+         Addr_Digits_To_Skip => 0,
+         Bt_Offset_From_Call => -4),
+      SOLARIS_I586 =>
+        (Addr2line_Binary    => null,
+         Nm_Binary           => null,
+         Addr_Digits_To_Skip => 0,
+         Bt_Offset_From_Call => -2),
+      SOLARIS_POWERPC =>
+        (Addr2line_Binary    => null,
+         Nm_Binary           => null,
+         Addr_Digits_To_Skip => 0,
+         Bt_Offset_From_Call => -4),
+      WINDOWS_E500V2 =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
@@ -129,21 +164,16 @@ procedure VxAddr2Line is
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
          Bt_Offset_From_Call => -2),
-      SOLARIS_POWERPC =>
+      WINDOWS_M68K =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
-         Bt_Offset_From_Call => 0),
-      SOLARIS_I586 =>
+         Bt_Offset_From_Call => -4),
+      WINDOWS_POWERPC =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
-         Bt_Offset_From_Call => -2),
-      DEC_ALPHA =>
-        (Addr2line_Binary    => null,
-         Nm_Binary           => null,
-         Addr_Digits_To_Skip => 8,
-         Bt_Offset_From_Call => 0)
+         Bt_Offset_From_Call => -4)
      );
 
    --  Current architecture

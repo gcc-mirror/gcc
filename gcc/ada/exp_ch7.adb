@@ -3064,15 +3064,10 @@ package body Exp_Ch7 is
 
       Params := New_List (New_Reference_To (E_Id, Loc));
 
-      --  .NET/JVM
+      --  Standard run-time, .NET/JVM targets, this case handles finalization
+      --  exceptions raised during an abort.
 
-      if VM_Target /= No_VM then
-         Proc_Id := RTE (RE_Reraise_Occurrence);
-
-      --  Standard run-time library, this case handles finalization exceptions
-      --  raised during an abort.
-
-      elsif RTE_Available (RE_Raise_From_Controlled_Operation) then
+      if RTE_Available (RE_Raise_From_Controlled_Operation) then
          Proc_Id := RTE (RE_Raise_From_Controlled_Operation);
          Append_To (Params, New_Reference_To (Abort_Id, Loc));
 
@@ -3494,12 +3489,6 @@ package body Exp_Ch7 is
       Wrap_Node : Node_Id;
 
    begin
-      --  Nothing to do for virtual machines where memory is GCed
-
-      if VM_Target /= No_VM then
-         return;
-      end if;
-
       --  Do not create a transient scope if we are already inside one
 
       for S in reverse Scope_Stack.First .. Scope_Stack.Last loop
@@ -3515,7 +3504,6 @@ package body Exp_Ch7 is
 
          elsif Scope_Stack.Table (S).Entity = Standard_Standard then
             exit;
-
          end if;
       end loop;
 
@@ -7228,23 +7216,12 @@ package body Exp_Ch7 is
       --  Procedure call or raise statement
 
    begin
-      --  .NET/JVM runtime: add choice parameter E and pass it to Reraise_
-      --  Occurrence.
+      --  Standard runtime, .NET/JVM targets: add choice parameter E and pass
+      --  it to Raise_From_Controlled_Operation so that the original exception
+      --  name and message can be recorded in the exception message for
+      --  Program_Error.
 
-      if VM_Target /= No_VM then
-         E_Occ := Make_Defining_Identifier (Loc, Name_E);
-         Raise_Node :=
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Reference_To (RTE (RE_Reraise_Occurrence), Loc),
-             Parameter_Associations => New_List (
-               New_Reference_To (E_Occ, Loc)));
-
-      --  Standard runtime: add choice parameter E and pass it to Raise_From_
-      --  Controlled_Operation so that the original exception name and message
-      --  can be recorded in the exception message for Program_Error.
-
-      elsif RTE_Available (RE_Raise_From_Controlled_Operation) then
+      if RTE_Available (RE_Raise_From_Controlled_Operation) then
          E_Occ := Make_Defining_Identifier (Loc, Name_E);
          Raise_Node :=
            Make_Procedure_Call_Statement (Loc,

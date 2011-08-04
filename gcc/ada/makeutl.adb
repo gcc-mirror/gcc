@@ -1290,7 +1290,6 @@ package body Makeutl is
 
          function Find_File_Add_Extension
            (Tree         : Project_Tree_Ref;
-            Root_Project : Project_Id;
             Base_Main    : String) return Prj.Source_Id;
          --  Search for Main in the project, adding body or spec extensions.
 
@@ -1346,66 +1345,57 @@ package body Makeutl is
 
          function Find_File_Add_Extension
            (Tree         : Project_Tree_Ref;
-            Root_Project : Project_Id;
             Base_Main    : String) return Prj.Source_Id
          is
             Spec_Source : Prj.Source_Id := No_Source;
             Source      : Prj.Source_Id;
-            Project     : Project_Id;
             Iter        : Source_Iterator;
             Suffix      : File_Name_Type;
 
          begin
             Source  := No_Source;
-            Project := Root_Project;
-            while Source = No_Source
-              and then Project /= No_Project
+            Iter := For_Each_Source (Tree);  --  In all projects
             loop
-               Iter := For_Each_Source (Tree, Project);
-               loop
-                  Source := Prj.Element (Iter);
-                  exit when Source = No_Source;
+               Source := Prj.Element (Iter);
+               exit when Source = No_Source;
 
-                  if Source.Kind = Impl then
-                     Get_Name_String (Source.File);
+               if Source.Kind = Impl then
+                  Get_Name_String (Source.File);
 
-                     if Name_Len > Base_Main'Length
-                       and then Name_Buffer (1 .. Base_Main'Length) = Base_Main
-                     then
-                        Suffix :=
-                          Source.Language.Config.Naming_Data.Body_Suffix;
+                  if Name_Len > Base_Main'Length
+                    and then Name_Buffer (1 .. Base_Main'Length) = Base_Main
+                  then
+                     Suffix :=
+                       Source.Language.Config.Naming_Data.Body_Suffix;
 
-                        exit when Suffix /= No_File and then
-                          Name_Buffer (Base_Main'Length + 1 .. Name_Len) =
-                          Get_Name_String (Suffix);
-                     end if;
-
-                  elsif Source.Kind = Spec then
-                     --  A spec needs to be taken into account unless there is
-                     --  also a body. So we delay the decision for them.
-
-                     Get_Name_String (Source.File);
-
-                     if Name_Len > Base_Main'Length
-                       and then Name_Buffer (1 .. Base_Main'Length) = Base_Main
-                     then
-                        Suffix :=
-                          Source.Language.Config.Naming_Data.Spec_Suffix;
-
-                        if Suffix /= No_File
-                          and then
-                            Name_Buffer (Base_Main'Length + 1 .. Name_Len) =
-                            Get_Name_String (Suffix)
-                        then
-                           Spec_Source := Source;
-                        end if;
-                     end if;
+                     exit when Suffix /= No_File and then
+                       Name_Buffer (Base_Main'Length + 1 .. Name_Len) =
+                       Get_Name_String (Suffix);
                   end if;
 
-                  Next (Iter);
-               end loop;
+               elsif Source.Kind = Spec then
+                  --  A spec needs to be taken into account unless there is
+                  --  also a body. So we delay the decision for them.
 
-               Project := Project.Extends;
+                  Get_Name_String (Source.File);
+
+                  if Name_Len > Base_Main'Length
+                    and then Name_Buffer (1 .. Base_Main'Length) = Base_Main
+                  then
+                     Suffix :=
+                       Source.Language.Config.Naming_Data.Spec_Suffix;
+
+                     if Suffix /= No_File
+                       and then
+                         Name_Buffer (Base_Main'Length + 1 .. Name_Len) =
+                         Get_Name_String (Suffix)
+                     then
+                        Spec_Source := Source;
+                     end if;
+                  end if;
+               end if;
+
+               Next (Iter);
             end loop;
 
             if Source = No_Source then
@@ -1496,7 +1486,7 @@ package body Makeutl is
 
                         if Source = No_Source then
                            Source := Find_File_Add_Extension
-                             (Tree, File.Project, Get_Name_String (Main_Id));
+                             (Tree, Get_Name_String (Main_Id));
                         end if;
 
                         if Is_Absolute
@@ -1508,29 +1498,6 @@ package body Makeutl is
                              ("Found a non-matching file",
                               Name_Id (Source.Path.Display_Name));
                            Source := No_Source;
-                        end if;
-
-                        if Source = No_Source
-                          and then not Is_Absolute
-                        then
-
-                           --  Still not found? Maybe we have a unit name
-
-                           declare
-                              Unit : constant Unit_Index :=
-                                       Units_Htable.Get
-                                         (File.Tree.Units_HT,
-                                          Name_Id (Main_Id));
-
-                           begin
-                              if Unit /= No_Unit_Index then
-                                 Source := Unit.File_Names (Impl);
-
-                                 if Source = No_Source then
-                                    Source := Unit.File_Names (Spec);
-                                 end if;
-                              end if;
-                           end;
                         end if;
 
                         if Source /= No_Source then
@@ -2988,6 +2955,22 @@ package body Makeutl is
                         Shared                  => Project_Tree.Shared,
                         Force_Lower_Case_Index  => False,
                         Allow_Wildcards         => True);
+
+                     --  If not found, try without extension.
+                     --  That's because gnatmake accepts truncated file names
+                     --  in Builder'Switches
+
+                     if Switches_For_Main = Nil_Variable_Value
+                       and then Source.Unit /= null
+                     then
+                        Switches_For_Main := Value_Of
+                          (Name                    => Source.Unit.Name,
+                           Attribute_Or_Array_Name => Name_Switches,
+                           In_Package              => Builder_Package,
+                           Shared                  => Project_Tree.Shared,
+                           Force_Lower_Case_Index  => False,
+                           Allow_Wildcards         => True);
+                     end if;
                   end if;
 
                   if Index = 1 then
