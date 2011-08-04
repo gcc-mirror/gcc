@@ -1733,7 +1733,6 @@ begin
                Write_Str ("   ");
                Write_Line
                  (To_Host_Dir_Spec (Name_Buffer (1 .. Name_Len), True).all);
-
             end if;
          end if;
       end;

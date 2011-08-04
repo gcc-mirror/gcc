@@ -9017,7 +9017,6 @@ package body Exp_Ch3 is
    --  Start processing for Stream_Operation_OK
 
    begin
-
       --  Special case of a limited type extension: a default implementation
       --  of the stream attributes Read or Write exists if that attribute
       --  has been specified or is available for an ancestor type; a default

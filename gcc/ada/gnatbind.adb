@@ -566,14 +566,12 @@ begin
       Check_Extensions : declare
          Length : constant Natural := Output_File_Name'Length;
          Last   : constant Natural := Output_File_Name'Last;
-
       begin
          if Length <= 4
            or else Output_File_Name (Last - 3 .. Last) /= ".adb"
          then
             Fail ("output file name should have .adb extension");
          end if;
-
       end Check_Extensions;
    end if;
 

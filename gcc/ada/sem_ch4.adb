@@ -2492,6 +2492,7 @@ package body Sem_Ch4 is
 
       else
          Analyze (R);
+
          if Is_Entity_Name (R)
            and then Is_Type (Entity (R))
          then
