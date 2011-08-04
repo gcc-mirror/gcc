@@ -5392,7 +5392,7 @@ rs6000_legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
     }
 
   offset += 0x8000;
-  return (offset < 0x10000) && (offset + extra < 0x10000);
+  return offset < 0x10000 - extra;
 }
 
 bool
@@ -20712,10 +20712,7 @@ rs6000_emit_epilogue (int sibcall)
      here will not trigger at the moment;  We don't actually need a
      frame pointer for alloca, but the generic parts of the compiler
      give us one anyway.  */
-  use_backchain_to_restore_sp = (info->total_size > 32767
-				 || info->total_size
-				     + (info->lr_save_p ? info->lr_save_offset : 0)
-				       > 32767
+  use_backchain_to_restore_sp = (info->total_size > 32767 - info->lr_save_offset
 				 || (cfun->calls_alloca
 				     && !frame_pointer_needed));
   restore_lr = (info->lr_save_p

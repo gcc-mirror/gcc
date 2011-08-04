@@ -1,3 +1,9 @@
+2011-08-04  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Simplify
+	use_backchain_to_restore_sp initialisation.
+	(rs6000_legitimate_offset_address_p): Simplify offset test.
+
 2011-08-03  Richard Henderson  <rth@redhat.com>
 
 	* config/spu/spu.md: Use define_c_enum instead of define_constants.
