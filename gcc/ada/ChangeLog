@@ -1,3 +1,21 @@
+2011-08-04  Pascal Obry  <obry@adacore.com>
+
+	* urealp.adb: Minor reformatting.
+
+2011-08-04  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch7.adb (build_finalizer.process_declarations.processing_actions):
+	Handle the case when Cleanup_Protected_Object returns Empty.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* frontend.adb (Frontend): only qualify names in non-ALFA mode
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Class_Wide_Operation): if the context is a procedure
+	call, ignore functions.
+
 2011-08-04  Geert Bosch  <bosch@adacore.com>
 
 	* urealp.adb (Equivalent_Decimal_Exponent): Avoid the use of floating
