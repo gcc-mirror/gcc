@@ -15302,7 +15302,7 @@ package body Sem_Ch3 is
             elsif No (Real_Range_Specification (Def)) then
                Error_Msg_Uint_1 := Max_Digs_Val;
                Error_Msg_N ("types with more than ^ digits need range spec "
-                 & "('R'M 3.5.7(6))", Digs);
+                 & "(RM 3.5.7(6))", Digs);
             end if;
          end;
       end if;

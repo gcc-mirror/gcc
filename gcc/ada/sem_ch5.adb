@@ -2098,8 +2098,9 @@ package body Sem_Ch5 is
                --  elements of a container using the OF syntax.
 
                if Is_In_ALFA (Etype (Id))
-                 and then (No (Iterator_Specification (N))
-                           or else not Of_Present (Iterator_Specification (N)))
+                 and then
+                   (No (Iterator_Specification (N))
+                     or else not Of_Present (Iterator_Specification (N)))
                then
                   Set_Is_In_ALFA (Id);
                end if;

@@ -3097,6 +3097,9 @@ package body Bindgen is
          WBI ("");
       end if;
 
+      --  The B.1 (39) implementation advice says that the adainit/adafinal
+      --  routines should be idempotent. Generate a flag to ensure that.
+
       WBI ("   Is_Elaborated : Boolean := False;");
       WBI ("");
 
@@ -3322,6 +3325,9 @@ package body Bindgen is
          Write_Statement_Buffer;
          WBI ("");
       end if;
+
+      --  The B.1 (39) implementation advice says that the adainit/adafinal
+      --  routines should be idempotent. Generate a flag to ensure that.
 
       WBI ("static char is_elaborated = 0;");
       WBI ("");

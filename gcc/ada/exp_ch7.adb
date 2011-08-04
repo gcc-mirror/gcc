@@ -2817,6 +2817,10 @@ package body Exp_Ch7 is
       --  order to detect this scenario, save the state of entry into the
       --  finalization code.
 
+      --  No need to do this for VM case, since VM version of Ada.Exceptions
+      --  does not include routine Raise_From_Controlled_Operation which is the
+      --  the sole user of flag Abort.
+
       if Abort_Allowed
         and then VM_Target = No_VM
       then
@@ -2871,9 +2875,7 @@ package body Exp_Ch7 is
                         Attribute_Name => Name_Identity)));
          end;
 
-      --  No abort or .NET/JVM. The VM version of Ada.Exceptions does not
-      --  include routine Raise_From_Controlled_Operation which is the sole
-      --  user of flag Abort.
+      --  No abort or .NET/JVM
 
       else
          A_Expr := New_Reference_To (Standard_False, Loc);
@@ -7131,8 +7133,9 @@ package body Exp_Ch7 is
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
          Ref  := Unchecked_Convert_To (Utyp, Ref);
 
+         --  The following is to prevent problems with UC see 1.156 RH ???
+
          Set_Assignment_OK (Ref);
-         --  To prevent problems with UC see 1.156 RH ???
       end if;
 
       --  If the underlying_type is a subtype, then we are dealing with the

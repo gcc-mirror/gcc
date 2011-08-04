@@ -440,14 +440,14 @@ package body Sem_Ch13 is
                               Error_Msg_Uint_1 := SSU;
                               Error_Msg_F
                                 ("\and is not a multiple of Storage_Unit (^) "
-                                 & "('R'M 13.4.1(10))",
+                                 & "(RM 13.4.1(10))",
                                  First_Bit (CC));
 
                            else
                               Error_Msg_Uint_1 := Fbit;
                               Error_Msg_F
                                 ("\and first bit (^) is non-zero "
-                                 & "('R'M 13.4.1(10))",
+                                 & "(RM 13.4.1(10))",
                                  First_Bit (CC));
                            end if;
                         end if;

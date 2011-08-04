@@ -7188,7 +7188,7 @@ package body Exp_Ch6 is
             null;
 
          --  Do not generate the call to Make_Set_Finalize_Address_Ptr for
-         --  CodePeer compilations becase Finalize_Address is never built.
+         --  CodePeer compilations because Finalize_Address is never built.
 
          elsif not CodePeer_Mode then
             Insert_Action (Allocator,

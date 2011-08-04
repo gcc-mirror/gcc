@@ -1280,8 +1280,8 @@ package body Layout is
             end;
          end if;
 
-         --  Now set the dynamic size (the Value_Size is always the same
-         --  as the Object_Size for arrays whose length is dynamic).
+         --  Now set the dynamic size (the Value_Size is always the same as the
+         --  Object_Size for arrays whose length is dynamic).
 
          --  ??? If Size.Status = Dynamic, Vtyp will not have been set.
          --  The added initialization sets it to Empty now, but is this
@@ -1305,6 +1305,7 @@ package body Layout is
       Lo   : Node_Id;
       Hi   : Node_Id;
       Res  : Boolean := False;
+
    begin
       --  Loop to process array indexes
 
@@ -1323,9 +1324,10 @@ package body Layout is
          Hi := Type_High_Bound (Ityp);
 
          if (Nkind (Lo) = N_Identifier
-               and then Ekind (Entity (Lo)) = E_Discriminant)
-           or else (Nkind (Hi) = N_Identifier
-                      and then Ekind (Entity (Hi)) = E_Discriminant)
+              and then Ekind (Entity (Lo)) = E_Discriminant)
+           or else
+            (Nkind (Hi) = N_Identifier
+              and then Ekind (Entity (Hi)) = E_Discriminant)
          then
             Res := True;
          end if;
