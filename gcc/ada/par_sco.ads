@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,6 +56,9 @@ package Par_SCO is
    --  that we use the Sloc as the key here, since in the generic case, the
    --  analysis is on a copy of the node, which is different from the node
    --  seen by Par_SCO in the parse tree (but the Sloc values are the same).
+
+   function SCO_Pragma_Disabled (Loc : Source_Ptr) return Boolean;
+   --  True if Loc is the source location of a disabled pragma
 
    procedure SCO_Output;
    --  Outputs SCO lines for all units, with appropriate section headers, for

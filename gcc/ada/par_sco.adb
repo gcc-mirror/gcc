@@ -113,11 +113,12 @@ package body Par_SCO is
    --  Calls above procedure for each element of the list L
 
    procedure Set_Table_Entry
-     (C1   : Character;
-      C2   : Character;
-      From : Source_Ptr;
-      To   : Source_Ptr;
-      Last : Boolean);
+     (C1          : Character;
+      C2          : Character;
+      From        : Source_Ptr;
+      To          : Source_Ptr;
+      Last        : Boolean;
+      Pragma_Sloc : Source_Ptr := No_Location);
    --  Append an entry to SCO_Table with fields set as per arguments
 
    procedure Traverse_Declarations_Or_Statements  (L : List_Id);
@@ -329,8 +330,11 @@ package body Par_SCO is
 
    --  Version taking a node
 
-   procedure Process_Decisions (N : Node_Id; T : Character) is
+   Pragma_Sloc : Source_Ptr := No_Location;
+   --  While processing decisions within a pragma Assert/Debug/PPC, this is set
+   --  to the sloc of the pragma.
 
+   procedure Process_Decisions (N : Node_Id; T : Character) is
       Mark : Nat;
       --  This is used to mark the location of a decision sequence in the SCO
       --  table. We use it for backing out a simple decision in an expression
@@ -462,6 +466,11 @@ package body Par_SCO is
 
                Loc := Sloc (Parent (Parent (N)));
 
+               --  Record sloc of pragma (pragmas don't nest)
+
+               pragma Assert (Pragma_Sloc = No_Location);
+               Pragma_Sloc := Loc;
+
             when 'X' =>
 
                --  For an expression, no Sloc
@@ -475,11 +484,12 @@ package body Par_SCO is
          end case;
 
          Set_Table_Entry
-           (C1   => T,
-            C2   => ' ',
-            From => Loc,
-            To   => No_Location,
-            Last => False);
+           (C1          => T,
+            C2          => ' ',
+            From        => Loc,
+            To          => No_Location,
+            Last        => False,
+            Pragma_Sloc => Pragma_Sloc);
 
          if T = 'P' then
 
@@ -491,7 +501,6 @@ package body Par_SCO is
             SCO_Table.Table (SCO_Table.Last).C2 := 'd';
             Condition_Pragma_Hash_Table.Set (Loc, SCO_Table.Last);
          end if;
-
       end Output_Header;
 
       ------------------------------
@@ -623,6 +632,12 @@ package body Par_SCO is
       end if;
 
       Traverse (N);
+
+      --  Reset Pragma_Sloc after full subtree traversal
+
+      if T = 'P' then
+         Pragma_Sloc := No_Location;
+      end if;
    end Process_Decisions;
 
    -----------
@@ -732,6 +747,31 @@ package body Par_SCO is
 
       Write_SCOs_To_ALI_File;
    end SCO_Output;
+
+   -------------------------
+   -- SCO_Pragma_Disabled --
+   -------------------------
+
+   function SCO_Pragma_Disabled (Loc : Source_Ptr) return Boolean is
+      Index : Nat;
+
+   begin
+      if Loc = No_Location then
+         return False;
+      end if;
+
+      Index := Condition_Pragma_Hash_Table.Get (Loc);
+
+      --  The test here for zero is to deal with possible previous errors
+
+      if Index /= 0 then
+         pragma Assert (SCO_Table.Table (Index).C1 = 'P');
+         return SCO_Table.Table (Index).C2 = 'd';
+
+      else
+         return False;
+      end if;
+   end SCO_Pragma_Disabled;
 
    ----------------
    -- SCO_Record --
@@ -863,11 +903,12 @@ package body Par_SCO is
    ---------------------
 
    procedure Set_Table_Entry
-     (C1   : Character;
-      C2   : Character;
-      From : Source_Ptr;
-      To   : Source_Ptr;
-      Last : Boolean)
+     (C1          : Character;
+      C2          : Character;
+      From        : Source_Ptr;
+      To          : Source_Ptr;
+      Last        : Boolean;
+      Pragma_Sloc : Source_Ptr := No_Location)
    is
       function To_Source_Location (S : Source_Ptr) return Source_Location;
       --  Converts Source_Ptr value to Source_Location (line/col) format
@@ -891,11 +932,12 @@ package body Par_SCO is
 
    begin
       Add_SCO
-        (C1   => C1,
-         C2   => C2,
-         From => To_Source_Location (From),
-         To   => To_Source_Location (To),
-         Last => Last);
+        (C1          => C1,
+         C2          => C2,
+         From        => To_Source_Location (From),
+         To          => To_Source_Location (To),
+         Last        => Last,
+         Pragma_Sloc => Pragma_Sloc);
    end Set_Table_Entry;
 
    -----------------------------------------

@@ -353,6 +353,10 @@ package SCOs is
       C1   : Character;
       C2   : Character;
       Last : Boolean;
+
+      Pragma_Sloc : Source_Ptr := No_Location;
+      --  For a SCO nested with a pragma Debug/Assert/PPC, location of pragma
+      --  (used for control of SCO output, value not recorded in ALI file).
    end record;
 
    package SCO_Table is new GNAT.Table (
@@ -477,11 +481,12 @@ package SCOs is
    --  Reset tables for a new compilation
 
    procedure Add_SCO
-     (From : Source_Location := No_Source_Location;
-      To   : Source_Location := No_Source_Location;
-      C1   : Character       := ' ';
-      C2   : Character       := ' ';
-      Last : Boolean         := False);
+     (From        : Source_Location := No_Source_Location;
+      To          : Source_Location := No_Source_Location;
+      C1          : Character       := ' ';
+      C2          : Character       := ' ';
+      Last        : Boolean         := False;
+      Pragma_Sloc : Source_Ptr      := No_Location);
    --  Adds one entry to SCO table with given field values
 
 end SCOs;
