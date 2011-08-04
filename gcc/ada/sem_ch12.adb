@@ -12446,26 +12446,6 @@ package body Sem_Ch12 is
                --  All other cases than aggregates
 
                else
-                  --  For pragmas, we propagate the Enabled status for the
-                  --  relevant pragmas to the original generic tree. This was
-                  --  originally needed for SCO generation. It is no longer
-                  --  needed there (since we use the Sloc value in calls to
-                  --  Set_SCO_Pragma_Enabled), but it seems a generally good
-                  --  idea to have this flag set properly.
-
-                  if Nkind (N) = N_Pragma
-                    and then
-                      (Pragma_Name (N) = Name_Assert       or else
-                       Pragma_Name (N) = Name_Check        or else
-                       Pragma_Name (N) = Name_Precondition or else
-                       Pragma_Name (N) = Name_Postcondition)
-                    and then Present (Associated_Node (Pragma_Identifier (N)))
-                  then
-                     Set_Pragma_Enabled (N,
-                       Pragma_Enabled
-                         (Parent (Associated_Node (Pragma_Identifier (N)))));
-                  end if;
-
                   Save_Global_Descendant (Field1 (N));
                   Save_Global_Descendant (Field2 (N));
                   Save_Global_Descendant (Field3 (N));

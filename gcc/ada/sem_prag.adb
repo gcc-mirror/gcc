@@ -1719,7 +1719,6 @@ package body Sem_Prag is
          --  Record if pragma is enabled
 
          if Check_Enabled (Pname) then
-            Set_Pragma_Enabled (N);
             Set_SCO_Pragma_Enabled (Loc);
          end if;
 
@@ -6695,8 +6694,6 @@ package body Sem_Prag is
             Check_On := Check_Enabled (Chars (Get_Pragma_Arg (Arg1)));
 
             if Check_On then
-               Set_Pragma_Enabled (N);
-               Set_Pragma_Enabled (Original_Node (N));
                Set_SCO_Pragma_Enabled (Loc);
             end if;
 

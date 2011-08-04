@@ -755,8 +755,9 @@ package body Sem_Ch10 is
 
       --  If the unit is a subprogram body, then we similarly need to analyze
       --  its spec. However, things are a little simpler in this case, because
-      --  here, this analysis is done only for error checking and consistency
-      --  purposes, so there's nothing else to be done.
+      --  here, this analysis is done mostly for error checking and consistency
+      --  purposes (but not only, e.g. there could be a contract on the spec),
+      --  so there's nothing else to be done.
 
       elsif Nkind (Unit_Node) = N_Subprogram_Body then
          if Acts_As_Spec (N) then

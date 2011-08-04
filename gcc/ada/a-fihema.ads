@@ -133,7 +133,7 @@ private
 
       Finalize_Address : Finalize_Address_Ptr;
       --  A reference to a routine which finalizes an object denoted by its
-      --  address. The collection must be homogenious since the same routine
+      --  address. The collection must be homogeneous since the same routine
       --  will be invoked for every allocated object when the pool is
       --  finalized.
 

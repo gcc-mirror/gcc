@@ -6699,7 +6699,7 @@ package body Prj.Nmsc is
       if Current_Verbosity = High then
          Debug_Increase_Indent
            ("Checking file (rank=" & Source_Dir_Rank'Img & ")",
-            Name_Id (Path));
+            Name_Id (Display_Path));
       end if;
 
       if Name_Loc = No_Name_Location then

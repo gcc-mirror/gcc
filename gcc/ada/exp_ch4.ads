@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@ package Exp_Ch4 is
    procedure Expand_N_Case_Expression             (N : Node_Id);
    procedure Expand_N_Conditional_Expression      (N : Node_Id);
    procedure Expand_N_Explicit_Dereference        (N : Node_Id);
+   procedure Expand_N_Expression_With_Actions     (N : Node_Id);
    procedure Expand_N_In                          (N : Node_Id);
    procedure Expand_N_Indexed_Component           (N : Node_Id);
    procedure Expand_N_Not_In                      (N : Node_Id);

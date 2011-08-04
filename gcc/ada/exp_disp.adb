@@ -6189,6 +6189,7 @@ package body Exp_Disp is
       if not No_Run_Time_Mode
         and then Ada_Version >= Ada_2005
         and then RTE_Available (RE_Check_TSD)
+        and then not Debug_Flag_QQ
       then
          Append_To (Elab_Code,
            Make_Procedure_Call_Statement (Loc,

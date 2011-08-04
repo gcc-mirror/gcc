@@ -3494,11 +3494,14 @@ package Einfo is
 --       is True only for implicitly declare subprograms; it is not set on the
 --       parent type's subprogram. See also Is_Abstract_Subprogram.
 
---    Return_Flag (Node15)
+--    Return_Flag_Or_Transient_Decl (Node15)
 --       Applies to variables and constants. Set for objects which act as the
 --       return value of an extended return statement. The node contains the
 --       entity of a locally declared flag which controls the finalization of
---       the return object should the function fail.
+--       the return object should the function fail. Also set for access-to-
+--       controlled objects used to provide a hook to controlled transients
+--       declared inside an Expression_With_Actions. The node contains the
+--       object declaration of the controlled transient.
 
 --    Return_Present (Flag54)
 --       Present in function and generic function entities. Set if the
@@ -5064,7 +5067,7 @@ package Einfo is
    --    Full_View                           (Node11)
    --    Esize                               (Uint12)
    --    Alignment                           (Uint14)
-   --    Return_Flag                         (Node15)   (constants only)
+   --    Return_Flag_Or_Transient_Decl       (Node15)   (constants only)
    --    Actual_Subtype                      (Node17)
    --    Renamed_Object                      (Node18)
    --    Size_Check_Code                     (Node19)   (constants only)
@@ -5710,7 +5713,7 @@ package Einfo is
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)
    --    Alignment                           (Uint14)
-   --    Return_Flag                         (Node15)   (transient object only)
+   --    Return_Flag_Or_Transient_Decl       (Node15)   (transient object only)
    --    Unset_Reference                     (Node16)
    --    Actual_Subtype                      (Node17)
    --    Renamed_Object                      (Node18)
@@ -6328,7 +6331,7 @@ package Einfo is
    function Renamed_Object                      (Id : E) return N;
    function Renaming_Map                        (Id : E) return U;
    function Requires_Overriding                 (Id : E) return B;
-   function Return_Flag                         (Id : E) return E;
+   function Return_Flag_Or_Transient_Decl       (Id : E) return E;
    function Return_Present                      (Id : E) return B;
    function Return_Applies_To                   (Id : E) return N;
    function Returns_By_Ref                      (Id : E) return B;
@@ -6924,7 +6927,7 @@ package Einfo is
    procedure Set_Renamed_Object                  (Id : E; V : N);
    procedure Set_Renaming_Map                    (Id : E; V : U);
    procedure Set_Requires_Overriding             (Id : E; V : B := True);
-   procedure Set_Return_Flag                     (Id : E; V : E);
+   procedure Set_Return_Flag_Or_Transient_Decl   (Id : E; V : E);
    procedure Set_Return_Present                  (Id : E; V : B := True);
    procedure Set_Return_Applies_To               (Id : E; V : N);
    procedure Set_Returns_By_Ref                  (Id : E; V : B := True);
@@ -7663,7 +7666,7 @@ package Einfo is
    pragma Inline (Renamed_Object);
    pragma Inline (Renaming_Map);
    pragma Inline (Requires_Overriding);
-   pragma Inline (Return_Flag);
+   pragma Inline (Return_Flag_Or_Transient_Decl);
    pragma Inline (Return_Present);
    pragma Inline (Return_Applies_To);
    pragma Inline (Returns_By_Ref);
@@ -8063,7 +8066,7 @@ package Einfo is
    pragma Inline (Set_Renamed_Object);
    pragma Inline (Set_Renaming_Map);
    pragma Inline (Set_Requires_Overriding);
-   pragma Inline (Set_Return_Flag);
+   pragma Inline (Set_Return_Flag_Or_Transient_Decl);
    pragma Inline (Set_Return_Present);
    pragma Inline (Set_Return_Applies_To);
    pragma Inline (Set_Returns_By_Ref);
