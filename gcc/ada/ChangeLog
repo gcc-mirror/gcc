@@ -1,5 +1,55 @@
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
+	* sem_attr.adb (Result): modify error message for misplaced 'Result
+
+2011-08-04  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_rm.texi (pragma Annotate): Fix syntax description to make it
+	clear that the second argument must be an identifier.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb (Build_Barrier_Function): When compiling with
+	-fpreserve-control-flow, insert an IF statement on the barrier
+	condition to ensure that a conditional branch instruction is generated.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-part.adb, prj.adb, prj.ads, prj-tree.ads
+	(Processing_Flags.Ignore_Missing_With): new flag.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Find_Sources, Path_Name_Of): Fix handling of
+	Source_List_File on case-insensitive systems where the file is actually
+	on a case-sensitive file system (NFS,...).
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Return): In a rare case where a
+	function return contains a controlled [extension] aggregate and the
+	return statement is not part of a handled sequence of statements, wrap
+	the return in a block. This ensures that all controlled temporaries
+	generated during aggregate resolution will be picked up by the
+	finalization machinery.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate): If aggregate has box-initialized
+	components, freeze type before resolution, to ensure that default
+	initializations are present for all components.
+	* sem_res.adb (Resolve_Actuals): the designated object of an
+	accces-to-constant type is a legal actual in a call to an
+	initialization procedure.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Extract_Renamed_Object): Add N_Type_Conversion and
+	N_Unchecked_Type_Conversion to the possible containers of a renamed
+	transient variable.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
 	* par-ch13.adb (Aspect_Specifications_Present): recognize
 	"with Identifier'Class =>" as an aspect, so that a meaningful warning
 	is issued in Strict mode.

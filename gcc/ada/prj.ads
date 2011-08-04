@@ -1630,7 +1630,8 @@ package Prj is
       Error_On_Unknown_Language  : Boolean       := True;
       Require_Obj_Dirs           : Error_Warning := Error;
       Allow_Invalid_External     : Error_Warning := Error;
-      Missing_Source_Files       : Error_Warning := Error)
+      Missing_Source_Files       : Error_Warning := Error;
+      Ignore_Missing_With        : Boolean       := False)
       return Processing_Flags;
    --  Function used to create Processing_Flags structure
    --
@@ -1668,6 +1669,16 @@ package Prj is
    --  a source file mentioned in the Source_Files attributes is not actually
    --  found in the source directories. This also impacts errors for missing
    --  source directories.
+   --
+   --  If Ignore_Missing_With is True, then a "with" statement that cannot be
+   --  resolved will simply be ignored. However, in such a case, the flag
+   --  Incomplete_With in the project tree will be set to True.
+   --  This is meant for use by tools so that they can properly set the
+   --  project path in such a case:
+   --       * no "gnatls" found (so no default project path)
+   --       * user project sets Project.IDE'gnatls attribute to a cross gnatls
+   --       * user project also includes a "with" that can only be resolved
+   --         once we have found the gnatls
 
    Gprbuild_Flags : constant Processing_Flags;
    Gprclean_Flags : constant Processing_Flags;
@@ -1813,6 +1824,7 @@ private
       Require_Obj_Dirs           : Error_Warning;
       Allow_Invalid_External     : Error_Warning;
       Missing_Source_Files       : Error_Warning;
+      Ignore_Missing_With        : Boolean;
    end record;
 
    Gprbuild_Flags : constant Processing_Flags :=
@@ -1824,7 +1836,8 @@ private
       Error_On_Unknown_Language  => True,
       Require_Obj_Dirs           => Error,
       Allow_Invalid_External     => Error,
-      Missing_Source_Files       => Error);
+      Missing_Source_Files       => Error,
+      Ignore_Missing_With        => False);
 
    Gprclean_Flags : constant Processing_Flags :=
      (Report_Error               => null,
@@ -1835,7 +1848,8 @@ private
       Error_On_Unknown_Language  => True,
       Require_Obj_Dirs           => Warning,
       Allow_Invalid_External     => Error,
-      Missing_Source_Files       => Error);
+      Missing_Source_Files       => Error,
+      Ignore_Missing_With        => False);
 
    Gnatmake_Flags : constant Processing_Flags :=
      (Report_Error               => null,
@@ -1846,6 +1860,7 @@ private
       Error_On_Unknown_Language  => False,
       Require_Obj_Dirs           => Error,
       Allow_Invalid_External     => Error,
-      Missing_Source_Files       => Error);
+      Missing_Source_Files       => Error,
+      Ignore_Missing_With        => False);
 
 end Prj;

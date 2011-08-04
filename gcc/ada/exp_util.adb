@@ -3888,7 +3888,13 @@ package body Exp_Util is
                                      N_Selected_Component)
                then
                   Ren_Obj := Prefix (Ren_Obj);
-                  Change := True;
+                  Change  := True;
+
+               elsif Nkind_In (Ren_Obj, N_Type_Conversion,
+                                        N_Unchecked_Type_Conversion)
+               then
+                  Ren_Obj := Expression (Ren_Obj);
+                  Change  := True;
                end if;
             end loop;
 

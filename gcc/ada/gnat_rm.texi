@@ -984,7 +984,7 @@ same syntax and effect.
 @noindent
 Syntax:
 @smallexample @c ada
-pragma Annotate (IDENTIFIER [,IDENTIFIER] @{, ARG@});
+pragma Annotate (IDENTIFIER [,IDENTIFIER @{, ARG@}]);
 
 ARG ::= NAME | EXPRESSION
 @end smallexample

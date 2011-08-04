@@ -1505,6 +1505,11 @@ package Prj.Tree is
    type Project_Node_Tree_Data is record
       Project_Nodes : Tree_Private_Part.Project_Node_Table.Instance;
       Projects_HT   : Tree_Private_Part.Projects_Htable.Instance;
+
+      Incomplete_With : Boolean := False;
+      --  Set to True if the projects were loaded with the flag
+      --  Ignore_Missing_With set to True, and there were indeed some with
+      --  statements that could not be resolved
    end record;
 
    procedure Free (Proj : in out Project_Node_Tree_Ref);
