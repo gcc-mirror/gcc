@@ -623,13 +623,6 @@ package body Freeze is
          if S > 32 then
             return;
 
-         --  Don't bother if alignment clause with a value other than 1 is
-         --  present, because size may be padded up to meet back end alignment
-         --  requirements, and only the back end knows the rules!
-
-         elsif Known_Alignment (T) and then Alignment (T) /= 1 then
-            return;
-
          --  Check for bad size clause given
 
          elsif Has_Size_Clause (T) then
@@ -638,21 +631,12 @@ package body Freeze is
                Error_Msg_NE
                  ("size for& too small, minimum allowed is ^",
                   Size_Clause (T), T);
-
-            elsif Unknown_Esize (T) then
-               Set_Esize (T, S);
             end if;
 
-         --  Set sizes if not set already
+         --  Set size if not set already
 
-         else
-            if Unknown_Esize (T) then
-               Set_Esize (T, S);
-            end if;
-
-            if Unknown_RM_Size (T) then
-               Set_RM_Size (T, S);
-            end if;
+         elsif Unknown_RM_Size (T) then
+            Set_RM_Size (T, S);
          end if;
       end Set_Small_Size;
 
@@ -836,7 +820,7 @@ package body Freeze is
                   if not Is_Constrained (T)
                     and then
                       No (Discriminant_Default_Value (First_Discriminant (T)))
-                    and then Unknown_Esize (T)
+                    and then Unknown_RM_Size (T)
                   then
                      return False;
                   end if;
@@ -2251,12 +2235,12 @@ package body Freeze is
            --  less than the sum of the object sizes (no point in packing if
            --  this is not the case).
 
-           and then Esize (Rec) < Scalar_Component_Total_Esize
+           and then RM_Size (Rec) < Scalar_Component_Total_Esize
 
            --  And the total RM size cannot be greater than the specified size
            --  since otherwise packing will not get us where we have to be!
 
-           and then Esize (Rec) >= Scalar_Component_Total_RM_Size
+           and then RM_Size (Rec) >= Scalar_Component_Total_RM_Size
 
            --  Never do implicit packing in CodePeer mode since we don't do
            --  any packing in this mode, since this generates over-complex
@@ -3034,12 +3018,12 @@ package body Freeze is
                   --  action that causes stuff to be inherited).
 
                   if Present (Size_Clause (E))
-                    and then Known_Static_Esize (E)
+                    and then Known_Static_RM_Size (E)
                     and then not Is_Packed (E)
                     and then not Has_Pragma_Pack (E)
                     and then Number_Dimensions (E) = 1
                     and then not Has_Component_Size_Clause (E)
-                    and then Known_Static_Esize (Ctyp)
+                    and then Known_Static_RM_Size (Ctyp)
                     and then not Is_Limited_Composite (E)
                     and then not Is_Packed (Root_Type (E))
                     and then not Has_Component_Size_Clause (Root_Type (E))
@@ -3412,12 +3396,18 @@ package body Freeze is
                      --  Start of processing for Alias_Atomic_Check
 
                      begin
-                        --  Case where component size has no effect. First
-                        --  check for object size of component type known
-                        --  and a multiple of the storage unit size.
 
-                        if Known_Static_Esize (Ctyp)
-                          and then Esize (Ctyp) mod System_Storage_Unit = 0
+                        --  If object size of component type isn't known, we
+                        --  cannot be sure so we defer to the back end.
+
+                        if not Known_Static_Esize (Ctyp) then
+                           null;
+
+                        --  Case where component size has no effect. First
+                        --  check for object size of component type multiple
+                        --  of the storage unit size.
+
+                        elsif Esize (Ctyp) mod System_Storage_Unit = 0
 
                           --  OK in both packing case and component size case
                           --  if RM size is known and static and the same as

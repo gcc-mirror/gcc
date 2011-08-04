@@ -406,8 +406,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  if (esize > max_esize)
 	   esize = max_esize;
 	}
-      else
-	esize = LONG_LONG_TYPE_SIZE;
     }
 
   switch (kind)
@@ -2773,7 +2771,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      ? -1
 	      : (Known_Alignment (gnat_entity)
 		 || (Strict_Alignment (gnat_entity)
-		     && Known_Static_Esize (gnat_entity)))
+		     && Known_RM_Size (gnat_entity)))
 		? -2
 		: 0;
 	bool has_discr = Has_Discriminants (gnat_entity);
@@ -2824,8 +2822,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* If both a size and rep clause was specified, put the size in
 	   the record type now so that it can get the proper mode.  */
-	if (has_rep && Known_Esize (gnat_entity))
-	  TYPE_SIZE (gnu_type) = UI_To_gnu (Esize (gnat_entity), sizetype);
+	if (has_rep && Known_RM_Size (gnat_entity))
+	  TYPE_SIZE (gnu_type)
+	    = UI_To_gnu (RM_Size (gnat_entity), bitsizetype);
 
 	/* Always set the alignment here so that it can be used to
 	   set the mode, if it is making the alignment stricter.  If
@@ -2842,9 +2841,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   type size instead of the RM size (see validate_size).  Cap the
 	   alignment, lest it causes this type size to become too large.  */
 	else if (Strict_Alignment (gnat_entity)
-		 && Known_Static_Esize (gnat_entity))
+		 && Known_RM_Size (gnat_entity))
 	  {
-	    unsigned int raw_size = UI_To_Int (Esize (gnat_entity));
+	    unsigned int raw_size = UI_To_Int (RM_Size (gnat_entity));
 	    unsigned int raw_align = raw_size & -raw_size;
 	    if (raw_align < BIGGEST_ALIGNMENT)
 	      TYPE_ALIGN (gnu_type) = raw_align;
@@ -4583,9 +4582,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 confirming or we don't handle it properly (if the low bound is
 	 non-constant).  */
       if (!gnu_size && kind != E_String_Literal_Subtype)
-	gnu_size = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
-				  TYPE_DECL, false,
-				  Has_Size_Clause (gnat_entity));
+	{
+	  Uint gnat_size = Known_Esize (gnat_entity)
+			   ? Esize (gnat_entity) : RM_Size (gnat_entity);
+	  gnu_size
+	    = validate_size (gnat_size, gnu_type, gnat_entity, TYPE_DECL,
+			     false, Has_Size_Clause (gnat_entity));
+	}
 
       /* If a size was specified, see if we can make a new type of that size
 	 by rearranging the type, for example from a fat to a thin pointer.  */
@@ -6771,7 +6774,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   /* If a size is specified, use it.  Otherwise, if the record type is packed,
      use the official RM size.  See "Handling of Type'Size Values" in Einfo
      for further details.  */
-  if (Known_Static_Esize (gnat_field))
+  if (Known_Esize (gnat_field))
     gnu_size = validate_size (Esize (gnat_field), gnu_field_type,
 			      gnat_field, FIELD_DECL, false, true);
   else if (packed == 1)

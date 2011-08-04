@@ -2348,11 +2348,15 @@ package body Sem_Ch13 is
                if Is_Type (U_Ent) then
                   Set_RM_Size (U_Ent, Size);
 
-                  --  For scalar types, increase Object_Size to power of 2, but
-                  --  not less than a storage unit in any case (i.e., normally
+                  --  For elementary types, increase Object_Size to power of 2,
+                  --  but not less than a storage unit in any case (normally
                   --  this means it will be byte addressable).
 
-                  if Is_Scalar_Type (U_Ent) then
+                  --  For all other types, nothing else to do, we leave Esize
+                  --  (object size) unset, the back end will set it from the
+                  --  size and alignment in an appropriate manner.
+
+                  if Is_Elementary_Type (U_Ent) then
                      if Size <= System_Storage_Unit then
                         Init_Esize (U_Ent, System_Storage_Unit);
                      elsif Size <= 16 then
@@ -2363,14 +2367,8 @@ package body Sem_Ch13 is
                         Set_Esize  (U_Ent, (Size + 63) / 64 * 64);
                      end if;
 
-                  --  For all other types, object size = value size. The
-                  --  backend will adjust as needed.
-
-                  else
-                     Set_Esize (U_Ent, Size);
+                     Alignment_Check_For_Esize_Change (U_Ent);
                   end if;
-
-                  Alignment_Check_For_Esize_Change (U_Ent);
 
                --  For objects, set Esize only
 
@@ -3591,7 +3589,7 @@ package body Sem_Ch13 is
                      Lbit := Lbit + UI_From_Int (SSU) * Posit;
 
                      if Has_Size_Clause (Rectype)
-                       and then Esize (Rectype) <= Lbit
+                       and then RM_Size (Rectype) <= Lbit
                      then
                         Error_Msg_N
                           ("bit number out of range of specified size",
@@ -6008,7 +6006,7 @@ package body Sem_Ch13 is
             --  Check bit position out of range of specified size
 
             if Has_Size_Clause (Rectype)
-              and then Esize (Rectype) <= Lbit
+              and then RM_Size (Rectype) <= Lbit
             then
                Error_Msg_N
                  ("bit number out of range of specified size",
