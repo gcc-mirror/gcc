@@ -1878,9 +1878,6 @@ package Opt is
    --  the generation of Why code for those parts of the input code that
    --  belong to the ALFA subset of Ada. Set by debuf flag -gnatd.F.
 
-   SPARK_Mode : Boolean := False;
-   --  Reject constructs not allowed by SPARK. Set by flag -gnatd.D.
-
 private
 
    --  The following type is used to save and restore settings of switches in

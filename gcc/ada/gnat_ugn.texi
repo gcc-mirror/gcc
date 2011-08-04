@@ -17285,7 +17285,7 @@ much has actually been used.
 The environment task stack, e.g., the stack that contains the main unit, is
 only processed when the environment variable GNAT_STACK_LIMIT is set.
 
-@noident
+@noindent
 The package @code{GNAT.Task_Stack_Usage} provides facilities to get
 stack usage reports at run-time. See its body for the details.
 

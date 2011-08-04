@@ -9328,6 +9328,17 @@ package body Exp_Ch4 is
          elsif Chars (C) = Name_uTag then
             return Suitable_Element (Next_Entity (C));
 
+         --  The .NET/JVM version of type Root_Controlled contains two fields
+         --  which should not be considered part of the object. To achieve
+         --  proper equiality between two controlled objects on .NET/JVM, skip
+         --  field _parent whenever it is of type Root_Controlled.
+
+         elsif Chars (C) = Name_uParent
+           and then VM_Target /= No_VM
+           and then Etype (C) = RTE (RE_Root_Controlled)
+         then
+            return Suitable_Element (Next_Entity (C));
+
          elsif Is_Interface (Etype (C)) then
             return Suitable_Element (Next_Entity (C));
 

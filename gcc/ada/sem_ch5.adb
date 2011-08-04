@@ -2620,7 +2620,7 @@ package body Sem_Ch5 is
 
                   --  Now issue the warning (or error in formal mode)
 
-                  if SPARK_Mode or else Restriction_Check_Required (SPARK) then
+                  if Restriction_Check_Required (SPARK) then
                      Check_SPARK_Restriction
                        ("unreachable code is not allowed", Error_Node);
                   else
