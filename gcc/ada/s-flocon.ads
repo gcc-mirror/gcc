@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                    G N A T . F L O A T _ C O N T R O L                   --
+--                 S Y S T E M . F L O A T _ C O N T R O L                  --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -31,8 +31,29 @@
 
 --  Control functions for floating-point unit
 
---  See file s-flocon.ads for full documentation of the interface
+package System.Float_Control is
 
-with System.Float_Control;
+   procedure Reset;
+   --  Reset the floating-point processor to the default state needed to get
+   --  correct Ada semantics for the target. Some third party tools change
+   --  the settings for the floating-point processor. Reset can be called
+   --  to reset the floating-point processor into the mode required by GNAT
+   --  for correct operation. Use this call after a call to foreign code if
+   --  you suspect incorrect floating-point operation after the call.
+   --
+   --  For example under Windows NT some system DLL calls change the default
+   --  FPU arithmetic to 64 bit precision mode. However, since in Ada 95 it
+   --  is required to provide full access to the floating-point types of the
+   --  architecture, GNAT requires full 80-bit precision mode, and Reset makes
+   --  sure this mode is established.
+   --
+   --  Similarly on the PPC processor, it is important that overflow and
+   --  underflow exceptions be disabled.
+   --
+   --  The call to Reset simply has no effect if the target environment
+   --  does not give rise to such concerns.
 
-package GNAT.Float_Control renames System.Float_Control;
+private
+   pragma Import (C, Reset, "__gnat_init_float");
+
+end System.Float_Control;

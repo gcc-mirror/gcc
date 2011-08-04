@@ -21,7 +21,7 @@
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
--------------------------------------------R-----------------------------------
+------------------------------------------------------------------------------
 
 --  Warning! Error messages can be generated during Gigi processing by direct
 --  calls to error message routines, so it is essential that the processing

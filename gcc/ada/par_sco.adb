@@ -987,9 +987,13 @@ package body Par_SCO is
       procedure Set_Statement_Entry;
       --  If Start is No_Location, does nothing, otherwise outputs a SCO_Table
       --  statement entry for the range Start-Stop and then sets both Start
-      --  and Stop to No_Location. Unconditionally sets Term to True. This is
-      --  called when we find a statement or declaration that generates its
-      --  own table entry, so that we must end the current statement sequence.
+      --  and Stop to No_Location.
+      --  What are Start and Stop??? This comment seems completely unrelated
+      --  to the implementation!???
+      --  Unconditionally sets Term to True. What is Term???
+      --  This is called when we find a statement or declaration that generates
+      --  its own table entry, so that we must end the current statement
+      --  sequence.
 
       procedure Process_Decisions_Defer (N : Node_Id; T : Character);
       pragma Inline (Process_Decisions_Defer);

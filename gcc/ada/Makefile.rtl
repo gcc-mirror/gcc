@@ -492,6 +492,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-filofl$(objext) \
   s-finroo$(objext) \
   s-fishfl$(objext) \
+  s-flocon$(objext) \
   s-fore$(objext)   \
   s-fvadfl$(objext) \
   s-fvaffl$(objext) \
