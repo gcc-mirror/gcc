@@ -352,7 +352,7 @@ package Makeutl is
       function Next_Main return String;
       function Next_Main return Main_Info;
       --  Moves the cursor forward and returns the new current entry. Returns
-      --  No_File_And_Loc if there are no more mains in the table.
+      --  No_Main_Info there are no more mains in the table.
 
       function Number_Of_Mains (Tree : Project_Tree_Ref) return Natural;
       --  Returns the number of mains in this project tree (if Tree is null, it

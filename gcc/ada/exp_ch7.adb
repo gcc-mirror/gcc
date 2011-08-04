@@ -949,7 +949,7 @@ package body Exp_Ch7 is
 
                begin
                   if No (Associated_Storage_Pool (Base_Typ)) then
-                     Pool_Id := RTE (RE_Global_Pool_Object);
+                     Pool_Id := Get_Global_Pool_For_Access_Type (Base_Typ);
                      Set_Associated_Storage_Pool (Base_Typ, Pool_Id);
                   else
                      Pool_Id := Associated_Storage_Pool (Base_Typ);
@@ -959,7 +959,7 @@ package body Exp_Ch7 is
             --  The default choice is the global pool
 
             else
-               Pool_Id := RTE (RE_Global_Pool_Object);
+               Pool_Id := Get_Global_Pool_For_Access_Type (Typ);
                Set_Associated_Storage_Pool (Typ, Pool_Id);
             end if;
 
@@ -4071,6 +4071,21 @@ package body Exp_Ch7 is
          end case;
       end loop;
    end Find_Node_To_Be_Wrapped;
+
+   -------------------------------------
+   -- Get_Global_Pool_For_Access_Type --
+   -------------------------------------
+
+   function Get_Global_Pool_For_Access_Type (T : Entity_Id) return Entity_Id is
+   begin
+      if Opt.True_VMS_Target
+        and then Esize (T) = 32
+      then
+         return RTE (RE_Global_Pool_32_Object);
+      else
+         return RTE (RE_Global_Pool_Object);
+      end if;
+   end Get_Global_Pool_For_Access_Type;
 
    ----------------------------------
    -- Has_New_Controlled_Component --
