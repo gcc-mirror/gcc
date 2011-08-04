@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,5 +64,10 @@ package Sinfo.CN is
    --  modifies these to Expanded_Name nodes where appropriate. Note that
    --  on return the Chars field is set to a copy of the contents of the
    --  Chars field of the Selector_Name field.
+
+   procedure Change_Name_To_Procedure_Call_Statement (N : Node_Id);
+   --  Some statements (procedure call statements) are in the form of a name
+   --  and are parsed as such. This routine takes the scanned name as input
+   --  and returns the corresponding N_Procedure_Call_Statement.
 
 end Sinfo.CN;

@@ -1,3 +1,28 @@
+2011-08-04  Tristan Gingold  <gingold@adacore.com>
+
+	* s-taprop-vxworks.adb (Enter_Task): Use System.Float_Control.Reset
+	instead of the locally imported procedure.
+	* s-taprop-mingw.adb (Enter_Task): Ditto.
+	* s-valrea.adb (Scan_Real): Ditto.
+	* s-imgrea.adb (Set_Image_Real): Ditto.
+	* s-flocon.ads: Make the package pure.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Debug_Statement, Set_Debug_Statement): Remove.
+	* tbuild.ads, tbuild.adb (Make_Pragma): Adjust accordingly.
+	* sinfo-cn.ads, sinfo-cn.adb (Change_Name_To_Procedure_Call_Statement):
+	New subprogram, moved here from...
+	* par.adb, par-ch5.adb (P_Statement_Name): ... here.
+	* par-prag.adb (Par.Prag, case Pragma_Debug): Do not perform any
+	rewriting of the last argument into a procedure call statement here...
+	* sem_prag.adb (Analyze_Pragma, case Pragma_Debug): ...do it there
+	instead.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb: Minor reformatting.
+
 2011-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* erroutc.adb: Minor reformatting.

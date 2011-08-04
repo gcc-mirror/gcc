@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,7 @@ with System.OS_Primitives;
 with System.Task_Info;
 with System.Interrupt_Management;
 with System.Win32.Ext;
+with System.Float_Control;
 
 with System.Soft_Links;
 --  We use System.Soft_Links instead of System.Tasking.Initialization because
@@ -791,16 +792,15 @@ package body System.Task_Primitives.Operations is
    --  System.Task_Primitives.Operations.Create_Task during thread creation.
 
    procedure Enter_Task (Self_ID : Task_Id) is
-      procedure Init_Float;
-      pragma Import (C, Init_Float, "__gnat_init_float");
-      --  Properly initializes the FPU for x86 systems
-
       procedure Get_Stack_Bounds (Base : Address; Limit : Address);
       pragma Import (C, Get_Stack_Bounds, "__gnat_get_stack_bounds");
       --  Get stack boundaries
    begin
       Specific.Set (Self_ID);
-      Init_Float;
+
+      --  Properly initializes the FPU for x86 systems
+
+      System.Float_Control.Reset;
 
       if Self_ID.Common.Task_Info /= null
         and then

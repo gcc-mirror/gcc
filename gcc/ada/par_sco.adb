@@ -103,11 +103,11 @@ package body Par_SCO is
 
    procedure Process_Decisions (N : Node_Id; T : Character);
    --  If N is Empty, has no effect. Otherwise scans the tree for the node N,
-   --  to output any decisions it contains. T is one of IEPWX (for context of
-   --  expression: if/exit when/pragma/while/expression). If T is other than X,
-   --  the node N is the conditional expression involved, and a decision is
-   --  always present (at the very least a simple decision is present at the
-   --  top level).
+   --  to output any decisions it contains. T is one of IEGPWX (for context of
+   --  expression: if/exit when/entry guard/pragma/while/expression). If T is
+   --  other than X, the node N is the conditional expression involved, and a
+   --  decision is always present (at the very least a simple decision is
+   --  present at the top level).
 
    procedure Process_Decisions (L : List_Id; T : Character);
    --  Calls above procedure for each element of the list L
@@ -521,8 +521,8 @@ package body Par_SCO is
       begin
          case Nkind (N) is
 
-               --  Logical operators, output table entries and then process
-               --  operands recursively to deal with nested conditions.
+            --  Logical operators, output table entries and then process
+            --  operands recursively to deal with nested conditions.
 
             when N_And_Then |
                  N_Or_Else  |
@@ -575,7 +575,7 @@ package body Par_SCO is
             when N_Case_Expression =>
                return OK; -- ???
 
-            --  Conditional expression, processed like an if statement
+            --  Conditional expression, processed like an IF statement
 
             when N_Conditional_Expression =>
                declare
@@ -654,7 +654,7 @@ package body Par_SCO is
 
       procedure Debug_Put_SCOs is new Put_SCOs;
 
-      --  Start of processing for pscos
+   --  Start of processing for pscos
 
    begin
       Debug_Put_SCOs;

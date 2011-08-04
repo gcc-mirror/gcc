@@ -32,6 +32,9 @@
 --  Control functions for floating-point unit
 
 package System.Float_Control is
+   pragma Pure;
+   --  This is not fully correct, but this unit is with-ed by pure units
+   --  (eg s-imgrea).
 
    procedure Reset;
    --  Reset the floating-point processor to the default state needed to get
