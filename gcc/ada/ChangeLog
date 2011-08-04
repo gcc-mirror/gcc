@@ -1,3 +1,14 @@
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Aspect_Loop): when an aspect X and its classwise
+	corresponding aspect X'Class are allowed, proceed with analysis of the
+	aspect instead of skipping it.
+
+2011-08-04  Tristan Gingold  <gingold@adacore.com>
+
+	* s-flocon.adb, s-flocon.ads: Add a body for s-flocon.ads
+	This will allow to have an Ada implementation for the subprogram.
+
 2011-08-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Analyze_Full_Type_Declaration): If the declaration is a
