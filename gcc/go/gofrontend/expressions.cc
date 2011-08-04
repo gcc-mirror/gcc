@@ -9682,6 +9682,8 @@ Call_result_expression::do_type()
   Function_type* fntype = ce->get_function_type();
   if (fntype == NULL)
     {
+      if (ce->issue_error())
+	this->report_error(_("expected function"));    
       this->set_is_error();
       return Type::make_error_type();
     }
