@@ -74,6 +74,7 @@ begin
                Write_Info_Nat (S.Col);
                Write_Info_Char (' ');
 
+               pragma Assert (S.Scope_Name.all /= "");
                for N in S.Scope_Name'Range loop
                   Write_Info_Char (S.Scope_Name (N));
                end loop;

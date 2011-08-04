@@ -321,7 +321,7 @@ package body ALFA is
       --  filled even later, but are initialized to represent an empty range.
 
       ALFA_Scope_Table.Append (
-        (Scope_Name     => new String'(Exact_Source_Name (Sloc (E))),
+        (Scope_Name     => new String'(Unique_Name (E)),
          File_Num       => 0,
          Scope_Num      => 0,
          Spec_File_Num  => 0,

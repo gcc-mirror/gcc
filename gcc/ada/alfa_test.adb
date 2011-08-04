@@ -251,8 +251,6 @@ begin
          C := Get_Char (Infile);
 
          if C = EOF then
-            Ada.Text_IO.Put_Line
-              (Argument (1) & ": no SCO found, recompile with -gnateS");
             raise Stop;
 
          elsif C = LF or else C = CR then
