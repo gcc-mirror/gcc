@@ -1,3 +1,38 @@
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* projects.texi: Added documentation for the IDE'Gnat project file
+	attribute.
+
+2011-08-04  Nicolas Roche  <roche@adacore.com>
+
+	* gnat_rm.texi: Minor editing.
+
+2011-08-04  Javier Miranda  <miranda@adacore.com>
+
+	* bindgen.adb (Gen_Adafinal_Ada): Do not differentiate the main case
+	and the library case for VM targets.
+	(Gen_Adainit_Ada): Likewise.
+
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* g-altive.ads: Minor comment updates.
+	* prj-nmsc.adb: Minor reformatting.
+
+2011-08-04  Javier Miranda  <miranda@adacore.com>
+
+	* opt.ads
+	(Normalize_Scalars_Config): Value of the configuration switch set by
+	pragma Normalize_Scalars when it appears in the gnat.adc file.
+	(Normalize_Scalars): New field for record Config_Switches_Type. Used
+	to save and restore settings of this pragma.
+	* opt.adb
+	(Register_Opt_Config_Switches, Save_Opt_Config_Switches,
+	Restore_Opt_Config_Switches): Add missing support for Normalize_Scalars.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Document gnatlink options -M and -M=mapfile
+
 2011-08-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* makeutl.adb: Minor reformatting.

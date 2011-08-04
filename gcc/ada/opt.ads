@@ -1730,6 +1730,13 @@ package Opt is
    --  This switch is not set when the pragma appears ahead of a given
    --  unit, so it does not affect the compilation of other units.
 
+   Normalize_Scalars_Config : Boolean;
+   --  GNAT
+   --  This is the value of the configuration switch that is set by the
+   --  pragma Normalize_Scalars when it appears in the gnat.adc file.
+   --  This switch is not set when the pragma appears ahead of a given
+   --  unit, so it does not affect the compilation of other units.
+
    Optimize_Alignment_Config : Character;
    --  GNAT
    --  This is the value of the configuration switch that controls the
@@ -1911,6 +1918,7 @@ private
       Fast_Math                      : Boolean;
       Init_Or_Norm_Scalars           : Boolean;
       Initialize_Scalars             : Boolean;
+      Normalize_Scalars              : Boolean;
       Optimize_Alignment             : Character;
       Optimize_Alignment_Local       : Boolean;
       Persistent_BSS_Mode            : Boolean;

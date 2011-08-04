@@ -46,13 +46,14 @@
 --    and instruction set.
 
 --  These documents, as well as a number of others of general interest on the
---  AltiVec technology, are available from the Motorola/AltiVec Web site at
+--  AltiVec technology, are available from the Motorola/AltiVec Web site at:
 
 --  http://www.freescale.com/altivec
 
 --  The binding interface is structured to allow alternate implementations:
 --  for real AltiVec capable targets, and for other targets. In the latter
---  case, everything is emulated in software. We refer to the two versions as:
+--  case, everything is emulated in software. The two versions are referred
+--  to as:
 
 --  o The Hard binding for AltiVec capable targets (with the appropriate
 --    hardware support and corresponding instruction set)
@@ -60,12 +61,12 @@
 --  o The Soft binding for other targets (with the low level primitives
 --    emulated in software).
 
---  We also offer interfaces not strictly part of the base AltiVec API, such
---  as vector conversions to/from array representations, which are of interest
---  for client applications (e.g. for vector initialization purposes) and may
---  also be used as implementation facilities.
+--  In addition, interfaces that are not strictly part of the base AltiVec API
+--  are provided, such as vector conversions to and from array representations,
+--  which are of interest for client applications (e.g. for vector
+--  initialization purposes).
 
---  Only the soft binding is available today.
+--  Only the soft binding is available today
 
 -----------------------------------------
 -- General package architecture survey --

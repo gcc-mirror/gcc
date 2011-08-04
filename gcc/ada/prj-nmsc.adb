@@ -592,7 +592,7 @@ package body Prj.Nmsc is
          --  For instance a suffix "configure.in" must match a file with the
          --  same name. To avoid dummy cases, though, a suffix starting with
          --  '.' requires a file that is at least one character longer ('.cpp'
-         --  should not match a file with the same name)
+         --  should not match a file with the same name).
 
          if Suf (Suf'First) = '.' then
             Min_Prefix_Length := 1;

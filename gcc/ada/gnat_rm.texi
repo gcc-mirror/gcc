@@ -4277,8 +4277,8 @@ packages:
 @item No_Dependence => Ada.Execution_Time.Timers
 @item No_Dependence => Ada.Task_Attributes
 @item No_Dependence => System.Multiprocessors.Dispatching_Domains
-
 @end table
+
 @noindent
 
 This set of configuration pragmas and restrictions correspond to the
