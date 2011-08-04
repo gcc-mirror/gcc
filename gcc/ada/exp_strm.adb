@@ -203,6 +203,7 @@ package body Exp_Strm is
            Make_Object_Declaration (Loc,
              Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
              Object_Definition   => New_Occurrence_Of (Typ, Loc));
+
       else
          Odecl :=
            Make_Object_Declaration (Loc,
@@ -270,10 +271,10 @@ package body Exp_Strm is
       for J in 1 .. Number_Dimensions (Typ) loop
          Append_To (Stms,
            Make_Attribute_Reference (Loc,
-             Prefix =>
+             Prefix         =>
                New_Occurrence_Of (Stream_Base_Type (Etype (Indx)), Loc),
              Attribute_Name => Name_Write,
-             Expressions => New_List (
+             Expressions    => New_List (
                Make_Identifier (Loc, Name_S),
                Make_Attribute_Reference (Loc,
                  Prefix         => Make_Identifier (Loc, Name_V),
@@ -283,10 +284,10 @@ package body Exp_Strm is
 
          Append_To (Stms,
            Make_Attribute_Reference (Loc,
-             Prefix =>
+             Prefix         =>
                New_Occurrence_Of (Stream_Base_Type (Etype (Indx)), Loc),
              Attribute_Name => Name_Write,
-             Expressions => New_List (
+             Expressions    => New_List (
                Make_Identifier (Loc, Name_S),
                Make_Attribute_Reference (Loc,
                  Prefix         => Make_Identifier (Loc, Name_V),
@@ -301,7 +302,7 @@ package body Exp_Strm is
 
       Append_To (Stms,
         Make_Attribute_Reference (Loc,
-          Prefix => New_Occurrence_Of (Typ, Loc),
+          Prefix         => New_Occurrence_Of (Typ, Loc),
           Attribute_Name => Name_Write,
           Expressions => New_List (
             Make_Identifier (Loc, Name_S),
@@ -566,6 +567,10 @@ package body Exp_Strm is
       --  then the representation is unsigned
 
       elsif not Is_Unsigned_Type (FST)
+
+        --  The following set of tests gets repeated many times, we should
+        --  have an abstraction defined ???
+
         and then
           (Is_Fixed_Point_Type (U_Type)
              or else
@@ -573,6 +578,7 @@ package body Exp_Strm is
              or else
            (Is_Signed_Integer_Type (U_Type)
               and then not Has_Biased_Representation (FST)))
+
       then
          if P_Size <= Standard_Short_Short_Integer_Size then
             Lib_RE := RE_I_SSI;

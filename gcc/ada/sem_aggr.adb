@@ -997,6 +997,7 @@ package body Sem_Aggr is
                   Insert_Actions (N, Freeze_Entity (Typ, N));
                   exit;
                end if;
+
                Next (Comp);
             end loop;
          end;

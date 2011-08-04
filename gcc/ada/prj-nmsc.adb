@@ -7820,8 +7820,7 @@ package body Prj.Nmsc is
 
    begin
       Debug_Output ("Path_Name_Of file_name=", Name_Id (File_Name));
-      Debug_Output ("Path_Name_Of directory=",
-                    Name_Id (Directory));
+      Debug_Output ("Path_Name_Of directory=", Name_Id (Directory));
       Get_Name_String (File_Name);
       Result :=
         Locate_Regular_File

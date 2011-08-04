@@ -1,3 +1,23 @@
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb, par_sco.adb, sem_type.adb, exp_util.adb, exp_ch9.adb,
+	prj-nmsc.adb, sem_ch13.adb, exp_strm.adb: Minor reformatting.
+
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor documentation fix for pragma Annotate.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): add check during pre-analysis that
+	'Result only appears in postcondition of function.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* a-tags.adb (Check_TSD): When raising PROGRAM_ERROR for a duplicated
+	external tag, include the value of the external tag in the exception
+	message.
+
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
 	* sem_attr.adb (Result): modify error message for misplaced 'Result

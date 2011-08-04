@@ -575,7 +575,7 @@ package body Par_SCO is
             when N_Case_Expression =>
                return OK; -- ???
 
-            --  Conditional expression, processed like an IF statement
+            --  Conditional expression, processed like an if statement
 
             when N_Conditional_Expression =>
                declare
