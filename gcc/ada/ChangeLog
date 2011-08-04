@@ -1,3 +1,14 @@
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.adb, prj.ads, makeutl.adb, makeutl.ads, prj-env.adb
+	(Project_Tree_Appdata): New type.
+	It is now possible to associate application-specific data to a project
+	tree. In particular, this is used in the gprbuild builder to avoid a
+	number of global tables and htables, especially now that there can be
+	several project trees loaded at once because of aggregate projects.
+	(Debug_Name): new procedure.
+	* projects.texi: Clarify syntax of "**" for Source_Dirs
+
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
 	* prj.ads, makeutl.adb, makeutl.ads (Queue.Insert): now also inserts

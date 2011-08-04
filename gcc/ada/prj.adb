@@ -943,6 +943,8 @@ package body Prj is
    procedure Free (Tree : in out Project_Tree_Ref) is
       procedure Unchecked_Free is new
         Ada.Unchecked_Deallocation (Project_Tree_Data, Project_Tree_Ref);
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+          (Project_Tree_Appdata'Class, Project_Tree_Appdata_Access);
 
    begin
       if Tree /= null then
@@ -955,6 +957,11 @@ package body Prj is
             Array_Table.Free            (Tree.Shared.Arrays);
             Package_Table.Free          (Tree.Shared.Packages);
             Temp_Files_Table.Free       (Tree.Shared.Private_Part.Temp_Files);
+         end if;
+
+         if Tree.Appdata /= null then
+            Free (Tree.Appdata.all);
+            Unchecked_Free (Tree.Appdata);
          end if;
 
          Source_Paths_Htable.Reset (Tree.Source_Paths_HT);
@@ -1465,6 +1472,41 @@ package body Prj is
          Debug_Output (Str);
       end if;
    end Debug_Decrease_Indent;
+
+   ----------------
+   -- Debug_Name --
+   ----------------
+
+   function Debug_Name (Tree : Project_Tree_Ref) return Name_Id is
+      P : Project_List := Tree.Projects;
+   begin
+      Name_Len := 0;
+      Add_Str_To_Name_Buffer ("Tree [");
+
+      while P /= null loop
+         if P /= Tree.Projects then
+            Add_Char_To_Name_Buffer (',');
+         end if;
+
+         Add_Str_To_Name_Buffer (Get_Name_String (P.Project.Name));
+
+         P := P.Next;
+      end loop;
+
+      Add_Char_To_Name_Buffer (']');
+
+      return Name_Find;
+   end Debug_Name;
+
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (Tree : in out Project_Tree_Appdata) is
+      pragma Unreferenced (Tree);
+   begin
+      null;
+   end Free;
 
 begin
    --  Make sure that the standard config and user project file extensions are

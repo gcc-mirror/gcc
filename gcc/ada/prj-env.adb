@@ -829,6 +829,7 @@ package body Prj.Env is
          Iter   : Source_Iterator;
 
       begin
+         Debug_Output ("Add mapping for project", Project.Name);
          Iter := For_Each_Source (In_Tree, Project, Language => Language);
 
          loop
@@ -901,13 +902,18 @@ package body Prj.Env is
    --  Start of processing for Create_Mapping_File
 
    begin
+      if Current_Verbosity = High then
+         Debug_Output ("Create mapping file for", Debug_Name (In_Tree));
+      end if;
+
       Create_Temp_File (In_Tree.Shared, File, Name, "mapping");
 
       if Current_Verbosity = High then
          Debug_Increase_Indent ("Create mapping file ", Name_Id (Name));
       end if;
 
-      For_Every_Imported_Project (Project, In_Tree, Dummy);
+      For_Every_Imported_Project
+        (Project, In_Tree, Dummy, Include_Aggregated => False);
 
       declare
          Last   : Natural;

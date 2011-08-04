@@ -33,13 +33,13 @@ with Osint;    use Osint;
 with Output;   use Output;
 with Opt;      use Opt;
 with Prj.Ext;
-with Prj.Util;
+with Prj.Util; use Prj.Util;
 with Sinput.P;
 with Snames;   use Snames;
 with Table;
 with Tempdir;
 
-with Ada.Command_Line; use Ada.Command_Line;
+with Ada.Command_Line;  use Ada.Command_Line;
 
 with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
@@ -2478,7 +2478,6 @@ package body Makeutl is
             end loop;
          end loop;
       end Insert_Withed_Sources_For;
-
    end Queue;
 
 end Makeutl;
