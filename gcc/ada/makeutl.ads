@@ -233,6 +233,33 @@ package Makeutl is
    --  Terminate program, with or without a message, setting the status code
    --  according to Fatal. This properly removes all temporary files.
 
+   --------------
+   -- Switches --
+   --------------
+
+   generic
+      with function Add_Switch
+        (Switch      : String;
+         For_Lang    : Name_Id;
+         For_Builder : Boolean;
+         Has_Global_Compilation_Switches : Boolean) return Boolean;
+      --  For_Builder is true if we have a builder switch
+      --  This function should return True in case of success (the switch is
+      --  valid), False otherwise. The error message will be displayed by
+      --  Compute_Builder_Switches itself.
+      --  Has_Global_Compilation_Switches is True if the attribute
+      --  Global_Compilation_Switches is defined in the project.
+
+   procedure Compute_Builder_Switches
+     (Project_Tree     : Project_Tree_Ref;
+      Root_Environment : in out Prj.Tree.Environment;
+      Main_Project     : Project_Id;
+      Only_For_Lang    : Name_Id := No_Name);
+   --  Compute the builder switches and global compilation switches.
+   --  Every time a switch is found in the project, it is passed to Add_Switch.
+   --  You can provide a value for Only_For_Lang so that we only look for
+   --  this language when parsing the global compilation switches.
+
    -----------------------
    -- Project_Tree data --
    -----------------------

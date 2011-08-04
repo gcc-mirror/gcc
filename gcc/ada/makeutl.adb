@@ -2894,4 +2894,334 @@ package body Makeutl is
       Compute_All (Root_Project, Tree);
    end Compute_Compilation_Phases;
 
+   ------------------------------
+   -- Compute_Builder_Switches --
+   ------------------------------
+
+   procedure Compute_Builder_Switches
+     (Project_Tree        : Project_Tree_Ref;
+      Root_Environment    : in out Prj.Tree.Environment;
+      Main_Project        : Project_Id;
+      Only_For_Lang       : Name_Id := No_Name)
+   is
+      Builder_Package  : constant Package_Id :=
+        Value_Of (Name_Builder, Main_Project.Decl.Packages,
+                  Project_Tree.Shared);
+
+      Global_Compilation_Array    : Array_Element_Id;
+      Global_Compilation_Elem     : Array_Element;
+      Global_Compilation_Switches : Variable_Value;
+
+      Default_Switches_Array : Array_Id;
+
+      Builder_Switches_Lang : Name_Id := No_Name;
+
+      List             : String_List_Id;
+      Element          : String_Element;
+
+      Index            : Name_Id;
+      Source           : Prj.Source_Id;
+
+      Lang              : Name_Id := No_Name;  --  language index for Switches
+      Switches_For_Lang : Variable_Value := Nil_Variable_Value;
+      --  Value of Builder'Default_Switches(lang)
+
+      Name             : Name_Id := No_Name;  --  main file index for Switches
+      Switches_For_Main : Variable_Value := Nil_Variable_Value;
+      --  Switches for a specific main. When there are several mains, Name is
+      --  set to No_Name, and Switches_For_Main might be left with an actual
+      --  value (so that we can display a warning that it was ignored).
+
+      Other_Switches : Variable_Value := Nil_Variable_Value;
+      --  Value of Builder'Switches(others)
+
+      Defaults : Variable_Value := Nil_Variable_Value;
+
+      Switches : Variable_Value := Nil_Variable_Value;
+      --  The computed builder switches
+
+      Success          : Boolean := False;
+   begin
+      if Builder_Package /= No_Package then
+         Mains.Reset;
+
+         --  If there is no main, and there is only one compilable language,
+         --  use this language as the switches index.
+
+         if Mains.Number_Of_Mains (Project_Tree) = 0 then
+
+            if Only_For_Lang = No_Name then
+               declare
+                  Language : Language_Ptr := Main_Project.Languages;
+
+               begin
+                  while Language /= No_Language_Index loop
+                     if Language.Config.Compiler_Driver /= No_File
+                       and then Language.Config.Compiler_Driver /= Empty_File
+                     then
+                        if Lang /= No_Name then
+                           Lang := No_Name;
+                           exit;
+                        else
+                           Lang := Language.Name;
+                        end if;
+                     end if;
+                     Language := Language.Next;
+                  end loop;
+               end;
+            else
+               Lang := Only_For_Lang;
+            end if;
+
+         else
+            for Index in 1 .. Mains.Number_Of_Mains (Project_Tree) loop
+               Source := Mains.Next_Main.Source;
+               if Source /= No_Source then
+
+                  if Switches_For_Main = Nil_Variable_Value then
+                     Switches_For_Main := Value_Of
+                       (Name                    => Name_Id (Source.File),
+                        Attribute_Or_Array_Name => Name_Switches,
+                        In_Package              => Builder_Package,
+                        Shared                  => Project_Tree.Shared,
+                        Force_Lower_Case_Index  => False,
+                        Allow_Wildcards         => True);
+
+                     --  If not found, try without extension ???
+                     --  That's because gnatmake accepts unit names in Switches
+
+                     if Switches_For_Main = Nil_Variable_Value
+                       and then Source.Unit /= null
+                     then
+                        Switches_For_Main := Value_Of
+                          (Name                    => Source.Unit.Name,
+                           Attribute_Or_Array_Name => Name_Switches,
+                           In_Package              => Builder_Package,
+                           Shared                  => Project_Tree.Shared,
+                           Force_Lower_Case_Index  => False,
+                           Allow_Wildcards         => True);
+                     end if;
+                  end if;
+
+                  if Index = 1 then
+                     Lang := Source.Language.Name;
+                     Name := Name_Id (Source.File);
+                  else
+                     Name := No_Name;  --  Can't use main specific switches
+
+                     if Lang /= Source.Language.Name then
+                        Lang := No_Name;
+                     end if;
+                  end if;
+               end if;
+            end loop;
+         end if;
+
+         Global_Compilation_Array := Value_Of
+           (Name      => Name_Global_Compilation_Switches,
+            In_Arrays => Project_Tree.Shared.Packages.Table
+              (Builder_Package).Decl.Arrays,
+            Shared    => Project_Tree.Shared);
+
+         Default_Switches_Array :=
+           Project_Tree.Shared.Packages.Table (Builder_Package).Decl.Arrays;
+
+         while Default_Switches_Array /= No_Array and then
+           Project_Tree.Shared.Arrays.Table (Default_Switches_Array).Name /=
+           Name_Default_Switches
+         loop
+            Default_Switches_Array :=
+              Project_Tree.Shared.Arrays.Table (Default_Switches_Array).Next;
+         end loop;
+
+         if Global_Compilation_Array /= No_Array_Element
+           and then Default_Switches_Array /= No_Array
+         then
+            Prj.Err.Error_Msg
+              (Root_Environment.Flags,
+               "Default_Switches forbidden in presence of " &
+               "Global_Compilation_Switches. Use Switches instead.",
+               Project_Tree.Shared.Arrays.Table
+                 (Default_Switches_Array).Location);
+            Fail_Program
+              (Project_Tree,
+               "*** illegal combination of Builder attributes");
+         end if;
+
+         if Lang /= No_Name then
+            Switches_For_Lang := Prj.Util.Value_Of
+              (Name                    => Lang,
+               Index                   => 0,
+               Attribute_Or_Array_Name => Name_Switches,
+               In_Package              => Builder_Package,
+               Shared                  => Project_Tree.Shared,
+               Force_Lower_Case_Index  => True);
+
+            Defaults := Prj.Util.Value_Of
+              (Name                    => Lang,
+               Index                   => 0,
+               Attribute_Or_Array_Name => Name_Default_Switches,
+               In_Package              => Builder_Package,
+               Shared                  => Project_Tree.Shared,
+               Force_Lower_Case_Index  => True);
+         end if;
+
+         Other_Switches := Prj.Util.Value_Of
+           (Name                    => All_Other_Names,
+            Index                   => 0,
+            Attribute_Or_Array_Name => Name_Switches,
+            In_Package              => Builder_Package,
+            Shared                  => Project_Tree.Shared);
+
+         if not Quiet_Output
+           and then Mains.Number_Of_Mains (Project_Tree) > 1
+           and then Switches_For_Main /= Nil_Variable_Value
+         then
+            --  More than one main, but we had main-specific switches that
+            --  are ignored.
+
+            if Switches_For_Lang /= Nil_Variable_Value then
+               Write_Line
+                 ("Warning: using Builder'Default_Switches"
+                  & "(""" & Get_Name_String (Lang)
+                  & """), as there are several mains");
+
+            elsif Other_Switches /= Nil_Variable_Value then
+               Write_Line
+                 ("Warning: using Builder'Switches(others), "
+                  & "as there are several mains");
+
+            elsif Defaults /= Nil_Variable_Value then
+               Write_Line
+                 ("Warning: using Builder'Default_Switches("""
+                  & Get_Name_String (Lang)
+                  & """), as there are several mains");
+            else
+               Write_Line
+                 ("Warning: using no switches from package "
+                  & "Builder, as there are several mains");
+            end if;
+         end if;
+
+         Builder_Switches_Lang := Lang;
+
+         if Name /= No_Name then
+            --  Get the switches for the single main
+            Switches := Switches_For_Main;
+         end if;
+
+         if Switches = Nil_Variable_Value or else Switches.Default then
+            --  Get the switches for the common language of the mains
+            Switches := Switches_For_Lang;
+         end if;
+
+         if Switches = Nil_Variable_Value or else Switches.Default then
+            Switches := Other_Switches;
+         end if;
+
+         --  For backward compatibility with gnatmake, if no Switches
+         --  are declared, check for Default_Switches (<language>).
+
+         if Switches = Nil_Variable_Value or else Switches.Default then
+            Switches := Defaults;
+         end if;
+
+         --  If switches have been found, scan them
+
+         if Switches /= Nil_Variable_Value and then not Switches.Default then
+            List := Switches.Values;
+
+            while List /= Nil_String loop
+               Element := Project_Tree.Shared.String_Elements.Table (List);
+               Get_Name_String (Element.Value);
+
+               if Name_Len /= 0 then
+                  declare
+                     --  Add_Switch might itself be using the name_buffer, so
+                     --  we make a temporary here.
+                     Switch : constant String :=
+                       Name_Buffer (1 .. Name_Len);
+                  begin
+                     Success := Add_Switch
+                       (Switch      => Switch,
+                        For_Lang    => Builder_Switches_Lang,
+                        For_Builder => True,
+                        Has_Global_Compilation_Switches =>
+                          Global_Compilation_Array /= No_Array_Element);
+                  end;
+
+                  if not Success then
+                     for J in reverse 1 .. Name_Len loop
+                        Name_Buffer (J + J) := Name_Buffer (J);
+                        Name_Buffer (J + J - 1) := ''';
+                     end loop;
+
+                     Name_Len := Name_Len + Name_Len;
+
+                     Prj.Err.Error_Msg
+                       (Root_Environment.Flags,
+                        '"' & Name_Buffer (1 .. Name_Len) &
+                        """ is not a builder switch. Consider moving " &
+                        "it to Global_Compilation_Switches.",
+                        Element.Location);
+                     Fail_Program
+                       (Project_Tree,
+                        "*** illegal switch """ &
+                        Get_Name_String (Element.Value) & '"');
+                  end if;
+               end if;
+
+               List := Element.Next;
+            end loop;
+         end if;
+
+         --  Reset the Builder Switches language
+
+         Builder_Switches_Lang := No_Name;
+
+         --  Take into account attributes Global_Compilation_Switches
+
+         while Global_Compilation_Array /= No_Array_Element loop
+            Global_Compilation_Elem :=
+              Project_Tree.Shared.Array_Elements.Table
+                (Global_Compilation_Array);
+
+            Get_Name_String (Global_Compilation_Elem.Index);
+            To_Lower (Name_Buffer (1 .. Name_Len));
+            Index := Name_Find;
+
+            if Only_For_Lang = No_Name or else Index = Only_For_Lang then
+               Global_Compilation_Switches := Global_Compilation_Elem.Value;
+
+               if Global_Compilation_Switches /= Nil_Variable_Value
+                 and then not Global_Compilation_Switches.Default
+               then
+                  --  We have found an attribute
+                  --  Global_Compilation_Switches for a language: put the
+                  --  switches in the appropriate table.
+
+                  List := Global_Compilation_Switches.Values;
+                  while List /= Nil_String loop
+                     Element :=
+                       Project_Tree.Shared.String_Elements.Table (List);
+
+                     if Element.Value /= No_Name then
+                        Success := Add_Switch
+                          (Switch      => Get_Name_String (Element.Value),
+                           For_Lang    => Index,
+                           For_Builder => False,
+                           Has_Global_Compilation_Switches =>
+                             Global_Compilation_Array /= No_Array_Element);
+                     end if;
+
+                     List := Element.Next;
+                  end loop;
+               end if;
+            end if;
+
+            Global_Compilation_Array := Global_Compilation_Elem.Next;
+         end loop;
+      end if;
+   end Compute_Builder_Switches;
+
 end Makeutl;

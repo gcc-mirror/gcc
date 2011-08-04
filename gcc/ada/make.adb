@@ -596,15 +596,6 @@ package body Make is
    procedure Process_Multilib (Env : in out Prj.Tree.Environment);
    --  Add appropriate --RTS argument to handle multilib
 
-   procedure Compute_Builder_Switches
-     (Project_Node_Tree   : Project_Node_Tree_Ref;
-      Root_Environment    : in out Prj.Tree.Environment;
-      Main_Unit_File_Name : String;
-      Main_Index          : Int := 0);
-   --  Analyze the root project to find the builder switches and the global
-   --  compilation switches (the latter are ignored if there were multiple main
-   --  on the command line.
-
    procedure Resolve_Relative_Names_In_Switches (Current_Work_Dir : String);
    --  Resolve all relative paths found in the linker and binder switches,
    --  when using project files.
@@ -4991,214 +4982,6 @@ package body Make is
       end if;
    end Compilation_Phase;
 
-   ------------------------------
-   -- Compute_Builder_Switches --
-   ------------------------------
-
-   procedure Compute_Builder_Switches
-     (Project_Node_Tree   : Project_Node_Tree_Ref;
-      Root_Environment    : in out Prj.Tree.Environment;
-      Main_Unit_File_Name : String;
-      Main_Index          : Int := 0)
-   is
-      Builder_Package : constant Prj.Package_Id :=
-                           Prj.Util.Value_Of
-                             (Name        => Name_Builder,
-                              In_Packages => Main_Project.Decl.Packages,
-                              Shared      => Project_Tree.Shared);
-
-      Global_Compilation_Array    : Array_Element_Id;
-      Global_Compilation_Elem     : Array_Element;
-      Global_Compilation_Switches : Variable_Value;
-
-      Default_Switches_Array : Array_Id;
-
-   begin
-      --  If there is a package Builder in the main project file, add
-      --  the switches from it.
-
-      if Builder_Package /= No_Package then
-         Global_Compilation_Array := Prj.Util.Value_Of
-           (Name      => Name_Global_Compilation_Switches,
-            In_Arrays => Project_Tree.Shared.Packages.Table
-                           (Builder_Package).Decl.Arrays,
-            Shared    => Project_Tree.Shared);
-
-         Default_Switches_Array :=
-           Project_Tree.Shared.Packages.Table (Builder_Package).Decl.Arrays;
-
-         while Default_Switches_Array /= No_Array
-           and then
-             Project_Tree.Shared.Arrays.Table (Default_Switches_Array).Name /=
-                                                        Name_Default_Switches
-         loop
-            Default_Switches_Array :=
-              Project_Tree.Shared.Arrays.Table (Default_Switches_Array).Next;
-         end loop;
-
-         if Global_Compilation_Array /= No_Array_Element and then
-           Default_Switches_Array /= No_Array
-         then
-            Errutil.Error_Msg
-              ("Default_Switches forbidden in presence of " &
-               "Global_Compilation_Switches. Use Switches instead.",
-               Project_Tree.Shared.Arrays.Table
-                 (Default_Switches_Array).Location);
-            Make_Failed ("*** illegal combination of Builder attributes");
-         end if;
-
-         --  If there is only one main, we attempt to get the gnatmake switches
-         --  for this main (if any). If there are no specific switch for this
-         --  particular main, get the general gnatmake switches (if any).
-
-         if Osint.Number_Of_Files = 1 then
-            if Verbose_Mode then
-               Write_Str ("Adding gnatmake switches for """);
-               Write_Str (Main_Unit_File_Name);
-               Write_Line (""".");
-            end if;
-
-            Add_Switches
-              (Project_Node_Tree                => Project_Node_Tree,
-               Env                              => Root_Environment,
-               File_Name                        => Main_Unit_File_Name,
-               Index                            => Main_Index,
-               The_Package                      => Builder_Package,
-               Program                          => None,
-               Unknown_Switches_To_The_Compiler =>
-                 Global_Compilation_Array = No_Array_Element);
-
-         else
-            --  If there are several mains, we always get the general gnatmake
-            --  switches (if any).
-
-            --  Warn the user, if necessary, so that he is not surprised that
-            --  specific switches are not taken into account.
-
-            declare
-               Defaults : constant Variable_Value :=
-                 Prj.Util.Value_Of
-                   (Name                    => Name_Ada,
-                    Index                   => 0,
-                    Attribute_Or_Array_Name => Name_Default_Switches,
-                    In_Package              => Builder_Package,
-                    Shared                  => Project_Tree.Shared);
-
-               Switches : constant Array_Element_Id :=
-                 Prj.Util.Value_Of
-                   (Name      => Name_Switches,
-                    In_Arrays => Project_Tree.Shared.Packages.Table
-                                   (Builder_Package).Decl.Arrays,
-                    Shared    => Project_Tree.Shared);
-
-               Other_Switches : constant Variable_Value :=
-                 Prj.Util.Value_Of
-                   (Name                    => All_Other_Names,
-                    Index                   => 0,
-                    Attribute_Or_Array_Name => Name_Switches,
-                    In_Package              => Builder_Package,
-                    Shared                  => Project_Tree.Shared);
-
-            begin
-               if Other_Switches /= Nil_Variable_Value then
-                  if not Quiet_Output
-                    and then Switches /= No_Array_Element
-                    and then Project_Tree.Shared.Array_Elements.Table
-                               (Switches).Next /= No_Array_Element
-                  then
-                     Write_Line
-                       ("Warning: using Builder'Switches(others), "
-                        & "as there are several mains");
-                  end if;
-
-                  Add_Switches
-                    (Project_Node_Tree                => Project_Node_Tree,
-                     Env                              => Root_Environment,
-                     File_Name                        => " ",
-                     Index                            => 0,
-                     The_Package                      => Builder_Package,
-                     Program                          => None,
-                     Unknown_Switches_To_The_Compiler => False);
-
-               elsif Defaults /= Nil_Variable_Value then
-                  if not Quiet_Output
-                    and then Switches /= No_Array_Element
-                  then
-                     Write_Line
-                       ("Warning: using Builder'Default_Switches"
-                        & "(""Ada""), as there are several mains");
-                  end if;
-
-                  Add_Switches
-                    (Project_Node_Tree => Project_Node_Tree,
-                     Env               => Root_Environment,
-                     File_Name         => " ",
-                     Index             => 0,
-                     The_Package       => Builder_Package,
-                     Program           => None);
-
-               elsif not Quiet_Output
-                 and then Switches /= No_Array_Element
-               then
-                  Write_Line
-                    ("Warning: using no switches from package "
-                     & "Builder, as there are several mains");
-               end if;
-            end;
-         end if;
-
-         --  Take into account attribute Global_Compilation_Switches
-         --  ("Ada").
-
-         declare
-            Index : Name_Id;
-            List  : String_List_Id;
-            Elem  : String_Element;
-
-         begin
-            while Global_Compilation_Array /= No_Array_Element loop
-               Global_Compilation_Elem :=
-                 Project_Tree.Shared.Array_Elements.Table
-                   (Global_Compilation_Array);
-
-               Get_Name_String (Global_Compilation_Elem.Index);
-               To_Lower (Name_Buffer (1 .. Name_Len));
-               Index := Name_Find;
-
-               if Index = Name_Ada then
-                  Global_Compilation_Switches := Global_Compilation_Elem.Value;
-
-                  if Global_Compilation_Switches /= Nil_Variable_Value
-                    and then not Global_Compilation_Switches.Default
-                  then
-                     --  We have found attribute Global_Compilation_Switches
-                     --  ("Ada"): put the switches in the appropriate table.
-
-                     List := Global_Compilation_Switches.Values;
-                     while List /= Nil_String loop
-                        Elem :=
-                          Project_Tree.Shared.String_Elements.Table (List);
-
-                        if Elem.Value /= No_Name then
-                           Add_Switch
-                             (Get_Name_String (Elem.Value),
-                              Compiler,
-                              And_Save => False);
-                        end if;
-
-                        List := Elem.Next;
-                     end loop;
-
-                     exit;
-                  end if;
-               end if;
-
-               Global_Compilation_Array := Global_Compilation_Elem.Next;
-            end loop;
-         end;
-      end if;
-   end Compute_Builder_Switches;
-
    ----------------------------------------
    -- Resolve_Relative_Names_In_Switches --
    ----------------------------------------
@@ -5429,6 +5212,38 @@ package body Make is
       Compute_Builder   : Boolean;
       Current_Work_Dir  : String)
    is
+      function Add_Global_Switches
+        (Switch      : String;
+         For_Lang    : Name_Id;
+         For_Builder : Boolean;
+         Has_Global_Compilation_Switches : Boolean) return Boolean;
+      --  Handles builder and global compilation switches, as read from the
+      --  project file.
+
+      function Add_Global_Switches
+        (Switch      : String;
+         For_Lang    : Name_Id;
+         For_Builder : Boolean;
+         Has_Global_Compilation_Switches : Boolean) return Boolean
+      is
+         pragma Unreferenced (For_Lang);
+      begin
+         if For_Builder then
+            Program_Args := None;
+            Switch_May_Be_Passed_To_The_Compiler :=
+              not Has_Global_Compilation_Switches;
+            Scan_Make_Arg (Root_Environment, Switch, And_Save => False);
+
+            return Gnatmake_Switch_Found
+              or else Switch_May_Be_Passed_To_The_Compiler;
+         else
+            Add_Switch (Switch, Compiler, And_Save => False);
+            return True;
+         end if;
+      end Add_Global_Switches;
+
+      procedure Do_Compute_Builder_Switches
+         is new Makeutl.Compute_Builder_Switches (Add_Global_Switches);
    begin
       if Main_Project /= No_Project then
          declare
@@ -5496,11 +5311,11 @@ package body Make is
             end;
 
             if Compute_Builder then
-               Compute_Builder_Switches
-                 (Project_Node_Tree   => Project_Node_Tree,
-                  Root_Environment    => Root_Environment,
-                  Main_Unit_File_Name => Main_Unit_File_Name,
-                  Main_Index          => Main_Index);
+               Do_Compute_Builder_Switches
+                 (Project_Tree     => Project_Tree,
+                  Root_Environment => Root_Environment,
+                  Main_Project     => Main_Project,
+                  Only_For_Lang    => Name_Ada);
 
                Resolve_Relative_Names_In_Switches
                  (Current_Work_Dir => Current_Work_Dir);
