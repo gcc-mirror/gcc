@@ -3128,18 +3128,12 @@ expand_call (tree exp, rtx target, int ignore)
 
       if (old_stack_level)
 	{
-	  rtx last, set;
+	  rtx prev = get_last_insn ();
 
 	  emit_stack_restore (SAVE_BLOCK, old_stack_level);
 	  stack_pointer_delta = old_stack_pointer_delta;
 
-	  /* ??? Is this assert warrented, given emit_stack_restore?
-	     or should we just mark the last insn no matter what?  */
-	  last = get_last_insn ();
-	  set = single_set (last);
-	  gcc_assert (set != NULL);
-	  gcc_assert (SET_DEST (set) == stack_pointer_rtx);
-	  add_reg_note (last, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
+	  fixup_args_size_notes (prev, get_last_insn (), stack_pointer_delta);
 
 	  pending_stack_adjust = old_pending_adj;
 	  old_stack_allocated = stack_pointer_delta - pending_stack_adjust;

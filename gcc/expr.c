@@ -3620,11 +3620,14 @@ fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
       dest = SET_DEST (set);
 
       /* Look for direct modifications of the stack pointer.  */
-      if (dest == stack_pointer_rtx)
+      if (REG_P (dest) && REGNO (dest) == STACK_POINTER_REGNUM)
 	{
 	  gcc_assert (!saw_unknown);
 	  /* Look for a trivial adjustment, otherwise assume nothing.  */
-	  if (GET_CODE (SET_SRC (set)) == PLUS
+	  /* Note that the SPU restore_stack_block pattern refers to
+	     the stack pointer in V4SImode.  Consider that non-trivial.  */
+	  if (SCALAR_INT_MODE_P (GET_MODE (dest))
+	      && GET_CODE (SET_SRC (set)) == PLUS
 	      && XEXP (SET_SRC (set), 0) == stack_pointer_rtx
 	      && CONST_INT_P (XEXP (SET_SRC (set), 1)))
 	    this_delta = INTVAL (XEXP (SET_SRC (set), 1));
