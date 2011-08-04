@@ -2656,7 +2656,23 @@ package body Sem_Type is
          return True;
 
       else
-         Par := Etype (BT2);
+         --  Obtain the parent of the base type of T2 (use the full view if
+         --  allowed).
+
+         if Use_Full_View
+           and then Is_Private_Type (BT2)
+           and then Present (Full_View (BT2))
+         then
+            --  No climbing needed if its full view is the root type
+
+            if Full_View (BT2) = Root_Type (Full_View (BT2)) then
+               return False;
+            end if;
+
+            Par := Etype (Full_View (BT2));
+         else
+            Par := Etype (BT2);
+         end if;
 
          loop
             --  If there was a error on the type declaration, do not recurse
@@ -2677,10 +2693,14 @@ package body Sem_Type is
             then
                return True;
 
-            --  Climb to the ancestor type
+            --  Root type found
 
-            elsif Etype (Par) /= Par then
+            elsif Par = Root_Type (Par) then
+               return False;
 
+            --  Continue climbing
+
+            else
                --  Use the full-view of private types (if allowed)
 
                if Use_Full_View
@@ -2691,11 +2711,6 @@ package body Sem_Type is
                else
                   Par := Etype (Par);
                end if;
-
-            --  For all other cases return False, not an Ancestor
-
-            else
-               return False;
             end if;
          end loop;
       end if;

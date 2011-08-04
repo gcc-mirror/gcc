@@ -1,3 +1,18 @@
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Create_Finalizer): Remove local variables Spec_Nod and
+	Vis_Decls. When creating a library-level finalizer for a package spec,
+	both the declaration and body of the finalizer are inserted either in
+	the visible or private declarations of the package spec.
+
+2011-08-04  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Derive_Subprograms): Complete assertion to request the
+	use of the full-view of a type when invoking Is_Ancestor.
+	* sem_type.adb (Is_Ancestor): For consistency, when the traversal of
+	the full-view of private parents is requested, then use also the
+	full-view of the parent of the first derivation.
+
 2011-08-04  Tristan Gingold  <gingold@adacore.com>
 
 	* s-taprop-vxworks.adb (Enter_Task): Use System.Float_Control.Reset
