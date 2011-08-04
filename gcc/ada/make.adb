@@ -5464,6 +5464,9 @@ package body Make is
       Current_Main_Index : Int := 0;
       --  If not zero, the index of the current main unit in its source file
 
+      Is_First_Main : Boolean;
+      --  Whether we are processing the first main
+
       Stand_Alone_Libraries : Boolean := False;
       --  Set to True when there are Stand-Alone Libraries, so that gnatbind
       --  is invoked with the -F switch to force checking of elaboration flags.
@@ -5526,6 +5529,30 @@ package body Make is
 
             Debug_Output ("After checking mains, main project is",
                           Main_Project.Name);
+
+         else
+            --  For all mains on the command line, make sure they were in
+            --  osint. In particular, if the user has specified a multi-unit
+            --  source file, the call to Complete_Mains will have expanded
+            --  the list of mains to all its units, and we must now put them
+            --  back on the command line.
+            --  ??? This will not be necessary when gnatmake shares the same
+            --  queue as gprbuild and processes the file directly on the queue.
+
+            Mains.Reset;
+            --  Osint.Reset_Command_Line_Files;
+            Debug_Output ("Reseting list of mains on the command line");
+
+            loop
+               Info := Mains.Next_Main;
+               exit when Info = No_Main_Info;
+
+               if Info.Index /= 0 then
+                  Debug_Output ("Add to command line index="
+                                & Info.Index'Img, Name_Id (Info.File));
+                  Osint.Add_File (Get_Name_String (Info.File), Info.Index);
+               end if;
+            end loop;
          end if;
       end Check_Mains;
 
@@ -6056,6 +6083,8 @@ package body Make is
       Queue.Initialize
         (Main_Project /= No_Project and then One_Compilation_Per_Obj_Dir);
 
+      Is_First_Main := True;
+
       Multiple_Main_Loop : for N_File in 1 .. Osint.Number_Of_Files loop
          if Current_File_Index /= No_Index then
             Main_Index := Current_File_Index;
@@ -6063,14 +6092,39 @@ package body Make is
 
          Current_Main_Index := Main_Index;
 
+         if Current_Main_Index = 0
+           and then Unique_Compile
+             and then Main_Project /= No_Project
+         then
+            --  If this is a multi-unit source, do not compile it as is (ie
+            --  without specifying which unit to compile)
+            --  Insert_Project_Sources has added each of the unit separately.
+
+            declare
+               Source : constant Prj.Source_Id := Find_Source
+                 (In_Tree   => Project_Tree,
+                  Project   => Main_Project,
+                  Base_Name => Main_Source_File,
+                  Index     => Current_Main_Index,
+                  In_Imported_Only => True);
+            begin
+               if Source /= No_Source
+                 and then Source.Index /= 0
+               then
+                  goto Next_Main;
+               end if;
+            end;
+         end if;
+
          Compute_Switches_For_Main
            (Main_Source_File,
             Main_Index,
             Project_Node_Tree,
             Root_Environment,
-            Compute_Builder  => N_File = 1,
+            Compute_Builder  => Is_First_Main,
             Current_Work_Dir => Current_Work_Dir.all);
 
+         Is_First_Main := False;
          Executable_Obsolete := False;
 
          Compute_Executable

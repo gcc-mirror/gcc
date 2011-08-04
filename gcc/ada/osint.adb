@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2748,6 +2748,15 @@ package body Osint is
 
       return new String'(Path);
    end Relocate_Path;
+
+   ------------------------------
+   -- Reset_Command_Line_Files --
+   ------------------------------
+
+   procedure Reset_Command_Line_Files is
+   begin
+      Number_File_Names := 0;
+   end Reset_Command_Line_Files;
 
    -----------------
    -- Set_Program --

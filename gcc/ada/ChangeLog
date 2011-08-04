@@ -1,3 +1,9 @@
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb, makeutl.adb, osint.adb, osint.ads (Check_Mains): rebuild
+	the list of files on the command line after processing it through
+	Complete_Mains.
+
 2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Build_Raise_Statement): Remove the specialized
