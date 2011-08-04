@@ -1,3 +1,60 @@
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb, sem.ads: Code cleanup.
+
+2011-08-04  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tassta.adb (Task_Wrapper): Rewrite the dynamic stack usage part.
+	* s-stausa.adb, s-stausa.ads: Major rewrite. Now provides accurate
+	results if possible.
+	* s-stusta.adb (Print): Adjust after changes in s-stausa.
+	* gnat_ugn.texi: Update dynamic stack usage section.
+
+2011-08-04  Steve Baird  <baird@adacore.com>
+
+	* bindgen.adb (Gen_CodePeer_Wrapper): new procedure.
+	Generate (if CodePeer_Mode is set) a "wrapper" subprogram which
+	contains only a call to the user-defined main subprogram.
+	(Gen_Main_Ada) - If CodePeer_Mode is set, then
+	call the "wrapper" subprogram instead of directly
+	calling the user-defined main subprogram.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Case_Statement): Check the statements of all
+	alternatives of a case statement for controlled objects. Rename local
+	variable A to Dead_Alt.
+	(Expand_N_If_Statement): Check the then and else statements of an if
+	statement for controlled objects. Check the then statements of all
+	elsif parts of an if statement for controlled objects.
+	(Expand_N_Loop_Statement): Check the statements of a loop for controlled
+	objects.
+	* exp_ch7.adb (Process_Transient_Objects): Rewrite the condition which
+	detects a loop associated with the expansion of an array object.
+	Augment the processing of the loop statements to account for a possible
+	wrap done by Process_Statements_For_Controlled_Objects.
+	* exp_ch9.adb (Expand_N_Asynchronous_Select): Check the triggering
+	statements and abortable part of an asynchronous select for controlled
+	objects.
+	(Expand_N_Conditional_Entry_Call): Check the else statements of a
+	conditional entry call for controlled objects.
+	(Expand_N_Selective_Accept): Check the alternatives of a selective
+	accept for controlled objects.
+	(Expand_N_Timed_Entry_Call): Check the entry call and delay
+	alternatives of a timed entry call for controlled objects.
+	* exp_ch11.adb (Expand_Exception_Handlers): Check the statements of an
+	exception handler for controlled objects.
+	* exp_util.adb (Requires_Cleanup_Actions (List_Id, Boolean, Boolean)):
+	Add formal parameter Nested_Constructs along with its associated
+	comment.
+	(Requires_Cleanup_Actions (Node_Id)): Update all calls to
+	Requires_Cleanup_Actions.
+	(Process_Statements_For_Controlled_Objects): New routine.
+	* exp_util.ads (Process_Statements_For_Controlled_Objects): New
+	routine. Inspect a node which contains a non-handled sequence of
+	statements for controlled objects. If such an object is found, the
+	statements are wrapped in a block.
+
 2011-08-04  Bob Duff  <duff@adacore.com>
 
 	* sem_type.adb (Covers): If T2 is a subtype of a class-wide type, we

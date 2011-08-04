@@ -258,11 +258,8 @@ package body Sem_Prag is
       --  Preanalyze the boolean expression, we treat this as a spec expression
       --  (i.e. similar to a default expression).
 
-      pragma Assert (In_Pre_Post_Expression = False);
-      In_Pre_Post_Expression := True;
       Preanalyze_Spec_Expression
         (Get_Pragma_Arg (Arg1), Standard_Boolean);
-      In_Pre_Post_Expression := False;
 
       --  Remove the subprogram from the scope stack now that the pre-analysis
       --  of the precondition/postcondition is done.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 2009-2010, Free Software Foundation, Inc.        --
+--           Copyright (C) 2009-2011, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -250,9 +250,8 @@ package body System.Stack_Usage.Tasking is
                     Obj.Task_Name (Obj.Task_Name'First .. Pos);
       begin
          Put_Line
-           ("| " & T_Name & " | " & Natural'Image (Obj.Max_Size) &
-            Natural'Image (Obj.Value) & " +/- " &
-            Natural'Image (Obj.Variation));
+           ("| " & T_Name & " | " & Natural'Image (Obj.Stack_Size) &
+            Natural'Image (Obj.Value));
       end;
    end Print;
 

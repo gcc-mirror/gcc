@@ -148,15 +148,17 @@ package body Exp_Util is
    --  Create an implicit subtype of CW_Typ attached to node N
 
    function Requires_Cleanup_Actions
-     (L           : List_Id;
-      For_Package : Boolean) return Boolean;
+     (L                 : List_Id;
+      For_Package       : Boolean;
+      Nested_Constructs : Boolean) return Boolean;
    --  Given a list L, determine whether it contains one of the following:
    --
    --    1) controlled objects
    --    2) library-level tagged types
    --
    --  Flag For_Package should be set when the list comes from a package spec
-   --  or body.
+   --  or body. Flag Nested_Constructs should be set when any nested packages
+   --  declared in L must be processed.
 
    ----------------------
    -- Adjust_Condition --
@@ -5446,6 +5448,107 @@ package body Exp_Util is
       end case;
    end Possible_Bit_Aligned_Component;
 
+   -----------------------------------------------
+   -- Process_Statements_For_Controlled_Objects --
+   -----------------------------------------------
+
+   procedure Process_Statements_For_Controlled_Objects (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+
+      function Are_Wrapped (L : List_Id) return Boolean;
+      --  Determine whether list L contains only one statement which is a block
+
+      function Wrap_Statements_In_Block (L : List_Id) return Node_Id;
+      --  Given a list of statements L, wrap it in a block statement and return
+      --  the generated node.
+
+      -----------------
+      -- Are_Wrapped --
+      -----------------
+
+      function Are_Wrapped (L : List_Id) return Boolean is
+         Stmt : constant Node_Id := First (L);
+
+      begin
+         return
+           Present (Stmt)
+             and then No (Next (Stmt))
+             and then Nkind (Stmt) = N_Block_Statement;
+      end Are_Wrapped;
+
+      ------------------------------
+      -- Wrap_Statements_In_Block --
+      ------------------------------
+
+      function Wrap_Statements_In_Block (L : List_Id) return Node_Id is
+      begin
+         return
+           Make_Block_Statement (Loc,
+             Declarations => No_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => L));
+      end Wrap_Statements_In_Block;
+
+   --  Start of processing for Process_Statements_For_Controlled_Objects
+
+   begin
+      case Nkind (N) is
+         when N_Elsif_Part                 |
+              N_If_Statement               |
+              N_Conditional_Entry_Call     |
+              N_Selective_Accept           =>
+
+            --  Check the "then statements" for elsif parts and if statements
+
+            if Nkind_In (N, N_Elsif_Part,
+                            N_If_Statement)
+              and then not Is_Empty_List (Then_Statements (N))
+              and then not Are_Wrapped (Then_Statements (N))
+              and then Requires_Cleanup_Actions
+                         (Then_Statements (N), False, False)
+            then
+               Set_Then_Statements (N, New_List (
+                 Wrap_Statements_In_Block (Then_Statements (N))));
+            end if;
+
+            --  Check the "else statements" for conditional entry calls, if
+            --  statements and selective accepts.
+
+            if Nkind_In (N, N_Conditional_Entry_Call,
+                            N_If_Statement,
+                            N_Selective_Accept)
+              and then not Is_Empty_List (Else_Statements (N))
+              and then not Are_Wrapped (Else_Statements (N))
+              and then Requires_Cleanup_Actions
+                         (Else_Statements (N), False, False)
+            then
+               Set_Else_Statements (N, New_List (
+                 Wrap_Statements_In_Block (Else_Statements (N))));
+            end if;
+
+         when N_Abortable_Part             |
+              N_Accept_Alternative         |
+              N_Case_Statement_Alternative |
+              N_Delay_Alternative          |
+              N_Entry_Call_Alternative     |
+              N_Exception_Handler          |
+              N_Loop_Statement             |
+              N_Triggering_Alternative     =>
+
+            if not Is_Empty_List (Statements (N))
+              and then not Are_Wrapped (Statements (N))
+              and then Requires_Cleanup_Actions (Statements (N), False, False)
+            then
+               Set_Statements (N, New_List (
+                 Wrap_Statements_In_Block (Statements (N))));
+            end if;
+
+         when others                       =>
+            null;
+      end case;
+   end Process_Statements_For_Controlled_Objects;
+
    -------------------------
    -- Remove_Side_Effects --
    -------------------------
@@ -6148,18 +6251,20 @@ package body Exp_Util is
               N_Subprogram_Body       |
               N_Task_Body             =>
             return
-              Requires_Cleanup_Actions (Declarations (N), For_Pkg)
+              Requires_Cleanup_Actions (Declarations (N), For_Pkg, True)
                 or else
               (Present (Handled_Statement_Sequence (N))
                 and then
-              Requires_Cleanup_Actions
-                (Statements (Handled_Statement_Sequence (N)), For_Pkg));
+              Requires_Cleanup_Actions (Statements
+                (Handled_Statement_Sequence (N)), For_Pkg, True));
 
          when N_Package_Specification =>
             return
-              Requires_Cleanup_Actions (Visible_Declarations (N), For_Pkg)
-                or else
-              Requires_Cleanup_Actions (Private_Declarations (N), For_Pkg);
+              Requires_Cleanup_Actions
+                (Visible_Declarations (N), For_Pkg, True)
+                  or else
+              Requires_Cleanup_Actions
+                (Private_Declarations (N), For_Pkg, True);
 
          when others                  =>
             return False;
@@ -6171,8 +6276,9 @@ package body Exp_Util is
    ------------------------------
 
    function Requires_Cleanup_Actions
-     (L           : List_Id;
-      For_Package : Boolean) return Boolean
+     (L                 : List_Id;
+      For_Package       : Boolean;
+      Nested_Constructs : Boolean) return Boolean
    is
       Decl    : Node_Id;
       Expr    : Node_Id;
@@ -6345,7 +6451,9 @@ package body Exp_Util is
 
          --  Nested package declarations
 
-         elsif Nkind (Decl) = N_Package_Declaration then
+         elsif Nested_Constructs
+           and then Nkind (Decl) = N_Package_Declaration
+         then
             Pack_Id := Defining_Unit_Name (Specification (Decl));
 
             if Nkind (Pack_Id) = N_Defining_Program_Unit_Name then
@@ -6360,7 +6468,9 @@ package body Exp_Util is
 
          --  Nested package bodies
 
-         elsif Nkind (Decl) = N_Package_Body then
+         elsif Nested_Constructs
+           and then Nkind (Decl) = N_Package_Body
+         then
             Pack_Id := Corresponding_Spec (Decl);
 
             if Ekind (Pack_Id) /= E_Generic_Package

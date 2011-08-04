@@ -1,4 +1,4 @@
-------------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
@@ -73,6 +73,10 @@ package body Bindgen is
 
    Lib_Final_Built : Boolean := False;
    --  Flag indicating whether the finalize_library rountine has been built
+
+   CodePeer_Wrapper_Name : constant String := "call_main_subprogram";
+   --  For CodePeer, introduce a wrapper subprogram which calls the
+   --  user-defined main subprogram.
 
    ----------------------------------
    -- Interface_State Pragma Table --
@@ -274,6 +278,9 @@ package body Bindgen is
 
    procedure Gen_Finalize_Library_Defs_C;
    --  Generate a sequence of defininitions for package finalizers (C case)
+
+   procedure Gen_CodePeer_Wrapper;
+   --  For CodePeer, generate wrapper which calls user-defined main subprogram
 
    procedure Gen_Main_Ada;
    --  Generate procedure main (Ada code case)
@@ -2126,6 +2133,36 @@ package body Bindgen is
       WBI ("");
    end Gen_Finalize_Library_Defs_C;
 
+   --------------------------
+   -- Gen_CodePeer_Wrapper --
+   --------------------------
+
+   procedure Gen_CodePeer_Wrapper is
+   begin
+      Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+
+      declare
+         --  Bypass Ada_Main_Program; its Import pragma confuses CodePeer
+
+         Callee_Name : String renames Name_Buffer (1 .. Name_Len - 2);
+         --  Strip trailing "%b"
+      begin
+         if ALIs.Table (ALIs.First).Main_Program = Proc then
+            WBI ("   procedure " & CodePeer_Wrapper_Name & " is ");
+            WBI ("   begin");
+            WBI ("      " & Callee_Name & ";");
+         else
+            WBI
+              ("   function " & CodePeer_Wrapper_Name & " return Integer is");
+            WBI ("   begin");
+            WBI ("      return " & Callee_Name & ";");
+         end if;
+      end;
+
+      WBI ("   end " & CodePeer_Wrapper_Name & ";");
+      WBI ("");
+   end Gen_CodePeer_Wrapper;
+
    ------------------
    -- Gen_Main_Ada --
    ------------------
@@ -2318,22 +2355,11 @@ package body Bindgen is
       if not No_Main_Subprogram then
 
          if CodePeer_Mode then
-
-            --  Bypass Ada_Main_Program, its Import pragma confuses CodePeer
-
-            Get_Name_String (Units.Table (First_Unit_Entry).Uname);
-
-            declare
-               Callee_Name : String renames Name_Buffer (1 .. Name_Len - 2);
-               --  Strip trailing "%b"
-
-            begin
-               if ALIs.Table (ALIs.First).Main_Program = Proc then
-                  WBI ("      " & Callee_Name & ";");
-               else
-                  WBI ("      Result := " & Callee_Name & ";");
-               end if;
-            end;
+            if ALIs.Table (ALIs.First).Main_Program = Proc then
+               WBI ("      " & CodePeer_Wrapper_Name & ";");
+            else
+               WBI ("      Result := " & CodePeer_Wrapper_Name & ";");
+            end if;
 
          elsif ALIs.Table (ALIs.First).Main_Program = Proc then
             WBI ("      Ada_Main_Program;");
@@ -3232,6 +3258,13 @@ package body Bindgen is
       Gen_Adainit_Ada;
 
       if Bind_Main_Program and then VM_Target = No_VM then
+         --  For CodePeer, declare a wrapper for the
+         --  user-defined main program.
+
+         if CodePeer_Mode then
+            Gen_CodePeer_Wrapper;
+         end if;
+
          Gen_Main_Ada;
       end if;
 

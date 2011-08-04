@@ -17259,7 +17259,7 @@ output this info at program termination. Results are displayed in four
 columns:
 
 @noindent
-Index | Task Name | Stack Size | Stack Usage [Value +/- Variation]
+Index | Task Name | Stack Size | Stack Usage
 
 @noindent
 where:
@@ -17277,8 +17277,7 @@ is the maximum size for the stack.
 @item Stack Usage
 is the measure done by the stack analyzer. In order to prevent overflow, the stack
 is not entirely analyzed, and it's not possible to know exactly how
-much has actually been used. The report thus contains the theoretical stack usage
-(Value) and the possible variation (Variation) around this value.
+much has actually been used.
 
 @end table
 

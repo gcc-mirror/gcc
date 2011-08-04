@@ -5872,6 +5872,9 @@ package body Exp_Ch9 is
       T   : Entity_Id;  --  Additional status flag
 
    begin
+      Process_Statements_For_Controlled_Objects (Trig);
+      Process_Statements_For_Controlled_Objects (Abrt);
+
       Blk_Ent := Make_Temporary (Loc, 'A');
       Ecall   := Triggering_Statement (Trig);
 
@@ -6824,6 +6827,8 @@ package body Exp_Ch9 is
       S : Entity_Id;  --  Primitive operation slot
 
    begin
+      Process_Statements_For_Controlled_Objects (N);
+
       if Ada_Version >= Ada_2005
         and then Nkind (Blk) = N_Procedure_Call_Statement
       then
@@ -9660,6 +9665,8 @@ package body Exp_Ch9 is
    --  Start of processing for Expand_N_Selective_Accept
 
    begin
+      Process_Statements_For_Controlled_Objects (N);
+
       --  First insert some declarations before the select. The first is:
 
       --    Ann : Address
@@ -9679,6 +9686,7 @@ package body Exp_Ch9 is
 
       Alt := First (Alts);
       while Present (Alt) loop
+         Process_Statements_For_Controlled_Objects (Alt);
 
          if Nkind (Alt) = N_Accept_Alternative then
             Add_Accept (Alt);
@@ -11034,6 +11042,9 @@ package body Exp_Ch9 is
       if Restriction_Active (No_Select_Statements) then
          return;
       end if;
+
+      Process_Statements_For_Controlled_Objects (Entry_Call_Alternative (N));
+      Process_Statements_For_Controlled_Objects (Delay_Alternative (N));
 
       --  The arguments in the call may require dynamic allocation, and the
       --  call statement may have been transformed into a block. The block

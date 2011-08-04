@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -968,6 +968,8 @@ package body Exp_Ch11 is
 
       Handler := First_Non_Pragma (Handlrs);
       Handler_Loop : while Present (Handler) loop
+         Process_Statements_For_Controlled_Objects (Handler);
+
          Next_Handler := Next_Non_Pragma (Handler);
 
          --  Remove source handler if gnat debug flag .x is set

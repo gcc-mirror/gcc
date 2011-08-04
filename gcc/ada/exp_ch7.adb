@@ -4366,11 +4366,38 @@ package body Exp_Ch7 is
             --  sometimes generate a loop and create transient objects inside
             --  the loop.
 
-            elsif Nkind (Stmt) = N_Loop_Statement then
-               Process_Transient_Objects
-                 (First_Object => First (Statements (Stmt)),
-                  Last_Object  => Last (Statements (Stmt)),
-                  Related_Node => Related_Node);
+            elsif Nkind (Related_Node) = N_Object_Declaration
+              and then Is_Array_Type (Base_Type
+                         (Etype (Defining_Identifier (Related_Node))))
+              and then Nkind (Stmt) = N_Loop_Statement
+            then
+               declare
+                  Block_HSS : Node_Id := First (Statements (Stmt));
+
+               begin
+                  --  The loop statements may have been wrapped in a block by
+                  --  Process_Statements_For_Controlled_Objects, inspect the
+                  --  handled sequence of statements.
+
+                  if Nkind (Block_HSS) = N_Block_Statement
+                    and then No (Next (Block_HSS))
+                  then
+                     Block_HSS := Handled_Statement_Sequence (Block_HSS);
+
+                     Process_Transient_Objects
+                       (First_Object => First (Statements (Block_HSS)),
+                        Last_Object  => Last (Statements (Block_HSS)),
+                        Related_Node => Related_Node);
+
+                  --  Inspect the statements of the loop
+
+                  else
+                     Process_Transient_Objects
+                       (First_Object => First (Statements (Stmt)),
+                        Last_Object  => Last (Statements (Stmt)),
+                        Related_Node => Related_Node);
+                  end if;
+               end;
 
             --  Terminate the scan after the last object has been processed
 

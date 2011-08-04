@@ -240,14 +240,6 @@ package Sem is
    --  then Full_Analysis above must be False. You should really regard this as
    --  a read only flag.
 
-   In_Pre_Post_Expression : Boolean := False;
-   --  Switch to indicate that we are in a precondition or postcondition. The
-   --  analysis is not expected to process a precondition or a postcondition as
-   --  a sub-analysis for another precondition or postcondition, so this switch
-   --  needs not be saved for recursive calls. When this switch is True then
-   --  In_Spec_Expression above must be True also. You should really regard
-   --  this as a read only flag.
-
    In_Deleted_Code : Boolean := False;
    --  If the condition in an if-statement is statically known, the branch
    --  that is not taken is analyzed with expansion disabled, and the tree
