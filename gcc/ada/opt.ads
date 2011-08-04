@@ -112,10 +112,6 @@ package Opt is
    --  case of some binder variables, Gnatbind.Scan_Bind_Arg may modify
    --  the default values.
 
-   Ada_Bind_File : Boolean := True;
-   --  GNATBIND, GNATLINK
-   --  Set True if binder file to be generated in Ada rather than C
-
    type Ada_Version_Type is (Ada_83, Ada_95, Ada_2005, Ada_2012);
    pragma Ordered (Ada_Version_Type);
    --  Versions of Ada for Ada_Version below. Note that these are ordered,

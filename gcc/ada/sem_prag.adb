@@ -422,9 +422,7 @@ package body Sem_Prag is
       --  Checks that the given argument has an identifier, and if so, requires
       --  it to match one of the given identifier names. If there is no
       --  identifier, or a non-matching identifier, then an error message is
-      --  given and Pragma_Exit is raised. This checks the optional identifier
-      --  of a pragma argument, not the argument itself like
-      --  Check_Arg_Is_One_Of does.
+      --  given and Pragma_Exit is raised.
 
       procedure Check_In_Main_Program;
       --  Common checks for pragmas that appear within a main program
@@ -13247,10 +13245,12 @@ package body Sem_Prag is
          -- Test_Case --
          ---------------
 
-         --  pragma Test_Case ([Name     =>] static_string_EXPRESSION
-         --                   ,[Mode     =>] (Normal | Robustness)
+         --  pragma Test_Case ([Name     =>] Static_String_EXPRESSION
+         --                   ,[Mode     =>] MODE_TYPE
          --                  [, Requires =>  Boolean_EXPRESSION]
          --                  [, Ensures  =>  Boolean_EXPRESSION]);
+
+         --  MODE_TYPE ::= Normal | Robustness
 
          when Pragma_Test_Case => Test_Case : declare
          begin
@@ -13258,7 +13258,7 @@ package body Sem_Prag is
             Check_At_Least_N_Arguments (3);
             Check_At_Most_N_Arguments (4);
             Check_Arg_Order
-              ((Name_Name, Name_Mode, Name_Requires, Name_Ensures));
+                 ((Name_Name, Name_Mode, Name_Requires, Name_Ensures));
 
             Check_Optional_Identifier (Arg1, Name_Name);
             Check_Arg_Is_Static_Expression (Arg1, Standard_String);

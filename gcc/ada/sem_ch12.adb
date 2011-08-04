@@ -2690,6 +2690,8 @@ package body Sem_Ch12 is
       Decl        : Node_Id;
 
    begin
+      Check_SPARK_Restriction ("generic is not allowed", N);
+
       --  We introduce a renaming of the enclosing package, to have a usable
       --  entity as the prefix of an expanded name for a local entity of the
       --  form Par.P.Q, where P is the generic package. This is because a local
@@ -2811,6 +2813,8 @@ package body Sem_Ch12 is
       Typ         : Entity_Id;
 
    begin
+      Check_SPARK_Restriction ("generic is not allowed", N);
+
       --  Create copy of generic unit, and save for instantiation. If the unit
       --  is a child unit, do not copy the specifications for the parent, which
       --  are not part of the generic tree.
@@ -3051,6 +3055,8 @@ package body Sem_Ch12 is
    --  Start of processing for Analyze_Package_Instantiation
 
    begin
+      Check_SPARK_Restriction ("generic is not allowed", N);
+
       --  Very first thing: apply the special kludge for Text_IO processing
       --  in case we are instantiating one of the children of [Wide_]Text_IO.
 
@@ -4195,6 +4201,8 @@ package body Sem_Ch12 is
    --  Start of processing for Analyze_Subprogram_Instantiation
 
    begin
+      Check_SPARK_Restriction ("generic is not allowed", N);
+
       --  Very first thing: apply the special kludge for Text_IO processing
       --  in case we are instantiating one of the children of [Wide_]Text_IO.
       --  Of course such an instantiation is bogus (these are packages, not
