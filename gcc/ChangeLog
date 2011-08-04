@@ -1,3 +1,10 @@
+2011-08-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49806
+	* tree-vrp.c (op_with_boolean_value_range_p): New function.
+	(simplify_truth_ops_using_ranges): Simplify.  Allow inserting
+	a new statement for a final conversion to bool.
+
 2011-08-04  Romain Geissler  <romain.geissler@gmail.com>
 
 	* gengtype-state.c: Include "bconfig.h" if
