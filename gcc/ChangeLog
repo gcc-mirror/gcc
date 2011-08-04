@@ -1,5 +1,17 @@
 2011-08-04  Richard Henderson  <rth@redhat.com>
 
+	PR target/49964
+	* config/i386/i386.c (ix86_expand_call): Don't create nested
+	PARALLELs for TARGET_VZEROUPPER.
+	(ix86_split_call_vzeroupper): Fix extraction of the original call.
+	* config/i386/i386.md (*call_rex64_ms_sysv_vzeroupper): Don't
+	recognize nested PARALLELs.
+	(*call_pop_vzeroupper, *sibcall_pop_vzeroupper,
+	*call_value_rex64_ms_sysv_vzeroupper, *call_value_pop_vzeroupper,
+	*sibcall_value_pop_vzeroupper): Likewise.
+
+2011-08-04  Richard Henderson  <rth@redhat.com>
+
 	PR middle-end/49968
 	* calls.c (expand_call): Use fixup_args_size_notes for
 	emit_stack_restore.
