@@ -51,6 +51,7 @@ with Prj.Env;
 with Prj.Pars;
 with Prj.Tree; use Prj.Tree;
 with Prj.Util;
+with Sdefault;
 with SFN_Scan;
 with Sinput.P;
 with Snames;   use Snames;
@@ -6370,7 +6371,7 @@ package body Make is
 
       Prj.Tree.Initialize (Env, Gnatmake_Flags);
       Prj.Env.Initialize_Default_Project_Path
-        (Env.Project_Path, Target_Name => "");
+        (Env.Project_Path, Target_Name => Sdefault.Target_Name.all);
 
       Project_Node_Tree := new Project_Node_Tree_Data;
       Prj.Tree.Initialize (Project_Node_Tree);

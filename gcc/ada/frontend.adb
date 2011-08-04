@@ -372,11 +372,9 @@ begin
    --  Qualify all entity names in inner packages, package bodies, etc.,
    --  except when compiling for the VM back-ends, which depend on having
    --  unqualified names in certain cases and handles the generation of
-   --  qualified names when needed, and when compiling for formal verification,
-   --  in which the back-end calls directly Qualify_All_Entity_Names after some
-   --  preprocessing which uses the non-qualified names.
+   --  qualified names when needed.
 
-   if VM_Target = No_VM and then not ALFA_Mode then
+   if VM_Target = No_VM then
       Exp_Dbug.Qualify_All_Entity_Names;
    end if;
 

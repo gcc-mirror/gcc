@@ -1981,44 +1981,67 @@ package body Prj.Env is
 
       if Add_Default_Dir then
          declare
-            Prefix : String_Ptr := Sdefault.Search_Dir_Prefix;
+            Prefix : String_Ptr;
+            Add_Prefix_Share_Gpr : Boolean;
 
          begin
-            if Prefix = null then
-               Prefix := new String'(Executable_Prefix_Path);
+            if Sdefault.Search_Dir_Prefix = null then
 
-               if Prefix.all /= "" then
-                  if Target_Name /= "" then
-                     Add_Str_To_Name_Buffer
-                       (Path_Separator & Prefix.all &
-                        Target_Name & Directory_Separator &
-                        "lib" & Directory_Separator & "gnat");
+               --  gprbuild case
+
+               Prefix := new String'(Executable_Prefix_Path);
+               Add_Prefix_Share_Gpr := True;
+
+            else
+               Prefix := new String'(Sdefault.Search_Dir_Prefix.all
+                                     & ".." & Dir_Separator
+                                     & ".." & Dir_Separator
+                                     & ".." & Dir_Separator
+                                     & ".." & Dir_Separator);
+               Add_Prefix_Share_Gpr := False;
+            end if;
+
+            if Prefix.all /= "" then
+               if Target_Name /= "" then
+
+                  --  $prefix/$target/lib/gnat
+
+                  Add_Str_To_Name_Buffer
+                    (Path_Separator & Prefix.all &
+                     Target_Name);
+
+                  --  Note: Target_Name has a trailing / when it comes from
+                  --  Sdefault.
+
+                  if Name_Buffer (Name_Len) /= '/' then
+                     Add_Char_To_Name_Buffer (Directory_Separator);
                   end if;
+
+                  Add_Str_To_Name_Buffer
+                    ("lib" & Directory_Separator & "gnat");
+               end if;
+
+               if Add_Prefix_Share_Gpr then
+
+                  --  $prefix/share/gpr
 
                   Add_Str_To_Name_Buffer
                     (Path_Separator & Prefix.all &
                      "share" & Directory_Separator & "gpr");
-                  Add_Str_To_Name_Buffer
-                    (Path_Separator & Prefix.all &
-                     "lib" & Directory_Separator & "gnat");
                end if;
 
-            else
-               Self.Path :=
-                 new String'(Name_Buffer (1 .. Name_Len) & Path_Separator &
-                             Prefix.all &
-                             ".." &  Directory_Separator &
-                             ".." & Directory_Separator &
-                             ".." & Directory_Separator & "gnat");
+               --  $prefix/lib/gnat
+
+               Add_Str_To_Name_Buffer
+                 (Path_Separator & Prefix.all &
+                  "lib" & Directory_Separator & "gnat");
             end if;
 
             Free (Prefix);
          end;
       end if;
 
-      if Self.Path = null then
-         Self.Path := new String'(Name_Buffer (1 .. Name_Len));
-      end if;
+      Self.Path := new String'(Name_Buffer (1 .. Name_Len));
    end Initialize_Default_Project_Path;
 
    --------------

@@ -6734,6 +6734,7 @@ package body Exp_Ch7 is
       For_Parent : Boolean := False) return Node_Id
    is
       Loc    : constant Source_Ptr := Sloc (Obj_Ref);
+      Atyp   : Entity_Id;
       Fin_Id : Entity_Id := Empty;
       Ref    : Node_Id;
       Utyp   : Entity_Id;
@@ -6743,10 +6744,12 @@ package body Exp_Ch7 is
 
       if Is_Class_Wide_Type (Typ) then
          Utyp := Root_Type (Typ);
+         Atyp := Utyp;
          Ref  := Obj_Ref;
 
       elsif Is_Concurrent_Type (Typ) then
          Utyp := Corresponding_Record_Type (Typ);
+         Atyp := Empty;
          Ref  := Convert_Concurrent (Obj_Ref, Typ);
 
       elsif Is_Private_Type (Typ)
@@ -6754,10 +6757,12 @@ package body Exp_Ch7 is
         and then Is_Concurrent_Type (Full_View (Typ))
       then
          Utyp := Corresponding_Record_Type (Full_View (Typ));
+         Atyp := Typ;
          Ref  := Convert_Concurrent (Obj_Ref, Full_View (Typ));
 
       else
          Utyp := Typ;
+         Atyp := Typ;
          Ref  := Obj_Ref;
       end if;
 
@@ -6802,7 +6807,7 @@ package body Exp_Ch7 is
       --  instead.
 
       if Utyp /= Base_Type (Utyp) then
-         pragma Assert (Is_Private_Type (Typ));
+         pragma Assert (Present (Atyp) and then Is_Private_Type (Atyp));
 
          Utyp := Base_Type (Utyp);
          Ref  := Unchecked_Convert_To (Utyp, Ref);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1614,6 +1614,9 @@ begin
       Write_Str ("   <Current_Directory>");
       Write_Eol;
 
+      --  The code below reproduces Prj.Env.Initialize_Default_Project_Path,
+      --  shouldn't we reuse that instead???
+
       declare
          Project_Path : String_Access := Getenv (Gpr_Project_Path);
 
@@ -1624,6 +1627,7 @@ begin
          Last  : Natural;
 
          Add_Default_Dir : Boolean := True;
+         Prefix_Name_Len : Integer;
 
       begin
          --  If there is a project path, display each directory in the path
@@ -1699,12 +1703,26 @@ begin
             end loop;
 
             --  If the sequence "/lib"/ was found, display the default
-            --  directory <prefix>/lib/gnat/.
+            --  directories <prefix>/<target>/lib/gnat and <prefix>/lib/gnat/.
 
             if Name_Len >= 5 then
-               Name_Buffer (Name_Len + 1 .. Name_Len + 4) := "gnat";
-               Name_Buffer (Name_Len + 5) := Directory_Separator;
-               Name_Len := Name_Len + 5;
+               Prefix_Name_Len := Name_Len - 4;
+
+               Name_Len := Prefix_Name_Len;
+
+               Name_Len := Prefix_Name_Len;
+               Add_Str_To_Name_Buffer (Sdefault.Target_Name.all);
+               Name_Len := Name_Len - 1;
+               Add_Str_To_Name_Buffer (Directory_Separator
+                                       & "lib" & Directory_Separator
+                                       & "gnat" & Directory_Separator);
+               Write_Str ("   ");
+               Write_Line
+                 (To_Host_Dir_Spec (Name_Buffer (1 .. Name_Len), True).all);
+
+               Name_Len := Prefix_Name_Len;
+               Add_Str_To_Name_Buffer ("lib" & Directory_Separator
+                                       & "gnat" & Directory_Separator);
                Write_Str ("   ");
                Write_Line
                  (To_Host_Dir_Spec (Name_Buffer (1 .. Name_Len), True).all);

@@ -12201,6 +12201,22 @@ package body Sem_Util is
       end case;
    end Unique_Defining_Entity;
 
+   -----------------
+   -- Unique_Name --
+   -----------------
+
+   function Unique_Name (E : Entity_Id) return String is
+      Name : constant String := Get_Name_String (Chars (E));
+   begin
+      if Has_Fully_Qualified_Name (E)
+        or else E = Standard_Standard
+      then
+         return Name;
+      else
+         return Unique_Name (Scope (E)) & "__" & Name;
+      end if;
+   end Unique_Name;
+
    --------------------------
    -- Unit_Declaration_Node --
    --------------------------
