@@ -1,3 +1,18 @@
+2011-08-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/build_hacking.xml: Use relative fileref for PNG
+	imagedata.
+	* doc/xml/manual/test_policy_data_structures.xml: Same.
+	* doc/xml/manual/policy_data_structures.xml: Same.
+
+	* doc/Makefile.am (stamp-html-docbook-images)
+	(stamp-html-docbook-lwg, stamp-html-docbook-data): New.
+	(xml_extra): Add lwg html file dependencies.
+	(xml_images): Add image html file dependencies.
+	* doc/Makefile.in: Regenerate.
+	(stamp-html): Change to stamp-html-docbook-data.
+	(stamp-html-copy): Remove.
+
 2011-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/atomic.cc: Use noexcept.

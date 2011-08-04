@@ -136,15 +136,8 @@ doc-install-xml: doc-xml
 
 # HTML
 htmldir="$(DESTDIR)@docdir@"
-stamp-html: stamp-html-copy stamp-html-doxygen
+stamp-html: stamp-html-docbook-data stamp-html-doxygen
 	$(STAMP) stamp-html
-
-copydir=${docbook_outdir}/html/manual/ext/
-stamp-html-copy: stamp-html-docbook
-	cp -r ${top_srcdir}/doc/html/ext ${docbook_outdir}/html/manual/ext
-	cd ${docbook_outdir}/html/manual/ext
-	rm -rf ${docbook_outdir}/html/manual/ext/.svn 
-	$(STAMP) stamp-html-copy
 
 doc-html: stamp-html
 
@@ -367,13 +360,97 @@ xml_sources = \
 	${xml_sources_manual} \
 	${xml_sources_extra}
 
+image_dir = ${xml_dir}/images
+xml_images = \
+	${image_dir}/confdeps.png \
+	${image_dir}/pbds_balls_and_bins.png \
+	${image_dir}/pbds_binary_priority_queue_random_int_push_timing_test_local.png \
+	${image_dir}/pbds_cc_hash_random_int_find_timing_test_local.png \
+	${image_dir}/pbds_cc_hash_random_int_subscript_timing_test_find_local.png \
+	${image_dir}/pbds_cc_hash_random_int_subscript_timing_test_insert_local.png \
+	${image_dir}/pbds_container_tag_hierarchy.png \
+	${image_dir}/pbds_different_underlying_dss_1.png \
+	${image_dir}/pbds_different_underlying_dss_2.png \
+	${image_dir}/pbds_embedded_lists_1.png \
+	${image_dir}/pbds_embedded_lists_2.png \
+	${image_dir}/pbds_embedded_lists_3.png \
+	${image_dir}/pbds_exception_hierarchy.png \
+	${image_dir}/pbds_gp_hash_random_int_find_timing_test_local.png \
+	${image_dir}/pbds_gp_hash_random_int_subscript_timing_test_find_local.png \
+	${image_dir}/pbds_gp_hash_random_int_subscript_timing_test_insert_local.png \
+	${image_dir}/pbds_hash_policy_cd.png \
+	${image_dir}/pbds_hash_random_int_erase_mem_usage_test_local.png \
+	${image_dir}/pbds_hash_ranged_hash_range_hashing_fns.png \
+	${image_dir}/pbds_hash_range_hashing_seq_diagram2.png \
+	${image_dir}/pbds_hash_range_hashing_seq_diagram.png \
+	${image_dir}/pbds_hash_zlob_random_int_find_timing_test_local.png \
+	${image_dir}/pbds_insert_resize_sequence_diagram1.png \
+	${image_dir}/pbds_insert_resize_sequence_diagram2.png \
+	${image_dir}/pbds_insert_resize_sequence_diagram3.png \
+	${image_dir}/pbds_invalidation_guarantee_erase.png \
+	${image_dir}/pbds_invalidation_tag_hierarchy.png \
+	${image_dir}/pbds_list_update.png \
+	${image_dir}/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png \
+	${image_dir}/pbds_multimap_text_find_timing_test_large_s2p_tree_local.png \
+	${image_dir}/pbds_multimap_text_find_timing_test_small_s2p_hash_local.png \
+	${image_dir}/pbds_multimap_text_find_timing_test_small_s2p_tree_local.png \
+	${image_dir}/pbds_multimap_text_insert_mem_usage_test_large_s2p_hash_local.png \
+	${image_dir}/pbds_multimap_text_insert_mem_usage_test_large_s2p_tree_local.png \
+	${image_dir}/pbds_multimap_text_insert_mem_usage_test_small_s2p_hash_local.png \
+	${image_dir}/pbds_multimap_text_insert_mem_usage_test_small_s2p_tree_local.png \
+	${image_dir}/pbds_multimap_text_insert_timing_test_large_s2p_hash_local.png \
+	${image_dir}/pbds_multimap_text_insert_timing_test_large_s2p_tree_local.png \
+	${image_dir}/pbds_multimap_text_insert_timing_test_small_s2p_hash_local.png \
+	${image_dir}/pbds_multimap_text_insert_timing_test_small_s2p_tree_local.png \
+	${image_dir}/pbds_node_invariants.png \
+	${image_dir}/pbds_pairing_priority_queue_text_push_pop_timing_test_local.png \
+	${image_dir}/pbds_pairing_priority_queue_text_push_timing_test_local.png \
+	${image_dir}/pbds_pat_trie.png \
+	${image_dir}/pbds_point_iterator_hierarchy.png \
+	${image_dir}/pbds_point_iterators_range_ops_1.png \
+	${image_dir}/pbds_point_iterators_range_ops_2.png \
+	${image_dir}/pbds_priority_queue_different_underlying_dss.png \
+	${image_dir}/pbds_priority_queue_random_int_push_pop_timing_test_local.png \
+	${image_dir}/pbds_priority_queue_random_int_push_timing_test_local.png \
+	${image_dir}/pbds_priority_queue_tag_hierarchy.png \
+	${image_dir}/pbds_priority_queue_text_join_timing_test_local.png \
+	${image_dir}/pbds_priority_queue_text_modify_down_timing_test_local.png \
+	${image_dir}/pbds_priority_queue_text_modify_down_timing_test_pairing_thin_local.png \
+	${image_dir}/pbds_priority_queue_text_modify_up_timing_test_local.png \
+	${image_dir}/pbds_priority_queue_text_modify_up_timing_test_pairing_thin_local.png \
+	${image_dir}/pbds_priority_queue_text_pop_mem_usage_test_local.png \
+	${image_dir}/pbds_priority_queue_text_push_pop_timing_test_local.png \
+	${image_dir}/pbds_priority_queue_text_push_timing_test_local.png \
+	${image_dir}/pbds_rationale_null_node_updator.png \
+	${image_dir}/pbds_resize_policy_cd.png \
+	${image_dir}/pbds_restoring_node_invariants.png \
+	${image_dir}/pbds_simple_list.png \
+	${image_dir}/pbds_text_find_timing_test_hash_local.png \
+	${image_dir}/pbds_text_find_timing_test_tree_like_local.png \
+	${image_dir}/pbds_tree_node_invalidations.png \
+	${image_dir}/pbds_tree_node_invariants.png \
+	${image_dir}/pbds_tree_node_updator_policy_cd.png \
+	${image_dir}/pbds_tree_order_statistics_timing_test_local.png \
+	${image_dir}/pbds_tree_split_join_timing_test_local.png \
+	${image_dir}/pbds_tree_text_insert_timing_test_node_tree_local.png \
+	${image_dir}/pbds_tree_text_insert_timing_test_pat_trie_local.png \
+	${image_dir}/pbds_tree_text_insert_timing_test_vector_tree_local.png \
+	${image_dir}/pbds_tree_text_lor_find_timing_test_local.png \
+	${image_dir}/pbds_trie_node_updator_policy_cd.png \
+	${image_dir}/pbds_update_seq_diagram.png
+
+xml_extradir = ${glibcxx_srcdir}/doc/html/ext
+xml_extra = \
+	${xml_extradir}/lwg-active.html \
+	${xml_extradir}/lwg-closed.html \
+	${xml_extradir}/lwg-defects.html 
+
 xml_noinst = \
 	${xml_dir}/book.txml \
 	${xml_dir}/chapter.txml \
 	${xml_dir}/class.txml \
-	${xml_dir}/images/confdeps.dot \
-	${xml_dir}/images/confdeps.png \
-	${xml_dir}/images/confdeps.pdf
+	${image_dir}/confdeps.dot \
+	${image_dir}/confdeps.pdf
 
 XSLTPROC       = xsltproc
 XSLT_FLAGS = --nonet --xinclude
@@ -393,6 +470,8 @@ ${docbook_outdir}/fo:
 
 ${docbook_outdir}/html:
 	mkdir -p ${docbook_outdir}/html
+	mkdir -p ${docbook_outdir}/html/images
+	mkdir -p ${docbook_outdir}/html/manual/ext
 
 ${docbook_outdir}/pdf:
 	mkdir -p ${docbook_outdir}/pdf
@@ -410,7 +489,7 @@ SCHEMA_FLAGS = http://www.docbook.org/xml/5.0/dtd/docbook.dtd
 #SCHEMA_FLAGS = --nonet /usr/share/xml/docbook5/schema/dtd/5.0/docbook.dtd
 XMLLINT_VALID_FLAGS = $(LINT_FLAGS) --dtdvalid $(SCHEMA_FLAGS)
 XMLLINT_FLAGS = --xinclude --nsclean --c14n --noent --noblanks --nocdata
-doc-xml-validate-docbook: $(xml_sources)
+doc-xml-validate-docbook: $(xml_sources) $(xml_images)
 	@echo "Generating XML validation log..."
 	$(XMLLINT) $(XMLLINT_VALID_FLAGS) ${top_srcdir}/doc/xml/spine.xml
 
@@ -432,6 +511,18 @@ stamp-xml-single-docbook: $(xml_sources) ${docbook_outdir}/xml
 
 doc-xml-single-docbook: stamp-xml-single-docbook
 
+# HTML support files
+stamp-html-docbook-images: stamp-html-docbook $(xml_images)
+	$(INSTALL_DATA)	$(xml_images) ${docbook_outdir}/html/images
+	$(STAMP) stamp-html-docbook-images
+
+stamp-html-docbook-lwg: stamp-html-docbook $(xml_extra)
+	$(INSTALL_DATA)	$(xml_extra) ${docbook_outdir}/html/manual/ext
+	$(STAMP) stamp-html-docbook-lwg
+
+stamp-html-docbook-data: stamp-html-docbook-images stamp-html-docbook-lwg
+	$(STAMP) stamp-html-docbook-data
+
 # HTML, index plus chapters
 stamp-html-docbook: $(xml_sources) ${docbook_outdir}/html
 	@echo "Generating html files..."
@@ -439,7 +530,7 @@ stamp-html-docbook: $(xml_sources) ${docbook_outdir}/html
 	$(XSL_HTML_STYLE) ${top_srcdir}/doc/xml/spine.xml
 	$(STAMP) stamp-html-docbook
 
-doc-html-docbook: stamp-html-docbook
+doc-html-docbook: stamp-html-docbook-data
 
 # HTML, all one page
 manual_html = ${docbook_outdir}/html/libstdc++-manual-single.html
@@ -462,10 +553,11 @@ doc-fo-docbook: stamp-fo-docbook
 
 # PDF, via dblatex
 manual_pdf = ${docbook_outdir}/pdf/libstdc++-manual.pdf
-DBLATEX_FLAGS = --dump --verbose --pdf -o ${manual_pdf}
+DBLATEX_FLAGS = --dump --verbose --pdf 
 stamp-pdf-docbook: $(xml_sources) ${docbook_outdir}/pdf
 	@echo "Generating pdf dblatex files..."
-	dblatex $(DBLATEX_FLAGS) ${top_srcdir}/doc/xml/spine.xml
+	dblatex $(DBLATEX_FLAGS) \
+	-o ${manual_pdf} ${top_srcdir}/doc/xml/spine.xml
 	$(STAMP) stamp-pdf-docbook
 
 doc-pdf-docbook: stamp-pdf-docbook
