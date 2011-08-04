@@ -2158,7 +2158,7 @@ package body Sem_Elab is
                     Make_Object_Declaration (Loce,
                       Defining_Identifier => Ent,
                       Object_Definition   =>
-                        New_Occurrence_Of (Standard_Integer, Loce),
+                        New_Occurrence_Of (Standard_Short_Integer, Loce),
                       Expression          =>
                         Make_Integer_Literal (Loc, Uint_0)));
 

@@ -1241,9 +1241,9 @@ package body Bindgen is
 
                case VM_Target is
                   when No_VM | JVM_Target =>
-                     Set_String (" : Integer; pragma Import (Ada, ");
+                     Set_String (" : Short_Integer; pragma Import (Ada, ");
                   when CLI_Target =>
-                     Set_String (" : Integer; pragma Import (CIL, ");
+                     Set_String (" : Short_Integer; pragma Import (CIL, ");
                end case;
 
                Set_String ("E");
@@ -1320,7 +1320,7 @@ package body Bindgen is
                 (No_Run_Time_Mode
                   and then Is_Predefined_File_Name (U.Sfile))
             then
-               Set_String ("extern int ");
+               Set_String ("extern short int ");
                Get_Name_String (U.Uname);
                Set_Unit_Name;
                Set_String ("_E;");
