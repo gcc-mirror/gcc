@@ -1,3 +1,8 @@
+2011-08-03   David Li  <davidxl@google.com>
+
+	* profile.c (compute_branch_probabilities): Compute
+	function frequency after profile annotation.
+
 2011-08-04  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Simplify
