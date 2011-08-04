@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -42,7 +42,7 @@
 
 with Ada.Strings.Wide_Wide_Maps;
 private with Ada.Finalization;
-private with Interfaces;
+private with System.Atomic_Counters;
 
 package Ada.Strings.Wide_Wide_Unbounded is
    pragma Preelaborate;
@@ -417,7 +417,7 @@ private
    package AF renames Ada.Finalization;
 
    type Shared_Wide_Wide_String (Max_Length : Natural) is limited record
-      Counter : aliased Interfaces.Unsigned_32 := 1;
+      Counter : System.Atomic_Counters.Atomic_Counter;
       --  Reference counter.
 
       Last    : Natural                        := 0;

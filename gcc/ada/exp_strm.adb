@@ -25,6 +25,7 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -476,6 +477,15 @@ package body Exp_Strm is
    begin
       Check_Restriction (No_Default_Stream_Attributes, N);
 
+      if Restriction_Active (No_Default_Stream_Attributes) then
+         Error_Msg_NE
+           ("missing user-defined Input for type&", N, Etype (Targ));
+         if Nkind (Targ) = N_Selected_Component then
+            Error_Msg_NE
+              ("\which is a component of type&", N, Etype (Prefix (Targ)));
+         end if;
+      end if;
+
       --  Check first for Boolean and Character. These are enumeration types,
       --  but we treat them specially, since they may require special handling
       --  in the transfer protocol. However, this special handling only applies
@@ -685,6 +695,15 @@ package body Exp_Strm is
 
    begin
       Check_Restriction (No_Default_Stream_Attributes, N);
+
+      if Restriction_Active (No_Default_Stream_Attributes) then
+         Error_Msg_NE
+           ("missing user-defined Write for type&", N, Etype (Item));
+         if Nkind (Item) = N_Selected_Component then
+            Error_Msg_NE
+              ("\which is a component of type&", N, Etype (Prefix (Item)));
+         end if;
+      end if;
 
       --  Compute the size of the stream element. This is either the size of
       --  the first subtype or if given the size of the Stream_Size attribute.
