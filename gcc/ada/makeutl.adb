@@ -1529,6 +1529,7 @@ package body Makeutl is
                            end if;
 
                            Names.Table (J).Source  := Source;
+                           Names.Table (J).Index   := Source.Index;
 
                         elsif File.Location /= No_Location then
 
