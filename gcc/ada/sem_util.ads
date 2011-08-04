@@ -291,8 +291,7 @@ package Sem_Util is
    --  specification, and calls to the subprogram, from being in ALFA.
 
    --  If the subprogram being marked as not in ALFA is annotated with
-   --  Formal_Proof being On, then an error is issued with message Msg on node
-   --  N.
+   --  Formal_Proof On, then an error is issued with message Msg on node N.
 
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the

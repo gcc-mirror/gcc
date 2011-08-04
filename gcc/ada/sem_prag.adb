@@ -6091,103 +6091,118 @@ package body Sem_Prag is
          --  external tool and a tool-specific function. These arguments are
          --  not analyzed.
 
-         when Pragma_Annotate => Annotate : begin
+         --  The following is a special form used in conjunction with the
+         --  ALFA subset of Ada:
+
+         --    pragma Annotate (Formal_Proof, MODE);
+         --    MODE ::= On | Off
+
+         --    This pragma either forces (mode On) or disables (mode Off)
+         --    formal verification of the subprogram in which it is added. When
+         --    formal verification is forced, all violations of the the ALFA
+         --    subset of Ada present in the subprogram are reported as errors
+         --    to the user.
+
+         when Pragma_Annotate => Annotate : declare
+            Arg : Node_Id;
+            Exp : Node_Id;
+
+         begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
             Check_Arg_Is_Identifier (Arg1);
             Check_No_Identifiers;
             Store_Note (N);
 
-            declare
-               Arg : Node_Id;
-               Exp : Node_Id;
+            --  Special processing for Formal_Proof case
 
-            begin
-               if Chars (Get_Pragma_Arg (Arg1)) = Name_Formal_Proof then
-                  if No (Arg2) then
-                     Error_Pragma_Arg
-                       ("missing second argument for pragma%", Arg1);
-                  end if;
-
-                  Check_Arg_Is_Identifier (Arg2);
-                  Check_Arg_Count (2);
-
-                  if Chars (Get_Pragma_Arg (Arg2)) /= Name_On
-                    and then Chars (Get_Pragma_Arg (Arg2)) /= Name_Off
-                  then
-                     Error_Pragma_Arg
-                       ("wrong second argument for pragma%", Arg2);
-                  end if;
-
-                  if Chars (Get_Pragma_Arg (Arg2)) = Name_On then
-                     declare
-                        Cur_Subp : constant Entity_Id := Current_Subprogram;
-
-                     begin
-                        if Present (Cur_Subp)
-                          and then (Is_Subprogram (Cur_Subp)
-                                     or else Is_Generic_Subprogram (Cur_Subp))
-                        then
-                           --  Notify user if some ALFA violation occurred
-                           --  before this point in Cur_Subp. These violations
-                           --  are not precisly located, but this is better
-                           --  than ignoring them.
-
-                           if not Is_In_ALFA (Cur_Subp)
-                             or else not Body_Is_In_ALFA (Cur_Subp)
-                           then
-                              Error_Pragma
-                                ("pragma% is placed after violation"
-                                 & " of 'A'L'F'A");
-                           end if;
-
-                           Set_Formal_Proof_On (Cur_Subp);
-
-                        else
-                           Error_Pragma ("wrong placement for pragma%");
-                        end if;
-                     end;
-                  end if;
+            if Chars (Get_Pragma_Arg (Arg1)) = Name_Formal_Proof then
+               if No (Arg2) then
+                  Error_Pragma_Arg
+                    ("missing second argument for pragma%", Arg1);
                end if;
 
-               --  Second unanalyzed parameter is optional
+               Check_Arg_Count (2);
+               Check_Arg_Is_One_Of (Arg2, Name_On, Name_Off);
 
-               if No (Arg2) then
-                  null;
-               else
-                  Arg := Next (Arg2);
-                  while Present (Arg) loop
-                     Exp := Get_Pragma_Arg (Arg);
-                     Analyze (Exp);
+               declare
+                  Cur_Subp : constant Entity_Id := Current_Subprogram;
 
-                     if Is_Entity_Name (Exp) then
-                        null;
+               begin
+                  if Present (Cur_Subp)
+                    and then (Is_Subprogram (Cur_Subp)
+                               or else Is_Generic_Subprogram (Cur_Subp))
+                  then
+                     --  Notify user if some ALFA violation occurred before
+                     --  this point in Cur_Subp. These violations are not
+                     --  precisly located, but this is better than ignoring
+                     --  these violations.
 
-                     --  For string literals, we assume Standard_String as the
-                     --  type, unless the string contains wide or wide_wide
-                     --  characters.
-
-                     elsif Nkind (Exp) = N_String_Literal then
-                        if Has_Wide_Wide_Character (Exp) then
-                           Resolve (Exp, Standard_Wide_Wide_String);
-                        elsif Has_Wide_Character (Exp) then
-                           Resolve (Exp, Standard_Wide_String);
-                        else
-                           Resolve (Exp, Standard_String);
-                        end if;
-
-                     elsif Is_Overloaded (Exp) then
-                           Error_Pragma_Arg
-                             ("ambiguous argument for pragma%", Exp);
-
-                     else
-                        Resolve (Exp);
+                     if Chars (Get_Pragma_Arg (Arg2)) = Name_On
+                       and then (not Is_In_ALFA (Cur_Subp)
+                                  or else not Body_Is_In_ALFA (Cur_Subp))
+                     then
+                        Error_Pragma
+                          ("pragma% is placed after violation"
+                           & " of 'A'L'F'A");
                      end if;
 
-                     Next (Arg);
-                  end loop;
-               end if;
-            end;
+                     --  We treat this as a Rep_Item to record it on the rep
+                     --  item chain for easy location later on.
+
+                     Record_Rep_Item (Cur_Subp, N);
+
+                  else
+                     Error_Pragma ("wrong placement for pragma%");
+                  end if;
+               end;
+
+            --  Second parameter is optional, it is never analyzed
+
+            elsif No (Arg2) then
+               null;
+
+            --  Here if we have a second parameter
+
+            else
+               --  Second parameter must be identifier
+
+               Check_Arg_Is_Identifier (Arg2);
+
+               --  Process remaining parameters if any
+
+               Arg := Next (Arg2);
+               while Present (Arg) loop
+                  Exp := Get_Pragma_Arg (Arg);
+                  Analyze (Exp);
+
+                  if Is_Entity_Name (Exp) then
+                     null;
+
+                  --  For string literals, we assume Standard_String as the
+                  --  type, unless the string contains wide or wide_wide
+                  --  characters.
+
+                  elsif Nkind (Exp) = N_String_Literal then
+                     if Has_Wide_Wide_Character (Exp) then
+                        Resolve (Exp, Standard_Wide_Wide_String);
+                     elsif Has_Wide_Character (Exp) then
+                        Resolve (Exp, Standard_Wide_String);
+                     else
+                        Resolve (Exp, Standard_String);
+                     end if;
+
+                  elsif Is_Overloaded (Exp) then
+                        Error_Pragma_Arg
+                          ("ambiguous argument for pragma%", Exp);
+
+                  else
+                     Resolve (Exp);
+                  end if;
+
+                  Next (Arg);
+               end loop;
+            end if;
          end Annotate;
 
          ------------

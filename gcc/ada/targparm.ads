@@ -26,8 +26,6 @@
 --  This package obtains parameters from the target runtime version of System,
 --  to indicate parameters relevant to the target environment.
 
---  Is it right for this to be modified GPL???
-
 --  Conceptually, these parameters could be obtained using rtsfind, but
 --  we do not do this for four reasons:
 

@@ -112,6 +112,8 @@ package body System.Pool_Local is
       if Prev (Allocated).all = Null_Address then
          Pool.First := Next (Allocated).all;
 
+         --  Comment needed
+
          if Pool.First /= Null_Address then
             Prev (Pool.First).all := Null_Address;
          end if;

@@ -522,7 +522,7 @@ package body Einfo is
    --    Body_Is_In_ALFA                 Flag251
    --    Is_Processed_Transient          Flag252
    --    Is_Postcondition_Proc           Flag253
-   --    Formal_Proof_On                 Flag254
+   --    (unused)                        Flag254
 
    -----------------------
    -- Local subprograms --
@@ -1125,12 +1125,6 @@ package body Einfo is
    begin
       return Node6 (Id);
    end First_Rep_Item;
-
-   function Formal_Proof_On (Id : E) return B is
-   begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
-      return Flag254 (Id);
-   end Formal_Proof_On;
 
    function Freeze_Node (Id : E) return N is
    begin
@@ -3612,12 +3606,6 @@ package body Einfo is
       Set_Uint10 (Id, UI_From_Int (F'Pos (V)));
    end Set_Float_Rep;
 
-   procedure Set_Formal_Proof_On (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
-      Set_Flag254 (Id, V);
-   end Set_Formal_Proof_On;
-
    procedure Set_Freeze_Node (Id : E; V : N) is
    begin
       Set_Node7 (Id, V);
@@ -5911,6 +5899,41 @@ package body Einfo is
       end if;
    end First_Formal_With_Extras;
 
+   ---------------------
+   -- Formal_Proof_On --
+   ---------------------
+
+   function Formal_Proof_On (Id : E) return B is
+      N    : Node_Id;
+      Arg1 : Node_Id;
+      Arg2 : Node_Id;
+
+   begin
+      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
+
+      N := First_Rep_Item (Id);
+      while Present (N) loop
+         if Nkind (N) = N_Pragma
+           and then Get_Pragma_Id (Pragma_Name (N)) = Pragma_Annotate
+           and then Present (Pragma_Argument_Associations (N))
+           and then List_Length (Pragma_Argument_Associations (N)) = 2
+         then
+            Arg1 := First (Pragma_Argument_Associations (N));
+            Arg2 := Next (Arg1);
+
+            if Chars (Get_Pragma_Arg (Arg1)) = Name_Formal_Proof
+              and then Chars (Get_Pragma_Arg (Arg2)) = Name_On
+            then
+               return True;
+            end if;
+         end if;
+
+         Next_Rep_Item (N);
+      end loop;
+
+      return False;
+   end Formal_Proof_On;
+
    -------------------------------------
    -- Get_Attribute_Definition_Clause --
    -------------------------------------
@@ -7442,7 +7465,6 @@ package body Einfo is
       W ("Entry_Accepted",                  Flag152 (Id));
       W ("Can_Use_Internal_Rep",            Flag229 (Id));
       W ("Finalize_Storage_Only",           Flag158 (Id));
-      W ("Formal_Proof_On",                 Flag254 (Id));
       W ("From_With_Type",                  Flag159 (Id));
       W ("Has_Aliased_Components",          Flag135 (Id));
       W ("Has_Alignment_Clause",            Flag46  (Id));

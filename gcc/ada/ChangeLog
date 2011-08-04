@@ -1,3 +1,20 @@
+2011-08-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* bindgen.adb: Add comments.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* einfo.adb, einfo.ads: Free Flag254 and make Formal_Proof_On a
+	synthesized flag.
+	* sem_prag.adb (Analyze_Pragma): record the pragma Annotate
+	(Formal_Proof, On/Off) in the Rep_Item list of the current subprogram.
+
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb, exp_ch6.adb, sem_ch3.adb, layout.adb, sem_ch5.adb,
+	osint-c.ads, sem_util.ads, gnat1drv.adb, targparm.ads, sem_ch6.adb,
+	sem_ch13.adb, s-pooloc.adb: Minor reformatting.
+
 2011-08-04  Thomas Quinot  <quinot@adacore.com>
 
 	* s-pooloc.ads, s-pooglo.ads: Minor reformatting

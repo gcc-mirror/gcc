@@ -117,10 +117,10 @@ package Osint.C is
    --  above for a discussion of how library information files are stored.
 
    procedure Set_Library_Info_Name;
-   --  Sets a default ALI file name from the main compiler source name.
-   --  This is used by Create_Output_Library_Info, and by the version of
-   --  Read_Library_Info that takes a default file name. The name is in
-   --  Name_Buffer (with length in Name_Len) on return from the call.
+   --  Sets a default ALI file name from the main compiler source name. Used by
+   --  Create_Output_Library_Info, and by the version of Read_Library_Info that
+   --  takes a default file name. The name is in Name_Buffer (with length in
+   --  Name_Len) on return from the call.
 
    procedure Create_Output_Library_Info;
    --  Creates the output library information file for the source file which
