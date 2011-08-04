@@ -514,6 +514,7 @@ package body Impunit is
      "a-cborma",    -- Ada.Containers.Bounded_Ordered_Maps
      "a-cbhase",    -- Ada.Containers.Bounded_Hashed_Sets
      "a-cbhama",    -- Ada.Containers.Bounded_Hashed_Maps
+     "a-coinho",    -- Ada.Containers.Indefinite_Holders
      "a-extiin",    -- Ada.Execution_Time.Interrupts
 
    -----------------------------------------

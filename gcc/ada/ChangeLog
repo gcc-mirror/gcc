@@ -1,3 +1,22 @@
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* bindgen.ads, gnatlink.adb, sem_ch4.adb, gnatbind.adb, put_alfa.adb,
+	gnatls.adb, exp_ch3.adb: Minor reformatting.
+
+2011-08-04  Marc Sango  <sango@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Replace the message
+	"invisible attribute of}" of the spark restriction violation in
+	attribute reference by the simple message "invisible attribute of type".
+	Indeed, the node value Error_Msg_Node_1 used is in conflit with the
+	two insertion characters: '&' and '}'.
+
+2011-08-04  Vadim Godunko  <godunko@adacore.com>
+
+	* impunit.adb (Non_Imp_File_Names_12): Add "a-coinho".
+	* a-coinho.ads, a-coinho.adb: New file.
+	* Makefile.rtl: Add Ada.Containers.Indefinite_Holders.
+
 2011-08-04  Nicolas Roche  <roche@adacore.com>
 
 	* alfa_test.adb: Not all ali files are containing alfa information even

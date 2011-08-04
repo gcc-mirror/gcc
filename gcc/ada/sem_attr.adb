@@ -2068,8 +2068,7 @@ package body Sem_Attr is
         and then not In_Open_Scopes (Scope (P_Type))
         and then not In_Spec_Expression
       then
-         Error_Msg_Node_1 := First_Subtype (P_Type);
-         Check_SPARK_Restriction ("invisible attribute of}", N);
+         Check_SPARK_Restriction ("invisible attribute of type", N);
       end if;
 
       --  Remaining processing depends on attribute

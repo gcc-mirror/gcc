@@ -1591,8 +1591,7 @@ begin
                   then
                      Binder_Options_From_ALI.Increment_Last;
                      Binder_Options_From_ALI.Table
-                       (Binder_Options_From_ALI.Last)
-                          := String_Access (Arg);
+                       (Binder_Options_From_ALI.Last) := String_Access (Arg);
 
                      --  Set the RTS_*_Path_Name variables, so that
                      --  the correct directories will be set when
