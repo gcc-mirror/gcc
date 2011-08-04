@@ -6649,7 +6649,7 @@ package body Exp_Disp is
              Name => New_Reference_To (RTE (RE_Check_TSD), Loc),
              Parameter_Associations => New_List (
                Make_Attribute_Reference (Loc,
-                 Prefix => New_Reference_To (TSD, Loc),
+                 Prefix         => New_Reference_To (TSD, Loc),
                  Attribute_Name => Name_Unrestricted_Access))));
       end if;
 
@@ -6661,7 +6661,7 @@ package body Exp_Disp is
           Name => New_Reference_To (RTE (RE_Register_TSD), Loc),
           Parameter_Associations => New_List (
             Make_Attribute_Reference (Loc,
-              Prefix => New_Reference_To (TSD, Loc),
+              Prefix         => New_Reference_To (TSD, Loc),
               Attribute_Name => Name_Unrestricted_Access))));
 
       --  Populate the two auxiliary tables used for dispatching asynchronous,

@@ -659,8 +659,7 @@ package body Exp_Ch4 is
                 Attribute_Name => Name_Tag);
 
             if Tagged_Type_Expansion then
-               New_Node :=
-                 Build_Get_Access_Level (Loc, New_Node);
+               New_Node := Build_Get_Access_Level (Loc, New_Node);
 
             elsif VM_Target /= No_VM then
                New_Node :=

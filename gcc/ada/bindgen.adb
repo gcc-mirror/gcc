@@ -1,4 +1,4 @@
------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
@@ -467,8 +467,8 @@ package body Bindgen is
          end if;
 
       --  Pragma Import C cannot be used on virtual machine targets, therefore
-      --  call the runtime finalization routine directly.
-      --  Similarly in CodePeer mode, where imported functions are ignored.
+      --  call the runtime finalization routine directly. Similarly in CodePeer
+      --  mode, where imported functions are ignored.
 
       else
          WBI ("      System.Standard_Library.Adafinal;");
@@ -1406,6 +1406,7 @@ package body Bindgen is
 
    procedure Gen_Elab_Calls_Ada is
       Check_Elab_Flag : Boolean;
+
    begin
       for E in Elab_Order.First .. Elab_Order.Last loop
          declare
@@ -1478,9 +1479,9 @@ package body Bindgen is
             elsif U.Unit_Kind /= 's' or else not CodePeer_Mode then
                Check_Elab_Flag :=
                  not CodePeer_Mode
-                 and then (Force_Checking_Of_Elaboration_Flags
-                            or Interface_Library_Unit
-                            or not Bind_Main_Program);
+                   and then (Force_Checking_Of_Elaboration_Flags
+                              or Interface_Library_Unit
+                              or not Bind_Main_Program);
 
                if Check_Elab_Flag then
                   Set_String ("      if E");
@@ -2179,6 +2180,7 @@ package body Bindgen is
 
          Callee_Name : String renames Name_Buffer (1 .. Name_Len - 2);
          --  Strip trailing "%b"
+
       begin
          if ALIs.Table (ALIs.First).Main_Program = Proc then
             WBI ("   procedure " & CodePeer_Wrapper_Name & " is ");
@@ -2277,6 +2279,7 @@ package body Bindgen is
             if ALIs.Table (ALIs.First).Main_Program = Func then
                WBI ("      Result : Integer;");
             end if;
+
          else
             --  To call the main program, we declare it using a pragma Import
             --  Ada with the right link name.
@@ -2330,7 +2333,7 @@ package body Bindgen is
       --  with a pragma Volatile in order to tell the compiler to preserve
       --  this variable at any level of optimization.
 
-      if Bind_Main_Program and then not CodePeer_Mode then
+      if Bind_Main_Program and not CodePeer_Mode then
          WBI
            ("      Ensure_Reference : aliased System.Address := " &
             "Ada_Main_Program_Name'Address;");
@@ -3312,8 +3315,8 @@ package body Bindgen is
       Gen_Adainit_Ada;
 
       if Bind_Main_Program and then VM_Target = No_VM then
-         --  For CodePeer, declare a wrapper for the
-         --  user-defined main program.
+
+         --  For CodePeer, declare a wrapper for the user-defined main program
 
          if CodePeer_Mode then
             Gen_CodePeer_Wrapper;

@@ -1,3 +1,14 @@
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, exp_ch7.adb, exp_util.adb, bindgen.adb, sem_prag.adb,
+	s-tassta.adb, exp_ch4.adb, exp_disp.adb, s-stausa.adb: Minor
+	reformatting.
+
+2011-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* make.adb (Linking_Phase): Set source search path before calling
+	gnatlink in CodePeer mode.
+
 2011-08-04  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch7.adb (Expand_N_Package_Body, Expand_N_Package_Declaration):

@@ -129,8 +129,8 @@ package body System.Stack_Usage is
       Result_Array := new Result_Array_Type (1 .. Buffer_Size);
       Result_Array.all :=
         (others =>
-           (Task_Name => (others => ASCII.NUL),
-            Value     => 0,
+           (Task_Name   => (others => ASCII.NUL),
+            Value       => 0,
             Stack_Size  => 0));
 
       --  Set the Is_Enabled flag to true, so that the task wrapper knows that
@@ -176,6 +176,7 @@ package body System.Stack_Usage is
    ----------------
 
    procedure Fill_Stack (Analyzer : in out Stack_Analyzer) is
+
       --  Change the local variables and parameters of this function with
       --  super-extra care. The more the stack frame size of this function is
       --  big, the more an "instrumentation threshold at writing" error is
@@ -188,21 +189,23 @@ package body System.Stack_Usage is
       --  allocated byte on the stack.
    begin
       if Parameters.Stack_Grows_Down then
-         if Analyzer.Stack_Base - Stack_Address (Analyzer.Pattern_Size)
-           > To_Stack_Address (Current_Stack_Level'Address) - Guard
+         if Analyzer.Stack_Base - Stack_Address (Analyzer.Pattern_Size) >
+              To_Stack_Address (Current_Stack_Level'Address) - Guard
          then
             --  No room for a pattern
+
             Analyzer.Pattern_Size := 0;
             return;
          end if;
 
-         Analyzer.Pattern_Limit := Analyzer.Stack_Base
-           - Stack_Address (Analyzer.Pattern_Size);
+         Analyzer.Pattern_Limit :=
+           Analyzer.Stack_Base - Stack_Address (Analyzer.Pattern_Size);
 
          if Analyzer.Stack_Base >
-           To_Stack_Address (Current_Stack_Level'Address) - Guard
+              To_Stack_Address (Current_Stack_Level'Address) - Guard
          then
             --  Reduce pattern size to prevent local frame overwrite
+
             Analyzer.Pattern_Size :=
               Integer (To_Stack_Address (Current_Stack_Level'Address) - Guard
                          - Analyzer.Pattern_Limit);
@@ -211,35 +214,39 @@ package body System.Stack_Usage is
          Analyzer.Pattern_Overlay_Address :=
            To_Address (Analyzer.Pattern_Limit);
       else
-         if Analyzer.Stack_Base + Stack_Address (Analyzer.Pattern_Size)
-           < To_Stack_Address (Current_Stack_Level'Address) + Guard
+         if Analyzer.Stack_Base + Stack_Address (Analyzer.Pattern_Size) <
+              To_Stack_Address (Current_Stack_Level'Address) + Guard
          then
             --  No room for a pattern
+
             Analyzer.Pattern_Size := 0;
             return;
          end if;
 
-         Analyzer.Pattern_Limit := Analyzer.Stack_Base
-           + Stack_Address (Analyzer.Pattern_Size);
+         Analyzer.Pattern_Limit :=
+           Analyzer.Stack_Base + Stack_Address (Analyzer.Pattern_Size);
 
          if Analyzer.Stack_Base <
            To_Stack_Address (Current_Stack_Level'Address) + Guard
          then
             --  Reduce pattern size to prevent local frame overwrite
-            Analyzer.Pattern_Size := Integer
-              (Analyzer.Pattern_Limit
-                 - (To_Stack_Address (Current_Stack_Level'Address) + Guard));
+
+            Analyzer.Pattern_Size :=
+              Integer
+                (Analyzer.Pattern_Limit -
+                  (To_Stack_Address (Current_Stack_Level'Address) + Guard));
          end if;
 
          Analyzer.Pattern_Overlay_Address :=
-           To_Address (Analyzer.Pattern_Limit
-                         - Stack_Address (Analyzer.Pattern_Size));
+           To_Address (Analyzer.Pattern_Limit -
+                         Stack_Address (Analyzer.Pattern_Size));
       end if;
 
       --  Declare and fill the pattern buffer
+
       declare
          Pattern : aliased Stack_Slots
-           (1 .. Analyzer.Pattern_Size / Bytes_Per_Pattern);
+                     (1 .. Analyzer.Pattern_Size / Bytes_Per_Pattern);
          for Pattern'Address use Analyzer.Pattern_Overlay_Address;
 
       begin
@@ -247,6 +254,7 @@ package body System.Stack_Usage is
             for J in reverse Pattern'Range loop
                Pattern (J) := Analyzer.Pattern;
             end loop;
+
          else
             for J in Pattern'Range loop
                Pattern (J) := Analyzer.Pattern;
@@ -284,7 +292,7 @@ package body System.Stack_Usage is
       else
          Analyzer.Task_Name :=
            Task_Name (Task_Name'First ..
-                        Task_Name'First + Task_Name_Length - 1);
+                      Task_Name'First + Task_Name_Length - 1);
       end if;
 
       Next_Id := Next_Id + 1;
@@ -322,6 +330,7 @@ package body System.Stack_Usage is
 
    begin
       --  Value if the pattern was not modified
+
       if Parameters.Stack_Grows_Down then
          Analyzer.Topmost_Touched_Mark :=
            Analyzer.Pattern_Limit + Stack_Address (Analyzer.Pattern_Size);
@@ -341,8 +350,8 @@ package body System.Stack_Usage is
       if System.Parameters.Stack_Grows_Down then
          for J in Stack'Range loop
             if Stack (J) /= Analyzer.Pattern then
-               Analyzer.Topmost_Touched_Mark
-                 := To_Stack_Address (Stack (J)'Address);
+               Analyzer.Topmost_Touched_Mark :=
+                 To_Stack_Address (Stack (J)'Address);
                exit;
             end if;
          end loop;
@@ -350,8 +359,8 @@ package body System.Stack_Usage is
       else
          for J in reverse Stack'Range loop
             if Stack (J) /= Analyzer.Pattern then
-               Analyzer.Topmost_Touched_Mark
-                 := To_Stack_Address (Stack (J)'Address);
+               Analyzer.Topmost_Touched_Mark :=
+                 To_Stack_Address (Stack (J)'Address);
                exit;
             end if;
          end loop;
@@ -407,8 +416,9 @@ package body System.Stack_Usage is
       Max_Stack_Size_Len, Max_Actual_Use_Len : Natural := 0;
 
       Task_Name_Blanks : constant
-        String (1 .. Task_Name_Length - Task_Name_Str'Length) :=
-          (others => ' ');
+                           String
+                             (1 .. Task_Name_Length - Task_Name_Str'Length) :=
+                               (others => ' ');
 
    begin
       Set_Output (Standard_Error);
@@ -444,12 +454,14 @@ package body System.Stack_Usage is
 
          declare
             Stack_Size_Blanks  : constant
-              String (1 .. Max_Stack_Size_Len - Stack_Size_Str'Length) :=
-                (others => ' ');
+                                   String (1 .. Max_Stack_Size_Len -
+                                                  Stack_Size_Str'Length) :=
+                                      (others => ' ');
 
             Stack_Usage_Blanks : constant
-              String (1 .. Max_Actual_Use_Len - Actual_Size_Str'Length) :=
-                (others => ' ');
+                                   String (1 .. Max_Actual_Use_Len -
+                                                  Actual_Size_Str'Length) :=
+                                      (others => ' ');
 
          begin
             if Stack_Size_Str'Length > Max_Stack_Size_Len then
@@ -491,14 +503,14 @@ package body System.Stack_Usage is
    -------------------
 
    procedure Report_Result (Analyzer : Stack_Analyzer) is
-      Result  : Task_Result := (Task_Name  => Analyzer.Task_Name,
-                                Stack_Size => Analyzer.Stack_Size,
-                                Value      => 0);
+      Result : Task_Result := (Task_Name  => Analyzer.Task_Name,
+                               Stack_Size => Analyzer.Stack_Size,
+                               Value      => 0);
    begin
       if Analyzer.Pattern_Size = 0 then
+
          --  If we have that result, it means that we didn't do any computation
-         --  at all. In other words, we used at least everything (and possibly
-         --  more).
+         --  at all (i.e. we used at least everything (and possibly more).
 
          Result.Value := Analyzer.Stack_Size;
 
