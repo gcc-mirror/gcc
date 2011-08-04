@@ -6865,6 +6865,42 @@ package body Exp_Ch7 is
       Desg_Typ : Entity_Id;
       Obj_Expr : Node_Id;
 
+      function Alignment_Of (Some_Typ : Entity_Id) return Node_Id;
+      --  Subsidiary routine, generate the following attribute reference:
+      --
+      --    Some_Typ'Alignment
+
+      function Double_Alignment_Of (Some_Typ : Entity_Id) return Node_Id;
+      --  Subsidiary routine, generate the following expression:
+      --
+      --    2 * Some_Typ'Alignment
+
+      ------------------
+      -- Alignment_Of --
+      ------------------
+
+      function Alignment_Of (Some_Typ : Entity_Id) return Node_Id is
+      begin
+         return
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Reference_To (Some_Typ, Loc),
+             Attribute_Name => Name_Alignment);
+      end Alignment_Of;
+
+      -------------------------
+      -- Double_Alignment_Of --
+      -------------------------
+
+      function Double_Alignment_Of (Some_Typ : Entity_Id) return Node_Id is
+      begin
+         return
+           Make_Op_Multiply (Loc,
+             Left_Opnd  => Make_Integer_Literal (Loc, 2),
+             Right_Opnd => Alignment_Of (Some_Typ));
+      end Double_Alignment_Of;
+
+   --  Start of processing for Make_Finalize_Address_Stmts
+
    begin
       if Is_Array_Type (Typ) then
          if Is_Constrained (First_Subtype (Typ)) then
@@ -6931,7 +6967,7 @@ package body Exp_Ch7 is
 
       --  Unconstrained arrays require special processing in order to retrieve
       --  the elements. To achieve this, we have to skip the dope vector which
-      --  lays infront of the elements and then use a thin pointer to perform
+      --  lays in front of the elements and then use a thin pointer to perform
       --  the address-to-access conversion.
 
       if Is_Array_Type (Typ)
@@ -6942,30 +6978,7 @@ package body Exp_Ch7 is
             Dope_Id   : Entity_Id;
             For_First : Boolean := True;
             Index     : Node_Id;
-
-            function Bounds_Size_Expression (Typ : Entity_Id) return Node_Id;
-            --  Given the type of an array index, create the following
-            --  expression:
-            --
-            --    2 * Esize (Typ) / Storage_Unit
-
-            ----------------------------
-            -- Bounds_Size_Expression --
-            ----------------------------
-
-            function Bounds_Size_Expression (Typ : Entity_Id) return Node_Id is
-            begin
-               return
-                 Make_Op_Multiply (Loc,
-                   Left_Opnd  => Make_Integer_Literal (Loc, 2),
-                   Right_Opnd =>
-                     Make_Op_Divide (Loc,
-                       Left_Opnd  => Make_Integer_Literal (Loc, Esize (Typ)),
-                       Right_Opnd =>
-                         Make_Integer_Literal (Loc, System_Storage_Unit)));
-            end Bounds_Size_Expression;
-
-         --  Start of processing for arrays
+            Index_Typ : Entity_Id;
 
          begin
             --  Ensure that Ptr_Typ a thin pointer, generate:
@@ -6980,31 +6993,55 @@ package body Exp_Ch7 is
                   Make_Integer_Literal (Loc, System_Address_Size)));
 
             --  For unconstrained arrays, create the expression which computes
-            --  the size of the dope vector. Note that in the end, all values
-            --  will be constant folded.
+            --  the size of the dope vector.
 
             Index := First_Index (Typ);
             while Present (Index) loop
+               Index_Typ := Etype (Index);
 
-               --  Generate:
-               --    2 * Esize (Index_Typ) / Storage_Unit
+               --  Each bound has two values and a potential hole added to
+               --  compensate for alignment differences.
 
                if For_First then
                   For_First := False;
-                  Dope_Expr := Bounds_Size_Expression (Etype (Index));
 
-               --  Generate:
-               --    Dope_Expr + 2 * Esize (Index_Typ) / Storage_Unit
+                  --  Generate:
+                  --    2 * Index_Typ'Alignment
+
+                  Dope_Expr := Double_Alignment_Of (Index_Typ);
 
                else
+                  --  Generate:
+                  --    Dope_Expr + 2 * Index_Typ'Alignment
+
                   Dope_Expr :=
                     Make_Op_Add (Loc,
                       Left_Opnd  => Dope_Expr,
-                      Right_Opnd => Bounds_Size_Expression (Etype (Index)));
+                      Right_Opnd => Double_Alignment_Of (Index_Typ));
                end if;
 
                Next_Index (Index);
             end loop;
+
+            --  Round the cumulative alignment to the next higher multiple of
+            --  the array alignment. Generate:
+
+            --    ((Dope_Expr + Typ'Alignment - 1) / Typ'Alignment)
+            --        * Typ'Alignment
+
+            Dope_Expr :=
+              Make_Op_Multiply (Loc,
+                Left_Opnd  =>
+                  Make_Op_Divide (Loc,
+                    Left_Opnd  =>
+                      Make_Op_Add (Loc,
+                        Left_Opnd  => Dope_Expr,
+                        Right_Opnd =>
+                          Make_Op_Subtract (Loc,
+                            Left_Opnd  => Alignment_Of (Typ),
+                            Right_Opnd => Make_Integer_Literal (Loc, 1))),
+                    Right_Opnd => Alignment_Of (Typ)),
+                Right_Opnd => Alignment_Of (Typ));
 
             --  Generate:
             --    Dnn : Storage_Offset := Dope_Expr;

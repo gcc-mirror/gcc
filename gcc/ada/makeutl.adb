@@ -1347,7 +1347,7 @@ package body Makeutl is
             then
                --  Traverse in reverse order, since in the case of multi-unit
                --  files we will be adding extra files at the end, and there's
-               --  no need to process them in tun.
+               --  no need to process them in turn.
 
                for J in reverse Names.First .. Names.Last loop
                   declare
@@ -1457,7 +1457,7 @@ package body Makeutl is
 
                         else
                            if Is_Absolute then
-                              if File_Name_Type (Source.Path.Display_Name) /=
+                              if File_Name_Type (Source.Path.Name) /=
                                 File.File
                               then
                                  Debug_Output

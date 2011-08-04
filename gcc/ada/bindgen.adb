@@ -1662,38 +1662,84 @@ package body Bindgen is
       Uspec : Unit_Record;
       Unum  : Unit_Id;
 
+      procedure Gen_Header;
+      --  Generate the header of the finalization routine
+
+      procedure Gen_Header is
+      begin
+         WBI ("   procedure finalize_library is");
+
+         --  The following flag is used to check for library-level
+         --  exceptions raised during finalization. The symbol comes
+         --  from System.Soft_Links. VM targets use regular Ada to
+         --  reference the entity.
+
+         if VM_Target = No_VM then
+            WBI ("      LE_Set : Boolean;");
+
+            Set_String ("      pragma Import (Ada, LE_Set, ");
+            Set_String ("""__gnat_library_exception_set"");");
+            Write_Statement_Buffer;
+         end if;
+
+         WBI ("   begin");
+      end Gen_Header;
+
    begin
       for E in reverse Elab_Order.First .. Elab_Order.Last loop
          Unum := Elab_Order.Table (E);
          U    := Units.Table (Unum);
 
+         --  Dealing with package bodies is a little complicated. In such
+         --  cases we must retrieve the package spec since it contains the
+         --  spec of the body finalizer.
+
+         if U.Utype = Is_Body then
+            Unum  := Unum + 1;
+            Uspec := Units.Table (Unum);
+         else
+            Uspec := U;
+         end if;
+
+         Get_Name_String (Uspec.Uname);
+
          --  We are only interested in non-generic packages
 
-         if U.Unit_Kind = 'p'
-           and then U.Has_Finalizer
-           and then not U.Is_Generic
-           and then not U.SAL_Interface
-           and then not U.No_Elab
-         then
-            if not Lib_Final_Built then
-               Lib_Final_Built := True;
+         if U.Unit_Kind /= 'p' or else U.Is_Generic then
+            null;
 
-               WBI ("   procedure finalize_library is");
+         --  That aren't an interface to a stand alone library
 
-               --  The following flag is used to check for library-level
-               --  exceptions raised during finalization. The symbol comes
-               --  from System.Soft_Links. VM targets use regular Ada to
-               --  reference the entity.
+         elsif U.SAL_Interface then
+            null;
 
-               if VM_Target = No_VM then
-                  WBI ("      LE_Set : Boolean;");
+         --  Case of no finalization
 
-                  Set_String ("      pragma Import (Ada, LE_Set, ");
-                  Set_String ("""__gnat_library_exception_set"");");
-                  Write_Statement_Buffer;
+         elsif not U.Has_Finalizer then
+
+            --  The only case in which we have to do something is if this
+            --  is a body, with a separate spec, where the separate spec
+            --  has a finalizer. In that case, this is where we decrement
+            --  the elaboration entity.
+
+            if U.Utype = Is_Body and then Uspec.Has_Finalizer then
+               if not Lib_Final_Built then
+                  Gen_Header;
+                  Lib_Final_Built := True;
                end if;
 
-               WBI ("   begin");
+               Set_String ("      E");
+               Set_Unit_Number (Unum);
+               Set_String (" := E");
+               Set_Unit_Number (Unum);
+               Set_String (" - 1;");
+               Write_Statement_Buffer;
+            end if;
+
+         else
+            if not Lib_Final_Built then
+               Gen_Header;
+               Lib_Final_Built := True;
             end if;
 
             --  Generate:
@@ -1731,19 +1777,6 @@ package body Bindgen is
 
             Set_Int (Count);
             Set_String (", """);
-
-            --  Dealing with package bodies is a little complicated. In such
-            --  cases we must retrieve the package spec since it contains the
-            --  spec of the body finalizer.
-
-            if U.Utype = Is_Body then
-               Unum  := Unum + 1;
-               Uspec := Units.Table (Unum);
-            else
-               Uspec := U;
-            end if;
-
-            Get_Name_String (Uspec.Uname);
 
             --  Perform name construction
 
@@ -1798,13 +1831,19 @@ package body Bindgen is
             --       F<Count>;
             --    end;
 
+            --  The uname_E decrement is skipped if this is a separate spec,
+            --  since it will be done when we process the body.
+
             WBI ("      begin");
-            Set_String ("         E");
-            Set_Unit_Number (Unum);
-            Set_String (" := E");
-            Set_Unit_Number (Unum);
-            Set_String (" - 1;");
-            Write_Statement_Buffer;
+
+            if U.Utype /= Is_Spec then
+               Set_String ("         E");
+               Set_Unit_Number (Unum);
+               Set_String (" := E");
+               Set_Unit_Number (Unum);
+               Set_String (" - 1;");
+               Write_Statement_Buffer;
+            end if;
 
             if Interface_Library_Unit or not Bind_Main_Program then
                Set_String ("         if E");
@@ -1884,37 +1923,68 @@ package body Bindgen is
       Uspec : Unit_Record;
       Unum  : Unit_Id;
 
+      procedure Gen_Header;
+      --  Generate the header of the finalization routine
+
+      procedure Gen_Header is
+      begin
+         WBI ("static void finalize_library(void) {");
+      end Gen_Header;
+
    begin
       for E in reverse Elab_Order.First .. Elab_Order.Last loop
          Unum := Elab_Order.Table (E);
          U    := Units.Table (Unum);
 
+         --  Dealing with package bodies is a little complicated. In such
+         --  cases we must retrieve the package spec since it contains the
+         --  spec of the body finalizer.
+
+         if U.Utype = Is_Body then
+            Unum  := Unum + 1;
+            Uspec := Units.Table (Unum);
+         else
+            Uspec := U;
+         end if;
+
+         Get_Name_String (Uspec.Uname);
+
          --  We are only interested in non-generic packages
 
-         if U.Unit_Kind = 'p'
-           and then U.Has_Finalizer
-           and then not U.Is_Generic
-           and then not U.SAL_Interface
-           and then not U.No_Elab
-         then
+         if U.Unit_Kind /= 'p' or else U.Is_Generic then
+            null;
+
+         --  That aren't an interface to a stand alone library
+
+         elsif U.SAL_Interface then
+            null;
+
+         --  Case of no finalization
+
+         elsif not U.Has_Finalizer then
+
+            --  The only case in which we have to do something is if this
+            --  is a body, with a separate spec, where the separate spec
+            --  has a finalizer. In that case, this is where we decrement
+            --  the elaboration entity.
+
+            if U.Utype = Is_Body and then Uspec.Has_Finalizer then
+               if not Lib_Final_Built then
+                  Gen_Header;
+                  Lib_Final_Built := True;
+               end if;
+
+               Set_String ("   ");
+               Set_Unit_Name;
+               Set_String ("_E--;");
+               Write_Statement_Buffer;
+            end if;
+
+         else
             if not Lib_Final_Built then
+               Gen_Header;
                Lib_Final_Built := True;
-
-               WBI ("static void finalize_library(void) {");
             end if;
-
-            --  Dealing with package bodies is a little complicated. In such
-            --  cases we must retrieve the package spec since it contains the
-            --  spec of the body finalizer.
-
-            if U.Utype = Is_Body then
-               Unum  := Unum + 1;
-               Uspec := Units.Table (Unum);
-            else
-               Uspec := U;
-            end if;
-
-            Get_Name_String (Uspec.Uname);
 
             --  If binding a library or if there is a non-Ada main subprogram
             --  then we generate:
@@ -1928,10 +1998,15 @@ package body Bindgen is
             --    uname_E--;
             --    uname__finalize_[spec|body] ();
 
-            Set_String ("   ");
-            Set_Unit_Name;
-            Set_String ("_E--;");
-            Write_Statement_Buffer;
+            --  The uname_E decrement is skipped if this is a separate spec,
+            --  since it will be done when we process the body.
+
+            if U.Utype /= Is_Spec then
+               Set_String ("   ");
+               Set_Unit_Name;
+               Set_String ("_E--;");
+               Write_Statement_Buffer;
+            end if;
 
             if Interface_Library_Unit or not Bind_Main_Program then
                Set_String ("   if (");

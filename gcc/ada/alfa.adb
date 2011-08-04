@@ -23,11 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
 with Output;   use Output;
 with Put_ALFA;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
 
 package body ALFA is
 
@@ -202,27 +199,5 @@ package body ALFA is
    begin
       Debug_Put_ALFA;
    end palfa;
-
-   ----------------------------
-   -- Unique_Defining_Entity --
-   ----------------------------
-
-   function Unique_Defining_Entity (N : Node_Id) return Entity_Id is
-   begin
-      case Nkind (N) is
-         when N_Package_Body =>
-            return Corresponding_Spec (N);
-
-         when N_Subprogram_Body =>
-            if Acts_As_Spec (N) then
-               return Defining_Entity (N);
-            else
-               return Corresponding_Spec (N);
-            end if;
-
-         when others =>
-            return Defining_Entity (N);
-      end case;
-   end Unique_Defining_Entity;
 
 end ALFA;

@@ -12179,6 +12179,28 @@ package body Sem_Util is
       return Scope_Depth (Enclosing_Dynamic_Scope (Btyp));
    end Type_Access_Level;
 
+   ----------------------------
+   -- Unique_Defining_Entity --
+   ----------------------------
+
+   function Unique_Defining_Entity (N : Node_Id) return Entity_Id is
+   begin
+      case Nkind (N) is
+         when N_Package_Body =>
+            return Corresponding_Spec (N);
+
+         when N_Subprogram_Body =>
+            if Acts_As_Spec (N) then
+               return Defining_Entity (N);
+            else
+               return Corresponding_Spec (N);
+            end if;
+
+         when others =>
+            return Defining_Entity (N);
+      end case;
+   end Unique_Defining_Entity;
+
    --------------------------
    -- Unit_Declaration_Node --
    --------------------------
