@@ -854,7 +854,7 @@ package body Sem_Ch13 is
                      end if;
                   end if;
 
-                  goto Continue;
+                  --  Allowed case of X and X'Class both specified
                end if;
 
                Next (Anod);

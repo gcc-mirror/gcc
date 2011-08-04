@@ -4,9 +4,9 @@
 --                                                                          --
 --                 S Y S T E M . F L O A T _ C O N T R O L                  --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2011, AdaCore                     --
+--                       Copyright (C) 2011, AdaCore                        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,31 +29,19 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Control functions for floating-point unit
+--  This implementation calls an imported function.
 
-package System.Float_Control is
-   pragma Pure;
-   --  This is not fully correct, but this unit is with-ed by pure units
-   --  (eg s-imgrea).
+package body System.Float_Control is
 
-   procedure Reset;
-   pragma Inline (Reset);
-   --  Reset the floating-point processor to the default state needed to get
-   --  correct Ada semantics for the target. Some third party tools change
-   --  the settings for the floating-point processor. Reset can be called
-   --  to reset the floating-point processor into the mode required by GNAT
-   --  for correct operation. Use this call after a call to foreign code if
-   --  you suspect incorrect floating-point operation after the call.
-   --
-   --  For example under Windows NT some system DLL calls change the default
-   --  FPU arithmetic to 64 bit precision mode. However, since in Ada 95 it
-   --  is required to provide full access to the floating-point types of the
-   --  architecture, GNAT requires full 80-bit precision mode, and Reset makes
-   --  sure this mode is established.
-   --
-   --  Similarly on the PPC processor, it is important that overflow and
-   --  underflow exceptions be disabled.
-   --
-   --  The call to Reset simply has no effect if the target environment
-   --  does not give rise to such concerns.
+   -----------
+   -- Reset --
+   -----------
+
+   procedure Reset is
+      procedure Init_Float;
+      pragma Import (C, Init_Float, "__gnat_init_float");
+   begin
+      Init_Float;
+   end Reset;
+
 end System.Float_Control;
