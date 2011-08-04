@@ -1,3 +1,15 @@
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): If the declaration is a
+	completion and aspects are present, apply them to the entity for the
+	type which is currently the partial view, but which is the one that
+	will be frozen.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): if the predicate
+	applies to a partial view, indicate that the full view has predicates
+	and delayed aspects.
+	(Replace_Type_Reference): Handle properly predicates that apply to the
+	full view of a private completion.
+
 2011-08-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* layout.adb (Layout_Type): For composite types, do not set Esize.

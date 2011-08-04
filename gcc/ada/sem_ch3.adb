@@ -2500,8 +2500,16 @@ package body Sem_Ch3 is
       Set_Optimize_Alignment_Flags (Def_Id);
       Check_Eliminated (Def_Id);
 
+      --  If the declaration is a completion and aspects are present, apply
+      --  them to the entity for the type which is currently the partial
+      --  view, but which is the one that will be frozen.
+
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Def_Id);
+         if Prev /= Def_Id then
+            Analyze_Aspect_Specifications (N, Prev);
+         else
+            Analyze_Aspect_Specifications (N, Def_Id);
+         end if;
       end if;
    end Analyze_Full_Type_Declaration;
 

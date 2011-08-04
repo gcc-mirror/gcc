@@ -695,8 +695,8 @@ package body Sem_Ch13 is
       --  Insert pragmas (except Pre/Post/Invariant/Predicate) after this node
 
       --  The general processing involves building an attribute definition
-      --  clause or a pragma node that corresponds to the access type. Then
-      --  one of two things happens:
+      --  clause or a pragma node that corresponds to the aspect. Then one
+      --  of two things happens:
 
       --  If we are required to delay the evaluation of this aspect to the
       --  freeze point, we attach the corresponding pragma/attribute definition
@@ -1238,6 +1238,14 @@ package body Sem_Ch13 is
                   --  have a place to build the predicate function).
 
                   Set_Has_Predicates (E);
+
+                  if Is_Private_Type (E)
+                    and then Present (Full_View (E))
+                  then
+                     Set_Has_Predicates (Full_View (E));
+                     Set_Has_Delayed_Aspects (Full_View (E));
+                  end if;
+
                   Ensure_Freeze_Node (E);
                   Set_Is_Delayed_Aspect (Aspect);
                   Delay_Required := True;
@@ -4221,8 +4229,13 @@ package body Sem_Ch13 is
                Arg2 := Get_Pragma_Arg (Arg2);
 
                --  See if this predicate pragma is for the current type
+               --  or for its full view. A predicate on a private completion
+               --  is placed on the partial view beause this is the visible
+               --  entity that is frozen..
 
-               if Entity (Arg1) = Typ then
+               if Entity (Arg1) = Typ
+                 or else Full_View (Entity (Arg1)) = Typ
+               then
 
                   --  We have a match, this entry is for our subtype
 
