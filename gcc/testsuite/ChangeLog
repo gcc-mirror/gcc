@@ -1,3 +1,10 @@
+2011-08-04  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/vect-over-widen-1.c: New test.
+	* gcc.dg/vect/vect-over-widen-2.c: New test.
+	* gcc.dg/vect/vect-over-widen-3.c: New test.
+	* gcc.dg/vect/vect-over-widen-4.c: New test.
+
 2011-08-04  Richard Guenther  <rguenther@suse.de>
 
 	PR fortran/49957
