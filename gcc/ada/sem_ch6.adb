@@ -6423,8 +6423,9 @@ package body Sem_Ch6 is
 
                --  If the body already exists, then this is an error unless
                --  the previous declaration is the implicit declaration of a
-               --  derived subprogram, or this is a spurious overloading in an
-               --  instance.
+               --  derived subprogram. It is also legal for an instance to
+               --  contain type conformant overloadable declarations (but the
+               --  generic declaration may not), per 8.3(26/2).
 
                elsif No (Alias (E))
                  and then not Is_Intrinsic_Subprogram (E)

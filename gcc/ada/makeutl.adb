@@ -1280,13 +1280,71 @@ package body Makeutl is
          procedure Complete_All is new For_Project_And_Aggregated
            (Do_Complete);
 
+         procedure Add_Multi_Unit_Sources
+           (Tree   : Project_Tree_Ref;
+            Source : Prj.Source_Id);
+         --  Add all units from the same file as the multi-unit Source.
+
+         ----------------------------
+         -- Add_Multi_Unit_Sources --
+         ----------------------------
+
+         procedure Add_Multi_Unit_Sources
+           (Tree   : Project_Tree_Ref;
+            Source : Prj.Source_Id)
+         is
+            Iter : Source_Iterator;
+            Src  : Prj.Source_Id;
+         begin
+            Debug_Output
+              ("Found multi-unit source file in project", Source.Project.Name);
+
+            Iter := For_Each_Source
+              (In_Tree => Tree, Project => Source.Project);
+
+            while Element (Iter) /= No_Source loop
+               Src := Element (Iter);
+
+               if Src.File = Source.File
+                 and then Src.Index /= Source.Index
+               then
+                  if Src.File = Source.File then
+                     Debug_Output
+                       ("Add main in project, index=" & Src.Index'Img);
+                  end if;
+
+                  Names.Increment_Last;
+                  Names.Table (Names.Last) :=
+                    (File     => Src.File,
+                     Index    => Src.Index,
+                     Location => No_Location,
+                     Source   => Src,
+                     Project  => Src.Project,
+                     Tree     => Tree);
+
+                  Builder_Data (Tree).Number_Of_Mains :=
+                    Builder_Data (Tree).Number_Of_Mains + 1;
+               end if;
+
+               Next (Iter);
+            end loop;
+         end Add_Multi_Unit_Sources;
+
+         -----------------
+         -- Do_Complete --
+         -----------------
+
          procedure Do_Complete
            (Project : Project_Id; Tree : Project_Tree_Ref) is
          begin
             if Mains.Number_Of_Mains (Tree) > 0
               or else Mains.Count_Of_Mains_With_No_Tree > 0
             then
-               for J in Names.First .. Names.Last loop
+               --  Traverse in reverse order, since in the case of multi-unit
+               --  files we will be adding extra files at the end, and there's
+               --  no need to process them in tun.
+
+               for J in reverse Names.First .. Names.Last loop
                   declare
                      File       : Main_Info := Names.Table (J);
                      Main_Id    : File_Name_Type := File.File;
@@ -1327,7 +1385,7 @@ package body Makeutl is
                         if Current_Verbosity = High then
                            Debug_Output
                              ("Search for main """ & Main
-                              & """ in "
+                              & '"' & File.Index'Img & " in "
                               & Get_Name_String (Debug_Name (File.Tree))
                               & ", project", Project.Name);
                         end if;
@@ -1402,6 +1460,19 @@ package body Makeutl is
                         end if;
 
                         if Source /= No_Source then
+                           --  If we have found a multi-unit source file but
+                           --  did not specify an index initially, we'll need
+                           --  to compile all the units from the same source
+                           --  file
+
+                           if Source.Index /= 0
+                             and then File.Index = 0
+                           then
+                              Add_Multi_Unit_Sources (File.Tree, Source);
+                           end if;
+
+                           --  Now update the original Main, otherwise it will
+                           --  be reported as not found.
 
                            Debug_Output ("Found main in project",
                                          Source.Project.Name);
@@ -1412,7 +1483,8 @@ package body Makeutl is
                               Names.Table (J).Tree := File.Tree;
 
                               Builder_Data (File.Tree).Number_Of_Mains :=
-                                Builder_Data (File.Tree).Number_Of_Mains + 1;
+                                Builder_Data (File.Tree).Number_Of_Mains
+                                + 1;
                               Mains.Count_Of_Mains_With_No_Tree :=
                                 Mains.Count_Of_Mains_With_No_Tree - 1;
                            end if;
@@ -1451,9 +1523,11 @@ package body Makeutl is
 
          if Mains.Count_Of_Mains_With_No_Tree > 0 then
             for J in Names.First .. Names.Last loop
-               Fail_Program
-                 (Project_Tree, '"' & Get_Name_String (Names.Table (J).File)
-                    & """ is not a source of any project");
+               if Names.Table (J).Source = No_Source then
+                  Fail_Program
+                    (Project_Tree, '"' & Get_Name_String (Names.Table (J).File)
+                     & """ is not a source of any project");
+               end if;
             end loop;
          end if;
       end Complete_Mains;

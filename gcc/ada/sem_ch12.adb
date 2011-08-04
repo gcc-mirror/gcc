@@ -3380,9 +3380,11 @@ package body Sem_Ch12 is
          end;
 
          --  If we are generating calling stubs, we never need a body for an
-         --  instantiation from source. However normal processing occurs for
-         --  any generic instantiation appearing in generated code, since we
-         --  do not generate stubs in that case.
+         --  instantiation from source in the visible part, because in that
+         --  case we'll be generating stubs for any subprogram in the instance.
+         --  However normal processing occurs for instantiations in generated
+         --  code or in the private part, since in those cases we do not
+         --  generate stubs.
 
          if Distribution_Stub_Mode = Generate_Caller_Stub_Body
               and then Comes_From_Source (N)
@@ -6295,8 +6297,8 @@ package body Sem_Ch12 is
             end if;
          end if;
 
-         --  Do not copy the associated node, which points to
-         --  the generic copy of the aggregate.
+         --  Do not copy the associated node, which points to the generic copy
+         --  of the aggregate.
 
          declare
             use Atree.Unchecked_Access;
@@ -6310,9 +6312,9 @@ package body Sem_Ch12 is
             Set_Field5 (New_N, Copy_Generic_Descendant (Field5 (N)));
          end;
 
-      --  Allocators do not have an identifier denoting the access type,
-      --  so we must locate it through the expression to check whether
-      --  the views are consistent.
+      --  Allocators do not have an identifier denoting the access type, so we
+      --  must locate it through the expression to check whether the views are
+      --  consistent.
 
       elsif Nkind (N) = N_Allocator
         and then Nkind (Expression (N)) = N_Qualified_Expression
@@ -6373,16 +6375,13 @@ package body Sem_Ch12 is
       --  Don't copy Ident or Comment pragmas, since the comment belongs to the
       --  generic unit, not to the instantiating unit.
 
-      elsif Nkind (N) = N_Pragma
-        and then Instantiating
-      then
+      elsif Nkind (N) = N_Pragma and then Instantiating then
          declare
             Prag_Id : constant Pragma_Id := Get_Pragma_Id (N);
          begin
-            if Prag_Id = Pragma_Ident
-              or else Prag_Id = Pragma_Comment
-            then
+            if Prag_Id = Pragma_Ident or else Prag_Id = Pragma_Comment then
                New_N := Make_Null_Statement (Sloc (N));
+
             else
                Copy_Descendants;
             end if;
@@ -6411,10 +6410,10 @@ package body Sem_Ch12 is
       else
          Copy_Descendants;
 
-         if Instantiating
-           and then Nkind (N) = N_Subprogram_Body
-         then
+         if Instantiating and then Nkind (N) = N_Subprogram_Body then
             Set_Generic_Parent (Specification (New_N), N);
+
+            --  Should preserve Corresponding_Spec??? (12.3(14))
          end if;
       end if;
 
@@ -6455,9 +6454,7 @@ package body Sem_Ch12 is
                if Renamed_Object (E1) = Pack then
                   return True;
 
-               elsif E1 = P
-                 or else  Renamed_Object (E1) = P
-               then
+               elsif E1 = P or else  Renamed_Object (E1) = P then
                   return False;
 
                elsif Is_Actual_Of_Previous_Formal (E1) then
@@ -6479,7 +6476,7 @@ package body Sem_Ch12 is
            Instance_Envs.Table
              (Instance_Envs.Last).Instantiated_Parent.Act_Id;
       else
-         Par  := Current_Instantiated_Parent.Act_Id;
+         Par := Current_Instantiated_Parent.Act_Id;
       end if;
 
       if Ekind (Scop) = E_Generic_Package
@@ -6675,12 +6672,12 @@ package body Sem_Ch12 is
          end loop;
 
          --  At this point P1 and P2 are at the same distance from the root.
-         --  We examine their parents until we find a common declarative
-         --  list, at which point we can establish their relative placement
-         --  by comparing their ultimate slocs. If we reach the root,
-         --  N1 and N2 do not descend from the same declarative list (e.g.
-         --  one is nested in the declarative part and the other is in a block
-         --  in the statement part) and the earlier one is already frozen.
+         --  We examine their parents until we find a common declarative list,
+         --  at which point we can establish their relative placement by
+         --  comparing their ultimate slocs. If we reach the root, N1 and N2
+         --  do not descend from the same declarative list (e.g. one is nested
+         --  in the declarative part and the other is in a block in the
+         --  statement part) and the earlier one is already frozen.
 
          while not Is_List_Member (P1)
            or else not Is_List_Member (P2)
@@ -6814,9 +6811,9 @@ package body Sem_Ch12 is
                  In_Same_Declarative_Part (Freeze_Node (Par), Parent (Enc_I)))
          then
             --  The enclosing package may contain several instances. Rather
-            --  than computing the earliest point at which to insert its
-            --  freeze node, we place it at the end of the declarative part
-            --  of the parent of the generic.
+            --  than computing the earliest point at which to insert its freeze
+            --  node, we place it at the end of the declarative part of the
+            --  parent of the generic.
 
             Insert_After_Last_Decl
               (Freeze_Node (Par), Package_Freeze_Node (Enc_I));
@@ -6838,12 +6835,12 @@ package body Sem_Ch12 is
 
          --  Freeze package that encloses instance, and place node after
          --  package that encloses generic. If enclosing package is already
-         --  frozen we have to assume it is at the proper place. This may be
-         --  a potential ABE that requires dynamic checking. Do not add a
-         --  freeze node if the package that encloses the generic is inside
-         --  the body that encloses the instance, because the freeze node
-         --  would be in the wrong scope. Additional contortions needed if
-         --  the bodies are within a subunit.
+         --  frozen we have to assume it is at the proper place. This may be a
+         --  potential ABE that requires dynamic checking. Do not add a freeze
+         --  node if the package that encloses the generic is inside the body
+         --  that encloses the instance, because the freeze node would be in
+         --  the wrong scope. Additional contortions needed if the bodies are
+         --  within a subunit.
 
          declare
             Enclosing_Body : Node_Id;
@@ -6921,14 +6918,13 @@ package body Sem_Ch12 is
       --  investigated, and would allow this function to be significantly
       --  simplified. ???
 
-      if Present (Package_Instantiation (A)) then
-         if Nkind (Package_Instantiation (A)) = N_Package_Instantiation then
-            return Package_Instantiation (A);
+      Inst := Package_Instantiation (A);
+      if Present (Inst) then
+         if Nkind (Inst) = N_Package_Instantiation then
+            return Inst;
 
-         elsif Nkind (Original_Node (Package_Instantiation (A))) =
-                                                   N_Package_Instantiation
-         then
-            return Original_Node (Package_Instantiation (A));
+         elsif Nkind (Original_Node (Inst)) = N_Package_Instantiation then
+            return Original_Node (Inst);
          end if;
       end if;
 
@@ -7034,9 +7030,7 @@ package body Sem_Ch12 is
       --  now we depend on the user not redefining Standard itself in one of
       --  the parent units.
 
-      if Is_Immediately_Visible (C)
-        and then C /= Standard_Standard
-      then
+      if Is_Immediately_Visible (C) and then C /= Standard_Standard then
          Set_Is_Immediately_Visible (C, False);
          Append_Elmt (C, Hidden_Entities);
       end if;
@@ -7143,8 +7137,7 @@ package body Sem_Ch12 is
             --  might produce false positives in rare cases, but guarantees
             --  that we produce all the instance bodies we will need.
 
-            if (Is_Entity_Name (Nam)
-                 and then Chars (Nam) = Chars (E))
+            if (Is_Entity_Name (Nam) and then Chars (Nam) = Chars (E))
               or else (Nkind (Nam) = N_Selected_Component
                         and then Chars (Selector_Name (Nam)) = Chars (E))
             then
@@ -7321,8 +7314,8 @@ package body Sem_Ch12 is
 
    begin
 
-      --  If the body is a subunit, the freeze point is the corresponding
-      --  stub in the current compilation, not the subunit itself.
+      --  If the body is a subunit, the freeze point is the corresponding stub
+      --  in the current compilation, not the subunit itself.
 
       if Nkind (Parent (Gen_Body)) = N_Subunit then
          Orig_Body := Corresponding_Stub (Parent (Gen_Body));
