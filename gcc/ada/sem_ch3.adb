@@ -3053,9 +3053,9 @@ package body Sem_Ch3 is
       --  not aliased.
 
       if not Is_In_ALFA (T) then
-         Mark_Non_ALFA_Subprogram ("object type is not in 'A'L'F'A", N);
+         Mark_Non_ALFA_Subprogram ("object type is not in ALFA", N);
       elsif Aliased_Present (N) then
-         Mark_Non_ALFA_Subprogram ("ALIASED is not in 'A'L'F'A", N);
+         Mark_Non_ALFA_Subprogram ("ALIASED is not in ALFA", N);
       else
          Set_Is_In_ALFA (Id);
       end if;

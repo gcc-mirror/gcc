@@ -1163,6 +1163,15 @@ package body Sem_Ch13 is
                when Aspect_Invariant      |
                     Aspect_Type_Invariant =>
 
+                  --  Check placement legality
+
+                  if not Nkind_In (N, N_Private_Type_Declaration,
+                                      N_Private_Extension_Declaration)
+                  then
+                     Error_Msg_N
+                       ("invariant aspect must apply to a private type", N);
+                  end if;
+
                   --  Construct the pragma
 
                   Aitem :=

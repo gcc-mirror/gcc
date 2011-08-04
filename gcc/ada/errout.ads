@@ -319,8 +319,8 @@ package Errout is
    --      Precedes a character which is placed literally into the message.
    --      Used to insert characters into messages that are one of the
    --      insertion characters defined here. Also useful in inserting
-   --      sequences of upper case letters (e.g. RM) which are not to be
-   --      treated as keywords.
+   --      sequences of upper case letters which are not to be treated as
+   --      keywords.
 
    --    Insertion character \ (Backslash: continuation message)
    --      Indicates that the message is a continuation of a message
@@ -494,7 +494,9 @@ package Errout is
 
    --  Note: a special exception is that RM is never treated as a keyword
    --  but instead is copied literally into the message, this avoids the
-   --  need for writing 'R'M for all reference manual quotes.
+   --  need for writing 'R'M for all reference manual quotes. A similar
+   --  exception is applied to the occurrence of the string ALFA used in
+   --  error messages about the ALFA subset of Ada.
 
    --  In the case of names, the default mode for the error text processor
    --  is to surround the name by quotation marks automatically. The case
