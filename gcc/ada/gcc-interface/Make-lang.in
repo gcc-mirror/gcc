@@ -1301,8 +1301,9 @@ ada/alfa.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/aspects.ads ada/atree.ads ada/atree.adb ada/casing.ads \
    ada/debug.ads ada/einfo.ads ada/gnat.ads ada/g-htable.ads \
    ada/g-table.ads ada/g-table.adb ada/hostparm.ads ada/interfac.ads \
-   ada/namet.ads ada/namet.adb ada/nlists.ads ada/nlists.adb ada/opt.ads \
-   ada/output.ads ada/output.adb ada/put_alfa.ads ada/put_alfa.adb \
+   ada/namet.ads ada/namet.adb ada/nlists.ads ada/nlists.adb \
+   ada/nmake.ads ada/opt.ads ada/output.ads ada/output.adb \
+   ada/put_alfa.ads ada/put_alfa.adb ada/sem_util.ads \
    ada/sinfo.ads ada/sinfo.adb ada/sinput.ads ada/snames.ads \
    ada/system.ads ada/s-exctab.ads ada/s-htable.ads ada/s-imenne.ads \
    ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads ada/s-secsta.ads \
@@ -3322,10 +3323,10 @@ ada/put_alfa.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads 
 
 ada/put_scos.o : ada/ada.ads ada/a-unccon.ads ada/gnat.ads ada/g-table.ads \
-   ada/g-table.adb ada/put_scos.ads ada/put_scos.adb ada/scos.ads \
-   ada/scos.adb ada/system.ads ada/s-exctab.ads ada/s-memory.ads \
-   ada/s-stalib.ads ada/s-unstyp.ads ada/types.ads ada/unchconv.ads \
-   ada/unchdeal.ads 
+   ada/g-table.adb ada/par_sco.ads ada/put_scos.ads ada/put_scos.adb \
+   ada/scos.ads ada/scos.adb ada/system.ads ada/s-exctab.ads \
+   ada/s-memory.ads ada/s-stalib.ads ada/s-unstyp.ads ada/types.ads \
+   ada/unchconv.ads ada/unchdeal.ads 
 
 ada/repinfo.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \

@@ -1101,17 +1101,17 @@ package body System.Tasking.Rendezvous is
 
       --  We rely that the call is off-queue for protection, that the caller
       --  will not exit the Entry_Caller_Sleep, and so will not reuse the call
-      --  record for another call.
-      --  We rely on the Caller's lock for call State mod's.
+      --  record for another call. We rely on the Caller's lock for call State
+      --  mod's.
 
       --  If Acceptor.Terminate_Alternative is True, we need to lock Parent and
-      --  Acceptor, in that order; otherwise, we only need a lock on
-      --  Acceptor. However, we can't check Acceptor.Terminate_Alternative
-      --  until Acceptor is locked. Therefore, we need to lock both. Attempts
-      --  to avoid locking Parent tend to result in race conditions. It would
-      --  work to unlock Parent immediately upon finding
-      --  Acceptor.Terminate_Alternative to be False, but that violates the
-      --  rule of properly nested locking (see System.Tasking).
+      --  Acceptor, in that order; otherwise, we only need a lock on Acceptor.
+      --  However, we can't check Acceptor.Terminate_Alternative until Acceptor
+      --  is locked. Therefore, we need to lock both. Attempts to avoid locking
+      --  Parent tend to result in race conditions. It would work to unlock
+      --  Parent immediately upon finding Acceptor.Terminate_Alternative to be
+      --  False, but that violates the rule of properly nested locking (see
+      --  System.Tasking).
 
       STPO.Write_Lock (Parent);
       STPO.Write_Lock (Acceptor);

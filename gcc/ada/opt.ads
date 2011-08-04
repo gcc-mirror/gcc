@@ -328,7 +328,7 @@ package Opt is
    --  of withing a package and using none of the entities in the package.
 
    CodePeer_Mode : Boolean := False;
-   --  GNAT
+   --  GNAT, GNATBIND
    --  Enable full CodePeer mode (SCIL generation, disable switches that
    --  interact badly with it, etc...).
 

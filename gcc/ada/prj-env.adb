@@ -476,7 +476,7 @@ package body Prj.Env is
       File_Name : Path_Name_Type  := No_Path;
       File      : File_Descriptor := Invalid_FD;
 
-      Current_Naming  : Naming_Id;
+      Current_Naming : Naming_Id;
 
       procedure Check
         (Project : Project_Id;

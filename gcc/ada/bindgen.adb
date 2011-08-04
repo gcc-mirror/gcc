@@ -2219,11 +2219,15 @@ package body Bindgen is
          WBI ("      Break_Start;");
 
          if CodePeer_Mode then
-            --  Bypass Ada_Main_Program; its Import pragma confuses CodePeer.
+
+            --  Bypass Ada_Main_Program, its Import pragma confuses CodePeer
+
             Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+
             declare
                Callee_Name : String renames Name_Buffer (1 .. Name_Len - 2);
-               --  strip trailing "%b"
+               --  Strip trailing "%b"
+
             begin
                if ALIs.Table (ALIs.First).Main_Program = Proc then
                   WBI ("      " & Callee_Name & ";");
@@ -2231,8 +2235,10 @@ package body Bindgen is
                   WBI ("      Result := " & Callee_Name & ";");
                end if;
             end;
+
          elsif ALIs.Table (ALIs.First).Main_Program = Proc then
             WBI ("      Ada_Main_Program;");
+
          else
             WBI ("      Result := Ada_Main_Program;");
          end if;
@@ -3076,10 +3082,14 @@ package body Bindgen is
       end if;
 
       if CodePeer_Mode then
-         --  For CodePeer, main program is not called via an Import pragma.
+
+         --  For CodePeer, main program is not called via an Import pragma
+
          Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+
+         --  Note: trailing "%b" is stripped.
+
          WBI ("with " & Name_Buffer (1 .. Name_Len - 2) & ";");
-         --  strip trailing "%b"
       end if;
 
       WBI ("");
@@ -3088,6 +3098,7 @@ package body Bindgen is
       WBI ("");
 
       --  Generate externals for elaboration entities
+
       Gen_Elab_Externals_Ada;
 
       if not Suppress_Standard_Library_On_Target then
