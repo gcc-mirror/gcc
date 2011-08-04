@@ -2622,6 +2622,22 @@ gfc_conv_tmp_array_ref (gfc_se * se)
   gfc_advance_se_ss_chain (se);
 }
 
+/* Add T to the offset pair *OFFSET, *CST_OFFSET.  */
+
+static void
+add_to_offset (tree *cst_offset, tree *offset, tree t)
+{
+  if (TREE_CODE (t) == INTEGER_CST)
+    *cst_offset = int_const_binop (PLUS_EXPR, *cst_offset, t);
+  else
+    {
+      if (!integer_zerop (*offset))
+	*offset = fold_build2_loc (input_location, PLUS_EXPR,
+				   gfc_array_index_type, *offset, t);
+      else
+	*offset = t;
+    }
+}
 
 /* Build an array reference.  se->expr already holds the array descriptor.
    This should be either a variable, indirect variable reference or component
@@ -2634,7 +2650,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 		    locus * where)
 {
   int n;
-  tree index;
+  tree offset, cst_offset;
   tree tmp;
   tree stride;
   gfc_se indexse;
@@ -2669,10 +2685,12 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
       return;
     }
 
-  index = gfc_index_zero_node;
+  cst_offset = offset = gfc_index_zero_node;
+  add_to_offset (&cst_offset, &offset, gfc_conv_array_offset (se->expr));
 
-  /* Calculate the offsets from all the dimensions.  */
-  for (n = 0; n < ar->dimen; n++)
+  /* Calculate the offsets from all the dimensions.  Make sure to associate
+     the final offset so that we form a chain of loop invariant summands.  */
+  for (n = ar->dimen - 1; n >= 0; n--)
     {
       /* Calculate the index for this dimension.  */
       gfc_init_se (&indexse, se);
@@ -2741,19 +2759,17 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 			     indexse.expr, stride);
 
       /* And add it to the total.  */
-      index = fold_build2_loc (input_location, PLUS_EXPR,
-			       gfc_array_index_type, index, tmp);
+      add_to_offset (&cst_offset, &offset, tmp);
     }
 
-  tmp = gfc_conv_array_offset (se->expr);
-  if (!integer_zerop (tmp))
-    index = fold_build2_loc (input_location, PLUS_EXPR,
-			     gfc_array_index_type, index, tmp);
+  if (!integer_zerop (cst_offset))
+    offset = fold_build2_loc (input_location, PLUS_EXPR,
+			      gfc_array_index_type, offset, cst_offset);
 
   /* Access the calculated element.  */
   tmp = gfc_conv_array_data (se->expr);
   tmp = build_fold_indirect_ref (tmp);
-  se->expr = gfc_build_array_ref (tmp, index, sym->backend_decl);
+  se->expr = gfc_build_array_ref (tmp, offset, sym->backend_decl);
 }
 
 
@@ -7575,7 +7591,7 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
       switch (ar->type)
 	{
 	case AR_ELEMENT:
-	  for (n = 0; n < ar->dimen + ar->codimen; n++)
+	  for (n = ar->dimen + ar->codimen - 1; n >= 0; n--)
 	    {
 	      newss = gfc_get_ss ();
 	      newss->type = GFC_SS_SCALAR;

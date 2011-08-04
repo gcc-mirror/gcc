@@ -1,3 +1,11 @@
+2011-08-04  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/49957
+	* trans-array.c (add_to_offset): New function.
+	(gfc_conv_array_ref): Build the array index expression in optimally
+	associated order.
+	(gfc_walk_variable_expr): Adjust for the backward walk.
+
 2011-08-02  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/49885
