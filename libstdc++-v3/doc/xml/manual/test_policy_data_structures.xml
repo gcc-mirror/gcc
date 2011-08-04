@@ -106,7 +106,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_text_find_timing_test_hash_local.png"/>
+			   fileref="../images/pbds_text_find_timing_test_hash_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -433,7 +433,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_cc_hash_random_int_find_timing_test_local.png"/>
+			   fileref="../images/pbds_cc_hash_random_int_find_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -694,7 +694,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_gp_hash_random_int_find_timing_test_local.png"/>
+			   fileref="../images/pbds_gp_hash_random_int_find_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -953,7 +953,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_cc_hash_random_int_subscript_timing_test_find_local.png"/>
+			   fileref="../images/pbds_cc_hash_random_int_subscript_timing_test_find_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -1212,7 +1212,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_gp_hash_random_int_subscript_timing_test_find_local.png"/>
+			   fileref="../images/pbds_gp_hash_random_int_subscript_timing_test_find_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -1452,7 +1452,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_cc_hash_random_int_subscript_timing_test_insert_local.png"/>
+			   fileref="../images/pbds_cc_hash_random_int_subscript_timing_test_insert_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -1711,7 +1711,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_gp_hash_random_int_subscript_timing_test_insert_local.png"/>
+			   fileref="../images/pbds_gp_hash_random_int_subscript_timing_test_insert_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -1983,7 +1983,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_hash_zlob_random_int_find_timing_test_local.png"/>
+			   fileref="../images/pbds_hash_zlob_random_int_find_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -2282,7 +2282,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_hash_random_int_erase_mem_usage_test_local.png"/>
+			   fileref="../images/pbds_hash_random_int_erase_mem_usage_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -2568,7 +2568,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_tree_text_insert_timing_test_node_tree_local.png"/>
+			   fileref="../images/pbds_tree_text_insert_timing_test_node_tree_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 
@@ -2687,7 +2687,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_tree_text_insert_timing_test_vector_tree_local.png"/>
+			   fileref="../images/pbds_tree_text_insert_timing_test_vector_tree_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -2779,7 +2779,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_tree_text_insert_timing_test_pat_trie_local.png"/>
+			   fileref="../images/pbds_tree_text_insert_timing_test_pat_trie_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -2941,7 +2941,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_text_find_timing_test_tree_like_local.png"/>
+			   fileref="../images/pbds_text_find_timing_test_tree_like_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -3213,7 +3213,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_tree_text_lor_find_timing_test_local.png"/>
+			   fileref="../images/pbds_tree_text_lor_find_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -3456,7 +3456,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_tree_split_join_timing_test_local.png"/>
+			   fileref="../images/pbds_tree_split_join_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -3716,7 +3716,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_tree_order_statistics_timing_test_local.png"/>
+			   fileref="../images/pbds_tree_order_statistics_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -3909,7 +3909,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_find_timing_test_small_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_timing_test_small_s2p_tree_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -4095,7 +4095,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_find_timing_test_small_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_timing_test_small_s2p_hash_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -4374,7 +4374,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_find_timing_test_large_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_tree_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -4560,7 +4560,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -4843,7 +4843,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_insert_timing_test_small_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_insert_timing_test_small_s2p_tree_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -5029,7 +5029,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_find_timing_test_small_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_timing_test_small_s2p_hash_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -5312,7 +5312,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_insert_timing_test_large_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_insert_timing_test_large_s2p_tree_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -5498,7 +5498,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -5775,7 +5775,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_insert_mem_usage_test_small_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_insert_mem_usage_test_small_s2p_tree_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -5961,7 +5961,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -6237,7 +6237,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_insert_mem_usage_test_large_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_insert_mem_usage_test_large_s2p_tree_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -6423,7 +6423,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
@@ -6710,7 +6710,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_priority_queue_text_push_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_push_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -6898,7 +6898,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml//images/pbds_pairing_priority_queue_text_push_timing_test_local.png"/>
+			   fileref="../images/pbds_pairing_priority_queue_text_push_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -7097,7 +7097,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_priority_queue_text_push_pop_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_push_pop_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -7285,7 +7285,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml//images/pbds_pairing_priority_queue_text_push_pop_timing_test_local.png"/>
+			   fileref="../images/pbds_pairing_priority_queue_text_push_pop_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -7464,7 +7464,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_priority_queue_random_int_push_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_random_int_push_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -7652,7 +7652,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml//images/pbds_binary_priority_queue_random_int_push_timing_test_local.png"/>
+			   fileref="../images/pbds_binary_priority_queue_random_int_push_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -7816,7 +7816,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_priority_queue_random_int_push_pop_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_random_int_push_pop_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -8081,7 +8081,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_priority_queue_text_pop_mem_usage_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_pop_mem_usage_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -8333,7 +8333,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_priority_queue_text_join_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_join_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -8592,7 +8592,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_priority_queue_text_modify_up_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_modify_up_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -8780,7 +8780,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml//images/pbds_priority_queue_text_modify_up_timing_test_pairing_thin_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_modify_up_timing_test_pairing_thin_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -8954,7 +8954,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_priority_queue_text_modify_down_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_modify_down_timing_test_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -9142,7 +9142,7 @@
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml//images/pbds_priority_queue_text_modify_down_timing_test_pairing_thin_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_modify_down_timing_test_pairing_thin_local.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>

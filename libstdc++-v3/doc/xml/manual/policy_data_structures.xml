@@ -304,7 +304,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_node_invariants.png"/>
+			   fileref="../images/pbds_node_invariants.png"/>
 	      </imageobject>
 	      <textobject>
 		<phrase>Node Invariants</phrase>
@@ -333,7 +333,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_different_underlying_dss_1.png"/>
+			   fileref="../images/pbds_different_underlying_dss_1.png"/>
 	      </imageobject>
 	      <textobject>
 		<phrase>Underlying Associative Data Structures</phrase>
@@ -516,7 +516,7 @@
 	      <mediaobject>
 		<imageobject>
 		  <imagedata align="center" format="PNG" scale="100"
-			     fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_point_iterators_range_ops_1.png"/>
+			     fileref="../images/pbds_point_iterators_range_ops_1.png"/>
 		</imageobject>
 		<textobject>
 		  <phrase>Node Invariants</phrase>
@@ -597,7 +597,7 @@
 	      <mediaobject>
 		<imageobject>
 		  <imagedata align="center" format="PNG" scale="100"
-			     fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_point_iterators_range_ops_2.png"/>
+			     fileref="../images/pbds_point_iterators_range_ops_2.png"/>
 		</imageobject>
 		<textobject>
 		  <phrase>Point Iteration in Hash Data Structures</phrase>
@@ -638,7 +638,7 @@
 	      <mediaobject>
 		<imageobject>
 		  <imagedata align="center" format="PNG" scale="100"
-			     fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_invalidation_guarantee_erase.png"/>
+			     fileref="../images/pbds_invalidation_guarantee_erase.png"/>
 		</imageobject>
 		<textobject>
 		  <phrase>Effect of erase in different underlying data structures</phrase>
@@ -1028,7 +1028,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_different_underlying_dss_2.png"/>
+			   fileref="../images/pbds_different_underlying_dss_2.png"/>
 	      </imageobject>
 	      <textobject>
 		<phrase>Underlying Priority Queue Data Structures</phrase>
@@ -1326,7 +1326,7 @@
 	  </imageobject>
 	  <imageobject>
 	    <imagedata align="center" format="PNG" scale="100"
-		       fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_exception_hierarchy.png"/>
+		       fileref="../images/pbds_exception_hierarchy.png"/>
 	  </imageobject>
 	  <textobject>
 	    <phrase>Exception Hierarchy</phrase>
@@ -2359,7 +2359,7 @@
 	  <mediaobject>
 	    <imageobject>
 	      <imagedata align="center" format="PNG" scale="100"
-			 fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_embedded_lists_1.png"/>
+			 fileref="../images/pbds_embedded_lists_1.png"/>
 	    </imageobject>
 	    <textobject>
 	      <phrase>Non-unique Mapping Standard Containers</phrase>
@@ -2385,7 +2385,7 @@
 	  <mediaobject>
 	    <imageobject>
 	      <imagedata align="center" format="PNG" scale="100"
-			 fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_embedded_lists_2.png"/>
+			 fileref="../images/pbds_embedded_lists_2.png"/>
 	    </imageobject>
 	    <textobject>
 	      <phrase>
@@ -2513,7 +2513,7 @@
 	  <mediaobject>
 	    <imageobject>
 	      <imagedata align="center" format="PNG" scale="100"
-			 fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_embedded_lists_3.png"/>
+			 fileref="../images/pbds_embedded_lists_3.png"/>
 	    </imageobject>
 	    <textobject>
 	      <phrase>Non-unique Mapping Containers</phrase>
@@ -2612,7 +2612,7 @@
 	  <mediaobject>
 	    <imageobject>
 	      <imagedata align="center" format="PNG" scale="100"
-			 fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_point_iterator_hierarchy.png"/>
+			 fileref="../images/pbds_point_iterator_hierarchy.png"/>
 	    </imageobject>
 	    <textobject>
 	      <phrase>Point Iterator Hierarchy</phrase>
@@ -2684,7 +2684,7 @@
 	    </imageobject>
 	    <imageobject>
 	      <imagedata align="center" format="PNG" scale="100"
-			 fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_invalidation_tag_hierarchy.png"/>
+			 fileref="../images/pbds_invalidation_tag_hierarchy.png"/>
 	    </imageobject>
 	    <textobject>
 	      <phrase>Invalidation Guarantee Tags Hierarchy</phrase>
@@ -2843,7 +2843,7 @@
 	    </imageobject>
 	    <imageobject>
 	      <imagedata align="center" format="PNG" scale="100"
-			 fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_container_tag_hierarchy.png"/>
+			 fileref="../images/pbds_container_tag_hierarchy.png"/>
 	    </imageobject>
 	    <textobject>
 	      <phrase>Container Tag Hierarchy</phrase>
@@ -3016,7 +3016,7 @@
 	      <mediaobject>
 		<imageobject>
 		  <imagedata align="center" format="PNG" scale="100"
-			     fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_hash_ranged_hash_range_hashing_fns.png"/>
+			     fileref="../images/pbds_hash_ranged_hash_range_hashing_fns.png"/>
 		</imageobject>
 		<textobject>
 		  <phrase>Hash functions, ranged-hash functions, and
@@ -3292,7 +3292,7 @@
 		<mediaobject>
 		  <imageobject>
 		    <imagedata align="center" format="PNG" scale="100"
-			       fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_hash_range_hashing_seq_diagram.png"/>
+			       fileref="../images/pbds_hash_range_hashing_seq_diagram.png"/>
 		  </imageobject>
 		  <textobject>
 		    <phrase>Insert hash sequence diagram</phrase>
@@ -3312,7 +3312,7 @@
 		<mediaobject>
 		  <imageobject>
 		    <imagedata align="center" format="PNG" scale="100"
-			       fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_hash_range_hashing_seq_diagram2.png"/>
+			       fileref="../images/pbds_hash_range_hashing_seq_diagram2.png"/>
 		  </imageobject>
 		  <textobject>
 		    <phrase>Insert hash sequence diagram with a null policy</phrase>
@@ -3368,7 +3368,7 @@
 		<mediaobject>
 		  <imageobject>
 		    <imagedata align="center" format="PNG" scale="100"
-			       fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_hash_policy_cd.png"/>
+			       fileref="../images/pbds_hash_policy_cd.png"/>
 		  </imageobject>
 		  <textobject>
 		    <phrase>Hash policy class diagram</phrase>
@@ -3458,7 +3458,7 @@
 	      <mediaobject>
 		<imageobject>
 		  <imagedata align="center" format="PNG" scale="100"
-			     fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_balls_and_bins.png"/>
+			     fileref="../images/pbds_balls_and_bins.png"/>
 		</imageobject>
 		<textobject>
 		  <phrase>Balls and bins</phrase>
@@ -3579,7 +3579,7 @@
 		<mediaobject>
 		  <imageobject>
 		    <imagedata align="center" format="PNG" scale="100"
-			       fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_insert_resize_sequence_diagram1.png"/>
+			       fileref="../images/pbds_insert_resize_sequence_diagram1.png"/>
 		  </imageobject>
 		  <textobject>
 		    <phrase>Insert resize sequence diagram</phrase>
@@ -3607,7 +3607,7 @@
 		<mediaobject>
 		  <imageobject>
 		    <imagedata align="center" format="PNG" scale="100"
-			       fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_insert_resize_sequence_diagram2.png"/>
+			       fileref="../images/pbds_insert_resize_sequence_diagram2.png"/>
 		  </imageobject>
 		  <textobject>
 		    <phrase>Standard resize policy trigger sequence
@@ -3622,7 +3622,7 @@
 		<mediaobject>
 		  <imageobject>
 		    <imagedata align="center" format="PNG" scale="100"
-			       fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_insert_resize_sequence_diagram3.png"/>
+			       fileref="../images/pbds_insert_resize_sequence_diagram3.png"/>
 		  </imageobject>
 		  <textobject>
 		    <phrase>Standard resize policy size sequence
@@ -3929,7 +3929,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_tree_node_invariants.png"/>
+			   fileref="../images/pbds_tree_node_invariants.png"/>
 	      </imageobject>
 	      <textobject>
 		<phrase>Tree node invariants</phrase>
@@ -3968,7 +3968,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_tree_node_invalidations.png"/>
+			   fileref="../images/pbds_tree_node_invalidations.png"/>
 	      </imageobject>
 	      <textobject>
 		<phrase>Tree node invalidation</phrase>
@@ -4027,7 +4027,7 @@
 	      <mediaobject>
 		<imageobject>
 		  <imagedata align="center" format="PNG" scale="100"
-			     fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_tree_node_updator_policy_cd.png"/>
+			     fileref="../images/pbds_tree_node_updator_policy_cd.png"/>
 		</imageobject>
 		<textobject>
 		  <phrase>A tree and its update policy</phrase>
@@ -4067,7 +4067,7 @@
 	      <mediaobject>
 		<imageobject>
 		  <imagedata align="center" format="PNG" scale="100"
-			     fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_restoring_node_invariants.png"/>
+			     fileref="../images/pbds_restoring_node_invariants.png"/>
 		</imageobject>
 		<textobject>
 		  <phrase>Restoring node invariants</phrase>
@@ -4090,7 +4090,7 @@
 	      <mediaobject>
 		<imageobject>
 		  <imagedata align="center" format="PNG" scale="100"
-			     fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_update_seq_diagram.png"/>
+			     fileref="../images/pbds_update_seq_diagram.png"/>
 		</imageobject>
 		<textobject>
 		  <phrase>Insert update sequence</phrase>
@@ -4176,7 +4176,7 @@
 	      <mediaobject>
 		<imageobject>
 		  <imagedata align="center" format="PNG" scale="100"
-			     fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_rationale_null_node_updator.png"/>
+			     fileref="../images/pbds_rationale_null_node_updator.png"/>
 		</imageobject>
 		<textobject>
 		  <phrase>Useless update path</phrase>
@@ -4375,7 +4375,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_pat_trie.png"/>
+			   fileref="../images/pbds_pat_trie.png"/>
 	      </imageobject>
 	      <textobject>
 		<phrase>A PATRICIA trie</phrase>
@@ -4413,7 +4413,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_trie_node_updator_policy_cd.png"/>
+			   fileref="../images/pbds_trie_node_updator_policy_cd.png"/>
 	      </imageobject>
 	      <textobject>
 		<phrase>A trie and its update policy</phrase>
@@ -4548,7 +4548,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_simple_list.png"/>
+			   fileref="../images/pbds_simple_list.png"/>
 	      </imageobject>
 	      <textobject>
 		<phrase>A simple list</phrase>
@@ -4575,7 +4575,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_list_update.png"/>
+			   fileref="../images/pbds_list_update.png"/>
 	      </imageobject>
 	      <textobject>
 		<phrase>The counter algorithm</phrase>
@@ -4873,7 +4873,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_priority_queue_different_underlying_dss.png"/>
+			   fileref="../images/pbds_priority_queue_different_underlying_dss.png"/>
 	      </imageobject>
 	      <textobject>
 		<phrase>Underlying Priority-Queue Data-Structures.</phrase>
@@ -4997,7 +4997,7 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_priority_queue_tag_hierarchy.png"/>
+			   fileref="../images/pbds_priority_queue_tag_hierarchy.png"/>
 	      </imageobject>
 	      <textobject>
 		<phrase>Priority-Queue Data-Structure Tags.</phrase>
