@@ -11022,7 +11022,7 @@ package body Sem_Util is
          --  subprogram bodies. Detect those cases by testing whether
          --  Process_End_Label was called for a body (Typ = 't') or a package.
 
-         if (SPARK_Mode or else Restriction_Check_Required (SPARK))
+         if Restriction_Check_Required (SPARK)
            and then (Typ = 't' or else Ekind (Ent) = E_Package)
          then
             Error_Msg_Node_1 := Endl;

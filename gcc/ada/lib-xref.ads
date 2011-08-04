@@ -177,7 +177,6 @@ package Lib.Xref is
    --              e = end of spec
    --              H = abstract type
    --              i = implicit reference
-   --              I = object definition with initialization
    --              k = implicit reference to parent unit in child unit
    --              l = label on END line
    --              m = modification

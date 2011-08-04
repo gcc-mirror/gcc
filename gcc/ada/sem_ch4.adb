@@ -881,7 +881,7 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Call
 
    begin
-      if SPARK_Mode or else Restriction_Check_Required (SPARK) then
+      if Restriction_Check_Required (SPARK) then
          Check_Mixed_Parameter_And_Named_Associations;
       end if;
 

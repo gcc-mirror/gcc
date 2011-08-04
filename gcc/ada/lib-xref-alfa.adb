@@ -546,7 +546,7 @@ package body ALFA is
 
          function Is_Global_Constant (E : Entity_Id) return Boolean is
          begin
-            return Ekind (E) in E_Constant
+            return Ekind (E) = E_Constant
               and then Ekind_In (Scope (E), E_Package, E_Package_Body);
          end Is_Global_Constant;
 

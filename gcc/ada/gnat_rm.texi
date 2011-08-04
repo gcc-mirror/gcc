@@ -5018,7 +5018,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Test_Case (
-   [Name     =>] String_Expression
+   [Name     =>] static_string_Expression
   ,[Mode     =>] (Normal | Robustness)
  [, Requires =>  Boolean_Expression]
  [, Ensures  =>  Boolean_Expression]);
@@ -5047,13 +5047,22 @@ expression. The following is an example of use within a package spec:
 package Math_Functions is
    ...
    function Sqrt (Arg : Float) return Float;
-   pragma Test_Case (Name     => ``Test_1``,
+   pragma Test_Case (Name     => "Test 1",
                      Mode     => Normal,
                      Requires => Arg < 100,
                      Ensures  => Sqrt'Result < 10);
    ...
 end Math_Functions;
 @end smallexample
+
+@noindent
+The meaning of a test case is that, if the associated subprogram is
+executed in a context where @code{Requires} holds, then @code{Ensures}
+should hold when the subprogram returns. Mode @code{Normal} indicates
+that the input context should satisfy the normal precondition of the
+subprogram, and the output context should then satisfy its
+postcondition. More @code{Robustness} indicates that the normal pre- and
+postcondition of the subprogram should be ignored for this test case.
 
 @node Pragma Thread_Local_Storage
 @unnumberedsec Pragma Thread_Local_Storage

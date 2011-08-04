@@ -1,5 +1,34 @@
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
+	* sem_ch3.adb, sem_ch5.adb, sem_util.adb, sem_ch4.adb, sem_ch8.adb,
+	opt.ads, lib-xref.ads: Code clean up.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Update description of Test_Case
+	* gnat_ugn.texi: Typo.
+
+2011-08-04  Ed Falis  <falis@adacore.com>
+
+	* adaint.c (__gnat_get_number_of_cpus): fix typo in last checkin.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Suitable_Element): Skip field _parent on .NET/JVM when
+	it is of type Root_Controlled. This action eliminates fields Prev and
+	Next from type equality.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb: Correct typo.
+
+2011-08-04  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cohata.ads (Hash_Table_Type): default-initialize the Nodes
+	component.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
 	* sem_prag.adb (Check_Arg_Is_String_Literal): remove useless procedure
 	(Analyze_Pragma): allow static string expression for name of Test_Case,
 	instead of simply string literals.

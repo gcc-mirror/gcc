@@ -2448,7 +2448,7 @@ __gnat_number_of_cpus (void)
   if ((status & 1) != 0)
     cores = res;
 
-#elif defined (__WRS_CONFIG_SMP)
+#elif defined (_WRS_CONFIG_SMP)
   unsigned int vxCpuConfiguredGet (void);
 
   cores = vxCpuConfiguredGet ();
