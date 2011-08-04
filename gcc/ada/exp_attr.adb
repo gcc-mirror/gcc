@@ -1916,7 +1916,12 @@ package body Exp_Attr is
       begin
          if Present (Elaboration_Entity (Ent)) then
             Rewrite (N,
-              New_Occurrence_Of (Elaboration_Entity (Ent), Loc));
+              Make_Op_Ne (Loc,
+                Left_Opnd =>
+                  New_Occurrence_Of (Elaboration_Entity (Ent), Loc),
+                Right_Opnd =>
+                  Make_Integer_Literal (Loc, Uint_0)));
+            Analyze_And_Resolve (N, Typ);
          else
             Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
          end if;

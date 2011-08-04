@@ -144,17 +144,6 @@ package body ALFA is
       end loop;
    end dalfa;
 
-   ----------------
-   -- Initialize --
-   ----------------
-
-   procedure Initialize_ALFA_Tables is
-   begin
-      ALFA_File_Table.Init;
-      ALFA_Scope_Table.Init;
-      ALFA_Xref_Table.Init;
-   end Initialize_ALFA_Tables;
-
    -------------------------
    -- Get_Entity_For_Decl --
    -------------------------
@@ -222,6 +211,17 @@ package body ALFA is
 
       return E;
    end Get_Unique_Entity_For_Decl;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize_ALFA_Tables is
+   begin
+      ALFA_File_Table.Init;
+      ALFA_Scope_Table.Init;
+      ALFA_Xref_Table.Init;
+   end Initialize_ALFA_Tables;
 
    -----------
    -- palfa --

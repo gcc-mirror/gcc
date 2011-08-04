@@ -28,6 +28,7 @@ with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Attr; use Prj.Attr;
+with Prj.Env;
 with Prj.Err;  use Prj.Err;
 with Prj.Ext;  use Prj.Ext;
 with Prj.Nmsc; use Prj.Nmsc;
@@ -1971,10 +1972,6 @@ package body Prj.Proc is
                      & Get_Name_String (Index_Name) & ")", New_Value.Value);
                end if;
             end if;
-
-         elsif Name = Snames.Name_Project_Path then
-            Debug_Output
-              ("Defined project path");
          end if;
       end Process_Expression_For_Associative_Array;
 
@@ -1987,11 +1984,10 @@ package body Prj.Proc is
          New_Value    : Variable_Value)
       is
          Name : constant Name_Id := Name_Of (Current_Item, Node_Tree);
-         Var  : Variable_Id := No_Variable;
-
          Is_Attribute : constant Boolean :=
                           Kind_Of (Current_Item, Node_Tree) =
                             N_Attribute_Declaration;
+         Var  : Variable_Id := No_Variable;
 
       begin
          --  First, find the list where to find the variable or attribute.
@@ -2055,6 +2051,29 @@ package body Prj.Proc is
 
          else
             Shared.Variable_Elements.Table (Var).Value := New_Value;
+         end if;
+
+         if Name = Snames.Name_Project_Path then
+            if In_Tree.Is_Root_Tree then
+               declare
+                  Val : String_List_Id := New_Value.Values;
+               begin
+                  while Val /= Nil_String loop
+                     Prj.Env.Add_Directories
+                       (Child_Env.Project_Path,
+                        Get_Name_String
+                          (Shared.String_Elements.Table (Val).Value));
+                     Val := Shared.String_Elements.Table (Val).Next;
+                  end loop;
+               end;
+
+            else
+               if Current_Verbosity = High then
+                  Debug_Output
+                    ("'for Project_Path' has no effect except in"
+                     & " root aggregate");
+               end if;
+            end if;
          end if;
       end Process_Expression_Variable_Decl;
 

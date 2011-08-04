@@ -3463,7 +3463,7 @@ package body Checks is
 
       if Enable_Overflow_Checks
         and then not Is_Entity_Name (N)
-        and then  (Lor < Lo or else Hir > Hi)
+        and then (Lor < Lo or else Hir > Hi)
       then
          OK := False;
          return;

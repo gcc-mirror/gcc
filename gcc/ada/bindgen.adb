@@ -72,6 +72,7 @@ package body Bindgen is
    --  unit unconditionally, which is unpleasand, especially for ZFP etc.)
 
    Lib_Final_Built : Boolean := False;
+   --  Flag indicating whether the finalize_library rountine has been built
 
    ----------------------------------
    -- Interface_State Pragma Table --
@@ -243,6 +244,12 @@ package body Bindgen is
 
    procedure Gen_Adafinal_C;
    --  Generate the Adafinal procedure (C code case)
+
+   procedure Gen_Elab_Externals_Ada;
+   --  Generate sequence of external declarations for elaboration (Ada)
+
+   procedure Gen_Elab_Externals_C;
+   --  Generate sequence of external declarations for elaboration (C)
 
    procedure Gen_Elab_Calls_Ada;
    --  Generate sequence of elaboration calls (Ada code case)
@@ -421,13 +428,15 @@ package body Bindgen is
    begin
       WBI ("   procedure " & Ada_Final_Name.all & " is");
 
-      --  Do nothing if finalization is disabled
-
-      if Cumulative_Restrictions.Set (No_Finalization) then
+      if not Bind_Main_Program then
          WBI ("   begin");
-         WBI ("      null;");
+         if Lib_Final_Built then
+            WBI ("      finalize_library;");
+         else
+            WBI ("      null;");
+         end if;
 
-      --  General case
+      --  Main program case
 
       elsif VM_Target = No_VM then
          WBI ("      procedure s_stalib_adafinal;");
@@ -455,7 +464,17 @@ package body Bindgen is
    procedure Gen_Adafinal_C is
    begin
       WBI ("void " & Ada_Final_Name.all & " (void) {");
-      WBI ("   system__standard_library__adafinal ();");
+
+      if not Bind_Main_Program then
+         if Lib_Final_Built then
+            WBI ("   finalize_library ();");
+         end if;
+
+      --  Main program case
+
+      else
+         WBI ("   system__standard_library__adafinal ();");
+      end if;
       WBI ("}");
       WBI ("");
    end Gen_Adafinal_C;
@@ -470,86 +489,6 @@ package body Bindgen is
 
    begin
       WBI ("   procedure " & Ada_Init_Name.all & " is");
-
-      --  Generate externals for elaboration entities
-
-      for E in Elab_Order.First .. Elab_Order.Last loop
-         declare
-            Unum : constant Unit_Id := Elab_Order.Table (E);
-            U    : Unit_Record renames Units.Table (Unum);
-
-         begin
-            --  Check for Elab_Entity to be set for this unit
-
-            if U.Set_Elab_Entity
-
-            --  Don't generate reference for stand alone library
-
-              and then not U.SAL_Interface
-
-            --  Don't generate reference for predefined file in No_Run_Time
-            --  mode, since we don't include the object files in this case
-
-              and then not
-                (No_Run_Time_Mode
-                   and then Is_Predefined_File_Name (U.Sfile))
-            then
-               Set_String ("      ");
-               Set_String ("E");
-               Set_Unit_Number (Unum);
-
-               case VM_Target is
-                  when No_VM | JVM_Target =>
-                     Set_String (" : Boolean; pragma Import (Ada, ");
-                  when CLI_Target =>
-                     Set_String (" : Boolean; pragma Import (CIL, ");
-               end case;
-
-               Set_String ("E");
-               Set_Unit_Number (Unum);
-               Set_String (", """);
-               Get_Name_String (U.Uname);
-
-               --  In the case of JGNAT we need to emit an Import name that
-               --  includes the class name (using '$' separators in the case
-               --  of a child unit name).
-
-               if VM_Target /= No_VM then
-                  for J in 1 .. Name_Len - 2 loop
-                     if VM_Target = CLI_Target
-                       or else Name_Buffer (J) /= '.'
-                     then
-                        Set_Char (Name_Buffer (J));
-                     else
-                        Set_String ("$");
-                     end if;
-                  end loop;
-
-                  if VM_Target /= CLI_Target or else U.Unit_Kind = 's' then
-                     Set_String (".");
-                  else
-                     Set_String ("_pkg.");
-                  end if;
-
-                  --  If the unit name is very long, then split the
-                  --  Import link name across lines using "&" (occurs
-                  --  in some C2 tests).
-
-                  if 2 * Name_Len + 60 > Hostparm.Max_Line_Length then
-                     Set_String (""" &");
-                     Write_Statement_Buffer;
-                     Set_String ("         """);
-                  end if;
-               end if;
-
-               Set_Unit_Name;
-               Set_String ("_E"");");
-               Write_Statement_Buffer;
-            end if;
-         end;
-      end loop;
-
-      Write_Statement_Buffer;
 
       --  If the standard library is suppressed, then the only global variables
       --  that might be needed (by the Ravenscar profile) are the priority and
@@ -927,38 +866,39 @@ package body Bindgen is
          WBI ("      Initialize_Stack_Limit;");
       end if;
 
-      --  Attach Finalize_Library to the right soft link. Do it only when not
-      --  using a restricted run time, in which case tasks are
-      --  non-terminating, so we do not want library-level finalization.
+      --  In the main program case, attach finalize_library to the soft link.
+      --  Do it only when not using a restricted run time, in which case tasks
+      --  are non-terminating, so we do not want library-level finalization.
 
-      if not Configurable_Run_Time_On_Target then
-         if not Suppress_Standard_Library_On_Target then
-            WBI ("");
+      if Bind_Main_Program
+        and then not Configurable_Run_Time_On_Target
+        and then not Suppress_Standard_Library_On_Target
+      then
+         WBI ("");
 
-            if VM_Target = No_VM then
-               if Lib_Final_Built then
-                  Set_String ("      Finalize_Library_Objects := ");
-                  Set_String ("Finalize_Library'access;");
-               else
-                  Set_String ("      Finalize_Library_Objects := null;");
-               end if;
-
-            --  On VM targets use regular Ada to set the soft link
-
+         if VM_Target = No_VM then
+            if Lib_Final_Built then
+               Set_String ("      Finalize_Library_Objects := ");
+               Set_String ("finalize_library'access;");
             else
-               if Lib_Final_Built then
-                  Set_String
-                    ("      System.Soft_Links.Finalize_Library_Objects");
-                  Set_String (" := Finalize_Library'access;");
-               else
-                  Set_String
-                    ("      System.Soft_Links.Finalize_Library_Objects");
-                  Set_String (" := null;");
-               end if;
+               Set_String ("      Finalize_Library_Objects := null;");
             end if;
 
-            Write_Statement_Buffer;
+         --  On VM targets use regular Ada to set the soft link
+
+         else
+            if Lib_Final_Built then
+               Set_String
+                 ("      System.Soft_Links.Finalize_Library_Objects");
+               Set_String (" := finalize_library'access;");
+            else
+               Set_String
+                 ("      System.Soft_Links.Finalize_Library_Objects");
+               Set_String (" := null;");
+            end if;
          end if;
+
+         Write_Statement_Buffer;
       end if;
 
       --  Generate elaboration calls
@@ -1000,40 +940,6 @@ package body Bindgen is
    begin
       WBI ("void " & Ada_Init_Name.all & " (void)");
       WBI ("{");
-
-      --  Generate externals for elaboration entities
-
-      for E in Elab_Order.First .. Elab_Order.Last loop
-         declare
-            Unum : constant Unit_Id := Elab_Order.Table (E);
-            U    : Unit_Record renames Units.Table (Unum);
-
-         begin
-            --  Check for Elab entity to be set for this unit
-
-            if U.Set_Elab_Entity
-
-            --  Don't generate reference for stand alone library
-
-              and then not U.SAL_Interface
-
-            --  Don't generate reference for predefined file in No_Run_Time
-            --  mode, since we don't include the object files in this case
-
-              and then not
-                (No_Run_Time_Mode
-                   and then Is_Predefined_File_Name (U.Sfile))
-            then
-               Set_String ("   extern char ");
-               Get_Name_String (U.Uname);
-               Set_Unit_Name;
-               Set_String ("_E;");
-               Write_Statement_Buffer;
-            end if;
-         end;
-      end loop;
-
-      Write_Statement_Buffer;
 
       --  Standard library suppressed
 
@@ -1217,22 +1123,26 @@ package body Bindgen is
          Set_String (";");
          Write_Statement_Buffer;
 
+         --  Import entry point for elaboration time signal handler
+         --  installation, and indication of if it's been called previously.
+
+         WBI ("   extern int __gnat_handler_installed;");
          WBI ("");
 
          --  Install elaboration time signal handler
 
          WBI ("   if (__gnat_handler_installed == 0)");
-         WBI ("     {");
-         WBI ("        __gnat_install_handler ();");
-         WBI ("     }");
+         WBI ("      __gnat_install_handler ();");
 
-         --  Call feature enable/disable routine
+         --  Import entry point for environment feature enable/disable
+         --  routine, and indication that it's been called previously.
 
          if OpenVMS_On_Target then
+            WBI ("   extern int __gnat_features_set;");
+            WBI ("");
+
             WBI ("   if (__gnat_features_set == 0)");
-            WBI ("     {");
-            WBI ("        __gnat_set_features ();");
-            WBI ("     }");
+            WBI ("      __gnat_set_features ();");
          end if;
       end if;
 
@@ -1269,6 +1179,27 @@ package body Bindgen is
          Write_Statement_Buffer;
       end if;
 
+      --  In the main program case, attach finalize_library to the soft link.
+      --  Do it only when not using a restricted run time, in which case tasks
+      --  are non-terminating, so we do not want library-level finalization.
+
+      if Bind_Main_Program
+        and then not Configurable_Run_Time_On_Target
+        and then not Suppress_Standard_Library_On_Target
+      then
+         WBI ("");
+         WBI ("   extern void (*__gnat_finalize_library_objects)(void);");
+
+         if Lib_Final_Built then
+            Set_String ("   __gnat_finalize_library_objects = ");
+            Set_String ("&finalize_library;");
+         else
+            Set_String ("   __gnat_finalize_library_objects = 0;");
+         end if;
+
+         Write_Statement_Buffer;
+      end if;
+
       --  Generate elaboration calls
 
       WBI ("");
@@ -1276,6 +1207,130 @@ package body Bindgen is
       WBI ("}");
       WBI ("");
    end Gen_Adainit_C;
+
+   ----------------------------
+   -- Gen_Elab_Externals_Ada --
+   ----------------------------
+
+   procedure Gen_Elab_Externals_Ada is
+   begin
+      for E in Elab_Order.First .. Elab_Order.Last loop
+         declare
+            Unum : constant Unit_Id := Elab_Order.Table (E);
+            U    : Unit_Record renames Units.Table (Unum);
+
+         begin
+            --  Check for Elab_Entity to be set for this unit
+
+            if U.Set_Elab_Entity
+
+            --  Don't generate reference for stand alone library
+
+              and then not U.SAL_Interface
+
+            --  Don't generate reference for predefined file in No_Run_Time
+            --  mode, since we don't include the object files in this case
+
+              and then not
+                (No_Run_Time_Mode
+                   and then Is_Predefined_File_Name (U.Sfile))
+            then
+               Set_String ("   ");
+               Set_String ("E");
+               Set_Unit_Number (Unum);
+
+               case VM_Target is
+                  when No_VM | JVM_Target =>
+                     Set_String (" : Integer; pragma Import (Ada, ");
+                  when CLI_Target =>
+                     Set_String (" : Integer; pragma Import (CIL, ");
+               end case;
+
+               Set_String ("E");
+               Set_Unit_Number (Unum);
+               Set_String (", """);
+               Get_Name_String (U.Uname);
+
+               --  In the case of JGNAT we need to emit an Import name that
+               --  includes the class name (using '$' separators in the case
+               --  of a child unit name).
+
+               if VM_Target /= No_VM then
+                  for J in 1 .. Name_Len - 2 loop
+                     if VM_Target = CLI_Target
+                       or else Name_Buffer (J) /= '.'
+                     then
+                        Set_Char (Name_Buffer (J));
+                     else
+                        Set_String ("$");
+                     end if;
+                  end loop;
+
+                  if VM_Target /= CLI_Target or else U.Unit_Kind = 's' then
+                     Set_String (".");
+                  else
+                     Set_String ("_pkg.");
+                  end if;
+
+                  --  If the unit name is very long, then split the
+                  --  Import link name across lines using "&" (occurs
+                  --  in some C2 tests).
+
+                  if 2 * Name_Len + 60 > Hostparm.Max_Line_Length then
+                     Set_String (""" &");
+                     Write_Statement_Buffer;
+                     Set_String ("         """);
+                  end if;
+               end if;
+
+               Set_Unit_Name;
+               Set_String ("_E"");");
+               Write_Statement_Buffer;
+            end if;
+         end;
+      end loop;
+
+      WBI ("");
+   end Gen_Elab_Externals_Ada;
+
+   --------------------------
+   -- Gen_Elab_Externals_C --
+   --------------------------
+
+   procedure Gen_Elab_Externals_C is
+   begin
+      for E in Elab_Order.First .. Elab_Order.Last loop
+         declare
+            Unum : constant Unit_Id := Elab_Order.Table (E);
+            U    : Unit_Record renames Units.Table (Unum);
+
+         begin
+            --  Check for Elab entity to be set for this unit
+
+            if U.Set_Elab_Entity
+
+            --  Don't generate reference for stand alone library
+
+              and then not U.SAL_Interface
+
+            --  Don't generate reference for predefined file in No_Run_Time
+            --  mode, since we don't include the object files in this case
+
+              and then not
+                (No_Run_Time_Mode
+                   and then Is_Predefined_File_Name (U.Sfile))
+            then
+               Set_String ("extern int ");
+               Get_Name_String (U.Uname);
+               Set_Unit_Name;
+               Set_String ("_E;");
+               Write_Statement_Buffer;
+            end if;
+         end;
+      end loop;
+
+      WBI ("");
+   end Gen_Elab_Externals_C;
 
    ------------------------
    -- Gen_Elab_Calls_Ada --
@@ -1306,51 +1361,55 @@ package body Bindgen is
             if No_Run_Time_Mode and then Is_Predefined_File_Name (U.Sfile) then
                null;
 
+            --  Likewise if this is an interface to a stand alone library
+
+            elsif U.SAL_Interface then
+               null;
+
             --  Case of no elaboration code
 
             elsif U.No_Elab then
 
-               --  The only case in which we have to do something is if
-               --  this is a body, with a separate spec, where the separate
-               --  spec has an elaboration entity defined.
+               --  The only case in which we have to do something is if this
+               --  is a body, with a separate spec, where the separate spec
+               --  has an elaboration entity defined. In that case, this is
+               --  where we increment the elaboration entity.
 
-               --  In that case, this is where we set the elaboration entity
-               --  to True, we do not need to test if this has already been
-               --  done, since it is quicker to set the flag than to test it.
-
-               if not U.SAL_Interface and then U.Utype = Is_Body
+               if U.Utype = Is_Body
                  and then Units.Table (Unum_Spec).Set_Elab_Entity
                then
                   Set_String ("      E");
                   Set_Unit_Number (Unum_Spec);
-                  Set_String (" := True;");
+                  Set_String (" := E");
+                  Set_Unit_Number (Unum_Spec);
+                  Set_String (" + 1;");
                   Write_Statement_Buffer;
                end if;
 
             --  Here if elaboration code is present. If binding a library
             --  or if there is a non-Ada main subprogram then we generate:
 
-            --    if not uname_E then
+            --    if uname_E = 0 then
             --       uname'elab_[spec|body];
-            --       uname_E := True;
             --    end if;
+            --    uname_E := uname_E + 1;
 
             --  Otherwise, elaboration routines are called unconditionally:
 
             --    uname'elab_[spec|body];
-            --    uname_E := True;
+            --    uname_E := uname_E + 1;
 
-            --  The uname_E assignment is skipped if this is a separate spec,
-            --  since the assignment will be done when we process the body.
+            --  The uname_E increment is skipped if this is a separate spec,
+            --  since it will be done when we process the body.
 
-            elsif not U.SAL_Interface then
+            else
                if Force_Checking_Of_Elaboration_Flags or
                   Interface_Library_Unit or
                   (not Bind_Main_Program)
                then
-                  Set_String ("      if not E");
+                  Set_String ("      if E");
                   Set_Unit_Number (Unum_Spec);
-                  Set_String (" then");
+                  Set_String (" = 0 then");
                   Write_Statement_Buffer;
                   Set_String ("   ");
                end if;
@@ -1386,25 +1445,20 @@ package body Bindgen is
                Set_Char (';');
                Write_Statement_Buffer;
 
-               if U.Utype /= Is_Spec then
-                  if Force_Checking_Of_Elaboration_Flags or
-                     Interface_Library_Unit or
-                     (not Bind_Main_Program)
-                  then
-                     Set_String ("   ");
-                  end if;
-
-                  Set_String ("      E");
-                  Set_Unit_Number (Unum_Spec);
-                  Set_String (" := True;");
-                  Write_Statement_Buffer;
-               end if;
-
                if Force_Checking_Of_Elaboration_Flags or
                   Interface_Library_Unit or
                   (not Bind_Main_Program)
                then
                   WBI ("      end if;");
+               end if;
+
+               if U.Utype /= Is_Spec then
+                  Set_String ("      E");
+                  Set_Unit_Number (Unum_Spec);
+                  Set_String (" := E");
+                  Set_Unit_Number (Unum_Spec);
+                  Set_String (" + 1;");
+                  Write_Statement_Buffer;
                end if;
             end if;
          end;
@@ -1440,40 +1494,47 @@ package body Bindgen is
             if No_Run_Time_Mode and then Is_Predefined_File_Name (U.Sfile) then
                null;
 
+            --  Likewise if this is an interface to a stand alone library
+
+            elsif U.SAL_Interface then
+               null;
+
             --  Case of no elaboration code
 
             elsif U.No_Elab then
 
-               --  The only case in which we have to do something is if
-               --  this is a body, with a separate spec, where the separate
-               --  spec has an elaboration entity defined.
+               --  The only case in which we have to do something is if this
+               --  is a body, with a separate spec, where the separate spec
+               --  has an elaboration entity defined. In that case, this is
+               --  where we increment the elaboration entity.
 
-               --  In that case, this is where we set the elaboration entity
-               --  to True, we do not need to test if this has already been
-               --  done, since it is quicker to set the flag than to test it.
-
-               if not U.SAL_Interface and then U.Utype = Is_Body
+               if U.Utype = Is_Body
                  and then Units.Table (Unum_Spec).Set_Elab_Entity
                then
-                  Set_String ("   ");
                   Get_Name_String (U.Uname);
+
+                  Set_String ("   ");
                   Set_Unit_Name;
-                  Set_String ("_E = 1;");
+                  Set_String ("_E++;");
                   Write_Statement_Buffer;
                end if;
 
             --  Here if elaboration code is present. If binding a library
             --  or if there is a non-Ada main subprogram then we generate:
 
-            --    if (uname_E == 0) {
+            --    if (uname_E == 0)
             --       uname__elab[s|b] ();
-            --       uname_E++;
-            --    }
+            --    uname_E++;
 
-            --  The uname_E assignment is skipped if this is a separate spec,
-            --  since the assignment will be done when we process the body.
+            --  Otherwise, elaboration routines are called unconditionally:
 
-            elsif not U.SAL_Interface then
+            --    uname__elab[s|b] ();
+            --    uname_E++;
+
+            --  The uname_E increment is skipped if this is a separate spec,
+            --  since it will be done when we process the body.
+
+            else
                Get_Name_String (U.Uname);
 
                if Force_Checking_Of_Elaboration_Flags or
@@ -1482,7 +1543,7 @@ package body Bindgen is
                then
                   Set_String ("   if (");
                   Set_Unit_Name;
-                  Set_String ("_E == 0) {");
+                  Set_String ("_E == 0)");
                   Write_Statement_Buffer;
                   Set_String ("   ");
                end if;
@@ -1495,24 +1556,10 @@ package body Bindgen is
                Write_Statement_Buffer;
 
                if U.Utype /= Is_Spec then
-                  if Force_Checking_Of_Elaboration_Flags or
-                     Interface_Library_Unit or
-                     (not Bind_Main_Program)
-                  then
-                     Set_String ("   ");
-                  end if;
-
                   Set_String ("   ");
                   Set_Unit_Name;
                   Set_String ("_E++;");
                   Write_Statement_Buffer;
-               end if;
-
-               if Force_Checking_Of_Elaboration_Flags or
-                  Interface_Library_Unit or
-                  (not Bind_Main_Program)
-               then
-                  WBI ("   }");
                end if;
             end if;
          end;
@@ -1542,6 +1589,8 @@ package body Bindgen is
             Write_Statement_Buffer;
          end if;
       end loop;
+
+      WBI ("/* END ELABORATION DEFINITIONS */");
       WBI ("");
    end Gen_Elab_Defs_C;
 
@@ -1602,12 +1651,13 @@ package body Bindgen is
          if U.Unit_Kind = 'p'
            and then U.Has_Finalizer
            and then not U.Is_Generic
+           and then not U.SAL_Interface
            and then not U.No_Elab
          then
             if not Lib_Final_Built then
                Lib_Final_Built := True;
 
-               WBI ("   procedure Finalize_Library is");
+               WBI ("   procedure finalize_library is");
 
                --  The following flag is used to check for library-level
                --  exceptions raised during finalization. The symbol comes
@@ -1708,16 +1758,48 @@ package body Bindgen is
             Set_String (""");");
             Write_Statement_Buffer;
 
-            WBI ("      begin");
+            --  If binding a library or if there is a non-Ada main subprogram
+            --  then we generate:
 
-            --  Generate:
+            --    begin
+            --       uname_E := uname_E - 1;
+            --       if uname_E = 0 then
+            --          F<Count>;
+            --       end if;
+            --    end;
+
+            --  Otherwise, finalization routines are called unconditionally:
+
+            --    begin
+            --       uname_E := uname_E - 1;
             --       F<Count>;
             --    end;
+
+            WBI ("      begin");
+            Set_String ("         E");
+            Set_Unit_Number (Unum);
+            Set_String (" := E");
+            Set_Unit_Number (Unum);
+            Set_String (" - 1;");
+            Write_Statement_Buffer;
+
+            if Interface_Library_Unit or (not Bind_Main_Program) then
+               Set_String ("         if E");
+               Set_Unit_Number (Unum);
+               Set_String (" = 0 then");
+               Write_Statement_Buffer;
+               Set_String ("   ");
+            end if;
 
             Set_String ("         F");
             Set_Int    (Count);
             Set_Char   (';');
             Write_Statement_Buffer;
+
+            if Interface_Library_Unit or (not Bind_Main_Program) then
+               WBI ("         end if;");
+            end if;
+
             WBI ("      end;");
 
             Count := Count + 1;
@@ -1762,7 +1844,7 @@ package body Bindgen is
          end if;
 
          WBI ("      end if;");
-         WBI ("   end Finalize_Library;");
+         WBI ("   end finalize_library;");
          WBI ("");
       end if;
    end Gen_Finalize_Library_Ada;
@@ -1777,8 +1859,6 @@ package body Bindgen is
       Unum  : Unit_Id;
 
    begin
-      WBI ("   /* BEGIN FINALIZE */");
-
       for E in reverse Elab_Order.First .. Elab_Order.Last loop
          Unum := Elab_Order.Table (E);
          U    := Units.Table (Unum);
@@ -1788,9 +1868,14 @@ package body Bindgen is
          if U.Unit_Kind = 'p'
            and then U.Has_Finalizer
            and then not U.Is_Generic
+           and then not U.SAL_Interface
            and then not U.No_Elab
          then
-            Set_String ("   ");
+            if not Lib_Final_Built then
+               Lib_Final_Built := True;
+
+               WBI ("static void finalize_library(void) {");
+            end if;
 
             --  Dealing with package bodies is a little complicated. In such
             --  cases we must retrieve the package spec since it contains the
@@ -1803,6 +1888,34 @@ package body Bindgen is
                Uspec := U;
             end if;
 
+            Get_Name_String (Uspec.Uname);
+
+            --  If binding a library or if there is a non-Ada main subprogram
+            --  then we generate:
+
+            --    uname_E--;
+            --    if (uname_E == 0)
+            --       uname__finalize[S|B] ();
+
+            --  Otherwise, finalization routines are called unconditionally:
+
+            --    uname_E--;
+            --    uname__finalize[S|B] ();
+
+            Set_String ("   ");
+            Set_Unit_Name;
+            Set_String ("_E--;");
+            Write_Statement_Buffer;
+
+            if Interface_Library_Unit or (not Bind_Main_Program) then
+               Set_String ("   if (");
+               Set_Unit_Name;
+               Set_String ("_E == 0)");
+               Write_Statement_Buffer;
+               Set_String ("   ");
+            end if;
+
+            Set_String ("   ");
             Get_Name_String (Uspec.Uname);
             Set_Unit_Name;
             Set_String ("__finalize");
@@ -1826,8 +1939,10 @@ package body Bindgen is
          end if;
       end loop;
 
-      WBI ("   /* END FINALIZE */");
-      WBI ("");
+      if Lib_Final_Built then
+         WBI ("}");
+         WBI ("");
+      end if;
    end Gen_Finalize_Library_C;
 
    ---------------------------------
@@ -2124,15 +2239,10 @@ package body Bindgen is
    ----------------
 
    procedure Gen_Main_C is
-      Needs_Library_Finalization : constant Boolean :=
-                                     not Configurable_Run_Time_On_Target
-                                       and then Has_Finalizer;
-      --  For restricted run-time libraries (ZFP and Ravenscar) tasks are
-      --  non-terminating, so we do not want library-level finalization.
-
    begin
       if Exit_Status_Supported_On_Target then
          WBI ("#include <stdlib.h>");
+         WBI ("");
          Set_String ("int ");
       else
          Set_String ("void ");
@@ -2190,7 +2300,7 @@ package body Bindgen is
          WBI ("   gnat_argc = argc;");
          WBI ("   gnat_argv = argv;");
          WBI ("   gnat_envp = envp;");
-         WBI (" ");
+         WBI ("");
 
       --  If configurable run-time, then nothing to do, since in this case
       --  the gnat_argc/argv/envp variables are entirely suppressed.
@@ -2239,7 +2349,6 @@ package body Bindgen is
 
       if not No_Main_Subprogram then
          WBI ("   __gnat_break_start ();");
-         WBI (" ");
 
          --  Output main program name
 
@@ -2266,10 +2375,8 @@ package body Bindgen is
 
       --  Call adafinal if finalization active
 
-      if not Cumulative_Restrictions.Set (No_Finalization)
-        and then Needs_Library_Finalization
-      then
-         Gen_Finalize_Library_C;
+      if not Cumulative_Restrictions.Set (No_Finalization) then
+         WBI ("   " & Ada_Final_Name.all & " ();");
       end if;
 
       --  Outputs the dynamic stack measurement if needed
@@ -2798,27 +2905,27 @@ package body Bindgen is
             """__gnat_ada_main_program_name"");");
       end if;
 
-      if not Cumulative_Restrictions.Set (No_Finalization) then
-         WBI ("");
-         WBI ("   procedure " & Ada_Final_Name.all & ";");
-         WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
-              Ada_Final_Name.all & """);");
-      end if;
-
       WBI ("");
       WBI ("   procedure " & Ada_Init_Name.all & ";");
       WBI ("   pragma Export (C, " & Ada_Init_Name.all & ", """ &
            Ada_Init_Name.all & """);");
 
       --  If -a has been specified use pragma Linker_Constructor for the init
-      --  procedure. No need to use a similar pragma for the final procedure as
-      --  global finalization will occur when the executable finishes execution
-      --  and for plugins (shared stand-alone libraries that can be
-      --  "unloaded"), finalization should not occur automatically, otherwise
-      --  the main executable may not continue to work properly.
+      --  procedure and pragma Linker_Destructor for the final procedure.
 
       if Use_Pragma_Linker_Constructor then
          WBI ("   pragma Linker_Constructor (" & Ada_Init_Name.all & ");");
+      end if;
+
+      if not Cumulative_Restrictions.Set (No_Finalization) then
+         WBI ("");
+         WBI ("   procedure " & Ada_Final_Name.all & ";");
+         WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
+              Ada_Final_Name.all & """);");
+
+         if Use_Pragma_Linker_Constructor then
+            WBI ("   pragma Linker_Destructor (" & Ada_Final_Name.all & ");");
+         end if;
       end if;
 
       if Bind_Main_Program and then VM_Target = No_VM then
@@ -2933,6 +3040,10 @@ package body Bindgen is
       WBI ("");
       WBI ("package body " & Ada_Main & " is");
       WBI ("   pragma Warnings (Off);");
+      WBI ("");
+
+      --  Generate externals for elaboration entities
+      Gen_Elab_Externals_Ada;
 
       if not Suppress_Standard_Library_On_Target then
 
@@ -2964,11 +3075,11 @@ package body Bindgen is
       --  Generate the adafinal routine unless there is no finalization to do
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
-         Gen_Adafinal_Ada;
-
          if Needs_Library_Finalization then
             Gen_Finalize_Library_Ada;
          end if;
+
+         Gen_Adafinal_Ada;
       end if;
 
       Gen_Adainit_Ada;
@@ -3019,20 +3130,23 @@ package body Bindgen is
 
       Resolve_Binder_Options;
 
-      WBI ("extern void " & Ada_Final_Name.all & " (void);");
-
       --  If -a has been specified use __attribute__((constructor)) for the
-      --  init procedure. No need to use a similar featute for the final
-      --  procedure as global finalization will occur when the executable
-      --  finishes execution and for plugins (shared stand-alone libraries that
-      --  can be "unloaded"), finalization should not occur automatically,
-      --  otherwise the main executable may not continue to work properly.
+      --  init procedure and __attribute__((destructor)) for the final one.
 
       if Use_Pragma_Linker_Constructor then
          WBI ("extern void " & Ada_Init_Name.all &
               " (void) __attribute__((constructor));");
       else
          WBI ("extern void " & Ada_Init_Name.all & " (void);");
+      end if;
+
+      if not Cumulative_Restrictions.Set (No_Finalization) then
+         if Use_Pragma_Linker_Constructor then
+            WBI ("extern void " & Ada_Final_Name.all &
+                 " (void) __attribute__((destructor));");
+         else
+            WBI ("extern void " & Ada_Final_Name.all & " (void);");
+         end if;
       end if;
 
       WBI ("extern void system__standard_library__adafinal (void);");
@@ -3099,27 +3213,13 @@ package body Bindgen is
 
       WBI ("");
 
+      --  Generate externals for elaboration entities
+      Gen_Elab_Externals_C;
+
       Gen_Elab_Defs_C;
 
       if Needs_Library_Finalization then
          Gen_Finalize_Library_Defs_C;
-      end if;
-
-      --  Imported variables used only when we have a runtime
-
-      if not Suppress_Standard_Library_On_Target then
-
-         --  Track elaboration/finalization phase
-
-         WBI ("extern int  __gnat_handler_installed;");
-         WBI ("");
-
-         --  Track feature enable/disable on VMS
-
-         if OpenVMS_On_Target then
-            WBI ("extern int  __gnat_features_set;");
-            WBI ("");
-         end if;
       end if;
 
       --  Write argv/argc exit status stuff if main program case
@@ -3174,8 +3274,8 @@ package body Bindgen is
       --  (for the debugger to get initial control) is defined in this file.
 
       if Suppress_Standard_Library_On_Target then
-         WBI ("");
          WBI ("void __gnat_break_start (void) {}");
+         WBI ("");
       end if;
 
       --  Generate the __gnat_version and __gnat_ada_main_program_name info
@@ -3184,7 +3284,6 @@ package body Bindgen is
       --  when a C program uses 2 Ada libraries)
 
       if Bind_Main_Program then
-         WBI ("");
          WBI ("char __gnat_version[] = """ & Ver_Prefix &
                                    Gnat_Version_String & """;");
 
@@ -3193,12 +3292,16 @@ package body Bindgen is
          Set_Main_Program_Name;
          Set_String (""";");
          Write_Statement_Buffer;
+         WBI ("");
       end if;
 
-      --  Generate the adafinal routine. In no runtime mode, this is not
-      --  needed, since there is no finalization to do.
+      --  Generate the adafinal routine unless there is no finalization to do
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
+         if Needs_Library_Finalization then
+            Gen_Finalize_Library_C;
+         end if;
+
          Gen_Adafinal_C;
       end if;
 

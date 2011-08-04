@@ -1840,6 +1840,11 @@ package body Prj.Env is
          Self.Path := new String'(Tmp.all & Path_Separator & Path);
          Free (Tmp);
       end if;
+
+      if Current_Verbosity = High then
+         Debug_Output ("Adding directories to Project_Path: """
+                       & Path & '"');
+      end if;
    end Add_Directories;
 
    --------------------

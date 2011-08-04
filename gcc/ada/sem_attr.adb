@@ -295,9 +295,6 @@ package body Sem_Attr is
       procedure Check_Integer_Type;
       --  Verify that prefix of attribute N is an integer type
 
-      procedure Check_Library_Unit;
-      --  Verify that prefix of attribute N is a library unit
-
       procedure Check_Modular_Integer_Type;
       --  Verify that prefix of attribute N is a modular integer type
 
@@ -344,8 +341,8 @@ package body Sem_Attr is
       --  itself of the form of a library unit name. Note that this is
       --  quite different from Check_Program_Unit, since it only checks
       --  the syntactic form of the name, not the semantic identity. This
-      --  is because it is used with attributes (Elab_Body, Elab_Spec, and
-      --  UET_Address) which can refer to non-visible unit.
+      --  is because it is used with attributes (Elab_Body, Elab_Spec,
+      --  UET_Address and Elaborated) which can refer to non-visible unit.
 
       procedure Error_Attr (Msg : String; Error_Node : Node_Id);
       pragma No_Return (Error_Attr);
@@ -1302,17 +1299,6 @@ package body Sem_Attr is
          end if;
       end Check_Integer_Type;
 
-      ------------------------
-      -- Check_Library_Unit --
-      ------------------------
-
-      procedure Check_Library_Unit is
-      begin
-         if not Is_Compilation_Unit (Entity (P)) then
-            Error_Attr_P ("prefix of % attribute must be library unit");
-         end if;
-      end Check_Library_Unit;
-
       --------------------------------
       -- Check_Modular_Integer_Type --
       --------------------------------
@@ -1761,7 +1747,9 @@ package body Sem_Attr is
          if Nkind (Nod) = N_Identifier then
             return;
 
-         elsif Nkind (Nod) = N_Selected_Component then
+         elsif Nkind (Nod) = N_Selected_Component
+           or else Nkind (Nod) = N_Expanded_Name
+         then
             Check_Unit_Name (Prefix (Nod));
 
             if Nkind (Selector_Name (Nod)) = N_Identifier then
@@ -3003,7 +2991,7 @@ package body Sem_Attr is
 
       when Attribute_Elaborated =>
          Check_E0;
-         Check_Library_Unit;
+         Check_Unit_Name (P);
          Set_Etype (N, Standard_Boolean);
 
       ----------

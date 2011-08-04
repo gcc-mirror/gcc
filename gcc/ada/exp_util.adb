@@ -6634,7 +6634,7 @@ package body Exp_Util is
             Asn :=
               Make_Assignment_Statement (Loc,
                 Name       => New_Occurrence_Of (Ent, Loc),
-                Expression => New_Occurrence_Of (Standard_True, Loc));
+                Expression => Make_Integer_Literal (Loc, Uint_1));
 
             if Nkind (Parent (N)) = N_Subunit then
                Insert_After (Corresponding_Stub (Parent (N)), Asn);

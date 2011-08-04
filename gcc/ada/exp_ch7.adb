@@ -2897,6 +2897,7 @@ package body Exp_Ch7 is
    is
       A_Expr : Node_Id;
       E_Decl : Node_Id;
+      Result : List_Id;
 
    begin
       if Restriction_Active (No_Exception_Propagation) then
@@ -2907,35 +2908,85 @@ package body Exp_Ch7 is
       pragma Assert (Present (E_Id));
       pragma Assert (Present (Raised_Id));
 
-      --  Generate:
-      --    Exception_Identity (Get_Current_Excep.all.all) =
-      --      Standard'Abort_Signal'Identity;
+      Result := New_List;
+
+      --  In certain scenarios, finalization can be triggered by an abort. If
+      --  the finalization itself fails and raises an exception, the resulting
+      --  Program_Error must be supressed and replaced by an abort signal. In
+      --  order to detect this scenario, save the state of entry into the
+      --  finalization code.
 
       if Abort_Allowed then
-         A_Expr :=
-           Make_Op_Eq (Loc,
-             Left_Opnd =>
-               Make_Function_Call (Loc,
-                 Name =>
-                   New_Reference_To (RTE (RE_Exception_Identity), Loc),
-               Parameter_Associations => New_List (
-                 Make_Explicit_Dereference (Loc,
-                   Prefix =>
-                     Make_Function_Call (Loc,
-                       Name =>
-                         Make_Explicit_Dereference (Loc,
-                           Prefix =>
-                             New_Reference_To
-                               (RTE (RE_Get_Current_Excep), Loc)))))),
+         declare
+            Temp_Id : constant Entity_Id := Make_Temporary (Loc, 'E');
 
-             Right_Opnd =>
-               Make_Attribute_Reference (Loc,
-                 Prefix =>
-                   New_Reference_To (Stand.Abort_Signal, Loc),
-                 Attribute_Name => Name_Identity));
+         begin
+            --  Generate:
+            --    Temp : constant Exception_Occurrence_Access :=
+            --             Get_Current_Excep.all;
+
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp_Id,
+                Constant_Present => True,
+                Object_Definition =>
+                  New_Reference_To (RTE (RE_Exception_Occurrence_Access), Loc),
+                Expression =>
+                  Make_Function_Call (Loc,
+                    Name =>
+                      Make_Explicit_Dereference (Loc,
+                        Prefix =>
+                          New_Reference_To
+                            (RTE (RE_Get_Current_Excep), Loc)))));
+
+            --  Generate:
+            --    Temp /= null
+            --      and then Exception_Identity (Temp.all) =
+            --                 Standard'Abort_Signal'Identity;
+
+            A_Expr :=
+              Make_And_Then (Loc,
+                Left_Opnd =>
+                  Make_Op_Ne (Loc,
+                    Left_Opnd =>
+                      New_Reference_To (Temp_Id, Loc),
+                    Right_Opnd =>
+                      Make_Null (Loc)),
+
+                Right_Opnd =>
+                  Make_Op_Eq (Loc,
+                    Left_Opnd =>
+                      Make_Function_Call (Loc,
+                        Name =>
+                          New_Reference_To (RTE (RE_Exception_Identity), Loc),
+                        Parameter_Associations => New_List (
+                          Make_Explicit_Dereference (Loc,
+                            Prefix =>
+                              New_Reference_To (Temp_Id, Loc)))),
+
+                    Right_Opnd =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix =>
+                          New_Reference_To (Stand.Abort_Signal, Loc),
+                        Attribute_Name => Name_Identity)));
+         end;
+
+      --  No abort
+
       else
          A_Expr := New_Reference_To (Standard_False, Loc);
       end if;
+
+      --  Generate:
+      --    Abort_Id : constant Boolean := <A_Expr>;
+
+      Append_To (Result,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Abort_Id,
+          Constant_Present => True,
+          Object_Definition =>
+            New_Reference_To (Standard_Boolean, Loc),
+          Expression => A_Expr));
 
       --  Generate:
       --    E_Id : Exception_Occurrence;
@@ -2947,30 +2998,20 @@ package body Exp_Ch7 is
             New_Reference_To (RTE (RE_Exception_Occurrence), Loc));
       Set_No_Initialization (E_Decl);
 
-      return
-        New_List (
+      Append_To (Result, E_Decl);
 
-         --  Abort_Id
+      --  Generate:
+      --    Raised_Id : Boolean := False;
 
-          Make_Object_Declaration (Loc,
-            Defining_Identifier => Abort_Id,
-            Constant_Present => True,
-            Object_Definition =>
-              New_Reference_To (Standard_Boolean, Loc),
-            Expression => A_Expr),
+      Append_To (Result,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Raised_Id,
+          Object_Definition =>
+            New_Reference_To (Standard_Boolean, Loc),
+          Expression =>
+            New_Reference_To (Standard_False, Loc)));
 
-         --  E_Id
-
-          E_Decl,
-
-         --  Raised_Id
-
-          Make_Object_Declaration (Loc,
-            Defining_Identifier => Raised_Id,
-            Object_Definition =>
-              New_Reference_To (Standard_Boolean, Loc),
-            Expression =>
-              New_Reference_To (Standard_False, Loc)));
+      return Result;
    end Build_Object_Declarations;
 
    ---------------------------
@@ -4600,9 +4641,12 @@ package body Exp_Ch7 is
       --  controlled elements. Generate:
 
       --    declare
+      --       Temp   : constant Exception_Occurrence_Access :=
+      --                  Get_Current_Excep.all;
       --       Abort  : constant Boolean :=
-      --                  Exception_Identity (Get_Current_Excep.all) =
-      --                    Standard'Abort_Signal'Identity;
+      --                  Temp /= null
+      --                    and then Exception_Identity (Temp_Id.all) =
+      --                               Standard'Abort_Signal'Identity;
       --         <or>
       --       Abort  : constant Boolean := False;  --  no abort
 
@@ -4653,9 +4697,12 @@ package body Exp_Ch7 is
       --             exception
       --                when others =>
       --                   declare
+      --                      Temp   : constant Exception_Occurrence_Access :=
+      --                                 Get_Current_Excep.all;
       --                      Abort  : constant Boolean :=
-      --                        Exception_Identity (Get_Current_Excep.all) =
-      --                          Standard'Abort_Signal'Identity;
+      --                        Temp /= null
+      --                          and then Exception_Identity (Temp_Id.all) =
+      --                                     Standard'Abort_Signal'Identity;
       --                        <or>
       --                      Abort  : constant Boolean := False; --  no abort
       --                      E      : Exception_Occurence;
@@ -5513,9 +5560,12 @@ package body Exp_Ch7 is
       --  may have discriminants and contain variant parts. Generate:
 
       --    declare
+      --       Temp   : constant Exception_Occurrence_Access :=
+      --                  Get_Current_Excep.all;
       --       Abort  : constant Boolean :=
-      --                  Exception_Identity (Get_Current_Excep.all) =
-      --                    Standard'Abort_Signal'Identity;
+      --                  Temp /= null
+      --                    and then Exception_Identity (Temp_Id.all) =
+      --                               Standard'Abort_Signal'Identity;
       --         <or>
       --       Abort  : constant Boolean := False;  --  no abort
       --       E      : Exception_Occurence;
