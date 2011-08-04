@@ -1,3 +1,26 @@
+2011-08-04  Bob Duff  <duff@adacore.com>
+
+	* sem_type.adb (Covers): If T2 is a subtype of a class-wide type, we
+	need to compare with Class_Wide_Type (T2), in order to get at the
+	original class-wide type node.
+	* sem_type.ads (Covers): Improve the comment.
+	* einfo.ads (Class_Wide_Type): Improve the comment.
+	* exp_intr.adb (Expand_Unc_Deallocation): Remove unnecessary setting of
+	the type of the Deref.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Document that Test_Case pragma can only appear on
+	separate declarations.
+	* sem_prag.adb (procedure Check_Identifier_Is_One_Of): new procedure to
+	check identifier of pragma argument.
+	(Chain_TC): check that no other test case associated to the same entity
+	share the same name.
+	(Check_Test_Case): disallow test case inside subprogram body
+	(Analyze_Pragma): correct call to check identifier and not argument
+	* sem_util.adb, sem_util.ads (Get_Name_From_Test_Case_Pragma): new
+	function gets name from test case pragma.
+
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
 	* gnat_rm.texi: Document new pragma and aspect.
