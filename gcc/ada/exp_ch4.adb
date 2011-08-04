@@ -455,7 +455,8 @@ package body Exp_Ch4 is
              or else Is_Library_Level_Entity (Ptr_Typ))
       then
          declare
-            Pool_Id : constant Entity_Id := RTE (RE_Global_Pool_Object);
+            Pool_Id : constant Entity_Id :=
+              Get_Global_Pool_For_Access_Type (Ptr_Typ);
             Scop    : Node_Id := Cunit_Entity (Current_Sem_Unit);
 
          begin

@@ -1696,6 +1696,38 @@ package body Makeutl is
             return No_Main_Info;
          else
             Current := Current + 1;
+
+            --  If not using projects, and in the gnatmake case, the main file
+            --  may have not have the extension. Try ".adb" first then ".ads"
+
+            if Names.Table (Current).Project = No_Project then
+               declare
+                  Orig_Main : constant File_Name_Type :=
+                    Names.Table (Current).File;
+                  Current_Main : File_Name_Type;
+
+               begin
+                  if Strip_Suffix (Orig_Main) = Orig_Main then
+                     Get_Name_String (Orig_Main);
+                     Add_Str_To_Name_Buffer (".adb");
+                     Current_Main := Name_Find;
+
+                     if Full_Source_Name (Current_Main) = No_File then
+                        Get_Name_String (Orig_Main);
+                        Add_Str_To_Name_Buffer (".ads");
+                        Current_Main := Name_Find;
+
+                        if Full_Source_Name (Current_Main) /= No_File then
+                           Names.Table (Current).File := Current_Main;
+                        end if;
+
+                     else
+                        Names.Table (Current).File := Current_Main;
+                     end if;
+                  end if;
+               end;
+            end if;
+
             return Names.Table (Current);
          end if;
       end Next_Main;

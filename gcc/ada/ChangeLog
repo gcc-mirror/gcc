@@ -1,5 +1,24 @@
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
+	* make.adb, makeutl.adb, makeutl.ads (Make): major refactoring.
+	Create several new subprograms to move code out of Make. This makes the
+	code more readable, removes code duplication, and is a preparation work
+	for adding support for aggregate projects.
+
+2011-08-04  Tristan Gingold  <gingold@adacore.com>
+
+	* s-po32gl.ads, s-po32gl.adb: New files.
+	* exp_ch7.ads (Get_Global_Pool_For_Access_Type): New function.
+	* exp_ch7.adb (Get_Global_Pool_For_Access_Type): New function.
+	(Build_Finalization_Collection): Use it.
+	* exp_ch4.adb (Complete_Controlled_Allocation): Ditto.
+	* rtsfind.ads: System_Pool_32_Global, Re_Global_Pool_32_Object: New
+	literals.
+	* gcc-interface/Makefile.in: Use s-po32gl.o on VMS.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
 	* makeutl.adb (Complete_Mains): add support for specs with no suffix on
 	the command line.
 

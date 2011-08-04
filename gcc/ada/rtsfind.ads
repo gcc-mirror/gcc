@@ -324,6 +324,7 @@ package Rtsfind is
       System_Pack_63,
       System_Parameters,
       System_Partition_Interface,
+      System_Pool_32_Global,
       System_Pool_Global,
       System_Pool_Empty,
       System_Pool_Local,
@@ -1153,6 +1154,8 @@ package Rtsfind is
      RE_Get_RAS_Info,                    -- System.Partition_Interface
 
      RE_Global_Pool_Object,              -- System.Pool_Global
+
+     RE_Global_Pool_32_Object,           -- System.Pool_32_Global
 
      RE_Stack_Bounded_Pool,              -- System.Pool_Size
 
@@ -2451,6 +2454,8 @@ package Rtsfind is
      RE_TC_Object                        => System_Partition_Interface,
 
      RE_Global_Pool_Object               => System_Pool_Global,
+
+     RE_Global_Pool_32_Object            => System_Pool_32_Global,
 
      RE_Stack_Bounded_Pool               => System_Pool_Size,
 

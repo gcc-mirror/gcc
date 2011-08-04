@@ -1574,6 +1574,7 @@ adamsg.o: adamsg.msg
   GNATLIB_SHARED=gnatlib-shared-vms
   EXTRA_LIBGNAT_SRCS+=adamsg.msg
   EXTRA_LIBGNAT_OBJS+=adamsg.o
+  EXTRA_GNATRTL_NONTASKING_OBJS+-s-po32gl.o
   EXTRA_GNATRTL_TASKING_OBJS=s-tpopde.o
   EXTRA_GNATTOOLS = \
      ../../gnatsym$(exeext)
