@@ -3052,10 +3052,12 @@ package body Sem_Ch3 is
       --  The object is in ALFA if-and-only-if its type is in ALFA and it is
       --  not aliased.
 
-      if Is_In_ALFA (T) and then not Aliased_Present (N) then
-         Set_Is_In_ALFA (Id);
+      if not Is_In_ALFA (T) then
+         Mark_Non_ALFA_Subprogram ("object type is not in 'A'L'F'A", N);
+      elsif Aliased_Present (N) then
+         Mark_Non_ALFA_Subprogram ("ALIASED is not in 'A'L'F'A", N);
       else
-         Mark_Non_ALFA_Subprogram;
+         Set_Is_In_ALFA (Id);
       end if;
 
       --  These checks should be performed before the initialization expression

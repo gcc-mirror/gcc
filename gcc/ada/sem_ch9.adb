@@ -101,7 +101,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("abort statement is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("abort statement is not allowed", N);
 
       T_Name := First (Names (N));
@@ -140,7 +140,7 @@ package body Sem_Ch9 is
    procedure Analyze_Accept_Alternative (N : Node_Id) is
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("accept is not in 'A'L'F'A", N);
 
       if Present (Pragmas_Before (N)) then
          Analyze_List (Pragmas_Before (N));
@@ -174,7 +174,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("accept statement is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("accept statement is not allowed", N);
 
       --  Entry name is initialized to Any_Id. It should get reset to the
@@ -406,7 +406,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("select statement is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("select statement is not allowed", N);
       Check_Restriction (Max_Asynchronous_Select_Nesting, N);
       Check_Restriction (No_Select_Statements, N);
@@ -453,7 +453,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("select statement is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("select statement is not allowed", N);
       Check_Restriction (No_Select_Statements, N);
 
@@ -500,7 +500,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("delay is not in 'A'L'F'A", N);
       Check_Restriction (No_Delay, N);
 
       if Present (Pragmas_Before (N)) then
@@ -552,7 +552,7 @@ package body Sem_Ch9 is
       E : constant Node_Id := Expression (N);
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("delay statement is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("delay statement is not allowed", N);
       Check_Restriction (No_Relative_Delay, N);
       Check_Restriction (No_Delay, N);
@@ -571,7 +571,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("delay statement is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("delay statement is not allowed", N);
       Check_Restriction (No_Delay, N);
       Check_Potentially_Blocking_Operation (N);
@@ -600,7 +600,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("entry is not in 'A'L'F'A", N);
 
       --  Entry_Name is initialized to Any_Id. It should get reset to the
       --  matching entry entity. An error is signalled if it is not reset
@@ -833,7 +833,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("entry is not in 'A'L'F'A", N);
 
       if Present (Index) then
          Analyze (Index);
@@ -861,7 +861,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("entry call is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("entry call is not allowed", N);
 
       if Present (Pragmas_Before (N)) then
@@ -897,7 +897,7 @@ package body Sem_Ch9 is
    begin
       Generate_Definition (Def_Id);
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("entry is not in 'A'L'F'A", N);
 
       --  Case of no discrete subtype definition
 
@@ -967,7 +967,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("entry is not in 'A'L'F'A", N);
       Analyze (Def);
 
       --  There is no elaboration of the entry index specification. Therefore,
@@ -1009,7 +1009,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("protected body is not in 'A'L'F'A", N);
       Set_Ekind (Body_Id, E_Protected_Body);
       Spec_Id := Find_Concurrent_Spec (Body_Id);
 
@@ -1128,7 +1128,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("protected definition is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("protected definition is not allowed", N);
       Analyze_Declarations (Visible_Declarations (N));
 
@@ -1182,7 +1182,7 @@ package body Sem_Ch9 is
       end if;
 
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("protected type is not in 'A'L'F'A", N);
       Check_Restriction (No_Protected_Types, N);
 
       T := Find_Type_Name (N);
@@ -1324,7 +1324,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("requeue statement is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("requeue statement is not allowed", N);
       Check_Restriction (No_Requeue_Statements, N);
       Check_Unreachable_Code (N);
@@ -1599,7 +1599,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("select statement is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("select statement is not allowed", N);
       Check_Restriction (No_Select_Statements, N);
 
@@ -1720,7 +1720,7 @@ package body Sem_Ch9 is
    begin
       Generate_Definition (Id);
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("protected object is not in 'A'L'F'A", N);
 
       --  The node is rewritten as a protected type declaration, in exact
       --  analogy with what is done with single tasks.
@@ -1782,7 +1782,7 @@ package body Sem_Ch9 is
    begin
       Generate_Definition (Id);
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("task is not in 'A'L'F'A", N);
 
       --  The node is rewritten as a task type declaration, followed by an
       --  object declaration of that anonymous task type.
@@ -1860,7 +1860,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("task body is not in 'A'L'F'A", N);
       Set_Ekind (Body_Id, E_Task_Body);
       Set_Scope (Body_Id, Current_Scope);
       Spec_Id := Find_Concurrent_Spec (Body_Id);
@@ -1981,7 +1981,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("task definition is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("task definition is not allowed", N);
 
       if Present (Visible_Declarations (N)) then
@@ -2016,7 +2016,7 @@ package body Sem_Ch9 is
    begin
       Check_Restriction (No_Tasking, N);
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("task type is not in 'A'L'F'A", N);
       T := Find_Type_Name (N);
       Generate_Definition (T);
 
@@ -2122,7 +2122,7 @@ package body Sem_Ch9 is
    procedure Analyze_Terminate_Alternative (N : Node_Id) is
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("terminate is not in 'A'L'F'A", N);
 
       if Present (Pragmas_Before (N)) then
          Analyze_List (Pragmas_Before (N));
@@ -2144,7 +2144,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("select statement is not in 'A'L'F'A", N);
       Check_SPARK_Restriction ("select statement is not allowed", N);
       Check_Restriction (No_Select_Statements, N);
 
@@ -2181,7 +2181,7 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Mark_Non_ALFA_Subprogram;
+      Mark_Non_ALFA_Subprogram ("triggering statement is not in 'A'L'F'A", N);
 
       if Present (Pragmas_Before (N)) then
          Analyze_List (Pragmas_Before (N));

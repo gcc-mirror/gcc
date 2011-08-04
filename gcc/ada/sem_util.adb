@@ -141,9 +141,13 @@ package body Sem_Util is
    --  T is a derived tagged type. Check whether the type extension is null.
    --  If the parent type is fully initialized, T can be treated as such.
 
-   procedure Mark_Non_ALFA_Subprogram_Unconditional;
+   procedure Mark_Non_ALFA_Subprogram_Unconditional
+     (Msg : String;
+      N   : Node_Id);
    --  Perform the action for Mark_Non_ALFA_Subprogram_Body, which allows the
-   --  latter to be small and inlined.
+   --  latter to be small and inlined. If the subprogram being marked as not in
+   --  ALFA is annotated with Formal_Proof being On, then an error is issued
+   --  with message Msg on node N.
 
    ------------------------------
    --  Abstract_Interface_List --
@@ -2323,13 +2327,13 @@ package body Sem_Util is
    -- Mark_Non_ALFA_Subprogram --
    ------------------------------
 
-   procedure Mark_Non_ALFA_Subprogram is
+   procedure Mark_Non_ALFA_Subprogram (Msg : String; N : Node_Id) is
    begin
       --  Isolate marking of the current subprogram body so that the body of
       --  Mark_Non_ALFA_Subprogram is small and inlined.
 
       if ALFA_Mode then
-         Mark_Non_ALFA_Subprogram_Unconditional;
+         Mark_Non_ALFA_Subprogram_Unconditional (Msg, N);
       end if;
    end Mark_Non_ALFA_Subprogram;
 
@@ -2337,7 +2341,10 @@ package body Sem_Util is
    -- Mark_Non_ALFA_Subprogram_Unconditional --
    --------------------------------------------
 
-   procedure Mark_Non_ALFA_Subprogram_Unconditional is
+   procedure Mark_Non_ALFA_Subprogram_Unconditional
+     (Msg : String;
+      N   : Node_Id)
+   is
       Cur_Subp : constant Entity_Id := Current_Subprogram;
 
    begin
@@ -2345,12 +2352,22 @@ package body Sem_Util is
         and then (Is_Subprogram (Cur_Subp)
                    or else Is_Generic_Subprogram (Cur_Subp))
       then
-         --  If the non-ALFA construct is in a precondition or postcondition,
-         --  then mark the subprogram as not in ALFA. Otherwise, mark the
-         --  subprogram body as not in ALFA.
+         --  If the subprogram has been annotated with Formal_Proof being On,
+         --  then an error must be issued to notify the user that this
+         --  subprogram unexpectedly falls outside the ALFA subset.
 
-         --  This comment just says what is done, but not why ??? and it
-         --  just repeats what is in the spec ???
+         if Formal_Proof_On (Cur_Subp) then
+            Error_Msg_F (Msg, N);
+         end if;
+
+         --  If the non-ALFA construct is in a precondition or postcondition,
+         --  then mark the subprogram as not in ALFA, because neither the
+         --  subprogram nor its callers can be proved formally.
+
+         --  If the non-ALFA construct is in a regular piece of code inside the
+         --  body of the subprogram, then mark the subprogram body as not in
+         --  ALFA, because the subprogram cannot be proved formally, but its
+         --  callers could.
 
          if In_Pre_Post_Expression then
             Set_Is_In_ALFA (Cur_Subp, False);

@@ -1,5 +1,34 @@
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
+	* einfo.adb, einfo.ads (Formal_Proof_On): new flag set on subprogram
+	entities whose body contains an Annotate pragma which forces formal
+	proof on this body.
+	* sem_ch11.adb, sem_ch2.adb, sem_ch3.adb, sem_ch4.adb, sem_ch5.adb,
+	sem_ch6.adb, sem_ch9.adb, sem_res.adb: Adapt call to
+	Mark_Non_ALFA_Subprogram to pass in a message and node.
+	* sem_prag.adb (Analyze_Pragma): add treatment of pragma Annotate
+	(Forma_Proof, On) which sets the flag Formal_Proof_On in the
+	surrounding subprogram.
+	* sem_util.adb, sem_util.ads (Mark_Non_ALFA_Subprogram,
+	Mark_Non_ALFA_Subprogram_Unconditional): if the subprogram being marked
+	as not in ALFA is annotated with Formal_Proof being On, then an error
+	is issued based on the additional parameters for message and node.
+	* snames.ads-tmpl (Name_Formal_Proof): new name for annotation.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Class_Wide_Type): Do not generate
+	Finalize_Address when CodePeer is enabled.
+
+2011-08-04  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_tmp_name): Use _tempnam() instead of tempnam() as
+	the latter returns a pointer to a static buffer which is deallocated
+	at the end of the routine.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
 	* sem_ch3.adb (Array_Type_Declaration): move test for type in ALFA
 	after index creation; mark unconstrained base array type generated as
 	being in/not in ALFA as well

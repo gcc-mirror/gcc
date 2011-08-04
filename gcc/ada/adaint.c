@@ -1183,7 +1183,7 @@ __gnat_tmp_name (char *tmp_filename)
        directory specified by P_tmpdir in stdio.h if c:\temp does not
        exist. The filename will be created with the prefix "gnat-".  */
 
-    pname = (char *) tempnam ("c:\\temp", "gnat-");
+    pname = (char *) _tempnam ("c:\\temp", "gnat-");
 
     /* if pname is NULL, the file was not created properly, the disk is full
        or there is no more free temporary files */

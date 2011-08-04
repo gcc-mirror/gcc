@@ -5576,6 +5576,12 @@ package body Exp_Ch3 is
       if Restriction_Active (No_Finalization) then
          return;
 
+      --  Do not create TSS routine Finalize_Address when dispatching calls are
+      --  disabled since the core of the routine is a dispatching call.
+
+      elsif Restriction_Active (No_Dispatching_Calls) then
+         return;
+
       --  Do not create TSS routine Finalize_Address for concurrent class-wide
       --  types. Ignore C, C++, CIL and Java types since it is assumed that the
       --  non-Ada side will handle their destruction.
@@ -5588,16 +5594,16 @@ package body Exp_Ch3 is
       then
          return;
 
-      --  Do not create TSS routine Finalize_Address when dispatching calls are
-      --  disabled since the core of the routine is a dispatching call.
-
-      elsif Restriction_Active (No_Dispatching_Calls) then
-         return;
-
       --  Do not create TSS routine Finalize_Address for .NET/JVM because these
       --  targets do not support address arithmetic and unchecked conversions.
 
       elsif VM_Target /= No_VM then
+         return;
+
+      --  Do not create TSS routine Finalize_Address when compiling in CodePeer
+      --  mode since the routine contains an Unchecked_Conversion.
+
+      elsif CodePeer_Mode then
          return;
       end if;
 
