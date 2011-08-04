@@ -1510,7 +1510,9 @@ package body Makeutl is
                            Source := No_Source;
                         end if;
 
-                        if Source = No_Source then
+                        if Source = No_Source
+                          and then not Is_Absolute
+                        then
 
                            --  Still not found? Maybe we have a unit name
 

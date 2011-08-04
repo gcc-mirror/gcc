@@ -1,5 +1,17 @@
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
+	* makeutl.adb (Complete_Mains): if the user has passed a relative file
+	name on the command line (for instance "../dummy"), never assume it can
+	be a unit name.
+
+2011-08-04  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb: Remove code the reference or create the
+	Break_Start/__gnat_break_start procedure.
+	* s-stalib.adb (Break_Start): Removed.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
 	* make.adb, makeutl.adb, makeutl.ads (Compute_Builder_Switches): now
 	shared with gprbuild.
 
