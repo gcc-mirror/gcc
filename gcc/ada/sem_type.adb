@@ -1208,7 +1208,7 @@ package body Sem_Type is
 
       function Operand_Type return Entity_Id;
       --  Determine type of operand for an equality operation, to apply
-      --  Ada2005 rules to equality on anonymous access types.
+      --  Ada 2005 rules to equality on anonymous access types.
 
       function Standard_Operator return Boolean;
       --  Check whether subprogram is predefined operator declared in Standard.
@@ -1287,14 +1287,15 @@ package body Sem_Type is
 
       function Operand_Type return Entity_Id is
          Opnd : Node_Id;
+
       begin
          if Nkind (N) = N_Function_Call then
             Opnd := First_Actual (N);
          else
             Opnd := Left_Opnd (N);
          end if;
-         return Etype (Opnd);
 
+         return Etype (Opnd);
       end Operand_Type;
 
       ------------------------
@@ -1927,14 +1928,14 @@ package body Sem_Type is
             --  may be an operator or a function call.
 
             elsif (Chars (Nam1) = Name_Op_Eq
-                  or else
-                Chars (Nam1) = Name_Op_Ne)
+                     or else
+                   Chars (Nam1) = Name_Op_Ne)
               and then Ada_Version >= Ada_2005
               and then Etype (User_Subp) = Standard_Boolean
               and then Ekind (Operand_Type) = E_Anonymous_Access_Type
               and then
                 In_Same_List (Parent (Designated_Type (Operand_Type)),
-                                    Unit_Declaration_Node (User_Subp))
+                              Unit_Declaration_Node (User_Subp))
             then
                if It2.Nam = Predef_Subp then
                   return It1;
@@ -2675,6 +2676,7 @@ package body Sem_Type is
             end if;
 
             Par := Etype (Full_View (BT2));
+
          else
             Par := Etype (BT2);
          end if;

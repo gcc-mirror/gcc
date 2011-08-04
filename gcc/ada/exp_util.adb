@@ -3888,13 +3888,13 @@ package body Exp_Util is
                                      N_Selected_Component)
                then
                   Ren_Obj := Prefix (Ren_Obj);
-                  Change  := True;
+                  Change := True;
 
                elsif Nkind_In (Ren_Obj, N_Type_Conversion,
                                         N_Unchecked_Type_Conversion)
                then
                   Ren_Obj := Expression (Ren_Obj);
-                  Change  := True;
+                  Change := True;
                end if;
             end loop;
 
@@ -3909,8 +3909,7 @@ package body Exp_Util is
 
       begin
          --  If a previous invocation of this routine has determined that a
-         --  list has no renamings, there is no point in repeating the same
-         --  scan.
+         --  list has no renamings, then no point in repeating the same scan.
 
          if not Has_Rens then
             return False;

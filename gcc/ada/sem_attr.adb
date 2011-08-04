@@ -3990,6 +3990,9 @@ package body Sem_Attr is
          --  source subprogram to which the postcondition applies. During
          --  pre-analysis, CS is the scope of the subprogram declaration.
 
+         Prag : Node_Id;
+         --  During pre-analysis, Prag is the enclosing pragma node if any
+
       begin
          --  Find enclosing scopes, excluding loops
 
@@ -4027,6 +4030,23 @@ package body Sem_Attr is
                Error_Msg_NE
                  ("incorrect prefix for % attribute, expected &", P, CS);
                Error_Attr;
+            end if;
+
+            --  Check in postcondition of function
+
+            Prag := N;
+            while not Nkind_In (Prag, N_Pragma, N_Function_Specification,
+                                N_Subprogram_Body)
+            loop
+               Prag := Parent (Prag);
+            end loop;
+
+            if Nkind (Prag) /= N_Pragma
+              or else Get_Pragma_Id (Prag) /= Pragma_Postcondition
+            then
+               Error_Attr
+                 ("% attribute can only appear in postcondition of function",
+                  P);
             end if;
 
             --  The attribute reference is a primary. If expressions follow,

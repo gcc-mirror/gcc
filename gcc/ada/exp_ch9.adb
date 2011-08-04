@@ -949,8 +949,7 @@ package body Exp_Ch9 is
 
       if Opt.Suppress_Control_Flow_Optimizations then
          Stmt := Make_Implicit_If_Statement (Cond,
-                   Condition       =>
-                     Cond,
+                   Condition       => Cond,
                    Then_Statements => New_List (
                      Make_Simple_Return_Statement (Loc,
                        New_Occurrence_Of (Standard_True, Loc))),

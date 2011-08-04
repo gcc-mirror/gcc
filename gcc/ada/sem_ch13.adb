@@ -4228,10 +4228,10 @@ package body Sem_Ch13 is
                Arg1 := Get_Pragma_Arg (Arg1);
                Arg2 := Get_Pragma_Arg (Arg2);
 
-               --  See if this predicate pragma is for the current type
-               --  or for its full view. A predicate on a private completion
-               --  is placed on the partial view beause this is the visible
-               --  entity that is frozen..
+               --  See if this predicate pragma is for the current type or for
+               --  its full view. A predicate on a private completion is placed
+               --  on the partial view beause this is the visible entity that
+               --  is frozen.
 
                if Entity (Arg1) = Typ
                  or else Full_View (Entity (Arg1)) = Typ
