@@ -12478,8 +12478,8 @@ package body Sem_Util is
    ----------------
 
    procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id) is
-      Found_Type     : constant Entity_Id := First_Subtype (Etype (Expr));
-      Expec_Type     : constant Entity_Id := First_Subtype (Expected_Type);
+      Found_Type : constant Entity_Id := First_Subtype (Etype (Expr));
+      Expec_Type : constant Entity_Id := First_Subtype (Expected_Type);
 
       Matching_Field : Entity_Id;
       --  Entity to give a more precise suggestion on how to write a one-

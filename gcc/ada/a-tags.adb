@@ -317,8 +317,6 @@ package body Ada.Tags is
 
       Dup_Ext_Tag : constant String := "duplicated external tag """;
 
-   --  Start of processing for Check_TSD
-
    begin
       --  Verify that the external tag of this TSD is not registered in the
       --  runtime hash table.
@@ -326,6 +324,7 @@ package body Ada.Tags is
       T := External_Tag_HTable.Get (To_Address (TSD.External_Tag));
 
       if T /= null then
+
          --  Avoid concatenation, as it is not allowed in no run time mode
 
          declare

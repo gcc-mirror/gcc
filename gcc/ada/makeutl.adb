@@ -32,6 +32,7 @@ with Hostparm;
 with Osint;    use Osint;
 with Output;   use Output;
 with Opt;      use Opt;
+with Prj.Err;
 with Prj.Ext;
 with Prj.Util; use Prj.Util;
 with Sinput.P;
@@ -1269,7 +1270,8 @@ package body Makeutl is
       --------------------
 
       procedure Complete_Mains
-        (Root_Project : Project_Id;
+        (Flags        : Processing_Flags;
+         Root_Project : Project_Id;
          Project_Tree : Project_Tree_Ref)
       is
          procedure Do_Complete (Project : Project_Id; Tree : Project_Tree_Ref);
@@ -1292,11 +1294,13 @@ package body Makeutl is
                      Source     : Prj.Source_Id := No_Source;
                      Suffix     : File_Name_Type;
                      Iter       : Source_Iterator;
+                     Is_Absolute : Boolean := False;
 
                   begin
                      if Base_Name (Main) /= Main then
                         if Is_Absolute_Path (Main) then
                            Main_Id := Create_Name (Base_Name (Main));
+                           Is_Absolute := True;
                         else
                            Fail_Program
                              (Tree,
@@ -1316,17 +1320,27 @@ package body Makeutl is
                      end if;
 
                      if File.Tree = null then
-                        File.Tree := Project_Tree;
+                        File.Tree := Tree;
                      end if;
 
                      if File.Source = null then
+                        if Current_Verbosity = High then
+                           Debug_Output
+                             ("Search for main """ & Main
+                              & """ in "
+                              & Get_Name_String (Debug_Name (File.Tree))
+                              & ", project", Project.Name);
+                        end if;
 
                         --  First, look for the main as specified.
+                        --  We need to search for the base name though, and
+                        --  if needed check later that we found the correct
+                        --  file.
 
                         Source := Find_Source
                           (In_Tree   => File.Tree,
                            Project   => File.Project,
-                           Base_Name => File.File,
+                           Base_Name => Main_Id,
                            Index     => File.Index);
 
                         if Source = No_Source then
@@ -1373,9 +1387,22 @@ package body Makeutl is
                                  Project := Project.Extends;
                               end loop;
                            end;
+
+                        else
+                           if Is_Absolute then
+                              if File_Name_Type (Source.Path.Display_Name) /=
+                                File.File
+                              then
+                                 Debug_Output
+                                   ("Found a non-matching file",
+                                    Name_Id (Source.Path.Display_Name));
+                                 Source := No_Source;
+                              end if;
+                           end if;
                         end if;
 
                         if Source /= No_Source then
+
                            Debug_Output ("Found main in project",
                                          Source.Project.Name);
                            Names.Table (J).File    := Source.File;
@@ -1402,9 +1429,10 @@ package body Makeutl is
 
                            Error_Msg_File_1 := Main_Id;
                            Error_Msg_Name_1 := Root_Project.Name;
-                           Errutil.Error_Msg
-                             ("{ is not a source of project %%",
-                              File.Location);
+                           Prj.Err.Error_Msg
+                             (Flags,
+                              "{ is not a source of project %%",
+                              File.Location, Project);
                         end if;
                      end if;
                   end;
@@ -1420,6 +1448,14 @@ package body Makeutl is
 
       begin
          Complete_All (Root_Project, Project_Tree);
+
+         if Mains.Count_Of_Mains_With_No_Tree > 0 then
+            for J in Names.First .. Names.Last loop
+               Fail_Program
+                 (Project_Tree, '"' & Get_Name_String (Names.Table (J).File)
+                    & """ is not a source of any project");
+            end loop;
+         end if;
       end Complete_Mains;
 
       ------------

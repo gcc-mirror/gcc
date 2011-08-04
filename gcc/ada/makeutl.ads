@@ -366,7 +366,8 @@ package Makeutl is
       --  project from all the aggregated projects).
 
       procedure Complete_Mains
-        (Root_Project : Project_Id;
+        (Flags        : Processing_Flags;
+         Root_Project : Project_Id;
          Project_Tree : Project_Tree_Ref);
       --  If some main units were already added from the command line, check
       --  that they all belong to the root project, and that they are full

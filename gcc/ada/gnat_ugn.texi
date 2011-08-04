@@ -4115,9 +4115,12 @@ Defines a symbol, associated with @var{value}, for preprocessing.
 
 @item -gnateE
 @cindex @option{-gnateE} (@command{gcc})
-Generate extra information in exception messages, in particular display
+Generate extra information in exception messages. In particular, display
 extra column information and the value and range associated with index and
 range check failures, and extra column information for access checks.
+In cases where the compiler is able to determine at compile time that
+a check will fail, it gives a warning, and the extra information is not
+produced at run time.
 
 @item -gnatef
 @cindex @option{-gnatef} (@command{gcc})

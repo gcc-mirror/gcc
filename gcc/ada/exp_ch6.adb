@@ -4715,6 +4715,7 @@ package body Exp_Ch6 is
             declare
                Flag_Id : constant Entity_Id :=
                            Return_Flag_Or_Transient_Decl (Ret_Obj_Id);
+
             begin
                --  Generate:
                --    Fnn := True;

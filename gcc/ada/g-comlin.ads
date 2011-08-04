@@ -599,8 +599,8 @@ package GNAT.Command_Line is
    --  format (trailing ':', '?', etc for defining a switch with parameters).
    --
    --  Switch should also start with the leading '-' (or any other characters).
-   --  If this character is not '-', you will need to call
-   --  Initialize_Option_Scan to set the proper character for the parser.
+   --  If this character is not '-', you need to call Initialize_Option_Scan to
+   --  set the proper character for the parser.
    --
    --  The switches defined in the command_line_configuration object are used
    --  when ungrouping switches with more that one character after the prefix.
@@ -843,10 +843,13 @@ package GNAT.Command_Line is
    --  "-from:", the separator defaults to a space. But if your application
    --  uses unusual separators not supported by GNAT.Command_Line (for instance
    --  it requires ":"), you can specify this separator here.
+   --
    --  For instance,
    --     Add_Switch(Cmd, "-from", "bar", ':')
+   --
    --  results in
    --     -from:bar
+   --
    --  rather than the default
    --     -from bar
    --

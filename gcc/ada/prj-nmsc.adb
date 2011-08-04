@@ -7165,7 +7165,7 @@ package body Prj.Nmsc is
       Display_File_Name : File_Name_Type;
 
    begin
-      Debug_Increase_Indent ("Looking for sources");
+      Debug_Increase_Indent ("Looking for sources of", Project.Project.Name);
 
       --  Loop through subdirectories
 
