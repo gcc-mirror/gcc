@@ -315,6 +315,8 @@ package body Ada.Tags is
       for E_Tag'Address use TSD.External_Tag.all'Address;
       pragma Import (Ada, E_Tag);
 
+      Dup_Ext_Tag : constant String := "duplicated external tag """;
+
    --  Start of processing for Check_TSD
 
    begin
@@ -324,7 +326,17 @@ package body Ada.Tags is
       T := External_Tag_HTable.Get (To_Address (TSD.External_Tag));
 
       if T /= null then
-         raise Program_Error with "duplicated external tag " & E_Tag;
+         --  Avoid concatenation, as it is not allowed in no run time mode
+
+         declare
+            Msg : String (1 .. Dup_Ext_Tag'Length + E_Tag_Len + 1);
+         begin
+            Msg (1 .. Dup_Ext_Tag'Length) := Dup_Ext_Tag;
+            Msg (Dup_Ext_Tag'Length + 1 .. Dup_Ext_Tag'Length + E_Tag_Len) :=
+              E_Tag;
+            Msg (Msg'Last) := '"';
+            raise Program_Error with Msg;
+         end;
       end if;
    end Check_TSD;
 

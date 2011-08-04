@@ -1,3 +1,13 @@
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* a-tags.adb (Check_TSD): Avoid concatenation of strings, as it is not
+	allowed in no run time mode.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Check): When -gnatc is used, check for the source file
+	inside the ALI file with a canonical case file name.
+
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
 	* g-comlin.adb, g-comlin.ads (Add_Switch): Put back support for
