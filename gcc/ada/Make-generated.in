@@ -74,7 +74,7 @@ OSCONS_EXTRACT=../../../$(DECC) -DNATIVE \
   ./s-oscons-tmplt.exe > s-oscons-tmplt.s
 
 else
-# GCC_FOR_TARGET has paths relative to the gcc directory, so we need to ajust
+# GCC_FOR_TARGET has paths relative to the gcc directory, so we need to adjust
 # for running it from $(ADA_GEN_SUBDIR)/bldtools/oscons
 OSCONS_CC=`echo "$(GCC_FOR_TARGET)" \
   | sed -e 's^\./xgcc^../../../xgcc^' -e 's^-B./^-B../../../^'`

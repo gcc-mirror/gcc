@@ -29,7 +29,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is dummy version of the package.
+--  This implementation of the package for x86 processor. GCC can't generate
+--  code for atomic builtins for 386 CPU there only increment/decrement
+--  instructions are supported, thus implementaton use assembler code.
+
+with System.Machine_Code;
 
 package body System.Atomic_Counters is
 
@@ -38,9 +42,20 @@ package body System.Atomic_Counters is
    ---------------
 
    function Decrement (Item : in out Atomic_Counter) return Boolean is
+      Aux : Boolean;
+
    begin
-      raise Program_Error;
-      return False;
+      System.Machine_Code.Asm
+        (Template =>
+           "lock decl" & ASCII.HT & "%0" & ASCII.LF & ASCII.HT
+             & "sete %1",
+         Outputs  =>
+           (Unsigned_32'Asm_Output ("=m", Item.Value),
+            Boolean'Asm_Output ("=rm", Aux)),
+         Inputs   => Unsigned_32'Asm_Input ("m", Item.Value),
+         Volatile => True);
+
+      return Aux;
    end Decrement;
 
    ---------------
@@ -49,7 +64,11 @@ package body System.Atomic_Counters is
 
    procedure Increment (Item : in out Atomic_Counter) is
    begin
-      raise Program_Error;
+      System.Machine_Code.Asm
+        (Template => "lock incl" & ASCII.HT & "%0",
+         Outputs  => Unsigned_32'Asm_Output ("=m", Item.Value),
+         Inputs   => Unsigned_32'Asm_Input ("m", Item.Value),
+         Volatile => True);
    end Increment;
 
    ------------
@@ -58,8 +77,7 @@ package body System.Atomic_Counters is
 
    function Is_One (Item : Atomic_Counter) return Boolean is
    begin
-      raise Program_Error;
-      return False;
+      return Item.Value = 1;
    end Is_One;
 
 end System.Atomic_Counters;
