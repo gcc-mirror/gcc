@@ -2602,7 +2602,7 @@ package body Sem_Ch10 is
             Par_Name := Entity (Pref);
          end if;
 
-         --  Guard against missing or misspelled child units.
+         --  Guard against missing or misspelled child units
 
          if Present (Par_Name) then
             Set_Entity_With_Style_Check (Pref, Par_Name);

@@ -456,7 +456,7 @@ package body Exp_Ch4 is
       then
          declare
             Pool_Id : constant Entity_Id :=
-              Get_Global_Pool_For_Access_Type (Ptr_Typ);
+                        Get_Global_Pool_For_Access_Type (Ptr_Typ);
             Scop    : Node_Id := Cunit_Entity (Current_Sem_Unit);
 
          begin

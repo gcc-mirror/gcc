@@ -4355,7 +4355,7 @@ package body Sem_Res is
       then
          Error_Msg_N
            ("cannot activate task before body seen?", N);
-         Error_Msg_N ("\Program_Error will be raised at run time", N);
+         Error_Msg_N ("\Program_Error will be raised at run time?", N);
       end if;
    end Resolve_Allocator;
 
