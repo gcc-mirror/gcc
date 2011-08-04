@@ -1,5 +1,14 @@
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
+	* make.adb, osint.adb, osint.ads (Reset_Command_Line_Files): not used
+	after all, so removed.
+
+2011-08-04  Sergey Rybin  <rybin@adacore.com>
+
+	* vms_data.ads: Add missing VMS qualifiers.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
 	* make.adb, makeutl.adb, osint.adb, osint.ads (Check_Mains): rebuild
 	the list of files on the command line after processing it through
 	Complete_Mains.

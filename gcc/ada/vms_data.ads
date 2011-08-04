@@ -882,6 +882,12 @@ package VMS_Data is
    --   of the directory specified in the project file. If the subdirectory
    --   does not exist, it is created automatically.
 
+   S_Check_Template  : aliased constant S := "/TEMPLATE=@"                 &
+                                             "--write-rules=@";
+   --      /TEMPLATE=filename
+   --
+   --   Generate the rule template into the specified file.
+
    S_Check_Verb   : aliased constant S := "/VERBOSE "                      &
                                             "-v";
    --        /NOVERBOSE (D)
@@ -898,24 +904,25 @@ package VMS_Data is
    --   Specify the name of the output file.
 
    Check_Switches : aliased constant Switches :=
-                      (S_Check_Add    'Access,
-                       S_Check_All    'Access,
-                       S_Diagnosis    'Access,
-                       S_Check_Ext    'Access,
-                       S_Check_Files  'Access,
-                       S_Check_Follow 'Access,
-                       S_Check_Help   'Access,
-                       S_Check_Locs   'Access,
-                       S_Check_Mess   'Access,
-                       S_Check_Project'Access,
-                       S_Check_Quiet  'Access,
-                       S_Check_Time   'Access,
-                       S_Check_Log    'Access,
-                       S_Check_Short  'Access,
-                       S_Check_Include'Access,
-                       S_Check_Subdirs'Access,
-                       S_Check_Verb   'Access,
-                       S_Check_Out    'Access);
+                      (S_Check_Add     'Access,
+                       S_Check_All     'Access,
+                       S_Diagnosis     'Access,
+                       S_Check_Ext     'Access,
+                       S_Check_Files   'Access,
+                       S_Check_Follow  'Access,
+                       S_Check_Help    'Access,
+                       S_Check_Locs    'Access,
+                       S_Check_Mess    'Access,
+                       S_Check_Project 'Access,
+                       S_Check_Quiet   'Access,
+                       S_Check_Time    'Access,
+                       S_Check_Log     'Access,
+                       S_Check_Short   'Access,
+                       S_Check_Include 'Access,
+                       S_Check_Subdirs 'Access,
+                       S_Check_Template'Access,
+                       S_Check_Verb    'Access,
+                       S_Check_Out     'Access);
 
    ----------------------------
    -- Switches for GNAT CHOP --
