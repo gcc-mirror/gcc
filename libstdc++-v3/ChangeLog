@@ -1,3 +1,11 @@
+2011-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/atomic.cc: Use noexcept.
+	* include/std/atomic: Likewise.
+	* include/bits/atomic_0.h: Likewise.
+	* include/bits/atomic_2.h: Likewise.
+	* include/bits/atomic_base.h: Likewise.
+
 2011-08-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/performance/27_io/filebuf_sputn_unbuf.cc: Include

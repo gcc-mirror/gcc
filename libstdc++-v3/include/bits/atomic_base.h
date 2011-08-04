@@ -59,7 +59,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     } memory_order;
 
   inline memory_order
-  __calculate_memory_order(memory_order __m)
+  __calculate_memory_order(memory_order __m) noexcept
   {
     const bool __cond1 = __m == memory_order_release;
     const bool __cond2 = __m == memory_order_acq_rel;
@@ -69,15 +69,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   void
-  atomic_thread_fence(memory_order);
+  atomic_thread_fence(memory_order) noexcept;
 
   void
-  atomic_signal_fence(memory_order);
+  atomic_signal_fence(memory_order) noexcept;
 
   /// kill_dependency
   template<typename _Tp>
     inline _Tp
-    kill_dependency(_Tp __y)
+    kill_dependency(_Tp __y) noexcept
     {
       _Tp __ret(__y);
       return __ret;
