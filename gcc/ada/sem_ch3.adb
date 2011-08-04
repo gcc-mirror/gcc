@@ -4678,12 +4678,6 @@ package body Sem_Ch3 is
             Check_SPARK_Restriction ("subtype mark required", Index);
          end if;
 
-         if Present (Etype (Index))
-           and then not Is_In_ALFA (Etype (Index))
-         then
-            T_In_ALFA := False;
-         end if;
-
          --  Add a subtype declaration for each index of private array type
          --  declaration whose etype is also private. For example:
 
@@ -4737,6 +4731,12 @@ package body Sem_Ch3 is
          end if;
 
          Make_Index (Index, P, Related_Id, Nb_Index);
+
+         if Present (Etype (Index))
+           and then not Is_In_ALFA (Etype (Index))
+         then
+            T_In_ALFA := False;
+         end if;
 
          --  Check error of subtype with predicate for index type
 
@@ -4878,6 +4878,7 @@ package body Sem_Ch3 is
       Set_Component_Type (Base_Type (T), Element_Type);
       Set_Packed_Array_Type (T, Empty);
       Set_Is_In_ALFA (T, T_In_ALFA);
+      Set_Is_In_ALFA (Base_Type (T), T_In_ALFA);
 
       if Aliased_Present (Component_Definition (Def)) then
          Check_SPARK_Restriction
@@ -16537,6 +16538,19 @@ package body Sem_Ch3 is
            and then not Is_Static_Subtype (Entity (Subtype_Mark (I)))
          then
             Set_Is_Non_Static_Subtype (Def_Id);
+         end if;
+
+         --  By default, consider that the subtype is in ALFA if its base type
+         --  is in ALFA.
+
+         Set_Is_In_ALFA (Def_Id, Is_In_ALFA (Base_Type (Def_Id)));
+
+         --  In ALFA, all subtypes should have a static range
+
+         if Nkind (R) = N_Range
+           and then not Is_Static_Range (R)
+         then
+            Set_Is_In_ALFA (Def_Id, False);
          end if;
       end if;
 
