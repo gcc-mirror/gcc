@@ -654,13 +654,6 @@ package body Sem_Ch4 is
          Check_Restriction (No_Tasking, N);
          Check_Restriction (Max_Tasks, N);
          Check_Restriction (No_Task_Allocators, N);
-
-         --  Check that an allocator with task parts isn't for a nested access
-         --  type when restriction No_Task_Hierarchy applies.
-
-         if not Is_Library_Level_Entity (Acc_Type) then
-            Check_Restriction (No_Task_Hierarchy, N);
-         end if;
       end if;
 
       --  Check that an allocator of a nested access type doesn't create a
