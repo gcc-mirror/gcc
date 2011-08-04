@@ -3057,17 +3057,6 @@ package body Sem_Ch3 is
 
       Act_T := T;
 
-      --  The object is in ALFA if-and-only-if its type is in ALFA and it is
-      --  not aliased.
-
-      if not Is_In_ALFA (T) then
-         Mark_Non_ALFA_Subprogram ("object type is not in ALFA", N);
-      elsif Aliased_Present (N) then
-         Mark_Non_ALFA_Subprogram ("ALIASED is not in ALFA", N);
-      else
-         Set_Is_In_ALFA (Id);
-      end if;
-
       --  These checks should be performed before the initialization expression
       --  is considered, so that the Object_Definition node is still the same
       --  as in source code.
@@ -4661,7 +4650,6 @@ package body Sem_Ch3 is
       Nb_Index      : Nat;
       P             : constant Node_Id := Parent (Def);
       Priv          : Entity_Id;
-      T_In_ALFA     : Boolean := True;
 
    begin
       if Nkind (Def) = N_Constrained_Array_Definition then
@@ -4742,12 +4730,6 @@ package body Sem_Ch3 is
 
          Make_Index (Index, P, Related_Id, Nb_Index);
 
-         if Present (Etype (Index))
-           and then not Is_In_ALFA (Etype (Index))
-         then
-            T_In_ALFA := False;
-         end if;
-
          --  Check error of subtype with predicate for index type
 
          Bad_Predicated_Subtype_Use
@@ -4769,17 +4751,9 @@ package body Sem_Ch3 is
             Check_SPARK_Restriction ("subtype mark required", Component_Typ);
          end if;
 
-         if Present (Element_Type)
-           and then not Is_In_ALFA (Element_Type)
-         then
-            T_In_ALFA := False;
-         end if;
-
       --  Ada 2005 (AI-230): Access Definition case
 
       else pragma Assert (Present (Access_Definition (Component_Def)));
-
-         T_In_ALFA := False;
 
          --  Indicate that the anonymous access type is created by the
          --  array type declaration.
@@ -4857,12 +4831,6 @@ package body Sem_Ch3 is
                                (Implicit_Base, Finalize_Storage_Only
                                                         (Element_Type));
 
-         --  Final check for static bounds on array
-
-         if not Has_Static_Array_Bounds (T) then
-            T_In_ALFA := False;
-         end if;
-
       --  Unconstrained array case
 
       else
@@ -4887,8 +4855,6 @@ package body Sem_Ch3 is
 
       Set_Component_Type (Base_Type (T), Element_Type);
       Set_Packed_Array_Type (T, Empty);
-      Set_Is_In_ALFA (T, T_In_ALFA);
-      Set_Is_In_ALFA (Base_Type (T), T_In_ALFA);
 
       if Aliased_Present (Component_Definition (Def)) then
          Check_SPARK_Restriction
@@ -11599,14 +11565,6 @@ package body Sem_Ch3 is
       C : constant Node_Id   := Constraint (S);
 
    begin
-      --  By default, consider that the enumeration subtype is in ALFA if the
-      --  entity of its subtype mark is in ALFA. This is reversed later if the
-      --  range of the subtype is not static.
-
-      if Is_In_ALFA (T) then
-         Set_Is_In_ALFA (Def_Id);
-      end if;
-
       Set_Ekind (Def_Id, E_Enumeration_Subtype);
 
       Set_First_Literal     (Def_Id, First_Literal (Base_Type (T)));
@@ -11829,14 +11787,6 @@ package body Sem_Ch3 is
       C : constant Node_Id   := Constraint (S);
 
    begin
-      --  By default, consider that the integer subtype is in ALFA if the
-      --  entity of its subtype mark is in ALFA. This is reversed later if the
-      --  range of the subtype is not static.
-
-      if Is_In_ALFA (T) then
-         Set_Is_In_ALFA (Def_Id);
-      end if;
-
       Set_Scalar_Range_For_Subtype (Def_Id, Range_Expression (C), T);
 
       if Is_Modular_Integer_Type (T) then
@@ -14586,12 +14536,6 @@ package body Sem_Ch3 is
       Set_Enum_Esize      (T);
       Set_Enum_Pos_To_Rep (T, Empty);
 
-      --  Enumeration type is in ALFA only if it is not a character type
-
-      if not Is_Character_Type (T) then
-         Set_Is_In_ALFA (T);
-      end if;
-
       --  Set Discard_Names if configuration pragma set, or if there is
       --  a parameterless pragma in the current declarative region
 
@@ -16549,19 +16493,6 @@ package body Sem_Ch3 is
            and then not Is_Static_Subtype (Entity (Subtype_Mark (I)))
          then
             Set_Is_Non_Static_Subtype (Def_Id);
-         end if;
-
-         --  By default, consider that the subtype is in ALFA if its base type
-         --  is in ALFA.
-
-         Set_Is_In_ALFA (Def_Id, Is_In_ALFA (Base_Type (Def_Id)));
-
-         --  In ALFA, all subtypes should have a static range
-
-         if Nkind (R) = N_Range
-           and then not Is_Static_Range (R)
-         then
-            Set_Is_In_ALFA (Def_Id, False);
          end if;
       end if;
 
@@ -19539,14 +19470,6 @@ package body Sem_Ch3 is
       Set_Ekind (Def_Id, E_Void);
       Process_Range_Expr_In_Decl (R, Subt);
       Set_Ekind (Def_Id, Kind);
-
-      --  In ALFA, all subtypes should have a static range
-
-      if Nkind (R) = N_Range
-        and then not Is_Static_Range (R)
-      then
-         Set_Is_In_ALFA (Def_Id, False);
-      end if;
    end Set_Scalar_Range_For_Subtype;
 
    --------------------------------------------------------
@@ -19718,7 +19641,6 @@ package body Sem_Ch3 is
       Set_Scalar_Range   (T, Def);
       Set_RM_Size        (T, UI_From_Int (Minimum_Size (T)));
       Set_Is_Constrained (T);
-      Set_Is_In_ALFA     (T);
    end Signed_Integer_Type_Declaration;
 
 end Sem_Ch3;

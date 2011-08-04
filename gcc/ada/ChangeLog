@@ -1,3 +1,22 @@
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* alfa.adb, alfa.ads (Get_Entity_For_Decl): remove function, partial
+	duplicate of Defining_Entity
+	(Get_Unique_Entity_For_Decl): rename function into
+	Unique_Defining_Entity
+	* einfo.adb, einfo.ads (Is_In_ALFA, Body_Is_In_ALFA): remove flags
+	(Formal_Proof_On): remove synthesized flag
+	* cstand.adb, sem_ch11.adb, sem_ch2.adb, sem_ch3.adb, sem_ch4.adb,
+	sem_ch5.adb, sem_ch6.adb, sem_ch9.adb, sem_res.adb, sem_util.adb,
+	sem_util.ads, stand.ads: Remove treatment associated to entities in ALFA
+	* sem_prag.adb (Analyze_Pragma): remove special treatment for pragma
+	Annotate (Formal_Proof)
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-env.adb (Create_Config_Pragmas_File): fix handling of multi-unit
+	source files with non-standard naming schemes, in imported projects
+
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
 	* makeutl.adb (Complete_Mains): when a multi-unit source file is

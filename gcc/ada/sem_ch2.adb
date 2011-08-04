@@ -24,14 +24,12 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 with Uintp;    use Uintp;
@@ -76,13 +74,6 @@ package body Sem_Ch2 is
          return;
       else
          Find_Direct_Name (N);
-
-         if Present (Entity (N))
-           and then Is_Object (Entity (N))
-           and then not Is_In_ALFA (Entity (N))
-         then
-            Mark_Non_ALFA_Subprogram ("object is not in ALFA", N);
-         end if;
       end if;
    end Analyze_Identifier;
 

@@ -477,8 +477,6 @@ package body Prj.Env is
       File      : File_Descriptor := Invalid_FD;
 
       Current_Naming  : Naming_Id;
-      Iter            : Source_Iterator;
-      Source          : Source_Id;
 
       procedure Check
         (Project : Project_Id;
@@ -509,11 +507,13 @@ package body Prj.Env is
          In_Tree : Project_Tree_Ref;
          State   : in out Integer)
       is
-         pragma Unreferenced (State, In_Tree);
+         pragma Unreferenced (State);
 
          Lang   : constant Language_Ptr :=
                     Get_Language_From_Name (Project, "ada");
          Naming : Lang_Naming_Data;
+         Iter   : Source_Iterator;
+         Source : Source_Id;
 
       begin
          if Current_Verbosity = High then
@@ -527,6 +527,25 @@ package body Prj.Env is
 
             return;
          end if;
+
+         --  Visit all the files and process those that need an SFN pragma
+
+         Iter := For_Each_Source (In_Tree, Project);
+         while Element (Iter) /= No_Source loop
+            Source := Element (Iter);
+
+            Debug_Output ("MANU Source index=" & Source.Index'Img,
+                          Name_Id (Source.File));
+
+            if Source.Index >= 1
+              and then not Source.Locally_Removed
+              and then Source.Unit /= null
+            then
+               Put (Source);
+            end if;
+
+            Next (Iter);
+         end loop;
 
          Naming := Lang.Config.Naming_Data;
 
@@ -684,6 +703,7 @@ package body Prj.Env is
    --  Start of processing for Create_Config_Pragmas_File
 
    begin
+      Debug_Output ("MANU Create_Config_Pragmas_File", For_Project.Name);
       if not For_Project.Config_Checked then
          Naming_Table.Init (Namings);
 
@@ -691,22 +711,6 @@ package body Prj.Env is
 
          Check_Imported_Projects
            (For_Project, In_Tree, Dummy, Imported_First => False);
-
-         --  Visit all the files and process those that need an SFN pragma
-
-         Iter := For_Each_Source (In_Tree, For_Project);
-         while Element (Iter) /= No_Source loop
-            Source := Element (Iter);
-
-            if Source.Index >= 1
-              and then not Source.Locally_Removed
-              and then Source.Unit /= null
-            then
-               Put (Source);
-            end if;
-
-            Next (Iter);
-         end loop;
 
          --  If there are no non standard naming scheme, issue the GNAT
          --  standard naming scheme. This will tell the compiler that

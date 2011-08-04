@@ -570,10 +570,6 @@ package body CStand is
             Decl := New_Node (N_Full_Type_Declaration, Stloc);
          end if;
 
-         if Standard_Type_Is_In_ALFA (S) then
-            Set_Is_In_ALFA (Standard_Entity (S));
-         end if;
-
          Set_Is_Frozen (Standard_Entity (S));
          Set_Is_Public (Standard_Entity (S));
          Set_Defining_Identifier (Decl, Standard_Entity (S));
@@ -1334,7 +1330,6 @@ package body CStand is
       Set_Scope (Universal_Integer, Standard_Standard);
       Build_Signed_Integer_Type
         (Universal_Integer, Standard_Long_Long_Integer_Size);
-      Set_Is_In_ALFA (Universal_Integer);
 
       Universal_Real := New_Standard_Entity;
       Decl := New_Node (N_Full_Type_Declaration, Stloc);

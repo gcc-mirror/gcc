@@ -5817,23 +5817,14 @@ package body Sem_Res is
       --  types or array types except String.
 
       if Is_Boolean_Type (T) then
-         Mark_Non_ALFA_Subprogram
-           ("ordering operator on boolean type is not in ALFA", N);
          Check_SPARK_Restriction
            ("comparison is not defined on Boolean type", N);
 
-      elsif Is_Array_Type (T) then
-         Mark_Non_ALFA_Subprogram
-           ("ordering operator on array type is not in ALFA", N);
-
-         if Base_Type (T) /= Standard_String then
-            Check_SPARK_Restriction
-              ("comparison is not defined on array types other than String",
-               N);
-         end if;
-
-      else
-         null;
+      elsif Is_Array_Type (T)
+        and then Base_Type (T) /= Standard_String
+      then
+         Check_SPARK_Restriction
+           ("comparison is not defined on array types other than String", N);
       end if;
 
       --  Check comparison on unordered enumeration
@@ -5881,11 +5872,6 @@ package body Sem_Res is
       else
          Error_Msg_N ("can only omit ELSE expression in Boolean case", N);
          Append_To (Expressions (N), Error);
-      end if;
-
-      if Root_Type (Typ) /= Standard_Boolean then
-         Mark_Non_ALFA_Subprogram
-           ("non-boolean conditional expression is not in ALFA", N);
       end if;
 
       Set_Etype (N, Typ);
@@ -6688,9 +6674,6 @@ package body Sem_Res is
          --  operands have equal static bounds.
 
          if Is_Array_Type (T) then
-            Mark_Non_ALFA_Subprogram
-              ("equality operator on array is not in ALFA", N);
-
             --  Protect call to Matching_Static_Array_Bounds to avoid costly
             --  operation if not needed.
 
@@ -7262,9 +7245,6 @@ package body Sem_Res is
       if Is_Array_Type (B_Typ)
         and then Nkind (N) in N_Binary_Op
       then
-         Mark_Non_ALFA_Subprogram
-           ("binary operator on array is not in ALFA", N);
-
          declare
             Left_Typ  : constant Node_Id := Etype (Left_Opnd (N));
             Right_Typ : constant Node_Id := Etype (Right_Opnd (N));

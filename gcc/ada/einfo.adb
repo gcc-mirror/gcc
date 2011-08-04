@@ -409,7 +409,7 @@ package body Einfo is
    --    Is_Compilation_Unit             Flag149
    --    Has_Pragma_Elaborate_Body       Flag150
 
-   --    Is_In_ALFA                      Flag151
+   --    (unused)                        Flag151
    --    Entry_Accepted                  Flag152
    --    Is_Obsolescent                  Flag153
    --    Has_Per_Object_Constraint       Flag154
@@ -519,7 +519,7 @@ package body Einfo is
    --    Is_Safe_To_Reevaluate           Flag249
    --    Has_Predicates                  Flag250
 
-   --    Body_Is_In_ALFA                 Flag251
+   --    (unused)                        Flag251
    --    Is_Processed_Transient          Flag252
    --    Is_Postcondition_Proc           Flag253
    --    (unused)                        Flag254
@@ -651,12 +651,6 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
       return Node19 (Id);
    end Body_Entity;
-
-   function Body_Is_In_ALFA (Id : E) return B is
-   begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
-      return Flag251 (Id);
-   end Body_Is_In_ALFA;
 
    function Body_Needed_For_SAL (Id : E) return B is
    begin
@@ -1853,11 +1847,6 @@ package body Einfo is
    begin
       return Flag24 (Id);
    end Is_Imported;
-
-   function Is_In_ALFA (Id : E) return B is
-   begin
-      return Flag151 (Id);
-   end Is_In_ALFA;
 
    function Is_Inlined (Id : E) return B is
    begin
@@ -3126,12 +3115,6 @@ package body Einfo is
       Set_Node19 (Id, V);
    end Set_Body_Entity;
 
-   procedure Set_Body_Is_In_ALFA (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
-      Set_Flag251 (Id, V);
-   end Set_Body_Is_In_ALFA;
-
    procedure Set_Body_Needed_For_SAL (Id : E; V : B := True) is
    begin
       pragma Assert
@@ -4373,11 +4356,6 @@ package body Einfo is
    begin
       Set_Flag24 (Id, V);
    end Set_Is_Imported;
-
-   procedure Set_Is_In_ALFA (Id : E; V : B := True) is
-   begin
-      Set_Flag151 (Id, V);
-   end Set_Is_In_ALFA;
 
    procedure Set_Is_Inlined (Id : E; V : B := True) is
    begin
@@ -5899,41 +5877,6 @@ package body Einfo is
       end if;
    end First_Formal_With_Extras;
 
-   ---------------------
-   -- Formal_Proof_On --
-   ---------------------
-
-   function Formal_Proof_On (Id : E) return B is
-      N    : Node_Id;
-      Arg1 : Node_Id;
-      Arg2 : Node_Id;
-
-   begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
-
-      N := First_Rep_Item (Id);
-      while Present (N) loop
-         if Nkind (N) = N_Pragma
-           and then Get_Pragma_Id (Pragma_Name (N)) = Pragma_Annotate
-           and then Present (Pragma_Argument_Associations (N))
-           and then List_Length (Pragma_Argument_Associations (N)) = 2
-         then
-            Arg1 := First (Pragma_Argument_Associations (N));
-            Arg2 := Next (Arg1);
-
-            if Chars (Get_Pragma_Arg (Arg1)) = Name_Formal_Proof
-              and then Chars (Get_Pragma_Arg (Arg2)) = Name_On
-            then
-               return True;
-            end if;
-         end if;
-
-         Next_Rep_Item (N);
-      end loop;
-
-      return False;
-   end Formal_Proof_On;
-
    -------------------------------------
    -- Get_Attribute_Definition_Clause --
    -------------------------------------
@@ -7449,7 +7392,6 @@ package body Einfo is
       end if;
 
       W ("Address_Taken",                   Flag104 (Id));
-      W ("Body_Is_In_ALFA",                 Flag251 (Id));
       W ("Body_Needed_For_SAL",             Flag40  (Id));
       W ("C_Pass_By_Copy",                  Flag125 (Id));
       W ("Can_Never_Be_Null",               Flag38  (Id));
@@ -7587,7 +7529,6 @@ package body Einfo is
       W ("Is_Hidden_Open_Scope",            Flag171 (Id));
       W ("Is_Immediately_Visible",          Flag7   (Id));
       W ("Is_Imported",                     Flag24  (Id));
-      W ("Is_In_ALFA",                      Flag151 (Id));
       W ("Is_Inlined",                      Flag11  (Id));
       W ("Is_Instantiated",                 Flag126 (Id));
       W ("Is_Interface",                    Flag186 (Id));
