@@ -5540,9 +5540,6 @@ package body Make is
             --  queue as gprbuild and processes the file directly on the queue.
 
             Mains.Reset;
-            --  Osint.Reset_Command_Line_Files;
-            Debug_Output ("Reseting list of mains on the command line");
-
             loop
                Info := Mains.Next_Main;
                exit when Info = No_Main_Info;

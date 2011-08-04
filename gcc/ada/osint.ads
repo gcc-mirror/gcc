@@ -114,9 +114,6 @@ package Osint is
    function Number_Of_Files return Int;
    --  Gives the total number of filenames found on the command line
 
-   procedure Reset_Command_Line_Files;
-   --  Reset the list of files specified on the command line to empty.
-
    No_Index : constant := -1;
    --  Value used in Add_File to indicate no index is specified for main
 

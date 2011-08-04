@@ -2749,15 +2749,6 @@ package body Osint is
       return new String'(Path);
    end Relocate_Path;
 
-   ------------------------------
-   -- Reset_Command_Line_Files --
-   ------------------------------
-
-   procedure Reset_Command_Line_Files is
-   begin
-      Number_File_Names := 0;
-   end Reset_Command_Line_Files;
-
    -----------------
    -- Set_Program --
    -----------------
