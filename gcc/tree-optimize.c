@@ -256,6 +256,10 @@ execute_fixup_cfg (void)
   EXIT_BLOCK_PTR->count = (EXIT_BLOCK_PTR->count * count_scale
   			   + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
 
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+    e->count = (e->count * count_scale
+       + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
+
   FOR_EACH_BB (bb)
     {
       bb->count = (bb->count * count_scale

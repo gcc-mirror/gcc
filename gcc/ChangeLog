@@ -1,5 +1,10 @@
 2011-08-03   David Li  <davidxl@google.com>
 
+	* tree-optimize.c (execute_fixup_cfg): Fix up entry
+	outgoing edge counts after inlining.
+
+2011-08-03   David Li  <davidxl@google.com>
+
 	* profile.c (compute_branch_probabilities): Compute
 	function frequency after profile annotation.
 
