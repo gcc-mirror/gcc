@@ -4270,7 +4270,7 @@ The Ravenscar profile also includes the following restrictions that specify
 that there are no semantic dependences on the corresponding predefined
 packages:
 
-@table
+@table @code
 @item No_Dependence => Ada.Asynchronous_Task_Control
 @item No_Dependence => Ada.Calendar
 @item No_Dependence => Ada.Execution_Time.Group_Budget
