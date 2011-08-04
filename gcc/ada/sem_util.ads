@@ -136,7 +136,7 @@ package Sem_Util is
    --  discriminants, and build actual subtype for it if so.
 
    procedure Build_Elaboration_Entity (N : Node_Id; Spec_Id : Entity_Id);
-   --  Given a compilation unit node N, allocate an elaboration boolean for
+   --  Given a compilation unit node N, allocate an elaboration counter for
    --  the compilation unit, and install it in the Elaboration_Entity field
    --  of Spec_Id, the entity for the compilation unit.
 

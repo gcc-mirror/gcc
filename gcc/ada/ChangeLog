@@ -1,5 +1,68 @@
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-proc.adb, prj-nmsc.adb, prj-env.adb (Process_Declarative_Items):
+	Add support for overriding the Project_Path in aggregate projects.
+
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* a-cofove.ads: Minor reformatting.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Build_Adjust_Or_Finalize_Statements): Update the comment
+	on the generated code.
+	(Build_Finalize_Statements): Update the comment on the generated code.
+	(Build_Initialize_Statements): Update the comment on the generated code.
+	(Build_Object_Declarations): Add local variable Result. The object
+	declarations are now built in sequence.
+	* rtsfind.ads: Add RE_Exception_Occurrence_Access to tables RE_Id and
+	RE_Unit_Table.
+
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb, alfa.adb, alfa.ads: Minor reformatting.
+
+2011-08-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Elaboration_Entity): Document new definition and use.
+	(Elaboration_Entity_Required): Adjust to above change.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Likewise.
+	* exp_ch12.adb: And with and use for Snames.
+	(Expand_N_Generic_Instantiation): Test 'Elaborated attribute.
+	* exp_util.adb (Set_Elaboration_Flag): Likewise.
+	* sem_attr.adb (Analyze_Attribute) <Check_Library_Unit>: Delete.
+	<Check_Unit_Name>: Deal with N_Expanded_Name.
+	<Attribute_Elaborated>: Extend to all unit names.
+	* sem_elab.adb: And with and use for Uintp.
+	(Check_Internal_Call_Continue): Adjust to Elaboration_Entity change.
+	* sem_util.ads (Build_Elaboration_Entity): Adjust comment.
+	* sem_util.adb (Build_Elaboration_Entity): Change type to Integer.
+	* bindgen.adb (Gen_Elab_Externals_Ada): New local subprogram taken
+	from Gen_Adainit_Ada.
+	(Gen_Elab_Externals_C): Likewise, but taken from Gen_Adainit_C.
+	(Gen_Adafinal_Ada): Remove redundant test.  In the non-main program
+	case, do not call System.Standard_Library.Adafinal; instead call
+	finalize_library if needed.
+	(Gen_Adafinal_C): Likewise.
+	(Gen_Adainit_Ada): Do not set SSL.Finalize_Library_Objects in the
+	non-main program case.
+	(Gen_Adainit_C): Generate a couple of external declarations here.
+	In the main program case, set SSL.Finalize_Library_Objects.
+	(Gen_Elab_Calls_Ada): Adjust to Elaboration_Entity change.
+	(Gen_Elab_Calls_C): Likewise.
+	(Gen_Finalize_Library_Ada): Likewise.  Skip SAL interface units.
+	(Gen_Finalize_Library_C): Likewise.  Generate a full function.
+	(Gen_Main_C): Put back call to Ada_Final and don't finalize library
+	objects here.
+	(Gen_Output_File_Ada): Generate pragma Linker_Destructor for Ada_Final
+	if -a is specified.  Call Gen_Elab_Externals_Ada.  Move around call to
+	Gen_Adafinal_Ada.
+	(Gen_Output_File_C): Generate __attribute__((destructor)) for Ada_Final
+	if -a is specified.  Call Gen_Elab_Externals_C.  Remove useless couple
+	of external declarations.  Call Gen_Finalize_Library_C.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
 	* prj.adb, prj.ads, makeutl.adb, makeutl.ads (Complete_Mains,
 	Compute_Compilation_Phases): new subprogram.
 	(Builder_Data, Builder_Project_Tree_Data): new subprogram and type

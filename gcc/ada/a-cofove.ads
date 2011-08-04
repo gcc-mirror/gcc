@@ -143,8 +143,9 @@ package Ada.Containers.Formal_Vectors is
      (Container : Vector;
       Index     : Index_Type) return Element_Type;
 
-   function Element (Container : Vector; Position : Cursor)
-                     return Element_Type;
+   function Element
+     (Container : Vector;
+      Position  : Cursor) return Element_Type;
 
    procedure Replace_Element
      (Container : in out Vector;
@@ -388,7 +389,7 @@ private
    for Vector'Read use Read;
 
    type Cursor is record
-      Valid : Boolean := True;
+      Valid : Boolean    := True;
       Index : Index_Type := Index_Type'First;
    end record;
 

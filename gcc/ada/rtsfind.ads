@@ -504,6 +504,7 @@ package Rtsfind is
      RE_Exception_Message,               -- Ada.Exceptions
      RE_Exception_Name_Simple,           -- Ada.Exceptions
      RE_Exception_Occurrence,            -- Ada.Exceptions
+     RE_Exception_Occurrence_Access,     -- Ada.Exceptions
      RE_Null_Id,                         -- Ada.Exceptions
      RE_Null_Occurrence,                 -- Ada.Exceptions
      RE_Poll,                            -- Ada.Exceptions
@@ -1682,6 +1683,7 @@ package Rtsfind is
      RE_Exception_Message                => Ada_Exceptions,
      RE_Exception_Name_Simple            => Ada_Exceptions,
      RE_Exception_Occurrence             => Ada_Exceptions,
+     RE_Exception_Occurrence_Access      => Ada_Exceptions,
      RE_Null_Id                          => Ada_Exceptions,
      RE_Null_Occurrence                  => Ada_Exceptions,
      RE_Poll                             => Ada_Exceptions,

@@ -934,32 +934,34 @@ package Einfo is
 --       to the spec as possible.
 
 --    Elaboration_Entity (Node13)
---       Present in generic and non-generic package and subprogram
---       entities. This is a boolean entity associated with the unit that
---       is initially set to False, and is set True when the unit is
---       elaborated. This is used for two purposes. First, it is used to
---       implement required access before elaboration checks (the flag
---       must be true to call a subprogram at elaboration time). Second,
---       it is used to guard against repeated execution of the generated
---       elaboration code.
+--       Present in generic and non-generic package and subprogram entities.
+--       This is a counter associated with the unit that is initially set to
+--       zero, is incremented when an elaboration request for the unit is
+--       made, and is decremented when a finalization request for the unit
+--       is made. This is used for three purposes. First, it is used to
+--       implement access before elaboration checks (the counter must be
+--       non-zero to call a subprogram at elaboration time). Second, it is
+--       used to guard against repeated execution of the elaboration code.
+--       Third, it is used to ensure that the finalization code is executed
+--       only after all clients have requested it.
 --
---       Note that we always allocate this flag, and set this field, but
+--       Note that we always allocate this counter, and set this field, but
 --       we do not always actually use it. It is only used if it is needed
---       for access-before-elaboration use (see Elaboration_Entity_Required
+--       for access before elaboration use (see Elaboration_Entity_Required
 --       flag) or if either the spec or the body has elaboration code. If
 --       neither of these two conditions holds, then the entity is still
 --       allocated (since we don't know early enough whether or not there
 --       is elaboration code), but is simply not used for any purpose.
 
 --    Elaboration_Entity_Required (Flag174)
---       Present in generics and non-generic package and subprogram
---       entities. Set only if Elaboration_Entity is non-Empty to indicate
---       that the boolean is required to be set even if there is no other
---       elaboration code. This occurs when the Elaboration_Entity flag
---       is used for required access-before-elaboration checking. If the
---       flag is only for preventing multiple execution of the elaboration
---       code, then if there is no other elaboration code, obviously there
---       is no need to set the flag.
+--       Present in generic and non-generic package and subprogram entities.
+--       Set only if Elaboration_Entity is non-Empty to indicate that the
+--       counter is required to be non-zero even if there is no other
+--       elaboration code. This occurs when the Elaboration_Entity counter
+--       is used for access before elaboration checks. If the counter is
+--       only used to prevent multiple execution of the elaboration code,
+--       then if there is no other elaboration code, obviously there is no
+--       need to set the flag.
 
 --    Enclosing_Scope (Node18)
 --       Present in labels. Denotes the innermost enclosing construct that

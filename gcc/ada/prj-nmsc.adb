@@ -930,7 +930,9 @@ package body Prj.Nmsc is
 
       Project_Path_For_Aggregate : Prj.Env.Project_Search_Path;
 
-      procedure Found_Project_File (Path : Path_Information; Rank : Natural);
+      procedure Found_Project_File
+        (Path  : Path_Information;
+         Rank  : Natural);
       --  Called for each project file aggregated by Project
 
       procedure Expand_Project_Files is
@@ -942,7 +944,10 @@ package body Prj.Nmsc is
       -- Found_Project_File --
       ------------------------
 
-      procedure Found_Project_File (Path : Path_Information; Rank : Natural) is
+      procedure Found_Project_File
+        (Path  : Path_Information;
+         Rank  : Natural)
+      is
          pragma Unreferenced (Rank);
       begin
          if Path.Name /= Project.Path.Name then
@@ -5041,8 +5046,8 @@ package body Prj.Nmsc is
       Remove_Source_Dirs : Boolean := False;
 
       procedure Add_To_Or_Remove_From_Source_Dirs
-        (Path : Path_Information;
-         Rank : Natural);
+        (Path  : Path_Information;
+         Rank  : Natural);
       --  When Removed = False, the directory Path_Id to the list of
       --  source_dirs if not already in the list. When Removed = True,
       --  removed directory Path_Id if in the list.
@@ -5055,8 +5060,8 @@ package body Prj.Nmsc is
       ---------------------------------------
 
       procedure Add_To_Or_Remove_From_Source_Dirs
-        (Path : Path_Information;
-         Rank : Natural)
+        (Path  : Path_Information;
+         Rank  : Natural)
       is
          List       : String_List_Id;
          Prev       : String_List_Id;
@@ -5310,9 +5315,9 @@ package body Prj.Nmsc is
 
          Remove_Source_Dirs := False;
          Add_To_Or_Remove_From_Source_Dirs
-           (Path => (Name         => Project.Directory.Name,
-                     Display_Name => Project.Directory.Display_Name),
-            Rank => 1);
+           (Path  => (Name         => Project.Directory.Name,
+                      Display_Name => Project.Directory.Display_Name),
+            Rank  => 1);
 
       else
          Remove_Source_Dirs := False;

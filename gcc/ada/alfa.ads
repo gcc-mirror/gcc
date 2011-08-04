@@ -316,10 +316,6 @@ package ALFA is
    -- Subprograms --
    -----------------
 
-   procedure dalfa;
-   --  Debug routine to dump internal ALFA tables. This is a raw format dump
-   --  showing exactly what the tables contain.
-
    procedure Initialize_ALFA_Tables;
    --  Reset tables for a new compilation
 
@@ -329,6 +325,10 @@ package ALFA is
    function Get_Unique_Entity_For_Decl (N : Node_Id) return Entity_Id;
    --  Return the entity which represents declaration N, so that matching
    --  declaration and body have the same entity.
+
+   procedure dalfa;
+   --  Debug routine to dump internal ALFA tables. This is a raw format dump
+   --  showing exactly what the tables contain.
 
    procedure palfa;
    --  Debugging procedure to output contents of ALFA binary tables in the
