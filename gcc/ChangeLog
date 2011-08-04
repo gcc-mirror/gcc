@@ -1,3 +1,10 @@
+2011-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (self_spec): New variable.
+	(static_specs): Add self_spec.
+	(main): Call do_self_spec on "self_spec" specs after reading
+	user specs files.  Move compare_debug handling right after that.
+
 2011-08-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (vrp_expr_computes_nonnegative): Remove.
