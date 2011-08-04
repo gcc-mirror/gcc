@@ -1288,6 +1288,12 @@ package body Makeutl is
             Source : Prj.Source_Id);
          --  Add all units from the same file as the multi-unit Source.
 
+         function Find_File_Add_Extension
+           (Tree         : Project_Tree_Ref;
+            Root_Project : Project_Id;
+            Base_Main    : String) return Prj.Source_Id;
+         --  Search for Main in the project, adding body or spec extensions.
+
          ----------------------------
          -- Add_Multi_Unit_Sources --
          ----------------------------
@@ -1334,6 +1340,78 @@ package body Makeutl is
             end loop;
          end Add_Multi_Unit_Sources;
 
+         -----------------------------
+         -- Find_File_Add_Extension --
+         -----------------------------
+
+         function Find_File_Add_Extension
+           (Tree         : Project_Tree_Ref;
+            Root_Project : Project_Id;
+            Base_Main    : String) return Prj.Source_Id
+         is
+            Spec_Source : Prj.Source_Id := No_Source;
+            Source      : Prj.Source_Id := No_Source;
+            Project     : Project_Id := Root_Project;
+            Iter        : Source_Iterator;
+            Suffix      : File_Name_Type;
+         begin
+            while Source = No_Source
+              and then Project /= No_Project
+            loop
+               Iter := For_Each_Source (Tree, Project);
+               loop
+                  Source := Prj.Element (Iter);
+                  exit when Source = No_Source;
+
+                  if Source.Kind = Impl then
+                     Get_Name_String (Source.File);
+
+                     if Name_Len > Base_Main'Length
+                       and then Name_Buffer (1 .. Base_Main'Length) = Base_Main
+                     then
+                        Suffix :=
+                          Source.Language.Config.Naming_Data.Body_Suffix;
+
+                        exit when Suffix /= No_File and then
+                          Name_Buffer (Base_Main'Length + 1 .. Name_Len) =
+                          Get_Name_String (Suffix);
+                     end if;
+
+                  elsif Source.Kind = Spec then
+                     --  A spec needs to be taken into account unless there is
+                     --  also a body. So we delay the decision for them.
+
+                     Get_Name_String (Source.File);
+
+                     if Name_Len > Base_Main'Length
+                       and then Name_Buffer (1 .. Base_Main'Length) = Base_Main
+                     then
+                        Suffix :=
+                          Source.Language.Config.Naming_Data.Spec_Suffix;
+
+                        if Suffix /= No_File
+                          and then
+                            Name_Buffer (Base_Main'Length + 1 .. Name_Len) =
+                            Get_Name_String (Suffix)
+                        then
+                           Spec_Source := Source;
+                        end if;
+                     end if;
+                  end if;
+
+                  Next (Iter);
+               end loop;
+
+               Project := Project.Extends;
+            end loop;
+
+            if Source = No_Source then
+               Source := Spec_Source;
+            end if;
+
+            return Source;
+         end Find_File_Add_Extension;
+
          -----------------
          -- Do_Complete --
          -----------------
@@ -1354,10 +1432,9 @@ package body Makeutl is
                      File       : Main_Info       := Names.Table (J);
                      Main_Id    : File_Name_Type  := File.File;
                      Main       : constant String := Get_Name_String (Main_Id);
+                     Base       : constant String := Base_Name (Main);
                      Source     : Prj.Source_Id   := No_Source;
-                     Suffix     : File_Name_Type;
-                     Iter       : Source_Iterator;
-                     Is_Absolute : Boolean         := False;
+                     Is_Absolute : Boolean        := False;
 
                   begin
                      if Base /= Main then
@@ -1379,9 +1456,7 @@ package body Makeutl is
                      end if;
 
                      --  If no project or tree was specified for the main, it
-                     --  came from the command line. In this case, it needs to
-                     --  belong to the root project.
-
+                     --  came from the command line.
                      --  Note that the assignments below will not modify inside
                      --  the table itself.
 
@@ -1413,64 +1488,19 @@ package body Makeutl is
                            Index     => File.Index);
 
                         if Source = No_Source then
+                           Source := Find_File_Add_Extension
+                             (Tree, File.Project, Get_Name_String (Main_Id));
+                        end if;
 
-                           --  Now look for the main with a body suffix
-
-                           declare
-                              --  Main already has a canonical casing
-
-                              Main : constant String :=
-                                Get_Name_String (Main_Id);
-                              Project : Project_Id;
-
-                           begin
-                              Project := File.Project;
-                              while Source = No_Source
-                                and then Project /= No_Project
-                              loop
-                                 Iter := For_Each_Source (File.Tree, Project);
-                                 loop
-                                    Source := Prj.Element (Iter);
-                                    exit when Source = No_Source;
-
-                                    --  Only consider bodies
-
-                                    if Source.Kind = Impl then
-                                       Get_Name_String (Source.File);
-
-                                       if Name_Len > Main'Length
-                                         and then Name_Buffer
-                                           (1 .. Main'Length) = Main
-                                       then
-                                          Suffix :=
-                                            Source.Language
-                                              .Config.Naming_Data.Body_Suffix;
-
-                                          exit when Suffix /= No_File and then
-                                            Name_Buffer
-                                              (Main'Length + 1 .. Name_Len) =
-                                              Get_Name_String (Suffix);
-                                       end if;
-                                    end if;
-
-                                    Next (Iter);
-                                 end loop;
-
-                                 Project := Project.Extends;
-                              end loop;
-                           end;
-
-                        else
-                           if Is_Absolute then
-                              if File_Name_Type (Source.Path.Name) /=
-                                File.File
-                              then
-                                 Debug_Output
-                                   ("found a non-matching file",
-                                    Name_Id (Source.Path.Display_Name));
-                                 Source := No_Source;
-                              end if;
-                           end if;
+                        if Is_Absolute
+                          and then Source /= No_Source
+                          and then File_Name_Type (Source.Path.Name) /=
+                          File.File
+                        then
+                           Debug_Output
+                             ("Found a non-matching file",
+                              Name_Id (Source.Path.Display_Name));
+                           Source := No_Source;
                         end if;
 
                         if Source = No_Source then
@@ -1480,6 +1510,7 @@ package body Makeutl is
                                 Units_Htable.Get
                                   (File.Tree.Units_HT, Name_Id (Main_Id));
                            begin
+
                               if Unit /= No_Unit_Index then
                                  Source := Unit.File_Names (Impl);
                                  if Source = No_Source then
