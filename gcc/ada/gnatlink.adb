@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -478,6 +478,9 @@ procedure Gnatlink is
                           new String'(Executable_Name
                                         (Argument (Next_Arg),
                                          Only_If_No_Suffix => True));
+
+                     when 'P' =>
+                        Opt.CodePeer_Mode := True;
 
                      when 'R' =>
                         Opt.Run_Path_Option := False;
@@ -1441,12 +1444,13 @@ procedure Gnatlink is
       Write_Eol;
       Write_Line ("  mainprog.ali   the ALI file of the main program");
       Write_Eol;
-      Write_Line ("  -f    force object file list to be generated");
+      Write_Line ("  -f    Force object file list to be generated");
       Write_Line ("  -g    Compile binder source file with debug information");
       Write_Line ("  -n    Do not compile the binder source file");
+      Write_Line ("  -P    Process files for use by CodePeer");
       Write_Line ("  -R    Do not use a run_path_option");
-      Write_Line ("  -v    verbose mode");
-      Write_Line ("  -v -v very verbose mode");
+      Write_Line ("  -v    Verbose mode");
+      Write_Line ("  -v -v Very verbose mode");
       Write_Eol;
       Write_Line ("  -o nam     Use 'nam' as the name of the executable");
       Write_Line ("  -b target  Compile the binder source to run on target");
@@ -1675,6 +1679,8 @@ begin
    --             because bindgen uses brackets encoding for all upper
    --             half and wide characters in identifier names.
 
+   --  In addition, in CodePeer mode compile with -gnatC
+
    if Ada_Bind_File then
       Binder_Options_From_ALI.Increment_Last;
       Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
@@ -1685,6 +1691,12 @@ begin
       Binder_Options_From_ALI.Increment_Last;
       Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
         new String'("-gnatiw");
+
+      if Opt.CodePeer_Mode then
+         Binder_Options_From_ALI.Increment_Last;
+         Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
+           new String'("-gnatC");
+      end if;
    end if;
 
    --  Locate all the necessary programs and verify required files are present
@@ -1886,6 +1898,13 @@ begin
             Exit_Program (E_Fatal);
          end if;
       end Bind_Step;
+   end if;
+
+   --  In CodePeer mode, there's nothing left to do after the binder file has
+   --  been compiled.
+
+   if Opt.CodePeer_Mode then
+      return;
    end if;
 
    --  Now, actually link the program

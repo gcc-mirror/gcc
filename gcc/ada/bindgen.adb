@@ -1423,7 +1423,10 @@ package body Bindgen is
             --  The uname_E increment is skipped if this is a separate spec,
             --  since it will be done when we process the body.
 
-            else
+            --  Ignore subprograms in CodePeer mode, since no useful
+            --  elaboration subprogram is needed by CodePeer.
+
+            elsif U.Unit_Kind /= 's' or else not CodePeer_Mode then
                if Force_Checking_Of_Elaboration_Flags
                  or Interface_Library_Unit
                  or not Bind_Main_Program

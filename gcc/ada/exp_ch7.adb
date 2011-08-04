@@ -4079,7 +4079,7 @@ package body Exp_Ch7 is
    function Get_Global_Pool_For_Access_Type (T : Entity_Id) return Entity_Id is
    begin
       --  Access types whose size is smaller than System.Address size can
-      --  exit only on VMS. We can't use the usual global pool which returns
+      --  exist only on VMS. We can't use the usual global pool which returns
       --  an object of type Address as truncation will make it invalid.
       --  To handle this case, VMS has a dedicated global pool that returns
       --  addresses that fit into 32 bit accesses.
