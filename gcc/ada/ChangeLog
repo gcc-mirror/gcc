@@ -1,3 +1,10 @@
+2011-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Clean up targets.
+	Enable new package for atomic counters and copy-on-write implementation
+	of unbounded strings on x86 platforms.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2011-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch7.adb: Minor reformatting.
