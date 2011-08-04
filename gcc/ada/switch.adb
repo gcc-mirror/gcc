@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -137,6 +137,23 @@ package body Switch is
             or else (Switch_Chars'Length >= 5
                       and then Switch_Chars (Ptr + 2 .. Ptr + 4) = "RTS"));
    end Is_Front_End_Switch;
+
+   -------------------------
+   -- Is_Language_Switch --
+   -------------------------
+
+   function Is_Language_Switch (Switch_Chars : String) return Boolean is
+      Ptr : constant Positive := Switch_Chars'First;
+   begin
+      return Is_Switch (Switch_Chars)
+        and then
+          (Switch_Chars (Ptr + 1 .. Switch_Chars'Last) = "gnat83"
+           or else Switch_Chars (Ptr + 1 .. Switch_Chars'Last) = "gnat95"
+           or else Switch_Chars (Ptr + 1 .. Switch_Chars'Last) = "gnat05"
+           or else Switch_Chars (Ptr + 1 .. Switch_Chars'Last) = "gnat2005"
+           or else Switch_Chars (Ptr + 1 .. Switch_Chars'Last) = "gnat12"
+           or else Switch_Chars (Ptr + 1 .. Switch_Chars'Last) = "gnat2012");
+   end Is_Language_Switch;
 
    ----------------------------
    -- Is_Internal_GCC_Switch --

@@ -173,7 +173,7 @@ begin
                         Write_Info_Initiate ('F');
                         Write_Info_Char (' ');
                         Write_Info_Nat (R.Entity_Line);
-                        Write_Info_Char (' ');
+                        Write_Info_Char (R.Etype);
                         Write_Info_Nat (R.Entity_Col);
                         Write_Info_Char (' ');
 

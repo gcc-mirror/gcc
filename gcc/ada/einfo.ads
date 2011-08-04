@@ -1690,10 +1690,13 @@ package Einfo is
 --       Present in all type entities. Set if at least one primitive operation
 --       is defined for the type.
 
---    Has_Private_Ancestor (synthesized)
---       Applies to all type and subtype entities. Returns True if at least
---       one ancestor is private, and otherwise False if there are no private
---       ancestors.
+--    Has_Private_Ancestor (Flag151)
+--       Applies to type extensions. True if some ancestor is derived from a
+--       private type, making some components invisible and aggregates illegal.
+--       This flag is set at the point of derivation. The legality of the
+--       aggregate must be rechecked because it also depends on the visibility
+--       at the point the aggregate is resolved. See sem_aggr.adb.
+--       This is part of AI05-0115.
 
 --    Has_Private_Declaration (Flag155)
 --       Present in all entities. Returns True if it is the defining entity
@@ -4909,7 +4912,6 @@ package Einfo is
 
    --    Alignment_Clause                    (synth)
    --    Base_Type                           (synth)
-   --    Has_Private_Ancestor                (synth)
    --    Implementation_Base_Type            (synth)
    --    Invariant_Procedure                 (synth)
    --    Is_Access_Protected_Subprogram_Type (synth)
@@ -5581,6 +5583,7 @@ package Einfo is
    --    Has_Dispatch_Table                  (Flag220)  (base tagged type only)
    --    Has_External_Tag_Rep_Clause         (Flag110)
    --    Has_Pragma_Pack                     (Flag121)  (impl base type only)
+   --    Has_Private_Ancestor                (Flag151)
    --    Has_Record_Rep_Clause               (Flag65)   (base type only)
    --    Has_Static_Discriminants            (Flag211)  (subtype only)
    --    Is_Class_Wide_Equivalent_Type       (Flag35)
@@ -5607,6 +5610,7 @@ package Einfo is
    --    Stored_Constraint                   (Elist23)
    --    Interfaces                          (Elist25)
    --    Has_Completion                      (Flag26)
+   --    Has_Private_Ancestor                (Flag151)
    --    Has_Record_Rep_Clause               (Flag65)   (base type only)
    --    Has_External_Tag_Rep_Clause         (Flag110)
    --    Is_Concurrent_Record_Type           (Flag20)
@@ -6119,6 +6123,7 @@ package Einfo is
    function Has_Pragma_Unreferenced_Objects     (Id : E) return B;
    function Has_Predicates                      (Id : E) return B;
    function Has_Primitive_Operations            (Id : E) return B;
+   function Has_Private_Ancestor                (Id : E) return B;
    function Has_Qualified_Name                  (Id : E) return B;
    function Has_RACW                            (Id : E) return B;
    function Has_Record_Rep_Clause               (Id : E) return B;
@@ -6436,7 +6441,6 @@ package Einfo is
    function Has_Attach_Handler                  (Id : E) return B;
    function Has_Entries                         (Id : E) return B;
    function Has_Foreign_Convention              (Id : E) return B;
-   function Has_Private_Ancestor                (Id : E) return B;
    function Has_Private_Declaration             (Id : E) return B;
    function Implementation_Base_Type            (Id : E) return E;
    function Is_Base_Type                        (Id : E) return B;
@@ -6705,6 +6709,7 @@ package Einfo is
    procedure Set_Has_Pragma_Unreferenced_Objects (Id : E; V : B := True);
    procedure Set_Has_Predicates                  (Id : E; V : B := True);
    procedure Set_Has_Primitive_Operations        (Id : E; V : B := True);
+   procedure Set_Has_Private_Ancestor            (Id : E; V : B := True);
    procedure Set_Has_Private_Declaration         (Id : E; V : B := True);
    procedure Set_Has_Qualified_Name              (Id : E; V : B := True);
    procedure Set_Has_RACW                        (Id : E; V : B := True);
@@ -7400,6 +7405,7 @@ package Einfo is
    pragma Inline (Has_Pragma_Unreferenced_Objects);
    pragma Inline (Has_Predicates);
    pragma Inline (Has_Primitive_Operations);
+   pragma Inline (Has_Private_Ancestor);
    pragma Inline (Has_Private_Declaration);
    pragma Inline (Has_Qualified_Name);
    pragma Inline (Has_RACW);
@@ -7842,6 +7848,7 @@ package Einfo is
    pragma Inline (Set_Has_Pragma_Unreferenced_Objects);
    pragma Inline (Set_Has_Predicates);
    pragma Inline (Set_Has_Primitive_Operations);
+   pragma Inline (Set_Has_Private_Ancestor);
    pragma Inline (Set_Has_Private_Declaration);
    pragma Inline (Set_Has_Qualified_Name);
    pragma Inline (Set_Has_RACW);

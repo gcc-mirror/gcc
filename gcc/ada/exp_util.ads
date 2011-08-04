@@ -486,17 +486,6 @@ package Exp_Util is
    function Has_Access_Constraint (E : Entity_Id) return Boolean;
    --  Given object or type E, determine if a discriminant is of an access type
 
-   function Has_Controlled_Objects (N : Node_Id) return Boolean;
-   --  Given a node N, determine if it has a declarative or a statement part
-   --  and whether those lists contain at least one controlled object.
-
-   function Has_Controlled_Objects
-     (L           : List_Id;
-      For_Package : Boolean) return Boolean;
-   --  Given a list, determine whether L contains at least one controlled
-   --  object. Flag For_Package should be set when the list comes from a
-   --  package spec or body.
-
    function Has_Following_Address_Clause (D : Node_Id) return Boolean;
    --  D is the node for an object declaration. This function searches the
    --  current declarative part to look for an address clause for the object
@@ -737,6 +726,15 @@ package Exp_Util is
    --  Returns True iff the implementation of this type in code generation
    --  terms is scalar. This is true for scalars in the Ada sense, and for
    --  packed arrays which are represented by a scalar (modular) type.
+
+   function Requires_Cleanup_Actions (N : Node_Id) return Boolean;
+   --  Given a node N, determine whether its declarative and/or statement list
+   --  contains one of the following:
+   --
+   --    1) controlled objects
+   --    2) library-level tagged types
+   --
+   --  The above cases require special actions on scope exit.
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean;
    --  Given the node for an N_Unchecked_Type_Conversion, return True if this

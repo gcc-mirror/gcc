@@ -542,6 +542,9 @@ private
    --  Ada 2005 (AI-251): Set the kind of a primitive operation in T's TSD
    --  table indexed by Position.
 
+   procedure Unregister_Tag (T : Tag);
+   --  Remove a particular tag from the external tag hash table
+
    Max_Predef_Prims : constant Positive := 16;
    --  Number of reserved slots for the following predefined ada primitives:
    --

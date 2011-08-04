@@ -7006,6 +7006,28 @@ package body Sem_Ch3 is
          Parent_Base := Base_Type (Parent_Type);
       end if;
 
+      --  AI05-0115 : if this is a derivation from a private type in some
+      --  other scope that may lead to invisible components for the derived
+      --  type, mark it accordingly.
+
+      if Is_Private_Type (Parent_Type) then
+         if Scope (Parent_Type) = Scope (Derived_Type) then
+            null;
+
+         elsif In_Open_Scopes (Scope (Parent_Type))
+           and then In_Private_Part (Scope (Parent_Type))
+         then
+            null;
+
+         else
+            Set_Has_Private_Ancestor (Derived_Type);
+         end if;
+
+      else
+         Set_Has_Private_Ancestor
+           (Derived_Type, Has_Private_Ancestor (Parent_Type));
+      end if;
+
       --  Before we start the previously documented transformations, here is
       --  little fix for size and alignment of tagged types. Normally when we
       --  derive type D from type P, we copy the size and alignment of P as the

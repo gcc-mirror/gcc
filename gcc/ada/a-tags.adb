@@ -1005,6 +1005,19 @@ package body Ada.Tags is
       return TSD.Type_Is_Abstract;
    end Type_Is_Abstract;
 
+   --------------------
+   -- Unregister_Tag --
+   --------------------
+
+   procedure Unregister_Tag (T : Tag) is
+      TSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+      TSD     : constant Type_Specific_Data_Ptr :=
+                  To_Type_Specific_Data_Ptr (TSD_Ptr.all);
+   begin
+      External_Tag_HTable.Remove (To_Address (TSD.External_Tag));
+   end Unregister_Tag;
+
    ------------------------
    -- Wide_Expanded_Name --
    ------------------------

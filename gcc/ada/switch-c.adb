@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1057,6 +1057,10 @@ package body Switch.C is
                Ptr := Ptr + 1;
                Osint.Fail
                  ("-gnatZ is no longer supported: consider using --RTS=zcx");
+
+            --  Note on language version switches: whenever a new language
+            --  version switch is added, function Switch.Is_Language_Switch and
+            --  procedure Switch.M.Normalize_Compiler_Switches must be updated.
 
             --  Processing for 83 switch
 

@@ -409,6 +409,7 @@ package body Einfo is
    --    Is_Compilation_Unit             Flag149
    --    Has_Pragma_Elaborate_Body       Flag150
 
+   --    Has_Private_Ancestor            Flag151
    --    Entry_Accepted                  Flag152
    --    Is_Obsolescent                  Flag153
    --    Has_Per_Object_Constraint       Flag154
@@ -1312,7 +1313,9 @@ package body Einfo is
 
    function Has_Invariants (Id : E) return B is
    begin
-      pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Procedure);
+      pragma Assert (Is_Type (Id)
+        or else Ekind (Id) = E_Procedure
+        or else Ekind (Id) = E_Generic_Procedure);
       return Flag232 (Id);
    end Has_Invariants;
 
@@ -1444,6 +1447,11 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag120 (Base_Type (Id));
    end Has_Primitive_Operations;
+
+   function Has_Private_Ancestor (Id : E) return B is
+   begin
+      return Flag151 (Id);
+   end Has_Private_Ancestor;
 
    function Has_Private_Declaration (Id : E) return B is
    begin
@@ -3936,6 +3944,12 @@ package body Einfo is
       Set_Flag120 (Id, V);
    end Set_Has_Primitive_Operations;
 
+   procedure Set_Has_Private_Ancestor (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag151 (Id, V);
+   end Set_Has_Private_Ancestor;
+
    procedure Set_Has_Private_Declaration (Id : E; V : B := True) is
    begin
       Set_Flag155 (Id, V);
@@ -6100,25 +6114,6 @@ package body Einfo is
       return False;
    end Has_Interrupt_Handler;
 
-   --------------------------
-   -- Has_Private_Ancestor --
-   --------------------------
-
-   function Has_Private_Ancestor (Id : E) return B is
-      R  : constant Entity_Id := Root_Type (Id);
-      T1 : Entity_Id := Id;
-   begin
-      loop
-         if Is_Private_Type (T1) then
-            return True;
-         elsif T1 = R then
-            return False;
-         else
-            T1 := Etype (T1);
-         end if;
-      end loop;
-   end Has_Private_Ancestor;
-
    --------------------
    -- Has_Rep_Pragma --
    --------------------
@@ -7461,6 +7456,7 @@ package body Einfo is
       W ("Has_Pragma_Unreferenced_Objects", Flag212 (Id));
       W ("Has_Predicates",                  Flag250 (Id));
       W ("Has_Primitive_Operations",        Flag120 (Id));
+      W ("Has_Private_Ancestor",            Flag151 (Id));
       W ("Has_Private_Declaration",         Flag155 (Id));
       W ("Has_Qualified_Name",              Flag161 (Id));
       W ("Has_RACW",                        Flag214 (Id));

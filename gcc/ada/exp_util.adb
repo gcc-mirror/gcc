@@ -147,6 +147,17 @@ package body Exp_Util is
       N      : Node_Id) return Entity_Id;
    --  Create an implicit subtype of CW_Typ attached to node N
 
+   function Requires_Cleanup_Actions
+     (L           : List_Id;
+      For_Package : Boolean) return Boolean;
+   --  Given a list L, determine whether it contains one of the following:
+   --
+   --    1) controlled objects
+   --    2) library-level tagged types
+   --
+   --  Flag For_Package should be set when the list comes from a package spec
+   --  or body.
+
    ----------------------
    -- Adjust_Condition --
    ----------------------
@@ -2578,238 +2589,6 @@ package body Exp_Util is
          return False;
       end if;
    end Has_Access_Constraint;
-
-   ----------------------------
-   -- Has_Controlled_Objects --
-   ----------------------------
-
-   function Has_Controlled_Objects (N : Node_Id) return Boolean is
-      For_Pkg : constant Boolean :=
-                  Nkind_In (N, N_Package_Body, N_Package_Specification);
-
-   begin
-      case Nkind (N) is
-         when N_Accept_Statement      |
-              N_Block_Statement       |
-              N_Entry_Body            |
-              N_Package_Body          |
-              N_Protected_Body        |
-              N_Subprogram_Body       |
-              N_Task_Body             =>
-            return Has_Controlled_Objects (Declarations (N), For_Pkg)
-                     or else
-
-                  --  An expanded sequence of statements may introduce
-                  --  controlled objects.
-
-                  (Present (Handled_Statement_Sequence (N))
-                     and then
-                   Has_Controlled_Objects
-                     (Statements (Handled_Statement_Sequence (N)), For_Pkg));
-
-         when N_Package_Specification =>
-            return Has_Controlled_Objects (Visible_Declarations (N), For_Pkg)
-                     or else
-                   Has_Controlled_Objects (Private_Declarations (N), For_Pkg);
-
-         when others                  =>
-            return False;
-      end case;
-   end Has_Controlled_Objects;
-
-   ----------------------------
-   -- Has_Controlled_Objects --
-   ----------------------------
-
-   function Has_Controlled_Objects
-     (L           : List_Id;
-      For_Package : Boolean) return Boolean
-   is
-      Decl    : Node_Id;
-      Expr    : Node_Id;
-      Obj_Id  : Entity_Id;
-      Obj_Typ : Entity_Id;
-      Pack_Id : Entity_Id;
-      Typ     : Entity_Id;
-
-   begin
-      if No (L)
-        or else Is_Empty_List (L)
-      then
-         return False;
-      end if;
-
-      Decl := First (L);
-      while Present (Decl) loop
-
-         --  Regular object declarations
-
-         if Nkind (Decl) = N_Object_Declaration then
-            Obj_Id  := Defining_Identifier (Decl);
-            Obj_Typ := Base_Type (Etype (Obj_Id));
-            Expr    := Expression (Decl);
-
-            --  Bypass any form of processing for objects which have their
-            --  finalization disabled. This applies only to objects at the
-            --  library level.
-
-            if For_Package
-              and then Finalize_Storage_Only (Obj_Typ)
-            then
-               null;
-
-            --  Transient variables are treated separately in order to minimize
-            --  the size of the generated code. See Exp_Ch7.Process_Transient_
-            --  Objects.
-
-            elsif Is_Processed_Transient (Obj_Id) then
-               null;
-
-            --  The object is of the form:
-            --    Obj : Typ [:= Expr];
-            --
-            --  Do not process the incomplete view of a deferred constant. Do
-            --  not consider tag-to-class-wide conversions.
-
-            elsif not Is_Imported (Obj_Id)
-              and then Needs_Finalization (Obj_Typ)
-              and then not (Ekind (Obj_Id) = E_Constant
-                              and then not Has_Completion (Obj_Id))
-              and then not Is_Tag_To_CW_Conversion (Obj_Id)
-            then
-               return True;
-
-            --  The object is of the form:
-            --    Obj : Access_Typ := Non_BIP_Function_Call'reference;
-            --
-            --    Obj : Access_Typ :=
-            --            BIP_Function_Call
-            --              (..., BIPaccess => null, ...)'reference;
-
-            elsif Is_Access_Type (Obj_Typ)
-              and then Needs_Finalization
-                         (Available_View (Designated_Type (Obj_Typ)))
-              and then Present (Expr)
-              and then
-                (Is_Null_Access_BIP_Func_Call (Expr)
-                   or else
-                (Is_Non_BIP_Func_Call (Expr)
-                   and then not Is_Related_To_Func_Return (Obj_Id)))
-            then
-               return True;
-
-            --  Processing for "hook" objects generated for controlled
-            --  transients declared inside an Expression_With_Actions.
-
-            elsif Is_Access_Type (Obj_Typ)
-              and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
-              and then Nkind (Return_Flag_Or_Transient_Decl (Obj_Id)) =
-                         N_Object_Declaration
-              and then Is_Finalizable_Transient
-                         (Return_Flag_Or_Transient_Decl (Obj_Id), Decl)
-            then
-               return True;
-
-            --  Simple protected objects which use type System.Tasking.
-            --  Protected_Objects.Protection to manage their locks should be
-            --  treated as controlled since they require manual cleanup.
-
-            elsif Ekind (Obj_Id) = E_Variable
-              and then
-                (Is_Simple_Protected_Type (Obj_Typ)
-                  or else Has_Simple_Protected_Object (Obj_Typ))
-            then
-               return True;
-            end if;
-
-         --  Specific cases of object renamings
-
-         elsif Nkind (Decl) = N_Object_Renaming_Declaration
-           and then Nkind (Name (Decl)) = N_Explicit_Dereference
-           and then Nkind (Prefix (Name (Decl))) = N_Identifier
-         then
-            Obj_Id  := Defining_Identifier (Decl);
-            Obj_Typ := Base_Type (Etype (Obj_Id));
-
-            --  Bypass any form of processing for objects which have their
-            --  finalization disabled. This applies only to objects at the
-            --  library level.
-
-            if For_Package
-              and then Finalize_Storage_Only (Obj_Typ)
-            then
-               null;
-
-            --  Return object of a build-in-place function. This case is
-            --  recognized and marked by the expansion of an extended return
-            --  statement (see Expand_N_Extended_Return_Statement).
-
-            elsif Needs_Finalization (Obj_Typ)
-              and then Is_Return_Object (Obj_Id)
-              and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
-            then
-               return True;
-            end if;
-
-         --  Inspect the freeze node of an access-to-controlled type and
-         --  look for a delayed finalization collection. This case arises
-         --  when the freeze actions are inserted at a later time than the
-         --  expansion of the context. Since Build_Finalizer is never called
-         --  on a single construct twice, the collection will be ultimately
-         --  left out and never finalized. This is also needed for freeze
-         --  actions of designated types themselves, since in some cases the
-         --  finalization collection is associated with a designated type's
-         --  freeze node rather than that of the access type (see handling
-         --  for freeze actions in Build_Finalization_Collection).
-
-         elsif Nkind (Decl) = N_Freeze_Entity
-           and then Present (Actions (Decl))
-         then
-            Typ := Entity (Decl);
-
-            if (Is_Access_Type (Typ)
-                  and then not Is_Access_Subprogram_Type (Typ)
-                  and then Needs_Finalization
-                             (Available_View (Designated_Type (Typ))))
-              or else
-               (Is_Type (Typ)
-                  and then Needs_Finalization (Typ))
-            then
-               return True;
-            end if;
-
-         --  Nested package declarations
-
-         elsif Nkind (Decl) = N_Package_Declaration then
-            Pack_Id := Defining_Unit_Name (Specification (Decl));
-
-            if Nkind (Pack_Id) = N_Defining_Program_Unit_Name then
-               Pack_Id := Defining_Identifier (Pack_Id);
-            end if;
-
-            if Ekind (Pack_Id) /= E_Generic_Package
-              and then Has_Controlled_Objects (Specification (Decl))
-            then
-               return True;
-            end if;
-
-         --  Nested package bodies
-
-         elsif Nkind (Decl) = N_Package_Body then
-            Pack_Id := Corresponding_Spec (Decl);
-
-            if Ekind (Pack_Id) /= E_Generic_Package
-              and then Has_Controlled_Objects (Decl)
-            then
-               return True;
-            end if;
-         end if;
-
-         Next (Decl);
-      end loop;
-
-      return False;
-   end Has_Controlled_Objects;
 
    ----------------------------------
    -- Has_Following_Address_Clause --
@@ -6345,6 +6124,252 @@ package body Exp_Util is
         or else (Is_Bit_Packed_Array (UT)
                    and then Is_Scalar_Type (Packed_Array_Type (UT)));
    end Represented_As_Scalar;
+
+   ------------------------------
+   -- Requires_Cleanup_Actions --
+   ------------------------------
+
+   function Requires_Cleanup_Actions (N : Node_Id) return Boolean is
+      For_Pkg : constant Boolean :=
+                  Nkind_In (N, N_Package_Body, N_Package_Specification);
+
+   begin
+      case Nkind (N) is
+         when N_Accept_Statement      |
+              N_Block_Statement       |
+              N_Entry_Body            |
+              N_Package_Body          |
+              N_Protected_Body        |
+              N_Subprogram_Body       |
+              N_Task_Body             =>
+            return
+              Requires_Cleanup_Actions (Declarations (N), For_Pkg)
+                or else
+              (Present (Handled_Statement_Sequence (N))
+                and then
+              Requires_Cleanup_Actions
+                (Statements (Handled_Statement_Sequence (N)), For_Pkg));
+
+         when N_Package_Specification =>
+            return
+              Requires_Cleanup_Actions (Visible_Declarations (N), For_Pkg)
+                or else
+              Requires_Cleanup_Actions (Private_Declarations (N), For_Pkg);
+
+         when others                  =>
+            return False;
+      end case;
+   end Requires_Cleanup_Actions;
+
+   ------------------------------
+   -- Requires_Cleanup_Actions --
+   ------------------------------
+
+   function Requires_Cleanup_Actions
+     (L           : List_Id;
+      For_Package : Boolean) return Boolean
+   is
+      Decl    : Node_Id;
+      Expr    : Node_Id;
+      Obj_Id  : Entity_Id;
+      Obj_Typ : Entity_Id;
+      Pack_Id : Entity_Id;
+      Typ     : Entity_Id;
+
+   begin
+      if No (L)
+        or else Is_Empty_List (L)
+      then
+         return False;
+      end if;
+
+      Decl := First (L);
+      while Present (Decl) loop
+
+         --  Library-level tagged types
+
+         if Nkind (Decl) = N_Full_Type_Declaration then
+            Typ := Defining_Identifier (Decl);
+
+            if Is_Tagged_Type (Typ)
+              and then Is_Library_Level_Entity (Typ)
+              and then Convention (Typ) = Convention_Ada
+              and then Present (Access_Disp_Table (Typ))
+              and then RTE_Available (RE_Unregister_Tag)
+              and then not No_Run_Time_Mode
+              and then not Is_Abstract_Type (Typ)
+            then
+               return True;
+            end if;
+
+         --  Regular object declarations
+
+         elsif Nkind (Decl) = N_Object_Declaration then
+            Obj_Id  := Defining_Identifier (Decl);
+            Obj_Typ := Base_Type (Etype (Obj_Id));
+            Expr    := Expression (Decl);
+
+            --  Bypass any form of processing for objects which have their
+            --  finalization disabled. This applies only to objects at the
+            --  library level.
+
+            if For_Package
+              and then Finalize_Storage_Only (Obj_Typ)
+            then
+               null;
+
+            --  Transient variables are treated separately in order to minimize
+            --  the size of the generated code. See Exp_Ch7.Process_Transient_
+            --  Objects.
+
+            elsif Is_Processed_Transient (Obj_Id) then
+               null;
+
+            --  The object is of the form:
+            --    Obj : Typ [:= Expr];
+            --
+            --  Do not process the incomplete view of a deferred constant. Do
+            --  not consider tag-to-class-wide conversions.
+
+            elsif not Is_Imported (Obj_Id)
+              and then Needs_Finalization (Obj_Typ)
+              and then not (Ekind (Obj_Id) = E_Constant
+                              and then not Has_Completion (Obj_Id))
+              and then not Is_Tag_To_CW_Conversion (Obj_Id)
+            then
+               return True;
+
+            --  The object is of the form:
+            --    Obj : Access_Typ := Non_BIP_Function_Call'reference;
+            --
+            --    Obj : Access_Typ :=
+            --            BIP_Function_Call
+            --              (..., BIPaccess => null, ...)'reference;
+
+            elsif Is_Access_Type (Obj_Typ)
+              and then Needs_Finalization
+                         (Available_View (Designated_Type (Obj_Typ)))
+              and then Present (Expr)
+              and then
+                (Is_Null_Access_BIP_Func_Call (Expr)
+                   or else
+                (Is_Non_BIP_Func_Call (Expr)
+                   and then not Is_Related_To_Func_Return (Obj_Id)))
+            then
+               return True;
+
+            --  Processing for "hook" objects generated for controlled
+            --  transients declared inside an Expression_With_Actions.
+
+            elsif Is_Access_Type (Obj_Typ)
+              and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
+              and then Nkind (Return_Flag_Or_Transient_Decl (Obj_Id)) =
+                         N_Object_Declaration
+              and then Is_Finalizable_Transient
+                         (Return_Flag_Or_Transient_Decl (Obj_Id), Decl)
+            then
+               return True;
+
+            --  Simple protected objects which use type System.Tasking.
+            --  Protected_Objects.Protection to manage their locks should be
+            --  treated as controlled since they require manual cleanup.
+
+            elsif Ekind (Obj_Id) = E_Variable
+              and then
+                (Is_Simple_Protected_Type (Obj_Typ)
+                  or else Has_Simple_Protected_Object (Obj_Typ))
+            then
+               return True;
+            end if;
+
+         --  Specific cases of object renamings
+
+         elsif Nkind (Decl) = N_Object_Renaming_Declaration
+           and then Nkind (Name (Decl)) = N_Explicit_Dereference
+           and then Nkind (Prefix (Name (Decl))) = N_Identifier
+         then
+            Obj_Id  := Defining_Identifier (Decl);
+            Obj_Typ := Base_Type (Etype (Obj_Id));
+
+            --  Bypass any form of processing for objects which have their
+            --  finalization disabled. This applies only to objects at the
+            --  library level.
+
+            if For_Package
+              and then Finalize_Storage_Only (Obj_Typ)
+            then
+               null;
+
+            --  Return object of a build-in-place function. This case is
+            --  recognized and marked by the expansion of an extended return
+            --  statement (see Expand_N_Extended_Return_Statement).
+
+            elsif Needs_Finalization (Obj_Typ)
+              and then Is_Return_Object (Obj_Id)
+              and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
+            then
+               return True;
+            end if;
+
+         --  Inspect the freeze node of an access-to-controlled type and
+         --  look for a delayed finalization collection. This case arises
+         --  when the freeze actions are inserted at a later time than the
+         --  expansion of the context. Since Build_Finalizer is never called
+         --  on a single construct twice, the collection will be ultimately
+         --  left out and never finalized. This is also needed for freeze
+         --  actions of designated types themselves, since in some cases the
+         --  finalization collection is associated with a designated type's
+         --  freeze node rather than that of the access type (see handling
+         --  for freeze actions in Build_Finalization_Collection).
+
+         elsif Nkind (Decl) = N_Freeze_Entity
+           and then Present (Actions (Decl))
+         then
+            Typ := Entity (Decl);
+
+            if (Is_Access_Type (Typ)
+                  and then not Is_Access_Subprogram_Type (Typ)
+                  and then Needs_Finalization
+                             (Available_View (Designated_Type (Typ))))
+              or else
+               (Is_Type (Typ)
+                  and then Needs_Finalization (Typ))
+            then
+               return True;
+            end if;
+
+         --  Nested package declarations
+
+         elsif Nkind (Decl) = N_Package_Declaration then
+            Pack_Id := Defining_Unit_Name (Specification (Decl));
+
+            if Nkind (Pack_Id) = N_Defining_Program_Unit_Name then
+               Pack_Id := Defining_Identifier (Pack_Id);
+            end if;
+
+            if Ekind (Pack_Id) /= E_Generic_Package
+              and then Requires_Cleanup_Actions (Specification (Decl))
+            then
+               return True;
+            end if;
+
+         --  Nested package bodies
+
+         elsif Nkind (Decl) = N_Package_Body then
+            Pack_Id := Corresponding_Spec (Decl);
+
+            if Ekind (Pack_Id) /= E_Generic_Package
+              and then Requires_Cleanup_Actions (Decl)
+            then
+               return True;
+            end if;
+         end if;
+
+         Next (Decl);
+      end loop;
+
+      return False;
+   end Requires_Cleanup_Actions;
 
    ------------------------------------
    -- Safe_Unchecked_Type_Conversion --

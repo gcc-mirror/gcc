@@ -499,6 +499,22 @@ package body Bindgen is
       Main_CPU      : Int renames ALIs.Table (ALIs.First).Main_CPU;
 
    begin
+      --  Declare the access-to-subprogram type used for initialization of
+      --  of __gnat_finalize_library_objects. This is declared at library
+      --  level for compatibility with the type used in System.Soft_Links.
+      --  The import of the soft link which performs library-level object
+      --  finalization is not needed for VM targets; regular Ada is used in
+      --  that case. For restricted run-time libraries (ZFP and Ravenscar)
+      --  tasks are non-terminating, so we do not want finalization.
+
+      if not Suppress_Standard_Library_On_Target
+        and then VM_Target = No_VM
+        and then not Configurable_Run_Time_On_Target
+      then
+         WBI ("   type No_Param_Proc is access procedure;");
+         WBI ("");
+      end if;
+
       WBI ("   procedure " & Ada_Init_Name.all & " is");
 
       --  If the standard library is suppressed, then the only global variables
@@ -621,7 +637,6 @@ package body Bindgen is
 
          if VM_Target = No_VM and then not Configurable_Run_Time_On_Target then
             WBI ("");
-            WBI ("      type No_Param_Proc is access procedure;");
             WBI ("      Finalize_Library_Objects : No_Param_Proc;");
             WBI ("      pragma Import (C, Finalize_Library_Objects, " &
                  """__gnat_finalize_library_objects"");");

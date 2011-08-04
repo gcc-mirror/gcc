@@ -133,9 +133,17 @@ package ALFA is
    --      entity-number and identity identify a scope entity in FS lines for
    --      the file previously identified.
 
-   --    line col entity ref*
+   --    line typ col entity ref*
 
    --      line is the line number of the referenced entity
+
+   --      typ is the type of the referenced entity, using a code similar to
+   --      the one used for cross-references:
+
+   --        > = IN parameter
+   --        < = OUT parameter
+   --        = = IN OUT parameter
+   --        * = all other cases
 
    --      col is the column number of the referenced entity
 
@@ -185,6 +193,13 @@ package ALFA is
 
       Entity_Line : Nat;
       --  Line number for the entity referenced
+
+      Etype : Character;
+      --  Indicates type of entity, using code used in ALI file:
+      --    > = IN parameter
+      --    < = OUT parameter
+      --    = = IN OUT parameter
+      --    * = all other cases
 
       Entity_Col : Nat;
       --  Column number for the entity referenced

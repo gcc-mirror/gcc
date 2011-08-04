@@ -1,3 +1,106 @@
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-tags.ads, a-tags.adb (Unregister_Tag): New routine.
+	Remove the external tag of a tagged type from the internal hash table.
+	* exp_ch7.adb (Build_Cleanup_Statements): Update the comment on the
+	expanded usage of the routine. Strenghten the check for Is_Master. Add
+	processing for tagged types.
+	(Build_Finalizer): Create all the necessary lists used in finalizer
+	creation when the processed context is a package that may contain
+	tagged types.
+	(Expand_Cleanup_Actions): Rename the call to Has_Controlled_Objects to
+	Requires_Cleanup_Actions.
+	(Expand_N_Package_Body): Package bodies may need clean up code
+	depending on whether they contain tagged types.
+	(Expand_N_Package_Declaration): Package declarations may need clean up
+	code depending on whether they contain tagged types.
+	(Unregister_Tagged_Types): New routine. Search through a list of
+	declarations or statements, looking for non-abstract Ada tagged types.
+	For each such type, generate code to unregister the external tag.
+	* exp_util.adb (Has_Controlled_Objects (Node_Id)): Renamed to
+	Requires_Cleanup_Actions.
+	(Requires_Cleanup_Actions (List_Id, Boolean)): New routine. Search
+	through a list of declarations or statements looking for non-abstract
+	Ada tagged types or controlled objects.
+	* exp_util.ads (Has_Controlled_Objects (Node_Id)): Renamed to
+	Requires_Cleanup_Actions.
+	(Has_Controlled_Objects (List_Id, Boolean)): Removed.
+	* rtsfind.ads: Add entry RE_Unregister_Tag to tables RE_Id and
+	RE_Unit_Table.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-env.adb (For_All_Source_Dirs.For_Project): Check if project Prj
+	has Ada sources, not project Project, because if the root project
+	Project has no sources of its own, all projects will be deemed without
+	sources.
+
+2011-08-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* bindgen.adb (Gen_Adainit_Ada): Move the generation of the declaration
+	of the No_Param_Proc acc-to-subp type used for initialization of
+	__gnat_finalize_library_objects so that it's declared at library level
+	rather than nested inside of the adainit routine.
+
+2011-08-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Generate code to check the external tag ONLY
+	if the tagged type has a representation clause which specifies its
+	external tag.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb (Has_Private_Ancestor): now a flag on types.
+	Remove previous procedure with that name.
+	* sem_ch3.adb (Build_Derived_Record_Type): set Has_Private_Ancestor
+	when appropriate.
+	* sem_aggr.adb (Resolve_Extension_Aggregate): if the ancestor part is a
+	subtype mark, the ancestor cannot have unknown discriminants.
+	(Resolve_Record_Aggregate): if the type has invisible components
+	because of a private ancestor, the aggregate is illegal.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* switch-m.adb (Normalize_Compiler_Switches): Recognize and take into
+	account switches -gnat2005, -gnat12 and -gnat2012.
+
+2011-08-04  Bob Duff  <duff@adacore.com>
+
+	* s-tasdeb.ads: Minor comment fix.
+
+2011-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatlink.adb (Gnatlink): Pass -gnat83/95/05/12 switch to gcc in
+	CodePeer mode.
+	* switch.ads, switch.adb (Is_Language_Switch): New function.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* switch-c.adb: Minor comment addition.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* vms_conv.adb (Process_Argument): Fail graciously when qualifier
+	ending with '=' is followed by a space (missing file name).
+
+2011-08-04  Pascal Obry  <obry@adacore.com>
+
+	* g-regist.ads: Fix size of HKEY on x86_64-windows.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations): New routine
+	Check_Overloaded_Formal_Subprogram to reject a formal package when
+	there is a named association or a box initialisation for an overloaded
+	formal subprogram of the corresponding generic.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* alfa.ads (ALFA_Xref_Record): add component for type of entity
+	* get_alfa.adb, put_alfa.adb: Read and write new component of
+	cross-reference.
+	* lib-xref-alfa.adb (Collect_ALFA): generate new component.
+
 2011-08-04  Pascal Obry  <obry@adacore.com>
 
 	* urealp.adb: Minor reformatting.

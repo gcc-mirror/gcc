@@ -45,6 +45,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
@@ -2573,6 +2574,15 @@ package body Sem_Aggr is
         and then Is_Type (Entity (A))
       then
          Check_SPARK_Restriction ("ancestor part cannot be a type mark", A);
+
+         --  AI05-0115: if the ancestor part is a subtype mark, the ancestor
+         --  must not have unknown discriminants.
+
+         if Has_Unknown_Discriminants (Root_Type (Typ)) then
+            Error_Msg_NE
+              ("aggregate not available for type& whose ancestor "
+                 & "has unknown discriminants", N, Typ);
+         end if;
       end if;
 
       if not Is_Tagged_Type (Typ) then
@@ -3405,6 +3415,18 @@ package body Sem_Aggr is
             Positional_Expr := Empty;
          end if;
 
+         --  AI05-0115: if the ancestor part is a subtype mark, the ancestor
+         --  must npt have unknown discriminants.
+
+         if Is_Derived_Type (Typ)
+           and then Has_Unknown_Discriminants (Root_Type (Typ))
+           and then Nkind (N) /= N_Extension_Aggregate
+         then
+            Error_Msg_NE
+              ("aggregate not available for type& whose ancestor "
+                 & "has unknown discriminants ", N, Typ);
+         end if;
+
          if Has_Unknown_Discriminants (Typ)
            and then Present (Underlying_Record_View (Typ))
          then
@@ -3558,6 +3580,35 @@ package body Sem_Aggr is
          Errors_Found    : Boolean := False;
          Dnode           : Node_Id;
 
+         function Find_Private_Ancestor return Entity_Id;
+         --  AI05-0115: Find earlier ancestor in the derivation chain that is
+         --  derived from a private view. Whether the aggregate is legal
+         --  depends on the current visibility of the type as well as that
+         --  of the parent of the ancestor.
+
+         ---------------------------
+         -- Find_Private_Ancestor --
+         ---------------------------
+
+         function Find_Private_Ancestor return Entity_Id is
+            Par : Entity_Id;
+         begin
+            Par := Typ;
+            loop
+               if Has_Private_Ancestor (Par)
+                 and then not Has_Private_Ancestor (Etype (Base_Type (Par)))
+               then
+                  return Par;
+
+               elsif not Is_Derived_Type (Par) then
+                  return Empty;
+
+               else
+                  Par := Etype (Base_Type (Par));
+               end if;
+            end loop;
+         end Find_Private_Ancestor;
+
       begin
          if Is_Derived_Type (Typ) and then Is_Tagged_Type (Typ) then
             Parent_Typ_List := New_Elmt_List;
@@ -3571,16 +3622,45 @@ package body Sem_Aggr is
                Root_Typ := Base_Type (Etype (Ancestor_Part (N)));
 
             else
-               Root_Typ := Root_Type (Typ);
+               --  AI05-0115:  check legality of aggregate for type with
+               --  aa private ancestor.
 
-               if Nkind (Parent (Base_Type (Root_Typ))) =
-                                               N_Private_Type_Declaration
-               then
-                  Error_Msg_NE
-                    ("type of aggregate has private ancestor&!",
-                     N, Root_Typ);
-                  Error_Msg_N ("must use extension aggregate!", N);
-                  return;
+               Root_Typ := Root_Type (Typ);
+               if Has_Private_Ancestor (Typ) then
+                  declare
+                     Ancestor      : constant Entity_Id :=
+                       Find_Private_Ancestor;
+                     Ancestor_Unit : constant Entity_Id :=
+                       Cunit_Entity (Get_Source_Unit (Ancestor));
+                     Parent_Unit   : constant Entity_Id :=
+                       Cunit_Entity
+                         (Get_Source_Unit (Base_Type (Etype (Ancestor))));
+                  begin
+
+                     --  check whether we are in a scope that has full view
+                     --  over the private ancestor and its parent. This can
+                     --  only happen if the derivation takes place in a child
+                     --  unit of the unit that declares the parent, and we are
+                     --  in the private part or body of that child unit, else
+                     --  the aggregate is illegal.
+
+                     if Is_Child_Unit (Ancestor_Unit)
+                       and then Scope (Ancestor_Unit) = Parent_Unit
+                       and then In_Open_Scopes (Scope (Ancestor))
+                       and then
+                        (In_Private_Part (Scope (Ancestor))
+                           or else In_Package_Body (Scope (Ancestor)))
+                     then
+                        null;
+
+                     else
+                        Error_Msg_NE
+                          ("type of aggregate has private ancestor&!",
+                              N, Root_Typ);
+                        Error_Msg_N ("must use extension aggregate!", N);
+                        return;
+                     end if;
+                  end;
                end if;
 
                Dnode := Declaration_Node (Base_Type (Root_Typ));
