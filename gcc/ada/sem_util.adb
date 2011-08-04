@@ -4151,6 +4151,38 @@ package body Sem_Util is
           Strval => String_From_Name_Buffer);
    end Get_Default_External_Name;
 
+   --------------------------
+   -- Get_Enclosing_Object --
+   --------------------------
+
+   function Get_Enclosing_Object (N : Node_Id) return Entity_Id is
+   begin
+      if Is_Entity_Name (N) then
+         return Entity (N);
+      else
+         case Nkind (N) is
+            when N_Indexed_Component  |
+                 N_Slice              |
+                 N_Selected_Component =>
+
+               --  If not generating code, a dereference may be left implicit.
+               --  In thoses cases, return Empty.
+
+               if Is_Access_Type (Etype (Prefix (N))) then
+                  return Empty;
+               else
+                  return Get_Enclosing_Object (Prefix (N));
+               end if;
+
+            when N_Type_Conversion =>
+               return Get_Enclosing_Object (Expression (N));
+
+            when others =>
+               return Empty;
+         end case;
+      end if;
+   end Get_Enclosing_Object;
+
    ---------------------------
    -- Get_Enum_Lit_From_Pos --
    ---------------------------

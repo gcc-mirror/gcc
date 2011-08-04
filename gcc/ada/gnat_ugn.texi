@@ -8313,6 +8313,10 @@ Output object list (to standard output or to the named file).
 @cindex @option{^-p^/PESSIMISTIC_ELABORATION^} (@command{gnatbind})
 Pessimistic (worst-case) elaboration order
 
+@item ^-P^-P^
+@cindex @option{^-P^/CODEPEER^} (@command{gnatbind})
+Generate binder file suitable for CodePeer.
+
 @item ^-R^-R^
 @cindex @option{^-R^-R^} (@command{gnatbind})
 Output closure source list.

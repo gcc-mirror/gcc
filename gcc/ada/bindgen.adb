@@ -2218,7 +2218,20 @@ package body Bindgen is
       if not No_Main_Subprogram then
          WBI ("      Break_Start;");
 
-         if ALIs.Table (ALIs.First).Main_Program = Proc then
+         if CodePeer_Mode then
+            --  Bypass Ada_Main_Program; its Import pragma confuses CodePeer.
+            Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+            declare
+               Callee_Name : String renames Name_Buffer (1 .. Name_Len - 2);
+               --  strip trailing "%b"
+            begin
+               if ALIs.Table (ALIs.First).Main_Program = Proc then
+                  WBI ("      " & Callee_Name & ";");
+               else
+                  WBI ("      Result := " & Callee_Name & ";");
+               end if;
+            end;
+         elsif ALIs.Table (ALIs.First).Main_Program = Proc then
             WBI ("      Ada_Main_Program;");
          else
             WBI ("      Result := Ada_Main_Program;");
@@ -3060,6 +3073,13 @@ package body Bindgen is
 
       if Needs_Library_Finalization then
          WBI ("with Ada.Exceptions;");
+      end if;
+
+      if CodePeer_Mode then
+         --  For CodePeer, main program is not called via an Import pragma.
+         Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+         WBI ("with " & Name_Buffer (1 .. Name_Len - 2) & ";");
+         --  strip trailing "%b"
       end if;
 
       WBI ("");
