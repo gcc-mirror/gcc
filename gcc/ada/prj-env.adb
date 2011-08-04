@@ -105,11 +105,6 @@ package body Prj.Env is
    procedure Set_Path_File_Var (Name : String; Value : String);
    --  Call Setenv, after calling To_Host_File_Spec
 
-   function Ultimate_Extension_Of
-     (Project : Project_Id) return Project_Id;
-   --  Return a project that is either Project or an extended ancestor of
-   --  Project that itself is not extended.
-
    ----------------------
    -- Ada_Include_Path --
    ----------------------
@@ -1345,8 +1340,8 @@ package body Prj.Env is
                               (Unit.File_Names (Spec).Path.Name) =
                             Original_Name))
             then
-               Project := Ultimate_Extension_Of
-                          (Project => Unit.File_Names (Spec).Project);
+               Project := Ultimate_Extending_Project_Of
+                          (Unit.File_Names (Spec).Project);
                Path := Unit.File_Names (Spec).Path.Display_Name;
 
                if Current_Verbosity > Default then
@@ -1367,8 +1362,8 @@ package body Prj.Env is
                             (Unit.File_Names (Impl).Path.Name) =
                             Original_Name))
             then
-               Project := Ultimate_Extension_Of
-                            (Project => Unit.File_Names (Impl).Project);
+               Project := Ultimate_Extending_Project_Of
+                            (Unit.File_Names (Impl).Project);
                Path := Unit.File_Names (Impl).Path.Display_Name;
 
                if Current_Verbosity > Default then
@@ -1556,15 +1551,7 @@ package body Prj.Env is
          Unit := Units_Htable.Get_Next (In_Tree.Units_HT);
       end loop;
 
-      --  Get the ultimate extending project
-
-      if Result /= No_Project then
-         while Result.Extended_By /= No_Project loop
-            Result := Result.Extended_By;
-         end loop;
-      end if;
-
-      return Result;
+      return Ultimate_Extending_Project_Of (Result);
    end Project_Of;
 
    -------------------
@@ -1804,24 +1791,6 @@ package body Prj.Env is
          Free (Host_Spec);
       end if;
    end Set_Path_File_Var;
-
-   ---------------------------
-   -- Ultimate_Extension_Of --
-   ---------------------------
-
-   function Ultimate_Extension_Of
-     (Project : Project_Id) return Project_Id
-   is
-      Result : Project_Id;
-
-   begin
-      Result := Project;
-      while Result.Extended_By /= No_Project loop
-         Result := Result.Extended_By;
-      end loop;
-
-      return Result;
-   end Ultimate_Extension_Of;
 
    ---------------------
    -- Add_Directories --

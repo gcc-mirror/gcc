@@ -1442,9 +1442,10 @@ package body Makeutl is
 
                   begin
                      if Base /= Main then
+                        Is_Absolute := True;
+
                         if Is_Absolute_Path (Main) then
                            Main_Id := Create_Name (Base);
-                           Is_Absolute := True;
                         else
                            declare
                               Absolute : constant String :=
@@ -1545,7 +1546,7 @@ package body Makeutl is
                            Debug_Output
                              ("found main in project", Source.Project.Name);
                            Names.Table (J).File    := Source.File;
-                           Names.Table (J).Project := File.Project;
+                           Names.Table (J).Project := Source.Project;
 
                            if Names.Table (J).Tree = null then
                               Names.Table (J).Tree := File.Tree;

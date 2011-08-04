@@ -5673,6 +5673,9 @@ package body Make is
       -----------------
 
       procedure Check_Mains is
+         Real_Main_Project : Project_Id := No_Project;
+         Info : Main_Info;
+         Proj : Project_Id;
       begin
          if Mains.Number_Of_Mains (Project_Tree) = 0
            and then not Unique_Compile
@@ -5682,6 +5685,38 @@ package body Make is
 
          Mains.Complete_Mains
            (Root_Environment.Flags, Main_Project, Project_Tree);
+
+         --  If we have multiple mains on the command line, they need not
+         --  belong to the root project, but they must all belong to the same
+         --  project.
+         if not Unique_Compile then
+            Mains.Reset;
+            loop
+               Info := Mains.Next_Main;
+               exit when Info = No_Main_Info;
+
+               Debug_Output ("MANU Got main: ", Name_Id (Info.File));
+               Debug_Output ("MANU    in project: ", Info.Project.Name);
+
+               Proj := Ultimate_Extending_Project_Of (Info.Project);
+
+               if Real_Main_Project = No_Project then
+                  Real_Main_Project := Proj;
+               elsif Real_Main_Project /= Proj then
+                  Make_Failed
+                    ("""" & Get_Name_String (Info.File) &
+                     """ is not a source of project " &
+                     Get_Name_String (Real_Main_Project.Name));
+               end if;
+            end loop;
+
+            if Real_Main_Project /= No_Project then
+               Main_Project := Real_Main_Project;
+            end if;
+
+            Debug_Output ("After checking mains, main project is",
+                          Main_Project.Name);
+         end if;
       end Check_Mains;
 
    --  Start of processing for Gnatmake
