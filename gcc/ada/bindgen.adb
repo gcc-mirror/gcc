@@ -1665,6 +1665,10 @@ package body Bindgen is
       procedure Gen_Header;
       --  Generate the header of the finalization routine
 
+      ----------------
+      -- Gen_Header --
+      ----------------
+
       procedure Gen_Header is
       begin
          WBI ("   procedure finalize_library is");
@@ -1684,6 +1688,8 @@ package body Bindgen is
 
          WBI ("   begin");
       end Gen_Header;
+
+   --  Start of processing for Gen_Finalize_Library_Ada
 
    begin
       for E in reverse Elab_Order.First .. Elab_Order.Last loop
@@ -1954,7 +1960,7 @@ package body Bindgen is
          if U.Unit_Kind /= 'p' or else U.Is_Generic then
             null;
 
-         --  That aren't an interface to a stand alone library
+         --  .. that are not interfaces to a stand alone library
 
          elsif U.SAL_Interface then
             null;

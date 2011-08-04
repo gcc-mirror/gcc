@@ -1350,11 +1350,14 @@ package body Makeutl is
             Base_Main    : String) return Prj.Source_Id
          is
             Spec_Source : Prj.Source_Id := No_Source;
-            Source      : Prj.Source_Id := No_Source;
-            Project     : Project_Id := Root_Project;
+            Source      : Prj.Source_Id;
+            Project     : Project_Id;
             Iter        : Source_Iterator;
             Suffix      : File_Name_Type;
+
          begin
+            Source  := No_Source;
+            Project := Root_Project;
             while Source = No_Source
               and then Project /= No_Project
             loop
@@ -1429,12 +1432,13 @@ package body Makeutl is
 
                for J in reverse Names.First .. Names.Last loop
                   declare
-                     File       : Main_Info       := Names.Table (J);
-                     Main_Id    : File_Name_Type  := File.File;
-                     Main       : constant String := Get_Name_String (Main_Id);
-                     Base       : constant String := Base_Name (Main);
-                     Source     : Prj.Source_Id   := No_Source;
-                     Is_Absolute : Boolean        := False;
+                     File        : Main_Info       := Names.Table (J);
+                     Main_Id     : File_Name_Type  := File.File;
+                     Main        : constant String :=
+                                     Get_Name_String (Main_Id);
+                     Base        : constant String := Base_Name (Main);
+                     Source      : Prj.Source_Id   := No_Source;
+                     Is_Absolute : Boolean         := False;
 
                   begin
                      if Base /= Main then
@@ -1444,10 +1448,10 @@ package body Makeutl is
                         else
                            declare
                               Absolute : constant String :=
-                                Normalize_Pathname
-                                  (Name           => Main,
-                                   Directory      => "",
-                                   Resolve_Links  => False);
+                                           Normalize_Pathname
+                                             (Name           => Main,
+                                              Directory      => "",
+                                              Resolve_Links  => False);
                            begin
                               File.File := Create_Name (Absolute);
                               Main_Id := Create_Name (Base);
@@ -1504,15 +1508,19 @@ package body Makeutl is
                         end if;
 
                         if Source = No_Source then
-                           --  Still not found ? Maybe we have a unit name
+
+                           --  Still not found? Maybe we have a unit name
+
                            declare
                               Unit : constant Unit_Index :=
-                                Units_Htable.Get
-                                  (File.Tree.Units_HT, Name_Id (Main_Id));
-                           begin
+                                       Units_Htable.Get
+                                         (File.Tree.Units_HT,
+                                          Name_Id (Main_Id));
 
+                           begin
                               if Unit /= No_Unit_Index then
                                  Source := Unit.File_Names (Impl);
+
                                  if Source = No_Source then
                                     Source := Unit.File_Names (Spec);
                                  end if;
@@ -1527,9 +1535,7 @@ package body Makeutl is
                            --  to compile all the units from the same source
                            --  file.
 
-                           if Source.Index /= 0
-                             and then File.Index = 0
-                           then
+                           if Source.Index /= 0 and then File.Index = 0 then
                               Add_Multi_Unit_Sources (File.Tree, Source);
                            end if;
 
@@ -1564,8 +1570,7 @@ package body Makeutl is
                            Error_Msg_File_1 := Main_Id;
                            Error_Msg_Name_1 := Root_Project.Name;
                            Prj.Err.Error_Msg
-                             (Flags,
-                              "{ is not a source of project %%",
+                             (Flags, "{ is not a source of project %%",
                               File.Location, Project);
                         end if;
                      end if;
@@ -1832,8 +1837,10 @@ package body Makeutl is
 
                elsif Sw'Length >= 4
                  and then (Sw (2 .. 3) = "aL"
-                            or else Sw (2 .. 3) = "aO"
-                            or else Sw (2 .. 3) = "aI")
+                             or else
+                           Sw (2 .. 3) = "aO"
+                             or else
+                           Sw (2 .. 3) = "aI")
                then
                   Start := 4;
 
@@ -1923,7 +1930,6 @@ package body Makeutl is
 
       Start := Finish;
       Finish := Finish - 1;
-
       while Start >= 1 and then Name_Buffer (Start - 1) in '0' .. '9' loop
          Start := Start - 1;
       end loop;
@@ -2644,6 +2650,7 @@ package body Makeutl is
 
             Iter   : Source_Iterator;
             Source : Prj.Source_Id;
+
          begin
             --  Nothing to do when "-u" was specified and some files were
             --  specified on the command line
@@ -2662,23 +2669,23 @@ package body Makeutl is
                if Is_Compilable (Source)
                  and then
                    (All_Projects
-                    or else Is_Extending (Project, Source.Project))
+                     or else Is_Extending (Project, Source.Project))
                  and then not Source.Locally_Removed
                  and then Source.Replaced_By = No_Source
                  and then
                    (not Source.Project.Externally_Built
-                    or else
-                      (Is_Extending (Project, Source.Project)
-                        and then not Project.Externally_Built))
+                     or else
+                       (Is_Extending (Project, Source.Project)
+                         and then not Project.Externally_Built))
                  and then Source.Kind /= Sep
                  and then Source.Path /= No_Path_Information
                then
                   if Source.Kind = Impl
                     or else (Source.Unit /= No_Unit_Index
-                             and then Source.Kind = Spec
-                             and then (Other_Part (Source) = No_Source
-                                        or else
-                                          Other_Part (Source).Locally_Removed))
+                              and then Source.Kind = Spec
+                              and then (Other_Part (Source) = No_Source
+                                          or else
+                                        Other_Part (Source).Locally_Removed))
                   then
                      if (Unit_Based
                           or else Source.Unit = No_Unit_Index
@@ -2712,9 +2719,9 @@ package body Makeutl is
          Project_Tree          : Project_Tree_Ref;
          Excluding_Shared_SALs : Boolean := False)
       is
-         Sfile     : File_Name_Type;
-         Afile     : File_Name_Type;
-         Src_Id    : Prj.Source_Id;
+         Sfile  : File_Name_Type;
+         Afile  : File_Name_Type;
+         Src_Id : Prj.Source_Id;
 
       begin
          --  Insert in the queue the unmarked source files (i.e. those which
@@ -2745,7 +2752,7 @@ package body Makeutl is
                         when Spec =>
                            declare
                               Bdy : constant Prj.Source_Id :=
-                                Other_Part (Src_Id);
+                                      Other_Part (Src_Id);
                            begin
                               if Bdy /= No_Source
                                 and then not Bdy.Locally_Removed
@@ -2838,9 +2845,9 @@ package body Makeutl is
       procedure Do_Compute (Project : Project_Id; Tree : Project_Tree_Ref) is
          Data       : constant Builder_Data_Access := Builder_Data (Tree);
          All_Phases : constant Boolean :=
-           not Option_Compile_Only
-           and then not Option_Bind_Only
-           and then not Option_Link_Only;
+                        not Option_Compile_Only
+                        and then not Option_Bind_Only
+                        and then not Option_Link_Only;
          --  Whether the command line asked for all three phases. Depending on
          --  the project settings, we might still disable some of the phases.
 
