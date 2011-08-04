@@ -1,3 +1,8 @@
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb, g-comlin.ads (Add_Switch): Put back support for
+	overriding the separator.
+
 2011-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* sem_aggr.adb, par_sco.adb, sem_type.adb, exp_util.adb, exp_ch9.adb,
