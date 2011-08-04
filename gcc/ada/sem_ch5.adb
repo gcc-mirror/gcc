@@ -746,14 +746,10 @@ package body Sem_Ch5 is
             if Safe_To_Capture_Value (N, Ent) then
 
                --  If simple variable on left side, warn if this assignment
-               --  blots out another one (rendering it useless) and note
-               --  location of assignment in case no one references value. We
-               --  only do this for source assignments, otherwise we can
-               --  generate bogus warnings when an assignment is rewritten as
-               --  another assignment, and gets tied up with itself.
-
-               --  Note: we don't use Record_Last_Assignment here, because we
-               --  have lots of other stuff to do under control of this test.
+               --  blots out another one (rendering it useless). We only do
+               --  this for source assignments, otherwise we can generate bogus
+               --  warnings when an assignment is rewritten as another
+               --  assignment, and gets tied up with itself.
 
                if Warn_On_Modified_Unread
                  and then Is_Assignable (Ent)
@@ -761,7 +757,6 @@ package body Sem_Ch5 is
                  and then In_Extended_Main_Source_Unit (Ent)
                then
                   Warn_On_Useless_Assignment (Ent, N);
-                  Set_Last_Assignment (Ent, Lhs);
                end if;
 
                --  If we are assigning an access type and the left side is an
@@ -803,6 +798,28 @@ package body Sem_Ch5 is
             end if;
          end;
       end if;
+
+      --  If assigning to an object in whole or in part, note location of
+      --  assignment in case no one references value. We only do this for
+      --  source assignments, otherwise we can generate bogus warnings when an
+      --  assignment is rewritten as another assignment, and gets tied up with
+      --  itself.
+
+      declare
+         Ent : constant Entity_Id := Get_Enclosing_Object (Lhs);
+
+      begin
+         if Present (Ent)
+           and then Safe_To_Capture_Value (N, Ent)
+           and then Nkind (N) = N_Assignment_Statement
+           and then Warn_On_Modified_Unread
+           and then Is_Assignable (Ent)
+           and then Comes_From_Source (N)
+           and then In_Extended_Main_Source_Unit (Ent)
+         then
+            Set_Last_Assignment (Ent, Lhs);
+         end if;
+      end;
    end Analyze_Assignment;
 
    -----------------------------

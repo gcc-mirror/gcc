@@ -1,3 +1,35 @@
+2011-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* prj-env.adb: Remove local debug traces.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Apply_Float_Conversion_Check): correct a typo where Lo_OK
+	was used instead of Hi_OK, which could cause a read of an uninitialized
+	value later on. Detected while working on the new warning.
+	* exp_ch9.adb (Expand_N_Entry_Declaration): remove useless assignment
+	to local variable.
+	* sem_ch5.adb (Analyze_Assignment): set the last assignment component
+	in more cases, in order to detect more unreferenced values.
+	* sem_util.adb, sem_util.ads (Get_Enclosing_Object): return enclosing
+	object for expression, if any.
+
+2011-08-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_intr.adb (Expand_Binary_Operator_Call): Look at the RM size of
+	the operand types instead of the Esize.
+
+2011-08-04  Steve Baird  <baird@adacore.com>
+
+	* switch-b.adb (Scan_Binder_Switches): Add -P binder switch, used to
+	enable CodePeer_Mode.
+	* bindusg.adb (Display): Add help message describing -P binder switch.
+	* gnat_ugn.texi: Document -P binder switch.
+	* bindgen.adb (Gen_Main_Ada): If CodePeer_Mode is set, then call the
+	user-defined main program directly.
+	(Gen_Output_File_Ada): If CodePeer_Mode is set, generate a with of the
+	user-defined main program in the context clause of the package body.
+
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
 	* alfa.adb, alfa.ads (Get_Entity_For_Decl): remove function, partial

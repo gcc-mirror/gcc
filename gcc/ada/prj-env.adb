@@ -534,9 +534,6 @@ package body Prj.Env is
          while Element (Iter) /= No_Source loop
             Source := Element (Iter);
 
-            Debug_Output ("MANU Source index=" & Source.Index'Img,
-                          Name_Id (Source.File));
-
             if Source.Index >= 1
               and then not Source.Locally_Removed
               and then Source.Unit /= null
@@ -703,7 +700,6 @@ package body Prj.Env is
    --  Start of processing for Create_Config_Pragmas_File
 
    begin
-      Debug_Output ("MANU Create_Config_Pragmas_File", For_Project.Name);
       if not For_Project.Config_Checked then
          Naming_Table.Init (Namings);
 

@@ -124,7 +124,7 @@ package body Exp_Intr is
       T3  : Entity_Id;
       Res : Node_Id;
 
-      Siz : constant Uint := UI_Max (Esize (T1), Esize (T2));
+      Siz : constant Uint := UI_Max (RM_Size (T1), RM_Size (T2));
       --  Maximum of operand sizes
 
    begin
