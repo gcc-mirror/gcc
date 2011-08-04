@@ -1273,8 +1273,9 @@ package Einfo is
 --       the floating-point representation to be used.
 
 --    Formal_Proof_On (Flag254)
---       Present in subprogram entities. Set for subprograms whose body
---       contains an Annotate pragma which forces formal proof on this body.
+--       Present in subprogram and generic subprogram entities. Set on for
+--       subprograms whose body contains an Annotate pragma which forces formal
+--       proof on this body.
 
 --    Freeze_Node (Node7)
 --       Present in all entities. If there is an associated freeze node for
@@ -5249,6 +5250,7 @@ package Einfo is
    --    Delay_Cleanups                      (Flag114)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Discard_Names                       (Flag88)
+   --    Formal_Proof_On                     (Flag254)
    --    Has_Completion                      (Flag26)
    --    Has_Controlling_Result              (Flag98)
    --    Has_Invariants                      (Flag232)
@@ -5395,6 +5397,7 @@ package Einfo is
    --    Is_Primitive                        (Flag218)
    --    Is_Thunk                            (Flag225)
    --    Default_Expressions_Processed       (Flag108)
+   --    Formal_Proof_On                     (Flag254)
    --    Aren't there more flags and fields? seems like this list should be
    --    more similar to the E_Function list, which is much longer ???
 
@@ -5515,6 +5518,7 @@ package Einfo is
    --    Delay_Cleanups                      (Flag114)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Discard_Names                       (Flag88)
+   --    Formal_Proof_On                     (Flag254)
    --    Has_Completion                      (Flag26)
    --    Has_Invariants                      (Flag232)
    --    Has_Master_Entity                   (Flag21)

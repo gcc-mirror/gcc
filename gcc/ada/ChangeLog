@@ -1,3 +1,21 @@
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* s-pooloc.ads, s-pooglo.ads: Minor reformatting
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	PR ada/47880
+	* s-pooloc.adb (Deallocate): Fix the case of deallocating the only
+	allocated object.
+
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, exp_ch4.adb: Minor reformatting.
+
+2011-08-04  Jerome Lambourg  <lambourg@adacore.com>
+
+	* back_end.ads (Gen_Or_Update_Object_File): Add more comments.
+
 2011-08-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb (Expand_Composite_Equality): code cleanup: use component

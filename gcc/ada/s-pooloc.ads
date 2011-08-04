@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package System.Pool_Local is
    --  Allocation strategy:
 
    --    Call to malloc/free for each Allocate/Deallocate
-   --    no user specifiable size
+   --    No user specifiable size
    --    Space of allocated objects is reclaimed at pool finalization
    --    Manages a list of allocated objects
 
