@@ -638,6 +638,28 @@ package body Sem_Ch6 is
             return;
 
          else
+            --  The resolution of a controlled [extension] aggregate associated
+            --  with a return statement creates a temporary which needs to be
+            --  finalized on function exit. Wrap the return statement inside a
+            --  block so that the finalization machinery can detect this case.
+            --  This early expansion is done only when the return statement is
+            --  not part of a handled sequence of statements.
+
+            if Nkind_In (Expr, N_Aggregate,
+                               N_Extension_Aggregate)
+              and then Needs_Finalization (R_Type)
+              and then Nkind (Parent (N)) /= N_Handled_Sequence_Of_Statements
+            then
+               Rewrite (N,
+                 Make_Block_Statement (Loc,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (Relocate_Node (N)))));
+
+               Analyze (N);
+               return;
+            end if;
+
             Analyze_And_Resolve (Expr, R_Type);
             Check_Limited_Return (Expr);
          end if;

@@ -3736,7 +3736,13 @@ package body Sem_Res is
                --  Is_OK_Variable_For_Out_Formal generates the required
                --  reference in this case.
 
-               if not Is_OK_Variable_For_Out_Formal (A) then
+               --  A call to an initialization procedure for an aggregate
+               --  component may initialize a nested component of a constant
+               --  designated object. In this context the object is variable.
+
+               if not Is_OK_Variable_For_Out_Formal (A)
+                 and then not Is_Init_Proc (Nam)
+               then
                   Error_Msg_NE ("actual for& must be a variable", A, F);
                end if;
 

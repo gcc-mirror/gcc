@@ -978,6 +978,30 @@ package body Sem_Aggr is
          return;
       end if;
 
+      --  If the aggregate has box-initialized components, its type must be
+      --  frozen so that initialization procedures can properly be called
+      --  in the resolution that follows.  The replacement of boxes with
+      --  initialization calls is properly an expansion activity but it must
+      --  be done during revolution.
+
+      if Expander_Active
+        and then  Present (Component_Associations (N))
+      then
+         declare
+            Comp : Node_Id;
+
+         begin
+            Comp := First (Component_Associations (N));
+            while Present (Comp) loop
+               if Box_Present (Comp) then
+                  Insert_Actions (N, Freeze_Entity (Typ, N));
+                  exit;
+               end if;
+               Next (Comp);
+            end loop;
+         end;
+      end if;
+
       --  An unqualified aggregate is restricted in SPARK to:
 
       --    An aggregate item inside an aggregate for a multi-dimensional array

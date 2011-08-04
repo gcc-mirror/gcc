@@ -460,6 +460,8 @@ package body Prj.Part is
       Path_Name_Id : Path_Name_Type;
 
    begin
+      In_Tree.Incomplete_With := False;
+
       if not Is_Initialized (Env.Project_Path) then
          Prj.Env.Initialize_Default_Project_Path
            (Env.Project_Path, Target_Name);
@@ -794,24 +796,29 @@ package body Prj.Part is
                Path              => Imported_Path_Name_Id);
 
             if Imported_Path_Name_Id = No_Path then
+               if Env.Flags.Ignore_Missing_With then
+                  In_Tree.Incomplete_With := True;
 
-               --  The project file cannot be found
+               else
+                  --  The project file cannot be found
 
-               Error_Msg_File_1 := File_Name_Type (Current_With.Path);
-               Error_Msg
-                 (Env.Flags, "unknown project file: {", Current_With.Location);
+                  Error_Msg_File_1 := File_Name_Type (Current_With.Path);
+                  Error_Msg
+                    (Env.Flags, "unknown project file: {",
+                     Current_With.Location);
 
-               --  If this is not imported by the main project file, display
-               --  the import path.
+                  --  If this is not imported by the main project file, display
+                  --  the import path.
 
-               if Project_Stack.Last > 1 then
-                  for Index in reverse 1 .. Project_Stack.Last loop
-                     Error_Msg_File_1 :=
-                       File_Name_Type
-                         (Project_Stack.Table (Index).Path_Name);
-                     Error_Msg
-                       (Env.Flags, "\imported by {", Current_With.Location);
-                  end loop;
+                  if Project_Stack.Last > 1 then
+                     for Index in reverse 1 .. Project_Stack.Last loop
+                        Error_Msg_File_1 :=
+                          File_Name_Type
+                            (Project_Stack.Table (Index).Path_Name);
+                        Error_Msg
+                          (Env.Flags, "\imported by {", Current_With.Location);
+                     end loop;
+                  end if;
                end if;
 
             else

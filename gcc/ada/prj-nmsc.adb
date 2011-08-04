@@ -6262,7 +6262,7 @@ package body Prj.Nmsc is
             Source_File_Path_Name : constant String :=
               Path_Name_Of
                 (File_Name_Type (Source_List_File.Value),
-                 Project.Project.Directory.Name);
+                 Project.Project.Directory.Display_Name);
 
          begin
             Has_Explicit_Sources := True;
@@ -7819,6 +7819,9 @@ package body Prj.Nmsc is
       The_Directory : constant String := Get_Name_String (Directory);
 
    begin
+      Debug_Output ("Path_Name_Of file_name=", Name_Id (File_Name));
+      Debug_Output ("Path_Name_Of directory=",
+                    Name_Id (Directory));
       Get_Name_String (File_Name);
       Result :=
         Locate_Regular_File
@@ -7829,10 +7832,9 @@ package body Prj.Nmsc is
          return "";
       else
          declare
-            R : String := Result.all;
+            R : constant String := Result.all;
          begin
             Free (Result);
-            Canonical_Case_File_Name (R);
             return R;
          end;
       end if;
