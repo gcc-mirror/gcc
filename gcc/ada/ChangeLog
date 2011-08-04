@@ -1,3 +1,20 @@
+2011-08-04  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Update doc on gnatcheck.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Add_ALFA_Xrefs): correct definition of ranges of
+	xrefs in a scope.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Check): in ALFA mode, return without
+	performing expansion.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper,
+	Analyze_Generic_Subprogram_Body): protect call to Process_PCCs so that
+	it is not called in ALFA mode.
+
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
 	* make.adb, osint.adb, osint.ads (Reset_Command_Line_Files): not used

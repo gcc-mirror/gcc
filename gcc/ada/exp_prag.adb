@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -320,6 +320,12 @@ package body Exp_Prag is
       --  Generate the appropriate if statement. Note that we consider this to
       --  be an explicit conditional in the source, not an implicit if, so we
       --  do not call Make_Implicit_If_Statement.
+
+      --  In formal verification mode, we keep the pragma check in the code
+
+      if ALFA_Mode then
+         return;
+      end if;
 
       --  Case where we generate a direct raise
 
