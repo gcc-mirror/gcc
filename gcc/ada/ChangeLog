@@ -1,5 +1,53 @@
 2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_ch7.adb (Build_Raise_Statement): Remove the specialized
+	processing for .NET/JVM. These targets can now benefit from
+	Raise_From_Controlled_Operation and they share the same processing with
+	standard targets.
+	(Establish_Transient_Scope): Remove the restriction for .NET/JVM.
+	These targets need transient scopes in order to properly finalize short
+	lived controlled objects.
+	(Make_Handler_For_Ctrl_Operation): Remove the specialized processing for
+	 NET/JVM. These targets can now benefit from
+	Raise_From_Controlled_Operation and they share the same processing with
+	standard targets.
+
+2011-08-04  Geert Bosch  <bosch@adacore.com>
+
+	* tracebak.c (STOP_FRAME): Stop at any next pointer outside the stack
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Has_Visible_Private_Ancestor): subsidiary routine to
+	Expand_Record_Aggregate, to determine whether aggregate must be
+	expanded into assignments. This is the case if the ancestor part is
+	private, regarless of the setting of the flag Has_Private_Ancestor.
+
+2011-08-04  Ed Falis  <falis@adacore.com>
+
+	* vxaddr2line.adb: Add support for e500v2 and for Linux hosts
+
+2011-08-04  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads: Fix comment.
+
+2011-08-04  Steve Baird  <baird@adacore.com>
+
+	* bindgen.adb (Get_Ada_Main_Name): If CodePeer_Mode is set, then
+	choose a package name in much the same way as is
+	done for JGNAT when VM_Target /= No_VM, except that
+	a slightly more distinctive prefix string is used.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* makeutl.adb (Complete_Mains): no longer accept unit names on the
+	gnatmake command line.
+	This behavior was never documented (and was supported only because of
+	an early bug in the code). This case might lead to ambiguous cases
+	(between unit names and truncated base names without suffixes).
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* a-tags.ads, a-tags.adb (Unregister_Tag): New routine.
 	Remove the external tag of a tagged type from the internal hash table.
 	* exp_ch7.adb (Build_Cleanup_Statements): Update the comment on the

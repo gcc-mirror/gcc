@@ -5178,6 +5178,33 @@ package body Exp_Aggr is
       Comp      : Entity_Id;
       New_Comp  : Node_Id;
 
+      function Has_Visible_Private_Ancestor (Id : E) return Boolean;
+      --  If any ancestor of the current type is private, the aggregate
+      --  cannot be built in place. We canot rely on Has_Private_Ancestor,
+      --  because it will not be set when type and its parent are in the
+      --  same scope, and the parent component needs expansion.
+
+      -----------------------------------
+      --  Has_Visible_Private_Ancestor --
+      -----------------------------------
+
+      function Has_Visible_Private_Ancestor (Id : E) return Boolean is
+         R  : constant Entity_Id := Root_Type (Id);
+         T1 : Entity_Id := Id;
+      begin
+         loop
+            if Is_Private_Type (T1) then
+               return True;
+
+            elsif T1 = R then
+               return False;
+
+            else
+               T1 := Etype (T1);
+            end if;
+         end loop;
+      end Has_Visible_Private_Ancestor;
+
    --  Start of processing for Expand_Record_Aggregate
 
    begin
@@ -5261,7 +5288,7 @@ package body Exp_Aggr is
       --  If an ancestor is private, some components are not inherited and
       --  we cannot expand into a record aggregate
 
-      elsif Has_Private_Ancestor (Typ) then
+      elsif Has_Visible_Private_Ancestor (Typ) then
          Convert_To_Assignments (N, Typ);
 
       --  ??? The following was done to compile fxacc00.ads in the ACVCs. Gigi
