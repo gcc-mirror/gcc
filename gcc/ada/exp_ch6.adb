@@ -5382,21 +5382,6 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_N_Subprogram_Body
 
    begin
-      --  If this is the main compilation unit, and we are generating code for
-      --  VM targets, we now generate the Type Specific Data record of all the
-      --  enclosing tagged type declarations.
-
-      --  If the runtime package Ada_Tags has not been loaded then this
-      --  subprogram does not have tagged type declarations and there is no
-      --  need to search for tagged types to generate their TSDs.
-
-      if not Tagged_Type_Expansion
-        and then Unit (Cunit (Main_Unit)) = N
-        and then RTU_Loaded (Ada_Tags)
-      then
-         Build_VM_TSDs (N);
-      end if;
-
       --  Set L to either the list of declarations if present, or to the list
       --  of statements if no declarations are present. This is used to insert
       --  new stuff at the start.

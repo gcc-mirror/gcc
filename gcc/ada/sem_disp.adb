@@ -49,6 +49,7 @@ with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
 with Sinfo;    use Sinfo;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -1028,6 +1029,12 @@ package body Sem_Disp is
                                     " the type!", Subp);
                               end if;
 
+                           --  No code required to register primitives in VM
+                           --  targets
+
+                           elsif VM_Target /= No_VM then
+                              null;
+
                            else
                               Insert_Actions_After (Subp_Body,
                                 Register_Primitive (Sloc (Subp_Body),
@@ -1158,10 +1165,13 @@ package body Sem_Disp is
                   while Present (Elmt) loop
                      Prim := Node (Elmt);
 
+                     --  No code required to register primitives in VM targets
+
                      if Present (Alias (Prim))
                        and then Present (Interface_Alias (Prim))
                        and then Alias (Prim) = Subp
                        and then not Building_Static_DT (Tagged_Type)
+                       and then VM_Target = No_VM
                      then
                         Insert_Actions_After (Subp_Body,
                           Register_Primitive (Sloc (Subp_Body), Prim => Prim));

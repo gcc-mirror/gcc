@@ -5022,27 +5022,6 @@ package body Exp_Ch3 is
                   Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
                   Exchange_Entities (Defining_Identifier (N), Def_Id);
                end;
-
-            --  Handle initialization of class-wide interface object in VM
-            --  targets
-
-            elsif not Tagged_Type_Expansion then
-
-               --  Replace
-               --     CW : I'Class := Obj;
-               --  by
-               --     CW : I'Class;
-               --     CW := I'Class (Obj); [1]
-
-               --  The assignment [1] is later expanded in a dispatching
-               --  call to _assign
-
-               Set_Expression (N, Empty);
-
-               Insert_Action (N,
-                 Make_Assignment_Statement (Loc,
-                   Name       => New_Reference_To (Def_Id, Loc),
-                   Expression => Convert_To (Typ, Relocate_Node (Expr))));
             end if;
 
             return;
@@ -6170,6 +6149,9 @@ package body Exp_Ch3 is
                if not Building_Static_DT (Def_Id) then
                   Append_Freeze_Actions (Def_Id, Make_DT (Def_Id));
                end if;
+
+            elsif VM_Target /= No_VM then
+               Append_Freeze_Actions (Def_Id, Make_VM_TSD (Def_Id));
             end if;
 
             --  If the type has unknown discriminants, propagate dispatching

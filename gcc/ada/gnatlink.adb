@@ -1717,7 +1717,7 @@ begin
          Linker_Path := System.OS_Lib.Locate_Exec_On_Path ("dotnet-ld");
 
          if Linker_Path = null then
-            Exit_With_Error ("Couldn't locate ilasm");
+            Exit_With_Error ("Couldn't locate dotnet-ld");
          end if;
 
       elsif RTX_RTSS_Kernel_Module_On_Target then

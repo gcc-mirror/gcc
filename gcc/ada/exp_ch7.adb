@@ -1261,7 +1261,7 @@ package body Exp_Ch7 is
       --  objects that need finalization. When flag Preprocess is set, the
       --  routine will simply count the total number of controlled objects in
       --  Decls. Flag Top_Level denotes whether the processing is done for
-      --  objects in nested package decparations or instances.
+      --  objects in nested package declarations or instances.
 
       procedure Process_Object_Declaration
         (Decl         : Node_Id;
@@ -3810,24 +3810,10 @@ package body Exp_Ch7 is
 
          --  Build dispatch tables of library level tagged types
 
-         if Is_Library_Level_Entity (Spec_Ent) then
-            if Tagged_Type_Expansion then
-               Build_Static_Dispatch_Tables (N);
-
-            --  In VM targets there is no need to build dispatch tables but
-            --  we must generate the corresponding Type Specific Data record.
-
-            elsif Unit (Cunit (Main_Unit)) = N then
-
-               --  If the runtime package Ada_Tags has not been loaded then
-               --  this package does not have tagged type declarations and
-               --  there is no need to search for tagged types to generate
-               --  their TSDs.
-
-               if RTU_Loaded (Ada_Tags) then
-                  Build_VM_TSDs (N);
-               end if;
-            end if;
+         if Tagged_Type_Expansion
+           and then Is_Library_Level_Entity (Spec_Ent)
+         then
+            Build_Static_Dispatch_Tables (N);
          end if;
 
          Build_Task_Activation_Call (N);
@@ -3948,42 +3934,12 @@ package body Exp_Ch7 is
 
       --  Build dispatch tables of library level tagged types
 
-      if Is_Compilation_Unit (Id)
-        or else (Is_Generic_Instance (Id)
-                  and then Is_Library_Level_Entity (Id))
+      if Tagged_Type_Expansion
+        and then (Is_Compilation_Unit (Id)
+                    or else (Is_Generic_Instance (Id)
+                               and then Is_Library_Level_Entity (Id)))
       then
-         if Tagged_Type_Expansion then
-            Build_Static_Dispatch_Tables (N);
-
-         --  In VM targets there is no need to build dispatch tables, but we
-         --  must generate the corresponding Type Specific Data record.
-
-         elsif Unit (Cunit (Main_Unit)) = N then
-
-            --  If the runtime package Ada_Tags has not been loaded then
-            --  this package does not have tagged types and there is no need
-            --  to search for tagged types to generate their TSDs.
-
-            if RTU_Loaded (Ada_Tags) then
-
-               --  Enter the scope of the package because the new declarations
-               --  are appended at the end of the package and must be analyzed
-               --  in that context.
-
-               Push_Scope (Id);
-
-               if Is_Generic_Instance (Main_Unit_Entity) then
-                  if Package_Instantiation (Main_Unit_Entity) = N then
-                     Build_VM_TSDs (N);
-                  end if;
-
-               else
-                  Build_VM_TSDs (N);
-               end if;
-
-               Pop_Scope;
-            end if;
-         end if;
+         Build_Static_Dispatch_Tables (N);
       end if;
 
       --  Note: it is not necessary to worry about generating a subprogram
