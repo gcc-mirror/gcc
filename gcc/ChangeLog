@@ -1,3 +1,29 @@
+2011-08-04  Romain Geissler  <romain.geissler@gmail.com>
+
+	* gengtype-state.c: Include "bconfig.h" if
+	GENERATOR_FILE is defined, "config.h" otherwise.
+	* gengtype.c: Likewise.
+	* gengtype-lex.l: Likewise.
+	* gengtype-parse.c: Likewise.
+	* Makefile.in (gengtype-lex.o-warn): New variable.
+	(plugin_resourcesdir): Likewise.
+	(plugin_bindir): Likewise.
+	(plugin_includedir): Use $(plugin_resourcesdir) as prefix base.
+	(MOSTLYCLEANFILES): Add gengtype$(exeext).
+	(native): Depend on gengtype$(exeext) is $enable_plugin
+	is set to "yes".
+	(gtype.state): Depend on s-gtype. Use temporary file.
+	(gengtype-lex.o): New rule.
+	(gengtype-parse.o): Likewise.
+	(gengtype-state.o): Likewise.
+	(gengtype$(exeext)): Likewise.
+	(install-gengtype): Likewise.
+	(gengtype.o): Likewise.
+	(build/gengtype.o): Depend on version.h.
+	(build/gengtype-state): Depend on double-int.h, version.h,
+	$(HASHTAB_H), $(OBSTACK_H), $(XREGEX_H) and build/errors.o.
+	(install-plugin): Depend on install-gengtype.
+
 2011-08-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49905

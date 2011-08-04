@@ -192,6 +192,7 @@ GCC_WARN_CXXFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 # be subject to -Werror:
 # flex output may yield harmless "no previous prototype" warnings
 build/gengtype-lex.o-warn = -Wno-error
+gengtype-lex.o-warn = -Wno-error
 # mips-tfile.c contains -Wcast-qual warnings.
 mips-tfile.o-warn = -Wno-error
 expmed.o-warn = -Wno-error
@@ -566,8 +567,12 @@ libexecdir = @libexecdir@
 libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(version)
 # Directory in which the compiler finds executables
 libexecsubdir = $(libexecdir)/gcc/$(target_noncanonical)/$(version)
-# Directory in which plugin headers are installed
-plugin_includedir = $(libsubdir)/plugin/include
+# Directory in which all plugin resources are installed
+plugin_resourcesdir = $(libsubdir)/plugin
+ # Directory in which plugin headers are installed
+plugin_includedir = $(plugin_resourcesdir)/include
+# Directory in which plugin specific executables are installed
+plugin_bindir = $(libexecsubdir)/plugin
 # Used to produce a relative $(gcc_tooldir) in gcc.o
 unlibsubdir = ../../..
 # $(prefix), expressed as a path relative to $(libsubdir).
@@ -1531,8 +1536,8 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(SPECS) collect2$(exeext) lto-wrapper$(exeext) \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
- *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a libcommon-target.a \
- libcommon.a libgcc.mk
+ gengtype$(exeext) *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a \
+ libcommon-target.a libcommon.a libgcc.mk
 
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
@@ -1791,6 +1796,10 @@ rest.encap: lang.rest.encap
 # whether making a cross compiler or not.
 native: config.status auto-host.h build-@POSUB@ $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(COLLECT2) lto-wrapper$(exeext)
+
+ifeq ($(enable_plugin),yes)
+native: gengtype$(exeext)
+endif
 
 # Define the names for selecting languages in LANGUAGES.
 c: cc1$(exeext)
@@ -3838,7 +3847,7 @@ ALL_GTFILES_H := $(sort $(GTFILES_H) $(GTFILES_LANG_H))
 # write it out to a file (taking care not to do that in a way that
 # overflows a command line!) and then have gengtype read the file in.
 
-$(ALL_GTFILES_H) gtype-desc.c gtype-desc.h : s-gtype ; @true
+$(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gtype.state: s-gtype ; @true
 
 ### Common flags to gengtype [e.g. -v or -B backupdir]
 GENGTYPE_FLAGS= 
@@ -3853,9 +3862,10 @@ s-gtype: build/gengtype$(build_exeext) $(filter-out [%], $(GTFILES)) \
 	 gtyp-input.list
 # First, parse all files and save a state file.
 	$(RUN_GEN) build/gengtype$(build_exeext) $(GENGTYPE_FLAGS) \
-                    -S $(srcdir) -I gtyp-input.list -w gtype.state
+                    -S $(srcdir) -I gtyp-input.list -w tmp-gtype.state
 # Second, read the state file and generate all files.  This ensure that
 # gtype.state is correctly read:
+	$(SHELL) $(srcdir)/../move-if-change tmp-gtype.state gtype.state
 	$(RUN_GEN) build/gengtype$(build_exeext) $(GENGTYPE_FLAGS) \
                     -r gtype.state
 	$(STAMP) s-gtype
@@ -3952,14 +3962,23 @@ build/genextract.o : genextract.c $(RTL_BASE_H) $(BCONFIG_H)		\
 build/genflags.o : genflags.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H)	\
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
 build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
-build/gengtype-lex.o : gengtype-lex.c gengtype.h $(BCONFIG_H) $(SYSTEM_H)
-build/gengtype-parse.o : gengtype-parse.c gengtype.h $(BCONFIG_H)	\
+gengtype-lex.o build/gengtype-lex.o : gengtype-lex.c gengtype.h $(SYSTEM_H)
+gengtype-lex.o: $(CONFIG_H)
+build/gengtype-lex.o: $(BCONFIG_H)
+gengtype-parse.o build/gengtype-parse.o : gengtype-parse.c gengtype.h \
   $(SYSTEM_H)
-build/gengtype-state.o: gengtype-state.c gengtype.h $(BCONFIG_H)	\
-  $(SYSTEM_H) errors.h
-build/gengtype.o : gengtype.c $(BCONFIG_H) $(SYSTEM_H) gengtype.h 	\
-  rtl.def insn-notes.def errors.h double-int.h $(HASHTAB_H)             \
+gengtype-parse.o: $(CONFIG_H)
+build/gengtype-parse.o: $(BCONFIG_H)
+gengtype-state.o build/gengtype-state.o: gengtype-state.c $(SYSTEM_H) \
+  gengtype.h errors.h double-int.h version.h $(HASHTAB_H) $(OBSTACK_H) \
+  $(XREGEX_H)
+gengtype-state.o: $(CONFIG_H)
+build/gengtype-state.o: $(BCONFIG_H)
+gengtype.o build/gengtype.o : gengtype.c $(SYSTEM_H) gengtype.h 	\
+  rtl.def insn-notes.def errors.h double-int.h version.h $(HASHTAB_H) \
   $(OBSTACK_H) $(XREGEX_H)
+gengtype.o: $(CONFIG_H)
+build/gengtype.o: $(BCONFIG_H)
 build/genmddeps.o: genmddeps.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
   errors.h $(READ_MD_H)
 build/genmodes.o : genmodes.c $(BCONFIG_H) $(SYSTEM_H) errors.h		\
@@ -4003,7 +4022,11 @@ build/genautomata$(build_exeext) : BUILD_LIBS += -lm
 
 # These programs are not linked with the MD reader.
 build/gengtype$(build_exeext) : build/gengtype-lex.o build/gengtype-parse.o \
-              build/gengtype-state.o build/version.o
+              build/gengtype-state.o build/version.o build/errors.o
+
+gengtype$(exeext) : gengtype.o gengtype-lex.o gengtype-parse.o \
+              gengtype-state.o version.o errors.o $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) -o $@ $(filter-out ($LIBDEPS), $^) $(LIBS)
 
 # Rule for the generator programs:
 $(genprog:%=build/gen%$(build_exeext)): build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
@@ -4600,8 +4623,15 @@ s-header-vars: Makefile
 	$(SHELL) $(srcdir)/../move-if-change tmp-header-vars b-header-vars
 	$(STAMP) s-header-vars
 
+# Install gengtype
+install-gengtype: installdirs gengtype$(exeext) gtype.state
+	$(mkinstalldirs) $(DESTDIR)$(plugin_resourcesdir)
+	$(INSTALL_DATA) gtype.state $(DESTDIR)$(plugin_resourcesdir)/gtype.state
+	$(mkinstalldirs) $(DESTDIR)$(plugin_bindir)
+	$(INSTALL_PROGRAM) gengtype$(exeext) $(DESTDIR)$(plugin_bindir)/gengtype$(exeext)
+
 # Install the headers needed to build a plugin.
-install-plugin: installdirs lang.install-plugin s-header-vars
+install-plugin: installdirs lang.install-plugin s-header-vars install-gengtype
 # We keep the directory structure for files in config or c-family and .def
 # files. All other files are flattened to a single directory.
 	$(mkinstalldirs) $(DESTDIR)$(plugin_includedir)

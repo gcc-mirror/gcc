@@ -22,7 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 %option noinput
 
 %{
+#ifdef GENERATOR_FILE
 #include "bconfig.h"
+#else
+#include "config.h"
+#endif
 #include "system.h"
 
 #define malloc xmalloc
