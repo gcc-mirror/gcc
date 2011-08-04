@@ -2301,7 +2301,6 @@ package body Bindgen is
       WBI ("      " & Ada_Init_Name.all & ";");
 
       if not No_Main_Subprogram then
-         WBI ("      Break_Start;");
 
          if CodePeer_Mode then
 
@@ -2477,7 +2476,6 @@ package body Bindgen is
       WBI ("   " & Ada_Init_Name.all & " ();");
 
       if not No_Main_Subprogram then
-         WBI ("   __gnat_break_start ();");
 
          --  Output main program name
 
@@ -3059,19 +3057,6 @@ package body Bindgen is
 
       if Bind_Main_Program and then VM_Target = No_VM then
 
-         --  If we have the standard library, then Break_Start is defined
-         --  there, but when the standard library is suppressed, Break_Start
-         --  is defined here.
-
-         WBI ("");
-         WBI ("   procedure Break_Start;");
-
-         if Suppress_Standard_Library_On_Target then
-            WBI ("   pragma Export (C, Break_Start, ""__gnat_break_start"");");
-         else
-            WBI ("   pragma Import (C, Break_Start, ""__gnat_break_start"");");
-         end if;
-
          WBI ("");
 
          if Exit_Status_Supported_On_Target then
@@ -3232,18 +3217,6 @@ package body Bindgen is
       Gen_Adainit_Ada;
 
       if Bind_Main_Program and then VM_Target = No_VM then
-
-         --  When suppressing the standard library then generate dummy body
-         --  for Break_Start
-
-         if Suppress_Standard_Library_On_Target then
-            WBI ("");
-            WBI ("   procedure Break_Start is");
-            WBI ("   begin");
-            WBI ("      null;");
-            WBI ("   end;");
-         end if;
-
          Gen_Main_Ada;
       end if;
 
@@ -3321,7 +3294,6 @@ package body Bindgen is
             WBI ("extern void exit (int);");
          end if;
 
-         WBI ("extern void __gnat_break_start (void);");
          Set_String ("extern ");
 
          if ALIs.Table (ALIs.First).Main_Program = Proc then
@@ -3414,14 +3386,6 @@ package body Bindgen is
             WBI ("int gnat_exit_status = 0;");
          end if;
 
-         WBI ("");
-      end if;
-
-      --  When suppressing the standard library, the __gnat_break_start routine
-      --  (for the debugger to get initial control) is defined in this file.
-
-      if Suppress_Standard_Library_On_Target then
-         WBI ("void __gnat_break_start (void) {}");
          WBI ("");
       end if;
 
