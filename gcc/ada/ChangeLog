@@ -1,5 +1,38 @@
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
+	* par-ch13.adb (Aspect_Specifications_Present): recognize
+	"with Identifier'Class =>" as an aspect, so that a meaningful warning
+	is issued in Strict mode.
+	* par.adb: Fix typos in comments.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Result): modify error message to take into account Post
+	aspect when compiling Ada 2012 (or newer) code.
+
+2011-08-04  Nicolas Roche  <roche@adacore.com>
+
+	* env.c (__gnat_clearenv): Avoid use of dynamic size array in order to
+	remove need for GCC exceptions. 
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Do_Complete): Call Debug_Output with the name of the
+	project, not the source file name.
+	* prj.adb (Find_Sources.Look_For_Sources): If the source has been
+	excluded, continue looking. This excluded source will only be returned
+	if there is no other source with the same base name that is not locally
+	removed.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Intrinsic_Operator): if the result type is
+	private and one of the operands is a real literal, use a qualified
+	expression rather than a conversion which is not meaningful to the
+	back-end.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
 	* sem_ch13.adb (Aspect_Loop): when an aspect X and its classwise
 	corresponding aspect X'Class are allowed, proceed with analysis of the
 	aspect instead of skipping it.

@@ -557,7 +557,14 @@ package body Prj is
               and then (Index = 0 or else Element (Iterator).Index = Index)
             then
                Src := Element (Iterator);
-               return;
+
+               --  If the source has been excluded, continue looking. We will
+               --  get the excluded source only if there is no other source
+               --  with the same base name that is not locally removed.
+
+               if not Element (Iterator).Locally_Removed then
+                  return;
+               end if;
             end if;
 
             Next (Iterator);

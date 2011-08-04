@@ -858,8 +858,8 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  attempt at an aspect specification. The default is more strict for
       --  Ada versions before Ada 2012 (where aspect specifications are not
       --  permitted). Note: this routine never checks the terminator token
-      --  for aspects so it does not matter whether the aspect speficiations
-      --  are terminated by semicolon or some other character
+      --  for aspects so it does not matter whether the aspect specifications
+      --  are terminated by semicolon or some other character.
 
       procedure P_Aspect_Specifications
         (Decl      : Node_Id;

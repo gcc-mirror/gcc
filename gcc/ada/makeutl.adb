@@ -1377,7 +1377,7 @@ package body Makeutl is
 
                         if Source /= No_Source then
                            Debug_Output ("Found main in project",
-                                         Name_Id (Source.File));
+                                         Source.Project.Name);
                            Names.Table (J).File    := Source.File;
                            Names.Table (J).Project := File.Project;
 

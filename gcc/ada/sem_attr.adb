@@ -4102,9 +4102,15 @@ package body Sem_Attr is
                Analyze_And_Resolve (N, Etype (PS));
 
             else
-               Error_Attr
-                 ("% attribute can only appear" &
-                   " in function Postcondition pragma", P);
+               if Ada_Version >= Ada_2012 then
+                  Error_Attr
+                    ("% attribute can only appear" &
+                      " in function Postcondition pragma or Post aspect", P);
+               else
+                  Error_Attr
+                    ("% attribute can only appear" &
+                      " in function Postcondition pragma", P);
+               end if;
             end if;
          end if;
       end Result;
