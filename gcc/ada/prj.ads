@@ -1397,10 +1397,12 @@ package Prj is
       In_Extended_Only : Boolean := False;
       Base_Name        : File_Name_Type;
       Index            : Int := 0) return Source_Id;
-   --  Find the first source file with the given name either in the whole tree
-   --  (if In_Imported_Only is False) or in the projects imported or extended
-   --  by Project otherwise. In_Extended_Only implies In_Imported_Only, and
-   --  will only look in Project and the projects it extends.
+   --  Find the first source file with the given name.
+   --  If In_Extended_Only is True, it will search in project and the project
+   --     it extends, but not in the imported projects.
+   --  Elsif In_Imported_Only is True, it will search in project and the
+   --     projects it imports, but not in the others or in aggregated projects.
+   --  Else it searches in the whole tree.
    --  If Index is specified, this only search for a source with that index.
 
    -----------------------

@@ -1,5 +1,11 @@
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
+	* prj.adb, prj.ads, makeutl.adb (Complete_Mains): search for the
+	sources in the project and its imported projects, but not in the whole
+	tree.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
 	* make.adb: Remove debug trace.
 
 2011-08-04  Vincent Celier  <celier@adacore.com>

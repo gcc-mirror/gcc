@@ -271,7 +271,7 @@ package body Prj is
 
       begin
          --  Only the fields for which no default value could be provided in
-         --  prj.ads are initialized below
+         --  prj.ads are initialized below.
 
          Data.Config := Default_Project_Config;
          return Data;
@@ -593,9 +593,10 @@ package body Prj is
 
          if Result = No_Source then
             For_Imported_Projects
-              (By         => Project,
-               Tree       => In_Tree,
-               With_State => Result);
+              (By                 => Project,
+               Tree               => In_Tree,
+               Include_Aggregated => False,
+               With_State         => Result);
          end if;
       else
          Look_For_Sources (No_Project, In_Tree, Result);
