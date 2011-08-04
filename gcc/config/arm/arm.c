@@ -1067,7 +1067,7 @@ arm_set_fixed_conv_libfunc (convert_optab optable, enum machine_mode to,
 			    const char *toname, const char *fromname)
 {
   char buffer[50];
-  char *maybe_suffix_2 = "";
+  const char *maybe_suffix_2 = "";
   
   /* Follow the logic for selecting a "2" suffix in fixed-bit.h.  */
   if (ALL_FIXED_POINT_MODE_P (from) && ALL_FIXED_POINT_MODE_P (to)
