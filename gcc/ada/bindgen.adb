@@ -428,7 +428,7 @@ package body Bindgen is
    begin
       WBI ("   procedure " & Ada_Final_Name.all & " is");
 
-      if Bind_Main_Program and then VM_Target = No_VM then
+      if VM_Target = No_VM and then Bind_Main_Program then
          WBI ("      procedure s_stalib_adafinal;");
          Set_String ("      pragma Import (C, s_stalib_adafinal, ");
          Set_String ("""system__standard_library__adafinal"");");
@@ -441,17 +441,17 @@ package body Bindgen is
       WBI ("      end if;");
       WBI ("      Is_Elaborated := False;");
 
-      if not Bind_Main_Program then
-         if Lib_Final_Built then
+      --  On non-virtual machine targets, finalization is done differently
+      --  depending on whether this is the main program or a library.
+
+      if VM_Target = No_VM then
+         if Bind_Main_Program then
+            WBI ("      s_stalib_adafinal;");
+         elsif Lib_Final_Built then
             WBI ("      finalize_library;");
          else
             WBI ("      null;");
          end if;
-
-      --  Main program case
-
-      elsif VM_Target = No_VM then
-         WBI ("      s_stalib_adafinal;");
 
       --  Pragma Import C cannot be used on virtual machine targets, therefore
       --  call the runtime finalization routine directly.
@@ -882,11 +882,12 @@ package body Bindgen is
          WBI ("      Initialize_Stack_Limit;");
       end if;
 
-      --  In the main program case, attach finalize_library to the soft link.
+      --  On virtual machine targets, or on non-virtual machine ones if this
+      --  is the main program case, attach finalize_library to the soft link.
       --  Do it only when not using a restricted run time, in which case tasks
       --  are non-terminating, so we do not want library-level finalization.
 
-      if Bind_Main_Program
+      if (VM_Target /= No_VM or else Bind_Main_Program)
         and then not Configurable_Run_Time_On_Target
         and then not Suppress_Standard_Library_On_Target
       then

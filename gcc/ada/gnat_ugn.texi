@@ -9141,6 +9141,14 @@ when multiple versions of the GNAT compiler are available.
 for further details. You would normally use the @option{-b} or
 @option{-V} switch instead.
 
+@item -M
+When linking an executable, create a map file. The name of the map file
+has the same name as the executable with extension ".map".
+
+@item -M=mapfile
+When linking an executable, create a map file. The name of the map file is
+"mapfile".
+
 @item --GCC=@var{compiler_name}
 @cindex @option{--GCC=compiler_name} (@command{gnatlink})
 Program used for compiling the binder file. The default is

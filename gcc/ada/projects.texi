@@ -3393,6 +3393,7 @@ system (file). The text is between brackets ([]) if the index is optional.
 @item Compiler_Command @tab string @tab IDE @tab insensitive (language)
 @item Debugger_Command @tab string @tab IDE @tab -
 @item Gnatlist @tab string @tab IDE @tab -
+@item Gnat @tab string @tab IDE @tab -
 @item VCS_Kind @tab string @tab IDE @tab -
 @item VCS_File_Check @tab string @tab IDE @tab -
 @item VCS_Log_Check @tab string @tab IDE @tab -
@@ -4382,10 +4383,16 @@ value is a list of switches to use when invoking that tool.
 This is a simple attribute.  Its value is a string that specifies the name
 of the @command{gnatls} utility to be used to retrieve information about the
 predefined path; e.g., @code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
+
 @item VCS_Kind
 This is a simple attribute. Its value is a string used to specify the
 Version Control System (VCS) to be used for this project, e.g.@: CVS, RCS
 ClearCase or Perforce.
+
+@item Gnat
+This is a simple attribute. Its value is a string that specifies the name
+of the @command{gnat} utility to be used when executing various tools from
+GPS, in particular @code{"gnat pp"}, @code{"gnat stub"},@dots{}
 
 @item VCS_File_Check
 This is a simple attribute. Its value is a string that specifies the
