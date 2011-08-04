@@ -593,6 +593,10 @@ package Lib.Xref is
 
       type Node_Processing is access procedure (N : Node_Id);
 
+      procedure Traverse_Compilation_Unit
+        (CU      : Node_Id;
+         Process : Node_Processing);
+
       procedure Traverse_All_Compilation_Units (Process : Node_Processing);
       --  Call Process on all declarations through all compilation units
 
