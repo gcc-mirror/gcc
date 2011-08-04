@@ -2668,12 +2668,14 @@ package body Exp_Util is
             --  The object is of the form:
             --    Obj : Typ [:= Expr];
             --
-            --  Do not process the incomplete view of a deferred constant
+            --  Do not process the incomplete view of a deferred constant. Do
+            --  not consider tag-to-class-wide conversions.
 
             elsif not Is_Imported (Obj_Id)
               and then Needs_Finalization (Obj_Typ)
               and then not (Ekind (Obj_Id) = E_Constant
                               and then not Has_Completion (Obj_Id))
+              and then not Is_Tag_To_CW_Conversion (Obj_Id)
             then
                return True;
 
@@ -2695,6 +2697,9 @@ package body Exp_Util is
                    and then not Is_Related_To_Func_Return (Obj_Id)))
             then
                return True;
+
+            --  Processing for "hook" objects generated for controlled
+            --  transients declared inside an Expression_With_Actions.
 
             elsif Is_Access_Type (Obj_Typ)
               and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
@@ -3968,11 +3973,6 @@ package body Exp_Util is
 
           and then not Is_Allocated (Obj_Id)
 
-         --  Do not consider renamed transient objects because the act of
-         --  renaming extends the object's lifetime.
-
-          and then not Is_Renamed (Obj_Id, Decl)
-
          --  If the transient object is a pointer, check that it is not
          --  initialized by a function which returns a pointer or acts as a
          --  renaming of another pointer.
@@ -3984,7 +3984,16 @@ package body Exp_Util is
          --  Do not consider transient objects which act as indirect aliases of
          --  build-in-place function results.
 
-          and then not Initialized_By_Aliased_BIP_Func_Call (Obj_Id);
+          and then not Initialized_By_Aliased_BIP_Func_Call (Obj_Id)
+
+         --  Do not consider renamed transient objects because the act of
+         --  renaming extends the object's lifetime.
+
+          and then not Is_Renamed (Obj_Id, Decl)
+
+         --  Do not consider conversions of tags to class-wide types
+
+          and then not Is_Tag_To_CW_Conversion (Obj_Id);
    end Is_Finalizable_Transient;
 
    ---------------------------------
@@ -4501,6 +4510,21 @@ package body Exp_Util is
          return False;
       end if;
    end Is_Renamed_Object;
+
+   -----------------------------
+   -- Is_Tag_To_CW_Conversion --
+   -----------------------------
+
+   function Is_Tag_To_CW_Conversion (Obj_Id : Entity_Id) return Boolean is
+      Expr : constant Node_Id := Expression (Parent (Obj_Id));
+
+   begin
+      return
+        Is_Class_Wide_Type (Etype (Obj_Id))
+          and then Present (Expr)
+          and then Nkind (Expr) = N_Unchecked_Type_Conversion
+          and then Etype (Expression (Expr)) = RTE (RE_Tag);
+   end Is_Tag_To_CW_Conversion;
 
    ----------------------------
    -- Is_Untagged_Derivation --

@@ -1757,12 +1757,14 @@ package body Exp_Ch7 is
                --  The object is of the form:
                --    Obj : Typ [:= Expr];
                --
-               --  Do not process the incomplete view of a deferred constant
+               --  Do not process the incomplete view of a deferred constant.
+               --  Do not consider tag-to-class-wide conversions.
 
                elsif not Is_Imported (Obj_Id)
                  and then Needs_Finalization (Obj_Typ)
                  and then not (Ekind (Obj_Id) = E_Constant
                                 and then not Has_Completion (Obj_Id))
+                 and then not Is_Tag_To_CW_Conversion (Obj_Id)
                then
                   Processing_Actions;
 
@@ -1784,6 +1786,9 @@ package body Exp_Ch7 is
                                  Is_Related_To_Func_Return (Obj_Id)))
                then
                   Processing_Actions (Has_No_Init => True);
+
+               --  Processing for "hook" objects generated for controlled
+               --  transients declared inside an Expression_With_Actions.
 
                elsif Is_Access_Type (Obj_Typ)
                  and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))

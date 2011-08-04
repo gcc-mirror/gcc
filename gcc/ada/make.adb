@@ -1298,10 +1298,10 @@ package body Make is
          Add_Str_To_Name_Buffer (File_Name);
          Switches :=
            Switches_Of
-             (Source_File      => Name_Find,
-              Project          => Main_Project,
-              In_Package       => The_Package,
-              Allow_ALI        => Program = Binder or else Program = Linker);
+             (Source_File => Name_Find,
+              Project     => Main_Project,
+              In_Package  => The_Package,
+              Allow_ALI   => Program = Binder or else Program = Linker);
 
          if Switches.Kind = List then
             Program_Args := Program;
@@ -1357,7 +1357,9 @@ package body Make is
       pragma Assert (Args'First = 1);
 
       --  Optimize the simple case where the gnatbind command line looks like
-      --     gnatbind -aO. -I- file.ali   --into->   gnatbind file.adb
+      --     gnatbind -aO. -I- file.ali
+      --  into
+      --     gnatbind file.adb
 
       if Args'Length = 2
         and then Args (Args'First).all = "-aO" & Normalized_CWD
@@ -1494,7 +1496,7 @@ package body Make is
 
          begin
             --  Test whether Uname is the name of a body unit (i.e. ends
-            --  with %b)
+            --  with %b).
 
             Get_Name_String (Uname);
             pragma
@@ -1571,12 +1573,12 @@ package body Make is
       --  Time stamp of the current object file
 
       Modified_Source : File_Name_Type;
-      --  The first source in Lib_File whose current time stamp differs
-      --  from that stored in Lib_File.
+      --  The first source in Lib_File whose current time stamp differs from
+      --  that stored in Lib_File.
 
       New_Spec : File_Name_Type;
       --  If Lib_File contains in its W (with) section a body (for a
-      --  subprogram) for which there exists a spec and the spec did not
+      --  subprogram) for which there exists a spec, and the spec did not
       --  appear in the Sdep section of Lib_File, New_Spec contains the file
       --  name of this new spec.
 
@@ -1670,8 +1672,7 @@ package body Make is
             return;
          end if;
 
-         --  Don't take Ali file into account if it was generated with
-         --  errors.
+         --  Don't take ALI file into account if it was generated with errors
 
          if ALIs.Table (ALI).Compile_Errors then
             Verbose_Msg (Full_Lib_File, "had errors, must be recompiled");
@@ -1679,8 +1680,7 @@ package body Make is
             return;
          end if;
 
-         --  Don't take Ali file into account if it was generated without
-         --  object.
+         --  Don't take ALI file into account if no object was generated
 
          if Operating_Mode /= Check_Semantics
            and then ALIs.Table (ALI).No_Object
@@ -1727,11 +1727,8 @@ package body Make is
             --  First, collect all the switches
 
             Collect_Arguments (Source_File, Is_Main_Source, The_Args);
-
             Prev_Switch := Dummy_Switch;
-
             Get_Name_String (ALIs.Table (ALI).Sfile);
-
             Switches_To_Check.Set_Last (0);
 
             for J in 1 .. Last_Argument loop
@@ -1992,8 +1989,8 @@ package body Make is
                         Projects (J) := Proj;
                      end loop;
 
-                     --  Now check if any of the dependant sources are in
-                     --  any of these extending projects.
+                     --  Now check if any of the dependant sources are in any
+                     --  of these extending projects.
 
                      D_Chk :
                      for D in ALIs.Table (ALI).First_Sdep ..
@@ -5674,8 +5671,8 @@ package body Make is
 
       procedure Check_Mains is
          Real_Main_Project : Project_Id := No_Project;
-         Info : Main_Info;
-         Proj : Project_Id;
+         Info              : Main_Info;
+         Proj              : Project_Id;
       begin
          if Mains.Number_Of_Mains (Project_Tree) = 0
            and then not Unique_Compile
@@ -5689,6 +5686,7 @@ package body Make is
          --  If we have multiple mains on the command line, they need not
          --  belong to the root project, but they must all belong to the same
          --  project.
+
          if not Unique_Compile then
             Mains.Reset;
             loop

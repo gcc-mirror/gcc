@@ -594,6 +594,10 @@ package Exp_Util is
    --  We consider that a (1 .. 2) is a renamed object since it is the prefix
    --  of the name in the renaming declaration.
 
+   function Is_Tag_To_CW_Conversion (Obj_Id : Entity_Id) return Boolean;
+   --  Determine whether object Obj_Id is the result of a tag-to-class-wide
+   --  type conversion.
+
    function Is_Untagged_Derivation (T : Entity_Id) return Boolean;
    --  Returns true if type T is not tagged and is a derived type,
    --  or is a private type whose completion is such a type.
