@@ -17306,9 +17306,6 @@ outside the current directory, the source search path has to be provided when
 calling @command{gnatcheck}, either through a specified project file or
 through @command{gnatcheck} switches.
 
-A number of rules are predefined in @command{gnatcheck} and are described
-later in this chapter.
-
 For full details, refer to @cite{GNATcheck Reference Manual} document.
 
 

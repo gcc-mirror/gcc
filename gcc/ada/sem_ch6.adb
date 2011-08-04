@@ -962,7 +962,15 @@ package body Sem_Ch6 is
          end if;
 
          Set_Actual_Subtypes (N, Current_Scope);
-         Process_PPCs (N, Gen_Id, Body_Id);
+
+         --  Deal with preconditions and postconditions. In formal verification
+         --  mode, we keep pre- and postconditions attached to entities rather
+         --  than inserted in the code, in order to facilitate a distinct
+         --  treatment for them.
+
+         if not ALFA_Mode then
+            Process_PPCs (N, Gen_Id, Body_Id);
+         end if;
 
          --  If the generic unit carries pre- or post-conditions, copy them
          --  to the original generic tree, so that they are properly added
@@ -2663,9 +2671,14 @@ package body Sem_Ch6 is
       HSS := Handled_Statement_Sequence (N);
       Set_Actual_Subtypes (N, Current_Scope);
 
-      --  Deal with preconditions and postconditions
+      --  Deal with preconditions and postconditions. In formal verification
+      --  mode, we keep pre- and postconditions attached to entities rather
+      --  than inserted in the code, in order to facilitate a distinct
+      --  treatment for them.
 
-      Process_PPCs (N, Spec_Id, Body_Id);
+      if not ALFA_Mode then
+         Process_PPCs (N, Spec_Id, Body_Id);
+      end if;
 
       --  Add a declaration for the Protection object, renaming declarations
       --  for discriminals and privals and finally a declaration for the entry

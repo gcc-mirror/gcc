@@ -339,7 +339,6 @@ package body ALFA is
    --------------------
 
    procedure Add_ALFA_Xrefs is
-      Prev_Scope_Idx  : Scope_Index;
       Cur_Scope_Idx   : Scope_Index;
       From_Xref_Idx   : Xref_Index;
       Cur_Entity      : Entity_Id;
@@ -613,13 +612,12 @@ package body ALFA is
 
       --  Initialize loop
 
-      Prev_Scope_Idx := 1;
       Cur_Scope_Idx  := 1;
       From_Xref_Idx  := 1;
       Cur_Entity     := Empty;
 
-      if ALFA_Scope_Table.Last /= 0 then
-         ALFA_Scope_Table.Table (1).From_Xref := 1;
+      if ALFA_Scope_Table.Last = 0 then
+         return;
       end if;
 
       --  Loop to output references
@@ -721,9 +719,15 @@ package body ALFA is
 
             pragma Assert (Is_Future_Scope_Entity (XE.Ent_Scope));
 
+            --  Update the range of cross references to which the current scope
+            --  refers to. This may be the empty range only for the first scope
+            --  considered.
+
             if XE.Ent_Scope /= Cur_Scope then
                ALFA_Scope_Table.Table (Cur_Scope_Idx).From_Xref :=
                  From_Xref_Idx;
+               ALFA_Scope_Table.Table (Cur_Scope_Idx).To_Xref :=
+                 ALFA_Xref_Table.Last;
                From_Xref_Idx := ALFA_Xref_Table.Last + 1;
             end if;
 
@@ -731,14 +735,6 @@ package body ALFA is
                Cur_Scope_Idx := Cur_Scope_Idx + 1;
                pragma Assert (Cur_Scope_Idx <= ALFA_Scope_Table.Last);
             end loop;
-
-            if Prev_Scope_Idx /= Cur_Scope_Idx
-              and then ALFA_Xref_Table.Last /= 0
-            then
-               ALFA_Scope_Table.Table (Prev_Scope_Idx).To_Xref :=
-                 ALFA_Xref_Table.Last;
-               Prev_Scope_Idx := Cur_Scope_Idx;
-            end if;
 
             if XE.Ent /= Cur_Entity then
                Cur_Entity_Name :=
@@ -757,6 +753,8 @@ package body ALFA is
                Col         => Int (Get_Column_Number (XE.Loc))));
          end Add_One_Xref;
       end loop;
+
+      --  Update the range of cross references to which the scope refers to
 
       ALFA_Scope_Table.Table (Cur_Scope_Idx).From_Xref := From_Xref_Idx;
       ALFA_Scope_Table.Table (Cur_Scope_Idx).To_Xref   := ALFA_Xref_Table.Last;
