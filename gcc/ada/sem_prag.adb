@@ -1700,7 +1700,7 @@ package body Sem_Prag is
             return;
          end Chain_PPC;
 
-         --  Start of processing for Check_Precondition_Postcondition
+      --  Start of processing for Check_Precondition_Postcondition
 
       begin
          if not Is_List_Member (N) then
@@ -6713,11 +6713,11 @@ package body Sem_Prag is
             --  cause insertion of actions that would escape the attempt to
             --  suppress the check code.
 
-            --  Note that the Sloc for the if statement corresponds to the
+            --  Note that the Sloc for the IF statement corresponds to the
             --  argument condition, not the pragma itself. The reason for this
             --  is that we may generate a warning if the condition is False at
             --  compile time, and we do not want to delete this warning when we
-            --  delete the if statement.
+            --  delete the IF statement.
 
             Expr := Get_Pragma_Arg (Arg2);
 

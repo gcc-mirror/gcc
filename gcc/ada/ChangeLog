@@ -1,3 +1,14 @@
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* put_scos.adb (Put_SCOs): Do not emit decision SCO for an X decision
+	nested in a disabled pragma.
+	* scos.ads, scos.adb, par_sco.ads, par_sco.adb: Record sloc of
+	enclosing pragma, if any, for X decisions.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
 2011-08-04  Vincent Celier  <celier@adacore.com>
 
 	* a-tags.adb (Check_TSD): Avoid concatenation of strings, as it is not
