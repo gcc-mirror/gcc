@@ -884,12 +884,13 @@ package body Sem_Type is
             return False;
          end;
 
-         --  In a dispatching call the actual may be class-wide, the formal
-         --  may be its specific type, or that of a descendent of it.
+      --  In a dispatching call, the formal is of some specific type, and the
+      --  actual is of the corresponding class-wide type, including a subtype
+      --  of the class-wide type.
 
       elsif Is_Class_Wide_Type (T2)
         and then
-          (Class_Wide_Type (T1) = T2
+          (Class_Wide_Type (T1) = Class_Wide_Type (T2)
              or else Base_Type (Root_Type (T2)) = BT1)
       then
          return True;

@@ -567,8 +567,8 @@ package Einfo is
 
 --    Class_Wide_Type (Node9)
 --       Present in all type entities. For a tagged type or subtype, returns
---       the corresponding implicitly declared class-wide type. Set to Empty
---       for non-tagged types.
+--       the corresponding implicitly declared class-wide type. For a
+--       class-wide type, returns itself. Set to Empty for non-tagged types.
 
 --    Cloned_Subtype (Node16)
 --       Present in E_Record_Subtype and E_Class_Wide_Subtype entities.

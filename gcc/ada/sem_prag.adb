@@ -423,7 +423,13 @@ package body Sem_Prag is
       --  Checks that the given argument has an identifier, and if so, requires
       --  it to match the given identifier name. If there is no identifier, or
       --  a non-matching identifier, then an error message is given and
-      --  Error_Pragmas raised.
+      --  Pragma_Exit is raised.
+
+      procedure Check_Identifier_Is_One_Of (Arg : Node_Id; N1, N2 : Name_Id);
+      --  Checks that the given argument has an identifier, and if so, requires
+      --  it to match one of the given identifier names. If there is no
+      --  identifier, or a non-matching identifier, then an error message is
+      --  given and Pragma_Exit is raised.
 
       procedure Check_In_Main_Program;
       --  Common checks for pragmas that appear within a main program
@@ -454,12 +460,12 @@ package body Sem_Prag is
       procedure Check_Optional_Identifier (Arg : Node_Id; Id : Name_Id);
       --  Checks if the given argument has an identifier, and if so, requires
       --  it to match the given identifier name. If there is a non-matching
-      --  identifier, then an error message is given and Error_Pragmas raised.
+      --  identifier, then an error message is given and Pragma_Exit is raised.
 
       procedure Check_Optional_Identifier (Arg : Node_Id; Id : String);
       --  Checks if the given argument has an identifier, and if so, requires
       --  it to match the given identifier name. If there is a non-matching
-      --  identifier, then an error message is given and Error_Pragmas raised.
+      --  identifier, then an error message is given and Pragma_Exit is raised.
       --  In this version of the procedure, the identifier name is given as
       --  a string with lower case letters.
 
@@ -1432,6 +1438,30 @@ package body Sem_Prag is
          end if;
       end Check_Identifier;
 
+      --------------------------------
+      -- Check_Identifier_Is_One_Of --
+      --------------------------------
+
+      procedure Check_Identifier_Is_One_Of (Arg : Node_Id; N1, N2 : Name_Id) is
+      begin
+         if Present (Arg)
+           and then Nkind (Arg) = N_Pragma_Argument_Association
+         then
+            if Chars (Arg) = No_Name then
+               Error_Msg_Name_1 := Pname;
+               Error_Msg_N ("pragma% argument expects an identifier", Arg);
+               raise Pragma_Exit;
+
+            elsif Chars (Arg) /= N1
+              and then Chars (Arg) /= N2
+            then
+               Error_Msg_Name_1 := Pname;
+               Error_Msg_N ("invalid identifier for pragma% argument", Arg);
+               raise Pragma_Exit;
+            end if;
+         end if;
+      end Check_Identifier_Is_One_Of;
+
       ---------------------------
       -- Check_In_Main_Program --
       ---------------------------
@@ -1989,6 +2019,33 @@ package body Sem_Prag is
             --  in this analysis, allowing forward references. The analysis
             --  happens at the end of Analyze_Declarations.
 
+            --  There should not be another test case with the same name
+            --  associated to this subprogram.
+
+            declare
+               Name : constant String_Id := Get_Name_From_Test_Case_Pragma (N);
+               TC   : Node_Id;
+
+            begin
+               TC := Spec_TC_List (Contract (S));
+               while Present (TC) loop
+
+                  if String_Equal
+                    (Name, Get_Name_From_Test_Case_Pragma (TC))
+                  then
+                     Error_Msg_Sloc := Sloc (TC);
+
+                     if From_Aspect_Specification (N) then
+                        Error_Pragma ("name for aspect% is already used#");
+                     else
+                        Error_Pragma ("name for pragma% is already used#");
+                     end if;
+                  end if;
+
+                  TC := Next_Pragma (TC);
+               end loop;
+            end;
+
             --  Chain spec TC pragma to list for subprogram
 
             Set_Next_Pragma (N, Spec_TC_List (Contract (S)));
@@ -2039,25 +2096,9 @@ package body Sem_Prag is
          end loop;
 
          --  If we fall through loop, pragma is at start of list, so see if it
-         --  is at the start of declarations of a subprogram body.
+         --  is in the pragmas after a library level subprogram.
 
-         if Nkind (Parent (N)) = N_Subprogram_Body
-           and then List_Containing (N) = Declarations (Parent (N))
-         then
-            if Operating_Mode /= Generate_Code
-              or else Inside_A_Generic
-            then
-               --  Analyze pragma expressions for correctness and for ASIS use
-
-               Preanalyze_TC_Args (Get_Requires_From_Test_Case_Pragma (N),
-                                   Get_Ensures_From_Test_Case_Pragma (N));
-            end if;
-
-            return;
-
-         --  See if it is in the pragmas after a library level subprogram
-
-         elsif Nkind (Parent (N)) = N_Compilation_Unit_Aux then
+         if Nkind (Parent (N)) = N_Compilation_Unit_Aux then
             Chain_TC (Unit (Parent (Parent (N))));
             return;
          end if;
@@ -13246,7 +13287,7 @@ package body Sem_Prag is
                Check_Identifier (Arg3, Name_Requires);
                Check_Identifier (Arg4, Name_Ensures);
             else
-               Check_Arg_Is_One_Of (Arg3, Name_Requires, Name_Ensures);
+               Check_Identifier_Is_One_Of (Arg3, Name_Requires, Name_Ensures);
             end if;
 
             Check_Test_Case;

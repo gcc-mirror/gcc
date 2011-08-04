@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -164,7 +164,8 @@ package Sem_Type is
    function Covers (T1, T2 : Entity_Id) return Boolean;
    --  This is the basic type compatibility routine. T1 is the expected type,
    --  imposed by context, and T2 is the actual type. The processing reflects
-   --  both the definition of type coverage and the rules for operand matching.
+   --  both the definition of type coverage and the rules for operand matching;
+   --  that is, this does not exactly match the RM definition of "covers".
 
    function Disambiguate
      (N      : Node_Id;

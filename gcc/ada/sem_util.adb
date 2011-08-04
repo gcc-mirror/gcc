@@ -4331,6 +4331,16 @@ package body Sem_Util is
       return Entity_Id (Get_Name_Table_Info (Id));
    end Get_Name_Entity_Id;
 
+   ------------------------------------
+   -- Get_Name_From_Test_Case_Pragma --
+   ------------------------------------
+
+   function Get_Name_From_Test_Case_Pragma (N : Node_Id) return String_Id is
+   begin
+      return
+        Strval (Get_Pragma_Arg (First (Pragma_Argument_Associations (N))));
+   end Get_Name_From_Test_Case_Pragma;
+
    -------------------
    -- Get_Pragma_Id --
    -------------------
