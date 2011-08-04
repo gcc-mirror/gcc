@@ -1,5 +1,20 @@
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
+	* sem_ch3.adb (Array_Type_Declaration): move test for type in ALFA
+	after index creation; mark unconstrained base array type generated as
+	being in/not in ALFA as well
+	(Make_Index): mark subtype created as in/not in ALFA
+	* sem_ch5.adb (Analyze_Iteration_Scheme): mark entity for iterating
+	over a loop as in/not in ALFA, depending on its type and form of loop
+	iteration.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Build_Object_Declarations): Initialize flag Abort
+	directly to False on .NET and JVM.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
 	* sem_ch3.adb (Constrain_Enumeration, Constrain_Integer): remove
 	constraint that subtype must come from source code to be in ALFA, so
 	that anonymous subtypes can be in ALFA too.

@@ -2817,7 +2817,9 @@ package body Exp_Ch7 is
       --  order to detect this scenario, save the state of entry into the
       --  finalization code.
 
-      if Abort_Allowed then
+      if Abort_Allowed
+        and then VM_Target = No_VM
+      then
          declare
             Temp_Id : constant Entity_Id := Make_Temporary (Loc, 'E');
 
@@ -2869,7 +2871,9 @@ package body Exp_Ch7 is
                         Attribute_Name => Name_Identity)));
          end;
 
-      --  No abort
+      --  No abort or .NET/JVM. The VM version of Ada.Exceptions does not
+      --  include routine Raise_From_Controlled_Operation which is the sole
+      --  user of flag Abort.
 
       else
          A_Expr := New_Reference_To (Standard_False, Loc);

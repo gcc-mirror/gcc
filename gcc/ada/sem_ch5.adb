@@ -2082,6 +2082,17 @@ package body Sem_Ch5 is
                   Set_Etype (Id, Etype (DS));
                end if;
 
+               --  The entity for iterating over a loop is always in ALFA if
+               --  its type is in ALFA, and it is not an iteration over
+               --  elements of a container using the OF syntax.
+
+               if Is_In_ALFA (Etype (Id))
+                 and then (No (Iterator_Specification (N))
+                           or else not Of_Present (Iterator_Specification (N)))
+               then
+                  Set_Is_In_ALFA (Id);
+               end if;
+
                --  Treat a range as an implicit reference to the type, to
                --  inhibit spurious warnings.
 
