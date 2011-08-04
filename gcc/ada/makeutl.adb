@@ -1581,7 +1581,7 @@ package body Makeutl is
             if Number_Of_Mains (Tree) = 0
               and then Mains.Count_Of_Mains_With_No_Tree = 0
             then
-               Debug_Output ("add_Mains_From_Project", Project.Name);
+               Debug_Output ("Add_Mains_From_Project", Project.Name);
                List := Project.Mains;
 
                if List /= Prj.Nil_String then

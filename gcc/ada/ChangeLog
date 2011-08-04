@@ -1,3 +1,12 @@
+2011-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* makeutl.adb: Minor reformatting.
+
+2011-08-04  Olivier Hainque  <hainque@adacore.com>
+
+	* g-altive.ads: Update comments to reflect that only the soft
+	binding is available today.
+
 2011-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* bindgen.adb, einfo.adb, sem_ch12.adb, s-tasren.adb, sem_res.adb,
