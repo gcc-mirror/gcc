@@ -1,3 +1,17 @@
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Bad_Attribute_For_Predicate): flag illegal use of
+	attribute only if prefix type is scalar.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb, makeutl.adb, prj-env.adb (Check_Mains): put back support
+	in gnatmake for specifying mains on the command line that do not belong
+	to the main project. These mains must currently all belong to the same
+	project, though.
+	(Ultimate_Extension_Of): removed, since duplicated
+	Ultimate_Extending_Project.
+
 2011-08-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* make.adb (Do_Codepeer_Globalize_Step): Removed. Use CodePeer_Mode

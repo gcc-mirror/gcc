@@ -217,6 +217,8 @@ package body Sem_Attr is
       --  actual, then the message is a warning, and we generate code to raise
       --  program error with an appropriate reason. No error message is given
       --  for internally generated uses of the attributes.
+      --  The legality rule only applies to scalar types, even though the
+      --  current AI mentions all subtypes.
 
       procedure Check_Array_Or_Scalar_Type;
       --  Common procedure used by First, Last, Range attribute to check
@@ -840,7 +842,9 @@ package body Sem_Attr is
 
       procedure Bad_Attribute_For_Predicate is
       begin
-         if Comes_From_Source (N) then
+         if Is_Scalar_Type (P_Type)
+           and then  Comes_From_Source (N)
+         then
             Error_Msg_Name_1 := Aname;
             Bad_Predicated_Subtype_Use
               ("type& has predicates, attribute % not allowed", N, P_Type);
