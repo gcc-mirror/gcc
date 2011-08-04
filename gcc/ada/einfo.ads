@@ -1272,6 +1272,10 @@ package Einfo is
 --       Float_Rep_Kind. Together with the Digits_Value uniquely defines
 --       the floating-point representation to be used.
 
+--    Formal_Proof_On (Flag254)
+--       Present in subprogram entities. Set for subprograms whose body
+--       contains an Annotate pragma which forces formal proof on this body.
+
 --    Freeze_Node (Node7)
 --       Present in all entities. If there is an associated freeze node for
 --       the entity, this field references this freeze node. If no freeze
@@ -6068,6 +6072,7 @@ package Einfo is
    function First_Private_Entity                (Id : E) return E;
    function First_Rep_Item                      (Id : E) return N;
    function Float_Rep                           (Id : E) return F;
+   function Formal_Proof_On                     (Id : E) return B;
    function Freeze_Node                         (Id : E) return N;
    function From_With_Type                      (Id : E) return B;
    function Full_View                           (Id : E) return E;
@@ -6657,6 +6662,7 @@ package Einfo is
    procedure Set_First_Private_Entity            (Id : E; V : E);
    procedure Set_First_Rep_Item                  (Id : E; V : N);
    procedure Set_Float_Rep                       (Id : E; V : F);
+   procedure Set_Formal_Proof_On                 (Id : E; V : B := True);
    procedure Set_Freeze_Node                     (Id : E; V : N);
    procedure Set_From_With_Type                  (Id : E; V : B := True);
    procedure Set_Full_View                       (Id : E; V : E);
@@ -7354,6 +7360,7 @@ package Einfo is
    pragma Inline (First_Optional_Parameter);
    pragma Inline (First_Private_Entity);
    pragma Inline (First_Rep_Item);
+   pragma Inline (Formal_Proof_On);
    pragma Inline (Freeze_Node);
    pragma Inline (From_With_Type);
    pragma Inline (Full_View);
@@ -7798,6 +7805,7 @@ package Einfo is
    pragma Inline (Set_First_Optional_Parameter);
    pragma Inline (Set_First_Private_Entity);
    pragma Inline (Set_First_Rep_Item);
+   pragma Inline (Set_Formal_Proof_On);
    pragma Inline (Set_Freeze_Node);
    pragma Inline (Set_From_With_Type);
    pragma Inline (Set_Full_View);

@@ -6103,6 +6103,53 @@ package body Sem_Prag is
                Exp : Node_Id;
 
             begin
+               if Chars (Get_Pragma_Arg (Arg1)) = Name_Formal_Proof then
+                  if No (Arg2) then
+                     Error_Pragma_Arg
+                       ("missing second argument for pragma%", Arg1);
+                  end if;
+
+                  Check_Arg_Is_Identifier (Arg2);
+                  Check_Arg_Count (2);
+
+                  if Chars (Get_Pragma_Arg (Arg2)) /= Name_On
+                    and then Chars (Get_Pragma_Arg (Arg2)) /= Name_Off
+                  then
+                     Error_Pragma_Arg
+                       ("wrong second argument for pragma%", Arg2);
+                  end if;
+
+                  if Chars (Get_Pragma_Arg (Arg2)) = Name_On then
+                     declare
+                        Cur_Subp : constant Entity_Id := Current_Subprogram;
+
+                     begin
+                        if Present (Cur_Subp)
+                          and then (Is_Subprogram (Cur_Subp)
+                                     or else Is_Generic_Subprogram (Cur_Subp))
+                        then
+                           --  Notify user if some ALFA violation occurred
+                           --  before this point in Cur_Subp. These violations
+                           --  are not precisly located, but this is better
+                           --  than ignoring them.
+
+                           if not Is_In_ALFA (Cur_Subp)
+                             or else not Body_Is_In_ALFA (Cur_Subp)
+                           then
+                              Error_Pragma
+                                ("pragma% is placed after violation"
+                                 & " of 'A'L'F'A");
+                           end if;
+
+                           Set_Formal_Proof_On (Cur_Subp);
+
+                        else
+                           Error_Pragma ("wrong placement for pragma%");
+                        end if;
+                     end;
+                  end if;
+               end if;
+
                --  Second unanalyzed parameter is optional
 
                if No (Arg2) then

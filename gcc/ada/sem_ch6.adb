@@ -649,13 +649,14 @@ package body Sem_Ch6 is
              (Nkind (Parent (Parent (N))) /= N_Subprogram_Body
                or else Present (Next (N)))
          then
-            Mark_Non_ALFA_Subprogram;
+            Mark_Non_ALFA_Subprogram
+              ("RETURN should be the last statement in 'A'L'F'A", N);
             Check_SPARK_Restriction
               ("RETURN should be the last statement in function", N);
          end if;
 
       else
-         Mark_Non_ALFA_Subprogram;
+         Mark_Non_ALFA_Subprogram ("extended RETURN is not in 'A'L'F'A", N);
          Check_SPARK_Restriction ("extended RETURN is not allowed", N);
 
          --  Analyze parts specific to extended_return_statement:
@@ -8886,7 +8887,7 @@ package body Sem_Ch6 is
          if Is_In_ALFA (Formal_Type) then
             Set_Is_In_ALFA (Formal);
          else
-            Mark_Non_ALFA_Subprogram;
+            Mark_Non_ALFA_Subprogram ("formal is not in 'A'L'F'A", Formal);
          end if;
 
          Default := Expression (Param_Spec);

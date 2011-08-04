@@ -81,7 +81,7 @@ package body Sem_Ch2 is
            and then Is_Object (Entity (N))
            and then not Is_In_ALFA (Entity (N))
          then
-            Mark_Non_ALFA_Subprogram;
+            Mark_Non_ALFA_Subprogram ("object is not in 'A'L'F'A", N);
          end if;
       end if;
    end Analyze_Identifier;
