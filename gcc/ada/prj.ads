@@ -1437,6 +1437,17 @@ package Prj is
    --  own tree) and make the comparison of projects easier, all trees store
    --  the lists in the same tables.
 
+   type Project_Tree_Appdata is tagged null record;
+   type Project_Tree_Appdata_Access is access all Project_Tree_Appdata'Class;
+   --  Application-specific data that can be associated with a project tree.
+   --  We do not make the Project_Tree_Data itself tagged for several reasons:
+   --    - it couldn't have a default value for its discriminant
+   --    - it would require a "factory" to allocate such data, because trees
+   --      are created automatically when parsing aggregate projects.
+
+   procedure Free (Tree : in out Project_Tree_Appdata);
+   --  Should be overridden if your derive your own data
+
    type Project_Tree_Data (Is_Root_Tree : Boolean := True) is record
       --  The root tree is the one loaded by the user from the command line.
       --  Is_Root_Tree is only false for projects aggregated within a root
@@ -1472,6 +1483,9 @@ package Prj is
       Shared : Shared_Project_Tree_Data_Access;
       --  The shared data for this tree and all aggregated trees.
 
+      Appdata : Project_Tree_Appdata_Access;
+      --  Application-specific data for this tree
+
       case Is_Root_Tree is
          when True =>
             Shared_Data : aliased Shared_Project_Tree_Data;
@@ -1482,6 +1496,10 @@ package Prj is
       end case;
    end record;
    --  Data for a project tree
+
+   function Debug_Name (Tree : Project_Tree_Ref) return Name_Id;
+   --  If debug traces are activated, return an identitier for the
+   --  project tree. This modifies Name_Buffer
 
    procedure Expect (The_Token : Token_Type; Token_Image : String);
    --  Check that the current token is The_Token. If it is not, then output

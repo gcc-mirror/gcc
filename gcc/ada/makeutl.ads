@@ -41,6 +41,9 @@ package Makeutl is
 
    type Fail_Proc is access procedure (S : String);
 
+   On_Windows : constant Boolean := Directory_Separator = '\';
+   --  True when on Windows
+
    Source_Info_Option : constant String := "--source-info=";
    --  Switch to indicate the source info file
 
@@ -336,6 +339,9 @@ package Makeutl is
       --  Information about files stored in the queue. The exact information
       --  depends on the builder, and in particular whether it only supports
       --  project-based files (in which case we have a full Source_Id record).
+
+      No_Source_Info : constant Source_Info :=
+        (Format_Gprbuild, null, null);
 
       procedure Initialize
         (Queue_Per_Obj_Dir : Boolean;
