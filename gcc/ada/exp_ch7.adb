@@ -297,11 +297,9 @@ package body Exp_Ch7 is
 
    function Build_Cleanup_Statements (N : Node_Id) return List_Id;
    --  Create the clean up calls for an asynchronous call block, task master,
-   --  protected subprogram body, task allocation block or task body. Generate
-   --  code to unregister the external tags of all library-level tagged types
-   --  found in the declarations and/or statements of N. If the context does
-   --  not contain the above constructs or types, the routine returns an empty
-   --  list.
+   --  protected subprogram body, task allocation block or task body. If the
+   --  context does not contain the above constructs, the routine returns an
+   --  empty list.
 
    function Build_Exception_Handler
      (Loc         : Source_Ptr;
@@ -489,11 +487,8 @@ package body Exp_Ch7 is
       Is_Asynchronous_Call : constant Boolean :=
                                Nkind (N) = N_Block_Statement
                                  and then Is_Asynchronous_Call_Block (N);
-
       Is_Master            : constant Boolean :=
-                               not Nkind_In (N, N_Entry_Body,
-                                                N_Package_Body,
-                                                N_Package_Declaration)
+                               Nkind (N) /= N_Entry_Body
                                  and then Is_Task_Master (N);
       Is_Protected_Body    : constant Boolean :=
                                Nkind (N) = N_Subprogram_Body
@@ -506,59 +501,6 @@ package body Exp_Ch7 is
 
       Loc   : constant Source_Ptr := Sloc (N);
       Stmts : constant List_Id    := New_List;
-
-      procedure Unregister_Tagged_Types (Decls : List_Id);
-      --  Unregister the external tag of each tagged type found in the list
-      --  Decls. The generated statements are added to list Stmts.
-
-      -----------------------------
-      -- Unregister_Tagged_Types --
-      -----------------------------
-
-      procedure Unregister_Tagged_Types (Decls : List_Id) is
-         Decl   : Node_Id;
-         DT_Ptr : Entity_Id;
-         Typ    : Entity_Id;
-
-      begin
-         if No (Decls) or else Is_Empty_List (Decls) then
-            return;
-         end if;
-
-         --  Process all declarations or statements in reverse order
-
-         Decl := Last_Non_Pragma (Decls);
-         while Present (Decl) loop
-            if Nkind (Decl) = N_Full_Type_Declaration then
-               Typ := Defining_Identifier (Decl);
-
-               if Is_Tagged_Type (Typ)
-                 and then Is_Library_Level_Entity (Typ)
-                 and then Convention (Typ) = Convention_Ada
-                 and then Present (Access_Disp_Table (Typ))
-                 and then RTE_Available (RE_Unregister_Tag)
-                 and then not No_Run_Time_Mode
-                 and then not Is_Abstract_Type (Typ)
-               then
-                  DT_Ptr := Node (First_Elmt (Access_Disp_Table (Typ)));
-
-                  --  Generate:
-                  --    Ada.Tags.Unregister_Tag (<Typ>P);
-
-                  Append_To (Stmts,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To (RTE (RE_Unregister_Tag), Loc),
-                      Parameter_Associations => New_List (
-                        New_Reference_To (DT_Ptr, Loc))));
-               end if;
-            end if;
-
-            Prev_Non_Pragma (Decl);
-         end loop;
-      end Unregister_Tagged_Types;
-
-   --  Start of processing for Build_Cleanup_Statements
 
    begin
       if Is_Task_Body then
@@ -768,26 +710,6 @@ package body Exp_Ch7 is
                      New_Reference_To (Cancel_Param, Loc))));
             end if;
          end;
-      end if;
-
-      --  Inspect all declaration and/or statement lists of N for library-level
-      --  tagged types. Generate code to unregister the external tag of such a
-      --  type.
-
-      if Nkind (N) = N_Package_Declaration then
-         Unregister_Tagged_Types (Private_Declarations (Specification (N)));
-         Unregister_Tagged_Types (Visible_Declarations (Specification (N)));
-
-      --  Accept statement, block, entry body, package body, protected body,
-      --  subprogram body or task body.
-
-      else
-         if Present (Handled_Statement_Sequence (N)) then
-            Unregister_Tagged_Types
-              (Statements (Handled_Statement_Sequence (N)));
-         end if;
-
-         Unregister_Tagged_Types (Declarations (N));
       end if;
 
       return Stmts;
@@ -1207,6 +1129,10 @@ package body Exp_Ch7 is
       --  A general flag which denotes whether N has at least one controlled
       --  object.
 
+      Has_Tagged_Types : Boolean := False;
+      --  A general flag which denotes whether N has at least one library-level
+      --  tagged type declaration.
+
       HSS : Node_Id := Empty;
       --  The sequence of statements of N (if available)
 
@@ -1241,6 +1167,10 @@ package body Exp_Ch7 is
       Spec_Decls : List_Id   := Top_Decls;
       Stmts      : List_Id   := No_List;
 
+      Tagged_Type_Stmts : List_Id := No_List;
+      --  Contains calls to Ada.Tags.Unregister_Tag for all library-level
+      --  tagged types found in N.
+
       -----------------------
       -- Local subprograms --
       -----------------------
@@ -1271,6 +1201,10 @@ package body Exp_Ch7 is
       --  single object. Flag Has_No_Init is used to denote certain contexts
       --  where Decl does not have initialization call(s). Flag Is_Protected
       --  is set when Decl denotes a simple protected object.
+
+      procedure Process_Tagged_Type_Declaration (Decl : Node_Id);
+      --  Generate all the code necessary to unregister the external tag of a
+      --  tagged type.
 
       ----------------------
       -- Build_Components --
@@ -1377,6 +1311,10 @@ package body Exp_Ch7 is
             Jump_Block_Insert_Nod := Last (Finalizer_Stmts);
          else
             Finalizer_Stmts := New_List;
+         end if;
+
+         if Has_Tagged_Types then
+            Tagged_Type_Stmts := New_List;
          end if;
       end Build_Components;
 
@@ -1541,6 +1479,14 @@ package body Exp_Ch7 is
             else
                Prepend_To (Finalizer_Stmts, Jump_Block);
             end if;
+         end if;
+
+         --  Add the library-level tagged type unregistration machinery before
+         --  the jump block circuitry. This ensures that external tags will be
+         --  removed even if a finalization exception occurs at some point.
+
+         if Has_Tagged_Types then
+            Prepend_List_To (Finalizer_Stmts, Tagged_Type_Stmts);
          end if;
 
          --  Add a call to the previous At_End handler if it exists. The call
@@ -1784,17 +1730,36 @@ package body Exp_Ch7 is
             Is_Protected : Boolean := False)
          is
          begin
-            if Preprocess then
-               Counter_Val   := Counter_Val + 1;
-               Has_Ctrl_Objs := True;
+            --  Library-level tagged type
 
-               if Top_Level
-                 and then No (Last_Top_Level_Ctrl_Construct)
-               then
-                  Last_Top_Level_Ctrl_Construct := Decl;
+            if Nkind (Decl) = N_Full_Type_Declaration then
+               if Preprocess then
+                  Has_Tagged_Types := True;
+
+                  if Top_Level
+                    and then No (Last_Top_Level_Ctrl_Construct)
+                  then
+                     Last_Top_Level_Ctrl_Construct := Decl;
+                  end if;
+               else
+                  Process_Tagged_Type_Declaration (Decl);
                end if;
+
+            --  Controlled object declaration
+
             else
-               Process_Object_Declaration (Decl, Has_No_Init, Is_Protected);
+               if Preprocess then
+                  Counter_Val   := Counter_Val + 1;
+                  Has_Ctrl_Objs := True;
+
+                  if Top_Level
+                    and then No (Last_Top_Level_Ctrl_Construct)
+                  then
+                     Last_Top_Level_Ctrl_Construct := Decl;
+                  end if;
+               else
+                  Process_Object_Declaration (Decl, Has_No_Init, Is_Protected);
+               end if;
             end if;
          end Processing_Actions;
 
@@ -1810,9 +1775,25 @@ package body Exp_Ch7 is
          Decl := Last_Non_Pragma (Decls);
          while Present (Decl) loop
 
+            --  Library-level tagged types
+
+            if Nkind (Decl) = N_Full_Type_Declaration then
+               Typ := Defining_Identifier (Decl);
+
+               if Is_Tagged_Type (Typ)
+                 and then Is_Library_Level_Entity (Typ)
+                 and then Convention (Typ) = Convention_Ada
+                 and then Present (Access_Disp_Table (Typ))
+                 and then RTE_Available (RE_Register_Tag)
+                 and then not No_Run_Time_Mode
+                 and then not Is_Abstract_Type (Typ)
+               then
+                  Processing_Actions;
+               end if;
+
             --  Regular object declarations
 
-            if Nkind (Decl) = N_Object_Declaration then
+            elsif Nkind (Decl) = N_Object_Declaration then
                Obj_Id  := Defining_Identifier (Decl);
                Obj_Typ := Base_Type (Etype (Obj_Id));
                Expr    := Expression (Decl);
@@ -2687,12 +2668,33 @@ package body Exp_Ch7 is
          Counter_Val := Counter_Val - 1;
       end Process_Object_Declaration;
 
+      -------------------------------------
+      -- Process_Tagged_Type_Declaration --
+      -------------------------------------
+
+      procedure Process_Tagged_Type_Declaration (Decl : Node_Id) is
+         Typ    : constant Entity_Id := Defining_Identifier (Decl);
+         DT_Ptr : constant Entity_Id :=
+                    Node (First_Elmt (Access_Disp_Table (Typ)));
+      begin
+         --  Generate:
+         --    Ada.Tags.Unregister_Tag (<Typ>P);
+
+         Append_To (Tagged_Type_Stmts,
+           Make_Procedure_Call_Statement (Loc,
+             Name =>
+               New_Reference_To (RTE (RE_Unregister_Tag), Loc),
+             Parameter_Associations => New_List (
+               New_Reference_To (DT_Ptr, Loc))));
+      end Process_Tagged_Type_Declaration;
+
    --  Start of processing for Build_Finalizer
 
    begin
       Fin_Id := Empty;
 
-      --  Step 1: Extract all lists which may contain controlled objects
+      --  Step 1: Extract all lists which may contain controlled objects or
+      --  library-level tagged types.
 
       if For_Package_Spec then
          Decls      := Visible_Declarations (Specification (N));
@@ -2772,15 +2774,19 @@ package body Exp_Ch7 is
          --  cases, the finalizer must be created and carry the additional
          --  statements.
 
-         if Acts_As_Clean or else Has_Ctrl_Objs then
+         if Acts_As_Clean
+           or else Has_Ctrl_Objs
+           or else Has_Tagged_Types
+         then
             Build_Components;
          end if;
 
-         --  The preprocessing has determined that the context has objects that
-         --  need finalization actions.
+         --  The preprocessing has determined that the context has controlled
+         --  objects or library-level tagged types.
 
-         if Has_Ctrl_Objs then
-
+         if Has_Ctrl_Objs
+           or else Has_Tagged_Types
+         then
             --  Private declarations are processed first in order to preserve
             --  possible dependencies between public and private objects.
 
@@ -2814,11 +2820,16 @@ package body Exp_Ch7 is
          --  cases, the finalizer must be created and carry the additional
          --  statements.
 
-         if Acts_As_Clean or else Has_Ctrl_Objs then
+         if Acts_As_Clean
+           or else Has_Ctrl_Objs
+           or else Has_Tagged_Types
+         then
             Build_Components;
          end if;
 
-         if Has_Ctrl_Objs then
+         if Has_Ctrl_Objs
+           or else Has_Tagged_Types
+         then
             Process_Declarations (Stmts);
             Process_Declarations (Decls);
          end if;
@@ -2826,7 +2837,10 @@ package body Exp_Ch7 is
 
       --  Step 3: Finalizer creation
 
-      if Acts_As_Clean or else Has_Ctrl_Objs then
+      if Acts_As_Clean
+        or else Has_Ctrl_Objs
+        or else Has_Tagged_Types
+      then
          Create_Finalizer;
       end if;
    end Build_Finalizer;
@@ -3830,7 +3844,7 @@ package body Exp_Ch7 is
       if Ekind (Spec_Ent) /= E_Generic_Package then
          Build_Finalizer
            (N           => N,
-            Clean_Stmts => Build_Cleanup_Statements (N),
+            Clean_Stmts => No_List,
             Mark_Id     => Empty,
             Top_Decls   => No_List,
             Defer_Abort => False,
@@ -3954,7 +3968,7 @@ package body Exp_Ch7 is
       if Ekind (Id) /= E_Generic_Package then
          Build_Finalizer
            (N           => N,
-            Clean_Stmts => Build_Cleanup_Statements (N),
+            Clean_Stmts => No_List,
             Mark_Id     => Empty,
             Top_Decls   => No_List,
             Defer_Abort => False,

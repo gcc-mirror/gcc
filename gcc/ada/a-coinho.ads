@@ -56,7 +56,8 @@ package Ada.Containers.Indefinite_Holders is
    function Element (Container : Holder) return Element_Type;
 
    procedure Replace_Element
-     (Container : in out Holder; New_Item : Element_Type);
+     (Container : in out Holder;
+      New_Item  : Element_Type);
 
    procedure Query_Element
      (Container : Holder;

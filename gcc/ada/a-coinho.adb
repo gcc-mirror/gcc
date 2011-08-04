@@ -102,7 +102,6 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Source.Element = null then
          return (AF.Controlled with null, 0);
-
       else
          return (AF.Controlled with new Element_Type'(Source.Element.all), 0);
       end if;
@@ -116,7 +115,6 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Container.Element = null then
          raise Constraint_Error with "container is empty";
-
       else
          return Container.Element.all;
       end if;
@@ -184,11 +182,9 @@ package body Ada.Containers.Indefinite_Holders is
 
       begin
          Process (Container.Element.all);
-
       exception
          when others =>
             B := B - 1;
-
             raise;
       end;
 
@@ -201,7 +197,8 @@ package body Ada.Containers.Indefinite_Holders is
 
    procedure Read
      (Stream    : not null access Ada.Streams.Root_Stream_Type'Class;
-      Container : out Holder) is
+      Container : out Holder)
+   is
    begin
       Clear (Container);
 
@@ -215,7 +212,9 @@ package body Ada.Containers.Indefinite_Holders is
    ---------------------
 
    procedure Replace_Element
-     (Container : in out Holder; New_Item : Element_Type) is
+     (Container : in out Holder;
+      New_Item  : Element_Type)
+   is
    begin
       if Container.Busy /= 0 then
          raise Program_Error with "attempt to tamper with elements";
@@ -253,11 +252,9 @@ package body Ada.Containers.Indefinite_Holders is
 
       begin
          Process (Container.Element.all);
-
       exception
          when others =>
             B := B - 1;
-
             raise;
       end;
 
@@ -270,7 +267,8 @@ package body Ada.Containers.Indefinite_Holders is
 
    procedure Write
      (Stream    : not null access Ada.Streams.Root_Stream_Type'Class;
-      Container : Holder) is
+      Container : Holder)
+   is
    begin
       Boolean'Output (Stream, Container.Element = null);
 

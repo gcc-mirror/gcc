@@ -1010,12 +1010,8 @@ package body Ada.Tags is
    --------------------
 
    procedure Unregister_Tag (T : Tag) is
-      TSD_Ptr : constant Addr_Ptr :=
-                  To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
-      TSD     : constant Type_Specific_Data_Ptr :=
-                  To_Type_Specific_Data_Ptr (TSD_Ptr.all);
    begin
-      External_Tag_HTable.Remove (To_Address (TSD.External_Tag));
+      External_Tag_HTable.Remove (Get_External_Tag (T));
    end Unregister_Tag;
 
    ------------------------

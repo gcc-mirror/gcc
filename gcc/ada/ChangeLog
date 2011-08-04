@@ -1,3 +1,54 @@
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* gnatls.adb: Use Prj.Env.Initialize_Default_Project_Path to retrieve
+	the project path.
+
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* a-coinho.adb: Minor reformatting.
+
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* a-coinho.ads: Minor reformatting.
+
+2011-08-04  Vadim Godunko  <godunko@adacore.com>
+
+	* s-atocou.ads, s-atocou.adb: New files.
+	* a-strunb-shared.ads, a-strunb-shared.adb, a-stwiun-shared.ads,
+	a-stwiun-shared.adb, a-stzunb-shared.ads, a-stzunb-shared.adb: Remove
+	direct use of GCC's atomic builtins and replace them by use of new
+	atomic counter package.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_strm.adb: better error message for No_Default_Stream_Attributes.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-tags.adb (Unregister_Tag): Replace the complex address arithmetic
+	with a call to Get_External_Tag.
+	* exp_ch7.adb (Build_Cleanup_Statements): Update the comment on
+	subprogram usage. Remove the guard against package declarations and
+	bodies since Build_Cleanup_Statements is no longer invoked in that
+	context.
+	(Build_Components): Initialize Tagged_Type_Stmts when the context
+	contains at least one library-level tagged type.
+	(Build_Finalizer): New local variables Has_Tagged_Types and
+	Tagged_Type_Stmts along with associated comments on usage. Update the
+	logic to include tagged type processing.
+	(Create_Finalizer): Insert all library-level tagged type unregistration
+	code before the jump block circuitry.
+	(Expand_N_Package_Body): Remove the call to Build_Cleanup_Statements.
+	(Expand_N_Package_Declaration): Remove the call to
+	Build_Cleanup_Statements.
+	(Process_Tagged_Type_Declaration): New routine. Generate a call to
+	unregister the external tag of a tagged type.
+	(Processing_Actions): Reimplemented to handle tagged types.
+	(Process_Declarations): Detect the declaration of a library-level
+	tagged type and carry out the appropriate actions.
+	(Unregister_Tagged_Types): Removed. The machinery has been directly
+	merged with Build_Finalizer.
+
 2011-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* bindgen.ads, gnatlink.adb, sem_ch4.adb, gnatbind.adb, put_alfa.adb,

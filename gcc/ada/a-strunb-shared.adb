@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,16 +49,6 @@ package body Ada.Strings.Unbounded is
    --  no memory loss as most (all?) malloc implementations are obliged to
    --  align the returned memory on the maximum alignment as malloc does not
    --  know the target alignment.
-
-   procedure Sync_Add_And_Fetch
-     (Ptr   : access Interfaces.Unsigned_32;
-      Value : Interfaces.Unsigned_32);
-   pragma Import (Intrinsic, Sync_Add_And_Fetch, "__sync_add_and_fetch_4");
-
-   function Sync_Sub_And_Fetch
-     (Ptr   : access Interfaces.Unsigned_32;
-      Value : Interfaces.Unsigned_32) return Interfaces.Unsigned_32;
-   pragma Import (Intrinsic, Sync_Sub_And_Fetch, "__sync_sub_and_fetch_4");
 
    function Aligned_Max_Length (Max_Length : Natural) return Natural;
    --  Returns recommended length of the shared string which is greater or
@@ -633,12 +623,10 @@ package body Ada.Strings.Unbounded is
 
    function Can_Be_Reused
      (Item   : Shared_String_Access;
-      Length : Natural) return Boolean
-   is
-      use Interfaces;
+      Length : Natural) return Boolean is
    begin
       return
-        Item.Counter = 1
+        System.Atomic_Counters.Is_One (Item.Counter)
           and then Item.Max_Length >= Length
           and then Item.Max_Length <=
                      Aligned_Max_Length (Length + Length / Growth_Factor);
@@ -1282,7 +1270,7 @@ package body Ada.Strings.Unbounded is
 
    procedure Reference (Item : not null Shared_String_Access) is
    begin
-      Sync_Add_And_Fetch (Item.Counter'Access, 1);
+      System.Atomic_Counters.Increment (Item.Counter);
    end Reference;
 
    ---------------------
@@ -2082,7 +2070,6 @@ package body Ada.Strings.Unbounded is
    -----------------
 
    procedure Unreference (Item : not null Shared_String_Access) is
-      use Interfaces;
 
       procedure Free is
         new Ada.Unchecked_Deallocation (Shared_String, Shared_String_Access);
@@ -2090,7 +2077,7 @@ package body Ada.Strings.Unbounded is
       Aux : Shared_String_Access := Item;
 
    begin
-      if Sync_Sub_And_Fetch (Aux.Counter'Access, 1) = 0 then
+      if System.Atomic_Counters.Decrement (Aux.Counter) then
 
          --  Reference counter of Empty_Shared_String must never reach zero
 
