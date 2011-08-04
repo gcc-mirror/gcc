@@ -1076,9 +1076,11 @@ package body Exp_Ch4 is
             --      (Collection, <Finalize_Address>'Unrestricted_Access)
 
             --  Since .NET/JVM compilers do not support address arithmetic,
-            --  this call is skipped.
+            --  this call is skipped. The same is done for CodePeer because
+            --  Finalize_Address is never generated.
 
             if VM_Target = No_VM
+              and then not CodePeer_Mode
               and then Present (Associated_Collection (PtrT))
             then
                Insert_Action (N,
@@ -3847,7 +3849,10 @@ package body Exp_Ch4 is
                      --    Set_Finalize_Address_Ptr
                      --      (Pool, <Finalize_Address>'Unrestricted_Access)
 
-                     else
+                     --  Do not generate the above for CodePeer compilations
+                     --  because Finalize_Address is never built.
+
+                     elsif not CodePeer_Mode then
                         Insert_Action (N,
                           Make_Set_Finalize_Address_Ptr_Call
                             (Loc     => Loc,

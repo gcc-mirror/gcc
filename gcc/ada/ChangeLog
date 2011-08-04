@@ -1,3 +1,12 @@
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Disable the generation of
+	Set_Finalize_Address_Ptr for CodePeer because Finalize_Address was not
+	built in the first place.
+	(Expand_N_Allocator): Disable the generation of Set_Finalize_Address_Ptr
+	for CodePeer because Finalize_Address was not built to begin with.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Ditto.
+
 2011-08-04  Pascal Obry  <obry@adacore.com>
 
 	* adaint.c (__gnat_tmp_name): Use current process id to create temp
