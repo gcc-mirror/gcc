@@ -1,3 +1,26 @@
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* makeutl.adb (Complete_Mains): when a multi-unit source file is
+	specified on the gprbuild command line, we need to compile all units
+	within that file, not just the first one we find
+	Fix error message for mains that are not found.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch6.adb: Update comment.
+	* sem_ch12.adb: Minor reformatting.
+
+2011-08-04  Bob Duff  <duff@adacore.com>
+
+	* s-tasren.adb (Task_Do_Or_Queue): Previous code was reading
+	Acceptor.Terminate_Alternative without locking Acceptor, which causes a
+	race condition whose symptom is to fail to lock Parent. That, in turn,
+	causes Parent.Awake_Count to be accessed without locking Parent, which
+	causes another race condition whose symptom is that Parent.Awake_Count
+	can be off by 1 (either too high or too low). The solution is to lock
+	Parent unconditionally, and then lock Acceptor, before reading
+	Acceptor.Terminate_Alternative.
+
 2011-08-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* debug.adb: Update comment.
