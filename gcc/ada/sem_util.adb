@@ -964,8 +964,7 @@ package body Sem_Util is
           Defining_Identifier => Elab_Ent,
           Object_Definition   =>
             New_Occurrence_Of (Standard_Short_Integer, Loc),
-          Expression          =>
-            Make_Integer_Literal (Loc, Uint_0));
+          Expression          => Make_Integer_Literal (Loc, Uint_0));
 
       Push_Scope (Standard_Standard);
       Add_Global_Declaration (Decl);

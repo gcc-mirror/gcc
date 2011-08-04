@@ -1,3 +1,24 @@
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb: Minor reformatting.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindgen.adb (Gen_Finalize_Library_Ada): Update the import string for
+	library-level finalizers.
+	(Gen_Finalize_Library_C): Update the import string for library-level
+	finalizers.
+	(Gen_Finalize_Library_Defs_C): Update the definition name of a
+	library-level finalizer.
+	* exp_ch7.adb: Remove with and use clauses for Stringt.
+	(Create_Finalizer): Remove local variables Conv_Name, Prag_Decl,
+	Spec_Decl. Add local variable Body_Id. The names of library-level
+	finalizers are now manually fully qualified and are no longer external.
+	A single name is now capable of servicing .NET, JVM and non-VM targets.
+	Pragma Export is no longer required to provide visibility for the name.
+	(Create_Finalizer_String): Removed.
+	(New_Finalizer_Name): New routine which mimics New_..._Name.
+
 2011-08-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_elab.adb (Check_Internal_Call_Continue): Change the type of the

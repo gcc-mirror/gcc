@@ -1688,13 +1688,16 @@ package body Bindgen is
             Write_Statement_Buffer;
 
             --  Generate:
-            --    pragma Import (CIL, F<Count>, "xx.yy_pkg.Finalize[B/S]");
+            --    pragma Import (CIL, F<Count>,
+            --                   "xx.yy_pkg.xx__yy__finalize_[body|spec]");
             --    --  for .NET targets
 
-            --    pragma Import (Java, F<Count>, "xx$yy.Finalize[B/S]");
+            --    pragma Import (Java, F<Count>,
+            --                   "xx$yy.xx__yy__finalize_[body|spec]");
             --    --  for JVM targets
 
-            --    pragma Import (Ada, F<Count>, "xx__yy__Finalize[B/S]");
+            --    pragma Import (Ada, F<Count>,
+            --                  "xx__yy__finalize_[body|spec]");
             --    --  for default targets
 
             if VM_Target = CLI_Target then
@@ -1723,36 +1726,35 @@ package body Bindgen is
 
             --  Perform name construction
 
-            --  .NET   xx.yy_pkg.finalize
+            --  .NET   xx.yy_pkg.xx__yy__finalize
 
             if VM_Target = CLI_Target then
                Set_Unit_Name (Mode => Dot);
-               Set_String ("_pkg.finalize");
+               Set_String ("_pkg.");
 
-            --  JVM   xx$yy.finalize
+            --  JVM   xx$yy.xx__yy__finalize
 
             elsif VM_Target = JVM_Target then
                Set_Unit_Name (Mode => Dollar_Sign);
-               Set_String (".finalize");
+               Set_Char ('.');
+            end if;
 
             --  Default   xx__yy__finalize
 
-            else
-               Set_Unit_Name;
-               Set_String ("__finalize");
-            end if;
+            Set_Unit_Name;
+            Set_String ("__finalize_");
 
             --  Package spec processing
 
             if U.Utype = Is_Spec
               or else U.Utype = Is_Spec_Only
             then
-               Set_Char ('S');
+               Set_String ("spec");
 
             --  Package body processing
 
             else
-               Set_Char ('B');
+               Set_String ("body");
             end if;
 
             Set_String (""");");
@@ -1895,12 +1897,12 @@ package body Bindgen is
 
             --    uname_E--;
             --    if (uname_E == 0)
-            --       uname__finalize[S|B] ();
+            --       uname__finalize_[spec|body] ();
 
             --  Otherwise, finalization routines are called unconditionally:
 
             --    uname_E--;
-            --    uname__finalize[S|B] ();
+            --    uname__finalize_[spec|body] ();
 
             Set_String ("   ");
             Set_Unit_Name;
@@ -1918,19 +1920,19 @@ package body Bindgen is
             Set_String ("   ");
             Get_Name_String (Uspec.Uname);
             Set_Unit_Name;
-            Set_String ("__finalize");
+            Set_String ("__finalize_");
 
             --  Package spec processing
 
             if U.Utype = Is_Spec
               or else U.Utype = Is_Spec_Only
             then
-               Set_Char ('S');
+               Set_String ("spec");
 
             --  Package body processing
 
             else
-               Set_Char ('B');
+               Set_String ("body");
             end if;
 
             Set_String (" ();");
@@ -1982,14 +1984,14 @@ package body Bindgen is
             Set_String ("extern void ");
             Get_Name_String (Uspec.Uname);
             Set_Unit_Name;
-            Set_String ("__finalize");
+            Set_String ("__finalize_");
 
             if U.Utype = Is_Spec
               or else U.Utype = Is_Spec_Only
             then
-               Set_Char ('S');
+               Set_String ("spec");
             else
-               Set_Char ('B');
+               Set_String ("body");
             end if;
 
             Set_String (" (void);");
