@@ -1,3 +1,11 @@
+2011-08-04  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/49968
+	* calls.c (expand_call): Use fixup_args_size_notes for
+	emit_stack_restore.
+	* expr.c (fixup_args_size_notes): Allow STACK_POINTER_REGNUM sets
+	in non-standard modes.
+
 2011-08-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (self_spec): New variable.
