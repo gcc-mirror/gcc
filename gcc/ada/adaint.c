@@ -1177,13 +1177,15 @@ __gnat_tmp_name (char *tmp_filename)
 #elif defined (__MINGW32__)
   {
     char *pname;
+    char prefix[25];
 
     /* tempnam tries to create a temporary file in directory pointed to by
        TMP environment variable, in c:\temp if TMP is not set, and in
        directory specified by P_tmpdir in stdio.h if c:\temp does not
        exist. The filename will be created with the prefix "gnat-".  */
 
-    pname = (char *) _tempnam ("c:\\temp", "gnat-");
+    sprintf (prefix, "gnat-%d-", (int)getpid());
+    pname = (char *) _tempnam ("c:\\temp", prefix);
 
     /* if pname is NULL, the file was not created properly, the disk is full
        or there is no more free temporary files */
