@@ -1,3 +1,8 @@
+2011-08-04  Geert Bosch  <bosch@adacore.com>
+
+	* urealp.adb (Equivalent_Decimal_Exponent): Avoid the use of floating
+	point.
+
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
 	* makeutl.adb (Compute_Builder_Switches): no longer accept a unit name
