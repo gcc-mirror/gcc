@@ -1622,10 +1622,14 @@ package body Make is
 
          if Operating_Mode = Check_Semantics then
             declare
-               File_Name : constant String := Get_Name_String (Source_File);
+               File_Name : String := Get_Name_String (Source_File);
                OK        : Boolean := False;
 
             begin
+               --  In the ALI file, the source file names are in canonical case
+
+               Canonical_Case_File_Name (File_Name);
+
                for U in ALIs.Table (ALI).First_Unit ..
                  ALIs.Table (ALI).Last_Unit
                loop
