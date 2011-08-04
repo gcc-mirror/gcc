@@ -2113,7 +2113,7 @@ package body GNAT.Command_Line is
      (Cmd        : in out Command_Line;
       Switch     : String;
       Parameter  : String    := "";
-      Separator  : Character := ' ';
+      Separator  : Character := ASCII.NUL;
       Section    : String    := "";
       Add_Before : Boolean   := False)
    is
@@ -2132,16 +2132,14 @@ package body GNAT.Command_Line is
      (Cmd        : in out Command_Line;
       Switch     : String;
       Parameter  : String := "";
-      Separator  : Character := ' ';
+      Separator  : Character := ASCII.NUL;
       Section    : String := "";
       Add_Before : Boolean := False;
       Success    : out Boolean)
    is
-      pragma Unreferenced (Separator);  --  ??? Should be removed eventually
-
       procedure Add_Simple_Switch
         (Simple    : String;
-         Separator : String;
+         Sepa      : String;
          Param     : String;
          Index     : Integer);
       --  Add a new switch that has had all its aliases expanded, and switches
@@ -2153,7 +2151,7 @@ package body GNAT.Command_Line is
 
       procedure Add_Simple_Switch
         (Simple    : String;
-         Separator : String;
+         Sepa      : String;
          Param     : String;
          Index     : Integer)
       is
@@ -2168,10 +2166,13 @@ package body GNAT.Command_Line is
               with "Invalid switch " & Simple;
          end if;
 
-         if Separator = "" then
+         if Separator /= ASCII.NUL then
+            Sep := Separator;
+
+         elsif Sepa = "" then
             Sep := ASCII.NUL;
          else
-            Sep := Separator (Separator'First);
+            Sep := Sepa (Sepa'First);
          end if;
 
          if Cmd.Expanded = null then
