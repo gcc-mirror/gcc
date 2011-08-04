@@ -1,3 +1,8 @@
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb, makeutl.adb, makeutl.ads (Compute_Builder_Switches): now
+	shared with gprbuild.
+
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
 	* par-ch4.adb (P_Primary): preferentially issue an error message about
