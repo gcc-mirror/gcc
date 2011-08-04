@@ -58,10 +58,11 @@ package Exp_Ch7 is
    --  the controlling operations.
 
    function Build_Object_Declarations
-     (Loc       : Source_Ptr;
-      Abort_Id  : Entity_Id;
-      E_Id      : Entity_Id;
-      Raised_Id : Entity_Id) return List_Id;
+     (Loc         : Source_Ptr;
+      Abort_Id    : Entity_Id;
+      E_Id        : Entity_Id;
+      Raised_Id   : Entity_Id;
+      For_Package : Boolean := False) return List_Id;
    --  Subsidiary to Make_Deep_Array_Body and Make_Deep_Record_Body. Return a
    --  list containing the object declarations of boolean flag Abort_Id, the
    --  exception occurrence E_Id and boolean flag Raised_Id.
@@ -70,7 +71,7 @@ package Exp_Ch7 is
    --                  Exception_Identity (Get_Current_Excep.all) =
    --                    Standard'Abort_Signal'Identity;
    --      <or>
-   --    Abort_Id  : constant Boolean := False;  --  no abort
+   --    Abort_Id  : constant Boolean := False;  --  no abort or For_Package
    --
    --    E_Id      : Exception_Occurrence;
    --    Raised_Id : Boolean := False;

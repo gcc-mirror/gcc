@@ -26,6 +26,7 @@
 --  Package containing utility procedures used throughout the semantics
 
 with Einfo;  use Einfo;
+with Exp_Tss; use Exp_Tss;
 with Namet;  use Namet;
 with Nmake;  use Nmake;
 with Snames; use Snames;
@@ -1376,6 +1377,16 @@ package Sem_Util is
 
    function Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Return the accessibility level of Typ
+
+   function Type_Without_Stream_Operation
+     (T : Entity_Id; Op : TSS_Name_Type := TSS_Null) return Entity_Id;
+   --  AI05-0161 : if the restriction No_Default_Stream_Attributes is active
+   --  then we cannot generate stream subprograms for composite types with
+   --  elementary subcomponents that lack user-defined stream subprograms.
+   --  This predicate determines whether a type has such an elementary
+   --  subcomponent. If Op is TSS_Null, a type that lacks either Read or Write
+   --  prevents the construction of a composite stream operation. If Op is
+   --  specified we check only for the given stream operation.
 
    function Unique_Defining_Entity (N : Node_Id) return Entity_Id;
    --  Return the entity which represents declaration N, so that matching

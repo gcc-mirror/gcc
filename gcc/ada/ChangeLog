@@ -1,3 +1,37 @@
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_unit.adb (Type_Without_Stream_Operation): determine
+	whether a type lacks user-defined Read or Write operations, or has a
+	component that lacks them.
+	* sem_attr.adb (Check_Stream_Attribute): if restriction
+	No_Default_Stream_Attributes is active, verify that all subcomponent
+	types of the target have user-defined stream operations, and report
+	error otherwise.
+	* exp_ch3.adb (Stream_Operqtion_OK): use Type_Without_Stream_Operation.
+	* exp_strm.adb: Build_Elementary_Input_Call,
+	Build_Elementary_Write_Call): remove checks for restriction
+	No_Default_Stream_Attributes, now checked in semantics.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.ads, prj-conf.adb (Do_Autoconf): If there is no --RTS
+	switches on the command line, look for all valid --RTS switches in the
+	Builder switches and for each language use the first runtime name found
+	to invoke gprconfig.
+	(Get_Or_Create_Configuration_File): Warn if --RTS is specified on the
+	command line and there is no auto-configuration.
+	(Runtime_Name_Set_For): New function.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Build_Object_Declarations): Do not generate the
+	elaborate initialization expression for variable Abort when processing
+	a package body or a declaration.
+	(Create_Finalizer): Propagate the package context when creating the
+	exception-related variables.
+	* exp_ch7.ads (Build_Object_Declarations): New formal parameter
+	For_Package along with usage comment.
+
 2011-08-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in: Clean up targets.

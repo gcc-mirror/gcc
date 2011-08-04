@@ -25,14 +25,11 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
-with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Util; use Sem_Util;
@@ -475,18 +472,6 @@ package body Exp_Strm is
       Lib_RE  : RE_Id;
 
    begin
-      Check_Restriction (No_Default_Stream_Attributes, N);
-
-      --  Are we sure following messages are issued in -gnatc mode ???
-
-      if Restriction_Active (No_Default_Stream_Attributes) then
-         Error_Msg_NE
-           ("missing user-defined Input for type&", N, Etype (Targ));
-         if Nkind (Targ) = N_Selected_Component then
-            Error_Msg_NE
-              ("\which is a component of type&", N, Etype (Prefix (Targ)));
-         end if;
-      end if;
 
       --  Check first for Boolean and Character. These are enumeration types,
       --  but we treat them specially, since they may require special handling
@@ -696,16 +681,6 @@ package body Exp_Strm is
       Libent  : Entity_Id;
 
    begin
-      Check_Restriction (No_Default_Stream_Attributes, N);
-
-      if Restriction_Active (No_Default_Stream_Attributes) then
-         Error_Msg_NE
-           ("missing user-defined Write for type&", N, Etype (Item));
-         if Nkind (Item) = N_Selected_Component then
-            Error_Msg_NE
-              ("\which is a component of type&", N, Etype (Prefix (Item)));
-         end if;
-      end if;
 
       --  Compute the size of the stream element. This is either the size of
       --  the first subtype or if given the size of the Stream_Size attribute.
