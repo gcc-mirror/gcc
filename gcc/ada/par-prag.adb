@@ -358,42 +358,16 @@ begin
       -- Debug --
       -----------
 
-      --  pragma Debug (PROCEDURE_CALL_STATEMENT);
+      --  pragma Debug ([boolean_EXPRESSION,] PROCEDURE_CALL_STATEMENT);
 
-      --  This has to be processed by the parser because of the very peculiar
-      --  form of the second parameter, which is syntactically from a formal
-      --  point of view a function call (since it must be an expression), but
-      --  semantically we treat it as a procedure call (which has exactly the
-      --  same syntactic form, so that's why we can get away with this!)
+      when Pragma_Debug =>
+         Check_No_Identifier (Arg1);
 
-      when Pragma_Debug => Debug : declare
-         Expr : Node_Id;
-
-      begin
          if Arg_Count = 2 then
-            Check_No_Identifier (Arg1);
             Check_No_Identifier (Arg2);
-            Expr := New_Copy (Expression (Arg2));
-
          else
             Check_Arg_Count (1);
-            Check_No_Identifier (Arg1);
-            Expr := New_Copy (Expression (Arg1));
          end if;
-
-         if Nkind (Expr) /= N_Indexed_Component
-           and then Nkind (Expr) /= N_Function_Call
-           and then Nkind (Expr) /= N_Identifier
-           and then Nkind (Expr) /= N_Selected_Component
-         then
-            Error_Msg
-              ("argument of pragma% is not procedure call", Sloc (Expr));
-            raise Error_Resync;
-         else
-            Set_Debug_Statement
-              (Pragma_Node, P_Statement_Name (Expr));
-         end if;
-      end Debug;
 
       -------------------------------
       -- Extensions_Allowed (GNAT) --

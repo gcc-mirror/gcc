@@ -388,14 +388,12 @@ package body Tbuild is
    function Make_Pragma
      (Sloc                         : Source_Ptr;
       Chars                        : Name_Id;
-      Pragma_Argument_Associations : List_Id := No_List;
-      Debug_Statement              : Node_Id := Empty) return Node_Id
+      Pragma_Argument_Associations : List_Id := No_List) return Node_Id
    is
    begin
       return
         Make_Pragma (Sloc,
           Pragma_Argument_Associations => Pragma_Argument_Associations,
-          Debug_Statement              => Debug_Statement,
           Pragma_Identifier            => Make_Identifier (Sloc, Chars));
    end Make_Pragma;
 

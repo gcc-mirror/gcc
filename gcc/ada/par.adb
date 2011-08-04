@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -722,10 +722,6 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
       function P_Loop_Parameter_Specification return Node_Id;
       --  Used in loop constructs and quantified expressions.
-
-      function P_Statement_Name (Name_Node : Node_Id) return Node_Id;
-      --  Given a node representing a name (which is a call), converts it
-      --  to the syntactically corresponding procedure call statement.
 
       function P_Sequence_Of_Statements (SS_Flags : SS_Rec) return List_Id;
       --  The argument indicates the acceptable termination tokens.

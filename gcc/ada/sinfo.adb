@@ -661,14 +661,6 @@ package body Sinfo is
       return Node5 (N);
    end Dcheck_Function;
 
-   function Debug_Statement
-      (N : Node_Id) return Node_Id is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Pragma);
-      return Node3 (N);
-   end Debug_Statement;
-
    function Declarations
       (N : Node_Id) return List_Id is
    begin
@@ -3711,14 +3703,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Variant);
       Set_Node5 (N, Val); -- semantic field, no parent set
    end Set_Dcheck_Function;
-
-   procedure Set_Debug_Statement
-      (N : Node_Id; Val : Node_Id) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Pragma);
-      Set_Node3_With_Parent (N, Val);
-   end Set_Debug_Statement;
 
    procedure Set_Declarations
       (N : Node_Id; Val : List_Id) is

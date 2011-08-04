@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@
 
 with System.Powten_Table; use System.Powten_Table;
 with System.Val_Util;     use System.Val_Util;
+with System.Float_Control;
 
 package body System.Val_Real is
 
@@ -43,14 +44,6 @@ package body System.Val_Real is
       Ptr : not null access Integer;
       Max : Integer) return Long_Long_Float
    is
-      procedure Reset;
-      pragma Import (C, Reset, "__gnat_init_float");
-      --  We import the floating-point processor reset routine so that we can
-      --  be sure the floating-point processor is properly set for conversion
-      --  calls (see description of Reset in GNAT.Float_Control (g-flocon.ads).
-      --  This is notably need on Windows, where calls to the operating system
-      --  randomly reset the processor into 64-bit mode.
-
       P : Integer;
       --  Local copy of string pointer
 
@@ -173,7 +166,13 @@ package body System.Val_Real is
    --  Start of processing for System.Scan_Real
 
    begin
-      Reset;
+      --  We call the floating-point processor reset routine so that we can
+      --  be sure the floating-point processor is properly set for conversion
+      --  calls. This is notably need on Windows, where calls to the operating
+      --  system randomly reset the processor into 64-bit mode.
+
+      System.Float_Control.Reset;
+
       Scan_Sign (Str, Ptr, Max, Minus, Start);
       P := Ptr.all;
       Ptr.all := Start;

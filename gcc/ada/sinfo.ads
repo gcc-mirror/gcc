@@ -764,15 +764,6 @@ package Sinfo is
    --    This field is present in an N_Variant node, It references the entity
    --    for the discriminant checking function for the variant.
 
-   --  Debug_Statement (Node3)
-   --    This field is present in an N_Pragma node. It is used only for a Debug
-   --    pragma. The parameter is of the form of an expression, as required by
-   --    the pragma syntax, but is actually a procedure call. To simplify
-   --    semantic processing, the parser creates a copy of the argument
-   --    rearranged into a procedure call statement and places it in the
-   --    Debug_Statement field. Note that this field is considered syntactic
-   --    field, since it is created by the parser.
-
    --  Default_Expression (Node5-Sem)
    --    This field is Empty if there is no default expression. If there is a
    --    simple default expression (one with no side effects), then this field
@@ -2069,7 +2060,6 @@ package Sinfo is
       --  Sloc points to PRAGMA
       --  Next_Pragma (Node1-Sem)
       --  Pragma_Argument_Associations (List2) (set to No_List if none)
-      --  Debug_Statement (Node3) (set to Empty if not Debug)
       --  Pragma_Identifier (Node4)
       --  Next_Rep_Item (Node5-Sem)
       --  Pragma_Enabled (Flag5-Sem)
@@ -8201,9 +8191,6 @@ package Sinfo is
    function Dcheck_Function
      (N : Node_Id) return Entity_Id;  -- Node5
 
-   function Debug_Statement
-     (N : Node_Id) return Node_Id;    -- Node3
-
    function Declarations
      (N : Node_Id) return List_Id;    -- List2
 
@@ -9173,9 +9160,6 @@ package Sinfo is
    procedure Set_Dcheck_Function
      (N : Node_Id; Val : Entity_Id);          -- Node5
 
-   procedure Set_Debug_Statement
-     (N : Node_Id; Val : Node_Id);            -- Node3
-
    procedure Set_Declarations
      (N : Node_Id; Val : List_Id);            -- List2
 
@@ -10105,7 +10089,7 @@ package Sinfo is
      N_Pragma =>
        (1 => False,   --  Next_Pragma (Node1-Sem)
         2 => True,    --  Pragma_Argument_Associations (List2)
-        3 => True,    --  Debug_Statement (Node3)
+        3 => False,   --  unused
         4 => True,    --  Pragma_Identifier (Node4)
         5 => False),  --  Next_Rep_Item (Node5-Sem)
 
@@ -11732,7 +11716,6 @@ package Sinfo is
    pragma Inline (Corresponding_Spec);
    pragma Inline (Corresponding_Stub);
    pragma Inline (Dcheck_Function);
-   pragma Inline (Debug_Statement);
    pragma Inline (Declarations);
    pragma Inline (Default_Expression);
    pragma Inline (Default_Storage_Pool);
@@ -12053,7 +12036,6 @@ package Sinfo is
    pragma Inline (Set_Corresponding_Spec);
    pragma Inline (Set_Corresponding_Stub);
    pragma Inline (Set_Dcheck_Function);
-   pragma Inline (Set_Debug_Statement);
    pragma Inline (Set_Declarations);
    pragma Inline (Set_Default_Expression);
    pragma Inline (Set_Default_Storage_Pool);

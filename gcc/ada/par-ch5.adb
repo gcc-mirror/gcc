@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,8 +24,10 @@
 ------------------------------------------------------------------------------
 
 pragma Style_Checks (All_Checks);
---  Turn off subprogram body ordering check. Subprograms are in order
---  by RM section rather than alphabetical
+--  Turn off subprogram body ordering check. Subprograms are in order by RM
+--  section rather than alphabetical.
+
+with Sinfo.CN; use Sinfo.CN;
 
 separate (Par)
 package body Ch5 is
@@ -499,8 +501,8 @@ package body Ch5 is
                   --  we want to speed up as much as possible.
 
                   elsif Token = Tok_Semicolon then
-                     Append_To (Statement_List,
-                       P_Statement_Name (Id_Node));
+                     Change_Name_To_Procedure_Call_Statement (Id_Node);
+                     Append_To (Statement_List, Id_Node);
                      Scan; -- past semicolon
                      Statement_Required := False;
 
@@ -652,8 +654,8 @@ package body Ch5 is
                      --  means that the item we just scanned was a call.
 
                      elsif Token = Tok_Semicolon then
-                        Append_To (Statement_List,
-                          P_Statement_Name (Name_Node));
+                        Change_Name_To_Procedure_Call_Statement (Name_Node);
+                        Append_To (Statement_List, Name_Node);
                         Scan; -- past semicolon
                         Statement_Required := False;
 
@@ -727,8 +729,8 @@ package body Ch5 is
                         --  call with no parameters.
 
                         if Token_Is_At_Start_Of_Line then
-                           Append_To (Statement_List,
-                             P_Statement_Name (Id_Node));
+                           Change_Name_To_Procedure_Call_Statement (Id_Node);
+                           Append_To (Statement_List, Id_Node);
                            T_Semicolon; -- to give error message
                            Statement_Required := False;
 
@@ -769,8 +771,8 @@ package body Ch5 is
                      Append_To (Statement_List,
                        P_Assignment_Statement (Name_Node));
                   else
-                     Append_To (Statement_List,
-                       P_Statement_Name (Name_Node));
+                     Change_Name_To_Procedure_Call_Statement (Name_Node);
+                     Append_To (Statement_List, Name_Node);
                   end if;
 
                   TF_Semicolon;
@@ -953,68 +955,6 @@ package body Ch5 is
    --------------------
    -- 5.1  Statement --
    --------------------
-
-   --  Parsed by P_Sequence_Of_Statements (5.1), except for the case
-   --  of a statement of the form of a name, which is handled here. The
-   --  argument passed in is the tree for the name which has been scanned
-   --  The returned value is the corresponding statement form.
-
-   --  This routine is also used by Par.Prag for processing the procedure
-   --  call that appears as the second argument of a pragma Assert.
-
-   --  Error recovery: cannot raise Error_Resync
-
-   function P_Statement_Name (Name_Node : Node_Id) return Node_Id is
-      Stmt_Node : Node_Id;
-
-   begin
-      --  Case of Indexed component, which is a procedure call with arguments
-
-      if Nkind (Name_Node) = N_Indexed_Component then
-         declare
-            Prefix_Node : constant Node_Id := Prefix (Name_Node);
-            Exprs_Node  : constant List_Id := Expressions (Name_Node);
-
-         begin
-            Change_Node (Name_Node, N_Procedure_Call_Statement);
-            Set_Name (Name_Node, Prefix_Node);
-            Set_Parameter_Associations (Name_Node, Exprs_Node);
-            return Name_Node;
-         end;
-
-      --  Case of function call node, which is a really a procedure call
-
-      elsif Nkind (Name_Node) = N_Function_Call then
-         declare
-            Fname_Node  : constant Node_Id := Name (Name_Node);
-            Params_List : constant List_Id :=
-                            Parameter_Associations (Name_Node);
-
-         begin
-            Change_Node (Name_Node, N_Procedure_Call_Statement);
-            Set_Name (Name_Node, Fname_Node);
-            Set_Parameter_Associations (Name_Node, Params_List);
-            return Name_Node;
-         end;
-
-      --  Case of call to attribute that denotes a procedure. Here we
-      --  just leave the attribute reference unchanged.
-
-      elsif Nkind (Name_Node) = N_Attribute_Reference
-        and then Is_Procedure_Attribute_Name (Attribute_Name (Name_Node))
-      then
-         return Name_Node;
-
-      --  All other cases of names are parameterless procedure calls
-
-      else
-         Stmt_Node :=
-           New_Node (N_Procedure_Call_Statement, Sloc (Name_Node));
-         Set_Name (Stmt_Node, Name_Node);
-         return Stmt_Node;
-      end if;
-
-   end P_Statement_Name;
 
    ---------------------------
    -- 5.1  Simple Statement --

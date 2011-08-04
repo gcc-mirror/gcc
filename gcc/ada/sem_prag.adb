@@ -7430,7 +7430,8 @@ package body Sem_Prag is
          --  pragma Debug ([boolean_EXPRESSION,] PROCEDURE_CALL_STATEMENT);
 
          when Pragma_Debug => Debug : declare
-               Cond : Node_Id;
+            Cond : Node_Id;
+            Call : Node_Id;
 
          begin
             GNAT_Pragma;
@@ -7443,8 +7444,39 @@ package body Sem_Prag is
             if Arg_Count = 2 then
                Cond :=
                  Make_And_Then (Loc,
-                   Left_Opnd   => Relocate_Node (Cond),
-                   Right_Opnd  => Get_Pragma_Arg (Arg1));
+                   Left_Opnd  => Relocate_Node (Cond),
+                   Right_Opnd => Get_Pragma_Arg (Arg1));
+               Call := Get_Pragma_Arg (Arg2);
+            else
+               Call := Get_Pragma_Arg (Arg1);
+            end if;
+
+            if Nkind_In (Call,
+                 N_Indexed_Component,
+                 N_Function_Call,
+                 N_Identifier,
+                 N_Selected_Component)
+            then
+               --  If this pragma Debug comes from source, its argument was
+               --  parsed as a name form (which is syntactically identical).
+               --  Change it to a procedure call statement now.
+
+               Change_Name_To_Procedure_Call_Statement (Call);
+
+            elsif Nkind (Call) = N_Procedure_Call_Statement then
+
+               --  Already in the form of a procedure call statement: nothing
+               --  to do (could happen in case of an internally generated
+               --  pragma Debug).
+
+               null;
+
+            else
+               --  All other cases: diagnose error
+
+               Error_Msg
+                 ("argument of pragma% is not procedure call", Sloc (Call));
+               return;
             end if;
 
             --  Rewrite into a conditional with an appropriate condition. We
@@ -7458,8 +7490,7 @@ package body Sem_Prag is
                    Make_Block_Statement (Loc,
                      Handled_Statement_Sequence =>
                        Make_Handled_Sequence_Of_Statements (Loc,
-                         Statements => New_List (
-                           Relocate_Node (Debug_Statement (N))))))));
+                         Statements => New_List (Relocate_Node (Call)))))));
             Analyze (N);
          end Debug;
 

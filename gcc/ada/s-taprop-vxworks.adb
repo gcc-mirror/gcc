@@ -46,6 +46,7 @@ with Interfaces.C;
 with System.Multiprocessors;
 with System.Tasking.Debug;
 with System.Interrupt_Management;
+with System.Float_Control;
 
 with System.Soft_Links;
 --  We use System.Soft_Links instead of System.Tasking.Initialization
@@ -793,10 +794,6 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Enter_Task (Self_ID : Task_Id) is
-      procedure Init_Float;
-      pragma Import (C, Init_Float, "__gnat_init_float");
-      --  Properly initializes the FPU for PPC/MIPS systems
-
    begin
       --  Store the user-level task id in the Thread field (to be used
       --  internally by the run-time system) and the kernel-level task id in
@@ -807,7 +804,9 @@ package body System.Task_Primitives.Operations is
 
       Specific.Set (Self_ID);
 
-      Init_Float;
+      --  Properly initializes the FPU for PPC/MIPS systems
+
+      System.Float_Control.Reset;
 
       --  Install the signal handlers
 

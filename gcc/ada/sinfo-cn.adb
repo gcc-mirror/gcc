@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,8 @@
 --  general manner, but in some specific cases, the fields of related nodes
 --  have been deliberately layed out in a manner that permits such alteration.
 
-with Atree; use Atree;
+with Atree;  use Atree;
+with Snames; use Snames;
 
 package body Sinfo.CN is
 
@@ -73,6 +74,58 @@ package body Sinfo.CN is
       Set_Nkind (N, N_Defining_Identifier);
       N := Extend_Node (N);
    end Change_Identifier_To_Defining_Identifier;
+
+   ---------------------------------------------
+   -- Change_Name_To_Procedure_Call_Statement --
+   ---------------------------------------------
+
+   procedure Change_Name_To_Procedure_Call_Statement (N : Node_Id) is
+   begin
+      --  Case of Indexed component, which is a procedure call with arguments
+
+      if Nkind (N) = N_Indexed_Component then
+         declare
+            Prefix_Node : constant Node_Id := Prefix (N);
+            Exprs_Node  : constant List_Id := Expressions (N);
+
+         begin
+            Change_Node (N, N_Procedure_Call_Statement);
+            Set_Name (N, Prefix_Node);
+            Set_Parameter_Associations (N, Exprs_Node);
+         end;
+
+      --  Case of function call node, which is a really a procedure call
+
+      elsif Nkind (N) = N_Function_Call then
+         declare
+            Fname_Node  : constant Node_Id := Name (N);
+            Params_List : constant List_Id := Parameter_Associations (N);
+
+         begin
+            Change_Node (N, N_Procedure_Call_Statement);
+            Set_Name (N, Fname_Node);
+            Set_Parameter_Associations (N, Params_List);
+         end;
+
+      --  Case of call to attribute that denotes a procedure. Here we just
+      --  leave the attribute reference unchanged.
+
+      elsif Nkind (N) = N_Attribute_Reference
+        and then Is_Procedure_Attribute_Name (Attribute_Name (N))
+      then
+         null;
+
+      --  All other cases of names are parameterless procedure calls
+
+      else
+         declare
+            Name_Node : constant Node_Id := Relocate_Node (N);
+         begin
+            Change_Node (N, N_Procedure_Call_Statement);
+            Set_Name (N, Name_Node);
+         end;
+      end if;
+   end Change_Name_To_Procedure_Call_Statement;
 
    --------------------------------------------------------
    -- Change_Operator_Symbol_To_Defining_Operator_Symbol --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -150,8 +150,7 @@ package Tbuild is
    function Make_Pragma
      (Sloc                         : Source_Ptr;
       Chars                        : Name_Id;
-      Pragma_Argument_Associations : List_Id := No_List;
-      Debug_Statement              : Node_Id := Empty) return Node_Id;
+      Pragma_Argument_Associations : List_Id := No_List) return Node_Id;
    --  A convenient form of Make_Pragma not requiring a Pragma_Identifier
    --  argument (this argument is built from the value given for Chars).
 
