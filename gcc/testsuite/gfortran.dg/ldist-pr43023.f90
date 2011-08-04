@@ -29,3 +29,5 @@ end do
 END SUBROUTINE NFT_Init
 
 END MODULE NFT_mod
+
+! { dg-final { cleanup-modules "nft_mod" } }
