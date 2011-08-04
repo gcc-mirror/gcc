@@ -1626,7 +1626,7 @@ Other library-related attributes can be used to change the defaults:
 
 @item @b{Library_Options}:
 @cindex @code{Library_Options}
-  This attribute may be used to specified additional switches (last switches)
+  This attribute may be used to specify additional switches (last switches)
   when linking a shared library.
 
 @item @b{Leading_Library_Options}:

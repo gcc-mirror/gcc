@@ -2406,14 +2406,6 @@ package body Sinfo is
       return List2 (N);
    end Pragma_Argument_Associations;
 
-   function Pragma_Enabled
-     (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Pragma);
-      return Flag5 (N);
-   end Pragma_Enabled;
-
    function Pragma_Identifier
       (N : Node_Id) return Node_Id is
    begin
@@ -5439,14 +5431,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Pragma);
       Set_List2_With_Parent (N, Val);
    end Set_Pragma_Argument_Associations;
-
-   procedure Set_Pragma_Enabled
-     (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Pragma);
-      Set_Flag5 (N, Val);
-   end Set_Pragma_Enabled;
 
    procedure Set_Pragma_Identifier
       (N : Node_Id; Val : Node_Id) is

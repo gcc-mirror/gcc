@@ -2696,6 +2696,15 @@ package body Exp_Util is
             then
                return True;
 
+            elsif Is_Access_Type (Obj_Typ)
+              and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
+              and then Nkind (Return_Flag_Or_Transient_Decl (Obj_Id)) =
+                         N_Object_Declaration
+              and then Is_Finalizable_Transient
+                         (Return_Flag_Or_Transient_Decl (Obj_Id), Decl)
+            then
+               return True;
+
             --  Simple protected objects which use type System.Tasking.
             --  Protected_Objects.Protection to manage their locks should be
             --  treated as controlled since they require manual cleanup.
@@ -2732,7 +2741,7 @@ package body Exp_Util is
 
             elsif Needs_Finalization (Obj_Typ)
               and then Is_Return_Object (Obj_Id)
-              and then Present (Return_Flag (Obj_Id))
+              and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
             then
                return True;
             end if;

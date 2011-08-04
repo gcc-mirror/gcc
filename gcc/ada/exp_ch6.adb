@@ -4649,7 +4649,7 @@ package body Exp_Ch6 is
             --  Create a flag to track the function state
 
             Flag_Id := Make_Temporary (Loc, 'F');
-            Set_Return_Flag (Ret_Obj_Id, Flag_Id);
+            Set_Return_Flag_Or_Transient_Decl (Ret_Obj_Id, Flag_Id);
 
             --  Insert the flag at the beginning of the function declarations,
             --  generate:
@@ -4713,8 +4713,8 @@ package body Exp_Ch6 is
            and then Needs_Finalization (Etype (Ret_Obj_Id))
          then
             declare
-               Flag_Id : constant Entity_Id := Return_Flag (Ret_Obj_Id);
-
+               Flag_Id : constant Entity_Id :=
+                           Return_Flag_Or_Transient_Decl (Ret_Obj_Id);
             begin
                --  Generate:
                --    Fnn := True;

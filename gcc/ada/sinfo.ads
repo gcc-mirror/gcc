@@ -1587,12 +1587,6 @@ package Sinfo is
    --    package specification. This field is Empty for library bodies (the
    --    parent spec in this case can be found from the corresponding spec).
 
-   --  Pragma_Enabled (Flag5-Sem)
-   --    Present in N_Pragma nodes. This flag is relevant only for pragmas
-   --    Assert, Check, Precondition, and Postcondition. It is true if the
-   --    check corresponding to the pragma type is enabled at the point where
-   --    the pragma appears.
-
    --  Present_Expr (Uint3-Sem)
    --    Present in an N_Variant node. This has a meaningful value only after
    --    Gigi has back annotated the tree with representation information. At
@@ -2062,7 +2056,6 @@ package Sinfo is
       --  Pragma_Argument_Associations (List2) (set to No_List if none)
       --  Pragma_Identifier (Node4)
       --  Next_Rep_Item (Node5-Sem)
-      --  Pragma_Enabled (Flag5-Sem)
       --  From_Aspect_Specification (Flag13-Sem)
       --  Is_Delayed_Aspect (Flag14-Sem)
       --  Import_Interface_Present (Flag16-Sem)
@@ -8734,9 +8727,6 @@ package Sinfo is
    function Pragma_Argument_Associations
      (N : Node_Id) return List_Id;    -- List2
 
-   function Pragma_Enabled
-     (N : Node_Id) return Boolean;    -- Flag5
-
    function Pragma_Identifier
      (N : Node_Id) return Node_Id;    -- Node4
 
@@ -9699,9 +9689,6 @@ package Sinfo is
 
    procedure Set_Pragma_Argument_Associations
      (N : Node_Id; Val : List_Id);            -- List2
-
-   procedure Set_Pragma_Enabled
-     (N : Node_Id; Val : Boolean := True);    -- Flag5
 
    procedure Set_Pragma_Identifier
      (N : Node_Id; Val : Node_Id);            -- Node4
@@ -11897,7 +11884,6 @@ package Sinfo is
    pragma Inline (Parent_Spec);
    pragma Inline (Position);
    pragma Inline (Pragma_Argument_Associations);
-   pragma Inline (Pragma_Enabled);
    pragma Inline (Pragma_Identifier);
    pragma Inline (Pragmas_After);
    pragma Inline (Pragmas_Before);
@@ -12216,7 +12202,6 @@ package Sinfo is
    pragma Inline (Set_Parent_Spec);
    pragma Inline (Set_Position);
    pragma Inline (Set_Pragma_Argument_Associations);
-   pragma Inline (Set_Pragma_Enabled);
    pragma Inline (Set_Pragma_Identifier);
    pragma Inline (Set_Pragmas_After);
    pragma Inline (Set_Pragmas_Before);

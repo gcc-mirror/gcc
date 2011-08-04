@@ -4302,6 +4302,126 @@ package body Exp_Ch4 is
       Insert_Dereference_Action (Prefix (N));
    end Expand_N_Explicit_Dereference;
 
+   --------------------------------------
+   -- Expand_N_Expression_With_Actions --
+   --------------------------------------
+
+   procedure Expand_N_Expression_With_Actions (N : Node_Id) is
+
+      procedure Process_Transient_Object (Decl : Node_Id);
+      --  Given the declaration of a controlled transient declared inside the
+      --  Actions list of an Expression_With_Actions, generate all necessary
+      --  types and hooks in order to properly finalize the transient. This
+      --  mechanism works in conjunction with Build_Finalizer.
+
+      ------------------------------
+      -- Process_Transient_Object --
+      ------------------------------
+
+      procedure Process_Transient_Object (Decl : Node_Id) is
+         Ins_Nod   : constant Node_Id    := Parent (N);
+         --  To avoid the insertion of generated code in the list of Actions,
+         --  Insert_Action must look at the parent field of the EWA.
+
+         Loc       : constant Source_Ptr := Sloc (Decl);
+         Obj_Id    : constant Entity_Id  := Defining_Identifier (Decl);
+         Obj_Typ   : constant Entity_Id  := Etype (Obj_Id);
+         Desig_Typ : Entity_Id;
+         Expr      : Node_Id;
+         Ptr_Decl  : Node_Id;
+         Ptr_Id    : Entity_Id;
+         Temp_Decl : Node_Id;
+         Temp_Id   : Node_Id;
+
+      begin
+         --  Step 1: Create the access type which provides a reference to
+         --  the transient object.
+
+         if Is_Access_Type (Obj_Typ) then
+            Desig_Typ := Directly_Designated_Type (Obj_Typ);
+         else
+            Desig_Typ := Obj_Typ;
+         end if;
+
+         --  Generate:
+         --    Ann : access [all] <Desig_Typ>;
+
+         Ptr_Id := Make_Temporary (Loc, 'A');
+
+         Ptr_Decl :=
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier => Ptr_Id,
+               Type_Definition =>
+                 Make_Access_To_Object_Definition (Loc,
+                   All_Present =>
+                     Ekind (Obj_Typ) = E_General_Access_Type,
+                   Subtype_Indication =>
+                     New_Reference_To (Desig_Typ, Loc)));
+
+         Insert_Action (Ins_Nod, Ptr_Decl);
+         Analyze (Ptr_Decl);
+
+         --  Step 2: Create a temporary which acts as a hook to the transient
+         --  object. Generate:
+
+         --    Temp : Ptr_Id := null;
+
+         Temp_Id := Make_Temporary (Loc, 'T');
+
+         Temp_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Temp_Id,
+             Object_Definition   => New_Reference_To (Ptr_Id, Loc));
+
+         Insert_Action (Ins_Nod, Temp_Decl);
+         Analyze (Temp_Decl);
+
+         --  Mark this temporary as created for the purposes of "exporting" the
+         --  transient declaration out of the Actions list. This signals the
+         --  machinery in Build_Finalizer to recognize this special case.
+
+         Set_Return_Flag_Or_Transient_Decl (Temp_Id, Decl);
+
+         --  Step 3: "Hook" the transient object to the temporary
+
+         if Is_Access_Type (Obj_Typ) then
+            Expr := Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
+         else
+            Expr :=
+              Make_Attribute_Reference (Loc,
+                Prefix =>
+                  New_Reference_To (Obj_Id, Loc),
+                Attribute_Name => Name_Unrestricted_Access);
+         end if;
+
+         --  Generate:
+         --    Temp := Ptr_Id (Obj_Id);
+         --      <or>
+         --    Temp := Obj_Id'Unrestricted_Access;
+
+         Insert_After_And_Analyze (Decl,
+           Make_Assignment_Statement (Loc,
+             Name       => New_Reference_To (Temp_Id, Loc),
+             Expression => Expr));
+      end Process_Transient_Object;
+
+      Decl : Node_Id;
+
+   --  Start of processing for Expand_N_Expression_With_Actions
+
+   begin
+      Decl := First (Actions (N));
+      while Present (Decl) loop
+         if Nkind (Decl) = N_Object_Declaration
+           and then Is_Finalizable_Transient (Decl, N)
+         then
+            Process_Transient_Object (Decl);
+         end if;
+
+         Next (Decl);
+      end loop;
+   end Expand_N_Expression_With_Actions;
+
    -----------------
    -- Expand_N_In --
    -----------------

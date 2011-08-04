@@ -466,10 +466,12 @@ package body Par_SCO is
 
                Loc := Sloc (Parent (Parent (N)));
 
-               --  Record sloc of pragma (pragmas don't nest)
+               if T = 'P' then
+                  --  Record sloc of pragma (pragmas don't nest)
 
-               pragma Assert (Pragma_Sloc = No_Location);
-               Pragma_Sloc := Loc;
+                  pragma Assert (Pragma_Sloc = No_Location);
+                  Pragma_Sloc := Loc;
+               end if;
 
             when 'X' =>
 

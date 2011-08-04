@@ -1785,6 +1785,15 @@ package body Exp_Ch7 is
                then
                   Processing_Actions (Has_No_Init => True);
 
+               elsif Is_Access_Type (Obj_Typ)
+                 and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
+                 and then Nkind (Return_Flag_Or_Transient_Decl (Obj_Id)) =
+                                   N_Object_Declaration
+                 and then Is_Finalizable_Transient
+                            (Return_Flag_Or_Transient_Decl (Obj_Id), Decl)
+               then
+                  Processing_Actions (Has_No_Init => True);
+
                --  Simple protected objects which use type System.Tasking.
                --  Protected_Objects.Protection to manage their locks should
                --  be treated as controlled since they require manual cleanup.
@@ -1850,7 +1859,7 @@ package body Exp_Ch7 is
 
                elsif Needs_Finalization (Obj_Typ)
                  and then Is_Return_Object (Obj_Id)
-                 and then Present (Return_Flag (Obj_Id))
+                 and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
                then
                   Processing_Actions (Has_No_Init => True);
                end if;
@@ -2517,25 +2526,69 @@ package body Exp_Ch7 is
                end;
             end if;
 
-            --  Return objects use a flag to aid their potential finalization
-            --  then the enclosing function fails to return properly. Generate:
-            --
-            --    if not Flag then
-            --       <object finalization statements>
-            --    end if;
-
             if Ekind_In (Obj_Id, E_Constant, E_Variable)
-              and then Is_Return_Object (Obj_Id)
-              and then Present (Return_Flag (Obj_Id))
+              and then Present (Return_Flag_Or_Transient_Decl (Obj_Id))
             then
-               Fin_Stmts := New_List (
-                 Make_If_Statement (Loc,
-                   Condition     =>
-                     Make_Op_Not (Loc,
-                       Right_Opnd =>
-                         New_Reference_To (Return_Flag (Obj_Id), Loc)),
+               --  Return objects use a flag to aid their potential
+               --  finalization when the enclosing function fails to return
+               --  properly. Generate:
+               --
+               --    if not Flag then
+               --       <object finalization statements>
+               --    end if;
 
-                 Then_Statements => Fin_Stmts));
+               if Is_Return_Object (Obj_Id) then
+                  Fin_Stmts := New_List (
+                    Make_If_Statement (Loc,
+                      Condition     =>
+                        Make_Op_Not (Loc,
+                          Right_Opnd =>
+                            New_Reference_To
+                              (Return_Flag_Or_Transient_Decl (Obj_Id), Loc)),
+
+                    Then_Statements => Fin_Stmts));
+
+               --  Temporaries created for the purpose of "exporting" a
+               --  controlled transient out of an Expression_With_Actions (EWA)
+               --  need guards. The following illustrates the usage of such
+               --  temporaries.
+
+               --    Access_Typ : access [all] Obj_Typ;
+               --    Temp       : Access_Typ := null;
+               --    <Counter>  := ...;
+
+               --    do
+               --       Ctrl_Trans : [access [all]] Obj_Typ := ...;
+               --       Temp := Access_Typ (Ctrl_Trans);  --  when a pointer
+               --         <or>
+               --       Temp := Ctrl_Trans'Unchecked_Access;
+               --    in ... end;
+
+               --  The finalization machinery does not process EWA nodes as
+               --  this may lead to premature finalization of expressions. Note
+               --  that Temp is marked as being properly initialized regardless
+               --  of whether the initialization of Ctrl_Trans succeeded. Since
+               --  a failed initialization may leave Temp with a value of null,
+               --  add a guard to handle this case:
+
+               --    if Obj /= null then
+               --       <object finalization statements>
+               --    end if;
+
+               else
+                  pragma Assert
+                    (Nkind (Return_Flag_Or_Transient_Decl (Obj_Id)) =
+                       N_Object_Declaration);
+
+                  Fin_Stmts := New_List (
+                    Make_If_Statement (Loc,
+                      Condition       =>
+                        Make_Op_Ne (Loc,
+                          Left_Opnd  => New_Reference_To (Obj_Id, Loc),
+                          Right_Opnd => Make_Null (Loc)),
+
+                      Then_Statements => Fin_Stmts));
+               end if;
             end if;
          end if;
 

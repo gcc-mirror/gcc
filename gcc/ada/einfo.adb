@@ -123,7 +123,7 @@ package body Einfo is
    --    Extra_Formal                    Node15
    --    Lit_Indexes                     Node15
    --    Related_Instance                Node15
-   --    Return_Flag                     Node15
+   --    Return_Flag_Or_Transient_Decl   Node15
    --    Scale_Value                     Uint15
    --    Storage_Size_Variable           Node15
    --    String_Literal_Low_Bound        Node15
@@ -2559,11 +2559,11 @@ package body Einfo is
       return Flag213 (Id);
    end Requires_Overriding;
 
-   function Return_Flag (Id : E) return N is
+   function Return_Flag_Or_Transient_Decl (Id : E) return N is
    begin
       pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
       return Node15 (Id);
-   end Return_Flag;
+   end Return_Flag_Or_Transient_Decl;
 
    function Return_Present (Id : E) return B is
    begin
@@ -5101,11 +5101,11 @@ package body Einfo is
       Set_Flag213 (Id, V);
    end Set_Requires_Overriding;
 
-   procedure Set_Return_Flag (Id : E; V : E) is
+   procedure Set_Return_Flag_Or_Transient_Decl (Id : E; V : E) is
    begin
       pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
       Set_Node15 (Id, V);
-   end Set_Return_Flag;
+   end Set_Return_Flag_Or_Transient_Decl;
 
    procedure Set_Return_Present (Id : E; V : B := True) is
    begin
@@ -8130,7 +8130,7 @@ package body Einfo is
 
          when E_Constant                                   |
               E_Variable                                   =>
-            Write_Str ("Return_Flag");
+            Write_Str ("Return_Flag_Or_Transient_Decl");
 
          when Decimal_Fixed_Point_Kind                     =>
             Write_Str ("Scale_Value");

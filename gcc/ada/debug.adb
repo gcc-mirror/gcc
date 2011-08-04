@@ -80,7 +80,7 @@ package body Debug is
    --  dN   No file name information in exception messages
    --  dO   Output immediate error messages
    --  dP   Do not check for controlled objects in preelaborable packages
-   --  dQ
+   --  dQ   Do not generate runtime check for duplicated external tag
    --  dR   Bypass check for correct version of s-rpc
    --  dS   Never convert numbers to machine numbers in Sem_Eval
    --  dT   Convert to machine numbers only for constant declarations
@@ -427,6 +427,12 @@ package body Debug is
    --       RM 10.2.1(9) forbids the use of library level controlled objects
    --       in preelaborable packages, but this restriction is a huge pain,
    --       especially in the predefined library units.
+
+   --  dQ   Eliminate check for duplicate external tags. This check was added
+   --       for GNAT 6.4.1, and causes some backward compatibility problems.
+   --       It is never legitimate to have duplicate external tags, so the
+   --       check is certainly valid, but this debug switch can be useful for
+   --       enabling previous behavior of ignoring this problem.
 
    --  dR   Bypass the check for a proper version of s-rpc being present
    --       to use the -gnatz? switch. This allows debugging of the use

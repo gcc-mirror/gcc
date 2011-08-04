@@ -12478,8 +12478,12 @@ package body Sem_Util is
    ----------------
 
    procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id) is
-      Found_Type : constant Entity_Id := First_Subtype (Etype (Expr));
-      Expec_Type : constant Entity_Id := First_Subtype (Expected_Type);
+      Found_Type     : constant Entity_Id := First_Subtype (Etype (Expr));
+      Expec_Type     : constant Entity_Id := First_Subtype (Expected_Type);
+
+      Matching_Field : Entity_Id;
+      --  Entity to give a more precise suggestion on how to write a one-
+      --  element positional aggregate.
 
       function Has_One_Matching_Field return Boolean;
       --  Determines if Expec_Type is a record type with a single component or
@@ -12494,11 +12498,27 @@ package body Sem_Util is
          E : Entity_Id;
 
       begin
+         Matching_Field := Empty;
+
          if Is_Array_Type (Expec_Type)
            and then Number_Dimensions (Expec_Type) = 1
            and then
              Covers (Etype (Component_Type (Expec_Type)), Found_Type)
          then
+            --  Use type name if available. This excludes multidimensional
+            --  arrays and anonymous arrays.
+
+            if Comes_From_Source (Expec_Type) then
+               Matching_Field := Expec_Type;
+
+            --  For an assignment, use name of target.
+
+            elsif Nkind (Parent (Expr)) = N_Assignment_Statement
+              and then Is_Entity_Name (Name (Parent (Expr)))
+            then
+               Matching_Field := Entity (Name (Parent (Expr)));
+            end if;
+
             return True;
 
          elsif not Is_Record_Type (Expec_Type) then
@@ -12529,6 +12549,7 @@ package body Sem_Util is
                return False;
 
             else
+               Matching_Field := E;
                return True;
             end if;
          end if;
@@ -12577,6 +12598,16 @@ package body Sem_Util is
         and then Has_One_Matching_Field
       then
          Error_Msg_N ("positional aggregate cannot have one component", Expr);
+         if Present (Matching_Field) then
+            if Is_Array_Type (Expec_Type) then
+               Error_Msg_NE
+                 ("\write instead `&''First ='> ...`", Expr, Matching_Field);
+
+            else
+               Error_Msg_NE
+                 ("\write instead `& ='> ...`", Expr, Matching_Field);
+            end if;
+         end if;
 
       --  Another special check, if we are looking for a pool-specific access
       --  type and we found an E_Access_Attribute_Type, then we have the case

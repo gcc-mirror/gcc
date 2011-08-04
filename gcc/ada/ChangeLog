@@ -1,5 +1,74 @@
 2011-08-04  Thomas Quinot  <quinot@adacore.com>
 
+	* sinfo.adb, sinfo.ads, sem_prag.adb, sem_ch12.adb (Pragma_Enabled):
+	This flag of N_Pragma nodes is not used, remove it as well as all of
+	the associated circuitry.
+
+2011-08-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Switch -gnatdQ disables the generation of the
+	runtime check on duplicated externa tags
+	* debug.adb Document switch -gnatdQ.
+
+2011-08-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-fihema.ads: Minor typo fix.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch10.adb: Minor comment update.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Update the node field usage to reflect the renaming of
+	Return_Flag to Return_ Flag_Or_Transient_Decl.
+	(Return_Flag): Renamed to Return_Flag_Or_Transient_Decl.
+	(Set_Return_Flag): Renamed to Set_Return_Flag_Or_Transient_Decl.
+	(Write_Field15_Name): Change Return_Flag to
+	Return_Flag_Or_Transient_Decl.
+	* einfo.ads: Rename node field Return_Flag to
+	Return_Flag_Or_Transient_Decl. Update the associated comment and all
+	occurrences in entities.
+	(Return_Flag): Renamed to Return_Flag_Or_Transient_Decl. Update
+	associated Inline pragma.
+	(Set_Return_Flag): Renamed to Set_Return_Flag_Or_Transient_Decl. Update
+	associated Inline pragma.
+	* exp_ch4.ads, exp_ch4.adb (Expand_N_Expression_With_Actions): New
+	routine.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Update the calls to
+	Return_Flag and Set_Return_Flag.
+	* exp_ch7.adb (Process_Declarations): Add code to recognize hook
+	objects generated for controlled transients declared inside an
+	Exception_With_Actions. Update the calls to Return_Flag.
+	(Process_Object_Declaration): Add code to add a null guard for hook
+	objects generated for controlled transients declared inside an
+	Exception_With_Actions. Update related comment.
+	* exp_util.adb (Has_Controlled_Objects): Add code to recognize hook
+	objects generated for controlled transients declared inside an
+	Exception_With_Actions. Update the calls to Return_Flag.
+	* expander.adb (Expand): Add new case for N_Expression_With_Actions.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb:(Wrong_Type): Improve error message on a one-element
+	positional aggregate.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* par_sco.adb (Process_Decisions.Output_Header): Check and record pragma
+	SLOC only for pragmas.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* projects.texi: Minor typo fix.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Check_File): Minor change to traces, to help debugging
+	on case-sensitive file systems.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
 	* put_scos.adb (Put_SCOs): Do not emit decision SCO for an X decision
 	nested in a disabled pragma.
 	* scos.ads, scos.adb, par_sco.ads, par_sco.adb: Record sloc of
