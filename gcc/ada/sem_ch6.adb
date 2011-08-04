@@ -9189,8 +9189,8 @@ package body Sem_Ch6 is
                --  will be executed at the start of the procedure. Note that
                --  this processing reverses the order of the list, which is
                --  what we want since new entries were chained to the head of
-               --  the list. There can be more then one precondition when we
-               --  use pragma Precondition
+               --  the list. There can be more than one precondition when we
+               --  use pragma Precondition.
 
                if not Class_Present (Prag) then
                   Prepend (Grab_PPC, Declarations (N));

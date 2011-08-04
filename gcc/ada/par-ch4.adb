@@ -2445,9 +2445,16 @@ package body Ch4 is
 
                --  If this looks like a real if, defined as an IF appearing at
                --  the start of a new line, then we consider we have a missing
-               --  operand.
+               --  operand. If in Ada 2012 and the IF is not properly indented
+               --  for a statement, we prefer to issue a message about an ill-
+               --  parenthesized conditional expression.
 
-               if Token_Is_At_Start_Of_Line then
+               if Token_Is_At_Start_Of_Line
+                 and then not
+                   (Ada_Version >= Ada_2012
+                     and then Style_Check_Indentation /= 0
+                     and then Start_Column rem Style_Check_Indentation /= 0)
+               then
                   Error_Msg_AP ("missing operand");
                   return Error;
 
@@ -2471,9 +2478,16 @@ package body Ch4 is
 
                --  If this looks like a real case, defined as a CASE appearing
                --  the start of a new line, then we consider we have a missing
-               --  operand.
+               --  operand. If in Ada 2012 and the CASE is not properly
+               --  indented for a statement, we prefer to issue a message about
+               --  an ill-parenthesized case expression.
 
-               if Token_Is_At_Start_Of_Line then
+               if Token_Is_At_Start_Of_Line
+                 and then not
+                   (Ada_Version >= Ada_2012
+                     and then Style_Check_Indentation /= 0
+                     and then Start_Column rem Style_Check_Indentation /= 0)
+               then
                   Error_Msg_AP ("missing operand");
                   return Error;
 

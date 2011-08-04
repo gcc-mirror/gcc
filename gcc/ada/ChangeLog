@@ -1,3 +1,38 @@
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* par-ch4.adb (P_Primary): preferentially issue an error message about
+	a missing parenthesis arount a conditional or case expression in Ada
+	2012 mode, if we detect that the alignment is not correct for a
+	statement.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Process_Declarations): Do not consider the result of a
+	tag-to-class-wide conversion as needing finalization actions.
+	* exp_util.adb (Has_Controlled_Objects): Do not consider the result of
+	a tag-to-class-wide conversion as needing finalization actions.
+	(Is_Finalizable_Transient): The result of a tag-to-class-wide
+	conversion does not need finalization actions.
+	(Is_Tag_To_CW_Conversion): New routine.
+	* exp_util.ads (Is_Tag_To_CW_Conversion): New routine. Determines
+	whether an object is the result of a tag-to-class-wide conversion.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): correct order in which
+	the left-hand-side and right-hand-side of a conjunct are inserted when
+	translating a pre- or postcondition
+	* sem_ch6.adb: Correct typo in comment
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat_rm.texi: Ravenscar does not prohibit dependence on
+	Unchecked_Conversion and Unchecked_Deallocation.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* make.adb: Minor reformatting.
+
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
 	* prj.adb, prj.ads, makeutl.adb (Complete_Mains): search for the

@@ -4256,13 +4256,6 @@ Tasks which terminate are erroneous.
 Entry barrier condition expressions shall be either static
 boolean expressions or boolean objects which are declared in
 the protected type which contains the entry.
-
-@item No_Unchecked_Conversion
-There are no semantic dependencies on the Ada.Unchecked_Conversion package.
-
-@item No_Unchecked_Deallocation
-There are no semantic dependencies on the Ada.Unchecked_Deallocation package.
-
 @end table
 @noindent
 

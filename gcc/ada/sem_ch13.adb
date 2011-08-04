@@ -1086,6 +1086,12 @@ package body Sem_Ch13 is
                   --  we generate separate Pre/Post aspects for the separate
                   --  clauses. Since we allow multiple pragmas, there is no
                   --  problem in allowing multiple Pre/Post aspects internally.
+                  --  These should be treated in reverse order (B first and
+                  --  A second) since they are later inserted just after N in
+                  --  the order they are treated. This way, the pragma for A
+                  --  ends up preceding the pragma for B, which may have an
+                  --  importance for the error raised (either constraint error
+                  --  or precondition error).
 
                   --  We do not do this for Pre'Class, since we have to put
                   --  these conditions together in a complex OR expression
@@ -1095,12 +1101,12 @@ package body Sem_Ch13 is
                   then
                      while Nkind (Expr) = N_And_Then loop
                         Insert_After (Aspect,
-                          Make_Aspect_Specification (Sloc (Right_Opnd (Expr)),
+                          Make_Aspect_Specification (Sloc (Left_Opnd (Expr)),
                             Identifier    => Identifier (Aspect),
-                            Expression    => Relocate_Node (Right_Opnd (Expr)),
+                            Expression    => Relocate_Node (Left_Opnd (Expr)),
                             Class_Present => Class_Present (Aspect),
                             Split_PPC     => True));
-                        Rewrite (Expr, Relocate_Node (Left_Opnd (Expr)));
+                        Rewrite (Expr, Relocate_Node (Right_Opnd (Expr)));
                         Eloc := Sloc (Expr);
                      end loop;
                   end if;
