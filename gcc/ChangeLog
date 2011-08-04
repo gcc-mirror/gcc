@@ -1,5 +1,16 @@
 2011-08-04  Richard Guenther  <rguenther@suse.de>
 
+	* tree-vrp.c (vrp_expr_computes_nonnegative): Remove.
+	(value_range_nonnegative_p): New function.
+	(ssa_name_nonnegative_p): Use it.
+	(value_range_constant_singleton): New function.
+	(op_with_constant_singleton_value_range): Use it.
+	(extract_range_from_binary_expr_1): New function, split out from ...
+	(extract_range_from_binary_expr): ... this.  Remove fallback
+	constant folding done here.
+
+2011-08-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/49806
 	* tree-vrp.c (op_with_boolean_value_range_p): New function.
 	(simplify_truth_ops_using_ranges): Simplify.  Allow inserting
