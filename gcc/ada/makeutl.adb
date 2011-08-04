@@ -239,6 +239,7 @@ package body Makeutl is
             Unit_Name := SD.Subunit_Name;
 
             if Unit_Name = No_Name then
+
                --  Check if this source file has been replaced by a source with
                --  a different file name.
 
@@ -902,10 +903,11 @@ package body Makeutl is
          if Source.Language.Config.Dependency_Kind /= None then
             declare
                Dep_Path : constant String :=
-                 Normalize_Pathname
-                   (Name          => Get_Name_String (Source.Dep_Name),
-                    Resolve_Links => Opt.Follow_Links_For_Files,
-                    Directory     => Obj_Dir);
+                            Normalize_Pathname
+                              (Name          =>
+                                 Get_Name_String (Source.Dep_Name),
+                               Resolve_Links => Opt.Follow_Links_For_Files,
+                               Directory     => Obj_Dir);
             begin
                Source.Dep_Path := Create_Name (Dep_Path);
                Source.Dep_TS   := Osint.Unknown_Attributes;
@@ -974,9 +976,9 @@ package body Makeutl is
                 (Source.Object, Source.Language.Config.Dependency_Kind);
          end if;
 
-         --  Find the object file for that source. It could be either in
-         --  the current project or in an extended project (it might actually
-         --  not exist yet in the ultimate extending project, but if not found
+         --  Find the object file for that source. It could be either in the
+         --  current project or in an extended project (it might actually not
+         --  exist yet in the ultimate extending project, but if not found
          --  elsewhere that's where we'll expect to find it).
 
          Obj_Proj := Source.Project;
@@ -1000,7 +1002,7 @@ package body Makeutl is
                --  For specs, we do not check object files if there is a body.
                --  This saves a system call. On the other hand, we do need to
                --  know the object_path, in case the user has passed the .ads
-               --  on the command line to compile the spec only
+               --  on the command line to compile the spec only.
 
                if Source.Kind /= Spec
                  or else Source.Unit = No_Unit_Index
@@ -1147,8 +1149,8 @@ package body Makeutl is
               In_Package              => Linker_Package,
               Shared                  => In_Tree.Shared);
 
-         --  If attribute is present, add the project with
-         --  the attribute to table Linker_Opts.
+         --  If attribute is present, add the project with the attribute to
+         --  table Linker_Opts.
 
          if Options /= Nil_Variable_Value then
             Linker_Opts.Increment_Last;
@@ -1259,6 +1261,7 @@ package body Makeutl is
          if Tree /= null then
             Builder_Data (Tree).Number_Of_Mains :=
               Builder_Data (Tree).Number_Of_Mains + 1;
+
          else
             Mains.Count_Of_Mains_With_No_Tree :=
               Mains.Count_Of_Mains_With_No_Tree + 1;
@@ -1295,9 +1298,10 @@ package body Makeutl is
          is
             Iter : Source_Iterator;
             Src  : Prj.Source_Id;
+
          begin
             Debug_Output
-              ("Found multi-unit source file in project", Source.Project.Name);
+              ("found multi-unit source file in project", Source.Project.Name);
 
             Iter := For_Each_Source
               (In_Tree => Tree, Project => Source.Project);
@@ -1310,7 +1314,7 @@ package body Makeutl is
                then
                   if Src.File = Source.File then
                      Debug_Output
-                       ("Add main in project, index=" & Src.Index'Img);
+                       ("add main in project, index=" & Src.Index'Img);
                   end if;
 
                   Names.Increment_Last;
@@ -1335,7 +1339,8 @@ package body Makeutl is
          -----------------
 
          procedure Do_Complete
-           (Project : Project_Id; Tree : Project_Tree_Ref) is
+           (Project : Project_Id; Tree : Project_Tree_Ref)
+         is
          begin
             if Mains.Number_Of_Mains (Tree) > 0
               or else Mains.Count_Of_Mains_With_No_Tree > 0
@@ -1346,13 +1351,14 @@ package body Makeutl is
 
                for J in reverse Names.First .. Names.Last loop
                   declare
-                     File       : Main_Info := Names.Table (J);
-                     Main_Id    : File_Name_Type := File.File;
-                     Main       : constant String := Get_Name_String (Main_Id);
-                     Source     : Prj.Source_Id := No_Source;
-                     Suffix     : File_Name_Type;
-                     Iter       : Source_Iterator;
-                     Is_Absolute : Boolean := False;
+                     File        : Main_Info       := Names.Table (J);
+                     Main_Id     : File_Name_Type  := File.File;
+                     Main        : constant String :=
+                                     Get_Name_String (Main_Id);
+                     Source      : Prj.Source_Id   := No_Source;
+                     Is_Absolute : Boolean         := False;
+                     Suffix      : File_Name_Type;
+                     Iter        : Source_Iterator;
 
                   begin
                      if Base_Name (Main) /= Main then
@@ -1370,6 +1376,7 @@ package body Makeutl is
                      --  If no project or tree was specified for the main, it
                      --  came from the command line. In this case, it needs to
                      --  belong to the root project.
+
                      --  Note that the assignments below will not modify inside
                      --  the table itself.
 
@@ -1384,16 +1391,15 @@ package body Makeutl is
                      if File.Source = null then
                         if Current_Verbosity = High then
                            Debug_Output
-                             ("Search for main """ & Main
+                             ("search for main """ & Main
                               & '"' & File.Index'Img & " in "
                               & Get_Name_String (Debug_Name (File.Tree))
                               & ", project", Project.Name);
                         end if;
 
-                        --  First, look for the main as specified.
-                        --  We need to search for the base name though, and
-                        --  if needed check later that we found the correct
-                        --  file.
+                        --  First, look for the main as specified. We need to
+                        --  search for the base name though, and if needed
+                        --  check later that we found the correct file.
 
                         Source := Find_Source
                           (In_Tree   => File.Tree,
@@ -1402,13 +1408,16 @@ package body Makeutl is
                            Index     => File.Index);
 
                         if Source = No_Source then
+
                            --  Now look for the main with a body suffix
 
                            declare
                               --  Main already has a canonical casing
+
                               Main : constant String :=
                                 Get_Name_String (Main_Id);
                               Project : Project_Id;
+
                            begin
                               Project := File.Project;
                               while Source = No_Source
@@ -1452,7 +1461,7 @@ package body Makeutl is
                                 File.File
                               then
                                  Debug_Output
-                                   ("Found a non-matching file",
+                                   ("found a non-matching file",
                                     Name_Id (Source.Path.Display_Name));
                                  Source := No_Source;
                               end if;
@@ -1460,10 +1469,11 @@ package body Makeutl is
                         end if;
 
                         if Source /= No_Source then
+
                            --  If we have found a multi-unit source file but
                            --  did not specify an index initially, we'll need
                            --  to compile all the units from the same source
-                           --  file
+                           --  file.
 
                            if Source.Index /= 0
                              and then File.Index = 0
@@ -1474,8 +1484,8 @@ package body Makeutl is
                            --  Now update the original Main, otherwise it will
                            --  be reported as not found.
 
-                           Debug_Output ("Found main in project",
-                                         Source.Project.Name);
+                           Debug_Output
+                             ("found main in project", Source.Project.Name);
                            Names.Table (J).File    := Source.File;
                            Names.Table (J).Project := File.Project;
 
@@ -1483,8 +1493,7 @@ package body Makeutl is
                               Names.Table (J).Tree := File.Tree;
 
                               Builder_Data (File.Tree).Number_Of_Mains :=
-                                Builder_Data (File.Tree).Number_Of_Mains
-                                + 1;
+                                Builder_Data (File.Tree).Number_Of_Mains + 1;
                               Mains.Count_Of_Mains_With_No_Tree :=
                                 Mains.Count_Of_Mains_With_No_Tree - 1;
                            end if;
@@ -1492,6 +1501,7 @@ package body Makeutl is
                            Names.Table (J).Source  := Source;
 
                         elsif File.Location /= No_Location then
+
                            --  If the main is declared in package Builder of
                            --  the main project, report an error. If the main
                            --  is on the command line, it may be a main from
@@ -1551,7 +1561,8 @@ package body Makeutl is
          Project_Tree : Project_Tree_Ref)
       is
          procedure Add_Mains_From_Project
-           (Project : Project_Id; Tree    : Project_Tree_Ref);
+           (Project : Project_Id;
+            Tree    : Project_Tree_Ref);
          --  Add the main units from this project into Mains.
          --  This takes into account the aggregated projects
 
@@ -1565,15 +1576,18 @@ package body Makeutl is
          is
             List    : String_List_Id;
             Element : String_Element;
+
          begin
             if Number_Of_Mains (Tree) = 0
               and then Mains.Count_Of_Mains_With_No_Tree = 0
             then
-               Debug_Output ("Add_Mains_From_Project", Project.Name);
+               Debug_Output ("add_Mains_From_Project", Project.Name);
                List := Project.Mains;
+
                if List /= Prj.Nil_String then
-                  --  The attribute Main is not an empty list.
-                  --  Get the mains in the list
+
+                  --  The attribute Main is not an empty list. Get the mains in
+                  --  the list.
 
                   while List /= Prj.Nil_String loop
                      Element := Tree.Shared.String_Elements.Table (List);
@@ -1962,10 +1976,10 @@ package body Makeutl is
          Index       : Int := 0) return Boolean;
       --  Returns True if the unit was previously marked
 
-      Q_Processed           : Natural := 0;
-      Q_Initialized         : Boolean := False;
+      Q_Processed   : Natural := 0;
+      Q_Initialized : Boolean := False;
 
-      Q_First               : Natural := 1;
+      Q_First : Natural := 1;
       --  Points to the first valid element in the queue
 
       One_Queue_Per_Obj_Dir : Boolean := False;
@@ -1995,12 +2009,14 @@ package body Makeutl is
                if S.Id.In_The_Queue then
                   return True;
                end if;
+
                S.Id.In_The_Queue := True;
 
             when Format_Gnatmake =>
                if Is_Marked (S.File, S.Index) then
                   return True;
                end if;
+
                Mark (S.File, Index => S.Index);
          end case;
 
@@ -2065,7 +2081,8 @@ package body Makeutl is
 
       function Is_Marked
         (Source_File : File_Name_Type;
-         Index       : Int := 0) return Boolean is
+         Index       : Int := 0) return Boolean
+      is
       begin
          return Marks.Get (K => (File => Source_File, Index => Index));
       end Is_Marked;
@@ -2182,8 +2199,7 @@ package body Makeutl is
       function Insert_No_Roots (Source  : Source_Info) return Boolean is
       begin
          pragma Assert
-           (Source.Format = Format_Gnatmake
-            or else Source.Id /= No_Source);
+           (Source.Format = Format_Gnatmake or else Source.Id /= No_Source);
 
          --  Only insert in the Q if it is not already done, to avoid
          --  simultaneous compilations if -jnnn is used.
@@ -2223,7 +2239,8 @@ package body Makeutl is
       ------------
 
       function Insert
-        (Source  : Source_Info; With_Roots : Boolean := False) return Boolean
+        (Source     : Source_Info;
+         With_Roots : Boolean := False) return Boolean
       is
          Root_Arr     : Array_Element_Id;
          Roots        : Variable_Value;
@@ -2234,19 +2251,22 @@ package body Makeutl is
          Root_Pattern : Regexp;
          Root_Found   : Boolean;
          Roots_Found  : Boolean;
-         Dummy        : Boolean;
          Root_Source  : Prj.Source_Id;
          Iter         : Source_Iterator;
+
+         Dummy : Boolean;
          pragma Unreferenced (Dummy);
 
       begin
          if not Insert_No_Roots (Source) then
+
             --  Was already in the queue
+
             return False;
          end if;
 
          if With_Roots and then Source.Format = Format_Gprbuild then
-            Debug_Output ("Looking for roots of", Name_Id (Source.Id.File));
+            Debug_Output ("looking for roots of", Name_Id (Source.Id.File));
 
             Root_Arr :=
               Prj.Util.Value_Of
@@ -2305,10 +2325,10 @@ package body Makeutl is
                   Pat_Root := False;
 
                   for J in 1 .. Name_Len loop
-                     if Name_Buffer (J) not in 'a' .. 'z'
-                       and then Name_Buffer (J) not in '0' .. '9'
-                       and then Name_Buffer (J) /= '_'
-                       and then Name_Buffer (J) /= '.'
+                     if Name_Buffer (J) not in 'a' .. 'z' and then
+                        Name_Buffer (J) not in '0' .. '9' and then
+                        Name_Buffer (J) /= '_'            and then
+                        Name_Buffer (J) /= '.'
                      then
                         Pat_Root := True;
                         exit;
@@ -2349,7 +2369,7 @@ package body Makeutl is
                      else
                         Root_Found :=
                           Root_Source.Unit /= No_Unit_Index
-                          and then Root_Source.Unit.Name = Unit_Name;
+                            and then Root_Source.Unit.Name = Unit_Name;
                      end if;
 
                      if Root_Found then
@@ -2420,7 +2440,8 @@ package body Makeutl is
       ------------
 
       procedure Insert
-        (Source  : Source_Info; With_Roots : Boolean := False)
+        (Source     : Source_Info;
+         With_Roots : Boolean := False)
       is
          Discard : Boolean;
          pragma Unreferenced (Discard);
@@ -2530,8 +2551,8 @@ package body Makeutl is
          procedure Do_Insert (Project : Project_Id; Tree : Project_Tree_Ref);
          procedure Do_Insert (Project : Project_Id; Tree : Project_Tree_Ref) is
             Unit_Based : constant Boolean :=
-              Unique_Compile
-              or else not Builder_Data (Tree).Closure_Needed;
+                           Unique_Compile
+                             or else not Builder_Data (Tree).Closure_Needed;
             --  When Unit_Based is True, put in the queue all compilable
             --  sources including the unit based (Ada) one. When Unit_Based is
             --  False, put the Ada sources only when they are in a library
@@ -2564,7 +2585,7 @@ package body Makeutl is
                    (not Source.Project.Externally_Built
                     or else
                       (Is_Extending (Project, Source.Project)
-                       and then not Project.Externally_Built))
+                        and then not Project.Externally_Built))
                  and then Source.Kind /= Sep
                  and then Source.Path /= No_Path_Information
                then
@@ -2572,12 +2593,12 @@ package body Makeutl is
                     or else (Source.Unit /= No_Unit_Index
                              and then Source.Kind = Spec
                              and then (Other_Part (Source) = No_Source
-                                       or else
-                                         Other_Part (Source).Locally_Removed))
+                                        or else
+                                          Other_Part (Source).Locally_Removed))
                   then
                      if (Unit_Based
-                         or else Source.Unit = No_Unit_Index
-                         or else Source.Project.Library)
+                          or else Source.Unit = No_Unit_Index
+                          or else Source.Project.Library)
                        and then not Is_Subunit (Source)
                      then
                         Queue.Insert
@@ -2627,9 +2648,9 @@ package body Makeutl is
 
                if Sfile /= No_File then
                   Afile := ALI.Withs.Table (K).Afile;
-                  Src_Id := Source_Files_Htable.Get
-                    (Project_Tree.Source_Files_HT, Sfile);
 
+                  Src_Id := Source_Files_Htable.Get
+                              (Project_Tree.Source_Files_HT, Sfile);
                   while Src_Id /= No_Source loop
                      Initialize_Source_Record (Src_Id);
 
@@ -2667,10 +2688,10 @@ package body Makeutl is
                   --  If Excluding_Shared_SALs is True, do not insert in the
                   --  queue the sources of a shared Stand-Alone Library.
 
-                  if Src_Id /= No_Source and then
-                    (not Excluding_Shared_SALs or else
-                       not Src_Id.Project.Standalone_Library or else
-                         Src_Id.Project.Library_Kind = Static)
+                  if Src_Id /= No_Source
+                    and then (not Excluding_Shared_SALs
+                               or else not Src_Id.Project.Standalone_Library
+                               or else Src_Id.Project.Library_Kind = Static)
                   then
                      Queue.Insert
                        (Source => (Format => Format_Gprbuild,
@@ -2692,6 +2713,7 @@ package body Makeutl is
         (Binding_Data_Record, Binding_Data);
 
       TmpB, Binding : Binding_Data := Data.Binding;
+
    begin
       while Binding /= null loop
          TmpB := Binding.Next;
@@ -2744,6 +2766,7 @@ package body Makeutl is
 
       begin
          if Option_Unique_Compile then
+
             --  If -u or -U is specified on the command line, disregard any -c,
             --  -b or -l switch: only perform compilation.
 
@@ -2757,11 +2780,11 @@ package body Makeutl is
             Data.Need_Compilation := All_Phases or Option_Compile_Only;
             Data.Need_Binding     := All_Phases or Option_Bind_Only;
             Data.Need_Linking     := (All_Phases or Option_Link_Only)
-              and then Has_Mains;
+                                       and Has_Mains;
          end if;
 
          if Current_Verbosity = High then
-            Debug_Output ("Compilation phases: "
+            Debug_Output ("compilation phases: "
                           & " compile=" & Data.Need_Compilation'Img
                           & " bind=" & Data.Need_Binding'Img
                           & " link=" & Data.Need_Linking'Img
@@ -2772,6 +2795,7 @@ package body Makeutl is
       end Do_Compute;
 
       procedure Compute_All is new For_Project_And_Aggregated (Do_Compute);
+
    begin
       Compute_All (Root_Project, Tree);
    end Compute_Compilation_Phases;

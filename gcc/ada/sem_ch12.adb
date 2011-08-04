@@ -6919,6 +6919,7 @@ package body Sem_Ch12 is
       --  simplified. ???
 
       Inst := Package_Instantiation (A);
+
       if Present (Inst) then
          if Nkind (Inst) = N_Package_Instantiation then
             return Inst;
@@ -7138,8 +7139,8 @@ package body Sem_Ch12 is
             --  that we produce all the instance bodies we will need.
 
             if (Is_Entity_Name (Nam) and then Chars (Nam) = Chars (E))
-              or else (Nkind (Nam) = N_Selected_Component
-                        and then Chars (Selector_Name (Nam)) = Chars (E))
+                 or else (Nkind (Nam) = N_Selected_Component
+                           and then Chars (Selector_Name (Nam)) = Chars (E))
             then
                return True;
             end if;

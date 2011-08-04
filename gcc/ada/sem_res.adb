@@ -7248,6 +7248,7 @@ package body Sem_Res is
          declare
             Left_Typ  : constant Node_Id := Etype (Left_Opnd (N));
             Right_Typ : constant Node_Id := Etype (Right_Opnd (N));
+
          begin
             --  Protect call to Matching_Static_Array_Bounds to avoid costly
             --  operation if not needed.
