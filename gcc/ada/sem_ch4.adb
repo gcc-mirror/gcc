@@ -6866,6 +6866,16 @@ package body Sem_Ch4 is
                               (Designated_Type (Etype (First_Formal (Hom)))) =
                                                                    Cls_Type))
                then
+                  --  If the context is a procedure call, ignore functions
+                  --  in the name of the call.
+
+                  if Ekind (Hom) = E_Function
+                    and then Nkind (Parent (N)) = N_Procedure_Call_Statement
+                    and then N = Name (Parent (N))
+                  then
+                     goto Next_Hom;
+                  end if;
+
                   Set_Etype (Call_Node, Any_Type);
                   Set_Is_Overloaded (Call_Node, False);
                   Success := False;
@@ -6907,7 +6917,8 @@ package body Sem_Ch4 is
                   end if;
                end if;
 
-               Hom := Homonym (Hom);
+               <<Next_Hom>>
+                  Hom := Homonym (Hom);
             end loop;
          end Traverse_Homonyms;
 

@@ -149,7 +149,7 @@ package body Urealp is
 
    function Store_Ureal_Normalized (Val : Ureal_Entry) return Ureal;
    pragma Inline (Store_Ureal_Normalized);
-   --  Like Store_Ureal, but normalizes its operand first.
+   --  Like Store_Ureal, but normalizes its operand first
 
    -------------------------
    -- Decimal_Exponent_Hi --
@@ -275,6 +275,10 @@ package body Urealp is
 
       function Scale (X : Int; R : Ratio) return Int;
       --  Compute the value of X scaled by R
+
+      -----------
+      -- Scale --
+      -----------
 
       function Scale (X : Int; R : Ratio) return Int is
          type Wide_Int is range -2**63 .. 2**63 - 1;

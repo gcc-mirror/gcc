@@ -2419,8 +2419,10 @@ package body Exp_Ch7 is
             Fin_Stmts := No_List;
 
             if Is_Simple_Protected_Type (Obj_Typ) then
-               Fin_Stmts :=
-                 New_List (Cleanup_Protected_Object (Decl, Obj_Ref));
+               Fin_Call := Cleanup_Protected_Object (Decl, Obj_Ref);
+               if Present (Fin_Call) then
+                  Fin_Stmts := New_List (Fin_Call);
+               end if;
 
             elsif Has_Simple_Protected_Object (Obj_Typ) then
                if Is_Record_Type (Obj_Typ) then
