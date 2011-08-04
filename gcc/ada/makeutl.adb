@@ -1368,9 +1368,16 @@ package body Makeutl is
                      Suffix :=
                        Source.Language.Config.Naming_Data.Body_Suffix;
 
-                     exit when Suffix /= No_File and then
-                       Name_Buffer (Base_Main'Length + 1 .. Name_Len) =
-                       Get_Name_String (Suffix);
+                     if Suffix /= No_File then
+                        declare
+                           Suffix_Str : String := Get_Name_String (Suffix);
+                        begin
+                           Canonical_Case_File_Name (Suffix_Str);
+                           exit when
+                             Name_Buffer (Base_Main'Length + 1 .. Name_Len) =
+                             Suffix_Str;
+                        end;
+                     end if;
                   end if;
 
                elsif Source.Kind = Spec then
@@ -1385,12 +1392,18 @@ package body Makeutl is
                      Suffix :=
                        Source.Language.Config.Naming_Data.Spec_Suffix;
 
-                     if Suffix /= No_File
-                       and then
-                         Name_Buffer (Base_Main'Length + 1 .. Name_Len) =
-                         Get_Name_String (Suffix)
-                     then
-                        Spec_Source := Source;
+                     if Suffix /= No_File then
+                        declare
+                           Suffix_Str : String := Get_Name_String (Suffix);
+                        begin
+                           Canonical_Case_File_Name (Suffix_Str);
+
+                           if Name_Buffer (Base_Main'Length + 1 .. Name_Len) =
+                             Suffix_Str
+                           then
+                              Spec_Source := Source;
+                           end if;
+                        end;
                      end if;
                   end if;
                end if;

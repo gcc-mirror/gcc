@@ -4336,9 +4336,10 @@ package body Sem_Util is
    ------------------------------------
 
    function Get_Name_From_Test_Case_Pragma (N : Node_Id) return String_Id is
+      Arg : constant Node_Id :=
+              Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
    begin
-      return
-        Strval (Get_Pragma_Arg (First (Pragma_Argument_Associations (N))));
+      return Strval (Expr_Value_S (Arg));
    end Get_Name_From_Test_Case_Pragma;
 
    -------------------

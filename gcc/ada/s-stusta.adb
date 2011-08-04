@@ -92,7 +92,7 @@ package body System.Stack_Usage.Tasking is
       use type System.Tasking.Task_Id;
    begin
       if not System.Stack_Usage.Is_Enabled then
-         Put ("Stack Usage not enabled: bind with -uNNN switch");
+         Put_Line ("Stack Usage not enabled: bind with -uNNN switch");
       else
 
          --  Loop over all tasks
@@ -118,7 +118,7 @@ package body System.Stack_Usage.Tasking is
    procedure Compute_Current_Task is
    begin
       if not System.Stack_Usage.Is_Enabled then
-         Put ("Stack Usage not enabled: bind with -uNNN switch");
+         Put_Line ("Stack Usage not enabled: bind with -uNNN switch");
       else
 
          --  The current task

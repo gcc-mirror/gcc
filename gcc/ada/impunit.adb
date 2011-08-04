@@ -295,6 +295,7 @@ package body Impunit is
      "g-ssvety",    -- GNAT.SSE.Vector_Types
      "g-table ",    -- GNAT.Table
      "g-tasloc",    -- GNAT.Task_Lock
+     "g-tastus",    -- GNAT.Task_Stack_Usage
      "g-thread",    -- GNAT.Threads
      "g-timsta",    -- GNAT.Time_Stamp
      "g-traceb",    -- GNAT.Traceback

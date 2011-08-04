@@ -1,3 +1,34 @@
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Check_Arg_Is_String_Literal): remove useless procedure
+	(Analyze_Pragma): allow static string expression for name of Test_Case,
+	instead of simply string literals.
+	* sem_util.adb (Get_Name_From_Test_Case_Pragma): adapt to static string
+	expressions.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Complete_Mains.Find_File_Add_Extension): Use canonical
+	case suffixes to find truncated main sources.
+
+2011-08-04  Tristan Gingold  <gingold@adacore.com>
+
+	* impunit.adb (Non_Imp_File_Names_95): Add g-tastus.
+	s-stusta.adb (Compute_All_Task): Use Put_Line instead of Put.
+	(Compute_Current_Task): Ditto.
+
+2011-08-04  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat_ugn.texi: Mention GNAT.Task_Stack_Usage.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Is_Global_Constant): new function that detects
+	library-level constant.
+	(Add_ALFA_Xrefs): ignore global constants in ALFA xref.
+	* sem_res.adb (Resolve_Actuals): do not add cross-reference to Formal
+	used as selector of parameter association, in ALFA mode.
+
 2011-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, exp_ch7.adb, exp_util.adb, bindgen.adb, sem_prag.adb,
