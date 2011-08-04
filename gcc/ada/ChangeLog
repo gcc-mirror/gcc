@@ -1,3 +1,20 @@
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Composite_Equality): code cleanup: use component
+	type in all cases to compute list of primitive operations, because full
+	view may be an itype that is not attached to the list of declarations.
+
+2011-08-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* bindgen.adb (Gen_Adafinal_Ada): Generate an early return if the
+	library has already been finalized.
+	(Gen_Adafinal_C): Likewise.
+	(Gen_Adainit_Ada): Generate an early return if the library has
+	already been elaborated.
+	(Gen_Adainit_C): Likewise.
+	(Gen_Output_File_Ada): Generate an elaboration flag.
+	(Gen_Output_File_C): Likewise.
+
 2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Expand_Allocator_Expression): Disable the generation of

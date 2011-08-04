@@ -2103,6 +2103,54 @@ package body Exp_Ch4 is
       Prim      : Elmt_Id;
       Eq_Op     : Entity_Id;
 
+      function Find_Primitive_Eq return Node_Id;
+      --  AI05-0123: Locate primitive equality for type if it exists, and
+      --  build the corresponding call. If operation is abstract, replace
+      --  call with an explicit raise. Return Empty if there is no primitive.
+
+      -----------------------
+      -- Find_Primitive_Eq --
+      -----------------------
+
+      function Find_Primitive_Eq return Node_Id is
+         Prim_E : Elmt_Id;
+         Prim   : Node_Id;
+
+      begin
+         Prim_E := First_Elmt (Collect_Primitive_Operations (Typ));
+         while Present (Prim_E) loop
+            Prim := Node (Prim_E);
+
+            --  Locate primitive equality with the right signature
+
+            if Chars (Prim) = Name_Op_Eq
+              and then Etype (First_Formal (Prim)) =
+                         Etype (Next_Formal (First_Formal (Prim)))
+              and then Etype (Prim) = Standard_Boolean
+            then
+               if Is_Abstract_Subprogram (Prim) then
+                  return
+                    Make_Raise_Program_Error (Loc,
+                      Reason => PE_Explicit_Raise);
+
+               else
+                  return
+                    Make_Function_Call (Loc,
+                      Name => New_Reference_To (Prim, Loc),
+                      Parameter_Associations => New_List (Lhs, Rhs));
+               end if;
+            end if;
+
+            Next_Elmt (Prim_E);
+         end loop;
+
+         --  If not found, predefined operation will be used
+
+         return Empty;
+      end Find_Primitive_Eq;
+
+   --  Start of processing for Expand_Composite_Equality
+
    begin
       if Is_Private_Type (Typ) then
          Full_Type := Underlying_Type (Typ);
@@ -2324,42 +2372,21 @@ package body Exp_Ch4 is
          elsif Ada_Version >= Ada_2012 then
 
             --  if no TSS has been created for the type, check whether there is
-            --  a primitive equality declared for it. If it is abstract replace
-            --  the call with an explicit raise (AI05-0123).
+            --  a primitive equality declared for it.
 
             declare
-               Prim : Elmt_Id;
+               Ada_2012_Op : constant Node_Id := Find_Primitive_Eq;
 
             begin
-               Prim := First_Elmt (Collect_Primitive_Operations (Full_Type));
-               while Present (Prim) loop
+               if Present (Ada_2012_Op) then
+                  return Ada_2012_Op;
+               else
 
-                  --  Locate primitive equality with the right signature
+               --  Use predefined equality if no user-defined primitive exists
 
-                  if Chars (Node (Prim)) = Name_Op_Eq
-                    and then Etype (First_Formal (Node (Prim))) =
-                               Etype (Next_Formal (First_Formal (Node (Prim))))
-                    and then Etype (Node (Prim)) = Standard_Boolean
-                  then
-                     if Is_Abstract_Subprogram (Node (Prim)) then
-                        return
-                          Make_Raise_Program_Error (Loc,
-                            Reason => PE_Explicit_Raise);
-                     else
-                        return
-                          Make_Function_Call (Loc,
-                            Name => New_Reference_To (Node (Prim), Loc),
-                            Parameter_Associations => New_List (Lhs, Rhs));
-                     end if;
-                  end if;
-
-                  Next_Elmt (Prim);
-               end loop;
+                  return Make_Op_Eq (Loc, Lhs, Rhs);
+               end if;
             end;
-
-            --  Use predefined equality iff no user-defined primitive exists
-
-            return Make_Op_Eq (Loc, Lhs, Rhs);
 
          else
             return Expand_Record_Equality (Nod, Full_Type, Lhs, Rhs, Bodies);

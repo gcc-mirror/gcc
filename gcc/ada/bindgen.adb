@@ -428,8 +428,20 @@ package body Bindgen is
    begin
       WBI ("   procedure " & Ada_Final_Name.all & " is");
 
+      if Bind_Main_Program and then VM_Target = No_VM then
+         WBI ("      procedure s_stalib_adafinal;");
+         Set_String ("      pragma Import (C, s_stalib_adafinal, ");
+         Set_String ("""system__standard_library__adafinal"");");
+         Write_Statement_Buffer;
+      end if;
+
+      WBI ("   begin");
+      WBI ("      if not Is_Elaborated then");
+      WBI ("         return;");
+      WBI ("      end if;");
+      WBI ("      Is_Elaborated := False;");
+
       if not Bind_Main_Program then
-         WBI ("   begin");
          if Lib_Final_Built then
             WBI ("      finalize_library;");
          else
@@ -439,17 +451,12 @@ package body Bindgen is
       --  Main program case
 
       elsif VM_Target = No_VM then
-         WBI ("      procedure s_stalib_adafinal;");
-         WBI ("      pragma Import (C, s_stalib_adafinal, " &
-              """system__standard_library__adafinal"");");
-         WBI ("   begin");
          WBI ("      s_stalib_adafinal;");
 
       --  Pragma Import C cannot be used on virtual machine targets, therefore
       --  call the runtime finalization routine directly.
 
       else
-         WBI ("   begin");
          WBI ("      System.Standard_Library.Adafinal;");
       end if;
 
@@ -464,6 +471,10 @@ package body Bindgen is
    procedure Gen_Adafinal_C is
    begin
       WBI ("void " & Ada_Final_Name.all & " (void) {");
+
+      WBI ("   if (!is_elaborated)");
+      WBI ("      return;");
+      WBI ("   is_elaborated = 0;");
 
       if not Bind_Main_Program then
          if Lib_Final_Built then
@@ -684,6 +695,11 @@ package body Bindgen is
          end if;
 
          WBI ("   begin");
+
+         WBI ("      if Is_Elaborated then");
+         WBI ("         return;");
+         WBI ("      end if;");
+         WBI ("      Is_Elaborated := True;");
 
          Set_String ("      Main_Priority := ");
          Set_Int    (Main_Priority);
@@ -940,6 +956,10 @@ package body Bindgen is
    begin
       WBI ("void " & Ada_Init_Name.all & " (void)");
       WBI ("{");
+
+      WBI ("   if (is_elaborated)");
+      WBI ("      return;");
+      WBI ("   is_elaborated = 1;");
 
       --  Standard library suppressed
 
@@ -3077,6 +3097,9 @@ package body Bindgen is
          WBI ("");
       end if;
 
+      WBI ("   Is_Elaborated : Boolean := False;");
+      WBI ("");
+
       --  Generate the adafinal routine unless there is no finalization to do
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
@@ -3299,6 +3322,9 @@ package body Bindgen is
          Write_Statement_Buffer;
          WBI ("");
       end if;
+
+      WBI ("static char is_elaborated = 0;");
+      WBI ("");
 
       --  Generate the adafinal routine unless there is no finalization to do
 
