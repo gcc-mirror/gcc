@@ -4342,6 +4342,21 @@ package body Sem_Res is
             Set_Is_Static_Coextension  (N, False);
          end if;
       end if;
+
+      --  Report a simple error:  if the designated object is a local task,
+      --  its body has not been seen yet, and its activation will fail
+      --  an elaboration check.
+
+      if Is_Task_Type (Designated_Type (Typ))
+        and then Scope (Base_Type (Designated_Type (Typ))) = Current_Scope
+        and then Is_Compilation_Unit (Current_Scope)
+        and then Ekind (Current_Scope) = E_Package
+        and then not In_Package_Body (Current_Scope)
+      then
+         Error_Msg_N
+           ("cannot activate task before body seen?", N);
+         Error_Msg_N ("\Program_Error will be raised at run time", N);
+      end if;
    end Resolve_Allocator;
 
    ---------------------------

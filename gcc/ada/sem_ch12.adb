@@ -3379,18 +3379,18 @@ package body Sem_Ch12 is
             end if;
          end;
 
-         --  If we are generating calling stubs, we never need a body for an
-         --  instantiation from source in the visible part, because in that
-         --  case we'll be generating stubs for any subprogram in the instance.
-         --  However normal processing occurs for instantiations in generated
-         --  code or in the private part, since in those cases we do not
-         --  generate stubs.
+         --  Note that we generate the instance body even when generating
+         --  calling stubs for an RCI unit: it may be required e.g. if it
+         --  provides stream attributes for some type used in the profile of a
+         --  remote subprogram. If the instantiation is within the visible part
+         --  of the RCI, then calling stubs for any relevant subprogram will
+         --  be inserted immediately after the subprogram declaration, and
+         --  will take precedence over the subsequent (original) body. (The
+         --  stub and original body will be complete homographs, but this is
+         --  permitted in an instance).
 
-         if Distribution_Stub_Mode = Generate_Caller_Stub_Body
-              and then Comes_From_Source (N)
-         then
-            Needs_Body := False;
-         end if;
+         --  Could we do better and remove the original subprogram body in that
+         --  case???
 
          if Needs_Body then
 

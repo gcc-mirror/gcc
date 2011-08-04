@@ -1,3 +1,50 @@
+2011-08-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* bindgen.adb (Gen_Finalize_Library_Ada): Factor out code to generate
+	the header of the finalization routine.
+	If the unit has no finalizer but is a body whose spec has one, then
+	generate the decrement of the elaboration entity only.
+	If the unit has a finalizer and is a spec, then do not generate the
+	decrement of the elaboration entity.
+	(Gen_Finalize_Library_C): Likewise.
+
+2011-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Alignment_Of): New subsidiary routine.
+	(Bounds_Size_Expression): Removed.
+	(Double_Alignment_Of): New subsidiary routine.
+	(Make_Finalize_Address_Stmts): New local variable Index_Typ. Account
+	for a hole in the dope vector of unconstrained arrays due to different
+	index and element alignments.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): diagnose task allocator that will
+	raise program_error because body has not been seen yet.
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_With_Clause): Protect against child unit with
+	an unresolved name.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Do_Complete): Check absolute paths in canonical forms
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* alfa.adb, alfa.ads (Unique_Defining_Entity): move function from here
+	* sem_util.adb, sem_util.ads (Unique_Defining_Entity): ...to here
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): Do not omit body for
+	instantiation in RCI.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb: Share more code with gprbuild
+
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
 	* projects.texi: Added documentation for the IDE'Gnat project file

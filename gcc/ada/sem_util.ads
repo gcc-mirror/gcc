@@ -1368,6 +1368,10 @@ package Sem_Util is
    function Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Return the accessibility level of Typ
 
+   function Unique_Defining_Entity (N : Node_Id) return Entity_Id;
+   --  Return the entity which represents declaration N, so that matching
+   --  declaration and body have the same entity.
+
    function Unit_Declaration_Node (Unit_Id : Entity_Id) return Node_Id;
    --  Unit_Id is the simple name of a program unit, this function returns the
    --  corresponding xxx_Declaration node for the entity. Also applies to the
