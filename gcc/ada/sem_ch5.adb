@@ -1114,7 +1114,7 @@ package body Sem_Ch5 is
         and then List_Length (Alternatives (N)) = 1
       then
          Mark_Non_ALFA_Subprogram
-           ("OTHERS as unique case alternative is not in 'A'L'F'A", N);
+           ("OTHERS as unique case alternative is not in ALFA", N);
          Check_SPARK_Restriction
            ("OTHERS as unique case alternative is not allowed", N);
       end if;
@@ -1198,7 +1198,7 @@ package body Sem_Ch5 is
             if Has_Loop_In_Inner_Open_Scopes (U_Name) then
                Mark_Non_ALFA_Subprogram
                  ("exit label must name the closest enclosing loop"
-                   & " in 'A'L'F'A", N);
+                   & " in ALFA", N);
                Check_SPARK_Restriction
                  ("exit label must name the closest enclosing loop", N);
             end if;
@@ -1247,7 +1247,7 @@ package body Sem_Ch5 is
          if Nkind (Parent (N)) /= N_Loop_Statement then
             Mark_Non_ALFA_Subprogram
               ("exit with when clause must be directly in loop"
-                & " in 'A'L'F'A", N);
+                & " in ALFA", N);
             Check_SPARK_Restriction
               ("exit with when clause must be directly in loop", N);
          end if;
@@ -1256,18 +1256,18 @@ package body Sem_Ch5 is
          if Nkind (Parent (N)) /= N_If_Statement then
             if Nkind (Parent (N)) = N_Elsif_Part then
                Mark_Non_ALFA_Subprogram
-                 ("exit must be in IF without ELSIF in 'A'L'F'A", N);
+                 ("exit must be in IF without ELSIF in ALFA", N);
                Check_SPARK_Restriction
                  ("exit must be in IF without ELSIF", N);
             else
                Mark_Non_ALFA_Subprogram
-                 ("exit must be directly in IF in 'A'L'F'A", N);
+                 ("exit must be directly in IF in ALFA", N);
                Check_SPARK_Restriction ("exit must be directly in IF", N);
             end if;
 
          elsif Nkind (Parent (Parent (N))) /= N_Loop_Statement then
             Mark_Non_ALFA_Subprogram
-              ("exit must be in IF directly in loop in 'A'L'F'A", N);
+              ("exit must be in IF directly in loop in ALFA", N);
             Check_SPARK_Restriction
               ("exit must be in IF directly in loop", N);
 
@@ -1276,7 +1276,7 @@ package body Sem_Ch5 is
 
          elsif Present (Else_Statements (Parent (N))) then
             Mark_Non_ALFA_Subprogram
-              ("exit must be in IF without ELSE in 'A'L'F'A", N);
+              ("exit must be in IF without ELSE in ALFA", N);
             Check_SPARK_Restriction ("exit must be in IF without ELSE", N);
 
             --  An exit in an ELSIF does not reach here, as it would have been
@@ -1284,7 +1284,7 @@ package body Sem_Ch5 is
 
          elsif Present (Elsif_Parts (Parent (N))) then
             Mark_Non_ALFA_Subprogram
-              ("exit must be in IF without ELSIF in 'A'L'F'A", N);
+              ("exit must be in IF without ELSIF in ALFA", N);
             Check_SPARK_Restriction ("exit must be in IF without ELSIF", N);
          end if;
       end if;
@@ -1313,7 +1313,7 @@ package body Sem_Ch5 is
       Label_Ent   : Entity_Id;
 
    begin
-      Mark_Non_ALFA_Subprogram ("goto statement is not in 'A'L'F'A", N);
+      Mark_Non_ALFA_Subprogram ("goto statement is not in ALFA", N);
       Check_SPARK_Restriction ("goto statement is not allowed", N);
 
       --  Actual semantic checks

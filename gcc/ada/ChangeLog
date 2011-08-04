@@ -1,3 +1,22 @@
+2011-08-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_strm.adb (Build_Array_Input_Function): if the array type is
+	constrained, do not attempt to build a subtype of it.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
+	* errout.ads Change comments: remove 'R'M as an example where quotes
+	are needed; add ALFA as another case where quotes are not needed
+	* erroutc.adb (Set_Msg_Insertion_Reserved_Word): add ALFA as another
+	case where quotes are not needed.
+	* sem_ch11.adb, sem_ch13.adb, sem_ch2.adb, sem_ch3.adb, sem_ch4.adb,
+	sem_ch5.adb, sem_ch6.adb, sem_ch9.adb, sem_prag.adb, sem_res.adb:
+	Remove all occurrences of 'A'L'F'A
+
+2011-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: check legality of invariant pragma.
+
 2011-08-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* bindgen.adb: Add comments.

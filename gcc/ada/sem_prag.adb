@@ -6144,7 +6144,7 @@ package body Sem_Prag is
                      then
                         Error_Pragma
                           ("pragma% is placed after violation"
-                           & " of 'A'L'F'A");
+                           & " of ALFA");
                      end if;
 
                      --  We treat this as a Rep_Item to record it on the rep

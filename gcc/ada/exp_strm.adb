@@ -195,15 +195,14 @@ package body Exp_Strm is
          Next_Index (Indx);
       end loop;
 
-      --  If the first subtype is constrained, use it directly. Otherwise
-      --  build a subtype indication with the proper bounds.
+      --  If the type is constrained, use it directly. Otherwise build a
+      --  subtype indication with the proper bounds.
 
-      if Is_Constrained (Stream_Base_Type (Typ)) then
+      if Is_Constrained (Typ) then
          Odecl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
-             Object_Definition   =>
-               New_Occurrence_Of (Stream_Base_Type (Typ), Loc));
+             Object_Definition   => New_Occurrence_Of (Typ, Loc));
       else
          Odecl :=
            Make_Object_Declaration (Loc,
