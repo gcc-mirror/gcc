@@ -1524,6 +1524,14 @@ package Prj is
    --  whether a project was already processed for instance.
 
    generic
+      with procedure Action (Project : Project_Id; Tree    : Project_Tree_Ref);
+   procedure For_Project_And_Aggregated
+     (Root_Project : Project_Id;
+      Root_Tree    : Project_Tree_Ref);
+   --  Execute Action for Root_Project and all its aggregated projects
+   --  recursively.
+
+   generic
       type State is limited private;
       with procedure Action
         (Project    : Project_Id;

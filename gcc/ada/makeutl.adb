@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Unchecked_Deallocation;
 with ALI;      use ALI;
 with Debug;
 with Err_Vars; use Err_Vars;
@@ -1224,6 +1225,9 @@ package body Makeutl is
       Current : Natural := 0;
       --  The index of the last main retrieved from the table
 
+      Count_Of_Mains_With_No_Tree : Natural := 0;
+      --  Number of main units for which we do not know the project tree
+
       --------------
       -- Add_Main --
       --------------
@@ -1236,6 +1240,12 @@ package body Makeutl is
          Tree     : Project_Tree_Ref := null)
       is
       begin
+         if Current_Verbosity = High then
+            Debug_Output ("Add_Main """ & Name & """ " & Index'Img
+                          & " with_tree? "
+                          & Boolean'Image (Tree /= null));
+         end if;
+
          Name_Len := 0;
          Add_Str_To_Name_Buffer (Name);
          Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
@@ -1243,6 +1253,14 @@ package body Makeutl is
          Names.Increment_Last;
          Names.Table (Names.Last) :=
            (Name_Find, Index, Location, No_Source, Project, Tree);
+
+         if Tree /= null then
+            Builder_Data (Tree).Number_Of_Mains :=
+              Builder_Data (Tree).Number_Of_Mains + 1;
+         else
+            Mains.Count_Of_Mains_With_No_Tree :=
+              Mains.Count_Of_Mains_With_No_Tree + 1;
+         end if;
       end Add_Main;
 
       --------------------------
@@ -1281,6 +1299,162 @@ package body Makeutl is
          Mains.Reset;
       end Delete;
 
+      --------------------
+      -- Complete_Mains --
+      --------------------
+
+      procedure Complete_Mains
+        (Root_Project : Project_Id;
+         Project_Tree : Project_Tree_Ref)
+      is
+         procedure Do_Complete (Project : Project_Id; Tree : Project_Tree_Ref);
+         --  Check the mains for this specific project
+
+         procedure Complete_All is new For_Project_And_Aggregated
+           (Do_Complete);
+
+         procedure Do_Complete
+           (Project : Project_Id; Tree : Project_Tree_Ref) is
+         begin
+            if Mains.Number_Of_Mains (Tree) > 0
+              or else Mains.Count_Of_Mains_With_No_Tree > 0
+            then
+               for J in Names.First .. Names.Last loop
+                  declare
+                     File       : Main_Info := Names.Table (J);
+                     Main_Id    : File_Name_Type := File.File;
+                     Main       : constant String := Get_Name_String (Main_Id);
+                     Source     : Prj.Source_Id := No_Source;
+                     Suffix     : File_Name_Type;
+                     Iter       : Source_Iterator;
+
+                  begin
+                     if Base_Name (Main) /= Main then
+                        if Is_Absolute_Path (Main) then
+                           Main_Id := Create_Name (Base_Name (Main));
+                        else
+                           Fail_Program
+                             (Tree,
+                              "mains cannot include directory information ("""
+                              & Main & """)");
+                        end if;
+                     end if;
+
+                     --  If no project or tree was specified for the main, it
+                     --  came from the command line. In this case, it needs to
+                     --  belong to the root project.
+                     --  Note that the assignments below will not modify inside
+                     --  the table itself.
+
+                     if File.Project = null then
+                        File.Project := Project;
+                     end if;
+
+                     if File.Tree = null then
+                        File.Tree := Project_Tree;
+                     end if;
+
+                     if File.Source = null then
+
+                        --  First, look for the main as specified.
+
+                        Source := Find_Source
+                          (In_Tree   => File.Tree,
+                           Project   => File.Project,
+                           Base_Name => File.File,
+                           Index     => File.Index);
+
+                        if Source = No_Source then
+                           --  Now look for the main with a body suffix
+
+                           declare
+                              --  Main already has a canonical casing
+                              Main : constant String :=
+                                Get_Name_String (Main_Id);
+                              Project : Project_Id;
+                           begin
+                              Project := File.Project;
+                              while Source = No_Source
+                                and then Project /= No_Project
+                              loop
+                                 Iter := For_Each_Source (File.Tree, Project);
+                                 loop
+                                    Source := Prj.Element (Iter);
+                                    exit when Source = No_Source;
+
+                                    --  Only consider bodies
+
+                                    if Source.Kind = Impl then
+                                       Get_Name_String (Source.File);
+
+                                       if Name_Len > Main'Length
+                                         and then Name_Buffer
+                                           (1 .. Main'Length) = Main
+                                       then
+                                          Suffix :=
+                                            Source.Language
+                                              .Config.Naming_Data.Body_Suffix;
+
+                                          exit when Suffix /= No_File and then
+                                            Name_Buffer
+                                              (Main'Length + 1 .. Name_Len) =
+                                              Get_Name_String (Suffix);
+                                       end if;
+                                    end if;
+
+                                    Next (Iter);
+                                 end loop;
+
+                                 Project := Project.Extends;
+                              end loop;
+                           end;
+                        end if;
+
+                        if Source /= No_Source then
+                           Debug_Output ("Found main in project",
+                                         Name_Id (Source.File));
+                           Names.Table (J).File    := Source.File;
+                           Names.Table (J).Project := File.Project;
+
+                           if Names.Table (J).Tree = null then
+                              Names.Table (J).Tree := File.Tree;
+
+                              Builder_Data (File.Tree).Number_Of_Mains :=
+                                Builder_Data (File.Tree).Number_Of_Mains + 1;
+                              Mains.Count_Of_Mains_With_No_Tree :=
+                                Mains.Count_Of_Mains_With_No_Tree - 1;
+                           end if;
+
+                           Names.Table (J).Source  := Source;
+
+                        elsif File.Location /= No_Location then
+                           --  If the main is declared in package Builder of
+                           --  the main project, report an error. If the main
+                           --  is on the command line, it may be a main from
+                           --  another project, so do nothing: if the main does
+                           --  not exist in another project, an error will be
+                           --  reported later.
+
+                           Error_Msg_File_1 := Main_Id;
+                           Error_Msg_Name_1 := Root_Project.Name;
+                           Errutil.Error_Msg
+                             ("{ is not a source of project %%",
+                              File.Location);
+                        end if;
+                     end if;
+                  end;
+               end loop;
+            end if;
+
+            if Total_Errors_Detected > 0 then
+               Fail_Program (Tree, "problems with main sources");
+            end if;
+         end Do_Complete;
+
+      begin
+         Complete_All (Root_Project, Project_Tree);
+      end Complete_Mains;
+
       -----------------------
       -- FIll_From_Project --
       -----------------------
@@ -1291,7 +1465,8 @@ package body Makeutl is
       is
          procedure Add_Mains_From_Project
            (Project : Project_Id; Tree    : Project_Tree_Ref);
-         --  Add the main units from this project into Mains
+         --  Add the main units from this project into Mains.
+         --  This takes into account the aggregated projects
 
          procedure Add_Mains_From_Project
            (Project : Project_Id;
@@ -1299,160 +1474,47 @@ package body Makeutl is
          is
             List    : String_List_Id;
             Element : String_Element;
-            Agg     : Aggregated_Project_List;
          begin
-            Debug_Output ("Add_Mains_From_Project", Project.Name);
-            case Project.Qualifier is
-               when Aggregate =>
-                  Agg := Project.Aggregated_Projects;
-                  while Agg /= null loop
-                     Add_Mains_From_Project (Agg.Project, Agg.Tree);
-                     Agg := Agg.Next;
+            if Number_Of_Mains (Tree) = 0
+              and then Mains.Count_Of_Mains_With_No_Tree = 0
+            then
+               Debug_Output ("Add_Mains_From_Project", Project.Name);
+               List := Project.Mains;
+               if List /= Prj.Nil_String then
+                  --  The attribute Main is not an empty list.
+                  --  Get the mains in the list
+
+                  while List /= Prj.Nil_String loop
+                     Element := Tree.Shared.String_Elements.Table (List);
+                     Debug_Output ("Add_Main", Element.Value);
+
+                     if Project.Library then
+                        Fail_Program
+                          (Tree,
+                           "cannot specify a main program " &
+                           "for a library project file");
+                     end if;
+
+                     Add_Main (Name     => Get_Name_String (Element.Value),
+                               Index    => Element.Index,
+                               Location => Element.Location,
+                               Project  => Project,
+                               Tree     => Tree);
+                     List := Element.Next;
                   end loop;
+               end if;
+            end if;
 
-               when others =>
-                  List := Project.Mains;
-                  if List /= Prj.Nil_String then
-                     --  The attribute Main is not an empty list.
-                     --  Get the mains in the list
-
-                     while List /= Prj.Nil_String loop
-                        Element := Tree.Shared.String_Elements.Table (List);
-                        Debug_Output ("Add_Main", Element.Value);
-                        Add_Main (Name     => Get_Name_String (Element.Value),
-                                  Index    => Element.Index,
-                                  Location => Element.Location,
-                                  Project  => Project,
-                                  Tree     => Tree);
-                        List := Element.Next;
-                     end loop;
-                  end if;
-            end case;
+            if Total_Errors_Detected > 0 then
+               Fail_Program (Tree, "problems with main sources");
+            end if;
          end Add_Mains_From_Project;
 
+         procedure Fill_All is new For_Project_And_Aggregated
+           (Add_Mains_From_Project);
+
       begin
-         if Number_Of_Mains = 0 then
-            Add_Mains_From_Project (Root_Project, Project_Tree);
-         end if;
-
-         --  If there are mains, check that they are sources of the main
-         --  project
-
-         if Mains.Number_Of_Mains > 0 then
-            for J in Names.First .. Names.Last loop
-               declare
-                  File       : Main_Info := Names.Table (J);
-                  Main_Id    : File_Name_Type := File.File;
-                  Main       : constant String := Get_Name_String (Main_Id);
-                  Project    : Project_Id;
-                  Source     : Prj.Source_Id := No_Source;
-                  Suffix     : File_Name_Type;
-                  Iter       : Source_Iterator;
-
-               begin
-                  if Base_Name (Main) /= Main then
-                     if Is_Absolute_Path (Main) then
-                        Main_Id := Create_Name (Base_Name (Main));
-
-                     else
-                        Fail_Program
-                          (Project_Tree,
-                           "mains cannot include directory information (""" &
-                           Main & """)");
-                     end if;
-                  end if;
-
-                  --  If no project or tree was specified for the main, it came
-                  --  from the command line. In this case, it needs to belong
-                  --  to the root project.
-                  --  Note that the assignments below will not modify inside
-                  --  the table itself.
-
-                  if File.Project = null then
-                     File.Project := Root_Project;
-                  end if;
-
-                  if File.Tree = null then
-                     File.Tree := Project_Tree;
-                  end if;
-
-                  --  First, look for the main as specified.
-
-                  Source := Find_Source
-                    (In_Tree   => File.Tree,
-                     Project   => File.Project,
-                     Base_Name => File.File,
-                     Index     => File.Index);
-
-                  if Source = No_Source then
-                     --  Now look for the main with a body suffix
-
-                     declare
-                        --  Main already has a canonical casing
-                        Main : constant String := Get_Name_String (Main_Id);
-                     begin
-                        Project := File.Project;
-                        while Source = No_Source
-                          and then Project /= No_Project
-                        loop
-                           Iter := For_Each_Source (File.Tree, Project);
-                           loop
-                              Source := Prj.Element (Iter);
-                              exit when Source = No_Source;
-
-                              --  Only consider bodies
-
-                              if Source.Kind = Impl then
-                                 Get_Name_String (Source.File);
-
-                                 if Name_Len > Main'Length
-                                   and then
-                                     Name_Buffer (1 .. Main'Length) = Main
-                                 then
-                                    Suffix :=
-                                      Source.Language
-                                        .Config.Naming_Data.Body_Suffix;
-
-                                    exit when Suffix /= No_File and then
-                                      Name_Buffer (Main'Length + 1 .. Name_Len)
-                                      = Get_Name_String (Suffix);
-                                 end if;
-                              end if;
-
-                              Next (Iter);
-                           end loop;
-
-                           Project := Project.Extends;
-                        end loop;
-                     end;
-                  end if;
-
-                  if Source /= No_Source then
-                     Names.Table (J).File    := Source.File;
-                     Names.Table (J).Project := File.Project;
-                     Names.Table (J).Tree    := File.Tree;
-                     Names.Table (J).Source  := Source;
-
-                  elsif File.Location /= No_Location then
-                     --  If the main is declared in package Builder of the
-                     --  main project, report an error. If the main is on
-                     --  the command line, it may be a main from another
-                     --  project, so do nothing: if the main does not exist
-                     --  in another project, an error will be reported
-                     --  later.
-
-                     Error_Msg_File_1 := Main_Id;
-                     Error_Msg_Name_1 := Root_Project.Name;
-                     Errutil.Error_Msg ("{ is not a source of project %%",
-                                        File.Location);
-                  end if;
-               end;
-            end loop;
-         end if;
-
-         if Total_Errors_Detected > 0 then
-            Fail_Program (Project_Tree, "problems with main sources");
-         end if;
+         Fill_All (Root_Project, Project_Tree);
       end Fill_From_Project;
 
       ---------------
@@ -1488,9 +1550,13 @@ package body Makeutl is
       -- Number_Of_Mains --
       ---------------------
 
-      function Number_Of_Mains return Natural is
+      function Number_Of_Mains (Tree : Project_Tree_Ref) return Natural is
       begin
-         return Names.Last;
+         if Tree = null then
+            return Names.Last;
+         else
+            return Builder_Data (Tree).Number_Of_Mains;
+         end if;
       end Number_Of_Mains;
 
       -----------
@@ -2017,7 +2083,7 @@ package body Makeutl is
          if Current_Verbosity = High then
             Write_Str ("Adding """);
             Debug_Display (Source);
-            Write_Line (" to the queue");
+            Write_Line (""" to the queue");
          end if;
 
          Q.Append (New_Val => (Info => Source, Processed => False));
@@ -2344,55 +2410,80 @@ package body Makeutl is
       ----------------------------
 
       procedure Insert_Project_Sources
-        (Project      : Project_Id;
-         Project_Tree : Project_Tree_Ref;
-         All_Projects : Boolean;
-         Unit_Based   : Boolean)
+        (Project        : Project_Id;
+         Project_Tree   : Project_Tree_Ref;
+         All_Projects   : Boolean;
+         Unique_Compile : Boolean)
       is
-         Iter   : Source_Iterator;
-         Source : Prj.Source_Id;
-      begin
-         Iter := For_Each_Source (Project_Tree);
-         loop
-            Source := Prj.Element (Iter);
-            exit when Source = No_Source;
+         procedure Do_Insert (Project : Project_Id; Tree : Project_Tree_Ref);
+         procedure Do_Insert (Project : Project_Id; Tree : Project_Tree_Ref) is
+            Unit_Based : constant Boolean :=
+              Unique_Compile
+              or else not Builder_Data (Tree).Closure_Needed;
+            --  When Unit_Based is True, put in the queue all compilable
+            --  sources including the unit based (Ada) one. When Unit_Based is
+            --  False, put the Ada sources only when they are in a library
+            --  project.
 
-            if Is_Compilable (Source)
-              and then
-                (All_Projects
-                 or else Is_Extending (Project, Source.Project))
-              and then not Source.Locally_Removed
-              and then Source.Replaced_By = No_Source
-              and then
-                (not Source.Project.Externally_Built
-                 or else
-                   (Is_Extending (Project, Source.Project)
-                    and then not Project.Externally_Built))
-              and then Source.Kind /= Sep
-              and then Source.Path /= No_Path_Information
+            Iter   : Source_Iterator;
+            Source : Prj.Source_Id;
+         begin
+            --  Nothing to do when "-u" was specified and some files were
+            --  specified on the command line
+
+            if Unique_Compile
+              and then Mains.Number_Of_Mains (Tree) > 0
             then
-               if Source.Kind = Impl
-                 or else (Source.Unit /= No_Unit_Index
-                          and then Source.Kind = Spec
-                          and then (Other_Part (Source) = No_Source
-                                    or else
-                                      Other_Part (Source).Locally_Removed))
-               then
-                  if (Unit_Based
-                      or else Source.Unit = No_Unit_Index
-                      or else Source.Project.Library)
-                    and then not Is_Subunit (Source)
-                  then
-                     Queue.Insert
-                       (Source => (Format => Format_Gprbuild,
-                                   Tree   => Project_Tree,
-                                   Id     => Source));
-                  end if;
-               end if;
+               return;
             end if;
 
-            Next (Iter);
-         end loop;
+            Iter := For_Each_Source (Tree);
+            loop
+               Source := Prj.Element (Iter);
+               exit when Source = No_Source;
+
+               if Is_Compilable (Source)
+                 and then
+                   (All_Projects
+                    or else Is_Extending (Project, Source.Project))
+                 and then not Source.Locally_Removed
+                 and then Source.Replaced_By = No_Source
+                 and then
+                   (not Source.Project.Externally_Built
+                    or else
+                      (Is_Extending (Project, Source.Project)
+                       and then not Project.Externally_Built))
+                 and then Source.Kind /= Sep
+                 and then Source.Path /= No_Path_Information
+               then
+                  if Source.Kind = Impl
+                    or else (Source.Unit /= No_Unit_Index
+                             and then Source.Kind = Spec
+                             and then (Other_Part (Source) = No_Source
+                                       or else
+                                         Other_Part (Source).Locally_Removed))
+                  then
+                     if (Unit_Based
+                         or else Source.Unit = No_Unit_Index
+                         or else Source.Project.Library)
+                       and then not Is_Subunit (Source)
+                     then
+                        Queue.Insert
+                          (Source => (Format => Format_Gprbuild,
+                                      Tree   => Tree,
+                                      Id     => Source));
+                     end if;
+                  end if;
+               end if;
+
+               Next (Iter);
+            end loop;
+         end Do_Insert;
+
+         procedure Insert_All is new For_Project_And_Aggregated (Do_Insert);
+
+      begin
+         Insert_All (Project, Project_Tree);
       end Insert_Project_Sources;
 
       -------------------------------
@@ -2479,5 +2570,98 @@ package body Makeutl is
          end loop;
       end Insert_Withed_Sources_For;
    end Queue;
+
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (Data : in out Builder_Project_Tree_Data) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Binding_Data_Record, Binding_Data);
+
+      TmpB, Binding : Binding_Data := Data.Binding;
+   begin
+      while Binding /= null loop
+         TmpB := Binding.Next;
+         Unchecked_Free (Binding);
+         Binding := TmpB;
+      end loop;
+   end Free;
+
+   ------------------
+   -- Builder_Data --
+   ------------------
+
+   function Builder_Data
+     (Tree : Project_Tree_Ref) return Builder_Data_Access
+   is
+   begin
+      if Tree.Appdata = null then
+         Tree.Appdata := new Builder_Project_Tree_Data;
+      end if;
+
+      return Builder_Data_Access (Tree.Appdata);
+   end Builder_Data;
+
+   --------------------------------
+   -- Compute_Compilation_Phases --
+   --------------------------------
+
+   procedure Compute_Compilation_Phases
+     (Tree                  : Project_Tree_Ref;
+      Root_Project          : Project_Id;
+      Option_Unique_Compile : Boolean := False;   --  Was "-u" specified ?
+      Option_Compile_Only   : Boolean := False;   --  Was "-c" specified ?
+      Option_Bind_Only      : Boolean := False;
+      Option_Link_Only      : Boolean := False)
+   is
+      procedure Do_Compute (Project : Project_Id; Tree : Project_Tree_Ref);
+
+      procedure Do_Compute (Project : Project_Id; Tree : Project_Tree_Ref) is
+         Data       : constant Builder_Data_Access := Builder_Data (Tree);
+         All_Phases : constant Boolean :=
+           not Option_Compile_Only
+           and then not Option_Bind_Only
+           and then not Option_Link_Only;
+         --  Whether the command line asked for all three phases. Depending on
+         --  the project settings, we might still disable some of the phases.
+
+         Has_Mains : constant Boolean := Data.Number_Of_Mains > 0;
+         --  Whether there are some main units defined for this project tree
+         --  (either from one of the projects, or from the command line)
+
+      begin
+         if Option_Unique_Compile then
+            --  If -u or -U is specified on the command line, disregard any -c,
+            --  -b or -l switch: only perform compilation.
+
+            Data.Closure_Needed   := False;
+            Data.Need_Compilation := True;
+            Data.Need_Binding     := False;
+            Data.Need_Linking     := False;
+
+         else
+            Data.Closure_Needed   := Has_Mains;
+            Data.Need_Compilation := All_Phases or Option_Compile_Only;
+            Data.Need_Binding     := All_Phases or Option_Bind_Only;
+            Data.Need_Linking     := (All_Phases or Option_Link_Only)
+              and then Has_Mains;
+         end if;
+
+         if Current_Verbosity = High then
+            Debug_Output ("Compilation phases: "
+                          & " compile=" & Data.Need_Compilation'Img
+                          & " bind=" & Data.Need_Binding'Img
+                          & " link=" & Data.Need_Linking'Img
+                          & " closure=" & Data.Closure_Needed'Img
+                          & " mains=" & Data.Number_Of_Mains'Img,
+                          Project.Name);
+         end if;
+      end Do_Compute;
+
+      procedure Compute_All is new For_Project_And_Aggregated (Do_Compute);
+   begin
+      Compute_All (Root_Project, Tree);
+   end Compute_Compilation_Phases;
 
 end Makeutl;
