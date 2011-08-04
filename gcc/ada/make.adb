@@ -2908,13 +2908,6 @@ package body Make is
                Do_Bind_Step := False;
                Do_Link_Step := False;
                Syntax_Only  := False;
-
-            elsif Args (J).all = "-gnatC"
-              or else Args (J).all = "-gnatcC"
-            then
-               --  If we compile with -gnatC, enable CodePeer globalize step
-
-               CodePeer_Mode := True;
             end if;
          end loop;
 
@@ -4879,12 +4872,14 @@ package body Make is
          return;
       end if;
 
-      --  If the objects were up-to-date check if the executable file
-      --  is also up-to-date. For now always bind and link on the JVM
-      --  since there is currently no simple way to check whether
-      --  objects are up-to-date.
+      --  If the objects were up-to-date check if the executable file is also
+      --  up-to-date. For now always bind and link on the JVM since there is
+      --  currently no simple way to check whether objects are up-to-date wrt
+      --  the executable. Similarly in CodePeer mode where there is no
+      --  executable.
 
       if Targparm.VM_Target /= JVM_Target
+        and then not CodePeer_Mode
         and then First_Compiled_File = No_File
       then
          Executable_Stamp := File_Stamp (Executable);
@@ -7838,9 +7833,9 @@ package body Make is
             Operating_Mode           := Check_Semantics;
             Check_Object_Consistency := False;
 
-            if not CodePeer_Mode
-              and then (Argv'Last < 7 or else Argv (7) /= 'C')
-            then
+            if Argv'Last >= 7 and then Argv (7) = 'C' then
+               CodePeer_Mode := True;
+            else
                Compile_Only := True;
                Do_Bind_Step := False;
                Do_Link_Step := False;

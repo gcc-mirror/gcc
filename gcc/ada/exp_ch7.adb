@@ -1130,8 +1130,8 @@ package body Exp_Ch7 is
       --  object.
 
       Has_Tagged_Types : Boolean := False;
-      --  A general flag which denotes whether N has at least one library-level
-      --  tagged type declaration.
+      --  A general flag which indicates whether N has at least one library-
+      --  level tagged type declaration.
 
       HSS : Node_Id := Empty;
       --  The sequence of statements of N (if available)
@@ -1741,6 +1741,7 @@ package body Exp_Ch7 is
                   then
                      Last_Top_Level_Ctrl_Construct := Decl;
                   end if;
+
                else
                   Process_Tagged_Type_Declaration (Decl);
                end if;
@@ -1757,6 +1758,7 @@ package body Exp_Ch7 is
                   then
                      Last_Top_Level_Ctrl_Construct := Decl;
                   end if;
+
                else
                   Process_Object_Declaration (Decl, Has_No_Init, Is_Protected);
                end if;
@@ -2774,19 +2776,15 @@ package body Exp_Ch7 is
          --  cases, the finalizer must be created and carry the additional
          --  statements.
 
-         if Acts_As_Clean
-           or else Has_Ctrl_Objs
-           or else Has_Tagged_Types
-         then
+         if Acts_As_Clean or Has_Ctrl_Objs or Has_Tagged_Types then
             Build_Components;
          end if;
 
          --  The preprocessing has determined that the context has controlled
          --  objects or library-level tagged types.
 
-         if Has_Ctrl_Objs
-           or else Has_Tagged_Types
-         then
+         if Has_Ctrl_Objs or Has_Tagged_Types then
+
             --  Private declarations are processed first in order to preserve
             --  possible dependencies between public and private objects.
 
@@ -2820,16 +2818,11 @@ package body Exp_Ch7 is
          --  cases, the finalizer must be created and carry the additional
          --  statements.
 
-         if Acts_As_Clean
-           or else Has_Ctrl_Objs
-           or else Has_Tagged_Types
-         then
+         if Acts_As_Clean or Has_Ctrl_Objs or Has_Tagged_Types then
             Build_Components;
          end if;
 
-         if Has_Ctrl_Objs
-           or else Has_Tagged_Types
-         then
+         if Has_Ctrl_Objs or Has_Tagged_Types then
             Process_Declarations (Stmts);
             Process_Declarations (Decls);
          end if;
@@ -2837,10 +2830,7 @@ package body Exp_Ch7 is
 
       --  Step 3: Finalizer creation
 
-      if Acts_As_Clean
-        or else Has_Ctrl_Objs
-        or else Has_Tagged_Types
-      then
+      if Acts_As_Clean or Has_Ctrl_Objs or Has_Tagged_Types then
          Create_Finalizer;
       end if;
    end Build_Finalizer;

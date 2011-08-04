@@ -446,6 +446,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-arit64$(objext) \
   s-assert$(objext) \
   s-atacco$(objext) \
+  s-atocou$(objext) \
   s-auxdec$(objext) \
   s-bitops$(objext) \
   s-boarop$(objext) \

@@ -477,6 +477,8 @@ package body Exp_Strm is
    begin
       Check_Restriction (No_Default_Stream_Attributes, N);
 
+      --  Are we sure following messages are issued in -gnatc mode ???
+
       if Restriction_Active (No_Default_Stream_Attributes) then
          Error_Msg_NE
            ("missing user-defined Input for type&", N, Etype (Targ));

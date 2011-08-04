@@ -29,9 +29,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is dummy version of the package.
+--  This package provides implementation of atomic counter for platforms where
+--  GCC supports __sync_add_and_fetch_4 and __sync_sub_and_fetch_4 builtins.
 
 package body System.Atomic_Counters is
+
+   procedure Sync_Add_And_Fetch
+     (Ptr   : access Unsigned_32;
+      Value : Unsigned_32);
+   pragma Import (Intrinsic, Sync_Add_And_Fetch, "__sync_add_and_fetch_4");
+
+   function Sync_Sub_And_Fetch
+     (Ptr   : access Unsigned_32;
+      Value : Unsigned_32) return Unsigned_32;
+   pragma Import (Intrinsic, Sync_Sub_And_Fetch, "__sync_sub_and_fetch_4");
 
    ---------------
    -- Decrement --
@@ -39,8 +50,7 @@ package body System.Atomic_Counters is
 
    function Decrement (Item : in out Atomic_Counter) return Boolean is
    begin
-      raise Program_Error;
-      return False;
+      return Sync_Sub_And_Fetch (Item.Value'Access, 1) = 0;
    end Decrement;
 
    ---------------
@@ -49,7 +59,7 @@ package body System.Atomic_Counters is
 
    procedure Increment (Item : in out Atomic_Counter) is
    begin
-      raise Program_Error;
+      Sync_Add_And_Fetch (Item.Value'Access, 1);
    end Increment;
 
    ------------
@@ -58,8 +68,7 @@ package body System.Atomic_Counters is
 
    function Is_One (Item : Atomic_Counter) return Boolean is
    begin
-      raise Program_Error;
-      return False;
+      return Item.Value = 1;
    end Is_One;
 
 end System.Atomic_Counters;

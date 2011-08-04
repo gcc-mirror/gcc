@@ -1,3 +1,29 @@
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb: Minor reformatting.
+
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_strm.adb: Minor reformatting.
+
+2011-08-04  Vadim Godunko  <godunko@adacore.com>
+
+	* s-atocou.adb: Replace by dummy version and use on targets where atomic
+	operations are not supported.
+	* s-atocou-builtin.adb: Renamed from s-atocou.adb.
+	* s-atocou-x86.adb: New file.
+	* Makefile.rtl: Add s-atocou.o file
+
+2011-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* make.adb (Compile): Move setting of CodePeer_Mode to ...
+	(Compilation_Phase): ... here.
+	(Scan_Make_Arg): Now bind and link by default in CodePeer mode.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* Make-generated.in: Fix minor typo in comment.
+
 2011-08-04  Thomas Quinot  <quinot@adacore.com>
 
 	* gnatls.adb: Use Prj.Env.Initialize_Default_Project_Path to retrieve
