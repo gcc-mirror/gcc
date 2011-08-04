@@ -2279,6 +2279,8 @@ package body Exp_Ch5 is
       if Compile_Time_Known_Value (Expr) then
          Alt := Find_Static_Alternative (N);
 
+         Process_Statements_For_Controlled_Objects (Alt);
+
          --  Move statements from this alternative after the case statement.
          --  They are already analyzed, so will be skipped by the analyzer.
 
@@ -2290,21 +2292,21 @@ package body Exp_Ch5 is
          Kill_Dead_Code (Expression (N));
 
          declare
-            A : Node_Id;
+            Dead_Alt : Node_Id;
 
          begin
             --  Loop through case alternatives, skipping pragmas, and skipping
             --  the one alternative that we select (and therefore retain).
 
-            A := First (Alternatives (N));
-            while Present (A) loop
-               if A /= Alt
-                 and then Nkind (A) = N_Case_Statement_Alternative
+            Dead_Alt := First (Alternatives (N));
+            while Present (Dead_Alt) loop
+               if Dead_Alt /= Alt
+                 and then Nkind (Dead_Alt) = N_Case_Statement_Alternative
                then
-                  Kill_Dead_Code (Statements (A), Warn_On_Deleted_Code);
+                  Kill_Dead_Code (Statements (Dead_Alt), Warn_On_Deleted_Code);
                end if;
 
-               Next (A);
+               Next (Dead_Alt);
             end loop;
          end;
 
@@ -2351,12 +2353,16 @@ package body Exp_Ch5 is
          Len := List_Length (Alternatives (N));
 
          if Len = 1 then
-            --  We still need to evaluate the expression if it has any
-            --  side effects.
+
+            --  We still need to evaluate the expression if it has any side
+            --  effects.
 
             Remove_Side_Effects (Expression (N));
 
-            Insert_List_After (N, Statements (First (Alternatives (N))));
+            Alt := First (Alternatives (N));
+
+            Process_Statements_For_Controlled_Objects (Alt);
+            Insert_List_After (N, Statements (Alt));
 
             --  That leaves the case statement as a shell. The alternative that
             --  will be executed is reset to a null list. So now we can kill
@@ -2365,7 +2371,6 @@ package body Exp_Ch5 is
             Kill_Dead_Code (Expression (N));
             Rewrite (N, Make_Null_Statement (Loc));
             return;
-         end if;
 
          --  An optimization. If there are only two alternatives, and only
          --  a single choice, then rewrite the whole case statement as an
@@ -2374,7 +2379,7 @@ package body Exp_Ch5 is
          --  simple form, but also with generated code (discriminant check
          --  functions in particular)
 
-         if Len = 2 then
+         elsif Len = 2 then
             Chlist := Discrete_Choices (First (Alternatives (N)));
 
             if List_Length (Chlist) = 1 then
@@ -2451,6 +2456,15 @@ package body Exp_Ch5 is
               (Others_Node, Discrete_Choices (Last_Alt));
             Set_Discrete_Choices (Last_Alt, New_List (Others_Node));
          end if;
+
+         Alt := First (Alternatives (N));
+         while Present (Alt)
+           and then Nkind (Alt) = N_Case_Statement_Alternative
+         loop
+            Process_Statements_For_Controlled_Objects (Alt);
+
+            Next (Alt);
+         end loop;
       end;
    end Expand_N_Case_Statement;
 
@@ -2525,6 +2539,8 @@ package body Exp_Ch5 is
       --  these warnings for expander generated code.
 
    begin
+      Process_Statements_For_Controlled_Objects (N);
+
       Adjust_Condition (Condition (N));
 
       --  The following loop deals with constant conditions for the IF. We
@@ -2610,6 +2626,8 @@ package body Exp_Ch5 is
       if Present (Elsif_Parts (N)) then
          E := First (Elsif_Parts (N));
          while Present (E) loop
+            Process_Statements_For_Controlled_Objects (E);
+
             Adjust_Condition (Condition (E));
 
             --  If there are condition actions, then rewrite the if statement
@@ -3064,6 +3082,8 @@ package body Exp_Ch5 is
          Rewrite (N, Make_Null_Statement (Loc));
          return;
       end if;
+
+      Process_Statements_For_Controlled_Objects (N);
 
       --  Deal with condition for C/Fortran Boolean
 

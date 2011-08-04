@@ -706,6 +706,11 @@ package Exp_Util is
    --  causes trouble for the back end (see Component_May_Be_Bit_Aligned for
    --  further details).
 
+   procedure Process_Statements_For_Controlled_Objects (N : Node_Id);
+   --  N is a node which contains a non-handled statement list. Inspect the
+   --  statements looking for declarations of controlled objects. If at least
+   --  one such object is found, wrap the statement list in a block.
+
    procedure Remove_Side_Effects
      (Exp          : Node_Id;
       Name_Req     : Boolean := False;
