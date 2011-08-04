@@ -335,10 +335,6 @@ package body Sem_Prag is
       --  Check the specified argument Arg to make sure that it is an integer
       --  literal. If not give error and raise Pragma_Exit.
 
-      procedure Check_Arg_Is_String_Literal (Arg : Node_Id);
-      --  Check the specified argument Arg to make sure that it is a string
-      --  literal. If not give error and raise Pragma_Exit.
-
       procedure Check_Arg_Is_Library_Level_Local_Name (Arg : Node_Id);
       --  Check the specified argument Arg to make sure that it has the proper
       --  syntactic form for a local name and meets the semantic requirements
@@ -426,9 +422,9 @@ package body Sem_Prag is
       --  Checks that the given argument has an identifier, and if so, requires
       --  it to match one of the given identifier names. If there is no
       --  identifier, or a non-matching identifier, then an error message is
-      --  given and Pragma_Exit is raised. ??? why is this needed, why isnt
-      --  Check_Arg_Is_One_Of good enough. At the very least explain this
-      --  odd apparent redundancy
+      --  given and Pragma_Exit is raised. This checks the optional identifier
+      --  of a pragma argument, not the argument itself like
+      --  Check_Arg_Is_One_Of does.
 
       procedure Check_In_Main_Program;
       --  Common checks for pragmas that appear within a main program
@@ -900,19 +896,6 @@ package body Sem_Prag is
               ("argument for pragma% must be integer literal", Argx);
          end if;
       end Check_Arg_Is_Integer_Literal;
-
-      ---------------------------------
-      -- Check_Arg_Is_String_Literal --
-      ---------------------------------
-
-      procedure Check_Arg_Is_String_Literal (Arg : Node_Id) is
-         Argx : constant Node_Id := Get_Pragma_Arg (Arg);
-      begin
-         if Nkind (Argx) /= N_String_Literal then
-            Error_Pragma_Arg
-              ("argument for pragma% must be string literal", Argx);
-         end if;
-      end Check_Arg_Is_String_Literal;
 
       -------------------------------------------
       -- Check_Arg_Is_Library_Level_Local_Name --
@@ -13264,17 +13247,12 @@ package body Sem_Prag is
          -- Test_Case --
          ---------------
 
-         --  pragma Test_Case ([Name     =>] String_EXPRESSION
+         --  pragma Test_Case ([Name     =>] static_string_EXPRESSION
          --                   ,[Mode     =>] (Normal | Robustness)
          --                  [, Requires =>  Boolean_EXPRESSION]
          --                  [, Ensures  =>  Boolean_EXPRESSION]);
 
-         --  ??? Why is Name not static_string_EXPRESSION??? Seems very
-         --  weird to require it to be a string literal, and if we DO want
-         --  that restriction the grammar should make this clear.
-
          when Pragma_Test_Case => Test_Case : declare
-
          begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (3);
@@ -13283,7 +13261,7 @@ package body Sem_Prag is
               ((Name_Name, Name_Mode, Name_Requires, Name_Ensures));
 
             Check_Optional_Identifier (Arg1, Name_Name);
-            Check_Arg_Is_String_Literal (Arg1);
+            Check_Arg_Is_Static_Expression (Arg1, Standard_String);
             Check_Optional_Identifier (Arg2, Name_Mode);
             Check_Arg_Is_One_Of (Arg2, Name_Normal, Name_Robustness);
 
@@ -13291,9 +13269,6 @@ package body Sem_Prag is
                Check_Identifier (Arg3, Name_Requires);
                Check_Identifier (Arg4, Name_Ensures);
             else
-               --  ??? why not Check_Arg_Is_One_Of, very odd!!! At the very
-               --  least needs an explanation!
-
                Check_Identifier_Is_One_Of (Arg3, Name_Requires, Name_Ensures);
             end if;
 

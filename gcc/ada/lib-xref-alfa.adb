@@ -524,6 +524,10 @@ package body ALFA is
          function Is_ALFA_Scope (E : Entity_Id) return Boolean;
          --  Return whether the entity or reference scope is adequate
 
+         function Is_Global_Constant (E : Entity_Id) return Boolean;
+         --  Return True if E is a global constant for which we should ignore
+         --  reads in ALFA.
+
          -------------------
          -- Is_ALFA_Scope --
          -------------------
@@ -536,6 +540,16 @@ package body ALFA is
               and then Get_Scope_Num (E) /= No_Scope;
          end Is_ALFA_Scope;
 
+         ------------------------
+         -- Is_Global_Constant --
+         ------------------------
+
+         function Is_Global_Constant (E : Entity_Id) return Boolean is
+         begin
+            return Ekind (E) in E_Constant
+              and then Ekind_In (Scope (E), E_Package, E_Package_Body);
+         end Is_Global_Constant;
+
          --  Start of processing for Eliminate_Before_Sort
       begin
 
@@ -547,6 +561,7 @@ package body ALFA is
               and then ALFA_References (Xrefs.Table (Rnums (J)).Typ)
               and then Is_ALFA_Scope (Xrefs.Table (Rnums (J)).Ent_Scope)
               and then Is_ALFA_Scope (Xrefs.Table (Rnums (J)).Ref_Scope)
+              and then not Is_Global_Constant (Xrefs.Table (Rnums (J)).Ent)
             then
                Nrefs         := Nrefs + 1;
                Rnums (Nrefs) := Rnums (J);

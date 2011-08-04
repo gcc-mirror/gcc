@@ -3971,9 +3971,14 @@ package body Sem_Res is
             Eval_Actual (A);
 
             --  If it is a named association, treat the selector_name as a
-            --  proper identifier, and mark the corresponding entity.
+            --  proper identifier, and mark the corresponding entity. Ignore
+            --  this reference in ALFA mode, as it refers to an entity not in
+            --  scope at the point of reference, so the reference should be
+            --  ignored for computing effects of subprograms.
 
-            if Nkind (Parent (A)) = N_Parameter_Association then
+            if Nkind (Parent (A)) = N_Parameter_Association
+              and then not ALFA_Mode
+            then
                Set_Entity (Selector_Name (Parent (A)), F);
                Generate_Reference (F, Selector_Name (Parent (A)));
                Set_Etype (Selector_Name (Parent (A)), F_Typ);
