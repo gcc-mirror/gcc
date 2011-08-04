@@ -186,4 +186,7 @@ package Prj.Conf is
    --  Returns the runtime name for a language. Returns an empty string if no
    --  runtime was specified for the language using option --RTS.
 
+   function Runtime_Name_Set_For (Language : Name_Id) return Boolean;
+   --  Returns True only of Set_Runtime_For has been called for the Language
+
 end Prj.Conf;

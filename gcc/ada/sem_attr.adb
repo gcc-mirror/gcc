@@ -1633,6 +1633,39 @@ package body Sem_Attr is
             Check_Restriction (No_Streams, P);
          end if;
 
+         --  AI05-0057: if restriction No_Default_Stream_Attributes is active,
+         --  it is illegal to use a predefined elementary type stream attribute
+         --  either by itself, or more importantly as part of the attribute
+         --  subprogram for a composite type.
+
+         if Restriction_Active (No_Default_Stream_Attributes) then
+            declare
+               T : Entity_Id;
+            begin
+               if Nam = TSS_Stream_Input
+                 or else Nam = TSS_Stream_Read
+               then
+                  T :=
+                    Type_Without_Stream_Operation (P_Type, TSS_Stream_Read);
+               else
+                  T :=
+                    Type_Without_Stream_Operation (P_Type, TSS_Stream_Write);
+               end if;
+
+               if Present (T) then
+                  Check_Restriction (No_Default_Stream_Attributes, N);
+
+                  Error_Msg_NE
+                    ("missing user-defined Stream Read or Write for type&",
+                      N, T);
+                  if not Is_Elementary_Type (P_Type) then
+                     Error_Msg_NE
+                     ("\which is a component of type&", N, P_Type);
+                  end if;
+               end if;
+            end;
+         end if;
+
          --  Check special case of Exception_Id and Exception_Occurrence which
          --  are not allowed for restriction No_Exception_Registration.
 

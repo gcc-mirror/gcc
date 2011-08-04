@@ -1558,7 +1558,8 @@ package body Exp_Ch7 is
            and then Exceptions_OK
          then
             Prepend_List_To (Finalizer_Decls,
-              Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id));
+              Build_Object_Declarations
+                (Loc, Abort_Id, E_Id, Raised_Id, For_Package));
          end if;
 
          --  Create the body of the finalizer
@@ -2926,10 +2927,11 @@ package body Exp_Ch7 is
    -------------------------------
 
    function Build_Object_Declarations
-     (Loc       : Source_Ptr;
-      Abort_Id  : Entity_Id;
-      E_Id      : Entity_Id;
-      Raised_Id : Entity_Id) return List_Id
+     (Loc         : Source_Ptr;
+      Abort_Id    : Entity_Id;
+      E_Id        : Entity_Id;
+      Raised_Id   : Entity_Id;
+      For_Package : Boolean := False) return List_Id
    is
       A_Expr : Node_Id;
       E_Decl : Node_Id;
@@ -2956,8 +2958,12 @@ package body Exp_Ch7 is
       --  does not include routine Raise_From_Controlled_Operation which is the
       --  the sole user of flag Abort.
 
+      --  This is not needed for library-level finalizers as they are called
+      --  by the environment task and cannot be aborted.
+
       if Abort_Allowed
         and then VM_Target = No_VM
+        and then not For_Package
       then
          declare
             Temp_Id : constant Entity_Id := Make_Temporary (Loc, 'E');
