@@ -202,35 +202,34 @@ package body Exp_Strm is
          Odecl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
-             Object_Definition =>
+             Object_Definition   =>
                New_Occurrence_Of (Stream_Base_Type (Typ), Loc));
       else
          Odecl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
-             Object_Definition =>
+             Object_Definition   =>
                Make_Subtype_Indication (Loc,
                  Subtype_Mark =>
                    New_Occurrence_Of (Stream_Base_Type (Typ), Loc),
-                 Constraint =>
-                   Make_Index_Or_Discriminant_Constraint (Loc,
-                     Constraints => Ranges)));
+                 Constraint   =>
+                   Make_Index_Or_Discriminant_Constraint (Loc, Ranges)));
       end if;
 
-      Rstmt := Make_Attribute_Reference (Loc,
-                 Prefix         => New_Occurrence_Of (Typ, Loc),
-                 Attribute_Name => Name_Read,
-                 Expressions    => New_List (
-                   Make_Identifier (Loc, Name_S),
-                   Make_Identifier (Loc, Name_V)));
+      Rstmt :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => New_Occurrence_Of (Typ, Loc),
+          Attribute_Name => Name_Read,
+          Expressions    => New_List (
+            Make_Identifier (Loc, Name_S),
+            Make_Identifier (Loc, Name_V)));
 
       if Ada_Version >= Ada_2005 then
          Stms := New_List (
             Make_Extended_Return_Statement (Loc,
               Return_Object_Declarations => New_List (Odecl),
               Handled_Statement_Sequence =>
-                Make_Handled_Sequence_Of_Statements (Loc,
-                  New_List (Rstmt))));
+                Make_Handled_Sequence_Of_Statements (Loc, New_List (Rstmt))));
       else
          --  pragma Assert (not Is_Limited_Type (Typ));
          --  Returning a local object, shouldn't happen in the case of a
@@ -1200,10 +1199,9 @@ package body Exp_Strm is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (
                    Make_Attribute_Reference (Loc,
-                     Prefix =>
-                       New_Occurrence_Of (Typ, Loc),
+                     Prefix         => New_Occurrence_Of (Typ, Loc),
                      Attribute_Name => Name_Read,
-                     Expressions => New_List (
+                     Expressions    => New_List (
                        Make_Identifier (Loc, Name_S),
                        Make_Identifier (Loc, Name_V)))))));
       else

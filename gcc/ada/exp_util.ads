@@ -484,13 +484,11 @@ package Exp_Util is
    --  Return the stream size value of the subtype E
 
    function Has_Access_Constraint (E : Entity_Id) return Boolean;
-   --  Given object or type E, determine whether a discriminant is of an access
-   --  type.
+   --  Given object or type E, determine if a discriminant is of an access type
 
    function Has_Controlled_Objects (N : Node_Id) return Boolean;
-   --  Given an arbitrary node N, determine whether it has a declarative or a
-   --  statement part and whether those lists contain at least one controlled
-   --  object.
+   --  Given a node N, determine if it has a declarative or a statement part
+   --  and whether those lists contain at least one controlled object.
 
    function Has_Controlled_Objects
      (L           : List_Id;

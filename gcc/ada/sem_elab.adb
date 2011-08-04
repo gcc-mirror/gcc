@@ -661,6 +661,7 @@ package body Sem_Elab is
                declare
                   Typ  : constant Entity_Id := Etype (First_Formal (Ent));
                   Init : Entity_Id;
+
                begin
                   if not Is_Controlled (Typ) then
                      return;
@@ -2156,9 +2157,10 @@ package body Sem_Elab is
                   Insert_Action (Declaration_Node (E),
                     Make_Object_Declaration (Loce,
                       Defining_Identifier => Ent,
-                      Object_Definition =>
+                      Object_Definition   =>
                         New_Occurrence_Of (Standard_Integer, Loce),
-                      Expression => Make_Integer_Literal (Loc, Uint_0)));
+                      Expression          =>
+                        Make_Integer_Literal (Loc, Uint_0)));
 
                   --  Set elaboration flag at the point of the body
 
@@ -2182,7 +2184,7 @@ package body Sem_Elab is
             Insert_Elab_Check (N,
                Make_Attribute_Reference (Loc,
                  Attribute_Name => Name_Elaborated,
-                 Prefix => New_Occurrence_Of (E, Loc)));
+                 Prefix         => New_Occurrence_Of (E, Loc)));
          end if;
 
          --  Generate the warning

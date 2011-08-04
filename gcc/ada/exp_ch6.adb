@@ -1790,8 +1790,7 @@ package body Exp_Ch6 is
       --  called.
 
       function Is_Direct_Deep_Call (Subp : Entity_Id) return Boolean;
-      --  Determine whether Subp denotes a non-dispatching call to a Deep
-      --  routine.
+      --  Determine if Subp denotes a non-dispatching call to a Deep routine
 
       function New_Value (From : Node_Id) return Node_Id;
       --  From is the original Expression. New_Value is equivalent to a call
@@ -4465,19 +4464,17 @@ package body Exp_Ch6 is
                Append_To (Decls,
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Pool_Id,
-                   Subtype_Mark =>
+                   Subtype_Mark        =>
                      New_Reference_To (RTE (RE_Root_Storage_Pool), Loc),
-                   Name =>
+                   Name                =>
                      Make_Explicit_Dereference (Loc,
                        Prefix =>
                          Make_Function_Call (Loc,
-                           Name =>
+                           Name                   =>
                              New_Reference_To (RTE (RE_Base_Pool), Loc),
-
                            Parameter_Associations => New_List (
                              Make_Explicit_Dereference (Loc,
-                               Prefix =>
-                                 New_Reference_To (Collect, Loc)))))));
+                               Prefix => New_Reference_To (Collect, Loc)))))));
 
                --  Create an access type which uses the storage pool of the
                --  caller's collection. This additional type is necessary
@@ -4493,7 +4490,7 @@ package body Exp_Ch6 is
                Append_To (Decls,
                  Make_Full_Type_Declaration (Loc,
                    Defining_Identifier => Ptr_Typ,
-                   Type_Definition =>
+                   Type_Definition     =>
                      Make_Access_To_Object_Definition (Loc,
                        Subtype_Indication =>
                          New_Reference_To (Ret_Typ, Loc))));
@@ -4514,7 +4511,7 @@ package body Exp_Ch6 is
                Append_To (Decls,
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Local_Id,
-                   Object_Definition =>
+                   Object_Definition   =>
                      New_Reference_To (Ptr_Typ, Loc)));
 
                --  Allocate the object, generate:
@@ -4523,8 +4520,7 @@ package body Exp_Ch6 is
 
                Append_To (Stmts,
                  Make_Assignment_Statement (Loc,
-                   Name =>
-                     New_Reference_To (Local_Id, Loc),
+                   Name       => New_Reference_To (Local_Id, Loc),
                    Expression => Alloc_Expr));
 
                --  Generate:
@@ -4532,8 +4528,7 @@ package body Exp_Ch6 is
 
                Append_To (Stmts,
                  Make_Assignment_Statement (Loc,
-                   Name =>
-                     New_Reference_To (Temp_Id, Loc),
+                   Name       => New_Reference_To (Temp_Id, Loc),
                    Expression =>
                      Unchecked_Convert_To (Temp_Typ,
                        New_Reference_To (Local_Id, Loc))));
@@ -4554,16 +4549,14 @@ package body Exp_Ch6 is
 
                return
                  Make_If_Statement (Loc,
-                   Condition =>
+                   Condition       =>
                      Make_Op_Ne (Loc,
-                       Left_Opnd =>
-                         New_Reference_To (Collect, Loc),
-                       Right_Opnd =>
-                         Make_Null (Loc)),
+                       Left_Opnd  => New_Reference_To (Collect, Loc),
+                       Right_Opnd => Make_Null (Loc)),
 
                    Then_Statements => New_List (
                      Make_Block_Statement (Loc,
-                       Declarations => Decls,
+                       Declarations               => Decls,
                        Handled_Statement_Sequence =>
                          Make_Handled_Sequence_Of_Statements (Loc,
                            Statements => Stmts))));
@@ -4576,8 +4569,7 @@ package body Exp_Ch6 is
          else
             return
               Make_Assignment_Statement (Loc,
-                Name =>
-                  New_Reference_To (Temp_Id, Loc),
+                Name       => New_Reference_To (Temp_Id, Loc),
                 Expression => Alloc_Expr);
          end if;
       end Build_Heap_Allocator;
@@ -4616,7 +4608,7 @@ package body Exp_Ch6 is
 
          return
            Make_Procedure_Call_Statement (Loc,
-             Name =>
+             Name                   =>
                New_Reference_To (RTE (RE_Move_Activation_Chain), Loc),
              Parameter_Associations => New_List (From, To, New_Master));
       end Move_Activation_Chain;
@@ -4666,10 +4658,9 @@ package body Exp_Ch6 is
             Flag_Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Flag_Id,
-                Object_Definition =>
-                  New_Reference_To (Standard_Boolean, Loc),
-                Expression =>
-                  New_Reference_To (Standard_False, Loc));
+                  Object_Definition =>
+                    New_Reference_To (Standard_Boolean, Loc),
+                  Expression        => New_Reference_To (Standard_False, Loc));
 
             Prepend_To (Declarations (Func_Bod), Flag_Decl);
             Analyze (Flag_Decl);
@@ -4695,7 +4686,7 @@ package body Exp_Ch6 is
          else
             Stmts := New_List (
               Make_Block_Statement (Loc,
-                Declarations => New_List,
+                Declarations               => New_List,
                 Handled_Statement_Sequence => HSS));
          end if;
 
@@ -4710,7 +4701,7 @@ package body Exp_Ch6 is
          --  the case of result types with task parts.
 
          if Is_Build_In_Place
-           and Has_Task (Etype (Par_Func))
+           and then Has_Task (Etype (Par_Func))
          then
             Append_To (Stmts, Move_Activation_Chain);
          end if;
@@ -4730,10 +4721,8 @@ package body Exp_Ch6 is
 
                Append_To (Stmts,
                  Make_Assignment_Statement (Loc,
-                   Name =>
-                     New_Reference_To (Flag_Id, Loc),
-                   Expression =>
-                     New_Reference_To (Standard_True, Loc)));
+                   Name       => New_Reference_To (Flag_Id, Loc),
+                   Expression => New_Reference_To (Standard_True, Loc)));
             end;
          end if;
 
@@ -4741,8 +4730,7 @@ package body Exp_Ch6 is
 
          Return_Stmt :=
            Make_Simple_Return_Statement (Loc,
-             Expression =>
-               New_Occurrence_Of (Ret_Obj_Id, Loc));
+             Expression => New_Occurrence_Of (Ret_Obj_Id, Loc));
          Append_To (Stmts, Return_Stmt);
 
          HSS := Make_Handled_Sequence_Of_Statements (Loc, Stmts);
@@ -4753,7 +4741,7 @@ package body Exp_Ch6 is
       if Present (HSS) then
          Result :=
            Make_Block_Statement (Loc,
-             Declarations => Return_Object_Declarations (N),
+             Declarations               => Return_Object_Declarations (N),
              Handled_Statement_Sequence => HSS);
 
          --  We set the entity of the new block statement to be that of the
@@ -4777,8 +4765,8 @@ package body Exp_Ch6 is
          then
             pragma Assert
               (Nkind (Original_Node (Ret_Obj_Decl)) = N_Object_Declaration
-                 and then Is_Build_In_Place_Function_Call
-                            (Expression (Original_Node (Ret_Obj_Decl))));
+                and then Is_Build_In_Place_Function_Call
+                           (Expression (Original_Node (Ret_Obj_Decl))));
 
             --  Return the build-in-place result by reference
 
@@ -4853,10 +4841,8 @@ package body Exp_Ch6 is
                then
                   Init_Assignment :=
                     Make_Assignment_Statement (Loc,
-                      Name =>
-                        New_Reference_To (Return_Obj_Id, Loc),
-                      Expression =>
-                        Relocate_Node (Return_Obj_Expr));
+                      Name       => New_Reference_To (Return_Obj_Id, Loc),
+                      Expression => Relocate_Node (Return_Obj_Expr));
 
                   Set_Etype (Name (Init_Assignment), Etype (Return_Obj_Id));
                   Set_Assignment_OK (Name (Init_Assignment));
@@ -4875,7 +4861,7 @@ package body Exp_Ch6 is
                        Make_Type_Conversion (Loc,
                          Subtype_Mark =>
                            New_Occurrence_Of (Etype (Return_Obj_Id), Loc),
-                         Expression =>
+                         Expression   =>
                            Relocate_Node (Expression (Init_Assignment))));
                   end if;
 
@@ -4942,9 +4928,9 @@ package body Exp_Ch6 is
                      Ptr_Type_Decl :=
                        Make_Full_Type_Declaration (Loc,
                          Defining_Identifier => Ref_Type,
-                         Type_Definition =>
+                         Type_Definition     =>
                            Make_Access_To_Object_Definition (Loc,
-                             All_Present => True,
+                             All_Present        => True,
                              Subtype_Indication =>
                                New_Reference_To (Return_Obj_Typ, Loc)));
 
@@ -4961,7 +4947,7 @@ package body Exp_Ch6 is
                      Alloc_Obj_Decl :=
                        Make_Object_Declaration (Loc,
                          Defining_Identifier => Alloc_Obj_Id,
-                         Object_Definition =>
+                         Object_Definition   =>
                            New_Reference_To (Ref_Type, Loc));
 
                      Insert_Before (Ret_Obj_Decl, Alloc_Obj_Decl);
@@ -4988,7 +4974,7 @@ package body Exp_Ch6 is
                                 Subtype_Mark =>
                                   New_Reference_To
                                     (Etype (Return_Obj_Expr), Loc),
-                                Expression =>
+                                Expression   =>
                                   New_Copy_Tree (Return_Obj_Expr)));
 
                      else
@@ -5089,7 +5075,7 @@ package body Exp_Ch6 is
                        Make_If_Statement (Loc,
                          Condition =>
                            Make_Op_Eq (Loc,
-                             Left_Opnd =>
+                             Left_Opnd  =>
                                New_Reference_To (Obj_Alloc_Formal, Loc),
                              Right_Opnd =>
                                Make_Integer_Literal (Loc,
@@ -5098,20 +5084,20 @@ package body Exp_Ch6 is
 
                          Then_Statements => New_List (
                            Make_Assignment_Statement (Loc,
-                             Name =>
+                             Name       =>
                                New_Reference_To (Alloc_Obj_Id, Loc),
                              Expression =>
                                Make_Unchecked_Type_Conversion (Loc,
                                  Subtype_Mark =>
                                    New_Reference_To (Ref_Type, Loc),
-                                 Expression =>
+                                 Expression   =>
                                    New_Reference_To (Object_Access, Loc)))),
 
                          Elsif_Parts => New_List (
                            Make_Elsif_Part (Loc,
                              Condition =>
                                Make_Op_Eq (Loc,
-                                 Left_Opnd =>
+                                 Left_Opnd  =>
                                    New_Reference_To (Obj_Alloc_Formal, Loc),
                                  Right_Opnd =>
                                    Make_Integer_Literal (Loc,
@@ -5120,7 +5106,7 @@ package body Exp_Ch6 is
 
                              Then_Statements => New_List (
                                Make_Assignment_Statement (Loc,
-                                 Name =>
+                                 Name       =>
                                    New_Reference_To (Alloc_Obj_Id, Loc),
                                  Expression => SS_Allocator)))),
 
@@ -5143,15 +5129,13 @@ package body Exp_Ch6 is
                      if Present (Init_Assignment) then
                         Rewrite (Name (Init_Assignment),
                           Make_Explicit_Dereference (Loc,
-                            Prefix =>
-                              New_Reference_To (Alloc_Obj_Id, Loc)));
+                            Prefix => New_Reference_To (Alloc_Obj_Id, Loc)));
 
                         Set_Etype
                           (Name (Init_Assignment), Etype (Return_Obj_Id));
 
                         Append_To
-                          (Then_Statements (Alloc_If_Stmt),
-                           Init_Assignment);
+                          (Then_Statements (Alloc_If_Stmt), Init_Assignment);
                      end if;
 
                      Insert_Before (Ret_Obj_Decl, Alloc_If_Stmt);
@@ -5169,16 +5153,15 @@ package body Exp_Ch6 is
 
                Obj_Acc_Deref :=
                  Make_Explicit_Dereference (Loc,
-                   Prefix =>
-                     New_Reference_To (Object_Access, Loc));
+                   Prefix => New_Reference_To (Object_Access, Loc));
 
                Rewrite (Ret_Obj_Decl,
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Return_Obj_Id,
-                   Access_Definition => Empty,
-                   Subtype_Mark =>
+                   Access_Definition   => Empty,
+                   Subtype_Mark        =>
                      New_Occurrence_Of (Return_Obj_Typ, Loc),
-                   Name => Obj_Acc_Deref));
+                   Name                => Obj_Acc_Deref));
 
                Set_Renamed_Object (Return_Obj_Id, Obj_Acc_Deref);
             end;
@@ -5358,10 +5341,8 @@ package body Exp_Ch6 is
               and then not Comes_From_Source (Parent (S))
             then
                Loc := Sloc (Last_Stm);
-
             elsif Present (End_Label (H)) then
                Loc := Sloc (End_Label (H));
-
             else
                Loc := Sloc (Last_Stm);
             end if;
@@ -5580,8 +5561,7 @@ package body Exp_Ch6 is
             Set_Declarations (N, Empty_List);
             Set_Handled_Statement_Sequence (N,
               Make_Handled_Sequence_Of_Statements (Loc,
-                Statements => New_List (
-                  Make_Null_Statement (Loc))));
+                Statements => New_List (Make_Null_Statement (Loc))));
             return;
          end if;
       end if;
@@ -5935,11 +5915,10 @@ package body Exp_Ch6 is
                New_Reference_To (RTE (RE_Complete_Entry_Body), Loc),
              Parameter_Associations => New_List (
                Make_Attribute_Reference (Loc,
-                 Prefix =>
+                 Prefix         =>
                    New_Reference_To
                      (Find_Protection_Object (Current_Scope), Loc),
-                 Attribute_Name =>
-                   Name_Unchecked_Access)));
+                 Attribute_Name => Name_Unchecked_Access)));
 
          Insert_Before (N, Call);
          Analyze (Call);
@@ -6020,7 +5999,7 @@ package body Exp_Ch6 is
             Decls := New_List (
               Make_Full_Type_Declaration (Loc,
                 Defining_Identifier => Obj_Ptr,
-                  Type_Definition =>
+                  Type_Definition   =>
                      Make_Access_To_Object_Definition (Loc,
                        Subtype_Indication =>
                          New_Reference_To
@@ -6031,8 +6010,9 @@ package body Exp_Ch6 is
 
             Rec :=
               Make_Explicit_Dereference (Loc,
-                Unchecked_Convert_To (Obj_Ptr,
-                  New_Occurrence_Of (Param, Loc)));
+                Prefix =>
+                  Unchecked_Convert_To (Obj_Ptr,
+                    New_Occurrence_Of (Param, Loc)));
 
             --  Analyze new actual. Other actuals in calls are already analyzed
             --  and the list of actuals is not reanalyzed after rewriting.
@@ -6057,14 +6037,13 @@ package body Exp_Ch6 is
       Rec   : Node_Id;
 
    begin
-      --  If the protected object is not an enclosing scope, this is
-      --  an inter-object function call. Inter-object procedure
-      --  calls are expanded by Exp_Ch9.Build_Simple_Entry_Call.
-      --  The call is intra-object only if the subprogram being
-      --  called is in the protected body being compiled, and if the
-      --  protected object in the call is statically the enclosing type.
-      --  The object may be an component of some other data structure,
-      --  in which case this must be handled as an inter-object call.
+      --  If the protected object is not an enclosing scope, this is an
+      --  inter-object function call. Inter-object procedure calls are expanded
+      --  by Exp_Ch9.Build_Simple_Entry_Call. The call is intra-object only if
+      --  the subprogram being called is in the protected body being compiled,
+      --  and if the protected object in the call is statically the enclosing
+      --  type. The object may be an component of some other data structure, in
+      --  which case this must be handled as an inter-object call.
 
       if not In_Open_Scopes (Scop)
         or else not Is_Entity_Name (Name (N))
@@ -6078,8 +6057,8 @@ package body Exp_Ch6 is
          end if;
 
          Build_Protected_Subprogram_Call (N,
-           Name => New_Occurrence_Of (Subp, Sloc (N)),
-           Rec =>  Convert_Concurrent (Rec, Etype (Rec)),
+           Name     => New_Occurrence_Of (Subp, Sloc (N)),
+           Rec      =>  Convert_Concurrent (Rec, Etype (Rec)),
            External => True);
 
       else
@@ -6431,15 +6410,16 @@ package body Exp_Ch6 is
               Make_Raise_Constraint_Error (Loc,
                 Condition =>
                   Make_Op_Ne (Loc,
-                    Left_Opnd =>
+                    Left_Opnd  =>
                       Make_Selected_Component (Loc,
                         Prefix        => Duplicate_Subexpr (Exp),
                         Selector_Name => Make_Identifier (Loc, Name_uTag)),
                     Right_Opnd =>
                       Make_Attribute_Reference (Loc,
-                        Prefix => New_Occurrence_Of (Base_Type (Utyp), Loc),
+                        Prefix         =>
+                          New_Occurrence_Of (Base_Type (Utyp), Loc),
                         Attribute_Name => Name_Tag)),
-                Reason => CE_Tag_Check_Failed));
+                Reason    => CE_Tag_Check_Failed));
 
          --  If the result type is a specific nonlimited tagged type, then we
          --  have to ensure that the tag of the result is that of the result
@@ -6494,7 +6474,7 @@ package body Exp_Ch6 is
             or else Nkind_In (Exp, N_Type_Conversion,
                                    N_Unchecked_Type_Conversion)
             or else (Is_Entity_Name (Exp)
-                       and then Ekind (Entity (Exp)) in Formal_Kind)
+                      and then Ekind (Entity (Exp)) in Formal_Kind)
             or else Scope_Depth (Enclosing_Dynamic_Scope (Etype (Exp))) >
                       Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))
       then
@@ -6512,16 +6492,18 @@ package body Exp_Ch6 is
             then
                Tag_Node :=
                  Make_Explicit_Dereference (Loc,
-                   Unchecked_Convert_To (RTE (RE_Tag_Ptr),
-                     Make_Function_Call (Loc,
-                       Name => New_Reference_To (RTE (RE_Base_Address), Loc),
-                       Parameter_Associations => New_List (
-                         Unchecked_Convert_To (RTE (RE_Address),
-                           Duplicate_Subexpr (Prefix (Exp)))))));
+                   Prefix =>
+                     Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                       Make_Function_Call (Loc,
+                         Name                   =>
+                           New_Reference_To (RTE (RE_Base_Address), Loc),
+                         Parameter_Associations => New_List (
+                           Unchecked_Convert_To (RTE (RE_Address),
+                             Duplicate_Subexpr (Prefix (Exp)))))));
             else
                Tag_Node :=
                  Make_Attribute_Reference (Loc,
-                   Prefix => Duplicate_Subexpr (Exp),
+                   Prefix         => Duplicate_Subexpr (Exp),
                    Attribute_Name => Name_Tag);
             end if;
 
@@ -6529,8 +6511,7 @@ package body Exp_Ch6 is
               Make_Raise_Program_Error (Loc,
                 Condition =>
                   Make_Op_Gt (Loc,
-                    Left_Opnd =>
-                      Build_Get_Access_Level (Loc, Tag_Node),
+                    Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
                     Right_Opnd =>
                       Make_Integer_Literal (Loc,
                         Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))),
@@ -6587,7 +6568,7 @@ package body Exp_Ch6 is
                 Constant_Present    => True,
                 Object_Definition   => New_Occurrence_Of (R_Type, Loc),
                 Expression          => ExpR),
-              Suppress            => All_Checks);
+              Suppress => All_Checks);
             Rewrite (Exp, New_Occurrence_Of (Tnn, Loc));
          end;
       end if;
@@ -6612,7 +6593,7 @@ package body Exp_Ch6 is
                                   N_Integer_Literal,
                                   N_Real_Literal)
            or else (Nkind (Exp) = N_Explicit_Dereference
-                      and then Is_Entity_Name (Prefix (Exp)))
+                     and then Is_Entity_Name (Prefix (Exp)))
          then
             null;
 
@@ -7465,9 +7446,9 @@ package body Exp_Ch6 is
       Ptr_Typ_Decl :=
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => Ptr_Typ,
-          Type_Definition =>
+          Type_Definition     =>
             Make_Access_To_Object_Definition (Loc,
-              All_Present => True,
+              All_Present        => True,
               Subtype_Indication =>
                 New_Reference_To (Result_Subt, Loc)));
       Insert_After_And_Analyze (Assign, Ptr_Typ_Decl);
@@ -7481,11 +7462,8 @@ package body Exp_Ch6 is
       Obj_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Obj_Id,
-          Object_Definition =>
-            New_Reference_To (Ptr_Typ, Loc),
-          Expression =>
-            Make_Reference (Loc,
-              Prefix => Relocate_Node (Func_Call)));
+          Object_Definition   => New_Reference_To (Ptr_Typ, Loc),
+          Expression => Make_Reference (Loc, Relocate_Node (Func_Call)));
       Insert_After_And_Analyze (Ptr_Typ_Decl, Obj_Decl);
 
       Rewrite (Assign, Make_Null_Statement (Loc));
@@ -7693,9 +7671,9 @@ package body Exp_Ch6 is
       Ptr_Typ_Decl :=
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => Ref_Type,
-          Type_Definition =>
+          Type_Definition     =>
             Make_Access_To_Object_Definition (Loc,
-              All_Present => True,
+              All_Present        => True,
               Subtype_Indication =>
                 New_Reference_To (Etype (Function_Call), Loc)));
 
@@ -7715,9 +7693,7 @@ package body Exp_Ch6 is
       --  Finally, create an access object initialized to a reference to the
       --  function call.
 
-      New_Expr :=
-        Make_Reference (Loc,
-          Prefix => Relocate_Node (Func_Call));
+      New_Expr := Make_Reference (Loc, Relocate_Node (Func_Call));
 
       Def_Id := Make_Temporary (Loc, 'R', New_Expr);
       Set_Etype (Def_Id, Ref_Type);

@@ -150,8 +150,9 @@ package body Prj is
 
    procedure Delete_Temp_Config_Files (Project_Tree : Project_Tree_Ref) is
       Success : Boolean;
-      Proj    : Project_List;
       pragma Warnings (Off, Success);
+
+      Proj : Project_List;
 
    begin
       if not Debug.Debug_Flag_N then
@@ -171,6 +172,7 @@ package body Prj is
                   Proj.Project.Config_File_Name := No_Path;
                   Proj.Project.Config_File_Temp := False;
                end if;
+
                Proj := Proj.Next;
             end loop;
          end if;
@@ -942,8 +944,11 @@ package body Prj is
 
    procedure Free (Tree : in out Project_Tree_Ref) is
       procedure Unchecked_Free is new
-        Ada.Unchecked_Deallocation (Project_Tree_Data, Project_Tree_Ref);
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        Ada.Unchecked_Deallocation
+          (Project_Tree_Data, Project_Tree_Ref);
+
+      procedure Unchecked_Free is new
+        Ada.Unchecked_Deallocation
           (Project_Tree_Appdata'Class, Project_Tree_Appdata_Access);
 
    begin
@@ -1478,11 +1483,13 @@ package body Prj is
    ----------------
 
    function Debug_Name (Tree : Project_Tree_Ref) return Name_Id is
-      P : Project_List := Tree.Projects;
+      P : Project_List;
+
    begin
       Name_Len := 0;
       Add_Str_To_Name_Buffer ("Tree [");
 
+      P := Tree.Projects;
       while P /= null loop
          if P /= Tree.Projects then
             Add_Char_To_Name_Buffer (',');

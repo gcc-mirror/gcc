@@ -918,9 +918,9 @@ package body Prj.Nmsc is
       Flags     : Processing_Flags)
    is
       Data : Tree_Processing_Data :=
-               (Tree           => Tree,
-                Node_Tree      => Node_Tree,
-                Flags          => Flags);
+               (Tree      => Tree,
+                Node_Tree => Node_Tree,
+                Flags     => Flags);
 
       Project_Files : constant Prj.Variable_Value :=
                         Prj.Util.Value_Of
@@ -930,9 +930,7 @@ package body Prj.Nmsc is
 
       Project_Path_For_Aggregate : Prj.Env.Project_Search_Path;
 
-      procedure Found_Project_File
-        (Path  : Path_Information;
-         Rank  : Natural);
+      procedure Found_Project_File (Path : Path_Information; Rank : Natural);
       --  Called for each project file aggregated by Project
 
       procedure Expand_Project_Files is
@@ -944,11 +942,9 @@ package body Prj.Nmsc is
       -- Found_Project_File --
       ------------------------
 
-      procedure Found_Project_File
-        (Path  : Path_Information;
-         Rank  : Natural)
-      is
+      procedure Found_Project_File (Path : Path_Information; Rank : Natural) is
          pragma Unreferenced (Rank);
+
       begin
          if Path.Name /= Project.Path.Name then
             Debug_Output ("Aggregates: ", Name_Id (Path.Display_Name));
@@ -5046,8 +5042,8 @@ package body Prj.Nmsc is
       Remove_Source_Dirs : Boolean := False;
 
       procedure Add_To_Or_Remove_From_Source_Dirs
-        (Path  : Path_Information;
-         Rank  : Natural);
+        (Path : Path_Information;
+         Rank : Natural);
       --  When Removed = False, the directory Path_Id to the list of
       --  source_dirs if not already in the list. When Removed = True,
       --  removed directory Path_Id if in the list.
@@ -5060,14 +5056,14 @@ package body Prj.Nmsc is
       ---------------------------------------
 
       procedure Add_To_Or_Remove_From_Source_Dirs
-        (Path  : Path_Information;
-         Rank  : Natural)
+        (Path : Path_Information;
+         Rank : Natural)
       is
-         List       : String_List_Id;
-         Prev       : String_List_Id;
-         Rank_List  : Number_List_Index;
-         Prev_Rank  : Number_List_Index;
-         Element    : String_Element;
+         List      : String_List_Id;
+         Prev      : String_List_Id;
+         Rank_List : Number_List_Index;
+         Prev_Rank : Number_List_Index;
+         Element   : String_Element;
 
       begin
          Prev      := Nil_String;
@@ -5153,11 +5149,11 @@ package body Prj.Nmsc is
                      ((not Source_Files.Default
                         and then Source_Files.Values = Nil_String)
                        or else
-                      (not Source_Dirs.Default
-                        and then Source_Dirs.Values = Nil_String)
+                         (not Source_Dirs.Default
+                           and then Source_Dirs.Values = Nil_String)
                        or else
-                      (not Languages.Default
-                        and then Languages.Values = Nil_String))
+                         (not Languages.Default
+                           and then Languages.Values = Nil_String))
                      and then Project.Extends = No_Project;
 
    --  Start of processing for Get_Directories

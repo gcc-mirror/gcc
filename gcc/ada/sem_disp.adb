@@ -894,13 +894,13 @@ package body Sem_Disp is
          then
             pragma Assert
               ((Ekind (Subp) = E_Function
-                  and then Is_Dispatching_Operation (Old_Subp)
-                  and then Is_Null_Extension (Base_Type (Etype (Subp))))
+                 and then Is_Dispatching_Operation (Old_Subp)
+                 and then Is_Null_Extension (Base_Type (Etype (Subp))))
               or else
                (Ekind (Subp) = E_Procedure
-                  and then Is_Dispatching_Operation (Old_Subp)
-                  and then Present (Alias (Old_Subp))
-                  and then Is_Null_Interface_Primitive
+                 and then Is_Dispatching_Operation (Old_Subp)
+                 and then Present (Alias (Old_Subp))
+                 and then Is_Null_Interface_Primitive
                              (Ultimate_Alias (Old_Subp)))
               or else Get_TSS_Name (Subp) = TSS_Stream_Read
               or else Get_TSS_Name (Subp) = TSS_Stream_Write);
@@ -1279,13 +1279,10 @@ package body Sem_Disp is
 
       elsif Has_Controlled_Component (Tagged_Type)
         and then
-         (Chars (Subp) = Name_Initialize
-            or else
-          Chars (Subp) = Name_Adjust
-            or else
-          Chars (Subp) = Name_Finalize
-            or else
-          Chars (Subp) = Name_Finalize_Address)
+          (Chars (Subp) = Name_Initialize or else
+           Chars (Subp) = Name_Adjust     or else
+           Chars (Subp) = Name_Finalize   or else
+           Chars (Subp) = Name_Finalize_Address)
       then
          declare
             F_Node   : constant Node_Id := Freeze_Node (Tagged_Type);

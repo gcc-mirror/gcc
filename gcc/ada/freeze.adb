@@ -1190,6 +1190,7 @@ package body Freeze is
 
          Set_Expression (Par, New_Occurrence_Of (Temp, Loc));
          return True;
+
       else
          return False;
       end if;
@@ -2726,24 +2727,24 @@ package body Freeze is
 
                      if Has_Foreign_Convention (E)
 
-                        --  We are looking for a return of unconstrained array
+                       --  We are looking for a return of unconstrained array
 
                        and then Is_Array_Type (R_Type)
                        and then not Is_Constrained (R_Type)
 
-                        --  Exclude imported routines, the warning does not
-                        --  belong on the import, but rather on the routine
-                        --  definition.
+                       --  Exclude imported routines, the warning does not
+                       --  belong on the import, but rather on the routine
+                       --  definition.
 
                        and then not Is_Imported (E)
 
-                        --  Exclude VM case, since both .NET and JVM can handle
-                        --  return of unconstrained arrays without a problem.
+                       --  Exclude VM case, since both .NET and JVM can handle
+                       --  return of unconstrained arrays without a problem.
 
                        and then VM_Target = No_VM
 
-                        --  Check that general warning is enabled, and that it
-                        --  is not suppressed for this particular case.
+                       --  Check that general warning is enabled, and that it
+                       --  is not suppressed for this particular case.
 
                        and then Warn_On_Export_Import
                        and then not Has_Warnings_Off (E)
@@ -3920,7 +3921,7 @@ package body Freeze is
 
             if Is_Pure_Unit_Access_Type (E)
               and then (Ada_Version < Ada_2005
-                          or else not No_Pool_Assigned (E))
+                         or else not No_Pool_Assigned (E))
             then
                Error_Msg_N ("named access type not allowed in pure unit", E);
 
@@ -5449,8 +5450,8 @@ package body Freeze is
             elsif Is_Array_Type (Retype)
               and then not Is_Constrained (Retype)
 
-               --  Exclude cases where descriptor mechanism is set, since the
-               --  VMS descriptor mechanisms allow such unconstrained returns.
+              --  Exclude cases where descriptor mechanism is set, since the
+              --  VMS descriptor mechanisms allow such unconstrained returns.
 
               and then Mechanism (E) not in Descriptor_Codes
 
@@ -5459,8 +5460,8 @@ package body Freeze is
 
               and then Warn_On_Export_Import
 
-               --  Exclude the VM case, since return of unconstrained arrays
-               --  is properly handled in both the JVM and .NET cases.
+              --  Exclude the VM case, since return of unconstrained arrays
+              --  is properly handled in both the JVM and .NET cases.
 
               and then VM_Target = No_VM
             then
@@ -5724,15 +5725,14 @@ package body Freeze is
 
                    Declarations => New_List (
                      Make_Object_Declaration (Loc,
-                       Defining_Identifier =>
-                         Make_Temporary (Loc, 'T'),
-                       Object_Definition =>
+                       Defining_Identifier => Make_Temporary (Loc, 'T'),
+                       Object_Definition   =>
                          New_Occurrence_Of (Etype (Formal), Loc),
-                       Expression => New_Copy_Tree (Dcopy))),
+                       Expression          => New_Copy_Tree (Dcopy))),
 
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements => New_List));
+                       Statements => Empty_List));
 
                Set_Scope (Dnam, Scope (E));
                Set_Assignment_OK (First (Declarations (Dbody)));

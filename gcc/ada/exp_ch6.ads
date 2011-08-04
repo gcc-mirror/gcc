@@ -83,9 +83,9 @@ package Exp_Ch6 is
       --  Present for all build-in-place functions. Address at which to place
       --  the return object, or null if BIP_Alloc_Form indicates allocated by
       --  callee.
-      --  ??? We also need to be able to pass in some way to access a
-      --  user-defined storage pool at some point. And perhaps a constrained
-      --  flag.
+      --
+      --  ??? We also need to be able to pass in some way to access a user-
+      --  defined storage pool at some point. And perhaps a constrained flag.
 
    function BIP_Formal_Suffix (Kind : BIP_Formal_Kind) return String;
    --  Ada 2005 (AI-318-02): Returns a string to be used as the suffix of names

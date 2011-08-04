@@ -1498,8 +1498,8 @@ package Prj is
    --  Data for a project tree
 
    function Debug_Name (Tree : Project_Tree_Ref) return Name_Id;
-   --  If debug traces are activated, return an identitier for the
-   --  project tree. This modifies Name_Buffer
+   --  If debug traces are activated, return an identitier for the project
+   --  tree. This modifies Name_Buffer.
 
    procedure Expect (The_Token : Token_Type; Token_Image : String);
    --  Check that the current token is The_Token. If it is not, then output
@@ -1524,7 +1524,7 @@ package Prj is
    --  whether a project was already processed for instance.
 
    generic
-      with procedure Action (Project : Project_Id; Tree    : Project_Tree_Ref);
+      with procedure Action (Project : Project_Id; Tree : Project_Tree_Ref);
    procedure For_Project_And_Aggregated
      (Root_Project : Project_Id;
       Root_Tree    : Project_Tree_Ref);
@@ -1691,9 +1691,8 @@ package Prj is
    --  Does nothing if Debug.Debug_Flag_N is set
 
    procedure Delete_Temp_Config_Files (Project_Tree : Project_Tree_Ref);
-   --  Delete all temporary config files.
-   --  Does nothing if Debug.Debug_Flag_N is set or if Project_Tree is null.
-   --  This initially came from gnatmake
+   --  Delete all temporary config files. Does nothing if Debug.Debug_Flag_N is
+   --  set or if Project_Tree is null. This initially came from gnatmake
    --  ??? Should this be combined with Delete_All_Temp_Files above
 
    procedure Delete_Temporary_File
@@ -1701,8 +1700,8 @@ package Prj is
       Path   : Path_Name_Type);
    --  Delete a temporary file from the disk. The file is also removed from the
    --  list of temporary files to delete at the end of the program, in case
-   --  another program running on the same machine has recreated it.
-   --  Does nothing if Debug.Debug_Flag_N is set
+   --  another program running on the same machine has recreated it. Does
+   --  nothing if Debug.Debug_Flag_N is set
 
    Virtual_Prefix : constant String := "v$";
    --  The prefix for virtual extending projects. Because of the '$', which is
@@ -1734,8 +1733,8 @@ package Prj is
    procedure Debug_Increase_Indent
      (Str : String := ""; Str2 : Name_Id := No_Name);
    procedure Debug_Decrease_Indent (Str : String := "");
-   --  Increase or decrease the indentation level for debug traces.
-   --  This indentation level only affects output done through Debug_Output.
+   --  Increase or decrease the indentation level for debug traces. This
+   --  indentation level only affects output done through Debug_Output.
 
 private
 

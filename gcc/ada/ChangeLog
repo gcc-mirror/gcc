@@ -1,3 +1,18 @@
+2011-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb, prj-proc.adb, make.adb, bindgen.adb, prj.adb, prj.ads,
+	makeutl.adb, makeutl.ads, prj-nmsc.adb, exp_ch5.adb, exp_ch12.adb,
+	exp_ch7.ads, exp_util.ads, sem_util.ads, g-comlin.ads, exp_ch6.adb,
+	exp_ch6.ads, lib-xref.ads, exp_ch7.adb, exp_util.adb, exp_dist.adb,
+	exp_strm.adb, gnatcmd.adb, freeze.adb, g-comlin.adb, lib-xref-alfa.adb,
+	sem_attr.adb, sem_prag.adb, sem_util.adb, sem_elab.adb, sem_ch8.adb,
+	sem_ch11.adb, sem_eval.adb, sem_ch13.adb, sem_disp.adb, a-fihema.adb:
+	Minor reformatting and code reorganization.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* projects.texi: Added doc for aggregate projects.
+
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-proc.adb, prj-nmsc.adb, prj-env.adb (Process_Declarative_Items):

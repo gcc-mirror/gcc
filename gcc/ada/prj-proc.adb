@@ -1984,9 +1984,11 @@ package body Prj.Proc is
          New_Value    : Variable_Value)
       is
          Name : constant Name_Id := Name_Of (Current_Item, Node_Tree);
+
          Is_Attribute : constant Boolean :=
                           Kind_Of (Current_Item, Node_Tree) =
                             N_Attribute_Declaration;
+
          Var  : Variable_Id := No_Variable;
 
       begin

@@ -74,7 +74,7 @@ package body Sem_Ch8 is
    -- Visibility and Name Resolution --
    ------------------------------------
 
-   --  This package handles name resolution and the collection of
+   --  This package handles name resolution and the collection of possible
    --  interpretations for overloaded names, prior to overload resolution.
 
    --  Name resolution is the process that establishes a mapping between source
@@ -5639,19 +5639,19 @@ package body Sem_Ch8 is
                     and then RTU_Loaded (Ada_Tags)
                     and then
                       ((RTE_Available (RE_Dispatch_Table_Wrapper)
-                          and then Scope (Selector) =
+                         and then Scope (Selector) =
                                      RTE (RE_Dispatch_Table_Wrapper))
-                      or else
+                          or else
                        (RTE_Available (RE_No_Dispatch_Table_Wrapper)
-                          and then Scope (Selector) =
+                         and then Scope (Selector) =
                                      RTE (RE_No_Dispatch_Table_Wrapper)))
                   then
                      C_Etype := Empty;
 
                   else
                      C_Etype :=
-                       Build_Actual_Subtype_Of_Component (
-                         Etype (Selector), N);
+                       Build_Actual_Subtype_Of_Component
+                         (Etype (Selector), N);
                   end if;
 
                else

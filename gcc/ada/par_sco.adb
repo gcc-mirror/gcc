@@ -440,7 +440,7 @@ package body Par_SCO is
       -------------------
 
       procedure Output_Header (T : Character) is
-         Loc   : Source_Ptr := No_Location;
+         Loc : Source_Ptr := No_Location;
          --  Node whose sloc is used for the decision
 
       begin
@@ -454,8 +454,8 @@ package body Par_SCO is
 
             when 'G' | 'P' =>
 
-               --  For entry, the token sloc is from the N_Entry_Body.
-               --  For PRAGMA, we must get the location from the pragma node.
+               --  For entry, the token sloc is from the N_Entry_Body. For
+               --  PRAGMA, we must get the location from the pragma node.
                --  Argument N is the pragma argument, and we have to go up two
                --  levels (through the pragma argument association) to get to
                --  the pragma node itself.
@@ -482,10 +482,11 @@ package body Par_SCO is
             Last => False);
 
          if T = 'P' then
-            --  For pragmas we also must make an entry in the hash table
-            --  for later access by Set_SCO_Pragma_Enabled. We set the
-            --  pragma as disabled now, the call will change C2 to 'e'
-            --  to enable the pragma header entry.
+
+            --  For pragmas we also must make an entry in the hash table for
+            --  later access by Set_SCO_Pragma_Enabled. We set the pragma as
+            --  disabled now, the call will change C2 to 'e' to enable the
+            --  pragma header entry.
 
             SCO_Table.Table (SCO_Table.Last).C2 := 'd';
             Condition_Pragma_Hash_Table.Set (Loc, SCO_Table.Last);
@@ -792,6 +793,7 @@ package body Par_SCO is
             Traverse_Generic_Instantiation (Lu);
 
          when others =>
+
             --  All other cases of compilation units (e.g. renamings), generate
             --  no SCO information.
 
@@ -1156,11 +1158,14 @@ package body Par_SCO is
                   declare
                      Cond : constant Node_Id :=
                               Condition (Entry_Body_Formal_Part (N));
+
                   begin
                      Set_Statement_Entry;
+
                      if Present (Cond) then
                         Process_Decisions_Defer (Cond, 'G');
                      end if;
+
                      Traverse_Subprogram_Or_Task_Body (N);
                   end;
 

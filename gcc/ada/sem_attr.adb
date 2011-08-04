@@ -1747,9 +1747,7 @@ package body Sem_Attr is
          if Nkind (Nod) = N_Identifier then
             return;
 
-         elsif Nkind (Nod) = N_Selected_Component
-           or else Nkind (Nod) = N_Expanded_Name
-         then
+         elsif Nkind_In (Nod, N_Selected_Component, N_Expanded_Name) then
             Check_Unit_Name (Prefix (Nod));
 
             if Nkind (Selector_Name (Nod)) = N_Identifier then

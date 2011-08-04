@@ -200,8 +200,8 @@ package body GNAT.Command_Line is
      (Config   : Command_Line_Configuration;
       Section  : String);
    --  Iterate over all switches defined in Config, for a specific section.
-   --  Index is set to the index in Config.Switches.
-   --  Stop iterating when Callback returns False.
+   --  Index is set to the index in Config.Switches. Stop iterating when
+   --  Callback returns False.
 
    --------------
    -- Argument --
@@ -1598,12 +1598,15 @@ package body GNAT.Command_Line is
          loop
             begin
                if Cmd.Config /= null then
+
                   --  Do not use Getopt_Description in this case. Otherwise,
                   --  if we have defined a prefix -gnaty, and two switches
                   --  -gnatya and -gnatyL!, we would have a different behavior
                   --  depending on the order of switches:
+
                   --      -gnatyL1a   =>  -gnatyL with argument "1a"
                   --      -gnatyaL1   =>  -gnatya and -gnatyL with argument "1"
+
                   --  This is because the call to Getopt below knows nothing
                   --  about prefixes, and in the first case finds a valid
                   --  switch with arguments, so returns it without analyzing
@@ -1613,6 +1616,7 @@ package body GNAT.Command_Line is
                   S := Getopt (Switches    => "*",
                                Concatenate => False,
                                Parser      => Parser);
+
                else
                   S := Getopt (Switches    => "* " & Getopt_Description,
                                Concatenate => False,
@@ -1622,9 +1626,8 @@ package body GNAT.Command_Line is
                exit when S = ASCII.NUL;
 
                declare
-                  Sw         : constant String :=
-                                 Real_Full_Switch (S, Parser);
-                  Is_Section : Boolean := False;
+                  Sw         : constant String := Real_Full_Switch (S, Parser);
+                  Is_Section : Boolean         := False;
 
                begin
                   if Cmd.Config /= null
@@ -1797,29 +1800,30 @@ package body GNAT.Command_Line is
          is
             pragma Unreferenced (Index);
 
-            Full  : constant String := Prefix & Group (Idx .. Group'Last);
+            Full : constant String := Prefix & Group (Idx .. Group'Last);
 
-            Sw    : constant String := Actual_Switch (Switch);
+            Sw : constant String := Actual_Switch (Switch);
             --  Switches definition minus argument definition
 
             Last  : Natural;
             Param : Natural;
 
          begin
-            if
-               --  Verify that sw starts with Prefix
-               Looking_At (Sw, Sw'First, Prefix)
+            --  Verify that sw starts with Prefix
 
-               --  Verify that the group starts with sw
+            if Looking_At (Sw, Sw'First, Prefix)
+
+              --  Verify that the group starts with sw
+
               and then Looking_At (Full, Full'First, Sw)
-
             then
                Last  := Idx + Sw'Length - Prefix'Length - 1;
                Param := Last + 1;
 
                if Can_Have_Parameter (Switch) then
-                  --  Include potential parameter to the recursive call.
-                  --  Only numbers are allowed.
+
+                  --  Include potential parameter to the recursive call. Only
+                  --  numbers are allowed.
 
                   while Last < Group'Last
                     and then Group (Last + 1) in '0' .. '9'
@@ -1865,6 +1869,7 @@ package body GNAT.Command_Line is
                   return False;
                end if;
             end if;
+
             return True;
          end Analyze_Simple_Switch;
 
@@ -2019,6 +2024,7 @@ package body GNAT.Command_Line is
       --  results with or without this call.
 
       Foreach_In_Config (Config, Section);
+
       if Found_In_Config then
          return;
       end if;
@@ -2053,8 +2059,8 @@ package body GNAT.Command_Line is
       if Config /= null and then Config.Prefixes /= null then
          for P in Config.Prefixes'Range loop
             if Switch'Length > Config.Prefixes (P)'Length + 1
-              and then Looking_At
-                (Switch, Switch'First, Config.Prefixes (P).all)
+              and then
+                Looking_At (Switch, Switch'First, Config.Prefixes (P).all)
             then
                --  Alias expansion will be done recursively
 
@@ -2076,6 +2082,7 @@ package body GNAT.Command_Line is
                then
                   --  Recursive calls already done on each switch of the group:
                   --  Return without executing Callback.
+
                   return;
                end if;
             end if;
@@ -2091,6 +2098,7 @@ package body GNAT.Command_Line is
       then
          Found_In_Config := False;
          Foreach_Starts_With (Config, Section);
+
          if Found_In_Config then
             return;
          end if;

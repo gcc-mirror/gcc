@@ -119,7 +119,7 @@ package Exp_Ch7 is
    --  Create a call to prepend an object to a finalization collection. Obj_Ref
    --  is the object, Ptr_Typ is the access type that owns the collection.
    --  Generate the following:
-
+   --
    --    Ada.Finalization.Heap_Managment.Attach
    --      (<Ptr_Typ>FC,
    --       System.Finalization_Root.Root_Controlled_Ptr (Obj_Ref));
@@ -127,7 +127,7 @@ package Exp_Ch7 is
    function Make_Detach_Call (Obj_Ref : Node_Id) return Node_Id;
    --  Create a call to unhook an object from an arbitrary list. Obj_Ref is the
    --  object. Generate the following:
-
+   --
    --    Ada.Finalization.Heap_Management.Detach
    --      (System.Finalization_Root.Root_Controlled_Ptr (Obj_Ref));
 

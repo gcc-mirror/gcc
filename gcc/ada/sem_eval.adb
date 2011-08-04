@@ -964,11 +964,11 @@ package body Sem_Eval is
                      return Unknown;
                   end if;
                end if;
+
+            --  If the range of either operand cannot be determined, nothing
+            --  further can be inferred.
+
             else
-
-               --  If the range of either operand cannot be determined,
-               --  nothing further can be inferred.
-
                return Unknown;
             end if;
          end;

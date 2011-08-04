@@ -583,6 +583,7 @@ package GNAT.Command_Line is
    --  assumed that the remainder of the switch ("uv") is a set of characters
    --  whose order is irrelevant. In fact, this package will sort them
    --  alphabetically.
+   --
    --  When grouping switches that accept arguments (for instance "-gnatyL!"
    --  as the definition, and "-gnatyaL12b" as the command line), only
    --  numerical arguments are accepted. The above is equivalent to
@@ -772,9 +773,9 @@ package GNAT.Command_Line is
       Config : Command_Line_Configuration);
    function Get_Configuration
      (Cmd : Command_Line) return Command_Line_Configuration;
-   --  Set or retrieve the configuration used for that command line.
-   --  The Config must have been initialized first, by calling one of the
-   --  Define_Switches subprograms.
+   --  Set or retrieve the configuration used for that command line. The Config
+   --  must have been initialized first, by calling one of the Define_Switches
+   --  subprograms.
 
    procedure Set_Command_Line
      (Cmd                : in out Command_Line;
@@ -786,9 +787,9 @@ package GNAT.Command_Line is
    --
    --  The parsing of Switches is done through calls to Getopt, by passing
    --  Getopt_Description as an argument. (A "*" is automatically prepended so
-   --  that all switches and command line arguments are accepted).
-   --  If a config was defined via Set_Configuration, the Getopt_Description
-   --  parameter will be ignored.
+   --  that all switches and command line arguments are accepted). If a config
+   --  was defined via Set_Configuration, the Getopt_Description parameter will
+   --  be ignored.
    --
    --  To properly handle switches that take parameters, you should document
    --  them in Getopt_Description. Otherwise, the switch and its parameter will

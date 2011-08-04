@@ -286,7 +286,6 @@ package body Exp_Ch7 is
                      Adjust_Case     => Name_Adjust,
                      Finalize_Case   => Name_Finalize,
                      Address_Case    => Name_Finalize_Address);
-
    Deep_Name_Of : constant array (Final_Primitives) of TSS_Name_Type :=
                     (Initialize_Case => TSS_Deep_Initialize,
                      Adjust_Case     => TSS_Deep_Adjust,
@@ -473,10 +472,10 @@ package body Exp_Ch7 is
 
       if VM_Target = No_VM then
          Set_TSS (Typ,
-           Make_Deep_Proc (
-             Prim  => Address_Case,
-             Typ   => Typ,
-             Stmts => Make_Deep_Array_Body (Address_Case, Typ)));
+           Make_Deep_Proc
+             (Prim  => Address_Case,
+              Typ   => Typ,
+              Stmts => Make_Deep_Array_Body (Address_Case, Typ)));
       end if;
    end Build_Array_Deep_Procs;
 
@@ -499,6 +498,7 @@ package body Exp_Ch7 is
                                  and then Is_Task_Allocation_Block (N);
       Is_Task_Body         : constant Boolean :=
                                Nkind (Original_Node (N)) = N_Task_Body;
+
       Loc   : constant Source_Ptr := Sloc (N);
       Stmts : constant List_Id    := New_List;
 
@@ -569,12 +569,12 @@ package body Exp_Ch7 is
 
                Append_To (Stmts,
                  Make_Procedure_Call_Statement (Loc,
-                   Name => Nam,
+                   Name                   => Nam,
                    Parameter_Associations => New_List (
                      Make_Attribute_Reference (Loc,
-                       Prefix =>
+                       Prefix         =>
                          Make_Selected_Component (Loc,
-                           Prefix => New_Reference_To (
+                           Prefix        => New_Reference_To (
                              Defining_Identifier (Param), Loc),
                            Selector_Name =>
                              Make_Identifier (Loc, Name_uObject)),
@@ -600,12 +600,12 @@ package body Exp_Ch7 is
 
                Append_To (Stmts,
                  Make_Procedure_Call_Statement (Loc,
-                   Name => Nam,
+                   Name                   => Nam,
                    Parameter_Associations => New_List (
                      Make_Attribute_Reference (Loc,
-                       Prefix =>
+                       Prefix         =>
                          Make_Selected_Component (Loc,
-                           Prefix =>
+                           Prefix        =>
                              New_Reference_To
                                (Defining_Identifier (Param), Loc),
                            Selector_Name =>
@@ -619,7 +619,7 @@ package body Exp_Ch7 is
             if Abort_Allowed then
                Append_To (Stmts,
                  Make_Procedure_Call_Statement (Loc,
-                   Name =>
+                   Name                   =>
                      New_Reference_To (RTE (RE_Abort_Undefer), Loc),
                    Parameter_Associations => Empty_List));
             end if;
@@ -643,8 +643,8 @@ package body Exp_Ch7 is
          Append_To (Stmts,
            Make_Procedure_Call_Statement (Loc,
              Name =>
-               New_Reference_To (
-                 RTE (RE_Expunge_Unactivated_Tasks), Loc),
+               New_Reference_To
+                 (RTE (RE_Expunge_Unactivated_Tasks), Loc),
              Parameter_Associations => New_List (
                New_Reference_To (Activation_Chain_Entity (N), Loc))));
 
@@ -671,7 +671,7 @@ package body Exp_Ch7 is
                  Make_If_Statement (Loc,
                    Condition =>
                      Make_Function_Call (Loc,
-                       Name =>
+                       Name                   =>
                          New_Reference_To (RTE (RE_Enqueued), Loc),
                        Parameter_Associations => New_List (
                          New_Reference_To (Cancel_Param, Loc))),
@@ -679,8 +679,8 @@ package body Exp_Ch7 is
                    Then_Statements => New_List (
                      Make_Procedure_Call_Statement (Loc,
                        Name =>
-                         New_Reference_To (
-                           RTE (RE_Cancel_Protected_Entry_Call), Loc),
+                         New_Reference_To
+                           (RTE (RE_Cancel_Protected_Entry_Call), Loc),
                          Parameter_Associations => New_List (
                            New_Reference_To (Cancel_Param, Loc))))));
 
@@ -690,11 +690,11 @@ package body Exp_Ch7 is
             elsif Is_RTE (Etype (Cancel_Param), RE_Delay_Block) then
                Append_To (Stmts,
                  Make_Procedure_Call_Statement (Loc,
-                   Name =>
+                   Name                   =>
                      New_Reference_To (RTE (RE_Cancel_Async_Delay), Loc),
                    Parameter_Associations => New_List (
                      Make_Attribute_Reference (Loc,
-                       Prefix =>
+                       Prefix         =>
                          New_Reference_To (Cancel_Param, Loc),
                        Attribute_Name => Name_Unchecked_Access))));
 
@@ -704,7 +704,7 @@ package body Exp_Ch7 is
             else
                Append_To (Stmts,
                  Make_Procedure_Call_Statement (Loc,
-                   Name =>
+                   Name                   =>
                      New_Reference_To (RTE (RE_Cancel_Task_Entry_Call), Loc),
                    Parameter_Associations => New_List (
                      New_Reference_To (Cancel_Param, Loc))));
@@ -723,7 +723,6 @@ package body Exp_Ch7 is
    begin
       if Is_Array_Type (Typ) then
          Build_Array_Deep_Procs (Typ);
-
       else pragma Assert (Is_Record_Type (Typ));
          Build_Record_Deep_Procs (Typ);
       end if;
@@ -3298,10 +3297,9 @@ package body Exp_Ch7 is
       else
          return
            Make_Procedure_Call_Statement (Loc,
-             Name =>
+             Name                   =>
                New_Reference_To (RTE (RE_Finalize_Protection), Loc),
-             Parameter_Associations =>
-               New_List (Concurrent_Ref (Ref)));
+             Parameter_Associations => New_List (Concurrent_Ref (Ref)));
       end if;
    end Cleanup_Protected_Object;
 
@@ -3314,6 +3312,7 @@ package body Exp_Ch7 is
       Ref : Node_Id) return Node_Id
    is
       Loc  : constant Source_Ptr := Sloc (N);
+
    begin
       --  For restricted run-time libraries (Ravenscar), tasks are
       --  non-terminating and they can only appear at library level, so we do
@@ -3325,10 +3324,9 @@ package body Exp_Ch7 is
       else
          return
            Make_Procedure_Call_Statement (Loc,
-             Name =>
+             Name                   =>
                New_Reference_To (RTE (RE_Free_Task), Loc),
-             Parameter_Associations =>
-               New_List (Concurrent_Ref (Ref)));
+             Parameter_Associations => New_List (Concurrent_Ref (Ref)));
       end if;
    end Cleanup_Task;
 
@@ -3442,9 +3440,10 @@ package body Exp_Ch7 is
    ------------------------
 
    function Enclosing_Function (E : Entity_Id) return Entity_Id is
-      Func_Id : Entity_Id := E;
+      Func_Id : Entity_Id;
 
    begin
+      Func_Id := E;
       while Present (Func_Id)
         and then Func_Id /= Standard_Standard
       loop
@@ -3866,14 +3865,15 @@ package body Exp_Ch7 is
    --  appear.
 
    procedure Expand_N_Package_Declaration (N : Node_Id) is
-      Id      : constant Entity_Id := Defining_Entity (N);
-      Spec    : constant Node_Id   := Specification (N);
-      Decls   : List_Id;
-      Fin_Id  : Entity_Id;
+      Id     : constant Entity_Id := Defining_Entity (N);
+      Spec   : constant Node_Id   := Specification (N);
+      Decls  : List_Id;
+      Fin_Id : Entity_Id;
+
       No_Body : Boolean := False;
-      --  True in the case of a package declaration that is a compilation unit
-      --  and for which no associated body will be compiled in
-      --  this compilation.
+      --  True in the case of a package declaration that is a compilation
+      --  unit and for which no associated body will be compiled in this
+      --  compilation.
 
    begin
       --  Case of a package declaration other than a compilation unit
@@ -3889,10 +3889,9 @@ package body Exp_Ch7 is
          No_Body := True;
 
       --  Special case of generating calling stubs for a remote call interface
-      --  package: even though the package declaration requires one, the
-      --  body won't be processed in this compilation (so any stubs for RACWs
-      --  declared in the package must be generated here, along with the
-      --  spec).
+      --  package: even though the package declaration requires one, the body
+      --  won't be processed in this compilation (so any stubs for RACWs
+      --  declared in the package must be generated here, along with the spec).
 
       elsif Parent (N) = Cunit (Main_Unit)
         and then Is_Remote_Call_Interface (Id)
@@ -4224,9 +4223,9 @@ package body Exp_Ch7 is
       Before : List_Id renames SE.Actions_To_Be_Wrapped_Before;
 
       procedure Process_Transient_Objects
-        (First_Object  : Node_Id;
-         Last_Object   : Node_Id;
-         Related_Node  : Node_Id);
+        (First_Object : Node_Id;
+         Last_Object  : Node_Id;
+         Related_Node : Node_Id);
       --  First_Object and Last_Object define a list which contains potential
       --  controlled transient objects. Finalization flags are inserted before
       --  First_Object and finalization calls are inserted after Last_Object.
@@ -4238,9 +4237,9 @@ package body Exp_Ch7 is
       -------------------------------
 
       procedure Process_Transient_Objects
-        (First_Object  : Node_Id;
-         Last_Object   : Node_Id;
-         Related_Node  : Node_Id)
+        (First_Object : Node_Id;
+         Last_Object  : Node_Id;
+         Related_Node : Node_Id)
       is
          Abort_Id  : Entity_Id;
          Built     : Boolean := False;
@@ -4264,8 +4263,8 @@ package body Exp_Ch7 is
               and then Analyzed (Stmt)
               and then Is_Finalizable_Transient (Stmt, N)
 
-               --  Do not process the node to be wrapped since it will be
-               --  handled by the enclosing finalizer.
+              --  Do not process the node to be wrapped since it will be
+              --  handled by the enclosing finalizer.
 
               and then Stmt /= Related_Node
             then
@@ -4321,9 +4320,9 @@ package body Exp_Ch7 is
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,
                        Statements => New_List (
-                         Make_Final_Call (
-                           Obj_Ref => Obj_Ref,
-                           Typ     => Desig)),
+                         Make_Final_Call
+                           (Obj_Ref => Obj_Ref,
+                            Typ     => Desig)),
 
                        Exception_Handlers => New_List (
                          Build_Exception_Handler (Loc, E_Id, Raised_Id))));
@@ -4402,12 +4401,12 @@ package body Exp_Ch7 is
 
          --  Add all actions associated with a transient scope into the main
          --  tree. There are several scenarios here:
-         --
+
          --       +--- Before ----+        +----- After ---+
          --    1) First_Obj ....... Target ........ Last_Obj
-         --
+
          --    2) First_Obj ....... Target
-         --
+
          --    3)                   Target ........ Last_Obj
 
          if Present (Before) then
@@ -4572,11 +4571,10 @@ package body Exp_Ch7 is
       Ptr_Typ : Entity_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Obj_Ref);
-
    begin
       return
         Make_Procedure_Call_Statement (Loc,
-          Name =>
+          Name                   =>
             New_Reference_To (RTE (RE_Attach), Loc),
           Parameter_Associations => New_List (
             New_Reference_To (Associated_Collection (Ptr_Typ), Loc),
@@ -4593,7 +4591,7 @@ package body Exp_Ch7 is
    begin
       return
         Make_Procedure_Call_Statement (Loc,
-          Name =>
+          Name                   =>
             New_Reference_To (RTE (RE_Detach), Loc),
           Parameter_Associations => New_List (
             Unchecked_Convert_To (RTE (RE_Root_Controlled_Ptr), Obj_Ref)));
@@ -4622,8 +4620,7 @@ package body Exp_Ch7 is
 
       return
         Make_Procedure_Call_Statement (Loc,
-          Name =>
-            New_Reference_To (Proc_Id, Loc),
+          Name                   => New_Reference_To (Proc_Id, Loc),
           Parameter_Associations => Params);
    end Make_Call;
 
@@ -4810,29 +4807,21 @@ package body Exp_Ch7 is
 
          Comp_Ref :=
            Make_Indexed_Component (Loc,
-             Prefix =>
-               Make_Identifier (Loc, Name_V),
-             Expressions =>
-               New_References_To (Index_List, Loc));
+             Prefix      => Make_Identifier (Loc, Name_V),
+             Expressions => New_References_To (Index_List, Loc));
          Set_Etype (Comp_Ref, Comp_Typ);
 
          --  Generate:
          --    [Deep_]Adjust (V (J1, ..., JN))
 
          if Prim = Adjust_Case then
-            Call :=
-              Make_Adjust_Call (
-                Obj_Ref => Comp_Ref,
-                Typ     => Comp_Typ);
+            Call := Make_Adjust_Call (Obj_Ref => Comp_Ref, Typ => Comp_Typ);
 
          --  Generate:
          --    [Deep_]Finalize (V (J1, ..., JN))
 
          else pragma Assert (Prim = Finalize_Case);
-            Call :=
-              Make_Final_Call (
-                Obj_Ref => Comp_Ref,
-                Typ     => Comp_Typ);
+            Call := Make_Final_Call (Obj_Ref => Comp_Ref, Typ => Comp_Typ);
          end if;
 
          --  Generate the block which houses the adjust or finalize call:
@@ -4855,10 +4844,9 @@ package body Exp_Ch7 is
               Make_Block_Statement (Loc,
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => New_List (Call),
-
-                  Exception_Handlers => New_List (
-                    Build_Exception_Handler (Loc, E_Id, Raised_Id))));
+                    Statements         => New_List (Call),
+                    Exception_Handlers => New_List (
+                      Build_Exception_Handler (Loc, E_Id, Raised_Id))));
          else
             Core_Loop := Call;
          end if;
@@ -4884,14 +4872,12 @@ package body Exp_Ch7 is
                   Make_Iteration_Scheme (Loc,
                     Loop_Parameter_Specification =>
                       Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier => Loop_Id,
+                        Defining_Identifier         => Loop_Id,
                         Discrete_Subtype_Definition =>
                           Make_Attribute_Reference (Loc,
-                            Prefix =>
-                              Make_Identifier (Loc, Name_V),
-                            Attribute_Name =>
-                              Name_Range,
-                            Expressions => New_List (
+                            Prefix         => Make_Identifier (Loc, Name_V),
+                            Attribute_Name => Name_Range,
+                            Expressions    => New_List (
                               Make_Integer_Literal (Loc, Dim))),
 
                         Reverse_Present => Prim = Finalize_Case)),
@@ -4934,11 +4920,10 @@ package body Exp_Ch7 is
          return
            New_List (
              Make_Block_Statement (Loc,
-               Declarations =>
+               Declarations               =>
                  Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id),
                Handled_Statement_Sequence =>
-                 Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements => Stmts)));
+                 Make_Handled_Sequence_Of_Statements (Loc, Stmts)));
       end Build_Adjust_Or_Finalize_Statements;
 
       ---------------------------------
@@ -5013,15 +4998,12 @@ package body Exp_Ch7 is
             while Dim <= Num_Dims loop
                Expr :=
                  Make_Op_Multiply (Loc,
-                   Left_Opnd =>
-                     Expr,
+                   Left_Opnd  => Expr,
                    Right_Opnd =>
                      Make_Attribute_Reference (Loc,
-                       Prefix =>
-                         Make_Identifier (Loc, Name_V),
-                       Attribute_Name =>
-                         Name_Length,
-                       Expressions => New_List (
+                       Prefix         => Make_Identifier (Loc, Name_V),
+                       Attribute_Name => Name_Length,
+                       Expressions    => New_List (
                          Make_Integer_Literal (Loc, Dim))));
 
                Dim := Dim + 1;
@@ -5032,14 +5014,11 @@ package body Exp_Ch7 is
 
             return
               Make_Assignment_Statement (Loc,
-                Name =>
-                  New_Reference_To (Counter_Id, Loc),
+                Name       => New_Reference_To (Counter_Id, Loc),
                 Expression =>
                   Make_Op_Subtract (Loc,
-                    Left_Opnd =>
-                      Expr,
-                    Right_Opnd =>
-                      New_Reference_To (Counter_Id, Loc)));
+                    Left_Opnd  => Expr,
+                    Right_Opnd => New_Reference_To (Counter_Id, Loc)));
          end Build_Counter_Assignment;
 
          -----------------------------
@@ -5049,10 +5028,8 @@ package body Exp_Ch7 is
          function Build_Finalization_Call return Node_Id is
             Comp_Ref : constant Node_Id :=
                          Make_Indexed_Component (Loc,
-                           Prefix =>
-                             Make_Identifier (Loc, Name_V),
-                           Expressions =>
-                             New_References_To (Final_List, Loc));
+                           Prefix      => Make_Identifier (Loc, Name_V),
+                           Expressions => New_References_To (Final_List, Loc));
 
          begin
             Set_Etype (Comp_Ref, Comp_Typ);
@@ -5060,10 +5037,7 @@ package body Exp_Ch7 is
             --  Generate:
             --    [Deep_]Finalize (V);
 
-            return
-              Make_Final_Call (
-                Obj_Ref => Comp_Ref,
-                Typ     => Comp_Typ);
+            return Make_Final_Call (Obj_Ref => Comp_Ref, Typ => Comp_Typ);
          end Build_Finalization_Call;
 
          -------------------
@@ -5103,10 +5077,7 @@ package body Exp_Ch7 is
             --  Generate:
             --    [Deep_]Initialize (V (J1, ..., JN));
 
-            return
-              Make_Init_Call (
-                Obj_Ref => Comp_Ref,
-                Typ     => Comp_Typ);
+            return Make_Init_Call (Obj_Ref => Comp_Ref, Typ => Comp_Typ);
          end Build_Initialization_Call;
 
       --  Start of processing for Build_Initialize_Statements
@@ -5146,10 +5117,9 @@ package body Exp_Ch7 is
               Make_Block_Statement (Loc,
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => New_List (Build_Finalization_Call),
-
-                  Exception_Handlers => New_List (
-                    Build_Exception_Handler (Loc, E_Id, Raised_Id))));
+                    Statements         => New_List (Build_Finalization_Call),
+                    Exception_Handlers => New_List (
+                      Build_Exception_Handler (Loc, E_Id, Raised_Id))));
          else
             Fin_Stmt := Build_Finalization_Call;
          end if;
@@ -5161,21 +5131,16 @@ package body Exp_Ch7 is
            Make_If_Statement (Loc,
              Condition =>
                Make_Op_Gt (Loc,
-                 Left_Opnd =>
-                   New_Reference_To (Counter_Id, Loc),
-                 Right_Opnd =>
-                   Make_Integer_Literal (Loc, 0)),
+                 Left_Opnd  => New_Reference_To (Counter_Id, Loc),
+                 Right_Opnd => Make_Integer_Literal (Loc, 0)),
 
              Then_Statements => New_List (
                Make_Assignment_Statement (Loc,
-                 Name =>
-                   New_Reference_To (Counter_Id, Loc),
+                 Name       => New_Reference_To (Counter_Id, Loc),
                  Expression =>
                    Make_Op_Subtract (Loc,
-                     Left_Opnd =>
-                       New_Reference_To (Counter_Id, Loc),
-                     Right_Opnd =>
-                       Make_Integer_Literal (Loc, 1)))),
+                     Left_Opnd  => New_Reference_To (Counter_Id, Loc),
+                     Right_Opnd => Make_Integer_Literal (Loc, 1)))),
 
              Else_Statements => New_List (Fin_Stmt));
 
@@ -5204,11 +5169,9 @@ package body Exp_Ch7 is
                         Defining_Identifier => Loop_Id,
                         Discrete_Subtype_Definition =>
                           Make_Attribute_Reference (Loc,
-                            Prefix =>
-                              Make_Identifier (Loc, Name_V),
-                            Attribute_Name =>
-                              Name_Range,
-                            Expressions => New_List (
+                            Prefix         => Make_Identifier (Loc, Name_V),
+                            Attribute_Name => Name_Range,
+                            Expressions    => New_List (
                               Make_Integer_Literal (Loc, Dim))),
 
                         Reverse_Present => True)),
@@ -5262,8 +5225,7 @@ package body Exp_Ch7 is
                Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id),
 
              Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Stmts));
+               Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts));
 
          --  Generate the block which contains the initialization call and
          --  the partial finalization code.
@@ -5289,19 +5251,15 @@ package body Exp_Ch7 is
                    Make_Exception_Handler (Loc,
                      Exception_Choices => New_List (
                        Make_Others_Choice (Loc)),
-                     Statements => New_List (
-                       Final_Block)))));
+                     Statements => New_List (Final_Block)))));
 
          Append_To (Statements (Handled_Statement_Sequence (Init_Loop)),
            Make_Assignment_Statement (Loc,
-             Name =>
-               New_Reference_To (Counter_Id, Loc),
+             Name       => New_Reference_To (Counter_Id, Loc),
              Expression =>
                Make_Op_Add (Loc,
-                 Left_Opnd =>
-                   New_Reference_To (Counter_Id, Loc),
-                 Right_Opnd =>
-                   Make_Integer_Literal (Loc, 1))));
+                 Left_Opnd  => New_Reference_To (Counter_Id, Loc),
+                 Right_Opnd => Make_Integer_Literal (Loc, 1))));
 
          --  Generate all initialization loops starting from the innermost
          --  dimension.
@@ -5355,15 +5313,13 @@ package body Exp_Ch7 is
                Declarations => New_List (
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Counter_Id,
-                   Object_Definition =>
+                   Object_Definition   =>
                      New_Reference_To (Standard_Integer, Loc),
-                   Expression =>
-                     Make_Integer_Literal (Loc, 0))),
+                   Expression          => Make_Integer_Literal (Loc, 0))),
 
                Handled_Statement_Sequence =>
                  Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements => New_List (
-                     Init_Loop))));
+                   Statements => New_List (Init_Loop))));
       end Build_Initialize_Statements;
 
       -----------------------
@@ -5423,9 +5379,8 @@ package body Exp_Ch7 is
       if Prim = Address_Case then
          Formals := New_List (
            Make_Parameter_Specification (Loc,
-             Make_Defining_Identifier (Loc, Name_V),
-           Parameter_Type =>
-             New_Reference_To (RTE (RE_Address), Loc)));
+             Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
+             Parameter_Type      => New_Reference_To (RTE (RE_Address), Loc)));
 
       --  Default case
 
@@ -5434,12 +5389,10 @@ package body Exp_Ch7 is
 
          Formals := New_List (
            Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_V),
-             In_Present  => True,
-             Out_Present => True,
-             Parameter_Type =>
-               New_Reference_To (Typ, Loc)));
+             Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
+             In_Present          => True,
+             Out_Present         => True,
+             Parameter_Type      => New_Reference_To (Typ, Loc)));
 
          --  F : Boolean := True
 
@@ -5448,11 +5401,10 @@ package body Exp_Ch7 is
          then
             Append_To (Formals,
               Make_Parameter_Specification (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, Name_F),
-                Parameter_Type =>
+                Defining_Identifier => Make_Defining_Identifier (Loc, Name_F),
+                Parameter_Type      =>
                   New_Reference_To (Standard_Boolean, Loc),
-                Expression =>
+                Expression          =>
                   New_Reference_To (Standard_True, Loc)));
          end if;
       end if;
@@ -5486,8 +5438,7 @@ package body Exp_Ch7 is
           Declarations => Empty_List,
 
           Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => Stmts)));
+            Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts)));
 
       return Proc_Id;
    end Make_Deep_Proc;
@@ -5827,7 +5778,7 @@ package body Exp_Ch7 is
                        Make_Case_Statement_Alternative (Loc,
                          Discrete_Choices =>
                            New_Copy_List (Discrete_Choices (Var)),
-                         Statements =>
+                         Statements       =>
                            Process_Component_List_For_Adjust (
                              Component_List (Var))));
 
@@ -5847,11 +5798,10 @@ package body Exp_Ch7 is
                     Make_Case_Statement (Loc,
                       Expression =>
                         Make_Selected_Component (Loc,
-                          Prefix =>
-                            Make_Identifier (Loc, Name_V),
+                          Prefix        => Make_Identifier (Loc, Name_V),
                           Selector_Name =>
                             Make_Identifier (Loc,
-                              Chars (Name (Variant_Part (Comps))))),
+                              Chars => Chars (Name (Variant_Part (Comps))))),
                       Alternatives => Var_Alts);
                end;
             end if;
@@ -5943,15 +5893,14 @@ package body Exp_Ch7 is
             begin
                if Needs_Finalization (Par_Typ) then
                   Call :=
-                    Make_Adjust_Call (
-                      Obj_Ref =>
-                        Make_Selected_Component (Loc,
-                          Prefix =>
-                            Make_Identifier (Loc, Name_V),
-                          Selector_Name =>
-                            Make_Identifier (Loc, Name_uParent)),
-                      Typ        => Par_Typ,
-                      For_Parent => True);
+                    Make_Adjust_Call
+                      (Obj_Ref    =>
+                         Make_Selected_Component (Loc,
+                           Prefix        => Make_Identifier (Loc, Name_V),
+                           Selector_Name =>
+                             Make_Identifier (Loc, Name_uParent)),
+                       Typ        => Par_Typ,
+                       For_Parent => True);
 
                   --  Generate:
                   --    Deep_Adjust (V._parent, False);  --  No_Except_Propagat
@@ -5975,8 +5924,7 @@ package body Exp_Ch7 is
                           Make_Block_Statement (Loc,
                             Handled_Statement_Sequence =>
                               Make_Handled_Sequence_Of_Statements (Loc,
-                                Statements => New_List (Adj_Stmt),
-
+                                Statements         => New_List (Adj_Stmt),
                                 Exception_Handlers => New_List (
                                   Build_Exception_Handler
                                     (Loc, E_Id, Raised_Id))));
@@ -6018,8 +5966,7 @@ package body Exp_Ch7 is
                if Present (Proc) then
                   Adj_Stmt :=
                     Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To (Proc, Loc),
+                      Name                   => New_Reference_To (Proc, Loc),
                       Parameter_Associations => New_List (
                         Make_Identifier (Loc, Name_V)));
 
@@ -6028,8 +5975,7 @@ package body Exp_Ch7 is
                        Make_Block_Statement (Loc,
                          Handled_Statement_Sequence =>
                            Make_Handled_Sequence_Of_Statements (Loc,
-                             Statements => New_List (Adj_Stmt),
-
+                             Statements         => New_List (Adj_Stmt),
                              Exception_Handlers => New_List (
                                Build_Exception_Handler
                                  (Loc, E_Id, Raised_Id))));
@@ -6037,8 +5983,7 @@ package body Exp_Ch7 is
 
                   Append_To (Bod_Stmts,
                     Make_If_Statement (Loc,
-                      Condition =>
-                        Make_Identifier (Loc, Name_F),
+                      Condition       => Make_Identifier (Loc, Name_F),
                       Then_Statements => New_List (Adj_Stmt)));
                end if;
             end;
@@ -6082,12 +6027,10 @@ package body Exp_Ch7 is
             return
               New_List (
                 Make_Block_Statement (Loc,
-                  Declarations =>
+                  Declarations               =>
                     Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id),
-
                   Handled_Statement_Sequence =>
-                    Make_Handled_Sequence_Of_Statements (Loc,
-                      Statements => Bod_Stmts)));
+                    Make_Handled_Sequence_Of_Statements (Loc, Bod_Stmts)));
          end if;
       end Build_Adjust_Statements;
 
@@ -6180,7 +6123,7 @@ package body Exp_Ch7 is
                      Append_To (Decls,
                        Make_Implicit_Label_Declaration (Loc,
                          Defining_Identifier => Entity (Label_Id),
-                         Label_Construct => Label));
+                         Label_Construct     => Label));
 
                      --  Generate:
                      --    when N =>
@@ -6223,22 +6166,19 @@ package body Exp_Ch7 is
                --    end;
 
                Fin_Stmt :=
-                 Make_Final_Call (
-                   Obj_Ref =>
-                     Make_Selected_Component (Loc,
-                       Prefix =>
-                         Make_Identifier (Loc, Name_V),
-                       Selector_Name =>
-                         Make_Identifier (Loc, Chars (Id))),
-                   Typ => Typ);
+                 Make_Final_Call
+                   (Obj_Ref =>
+                      Make_Selected_Component (Loc,
+                        Prefix        => Make_Identifier (Loc, Name_V),
+                        Selector_Name => Make_Identifier (Loc, Chars (Id))),
+                    Typ     => Typ);
 
                if not Restriction_Active (No_Exception_Propagation) then
                   Fin_Stmt :=
                     Make_Block_Statement (Loc,
                       Handled_Statement_Sequence =>
                         Make_Handled_Sequence_Of_Statements (Loc,
-                          Statements => New_List (Fin_Stmt),
-
+                          Statements         => New_List (Fin_Stmt),
                           Exception_Handlers => New_List (
                             Build_Exception_Handler (Loc, E_Id, Raised_Id))));
                end if;
@@ -6461,10 +6401,9 @@ package body Exp_Ch7 is
 
             Jump_Block :=
               Make_Block_Statement (Loc,
-                Declarations => Decls,
+                Declarations               => Decls,
                 Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => Stmts));
+                  Make_Handled_Sequence_Of_Statements (Loc, Stmts));
 
             if Present (Var_Case) then
                return New_List (Var_Case, Jump_Block);
@@ -6544,15 +6483,14 @@ package body Exp_Ch7 is
             begin
                if Needs_Finalization (Par_Typ) then
                   Call :=
-                    Make_Final_Call (
-                      Obj_Ref =>
-                        Make_Selected_Component (Loc,
-                          Prefix =>
-                            Make_Identifier (Loc, Name_V),
-                          Selector_Name =>
-                            Make_Identifier (Loc, Name_uParent)),
-                      Typ        => Par_Typ,
-                      For_Parent => True);
+                    Make_Final_Call
+                      (Obj_Ref =>
+                         Make_Selected_Component (Loc,
+                           Prefix        => Make_Identifier (Loc, Name_V),
+                           Selector_Name =>
+                             Make_Identifier (Loc, Name_uParent)),
+                       Typ        => Par_Typ,
+                       For_Parent => True);
 
                   --  Generate:
                   --    Deep_Finalize (V._parent, False);  --  No_Except_Propag
@@ -6576,8 +6514,7 @@ package body Exp_Ch7 is
                           Make_Block_Statement (Loc,
                             Handled_Statement_Sequence =>
                               Make_Handled_Sequence_Of_Statements (Loc,
-                                Statements => New_List (Fin_Stmt),
-
+                                Statements         => New_List (Fin_Stmt),
                                 Exception_Handlers => New_List (
                                   Build_Exception_Handler
                                     (Loc, E_Id, Raised_Id))));
@@ -6621,8 +6558,7 @@ package body Exp_Ch7 is
                if Present (Proc) then
                   Fin_Stmt :=
                     Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To (Proc, Loc),
+                      Name                   => New_Reference_To (Proc, Loc),
                       Parameter_Associations => New_List (
                         Make_Identifier (Loc, Name_V)));
 
@@ -6631,8 +6567,7 @@ package body Exp_Ch7 is
                        Make_Block_Statement (Loc,
                          Handled_Statement_Sequence =>
                            Make_Handled_Sequence_Of_Statements (Loc,
-                             Statements => New_List (Fin_Stmt),
-
+                             Statements         => New_List (Fin_Stmt),
                              Exception_Handlers => New_List (
                                Build_Exception_Handler
                                  (Loc, E_Id, Raised_Id))));
@@ -6640,8 +6575,7 @@ package body Exp_Ch7 is
 
                   Prepend_To (Bod_Stmts,
                     Make_If_Statement (Loc,
-                      Condition =>
-                        Make_Identifier (Loc, Name_F),
+                      Condition       => Make_Identifier (Loc, Name_F),
                       Then_Statements => New_List (Fin_Stmt)));
                end if;
             end;
@@ -6686,12 +6620,10 @@ package body Exp_Ch7 is
             return
               New_List (
                 Make_Block_Statement (Loc,
-                  Declarations =>
+                  Declarations               =>
                     Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id),
-
                   Handled_Statement_Sequence =>
-                    Make_Handled_Sequence_Of_Statements (Loc,
-                      Statements => Bod_Stmts)));
+                    Make_Handled_Sequence_Of_Statements (Loc, Bod_Stmts)));
          end if;
       end Build_Finalize_Statements;
 
@@ -6778,10 +6710,9 @@ package body Exp_Ch7 is
                if Is_Controlled (Typ) then
                   return New_List (
                     Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To (
-                          Find_Prim_Op (Typ, Name_Of (Prim)), Loc),
-
+                      Name                   =>
+                        New_Reference_To
+                          (Find_Prim_Op (Typ, Name_Of (Prim)), Loc),
                       Parameter_Associations => New_List (
                         Make_Identifier (Loc, Name_V))));
                else
@@ -7044,8 +6975,8 @@ package body Exp_Ch7 is
 
       elsif Is_Class_Wide_Type (Typ)
         and then Has_Discriminants (Root_Type (Typ))
-        and then not Is_Empty_Elmt_List (
-                       Discriminant_Constraint (Root_Type (Typ)))
+        and then not
+          Is_Empty_Elmt_List (Discriminant_Constraint (Root_Type (Typ)))
       then
          declare
             Parent_Typ : Entity_Id := Root_Type (Typ);
@@ -7055,8 +6986,8 @@ package body Exp_Ch7 is
 
             while Parent_Typ /= Etype (Parent_Typ)
               and then Has_Discriminants (Parent_Typ)
-              and then not Is_Empty_Elmt_List (
-                             Discriminant_Constraint (Parent_Typ))
+              and then not
+                Is_Empty_Elmt_List (Discriminant_Constraint (Parent_Typ))
             loop
                Parent_Typ := Etype (Parent_Typ);
             end loop;
@@ -7091,11 +7022,9 @@ package body Exp_Ch7 is
                 New_Reference_To (Desg_Typ, Loc))),
 
         Make_Attribute_Definition_Clause (Loc,
-          Name =>
-            New_Reference_To (Ptr_Typ, Loc),
-          Chars => Name_Storage_Size,
-          Expression =>
-            Make_Integer_Literal (Loc, 0)));
+          Name       => New_Reference_To (Ptr_Typ, Loc),
+          Chars      => Name_Storage_Size,
+          Expression => Make_Integer_Literal (Loc, 0)));
 
       Obj_Expr := Make_Identifier (Loc, Name_V);
 
@@ -7127,11 +7056,10 @@ package body Exp_Ch7 is
             begin
                return
                  Make_Op_Multiply (Loc,
-                   Left_Opnd =>
-                     Make_Integer_Literal (Loc, 2),
+                   Left_Opnd  => Make_Integer_Literal (Loc, 2),
                    Right_Opnd =>
                      Make_Op_Divide (Loc,
-                       Left_Opnd =>
+                       Left_Opnd  =>
                          Make_Integer_Literal (Loc, Esize (Typ)),
                        Right_Opnd =>
                          Make_Integer_Literal (Loc, System_Storage_Unit)));
@@ -7146,9 +7074,8 @@ package body Exp_Ch7 is
 
             Append_To (Decls,
               Make_Attribute_Definition_Clause (Loc,
-                Name =>
-                  New_Reference_To (Ptr_Typ, Loc),
-                Chars => Name_Size,
+                Name       => New_Reference_To (Ptr_Typ, Loc),
+                Chars      => Name_Size,
                 Expression =>
                   Make_Integer_Literal (Loc, System_Address_Size)));
 
@@ -7172,10 +7099,8 @@ package body Exp_Ch7 is
                else
                   Dope_Expr :=
                     Make_Op_Add (Loc,
-                      Left_Opnd =>
-                        Dope_Expr,
-                      Right_Opnd =>
-                        Bounds_Size_Expression (Etype (Index)));
+                      Left_Opnd  => Dope_Expr,
+                      Right_Opnd => Bounds_Size_Expression (Etype (Index)));
                end if;
 
                Next_Index (Index);
@@ -7189,10 +7114,10 @@ package body Exp_Ch7 is
             Append_To (Decls,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Dope_Id,
-                Constant_Present => True,
-                Object_Definition =>
+                Constant_Present    => True,
+                Object_Definition   =>
                   New_Reference_To (RTE (RE_Storage_Offset), Loc),
-                Expression => Dope_Expr));
+                Expression          => Dope_Expr));
 
             --  Shift the address from the start of the dope vector to the
             --  start of the elements:
@@ -7204,7 +7129,7 @@ package body Exp_Ch7 is
 
             Obj_Expr :=
               Make_Function_Call (Loc,
-                Name =>
+                Name                   =>
                   New_Reference_To (RTE (RE_Add_Offset_To_Address), Loc),
                 Parameter_Associations => New_List (
                   Obj_Expr,
@@ -7224,8 +7149,7 @@ package body Exp_Ch7 is
                 Make_Final_Call (
                   Obj_Ref =>
                     Make_Explicit_Dereference (Loc,
-                      Prefix =>
-                        Unchecked_Convert_To (Ptr_Typ, Obj_Expr)),
+                      Prefix => Unchecked_Convert_To (Ptr_Typ, Obj_Expr)),
                   Typ => Desg_Typ)))));
    end Make_Finalize_Address_Stmts;
 
@@ -7262,7 +7186,7 @@ package body Exp_Ch7 is
          E_Occ := Make_Defining_Identifier (Loc, Name_E);
          Raise_Node :=
            Make_Procedure_Call_Statement (Loc,
-             Name =>
+             Name                   =>
                New_Reference_To (RTE (RE_Reraise_Occurrence), Loc),
              Parameter_Associations => New_List (
                New_Reference_To (E_Occ, Loc)));
@@ -7275,7 +7199,7 @@ package body Exp_Ch7 is
          E_Occ := Make_Defining_Identifier (Loc, Name_E);
          Raise_Node :=
            Make_Procedure_Call_Statement (Loc,
-             Name =>
+             Name                   =>
                New_Reference_To
                  (RTE (RE_Raise_From_Controlled_Operation), Loc),
              Parameter_Associations => New_List (
@@ -7364,7 +7288,6 @@ package body Exp_Ch7 is
 
       if Has_Controlled_Component (Utyp) then
          Proc := TSS (Utyp, Deep_Name_Of (Initialize_Case));
-
       else
          Proc := Find_Prim_Op (Utyp, Name_Of (Initialize_Case));
          Check_Visibly_Controlled (Initialize_Case, Typ, Proc, Ref);
@@ -7402,22 +7325,17 @@ package body Exp_Ch7 is
          --  V : in out Typ
 
         Make_Parameter_Specification (Loc,
-          Defining_Identifier =>
-            Make_Defining_Identifier (Loc, Name_V),
-          In_Present  => True,
-          Out_Present => True,
-          Parameter_Type =>
-            New_Reference_To (Typ, Loc)),
+          Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
+          In_Present          => True,
+          Out_Present         => True,
+          Parameter_Type      => New_Reference_To (Typ, Loc)),
 
          --  F : Boolean := True
 
         Make_Parameter_Specification (Loc,
-          Defining_Identifier =>
-            Make_Defining_Identifier (Loc, Name_F),
-          Parameter_Type =>
-            New_Reference_To (Standard_Boolean, Loc),
-          Expression =>
-            New_Reference_To (Standard_True, Loc)));
+          Defining_Identifier => Make_Defining_Identifier (Loc, Name_F),
+          Parameter_Type      => New_Reference_To (Standard_Boolean, Loc),
+          Expression          => New_Reference_To (Standard_True, Loc)));
 
       --  Add the necessary number of counters to represent the initialization
       --  state of an object.
@@ -7426,15 +7344,14 @@ package body Exp_Ch7 is
         Make_Subprogram_Body (Loc,
           Specification =>
             Make_Procedure_Specification (Loc,
-              Defining_Unit_Name => Nam,
+              Defining_Unit_Name       => Nam,
               Parameter_Specifications => Formals),
 
           Declarations => No_List,
 
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
-              Statements =>
-                Make_Deep_Record_Body (Finalize_Case, Typ, True)));
+              Statements => Make_Deep_Record_Body (Finalize_Case, Typ, True)));
    end Make_Local_Deep_Finalize;
 
    ----------------------------------------
@@ -7507,14 +7424,14 @@ package body Exp_Ch7 is
 
       return
         Make_Procedure_Call_Statement (Loc,
-          Name =>
+          Name                   =>
             New_Reference_To (RTE (RE_Set_Finalize_Address_Ptr), Loc),
 
           Parameter_Associations => New_List (
             New_Reference_To (Associated_Collection (Ptr_Typ), Loc),
 
             Make_Attribute_Reference (Loc,
-              Prefix =>
+              Prefix         =>
                 New_Reference_To (TSS (Utyp, TSS_Finalize_Address), Loc),
               Attribute_Name => Name_Unrestricted_Access)));
    end Make_Set_Finalize_Address_Ptr_Call;
@@ -7596,13 +7513,11 @@ package body Exp_Ch7 is
 
       Block :=
         Make_Block_Statement (Loc,
-          Identifier =>
-            New_Reference_To (Current_Scope, Loc),
-          Declarations => Decls,
+          Identifier                 => New_Reference_To (Current_Scope, Loc),
+          Declarations               => Decls,
           Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => Instrs),
-          Has_Created_Identifier => True);
+            Make_Handled_Sequence_Of_Statements (Loc, Statements => Instrs),
+          Has_Created_Identifier     => True);
       Set_Parent (Block, Par);
 
       --  Insert actions stuck in the transient scopes as well as all freezing
@@ -7786,15 +7701,14 @@ package body Exp_Ch7 is
       Insert_Actions (N, New_List (
         Make_Object_Declaration (Loc,
           Defining_Identifier => Temp,
-          Object_Definition =>
-            New_Reference_To (Typ, Loc)),
+          Object_Definition   => New_Reference_To (Typ, Loc)),
 
         Make_Transient_Block (Loc,
           Action =>
             Make_Assignment_Statement (Loc,
               Name       => New_Reference_To (Temp, Loc),
               Expression => Expr),
-          Par => Parent (N))));
+          Par    => Parent (N))));
 
       Rewrite (N, New_Reference_To (Temp, Loc));
       Analyze_And_Resolve (N, Typ);

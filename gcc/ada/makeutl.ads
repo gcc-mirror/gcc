@@ -31,7 +31,7 @@ with ALI;
 with Namet;    use Namet;
 with Opt;
 with Osint;
-with Prj;         use Prj;
+with Prj;      use Prj;
 with Prj.Tree;
 with Types;    use Types;
 
@@ -40,6 +40,7 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 package Makeutl is
 
    type Fail_Proc is access procedure (S : String);
+   --  Pointer to procedure which outputs a failure message
 
    On_Windows : constant Boolean := Directory_Separator = '\';
    --  True when on Windows
@@ -119,8 +120,8 @@ package Makeutl is
    --  Return True if source is a subunit
 
    procedure Initialize_Source_Record (Source : Source_Id);
-   --  Get information either about the source file, the object and
-   --  dependency file, as well as their timestamps. This includes timestamps.
+   --  Get information either about the source file, or the object and
+   --  dependency file, as well as their timestamps.
 
    function Is_External_Assignment
      (Env  : Prj.Tree.Environment;
@@ -230,12 +231,12 @@ package Makeutl is
       Exit_Code    : Osint.Exit_Code_Type := Osint.E_Success;
       S            : String := "");
    --  Terminate program, with or without a message, setting the status code
-   --  according to Fatal.
-   --  This properly removes all temporary files
+   --  according to Fatal. This properly removes all temporary files.
 
    -----------------------
    -- Project_Tree data --
    -----------------------
+
    --  The following types are specific to builders, and associated with each
    --  of the loaded project trees.
 
@@ -288,10 +289,10 @@ package Makeutl is
       Option_Compile_Only   : Boolean := False;   --  Was "-c" specified ?
       Option_Bind_Only      : Boolean := False;
       Option_Link_Only      : Boolean := False);
-   --  Compute which compilation phases will be needed for Tree. This also
-   --  does the computation for aggregated trees.
-   --  This also check whether we'll need to check the closure of the files we
-   --  have just compiled to add them to the queue.
+   --  Compute which compilation phases will be needed for Tree. This also does
+   --  the computation for aggregated trees. This also check whether we'll need
+   --  to check the closure of the files we have just compiled to add them to
+   --  the queue.
 
    -----------
    -- Mains --
@@ -313,8 +314,9 @@ package Makeutl is
       Project   : Project_Id;
       Tree      : Project_Tree_Ref;
    end record;
+
    No_Main_Info : constant Main_Info :=
-     (No_File, 0, No_Location, No_Source, No_Project, null);
+                    (No_File, 0, No_Location, No_Source, No_Project, null);
 
    package Mains is
       procedure Add_Main
@@ -323,17 +325,14 @@ package Makeutl is
          Location : Source_Ptr := No_Location;
          Project  : Project_Id := No_Project;
          Tree     : Project_Tree_Ref := null);
-      --  Add one main to the table.
-      --  This is in general used to add the main files specified on the
-      --  command line.
-      --  Index is used for multi-unit source files, and indicates which unit
-      --  within the source is concerned.
+      --  Add one main to the table. This is in general used to add the main
+      --  files specified on the command line. Index is used for multi-unit
+      --  source files, and indicates which unit in the source is concerned.
       --  Location is the location within the project file (if a project file
-      --  is used).
-      --  Project and Tree indicate to which project the main should belong.
-      --  In particular, for aggregate projects, this isn't necessarily the
-      --  main project tree. These can be set to No_Project and null when not
-      --  using projects.
+      --  is used). Project and Tree indicate to which project the main should
+      --  belong. In particular, for aggregate projects, this isn't necessarily
+      --  the main project tree. These can be set to No_Project and null when
+      --  not using projects.
 
       procedure Delete;
       --  Empty the table
@@ -347,17 +346,17 @@ package Makeutl is
       --  If a single main file was defined, this subprogram indicates which
       --  unit inside it is the main (case of a multi-unit source files).
       --  Errors are raised if zero or more than one main file was defined,
-      --  and Index is not 0.
-      --  This subprogram is used for the handling of the command line switch.
+      --  and Index is non-zaero. This subprogram is used for the handling
+      --  of the command line switch.
 
       function Next_Main return String;
       function Next_Main return Main_Info;
-      --  Moves the cursor forward and returns the new current entry.
-      --  Returns No_File_And_Loc if there are no more mains in the table.
+      --  Moves the cursor forward and returns the new current entry. Returns
+      --  No_File_And_Loc if there are no more mains in the table.
 
       function Number_Of_Mains (Tree : Project_Tree_Ref) return Natural;
-      --  Returns the number of mains in this project tree (if Tree is null,
-      --  it returns the total number of project trees)
+      --  Returns the number of mains in this project tree (if Tree is null, it
+      --  returns the total number of project trees)
 
       procedure Fill_From_Project
         (Root_Project : Project_Id;
@@ -371,7 +370,7 @@ package Makeutl is
          Project_Tree : Project_Tree_Ref);
       --  If some main units were already added from the command line, check
       --  that they all belong to the root project, and that they are full
-      --  full paths rather than (partial) base names (e.g. no body suffix was
+      --  paths rather than (partial) base names (e.g. no body suffix was
       --  specified).
 
    end Mains;
@@ -383,29 +382,29 @@ package Makeutl is
    type Source_Info_Format is (Format_Gprbuild, Format_Gnatmake);
 
    package Queue is
-      --  The queue of sources to be checked for compilation.
-      --  There can be a single such queue per application.
+
+      --  The queue of sources to be checked for compilation. There can be a
+      --  single such queue per application.
 
       type Source_Info (Format : Source_Info_Format := Format_Gprbuild) is
          record
             case Format is
-            when Format_Gprbuild =>
-               Tree : Project_Tree_Ref := null;
-               Id   : Source_Id := null;
+               when Format_Gprbuild =>
+                  Tree : Project_Tree_Ref := null;
+                  Id   : Source_Id        := null;
 
-            when Format_Gnatmake =>
-               File      : File_Name_Type := No_File;
-               Unit      : Unit_Name_Type := No_Unit_Name;
-               Index     : Int := 0;
-               Project   : Project_Id := No_Project;
+               when Format_Gnatmake =>
+                  File      : File_Name_Type := No_File;
+                  Unit      : Unit_Name_Type := No_Unit_Name;
+                  Index     : Int            := 0;
+                  Project   : Project_Id     := No_Project;
             end case;
          end record;
       --  Information about files stored in the queue. The exact information
       --  depends on the builder, and in particular whether it only supports
       --  project-based files (in which case we have a full Source_Id record).
 
-      No_Source_Info : constant Source_Info :=
-        (Format_Gprbuild, null, null);
+      No_Source_Info : constant Source_Info := (Format_Gprbuild, null, null);
 
       procedure Initialize
         (Queue_Per_Obj_Dir : Boolean;
@@ -429,21 +428,19 @@ package Makeutl is
       --  Returns True if the queue is empty
 
       function Is_Virtually_Empty return Boolean;
-      --  Returns True if the queue is empty or if all object directories are
-      --  busy.
+      --  Returns True if queue is empty or if all object directories are busy
 
       procedure Insert (Source  : Source_Info; With_Roots : Boolean := False);
       function Insert
         (Source  : Source_Info; With_Roots : Boolean := False) return Boolean;
-      --  Insert source in the queue.
-      --  The second version returns False if the Source was already marked in
-      --  the queue.
-      --  If With_Roots is True and the source is in Format_Gprbuild mode (ie
-      --  with a project), this procedure also includes the "Roots" for this
-      --  main, ie all the other files that must be included in the library or
-      --  binary (in particular to combine Ada and C files connected through
-      --  pragma Export/Import). When the roots are computed, they are also
-      --  stored in the corresponding Source_Id for later reuse by the binder.
+      --  Insert source in the queue. The second version returns False if the
+      --  Source was already marked in the queue. If With_Roots is True and the
+      --  source is in Format_Gprbuild mode (ie with a project), this procedure
+      --  also includes the "Roots" for this main, ie all the other files that
+      --  must be included in the library or binary (in particular to combine
+      --  Ada and C files connected through pragma Export/Import). When the
+      --  roots are computed, they are also stored in the corresponding
+      --  Source_Id for later reuse by the binder.
 
       procedure Insert_Project_Sources
         (Project        : Project_Id;
@@ -452,13 +449,12 @@ package Makeutl is
          Unique_Compile : Boolean);
       --  Insert all the compilable sources of the project in the queue. If
       --  All_Project is true, then all sources from imported projects are also
-      --  inserted.
-      --  Unique_Compile should be true if "-u" was specified on the command
-      --  line: if True and some files were given on the command line), only
-      --  those files will be compiled (so Insert_Project_Sources will do
+      --  inserted. Unique_Compile should be true if "-u" was specified on the
+      --  command line: if True and some files were given on the command line),
+      --  only those files will be compiled (so Insert_Project_Sources will do
       --  nothing). If True and no file was specified on the command line, all
-      --  files of the project(s) will be compiled.
-      --  This procedure also processed aggregated projects.
+      --  files of the project(s) will be compiled. This procedure also
+      --  processed aggregated projects.
 
       procedure Insert_Withed_Sources_For
         (The_ALI               : ALI.ALI_Id;

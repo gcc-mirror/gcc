@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Unchecked_Deallocation;
 with ALI;      use ALI;
 with Debug;
 with Err_Vars; use Err_Vars;
@@ -40,12 +39,13 @@ with Snames;   use Snames;
 with Table;
 with Tempdir;
 
-with Ada.Command_Line;  use Ada.Command_Line;
+with Ada.Command_Line;           use Ada.Command_Line;
+with Ada.Unchecked_Deallocation;
 
-with GNAT.Case_Util;            use GNAT.Case_Util;
-with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+with GNAT.Case_Util;             use GNAT.Case_Util;
+with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
 with GNAT.HTable;
-with GNAT.Regexp;               use GNAT.Regexp;
+with GNAT.Regexp;                use GNAT.Regexp;
 
 package body Makeutl is
 
@@ -1077,6 +1077,7 @@ package body Makeutl is
 
    function Is_Subunit (Source : Prj.Source_Id) return Boolean is
       Src_Ind : Source_File_Index;
+
    begin
       if Source.Kind = Sep then
          return True;
@@ -1084,9 +1085,9 @@ package body Makeutl is
       --  A Spec, a file based language source or a body with a spec cannot be
       --  a subunit.
 
-      elsif Source.Kind = Spec or else
-        Source.Unit = No_Unit_Index or else
-        Other_Part (Source) /= No_Source
+      elsif Source.Kind = Spec
+        or else Source.Unit = No_Unit_Index
+        or else Other_Part (Source) /= No_Source
       then
          return False;
       end if;
@@ -1263,42 +1264,6 @@ package body Makeutl is
          end if;
       end Add_Main;
 
-      --------------------------
-      -- Set_Multi_Unit_Index --
-      --------------------------
-
-      procedure Set_Multi_Unit_Index
-        (Project_Tree : Project_Tree_Ref := null;
-         Index        : Int := 0) is
-      begin
-         if Index /= 0 then
-            if Names.Last = 0 then
-               Fail_Program
-                 (Project_Tree,
-                  "cannot specify a multi-unit index but no main " &
-                  "on the command line");
-
-            elsif Names.Last > 1 then
-               Fail_Program
-                 (Project_Tree,
-                  "cannot specify several mains with a multi-unit index");
-
-            else
-               Names.Table (Names.Last).Index := Index;
-            end if;
-         end if;
-      end Set_Multi_Unit_Index;
-
-      ------------
-      -- Delete --
-      ------------
-
-      procedure Delete is
-      begin
-         Names.Set_Last (0);
-         Mains.Reset;
-      end Delete;
-
       --------------------
       -- Complete_Mains --
       --------------------
@@ -1451,12 +1416,24 @@ package body Makeutl is
             end if;
          end Do_Complete;
 
+      --  Start of processing for Complete_Mains
+
       begin
          Complete_All (Root_Project, Project_Tree);
       end Complete_Mains;
 
+      ------------
+      -- Delete --
+      ------------
+
+      procedure Delete is
+      begin
+         Names.Set_Last (0);
+         Mains.Reset;
+      end Delete;
+
       -----------------------
-      -- FIll_From_Project --
+      -- Fill_From_Project --
       -----------------------
 
       procedure Fill_From_Project
@@ -1467,6 +1444,10 @@ package body Makeutl is
            (Project : Project_Id; Tree    : Project_Tree_Ref);
          --  Add the main units from this project into Mains.
          --  This takes into account the aggregated projects
+
+         ----------------------------
+         -- Add_Mains_From_Project --
+         ----------------------------
 
          procedure Add_Mains_From_Project
            (Project : Project_Id;
@@ -1513,6 +1494,8 @@ package body Makeutl is
          procedure Fill_All is new For_Project_And_Aggregated
            (Add_Mains_From_Project);
 
+      --  Start of processing for Fill_From_Project
+
       begin
          Fill_All (Root_Project, Project_Tree);
       end Fill_From_Project;
@@ -1522,19 +1505,14 @@ package body Makeutl is
       ---------------
 
       function Next_Main return String is
-         Info : Main_Info;
+         Info : constant Main_Info := Next_Main;
       begin
-         Info := Next_Main;
          if Info = No_Main_Info then
             return "";
          else
             return Get_Name_String (Info.File);
          end if;
       end Next_Main;
-
-      ---------------
-      -- Next_Main --
-      ---------------
 
       function Next_Main return Main_Info is
       begin
@@ -1567,6 +1545,34 @@ package body Makeutl is
       begin
          Current := 0;
       end Reset;
+
+      --------------------------
+      -- Set_Multi_Unit_Index --
+      --------------------------
+
+      procedure Set_Multi_Unit_Index
+        (Project_Tree : Project_Tree_Ref := null;
+         Index        : Int := 0)
+      is
+      begin
+         if Index /= 0 then
+            if Names.Last = 0 then
+               Fail_Program
+                 (Project_Tree,
+                  "cannot specify a multi-unit index but no main " &
+                  "on the command line");
+
+            elsif Names.Last > 1 then
+               Fail_Program
+                 (Project_Tree,
+                  "cannot specify several mains with a multi-unit index");
+
+            else
+               Names.Table (Names.Last).Index := Index;
+            end if;
+         end if;
+      end Set_Multi_Unit_Index;
+
    end Mains;
 
    -----------------------
@@ -1633,10 +1639,9 @@ package body Makeutl is
                   return;
                end if;
 
-               --  Because relative path arguments to --RTS= may be relative
-               --  to the search directory prefix, those relative path
-               --  arguments are converted only when they include directory
-               --  information.
+               --  Because relative path arguments to --RTS= may be relative to
+               --  the search directory prefix, those relative path arguments
+               --  are converted only when they include directory information.
 
                if not Is_Absolute_Path (Sw (Start .. Sw'Last)) then
                   if Parent'Length = 0 then
@@ -1772,10 +1777,6 @@ package body Makeutl is
       Write_Eol;
    end Verbose_Msg;
 
-   -----------------
-   -- Verbose_Msg --
-   -----------------
-
    procedure Verbose_Msg
      (N1                : File_Name_Type;
       S1                : String;
@@ -1794,6 +1795,7 @@ package body Makeutl is
    -----------
 
    package body Queue is
+
       type Q_Record is record
          Info      : Source_Info;
          Processed : Boolean;
