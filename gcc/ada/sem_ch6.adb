@@ -664,21 +664,18 @@ package body Sem_Ch6 is
             Check_Limited_Return (Expr);
          end if;
 
-         --  RETURN only allowed in SPARK is as the last statement function
+         --  RETURN only allowed in SPARK as the last statement in function
 
          if Nkind (Parent (N)) /= N_Handled_Sequence_Of_Statements
            and then
              (Nkind (Parent (Parent (N))) /= N_Subprogram_Body
                or else Present (Next (N)))
          then
-            Mark_Non_ALFA_Subprogram
-              ("RETURN should be the last statement in ALFA", N);
             Check_SPARK_Restriction
               ("RETURN should be the last statement in function", N);
          end if;
 
       else
-         Mark_Non_ALFA_Subprogram ("extended RETURN is not in ALFA", N);
          Check_SPARK_Restriction ("extended RETURN is not allowed", N);
 
          --  Analyze parts specific to extended_return_statement:
@@ -1491,13 +1488,6 @@ package body Sem_Ch6 is
             Typ := Entity (Result_Definition (N));
             Set_Etype (Designator, Typ);
 
-            --  If the result type of a subprogram is not in ALFA, then the
-            --  subprogram is not in ALFA.
-
-            if not Is_In_ALFA (Typ) then
-               Set_Is_In_ALFA (Designator, False);
-            end if;
-
             --  Unconstrained array as result is not allowed in SPARK
 
             if Is_Array_Type (Typ)
@@ -1932,11 +1922,11 @@ package body Sem_Ch6 is
             Check_Returns (HSS, 'P', Missing_Ret, Spec_Id);
          end if;
 
-         --  Special checks in formal mode
+         --  Special checks in SPARK mode
 
          if Nkind (Body_Spec) = N_Function_Specification then
 
-            --  In formal mode, last statement of a function should be a return
+            --  In SPARK mode, last statement of a function should be a return
 
             declare
                Stat : constant Node_Id := Last_Source_Statement (HSS);
@@ -1945,13 +1935,12 @@ package body Sem_Ch6 is
                  and then not Nkind_In (Stat, N_Simple_Return_Statement,
                                               N_Extended_Return_Statement)
                then
-                  Set_Body_Is_In_ALFA (Id, False);
                   Check_SPARK_Restriction
                     ("last statement in function should be RETURN", Stat);
                end if;
             end;
 
-         --  In formal mode, verify that a procedure has no return
+         --  In SPARK mode, verify that a procedure has no return
 
          elsif Nkind (Body_Spec) = N_Procedure_Specification then
             if Present (Spec_Id) then
@@ -1964,7 +1953,6 @@ package body Sem_Ch6 is
             --  borrow the Check_Returns procedure here ???
 
             if Return_Present (Id) then
-               Set_Body_Is_In_ALFA (Id, False);
                Check_SPARK_Restriction
                  ("procedure should not have RETURN", N);
             end if;
@@ -2282,24 +2270,6 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  By default, consider that the subprogram body is in ALFA if the spec
-      --  is in ALFA. This is reversed later if some expression or statement is
-      --  not in ALFA.
-
-      declare
-         Id : Entity_Id;
-      begin
-         if Present (Spec_Id) then
-            Id := Spec_Id;
-         else
-            Id := Body_Id;
-         end if;
-
-         if Is_In_ALFA (Id) then
-            Set_Body_Is_In_ALFA (Id);
-         end if;
-      end;
-
       --  Do not inline any subprogram that contains nested subprograms, since
       --  the backend inlining circuit seems to generate uninitialized
       --  references in this case. We know this happens in the case of front
@@ -2531,7 +2501,6 @@ package body Sem_Ch6 is
          Set_Ekind (Body_Id, E_Subprogram_Body);
          Set_Scope (Body_Id, Scope (Spec_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Spec_Id));
-         Set_Is_In_ALFA (Body_Id, False);
 
       --  Case of subprogram body with no previous spec
 
@@ -3177,11 +3146,6 @@ package body Sem_Ch6 is
    --  Start of processing for Analyze_Subprogram_Specification
 
    begin
-      --  By default, consider that the subprogram spec is in ALFA. This is
-      --  reversed later if some parameter or result is not in ALFA.
-
-      Set_Is_In_ALFA (Designator);
-
       --  User-defined operator is not allowed in SPARK, except as a renaming
 
       if Nkind (Defining_Unit_Name (N)) = N_Defining_Operator_Symbol
@@ -8904,14 +8868,6 @@ package body Sem_Ch6 is
          end if;
 
          Set_Etype (Formal, Formal_Type);
-
-         --  The parameter is in ALFA if-and-only-if its type is in ALFA
-
-         if Is_In_ALFA (Formal_Type) then
-            Set_Is_In_ALFA (Formal);
-         else
-            Mark_Non_ALFA_Subprogram ("formal is not in ALFA", Formal);
-         end if;
 
          Default := Expression (Param_Spec);
 

@@ -6090,18 +6090,6 @@ package body Sem_Prag is
          --  external tool and a tool-specific function. These arguments are
          --  not analyzed.
 
-         --  The following is a special form used in conjunction with the
-         --  ALFA subset of Ada:
-
-         --    pragma Annotate (Formal_Proof, MODE);
-         --    MODE ::= On | Off
-
-         --    This pragma either forces (mode On) or disables (mode Off)
-         --    formal verification of the subprogram in which it is added. When
-         --    formal verification is forced, all violations of the the ALFA
-         --    subset of Ada present in the subprogram are reported as errors
-         --    to the user.
-
          when Pragma_Annotate => Annotate : declare
             Arg : Node_Id;
             Exp : Node_Id;
@@ -6113,52 +6101,9 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Store_Note (N);
 
-            --  Special processing for Formal_Proof case
-
-            if Chars (Get_Pragma_Arg (Arg1)) = Name_Formal_Proof then
-               if No (Arg2) then
-                  Error_Pragma_Arg
-                    ("missing second argument for pragma%", Arg1);
-               end if;
-
-               Check_Arg_Count (2);
-               Check_Arg_Is_One_Of (Arg2, Name_On, Name_Off);
-
-               declare
-                  Cur_Subp : constant Entity_Id := Current_Subprogram;
-
-               begin
-                  if Present (Cur_Subp)
-                    and then (Is_Subprogram (Cur_Subp)
-                               or else Is_Generic_Subprogram (Cur_Subp))
-                  then
-                     --  Notify user if some ALFA violation occurred before
-                     --  this point in Cur_Subp. These violations are not
-                     --  precisly located, but this is better than ignoring
-                     --  these violations.
-
-                     if Chars (Get_Pragma_Arg (Arg2)) = Name_On
-                       and then (not Is_In_ALFA (Cur_Subp)
-                                  or else not Body_Is_In_ALFA (Cur_Subp))
-                     then
-                        Error_Pragma
-                          ("pragma% is placed after violation"
-                           & " of ALFA");
-                     end if;
-
-                     --  We treat this as a Rep_Item to record it on the rep
-                     --  item chain for easy location later on.
-
-                     Record_Rep_Item (Cur_Subp, N);
-
-                  else
-                     Error_Pragma ("wrong placement for pragma%");
-                  end if;
-               end;
-
             --  Second parameter is optional, it is never analyzed
 
-            elsif No (Arg2) then
+            if No (Arg2) then
                null;
 
             --  Here if we have a second parameter

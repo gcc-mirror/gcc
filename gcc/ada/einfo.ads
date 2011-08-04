@@ -486,11 +486,6 @@ package Einfo is
 --       Present in package and generic package entities, points to the
 --       corresponding package body entity if one is present.
 
---    Body_Is_In_ALFA (Flag251)
---       Present in subprogram entities. Set for subprograms whose body belongs
---       to the ALFA subset, which are eligible for formal verification through
---       SPARK or Why tool-sets.
-
 --    Body_Needed_For_SAL (Flag40)
 --       Present in package and subprogram entities that are compilation
 --       units. Indicates that the source for the body must be included
@@ -1271,11 +1266,6 @@ package Einfo is
 --       Present in floating-point entities. Contains a value of type
 --       Float_Rep_Kind. Together with the Digits_Value uniquely defines
 --       the floating-point representation to be used.
-
---    Formal_Proof_On (synthesized)
---       Applies to subprogram and generic subprogram entities. Returns True if
---       the Rep_Item chain for the subprogram has a pragma Annotate which
---       forces formal proof on the subprogram's body.
 
 --    Freeze_Node (Node7)
 --       Present in all entities. If there is an associated freeze node for
@@ -2278,13 +2268,6 @@ package Einfo is
 
 --    Is_Incomplete_Type (synthesized)
 --       Applies to all entities, true for incomplete types and subtypes
-
---    Is_In_ALFA (Flag151)
---       Present in all entities. Set for entities that belong to the ALFA
---       subset, which are eligible for formal verification through SPARK or
---       Why tool-sets. For a subprogram, this only means that a call to the
---       subprogram can be formally analyzed. Another flag, Body_Is_In_ALFA,
---       defines which subprograms can be formally analyzed.
 
 --    Is_Inlined (Flag11)
 --       Present in all entities. Set for functions and procedures which are
@@ -5997,7 +5980,6 @@ package Einfo is
    function Barrier_Function                    (Id : E) return N;
    function Block_Node                          (Id : E) return N;
    function Body_Entity                         (Id : E) return E;
-   function Body_Is_In_ALFA                     (Id : E) return B;
    function Body_Needed_For_SAL                 (Id : E) return B;
    function CR_Discriminant                     (Id : E) return E;
    function C_Pass_By_Copy                      (Id : E) return B;
@@ -6205,7 +6187,6 @@ package Einfo is
    function Is_Hidden_Open_Scope                (Id : E) return B;
    function Is_Immediately_Visible              (Id : E) return B;
    function Is_Imported                         (Id : E) return B;
-   function Is_In_ALFA                          (Id : E) return B;
    function Is_Inlined                          (Id : E) return B;
    function Is_Interface                        (Id : E) return B;
    function Is_Instantiated                     (Id : E) return B;
@@ -6452,7 +6433,6 @@ package Einfo is
    function First_Component_Or_Discriminant     (Id : E) return E;
    function First_Formal                        (Id : E) return E;
    function First_Formal_With_Extras            (Id : E) return E;
-   function Formal_Proof_On                     (Id : E) return B;
    function Has_Attach_Handler                  (Id : E) return B;
    function Has_Entries                         (Id : E) return B;
    function Has_Foreign_Convention              (Id : E) return B;
@@ -6589,7 +6569,6 @@ package Einfo is
    procedure Set_Barrier_Function                (Id : E; V : N);
    procedure Set_Block_Node                      (Id : E; V : N);
    procedure Set_Body_Entity                     (Id : E; V : E);
-   procedure Set_Body_Is_In_ALFA                 (Id : E; V : B := True);
    procedure Set_Body_Needed_For_SAL             (Id : E; V : B := True);
    procedure Set_CR_Discriminant                 (Id : E; V : E);
    procedure Set_C_Pass_By_Copy                  (Id : E; V : B := True);
@@ -6800,7 +6779,6 @@ package Einfo is
    procedure Set_Is_Hidden_Open_Scope            (Id : E; V : B := True);
    procedure Set_Is_Immediately_Visible          (Id : E; V : B := True);
    procedure Set_Is_Imported                     (Id : E; V : B := True);
-   procedure Set_Is_In_ALFA                      (Id : E; V : B := True);
    procedure Set_Is_Inlined                      (Id : E; V : B := True);
    procedure Set_Is_Interface                    (Id : E; V : B := True);
    procedure Set_Is_Instantiated                 (Id : E; V : B := True);
@@ -7286,7 +7264,6 @@ package Einfo is
    pragma Inline (Barrier_Function);
    pragma Inline (Block_Node);
    pragma Inline (Body_Entity);
-   pragma Inline (Body_Is_In_ALFA);
    pragma Inline (Body_Needed_For_SAL);
    pragma Inline (CR_Discriminant);
    pragma Inline (C_Pass_By_Copy);
@@ -7522,7 +7499,6 @@ package Einfo is
    pragma Inline (Is_Imported);
    pragma Inline (Is_Incomplete_Or_Private_Type);
    pragma Inline (Is_Incomplete_Type);
-   pragma Inline (Is_In_ALFA);
    pragma Inline (Is_Inlined);
    pragma Inline (Is_Interface);
    pragma Inline (Is_Instantiated);
@@ -7731,7 +7707,6 @@ package Einfo is
    pragma Inline (Set_Barrier_Function);
    pragma Inline (Set_Block_Node);
    pragma Inline (Set_Body_Entity);
-   pragma Inline (Set_Body_Is_In_ALFA);
    pragma Inline (Set_Body_Needed_For_SAL);
    pragma Inline (Set_CR_Discriminant);
    pragma Inline (Set_C_Pass_By_Copy);
@@ -7941,7 +7916,6 @@ package Einfo is
    pragma Inline (Set_Is_Hidden_Open_Scope);
    pragma Inline (Set_Is_Immediately_Visible);
    pragma Inline (Set_Is_Imported);
-   pragma Inline (Set_Is_In_ALFA);
    pragma Inline (Set_Is_Inlined);
    pragma Inline (Set_Is_Interface);
    pragma Inline (Set_Is_Instantiated);

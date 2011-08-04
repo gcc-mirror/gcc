@@ -319,10 +319,7 @@ package ALFA is
    procedure Initialize_ALFA_Tables;
    --  Reset tables for a new compilation
 
-   function Get_Entity_For_Decl (N : Node_Id) return Entity_Id;
-   --  Return the entity for declaration N
-
-   function Get_Unique_Entity_For_Decl (N : Node_Id) return Entity_Id;
+   function Unique_Defining_Entity (N : Node_Id) return Entity_Id;
    --  Return the entity which represents declaration N, so that matching
    --  declaration and body have the same entity.
 

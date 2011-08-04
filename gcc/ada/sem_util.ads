@@ -277,22 +277,6 @@ package Sem_Util is
    --  Current_Scope is returned. The returned value is Empty if this is called
    --  from a library package which is not within any subprogram.
 
-   procedure Mark_Non_ALFA_Subprogram (Msg : String; N : Node_Id);
-   --  If Current_Subprogram is not Empty, mark either its specification or its
-   --  body as not being in ALFA.
-
-   --  This procedure may be called during the analysis of a precondition or
-   --  postcondition, as indicated by the flag In_Pre_Post_Expression, or
-   --  during the analysis of a subprogram's body. In the first case, the
-   --  specification of Current_Subprogram must be marked as not being in ALFA,
-   --  as the contract is considered to be part of the specification, so that
-   --  calls to this subprogram are not in ALFA. In the second case, mark the
-   --  body as not being in ALFA, which does not prevent the subprogram's
-   --  specification, and calls to the subprogram, from being in ALFA.
-
-   --  If the subprogram being marked as not in ALFA is annotated with
-   --  Formal_Proof On, then an error is issued with message Msg on node N.
-
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the
    --  declaration has a specification, the entity is obtained from the

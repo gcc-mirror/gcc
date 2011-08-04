@@ -434,7 +434,6 @@ package body Sem_Ch11 is
       P              : Node_Id;
 
    begin
-      Mark_Non_ALFA_Subprogram ("raise statement is not in ALFA", N);
       Check_SPARK_Restriction ("raise statement is not allowed", N);
       Check_Unreachable_Code (N);
 

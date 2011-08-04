@@ -350,8 +350,6 @@ package body Sem_Ch4 is
 
    procedure Analyze_Aggregate (N : Node_Id) is
    begin
-      Mark_Non_ALFA_Subprogram ("aggregate is not in ALFA", N);
-
       if No (Etype (N)) then
          Set_Etype (N, Any_Composite);
       end if;
@@ -371,7 +369,6 @@ package body Sem_Ch4 is
       C        : Node_Id;
 
    begin
-      Mark_Non_ALFA_Subprogram ("allocator is not in ALFA", N);
       Check_SPARK_Restriction ("allocator is not allowed", N);
 
       --  Deal with allocator restrictions
@@ -978,15 +975,6 @@ package body Sem_Ch4 is
             return;
          end if;
 
-         --  If this is an indirect call, or the subprogram called is not in
-         --  ALFA, then the call is not in ALFA.
-
-         if not Is_Subprogram (Nam_Ent) then
-            Mark_Non_ALFA_Subprogram ("indirect call is not in ALFA", N);
-         elsif not Is_In_ALFA (Nam_Ent) then
-            Mark_Non_ALFA_Subprogram ("call to subprogram not in ALFA", N);
-         end if;
-
          Analyze_One_Call (N, Nam_Ent, True, Success);
 
          --  If this is an indirect call, the return type of the access_to
@@ -1363,8 +1351,6 @@ package body Sem_Ch4 is
       L  : Node_Id;
 
    begin
-      Mark_Non_ALFA_Subprogram ("concatenation is not in ALFA", N);
-
       Candidate_Type := Empty;
 
       --  The following code is equivalent to:
@@ -1516,26 +1502,6 @@ package body Sem_Ch4 is
       Check_SPARK_Restriction ("conditional expression is not allowed", N);
 
       Else_Expr := Next (Then_Expr);
-
-      --  In ALFA, boolean conditional expressions are allowed:
-      --    * if they have no ELSE part, in which case the expression is
-      --      equivalent to
-
-      --        NOT Condition OR ELSE Then_Expr
-
-      --    * in pre- and postconditions, where the Condition cannot have side-
-      --      effects (in ALFA) and thus the expression is equivalent to
-
-      --        (Condition AND THEN Then_Expr)
-      --          and (NOT Condition AND THEN Then_Expr)
-
-      --  Non-boolean conditional expressions are marked as not in ALFA during
-      --  resolution.
-
-      if Present (Else_Expr) and then not In_Pre_Post_Expression then
-         Mark_Non_ALFA_Subprogram
-           ("this form of conditional expression is not in ALFA", N);
-      end if;
 
       if Comes_From_Source (N) then
          Check_Compiler_Unit (N);
@@ -1733,7 +1699,6 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Explicit_Dereference
 
    begin
-      Mark_Non_ALFA_Subprogram ("explicit dereference is not in ALFA", N);
       Check_SPARK_Restriction ("explicit dereference is not allowed", N);
 
       Analyze (P);
@@ -2616,7 +2581,6 @@ package body Sem_Ch4 is
 
    procedure Analyze_Null (N : Node_Id) is
    begin
-      Mark_Non_ALFA_Subprogram ("null is not in ALFA", N);
       Check_SPARK_Restriction ("null is not allowed", N);
 
       Set_Etype (N, Any_Access);
@@ -3248,8 +3212,6 @@ package body Sem_Ch4 is
       T    : Entity_Id;
 
    begin
-      Mark_Non_ALFA_Subprogram ("qualified expression is not in ALFA", N);
-
       Analyze_Expression (Expr);
 
       Set_Etype (N, Any_Type);
@@ -3308,7 +3270,6 @@ package body Sem_Ch4 is
       Iterator : Node_Id;
 
    begin
-      Mark_Non_ALFA_Subprogram ("quantified expression is not in ALFA", N);
       Check_SPARK_Restriction ("quantified expression is not allowed", N);
 
       Set_Etype  (Ent,  Standard_Void_Type);
@@ -3474,8 +3435,6 @@ package body Sem_Ch4 is
       Acc_Type : Entity_Id;
 
    begin
-      Mark_Non_ALFA_Subprogram ("reference is not in ALFA", N);
-
       Analyze (P);
 
       --  An interesting error check, if we take the 'Reference of an object
@@ -4340,7 +4299,6 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Slice
 
    begin
-      Mark_Non_ALFA_Subprogram ("slice is not in ALFA", N);
       Check_SPARK_Restriction ("slice is not allowed", N);
 
       Analyze (P);
@@ -4405,14 +4363,6 @@ package body Sem_Ch4 is
       Check_Fully_Declared (T, N);
       Analyze_Expression (Expr);
       Validate_Remote_Type_Type_Conversion (N);
-
-      --  Type conversion between scalar types are allowed in ALFA. All other
-      --  type conversions are not allowed.
-
-      if not (Is_Scalar_Type (Etype (Expr)) and then Is_Scalar_Type (T)) then
-         Mark_Non_ALFA_Subprogram
-           ("only type conversion between scalar types is in ALFA", N);
-      end if;
 
       --  Only remaining step is validity checks on the argument. These
       --  are skipped if the conversion does not come from the source.
@@ -4523,8 +4473,6 @@ package body Sem_Ch4 is
 
    procedure Analyze_Unchecked_Type_Conversion (N : Node_Id) is
    begin
-      Mark_Non_ALFA_Subprogram
-        ("unchecked type conversion is not in ALFA", N);
       Find_Type (Subtype_Mark (N));
       Analyze_Expression (Expression (N));
       Set_Etype (N, Entity (Subtype_Mark (N)));
