@@ -635,6 +635,9 @@ package body ALFA is
             --  Return scope entity which corresponds to index Cur_Scope_Idx in
             --  table ALFA_Scope_Table.
 
+            function Get_Entity_Type (E : Entity_Id) return Character;
+            --  Return a character representing the type of entity
+
             function Is_Future_Scope_Entity (E : Entity_Id) return Boolean;
             --  Check whether entity E is in ALFA_Scope_Table at index
             --  Cur_Scope_Idx or higher.
@@ -651,6 +654,22 @@ package body ALFA is
             begin
                return ALFA_Scope_Table.Table (Cur_Scope_Idx).Scope_Entity;
             end Cur_Scope;
+
+            ---------------------
+            -- Get_Entity_Type --
+            ---------------------
+
+            function Get_Entity_Type (E : Entity_Id) return Character is
+               C : Character;
+            begin
+               case Ekind (E) is
+                  when E_Out_Parameter    => C := '<';
+                  when E_In_Out_Parameter => C := '=';
+                  when E_In_Parameter     => C := '>';
+                  when others             => C := '*';
+               end case;
+               return C;
+            end Get_Entity_Type;
 
             ----------------------------
             -- Is_Future_Scope_Entity --
@@ -729,6 +748,7 @@ package body ALFA is
             ALFA_Xref_Table.Append (
               (Entity_Name => Cur_Entity_Name,
                Entity_Line => Int (Get_Logical_Line_Number (XE.Def)),
+               Etype       => Get_Entity_Type (XE.Ent),
                Entity_Col  => Int (Get_Column_Number (XE.Def)),
                File_Num    => Dependency_Num (XE.Lun),
                Scope_Num   => Get_Scope_Num (XE.Ref_Scope),

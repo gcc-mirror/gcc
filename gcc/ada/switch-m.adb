@@ -548,6 +548,58 @@ package body Switch.M is
                         Ptr := Ptr + 1;
                      end if;
 
+                     --  -gnat12
+
+                  when '1' =>
+                     Last_Stored := First_Stored;
+                     Storing (Last_Stored) := C;
+                     Ptr := Ptr + 1;
+
+                     if Ptr /= Max or else Switch_Chars (Ptr) /= '2' then
+
+                        --  Invalid switch
+
+                        Last := 0;
+                        return;
+
+                     else
+                        Last_Stored := Last_Stored + 1;
+                        Storing (Last_Stored) := '2';
+                        Add_Switch_Component
+                          (Storing (Storing'First .. Last_Stored));
+                        Ptr := Ptr + 1;
+                     end if;
+
+                     --  -gnat2005 -gnat2012
+
+                  when '2' =>
+                     if Ptr + 3 /= Max then
+                        Last := 0;
+                        return;
+
+                     elsif Switch_Chars (Ptr + 1 .. Ptr + 3) = "005" then
+                        Last_Stored := First_Stored + 3;
+                        Storing (First_Stored .. Last_Stored) := "2005";
+                        Add_Switch_Component
+                          (Storing (Storing'First .. Last_Stored));
+                        Ptr := Max + 1;
+
+                     elsif Switch_Chars (Ptr + 1 .. Ptr + 3) = "012" then
+                        Last_Stored := First_Stored + 3;
+                        Storing (First_Stored .. Last_Stored) := "2012";
+                        Add_Switch_Component
+                          (Storing (Storing'First .. Last_Stored));
+                        Ptr := Max + 1;
+
+                     else
+
+                        --  Invalid switch
+
+                        Last := 0;
+                        return;
+
+                     end if;
+
                   --  -gnat83
 
                   when '8' =>

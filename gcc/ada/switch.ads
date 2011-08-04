@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,6 +71,10 @@ package Switch is
    function Is_Front_End_Switch (Switch_Chars : String) return Boolean;
    --  Returns True iff Switch_Chars represents a front-end switch, i.e. it
    --  starts with -I, -gnat or -?RTS.
+
+   function Is_Language_Switch (Switch_Chars : String) return Boolean;
+   --  Returns True iff Switch_Chars represents a language switch, i.e. it
+   --  specifies -gnat83/95/2005/2012.
 
    function Is_Internal_GCC_Switch (Switch_Chars : String) return Boolean;
    --  Returns True iff Switch_Chars represents an internal GCC switch to be

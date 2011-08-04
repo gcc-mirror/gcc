@@ -888,7 +888,6 @@ package body Sem_Ch12 is
       Actual          : Node_Id;
       Formal          : Node_Id;
       Next_Formal     : Node_Id;
-      Temp_Formal     : Node_Id;
       Analyzed_Formal : Node_Id;
       Match           : Node_Id;
       Named           : Node_Id;
@@ -910,8 +909,15 @@ package body Sem_Ch12 is
       Num_Actuals    : Int := 0;
 
       Others_Present : Boolean := False;
+      Others_Choice  : Node_Id := Empty;
       --  In Ada 2005, indicates partial parametrization of a formal
       --  package. As usual an other association must be last in the list.
+
+      procedure Check_Overloaded_Formal_Subprogram (Formal : Entity_Id);
+      --  Apply RM 12.3 (9): if a formal subprogram is overloaded, the instance
+      --  cannot have a named association for it. AI05-0025 extends this rule
+      --  to formals of formal packages by AI05-0025, and it also applies to
+      --  box-initialized formals.
 
       function Matching_Actual
         (F   : Entity_Id;
@@ -945,6 +951,40 @@ package body Sem_Ch12 is
       --  correspondence between the two lists is not one-one. In addition to
       --  anonymous types, the presence a formal equality will introduce an
       --  implicit declaration for the corresponding inequality.
+
+      ----------------------------------------
+      -- Check_Overloaded_Formal_Subprogram --
+      ----------------------------------------
+
+      procedure Check_Overloaded_Formal_Subprogram (Formal : Entity_Id) is
+         Temp_Formal : Entity_Id;
+
+      begin
+         Temp_Formal := First (Formals);
+         while Present (Temp_Formal) loop
+            if Nkind (Temp_Formal) in N_Formal_Subprogram_Declaration
+              and then Temp_Formal /= Formal
+              and then
+                Chars (Defining_Unit_Name (Specification (Formal))) =
+                Chars (Defining_Unit_Name (Specification (Temp_Formal)))
+            then
+               if Present (Found_Assoc) then
+                  Error_Msg_N
+                    ("named association not allowed for overloaded formal",
+                     Found_Assoc);
+
+               else
+                  Error_Msg_N
+                    ("named association not allowed for overloaded formal",
+                     Others_Choice);
+               end if;
+
+               Abandon_Instantiation (Instantiation_Node);
+            end if;
+
+            Next (Temp_Formal);
+         end loop;
+      end Check_Overloaded_Formal_Subprogram;
 
       ---------------------
       -- Matching_Actual --
@@ -1131,6 +1171,7 @@ package body Sem_Ch12 is
          while Present (Actual) loop
             if Nkind (Actual) = N_Others_Choice then
                Others_Present := True;
+               Others_Choice  := Actual;
 
                if Present (Next (Actual)) then
                   Error_Msg_N ("others must be last association", Actual);
@@ -1293,24 +1334,7 @@ package body Sem_Ch12 is
                     and then Is_Named_Assoc
                     and then Comes_From_Source (Found_Assoc)
                   then
-                     Temp_Formal := First (Formals);
-                     while Present (Temp_Formal) loop
-                        if Nkind (Temp_Formal) in
-                             N_Formal_Subprogram_Declaration
-                          and then Temp_Formal /= Formal
-                          and then
-                            Chars (Selector_Name (Found_Assoc)) =
-                              Chars (Defining_Unit_Name
-                                       (Specification (Temp_Formal)))
-                        then
-                           Error_Msg_N
-                             ("name not allowed for overloaded formal",
-                              Found_Assoc);
-                           Abandon_Instantiation (Instantiation_Node);
-                        end if;
-
-                        Next (Temp_Formal);
-                     end loop;
+                     Check_Overloaded_Formal_Subprogram (Formal);
                   end if;
 
                   --  If there is no corresponding actual, this may be case of
@@ -1321,6 +1345,10 @@ package body Sem_Ch12 is
                     and then  Partial_Parametrization
                   then
                      Process_Default (Formal);
+                     if Nkind (I_Node) = N_Formal_Package_Declaration then
+                        Check_Overloaded_Formal_Subprogram (Formal);
+                     end if;
+
                   else
                      Append_To (Assoc,
                        Instantiate_Formal_Subprogram

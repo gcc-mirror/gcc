@@ -371,6 +371,7 @@ begin
                XR_Entity      : String_Ptr;
                XR_Entity_Line : Nat;
                XR_Entity_Col  : Nat;
+               XR_Entity_Typ  : Character;
 
                XR_File : Nat;
                --  Keeps track of the current file (changed by nn|)
@@ -383,7 +384,7 @@ begin
                XR_Scope := Cur_Scope;
 
                XR_Entity_Line := Get_Nat;
-               Check (' ');
+               XR_Entity_Typ  := Getc;
                XR_Entity_Col  := Get_Nat;
 
                Skip_Spaces;
@@ -439,6 +440,7 @@ begin
                            ALFA_Xref_Table.Append (
                              (Entity_Name => XR_Entity,
                               Entity_Line => XR_Entity_Line,
+                              Etype       => XR_Entity_Typ,
                               Entity_Col  => XR_Entity_Col,
                               File_Num    => XR_File,
                               Scope_Num   => XR_Scope,
