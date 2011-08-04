@@ -2125,7 +2125,7 @@ package body Exp_Ch4 is
 
             if Chars (Prim) = Name_Op_Eq
               and then Etype (First_Formal (Prim)) =
-                         Etype (Next_Formal (First_Formal (Prim)))
+                       Etype (Next_Formal (First_Formal (Prim)))
               and then Etype (Prim) = Standard_Boolean
             then
                if Is_Abstract_Subprogram (Prim) then
@@ -2136,7 +2136,7 @@ package body Exp_Ch4 is
                else
                   return
                     Make_Function_Call (Loc,
-                      Name => New_Reference_To (Prim, Loc),
+                      Name                   => New_Reference_To (Prim, Loc),
                       Parameter_Associations => New_List (Lhs, Rhs));
                end if;
             end if;
@@ -2177,7 +2177,7 @@ package body Exp_Ch4 is
          if Is_Elementary_Type (Component_Type (Full_Type))
            and then not Is_Floating_Point_Type (Component_Type (Full_Type))
          then
-            return Make_Op_Eq (Loc, Left_Opnd  => Lhs, Right_Opnd => Rhs);
+            return Make_Op_Eq (Loc, Left_Opnd => Lhs, Right_Opnd => Rhs);
 
          --  For composite component types, and floating-point types, use the
          --  expansion. This deals with tagged component types (where we use
@@ -2248,10 +2248,10 @@ package body Exp_Ch4 is
                begin
                   return
                     Make_Function_Call (Loc,
-                      Name => New_Reference_To (Eq_Op, Loc),
-                      Parameter_Associations =>
-                        New_List (OK_Convert_To (T, Lhs),
-                                  OK_Convert_To (T, Rhs)));
+                      Name                  => New_Reference_To (Eq_Op, Loc),
+                      Parameter_Associations => New_List (
+                        OK_Convert_To (T, Lhs),
+                        OK_Convert_To (T, Rhs)));
                end;
 
             else
@@ -2292,20 +2292,21 @@ package body Exp_Ch4 is
                         then
                            Lhs_Discr_Val :=
                              Make_Selected_Component (Loc,
-                               Prefix => Prefix (Lhs),
+                               Prefix        => Prefix (Lhs),
                                Selector_Name =>
-                                 New_Copy (
-                                   Get_Discriminant_Value (
-                                     First_Discriminant (Lhs_Type),
-                                     Lhs_Type,
-                                     Stored_Constraint (Lhs_Type))));
+                                 New_Copy
+                                   (Get_Discriminant_Value
+                                      (First_Discriminant (Lhs_Type),
+                                       Lhs_Type,
+                                       Stored_Constraint (Lhs_Type))));
 
                         else
-                           Lhs_Discr_Val := New_Copy (
-                             Get_Discriminant_Value (
-                               First_Discriminant (Lhs_Type),
-                               Lhs_Type,
-                               Stored_Constraint (Lhs_Type)));
+                           Lhs_Discr_Val :=
+                             New_Copy
+                               (Get_Discriminant_Value
+                                  (First_Discriminant (Lhs_Type),
+                                   Lhs_Type,
+                                   Stored_Constraint (Lhs_Type)));
 
                         end if;
                      else
@@ -2321,25 +2322,26 @@ package body Exp_Ch4 is
 
                      if Is_Constrained (Rhs_Type) then
                         if Nkind (Rhs) = N_Selected_Component
-                          and then Has_Per_Object_Constraint (
-                                     Entity (Selector_Name (Rhs)))
+                          and then Has_Per_Object_Constraint
+                                     (Entity (Selector_Name (Rhs)))
                         then
                            Rhs_Discr_Val :=
                              Make_Selected_Component (Loc,
-                               Prefix => Prefix (Rhs),
+                               Prefix        => Prefix (Rhs),
                                Selector_Name =>
-                                 New_Copy (
-                                   Get_Discriminant_Value (
-                                     First_Discriminant (Rhs_Type),
-                                     Rhs_Type,
-                                     Stored_Constraint (Rhs_Type))));
+                                 New_Copy
+                                   (Get_Discriminant_Value
+                                      (First_Discriminant (Rhs_Type),
+                                       Rhs_Type,
+                                       Stored_Constraint (Rhs_Type))));
 
                         else
-                           Rhs_Discr_Val := New_Copy (
-                             Get_Discriminant_Value (
-                               First_Discriminant (Rhs_Type),
-                               Rhs_Type,
-                               Stored_Constraint (Rhs_Type)));
+                           Rhs_Discr_Val :=
+                             New_Copy
+                               (Get_Discriminant_Value
+                                  (First_Discriminant (Rhs_Type),
+                                   Rhs_Type,
+                                   Stored_Constraint (Rhs_Type)));
 
                         end if;
                      else
@@ -2763,8 +2765,7 @@ package body Exp_Ch4 is
                         if J = N and then Result_May_Be_Null then
                            Last_Opnd_High_Bound :=
                              Convert_To (Ityp,
-                               Make_Integer_Literal (Loc,
-                                 Intval => Expr_Value (Hi)));
+                               Make_Integer_Literal (Loc, Expr_Value (Hi)));
                         end if;
 
                         --  Exclude null length case unless last operand
@@ -2778,10 +2779,9 @@ package body Exp_Ch4 is
                         Is_Fixed_Length (NN) := True;
                         Fixed_Length (NN)    := Len;
 
-                        Opnd_Low_Bound (NN) := To_Ityp (
-                          Make_Integer_Literal (Loc,
-                            Intval => Expr_Value (Lo)));
-
+                        Opnd_Low_Bound (NN) :=
+                          To_Ityp
+                            (Make_Integer_Literal (Loc, Expr_Value (Lo)));
                         Set := True;
                      end;
                   end if;
@@ -2823,10 +2823,7 @@ package body Exp_Ch4 is
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Var_Length (NN),
                    Constant_Present    => True,
-
-                   Object_Definition   =>
-                     New_Occurrence_Of (Artyp, Loc),
-
+                   Object_Definition   => New_Occurrence_Of (Artyp, Loc),
                    Expression          =>
                      Make_Attribute_Reference (Loc,
                        Prefix         =>
@@ -2842,12 +2839,9 @@ package body Exp_Ch4 is
 
          if NN = 1 then
             if Is_Fixed_Length (1) then
-               Aggr_Length (1) :=
-                 Make_Integer_Literal (Loc,
-                   Intval => Fixed_Length (1));
+               Aggr_Length (1) := Make_Integer_Literal (Loc, Fixed_Length (1));
             else
-               Aggr_Length (1) :=
-                 New_Reference_To (Var_Length (1), Loc);
+               Aggr_Length (1) := New_Reference_To (Var_Length (1), Loc);
             end if;
 
          --  If entry is fixed length and only fixed lengths so far, make
@@ -2876,10 +2870,7 @@ package body Exp_Ch4 is
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Ent,
                 Constant_Present    => True,
-
-                Object_Definition   =>
-                  New_Occurrence_Of (Artyp, Loc),
-
+                Object_Definition   => New_Occurrence_Of (Artyp, Loc),
                 Expression          =>
                   Make_Op_Add (Loc,
                     Left_Opnd  => New_Copy (Aggr_Length (NN - 1)),
@@ -3214,13 +3205,12 @@ package body Exp_Ch4 is
 
                      Assign :=
                        Make_Implicit_If_Statement (Cnode,
-                         Condition =>
+                         Condition       =>
                            Make_Op_Ne (Loc,
-                             Left_Opnd =>
+                             Left_Opnd  =>
                                New_Occurrence_Of (Var_Length (J), Loc),
                              Right_Opnd => Make_Integer_Literal (Loc, 0)),
-                         Then_Statements =>
-                           New_List (Assign));
+                         Then_Statements => New_List (Assign));
                   end if;
 
                   Insert_Action (Cnode, Assign, Suppress => All_Checks);
