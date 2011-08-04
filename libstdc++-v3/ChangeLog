@@ -1,5 +1,18 @@
 2011-08-03  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/performance/27_io/filebuf_sputn_unbuf.cc: Include
+	unistd.h for unlink.
+	* testsuite/performance/27_io/ofstream_insert_int.cc: Same.
+	* testsuite/performance/27_io/ifstream_extract_int.cc: Same.
+	* testsuite/performance/27_io/ifstream_getline-2.cc: Same.
+	* testsuite/performance/27_io/fstream_seek_write.cc: Same.
+	* testsuite/performance/27_io/ifstream_extract_chars.cc: Same.
+	* testsuite/performance/27_io/ofstream_insert_float.cc: Same.
+	* testsuite/performance/27_io/ifstream_extract_float.cc: Same.
+	* testsuite/performance/27_io/filebuf_sputc.cc: Same.
+
+2011-08-03  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/std/tuple: Mark more constructors constexpr.
 	* testsuite/20_util/tuple/cons/constexpr.cc: Split into and extend as:
 	* testsuite/20_util/tuple/cons/constexpr-2.cc: ...this.
