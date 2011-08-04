@@ -1508,6 +1508,27 @@ package body Prj is
       null;
    end Free;
 
+   --------------------------------
+   -- For_Project_And_Aggregated --
+   --------------------------------
+
+   procedure For_Project_And_Aggregated
+     (Root_Project : Project_Id;
+      Root_Tree    : Project_Tree_Ref)
+   is
+      Agg : Aggregated_Project_List;
+   begin
+      Action (Root_Project, Root_Tree);
+
+      if Root_Project.Qualifier = Aggregate then
+         Agg := Root_Project.Aggregated_Projects;
+         while Agg /= null loop
+            For_Project_And_Aggregated (Agg.Project, Agg.Tree);
+            Agg := Agg.Next;
+         end loop;
+      end if;
+   end For_Project_And_Aggregated;
+
 begin
    --  Make sure that the standard config and user project file extensions are
    --  compatible with canonical case file naming.

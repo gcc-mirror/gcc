@@ -1,5 +1,15 @@
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
+	* prj.adb, prj.ads, makeutl.adb, makeutl.ads (Complete_Mains,
+	Compute_Compilation_Phases): new subprogram.
+	(Builder_Data, Builder_Project_Tree_Data): new subprogram and type
+	The number of mains as well as the various compilation phases that
+	need to be run are now project tree specific, since various
+	aggregated trees might have different requirements. In particular,
+	they do not all require bind or link phases.
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
 	* prj.adb, prj.ads, makeutl.adb, makeutl.ads, prj-env.adb
 	(Project_Tree_Appdata): New type.
 	It is now possible to associate application-specific data to a project

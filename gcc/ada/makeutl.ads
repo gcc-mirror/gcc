@@ -233,6 +233,66 @@ package Makeutl is
    --  according to Fatal.
    --  This properly removes all temporary files
 
+   -----------------------
+   -- Project_Tree data --
+   -----------------------
+   --  The following types are specific to builders, and associated with each
+   --  of the loaded project trees.
+
+   type Binding_Data_Record;
+   type Binding_Data is access Binding_Data_Record;
+   type Binding_Data_Record is record
+      Language           : Language_Ptr;
+      Language_Name      : Name_Id;
+      Binder_Driver_Name : File_Name_Type;
+      Binder_Driver_Path : String_Access;
+      Binder_Prefix      : Name_Id;
+      Next               : Binding_Data;
+   end record;
+   --  Data for a language that have a binder driver
+
+   type Builder_Project_Tree_Data is new Project_Tree_Appdata with record
+      Binding : Binding_Data;
+
+      There_Are_Binder_Drivers : Boolean := False;
+      --  True when there is a binder driver. Set by Get_Configuration when
+      --  an attribute Language_Processing'Binder_Driver is declared.
+      --  Reset to False if there are no sources of the languages with binder
+      --  drivers.
+
+      Number_Of_Mains : Natural := 0;
+      --  Number of main units in this project tree
+
+      Closure_Needed : Boolean := False;
+      --  If True, we need to add the closure of the file we just compiled to
+      --  the queue. If False, it is assumed that all files are already on the
+      --  queue so we do not waste time computing the closure.
+
+      Need_Compilation : Boolean := True;
+      Need_Binding     : Boolean := True;
+      Need_Linking     : Boolean := True;
+      --  Which of the compilation phases are needed for this project tree.
+   end record;
+   type Builder_Data_Access is access all Builder_Project_Tree_Data;
+
+   procedure Free (Data : in out Builder_Project_Tree_Data);
+   --  Free all memory allocated for Data
+
+   function Builder_Data (Tree : Project_Tree_Ref) return Builder_Data_Access;
+   --  Return (allocate if needed) tree-specific data
+
+   procedure Compute_Compilation_Phases
+     (Tree                  : Project_Tree_Ref;
+      Root_Project          : Project_Id;
+      Option_Unique_Compile : Boolean := False;   --  Was "-u" specified ?
+      Option_Compile_Only   : Boolean := False;   --  Was "-c" specified ?
+      Option_Bind_Only      : Boolean := False;
+      Option_Link_Only      : Boolean := False);
+   --  Compute which compilation phases will be needed for Tree. This also
+   --  does the computation for aggregated trees.
+   --  This also check whether we'll need to check the closure of the files we
+   --  have just compiled to add them to the queue.
+
    -----------
    -- Mains --
    -----------
@@ -295,8 +355,9 @@ package Makeutl is
       --  Moves the cursor forward and returns the new current entry.
       --  Returns No_File_And_Loc if there are no more mains in the table.
 
-      function Number_Of_Mains return Natural;
-      --  Returns the number of mains in the table.
+      function Number_Of_Mains (Tree : Project_Tree_Ref) return Natural;
+      --  Returns the number of mains in this project tree (if Tree is null,
+      --  it returns the total number of project trees)
 
       procedure Fill_From_Project
         (Root_Project : Project_Id;
@@ -304,7 +365,10 @@ package Makeutl is
       --  If no main was already added (presumably from the command line), add
       --  the main units from root_project (or in the case of an aggregate
       --  project from all the aggregated projects).
-      --
+
+      procedure Complete_Mains
+        (Root_Project : Project_Id;
+         Project_Tree : Project_Tree_Ref);
       --  If some main units were already added from the command line, check
       --  that they all belong to the root project, and that they are full
       --  full paths rather than (partial) base names (e.g. no body suffix was
@@ -382,16 +446,19 @@ package Makeutl is
       --  stored in the corresponding Source_Id for later reuse by the binder.
 
       procedure Insert_Project_Sources
-        (Project      : Project_Id;
-         Project_Tree : Project_Tree_Ref;
-         All_Projects : Boolean;
-         Unit_Based   : Boolean);
+        (Project        : Project_Id;
+         Project_Tree   : Project_Tree_Ref;
+         All_Projects   : Boolean;
+         Unique_Compile : Boolean);
       --  Insert all the compilable sources of the project in the queue. If
       --  All_Project is true, then all sources from imported projects are also
       --  inserted.
-      --  When Unit_Based is True, put in the queue all compilable sources
-      --  including the unit based (Ada) one. When Unit_Based is False, put the
-      --  Ada sources only when they are in a library project.
+      --  Unique_Compile should be true if "-u" was specified on the command
+      --  line: if True and some files were given on the command line), only
+      --  those files will be compiled (so Insert_Project_Sources will do
+      --  nothing). If True and no file was specified on the command line, all
+      --  files of the project(s) will be compiled.
+      --  This procedure also processed aggregated projects.
 
       procedure Insert_Withed_Sources_For
         (The_ALI               : ALI.ALI_Id;
