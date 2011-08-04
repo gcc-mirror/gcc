@@ -1,5 +1,11 @@
 2011-08-04  Yannick Moy  <moy@adacore.com>
 
+	* sem_ch3.adb (Constrain_Enumeration, Constrain_Integer): remove
+	constraint that subtype must come from source code to be in ALFA, so
+	that anonymous subtypes can be in ALFA too.
+
+2011-08-04  Yannick Moy  <moy@adacore.com>
+
 	* sem_ch3.adb (Analyze_Object_Declaration): remove obsolete addition of
 	reference for ALFA mode.
 	* lib-xref-alfa.adb, lib-xref.ads (Traverse_Compilation_Unit): make
