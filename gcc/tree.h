@@ -5547,6 +5547,8 @@ extern bool must_pass_in_stack_var_size_or_pad (enum machine_mode, const_tree);
 
 extern const struct attribute_spec *lookup_attribute_spec (const_tree);
 
+extern void init_attributes (void);
+
 /* Process the attributes listed in ATTRIBUTES and install them in *NODE,
    which is either a DECL (including a TYPE_DECL) or a TYPE.  If a DECL,
    it should be modified in place; if a TYPE, a copy should be created

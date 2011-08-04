@@ -34,8 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "plugin.h"
 
-static void init_attributes (void);
-
 /* Table of the tables of attributes (common, language, format, machine)
    searched.  */
 static const struct attribute_spec *attribute_tables[4];
@@ -107,11 +105,14 @@ eq_attr (const void *p, const void *q)
 /* Initialize attribute tables, and make some sanity checks
    if --enable-checking.  */
 
-static void
+void
 init_attributes (void)
 {
   size_t i;
   int k;
+
+  if (attributes_initialized)
+    return;
 
   attribute_tables[0] = lang_hooks.common_attribute_table;
   attribute_tables[1] = lang_hooks.attribute_table;
