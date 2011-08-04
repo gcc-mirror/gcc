@@ -1,3 +1,8 @@
+2011-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/49905
+	* g++.dg/ext/builtin-object-size3.C: New test.
+
 2011-08-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49948

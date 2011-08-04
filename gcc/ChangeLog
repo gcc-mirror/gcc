@@ -1,3 +1,9 @@
+2011-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/49905
+	* tree.h (init_attributes): New prototype.
+	* attribs.c (init_attributes): No longer static.
+
 2011-08-04  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* config/arm/arm.c (arm_set_fixed_optab_libfunc): Constify
