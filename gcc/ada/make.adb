@@ -5695,9 +5695,6 @@ package body Make is
                Info := Mains.Next_Main;
                exit when Info = No_Main_Info;
 
-               Debug_Output ("MANU Got main: ", Name_Id (Info.File));
-               Debug_Output ("MANU    in project: ", Info.Project.Name);
-
                Proj := Ultimate_Extending_Project_Of (Info.Project);
 
                if Real_Main_Project = No_Project then

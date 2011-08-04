@@ -765,7 +765,10 @@ package body Par_SCO is
 
       Index := Condition_Pragma_Hash_Table.Get (Loc);
 
-      --  The test here for zero is to deal with possible previous errors
+      --  The test here for zero is to deal with possible previous errors, and
+      --  for the case of pragma statement SCOs, for which we always set the
+      --  Pragma_Sloc even if the particular pragma cannot be specifically
+      --  disabled.
 
       if Index /= 0 then
          pragma Assert (SCO_Table.Table (Index).C1 = 'P');
@@ -1071,14 +1074,23 @@ package body Par_SCO is
             end if;
 
             declare
-               SCE : SC_Entry renames SC.Table (J);
+               SCE         : SC_Entry renames SC.Table (J);
+               Pragma_Sloc : Source_Ptr := No_Location;
             begin
+               --  For the statement SCO for a pragma, set Pragma_Sloc so that
+               --  the SCO can be omitted if the pragma is disabled.
+
+               if SCE.Typ = 'P' then
+                  Pragma_Sloc := SCE.From;
+               end if;
+
                Set_Table_Entry
-                 (C1   => C1,
-                  C2   => SCE.Typ,
-                  From => SCE.From,
-                  To   => SCE.To,
-                  Last => (J = SC_Last));
+                 (C1          => C1,
+                  C2          => SCE.Typ,
+                  From        => SCE.From,
+                  To          => SCE.To,
+                  Last        => (J = SC_Last),
+                  Pragma_Sloc => Pragma_Sloc);
             end;
          end loop;
 

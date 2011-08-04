@@ -1,3 +1,21 @@
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb: Remove debug trace.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Do_Complete): Get the absolute path name of a relative
+	path in canonical form, to be able to compare path names on platforms
+	such as Windows or Darwin.
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb (Traverse_Declarations_Or_Statements.Set_Statement_Entry):
+	For a pragma (statement with C1 = 'P'), record the sloc of the pragma.
+	* scos.ads: Update documentation accordingly.
+	* put_scos.adb (Output_SCO_Line): Omit statement SCOs for disabled
+	pragmas.
+
 2011-08-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Bad_Attribute_For_Predicate): flag illegal use of
