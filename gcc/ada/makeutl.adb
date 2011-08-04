@@ -2988,21 +2988,6 @@ package body Makeutl is
                         Shared                  => Project_Tree.Shared,
                         Force_Lower_Case_Index  => False,
                         Allow_Wildcards         => True);
-
-                     --  If not found, try without extension ???
-                     --  That's because gnatmake accepts unit names in Switches
-
-                     if Switches_For_Main = Nil_Variable_Value
-                       and then Source.Unit /= null
-                     then
-                        Switches_For_Main := Value_Of
-                          (Name                    => Source.Unit.Name,
-                           Attribute_Or_Array_Name => Name_Switches,
-                           In_Package              => Builder_Package,
-                           Shared                  => Project_Tree.Shared,
-                           Force_Lower_Case_Index  => False,
-                           Allow_Wildcards         => True);
-                     end if;
                   end if;
 
                   if Index = 1 then
@@ -3084,8 +3069,8 @@ package body Makeutl is
 
             if Switches_For_Lang /= Nil_Variable_Value then
                Write_Line
-                 ("Warning: using Builder'Default_Switches"
-                  & "(""" & Get_Name_String (Lang)
+                 ("Warning: using Builder'Switches("""
+                  & Get_Name_String (Lang)
                   & """), as there are several mains");
 
             elsif Other_Switches /= Nil_Variable_Value then

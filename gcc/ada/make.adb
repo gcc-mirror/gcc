@@ -5831,7 +5831,7 @@ package body Make is
 
       --  Get the first executable.
       --  ??? This needs to be done early, because Osint.Next_Main_File also
-      --  initializes the primary search directory, used below to initiliaze
+      --  initializes the primary search directory, used below to initialize
       --  the "-I" parameter
 
       Main_Source_File := Next_Main_Source;  --  No directory information
@@ -6610,41 +6610,6 @@ package body Make is
       Index    : Int;
       Project  : Project_Id;
 
-      Extending : constant Boolean := The_Project.Extends /= No_Project;
-
-      function Check_Project (P : Project_Id) return Boolean;
-      --  Returns True if P is The_Project or a project extended by The_Project
-
-      -------------------
-      -- Check_Project --
-      -------------------
-
-      function Check_Project (P : Project_Id) return Boolean is
-      begin
-         if All_Projects or else P = The_Project then
-            return True;
-
-         elsif Extending then
-            declare
-               Proj : Project_Id;
-
-            begin
-               Proj := The_Project;
-               while Proj /= null loop
-                  if P = Proj.Extends then
-                     return True;
-                  end if;
-
-                  Proj := Proj.Extends;
-               end loop;
-            end;
-         end if;
-
-         return False;
-      end Check_Project;
-
-   --  Start of processing for Insert_Project_Sources
-
    begin
       --  Loop through all the sources in the project files
 
@@ -6662,7 +6627,10 @@ package body Make is
          then
             --  And it is a source for the specified project
 
-            if Check_Project (Unit.File_Names (Impl).Project) then
+            if All_Projects
+              or else
+                Is_Extending (The_Project, Unit.File_Names (Impl).Project)
+            then
                Project := Unit.File_Names (Impl).Project;
 
                --  If we don't have a spec, we cannot consider the source
@@ -6707,7 +6675,10 @@ package body Make is
 
          elsif Unit.File_Names (Spec) /= null
            and then not Unit.File_Names (Spec).Locally_Removed
-           and then Check_Project (Unit.File_Names (Spec).Project)
+           and then
+             (All_Projects
+              or else
+                Is_Extending (The_Project, Unit.File_Names (Spec).Project))
          then
             --  If there is no source for the body, but there is one for the
             --  spec which has not been locally removed, then we take this one.

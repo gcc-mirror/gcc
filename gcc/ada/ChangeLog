@@ -1,5 +1,11 @@
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
+	* makeutl.adb (Compute_Builder_Switches): no longer accept a unit name
+	as an index for Builder'Switches. This conforms to the documentation.
+	* make.adb (Insert_Project_Sources): avoid duplicate code
+
+2011-08-04  Emmanuel Briot  <briot@adacore.com>
+
 	* makeutl.adb (Complete_Mains): if the user has passed a relative file
 	name on the command line (for instance "../dummy"), never assume it can
 	be a unit name.
