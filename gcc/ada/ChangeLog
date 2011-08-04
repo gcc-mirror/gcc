@@ -1,3 +1,23 @@
+2011-08-04  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g-comlin.adb (For_Each_Simple_Switch.Is_In_Config): Remove the
+	invalid checks of the Parameter, making Remove_Switch not working
+	correctly.
+
+2011-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* targparm.ads: Update header: no run-time exception is needed on this
+	file.
+
+2011-08-04  Vincent Celier  <celier@adacore.com>
+
+	* a-fihema.adb: Use System.IO instead of GNAT.IO
+
+2011-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb (Access_Definition): Anonymous access to subprogram types
+	are forbidden in Compiler_Unit mode.
+
 2011-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb: Minor reformatting.
