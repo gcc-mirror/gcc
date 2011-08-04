@@ -2212,6 +2212,42 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
 }
 
 
+/* Return TRUE if CODE (a shift operation) is supported for SCALAR_TYPE
+   either as shift by a scalar or by a vector.  */
+
+bool
+vect_supportable_shift (enum tree_code code, tree scalar_type)
+{
+
+  enum machine_mode vec_mode;
+  optab optab;
+  int icode;
+  tree vectype;
+
+  vectype = get_vectype_for_scalar_type (scalar_type);
+  if (!vectype)
+    return false;
+
+  optab = optab_for_tree_code (code, vectype, optab_scalar);
+  if (!optab
+      || optab_handler (optab, TYPE_MODE (vectype)) == CODE_FOR_nothing)
+    {
+      optab = optab_for_tree_code (code, vectype, optab_vector);
+      if (!optab
+          || (optab_handler (optab, TYPE_MODE (vectype))
+                      == CODE_FOR_nothing))
+        return false;
+    }
+
+  vec_mode = TYPE_MODE (vectype);
+  icode = (int) optab_handler (optab, vec_mode);
+  if (icode == CODE_FOR_nothing)
+    return false;
+
+  return true;
+}
+
+
 /* Function vectorizable_shift.
 
    Check if STMT performs a shift operation that can be vectorized.
@@ -4890,7 +4926,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
   enum vect_relevant relevance = STMT_VINFO_RELEVANT (stmt_info);
   bool ok;
   tree scalar_type, vectype;
-  gimple pattern_stmt;
+  gimple pattern_stmt, pattern_def_stmt;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
@@ -4959,6 +4995,23 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
       if (!vect_analyze_stmt (pattern_stmt, need_to_vectorize, node))
         return false;
    }
+
+  if (is_pattern_stmt_p (stmt_info)
+      && (pattern_def_stmt = STMT_VINFO_PATTERN_DEF_STMT (stmt_info))
+      && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_def_stmt))
+          || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_def_stmt))))
+    {
+      /* Analyze def stmt of STMT if it's a pattern stmt.  */
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "==> examining pattern def statement: ");
+          print_gimple_stmt (vect_dump, pattern_def_stmt, 0, TDF_SLIM);
+        }
+
+      if (!vect_analyze_stmt (pattern_def_stmt, need_to_vectorize, node))
+        return false;
+   }
+
 
   switch (STMT_VINFO_DEF_TYPE (stmt_info))
     {
@@ -5280,6 +5333,7 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo,
   STMT_VINFO_VECTORIZABLE (res) = true;
   STMT_VINFO_IN_PATTERN_P (res) = false;
   STMT_VINFO_RELATED_STMT (res) = NULL;
+  STMT_VINFO_PATTERN_DEF_STMT (res) = NULL;
   STMT_VINFO_DATA_REF (res) = NULL;
 
   STMT_VINFO_DR_BASE_ADDRESS (res) = NULL;
