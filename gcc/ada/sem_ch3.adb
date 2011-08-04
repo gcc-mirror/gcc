@@ -3740,13 +3740,6 @@ package body Sem_Ch3 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
-
-      --  Generate 'I' xref for object initialization at definition, only used
-      --  for the local xref section used in ALFA mode.
-
-      if ALFA_Mode and then Present (Expression (Original_Node (N))) then
-         Generate_Reference (Id, Id, 'I');
-      end if;
    end Analyze_Object_Declaration;
 
    ---------------------------

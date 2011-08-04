@@ -164,9 +164,6 @@ package body ALFA is
    function Entity_Hash (E : Entity_Id) return Entity_Hashed_Range;
    --  Hash function for hash table
 
-   procedure Traverse_Compilation_Unit
-     (CU      : Node_Id;
-      Process : Node_Processing);
    procedure Traverse_Declarations_Or_Statements
      (L       : List_Id;
       Process : Node_Processing);
