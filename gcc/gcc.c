@@ -728,6 +728,7 @@ static const char *startfile_prefix_spec = STARTFILE_PREFIX_SPEC;
 static const char *sysroot_spec = SYSROOT_SPEC;
 static const char *sysroot_suffix_spec = SYSROOT_SUFFIX_SPEC;
 static const char *sysroot_hdrs_suffix_spec = SYSROOT_HEADERS_SUFFIX_SPEC;
+static const char *self_spec = "";
 
 /* Standard options to cpp, cc1, and as, to reduce duplication in specs.
    There should be no need to override these in target dependent files,
@@ -1215,6 +1216,7 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("sysroot_spec",             &sysroot_spec),
   INIT_STATIC_SPEC ("sysroot_suffix_spec",	&sysroot_suffix_spec),
   INIT_STATIC_SPEC ("sysroot_hdrs_suffix_spec",	&sysroot_hdrs_suffix_spec),
+  INIT_STATIC_SPEC ("self_spec",		&self_spec),
 };
 
 #ifdef EXTRA_SPECS		/* additional specs needed */
@@ -6261,48 +6263,6 @@ main (int argc, char **argv)
   for (i = 0; i < ARRAY_SIZE (driver_self_specs); i++)
     do_self_spec (driver_self_specs[i]);
 
-  if (compare_debug)
-    {
-      enum save_temps save;
-
-      if (!compare_debug_second)
-	{
-	  n_switches_debug_check[1] = n_switches;
-	  n_switches_alloc_debug_check[1] = n_switches_alloc;
-	  switches_debug_check[1] = XDUPVEC (struct switchstr, switches,
-					     n_switches_alloc);
-
-	  do_self_spec ("%:compare-debug-self-opt()");
-	  n_switches_debug_check[0] = n_switches;
-	  n_switches_alloc_debug_check[0] = n_switches_alloc;
-	  switches_debug_check[0] = switches;
-
-	  n_switches = n_switches_debug_check[1];
-	  n_switches_alloc = n_switches_alloc_debug_check[1];
-	  switches = switches_debug_check[1];
-	}
-
-      /* Avoid crash when computing %j in this early.  */
-      save = save_temps_flag;
-      save_temps_flag = SAVE_TEMPS_NONE;
-
-      compare_debug = -compare_debug;
-      do_self_spec ("%:compare-debug-self-opt()");
-
-      save_temps_flag = save;
-
-      if (!compare_debug_second)
-	{
-	  n_switches_debug_check[1] = n_switches;
-	  n_switches_alloc_debug_check[1] = n_switches_alloc;
-	  switches_debug_check[1] = switches;
-	  compare_debug = -compare_debug;
-	  n_switches = n_switches_debug_check[0];
-	  n_switches_alloc = n_switches_debug_check[0];
-	  switches = switches_debug_check[0];
-	}
-    }
-
   /* If not cross-compiling, look for executables in the standard
      places.  */
   if (*cross_compile == '0')
@@ -6411,6 +6371,58 @@ main (int argc, char **argv)
 				    R_OK, true);
       read_specs (filename ? filename : uptr->filename, FALSE);
     }
+
+  /* Process any user self specs.  */
+  {
+    struct spec_list *sl;
+    for (sl = specs; sl; sl = sl->next)
+      if (sl->name_len == sizeof "self_spec" - 1
+	  && !strcmp (sl->name, "self_spec"))
+	do_self_spec (*sl->ptr_spec);
+  }
+
+  if (compare_debug)
+    {
+      enum save_temps save;
+
+      if (!compare_debug_second)
+	{
+	  n_switches_debug_check[1] = n_switches;
+	  n_switches_alloc_debug_check[1] = n_switches_alloc;
+	  switches_debug_check[1] = XDUPVEC (struct switchstr, switches,
+					     n_switches_alloc);
+
+	  do_self_spec ("%:compare-debug-self-opt()");
+	  n_switches_debug_check[0] = n_switches;
+	  n_switches_alloc_debug_check[0] = n_switches_alloc;
+	  switches_debug_check[0] = switches;
+
+	  n_switches = n_switches_debug_check[1];
+	  n_switches_alloc = n_switches_alloc_debug_check[1];
+	  switches = switches_debug_check[1];
+	}
+
+      /* Avoid crash when computing %j in this early.  */
+      save = save_temps_flag;
+      save_temps_flag = SAVE_TEMPS_NONE;
+
+      compare_debug = -compare_debug;
+      do_self_spec ("%:compare-debug-self-opt()");
+
+      save_temps_flag = save;
+
+      if (!compare_debug_second)
+	{
+	  n_switches_debug_check[1] = n_switches;
+	  n_switches_alloc_debug_check[1] = n_switches_alloc;
+	  switches_debug_check[1] = switches;
+	  compare_debug = -compare_debug;
+	  n_switches = n_switches_debug_check[0];
+	  n_switches_alloc = n_switches_debug_check[0];
+	  switches = switches_debug_check[0];
+	}
+    }
+
 
   /* If we have a GCC_EXEC_PREFIX envvar, modify it for cpp's sake.  */
   if (gcc_exec_prefix)
