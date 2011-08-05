@@ -1,5 +1,10 @@
 2011-08-05  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/49494
+	* ipa-inline-analysis.c (remap_predicate): Add bounds check.
+
+2011-08-05  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/49500
 	* tree-emultls.c (new_emutls_decl):Add alias_of parameter;
 	handle aliases.
