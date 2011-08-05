@@ -1,3 +1,13 @@
+2011-08-05  Bob Duff  <duff@adacore.com>
+
+	* a-fihema.ads, a-fihema.adb (Finalization_Collection): Avoid heap
+	allocation for Objects component. This simplifies the code somewhat. It
+	is also a little more efficient in the not-so-unusual case where there
+	are no controlled objects allocated.
+	Make Finalization_Started flag atomic.
+	(Finalize): Avoid unnecessary detachment of items from the list.
+	(pcol): Minor cleanup.
+
 2011-08-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Analyze_Formal_Package_Declaration): reject a formal

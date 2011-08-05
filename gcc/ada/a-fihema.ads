@@ -93,11 +93,11 @@ package Ada.Finalization.Heap_Management is
    overriding procedure Finalize
      (Collection : in out Finalization_Collection);
    --  Traverse the objects of Collection, invoking Finalize_Address on each of
-   --  them. In the end, the routine destroys its dummy head and tail.
+   --  them.
 
    overriding procedure Initialize
      (Collection : in out Finalization_Collection);
-   --  Create a new Collection by allocating a dummy head and tail
+   --  Initialize the finalization list to empty
 
    procedure Set_Finalize_Address_Ptr
      (Collection : in out Finalization_Collection;
@@ -117,6 +117,11 @@ private
    pragma No_Strict_Aliasing (Node_Ptr);
 
    type Node is record
+      --  This should really be limited, but we can see the full view of
+      --  Limited_Controlled, which NOT limited. If it were limited, we could
+      --  default initialize here, and get rid of Initialize for
+      --  Finalization_Collection.
+
       Prev : Node_Ptr;
       Next : Node_Ptr;
    end record;
@@ -128,8 +133,10 @@ private
       --  All objects and node headers are allocated on this underlying pool;
       --  the collection is simply a wrapper around it.
 
-      Objects : Node_Ptr;
-      --  The head of a doubly linked list
+      Objects : aliased Node;
+      --  The head of a doubly linked list containing all allocated objects
+      --  with controlled parts that still exist (Unchecked_Deallocation has
+      --  not been done on them).
 
       Finalize_Address : Finalize_Address_Ptr;
       --  A reference to a routine that finalizes an object denoted by its
