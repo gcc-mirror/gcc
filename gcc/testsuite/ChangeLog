@@ -1,5 +1,10 @@
 2011-08-05  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/49984
+	* gcc.dg/tree-ssa/vrp59.c: New testcase.
+
+2011-08-05  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/vrp51.c: Disable CCP.
 	* gcc.dg/tree-ssa/vrp52.c: Likewise.
 	* gcc.dg/tree-ssa/vrp53.c: Likewise.

@@ -2214,7 +2214,8 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
       && code != MIN_EXPR
       && code != MAX_EXPR
       && code != BIT_AND_EXPR
-      && code != BIT_IOR_EXPR)
+      && code != BIT_IOR_EXPR
+      && code != BIT_XOR_EXPR)
     {
       set_value_range_to_varying (vr);
       return;
@@ -2635,7 +2636,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
       min = vrp_int_const_binop (code, vr0.min, vr1.max);
       max = vrp_int_const_binop (code, vr0.max, vr1.min);
     }
-  else if (code == BIT_AND_EXPR || code == BIT_IOR_EXPR)
+  else if (code == BIT_AND_EXPR || code == BIT_IOR_EXPR || code == BIT_XOR_EXPR)
     {
       bool int_cst_range0, int_cst_range1;
       double_int may_be_nonzero0, may_be_nonzero1;
@@ -2693,6 +2694,35 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	    }
 	  if (int_cst_range1)
 	    min = vrp_int_const_binop (MAX_EXPR, min, vr1.min);
+	}
+      else if (code == BIT_XOR_EXPR)
+	{
+	  double_int result_zero_bits, result_one_bits;
+	  result_zero_bits
+	    = double_int_ior (double_int_and (must_be_nonzero0,
+					      must_be_nonzero1),
+			      double_int_not
+			        (double_int_ior (may_be_nonzero0,
+						 may_be_nonzero1)));
+	  result_one_bits
+	    = double_int_ior (double_int_and
+			        (must_be_nonzero0,
+				 double_int_not (may_be_nonzero1)),
+			      double_int_and
+			        (must_be_nonzero1,
+				 double_int_not (may_be_nonzero0)));
+	  max = double_int_to_tree (expr_type,
+				    double_int_not (result_zero_bits));
+	  min = double_int_to_tree (expr_type, result_one_bits);
+	  /* Return a [min, max] range if we know the
+	     result range is either positive or negative.  */
+	  if (tree_int_cst_sgn (max) >= 0)
+	    /* The range is bound by a lower value of 0.  */;
+	  else if (tree_int_cst_sgn (min) < 0)
+	    /* The range is bound by an upper value of -1.  */;
+	  else
+	    /* We don't know whether the sign bit is set or not.  */
+	    max = min = NULL_TREE;
 	}
       else
 	{
