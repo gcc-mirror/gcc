@@ -8679,7 +8679,8 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl)
     {
       stmt = begin_range_for_stmt (scope, init);
       finish_range_for_decl (stmt, range_decl, range_expr);
-      do_range_for_auto_deduction (range_decl, range_expr);
+      if (!type_dependent_expression_p (range_expr))
+	do_range_for_auto_deduction (range_decl, range_expr);
     }
   else
     {
