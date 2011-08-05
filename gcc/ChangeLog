@@ -6,6 +6,9 @@
 	(*pushdf_rex64): New pattern, split out of *pushdf.  Use "m"
 	constraint instead of "o" for opreand 1.
 	(*pushdf): Disable for TARGET_64BIT.  Correct mode attribute.
+	(*movdi_internal_rex64): Use "!o" constraint instead of "!m" for
+	operand 0, alternative 4.
+	(*movdf_internal_rex64): Ditto for operand 0, alernative 6.
 
 2011-08-05  Uros Bizjak  <ubizjak@gmail.com>
 
