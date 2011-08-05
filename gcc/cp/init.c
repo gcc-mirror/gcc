@@ -547,7 +547,8 @@ perform_member_init (tree member, tree init)
 	  finish_expr_stmt (init);
 	}
     }
-  else if (type_build_ctor_call (type))
+  else if (type_build_ctor_call (type)
+	   || (init && CLASS_TYPE_P (strip_array_types (type))))
     {
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{

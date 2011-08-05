@@ -1,5 +1,8 @@
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
+	* init.c (perform_member_init): Always build_aggr_init
+	for a class member with an explicit mem-initializer.
+
 	* pt.c (unify) [TEMPLATE_TYPE_PARM]: Allow VLA for C++0x 'auto'.
 
 2011-08-04  Jakub Jelinek  <jakub@redhat.com>
