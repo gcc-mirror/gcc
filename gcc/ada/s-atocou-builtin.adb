@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides implementation of atomic counter for platforms where
+--  This package implements Atomic_Counter operatiobns for platforms where
 --  GCC supports __sync_add_and_fetch_4 and __sync_sub_and_fetch_4 builtins.
 
 package body System.Atomic_Counters is

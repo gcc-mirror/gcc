@@ -29,7 +29,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is dummy version of the package.
+--  This is dummy version of the package, for use on platforms where this
+--  capability is not supported. Any use of any of the routines in this
+--  package will raise Program_Error.
+
+--  Why don't we use pragma Unimplemented_Unit in a dummy spec, this would
+--  seem much more useful than raising an exception at run time ???
 
 package body System.Atomic_Counters is
 

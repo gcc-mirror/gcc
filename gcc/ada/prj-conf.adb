@@ -911,7 +911,7 @@ package body Prj.Conf is
 
          if Subdirs /= null then
             Add_Char_To_Name_Buffer (Directory_Separator);
-            Add_Str_To_Name_Buffer (Subdirs.all);
+            Add_Str_To_Name_Buffer  (Subdirs.all);
          end if;
 
          for J in 1 .. Name_Len loop
@@ -924,9 +924,8 @@ package body Prj.Conf is
             Obj_Dir         : constant String := Name_Buffer (1 .. Name_Len);
             Config_Switches : Argument_List_Access;
             Args            : Argument_List (1 .. 5);
-            Arg_Last         : Positive;
-
-            Obj_Dir_Exists : Boolean := True;
+            Arg_Last        : Positive;
+            Obj_Dir_Exists  : Boolean := True;
 
          begin
             --  Check if the object directory exists. If Setup_Projects is True
@@ -958,11 +957,13 @@ package body Prj.Conf is
                   when Error =>
                      Raise_Invalid_Config
                        ("object directory " & Obj_Dir & " does not exist");
+
                   when Warning =>
                      Prj.Err.Error_Msg
                        (Env.Flags,
                         "?object directory " & Obj_Dir & " does not exist");
                      Obj_Dir_Exists := False;
+
                   when Silent =>
                      null;
                end case;
@@ -974,7 +975,8 @@ package body Prj.Conf is
             if RTS_Languages.Get_First = No_Name then
                declare
                   Builder : constant Package_Id :=
-                    Value_Of (Name_Builder, Project.Decl.Packages, Shared);
+                              Value_Of
+                                (Name_Builder, Project.Decl.Packages, Shared);
                   Switch_Array_Id : Array_Element_Id;
 
                   procedure Check_RTS_Switches;
@@ -988,17 +990,18 @@ package body Prj.Conf is
                   procedure Check_RTS_Switches is
                      Switch_Array : Array_Element;
 
-                     Switch_List   : String_List_Id := Nil_String;
-                     Switch : String_Element;
+                     Switch_List  : String_List_Id := Nil_String;
+                     Switch       : String_Element;
 
-                     Lang      : Name_Id;
-                     Lang_Last : Positive;
+                     Lang         : Name_Id;
+                     Lang_Last    : Positive;
+
                   begin
                      while Switch_Array_Id /= No_Array_Element loop
                         Switch_Array :=
                           Shared.Array_Elements.Table (Switch_Array_Id);
-                           Switch_List := Switch_Array.Value.Values;
 
+                        Switch_List := Switch_Array.Value.Values;
                         while Switch_List /= Nil_String loop
                            Switch :=
                              Shared.String_Elements.Table (Switch_List);
@@ -1027,23 +1030,21 @@ package body Prj.Conf is
                                        Lang_Last := Lang_Last + 1;
                                     end loop;
 
-                                    if
-                                      Name_Buffer (Lang_Last + 1) = '='
-                                    then
+                                    if Name_Buffer (Lang_Last + 1) = '=' then
                                        declare
                                           RTS : constant String :=
-                                            Name_Buffer (Lang_Last + 2 ..
-                                                           Name_Len);
+                                                  Name_Buffer (Lang_Last + 2 ..
+                                                               Name_Len);
                                        begin
-                                          Name_Buffer (1 .. Lang_Last - 6)
-                                            := Name_Buffer (7 .. Lang_Last);
+                                          Name_Buffer (1 .. Lang_Last - 6) :=
+                                            Name_Buffer (7 .. Lang_Last);
                                           Name_Len := Lang_Last - 6;
                                           To_Lower
                                             (Name_Buffer (1 .. Name_Len));
                                           Lang := Name_Find;
 
-                                          if
-                                          not Runtime_Name_Set_For (Lang)
+                                          if not
+                                            Runtime_Name_Set_For (Lang)
                                           then
                                              Set_Runtime_For (Lang, RTS);
                                           end if;
@@ -1245,8 +1246,8 @@ package body Prj.Conf is
       --  If the config file is not auto-generated, warn if there is any --RTS
       --  switch on the command line.
 
-      elsif RTS_Languages.Get_First /= No_Name and then
-        Opt.Warning_Mode /= Opt.Suppress
+      elsif RTS_Languages.Get_First /= No_Name
+        and then Opt.Warning_Mode /= Opt.Suppress
       then
          Write_Line
            ("warning: --RTS is taken into account only in auto-configuration");
@@ -1266,14 +1267,14 @@ package body Prj.Conf is
 
       elsif Config_File_Path /= null then
          Prj.Part.Parse
-           (In_Tree                => Project_Node_Tree,
-            Project                => Config_Project_Node,
-            Project_File_Name      => Config_File_Path.all,
-            Errout_Handling        => Prj.Part.Finalize_If_Error,
-            Packages_To_Check      => Packages_To_Check,
-            Current_Directory      => Current_Directory,
-            Is_Config_File         => True,
-            Env                    => Env);
+           (In_Tree           => Project_Node_Tree,
+            Project           => Config_Project_Node,
+            Project_File_Name => Config_File_Path.all,
+            Errout_Handling   => Prj.Part.Finalize_If_Error,
+            Packages_To_Check => Packages_To_Check,
+            Current_Directory => Current_Directory,
+            Is_Config_File    => True,
+            Env               => Env);
       else
          Config_Project_Node := Empty_Node;
       end if;

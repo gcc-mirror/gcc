@@ -30,12 +30,15 @@
 ------------------------------------------------------------------------------
 
 --  This implementation of the package for x86 processor. GCC can't generate
---  code for atomic builtins for 386 CPU there only increment/decrement
---  instructions are supported, thus implementaton use assembler code.
+--  code for atomic builtins for 386 CPU. Only increment/decrement instructions
+--  are supported, thus this implementaton uses machine code insertions to
+--  access the necessary instructions.
 
 with System.Machine_Code;
 
 package body System.Atomic_Counters is
+
+   --  Add comments showing in normal asm language what we generate???
 
    ---------------
    -- Decrement --

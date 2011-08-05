@@ -4528,8 +4528,8 @@ package body Sem_Ch6 is
          elsif Ekind (T) = E_Incomplete_Type and then From_With_Type (T) then
             Set_Has_Delayed_Freeze (Designator);
 
-         --  AI05-0151 : incomplete types can now appear in the profile of a
-         --  subprogram or entry declaration.
+         --  AI05-0151: In Ada 2012, Incomplete types can appear in the profile
+         --  of a subprogram or entry declaration.
 
          elsif Ekind (T) = E_Incomplete_Type
            and then Ada_Version >= Ada_2012
