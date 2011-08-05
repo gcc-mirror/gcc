@@ -427,6 +427,86 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Target.Count := Source.Count;
    end Assign;
 
+   -----------------
+   -- Child_Count --
+   -----------------
+
+   function Child_Count (Parent : Cursor) return Count_Type is
+   begin
+      if Parent = No_Element then
+         return 0;
+      end if;
+
+      if Parent.Container.Count = 0 then
+         pragma Assert (Is_Root (Parent));
+         return 0;
+      end if;
+
+      return Child_Count (Parent.Container.all, Parent.Node);
+   end Child_Count;
+
+   function Child_Count
+     (Container : Tree;
+      Parent    : Count_Type) return Count_Type
+   is
+      NN : Tree_Node_Array renames Container.Nodes;
+      CC : Children_Type renames NN (Parent).Children;
+
+      Result : Count_Type;
+      Node   : Count_Type'Base;
+
+   begin
+      Result := 0;
+      Node := CC.First;
+      while Node > 0 loop
+         Result := Result + 1;
+         Node := NN (Node).Next;
+      end loop;
+
+      return Result;
+   end Child_Count;
+
+   -----------------
+   -- Child_Depth --
+   -----------------
+
+   function Child_Depth (Parent, Child : Cursor) return Count_Type is
+      Result : Count_Type;
+      N      : Count_Type'Base;
+
+   begin
+      if Parent = No_Element then
+         raise Constraint_Error with "Parent cursor has no element";
+      end if;
+
+      if Child = No_Element then
+         raise Constraint_Error with "Child cursor has no element";
+      end if;
+
+      if Parent.Container /= Child.Container then
+         raise Program_Error with "Parent and Child in different containers";
+      end if;
+
+      if Parent.Container.Count = 0 then
+         pragma Assert (Is_Root (Parent));
+         pragma Assert (Child = Parent);
+         return 0;
+      end if;
+
+      Result := 0;
+      N := Child.Node;
+      while N /= Parent.Node loop
+         Result := Result + 1;
+         N := Parent.Container.Nodes (N).Parent;
+
+         if N < 0 then
+            raise Program_Error with "Parent is not ancestor of Child";
+         end if;
+      end loop;
+
+      return Result;
+   end Child_Depth;
+
    -----------
    -- Clear --
    -----------
@@ -580,86 +660,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
       T_Node.Children := T_CC;
    end Copy_Children;
-
-   -----------------
-   -- Child_Count --
-   -----------------
-
-   function Child_Count (Parent : Cursor) return Count_Type is
-   begin
-      if Parent = No_Element then
-         return 0;
-      end if;
-
-      if Parent.Container.Count = 0 then
-         pragma Assert (Is_Root (Parent));
-         return 0;
-      end if;
-
-      return Child_Count (Parent.Container.all, Parent.Node);
-   end Child_Count;
-
-   function Child_Count
-     (Container : Tree;
-      Parent    : Count_Type) return Count_Type
-   is
-      NN : Tree_Node_Array renames Container.Nodes;
-      CC : Children_Type renames NN (Parent).Children;
-
-      Result : Count_Type;
-      Node   : Count_Type'Base;
-
-   begin
-      Result := 0;
-      Node := CC.First;
-      while Node > 0 loop
-         Result := Result + 1;
-         Node := NN (Node).Next;
-      end loop;
-
-      return Result;
-   end Child_Count;
-
-   -----------------
-   -- Child_Depth --
-   -----------------
-
-   function Child_Depth (Parent, Child : Cursor) return Count_Type is
-      Result : Count_Type;
-      N      : Count_Type'Base;
-
-   begin
-      if Parent = No_Element then
-         raise Constraint_Error with "Parent cursor has no element";
-      end if;
-
-      if Child = No_Element then
-         raise Constraint_Error with "Child cursor has no element";
-      end if;
-
-      if Parent.Container /= Child.Container then
-         raise Program_Error with "Parent and Child in different containers";
-      end if;
-
-      if Parent.Container.Count = 0 then
-         pragma Assert (Is_Root (Parent));
-         pragma Assert (Child = Parent);
-         return 0;
-      end if;
-
-      Result := 0;
-      N := Child.Node;
-      while N /= Parent.Node loop
-         Result := Result + 1;
-         N := Parent.Container.Nodes (N).Parent;
-
-         if N < 0 then
-            raise Program_Error with "Parent is not ancestor of Child";
-         end if;
-      end loop;
-
-      return Result;
-   end Child_Depth;
 
    ------------------
    -- Copy_Subtree --

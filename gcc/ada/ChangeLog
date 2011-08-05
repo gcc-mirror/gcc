@@ -1,3 +1,14 @@
+2011-08-05  Matthew Heaney  <heaney@adacore.com>
+
+	* a-comutr.adb, a-cimutr.adb, a-cbmutr.adb (Child_Count, Child_Depth):
+	subprogram bodies declared out-of-order.
+
+2011-08-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Unique_Name): only prefix with "standard" the names of
+	entities directly in package Standard, otherwise skip the standard
+	prefix.
+
 2011-08-05  Robert Dewar  <dewar@adacore.com>
 
 	* a-cbmutr.adb: Minor reformatting
