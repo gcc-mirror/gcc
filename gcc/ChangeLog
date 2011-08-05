@@ -1,3 +1,9 @@
+2011-08-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/49900
+	* sched-ebb.c (add_deps_for_risky_insns): Also add dependencies to
+	ensure basic blocks stay in the same order.
+
 2011-08-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/s390/s390.c (s390_expand_cs_hqi): Add new arguments to

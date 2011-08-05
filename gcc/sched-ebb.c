@@ -397,6 +397,9 @@ add_deps_for_risky_insns (rtx head, rtx tail)
 	  bb = BLOCK_FOR_INSN (insn);
 	  bb->aux = last_block;
 	  last_block = bb;
+	  /* Ensure blocks stay in the same order.  */
+	  if (last_jump)
+	    add_dependence (insn, last_jump, REG_DEP_ANTI);
 	  last_jump = insn;
 	}
       else if (INSN_P (insn) && last_jump != NULL_RTX)
