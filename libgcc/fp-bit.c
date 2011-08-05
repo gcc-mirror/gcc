@@ -1,7 +1,7 @@
 /* This is a software floating point library which can be used
    for targets without hardware floating point. 
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003,
-   2004, 2005, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2004, 2005, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,7 +37,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "config/fp-bit.h"
+#include "fp-bit.h"
 
 /* The following macros can be defined to change the behavior of this file:
    FLOAT: Implement a `float', aka SFmode, fp library.  If this is not

@@ -1,5 +1,5 @@
 # Makefile fragment for building LIBGCC for the Renesas RX target.
-# Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
 # Contributed by Red Hat.
 #
 # This file is part of GCC.
@@ -28,17 +28,7 @@ LIB2ADD = $(srcdir)/config/rx/rx-abi-functions.c
 # We need special handling of the floating point conversion
 # routines, to allow for the varying size of a double:
 
-FPBIT = fp-bit.c
-$(gcc_objdir)/fp-bit.c: $(gcc_srcdir)/config/fp-bit.c
-	echo '#define FLOAT'		     > $@
-	echo '#ifndef __RX_64BIT_DOUBLES__' >> $@
-	echo '#define DF SF'		    >> $@
-	echo '#define FLOAT_ONLY'	    >> $@
-	echo '#endif' 			    >> $@
-	cat $(gcc_srcdir)/config/fp-bit.c   >> $@
-
-DPBIT = dp-bit.c
-$(gcc_objdir)/dp-bit.c: $(gcc_srcdir)/config/fp-bit.c
-	echo '#ifdef __RX_64BIT_DOUBLES__'   > $@
-	cat $(gcc_srcdir)/config/fp-bit.c   >> $@
-	echo '#endif'		      	    >> $@
+FPBIT = true
+ifeq ($(double_type_size),64)
+DPBIT = true
+endif

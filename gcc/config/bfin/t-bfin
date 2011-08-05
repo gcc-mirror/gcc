@@ -1,4 +1,4 @@
-# Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2007, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -23,16 +23,6 @@ LIB1ASMFUNCS = _divsi3 _udivsi3 _umodsi3 _modsi3 _muldi3 _umulsi3_highpart
 LIB1ASMFUNCS += _smulsi3_highpart
 
 EXTRA_PARTS = crtbegin.o crtend.o crti.o crtn.o
-
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	cat $(srcdir)/config/fp-bit.c > dp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 # Assemble startup files.
 $(T)crti.o: $(srcdir)/config/bfin/crti.s $(GCC_PASSES)

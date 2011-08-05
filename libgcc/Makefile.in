@@ -37,6 +37,8 @@ SHELL = @SHELL@
 
 cpu_type = @cpu_type@
 enable_shared = @enable_shared@
+double_type_size = @double_type_size@
+long_double_type_size = @long_double_type_size@
 decimal_float = @decimal_float@
 enable_decimal_float = @enable_decimal_float@
 fixed_point = @fixed_point@
@@ -256,6 +258,21 @@ LIBGCC_VER_GNU_PREFIX = __
 LIBGCC_VER_FIXEDPOINT_GNU_PREFIX = __
 LIBGCC_VER_SYMBOLS_PREFIX =
 
+FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
+    _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
+    _lt_sf _le_sf _unord_sf _si_to_sf _sf_to_si _negate_sf _make_sf \
+    _sf_to_df _sf_to_tf _thenan_sf _sf_to_usi _usi_to_sf
+
+DPBIT_FUNCS = _pack_df _unpack_df _addsub_df _mul_df _div_df \
+    _fpcmp_parts_df _compare_df _eq_df _ne_df _gt_df _ge_df \
+    _lt_df _le_df _unord_df _si_to_df _df_to_si _negate_df _make_df \
+    _df_to_sf _df_to_tf _thenan_df _df_to_usi _usi_to_df
+
+TPBIT_FUNCS = _pack_tf _unpack_tf _addsub_tf _mul_tf _div_tf \
+    _fpcmp_parts_tf _compare_tf _eq_tf _ne_tf _gt_tf _ge_tf \
+    _lt_tf _le_tf _unord_tf _si_to_tf _tf_to_si _negate_tf _make_tf \
+    _tf_to_df _tf_to_sf _thenan_tf _tf_to_usi _usi_to_tf
+
 # Additional sources to handle exceptions; overridden by targets as needed.
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
   $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
@@ -445,34 +462,25 @@ $(lib2-divmod-s-o): %_s$(objext): $(gcc_srcdir)/libgcc2.c
 libgcc-s-objects += $(lib2-divmod-s-o)
 endif
 
-# $(FPBIT) et al. are pathnames relative to the GCC build
-# directory; the supporting files are made by the GCC
-# Makefile.
-# FIXME: Soon we will be able to move this logic into this directory.
-
-ifneq ($(fpbit-in-libgcc),yes)
-FPBIT:=$(if $(FPBIT),$(gcc_objdir)/$(FPBIT),)
-DPBIT:=$(if $(DPBIT),$(gcc_objdir)/$(DPBIT),)
-TPBIT:=$(if $(TPBIT),$(gcc_objdir)/$(TPBIT),)
-endif
-
 ifeq ($(TPBIT),)
 # _sf_to_tf and _df_to_tf require tp-bit.c being compiled in.
 FPBIT_FUNCS := $(filter-out _sf_to_tf,$(FPBIT_FUNCS))
 DPBIT_FUNCS := $(filter-out _df_to_tf,$(DPBIT_FUNCS))
 endif
 
+fpbit-src := $(srcdir)/fp-bit.c
+
 # Build FPBIT.
 ifneq ($(FPBIT),)
 fpbit-o = $(patsubst %,%$(objext),$(FPBIT_FUNCS))
-$(fpbit-o): %$(objext): $(FPBIT)
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(FPBIT) $(vis_hide)
+$(fpbit-o): %$(objext): $(fpbit-src)
+	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DFLOAT $(FPBIT_CFLAGS) -c $< $(vis_hide)
 libgcc-objects += $(fpbit-o)
 
 ifeq ($(enable_shared),yes)
 fpbit-s-o = $(patsubst %,%_s$(objext),$(FPBIT_FUNCS))
-$(fpbit-s-o): %_s$(objext): $(FPBIT)
-	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(FPBIT)
+$(fpbit-s-o): %_s$(objext): $(fpbit-src)
+	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DFLOAT $(FPBIT_CFLAGS)  -c $<
 libgcc-s-objects += $(fpbit-s-o)
 endif
 endif
@@ -480,14 +488,14 @@ endif
 # Build DPBIT.
 ifneq ($(DPBIT),)
 dpbit-o = $(patsubst %,%$(objext),$(DPBIT_FUNCS))
-$(dpbit-o): %$(objext): $(DPBIT)
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(DPBIT) $(vis_hide)
+$(dpbit-o): %$(objext): $(fpbit-src)
+	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* $(DPBIT_CFLAGS) -c $< $(vis_hide)
 libgcc-objects += $(dpbit-o)
 
 ifeq ($(enable_shared),yes)
 dpbit-s-o = $(patsubst %,%_s$(objext),$(DPBIT_FUNCS))
-$(dpbit-s-o): %_s$(objext): $(DPBIT)
-	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(DPBIT)
+$(dpbit-s-o): %_s$(objext): $(fpbit-src)
+	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* $(DPBIT_CFLAGS) -c $<
 libgcc-s-objects += $(dpbit-s-o)
 endif
 endif
@@ -495,14 +503,14 @@ endif
 # Build TPBIT.
 ifneq ($(TPBIT),)
 tpbit-o = $(patsubst %,%$(objext),$(TPBIT_FUNCS))
-$(tpbit-o): %$(objext): $(TPBIT)
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(TPBIT) $(vis_hide)
+$(tpbit-o): %$(objext): $(fpbit-src)
+	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DTFLOAT $(TPBIT_CFLAGS) -c $< $(vis_hide)
 libgcc-objects += $(tpbit-o)
 
 ifeq ($(enable_shared),yes)
 tpbit-s-o = $(patsubst %,%_s$(objext),$(TPBIT_FUNCS))
-$(tpbit-s-o): %_s$(objext): $(TPBIT)
-	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(TPBIT)
+$(tpbit-s-o): %_s$(objext): $(fpbit-src)
+	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DTFLOAT $(TPBIT_CFLAGS) -c $<
 libgcc-s-objects += $(tpbit-s-o)
 endif
 endif

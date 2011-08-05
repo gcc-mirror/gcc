@@ -49,29 +49,6 @@ Compiler flags to use when compiling @file{libgcc2.c}.
 A list of source file names to be compiled or assembled and inserted
 into @file{libgcc.a}.
 
-@findex Floating Point Emulation
-@item Floating Point Emulation
-To have GCC include software floating point libraries in @file{libgcc.a}
-define @code{FPBIT} and @code{DPBIT} along with a few rules as follows:
-@smallexample
-# We want fine grained libraries, so use the new code
-# to build the floating point emulation libraries.
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-        echo '#define FLOAT' > fp-bit.c
-        cat $(srcdir)/config/fp-bit.c >> fp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-        cat $(srcdir)/config/fp-bit.c > dp-bit.c
-@end smallexample
-
-You may need to provide additional #defines at the beginning of @file{fp-bit.c}
-and @file{dp-bit.c} to control target endianness and other options.
-
-
 @findex CRTSTUFF_T_CFLAGS
 @item CRTSTUFF_T_CFLAGS
 Special flags used when compiling @file{crtstuff.c}.

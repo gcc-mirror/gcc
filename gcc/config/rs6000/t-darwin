@@ -18,7 +18,6 @@
 # <http://www.gnu.org/licenses/>.
 
 LIB2FUNCS_EXTRA = $(srcdir)/config/rs6000/darwin-tramp.asm \
-	$(srcdir)/config/rs6000/ppc64-fp.c \
 	$(srcdir)/config/darwin-64.c \
 	$(srcdir)/config/rs6000/darwin-ldouble.c \
 	$(srcdir)/config/rs6000/darwin-world.asm

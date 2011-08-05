@@ -72,6 +72,7 @@ cpu_type=`echo ${host} | sed 's/-.*$//'`
 case ${host} in
 m32c*-*-*)
         cpu_type=m32c
+	tmake_file=t-fdpbit
         ;;
 alpha*-*-*)
 	cpu_type=alpha
@@ -121,6 +122,7 @@ microblaze*-*-*)
 	;;
 mips*-*-*)
 	cpu_type=mips
+	tmake_file=mips/t-mips
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
@@ -265,8 +267,10 @@ alpha*-dec-*vms*)
 	md_unwind_header=alpha/vms-unwind.h
 	;;
 arm-wrs-vxworks)
+	tmake_file=t-fdpbit
 	;;
 arm*-*-freebsd*)
+	tmake_file=t-fdpbit
 	;;
 arm*-*-netbsdelf*)
 	;;
@@ -309,40 +313,56 @@ arm*-*-elf)
 arm*-wince-pe*)
 	;;
 avr-*-rtems*)
+	tmake_file=t-fpbit
 	;;
 avr-*-*)
-    # Make HImode functions for AVR
-    tmake_file=${cpu_type}/t-avr
+	# Make HImode functions for AVR
+	tmake_file="${cpu_type}/t-avr t-fpbit"
+
 	;;
 bfin*-elf*)
+	tmke_file=t-fdpbit
         ;;
 bfin*-uclinux*)
+	tmake_file=t-fdpbit
 	md_unwind_header=bfin/linux-unwind.h
         ;;
 bfin*-linux-uclibc*)
+	tmake_file=t-fdpbit
 	# No need to build crtbeginT.o on uClibc systems.  Should probably
 	# be moved to the OS specific section above.
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	md_unwind_header=bfin/linux-unwind.h
 	;;
+bfin*-rtems*)
+	tmake_file=t-fdpbit
+	;;
 bfin*-*)
+	tmake_file=t-fdpbit
         ;;
 crisv32-*-elf | crisv32-*-none | cris-*-elf | cris-*-none)
+	tmake_file=t-fdpbit
 	extra_parts="crtbegin.o crtend.o"
 	;;
 cris-*-linux* | crisv32-*-linux*)
+	tmake_file=t-fdpbit
 	;;
 fido-*-elf)
 	;;
 fr30-*-elf)
+	tmake_file=t-fdpbit
 	;;
 frv-*-elf)
+	tmake_file=t-fdpbit
 	;;
 frv-*-*linux*)
+	tmake_file=t-fdpbit
 	;;
 h8300-*-rtems*)
+	tmake_file=t-fpbit
 	;;
 h8300-*-elf*)
+	tmake_file=t-fpbit
 	;;
 hppa*64*-*-linux*)
 	;;
@@ -458,6 +478,7 @@ ia64-hp-*vms*)
 	md_unwind_header=ia64/vms-unwind.h
 	;;
 iq2000*-*-elf*)
+	tmake_file=t-fdpbit
         ;;
 lm32-*-elf*|lm32-*-rtems*)
         extra_parts="crtbegin.o crtend.o crti.o crtn.o"
@@ -468,12 +489,16 @@ lm32-*-uclinux*)
         tmake_file="lm32/t-lm32 lm32/t-uclinux t-softfp"
 	;;	
 m32r-*-elf*|m32r-*-rtems*)
+	tmake_file=t-fdpbit
  	;;
 m32rle-*-elf*)
+	tmake_file=t-fdpbit
 	;;
 m32r-*-linux*)
+	tmake_file=t-fdpbit
  	;;
 m32rle-*-linux*)
+	tmake_file=t-fdpbit
 	;;
 m68k-*-elf*)
 	;;
@@ -492,28 +517,40 @@ m68k-*-linux*)			# Motorola m68k's running GNU/Linux
 m68k-*-rtems*)
 	;;
 mcore-*-elf)
+	tmake_file=t-fdpbit
 	;;
 microblaze*-*-*)
-        tmake_file="microblaze/t-microblaze"
+        tmake_file="microblaze/t-microblaze t-fdpbit"
 	;;
 mips-sgi-irix6.5*)
-	tmake_file="mips/t-irix6 t-crtfm t-slibgcc mips/t-slibgcc-irix"
+	tmake_file="$tmake_file mips/t-irix6 t-crtfm mips/t-tpbit t-slibgcc mips/t-slibgcc-irix"
 	extra_parts="crtbegin.o crtend.o crtfastmath.o irix-crti.o irix-crtn.o"
 	md_unwind_header=mips/irix6-unwind.h
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
-mips64*-*-linux*)
+mips64*-*-linux* | mipsisa64*-*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="{$tmake_file} t-crtfm"
+	tmake_file="${tmake_file} t-crtfm mips/t-tpbit"
 	md_unwind_header=mips/linux-unwind.h
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="{$tmake_file} t-crtfm"
+	tmake_file="${tmake_file} t-crtfm"
 	md_unwind_header=mips/linux-unwind.h
 	;;
 mips*-*-openbsd*)
+	;;
+mips*-sde-elf*)
+	case "${with_newlib}" in
+	  yes)
+	    # newlib / libgloss.
+	    ;;
+	  *)
+	    # MIPS toolkit libraries.
+	    tmake_file=mips/t-sdemtk
+	    ;;
+	esac
 	;;
 mipsisa32-*-elf* | mipsisa32el-*-elf*)
 	;;
@@ -524,6 +561,7 @@ mipsisa64-*-elf* | mipsisa64el-*-elf*)
 mipsisa64r2-*-elf* | mipsisa64r2el-*-elf*)
 	;;
 mipsisa64sr71k-*-elf*)
+	tmake_file=t-fdpbit
         ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
 	;;
@@ -546,15 +584,17 @@ mmix-knuth-mmixware)
 	tmake_file="${tmake_file} ${cpu_type}/t-${cpu_type}"
 	;;
 mn10300-*-*)
+	tmake_file=t-fdpbit
 	;;
 moxie-*-*)
 	tmake_file="moxie/t-moxie moxie/t-moxie-softfp"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
 	;;
 pdp11-*-*)
+	tmake_file=t-fdpbit
 	;;
 picochip-*-*)
-	tmake_file=picochip/t-picochip
+	tmake_file="picochip/t-picochip t-fpbit"
         ;;
 powerpc-*-darwin*)
 	case ${host} in
@@ -580,44 +620,60 @@ powerpc-*-eabispe*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm"
 	;;
 powerpc-*-eabisimaltivec*)
+	tmake_file=t-fdpbit
 	;;
 powerpc-*-eabisim*)
+	tmake_file=t-fdpbit
 	;;
 powerpc-*-elf*)
+	tmake_file=t-fdpbit
 	;;
 powerpc-*-eabialtivec*)
+	tmake_file=t-fdpbit
+	;;
+powerpc-xilinx-eabi*)
+	tmake_file=t-fdpbit
 	;;
 powerpc-*-eabi*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm"
+	tmake_file="${tmake_file} rs6000/t-ppccomm t-fdpbit"
 	;;
 powerpc-*-rtems*)
+	tmake_file=t-fdpbit
 	;;
 powerpc-*-linux* | powerpc64-*-linux*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp t-dfprules"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp t-dfprules rs6000/t-ppc64-fp"
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
+	tmake_file=t-fdpbit
 	;;
 powerpc-*-lynxos*)
+	tmake_file=t-fdpbit
 	;;
 powerpcle-*-elf*)
+	tmake_file=t-fdpbit
 	;;
 powerpcle-*-eabisim*)
+	tmake_file=t-fdpbit
 	;;
 powerpcle-*-eabi*)
+	tmake_file=t-fdpbit
 	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	md_unwind_header=rs6000/aix-unwind.h
+	tmake_file="t-fdpbit rs6000/t-ppc64-fp"
 	;;
 rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 	md_unwind_header=rs6000/aix-unwind.h
+	tmake_file="t-fdpbit rs6000/t-ppc64-fp"
 	;;
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	md_unwind_header=rs6000/aix-unwind.h
+	tmake_file="t-fdpbit rs6000/t-ppc64-fp"
 	;;
 rx-*-elf)
 	extra_parts="crtbegin.o crtend.o"
-	tmake_file="rx/t-rx"
+	tmake_file="rx/t-rx t-fdpbit"
 	;;
 s390-*-linux*)
 	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi"
@@ -639,14 +695,25 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
    sh64-*-netbsd* | sh64l*-*-netbsd*)
 	case ${host} in
 	sh*-*-linux*)
-		tmake_file="${tmake_file} sh/t-linux"
+		tmake_file="${tmake_file} sh/t-linux t-fdpbit"
 		md_unwind_header=sh/linux-unwind.h
+		;;
+	sh*-*-netbsd*)
+		# NetBSD's C library includes a fast software FP library that
+		# has support for setting/setting the rounding mode, exception
+		# mask, etc.  Therefore, we don't want to include software FP
+		# in libgcc.
+		;;
+	sh*-*-*)
+	        tmake_file=t-fdpbit
 		;;
 	esac
 	;;
 sh-*-rtems*)
+	tmake_file=t-fdpbit
 	;;
 sh-wrs-vxworks)
+	tmake_file=t-fdpbit
 	;;
 sparc-*-netbsdelf*)
 	;;
@@ -660,16 +727,21 @@ sparc-*-elf*)
 	  	tmake_file="sparc/t-softmul"
 	  	;;
 	esac
-	tmake_file="${tmake_file} sparc/t-softfp t-crtin t-crtfm"
+	tmake_file="${tmake_file} t-fdpbit t-crtin t-crtfm"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o crtfastmath.o"
 	;;
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
+	case ${host} in
+	*-leon*)
+		tmake_file=t-fdpbit
+		;;
+	esac
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} t-crtfm"
 	md_unwind_header=sparc/linux-unwind.h
 	;;
-sparc-*-rtems* | sparc64-*-rtems* )
-	tmake_file="sparc/t-elf t-crtin t-crtfm t-rtems"
+sparc-*-rtems*)
+	tmake_file="sparc/t-elf t-crtin t-crtfm t-rtems t-fdpbit"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o crtfastmath.o"
 	;;
 sparc*-*-solaris2*)
@@ -679,6 +751,10 @@ sparc*-*-solaris2*)
 	;;
 sparc64-*-elf*)
 	tmake_file="${tmake_file} t-crtin t-crtfm"
+	extra_parts="crtbegin.o crtend.o crti.o crtn.o crtfastmath.o"
+	;;
+sparc64-*-rtems*)
+	tmake_file="sparc/t-elf t-crtin t-crtfm t-rtems"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o crtfastmath.o"
 	;;
 sparc-wrs-vxworks)
@@ -695,11 +771,13 @@ sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
 sparc64-*-netbsd*)
 	;;
 spu-*-elf*)
+	tmake_file="t-fdpbit spu/t-elf"
 	;;
 tic6x-*-*)
 	tmake_file="${tmake_file} t-gnu-prefix"
 	;;
 v850*-*-*)
+	tmake_file=t-fdpbit
 	;;
 vax-*-linux*)
 	;;
@@ -708,6 +786,7 @@ vax-*-netbsdelf*)
 vax-*-openbsd*)
 	;;
 xstormy16-*-elf)
+	tmake_file=t-fdpbit
 	;;
 xtensa*-*-elf*)
 	tmake_file=xtensa/t-xtensa
@@ -718,10 +797,12 @@ xtensa*-*-linux*)
 	;;
 am33_2.0-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	tmake_file=t-fdpbit
 	;;
 m32c-*-elf*|m32c-*-rtems*)
  	;;
 mep*-*-*)
+	tmake_file=t-fdpbit
 	;;
 *)
 	echo "*** Configuration ${host} not supported" 1>&2

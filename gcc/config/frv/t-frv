@@ -27,22 +27,8 @@ LIB1ASMSRC	= frv/lib1funcs.asm
 LIB1ASMFUNCS	= _cmpll _cmpf _cmpd _addll _subll _andll _orll _xorll _notll _cmov
 LIB2FUNCS_EXTRA	= cmovh.c cmovw.c cmovd.c modi.c umodi.c uitof.c uitod.c ulltof.c ulltod.c
 
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
 # If any special flags are necessary when building libgcc2 put them here.
 TARGET_LIBGCC2_CFLAGS =
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	echo '#include "config/frv/frv-abi.h"' >> fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#include "config/frv/frv-abi.h"' > dp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
 
 cmovh.c: $(srcdir)/config/frv/cmovh.c
 	$(LN_S) $(srcdir)/config/frv/cmovh.c .

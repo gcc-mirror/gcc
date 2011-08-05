@@ -1,4 +1,4 @@
-# Copyright (C) 2003, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,18 +22,6 @@ LIBGCC1 =
 CROSS_LIBGCC1 =
 
 LIB2FUNCS_EXTRA = $(srcdir)/config/udivmod.c $(srcdir)/config/divmod.c $(srcdir)/config/udivmodsi4.c $(srcdir)/config/iq2000/lib2extra-funcs.c
-
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT'				> fp-bit.c
-	cat $(srcdir)/config/fp-bit.c			>> fp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	cat $(srcdir)/config/fp-bit.c > dp-bit.c
 
 # Enable the following if multilibs are needed.
 # See gcc/genmultilib, gcc/gcc.texi and gcc/tm.texi for a

@@ -1,4 +1,4 @@
-# Copyright (C) 2010 Free Software Foundation, Inc.
+# Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -18,18 +18,6 @@
 
 LIB1ASMSRC = sparc/lb1spc.asm
 LIB1ASMFUNCS = _mulsi3 _divsi3 _modsi3
-
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	cat $(srcdir)/config/fp-bit.c > dp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 # Multilibs for LEON
 # LEON is a SPARC-V8, but the AT697 implementation has a bug in the

@@ -1,4 +1,4 @@
-# Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2007, 2008, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -38,7 +38,3 @@ stmp-sdefixinc: gsyslimits.h
 	cp $(srcdir)/gsyslimits.h include/syslimits.h
 	chmod a+r include/syslimits.h
 	$(STAMP) stmp-sdefixinc
-
-# Don't build FPBIT and DPBIT; we'll be using the SDE soft-float library.
-FPBIT =
-DPBIT =

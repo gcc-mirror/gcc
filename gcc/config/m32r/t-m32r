@@ -1,4 +1,5 @@
-# Copyright (C) 1997, 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998, 1999, 2001, 2003, 2011
+# Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,22 +17,10 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
 # Turn off the SDA while compiling libgcc2.  There are no headers for it
 # and we want maximal upward compatibility here.
 
 TARGET_LIBGCC2_CFLAGS = -G 0
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	cat $(srcdir)/config/fp-bit.c > dp-bit.c
 
 # We need to use -fpic when we are using gcc to compile the routines in
 # initfini.c.  This is only really needed when we are going to use gcc/g++
