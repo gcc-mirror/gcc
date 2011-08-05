@@ -1,5 +1,10 @@
 2011-08-05  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/49984
+	* tree-vrp.c (extract_range_from_binary_expr_1): Handle BIT_XOR_EXPR.
+
+2011-08-05  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vrp.c (zero_nonzero_bits_from_vr): Make sure to always
 	return true for constant integer ranges.
 	(extract_range_from_binary_expr_1): Simplify BIT_AND_EXPR and
