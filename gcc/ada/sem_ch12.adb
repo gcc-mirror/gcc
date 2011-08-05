@@ -11887,11 +11887,27 @@ package body Sem_Ch12 is
          N2 := Get_Associated_Node (N);
          E := Entity (N2);
 
-         --  If the entity is an itype created as a subtype of an access type
-         --  with a null exclusion restore source entity for proper visibility.
-         --  The itype will be created anew in the instance.
-
          if Present (E) then
+
+            --  If the node is an entry call to an entry in an enclosing task,
+            --  it is rewritten as a selected component. No global entity
+            --  to preserve in this case, the expansion will be redone in the
+            --  instance.
+
+            if not Nkind_In (E,
+              N_Defining_Identifier,
+              N_Defining_Character_Literal,
+              N_Defining_Operator_Symbol)
+            then
+               Set_Associated_Node (N, Empty);
+               Set_Etype  (N, Empty);
+               return;
+            end if;
+
+            --  If the entity is an itype created as a subtype of an access
+            --  type with a null exclusion restore source entity for proper
+            --  visibility. The itype will be created anew in the instance.
+
             if Is_Itype (E)
               and then Ekind (E) = E_Access_Subtype
               and then Is_Entity_Name (N)

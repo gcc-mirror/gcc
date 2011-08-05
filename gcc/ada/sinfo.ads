@@ -943,6 +943,12 @@ package Sinfo is
    --    there is no requirement that these match, and there are obscure cases
    --    of generated code where they do not match.
 
+   --    Note: Aspect specifications, introduced in Ada2012, require additional
+   --    links between identifiers and various attributes. These attributes
+   --    can be of arbitrary types, and the entity field of identifiers that
+   --    denote aspects must be used to store arbitrary expressions for later
+   --    semantic checks. See section on Aspect specifications for details.
+
    --  Entity_Or_Associated_Node (Node4-Sem)
    --    A synonym for both Entity and Associated_Node. Used by convention in
    --    the code when referencing this field in cases where it is not known
