@@ -30,7 +30,12 @@
 ------------------------------------------------------------------------------
 
 --  This package provides atomic counter on platforms where it is supported:
---    ??? Please provide a list of such platforms
+--    - all Alpha platforms
+--    - all ia64 platforms
+--    - all PowerPC platforms
+--    - all SPARC V9 platforms
+--    - all x86 platforms
+--    - all x86_64 platforms
 
 --  Why isn't this package available to application programs???
 

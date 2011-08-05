@@ -2270,6 +2270,10 @@ package body Exp_Ch7 is
             --  call and if it is, try to match the name of the call with the
             --  [Deep_]Initialize proc of Typ.
 
+            function Next_Suitable_Statement (Stmt : Node_Id) return Node_Id;
+            --  Given a statement which is part of a list, return the next
+            --  real statement while skipping over generated checks.
+
             ------------------
             -- Is_Init_Call --
             ------------------
@@ -2310,6 +2314,25 @@ package body Exp_Ch7 is
                return False;
             end Is_Init_Call;
 
+            -----------------------------
+            -- Next_Suitable_Statement --
+            -----------------------------
+
+            function Next_Suitable_Statement (Stmt : Node_Id) return Node_Id is
+               Result : Node_Id := Next (Stmt);
+
+            begin
+               --  Skip over access-before-elaboration checks
+
+               if Dynamic_Elaboration_Checks
+                 and then Nkind (Result) = N_Raise_Program_Error
+               then
+                  Result := Next (Result);
+               end if;
+
+               return Result;
+            end Next_Suitable_Statement;
+
          --  Start of processing for Find_Last_Init
 
          begin
@@ -2338,9 +2361,9 @@ package body Exp_Ch7 is
             --  where the user-defined initialize may be optional or may appear
             --  inside a block when abort deferral is needed.
 
-            Nod_1 := Next (Decl);
+            Nod_1 := Next_Suitable_Statement (Decl);
             if Present (Nod_1) then
-               Nod_2 := Next (Nod_1);
+               Nod_2 := Next_Suitable_Statement (Nod_1);
 
                --  The statement following an object declaration is always a
                --  call to the type init proc.

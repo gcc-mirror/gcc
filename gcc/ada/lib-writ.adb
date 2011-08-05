@@ -870,6 +870,13 @@ package body Lib.Writ is
          return;
       end if;
 
+      --  Generation of ALI files may be disabled, e.g. for formal verification
+      --  back-end.
+
+      if Disable_ALI_File then
+         return;
+      end if;
+
       --  Build sorted source dependency table. We do this right away, because
       --  it is referenced by Up_To_Date_ALI_File_Exists.
 

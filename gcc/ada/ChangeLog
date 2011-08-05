@@ -1,3 +1,53 @@
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: (Check_Private_Overriding): better error message,
+	suggested by AI95-0068.
+
+2011-08-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Find_Last_Init): Use Next_Suitable_Statement to retrieve
+	the two potential initialization calls. This accounts for any
+	access-before-elaboration checks which may precede the initialization
+	calls.
+	(Next_Suitable_Statement): New routine. Returns the next real statement
+	after the input node while skipping generated checks.
+	* sem_elab.adb (Check_A_Call): New formal parameter In_Init_Proc along
+	with comment on usage.
+	Do not generate Elaborate_All when the trigger is a finalization call
+	coming from a type init proc.
+	(Check_Elab_Call): Propagate the initialization procedure context to
+	subsequent calls to Check_A_Call.
+	(Check_Internal_Call_Continue): Propagate the initialization procedure
+	context to subsequent calls to Check_Elab_Call.
+	(Is_Finalization_Procedure): New routine. Returns True if the input
+	entity denotes a [Deep_]Finalize routine.
+	* sem_elab.ads (Check_Elab_Call): New formal parameter In_Init_Proc
+	along with comment on usage.
+
+2011-08-05  Vadim Godunko  <godunko@adacore.com>
+
+	* s-atocou.ads: Add list of supported platforms.
+
+2011-08-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb, restrict.adb: Correct style for or'ing Boolean variables
+
+	* opt.ads (Disable_ALI_File): new Boolean flag
+	* lib-writ.adb (Write_ALI): when Disable_ALI_File is set, do nothing
+
+2011-08-05  Ed Falis  <falis@adacore.com>
+
+	* env.c (__gnat_environ): Fix includes for RTPs and VTHREADS so that
+	environ is properly defined.
+
+2011-08-05  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Compilation_Phase): Exit immediately when all objects have
+	been found up to date, to avoid multiple exit messages.
+	* prj-nmsc.adb (Add_Source): Allow duplicate source file names in the
+	same project for languages with no compiler.
+	* gnat_ugn.texi: Document compiler switch -gnateI and gnatmake switch
+	-eI.
 2011-08-05  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch7.ads, sem_type.adb, make.adb, sem_prag.adb, sem_util.adb,

@@ -602,6 +602,10 @@ package Opt is
    --  Force generation of ALI file even if errors are encountered.
    --  Also forces generation of tree file if -gnatt is also set.
 
+   Disable_ALI_File : Boolean := False;
+   --  GNAT2WHY
+   --  Disable generation of ALI file
+
    Force_Checking_Of_Elaboration_Flags : Boolean := False;
    --  GNATBIND
    --  True if binding with forced checking of the elaboration flags

@@ -673,7 +673,8 @@ package body Prj.Nmsc is
       end if;
 
       --  Duplication of file/unit in same project is allowed if order of
-      --  source directories is known.
+      --  source directories is known, or if there is no compiler for the
+      --  language.
 
       if Add_Src = False then
          Add_Src := True;
@@ -681,6 +682,9 @@ package body Prj.Nmsc is
          if Project = Source.Project then
             if Prev_Unit = No_Unit_Index then
                if Data.Flags.Allow_Duplicate_Basenames then
+                  Add_Src := True;
+
+               elsif Lang_Id.Config.Compiler_Driver = Empty_File then
                   Add_Src := True;
 
                elsif Source_Dir_Rank /= Source.Source_Dir_Rank then

@@ -56,10 +56,25 @@ extern "C" {
 #include <stdlib.h>
 #endif
 
-#if defined (__vxworks) \
-  && ! (defined (__RTP__) || defined (__COREOS__) || defined (__VXWORKSMILS__))
-#include "envLib.h"
-extern char** ppGlobalEnviron;
+#if defined (__vxworks)
+  #if defined (__RTP__)
+    /* On VxWorks 6 Real-Time process mode, environ is defined in unistd.h.  */
+    #include <unistd.h>
+  #elif defined (VTHREADS)
+    /* VTHREADS mode applies to both VxWorks 653 and VxWorks MILS. The
+       inclusion of vThreadsData.h is necessary to workaround a bug with
+       envLib.h on VxWorks MILS.  */
+    #include <vThreadsData.h>
+    #include <envLib.h>
+  #else
+    /* This should work for kernel mode on both VxWorks 5 and VxWorks 6.  */
+    #include <envLib.h>
+
+    /* In that mode environ is a macro which reference the following symbol.
+       As the symbol is not defined in any VxWorks include files we declare
+       it as extern.  */
+    extern char** ppGlobalEnviron;
+  #endif
 #endif
 
 /* We don't have libiberty, so use malloc.  */
@@ -200,8 +215,7 @@ __gnat_setenv (char *name, char *value)
 char **
 __gnat_environ (void)
 {
-#if defined (VMS) || defined (RTX) \
-   || (defined (VTHREADS) && ! defined (__VXWORKSMILS__))
+#if defined (VMS) || defined (RTX)
   /* Not implemented */
   return NULL;
 #elif defined (__APPLE__)
@@ -212,14 +226,10 @@ __gnat_environ (void)
 #elif defined (sun)
   extern char **_environ;
   return _environ;
-#else
-#if ! (defined (__vxworks) \
-   && ! (defined (__RTP__) || defined (__COREOS__) \
-   || defined (__VXWORKSMILS__)))
-  /* in VxWorks kernel mode environ is macro and not a variable */
-  /* same thing on 653 in the CoreOS and for VxWorks MILS vThreads */
+#elif ! (defined (__vxworks))
   extern char **environ;
-#endif
+  return environ;
+#else
   return environ;
 #endif
 }
