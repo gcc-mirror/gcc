@@ -12357,14 +12357,37 @@ package body Sem_Util is
    -----------------
 
    function Unique_Name (E : Entity_Id) return String is
-      Name : constant String := Get_Name_String (Chars (E));
+
+      function Get_Scoped_Name (E : Entity_Id) return String;
+      --  Return the name of E prefixed by all the names of the scopes to which
+      --  E belongs, except for Standard.
+
+      ---------------------
+      -- Get_Scoped_Name --
+      ---------------------
+
+      function Get_Scoped_Name (E : Entity_Id) return String is
+         Name : constant String := Get_Name_String (Chars (E));
+      begin
+         if Has_Fully_Qualified_Name (E)
+           or else Scope (E) = Standard_Standard
+         then
+            return Name;
+         else
+            return Get_Scoped_Name (Scope (E)) & "__" & Name;
+         end if;
+      end Get_Scoped_Name;
+
    begin
-      if Has_Fully_Qualified_Name (E)
-        or else E = Standard_Standard
-      then
-         return Name;
+      if E = Standard_Standard then
+         return Get_Name_String (Name_Standard);
+
+      elsif Scope (E) = Standard_Standard then
+         return Get_Name_String (Name_Standard) & "__" &
+           Get_Name_String (Chars (E));
+
       else
-         return Unique_Name (Scope (E)) & "__" & Name;
+         return Get_Scoped_Name (E);
       end if;
    end Unique_Name;
 
@@ -12478,7 +12501,7 @@ package body Sem_Util is
    --  Start of processing for Unit_Is_Visible
 
    begin
-      --  The currrent unit is directly visible.
+      --  The currrent unit is directly visible
 
       if Curr = U then
          return True;
@@ -12486,7 +12509,7 @@ package body Sem_Util is
       elsif Unit_In_Context (Curr) then
          return True;
 
-      --  If the current unit is a body, check the context of the spec.
+      --  If the current unit is a body, check the context of the spec
 
       elsif Nkind (Unit (Curr)) = N_Package_Body
         or else
@@ -12498,7 +12521,7 @@ package body Sem_Util is
          end if;
       end if;
 
-      --  If the spec is a child unit, examine the parents.
+      --  If the spec is a child unit, examine the parents
 
       if Is_Child_Unit (Curr_Entity) then
          if Nkind (Unit (Curr)) in N_Unit_Body then
@@ -12670,7 +12693,7 @@ package body Sem_Util is
             if Comes_From_Source (Expec_Type) then
                Matching_Field := Expec_Type;
 
-            --  For an assignment, use name of target.
+            --  For an assignment, use name of target
 
             elsif Nkind (Parent (Expr)) = N_Assignment_Statement
               and then Is_Entity_Name (Name (Parent (Expr)))

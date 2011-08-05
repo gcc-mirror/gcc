@@ -295,6 +295,69 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Target.Count := Source_Count;
    end Assign;
 
+   -----------------
+   -- Child_Count --
+   -----------------
+
+   function Child_Count (Parent : Cursor) return Count_Type is
+   begin
+      if Parent = No_Element then
+         return 0;
+      end if;
+
+      return Child_Count (Parent.Node.Children);
+   end Child_Count;
+
+   function Child_Count (Children : Children_Type) return Count_Type is
+      Result : Count_Type;
+      Node   : Tree_Node_Access;
+
+   begin
+      Result := 0;
+      Node := Children.First;
+      while Node /= null loop
+         Result := Result + 1;
+         Node := Node.Next;
+      end loop;
+
+      return Result;
+   end Child_Count;
+
+   -----------------
+   -- Child_Depth --
+   -----------------
+
+   function Child_Depth (Parent, Child : Cursor) return Count_Type is
+      Result : Count_Type;
+      N      : Tree_Node_Access;
+
+   begin
+      if Parent = No_Element then
+         raise Constraint_Error with "Parent cursor has no element";
+      end if;
+
+      if Child = No_Element then
+         raise Constraint_Error with "Child cursor has no element";
+      end if;
+
+      if Parent.Container /= Child.Container then
+         raise Program_Error with "Parent and Child in different containers";
+      end if;
+
+      Result := 0;
+      N := Child.Node;
+      while N /= Parent.Node loop
+         Result := Result + 1;
+         N := N.Parent;
+
+         if N = null then
+            raise Program_Error with "Parent is not ancestor of Child";
+         end if;
+      end loop;
+
+      return Result;
+   end Child_Depth;
+
    -----------
    -- Clear --
    -----------
@@ -417,69 +480,6 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
       Parent.Children := CC;
    end Copy_Children;
-
-   -----------------
-   -- Child_Count --
-   -----------------
-
-   function Child_Count (Parent : Cursor) return Count_Type is
-   begin
-      if Parent = No_Element then
-         return 0;
-      end if;
-
-      return Child_Count (Parent.Node.Children);
-   end Child_Count;
-
-   function Child_Count (Children : Children_Type) return Count_Type is
-      Result : Count_Type;
-      Node   : Tree_Node_Access;
-
-   begin
-      Result := 0;
-      Node := Children.First;
-      while Node /= null loop
-         Result := Result + 1;
-         Node := Node.Next;
-      end loop;
-
-      return Result;
-   end Child_Count;
-
-   -----------------
-   -- Child_Depth --
-   -----------------
-
-   function Child_Depth (Parent, Child : Cursor) return Count_Type is
-      Result : Count_Type;
-      N      : Tree_Node_Access;
-
-   begin
-      if Parent = No_Element then
-         raise Constraint_Error with "Parent cursor has no element";
-      end if;
-
-      if Child = No_Element then
-         raise Constraint_Error with "Child cursor has no element";
-      end if;
-
-      if Parent.Container /= Child.Container then
-         raise Program_Error with "Parent and Child in different containers";
-      end if;
-
-      Result := 0;
-      N := Child.Node;
-      while N /= Parent.Node loop
-         Result := Result + 1;
-         N := N.Parent;
-
-         if N = null then
-            raise Program_Error with "Parent is not ancestor of Child";
-         end if;
-      end loop;
-
-      return Result;
-   end Child_Depth;
 
    ------------------
    -- Copy_Subtree --
