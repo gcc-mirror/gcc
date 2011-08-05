@@ -1,3 +1,13 @@
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Inline): reject an Inline pragma
+	that appears in a generic formal part and applies to a formal
+	subprogram.
+
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* a-cbmutr.ads: Minor reformatting.
+
 2011-08-05  Matthew Heaney  <heaney@adacore.com>
 
 	* a-comutr.adb, a-cimutr.adb, a-cbmutr.adb (Read): do not use T'Valid

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--             Copyright (C) 2011, Free Software Foundation, Inc.           --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -113,10 +113,12 @@ package Ada.Containers.Bounded_Multiway_Trees is
       Item      : Element_Type) return Cursor;
 
    --  This version of the AI:
-   --   10-06-02  AI05-0136-1/07
-   --  declares Find_In_Subtree with a Container parameter,
-   --  but this seems incorrect. We need a ruling from the
-   --  ARG about whether this really was intended.  ???
+
+   --    10-06-02  AI05-0136-1/07
+
+   --  declares Find_In_Subtree with a Container parameter, but this seems
+   --  incorrect. We need a ruling from the ARG about whether this really was
+   --  intended. ???
 
    function Find_In_Subtree
      (Container : Tree;
@@ -204,11 +206,11 @@ package Ada.Containers.Bounded_Multiway_Trees is
       Position  : Cursor);
 
    procedure Splice_Children
-     (Target          : in out Tree;
-      Target_Parent   : Cursor;
-      Before          : Cursor;
-      Source          : in out Tree;
-      Source_Parent   : Cursor);
+     (Target        : in out Tree;
+      Target_Parent : Cursor;
+      Before        : Cursor;
+      Source        : in out Tree;
+      Source_Parent : Cursor);
 
    procedure Splice_Children
      (Container       : in out Tree;
@@ -235,16 +237,18 @@ package Ada.Containers.Bounded_Multiway_Trees is
    procedure Previous_Sibling (Position : in out Cursor);
 
    --  This version of the AI:
+
    --   10-06-02  AI05-0136-1/07
+
    --  declares Iterate_Children this way:
-   --
+
    --  procedure Iterate_Children
    --    (Container : Tree;
    --     Parent    : Cursor;
    --     Process   : not null access procedure (Position : Cursor));
-   --
-   --  It seems that the Container parameter is there by mistake, but
-   --  we need an official ruling from the ARG.  ???
+
+   --  It seems that the Container parameter is there by mistake, but we need
+   --  an official ruling from the ARG. ???
 
    procedure Iterate_Children
      (Parent  : Cursor;

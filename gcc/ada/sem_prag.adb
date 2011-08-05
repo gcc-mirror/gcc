@@ -4672,6 +4672,15 @@ package body Sem_Prag is
                      then
                         null;
                      end if;
+
+                  --  Inline is a program unit pragma (RM 10.1.5) and cannot
+                  --  appear in a formal part to apply to a formal subprogram.
+
+                  elsif Nkind (Decl) in N_Formal_Subprogram_Declaration
+                    and then List_Containing (Decl) = List_Containing (N)
+                  then
+                     Error_Msg_N
+                       ("Inline cannot apply to a formal subprogram", N);
                   end if;
                end if;
 
