@@ -1,7 +1,7 @@
 # Common support for PowerPC ELF targets (both EABI and SVR4).
 #
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2006, 2007,
-# 2008 Free Software Foundation, Inc.
+# 2008, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -19,7 +19,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB2FUNCS_EXTRA += tramp.S $(srcdir)/config/rs6000/darwin-ldouble.c
+LIB2FUNCS_EXTRA += tramp.S
 
 # These can't end up in shared libgcc
 LIB2FUNCS_STATIC_EXTRA = eabi.S

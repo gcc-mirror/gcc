@@ -18,8 +18,5 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# We do not want to build darwin-ldouble.c, so set the LIB2FUNCS_EXTRA again. 
-# Invoke this file after rs6000/t-ppccomm.
-
-LIB2FUNCS_EXTRA = tramp.S
-
+# We do not want to build ibm-ldouble.c.
+LIB2ADD := $(filter-out ibm-ldouble.c, $(LIB2ADD))

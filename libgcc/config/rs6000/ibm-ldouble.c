@@ -1,5 +1,5 @@
 /* 128-bit long double support routines for Darwin.
-   Copyright (C) 1993, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 1993, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -364,9 +364,9 @@ __gcc_qunord (double a, double aa, double c, double cc)
   return __unorddf2 (a, c);
 }
 
-#include "config/soft-fp/soft-fp.h"
-#include "config/soft-fp/double.h"
-#include "config/soft-fp/quad.h"
+#include "soft-fp/soft-fp.h"
+#include "soft-fp/double.h"
+#include "soft-fp/quad.h"
 
 /* Compute floating point multiply-subtract with higher (quad) precision.  */
 static double
