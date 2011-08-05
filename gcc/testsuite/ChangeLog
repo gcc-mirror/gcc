@@ -1,5 +1,8 @@
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49983
+	* g++.dg/cpp0x/range-for21.C: New.
+
 	* g++.dg/ext/vla11.C: New.
 
 2011-08-05  Richard Guenther  <rguenther@suse.de>

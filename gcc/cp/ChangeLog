@@ -1,5 +1,9 @@
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49983
+	* parser.c (cp_parser_range_for): Only do auto deduction in
+	template if the range is non-dependent.
+
 	* init.c (perform_member_init): Always build_aggr_init
 	for a class member with an explicit mem-initializer.
 
