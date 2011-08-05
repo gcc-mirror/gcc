@@ -1,3 +1,9 @@
+2011-08-05  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/49977
+	* dwarf2cfi.c (scan_insn_after): Split out of ...
+	(scan_trace): ... here.  Correctly place notes wrt sequences.
+
 2011-08-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 	    Richard Henderson  <rth@redhat.com>
 
