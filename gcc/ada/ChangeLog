@@ -1,3 +1,15 @@
+2011-08-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation,
+	Need_Subprogram_Instance_Body): do not generate instance bodies in ALFA
+	mode.
+
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Specific_Type): in an instance, the type-specific
+	operand of an equality check that involves null may have a private
+	type. Use full view to determine legality of construct.
+
 2011-08-05  Vincent Celier  <celier@adacore.com>
 
 	* gnatcmd.adb (Get_Closure): Do not crash when it is not possible to

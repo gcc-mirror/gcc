@@ -3198,6 +3198,17 @@ package body Sem_Type is
       then
          return T1;
 
+      --  In an instance, the specific type may have a private view. Use full
+      --  view to check legality.
+
+      elsif T2 = Any_Access
+        and then Is_Private_Type (T1)
+        and then Present (Full_View (T1))
+        and then Is_Access_Type (Full_View (T1))
+        and then In_Instance
+      then
+         return T1;
+
       elsif T2 = Any_Composite
         and then Is_Aggregate_Type (T1)
       then
