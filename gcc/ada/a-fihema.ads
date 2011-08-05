@@ -118,9 +118,10 @@ private
 
    type Node is record
       --  This should really be limited, but we can see the full view of
-      --  Limited_Controlled, which NOT limited. If it were limited, we could
-      --  default initialize here, and get rid of Initialize for
-      --  Finalization_Collection.
+      --  Limited_Controlled, which is NOT limited. Note that default
+      --  initialization does not happen for this type (these pointers will not
+      --  be automatically set to null), because of the games we're playing
+      --  with address arithmetic.
 
       Prev : Node_Ptr;
       Next : Node_Ptr;

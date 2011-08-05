@@ -131,6 +131,8 @@ package body Ada.Finalization.Heap_Management is
             Storage_Size,
             Alignment);
       end if;
+
+      pragma Assert (Addr mod Alignment = 0);
    end Allocate;
 
    ------------
@@ -147,11 +149,8 @@ package body Ada.Finalization.Heap_Management is
       N.Prev := L;
 
       Unlock_Task.all;
-
-   exception
-      when others =>
-         Unlock_Task.all;
-         raise;
+      --  Note: no need to unlock in case of exceptions; the above code cannot
+      --  raise any.
    end Attach;
 
    ---------------
@@ -176,6 +175,7 @@ package body Ada.Finalization.Heap_Management is
       Alignment    : System.Storage_Elements.Storage_Count;
       Has_Header   : Boolean := True)
    is
+      pragma Assert (Addr mod Alignment = 0);
    begin
       --  Deallocation of an object with controlled parts
 
@@ -221,24 +221,35 @@ package body Ada.Finalization.Heap_Management is
    ------------
 
    procedure Detach (N : Node_Ptr) is
+      pragma Assert (N.Next /= null and then N.Prev /= null);
+      --  It must be attached to some list
+
+      procedure Null_Out_Pointers;
+      --  Set Next/Prev pointer of N to null (for debugging)
+
+      ----------
+      -- Head --
+      ----------
+
+      procedure Null_Out_Pointers is
+      begin
+         N.Next := null;
+         N.Prev := null;
+      end Null_Out_Pointers;
+
    begin
       Lock_Task.all;
 
-      if N.Prev /= null
-        and then N.Next /= null
-      then
-         N.Prev.Next := N.Next;
-         N.Next.Prev := N.Prev;
-         N.Prev := null;
-         N.Next := null;
-      end if;
+      N.Prev.Next := N.Next;
+      N.Next.Prev := N.Prev;
 
       Unlock_Task.all;
+      --  Note: no need to unlock in case of exceptions; the above code cannot
+      --  raise any.
 
-   exception
-      when others =>
-         Unlock_Task.all;
-         raise;
+      pragma Debug (Null_Out_Pointers);
+      --  No need to null out the pointers, except that it makes pcol easier to
+      --  understand.
    end Detach;
 
    --------------
@@ -248,19 +259,6 @@ package body Ada.Finalization.Heap_Management is
    overriding procedure Finalize
      (Collection : in out Finalization_Collection)
    is
-      function Node_Ptr_To_Address (N : Node_Ptr) return Address;
-      --  Not the reverse of Address_To_Node_Ptr. Return the address of the
-      --  object following the list header.
-
-      -------------------------
-      -- Node_Ptr_To_Address --
-      -------------------------
-
-      function Node_Ptr_To_Address (N : Node_Ptr) return Address is
-      begin
-         return N.all'Address + Header_Offset;
-      end Node_Ptr_To_Address;
-
       Curr_Ptr : Node_Ptr := Collection.Objects.Next; -- skip dummy head
       Ex_Occur : Exception_Occurrence;
       Raised   : Boolean := False;
@@ -284,8 +282,13 @@ package body Ada.Finalization.Heap_Management is
          --  primitive Finalize_Address has been determined.
 
          if Collection.Finalize_Address /= null then
+            declare
+               Object_Address : constant Address :=
+                 Curr_Ptr.all'Address + Header_Offset;
+               --  Get address of object from address of header
+
             begin
-               Collection.Finalize_Address (Node_Ptr_To_Address (Curr_Ptr));
+               Collection.Finalize_Address (Object_Address);
 
             exception
                when Fin_Except : others =>
