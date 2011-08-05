@@ -7722,10 +7722,58 @@ package body Exp_Disp is
 
    procedure Set_All_DT_Position (Typ : Entity_Id) is
 
+      function In_Predef_Prims_DT (Prim : Entity_Id) return Boolean;
+      --  Returns True if Prim is located in the dispatch table of
+      --  predefined primitives
+
       procedure Validate_Position (Prim : Entity_Id);
       --  Check that the position assigned to Prim is completely safe
       --  (it has not been assigned to a previously defined primitive
       --   operation of Typ)
+
+      ------------------------
+      -- In_Predef_Prims_DT --
+      ------------------------
+
+      function In_Predef_Prims_DT (Prim : Entity_Id) return Boolean is
+         E : Entity_Id;
+
+      begin
+         --  Predefined primitives
+
+         if Is_Predefined_Dispatching_Operation (Prim) then
+            return True;
+
+         --  Renamings of predefined primitives
+
+         elsif Present (Alias (Prim))
+           and then Is_Predefined_Dispatching_Operation (Ultimate_Alias (Prim))
+         then
+            if Chars (Ultimate_Alias (Prim)) /= Name_Op_Eq then
+               return True;
+
+            --  User-defined renamings of predefined equality have their own
+            --  slot in the primary dispatch table
+
+            else
+               E := Prim;
+               while Present (Alias (E)) loop
+                  if Comes_From_Source (E) then
+                     return False;
+                  end if;
+
+                  E := Alias (E);
+               end loop;
+
+               return not Comes_From_Source (E);
+            end if;
+
+         --  User-defined primitives
+
+         else
+            return False;
+         end if;
+      end In_Predef_Prims_DT;
 
       -----------------------
       -- Validate_Position --
@@ -7850,10 +7898,7 @@ package body Exp_Disp is
 
          --  Predefined primitives have a separate dispatch table
 
-         if not (Is_Predefined_Dispatching_Operation (Prim)
-                   or else
-                 Is_Predefined_Dispatching_Alias (Prim))
-         then
+         if not In_Predef_Prims_DT (Prim) then
             Count_Prim := Count_Prim + 1;
          end if;
 
@@ -7978,12 +8023,14 @@ package body Exp_Disp is
             --  Predefined primitives have a separate table and all its
             --  entries are at predefined fixed positions.
 
-            if Is_Predefined_Dispatching_Operation (Prim) then
-               Set_DT_Position (Prim, Default_Prim_Op_Position (Prim));
+            if In_Predef_Prims_DT (Prim) then
+               if Is_Predefined_Dispatching_Operation (Prim) then
+                  Set_DT_Position (Prim, Default_Prim_Op_Position (Prim));
 
-            elsif Is_Predefined_Dispatching_Alias (Prim) then
-               Set_DT_Position (Prim,
-                 Default_Prim_Op_Position (Ultimate_Alias (Prim)));
+               else pragma Assert (Present (Alias (Prim)));
+                  Set_DT_Position (Prim,
+                    Default_Prim_Op_Position (Ultimate_Alias (Prim)));
+               end if;
 
             --  Overriding primitives of ancestor abstract interfaces
 
@@ -8124,8 +8171,7 @@ package body Exp_Disp is
 
          --  Calculate real size of the dispatch table
 
-         if not (Is_Predefined_Dispatching_Operation (Prim)
-                   or else Is_Predefined_Dispatching_Alias (Prim))
+         if not In_Predef_Prims_DT (Prim)
            and then UI_To_Int (DT_Position (Prim)) > DT_Length
          then
             DT_Length := UI_To_Int (DT_Position (Prim));
@@ -8134,8 +8180,8 @@ package body Exp_Disp is
          --  Ensure that the assigned position to non-predefined
          --  dispatching operations in the dispatch table is correct.
 
-         if not (Is_Predefined_Dispatching_Operation (Prim)
-                   or else Is_Predefined_Dispatching_Alias (Prim))
+         if not Is_Predefined_Dispatching_Operation (Prim)
+           and then not Is_Predefined_Dispatching_Alias (Prim)
          then
             Validate_Position (Prim);
          end if;

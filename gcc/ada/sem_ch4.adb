@@ -301,7 +301,24 @@ package body Sem_Ch4 is
                Nam := Opnd;
             elsif Nkind (Opnd) = N_Function_Call then
                Nam := Name (Opnd);
-            else
+            elsif Ada_Version >= Ada_2012 then
+               declare
+                  It : Interp;
+                  I  : Interp_Index;
+
+               begin
+                  Get_First_Interp (Opnd, I, It);
+                  while Present (It.Nam) loop
+                     if Has_Implicit_Dereference (It.Typ) then
+                        Error_Msg_N
+                          ("can be interpreted as implicit dereference", Opnd);
+                        return;
+                     end if;
+
+                     Get_Next_Interp (I, It);
+                  end loop;
+               end;
+
                return;
             end if;
 
@@ -2068,6 +2085,7 @@ package body Sem_Ch4 is
             end loop;
 
             Set_Etype (N, Component_Type (Array_Type));
+            Check_Implicit_Dereference (N, Etype (N));
 
             if Present (Index) then
                Error_Msg_N
@@ -2164,9 +2182,13 @@ package body Sem_Ch4 is
                end loop;
 
                if Found and then No (Index) and then No (Exp) then
-                  Add_One_Interp (N,
-                     Etype (Component_Type (Typ)),
-                     Etype (Component_Type (Typ)));
+                  declare
+                     CT : constant Entity_Id :=
+                            Base_Type (Component_Type (Typ));
+                  begin
+                     Add_One_Interp (N, CT, CT);
+                     Check_Implicit_Dereference (N, CT);
+                  end;
                end if;
             end if;
 
@@ -2644,6 +2666,7 @@ package body Sem_Ch4 is
       procedure Indicate_Name_And_Type is
       begin
          Add_One_Interp (N, Nam, Etype (Nam));
+         Check_Implicit_Dereference (N, Etype (Nam));
          Success := True;
 
          --  If the prefix of the call is a name, indicate the entity
@@ -3133,6 +3156,7 @@ package body Sem_Ch4 is
                      Set_Entity (Sel, Comp);
                      Set_Etype (Sel, Etype (Comp));
                      Add_One_Interp (N, Etype (Comp), Etype (Comp));
+                     Check_Implicit_Dereference (N, Etype (Comp));
 
                      --  This also specifies a candidate to resolve the name.
                      --  Further overloading will be resolved from context.
@@ -3740,6 +3764,7 @@ package body Sem_Ch4 is
            New_Occurrence_Of (Comp, Sloc (N)));
          Set_Original_Discriminant (Selector_Name (N), Comp);
          Set_Etype (N, Etype (Comp));
+         Check_Implicit_Dereference (N, Etype (Comp));
 
          if Is_Access_Type (Etype (Name)) then
             Insert_Explicit_Dereference (Name);
@@ -3876,6 +3901,7 @@ package body Sem_Ch4 is
                   Set_Etype (N, Etype (Comp));
                end if;
 
+               Check_Implicit_Dereference (N, Etype (N));
                return;
             end if;
 
@@ -3941,6 +3967,7 @@ package body Sem_Ch4 is
 
                   Set_Etype (Sel, Etype (Comp));
                   Set_Etype (N,   Etype (Comp));
+                  Check_Implicit_Dereference (N, Etype (N));
 
                   if Is_Generic_Type (Prefix_Type)
                     or else Is_Generic_Type (Root_Type (Prefix_Type))

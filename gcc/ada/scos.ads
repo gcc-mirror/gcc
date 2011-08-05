@@ -152,6 +152,7 @@ package SCOs is
    --      E  EXIT statement
    --      F  FOR loop statement (from FOR through end of iteration scheme)
    --      I  IF statement (from IF through end of condition)
+   --      p  disabled PRAGMA
    --      P  PRAGMA
    --      R  extended RETURN statement
    --      W  WHILE loop statement (from WHILE through end of condition)
@@ -194,12 +195,12 @@ package SCOs is
    --    Decisions are either simple or complex. A simple decision is a top
    --    level boolean expression that has only one condition and that occurs
    --    in the context of a control structure in the source program, including
-   --    WHILE, IF, EXIT WHEN, or in an Assert, Check, Pre_Condition or
-   --    Post_Condition pragma. For pragmas, decision SCOs are generated only
-   --    if the corresponding pragma is enabled. Note that a top level boolean
-   --    expression with only one condition that occurs in any other context,
-   --    for example as right hand side of an assignment, is not considered to
-   --    be a (simple) decision.
+   --    WHILE, IF, EXIT WHEN, or immediately within an Assert, Check,
+   --    Pre_Condition or Post_Condition pragma, or as the first argument of a
+   --    dyadic pragma Debug. Note that a top level boolean expression with
+   --    only one condition that occurs in any other context, for example as
+   --    right hand side of an assignment, is not considered to be a (simple)
+   --    decision.
 
    --    A complex decision is a top level boolean expression that has more
    --    than one condition. A complex decision may occur in any boolean
@@ -336,6 +337,10 @@ package SCOs is
    --    entries appear in one logical statement sequence, continuation lines
    --    are marked by Cc and appear immediately after the CC line.
 
+   --  Disabled pragmas
+
+   --    No SCO is generated for disabled pragmas.
+
    ---------------------------------------------------------------------
    -- Internal table used to store Source Coverage Obligations (SCOs) --
    ---------------------------------------------------------------------
@@ -392,7 +397,7 @@ package SCOs is
 
    --    Decision (PRAGMA)
    --      C1   = 'P'
-   --      C2   = 'e'/'d' for enabled/disabled
+   --      C2   = ' '
    --      From = PRAGMA token
    --      To   = No_Source_Location
    --      Last = unused
@@ -400,14 +405,11 @@ package SCOs is
    --      Note: when the parse tree is first scanned, we unconditionally build
    --      a pragma decision entry for any decision in a pragma (here as always
    --      in SCO contexts, the only pragmas with decisions are Assert, Check,
-   --      Precondition and Postcondition), and we mark the pragma as disabled.
+   --      dyadic Debug, Precondition and Postcondition).
    --
-   --      During analysis, if the pragma is enabled, Set_SCO_Pragma_Enabled to
-   --      mark the SCO decision table entry as enabled (C2 set to 'e'). Then
-   --      in Put_SCOs, we only output the decision for a pragma if C2 is 'e'.
-   --
-   --      When we read SCOs from an ALI file (in Get_SCOs), we always set C2
-   --      to 'e', since clearly the pragma is enabled if it was written out.
+   --      During analysis, if the pragma is enabled, Set_SCO_Pragma_Enabled
+   --      marks the statement SCO table entry as enaabled (C1 changed from 'p'
+   --      to 'P') to cause the entry to be emitted in Put_SCOs.
 
    --    Decision (Expression)
    --      C1   = 'X'

@@ -1,3 +1,40 @@
+2011-08-05  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Set_All_DT_Position): Cleanup code and improve support
+	for renamings of predefined primitives.
+	(In_Predef_Prims_DT): New subprogram.
+
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb, sem_util.ads (Check_Implicit_Dereference): If a
+	possible interpretation of name is a reference type, add an
+	interpretation that is the designated type of the reference
+	discriminant of that type.
+	* sem_res.adb (resolve): If the interpretation imposed by context is an
+	implicit dereference, rewrite the node as the deference of the
+	reference discriminant.
+	* sem_ch3.adb (Analyze_Subtype_Declaration, Build_Derived_Record_Type,
+	Build_Discriminated_Subtype): Inherit Has_Implicit_Dereference from
+	parent type or base type.
+	* sem_ch4.adb (Process_Indexed_Component,
+	Process_Overloaded_Indexed_Component, Indicate_Name_And_Type,
+	Analyze_Overloaded_Selected_Component, Analyze_Selected_Component):
+	Check for implicit dereference.
+	(List_Operand_Interps): Indicate when an implicit dereference is
+	ambiguous.
+	* sem_ch8.adb (Find_Direct_Name): Check for implicit dereference.
+
+2011-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* scos.ads: Update documentation of SCO table. Pragma statements can now
+	be marked as disabled (using 'p' instead of 'P' as the statement kind).
+	* par_sco.ads, par_sco.adb: Implement the above change.
+	(Process_Decisions_Defer): Generate a P decision for the first parameter
+	of a dyadic pragma Debug.
+	* sem_prag.adb (Analyze_Pragma, case Debug): Mark pragma as enabled if
+	necessary.
+	* put_scos.adb: Code simplification based on above change.
+
 2011-08-05  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, gnatcmd.adb, switch-c.adb, exp_attr.adb, make.adb,

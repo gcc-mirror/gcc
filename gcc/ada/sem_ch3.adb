@@ -4215,6 +4215,8 @@ package body Sem_Ch3 is
                Set_Has_Discriminants    (Id, Has_Discriminants  (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Limited_Record    (Id, Is_Limited_Record  (T));
+               Set_Has_Implicit_Dereference
+                                        (Id, Has_Implicit_Dereference (T));
                Set_Has_Unknown_Discriminants
                                         (Id, Has_Unknown_Discriminants (T));
 
@@ -4248,6 +4250,8 @@ package body Sem_Ch3 is
                Set_Last_Entity        (Id, Last_Entity           (T));
                Set_Private_Dependents (Id, New_Elmt_List);
                Set_Is_Limited_Record  (Id, Is_Limited_Record     (T));
+               Set_Has_Implicit_Dereference
+                                        (Id, Has_Implicit_Dereference (T));
                Set_Has_Unknown_Discriminants
                                       (Id, Has_Unknown_Discriminants (T));
                Set_Known_To_Have_Preelab_Init
@@ -7875,6 +7879,8 @@ package body Sem_Ch3 is
             Set_Stored_Constraint
               (Derived_Type, Expand_To_Stored_Constraint (Parent_Type, Discs));
             Replace_Components (Derived_Type, New_Decl);
+            Set_Has_Implicit_Dereference
+              (Derived_Type, Has_Implicit_Dereference (Parent_Type));
          end if;
 
          --  Insert the new derived type declaration
@@ -8586,6 +8592,8 @@ package body Sem_Ch3 is
 
       Set_First_Entity      (Def_Id, First_Entity   (T));
       Set_Last_Entity       (Def_Id, Last_Entity    (T));
+      Set_Has_Implicit_Dereference
+                            (Def_Id, Has_Implicit_Dereference (T));
 
       --  If the subtype is the completion of a private declaration, there may
       --  have been representation clauses for the partial view, and they must
