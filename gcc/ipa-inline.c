@@ -1206,8 +1206,9 @@ recursive_inlining (struct cgraph_edge *edge,
       depth = 1;
       for (cnode = curr->caller;
 	   cnode->global.inlined_to; cnode = cnode->callers->caller)
-	if (node->decl == curr->callee->decl)
-	  depth++;
+	if (node->decl
+	    == cgraph_function_or_thunk_node (curr->callee, NULL)->decl)
+          depth++;
 
       if (!want_inline_self_recursive_call_p (curr, node, false, depth))
 	continue;
