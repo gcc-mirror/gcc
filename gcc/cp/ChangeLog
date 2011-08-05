@@ -1,5 +1,8 @@
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49812
+	* typeck.c (cp_build_unary_op) [POSTINCREMENT_EXPR]: Strip cv-quals.
+
 	PR c++/49983
 	* parser.c (cp_parser_range_for): Only do auto deduction in
 	template if the range is non-dependent.
