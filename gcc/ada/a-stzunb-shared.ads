@@ -38,6 +38,7 @@
 --    - all ia64 platforms
 --    - all PowerPC platforms
 --    - all SPARC V9 platforms
+--    - all x86 platforms
 --    - all x86_64 platforms
 
 with Ada.Strings.Wide_Wide_Maps;

@@ -42,6 +42,7 @@
 --    - all ia64 platforms
 --    - all PowerPC platforms
 --    - all SPARC V9 platforms
+--    - all x86 platforms
 --    - all x86_64 platforms
 
    --  This package uses several techniques to increase speed:
