@@ -1528,21 +1528,6 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
 
-FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
-    _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
-    _lt_sf _le_sf _unord_sf _si_to_sf _sf_to_si _negate_sf _make_sf \
-    _sf_to_df _sf_to_tf _thenan_sf _sf_to_usi _usi_to_sf
-
-DPBIT_FUNCS = _pack_df _unpack_df _addsub_df _mul_df _div_df \
-    _fpcmp_parts_df _compare_df _eq_df _ne_df _gt_df _ge_df \
-    _lt_df _le_df _unord_df _si_to_df _df_to_si _negate_df _make_df \
-    _df_to_sf _df_to_tf _thenan_df _df_to_usi _usi_to_df
-
-TPBIT_FUNCS = _pack_tf _unpack_tf _addsub_tf _mul_tf _div_tf \
-    _fpcmp_parts_tf _compare_tf _eq_tf _ne_tf _gt_tf _ge_tf \
-    _lt_tf _le_tf _unord_tf _si_to_tf _tf_to_si _negate_tf _make_tf \
-    _tf_to_df _tf_to_sf _thenan_tf _tf_to_usi _usi_to_tf
-
 # These might cause a divide overflow trap and so are compiled with
 # unwinder info.
 LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
@@ -1883,8 +1868,7 @@ srcdirify = $(patsubst $$(libgcc_objdir)/%,%, \
 GCC_EXTRA_PARTS := $(sort $(EXTRA_MULTILIB_PARTS) $(EXTRA_PARTS))
 
 libgcc-support: libgcc.mvars stmp-int-hdrs $(TCONFIG_H) \
-	$(MACHMODE_H) $(FPBIT) $(DPBIT) $(TPBIT) $(LIB2ADD) \
-	$(LIB2ADD_ST) gcov-iov.h $(SFP_MACHINE)
+	$(MACHMODE_H) $(LIB2ADD) $(LIB2ADD_ST) gcov-iov.h $(SFP_MACHINE)
 
 libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
 		xgcc$(exeext)
@@ -1896,13 +1880,7 @@ libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
 	echo LIB2ADD = '$(call srcdirify,$(LIB2ADD))' >> tmp-libgcc.mvars
 	echo LIB2ADD_ST = '$(call srcdirify,$(LIB2ADD_ST))' >> tmp-libgcc.mvars
 	echo LIB2_SIDITI_CONV_FUNCS = '$(LIB2_SIDITI_CONV_FUNCS)' >> tmp-libgcc.mvars
-	echo FPBIT = '$(FPBIT)' >> tmp-libgcc.mvars
-	echo FPBIT_FUNCS = '$(FPBIT_FUNCS)' >> tmp-libgcc.mvars
 	echo LIB2_DIVMOD_FUNCS = '$(LIB2_DIVMOD_FUNCS)' >> tmp-libgcc.mvars
-	echo DPBIT = '$(DPBIT)' >> tmp-libgcc.mvars
-	echo DPBIT_FUNCS = '$(DPBIT_FUNCS)' >> tmp-libgcc.mvars
-	echo TPBIT = '$(TPBIT)' >> tmp-libgcc.mvars
-	echo TPBIT_FUNCS = '$(TPBIT_FUNCS)' >> tmp-libgcc.mvars
 	echo GCC_EXTRA_PARTS = '$(GCC_EXTRA_PARTS)' >> tmp-libgcc.mvars
 	echo SHLIB_LINK = '$(subst $(GCC_FOR_TARGET),$$(GCC_FOR_TARGET),$(SHLIB_LINK))' >> tmp-libgcc.mvars
 	echo SHLIB_INSTALL = '$(SHLIB_INSTALL)' >> tmp-libgcc.mvars

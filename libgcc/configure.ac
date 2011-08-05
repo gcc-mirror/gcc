@@ -152,6 +152,13 @@ GCC_NO_EXECUTABLES
 AC_PROG_CC
 AC_PROG_CPP_WERROR
 
+AC_CHECK_SIZEOF([double])
+AC_CHECK_SIZEOF([long double])
+AS_VAR_ARITH([double_type_size], [$ac_cv_sizeof_double \* 8])
+AS_VAR_ARITH([long_double_type_size], [$ac_cv_sizeof_long_double \* 8])
+AC_SUBST(double_type_size)
+AC_SUBST(long_double_type_size)
+
 # Check for decimal float support.
 AC_CACHE_CHECK([whether decimal floating point is supported], [libgcc_cv_dfp],
 	       [AC_COMPILE_IFELSE([_Decimal32 x;], [libgcc_cv_dfp=yes],

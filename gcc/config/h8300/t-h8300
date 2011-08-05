@@ -1,5 +1,5 @@
 # Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2002, 2003,
-# 2004 Free Software Foundation, Inc.
+# 2004, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -30,21 +30,6 @@ LIB2FUNCS_EXTRA = \
 
 # We do not have DF type, so fake out the libgcc2 compilation.
 TARGET_LIBGCC2_CFLAGS = -DDF=SF
-
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-FPBIT = fp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	echo '#define FLOAT_ONLY' >> fp-bit.c
-	echo '#define SMALL_MACHINE' >> fp-bit.c
-	echo '#ifdef __H8300__' >> fp-bit.c
-	echo '#define CMPtype HItype' >> fp-bit.c
-	echo '#else' >> fp-bit.c
-	echo '#define CMPtype SItype' >> fp-bit.c
-	echo '#endif' >> fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 MULTILIB_OPTIONS = mh/ms/msx mn mint32
 MULTILIB_DIRNAMES = h8300h h8300s h8sx normal int32

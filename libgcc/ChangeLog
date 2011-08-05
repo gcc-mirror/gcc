@@ -1,5 +1,117 @@
 2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* Makefile.in (double_type_size, long_double_type_size): Set.
+	Remove $(fpbit-in-libgcc) support.
+	(FPBIT_FUNCS, DPBIT_FUNCS, TPBIT_FUNCS): New variables.
+	(fpbit-src): New variable.
+	($(fpbit-o), $(fpbit-s-o)): Use $(fpbit-src) instead of $(FPBIT).
+	Compile with -DFLOAT $(FPBIT_CFLAGS).
+	Use $<.
+	($(dpbit-o), $(dpbit-s-o)): Use $(fpbit-src) instead of $(DPBIT).
+	Compile with $(FPBIT_CFLAGS).
+	Use $<.
+	($(tpbit-o), $(tpbit-s-o): Use $(fpbit-src) instead of $(TPBIT).
+	Compile with -DFLOAT $(TPBIT_CFLAGS).
+	Use $<.
+	* configure.ac (double_type_size, long_double_type_size):
+	Determine and substitute.
+	* configure: Regenerate.
+	* fp-bit.c, fp-bit.h: New files.
+	* config/avr/avr-lib.h, config/h8300/h8300-lib.h: New files.
+	* config/mips/t-irix6 (TPBIT, $(gcc_objdir)/tp-bit.c): Remove.
+	* config/mips/t-mips: New file.
+	* config/mips/t-sdemtk: New file.
+	* config/rs6000/ppc64-fp.c: New file.
+	* config/rs6000/t-darwin (LIB2ADD): Add
+	$(srcdir)/config/rs6000/ppc64-fp.c.
+	* config/rs6000/t-ppc64-fp: New file.
+	* config/rx/rx-lib.h: New file.
+	* config/rx/t-rx (FPBIT): Set to true.
+	($(gcc_objdir)/fp-bit.c): Remove.
+	(DPBIT): Set to true only with -m64bit-doubles.
+	($(gcc_objdir)/dp-bit.c): Remove.
+	* config/sparc/t-softfp: Remove.
+	* config/spu/t-elf: New file.
+	* config/t-fdpbit, config/t-fpbit: New files.
+	* config.host (m32c*-*-*): Add t-fdpbit to tmake_file.
+	(mips*-*-*): Likewise.
+	(arm-wrs-vxworks): Likewise.
+	(arm*-*-freebsd*): Likewise.
+	(avr-*-rtems*): Add t-fpbit to tmake_file.
+	(avr-*-*): Likewise.
+	(bfin*-elf*): Add t-fdpbit to tmake_file.
+	(bfin*-uclinux*): Likewise.
+	(bfin*-linux-uclibc*): Likewise.
+	(bfin*-rtems*): New case.
+	Add t-fdpbit to tmake_file.
+	(bfin*-*): Add t-fdpbit to tmake_file.
+	(crisv32-*-elf): Likewise.
+	(cris-*-linux*): Likewise.
+	(fr30-*-elf): Likewise.
+	(frv-*-elf, frv-*-*linux*): Likewise.
+	(h8300-*-rtems*, h8300-*-elf*): Add t-fpbit to tmake_file.
+	(iq2000*-*-elf*): Add t-fdpbit to tmake_file.
+	(m32r-*-elf*): Likewise.
+	(m32rle-*-elf*): Likewise.
+	(m32r-*-linux*): Likewise.
+	(m32rle-*-linux*): Likewise.
+	(mcore-*-elf): Add t-fdpbit to tmake_file.
+	(microblaze*-*-*): Likewise.
+	(mips-sgi-irix6.5*): Add t-tpbit to tmake_file.
+	(mips*-*-netbsd*): Add mips/t-mips to tmake_file.
+	(mips64*-*-linux*): Also handle mipsisa64*-*-linux*.
+	Fix typo.
+	Add mips/t-tpbit to tmake-file.
+	(mips*-*-linux*): Fix typo.
+	(mips*-sde-elf*): New case
+	Add mips/t-sdemtk unless using newlib.
+	(mipsisa64sr71k-*-elf*): Add t-fdpbit to tmake_file.
+	(mipsisa64sb1-*-elf*): Add mips/t-mips to tmake_file.
+	(mn10300-*-*): Likewise.
+	(pdp11-*-*): Likewise.
+	(picochip-*-*): Add t-fpbit to tmake_file.
+	(powerpc-*-eabisimaltivec*): Likewise.
+	(powerpc-*-eabisim*): Likewise.
+	(powerpc-*-elf*): Likewise.
+	(powerpc-*-eabialtivec*): Likewise.
+	(powerpc-xilinx-eabi*): New case.
+	Add t-fdpbit to tmake_file.
+	(powerpc-*-eabi*):  Add t-fdpbit to tmake_file.
+	(powerpc-*-rtems*): Likewise.
+	(powerpc-*-linux*, powerpc64-*-linux*): Add rs6000/t-ppc64-fp to
+	tmake_file.
+	(powerpc-wrs-vxworks, powerpc-wrs-vxworksae): Add t-fdpbit to
+	tmake_file.
+	(powerpc-*-lynxos*): Likewise.
+	(powerpcle-*-elf*): Likewise.
+	(powerpcle-*-eabisim*): Likewise.
+	(powerpcle-*-eabi*): Likewise.
+	(rs6000-ibm-aix4.[3456789]*, powerpc-ibm-aix4.[3456789]*): Add
+	t-fdpbit, rs6000/t-ppc64-fp to tmake_file.
+	(rs6000-ibm-aix5.1.*, powerpc-ibm-aix5.1.*): Likewise.
+	(rs6000-ibm-aix[56789].*, powerpc-ibm-aix[56789].*): Likewise.
+	(rx-*-elf): Add t-fdpbit to tmake_file.
+	(sh-*-elf*, sh[12346l]*-*-elf*, sh-*-linux*)
+	(sh[2346lbe]*-*-linux*, sh-*-netbsdelf*, shl*-*-netbsdelf*)
+	(sh5-*-netbsd*, sh5l*-*-netbsd*, sh64-*-netbsd*)
+	(sh64l*-*-netbsd*): Add t-fdpbit to tmake_file except on
+	sh*-*-netbsd*.
+	(sh-*-rtems*): Add t-fdpbit to tmake_file.
+	(sh-wrs-vxworks): Likewise.
+	(sparc-*-elf*): Replace sparc/t-softfp by t-fdpbit in tmake_file.
+	(sparc-*-linux*): Add t-fdpbit to tmake_file for *-leon*.
+	(sparc-*-rtems*, sparc64-*-rtems*): Split off ...
+	(sparc64-*-rtems*): ... new case.
+	(sparc-*-rtems*): Add t-fdpbit to tmake_file.
+	(spu-*-elf*): Likewise.
+	Add spu/t-elf to tmake_file.
+	(v850*-*-*): Add t-fdpbit to tmake_file.
+	(xstormy16-*-elf): Likewise.
+	(am33_2.0-*-linux*): Add t-fdpbit to tmake_file.
+	(mep*-*-*): Likewise.
+
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* Makefile.in (LIB2ADDEH, LIB2ADDEHSTATIC, LIB2ADDEHSHARED): New
 	variables.
 	(LIBUNWIND, SHLIBUNWIND_LINK, SHLIBUNWIND_INSTALL): New variables.

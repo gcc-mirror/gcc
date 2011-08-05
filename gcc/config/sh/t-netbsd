@@ -1,4 +1,4 @@
-# Copyright (C) 2002, 2004, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2004, 2009, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,10 +22,3 @@ LIB1ASMFUNCS_CACHE = _ic_invalidate
 LIB2FUNCS_EXTRA=
 
 EXTRA_MULTILIB_PARTS=
-
-# NetBSD's C library includes a fast software FP library that
-# has support for setting/setting the rounding mode, exception
-# mask, etc.  Therefore, we don't want to include software FP
-# in libgcc.
-FPBIT =
-DPBIT =

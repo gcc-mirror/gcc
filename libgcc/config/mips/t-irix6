@@ -22,15 +22,3 @@ irix-crti.o: $(srcdir)/config/mips/irix-crti.S
 
 irix-crtn.o: $(srcdir)/config/mips/irix-crtn.S
 	$(crt_compile) -c $<
-
-TPBIT = tp-bit.c
-
-$(gcc_objdir)/tp-bit.c: $(gcc_srcdir)/config/fp-bit.c
-	echo '#ifdef __MIPSEL__'		 > $@
-	echo '# define FLOAT_BIT_ORDER_MISMATCH' >> $@
-	echo '#endif'				>> $@
-	echo '#define QUIET_NAN_NEGATED'	>> $@
-	echo '#if __LDBL_MANT_DIG__ == 106'	>> $@
-	echo '# define TFLOAT'			>> $@
-	cat $<					>> $@
-	echo '#endif'				>> $@

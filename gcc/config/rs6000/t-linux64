@@ -1,7 +1,7 @@
 #rs6000/t-linux64
 
 # Copyright (C) 2002, 2003, 2004, 2006, 2007,
-# 2009 Free Software Foundation, Inc.
+# 2009, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -18,9 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
-
-LIB2FUNCS_EXTRA += $(srcdir)/config/rs6000/ppc64-fp.c
-LIB2FUNCS_EXTRA := $(sort $(LIB2FUNCS_EXTRA))
 
 TARGET_LIBGCC2_CFLAGS += -mno-minimal-toc
 

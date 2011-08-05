@@ -937,12 +937,14 @@ arm*-wince-pe*)
 	;;
 avr-*-rtems*)
 	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
+	libgcc_tm_file="$libgcc_tm_file avr/avr-lib.h"
 	tmake_file="avr/t-avr t-rtems avr/t-rtems"
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o"
 	;;
 avr-*-*)
 	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h newlib-stdint.h"
+	libgcc_tm_file="$libgcc_tm_file avr/avr-lib.h"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o"
@@ -1039,10 +1041,12 @@ moxie-*-rtems*)
 h8300-*-rtems*)
 	tmake_file="h8300/t-h8300 h8300/t-elf t-rtems h8300/t-rtems"
 	tm_file="h8300/h8300.h dbxelf.h elfos.h h8300/elf.h h8300/rtems.h rtems.h newlib-stdint.h"
+	libgcc_tm_file="$libgcc_tm_file h8300/h8300-lib.h"
 	;;
 h8300-*-elf*)
 	tmake_file="h8300/t-h8300 h8300/t-elf"
 	tm_file="h8300/h8300.h dbxelf.h elfos.h newlib-stdint.h h8300/elf.h"
+	libgcc_tm_file="$libgcc_tm_file h8300/h8300-lib.h"
 	;;
 hppa*64*-*-linux*)
 	target_cpu_default="MASK_PA_11|MASK_PA_20"
@@ -2017,7 +2021,7 @@ picochip-*)
         ;;
 # port not yet contributed
 #powerpc-*-openbsd*)
-#	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-fprules-fpbit "
+#	tmake_file="${tmake_file} rs6000/t-fprules"
 #	extra_headers=
 #	;;
 powerpc-*-darwin*)
@@ -2063,42 +2067,42 @@ powerpc-*-eabispe*)
 powerpc-*-eabisimaltivec*)
 	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/e500.h rs6000/eabisim.h rs6000/eabialtivec.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcendian rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcendian rs6000/t-ppccomm"
 	use_gcc_stdint=wrap
 	;;
 powerpc-*-eabisim*)
 	tm_file="${tm_file} dbxelf.h elfos.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/e500.h rs6000/eabisim.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcgas rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	use_gcc_stdint=wrap
 	;;
 powerpc-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcgas rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	;;
 powerpc-*-eabialtivec*)
 	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/e500.h rs6000/eabialtivec.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcendian rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcendian rs6000/t-ppccomm"
 	use_gcc_stdint=wrap
 	;;
 powerpc-xilinx-eabi*)
 	tm_file="${tm_file} dbxelf.h elfos.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/singlefp.h rs6000/xfpu.h rs6000/xilinx.h"
 	extra_options="${extra_options} rs6000/sysv4.opt rs6000/xilinx.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcgas rs6000/t-ppccomm rs6000/t-xilinx"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm rs6000/t-xilinx"
 	use_gcc_stdint=wrap
 	;;
 powerpc-*-eabi*)
 	tm_file="${tm_file} dbxelf.h elfos.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/e500.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcgas rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	use_gcc_stdint=wrap
 	;;
 powerpc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/e500.h rs6000/rtems.h rtems.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-rtems t-rtems rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-rtems t-rtems rs6000/t-ppccomm"
 	;;
 powerpc-*-linux* | powerpc64-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h rs6000/sysv4.h"
@@ -2146,7 +2150,7 @@ powerpc-*-linux* | powerpc64-*-linux*)
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
 	tm_file="${tm_file} elfos.h freebsd-spec.h rs6000/sysv4.h"
-	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppccomm rs6000/t-vxworks"
+	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	extra_headers=ppc-asm.h
 	case ${target} in
@@ -2171,18 +2175,18 @@ powerpc-*-lynxos*)
 	;;
 powerpcle-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/sysv4le.h"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcgas rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	;;
 powerpcle-*-eabisim*)
 	tm_file="${tm_file} dbxelf.h elfos.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h rs6000/e500.h rs6000/eabisim.h"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcgas rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	use_gcc_stdint=wrap
 	;;
 powerpcle-*-eabi*)
 	tm_file="${tm_file} dbxelf.h elfos.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h rs6000/e500.h"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcgas rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	use_gcc_stdint=wrap
 	;;
@@ -2233,7 +2237,7 @@ rs6000-ibm-aix[6789].* | powerpc-ibm-aix[6789].*)
 	;;
 rx-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	libgcc_tm_file="${libgcc_tm_file} rx/rx-abi.h"
+	libgcc_tm_file="${libgcc_tm_file} rx/rx-abi.h rx/rx-lib.h"
 	tmake_file="${tmake_file} rx/t-rx"
 	;;
 s390-*-linux*)
@@ -2643,7 +2647,6 @@ xtensa*-*-linux*)
 	;;
 am33_2.0-*-linux*)
 	tm_file="mn10300/mn10300.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h mn10300/linux.h"
-	tmake_file="${tmake_file} mn10300/t-linux"
 	gas=yes gnu_ld=yes
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	use_collect2=no

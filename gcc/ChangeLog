@@ -1,5 +1,81 @@
 2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* Makefile.in (FPBIT_FUNCS, DPBIT_FUNCS, TPBIT_FUNCS): Remove.
+	(libgcc-support): Remove $(FPBIT), $(DPBIT), $(TPBIT)
+	dependencies.
+	(libgcc.mvars): Remove FPBIT, FPBIT_FUNCS, DPBIT, DPBIT_FUNCS,
+	TPBIT, TPBIT_FUNCS.
+	* config/fp-bit.c, config/fp-bit.h: Move to ../libgcc.
+	* config/arm/t-strongarm-elf (FPBIT, DPBIT, dp-bit.c, fp-bit.c):
+	Remove.
+	* config/arm/t-vxworks: Likewise.
+	* config/arm/t-wince-pe: Likewise.
+	* config/avr/t-avr (fp-bit.c, FPBIT): Remove.
+	* config/bfin/t-bfin (FPBIT, DPBIT, dp-bit.c, fp-bit.c): Remove.
+	* config/bfin/t-bfin-elf: Likewise.
+	* config/bfin/t-bfin-linux: Likewise.
+	* config/bfin/t-bfin-uclinux: Likewise.
+	* config/cris/t-cris (FPBIT, DPBIT, dp-bit.c, tmplibgcc_fp_bit.c):
+	Remove.
+	* config/fr30/t-fr30: Likewise.
+	* config/frv/t-frv: Likewise.
+	* config/h8300/t-h8300 (FPBIT, fp-bit.c): Remove.
+	* config/iq2000/t-iq2000 (FPBIT, DPBIT, dp-bit.c, fp-bit.c): Remove.
+	* config/m32c/t-m32c: Likewise.
+	* config/m32r/t-linux: (LIB2FUNCS_EXTRA, fp-bit.c, dp-bit.c): Remove.
+	* config/m32r/t-m32r (FPBIT, DPBIT, dp-bit.c, fp-bit.c): Remove.
+	* config/mcore/t-mcore: Likewise.
+	* config/mep/t-mep: Likewise.
+	* config/microblaze/t-microblaze: Likewise.
+	* config/mips/t-linux64 (TPBIT, tp-bit.c): Remove.
+	* config/mips/t-mips (FPBIT, DPBIT, dp-bit.c, fp-bit.c): Remove.
+	* config/mips/t-sdemtk (FPBIT, DPBIT): Remove.
+	* config/mips/t-sr71k (FPBIT, DPBIT, dp-bit.c, fp-bit.c): Remove.
+	* config/mn10300/t-linux: Remove.
+	* config/mn10300/t-mn10300 (FPBIT, DPBIT, dp-bit.c, fp-bit.c): Remove.
+	* config/pdp11/t-pdp11: Likewise.
+	* config/picochip/t-picochip (FPBIT, fp-bit.c): Remove.
+	* config/rs6000/ppc64-fp.c: Move to ../libgcc/config/rs6000.
+	* config/rs6000/t-aix43 (FPBIT, DPBIT, dp-bit.c, fp-bit.c): Remove.
+	(LIB2FUNCS_EXTRA): Remove $(srcdir)/config/rs6000/ppc64-fp.c.
+	* config/rs6000/t-aix52: Likewise.
+	* config/rs6000/t-darwin (LIB2FUNCS_EXTRA): Remove
+	$(srcdir)/config/rs6000/ppc64-fp.c.
+	* config/rs6000/t-fprules-fpbit: Remove.
+	* config/rs6000/t-linux64 (LIB2FUNCS_EXTRA): Remove.
+	* config/rs6000/t-lynx (FPBIT, DPBIT, dp-bit.c, fp-bit.c): Remove.
+	* config/sh/t-netbsd (FPBIT, DPBIT): Remove.
+	* config/sh/t-sh (FPBIT, DPBIT, dp-bit.c, fp-bit.c): Remove.
+	* config/sparc/t-elf: Likewise.
+	* config/sparc/t-leon: Likewise.
+	* config/sparc/t-leon3: Likewise.
+	* config/spu/t-spu-elf: Likewise.
+	(DPBIT_FUNCS): Remove.
+	* config/stormy16/t-stormy16 (FPBIT, DPBIT, dp-bit.c, fp-bit.c): Remove.
+	* config/v850/t-v850: Likewise.
+	* config.gcc (avr-*-rtems*): Add avr/avr-lib.h to libgcc_tm_file.
+	(avr-*-*): Likewise.
+	(h8300-*-rtems*): Set libgcc_tm_file.
+	(h8300-*-elf*): Likewise.
+	(powerpc-*-eabisimaltivec*): Remove rs6000/t-fprules-fpbit from
+	tmake_file.
+	(powerpc-*-eabisim*): Likewise.
+	(powerpc-*-elf*): Likewise.
+	(powerpc-*-eabialtivec*): Likewise.
+	(powerpc-xilinx-eabi*): Likewise.
+	(powerpc-*-eabi*): Likewise.
+	(powerpc-*-rtems*): Likewise.
+	(powerpc-wrs-vxworks, powerpc-wrs-vxworksae): Likewise.
+	(powerpcle-*-elf*): Likewise.
+	(powerpcle-*-eabisim*): Likewise.
+	(powerpcle-*-eabi*): Likewise.
+	(rx-*-elf*): Add rx/rx-lib.h to libgcc_tm_file.
+	(am33_2.0-*-linux*): Remove mn10300/t-linux from tmake_file.
+	* doc/fragments.texi (Target Fragment, Floating Point Emulation):
+	Remove.
+
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* Makefile.in (UNWIND_H): Remove.
 	(LIB2ADDEH, LIB2ADDEHSTATIC, LIB2ADDEHSHARED): Move to
 	../libgcc/Makefile.in.

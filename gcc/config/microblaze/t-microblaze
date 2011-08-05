@@ -14,17 +14,6 @@ microblaze-c.o: $(srcdir)/config/microblaze/microblaze-c.c \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/microblaze/microblaze-c.c
 
-# Build soft FP routines. 
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	cat $(srcdir)/config/fp-bit.c > dp-bit.c
-
 # Assemble startup files
 $(T)crti$(objext): $(srcdir)/config/microblaze/crti.s
 	$(GCC_FOR_TARGET) -c $(srcdir)/config/microblaze/crti.s -o $(T)crti$(objext)

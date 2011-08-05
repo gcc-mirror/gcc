@@ -1,5 +1,5 @@
 /* Header file for fp-bit.c.  */
-/* Copyright (C) 2000, 2002, 2003, 2006, 2009, 2010
+/* Copyright (C) 2000, 2002, 2003, 2006, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -127,6 +127,14 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 
 #ifdef FLOAT_ONLY
 #define NO_DI_MODE
+#endif
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define FLOAT_BIT_ORDER_MISMATCH
+#endif
+
+#if __BYTE_ORDER__ != __FLOAT_WORD_ORDER__
+#define FLOAT_WORD_ORDER_MISMATCH
 #endif
 
 #ifdef TFLOAT

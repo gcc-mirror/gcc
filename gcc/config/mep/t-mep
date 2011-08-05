@@ -1,6 +1,6 @@
 # -*- makefile -*-
 # GCC makefile fragment for MeP
-# Copyright (C) 2001, 2002, 2003, 2005, 2007, 2009, 2010
+# Copyright (C) 2001, 2002, 2003, 2005, 2007, 2009, 2010, 2011
 # Free Software Foundation, Inc.
 # Contributed by Red Hat Inc
 #
@@ -53,18 +53,6 @@ LIB1ASMFUNCS = _mep_profile \
 LIB2FUNCS_EXTRA = \
 	$(srcdir)/config/mep/mep-lib2.c \
 	$(srcdir)/config/mep/mep-tramp.c
-
-# floating point emulation libraries
-
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT'				> fp-bit.c
-	cat $(srcdir)/config/fp-bit.c			>> fp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	cat $(srcdir)/config/fp-bit.c > dp-bit.c
 
 MULTILIB_OPTIONS = mel mall-opts mfar
 MULTILIB_DIRNAMES = el allopt far

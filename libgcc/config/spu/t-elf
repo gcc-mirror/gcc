@@ -1,0 +1,3 @@
+# We provide our own version of __divdf3 that performs better and has
+# better support for non-default rounding modes.
+DPBIT_FUNCS := $(filter-out _div_df, $(DPBIT_FUNCS))

@@ -2,8 +2,8 @@
    libgcc2.c with macros expanded to force the use of specific types.
  
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2006, 2009  Free Software Foundation,
-   Inc.
+   2000, 2001, 2002, 2003, 2004, 2006, 2009, 2011
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,7 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined(__powerpc64__) || defined (__64BIT__) || defined(__ppc64__)
 #define TMODES
-#include "config/fp-bit.h"
+#include "fp-bit.h"
 
 extern DItype __fixtfdi (TFtype);
 extern DItype __fixdfdi (DFtype);
