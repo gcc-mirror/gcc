@@ -623,6 +623,7 @@ package Snames is
    Name_Copy                           : constant Name_Id := N + $;
    Name_D_Float                        : constant Name_Id := N + $;
    Name_Descriptor                     : constant Name_Id := N + $;
+   Name_Disable                        : constant Name_Id := N + $;
    Name_Dot_Replacement                : constant Name_Id := N + $;
    Name_Dynamic                        : constant Name_Id := N + $;
    Name_Ensures                        : constant Name_Id := N + $;

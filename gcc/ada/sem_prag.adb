@@ -352,12 +352,18 @@ package body Sem_Prag is
       --  Check the specified argument Arg to make sure that it is a valid
       --  locking policy name. If not give error and raise Pragma_Exit.
 
-      procedure Check_Arg_Is_One_Of (Arg : Node_Id; N1, N2 : Name_Id);
-      procedure Check_Arg_Is_One_Of (Arg : Node_Id; N1, N2, N3 : Name_Id);
-      procedure Check_Arg_Is_One_Of (Arg : Node_Id; N1, N2, N3, N4 : Name_Id);
+      procedure Check_Arg_Is_One_Of
+        (Arg                : Node_Id;
+         N1, N2             : Name_Id);
+      procedure Check_Arg_Is_One_Of
+        (Arg                : Node_Id;
+         N1, N2, N3         : Name_Id);
+      procedure Check_Arg_Is_One_Of
+        (Arg                : Node_Id;
+         N1, N2, N3, N4, N5 : Name_Id);
       --  Check the specified argument Arg to make sure that it is an
-      --  identifier whose name matches either N1 or N2 (or N3 if present).
-      --  If not then give error and raise Pragma_Exit.
+      --  identifier whose name matches either N1 or N2 (or N3, N4, N5 if
+      --  present). If not then give error and raise Pragma_Exit.
 
       procedure Check_Arg_Is_Queuing_Policy (Arg : Node_Id);
       --  Check the specified argument Arg to make sure that it is a valid
@@ -1055,8 +1061,8 @@ package body Sem_Prag is
       end Check_Arg_Is_One_Of;
 
       procedure Check_Arg_Is_One_Of
-        (Arg            : Node_Id;
-         N1, N2, N3, N4 : Name_Id)
+        (Arg                : Node_Id;
+         N1, N2, N3, N4, N5 : Name_Id)
       is
          Argx : constant Node_Id := Get_Pragma_Arg (Arg);
 
@@ -1067,11 +1073,11 @@ package body Sem_Prag is
            and then Chars (Argx) /= N2
            and then Chars (Argx) /= N3
            and then Chars (Argx) /= N4
+           and then Chars (Argx) /= N5
          then
             Error_Pragma_Arg ("invalid argument for pragma%", Argx);
          end if;
       end Check_Arg_Is_One_Of;
-
       ---------------------------------
       -- Check_Arg_Is_Queuing_Policy --
       ---------------------------------
@@ -6419,7 +6425,7 @@ package body Sem_Prag is
 
             Rewrite (N,
               Make_Pragma (Loc,
-                Chars => Name_Check,
+                Chars                        => Name_Check,
                 Pragma_Argument_Associations => Newa));
             Analyze (N);
          end Assert;
@@ -6428,7 +6434,7 @@ package body Sem_Prag is
          -- Assertion_Policy --
          ----------------------
 
-         --  pragma Assertion_Policy (Check | Ignore)
+         --  pragma Assertion_Policy (Check | Disable |Ignore)
 
          when Pragma_Assertion_Policy => Assertion_Policy : declare
             Policy : Node_Id;
@@ -6438,7 +6444,7 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Check_Arg_Count (1);
             Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_Check, Name_Ignore);
+            Check_Arg_Is_One_Of (Arg1, Name_Check, Name_Disable, Name_Ignore);
 
             --  We treat pragma Assertion_Policy as equivalent to:
 
@@ -6863,6 +6869,14 @@ package body Sem_Prag is
 
             Check_Arg_Is_Identifier (Arg1);
 
+            --  Completely ignore if disabled
+
+            if Check_Disabled (Chars (Get_Pragma_Arg (Arg1))) then
+               Rewrite (N, Make_Null_Statement (Loc));
+               Analyze (N);
+               return;
+            end if;
+
             --  Indicate if pragma is enabled. The Original_Node reference here
             --  is to deal with pragma Assert rewritten as a Check pragma.
 
@@ -6948,7 +6962,7 @@ package body Sem_Prag is
          --    [Name   =>] IDENTIFIER,
          --    [Policy =>] POLICY_IDENTIFIER);
 
-         --  POLICY_IDENTIFIER ::= ON | OFF | CHECK | IGNORE
+         --  POLICY_IDENTIFIER ::= ON | OFF | CHECK | DISABLE | IGNORE
 
          --  Note: this is a configuration pragma, but it is allowed to appear
          --  anywhere else.
@@ -6959,7 +6973,7 @@ package body Sem_Prag is
             Check_Optional_Identifier (Arg1, Name_Name);
             Check_Optional_Identifier (Arg2, Name_Policy);
             Check_Arg_Is_One_Of
-              (Arg2, Name_On, Name_Off, Name_Check, Name_Ignore);
+              (Arg2, Name_On, Name_Off, Name_Check, Name_Disable, Name_Ignore);
 
             --  A Check_Policy pragma can appear either as a configuration
             --  pragma, or in a declarative part or a package spec (see RM
@@ -7608,6 +7622,14 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
 
+            --  Skip analysis if disabled
+
+            if Debug_Pragmas_Disabled then
+               Rewrite (N, Make_Null_Statement (Loc));
+               Analyze (N);
+               return;
+            end if;
+
             Cond :=
               New_Occurrence_Of
                 (Boolean_Literals (Debug_Pragmas_Enabled and Expander_Active),
@@ -7679,9 +7701,11 @@ package body Sem_Prag is
          when Pragma_Debug_Policy =>
             GNAT_Pragma;
             Check_Arg_Count (1);
-            Check_Arg_Is_One_Of (Arg1, Name_Check, Name_Ignore);
+            Check_Arg_Is_One_Of (Arg1, Name_Check, Name_Disable, Name_Ignore);
             Debug_Pragmas_Enabled :=
               Chars (Get_Pragma_Arg (Arg1)) = Name_Check;
+            Debug_Pragmas_Disabled :=
+              Chars (Get_Pragma_Arg (Arg1)) = Name_Disable;
 
          ---------------------
          -- Detect_Blocking --
@@ -14180,6 +14204,40 @@ package body Sem_Prag is
 
       End_Scope;
    end Analyze_TC_In_Decl_Part;
+
+   --------------------
+   -- Check_Disabled --
+   --------------------
+
+   function Check_Disabled (Nam : Name_Id) return Boolean is
+      PP : Node_Id;
+
+   begin
+      --  Loop through entries in check policy list
+
+      PP := Opt.Check_Policy_List;
+      loop
+         --  If there are no specific entries that matched, then nothing is
+         --  disabled, so return False.
+
+         if No (PP) then
+            return False;
+
+         --  Here we have an entry see if it matches
+
+         else
+            declare
+               PPA : constant List_Id := Pragma_Argument_Associations (PP);
+            begin
+               if Nam = Chars (Get_Pragma_Arg (First (PPA))) then
+                  return Chars (Get_Pragma_Arg (Last (PPA))) = Name_Disable;
+               else
+                  PP := Next_Pragma (PP);
+               end if;
+            end;
+         end if;
+      end loop;
+   end Check_Disabled;
 
    -------------------
    -- Check_Enabled --

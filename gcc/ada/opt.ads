@@ -374,6 +374,10 @@ package Opt is
    --  GNAT
    --  Enable debug statements from pragma Debug
 
+   Debug_Pragmas_Disabled : Boolean := False;
+   --  GNAT
+   --  Debug pragmas completely disabled (no semantic checking)
+
    subtype Debug_Level_Value is Nat range 0 .. 3;
    Debugger_Level : Debug_Level_Value := 0;
    --  GNATBIND
@@ -1661,6 +1665,11 @@ package Opt is
    --  terminated by Empty. The order is most recently processed first. This
    --  list includes only those pragmas in configuration pragma files.
 
+   Debug_Pragmas_Disabled_Config : Boolean;
+   --  GNAT
+   --  This is the value of the configuration switch for debug pragmas disabled
+   --  mode, as possibly set by use of the configuration pragma Debug_Policy.
+
    Debug_Pragmas_Enabled_Config : Boolean;
    --  GNAT
    --  This is the value of the configuration switch for debug pragmas enabled
@@ -1885,6 +1894,7 @@ private
       Assertions_Enabled             : Boolean;
       Assume_No_Invalid_Values       : Boolean;
       Check_Policy_List              : Node_Id;
+      Debug_Pragmas_Disabled         : Boolean;
       Debug_Pragmas_Enabled          : Boolean;
       Default_Pool                   : Node_Id;
       Dynamic_Elaboration_Checks     : Boolean;

@@ -49,6 +49,7 @@ package body Opt is
       Assertions_Enabled_Config             := Assertions_Enabled;
       Assume_No_Invalid_Values_Config       := Assume_No_Invalid_Values;
       Check_Policy_List_Config              := Check_Policy_List;
+      Debug_Pragmas_Disabled_Config         := Debug_Pragmas_Disabled;
       Debug_Pragmas_Enabled_Config          := Debug_Pragmas_Enabled;
       Default_Pool_Config                   := Default_Pool;
       Dynamic_Elaboration_Checks_Config     := Dynamic_Elaboration_Checks;
@@ -82,6 +83,7 @@ package body Opt is
       Assertions_Enabled             := Save.Assertions_Enabled;
       Assume_No_Invalid_Values       := Save.Assume_No_Invalid_Values;
       Check_Policy_List              := Save.Check_Policy_List;
+      Debug_Pragmas_Disabled         := Save.Debug_Pragmas_Disabled;
       Debug_Pragmas_Enabled          := Save.Debug_Pragmas_Enabled;
       Default_Pool                   := Save.Default_Pool;
       Dynamic_Elaboration_Checks     := Save.Dynamic_Elaboration_Checks;
@@ -117,6 +119,7 @@ package body Opt is
       Save.Assertions_Enabled             := Assertions_Enabled;
       Save.Assume_No_Invalid_Values       := Assume_No_Invalid_Values;
       Save.Check_Policy_List              := Check_Policy_List;
+      Save.Debug_Pragmas_Disabled         := Debug_Pragmas_Disabled;
       Save.Debug_Pragmas_Enabled          := Debug_Pragmas_Enabled;
       Save.Default_Pool                   := Default_Pool;
       Save.Dynamic_Elaboration_Checks     := Dynamic_Elaboration_Checks;
@@ -168,11 +171,13 @@ package body Opt is
          if Main_Unit then
             Assertions_Enabled       := Assertions_Enabled_Config;
             Assume_No_Invalid_Values := Assume_No_Invalid_Values_Config;
+            Debug_Pragmas_Disabled   := Debug_Pragmas_Disabled_Config;
             Debug_Pragmas_Enabled    := Debug_Pragmas_Enabled_Config;
             Check_Policy_List        := Check_Policy_List_Config;
          else
             Assertions_Enabled       := False;
             Assume_No_Invalid_Values := False;
+            Debug_Pragmas_Disabled   := False;
             Debug_Pragmas_Enabled    := False;
             Check_Policy_List        := Empty;
          end if;
@@ -185,6 +190,7 @@ package body Opt is
          Assertions_Enabled          := Assertions_Enabled_Config;
          Assume_No_Invalid_Values    := Assume_No_Invalid_Values_Config;
          Check_Policy_List           := Check_Policy_List_Config;
+         Debug_Pragmas_Disabled      := Debug_Pragmas_Disabled_Config;
          Debug_Pragmas_Enabled       := Debug_Pragmas_Enabled_Config;
          Dynamic_Elaboration_Checks  := Dynamic_Elaboration_Checks_Config;
          Extensions_Allowed          := Extensions_Allowed_Config;
@@ -241,6 +247,7 @@ package body Opt is
       Tree_Read_Bool (All_Errors_Mode);
       Tree_Read_Bool (Assertions_Enabled);
       Tree_Read_Int  (Int (Check_Policy_List));
+      Tree_Read_Bool (Debug_Pragmas_Disabled);
       Tree_Read_Bool (Debug_Pragmas_Enabled);
       Tree_Read_Int  (Int (Default_Pool));
       Tree_Read_Bool (Enable_Overflow_Checks);
@@ -307,6 +314,7 @@ package body Opt is
       Tree_Write_Bool (All_Errors_Mode);
       Tree_Write_Bool (Assertions_Enabled);
       Tree_Write_Int  (Int (Check_Policy_List));
+      Tree_Write_Bool (Debug_Pragmas_Disabled);
       Tree_Write_Bool (Debug_Pragmas_Enabled);
       Tree_Write_Int  (Int (Default_Pool));
       Tree_Write_Bool (Enable_Overflow_Checks);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--             Copyright (C) 2011, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,11 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
    procedure Initialize_Node (Container : in out Tree; Index : Count_Type);
    procedure Initialize_Root (Container : in out Tree);
+
+   procedure Allocate_Node
+     (Container          : in out Tree;
+      Initialize_Element : not null access procedure (Index : Count_Type);
+      New_Node           : out Count_Type);
 
    procedure Allocate_Node
      (Container : in out Tree;
@@ -194,18 +199,20 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    -------------------
 
    procedure Allocate_Node
-     (Container : in out Tree;
-      New_Item  : Element_Type;
-      New_Node  : out Count_Type)
+     (Container          : in out Tree;
+      Initialize_Element : not null access procedure (Index : Count_Type);
+      New_Node           : out Count_Type)
    is
    begin
       if Container.Free >= 0 then
          New_Node := Container.Free;
+         pragma Assert (New_Node in Container.Elements'Range);
 
          --  We always perform the assignment first, before we change container
          --  state, in order to defend against exceptions duration assignment.
 
-         Container.Elements (New_Node) := New_Item;
+         Initialize_Element (New_Node);
+
          Container.Free := Container.Nodes (New_Node).Next;
 
       else
@@ -216,15 +223,37 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          --  the end of the array (Nodes'Last).
 
          New_Node := abs Container.Free;
+         pragma Assert (New_Node in Container.Elements'Range);
 
          --  As above, we perform this assignment first, before modifying any
          --  container state.
 
-         Container.Elements (New_Node) := New_Item;
+         Initialize_Element (New_Node);
+
          Container.Free := Container.Free - 1;
+
+         if abs Container.Free > Container.Capacity then
+            Container.Free := 0;
+         end if;
       end if;
 
       Initialize_Node (Container, New_Node);
+   end Allocate_Node;
+
+   procedure Allocate_Node
+     (Container : in out Tree;
+      New_Item  : Element_Type;
+      New_Node  : out Count_Type)
+   is
+      procedure Initialize_Element (Index : Count_Type);
+
+      procedure Initialize_Element (Index : Count_Type) is
+      begin
+         Container.Elements (Index) := New_Item;
+      end Initialize_Element;
+
+   begin
+      Allocate_Node (Container, Initialize_Element'Access, New_Node);
    end Allocate_Node;
 
    procedure Allocate_Node
@@ -232,56 +261,24 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Stream    : not null access Root_Stream_Type'Class;
       New_Node  : out Count_Type)
    is
+      procedure Initialize_Element (Index : Count_Type);
+
+      procedure Initialize_Element (Index : Count_Type) is
+      begin
+         Element_Type'Read (Stream, Container.Elements (Index));
+      end Initialize_Element;
+
    begin
-      if Container.Free >= 0 then
-         New_Node := Container.Free;
-
-         --  We always perform the assignment first, before we change container
-         --  state, in order to defend against exceptions duration assignment.
-
-         Element_Type'Read (Stream, Container.Elements (New_Node));
-         Container.Free := Container.Nodes (New_Node).Next;
-
-      else
-         --  A negative free store value means that the links of the nodes in
-         --  the free store have not been initialized. In this case, the nodes
-         --  are physically contiguous in the array, starting at the index that
-         --  is the absolute value of the Container.Free, and continuing until
-         --  the end of the array (Nodes'Last).
-
-         New_Node := abs Container.Free;
-
-         --  As above, we perform this assignment first, before modifying any
-         --  container state.
-
-         Element_Type'Read (Stream, Container.Elements (New_Node));
-         Container.Free := Container.Free - 1;
-      end if;
-
-      Initialize_Node (Container, New_Node);
+      Allocate_Node (Container, Initialize_Element'Access, New_Node);
    end Allocate_Node;
 
    procedure Allocate_Node
      (Container : in out Tree;
       New_Node  : out Count_Type)
    is
+      procedure Initialize_Element (Index : Count_Type) is null;
    begin
-      if Container.Free >= 0 then
-         New_Node := Container.Free;
-         Container.Free := Container.Nodes (New_Node).Next;
-
-      else
-         --  A negative free store value means that the links of the nodes in
-         --  the free store have not been initialized. In this case, the nodes
-         --  are physically contiguous in the array, starting at the index that
-         --  is the absolute value of the Container.Free, and continuing until
-         --  the end of the array (Nodes'Last).
-
-         New_Node := abs Container.Free;
-         Container.Free := Container.Free - 1;
-      end if;
-
-      Initialize_Node (Container, New_Node);
+      Allocate_Node (Container, Initialize_Element'Access, New_Node);
    end Allocate_Node;
 
    -------------------
@@ -405,7 +402,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
            with "Target capacity is less than Source count";
       end if;
 
-      Target.Clear;  -- checks busy bit
+      Target.Clear;  -- Checks busy bit
 
       if Source.Count = 0 then
          return;
@@ -647,7 +644,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       if Parent.Container.Count = 0 then
          pragma Assert (Is_Root (Parent));
          pragma Assert (Child = Parent);
-
          return 0;
       end if;
 
@@ -823,8 +819,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       --  the "normal" way: Container.Free points to the head of the list of
       --  free (inactive) nodes, and the value 0 means the free list is
       --  empty. Each node on the free list has been initialized to point to
-      --  the next free node (via its Next component), and the value -1 means
-      --  that this is the last free node.
+      --  the next free node (via its Next component), and the value 0 means
+      --  that this is the last node of the free list.
       --
       --  If Container.Free is negative, then the links on the free store have
       --  not been initialized. In this case the link values are implied: the
@@ -833,11 +829,11 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       --  the array (Nodes'Last).
       --
       --  We prefer to lazy-init the free store (in fact, we would prefer to
-      --  not initialize it at all). The time when we need to actually
-      --  initialize the nodes in the free store is if the node that becomes
-      --  inactive is not at the end of the active list. The free store would
-      --  then be discontigous and so its nodes would need to be linked in the
-      --  traditional way.
+      --  not initialize it at all, because such initialization is an O(n)
+      --  operation). The time when we need to actually initialize the nodes in
+      --  the free store is when the node that becomes inactive is not at the
+      --  end of the active list. The free store would then be discontigous and
+      --  so its nodes would need to be linked in the traditional way.
       --
       --  It might be possible to perform an optimization here. Suppose that
       --  the free store can be represented as having two parts: one comprising
@@ -848,16 +844,17 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       --  nodes become inactive. ???
 
       --  When an element is deleted from the list container, its node becomes
-      --  inactive, and so we set its Prev component to a negative value, to
-      --  indicate that it is now inactive. This provides a useful way to
-      --  detect a dangling cursor reference.
+      --  inactive, and so we set its Parent and Prev components to an
+      --  impossible value (the index of the node itself), to indicate that it
+      --  is now inactive. This provides a useful way to detect a dangling
+      --  cursor reference.
 
       N.Parent := X;  -- Node is deallocated (not on active list)
       N.Prev := X;
 
       if Container.Free >= 0 then
-         --  The free store has previously been initialized. All we need to
-         --  do here is link the newly-free'd node onto the free list.
+         --  The free store has previously been initialized. All we need to do
+         --  here is link the newly-free'd node onto the free list.
 
          N.Next := Container.Free;
          Container.Free := X;
@@ -867,7 +864,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          --  inactive immediately precedes the start of the free store. All
          --  we need to do is move the start of the free store back by one.
 
-         N.Next := -1;  -- Not strictly necessary, but marginally safer
+         N.Next := X;  -- Not strictly necessary, but marginally safer
          Container.Free := Container.Free + 1;
 
       else
@@ -880,8 +877,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          --  See the comments above for an optimization opportunity. If the
          --  next link for a node on the free store is negative, then this
          --  means the remaining nodes on the free store are physically
-         --  contiguous, starting as the absolute value of that index
-         --  value. ???
+         --  contiguous, starting at the absolute value of that index value.
+         --  ???
 
          Container.Free := abs Container.Free;
 
@@ -893,7 +890,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
                NN (J).Next := J + 1;
             end loop;
 
-            NN (Container.Capacity).Next := -1;
+            NN (Container.Capacity).Next := 0;
          end if;
 
          NN (X).Next := Container.Free;
@@ -1558,8 +1555,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    begin
       --  This is a simple utility operation to insert a list of nodes
       --  (First..Last) as children of Parent. The Before node specifies where
-      --  the new children should be inserted relative to the existing
-      --  children.
+      --  the new children should be inserted relative to existing children.
 
       if First <= 0 then
          pragma Assert (Last <= 0);
@@ -2233,8 +2229,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       CC : Children_Type renames NN (N.Parent).Children;
 
    begin
-      --  This is a utility operation to remove a subtree
-      --  node from its parent's list of children.
+      --  This is a utility operation to remove a subtree node from its
+      --  parent's list of children.
 
       if CC.First = Subtree then
          pragma Assert (N.Prev <= 0);
@@ -2356,11 +2352,11 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    ---------------------
 
    procedure Splice_Children
-     (Target          : in out Tree;
-      Target_Parent   : Cursor;
-      Before          : Cursor;
-      Source          : in out Tree;
-      Source_Parent   : Cursor)
+     (Target        : in out Tree;
+      Target_Parent : Cursor;
+      Before        : Cursor;
+      Source        : in out Tree;
+      Source_Parent : Cursor)
    is
    begin
       if Target_Parent = No_Element then
@@ -2567,14 +2563,14 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       --  Before we attempt the insertion, we must count the sources nodes in
       --  order to determine whether the target have enough storage
       --  available. Note that calculating this value is an O(n) operation.
-      --
+
       --  Here is an optimization opportunity: iterate of each children the
       --  source explicitly, and keep a running count of the total number of
       --  nodes. Compare the running total to the capacity of the target each
       --  pass through the loop. This is more efficient than summing the counts
       --  of child subtree (which is what Subtree_Node_Count does) and then
       --  comparing that total sum to the target's capacity.  ???
-      --
+
       --  Here is another possibility. We currently treat the splice as an
       --  all-or-nothing proposition: either we can insert all of children of
       --  the source, or we raise exception with modifying the target. The
@@ -2767,7 +2763,9 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       if Is_Root (Position) then
+
          --  Should this be PE instead?  Need ARG confirmation.  ???
+
          raise Constraint_Error with "Position cursor designates root";
       end if;
 

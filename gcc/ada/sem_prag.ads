@@ -54,9 +54,15 @@ package Sem_Prag is
    --  pragma as "spec expressions" (see section in Sem "Handling of Default
    --  and Per-Object Expressions...").
 
+   function Check_Disabled (Nam : Name_Id) return Boolean;
+   --  This function is used in connection with pragmas Assertion, Check,
+   --  Precondition, and Postcondition, to determine if Check pragmas (or
+   --  corresponding Assert, Precondition, or Postcondition pragmas) are
+   --  currently disabled (as set by a Policy pragma with the Disabled
+
    function Check_Enabled (Nam : Name_Id) return Boolean;
    --  This function is used in connection with pragmas Assertion, Check,
-   --  Precondition, and Postcondition to determine if Check pragmas (or
+   --  Precondition, and Postcondition, to determine if Check pragmas (or
    --  corresponding Assert, Precondition, or Postcondition pragmas) are
    --  currently active, as determined by the presence of -gnata on the
    --  command line (which sets the default), and the appearance of pragmas

@@ -104,6 +104,7 @@ Implementation Defined Pragmas
 * Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
+* Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
@@ -737,6 +738,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
+* Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
@@ -1075,6 +1077,43 @@ effect on the program.  However, the expressions are analyzed for
 semantic correctness whether or not assertions are enabled, so turning
 assertions on and off cannot affect the legality of a program.
 
+Note that the implementation defined policy @code{DISABLE}, given in a
+pragma Assertion_Policy, can be used to suppress this semantic analysis.
+
+Note: this is a standard language-defined pragma in versions
+of Ada from 2005 on. In GNAT, it is implemented in all versions
+of Ada, and the DISABLE policy is an implementation-defined
+addition.
+
+
+@node Pragma Assertion_Policy
+@unnumberedsec Pragma Assertion_Policy
+@findex Debug_Policy
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Assertion_Policy (CHECK | DISABLE | IGNORE);
+@end smallexample
+
+@noindent
+If the argument is @code{CHECK}, then pragma @code{Assert} is enabled.
+If the argument is @code{IGNORE}, then pragma @code{Assert} is ignored.
+This pragma overrides the effect of the @option{-gnata} switch on the
+command line.
+
+The implementation defined policy @code{DISABLE} is like
+@code{IGNORE} except that it completely disables semantic
+checking of the argument to @code{pragma Assert}. This may
+be useful when the pragma argument references subprograms
+in a with'ed package which is replaced by a dummy package
+for the final build.
+
+Note: this is a standard language-defined pragma in versions
+of Ada from 2005 on. In GNAT, it is implemented in all versions
+of Ada, and the DISABLE policy is an implementation-defined
+addition.
+
 @node Pragma Assume_No_Invalid_Values
 @unnumberedsec Pragma Assume_No_Invalid_Values
 @findex Assume_No_Invalid_Values
@@ -1258,7 +1297,7 @@ pragma Check_Policy
  ([Name   =>] Identifier,
   [Policy =>] POLICY_IDENTIFIER);
 
-POLICY_IDENTIFIER ::= On | Off | Check | Ignore
+POLICY_IDENTIFIER ::= ON | OFF | CHECK | DISABLE | IGNORE
 @end smallexample
 
 @noindent
@@ -1273,7 +1312,7 @@ The identifier given as the first argument corresponds to a name used in
 associated @code{Check} pragmas. For example, if the pragma:
 
 @smallexample @c ada
-pragma Check_Policy (Critical_Error, Off);
+pragma Check_Policy (Critical_Error, OFF);
 @end smallexample
 
 @noindent
@@ -1291,14 +1330,21 @@ that @code{Precondition} checks are @code{Off} or @code{Ignored}. Similarly use
 of the name @code{Postcondition} controls whether @code{Postcondition} pragmas
 are recognized.
 
-The check policy is @code{Off} to turn off corresponding checks, and @code{On}
+The check policy is @code{OFF} to turn off corresponding checks, and @code{ON}
 to turn on corresponding checks. The default for a set of checks for which no
-@code{Check_Policy} is given is @code{Off} unless the compiler switch
+@code{Check_Policy} is given is @code{OFF} unless the compiler switch
 @option{-gnata} is given, which turns on all checks by default.
 
-The check policy settings @code{Check} and @code{Ignore} are also recognized
-as synonyms for @code{On} and @code{Off}. These synonyms are provided for
+The check policy settings @code{CHECK} and @code{IGNORE} are also recognized
+as synonyms for @code{ON} and @code{OFF}. These synonyms are provided for
 compatibility with the standard @code{Assertion_Policy} pragma.
+
+The implementation defined policy @code{DISABLE} is like
+@code{OFF} except that it completely disables semantic
+checking of the argument to the corresponding class of
+pragmas. This may be useful when the pragma arguments reference
+subprograms in a with'ed package which is replaced by a dummy package
+for the final build.
 
 @node Pragma Comment
 @unnumberedsec Pragma Comment
@@ -1719,7 +1765,7 @@ or by use of the configuration pragma @code{Debug_Policy}.
 Syntax:
 
 @smallexample @c ada
-pragma Debug_Policy (CHECK | IGNORE);
+pragma Debug_Policy (CHECK | DISABLE | IGNORE);
 @end smallexample
 
 @noindent
@@ -1727,6 +1773,13 @@ If the argument is @code{CHECK}, then pragma @code{DEBUG} is enabled.
 If the argument is @code{IGNORE}, then pragma @code{DEBUG} is ignored.
 This pragma overrides the effect of the @option{-gnata} switch on the
 command line.
+
+The implementation defined policy @code{DISABLE} is like
+@code{IGNORE} except that it completely disables semantic
+checking of the argument to @code{pragma Debug}. This may
+be useful when the pragma argument references subprograms
+in a with'ed package which is replaced by a dummy package
+for the final build.
 
 @node Pragma Detect_Blocking
 @unnumberedsec Pragma Detect_Blocking
