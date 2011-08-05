@@ -3706,13 +3706,13 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
     {
       tree first_vect = PHI_RESULT (VEC_index (gimple, new_phis, 0));
       tree tmp;
+      gimple new_vec_stmt = NULL;
 
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       for (k = 1; k < VEC_length (gimple, new_phis); k++)
         {
           gimple next_phi = VEC_index (gimple, new_phis, k);
           tree second_vect = PHI_RESULT (next_phi);
-          gimple new_vec_stmt;
 
           tmp = build2 (code, vectype,  first_vect, second_vect);
           new_vec_stmt = gimple_build_assign (vec_dest, tmp);
@@ -3722,6 +3722,11 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
         }
 
       new_phi_result = first_vect;
+      if (new_vec_stmt)
+        {
+          VEC_truncate (gimple, new_phis, 0);
+          VEC_safe_push (gimple, heap, new_phis, new_vec_stmt);
+        }
     }
   else
     new_phi_result = PHI_RESULT (VEC_index (gimple, new_phis, 0));
@@ -3832,7 +3837,10 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
           vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
           FOR_EACH_VEC_ELT (gimple, new_phis, i, new_phi)
             {
-              vec_temp = PHI_RESULT (new_phi);
+              if (gimple_code (new_phi) == GIMPLE_PHI)
+                vec_temp = PHI_RESULT (new_phi);
+              else
+                vec_temp = gimple_assign_lhs (new_phi);
               rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
                             bitsize_zero_node);
               epilog_stmt = gimple_build_assign (new_scalar_dest, rhs);
