@@ -14106,7 +14106,7 @@ explicitly specified metrics are reported.
 * Line Metrics Control::
 * Syntax Metrics Control::
 * Complexity Metrics Control::
-* Object-Oriented Metrics Control::
+* Coupling Metrics Control::
 @end menu
 
 @node Line Metrics Control
@@ -14515,30 +14515,69 @@ Do not report the extra exit points for subprogram bodies
 @end table
 
 
-@node Object-Oriented Metrics Control
-@subsubsection Object-Oriented Metrics Control
-@cindex Object-Oriented metrics control in @command{gnatmetric}
+@node Coupling Metrics Control
+@subsubsection Coupling Metrics Control
+@cindex Coupling metrics control in @command{gnatmetric}
 
 @noindent
 @cindex Coupling metrics (in in @command{gnatmetric})
-Coupling metrics are object-oriented metrics that measure the
-dependencies between a given class (or a group of classes) and the
-``external world'' (that is, the other classes in the program). In this
-subsection the term ``class'' is used in its
-traditional object-oriented programming sense
-(an instantiable module that contains data and/or method members).
-A @emph{category} (of classes)
-is a group of closely related classes that are reused and/or
-modified together.
+Coupling metrics measure the dependencies between a given entity and other
+entities the program consists of. The goal of these metrics is to estimate the
+stability of the whole program considered as the collection of entities
+(modules, classes etc.).
 
-A class @code{K}'s @emph{efferent coupling} is the number of classes
+Gnatmetric computes the following coupling metrics:
+
+@itemize @bullet
+
+@item
+@emph{object-oriented coupling} - for classes in traditional object-oriented
+sense;
+
+@item
+emph{unit coupling} - for all the program units making up a program;
+
+@item
+emph{control coupling} - this metric counts dependencies between a unit and
+only those units that define subprograms;
+@end itemize
+
+@noindent
+Two kinds of coupling metrics are computed:
+
+@table @asis
+@item fan-out coupling (efferent coupling)
+@cindex fan-out coupling
+@cindex efferent coupling
+the number of entities the given entity depends upon. It
+estimates in what extent the given entity depends on the changes in
+``external world''
+
+@item fan-in coupling (afferent coupling)
+@cindex fan-in coupling
+@cindex afferent coupling
+the number of entities that depend on a given entity.
+It estimates in what extent the ``external world'' depends on the changes in a
+given entity
+@end table
+
+@noindent
+
+Object-oriented coupling metrics are metrics that measure the dependencies
+between a given class (or a group of classes) and the other classes in the
+program. In this subsection the term ``class'' is used in its traditional
+object-oriented programming sense (an instantiable module that contains data
+and/or method members). A @emph{category} (of classes) is a group of closely
+related classes that are reused and/or modified together.
+
+A class @code{K}'s fan-out coupling is the number of classes
 that @code{K} depends upon.
-A category's efferent coupling is the number of classes outside the
+A category's fan-out coupling is the number of classes outside the
 category that the classes inside the category depend upon.
 
-A class @code{K}'s @emph{afferent coupling} is the number of classes
+A class @code{K}'s fan-in coupling is the number of classes
 that depend upon @code{K}.
-A category's afferent coupling is the number of classes outside the
+A category's fan-in coupling is the number of classes outside the
 category that depend on classes belonging to the category.
 
 Ada's implementation of the object-oriented paradigm does not use the
@@ -14552,13 +14591,36 @@ that define a tagged type or an interface type are
 considered to be a class. A category consists of a library package (or
 a library generic package) that defines a tagged or an interface type,
 together with all its descendant (generic) packages that define tagged
-or interface types. For any package counted as a class,
-its body and subunits (if any) are considered
-together with its spec when counting the dependencies, and coupling
-metrics are reported for spec units only. For dependencies
-between classes, the Ada semantic dependencies are considered.
-For coupling metrics, only dependencies on units that are considered as
-classes, are considered.
+or interface types. That is a
+category is an Ada hierarchy of library-level program units. So class coupling
+in case of Ada is called as tagged coupling, and category coupling - as
+hierarchy coupling.
+
+For any package counted as a class, its body and subunits (if any) are
+considered together with its spec when counting the dependencies, and coupling
+metrics are reported for spec units only. For dependencies between classes,
+the Ada semantic dependencies are considered. For object-oriented coupling
+metrics, only dependencies on units that are considered as classes, are
+considered.
+
+For unit and control coupling also not compilation units but program units are
+counted. That is, for a package, its spec, its body and its subunits (if any)
+are considered as making up one unit, and the dependencies that are counted
+are the dependencies of all these compilation units collected together as
+the dependencies as a (whole) unit. And metrics are reported for spec
+compilation units only (or for a subprogram body unit in case if there is no
+separate spec for the given subprogram).
+
+For unit coupling, dependencies between all kinds of program units are
+considered. For control coupling, for each unit the dependencies of this unit
+upon units that define subprograms are counted, so control fan-out coupling
+is reported for all units, but control fan-in coupling - only for the units
+that define subprograms.
+
+
+
+
+
 
 When computing coupling metrics, @command{gnatmetric} counts only
 dependencies between units that are arguments of the gnatmetric call.
@@ -14566,7 +14628,7 @@ Coupling metrics are program-wide (or project-wide) metrics, so to
 get a valid result, you should call @command{gnatmetric} for
 the whole set of sources that make up your program. It can be done
 by calling @command{gnatmetric} from the GNAT driver with @option{-U}
-option (see See @ref{The GNAT Driver and Project Files} for details.
+option (see @ref{The GNAT Driver and Project Files} for details).
 
 By default, all the coupling metrics are disabled. You can use the following
 switches to specify the coupling metrics to be computed and reported:
@@ -14574,10 +14636,10 @@ switches to specify the coupling metrics to be computed and reported:
 @table @option
 
 @ifclear vms
-@cindex @option{--package@var{x}} (@command{gnatmetric})
-@cindex @option{--no-package@var{x}} (@command{gnatmetric})
-@cindex @option{--category@var{x}} (@command{gnatmetric})
-@cindex @option{--no-category@var{x}} (@command{gnatmetric})
+@cindex @option{--tagged-coupling@var{x}} (@command{gnatmetric})
+@cindex @option{--hierarchy-coupling@var{x}} (@command{gnatmetric})
+@cindex @option{--unit-coupling@var{x}} (@command{gnatmetric})
+@cindex @option{--control-coupling@var{x}} (@command{gnatmetric})
 @end ifclear
 
 @ifset vms
@@ -14587,33 +14649,29 @@ switches to specify the coupling metrics to be computed and reported:
 @item ^--coupling-all^/COUPLING_METRICS=ALL^
 Report all the coupling metrics
 
-@item ^--no-coupling-all^/COUPLING_METRICS=NONE^
-Do not report any of  metrics
+@item ^--tagged-coupling-out^/COUPLING_METRICS=TAGGED_OUT^
+Report tagged (class) fan-out coupling
 
-@item ^--package-efferent-coupling^/COUPLING_METRICS=PACKAGE_EFFERENT^
-Report package efferent coupling
+@item ^--tagged-coupling-in^/COUPLING_METRICS=TAGGED_IN^
+Report tagged (class) fan-in coupling
 
-@item ^--no-package-efferent-coupling^/COUPLING_METRICS=NOPACKAGE_EFFERENT^
-Do not report package efferent coupling
+@item ^--hierarchy-coupling-out^/COUPLING_METRICS=HIERARCHY_OUT^
+Report hierarchy (category) fan-out coupling
 
-@item ^--package-afferent-coupling^/COUPLING_METRICS=PACKAGE_AFFERENT^
-Report package afferent coupling
+@item ^--hierarchy-coupling-in^/COUPLING_METRICS=HIERARCHY_IN^
+Report hierarchy (category) fan-in coupling
 
-@item ^--no-package-afferent-coupling^/COUPLING_METRICS=NOPACKAGE_AFFERENT^
-Do not report package afferent coupling
+@item ^--unit-coupling-out^/COUPLING_METRICS=UNIT_OUT^
+Report unit fan-out coupling
 
-@item ^--category-efferent-coupling^/COUPLING_METRICS=CATEGORY_EFFERENT^
-Report category efferent coupling
+@item ^--unit-coupling-in^/COUPLING_METRICS=UNIT_IN^
+Report unit fan-in coupling
 
-@item ^--no-category-efferent-coupling^/COUPLING_METRICS=NOCATEGORY_EFFERENT^
-Do not report category efferent coupling
+@item ^--control-coupling-out^/COUPLING_METRICS=CONTROL_OUT^
+Report control fan-out coupling
 
-@item ^--category-afferent-coupling^/COUPLING_METRICS=CATEGORY_AFFERENT^
-Report category afferent coupling
-
-@item ^--no-category-afferent-coupling^/COUPLING_METRICS=NOCATEGORY_AFFERENT^
-Do not report category afferent coupling
-
+@item ^--control-coupling-in^/COUPLING_METRICS=CONTROL_IN^
+Report control fan-in coupling
 @end table
 
 @node Other gnatmetric Switches

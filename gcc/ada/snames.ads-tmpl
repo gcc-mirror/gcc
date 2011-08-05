@@ -731,9 +731,11 @@ package Snames is
    Name_Compiler_Version               : constant Name_Id := N + $; -- GNAT
    Name_Component_Size                 : constant Name_Id := N + $;
    Name_Compose                        : constant Name_Id := N + $;
+   Name_Constant_Indexing              : constant Name_Id := N + $; -- GNAT
    Name_Constrained                    : constant Name_Id := N + $;
    Name_Count                          : constant Name_Id := N + $;
    Name_Default_Bit_Order              : constant Name_Id := N + $; -- GNAT
+   Name_Default_Iterator               : constant Name_Id := N + $; -- GNAT
    Name_Definite                       : constant Name_Id := N + $;
    Name_Delta                          : constant Name_Id := N + $;
    Name_Denorm                         : constant Name_Id := N + $;
@@ -756,8 +758,10 @@ package Snames is
    Name_Has_Tagged_Values              : constant Name_Id := N + $; -- GNAT
    Name_Identity                       : constant Name_Id := N + $;
    Name_Img                            : constant Name_Id := N + $; -- GNAT
+   Name_Implicit_Dereference           : constant Name_Id := N + $; -- GNAT
    Name_Integer_Value                  : constant Name_Id := N + $; -- GNAT
    Name_Invalid_Value                  : constant Name_Id := N + $; -- GNAT
+   Name_Iterator_Element               : constant Name_Id := N + $; -- GNAT
    Name_Large                          : constant Name_Id := N + $; -- Ada 83
    Name_Last                           : constant Name_Id := N + $;
    Name_Last_Bit                       : constant Name_Id := N + $;
@@ -825,6 +829,7 @@ package Snames is
    Name_Val                            : constant Name_Id := N + $;
    Name_Valid                          : constant Name_Id := N + $;
    Name_Value_Size                     : constant Name_Id := N + $; -- GNAT
+   Name_Variable_Indexing              : constant Name_Id := N + $; -- GNAT
    Name_Version                        : constant Name_Id := N + $;
    Name_Wchar_T_Size                   : constant Name_Id := N + $; -- GNAT
    Name_Wide_Wide_Width                : constant Name_Id := N + $; -- Ada 05
@@ -1263,9 +1268,11 @@ package Snames is
       Attribute_Compiler_Version,
       Attribute_Component_Size,
       Attribute_Compose,
+      Attribute_Constant_Indexing,
       Attribute_Constrained,
       Attribute_Count,
       Attribute_Default_Bit_Order,
+      Attribute_Default_Iterator,
       Attribute_Definite,
       Attribute_Delta,
       Attribute_Denorm,
@@ -1288,8 +1295,10 @@ package Snames is
       Attribute_Has_Tagged_Values,
       Attribute_Identity,
       Attribute_Img,
+      Attribute_Implicit_Dereference,
       Attribute_Integer_Value,
       Attribute_Invalid_Value,
+      Attribute_Iterator_Element,
       Attribute_Large,
       Attribute_Last,
       Attribute_Last_Bit,
@@ -1357,6 +1366,7 @@ package Snames is
       Attribute_Val,
       Attribute_Valid,
       Attribute_Value_Size,
+      Attribute_Variable_Indexing,
       Attribute_Version,
       Attribute_Wchar_T_Size,
       Attribute_Wide_Wide_Width,

@@ -522,8 +522,7 @@ package body Einfo is
    --    Is_Processed_Transient          Flag252
    --    Is_Postcondition_Proc           Flag253
 
-   --    (unused)                        Flag151
-   --    (unused)                        Flag251
+   --    (Has_Implicit_Dereference)      Flag251
    --    (unused)                        Flag254
 
    -----------------------
@@ -1307,6 +1306,11 @@ package body Einfo is
    begin
       return Flag56 (Id);
    end Has_Homonym;
+
+   function Has_Implicit_Dereference (Id : E) return B is
+   begin
+      return Flag251 (Id);
+   end Has_Implicit_Dereference;
 
    function Has_Inheritable_Invariants (Id : E) return B is
    begin
@@ -3794,6 +3798,11 @@ package body Einfo is
    begin
       Set_Flag56 (Id, V);
    end Set_Has_Homonym;
+
+   procedure Set_Has_Implicit_Dereference (Id : E; V : B := True) is
+   begin
+      Set_Flag251 (Id, V);
+   end Set_Has_Implicit_Dereference;
 
    procedure Set_Has_Inheritable_Invariants (Id : E; V : B := True) is
    begin
@@ -7429,6 +7438,7 @@ package body Einfo is
       W ("Has_Fully_Qualified_Name",        Flag173 (Id));
       W ("Has_Gigi_Rep_Item",               Flag82  (Id));
       W ("Has_Homonym",                     Flag56  (Id));
+      W ("Has_Implicit_Dereference",        Flag251 (Id));
       W ("Has_Inheritable_Invariants",      Flag248 (Id));
       W ("Has_Initial_Value",               Flag219 (Id));
       W ("Has_Invariants",                  Flag232 (Id));

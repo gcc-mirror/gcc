@@ -1508,6 +1508,11 @@ package Einfo is
 --       Present in all entities. Set if an entity has a homonym in the same
 --       scope. Used by Gigi to generate unique names for such entities.
 
+--    Has_Implicit_Dereference (Flag251)
+--       Present in types and discriminants. Set if the type has an aspect
+--       Implicit_Dereference. Set also on the discriminant named in the aspect
+--       clause, to simplify type resolution.
+
 --    Has_Initial_Value (Flag219)
 --       Present in entities for variables and out parameters. Set if there
 --       is an explicit initial value expression in the declaration of the
@@ -6093,6 +6098,7 @@ package Einfo is
    function Has_Fully_Qualified_Name            (Id : E) return B;
    function Has_Gigi_Rep_Item                   (Id : E) return B;
    function Has_Homonym                         (Id : E) return B;
+   function Has_Implicit_Dereference            (Id : E) return B;
    function Has_Inheritable_Invariants          (Id : E) return B;
    function Has_Initial_Value                   (Id : E) return B;
    function Has_Invariants                      (Id : E) return B;
@@ -6680,6 +6686,7 @@ package Einfo is
    procedure Set_Has_Fully_Qualified_Name        (Id : E; V : B := True);
    procedure Set_Has_Gigi_Rep_Item               (Id : E; V : B := True);
    procedure Set_Has_Homonym                     (Id : E; V : B := True);
+   procedure Set_Has_Implicit_Dereference        (Id : E; V : B := True);
    procedure Set_Has_Inheritable_Invariants      (Id : E; V : B := True);
    procedure Set_Has_Initial_Value               (Id : E; V : B := True);
    procedure Set_Has_Invariants                  (Id : E; V : B := True);
@@ -7376,6 +7383,7 @@ package Einfo is
    pragma Inline (Has_Fully_Qualified_Name);
    pragma Inline (Has_Gigi_Rep_Item);
    pragma Inline (Has_Homonym);
+   pragma Inline (Has_Implicit_Dereference);
    pragma Inline (Has_Inheritable_Invariants);
    pragma Inline (Has_Initial_Value);
    pragma Inline (Has_Invariants);
@@ -7819,6 +7827,7 @@ package Einfo is
    pragma Inline (Set_Has_Fully_Qualified_Name);
    pragma Inline (Set_Has_Gigi_Rep_Item);
    pragma Inline (Set_Has_Homonym);
+   pragma Inline (Set_Has_Implicit_Dereference);
    pragma Inline (Set_Has_Inheritable_Invariants);
    pragma Inline (Set_Has_Initial_Value);
    pragma Inline (Set_Has_Invariants);

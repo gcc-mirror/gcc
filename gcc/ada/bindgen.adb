@@ -928,28 +928,18 @@ package body Bindgen is
    --------------------------
 
    procedure Gen_CodePeer_Wrapper is
+      Callee_Name : constant String := "Ada_Main_Program";
    begin
-      Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+      if ALIs.Table (ALIs.First).Main_Program = Proc then
+         WBI ("   procedure " & CodePeer_Wrapper_Name & " is ");
+         WBI ("   begin");
+         WBI ("      " & Callee_Name & ";");
 
-      declare
-         --  Bypass Ada_Main_Program; its Import pragma confuses CodePeer
-
-         Callee_Name : String renames Name_Buffer (1 .. Name_Len - 2);
-         --  Strip trailing "%b"
-
-      begin
-         if ALIs.Table (ALIs.First).Main_Program = Proc then
-            WBI ("   procedure " & CodePeer_Wrapper_Name & " is ");
-            WBI ("   begin");
-            WBI ("      " & Callee_Name & ";");
-
-         else
-            WBI
-              ("   function " & CodePeer_Wrapper_Name & " return Integer is");
-            WBI ("   begin");
-            WBI ("      return " & Callee_Name & ";");
-         end if;
-      end;
+      else
+         WBI ("   function " & CodePeer_Wrapper_Name & " return Integer is");
+         WBI ("   begin");
+         WBI ("      return " & Callee_Name & ";");
+      end if;
 
       WBI ("   end " & CodePeer_Wrapper_Name & ";");
       WBI ("");
@@ -1481,6 +1471,42 @@ package body Bindgen is
 
    procedure Gen_Main is
    begin
+      if not No_Main_Subprogram then
+         --  To call the main program, we declare it using a pragma Import
+         --  Ada with the right link name.
+
+         --  It might seem more obvious to "with" the main program, and call
+         --  it in the normal Ada manner. We do not do this for three
+         --  reasons:
+
+         --    1. It is more efficient not to recompile the main program
+         --    2. We are not entitled to assume the source is accessible
+         --    3. We don't know what options to use to compile it
+
+         --  It is really reason 3 that is most critical (indeed we used
+         --  to generate the "with", but several regression tests failed).
+
+         if ALIs.Table (ALIs.First).Main_Program = Func then
+            WBI ("   function Ada_Main_Program return Integer;");
+
+         else
+            WBI ("   procedure Ada_Main_Program;");
+         end if;
+
+         Set_String ("   pragma Import (Ada, Ada_Main_Program, """);
+         Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+         Set_Main_Program_Name;
+         Set_String (""");");
+
+         Write_Statement_Buffer;
+         WBI ("");
+
+         --  For CodePeer, declare a wrapper for the user-defined main program
+         if CodePeer_Mode then
+            Gen_CodePeer_Wrapper;
+         end if;
+      end if;
+
       if Exit_Status_Supported_On_Target then
          Set_String ("   function ");
       else
@@ -1551,51 +1577,17 @@ package body Bindgen is
       --  Deal with declarations for main program case
 
       if not No_Main_Subprogram then
-         if CodePeer_Mode then
-            if ALIs.Table (ALIs.First).Main_Program = Func then
-               WBI ("      Result : Integer;");
-            end if;
-
-         else
-            --  To call the main program, we declare it using a pragma Import
-            --  Ada with the right link name.
-
-            --  It might seem more obvious to "with" the main program, and call
-            --  it in the normal Ada manner. We do not do this for three
-            --  reasons:
-
-            --    1. It is more efficient not to recompile the main program
-            --    2. We are not entitled to assume the source is accessible
-            --    3. We don't know what options to use to compile it
-
-            --  It is really reason 3 that is most critical (indeed we used
-            --  to generate the "with", but several regression tests failed).
-
+         if ALIs.Table (ALIs.First).Main_Program = Func then
+            WBI ("      Result : Integer;");
             WBI ("");
+         end if;
 
-            if ALIs.Table (ALIs.First).Main_Program = Func then
-               WBI ("      Result : Integer;");
-               WBI ("");
-               WBI ("      function Ada_Main_Program return Integer;");
-
-            else
-               WBI ("      procedure Ada_Main_Program;");
-            end if;
-
-            Set_String ("      pragma Import (Ada, Ada_Main_Program, """);
-            Get_Name_String (Units.Table (First_Unit_Entry).Uname);
-            Set_Main_Program_Name;
-            Set_String (""");");
-
-            Write_Statement_Buffer;
+         if Bind_Main_Program
+           and then not Suppress_Standard_Library_On_Target
+           and then not CodePeer_Mode
+         then
+            WBI ("      SEH : aliased array (1 .. 2) of Integer;");
             WBI ("");
-
-            if Bind_Main_Program
-              and then not Suppress_Standard_Library_On_Target
-            then
-               WBI ("      SEH : aliased array (1 .. 2) of Integer;");
-               WBI ("");
-            end if;
          end if;
       end if;
 
@@ -2310,17 +2302,6 @@ package body Bindgen is
          WBI ("with Ada.Exceptions;");
       end if;
 
-      if CodePeer_Mode then
-
-         --  For CodePeer, main program is not called via an Import pragma
-
-         Get_Name_String (Units.Table (First_Unit_Entry).Uname);
-
-         --  Note: trailing "%b" is stripped.
-
-         WBI ("with " & Name_Buffer (1 .. Name_Len - 2) & ";");
-      end if;
-
       WBI ("");
       WBI ("package body " & Ada_Main & " is");
       WBI ("   pragma Warnings (Off);");
@@ -2379,13 +2360,6 @@ package body Bindgen is
       Gen_Adainit;
 
       if Bind_Main_Program and then VM_Target = No_VM then
-
-         --  For CodePeer, declare a wrapper for the user-defined main program
-
-         if CodePeer_Mode then
-            Gen_CodePeer_Wrapper;
-         end if;
-
          Gen_Main;
       end if;
 

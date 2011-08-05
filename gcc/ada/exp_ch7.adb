@@ -2289,7 +2289,7 @@ package body Exp_Ch7 is
                  and then Nkind (Name (N)) = N_Identifier
                then
                   declare
-                     Call_Nam  : constant Name_Id := Chars (Entity (Name (N)));
+                     Call_Ent  : constant Entity_Id := Entity (Name (N));
                      Deep_Init : constant Entity_Id :=
                                    TSS (Typ, TSS_Deep_Initialize);
                      Init      : Entity_Id := Empty;
@@ -2304,10 +2304,10 @@ package body Exp_Ch7 is
 
                      return
                          (Present (Deep_Init)
-                           and then Chars (Deep_Init) = Call_Nam)
+                           and then Call_Ent = Deep_Init)
                        or else
                          (Present (Init)
-                           and then Chars (Init) = Call_Nam);
+                           and then Call_Ent = Init);
                   end;
                end if;
 
