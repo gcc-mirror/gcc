@@ -1,3 +1,25 @@
+2011-08-05  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Get_Closure): Do not crash when it is not possible to
+	delete or close the file when the call to gnatmake was successful.
+
+2011-08-05  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): in ALFA mode, set
+	Global_Discard_Names.
+
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads: comments on use of entity field for aspect specifications.
+
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Reset_Entity): If the entity field of the associated
+	node is not itself an entity but a selected component, it is a
+	rewritten parameterless call to an en enclosing synchronized operation,
+	and this expansion will be performed again in the instance, so there is
+	no global information to preserve.
+
 2011-08-05  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.adb (Set_All_DT_Position): Cleanup code and improve support
