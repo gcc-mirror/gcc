@@ -1,3 +1,14 @@
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, gnatcmd.adb, switch-c.adb, exp_attr.adb, make.adb,
+	bindgen.adb, einfo.adb, sem_ch12.adb, sem_attr.adb, a-fihema.adb,
+	a-fihema.ads, sem_elab.adb, sem_elab.ads, aspects.adb, opt.ads,
+	prj-conf.adb, sem_ch13.adb, s-ficobl.ads: Minor reformatting
+
+2011-08-05  Bob Duff  <duff@adacore.com>
+
+	* a-stunau.ads, g-spipat.adb: Update comments.
+
 2011-08-05  Bob Duff  <duff@adacore.com>
 
 	* a-fihema.ads: Minor comment fix.

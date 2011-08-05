@@ -122,7 +122,7 @@ package System.File_Control_Block is
       --  Indicates sharing status of file, see description of type above
 
       Access_Method : Character;
-      --  Set to 'Q', 'S', 'T, 'D' for Sequential_IO, Stream_IO, Text_IO,
+      --  Set to 'Q', 'S', 'T', 'D' for Sequential_IO, Stream_IO, Text_IO,
       --  Direct_IO file (used to validate file sharing request).
 
       Next : AFCB_Ptr;

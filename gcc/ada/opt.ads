@@ -603,7 +603,7 @@ package Opt is
    --  Also forces generation of tree file if -gnatt is also set.
 
    Disable_ALI_File : Boolean := False;
-   --  GNAT2WHY
+   --  GNAT
    --  Disable generation of ALI file
 
    Force_Checking_Of_Elaboration_Flags : Boolean := False;

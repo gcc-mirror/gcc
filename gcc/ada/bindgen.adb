@@ -929,6 +929,7 @@ package body Bindgen is
 
    procedure Gen_CodePeer_Wrapper is
       Callee_Name : constant String := "Ada_Main_Program";
+
    begin
       if ALIs.Table (ALIs.First).Main_Program = Proc then
          WBI ("   procedure " & CodePeer_Wrapper_Name & " is ");
@@ -1472,6 +1473,7 @@ package body Bindgen is
    procedure Gen_Main is
    begin
       if not No_Main_Subprogram then
+
          --  To call the main program, we declare it using a pragma Import
          --  Ada with the right link name.
 
@@ -1488,7 +1490,6 @@ package body Bindgen is
 
          if ALIs.Table (ALIs.First).Main_Program = Func then
             WBI ("   function Ada_Main_Program return Integer;");
-
          else
             WBI ("   procedure Ada_Main_Program;");
          end if;
@@ -1584,8 +1585,8 @@ package body Bindgen is
          end if;
 
          if Bind_Main_Program
-           and then not Suppress_Standard_Library_On_Target
-           and then not CodePeer_Mode
+           and not Suppress_Standard_Library_On_Target
+           and not CodePeer_Mode
          then
             WBI ("      SEH : aliased array (1 .. 2) of Integer;");
             WBI ("");
@@ -1603,9 +1604,8 @@ package body Bindgen is
       --  this variable at any level of optimization.
 
       if Bind_Main_Program and not CodePeer_Mode then
-         WBI
-           ("      Ensure_Reference : aliased System.Address := " &
-            "Ada_Main_Program_Name'Address;");
+         WBI ("      Ensure_Reference : aliased System.Address := " &
+              "Ada_Main_Program_Name'Address;");
          WBI ("      pragma Volatile (Ensure_Reference);");
          WBI ("");
       end if;

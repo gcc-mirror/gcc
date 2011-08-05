@@ -121,7 +121,7 @@ package Sem_Elab is
    procedure Check_Elab_Call
      (N            : Node_Id;
       Outer_Scope  : Entity_Id := Empty;
-      In_Init_Proc : Boolean := False);
+      In_Init_Proc : Boolean   := False);
    --  Check a call for possible elaboration problems. The node N is either
    --  an N_Function_Call or N_Procedure_Call_Statement node. The Outer_Scope
    --  argument indicates whether this is an outer level call from Sem_Res

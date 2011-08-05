@@ -41,7 +41,7 @@ with System.Storage_Pools;    use System.Storage_Pools;
 
 package body Ada.Finalization.Heap_Management is
 
-   Header_Size   : constant Storage_Count  := Node'Size / Storage_Unit;
+   Header_Size : constant Storage_Count  := Node'Size / Storage_Unit;
    --  Size of the header in bytes. Added to Storage_Size requested by
    --  Allocate/Deallocate to determine the Storage_Size passed to the
    --  underlying pool.
@@ -149,6 +149,7 @@ package body Ada.Finalization.Heap_Management is
       N.Prev := L;
 
       Unlock_Task.all;
+
       --  Note: no need to unlock in case of exceptions; the above code cannot
       --  raise any.
    end Attach;
@@ -185,8 +186,7 @@ package body Ada.Finalization.Heap_Management is
             N_Ptr  : Node_Ptr;
 
          begin
-            --  Move the address from the object to the beginning of the list
-            --  header.
+            --  Move address from the object to beginning of the list header
 
             N_Addr := Addr - Header_Offset;
 
@@ -221,8 +221,10 @@ package body Ada.Finalization.Heap_Management is
    ------------
 
    procedure Detach (N : Node_Ptr) is
+
+      --  N must be attached to some list
+
       pragma Assert (N.Next /= null and then N.Prev /= null);
-      --  It must be attached to some list
 
       procedure Null_Out_Pointers;
       --  Set Next/Prev pointer of N to null (for debugging)
@@ -237,6 +239,8 @@ package body Ada.Finalization.Heap_Management is
          N.Prev := null;
       end Null_Out_Pointers;
 
+   --  Start of processing for Detach
+
    begin
       Lock_Task.all;
 
@@ -247,9 +251,10 @@ package body Ada.Finalization.Heap_Management is
       --  Note: no need to unlock in case of exceptions; the above code cannot
       --  raise any.
 
-      pragma Debug (Null_Out_Pointers);
       --  No need to null out the pointers, except that it makes pcol easier to
       --  understand.
+
+      pragma Debug (Null_Out_Pointers);
    end Detach;
 
    --------------
@@ -278,13 +283,14 @@ package body Ada.Finalization.Heap_Management is
       --  to go away.
 
       while Curr_Ptr /= Collection.Objects'Unchecked_Access loop
+
          --  ??? Kludge: Don't do anything until the proper place to set
          --  primitive Finalize_Address has been determined.
 
          if Collection.Finalize_Address /= null then
             declare
                Object_Address : constant Address :=
-                 Curr_Ptr.all'Address + Header_Offset;
+                                  Curr_Ptr.all'Address + Header_Offset;
                --  Get address of object from address of header
 
             begin
@@ -330,8 +336,8 @@ package body Ada.Finalization.Heap_Management is
 
    procedure pcol (Collection : Finalization_Collection) is
       Head      : constant Node_Ptr := Collection.Objects'Unrestricted_Access;
-      --  "Unrestricted", because we're evilly getting access-to-variable of a
-      --  constant!  OK for debugging code.
+      --  "Unrestricted", because we are getting access-to-variable of a
+      --  constant!  Normally worrisome, this is OK for debugging code.
 
       Head_Seen : Boolean := False;
       N_Ptr     : Node_Ptr;
@@ -348,6 +354,7 @@ package body Ada.Finalization.Heap_Management is
       Put_Line (Address_Image (Collection'Address));
 
       Put ("Base_Pool : ");
+
       if Collection.Base_Pool = null then
          Put_Line (" null");
       else
@@ -355,6 +362,7 @@ package body Ada.Finalization.Heap_Management is
       end if;
 
       Put ("Fin_Addr  : ");
+
       if Collection.Finalize_Address = null then
          Put_Line ("null");
       else
@@ -384,7 +392,6 @@ package body Ada.Finalization.Heap_Management is
       --  (dummy head) - present if dummy head
 
       N_Ptr := Head;
-
       while N_Ptr /= null loop -- Should never be null; we being defensive
          Put_Line ("V");
 
@@ -428,6 +435,7 @@ package body Ada.Finalization.Heap_Management is
          end if;
 
          Put ("|  Prev: ");
+
          if N_Ptr.Prev = null then
             Put_Line ("null");
          else
@@ -435,6 +443,7 @@ package body Ada.Finalization.Heap_Management is
          end if;
 
          Put ("|  Next: ");
+
          if N_Ptr.Next = null then
             Put_Line ("null");
          else

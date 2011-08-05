@@ -872,8 +872,10 @@ procedure GNATCmd is
                Close (File);
             end if;
 
+         --  Don't crash if it is not possible to delete or close the file,
+         --  just ignore the situation.
+
          exception
-            --  Don't crash if it is not possible to delete or close the file
             when others =>
                null;
          end;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2010, AdaCore                     --
+--                     Copyright (C) 1998-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3851,7 +3851,8 @@ package body GNAT.Spitbol.Patterns is
 
                   begin
                      if Node_OnM.Pcode = PC_Assign_OnM then
-                        Set_String (Node_OnM.VP.all, Subject (Start .. Stop));
+                        Set_Unbounded_String
+                          (Node_OnM.VP.all, Subject (Start .. Stop));
 
                      elsif Node_OnM.Pcode = PC_Write_OnM then
                         Put_Line (Node_OnM.FP.all, Subject (Start .. Stop));
@@ -4062,7 +4063,7 @@ package body GNAT.Spitbol.Patterns is
          --  Assign immediate. This node performs the actual assignment
 
          when PC_Assign_Imm =>
-            Set_String
+            Set_Unbounded_String
               (Node.VP.all,
                Subject (Stack (Stack_Base - 1).Cursor + 1 .. Cursor));
             Pop_Region;
@@ -5228,7 +5229,8 @@ package body GNAT.Spitbol.Patterns is
 
                   begin
                      if Node_OnM.Pcode = PC_Assign_OnM then
-                        Set_String (Node_OnM.VP.all, Subject (Start .. Stop));
+                        Set_Unbounded_String
+                          (Node_OnM.VP.all, Subject (Start .. Stop));
                         Dout
                           (Img (Stack (S).Node) &
                            "deferred assignment of " &
@@ -5477,7 +5479,7 @@ package body GNAT.Spitbol.Patterns is
             Dout
               (Img (Node) & "executing immediate assignment of " &
                Image (Subject (Stack (Stack_Base - 1).Cursor + 1 .. Cursor)));
-            Set_String
+            Set_Unbounded_String
               (Node.VP.all,
                Subject (Stack (Stack_Base - 1).Cursor + 1 .. Cursor));
             Pop_Region;

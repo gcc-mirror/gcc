@@ -4352,7 +4352,7 @@ package body Make is
             end if;
          end if;
 
-         --  Put the object directories in ADA_OBJECTS_PATH.
+         --  Put the object directories in ADA_OBJECTS_PATH
 
          Prj.Env.Set_Ada_Paths
            (Main_Project,

@@ -42,12 +42,11 @@ package body Aspects is
    --  Same as Set_Aspect_Specifications, but does not contain the assertion
    --  that checks that N does not already have aspect specifications. This
    --  subprogram is supposed to be used as a part of Tree_Read. When reading
-   --  the tree we first read nodes with their basic properties (as
-   --  Atree.Tree_Read), this includes reading the Has_Aspects flag for each
-   --  node, then we reed all the list tables and only after that we call
-   --  Tree_Read for Aspects. That is, when reading the tree, the list of
-   --  aspects is attached to the node that already has Has_Aspects flag set
-   --  ON
+   --  tree, first read nodes with their basic properties (as Atree.Tree_Read),
+   --  this includes reading the Has_Aspects flag for each node, then we reed
+   --  all the list tables and only after that we call Tree_Read for Aspects.
+   --  That is, when reading the tree, the list of aspects is attached to the
+   --  node that already has Has_Aspects flag set ON.
 
    ------------------------------------------
    -- Hash Table for Aspect Specifications --

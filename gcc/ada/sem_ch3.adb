@@ -9121,12 +9121,13 @@ package body Sem_Ch3 is
 
                            --  AI05-0068: report if there is an overriding
                            --  non-abstract subprogram that is invisible.
+
                            if Is_Hidden (E)
                              and then not Is_Abstract_Subprogram (E)
                            then
                               Error_Msg_NE
-                             ("\& subprogram# is not visible",
-                              T, Subp);
+                                ("\& subprogram# is not visible",
+                                 T, Subp);
 
                            else
                               Error_Msg_NE
