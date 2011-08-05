@@ -1,3 +1,7 @@
+2011-08-05  Gabriel Charette  <gchare@google.com>
+
+	* decl.c (finish_function): Remove unecessary line 0 hack.
+
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47453
