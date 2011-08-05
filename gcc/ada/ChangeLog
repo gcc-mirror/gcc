@@ -1,3 +1,61 @@
+2011-08-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* make.adb (Linking_Phase): No longer need to set source search path
+	before calling gnatlink in CodePeer mode.
+	* gnatlink.adb (Gnatlink): No longer pass -gnat83/95/05/12 switch to
+	gcc in CodePeer mode, since the binder generated file no longer has a
+	'with Main'.
+	* switch.ads, switch.adb (Is_Language_Switch): Removed.
+	* switch-c.adb: Update comment.
+
+2011-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_strm.adb, bindgen.adb, s-ficobl.ads: Minor reformatting.
+
+2011-08-05  Nicolas Roche  <roche@adacore.com>
+
+	* gnat_ugn.texi: Fix minor syntax error issue.
+
+2011-08-05  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Get_Closure): Do not crash when it is not possible to
+	delete or close the file when the call to gnatmake returns a non
+	successful return code.
+
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): When expanding a predicate
+	check, indicate that the copy of the original node does not come from
+	source, to prevent an infinite recursion of the expansion.
+
+2011-08-05  Johannes Kanig  <kanig@adacore.com>
+
+	* debug.adb: document switch -gnatd.G for gnat2why, which deactivates
+	VC generation for subprogram bodies.
+
+2011-08-05  Yannick Moy  <moy@adacore.com>
+
+	* einfo.ads: Typo.
+	* sem_ch3.adb (Signed_Integer_Type_Declaration): in ALFA mode, define
+	the base type with the smallest allowed base type.
+
+2011-08-05  Sergey Rybin  <rybin@adacore.com>
+
+	* tree_gen.adb, tree_in.adb, aspects.adb: Fix tree read-write for
+	aspects.
+
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.ads: minor comment updates.
+
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Formal_Package_Declaration): in an
+	instantiation and a formal package the compiler generates a package
+	renaming declaration so that the generic name within the declaration
+	is interpreted as a renaming of the instance. At the end of a formal
+	package declaration, this renaming must become invisible.
+
 2011-08-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Is_Init_Call): Reimplemented to avoid character

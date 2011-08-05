@@ -72,10 +72,6 @@ package Switch is
    --  Returns True iff Switch_Chars represents a front-end switch, i.e. it
    --  starts with -I, -gnat or -?RTS.
 
-   function Is_Language_Switch (Switch_Chars : String) return Boolean;
-   --  Returns True iff Switch_Chars represents a language switch, i.e. it
-   --  specifies -gnat83/95/2005/2012.
-
    function Is_Internal_GCC_Switch (Switch_Chars : String) return Boolean;
    --  Returns True iff Switch_Chars represents an internal GCC switch to be
    --  followed by a single argument, such as -dumpbase, --param or -auxbase.

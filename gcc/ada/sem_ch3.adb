@@ -19678,6 +19678,81 @@ package body Sem_Ch3 is
       Set_Ekind          (T, E_Signed_Integer_Subtype);
       Set_Etype          (T, Implicit_Base);
 
+      --  In formal verification mode, override partially the decisions above
+      --  to restrict base type's range to the minimum allowed by RM 3.5.4,
+      --  namely the smallest symmetric range around zero with a possible extra
+      --  negative value that contains the subtype range. Keep Size, RM_Size
+      --  and First_Rep_Item info, which should not be relied upon in formal
+      --  verification.
+
+      if ALFA_Mode then
+
+         --  If the range of the type is already symmetric with a possible
+         --  extra negative value, just make the type its own base type.
+
+         if UI_Le (Lo_Val, Hi_Val)
+           and then (UI_Eq (Lo_Val, UI_Negate (Hi_Val))
+                      or else
+                        UI_Eq (Lo_Val, UI_Sub (UI_Negate (Hi_Val), Uint_1)))
+         then
+            Set_Etype (T, T);
+
+         else
+            declare
+               Sym_Hi_Val : Uint;
+               Sym_Lo_Val : Uint;
+               Decl       : Node_Id;
+               Dloc       : constant Source_Ptr := Sloc (Def);
+               Lbound     : Node_Id;
+               Ubound     : Node_Id;
+
+            begin
+               --  If the subtype range is empty, the smallest base type range
+               --  is the symmetric range around zero containing Lo_Val and
+               --  Hi_Val.
+
+               if UI_Gt (Lo_Val, Hi_Val) then
+                  Sym_Hi_Val := UI_Max (UI_Abs (Lo_Val), UI_Abs (Hi_Val));
+                  Sym_Lo_Val := UI_Negate (Sym_Hi_Val);
+
+               --  Otherwise, if the subtype range is not empty and Hi_Val has
+               --  the largest absolute value, Hi_Val is non negative and the
+               --  smallest base type range is the symmetric range around zero
+               --  containing Hi_Val.
+
+               elsif UI_Le (UI_Abs (Lo_Val), UI_Abs (Hi_Val)) then
+                  Sym_Hi_Val := Hi_Val;
+                  Sym_Lo_Val := UI_Negate (Hi_Val);
+
+               --  Otherwise, the subtype range is not empty, Lo_Val has the
+               --  strictly largest absolute value, Lo_Val is negative and the
+               --  smallest base type range is the symmetric range around zero
+               --  with an extra negative value Lo_Val.
+
+               else
+                  Sym_Lo_Val := Lo_Val;
+                  Sym_Hi_Val := UI_Sub (UI_Negate (Lo_Val), Uint_1);
+               end if;
+
+               Lbound := Make_Integer_Literal (Dloc, Sym_Lo_Val);
+               Ubound := Make_Integer_Literal (Dloc, Sym_Hi_Val);
+               Set_Is_Static_Expression (Lbound);
+               Set_Is_Static_Expression (Ubound);
+
+               Decl := Make_Full_Type_Declaration (Dloc,
+                 Defining_Identifier => Implicit_Base,
+                 Type_Definition     =>
+                   Make_Signed_Integer_Type_Definition (Dloc,
+                     Low_Bound  => Lbound,
+                     High_Bound => Ubound));
+
+               Analyze (Decl);
+               Set_Etype (Implicit_Base, Implicit_Base);
+               Insert_Before (Parent (Def), Decl);
+            end;
+         end if;
+      end if;
+
       Set_Size_Info      (T,                (Implicit_Base));
       Set_First_Rep_Item (T, First_Rep_Item (Implicit_Base));
       Set_Scalar_Range   (T, Def);

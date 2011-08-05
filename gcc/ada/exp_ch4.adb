@@ -9154,8 +9154,16 @@ package body Exp_Ch4 is
         and then Target_Type /= Operand_Type
         and then Comes_From_Source (N)
       then
-         Insert_Action (N,
-           Make_Predicate_Check (Target_Type, Duplicate_Subexpr (N)));
+         declare
+            New_Expr : constant Node_Id := Duplicate_Subexpr (N);
+
+         begin
+            --  Avoid infinite recursion on the subsequent expansion of
+            --  of the copy of the original type conversion.
+
+            Set_Comes_From_Source (New_Expr, False);
+            Insert_Action (N, Make_Predicate_Check (Target_Type, New_Expr));
+         end;
       end if;
    end Expand_N_Type_Conversion;
 

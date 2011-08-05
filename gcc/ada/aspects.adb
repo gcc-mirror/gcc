@@ -38,6 +38,17 @@ with GNAT.HTable;           use GNAT.HTable;
 
 package body Aspects is
 
+   procedure Set_Aspect_Specifications_No_Check (N : Node_Id; L : List_Id);
+   --  Same as Set_Aspect_Specifications, but does not contain the assertion
+   --  that checks that N does not already have aspect specifications. This
+   --  subprogram is supposed to be used as a part of Tree_Read. When reading
+   --  the tree we first read nodes with their basic properties (as
+   --  Atree.Tree_Read), this includes reading the Has_Aspects flag for each
+   --  node, then we reed all the list tables and only after that we call
+   --  Tree_Read for Aspects. That is, when reading the tree, the list of
+   --  aspects is attached to the node that already has Has_Aspects flag set
+   --  ON
+
    ------------------------------------------
    -- Hash Table for Aspect Specifications --
    ------------------------------------------
@@ -261,6 +272,20 @@ package body Aspects is
       Aspect_Specifications_Hash_Table.Set (N, L);
    end Set_Aspect_Specifications;
 
+   ----------------------------------------
+   -- Set_Aspect_Specifications_No_Check --
+   ----------------------------------------
+
+   procedure Set_Aspect_Specifications_No_Check (N : Node_Id; L : List_Id) is
+   begin
+      pragma Assert (Permits_Aspect_Specifications (N));
+      pragma Assert (L /= No_List);
+
+      Set_Has_Aspects (N);
+      Set_Parent (L, N);
+      Aspect_Specifications_Hash_Table.Set (N, L);
+   end Set_Aspect_Specifications_No_Check;
+
    ---------------
    -- Tree_Read --
    ---------------
@@ -273,7 +298,7 @@ package body Aspects is
          Tree_Read_Int (Int (Node));
          Tree_Read_Int (Int (List));
          exit when List = No_List;
-         Set_Aspect_Specifications (Node, List);
+         Set_Aspect_Specifications_No_Check (Node, List);
       end loop;
    end Tree_Read;
 

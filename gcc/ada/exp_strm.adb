@@ -911,10 +911,10 @@ package body Exp_Strm is
           Selector_Name => Make_Identifier (Loc, Name_V));
 
       --  Generate Reads for the discriminants of the type. The discriminants
-      --  need to be read before the rest of the components, so that
-      --  variants are initialized correctly. The discriminants must be read
-      --  into temporary variables so an incomplete Read (interrupted by an
-      --  exception, for example) does not alter the passed object.
+      --  need to be read before the rest of the components, so that variants
+      --  are initialized correctly. The discriminants must be read into temp
+      --  variables so an incomplete Read (interrupted by an exception, for
+      --  example) does not alter the passed object.
 
       while Present (Disc) loop
          Tmp_For_Disc := Make_Defining_Identifier (Loc,
@@ -928,9 +928,9 @@ package body Exp_Strm is
 
          Append_To (Stms,
            Make_Attribute_Reference (Loc,
-             Prefix => New_Occurrence_Of (Etype (Disc), Loc),
+             Prefix         => New_Occurrence_Of (Etype (Disc), Loc),
              Attribute_Name => Name_Read,
-             Expressions => New_List (
+             Expressions    => New_List (
                Make_Identifier (Loc, Name_S),
                New_Occurrence_Of (Tmp_For_Disc, Loc))));
 
@@ -946,14 +946,14 @@ package body Exp_Strm is
                  Left_Opnd  => New_Occurrence_Of (Tmp_For_Disc, Loc),
                  Right_Opnd =>
                    Make_Selected_Component (Loc,
-                     Prefix => New_Copy_Tree (Out_Formal),
+                     Prefix        => New_Copy_Tree (Out_Formal),
                      Selector_Name => New_Occurrence_Of (Disc, Loc))),
              Reason => CE_Discriminant_Check_Failed));
          Next_Discriminant (Disc);
       end loop;
 
-      --  Generate reads for the components of the record (including
-      --  those that depend on discriminants).
+      --  Generate reads for the components of the record (including those
+      --  that depend on discriminants).
 
       Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Read);
 
@@ -977,14 +977,14 @@ package body Exp_Strm is
       Constrained_Stms := Statements (Handled_Statement_Sequence (Decl));
       Append_To (Stms,
         Make_Block_Statement (Loc,
-          Declarations => Dcls,
+          Declarations               => Dcls,
           Handled_Statement_Sequence => Parent (Constrained_Stms)));
 
       Append_To (Constrained_Stms,
         Make_Implicit_If_Statement (Pnam,
           Condition =>
             Make_Attribute_Reference (Loc,
-              Prefix => New_Copy_Tree (Out_Formal),
+              Prefix         => New_Copy_Tree (Out_Formal),
               Attribute_Name => Name_Constrained),
           Then_Statements => Discriminant_Checks));
 

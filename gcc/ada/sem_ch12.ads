@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -151,10 +151,14 @@ package Sem_Ch12 is
    procedure Save_Env
      (Gen_Unit : Entity_Id;
       Act_Unit : Entity_Id);
-   --   ??? comment needed
+   --  Because instantiations can be nested, the compiler maintains a stack
+   --  of environments that holds variables relevant to the current instance:
+   --  most importanty Instantiated_Parent, Exchanged_Views, Hidden_Entities,
+   --  and others (see full list in Instance_Env).
 
    procedure Restore_Env;
-   --   ??? comment needed
+   --  After processing an instantiation, or aborting one because of semantic
+   --  errors, remove the current Instantiation_Env from Instantation_Envs.
 
    procedure Initialize;
    --  Initializes internal data structures

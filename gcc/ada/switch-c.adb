@@ -1059,8 +1059,8 @@ package body Switch.C is
                  ("-gnatZ is no longer supported: consider using --RTS=zcx");
 
             --  Note on language version switches: whenever a new language
-            --  version switch is added, function Switch.Is_Language_Switch and
-            --  procedure Switch.M.Normalize_Compiler_Switches must be updated.
+            --  version switch is added, procedure
+            --  Switch.M.Normalize_Compiler_Switches must be updated.
 
             --  Processing for 83 switch
 

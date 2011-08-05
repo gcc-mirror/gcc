@@ -131,7 +131,7 @@ package Einfo is
 --  The Ada 95 RM contains some rather peculiar (to us!) rules on the value
 --  of type'Size (see RM 13.3(55)). We have found that attempting to use
 --  these RM Size values generally, and in particular for determining the
---  default size of objects, creates chaos, and major incompatibilies in
+--  default size of objects, creates chaos, and major incompatibilities in
 --  existing code.
 
 --  We proceed as follows, for discrete and fixed-point subtypes, we have

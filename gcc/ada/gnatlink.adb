@@ -1572,16 +1572,11 @@ begin
                --  is to be dealt with specially because it needs to be passed
                --  if the binder-generated file is in Ada and may also be used
                --  to drive the linker.
-               --  Also in CodePeer mode, we need to pass the -gnat05 or
-               --  -gnat12 switches to be able to compile the binder file.
 
                declare
                   Arg : String_Ptr renames Args.Table (Index);
                begin
-                  if not Is_Front_End_Switch (Arg.all)
-                    or else (Opt.CodePeer_Mode
-                             and then Is_Language_Switch (Arg.all))
-                  then
+                  if not Is_Front_End_Switch (Arg.all) then
                      Binder_Options_From_ALI.Increment_Last;
                      Binder_Options_From_ALI.Table
                        (Binder_Options_From_ALI.Last) := String_Access (Arg);

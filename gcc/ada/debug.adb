@@ -124,7 +124,7 @@ package body Debug is
    --  d.D
    --  d.E
    --  d.F  ALFA mode
-   --  d.G
+   --  d.G  Precondition only mode for gnat2why
    --  d.H
    --  d.I  SCIL generation mode
    --  d.J  Disable parallel SCIL generation mode
@@ -583,6 +583,10 @@ package body Debug is
    --  d.F  ALFA mode. Generate AST in a form suitable for formal verification,
    --       as well as additional cross reference information in ALI files to
    --       compute effects of subprograms.
+
+   --  d.G  Precondition only mode for gnat2why. In this mode, gnat2why will
+   --       only generate Why code that checks for the well-guardedness of
+   --       preconditions.
 
    --  d.I  Generate SCIL mode. Generate intermediate code for the sake of
    --       of static analysis tools, and ensure additional tree consistency
