@@ -63,7 +63,7 @@ extern "C" {
   #elif defined (VTHREADS)
     /* VTHREADS mode applies to both VxWorks 653 and VxWorks MILS. The
        inclusion of vThreadsData.h is necessary to workaround a bug with
-       envLib.h on VxWorks MILS.  */
+       envLib.h on VxWorks MILS and VxWorks 653.  */
     #include <vThreadsData.h>
     #include <envLib.h>
   #else

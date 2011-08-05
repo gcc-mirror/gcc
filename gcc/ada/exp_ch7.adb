@@ -2272,7 +2272,7 @@ package body Exp_Ch7 is
 
             function Next_Suitable_Statement (Stmt : Node_Id) return Node_Id;
             --  Given a statement which is part of a list, return the next
-            --  real statement while skipping over generated checks.
+            --  real statement while skipping over dynamic elab checks.
 
             ------------------
             -- Is_Init_Call --

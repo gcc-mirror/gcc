@@ -2871,6 +2871,10 @@ The following packages are currently supported in project files
 @item Linker
   This package specifies the options used by the linker.
   @xref{Main Subprograms}.
+@item Makefile
+@cindex Makefile package in projects
+  This package is used by the GPS plugin Makefile.py. See the documentation
+  in that plugin (from GPS: /Tools/Plug-ins).
 @item Metrics
   This package specifies the options used when calling the tool
   @command{gnatmetric} via the @command{gnat} driver. Its attributes

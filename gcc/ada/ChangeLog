@@ -1,3 +1,20 @@
+2011-08-05  Emmanuel Briot  <briot@adacore.com>
+
+	* projects.texi: Added reference to the Makefile package.
+
+2011-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb: Minor comment rewording.
+
+2011-08-05  Ed Falis  <falis@adacore.com>
+
+	* env.c: Fix comment.
+
+2011-08-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Is_Finalization_Procedure): Reimplemented to avoid
+	character comparison and rely on concrete entities instead.
+
 2011-08-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb: (Check_Private_Overriding): better error message,
