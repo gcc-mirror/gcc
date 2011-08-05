@@ -1483,7 +1483,8 @@ package body Par_SCO is
 
                when others =>
 
-                  --  Determine required type character code
+                  --  Determine required type character code, or ASCII.NUL if
+                  --  no SCO should be generated for this node.
 
                   declare
                      Typ : Character;
@@ -1505,11 +1506,19 @@ package body Par_SCO is
                         when N_Generic_Instantiation         =>
                            Typ := 'i';
 
+                        when
+                          N_Representation_Clause            |
+                          N_Use_Package_Clause               |
+                          N_Use_Type_Clause                  =>
+                           Typ := ASCII.NUL;
+
                         when others                          =>
                            Typ := ' ';
                      end case;
 
-                     Extend_Statement_Sequence (N, Typ);
+                     if Typ /= ASCII.NUL then
+                        Extend_Statement_Sequence (N, Typ);
+                     end if;
                   end;
 
                   --  Process any embedded decisions

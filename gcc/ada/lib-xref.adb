@@ -129,7 +129,7 @@ package body Lib.Xref is
    -------------------------------------
 
    function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id is
-      Result         : Entity_Id;
+      Result : Entity_Id;
 
    begin
       --  If N is the defining identifier for a subprogram, then return the
@@ -166,6 +166,20 @@ package body Lib.Xref is
             when N_Subprogram_Body =>
                Result := Defining_Unit_Name (Specification (Result));
                exit;
+
+            --  The enclosing subprogram for a pre- or postconditions should be
+            --  the subprogram to which the pragma is attached. This is not
+            --  always the case in the AST, as the pragma may be declared after
+            --  the declaration of the subprogram. Return Empty in this case.
+
+            when N_Pragma =>
+               if Get_Pragma_Id (Result) = Pragma_Precondition
+                 or else Get_Pragma_Id (Result) = Pragma_Postcondition
+               then
+                  return Empty;
+               else
+                  Result := Parent (Result);
+               end if;
 
             when others =>
                Result := Parent (Result);

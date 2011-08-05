@@ -1,3 +1,21 @@
+2011-08-05  Pascal Obry  <obry@adacore.com>
+
+	* a-iteint.ads: Fix copyright year.
+
+2011-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb (Traverse_Declarations_Or_Statements): Do not generate a
+	statement SCO for a USE clause or a representation clause.
+
+2011-08-05  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Collect_ALFA): generate the proper relation
+	between body and spec for stub.
+	(Detect_And_Add_ALFA_Scope): take into account subprogram stub
+	* lib-xref.adb (Enclosing_Subprogram_Or_Package): in the case of a
+	pragma precondition or postcondition, for which the enclosing
+	subprogram or package in the AST is not the desired one, return empty.
+
 2011-08-05  Thomas Quinot  <quinot@adacore.com>
 
 	* g-expect.adb: Minor reformatting.
