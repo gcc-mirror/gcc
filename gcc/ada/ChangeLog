@@ -1,3 +1,15 @@
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Formal_Package_Declaration): reject a formal
+	package whose name is the same as that of the generic unit, or its
+	ultimate prefix.
+
+2011-08-05  Bob Duff  <duff@adacore.com>
+
+	* a-fihema.adb, a-fihema.ads: Minor comment improvements.
+	* sem_ch3.adb, exp_ch5.adb, exp_ch7.adb, exp_ch7.ads, exp_util.adb:
+	Minor comment fixes.
+
 2011-08-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* make.adb (Linking_Phase): No longer need to set source search path

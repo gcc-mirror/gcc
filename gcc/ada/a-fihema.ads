@@ -69,8 +69,8 @@ package Ada.Finalization.Heap_Management is
       Needs_Header : Boolean := True);
    --  Allocate a chunk of memory described by Storage_Size and Alignment on
    --  Collection's underlying storage pool. Return the address of the chunk.
-   --  The routine creates a list header which precedes the chunk of memory is
-   --  flag Needs_Header is set. If allocated, the header is attached to the
+   --  The routine creates a list header which precedes the chunk of memory if
+   --  Needs_Header is True. If allocated, the header is attached to the
    --  Collection's objects. The interface to this routine is provided by
    --  Build_Allocate_Deallocate_Proc.
 
@@ -92,12 +92,12 @@ package Ada.Finalization.Heap_Management is
 
    overriding procedure Finalize
      (Collection : in out Finalization_Collection);
-   --  Traverse the objects of Collection, invoking Finalize_Address on eanch
-   --  of them. In the end, the routine destroys its dummy head and tail.
+   --  Traverse the objects of Collection, invoking Finalize_Address on each of
+   --  them. In the end, the routine destroys its dummy head and tail.
 
    overriding procedure Initialize
      (Collection : in out Finalization_Collection);
-   --  Create a new Collection by allocating a dummy head and tal
+   --  Create a new Collection by allocating a dummy head and tail
 
    procedure Set_Finalize_Address_Ptr
      (Collection : in out Finalization_Collection;
@@ -125,22 +125,25 @@ private
      new Ada.Finalization.Limited_Controlled with
    record
       Base_Pool : Any_Storage_Pool_Ptr;
-      --  All objects and node headers are allocated on this underlying pool,
+      --  All objects and node headers are allocated on this underlying pool;
       --  the collection is simply a wrapper around it.
 
       Objects : Node_Ptr;
       --  The head of a doubly linked list
 
       Finalize_Address : Finalize_Address_Ptr;
-      --  A reference to a routine which finalizes an object denoted by its
+      --  A reference to a routine that finalizes an object denoted by its
       --  address. The collection must be homogeneous since the same routine
       --  will be invoked for every allocated object when the pool is
       --  finalized.
 
       Finalization_Started : Boolean := False;
-      --  When the finalization of a collection takes place, any allocations on
-      --  the same collection are prohibited and the action must raise Program_
-      --  Error.
+      pragma Atomic (Finalization_Started);
+      --  When the finalization of a collection takes place, any allocations of
+      --  objects with controlled or protected parts on the same collection are
+      --  prohibited and the action must raise Program_Error. This needs to be
+      --  atomic, because it is accessed without Lock_Task/Unlock_Task. See
+      --  RM-4.8(10.2/2).
    end record;
 
    procedure pcol (Collection : Finalization_Collection);

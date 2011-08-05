@@ -122,10 +122,11 @@ package Exp_Ch7 is
      (Obj_Ref : Node_Id;
       Ptr_Typ : Entity_Id) return Node_Id;
    --  Create a call to prepend an object to a finalization collection. Obj_Ref
-   --  is the object, Ptr_Typ is the access type that owns the collection.
+   --  is the object, Ptr_Typ is the access type that owns the collection. This
+   --  is used only for .NET/JVM, that is, when VM_Target /= No_VM.
    --  Generate the following:
    --
-   --    Ada.Finalization.Heap_Managment.Attach
+   --    Ada.Finalization.Heap_Management.Attach
    --      (<Ptr_Typ>FC,
    --       System.Finalization_Root.Root_Controlled_Ptr (Obj_Ref));
 

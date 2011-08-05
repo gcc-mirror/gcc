@@ -2923,7 +2923,7 @@ package body Exp_Ch5 is
                   --    declare
                   --       Id : Element_Type := Pack.Element (Cursor);
                   --    begin
-                  --       <original loop statments>
+                  --       <original loop statements>
                   --    end;
 
                   Stats := New_List (
