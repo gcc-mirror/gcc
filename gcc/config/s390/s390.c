@@ -4733,7 +4733,8 @@ s390_expand_cs_hqi (enum machine_mode mode, rtx target, rtx mem, rtx cmp, rtx ne
   if (ac.aligned && MEM_P (cmp))
     {
       cmpv = force_reg (SImode, val);
-      store_bit_field (cmpv, GET_MODE_BITSIZE (mode), 0, SImode, cmp);
+      store_bit_field (cmpv, GET_MODE_BITSIZE (mode), 0,
+		       0, 0, SImode, cmp);
     }
   else
     cmpv = force_reg (SImode, expand_simple_binop (SImode, IOR, cmp, val,
@@ -4741,7 +4742,8 @@ s390_expand_cs_hqi (enum machine_mode mode, rtx target, rtx mem, rtx cmp, rtx ne
   if (ac.aligned && MEM_P (new_rtx))
     {
       newv = force_reg (SImode, val);
-      store_bit_field (newv, GET_MODE_BITSIZE (mode), 0, SImode, new_rtx);
+      store_bit_field (newv, GET_MODE_BITSIZE (mode), 0,
+		       0, 0, SImode, new_rtx);
     }
   else
     newv = force_reg (SImode, expand_simple_binop (SImode, IOR, new_rtx, val,
@@ -4818,7 +4820,8 @@ s390_expand_atomic (enum machine_mode mode, enum rtx_code code,
       /* FALLTHRU */
     case SET:
       if (ac.aligned && MEM_P (val))
-	store_bit_field (new_rtx, GET_MODE_BITSIZE (mode), 0, SImode, val);
+	store_bit_field (new_rtx, GET_MODE_BITSIZE (mode), 0,
+			 0, 0, SImode, val);
       else
 	{
 	  new_rtx = expand_simple_binop (SImode, AND, new_rtx, ac.modemaski,
