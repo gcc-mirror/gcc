@@ -6312,7 +6312,7 @@ example:
 
 @item ^C^COMMENTS1^ (single space)
 @emph{Check comments, single space.}
-This is identical to @code{^c^COMMENTS} except that only one space
+This is identical to @code{^c^COMMENTS^} except that only one space
 is required following the @code{--} of a comment instead of two.
 
 @item ^d^DOS_LINE_ENDINGS^

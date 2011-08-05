@@ -2117,20 +2117,26 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
       NN : Tree_Node_Array renames Container.Nodes;
 
-      Total_Count, Read_Count : Count_Type;
+      Total_Count : Count_Type'Base;
+      --  Value read from the stream that says how many elements follow
+
+      Read_Count : Count_Type'Base;
+      --  Actual number of elements read from the stream
 
       -------------------
       -- Read_Children --
       -------------------
 
       procedure Read_Children (Subtree : Count_Type) is
-         Count : Count_Type;  -- number of child subtrees
-         CC    : Children_Type;
+         Count : Count_Type'Base;
+         --  number of child subtrees
+
+         CC : Children_Type;
 
       begin
          Count_Type'Read (Stream, Count);
 
-         if not Count'Valid then  -- Is this check necessary???
+         if Count < 0 then
             raise Program_Error with "attempt to read from corrupt stream";
          end if;
 
@@ -2180,7 +2186,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
       Count_Type'Read (Stream, Total_Count);
 
-      if not Total_Count'Valid then  -- Is this check necessary???
+      if Total_Count < 0 then
          raise Program_Error with "attempt to read from corrupt stream";
       end if;
 
