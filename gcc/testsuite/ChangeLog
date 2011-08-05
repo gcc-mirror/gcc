@@ -2,6 +2,8 @@
 
 	PR middle-end/47364
 	* gcc.dg/torture/pr47364-1.c: New.
+	* gcc.target/i386/pr47364-1.c: Likewise.
+	* gcc.target/i386/pr47364-2.c: Likewise.
 
 2011-08-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
