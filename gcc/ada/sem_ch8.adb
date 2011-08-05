@@ -4818,7 +4818,12 @@ package body Sem_Ch8 is
             end if;
 
             Set_Entity_Or_Discriminal (N, E);
-            Check_Implicit_Dereference (N, Etype (E));
+
+            if Ada_Version >= Ada_2012
+              and then Nkind (Parent (N)) in N_Subexpr
+            then
+               Check_Implicit_Dereference (N, Etype (E));
+            end if;
          end if;
       end;
    end Find_Direct_Name;
