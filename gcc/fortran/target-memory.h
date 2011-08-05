@@ -41,7 +41,7 @@ int gfc_interpret_complex (int, unsigned char *, size_t, mpc_t);
 int gfc_interpret_logical (int, unsigned char *, size_t, int *);
 int gfc_interpret_character (unsigned char *, size_t, gfc_expr *);
 int gfc_interpret_derived (unsigned char *, size_t, gfc_expr *);
-int gfc_target_interpret_expr (unsigned char *, size_t, gfc_expr *);
+int gfc_target_interpret_expr (unsigned char *, size_t, gfc_expr *, bool);
 
 /* Merge overlapping equivalence initializers for trans-common.c. */
 size_t gfc_merge_initializers (gfc_typespec, gfc_expr *,

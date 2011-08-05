@@ -2896,6 +2896,8 @@ int gfc_dep_compare_expr (gfc_expr *, gfc_expr *);
 
 /* check.c */
 gfc_try gfc_check_same_strlen (const gfc_expr*, const gfc_expr*, const char*);
+gfc_try gfc_calculate_transfer_sizes (gfc_expr*, gfc_expr*, gfc_expr*,
+				      size_t*, size_t*, size_t*);
 
 /* class.c */
 void gfc_add_component_ref (gfc_expr *, const char *);
