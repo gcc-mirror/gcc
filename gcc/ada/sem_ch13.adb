@@ -946,6 +946,50 @@ package body Sem_Ch13 is
 
                   Delay_Required := False;
 
+               --  Aspects related to container iterators.
+
+               when Aspect_Constant_Indexing    |
+                    Aspect_Default_Iterator     |
+                    Aspect_Iterator_Element     |
+                    Aspect_Variable_Indexing    =>
+                  null;
+
+               when Aspect_Implicit_Dereference =>
+
+                  if not Is_Type (E)
+                    or else not Has_Discriminants (E)
+                  then
+                     Error_Msg_N
+                       ("Aspect must apply to a type with discriminants", N);
+                     goto Continue;
+
+                  else
+                     declare
+                        Disc : Entity_Id;
+
+                     begin
+                        Disc := First_Discriminant (E);
+                        while Present (Disc) loop
+                           if Chars (Expr) = Chars (Disc)
+                             and then Ekind (Etype (Disc)) =
+                               E_Anonymous_Access_Type
+                           then
+                              Set_Has_Implicit_Dereference (E);
+                              Set_Has_Implicit_Dereference (Disc);
+                              goto Continue;
+                           end if;
+                           Next_Discriminant (Disc);
+                        end loop;
+
+                        --  Error if no proper access discriminant.
+
+                        Error_Msg_NE
+                         ("not an access discriminant of&", Expr, E);
+                     end;
+
+                     goto Continue;
+                  end if;
+
                --  Aspects corresponding to attribute definition clauses
 
                when Aspect_Address        |
@@ -2262,6 +2306,13 @@ package body Sem_Ch13 is
                end if;
             end if;
          end External_Tag;
+
+         --------------------------
+         -- Implicit_Dereference --
+         --------------------------
+         when Attribute_Implicit_Dereference =>
+            --  Legality checks already performed above.
+            null;   --  TBD
 
          -----------
          -- Input --
@@ -5430,6 +5481,13 @@ package body Sem_Ch13 is
               Aspect_Stream_Size    |
               Aspect_Value_Size     =>
             T := Any_Integer;
+
+         when Aspect_Constant_Indexing    |
+              Aspect_Default_Iterator     |
+              Aspect_Iterator_Element     |
+              Aspect_Implicit_Dereference |
+              Aspect_Variable_Indexing    =>
+            null;
 
          --  Stream attribute. Special case, the expression is just an entity
          --  that does not need any resolution, so just analyze.

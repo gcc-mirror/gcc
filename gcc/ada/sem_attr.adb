@@ -2110,6 +2110,14 @@ package body Sem_Attr is
 
       case Attr_Id is
 
+         --  Attributes related to Ada2012 iterators (Placeholder).
+
+         when Attribute_Constant_Indexing => null;
+         when Attribute_Default_Iterator => null;
+         when Attribute_Implicit_Dereference => null;
+         when Attribute_Iterator_Element => null;
+         when Attribute_Variable_Indexing => null;
+
       ------------------
       -- Abort_Signal --
       ------------------
@@ -5968,6 +5976,14 @@ package body Sem_Attr is
       --  even though such references are not static expressions.
 
       case Id is
+
+         --  Attributes related to Ada2012 iterators (Placeholder).
+
+         when Attribute_Constant_Indexing => null;
+         when Attribute_Default_Iterator => null;
+         when Attribute_Implicit_Dereference => null;
+         when Attribute_Iterator_Element => null;
+         when Attribute_Variable_Indexing => null;
 
       --------------
       -- Adjacent --

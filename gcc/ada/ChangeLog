@@ -1,3 +1,38 @@
+2011-08-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Is_Init_Call): Reimplemented to avoid character
+	comparison and rely on concrete entities instead.
+
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb (Has_Implicit_Dereference): new flag on types
+	and discriminants, to indicate that the type has an access discriminant
+	that supports implicit dereference.
+	* snames.ads-tmpl: Add names of aspects and attributes related to
+	Ada2012 iterators: constant_indexing, default_iterator,
+	iterator_element, implicit_dereference, variable_indexing.
+	* aspects.ads, aspects.adb: entries for iterator-related aspects.
+	* sem_ch13.adb (Analyze_aspect_specifications): dummy entries for
+	iterator-related aspects.
+	* sem_attr.adb, exp_attr.adb Dummy entries for iterator-related aspects.
+
+2011-08-05  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi, vms_data.ads: Extend the subsection about coupling
+	metrics in gnatmetric to cover new kinds of coupling mentrics.
+
+2011-08-05  Steve Baird  <baird@adacore.com>
+
+	* bindgen.adb (Gen_CodePeer_Wrapper): Call Ada_Main_Program instead
+	of calling the user-defined main subprogram. 
+	(Gen_Main):  Declare Ada_Main_Program and (if CodePeer_Mode
+	is set) Call_Main_Subprogram ahead of, as opposed to
+	inside of, Main.
+	(Gen_Output_File_Ada): Remove CodePeer_Mode-conditional
+	generation of a "with" of the user-defined main subprogram.
+	Remove CodePeer_Mode-conditional call to Gen_CodePeer_Wrapper
+	(which is now called from Gen_Main instead).
+
 2011-08-05  Emmanuel Briot  <briot@adacore.com>
 
 	* projects.texi: Added reference to the Makefile package.
