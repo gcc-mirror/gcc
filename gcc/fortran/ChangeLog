@@ -1,3 +1,23 @@
+2011-08-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37221
+	* gfortran.h (gfc_calculate_transfer_sizes):  Add prototype.
+	* target-memory.h (gfc_target_interpret_expr):  Add boolean
+	argument wether to convert wide characters.
+	* target-memory.c (gfc_target_expr_size):  Also return length
+	of characters for non-constant expressions if these can be
+	determined from the cl.
+	(interpret_array):  Add argument for gfc_target_interpret_expr.
+	(gfc_interpret_derived):  Likewise.
+	(gfc_target_interpret_expr):  Likewise.
+	* check.c:  Include target-memory.h.
+	(gfc_calculate_transfer_sizes):  New function.
+	(gfc_check_transfer):  When -Wsurprising is in force, calculate
+	sizes and warn if result is larger than size (check moved from
+	gfc_simplify_transfer).
+	* simplify.c (gfc_simplify_transfer):  Use
+	gfc_calculate_transfer_sizes.  Remove warning.
+
 2011-08-04  Richard Guenther  <rguenther@suse.de>
 
 	PR fortran/49957

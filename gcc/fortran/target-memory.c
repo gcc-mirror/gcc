@@ -103,16 +103,20 @@ gfc_target_expr_size (gfc_expr *e)
     case BT_LOGICAL:
       return size_logical (e->ts.kind);
     case BT_CHARACTER:
-      if (e->expr_type == EXPR_SUBSTRING && e->ref)
-        {
-          int start, end;
+      if (e->expr_type == EXPR_CONSTANT)
+	return size_character (e->value.character.length, e->ts.kind);
+      else if (e->ts.u.cl != NULL && e->ts.u.cl->length != NULL
+	       && e->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	       && e->ts.u.cl->length->ts.type == BT_INTEGER)
+	{
+	  int length;
 
-          gfc_extract_int (e->ref->u.ss.start, &start);
-          gfc_extract_int (e->ref->u.ss.end, &end);
-          return size_character (MAX(end - start + 1, 0), e->ts.kind);
-        }
+	  gfc_extract_int (e->ts.u.cl->length, &length);
+	  return size_character (length, e->ts.kind);
+	}
       else
-        return size_character (e->value.character.length, e->ts.kind);
+	return 0;
+
     case BT_HOLLERITH:
       return e->representation.length;
     case BT_DERIVED:
@@ -330,7 +334,8 @@ interpret_array (unsigned char *buffer, size_t buffer_size, gfc_expr *result)
 
       gfc_constructor_append_expr (&base, e, &result->where);
 
-      ptr += gfc_target_interpret_expr (&buffer[ptr], buffer_size - ptr, e);
+      ptr += gfc_target_interpret_expr (&buffer[ptr], buffer_size - ptr, e,
+					true);
     }
 
   result->value.constructor = base;
@@ -456,7 +461,7 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
       e = gfc_get_constant_expr (cmp->ts.type, cmp->ts.kind, &result->where); 
       c = gfc_constructor_append_expr (&result->value.constructor, e, NULL);
       c->n.component = cmp;
-      gfc_target_interpret_expr (buffer, buffer_size, e);
+      gfc_target_interpret_expr (buffer, buffer_size, e, true);
       e->ts.is_iso_c = 1;
       return int_size_in_bytes (ptr_type_node);
     }
@@ -506,7 +511,7 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
       gcc_assert (ptr % 8 == 0);
       ptr = ptr/8 + TREE_INT_CST_LOW (DECL_FIELD_OFFSET (cmp->backend_decl));
 
-      gfc_target_interpret_expr (&buffer[ptr], buffer_size - ptr, e);
+      gfc_target_interpret_expr (&buffer[ptr], buffer_size - ptr, e, true);
     }
     
   return int_size_in_bytes (type);
@@ -516,7 +521,7 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
 /* Read a binary buffer to a constant expression.  */
 int
 gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
-			   gfc_expr *result)
+			   gfc_expr *result, bool convert_widechar)
 {
   if (result->expr_type == EXPR_ARRAY)
     return interpret_array (buffer, buffer_size, result);
@@ -562,7 +567,7 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
       break;
     }
 
-  if (result->ts.type == BT_CHARACTER)
+  if (result->ts.type == BT_CHARACTER && convert_widechar)
     result->representation.string
       = gfc_widechar_to_char (result->value.character.string,
 			      result->value.character.length);
