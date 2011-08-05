@@ -1,3 +1,50 @@
+2011-08-05  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch7.adb (Establish_Transient_Scope): in formal verification mode,
+	if the node to wrap is a pragma check, this node and enclosed
+	expression are not expanded, so do not apply any transformations here.
+	* exp_prag.adb (Expand_Pragma_Check): document the need to avoid
+	introducing transient scopes.
+
+2011-08-05  Jose Ruiz  <ruiz@adacore.com>
+
+	* adaint.c (__gnat_set_writable, __gnat_set_readable,
+	__gnat_set_executable, __gnat_set_non_writable, __gnat_set_non_readable,
+	__gnat_copy_attribs): On VxWorks 6.x and later, the required chmod
+	routine is available, so we use the default implementation of these
+	functions.
+	* s-os_lib.ads (Copy_File, Copy_Time_Stamps): Document that there is
+	support for copying attributes on VxWorks 6.
+
+2011-08-05  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb: Remove use of -gnatd.D.
+	* gnat1drv.adb (Adjust_Global_Switches): adjust switches for ALFA mode
+	* opt.ads: Simplify variables for ALFA mode, to keep one only
+	* restrict.adb, sem_prag.adb: Adapt treatment done for CodePeer mode
+	to ALFA mode.
+
+2011-08-05  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Do_Autoconf): Look also for --RTS in
+	Builder'Default_Switches.
+
+2011-08-05  Vincent Celier  <celier@adacore.com>
+
+	* makeusg.adb: Add lines for --create-map-file switches.
+
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): For a subprogram, if a type in the
+	profile is incomplete and the full view is available, replace it with
+	the full view.
+	* sem_ch6.adb (Possible_Freeze): if a type in the profile is
+	incomplete, freezing the subprogram is delayed until the full view is
+	frozen.
+	* sem_type.adb (Disambiguate): an ambiguity between a user-defined
+	fixed-point multiplication operator and the predefined operator is
+	resolved in favor of the user-defined one.
+
 2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* init.c [__alpha__ && __osf__] (__gnat_error_handler): Use

@@ -5059,9 +5059,9 @@ package body Sem_Prag is
       --  Start of processing for Process_Restrictions_Or_Restriction_Warnings
 
       begin
-         --  Ignore all Restrictions pragma in CodePeer mode
+         --  Ignore all Restrictions pragma in CodePeer and ALFA modes
 
-         if CodePeer_Mode then
+         if CodePeer_Mode or else ALFA_Mode then
             return;
          end if;
 
@@ -5283,10 +5283,13 @@ package body Sem_Prag is
       --  Start of processing for Process_Suppress_Unsuppress
 
       begin
-         --  Ignore pragma Suppress/Unsuppress in codepeer mode on user code:
-         --  we want to generate checks for analysis purposes, as set by -gnatC
+         --  Ignore pragma Suppress/Unsuppress in CodePeer and ALFA modes on
+         --  user code: we want to generate checks for analysis purposes, as
+         --  set respectively by -gnatC and -gnatd.F
 
-         if CodePeer_Mode and then Comes_From_Source (N) then
+         if (CodePeer_Mode or else ALFA_Mode)
+           and then Comes_From_Source (N)
+         then
             return;
          end if;
 
@@ -9444,11 +9447,12 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Check_Restriction (No_Initialize_Scalars, N);
 
-            --  Initialize_Scalars creates false positives in CodePeer,
-            --  so ignore this pragma in this mode.
+            --  Initialize_Scalars creates false positives in CodePeer, and
+            --  incorrect negative results in ALFA mode, so ignore this pragma
+            --  in these modes.
 
             if not Restriction_Active (No_Initialize_Scalars)
-              and then not CodePeer_Mode
+              and then not (CodePeer_Mode or else ALFA_Mode)
             then
                Init_Or_Norm_Scalars := True;
                Initialize_Scalars := True;
@@ -9475,10 +9479,10 @@ package body Sem_Prag is
          when Pragma_Inline_Always =>
             GNAT_Pragma;
 
-            --  Pragma always active unless in CodePeer mode, since this causes
-            --  walk order issues.
+            --  Pragma always active unless in CodePeer or ALFA mode, since
+            --  this causes walk order issues.
 
-            if not CodePeer_Mode then
+            if not (CodePeer_Mode or else ALFA_Mode) then
                Process_Inline (True);
             end if;
 
@@ -10917,10 +10921,11 @@ package body Sem_Prag is
             Check_Arg_Count (0);
             Check_Valid_Configuration_Pragma;
 
-            --  Normalize_Scalars creates false positives in CodePeer, so
-            --  ignore this pragma in this mode.
+            --  Normalize_Scalars creates false positives in CodePeer, and
+            --  incorrect negative results in ALFA mode, so ignore this pragma
+            --  in these modes.
 
-            if not CodePeer_Mode then
+            if not (CodePeer_Mode or else ALFA_Mode) then
                Normalize_Scalars := True;
                Init_Or_Norm_Scalars := True;
             end if;
@@ -11287,9 +11292,9 @@ package body Sem_Prag is
 
                   --  In the context of static code analysis, we do not need
                   --  complex front-end expansions related to pragma Pack,
-                  --  so disable handling of pragma Pack in this case.
+                  --  so disable handling of pragma Pack in these cases.
 
-                  if CodePeer_Mode then
+                  if CodePeer_Mode or else ALFA_Mode then
                      null;
 
                   --  Don't attempt any packing for VM targets. We possibly

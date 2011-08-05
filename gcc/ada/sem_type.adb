@@ -1932,10 +1932,17 @@ package body Sem_Type is
          end if;
 
       --  Otherwise, the predefined operator has precedence, or if the user-
-      --  defined operation is directly visible we have a true ambiguity. If
-      --  this is a fixed-point multiplication and division in Ada83 mode,
+      --  defined operation is directly visible we have a true ambiguity.
+
+      --  If this is a fixed-point multiplication and division in Ada83 mode,
       --  exclude the universal_fixed operator, which often causes ambiguities
       --  in legacy code.
+
+      --  Ditto in Ada2012, where an ambiguity may arise for an operation on
+      --  a partial view that is completed with a fixed point type. See
+      --  AI05-0020 and AI05-0209. The ambiguity is resolved in favor of the
+      --  user-defined subprogram so that a client of the package has the
+      --  same resulution as the body of the package.
 
       else
          if (In_Open_Scopes (Scope (User_Subp))
@@ -1945,7 +1952,13 @@ package body Sem_Type is
             if Is_Fixed_Point_Type (Typ)
               and then (Chars (Nam1) = Name_Op_Multiply
                           or else Chars (Nam1) = Name_Op_Divide)
-              and then Ada_Version = Ada_83
+              and then
+                (Ada_Version = Ada_83
+                  or else
+                   (Ada_Version >= Ada_2012
+                      and then
+                        In_Same_Declaration_List
+                          (Typ, Unit_Declaration_Node (User_Subp))))
             then
                if It2.Nam = Predef_Subp then
                   return It1;

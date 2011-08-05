@@ -3532,6 +3532,16 @@ package body Exp_Ch7 is
       elsif Nkind (Wrap_Node) = N_Iteration_Scheme then
          null;
 
+      --  In formal verification mode, if the node to wrap is a pragma check,
+      --  this node and enclosed expression are not expanded, so do not apply
+      --  any transformations here.
+
+      elsif ALFA_Mode
+        and then Nkind (Wrap_Node) = N_Pragma
+        and then Get_Pragma_Id (Wrap_Node) = Pragma_Check
+      then
+         null;
+
       else
          Push_Scope (New_Internal_Entity (E_Block, Current_Scope, Loc, 'B'));
          Set_Scope_Is_Transient;
