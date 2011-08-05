@@ -1,0 +1,6 @@
+# GCC 128-bit long double support routines.
+LIB2ADD += $(srcdir)/config/rs6000/ibm-ldouble.c
+
+HOST_LIBGCC2_CFLAGS += -mlong-double-128
+
+SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-ppc64.ver

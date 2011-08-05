@@ -868,7 +868,6 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	esac
 	with_tls=${with_tls:-gnu}
 	tm_file="$tm_file arm/aout.h arm/arm.h"
-	tmake_file="${tmake_file} arm/t-arm-softfp soft-fp/t-softfp"
 	;;
 arm*-*-uclinux*)		# ARM ucLinux
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/uclinux-elf.h glibc-stdint.h"
@@ -886,12 +885,10 @@ arm*-*-uclinux*)		# ARM ucLinux
 	    default_use_cxa_atexit=yes
 	esac
 	tm_file="$tm_file arm/aout.h arm/arm.h"
-	tmake_file="${tmake_file} arm/t-arm-softfp soft-fp/t-softfp"
 	;;
 arm*-*-ecos-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/ecos-elf.h"
 	tmake_file="arm/t-arm arm/t-arm-elf"
-	tmake_file="${tmake_file} arm/t-arm-softfp soft-fp/t-softfp"
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* )
 	# The BPABI long long divmod functions return a 128-bit value in
@@ -917,17 +914,14 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	  ;;
 	esac
 	tm_file="${tm_file} arm/aout.h arm/arm.h"
-	tmake_file="${tmake_file} arm/t-arm-softfp soft-fp/t-softfp"
 	;;
 arm*-*-rtems*)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/rtems-elf.h rtems.h newlib-stdint.h"
 	tmake_file="arm/t-arm arm/t-arm-elf t-rtems arm/t-rtems"
-	tmake_file="${tmake_file} arm/t-arm-softfp soft-fp/t-softfp"
 	;;
 arm*-*-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
 	tmake_file="arm/t-arm arm/t-arm-elf"
-	tmake_file="${tmake_file} arm/t-arm-softfp soft-fp/t-softfp"
 	;;
 arm*-wince-pe*)
 	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h arm/pe.h arm/wince-pe.h"
@@ -1025,17 +1019,17 @@ moxie-*-elf)
 	gnu_ld=yes
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
-	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp"
+	tmake_file="${tmake_file} moxie/t-moxie"
 	;;
 moxie-*-uclinux*)
 	gas=yes
 	gnu_ld=yes
 	tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h moxie/uclinux.h"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
-	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp"
+	tmake_file="${tmake_file} moxie/t-moxie"
 	;;
 moxie-*-rtems*)
-	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp t-rtems"
+	tmake_file="${tmake_file} moxie/t-moxie t-rtems"
 	tm_file="moxie/moxie.h dbxelf.h elfos.h moxie/rtems.h rtems.h newlib-stdint.h"
 	;;
 h8300-*-rtems*)
@@ -1651,16 +1645,16 @@ iq2000*-*-elf*)
         ;;
 lm32-*-elf*)
         tm_file="dbxelf.h elfos.h ${tm_file}"
-	tmake_file="${tmake_file} lm32/t-lm32 lm32/t-fprules-softfp soft-fp/t-softfp"
+	tmake_file="${tmake_file} lm32/t-lm32"
         ;;
 lm32-*-rtems*)
 	tm_file="dbxelf.h elfos.h ${tm_file} lm32/rtems.h rtems.h newlib-stdint.h"
-	tmake_file="${tmake_file} lm32/t-lm32 lm32/t-fprules-softfp soft-fp/t-softfp"
+	tmake_file="${tmake_file} lm32/t-lm32"
 	tmake_file="${tmake_file} t-rtems"
          ;;
 lm32-*-uclinux*)
         tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h lm32/uclinux-elf.h"
-	tmake_file="${tmake_file} lm32/t-lm32 lm32/t-fprules-softfp soft-fp/t-softfp"
+	tmake_file="${tmake_file} lm32/t-lm32"
         ;;
 m32r-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
@@ -2048,8 +2042,8 @@ powerpc64-*-darwin*)
 	;;
 powerpc-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h rs6000/freebsd.h"
-	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm rs6000/t-freebsd"
-	tmake_file="${tmake_file} t-slibgcc-libgcc rs6000/t-fprules-softfp soft-fp/t-softfp"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
+	tmake_file="${tmake_file} t-slibgcc-libgcc"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	;;
 powerpc-*-netbsd*)
@@ -2135,7 +2129,7 @@ powerpc-*-linux* | powerpc64-*-linux*)
 		tm_file="${tm_file} rs6000/linux.h glibc-stdint.h"
 		;;
 	esac
-	tmake_file="${tmake_file} t-slibgcc-libgcc rs6000/t-fprules-softfp soft-fp/t-softfp"
+	tmake_file="${tmake_file} t-slibgcc-libgcc"
 	case ${target} in
 	    powerpc*-*-linux*altivec*)
 		tm_file="${tm_file} rs6000/linuxaltivec.h" ;;
@@ -2269,7 +2263,7 @@ score-*-elf)
 	gnu_ld=yes
         tm_file="dbxelf.h elfos.h score/elf.h score/score.h newlib-stdint.h"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
-        tmake_file="${tmake_file} score/t-score-elf score/t-score-softfp soft-fp/t-softfp"
+        tmake_file="${tmake_file} score/t-score-elf"
         ;;
 sh-*-elf* | sh[12346l]*-*-elf* | \
   sh-*-linux* | sh[2346lbe]*-*-linux* | \
@@ -2571,7 +2565,6 @@ tic6x-*-elf)
 	tm_file="${tm_file} dbxelf.h tm-dwarf2.h newlib-stdint.h"
 	libgcc_tm_file="${libgcc_tm_file} c6x/c6x-abi.h"
 	tmake_file="c6x/t-c6x c6x/t-c6x-elf"
-	tmake_file="${tmake_file} c6x/t-c6x-softfp soft-fp/t-softfp"
 	use_collect2=no
 	;;
 tic6x-*-uclinux)
@@ -2581,7 +2574,6 @@ tic6x-*-uclinux)
 	libgcc_tm_file="${libgcc_tm_file} c6x/c6x-abi.h"
 	tmake_file="t-slibgcc-elf-ver t-sysroot-suffix"
 	tmake_file="${tmake_file} c6x/t-c6x c6x/t-c6x-elf c6x/t-c6x-uclinux"
-	tmake_file="${tmake_file} c6x/t-c6x-softfp soft-fp/t-softfp"
 	use_collect2=no
 	;;
 v850*-*-*)
@@ -3585,24 +3577,19 @@ case ${target} in
 		;;
 
 	i[34567]86-*-darwin* | x86_64-*-darwin*)
-		tmake_file="${tmake_file} i386/t-fprules-softfp soft-fp/t-softfp"
 		;;
 	i[34567]86-*-linux* | x86_64-*-linux* | \
 	  i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu | \
 	  i[34567]86-*-gnu*)
-		tmake_file="${tmake_file} i386/t-fprules-softfp soft-fp/t-softfp i386/t-linux"
+		tmake_file="${tmake_file} i386/t-linux"
 		;;
 	i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
-		tmake_file="${tmake_file} i386/t-fprules-softfp soft-fp/t-softfp"
 		;;
 	i[34567]86-*-cygwin* | i[34567]86-*-mingw* | x86_64-*-mingw*)
-		tmake_file="${tmake_file} i386/t-fprules-softfp soft-fp/t-softfp"
 		;;
 	i[34567]86-*-freebsd* | x86_64-*-freebsd*)
-		tmake_file="${tmake_file} i386/t-fprules-softfp soft-fp/t-softfp"
 		;;
 	ia64*-*-linux*)
-		tmake_file="${tmake_file} ia64/t-fprules-softfp soft-fp/t-softfp"
 		;;
 
 	mips*-*-*)

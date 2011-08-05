@@ -1,5 +1,103 @@
 2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/t-softfp: Remove.
+	* soft-fp: Moved from ../gcc/config.
+	* soft-fp/README: Remove t-softfp reference.
+	* soft-fp/t-softfp: Move to config/t-softfp.
+	(softfp_machine_header): Remove.
+	(softfp_file_list): Remove config subdir.
+	(soft-fp-objects): New variable.
+	($(soft-fp-objects)): Set INTERNAL_CFLAGS.
+	(LIB2FUNCS_EXTRA): Add to LIB2ADD instead.
+	(SFP_MACHINE, $(SFP_MACHINE)): Remove.
+	* config/t-softfp-excl: New file.
+	* config/t-softfp-sfdf: New file.
+	* config/t-softfp-tf: New file.
+	* config/no-sfp-machine.h: New file.
+	* config/arm/sfp-machine.h: New file.
+	* config/arm/t-softfp: New file.
+	* config/c6x/sfp-machine.h: New file.
+	* config/i386/32/t-fprules-softfp: Rename to ...
+	* config/i386/32/t-softfp: ... this.
+	(tifunctions, LIB2ADD): Remove.
+	(softfp_int_modes): Override.
+	* config/i386/64/t-softfp-compat (tf-functions): Remove config
+	subdir.
+	* config/i386/64/eqtf2.c: Likewise.
+	* config/i386/64/getf2.c: Likewise.
+	* config/i386/64/letf2.c: Likewise.
+	* config/ia64/sft-machine.h: New file.
+	* config/ia64/t-fprules-softfp: Rename to ...
+	* config/ia64/t-softfp: ... this.
+	* config/lm32/sfp-machine.h: New file.
+	* config/moxie/t-moxie-softfp: Remove.
+	* config/rs6000/ibm-ldouble-format: New file.
+	* config/rs6000/ibm-ldouble.c: New file.
+	* config/rs6000/libgcc-ppc-glibc.ver: New file
+	* config/rs6000/libgcc-ppc64.ver: New file
+	* config/rs6000/sfp-machine.h: New file.
+	* config/rs6000/t-freebsd: New file.
+	* config/rs6000/t-ibm-ldouble: New file.
+	* config/rs6000/t-ldbl128: Use $(srcdir) to refer to
+	libgcc-ppc-glibc.ver.
+	* config/rs6000/t-linux64: New file.
+	* config/rs6000/t-ppccomm (LIB2ADD): Add
+	$(srcdir)/config/rs6000/ibm-ldouble.c.
+	* config/rs6000/t-ppccomm-ldbl: New file.
+	* config/score/sfp-machine.h: New file.
+	* config.host (sfp_machine_header): Explain.
+	(arm*-*-linux*): Add t-softfp-sfdf, t-softfp-excl, arm/t-softfp,
+	t-softfp to tmake_file.
+	(arm*-*-uclinux*): Likewise.
+	(arm*-*-ecos-elf): Likewise.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Likewise.
+	(arm*-*-rtems*): Likewise.
+	(arm*-*-elf): Likewise.
+	(ia64*-*-linux*): Replace ia64/t-fprules-softfp by ia64/t-softfp
+	in tmake_file.
+	Add t-softfp-tf, t-softfp-excl, t-softfp to tmake_file.
+	(lm32-*-elf*, lm32-*-rtems*): Add t-softfp-sfdf, t-softfp to tmake_file.
+	(lm32-*-uclinux*): Likewise.
+	(moxie-*-*): Replace moxie/t-moxie-softfp by t-softfp-sfdf,
+	t-softfp-excl, t-softfp.
+	(powerpc-*-darwin*): Add rs6000/t-ibm-ldouble to tmake_file.
+	(powerpc64-*-darwin*): Likewise.
+	(powerpc-*-freebsd*): Add t-softfp-sfdf, t-softfp-excl, t-softfp
+	to tmake_file.
+	(powerpc-*-eabisimaltivec*): Add rs6000/t-ppccomm-ldbl to
+	tmake_file.
+	(powerpc-*-eabisim*): Likewise.
+	(powerpc-*-elf*): Likewise.
+	(powerpc-*-eabialtivec*): Likewise.
+	(powerpc-xilinx-eabi*): Likewise.
+	(powerpc-*-rtems*): Likewise.
+	(powerpc-*-linux*, powerpc64-*-linux*): Add t-softfp-sfdf,
+	t-softfp-excl, t-softfp to tmake_file.
+	(powerpc-wrs-vxworks, powerpc-wrs-vxworksae): Add
+	rs6000/t-ppccomm-ldbl to tmake_file.
+	(powerpcle-*-elf*): Likewise.
+	(powerpcle-*-eabisim*): Likewise.
+	(powerpcle-*-eabi*): Likewise.
+	(rs6000-ibm-aix4.[3456789]*, powerpc-ibm-aix4.[3456789]*): Add
+	rs6000/t-ibm-ldouble to tmake_file.
+	(rs6000-ibm-aix5.1.*, powerpc-ibm-aix5.1.*): Likewise.
+	(rs6000-ibm-aix[56789].*, powerpc-ibm-aix[56789].*): Likewise.
+	(score-*-elf): Add t-softfp-sfdf, t-softfp-excl, t-softfp to tmake_file.
+	(tic6x-*-*): Likewise.
+	(i[34567]86-*-darwin*, x86_64-*-darwin*,
+	i[34567]86-*-kfreebsd*-gnu, x86_64-*-kfreebsd*-gnu,
+	i[34567]86-*-linux*, x86_64-*-linux*, i[34567]86-*-gnu*,
+	i[34567]86-*-solaris2*, x86_64-*-solaris2.1[0-9]*,
+	i[34567]86-*-cygwin*, i[34567]86-*-mingw*, x86_64-*-mingw*,
+	i[34567]86-*-freebsd*, x86_64-*-freebsd*): Add t-softfp-tf,
+	t-softfp to tmake_file.
+	* configure.ac (sfp_machine_header): Provide default if unset.
+	Substitute.
+	Link sfp-machine.h to config/$sfp_machine_header.
+	* configure: Regenerate.
+
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* Makefile.in (double_type_size, long_double_type_size): Set.
 	Remove $(fpbit-in-libgcc) support.
 	(FPBIT_FUNCS, DPBIT_FUNCS, TPBIT_FUNCS): New variables.

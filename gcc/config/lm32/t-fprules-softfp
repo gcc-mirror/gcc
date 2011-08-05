@@ -1,5 +1,0 @@
-softfp_float_modes := sf df
-softfp_int_modes := si di
-softfp_extensions := sfdf
-softfp_truncations := dfsf
-softfp_machine_header := lm32/sfp-machine.h

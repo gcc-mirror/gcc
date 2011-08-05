@@ -594,6 +594,7 @@ asm_hidden_op
 extra_parts
 cpu_type
 tmake_file
+sfp_machine_header
 set_use_emutls
 set_have_cc_tls
 vis_hide
@@ -4608,6 +4609,17 @@ if test "$enable_tls $gcc_cv_use_emutls" = "yes yes"; then
 fi
 
 
+# Conditionalize the sfp-machine.h header for this target machine.
+if test -z "${sfp_machine_header}"; then
+	sfp_machine_header=$cpu_type/sfp-machine.h
+	if test -f ${srcdir}/config/${sfp_machine_header}; then
+		:
+	else
+		sfp_machine_header=no-sfp-machine.h
+	fi
+fi
+
+
 # Conditionalize the makefile for this target machine.
 tmake_file_=
 for f in ${tmake_file}
@@ -4629,6 +4641,8 @@ ac_config_links="$ac_config_links enable-execute-stack.c:$enable_execute_stack"
 ac_config_links="$ac_config_links unwind.h:$unwind_header"
 
 ac_config_links="$ac_config_links md-unwind-support.h:config/$md_unwind_header"
+
+ac_config_links="$ac_config_links sfp-machine.h:config/$sfp_machine_header"
 
 
 # We need multilib support.
@@ -5358,6 +5372,7 @@ do
     "enable-execute-stack.c") CONFIG_LINKS="$CONFIG_LINKS enable-execute-stack.c:$enable_execute_stack" ;;
     "unwind.h") CONFIG_LINKS="$CONFIG_LINKS unwind.h:$unwind_header" ;;
     "md-unwind-support.h") CONFIG_LINKS="$CONFIG_LINKS md-unwind-support.h:config/$md_unwind_header" ;;
+    "sfp-machine.h") CONFIG_LINKS="$CONFIG_LINKS sfp-machine.h:config/$sfp_machine_header" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
 

@@ -1,5 +1,82 @@
 2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/soft-fp: Move to ../libgcc.
+	* Makefile.in (SFP_MACHINE): Remove.
+	(libgcc-support): Remove $(SFP_MACHINE) dependency.
+	* config/arm/sfp-machine.h: Move to ../libgcc/config/arm.
+	* config/arm/t-arm-softfp: Move to
+	../libgcc/config/arm/t-softfp.
+	* config/c6x/sfp-machine.h: Move to ../libgcc/config/c6x.
+	* config/c6x/t-c6x-softfp: Remove.
+	* config/i386/sfp-machine.h: Move to ../libgcc/config/i386.
+	* config/i386/t-fprules-softfp: Move to
+	../libgcc/config/t-softfp-tf.
+	* config/ia64/sfp-machine.h: Move to ../libgcc/config/ia64.
+	* config/ia64/t-fprules-softfp: Remove.
+	* config/lm32/sfp-machine.h: Move to ../libgcc/config/lm32.
+	* config/lm32/t-fprules-softfp: Remove.
+	* config/moxie/sfp-machine.h: Remove.
+	* config/moxie/t-moxie-softfp: Remove.
+	* config/rs6000/darwin-ldouble-format: Move to
+	../libgcc/config/rs6000/ibm-ldouble-format.
+	* config/rs6000/darwin-ldouble.c: Move to
+	../libgcc/config/rs6000/ibm-ldouble.c
+	* config/rs6000/libgcc-ppc-glibc.ver: Move to ../libgcc/config/rs6000.
+	* config/rs6000/libgcc-ppc64.ver: Likewise.
+	* config/rs6000/sfp-machine.h: Likewise.
+	* config/rs6000/t-aix43 (SHLIB_MAPFILES): Remove
+	$(srcdir)/config/rs6000/libgcc-ppc64.ver.
+	(LIB2FUNCS_EXTRA): Remove.
+	(TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/rs6000/t-aix52: Likewise
+	* config/rs6000/t-darwin (LIB2FUNCS_EXTRA): Remove
+	$(srcdir)/config/rs6000/darwin-ldouble.c.
+	(SHLIB_MAPFILES): Remove.
+	* config/rs6000/t-darwin64 (LIB2FUNCS_EXTRA): Remove
+	$(srcdir)/config/rs6000/darwin-ldouble.c.
+	* config/rs6000/t-fprules-softfp: Move to
+	../libgcc/config/t-softfp-sfdf.
+	* config/rs6000/t-freebsd: Move to ../libgcc/config/rs6000.
+	* config/rs6000/t-linux64 (softfp_wrap_start, softfp_wrap_end): Remove.
+	* config/rs6000/t-ppccomm (LIB2FUNCS_EXTRA): Remove
+	$(srcdir)/config/rs6000/darwin-ldouble.c.
+	* config/score/sfp-machine.h: Move to ../libgcc/config/score.
+	* config/score/t-score-softfp: Remove.
+	* config.gcc (arm*-*-linux*): Remove arm/t-arm-softfp,
+	soft-fp/t-softfp from tmake_file.
+	(arm*-*-uclinux*): Likewise.
+	(arm*-*-ecos-elf): Likewise.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Likewise.
+	(arm*-*-rtems*): Likewise.
+	(arm*-*-elf): Likewise.
+	(moxie-*-elf): Remove moxie/t-moxie-softfp, soft-fp/t-softfp from
+	tmake_file.
+	(moxie-*-uclinux*): Likewise.
+	(moxie-*-rtems*): Likewise.
+	(lm32-*-elf*): Remove lm32/t-fprules-softfp, soft-fp/t-softfp from
+	tmake_file.
+	(lm32-*-rtems*): Likewise.
+	(lm32-*-uclinux*): Likewise.
+	(powerpc-*-freebsd*): Remove rs6000/t-freebsd,
+	rs6000/t-fprules-softfp, soft-fp/t-softfp from tmake_file.
+	(powerpc-*-linux*, powerpc64-*-linux*): Remove
+	rs6000/t-fprules-softfp, soft-fp/t-softfp from tmake_file.
+	(score-*-elf): Remove score/t-score-softfp, soft-fp/t-softfp from
+	tmake_file.
+	(tic6x-*-elf): Remove c6x/t-c6x-softfp, soft-fp/t-softfp from
+	tmake_file.
+	(tic6x-*-uclinux): Likewise.
+	(i[34567]86-*-darwin*, x86_64-*-darwin*): Remove i386/t-fprules-softfp,
+	soft-fp/t-softfp from tmake_file.
+	(i[34567]86-*-linux*, x86_64-*-linux*, i[34567]86-*-kfreebsd*-gnu)
+	(x86_64-*-kfreebsd*-gnu, i[34567]86-*-gnu*): Likewise.
+	(i[34567]86-*-solaris2*, x86_64-*-solaris2.1[0-9]*): Likewise.
+	(i[34567]86-*-cygwin*, i[34567]86-*-mingw*, x86_64-*-mingw*):
+	Likewise.
+	(i[34567]86-*-freebsd*, x86_64-*-freebsd*): Likewise.
+
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* Makefile.in (FPBIT_FUNCS, DPBIT_FUNCS, TPBIT_FUNCS): Remove.
 	(libgcc-support): Remove $(FPBIT), $(DPBIT), $(TPBIT)
 	dependencies.

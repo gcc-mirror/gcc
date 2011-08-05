@@ -54,6 +54,9 @@
 #			subdirectory will be ignored.
 #  md_unwind_header	The name of a header file defining
 #			MD_FALLBACK_FRAME_STATE_FOR.
+#  sfp_machine_header	The name of a sfp-machine.h header file for soft-fp.
+#  			Defaults to "$cpu_type/sfp-machine.h" if it exists,
+#			no-sfp-machine.h otherwise.
 #  tmake_file		A list of machine-description-specific
 #			makefile-fragments, if different from
 #			"$cpu_type/t-$cpu_type".
@@ -282,6 +285,7 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	  unwind_header=config/arm/unwind-arm.h
 	  ;;
 	esac
+	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	;;
 arm*-*-uclinux*)		# ARM ucLinux
 	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
@@ -291,8 +295,10 @@ arm*-*-uclinux*)		# ARM ucLinux
 	  unwind_header=config/arm/unwind-arm.h
 	  ;;
 	esac
+	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	;;
 arm*-*-ecos-elf)
+	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* )
 	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
@@ -304,11 +310,14 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	  tmake_file="${tmake_file} arm/t-symbian"
 	  ;;
 	esac
+	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	unwind_header=config/arm/unwind-arm.h
 	;;
 arm*-*-rtems*)
+	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	;;
 arm*-*-elf)
+	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	;;
 arm*-wince-pe*)
 	;;
@@ -318,7 +327,6 @@ avr-*-rtems*)
 avr-*-*)
 	# Make HImode functions for AVR
 	tmake_file="${cpu_type}/t-avr t-fpbit"
-
 	;;
 bfin*-elf*)
 	tmke_file=t-fdpbit
@@ -464,7 +472,7 @@ ia64*-*-freebsd*)
 	;;
 ia64*-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
-	tmake_file="ia64/t-ia64 t-crtfm t-softfp ia64/t-fprules-softfp ia64/t-softfp-compat ia64/t-glibc ia64/t-eh-ia64 t-libunwind"
+	tmake_file="ia64/t-ia64 t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat ia64/t-glibc ia64/t-eh-ia64 t-libunwind"
 	if test x$with_system_libunwind != xyes ; then
 		tmake_file="${tmake_file} t-libunwind-elf ia64/t-glibc-libunwind"
 	fi
@@ -482,11 +490,11 @@ iq2000*-*-elf*)
         ;;
 lm32-*-elf*|lm32-*-rtems*)
         extra_parts="crtbegin.o crtend.o crti.o crtn.o"
-        tmake_file="lm32/t-lm32 lm32/t-elf t-softfp"
+        tmake_file="lm32/t-lm32 lm32/t-elf t-softfp-sfdf t-softfp"
 	;;
 lm32-*-uclinux*)
         extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
-        tmake_file="lm32/t-lm32 lm32/t-uclinux t-softfp"
+        tmake_file="lm32/t-lm32 lm32/t-uclinux t-softfp-sfdf t-softfp"
 	;;	
 m32r-*-elf*|m32r-*-rtems*)
 	tmake_file=t-fdpbit
@@ -587,7 +595,7 @@ mn10300-*-*)
 	tmake_file=t-fdpbit
 	;;
 moxie-*-*)
-	tmake_file="moxie/t-moxie moxie/t-moxie-softfp"
+	tmake_file="moxie/t-moxie t-softfp-sfdf t-softfp-excl t-softfp"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
 	;;
 pdp11-*-*)
@@ -606,13 +614,15 @@ powerpc-*-darwin*)
 	  md_unwind_header=rs6000/darwin-unwind.h
 	  ;;
 	esac
+	tmake_file="$tmake_file rs6000/t-ibm-ldouble"
 	extra_parts="$extra_parts crt2.o"
 	;;
 powerpc64-*-darwin*)
+	tmake_file="$tmake_file rs6000/t-ibm-ldouble"
 	extra_parts="$extra_parts crt2.o"
 	;;
 powerpc-*-freebsd*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-freebsd t-softfp"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-freebsd t-softfp-sfdf t-softfp-excl t-softfp"
 	;;
 powerpc-*-netbsd*)
 	;;
@@ -620,56 +630,56 @@ powerpc-*-eabispe*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm"
 	;;
 powerpc-*-eabisimaltivec*)
-	tmake_file=t-fdpbit
+	tmake_file="rs6000/t-ppccomm-ldbl t-fdpbit"
 	;;
 powerpc-*-eabisim*)
-	tmake_file=t-fdpbit
+	tmake_file="rs6000/t-ppccomm-ldbl t-fdpbit"
 	;;
 powerpc-*-elf*)
-	tmake_file=t-fdpbit
+	tmake_file="rs6000/t-ppccomm-ldbl t-fdpbit"
 	;;
 powerpc-*-eabialtivec*)
-	tmake_file=t-fdpbit
+	tmake_file="rs6000/t-ppccomm-ldbl t-fdpbit"
 	;;
 powerpc-xilinx-eabi*)
-	tmake_file=t-fdpbit
+	tmake_file="rs6000/t-ppccomm-ldbl t-fdpbit"
 	;;
 powerpc-*-eabi*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm t-fdpbit"
 	;;
 powerpc-*-rtems*)
-	tmake_file=t-fdpbit
+	tmake_file="rs6000/t-ppccomm-ldbl t-fdpbit"
 	;;
 powerpc-*-linux* | powerpc64-*-linux*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp t-dfprules rs6000/t-ppc64-fp"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp-sfdf t-softfp-excl t-dfprules rs6000/t-ppc64-fp t-softfp"
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
-	tmake_file=t-fdpbit
+	tmake_file="rs6000/t-ppccomm-ldbl t-fdpbit"
 	;;
 powerpc-*-lynxos*)
 	tmake_file=t-fdpbit
 	;;
 powerpcle-*-elf*)
-	tmake_file=t-fdpbit
+	tmake_file="rs6000/t-ppccomm-ldbl t-fdpbit"
 	;;
 powerpcle-*-eabisim*)
-	tmake_file=t-fdpbit
+	tmake_file="rs6000/t-ppccomm-ldbl t-fdpbit"
 	;;
 powerpcle-*-eabi*)
-	tmake_file=t-fdpbit
+	tmake_file="rs6000/t-ppccomm-ldbl t-fdpbit"
 	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	md_unwind_header=rs6000/aix-unwind.h
-	tmake_file="t-fdpbit rs6000/t-ppc64-fp"
+	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-ibm-ldouble"
 	;;
 rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 	md_unwind_header=rs6000/aix-unwind.h
-	tmake_file="t-fdpbit rs6000/t-ppc64-fp"
+	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-ibm-ldouble"
 	;;
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	md_unwind_header=rs6000/aix-unwind.h
-	tmake_file="t-fdpbit rs6000/t-ppc64-fp"
+	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-ibm-ldouble"
 	;;
 rx-*-elf)
 	extra_parts="crtbegin.o crtend.o"
@@ -688,6 +698,7 @@ s390x-ibm-tpf*)
 	md_unwind_header=s390/tpf-unwind.h
 	;;
 score-*-elf)
+	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp"
         ;;
 sh-*-elf* | sh[12346l]*-*-elf* | \
   sh-*-linux* | sh[2346lbe]*-*-linux* | \
@@ -774,7 +785,7 @@ spu-*-elf*)
 	tmake_file="t-fdpbit spu/t-elf"
 	;;
 tic6x-*-*)
-	tmake_file="${tmake_file} t-gnu-prefix"
+	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix"
 	;;
 v850*-*-*)
 	tmake_file=t-fdpbit
@@ -829,9 +840,11 @@ i[34567]86-*-darwin* | x86_64-*-darwin* | \
   i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]* | \
   i[34567]86-*-cygwin* | i[34567]86-*-mingw* | x86_64-*-mingw* | \
   i[34567]86-*-freebsd* | x86_64-*-freebsd*)
+  	tmake_file="${tmake_file} t-softfp-tf"
 	if test "${host_address}" = 32; then
-		tmake_file="${tmake_file} t-softfp i386/${host_address}/t-fprules-softfp"
+		tmake_file="${tmake_file} i386/${host_address}/t-softfp"
 	fi
+	tmake_file="${tmake_file} t-softfp"
 	;;
 esac
 
