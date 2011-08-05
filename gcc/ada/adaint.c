@@ -56,6 +56,10 @@ extern "C" {
 #include <vxCpuLib.h>
 #endif /* _WRS_CONFIG_SMP */
 
+/* We need to know the VxWorks version because some file operations
+   (such as chmod) are only available on VxWorks 6.  */
+#include "version.h"
+
 #endif /* VxWorks */
 
 #if (defined (__mips) && defined (__sgi)) || defined (__APPLE__)
@@ -82,6 +86,17 @@ extern "C" {
 #include <time.h>
 #ifdef VMS
 #include <unixio.h>
+#endif
+
+#ifdef __vxworks
+/* S_IREAD and S_IWRITE are not defined in VxWorks */
+#ifndef S_IREAD
+#define S_IREAD  (S_IRUSR | S_IRGRP | S_IROTH)
+#endif
+
+#ifndef S_IWRITE
+#define S_IWRITE (S_IWUSR)
+#endif
 #endif
 
 /* We don't have libiberty, so use malloc.  */
@@ -2191,7 +2206,8 @@ __gnat_set_writable (char *name)
 
   SetFileAttributes
     (wname, GetFileAttributes (wname) & ~FILE_ATTRIBUTE_READONLY);
-#elif ! defined (__vxworks) && ! defined(__nucleus__)
+#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) && \
+  ! defined(__nucleus__)
   GNAT_STRUCT_STAT statbuf;
 
   if (GNAT_STAT (name, &statbuf) == 0)
@@ -2213,7 +2229,8 @@ __gnat_set_executable (char *name)
   if (__gnat_can_use_acl (wname))
     __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_EXECUTE);
 
-#elif ! defined (__vxworks) && ! defined(__nucleus__)
+#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) && \
+  ! defined(__nucleus__)
   GNAT_STRUCT_STAT statbuf;
 
   if (GNAT_STAT (name, &statbuf) == 0)
@@ -2240,7 +2257,8 @@ __gnat_set_non_writable (char *name)
 
   SetFileAttributes
     (wname, GetFileAttributes (wname) | FILE_ATTRIBUTE_READONLY);
-#elif ! defined (__vxworks) && ! defined(__nucleus__)
+#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) && \
+  ! defined(__nucleus__)
   GNAT_STRUCT_STAT statbuf;
 
   if (GNAT_STAT (name, &statbuf) == 0)
@@ -2262,7 +2280,8 @@ __gnat_set_readable (char *name)
   if (__gnat_can_use_acl (wname))
     __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_READ);
 
-#elif ! defined (__vxworks) && ! defined(__nucleus__)
+#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) && \
+  ! defined(__nucleus__)
   GNAT_STRUCT_STAT statbuf;
 
   if (GNAT_STAT (name, &statbuf) == 0)
@@ -2283,7 +2302,8 @@ __gnat_set_non_readable (char *name)
   if (__gnat_can_use_acl (wname))
     __gnat_set_OWNER_ACL (wname, DENY_ACCESS, FILE_GENERIC_READ);
 
-#elif ! defined (__vxworks) && ! defined(__nucleus__)
+#elif ! (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) && \
+  ! defined(__nucleus__)
   GNAT_STRUCT_STAT statbuf;
 
   if (GNAT_STAT (name, &statbuf) == 0)
@@ -3555,7 +3575,8 @@ char __gnat_environment_char = '$';
 int
 __gnat_copy_attribs (char *from, char *to, int mode)
 {
-#if defined (VMS) || defined (__vxworks) || defined (__nucleus__)
+#if defined (VMS) || (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 6) || \
+  defined (__nucleus__)
   return -1;
 
 #elif defined (_WIN32) && !defined (RTX)

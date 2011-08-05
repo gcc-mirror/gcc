@@ -122,8 +122,8 @@ package body Debug is
    --  d.B
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D
-   --  d.E  SPARK generation mode
-   --  d.F  Why generation mode
+   --  d.E
+   --  d.F  ALFA mode
    --  d.G
    --  d.H
    --  d.I  SCIL generation mode
@@ -580,11 +580,9 @@ package body Debug is
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
 
-   --  d.E  SPARK generation mode. Generate intermediate code for the sake of
-   --       formal verification through SPARK and the SPARK toolset.
-
-   --  d.F  Why generation mode. Generate intermediate code for the sake of
-   --       formal verification through Why and the Why VC generator.
+   --  d.F  ALFA mode. Generate AST in a form suitable for formal verification,
+   --       as well as additional cross reference information in ALI files to
+   --       compute effects of subprograms.
 
    --  d.I  Generate SCIL mode. Generate intermediate code for the sake of
    --       of static analysis tools, and ensure additional tree consistency

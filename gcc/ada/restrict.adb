@@ -375,11 +375,12 @@ package body Restrict is
    begin
       Msg_Issued := False;
 
-      --  In CodePeer mode, we do not want to check for any restriction, or set
-      --  additional restrictions other than those already set in gnat1drv.adb
-      --  so that we have consistency between each compilation.
+      --  In CodePeer and ALFA mode, we do not want to check for any
+      --  restriction, or set additional restrictions other than those already
+      --  set in gnat1drv.adb so that we have consistency between each
+      --  compilation.
 
-      if CodePeer_Mode then
+      if CodePeer_Mode or else ALFA_Mode then
          return;
       end if;
 

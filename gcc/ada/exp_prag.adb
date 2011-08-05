@@ -321,7 +321,10 @@ package body Exp_Prag is
       --  be an explicit conditional in the source, not an implicit if, so we
       --  do not call Make_Implicit_If_Statement.
 
-      --  In formal verification mode, we keep the pragma check in the code
+      --  In formal verification mode, we keep the pragma check in the code,
+      --  and its enclosed expression is not expanded. This requires that no
+      --  transient scope is introduced for pragma check in this mode in
+      --  Exp_Ch7.Establish_Transient_Scope.
 
       if ALFA_Mode then
          return;

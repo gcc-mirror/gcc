@@ -976,23 +976,24 @@ package body Prj.Conf is
                   Builder : constant Package_Id :=
                     Value_Of (Name_Builder, Project.Decl.Packages, Shared);
                   Switch_Array_Id : Array_Element_Id;
-                  Switch_Array : Array_Element;
 
-                  Switch_List   : String_List_Id := Nil_String;
-                  Switch : String_Element;
+                  procedure Check_RTS_Switches;
+                  --  Take into account eventual switches --RTS in
+                  --  Switch_Array_Id.
 
-                  Lang      : Name_Id;
-                  Lang_Last : Positive;
+                  ------------------------
+                  -- Check_RTS_SWitches --
+                  ------------------------
 
-               begin
-                  if Builder /= No_Package then
-                     Switch_Array_Id :=
-                       Value_Of
-                         (Name      => Name_Switches,
-                          In_Arrays =>
-                            Shared.Packages.Table (Builder).Decl.Arrays,
-                          Shared    => Shared);
+                  procedure Check_RTS_Switches is
+                     Switch_Array : Array_Element;
 
+                     Switch_List   : String_List_Id := Nil_String;
+                     Switch : String_Element;
+
+                     Lang      : Name_Id;
+                     Lang_Last : Positive;
+                  begin
                      while Switch_Array_Id /= No_Array_Element loop
                         Switch_Array :=
                           Shared.Array_Elements.Table (Switch_Array_Id);
@@ -1057,6 +1058,25 @@ package body Prj.Conf is
 
                         Switch_Array_Id := Switch_Array.Next;
                      end loop;
+                  end Check_RTS_Switches;
+
+               begin
+                  if Builder /= No_Package then
+                     Switch_Array_Id :=
+                       Value_Of
+                         (Name      => Name_Switches,
+                          In_Arrays =>
+                            Shared.Packages.Table (Builder).Decl.Arrays,
+                          Shared    => Shared);
+                     Check_RTS_Switches;
+
+                     Switch_Array_Id :=
+                       Value_Of
+                         (Name      => Name_Default_Switches,
+                          In_Arrays =>
+                            Shared.Packages.Table (Builder).Decl.Arrays,
+                          Shared    => Shared);
+                     Check_RTS_Switches;
                   end if;
                end;
             end if;

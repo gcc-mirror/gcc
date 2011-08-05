@@ -2461,6 +2461,18 @@ package body Freeze is
                   Formal := First_Formal (E);
                   while Present (Formal) loop
                      F_Type := Etype (Formal);
+
+                     --  AI05-0151 : incomplete types can appear in a profile.
+                     --  By the time the entity is frozen, the full view must
+                     --  be available, unless it is a limited view.
+
+                     if Is_Incomplete_Type (F_Type)
+                       and then Present (Full_View (F_Type))
+                     then
+                        F_Type := Full_View (F_Type);
+                        Set_Etype (Formal, F_Type);
+                     end if;
+
                      Freeze_And_Append (F_Type, N, Result);
 
                      if Is_Private_Type (F_Type)
@@ -2631,6 +2643,17 @@ package body Freeze is
                      --  Freeze return type
 
                      R_Type := Etype (E);
+
+                     --  AI05-0151: the return type may have been incomplete
+                     --  at the point of declaration.
+
+                     if Ekind (R_Type) = E_Incomplete_Type
+                       and then Present (Full_View (R_Type))
+                     then
+                        R_Type := Full_View (R_Type);
+                        Set_Etype (E, R_Type);
+                     end if;
+
                      Freeze_And_Append (R_Type, N, Result);
 
                      --  Check suspicious return type for C function
