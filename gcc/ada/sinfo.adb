@@ -2844,6 +2844,14 @@ package body Sinfo is
       return Node1 (N);
    end Storage_Pool;
 
+   function Subpool_Handle_Name
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Allocator);
+      return Node4 (N);
+   end Subpool_Handle_Name;
+
    function Strval
       (N : Node_Id) return String_Id is
    begin
@@ -5885,6 +5893,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Return_Statement);
       Set_Node1 (N, Val); -- semantic field, no parent set
    end Set_Storage_Pool;
+
+   procedure Set_Subpool_Handle_Name
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Allocator);
+      Set_Node4_With_Parent (N, Val);
+   end Set_Subpool_Handle_Name;
 
    procedure Set_Strval
       (N : Node_Id; Val : String_Id) is

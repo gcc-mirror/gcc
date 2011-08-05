@@ -1,3 +1,25 @@
+2011-08-05  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Subpool_Handle_Name): New attribute for
+	subpools.
+	* par-ch4.adb (P_Allocator): Parse new subpool specification syntax.
+
+2011-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing): New procedure to implement the
+	general indexing aspects of Ada2012. Called when analyzing indexed
+	components when other interpretations fail.
+	* sem_ch8.adb (Find_Direct_Name): check for implicit dereference only
+	in an expression context where overloading is meaningful. This excludes
+	the occurrence in an aspect specification (efficiency only).
+	* sem_attr.adb (Analyze_Attribute): indicate that the attributes
+	related to iterators can be set by an attribute specification, but
+	cannot be queried.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): handle
+	Constant_Indexing and Variable_Indexing.
+	(Check_Indexing_Functions): New procedure to perform legality checks.
+	Additional semantic checks at end of declarations.
+
 2011-08-05  Sergey Rybin  <rybin@adacore.com>
 
 	* tree_io.ads: Update ASIS_Version_Number because of the change of the

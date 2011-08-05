@@ -946,13 +946,36 @@ package body Sem_Ch13 is
 
                   Delay_Required := False;
 
-               --  Aspects related to container iterators (fill in later???)
+               --  Aspects related to container iterators. These aspects denote
+               --  subprograms, and thus must be delayed.
 
                when Aspect_Constant_Indexing    |
-                    Aspect_Default_Iterator     |
-                    Aspect_Iterator_Element     |
                     Aspect_Variable_Indexing    =>
-                  null;
+
+                  if not Is_Type (E) or else not Is_Tagged_Type (E) then
+                     Error_Msg_N ("indexing applies to a tagged type", N);
+                  end if;
+
+                  Aitem :=
+                    Make_Attribute_Definition_Clause (Loc,
+                      Name       => Ent,
+                      Chars      => Chars (Id),
+                      Expression => Relocate_Node (Expr));
+
+                  Delay_Required := True;
+                  Set_Is_Delayed_Aspect (Aspect);
+
+               when Aspect_Default_Iterator     |
+                    Aspect_Iterator_Element     =>
+
+                  Aitem :=
+                    Make_Attribute_Definition_Clause (Loc,
+                      Name       => Ent,
+                      Chars      => Chars (Id),
+                      Expression => Relocate_Node (Expr));
+
+                  Delay_Required := True;
+                  Set_Is_Delayed_Aspect (Aspect);
 
                when Aspect_Implicit_Dereference =>
                   if not Is_Type (E)
@@ -1511,6 +1534,11 @@ package body Sem_Ch13 is
       --  and if so gives an error message. If there is a duplicate, True is
       --  returned, otherwise if there is no error, False is returned.
 
+      procedure Check_Indexing_Functions;
+      --  Check that the function in Constant_Indexing or Variable_Indexing
+      --  attribute has the proper type structure. If the name is overloaded,
+      --  check that all interpretations are legal.
+
       -----------------------------------
       -- Analyze_Stream_TSS_Definition --
       -----------------------------------
@@ -1647,6 +1675,89 @@ package body Sem_Ch13 is
             Error_Msg_N ("incorrect expression for% attribute", Expr);
          end if;
       end Analyze_Stream_TSS_Definition;
+
+      ------------------------------
+      -- Check_Indexing_Functions --
+      ------------------------------
+
+      procedure Check_Indexing_Functions is
+         Ctrl : Entity_Id;
+
+         procedure Check_One_Function (Subp : Entity_Id);
+         --  Check one possible interpretation
+
+         ------------------------
+         -- Check_One_Function --
+         ------------------------
+
+         procedure Check_One_Function (Subp : Entity_Id) is
+         begin
+            if Ekind (Subp) /= E_Function then
+               Error_Msg_N ("indexing requires a function", Subp);
+            end if;
+
+            if No (First_Formal (Subp)) then
+               Error_Msg_N
+                 ("function for indexing must have parameters", Subp);
+            else
+               Ctrl := Etype (First_Formal (Subp));
+            end if;
+
+            if Ctrl = Ent
+              or else Ctrl = Class_Wide_Type (Ent)
+              or else
+                (Ekind (Ctrl) = E_Anonymous_Access_Type
+                  and then
+                    (Designated_Type (Ctrl) = Ent
+                      or else Designated_Type (Ctrl) = Class_Wide_Type (Ent)))
+            then
+               null;
+
+            else
+               Error_Msg_N ("indexing function must apply to type&", Subp);
+            end if;
+
+            if No (Next_Formal (First_Formal (Subp))) then
+               Error_Msg_N
+                 ("function for indexing must have two parameters", Subp);
+            end if;
+
+            if not Has_Implicit_Dereference (Etype (Subp)) then
+               Error_Msg_N
+                 ("function for indexing must return a reference type", Subp);
+            end if;
+         end Check_One_Function;
+
+      --  Start of processing for Check_Indexing_Functions
+
+      begin
+         Analyze (Expr);
+
+         if not Is_Overloaded (Expr) then
+            Check_One_Function (Entity (Expr));
+
+         else
+            declare
+               I : Interp_Index;
+               It : Interp;
+
+            begin
+               Get_First_Interp (Expr, I, It);
+               while Present (It.Nam) loop
+
+                  --  Note that analysis will have added the interpretation
+                  --  that corresponds to the dereference. We only check the
+                  --  subprogram itself.
+
+                  if Is_Overloadable (It.Nam) then
+                     Check_One_Function (It.Nam);
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+            end;
+         end if;
+      end Check_Indexing_Functions;
 
       ----------------------
       -- Duplicate_Clause --
@@ -2267,6 +2378,13 @@ package body Sem_Ch13 is
             end if;
          end Component_Size_Case;
 
+         -----------------------
+         -- Constant_Indexing --
+         -----------------------
+
+         when Attribute_Constant_Indexing =>
+            Check_Indexing_Functions;
+
          ------------------
          -- External_Tag --
          ------------------
@@ -2844,6 +2962,13 @@ package body Sem_Ch13 is
                Set_RM_Size (U_Ent, Size);
             end if;
          end Value_Size;
+
+         -----------------------
+         -- Variable_Indexing --
+         -----------------------
+
+         when Attribute_Variable_Indexing =>
+            Check_Indexing_Functions;
 
          -----------
          -- Write --
@@ -5381,6 +5506,13 @@ package body Sem_Ch13 is
          Analyze (End_Decl_Expr);
          Err := Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
 
+      elsif A_Id = Aspect_Variable_Indexing or else
+            A_Id = Aspect_Constant_Indexing
+      then
+         Analyze (End_Decl_Expr);
+         Analyze (Aspect_Rep_Item (ASN));
+         Err := Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
+
       --  All other cases
 
       else
@@ -5485,15 +5617,6 @@ package body Sem_Ch13 is
               Aspect_Value_Size     =>
             T := Any_Integer;
 
-         --  Following to be done later ???
-
-         when Aspect_Constant_Indexing    |
-              Aspect_Default_Iterator     |
-              Aspect_Iterator_Element     |
-              Aspect_Implicit_Dereference |
-              Aspect_Variable_Indexing    =>
-            null;
-
          --  Stream attribute. Special case, the expression is just an entity
          --  that does not need any resolution, so just analyze.
 
@@ -5501,6 +5624,17 @@ package body Sem_Ch13 is
               Aspect_Output |
               Aspect_Read   |
               Aspect_Write  =>
+            Analyze (Expression (ASN));
+            return;
+
+         --  Same for Iterator aspects, where the expression is a function
+         --  name. Legality rules are checked separately.
+
+         when Aspect_Constant_Indexing    |
+              Aspect_Default_Iterator     |
+              Aspect_Iterator_Element     |
+              Aspect_Implicit_Dereference |
+              Aspect_Variable_Indexing    =>
             Analyze (Expression (ASN));
             return;
 

@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -247,6 +248,12 @@ package body Sem_Ch4 is
    procedure Remove_Abstract_Operations (N : Node_Id);
    --  Ada 2005: implementation of AI-310. An abstract non-dispatching
    --  operation is not a candidate interpretation.
+
+   function Try_Container_Indexing
+     (N      : Node_Id;
+      Prefix : Node_Id;
+      Expr   : Node_Id) return Boolean;
+   --  AI05-0139: Generalized indexing to support iterators over containers
 
    function Try_Indexed_Call
      (N          : Node_Id;
@@ -2030,6 +2037,9 @@ package body Sem_Ch4 is
             elsif Is_Record_Type (Array_Type)
               and then Remote_AST_I_Dereference (P)
             then
+               return;
+
+            elsif Try_Container_Indexing (N, P, Exp) then
                return;
 
             elsif Array_Type = Any_Type then
@@ -6269,6 +6279,130 @@ package body Sem_Ch4 is
          end if;
       end if;
    end Remove_Abstract_Operations;
+
+   ----------------------------
+   -- Try_Container_Indexing --
+   ----------------------------
+
+   function Try_Container_Indexing
+     (N      : Node_Id;
+      Prefix : Node_Id;
+      Expr   : Node_Id) return Boolean
+   is
+      Loc       : constant Source_Ptr := Sloc (N);
+      Disc      : Entity_Id;
+      Func      : Entity_Id;
+      Func_Name : Node_Id;
+      Indexing  : Node_Id;
+      Is_Var    : Boolean;
+      Ritem     : Node_Id;
+
+   begin
+
+      --  Check whether type has a specified indexing aspect.
+
+      Func_Name := Empty;
+      Is_Var := False;
+      Ritem := First_Rep_Item (Etype (Prefix));
+
+      while Present (Ritem) loop
+         if Nkind (Ritem) = N_Aspect_Specification then
+
+            --  Prefer Variable_Indexing, but will settle for Constant.
+
+            if Get_Aspect_Id (Chars (Identifier (Ritem))) =
+              Aspect_Constant_Indexing
+            then
+               Func_Name := Expression (Ritem);
+
+            elsif Get_Aspect_Id (Chars (Identifier (Ritem))) =
+              Aspect_Variable_Indexing
+            then
+               Func_Name :=  Expression (Ritem);
+               Is_Var := True;
+               exit;
+            end if;
+         end if;
+         Next_Rep_Item (Ritem);
+      end loop;
+
+      --  If aspect does not exist the expression is illegal. Error is
+      --  diagnosed in caller.
+
+      if No (Func_Name) then
+         return False;
+      end if;
+
+      if Is_Var
+        and then not Is_Variable (Prefix)
+      then
+         Error_Msg_N ("Variable indexing cannot be applied to a constant", N);
+      end if;
+
+      if not Is_Overloaded (Func_Name) then
+         Func := Entity (Func_Name);
+         Indexing := Make_Function_Call (Loc,
+           Name => New_Occurrence_Of (Func, Loc),
+           Parameter_Associations =>
+             New_List (Relocate_Node (Prefix), Relocate_Node (Expr)));
+         Rewrite (N, Indexing);
+         Analyze (N);
+
+         --  The return type of the indexing function is a reference type, so
+         --  add the dereference as a possible interpretation.
+
+         Disc := First_Discriminant (Etype (Func));
+         while Present (Disc) loop
+            if Has_Implicit_Dereference (Disc) then
+               Add_One_Interp (N, Disc, Designated_Type (Etype (Disc)));
+               exit;
+            end if;
+
+            Next_Discriminant (Disc);
+         end loop;
+
+      else
+         Indexing := Make_Function_Call (Loc,
+           Name => Make_Identifier (Loc, Chars (Func_Name)),
+           Parameter_Associations =>
+             New_List (Relocate_Node (Prefix), Relocate_Node (Expr)));
+
+         Rewrite (N, Indexing);
+
+         declare
+            I  : Interp_Index;
+            It : Interp;
+            Success : Boolean;
+
+         begin
+            Get_First_Interp (Func_Name, I, It);
+            Set_Etype (N, Any_Type);
+            while Present (It.Nam) loop
+               Analyze_One_Call (N, It.Nam, False, Success);
+               if Success then
+                  Set_Etype (Name (N), It.Typ);
+
+                  --  Add implicit dereference interpretation.
+
+                  Disc := First_Discriminant (Etype (It.Nam));
+
+                  while Present (Disc) loop
+                     if Has_Implicit_Dereference (Disc) then
+                        Add_One_Interp
+                          (N, Disc, Designated_Type (Etype (Disc)));
+                        exit;
+                     end if;
+
+                     Next_Discriminant (Disc);
+                  end loop;
+               end if;
+               Get_Next_Interp (I, It);
+            end loop;
+         end;
+      end if;
+
+      return True;
+   end Try_Container_Indexing;
 
    -----------------------
    -- Try_Indirect_Call --

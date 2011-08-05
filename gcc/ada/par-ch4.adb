@@ -2810,7 +2810,10 @@ package body Ch4 is
    --------------------
 
    --  ALLOCATOR ::=
-   --    new [NULL_EXCLUSION] SUBTYPE_INDICATION | new QUALIFIED_EXPRESSION
+   --      new [SUBPOOL_SPECIFICATION] SUBTYPE_INDICATION
+   --    | new [SUBPOOL_SPECIFICATION] QUALIFIED_EXPRESSION
+   --
+   --  SUBPOOL_SPECIFICATION ::= (subpool_handle_NAME)
 
    --  The caller has checked that the initial token is NEW
 
@@ -2825,7 +2828,24 @@ package body Ch4 is
       Alloc_Node := New_Node (N_Allocator, Token_Ptr);
       T_New;
 
+      --  Scan subpool_specification if present (Ada 2012 (AI05-0111-3))
+
       --  Scan Null_Exclusion if present (Ada 2005 (AI-231))
+
+      if Token = Tok_Left_Paren then
+         Scan; -- past (
+         Set_Subpool_Handle_Name (Alloc_Node, P_Name);
+         T_Right_Paren;
+
+         if Ada_Version < Ada_2012 then
+            Error_Msg_N
+              ("|subpool specification is an Ada 2012 feature",
+               Subpool_Handle_Name (Alloc_Node));
+            Error_Msg_N
+              ("\|unit must be compiled with -gnat2012 switch",
+               Subpool_Handle_Name (Alloc_Node));
+         end if;
+      end if;
 
       Null_Exclusion_Present := P_Null_Exclusion;
       Set_Null_Exclusion_Present (Alloc_Node, Null_Exclusion_Present);
