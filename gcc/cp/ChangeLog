@@ -1,5 +1,9 @@
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47453
+	* typeck.c (build_x_compound_expr_from_list): Also complain
+	about ({...}).
+
 	PR c++/49812
 	* typeck.c (cp_build_unary_op) [POSTINCREMENT_EXPR]: Strip cv-quals.
 

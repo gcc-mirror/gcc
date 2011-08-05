@@ -5470,6 +5470,16 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
 {
   tree expr = TREE_VALUE (list);
 
+  if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+      && !CONSTRUCTOR_IS_DIRECT_INIT (expr))
+    {
+      if (complain & tf_error)
+	pedwarn (EXPR_LOC_OR_HERE (expr), 0, "list-initializer for "
+		 "non-class type must not be parenthesized");
+      else
+	return error_mark_node;
+    }
+
   if (TREE_CHAIN (list))
     {
       if (complain & tf_error)
