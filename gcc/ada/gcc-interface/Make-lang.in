@@ -94,7 +94,11 @@ ada: gnat1$(exeext) gnatbind$(exeext)
 
 # There are too many Ada sources to check against here.  Let's
 # always force the recursive make.
-ADA_TOOLS_FLAGS_TO_PASS=\
+ifeq ($(build), $(host))
+  ifeq ($(host), $(target))
+    # This is a regular native. So use the compiler from our current build
+    # tree.
+    ADA_TOOLS_FLAGS_TO_PASS=\
         "CC=../../xgcc -B../../"	\
         "CFLAGS=$(CFLAGS)"		\
 	"exeext=$(exeext)"              \
@@ -103,6 +107,58 @@ ADA_TOOLS_FLAGS_TO_PASS=\
 	"GNATMAKE=../../gnatmake"	\
 	"GNATLINK=../../gnatlink"	\
 	"GNATBIND=../../gnatbind"
+  else
+    # This is a regular cross compiler. Use the native compiler to compile
+    # the tools.
+
+    # put the host RTS dir first in the PATH to hide the default runtime
+    # files that are among the sources
+    RTS_DIR:=$(strip $(subst \,/,$(shell gnatls -v | grep adalib )))
+
+    ADA_TOOLS_FLAGS_TO_PASS=\
+        CC="$(CC)" \
+        $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
+        ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
+        GNATMAKE="gnatmake" \
+        GNATBIND="gnatbind" \
+        GNATLINK="gnatlink" \
+        LIBGNAT=""
+  endif
+else
+  # Build is different from host so we are either building a canadian cross
+  # or a cross-native compiler. We provide defaults for tools targeting the
+  # host platform, but they can be overriden by just setting <tool>_FOR_HOST
+  # variables. 
+  GNATMAKE_FOR_HOST=$(host)-gnatmake
+  GNATBIND_FOR_HOST=$(host)-gnatbind
+  GNATLINK_FOR_HOST=$(host)-gnatlink
+  GNATLS_FOR_HOST=$(host)-gnatls
+
+  ifeq ($(host), $(target))
+    # This is a cross native. All the sources are taken from the currently
+    # built runtime.
+    ADA_TOOLS_FLAGS_TO_PASS=\
+        CC="$(CC)" \
+        $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
+        ADA_INCLUDES="-I../rts"                \
+        GNATMAKE="$(GNATMAKE_FOR_HOST)"      \
+        GNATBIND="$(GNATBIND_FOR_HOST)"      \
+        GNATLINK="$(GNATLINK_FOR_HOST)"      \
+        LIBGNAT=""
+  else
+    # This is a canadian cross. We should use a toolchain running on the
+    # build platform and targeting the host platform.
+    RTS_DIR:=$(strip $(subst \,/,$(shell $(GNATLS_FOR_HOST) -v | grep adalib )))
+    ADA_TOOLS_FLAGS_TO_PASS=\
+        CC="$(CC)" \
+        $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
+        ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
+        GNATMAKE="$(GNATMAKE_FOR_HOST)"      \
+        GNATBIND="$(GNATBIND_FOR_HOST)"      \
+        GNATLINK="$(GNATLINK_FOR_HOST)"      \
+        LIBGNAT=""
+  endif
+endif
 
 GCC_LINK=$(LINKER) $(ALL_LINKERFLAGS) -static-libgcc $(LDFLAGS)
 

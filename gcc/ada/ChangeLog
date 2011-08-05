@@ -1,3 +1,10 @@
+2011-08-05  Nicolas Roche  <roche@adacore.com>
+
+	* gcc-interface/Makefile.in: Don't use directly ../xgcc to build shared
+	libgnat. Use rather the value of GCC_FOR_TARGET. Fix issue with
+	canadian cross.
+	* gcc-interface/Make-lang.in: Add support for canadian cross setting.
+
 2011-08-05  Matthew Heaney  <heaney@adacore.com>
 
 	* a-comutr.adb, a-cimutr.adb, a-cbmutr.adb (Child_Count, Child_Depth):
