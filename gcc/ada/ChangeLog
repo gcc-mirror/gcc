@@ -1,5 +1,13 @@
 2011-08-05  Bob Duff  <duff@adacore.com>
 
+	* a-fihema.ads: Minor comment fix.
+	* a-fihema.adb (Allocate, Deallocate): Assert that the alignment is
+	correct.
+	(Attach, Detach): Remove some unnecessary code.
+	(Finalize): Remove Node_Ptr_To_Address, replace with a constant.
+
+2011-08-05  Bob Duff  <duff@adacore.com>
+
 	* a-fihema.ads, a-fihema.adb (Finalization_Collection): Avoid heap
 	allocation for Objects component. This simplifies the code somewhat. It
 	is also a little more efficient in the not-so-unusual case where there
