@@ -1,3 +1,8 @@
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* init.c [__alpha__ && __osf__] (__gnat_error_handler): Use
+	CONST_CAST.
+
 2011-08-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.ads, sem_unit.adb (Type_Without_Stream_Operation): determine

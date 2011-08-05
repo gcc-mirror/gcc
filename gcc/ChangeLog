@@ -1,3 +1,7 @@
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* tsystem.h (CONST_CAST2, CONST_CAST): Define.
+
 2011-08-05  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use the
