@@ -1,3 +1,8 @@
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgomp/49965
+	* testsuite/libgomp.c++/task-8.C: Replaced err by errval.
+
 2011-08-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/linux/proc.h: New.

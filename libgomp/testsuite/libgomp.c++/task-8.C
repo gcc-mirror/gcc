@@ -3,42 +3,42 @@
 #include <omp.h>
 #include <cstdlib>
 
-int err;
+int errval;
 
 int
 main ()
 {
   int e;
-#pragma omp parallel shared(err)
+#pragma omp parallel shared(errval)
   {
     if (omp_in_final ())
       #pragma omp atomic write
-	err = 1;
-    #pragma omp task if (0) shared(err)
+	errval = 1;
+    #pragma omp task if (0) shared(errval)
       {
 	if (omp_in_final ())
 	  #pragma omp atomic write
-	    err = 1;
-	#pragma omp task if (0) shared(err)
+	    errval = 1;
+	#pragma omp task if (0) shared(errval)
 	  if (omp_in_final ())
 	    #pragma omp atomic write
-	      err = 1;
+	      errval = 1;
       }
-    #pragma omp task final (1) shared(err)
+    #pragma omp task final (1) shared(errval)
       {
 	if (!omp_in_final ())
 	  #pragma omp atomic write
-	    err = 1;
+	    errval = 1;
 	#pragma omp taskyield
 	#pragma omp taskwait
-	#pragma omp task shared(err)
+	#pragma omp task shared(errval)
 	  if (!omp_in_final ())
 	    #pragma omp atomic write
-	      err = 1;
+	      errval = 1;
       }
   }
   #pragma omp atomic read
-    e = err;
+    e = errval;
   if (e)
     abort ();
 }
