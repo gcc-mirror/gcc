@@ -1138,7 +1138,7 @@ package body Exp_Ch7 is
 
       Jump_Alts : List_Id := No_List;
       --  Jump block alternatives. Depending on the value of the state counter,
-      --  the control flow jumps to a sequence of finalization statments. This
+      --  the control flow jumps to a sequence of finalization statements. This
       --  list contains the following:
       --
       --     when <counter value> =>
@@ -4623,6 +4623,8 @@ package body Exp_Ch7 is
      (Obj_Ref : Node_Id;
       Ptr_Typ : Entity_Id) return Node_Id
    is
+      pragma Assert (VM_Target /= No_VM);
+
       Loc : constant Source_Ptr := Sloc (Obj_Ref);
    begin
       return

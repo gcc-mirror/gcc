@@ -418,7 +418,7 @@ package body Exp_Util is
       if not Needs_Finalization (Desig_Typ) then
          return;
 
-      --  The allocator or free statmenet has already been expanded and already
+      --  The allocator or free statement has already been expanded and already
       --  has a custom Allocate / Deallocate routine.
 
       elsif Nkind (Expr) = N_Allocator

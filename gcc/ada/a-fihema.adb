@@ -43,8 +43,13 @@ with System.Storage_Pools;    use System.Storage_Pools;
 package body Ada.Finalization.Heap_Management is
 
    Header_Size   : constant Storage_Count  := Node'Size / Storage_Unit;
+   --  Size of the header in bytes. Added to Storage_Size requested by
+   --  Allocate/Deallocate to determine the Storage_Size passed to the
+   --  underlying pool.
+
    Header_Offset : constant Storage_Offset := Header_Size;
-   --  Comments needed???
+   --  Offset from the header to the actual object. Used to get from the
+   --  address of a header to the address of the actual object, and vice-versa.
 
    function Address_To_Node_Ptr is
      new Ada.Unchecked_Conversion (Address, Node_Ptr);
@@ -81,7 +86,7 @@ package body Ada.Finalization.Heap_Management is
       Needs_Header : Boolean := True)
    is
    begin
-      --  Allocation of a controlled object
+      --  Allocation of an object with controlled parts
 
       if Needs_Header then
 
@@ -99,7 +104,8 @@ package body Ada.Finalization.Heap_Management is
          begin
             --  Use the underlying pool to allocate enough space for the object
             --  and the list header. The returned address points to the list
-            --  header.
+            --  header. If locking is necessary, it will be done by the
+            --  underlying pool.
 
             Allocate
               (Collection.Base_Pool.all,
@@ -174,7 +180,7 @@ package body Ada.Finalization.Heap_Management is
       Has_Header   : Boolean := True)
    is
    begin
-      --  Deallocation of a controlled object
+      --  Deallocation of an object with controlled parts
 
       if Has_Header then
          declare
@@ -246,7 +252,7 @@ package body Ada.Finalization.Heap_Management is
      (Collection : in out Finalization_Collection)
    is
       function Head (L : Node_Ptr) return Node_Ptr;
-      --  Return the node which comes after the dummy head
+      --  Return the node that comes after the dummy head
 
       function Is_Dummy_Head (N : Node_Ptr) return Boolean;
       --  Determine whether a node acts as a dummy head. Such nodes do not
@@ -310,9 +316,10 @@ package body Ada.Finalization.Heap_Management is
    --  Start of processing for Finalize
 
    begin
-      --  Lock the collection to prevent any allocations while the objects are
-      --  being finalized. The collection remains locked because the associated
-      --  access type is about to go out of scope.
+      --  Set Finalization_Started to prevent any allocations of objects with
+      --  controlled parts during finalization. The associated access type is
+      --  about to go out of scope; Finalization_Started is never again
+      --  modified.
 
       Collection.Finalization_Started := True;
 
@@ -457,8 +464,8 @@ package body Ada.Finalization.Heap_Management is
             end if;
          end if;
 
-         --  The current element points back to null. This should never happen
-         --  since the list is circular.
+         --  The current element is null. This should never happen since the
+         --  list is circular.
 
          if N_Ptr.Prev = null then
             Put_Line ("null (ERROR)");
@@ -468,7 +475,7 @@ package body Ada.Finalization.Heap_Management is
          elsif N_Ptr.Prev.Next = N_Ptr then
             Put_Line ("^");
 
-         --  The current element points back to an erroneous element
+         --  The current element points to an erroneous element
 
          else
             Put_Line ("? (ERROR)");

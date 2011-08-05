@@ -17382,7 +17382,8 @@ package body Sem_Ch3 is
 
          --  GNAT allow its own definition of Limited_Controlled to disobey
          --  this rule in order in ease the implementation. This test is safe
-         --  because Root_Controlled is defined in a private system child.
+         --  because Root_Controlled is defined in a child of System that
+         --  normal programs are not supposed to use.
 
          elsif Is_RTE (Etype (Full_T), RE_Root_Controlled) then
             Set_Is_Limited_Composite (Full_T);
