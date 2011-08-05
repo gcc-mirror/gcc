@@ -2355,13 +2355,23 @@ create_trace_edges (rtx insn)
     }
 }
 
+/* A subroutine of scan_trace.  Do what needs to be done "after" INSN.  */
+
+static void
+scan_insn_after (rtx insn)
+{
+  if (RTX_FRAME_RELATED_P (insn))
+    dwarf2out_frame_debug (insn);
+  notice_args_size (insn);
+}
+
 /* Scan the trace beginning at INSN and create the CFI notes for the
    instructions therein.  */
 
 static void
 scan_trace (dw_trace_info *trace)
 {
-  rtx insn = trace->head;
+  rtx prev, insn = trace->head;
   dw_cfa_location this_cfa;
 
   if (dump_file)
@@ -2378,10 +2388,14 @@ scan_trace (dw_trace_info *trace)
   this_cfa = cur_row->cfa;
   cur_cfa = &this_cfa;
 
-  for (insn = NEXT_INSN (insn); insn ; insn = NEXT_INSN (insn))
+  for (prev = insn, insn = NEXT_INSN (insn);
+       insn;
+       prev = insn, insn = NEXT_INSN (insn))
     {
+      rtx control;
+
       /* Do everything that happens "before" the insn.  */
-      add_cfi_insn = PREV_INSN (insn);
+      add_cfi_insn = prev;
 
       /* Notice the end of a trace.  */
       if (BARRIER_P (insn))
@@ -2401,34 +2415,25 @@ scan_trace (dw_trace_info *trace)
       if (DEBUG_INSN_P (insn) || !inside_basic_block_p (insn))
 	continue;
 
-      /* Flush data before calls and jumps, and of course if necessary.  */
-      if (can_throw_internal (insn))
-	{
-	  dwarf2out_flush_queued_reg_saves ();
-	  notice_eh_throw (insn);
-	}
-      else if (!NONJUMP_INSN_P (insn)
-	       || clobbers_queued_reg_save (insn)
-	       || find_reg_note (insn, REG_CFA_FLUSH_QUEUE, NULL))
-	dwarf2out_flush_queued_reg_saves ();
-
-      /* Do everything that happens "after" the insn.  */
-      add_cfi_insn = insn;
-
-      /* Handle changes to the row state.  */
-      if (RTX_FRAME_RELATED_P (insn))
-	dwarf2out_frame_debug (insn);
-
-      /* Look for REG_ARGS_SIZE, and handle it.  */
+      /* Handle all changes to the row state.  Sequences require special
+	 handling for the positioning of the notes.  */
       if (GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{
 	  rtx elt, pat = PATTERN (insn);
 	  int i, n = XVECLEN (pat, 0);
 
-	  if (INSN_ANNULLED_BRANCH_P (XVECEXP (pat, 0, 0)))
+	  control = XVECEXP (pat, 0, 0);
+	  if (can_throw_internal (control))
+	    notice_eh_throw (control);
+	  dwarf2out_flush_queued_reg_saves ();
+
+	  if (INSN_ANNULLED_BRANCH_P (control))
 	    {
 	      /* ??? Hopefully multiple delay slots are not annulled.  */
 	      gcc_assert (n == 2);
+	      gcc_assert (!RTX_FRAME_RELATED_P (control));
+	      gcc_assert (!find_reg_note (control, REG_ARGS_SIZE, NULL));
+
 	      elt = XVECEXP (pat, 0, 1);
 
 	      /* If ELT is an instruction from target of an annulled branch,
@@ -2438,11 +2443,16 @@ scan_trace (dw_trace_info *trace)
 		{
 		  HOST_WIDE_INT restore_args_size;
 
+		  add_cfi_insn = NULL;
 		  restore_args_size = cur_trace->end_true_args_size;
 		  cur_cfa = &cur_row->cfa;
 
-		  notice_args_size (elt);
-		  create_trace_edges (insn);
+		  scan_insn_after (elt);
+
+		  /* ??? Should we instead save the entire row state?  */
+		  gcc_assert (!VEC_length (queued_reg_save, queued_reg_saves));
+
+		  create_trace_edges (control);
 
 		  cur_trace->end_true_args_size = restore_args_size;
 		  cur_row->cfa = this_cfa;
@@ -2451,14 +2461,48 @@ scan_trace (dw_trace_info *trace)
 		}
 	    }
 
+	  /* The insns in the delay slot should all be considered to happen
+	     "before" a call insn.  Consider a call with a stack pointer
+	     adjustment in the delay slot.  The backtrace from the callee
+	     should include the sp adjustment.  Unfortunately, that leaves
+	     us with an unavoidable unwinding error exactly at the call insn
+	     itself.  For jump insns we'd prefer to avoid this error by
+	     placing the notes after the sequence.  */
+	  if (JUMP_P (control))
+	    add_cfi_insn = insn;
+
 	  for (i = 1; i < n; ++i)
 	    {
 	      elt = XVECEXP (pat, 0, i);
-	      notice_args_size (elt);
+	      scan_insn_after (elt);
 	    }
+
+	  /* Make sure any register saves are visible at the jump target.  */
+	  dwarf2out_flush_queued_reg_saves ();
+
+          /* However, if there is some adjustment on the call itself, e.g.
+	     a call_pop, that action should be considered to happen after
+	     the call returns.  */
+	  add_cfi_insn = insn;
+	  scan_insn_after (control);
 	}
       else
-	notice_args_size (insn);
+	{
+	  /* Flush data before calls and jumps, and of course if necessary.  */
+	  if (can_throw_internal (insn))
+	    {
+	      notice_eh_throw (insn);
+	      dwarf2out_flush_queued_reg_saves ();
+	    }
+	  else if (!NONJUMP_INSN_P (insn)
+		   || clobbers_queued_reg_save (insn)
+		   || find_reg_note (insn, REG_CFA_FLUSH_QUEUE, NULL))
+	    dwarf2out_flush_queued_reg_saves ();
+
+	  add_cfi_insn = insn;
+	  scan_insn_after (insn);
+	  control = insn;
+	}
 
       /* Between frame-related-p and args_size we might have otherwise
 	 emitted two cfa adjustments.  Do it now.  */
@@ -2468,7 +2512,7 @@ scan_trace (dw_trace_info *trace)
 	 same tests as are done to actually create the edges.  So
 	 always call the routine and let it not create edges for
 	 non-control-flow insns.  */
-      create_trace_edges (insn);
+      create_trace_edges (control);
     }
 
   add_cfi_insn = NULL;
