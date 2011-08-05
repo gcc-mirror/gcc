@@ -1,3 +1,12 @@
+2011-08-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2011-08-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (processor_alias_table): Add core-avx-i.
+
+	* doc/invoke.texi: Document core-avx-i.
+
 2011-08-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49948
