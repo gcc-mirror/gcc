@@ -1681,7 +1681,11 @@ package body Ada.Containers.Multiway_Trees is
       function Read_Subtree
         (Parent : Tree_Node_Access) return Tree_Node_Access;
 
-      Total_Count, Read_Count : Count_Type;
+      Total_Count : Count_Type'Base;
+      --  Value read from the stream that says how many elements follow
+
+      Read_Count : Count_Type'Base;
+      --  Actual number of elements read from the stream
 
       -------------------
       -- Read_Children --
@@ -1692,13 +1696,15 @@ package body Ada.Containers.Multiway_Trees is
          pragma Assert (Subtree.Children.First = null);
          pragma Assert (Subtree.Children.Last = null);
 
-         Count : Count_Type;  -- number of child subtrees
-         C     : Children_Type;
+         Count : Count_Type'Base;
+         --  Number of child subtrees
+
+         C : Children_Type;
 
       begin
          Count_Type'Read (Stream, Count);
 
-         if not Count'Valid then  -- Is this check necessary???
+         if Count < 0 then
             raise Program_Error with "attempt to read from corrupt stream";
          end if;
 
@@ -1749,7 +1755,7 @@ package body Ada.Containers.Multiway_Trees is
 
       Count_Type'Read (Stream, Total_Count);
 
-      if not Total_Count'Valid then  -- Is this check necessary???
+      if Total_Count < 0 then
          raise Program_Error with "attempt to read from corrupt stream";
       end if;
 
@@ -2428,6 +2434,11 @@ package body Ada.Containers.Multiway_Trees is
 
    begin
       Count_Type'Write (Stream, Container.Count);
+
+      if Container.Count = 0 then
+         return;
+      end if;
+
       Write_Children (Root_Node (Container));
    end Write;
 

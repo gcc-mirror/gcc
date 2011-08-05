@@ -1,3 +1,15 @@
+2011-08-05  Matthew Heaney  <heaney@adacore.com>
+
+	* a-comutr.adb, a-cimutr.adb, a-cbmutr.adb (Read): do not use T'Valid
+	to check count, check sign of value instead.
+	* a-comutr.adb, a-cimutr.adb (Write): return immediately if tree empty
+	(Copy_Subtree): allocate copy of source element
+	(Equal_Subtree): compare elements, not access objects
+
+2011-08-05  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Fix VMS alternative.
+
 2011-08-05  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch11.adb: Add comment.
