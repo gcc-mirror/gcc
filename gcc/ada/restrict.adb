@@ -380,7 +380,7 @@ package body Restrict is
       --  set in gnat1drv.adb so that we have consistency between each
       --  compilation.
 
-      if CodePeer_Mode or else ALFA_Mode then
+      if CodePeer_Mode or ALFA_Mode then
          return;
       end if;
 

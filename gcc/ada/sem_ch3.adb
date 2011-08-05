@@ -9118,9 +9118,21 @@ package body Sem_Ch3 is
                            end loop;
 
                            Error_Msg_Sloc := Sloc (E);
-                           Error_Msg_NE
-                             ("\& has been inherited from subprogram #",
+
+                           --  AI05-0068: report if there is an overriding
+                           --  non-abstract subprogram that is invisible.
+                           if Is_Hidden (E)
+                             and then not Is_Abstract_Subprogram (E)
+                           then
+                              Error_Msg_NE
+                             ("\& subprogram# is not visible",
                               T, Subp);
+
+                           else
+                              Error_Msg_NE
+                                ("\& has been inherited from subprogram #",
+                                 T, Subp);
+                           end if;
                         end;
                      end if;
                   end if;

@@ -4843,6 +4843,8 @@ package body Make is
         and then Osint.Number_Of_Files = 1
       then
          Inform (Msg => "objects up to date.");
+         Stop_Compile := True;
+         return;
 
       elsif Do_Not_Execute and then First_Compiled_File /= No_File then
          Write_Name (First_Compiled_File);
