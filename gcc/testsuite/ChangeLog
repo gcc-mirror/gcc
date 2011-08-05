@@ -1,5 +1,10 @@
 2011-08-05  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/47369
+	* gcc.dg/pr47369-1.c: New.
+
+2011-08-05  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR middle-end/47364
 	* gcc.dg/torture/pr47364-1.c: New.
 	* gcc.c-torture/compile/pr47364-1.c: Likewise.
