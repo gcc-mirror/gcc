@@ -517,6 +517,7 @@ package body Impunit is
      "a-coinho",    -- Ada.Containers.Indefinite_Holders
      "a-comutr",    -- Ada.Containers.Multiway_Trees
      "a-cimutr",    -- Ada.Containers.Indefinite_Multiway_Trees
+     "a-cbmutr",    -- Ada.Containers.Bounded_Multiway_Trees
      "a-extiin",    -- Ada.Execution_Time.Interrupts
      "a-iteint",    -- Ada.Iterator_Interfaces
 

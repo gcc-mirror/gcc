@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,7 +94,8 @@ package Stylesw is
    --      The comment characters are followed by an exclamation point (the
    --      sequence --! is used by gnatprep for marking deleted lines).
    --
-   --      The comment characters are followed by two space characters
+   --      The comment characters are followed by two space characters if
+   --      Comment_Spacing = 2, else by one character if Comment_Spacing = 1.
    --
    --      The line consists entirely of minus signs
    --
@@ -103,6 +104,9 @@ package Stylesw is
    --
    --  Note: the reason for the last two conditions is to allow "boxed"
    --  comments where only a single space separates the comment characters.
+
+   Style_Check_Comments_Spacing : Nat range 1 .. 2;
+   --  Spacing required for comments, valid only if Style_Check_Comments true.
 
    Style_Check_DOS_Line_Terminator : Boolean := False;
    --  This can be set true by using the -gnatyd switch. If it is True, then

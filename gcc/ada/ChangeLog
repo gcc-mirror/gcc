@@ -1,3 +1,37 @@
+2011-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch11.adb: Add comment.
+
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb: Minor comment fix.
+
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* scng.adb (Error_Unterminated_String): Improve flag position when
+	comma present.
+
+2011-08-05  Matthew Heaney  <heaney@adacore.com>
+
+	* Makefile.rtl, impunit.adb: Added a-cbmutr.ad[sb] (bounded multiway
+	tree containers).
+	* a-cbmutr.ads, a-cbmutr.adb: This is the new Ada 2012 unit for bounded
+	multiway tree containers.
+
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* styleg.adb (Check_Comment): Implement comment spacing of 1 or 2
+	* stylesw.adb: Implement -gnatyC to control comment spacing
+	* stylesw.ads (Style_Check_Comments_Spacing): New switch (set by
+	-gnatyc/C).
+	* usage.adb: Add line for -gnatyC.
+
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document -gnatyC for J505-006
+	* vms_data.ads: Implement COMMENTS1/COMMENTS2 (retaining COMMENTS as a
+	synonym for COMMENTS2).
+
 2011-08-05  Robert Dewar  <dewar@adacore.com>
 
 	* par_sco.adb, sem_ch3.adb, scos.ads, a-iteint.ads, sem_ch12.adb,

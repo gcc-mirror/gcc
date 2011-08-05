@@ -481,7 +481,10 @@ package body Sem_Ch11 is
                   --  handler, since this may result in false positives, since
                   --  the handler may handle the exception and return normally.
 
-                  --  First find enclosing sequence of statements
+                  --  First find the enclosing handled sequence of statements
+                  --  (note, we could also look for a handler in an outer block
+                  --  but currently we don't, and in that case we'll emit the
+                  --  warning).
 
                   Par := N;
                   loop

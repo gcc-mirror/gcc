@@ -2319,6 +2319,10 @@ package VMS_Data is
                                                "-gnaty-B "                 &
                                             "COMMENTS "                    &
                                                "-gnatyc "                  &
+                                            "COMMENTS1 "                   &
+                                               "-gnatyC "                  &
+                                            "COMMENTS2 "                   &
+                                               "-gnatyc "                  &
                                             "NOCOMMENTS "                  &
                                                "-gnaty-c "                 &
                                             "DOS_LINE_ENDINGS "            &
@@ -2409,7 +2413,7 @@ package VMS_Data is
    --   input source code.  The following keywords are supported:
    --
    --      ALL_BUILTIN (D)      Equivalent to the following list of options:
-   --                           3, ATTRIBUTE, BLANKS, COMMENTS, END, VTABS,
+   --                           3, ATTRIBUTE, BLANKS, COMMENTS2, END, VTABS,
    --                           HTABS, IF_THEN, KEYWORD, LAYOUT, LINE_LENGTH,
    --                           PRAGMA, REFERENCES, SPECS, TOKEN.
    --
@@ -2441,8 +2445,8 @@ package VMS_Data is
    --                           enforce a canonical format for the use of
    --                           blanks to separate source tokens.
    --
-   --      COMMENTS             Check comments.
-   --                           Comments must meet the following set of rules:
+   --      COMMENTS2            Check comments.
+   --      COMMENTS             Comments must meet the following set of rules:
    --
    --                             * The "--" that starts the column must either
    --                               start in column one, or else at least one
@@ -2487,6 +2491,11 @@ package VMS_Data is
    --                               ---------------------------
    --                               -- This is a box comment --
    --                               ---------------------------
+   --
+   --      COMMENTS1            Check comments (single space).
+   --                           Like COMMENTS2, but the -- of a comment only
+   --                           requires one or more spaces following, instead
+   --                           of two or more spaces.
    --
    --      DOS_LINE_ENDINGS     Check that no DOS line terminators are present
    --                           All lines must be terminated by a single
