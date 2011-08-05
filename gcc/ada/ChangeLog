@@ -1,3 +1,21 @@
+2011-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* g-expect.adb: Minor reformatting.
+
+2011-08-05  Bob Duff  <duff@adacore.com>
+
+	* a-fihema.adb: Comment out OS_Lib.
+
+2011-08-05  Matthew Heaney  <heaney@adacore.com>
+
+	* Makefile.rtl, impunit.adb: Added a-c[oi]mutr.ad[sb]
+	(unbounded multiway tree containers) and a-iteint.ads.
+	* a-comutr.ads, a-comutr.adb:
+	This is the new Ada 2012 unit for unbounded multiway tree containers
+	* a-cimutr.ads, a-cimutr.adb
+	This is the new Ada 2012 unit for indefinite multiway tree containers
+	* a-iteint.ads: New file.
+
 2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/Makefile.in (raise-gcc.o): Search

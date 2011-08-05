@@ -515,7 +515,10 @@ package body Impunit is
      "a-cbhase",    -- Ada.Containers.Bounded_Hashed_Sets
      "a-cbhama",    -- Ada.Containers.Bounded_Hashed_Maps
      "a-coinho",    -- Ada.Containers.Indefinite_Holders
+     "a-comutr",    -- Ada.Containers.Multiway_Trees
+     "a-cimutr",    -- Ada.Containers.Indefinite_Multiway_Trees
      "a-extiin",    -- Ada.Execution_Time.Interrupts
+     "a-iteint",    -- Ada.Iterator_Interfaces
 
    -----------------------------------------
    -- GNAT Defined Additions to Ada 20012 --

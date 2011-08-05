@@ -139,6 +139,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-crbtgk$(objext) \
   a-crbtgo$(objext) \
   a-crdlli$(objext) \
+  a-comutr$(objext) \
+  a-cimutr$(objext) \
   a-cwila1$(objext) \
   a-cwila9$(objext) \
   a-decima$(objext) \
