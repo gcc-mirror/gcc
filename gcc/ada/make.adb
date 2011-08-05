@@ -4352,14 +4352,13 @@ package body Make is
             end if;
          end if;
 
-         --  Put the object directories in ADA_OBJECTS_PATH. Same treatment for
-         --  source directories in ADA_INCLUDE_PATH if in CodePeer mode.
+         --  Put the object directories in ADA_OBJECTS_PATH.
 
          Prj.Env.Set_Ada_Paths
            (Main_Project,
             Project_Tree,
             Including_Libraries => False,
-            Include_Path        => CodePeer_Mode);
+            Include_Path        => False);
 
          --  Check for attributes Linker'Linker_Options in projects other than
          --  the main project

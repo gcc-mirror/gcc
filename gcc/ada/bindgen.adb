@@ -1502,6 +1502,7 @@ package body Bindgen is
          WBI ("");
 
          --  For CodePeer, declare a wrapper for the user-defined main program
+
          if CodePeer_Mode then
             Gen_CodePeer_Wrapper;
          end if;

@@ -14535,10 +14535,10 @@ Gnatmetric computes the following coupling metrics:
 sense;
 
 @item
-emph{unit coupling} - for all the program units making up a program;
+@emph{unit coupling} - for all the program units making up a program;
 
 @item
-emph{control coupling} - this metric counts dependencies between a unit and
+@emph{control coupling} - this metric counts dependencies between a unit and
 only those units that define subprograms;
 @end itemize
 

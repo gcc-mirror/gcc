@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@
 with Aspects;
 with Atree;
 with Csets;
-with Debug;
 with Elists;
 with Fname;
 with Lib;
@@ -51,14 +50,8 @@ with Urealp;
 procedure Tree_In (Desc : File_Descriptor) is
 begin
    Tree_IO.Tree_Read_Initialize (Desc);
+
    Opt.Tree_Read;
-
-   --  For now, only  read aspect specifications hash table if -gnatd.A is set
-
-   if Debug.Debug_Flag_Dot_AA then
-      Aspects.Tree_Read;
-   end if;
-
    Atree.Tree_Read;
    Elists.Tree_Read;
    Fname.Tree_Read;
@@ -72,5 +65,7 @@ begin
    Uintp.Tree_Read;
    Urealp.Tree_Read;
    Repinfo.Tree_Read;
+   Aspects.Tree_Read;
+
    Csets.Initialize;
 end Tree_In;
