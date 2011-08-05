@@ -15932,10 +15932,11 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	     that were talking about variable-sized arrays (like
 	     `int[n]'), rather than arrays of unknown size (like
 	     `int[]').)  We'll get very confused by such a type since
-	     the bound of the array will not be computable in an
-	     instantiation.  Besides, such types are not allowed in
-	     ISO C++, so we can do as we please here.  */
-	  if (variably_modified_type_p (arg, NULL_TREE))
+	     the bound of the array is not constant, and therefore
+	     not mangleable.  Besides, such types are not allowed in
+	     ISO C++, so we can do as we please here.  We do allow
+	     them for 'auto' deduction, since that isn't ABI-exposed.  */
+	  if (!is_auto (parm) && variably_modified_type_p (arg, NULL_TREE))
 	    return unify_vla_arg (explain_p, arg);
 
 	  /* Strip typedefs as in convert_template_argument.  */
