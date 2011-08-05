@@ -1,3 +1,9 @@
+2011-08-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49112
+	* gfortran.dg/abstract_type_6.f03: Modified.
+	* gfortran.dg/typebound_proc_24.f03: New.
+
 2011-08-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49948
