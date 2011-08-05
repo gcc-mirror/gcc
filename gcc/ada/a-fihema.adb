@@ -35,11 +35,15 @@ with Ada.Unchecked_Conversion;
 with System;                  use System;
 with System.Address_Image;
 with System.IO;               use System.IO;
+with System.OS_Lib;
 with System.Soft_Links;       use System.Soft_Links;
 with System.Storage_Elements; use System.Storage_Elements;
 with System.Storage_Pools;    use System.Storage_Pools;
 
 package body Ada.Finalization.Heap_Management is
+
+   Debug : constant Boolean := False;
+   --  True for debugging printouts.
 
    Header_Size : constant Storage_Count  := Node'Size / Storage_Unit;
    --  Size of the header in bytes. Added to Storage_Size requested by
@@ -58,6 +62,42 @@ package body Ada.Finalization.Heap_Management is
 
    procedure Detach (N : Node_Ptr);
    --  Unhook a node from an arbitrary list
+
+   procedure Fin_Assert (Condition : Boolean; Message : String);
+   --  Asserts that the condition is True. Used instead of pragma Assert in
+   --  delicate places where raising an exception would cause re-invocation of
+   --  finalization. Instead of raising an exception, aborts the whole
+   --  process.
+
+   function Is_Empty (Objects : Node_Ptr) return Boolean;
+   --  True if the Objects list is empty.
+
+   ----------------
+   -- Fin_Assert --
+   ----------------
+
+   procedure Fin_Assert (Condition : Boolean; Message : String) is
+
+      procedure Fail;
+      --  Use a separate procedure to make it easy to set a breakpoint here.
+
+      ----------
+      -- Fail --
+      ----------
+
+      procedure Fail is
+      begin
+         Put_Line ("Heap_Management: Fin_Assert failed: " & Message);
+         OS_Lib.OS_Abort;
+      end Fail;
+
+   --  Start of processing for Fin_Assert
+
+   begin
+      if not Condition then
+         Fail;
+      end if;
+   end Fin_Assert;
 
    ---------------------------
    -- Add_Offset_To_Address --
@@ -221,40 +261,24 @@ package body Ada.Finalization.Heap_Management is
    ------------
 
    procedure Detach (N : Node_Ptr) is
-
-      --  N must be attached to some list
-
-      pragma Assert (N.Next /= null and then N.Prev /= null);
-
-      procedure Null_Out_Pointers;
-      --  Set Next/Prev pointer of N to null (for debugging)
-
-      ----------
-      -- Head --
-      ----------
-
-      procedure Null_Out_Pointers is
-      begin
-         N.Next := null;
-         N.Prev := null;
-      end Null_Out_Pointers;
-
-   --  Start of processing for Detach
-
    begin
+      pragma Debug (Fin_Assert (N /= null, "Detach null"));
+
       Lock_Task.all;
 
-      N.Prev.Next := N.Next;
-      N.Next.Prev := N.Prev;
+      if N.Next = null then
+         pragma Assert (N.Prev = null);
+
+      else
+         N.Prev.Next := N.Next;
+         N.Next.Prev := N.Prev;
+         N.Next := null;
+         N.Prev := null;
+      end if;
 
       Unlock_Task.all;
       --  Note: no need to unlock in case of exceptions; the above code cannot
       --  raise any.
-
-      --  No need to null out the pointers, except that it makes pcol easier to
-      --  understand.
-
-      pragma Debug (Null_Out_Pointers);
    end Detach;
 
    --------------
@@ -264,54 +288,81 @@ package body Ada.Finalization.Heap_Management is
    overriding procedure Finalize
      (Collection : in out Finalization_Collection)
    is
-      Curr_Ptr : Node_Ptr := Collection.Objects.Next; -- skip dummy head
       Ex_Occur : Exception_Occurrence;
       Raised   : Boolean := False;
 
-   --  Start of processing for Finalize
-
    begin
+      if Debug then
+         Put_Line ("-->Heap_Management: ");
+         pcol (Collection);
+      end if;
+
       --  Set Finalization_Started to prevent any allocations of objects with
       --  controlled parts during finalization. The associated access type is
       --  about to go out of scope; Finalization_Started is never again
       --  modified.
 
+      if Collection.Finalization_Started then
+         --  ???Needed for shared libraries.
+         return;
+      end if;
+      pragma Debug (Fin_Assert (not Collection.Finalization_Started,
+                                "Finalize: already started"));
       Collection.Finalization_Started := True;
 
-      --  Go through the Objects list, and finalize each one. There is no need
-      --  to detach items from the list, because the whole collection is about
-      --  to go away.
+      --  For each object in the Objects list, detach it, and finalize it. Note
+      --  that other tasks can be doing Unchecked_Deallocations at the same
+      --  time, so we need to beware of race conditions.
 
-      while Curr_Ptr /= Collection.Objects'Unchecked_Access loop
+      while not Is_Empty (Collection.Objects'Unchecked_Access) loop
 
-         --  ??? Kludge: Don't do anything until the proper place to set
-         --  primitive Finalize_Address has been determined.
+         declare
+            Node : constant Node_Ptr := Collection.Objects.Next;
+         begin
+            --  Remove the current node from the list first, in case some other
+            --  task is simultaneously doing Unchecked_Deallocation on this
+            --  object. Detach does Lock_Task. Note that we can't Lock_Task
+            --  during Finalize_Address, because finalization can do pretty
+            --  much anything.
 
-         if Collection.Finalize_Address /= null then
-            declare
-               Object_Address : constant Address :=
-                                  Curr_Ptr.all'Address + Header_Offset;
-               --  Get address of object from address of header
+            Detach (Node);
 
-            begin
-               Collection.Finalize_Address (Object_Address);
+            --  ??? Kludge: Don't do anything until the proper place to set
+            --  primitive Finalize_Address has been determined.
 
-            exception
-               when Fin_Except : others =>
-                  if not Raised then
-                     Raised := True;
-                     Save_Occurrence (Ex_Occur, Fin_Except);
-                  end if;
-            end;
-         end if;
+            if Collection.Finalize_Address /= null then
+               declare
+                  Object_Address : constant Address :=
+                                     Node.all'Address + Header_Offset;
+                  --  Get address of object from address of header
 
-         Curr_Ptr := Curr_Ptr.Next;
+               begin
+                  Collection.Finalize_Address (Object_Address);
+
+               exception
+                  when Fin_Except : others =>
+                     if not Raised then
+                        Raised := True;
+                        Save_Occurrence (Ex_Occur, Fin_Except);
+                     end if;
+               end;
+            end if;
+         end;
       end loop;
+
+      if Debug then
+         Put_Line ("<--Heap_Management: ");
+         pcol (Collection);
+      end if;
 
       --  If the finalization of a particular node raised an exception, reraise
       --  it after the remainder of the list has been finalized.
 
       if Raised then
+         if Debug then
+            Put_Line ("Heap_Management: reraised");
+         end if;
+
          Reraise_Occurrence (Ex_Occur);
       end if;
    end Finalize;
@@ -328,7 +379,20 @@ package body Ada.Finalization.Heap_Management is
 
       Collection.Objects.Next := Collection.Objects'Unchecked_Access;
       Collection.Objects.Prev := Collection.Objects'Unchecked_Access;
+      pragma Assert (Is_Empty (Collection.Objects'Unchecked_Access));
    end Initialize;
+
+   --------------
+   -- Is_Empty --
+   --------------
+
+   function Is_Empty (Objects : Node_Ptr) return Boolean is
+   begin
+      pragma Debug
+        (Fin_Assert ((Objects.Next = Objects) = (Objects.Prev = Objects),
+                     "Is_Empty"));
+      return Objects.Next = Objects;
+   end Is_Empty;
 
    ----------
    -- pcol --

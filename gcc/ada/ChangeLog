@@ -1,3 +1,12 @@
+2011-08-05  Sergey Rybin  <rybin@adacore.com>
+
+	* tree_io.ads: Update ASIS_Version_Number because of the change of the
+	order of calling Tree_Write/Tree_Read routines made for aspects.
+
+2011-08-05  Bob Duff  <duff@adacore.com>
+
+	* a-fihema.adb (Finalize): Fix race condition.
+
 2011-08-05  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch12.adb (Analyze_Package_Instantiation,
