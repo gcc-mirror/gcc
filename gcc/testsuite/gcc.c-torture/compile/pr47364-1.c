@@ -1,6 +1,3 @@
-/* { dg-do compile } */
-/* { dg-options "-O" } */
-
 static unsigned char foo[256];
 
 arc4_init(void)
