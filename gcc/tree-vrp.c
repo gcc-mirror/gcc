@@ -2141,15 +2141,18 @@ static bool
 zero_nonzero_bits_from_vr (value_range_t *vr, double_int *may_be_nonzero,
 			   double_int *must_be_nonzero)
 {
+  may_be_nonzero->low = ALL_ONES;
+  may_be_nonzero->high = ALL_ONES;
+  must_be_nonzero->low = 0;
+  must_be_nonzero->high = 0;
   if (range_int_cst_p (vr))
     {
       if (range_int_cst_singleton_p (vr))
 	{
 	  *may_be_nonzero = tree_to_double_int (vr->min);
 	  *must_be_nonzero = *may_be_nonzero;
-	  return true;
 	}
-      if (tree_int_cst_sgn (vr->min) >= 0)
+      else if (tree_int_cst_sgn (vr->min) >= 0)
 	{
 	  double_int dmin = tree_to_double_int (vr->min);
 	  double_int dmax = tree_to_double_int (vr->max);
@@ -2174,13 +2177,9 @@ zero_nonzero_bits_from_vr (value_range_t *vr, double_int *may_be_nonzero,
 	      may_be_nonzero->low |= mask;
 	      must_be_nonzero->low &= ~mask;
 	    }
-	  return true;
 	}
+      return true;
     }
-  may_be_nonzero->low = ALL_ONES;
-  may_be_nonzero->high = ALL_ONES;
-  must_be_nonzero->low = 0;
-  must_be_nonzero->high = 0;
   return false;
 }
 
@@ -2638,59 +2637,17 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
     }
   else if (code == BIT_AND_EXPR || code == BIT_IOR_EXPR)
     {
-      bool vr0_int_cst_singleton_p, vr1_int_cst_singleton_p;
       bool int_cst_range0, int_cst_range1;
       double_int may_be_nonzero0, may_be_nonzero1;
       double_int must_be_nonzero0, must_be_nonzero1;
-      value_range_t *non_singleton_vr;
-      tree singleton_val;
 
-      vr0_int_cst_singleton_p = range_int_cst_singleton_p (&vr0);
-      vr1_int_cst_singleton_p = range_int_cst_singleton_p (&vr1);
       int_cst_range0 = zero_nonzero_bits_from_vr (&vr0, &may_be_nonzero0,
 						  &must_be_nonzero0);
       int_cst_range1 = zero_nonzero_bits_from_vr (&vr1, &may_be_nonzero1,
 						  &must_be_nonzero1);
 
-      singleton_val = (vr0_int_cst_singleton_p ? vr0.min : vr1.min);
-      non_singleton_vr = (vr0_int_cst_singleton_p ? &vr1 : &vr0);
-
       type = VR_RANGE;
-      if (vr0_int_cst_singleton_p && vr1_int_cst_singleton_p)
-	min = max = int_const_binop (code, vr0.max, vr1.max);
-      else if ((vr0_int_cst_singleton_p || vr1_int_cst_singleton_p)
-      	       && (integer_zerop (singleton_val)
-      	           || integer_all_onesp (singleton_val)))
-	{
-	  /* If one of the operands is zero for and-case, we know that
- * 	     the whole expression evaluates zero.
-	     If one of the operands has all bits set to one for
-	     or-case, we know that the whole expression evaluates
-	     to this one.  */
-	   min = max = singleton_val;
-	   if ((code == BIT_IOR_EXPR
-		&& integer_zerop (singleton_val))
-	       || (code == BIT_AND_EXPR
-		   && integer_all_onesp (singleton_val)))
-	  /* If one of the operands has all bits set to one, we know
-	     that the whole expression evaluates to the other one for
-	     the and-case.
-	     If one of the operands is zero, we know that the whole
-	     expression evaluates to the other one for the or-case.  */
-	    {
-	      type = non_singleton_vr->type;
-	      min = non_singleton_vr->min;
-	      max = non_singleton_vr->max;
-	    }
-	  set_value_range (vr, type, min, max, NULL);
-	  return;
-	}
-      else if (!int_cst_range0 && !int_cst_range1)
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-      else if (code == BIT_AND_EXPR)
+      if (code == BIT_AND_EXPR)
 	{
 	  min = double_int_to_tree (expr_type,
 				    double_int_and (must_be_nonzero0,
@@ -2698,9 +2655,9 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  max = double_int_to_tree (expr_type,
 				    double_int_and (may_be_nonzero0,
 						    may_be_nonzero1));
-	  if (TREE_OVERFLOW (min) || tree_int_cst_sgn (min) < 0)
+	  if (tree_int_cst_sgn (min) < 0)
 	    min = NULL_TREE;
-	  if (TREE_OVERFLOW (max) || tree_int_cst_sgn (max) < 0)
+	  if (tree_int_cst_sgn (max) < 0)
 	    max = NULL_TREE;
 	  if (int_cst_range0 && tree_int_cst_sgn (vr0.min) >= 0)
 	    {
@@ -2717,15 +2674,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		max = vr1.max;
 	    }
 	}
-      else if (!int_cst_range0
-	       || !int_cst_range1
-	       || tree_int_cst_sgn (vr0.min) < 0
-	       || tree_int_cst_sgn (vr1.min) < 0)
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-      else
+      else if (code == BIT_IOR_EXPR)
 	{
 	  min = double_int_to_tree (expr_type,
 				    double_int_ior (must_be_nonzero0,
@@ -2733,13 +2682,22 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  max = double_int_to_tree (expr_type,
 				    double_int_ior (may_be_nonzero0,
 						    may_be_nonzero1));
-	  if (TREE_OVERFLOW (min) || tree_int_cst_sgn (min) < 0)
-	    min = vr0.min;
-	  else
-	    min = vrp_int_const_binop (MAX_EXPR, min, vr0.min);
-	  if (TREE_OVERFLOW (max) || tree_int_cst_sgn (max) < 0)
+	  if (tree_int_cst_sgn (max) < 0)
 	    max = NULL_TREE;
-	  min = vrp_int_const_binop (MAX_EXPR, min, vr1.min);
+	  if (int_cst_range0)
+	    {
+	      if (tree_int_cst_sgn (min) < 0)
+		min = vr0.min;
+	      else
+		min = vrp_int_const_binop (MAX_EXPR, min, vr0.min);
+	    }
+	  if (int_cst_range1)
+	    min = vrp_int_const_binop (MAX_EXPR, min, vr1.min);
+	}
+      else
+	{
+	  set_value_range_to_varying (vr);
+	  return;
 	}
     }
   else

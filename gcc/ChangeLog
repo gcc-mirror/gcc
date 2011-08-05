@@ -1,3 +1,10 @@
+2011-08-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (zero_nonzero_bits_from_vr): Make sure to always
+	return true for constant integer ranges.
+	(extract_range_from_binary_expr_1): Simplify BIT_AND_EXPR and
+	BIT_IOR_EXPR handling.
+
 2011-08-04  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/i386.c (setup_incoming_varargs_ms_64): Set
