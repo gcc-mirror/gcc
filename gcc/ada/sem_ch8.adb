@@ -4818,6 +4818,7 @@ package body Sem_Ch8 is
             end if;
 
             Set_Entity_Or_Discriminal (N, E);
+            Check_Implicit_Dereference (N, Etype (E));
          end if;
       end;
    end Find_Direct_Name;

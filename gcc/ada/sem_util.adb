@@ -1104,6 +1104,43 @@ package body Sem_Util is
       end if;
    end Cannot_Raise_Constraint_Error;
 
+   --------------------------------
+   -- Check_Implicit_Dereference --
+   --------------------------------
+
+   procedure Check_Implicit_Dereference (Nam : Node_Id;  Typ : Entity_Id)
+   is
+      Disc  : Entity_Id;
+      Desig : Entity_Id;
+
+   begin
+      if Ada_Version < Ada_2012
+        or else not Has_Implicit_Dereference (Base_Type (Typ))
+      then
+         return;
+
+      elsif not Comes_From_Source (Nam) then
+         return;
+
+      elsif Is_Entity_Name (Nam)
+        and then Is_Type (Entity (Nam))
+      then
+         null;
+
+      else
+         Disc := First_Discriminant (Typ);
+         while Present (Disc) loop
+            if Has_Implicit_Dereference (Disc) then
+               Desig := Designated_Type (Etype (Disc));
+               Add_One_Interp (Nam, Disc, Desig);
+               exit;
+            end if;
+
+            Next_Discriminant (Disc);
+         end loop;
+      end if;
+   end Check_Implicit_Dereference;
+
    ---------------------------------------
    -- Check_Later_Vs_Basic_Declarations --
    ---------------------------------------

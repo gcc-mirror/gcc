@@ -1794,7 +1794,7 @@ package body Sem_Prag is
               (Get_Pragma_Arg (Arg2), Standard_String);
          end if;
 
-         --  Record if pragma is enabled
+         --  Record if pragma is disabled
 
          if Check_Enabled (Pname) then
             Set_SCO_Pragma_Enabled (Loc);
@@ -7603,6 +7603,10 @@ package body Sem_Prag is
               New_Occurrence_Of
                 (Boolean_Literals (Debug_Pragmas_Enabled and Expander_Active),
                  Loc);
+
+            if Debug_Pragmas_Enabled then
+               Set_SCO_Pragma_Enabled (Loc);
+            end if;
 
             if Arg_Count = 2 then
                Cond :=

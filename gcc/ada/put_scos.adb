@@ -107,9 +107,8 @@ begin
                      Ctr := 0;
                      Continuation := False;
                      loop
-                        if SCO_Table.Table (Start).C2 = 'P'
-                             and then SCO_Pragma_Disabled
-                                        (SCO_Table.Table (Start).Pragma_Sloc)
+                        if SCO_Pragma_Disabled
+                             (SCO_Table.Table (Start).Pragma_Sloc)
                         then
                            goto Next_Statement;
                         end if;
@@ -160,13 +159,10 @@ begin
                   when 'I' | 'E' | 'G' | 'P' | 'W' | 'X' =>
                      Start := Start + 1;
 
-                     --  For disabled pragma, or nested decision nested, skip
+                     --  For disabled pragma, or nested decision therein, skip
                      --  decision output.
 
-                     if (T.C1 = 'P' and then T.C2 = 'd')
-                          or else
-                        SCO_Pragma_Disabled (T.Pragma_Sloc)
-                     then
+                     if SCO_Pragma_Disabled (T.Pragma_Sloc) then
                         while not SCO_Table.Table (Start).Last loop
                            Start := Start + 1;
                         end loop;
