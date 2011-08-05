@@ -2194,6 +2194,7 @@ package body Sem_Ch12 is
          while Nkind (Gen_Name) = N_Expanded_Name loop
             Gen_Name := Prefix (Gen_Name);
          end loop;
+
          if Chars (Gen_Name) = Chars (Pack_Id) then
             Error_Msg_NE
              ("& is hidden within declaration of formal package",
@@ -2285,6 +2286,7 @@ package body Sem_Ch12 is
       --  The formals for which associations are provided are not visible
       --  outside of the formal package. The others are still declared by a
       --  formal parameter declaration.
+
       --  If there are no associations, the only local entity to hide is the
       --  generated package renaming itself.
 
@@ -2294,7 +2296,6 @@ package body Sem_Ch12 is
       begin
          E := First_Entity (Formal);
          while Present (E) loop
-
             if Associations
               and then not Is_Generic_Formal (E)
             then

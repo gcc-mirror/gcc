@@ -1120,7 +1120,7 @@ package body Sem_Elab is
    procedure Check_Elab_Call
      (N            : Node_Id;
       Outer_Scope  : Entity_Id := Empty;
-      In_Init_Proc : Boolean := False)
+      In_Init_Proc : Boolean   := False)
    is
       Ent : Entity_Id;
       P   : Node_Id;

@@ -946,7 +946,7 @@ package body Sem_Ch13 is
 
                   Delay_Required := False;
 
-               --  Aspects related to container iterators.
+               --  Aspects related to container iterators (fill in later???)
 
                when Aspect_Constant_Indexing    |
                     Aspect_Default_Iterator     |
@@ -955,7 +955,6 @@ package body Sem_Ch13 is
                   null;
 
                when Aspect_Implicit_Dereference =>
-
                   if not Is_Type (E)
                     or else not Has_Discriminants (E)
                   then
@@ -978,6 +977,7 @@ package body Sem_Ch13 is
                               Set_Has_Implicit_Dereference (Disc);
                               goto Continue;
                            end if;
+
                            Next_Discriminant (Disc);
                         end loop;
 
@@ -2310,9 +2310,12 @@ package body Sem_Ch13 is
          --------------------------
          -- Implicit_Dereference --
          --------------------------
+
          when Attribute_Implicit_Dereference =>
-            --  Legality checks already performed above.
-            null;   --  TBD
+
+            --  Legality checks already performed above
+
+            null;   --  TBD???
 
          -----------
          -- Input --
@@ -5481,6 +5484,8 @@ package body Sem_Ch13 is
               Aspect_Stream_Size    |
               Aspect_Value_Size     =>
             T := Any_Integer;
+
+         --  Following to be done later ???
 
          when Aspect_Constant_Indexing    |
               Aspect_Default_Iterator     |

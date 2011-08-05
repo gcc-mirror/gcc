@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,12 +67,6 @@ package Ada.Strings.Unbounded.Aux is
    --  since it avoids the need to copy the string. The lower bound of the
    --  referenced string returned by this call is always one, so the actual
    --  string data is always accessible as S (1 .. L).
-
-   procedure Set_String (UP : out Unbounded_String; S : String)
-     renames Set_Unbounded_String;
-   --  This function is simply a renaming of the new Ada 2005 function as shown
-   --  above. It is provided for historical reasons, but should be removed at
-   --  this stage???
 
    procedure Set_String (UP : in out Unbounded_String; S : String_Access);
    pragma Inline (Set_String);

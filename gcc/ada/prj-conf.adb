@@ -911,7 +911,7 @@ package body Prj.Conf is
 
          if Subdirs /= null then
             Add_Char_To_Name_Buffer (Directory_Separator);
-            Add_Str_To_Name_Buffer  (Subdirs.all);
+            Add_Str_To_Name_Buffer (Subdirs.all);
          end if;
 
          for J in 1 .. Name_Len loop
@@ -989,10 +989,8 @@ package body Prj.Conf is
 
                   procedure Check_RTS_Switches is
                      Switch_Array : Array_Element;
-
                      Switch_List  : String_List_Id := Nil_String;
                      Switch       : String_Element;
-
                      Lang         : Name_Id;
                      Lang_Last    : Positive;
 

@@ -92,8 +92,7 @@ package Ada.Finalization.Heap_Management is
 
    overriding procedure Finalize
      (Collection : in out Finalization_Collection);
-   --  Traverse the objects of Collection, invoking Finalize_Address on each of
-   --  them.
+   --  Traverse objects of Collection, invoking Finalize_Address on each one
 
    overriding procedure Initialize
      (Collection : in out Finalization_Collection);
@@ -116,13 +115,13 @@ private
    type Node_Ptr is access all Node;
    pragma No_Strict_Aliasing (Node_Ptr);
 
-   type Node is record
-      --  This should really be limited, but we can see the full view of
-      --  Limited_Controlled, which is NOT limited. Note that default
-      --  initialization does not happen for this type (these pointers will not
-      --  be automatically set to null), because of the games we're playing
-      --  with address arithmetic.
+   --  The following record type should really be limited, but we can see the
+   --  full view of Limited_Controlled, which is NOT limited. Note that default
+   --  initialization does not happen for this type (the pointers will not be
+   --  automatically set to null), because of the games we're playing with
+   --  address arithmetic.
 
+   type Node is record
       Prev : Node_Ptr;
       Next : Node_Ptr;
    end record;
