@@ -1,3 +1,9 @@
+2011-08-05  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/vrp51.c: Disable CCP.
+	* gcc.dg/tree-ssa/vrp52.c: Likewise.
+	* gcc.dg/tree-ssa/vrp53.c: Likewise.
+
 2011-08-04  Mikael Morin  <mikael.morin@sfr.fr>
 
 	* gfortran.dg/dependency_26.f90: Add a module to the cleanup directive.
