@@ -1,3 +1,10 @@
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.ads, sem_type.adb, make.adb, sem_prag.adb, sem_util.adb,
+	sem_util.ads, sem_attr.adb, restrict.ads, sem_ch6.adb, prj-conf.adb,
+	prj-conf.ads, s-atocou.ads, s-atocou.adb, s-atocou-x86.adb,
+	s-atocou-builtin.adb: Minor reformatting.
+
 2011-08-05  Yannick Moy  <moy@adacore.com>
 
 	* exp_ch7.adb (Establish_Transient_Scope): in formal verification mode,

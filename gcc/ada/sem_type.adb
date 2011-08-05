@@ -1956,9 +1956,9 @@ package body Sem_Type is
                 (Ada_Version = Ada_83
                   or else
                    (Ada_Version >= Ada_2012
-                      and then
-                        In_Same_Declaration_List
-                          (Typ, Unit_Declaration_Node (User_Subp))))
+                     and then
+                       In_Same_Declaration_List
+                         (Typ, Unit_Declaration_Node (User_Subp))))
             then
                if It2.Nam = Predef_Subp then
                   return It1;

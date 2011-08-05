@@ -206,6 +206,11 @@ package Restrict is
    -- Subprograms --
    -----------------
 
+   --  Note: several of these subprograms can generate error messages (e.g.
+   --  Check_Restriction). These routines should be called in the analyzer
+   --  rather than the expander, so that the associated error messages are
+   --  correctly generated in semantics only (-gnatc) mode.
+
    function Abort_Allowed return Boolean;
    pragma Inline (Abort_Allowed);
    --  Tests to see if abort is allowed by the current restrictions settings.

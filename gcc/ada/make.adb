@@ -4874,9 +4874,8 @@ package body Make is
 
       --  If the objects were up-to-date check if the executable file is also
       --  up-to-date. For now always bind and link on the JVM since there is
-      --  currently no simple way to check whether objects are up-to-date wrt
-      --  the executable. Similarly in CodePeer mode where there is no
-      --  executable.
+      --  currently no simple way to check whether objects are up to date wrt
+      --  the executable. Same in CodePeer mode where there is no executable.
 
       if Targparm.VM_Target /= JVM_Target
         and then not CodePeer_Mode
@@ -7832,6 +7831,8 @@ package body Make is
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Operating_Mode           := Check_Semantics;
             Check_Object_Consistency := False;
+
+            --  Comment needed here, what is going on???
 
             if Argv'Last >= 7 and then Argv (7) = 'C' then
                CodePeer_Mode := True;

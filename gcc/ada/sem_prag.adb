@@ -5061,7 +5061,7 @@ package body Sem_Prag is
       begin
          --  Ignore all Restrictions pragma in CodePeer and ALFA modes
 
-         if CodePeer_Mode or else ALFA_Mode then
+         if CodePeer_Mode or ALFA_Mode then
             return;
          end if;
 

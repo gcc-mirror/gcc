@@ -1641,9 +1641,11 @@ package body Sem_Attr is
          if Restriction_Active (No_Default_Stream_Attributes) then
             declare
                T : Entity_Id;
+
             begin
                if Nam = TSS_Stream_Input
-                 or else Nam = TSS_Stream_Read
+                    or else
+                  Nam = TSS_Stream_Read
                then
                   T :=
                     Type_Without_Stream_Operation (P_Type, TSS_Stream_Read);
