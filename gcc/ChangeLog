@@ -1,3 +1,8 @@
+2011-08-05  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/49735
+	* ipa-inline.c (recursive_inlining): Look through aliases.
+
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
 	* config/i386/i386.c (setup_incoming_varargs_ms_64): Move
