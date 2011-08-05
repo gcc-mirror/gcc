@@ -894,7 +894,6 @@ enable_rpath
 with_libiconv_prefix
 enable_initfini_array
 enable_sjlj_exceptions
-with_system_libunwind
 enable_secureplt
 enable_leading_mingw64_underscores
 enable_cld
@@ -1659,7 +1658,6 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
-  --with-system-libunwind use installed libunwind
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
@@ -10855,46 +10853,6 @@ _ACEOF
 
 fi
 
-# For platforms with the unwind ABI which includes an unwind library,
-# libunwind, we can choose to use the system libunwind.
-# config.gcc also contains tests of with_system_libunwind.
-
-
-# Check whether --with-system-libunwind was given.
-if test "${with_system_libunwind+set}" = set; then :
-  withval=$with_system_libunwind;
-fi
-
-  # If system-libunwind was not specifically set, pick a default setting.
-  if test x$with_system_libunwind = x; then
-    case ${target} in
-      ia64-*-hpux*) with_system_libunwind=yes ;;
-      *) with_system_libunwind=no ;;
-    esac
-  fi
-  # Based on system-libunwind and target, do we have ipinfo?
-  if  test x$with_system_libunwind = xyes; then
-    case ${target} in
-      ia64-*-*) have_unwind_getipinfo=no ;;
-      *) have_unwind_getipinfo=yes ;;
-    esac
-  else
-    # Darwin before version 9 does not have _Unwind_GetIPInfo.
-
-    case ${target} in
-      *-*-darwin[3-8]|*-*-darwin[3-8].*) have_unwind_getipinfo=no ;;
-      *) have_unwind_getipinfo=yes ;;
-    esac
-
-  fi
-
-  if test x$have_unwind_getipinfo = xyes; then
-
-$as_echo "#define HAVE_GETIPINFO 1" >>confdefs.h
-
-  fi
-
-
 # --------------------------------------------------------
 # Build, host, and target specific configuration fragments
 # --------------------------------------------------------
@@ -17805,7 +17763,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17808 "configure"
+#line 17766 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17911,7 +17869,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17914 "configure"
+#line 17872 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

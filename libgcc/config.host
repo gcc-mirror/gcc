@@ -57,12 +57,15 @@
 #  tmake_file		A list of machine-description-specific
 #			makefile-fragments, if different from
 #			"$cpu_type/t-$cpu_type".
+#  unwind_header	The name of the header file declaring the unwind
+#			runtime interface routines.
 
 asm_hidden_op=.hidden
 enable_execute_stack=
 extra_parts=
 tmake_file=
 md_unwind_header=no-unwind.h
+unwind_header=unwind-generic.h
 
 # Set default cpu_type so it can be updated in each machine entry.
 cpu_type=`echo ${host} | sed 's/-.*$//'`
@@ -171,8 +174,10 @@ case ${host} in
   # This is the generic ELF configuration of FreeBSD.  Later
   # machine-specific sections may refine and add to this
   # configuration.
+  tmake_file=t-eh-dw2-dip
   ;;
-*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu*)
+*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
+  tmake_file=t-eh-dw2-dip
   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
   ;;
 *-*-netbsd*)
@@ -182,7 +187,9 @@ case ${host} in
 *-*-rtems*)
   ;;
 *-*-solaris2*)
-  tmake_file="$tmake_file t-sol2 t-slibgcc t-slibgcc-elf-ver"
+  # Unless linker support and dl_iterate_phdr are present,
+  # unwind-dw2-fde-dip.c automatically falls back to unwind-dw2-fde.c.
+  tmake_file="$tmake_file t-sol2 t-eh-dw2-dip t-slibgcc t-slibgcc-elf-ver"
   if test $with_gnu_ld = yes; then
     tmake_file="$tmake_file t-slibgcc-gld"
   else
@@ -265,14 +272,35 @@ arm*-*-netbsdelf*)
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
+	case ${host} in
+	arm*-*-linux-*eabi)
+	  tmake_file="${tmake_file} arm/t-bpabi"
+	  unwind_header=config/arm/unwind-arm.h
+	  ;;
+	esac
 	;;
 arm*-*-uclinux*)		# ARM ucLinux
 	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
+	case ${host} in
+	arm*-*-uclinux*eabi)
+	  tmake_file="${tmake_file} arm/t-bpabi"
+	  unwind_header=config/arm/unwind-arm.h
+	  ;;
+	esac
 	;;
 arm*-*-ecos-elf)
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* )
 	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
+	case ${host} in
+	arm*-*-eabi*)
+	  tmake_file="${tmake_file} arm/t-bpabi"
+	  ;;
+	arm*-*-symbianelf*)
+	  tmake_file="${tmake_file} arm/t-symbian"
+	  ;;
+	esac
+	unwind_header=config/arm/unwind-arm.h
 	;;
 arm*-*-rtems*)
 	;;
@@ -408,21 +436,25 @@ i[34567]86-*-interix3*)
 	;;
 ia64*-*-elf*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
-	tmake_file="ia64/t-ia64 t-crtfm"
+	tmake_file="ia64/t-ia64 ia64/t-eh-ia64 t-crtfm"
 	;;
 ia64*-*-freebsd*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
-	tmake_file="ia64/t-ia64 t-crtfm"
+	tmake_file="ia64/t-ia64 ia64/t-eh-ia64 t-crtfm"
 	;;
 ia64*-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
-	tmake_file="ia64/t-ia64 t-crtfm t-softfp ia64/t-fprules-softfp ia64/t-softfp-compat"
+	tmake_file="ia64/t-ia64 t-crtfm t-softfp ia64/t-fprules-softfp ia64/t-softfp-compat ia64/t-glibc ia64/t-eh-ia64 t-libunwind"
+	if test x$with_system_libunwind != xyes ; then
+		tmake_file="${tmake_file} t-libunwind-elf ia64/t-glibc-libunwind"
+	fi
 	md_unwind_header=ia64/linux-unwind.h
 	;;
 ia64*-*-hpux*)
+	tmake_file="ia64/t-hpux"
 	;;
 ia64-hp-*vms*)
-	tmake_file="vms/t-vms vms/t-vms64 ia64/t-vms"
+	tmake_file="vms/t-vms vms/t-vms64 ia64/t-eh-ia64 ia64/t-vms"
 	md_unwind_header=ia64/vms-unwind.h
 	;;
 iq2000*-*-elf*)
@@ -522,6 +554,7 @@ moxie-*-*)
 pdp11-*-*)
 	;;
 picochip-*-*)
+	tmake_file=picochip/t-picochip
         ;;
 powerpc-*-darwin*)
 	case ${host} in
@@ -574,10 +607,13 @@ powerpcle-*-eabisim*)
 powerpcle-*-eabi*)
 	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
+	md_unwind_header=rs6000/aix-unwind.h
 	;;
 rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
+	md_unwind_header=rs6000/aix-unwind.h
 	;;
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
+	md_unwind_header=rs6000/aix-unwind.h
 	;;
 rx-*-elf)
 	extra_parts="crtbegin.o crtend.o"
@@ -592,7 +628,7 @@ s390x-*-linux*)
 	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-ibm-tpf*)
-	tmake_file="${tmake_file} s390/t-crtstuff s390/t-tpf"
+	tmake_file="${tmake_file} s390/t-crtstuff s390/t-tpf t-eh-dw2-dip"
 	md_unwind_header=s390/tpf-unwind.h
 	;;
 score-*-elf)
@@ -674,8 +710,10 @@ vax-*-openbsd*)
 xstormy16-*-elf)
 	;;
 xtensa*-*-elf*)
+	tmake_file=xtensa/t-xtensa
 	;;
 xtensa*-*-linux*)
+	tmake_file=xtensa/t-xtensa
 	md_unwind_header=xtensa/linux-unwind.h
 	;;
 am33_2.0-*-linux*)

@@ -44,15 +44,6 @@ libgcc2.h
 limitx.h
 limity.h
 longlong.h
-unwind-c.c
-unwind-dw2-fde-darwin.c
-unwind-dw2-fde-glibc.c
-unwind-dw2-fde.c
-unwind-dw2-fde.h
-unwind-dw2.c
-unwind-pe.h
-unwind-sjlj.c
-unwind.h
 
 #   These programs are meant to be executed only by GCC maintainers or
 #   installers.  Such files do not need to be translated, as these

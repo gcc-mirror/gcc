@@ -256,6 +256,17 @@ LIBGCC_VER_GNU_PREFIX = __
 LIBGCC_VER_FIXEDPOINT_GNU_PREFIX = __
 LIBGCC_VER_SYMBOLS_PREFIX =
 
+# Additional sources to handle exceptions; overridden by targets as needed.
+LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
+  $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
+LIB2ADDEHSTATIC = $(LIB2ADDEH)
+LIB2ADDEHSHARED = $(LIB2ADDEH)
+
+# Don't build libunwind by default.
+LIBUNWIND =
+SHLIBUNWIND_LINK =
+SHLIBUNWIND_INSTALL =
+
 tmake_file = @tmake_file@
 include $(srcdir)/empty.mk $(tmake_file)
 
@@ -315,6 +326,10 @@ endif
 endif
 
 LIB2ADD += enable-execute-stack.c
+
+LIB2ADDEH += $(srcdir)/emutls.c
+LIB2ADDEHSTATIC += $(srcdir)/emutls.c
+LIB2ADDEHSHARED += $(srcdir)/emutls.c
 
 # Library members defined in libgcc2.c.
 lib2funcs = _muldi3 _negdi2 _lshrdi3 _ashldi3 _ashrdi3 _cmpdi2 _ucmpdi2	   \
@@ -966,6 +981,12 @@ gcc-extra-parts:
 	done
 
 all: $(extra-parts)
+
+install-unwind_h:
+	cp unwind.h $(gcc_objdir)/include/unwind.h
+	chmod a+r $(gcc_objdir)/include/unwind.h
+
+all: install-unwind_h
 
 # Documentation targets (empty).
 .PHONY: info html dvi pdf install-info install-html install-pdf

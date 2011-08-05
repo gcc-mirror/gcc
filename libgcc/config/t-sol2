@@ -16,11 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Use unwind-dw2-fde-glibc.c.  Unless linker support and dl_iterate_phdr
-# are present, automatically falls back to unwind-dw2-fde.c.
-LIB2ADDEH = $(gcc_srcdir)/unwind-dw2.c $(gcc_srcdir)/unwind-dw2-fde-glibc.c \
-  $(gcc_srcdir)/unwind-sjlj.c $(gcc_srcdir)/unwind-c.c $(gcc_srcdir)/emutls.c
-
 # gmon build rule:
 gmon.o:	$(srcdir)/config/gmon-sol2.c
 	$(gcc_compile) -c $<

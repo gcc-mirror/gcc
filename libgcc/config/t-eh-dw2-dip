@@ -1,0 +1,3 @@
+# Use unwind-dw2-fde-dip.
+LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-dip.c \
+  $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c

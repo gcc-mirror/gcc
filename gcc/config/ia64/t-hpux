@@ -1,5 +1,5 @@
 # Copyright (C) 2001, 2002, 2003, 2004, 2005,
-# 2006 Free Software Foundation, Inc.
+# 2006, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -49,8 +49,6 @@ LIBGCC1_TEST =
 # the HP-UX libunwind library.
 
 T_CFLAGS += -DUSE_LIBUNWIND_EXCEPTIONS
-
-LIB2ADDEH = $(srcdir)/unwind-c.c
 
 SHLIB_EXT = .so
 # Must include -lunwind in the link, so that libgcc_s.so has the necessary

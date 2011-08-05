@@ -1,0 +1,2 @@
+# Include the gcc personality routine
+LIB2ADDEH = $(srcdir)/unwind-c.c $(srcdir)/config/arm/pr-support.c

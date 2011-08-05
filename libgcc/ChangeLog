@@ -1,3 +1,68 @@
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (LIB2ADDEH, LIB2ADDEHSTATIC, LIB2ADDEHSHARED): New
+	variables.
+	(LIBUNWIND, SHLIBUNWIND_LINK, SHLIBUNWIND_INSTALL): New variables.
+	(LIB2ADDEH, LIB2ADDEHSTATIC, LIB2ADDEHSHARED): Add $(srcdir)/emutls.c.
+	(install-unwind_h): New target.
+	(all): Depend on it.
+	* config.host (unwind_header): New variable.
+	(*-*-freebsd*): Set tmake_file to t-eh-dw2-dip.
+	(*-*-linux*, frv-*-*linux*, *-*-kfreebsd*-gnu, *-*-knetbsd*-gnu,
+	*-*-gnu*): Likewise, also for *-*-kopensolaris*-gnu.
+	(*-*-solaris2*): Add t-eh-dw2-dip to tmake_file.
+	(arm*-*-linux*): Add arm/t-bpabi for arm*-*-linux-*eabi.
+	Set unwind_header.
+	(arm*-*-uclinux*): Add arm/t-bpabi for arm*-*-uclinux*eabi.
+	Set unwind_header.
+	(arm*-*-eabi*, arm*-*-symbianelf*): Add arm/t-bpabi for
+	arm*-*-eabi*.
+	Add arm/t-symbian to tmake_file for arm*-*-symbianelf*.
+	Set unwind_header.
+	(ia64*-*-elf*): Add ia64/t-eh-ia64 to tmake_file.
+	(ia64*-*-freebsd*): Likewise.
+	(ia64*-*-linux*): Add ia64/t-glibc, ia64/t-eh-ia64, t-libunwind to
+	tmake_file.
+	Add t-libunwind-elf, ia64/t-glibc-libunwind unless
+	$with_system_libunwind.
+	(ia64*-*-hpux*): Set tmake_file.
+	(ia64-hp-*vms*): Add ia64/t-eh-ia64 to tmake_file.
+	(picochip-*-*): Set tmake_file.
+	(rs6000-ibm-aix4.[3456789]*, powerpc-ibm-aix4.[3456789]*): Set
+	md_unwind_header.
+	(rs6000-ibm-aix5.1.*, powerpc-ibm-aix5.1.*): Likewise.
+	(rs6000-ibm-aix[56789].*, powerpc-ibm-aix[56789].*): Likewise.
+	(s390x-ibm-tpf*): Add t-eh-dw2-dip to tmake_file.
+	(xtensa*-*-elf*): Set tmake_file.
+	(xtensa*-*-linux*): Likewise.
+	* configure.ac: Include ../config/unwind_ipinfo.m4.
+	Call GCC_CHECK_UNWIND_GETIPINFO.
+	Link unwind.h to $unwind_header.
+	* configure: Regenerate.
+	* emutls.c, unwind-c.c, unwind-compat.c, unwind-compat.h,
+	unwind-dw2-fde-compat.c, unwind-dw2-fde-dip.c, unwind-dw2-fde.c,
+	unwind-dw2-fde.h, unwind-dw2.c, unwind-dw2.h, unwind-generic.h,
+	unwind-pe.h, unwind-sjlj.c, unwind.inc: New files.
+	* config/unwind-dw2-fde-darwin.c: New file.
+	* config/arm/libunwind.S, config/arm/pr-support.c,
+	config/arm/t-bpabi, config/arm/t-symbian, config/arm/unwind-arm.c,
+	config/arm/unwind-arm.h,: New files.
+	* config/ia64/fde-glibc.c, config/ia64/fde-vms.c,
+	config/ia64/t-eh-ia64, config/ia64/t-glibc,
+	config/ia64/t-glibc-libunwind, config/ia64/t-hpux,
+	config/ia64/t-vms, config/ia64/unwind-ia64.c,
+	config/ia64/unwind-ia64.h: New files.
+	* config/picochip/t-picochip: New file.
+	* config/rs6000/aix-unwind.h, config/rs6000/darwin-fallback.c: New
+	files.
+	* config/rs6000/t-darwin (LIB2ADDEH): Set.
+	* config/s390/t-tpf (LIB2ADDEH): Remove.
+	* config/t-darwin (LIB2ADDEH): Set.
+	* config/t-eh-dw2-dip: New file.
+	* config/t-libunwind, config/t-libunwind-elf: New files.
+	* config/t-sol2 (LIB2ADDEH): Remove.
+	* config/xtensa/t-xtensa: New file.
+
 2011-08-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/linux-unwind.h (RT_SIGRETURN_SYSCALL): New.

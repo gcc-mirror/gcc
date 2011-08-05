@@ -1,3 +1,59 @@
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (UNWIND_H): Remove.
+	(LIB2ADDEH, LIB2ADDEHSTATIC, LIB2ADDEHSHARED): Move to
+	../libgcc/Makefile.in.
+	(LIBUNWIND, SHLIBUNWIND_LINK, SHLIBUNWIND_INSTALL): Likewise.
+	(LIBUNWINDDEP): Remove.
+	(libgcc-support): Remove LIB2ADDEH, $(srcdir)/emutls.c dependencies.
+	(libgcc.mvars): Remove LIB2ADDEH, LIB2ADDEHSTATIC, LIB2ADDEHSHARED,
+	LIBUNWIND, SHLIBUNWIND_LINK, SHLIBUNWIND_INSTALL.
+	(stmp-int-hdrs): Remove $(UNWIND_H) dependency.
+	Don't copy $(UNWIND_H).
+	* config.gcc (ia64*-*-linux*): Remove with_system_libunwind
+	handling.
+	* configure.ac (GCC_CHECK_UNWIND_GETIPINFO): Remove.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* emutls.c, unwind-c.c, unwind-compat.c, unwind-compat.h,
+	unwind-dw2-fde-compat.c, unwind-dw2-fde-glibc.c, unwind-dw2-fde.c,
+	unwind-dw2-fde.h, unwind-dw2.c, unwind-dw2.h, unwind-generic.h,
+	unwind-pe.h, unwind-sjlj.c, unwind.inc: Move to ../libgcc.
+	* unwind-dw2-fde-darwin.c: Move to ../libgcc/config.
+	* config/arm/libunwind.S, config/arm/pr-support.c,
+	config/arm/unwind-arm.c, config/arm/unwind-arm.h: Move to
+	../libgcc/config/arm.
+	* config/arm/t-bpabi (UNWIND_H, LIB2ADDEH): Remove.
+	* config/arm/t-symbian (UNWIND_H, LIB2ADDEH): Remove.
+	* config/frv/t-frv ($(T)frvbegin$(objext)): Use
+	$(srcdir)/../libgcc to refer to unwind-dw2-fde.h.
+	($(T)frvend$(objext)): Likewise.
+	* config/ia64/t-glibc (LIB2ADDEH): Remove.
+	* config/ia64/t-glibc-libunwind: Move to ../libgcc/config/ia64.
+	* config/ia64/fde-glibc.c, config/ia64/fde-vms.c,
+	config/ia64/unwind-ia64.c, config/ia64/unwind-ia64.h: Move to
+	../libgcc/config/ia64.
+	* config/ia64/t-hpux (LIB2ADDEH): Remove.
+	* config/ia64/t-ia64 (LIB2ADDEH): Remove.
+	* config/ia64/t-vms (LIB2ADDEH): Remove.
+	* config/ia64/vms.h (UNW_IVMS_MODE,
+	MD_UNW_COMPATIBLE_PERSONALITY_P): Remove.
+	* config/picochip/t-picochip (LIB2ADDEH): Remove.
+	* config/rs6000/aix.h (R_LR, MD_FROB_UPDATE_CONTEXT): Remove.
+	* config/rs6000/t-darwin (LIB2ADDEH): Remove.
+	* config/rs6000/darwin-fallback.c: Move to ../libgcc/config/rs6000.
+	* config/sh/t-sh ($(T)unwind-dw2-Os-4-200.o): Use
+	$(srcdir)/../libgcc to refer to unwinder sources.
+	* config/spu/t-spu-elf (LIB2ADDEH): Remove.
+	* config/t-darwin (LIB2ADDEH): Remove.
+	* config/t-freebsd (LIB2ADDEH): Remove.
+	* config/t-libunwind (LIB2ADDEH, LIB2ADDEHSTATIC): Remove.
+	* config/t-libunwind-elf: Move to ../libgcc/config.
+	* config/t-linux (LIB2ADDEH): Remove.
+	* config/t-sol2 (LIB2ADDEH): Remove.
+	* config/xtensa/t-xtensa (LIB2ADDEH): Remove.
+	* system.h (MD_FROB_UPDATE_CONTEXT): Poison.
+
 2011-08-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (processor_alias_table): Add core-avx-i.

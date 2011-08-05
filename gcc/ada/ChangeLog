@@ -1,3 +1,8 @@
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (raise-gcc.o): Search
+	$(srcdir)/../libgcc.
+
 2011-08-05  Bob Duff  <duff@adacore.com>
 
 	* sinfo.ads, sinfo.adb (Subpool_Handle_Name): New attribute for
@@ -100,6 +105,7 @@
 	necessary.
 	* put_scos.adb: Code simplification based on above change.
 
+>>>>>>> .r177446
 2011-08-05  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, gnatcmd.adb, switch-c.adb, exp_attr.adb, make.adb,

@@ -101,6 +101,7 @@ OBJC_BOEHM_GC_LIBS=../boehm-gc/libgcjgc_convenience.la $(thread_libs_and_flags)
 INCLUDES = -I$(srcdir)/$(MULTISRCTOP)../gcc \
   -I$(srcdir)/$(MULTISRCTOP)../gcc/config \
   -I$(MULTIBUILDTOP)../../$(host_subdir)/gcc \
+  -I$(srcdir)/$(MULTISRCTOP)../libgcc \
   -I$(srcdir)/$(MULTISRCTOP)../include \
   $(OBJC_BOEHM_GC_INCLUDES)
 

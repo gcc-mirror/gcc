@@ -25,11 +25,6 @@ LIB2FUNCS_EXTRA = $(srcdir)/config/arm/bpabi.c \
 
 LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/arm/fp16.c
 
-UNWIND_H = $(srcdir)/config/arm/unwind-arm.h
-LIB2ADDEH = $(srcdir)/config/arm/unwind-arm.c \
-  $(srcdir)/config/arm/libunwind.S \
-  $(srcdir)/config/arm/pr-support.c $(srcdir)/unwind-c.c
-
 # Add the BPABI names.
 SHLIB_MAPFILES += $(srcdir)/config/arm/libgcc-bpabi.ver
 

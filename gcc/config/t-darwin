@@ -42,10 +42,6 @@ darwin-driver.o: $(srcdir)/config/darwin-driver.c \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/config/darwin-driver.c
 
-# Use unwind-dw2-fde-darwin
-LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-darwin.c \
-  $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
-
 # -pipe because there's an assembler bug, 4077127, which causes
 # it to not properly process the first # directive, causing temporary
 # file names to appear in stabs, causing the bootstrap to fail.  Using -pipe

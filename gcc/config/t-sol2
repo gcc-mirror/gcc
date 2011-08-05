@@ -31,8 +31,3 @@ sol2.o: $(srcdir)/config/sol2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 # This is required by gcc/ada/gcc-interface/Makefile.in.
 TARGET_LIBGCC2_CFLAGS = -fPIC
-
-# Use unwind-dw2-fde-glibc.c.  Unless linker support and dl_iterate_phdr
-# are present, automatically falls back to unwind-dw2-fde.c.
-LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-glibc.c \
-  $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c

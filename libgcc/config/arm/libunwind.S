@@ -1,5 +1,5 @@
 /* Support functions for the unwinder.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook
 
@@ -40,7 +40,7 @@
 
 #ifndef __symbian__
 
-#include "lib1funcs.asm"
+#include "config/arm/lib1funcs.asm"
 
 .macro UNPREFIX name
 	.global SYM (\name)

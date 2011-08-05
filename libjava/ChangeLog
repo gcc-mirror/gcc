@@ -1,3 +1,12 @@
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (GCC_UNWIND_INCLUDE): Rename to
+	LIBGCC_UNWIND_INCLUDE.
+	Point to $(multi_basedir)/./libjava/../libgcc.
+	* configure: Regenerate.
+	* Makefile.am (GCC_UNWIND_INCLUDE): Reflect this.
+	* Makefile.in: Regenerate.
+
 2011-07-12  Andrew Haley  <aph@redhat.com>
 
 	* interpret.cc (check_handler): Fix bit rot.

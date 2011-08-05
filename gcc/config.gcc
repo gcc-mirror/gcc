@@ -1604,9 +1604,6 @@ ia64*-*-freebsd*)
 ia64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ia64/sysv4.h ia64/linux.h"
 	tmake_file="${tmake_file} ia64/t-ia64 t-libunwind ia64/t-glibc"
-	if test x$with_system_libunwind != xyes ; then
-		tmake_file="${tmake_file} t-libunwind-elf ia64/t-glibc-libunwind"
-	fi
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
 	;;
