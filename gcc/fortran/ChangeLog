@@ -1,6 +1,6 @@
 2011-08-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	PR fortran/37221
+	PR fortran/37211
 	* gfortran.h (gfc_calculate_transfer_sizes):  Add prototype.
 	* target-memory.h (gfc_target_interpret_expr):  Add boolean
 	argument wether to convert wide characters.

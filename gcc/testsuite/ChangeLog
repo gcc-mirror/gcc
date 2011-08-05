@@ -12,7 +12,7 @@
 
 2011-08-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	PR fortran/37221
+	PR fortran/37211
 	* gfortran.dg/transfer_check_2.f90:  New test case.
 
 2011-08-05  Jan Hubicka  <jh@suse.cz>
