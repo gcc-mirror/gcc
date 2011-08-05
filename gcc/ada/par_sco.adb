@@ -893,6 +893,7 @@ package body Par_SCO is
       if Index /= 0 then
          declare
             T : SCO_Table_Entry renames SCO_Table.Table (Index);
+
          begin
             --  Called multiple times for the same sloc (need to allow for
             --  C2 = 'P') ???
@@ -1080,7 +1081,7 @@ package body Par_SCO is
                SCE         : SC_Entry renames SC.Table (J);
                Pragma_Sloc : Source_Ptr := No_Location;
             begin
-               --  For the statement SCO for a pragma controlled by
+               --  For the case of a statement SCO for a pragma controlled by
                --  Set_SCO_Pragma_Enable, set Pragma_Sloc so that the SCO (and
                --  those of any nested decision) is emitted only if the pragma
                --  is enabled.
@@ -1506,10 +1507,9 @@ package body Par_SCO is
                         when N_Generic_Instantiation         =>
                            Typ := 'i';
 
-                        when
-                          N_Representation_Clause            |
-                          N_Use_Package_Clause               |
-                          N_Use_Type_Clause                  =>
+                        when N_Representation_Clause         |
+                             N_Use_Package_Clause            |
+                             N_Use_Type_Clause               =>
                            Typ := ASCII.NUL;
 
                         when others                          =>

@@ -4243,24 +4243,24 @@ package body Sem_Ch3 is
                end if;
 
             when Private_Kind =>
-               Set_Ekind              (Id, Subtype_Kind (Ekind   (T)));
-               Set_Has_Discriminants  (Id, Has_Discriminants     (T));
-               Set_Is_Constrained     (Id, Is_Constrained        (T));
-               Set_First_Entity       (Id, First_Entity          (T));
-               Set_Last_Entity        (Id, Last_Entity           (T));
+               Set_Ekind              (Id, Subtype_Kind (Ekind        (T)));
+               Set_Has_Discriminants  (Id, Has_Discriminants          (T));
+               Set_Is_Constrained     (Id, Is_Constrained             (T));
+               Set_First_Entity       (Id, First_Entity               (T));
+               Set_Last_Entity        (Id, Last_Entity                (T));
                Set_Private_Dependents (Id, New_Elmt_List);
-               Set_Is_Limited_Record  (Id, Is_Limited_Record     (T));
+               Set_Is_Limited_Record  (Id, Is_Limited_Record          (T));
                Set_Has_Implicit_Dereference
-                                        (Id, Has_Implicit_Dereference (T));
+                                      (Id, Has_Implicit_Dereference   (T));
                Set_Has_Unknown_Discriminants
-                                      (Id, Has_Unknown_Discriminants (T));
+                                      (Id, Has_Unknown_Discriminants  (T));
                Set_Known_To_Have_Preelab_Init
                                       (Id, Known_To_Have_Preelab_Init (T));
 
                if Is_Tagged_Type (T) then
                   Set_Is_Tagged_Type              (Id);
                   Set_Is_Abstract_Type            (Id, Is_Abstract_Type (T));
-                  Set_Class_Wide_Type             (Id, Class_Wide_Type (T));
+                  Set_Class_Wide_Type             (Id, Class_Wide_Type  (T));
                   Set_Direct_Primitive_Operations (Id,
                     Direct_Primitive_Operations (T));
                end if;
@@ -4273,14 +4273,14 @@ package body Sem_Ch3 is
 
                if Has_Discriminants (T) then
                   Set_Discriminant_Constraint
-                                     (Id, Discriminant_Constraint (T));
+                    (Id, Discriminant_Constraint (T));
                   Set_Stored_Constraint_From_Discriminant_Constraint (Id);
 
                elsif Present (Full_View (T))
                  and then Has_Discriminants (Full_View (T))
                then
                   Set_Discriminant_Constraint
-                               (Id, Discriminant_Constraint (Full_View (T)));
+                    (Id, Discriminant_Constraint (Full_View (T)));
                   Set_Stored_Constraint_From_Discriminant_Constraint (Id);
 
                   --  This would seem semantically correct, but apparently

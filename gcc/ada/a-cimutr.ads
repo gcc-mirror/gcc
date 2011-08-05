@@ -231,8 +231,8 @@ package Ada.Containers.Indefinite_Multiway_Trees is
    --     Parent    : Cursor;
    --     Process   : not null access procedure (Position : Cursor));
    --
-   --  It seems that the Container parameter is there by mistake, but
-   --  we need an official ruling from the ARG.  ???
+   --  It seems that the Container parameter is there by mistake, but we need
+   --  an official ruling from the ARG. ???
 
    procedure Iterate_Children
      (Parent  : Cursor;
@@ -264,19 +264,17 @@ private
 
    use Ada.Finalization;
 
-   --  The Count component of type Tree represents the number of
-   --  nodes that have been (dynamically) allocated.  It does not
-   --  include the root node itself.  As implementors, we decide
-   --  to cache this value, so that the selector function Node_Count
-   --  can execute in O(1) time, in order to be consistent with
-   --  the behavior of the Length selector function for other
-   --  standard container library units. This does mean, however,
-   --  that the two-container forms for Splice_XXX (that move subtrees
-   --  across tree containers) will execute in O(n) time, because
-   --  we must count the number of nodes in the subtree(s) that
-   --  get moved.  (We resolve the tension between Node_Count
-   --  and Splice_XXX in favor of Node_Count, under the assumption
-   --  that Node_Count is the more common operation).
+   --  The Count component of type Tree represents the number of nodes that
+   --  have been (dynamically) allocated. It does not include the root node
+   --  itself. As implementors, we decide to cache this value, so that the
+   --  selector function Node_Count can execute in O(1) time, in order to be
+   --  consistent with the behavior of the Length selector function for other
+   --  standard container library units. This does mean, however, that the
+   --  two-container forms for Splice_XXX (that move subtrees across tree
+   --  containers) will execute in O(n) time, because we must count the number
+   --  of nodes in the subtree(s) that get moved. (We resolve the tension
+   --  between Node_Count and Splice_XXX in favor of Node_Count, under the
+   --  assumption that Node_Count is the more common operation).
 
    type Tree is new Controlled with record
       Root  : aliased Tree_Node_Type;

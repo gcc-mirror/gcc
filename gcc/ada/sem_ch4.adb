@@ -6303,26 +6303,27 @@ package body Sem_Ch4 is
 
       Func_Name := Empty;
       Is_Var := False;
-      Ritem := First_Rep_Item (Etype (Prefix));
 
+      Ritem := First_Rep_Item (Etype (Prefix));
       while Present (Ritem) loop
          if Nkind (Ritem) = N_Aspect_Specification then
 
             --  Prefer Variable_Indexing, but will settle for Constant.
 
             if Get_Aspect_Id (Chars (Identifier (Ritem))) =
-              Aspect_Constant_Indexing
+                                                 Aspect_Constant_Indexing
             then
                Func_Name := Expression (Ritem);
 
             elsif Get_Aspect_Id (Chars (Identifier (Ritem))) =
-              Aspect_Variable_Indexing
+                                                 Aspect_Variable_Indexing
             then
                Func_Name :=  Expression (Ritem);
                Is_Var := True;
                exit;
             end if;
          end if;
+
          Next_Rep_Item (Ritem);
       end loop;
 

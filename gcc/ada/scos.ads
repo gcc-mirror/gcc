@@ -339,7 +339,7 @@ package SCOs is
 
    --  Disabled pragmas
 
-   --    No SCO is generated for disabled pragmas.
+   --    No SCO is generated for disabled pragmas
 
    ---------------------------------------------------------------------
    -- Internal table used to store Source Coverage Obligations (SCOs) --

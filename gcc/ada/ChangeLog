@@ -1,3 +1,15 @@
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb, sem_ch3.adb, scos.ads, a-iteint.ads, sem_ch12.adb,
+	a-cimutr.adb, a-cimutr.ads, sem_util.ads, sem_res.adb, a-fihema.adb,
+	sem_ch4.adb, lib-xref-alfa.adb, exp_disp.adb, a-comutr.adb,
+	a-comutr.ads, lib-xref.adb: Minor reformatting.
+
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch11.adb (Analyze_Raise_Statement): Kill assignment to formal
+	warning if there is an exception handler present.
+
 2011-08-05  Pascal Obry  <obry@adacore.com>
 
 	* a-iteint.ads: Fix copyright year.

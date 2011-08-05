@@ -134,25 +134,24 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Target_Count : Count_Type;
 
    begin
-      --  We first restore the target container to its
-      --  default-initialized state, before we attempt any
-      --  allocation, to ensure that invariants are preserved
-      --  in the event that the allocation fails.
+      --  We first restore the target container to its default-initialized
+      --  state, before we attempt any allocation, to ensure that invariants
+      --  are preserved in the event that the allocation fails.
 
       Container.Root.Children := Children_Type'(others => null);
       Container.Busy := 0;
       Container.Lock := 0;
       Container.Count := 0;
 
-      --  Copy_Children returns a count of the number of nodes
-      --  that it allocates, but it works by incrementing the
-      --  value that is passed in. We must therefore initialize
-      --  the count value before calling Copy_Children.
+      --  Copy_Children returns a count of the number of nodes that it
+      --  allocates, but it works by incrementing the value that is passed in.
+      --  We must therefore initialize the count value before calling
+      --  Copy_Children.
 
       Target_Count := 0;
 
-      --  Now we attempt the allocation of subtrees. The invariants
-      --  are satisfied even if the allocation fails.
+      --  Now we attempt the allocation of subtrees. The invariants are
+      --  satisfied even if the allocation fails.
 
       Copy_Children (Source, Root_Node (Container), Target_Count);
       pragma Assert (Target_Count = Source_Count);
@@ -181,11 +180,10 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          raise Program_Error with "Position cursor not in container";
       end if;
 
-      --  AI-0136 says to raise PE if Position equals the root node.
-      --  This does not seem correct, as this value is just the limiting
-      --  condition of the search.  For now we omit this check,
-      --  pending a ruling from the ARG.  ???
-      --
+      --  AI-0136 says to raise PE if Position equals the root node. This does
+      --  not seem correct, as this value is just the limiting condition of the
+      --  search. For now we omit this check pending a ruling from the ARG.???
+
       --  if Is_Root (Position) then
       --     raise Program_Error with "Position cursor designates root";
       --  end if;
@@ -241,6 +239,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Last := First;
 
       for J in Count_Type'(2) .. Count loop
+
          --  Reclaim other nodes if Storage_Error.  ???
 
          Element := new Element_Type'(New_Item);
@@ -258,10 +257,9 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          Parent => Parent.Node,
          Before => null);  -- null means "insert at end of list"
 
-      --  In order for operation Node_Count to complete
-      --  in O(1) time, we cache the count value. Here we
-      --  increment the total count by the number of nodes
-      --  we just inserted.
+      --  In order for operation Node_Count to complete in O(1) time, we cache
+      --  the count value. Here we increment the total count by the number of
+      --  nodes we just inserted.
 
       Container.Count := Container.Count + Count;
    end Append_Child;
@@ -281,16 +279,15 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
       Target.Clear;  -- checks busy bit
 
-      --  Copy_Children returns the number of nodes that it allocates,
-      --  but it does this by incrementing the count value passed in,
-      --  so we must initialize the count before calling Copy_Children.
+      --  Copy_Children returns the number of nodes that it allocates, but it
+      --  does this by incrementing the count value passed in, so we must
+      --  initialize the count before calling Copy_Children.
 
       Target_Count := 0;
 
-      --  Note that Copy_Children inserts the newly-allocated children
-      --  into their parent list only after the allocation of all the
-      --  children has succeeded. This preserves invariants even if
-      --  the allocation fails.
+      --  Note that Copy_Children inserts the newly-allocated children into
+      --  their parent list only after the allocation of all the children has
+      --  succeeded. This preserves invariants even if the allocation fails.
 
       Copy_Children (Source.Root.Children, Root_Node (Target), Target_Count);
       pragma Assert (Target_Count = Source_Count);
@@ -303,7 +300,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
    -----------
 
    procedure Clear (Container : in out Tree) is
-      Container_Count, Children_Count : Count_Type;
+      Container_Count : Count_Type;
+      Children_Count  : Count_Type;
 
    begin
       if Container.Busy > 0 then
@@ -311,28 +309,24 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
            with "attempt to tamper with cursors (tree is busy)";
       end if;
 
-      --  We first set the container count to 0, in order to
-      --  preserve invariants in case the deallocation fails.
-      --  (This works because Deallocate_Children immediately
-      --  removes the children from their parent, and then
-      --  does the actual deallocation.)
+      --  We first set the container count to 0, in order to preserve
+      --  invariants in case the deallocation fails. (This works because
+      --  Deallocate_Children immediately removes the children from their
+      --  parent, and then does the actual deallocation.)
 
       Container_Count := Container.Count;
       Container.Count := 0;
 
-      --  Deallocate_Children returns the number of nodes that
-      --  it deallocates, but it does this by incrementing the
-      --  count value that is passed in, so we must first initialize
-      --  the count return value before calling it.
+      --  Deallocate_Children returns the number of nodes that it deallocates,
+      --  but it does this by incrementing the count value that is passed in,
+      --  so we must first initialize the count return value before calling it.
 
       Children_Count := 0;
 
-      --  See comment above.  Deallocate_Children immediately
-      --  removes the children list from their parent node (here,
-      --  the root of the tree), and only after that does it
-      --  attempt the actual deallocation.  So even if the
-      --  deallocation fails, the representation invariants
-      --  for the tree are preserved.
+      --  See comment above. Deallocate_Children immediately removes the
+      --  children list from their parent node (here, the root of the tree),
+      --  and only after that does it attempt the actual deallocation. So even
+      --  if the deallocation fails, the representation invariants
 
       Deallocate_Children (Root_Node (Container), Children_Count);
       pragma Assert (Children_Count = Container_Count);
@@ -383,9 +377,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       C  : Tree_Node_Access;
 
    begin
-      --  We special-case the first allocation, in order
-      --  to establish the representation invariants
-      --  for type Children_Type.
+      --  We special-case the first allocation, in order to establish the
+      --  representation invariants for type Children_Type.
 
       C := Source.First;
 
@@ -401,9 +394,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
       CC.Last := CC.First;
 
-      --  The representation invariants for the Children_Type
-      --  list have been established, so we can now copy
-      --  the remaining children of Source.
+      --  The representation invariants for the Children_Type list have been
+      --  established, so we can now copy the remaining children of Source.
 
       C := C.Next;
       while C /= null loop
@@ -419,9 +411,9 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          C := C.Next;
       end loop;
 
-      --  We add the newly-allocated children to their parent list
-      --  only after the allocation has succeeded, in order to
-      --  preserve invariants of the parent.
+      --  We add the newly-allocated children to their parent list only after
+      --  the allocation has succeeded, in order to preserve invariants of the
+      --  parent.
 
       Parent.Children := CC;
    end Copy_Children;
@@ -450,6 +442,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          Result := Result + 1;
          Node := Node.Next;
       end loop;
+
       return Result;
    end Child_Count;
 
@@ -484,6 +477,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
             raise Program_Error with "Parent is not ancestor of Child";
          end if;
       end loop;
+
       return Result;
    end Child_Depth;
 
@@ -527,10 +521,10 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          raise Constraint_Error with "Source cursor designates root";
       end if;
 
-      --  Copy_Subtree returns a count of the number of nodes
-      --  that it allocates, but it works by incrementing the
-      --  value that is passed in. We must therefore initialize
-      --  the count value before calling Copy_Subtree.
+      --  Copy_Subtree returns a count of the number of nodes that it
+      --  allocates, but it works by incrementing the value that is passed in.
+      --  We must therefore initialize the count value before calling
+      --  Copy_Subtree.
 
       Target_Count := 0;
 
@@ -549,10 +543,9 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          Parent  => Parent.Node,
          Before  => Before.Node);
 
-      --  In order for operation Node_Count to complete
-      --  in O(1) time, we cache the count value. Here we
-      --  increment the total count by the number of nodes
-      --  we just inserted.
+      --  In order for operation Node_Count to complete in O(1) time, we cache
+      --  the count value. Here we increment the total count by the number of
+      --  nodes we just inserted.
 
       Target.Count := Target.Count + Target_Count;
    end Copy_Subtree;
@@ -590,9 +583,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       C  : Tree_Node_Access;
 
    begin
-      --  We immediately remove the children from their
-      --  parent, in order to preserve invariants in case
-      --  the deallocation fails.
+      --  We immediately remove the children from their parent, in order to
+      --  preserve invariants in case the deallocation fails.
 
       Subtree.Children := Children_Type'(others => null);
 
@@ -707,16 +699,15 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       X := Position.Node;
       Position := No_Element;
 
-      --  Restore represention invariants before attempting the
-      --  actual deallocation.
+      --  Restore represention invariants before attempting the actual
+      --  deallocation.
 
       Remove_Subtree (X);
       Container.Count := Container.Count - 1;
 
-      --  It is now safe to attempt the deallocation.  This leaf
-      --  node has been disassociated from the tree, so even if
-      --  the deallocation fails, representation invariants
-      --  will remain satisfied.
+      --  It is now safe to attempt the deallocation. This leaf node has been
+      --  disassociated from the tree, so even if the deallocation fails,
+      --  representation invariants will remain satisfied.
 
       Deallocate_Node (X);
    end Delete_Leaf;
@@ -753,38 +744,35 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       X := Position.Node;
       Position := No_Element;
 
-      --  Here is one case where a deallocation failure can
-      --  result in the violation of a representation invariant.
-      --  We disassociate the subtree from the tree now, but we
-      --  only decrement the total node count after we attempt
-      --  the deallocation. However, if the deallocation fails,
-      --  the total node count will not get decremented.
-      --
-      --  One way around this dilemma is to count the nodes
-      --  in the subtree before attempt to delete the subtree,
-      --  but that is an O(n) operation, so it does not seem
-      --  worth it.
-      --
-      --  Perhaps this is much ado about nothing, since the
-      --  only way deallocation can fail is if Controlled
-      --  Finalization fails: this propagates Program_Error
-      --  so all bets are off anyway.  ???
+      --  Here is one case where a deallocation failure can result in the
+      --  violation of a representation invariant. We disassociate the subtree
+      --  from the tree now, but we only decrement the total node count after
+      --  we attempt the deallocation. However, if the deallocation fails, the
+      --  total node count will not get decremented.
+
+      --  One way around this dilemma is to count the nodes in the subtree
+      --  before attempt to delete the subtree, but that is an O(n) operation,
+      --  so it does not seem worth it.
+
+      --  Perhaps this is much ado about nothing, since the only way
+      --  deallocation can fail is if Controlled Finalization fails: this
+      --  propagates Program_Error so all bets are off anyway. ???
 
       Remove_Subtree (X);
 
-      --  Deallocate_Subtree returns a count of the number of nodes
-      --  that it deallocates, but it works by incrementing the
-      --  value that is passed in. We must therefore initialize
-      --  the count value before calling Deallocate_Subtree.
+      --  Deallocate_Subtree returns a count of the number of nodes that it
+      --  deallocates, but it works by incrementing the value that is passed
+      --  in. We must therefore initialize the count value before calling
+      --  Deallocate_Subtree.
 
       Count := 0;
 
       Deallocate_Subtree (X, Count);
       pragma Assert (Count <= Container.Count);
 
-      --  See comments above. We would prefer to do this
-      --  sooner, but there's no way to satisfy that goal
-      --  without an potentially severe execution penalty.
+      --  See comments above. We would prefer to do this sooner, but there's no
+      --  way to satisfy that goal without an potentially severe execution
+      --  penalty.
 
       Container.Count := Container.Count - Count;
    end Delete_Subtree;
@@ -804,6 +792,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          N := N.Parent;
          Result := Result + 1;
       end loop;
+
       return Result;
    end Depth;
 
@@ -1122,10 +1111,9 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          Parent => Parent.Node,
          Before => Before.Node);
 
-      --  In order for operation Node_Count to complete
-      --  in O(1) time, we cache the count value. Here we
-      --  increment the total count by the number of nodes
-      --  we just inserted.
+      --  In order for operation Node_Count to complete in O(1) time, we cache
+      --  the count value. Here we increment the total count by the number of
+      --  nodes we just inserted.
 
       Container.Count := Container.Count + Count;
    end Insert_Child;
@@ -1144,11 +1132,10 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       C : Children_Type renames Parent.Children;
 
    begin
-      --  This is a simple utility operation to
-      --  insert a list of nodes (from First..Last)
-      --  as children of Parent. The Before node
-      --  specifies where the new children should be
-      --  inserted relative to the existing children.
+      --  This is a simple utility operation to insert a list of nodes (from
+      --  First..Last) as children of Parent. The Before node specifies where
+      --  the new children should be inserted relative to the existing
+      --  children.
 
       if First = null then
          pragma Assert (Last = null);
@@ -1194,8 +1181,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Before  : Tree_Node_Access)
    is
    begin
-      --  This is a simple wrapper operation to insert
-      --  a single child into the Parent's children list.
+      --  This is a simple wrapper operation to insert a single child into the
+      --  Parent's children list.
 
       Insert_Subtree_List
         (First  => Subtree,
@@ -1282,6 +1269,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          Process   => Process);
 
       B := B - 1;
+
    exception
       when others =>
          B := B - 1;
@@ -1315,6 +1303,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          end loop;
 
          B := B - 1;
+
       exception
          when others =>
             B := B - 1;
@@ -1330,13 +1319,11 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Node : Tree_Node_Access;
 
    begin
-      --  This is a helper function to recursively iterate over
-      --  all the nodes in a subtree, in depth-first fashion.
-      --  This particular helper just visits the children of this
-      --  subtree, not the root of the subtree node itself.  This
-      --  is useful when starting from the ultimate root of the
-      --  entire tree (see Iterate), as that root does not have
-      --  an element.
+      --  This is a helper function to recursively iterate over all the nodes
+      --  in a subtree, in depth-first fashion. This particular helper just
+      --  visits the children of this subtree, not the root of the subtree node
+      --  itself. This is useful when starting from the ultimate root of the
+      --  entire tree (see Iterate), as that root does not have an element.
 
       Node := Subtree.Children.First;
       while Node /= null loop
@@ -1366,12 +1353,12 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
          if Is_Root (Position) then
             Iterate_Children (Position.Container, Position.Node, Process);
-
          else
             Iterate_Subtree (Position.Container, Position.Node, Process);
          end if;
 
          B := B - 1;
+
       exception
          when others =>
             B := B - 1;
@@ -1385,10 +1372,9 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Process   : not null access procedure (Position : Cursor))
    is
    begin
-      --  This is a helper function to recursively iterate over
-      --  all the nodes in a subtree, in depth-first fashion.
-      --  It first visits the root of the subtree, then visits
-      --  its children.
+      --  This is a helper function to recursively iterate over all the nodes
+      --  in a subtree, in depth-first fashion. It first visits the root of the
+      --  subtree, then visits its children.
 
       Process (Cursor'(Container, Subtree));
       Iterate_Children (Container, Subtree, Process);
@@ -1484,17 +1470,15 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
    function Node_Count (Container : Tree) return Count_Type is
    begin
-      --  Container.Count is the number of nodes we have actually
-      --  allocated. We cache the value specifically so this Node_Count
-      --  operation can execute in O(1) time, which makes it behave
-      --  similarly to how the Length selector function behaves
-      --  for other containers.
+      --  Container.Count is the number of nodes we have actually allocated. We
+      --  cache the value specifically so this Node_Count operation can execute
+      --  in O(1) time, which makes it behave similarly to how the Length
+      --  selector function behaves for other containers.
       --
-      --  The cached node count value only describes the nodes
-      --  we have allocated; the root node itself is not included
-      --  in that count. The Node_Count operation returns a value
-      --  that includes the root node (because the RM says so), so we
-      --  must add 1 to our cached value.
+      --  The cached node count value only describes the nodes we have
+      --  allocated; the root node itself is not included in that count. The
+      --  Node_Count operation returns a value that includes the root node
+      --  (because the RM says so), so we must add 1 to our cached value.
 
       return 1 + Container.Count;
    end Node_Count;
@@ -1555,6 +1539,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Last := First;
 
       for J in Count_Type'(2) .. Count loop
+
          --  Reclaim other nodes if Storage_Error.  ???
 
          Element := new Element_Type'(New_Item);
@@ -1572,10 +1557,9 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          Parent => Parent.Node,
          Before => Parent.Node.Children.First);
 
-      --  In order for operation Node_Count to complete
-      --  in O(1) time, we cache the count value. Here we
-      --  increment the total count by the number of nodes
-      --  we just inserted.
+      --  In order for operation Node_Count to complete in O(1) time, we cache
+      --  the count value. Here we increment the total count by the number of
+      --  nodes we just inserted.
 
       Container.Count := Container.Count + Count;
    end Prepend_Child;
@@ -1632,6 +1616,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
          L := L - 1;
          B := B - 1;
+
       exception
          when others =>
             L := L - 1;
@@ -1653,7 +1638,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       function Read_Subtree
         (Parent : Tree_Node_Access) return Tree_Node_Access;
 
-      Total_Count, Read_Count : Count_Type;
+      Total_Count : Count_Type;
+      Read_Count  : Count_Type;
 
       -------------------
       -- Read_Children --
@@ -1664,8 +1650,10 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          pragma Assert (Subtree.Children.First = null);
          pragma Assert (Subtree.Children.Last = null);
 
-         Count : Count_Type;  -- number of child subtrees
-         C     : Children_Type;
+         Count : Count_Type;
+         --  Number of child subtrees
+
+         C : Children_Type;
 
       begin
          Count_Type'Read (Stream, Count);
@@ -1687,8 +1675,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
             C.Last := C.Last.Next;
          end loop;
 
-         --  Now that the allocation and reads have completed successfully,
-         --  it is safe to link the children to their parent.
+         --  Now that the allocation and reads have completed successfully, it
+         --  is safe to link the children to their parent.
 
          Subtree.Children := C;
       end Read_Children;
@@ -1759,8 +1747,8 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       C : Children_Type renames Subtree.Parent.Children;
 
    begin
-      --  This is a utility operation to remove a subtree
-      --  node from its parent's list of children.
+      --  This is a utility operation to remove a subtree node from its
+      --  parent's list of children.
 
       if C.First = Subtree then
          pragma Assert (Subtree.Prev = null);
@@ -1850,6 +1838,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          end loop;
 
          B := B - 1;
+
       exception
          when others =>
             B := B - 1;
@@ -1954,10 +1943,10 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
            with "attempt to tamper with cursors (Source tree is busy)";
       end if;
 
-      --  We cache the count of the nodes we have allocated, so that
-      --  operation Node_Count can execute in O(1) time. But that means
-      --  we must count the nodes in the subtree we remove from Source
-      --  and insert into Target, in order to keep the count accurate.
+      --  We cache the count of the nodes we have allocated, so that operation
+      --  Node_Count can execute in O(1) time. But that means we must count the
+      --  nodes in the subtree we remove from Source and insert into Target, in
+      --  order to keep the count accurate.
 
       Count := Subtree_Node_Count (Source_Parent.Node);
       pragma Assert (Count >= 1);
@@ -2041,13 +2030,13 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       C  : Tree_Node_Access;
 
    begin
-      --  This is a utility operation to remove the children from
-      --  Source parent and insert them into Target parent.
+      --  This is a utility operation to remove the children from Source parent
+      --  and insert them into Target parent.
 
       Source_Parent.Children := Children_Type'(others => null);
 
-      --  Fix up the Parent pointers of each child to designate
-      --  its new Target parent.
+      --  Fix up the Parent pointers of each child to designate its new Target
+      --  parent.
 
       C := CC.First;
       while C /= null loop
@@ -2140,17 +2129,16 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
            with "attempt to tamper with cursors (Source tree is busy)";
       end if;
 
-      --  This is an unfortunate feature of this API: we must count
-      --  the nodes in the subtree that we remove from the source tree,
-      --  which is an O(n) operation. It would have been better if
-      --  the Tree container did not have a Node_Count selector; a
-      --  user that wants the number of nodes in the tree could
-      --  simply call Subtree_Node_Count, with the understanding that
-      --  such an operation is O(n).
+      --  This is an unfortunate feature of this API: we must count the nodes
+      --  in the subtree that we remove from the source tree, which is an O(n)
+      --  operation. It would have been better if the Tree container did not
+      --  have a Node_Count selector; a user that wants the number of nodes in
+      --  the tree could simply call Subtree_Node_Count, with the understanding
+      --  that such an operation is O(n).
       --
-      --  Of course, we could choose to implement the Node_Count selector
-      --  as an O(n) operation, which would turn this splice operation
-      --  into an O(1) operation.  ???
+      --  Of course, we could choose to implement the Node_Count selector as an
+      --  O(n) operation, which would turn this splice operation into an O(1)
+      --  operation. ???
 
       Subtree_Count := Subtree_Node_Count (Position.Node);
       pragma Assert (Subtree_Count <= Source.Count);
@@ -2200,7 +2188,9 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       end if;
 
       if Is_Root (Position) then
+
          --  Should this be PE instead?  Need ARG confirmation.  ???
+
          raise Constraint_Error with "Position cursor designates root";
       end if;
 
@@ -2251,6 +2241,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
          Result := Result + Subtree_Node_Count (Node);
          Node := Node.Next;
       end loop;
+
       return Result;
    end Subtree_Node_Count;
 
@@ -2340,6 +2331,7 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
 
          L := L - 1;
          B := B - 1;
+
       exception
          when others =>
             L := L - 1;
