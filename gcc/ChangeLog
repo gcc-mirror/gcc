@@ -1,3 +1,9 @@
+2011-08-05  Kaz Kojima  <kkojima@gcc.gnu.org>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/49982
+	* expr.c (fixup_args_size_notes): Look through no-op moves.
+
 2011-08-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*push<mode>2): Use "o" constraint instead

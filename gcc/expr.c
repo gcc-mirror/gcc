@@ -3631,6 +3631,10 @@ fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
 	      && XEXP (SET_SRC (set), 0) == stack_pointer_rtx
 	      && CONST_INT_P (XEXP (SET_SRC (set), 1)))
 	    this_delta = INTVAL (XEXP (SET_SRC (set), 1));
+	  /* ??? Reload can generate no-op moves, which will be cleaned
+	     up later.  Recognize it and continue searching.  */
+	  else if (rtx_equal_p (dest, SET_SRC (set)))
+	    this_delta = 0;
 	  else
 	    saw_unknown = true;
 	}
