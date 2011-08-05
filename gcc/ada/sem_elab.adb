@@ -2938,13 +2938,45 @@ package body Sem_Elab is
 
    function Is_Finalization_Procedure (Id : Entity_Id) return Boolean is
    begin
-      return
-        Ekind (Id) = E_Procedure
-          and then
-            (Chars (Id) = Name_Finalize
-               or else Is_TSS (Id, TSS_Deep_Finalize))
-          and then Present (First_Formal (Id))
-          and then Needs_Finalization (Etype (First_Formal (Id)));
+      --  Check whether Id is a procedure with at least one parameter
+
+      if Ekind (Id) = E_Procedure
+        and then Present (First_Formal (Id))
+      then
+         declare
+            Typ      : constant Entity_Id := Etype (First_Formal (Id));
+            Deep_Fin : Entity_Id := Empty;
+            Fin      : Entity_Id := Empty;
+
+         begin
+            --  If the type of the first formal does not require finalization
+            --  actions, then this is definitely not [Deep_]Finalize.
+
+            if not Needs_Finalization (Typ) then
+               return False;
+            end if;
+
+            --  At this point we have the following scenario:
+
+            --    procedure Name (Param1 : [in] [out] Ctrl[; Param2 : ...]);
+
+            --  Recover the two possible versions of [Deep_]Finalize using the
+            --  type of the first parameter and compare with the input.
+
+            Deep_Fin := TSS (Typ, TSS_Deep_Finalize);
+
+            if Is_Controlled (Typ) then
+               Fin := Find_Prim_Op (Typ, Name_Finalize);
+            end if;
+
+            return
+                (Present (Deep_Fin) and then Id = Deep_Fin)
+              or else
+                (Present (Fin) and then Id = Fin);
+         end;
+      end if;
+
+      return False;
    end Is_Finalization_Procedure;
 
    ------------------
