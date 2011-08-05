@@ -877,12 +877,11 @@ package body ALFA is
 
    procedure Detect_And_Add_ALFA_Scope (N : Node_Id) is
    begin
-      if Nkind_In (N,
-                   N_Subprogram_Declaration,
-                   N_Subprogram_Body,
-                   N_Subprogram_Body_Stub,
-                   N_Package_Declaration,
-                   N_Package_Body)
+      if Nkind_In (N, N_Subprogram_Declaration,
+                      N_Subprogram_Body,
+                      N_Subprogram_Body_Stub,
+                      N_Package_Declaration,
+                      N_Package_Body)
       then
          Add_ALFA_Scope (N);
       end if;

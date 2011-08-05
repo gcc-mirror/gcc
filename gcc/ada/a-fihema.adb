@@ -67,11 +67,10 @@ package body Ada.Finalization.Heap_Management is
    procedure Fin_Assert (Condition : Boolean; Message : String);
    --  Asserts that the condition is True. Used instead of pragma Assert in
    --  delicate places where raising an exception would cause re-invocation of
-   --  finalization. Instead of raising an exception, aborts the whole
-   --  process.
+   --  finalization. Instead of raising an exception, aborts the whole process.
 
    function Is_Empty (Objects : Node_Ptr) return Boolean;
-   --  True if the Objects list is empty.
+   --  True if the Objects list is empty
 
    ----------------
    -- Fin_Assert --
@@ -194,6 +193,7 @@ package body Ada.Finalization.Heap_Management is
 
       --  Note: no need to unlock in case of exceptions; the above code cannot
       --  raise any.
+
    end Attach;
 
    ---------------
@@ -279,8 +279,10 @@ package body Ada.Finalization.Heap_Management is
       end if;
 
       Unlock_Task.all;
+
       --  Note: no need to unlock in case of exceptions; the above code cannot
       --  raise any.
+
    end Detach;
 
    --------------
@@ -305,9 +307,12 @@ package body Ada.Finalization.Heap_Management is
       --  modified.
 
       if Collection.Finalization_Started then
-         --  ???Needed for shared libraries.
+
+         --  ???Needed for shared libraries
+
          return;
       end if;
+
       pragma Debug (Fin_Assert (not Collection.Finalization_Started,
                                 "Finalize: already started"));
       Collection.Finalization_Started := True;
@@ -340,7 +345,6 @@ package body Ada.Finalization.Heap_Management is
 
                begin
                   Collection.Finalize_Address (Object_Address);
-
                exception
                   when Fin_Except : others =>
                      if not Raised then
@@ -403,7 +407,7 @@ package body Ada.Finalization.Heap_Management is
    procedure pcol (Collection : Finalization_Collection) is
       Head      : constant Node_Ptr := Collection.Objects'Unrestricted_Access;
       --  "Unrestricted", because we are getting access-to-variable of a
-      --  constant!  Normally worrisome, this is OK for debugging code.
+      --  constant! Normally worrisome, this is OK for debugging code.
 
       Head_Seen : Boolean := False;
       N_Ptr     : Node_Ptr;

@@ -3402,14 +3402,14 @@ package body Sem_Ch12 is
                 and then not Inline_Now
                 and then not ALFA_Mode
                 and then (Operating_Mode = Generate_Code
-                            or else (Operating_Mode = Check_Semantics
-                                      and then ASIS_Mode));
+                           or else (Operating_Mode = Check_Semantics
+                                     and then ASIS_Mode));
 
             --  If front_end_inlining is enabled, do not instantiate body if
             --  within a generic context.
 
             if (Front_End_Inlining
-                  and then not Expander_Active)
+                 and then not Expander_Active)
               or else Is_Generic_Unit (Cunit_Entity (Main_Unit))
             then
                Needs_Body := False;
@@ -3430,10 +3430,10 @@ package body Sem_Ch12 is
                begin
                   if Nkind (Decl) = N_Formal_Package_Declaration
                     or else (Nkind (Decl) = N_Package_Declaration
-                               and then Is_List_Member (Decl)
-                               and then Present (Next (Decl))
-                               and then
-                                 Nkind (Next (Decl)) =
+                              and then Is_List_Member (Decl)
+                              and then Present (Next (Decl))
+                              and then
+                                Nkind (Next (Decl)) =
                                                 N_Formal_Package_Declaration)
                   then
                      Needs_Body := False;
@@ -4014,12 +4014,12 @@ package body Sem_Ch12 is
    is
    begin
       if (Is_In_Main_Unit (N)
-            or else Is_Inlined (Subp)
-            or else Is_Inlined (Alias (Subp)))
+           or else Is_Inlined (Subp)
+           or else Is_Inlined (Alias (Subp)))
         and then not ALFA_Mode
         and then (Operating_Mode = Generate_Code
-                    or else (Operating_Mode = Check_Semantics
-                               and then ASIS_Mode))
+                   or else (Operating_Mode = Check_Semantics
+                             and then ASIS_Mode))
         and then (Expander_Active or else ASIS_Mode)
         and then not ABE_Is_Certain (N)
         and then not Is_Eliminated (Subp)
@@ -4033,6 +4033,7 @@ package body Sem_Ch12 is
              Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
              Version                  => Ada_Version));
          return True;
+
       else
          return False;
       end if;
@@ -11892,14 +11893,13 @@ package body Sem_Ch12 is
          if Present (E) then
 
             --  If the node is an entry call to an entry in an enclosing task,
-            --  it is rewritten as a selected component. No global entity
-            --  to preserve in this case, the expansion will be redone in the
-            --  instance.
+            --  it is rewritten as a selected component. No global entity to
+            --  preserve in this case, since the expansion will be redone in
+            --  the instance.
 
-            if not Nkind_In (E,
-              N_Defining_Identifier,
-              N_Defining_Character_Literal,
-              N_Defining_Operator_Symbol)
+            if not Nkind_In (E, N_Defining_Identifier,
+                                N_Defining_Character_Literal,
+                                N_Defining_Operator_Symbol)
             then
                Set_Associated_Node (N, Empty);
                Set_Etype  (N, Empty);

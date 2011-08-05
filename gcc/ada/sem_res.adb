@@ -1756,7 +1756,7 @@ package body Sem_Res is
       procedure Build_Explicit_Dereference
         (Expr : Node_Id;
          Disc : Entity_Id);
-      --  AI05-139 : names with implicit dereference. If the expression N is a
+      --  AI05-139: Names with implicit dereference. If the expression N is a
       --  reference type and the context imposes the corresponding designated
       --  type, convert N into N.Disc.all. Such expressions are always over-
       --  loaded with both interpretations, and the dereference interpretation
@@ -2312,9 +2312,9 @@ package body Sem_Res is
                elsif Nkind (N) = N_Conditional_Expression then
                   Set_Etype (N, Expr_Type);
 
-               --  AI05-0139-2 : expression is overloaded because
-               --  type has implicit dereference. If type matches
-               --  context, no implicit dereference is involved.
+               --  AI05-0139-2: Expression is overloaded because type has
+               --  implicit dereference. If type matches context, no implicit
+               --  dereference is involved.
 
                elsif Has_Implicit_Dereference (Expr_Type) then
                   Set_Etype (N, Expr_Type);

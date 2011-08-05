@@ -148,7 +148,7 @@ package Sem_Util is
    --  means that for sure CE cannot be raised.
 
    procedure Check_Implicit_Dereference (Nam : Node_Id; Typ : Entity_Id);
-   --  AI05-139-2 : accessors and iterators for containers. This procedure
+   --  AI05-139-2: Accessors and iterators for containers. This procedure
    --  checks whether T is a reference type, and if so it adds an interprettion
    --  to Expr whose type is the designated type of the reference_discriminant.
 

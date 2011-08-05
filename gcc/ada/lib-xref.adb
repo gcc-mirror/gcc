@@ -174,7 +174,8 @@ package body Lib.Xref is
 
             when N_Pragma =>
                if Get_Pragma_Id (Result) = Pragma_Precondition
-                 or else Get_Pragma_Id (Result) = Pragma_Postcondition
+                    or else
+                  Get_Pragma_Id (Result) = Pragma_Postcondition
                then
                   return Empty;
                else

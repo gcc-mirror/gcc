@@ -7870,8 +7870,8 @@ package body Exp_Disp is
       First_Prim : constant Elmt_Id := First_Elmt (Primitive_Operations (Typ));
       The_Tag    : constant Entity_Id := First_Tag_Component (Typ);
 
-      Adjusted   : Boolean := False;
-      Finalized  : Boolean := False;
+      Adjusted  : Boolean := False;
+      Finalized : Boolean := False;
 
       Count_Prim : Nat;
       DT_Length  : Nat;

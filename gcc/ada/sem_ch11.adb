@@ -432,6 +432,7 @@ package body Sem_Ch11 is
       Exception_Id   : constant Node_Id := Name (N);
       Exception_Name : Entity_Id        := Empty;
       P              : Node_Id;
+      Par            : Node_Id;
 
    begin
       Check_SPARK_Restriction ("raise statement is not allowed", N);
@@ -443,9 +444,9 @@ package body Sem_Ch11 is
          Check_Restriction (No_Exceptions, N);
       end if;
 
-      --  Check for useless assignment to OUT or IN OUT scalar immediately
-      --  preceding the raise. Right now we only look at assignment statements,
-      --  we could do more.
+      --  Check for useless assignment to OUT or IN OUT scalar preceding the
+      --  raise. Right now we only look at assignment statements, we could do
+      --  more.
 
       if Is_List_Member (N) then
          declare
@@ -455,21 +456,49 @@ package body Sem_Ch11 is
          begin
             P := Prev (N);
 
+            --  Skip past null statements and pragmas
+
+            while Present (P)
+              and then Nkind_In (P, N_Null_Statement, N_Pragma)
+            loop
+               P := Prev (P);
+            end loop;
+
+            --  See if preceding statement is an assignment
+
             if Present (P)
               and then Nkind (P) = N_Assignment_Statement
             then
                L := Name (P);
 
+               --  Give warning for assignment to scalar formal
+
                if Is_Scalar_Type (Etype (L))
                  and then Is_Entity_Name (L)
                  and then Is_Formal (Entity (L))
                then
-                  Error_Msg_N
-                    ("?assignment to pass-by-copy formal may have no effect",
-                      P);
-                  Error_Msg_N
-                    ("\?RAISE statement may result in abnormal return" &
-                     " (RM 6.4.1(17))", P);
+                  --  Don't give warning if we are covered by an exception
+                  --  handler, since this may result in false positives, since
+                  --  the handler may handle the exception and return normally.
+
+                  --  First find enclosing sequence of statements
+
+                  Par := N;
+                  loop
+                     Par := Parent (Par);
+                     exit when Nkind (Par) = N_Handled_Sequence_Of_Statements;
+                  end loop;
+
+                  --  See if there is a handler, give message if not
+
+                  if No (Exception_Handlers (Par)) then
+                     Error_Msg_N
+                       ("?assignment to pass-by-copy formal " &
+                        "may have no effect", P);
+                     Error_Msg_N
+                       ("\?RAISE statement may result in abnormal return" &
+                        " (RM 6.4.1(17))", P);
+                  end if;
                end if;
             end if;
          end;

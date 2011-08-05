@@ -238,8 +238,8 @@ package Ada.Containers.Multiway_Trees is
    --     Parent    : Cursor;
    --     Process   : not null access procedure (Position : Cursor));
    --
-   --  It seems that the Container parameter is there by mistake, but
-   --  we need an official ruling from the ARG.  ???
+   --  It seems that the Container parameter is there by mistake, but we need
+   --  an official ruling from the ARG. ???
 
    procedure Iterate_Children
      (Parent  : Cursor;
@@ -251,29 +251,29 @@ package Ada.Containers.Multiway_Trees is
 
 private
 
-   --  A node of this multiway tree comprises an element and a list of
-   --  children (that are themselves trees).  The root node is distinguished
-   --  because it contains only children: it does not have an element itself.
+   --  A node of this multiway tree comprises an element and a list of children
+   --  (that are themselves trees). The root node is distinguished because it
+   --  contains only children: it does not have an element itself.
    --
    --  This design feature puts two design goals in tension:
    --   (1) treat the root node the same as any other node
    --   (2) not declare any objects of type Element_Type unnecessarily
    --
-   --  To satisfy (1), we could simply declare the Root node of the tree
-   --  using the normal Tree_Node_Type, but that would mean that (2) is not
+   --  To satisfy (1), we could simply declare the Root node of the tree using
+   --  the normal Tree_Node_Type, but that would mean that (2) is not
    --  satisfied. To resolve the tension (in favor of (2)), we declare the
    --  component Root as having a different node type, without an Element
-   --  component (thus satisfying goal (2)) but otherwise identical to a
-   --  normal node, and then use Unchecked_Conversion to convert an access
-   --  object designating the Root node component to the access type
-   --  designating a normal, non-root node (thus satisfying goal (1)). We make
-   --  an explicit check for Root when there is any attempt to manipulate the
-   --  Element component of the node (a check required by the RM anyway).
+   --  component (thus satisfying goal (2)) but otherwise identical to a normal
+   --  node, and then use Unchecked_Conversion to convert an access object
+   --  designating the Root node component to the access type designating a
+   --  normal, non-root node (thus satisfying goal (1)). We make an explicit
+   --  check for Root when there is any attempt to manipulate the Element
+   --  component of the node (a check required by the RM anyway).
    --
    --  In order to be explicit about node (and pointer) representation, we
-   --  specify that the respective node types have convention C, to ensure
-   --  that the layout of the components of the node records is the same,
-   --  thus guaranteeing that (unchecked) conversions between access types
+   --  specify that the respective node types have convention C, to ensure that
+   --  the layout of the components of the node records is the same, thus
+   --  guaranteeing that (unchecked) conversions between access types
    --  designating each kind of node type is a meaningful conversion.
 
    type Tree_Node_Type;
@@ -285,9 +285,8 @@ private
       Last  : Tree_Node_Access;
    end record;
 
-   --  See the comment above.  This declaration must exactly
-   --  match the declaration of Root_Node_Type (except for
-   --  the Element component).
+   --  See the comment above. This declaration must exactly match the
+   --  declaration of Root_Node_Type (except for the Element component).
 
    type Tree_Node_Type is record
       Parent   : Tree_Node_Access;
@@ -298,9 +297,8 @@ private
    end record;
    pragma Convention (C, Tree_Node_Type);
 
-   --  See the comment above.  This declaration must match
-   --  the declaration of Tree_Node_Type (except for the
-   --  Element component).
+   --  See the comment above. This declaration must match the declaration of
+   --  Tree_Node_Type (except for the Element component).
 
    type Root_Node_Type is record
       Parent   : Tree_Node_Access;
@@ -312,19 +310,17 @@ private
 
    use Ada.Finalization;
 
-   --  The Count component of type Tree represents the number of
-   --  nodes that have been (dynamically) allocated.  It does not
-   --  include the root node itself.  As implementors, we decide
-   --  to cache this value, so that the selector function Node_Count
-   --  can execute in O(1) time, in order to be consistent with
-   --  the behavior of the Length selector function for other
-   --  standard container library units. This does mean, however,
-   --  that the two-container forms for Splice_XXX (that move subtrees
-   --  across tree containers) will execute in O(n) time, because
-   --  we must count the number of nodes in the subtree(s) that
-   --  get moved.  (We resolve the tension between Node_Count
-   --  and Splice_XXX in favor of Node_Count, under the assumption
-   --  that Node_Count is the more common operation).
+   --  The Count component of type Tree represents the number of nodes that
+   --  have been (dynamically) allocated. It does not include the root node
+   --  itself. As implementors, we decide to cache this value, so that the
+   --  selector function Node_Count can execute in O(1) time, in order to be
+   --  consistent with the behavior of the Length selector function for other
+   --  standard container library units. This does mean, however, that the
+   --  two-container forms for Splice_XXX (that move subtrees across tree
+   --  containers) will execute in O(n) time, because we must count the number
+   --  of nodes in the subtree(s) that get moved. (We resolve the tension
+   --  between Node_Count and Splice_XXX in favor of Node_Count, under the
+   --  assumption that Node_Count is the more common operation).
 
    type Tree is new Controlled with record
       Root  : aliased Root_Node_Type;
