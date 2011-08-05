@@ -1,5 +1,13 @@
 2011-08-05  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/49500
+	* tree-emultls.c (new_emutls_decl):Add alias_of parameter;
+	handle aliases.
+	(create_emultls_var):New function.
+	(ipa_lower_emutls): Handle aliases correctly.
+
+2011-08-05  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/49735
 	* ipa-inline.c (recursive_inlining): Look through aliases.
 
