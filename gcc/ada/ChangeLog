@@ -1,3 +1,22 @@
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* a-cbmutr.adb: Minor reformatting
+	(Allocate_Node): refactor node allocation algorithm
+
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads, opt.adb (Debug_Pragmas_Disabled): New switch.
+	* sem_prag.adb (Analyze_Pragma, case Debug_Policy): Implement Disable
+	mode.
+	(Analyze_Pragma, case Check_Policy): Ditto.
+	* sem_prag.ads (Check_Disabled): New function
+	* snames.ads-tmpl: Add Name_Disable.
+
+2011-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document implementation-defined policy DISABLE for
+	pragmas Assertion_Policy, Check_Policy, Debug_Policy.
+
 2011-08-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Inline): reject an Inline pragma
