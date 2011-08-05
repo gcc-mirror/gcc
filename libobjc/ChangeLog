@@ -1,3 +1,8 @@
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (INCLUDES): Search
+	$(srcdir)/$(MULTISRCTOP)../libgcc.
+
 2011-06-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc.h (__GNU_LIBOBJC__): Bumped to 20110608.

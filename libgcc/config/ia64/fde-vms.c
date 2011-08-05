@@ -1,4 +1,4 @@
-/* Copyright (C) 2004, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2004, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Douglas B Rupp <rupp@gnat.com>
 
    This file is part of GCC.
@@ -32,6 +32,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "md-unwind-support.h"
 #include "unwind-ia64.h"
 
 #define __int64 long

@@ -1184,11 +1184,6 @@ if test $force_sjlj_exceptions = yes; then
     [Define 0/1 to force the choice for exception handling model.])
 fi
 
-# For platforms with the unwind ABI which includes an unwind library,
-# libunwind, we can choose to use the system libunwind.
-# config.gcc also contains tests of with_system_libunwind.
-GCC_CHECK_UNWIND_GETIPINFO
-
 # --------------------------------------------------------
 # Build, host, and target specific configuration fragments
 # --------------------------------------------------------

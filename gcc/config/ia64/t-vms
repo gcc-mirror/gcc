@@ -32,8 +32,6 @@ $(T)crtinitS.o: $(srcdir)/config/ia64/vms-crtinit.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) -I. -c -o $(T)crtinitS.o -x assembler-with-cpp \
 		$(srcdir)/config/ia64/vms-crtinit.asm
 
-LIB2ADDEH += $(srcdir)/config/ia64/fde-vms.c
-
 # Shared library macros
 shlib_version:=$(shell echo $(BASEVER_c) | sed -e 's/\./,/' -e 's/\.//g')
 SHLIB_EXT = .exe

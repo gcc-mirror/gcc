@@ -651,6 +651,7 @@ with_slibdir
 enable_maintainer_mode
 with_build_libsubdir
 enable_decimal_float
+with_system_libunwind
 enable_tls
 '
       ac_precious_vars='build_alias
@@ -1295,6 +1296,7 @@ Optional Packages:
   --with-ld               arrange to use the specified ld (full pathname)
   --with-slibdir=DIR      shared libraries in DIR LIBDIR
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
+  --with-system-libunwind use installed libunwind
 
 Some influential environment variables:
   CC          C compiler command
@@ -3743,6 +3745,46 @@ $as_echo "$libgcc_cv_fixed_point" >&6; }
 fixed_point=$libgcc_cv_fixed_point
 
 
+# For platforms with the unwind ABI which includes an unwind library,
+# libunwind, we can choose to use the system libunwind.
+# config.gcc also contains tests of with_system_libunwind.
+
+
+# Check whether --with-system-libunwind was given.
+if test "${with_system_libunwind+set}" = set; then :
+  withval=$with_system_libunwind;
+fi
+
+  # If system-libunwind was not specifically set, pick a default setting.
+  if test x$with_system_libunwind = x; then
+    case ${target} in
+      ia64-*-hpux*) with_system_libunwind=yes ;;
+      *) with_system_libunwind=no ;;
+    esac
+  fi
+  # Based on system-libunwind and target, do we have ipinfo?
+  if  test x$with_system_libunwind = xyes; then
+    case ${target} in
+      ia64-*-*) have_unwind_getipinfo=no ;;
+      *) have_unwind_getipinfo=yes ;;
+    esac
+  else
+    # Darwin before version 9 does not have _Unwind_GetIPInfo.
+
+    case ${target} in
+      *-*-darwin[3-8]|*-*-darwin[3-8].*) have_unwind_getipinfo=no ;;
+      *) have_unwind_getipinfo=yes ;;
+    esac
+
+  fi
+
+  if test x$have_unwind_getipinfo = xyes; then
+
+$as_echo "#define HAVE_GETIPINFO 1" >>confdefs.h
+
+  fi
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the linker ($LD) is GNU ld" >&5
 $as_echo_n "checking if the linker ($LD) is GNU ld... " >&6; }
 if test "${acl_cv_prog_gnu_ld+set}" = set; then :
@@ -3961,6 +4003,8 @@ tmake_file="${tmake_file_}"
 
 
 ac_config_links="$ac_config_links enable-execute-stack.c:$enable_execute_stack"
+
+ac_config_links="$ac_config_links unwind.h:$unwind_header"
 
 ac_config_links="$ac_config_links md-unwind-support.h:config/$md_unwind_header"
 
@@ -4690,6 +4734,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "enable-execute-stack.c") CONFIG_LINKS="$CONFIG_LINKS enable-execute-stack.c:$enable_execute_stack" ;;
+    "unwind.h") CONFIG_LINKS="$CONFIG_LINKS unwind.h:$unwind_header" ;;
     "md-unwind-support.h") CONFIG_LINKS="$CONFIG_LINKS md-unwind-support.h:config/$md_unwind_header" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;

@@ -2,3 +2,7 @@
 crt3.o: $(srcdir)/config/darwin-crt3.c
 	$(crt_compile) \
 	  -fno-tree-dominator-opts $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -c $<
+
+# Use unwind-dw2-fde-darwin
+LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/config/unwind-dw2-fde-darwin.c \
+  $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c

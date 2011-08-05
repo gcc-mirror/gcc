@@ -378,8 +378,6 @@ USER_H = $(srcdir)/ginclude/float.h \
 USER_H_INC_NEXT_PRE = @user_headers_inc_next_pre@
 USER_H_INC_NEXT_POST = @user_headers_inc_next_post@
 
-UNWIND_H = $(srcdir)/unwind-generic.h
-
 # The GCC to use for compiling crt*.o.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES).
@@ -692,18 +690,6 @@ CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
   -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
   -fno-stack-protector \
   $(INHIBIT_LIBC_CFLAGS)
-
-# Additional sources to handle exceptions; overridden by targets as needed.
-LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
-   $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
-LIB2ADDEHSTATIC = $(LIB2ADDEH)
-LIB2ADDEHSHARED = $(LIB2ADDEH)
-
-# Don't build libunwind by default.
-LIBUNWIND =
-LIBUNWINDDEP =
-SHLIBUNWIND_LINK =
-SHLIBUNWIND_INSTALL =
 
 # nm flags to list global symbols in libgcc object files.
 SHLIB_NM_FLAGS = -pg
@@ -1898,7 +1884,7 @@ GCC_EXTRA_PARTS := $(sort $(EXTRA_MULTILIB_PARTS) $(EXTRA_PARTS))
 
 libgcc-support: libgcc.mvars stmp-int-hdrs $(TCONFIG_H) \
 	$(MACHMODE_H) $(FPBIT) $(DPBIT) $(TPBIT) $(LIB2ADD) \
-	$(LIB2ADD_ST) $(LIB2ADDEH) $(srcdir)/emutls.c gcov-iov.h $(SFP_MACHINE)
+	$(LIB2ADD_ST) gcov-iov.h $(SFP_MACHINE)
 
 libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
 		xgcc$(exeext)
@@ -1909,13 +1895,7 @@ libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
 	echo LIB2FUNCS_EXCLUDE = '$(LIB2FUNCS_EXCLUDE)' >> tmp-libgcc.mvars
 	echo LIB2ADD = '$(call srcdirify,$(LIB2ADD))' >> tmp-libgcc.mvars
 	echo LIB2ADD_ST = '$(call srcdirify,$(LIB2ADD_ST))' >> tmp-libgcc.mvars
-	echo LIB2ADDEH = '$(call srcdirify,$(LIB2ADDEH) $(srcdir)/emutls.c)' >> tmp-libgcc.mvars
-	echo LIB2ADDEHSTATIC = '$(call srcdirify,$(LIB2ADDEHSTATIC) $(srcdir)/emutls.c)' >> tmp-libgcc.mvars
-	echo LIB2ADDEHSHARED = '$(call srcdirify,$(LIB2ADDEHSHARED) $(srcdir)/emutls.c)' >> tmp-libgcc.mvars
 	echo LIB2_SIDITI_CONV_FUNCS = '$(LIB2_SIDITI_CONV_FUNCS)' >> tmp-libgcc.mvars
-	echo LIBUNWIND = '$(call srcdirify,$(LIBUNWIND))' >> tmp-libgcc.mvars
-	echo SHLIBUNWIND_LINK = '$(SHLIBUNWIND_LINK)' >> tmp-libgcc.mvars
-	echo SHLIBUNWIND_INSTALL = '$(SHLIBUNWIND_INSTALL)' >> tmp-libgcc.mvars
 	echo FPBIT = '$(FPBIT)' >> tmp-libgcc.mvars
 	echo FPBIT_FUNCS = '$(FPBIT_FUNCS)' >> tmp-libgcc.mvars
 	echo LIB2_DIVMOD_FUNCS = '$(LIB2_DIVMOD_FUNCS)' >> tmp-libgcc.mvars
@@ -4114,7 +4094,7 @@ gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 # be rebuilt.
 
 # Build the include directories.
-stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) $(UNWIND_H) fixinc_list
+stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) fixinc_list
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
@@ -4146,9 +4126,6 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) $(UNWIND_H) fixinc_list
 	    chmod a+r include/$$file; \
 	  fi; \
 	done
-	rm -f include/unwind.h
-	cp $(UNWIND_H) include/unwind.h
-	chmod a+r include/unwind.h
 	rm -f include/stdint.h
 	if [ $(USE_GCC_STDINT) = wrap ]; then \
 	  rm -f include/stdint-gcc.h; \

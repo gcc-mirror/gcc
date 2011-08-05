@@ -41,13 +41,6 @@
 
 #ifndef __USING_SJLJ_EXCEPTIONS__
 
-
-/* By default, assume personality routine interface compatibility with
-   our expectations.  */
-#ifndef MD_UNW_COMPATIBLE_PERSONALITY_P
-#define MD_UNW_COMPATIBLE_PERSONALITY_P(HEADER) 1
-#endif
-
 enum unw_application_register
 {
   UNW_AR_BSP,
@@ -1768,6 +1761,13 @@ _Unwind_GetBSP (struct _Unwind_Context *context)
 }
 
 #include "md-unwind-support.h"
+
+/* By default, assume personality routine interface compatibility with
+   our expectations.  */
+#ifndef MD_UNW_COMPATIBLE_PERSONALITY_P
+#define MD_UNW_COMPATIBLE_PERSONALITY_P(HEADER) 1
+#endif
+
 
 static _Unwind_Reason_Code
 uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)

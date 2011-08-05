@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for IA64 VMS.
-   Copyright (C) 2005-2009 Free Software Foundation, Inc.
+   Copyright (C) 2005-2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -31,6 +31,9 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#define UNW_IVMS_MODE(HEADER) (((HEADER) >> 44) & 0x3L)
+#define MD_UNW_COMPATIBLE_PERSONALITY_P(HEADER) (!UNW_IVMS_MODE (HEADER))
 
 #define DYN$C_SSENTRY 66
 /* ??? would rather get the proper header file.  */

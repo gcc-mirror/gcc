@@ -469,7 +469,7 @@ case "${which_gcj}" in
    cross)
       if test "x${with_newlib}" = "xyes"; then
          # FIXME (comment): Why is this needed?
-         GCC_UNWIND_INCLUDE=
+         LIBGCC_UNWIND_INCLUDE=
       fi
       GCJH='$(target_noncanonical)-gcjh'
    ;;
@@ -1204,8 +1204,8 @@ AC_SUBST(HASH_SYNC_SPEC)
 
 AM_CONDITIONAL(USING_GCC, test "$GCC" = yes)
 
-# We're in the tree with gcc, and need to include some of its headers.
-GCC_UNWIND_INCLUDE='-I$(multi_basedir)/./libjava/../gcc'
+# We're in the tree with libgcc, and need to include some of its headers.
+LIBGCC_UNWIND_INCLUDE='-I$(multi_basedir)/./libjava/../libgcc'
 
 if test "x${with_newlib}" = "xyes"; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
@@ -1569,7 +1569,7 @@ AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes)
 AM_CONDITIONAL(ENABLE_SHARED, test "$enable_shared" = yes)
 AM_CONDITIONAL(NEEDS_DATA_START, test "$NEEDS_DATA_START" = yes && test "$NATIVE" = yes)
 AM_CONDITIONAL(INSTALL_BINARIES, test -z "${with_multisubdir}")
-AC_SUBST(GCC_UNWIND_INCLUDE)
+AC_SUBST(LIBGCC_UNWIND_INCLUDE)
 
 # Process the option "--enable-version-specific-runtime-libs"
 # Calculate toolexeclibdir

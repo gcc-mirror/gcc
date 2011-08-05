@@ -43,9 +43,6 @@ LIB2FUNCS_EXTRA = \
 LIB1ASMFUNCS = _mulsc3 _divsc3
 LIB1ASMSRC = picochip/libgccExtras/fake_libgcc.asm
 
-# Turn off the building of exception handling libraries.
-LIB2ADDEH =
-
 # Turn off ranlib on target libraries.
 RANLIB_FOR_TARGET = cat
 

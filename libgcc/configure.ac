@@ -7,6 +7,7 @@ sinclude(../config/no-executables.m4)
 sinclude(../config/lib-ld.m4)
 sinclude(../config/override.m4)
 sinclude(../config/dfp.m4)
+sinclude(../config/unwind_ipinfo.m4)
 
 AC_PREREQ(2.64)
 AC_INIT([GNU C Runtime Library], 1.0,,[libgcc])
@@ -167,6 +168,11 @@ AC_CACHE_CHECK([whether fixed-point is supported], [libgcc_cv_fixed_point],
 fixed_point=$libgcc_cv_fixed_point
 AC_SUBST(fixed_point)
 
+# For platforms with the unwind ABI which includes an unwind library,
+# libunwind, we can choose to use the system libunwind.
+# config.gcc also contains tests of with_system_libunwind.
+GCC_CHECK_UNWIND_GETIPINFO
+
 AC_LIB_PROG_LD_GNU
 
 AC_MSG_CHECKING([for thread model used by GCC])
@@ -277,6 +283,7 @@ AC_SUBST(cpu_type)
 AC_SUBST(extra_parts)
 AC_SUBST(asm_hidden_op)
 AC_CONFIG_LINKS([enable-execute-stack.c:$enable_execute_stack])
+AC_CONFIG_LINKS([unwind.h:$unwind_header])
 AC_CONFIG_LINKS([md-unwind-support.h:config/$md_unwind_header])
 
 # We need multilib support.

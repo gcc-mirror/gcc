@@ -342,7 +342,7 @@ LIBLINK = $(LIBTOOL) --tag=CXX $(LIBTOOLFLAGS) --mode=link $(CXX) -L$(here) \
 CXXLINK = $(LIBTOOL) --tag=CXX $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
 	  $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
 
-GCC_UNWIND_INCLUDE = @GCC_UNWIND_INCLUDE@
+LIBGCC_UNWIND_INCLUDE = @LIBGCC_UNWIND_INCLUDE@
 
 WARNINGS = -Wextra -Wall
 ## Some systems don't allow `$' in identifiers by default, so we force
@@ -410,7 +410,7 @@ AM_CPPFLAGS = -I$(top_srcdir) \
 	-Iclasspath/include \
 	-I$(top_srcdir)/classpath/native/fdlibm \
 	$(GCINCS) $(THREADINCS) $(INCLTDL) \
-	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
+	$(LIBGCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 BOOTCLASSPATH = $(srcdir)/classpath/lib
 

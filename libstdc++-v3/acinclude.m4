@@ -685,9 +685,9 @@ AC_DEFUN([GLIBCXX_EXPORT_INCLUDES], [
   fi
 
   # Stuff in the actual top level.  Currently only used by libsupc++ to
-  # get unwind* headers from the gcc dir.
-  #TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include'
-  TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/gcc'
+  # get unwind* headers from the libgcc dir.
+  #TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/libgcc -I$(toplevel_srcdir)/include'
+  TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/libgcc'
 
   # Now, export this to all the little Makefiles....
   AC_SUBST(GLIBCXX_INCLUDES)

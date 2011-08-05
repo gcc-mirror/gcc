@@ -1,0 +1,2 @@
+# Turn off the building of exception handling libraries.
+LIB2ADDEH =
