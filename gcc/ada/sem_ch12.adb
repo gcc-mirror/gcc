@@ -3400,6 +3400,7 @@ package body Sem_Ch12 is
                            or else Might_Inline_Subp)
                 and then not Is_Actual_Pack
                 and then not Inline_Now
+                and then not ALFA_Mode
                 and then (Operating_Mode = Generate_Code
                             or else (Operating_Mode = Check_Semantics
                                       and then ASIS_Mode));
@@ -4015,6 +4016,7 @@ package body Sem_Ch12 is
       if (Is_In_Main_Unit (N)
             or else Is_Inlined (Subp)
             or else Is_Inlined (Alias (Subp)))
+        and then not ALFA_Mode
         and then (Operating_Mode = Generate_Code
                     or else (Operating_Mode = Check_Semantics
                                and then ASIS_Mode))
