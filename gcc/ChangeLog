@@ -1,3 +1,28 @@
+2011-08-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*push<mode>2): Use "o" constraint instead
+	of "m" for operand 0.  Add type and mode attribute.
+	(*pushxf_nointeger"): Use "<" constraint for operand 0.
+	(*pushdf_rex64): New pattern, split out of *pushdf.  Use "m"
+	constraint instead of "o" for opreand 1.
+	(*pushdf): Disable for TARGET_64BIT.  Correct mode attribute.
+
+2011-08-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (lea_address_operand): Rename from
+	no_seg_address_operand.
+	* config/i386/i386.md (*lea_1): Update operand 1 predicate for rename.
+	(*lea_1_zext): Ditto.
+	(*lea_2): Ditto.
+	(*lea_2_zext): Ditto.
+
+2011-08-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_print_operand_address): Handle SUBREGs of
+	parts.base and parts.index.
+	* config/i386/predicates.md (aligned_operand): Ditto.
+	(cmpxchg8b_pic_memory_operand): Ditto.
+
 2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/soft-fp: Move to ../libgcc.
@@ -71,15 +96,13 @@
 	(i[34567]86-*-linux*, x86_64-*-linux*, i[34567]86-*-kfreebsd*-gnu)
 	(x86_64-*-kfreebsd*-gnu, i[34567]86-*-gnu*): Likewise.
 	(i[34567]86-*-solaris2*, x86_64-*-solaris2.1[0-9]*): Likewise.
-	(i[34567]86-*-cygwin*, i[34567]86-*-mingw*, x86_64-*-mingw*):
-	Likewise.
+	(i[34567]86-*-cygwin*, i[34567]86-*-mingw*, x86_64-*-mingw*): Likewise.
 	(i[34567]86-*-freebsd*, x86_64-*-freebsd*): Likewise.
 
 2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (FPBIT_FUNCS, DPBIT_FUNCS, TPBIT_FUNCS): Remove.
-	(libgcc-support): Remove $(FPBIT), $(DPBIT), $(TPBIT)
-	dependencies.
+	(libgcc-support): Remove $(FPBIT), $(DPBIT), $(TPBIT) dependencies.
 	(libgcc.mvars): Remove FPBIT, FPBIT_FUNCS, DPBIT, DPBIT_FUNCS,
 	TPBIT, TPBIT_FUNCS.
 	* config/fp-bit.c, config/fp-bit.h: Move to ../libgcc.
@@ -163,8 +186,7 @@
 	LIBUNWIND, SHLIBUNWIND_LINK, SHLIBUNWIND_INSTALL.
 	(stmp-int-hdrs): Remove $(UNWIND_H) dependency.
 	Don't copy $(UNWIND_H).
-	* config.gcc (ia64*-*-linux*): Remove with_system_libunwind
-	handling.
+	* config.gcc (ia64*-*-linux*): Remove with_system_libunwind handling.
 	* configure.ac (GCC_CHECK_UNWIND_GETIPINFO): Remove.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
