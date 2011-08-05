@@ -1,3 +1,9 @@
+2011-08-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/s390/s390.c (s390_expand_cs_hqi): Add new arguments to
+	store_bit_field.
+	(s390_expand_atomic): Same.
+
 2011-08-05  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/49977
