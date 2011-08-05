@@ -2488,13 +2488,15 @@ gnatlib-shared-default:
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
 	$(RM) $(RTSDIR)/libgna*$(soext)
-	cd $(RTSDIR); ../../xgcc -B../../ -shared $(GNATLIBCFLAGS) \
+	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
+                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -shared $(GNATLIBCFLAGS) \
 		$(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(MISCLIB) -lm
-	cd $(RTSDIR); ../../xgcc -B../../ -shared $(GNATLIBCFLAGS) \
+	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
+                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -shared $(GNATLIBCFLAGS) \
 		$(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
@@ -2556,12 +2558,14 @@ gnatlib-shared-win32:
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
 	$(RM) $(RTSDIR)/libgna*$(soext)
-	cd $(RTSDIR); ../../xgcc -B../../ -shared -shared-libgcc \
+	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
+                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -shared -shared-libgcc \
 		$(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) $(MISCLIB)
-	cd $(RTSDIR); ../../xgcc -B../../ -shared -shared-libgcc \
+	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
+                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -shared -shared-libgcc \
 		$(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
@@ -2577,13 +2581,15 @@ gnatlib-shared-darwin:
 	     THREAD_KIND="$(THREAD_KIND)" \
 	     gnatlib
 	$(RM) $(RTSDIR)/libgnat$(soext) $(RTSDIR)/libgnarl$(soext)
-	cd $(RTSDIR); ../../xgcc -B../../ -dynamiclib $(TARGET_LIBGCC2_CFLAGS) \
+	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
+                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -dynamiclib $(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS) \
 		-Wl,-install_name,@rpath/libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(MISCLIB) -lm
-	cd $(RTSDIR); ../../xgcc -B../../ -dynamiclib $(TARGET_LIBGCC2_CFLAGS) \
+	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
+                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -dynamiclib $(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
 		$(SO_OPTS) \
