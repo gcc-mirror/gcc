@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -507,7 +507,9 @@ package body Styleg is
             S := Scan_Ptr + 2;
             while Source (S) >= ' ' loop
                if Source (S) /= '-' then
-                  if Is_Box_Comment then
+                  if Is_Box_Comment
+                    or else Style_Check_Comments_Spacing = 1
+                  then
                      Error_Space_Required (Scan_Ptr + 2);
                   else
                      Error_Msg -- CODEFIX
@@ -522,14 +524,17 @@ package body Styleg is
 
          --  If we are followed by a blank, then the comment is OK if the
          --  character following this blank is another blank or a format
-         --  effector.
+         --  effector, or if the required comment spacing is 1.
 
-         elsif Source (Scan_Ptr + 3) <= ' ' then
+         elsif Source (Scan_Ptr + 3) <= ' '
+           or else Style_Check_Comments_Spacing = 1
+         then
             return;
 
-         --  Here is the case where we only have one blank after the two
-         --  minus signs, which is an error unless the line ends with two
-         --  minus signs, the case of a box comment.
+         --  Here is the case where we only have one blank after the two minus
+         --  signs, with Style_Check_Comments_Spacing set to 2, which is an
+         --  error unless the line ends with two minus signs, the case of a
+         --  box comment.
 
          elsif not Is_Box_Comment then
             Error_Space_Required (Scan_Ptr + 3);

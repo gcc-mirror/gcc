@@ -176,14 +176,8 @@ package body Exp_Util is
          Ti  : Entity_Id;
 
       begin
-         --  For now, we simply ignore a call where the argument has no type
-         --  (probably case of unanalyzed condition), or has a type that is not
-         --  Boolean. This is because this is a pretty marginal piece of
-         --  functionality, and violations of these rules are likely to be
-         --  truly marginal (how much code uses Fortran Logical as the barrier
-         --  to a protected entry?) and we do not want to blow up existing
-         --  programs. We can change this to an assertion after 3.12a is
-         --  released ???
+         --  Defend against a call where the argument has no type, or has a
+         --  type that is not Boolean. This can occur because of prior errors.
 
          if No (T) or else not Is_Boolean_Type (T) then
             return;

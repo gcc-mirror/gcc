@@ -6258,8 +6258,8 @@ The use of AND/OR operators is not permitted except in the cases of modular
 operands, array operands, and simple stand-alone boolean variables or
 boolean constants. In all other cases AND THEN/OR ELSE are required.
 
-@item ^c^COMMENTS^
-@emph{Check comments.}
+@item ^c^COMMENTS^ (double space)
+@emph{Check comments, double space.}
 Comments must meet the following set of rules:
 
 @itemize @bullet
@@ -6309,6 +6309,11 @@ example:
 ---------------------------
 @end smallexample
 @end itemize
+
+@item ^C^COMMENTS1^ (single space)
+@emph{Check comments, single space.}
+This is identical to @code{^c^COMMENTS} except that only one space
+is required following the @code{--} of a comment instead of two.
 
 @item ^d^DOS_LINE_ENDINGS^
 @emph{Check no DOS line terminators present.}
