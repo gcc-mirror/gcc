@@ -1,5 +1,10 @@
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (ix86_compute_frame_layout): Simplify
+	frame->save_regs_using_mov calculation.
+
+2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (ssemodesuffix): Remove V8SI mode.
 	* config/i386/sse.md (castmode): New mode attribute.
 	(avx_<castmode><avxsizesuffix>_<castmode>): Rename from

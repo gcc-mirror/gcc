@@ -8742,16 +8742,12 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
         cfun->machine->use_fast_prologue_epilogue
 	   = !expensive_function_p (count);
     }
-  if (TARGET_PROLOGUE_USING_MOVE
-      && cfun->machine->use_fast_prologue_epilogue)
-    frame->save_regs_using_mov = true;
-  else
-    frame->save_regs_using_mov = false;
 
-  /* If static stack checking is enabled and done with probes, the registers
-     need to be saved before allocating the frame.  */
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
-    frame->save_regs_using_mov = false;
+  frame->save_regs_using_mov
+    = (TARGET_PROLOGUE_USING_MOVE && cfun->machine->use_fast_prologue_epilogue
+       /* If static stack checking is enabled and done with probes,
+	  the registers need to be saved before allocating the frame.  */
+       && flag_stack_check != STATIC_BUILTIN_STACK_CHECK);
 
   /* Skip return address.  */
   offset = UNITS_PER_WORD;
