@@ -1,5 +1,14 @@
 2011-08-06  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR middle-end/47727
+	* gcc.dg/pr47727.c: New.
+
+	PR target/47372
+	* gcc.dg/pr47372-1.c: New.
+	* gcc.dg/pr47372-2.c: Likewise.
+
+2011-08-06  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR middle-end/47449
 	* gcc.target/i386/pr47449.c: New.
 
@@ -17,6 +26,7 @@
 	* gcc.dg/tls/pr47715-2.c: Likewise.
 	* gcc.dg/tls/pr47715-3.c: Likewise.
 	* gcc.dg/tls/pr47715-4.c: Likewise.
+	* gcc.dg/tls/pr47715-5.c: Likewise.
 
 2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
