@@ -1,9 +1,15 @@
+2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50001
+	* config/alpha/alpha.c (alpha_instantiate_decls): New function.
+	(TARGET_INSTANTIATE_DECLS): New define.
+
 2011-08-06  Paolo Bonzini  <bonzini@gnu.org>
             Mikael Morin   <mikael.morin@sfr.fr>
 
 	* Makefile.in (INCLUDES_FOR_TARGET): New.
 	(LIBGCC2_CFLAGS): Use it.
-	(CRTSTUFF_CFLAGS): Use it instead of INCLUDES. 
+	(CRTSTUFF_CFLAGS): Use it instead of INCLUDES.
 
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
