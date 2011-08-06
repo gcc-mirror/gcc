@@ -1,5 +1,8 @@
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49921
+	* semantics.c (finish_decltype_type): Call invalid_nonstatic_memfn_p.
+
 	PR c++/49669
 	* init.c (perform_member_init): Handle invalid array initializer.
 
