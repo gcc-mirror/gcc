@@ -4918,6 +4918,13 @@ alpha_gp_save_rtx (void)
   return m;
 }
 
+static void
+alpha_instantiate_decls (void)
+{
+  if (cfun->machine->gp_save_rtx != NULL_RTX)
+    instantiate_decl_rtl (cfun->machine->gp_save_rtx);
+}
+
 static int
 alpha_ra_ever_killed (void)
 {
@@ -11109,6 +11116,9 @@ alpha_conditional_register_usage (void)
 #define TARGET_FUNCTION_ARG_ADVANCE alpha_function_arg_advance
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT alpha_trampoline_init
+
+#undef TARGET_INSTANTIATE_DECLS
+#define TARGET_INSTANTIATE_DECLS alpha_instantiate_decls
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD alpha_secondary_reload
