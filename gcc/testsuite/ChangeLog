@@ -1,3 +1,9 @@
+2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	PR libobjc/49882
+	* objc.dg/gnu-api-2-class.m (main): Test class_getSuperclass()
+	with classes that are in construction.
+
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48993

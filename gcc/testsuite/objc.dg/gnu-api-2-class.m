@@ -394,6 +394,14 @@ int main(int argc, void **args)
     MySubClass *object = [[MySubClass alloc] init];
     if (class_getSuperclass (object_getClass (object)) != objc_getClass ("MyRootClass"))
       abort ();
+
+    /* Test that it works on a newly created, but not registered, class.  */
+    {
+      Class new_class = objc_allocateClassPair (objc_getClass ("MyRootClass"), "MySubClass3", 0);
+
+      if (class_getSuperclass (new_class) != objc_getClass ("MyRootClass"))
+	abort ();
+    }    
   }
 
   printf ("Testing class_getVersion ()...\n");
