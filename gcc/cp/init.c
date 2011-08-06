@@ -526,8 +526,10 @@ perform_member_init (tree member, tree init)
 	{
 	  if (init)
 	    {
-	      gcc_assert (TREE_CHAIN (init) == NULL_TREE);
-	      init = TREE_VALUE (init);
+	      if (TREE_CHAIN (init))
+		init = error_mark_node;
+	      else
+		init = TREE_VALUE (init);
 	      if (BRACE_ENCLOSED_INITIALIZER_P (init))
 		init = digest_init (type, init);
 	    }
