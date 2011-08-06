@@ -671,9 +671,9 @@ endif
 # Options to use when compiling libgcc2.a.
 #
 LIBGCC2_DEBUG_CFLAGS = -g
-LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) \
-		 $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) \
-		 -DIN_LIBGCC2 \
+LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(INCLUDES_FOR_TARGET) $(GCC_CFLAGS) \
+		 $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) \
+		 $(GTHREAD_FLAGS) -DIN_LIBGCC2 \
 		 -fbuilding-libgcc -fno-stack-protector \
 		 $(INHIBIT_LIBC_CFLAGS)
 
@@ -685,8 +685,8 @@ LIBGCC2_INCLUDES =
 TARGET_LIBGCC2_CFLAGS =
 
 # Options to use when compiling crtbegin/end.
-CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
-  -finhibit-size-directive -fno-inline -fno-exceptions \
+CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES_FOR_TARGET) $(MULTILIB_CFLAGS) \
+  -g0 -finhibit-size-directive -fno-inline -fno-exceptions \
   -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
   -fno-stack-protector \
   $(INHIBIT_LIBC_CFLAGS)
@@ -1089,6 +1089,9 @@ INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   -I$(srcdir)/../include @INCINTL@ \
 	   $(CPPINC) $(GMPINC) $(DECNUMINC) \
 	   $(PPLINC) $(CLOOGINC)
+
+INCLUDES_FOR_TARGET = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
+	   -I$(srcdir)/../include $(DECNUMINC) -I$(srcdir)/../libgcc
 
 .c.o:
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $< $(OUTPUT_OPTION)

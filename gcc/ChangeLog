@@ -1,3 +1,10 @@
+2011-08-06  Paolo Bonzini  <bonzini@gnu.org>
+            Mikael Morin   <mikael.morin@sfr.fr>
+
+	* Makefile.in (INCLUDES_FOR_TARGET): New.
+	(LIBGCC2_CFLAGS): Use it.
+	(CRTSTUFF_CFLAGS): Use it instead of INCLUDES. 
+
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_compute_frame_layout): Simplify
