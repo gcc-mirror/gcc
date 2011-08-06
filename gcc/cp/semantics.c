@@ -4835,6 +4835,9 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 
   expr = resolve_nondeduced_context (expr);
 
+  if (invalid_nonstatic_memfn_p (expr, complain))
+    return error_mark_node;
+
   /* To get the size of a static data member declared as an array of
      unknown bound, we need to instantiate it.  */
   if (TREE_CODE (expr) == VAR_DECL
