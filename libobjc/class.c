@@ -923,10 +923,13 @@ class_getSuperclass (Class class_)
   if (class_ == Nil)
     return Nil;
 
-  /* Classes that are in construction are not resolved and can not be
-     resolved!  */
+  /* Classes that are in construction are not resolved, and still have
+     the class name (instead of a class pointer) in the
+     class_->superclass field.  In that case we need to lookup the
+     superclass name to return the superclass.  We can not resolve the
+     class until it is registered.  */
   if (CLS_IS_IN_CONSTRUCTION (class_))
-    return Nil;
+    return objc_lookUpClass ((const char *)(class_->super_class));
 
   /* If the class is not resolved yet, super_class would point to a
      string (the name of the super class) as opposed to the actual
