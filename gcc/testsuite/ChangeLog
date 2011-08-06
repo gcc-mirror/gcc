@@ -1,3 +1,18 @@
+2011-08-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/48084
+	* gcc.target/i386/pr48084-1.c: New.
+	* gcc.target/i386/pr48084-2.c: Likewise.
+	* gcc.target/i386/pr48084-3.c: Likewise.
+	* gcc.target/i386/pr48084-4.c: Likewise.
+	* gcc.target/i386/pr48084-5.c: Likewise.
+
+	PR rtl-optimization/49504
+	* gcc.target/i386/pr49504.c: New.
+
+	PR target/49860
+	* gcc.dg/pr49860.c: New.
+
 2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 	
 	PR libobjc/49882
