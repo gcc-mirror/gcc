@@ -1,3 +1,9 @@
+2011-08-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49988
+	* semantics.c (cxx_eval_array_reference): Handle failure to
+	reduce the array operand to something we can work with.
+
 2011-08-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43886

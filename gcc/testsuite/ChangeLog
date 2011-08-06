@@ -1,3 +1,8 @@
+2011-08-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49988
+	* g++.dg/cpp0x/constexpr-non-const-arg3.C: New.
+
 2011-08-05  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49112
