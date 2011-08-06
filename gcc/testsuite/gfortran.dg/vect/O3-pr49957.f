@@ -14,3 +14,4 @@
       return
       end
 ! { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail vect_no_align } } }
+! { dg-final { cleanup-tree-dump "vect" } }
