@@ -1,3 +1,10 @@
+2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-22.c (dg-options): Add -march=k8.
+	(pragma GCC target): Add avx, fma4, lzcnt and bmi options.
+	* gcc.target/i386/sse-23.c (pragma GCC target): Add avx, fma4,
+	lzcnt and bmi options.
+
 2011-08-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/47381
@@ -42,13 +49,13 @@
 	* obj-c++.dg/gnu-api-2-class.mm: Likewise.
 	* objc.dg/gnu-api-2-class-meta.m: New test.
 	* obj-c++.dg/gnu-api-2-class-meta.mm: Likewise.
-	
+
 2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	PR libobjc/49882
 	* obj-c++.dg/gnu-api-2-class.mm (main): Test class_getSuperclass()
 	with classes that are in construction.
-	
+
 2011-08-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/48084
