@@ -178,6 +178,9 @@
 (define_mode_attr sserotatemax
   [(V16QI "7") (V8HI "15") (V4SI "31") (V2DI "63")])
 
+;; Mapping of mode to cast intrinsic name
+(define_mode_attr castmode [(V8SI "si") (V8SF "ps") (V4DF "pd")])
+
 ;; Instruction suffix for sign and zero extensions.
 (define_code_attr extsuffix [(sign_extend "sx") (zero_extend "zx")])
 
@@ -10233,7 +10236,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn_and_split "avx_<ssemodesuffix><avxsizesuffix>_<ssemodesuffix>"
+(define_insn_and_split "avx_<castmode><avxsizesuffix>_<castmode>"
   [(set (match_operand:AVX256MODE2P 0 "nonimmediate_operand" "=x,m")
 	(unspec:AVX256MODE2P
 	  [(match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "xm,x")]
