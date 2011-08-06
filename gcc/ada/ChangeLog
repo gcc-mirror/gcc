@@ -246,7 +246,6 @@
 	necessary.
 	* put_scos.adb: Code simplification based on above change.
 
->>>>>>> .r177446
 2011-08-05  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, gnatcmd.adb, switch-c.adb, exp_attr.adb, make.adb,
@@ -372,7 +371,7 @@
 2011-08-05  Steve Baird  <baird@adacore.com>
 
 	* bindgen.adb (Gen_CodePeer_Wrapper): Call Ada_Main_Program instead
-	of calling the user-defined main subprogram. 
+	of calling the user-defined main subprogram.
 	(Gen_Main):  Declare Ada_Main_Program and (if CodePeer_Mode
 	is set) Call_Main_Subprogram ahead of, as opposed to
 	inside of, Main.
@@ -1783,7 +1782,7 @@
 2011-08-04  Nicolas Roche  <roche@adacore.com>
 
 	* env.c (__gnat_clearenv): Avoid use of dynamic size array in order to
-	remove need for GCC exceptions. 
+	remove need for GCC exceptions.
 
 2011-08-04  Vincent Celier  <celier@adacore.com>
 
@@ -1841,7 +1840,7 @@
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not set Esize if it
 	is not known.
 	<E_Record_Type>: Look at the RM size instead of the Esize.  Remove
-	obsolete block.  
+	obsolete block.
 	Look at the RM size instead of the Esize for types if the latter is
 	not known.
 	(gnat_to_gnu_field): Use Known_Esize instead of Known_Static_Esize.
@@ -2197,7 +2196,7 @@
 	Gen_Adafinal_Ada.
 	(Gen_Output_File_C): Generate __attribute__((destructor)) for Ada_Final
 	if -a is specified.  Call Gen_Elab_Externals_C.  Remove useless couple
-	of external declarations.  Call Gen_Finalize_Library_C.
+	of external declarations.  Call Gen_Finalize_Library_C.
 
 2011-08-04  Emmanuel Briot  <briot@adacore.com>
 
@@ -2971,7 +2970,7 @@
 	System.Finalization_Implementation are no longer a GNAT unit.
 	Update the range of type Ada_Finalization_Child. Remove the following
 	recoverable entities:
-	
+
 	   RE_Attach_To_Final_List
 	   RE_Deep_Tag_Attach
 	   RE_Finalize_List
@@ -2983,9 +2982,9 @@
 	   RE_Move_Final_List
 	   RE_Record_Controller
 	   RE_Simple_List_Controller
-	
+
 	Add the following recoverable entities:
-	
+
 	   RE_Add_Offset_To_Address
 	   RE_Allocate
 	   RE_Base_Pool
@@ -3060,7 +3059,7 @@
 	(Coextensions): Removed along with its pragma Inline.
 	(Set_Coextensions): Removed along with its pragma Inline.
 	* snames.ads-tmpl: Remove names
-	
+
 	  Name_uClean
 	  Name_uController
 	  Name_uFinal_List
@@ -3068,9 +3067,9 @@
 	  Name_Finalization_Root
 	  Name_Next
 	  Name_Prev
-	
+
 	Add names
-	
+
 	  Name_uFinalizer
 	  Name_Finalize_Address
 	* s-pooglo.adb (Allocate): Add overriding indicator.
@@ -3315,7 +3314,7 @@
 
 	* inline.adb (Add_Inlined_Subprogram): Do not consider the enclosing
 	code unit to decide whether to add internally generated subprograms.
-	
+
 2011-08-03  Javier Miranda  <miranda@adacore.com>
 
 	* sem_aux.ads, sem_aux.adb (Is_VM_By_Copy_Actual): New subprogram.
@@ -5698,7 +5697,7 @@
 	* sem_util.ads, sem_util.adb, par.adb, par_util.adb
 	(Formal_Error_Msg, Formal_Error_Msg_N, Formal_Error_Msg_SP): move
 	procedures out of these packages.
-	* errout.ads, errout.adb 
+	* errout.ads, errout.adb
 	(Formal_Error_Msg, Formal_Error_Msg_N, Formal_Error_Msg_SP): move
 	procedures in of this package
 	(Formal_Error_Msg_NE): new procedure for wrapper on Error_Msg_NE
@@ -5915,7 +5914,7 @@
 	* debug.adb (d.D) reverve flag for the SPARK mode
 	(d.E) reverve flag for SPARK generation mode
 	(d.F) reverve flag for Why generation mode
-	* opt.ads, opt.adb (ALFA_Mode, ALFA_Through_SPARK_Mode, 
+	* opt.ads, opt.adb (ALFA_Mode, ALFA_Through_SPARK_Mode,
 	ALFA_Through_Why_Mode, Formal_Verification_Mode, SPARK_Mode):  New
 	functions which return True when the corresponding modes are set
 	(Formal_Language): return "spark" or "alfa" when in formal verification
@@ -6685,7 +6684,7 @@
 	(pos_to_constructor): Likewise.
 
 2011-05-03  Nathan Froyd  <froydnj@codesourcery.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gigi): Call build_function_type_list instead
 	of build_function_type.  Adjust calls to...
@@ -6886,8 +6885,8 @@
 	of incomplete types in this invocation.
 
 2011-04-01  Olivier Hainque  <hainque@adacore.com>
-            Nicolas Setton  <setton@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Nicolas Setton  <setton@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_descriptive_type): New function.
 	(LANG_HOOKS_DESCRIPTIVE_TYPE): Redefine to gnat_descriptive_type.
@@ -7063,7 +7062,7 @@
 	dependency.
 
 2011-01-04  Pascal Obry  <obry@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c: Disable Stdcall convention handling for 64-bit.
 
@@ -7079,7 +7078,7 @@
 	the CICO mechanism.
 
 2011-01-04  Olivier Hainque  <hainque@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (BLOCK_SOURCE_END_LOCATION): Provide default.
 	(set_end_locus_from_node): New function.
@@ -8890,7 +8889,7 @@ notice and this notice are preserved.
 	* sem_util.ads, sem_util.adb, par.adb, par_util.adb
 	(Formal_Error_Msg, Formal_Error_Msg_N, Formal_Error_Msg_SP): move
 	procedures out of these packages.
-	* errout.ads, errout.adb 
+	* errout.ads, errout.adb
 	(Formal_Error_Msg, Formal_Error_Msg_N, Formal_Error_Msg_SP): move
 	procedures in of this package
 	(Formal_Error_Msg_NE): new procedure for wrapper on Error_Msg_NE
@@ -9107,7 +9106,7 @@ notice and this notice are preserved.
 	* debug.adb (d.D) reverve flag for the SPARK mode
 	(d.E) reverve flag for SPARK generation mode
 	(d.F) reverve flag for Why generation mode
-	* opt.ads, opt.adb (ALFA_Mode, ALFA_Through_SPARK_Mode, 
+	* opt.ads, opt.adb (ALFA_Mode, ALFA_Through_SPARK_Mode,
 	ALFA_Through_Why_Mode, Formal_Verification_Mode, SPARK_Mode):  New
 	functions which return True when the corresponding modes are set
 	(Formal_Language): return "spark" or "alfa" when in formal verification
@@ -9877,7 +9876,7 @@ notice and this notice are preserved.
 	(pos_to_constructor): Likewise.
 
 2011-05-03  Nathan Froyd  <froydnj@codesourcery.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gigi): Call build_function_type_list instead
 	of build_function_type.  Adjust calls to...
@@ -10078,8 +10077,8 @@ notice and this notice are preserved.
 	of incomplete types in this invocation.
 
 2011-04-01  Olivier Hainque  <hainque@adacore.com>
-            Nicolas Setton  <setton@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Nicolas Setton  <setton@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_descriptive_type): New function.
 	(LANG_HOOKS_DESCRIPTIVE_TYPE): Redefine to gnat_descriptive_type.
@@ -10255,7 +10254,7 @@ notice and this notice are preserved.
 	dependency.
 
 2011-01-04  Pascal Obry  <obry@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c: Disable Stdcall convention handling for 64-bit.
 
@@ -10271,7 +10270,7 @@ notice and this notice are preserved.
 	the CICO mechanism.
 
 2011-01-04  Olivier Hainque  <hainque@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (BLOCK_SOURCE_END_LOCATION): Provide default.
 	(set_end_locus_from_node): New function.
