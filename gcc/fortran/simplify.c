@@ -6048,8 +6048,6 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
       && gfc_array_size (source, &tmp) == FAILURE)
     gfc_internal_error ("Failure getting length of a constant array.");
 
-  source_size = gfc_target_expr_size (source);
-
   /* Create an empty new expression with the appropriate characteristics.  */
   result = gfc_get_constant_expr (mold->ts.type, mold->ts.kind,
 				  &source->where);

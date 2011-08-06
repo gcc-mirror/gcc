@@ -1,3 +1,11 @@
+2011-08-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50004
+	* target-memory.c (gfc_target_expr-size): Don't clobber typespec
+	for derived types.
+	* simplify.c (gfc_simplify_transfer): Don't calculate source_size
+	twice.
+
 2011-08-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/37211
