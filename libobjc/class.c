@@ -925,7 +925,7 @@ class_getSuperclass (Class class_)
 
   /* Classes that are in construction are not resolved, and still have
      the class name (instead of a class pointer) in the
-     class_->superclass field.  In that case we need to lookup the
+     class_->super_class field.  In that case we need to lookup the
      superclass name to return the superclass.  We can not resolve the
      class until it is registered.  */
   if (CLS_IS_IN_CONSTRUCTION (class_))
