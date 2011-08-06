@@ -1,3 +1,7 @@
+2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/test-expandargv.c (writeout_test): Check result of fwrite.
+
 2011-06-27  Release Manager
 
 	* GCC 4.6.1 released.
@@ -514,7 +518,7 @@
 
 2009-04-29  Julian Brown  <julian@codesourcery.com>
 
-	* pex-win32.c (pex_win32_pipe): Add _O_NOINHERIT.    
+	* pex-win32.c (pex_win32_pipe): Add _O_NOINHERIT.
 	(pex_win32_exec_child): Ensure each process has only one handle open
 	on pipe endpoints. Close standard input after creating child for
 	symmetry with standard output/standard error.
@@ -532,7 +536,7 @@
 	section, so that the native build does detect them at configure
 	time.
 	* configure: Regenerated.
-	
+
 2009-04-13  Ozkan Sezer  <sezeroz@gmail.com>
 
         PR target/39397
@@ -632,7 +636,7 @@
 2008-10-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* xstrdup.c: Include <sys/types.h> after "config.h"
- 
+
 2008-10-07  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* configure.ac: Call AC_SYS_LARGEFILE.
