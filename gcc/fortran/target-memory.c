@@ -120,8 +120,14 @@ gfc_target_expr_size (gfc_expr *e)
     case BT_HOLLERITH:
       return e->representation.length;
     case BT_DERIVED:
-      type = gfc_typenode_for_spec (&e->ts);
-      return int_size_in_bytes (type);
+      {
+	/* Determine type size without clobbering the typespec for ISO C
+	   binding types.  */
+	gfc_typespec ts;
+	ts = e->ts;
+	type = gfc_typenode_for_spec (&ts);
+	return int_size_in_bytes (type);
+      }
     default:
       gfc_internal_error ("Invalid expression in gfc_target_expr_size.");
       return 0;
