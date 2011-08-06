@@ -4834,6 +4834,13 @@ alpha_gp_save_rtx (void)
   return m;
 }
 
+static void
+alpha_instantiate_decls (void)
+{
+  if (cfun->machine->gp_save_rtx != NULL_RTX)
+    instantiate_decl_rtl (cfun->machine->gp_save_rtx);
+}
+
 static int
 alpha_ra_ever_killed (void)
 {
@@ -10817,6 +10824,9 @@ alpha_init_libfuncs (void)
 #define TARGET_GIMPLIFY_VA_ARG_EXPR alpha_gimplify_va_arg
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES alpha_arg_partial_bytes
+
+#undef TARGET_INSTANTIATE_DECLS
+#define TARGET_INSTANTIATE_DECLS alpha_instantiate_decls
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD alpha_secondary_reload
