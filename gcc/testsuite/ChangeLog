@@ -1,5 +1,8 @@
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49921
+	* g++.dg/cpp0x/decltype31.C: New.
+
 	PR c++/49669
 	* g++.dg/init/array28.C: New.
 
