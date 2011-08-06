@@ -7506,7 +7506,17 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 		  {
 		    tree x = get_nth_callarg (t, 0);
 		    if (is_this_parameter (x))
-		      /* OK.  */;
+		      {
+			if (DECL_CONSTRUCTOR_P (DECL_CONTEXT (x)))
+			  {
+			    if (flags & tf_error)
+			      sorry ("calling a member function of the "
+				     "object being constructed in a constant "
+				     "expression");
+			    return false;
+			  }
+			/* Otherwise OK.  */;
+		      }
 		    else if (!potential_constant_expression_1 (x, rval, flags))
 		      {
 			if (flags & tf_error)
