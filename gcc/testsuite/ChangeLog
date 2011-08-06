@@ -1,5 +1,10 @@
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/pr48770.c: Cleanup coverage files.
+	* gfortran.dg/vect/O3-pr49957.f: Cleanup vect tree dump.
+
+2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/sse-22.c (dg-options): Add -march=k8.
 	(pragma GCC target): Add avx, fma4, lzcnt and bmi options.
 	* gcc.target/i386/sse-23.c (pragma GCC target): Add avx, fma4,
