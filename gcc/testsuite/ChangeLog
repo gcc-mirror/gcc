@@ -1,5 +1,10 @@
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR testsuite/48727
+	* g++.dg/opt/devirt2.C: Use specific pattern for alpha*-*-*.
+
+2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.dg/pr48770.c: Cleanup coverage files.
 	* gfortran.dg/vect/O3-pr49957.f: Cleanup vect tree dump.
 
