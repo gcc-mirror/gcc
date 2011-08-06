@@ -1,3 +1,14 @@
+2011-08-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/47766
+	* gcc.dg/pr47766.c: New.
+
+	PR target/47715
+	* gcc.dg/tls/pr47715-1.c: New.
+	* gcc.dg/tls/pr47715-2.c: Likewise.
+	* gcc.dg/tls/pr47715-3.c: Likewise.
+	* gcc.dg/tls/pr47715-4.c: Likewise.
+
 2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/50002
