@@ -1,5 +1,9 @@
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48993
+	* semantics.c (potential_constant_expression_1) [CALL_EXPR]: Sorry
+	on 'this' in a constructor.
+
 	PR c++/49921
 	* semantics.c (finish_decltype_type): Call invalid_nonstatic_memfn_p.
 
