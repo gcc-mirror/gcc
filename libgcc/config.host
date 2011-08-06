@@ -163,7 +163,7 @@ esac
 case ${host} in
 *-*-darwin*)
   asm_hidden_op=.private_extern
-  tmake_file="t-darwin ${cpu_type}/t-darwin t-slibgcc-darwin"
+  tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-slibgcc-darwin"
   extra_parts=crt3.o
   ;;
 *-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
@@ -179,10 +179,10 @@ case ${host} in
   # This is the generic ELF configuration of FreeBSD.  Later
   # machine-specific sections may refine and add to this
   # configuration.
-  tmake_file=t-eh-dw2-dip
+  tmake_file="$tmake_file t-eh-dw2-dip"
   ;;
 *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
-  tmake_file=t-eh-dw2-dip
+  tmake_file="$tmake_file t-eh-dw2-dip"
   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
   ;;
 *-*-netbsd*)
