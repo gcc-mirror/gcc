@@ -1,3 +1,17 @@
+2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/50002
+	* objc.dg/gnu-api-2-class.m: Updated comments.
+	* obj-c++.dg/gnu-api-2-class.mm: Likewise.
+	* objc.dg/gnu-api-2-class-meta.m: New test.
+	* obj-c++.dg/gnu-api-2-class-meta.mm: Likewise.
+	
+2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	PR libobjc/49882
+	* obj-c++.dg/gnu-api-2-class.mm (main): Test class_getSuperclass()
+	with classes that are in construction.
+	
 2011-08-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/48084

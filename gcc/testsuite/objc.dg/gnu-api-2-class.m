@@ -1,6 +1,8 @@
 /* Test the Modern GNU Objective-C Runtime API.
 
-  This is test 'class', covering all functions starting with 'class'.  */
+  This is test 'class', covering all functions starting with 'class'.
+  Tests calling the functions with a meta class as argument are covered
+  in the separate file, gnu-api-2-class-meta.m.  */
 
 /* { dg-do run } */
 /* { dg-skip-if "No API#2 pre-Darwin9" { *-*-darwin[5-8]* } { "-fnext-runtime" } { "" } } */
@@ -401,7 +403,7 @@ int main(int argc, void **args)
 
       if (class_getSuperclass (new_class) != objc_getClass ("MyRootClass"))
 	abort ();
-    }    
+    }
   }
 
   printf ("Testing class_getVersion ()...\n");
