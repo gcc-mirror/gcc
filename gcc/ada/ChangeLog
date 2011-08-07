@@ -1,3 +1,7 @@
+2011-08-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (raise-gcc.o): Fix previous change.
+
 2011-08-05  Nicolas Roche  <roche@adacore.com>
 
 	* gcc-interface/Makefile.in: Don't use directly ../xgcc to build shared
@@ -87,7 +91,7 @@
 
 2011-08-05  Robert Dewar  <dewar@adacore.com>
 
-	* gnat_ugn.texi: Document -gnatyC for J505-006
+	* gnat_ugn.texi: Document -gnatyC.
 	* vms_data.ads: Implement COMMENTS1/COMMENTS2 (retaining COMMENTS as a
 	synonym for COMMENTS2).
 
@@ -141,8 +145,7 @@
 
 2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* gcc-interface/Makefile.in (raise-gcc.o): Search
-	$(srcdir)/../libgcc.
+	* gcc-interface/Makefile.in (raise-gcc.o): Search $(srcdir)/../libgcc.
 
 2011-08-05  Bob Duff  <duff@adacore.com>
 
