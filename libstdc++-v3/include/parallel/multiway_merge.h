@@ -641,10 +641,7 @@ namespace __gnu_parallel
   /** @brief Multi-way merging procedure for a high branching factor,
    *         requiring sentinels to exist.
    *
-   * @param __stable The value must the same as for the used LoserTrees.
-   * @param UnguardedLoserTree _Loser Tree variant to use for the unguarded
-   *   merging.
-   * @param GuardedLoserTree _Loser Tree variant to use for the guarded
+   * @tparam UnguardedLoserTree _Loser Tree variant to use for the unguarded
    *   merging.
    *
    * @param __seqs_begin Begin iterator of iterator pair input sequence.
@@ -911,7 +908,6 @@ namespace __gnu_parallel
    *  @param __comp Comparator.
    *  @param __length Maximum length to merge, possibly larger than the
    *  number of elements available.
-   *  @param __stable Stable merging incurs a performance penalty.
    *  @param __sentinel The sequences have __a __sentinel element.
    *  @return End iterator of output sequence. */
   template<bool __stable,
@@ -1206,7 +1202,9 @@ namespace __gnu_parallel
    *
    * Must not be called if the number of sequences is 1.
    *
-   * @param _Splitter functor to split input (either __exact or sampling based)
+   * @tparam _Splitter functor to split input (either __exact or sampling based)
+   * @tparam __stable Stable merging incurs a performance penalty.
+   * @tparam __sentinel Ignored.
    *
    * @param __seqs_begin Begin iterator of iterator pair input sequence.
    * @param __seqs_end End iterator of iterator pair input sequence.
@@ -1214,8 +1212,6 @@ namespace __gnu_parallel
    * @param __comp Comparator.
    * @param __length Maximum length to merge, possibly larger than the
    * number of elements available.
-   * @param __stable Stable merging incurs a performance penalty.
-   * @param __sentinel Ignored.
    * @return End iterator of output sequence.
    */
   template<bool __stable,
@@ -1396,11 +1392,11 @@ namespace __gnu_parallel
    * @post return __value - __target = min(__length, number of elements in all
    *    sequences).
    *
-   * @param _RAIterPairIterator iterator over sequence
+   * @tparam _RAIterPairIterator iterator over sequence
    *    of pairs of iterators
-   * @param _RAIterOut iterator over target sequence
-   * @param _DifferenceTp difference type for the sequence
-   * @param _Compare strict weak ordering type to compare elements
+   * @tparam _RAIterOut iterator over target sequence
+   * @tparam _DifferenceTp difference type for the sequence
+   * @tparam _Compare strict weak ordering type to compare elements
    *    in sequences
    *
    * @param __seqs_begin  __begin of sequence __sequence
@@ -1760,11 +1756,11 @@ namespace __gnu_parallel
    *
    * @see stable_multiway_merge_sentinels
    *
-   * @param _RAIterPairIterator iterator over sequence
+   * @tparam _RAIterPairIterator iterator over sequence
    *    of pairs of iterators
-   * @param _RAIterOut iterator over target sequence
-   * @param _DifferenceTp difference type for the sequence
-   * @param _Compare strict weak ordering type to compare elements
+   * @tparam _RAIterOut iterator over target sequence
+   * @tparam _DifferenceTp difference type for the sequence
+   * @tparam _Compare strict weak ordering type to compare elements
    *    in sequences
    *
    * @param __seqs_begin  __begin of sequence __sequence

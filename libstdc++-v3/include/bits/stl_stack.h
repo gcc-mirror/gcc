@@ -174,7 +174,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Add data to the top of the %stack.
-       *  @param  x  Data to be added.
+       *  @param  __x  Data to be added.
        *
        *  This is a typical %stack operation.  The function creates an
        *  element at the top of the %stack and assigns the given data
@@ -227,8 +227,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Stack equality comparison.
-   *  @param  x  A %stack.
-   *  @param  y  A %stack of the same type as @a x.
+   *  @param  __x  A %stack.
+   *  @param  __y  A %stack of the same type as @a __x.
    *  @return  True iff the size and elements of the stacks are equal.
    *
    *  This is an equivalence relation.  Complexity and semantics
@@ -244,9 +244,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Stack ordering relation.
-   *  @param  x  A %stack.
-   *  @param  y  A %stack of the same type as @a x.
-   *  @return  True iff @a x is lexicographically less than @a y.
+   *  @param  __x  A %stack.
+   *  @param  __y  A %stack of the same type as @a x.
+   *  @return  True iff @a x is lexicographically less than @a __y.
    *
    *  This is an total ordering relation.  Complexity and semantics
    *  depend on the underlying sequence type, but the expected rules

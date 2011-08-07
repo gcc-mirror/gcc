@@ -226,12 +226,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Opens an external file.
-       *  @param  s  The name of the file.
-       *  @param  mode  The open mode flags.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
        *  @return  @c this on success, NULL on failure
        *
        *  If a file is already open, this function immediately fails.
-       *  Otherwise it tries to open the file named @a s using the flags
+       *  Otherwise it tries to open the file named @a __s using the flags
        *  given in @a mode.
        *
        *  Table 92, adapted here, gives the relation between openmode
@@ -269,8 +269,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Opens an external file.
-       *  @param  s  The name of the file.
-       *  @param  mode  The open mode flags.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
        *  @return  @c this on success, NULL on failure
        */
       __filebuf_type*
@@ -332,12 +332,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Manipulates the buffer.
-       *  @param  s  Pointer to a buffer area.
-       *  @param  n  Size of @a s.
+       *  @param  __s  Pointer to a buffer area.
+       *  @param  __n  Size of @a __s.
        *  @return  @c this
        *
-       *  If no file has been opened, and both @a s and @a n are zero, then
-       *  the stream becomes unbuffered.  Otherwise, @c s is used as a
+       *  If no file has been opened, and both @a __s and @a __n are zero, then
+       *  the stream becomes unbuffered.  Otherwise, @c __s is used as a
        *  buffer; see
        *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25s02.html
        *  for more.
@@ -448,10 +448,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Create an input file stream.
-       *  @param  s  Null terminated string specifying the filename.
-       *  @param  mode  Open file in specified mode (see std::ios_base).
+       *  @param  __s  Null terminated string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
-       *  @c ios_base::in is automatically included in @a mode.
+       *  @c ios_base::in is automatically included in @a __mode.
        *
        *  Tip:  When using std::string to hold the filename, you must use
        *  .c_str() before passing it to this constructor.
@@ -467,10 +467,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Create an input file stream.
-       *  @param  s  std::string specifying the filename.
-       *  @param  mode  Open file in specified mode (see std::ios_base).
+       *  @param  __s  std::string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
-       *  @c ios_base::in is automatically included in @a mode.
+       *  @c ios_base::in is automatically included in @a __mode.
        */
       explicit
       basic_ifstream(const std::string& __s,
@@ -518,10 +518,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Opens an external file.
-       *  @param  s  The name of the file.
-       *  @param  mode  The open mode flags.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
        *
-       *  Calls @c std::basic_filebuf::open(s,mode|in).  If that function
+       *  Calls @c std::basic_filebuf::open(s,__mode|in).  If that function
        *  fails, @c failbit is set in the stream's error state.
        *
        *  Tip:  When using std::string to hold the filename, you must use
@@ -541,10 +541,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Opens an external file.
-       *  @param  s  The name of the file.
-       *  @param  mode  The open mode flags.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
        *
-       *  Calls @c std::basic_filebuf::open(s,mode|in).  If that function
+       *  Calls @c std::basic_filebuf::open(__s,__mode|in).  If that function
        *  fails, @c failbit is set in the stream's error state.
        */
       void
@@ -616,11 +616,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Create an output file stream.
-       *  @param  s  Null terminated string specifying the filename.
-       *  @param  mode  Open file in specified mode (see std::ios_base).
+       *  @param  __s  Null terminated string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
        *  @c ios_base::out|ios_base::trunc is automatically included in
-       *  @a mode.
+       *  @a __mode.
        *
        *  Tip:  When using std::string to hold the filename, you must use
        *  .c_str() before passing it to this constructor.
@@ -637,11 +637,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Create an output file stream.
-       *  @param  s  std::string specifying the filename.
-       *  @param  mode  Open file in specified mode (see std::ios_base).
+       *  @param  __s  std::string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
        *  @c ios_base::out|ios_base::trunc is automatically included in
-       *  @a mode.
+       *  @a __mode.
        */
       explicit
       basic_ofstream(const std::string& __s,
@@ -689,10 +689,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Opens an external file.
-       *  @param  s  The name of the file.
-       *  @param  mode  The open mode flags.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
        *
-       *  Calls @c std::basic_filebuf::open(s,mode|out|trunc).  If that
+       *  Calls @c std::basic_filebuf::open(__s,__mode|out|trunc).  If that
        *  function fails, @c failbit is set in the stream's error state.
        *
        *  Tip:  When using std::string to hold the filename, you must use
@@ -713,8 +713,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Opens an external file.
-       *  @param  s  The name of the file.
-       *  @param  mode  The open mode flags.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
        *
        *  Calls @c std::basic_filebuf::open(s,mode|out|trunc).  If that
        *  function fails, @c failbit is set in the stream's error state.
@@ -791,8 +791,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Create an input/output file stream.
-       *  @param  s  Null terminated string specifying the filename.
-       *  @param  mode  Open file in specified mode (see std::ios_base).
+       *  @param  __s  Null terminated string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
        *  Tip:  When using std::string to hold the filename, you must use
        *  .c_str() before passing it to this constructor.
@@ -809,8 +809,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Create an input/output file stream.
-       *  @param  s  Null terminated string specifying the filename.
-       *  @param  mode  Open file in specified mode (see std::ios_base).
+       *  @param  __s  Null terminated string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
        */
       explicit
       basic_fstream(const std::string& __s,
@@ -858,10 +858,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Opens an external file.
-       *  @param  s  The name of the file.
-       *  @param  mode  The open mode flags.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
        *
-       *  Calls @c std::basic_filebuf::open(s,mode).  If that
+       *  Calls @c std::basic_filebuf::open(__s,__mode).  If that
        *  function fails, @c failbit is set in the stream's error state.
        *
        *  Tip:  When using std::string to hold the filename, you must use
@@ -882,10 +882,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Opens an external file.
-       *  @param  s  The name of the file.
-       *  @param  mode  The open mode flags.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
        *
-       *  Calls @c std::basic_filebuf::open(s,mode).  If that
+       *  Calls @c std::basic_filebuf::open(__s,__mode).  If that
        *  function fails, @c failbit is set in the stream's error state.
        */
       void

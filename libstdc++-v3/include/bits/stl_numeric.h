@@ -73,9 +73,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  For each element in the range @p [first,last) assigns @p value and
    *  increments @p value as if by @p ++value.
    *
-   *  @param  first  Start of range.
-   *  @param  last  End of range.
-   *  @param  value  Starting value.
+   *  @param  __first  Start of range.
+   *  @param  __last  End of range.
+   *  @param  __value  Starting value.
    *  @return  Nothing.
    */
   template<typename _ForwardIterator, typename _Tp>
@@ -111,9 +111,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  Accumulates the values in the range [first,last) using operator+().  The
    *  initial value is @a init.  The values are processed in order.
    *
-   *  @param  first  Start of range.
-   *  @param  last  End of range.
-   *  @param  init  Starting value to add other values to.
+   *  @param  __first  Start of range.
+   *  @param  __last  End of range.
+   *  @param  __init  Starting value to add other values to.
    *  @return  The final sum.
    */
   template<typename _InputIterator, typename _Tp>
@@ -136,10 +136,10 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  object @a binary_op.  The initial value is @a init.  The values are
    *  processed in order.
    *
-   *  @param  first  Start of range.
-   *  @param  last  End of range.
-   *  @param  init  Starting value to add other values to.
-   *  @param  binary_op  Function object to accumulate with.
+   *  @param  __first  Start of range.
+   *  @param  __last  End of range.
+   *  @param  __init  Starting value to add other values to.
+   *  @param  __binary_op  Function object to accumulate with.
    *  @return  The final sum.
    */
   template<typename _InputIterator, typename _Tp, typename _BinaryOperation>
@@ -164,10 +164,10 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  value using operator+().  The values in the ranges are processed in
    *  order.
    *
-   *  @param  first1  Start of range 1.
-   *  @param  last1  End of range 1.
-   *  @param  first2  Start of range 2.
-   *  @param  init  Starting value to add other values to.
+   *  @param  __first1  Start of range 1.
+   *  @param  __last1  End of range 1.
+   *  @param  __first2  Start of range 2.
+   *  @param  __init  Starting value to add other values to.
    *  @return  The final inner product.
    */
   template<typename _InputIterator1, typename _InputIterator2, typename _Tp>
@@ -193,12 +193,12 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  the accumulated value using @a binary_op1.  The values in the ranges are
    *  processed in order.
    *
-   *  @param  first1  Start of range 1.
-   *  @param  last1  End of range 1.
-   *  @param  first2  Start of range 2.
-   *  @param  init  Starting value to add other values to.
-   *  @param  binary_op1  Function object to accumulate with.
-   *  @param  binary_op2  Function object to apply to pairs of input values.
+   *  @param  __first1  Start of range 1.
+   *  @param  __last1  End of range 1.
+   *  @param  __first2  Start of range 2.
+   *  @param  __init  Starting value to add other values to.
+   *  @param  __binary_op1  Function object to accumulate with.
+   *  @param  __binary_op2  Function object to apply to pairs of input values.
    *  @return  The final inner product.
    */
   template<typename _InputIterator1, typename _InputIterator2, typename _Tp,
@@ -228,9 +228,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  first value of the input, the second value in result is the sum of the
    *  first and second input values, and so on.
    *
-   *  @param  first  Start of input range.
-   *  @param  last  End of input range.
-   *  @param  result  Output to write sums to.
+   *  @param  __first  Start of input range.
+   *  @param  __last  End of input range.
+   *  @param  __result  Output to write sums to.
    *  @return  Iterator pointing just beyond the values written to result.
    */
   template<typename _InputIterator, typename _OutputIterator>
@@ -267,9 +267,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  first value of the input, the second value in result is the sum of the
    *  first and second input values, and so on.
    *
-   *  @param  first  Start of input range.
-   *  @param  last  End of input range.
-   *  @param  result  Output to write sums to.
+   *  @param  __first  Start of input range.
+   *  @param  __last  End of input range.
+   *  @param  __result  Output to write sums to.
    *  @return  Iterator pointing just beyond the values written to result.
    */
   template<typename _InputIterator, typename _OutputIterator,
@@ -304,9 +304,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  Computes the difference between adjacent values in the range
    *  [first,last) using operator-() and writes the result to @a result.
    *
-   *  @param  first  Start of input range.
-   *  @param  last  End of input range.
-   *  @param  result  Output to write sums to.
+   *  @param  __first  Start of input range.
+   *  @param  __last  End of input range.
+   *  @param  __result  Output to write sums to.
    *  @return  Iterator pointing just beyond the values written to result.
    *
    *  _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -342,12 +342,12 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @brief  Return differences between adjacent values.
    *
    *  Computes the difference between adjacent values in the range
-   *  [first,last) using the function object @a binary_op and writes the
-   *  result to @a result.
+   *  [__first,__last) using the function object @a __binary_op and writes the
+   *  result to @a __result.
    *
-   *  @param  first  Start of input range.
-   *  @param  last  End of input range.
-   *  @param  result  Output to write sums to.
+   *  @param  __first  Start of input range.
+   *  @param  __last  End of input range.
+   *  @param  __result  Output to write sums to.
    *  @return  Iterator pointing just beyond the values written to result.
    *
    *  _GLIBCXX_RESOLVE_LIB_DEFECTS

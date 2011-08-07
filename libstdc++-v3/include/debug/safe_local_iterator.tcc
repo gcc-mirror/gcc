@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file debug/safe_locale_iterator.tcc
+/** @file debug/safe_local_iterator.tcc
  *  This file is a GNU debug extension to the Standard C++ Library.
  */
 

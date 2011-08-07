@@ -55,7 +55,7 @@ namespace __gnu_debug
     { }
 
     /** Initialize the iterator to reference the container pointed to
-     *  by @p__seq. @p __constant is true when we are initializing a
+     *  by @p __seq. @p __constant is true when we are initializing a
      *  constant local iterator, and false if it is a mutable local iterator.
      *  Note that @p __seq may be NULL, in which case the iterator will be
      *  singular. Otherwise, the iterator will reference @p __seq and

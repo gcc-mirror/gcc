@@ -97,10 +97,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Copies the range [first,last) into result.
-   *  @param  first  An input iterator.
-   *  @param  last   An input iterator.
-   *  @param  result An output iterator.
-   *  @return   result + (first - last)
+   *  @param  __first  An input iterator.
+   *  @param  __last   An input iterator.
+   *  @param  __result An output iterator.
+   *  @return   __result + (__first - __last)
    *
    *  Like copy(), but does not require an initialized output range.
   */
@@ -154,9 +154,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Copies the value x into the range [first,last).
-   *  @param  first  An input iterator.
-   *  @param  last   An input iterator.
-   *  @param  x      The source value.
+   *  @param  __first  An input iterator.
+   *  @param  __last   An input iterator.
+   *  @param  __x      The source value.
    *  @return   Nothing.
    *
    *  Like fill(), but does not require an initialized output range.
@@ -208,9 +208,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Copies the value x into the range [first,first+n).
-   *  @param  first  An input iterator.
-   *  @param  n      The number of copies to make.
-   *  @param  x      The source value.
+   *  @param  __first  An input iterator.
+   *  @param  __n      The number of copies to make.
+   *  @param  __x      The source value.
    *  @return   Nothing.
    *
    *  Like fill_n(), but does not require an initialized output range.
@@ -637,10 +637,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Copies the range [first,first+n) into result.
-   *  @param  first  An input iterator.
-   *  @param  n      The number of elements to copy.
-   *  @param  result An output iterator.
-   *  @return  result + n
+   *  @param  __first  An input iterator.
+   *  @param  __n      The number of elements to copy.
+   *  @param  __result An output iterator.
+   *  @return  __result + __n
    *
    *  Like copy_n(), but does not require an initialized output range.
   */

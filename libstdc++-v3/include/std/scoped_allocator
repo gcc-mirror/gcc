@@ -93,72 +93,84 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _OuterAlloc, typename... _InnerAllocs>
     class scoped_allocator_adaptor;
 
-      template<typename...> struct __inner_type_impl;
+  template<typename...> 
+    struct __inner_type_impl;
 
-      template<typename _Outer>
-      struct __inner_type_impl<_Outer>
-      {
-	typedef scoped_allocator_adaptor<_Outer> __type;
+  template<typename _Outer>
+    struct __inner_type_impl<_Outer>
+    {
+      typedef scoped_allocator_adaptor<_Outer> __type;
 
-        __inner_type_impl() = default;
-        __inner_type_impl(const __inner_type_impl&) = default;
-        __inner_type_impl(__inner_type_impl&&) = default;
+      __inner_type_impl() = default;
+      __inner_type_impl(const __inner_type_impl&) = default;
+      __inner_type_impl(__inner_type_impl&&) = default;
+      
+      template<typename _Alloc>
+      __inner_type_impl(const __inner_type_impl<_Alloc>& __other)
+      { }
+      
+      template<typename _Alloc>
+      __inner_type_impl(__inner_type_impl<_Alloc>&& __other)
+      { }
+      
+      __type& 
+      _M_get(__type* __p) noexcept { return *__p; }
 
-	template<typename _Alloc>
-	  __inner_type_impl(const __inner_type_impl<_Alloc>& __other)
-	  { }
+      const __type& 
+      _M_get(const __type* __p) const noexcept { return *__p; }
+      
+      tuple<> 
+      _M_tie() const noexcept { return tuple<>(); }
+      
+      bool 
+      operator==(const __inner_type_impl&) const noexcept
+      { return true; }
+    };
 
-	template<typename _Alloc>
-	  __inner_type_impl(__inner_type_impl<_Alloc>&& __other)
-	  { }
+  template<typename _Outer, typename _InnerHead, typename... _InnerTail>
+    struct __inner_type_impl<_Outer, _InnerHead, _InnerTail...>
+    {
+      typedef scoped_allocator_adaptor<_InnerHead, _InnerTail...> __type;
+      
+      __inner_type_impl() = default;
+      __inner_type_impl(const __inner_type_impl&) = default;
+      __inner_type_impl(__inner_type_impl&&) = default;
+      
+      template<typename... _Allocs>
+      __inner_type_impl(const __inner_type_impl<_Allocs...>& __other)
+      : _M_inner(__other._M_inner) { }
+      
+      template<typename... _Allocs>
+      __inner_type_impl(__inner_type_impl<_Allocs...>&& __other)
+      : _M_inner(std::move(__other._M_inner)) { }
 
-	__type& _M_get(__type* __p) noexcept { return *__p; }
-	const __type& _M_get(const __type* __p) const noexcept { return *__p; }
+    template<typename... _Args>
+      explicit
+      __inner_type_impl(_Args&&... __args)
+      : _M_inner(std::forward<_Args>(__args)...) { }
 
-	tuple<> _M_tie() const noexcept { return tuple<>(); }
+      __type& 
+      _M_get(void*) noexcept { return _M_inner; }
+      
+      const __type& 
+      _M_get(const void*) const noexcept { return _M_inner; }
+      
+      tuple<const _InnerHead&, const _InnerTail&...> 
+      _M_tie() const noexcept
+      { return _M_inner._M_tie(); }
+      
+      bool 
+      operator==(const __inner_type_impl& __other) const noexcept
+      { return _M_inner == __other._M_inner; }
+      
+    private:
+      template<typename...> friend class __inner_type_impl;
+      template<typename, typename...> friend class scoped_allocator_adaptor;
+      
+      __type _M_inner;
+    };
 
-	bool operator==(const __inner_type_impl&) const noexcept
-        { return true; }
-      };
-
-      template<typename _Outer, typename _InnerHead, typename... _InnerTail>
-      struct __inner_type_impl<_Outer, _InnerHead, _InnerTail...>
-      {
-	typedef scoped_allocator_adaptor<_InnerHead, _InnerTail...> __type;
-
-	__inner_type_impl() = default;
-        __inner_type_impl(const __inner_type_impl&) = default;
-        __inner_type_impl(__inner_type_impl&&) = default;
-
-	template<typename... _Allocs>
-	  __inner_type_impl(const __inner_type_impl<_Allocs...>& __other)
-	  : _M_inner(__other._M_inner) { }
-
-	template<typename... _Allocs>
-	  __inner_type_impl(__inner_type_impl<_Allocs...>&& __other)
-	  : _M_inner(std::move(__other._M_inner)) { }
-
-	template<typename... _Args>
-	  explicit
-	  __inner_type_impl(_Args&&... __args)
-	  : _M_inner(std::forward<_Args>(__args)...) { }
-
-	__type& _M_get(void*) noexcept { return _M_inner; }
-	const __type& _M_get(const void*) const noexcept { return _M_inner; }
-
-	tuple<const _InnerHead&, const _InnerTail&...> _M_tie() const noexcept
-	{ return _M_inner._M_tie(); }
-
-	bool operator==(const __inner_type_impl& __other) const noexcept
-	{ return _M_inner == __other._M_inner; }
-
-      private:
-	template<typename...> friend class __inner_type_impl;
-	template<typename, typename...> friend class scoped_allocator_adaptor;
-
-	__type _M_inner;
-      };
-
+  /// Primary class template.
   template<typename _OuterAlloc, typename... _InnerAllocs>
     class scoped_allocator_adaptor
     : public _OuterAlloc
@@ -180,7 +192,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       
       template<typename _Tp, typename... _Args>
-        void _M_construct(__uses_alloc0, _Tp* __p, _Args&&... __args)
+        void 
+        _M_construct(__uses_alloc0, _Tp* __p, _Args&&... __args)
         {
           auto& __outer = __outermost(*this);
 	  typedef typename std::decay<decltype(__outer)>::type __outer_type;
@@ -192,7 +205,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __uses_alloc2<typename __inner_type::__type> __uses_alloc2_;
 
       template<typename _Tp, typename... _Args>
-        void _M_construct(__uses_alloc1_, _Tp* __p, _Args&&... __args)
+        void 
+        _M_construct(__uses_alloc1_, _Tp* __p, _Args&&... __args)
         {
           auto& __outer = __outermost(*this);
 	  typedef typename std::decay<decltype(__outer)>::type __outer_type;
@@ -202,7 +216,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         }
 
       template<typename _Tp, typename... _Args>
-        void _M_construct(__uses_alloc2_, _Tp* __p, _Args&&... __args)
+        void 
+        _M_construct(__uses_alloc2_, _Tp* __p, _Args&&... __args)
         {
 	  auto& __outer = __outermost(*this);
 	  typedef typename std::decay<decltype(__outer)>::type __outer_type;

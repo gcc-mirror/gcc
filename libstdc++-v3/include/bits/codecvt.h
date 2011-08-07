@@ -104,13 +104,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  output, returns codecvt_base::partial.  Otherwise the
        *  conversion failed and codecvt_base::error is returned.
        *
-       *  @param  state  Persistent conversion state data.
-       *  @param  from  Start of input.
-       *  @param  from_end  End of input.
-       *  @param  from_next  Returns start of unconverted data.
-       *  @param  to  Start of output buffer.
-       *  @param  to_end  End of output buffer.
-       *  @param  to_next  Returns start of unused output area.
+       *  @param  __state  Persistent conversion state data.
+       *  @param  __from  Start of input.
+       *  @param  __from_end  End of input.
+       *  @param  __from_next  Returns start of unconverted data.
+       *  @param  __to  Start of output buffer.
+       *  @param  __to_end  End of output buffer.
+       *  @param  __to_next  Returns start of unused output area.
        *  @return  codecvt_base::result.
       */
       result
@@ -146,10 +146,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  output has insufficient space, returns codecvt_base::partial.
        *  Otherwise the reset failed and codecvt_base::error is returned.
        *
-       *  @param  state  Persistent conversion state data.
-       *  @param  to  Start of output buffer.
-       *  @param  to_end  End of output buffer.
-       *  @param  to_next  Returns start of unused output area.
+       *  @param  __state  Persistent conversion state data.
+       *  @param  __to  Start of output buffer.
+       *  @param  __to_end  End of output buffer.
+       *  @param  __to_next  Returns start of unused output area.
        *  @return  codecvt_base::result.
       */
       result
@@ -184,13 +184,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  output, returns codecvt_base::partial.  Otherwise the
        *  conversion failed and codecvt_base::error is returned.
        *
-       *  @param  state  Persistent conversion state data.
-       *  @param  from  Start of input.
-       *  @param  from_end  End of input.
-       *  @param  from_next  Returns start of unconverted data.
-       *  @param  to  Start of output buffer.
-       *  @param  to_end  End of output buffer.
-       *  @param  to_next  Returns start of unused output area.
+       *  @param  __state  Persistent conversion state data.
+       *  @param  __from  Start of input.
+       *  @param  __from_end  End of input.
+       *  @param  __from_next  Returns start of unconverted data.
+       *  @param  __to  Start of output buffer.
+       *  @param  __to_end  End of output buffer.
+       *  @param  __to_next  Returns start of unused output area.
        *  @return  codecvt_base::result.
       */
       result

@@ -262,8 +262,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief A convenience wrapper for creating a pair from two objects.
-   *  @param  x  The first object.
-   *  @param  y  The second object.
+   *  @param  __x  The first object.
+   *  @param  __y  The second object.
    *  @return   A newly-constructed pair<> object of the appropriate type.
    *
    *  The standard requires that the objects be passed by reference-to-const,

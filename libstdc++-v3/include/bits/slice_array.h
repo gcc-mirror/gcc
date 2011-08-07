@@ -1,7 +1,7 @@
 // The template and inlines for the -*- C++ -*- slice_array class.
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2009,
-// 2010  Free Software Foundation, Inc.
+// 2010, 2011  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,11 +66,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /**
      *  @brief  Construct a slice.
      *
-     *  @param  o  Offset in array of first element.
-     *  @param  d  Number of elements in slice.
-     *  @param  s  Stride between array elements.
+     *  @param  __o  Offset in array of first element.
+     *  @param  __d  Number of elements in slice.
+     *  @param  __s  Stride between array elements.
      */
-    slice(size_t, size_t, size_t);
+    slice(size_t __o, size_t __d, size_t __s);
 
     ///  Return array offset of first slice element.
     size_t start() const;

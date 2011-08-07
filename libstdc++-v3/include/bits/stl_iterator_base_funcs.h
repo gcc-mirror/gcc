@@ -98,12 +98,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief A generalization of pointer arithmetic.
-   *  @param  first  An input iterator.
-   *  @param  last  An input iterator.
+   *  @param  __first  An input iterator.
+   *  @param  __last  An input iterator.
    *  @return  The distance between them.
    *
-   *  Returns @c n such that first + n == last.  This requires that @p last
-   *  must be reachable from @p first.  Note that @c n may be negative.
+   *  Returns @c n such that __first + n == __last.  This requires
+   *  that @p __last must be reachable from @p __first.  Note that @c
+   *  n may be negative.
    *
    *  For random access iterators, this uses their @c + and @c - operations
    *  and are constant time.  For other %iterator classes they are linear time.
@@ -156,12 +157,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief A generalization of pointer arithmetic.
-   *  @param  i  An input iterator.
-   *  @param  n  The @a delta by which to change @p i.
+   *  @param  __i  An input iterator.
+   *  @param  __n  The @a delta by which to change @p __i.
    *  @return  Nothing.
    *
    *  This increments @p i by @p n.  For bidirectional and random access
-   *  iterators, @p n may be negative, in which case @p i is decremented.
+   *  iterators, @p __n may be negative, in which case @p __i is decremented.
    *
    *  For random access iterators, this uses their @c + and @c - operations
    *  and are constant time.  For other %iterator classes they are linear time.

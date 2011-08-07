@@ -44,7 +44,7 @@ namespace __gnu_parallel
    *  @brief Precalculate __advances for Knuth-Morris-Pratt algorithm.
    *  @param __elements Begin iterator of sequence to search for.
    *  @param __length Length of sequence to search for.
-   *  @param __advances Returned __offsets. 
+   *  @param __off Returned __offsets. 
    */
   template<typename _RAIter, typename _DifferenceTp>
     void

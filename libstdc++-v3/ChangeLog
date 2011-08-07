@@ -1,3 +1,88 @@
+2011-08-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PDF_HYPERLINKS): To NO.
+
+2011-08-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Add scoped_allocator.
+
+	* include/debug/safe_sequence.h: Fix doxygen markup.
+	* include/debug/safe_unordered_base.h: Same.
+	* include/debug/safe_local_iterator.tcc: Same.
+	* include/debug/safe_unordered_container.h: Same.
+	* include/std/valarray: Same.
+	* include/std/iomanip: Same.
+	* include/std/streambuf: Same.
+	* include/std/bitset: Same.
+	* include/std/fstream: Same.
+	* include/std/functional: Same.
+	* include/std/istream: Same.
+	* include/std/ostream: Same.
+	* include/std/scoped_allocator: Same.
+	* include/std/sstream: Same.
+	* include/parallel/multiway_merge.h: Same.
+	* include/parallel/base.h: Same.
+	* include/parallel/for_each_selectors.h: Same.
+	* include/parallel/multiway_mergesort.h: Same.
+	* include/parallel/search.h: Same.
+	* include/parallel/partial_sum.h: Same.
+	* include/parallel/queue.h: Same.
+	* include/parallel/sort.h: Same.
+	* include/parallel/random_number.h: Same.
+	* include/ext/vstring.h: Same.
+	* include/ext/algorithm: Same.
+	* include/ext/pb_ds/assoc_container.h: Same.
+	* include/ext/bitmap_allocator.h: Same.
+	* include/ext/stdio_filebuf.h: Same.
+	* include/ext/memory: Same.
+	* include/ext/functional: Same.
+	* include/bits/basic_ios.h: Same.
+	* include/bits/stl_list.h: Same.
+	* include/bits/stl_map.h: Same.
+	* include/bits/stl_algobase.h: Same.
+	* include/bits/stl_queue.h: Same.
+	* include/bits/gslice.h: Same.
+	* include/bits/locale_classes.h: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/bits/stl_stack.h: Same.
+	* include/bits/stl_heap.h: Same.
+	* include/bits/forward_list.h: Same.
+	* include/bits/stream_iterator.h: Same.
+	* include/bits/basic_string.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/stl_pair.h: Same.
+	* include/bits/ios_base.h: Same.
+	* include/bits/stl_numeric.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/codecvt.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/stl_uninitialized.h: Same.
+	* include/bits/ptr_traits.h: Same.
+	* include/bits/slice_array.h: Same.
+	* include/bits/stl_iterator_base_funcs.h: Same.
+	* include/bits/stl_algo.h: Same.
+	* include/bits/stl_iterator.h: Same.
+	* include/bits/stl_tempbuf.h: Same.
+	* include/bits/regex.h: Same.
+	* include/bits/range_access.h: Same.
+	* include/bits/random.h: Same.
+	* include/bits/alloc_traits.h: Same.
+	* include/bits/regex_error.h: Same.
+	* include/bits/locale_facets_nonio.h: Same.
+	* include/bits/stl_relops.h: Same.
+	* include/backward/auto_ptr.h: Same.
+	* libsupc++/initializer_list: Same.
+
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust line numbers.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Same.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Same.
+
 2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* acinclude.m4 (GLIBCXX_EXPORT_INCLUDES): Point TOPLEVEL_INCLUDES

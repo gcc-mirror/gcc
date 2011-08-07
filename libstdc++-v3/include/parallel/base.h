@@ -365,7 +365,7 @@ namespace __gnu_parallel
       typedef _PseudoSequenceIterator<_Tp, uint64_t> iterator;
 
       /** @brief Constructor.
-       *  @param _M_val Element of the sequence.
+       *  @param __val Element of the sequence.
        *  @param __count Number of (virtual) copies.
        */
       _PseudoSequence(const _Tp& __val, _DifferenceType __count)

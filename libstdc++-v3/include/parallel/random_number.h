@@ -104,7 +104,7 @@ namespace __gnu_parallel
     }
 
     /** @brief Generate a number of random bits, run-time parameter.
-     *  @param bits Number of bits to generate. */
+     *  @param __bits Number of bits to generate. */
     unsigned long
     __genrand_bits(int __bits)
     {

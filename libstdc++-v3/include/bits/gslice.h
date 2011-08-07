@@ -1,7 +1,7 @@
 // The template and inlines for the -*- C++ -*- gslice class.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2004, 2005, 2006, 2009, 2010
-// Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2004, 2005, 2006, 2009, 2010, 
+// 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -74,11 +74,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  Constructs a slice with as many dimensions as the length of the @a l
      *  and @a s arrays.
      *
-     *  @param  o  Offset in array of first element.
-     *  @param  l  Array of dimension lengths.
-     *  @param  s  Array of dimension strides between array elements.
+     *  @param  __o  Offset in array of first element.
+     *  @param  __l  Array of dimension lengths.
+     *  @param  __s  Array of dimension strides between array elements.
      */
-    gslice(size_t, const valarray<size_t>&, const valarray<size_t>&);
+    gslice(size_t __o, const valarray<size_t>& __l, 
+	   const valarray<size_t>& __s);
 
     // XXX: the IS says the copy-ctor and copy-assignment operators are
     //      synthesized by the compiler but they are just unsuitable
