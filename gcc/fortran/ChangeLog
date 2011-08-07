@@ -1,4 +1,13 @@
 2011-08-07  Janus Weil  <janus@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/49638
+	* dependency.c (are_identical_variables): For dummy arguments only
+	check for equal names, not equal symbols.
+	* interface.c (gfc_check_typebound_override): Add checking for rank
+	and character length.
+
+2011-08-07  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49638
 	* dependency.h (gfc_is_same_range,gfc_are_identical_variables): Remove
