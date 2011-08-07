@@ -10,6 +10,13 @@ struct a
   int Y;
 };
 
+/* Word size is long long for 64-bit mingw target.  */
+#ifdef _WIN64
+#define LONG long long
+#else
+#define LONG long
+#endif
+
 struct a arr[100];
 
 void test1(int b)
@@ -36,7 +43,7 @@ void test2(struct a *A, int b)
     }
 }
 
-void test3(unsigned long b)
+void test3(unsigned LONG b)
 {
   unsigned i;
 
@@ -48,7 +55,7 @@ void test3(unsigned long b)
     }
 }
 
-void test4(struct a *A, unsigned long b)
+void test4(struct a *A, unsigned LONG b)
 {
   unsigned i;
 

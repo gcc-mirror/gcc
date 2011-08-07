@@ -1,3 +1,18 @@
+2011-08-07  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/tree-ssa/pr23455.c: Adjust testcases for LLP64 for
+	x86_64 mingw target.
+	* gcc.dg/tree-ssa/loop-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-store-ccp-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-store-ccp-3.c: Likewise.
+	* gcc.dg/tree-ssa/loop-33.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-store-ccp-4.c: Likewise.
+	* gcc.dg/tree-ssa/loop-35.c: Likewise.
+	* gcc.dg/tree-ssa/stdarg-2.c: Likewise.
+	* gcc.dg/tree-ssa/stdarg-4.c: Likewise.
+	* gcc.dg/tree-ssa/stdarg-5.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-11c.c: Likewise.
+
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/48727
