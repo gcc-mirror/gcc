@@ -207,8 +207,8 @@ _GLIBCXX_HAS_NESTED_TYPE(difference_type)
 
       /**
        *  @brief  Obtain a pointer to an object
-       *  @param  r  A reference to an object of type @c element_type
-       *  @return @c addressof(r)
+       *  @param  __r  A reference to an object of type @c element_type
+       *  @return @c addressof(__r)
       */
       static pointer
       pointer_to(typename __ptrtr_not_void<element_type>::__type& __r) noexcept

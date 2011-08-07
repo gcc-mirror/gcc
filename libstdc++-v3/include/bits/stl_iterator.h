@@ -272,8 +272,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   //@{
   /**
-   *  @param  x  A %reverse_iterator.
-   *  @param  y  A %reverse_iterator.
+   *  @param  __x  A %reverse_iterator.
+   *  @param  __y  A %reverse_iterator.
    *  @return  A simple bool.
    *
    *  Reverse iterators forward many operations to their underlying base()
@@ -408,7 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       back_insert_iterator(_Container& __x) : container(&__x) { }
 
       /**
-       *  @param  value  An instance of whatever type
+       *  @param  __value  An instance of whatever type
        *                 container_type::const_reference is; presumably a
        *                 reference-to-const T for container<T>.
        *  @return  This %iterator, for chained operations.
@@ -458,8 +458,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /**
-   *  @param  x  A container of arbitrary type.
-   *  @return  An instance of back_insert_iterator working on @p x.
+   *  @param  __x  A container of arbitrary type.
+   *  @return  An instance of back_insert_iterator working on @p __x.
    *
    *  This wrapper function helps in creating back_insert_iterator instances.
    *  Typing the name of the %iterator requires knowing the precise full
@@ -498,7 +498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit front_insert_iterator(_Container& __x) : container(&__x) { }
 
       /**
-       *  @param  value  An instance of whatever type
+       *  @param  __value  An instance of whatever type
        *                 container_type::const_reference is; presumably a
        *                 reference-to-const T for container<T>.
        *  @return  This %iterator, for chained operations.
@@ -548,7 +548,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /**
-   *  @param  x  A container of arbitrary type.
+   *  @param  __x  A container of arbitrary type.
    *  @return  An instance of front_insert_iterator working on @p x.
    *
    *  This wrapper function helps in creating front_insert_iterator instances.
@@ -597,7 +597,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : container(&__x), iter(__i) {}
 
       /**
-       *  @param  value  An instance of whatever type
+       *  @param  __value  An instance of whatever type
        *                 container_type::const_reference is; presumably a
        *                 reference-to-const T for container<T>.
        *  @return  This %iterator, for chained operations.
@@ -662,8 +662,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /**
-   *  @param  x  A container of arbitrary type.
-   *  @return  An instance of insert_iterator working on @p x.
+   *  @param __x  A container of arbitrary type.
+   *  @return  An instance of insert_iterator working on @p __x.
    *
    *  This wrapper function helps in creating insert_iterator instances.
    *  Typing the name of the %iterator requires knowing the precise full

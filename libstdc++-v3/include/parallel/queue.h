@@ -64,7 +64,7 @@ namespace __gnu_parallel
 
     public:
       /** @brief Constructor. Not to be called concurrent, of course.
-       *  @param _M_max_size Maximal number of elements to be contained. */
+       *  @param __max_size Maximal number of elements to be contained. */
       _RestrictedBoundedConcurrentQueue(_SequenceIndex __max_size)
       {
         _M_max_size = __max_size;

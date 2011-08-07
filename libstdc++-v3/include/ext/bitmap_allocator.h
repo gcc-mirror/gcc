@@ -59,7 +59,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
      *  It is to be used only for built-in types or PODs. Notable
      *  differences are:
      * 
-     *  @detail
      *  1. Not all accessor functions are present.
      *  2. Used ONLY for PODs.
      *  3. No Allocator template argument. Uses ::operator new() to get
@@ -560,7 +559,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  @param  __addr The pointer to the memory block to be
      *  validated.
      *
-     *  @detail  Validates the memory block passed to this function and
+     *  Validates the memory block passed to this function and
      *  appropriately performs the action of managing the free list of
      *  blocks by adding this block to the free list or deleting this
      *  or larger blocks from the free list.
@@ -757,7 +756,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  @throw  std::bad_alloc. If memory can not be allocated.
        *
-       *  @detail  Complexity: O(1), but internally depends upon the
+       *  Complexity: O(1), but internally depends upon the
        *  complexity of the function free_list::_M_get. The part where
        *  the bitmap headers are written has complexity: O(X),where X
        *  is the number of blocks of size sizeof(value_type) within
@@ -813,7 +812,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  @throw  std::bad_alloc. If memory can not be allocated.
        *
-       *  @detail  Complexity: Worst case complexity is O(N), but that
+       *  Complexity: Worst case complexity is O(N), but that
        *  is hardly ever hit. If and when this particular case is
        *  encountered, the next few cases are guaranteed to have a
        *  worst case complexity of O(1)!  That's why this function
@@ -906,7 +905,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /** @brief  Deallocates memory that belongs to a single object of
        *  size sizeof(_Tp).
        *
-       *  @detail  Complexity: O(lg(N)), but the worst case is not hit
+       *  Complexity: O(lg(N)), but the worst case is not hit
        *  often!  This is because containers usually deallocate memory
        *  close to each other and this case is handled in O(1) time by
        *  the deallocate function.

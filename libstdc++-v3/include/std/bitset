@@ -831,10 +831,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Use a subset of a string.
-       *  @param  s  A string of @a 0 and @a 1 characters.
-       *  @param  position  Index of the first character in @a s to use;
+       *  @param  __s  A string of @a 0 and @a 1 characters.
+       *  @param  __position  Index of the first character in @a __s to use;
        *                    defaults to zero.
-       *  @throw  std::out_of_range  If @a pos is bigger the size of @a s.
+       *  @throw  std::out_of_range  If @a pos is bigger the size of @a __s.
        *  @throw  std::invalid_argument  If a character appears in the string
        *                                 which is neither @a 0 nor @a 1.
        */
@@ -854,10 +854,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Use a subset of a string.
-       *  @param  s  A string of @a 0 and @a 1 characters.
-       *  @param  position  Index of the first character in @a s to use.
-       *  @param  n    The number of characters to copy.
-       *  @throw  std::out_of_range  If @a pos is bigger the size of @a s.
+       *  @param  __s  A string of @a 0 and @a 1 characters.
+       *  @param  __position  Index of the first character in @a __s to use.
+       *  @param  __n    The number of characters to copy.
+       *  @throw std::out_of_range If @a __position is bigger the size
+       *  of @a __s.
        *  @throw  std::invalid_argument  If a character appears in the string
        *                                 which is neither @a 0 nor @a 1.
        */
@@ -889,12 +890,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Construct from a character %array.
-       *  @param  str  An %array of characters @a zero and @a one.
-       *  @param  n    The number of characters to use.
-       *  @param  zero The character corresponding to the value 0.
-       *  @param  one  The character corresponding to the value 1.
-       *  @throw  std::invalid_argument  If a character appears in the string
-       *                                 which is neither @a zero nor @a one.
+       *  @param  __str  An %array of characters @a zero and @a one.
+       *  @param  __n    The number of characters to use.
+       *  @param  __zero The character corresponding to the value 0.
+       *  @param  __one  The character corresponding to the value 1.
+       *  @throw  std::invalid_argument If a character appears in the string
+       *                                which is neither @a __zero nor @a __one.
        */
       template<typename _CharT>
         explicit
@@ -919,7 +920,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       //@{
       /**
        *  @brief  Operations on bitsets.
-       *  @param  rhs  A same-sized bitset.
+       *  @param  __rhs  A same-sized bitset.
        *
        *  These should be self-explanatory.
        */
@@ -948,7 +949,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       //@{
       /**
        *  @brief  Operations on bitsets.
-       *  @param  position  The number of places to shift.
+       *  @param  __position  The number of places to shift.
        *
        *  These should be self-explanatory.
        */
@@ -1036,8 +1037,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Sets a given bit to a particular value.
-       *  @param  position  The index of the bit.
-       *  @param  val  Either true or false, defaults to true.
+       *  @param  __position  The index of the bit.
+       *  @param  __val  Either true or false, defaults to true.
        *  @throw  std::out_of_range  If @a pos is bigger the size of the %set.
        */
       bitset<_Nb>&
@@ -1060,7 +1061,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Sets a given bit to false.
-       *  @param  position  The index of the bit.
+       *  @param  __position  The index of the bit.
        *  @throw  std::out_of_range  If @a pos is bigger the size of the %set.
        *
        *  Same as writing @c set(pos,false).
@@ -1086,7 +1087,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Toggles a given bit to its opposite value.
-       *  @param  position  The index of the bit.
+       *  @param  __position  The index of the bit.
        *  @throw  std::out_of_range  If @a pos is bigger the size of the %set.
        */
       bitset<_Nb>&
@@ -1105,7 +1106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       //@{
       /**
        *  @brief  Array-indexing support.
-       *  @param  position  Index into the %bitset.
+       *  @param  __position  Index into the %bitset.
        *  @return A bool for a <em>const %bitset</em>.  For non-const
        *           bitsets, an instance of the reference proxy class.
        *  @note  These operators do no range checking and throw no exceptions,
@@ -1271,7 +1272,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       
       /**
        *  @brief Tests the value of a bit.
-       *  @param  position  The index of a bit.
+       *  @param  __position  The index of a bit.
        *  @return  The value at @a pos.
        *  @throw  std::out_of_range  If @a pos is bigger the size of the %set.
        */
@@ -1333,7 +1334,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Finds the index of the next "on" bit after prev.
        *  @return  The index of the next bit set, or size() if not found.
-       *  @param  prev  Where to start searching.
+       *  @param  __prev  Where to start searching.
        *  @ingroup SGIextensions
        *  @sa  _Find_first
        */
@@ -1381,8 +1382,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   //@{
   /**
    *  @brief  Global bitwise operations on bitsets.
-   *  @param  x  A bitset.
-   *  @param  y  A bitset of the same size as @a x.
+   *  @param  __x  A bitset.
+   *  @param  __y  A bitset of the same size as @a __x.
    *  @return  A new bitset.
    *
    *  These should be self-explanatory.

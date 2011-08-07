@@ -159,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       //@{
       /**
        *  @brief  Basic arithmetic extractors
-       *  @param  A variable of builtin type.
+       *  @param  __n, __f, __p: A variable of builtin type.
        *  @return  @c *this if successful
        *
        *  These functions use the stream's current locale (specifically, the
@@ -219,13 +219,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Extracting into another streambuf.
-       *  @param  sb  A pointer to a streambuf
+       *  @param  __sb  A pointer to a streambuf
        *
        *  This function behaves like one of the basic arithmetic extractors,
        *  in that it also constructs a sentry object and has the same error
        *  handling behavior.
        *
-       *  If @a sb is NULL, the stream will set failbit in its error state.
+       *  If @a __sb is NULL, the stream will set failbit in its error state.
        *
        *  Characters are extracted from this stream and inserted into the
        *  @a sb streambuf until one of the following occurs:
@@ -284,10 +284,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Simple extraction.
-       *  @param  c  The character in which to store data.
+       *  @param  __c  The character in which to store data.
        *  @return  *this
        *
-       *  Tries to extract a character and store it in @a c.  If none are
+       *  Tries to extract a character and store it in @a __c.  If none are
        *  available, sets failbit and returns traits::eof().
        *
        *  @note  This function is not overloaded on signed char and
@@ -298,17 +298,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Simple multiple-character extraction.
-       *  @param  s  Pointer to an array.
-       *  @param  n  Maximum number of characters to store in @a s.
-       *  @param  delim  A "stop" character.
+       *  @param  __s  Pointer to an array.
+       *  @param  __n  Maximum number of characters to store in @a __s.
+       *  @param  __delim  A "stop" character.
        *  @return  *this
        *
-       *  Characters are extracted and stored into @a s until one of the
+       *  Characters are extracted and stored into @a __s until one of the
        *  following happens:
        *
-       *  - @c n-1 characters are stored
+       *  - @c __n-1 characters are stored
        *  - the input sequence reaches EOF
-       *  - the next character equals @a delim, in which case the character
+       *  - the next character equals @a __delim, in which case the character
        *    is not extracted
        *
        * If no characters are stored, failbit is set in the stream's error
@@ -325,11 +325,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Simple multiple-character extraction.
-       *  @param  s  Pointer to an array.
-       *  @param  n  Maximum number of characters to store in @a s.
+       *  @param  __s  Pointer to an array.
+       *  @param  __n  Maximum number of characters to store in @a s.
        *  @return  *this
        *
-       *  Returns @c get(s,n,widen(&apos;\\n&apos;)).
+       *  Returns @c get(__s,__n,widen(&apos;\\n&apos;)).
       */
       __istream_type& 
       get(char_type* __s, streamsize __n)
@@ -337,17 +337,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Extraction into another streambuf.
-       *  @param  sb  A streambuf in which to store data.
-       *  @param  delim  A "stop" character.
+       *  @param  __sb  A streambuf in which to store data.
+       *  @param  __delim  A "stop" character.
        *  @return  *this
        *
-       *  Characters are extracted and inserted into @a sb until one of the
+       *  Characters are extracted and inserted into @a __sb until one of the
        *  following happens:
        *
        *  - the input sequence reaches EOF
        *  - insertion into the output buffer fails (in this case, the
        *    character that would have been inserted is not extracted)
-       *  - the next character equals @a delim (in this case, the character
+       *  - the next character equals @a __delim (in this case, the character
        *    is not extracted)
        *  - an exception occurs (and in this case is caught)
        *
@@ -359,10 +359,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Extraction into another streambuf.
-       *  @param  sb  A streambuf in which to store data.
+       *  @param  __sb  A streambuf in which to store data.
        *  @return  *this
        *
-       *  Returns @c get(sb,widen(&apos;\\n&apos;)).
+       *  Returns @c get(__sb,widen(&apos;\\n&apos;)).
       */
       __istream_type&
       get(__streambuf_type& __sb)
@@ -370,21 +370,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  String extraction.
-       *  @param  s  A character array in which to store the data.
-       *  @param  n  Maximum number of characters to extract.
-       *  @param  delim  A "stop" character.
+       *  @param  __s  A character array in which to store the data.
+       *  @param  __n  Maximum number of characters to extract.
+       *  @param  __delim  A "stop" character.
        *  @return  *this
        *
-       *  Extracts and stores characters into @a s until one of the
+       *  Extracts and stores characters into @a __s until one of the
        *  following happens.  Note that these criteria are required to be
        *  tested in the order listed here, to allow an input line to exactly
-       *  fill the @a s array without setting failbit.
+       *  fill the @a __s array without setting failbit.
        *
        *  -# the input sequence reaches end-of-file, in which case eofbit
        *     is set in the stream error state
-       *  -# the next character equals @c delim, in which case the character
+       *  -# the next character equals @c __delim, in which case the character
        *     is extracted (and therefore counted in @c gcount()) but not stored
-       *  -# @c n-1 characters are stored, in which case failbit is set
+       *  -# @c __n-1 characters are stored, in which case failbit is set
        *     in the stream error state
        *
        *  If no characters are extracted, failbit is set.  (An empty line of
@@ -398,11 +398,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  String extraction.
-       *  @param  s  A character array in which to store the data.
-       *  @param  n  Maximum number of characters to extract.
+       *  @param  __s  A character array in which to store the data.
+       *  @param  __n  Maximum number of characters to extract.
        *  @return  *this
        *
-       *  Returns @c getline(s,n,widen(&apos;\\n&apos;)).
+       *  Returns @c getline(__s,__n,widen(&apos;\\n&apos;)).
       */
       __istream_type& 
       getline(char_type* __s, streamsize __n)
@@ -410,18 +410,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Discarding characters
-       *  @param  n  Number of characters to discard.
-       *  @param  delim  A "stop" character.
+       *  @param  __n  Number of characters to discard.
+       *  @param  __delim  A "stop" character.
        *  @return  *this
        *
        *  Extracts characters and throws them away until one of the
        *  following happens:
-       *  - if @a n @c != @c std::numeric_limits<int>::max(), @a n
+       *  - if @a __n @c != @c std::numeric_limits<int>::max(), @a __n
        *    characters are extracted
        *  - the input sequence reaches end-of-file
-       *  - the next character equals @a delim (in this case, the character
+       *  - the next character equals @a __delim (in this case, the character
        *    is extracted); note that this condition will never occur if
-       *    @a delim equals @c traits::eof().
+       *    @a __delim equals @c traits::eof().
        *
        *  NB: Provide three overloads, instead of the single function
        *  (with defaults) mandated by the Standard: this leads to a
@@ -429,14 +429,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the Standard.
       */
       __istream_type& 
-      ignore();
+      ignore(streamsize __n, int_type __delim);
 
       __istream_type& 
       ignore(streamsize __n);
 
       __istream_type& 
-      ignore(streamsize __n, int_type __delim);
-      
+      ignore();
+
       /**
        *  @brief  Looking ahead in the stream
        *  @return  The next character, or eof().
@@ -450,13 +450,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       
       /**
        *  @brief  Extraction without delimiters.
-       *  @param  s  A character array.
-       *  @param  n  Maximum number of characters to store.
+       *  @param  __s  A character array.
+       *  @param  __n  Maximum number of characters to store.
        *  @return  *this
        *
        *  If the stream state is @c good(), extracts characters and stores
-       *  them into @a s until one of the following happens:
-       *  - @a n characters are stored
+       *  them into @a __s until one of the following happens:
+       *  - @a __n characters are stored
        *  - the input sequence reaches end-of-file, in which case the error
        *    state is set to @c failbit|eofbit.
        *
@@ -468,11 +468,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Extraction until the buffer is exhausted, but no more.
-       *  @param  s  A character array.
-       *  @param  n  Maximum number of characters to store.
+       *  @param  __s  A character array.
+       *  @param  __n  Maximum number of characters to store.
        *  @return  The number of characters extracted.
        *
-       *  Extracts characters and stores them into @a s depending on the
+       *  Extracts characters and stores them into @a __s depending on the
        *  number of characters remaining in the streambuf's buffer,
        *  @c rdbuf()->in_avail(), called @c A here:
        *  - if @c A @c == @c -1, sets eofbit and extracts no characters
@@ -487,7 +487,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       
       /**
        *  @brief  Unextracting a single character.
-       *  @param  c  The character to push back into the input stream.
+       *  @param  __c  The character to push back into the input stream.
        *  @return  *this
        *
        *  If @c rdbuf() is not null, calls @c rdbuf()->sputbackc(c).
@@ -553,10 +553,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Changing the current read position.
-       *  @param  pos  A file position object.
+       *  @param  __pos  A file position object.
        *  @return  *this
        *
-       *  If @c fail() is not true, calls @c rdbuf()->pubseekpos(pos).  If
+       *  If @c fail() is not true, calls @c rdbuf()->pubseekpos(__pos).  If
        *  that function fails, sets failbit.
        *
        *  @note  This function first clears eofbit.  It does not count the
@@ -568,11 +568,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Changing the current read position.
-       *  @param  off  A file offset object.
-       *  @param  dir  The direction in which to seek.
+       *  @param  __off  A file offset object.
+       *  @param  __dir  The direction in which to seek.
        *  @return  *this
        *
-       *  If @c fail() is not true, calls @c rdbuf()->pubseekoff(off,dir).
+       *  If @c fail() is not true, calls @c rdbuf()->pubseekoff(__off,__dir).
        *  If that function fails, sets failbit.
        *
        *  @note  This function first clears eofbit.  It does not count the
@@ -650,10 +650,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  The constructor performs all the work.
-       *  @param  is  The input stream to guard.
-       *  @param  noskipws  Whether to consume whitespace or not.
+       *  @param  __is  The input stream to guard.
+       *  @param  __noskipws  Whether to consume whitespace or not.
        *
-       *  If the stream state is good (@a is.good() is true), then the
+       *  If the stream state is good (@a __is.good() is true), then the
        *  following actions are performed, otherwise the sentry state
        *  is false (<em>not okay</em>) and failbit is set in the
        *  stream state.
@@ -662,7 +662,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  -# if the stream is tied to an output stream, @c is.tie()->flush()
        *     is called to synchronize the output sequence
-       *  -# if @a noskipws is false, and @c ios_base::skipws is set in
+       *  -# if @a __noskipws is false, and @c ios_base::skipws is set in
        *     @c is.flags(), the sentry extracts and discards whitespace
        *     characters from the stream.  The currently imbued locale is
        *     used to determine whether each character is whitespace.
@@ -691,14 +691,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //@{
   /**
    *  @brief  Character extractors
-   *  @param  in  An input stream.
-   *  @param  c  A character reference.
+   *  @param  __in  An input stream.
+   *  @param  __c  A character reference.
    *  @return  in
    *
    *  Behaves like one of the formatted arithmetic extractors described in
    *  std::basic_istream.  After constructing a sentry object with good
    *  status, this function extracts a character (if one is available) and
-   *  stores it in @a c.  Otherwise, sets failbit in the input stream.
+   *  stores it in @a __c.  Otherwise, sets failbit in the input stream.
   */
   template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>&
@@ -718,14 +718,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //@{
   /**
    *  @brief  Character string extractors
-   *  @param  in  An input stream.
-   *  @param  s  A pointer to a character array.
-   *  @return  in
+   *  @param  __in  An input stream.
+   *  @param  __s  A pointer to a character array.
+   *  @return  __in
    *
    *  Behaves like one of the formatted arithmetic extractors described in
    *  std::basic_istream.  After constructing a sentry object with good
    *  status, this function extracts up to @c n characters and stores them
-   *  into the array starting at @a s.  @c n is defined as:
+   *  into the array starting at @a __s.  @c n is defined as:
    *
    *  - if @c width() is greater than zero, @c n is width() otherwise
    *  - @c n is <em>the number of elements of the largest array of *
@@ -839,8 +839,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // [27.7.1.6] Rvalue stream extraction
   /**
    *  @brief  Generic extractor for rvalue stream
-   *  @param  is  An input stream.
-   *  @param  x  A reference to the extraction target.
+   *  @param  __is  An input stream.
+   *  @param  __x  A reference to the extraction target.
    *  @return  is
    *
    *  This is just a forwarding function to allow extraction from

@@ -245,7 +245,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Creates a %vector with no elements.
-       *  @param  a  An allocator object.
+       *  @param  __a  An allocator object.
        */
       explicit
       vector(const allocator_type& __a)
@@ -254,9 +254,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Creates a %vector with default constructed elements.
-       *  @param  n  The number of elements to initially create.
+       *  @param  __n  The number of elements to initially create.
        *
-       *  This constructor fills the %vector with @a n default
+       *  This constructor fills the %vector with @a __n default
        *  constructed elements.
        */
       explicit
@@ -266,11 +266,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Creates a %vector with copies of an exemplar element.
-       *  @param  n  The number of elements to initially create.
-       *  @param  value  An element to copy.
-       *  @param  a  An allocator.
+       *  @param  __n  The number of elements to initially create.
+       *  @param  __value  An element to copy.
+       *  @param  __a  An allocator.
        *
-       *  This constructor fills the %vector with @a n copies of @a value.
+       *  This constructor fills the %vector with @a __n copies of @a __value.
        */
       vector(size_type __n, const value_type& __value,
 	     const allocator_type& __a = allocator_type())
@@ -279,11 +279,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #else
       /**
        *  @brief  Creates a %vector with copies of an exemplar element.
-       *  @param  n  The number of elements to initially create.
-       *  @param  value  An element to copy.
-       *  @param  a  An allocator.
+       *  @param  __n  The number of elements to initially create.
+       *  @param  __value  An element to copy.
+       *  @param  __a  An allocator.
        *
-       *  This constructor fills the %vector with @a n copies of @a value.
+       *  This constructor fills the %vector with @a __n copies of @a __value.
        */
       explicit
       vector(size_type __n, const value_type& __value = value_type(),
@@ -294,12 +294,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Vector copy constructor.
-       *  @param  x  A %vector of identical element and allocator types.
+       *  @param  __x  A %vector of identical element and allocator types.
        *
        *  The newly-created %vector uses a copy of the allocation
-       *  object used by @a x.  All the elements of @a x are copied,
+       *  object used by @a __x.  All the elements of @a __x are copied,
        *  but any extra memory in
-       *  @a x (for fast expansion) will not be copied.
+       *  @a __x (for fast expansion) will not be copied.
        */
       vector(const vector& __x)
       : _Base(__x.size(),
@@ -313,10 +313,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  %Vector move constructor.
-       *  @param  x  A %vector of identical element and allocator types.
+       *  @param  __x  A %vector of identical element and allocator types.
        *
-       *  The newly-created %vector contains the exact contents of @a x.
-       *  The contents of @a x are a valid, but unspecified %vector.
+       *  The newly-created %vector contains the exact contents of @a __x.
+       *  The contents of @a __x are a valid, but unspecified %vector.
        */
       vector(vector&& __x) noexcept
       : _Base(std::move(__x)) { }
@@ -346,14 +346,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Builds a %vector from an initializer list.
-       *  @param  l  An initializer_list.
-       *  @param  a  An allocator.
+       *  @param  __l  An initializer_list.
+       *  @param  __a  An allocator.
        *
        *  Create a %vector consisting of copies of the elements in the
-       *  initializer_list @a l.
+       *  initializer_list @a __l.
        *
        *  This will call the element type's copy constructor N times
-       *  (where N is @a l.size()) and do no memory reallocation.
+       *  (where N is @a __l.size()) and do no memory reallocation.
        */
       vector(initializer_list<value_type> __l,
 	     const allocator_type& __a = allocator_type())
@@ -366,9 +366,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Builds a %vector from a range.
-       *  @param  first  An input iterator.
-       *  @param  last  An input iterator.
-       *  @param  a  An allocator.
+       *  @param  __first  An input iterator.
+       *  @param  __last  An input iterator.
+       *  @param  __a  An allocator.
        *
        *  Create a %vector consisting of copies of the elements from
        *  [first,last).
@@ -402,10 +402,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Vector assignment operator.
-       *  @param  x  A %vector of identical element and allocator types.
+       *  @param  __x  A %vector of identical element and allocator types.
        *
-       *  All the elements of @a x are copied, but any extra memory in
-       *  @a x (for fast expansion) will not be copied.  Unlike the
+       *  All the elements of @a __x are copied, but any extra memory in
+       *  @a __x (for fast expansion) will not be copied.  Unlike the
        *  copy constructor, the allocator object is not copied.
        */
       vector&
@@ -414,10 +414,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  %Vector move assignment operator.
-       *  @param  x  A %vector of identical element and allocator types.
+       *  @param  __x  A %vector of identical element and allocator types.
        *
-       *  The contents of @a x are moved into this %vector (without copying).
-       *  @a x is a valid, but unspecified %vector.
+       *  The contents of @a __x are moved into this %vector (without copying).
+       *  @a __x is a valid, but unspecified %vector.
        */
       vector&
       operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
@@ -451,10 +451,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Vector list assignment operator.
-       *  @param  l  An initializer_list.
+       *  @param  __l  An initializer_list.
        *
        *  This function fills a %vector with copies of the elements in the
-       *  initializer list @a l.
+       *  initializer list @a __l.
        *
        *  Note that the assignment completely changes the %vector and
        *  that the resulting %vector's size is the same as the number
@@ -470,10 +470,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Assigns a given value to a %vector.
-       *  @param  n  Number of elements to be assigned.
-       *  @param  val  Value to be assigned.
+       *  @param  __n  Number of elements to be assigned.
+       *  @param  __val  Value to be assigned.
        *
-       *  This function fills a %vector with @a n copies of the given
+       *  This function fills a %vector with @a __n copies of the given
        *  value.  Note that the assignment completely changes the
        *  %vector and that the resulting %vector's size is the same as
        *  the number of elements assigned.  Old data may be lost.
@@ -484,11 +484,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Assigns a range to a %vector.
-       *  @param  first  An input iterator.
-       *  @param  last   An input iterator.
+       *  @param  __first  An input iterator.
+       *  @param  __last   An input iterator.
        *
        *  This function fills a %vector with copies of the elements in the
-       *  range [first,last).
+       *  range [__first,__last).
        *
        *  Note that the assignment completely changes the %vector and
        *  that the resulting %vector's size is the same as the number
@@ -506,10 +506,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Assigns an initializer list to a %vector.
-       *  @param  l  An initializer_list.
+       *  @param  __l  An initializer_list.
        *
        *  This function fills a %vector with copies of the elements in the
-       *  initializer list @a l.
+       *  initializer list @a __l.
        *
        *  Note that the assignment completely changes the %vector and
        *  that the resulting %vector's size is the same as the number
@@ -648,7 +648,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Resizes the %vector to the specified number of elements.
-       *  @param  new_size  Number of elements the %vector should contain.
+       *  @param  __new_size  Number of elements the %vector should contain.
        *
        *  This function will %resize the %vector to the specified
        *  number of elements.  If the number is smaller than the
@@ -666,8 +666,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Resizes the %vector to the specified number of elements.
-       *  @param  new_size  Number of elements the %vector should contain.
-       *  @param  x  Data with which new elements should be populated.
+       *  @param  __new_size  Number of elements the %vector should contain.
+       *  @param  __x  Data with which new elements should be populated.
        *
        *  This function will %resize the %vector to the specified
        *  number of elements.  If the number is smaller than the
@@ -686,8 +686,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #else
       /**
        *  @brief  Resizes the %vector to the specified number of elements.
-       *  @param  new_size  Number of elements the %vector should contain.
-       *  @param  x  Data with which new elements should be populated.
+       *  @param  __new_size  Number of elements the %vector should contain.
+       *  @param  __x  Data with which new elements should be populated.
        *
        *  This function will %resize the %vector to the specified
        *  number of elements.  If the number is smaller than the
@@ -732,7 +732,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Attempt to preallocate enough memory for specified number of
        *          elements.
-       *  @param  n  Number of elements required.
+       *  @param  __n  Number of elements required.
        *  @throw  std::length_error  If @a n exceeds @c max_size().
        *
        *  This function attempts to reserve enough memory for the
@@ -752,7 +752,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // element access
       /**
        *  @brief  Subscript access to the data contained in the %vector.
-       *  @param n The index of the element for which data should be
+       *  @param __n The index of the element for which data should be
        *  accessed.
        *  @return  Read/write reference to data.
        *
@@ -767,7 +767,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Subscript access to the data contained in the %vector.
-       *  @param n The index of the element for which data should be
+       *  @param __n The index of the element for which data should be
        *  accessed.
        *  @return  Read-only (constant) reference to data.
        *
@@ -792,10 +792,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     public:
       /**
        *  @brief  Provides access to the data contained in the %vector.
-       *  @param n The index of the element for which data should be
+       *  @param __n The index of the element for which data should be
        *  accessed.
        *  @return  Read/write reference to data.
-       *  @throw  std::out_of_range  If @a n is an invalid index.
+       *  @throw  std::out_of_range  If @a __n is an invalid index.
        *
        *  This function provides for safer data access.  The parameter
        *  is first checked that it is in the range of the vector.  The
@@ -810,10 +810,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Provides access to the data contained in the %vector.
-       *  @param n The index of the element for which data should be
+       *  @param __n The index of the element for which data should be
        *  accessed.
        *  @return  Read-only (constant) reference to data.
-       *  @throw  std::out_of_range  If @a n is an invalid index.
+       *  @throw  std::out_of_range  If @a __n is an invalid index.
        *
        *  This function provides for safer data access.  The parameter
        *  is first checked that it is in the range of the vector.  The
@@ -884,7 +884,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // [23.2.4.3] modifiers
       /**
        *  @brief  Add data to the end of the %vector.
-       *  @param  x  Data to be added.
+       *  @param  __x  Data to be added.
        *
        *  This is a typical stack operation.  The function creates an
        *  element at the end of the %vector and assigns the given data
@@ -938,8 +938,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Inserts an object in %vector before specified iterator.
-       *  @param  position  An iterator into the %vector.
-       *  @param  args  Arguments.
+       *  @param  __position  An iterator into the %vector.
+       *  @param  __args  Arguments.
        *  @return  An iterator that points to the inserted data.
        *
        *  This function will insert an object of type T constructed
@@ -955,8 +955,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Inserts given value into %vector before specified iterator.
-       *  @param  position  An iterator into the %vector.
-       *  @param  x  Data to be inserted.
+       *  @param  __position  An iterator into the %vector.
+       *  @param  __x  Data to be inserted.
        *  @return  An iterator that points to the inserted data.
        *
        *  This function will insert a copy of the given value before
@@ -970,8 +970,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Inserts given rvalue into %vector before specified iterator.
-       *  @param  position  An iterator into the %vector.
-       *  @param  x  Data to be inserted.
+       *  @param  __position  An iterator into the %vector.
+       *  @param  __x  Data to be inserted.
        *  @return  An iterator that points to the inserted data.
        *
        *  This function will insert a copy of the given rvalue before
@@ -985,8 +985,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Inserts an initializer_list into the %vector.
-       *  @param  position  An iterator into the %vector.
-       *  @param  l  An initializer_list.
+       *  @param  __position  An iterator into the %vector.
+       *  @param  __l  An initializer_list.
        *
        *  This function will insert copies of the data in the 
        *  initializer_list @a l into the %vector before the location
@@ -1003,9 +1003,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Inserts a number of copies of given data into the %vector.
-       *  @param  position  An iterator into the %vector.
-       *  @param  n  Number of elements to be inserted.
-       *  @param  x  Data to be inserted.
+       *  @param  __position  An iterator into the %vector.
+       *  @param  __n  Number of elements to be inserted.
+       *  @param  __x  Data to be inserted.
        *
        *  This function will insert a specified number of copies of
        *  the given data before the location specified by @a position.
@@ -1020,12 +1020,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Inserts a range into the %vector.
-       *  @param  position  An iterator into the %vector.
-       *  @param  first  An input iterator.
-       *  @param  last   An input iterator.
+       *  @param  __position  An iterator into the %vector.
+       *  @param  __first  An input iterator.
+       *  @param  __last   An input iterator.
        *
        *  This function will insert copies of the data in the range
-       *  [first,last) into the %vector before the location specified
+       *  [__first,__last) into the %vector before the location specified
        *  by @a pos.
        *
        *  Note that this kind of operation could be expensive for a
@@ -1044,7 +1044,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Remove element at given position.
-       *  @param  position  Iterator pointing to element to be erased.
+       *  @param  __position  Iterator pointing to element to be erased.
        *  @return  An iterator pointing to the next element (or end()).
        *
        *  This function will erase the element at the given position and thus
@@ -1062,14 +1062,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Remove a range of elements.
-       *  @param  first  Iterator pointing to the first element to be erased.
-       *  @param  last  Iterator pointing to one past the last element to be
-       *                erased.
-       *  @return  An iterator pointing to the element pointed to by @a last
+       *  @param  __first  Iterator pointing to the first element to be erased.
+       *  @param  __last  Iterator pointing to one past the last element to be
+       *                  erased.
+       *  @return  An iterator pointing to the element pointed to by @a __last
        *           prior to erasing (or end()).
        *
-       *  This function will erase the elements in the range [first,last) and
-       *  shorten the %vector accordingly.
+       *  This function will erase the elements in the range
+       *  [__first,__last) and shorten the %vector accordingly.
        *
        *  Note This operation could be expensive and if it is
        *  frequently used the user should consider using std::list.
@@ -1083,7 +1083,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Swaps data with another %vector.
-       *  @param  x  A %vector of the same element and allocator types.
+       *  @param  __x  A %vector of the same element and allocator types.
        *
        *  This exchanges the elements between two vectors in constant time.
        *  (Three pointers, so it should be quite fast.)
@@ -1339,8 +1339,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
    *  @brief  Vector equality comparison.
-   *  @param  x  A %vector.
-   *  @param  y  A %vector of the same type as @a x.
+   *  @param  __x  A %vector.
+   *  @param  __y  A %vector of the same type as @a __x.
    *  @return  True iff the size and elements of the vectors are equal.
    *
    *  This is an equivalence relation.  It is linear in the size of the
@@ -1355,9 +1355,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
    *  @brief  Vector ordering relation.
-   *  @param  x  A %vector.
-   *  @param  y  A %vector of the same type as @a x.
-   *  @return  True iff @a x is lexicographically less than @a y.
+   *  @param  __x  A %vector.
+   *  @param  __y  A %vector of the same type as @a __x.
+   *  @return  True iff @a __x is lexicographically less than @a __y.
    *
    *  This is a total ordering relation.  It is linear in the size of the
    *  vectors.  The elements must be comparable with @c <.

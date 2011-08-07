@@ -203,8 +203,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  This is a constructor for use by the library itself to set up new
        *  locales.
        *
-       *  @param cloc  The C locale.
-       *  @param s  The name of a locale.
+       *  @param __cloc  The C locale.
+       *  @param __s  The name of a locale.
        *  @param refs  Passed to the base facet class.
       */
       explicit
@@ -384,7 +384,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This is the constructor provided by the standard.
        *
-       *  @param refs  Passed to the base facet class.
+       *  @param __refs  Passed to the base facet class.
       */
       explicit
       time_get(size_t __refs = 0)
@@ -420,11 +420,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the end, err |= ios_base::failbit.  If parsing reads all the
        *  characters, err |= ios_base::eofbit.
        *
-       *  @param  beg  Start of string to parse.
-       *  @param  end  End of string to parse.
-       *  @param  io  Source of the locale.
-       *  @param  err  Error flags to set.
-       *  @param  tm  Pointer to struct tm to fill in.
+       *  @param  __beg  Start of string to parse.
+       *  @param  __end  End of string to parse.
+       *  @param  __io  Source of the locale.
+       *  @param  __err  Error flags to set.
+       *  @param  __tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond time string.
       */
       iter_type
@@ -445,11 +445,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the end, err |= ios_base::failbit.  If parsing reads all the
        *  characters, err |= ios_base::eofbit.
        *
-       *  @param  beg  Start of string to parse.
-       *  @param  end  End of string to parse.
-       *  @param  io  Source of the locale.
-       *  @param  err  Error flags to set.
-       *  @param  tm  Pointer to struct tm to fill in.
+       *  @param  __beg  Start of string to parse.
+       *  @param  __end  End of string to parse.
+       *  @param  __io  Source of the locale.
+       *  @param  __err  Error flags to set.
+       *  @param  __tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond date string.
       */
       iter_type
@@ -473,11 +473,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  If an error occurs before the end, err |= ios_base::failbit.  If
        *  parsing reads all the characters, err |= ios_base::eofbit.
        *
-       *  @param  beg  Start of string to parse.
-       *  @param  end  End of string to parse.
-       *  @param  io  Source of the locale.
-       *  @param  err  Error flags to set.
-       *  @param  tm  Pointer to struct tm to fill in.
+       *  @param  __beg  Start of string to parse.
+       *  @param  __end  End of string to parse.
+       *  @param  __io  Source of the locale.
+       *  @param  __err  Error flags to set.
+       *  @param  __tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond weekday name.
       */
       iter_type
@@ -502,11 +502,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  parsing reads all the characters, err |=
        *  ios_base::eofbit.
        *
-       *  @param  beg  Start of string to parse.
-       *  @param  end  End of string to parse.
-       *  @param  io  Source of the locale.
-       *  @param  err  Error flags to set.
-       *  @param  tm  Pointer to struct tm to fill in.
+       *  @param  __beg  Start of string to parse.
+       *  @param  __end  End of string to parse.
+       *  @param  __io  Source of the locale.
+       *  @param  __err  Error flags to set.
+       *  @param  __tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond month name.
       */
       iter_type
@@ -528,11 +528,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  If an error occurs before the end, err |= ios_base::failbit.  If
        *  parsing reads all the characters, err |= ios_base::eofbit.
        *
-       *  @param  beg  Start of string to parse.
-       *  @param  end  End of string to parse.
-       *  @param  io  Source of the locale.
-       *  @param  err  Error flags to set.
-       *  @param  tm  Pointer to struct tm to fill in.
+       *  @param  __beg  Start of string to parse.
+       *  @param  __end  End of string to parse.
+       *  @param  __io  Source of the locale.
+       *  @param  __err  Error flags to set.
+       *  @param  __tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond year.
       */
       iter_type
@@ -566,11 +566,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  derived classes to change the value returned.  @see get_time() for
        *  details.
        *
-       *  @param  beg  Start of string to parse.
-       *  @param  end  End of string to parse.
-       *  @param  io  Source of the locale.
-       *  @param  err  Error flags to set.
-       *  @param  tm  Pointer to struct tm to fill in.
+       *  @param  __beg  Start of string to parse.
+       *  @param  __end  End of string to parse.
+       *  @param  __io  Source of the locale.
+       *  @param  __err  Error flags to set.
+       *  @param  __tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond time string.
       */
       virtual iter_type
@@ -585,11 +585,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  derived classes to change the value returned.  @see get_date() for
        *  details.
        *
-       *  @param  beg  Start of string to parse.
-       *  @param  end  End of string to parse.
-       *  @param  io  Source of the locale.
-       *  @param  err  Error flags to set.
-       *  @param  tm  Pointer to struct tm to fill in.
+       *  @param  __beg  Start of string to parse.
+       *  @param  __end  End of string to parse.
+       *  @param  __io  Source of the locale.
+       *  @param  __err  Error flags to set.
+       *  @param  __tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond date string.
       */
       virtual iter_type
@@ -604,11 +604,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  classes to change the value returned.  @see get_weekday() for
        *  details.
        *
-       *  @param  beg  Start of string to parse.
-       *  @param  end  End of string to parse.
-       *  @param  io  Source of the locale.
-       *  @param  err  Error flags to set.
-       *  @param  tm  Pointer to struct tm to fill in.
+       *  @param  __beg  Start of string to parse.
+       *  @param  __end  End of string to parse.
+       *  @param  __io  Source of the locale.
+       *  @param  __err  Error flags to set.
+       *  @param  __tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond weekday name.
       */
       virtual iter_type
@@ -623,11 +623,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  classes to change the value returned.  @see get_monthname() for
        *  details.
        *
-       *  @param  beg  Start of string to parse.
-       *  @param  end  End of string to parse.
-       *  @param  io  Source of the locale.
-       *  @param  err  Error flags to set.
-       *  @param  tm  Pointer to struct tm to fill in.
+       *  @param  __beg  Start of string to parse.
+       *  @param  __end  End of string to parse.
+       *  @param  __io  Source of the locale.
+       *  @param  __err  Error flags to set.
+       *  @param  __tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond month name.
       */
       virtual iter_type
@@ -642,11 +642,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  hook for derived classes to change the value returned.  @see
        *  get_year() for details.
        *
-       *  @param  beg  Start of string to parse.
-       *  @param  end  End of string to parse.
-       *  @param  io  Source of the locale.
-       *  @param  err  Error flags to set.
-       *  @param  tm  Pointer to struct tm to fill in.
+       *  @param  __beg  Start of string to parse.
+       *  @param  __end  End of string to parse.
+       *  @param  __io  Source of the locale.
+       *  @param  __err  Error flags to set.
+       *  @param  __tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond year.
       */
       virtual iter_type
@@ -730,7 +730,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This is the constructor provided by the standard.
        *
-       *  @param refs  Passed to the base facet class.
+       *  @param __refs  Passed to the base facet class.
       */
       explicit
       time_put(size_t __refs = 0)
@@ -743,12 +743,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  provided format string.  The format string is interpreted as by
        *  strftime().
        *
-       *  @param  s  The stream to write to.
-       *  @param  io  Source of locale.
-       *  @param  fill  char_type to use for padding.
-       *  @param  tm  Struct tm with date and time info to format.
-       *  @param  beg  Start of format string.
-       *  @param  end  End of format string.
+       *  @param  __s  The stream to write to.
+       *  @param  __io  Source of locale.
+       *  @param  __fill  char_type to use for padding.
+       *  @param  __tm  Struct tm with date and time info to format.
+       *  @param  __beg  Start of format string.
+       *  @param  __end  End of format string.
        *  @return  Iterator after writing.
        */
       iter_type
@@ -763,12 +763,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  are interpreted as by strftime().  It does so by returning
        *  time_put::do_put().
        *
-       *  @param  s  The stream to write to.
-       *  @param  io  Source of locale.
-       *  @param  fill  char_type to use for padding.
-       *  @param  tm  Struct tm with date and time info to format.
-       *  @param  format  Format char.
-       *  @param  mod  Optional modifier char.
+       *  @param  __s  The stream to write to.
+       *  @param  __io  Source of locale.
+       *  @param  __fill  char_type to use for padding.
+       *  @param  __tm  Struct tm with date and time info to format.
+       *  @param  __format  Format char.
+       *  @param  __mod  Optional modifier char.
        *  @return  Iterator after writing.
        */
       iter_type
@@ -790,12 +790,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  for derived classes to change the value returned.  @see put() for
        *  more details.
        *
-       *  @param  s  The stream to write to.
-       *  @param  io  Source of locale.
-       *  @param  fill  char_type to use for padding.
-       *  @param  tm  Struct tm with date and time info to format.
-       *  @param  format  Format char.
-       *  @param  mod  Optional modifier char.
+       *  @param  __s  The stream to write to.
+       *  @param  __io  Source of locale.
+       *  @param  __fill  char_type to use for padding.
+       *  @param  __tm  Struct tm with date and time info to format.
+       *  @param  __format  Format char.
+       *  @param  __mod  Optional modifier char.
        *  @return  Iterator after writing.
        */
       virtual iter_type
@@ -957,7 +957,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This is the constructor provided by the standard.
        *
-       *  @param refs  Passed to the base facet class.
+       *  @param __refs  Passed to the base facet class.
       */
       explicit
       moneypunct(size_t __refs = 0)
@@ -969,8 +969,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This is an internal constructor.
        *
-       *  @param cache  Cache for optimization.
-       *  @param refs  Passed to the base facet class.
+       *  @param __cache  Cache for optimization.
+       *  @param __refs  Passed to the base facet class.
       */
       explicit
       moneypunct(__cache_type* __cache, size_t __refs = 0)
@@ -983,9 +983,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  This is a constructor for use by the library itself to set up new
        *  locales.
        *
-       *  @param cloc  The C locale.
-       *  @param s  The name of a locale.
-       *  @param refs  Passed to the base facet class.
+       *  @param __cloc  The C locale.
+       *  @param __s  The name of a locale.
+       *  @param __refs  Passed to the base facet class.
       */
       explicit
       moneypunct(__c_locale __cloc, const char* __s, size_t __refs = 0)
@@ -1386,7 +1386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
        *
        *  This is the constructor provided by the standard.
        *
-       *  @param refs  Passed to the base facet class.
+       *  @param __refs  Passed to the base facet class.
       */
       explicit
       money_get(size_t __refs = 0) : facet(__refs) { }
@@ -1394,7 +1394,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       /**
        *  @brief  Read and parse a monetary value.
        *
-       *  This function reads characters from @a s, interprets them as a
+       *  This function reads characters from @a __s, interprets them as a
        *  monetary value according to moneypunct and ctype facets retrieved
        *  from io.getloc(), and returns the result in @a units as an integral
        *  value moneypunct::frac_digits() * the actual amount.  For example,
@@ -1409,12 +1409,12 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
        *
        *  This function works by returning the result of do_get().
        *
-       *  @param  s  Start of characters to parse.
-       *  @param  end  End of characters to parse.
-       *  @param  intl  Parameter to use_facet<moneypunct<CharT,intl> >.
-       *  @param  io  Source of facets and io state.
-       *  @param  err  Error field to set if parsing fails.
-       *  @param  units  Place to store result of parsing.
+       *  @param  __s  Start of characters to parse.
+       *  @param  __end  End of characters to parse.
+       *  @param  __intl  Parameter to use_facet<moneypunct<CharT,intl> >.
+       *  @param  __io  Source of facets and io state.
+       *  @param  __err  Error field to set if parsing fails.
+       *  @param  __units  Place to store result of parsing.
        *  @return  Iterator referencing first character beyond valid money
        *	   amount.
        */
@@ -1426,7 +1426,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       /**
        *  @brief  Read and parse a monetary value.
        *
-       *  This function reads characters from @a s, interprets them as
+       *  This function reads characters from @a __s, interprets them as
        *  a monetary value according to moneypunct and ctype facets
        *  retrieved from io.getloc(), and returns the result in @a
        *  digits.  For example, the string $10.01 in a US locale would
@@ -1440,12 +1440,12 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
        *
        *  This function works by returning the result of do_get().
        *
-       *  @param  s  Start of characters to parse.
-       *  @param  end  End of characters to parse.
-       *  @param  intl  Parameter to use_facet<moneypunct<CharT,intl> >.
-       *  @param  io  Source of facets and io state.
-       *  @param  err  Error field to set if parsing fails.
-       *  @param  digits  Place to store result of parsing.
+       *  @param  __s  Start of characters to parse.
+       *  @param  __end  End of characters to parse.
+       *  @param  __intl  Parameter to use_facet<moneypunct<CharT,intl> >.
+       *  @param  __io  Source of facets and io state.
+       *  @param  __err  Error field to set if parsing fails.
+       *  @param  __digits  Place to store result of parsing.
        *  @return  Iterator referencing first character beyond valid money
        *	   amount.
        */
@@ -1536,7 +1536,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
        *
        *  This is the constructor provided by the standard.
        *
-       *  @param refs  Passed to the base facet class.
+       *  @param __refs  Passed to the base facet class.
       */
       explicit
       money_put(size_t __refs = 0) : facet(__refs) { }
@@ -1546,16 +1546,16 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
        *
        *  This function formats @a units as a monetary value according to
        *  moneypunct and ctype facets retrieved from io.getloc(), and writes
-       *  the resulting characters to @a s.  For example, the value 1001 in a
-       *  US locale would write <code>$10.01</code> to @a s.
+       *  the resulting characters to @a __s.  For example, the value 1001 in a
+       *  US locale would write <code>$10.01</code> to @a __s.
        *
        *  This function works by returning the result of do_put().
        *
-       *  @param  s  The stream to write to.
-       *  @param  intl  Parameter to use_facet<moneypunct<CharT,intl> >.
-       *  @param  io  Source of facets and io state.
-       *  @param  fill  char_type to use for padding.
-       *  @param  units  Place to store result of parsing.
+       *  @param  __s  The stream to write to.
+       *  @param  __intl  Parameter to use_facet<moneypunct<CharT,intl> >.
+       *  @param  __io  Source of facets and io state.
+       *  @param  __fill  char_type to use for padding.
+       *  @param  __units  Place to store result of parsing.
        *  @return  Iterator after writing.
        */
       iter_type
@@ -1568,17 +1568,17 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
        *
        *  This function formats @a digits as a monetary value
        *  according to moneypunct and ctype facets retrieved from
-       *  io.getloc(), and writes the resulting characters to @a s.
+       *  io.getloc(), and writes the resulting characters to @a __s.
        *  For example, the string <code>1001</code> in a US locale
-       *  would write <code>$10.01</code> to @a s.
+       *  would write <code>$10.01</code> to @a __s.
        *
        *  This function works by returning the result of do_put().
        *
-       *  @param  s  The stream to write to.
-       *  @param  intl  Parameter to use_facet<moneypunct<CharT,intl> >.
-       *  @param  io  Source of facets and io state.
-       *  @param  fill  char_type to use for padding.
-       *  @param  units  Place to store result of parsing.
+       *  @param  __s  The stream to write to.
+       *  @param  __intl  Parameter to use_facet<moneypunct<CharT,intl> >.
+       *  @param  __io  Source of facets and io state.
+       *  @param  __fill  char_type to use for padding.
+       *  @param  __digits  Place to store result of parsing.
        *  @return  Iterator after writing.
        */
       iter_type
@@ -1596,17 +1596,17 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
        *
        *  This function formats @a units as a monetary value according to
        *  moneypunct and ctype facets retrieved from io.getloc(), and writes
-       *  the resulting characters to @a s.  For example, the value 1001 in a
-       *  US locale would write <code>$10.01</code> to @a s.
+       *  the resulting characters to @a __s.  For example, the value 1001 in a
+       *  US locale would write <code>$10.01</code> to @a __s.
        *
        *  This function is a hook for derived classes to change the value
        *  returned.  @see put().
        *
-       *  @param  s  The stream to write to.
-       *  @param  intl  Parameter to use_facet<moneypunct<CharT,intl> >.
-       *  @param  io  Source of facets and io state.
-       *  @param  fill  char_type to use for padding.
-       *  @param  units  Place to store result of parsing.
+       *  @param  __s  The stream to write to.
+       *  @param  __intl  Parameter to use_facet<moneypunct<CharT,intl> >.
+       *  @param  __io  Source of facets and io state.
+       *  @param  __fill  char_type to use for padding.
+       *  @param  __units  Place to store result of parsing.
        *  @return  Iterator after writing.
        */
       // XXX GLIBCXX_ABI Deprecated
@@ -1625,18 +1625,18 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
        *
        *  This function formats @a digits as a monetary value
        *  according to moneypunct and ctype facets retrieved from
-       *  io.getloc(), and writes the resulting characters to @a s.
+       *  io.getloc(), and writes the resulting characters to @a __s.
        *  For example, the string <code>1001</code> in a US locale
-       *  would write <code>$10.01</code> to @a s.
+       *  would write <code>$10.01</code> to @a __s.
        *
        *  This function is a hook for derived classes to change the value
        *  returned.  @see put().
        *
-       *  @param  s  The stream to write to.
-       *  @param  intl  Parameter to use_facet<moneypunct<CharT,intl> >.
-       *  @param  io  Source of facets and io state.
-       *  @param  fill  char_type to use for padding.
-       *  @param  units  Place to store result of parsing.
+       *  @param  __s  The stream to write to.
+       *  @param  __intl  Parameter to use_facet<moneypunct<CharT,intl> >.
+       *  @param  __io  Source of facets and io state.
+       *  @param  __fill  char_type to use for padding.
+       *  @param  __digits  Place to store result of parsing.
        *  @return  Iterator after writing.
        */
       virtual iter_type
@@ -1717,7 +1717,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
        *
        *  This is the constructor provided by the standard.
        *
-       *  @param refs  Passed to the base facet class.
+       *  @param __refs  Passed to the base facet class.
       */
       explicit
       messages(size_t __refs = 0);
@@ -1729,9 +1729,9 @@ _GLIBCXX_END_NAMESPACE_LDBL
        *  This is a constructor for use by the library itself to set up new
        *  locales.
        *
-       *  @param  cloc  The C locale.
-       *  @param  s  The name of a locale.
-       *  @param  refs  Refcount to pass to the base class.
+       *  @param  __cloc  The C locale.
+       *  @param  __s  The name of a locale.
+       *  @param  __refs  Refcount to pass to the base class.
        */
       explicit
       messages(__c_locale __cloc, const char* __s, size_t __refs = 0);
@@ -1740,10 +1740,10 @@ _GLIBCXX_END_NAMESPACE_LDBL
        *  @brief  Open a message catalog.
        *
        *  This function opens and returns a handle to a message catalog by
-       *  returning do_open(s, loc).
+       *  returning do_open(__s, __loc).
        *
-       *  @param  s  The catalog to open.
-       *  @param  loc  Locale to use for character set conversions.
+       *  @param  __s  The catalog to open.
+       *  @param  __loc  Locale to use for character set conversions.
        *  @return  Handle to the catalog or value < 0 if open fails.
       */
       catalog
@@ -1759,9 +1759,9 @@ _GLIBCXX_END_NAMESPACE_LDBL
        *  message catalog root directory for gnu gettext and is ignored
        *  otherwise.
        *
-       *  @param  s  The catalog to open.
-       *  @param  loc  Locale to use for character set conversions.
-       *  @param  dir  Message catalog root directory.
+       *  @param  __s  The catalog to open.
+       *  @param  __loc  Locale to use for character set conversions.
+       *  @param  __dir  Message catalog root directory.
        *  @return  Handle to the catalog or value < 0 if open fails.
       */
       catalog
@@ -1773,14 +1773,14 @@ _GLIBCXX_END_NAMESPACE_LDBL
        *  This function retrieves and returns a message from a catalog by
        *  returning do_get(c, set, msgid, s).
        *
-       *  For gnu, @a set and @a msgid are ignored.  Returns gettext(s).
+       *  For gnu, @a __set and @a msgid are ignored.  Returns gettext(s).
        *  For default, returns s. For ieee, returns catgets(c,set,msgid,s).
        *
-       *  @param  c  The catalog to access.
-       *  @param  set  Implementation-defined.
-       *  @param  msgid  Implementation-defined.
-       *  @param  s  Default return value if retrieval fails.
-       *  @return  Retrieved message or @a s if get fails.
+       *  @param  __c  The catalog to access.
+       *  @param  __set  Implementation-defined.
+       *  @param  __msgid  Implementation-defined.
+       *  @param  __s  Default return value if retrieval fails.
+       *  @return  Retrieved message or @a __s if get fails.
       */
       string_type
       get(catalog __c, int __set, int __msgid, const string_type& __s) const
@@ -1791,7 +1791,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
        *
        *  Closes catalog @a c by calling do_close(c).
        *
-       *  @param  c  The catalog to close.
+       *  @param  __c  The catalog to close.
       */
       void
       close(catalog __c) const
@@ -1809,8 +1809,8 @@ _GLIBCXX_END_NAMESPACE_LDBL
        *  implementation-defined manner.  This function is a hook for derived
        *  classes to change the value returned.
        *
-       *  @param  s  The catalog to open.
-       *  @param  loc  Locale to use for character set conversions.
+       *  @param  __s  The catalog to open.
+       *  @param  __loc  Locale to use for character set conversions.
        *  @return  Handle to the opened catalog, value < 0 if open failed.
       */
       virtual catalog
@@ -1823,14 +1823,14 @@ _GLIBCXX_END_NAMESPACE_LDBL
        *  implementation-defined manner.  This function is a hook for derived
        *  classes to change the value returned.
        *
-       *  For gnu, @a set and @a msgid are ignored.  Returns gettext(s).
+       *  For gnu, @a __set and @a __msgid are ignored.  Returns gettext(s).
        *  For default, returns s. For ieee, returns catgets(c,set,msgid,s).
        *
-       *  @param  c  The catalog to access.
-       *  @param  set  Implementation-defined.
-       *  @param  msgid  Implementation-defined.
-       *  @param  s  Default return value if retrieval fails.
-       *  @return  Retrieved message or @a s if get fails.
+       *  @param  __c  The catalog to access.
+       *  @param  __set  Implementation-defined.
+       *  @param  __msgid  Implementation-defined.
+       *  @param  __s  Default return value if retrieval fails.
+       *  @return  Retrieved message or @a __s if get fails.
       */
       virtual string_type
       do_get(catalog, int, int, const string_type& __dfault) const;
@@ -1838,7 +1838,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
       /*
        *  @brief  Close a message catalog.
        *
-       *  @param  c  The catalog to close.
+       *  @param  __c  The catalog to close.
       */
       virtual void
       do_close(catalog) const;
@@ -1855,40 +1855,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
       string_type
       _M_convert_from_char(char*) const
       {
-#if 0
-	// Length of message string without terminating null.
-	size_t __len = char_traits<char>::length(__msg) - 1;
-
-	// "everybody can easily convert the string using
-	// mbsrtowcs/wcsrtombs or with iconv()"
-
-	// Convert char* to _CharT in locale used to open catalog.
-	// XXX need additional template parameter on messages class for this..
-	// typedef typename codecvt<char, _CharT, _StateT> __codecvt_type;
-	typedef typename codecvt<char, _CharT, mbstate_t> __codecvt_type;
-
-	__codecvt_type::state_type __state;
-	// XXX may need to initialize state.
-	//initialize_state(__state._M_init());
-
-	char* __from_next;
-	// XXX what size for this string?
-	_CharT* __to = static_cast<_CharT*>(__builtin_alloca(__len + 1));
-	const __codecvt_type& __cvt = use_facet<__codecvt_type>(_M_locale_conv);
-	__cvt.out(__state, __msg, __msg + __len, __from_next,
-		  __to, __to + __len + 1, __to_next);
-	return string_type(__to);
-#endif
-#if 0
-	typedef ctype<_CharT> __ctype_type;
-	// const __ctype_type& __cvt = use_facet<__ctype_type>(_M_locale_msg);
-	const __ctype_type& __cvt = use_facet<__ctype_type>(locale());
-	// XXX Again, proper length of converted string an issue here.
-	// For now, assume the converted length is not larger.
-	_CharT* __dest = static_cast<_CharT*>(__builtin_alloca(__len + 1));
-	__cvt.widen(__msg, __msg + __len, __dest);
-	return basic_string<_CharT>(__dest);
-#endif
+	// XXX
 	return string_type();
       }
      };

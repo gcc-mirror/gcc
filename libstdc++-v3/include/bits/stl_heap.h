@@ -144,12 +144,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Push an element onto a heap.
-   *  @param  first  Start of heap.
-   *  @param  last   End of heap + element.
+   *  @param  __first  Start of heap.
+   *  @param  __last   End of heap + element.
    *  @ingroup heap_algorithms
    *
-   *  This operation pushes the element at last-1 onto the valid heap over the
-   *  range [first,last-1).  After completion, [first,last) is a valid heap.
+   *  This operation pushes the element at last-1 onto the valid heap
+   *  over the range [__first,__last-1).  After completion,
+   *  [__first,__last) is a valid heap.
   */
   template<typename _RandomAccessIterator>
     inline void
@@ -191,14 +192,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Push an element onto a heap using comparison functor.
-   *  @param  first  Start of heap.
-   *  @param  last   End of heap + element.
-   *  @param  comp   Comparison functor.
+   *  @param  __first  Start of heap.
+   *  @param  __last   End of heap + element.
+   *  @param  __comp   Comparison functor.
    *  @ingroup heap_algorithms
    *
-   *  This operation pushes the element at last-1 onto the valid heap over the
-   *  range [first,last-1).  After completion, [first,last) is a valid heap.
-   *  Compare operations are performed using comp.
+   *  This operation pushes the element at __last-1 onto the valid
+   *  heap over the range [__first,__last-1).  After completion,
+   *  [__first,__last) is a valid heap.  Compare operations are
+   *  performed using comp.
   */
   template<typename _RandomAccessIterator, typename _Compare>
     inline void
@@ -266,12 +268,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Pop an element off a heap.
-   *  @param  first  Start of heap.
-   *  @param  last   End of heap.
+   *  @param  __first  Start of heap.
+   *  @param  __last   End of heap.
    *  @ingroup heap_algorithms
    *
-   *  This operation pops the top of the heap.  The elements first and last-1
-   *  are swapped and [first,last-1) is made into a heap.
+   *  This operation pops the top of the heap.  The elements __first
+   *  and __last-1 are swapped and [__first,__last-1) is made into a
+   *  heap.
   */
   template<typename _RandomAccessIterator>
     inline void
@@ -338,14 +341,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Pop an element off a heap using comparison functor.
-   *  @param  first  Start of heap.
-   *  @param  last   End of heap.
-   *  @param  comp   Comparison functor to use.
+   *  @param  __first  Start of heap.
+   *  @param  __last   End of heap.
+   *  @param  __comp   Comparison functor to use.
    *  @ingroup heap_algorithms
    *
-   *  This operation pops the top of the heap.  The elements first and last-1
-   *  are swapped and [first,last-1) is made into a heap.  Comparisons are
-   *  made using comp.
+   *  This operation pops the top of the heap.  The elements __first
+   *  and __last-1 are swapped and [__first,__last-1) is made into a
+   *  heap.  Comparisons are made using comp.
   */
   template<typename _RandomAccessIterator, typename _Compare>
     inline void
@@ -364,11 +367,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Construct a heap over a range.
-   *  @param  first  Start of heap.
-   *  @param  last   End of heap.
+   *  @param  __first  Start of heap.
+   *  @param  __last   End of heap.
    *  @ingroup heap_algorithms
    *
-   *  This operation makes the elements in [first,last) into a heap.
+   *  This operation makes the elements in [__first,__last) into a heap.
   */
   template<typename _RandomAccessIterator>
     void
@@ -402,13 +405,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Construct a heap over a range using comparison functor.
-   *  @param  first  Start of heap.
-   *  @param  last   End of heap.
-   *  @param  comp   Comparison functor to use.
+   *  @param  __first  Start of heap.
+   *  @param  __last   End of heap.
+   *  @param  __comp   Comparison functor to use.
    *  @ingroup heap_algorithms
    *
-   *  This operation makes the elements in [first,last) into a heap.
-   *  Comparisons are made using comp.
+   *  This operation makes the elements in [__first,__last) into a heap.
+   *  Comparisons are made using __comp.
   */
   template<typename _RandomAccessIterator, typename _Compare>
     void
@@ -443,11 +446,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Sort a heap.
-   *  @param  first  Start of heap.
-   *  @param  last   End of heap.
+   *  @param  __first  Start of heap.
+   *  @param  __last   End of heap.
    *  @ingroup heap_algorithms
    *
-   *  This operation sorts the valid heap in the range [first,last).
+   *  This operation sorts the valid heap in the range [__first,__last).
   */
   template<typename _RandomAccessIterator>
     void
@@ -470,13 +473,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Sort a heap using comparison functor.
-   *  @param  first  Start of heap.
-   *  @param  last   End of heap.
-   *  @param  comp   Comparison functor to use.
+   *  @param  __first  Start of heap.
+   *  @param  __last   End of heap.
+   *  @param  __comp   Comparison functor to use.
    *  @ingroup heap_algorithms
    *
-   *  This operation sorts the valid heap in the range [first,last).
-   *  Comparisons are made using comp.
+   *  This operation sorts the valid heap in the range [__first,__last).
+   *  Comparisons are made using __comp.
   */
   template<typename _RandomAccessIterator, typename _Compare>
     void
@@ -499,13 +502,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   /**
    *  @brief  Search the end of a heap.
-   *  @param  first  Start of range.
-   *  @param  last   End of range.
+   *  @param  __first  Start of range.
+   *  @param  __last   End of range.
    *  @return  An iterator pointing to the first element not in the heap.
    *  @ingroup heap_algorithms
    *
-   *  This operation returns the last iterator i in [first, last) for which
-   *  the range [first, i) is a heap.
+   *  This operation returns the last iterator i in [__first, __last) for which
+   *  the range [__first, i) is a heap.
   */
   template<typename _RandomAccessIterator>
     inline _RandomAccessIterator
@@ -524,14 +527,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Search the end of a heap using comparison functor.
-   *  @param  first  Start of range.
-   *  @param  last   End of range.
-   *  @param  comp   Comparison functor to use.
+   *  @param  __first  Start of range.
+   *  @param  __last   End of range.
+   *  @param  __comp   Comparison functor to use.
    *  @return  An iterator pointing to the first element not in the heap.
    *  @ingroup heap_algorithms
    *
-   *  This operation returns the last iterator i in [first, last) for which
-   *  the range [first, i) is a heap.  Comparisons are made using comp.
+   *  This operation returns the last iterator i in [__first, __last) for which
+   *  the range [__first, i) is a heap.  Comparisons are made using __comp.
   */
   template<typename _RandomAccessIterator, typename _Compare>
     inline _RandomAccessIterator
@@ -550,8 +553,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Determines whether a range is a heap.
-   *  @param  first  Start of range.
-   *  @param  last   End of range.
+   *  @param  __first  Start of range.
+   *  @param  __last   End of range.
    *  @return  True if range is a heap, false otherwise.
    *  @ingroup heap_algorithms
   */
@@ -562,9 +565,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Determines whether a range is a heap using comparison functor.
-   *  @param  first  Start of range.
-   *  @param  last   End of range.
-   *  @param  comp   Comparison functor to use.
+   *  @param  __first  Start of range.
+   *  @param  __last   End of range.
+   *  @param  __comp   Comparison functor to use.
    *  @return  True if range is a heap, false otherwise.
    *  @ingroup heap_algorithms
   */

@@ -387,7 +387,6 @@ namespace __gnu_parallel
    *  @param __begin Begin iterator of sequence.
    *  @param __end End iterator of sequence.
    *  @param __comp Comparator.
-   *  @param __n Length of sequence.
    *  @param __num_threads Number of threads to use.
    */
   template<bool __stable, bool __exact, typename _RAIter,

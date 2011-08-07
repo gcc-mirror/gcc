@@ -1996,19 +1996,19 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       /**
        *  @brief %Function copy constructor.
-       *  @param x A %function object with identical call signature.
-       *  @post @c (bool)*this == (bool)x
+       *  @param __x A %function object with identical call signature.
+       *  @post @c bool(*this) == bool(__x)
        *
        *  The newly-created %function contains a copy of the target of @a
-       *  x (if it has one).
+       *  __x (if it has one).
        */
       function(const function& __x);
 
       /**
        *  @brief %Function move constructor.
-       *  @param x A %function object rvalue with identical call signature.
+       *  @param __x A %function object rvalue with identical call signature.
        *
-       *  The newly-created %function contains the target of @a x
+       *  The newly-created %function contains the target of @a __x
        *  (if it has one).
        */
       function(function&& __x) : _Function_base()
@@ -2021,17 +2021,17 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       /**
        *  @brief Builds a %function that targets a copy of the incoming
        *  function object.
-       *  @param f A %function object that is callable with parameters of
+       *  @param __f A %function object that is callable with parameters of
        *  type @c T1, @c T2, ..., @c TN and returns a value convertible
        *  to @c Res.
        *
-       *  The newly-created %function object will target a copy of @a
-       *  f. If @a f is @c reference_wrapper<F>, then this function
+       *  The newly-created %function object will target a copy of 
+       *  @a __f. If @a __f is @c reference_wrapper<F>, then this function
        *  object will contain a reference to the function object @c
-       *  f.get(). If @a f is a NULL function pointer or NULL
+       *  __f.get(). If @a __f is a NULL function pointer or NULL
        *  pointer-to-member, the newly-created object will be empty.
        *
-       *  If @a f is a non-NULL function pointer or an object of type @c
+       *  If @a __f is a non-NULL function pointer or an object of type @c
        *  reference_wrapper<F>, this function will not throw.
        */
       template<typename _Functor>
@@ -2042,14 +2042,14 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       /**
        *  @brief %Function assignment operator.
-       *  @param x A %function with identical call signature.
+       *  @param __x A %function with identical call signature.
        *  @post @c (bool)*this == (bool)x
        *  @returns @c *this
        *
-       *  The target of @a x is copied to @c *this. If @a x has no
+       *  The target of @a __x is copied to @c *this. If @a __x has no
        *  target, then @c *this will be empty.
        *
-       *  If @a x targets a function pointer or a reference to a function
+       *  If @a __x targets a function pointer or a reference to a function
        *  object, then this operation will not throw an %exception.
        */
       function&
@@ -2061,13 +2061,13 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       /**
        *  @brief %Function move-assignment operator.
-       *  @param x A %function rvalue with identical call signature.
+       *  @param __x A %function rvalue with identical call signature.
        *  @returns @c *this
        *
-       *  The target of @a x is moved to @c *this. If @a x has no
+       *  The target of @a __x is moved to @c *this. If @a __x has no
        *  target, then @c *this will be empty.
        *
-       *  If @a x targets a function pointer or a reference to a function
+       *  If @a __x targets a function pointer or a reference to a function
        *  object, then this operation will not throw an %exception.
        */
       function&
@@ -2098,18 +2098,18 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       /**
        *  @brief %Function assignment to a new target.
-       *  @param f A %function object that is callable with parameters of
+       *  @param __f A %function object that is callable with parameters of
        *  type @c T1, @c T2, ..., @c TN and returns a value convertible
        *  to @c Res.
        *  @return @c *this
        *
        *  This  %function object wrapper will target a copy of @a
-       *  f. If @a f is @c reference_wrapper<F>, then this function
+       *  __f. If @a __f is @c reference_wrapper<F>, then this function
        *  object will contain a reference to the function object @c
-       *  f.get(). If @a f is a NULL function pointer or NULL
+       *  __f.get(). If @a __f is a NULL function pointer or NULL
        *  pointer-to-member, @c this object will be empty.
        *
-       *  If @a f is a non-NULL function pointer or an object of type @c
+       *  If @a __f is a non-NULL function pointer or an object of type @c
        *  reference_wrapper<F>, this function will not throw.
        */
       template<typename _Functor>
@@ -2133,9 +2133,9 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       /**
        *  @brief Swap the targets of two %function objects.
-       *  @param f A %function with identical call signature.
+       *  @param __x A %function with identical call signature.
        *
-       *  Swap the targets of @c this function object and @a f. This
+       *  Swap the targets of @c this function object and @a __f. This
        *  function will not throw an %exception.
        */
       void swap(function& __x)

@@ -200,7 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Add data to the end of the %queue.
-       *  @param  x  Data to be added.
+       *  @param  __x  Data to be added.
        *
        *  This is a typical %queue operation.  The function creates an
        *  element at the end of the %queue and assigns the given data
@@ -253,8 +253,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Queue equality comparison.
-   *  @param  x  A %queue.
-   *  @param  y  A %queue of the same type as @a x.
+   *  @param  __x  A %queue.
+   *  @param  __y  A %queue of the same type as @a __x.
    *  @return  True iff the size and elements of the queues are equal.
    *
    *  This is an equivalence relation.  Complexity and semantics depend on the
@@ -269,9 +269,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Queue ordering relation.
-   *  @param  x  A %queue.
-   *  @param  y  A %queue of the same type as @a x.
-   *  @return  True iff @a x is lexicographically less than @a y.
+   *  @param  __x  A %queue.
+   *  @param  __y  A %queue of the same type as @a x.
+   *  @return  True iff @a __x is lexicographically less than @a __y.
    *
    *  This is an total ordering relation.  Complexity and semantics
    *  depend on the underlying sequence type, but the expected rules
@@ -407,14 +407,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Builds a %queue from a range.
-       *  @param  first  An input iterator.
-       *  @param  last  An input iterator.
-       *  @param  x  A comparison functor describing a strict weak ordering.
-       *  @param  s  An initial sequence with which to start.
+       *  @param  __first  An input iterator.
+       *  @param  __last  An input iterator.
+       *  @param  __x  A comparison functor describing a strict weak ordering.
+       *  @param  __s  An initial sequence with which to start.
        *
-       *  Begins by copying @a s, inserting a copy of the elements
-       *  from @a [first,last) into the copy of @a s, then ordering
-       *  the copy according to @a x.
+       *  Begins by copying @a __s, inserting a copy of the elements
+       *  from @a [first,last) into the copy of @a __s, then ordering
+       *  the copy according to @a __x.
        *
        *  For more information on function objects, see the
        *  documentation on @link functors functor base
@@ -480,7 +480,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Add data to the %queue.
-       *  @param  x  Data to be added.
+       *  @param  __x  Data to be added.
        *
        *  This is a typical %queue operation.
        *  The time complexity of the operation depends on the underlying
