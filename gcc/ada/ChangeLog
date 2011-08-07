@@ -2,6 +2,10 @@
 
 	* gcc-interface/Makefile.in (raise-gcc.o): Fix previous change.
 
+	* gcc-interface/gigi.h (enumerate_modes): Fix formatting.
+
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Revert latest change.
+
 2011-08-05  Nicolas Roche  <roche@adacore.com>
 
 	* gcc-interface/Makefile.in: Don't use directly ../xgcc to build shared

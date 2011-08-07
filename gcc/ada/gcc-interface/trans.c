@@ -2762,12 +2762,6 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   end_subprog_body (gnu_result);
 
-  /* Attempt setting the end_locus of our GCC body tree, typically a
-     BIND_EXPR or STATEMENT_LIST, then the end_locus of our GCC subprogram
-     declaration tree.  */
-  set_end_locus_from_node (gnu_result, gnat_node);
-  set_end_locus_from_node (gnu_subprog_decl, gnat_node);
-
   /* Finally annotate the parameters and disconnect the trees for parameters
      that we have turned into variables since they are now unusable.  */
   for (gnat_param = First_Formal_With_Extras (gnat_subprog_id);
