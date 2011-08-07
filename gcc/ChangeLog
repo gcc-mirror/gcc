@@ -6,11 +6,7 @@
 
 2011-08-01  Sebastien Bourdeauducq  <sebastien@milkymist.org>
 
-	* gcc/config/lm32/t-lm32: fix multilib entry.
-
-2011-08-01  Sebastien Bourdeauducq  <sebastien@milkymist.org>
-
-	* gcc/config/lm32/t-lm32: add missing multilibs.
+	* config/lm32/t-lm32: Add missing multilibs.
 
 2011-07-31  Uros Bizjak  <ubizjak@gmail.com>
 
