@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* Skipped on MIPS GNU/Linux and IRIX target because __PIC__ can be
    defined for executables as well as shared libraries.  */
-/* { dg-skip-if "" { *-*-darwin* hppa*64*-*-* mips*-*-linux* mips*-*-irix* } { "*" } { "" } } */
+/* { dg-skip-if "" { *-*-darwin* hppa*64*-*-* mips*-*-linux* mips*-*-irix* *-*-mingw* } { "*" } { "" } } */
 /* { dg-options "-O2 -fno-common -fdump-tree-optimized" } */
 
 const int conststaticvariable;
