@@ -1,5 +1,9 @@
 2011-08-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50020
+	* semantics.c (finish_call_expr): Don't look at 'this' if we
+	had an explicit object argument.
+
 	PR c++/50011
 	* typeck2.c (check_narrowing): Fix integer logic.
 

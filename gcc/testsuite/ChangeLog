@@ -1,5 +1,7 @@
 2011-08-08  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/range-for20.C: Adjust to test 50020 as well.
+
 	* g++.dg/cpp0x/initlist5.C: Add 50011 test.
 
 2011-08-07  Janus Weil  <janus@gcc.gnu.org>
