@@ -1,3 +1,19 @@
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (static): Use fold_build_pointer_plus.
+	* class.c (make_class_data): Likewise.
+	(build_symbol_entry): Likewise.
+	* except.c (build_exception_object_ref): Likewise.
+	* expr.c (build_java_arrayaccess): Likewise.
+	(build_field_ref): Likewise.
+	(build_known_method_ref): Likewise.
+	(build_invokevirtual): Likewise.
+
+2011-07-06  Richard Guenther  <rguenther@suse.de>
+
+	* decl.c (java_init_decl_processing):
+	Merge calls to build_common_tree_nodes and build_common_tree_nodes_2.
+
 2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
 
 	* builtins.c: Add sync_ or SYNC__ to builtin names.

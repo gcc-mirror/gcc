@@ -487,6 +487,8 @@ proc cleanup-dump { suffix } {
     # The name might include a list of options; extract the file name.
     set src [file tail [lindex $testcase 0]]
     remove-build-file "[file tail $src].$suffix"
+    remove-build-file "[file rootname [file tail $src]].exe.$suffix"
+    remove-build-file "[file rootname [file tail $src]].exe.ltrans\[0-9\]*.$suffix"
     # -fcompare-debug dumps
     remove-build-file "[file tail $src].gk.$suffix"
 
@@ -494,6 +496,8 @@ proc cleanup-dump { suffix } {
     if [info exists additional_sources] {
 	foreach srcfile $additional_sources {
 	    remove-build-file "[file tail $srcfile].$suffix"
+	    remove-build-file "[file rootname [file tail $srcfile]].exe.$suffix"
+	    remove-build-file "[file rootname [file tail $srcfile]].exe.ltrans\[0-9\]*.$suffix"
 	    # -fcompare-debug dumps
 	    remove-build-file "[file tail $srcfile].gk.$suffix"
 	}

@@ -1,7 +1,7 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+// 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,9 @@
 
 #include <debug/debug.h>
 #include <debug/safe_sequence.h>
+#include <debug/safe_unordered_container.h>
 #include <debug/safe_iterator.h>
+#include <debug/safe_local_iterator.h>
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -51,21 +53,50 @@ namespace
   }
 
   void
+  swap_its(__gnu_debug::_Safe_sequence_base& __lhs,
+	   __gnu_debug::_Safe_iterator_base*& __lhs_its,
+	   __gnu_debug::_Safe_sequence_base& __rhs,
+	   __gnu_debug::_Safe_iterator_base*& __rhs_its)
+  {
+    swap(__lhs_its, __rhs_its);
+    __gnu_debug::_Safe_iterator_base* __iter;
+    for (__iter = __rhs_its; __iter; __iter = __iter->_M_next)
+      __iter->_M_sequence = &__rhs;
+    for (__iter = __lhs_its; __iter; __iter = __iter->_M_next)
+      __iter->_M_sequence = &__lhs;
+  }
+
+  void
   swap_seq(__gnu_debug::_Safe_sequence_base& __lhs,
 	   __gnu_debug::_Safe_sequence_base& __rhs)
   {
-    swap(__lhs._M_iterators, __rhs._M_iterators);
-    swap(__lhs._M_const_iterators, __rhs._M_const_iterators);
     swap(__lhs._M_version, __rhs._M_version);
-    __gnu_debug::_Safe_iterator_base* __iter;
-    for (__iter = __rhs._M_iterators; __iter; __iter = __iter->_M_next)
-      __iter->_M_sequence = &__rhs;
-    for (__iter = __lhs._M_iterators; __iter; __iter = __iter->_M_next)
-      __iter->_M_sequence = &__lhs;
-    for (__iter = __rhs._M_const_iterators; __iter; __iter = __iter->_M_next)
-      __iter->_M_sequence = &__rhs;
-    for (__iter = __lhs._M_const_iterators; __iter; __iter = __iter->_M_next)
-      __iter->_M_sequence = &__lhs;
+    swap_its(__lhs, __lhs._M_iterators,
+	     __rhs, __rhs._M_iterators);
+    swap_its(__lhs, __lhs._M_const_iterators,
+	     __rhs, __rhs._M_const_iterators);
+  }
+
+  void
+  swap_ucont(__gnu_debug::_Safe_unordered_container_base& __lhs,
+	    __gnu_debug::_Safe_unordered_container_base& __rhs)
+  {
+    swap_seq(__lhs, __rhs);
+    swap_its(__lhs, __lhs._M_local_iterators,
+	     __rhs, __rhs._M_local_iterators);
+    swap_its(__lhs, __lhs._M_const_local_iterators,
+	     __rhs, __rhs._M_const_local_iterators);
+  }
+
+  void
+  detach_all(__gnu_debug::_Safe_iterator_base* __iter)
+  {
+    for (; __iter;)
+      {
+	__gnu_debug::_Safe_iterator_base* __old = __iter;
+	__iter = __iter->_M_next;
+	__old->_M_reset();
+      }
   }
 } // anonymous namespace
 
@@ -73,6 +104,7 @@ namespace __gnu_debug
 {
   const char* _S_debug_messages[] = 
   {
+    // General Checks
     "function requires a valid iterator range [%1.name;, %2.name;)",
     "attempt to insert into container with a singular iterator",
     "attempt to insert into container with an iterator"
@@ -93,15 +125,18 @@ namespace __gnu_debug
     "elements in iterator range [%1.name;, %2.name;) do not form a heap",
     "elements in iterator range [%1.name;, %2.name;)"
     " do not form a heap with respect to the predicate %3;",
+    // std::bitset checks
     "attempt to write through a singular bitset reference",
     "attempt to read from a singular bitset reference",
     "attempt to flip a singular bitset reference",
+    // std::list checks
     "attempt to splice a list into itself",
     "attempt to splice lists with inequal allocators",
     "attempt to splice elements referenced by a %1.state; iterator",
     "attempt to splice an iterator from a different container",
     "splice destination %1.name;"
     " occurs within source range [%2.name;, %3.name;)",
+    // iterator checks
     "attempt to initialize an iterator that will immediately become singular",
     "attempt to copy-construct an iterator from a singular iterator",
     "attempt to construct a constant iterator"
@@ -124,17 +159,24 @@ namespace __gnu_debug
     " iterator to a %2.state; iterator",
     "attempt to compute the different between two iterators"
     " from different sequences",
+    // istream_iterator
     "attempt to dereference an end-of-stream istream_iterator",
     "attempt to increment an end-of-stream istream_iterator",
+    // ostream_iterator
     "attempt to output via an ostream_iterator with no associated stream",
+    // istreambuf_iterator
     "attempt to dereference an end-of-stream istreambuf_iterator"
     " (this is a GNU extension)",
     "attempt to increment an end-of-stream istreambuf_iterator",
+    // std::forward_list
     "attempt to insert into container after an end iterator",
     "attempt to erase from container after a %2.state; iterator not followed"
     " by a dereferenceable one",
     "function requires a valid iterator range (%2.name;, %3.name;)"
-    ", \"%2.name;\" shall be before and not equal to \"%3.name;\""
+    ", \"%2.name;\" shall be before and not equal to \"%3.name;\"",
+    // std::unordered_container::local_iterator
+    "attempt to compare local iterators from different unordered container"
+    " buckets"
   };
 
   void
@@ -142,20 +184,10 @@ namespace __gnu_debug
   _M_detach_all()
   {
     __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
-    for (_Safe_iterator_base* __iter = _M_iterators; __iter;)
-      {
-	_Safe_iterator_base* __old = __iter;
-	__iter = __iter->_M_next;
-	__old->_M_reset();
-      }
+    detach_all(_M_iterators);
     _M_iterators = 0;
     
-    for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2;)
-      {
-	_Safe_iterator_base* __old = __iter2;
-	__iter2 = __iter2->_M_next;
-	__old->_M_reset();
-      }
+    detach_all(_M_const_iterators);
     _M_const_iterators = 0;
   }
 
@@ -299,9 +331,7 @@ namespace __gnu_debug
   _M_detach()
   {
     if (_M_sequence)
-      {
-	_M_sequence->_M_detach(this);
-      }
+      _M_sequence->_M_detach(this);
 
     _M_reset();
   }
@@ -311,9 +341,7 @@ namespace __gnu_debug
   _M_detach_single() throw ()
   {
     if (_M_sequence)
-      {
-	_M_sequence->_M_detach_single(this);
-      }
+      _M_sequence->_M_detach_single(this);
 
     _M_reset();
   }
@@ -345,6 +373,143 @@ namespace __gnu_debug
   _Safe_iterator_base::
   _M_get_mutex() throw ()
   { return get_safe_base_mutex(_M_sequence); }
+
+  _Safe_unordered_container_base*
+  _Safe_local_iterator_base::
+  _M_get_container() const _GLIBCXX_NOEXCEPT
+  { return static_cast<_Safe_unordered_container_base*>(_M_sequence); }
+
+  void
+  _Safe_local_iterator_base::
+  _M_attach(_Safe_sequence_base* __cont, bool __constant)
+  {
+    _M_detach();
+    
+    // Attach to the new container (if there is one)
+    if (__cont)
+      {
+	_M_sequence = __cont;
+	_M_version = _M_sequence->_M_version;
+	_M_get_container()->_M_attach_local(this, __constant);
+      }
+  }
+  
+  void
+  _Safe_local_iterator_base::
+  _M_attach_single(_Safe_sequence_base* __cont, bool __constant) throw ()
+  {
+    _M_detach_single();
+    
+    // Attach to the new container (if there is one)
+    if (__cont)
+      {
+	_M_sequence = __cont;
+	_M_version = _M_sequence->_M_version;
+	_M_get_container()->_M_attach_local_single(this, __constant);
+      }
+  }
+
+  void
+  _Safe_local_iterator_base::
+  _M_detach()
+  {
+    if (_M_sequence)
+      _M_get_container()->_M_detach_local(this);
+
+    _M_reset();
+  }
+
+  void
+  _Safe_local_iterator_base::
+  _M_detach_single() throw ()
+  {
+    if (_M_sequence)
+      _M_get_container()->_M_detach_local_single(this);
+
+    _M_reset();
+  }
+
+  void
+  _Safe_unordered_container_base::
+  _M_detach_all()
+  {
+    __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
+    detach_all(_M_iterators);
+    _M_iterators = 0;
+    
+    detach_all(_M_const_iterators);
+    _M_const_iterators = 0;
+
+    detach_all(_M_local_iterators);
+    _M_local_iterators = 0;
+
+    detach_all(_M_const_local_iterators);
+    _M_const_local_iterators = 0;
+  }
+
+  void
+  _Safe_unordered_container_base::
+  _M_swap(_Safe_unordered_container_base& __x)
+  {
+    // We need to lock both containers to swap
+    using namespace __gnu_cxx;
+    __mutex *__this_mutex = &_M_get_mutex();
+    __mutex *__x_mutex = &__x._M_get_mutex();
+    if (__this_mutex == __x_mutex)
+      {
+	__scoped_lock __lock(*__this_mutex);
+	swap_ucont(*this, __x);
+      }
+    else
+      {
+	__scoped_lock __l1(__this_mutex < __x_mutex
+			     ? *__this_mutex : *__x_mutex);
+	__scoped_lock __l2(__this_mutex < __x_mutex
+			     ? *__x_mutex : *__this_mutex);
+	swap_ucont(*this, __x);
+      }
+  }
+
+  void
+  _Safe_unordered_container_base::
+  _M_attach_local(_Safe_iterator_base* __it, bool __constant)
+  {
+    __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
+    _M_attach_local_single(__it, __constant);
+  }
+
+  void
+  _Safe_unordered_container_base::
+  _M_attach_local_single(_Safe_iterator_base* __it, bool __constant) throw ()
+  {
+    _Safe_iterator_base*& __its =
+      __constant ? _M_const_local_iterators : _M_local_iterators;
+    __it->_M_next = __its;
+    if (__it->_M_next)
+      __it->_M_next->_M_prior = __it;
+    __its = __it;
+  }
+
+  void
+  _Safe_unordered_container_base::
+  _M_detach_local(_Safe_iterator_base* __it)
+  {
+    // Remove __it from this container's list
+    __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
+    _M_detach_local_single(__it);
+  }
+
+  void
+  _Safe_unordered_container_base::
+  _M_detach_local_single(_Safe_iterator_base* __it) throw ()
+  {
+    // Remove __it from this container's list
+    __it->_M_unlink();
+    if (_M_const_local_iterators == __it)
+      _M_const_local_iterators = __it->_M_next;
+    if (_M_local_iterators == __it)
+      _M_local_iterators = __it->_M_next;
+  }
 
   void
   _Error_formatter::_Parameter::

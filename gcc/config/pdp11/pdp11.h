@@ -664,3 +664,5 @@ extern rtx cc0_reg_rtx;
 
 
 #define COMPARE_FLAG_MODE HImode
+
+#define TARGET_HAVE_NAMED_SECTIONS false

@@ -1,5 +1,5 @@
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-# 2006 Free Software Foundation, Inc.
+# 2006, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,18 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
-
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	cat $(srcdir)/config/fp-bit.c > dp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 # Build the libraries for pthread and all of the 
 # different processor models
@@ -82,13 +70,8 @@ SHLIB_INSTALL = \
 		$$(DESTDIR)$$(slibdir)@shlib_slibdir_qual@/
 SHLIB_LIBS = -lc `case @multilib_dir@ in *pthread*) echo -lpthread ;; esac`
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
-SHLIB_MAPFILES = $$(libgcc_objdir)/libgcc-std.ver $(srcdir)/config/rs6000/libgcc-ppc64.ver
+SHLIB_MAPFILES = $$(libgcc_objdir)/libgcc-std.ver
 SHLIB_NM_FLAGS = -Bpg -X32_64
-
-# GCC 128-bit long double support routines.
-LIB2FUNCS_EXTRA =  $(srcdir)/config/rs6000/ppc64-fp.c \
-	$(srcdir)/config/rs6000/darwin-ldouble.c
-TARGET_LIBGCC2_CFLAGS = -mlong-double-128
 
 # Either 32-bit and 64-bit objects in archives.
 AR_FLAGS_FOR_TARGET = -X32_64

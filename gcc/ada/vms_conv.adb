@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1962,7 +1962,7 @@ package body VMS_Conv is
                            end if;
 
                         when T_File | T_No_Space_File =>
-                           if SwP + 1 > Arg'Last then
+                           if SwP + 2 > Arg'Last then
                               Put (Standard_Error,
                                    "missing file for: ");
                               Put_Line (Standard_Error, Arg.all);

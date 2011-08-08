@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2 -march=pentiumpro -minline-all-stringops" } */
 /* { dg-final { scan-assembler "rep" } } */
 /* { dg-final { scan-assembler "movs" } } */

@@ -8,7 +8,7 @@ struct A2 {
 
 template <class T> struct B {
   T ar[1];
-  B(T t):ar({t}) {}
+  B(T t):ar{t} {}
 };
 
 int main(){

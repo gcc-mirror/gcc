@@ -110,37 +110,6 @@ int_mod (int a, int b)
   return a - b * int_div (a, b);
 }
 
-/* For X and Y positive integers, return X multiplied by Y and check
-   that the result does not overflow.  */
-
-static inline int
-check_pos_mul (int x, int y)
-{
-  if (x != 0)
-    gcc_assert ((INT_MAX) / x > y);
-
-  return x * y;
-}
-
-/* Return X multiplied by Y and check that the result does not
-   overflow.  */
-
-static inline int
-check_mul (int x, int y)
-{
-  if (x >= 0)
-    {
-      if (y >= 0)
-	return check_pos_mul (x, y);
-      else
-	return -check_pos_mul (x, -y);
-    }
-  else if (y >= 0)
-    return -check_pos_mul (-x, y);
-  else
-    return check_pos_mul (-x, -y);
-}
-
 /* Test whether equation E is red.  */
 
 static inline bool
@@ -3907,8 +3876,8 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 	      max_splinters += -minC - 1;
 	    else
 	      max_splinters +=
-		check_pos_mul ((pb->geqs[e].coef[i] - 1),
-			       (-minC - 1)) / (-minC) + 1;
+		pos_mul_hwi ((pb->geqs[e].coef[i] - 1),
+			     (-minC - 1)) / (-minC) + 1;
 	  }
 
       /* #ifdef Omega3 */
@@ -4321,8 +4290,8 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 
 			for (k = 0; k <= n_vars; k++)
 			  pb->geqs[Ue].coef[k] =
-			    check_mul (pb->geqs[Ue].coef[k], Lc) +
-			    check_mul (lbeqn->coef[k], Uc);
+			    mul_hwi (pb->geqs[Ue].coef[k], Lc) +
+			    mul_hwi (lbeqn->coef[k], Uc);
 
 			if (dump_file && (dump_flags & TDF_DETAILS))
 			  {
@@ -4384,8 +4353,8 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 
 			      for (k = n_vars; k >= 0; k--)
 				pb->geqs[e2].coef[k] =
-				  check_mul (pb->geqs[Ue].coef[k], Lc) +
-				  check_mul (pb->geqs[Le].coef[k], Uc);
+				  mul_hwi (pb->geqs[Ue].coef[k], Lc) +
+				  mul_hwi (pb->geqs[Le].coef[k], Uc);
 
 			      pb->geqs[e2].coef[n_vars + 1] = 0;
 			      pb->geqs[e2].touched = 1;
@@ -4506,8 +4475,8 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 			  {
 			    for (k = n_vars; k >= 0; k--)
 			      iS->geqs[e2].coef[k] = rS->geqs[e2].coef[k] =
-				check_mul (pb->geqs[Ue].coef[k], Lc) +
-				check_mul (pb->geqs[Le].coef[k], Uc);
+				mul_hwi (pb->geqs[Ue].coef[k], Lc) +
+				mul_hwi (pb->geqs[Le].coef[k], Uc);
 
 			    iS->geqs[e2].coef[0] -= (Uc - 1) * (Lc - 1);
 			  }

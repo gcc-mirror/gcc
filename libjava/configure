@@ -648,7 +648,7 @@ GCJVERSION
 toolexeclibdir
 toolexecmainlibdir
 toolexecdir
-GCC_UNWIND_INCLUDE
+LIBGCC_UNWIND_INCLUDE
 INSTALL_BINARIES_FALSE
 INSTALL_BINARIES_TRUE
 NEEDS_DATA_START_FALSE
@@ -6781,7 +6781,7 @@ case "${which_gcj}" in
    cross)
       if test "x${with_newlib}" = "xyes"; then
          # FIXME (comment): Why is this needed?
-         GCC_UNWIND_INCLUDE=
+         LIBGCC_UNWIND_INCLUDE=
       fi
       GCJH='$(target_noncanonical)-gcjh'
    ;;
@@ -20907,8 +20907,8 @@ else
 fi
 
 
-# We're in the tree with gcc, and need to include some of its headers.
-GCC_UNWIND_INCLUDE='-I$(multi_basedir)/./libjava/../gcc'
+# We're in the tree with libgcc, and need to include some of its headers.
+LIBGCC_UNWIND_INCLUDE='-I$(multi_basedir)/./libjava/../libgcc'
 
 if test "x${with_newlib}" = "xyes"; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS

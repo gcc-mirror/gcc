@@ -240,10 +240,13 @@ POSTSTAGE1_CXX_EXPORT = \
 	CXX="$(STAGE_CC_WRAPPER) $$r/$(HOST_SUBDIR)/prev-gcc/g++$(exeext) \
 	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/ -nostdinc++ \
 	  -B$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs \
+	  -B$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/libsupc++/.libs \
 	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include/$(TARGET_SUBDIR) \
 	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include \
 	  -I$$s/libstdc++-v3/libsupc++ \
-	  -L$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs"; export CXX; \
+	  -L$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs \
+	  -L$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/libsupc++/.libs"; \
+	  export CXX; \
 	CXX_FOR_BUILD="$$CXX"; export CXX_FOR_BUILD;
 @endif target-libstdc++-v3-bootstrap
 
@@ -318,6 +321,8 @@ HOST_CLOOGINC = @clooginc@
 # Where to find libelf
 HOST_LIBELFLIBS = @libelflibs@
 HOST_LIBELFINC = @libelfinc@
+
+EXTRA_CONFIGARGS_LIBJAVA = @EXTRA_CONFIGARGS_LIBJAVA@
 
 # ----------------------------------------------
 # Programs producing files for the BUILD machine
@@ -416,6 +421,7 @@ TFLAGS =
 STAGE_CFLAGS = $(BOOT_CFLAGS)
 STAGE_TFLAGS = $(TFLAGS)
 STAGE_CONFIGURE_FLAGS=@stage2_werror_flag@
+POSTSTAGE1_CONFIGURE_FLAGS = @POSTSTAGE1_CONFIGURE_FLAGS@
 
 [+ FOR bootstrap-stage +]
 # Defaults for stage [+id+]; some are overridden below.
@@ -426,7 +432,10 @@ STAGE[+id+]_CXXFLAGS = $(CXXFLAGS)
 STAGE[+id+]_CXXFLAGS = $(STAGE[+id+]_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGE[+id+]_TFLAGS = $(STAGE_TFLAGS)
-STAGE[+id+]_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
+# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
+# POSTSTAGE1_CONFIGURE_FLAGS here.
+STAGE[+id+]_CONFIGURE_FLAGS = \
+	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
 [+ ENDFOR bootstrap-stage +]
 
 # Only build the C compiler for stage1, because that is the only one that
@@ -444,6 +453,9 @@ STAGE1_LANGUAGES = @stage1_languages@
 #   the last argument when conflicting --enable arguments are passed.
 # * Likewise, we force-disable coverage flags, since the installed
 #   compiler probably has never heard of them.
+# * Don't remove this, because above we added
+#   POSTSTAGE1_CONFIGURE_FLAGS to STAGE[+id+]_CONFIGURE_FLAGS, which
+#   we don't want for STAGE1_CONFIGURE_FLAGS.
 STAGE1_CONFIGURE_FLAGS = --disable-intermodule $(STAGE1_CHECKING) \
 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"
 
@@ -1390,6 +1402,13 @@ ENDIF raw_cxx +]
 @endif target-[+module+]
 [+ ENDFOR recursive_targets +]
 [+ ENDFOR target_modules +]
+
+@if target-libmudflap
+.PHONY: check-target-libmudflap-c++
+check-target-libmudflap-c++:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) c++frags.exp" check-target-libmudflap
+
+@endif target-libmudflap
 
 # ----------
 # GCC module

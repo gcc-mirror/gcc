@@ -1,8 +1,0 @@
-EXTRA_PARTS += crtfastmath.o
-
-$(T)crtfastmath.o: $(srcdir)/config/i386/crtfastmath.c \
-  $(srcdir)/config/i386/cpuid.h $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(MULTILIB_CFLAGS) \
-		-msse -minline-all-stringops -c \
-		$(srcdir)/config/i386/crtfastmath.c \
-		-o $(T)crtfastmath$(objext)

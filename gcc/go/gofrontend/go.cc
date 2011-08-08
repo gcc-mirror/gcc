@@ -133,6 +133,9 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 
   // Convert complicated go and defer statements into simpler ones.
   ::gogo->simplify_thunk_statements();
+  
+  // Dump ast, use filename[0] as the base name
+  ::gogo->dump_ast(filenames[0]);
 }
 
 // Write out globals.

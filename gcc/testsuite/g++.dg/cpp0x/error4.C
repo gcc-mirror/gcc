@@ -10,7 +10,7 @@ struct S {
     static U get(const volatile T&);
 
   template<typename U>
-    static decltype(*declval<U>()) get(...);
+    static decltype(*declval<U>()) get(...); // { dg-error "operator*" }
 
   typedef decltype(get<T>(declval<T>())) type; // { dg-error "no match" }
 };

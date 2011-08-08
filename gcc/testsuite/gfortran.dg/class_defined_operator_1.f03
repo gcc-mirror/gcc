@@ -100,3 +100,5 @@ contains
    this = this*scale
  end subroutine
 end program
+
+! { dg-final { cleanup-modules "bar_module foo_module" } }

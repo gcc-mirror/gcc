@@ -15,3 +15,5 @@ PROGRAM main
   i = 4 ! { dg-error "no IMPLICIT type" }
   j = 5
 END PROGRAM main
+
+! { dg-final { cleanup-modules "m" } }

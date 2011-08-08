@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,7 +94,8 @@ package body System.Standard_Library is
    pragma Export (C, Break_Start, "__gnat_break_start");
    --  This is a dummy procedure that is called at the start of execution.
    --  Its sole purpose is to provide a well defined point for the placement
-   --  of a main program breakpoint.
+   --  of a main program breakpoint. This is not used anymore but kept for
+   --  bootstrapping issues (still referenced by old gnatbind generated files).
 
    procedure Break_Start is
    begin

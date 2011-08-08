@@ -1280,8 +1280,8 @@ package body Layout is
             end;
          end if;
 
-         --  Now set the dynamic size (the Value_Size is always the same
-         --  as the Object_Size for arrays whose length is dynamic).
+         --  Now set the dynamic size (the Value_Size is always the same as the
+         --  Object_Size for arrays whose length is dynamic).
 
          --  ??? If Size.Status = Dynamic, Vtyp will not have been set.
          --  The added initialization sets it to Empty now, but is this
@@ -1305,6 +1305,7 @@ package body Layout is
       Lo   : Node_Id;
       Hi   : Node_Id;
       Res  : Boolean := False;
+
    begin
       --  Loop to process array indexes
 
@@ -1323,9 +1324,10 @@ package body Layout is
          Hi := Type_High_Bound (Ityp);
 
          if (Nkind (Lo) = N_Identifier
-               and then Ekind (Entity (Lo)) = E_Discriminant)
-           or else (Nkind (Hi) = N_Identifier
-                      and then Ekind (Entity (Hi)) = E_Discriminant)
+              and then Ekind (Entity (Lo)) = E_Discriminant)
+           or else
+            (Nkind (Hi) = N_Identifier
+              and then Ekind (Entity (Hi)) = E_Discriminant)
          then
             Res := True;
          end if;
@@ -2572,27 +2574,11 @@ package body Layout is
             end;
          end if;
 
-         --  If RM_Size is known, set Esize if not known
-
-         if Known_RM_Size (E) and then Unknown_Esize (E) then
-
-            --  If the alignment is known, we bump the Esize up to the next
-            --  alignment boundary if it is not already on one.
-
-            if Known_Alignment (E) then
-               declare
-                  A : constant Uint   := Alignment_In_Bits (E);
-                  S : constant SO_Ref := RM_Size (E);
-               begin
-                  Set_Esize (E, (S + A - 1) / A * A);
-               end;
-            end if;
-
          --  If Esize is set, and RM_Size is not, RM_Size is copied from Esize.
          --  At least for now this seems reasonable, and is in any case needed
          --  for compatibility with old versions of gigi.
 
-         elsif Known_Esize (E) and then Unknown_RM_Size (E) then
+         if Known_Esize (E) and then Unknown_RM_Size (E) then
             Set_RM_Size (E, Esize (E));
          end if;
 

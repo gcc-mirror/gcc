@@ -1,0 +1,38 @@
+/* C6X ISA names.
+   Copyright (C) 2011
+   Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* Define ISAs for the -march option, used both in C6X.c and to
+   generate c6x-tables.opt.  Before including this file, define a
+   macro:
+
+   C6X_ISA (NAME, ENUM_VALUE, FLAGS)
+
+   where NAME is the name for use with -march=, ENUM_VALUE is an enum
+   corresponding to this arch, and FLAGS is a combination of flags
+   that together specify the available instructions.  */
+
+C6X_ISA("c62x", C6X_CPU_C62X, C6X_INSNS_C62X)
+C6X_ISA("c64x", C6X_CPU_C64X, C6X_INSNS_C62X | C6X_INSNS_C64X)
+C6X_ISA("c64x+", C6X_CPU_C64XP, C6X_INSNS_C62X | C6X_INSNS_C64X | C6X_INSNS_C64XP)
+C6X_ISA("c67x", C6X_CPU_C67X, C6X_INSNS_C62X | C6X_INSNS_C67X)
+C6X_ISA("c67x+", C6X_CPU_C67XP, C6X_INSNS_C62X | C6X_INSNS_C67X | C6X_INSNS_C67XP)
+C6X_ISA("c674x", C6X_CPU_C674X,
+	(C6X_INSNS_C62X | C6X_INSNS_C64X | C6X_INSNS_C64XP | C6X_INSNS_C67X
+         | C6X_INSNS_C67XP | C6X_INSNS_C674X))

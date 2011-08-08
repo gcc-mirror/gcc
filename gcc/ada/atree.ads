@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -404,16 +404,16 @@ package Atree is
    --  with copying aspect specifications where this is required.
 
    function New_Copy (Source : Node_Id) return Node_Id;
-   --  This function allocates a completely new node, and then initializes
-   --  it by copying the contents of the source node into it. The contents
-   --  of the source node is not affected. The target node is always marked
-   --  as not being in a list (even if the source is a list member). The
-   --  new node will have an extension if the source has an extension.
-   --  New_Copy (Empty) returns Empty and New_Copy (Error) returns Error.
-   --  Note that, unlike New_Copy_Tree, New_Copy does not recursively copy any
-   --  descendents, so in general parent pointers are not set correctly for
-   --  the descendents of the copied node. Both normal and extended nodes
-   --  (entities) may be copied using New_Copy.
+   --  This function allocates a completely new node, and then initializes it
+   --  by copying the contents of the source node into it. The contents of the
+   --  source node is not affected. The target node is always marked as not
+   --  being in a list (even if the source is a list member). The new node will
+   --  have an extension if the source has an extension. New_Copy (Empty)
+   --  returns Empty and New_Copy (Error) returns Error. Note that, unlike
+   --  Copy_Separate_Tree, New_Copy does not recursively copy any descendents,
+   --  so in general parent pointers are not set correctly for the descendents
+   --  of the copied node. Both normal and extended nodes (entities) may be
+   --  copied using New_Copy.
 
    function Relocate_Node (Source : Node_Id) return Node_Id;
    --  Source is a non-entity node that is to be relocated. A new node is
@@ -819,9 +819,9 @@ package Atree is
 
    function Is_Rewrite_Insertion (Node : Node_Id) return Boolean;
    pragma Inline (Is_Rewrite_Insertion);
-   --  Tests whether the given node was marked using Set_Rewrite_Insert. This
-   --  is used in reconstructing the original tree (where such nodes are to
-   --  be eliminated from the reconstructed tree).
+   --  Tests whether the given node was marked using Mark_Rewrite_Insertion.
+   --  This is used in reconstructing the original tree (where such nodes are
+   --  to be eliminated).
 
    procedure Rewrite (Old_Node, New_Node : Node_Id);
    --  This is used when a complete subtree is to be replaced. Old_Node is the
@@ -889,8 +889,8 @@ package Atree is
 
    package Unchecked_Access is
 
-      --  Functions to allow interpretation of Union_Id values as Uint
-      --  and Ureal values
+      --  Functions to allow interpretation of Union_Id values as Uint and
+      --  Ureal values.
 
       function To_Union is new Unchecked_Conversion (Uint,  Union_Id);
       function To_Union is new Unchecked_Conversion (Ureal, Union_Id);
@@ -898,8 +898,8 @@ package Atree is
       function From_Union is new Unchecked_Conversion (Union_Id, Uint);
       function From_Union is new Unchecked_Conversion (Union_Id, Ureal);
 
-      --  Functions to fetch contents of indicated field. It is an error
-      --  to attempt to read the value of a field which is not present.
+      --  Functions to fetch contents of indicated field. It is an error to
+      --  attempt to read the value of a field which is not present.
 
       function Field1 (N : Node_Id) return Union_Id;
       pragma Inline (Field1);
@@ -1111,6 +1111,9 @@ package Atree is
       function Elist4 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist4);
 
+      function Elist5 (N : Node_Id) return Elist_Id;
+      pragma Inline (Elist5);
+
       function Elist8 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist8);
 
@@ -1135,6 +1138,9 @@ package Atree is
       function Elist23 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist23);
 
+      function Elist24 (N : Node_Id) return Elist_Id;
+      pragma Inline (Elist24);
+
       function Elist25 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist25);
 
@@ -1150,10 +1156,10 @@ package Atree is
       function Str3 (N : Node_Id) return String_Id;
       pragma Inline (Str3);
 
-      --  Note: the following Uintnn functions have a special test for
-      --  the Field value being Empty. If an Empty value is found then
-      --  Uint_0 is returned. This avoids the rather tricky requirement
-      --  of initializing all Uint fields in nodes and entities.
+      --  Note: the following Uintnn functions have a special test for the
+      --  Field value being Empty. If an Empty value is found then Uint_0 is
+      --  returned. This avoids the rather tricky requirement of initializing
+      --  all Uint fields in nodes and entities.
 
       function Uint2 (N : Node_Id) return Uint;
       pragma Inline (Uint2);
@@ -2177,6 +2183,9 @@ package Atree is
       procedure Set_Elist4 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist4);
 
+      procedure Set_Elist5 (N : Node_Id; Val : Elist_Id);
+      pragma Inline (Set_Elist5);
+
       procedure Set_Elist8 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist8);
 
@@ -2200,6 +2209,9 @@ package Atree is
 
       procedure Set_Elist23 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist23);
+
+      procedure Set_Elist24 (N : Node_Id; Val : Elist_Id);
+      pragma Inline (Set_Elist24);
 
       procedure Set_Elist25 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist25);
@@ -3023,8 +3035,8 @@ package Atree is
       procedure Set_Flag254 (N : Node_Id; Val : Boolean);
       pragma Inline (Set_Flag254);
 
-      --  The following versions of Set_Noden also set the parent
-      --  pointer of the referenced node if it is non_Empty
+      --  The following versions of Set_Noden also set the parent pointer of
+      --  the referenced node if it is not Empty.
 
       procedure Set_Node1_With_Parent (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node1_With_Parent);
@@ -3042,8 +3054,7 @@ package Atree is
       pragma Inline (Set_Node5_With_Parent);
 
       --  The following versions of Set_Listn also set the parent pointer of
-      --  the referenced node if it is non_Empty. The procedures for List6
-      --  to List12 can only be applied to nodes which have an extension.
+      --  the referenced node if it is not Empty.
 
       procedure Set_List1_With_Parent (N : Node_Id; Val : List_Id);
       pragma Inline (Set_List1_With_Parent);

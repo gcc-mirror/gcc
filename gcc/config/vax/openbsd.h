@@ -1,5 +1,5 @@
 /* Configuration fragment for a VAX OpenBSD target.
-   Copyright (C) 2000, 2002, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2007, 2009, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -46,3 +46,5 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef WINT_TYPE
 #define WINT_TYPE "int"
+
+#define TARGET_HAVE_NAMED_SECTIONS false

@@ -46,7 +46,6 @@ namespace __debug
       public __gnu_debug::_Safe_sequence<map<_Key, _Tp, _Compare, _Allocator> >
     {
       typedef _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Allocator> _Base;
-      typedef __gnu_debug::_Safe_sequence<map> _Safe_base;
 
       typedef typename _Base::const_iterator _Base_const_iterator;
       typedef typename _Base::iterator _Base_iterator;
@@ -61,9 +60,9 @@ namespace __debug
       typedef typename _Base::reference             reference;
       typedef typename _Base::const_reference       const_reference;
 
-      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator, map>
+      typedef __gnu_debug::_Safe_iterator<_Base_iterator, map>
                                                     iterator;
-      typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator, map>
+      typedef __gnu_debug::_Safe_iterator<_Base_const_iterator, map>
                                                     const_iterator;
 
       typedef typename _Base::size_type             size_type;
@@ -85,24 +84,24 @@ namespace __debug
 	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
 								     __last)),
 		__gnu_debug::__base(__last),
-		__comp, __a), _Safe_base() { }
+		__comp, __a) { }
 
       map(const map& __x)
-      : _Base(__x), _Safe_base() { }
+      : _Base(__x) { }
 
       map(const _Base& __x)
-      : _Base(__x), _Safe_base() { }
+      : _Base(__x) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       map(map&& __x)
       noexcept(is_nothrow_copy_constructible<_Compare>::value)
-      : _Base(std::move(__x)), _Safe_base()
+      : _Base(std::move(__x))
       { this->_M_swap(__x); }
 
       map(initializer_list<value_type> __l,
 	  const _Compare& __c = _Compare(),
 	  const allocator_type& __a = allocator_type())
-      : _Base(__l, __c, __a), _Safe_base() { }
+      : _Base(__l, __c, __a) { }
 #endif
 
       ~map() _GLIBCXX_NOEXCEPT { }
@@ -206,7 +205,6 @@ namespace __debug
       std::pair<iterator, bool>
       insert(const value_type& __x)
       {
-	typedef typename _Base::iterator _Base_iterator;
 	std::pair<_Base_iterator, bool> __res = _Base::insert(__x);
 	return std::pair<iterator, bool>(iterator(__res.first, this),
 					 __res.second);
@@ -219,7 +217,6 @@ namespace __debug
         std::pair<iterator, bool>
         insert(_Pair&& __x)
         {
-	  typedef typename _Base::iterator _Base_iterator;
 	  std::pair<_Base_iterator, bool> __res
 	    = _Base::insert(std::forward<_Pair>(__x));
 	  return std::pair<iterator, bool>(iterator(__res.first, this),
@@ -384,7 +381,6 @@ namespace __debug
       std::pair<iterator,iterator>
       equal_range(const key_type& __x)
       {
-	typedef typename _Base::iterator _Base_iterator;
 	std::pair<_Base_iterator, _Base_iterator> __res =
 	_Base::equal_range(__x);
 	return std::make_pair(iterator(__res.first, this),
@@ -394,7 +390,6 @@ namespace __debug
       std::pair<const_iterator,const_iterator>
       equal_range(const key_type& __x) const
       {
-	typedef typename _Base::const_iterator _Base_const_iterator;
 	std::pair<_Base_const_iterator, _Base_const_iterator> __res =
 	_Base::equal_range(__x);
 	return std::make_pair(const_iterator(__res.first, this),
@@ -411,7 +406,6 @@ namespace __debug
       void
       _M_invalidate_all()
       {
-	typedef typename _Base::const_iterator _Base_const_iterator;
 	typedef __gnu_debug::_Not_equal_to<_Base_const_iterator> _Not_equal;
 	this->_M_invalidate_if(_Not_equal(_M_base().end()));
       }

@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2009, 2010
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -84,6 +84,10 @@ along with GCC; see the file COPYING3.  If not see
 #  define fputc(C, Stream) fputc_unlocked (C, Stream)
 # endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 # ifdef HAVE_CLEARERR_UNLOCKED
 #  undef clearerr
 #  define clearerr(Stream) clearerr_unlocked (Stream)
@@ -163,6 +167,10 @@ extern size_t fwrite_unlocked (const void *, size_t, size_t, FILE *);
 extern int fprintf_unlocked (FILE *, const char *, ...);
 #  endif
 # endif
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
@@ -286,8 +294,16 @@ extern int errno;
    here.  These checks will be in the undefined state while configure
    is running so be careful to test "defined (HAVE_DECL_*)".  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined (HAVE_DECL_ABORT) && !HAVE_DECL_ABORT
 extern void abort (void);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #if HAVE_SYS_STAT_H
@@ -353,8 +369,8 @@ extern void abort (void);
    compilers, including G++.  -- gdr, 2005-05-18  */
 #if !defined(HAVE_DESIGNATED_INITIALIZERS)
 #define HAVE_DESIGNATED_INITIALIZERS \
-  ((!defined(__cplusplus) && (GCC_VERSION >= 2007)) \
-   || (__STDC_VERSION__ >= 199901L))
+  (!defined(__cplusplus) \
+   && ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)))
 #endif
 
 #ifndef offsetof

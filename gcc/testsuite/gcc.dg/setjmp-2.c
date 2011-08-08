@@ -2,7 +2,7 @@
 /* Origin: Tom Hughes <tom@compton.nu> */
 /* { dg-do run { target i?86-*-linux* x86_64-*-linux* } } */
 /* { dg-options "-O -fomit-frame-pointer" } */
-/* { dg-options "-O -fomit-frame-pointer -march=i386" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-O -fomit-frame-pointer -march=i386" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 #include <setjmp.h>
 #include <signal.h>

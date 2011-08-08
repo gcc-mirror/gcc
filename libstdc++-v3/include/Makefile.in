@@ -190,6 +190,7 @@ am__leading_dot = @am__leading_dot@
 am__tar = @am__tar@
 am__untar = @am__untar@
 baseline_dir = @baseline_dir@
+baseline_subdir_switch = @baseline_subdir_switch@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -266,7 +267,7 @@ toolexeclibdir = $(glibcxx_toolexeclibdir)
 # These bits are all figured out from configure.  Look in acinclude.m4
 # or configure.ac to see how they are set.  See GLIBCXX_EXPORT_FLAGS.
 CONFIG_CXXFLAGS = \
-	$(SECTION_FLAGS) $(EXTRA_CXX_FLAGS)
+	$(SECTION_FLAGS) $(EXTRA_CXX_FLAGS) -frandom-seed=$@
 
 WARN_CXXFLAGS = \
 	$(WARN_FLAGS) $(WERROR) -fdiagnostics-show-location=once
@@ -309,6 +310,7 @@ std_headers = \
 	${std_srcdir}/random \
 	${std_srcdir}/ratio \
 	${std_srcdir}/regex \
+	${std_srcdir}/scoped_allocator \
 	${std_srcdir}/set \
 	${std_srcdir}/sstream \
 	${std_srcdir}/stack \
@@ -944,8 +946,13 @@ debug_headers = \
 	${debug_srcdir}/safe_base.h \
 	${debug_srcdir}/safe_iterator.h \
 	${debug_srcdir}/safe_iterator.tcc \
+	${debug_srcdir}/safe_local_iterator.h \
+	${debug_srcdir}/safe_local_iterator.tcc \
 	${debug_srcdir}/safe_sequence.h \
 	${debug_srcdir}/safe_sequence.tcc \
+	${debug_srcdir}/safe_unordered_base.h \
+	${debug_srcdir}/safe_unordered_container.h \
+	${debug_srcdir}/safe_unordered_container.tcc \
 	${debug_srcdir}/set \
 	${debug_srcdir}/set.h \
 	${debug_srcdir}/string \

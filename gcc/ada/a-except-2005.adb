@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -829,31 +829,6 @@ package body Ada.Exceptions is
    -------------------------
 
    procedure Raise_Current_Excep (E : Exception_Id) is
-
-      pragma Inspection_Point (E);
-      --  This is so the debugger can reliably inspect the parameter when
-      --  inserting a breakpoint at the start of this procedure.
-
-      --  To provide support for breakpoints on unhandled exceptions, the
-      --  debugger will also need to be able to inspect the value of E from
-      --  inner frames so we need to make sure that its value is also spilled
-      --  on stack.  We take the address and dereference using volatile local
-      --  objects for this purpose.
-
-      --  The pragma Warnings (Off) are needed because the compiler knows that
-      --  these locals are not referenced and that this use of pragma Volatile
-      --  is peculiar!
-
-      type EID_Access is access Exception_Id;
-
-      Access_To_E : EID_Access := E'Unrestricted_Access;
-      pragma Volatile (Access_To_E);
-      pragma Warnings (Off, Access_To_E);
-
-      Id : Exception_Id := Access_To_E.all;
-      pragma Volatile (Id);
-      pragma Warnings (Off, Id);
-
    begin
       Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
       Exception_Propagation.Propagate_Exception
@@ -903,38 +878,59 @@ package body Ada.Exceptions is
    -------------------------------------
 
    procedure Raise_From_Controlled_Operation
-     (X : Ada.Exceptions.Exception_Occurrence)
+     (X          : Ada.Exceptions.Exception_Occurrence;
+      From_Abort : Boolean)
    is
-      Prefix   : constant String := "adjust/finalize raised ";
-      Orig_Msg : constant String := Exception_Message (X);
-      New_Msg  : constant String := Prefix & Exception_Name (X);
-
    begin
-      if Orig_Msg'Length >= Prefix'Length
-        and then
-          Orig_Msg (Orig_Msg'First .. Orig_Msg'First + Prefix'Length - 1) =
-                                                                     Prefix
-      then
-         --  Message already has proper prefix, just re-reraise PROGRAM_ERROR
+      --  When finalization was triggered by an abort, keep propagating the
+      --  abort signal rather than raising Program_Error.
 
-         Raise_Exception_No_Defer
-           (E       => Program_Error'Identity,
-            Message => Orig_Msg);
+      if From_Abort then
+         raise Standard'Abort_Signal;
 
-      elsif Orig_Msg = "" then
-
-         --  No message present: just provide our own
-
-         Raise_Exception_No_Defer
-           (E       => Program_Error'Identity,
-            Message => New_Msg);
+      --  Otherwise, raise Program_Error
 
       else
-         --  Message present, add informational prefix
+         declare
+            Prefix             : constant String := "adjust/finalize raised ";
+            Orig_Msg           : constant String := Exception_Message (X);
+            Orig_Prefix_Length : constant Natural :=
+                                   Integer'Min
+                                     (Prefix'Length, Orig_Msg'Length);
+            Orig_Prefix        : String renames Orig_Msg
+                                   (Orig_Msg'First ..
+                                    Orig_Msg'First + Orig_Prefix_Length - 1);
 
-         Raise_Exception_No_Defer
-           (E       => Program_Error'Identity,
-            Message => New_Msg & ": " & Orig_Msg);
+         begin
+            --  Message already has the proper prefix, just re-raise
+
+            if Orig_Prefix = Prefix then
+               Raise_Exception_No_Defer
+                 (E       => Program_Error'Identity,
+                  Message => Orig_Msg);
+
+            else
+               declare
+                  New_Msg  : constant String := Prefix & Exception_Name (X);
+
+               begin
+                  --  No message present, just provide our own
+
+                  if Orig_Msg = "" then
+                     Raise_Exception_No_Defer
+                       (E       => Program_Error'Identity,
+                        Message => New_Msg);
+
+                  --  Message present, add informational prefix
+
+                  else
+                     Raise_Exception_No_Defer
+                       (E       => Program_Error'Identity,
+                        Message => New_Msg & ": " & Orig_Msg);
+                  end if;
+               end;
+            end if;
+         end;
       end if;
    end Raise_From_Controlled_Operation;
 
@@ -949,6 +945,7 @@ package body Ada.Exceptions is
    begin
       Exception_Data.Set_Exception_C_Msg (E, M);
       Abort_Defer.all;
+      Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
       Exception_Propagation.Propagate_Exception
         (E => E, From_Signal_Handler => True);
    end Raise_From_Signal_Handler;

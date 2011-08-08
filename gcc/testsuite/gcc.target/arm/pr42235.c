@@ -1,6 +1,5 @@
-/* { dg-options "-mthumb -O2 -march=armv5te" }  */
+/* { dg-options "-mthumb -O2" }  */
 /* { dg-require-effective-target arm_thumb1_ok } */
-/* { dg-prune-output "switch .* conflicts with" } */
 /* { dg-final { scan-assembler-not "add\[\\t \]*r.,\[\\t \]*r.,\[\\t \]*\#1" } } */
 /* { dg-final { scan-assembler-not "add\[\\t \]*r.,\[\\t \]*\#1" } } */
 

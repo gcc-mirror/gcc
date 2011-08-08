@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,13 +34,8 @@
 -------------------------
 
 --  This is the root of a package hierarchy offering an Ada binding to the
---  PowerPC AltiVec extensions. These extensions basically consist in a set of
---  128bit vector types together with a set of subprograms operating on such
---  vectors. On a real Altivec capable target, vector objects map to hardware
---  vector registers and the subprograms map to a set of specific hardware
---  instructions.
-
---  Relevant documents are:
+--  PowerPC AltiVec extensions, a set of 128bit vector types together with a
+--  set of subprograms operating on them. Relevant documents are:
 
 --  o AltiVec Technology, Programming Interface Manual (1999-06)
 --    to which we will refer as [PIM], describes the data types, the
@@ -51,13 +46,14 @@
 --    and instruction set.
 
 --  These documents, as well as a number of others of general interest on the
---  AltiVec technology, are available from the Motorola/AltiVec Web site at
+--  AltiVec technology, are available from the Motorola/AltiVec Web site at:
 
---  http://www.motorola.com/altivec
+--  http://www.freescale.com/altivec
 
---  We offer two versions of this binding: one for real AltiVec capable
---  targets, and one for other targets. In the latter case, everything is
---  emulated in software. We will refer to the two bindings as:
+--  The binding interface is structured to allow alternate implementations:
+--  for real AltiVec capable targets, and for other targets. In the latter
+--  case, everything is emulated in software. The two versions are referred
+--  to as:
 
 --  o The Hard binding for AltiVec capable targets (with the appropriate
 --    hardware support and corresponding instruction set)
@@ -65,16 +61,12 @@
 --  o The Soft binding for other targets (with the low level primitives
 --    emulated in software).
 
---  The two versions of the binding are expected to be equivalent from the
---  functional standpoint. The same client application code should observe no
---  difference in operation results, even if the Soft version is used on a
---  non-powerpc target. The Hard binding is naturally expected to run faster
---  than the Soft version on the same target.
+--  In addition, interfaces that are not strictly part of the base AltiVec API
+--  are provided, such as vector conversions to and from array representations,
+--  which are of interest for client applications (e.g. for vector
+--  initialization purposes).
 
---  We also offer interfaces not strictly part of the base AltiVec API, such
---  as vector conversions to/from array representations, which are of interest
---  for client applications (e.g. for vector initialization purposes) and may
---  also be used as implementation facilities.
+--  Only the soft binding is available today
 
 -----------------------------------------
 -- General package architecture survey --
@@ -84,8 +76,8 @@
 --  values, the possible types of which are declared in this root package to
 --  be generally accessible.
 
---  From the user standpoint, the two versions of the binding are available
---  through a consistent hierarchy of units providing identical services:
+--  From the user standpoint, the binding materializes as a consistent
+--  hierarchy of units:
 
 --                             GNAT.Altivec
 --                           (component types)
@@ -99,7 +91,7 @@
 
 --  Vector types are defined in the GNAT.Altivec.Vector_Types package
 
---  On these types, the user can apply the Altivec operations defined in
+--  On these types, users can apply the Altivec operations defined in
 --  GNAT.Altivec.Vector_Operations. Their layout is opaque and may vary across
 --  configurations, for it is typically target-endianness dependant.
 
@@ -116,43 +108,20 @@
 --  The GNAT.Altivec.Conversions package is provided to convert a View to the
 --  corresponding Vector and vice-versa.
 
---  The two versions of the binding rely on a low level internal interface,
---  and switching from one version to the other amounts to select one low
---  level implementation instead of the other.
-
---  The bindings are provided as a set of sources together with a project file
---  (altivec.gpr). The hard/soft binding selection is controlled by a project
---  variable on targets where switching makes sense. See the example usage
---  section below.
-
 ---------------------------
 -- Underlying principles --
 ---------------------------
 
---  The general organization sketched above has been devised from a number
---  of driving ideas:
+--  Internally, the binding relies on an abstraction of the Altivec API, a
+--  rich set of functions around a core of low level primitives mapping to
+--  AltiVec instructions. See for instance "vec_add" in [PIM-4.4 Generic and
+--  Specific AltiVec operations], with no less than six result/arguments
+--  combinations of byte vector types that map to "vaddubm".
 
---  o From the clients standpoint, the two versions of the binding should be
---    as easily exchangeable as possible,
+--  The "soft" version is a software emulation of the low level primitives.
 
---  o From the maintenance standpoint, we want to avoid as much code
---    duplication as possible.
-
---  o From both standpoints above, we want to maintain a clear interface
---    separation between the base bindings to the Motorola API and the
---    additional facilities.
-
---  The identification of the low level interface is directly inspired by the
---  base API organization, basically consisting of a rich set of functions
---  around a core of low level primitives mapping to AltiVec instructions.
-
---  See for instance "vec_add" in [PIM-4.4 Generic and Specific AltiVec
---  operations]: no less than six result/arguments combinations of byte vector
---  types map to "vaddubm".
-
---  The "hard" version of the low level primitives map to real AltiVec
---  instructions via the corresponding GCC builtins. The "soft" version is
---  a software emulation of those.
+--  The "hard" version would map to real AltiVec instructions via GCC builtins
+--  and inlining.
 
 -------------------
 -- Example usage --
@@ -167,6 +136,8 @@
 --  with GNAT.Altivec.Conversions;       use GNAT.Altivec.Conversions;
 
 --  use GNAT.Altivec;
+
+--  with Ada.Text_IO; use Ada.Text_IO;
 
 --  procedure Sample is
 --     Va : Vector_Unsigned_Int := To_Vector ((Values => (1, 2, 3, 4)));
@@ -183,28 +154,7 @@
 --     end loop;
 --  end;
 
---  This currently requires the GNAT project management facilities to compile,
---  to automatically retrieve the set of necessary sources and switches
---  depending on your configuration. For the example above, customizing the
---  switches to include -g also, this would be something like:
-
---  sample.gpr
---
---  with "altivec.gpr";
---
---  project Sample is
-
---    for Source_Dirs use (".");
---    for Main use ("sample");
-
---    package Compiler is
---       for Default_Switches ("Ada") use
---           Altivec.Compiler'Default_Switches ("Ada") & "-g";
---    end Compiler;
-
---  end Sample;
-
---  $ gnatmake -Psample
+--  $ gnatmake sample.adb
 --  [...]
 --  $ ./sample
 --  2

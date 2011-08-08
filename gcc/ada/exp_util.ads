@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@ with Namet;   use Namet;
 with Rtsfind; use Rtsfind;
 with Sinfo;   use Sinfo;
 with Types;   use Types;
+with Uintp;   use Uintp;
 
 package Exp_Util is
 
@@ -117,6 +118,13 @@ package Exp_Util is
    --  Assoc_Node is the node with which the actions are associated.
    --  Ins_Actions may be No_List, in which case the call has no effect.
 
+   procedure Insert_Action_After
+     (Assoc_Node : Node_Id;
+      Ins_Action : Node_Id);
+   --  Assoc_Node must be a node in a list. Same as Insert_Action but the
+   --  action will be inserted after N in a manner that is compatible with
+   --  the transient scope mechanism.
+
    procedure Insert_Actions_After
      (Assoc_Node  : Node_Id;
       Ins_Actions : List_Id);
@@ -185,6 +193,30 @@ package Exp_Util is
    --  added, and the actions within the list will be elaborated in list order.
    --  Note that the added nodes are not analyzed. The analyze call is found in
    --  Exp_Ch13.Expand_N_Freeze_Entity.
+
+   procedure Build_Allocate_Deallocate_Proc
+     (N           : Node_Id;
+      Is_Allocate : Boolean);
+   --  Create a custom Allocate/Deallocate to be associated with an allocation
+   --  or deallocation of a controlled or class-wide object. In the case of
+   --  allocation, N is the declaration of the temporary variable which
+   --  represents the expression of the original allocator node, otherwise N
+   --  must be a free statement. If flag Is_Allocate is set, the generated
+   --  routine is allocate, deallocate otherwise. The generated routine is:
+   --
+   --     F : constant Boolean :=                          --  CW case
+   --           Ada.Tags.Needs_Finalization (<Expr>'Tag);  --  CW case
+   --
+   --     procedure Allocate / Deallocate
+   --       (P : Storage_Pool;
+   --        A : [out] Address;  --  out is present for Allocate
+   --        S : Storage_Count;
+   --        L : Storage_Count)
+   --     is
+   --     begin
+   --        Allocate / Deallocate
+   --          (<Ptr_Typ collection>, A, S, L, [Needs_Header => F]);
+   --     end Allocate;
 
    function Build_Runtime_Call (Loc : Source_Ptr; RE : RE_Id) return Node_Id;
    --  Build an N_Procedure_Call_Statement calling the given runtime entity.
@@ -392,6 +424,10 @@ package Exp_Util is
    --  in which this routine is invoked should always have a protection
    --  object.
 
+   function Find_Protection_Type (Conc_Typ : Entity_Id) return Entity_Id;
+   --  Given a protected type or its corresponding record, find the type of
+   --  field _object.
+
    procedure Force_Evaluation
      (Exp      : Node_Id;
       Name_Req : Boolean := False);
@@ -444,9 +480,11 @@ package Exp_Util is
    --  N_Op_Eq), or to determine the result of some other test in other cases
    --  (e.g. no access check required if N_Op_Ne Null).
 
-   function Has_Controlled_Coextensions (Typ : Entity_Id) return Boolean;
-   --  Determine whether a record type has anonymous access discriminants with
-   --  a controlled designated type.
+   function Get_Stream_Size (E : Entity_Id) return Uint;
+   --  Return the stream size value of the subtype E
+
+   function Has_Access_Constraint (E : Entity_Id) return Boolean;
+   --  Given object or type E, determine if a discriminant is of an access type
 
    function Has_Following_Address_Clause (D : Node_Id) return Boolean;
    --  D is the node for an object declaration. This function searches the
@@ -464,6 +502,10 @@ package Exp_Util is
    function Inside_Init_Proc return Boolean;
    --  Returns True if current scope is within an init proc
 
+   function In_Library_Level_Package_Body (Id : Entity_Id) return Boolean;
+   --  Given an arbitrary entity, determine whether it appears at the library
+   --  level of a package body.
+
    function In_Unconditional_Context (Node : Node_Id) return Boolean;
    --  Node is the node for a statement or a component of a statement. This
    --  function determines if the statement appears in a context that is
@@ -474,6 +516,14 @@ package Exp_Util is
    --  Return True if all the items of the list are N_Null_Statement nodes.
    --  False otherwise. True for an empty list. It is an error to call this
    --  routine with No_List as the argument.
+
+   function Is_Finalizable_Transient
+     (Decl     : Node_Id;
+      Rel_Node : Node_Id) return Boolean;
+   --  Determine whether declaration Decl denotes a controlled transient which
+   --  should be finalized. Rel_Node is the related context. Even though some
+   --  transient are controlled, they may act as renamings of other objects or
+   --  function calls.
 
    function Is_Fully_Repped_Tagged_Type (T : Entity_Id) return Boolean;
    --  Tests given type T, and returns True if T is a non-discriminated tagged
@@ -488,6 +538,13 @@ package Exp_Util is
    --  Return True if Typ is a library level tagged type. Currently we use
    --  this information to build statically allocated dispatch tables.
 
+   function Is_Null_Access_BIP_Func_Call (Expr : Node_Id) return Boolean;
+   --  Determine whether node Expr denotes a build-in-place function call with
+   --  a value of "null" for extra formal BIPaccess.
+
+   function Is_Non_BIP_Func_Call (Expr : Node_Id) return Boolean;
+   --  Determine whether node Expr denotes a non build-in-place function call
+
    function Is_Ref_To_Bit_Packed_Array (N : Node_Id) return Boolean;
    --  Determine whether the node P is a reference to a bit packed array, i.e.
    --  whether the designated object is a component of a bit packed array, or a
@@ -499,6 +556,10 @@ package Exp_Util is
    --  Determine whether the node P is a reference to a bit packed slice, i.e.
    --  whether the designated object is bit packed slice or a component of a
    --  bit packed slice. Return True if so.
+
+   function Is_Related_To_Func_Return (Id : Entity_Id) return Boolean;
+   --  Determine whether object Id is related to an expanded return statement.
+   --  The case concerned is "return Id.all;".
 
    function Is_Possibly_Unaligned_Slice (N : Node_Id) return Boolean;
    --  Determine whether the node P is a slice of an array where the slice
@@ -522,6 +583,10 @@ package Exp_Util is
    --  We consider that a (1 .. 2) is a renamed object since it is the prefix
    --  of the name in the renaming declaration.
 
+   function Is_Tag_To_CW_Conversion (Obj_Id : Entity_Id) return Boolean;
+   --  Determine whether object Obj_Id is the result of a tag-to-class-wide
+   --  type conversion.
+
    function Is_Untagged_Derivation (T : Entity_Id) return Boolean;
    --  Returns true if type T is not tagged and is a derived type,
    --  or is a private type whose completion is such a type.
@@ -532,6 +597,10 @@ package Exp_Util is
    --  indexed/selected component where the prefix is treated as volatile,
    --  or has Volatile_Components set. A slice of a volatile variable is
    --  also volatile.
+
+   function Is_VM_By_Copy_Actual (N : Node_Id) return Boolean;
+   --  Returns True if we are compiling on VM targets and N is a node that
+   --  requires pass-by-copy in these targets.
 
    procedure Kill_Dead_Code (N : Node_Id; Warn : Boolean := False);
    --  N represents a node for a section of code that is known to be dead. Any
@@ -606,6 +675,12 @@ package Exp_Util is
    --  consist of constants, when the object has a non-trivial initialization
    --  or is controlled.
 
+   function Needs_Finalization (T : Entity_Id) return Boolean;
+   --  True if type T is controlled, or has controlled subcomponents. Also
+   --  True if T is a class-wide type, because some type extension might add
+   --  controlled subcomponents, except that if pragma Restrictions
+   --  (No_Finalization) applies, this is False for class-wide types.
+
    function Non_Limited_Designated_Type (T : Entity_Id) return Entity_Id;
    --  An anonymous access type may designate a limited view. Check whether
    --  non-limited view is available during expansion, to examine components
@@ -631,6 +706,11 @@ package Exp_Util is
    --  causes trouble for the back end (see Component_May_Be_Bit_Aligned for
    --  further details).
 
+   procedure Process_Statements_For_Controlled_Objects (N : Node_Id);
+   --  N is a node which contains a non-handled statement list. Inspect the
+   --  statements looking for declarations of controlled objects. If at least
+   --  one such object is found, wrap the statement list in a block.
+
    procedure Remove_Side_Effects
      (Exp          : Node_Id;
       Name_Req     : Boolean := False;
@@ -651,6 +731,15 @@ package Exp_Util is
    --  Returns True iff the implementation of this type in code generation
    --  terms is scalar. This is true for scalars in the Ada sense, and for
    --  packed arrays which are represented by a scalar (modular) type.
+
+   function Requires_Cleanup_Actions (N : Node_Id) return Boolean;
+   --  Given a node N, determine whether its declarative and/or statement list
+   --  contains one of the following:
+   --
+   --    1) controlled objects
+   --    2) library-level tagged types
+   --
+   --  The above cases require special actions on scope exit.
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean;
    --  Given the node for an N_Unchecked_Type_Conversion, return True if this

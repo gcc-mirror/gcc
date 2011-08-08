@@ -340,3 +340,5 @@ do {						\
 /* Shared library suffix.  Collect2 strips the version string after
    this suffix when generating constructor/destructor names.  */ 
 #define SHLIB_SUFFIX ".sl"
+
+#define TARGET_HAVE_NAMED_SECTIONS false

@@ -759,7 +759,9 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
     {
       tree token;
 
-      token = gfc_create_var_np (pvoid_type_node, "caf_token");
+      token = gfc_create_var_np (build_qualified_type (pvoid_type_node,
+						       TYPE_QUAL_RESTRICT),
+				 "caf_token");
       GFC_TYPE_ARRAY_CAF_TOKEN (type) = token;
       DECL_ARTIFICIAL (token) = 1;
       TREE_STATIC (token) = 1;
@@ -1425,7 +1427,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && (sym->attr.save || sym->ns->proc_name->attr.is_main_program
 	  || gfc_option.flag_max_stack_var_size == 0
 	  || sym->attr.data || sym->ns->proc_name->attr.flavor == FL_MODULE)
-      && (gfc_option.coarray != GFC_FCOARRAY_LIB || !sym->attr.codimension))
+      && (gfc_option.coarray != GFC_FCOARRAY_LIB
+	  || !sym->attr.codimension || sym->attr.allocatable))
     {
       /* Add static initializer. For procedures, it is only needed if
 	 SAVE is specified otherwise they need to be reinitialized
@@ -1433,7 +1436,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	 in this case due to -fmax-stack-var-size=.  */
       DECL_INITIAL (decl) = gfc_conv_initializer (sym->value, &sym->ts,
 						  TREE_TYPE (decl),
-						  sym->attr.dimension,
+						  sym->attr.dimension
+						  || (sym->attr.codimension
+						      && sym->attr.allocatable),
 						  sym->attr.pointer
 						  || sym->attr.allocatable,
 						  sym->attr.proc_pointer);
@@ -2098,6 +2103,48 @@ create_function_arglist (gfc_symbol * sym)
       gfc_finish_decl (parm);
 
       f->sym->backend_decl = parm;
+
+      /* Coarrays which do not use a descriptor pass with -fcoarray=lib the
+	 token and the offset as hidden arguments.  */
+      if (f->sym->attr.codimension
+	  && gfc_option.coarray == GFC_FCOARRAY_LIB
+	  && !f->sym->attr.allocatable
+	  && f->sym->as->type != AS_ASSUMED_SHAPE)
+	{
+	  tree caf_type;
+	  tree token;
+	  tree offset;
+
+	  gcc_assert (f->sym->backend_decl != NULL_TREE
+		      && !sym->attr.is_bind_c);
+	  caf_type = TREE_TYPE (f->sym->backend_decl);
+
+	  gcc_assert (GFC_TYPE_ARRAY_CAF_TOKEN (caf_type) == NULL_TREE);
+	  token = build_decl (input_location, PARM_DECL,
+			      create_tmp_var_name ("caf_token"),
+			      build_qualified_type (pvoid_type_node,
+						    TYPE_QUAL_RESTRICT));
+	  GFC_TYPE_ARRAY_CAF_TOKEN (caf_type) = token;
+	  DECL_CONTEXT (token) = fndecl;
+	  DECL_ARTIFICIAL (token) = 1;
+	  DECL_ARG_TYPE (token) = TREE_VALUE (typelist);
+	  TREE_READONLY (token) = 1;
+	  hidden_arglist = chainon (hidden_arglist, token);
+	  gfc_finish_decl (token);
+
+	  gcc_assert (GFC_TYPE_ARRAY_CAF_OFFSET (caf_type) == NULL_TREE);
+	  offset = build_decl (input_location, PARM_DECL,
+			       create_tmp_var_name ("caf_offset"),
+			       gfc_array_index_type);
+
+	  GFC_TYPE_ARRAY_CAF_OFFSET (caf_type) = offset;
+	  DECL_CONTEXT (offset) = fndecl;
+	  DECL_ARTIFICIAL (offset) = 1;
+	  DECL_ARG_TYPE (offset) = TREE_VALUE (typelist);
+	  TREE_READONLY (offset) = 1;
+	  hidden_arglist = chainon (hidden_arglist, offset);
+	  gfc_finish_decl (offset);
+	}
 
       arglist = chainon (arglist, parm);
       typelist = TREE_CHAIN (typelist);
@@ -4167,7 +4214,8 @@ generate_coarray_sym_init (gfc_symbol *sym)
 			       GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE(decl)));
 
   tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_register, 6, size,
-			     build_int_cst (integer_type_node, 0), /* type.  */
+			     build_int_cst (integer_type_node,
+					    GFC_CAF_COARRAY_ALLOC), /* type.  */
 			     token, null_pointer_node, /* token, stat.  */
 			     null_pointer_node, /* errgmsg, errmsg_len.  */
 			     build_int_cst (integer_type_node, 0));

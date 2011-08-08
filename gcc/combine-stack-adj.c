@@ -296,68 +296,22 @@ record_stack_refs (rtx *xp, void *data)
   return 0;
 }
 
-/* Adjust or create REG_FRAME_RELATED_EXPR note when merging a stack
-   adjustment into a frame related insn.  */
+/* If INSN has a REG_ARGS_SIZE note, move it to LAST.  */
 
 static void
-adjust_frame_related_expr (rtx last_sp_set, rtx insn,
-			   HOST_WIDE_INT this_adjust)
+maybe_move_args_size_note (rtx last, rtx insn)
 {
-  rtx note = find_reg_note (last_sp_set, REG_FRAME_RELATED_EXPR, NULL_RTX);
-  rtx new_expr = NULL_RTX;
+  rtx note, last_note;
 
-  if (note == NULL_RTX && RTX_FRAME_RELATED_P (insn))
+  note = find_reg_note (insn, REG_ARGS_SIZE, NULL_RTX);
+  if (note == NULL)
     return;
 
-  if (note
-      && GET_CODE (XEXP (note, 0)) == SEQUENCE
-      && XVECLEN (XEXP (note, 0), 0) >= 2)
-    {
-      rtx expr = XEXP (note, 0);
-      rtx last = XVECEXP (expr, 0, XVECLEN (expr, 0) - 1);
-      int i;
-
-      if (GET_CODE (last) == SET
-	  && RTX_FRAME_RELATED_P (last) == RTX_FRAME_RELATED_P (insn)
-	  && SET_DEST (last) == stack_pointer_rtx
-	  && GET_CODE (SET_SRC (last)) == PLUS
-	  && XEXP (SET_SRC (last), 0) == stack_pointer_rtx
-	  && CONST_INT_P (XEXP (SET_SRC (last), 1)))
-	{
-	  XEXP (SET_SRC (last), 1)
-	    = GEN_INT (INTVAL (XEXP (SET_SRC (last), 1)) + this_adjust);
-	  return;
-	}
-
-      new_expr = gen_rtx_SEQUENCE (VOIDmode,
-				   rtvec_alloc (XVECLEN (expr, 0) + 1));
-      for (i = 0; i < XVECLEN (expr, 0); i++)
-	XVECEXP (new_expr, 0, i) = XVECEXP (expr, 0, i);
-    }
+  last_note = find_reg_note (last, REG_ARGS_SIZE, NULL_RTX);
+  if (last_note)
+    XEXP (last_note, 0) = XEXP (note, 0);
   else
-    {
-      new_expr = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (2));
-      if (note)
-	XVECEXP (new_expr, 0, 0) = XEXP (note, 0);
-      else
-	{
-	  rtx expr = copy_rtx (single_set_for_csa (last_sp_set));
-
-	  XEXP (SET_SRC (expr), 1)
-	    = GEN_INT (INTVAL (XEXP (SET_SRC (expr), 1)) - this_adjust);
-	  RTX_FRAME_RELATED_P (expr) = 1;
-	  XVECEXP (new_expr, 0, 0) = expr;
-	}
-    }
-
-  XVECEXP (new_expr, 0, XVECLEN (new_expr, 0) - 1)
-    = copy_rtx (single_set_for_csa (insn));
-  RTX_FRAME_RELATED_P (XVECEXP (new_expr, 0, XVECLEN (new_expr, 0) - 1))
-    = RTX_FRAME_RELATED_P (insn);
-  if (note)
-    XEXP (note, 0) = new_expr;
-  else
-    add_reg_note (last_sp_set, REG_FRAME_RELATED_EXPR, new_expr);
+    add_reg_note (last, REG_ARGS_SIZE, XEXP (note, 0));
 }
 
 /* Subroutine of combine_stack_adjustments, called for each basic block.  */
@@ -431,9 +385,8 @@ combine_stack_adjustments_for_block (basic_block bb)
 						  last_sp_adjust + this_adjust,
 						  this_adjust))
 		    {
-		      if (RTX_FRAME_RELATED_P (last_sp_set))
-			adjust_frame_related_expr (last_sp_set, insn,
-						   this_adjust);
+		      maybe_move_args_size_note (last_sp_set, insn);
+
 		      /* It worked!  */
 		      delete_insn (insn);
 		      last_sp_adjust += this_adjust;

@@ -104,6 +104,7 @@ Implementation Defined Pragmas
 * Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
+* Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
@@ -192,6 +193,7 @@ Implementation Defined Pragmas
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
+* Pragma Static_Elaboration_Desired::
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
 * Pragma Subtitle::
@@ -202,6 +204,7 @@ Implementation Defined Pragmas
 * Pragma Task_Info::
 * Pragma Task_Name::
 * Pragma Task_Storage::
+* Pragma Test_Case::
 * Pragma Thread_Local_Storage::
 * Pragma Time_Slice::
 * Pragma Title::
@@ -303,6 +306,12 @@ The GNAT Library
 * Ada.Characters.Wide_Latin_9 (a-cwila9.ads)::
 * Ada.Characters.Wide_Wide_Latin_1 (a-chzla1.ads)::
 * Ada.Characters.Wide_Wide_Latin_9 (a-chzla9.ads)::
+* Ada.Containers.Formal_Doubly_Linked_Lists (a-cfdlli.ads)::
+* Ada.Containers.Formal_Hashed_Maps (a-cfhama.ads)::
+* Ada.Containers.Formal_Hashed_Sets (a-cfhase.ads)::
+* Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)::
+* Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)::
+* Ada.Containers.Formal_Vectors (a-cofove.ads)::
 * Ada.Command_Line.Environment (a-colien.ads)::
 * Ada.Command_Line.Remove (a-colire.ads)::
 * Ada.Command_Line.Response_File (a-clrefi.ads)::
@@ -729,6 +738,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
+* Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
@@ -817,6 +827,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
+* Pragma Static_Elaboration_Desired::
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
 * Pragma Subtitle::
@@ -827,6 +838,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Task_Info::
 * Pragma Task_Name::
 * Pragma Task_Storage::
+* Pragma Test_Case::
 * Pragma Thread_Local_Storage::
 * Pragma Time_Slice::
 * Pragma Title::
@@ -976,7 +988,7 @@ same syntax and effect.
 @noindent
 Syntax:
 @smallexample @c ada
-pragma Annotate (IDENTIFIER [,IDENTIFIER] @{, ARG@});
+pragma Annotate (IDENTIFIER [,IDENTIFIER @{, ARG@}]);
 
 ARG ::= NAME | EXPRESSION
 @end smallexample
@@ -995,8 +1007,11 @@ All other kinds of arguments are analyzed as expressions, and must be
 unambiguous.
 
 The analyzed pragma is retained in the tree, but not otherwise processed
-by any part of the GNAT compiler.  This pragma is intended for use by
-external tools, including ASIS@.
+by any part of the GNAT compiler, except to generate corresponding note
+lines in the generated ALI file. For the format of these note lines, see
+the compiler source file lib-writ.ads. This pragma is intended for use by
+external tools, including ASIS@. The use of pragma Annotate does not
+affect the compilation process in any way.
 
 @node Pragma Assert
 @unnumberedsec Pragma Assert
@@ -1061,6 +1076,43 @@ setting of the assertions mode, resulting in assertions that have an
 effect on the program.  However, the expressions are analyzed for
 semantic correctness whether or not assertions are enabled, so turning
 assertions on and off cannot affect the legality of a program.
+
+Note that the implementation defined policy @code{DISABLE}, given in a
+pragma Assertion_Policy, can be used to suppress this semantic analysis.
+
+Note: this is a standard language-defined pragma in versions
+of Ada from 2005 on. In GNAT, it is implemented in all versions
+of Ada, and the DISABLE policy is an implementation-defined
+addition.
+
+
+@node Pragma Assertion_Policy
+@unnumberedsec Pragma Assertion_Policy
+@findex Debug_Policy
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Assertion_Policy (CHECK | DISABLE | IGNORE);
+@end smallexample
+
+@noindent
+If the argument is @code{CHECK}, then pragma @code{Assert} is enabled.
+If the argument is @code{IGNORE}, then pragma @code{Assert} is ignored.
+This pragma overrides the effect of the @option{-gnata} switch on the
+command line.
+
+The implementation defined policy @code{DISABLE} is like
+@code{IGNORE} except that it completely disables semantic
+checking of the argument to @code{pragma Assert}. This may
+be useful when the pragma argument references subprograms
+in a with'ed package which is replaced by a dummy package
+for the final build.
+
+Note: this is a standard language-defined pragma in versions
+of Ada from 2005 on. In GNAT, it is implemented in all versions
+of Ada, and the DISABLE policy is an implementation-defined
+addition.
 
 @node Pragma Assume_No_Invalid_Values
 @unnumberedsec Pragma Assume_No_Invalid_Values
@@ -1245,7 +1297,7 @@ pragma Check_Policy
  ([Name   =>] Identifier,
   [Policy =>] POLICY_IDENTIFIER);
 
-POLICY_IDENTIFIER ::= On | Off | Check | Ignore
+POLICY_IDENTIFIER ::= ON | OFF | CHECK | DISABLE | IGNORE
 @end smallexample
 
 @noindent
@@ -1260,7 +1312,7 @@ The identifier given as the first argument corresponds to a name used in
 associated @code{Check} pragmas. For example, if the pragma:
 
 @smallexample @c ada
-pragma Check_Policy (Critical_Error, Off);
+pragma Check_Policy (Critical_Error, OFF);
 @end smallexample
 
 @noindent
@@ -1278,14 +1330,21 @@ that @code{Precondition} checks are @code{Off} or @code{Ignored}. Similarly use
 of the name @code{Postcondition} controls whether @code{Postcondition} pragmas
 are recognized.
 
-The check policy is @code{Off} to turn off corresponding checks, and @code{On}
+The check policy is @code{OFF} to turn off corresponding checks, and @code{ON}
 to turn on corresponding checks. The default for a set of checks for which no
-@code{Check_Policy} is given is @code{Off} unless the compiler switch
+@code{Check_Policy} is given is @code{OFF} unless the compiler switch
 @option{-gnata} is given, which turns on all checks by default.
 
-The check policy settings @code{Check} and @code{Ignore} are also recognized
-as synonyms for @code{On} and @code{Off}. These synonyms are provided for
+The check policy settings @code{CHECK} and @code{IGNORE} are also recognized
+as synonyms for @code{ON} and @code{OFF}. These synonyms are provided for
 compatibility with the standard @code{Assertion_Policy} pragma.
+
+The implementation defined policy @code{DISABLE} is like
+@code{OFF} except that it completely disables semantic
+checking of the argument to the corresponding class of
+pragmas. This may be useful when the pragma arguments reference
+subprograms in a with'ed package which is replaced by a dummy package
+for the final build.
 
 @node Pragma Comment
 @unnumberedsec Pragma Comment
@@ -1706,7 +1765,7 @@ or by use of the configuration pragma @code{Debug_Policy}.
 Syntax:
 
 @smallexample @c ada
-pragma Debug_Policy (CHECK | IGNORE);
+pragma Debug_Policy (CHECK | DISABLE | IGNORE);
 @end smallexample
 
 @noindent
@@ -1714,6 +1773,13 @@ If the argument is @code{CHECK}, then pragma @code{DEBUG} is enabled.
 If the argument is @code{IGNORE}, then pragma @code{DEBUG} is ignored.
 This pragma overrides the effect of the @option{-gnata} switch on the
 command line.
+
+The implementation defined policy @code{DISABLE} is like
+@code{IGNORE} except that it completely disables semantic
+checking of the argument to @code{pragma Debug}. This may
+be useful when the pragma argument references subprograms
+in a with'ed package which is replaced by a dummy package
+for the final build.
 
 @node Pragma Detect_Blocking
 @unnumberedsec Pragma Detect_Blocking
@@ -1762,70 +1828,75 @@ gnat_ugn, @value{EDITION} User's Guide}.
 Syntax:
 
 @smallexample @c ada
-pragma Eliminate (UNIT_NAME, ENTITY, Source_Location => SOURCE_TRACE)
-
-UNIT_NAME        ::= IDENTIFIER |
-                     SELECTED_COMPONENT,
-
-ENTITY           ::= IDENTIFIER |
-                     SELECTED_COMPONENT,
-
-SOURCE_TRACE     ::= SOURCE_REFERENCE |
-                     SOURCE_REFERENCE LBRACKET SOURCE_TRACE RBRACKET
-
-LBRACKET         ::= [
-RBRACKET         ::= ]
-
-SOURCE_REFERENCE ::= FILE_NAME : LINE_NUMBER
-
-FILE_NAME        ::= STRING_LITERAL
-LINE_NUMBER      ::= INTEGER_LITERAL
+pragma Eliminate ([Entity          =>] DEFINING_DESIGNATOR,
+                  [Source_Location =>] STRING_LITERAL);
 @end smallexample
 
 @noindent
-This pragma indicates that the given entity is not used in the program
-to be compiled and built. The entity must be an explicitly declared
-subprogram; this includes generic subprogram instances and
-subprograms declared in generic package instances. @code{Unit_Name}
-must be the name of the compilation unit in which the entity is declared.
+The string literal given for the source location is a string which
+specifies the line number of the occurrence of the entity, using
+the syntax for SOURCE_TRACE given below:
 
-The @code{Source_Location} argument is used to resolve overloading
-in case more then one callable entity with the same name is declared
-in the given compilation unit. Each file name must be the short name of the
-source file (with no directory information).
-If an entity is not declared in
-a generic instantiation (this includes generic subprogram instances),
-the source trace includes only one source
-reference. If an entity is declared inside a generic instantiation,
-its source trace starts from the source location in the instantiation and
-ends with the source location of the declaration of the corresponding
-entity in the generic
-unit. This approach is recursively used in case of nested instantiations:
-the leftmost element of the
-source trace is the location of the outermost instantiation, the next
-element is the location of the next (first nested) instantiation in the
-code of the corresponding generic unit, and so on.
+@smallexample @c ada
+ SOURCE_TRACE     ::= SOURCE_REFERENCE [LBRACKET SOURCE_TRACE RBRACKET]
 
-The effect of the pragma is to allow the compiler to eliminate
-the code or data associated with the named entity.  Any reference to
-an eliminated entity outside the compilation unit where it is defined
-causes a compile-time or link-time error.
+ LBRACKET         ::= [
+ RBRACKET         ::= ]
+
+ SOURCE_REFERENCE ::= FILE_NAME : LINE_NUMBER
+
+ LINE_NUMBER      ::= DIGIT @{DIGIT@}
+@end smallexample
+
+@noindent
+Spaces around the colon in a @code{Source_Reference} are optional.
+
+The @code{DEFINING_DESIGNATOR} matches the defining designator used in an
+explicit subprogram declaration, where the @code{entity} name in this
+designator appears on the source line specified by the source location.
+
+The source trace that is given as the @code{Source_Location} shall obey the
+following rules. The @code{FILE_NAME} is the short name (with no directory
+information) of an Ada source file, given using exactly the required syntax
+for the underlying file system (e.g. case is important if the underlying
+operating system is case sensitive). @code{LINE_NUMBER} gives the line
+number of the occurrence of the @code{entity}
+as a decimal literal without an exponent or point. If an @code{entity} is not
+declared in a generic instantiation (this includes generic subprogram
+instances), the source trace includes only one source reference. If an entity
+is declared inside a generic instantiation, its source trace (when parsing
+from left to right) starts with the source location of the declaration of the
+entity in the generic unit and ends with the source location of the
+instantiation (it is given in square brackets). This approach is recursively
+used in case of nested instantiations: the rightmost (nested most deeply in
+square brackets) element of the source trace is the location of the outermost
+instantiation, the next to left element is the location of the next (first
+nested) instantiation in the code of the corresponding generic unit, and so
+on, and the leftmost element (that is out of any square brackets) is the
+location of the declaration of the entity to eliminate in a generic unit.
+
+Note that the @code{Source_Location} argument specifies which of a set of
+similarly named entities is being eliminated, dealing both with overloading,
+and also appearence of the same entity name in different scopes.
+
+This pragma indicates that the given entity is not used in the program to be
+compiled and built. The effect of the pragma is to allow the compiler to
+eliminate the code or data associated with the named entity. Any reference to
+an eliminated entity causes a compile-time or link-time error.
 
 The intention of pragma @code{Eliminate} is to allow a program to be compiled
 in a system-independent manner, with unused entities eliminated, without
-needing to modify the source text.  Normally the required set
-of @code{Eliminate} pragmas is constructed automatically using the gnatelim
-tool. Elimination of unused entities local to a compilation unit is
-automatic, without requiring the use of pragma @code{Eliminate}.
+needing to modify the source text. Normally the required set of
+@code{Eliminate} pragmas is constructed automatically using the gnatelim tool.
 
 Any source file change that removes, splits, or
 adds lines may make the set of Eliminate pragmas invalid because their
 @code{Source_Location} argument values may get out of date.
 
-Pragma Eliminate may be used where the referenced entity is a
-dispatching operation. In this case all the subprograms to which the
-given operation can dispatch are considered to be unused (are never called
-as a result of a direct or a dispatching call).
+Pragma @code{Eliminate} may be used where the referenced entity is a dispatching
+operation. In this case all the subprograms to which the given operation can
+dispatch are considered to be unused (are never called as a result of a direct
+or a dispatching call).
 
 @node Pragma Export_Exception
 @unnumberedsec Pragma Export_Exception
@@ -3487,6 +3558,8 @@ description of the strict aliasing optimization, and the situations
 in which it must be suppressed, see @ref{Optimization and Strict
 Aliasing,,, gnat_ugn, @value{EDITION} User's Guide}.
 
+This pragma currently has no effects on access to unconstrained array types.
+
 @node Pragma Normalize_Scalars
 @unnumberedsec Pragma Normalize_Scalars
 @findex Normalize_Scalars
@@ -3949,7 +4022,7 @@ In addition, the boolean expression which is the condition which
 must be true may contain references to function'Result in the case
 of a function to refer to the returned value.
 
-@code{Postcondition} pragmas may appear either immediate following the
+@code{Postcondition} pragmas may appear either immediately following the
 (separate) declaration of a subprogram, or at the start of the
 declarations of a subprogram body. Only other pragmas may intervene
 (that is appear between the subprogram declaration and its
@@ -4115,7 +4188,7 @@ end Math_Functions;
 @end smallexample
 
 @noindent
-@code{Precondition} pragmas may appear either immediate following the
+@code{Precondition} pragmas may appear either immediately following the
 (separate) declaration of a subprogram, or at the start of the
 declarations of a subprogram body. Only other pragmas may intervene
 (that is appear between the subprogram declaration and its
@@ -4160,20 +4233,20 @@ the ceiling priority of the corresponding protected object.
 plus the following set of restrictions:
 
 @table @code
-@item Max_Entry_Queue_Length = 1
+@item Max_Entry_Queue_Length => 1
 Defines the maximum number of calls that are queued on a (protected) entry.
 Note that this restrictions is checked at run time. Violation of this
 restriction results in the raising of Program_Error exception at the point of
 the call. For the Profile (Ravenscar) the value of Max_Entry_Queue_Length is
 always 1 and hence no task can be queued on a protected entry.
 
-@item Max_Protected_Entries = 1
+@item Max_Protected_Entries => 1
 [RM D.7] Specifies the maximum number of entries per protected type. The
 bounds of every entry family of a protected unit shall be static, or shall be
 defined by a discriminant of a subtype whose corresponding bound is static.
 For the Profile (Ravenscar) the value of Max_Protected_Entries is always 1.
 
-@item Max_Task_Entries = 0
+@item Max_Task_Entries => 0
 [RM D.7] Specifies the maximum number of entries
 per task.  The bounds of every entry family
 of a task unit shall be static, or shall be
@@ -4186,13 +4259,6 @@ the Profile (Ravenscar), the value of Max_Task_Entries is always
 @item No_Abort_Statements
 [RM D.7] There are no abort_statements, and there are
 no calls to Task_Identification.Abort_Task.
-
-@item No_Asynchronous_Control
-There are no semantic dependences on the package
-Asynchronous_Task_Control.
-
-@item No_Calendar
-There are no semantic dependencies on the package Ada.Calendar.
 
 @item No_Dynamic_Attachment
 There is no call to any of the operations defined in package Ada.Interrupts
@@ -4234,9 +4300,6 @@ or to Ada.Task_Termination.Specific_Handler.
 [RM D.7] There are no allocators for task types
 or types containing task subcomponents.
 
-@item No_Task_Attributes_Package
-There are no semantic dependencies on the Ada.Task_Attributes package.
-
 @item No_Task_Hierarchy
 [RM D.7] All (non-environment) tasks depend
 directly on the environment task of the partition.
@@ -4244,19 +4307,28 @@ directly on the environment task of the partition.
 @item No_Task_Termination
 Tasks which terminate are erroneous.
 
-@item No_Unchecked_Conversion
-There are no semantic dependencies on the Ada.Unchecked_Conversion package.
-
-@item No_Unchecked_Deallocation
-There are no semantic dependencies on the Ada.Unchecked_Deallocation package.
-
 @item Simple_Barriers
 Entry barrier condition expressions shall be either static
 boolean expressions or boolean objects which are declared in
 the protected type which contains the entry.
 @end table
+@noindent
+
+The Ravenscar profile also includes the following restrictions that specify
+that there are no semantic dependences on the corresponding predefined
+packages:
+
+@table @code
+@item No_Dependence => Ada.Asynchronous_Task_Control
+@item No_Dependence => Ada.Calendar
+@item No_Dependence => Ada.Execution_Time.Group_Budget
+@item No_Dependence => Ada.Execution_Time.Timers
+@item No_Dependence => Ada.Task_Attributes
+@item No_Dependence => System.Multiprocessors.Dispatching_Domains
+@end table
 
 @noindent
+
 This set of configuration pragmas and restrictions correspond to the
 definition of the ``Ravenscar Profile'' for limited tasking, devised and
 published by the @cite{International Real-Time Ada Workshop}, 1997,
@@ -4270,9 +4342,8 @@ Integrity Systems}, and has been approved by ISO/IEC/SC22/WG9 for inclusion in
 the next revision of the standard. The formal definition given by
 the Ada Rapporteur Group (ARG) can be found in two Ada Issues (AI-249 and
 AI-305) available at
-@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs/AI-00249.TXT} and
-@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs/AI-00305.TXT}
-respectively.
+@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/ais/ai-00249.txt} and
+@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/ais/ai-00305.txt}.
 
 The above set is a superset of the restrictions provided by pragma
 @code{Profile (Restricted)}, it includes six additional restrictions
@@ -4548,8 +4619,13 @@ specifies the casing of the unit name in the resulting file name string.
 The default is lower case.  Finally the third argument allows for systematic
 replacement of any dots in the unit name by the specified string literal.
 
-A pragma Source_File_Name cannot appear after a
-@ref{Pragma Source_File_Name_Project}.
+Note that Source_File_Name pragmas should not be used if you are using
+project files. The reason for this rule is that the project manager is not
+aware of these pragmas, and so other tools that use the projet file would not
+be aware of the intended naming conventions. If you are using project files,
+file naming is controlled by Source_File_Name_Project pragmas, which are
+usually supplied automatically by the project manager. A pragma
+Source_File_Name cannot appear after a @ref{Pragma Source_File_Name_Project}.
 
 For more details on the use of the @code{Source_File_Name} pragma,
 @xref{Using Other File Names,,, gnat_ugn, @value{EDITION} User's Guide},
@@ -4571,7 +4647,8 @@ The intention is that Source_File_Name_Project pragmas are always
 generated by the Project Manager in a manner consistent with the naming
 specified in a project file, and when naming is controlled in this manner,
 it is not permissible to attempt to modify this naming scheme using
-Source_File_Name pragmas (which would not be known to the project manager).
+Source_File_Name or Source_File_Name_Project pragmas (which would not be
+known to the project manager).
 
 @node Pragma Source_Reference
 @unnumberedsec Pragma Source_Reference
@@ -4596,6 +4673,30 @@ source file is the one referred to.
 The second argument must be a string literal, it cannot be a static
 string expression other than a string literal.  This is because its value
 is needed for error messages issued by all phases of the compiler.
+
+@node Pragma Static_Elaboration_Desired
+@unnumberedsec Pragma Static_Elaboration_Desired
+@findex Static_Elaboration_Desired
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Static_Elaboration_Desired;
+@end smallexample
+
+@noindent
+This pragma is used to indicate that the compiler should attempt to initialize
+statically the objects declared in the library unit to which the pragma applies,
+when these objects are initialized (explicitly or implicitly) by an aggregate.
+In the absence of this pragma, aggregates in object declarations are expanded
+into assignments and loops, even when the aggregate components are static
+constants. When the aggregate is present the compiler builds a static expression
+that requires no run-time code, so that the initialized object can be placed in
+read-only data space. If the components are not static, or the aggregate has
+more that 100 components, the compiler emits a warning that the pragma cannot
+be obeyed. (See also the restriction No_Implicit_Loops, which supports static
+construction of larger aggregates with static components that include an others
+choice.)
 
 @node Pragma Stream_Convert
 @unnumberedsec Pragma Stream_Convert
@@ -4852,7 +4953,18 @@ pragma Suppress_Initialization ([Entity =>] type_Name);
 
 @noindent
 This pragma suppresses any implicit or explicit initialization
-associated with the given type name for all variables of this type.
+associated with the given type name for all variables of this type,
+including initialization resulting from the use of pragmas
+Normalize_Scalars or Initialize_Scalars.
+
+This is considered a representation item, so it cannot be given after
+the type is frozen. It applies to all subsequent object declarations,
+and also any allocator that creates objects of the type.
+
+If the pragma is given for the first subtype, then it is considered
+to apply to the base type and all its subtypes. If the pragma is given
+for other than a first subtype, then it applies only to the given subtype.
+The pragma may not be given after the type is frozen.
 
 @node Pragma Task_Info
 @unnumberedsec Pragma Task_Info
@@ -4949,6 +5061,61 @@ means that either no guard area is created or a minimal guard area is
 created, depending on the target.  This pragma can appear anywhere a
 @code{Storage_Size} attribute definition clause is allowed for a task
 type.
+
+@node Pragma Test_Case
+@unnumberedsec Pragma Test_Case
+@cindex Test cases
+@findex Test_Case
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Test_Case (
+   [Name     =>] static_string_Expression
+  ,[Mode     =>] (Normal | Robustness)
+ [, Requires =>  Boolean_Expression]
+ [, Ensures  =>  Boolean_Expression]);
+@end smallexample
+
+@noindent
+The @code{Test_Case} pragma allows defining fine-grain specifications
+for use by testing and verification tools. The compiler only checks its
+validity but the presence of pragma @code{Test_Case} does not lead to
+any modification of the code generated by the compiler.
+
+@code{Test_Case} pragmas may only appear immediately following the
+(separate) declaration of a subprogram. Only other pragmas may intervene
+(that is appear between the subprogram declaration and its
+postconditions).
+
+The compiler checks that boolean expression given in @code{Requires} and
+@code{Ensures} are valid, where the rules for @code{Requires} are the
+same as the rule for an expression in @code{Precondition} and the rules
+for @code{Ensures} are the same as the rule for an expression in
+@code{Postcondition}. In particular, attributes @code{'Old} and
+@code{'Result} can only be used within the @code{Ensures}
+expression. The following is an example of use within a package spec:
+
+@smallexample @c ada
+package Math_Functions is
+   ...
+   function Sqrt (Arg : Float) return Float;
+   pragma Test_Case (Name     => "Test 1",
+                     Mode     => Normal,
+                     Requires => Arg < 100,
+                     Ensures  => Sqrt'Result < 10);
+   ...
+end Math_Functions;
+@end smallexample
+
+@noindent
+The meaning of a test case is that, if the associated subprogram is
+executed in a context where @code{Requires} holds, then @code{Ensures}
+should hold when the subprogram returns. Mode @code{Normal} indicates
+that the input context should satisfy the normal precondition of the
+subprogram, and the output context should then satisfy its
+postcondition. More @code{Robustness} indicates that the normal pre- and
+postcondition of the subprogram should be ignored for this test case.
 
 @node Pragma Thread_Local_Storage
 @unnumberedsec Pragma Thread_Local_Storage
@@ -8070,7 +8237,7 @@ further details.
 @item Integer
 32 bit signed
 @item Long_Integer
-64 bit signed (Alpha OpenVMS only)
+64 bit signed (on most 64 bit targets, depending on the C definition of long).
 32 bit signed (all other targets)
 @item Long_Long_Integer
 64 bit signed
@@ -9016,6 +9183,33 @@ wide types
 appear, and that no wide or wide wide string or character literals
 appear in the program (that is literals representing characters not in
 type @code{Character}.
+
+@item SPARK
+@findex SPARK
+This restriction checks at compile time that some constructs forbidden in
+SPARK are not present. The SPARK version used as a reference is the same as
+the Ada mode for the unit, so a unit compiled in Ada 95 mode with SPARK
+restrictions will be checked for constructs forbidden in SPARK 95.
+Error messages related to SPARK restriction have the form:
+
+@smallexample
+violation of restriction "Spark" at <file>
+ <error message>
+@end smallexample
+
+This is not a replacement for the semantic checks performed by the
+SPARK Examiner tool, as the compiler only deals currently with code,
+not at all with SPARK annotations and does not guarantee catching all
+cases of constructs forbidden by SPARK.
+
+Thus it may well be the case that code which
+passes the compiler in SPARK mode is rejected by the SPARK Examiner,
+e.g. due to the different visibility rules of the Examiner based on
+SPARK @code{inherit} annotations.
+
+This restriction can be useful in providing an initial filter for
+code developed using SPARK, or in examining legacy code to see how far
+it is from meeting SPARK restrictions.
 
 @end table
 
@@ -13809,6 +14003,12 @@ of GNAT, and will generate a warning message.
 * Ada.Characters.Wide_Latin_9 (a-cwila9.ads)::
 * Ada.Characters.Wide_Wide_Latin_1 (a-chzla1.ads)::
 * Ada.Characters.Wide_Wide_Latin_9 (a-chzla9.ads)::
+* Ada.Containers.Formal_Doubly_Linked_Lists (a-cfdlli.ads)::
+* Ada.Containers.Formal_Hashed_Maps (a-cfhama.ads)::
+* Ada.Containers.Formal_Hashed_Sets (a-cfhase.ads)::
+* Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)::
+* Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)::
+* Ada.Containers.Formal_Vectors (a-cofove.ads)::
 * Ada.Command_Line.Environment (a-colien.ads)::
 * Ada.Command_Line.Remove (a-colire.ads)::
 * Ada.Command_Line.Response_File (a-clrefi.ads)::
@@ -14010,6 +14210,66 @@ types of the constants being @code{Wide_Wide_Character}
 instead of @code{Character}.  The provision of such a package
 is specifically authorized by the Ada Reference Manual
 (RM A.3.3(27)).
+
+@node Ada.Containers.Formal_Doubly_Linked_Lists (a-cfdlli.ads)
+@section @code{Ada.Containers.Formal_Doubly_Linked_Lists} (@file{a-cfdlli.ads})
+@cindex @code{Ada.Containers.Formal_Doubly_Linked_Lists} (@file{a-cfdlli.ads})
+@cindex Formal container for doubly linked lists
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for doubly linked lists, meant to facilitate formal verification of
+code using such containers.
+
+@node Ada.Containers.Formal_Hashed_Maps (a-cfhama.ads)
+@section @code{Ada.Containers.Formal_Hashed_Maps} (@file{a-cfhama.ads})
+@cindex @code{Ada.Containers.Formal_Hashed_Maps} (@file{a-cfhama.ads})
+@cindex Formal container for hashed maps
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for hashed maps, meant to facilitate formal verification of
+code using such containers.
+
+@node Ada.Containers.Formal_Hashed_Sets (a-cfhase.ads)
+@section @code{Ada.Containers.Formal_Hashed_Sets} (@file{a-cfhase.ads})
+@cindex @code{Ada.Containers.Formal_Hashed_Sets} (@file{a-cfhase.ads})
+@cindex Formal container for hashed sets
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for hashed sets, meant to facilitate formal verification of
+code using such containers.
+
+@node Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)
+@section @code{Ada.Containers.Formal_Ordered_Maps} (@file{a-cforma.ads})
+@cindex @code{Ada.Containers.Formal_Ordered_Maps} (@file{a-cforma.ads})
+@cindex Formal container for ordered maps
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for ordered maps, meant to facilitate formal verification of
+code using such containers.
+
+@node Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)
+@section @code{Ada.Containers.Formal_Ordered_Sets} (@file{a-cforse.ads})
+@cindex @code{Ada.Containers.Formal_Ordered_Sets} (@file{a-cforse.ads})
+@cindex Formal container for ordered sets
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for ordered sets, meant to facilitate formal verification of
+code using such containers.
+
+@node Ada.Containers.Formal_Vectors (a-cofove.ads)
+@section @code{Ada.Containers.Formal_Vectors} (@file{a-cofove.ads})
+@cindex @code{Ada.Containers.Formal_Vectors} (@file{a-cofove.ads})
+@cindex Formal container for vectors
+
+@noindent
+This child of @code{Ada.Containers} defines a modified version of the Ada 2005
+container for vectors, meant to facilitate formal verification of
+code using such containers.
 
 @node Ada.Command_Line.Environment (a-colien.ads)
 @section @code{Ada.Command_Line.Environment} (@file{a-colien.ads})
@@ -16439,6 +16699,7 @@ A complete description of the AIs may be found in
 @item @code{Stream_Size} @tab
 @item @code{Suppress} @tab
 @item @code{Suppress_Debug_Info} @tab           -- GNAT
+@item @code{Test_Case} @tab                     -- GNAT
 @item @code{Unchecked_Union} @tab
 @item @code{Universal_Aliasing} @tab            -- GNAT
 @item @code{Unmodified} @tab                    -- GNAT
@@ -17792,7 +18053,7 @@ A complete description of the AIs may be found in
 
 @item
 @emph{AI-0216 No_Task_Hierarchy forbids local tasks (0000-00-00)}
-@cindex AI-0216 (Ada 2012 feature)
+@cindex AI05-0216 (Ada 2012 feature)
 
 @noindent
   It is clearly the intention that @code{No_Task_Hierarchy} is intended to

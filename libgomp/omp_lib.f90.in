@@ -1,4 +1,4 @@
-!  Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+!  Copyright (C) 2005, 2007, 2008, 2009, 2011 Free Software Foundation, Inc.
 !  Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 !  This file is part of the GNU OpenMP Library (libgomp).
@@ -24,8 +24,6 @@
 
       module omp_lib_kinds
         implicit none
-        integer, parameter :: omp_integer_kind = 4
-        integer, parameter :: omp_logical_kind = 4
         integer, parameter :: omp_lock_kind = @OMP_LOCK_KIND@
         integer, parameter :: omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@
         integer, parameter :: omp_sched_kind = 4
@@ -34,7 +32,7 @@
       module omp_lib
         use omp_lib_kinds
         implicit none
-        integer, parameter :: openmp_version = 200805
+        integer, parameter :: openmp_version = 201107
         integer (omp_sched_kind), parameter :: omp_sched_static = 1
         integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
         integer (omp_sched_kind), parameter :: omp_sched_guided = 3
@@ -126,28 +124,28 @@
         interface
           function omp_get_dynamic ()
             use omp_lib_kinds
-            logical (omp_logical_kind) :: omp_get_dynamic
+            logical (4) :: omp_get_dynamic
           end function omp_get_dynamic
         end interface
 
         interface
           function omp_get_nested ()
             use omp_lib_kinds
-            logical (omp_logical_kind) :: omp_get_nested
+            logical (4) :: omp_get_nested
           end function omp_get_nested
         end interface
 
         interface
           function omp_in_parallel ()
             use omp_lib_kinds
-            logical (omp_logical_kind) :: omp_in_parallel
+            logical (4) :: omp_in_parallel
           end function omp_in_parallel
         end interface
 
         interface
           function omp_test_lock (lock)
             use omp_lib_kinds
-            logical (omp_logical_kind) :: omp_test_lock
+            logical (4) :: omp_test_lock
             integer (omp_lock_kind), intent (inout) :: lock
           end function omp_test_lock
         end interface
@@ -155,35 +153,35 @@
         interface
           function omp_get_max_threads ()
             use omp_lib_kinds
-            integer (omp_integer_kind) :: omp_get_max_threads
+            integer (4) :: omp_get_max_threads
           end function omp_get_max_threads
         end interface
 
         interface
           function omp_get_num_procs ()
             use omp_lib_kinds
-            integer (omp_integer_kind) :: omp_get_num_procs
+            integer (4) :: omp_get_num_procs
           end function omp_get_num_procs
         end interface
 
         interface
           function omp_get_num_threads ()
             use omp_lib_kinds
-            integer (omp_integer_kind) :: omp_get_num_threads
+            integer (4) :: omp_get_num_threads
           end function omp_get_num_threads
         end interface
 
         interface
           function omp_get_thread_num ()
             use omp_lib_kinds
-            integer (omp_integer_kind) :: omp_get_thread_num
+            integer (4) :: omp_get_thread_num
           end function omp_get_thread_num
         end interface
 
         interface
           function omp_test_nest_lock (lock)
             use omp_lib_kinds
-            integer (omp_integer_kind) :: omp_test_nest_lock
+            integer (4) :: omp_test_nest_lock
             integer (omp_nest_lock_kind), intent (inout) :: lock
           end function omp_test_nest_lock
         end interface
@@ -229,7 +227,7 @@
         interface
           function omp_get_thread_limit ()
             use omp_lib_kinds
-            integer (omp_integer_kind) :: omp_get_thread_limit
+            integer (4) :: omp_get_thread_limit
           end function omp_get_thread_limit
         end interface
 
@@ -247,14 +245,14 @@
         interface
           function omp_get_max_active_levels ()
             use omp_lib_kinds
-            integer (omp_integer_kind) :: omp_get_max_active_levels
+            integer (4) :: omp_get_max_active_levels
           end function omp_get_max_active_levels
         end interface
 
         interface
           function omp_get_level ()
             use omp_lib_kinds
-            integer (omp_integer_kind) :: omp_get_level
+            integer (4) :: omp_get_level
           end function omp_get_level
         end interface
 
@@ -262,12 +260,12 @@
           function omp_get_ancestor_thread_num (level)
             use omp_lib_kinds
             integer (4), intent (in) :: level
-            integer (omp_integer_kind) :: omp_get_ancestor_thread_num
+            integer (4) :: omp_get_ancestor_thread_num
           end function omp_get_ancestor_thread_num
           function omp_get_ancestor_thread_num_8 (level)
             use omp_lib_kinds
             integer (8), intent (in) :: level
-            integer (omp_integer_kind) :: omp_get_ancestor_thread_num_8
+            integer (4) :: omp_get_ancestor_thread_num_8
           end function omp_get_ancestor_thread_num_8
         end interface
 
@@ -275,20 +273,27 @@
           function omp_get_team_size (level)
             use omp_lib_kinds
             integer (4), intent (in) :: level
-            integer (omp_integer_kind) :: omp_get_team_size
+            integer (4) :: omp_get_team_size
           end function omp_get_team_size
           function omp_get_team_size_8 (level)
             use omp_lib_kinds
             integer (8), intent (in) :: level
-            integer (omp_integer_kind) :: omp_get_team_size_8
+            integer (4) :: omp_get_team_size_8
           end function omp_get_team_size_8
         end interface
 
         interface
           function omp_get_active_level ()
             use omp_lib_kinds
-            integer (omp_integer_kind) :: omp_get_active_level
+            integer (4) :: omp_get_active_level
           end function omp_get_active_level
+        end interface
+
+        interface
+          function omp_in_final ()
+            use omp_lib_kinds
+            logical (4) :: omp_in_final
+          end function omp_in_final
         end interface
 
       end module omp_lib

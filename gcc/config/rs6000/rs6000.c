@@ -130,6 +130,9 @@ typedef struct GTY(()) machine_function
   int ra_need_lr;
   /* Cache lr_save_p after expansion of builtin_eh_return.  */
   int lr_save_state;
+  /* Whether we need to save the TOC to the reserved stack location in the
+     function prologue.  */
+  bool save_toc_in_prologue;
   /* Offset from virtual_stack_vars_rtx to the start of the ABI_V4
      varargs save area.  */
   HOST_WIDE_INT varargs_save_offset;
@@ -869,10 +872,7 @@ static bool rs6000_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool rs6000_debug_legitimate_address_p (enum machine_mode, rtx, bool);
 static rtx rs6000_generate_compare (rtx, enum machine_mode);
 static void rs6000_emit_stack_tie (void);
-static void rs6000_frame_related (rtx, rtx, HOST_WIDE_INT, rtx, rtx);
 static bool spe_func_has_64bit_regs_p (void);
-static void emit_frame_save (rtx, rtx, enum machine_mode, unsigned int,
-			     int, HOST_WIDE_INT);
 static rtx gen_frame_mem_offset (enum machine_mode, rtx, int);
 static unsigned rs6000_hash_constant (rtx);
 static unsigned toc_hash_function (const void *);
@@ -1178,6 +1178,7 @@ static void rs6000_conditional_register_usage (void);
 static void rs6000_trampoline_init (rtx, tree, rtx);
 static bool rs6000_cannot_force_const_mem (enum machine_mode, rtx);
 static bool rs6000_legitimate_constant_p (enum machine_mode, rtx);
+static bool rs6000_save_toc_in_prologue_p (void);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -5391,7 +5392,7 @@ rs6000_legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
     }
 
   offset += 0x8000;
-  return (offset < 0x10000) && (offset + extra < 0x10000);
+  return offset < 0x10000 - extra;
 }
 
 bool
@@ -9128,8 +9129,7 @@ rs6000_va_start (tree valist, rtx nextarg)
   /* Find the overflow area.  */
   t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
   if (words != 0)
-    t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ovf), t,
-	        size_int (words * UNITS_PER_WORD));
+    t = fold_build_pointer_plus_hwi (t, words * UNITS_PER_WORD);
   t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -9145,8 +9145,7 @@ rs6000_va_start (tree valist, rtx nextarg)
   /* Find the register save area.  */
   t = make_tree (TREE_TYPE (sav), virtual_stack_vars_rtx);
   if (cfun->machine->varargs_save_offset)
-    t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (sav), t,
-	        size_int (cfun->machine->varargs_save_offset));
+    t = fold_build_pointer_plus_hwi (t, cfun->machine->varargs_save_offset);
   t = build2 (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -9199,9 +9198,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	  /* This updates arg ptr by the amount that would be necessary
 	     to align the zero-sized (but not zero-alignment) item.  */
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
-		  fold_build2 (POINTER_PLUS_EXPR,
-			       TREE_TYPE (valist),
-			       valist_tmp, size_int (boundary - 1)));
+		      fold_build_pointer_plus_hwi (valist_tmp, boundary - 1));
 	  gimplify_and_add (t, pre_p);
 
 	  t = fold_convert (sizetype, valist_tmp);
@@ -9336,20 +9333,20 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
       t = sav;
       if (sav_ofs)
-	t = build2 (POINTER_PLUS_EXPR, ptr_type_node, sav, size_int (sav_ofs));
+	t = fold_build_pointer_plus_hwi (sav, sav_ofs);
 
       u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg), unshare_expr (reg),
 		  build_int_cst (TREE_TYPE (reg), n_reg));
       u = fold_convert (sizetype, u);
       u = build2 (MULT_EXPR, sizetype, u, size_int (sav_scale));
-      t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t, u);
+      t = fold_build_pointer_plus (t, u);
 
       /* _Decimal32 varargs are located in the second word of the 64-bit
 	 FP register for 32-bit binaries.  */
       if (!TARGET_POWERPC64
 	  && TARGET_HARD_FLOAT && TARGET_FPRS
 	  && TYPE_MODE (type) == SDmode)
-	t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t, size_int (size));
+	t = fold_build_pointer_plus_hwi (t, size);
 
       gimplify_assign (addr, t, pre_p);
 
@@ -9372,17 +9369,15 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   t = ovf;
   if (align != 1)
     {
-      t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t, size_int (align - 1));
-      t = fold_convert (sizetype, t);
+      t = fold_build_pointer_plus_hwi (t, align - 1);
       t = build2 (BIT_AND_EXPR, TREE_TYPE (t), t,
-		  size_int (-align));
-      t = fold_convert (TREE_TYPE (ovf), t);
+		  build_int_cst (TREE_TYPE (t), -align));
     }
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
 
   gimplify_assign (unshare_expr (addr), t, pre_p);
 
-  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t, size_int (size));
+  t = fold_build_pointer_plus_hwi (t, size);
   gimplify_assign (unshare_expr (ovf), t, pre_p);
 
   if (lab_over)
@@ -13682,14 +13677,14 @@ expand_block_move (rtx operands[])
 	      rtx src_reg = copy_addr_to_reg (XEXP (src, 0));
 	      src = replace_equiv_address (src, src_reg);
 	    }
-	  set_mem_size (src, GEN_INT (move_bytes));
+	  set_mem_size (src, move_bytes);
 
 	  if (!REG_P (XEXP (dest, 0)))
 	    {
 	      rtx dest_reg = copy_addr_to_reg (XEXP (dest, 0));
 	      dest = replace_equiv_address (dest, dest_reg);
 	    }
-	  set_mem_size (dest, GEN_INT (move_bytes));
+	  set_mem_size (dest, move_bytes);
 
 	  emit_insn ((*gen_func.movmemsi) (dest, src,
 					   GEN_INT (move_bytes & 31),
@@ -16885,7 +16880,7 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
       op_false = tmp;
     }
 
-  cond2 = gen_rtx_fmt_ee (NE, cc_mode, mask, const0_rtx);
+  cond2 = gen_rtx_fmt_ee (NE, cc_mode, mask, CONST0_RTX (dest_mode));
   emit_insn (gen_rtx_SET (VOIDmode,
 			  dest,
 			  gen_rtx_IF_THEN_ELSE (dest_mode,
@@ -19320,7 +19315,7 @@ output_probe_stack_range (rtx reg1, rtx reg2)
    deduce these equivalences by itself so it wasn't necessary to hold
    its hand so much.  */
 
-static void
+static rtx
 rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
 		      rtx reg2, rtx rreg)
 {
@@ -19393,6 +19388,8 @@ rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
 
   RTX_FRAME_RELATED_P (insn) = 1;
   add_reg_note (insn, REG_FRAME_RELATED_EXPR, real);
+
+  return insn;
 }
 
 /* Returns an insn that has a vrsave set operation with the
@@ -19457,7 +19454,7 @@ generate_set_vrsave (rtx reg, rs6000_stack_t *info, int epiloguep)
 /* Save a register into the frame, and emit RTX_FRAME_RELATED_P notes.
    Save REGNO into [FRAME_REG + OFFSET] in mode MODE.  */
 
-static void
+static rtx
 emit_frame_save (rtx frame_reg, rtx frame_ptr, enum machine_mode mode,
 		 unsigned int regno, int offset, HOST_WIDE_INT total_size)
 {
@@ -19495,7 +19492,7 @@ emit_frame_save (rtx frame_reg, rtx frame_ptr, enum machine_mode mode,
 
   insn = emit_move_insn (mem, reg);
 
-  rs6000_frame_related (insn, frame_ptr, total_size, replacea, replaceb);
+  return rs6000_frame_related (insn, frame_ptr, total_size, replacea, replaceb);
 }
 
 /* Emit an offset memory reference suitable for a frame store, while
@@ -20291,6 +20288,7 @@ rs6000_emit_prologue (void)
   if (TARGET_AIX && crtl->calls_eh_return)
     {
       rtx tmp_reg, tmp_reg_si, hi, lo, compare_result, toc_save_done, jump;
+      rtx save_insn, join_insn, note;
       long toc_restore_insn;
 
       gcc_assert (frame_reg_rtx == frame_ptr_rtx
@@ -20325,9 +20323,29 @@ rs6000_emit_prologue (void)
       JUMP_LABEL (jump) = toc_save_done;
       LABEL_NUSES (toc_save_done) += 1;
 
-      emit_frame_save (frame_reg_rtx, frame_ptr_rtx, reg_mode, 2,
-		       sp_offset + 5 * reg_size, info->total_size);
+      save_insn = emit_frame_save (frame_reg_rtx, frame_ptr_rtx, reg_mode,
+				   TOC_REGNUM, sp_offset + 5 * reg_size,
+				   info->total_size);
+
       emit_label (toc_save_done);
+
+      /* ??? If we leave SAVE_INSN as marked as saving R2, then we'll
+	 have a CFG that has different saves along different paths.
+	 Move the note to a dummy blockage insn, which describes that
+	 R2 is unconditionally saved after the label.  */
+      /* ??? An alternate representation might be a special insn pattern
+	 containing both the branch and the store.  That might let the
+	 code that minimizes the number of DW_CFA_advance opcodes better
+	 freedom in placing the annotations.  */
+      note = find_reg_note (save_insn, REG_FRAME_RELATED_EXPR, NULL);
+      gcc_assert (note);
+      remove_note (save_insn, note);
+      RTX_FRAME_RELATED_P (save_insn) = 0;
+
+      join_insn = emit_insn (gen_blockage ());
+      REG_NOTES (join_insn) = note;
+      RTX_FRAME_RELATED_P (join_insn) = 1;
+
       if (using_static_chain_p)
 	emit_move_insn (tmp_reg, gen_rtx_REG (Pmode, 0));
     }
@@ -20461,14 +20479,12 @@ rs6000_emit_prologue (void)
       insn = emit_insn (generate_set_vrsave (reg, info, 0));
     }
 
-  if (TARGET_SINGLE_PIC_BASE)
-    return; /* Do not set PIC register */
-
   /* If we are using RS6000_PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */
-  if ((TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
-      || (DEFAULT_ABI == ABI_V4
-	  && (flag_pic == 1 || (flag_pic && TARGET_SECURE_PLT))
-	  && df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM)))
+  if (!TARGET_SINGLE_PIC_BASE
+      && ((TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
+	  || (DEFAULT_ABI == ABI_V4
+	      && (flag_pic == 1 || (flag_pic && TARGET_SECURE_PLT))
+	      && df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM))))
     {
       /* If emit_load_toc_table will use the link register, we need to save
 	 it.  We use R12 for this purpose because emit_load_toc_table
@@ -20489,6 +20505,7 @@ rs6000_emit_prologue (void)
 	  rs6000_emit_load_toc_table (TRUE);
 
 	  insn = emit_move_insn (lr, frame_ptr_rtx);
+	  add_reg_note (insn, REG_CFA_RESTORE, lr);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
       else
@@ -20496,7 +20513,8 @@ rs6000_emit_prologue (void)
     }
 
 #if TARGET_MACHO
-  if (DEFAULT_ABI == ABI_DARWIN
+  if (!TARGET_SINGLE_PIC_BASE
+      && DEFAULT_ABI == ABI_DARWIN
       && flag_pic && crtl->uses_pic_offset_table)
     {
       rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
@@ -20516,6 +20534,27 @@ rs6000_emit_prologue (void)
 	emit_move_insn (lr, gen_rtx_REG (Pmode, 0));
     }
 #endif
+
+  /* If we need to, save the TOC register after doing the stack setup.
+     Do not emit eh frame info for this save.  The unwinder wants info,
+     conceptually attached to instructions in this function, about
+     register values in the caller of this function.  This R2 may have
+     already been changed from the value in the caller.
+     We don't attempt to write accurate DWARF EH frame info for R2
+     because code emitted by gcc for a (non-pointer) function call
+     doesn't save and restore R2.  Instead, R2 is managed out-of-line
+     by a linker generated plt call stub when the function resides in
+     a shared library.  This behaviour is costly to describe in DWARF,
+     both in terms of the size of DWARF info and the time taken in the
+     unwinder to interpret it.  R2 changes, apart from the
+     calls_eh_return case earlier in this function, are handled by
+     linux-unwind.h frob_update_context.  */ 
+  if (rs6000_save_toc_in_prologue_p ())
+    {
+      rtx addr = gen_rtx_PLUS (Pmode, sp_reg_rtx, GEN_INT (5 * reg_size));
+      rtx mem = gen_frame_mem (reg_mode, addr);
+      emit_move_insn (mem, gen_rtx_REG (reg_mode, TOC_REGNUM));
+    }
 }
 
 /* Write function prologue.  */
@@ -20560,39 +20599,6 @@ rs6000_output_function_prologue (FILE *file,
       fputs ("\t.extern __quoss\n", file);
       fputs ("\t.extern __quous\n", file);
       common_mode_defined = 1;
-    }
-
-  if (! HAVE_prologue)
-    {
-      rtx prologue;
-
-      start_sequence ();
-
-      /* A NOTE_INSN_DELETED is supposed to be at the start and end of
-	 the "toplevel" insn chain.  */
-      emit_note (NOTE_INSN_DELETED);
-      rs6000_emit_prologue ();
-      emit_note (NOTE_INSN_DELETED);
-
-      /* Expand INSN_ADDRESSES so final() doesn't crash.  */
-      {
-	rtx insn;
-	unsigned addr = 0;
-	for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
-	  {
-	    INSN_ADDRESSES_NEW (insn, addr);
-	    addr += 4;
-	  }
-      }
-
-      prologue = get_insns ();
-      end_sequence ();
-
-      if (TARGET_DEBUG_STACK)
-	debug_rtx_list (prologue, 100);
-
-      emit_insn_before_noloc (prologue, BB_HEAD (ENTRY_BLOCK_PTR->next_bb),
-			      ENTRY_BLOCK_PTR);
     }
 
   rs6000_pic_labelno++;
@@ -20706,10 +20712,7 @@ rs6000_emit_epilogue (int sibcall)
      here will not trigger at the moment;  We don't actually need a
      frame pointer for alloca, but the generic parts of the compiler
      give us one anyway.  */
-  use_backchain_to_restore_sp = (info->total_size > 32767
-				 || info->total_size
-				     + (info->lr_save_p ? info->lr_save_offset : 0)
-				       > 32767
+  use_backchain_to_restore_sp = (info->total_size > 32767 - info->lr_save_offset
 				 || (cfun->calls_alloca
 				     && !frame_pointer_needed));
   restore_lr = (info->lr_save_p
@@ -21405,43 +21408,6 @@ static void
 rs6000_output_function_epilogue (FILE *file,
 				 HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  if (! HAVE_epilogue)
-    {
-      rtx insn = get_last_insn ();
-      /* If the last insn was a BARRIER, we don't have to write anything except
-	 the trace table.  */
-      if (GET_CODE (insn) == NOTE)
-	insn = prev_nonnote_insn (insn);
-      if (insn == 0 ||  GET_CODE (insn) != BARRIER)
-	{
-	  /* This is slightly ugly, but at least we don't have two
-	     copies of the epilogue-emitting code.  */
-	  start_sequence ();
-
-	  /* A NOTE_INSN_DELETED is supposed to be at the start
-	     and end of the "toplevel" insn chain.  */
-	  emit_note (NOTE_INSN_DELETED);
-	  rs6000_emit_epilogue (FALSE);
-	  emit_note (NOTE_INSN_DELETED);
-
-	  /* Expand INSN_ADDRESSES so final() doesn't crash.  */
-	  {
-	    rtx insn;
-	    unsigned addr = 0;
-	    for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
-	      {
-		INSN_ADDRESSES_NEW (insn, addr);
-		addr += 4;
-	      }
-	  }
-
-	  if (TARGET_DEBUG_STACK)
-	    debug_rtx_list (get_insns (), 100);
-	  final (get_insns (), file, FALSE);
-	  end_sequence ();
-	}
-    }
-
 #if TARGET_MACHO
   macho_branch_islands ();
   /* Mach-O doesn't support labels at the end of objects, so if
@@ -21962,17 +21928,18 @@ const char *
 rs6000_xcoff_strip_dollar (const char *name)
 {
   char *strip, *p;
-  int len;
+  const char *q;
+  size_t len;
 
-  p = strchr (name, '$');
+  q = (const char *) strchr (name, '$');
 
-  if (p == 0 || p == name)
+  if (q == 0 || q == name)
     return name;
 
   len = strlen (name);
-  strip = (char *) alloca (len + 1);
+  strip = XALLOCAVEC (char, len + 1);
   strcpy (strip, name);
-  p = strchr (strip, '$');
+  p = strip + (q - name);
   while (p)
     {
       *p = '_';
@@ -23125,8 +23092,8 @@ adjacent_mem_locations (rtx insn1, rtx insn2)
       val_diff = val1 - val0;
 
       return ((REGNO (reg0) == REGNO (reg1))
-	      && ((MEM_SIZE (a) && val_diff == INTVAL (MEM_SIZE (a)))
-		  || (MEM_SIZE (b) && val_diff == -INTVAL (MEM_SIZE (b)))));
+	      && ((MEM_SIZE_KNOWN_P (a) && val_diff == MEM_SIZE (a))
+		  || (MEM_SIZE_KNOWN_P (b) && val_diff == -MEM_SIZE (b))));
     }
 
   return false;
@@ -24469,9 +24436,14 @@ rs6000_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
     /* Under AIX, just build the 3 word function descriptor */
     case ABI_AIX:
       {
-	rtx fnmem = gen_const_mem (Pmode, force_reg (Pmode, fnaddr));
-	rtx fn_reg = gen_reg_rtx (Pmode);
-	rtx toc_reg = gen_reg_rtx (Pmode);
+	rtx fnmem, fn_reg, toc_reg;
+
+	if (!TARGET_POINTERS_TO_NESTED_FUNCTIONS)
+	  error ("-mno-r11 must not be used if you have trampolines");
+
+	fnmem = gen_const_mem (Pmode, force_reg (Pmode, fnaddr));
+	fn_reg = gen_reg_rtx (Pmode);
+	toc_reg = gen_reg_rtx (Pmode);
 
   /* Macro to shorten the code expansions below.  */
 # define MEM_PLUS(MEM, OFFSET) adjust_address (MEM, Pmode, OFFSET)
@@ -27758,6 +27730,130 @@ rs6000_legitimate_constant_p (enum machine_mode mode, rtx x)
 	  || (TARGET_POWERPC64 && mode == DImode)
 	  || easy_fp_constant (x, mode)
 	  || easy_vector_constant (x, mode));
+}
+
+
+/* A function pointer under AIX is a pointer to a data area whose first word
+   contains the actual address of the function, whose second word contains a
+   pointer to its TOC, and whose third word contains a value to place in the
+   static chain register (r11).  Note that if we load the static chain, our
+   "trampoline" need not have any executable code.  */
+
+void
+rs6000_call_indirect_aix (rtx value, rtx func_desc, rtx flag)
+{
+  rtx func_addr;
+  rtx toc_reg;
+  rtx sc_reg;
+  rtx stack_ptr;
+  rtx stack_toc_offset;
+  rtx stack_toc_mem;
+  rtx func_toc_offset;
+  rtx func_toc_mem;
+  rtx func_sc_offset;
+  rtx func_sc_mem;
+  rtx insn;
+  rtx (*call_func) (rtx, rtx, rtx, rtx);
+  rtx (*call_value_func) (rtx, rtx, rtx, rtx, rtx);
+
+  stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+  toc_reg = gen_rtx_REG (Pmode, TOC_REGNUM);
+
+  /* Load up address of the actual function.  */
+  func_desc = force_reg (Pmode, func_desc);
+  func_addr = gen_reg_rtx (Pmode);
+  emit_move_insn (func_addr, gen_rtx_MEM (Pmode, func_desc));
+
+  if (TARGET_32BIT)
+    {
+
+      stack_toc_offset = GEN_INT (TOC_SAVE_OFFSET_32BIT);
+      func_toc_offset = GEN_INT (AIX_FUNC_DESC_TOC_32BIT);
+      func_sc_offset = GEN_INT (AIX_FUNC_DESC_SC_32BIT);
+      if (TARGET_POINTERS_TO_NESTED_FUNCTIONS)
+	{
+	  call_func = gen_call_indirect_aix32bit;
+	  call_value_func = gen_call_value_indirect_aix32bit;
+	}
+      else
+	{
+	  call_func = gen_call_indirect_aix32bit_nor11;
+	  call_value_func = gen_call_value_indirect_aix32bit_nor11;
+	}
+    }
+  else
+    {
+      stack_toc_offset = GEN_INT (TOC_SAVE_OFFSET_64BIT);
+      func_toc_offset = GEN_INT (AIX_FUNC_DESC_TOC_64BIT);
+      func_sc_offset = GEN_INT (AIX_FUNC_DESC_SC_64BIT);
+      if (TARGET_POINTERS_TO_NESTED_FUNCTIONS)
+	{
+	  call_func = gen_call_indirect_aix64bit;
+	  call_value_func = gen_call_value_indirect_aix64bit;
+	}
+      else
+	{
+	  call_func = gen_call_indirect_aix64bit_nor11;
+	  call_value_func = gen_call_value_indirect_aix64bit_nor11;
+	}
+    }
+
+  /* Reserved spot to store the TOC.  */
+  stack_toc_mem = gen_frame_mem (Pmode,
+				 gen_rtx_PLUS (Pmode,
+					       stack_ptr,
+					       stack_toc_offset));
+
+  gcc_assert (cfun);
+  gcc_assert (cfun->machine);
+
+  /* Can we optimize saving the TOC in the prologue or do we need to do it at
+     every call?  */
+  if (TARGET_SAVE_TOC_INDIRECT && !cfun->calls_alloca)
+    cfun->machine->save_toc_in_prologue = true;
+
+  else
+    {
+      MEM_VOLATILE_P (stack_toc_mem) = 1;
+      emit_move_insn (stack_toc_mem, toc_reg);
+    }
+
+  /* Calculate the address to load the TOC of the called function.  We don't
+     actually load this until the split after reload.  */
+  func_toc_mem = gen_rtx_MEM (Pmode,
+			      gen_rtx_PLUS (Pmode,
+					    func_desc,
+					    func_toc_offset));
+
+  /* If we have a static chain, load it up.  */
+  if (TARGET_POINTERS_TO_NESTED_FUNCTIONS)
+    {
+      func_sc_mem = gen_rtx_MEM (Pmode,
+				 gen_rtx_PLUS (Pmode,
+					       func_desc,
+					       func_sc_offset));
+
+      sc_reg = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
+      emit_move_insn (sc_reg, func_sc_mem);
+    }
+
+  /* Create the call.  */
+  if (value)
+    insn = call_value_func (value, func_addr, flag, func_toc_mem,
+			    stack_toc_mem);
+  else
+    insn = call_func (func_addr, flag, func_toc_mem, stack_toc_mem);
+
+  emit_call_insn (insn);
+}
+
+/* Return whether we need to always update the saved TOC pointer when we update
+   the stack pointer.  */
+
+static bool
+rs6000_save_toc_in_prologue_p (void)
+{
+  return (cfun && cfun->machine && cfun->machine->save_toc_in_prologue);
 }
 
 #include "gt-rs6000.h"

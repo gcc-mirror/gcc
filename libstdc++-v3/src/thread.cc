@@ -24,6 +24,7 @@
 
 
 #include <thread>
+#include <system_error>
 #include <cerrno>
 
 #if defined(_GLIBCXX_USE_GET_NPROCS)

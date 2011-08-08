@@ -1,6 +1,6 @@
 /* PR tree-optimization/19828 */
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-lim-details" } */
+/* { dg-options "-O1 -fdump-tree-lim1-details" } */
 
 int cst_fun1 (int) __attribute__((__const__));
 int cst_fun2 (int) __attribute__((__const__));
@@ -32,4 +32,4 @@ int xxx (void)
    with k = 0 may be invalid.  */
 
 /* { dg-final { scan-tree-dump-times "Moving statement" 2 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "lim1" } } */

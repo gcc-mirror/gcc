@@ -139,83 +139,53 @@ package body Ada.Calendar.Formatting is
      (Elapsed_Time          : Duration;
       Include_Time_Fraction : Boolean := False) return String
    is
+      To_Char    : constant array (0 .. 9) of Character := "0123456789";
       Hour       : Hour_Number;
       Minute     : Minute_Number;
       Second     : Second_Number;
       Sub_Second : Duration;
       SS_Nat     : Natural;
 
-      Low  : Integer;
-      High : Integer;
+      --  Determine the two slice bounds for the result string depending on
+      --  whether the input is negative and whether fractions are requested.
+
+      First  : constant Integer := (if Elapsed_Time < 0.0 then 1 else 2);
+      Last   : constant Integer := (if Include_Time_Fraction then 12 else 9);
 
       Result : String := "-00:00:00.00";
 
    begin
       Split (abs (Elapsed_Time), Hour, Minute, Second, Sub_Second);
 
-      --  Determine the two slice bounds for the result string depending on
-      --  whether the input is negative and whether fractions are requested.
+      --  Hour processing, positions 2 and 3
 
-      Low  := (if Elapsed_Time < 0.0 then 1 else 2);
-      High := (if Include_Time_Fraction then 12 else 9);
+      Result (2) := To_Char (Hour / 10);
+      Result (3) := To_Char (Hour mod 10);
 
-      --  Prevent rounding when converting to natural
+      --  Minute processing, positions 5 and 6
 
-      Sub_Second := Sub_Second * 100.0;
+      Result (5) := To_Char (Minute / 10);
+      Result (6) := To_Char (Minute mod 10);
 
-      if Sub_Second > 0.0 then
-         Sub_Second := Sub_Second - 0.5;
+      --  Second processing, positions 8 and 9
+
+      Result (8) := To_Char (Second / 10);
+      Result (9) := To_Char (Second mod 10);
+
+      --  Optional sub second processing, positions 11 and 12
+
+      if Include_Time_Fraction and then Sub_Second > 0.0 then
+
+         --  Prevent rounding up when converting to natural, avoiding the zero
+         --  case to prevent rounding down to a negative number.
+
+         SS_Nat := Natural (Duration'(Sub_Second * 100.0) - 0.5);
+
+         Result (11) := To_Char (SS_Nat / 10);
+         Result (12) := To_Char (SS_Nat mod 10);
       end if;
 
-      SS_Nat := Natural (Sub_Second);
-
-      declare
-         Hour_Str   : constant String := Hour_Number'Image (Hour);
-         Minute_Str : constant String := Minute_Number'Image (Minute);
-         Second_Str : constant String := Second_Number'Image (Second);
-         SS_Str     : constant String := Natural'Image (SS_Nat);
-
-      begin
-         --  Hour processing, positions 2 and 3
-
-         if Hour < 10 then
-            Result (3) := Hour_Str (2);
-         else
-            Result (2) := Hour_Str (2);
-            Result (3) := Hour_Str (3);
-         end if;
-
-         --  Minute processing, positions 5 and 6
-
-         if Minute < 10 then
-            Result (6) := Minute_Str (2);
-         else
-            Result (5) := Minute_Str (2);
-            Result (6) := Minute_Str (3);
-         end if;
-
-         --  Second processing, positions 8 and 9
-
-         if Second < 10 then
-            Result (9) := Second_Str (2);
-         else
-            Result (8) := Second_Str (2);
-            Result (9) := Second_Str (3);
-         end if;
-
-         --  Optional sub second processing, positions 11 and 12
-
-         if Include_Time_Fraction then
-            if SS_Nat < 10 then
-               Result (12) := SS_Str (2);
-            else
-               Result (11) := SS_Str (2);
-               Result (12) := SS_Str (3);
-            end if;
-         end if;
-
-         return Result (Low .. High);
-      end;
+      return Result (First .. Last);
    end Image;
 
    -----------
@@ -227,6 +197,8 @@ package body Ada.Calendar.Formatting is
       Include_Time_Fraction : Boolean := False;
       Time_Zone             : Time_Zones.Time_Offset := 0) return String
    is
+      To_Char : constant array (0 .. 9) of Character := "0123456789";
+
       Year        : Year_Number;
       Month       : Month_Number;
       Day         : Day_Number;
@@ -237,99 +209,60 @@ package body Ada.Calendar.Formatting is
       SS_Nat      : Natural;
       Leap_Second : Boolean;
 
+      --  The result length depends on whether fractions are requested.
+
       Result : String := "0000-00-00 00:00:00.00";
+      Last   : constant Positive :=
+                 Result'Last - (if Include_Time_Fraction then 0 else 3);
 
    begin
       Split (Date, Year, Month, Day,
              Hour, Minute, Second, Sub_Second, Leap_Second, Time_Zone);
 
-      --  Prevent rounding when converting to natural
+      --  Year processing, positions 1, 2, 3 and 4
 
-      Sub_Second := Sub_Second * 100.0;
+      Result (1) := To_Char (Year / 1000);
+      Result (2) := To_Char (Year / 100 mod 10);
+      Result (3) := To_Char (Year / 10 mod 10);
+      Result (4) := To_Char (Year mod 10);
 
-      if Sub_Second > 0.0 then
-         Sub_Second := Sub_Second - 0.5;
+      --  Month processing, positions 6 and 7
+
+      Result (6) := To_Char (Month / 10);
+      Result (7) := To_Char (Month mod 10);
+
+      --  Day processing, positions 9 and 10
+
+      Result (9)  := To_Char (Day / 10);
+      Result (10) := To_Char (Day mod 10);
+
+      Result (12) := To_Char (Hour / 10);
+      Result (13) := To_Char (Hour mod 10);
+
+      --  Minute processing, positions 15 and 16
+
+      Result (15) := To_Char (Minute / 10);
+      Result (16) := To_Char (Minute mod 10);
+
+      --  Second processing, positions 18 and 19
+
+      Result (18) := To_Char (Second / 10);
+      Result (19) := To_Char (Second mod 10);
+
+      --  Optional sub second processing, positions 21 and 22
+
+      if Include_Time_Fraction and then Sub_Second > 0.0 then
+
+         --  Prevent rounding up when converting to natural, avoiding the zero
+         --  case to prevent rounding down to a negative number.
+
+         SS_Nat := Natural (Duration'(Sub_Second * 100.0) - 0.5);
+
+         Result (21) := To_Char (SS_Nat / 10);
+         Result (22) := To_Char (SS_Nat mod 10);
       end if;
 
-      SS_Nat := Natural (Sub_Second);
-
-      declare
-         Year_Str   : constant String := Year_Number'Image (Year);
-         Month_Str  : constant String := Month_Number'Image (Month);
-         Day_Str    : constant String := Day_Number'Image (Day);
-         Hour_Str   : constant String := Hour_Number'Image (Hour);
-         Minute_Str : constant String := Minute_Number'Image (Minute);
-         Second_Str : constant String := Second_Number'Image (Second);
-         SS_Str     : constant String := Natural'Image (SS_Nat);
-
-      begin
-         --  Year processing, positions 1, 2, 3 and 4
-
-         Result (1) := Year_Str (2);
-         Result (2) := Year_Str (3);
-         Result (3) := Year_Str (4);
-         Result (4) := Year_Str (5);
-
-         --  Month processing, positions 6 and 7
-
-         if Month < 10 then
-            Result (7) := Month_Str (2);
-         else
-            Result (6) := Month_Str (2);
-            Result (7) := Month_Str (3);
-         end if;
-
-         --  Day processing, positions 9 and 10
-
-         if Day < 10 then
-            Result (10) := Day_Str (2);
-         else
-            Result (9)  := Day_Str (2);
-            Result (10) := Day_Str (3);
-         end if;
-
-         --  Hour processing, positions 12 and 13
-
-         if Hour < 10 then
-            Result (13) := Hour_Str (2);
-         else
-            Result (12) := Hour_Str (2);
-            Result (13) := Hour_Str (3);
-         end if;
-
-         --  Minute processing, positions 15 and 16
-
-         if Minute < 10 then
-            Result (16) := Minute_Str (2);
-         else
-            Result (15) := Minute_Str (2);
-            Result (16) := Minute_Str (3);
-         end if;
-
-         --  Second processing, positions 18 and 19
-
-         if Second < 10 then
-            Result (19) := Second_Str (2);
-         else
-            Result (18) := Second_Str (2);
-            Result (19) := Second_Str (3);
-         end if;
-
-         --  Optional sub second processing, positions 21 and 22
-
-         if Include_Time_Fraction then
-            if SS_Nat < 10 then
-               Result (22) := SS_Str (2);
-            else
-               Result (21) := SS_Str (2);
-               Result (22) := SS_Str (3);
-            end if;
-
-            return Result;
-         else
-            return Result (1 .. 19);
-         end if;
-      end;
+      return Result (Result'First .. Last);
    end Image;
 
    ------------
@@ -414,7 +347,7 @@ package body Ada.Calendar.Formatting is
    begin
       --  Validity checks
 
-      if not Hour'Valid
+      if        not Hour'Valid
         or else not Minute'Valid
         or else not Second'Valid
         or else not Sub_Second'Valid

@@ -35,11 +35,11 @@ package Sem_Ch6 is
    --  type is stronger than the ones preceding it.
 
    procedure Analyze_Abstract_Subprogram_Declaration (N : Node_Id);
+   procedure Analyze_Expression_Function             (N : Node_Id);
    procedure Analyze_Extended_Return_Statement       (N : Node_Id);
    procedure Analyze_Function_Call                   (N : Node_Id);
    procedure Analyze_Operator_Symbol                 (N : Node_Id);
    procedure Analyze_Parameter_Association           (N : Node_Id);
-   procedure Analyze_Parameterized_Expression        (N : Node_Id);
    procedure Analyze_Procedure_Call                  (N : Node_Id);
    procedure Analyze_Simple_Return_Statement         (N : Node_Id);
    procedure Analyze_Subprogram_Declaration          (N : Node_Id);
@@ -204,8 +204,8 @@ package Sem_Ch6 is
       Derived_Type : Entity_Id := Empty);
    --  Process new overloaded entity. Overloaded entities are created by
    --  enumeration type declarations, subprogram specifications, entry
-   --  declarations, and (implicitly) by type derivations. Derived_Type non-
-   --  Empty indicates that this is subprogram derived for that type.
+   --  declarations, and (implicitly) by type derivations. If Derived_Type
+   --  is non-empty then this is a subprogram derived for that type.
 
    procedure Process_Formals (T : List_Id; Related_Nod : Node_Id);
    --  Enter the formals in the scope of the subprogram or entry, and
@@ -239,7 +239,7 @@ package Sem_Ch6 is
       Old_Id                   : Entity_Id;
       Skip_Controlling_Formals : Boolean := False) return Boolean;
    --  Determine whether two callable entities (subprograms, entries, literals)
-   --  are subtype conformant (RM6.3.1(16)).  Skip_Controlling_Formals is True
+   --  are subtype conformant (RM 6.3.1(16)). Skip_Controlling_Formals is True
    --  when checking the conformance of a subprogram that implements an
    --  interface operation. In that case, only the non-controlling formals
    --  can (and must) be examined.
@@ -249,10 +249,10 @@ package Sem_Ch6 is
       Old_Id                   : Entity_Id;
       Skip_Controlling_Formals : Boolean := False) return Boolean;
    --  Determine whether two callable entities (subprograms, entries, literals)
-   --  are type conformant (RM6.3.1(14)). Skip_Controlling_Formals is True when
-   --  checking the conformance of a subprogram that implements an interface
-   --  operation. In that case, only the non-controlling formals can (and must)
-   --  be examined.
+   --  are type conformant (RM 6.3.1(14)). Skip_Controlling_Formals is True
+   --  when checking the conformance of a subprogram that implements an
+   --  interface operation. In that case, only the non-controlling formals
+   --  can (and must) be examined.
 
    procedure Valid_Operator_Definition (Designator : Entity_Id);
    --  Verify that an operator definition has the proper number of formals

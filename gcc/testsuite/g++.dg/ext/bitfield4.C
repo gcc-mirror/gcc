@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
-/* { dg-options "-Wno-packed-bitfield-compat -mno-ms-bitfields" { target { i?86-*-netware i?86-*-mingw* x86_64-*-mingw* } } } */
+/* { dg-options "-Wno-packed-bitfield-compat -mno-ms-bitfields" { target { i?86-*-mingw* x86_64-*-mingw* } } } */
 
 struct t /* { dg-message "note: offset of packed bit-field 't::b' has changed in GCC 4.4" "" { target pcc_bitfield_type_matters } } */
 {

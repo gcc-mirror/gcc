@@ -1,4 +1,4 @@
-# Copyright (C) 2005, 2009, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2009, 2010, 2011 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ if { [string match "*-*-darwin*" $target_triplet] } {
     set lib $blddir/src/.libs/libstdc++.so
 }
 
-set baseline_subdir "[eval exec $cxx --print-multi-dir]"
+set baseline_subdir "[eval exec $cxx $baseline_subdir_switch]"
 
 # Build the support objects.
 v3-build_support

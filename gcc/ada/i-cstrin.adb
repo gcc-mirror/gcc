@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,10 +42,10 @@ package body Interfaces.C.Strings is
    --  this type will in fact be used for aliasing values of other types.
 
    function To_chars_ptr is
-      new Ada.Unchecked_Conversion (Address, chars_ptr);
+      new Ada.Unchecked_Conversion (System.Parameters.C_Address, chars_ptr);
 
    function To_Address is
-      new Ada.Unchecked_Conversion (chars_ptr, Address);
+      new Ada.Unchecked_Conversion (chars_ptr, System.Parameters.C_Address);
 
    -----------------------
    -- Local Subprograms --
@@ -70,7 +70,7 @@ package body Interfaces.C.Strings is
    --  compatible, so we directly import here the malloc and free routines.
 
    function Memory_Alloc (Size : size_t) return chars_ptr;
-   pragma Import (C, Memory_Alloc, "__gnat_malloc");
+   pragma Import (C, Memory_Alloc, System.Parameters.C_Malloc_Linkname);
 
    procedure Memory_Free (Address : chars_ptr);
    pragma Import (C, Memory_Free, "__gnat_free");
@@ -139,8 +139,26 @@ package body Interfaces.C.Strings is
    ----------------
 
    function New_String (Str : String) return chars_ptr is
+
+      --  It's important that this subprogram uses the heap directly to compute
+      --  the result, and doesn't copy the string on the stack, otherwise its
+      --  use is limited when used from tasks on large strings.
+
+      Result : constant chars_ptr := Memory_Alloc (Str'Length + 1);
+
+      Result_Array : char_array  (1 .. Str'Length + 1);
+      for Result_Array'Address use To_Address (Result);
+      pragma Import (Ada, Result_Array);
+
+      Count : size_t;
+
    begin
-      return New_Char_Array (To_C (Str));
+      To_C
+        (Item       => Str,
+         Target     => Result_Array,
+         Count      => Count,
+         Append_Nul => True);
+      return Result;
    end New_String;
 
    ----------

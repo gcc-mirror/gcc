@@ -247,7 +247,9 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_ORDERED  */
   0, /* OMP_CLAUSE_DEFAULT  */
   3, /* OMP_CLAUSE_COLLAPSE  */
-  0  /* OMP_CLAUSE_UNTIED   */
+  0, /* OMP_CLAUSE_UNTIED   */
+  1, /* OMP_CLAUSE_FINAL  */
+  0  /* OMP_CLAUSE_MERGEABLE  */
 };
 
 const char * const omp_clause_code_name[] =
@@ -267,7 +269,9 @@ const char * const omp_clause_code_name[] =
   "ordered",
   "default",
   "collapse",
-  "untied"
+  "untied",
+  "final",
+  "mergeable"
 };
 
 
@@ -1759,9 +1763,7 @@ integer_all_onesp (const_tree expr)
   if (!uns)
     return 0;
 
-  /* Note that using TYPE_PRECISION here is wrong.  We care about the
-     actual bits, not the (arbitrary) range of the type.  */
-  prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (expr)));
+  prec = TYPE_PRECISION (TREE_TYPE (expr));
   if (prec >= HOST_BITS_PER_WIDE_INT)
     {
       HOST_WIDE_INT high_value;
@@ -3799,6 +3801,10 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 		&& useless_type_conversion_p (sizetype, TREE_TYPE (arg1)));
 
   t = make_node_stat (code PASS_MEM_STAT);
+
+  /* Remove UPC shared type qualifiers from the result type.  */
+  if (upc_shared_type_p (tt))
+    tt = build_upc_unshared_type (tt);
   TREE_TYPE (t) = tt;
 
   /* Below, we automatically set TREE_SIDE_EFFECTS and TREE_READONLY for the
@@ -6403,7 +6409,8 @@ attribute_list_contained (const_tree l1, const_tree l2)
        t1 != 0 && t2 != 0
         && TREE_PURPOSE (t1) == TREE_PURPOSE (t2)
         && TREE_VALUE (t1) == TREE_VALUE (t2);
-       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2));
+       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
+    ;
 
   /* Maybe the lists are equal.  */
   if (t1 == 0 && t2 == 0)
@@ -9222,10 +9229,12 @@ make_or_reuse_accum_type (unsigned size, int unsignedp, int satp)
 }
 
 /* Create nodes for all integer types (and error_mark_node) using the sizes
-   of C datatypes.  */
+   of C datatypes.  SIGNED_CHAR specifies whether char is signed,
+   SHORT_DOUBLE specifies whether double should be of the same precision
+   as float.  */
 
 void
-build_common_tree_nodes (bool signed_char)
+build_common_tree_nodes (bool signed_char, bool short_double)
 {
   error_mark_node = make_node (ERROR_MARK);
   TREE_TYPE (error_mark_node) = error_mark_node;
@@ -9282,6 +9291,8 @@ build_common_tree_nodes (bool signed_char)
     size_type_node = long_unsigned_type_node;
   else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
     size_type_node = long_long_unsigned_type_node;
+  else if (strcmp (SIZE_TYPE, "short unsigned int") == 0)
+    size_type_node = short_unsigned_type_node;
   else
     gcc_unreachable ();
 
@@ -9302,14 +9313,7 @@ build_common_tree_nodes (bool signed_char)
   access_public_node = get_identifier ("public");
   access_protected_node = get_identifier ("protected");
   access_private_node = get_identifier ("private");
-}
 
-/* Call this function after calling build_common_tree_nodes.
-   It will create several other common tree nodes.  */
-
-void
-build_common_tree_nodes_2 (int short_double)
-{
   /* Define these next since types below may used them.  */
   integer_zero_node = build_int_cst (integer_type_node, 0);
   integer_one_node = build_int_cst (integer_type_node, 1);
@@ -9604,6 +9608,31 @@ build_common_builtin_nodes (void)
 			  == UI_SJLJ)
 			 ? "_Unwind_SjLj_Resume" : "_Unwind_Resume"),
 			ECF_NORETURN);
+
+  if (built_in_decls[BUILT_IN_RETURN_ADDRESS] == NULL_TREE)
+    {
+      ftype = build_function_type_list (ptr_type_node, integer_type_node,
+					NULL_TREE);
+      local_define_builtin ("__builtin_return_address", ftype,
+			    BUILT_IN_RETURN_ADDRESS,
+			    "__builtin_return_address",
+			    ECF_NOTHROW);
+    }
+
+  if (built_in_decls[BUILT_IN_PROFILE_FUNC_ENTER] == NULL_TREE
+      || built_in_decls[BUILT_IN_PROFILE_FUNC_EXIT] == NULL_TREE)
+    {
+      ftype = build_function_type_list (void_type_node, ptr_type_node,
+					ptr_type_node, NULL_TREE);
+      if (built_in_decls[BUILT_IN_PROFILE_FUNC_ENTER] == NULL_TREE)
+	local_define_builtin ("__cyg_profile_func_enter", ftype,
+			      BUILT_IN_PROFILE_FUNC_ENTER,
+			      "__cyg_profile_func_enter", 0);
+      if (built_in_decls[BUILT_IN_PROFILE_FUNC_EXIT] == NULL_TREE)
+	local_define_builtin ("__cyg_profile_func_exit", ftype,
+			      BUILT_IN_PROFILE_FUNC_EXIT,
+			      "__cyg_profile_func_exit", 0);
+    }
 
   /* The exception object and filter values from the runtime.  The argument
      must be zero before exception lowering, i.e. from the front end.  After
@@ -10580,6 +10609,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE_COPYPRIVATE:
+	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_SCHEDULE:
@@ -10590,6 +10620,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_UNTIED:
+	case OMP_CLAUSE_MERGEABLE:
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_LASTPRIVATE:
@@ -10655,9 +10686,14 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	  if (result || !walk_subtrees)
 	    return result;
 
-	  result = walk_type_fields (*type_p, func, data, pset, lh);
-	  if (result)
-	    return result;
+	  /* But do not walk a pointed-to type since it may itself need to
+	     be walked in the declaration case if it isn't anonymous.  */
+	  if (!POINTER_TYPE_P (*type_p))
+	    {
+	      result = walk_type_fields (*type_p, func, data, pset, lh);
+	      if (result)
+		return result;
+	    }
 
 	  /* If this is a record type, also walk the fields.  */
 	  if (RECORD_OR_UNION_TYPE_P (*type_p))

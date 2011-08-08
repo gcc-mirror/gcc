@@ -46,7 +46,6 @@ namespace __debug
       public __gnu_debug::_Safe_sequence<set<_Key, _Compare, _Allocator> >
     {
       typedef _GLIBCXX_STD_C::set<_Key, _Compare, _Allocator> _Base;
-      typedef __gnu_debug::_Safe_sequence<set> _Safe_base;
 
       typedef typename _Base::const_iterator _Base_const_iterator;
       typedef typename _Base::iterator _Base_iterator;
@@ -88,21 +87,21 @@ namespace __debug
 		__comp, __a) { }
 
       set(const set& __x)
-      : _Base(__x), _Safe_base() { }
+      : _Base(__x) { }
 
       set(const _Base& __x)
-      : _Base(__x), _Safe_base() { }
+      : _Base(__x) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       set(set&& __x)
       noexcept(is_nothrow_copy_constructible<_Compare>::value)
-      : _Base(std::move(__x)), _Safe_base()
+      : _Base(std::move(__x))
       { this->_M_swap(__x); }
 
       set(initializer_list<value_type> __l,
 	  const _Compare& __comp = _Compare(),
 	  const allocator_type& __a = allocator_type())
-      : _Base(__l, __comp, __a), _Safe_base() { }
+      : _Base(__l, __comp, __a) { }
 #endif
 
       ~set() _GLIBCXX_NOEXCEPT { }
@@ -206,7 +205,6 @@ namespace __debug
       std::pair<iterator, bool>
       insert(value_type&& __x)
       {
-	typedef typename _Base::iterator _Base_iterator;
 	std::pair<_Base_iterator, bool> __res
 	  = _Base::insert(std::move(__x));
 	return std::pair<iterator, bool>(iterator(__res.first, this),

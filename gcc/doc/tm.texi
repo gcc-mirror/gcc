@@ -871,9 +871,16 @@ word has the lowest number.  This macro need not be a constant.
 @defmac WORDS_BIG_ENDIAN
 Define this macro to have the value 1 if, in a multiword object, the
 most significant word has the lowest number.  This applies to both
-memory locations and registers; GCC fundamentally assumes that the
-order of words in memory is the same as the order in registers.  This
+memory locations and registers; see @code{REG_WORDS_BIG_ENDIAN} if the
+order of words in memory is not the same as the order in registers.  This
 macro need not be a constant.
+@end defmac
+
+@defmac REG_WORDS_BIG_ENDIAN
+On some machines, the order of words in a multiword object differs between
+registers in memory.  In such a situation, define this macro to describe
+the order of words in a register.  The macro @code{WORDS_BIG_ENDIAN} controls
+the order of words in memory.
 @end defmac
 
 @defmac FLOAT_WORDS_BIG_ENDIAN
@@ -2840,6 +2847,23 @@ the only effect of such implementation would be to slow down register
 allocation.
 @end deftypefn
 
+@deftypefn {Target Hook} {unsigned char} TARGET_CLASS_MAX_NREGS (reg_class_t @var{rclass}, enum machine_mode @var{mode})
+A target hook returns the maximum number of consecutive registers
+of class @var{rclass} needed to hold a value of mode @var{mode}.
+
+This is closely related to the macro @code{HARD_REGNO_NREGS}.  In fact,
+the value returned by @code{TERGET_CLASS_MAX_NREGS (@var{rclass},
+@var{mode})} target hook should be the maximum value of
+@code{HARD_REGNO_NREGS (@var{regno}, @var{mode})} for all @var{regno}
+values in the class @var{rclass}.
+
+This target hook helps control the handling of multiple-word values
+in the reload pass.
+
+The default version of this target hook returns the size of @var{mode}
+in words.
+@end deftypefn
+
 @defmac CLASS_MAX_NREGS (@var{class}, @var{mode})
 A C expression for the maximum number of consecutive registers
 of class @var{class} needed to hold a value of mode @var{mode}.
@@ -4174,9 +4198,9 @@ to pad out an argument with extra space.  The value should be of type
 @code{enum direction}: either @code{upward} to pad above the argument,
 @code{downward} to pad below, or @code{none} to inhibit padding.
 
-The @emph{amount} of padding is always just enough to reach the next
-multiple of @code{TARGET_FUNCTION_ARG_BOUNDARY}; this macro does not
-control it.
+The @emph{amount} of padding is not controlled by this macro, but by the
+target hook @code{TARGET_FUNCTION_ARG_ROUND_BOUNDARY}.  It is
+always just enough to reach the next multiple of that boundary. 
 
 This macro has a default definition which is right for most systems.
 For little-endian machines, the default is to pad upward.  For
@@ -4207,6 +4231,13 @@ required.
 This hook returns the alignment boundary, in bits, of an argument
 with the specified mode and type.  The default hook returns
 @code{PARM_BOUNDARY} for all arguments.
+@end deftypefn
+
+@deftypefn {Target Hook} {unsigned int} TARGET_FUNCTION_ARG_ROUND_BOUNDARY (enum machine_mode @var{mode}, const_tree @var{type})
+Normally, the size of an argument is rounded up to @code{PARM_BOUNDARY},
+which is the default value for this hook.  You can define this hook to
+return a different value if an argument size must be rounded to a larger
+value.
 @end deftypefn
 
 @defmac FUNCTION_ARG_REGNO_P (@var{regno})
@@ -7036,6 +7067,12 @@ the function's section is @code{.gnu.linkonce.t.name}, @code{.rodata.name}
 if function is in @code{.text.name}, and the normal readonly-data section
 otherwise.
 @end deftypefn
+
+@deftypevr {Target Hook} {const char *} TARGET_ASM_MERGEABLE_RODATA_PREFIX
+Usually, the compiler uses the prefix @code{".rodata"} to construct
+section names for mergeable constant data.  Define this macro to override
+the string if a different section name should be used.
+@end deftypevr
 
 @deftypefn {Target Hook} {section *} TARGET_ASM_SELECT_RTX_SECTION (enum machine_mode @var{mode}, rtx @var{x}, unsigned HOST_WIDE_INT @var{align})
 Return the section into which a constant @var{x}, of mode @var{mode},
@@ -10957,7 +10994,7 @@ instructions or prefetch instructions).
 To create a built-in function, call the function
 @code{lang_hooks.builtin_function}
 which is defined by the language front end.  You can use any type nodes set
-up by @code{build_common_tree_nodes} and @code{build_common_tree_nodes_2};
+up by @code{build_common_tree_nodes};
 only language front ends that use those two functions will call
 @samp{TARGET_INIT_BUILTINS}.
 @end deftypefn

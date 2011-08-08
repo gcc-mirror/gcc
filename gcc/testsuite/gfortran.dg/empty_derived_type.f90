@@ -5,3 +5,5 @@ module stuff
       ! Empty!
    end type junk
 end module stuff 
+
+! { dg-final { cleanup-modules "stuff" } }

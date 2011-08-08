@@ -110,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  one-dimensional array from which different multidimensional subsets can
    *  be accessed and modified.
    *  
-   *  @param  Tp  Type of object in the array.
+   *  @tparam  _Tp  Type of object in the array.
    */
   template<class _Tp> 
     class valarray
@@ -173,9 +173,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Assign elements of array to values in @a v.
        *
-       *  @param  v  Valarray to get values from.
+       *  @param  __v  Valarray to get values from.
        */
-      valarray<_Tp>& operator=(const valarray<_Tp>&);
+      valarray<_Tp>& operator=(const valarray<_Tp>& __v);
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
@@ -183,9 +183,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Move assign elements of array to values in @a v.
        *
-       *  @param  v  Valarray to get values from.
+       *  @param  __v  Valarray to get values from.
        */
-      valarray<_Tp>& operator=(valarray<_Tp>&&) noexcept;
+      valarray<_Tp>& operator=(valarray<_Tp>&& __v) noexcept;
 #endif
 
       /**
@@ -193,9 +193,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Assign all elements of array to @a t.
        *
-       *  @param  t  Value for elements.
+       *  @param  __t  Value for elements.
        */
-      valarray<_Tp>& operator=(const _Tp&);
+      valarray<_Tp>& operator=(const _Tp& __t);
 
       /**
        *  @brief  Assign elements to an array subset.
@@ -203,9 +203,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Assign elements of array to values in @a sa.  Results are undefined
        *  if @a sa does not have the same size as this array.
        *
-       *  @param  sa  Array slice to get values from.
+       *  @param  __sa  Array slice to get values from.
        */
-      valarray<_Tp>& operator=(const slice_array<_Tp>&);
+      valarray<_Tp>& operator=(const slice_array<_Tp>& __sa);
 
       /**
        *  @brief  Assign elements to an array subset.
@@ -213,9 +213,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Assign elements of array to values in @a ga.  Results are undefined
        *  if @a ga does not have the same size as this array.
        *
-       *  @param  ga  Array slice to get values from.
+       *  @param  __ga  Array slice to get values from.
        */
-      valarray<_Tp>& operator=(const gslice_array<_Tp>&);
+      valarray<_Tp>& operator=(const gslice_array<_Tp>& __ga);
 
       /**
        *  @brief  Assign elements to an array subset.
@@ -223,9 +223,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Assign elements of array to values in @a ma.  Results are undefined
        *  if @a ma does not have the same size as this array.
        *
-       *  @param  ma  Array slice to get values from.
+       *  @param  __ma  Array slice to get values from.
        */
-      valarray<_Tp>& operator=(const mask_array<_Tp>&);
+      valarray<_Tp>& operator=(const mask_array<_Tp>& __ma);
 
       /**
        *  @brief  Assign elements to an array subset.
@@ -233,20 +233,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Assign elements of array to values in @a ia.  Results are undefined
        *  if @a ia does not have the same size as this array.
        *
-       *  @param  ia  Array slice to get values from.
+       *  @param  __ia  Array slice to get values from.
        */
-      valarray<_Tp>& operator=(const indirect_array<_Tp>&);
+      valarray<_Tp>& operator=(const indirect_array<_Tp>& __ia);
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Assign elements to an initializer_list.
        *
-       *  Assign elements of array to values in @a l.  Results are undefined
-       *  if @a l does not have the same size as this array.
+       *  Assign elements of array to values in @a __l.  Results are undefined
+       *  if @a __l does not have the same size as this array.
        *
-       *  @param  l  initializer_list to get values from.
+       *  @param  __l  initializer_list to get values from.
        */
-      valarray& operator=(initializer_list<_Tp>);
+      valarray& operator=(initializer_list<_Tp> __l);
 #endif
 
       template<class _Dom> valarray<_Tp>&
@@ -256,10 +256,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  Return a reference to the i'th array element.  
        *
-       *  @param  i  Index of element to return.
+       *  @param  __i  Index of element to return.
        *  @return  Reference to the i'th element.
        */
-      _Tp&                operator[](size_t);
+      _Tp&                operator[](size_t __i);
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 389. Const overload of valarray::operator[] returns by value.
@@ -273,10 +273,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  indicated by the slice argument.  The new valarray has the same size
        *  as the input slice.  @see slice.
        *
-       *  @param  s  The source slice.
-       *  @return  New valarray containing elements in @a s.
+       *  @param  __s  The source slice.
+       *  @return  New valarray containing elements in @a __s.
        */
-      _Expr<_SClos<_ValArray, _Tp>, _Tp> operator[](slice) const;
+      _Expr<_SClos<_ValArray, _Tp>, _Tp> operator[](slice __s) const;
 
       /**
        *  @brief  Return a reference to an array subset.
@@ -285,10 +285,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  indicated by the slice argument.  The new valarray has the same size
        *  as the input slice.  @see slice.
        *
-       *  @param  s  The source slice.
-       *  @return  New valarray containing elements in @a s.
+       *  @param  __s  The source slice.
+       *  @return  New valarray containing elements in @a __s.
        */
-      slice_array<_Tp>    operator[](slice);
+      slice_array<_Tp>    operator[](slice __s);
 
       /**
        *  @brief  Return an array subset.
@@ -296,10 +296,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns a slice_array referencing the elements of the array
        *  indicated by the slice argument.  @see gslice.
        *
-       *  @param  s  The source slice.
-       *  @return  Slice_array referencing elements indicated by @a s.
+       *  @param  __s  The source slice.
+       *  @return  Slice_array referencing elements indicated by @a __s.
        */
-      _Expr<_GClos<_ValArray, _Tp>, _Tp> operator[](const gslice&) const;
+      _Expr<_GClos<_ValArray, _Tp>, _Tp> operator[](const gslice& __s) const;
 
       /**
        *  @brief  Return a reference to an array subset.
@@ -308,10 +308,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  indicated by the gslice argument.  The new valarray has
        *  the same size as the input gslice.  @see gslice.
        *
-       *  @param  s  The source gslice.
-       *  @return  New valarray containing elements in @a s.
+       *  @param  __s  The source gslice.
+       *  @return  New valarray containing elements in @a __s.
        */
-      gslice_array<_Tp>   operator[](const gslice&);
+      gslice_array<_Tp>   operator[](const gslice& __s);
 
       /**
        *  @brief  Return an array subset.
@@ -322,10 +322,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the new valarray.  Each element of the array is added to the return
        *  valarray if the corresponding element of the argument is true.
        *
-       *  @param  m  The valarray bitmask.
-       *  @return  New valarray containing elements indicated by @a m.
+       *  @param  __m  The valarray bitmask.
+       *  @return  New valarray containing elements indicated by @a __m.
        */
-      valarray<_Tp>       operator[](const valarray<bool>&) const;
+      valarray<_Tp>       operator[](const valarray<bool>& __m) const;
 
       /**
        *  @brief  Return a reference to an array subset.
@@ -336,10 +336,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  subset.  Elements of the array are part of the subset if the
        *  corresponding element of the argument is true.
        *
-       *  @param  m  The valarray bitmask.
-       *  @return  New valarray containing elements indicated by @a m.
+       *  @param  __m  The valarray bitmask.
+       *  @return  New valarray containing elements indicated by @a __m.
        */
-      mask_array<_Tp>     operator[](const valarray<bool>&);
+      mask_array<_Tp>     operator[](const valarray<bool>& __m);
 
       /**
        *  @brief  Return an array subset.
@@ -349,11 +349,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  interpreted as the indices of elements of this valarray to copy to
        *  the return valarray.
        *
-       *  @param  i  The valarray element index list.
-       *  @return  New valarray containing elements in @a s.
+       *  @param  __i  The valarray element index list.
+       *  @return  New valarray containing elements in @a __s.
        */
       _Expr<_IClos<_ValArray, _Tp>, _Tp>
-        operator[](const valarray<size_t>&) const;
+        operator[](const valarray<size_t>& __i) const;
 
       /**
        *  @brief  Return a reference to an array subset.
@@ -364,10 +364,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  in the subset.  The returned indirect_array refers to these
        *  elements.
        *
-       *  @param  i  The valarray element index list.
-       *  @return  Indirect_array referencing elements in @a i.
+       *  @param  __i  The valarray element index list.
+       *  @return  Indirect_array referencing elements in @a __i.
        */
-      indirect_array<_Tp> operator[](const valarray<size_t>&);
+      indirect_array<_Tp> operator[](const valarray<size_t>& __i);
 
       // _lib.valarray.unary_ unary operators:
       ///  Return a new valarray by applying unary + to each element.
@@ -499,10 +499,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Positive arguments shift toward index 0, discarding elements [0, n).
        *  Negative arguments discard elements from the top of the array.
        *
-       *  @param  n  Number of element positions to shift.
+       *  @param  __n  Number of element positions to shift.
        *  @return  New valarray with elements in shifted positions.
        */
-      valarray<_Tp> shift (int) const;
+      valarray<_Tp> shift (int __n) const;
 
       /**
        *  @brief  Return a rotated array.
@@ -516,10 +516,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Positive arguments shift toward index 0, wrapping around the top.
        *  Negative arguments shift towards the top, wrapping around to 0.
        *
-       *  @param  n  Number of element positions to rotate.
+       *  @param  __n  Number of element positions to rotate.
        *  @return  New valarray with elements in shifted positions.
        */
-      valarray<_Tp> cshift(int) const;
+      valarray<_Tp> cshift(int __n) const;
 
       /**
        *  @brief  Apply a function to the array.
@@ -551,8 +551,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Resize this array to @a size and set all elements to @a c.  All
        *  references and iterators are invalidated.
        *
-       *  @param  size  New array size.
-       *  @param  c  New value for all elements.
+       *  @param  __size  New array size.
+       *  @param  __c  New value for all elements.
        */
       void resize(size_t __size, _Tp __c = _Tp());
 
@@ -1176,7 +1176,7 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
   /**
    *  @brief  Return an iterator pointing to the first element of
    *          the valarray.
-   *  @param  va  valarray.
+   *  @param  __va  valarray.
    */
   template<class _Tp>
     inline _Tp*
@@ -1186,7 +1186,7 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
   /**
    *  @brief  Return an iterator pointing to the first element of
    *          the const valarray.
-   *  @param  va  valarray.
+   *  @param  __va  valarray.
    */
   template<class _Tp>
     inline const _Tp*
@@ -1196,7 +1196,7 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
   /**
    *  @brief  Return an iterator pointing to one past the last element of
    *          the valarray.
-   *  @param  va  valarray.
+   *  @param  __va  valarray.
    */
   template<class _Tp>
     inline _Tp*
@@ -1206,7 +1206,7 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
   /**
    *  @brief  Return an iterator pointing to one past the last element of
    *          the const valarray.
-   *  @param  va  valarray.
+   *  @param  __va  valarray.
    */
   template<class _Tp>
     inline const _Tp*

@@ -968,15 +968,11 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
 	gimple_set_has_volatile_ops (stmt, true);
       /* FALLTHRU */
 
-    case TRUTH_NOT_EXPR:
     case VIEW_CONVERT_EXPR:
     do_unary:
       get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
       return;
 
-    case TRUTH_AND_EXPR:
-    case TRUTH_OR_EXPR:
-    case TRUTH_XOR_EXPR:
     case COMPOUND_EXPR:
     case OBJ_TYPE_REF:
     case ASSERT_EXPR:

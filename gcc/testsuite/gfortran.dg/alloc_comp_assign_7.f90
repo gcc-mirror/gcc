@@ -37,4 +37,4 @@ end module PrettyPix_module
   end do
 end
 
-! { dg-final { cleanup-modules "PrettyPix_module" } }
+! { dg-final { cleanup-modules "prettypix_module" } }

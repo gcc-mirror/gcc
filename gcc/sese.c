@@ -458,11 +458,13 @@ set_rename (htab_t rename_map, tree old_name, tree expr)
    substitution map RENAME_MAP, inserting the gimplification code at
    GSI_TGT, for the translation REGION, with the original copied
    statement in LOOP, and using the induction variable renaming map
-   IV_MAP.  Returns true when something has been renamed.  */
+   IV_MAP.  Returns true when something has been renamed.  GLOOG_ERROR
+   is set when the code generation cannot continue.  */
 
 static bool
 rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
-	     sese region, loop_p loop, VEC (tree, heap) *iv_map)
+	     sese region, loop_p loop, VEC (tree, heap) *iv_map,
+	     bool *gloog_error)
 {
   use_operand_p use_p;
   ssa_op_iter op_iter;
@@ -522,20 +524,29 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 	 scalar SSA_NAME used in the scop: all the other scalar
 	 SSA_NAMEs should have been translated out of SSA using
 	 arrays with one element.  */
-      gcc_assert (!chrec_contains_undetermined (scev));
-
-      new_expr = chrec_apply_map (scev, iv_map);
+      if (chrec_contains_undetermined (scev))
+	{
+	  *gloog_error = true;
+	  new_expr = build_zero_cst (TREE_TYPE (old_name));
+	}
+      else
+	new_expr = chrec_apply_map (scev, iv_map);
 
       /* The apply should produce an expression tree containing
 	 the uses of the new induction variables.  We should be
 	 able to use new_expr instead of the old_name in the newly
 	 generated loop nest.  */
-      gcc_assert (!chrec_contains_undetermined (new_expr)
-		  && !tree_contains_chrecs (new_expr, NULL));
+      if (chrec_contains_undetermined (new_expr)
+	  || tree_contains_chrecs (new_expr, NULL))
+	{
+	  *gloog_error = true;
+	  new_expr = build_zero_cst (TREE_TYPE (old_name));
+	}
+      else
+	/* Replace the old_name with the new_expr.  */
+	new_expr = force_gimple_operand (unshare_expr (new_expr), &stmts,
+					 true, NULL_TREE);
 
-      /* Replace the old_name with the new_expr.  */
-      new_expr = force_gimple_operand (unshare_expr (new_expr), &stmts,
-				       true, NULL_TREE);
       gsi_insert_seq_before (gsi_tgt, stmts, GSI_SAME_STMT);
       replace_exp (use_p, new_expr);
 
@@ -555,12 +566,14 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 }
 
 /* Duplicates the statements of basic block BB into basic block NEW_BB
-   and compute the new induction variables according to the IV_MAP.  */
+   and compute the new induction variables according to the IV_MAP.
+   GLOOG_ERROR is set when the code generation cannot continue.  */
 
 static void
 graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 				htab_t rename_map,
-				VEC (tree, heap) *iv_map, sese region)
+				VEC (tree, heap) *iv_map, sese region,
+				bool *gloog_error)
 {
   gimple_stmt_iterator gsi, gsi_tgt;
   loop_p loop = bb->loop_father;
@@ -605,7 +618,8 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	  set_rename (rename_map, old_name, new_name);
  	}
 
-      if (rename_uses (copy, rename_map, &gsi_tgt, region, loop, iv_map))
+      if (rename_uses (copy, rename_map, &gsi_tgt, region, loop, iv_map,
+		       gloog_error))
 	fold_stmt_inplace (copy);
 
       update_stmt (copy);
@@ -614,18 +628,21 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 
 /* Copies BB and includes in the copied BB all the statements that can
    be reached following the use-def chains from the memory accesses,
-   and returns the next edge following this new block.  */
+   and returns the next edge following this new block.  GLOOG_ERROR is
+   set when the code generation cannot continue.  */
 
 edge
 copy_bb_and_scalar_dependences (basic_block bb, sese region,
-				edge next_e, VEC (tree, heap) *iv_map)
+				edge next_e, VEC (tree, heap) *iv_map,
+				bool *gloog_error)
 {
   basic_block new_bb = split_edge (next_e);
   htab_t rename_map = htab_create (10, rename_map_elt_info,
 				   eq_rename_map_elts, free);
 
   next_e = single_succ_edge (new_bb);
-  graphite_copy_stmts_from_block (bb, new_bb, rename_map, iv_map, region);
+  graphite_copy_stmts_from_block (bb, new_bb, rename_map, iv_map, region,
+				  gloog_error);
   remove_phi_nodes (new_bb);
   htab_delete (rename_map);
 

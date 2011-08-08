@@ -80,14 +80,6 @@ package System.Interrupt_Management is
    --  The signal that is used to implement task abort if an interrupt is used
    --  for that purpose. This is one of the reserved signals.
 
-   Keep_Unmasked : Signal_Set := (others => False);
-   --  Keep_Unmasked (I) is true iff the signal I is one that must that must
-   --  be kept unmasked at all times, except (perhaps) for short critical
-   --  sections. This includes signals that are mapped to exceptions, but may
-   --  also include interrupts (e.g. timer) that need to be kept unmasked for
-   --  other reasons. Where signal masking is per-task, the signal should be
-   --  unmasked in ALL TASKS.
-
    Reserve : Interrupt_Set := (others => False);
    --  Reserve (I) is true iff the interrupt I is one that cannot be permitted
    --  to be attached to a user handler. The possible reasons are many. For
@@ -95,6 +87,7 @@ package System.Interrupt_Management is
    --  or used to implement time delays.
 
    procedure Initialize_Interrupts;
+   pragma Import (C, Initialize_Interrupts, "__gnat_install_handler");
    --  Under VxWorks, there is no signal inheritance between tasks.
    --  This procedure is used to initialize signal-to-exception mapping in
    --  each task.

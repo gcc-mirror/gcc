@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,30 +46,18 @@ package body Ch13 is
       Result     : Boolean;
 
    begin
-      Save_Scan_State (Scan_State);
-
-      --  If we have a semicolon, test for semicolon followed by Aspect
-      --  Specifications, in which case we decide the semicolon is accidental.
-
-      if Token = Tok_Semicolon then
-         Scan; -- past semicolon
-
-         --  The recursive test is set Strict, since we already have one
-         --  error (the unexpected semicolon), so we will ignore that semicolon
-         --  only if we absolutely definitely have an aspect specification
-         --  following it.
-
-         if Aspect_Specifications_Present (Strict => True) then
-            Error_Msg_SP ("|extra "";"" ignored");
-            return True;
-
-         else
-            Restore_Scan_State (Scan_State);
-            return False;
-         end if;
-      end if;
-
       --  Definitely must have WITH to consider aspect specs to be present
+
+      --  Note that this means that if we have a semicolon, we immediately
+      --  return False. There is a case in which this is not optimal, namely
+      --  something like
+
+      --    type R is new Integer;
+      --      with bla bla;
+
+      --  where the semicolon is redundant, but scanning forward for it would
+      --  be too expensive. Instead we pick up the aspect specifications later
+      --  as a bogus declaration, and diagnose the semicolon at that point.
 
       if Token /= Tok_With then
          return False;
@@ -101,9 +89,9 @@ package body Ch13 is
             Result := Token = Tok_Arrow;
          end if;
 
-      --  If earlier than Ada 2012, check for valid aspect identifier followed
-      --  by an arrow, and consider that this is still an aspect specification
-      --  so we give an appropriate message.
+      --  If earlier than Ada 2012, check for valid aspect identifier (possibly
+      --  completed with 'CLASS) followed by an arrow, and consider that this
+      --  is still an aspect specification so we give an appropriate message.
 
       else
          if Get_Aspect_Id (Token_Name) = No_Aspect then
@@ -112,10 +100,26 @@ package body Ch13 is
          else
             Scan; -- past aspect name
 
-            if Token /= Tok_Arrow then
-               Result := False;
+            Result := False;
 
-            else
+            if Token = Tok_Arrow then
+               Result := True;
+
+            elsif Token = Tok_Apostrophe then
+               Scan; -- past apostrophe
+
+               if Token = Tok_Identifier
+                 and then Token_Name = Name_Class
+               then
+                  Scan; -- past CLASS
+
+                  if Token = Tok_Arrow then
+                     Result := True;
+                  end if;
+               end if;
+            end if;
+
+            if Result then
                Restore_Scan_State (Scan_State);
                Error_Msg_SC ("|aspect specification is an Ada 2012 feature");
                Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
@@ -381,7 +385,10 @@ package body Ch13 is
 
    --  Error recovery: cannot raise Error_Resync
 
-   procedure P_Aspect_Specifications (Decl : Node_Id) is
+   procedure P_Aspect_Specifications
+     (Decl      : Node_Id;
+      Semicolon : Boolean := True)
+   is
       Aspects : List_Id;
       Aspect  : Node_Id;
       A_Id    : Aspect_Id;
@@ -392,7 +399,10 @@ package body Ch13 is
       --  Check if aspect specification present
 
       if not Aspect_Specifications_Present then
-         TF_Semicolon;
+         if Semicolon then
+            TF_Semicolon;
+         end if;
+
          return;
       end if;
 
@@ -411,7 +421,11 @@ package body Ch13 is
 
          if Token /= Tok_Identifier then
             Error_Msg_SC ("aspect identifier expected");
-            Resync_Past_Semicolon;
+
+            if Semicolon then
+               Resync_Past_Semicolon;
+            end if;
+
             return;
          end if;
 
@@ -427,6 +441,19 @@ package body Ch13 is
          if A_Id = No_Aspect then
             Error_Msg_SC ("aspect identifier expected");
 
+            --  Check bad spelling
+
+            for J in Aspect_Id loop
+               if Is_Bad_Spelling_Of (Token_Name, Aspect_Names (J)) then
+                  Error_Msg_Name_1 := Aspect_Names (J);
+                  Error_Msg_SC -- CODEFIX
+                    ("\possible misspelling of%");
+                  exit;
+               end if;
+            end loop;
+
+            Scan; -- past incorrect identifier
+
             if Token = Tok_Apostrophe then
                Scan; -- past '
                Scan; -- past presumably CLASS
@@ -441,7 +468,10 @@ package body Ch13 is
                OK := False;
 
             else
-               Resync_Past_Semicolon;
+               if Semicolon then
+                  Resync_Past_Semicolon;
+               end if;
+
                return;
             end if;
 
@@ -482,7 +512,10 @@ package body Ch13 is
 
             --  Test case of missing aspect definition
 
-            if Token = Tok_Comma or else Token = Tok_Semicolon then
+            if Token = Tok_Comma
+              or else Token = Tok_Semicolon
+              or else (not Semicolon and then Token /= Tok_Arrow)
+            then
                if Aspect_Argument (A_Id) /= Optional then
                   Error_Msg_Node_1 := Aspect;
                   Error_Msg_AP ("aspect& requires an aspect definition");
@@ -514,18 +547,36 @@ package body Ch13 is
 
             if Token = Tok_Comma then
                Scan; -- past comma
+
+            --  Must be terminator character
+
             else
-               T_Semicolon;
+               if Semicolon then
+                  T_Semicolon;
+               end if;
+
                exit;
             end if;
          end if;
       end loop;
 
-      --  If aspects scanned, store them
+      --  Here if aspects present
 
       if Is_Non_Empty_List (Aspects) then
-         if Decl = Error then
+
+         --  If Decl is Empty, we just ignore the aspects (the caller in this
+         --  case has always issued an appropriate error message).
+
+         if Decl = Empty then
+            null;
+
+         --  If Decl is Error, we ignore the aspects, and issue a message
+
+         elsif Decl = Error then
             Error_Msg ("aspect specifications not allowed here", Ptr);
+
+         --  Here aspects are allowed, and we store them
+
          else
             Set_Parent (Aspects, Decl);
             Set_Aspect_Specifications (Decl, Aspects);

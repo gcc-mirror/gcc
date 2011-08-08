@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@ package Prj.Util is
 
    function Executable_Of
      (Project        : Project_Id;
-      In_Tree        : Project_Tree_Ref;
+      Shared         : Shared_Project_Tree_Data_Access;
       Main           : File_Name_Type;
       Index          : Int;
       Ada_Main       : Boolean := True;
@@ -61,7 +61,7 @@ package Prj.Util is
 
    procedure Duplicate
      (This    : in out Name_List_Index;
-      In_Tree : Project_Tree_Ref);
+      Shared  : Shared_Project_Tree_Data_Access);
    --  Duplicate a name list
 
    function Value_Of
@@ -73,7 +73,7 @@ package Prj.Util is
    function Value_Of
      (Index    : Name_Id;
       In_Array : Array_Element_Id;
-      In_Tree  : Project_Tree_Ref) return Name_Id;
+      Shared   : Shared_Project_Tree_Data_Access) return Name_Id;
    --  Get a single string array component. Returns No_Name if there is no
    --  component Index, if In_Array is null, or if the component is a String
    --  list. Depending on the attribute (only attributes may be associative
@@ -85,7 +85,7 @@ package Prj.Util is
      (Index                  : Name_Id;
       Src_Index              : Int := 0;
       In_Array               : Array_Element_Id;
-      In_Tree                : Project_Tree_Ref;
+      Shared                 : Shared_Project_Tree_Data_Access;
       Force_Lower_Case_Index : Boolean := False;
       Allow_Wildcards        : Boolean := False) return Variable_Value;
    --  Get a string array component (single String or String list). Returns
@@ -101,7 +101,7 @@ package Prj.Util is
       Index                   : Int := 0;
       Attribute_Or_Array_Name : Name_Id;
       In_Package              : Package_Id;
-      In_Tree                 : Project_Tree_Ref;
+      Shared                  : Shared_Project_Tree_Data_Access;
       Force_Lower_Case_Index  : Boolean := False;
       Allow_Wildcards         : Boolean := False) return Variable_Value;
    --  In a specific package:
@@ -117,7 +117,7 @@ package Prj.Util is
      (Index     : Name_Id;
       In_Array  : Name_Id;
       In_Arrays : Array_Id;
-      In_Tree   : Project_Tree_Ref) return Name_Id;
+      Shared    : Shared_Project_Tree_Data_Access) return Name_Id;
    --  Get a string array component in an array of an array list. Returns
    --  No_Name if there is no component Index, if In_Arrays is null, if
    --  In_Array is not found in In_Arrays or if the component is a String list.
@@ -125,7 +125,7 @@ package Prj.Util is
    function Value_Of
      (Name      : Name_Id;
       In_Arrays : Array_Id;
-      In_Tree   : Project_Tree_Ref) return Array_Element_Id;
+      Shared    : Shared_Project_Tree_Data_Access) return Array_Element_Id;
    --  Returns a specified array in an array list. Returns No_Array_Element
    --  if In_Arrays is null or if Name is not the name of an array in
    --  In_Arrays. The caller must ensure that Name is in lower case.
@@ -133,7 +133,7 @@ package Prj.Util is
    function Value_Of
      (Name        : Name_Id;
       In_Packages : Package_Id;
-      In_Tree     : Project_Tree_Ref) return Package_Id;
+      Shared      : Shared_Project_Tree_Data_Access) return Package_Id;
    --  Returns a specified package in a package list. Returns No_Package
    --  if In_Packages is null or if Name is not the name of a package in
    --  Package_List. The caller must ensure that Name is in lower case.
@@ -141,7 +141,7 @@ package Prj.Util is
    function Value_Of
      (Variable_Name : Name_Id;
       In_Variables  : Variable_Id;
-      In_Tree       : Project_Tree_Ref) return Variable_Value;
+      Shared        : Shared_Project_Tree_Data_Access) return Variable_Value;
    --  Returns a specified variable in a variable list. Returns null if
    --  In_Variables is null or if Variable_Name is not the name of a
    --  variable in In_Variables. Caller must ensure that Name is lower case.

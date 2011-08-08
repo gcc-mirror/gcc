@@ -1,3 +1,11 @@
+2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* elf.m4 (target_elf): Remove *-netware*.
+
+2011-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* mt-alphaieee (GOCFLAGS_FOR_TARGET): Add -mieee.
+
 2011-06-15  Mike Stump  <mikestump@comcast.net>
 
 	PR target/49461

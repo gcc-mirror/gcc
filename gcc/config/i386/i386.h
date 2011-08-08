@@ -42,6 +42,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Redefines for option macros.  */
 
 #define TARGET_64BIT	OPTION_ISA_64BIT
+#define TARGET_X32	OPTION_ISA_X32
 #define TARGET_MMX	OPTION_ISA_MMX
 #define TARGET_3DNOW	OPTION_ISA_3DNOW
 #define TARGET_3DNOW_A	OPTION_ISA_3DNOW_A
@@ -60,6 +61,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_ROUND	OPTION_ISA_ROUND
 #define TARGET_ABM	OPTION_ISA_ABM
 #define TARGET_BMI	OPTION_ISA_BMI
+#define TARGET_LZCNT	OPTION_ISA_LZCNT
 #define TARGET_TBM	OPTION_ISA_TBM
 #define TARGET_POPCNT	OPTION_ISA_POPCNT
 #define TARGET_SAHF	OPTION_ISA_SAHF
@@ -72,6 +74,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_RDRND	OPTION_ISA_RDRND
 #define TARGET_F16C	OPTION_ISA_F16C
 
+#define TARGET_LP64	(TARGET_64BIT && !TARGET_X32)
 
 /* SSE4.1 defines round instructions */
 #define	OPTION_MASK_ISA_ROUND	OPTION_MASK_ISA_SSE4_1
@@ -240,6 +243,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_GENERIC (TARGET_GENERIC32 || TARGET_GENERIC64)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
 #define TARGET_BDVER1 (ix86_tune == PROCESSOR_BDVER1)
+#define TARGET_BDVER2 (ix86_tune == PROCESSOR_BDVER2)
 #define TARGET_BTVER1 (ix86_tune == PROCESSOR_BTVER1)
 #define TARGET_ATOM (ix86_tune == PROCESSOR_ATOM)
 
@@ -249,7 +253,6 @@ enum ix86_tune_indices {
   X86_TUNE_PUSH_MEMORY,
   X86_TUNE_ZERO_EXTEND_WITH_AND,
   X86_TUNE_UNROLL_STRLEN,
-  X86_TUNE_DEEP_BRANCH_PREDICTION,
   X86_TUNE_BRANCH_PREDICTION_HINTS,
   X86_TUNE_DOUBLE_WITH_ADD,
   X86_TUNE_USE_SAHF,
@@ -312,6 +315,7 @@ enum ix86_tune_indices {
   X86_TUNE_OPT_AGU,
   X86_TUNE_VECTORIZE_DOUBLE,
   X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL,
+  X86_TUNE_AVX128_OPTIMAL,
 
   X86_TUNE_LAST
 };
@@ -323,8 +327,6 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 #define TARGET_ZERO_EXTEND_WITH_AND \
 	ix86_tune_features[X86_TUNE_ZERO_EXTEND_WITH_AND]
 #define TARGET_UNROLL_STRLEN	ix86_tune_features[X86_TUNE_UNROLL_STRLEN]
-#define TARGET_DEEP_BRANCH_PREDICTION \
-	ix86_tune_features[X86_TUNE_DEEP_BRANCH_PREDICTION]
 #define TARGET_BRANCH_PREDICTION_HINTS \
 	ix86_tune_features[X86_TUNE_BRANCH_PREDICTION_HINTS]
 #define TARGET_DOUBLE_WITH_ADD	ix86_tune_features[X86_TUNE_DOUBLE_WITH_ADD]
@@ -410,7 +412,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_VECTORIZE_DOUBLE]
 #define TARGET_SOFTWARE_PREFETCHING_BENEFICIAL \
 	ix86_tune_features[X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL]
-
+#define TARGET_AVX128_OPTIMAL \
+	ix86_tune_features[X86_TUNE_AVX128_OPTIMAL]
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
   X86_ARCH_CMOVE,		/* || TARGET_SSE */
@@ -517,8 +520,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define OPT_ARCH64 "!m32"
 #define OPT_ARCH32 "m32"
 #else
-#define OPT_ARCH64 "m64"
-#define OPT_ARCH32 "!m64"
+#define OPT_ARCH64 "m64|mx32"
+#define OPT_ARCH32 "m64|mx32:;"
 #endif
 
 /* Support for configure-time defaults of some command line options.
@@ -584,6 +587,7 @@ enum target_cpu_default
   TARGET_CPU_DEFAULT_k8,
   TARGET_CPU_DEFAULT_amdfam10,
   TARGET_CPU_DEFAULT_bdver1,
+  TARGET_CPU_DEFAULT_bdver2,
   TARGET_CPU_DEFAULT_btver1,
 
   TARGET_CPU_DEFAULT_max
@@ -638,6 +642,8 @@ enum target_cpu_default
 
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE 32
+#define LONG_TYPE_SIZE (TARGET_X32 ? 32 : BITS_PER_WORD)
+#define POINTER_SIZE (TARGET_X32 ? 32 : BITS_PER_WORD)
 #define LONG_LONG_TYPE_SIZE 64
 #define FLOAT_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64
@@ -1126,7 +1132,6 @@ enum target_cpu_default
 /* This is overridden by <cygwin.h>.  */
 #define MS_AGGREGATE_RETURN 0
 
-/* This is overridden by <netware.h>.  */
 #define KEEP_AGGREGATE_RETURN_POINTER 0
 
 /* Define the classes of registers for register constraints in the
@@ -1352,19 +1357,6 @@ enum reg_class
   (GET_MODE_BITSIZE (MODE) < 32 && INTEGRAL_MODE_P (MODE)	\
    ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)		\
    : MODE)
-
-/* Return the maximum number of consecutive registers
-   needed to represent mode MODE in a register of class CLASS.  */
-/* On the 80386, this is the size of MODE in words,
-   except in the FP regs, where a single reg is always enough.  */
-#define CLASS_MAX_NREGS(CLASS, MODE)					\
-  (MAYBE_INTEGER_CLASS_P (CLASS)					\
-   ? ((MODE) == XFmode							\
-      ? (TARGET_64BIT ? 2 : 3)						\
-      : (MODE) == XCmode						\
-      ? (TARGET_64BIT ? 4 : 6)						\
-      : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))	\
-   : (COMPLEX_MODE_P (MODE) ? 2 : 1))
 
 /* Return a class of registers that cannot change FROM mode to TO mode.  */
 
@@ -1683,7 +1675,7 @@ typedef struct ix86_args {
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE \
- (!TARGET_64BIT || (flag_pic && ix86_cmodel != CM_LARGE_PIC) ? SImode : DImode)
+ (!TARGET_LP64 || (flag_pic && ix86_cmodel != CM_LARGE_PIC) ? SImode : DImode)
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
@@ -1742,6 +1734,13 @@ do {							\
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
 #define Pmode (TARGET_64BIT ? DImode : SImode)
+
+/* A C expression whose value is zero if pointers that need to be extended
+   from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and
+   greater then zero if they are zero-extended and less then zero if the
+   ptr_extend instruction should be used.  */
+
+#define POINTERS_EXTEND_UNSIGNED 1
 
 /* A function address in a call instruction
    is a byte address (for indexing purposes)
@@ -2025,6 +2024,7 @@ enum processor_type
   PROCESSOR_GENERIC64,
   PROCESSOR_AMDFAM10,
   PROCESSOR_BDVER1,
+  PROCESSOR_BDVER2,
   PROCESSOR_BTVER1,
   PROCESSOR_ATOM,
   PROCESSOR_max
@@ -2293,7 +2293,7 @@ extern void debug_dispatch_window (int);
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
 	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI)
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI)
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_LZCNT)
 
 
 /* Flags returned by ix86_get_callcvt ().  */

@@ -296,6 +296,15 @@ DEFHOOK
  section *, (tree decl),
  default_function_rodata_section)
 
+/* Nonnull if the target wants to override the default ".rodata" prefix
+   for mergeable data sections.  */
+DEFHOOKPOD
+(mergeable_rodata_prefix,
+ "Usually, the compiler uses the prefix @code{\".rodata\"} to construct\n\
+section names for mergeable constant data.  Define this macro to override\n\
+the string if a different section name should be used.",
+ const char *, ".rodata")
+
 /* Output a constructor for a symbol with a given priority.  */
 DEFHOOK
 (constructor,
@@ -2021,6 +2030,15 @@ DEFHOOK
  unsigned int, (enum machine_mode mode, const_tree type),
  default_function_arg_boundary)
 
+DEFHOOK
+(function_arg_round_boundary,
+ "Normally, the size of an argument is rounded up to @code{PARM_BOUNDARY},\n\
+which is the default value for this hook.  You can define this hook to\n\
+return a different value if an argument size must be rounded to a larger\n\
+value.",
+ unsigned int, (enum machine_mode mode, const_tree type),
+ default_function_arg_round_boundary)
+
 /* Return the diagnostic message string if function without a prototype
    is not allowed for this 'val' argument; NULL otherwise. */
 DEFHOOK
@@ -2226,6 +2244,14 @@ DEFHOOK
  "",
  bool, (reg_class_t rclass),
  default_class_likely_spilled_p)
+
+/* Return the maximum number of consecutive registers
+   needed to represent mode MODE in a register of class RCLASS.  */
+DEFHOOK
+(class_max_nregs,
+ "",
+ unsigned char, (reg_class_t rclass, enum machine_mode mode),
+ default_class_max_nregs)
 
 DEFHOOK
 (preferred_rename_class,

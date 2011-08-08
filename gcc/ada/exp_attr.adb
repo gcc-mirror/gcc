@@ -6,18 +6,17 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- You should have received a copy of the GNU General Public License along  --
--- with this program; see file COPYING3.  If not see                        --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -678,6 +677,14 @@ package body Exp_Attr is
       --  Remaining processing depends on specific attribute
 
       case Id is
+
+         --  Attributes related to Ada2012 iterators (placeholder ???)
+
+         when Attribute_Constant_Indexing    => null;
+         when Attribute_Default_Iterator     => null;
+         when Attribute_Implicit_Dereference => null;
+         when Attribute_Iterator_Element     => null;
+         when Attribute_Variable_Indexing    => null;
 
       ------------
       -- Access --
@@ -1809,6 +1816,13 @@ package body Exp_Attr is
       when Attribute_Elab_Body |
            Attribute_Elab_Spec =>
 
+         --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
+         --  back-end knows how to handle this attribute directly.
+
+         if CodePeer_Mode then
+            return;
+         end if;
+
          Elab_Body : declare
             Ent  : constant Entity_Id := Make_Temporary (Loc, 'E');
             Str  : String_Id;
@@ -1910,7 +1924,12 @@ package body Exp_Attr is
       begin
          if Present (Elaboration_Entity (Ent)) then
             Rewrite (N,
-              New_Occurrence_Of (Elaboration_Entity (Ent), Loc));
+              Make_Op_Ne (Loc,
+                Left_Opnd =>
+                  New_Occurrence_Of (Elaboration_Entity (Ent), Loc),
+                Right_Opnd =>
+                  Make_Integer_Literal (Loc, Uint_0)));
+            Analyze_And_Resolve (N, Typ);
          else
             Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
          end if;
@@ -4282,24 +4301,10 @@ package body Exp_Attr is
       -- Stream_Size --
       -----------------
 
-      when Attribute_Stream_Size => Stream_Size : declare
-         Size : Int;
-
-      begin
-         --  If we have a Stream_Size clause for this type use it, otherwise
-         --  the Stream_Size if the size of the type.
-
-         if Has_Stream_Size_Clause (Ptyp) then
-            Size :=
-              UI_To_Int
-                (Static_Integer (Expression (Stream_Size_Clause (Ptyp))));
-         else
-            Size := UI_To_Int (Esize (Ptyp));
-         end if;
-
-         Rewrite (N, Make_Integer_Literal (Loc, Intval => Size));
+      when Attribute_Stream_Size =>
+         Rewrite (N,
+           Make_Integer_Literal (Loc, Intval => Get_Stream_Size (Ptyp)));
          Analyze_And_Resolve (N, Typ);
-      end Stream_Size;
 
       ----------
       -- Succ --
@@ -5006,7 +5011,7 @@ package body Exp_Attr is
       -- Value --
       -----------
 
-      --  Value attribute is handled in separate unti Exp_Imgv
+      --  Value attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Value =>
          Exp_Imgv.Expand_Value_Attribute (N);
@@ -5370,7 +5375,6 @@ package body Exp_Attr is
            Attribute_Universal_Literal_String     |
            Attribute_Wchar_T_Size                 |
            Attribute_Word_Size                    =>
-
          raise Program_Error;
 
       --  The Asm_Input and Asm_Output attributes are not expanded at this
@@ -5379,9 +5383,7 @@ package body Exp_Attr is
 
       when Attribute_Asm_Input                    |
            Attribute_Asm_Output                   =>
-
          null;
-
       end case;
 
    exception
@@ -5532,6 +5534,31 @@ package body Exp_Attr is
       Base_Typ : constant Entity_Id := Base_Type (Typ);
       Ent      : constant Entity_Id := TSS (Typ, Nam);
 
+      function Is_Available (Entity : RE_Id) return Boolean;
+      pragma Inline (Is_Available);
+      --  Function to check whether the specified run-time call is available
+      --  in the run time used. In the case of a configurable run time, it
+      --  is normal that some subprograms are not there.
+
+      --  I don't understand this routine at all, why is this not just a
+      --  call to RTE_Available? And if for some reason we need a different
+      --  routine with different semantics, why is not in Rtsfind ???
+
+      ------------------
+      -- Is_Available --
+      ------------------
+
+      function Is_Available (Entity : RE_Id) return Boolean is
+      begin
+         --  Assume that the unit will always be available when using a
+         --  "normal" (not configurable) run time.
+
+         return not Configurable_Run_Time_Mode
+           or else RTE_Available (Entity);
+      end Is_Available;
+
+   --  Start of processing for Find_Stream_Subprogram
+
    begin
       if Present (Ent) then
          return Ent;
@@ -5550,6 +5577,13 @@ package body Exp_Attr is
       --  This is disabled for AAMP, to avoid creating dependences on files not
       --  supported in the AAMP library (such as s-fileio.adb).
 
+      --  Note: In the case of using a configurable run time, it is very likely
+      --  that stream routines for string types are not present (they require
+      --  file system support). In this case, the specific stream routines for
+      --  strings are not used, relying on the regular stream mechanism
+      --  instead. That is why we include the test Is_Available when dealing
+      --  with these cases.
+
       if VM_Target /= JVM_Target
         and then not AAMP_On_Target
         and then
@@ -5559,31 +5593,61 @@ package body Exp_Attr is
 
          if Base_Typ = Standard_String then
             if Restriction_Active (No_Stream_Optimizations) then
-               if Nam = TSS_Stream_Input then
+               if Nam = TSS_Stream_Input
+                 and then Is_Available (RE_String_Input)
+               then
                   return RTE (RE_String_Input);
 
-               elsif Nam = TSS_Stream_Output then
+               elsif Nam = TSS_Stream_Output
+                 and then Is_Available (RE_String_Output)
+               then
                   return RTE (RE_String_Output);
 
-               elsif Nam = TSS_Stream_Read then
+               elsif Nam = TSS_Stream_Read
+                 and then Is_Available (RE_String_Read)
+               then
                   return RTE (RE_String_Read);
 
-               else pragma Assert (Nam = TSS_Stream_Write);
+               elsif Nam = TSS_Stream_Write
+                 and then Is_Available (RE_String_Write)
+               then
                   return RTE (RE_String_Write);
+
+               elsif Nam /= TSS_Stream_Input and then
+                     Nam /= TSS_Stream_Output and then
+                     Nam /= TSS_Stream_Read and then
+                     Nam /= TSS_Stream_Write
+               then
+                  raise Program_Error;
                end if;
 
             else
-               if Nam = TSS_Stream_Input then
+               if Nam = TSS_Stream_Input
+                 and then Is_Available (RE_String_Input_Blk_IO)
+               then
                   return RTE (RE_String_Input_Blk_IO);
 
-               elsif Nam = TSS_Stream_Output then
+               elsif Nam = TSS_Stream_Output
+                 and then Is_Available (RE_String_Output_Blk_IO)
+               then
                   return RTE (RE_String_Output_Blk_IO);
 
-               elsif Nam = TSS_Stream_Read then
+               elsif Nam = TSS_Stream_Read
+                 and then Is_Available (RE_String_Read_Blk_IO)
+               then
                   return RTE (RE_String_Read_Blk_IO);
 
-               else pragma Assert (Nam = TSS_Stream_Write);
+               elsif Nam = TSS_Stream_Write
+                 and then Is_Available (RE_String_Write_Blk_IO)
+               then
                   return RTE (RE_String_Write_Blk_IO);
+
+               elsif Nam /= TSS_Stream_Input and then
+                     Nam /= TSS_Stream_Output and then
+                     Nam /= TSS_Stream_Read and then
+                     Nam /= TSS_Stream_Write
+               then
+                  raise Program_Error;
                end if;
             end if;
 
@@ -5591,31 +5655,61 @@ package body Exp_Attr is
 
          elsif Base_Typ = Standard_Wide_String then
             if Restriction_Active (No_Stream_Optimizations) then
-               if Nam = TSS_Stream_Input then
+               if Nam = TSS_Stream_Input
+                 and then Is_Available (RE_Wide_String_Input)
+               then
                   return RTE (RE_Wide_String_Input);
 
-               elsif Nam = TSS_Stream_Output then
+               elsif Nam = TSS_Stream_Output
+                 and then Is_Available (RE_Wide_String_Output)
+               then
                   return RTE (RE_Wide_String_Output);
 
-               elsif Nam = TSS_Stream_Read then
+               elsif Nam = TSS_Stream_Read
+                 and then Is_Available (RE_Wide_String_Read)
+               then
                   return RTE (RE_Wide_String_Read);
 
-               else pragma Assert (Nam = TSS_Stream_Write);
+               elsif Nam = TSS_Stream_Write
+                 and then Is_Available (RE_Wide_String_Write)
+               then
                   return RTE (RE_Wide_String_Write);
+
+               elsif Nam /= TSS_Stream_Input and then
+                     Nam /= TSS_Stream_Output and then
+                     Nam /= TSS_Stream_Read and then
+                     Nam /= TSS_Stream_Write
+               then
+                  raise Program_Error;
                end if;
 
             else
-               if Nam = TSS_Stream_Input then
+               if Nam = TSS_Stream_Input
+                 and then Is_Available (RE_Wide_String_Input_Blk_IO)
+               then
                   return RTE (RE_Wide_String_Input_Blk_IO);
 
-               elsif Nam = TSS_Stream_Output then
+               elsif Nam = TSS_Stream_Output
+                 and then Is_Available (RE_Wide_String_Output_Blk_IO)
+               then
                   return RTE (RE_Wide_String_Output_Blk_IO);
 
-               elsif Nam = TSS_Stream_Read then
+               elsif Nam = TSS_Stream_Read
+                 and then Is_Available (RE_Wide_String_Read_Blk_IO)
+               then
                   return RTE (RE_Wide_String_Read_Blk_IO);
 
-               else pragma Assert (Nam = TSS_Stream_Write);
+               elsif Nam = TSS_Stream_Write
+                 and then Is_Available (RE_Wide_String_Write_Blk_IO)
+               then
                   return RTE (RE_Wide_String_Write_Blk_IO);
+
+               elsif Nam /= TSS_Stream_Input and then
+                     Nam /= TSS_Stream_Output and then
+                     Nam /= TSS_Stream_Read and then
+                     Nam /= TSS_Stream_Write
+               then
+                  raise Program_Error;
                end if;
             end if;
 
@@ -5623,31 +5717,61 @@ package body Exp_Attr is
 
          elsif Base_Typ = Standard_Wide_Wide_String then
             if Restriction_Active (No_Stream_Optimizations) then
-               if Nam = TSS_Stream_Input then
+               if Nam = TSS_Stream_Input
+                 and then Is_Available (RE_Wide_Wide_String_Input)
+               then
                   return RTE (RE_Wide_Wide_String_Input);
 
-               elsif Nam = TSS_Stream_Output then
+               elsif Nam = TSS_Stream_Output
+                 and then Is_Available (RE_Wide_Wide_String_Output)
+               then
                   return RTE (RE_Wide_Wide_String_Output);
 
-               elsif Nam = TSS_Stream_Read then
+               elsif Nam = TSS_Stream_Read
+                 and then Is_Available (RE_Wide_Wide_String_Read)
+               then
                   return RTE (RE_Wide_Wide_String_Read);
 
-               else pragma Assert (Nam = TSS_Stream_Write);
+               elsif Nam = TSS_Stream_Write
+                 and then Is_Available (RE_Wide_Wide_String_Write)
+               then
                   return RTE (RE_Wide_Wide_String_Write);
+
+               elsif Nam /= TSS_Stream_Input and then
+                     Nam /= TSS_Stream_Output and then
+                     Nam /= TSS_Stream_Read and then
+                     Nam /= TSS_Stream_Write
+               then
+                  raise Program_Error;
                end if;
 
             else
-               if Nam = TSS_Stream_Input then
+               if Nam = TSS_Stream_Input
+                 and then Is_Available (RE_Wide_Wide_String_Input_Blk_IO)
+               then
                   return RTE (RE_Wide_Wide_String_Input_Blk_IO);
 
-               elsif Nam = TSS_Stream_Output then
+               elsif Nam = TSS_Stream_Output
+                 and then Is_Available (RE_Wide_Wide_String_Output_Blk_IO)
+               then
                   return RTE (RE_Wide_Wide_String_Output_Blk_IO);
 
-               elsif Nam = TSS_Stream_Read then
+               elsif Nam = TSS_Stream_Read
+                 and then Is_Available (RE_Wide_Wide_String_Read_Blk_IO)
+               then
                   return RTE (RE_Wide_Wide_String_Read_Blk_IO);
 
-               else pragma Assert (Nam = TSS_Stream_Write);
+               elsif Nam = TSS_Stream_Write
+                 and then Is_Available (RE_Wide_Wide_String_Write_Blk_IO)
+               then
                   return RTE (RE_Wide_Wide_String_Write_Blk_IO);
+
+               elsif Nam /= TSS_Stream_Input and then
+                     Nam /= TSS_Stream_Output and then
+                     Nam /= TSS_Stream_Read and then
+                     Nam /= TSS_Stream_Write
+               then
+                  raise Program_Error;
                end if;
             end if;
          end if;

@@ -78,3 +78,8 @@
 #ifdef L_floatundisf
 #define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (floatundisf, ul2f)
 #endif
+
+/* For ARM bpabi, we only want to use a "__gnu_" prefix for the fixed-point
+   helper functions - not everything in libgcc - in the interests of
+   maintaining backward compatibility.  */
+#define LIBGCC2_FIXEDBIT_GNU_PREFIX

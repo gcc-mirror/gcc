@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Storage pool corresponding to default global storage pool used for
---  types for which no storage pool is specified.
+--  Storage pool corresponding to default global storage pool used for types
+--  for which no storage pool is specified.
 
 with System;
 with System.Storage_Pools;
@@ -43,9 +43,9 @@ package System.Pool_Global is
    --  Allocation strategy:
 
    --    Call to malloc/free for each Allocate/Deallocate
-   --    no user specifiable size
-   --    no automatic reclaim
-   --    minimal overhead
+   --    No user specifiable size
+   --    No automatic reclaim
+   --    Minimal overhead
 
    --  Pool simulating the allocation/deallocation strategy used by the
    --  compiler for access types globally declared.
@@ -53,7 +53,7 @@ package System.Pool_Global is
    type Unbounded_No_Reclaim_Pool is new
      System.Storage_Pools.Root_Storage_Pool with null record;
 
-   function Storage_Size
+   overriding function Storage_Size
      (Pool : Unbounded_No_Reclaim_Pool)
       return System.Storage_Elements.Storage_Count;
 

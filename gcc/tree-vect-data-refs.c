@@ -1495,11 +1495,18 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
 
+      if (!STMT_VINFO_RELEVANT (stmt_info))
+	continue;
+
       /* For interleaving, only the alignment of the first access
          matters.  */
       if (STMT_VINFO_STRIDED_ACCESS (stmt_info)
           && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
         continue;
+
+      /* For invariant accesses there is nothing to enhance.  */
+      if (integer_zerop (DR_STEP (dr)))
+	continue;
 
       supportable_dr_alignment = vect_supportable_dr_alignment (dr, true);
       do_peeling = vector_alignment_reachable_p (dr);
@@ -2302,9 +2309,12 @@ vect_analyze_data_ref_access (struct data_reference *dr)
       return false;
     }
 
-  /* Don't allow invariant accesses in loops.  */
+  /* Allow invariant loads in loops.  */
   if (loop_vinfo && dr_step == 0)
-    return false;
+    {
+      GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = NULL;
+      return DR_IS_READ (dr);
+    }
 
   if (loop && nested_in_vect_loop_p (loop, stmt))
     {
@@ -2635,9 +2645,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	     inner-loop: *(BASE+INIT).  (The first location is actually
 	     BASE+INIT+OFFSET, but we add OFFSET separately later).  */
           tree inner_base = build_fold_indirect_ref
-                                (fold_build2 (POINTER_PLUS_EXPR,
-                                              TREE_TYPE (base), base,
-                                              fold_convert (sizetype, init)));
+                                (fold_build_pointer_plus (base, init));
 
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
@@ -2918,8 +2926,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
 
   /* base + base_offset */
   if (loop_vinfo)
-    addr_base = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (data_ref_base),
-                             data_ref_base, base_offset);
+    addr_base = fold_build_pointer_plus (data_ref_base, base_offset);
   else
     {
       addr_base = build1 (ADDR_EXPR,

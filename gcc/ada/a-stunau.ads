@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,18 @@ package Ada.Strings.Unbounded.Aux is
    pragma Preelaborate;
 
    subtype Big_String is String (1 .. Positive'Last);
+   pragma Suppress_Initialization (Big_String);
+   --  Type used to obtain string access to given address. Initialization is
+   --  suppressed, since we never want to have variables of this type, and
+   --  we never want to attempt initialiazation of virtual variables of this
+   --  type (e.g. when pragma Normalize_Scalars is used).
+
    type Big_String_Access is access all Big_String;
+   for Big_String_Access'Storage_Size use 0;
+   --  We use this access type to pass a pointer to an area of storage to be
+   --  accessed as a string. Of course when this pointer is used, it is the
+   --  responsibility of the accessor to ensure proper bounds. The storage
+   --  size clause ensures we do not allocate variables of this type.
 
    procedure Get_String
      (U : Unbounded_String;
@@ -56,12 +67,6 @@ package Ada.Strings.Unbounded.Aux is
    --  since it avoids the need to copy the string. The lower bound of the
    --  referenced string returned by this call is always one, so the actual
    --  string data is always accessible as S (1 .. L).
-
-   procedure Set_String (UP : out Unbounded_String; S : String)
-     renames Set_Unbounded_String;
-   --  This function is simply a renaming of the new Ada 2005 function as shown
-   --  above. It is provided for historical reasons, but should be removed at
-   --  this stage???
 
    procedure Set_String (UP : in out Unbounded_String; S : String_Access);
    pragma Inline (Set_String);

@@ -24,4 +24,4 @@ MODULE TEST
 END MODULE
 END
 
-! { dg-final { cleanup-modules "TEST" } }
+! { dg-final { cleanup-modules "test" } }

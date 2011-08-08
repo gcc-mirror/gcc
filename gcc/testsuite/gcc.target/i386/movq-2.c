@@ -1,7 +1,7 @@
 /* PR target/25199 */
 /* { dg-do compile } */
 /* { dg-options "-Os -mtune=pentium4" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 
 struct S
 {

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Errout;   use Errout;
 with Exp_Atag; use Exp_Atag;
 with Exp_Disp; use Exp_Disp;
 with Exp_Strm; use Exp_Strm;
@@ -1029,6 +1030,14 @@ package body Exp_Dist is
          pragma Warnings (Off, Subp_Str);
 
       begin
+         --  Disable expansion of stubs if serious errors have been diagnosed,
+         --  because otherwise some illegal remote subprogram declarations
+         --  could cause cascaded errors in stubs.
+
+         if Serious_Errors_Detected /= 0 then
+            return;
+         end if;
+
          Assign_Subprogram_Identifier
            (Defining_Unit_Name (Spec), Current_Subprogram_Number, Subp_Str);
 
@@ -3836,6 +3845,14 @@ package body Exp_Dist is
             pragma Warnings (Off, Subp_Val);
 
          begin
+            --  Disable expansion of stubs if serious errors have been
+            --  diagnosed, because otherwise some illegal remote subprogram
+            --  declarations could cause cascaded errors in stubs.
+
+            if Serious_Errors_Detected /= 0 then
+               return;
+            end if;
+
             --  Build receiving stub
 
             Current_Stubs :=
@@ -6539,12 +6556,12 @@ package body Exp_Dist is
                Make_Aggregate (Loc,
                  Component_Associations => New_List (
                    Make_Component_Association (Loc,
-                     Choices => New_List (Make_Identifier (Loc, Name_Ras)),
+                     Choices    => New_List (Make_Identifier (Loc, Name_Ras)),
                      Expression =>
-                       PolyORB_Support.Helpers.Build_From_Any_Call (
-                         Underlying_RACW_Type (RAS_Type),
-                         New_Occurrence_Of (Any_Parameter, Loc),
-                         No_List))))));
+                       PolyORB_Support.Helpers.Build_From_Any_Call
+                         (Underlying_RACW_Type (RAS_Type),
+                          New_Occurrence_Of (Any_Parameter, Loc),
+                          No_List))))));
 
          Func_Spec :=
            Make_Function_Specification (Loc,
@@ -6840,6 +6857,14 @@ package body Exp_Dist is
             Proxy_Obj_Addr : Entity_Id;
 
          begin
+            --  Disable expansion of stubs if serious errors have been
+            --  diagnosed, because otherwise some illegal remote subprogram
+            --  declarations could cause cascaded errors in stubs.
+
+            if Serious_Errors_Detected /= 0 then
+               return;
+            end if;
+
             --  Build receiving stub
 
             Current_Stubs :=
@@ -8255,9 +8280,9 @@ package body Exp_Dist is
 
          function Find_Numeric_Representation
            (Typ : Entity_Id) return Entity_Id;
-         --  Given a numeric type Typ, return the smallest integer or floating
-         --  point type from Standard, or the smallest unsigned (modular) type
-         --  from System.Unsigned_Types, whose range encompasses that of Typ.
+         --  Given a numeric type Typ, return the smallest integer or modular
+         --  type from Interfaces, or the smallest floating point type from
+         --  Standard whose range encompasses that of Typ.
 
          function Make_Helper_Function_Name
            (Loc : Source_Ptr;
@@ -8558,37 +8583,31 @@ package body Exp_Dist is
 
             --  Integer types
 
-            elsif U_Type = Etype (Standard_Short_Short_Integer) then
-                  Lib_RE := RE_FA_SSI;
+            elsif U_Type = RTE (RE_Integer_8) then
+                  Lib_RE := RE_FA_I8;
 
-            elsif U_Type = Etype (Standard_Short_Integer) then
-               Lib_RE := RE_FA_SI;
+            elsif U_Type = RTE (RE_Integer_16) then
+               Lib_RE := RE_FA_I16;
 
-            elsif U_Type = Etype (Standard_Integer) then
-               Lib_RE := RE_FA_I;
+            elsif U_Type = RTE (RE_Integer_32) then
+               Lib_RE := RE_FA_I32;
 
-            elsif U_Type = Etype (Standard_Long_Integer) then
-               Lib_RE := RE_FA_LI;
-
-            elsif U_Type = Etype (Standard_Long_Long_Integer) then
-               Lib_RE := RE_FA_LLI;
+            elsif U_Type = RTE (RE_Integer_64) then
+               Lib_RE := RE_FA_I64;
 
             --  Unsigned integer types
 
-            elsif U_Type = RTE (RE_Short_Short_Unsigned) then
-               Lib_RE := RE_FA_SSU;
+            elsif U_Type = RTE (RE_Unsigned_8) then
+               Lib_RE := RE_FA_U8;
 
-            elsif U_Type = RTE (RE_Short_Unsigned) then
-               Lib_RE := RE_FA_SU;
+            elsif U_Type = RTE (RE_Unsigned_16) then
+               Lib_RE := RE_FA_U16;
 
-            elsif U_Type = RTE (RE_Unsigned) then
-               Lib_RE := RE_FA_U;
+            elsif U_Type = RTE (RE_Unsigned_32) then
+               Lib_RE := RE_FA_U32;
 
-            elsif U_Type = RTE (RE_Long_Unsigned) then
-               Lib_RE := RE_FA_LU;
-
-            elsif U_Type = RTE (RE_Long_Long_Unsigned) then
-               Lib_RE := RE_FA_LLU;
+            elsif U_Type = RTE (RE_Unsigned_64) then
+               Lib_RE := RE_FA_U64;
 
             elsif Is_RTE (U_Type, RE_Unbounded_String) then
                Lib_RE := RE_FA_String;
@@ -9035,8 +9054,8 @@ package body Exp_Dist is
                      if Nkind (Datum) /= N_Attribute_Reference then
 
                         --  We ignore the value of the length of each
-                        --  dimension, since the target array has already
-                        --  been constrained anyway.
+                        --  dimension, since the target array has already been
+                        --  constrained anyway.
 
                         if Etype (Datum) /= RTE (RE_Any) then
                            Set_Expression (Assignment,
@@ -9188,7 +9207,7 @@ package body Exp_Dist is
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Counter,
                       Object_Definition =>
-                        New_Occurrence_Of (RTE (RE_Long_Unsigned), Loc),
+                        New_Occurrence_Of (RTE (RE_Unsigned_32), Loc),
                       Expression =>
                         Make_Integer_Literal (Loc, Initial_Counter_Value)));
 
@@ -9373,37 +9392,31 @@ package body Exp_Dist is
 
             --  Integer types
 
-            elsif U_Type = Etype (Standard_Short_Short_Integer) then
-                  Lib_RE := RE_TA_SSI;
+            elsif U_Type = RTE (RE_Integer_8) then
+               Lib_RE := RE_TA_I8;
 
-            elsif U_Type = Etype (Standard_Short_Integer) then
-               Lib_RE := RE_TA_SI;
+            elsif U_Type = RTE (RE_Integer_16) then
+               Lib_RE := RE_TA_I16;
 
-            elsif U_Type = Etype (Standard_Integer) then
-               Lib_RE := RE_TA_I;
+            elsif U_Type = RTE (RE_Integer_32) then
+               Lib_RE := RE_TA_I32;
 
-            elsif U_Type = Etype (Standard_Long_Integer) then
-               Lib_RE := RE_TA_LI;
-
-            elsif U_Type = Etype (Standard_Long_Long_Integer) then
-               Lib_RE := RE_TA_LLI;
+            elsif U_Type = RTE (RE_Integer_64) then
+               Lib_RE := RE_TA_I64;
 
             --  Unsigned integer types
 
-            elsif U_Type = RTE (RE_Short_Short_Unsigned) then
-               Lib_RE := RE_TA_SSU;
+            elsif U_Type = RTE (RE_Unsigned_8) then
+               Lib_RE := RE_TA_U8;
 
-            elsif U_Type = RTE (RE_Short_Unsigned) then
-               Lib_RE := RE_TA_SU;
+            elsif U_Type = RTE (RE_Unsigned_16) then
+               Lib_RE := RE_TA_U16;
 
-            elsif U_Type = RTE (RE_Unsigned) then
-               Lib_RE := RE_TA_U;
+            elsif U_Type = RTE (RE_Unsigned_32) then
+               Lib_RE := RE_TA_U32;
 
-            elsif U_Type = RTE (RE_Long_Unsigned) then
-               Lib_RE := RE_TA_LU;
-
-            elsif U_Type = RTE (RE_Long_Long_Unsigned) then
-               Lib_RE := RE_TA_LLU;
+            elsif U_Type = RTE (RE_Unsigned_64) then
+               Lib_RE := RE_TA_U64;
 
             elsif Is_RTE (U_Type, RE_Unbounded_String) then
                Lib_RE := RE_TA_String;
@@ -10151,37 +10164,31 @@ package body Exp_Dist is
 
                --  Integer types (walk back to the base type)
 
-               elsif U_Type = Etype (Standard_Short_Short_Integer) then
-                     Lib_RE := RE_TC_SSI;
+               elsif U_Type = RTE (RE_Integer_8) then
+                     Lib_RE := RE_TC_I8;
 
-               elsif U_Type = Etype (Standard_Short_Integer) then
-                  Lib_RE := RE_TC_SI;
+               elsif U_Type = RTE (RE_Integer_16) then
+                  Lib_RE := RE_TC_I16;
 
-               elsif U_Type = Etype (Standard_Integer) then
-                  Lib_RE := RE_TC_I;
+               elsif U_Type = RTE (RE_Integer_32) then
+                  Lib_RE := RE_TC_I32;
 
-               elsif U_Type = Etype (Standard_Long_Integer) then
-                  Lib_RE := RE_TC_LI;
-
-               elsif U_Type = Etype (Standard_Long_Long_Integer) then
-                  Lib_RE := RE_TC_LLI;
+               elsif U_Type = RTE (RE_Integer_64) then
+                  Lib_RE := RE_TC_I64;
 
                --  Unsigned integer types
 
-               elsif U_Type = RTE (RE_Short_Short_Unsigned) then
-                  Lib_RE := RE_TC_SSU;
+               elsif U_Type = RTE (RE_Unsigned_8) then
+                  Lib_RE := RE_TC_U8;
 
-               elsif U_Type = RTE (RE_Short_Unsigned) then
-                  Lib_RE := RE_TC_SU;
+               elsif U_Type = RTE (RE_Unsigned_16) then
+                  Lib_RE := RE_TC_U16;
 
-               elsif U_Type = RTE (RE_Unsigned) then
-                  Lib_RE := RE_TC_U;
+               elsif U_Type = RTE (RE_Unsigned_32) then
+                  Lib_RE := RE_TC_U32;
 
-               elsif U_Type = RTE (RE_Long_Unsigned) then
-                  Lib_RE := RE_TC_LU;
-
-               elsif U_Type = RTE (RE_Long_Long_Unsigned) then
-                  Lib_RE := RE_TC_LLU;
+               elsif U_Type = RTE (RE_Unsigned_64) then
+                  Lib_RE := RE_TC_U64;
 
                elsif Is_RTE (U_Type, RE_Unbounded_String) then
                   Lib_RE := RE_TC_String;
@@ -10314,7 +10321,8 @@ package body Exp_Dist is
             begin
                Append_To (Parameter_List,
                  Make_Function_Call (Loc,
-                   Name => New_Occurrence_Of (RTE (RE_TA_LI), Loc),
+                   Name                   =>
+                     New_Occurrence_Of (RTE (RE_TA_I32), Loc),
                    Parameter_Associations => New_List (Expr_Node)));
             end Add_Long_Parameter;
 
@@ -10559,7 +10567,7 @@ package body Exp_Dist is
                                       Make_Function_Call (Loc,
                                        Name =>
                                          New_Occurrence_Of
-                                           (RTE (RE_TA_LI), Loc),
+                                           (RTE (RE_TA_I32), Loc),
                                        Parameter_Associations =>
                                          New_List (
                                            Make_Integer_Literal
@@ -10770,7 +10778,7 @@ package body Exp_Dist is
                         Inner_TypeCode := Make_Constructed_TypeCode
                           (RTE (RE_TC_Array), New_List (
                             Build_To_Any_Call (
-                              OK_Convert_To (RTE (RE_Long_Unsigned),
+                              OK_Convert_To (RTE (RE_Unsigned_32),
                                 Make_Attribute_Reference (Loc,
                                   Prefix => New_Occurrence_Of (Typ, Loc),
                                   Attribute_Name => Name_Length,
@@ -10796,7 +10804,7 @@ package body Exp_Dist is
                         Inner_TypeCode := Make_Constructed_TypeCode
                           (RTE (RE_TC_Sequence), New_List (
                             Build_To_Any_Call (
-                              OK_Convert_To (RTE (RE_Long_Unsigned),
+                              OK_Convert_To (RTE (RE_Unsigned_32),
                                 Make_Integer_Literal (Loc, 0)),
                               Decls),
                             Build_To_Any_Call (Inner_TypeCode, Decls)));
@@ -10842,37 +10850,31 @@ package body Exp_Dist is
 
          begin
             if Is_Unsigned_Type (Typ) then
-               if P_Size <= Standard_Short_Short_Integer_Size then
-                  return RTE (RE_Short_Short_Unsigned);
+               if P_Size <= 8 then
+                  return RTE (RE_Unsigned_8);
 
-               elsif P_Size <= Standard_Short_Integer_Size then
-                  return RTE (RE_Short_Unsigned);
+               elsif P_Size <= 16 then
+                  return RTE (RE_Unsigned_16);
 
-               elsif P_Size <= Standard_Integer_Size then
-                  return RTE (RE_Unsigned);
-
-               elsif P_Size <= Standard_Long_Integer_Size then
-                  return RTE (RE_Long_Unsigned);
+               elsif P_Size <= 32 then
+                  return RTE (RE_Unsigned_32);
 
                else
-                  return RTE (RE_Long_Long_Unsigned);
+                  return RTE (RE_Unsigned_64);
                end if;
 
             elsif Is_Integer_Type (Typ) then
-               if P_Size <= Standard_Short_Short_Integer_Size then
-                  return Standard_Short_Short_Integer;
+               if P_Size <= 8 then
+                  return RTE (RE_Integer_8);
 
                elsif P_Size <= Standard_Short_Integer_Size then
-                  return Standard_Short_Integer;
+                  return RTE (RE_Integer_16);
 
                elsif P_Size <= Standard_Integer_Size then
-                  return Standard_Integer;
-
-               elsif P_Size <= Standard_Long_Integer_Size then
-                  return Standard_Long_Integer;
+                  return RTE (RE_Integer_32);
 
                else
-                  return Standard_Long_Long_Integer;
+                  return RTE (RE_Integer_64);
                end if;
 
             elsif Is_Floating_Point_Type (Typ) then
@@ -11061,7 +11063,7 @@ package body Exp_Dist is
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Inner_Counter,
                       Object_Definition   =>
-                        New_Occurrence_Of (RTE (RE_Long_Unsigned), Loc),
+                        New_Occurrence_Of (RTE (RE_Unsigned_32), Loc),
                       Expression          =>
                         Make_Integer_Literal (Loc, 0)));
                end if;
@@ -11072,7 +11074,7 @@ package body Exp_Dist is
                         Attribute_Name => Name_Length,
                         Expressions    =>
                           New_List (Make_Integer_Literal (Loc, Depth)));
-                  Set_Etype (Length_Node, RTE (RE_Long_Unsigned));
+                  Set_Etype (Length_Node, RTE (RE_Unsigned_32));
 
                   Add_Process_Element (Dimen_Stmts,
                     Datum   => Length_Node,

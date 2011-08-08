@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,17 +23,33 @@
 
 int main()
 {
+  typedef std::pair<int, int> pair_type;
+
   __gnu_test::constexpr_default_constructible test1;
-  test1.operator()<std::pair<int, int>>();
+  test1.operator()<pair_type>();
 
   __gnu_test::constexpr_single_value_constructible test2;
-  test2.operator()<std::pair<int, int>, std::pair<int, int>>();
-  test2.operator()<std::pair<int, int>, std::pair<short, short>>();
+  test2.operator()<pair_type, pair_type>();
+  test2.operator()<pair_type, std::pair<short, short>>();
 
   // test 3
   const int i1(129);
   const int i2(6);
-  constexpr std::pair<int, int> p3(i1, i2);
+  constexpr pair_type p0(i1, i2);
+
+  // test 4
+  constexpr int i(999);
+  constexpr pair_type p1 { 44, 90 };
+  constexpr pair_type p2 { std::move(p1.first),  i };
+  constexpr pair_type p3 { i, std::move(p1.second) };
+
+  constexpr pair_type p5 { 444, 904 };
+  constexpr pair_type p6 { std::move(p5.first), std::move(p5.second) };
+
+  constexpr std::pair<char, char> p8 { 'a', 'z' };
+  constexpr pair_type p9(std::move(p8));
+
+  constexpr pair_type p10(std::move(p0));
 
   return 0;
 }

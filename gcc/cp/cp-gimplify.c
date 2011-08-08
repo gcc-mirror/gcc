@@ -1230,7 +1230,7 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
 	start2 = build_fold_addr_expr_loc (input_location, start2);
 
       end1 = TYPE_SIZE_UNIT (TREE_TYPE (arg1));
-      end1 = build2 (POINTER_PLUS_EXPR, TREE_TYPE (start1), start1, end1);
+      end1 = fold_build_pointer_plus (start1, end1);
 
       p1 = create_tmp_var (TREE_TYPE (start1), NULL);
       t = build2 (MODIFY_EXPR, TREE_TYPE (p1), p1, start1);
@@ -1260,15 +1260,13 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
       append_to_statement_list (t, &ret);
 
-      t = TYPE_SIZE_UNIT (inner_type);
-      t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (p1), p1, t);
+      t = fold_build_pointer_plus (p1, TYPE_SIZE_UNIT (inner_type));
       t = build2 (MODIFY_EXPR, TREE_TYPE (p1), p1, t);
       append_to_statement_list (t, &ret);
 
       if (arg2)
 	{
-	  t = TYPE_SIZE_UNIT (inner_type);
-	  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (p2), p2, t);
+	  t = fold_build_pointer_plus (p2, TYPE_SIZE_UNIT (inner_type));
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (p2), p2, t);
 	  append_to_statement_list (t, &ret);
 	}
@@ -1367,26 +1365,15 @@ cxx_omp_privatize_by_reference (const_tree decl)
   return is_invisiref_parm (decl);
 }
 
-/* True if OpenMP sharing attribute of DECL is predetermined.  */
-
-enum omp_clause_default_kind
-cxx_omp_predetermined_sharing (tree decl)
+/* Return true if DECL is const qualified var having no mutable member.  */
+bool
+cxx_omp_const_qual_no_mutable (tree decl)
 {
-  tree type;
-
-  /* Static data members are predetermined as shared.  */
-  if (TREE_STATIC (decl))
-    {
-      tree ctx = CP_DECL_CONTEXT (decl);
-      if (TYPE_P (ctx) && MAYBE_CLASS_TYPE_P (ctx))
-	return OMP_CLAUSE_DEFAULT_SHARED;
-    }
-
-  type = TREE_TYPE (decl);
+  tree type = TREE_TYPE (decl);
   if (TREE_CODE (type) == REFERENCE_TYPE)
     {
       if (!is_invisiref_parm (decl))
-	return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+	return false;
       type = TREE_TYPE (type);
 
       if (TREE_CODE (decl) == RESULT_DECL && DECL_NAME (decl))
@@ -1410,11 +1397,32 @@ cxx_omp_predetermined_sharing (tree decl)
     }
 
   if (type == error_mark_node)
-    return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+    return false;
 
   /* Variables with const-qualified type having no mutable member
      are predetermined shared.  */
   if (TYPE_READONLY (type) && !cp_has_mutable_p (type))
+    return true;
+
+  return false;
+}
+
+/* True if OpenMP sharing attribute of DECL is predetermined.  */
+
+enum omp_clause_default_kind
+cxx_omp_predetermined_sharing (tree decl)
+{
+  /* Static data members are predetermined shared.  */
+  if (TREE_STATIC (decl))
+    {
+      tree ctx = CP_DECL_CONTEXT (decl);
+      if (TYPE_P (ctx) && MAYBE_CLASS_TYPE_P (ctx))
+	return OMP_CLAUSE_DEFAULT_SHARED;
+    }
+
+  /* Const qualified vars having no mutable member are predetermined
+     shared.  */
+  if (cxx_omp_const_qual_no_mutable (decl))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;

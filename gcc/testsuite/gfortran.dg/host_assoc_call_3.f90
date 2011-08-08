@@ -52,4 +52,4 @@ END MODULE
   CALL S3
   call S4
 END
-! { dg-final { cleanup-modules "M1 M2" } }
+! { dg-final { cleanup-modules "m1 m2" } }

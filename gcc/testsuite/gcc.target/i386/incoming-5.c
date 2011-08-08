@@ -1,5 +1,5 @@
 /* PR middle-end/37009 */
-/* { dg-do compile { target { { ! *-*-darwin* } && ilp32 } } } */
+/* { dg-do compile { target { { ! *-*-darwin* } && ia32 } } } */
 /* { dg-options "-m32 -mincoming-stack-boundary=2 -mpreferred-stack-boundary=2" } */
 
 extern void bar (double *);

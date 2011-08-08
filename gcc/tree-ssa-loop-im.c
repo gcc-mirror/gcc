@@ -1982,6 +1982,7 @@ gen_lsm_tmp_name (tree ref)
   switch (TREE_CODE (ref))
     {
     case MEM_REF:
+    case TARGET_MEM_REF:
       gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
       lsm_tmp_name_add ("_");
       break;

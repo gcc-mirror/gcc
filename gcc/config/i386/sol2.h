@@ -59,18 +59,29 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_SPEC
 #define CPP_SPEC "%{,assembler-with-cpp:-P} %(cpp_subtarget)"
 
+#define ASM_CPU_DEFAULT_SPEC ""
+
 #define ASM_CPU_SPEC ""
  
-/* Removed -K PIC from generic sol2.h ASM_SPEC: the Solaris 8 and 9 assembler
-   gives many warnings: R_386_32 relocation is used for symbol ".text", and
+/* Don't include ASM_PIC_SPEC.  While the Solaris 8 and 9 assembler accepts
+   -K PIC, it gives many warnings:
+	R_386_32 relocation is used for symbol "<symbol>"
    GNU as doesn't recognize -K at all.  */
-/* FIXME: Perhaps split between common and CPU-specific parts?  */
 #undef ASM_SPEC
-#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} -s %(asm_cpu)"
+#define ASM_SPEC ASM_SPEC_BASE
+
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   %{mpc32:crtprec32.o%s} \
+   %{mpc64:crtprec64.o%s} \
+   %{mpc80:crtprec80.o%s} \
+   crtend.o%s crtn.o%s"
 
 #define SUBTARGET_CPU_EXTRA_SPECS \
   { "cpp_subtarget",	 CPP_SUBTARGET_SPEC },		\
-  { "asm_cpu",		 ASM_CPU_SPEC }
+  { "asm_cpu",		 ASM_CPU_SPEC },		\
+  { "asm_cpu_default",	 ASM_CPU_DEFAULT_SPEC },	\
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
@@ -148,6 +159,19 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION i386_solaris_elf_named_section
+
+#ifndef USE_GAS
+/* Emit COMDAT group signature symbols for Sun as.  */
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END solaris_file_end
+#endif
+
+/* Unlike GNU ld, Sun ld doesn't coalesce .ctors.N/.dtors.N sections, so
+   inhibit their creation.  Also cf. sparc/sysv4.h.  */
+#ifndef USE_GLD
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors, \"aw\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors, \"aw\""
+#endif
 
 /* We do not need NT_VERSION notes.  */
 #undef X86_FILE_START_VERSION_DIRECTIVE

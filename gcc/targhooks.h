@@ -115,6 +115,8 @@ extern rtx default_function_incoming_arg
   (cumulative_args_t, enum machine_mode, const_tree, bool);
 extern unsigned int default_function_arg_boundary (enum machine_mode,
 						   const_tree);
+extern unsigned int default_function_arg_round_boundary (enum machine_mode,
+							 const_tree);
 extern bool hook_bool_const_rtx_commutative_p (const_rtx, int);
 extern rtx default_function_value (const_tree, const_tree, bool);
 extern rtx default_libcall_value (enum machine_mode, const_rtx);
@@ -161,6 +163,7 @@ extern reg_class_t default_preferred_reload_class (rtx, reg_class_t);
 extern reg_class_t default_preferred_output_reload_class (rtx, reg_class_t);
 extern reg_class_t default_preferred_rename_class (reg_class_t rclass);
 extern bool default_class_likely_spilled_p (reg_class_t);
+extern unsigned char default_class_max_nregs (reg_class_t, enum machine_mode);
 
 extern enum unwind_info_type default_debug_unwind_info (void);
 

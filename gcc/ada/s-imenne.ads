@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,8 +70,8 @@ package System.Img_Enum_New is
       P       : out Natural;
       Names   : String;
       Indexes : System.Address);
-   --  Identical to Set_Image_Enumeration_8 except that it handles types
-   --  using array (0 .. Num) of Natural_16 for the Indexes table.
+   --  Identical to Set_Image_Enumeration_8 except that it handles types using
+   --  array (0 .. Num) of Natural_16 for the Indexes table.
 
    procedure Image_Enumeration_32
      (Pos     : Natural;
@@ -79,7 +79,7 @@ package System.Img_Enum_New is
       P       : out Natural;
       Names   : String;
       Indexes : System.Address);
-   --  Identical to Set_Image_Enumeration_8 except that it handles types
-   --  using array (0 .. Num) of Natural_32 for the Indexes table.
+   --  Identical to Set_Image_Enumeration_8 except that it handles types using
+   --  array (0 .. Num) of Natural_32 for the Indexes table.
 
 end System.Img_Enum_New;

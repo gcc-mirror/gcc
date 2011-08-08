@@ -105,9 +105,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Copies the range [first,first+count) into [result,result+count).
-   *  @param  first  An input iterator.
-   *  @param  count  The number of elements to copy.
-   *  @param  result An output iterator.
+   *  @param  __first  An input iterator.
+   *  @param  __count  The number of elements to copy.
+   *  @param  __result An output iterator.
    *  @return   A std::pair composed of first+count and result+count.
    *
    *  This is an SGI extension.
@@ -185,10 +185,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief @c memcmp on steroids.
-   *  @param  first1  An input iterator.
-   *  @param  last1   An input iterator.
-   *  @param  first2  An input iterator.
-   *  @param  last2   An input iterator.
+   *  @param  __first1  An input iterator.
+   *  @param  __last1   An input iterator.
+   *  @param  __first2  An input iterator.
+   *  @param  __last2   An input iterator.
    *  @return   An int, as with @c memcmp.
    *
    *  The return value will be less than zero if the first range is
@@ -533,9 +533,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Find the median of three values.
-   *  @param  a  A value.
-   *  @param  b  A value.
-   *  @param  c  A value.
+   *  @param  __a  A value.
+   *  @param  __b  A value.
+   *  @param  __c  A value.
    *  @return One of @p a, @p b or @p c.
    *
    *  If @c {l,m,n} is some convolution of @p {a,b,c} such that @c l<=m<=n
@@ -566,10 +566,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Find the median of three values using a predicate for comparison.
-   *  @param  a     A value.
-   *  @param  b     A value.
-   *  @param  c     A value.
-   *  @param  comp  A binary predicate.
+   *  @param  __a     A value.
+   *  @param  __b     A value.
+   *  @param  __c     A value.
+   *  @param  __comp  A binary predicate.
    *  @return One of @p a, @p b or @p c.
    *
    *  If @c {l,m,n} is some convolution of @p {a,b,c} such that @p comp(l,m)

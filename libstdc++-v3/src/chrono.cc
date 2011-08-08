@@ -39,7 +39,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   {
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
  
-   constexpr bool system_clock::is_monotonic;
+    constexpr bool system_clock::is_steady;
 
     system_clock::time_point
     system_clock::now() throw ()
@@ -63,10 +63,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
     
 #ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-    constexpr bool monotonic_clock::is_monotonic;
+    constexpr bool steady_clock::is_steady;
     
-    monotonic_clock::time_point
-    monotonic_clock::now()
+    steady_clock::time_point
+    steady_clock::now()
     {
       timespec tp;
       // -EINVAL, -EFAULT

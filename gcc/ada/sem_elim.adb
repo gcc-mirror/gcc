@@ -261,14 +261,28 @@ package body Sem_Elim is
             --------------------
 
             procedure Set_Eliminated is
+               Overridden : Entity_Id;
+
             begin
                if Is_Dispatching_Operation (E) then
 
                   --  If an overriding dispatching primitive is eliminated then
-                  --  its parent must have been eliminated.
+                  --  its parent must have been eliminated. If the parent is an
+                  --  inherited operation, check the operation that it renames,
+                  --  because flag Eliminated is only set on source operations.
 
-                  if Present (Overridden_Operation (E))
-                    and then not Is_Eliminated (Overridden_Operation (E))
+                  Overridden := Overridden_Operation (E);
+
+                  if Present (Overridden)
+                    and then not Comes_From_Source (Overridden)
+                    and then Present (Alias (Overridden))
+                  then
+                     Overridden := Alias (Overridden);
+                  end if;
+
+                  if Present (Overridden)
+                    and then not Is_Eliminated (Overridden)
+                    and then not Is_Abstract_Subprogram (Overridden)
                   then
                      Error_Msg_Name_1 := Chars (E);
                      Error_Msg_N ("cannot eliminate subprogram %", E);

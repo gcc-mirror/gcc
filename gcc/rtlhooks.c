@@ -61,8 +61,7 @@ gen_lowpart_general (enum machine_mode mode, rtx x)
       /* The following exposes the use of "x" to CSE.  */
       if (GET_MODE_SIZE (GET_MODE (x)) <= UNITS_PER_WORD
 	  && SCALAR_INT_MODE_P (GET_MODE (x))
-	  && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-				    GET_MODE_BITSIZE (GET_MODE (x)))
+	  && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (x))
 	  && !reload_completed)
 	return gen_lowpart_general (mode, force_reg (GET_MODE (x), x));
 

@@ -35,6 +35,7 @@
     && defined(_GLIBCXX_ATOMIC_BUILTINS_4) && defined(_GLIBCXX_HAVE_LINUX_FUTEX)
 # include <climits>
 # include <syscall.h>
+# include <unistd.h>
 # define _GLIBCXX_USE_FUTEX
 # define _GLIBCXX_FUTEX_WAIT 0
 # define _GLIBCXX_FUTEX_WAKE 1

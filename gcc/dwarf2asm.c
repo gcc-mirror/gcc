@@ -34,12 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "tm_p.h"
 
-
-/* How to start an assembler comment.  */
-#ifndef ASM_COMMENT_START
-#define ASM_COMMENT_START ";#"
-#endif
-
 
 /* Output an unaligned integer with the given value and size.  Prefer not
    to print a newline, since the caller may want to add a comment.  */

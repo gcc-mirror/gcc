@@ -371,6 +371,69 @@ namespace __gnu_test
       
       int personality;
     };
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  // An uneq_allocator which can be used to test allocator propagation.
+  template<typename Tp, bool Propagate>
+    class propagating_allocator : public uneq_allocator<Tp>
+    {
+      typedef uneq_allocator<Tp> base_alloc;
+      base_alloc& base() { return *this; }
+      const base_alloc& base() const  { return *this; }
+      void swap_base(base_alloc& b) { swap(b, this->base()); }
+
+      typedef std::integral_constant<bool, Propagate> trait_type;
+
+    public:
+      template<typename Up>
+	struct rebind { typedef propagating_allocator<Up, Propagate> other; };
+
+      propagating_allocator(int i) noexcept
+      : base_alloc(i)
+      { }
+
+      template<typename Up>
+	propagating_allocator(const propagating_allocator<Up, Propagate>& a)
+       	noexcept
+	: base_alloc(a)
+	{ }
+
+      propagating_allocator() noexcept = default;
+
+      propagating_allocator(const propagating_allocator&) noexcept = default;
+
+      template<bool P2>
+  	propagating_allocator&
+  	operator=(const propagating_allocator<Tp, P2>& a) noexcept
+  	{
+	  static_assert(P2, "assigning propagating_allocator<T, true>");
+	  propagating_allocator(a).swap_base(*this);
+	  return *this;
+  	}
+
+      // postcondition: a.get_personality() == 0
+      propagating_allocator(propagating_allocator&& a) noexcept
+      : base_alloc()
+      { swap_base(a); }
+
+      // postcondition: a.get_personality() == 0
+      propagating_allocator&
+      operator=(propagating_allocator&& a) noexcept
+      {
+	propagating_allocator(std::move(a)).swap_base(*this);
+	return *this;
+      }
+
+      typedef trait_type propagate_on_container_copy_assignment;
+      typedef trait_type propagate_on_container_move_assignment;
+      typedef trait_type propagate_on_container_swap;
+
+      propagating_allocator select_on_container_copy_construction() const
+      { return Propagate ? *this : propagating_allocator(); }
+    };
+
+#endif
+
 } // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_ALLOCATOR_H

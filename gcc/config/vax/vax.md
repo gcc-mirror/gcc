@@ -29,11 +29,15 @@
 
 ;; UNSPEC_VOLATILE usage:
 
-(define_constants
-  [(VUNSPEC_BLOCKAGE 0)	    ; `blockage' insn to prevent scheduling across an
+(define_c_enum "unspecv" [
+  VUNSPEC_BLOCKAGE 	    ; 'blockage' insn to prevent scheduling across an
 			    ; insn in the code.
-   (VUNSPEC_SYNC_ISTREAM 1) ; sequence of insns to sync the I-stream
-   (VAX_AP_REGNUM 12)	    ; Register 12 contains the argument pointer
+  VUNSPEC_SYNC_ISTREAM      ; sequence of insns to sync the I-stream
+  VUNSPEC_PEM		    ; 'procedure_entry_mask' insn.
+])
+
+(define_constants
+  [(VAX_AP_REGNUM 12)	    ; Register 12 contains the argument pointer
    (VAX_FP_REGNUM 13)	    ; Register 13 contains the frame pointer
    (VAX_SP_REGNUM 14)	    ; Register 14 contains the stack pointer
    (VAX_PC_REGNUM 15)	    ; Register 15 contains the program counter
@@ -1409,10 +1413,23 @@
   ""
   "")
 
+(define_insn "procedure_entry_mask"
+  [(unspec_volatile [(match_operand 0 "const_int_operand")] VUNSPEC_PEM)]
+  ""
+  ".word %x0")
+
 (define_insn "return"
   [(return)]
   ""
   "ret")
+
+(define_expand "prologue"
+  [(const_int 0)]
+  ""
+{
+  vax_expand_prologue ();
+  DONE;
+})
 
 (define_expand "epilogue"
   [(return)]

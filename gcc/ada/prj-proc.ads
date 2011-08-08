@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@ package Prj.Proc is
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
-      Flags                  : Prj.Processing_Flags;
+      Env                    : in out Prj.Tree.Environment;
       Reset_Tree             : Boolean := True);
    --  Process a project tree (ie the direct resulting of parsing a .gpr file)
    --  based on the current external references.
@@ -57,7 +57,7 @@ package Prj.Proc is
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
-      Flags                  : Processing_Flags);
+      Env                    : Prj.Tree.Environment);
    --  Perform the second phase of the processing, filling the rest of the
    --  project with the information extracted from the project tree. This phase
    --  requires that the configuration file has already been parsed (in fact
@@ -71,8 +71,8 @@ package Prj.Proc is
       Success                : out Boolean;
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
-      Flags                  : Processing_Flags;
-      Reset_Tree             : Boolean       := True);
+      Env                    : in out Prj.Tree.Environment;
+      Reset_Tree             : Boolean := True);
    --  Performs the two phases of the processing
 
 end Prj.Proc;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -128,7 +128,7 @@ package body Urealp is
    --  U is a Ureal entry for which the base value is non-zero, the value
    --  returned is the equivalent decimal exponent value, i.e. the value of
    --  Den, adjusted as though the base were base 10. The value is rounded
-   --  to the nearest integer, and so can be one off.
+   --  toward zero (truncated), and so its value can be off by one.
 
    function Is_Integer (Num, Den : Uint) return Boolean;
    --  Return true if the real quotient of Num / Den is an integer value
@@ -149,7 +149,7 @@ package body Urealp is
 
    function Store_Ureal_Normalized (Val : Ureal_Entry) return Ureal;
    pragma Inline (Store_Ureal_Normalized);
-   --  Like Store_Ureal, but normalizes its operand first.
+   --  Like Store_Ureal, but normalizes its operand first
 
    -------------------------
    -- Decimal_Exponent_Hi --
@@ -244,29 +244,52 @@ package body Urealp is
 
    function Equivalent_Decimal_Exponent (U : Ureal_Entry) return Int is
 
-      --  The following table is a table of logs to the base 10
+      type Ratio is record
+         Num : Nat;
+         Den : Nat;
+      end record;
 
-      Logs : constant array (Nat range 1 .. 16) of Long_Float := (
-                1 => 0.000000000000000,
-                2 => 0.301029995663981,
-                3 => 0.477121254719662,
-                4 => 0.602059991327962,
-                5 => 0.698970004336019,
-                6 => 0.778151250383644,
-                7 => 0.845098040014257,
-                8 => 0.903089986991944,
-                9 => 0.954242509439325,
-               10 => 1.000000000000000,
-               11 => 1.041392685158230,
-               12 => 1.079181246047620,
-               13 => 1.113943352306840,
-               14 => 1.146128035678240,
-               15 => 1.176091259055680,
-               16 => 1.204119982655920);
+      --  The following table is a table of logs to the base 10. All values
+      --  have at least 15 digits of precision, and do not exceed the true
+      --  value. To avoid the use of floating point, and as a result potential
+      --  target dependency, each entry is represented as a fraction of two
+      --  integers.
+
+      Logs : constant array (Nat range 1 .. 16) of Ratio :=
+        (1 => (Num =>           0, Den =>            1),  -- 0
+         2 => (Num =>  15_392_313, Den =>   51_132_157),  -- 0.301029995663981
+         3 => (Num => 731_111_920, Den => 1532_339_867),  -- 0.477121254719662
+         4 => (Num =>  30_784_626, Den =>   51_132_157),  -- 0.602059991327962
+         5 => (Num => 111_488_153, Den =>  159_503_487),  -- 0.698970004336018
+         6 => (Num =>  84_253_929, Den =>  108_274_489),  -- 0.778151250383643
+         7 => (Num =>  35_275_468, Den =>   41_741_273),  -- 0.845098040014256
+         8 => (Num =>  46_176_939, Den =>   51_132_157),  -- 0.903089986991943
+         9 => (Num => 417_620_173, Den =>  437_645_744),  -- 0.954242509439324
+        10 => (Num =>           1, Den =>            1),  -- 1.000000000000000
+        11 => (Num => 136_507_510, Den =>  131_081_687),  -- 1.041392685158225
+        12 => (Num =>  26_797_783, Den =>   24_831_587),  -- 1.079181246047624
+        13 => (Num =>  73_333_297, Den =>   65_832_160),  -- 1.113943352306836
+        14 => (Num => 102_941_258, Den =>   89_816_543),  -- 1.146128035678238
+        15 => (Num =>  53_385_559, Den =>   45_392_361),  -- 1.176091259055681
+        16 => (Num =>  78_897_839, Den =>   65_523_237)); -- 1.204119982655924
+
+      function Scale (X : Int; R : Ratio) return Int;
+      --  Compute the value of X scaled by R
+
+      -----------
+      -- Scale --
+      -----------
+
+      function Scale (X : Int; R : Ratio) return Int is
+         type Wide_Int is range -2**63 .. 2**63 - 1;
+
+      begin
+         return Int (Wide_Int (X) * Wide_Int (R.Num) / Wide_Int (R.Den));
+      end Scale;
 
    begin
       pragma Assert (U.Rbase /= 0);
-      return Int (Long_Float (UI_To_Int (U.Den)) * Logs (U.Rbase));
+      return Scale (UI_To_Int (U.Den), Logs (U.Rbase));
    end Equivalent_Decimal_Exponent;
 
    ----------------

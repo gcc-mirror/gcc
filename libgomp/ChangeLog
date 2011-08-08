@@ -1,3 +1,150 @@
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgomp/49965
+	* testsuite/libgomp.c++/task-8.C: Replaced err by errval.
+
+2011-08-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/proc.h: New.
+	* config/linux/proc.c: Include "proc.h".  Do not include <sched.h>.
+	(gomp_cpuset_popcount): Rename from cpuset_popcount.  No more static.
+	(gomp_init_num_threads): Update call to cpuset_popcount.
+	(get_num_procs): Ditto.
+	* config/linux/affinity.c (gomp_init_affinity): Call
+	gomp_cpuset_popcount.
+
+2011-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/42041
+	PR fortran/46752
+	* omp.h.in (omp_in_final): New prototype.
+	* omp_lib.f90.in (omp_in_final): New interface.
+	(omp_integer_kind, omp_logical_kind): Remove
+	and replace all its uses in the module with 4.
+	(openmp_version): Change to 201107.
+	* omp_lib.h.in (omp_sched_static, omp_sched_dynamic,
+	omp_sched_guided, omp_sched_auto): Use omp_sched_kind
+	kind for the parameters.
+	(omp_in_final): New external.
+	(openmp_version): Change to 201107.
+	* task.c (omp_in_final): New function.
+	(gomp_init_task): Initialize final_task.
+	(GOMP_task): Remove unused attribute from flags.  Handle final
+	tasks.
+	(GOMP_taskyield): New function.
+	(omp_in_final): Return true if if (false) or final (true) task
+	or descendant of final (true).
+	* fortran.c (omp_in_final_): New function.
+	* libgomp.map (OMP_3.1): Export omp_in_final and omp_in_final_.
+	(GOMP_3.0): Export GOMP_taskyield.
+	* env.c (gomp_nthreads_var_list, gomp_nthreads_var_list_len): New
+	variables.
+	(parse_unsigned_long_list): New function.
+	(initialize_env): Use it for OMP_NUM_THREADS.  Call parse_boolean
+	with "OMP_PROC_BIND".  If OMP_PROC_BIND=true, call gomp_init_affinity
+	even if parse_affinity returned false.
+	* config/linux/affinity.c (gomp_init_affinity): Handle
+	gomp_cpu_affinity_len == 0.
+	* libgomp_g.h (GOMP_taskyield): New prototype.
+	* libgomp.h (struct gomp_task): Add final_task field.
+	(gomp_nthreads_var_list, gomp_nthreads_var_list_len): New externs.
+	* team.c (gomp_team_start): Override new task's nthreads_var icv
+	if list form OMP_NUM_THREADS has been used and it has value for
+	the new nesting level.
+
+	* testsuite/libgomp.c/atomic-11.c: New test.
+	* testsuite/libgomp.c/atomic-12.c: New test.
+	* testsuite/libgomp.c/atomic-13.c: New test.
+	* testsuite/libgomp.c/atomic-14.c: New test.
+	* testsuite/libgomp.c/reduction-6.c: New test.
+	* testsuite/libgomp.c/task-5.c: New test.
+	* testsuite/libgomp.c++/atomic-2.C: New test.
+	* testsuite/libgomp.c++/atomic-3.C: New test.
+	* testsuite/libgomp.c++/atomic-4.C: New test.
+	* testsuite/libgomp.c++/atomic-5.C: New test.
+	* testsuite/libgomp.c++/atomic-6.C: New test.
+	* testsuite/libgomp.c++/atomic-7.C: New test.
+	* testsuite/libgomp.c++/atomic-8.C: New test.
+	* testsuite/libgomp.c++/atomic-9.C: New test.
+	* testsuite/libgomp.c++/task-8.C: New test.
+	* testsuite/libgomp.c++/reduction-4.C: New test.
+	* testsuite/libgomp.fortran/allocatable7.f90: New test.
+	* testsuite/libgomp.fortran/allocatable8.f90: New test.
+	* testsuite/libgomp.fortran/crayptr3.f90: New test.
+	* testsuite/libgomp.fortran/omp_atomic3.f90: New test.
+	* testsuite/libgomp.fortran/omp_atomic4.f90: New test.
+	* testsuite/libgomp.fortran/pointer1.f90: New test.
+	* testsuite/libgomp.fortran/pointer2.f90: New test.
+	* testsuite/libgomp.fortran/task4.f90: New test.
+
+2011-08-02  Tobias Burnus  <burnus@net-b.de>
+
+	* libgomp.texi: Update OpenMP spec references to 3.1.
+	(omp_in_final,OMP_PROC_BIND): New sections.
+	(OMP_NUM_THREADS): Document that the value can be now a list.
+	(GOMP_STACKSIZE,GOMP_CPU_AFFINITY): Update @ref.
+
+2011-08-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/linux/x86/futex.h: Check __x86_64__ instead of
+	__LP64__.
+
+2011-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/49897
+	PR middle-end/49898
+	* testsuite/libgomp.c/pr49897-1.c: New test.
+	* testsuite/libgomp.c/pr49897-2.c: New test.
+	* testsuite/libgomp.c/pr49898-1.c: New test.
+	* testsuite/libgomp.c/pr49898-2.c: New test.
+
+2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Add -march=i486
+	for ia32 instead of ilp32.
+
+	* testsuite/libgomp.c/atomic-1.c: Require ia32 instead of ilp32.
+	* testsuite/libgomp.c/atomic-6.c: Likewise.
+
+2011-07-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* testsuite/libgomp.graphite/force-parallel-1.c: Un-xfail.
+	* testsuite/libgomp.graphite/force-parallel-2.c: Adjust pattern.
+
+2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgomp/45351
+	* config/osf/sem.h: New file.
+	* configure.tgt (alpha*-dec-osf*): Prepend osf to config_path.
+
+2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/49541
+	* testsuite/lib/libgomp.exp (libgomp_init): Don't add -lgomp to
+	ldflags.
+
+2011-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/wait.h (do_spin): New inline, largely copied
+	from do_wait, just don't do futex_wait here, instead return true if
+	it should be done.
+	(do_wait): Implement using do_spin.
+	* config/linux/mutex.h (gomp_mutex_lock_slow): Add an int argument
+	to prototype.
+	(gomp_mutex_lock): Use __sync_val_compare_and_swap instead of
+	__sync_bool_compare_and_swap, pass the oldval to
+	gomp_mutex_lock_slow.
+	* config/linux/mutex.c (gomp_mutex_lock_slow): Add oldval argument.
+	If all mutex contenders are just spinning and not sleeping, don't
+	change state to 2 unnecessarily.  Optimize the loop when state has
+	already become 2 to use just one atomic operation per loop instead
+	of two.
+	* config/linux/ia64/mutex.h (gomp_mutex_lock_slow): Add an int argument
+	to prototype.
+	(gomp_mutex_lock): Use __sync_val_compare_and_swap instead of
+	__sync_bool_compare_and_swap, pass the oldval to
+	gomp_mutex_lock_slow.
+
 2011-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/49490

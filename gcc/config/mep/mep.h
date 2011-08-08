@@ -428,9 +428,6 @@ enum reg_class
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
 	mep_secondary_memory_needed (CLASS1, CLASS2, MODE)
 
-#define CLASS_MAX_NREGS(CLASS, MODE) \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 #if 0
 #define CONST_OK_FOR_LETTER_P(VALUE, C) mep_const_ok_for_letter_p (VALUE, C)
 

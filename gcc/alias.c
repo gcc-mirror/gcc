@@ -162,7 +162,6 @@ static const_rtx fixed_scalar_and_varying_struct_p (const_rtx, const_rtx, rtx, r
 static int aliases_everything_p (const_rtx);
 static bool nonoverlapping_component_refs_p (const_tree, const_tree);
 static tree decl_for_component_ref (tree);
-static rtx adjust_offset_for_component_ref (tree, rtx);
 static int write_dependence_p (const_rtx, const_rtx, int);
 
 static void memory_modified_1 (rtx, const_rtx, void *);
@@ -313,10 +312,10 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 
   ref->ref_alias_set = MEM_ALIAS_SET (mem);
 
-  /* If MEM_OFFSET or MEM_SIZE are NULL we have to punt.
+  /* If MEM_OFFSET or MEM_SIZE are unknown we have to punt.
      Keep points-to related information though.  */
-  if (!MEM_OFFSET (mem)
-      || !MEM_SIZE (mem))
+  if (!MEM_OFFSET_KNOWN_P (mem)
+      || !MEM_SIZE_KNOWN_P (mem))
     {
       ref->ref = NULL_TREE;
       ref->offset = 0;
@@ -328,13 +327,12 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   /* If the base decl is a parameter we can have negative MEM_OFFSET in
      case of promoted subregs on bigendian targets.  Trust the MEM_EXPR
      here.  */
-  if (INTVAL (MEM_OFFSET (mem)) < 0
-      && ((INTVAL (MEM_SIZE (mem)) + INTVAL (MEM_OFFSET (mem)))
-	  * BITS_PER_UNIT) == ref->size)
+  if (MEM_OFFSET (mem) < 0
+      && (MEM_SIZE (mem) + MEM_OFFSET (mem)) * BITS_PER_UNIT == ref->size)
     return true;
 
-  ref->offset += INTVAL (MEM_OFFSET (mem)) * BITS_PER_UNIT;
-  ref->size = INTVAL (MEM_SIZE (mem)) * BITS_PER_UNIT;
+  ref->offset += MEM_OFFSET (mem) * BITS_PER_UNIT;
+  ref->size = MEM_SIZE (mem) * BITS_PER_UNIT;
 
   /* The MEM may extend into adjacent fields, so adjust max_size if
      necessary.  */
@@ -2201,34 +2199,33 @@ decl_for_component_ref (tree x)
   return x && DECL_P (x) ? x : NULL_TREE;
 }
 
-/* Walk up the COMPONENT_REF list and adjust OFFSET to compensate for the
-   offset of the field reference.  */
+/* Walk up the COMPONENT_REF list in X and adjust *OFFSET to compensate
+   for the offset of the field reference.  *KNOWN_P says whether the
+   offset is known.  */
 
-static rtx
-adjust_offset_for_component_ref (tree x, rtx offset)
+static void
+adjust_offset_for_component_ref (tree x, bool *known_p,
+				 HOST_WIDE_INT *offset)
 {
-  HOST_WIDE_INT ioffset;
-
-  if (! offset)
-    return NULL_RTX;
-
-  ioffset = INTVAL (offset);
+  if (!*known_p)
+    return;
   do
     {
-      tree offset = component_ref_field_offset (x);
+      tree xoffset = component_ref_field_offset (x);
       tree field = TREE_OPERAND (x, 1);
 
-      if (! host_integerp (offset, 1))
-	return NULL_RTX;
-      ioffset += (tree_low_cst (offset, 1)
+      if (! host_integerp (xoffset, 1))
+	{
+	  *known_p = false;
+	  return;
+	}
+      *offset += (tree_low_cst (xoffset, 1)
 		  + (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
 		     / BITS_PER_UNIT));
 
       x = TREE_OPERAND (x, 0);
     }
   while (x && TREE_CODE (x) == COMPONENT_REF);
-
-  return GEN_INT (ioffset);
 }
 
 /* Return nonzero if we can determine the exprs corresponding to memrefs
@@ -2241,7 +2238,8 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
   tree exprx = MEM_EXPR (x), expry = MEM_EXPR (y);
   rtx rtlx, rtly;
   rtx basex, basey;
-  rtx moffsetx, moffsety;
+  bool moffsetx_known_p, moffsety_known_p;
+  HOST_WIDE_INT moffsetx = 0, moffsety = 0;
   HOST_WIDE_INT offsetx = 0, offsety = 0, sizex, sizey, tem;
 
   /* Unless both have exprs, we can't tell anything.  */
@@ -2250,9 +2248,9 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
 
   /* For spill-slot accesses make sure we have valid offsets.  */
   if ((exprx == get_spill_slot_decl (false)
-       && ! MEM_OFFSET (x))
+       && ! MEM_OFFSET_KNOWN_P (x))
       || (expry == get_spill_slot_decl (false)
-	  && ! MEM_OFFSET (y)))
+	  && ! MEM_OFFSET_KNOWN_P (y)))
     return 0;
 
   /* If both are field references, we may be able to determine something.  */
@@ -2263,23 +2261,27 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
 
 
   /* If the field reference test failed, look at the DECLs involved.  */
-  moffsetx = MEM_OFFSET (x);
+  moffsetx_known_p = MEM_OFFSET_KNOWN_P (x);
+  if (moffsetx_known_p)
+    moffsetx = MEM_OFFSET (x);
   if (TREE_CODE (exprx) == COMPONENT_REF)
     {
       tree t = decl_for_component_ref (exprx);
       if (! t)
 	return 0;
-      moffsetx = adjust_offset_for_component_ref (exprx, moffsetx);
+      adjust_offset_for_component_ref (exprx, &moffsetx_known_p, &moffsetx);
       exprx = t;
     }
 
-  moffsety = MEM_OFFSET (y);
+  moffsety_known_p = MEM_OFFSET_KNOWN_P (y);
+  if (moffsety_known_p)
+    moffsety = MEM_OFFSET (y);
   if (TREE_CODE (expry) == COMPONENT_REF)
     {
       tree t = decl_for_component_ref (expry);
       if (! t)
 	return 0;
-      moffsety = adjust_offset_for_component_ref (expry, moffsety);
+      adjust_offset_for_component_ref (expry, &moffsety_known_p, &moffsety);
       expry = t;
     }
 
@@ -2338,26 +2340,26 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
     return 0;              
 
   sizex = (!MEM_P (rtlx) ? (int) GET_MODE_SIZE (GET_MODE (rtlx))
-	   : MEM_SIZE (rtlx) ? INTVAL (MEM_SIZE (rtlx))
+	   : MEM_SIZE_KNOWN_P (rtlx) ? MEM_SIZE (rtlx)
 	   : -1);
   sizey = (!MEM_P (rtly) ? (int) GET_MODE_SIZE (GET_MODE (rtly))
-	   : MEM_SIZE (rtly) ? INTVAL (MEM_SIZE (rtly)) :
-	   -1);
+	   : MEM_SIZE_KNOWN_P (rtly) ? MEM_SIZE (rtly)
+	   : -1);
 
   /* If we have an offset for either memref, it can update the values computed
      above.  */
-  if (moffsetx)
-    offsetx += INTVAL (moffsetx), sizex -= INTVAL (moffsetx);
-  if (moffsety)
-    offsety += INTVAL (moffsety), sizey -= INTVAL (moffsety);
+  if (moffsetx_known_p)
+    offsetx += moffsetx, sizex -= moffsetx;
+  if (moffsety_known_p)
+    offsety += moffsety, sizey -= moffsety;
 
   /* If a memref has both a size and an offset, we can use the smaller size.
      We can't do this if the offset isn't known because we must view this
      memref as being anywhere inside the DECL's MEM.  */
-  if (MEM_SIZE (x) && moffsetx)
-    sizex = INTVAL (MEM_SIZE (x));
-  if (MEM_SIZE (y) && moffsety)
-    sizey = INTVAL (MEM_SIZE (y));
+  if (MEM_SIZE_KNOWN_P (x) && moffsetx_known_p)
+    sizex = MEM_SIZE (x);
+  if (MEM_SIZE_KNOWN_P (y) && moffsety_known_p)
+    sizey = MEM_SIZE (y);
 
   /* Put the values of the memref with the lower offset in X's values.  */
   if (offsetx > offsety)

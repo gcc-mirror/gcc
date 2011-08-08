@@ -179,7 +179,6 @@ struct head
 bool vflag;				/* true if -v or --version */ 
 static int rflag;			/* true if -r */
 static int strip_flag;			/* true if -s */
-static const char *demangle_flag;
 #ifdef COLLECT_EXPORT_LIST
 static int export_flag;                 /* true if -bE */
 static int aix64_flag;			/* true if -b64 */
@@ -1112,10 +1111,12 @@ main (int argc, char **argv)
 
   num_c_args = argc + 9;
 
+#ifndef HAVE_LD_DEMANGLE
   no_demangle = !! getenv ("COLLECT_NO_DEMANGLE");
 
   /* Suppress demangling by the real linker, which may be broken.  */
-  putenv (xstrdup ("COLLECT_NO_DEMANGLE="));
+  putenv (xstrdup ("COLLECT_NO_DEMANGLE=1"));
+#endif
 
 #if defined (COLLECT2_HOST_INITIALIZATION)
   /* Perform system dependent initialization, if necessary.  */
@@ -1405,12 +1406,6 @@ main (int argc, char **argv)
   /* After the first file, put in the c++ rt0.  */
 
   first_file = 1;
-#ifdef HAVE_LD_DEMANGLE
-  if (!demangle_flag && !no_demangle)
-    demangle_flag = "--demangle";
-  if (demangle_flag)
-    *ld1++ = *ld2++ = demangle_flag;
-#endif
   while ((arg = *++argv) != (char *) 0)
     {
       *ld1++ = *ld2++ = arg;
@@ -1514,16 +1509,16 @@ main (int argc, char **argv)
 	    case '-':
 	      if (strcmp (arg, "--no-demangle") == 0)
 		{
-		  demangle_flag = arg;
+#ifndef HAVE_LD_DEMANGLE
 		  no_demangle = 1;
 		  ld1--;
 		  ld2--;
+#endif
 		}
 	      else if (strncmp (arg, "--demangle", 10) == 0)
 		{
-		  demangle_flag = arg;
-		  no_demangle = 0;
 #ifndef HAVE_LD_DEMANGLE
+		  no_demangle = 0;
 		  if (arg[10] == '=')
 		    {
 		      enum demangling_styles style
@@ -1533,9 +1528,9 @@ main (int argc, char **argv)
 		      else
 			current_demangling_style = style;
 		    }
-#endif
 		  ld1--;
 		  ld2--;
+#endif
 		}
 	      else if (strncmp (arg, "--sysroot=", 10) == 0)
 		target_system_root = arg + 10;

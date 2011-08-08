@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target fpic } */
-/* { dg-skip-if "" { *-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { *-*-darwin* *-*-mingw* } { "*" } { "" } } */
 /* { dg-options "-O2 -fno-common -fpic -fdump-tree-optimized" } */
 
 const int conststaticvariable;

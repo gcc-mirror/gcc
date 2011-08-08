@@ -285,9 +285,8 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
 				  TYPE_SIZE_UNIT (TREE_TYPE (op0)));
     }
 
-  addr_base = fold_build2_loc (loc, POINTER_PLUS_EXPR,
-			       TREE_TYPE (DR_BASE_ADDRESS (dr)),
-			       DR_BASE_ADDRESS (dr), addr_base);
+  addr_base = fold_build_pointer_plus_loc (loc,
+					   DR_BASE_ADDRESS (dr), addr_base);
   mem = force_gimple_operand (addr_base, &stmts, true, NULL);
   gimple_seq_add_seq (&stmt_list, stmts);
 

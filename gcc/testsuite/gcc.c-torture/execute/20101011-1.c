@@ -12,6 +12,9 @@
 #elif defined (__sh__)
   /* On SH division by zero does not trap.  */
 # define DO_TEST 0
+#elif defined (__TMS320C6X__)
+  /* On TI C6X division by zero does not trap.  */
+# define DO_TEST 0
 #elif defined (__mips__) && !defined(__linux__)
   /* MIPS divisions do trap by default, but libgloss targets do not
      intercept the trap and raise a SIGFPE.  The same is probably

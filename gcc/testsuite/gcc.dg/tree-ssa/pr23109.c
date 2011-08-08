@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funsafe-math-optimizations -ftrapping-math -fdump-tree-recip -fdump-tree-lim" } */
+/* { dg-options "-O2 -funsafe-math-optimizations -ftrapping-math -fdump-tree-recip -fdump-tree-lim1" } */
 /* { dg-warning "-fassociative-math disabled" "" { target *-*-* } 1 } */
 
 double F[2] = { 0., 0. }, e = 0.;
@@ -32,5 +32,5 @@ int main()
 /* { dg-final { scan-tree-dump-not "reciptmp" "lim1" } } */
 /* { dg-final { scan-tree-dump-not "reciptmp" "recip" } } */
 /* { dg-final { cleanup-tree-dump "recip" } } */
-/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "lim1" } } */
 

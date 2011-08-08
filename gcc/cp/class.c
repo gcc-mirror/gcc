@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-dump.h"
 #include "splay-tree.h"
+#include "pointer-set.h"
 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */
@@ -373,8 +374,7 @@ build_base_path (enum tree_code code,
                                                             tf_warning_or_error),
 				     TREE_TYPE (TREE_TYPE (expr)));
 
-      v_offset = build2 (POINTER_PLUS_EXPR, TREE_TYPE (v_offset),
-			 v_offset, fold_convert (sizetype, BINFO_VPTR_FIELD (v_binfo)));
+      v_offset = fold_build_pointer_plus (v_offset, BINFO_VPTR_FIELD (v_binfo));
       v_offset = build1 (NOP_EXPR,
 			 build_pointer_type (ptrdiff_type_node),
 			 v_offset);
@@ -412,7 +412,7 @@ build_base_path (enum tree_code code,
       offset = fold_convert (sizetype, offset);
       if (code == MINUS_EXPR)
 	offset = fold_build1_loc (input_location, NEGATE_EXPR, sizetype, offset);
-      expr = build2 (POINTER_PLUS_EXPR, ptr_target_type, expr, offset);
+      expr = fold_build_pointer_plus (expr, offset);
     }
   else
     null_test = NULL;
@@ -539,10 +539,6 @@ convert_to_base_statically (tree expr, tree base)
   expr_type = TREE_TYPE (expr);
   if (!SAME_BINFO_TYPE_P (BINFO_TYPE (base), expr_type))
     {
-      tree pointer_type;
-
-      pointer_type = build_pointer_type (expr_type);
-
       /* We use fold_build2 and fold_convert below to simplify the trees
 	 provided to the optimizers.  It is not safe to call these functions
 	 when processing a template because they do not handle C++-specific
@@ -550,9 +546,8 @@ convert_to_base_statically (tree expr, tree base)
       gcc_assert (!processing_template_decl);
       expr = cp_build_addr_expr (expr, tf_warning_or_error);
       if (!integer_zerop (BINFO_OFFSET (base)))
-        expr = fold_build2_loc (input_location,
-			    POINTER_PLUS_EXPR, pointer_type, expr,
-			    fold_convert (sizetype, BINFO_OFFSET (base)));
+        expr = fold_build_pointer_plus_loc (input_location,
+					    expr, BINFO_OFFSET (base));
       expr = fold_convert (build_pointer_type (BINFO_TYPE (base)), expr);
       expr = build_fold_indirect_ref_loc (input_location, expr);
     }
@@ -4566,12 +4561,10 @@ finalize_literal_type_property (tree t)
   tree fn;
 
   if (cxx_dialect < cxx0x
-      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
-      /* FIXME These constraints seem unnecessary; remove from standard.
-	 || !TYPE_HAS_TRIVIAL_COPY_CTOR (t)
-	 || TYPE_HAS_COMPLEX_MOVE_CTOR (t)*/ )
+      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
+	   && CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
 
@@ -4584,8 +4577,71 @@ finalize_literal_type_property (tree t)
 	{
 	  DECL_DECLARED_CONSTEXPR_P (fn) = false;
 	  if (!DECL_TEMPLATE_INFO (fn))
-	    error ("enclosing class of %q+#D is not a literal type", fn);
+	    {
+	      error ("enclosing class of constexpr non-static member "
+		     "function %q+#D is not a literal type", fn);
+	      explain_non_literal_class (t);
+	    }
 	}
+}
+
+/* T is a non-literal type used in a context which requires a constant
+   expression.  Explain why it isn't literal.  */
+
+void
+explain_non_literal_class (tree t)
+{
+  static struct pointer_set_t *diagnosed;
+
+  if (!CLASS_TYPE_P (t))
+    return;
+  t = TYPE_MAIN_VARIANT (t);
+
+  if (diagnosed == NULL)
+    diagnosed = pointer_set_create ();
+  if (pointer_set_insert (diagnosed, t) != 0)
+    /* Already explained.  */
+    return;
+
+  inform (0, "%q+T is not literal because:", t);
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+    inform (0, "  %q+T has a non-trivial destructor", t);
+  else if (CLASSTYPE_NON_AGGREGATE (t)
+	   && !TYPE_HAS_TRIVIAL_DFLT (t)
+	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
+    inform (0, "  %q+T is not an aggregate, does not have a trivial "
+	    "default constructor, and has no constexpr constructor that "
+	    "is not a copy or move constructor", t);
+  else
+    {
+      tree binfo, base_binfo, field; int i;
+      for (binfo = TYPE_BINFO (t), i = 0;
+	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+	{
+	  tree basetype = TREE_TYPE (base_binfo);
+	  if (!CLASSTYPE_LITERAL_P (basetype))
+	    {
+	      inform (0, "  base class %qT of %q+T is non-literal",
+		      basetype, t);
+	      explain_non_literal_class (basetype);
+	      return;
+	    }
+	}
+      for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+	{
+	  tree ftype;
+	  if (TREE_CODE (field) != FIELD_DECL)
+	    continue;
+	  ftype = TREE_TYPE (field);
+	  if (!literal_type_p (ftype))
+	    {
+	      inform (0, "  non-static data member %q+D has "
+		      "non-literal type", field);
+	      if (CLASS_TYPE_P (ftype))
+		explain_non_literal_class (ftype);
+	    }
+	}
+    }
 }
 
 /* Check the validity of the bases and members declared in T.  Add any
@@ -6063,9 +6119,6 @@ restore_class_cache (void)
    So that we may avoid calls to lookup_name, we cache the _TYPE
    nodes of local TYPE_DECLs in the TREE_TYPE field of the name.
 
-   For use by push_access_scope, we allow TYPE to be null to temporarily
-   push out of class scope.  This does not actually change binding levels.
-
    For multiple inheritance, we perform a two-pass depth-first search
    of the type lattice.  */
 
@@ -6073,6 +6126,8 @@ void
 pushclass (tree type)
 {
   class_stack_node_t csn;
+
+  type = TYPE_MAIN_VARIANT (type);
 
   /* Make sure there is enough room for the new entry on the stack.  */
   if (current_class_depth + 1 >= current_class_stack_size)
@@ -6091,15 +6146,6 @@ pushclass (tree type)
   csn->names_used = 0;
   csn->hidden = 0;
   current_class_depth++;
-
-  if (type == NULL_TREE)
-    {
-      current_class_name = current_class_type = NULL_TREE;
-      csn->hidden = true;
-      return;
-    }
-
-  type = TYPE_MAIN_VARIANT (type);
 
   /* Now set up the new type.  */
   current_class_name = TYPE_NAME (type);
@@ -6145,11 +6191,7 @@ invalidate_class_lookup_cache (void)
 void
 popclass (void)
 {
-  if (current_class_type)
-    poplevel_class ();
-  else
-    gcc_assert (current_class_depth
-		&& current_class_stack[current_class_depth - 1].hidden);
+  poplevel_class ();
 
   current_class_depth--;
   current_class_name = current_class_stack[current_class_depth].name;
@@ -6522,7 +6564,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	  targs = make_tree_vec (DECL_NTPARMS (fn));
 	  if (fn_type_unification (fn, explicit_targs, targs, args, nargs,
 				   target_ret_type, DEDUCE_EXACT,
-				   LOOKUP_NORMAL))
+				   LOOKUP_NORMAL, false))
 	    /* Argument deduction failed.  */
 	    continue;
 
@@ -7785,13 +7827,10 @@ dfs_accumulate_vtbl_inits (tree binfo,
 
       /* Figure out the position to which the VPTR should point.  */
       vtbl = build1 (ADDR_EXPR, vtbl_ptr_type_node, orig_vtbl);
-      index = size_binop (PLUS_EXPR,
-			  size_int (non_fn_entries),
-			  size_int (n_inits));
       index = size_binop (MULT_EXPR,
 			  TYPE_SIZE_UNIT (vtable_entry_type),
-			  index);
-      vtbl = build2 (POINTER_PLUS_EXPR, TREE_TYPE (vtbl), vtbl, index);
+			  size_int (non_fn_entries + n_inits));
+      vtbl = fold_build_pointer_plus (vtbl, index);
     }
 
   if (ctor_vtbl_p)

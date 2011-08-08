@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -118,12 +118,16 @@ package Sem_Elab is
    --  the resulting code does not contain subprogram specs with no
    --  corresponding bodies.
 
-   procedure Check_Elab_Call (N : Node_Id; Outer_Scope : Entity_Id := Empty);
+   procedure Check_Elab_Call
+     (N            : Node_Id;
+      Outer_Scope  : Entity_Id := Empty;
+      In_Init_Proc : Boolean   := False);
    --  Check a call for possible elaboration problems. The node N is either
    --  an N_Function_Call or N_Procedure_Call_Statement node. The Outer_Scope
    --  argument indicates whether this is an outer level call from Sem_Res
    --  (Outer_Scope set to Empty), or an internal recursive call (Outer_Scope
-   --  set to entity of outermost call, see body).
+   --  set to entity of outermost call, see body). Flag In_Init_Proc should be
+   --  set whenever the current context is a type init proc.
 
    procedure Check_Elab_Calls;
    --  Not all the processing for Check_Elab_Call can be done at the time

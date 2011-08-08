@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,7 +111,12 @@ package body System.Pool_Local is
    begin
       if Prev (Allocated).all = Null_Address then
          Pool.First := Next (Allocated).all;
-         Prev (Pool.First).all := Null_Address;
+
+         --  Comment needed
+
+         if Pool.First /= Null_Address then
+            Prev (Pool.First).all := Null_Address;
+         end if;
       else
          Next (Prev (Allocated).all).all := Next (Allocated).all;
       end if;

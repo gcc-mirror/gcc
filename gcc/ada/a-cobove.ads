@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -322,7 +322,7 @@ private
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
    type Vector (Capacity : Count_Type) is tagged record
-      Elements : Elements_Array (1 .. Capacity);
+      Elements : Elements_Array (1 .. Capacity) := (others => <>);
       Last     : Extended_Index := No_Index;
       Busy     : Natural := 0;
       Lock     : Natural := 0;

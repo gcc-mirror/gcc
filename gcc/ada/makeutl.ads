@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,25 +23,27 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package contains various subprograms used by the builders, in
+--  particular those subprograms related to project management and build
+--  queue management.
+
 with ALI;
-with Namet; use Namet;
+with Namet;    use Namet;
 with Opt;
 with Osint;
-with Prj;   use Prj;
+with Prj;      use Prj;
 with Prj.Tree;
-with Types; use Types;
+with Types;    use Types;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package Makeutl is
 
    type Fail_Proc is access procedure (S : String);
-   Do_Fail : Fail_Proc := Osint.Fail'Access;
-   --  Failing procedure called from procedure Test_If_Relative_Path below. May
-   --  be redirected.
+   --  Pointer to procedure which outputs a failure message
 
-   Project_Tree : constant Project_Tree_Ref := new Project_Tree_Data;
-   --  The project tree
+   On_Windows : constant Boolean := Directory_Separator = '\';
+   --  True when on Windows
 
    Source_Info_Option : constant String := "--source-info=";
    --  Switch to indicate the source info file
@@ -73,7 +75,8 @@ package Makeutl is
       Last   : in out Natural);
    --  Add a string to a list of strings
 
-   function Create_Binder_Mapping_File return Path_Name_Type;
+   function Create_Binder_Mapping_File
+     (Project_Tree : Project_Tree_Ref) return Path_Name_Type;
    --  Create a binder mapping file and returns its path name
 
    function Create_Name (Name : String) return File_Name_Type;
@@ -99,21 +102,29 @@ package Makeutl is
    --  Prints out the program name followed by a colon, N and S
 
    function File_Not_A_Source_Of
-     (Uname : Name_Id;
-      Sfile : File_Name_Type) return Boolean;
+     (Project_Tree : Project_Tree_Ref;
+      Uname        : Name_Id;
+      Sfile        : File_Name_Type) return Boolean;
    --  Check that file name Sfile is one of the source of unit Uname. Returns
    --  True if the unit is in one of the project file, but the file name is not
    --  one of its source. Returns False otherwise.
 
    function Check_Source_Info_In_ALI
-     (The_ALI : ALI.ALI_Id;
-      Tree    : Project_Tree_Ref) return Boolean;
+     (The_ALI      : ALI.ALI_Id;
+      Tree         : Project_Tree_Ref) return Boolean;
    --  Check whether all file references in ALI are still valid (i.e. the
    --  source files are still associated with the same units). Return True
    --  if everything is still valid.
 
+   function Is_Subunit (Source : Source_Id) return Boolean;
+   --  Return True if source is a subunit
+
+   procedure Initialize_Source_Record (Source : Source_Id);
+   --  Get information either about the source file, or the object and
+   --  dependency file, as well as their timestamps.
+
    function Is_External_Assignment
-     (Tree : Prj.Tree.Project_Node_Tree_Ref;
+     (Env  : Prj.Tree.Environment;
       Argv : String) return Boolean;
    --  Verify that an external assignment switch is syntactically correct
    --
@@ -148,16 +159,40 @@ package Makeutl is
    --  is printed last. Both N1 and N2 are printed in quotation marks. The two
    --  forms differ only in taking Name_Id or File_name_Type arguments.
 
+   procedure Get_Switches
+     (Source       : Source_Id;
+      Pkg_Name     : Name_Id;
+      Project_Tree : Project_Tree_Ref;
+      Value        : out Variable_Value;
+      Is_Default   : out Boolean);
+   procedure Get_Switches
+     (Source_File         : File_Name_Type;
+      Source_Lang         : Name_Id;
+      Source_Prj          : Project_Id;
+      Pkg_Name            : Name_Id;
+      Project_Tree        : Project_Tree_Ref;
+      Value               : out Variable_Value;
+      Is_Default          : out Boolean;
+      Test_Without_Suffix : Boolean := False;
+      Check_ALI_Suffix    : Boolean := False);
+   --  Compute the switches (Compilation switches for instance) for the given
+   --  file. This checks various attributes to see if there are file specific
+   --  switches, or else defaults on the switches for the corresponding
+   --  language. Is_Default is set to False if there were file-specific
+   --  switches Source_File can be set to No_File to force retrieval of the
+   --  default switches. If Test_Without_Suffix is True, and there is no " for
+   --  Switches(Source_File) use", then this procedure also tests without the
+   --  extension of the filename. If Test_Without_Suffix is True and
+   --  Check_ALI_Suffix is True, then we also replace the file extension with
+   --  ".ali" when testing.
+
    function Linker_Options_Switches
      (Project  : Project_Id;
+      Do_Fail  : Fail_Proc;
       In_Tree  : Project_Tree_Ref) return String_List;
    --  Collect the options specified in the Linker'Linker_Options attributes
    --  of project Project, in project tree In_Tree, and in the projects that
    --  it imports directly or indirectly, and returns the result.
-
-   --  Package Mains is used to store the mains specified on the command line
-   --  and to retrieve them when a project file is used, to verify that the
-   --  files exist and that they belong to a project file.
 
    function Unit_Index_Of (ALI_File : File_Name_Type) return Int;
    --  Find the index of a unit in a source file. Return zero if the file is
@@ -166,76 +201,319 @@ package Makeutl is
    procedure Test_If_Relative_Path
      (Switch               : in out String_Access;
       Parent               : String;
+      Do_Fail              : Fail_Proc;
       Including_L_Switch   : Boolean := True;
       Including_Non_Switch : Boolean := True;
       Including_RTS        : Boolean := False);
-   --  Test if Switch is a relative search path switch. If it is, fail if
-   --  Parent is the empty string, otherwise prepend the path with Parent.
-   --  This subprogram is only called when using project files. For gnatbind
-   --  switches, Including_L_Switch is False, because the argument of the -L
-   --  switch is not a path. If Including_RTS is True, process also switches
-   --  --RTS=.
+   --  Test if Switch is a relative search path switch. If so, fail if Parent
+   --  is the empty string, otherwise prepend the path with Parent. This
+   --  subprogram is only used when using project files. For gnatbind switches,
+   --  Including_L_Switch is False, because the argument of the -L switch is
+   --  not a path. If Including_RTS is True, process also switches --RTS=.
+   --  Do_Fail is called in case of error. Using Osint.Fail might be
+   --  appropriate.
 
    function Path_Or_File_Name (Path : Path_Name_Type) return String;
    --  Returns a file name if -df is used, otherwise return a path name
+
+   -------------------------
+   -- Program termination --
+   -------------------------
+
+   procedure Fail_Program
+     (Project_Tree   : Project_Tree_Ref;
+      S              : String;
+      Flush_Messages : Boolean := True);
+   --  Terminate program with a message and a fatal status code
+
+   procedure Finish_Program
+     (Project_Tree : Project_Tree_Ref;
+      Exit_Code    : Osint.Exit_Code_Type := Osint.E_Success;
+      S            : String := "");
+   --  Terminate program, with or without a message, setting the status code
+   --  according to Fatal. This properly removes all temporary files.
+
+   --------------
+   -- Switches --
+   --------------
+
+   generic
+      with function Add_Switch
+        (Switch      : String;
+         For_Lang    : Name_Id;
+         For_Builder : Boolean;
+         Has_Global_Compilation_Switches : Boolean) return Boolean;
+      --  For_Builder is true if we have a builder switch
+      --  This function should return True in case of success (the switch is
+      --  valid), False otherwise. The error message will be displayed by
+      --  Compute_Builder_Switches itself.
+      --  Has_Global_Compilation_Switches is True if the attribute
+      --  Global_Compilation_Switches is defined in the project.
+
+   procedure Compute_Builder_Switches
+     (Project_Tree     : Project_Tree_Ref;
+      Root_Environment : in out Prj.Tree.Environment;
+      Main_Project     : Project_Id;
+      Only_For_Lang    : Name_Id := No_Name);
+   --  Compute the builder switches and global compilation switches.
+   --  Every time a switch is found in the project, it is passed to Add_Switch.
+   --  You can provide a value for Only_For_Lang so that we only look for
+   --  this language when parsing the global compilation switches.
+
+   -----------------------
+   -- Project_Tree data --
+   -----------------------
+
+   --  The following types are specific to builders, and associated with each
+   --  of the loaded project trees.
+
+   type Binding_Data_Record;
+   type Binding_Data is access Binding_Data_Record;
+   type Binding_Data_Record is record
+      Language           : Language_Ptr;
+      Language_Name      : Name_Id;
+      Binder_Driver_Name : File_Name_Type;
+      Binder_Driver_Path : String_Access;
+      Binder_Prefix      : Name_Id;
+      Next               : Binding_Data;
+   end record;
+   --  Data for a language that have a binder driver
+
+   type Builder_Project_Tree_Data is new Project_Tree_Appdata with record
+      Binding : Binding_Data;
+
+      There_Are_Binder_Drivers : Boolean := False;
+      --  True when there is a binder driver. Set by Get_Configuration when
+      --  an attribute Language_Processing'Binder_Driver is declared.
+      --  Reset to False if there are no sources of the languages with binder
+      --  drivers.
+
+      Number_Of_Mains : Natural := 0;
+      --  Number of main units in this project tree
+
+      Closure_Needed : Boolean := False;
+      --  If True, we need to add the closure of the file we just compiled to
+      --  the queue. If False, it is assumed that all files are already on the
+      --  queue so we do not waste time computing the closure.
+
+      Need_Compilation : Boolean := True;
+      Need_Binding     : Boolean := True;
+      Need_Linking     : Boolean := True;
+      --  Which of the compilation phases are needed for this project tree.
+   end record;
+   type Builder_Data_Access is access all Builder_Project_Tree_Data;
+
+   procedure Free (Data : in out Builder_Project_Tree_Data);
+   --  Free all memory allocated for Data
+
+   function Builder_Data (Tree : Project_Tree_Ref) return Builder_Data_Access;
+   --  Return (allocate if needed) tree-specific data
+
+   procedure Compute_Compilation_Phases
+     (Tree                  : Project_Tree_Ref;
+      Root_Project          : Project_Id;
+      Option_Unique_Compile : Boolean := False;   --  Was "-u" specified ?
+      Option_Compile_Only   : Boolean := False;   --  Was "-c" specified ?
+      Option_Bind_Only      : Boolean := False;
+      Option_Link_Only      : Boolean := False);
+   --  Compute which compilation phases will be needed for Tree. This also does
+   --  the computation for aggregated trees. This also check whether we'll need
+   --  to check the closure of the files we have just compiled to add them to
+   --  the queue.
 
    -----------
    -- Mains --
    -----------
 
+   --  Package Mains is used to store the mains specified on the command line
+   --  and to retrieve them when a project file is used, to verify that the
+   --  files exist and that they belong to a project file.
+
    --  Mains are stored in a table. An index is used to retrieve the mains
    --  from the table.
 
+   type Main_Info is record
+      File      : File_Name_Type;  --  Always canonical casing
+      Index     : Int := 0;
+      Location  : Source_Ptr := No_Location;
+
+      Source    : Prj.Source_Id := No_Source;
+      Project   : Project_Id;
+      Tree      : Project_Tree_Ref;
+   end record;
+
+   No_Main_Info : constant Main_Info :=
+                    (No_File, 0, No_Location, No_Source, No_Project, null);
+
    package Mains is
-
-      procedure Add_Main (Name : String);
-      --  Add one main to the table
-
-      procedure Set_Index (Index : Int);
-
-      procedure Set_Location (Location : Source_Ptr);
-      --  Set the location of the last main added. By default, the location is
-      --  No_Location.
+      procedure Add_Main
+        (Name     : String;
+         Index    : Int := 0;
+         Location : Source_Ptr := No_Location;
+         Project  : Project_Id := No_Project;
+         Tree     : Project_Tree_Ref := null);
+      --  Add one main to the table. This is in general used to add the main
+      --  files specified on the command line. Index is used for multi-unit
+      --  source files, and indicates which unit in the source is concerned.
+      --  Location is the location within the project file (if a project file
+      --  is used). Project and Tree indicate to which project the main should
+      --  belong. In particular, for aggregate projects, this isn't necessarily
+      --  the main project tree. These can be set to No_Project and null when
+      --  not using projects.
 
       procedure Delete;
       --  Empty the table
 
       procedure Reset;
-      --  Reset the index to the beginning of the table
+      --  Reset the cursor to the beginning of the table
+
+      procedure Set_Multi_Unit_Index
+        (Project_Tree : Project_Tree_Ref := null;
+         Index        : Int := 0);
+      --  If a single main file was defined, this subprogram indicates which
+      --  unit inside it is the main (case of a multi-unit source files).
+      --  Errors are raised if zero or more than one main file was defined,
+      --  and Index is non-zaero. This subprogram is used for the handling
+      --  of the command line switch.
 
       function Next_Main return String;
-      --  Increase the index and return the next main. If table is exhausted,
-      --  return an empty string.
+      function Next_Main return Main_Info;
+      --  Moves the cursor forward and returns the new current entry. Returns
+      --  No_Main_Info there are no more mains in the table.
 
-      function Get_Index return Int;
+      function Number_Of_Mains (Tree : Project_Tree_Ref) return Natural;
+      --  Returns the number of mains in this project tree (if Tree is null, it
+      --  returns the total number of project trees)
 
-      function Get_Location return Source_Ptr;
-      --  Get the location of the current main
+      procedure Fill_From_Project
+        (Root_Project : Project_Id;
+         Project_Tree : Project_Tree_Ref);
+      --  If no main was already added (presumably from the command line), add
+      --  the main units from root_project (or in the case of an aggregate
+      --  project from all the aggregated projects).
 
-      procedure Update_Main (Name : String);
-      --  Update the file name of the current main
-
-      function Number_Of_Mains return Natural;
-      --  Returns the number of mains added with Add_Main since the last call
-      --  to Delete.
+      procedure Complete_Mains
+        (Flags        : Processing_Flags;
+         Root_Project : Project_Id;
+         Project_Tree : Project_Tree_Ref);
+      --  If some main units were already added from the command line, check
+      --  that they all belong to the root project, and that they are full
+      --  paths rather than (partial) base names (e.g. no body suffix was
+      --  specified).
 
    end Mains;
 
-   ----------------------
-   -- Marking Routines --
-   ----------------------
+   -----------
+   -- Queue --
+   -----------
 
-   procedure Mark (Source_File : File_Name_Type; Index : Int := 0);
-   --  Mark a unit, identified by its source file and, when Index is not 0, the
-   --  index of the unit in the source file. Marking is used to signal that the
-   --  unit has already been inserted in the Q.
+   type Source_Info_Format is (Format_Gprbuild, Format_Gnatmake);
 
-   function Is_Marked
-     (Source_File : File_Name_Type;
-      Index       : Int := 0) return Boolean;
-   --  Returns True if the unit was previously marked
+   package Queue is
 
-   procedure Delete_All_Marks;
-   --  Remove all file/index couples marked
+      --  The queue of sources to be checked for compilation. There can be a
+      --  single such queue per application.
+
+      type Source_Info (Format : Source_Info_Format := Format_Gprbuild) is
+         record
+            case Format is
+               when Format_Gprbuild =>
+                  Tree : Project_Tree_Ref := null;
+                  Id   : Source_Id        := null;
+
+               when Format_Gnatmake =>
+                  File      : File_Name_Type := No_File;
+                  Unit      : Unit_Name_Type := No_Unit_Name;
+                  Index     : Int            := 0;
+                  Project   : Project_Id     := No_Project;
+            end case;
+         end record;
+      --  Information about files stored in the queue. The exact information
+      --  depends on the builder, and in particular whether it only supports
+      --  project-based files (in which case we have a full Source_Id record).
+
+      No_Source_Info : constant Source_Info := (Format_Gprbuild, null, null);
+
+      procedure Initialize
+        (Queue_Per_Obj_Dir : Boolean;
+         Force : Boolean := False);
+      --  Initialize the queue.
+      --  Queue_Per_Obj_Dir matches the --single-compile-per-obj-dir switch:
+      --  when True, there cannot be simultaneous compilations with the object
+      --  files in the same object directory when project files are used.
+      --
+      --  Nothing is done if Force is False and the queue was already
+      --  initialized.
+
+      procedure Remove_Marks;
+      --  Remove all marks set for the files.
+      --  This means that the files will be handed to the compiler if they are
+      --  added to the queue, and is mostly useful when recompiling several
+      --  executables in non-project mode, as the switches may be different
+      --  and -s may be in use.
+
+      function Is_Empty return Boolean;
+      --  Returns True if the queue is empty
+
+      function Is_Virtually_Empty return Boolean;
+      --  Returns True if queue is empty or if all object directories are busy
+
+      procedure Insert (Source  : Source_Info; With_Roots : Boolean := False);
+      function Insert
+        (Source  : Source_Info; With_Roots : Boolean := False) return Boolean;
+      --  Insert source in the queue. The second version returns False if the
+      --  Source was already marked in the queue. If With_Roots is True and the
+      --  source is in Format_Gprbuild mode (ie with a project), this procedure
+      --  also includes the "Roots" for this main, ie all the other files that
+      --  must be included in the library or binary (in particular to combine
+      --  Ada and C files connected through pragma Export/Import). When the
+      --  roots are computed, they are also stored in the corresponding
+      --  Source_Id for later reuse by the binder.
+
+      procedure Insert_Project_Sources
+        (Project        : Project_Id;
+         Project_Tree   : Project_Tree_Ref;
+         All_Projects   : Boolean;
+         Unique_Compile : Boolean);
+      --  Insert all the compilable sources of the project in the queue. If
+      --  All_Project is true, then all sources from imported projects are also
+      --  inserted. Unique_Compile should be true if "-u" was specified on the
+      --  command line: if True and some files were given on the command line),
+      --  only those files will be compiled (so Insert_Project_Sources will do
+      --  nothing). If True and no file was specified on the command line, all
+      --  files of the project(s) will be compiled. This procedure also
+      --  processed aggregated projects.
+
+      procedure Insert_Withed_Sources_For
+        (The_ALI               : ALI.ALI_Id;
+         Project_Tree          : Project_Tree_Ref;
+         Excluding_Shared_SALs : Boolean := False);
+      --  Insert in the queue those sources withed by The_ALI, if there are not
+      --  already in the queue and Only_Interfaces is False or they are part of
+      --  the interfaces of their project.
+
+      procedure Extract
+        (Found  : out Boolean;
+         Source : out Source_Info);
+      --  Get the first source that can be compiled from the queue. If no
+      --  source may be compiled, sets Found to False. In this case, the value
+      --  for Source is undefined.
+
+      function Size return Natural;
+      --  Return the total size of the queue, including the sources already
+      --  extracted.
+
+      function Processed return Natural;
+      --  Return the number of source in the queue that have aready been
+      --  processed.
+
+      procedure Set_Obj_Dir_Busy (Obj_Dir : Path_Name_Type);
+      procedure Set_Obj_Dir_Free (Obj_Dir : Path_Name_Type);
+      --  Mark Obj_Dir as busy or free (see the parameter to Initialize)
+
+      function Element (Rank : Positive) return File_Name_Type;
+      --  Get the file name for element of index Rank in the queue
+
+   end Queue;
 
 end Makeutl;

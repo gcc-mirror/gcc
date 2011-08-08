@@ -84,13 +84,14 @@ along with GCC; see the file COPYING3.  If not see
       II cycles (i.e. use register copies to prevent a def from overwriting
       itself before reaching the use).
 
-    SMS works with countable loops whose loop count can be easily
-    adjusted.  This is because we peel a constant number of iterations
-    into a prologue and epilogue for which we want to avoid emitting
-    the control part, and a kernel which is to iterate that constant
-    number of iterations less than the original loop.  So the control
-    part should be a set of insns clearly identified and having its
-    own iv, not otherwise used in the loop (at-least for now), which
+    SMS works with countable loops (1) whose control part can be easily
+    decoupled from the rest of the loop and (2) whose loop count can
+    be easily adjusted.  This is because we peel a constant number of
+    iterations into a prologue and epilogue for which we want to avoid
+    emitting the control part, and a kernel which is to iterate that
+    constant number of iterations less than the original loop.  So the
+    control part should be a set of insns clearly identified and having
+    its own iv, not otherwise used in the loop (at-least for now), which
     initializes a register before the loop to the number of iterations.
     Currently SMS relies on the do-loop pattern to recognize such loops,
     where (1) the control part comprises of all insns defining and/or
@@ -202,7 +203,16 @@ static void generate_prolog_epilog (partial_schedule_ptr, struct loop *,
                                     rtx, rtx);
 static void duplicate_insns_of_cycles (partial_schedule_ptr,
 				       int, int, int, rtx);
-static int calculate_stage_count (partial_schedule_ptr ps);
+static int calculate_stage_count (partial_schedule_ptr, int);
+static void calculate_must_precede_follow (ddg_node_ptr, int, int,
+					   int, int, sbitmap, sbitmap, sbitmap);
+static int get_sched_window (partial_schedule_ptr, ddg_node_ptr, 
+			     sbitmap, int, int *, int *, int *);
+static bool try_scheduling_node_in_cycle (partial_schedule_ptr, ddg_node_ptr,
+					  int, int, sbitmap, int *, sbitmap,
+					  sbitmap);
+static bool remove_node_from_ps (partial_schedule_ptr, ps_insn_ptr);
+
 #define SCHED_ASAP(x) (((node_sched_params_ptr)(x)->aux.info)->asap)
 #define SCHED_TIME(x) (((node_sched_params_ptr)(x)->aux.info)->time)
 #define SCHED_FIRST_REG_MOVE(x) \
@@ -252,9 +262,7 @@ sms_print_insn (const_rtx insn, int aligned ATTRIBUTE_UNUSED)
 
 static void
 compute_jump_reg_dependencies (rtx insn ATTRIBUTE_UNUSED,
-			       regset cond_exec ATTRIBUTE_UNUSED,
-			       regset used ATTRIBUTE_UNUSED,
-			       regset set ATTRIBUTE_UNUSED)
+			       regset used ATTRIBUTE_UNUSED)
 {
 }
 
@@ -283,6 +291,7 @@ static struct haifa_sched_info sms_sched_info =
   0, 0,
 
   NULL, NULL, NULL, NULL,
+  NULL, NULL,
   0
 };
 
@@ -576,6 +585,36 @@ free_undo_replace_buff (struct undo_replace_buff_elem *reg_move_replaces)
     }
 }
 
+/* Update the sched_params (time, row and stage) for node U using the II,
+   the CYCLE of U and MIN_CYCLE.  
+   We're not simply taking the following
+   SCHED_STAGE (u) = CALC_STAGE_COUNT (SCHED_TIME (u), min_cycle, ii);
+   because the stages may not be aligned on cycle 0.  */
+static void
+update_node_sched_params (ddg_node_ptr u, int ii, int cycle, int min_cycle)
+{
+  int sc_until_cycle_zero;
+  int stage;
+
+  SCHED_TIME (u) = cycle;
+  SCHED_ROW (u) = SMODULO (cycle, ii);
+
+  /* The calculation of stage count is done adding the number
+     of stages before cycle zero and after cycle zero.  */
+  sc_until_cycle_zero = CALC_STAGE_COUNT (-1, min_cycle, ii);
+
+  if (SCHED_TIME (u) < 0)
+    {
+      stage = CALC_STAGE_COUNT (-1, SCHED_TIME (u), ii);
+      SCHED_STAGE (u) = sc_until_cycle_zero - stage;
+    }
+  else
+    {
+      stage = CALC_STAGE_COUNT (SCHED_TIME (u), 0, ii);
+      SCHED_STAGE (u) = sc_until_cycle_zero + stage - 1;
+    }
+}
+
 /* Bump the SCHED_TIMEs of all nodes by AMOUNT.  Set the values of
    SCHED_ROW and SCHED_STAGE.  Instruction scheduled on cycle AMOUNT
    will move to cycle zero.  */
@@ -592,15 +631,14 @@ reset_sched_times (partial_schedule_ptr ps, int amount)
 	ddg_node_ptr u = crr_insn->node;
 	int normalized_time = SCHED_TIME (u) - amount;
 	int new_min_cycle = PS_MIN_CYCLE (ps) - amount;
-        int sc_until_cycle_zero, stage;
 
         if (dump_file)
           {
             /* Print the scheduling times after the rotation.  */
             fprintf (dump_file, "crr_insn->node=%d (insn id %d), "
                      "crr_insn->cycle=%d, min_cycle=%d", crr_insn->node->cuid,
-                     INSN_UID (crr_insn->node->insn), SCHED_TIME (u),
-                     normalized_time);
+                     INSN_UID (crr_insn->node->insn), normalized_time,
+                     new_min_cycle);
             if (JUMP_P (crr_insn->node->insn))
               fprintf (dump_file, " (branch)");
             fprintf (dump_file, "\n");
@@ -608,23 +646,9 @@ reset_sched_times (partial_schedule_ptr ps, int amount)
 	
 	gcc_assert (SCHED_TIME (u) >= ps->min_cycle);
 	gcc_assert (SCHED_TIME (u) <= ps->max_cycle);
-	SCHED_TIME (u) = normalized_time;
-	SCHED_ROW (u) = SMODULO (normalized_time, ii);
-      
-        /* The calculation of stage count is done adding the number
-           of stages before cycle zero and after cycle zero.  */
-	sc_until_cycle_zero = CALC_STAGE_COUNT (-1, new_min_cycle, ii);
-	
-	if (SCHED_TIME (u) < 0)
-	  {
-	    stage = CALC_STAGE_COUNT (-1, SCHED_TIME (u), ii);
-	    SCHED_STAGE (u) = sc_until_cycle_zero - stage;
-	  }
-	else
-	  {
-	    stage = CALC_STAGE_COUNT (SCHED_TIME (u), 0, ii);
-	    SCHED_STAGE (u) = sc_until_cycle_zero + stage - 1;
-	  }
+
+	crr_insn->cycle = normalized_time;
+	update_node_sched_params (u, ii, normalized_time, new_min_cycle);
       }
 }
  
@@ -659,6 +683,206 @@ permute_partial_schedule (partial_schedule_ptr ps, rtx last)
       if (PREV_INSN (last) != ps_ij->node->insn)
       	reorder_insns_nobb (ps_ij->node->first_note, ps_ij->node->insn,
 			    PREV_INSN (last));
+}
+
+/* Set bitmaps TMP_FOLLOW and TMP_PRECEDE to MUST_FOLLOW and MUST_PRECEDE
+   respectively only if cycle C falls on the border of the scheduling
+   window boundaries marked by START and END cycles.  STEP is the
+   direction of the window.  */
+static inline void
+set_must_precede_follow (sbitmap *tmp_follow, sbitmap must_follow,
+			 sbitmap *tmp_precede, sbitmap must_precede, int c,
+			 int start, int end, int step)
+{
+  *tmp_precede = NULL;
+  *tmp_follow = NULL;
+
+  if (c == start)
+    {
+      if (step == 1)
+	*tmp_precede = must_precede;
+      else			/* step == -1.  */
+	*tmp_follow = must_follow;
+    }
+  if (c == end - step)
+    {
+      if (step == 1)
+	*tmp_follow = must_follow;
+      else			/* step == -1.  */
+	*tmp_precede = must_precede;
+    }
+
+}
+
+/* Return True if the branch can be moved to row ii-1 while
+   normalizing the partial schedule PS to start from cycle zero and thus
+   optimize the SC.  Otherwise return False.  */
+static bool
+optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
+{
+  int amount = PS_MIN_CYCLE (ps);
+  sbitmap sched_nodes = sbitmap_alloc (g->num_nodes);
+  int start, end, step;
+  int ii = ps->ii;
+  bool ok = false;
+  int stage_count, stage_count_curr;
+
+  /* Compare the SC after normalization and SC after bringing the branch
+     to row ii-1.  If they are equal just bail out.  */
+  stage_count = calculate_stage_count (ps, amount);
+  stage_count_curr =
+    calculate_stage_count (ps, SCHED_TIME (g->closing_branch) - (ii - 1));
+
+  if (stage_count == stage_count_curr)
+    {
+      if (dump_file)
+	fprintf (dump_file, "SMS SC already optimized.\n");
+
+      ok = false;
+      goto clear;
+    }
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "SMS Trying to optimize branch location\n");
+      fprintf (dump_file, "SMS partial schedule before trial:\n");
+      print_partial_schedule (ps, dump_file);
+    }
+
+  /* First, normalize the partial scheduling.  */
+  reset_sched_times (ps, amount);
+  rotate_partial_schedule (ps, amount);
+  if (dump_file)
+    {
+      fprintf (dump_file,
+	       "SMS partial schedule after normalization (ii, %d, SC %d):\n",
+	       ii, stage_count);
+      print_partial_schedule (ps, dump_file);
+    }
+
+  if (SMODULO (SCHED_TIME (g->closing_branch), ii) == ii - 1)
+    {
+      ok = true;
+      goto clear;
+    }
+
+  sbitmap_ones (sched_nodes);
+
+  /* Calculate the new placement of the branch.  It should be in row
+     ii-1 and fall into it's scheduling window.  */
+  if (get_sched_window (ps, g->closing_branch, sched_nodes, ii, &start,
+			&step, &end) == 0)
+    {
+      bool success;
+      ps_insn_ptr next_ps_i;
+      int branch_cycle = SCHED_TIME (g->closing_branch);
+      int row = SMODULO (branch_cycle, ps->ii);
+      int num_splits = 0;
+      sbitmap must_precede, must_follow, tmp_precede, tmp_follow;
+      int c;
+
+      if (dump_file)
+	fprintf (dump_file, "\nTrying to schedule node %d "
+		 "INSN = %d  in (%d .. %d) step %d\n",
+		 g->closing_branch->cuid,
+		 (INSN_UID (g->closing_branch->insn)), start, end, step);
+
+      gcc_assert ((step > 0 && start < end) || (step < 0 && start > end));
+      if (step == 1)
+	{
+	  c = start + ii - SMODULO (start, ii) - 1;
+	  gcc_assert (c >= start);
+	  if (c >= end)
+	    {
+	      ok = false;
+	      if (dump_file)
+		fprintf (dump_file,
+			 "SMS failed to schedule branch at cycle: %d\n", c);
+	      goto clear;
+	    }
+	}
+      else
+	{
+	  c = start - SMODULO (start, ii) - 1;
+	  gcc_assert (c <= start);
+
+	  if (c <= end)
+	    {
+	      if (dump_file)
+		fprintf (dump_file,
+			 "SMS failed to schedule branch at cycle: %d\n", c);
+	      ok = false;
+	      goto clear;
+	    }
+	}
+
+      must_precede = sbitmap_alloc (g->num_nodes);
+      must_follow = sbitmap_alloc (g->num_nodes);
+
+      /* Try to schedule the branch is it's new cycle.  */
+      calculate_must_precede_follow (g->closing_branch, start, end,
+				     step, ii, sched_nodes,
+				     must_precede, must_follow);
+
+      set_must_precede_follow (&tmp_follow, must_follow, &tmp_precede,
+			       must_precede, c, start, end, step);
+
+      /* Find the element in the partial schedule related to the closing
+         branch so we can remove it from it's current cycle.  */
+      for (next_ps_i = ps->rows[row];
+	   next_ps_i; next_ps_i = next_ps_i->next_in_row)
+	if (next_ps_i->node->cuid == g->closing_branch->cuid)
+	  break;
+
+      gcc_assert (next_ps_i);
+      gcc_assert (remove_node_from_ps (ps, next_ps_i));
+      success =
+	try_scheduling_node_in_cycle (ps, g->closing_branch,
+				      g->closing_branch->cuid, c,
+				      sched_nodes, &num_splits,
+				      tmp_precede, tmp_follow);
+      gcc_assert (num_splits == 0);
+      if (!success)
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "SMS failed to schedule branch at cycle: %d, "
+		     "bringing it back to cycle %d\n", c, branch_cycle);
+
+	  /* The branch was failed to be placed in row ii - 1.
+	     Put it back in it's original place in the partial
+	     schedualing.  */
+	  set_must_precede_follow (&tmp_follow, must_follow, &tmp_precede,
+				   must_precede, branch_cycle, start, end,
+				   step);
+	  success =
+	    try_scheduling_node_in_cycle (ps, g->closing_branch,
+					  g->closing_branch->cuid,
+					  branch_cycle, sched_nodes,
+					  &num_splits, tmp_precede,
+					  tmp_follow);
+	  gcc_assert (success && (num_splits == 0));
+	  ok = false;
+	}
+      else
+	{
+	  /* The branch is placed in row ii - 1.  */
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "SMS success in moving branch to cycle %d\n", c);
+
+	  update_node_sched_params (g->closing_branch, ii, c,
+				    PS_MIN_CYCLE (ps));
+	  ok = true;
+	}
+
+      free (must_precede);
+      free (must_follow);
+    }
+
+clear:
+  free (sched_nodes);
+  return ok;
 }
 
 static void
@@ -1116,6 +1340,7 @@ sms_schedule (void)
       int mii, rec_mii;
       unsigned stage_count = 0;
       HOST_WIDEST_INT loop_count = 0;
+      bool opt_sc_p = false;
 
       if (! (g = g_arr[loop->num]))
         continue;
@@ -1197,14 +1422,32 @@ sms_schedule (void)
       set_node_sched_params (g);
 
       ps = sms_schedule_by_order (g, mii, maxii, node_order);
-
-       if (ps)
-       {
-         stage_count = calculate_stage_count (ps);
-         gcc_assert(stage_count >= 1);
-         PS_STAGE_COUNT(ps) = stage_count;
-       }
-
+      
+      if (ps)
+	{
+	  /* Try to achieve optimized SC by normalizing the partial
+	     schedule (having the cycles start from cycle zero).
+	     The branch location must be placed in row ii-1 in the
+	     final scheduling.	If failed, shift all instructions to
+	     position the branch in row ii-1.  */
+	  opt_sc_p = optimize_sc (ps, g);
+	  if (opt_sc_p)
+	    stage_count = calculate_stage_count (ps, 0);
+	  else
+	    {
+	      /* Bring the branch to cycle ii-1.  */
+	      int amount = SCHED_TIME (g->closing_branch) - (ps->ii - 1);
+	      
+	      if (dump_file)
+		fprintf (dump_file, "SMS schedule branch at cycle ii-1\n");
+	      
+	      stage_count = calculate_stage_count (ps, amount);
+	    }
+	  
+	  gcc_assert (stage_count >= 1);
+	  PS_STAGE_COUNT (ps) = stage_count;
+	}
+      
       /* The default value of PARAM_SMS_MIN_SC is 2 as stage count of
 	 1 means that there is no interleaving between iterations thus
 	 we let the scheduling passes do the job in this case.  */
@@ -1225,12 +1468,16 @@ sms_schedule (void)
       else
 	{
 	  struct undo_replace_buff_elem *reg_move_replaces;
-          int amount = SCHED_TIME (g->closing_branch) + 1;
+
+          if (!opt_sc_p)
+            {
+	      /* Rotate the partial schedule to have the branch in row ii-1.  */
+              int amount = SCHED_TIME (g->closing_branch) - (ps->ii - 1);
+	      
+              reset_sched_times (ps, amount);
+              rotate_partial_schedule (ps, amount);
+            }
 	  
-	  /* Set the stage boundaries.	The closing_branch was scheduled
-	     and should appear in the last (ii-1) row.  */
-	  reset_sched_times (ps, amount);
-	  rotate_partial_schedule (ps, amount);
 	  set_columns_for_ps (ps);
 
 	  canon_loop (loop);
@@ -1382,13 +1629,11 @@ sms_schedule (void)
    scheduling window is empty and zero otherwise.  */
 
 static int
-get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
+get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
 		  sbitmap sched_nodes, int ii, int *start_p, int *step_p, int *end_p)
 {
   int start, step, end;
   ddg_edge_ptr e;
-  int u = nodes_order [i];
-  ddg_node_ptr u_node = &ps->g->nodes[u];
   sbitmap psp = sbitmap_alloc (ps->g->num_nodes);
   sbitmap pss = sbitmap_alloc (ps->g->num_nodes);
   sbitmap u_node_preds = NODE_PREDECESSORS (u_node);
@@ -1800,7 +2045,7 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 
 	  /* Try to get non-empty scheduling window.  */
 	 success = 0;
-         if (get_sched_window (ps, nodes_order, i, sched_nodes, ii, &start,
+         if (get_sched_window (ps, u_node, sched_nodes, ii, &start,
                                 &step, &end) == 0)
             {
               if (dump_file)
@@ -1817,24 +2062,11 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 
               for (c = start; c != end; c += step)
                 {
-                  sbitmap tmp_precede = NULL;
-                  sbitmap tmp_follow = NULL;
+		  sbitmap tmp_precede, tmp_follow;
 
-                  if (c == start)
-                    {
-                      if (step == 1)
-                        tmp_precede = must_precede;
-                      else      /* step == -1.  */
-                        tmp_follow = must_follow;
-                    }
-                  if (c == end - step)
-                    {
-                      if (step == 1)
-                        tmp_follow = must_follow;
-                      else      /* step == -1.  */
-                        tmp_precede = must_precede;
-                    }
-
+                  set_must_precede_follow (&tmp_follow, must_follow, 
+		                           &tmp_precede, must_precede, 
+                                           c, start, end, step);
                   success =
                     try_scheduling_node_in_cycle (ps, u_node, u, c,
                                                   sched_nodes,
@@ -2551,8 +2783,13 @@ print_partial_schedule (partial_schedule_ptr ps, FILE *dump)
       fprintf (dump, "\n[ROW %d ]: ", i);
       while (ps_i)
 	{
-	  fprintf (dump, "%d, ",
-		   INSN_UID (ps_i->node->insn));
+	  if (JUMP_P (ps_i->node->insn))
+	    fprintf (dump, "%d (branch), ",
+		     INSN_UID (ps_i->node->insn));
+	  else
+	    fprintf (dump, "%d, ",
+		     INSN_UID (ps_i->node->insn));
+	
 	  ps_i = ps_i->next_in_row;
 	}
     }
@@ -2894,12 +3131,10 @@ ps_add_node_check_conflicts (partial_schedule_ptr ps, ddg_node_ptr n,
 }
 
 /* Calculate the stage count of the partial schedule PS.  The calculation
-   takes into account the rotation to bring the closing branch to row
-   ii-1.  */
+   takes into account the rotation amount passed in ROTATION_AMOUNT.  */
 int
-calculate_stage_count (partial_schedule_ptr ps)
+calculate_stage_count (partial_schedule_ptr ps, int rotation_amount)
 {
-  int rotation_amount = (SCHED_TIME (ps->g->closing_branch)) + 1;
   int new_min_cycle = PS_MIN_CYCLE (ps) - rotation_amount;
   int new_max_cycle = PS_MAX_CYCLE (ps) - rotation_amount;
   int stage_count = CALC_STAGE_COUNT (-1, new_min_cycle, ps->ii);

@@ -19,4 +19,4 @@ CONTAINS
   end subroutine
 END MODULE s_TESTS
 
-! { dg-final { cleanup-modules "m s_TESTS" } }
+! { dg-final { cleanup-modules "m s_tests" } }

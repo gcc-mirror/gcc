@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,8 @@
 ------------------------------------------------------------------------------
 
 --  This is the part of MLib.Tgt.Specific common to both VMS versions
+
+with System.Case_Util; use System.Case_Util;
 
 package body MLib.Tgt.VMS_Common is
 
@@ -73,6 +75,23 @@ package body MLib.Tgt.VMS_Common is
    begin
       return "exe";
    end DLL_Ext;
+
+   --------------------
+   -- Init_Proc_Name --
+   --------------------
+
+   function Init_Proc_Name (Library_Name : String) return String is
+      Result : String := Library_Name & "INIT";
+   begin
+      To_Upper (Result);
+
+      if Result = "ADAINIT" then
+         return "ADA_INIT";
+
+      else
+         return Result;
+      end if;
+   end Init_Proc_Name;
 
    -------------------
    -- Is_Object_Ext --

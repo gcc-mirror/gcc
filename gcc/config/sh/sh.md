@@ -1609,7 +1609,7 @@
    (clobber (reg:SI PR_REG))
    (clobber (reg:SI R4_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
-  "TARGET_SH1 && ! TARGET_SH4"
+  "TARGET_SH1 && (! TARGET_SH4 || TARGET_DIVIDE_CALL_DIV1)"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
@@ -1815,7 +1815,7 @@
    (clobber (reg:SI R2_REG))
    (clobber (reg:SI R3_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
-  "TARGET_SH1 && ! TARGET_SH4"
+  "TARGET_SH1 && (! TARGET_SH4 || TARGET_DIVIDE_CALL_DIV1)"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
@@ -11070,7 +11070,7 @@ mov.l\\t1f,r0\\n\\
       && MEM_P (operands[1]) && MEM_ALIGN (operands[1]) < 32)
     {
       rtx src = adjust_address (operands[1], BLKmode, 0);
-      set_mem_size (src, GEN_INT (4));
+      set_mem_size (src, 4);
       emit_insn (gen_movua (operands[0], src));
       DONE;
     }
@@ -11102,7 +11102,7 @@ mov.l\\t1f,r0\\n\\
       && MEM_P (operands[1]) && MEM_ALIGN (operands[1]) < 32)
     {
       rtx src = adjust_address (operands[1], BLKmode, 0);
-      set_mem_size (src, GEN_INT (4));
+      set_mem_size (src, 4);
       emit_insn (gen_movua (operands[0], src));
       DONE;
     }

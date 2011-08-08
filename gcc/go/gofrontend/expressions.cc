@@ -36,6 +36,7 @@ extern "C"
 #include "runtime.h"
 #include "backend.h"
 #include "expressions.h"
+#include "ast-dump.h"
 
 // Class Expression.
 
@@ -790,6 +791,12 @@ Expression::check_bounds(tree val, tree bound_type, tree sofar,
 			   sofar, ret);
 }
 
+void
+Expression::dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  this->do_dump_expression(ast_dump_context);
+}
+
 // Error expressions.  This are used to avoid cascading errors.
 
 class Error_expression : public Expression
@@ -849,7 +856,18 @@ class Error_expression : public Expression
   tree
   do_get_tree(Translate_context*)
   { return error_mark_node; }
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 };
+
+// Dump the ast representation for an error expression to a dump context.
+
+void
+Error_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "_Error_" ;
+}
 
 Expression*
 Expression::make_error(source_location location)
@@ -894,10 +912,18 @@ Type_expression : public Expression
   do_get_tree(Translate_context*)
   { go_unreachable(); }
 
+  void do_dump_expression(Ast_dump_context*) const;
+ 
  private:
   // The type which we are representing as an expression.
   Type* type_;
 };
+
+void
+Type_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->dump_type(this->type_);
+}
 
 Expression*
 Expression::make_type(Type* type, source_location location)
@@ -926,7 +952,8 @@ Parser_expression::do_type()
 // if necessary.
 
 Expression*
-Var_expression::do_lower(Gogo* gogo, Named_object* function, int)
+Var_expression::do_lower(Gogo* gogo, Named_object* function,
+			 Statement_inserter* inserter, int)
 {
   if (this->variable_->is_variable())
     {
@@ -935,8 +962,11 @@ Var_expression::do_lower(Gogo* gogo, Named_object* function, int)
       // reference to a variable which is local to an enclosing
       // function will be a reference to a field in a closure.
       if (var->is_global())
-	function = NULL;
-      var->lower_init_expression(gogo, function);
+	{
+	  function = NULL;
+	  inserter = NULL;
+	}
+      var->lower_init_expression(gogo, function, inserter);
     }
   return this;
 }
@@ -1014,6 +1044,14 @@ Var_expression::do_get_tree(Translate_context* context)
   return ret;
 }
 
+// Ast dump for variable expression.
+
+void
+Var_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << this->variable_->name() ;
+}
+
 // Make a reference to a variable in an expression.
 
 Expression*
@@ -1061,7 +1099,9 @@ Temporary_reference_expression::do_get_tree(Translate_context* context)
   // that here by adding a type cast.  We need to use base() to push
   // the circularity down one level.
   tree ret = var_to_tree(bvar);
-  if (POINTER_TYPE_P(TREE_TYPE(ret)) && VOID_TYPE_P(TREE_TYPE(TREE_TYPE(ret))))
+  if (!this->is_lvalue_
+      && POINTER_TYPE_P(TREE_TYPE(ret))
+      && VOID_TYPE_P(TREE_TYPE(TREE_TYPE(ret))))
     {
       Btype* type_btype = this->type()->base()->get_backend(context->gogo());
       tree type_tree = type_to_tree(type_btype);
@@ -1070,9 +1110,18 @@ Temporary_reference_expression::do_get_tree(Translate_context* context)
   return ret;
 }
 
+// Ast dump for temporary reference.
+
+void
+Temporary_reference_expression::do_dump_expression(
+                                Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->dump_temp_variable_name(this->statement_);
+}
+
 // Make a reference to a temporary variable.
 
-Expression*
+Temporary_reference_expression*
 Expression::make_temporary_reference(Temporary_statement* statement,
 				     source_location location)
 {
@@ -1106,6 +1155,9 @@ class Sink_expression : public Expression
 
   tree
   do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The type of this sink variable.
@@ -1146,6 +1198,14 @@ Sink_expression::do_get_tree(Translate_context* context)
       this->var_ = create_tmp_var(type_to_tree(bt), "blank");
     }
   return this->var_;
+}
+
+// Ast dump for sink expression.
+
+void
+Sink_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "_" ;
 }
 
 // Make a sink expression.
@@ -1280,6 +1340,14 @@ Func_expression::do_get_tree(Translate_context* context)
   return gogo->make_trampoline(fnaddr, closure_tree, this->location());
 }
 
+// Ast dump for function.
+
+void
+Func_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << this->function_->name() ;
+}
+
 // Make a reference to a function in an expression.
 
 Expression*
@@ -1302,7 +1370,7 @@ Unknown_expression::name() const
 // Lower a reference to an unknown name.
 
 Expression*
-Unknown_expression::do_lower(Gogo*, Named_object*, int)
+Unknown_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 {
   source_location location = this->location();
   Named_object* no = this->named_object_;
@@ -1346,6 +1414,16 @@ Unknown_expression::do_lower(Gogo*, Named_object*, int)
     default:
       go_unreachable();
     }
+}
+
+// Dump the ast representation for an unknown expression to a dump context.
+
+void
+Unknown_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "_Unknown_(" << this->named_object_->name()
+			      << ")";
+   
 }
 
 // Make a reference to an unknown name.
@@ -1393,6 +1471,10 @@ class Boolean_expression : public Expression
   do_export(Export* exp) const
   { exp->write_c_string(this->val_ ? "true" : "false"); }
 
+  void
+  do_dump_expression(Ast_dump_context* ast_dump_context) const
+  { ast_dump_context->ostream() << (this->val_ ? "true" : "false"); }
+  
  private:
   // The constant.
   bool val_;
@@ -1560,6 +1642,15 @@ String_expression::do_import(Import* imp)
   return Expression::make_string(val, imp->location());
 }
 
+// Ast dump for string expression.
+
+void
+String_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  // FIXME: Do proper backshlash quoting for this->val_
+  ast_dump_context->ostream() << "\"" << this->val_ << "\"";
+}
+
 // Make a string expression.
 
 Expression*
@@ -1589,6 +1680,10 @@ class Integer_expression : public Expression
   static void
   export_integer(Export* exp, const mpz_t val);
 
+  // Write VAL to dump context.
+  static void
+  dump_integer(Ast_dump_context* ast_dump_context, const mpz_t val);
+
  protected:
   bool
   do_is_constant() const
@@ -1616,6 +1711,9 @@ class Integer_expression : public Expression
 
   void
   do_export(Export*) const;
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The integer value.
@@ -1865,6 +1963,28 @@ Integer_expression::do_import(Import* imp)
     }
 }
 
+// Write integer to dump context.
+
+void
+Integer_expression::dump_integer(Ast_dump_context* ast_dump_context, 
+                                 const mpz_t val)
+{
+  // FIXME: refactor this code so that is used both by dump and export. Extract
+  // a common interface for Ast_dump_context and Export.
+  char* s = mpz_get_str(NULL, 10, val);
+  ast_dump_context->ostream() << s ;
+  free(s);
+}
+
+
+// Ast dump for integer expression.
+
+void
+Integer_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  Integer_expression::dump_integer(ast_dump_context, this->val_);
+}
+
 // Build a new integer value.
 
 Expression*
@@ -1897,6 +2017,10 @@ class Float_expression : public Expression
   // Write VAL to export data.
   static void
   export_float(Export* exp, const mpfr_t val);
+  
+  // Write VAL to dump file.
+  static void
+  dump_float(Ast_dump_context* ast_dump_context, const mpfr_t val);
 
  protected:
   bool
@@ -1925,6 +2049,9 @@ class Float_expression : public Expression
 
   void
   do_export(Export*) const;
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The floating point value.
@@ -2103,6 +2230,35 @@ Float_expression::do_export(Export* exp) const
   exp->write_c_string(" ");
 }
 
+// Write  a floating point number to a dump context.
+
+void
+Float_expression::dump_float(Ast_dump_context* ast_dump_context, 
+                                  const mpfr_t val)
+{
+  // FIXME: this code should be refactored so that the same code is used here
+  // and in export_float.
+
+  mp_exp_t exponent;
+  char* s = mpfr_get_str(NULL, &exponent, 10, 0, val, GMP_RNDN);
+  if (*s == '-')
+    ast_dump_context->ostream() << "-";
+  ast_dump_context->ostream() << "0.";
+  ast_dump_context->ostream() << (*s == '-' ? s + 1 : s);
+  mpfr_free_str(s);
+  char buf[30];
+  snprintf(buf, sizeof buf, "E%ld", exponent);
+  ast_dump_context->ostream()  << buf;
+}
+
+// Dump a floating point number to the dump file.
+
+void
+Float_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  Float_expression::dump_float(ast_dump_context, this->val_);
+}
+
 // Make a float expression.
 
 Expression*
@@ -2137,6 +2293,11 @@ class Complex_expression : public Expression
   static void
   export_complex(Export* exp, const mpfr_t real, const mpfr_t val);
 
+  // Write REAL/IMAG to dump context.
+  static void
+  dump_complex(Ast_dump_context* ast_dump_context, 
+	       const mpfr_t real, const mpfr_t val);
+  
  protected:
   bool
   do_is_constant() const
@@ -2167,6 +2328,9 @@ class Complex_expression : public Expression
   void
   do_export(Export*) const;
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+  
  private:
   // The real part.
   mpfr_t real_;
@@ -2336,6 +2500,34 @@ Complex_expression::do_export(Export* exp) const
   exp->write_c_string(" ");
 }
 
+// Write a complex number to a dump context.
+
+void
+Complex_expression::dump_complex(Ast_dump_context* ast_dump_context,
+                                    const mpfr_t real, const mpfr_t imag) 
+{
+  // FIXME: this code should be refactored so that it is used both here
+  // and by export _complex
+  if (!mpfr_zero_p(real))
+    {
+      Float_expression::dump_float(ast_dump_context, real);
+      if (mpfr_sgn(imag) > 0)
+        ast_dump_context->ostream() << "+";
+    }
+  Float_expression::dump_float(ast_dump_context, imag);
+  ast_dump_context->ostream() << "i";
+}
+
+// Dump a complex expression to the dump file.
+
+void
+Complex_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  Complex_expression::dump_complex(ast_dump_context, 
+                                      this->real_,
+                                      this->imag_);
+}
+
 // Make a complex expression.
 
 Expression*
@@ -2394,7 +2586,7 @@ class Const_expression : public Expression
   do_traverse(Traverse*);
 
   Expression*
-  do_lower(Gogo*, Named_object*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   bool
   do_is_constant() const
@@ -2437,6 +2629,9 @@ class Const_expression : public Expression
   do_export(Export* exp) const
   { this->constant_->const_value()->expr()->export_expression(exp); }
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   // The constant.
   Named_object* constant_;
@@ -2462,7 +2657,8 @@ Const_expression::do_traverse(Traverse* traverse)
 // predeclared constant iota into an integer value.
 
 Expression*
-Const_expression::do_lower(Gogo* gogo, Named_object*, int iota_value)
+Const_expression::do_lower(Gogo* gogo, Named_object*,
+			   Statement_inserter*, int iota_value)
 {
   if (this->constant_->const_value()->expr()->classification()
       == EXPRESSION_IOTA)
@@ -2817,6 +3013,14 @@ Const_expression::do_get_tree(Translate_context* context)
   return ret;
 }
 
+// Dump ast representation for constant expression.
+
+void
+Const_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << this->constant_->name();
+}
+
 // Make a reference to a constant in an expression.
 
 Expression*
@@ -2898,6 +3102,10 @@ class Nil_expression : public Expression
   void
   do_export(Export* exp) const
   { exp->write_c_string("nil"); }
+
+  void
+  do_dump_expression(Ast_dump_context* ast_dump_context) const
+  { ast_dump_context->ostream() << "nil"; }
 };
 
 // Import a nil expression.
@@ -2931,13 +3139,17 @@ class Iota_expression : public Parser_expression
 
  protected:
   Expression*
-  do_lower(Gogo*, Named_object*, int)
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int)
   { go_unreachable(); }
 
   // There should only ever be one of these.
   Expression*
   do_copy()
   { go_unreachable(); }
+  
+  void
+  do_dump_expression(Ast_dump_context* ast_dump_context) const
+  { ast_dump_context->ostream() << "iota"; } 
 };
 
 // Make an iota expression.  This is only called for one case: the
@@ -2988,7 +3200,7 @@ class Type_conversion_expression : public Expression
   do_traverse(Traverse* traverse);
 
   Expression*
-  do_lower(Gogo*, Named_object*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   bool
   do_is_constant() const
@@ -3033,6 +3245,9 @@ class Type_conversion_expression : public Expression
   void
   do_export(Export*) const;
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   // The type to convert to.
   Type* type_;
@@ -3057,7 +3272,8 @@ Type_conversion_expression::do_traverse(Traverse* traverse)
 // Convert to a constant at lowering time.
 
 Expression*
-Type_conversion_expression::do_lower(Gogo*, Named_object*, int)
+Type_conversion_expression::do_lower(Gogo*, Named_object*,
+				     Statement_inserter*, int)
 {
   Type* type = this->type_;
   Expression* val = this->expr_;
@@ -3562,6 +3778,18 @@ Type_conversion_expression::do_import(Import* imp)
   return Expression::make_cast(type, val, imp->location());
 }
 
+// Dump ast representation for a type conversion expression.
+
+void
+Type_conversion_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream() << "(";
+  ast_dump_context->dump_expression(this->expr_);
+  ast_dump_context->ostream() << ") ";
+}
+
 // Make a type cast expression.
 
 Expression*
@@ -3605,6 +3833,9 @@ class Unsafe_type_conversion_expression : public Expression
 
   tree
   do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The type to convert to.
@@ -3690,6 +3921,18 @@ Unsafe_type_conversion_expression::do_get_tree(Translate_context* context)
     return fold_convert_loc(loc, type_tree, expr_tree);
 }
 
+// Dump ast representation for an unsafe type conversion expression.
+
+void
+Unsafe_type_conversion_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream() << "(";
+  ast_dump_context->dump_expression(this->expr_);
+  ast_dump_context->ostream() << ") ";
+}
+
 // Make an unsafe type conversion expression.
 
 Expression*
@@ -3753,7 +3996,7 @@ class Unary_expression : public Expression
   { return Expression::traverse(&this->expr_, traverse); }
 
   Expression*
-  do_lower(Gogo*, Named_object*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   bool
   do_is_constant() const;
@@ -3793,6 +4036,9 @@ class Unary_expression : public Expression
   void
   do_export(Export*) const;
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   // The unary operator to apply.
   Operator op_;
@@ -3808,7 +4054,7 @@ class Unary_expression : public Expression
 // instead.
 
 Expression*
-Unary_expression::do_lower(Gogo*, Named_object*, int)
+Unary_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 {
   source_location loc = this->location();
   Operator op = this->op_;
@@ -4402,6 +4648,17 @@ Unary_expression::do_import(Import* imp)
   imp->require_c_string(" ");
   Expression* expr = Expression::import_expression(imp);
   return Expression::make_unary(op, expr, imp->location());
+}
+
+// Dump ast representation of an unary expression.
+
+void
+Unary_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->dump_operator(this->op_);
+  ast_dump_context->ostream() << "(";
+  ast_dump_context->dump_expression(this->expr_);
+  ast_dump_context->ostream() << ") ";
 }
 
 // Make a unary expression.
@@ -5137,7 +5394,7 @@ Binary_expression::eval_complex(Operator op, Type* left_type,
 // constants.
 
 Expression*
-Binary_expression::do_lower(Gogo*, Named_object*, int)
+Binary_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 {
   source_location location = this->location();
   Operator op = this->op_;
@@ -6303,6 +6560,20 @@ Binary_expression::do_import(Import* imp)
   return Expression::make_binary(op, left, right, imp->location());
 }
 
+// Dump ast representation of a binary expression.
+
+void
+Binary_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "(";
+  ast_dump_context->dump_expression(this->left_);
+  ast_dump_context->ostream() << " ";
+  ast_dump_context->dump_operator(this->op_);
+  ast_dump_context->ostream() << " ";
+  ast_dump_context->dump_expression(this->right_);
+  ast_dump_context->ostream() << ") ";
+}
+
 // Make a binary expression.
 
 Expression*
@@ -6635,6 +6906,26 @@ Bound_method_expression::do_get_tree(Translate_context*)
   return error_mark_node;
 }
 
+// Dump ast representation of a bound method expression.
+
+void
+Bound_method_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
+    const
+{
+  if (this->expr_type_ != NULL)
+    ast_dump_context->ostream() << "(";
+  ast_dump_context->dump_expression(this->expr_); 
+  if (this->expr_type_ != NULL) 
+    {
+      ast_dump_context->ostream() << ":";
+      ast_dump_context->dump_type(this->expr_type_);
+      ast_dump_context->ostream() << ")";
+    }
+    
+  ast_dump_context->ostream() << ".";
+  ast_dump_context->dump_expression(method_);
+}
+
 // Make a method expression.
 
 Bound_method_expression*
@@ -6656,7 +6947,7 @@ class Builtin_call_expression : public Call_expression
  protected:
   // This overrides Call_expression::do_lower.
   Expression*
-  do_lower(Gogo*, Named_object*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   bool
   do_is_constant() const;
@@ -6864,7 +7155,8 @@ Find_call_expression::expression(Expression** pexpr)
 // specific expressions.  We also convert to a constant if we can.
 
 Expression*
-Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function, int)
+Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
+				  Statement_inserter* inserter, int)
 {
   if (this->classification() == EXPRESSION_ERROR)
     return this;
@@ -6974,7 +7266,7 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function, int)
 	  this->set_is_error();
 	  return this;
 	}
-      return this->lower_varargs(gogo, function, slice_type, 2);
+      return this->lower_varargs(gogo, function, inserter, slice_type, 2);
     }
 
   return this;
@@ -8553,9 +8845,10 @@ Call_expression::do_traverse(Traverse* traverse)
 // Lower a call statement.
 
 Expression*
-Call_expression::do_lower(Gogo* gogo, Named_object* function, int)
+Call_expression::do_lower(Gogo* gogo, Named_object* function,
+			  Statement_inserter* inserter, int)
 {
-  // A type case can look like a function call.
+  // A type cast can look like a function call.
   if (this->fn_->is_type_expression()
       && this->args_ != NULL
       && this->args_->size() == 1)
@@ -8597,6 +8890,29 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function, int)
 	}
     }
 
+  // If this call returns multiple results, create a temporary
+  // variable for each result.
+  size_t rc = this->result_count();
+  if (rc > 1 && this->results_ == NULL)
+    {
+      std::vector<Temporary_statement*>* temps =
+	new std::vector<Temporary_statement*>;
+      temps->reserve(rc);
+      const Typed_identifier_list* results =
+	this->fn_->type()->function_type()->results();
+      for (Typed_identifier_list::const_iterator p = results->begin();
+	   p != results->end();
+	   ++p)
+	{
+	  Temporary_statement* temp = Statement::make_temporary(p->type(),
+								NULL,
+								p->location());
+	  inserter->insert(temp);
+	  temps->push_back(temp);
+	}
+      this->results_ = temps;
+    }
+
   // Handle a call to a varargs function by packaging up the extra
   // parameters.
   if (this->fn_->type()->function_type() != NULL
@@ -8606,7 +8922,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function, int)
       const Typed_identifier_list* parameters = fntype->parameters();
       go_assert(parameters != NULL && !parameters->empty());
       Type* varargs_type = parameters->back().type();
-      return this->lower_varargs(gogo, function, varargs_type,
+      return this->lower_varargs(gogo, function, inserter, varargs_type,
 				 parameters->size());
     }
 
@@ -8622,6 +8938,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function, int)
 
 Expression*
 Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
+			       Statement_inserter* inserter,
 			       Type* varargs_type, size_t param_count)
 {
   if (this->varargs_are_lowered_)
@@ -8702,13 +9019,12 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
 
   // Lower all the new subexpressions.
   Expression* ret = this;
-  gogo->lower_expression(function, &ret);
+  gogo->lower_expression(function, inserter, &ret);
   go_assert(ret == this);
   return ret;
 }
 
-// Get the function type.  Returns NULL if we don't know the type.  If
-// this returns NULL, and if_ERROR is true, issues an error.
+// Get the function type.  This can return NULL in error cases.
 
 Function_type*
 Call_expression::get_function_type() const
@@ -8727,6 +9043,16 @@ Call_expression::result_count() const
   if (fntype->results() == NULL)
     return 0;
   return fntype->results()->size();
+}
+
+// Return the temporary which holds a result.
+
+Temporary_statement*
+Call_expression::result(size_t i) const
+{
+  go_assert(this->results_ != NULL
+	    && this->results_->size() > i);
+  return (*this->results_)[i];
 }
 
 // Return whether this is a call to the predeclared function recover.
@@ -8757,6 +9083,21 @@ void
 Call_expression::do_set_recover_arg(Expression*)
 {
   go_unreachable();
+}
+
+// We have found an error with this call expression; return true if
+// we should report it.
+
+bool
+Call_expression::issue_error()
+{
+  if (this->issued_error_)
+    return false;
+  else
+    {
+      this->issued_error_ = true;
+      return true;
+    }
 }
 
 // Get the type.
@@ -8941,15 +9282,12 @@ Call_expression::do_check_types(Gogo*)
 
 // Return whether we have to use a temporary variable to ensure that
 // we evaluate this call expression in order.  If the call returns no
-// results then it will inevitably be executed last.  If the call
-// returns more than one result then it will be used with Call_result
-// expressions.  So we only have to use a temporary variable if the
-// call returns exactly one result.
+// results then it will inevitably be executed last.
 
 bool
 Call_expression::do_must_eval_in_order() const
 {
-  return this->result_count() == 1;
+  return this->result_count() > 0;
 }
 
 // Get the function and the first argument to use when calling a bound
@@ -9193,14 +9531,67 @@ Call_expression::do_get_tree(Translate_context* context)
       ret = build1(NOP_EXPR, rettype, ret);
     }
 
-  // If there is more than one result, we will refer to the call
-  // multiple times.
-  if (fntype->results() != NULL && fntype->results()->size() > 1)
-    ret = save_expr(ret);
+  if (this->results_ != NULL)
+    ret = this->set_results(context, ret);
 
   this->tree_ = ret;
 
   return ret;
+}
+
+// Set the result variables if this call returns multiple results.
+
+tree
+Call_expression::set_results(Translate_context* context, tree call_tree)
+{
+  tree stmt_list = NULL_TREE;
+
+  call_tree = save_expr(call_tree);
+
+  if (TREE_CODE(TREE_TYPE(call_tree)) != RECORD_TYPE)
+    {
+      go_assert(saw_errors());
+      return call_tree;
+    }
+
+  source_location loc = this->location();
+  tree field = TYPE_FIELDS(TREE_TYPE(call_tree));
+  size_t rc = this->result_count();
+  for (size_t i = 0; i < rc; ++i, field = DECL_CHAIN(field))
+    {
+      go_assert(field != NULL_TREE);
+
+      Temporary_statement* temp = this->result(i);
+      Temporary_reference_expression* ref =
+	Expression::make_temporary_reference(temp, loc);
+      ref->set_is_lvalue();
+      tree temp_tree = ref->get_tree(context);
+      if (temp_tree == error_mark_node)
+	continue;
+
+      tree val_tree = build3_loc(loc, COMPONENT_REF, TREE_TYPE(field),
+				 call_tree, field, NULL_TREE);
+      tree set_tree = build2_loc(loc, MODIFY_EXPR, void_type_node, temp_tree,
+				 val_tree);
+
+      append_to_statement_list(set_tree, &stmt_list);
+    }
+  go_assert(field == NULL_TREE);
+
+  return save_expr(stmt_list);
+}
+
+// Dump ast representation for a call expressin.
+
+void
+Call_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  this->fn_->dump_expression(ast_dump_context);
+  ast_dump_context->ostream() << "(";
+  if (args_ != NULL)
+    ast_dump_context->dump_expression_list(this->args_);
+
+  ast_dump_context->ostream() << ") ";
 }
 
 // Make a call expression.
@@ -9249,6 +9640,9 @@ class Call_result_expression : public Expression
   tree
   do_get_tree(Translate_context*);
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   // The underlying call expression.
   Expression* call_;
@@ -9288,14 +9682,17 @@ Call_result_expression::do_type()
   Function_type* fntype = ce->get_function_type();
   if (fntype == NULL)
     {
+      if (ce->issue_error())
+	this->report_error(_("expected function"));    
       this->set_is_error();
       return Type::make_error_type();
     }
   const Typed_identifier_list* results = fntype->results();
-  if (results == NULL)
+  if (results == NULL || results->size() < 2)
     {
-      this->report_error(_("number of results does not match "
-			   "number of values"));
+      if (ce->issue_error())
+	this->report_error(_("number of results does not match "
+			     "number of values"));
       return Type::make_error_type();
     }
   Typed_identifier_list::const_iterator pr = results->begin();
@@ -9307,8 +9704,9 @@ Call_result_expression::do_type()
     }
   if (pr == results->end())
     {
-      this->report_error(_("number of results does not match "
-			   "number of values"));
+      if (ce->issue_error())
+	this->report_error(_("number of results does not match "
+			     "number of values"));
       return Type::make_error_type();
     }
   return pr->type();
@@ -9332,27 +9730,31 @@ Call_result_expression::do_determine_type(const Type_context*)
   this->call_->determine_type_no_context();
 }
 
-// Return the tree.
+// Return the tree.  We just refer to the temporary set by the call
+// expression.  We don't do this at lowering time because it makes it
+// hard to evaluate the call at the right time.
 
 tree
 Call_result_expression::do_get_tree(Translate_context* context)
 {
-  tree call_tree = this->call_->get_tree(context);
-  if (call_tree == error_mark_node)
-    return error_mark_node;
-  if (TREE_CODE(TREE_TYPE(call_tree)) != RECORD_TYPE)
-    {
-      go_assert(saw_errors());
-      return error_mark_node;
-    }
-  tree field = TYPE_FIELDS(TREE_TYPE(call_tree));
-  for (unsigned int i = 0; i < this->index_; ++i)
-    {
-      go_assert(field != NULL_TREE);
-      field = DECL_CHAIN(field);
-    }
-  go_assert(field != NULL_TREE);
-  return build3(COMPONENT_REF, TREE_TYPE(field), call_tree, field, NULL_TREE);
+  Call_expression* ce = this->call_->call_expression();
+  go_assert(ce != NULL);
+  Temporary_statement* ts = ce->result(this->index_);
+  Expression* ref = Expression::make_temporary_reference(ts, this->location());
+  return ref->get_tree(context);
+}
+
+// Dump ast representation for a call result expression.
+
+void
+Call_result_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
+    const
+{
+  // FIXME: Wouldn't it be better if the call is assigned to a temporary 
+  // (struct) and the fields are referenced instead.
+  ast_dump_context->ostream() << this->index_ << "@(";
+  ast_dump_context->dump_expression(this->call_);
+  ast_dump_context->ostream() << ")";
 }
 
 // Make a reference to a single result of a call which returns
@@ -9383,7 +9785,7 @@ Index_expression::do_traverse(Traverse* traverse)
 // expression into an array index, a string index, or a map index.
 
 Expression*
-Index_expression::do_lower(Gogo*, Named_object*, int)
+Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 {
   source_location location = this->location();
   Expression* left = this->left_;
@@ -9429,6 +9831,36 @@ Index_expression::do_lower(Gogo*, Named_object*, int)
 	       "attempt to index object which is not array, string, or map");
       return Expression::make_error(location);
     }
+}
+
+// Write an indexed expression (expr[expr:expr] or expr[expr]) to a
+// dump context
+
+void
+Index_expression::dump_index_expression(Ast_dump_context* ast_dump_context, 
+					const Expression* expr, 
+					const Expression* start,
+					const Expression* end)
+{
+  expr->dump_expression(ast_dump_context);
+  ast_dump_context->ostream() << "[";
+  start->dump_expression(ast_dump_context);
+  if (end != NULL)
+    {
+      ast_dump_context->ostream() << ":";
+      end->dump_expression(ast_dump_context);
+    }
+  ast_dump_context->ostream() << "]";
+}
+
+// Dump ast representation for an index expression.
+
+void
+Index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+    const
+{
+  Index_expression::dump_index_expression(ast_dump_context, this->left_, 
+                                          this->start_, this->end_);
 }
 
 // Make an index expression.
@@ -9485,6 +9917,9 @@ class Array_index_expression : public Expression
   tree
   do_get_tree(Translate_context*);
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+  
  private:
   // The array we are getting a value from.
   Expression* array_;
@@ -9834,6 +10269,16 @@ Array_index_expression::do_get_tree(Translate_context* context)
 			 constructor);
 }
 
+// Dump ast representation for an array index expression.
+
+void
+Array_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+    const
+{
+  Index_expression::dump_index_expression(ast_dump_context, this->array_, 
+                                          this->start_, this->end_);
+}
+
 // Make an array index expression.  END may be NULL.
 
 Expression*
@@ -9887,6 +10332,9 @@ class String_index_expression : public Expression
 
   tree
   do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The string we are getting a value from.
@@ -10086,6 +10534,16 @@ String_index_expression::do_get_tree(Translate_context* context)
 			     bad_index, crash, NULL_TREE),
 		      ret);
     }
+}
+
+// Dump ast representation for a string index expression.
+
+void
+String_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
+    const
+{
+  Index_expression::dump_index_expression(ast_dump_context, this->string_, 
+					  this->start_, this->end_);
 }
 
 // Make a string index expression.  END may be NULL.
@@ -10302,6 +10760,16 @@ Map_index_expression::get_value_pointer(Translate_context* context,
   return ret;
 }
 
+// Dump ast representation for a map index expression
+
+void
+Map_index_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+    const
+{
+  Index_expression::dump_index_expression(ast_dump_context, 
+                                          this->map_, this->index_, NULL);
+}
+
 // Make a map index expression.
 
 Map_index_expression*
@@ -10366,6 +10834,16 @@ Field_reference_expression::do_get_tree(Translate_context* context)
     return error_mark_node;
   return build3(COMPONENT_REF, TREE_TYPE(field), struct_tree, field,
 		NULL_TREE);
+}
+
+// Dump ast representation for a field reference expression.
+
+void
+Field_reference_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  this->expr_->dump_expression(ast_dump_context);
+  ast_dump_context->ostream() << "." <<  this->field_index_;
 }
 
 // Make a reference to a qualified identifier in an expression.
@@ -10514,6 +10992,16 @@ Interface_field_reference_expression::do_get_tree(Translate_context*)
   go_unreachable();
 }
 
+// Dump ast representation for an interface field reference.
+
+void
+Interface_field_reference_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  this->expr_->dump_expression(ast_dump_context);
+  ast_dump_context->ostream() << "." << this->name_;
+}
+
 // Make a reference to a field in an interface.
 
 Expression*
@@ -10542,7 +11030,7 @@ class Selector_expression : public Parser_expression
   { return Expression::traverse(&this->left_, traverse); }
 
   Expression*
-  do_lower(Gogo*, Named_object*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   Expression*
   do_copy()
@@ -10550,6 +11038,9 @@ class Selector_expression : public Parser_expression
     return new Selector_expression(this->left_->copy(), this->name_,
 				   this->location());
   }
+
+  void
+  do_dump_expression(Ast_dump_context* ast_dump_context) const;
 
  private:
   Expression*
@@ -10565,7 +11056,8 @@ class Selector_expression : public Parser_expression
 // hand side.
 
 Expression*
-Selector_expression::do_lower(Gogo* gogo, Named_object*, int)
+Selector_expression::do_lower(Gogo* gogo, Named_object*, Statement_inserter*,
+			      int)
 {
   Expression* left = this->left_;
   if (left->is_type_expression())
@@ -10734,6 +11226,8 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	}
     }
 
+  gogo->start_block(location);
+
   Call_expression* call = Expression::make_call(bm, args,
 						method_type->is_varargs(),
 						location);
@@ -10756,11 +11250,29 @@ Selector_expression::lower_method_expression(Gogo* gogo)
     }
   gogo->add_statement(s);
 
+  Block* b = gogo->finish_block(location);
+
+  gogo->add_block(b, location);
+
+  // Lower the call in case there are multiple results.
+  gogo->lower_block(no, b);
+
   gogo->finish_function(location);
 
   return Expression::make_func_reference(no, NULL, location);
 }
 
+// Dump the ast for a selector expression.
+
+void
+Selector_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+    const
+{
+  ast_dump_context->dump_expression(this->left_);
+  ast_dump_context->ostream() << ".";
+  ast_dump_context->ostream() << this->name_;
+}
+                      
 // Make a selector expression.
 
 Expression*
@@ -10800,6 +11312,9 @@ class Allocation_expression : public Expression
   tree
   do_get_tree(Translate_context*);
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+  
  private:
   // The type we are allocating.
   Type* type_;
@@ -10819,6 +11334,17 @@ Allocation_expression::do_get_tree(Translate_context* context)
   if (space == error_mark_node)
     return error_mark_node;
   return fold_convert(build_pointer_type(type_tree), space);
+}
+
+// Dump ast representation for an allocation expression.
+
+void
+Allocation_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+    const
+{
+  ast_dump_context->ostream() << "new(";
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream() << ")";
 }
 
 // Make an allocation expression.
@@ -10874,6 +11400,9 @@ class Struct_construction_expression : public Expression
 
   void
   do_export(Export*) const;
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The type of the struct to construct.
@@ -11087,6 +11616,19 @@ Struct_construction_expression::do_export(Export* exp) const
   exp->write_c_string(")");
 }
 
+// Dump ast representation of a struct construction expression.
+
+void
+Struct_construction_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream() << "{";
+  ast_dump_context->dump_expression_list(this->vals_);
+  ast_dump_context->ostream() << "}";
+}
+
 // Make a struct composite literal.  This used by the thunk code.
 
 Expression*
@@ -11150,6 +11692,9 @@ protected:
   // Get a constructor tree for the array values.
   tree
   get_constructor_tree(Translate_context* context, tree type_tree);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The type of the array to construct.
@@ -11322,6 +11867,19 @@ Array_construction_expression::do_export(Export* exp) const
 	}
     }
   exp->write_c_string(")");
+}
+
+// Dump ast representation of an array construction expressin.
+
+void
+Array_construction_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream() << "{" ;
+  ast_dump_context->dump_expression_list(this->vals_);
+  ast_dump_context->ostream() << "}" ;
+
 }
 
 // Construct a fixed array.
@@ -11590,6 +12148,9 @@ class Map_construction_expression : public Expression
   void
   do_export(Export*) const;
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+  
  private:
   // The type of the map to construct.
   Type* type_;
@@ -11843,6 +12404,18 @@ Map_construction_expression::do_export(Export* exp) const
   exp->write_c_string(")");
 }
 
+// Dump ast representation for a map construction expression.
+
+void
+Map_construction_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  // FIXME: We should print key:value pairs here.
+  ast_dump_context->ostream() << "{" ;
+  ast_dump_context->dump_expression_list(this->vals_);
+  ast_dump_context->ostream() << "}";
+}
+
 // A general composite literal.  This is lowered to a type specific
 // version.
 
@@ -11860,7 +12433,7 @@ class Composite_literal_expression : public Parser_expression
   do_traverse(Traverse* traverse);
 
   Expression*
-  do_lower(Gogo*, Named_object*, int);
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   Expression*
   do_copy()
@@ -11873,6 +12446,9 @@ class Composite_literal_expression : public Parser_expression
 					    this->location());
   }
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+  
  private:
   Expression*
   lower_struct(Gogo*, Type*);
@@ -11884,7 +12460,7 @@ class Composite_literal_expression : public Parser_expression
   make_array(Type*, Expression_list*);
 
   Expression*
-  lower_map(Gogo*, Named_object*, Type*);
+  lower_map(Gogo*, Named_object*, Statement_inserter*, Type*);
 
   // The type of the composite literal.
   Type* type_;
@@ -11913,7 +12489,8 @@ Composite_literal_expression::do_traverse(Traverse* traverse)
 // the type.
 
 Expression*
-Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function, int)
+Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function,
+				       Statement_inserter* inserter, int)
 {
   Type* type = this->type_;
 
@@ -11940,7 +12517,7 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function, int)
   else if (type->array_type() != NULL)
     return this->lower_array(type);
   else if (type->map_type() != NULL)
-    return this->lower_map(gogo, function, type);
+    return this->lower_map(gogo, function, inserter, type);
   else
     {
       error_at(this->location(),
@@ -12244,6 +12821,7 @@ Composite_literal_expression::make_array(Type* type, Expression_list* vals)
 
 Expression*
 Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
+					Statement_inserter* inserter,
 					Type* type)
 {
   source_location location = this->location();
@@ -12272,7 +12850,7 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 	  if ((*p)->unknown_expression() != NULL)
 	    {
 	      (*p)->unknown_expression()->clear_is_composite_literal_key();
-	      gogo->lower_expression(function, &*p);
+	      gogo->lower_expression(function, inserter, &*p);
 	      go_assert((*p)->is_error_expression());
 	      return Expression::make_error(location);
 	    }
@@ -12280,6 +12858,20 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
     }
 
   return new Map_construction_expression(type, this->vals_, location);
+}
+
+// Dump ast representation for a composite literal expression.
+
+void
+Composite_literal_expression::do_dump_expression(
+                               Ast_dump_context* ast_dump_context) const
+{
+  // FIXME: We should print colons if this->has_keys_ is true
+  ast_dump_context->ostream() << "composite_literal(" ;
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream() << ", {";
+  ast_dump_context->dump_expression_list(this->vals_);
+  ast_dump_context->ostream() << "})";
 }
 
 // Make a composite literal expression.
@@ -12456,6 +13048,17 @@ Type_guard_expression::do_get_tree(Translate_context* context)
 					      this->location());
 }
 
+// Dump ast representation for a type guard expression.
+
+void
+Type_guard_expression::do_dump_expression(Ast_dump_context* ast_dump_context) 
+    const
+{
+  this->expr_->dump_expression(ast_dump_context);
+  ast_dump_context->ostream() <<  ".";
+  ast_dump_context->dump_type(this->type_);
+}
+
 // Make a type guard expression.
 
 Expression*
@@ -12507,6 +13110,9 @@ class Heap_composite_expression : public Expression
   do_export(Export*) const
   { go_unreachable(); }
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   // The composite literal which is being put on the heap.
   Expression* expr_;
@@ -12533,6 +13139,17 @@ Heap_composite_expression::do_get_tree(Translate_context* context)
 		    space);
   SET_EXPR_LOCATION(ret, this->location());
   return ret;
+}
+
+// Dump ast representation for a heap composite expression.
+
+void
+Heap_composite_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "&(";
+  ast_dump_context->dump_expression(this->expr_);
+  ast_dump_context->ostream() << ")";
 }
 
 // Allocate a composite literal on the heap.
@@ -12602,6 +13219,15 @@ Receive_expression::do_get_tree(Translate_context* context)
 				    this->for_select_, this->location());
 }
 
+// Dump ast representation for a receive expression.
+
+void
+Receive_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << " <- " ;
+  ast_dump_context->dump_expression(channel_);
+}
+
 // Make a receive expression.
 
 Receive_expression*
@@ -12641,10 +13267,22 @@ class Type_descriptor_expression : public Expression
 						this->location());
   }
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
  private:
   // The type for which this is the descriptor.
   Type* type_;
 };
+
+// Dump ast representation for a type descriptor expression.
+
+void
+Type_descriptor_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->dump_type(this->type_);
+}
 
 // Make a type descriptor expression.
 
@@ -12682,6 +13320,9 @@ class Type_info_expression : public Expression
 
   tree
   do_get_tree(Translate_context* context);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
 
  private:
   // The type for which we are getting information.
@@ -12734,6 +13375,23 @@ Type_info_expression::do_get_tree(Translate_context* context)
     }
 }
 
+// Dump ast representation for a type info expression.
+
+void
+Type_info_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "typeinfo(";
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream() << ",";
+  ast_dump_context->ostream() << 
+    (this->type_info_ == TYPE_INFO_ALIGNMENT ? "alignment" 
+    : this->type_info_ == TYPE_INFO_FIELD_ALIGNMENT ? "field alignment"
+    : this->type_info_ == TYPE_INFO_SIZE ? "size "
+    : "unknown");
+  ast_dump_context->ostream() << ")";
+}
+
 // Make a type info expression.
 
 Expression*
@@ -12770,6 +13428,9 @@ class Struct_field_offset_expression : public Expression
   tree
   do_get_tree(Translate_context* context);
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+  
  private:
   // The type of the struct.
   Struct_type* type_;
@@ -12804,6 +13465,17 @@ Struct_field_offset_expression::do_get_tree(Translate_context* context)
 
   return fold_convert_loc(BUILTINS_LOCATION, val_type_tree,
 			  byte_position(struct_field_tree));
+}
+
+// Dump ast representation for a struct field offset expression.
+
+void
+Struct_field_offset_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() <<  "unsafe.Offsetof(";
+  ast_dump_context->ostream() << this->field_->field_name();
+  ast_dump_context->ostream() << ")";
 }
 
 // Make an expression for a struct field offset.
@@ -12846,10 +13518,24 @@ class Map_descriptor_expression : public Expression
 					       this->location());
   }
 
+  void
+  do_dump_expression(Ast_dump_context*) const;
+ 
  private:
   // The type for which this is the descriptor.
   Map_type* type_;
 };
+
+// Dump ast representation for a map descriptor expression.
+
+void
+Map_descriptor_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "map_descriptor(";
+  ast_dump_context->dump_type(this->type_);
+  ast_dump_context->ostream() << ")";
+}
 
 // Make a map descriptor expression.
 
@@ -12888,6 +13574,10 @@ class Label_addr_expression : public Expression
     return expr_to_tree(this->label_->get_addr(context, this->location()));
   }
 
+  void
+  do_dump_expression(Ast_dump_context* ast_dump_context) const
+  { ast_dump_context->ostream() << this->label_->name(); }
+  
  private:
   // The label whose address we are taking.
   Label* label_;

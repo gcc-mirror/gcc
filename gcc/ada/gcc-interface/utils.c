@@ -614,6 +614,7 @@ record_builtin_type (const char *name, tree type, bool artificial_p)
   tree type_decl = build_decl (input_location,
 			       TYPE_DECL, get_identifier (name), type);
   DECL_ARTIFICIAL (type_decl) = artificial_p;
+  TYPE_ARTIFICIAL (type) = artificial_p;
   gnat_pushdecl (type_decl, Empty);
 
   if (debug_hooks->type_decl)
@@ -1297,6 +1298,7 @@ create_type_stub_decl (tree type_name, tree type)
   tree type_decl = build_decl (input_location,
 			       TYPE_DECL, type_name, type);
   DECL_ARTIFICIAL (type_decl) = 1;
+  TYPE_ARTIFICIAL (type) = 1;
   return type_decl;
 }
 
@@ -1329,6 +1331,7 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
 			    TYPE_DECL, type_name, type);
 
   DECL_ARTIFICIAL (type_decl) = artificial_p;
+  TYPE_ARTIFICIAL (type) = artificial_p;
 
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (type_decl, gnat_node);
@@ -2553,8 +2556,10 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
   tem = build_unary_op (ADDR_EXPR, pointer64_type,
 			build0 (PLACEHOLDER_EXPR, type));
   tem = build3 (COND_EXPR, pointer32_type,
-		build_binary_op (GE_EXPR, boolean_type_node, tem,
-				 build_int_cstu (pointer64_type, 0x80000000)),
+		Pmode != SImode
+		? build_binary_op (GE_EXPR, boolean_type_node, tem,
+				   build_int_cstu (pointer64_type, 0x80000000))
+		: boolean_false_node,
 		build0 (PLACEHOLDER_EXPR, void_type_node),
 		convert (pointer32_type, tem));
 
@@ -3290,7 +3295,7 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
    reference.  GNAT_SUBPROG is the subprogram to which the VMS descriptor is
    passed.  */
 
-static tree
+tree
 convert_vms_descriptor (tree gnu_type, tree gnu_expr, tree gnu_expr_alt_type,
 			bool by_ref, Entity_Id gnat_subprog)
 {
@@ -3338,69 +3343,6 @@ convert_vms_descriptor (tree gnu_type, tree gnu_expr, tree gnu_expr_alt_type,
     gnu_expr32 =  build_unary_op (ADDR_EXPR, gnu_type, gnu_expr32);
 
   return build3 (COND_EXPR, gnu_type, is64bit, gnu_expr64, gnu_expr32);
-}
-
-/* Build a stub for the subprogram specified by the GCC tree GNU_SUBPROG
-   and the GNAT node GNAT_SUBPROG.  */
-
-void
-build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
-{
-  tree gnu_subprog_type, gnu_subprog_addr, gnu_subprog_call;
-  tree gnu_subprog_param, gnu_stub_param, gnu_param;
-  tree gnu_stub_decl = DECL_FUNCTION_STUB (gnu_subprog);
-  VEC(tree,gc) *gnu_param_vec = NULL;
-
-  gnu_subprog_type = TREE_TYPE (gnu_subprog);
-
-  /* Initialize the information structure for the function.  */
-  allocate_struct_function (gnu_stub_decl, false);
-  set_cfun (NULL);
-
-  begin_subprog_body (gnu_stub_decl);
-
-  start_stmt_group ();
-  gnat_pushlevel ();
-
-  /* Loop over the parameters of the stub and translate any of them
-     passed by descriptor into a by reference one.  */
-  for (gnu_stub_param = DECL_ARGUMENTS (gnu_stub_decl),
-       gnu_subprog_param = DECL_ARGUMENTS (gnu_subprog);
-       gnu_stub_param;
-       gnu_stub_param = TREE_CHAIN (gnu_stub_param),
-       gnu_subprog_param = TREE_CHAIN (gnu_subprog_param))
-    {
-      if (DECL_BY_DESCRIPTOR_P (gnu_stub_param))
-	{
-	  gcc_assert (DECL_BY_REF_P (gnu_subprog_param));
-	  gnu_param
-	    = convert_vms_descriptor (TREE_TYPE (gnu_subprog_param),
-				      gnu_stub_param,
-				      DECL_PARM_ALT_TYPE (gnu_stub_param),
-				      DECL_BY_DOUBLE_REF_P (gnu_subprog_param),
-				      gnat_subprog);
-	}
-      else
-	gnu_param = gnu_stub_param;
-
-      VEC_safe_push (tree, gc, gnu_param_vec, gnu_param);
-    }
-
-  /* Invoke the internal subprogram.  */
-  gnu_subprog_addr = build1 (ADDR_EXPR, build_pointer_type (gnu_subprog_type),
-			     gnu_subprog);
-  gnu_subprog_call = build_call_vec (TREE_TYPE (gnu_subprog_type),
-                                     gnu_subprog_addr, gnu_param_vec);
-
-  /* Propagate the return value, if any.  */
-  if (VOID_TYPE_P (TREE_TYPE (gnu_subprog_type)))
-    add_stmt (gnu_subprog_call);
-  else
-    add_stmt (build_return_expr (DECL_RESULT (gnu_stub_decl),
-				 gnu_subprog_call));
-
-  gnat_poplevel ();
-  end_subprog_body (end_stmt_group ());
 }
 
 /* Build a type to be used to represent an aliased object whose nominal type

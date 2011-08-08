@@ -648,6 +648,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
 			 include/random \
 			 include/ratio \
 			 include/regex \
+			 include/scoped_allocator \
 			 include/set \
 			 include/sstream \
 			 include/stack \
@@ -1384,7 +1385,7 @@ LATEX_FOOTER           =
 # contain links (just like the HTML output) instead of page references
 # This makes the output suitable for online browsing using a pdf viewer.
 
-PDF_HYPERLINKS         = YES
+PDF_HYPERLINKS         = NO
 
 # If the USE_PDFLATEX tag is set to YES, pdflatex will be used instead of
 # plain latex in the generated Makefile. Set this option to YES to get a

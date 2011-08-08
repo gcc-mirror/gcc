@@ -118,8 +118,8 @@ identical_array_ref (gfc_array_ref *a1, gfc_array_ref *a2)
 /* Return true for identical variables, checking for references if
    necessary.  Calls identical_array_ref for checking array sections.  */
 
-bool
-gfc_are_identical_variables (gfc_expr *e1, gfc_expr *e2)
+static bool
+are_identical_variables (gfc_expr *e1, gfc_expr *e2)
 {
   gfc_ref *r1, *r2;
 
@@ -169,7 +169,7 @@ gfc_are_identical_variables (gfc_expr *e1, gfc_expr *e2)
 	  break;
 
 	default:
-	  gfc_internal_error ("gfc_are_identical_variables: Bad type");
+	  gfc_internal_error ("are_identical_variables: Bad type");
 	}
       r1 = r1->next;
       r2 = r2->next;
@@ -421,7 +421,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
       return 1;
 
     case EXPR_VARIABLE:
-      if (gfc_are_identical_variables (e1, e2))
+      if (are_identical_variables (e1, e2))
 	return 0;
       else
 	return -2;
@@ -438,7 +438,12 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
       if (gfc_dep_compare_expr (e1->value.op.op1, e2->value.op.op1) == 0
 	  && gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op2) == 0)
 	return 0;
-      /* TODO Handle commutative binary operators here?  */
+      else if (e1->value.op.op == INTRINSIC_TIMES
+	       && gfc_dep_compare_expr (e1->value.op.op1, e2->value.op.op2) == 0
+	       && gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op1) == 0)
+	/* Commutativity of multiplication.  */
+	return 0;
+
       return -2;
 
     case EXPR_FUNCTION:
@@ -451,11 +456,11 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 }
 
 
-/* Returns 1 if the two ranges are the same, 0 if they are not, and def
-   if the results are indeterminate.  N is the dimension to compare.  */
+/* Returns 1 if the two ranges are the same and 0 if they are not (or if the
+   results are indeterminate). 'n' is the dimension to compare.  */
 
-int
-gfc_is_same_range (gfc_array_ref *ar1, gfc_array_ref *ar2, int n, int def)
+static int
+is_same_range (gfc_array_ref *ar1, gfc_array_ref *ar2, int n)
 {
   gfc_expr *e1;
   gfc_expr *e2;
@@ -472,25 +477,19 @@ gfc_is_same_range (gfc_array_ref *ar1, gfc_array_ref *ar2, int n, int def)
   if (e1 && !e2)
     {
       i = gfc_expr_is_one (e1, -1);
-      if (i == -1)
-	return def;
-      else if (i == 0)
+      if (i == -1 || i == 0)
 	return 0;
     }
   else if (e2 && !e1)
     {
       i = gfc_expr_is_one (e2, -1);
-      if (i == -1)
-	return def;
-      else if (i == 0)
+      if (i == -1 || i == 0)
 	return 0;
     }
   else if (e1 && e2)
     {
       i = gfc_dep_compare_expr (e1, e2);
-      if (i == -2)
-	return def;
-      else if (i != 0)
+      if (i != 0)
 	return 0;
     }
   /* The strides match.  */
@@ -509,12 +508,10 @@ gfc_is_same_range (gfc_array_ref *ar1, gfc_array_ref *ar2, int n, int def)
 
       /* Check we have values for both.  */
       if (!(e1 && e2))
-	return def;
+	return 0;
 
       i = gfc_dep_compare_expr (e1, e2);
-      if (i == -2)
-	return def;
-      else if (i != 0)
+      if (i != 0)
 	return 0;
     }
 
@@ -532,12 +529,10 @@ gfc_is_same_range (gfc_array_ref *ar1, gfc_array_ref *ar2, int n, int def)
 
       /* Check we have values for both.  */
       if (!(e1 && e2))
-	return def;
+	return 0;
 
       i = gfc_dep_compare_expr (e1, e2);
-      if (i == -2)
-	return def;
-      else if (i != 0)
+      if (i != 0)
 	return 0;
     }
 
@@ -1091,7 +1086,7 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
   int start_comparison;
 
   /* If they are the same range, return without more ado.  */
-  if (gfc_is_same_range (l_ar, r_ar, n, 0))
+  if (is_same_range (l_ar, r_ar, n))
     return GFC_DEP_EQUAL;
 
   l_start = l_ar->start[n];

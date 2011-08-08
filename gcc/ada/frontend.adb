@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -370,9 +370,9 @@ begin
    end if;
 
    --  Qualify all entity names in inner packages, package bodies, etc.,
-   --  except when compiling for the VM back-ends, which depend on
-   --  having unqualified names in certain cases and handles the
-   --  generation of qualified names when needed.
+   --  except when compiling for the VM back-ends, which depend on having
+   --  unqualified names in certain cases and handles the generation of
+   --  qualified names when needed.
 
    if VM_Target = No_VM then
       Exp_Dbug.Qualify_All_Entity_Names;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---        Copyright (C) 2007-2008, Free Software Foundation, Inc.           --
+--        Copyright (C) 2007-2010, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,4 +27,9 @@
 
 package MLib.Tgt.VMS_Common is
    pragma Elaborate_Body;
+
+   function Init_Proc_Name (Library_Name : String) return String;
+   --  Returns, in upper case, Library_Name & "INIT", except when Library_Name
+   --  is "ada" (case insensitive), returns "ADA_INIT".
+
 end MLib.Tgt.VMS_Common;

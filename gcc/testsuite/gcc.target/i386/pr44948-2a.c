@@ -1,7 +1,7 @@
 /* PR target/44948 */
 /* { dg-do run } */
 /* { dg-options "-O -Wno-psabi -mno-sse -mtune=generic" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-require-effective-target sse2_runtime } */
 /* { dg-additional-sources pr44948-2b.c } */
 

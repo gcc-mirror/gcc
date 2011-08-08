@@ -4,7 +4,7 @@
 
 # Filter out the following TFmode functions.
 tf-compats = getf2.c letf2.c eqtf2.c
-tf-functions := $(addprefix $(gcc_srcdir)/config/soft-fp/, $(tf-compats))
+tf-functions := $(addprefix $(srcdir)/soft-fp/, $(tf-compats))
 LIB2ADD := $(filter-out $(tf-functions), $(LIB2ADD))
 LIB2ADD += $(addprefix $(srcdir)/config/i386/64/, $(tf-compats))
 

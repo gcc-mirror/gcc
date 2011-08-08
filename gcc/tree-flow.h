@@ -699,8 +699,6 @@ bool gimple_duplicate_loop_to_header_edge (struct loop *, edge,
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *, edge);
 void rename_variables_in_loop (struct loop *);
 void rename_variables_in_bb (basic_block bb);
-struct loop *tree_ssa_loop_version (struct loop *, tree,
-				    basic_block *);
 tree expand_simple_operations (tree);
 void substitute_in_loop_info (struct loop *, tree, tree);
 edge single_dom_exit (struct loop *);

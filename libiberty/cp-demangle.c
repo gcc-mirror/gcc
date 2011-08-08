@@ -1,5 +1,5 @@
 /* Demangler for g++ V3 ABI.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
@@ -1280,6 +1280,7 @@ d_nested_name (struct d_info *di)
 /* <prefix> ::= <prefix> <unqualified-name>
             ::= <template-prefix> <template-args>
             ::= <template-param>
+            ::= <decltype>
             ::=
             ::= <substitution>
 
@@ -1308,10 +1309,19 @@ d_prefix (struct d_info *di)
 	 <template-param> here.  */
 
       comb_type = DEMANGLE_COMPONENT_QUAL_NAME;
-      if (IS_DIGIT (peek)
+      if (peek == 'D')
+	{
+	  char peek2 = d_peek_next_char (di);
+	  if (peek2 == 'T' || peek2 == 't')
+	    /* Decltype.  */
+	    dc = cplus_demangle_type (di);
+	  else
+	    /* Destructor name.  */
+	    dc = d_unqualified_name (di);
+	}
+      else if (IS_DIGIT (peek)
 	  || IS_LOWER (peek)
 	  || peek == 'C'
-	  || peek == 'D'
 	  || peek == 'U'
 	  || peek == 'L')
 	dc = d_unqualified_name (di);
@@ -2738,10 +2748,18 @@ d_expression (struct d_info *di)
       /* Function parameter used in a late-specified return type.  */
       int index;
       d_advance (di, 2);
-      index = d_compact_number (di);
-      if (index < 0)
-	return NULL;
-
+      if (d_peek_char (di) == 'T')
+	{
+	  /* 'this' parameter.  */
+	  d_advance (di, 1);
+	  index = 0;
+	}
+      else
+	{
+	  index = d_compact_number (di) + 1;
+	  if (index == 0)
+	    return NULL;
+	}
       return d_make_function_param (di, index);
     }
   else if (IS_DIGIT (peek)
@@ -3298,6 +3316,7 @@ d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
   dpi->last_char = '\0';
   dpi->templates = NULL;
   dpi->modifiers = NULL;
+  dpi->pack_index = 0;
   dpi->flush_count = 0;
 
   dpi->callback = callback;
@@ -3885,6 +3904,13 @@ d_print_comp (struct d_print_info *dpi, int options,
 	    struct demangle_component *a = d_lookup_template_argument (dpi, sub);
 	    if (a && a->type == DEMANGLE_COMPONENT_TEMPLATE_ARGLIST)
 	      a = d_index_template_argument (a, dpi->pack_index);
+
+	    if (a == NULL)
+	      {
+		d_print_error (dpi);
+		return;
+	      }
+
 	    sub = a;
 	  }
 
@@ -4139,7 +4165,46 @@ d_print_comp (struct d_print_info *dpi, int options,
       return;
 
     case DEMANGLE_COMPONENT_UNARY:
-      if (d_left (dc)->type != DEMANGLE_COMPONENT_CAST)
+      if (d_left (dc)->type == DEMANGLE_COMPONENT_OPERATOR
+	  && d_left (dc)->u.s_operator.op->len == 1
+	  && d_left (dc)->u.s_operator.op->name[0] == '&'
+	  && d_right (dc)->type == DEMANGLE_COMPONENT_TYPED_NAME
+	  && d_left (d_right (dc))->type == DEMANGLE_COMPONENT_QUAL_NAME
+	  && d_right (d_right (dc))->type == DEMANGLE_COMPONENT_FUNCTION_TYPE)
+	{
+	  /* Address of a function (therefore in an expression context) must
+	     have its argument list suppressed.
+
+	     unary operator ... dc
+	       operator & ... d_left (dc)
+	       typed name ... d_right (dc)
+		 qualified name ... d_left (d_right (dc))
+		   <names>
+		 function type ... d_right (d_right (dc))
+		   argument list
+		     <arguments>  */
+
+	  d_print_expr_op (dpi, options, d_left (dc));
+	  d_print_comp (dpi, options, d_left (d_right (dc)));
+	  return;
+	}
+      else if (d_left (dc)->type == DEMANGLE_COMPONENT_OPERATOR
+	       && d_left (dc)->u.s_operator.op->len == 1
+	       && d_left (dc)->u.s_operator.op->name[0] == '&'
+	       && d_right (dc)->type == DEMANGLE_COMPONENT_QUAL_NAME)
+	{
+	  /* Keep also already processed variant without the argument list.
+
+	     unary operator ... dc
+	       operator & ... d_left (dc)
+	       qualified name ... d_right (dc)
+		 <names>  */
+
+	  d_print_expr_op (dpi, options, d_left (dc));
+	  d_print_comp (dpi, options, d_right (dc));
+	  return;
+	}
+      else if (d_left (dc)->type != DEMANGLE_COMPONENT_CAST)
 	d_print_expr_op (dpi, options, d_left (dc));
       else
 	{
@@ -4165,7 +4230,21 @@ d_print_comp (struct d_print_info *dpi, int options,
 	  && d_left (dc)->u.s_operator.op->name[0] == '>')
 	d_append_char (dpi, '(');
 
-      d_print_subexpr (dpi, options, d_left (d_right (dc)));
+      if (strcmp (d_left (dc)->u.s_operator.op->code, "cl") == 0
+          && d_left (d_right (dc))->type == DEMANGLE_COMPONENT_TYPED_NAME)
+	{
+	  /* Function call used in an expression should not have printed types
+	     of the function arguments.  Values of the function arguments still
+	     get printed below.  */
+
+	  const struct demangle_component *func = d_left (d_right (dc));
+
+	  if (d_right (func)->type != DEMANGLE_COMPONENT_FUNCTION_TYPE)
+	    d_print_error (dpi);
+	  d_print_subexpr (dpi, options, d_left (func));
+	}
+      else
+	d_print_subexpr (dpi, options, d_left (d_right (dc)));
       if (strcmp (d_left (dc)->u.s_operator.op->code, "ix") == 0)
 	{
 	  d_append_char (dpi, '[');
@@ -4347,9 +4426,17 @@ d_print_comp (struct d_print_info *dpi, int options,
       return;
 
     case DEMANGLE_COMPONENT_FUNCTION_PARAM:
-      d_append_string (dpi, "{parm#");
-      d_append_num (dpi, dc->u.s_number.number + 1);
-      d_append_char (dpi, '}');
+      {
+	long num = dc->u.s_number.number;
+	if (num == 0)
+	  d_append_string (dpi, "this");
+	else
+	  {
+	    d_append_string (dpi, "{parm#");
+	    d_append_num (dpi, num);
+	    d_append_char (dpi, '}');
+	  }
+      }
       return;
 
     case DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS:

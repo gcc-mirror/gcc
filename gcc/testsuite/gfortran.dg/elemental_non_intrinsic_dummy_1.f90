@@ -20,4 +20,4 @@ INTEGER FUNCTION SUB(XX)
   SUB=XX()
 END
 
-! { dg-final { cleanup-modules "TT" } }
+! { dg-final { cleanup-modules "tt" } }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,7 @@ with Interfaces.C;
 with System.Multiprocessors;
 with System.Tasking.Debug;
 with System.Interrupt_Management;
+with System.Float_Control;
 
 with System.Soft_Links;
 --  We use System.Soft_Links instead of System.Tasking.Initialization
@@ -78,40 +79,29 @@ package body System.Task_Primitives.Operations is
    --  The followings are logically constants, but need to be initialized at
    --  run time.
 
+   Environment_Task_Id : Task_Id;
+   --  A variable to hold Task_Id for the environment task
+
+   --  The followings are internal configuration constants needed
+
+   Dispatching_Policy : Character;
+   pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
+
+   Foreign_Task_Elaborated : aliased Boolean := True;
+   --  Used to identified fake tasks (i.e., non-Ada Threads)
+
+   Locking_Policy : Character;
+   pragma Import (C, Locking_Policy, "__gl_locking_policy");
+
+   Mutex_Protocol : Priority_Type;
+
    Single_RTS_Lock : aliased RTS_Lock;
    --  This is a lock to allow only one thread of control in the RTS at a
    --  time; it is used to execute in mutual exclusion from all other tasks.
    --  Used mainly in Single_Lock mode, but also to protect All_Tasks_List
 
-   Environment_Task_Id : Task_Id;
-   --  A variable to hold Task_Id for the environment task
-
-   Unblocked_Signal_Mask : aliased sigset_t;
-   --  The set of signals that should unblocked in all tasks
-
-   --  The followings are internal configuration constants needed
-
    Time_Slice_Val : Integer;
    pragma Import (C, Time_Slice_Val, "__gl_time_slice_val");
-
-   Locking_Policy : Character;
-   pragma Import (C, Locking_Policy, "__gl_locking_policy");
-
-   Dispatching_Policy : Character;
-   pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
-
-   Mutex_Protocol : Priority_Type;
-
-   Foreign_Task_Elaborated : aliased Boolean := True;
-   --  Used to identified fake tasks (i.e., non-Ada Threads)
-
-   type Set_Stack_Limit_Proc_Acc is access procedure;
-   pragma Convention (C, Set_Stack_Limit_Proc_Acc);
-
-   Set_Stack_Limit_Hook : Set_Stack_Limit_Proc_Acc;
-   pragma Import (C, Set_Stack_Limit_Hook, "__gnat_set_stack_limit_hook");
-   --  Procedure to be called when a task is created to set stack
-   --  limit.
 
    --------------------
    -- Local Packages --
@@ -168,6 +158,14 @@ package body System.Task_Primitives.Operations is
    --  This function returns True if the current execution is in the context
    --  of a task, and False if it is an interrupt context.
 
+   type Set_Stack_Limit_Proc_Acc is access procedure;
+   pragma Convention (C, Set_Stack_Limit_Proc_Acc);
+
+   Set_Stack_Limit_Hook : Set_Stack_Limit_Proc_Acc;
+   pragma Import (C, Set_Stack_Limit_Hook, "__gnat_set_stack_limit_hook");
+   --  Procedure to be called when a task is created to set stack
+   --  limit. Used only for VxWorks 5 and VxWorks MILS guest OS.
+
    function To_Address is
      new Ada.Unchecked_Conversion (Task_Id, System.Address);
 
@@ -178,11 +176,13 @@ package body System.Task_Primitives.Operations is
    procedure Abort_Handler (signo : Signal) is
       pragma Unreferenced (signo);
 
-      Self_ID : constant Task_Id := Self;
-      Old_Set : aliased sigset_t;
-
-      Result : int;
+      Self_ID        : constant Task_Id := Self;
+      Old_Set        : aliased sigset_t;
+      Unblocked_Mask : aliased sigset_t;
+      Result         : int;
       pragma Warnings (Off, Result);
+
+      use System.Interrupt_Management;
 
    begin
       --  It is not safe to raise an exception when using ZCX and the GCC
@@ -198,12 +198,28 @@ package body System.Task_Primitives.Operations is
       then
          Self_ID.Aborting := True;
 
-         --  Make sure signals used for RTS internal purpose are unmasked
+         --  Make sure signals used for RTS internal purposes are unmasked
+
+         Result := sigemptyset (Unblocked_Mask'Access);
+         pragma Assert (Result = 0);
+         Result :=
+           sigaddset
+           (Unblocked_Mask'Access,
+            Signal (Abort_Task_Interrupt));
+         pragma Assert (Result = 0);
+         Result := sigaddset (Unblocked_Mask'Access, SIGBUS);
+         pragma Assert (Result = 0);
+         Result := sigaddset (Unblocked_Mask'Access, SIGFPE);
+         pragma Assert (Result = 0);
+         Result := sigaddset (Unblocked_Mask'Access, SIGILL);
+         pragma Assert (Result = 0);
+         Result := sigaddset (Unblocked_Mask'Access, SIGSEGV);
+         pragma Assert (Result = 0);
 
          Result :=
            pthread_sigmask
              (SIG_UNBLOCK,
-              Unblocked_Signal_Mask'Access,
+              Unblocked_Mask'Access,
               Old_Set'Access);
          pragma Assert (Result = 0);
 
@@ -778,10 +794,6 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Enter_Task (Self_ID : Task_Id) is
-      procedure Init_Float;
-      pragma Import (C, Init_Float, "__gnat_init_float");
-      --  Properly initializes the FPU for PPC/MIPS systems
-
    begin
       --  Store the user-level task id in the Thread field (to be used
       --  internally by the run-time system) and the kernel-level task id in
@@ -792,7 +804,9 @@ package body System.Task_Primitives.Operations is
 
       Specific.Set (Self_ID);
 
-      Init_Float;
+      --  Properly initializes the FPU for PPC/MIPS systems
+
+      System.Float_Control.Reset;
 
       --  Install the signal handlers
 
@@ -939,8 +953,13 @@ package body System.Task_Primitives.Operations is
       --  Set processor affinity
 
       if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+         --  Ada 2012 pragma CPU uses CPU numbers starting from 1, while
+         --  on VxWorks the first CPU is identified by a 0, so we need to
+         --  adjust.
+
          Result :=
-           taskCpuAffinitySet (T.Common.LL.Thread, int (T.Common.Base_CPU));
+           taskCpuAffinitySet
+             (T.Common.LL.Thread, int (T.Common.Base_CPU) - 1);
 
       elsif T.Common.Task_Info /= Unspecified_Task_Info then
          Result :=
@@ -1380,16 +1399,6 @@ package body System.Task_Primitives.Operations is
 
       end if;
 
-      Result := sigemptyset (Unblocked_Signal_Mask'Access);
-      pragma Assert (Result = 0);
-
-      for J in Interrupt_Management.Signal_ID loop
-         if System.Interrupt_Management.Keep_Unmasked (J) then
-            Result := sigaddset (Unblocked_Signal_Mask'Access, Signal (J));
-            pragma Assert (Result = 0);
-         end if;
-      end loop;
-
       --  Initialize the lock used to synchronize chain of all ATCBs
 
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
@@ -1407,10 +1416,14 @@ package body System.Task_Primitives.Operations is
       if Environment_Task.Common.Base_CPU /=
          System.Multiprocessors.Not_A_Specific_CPU
       then
+         --  Ada 2012 pragma CPU uses CPU numbers starting from 1, while
+         --  on VxWorks the first CPU is identified by a 0, so we need to
+         --  adjust.
+
          Result :=
            taskCpuAffinitySet
              (Environment_Task.Common.LL.Thread,
-              int (Environment_Task.Common.Base_CPU));
+              int (Environment_Task.Common.Base_CPU) - 1);
          pragma Assert (Result /= -1);
       end if;
    end Initialize;

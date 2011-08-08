@@ -427,15 +427,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /**
      *  @brief  The type of an event callback function.
-     *  @param  event  One of the members of the event enum.
-     *  @param  ios_base  Reference to the ios_base object.
-     *  @param  int  The integer provided when the callback was registered.
+     *  @param  __e  One of the members of the event enum.
+     *  @param  __b  Reference to the ios_base object.
+     *  @param  __i  The integer provided when the callback was registered.
      *
      *  Event callbacks are user defined functions that get called during
      *  several ios_base and basic_ios functions, specifically imbue(),
      *  copyfmt(), and ~ios().
     */
-    typedef void (*event_callback) (event, ios_base&, int);
+    typedef void (*event_callback) (event __e, ios_base& __b, int __i);
 
     /**
      *  @brief  Add the callback __fn with parameter __index.
@@ -555,10 +555,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /**
      *  @brief  Setting new format flags all at once.
-     *  @param  fmtfl  The new flags to set.
+     *  @param  __fmtfl  The new flags to set.
      *  @return  The previous format control flags.
      *
-     *  This function overwrites all the format flags with @a fmtfl.
+     *  This function overwrites all the format flags with @a __fmtfl.
     */
     fmtflags
     flags(fmtflags __fmtfl)
@@ -570,7 +570,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /**
      *  @brief  Setting new format flags.
-     *  @param  fmtfl  Additional flags to set.
+     *  @param  __fmtfl  Additional flags to set.
      *  @return  The previous format control flags.
      *
      *  This function sets additional flags in format control.  Flags that
@@ -586,8 +586,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /**
      *  @brief  Setting new format flags.
-     *  @param  fmtfl  Additional flags to set.
-     *  @param  mask  The flags mask for @a fmtfl.
+     *  @param  __fmtfl  Additional flags to set.
+     *  @param  __mask  The flags mask for @a fmtfl.
      *  @return  The previous format control flags.
      *
      *  This function clears @a mask in the format flags, then sets
@@ -604,9 +604,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /**
      *  @brief  Clearing format flags.
-     *  @param  mask  The flags to unset.
+     *  @param  __mask  The flags to unset.
      *
-     *  This function clears @a mask in the format flags.
+     *  This function clears @a __mask in the format flags.
     */
     void
     unsetf(fmtflags __mask)
@@ -625,7 +625,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /**
      *  @brief  Changing flags.
-     *  @param  prec  The new precision value.
+     *  @param  __prec  The new precision value.
      *  @return  The previous value of precision().
     */
     streamsize
@@ -648,7 +648,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /**
      *  @brief  Changing flags.
-     *  @param  wide  The new width value.
+     *  @param  __wide  The new width value.
      *  @return  The previous value of width().
     */
     streamsize
@@ -662,7 +662,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // [27.4.2.4] ios_base static members
     /**
      *  @brief  Interaction with the standard C I/O objects.
-     *  @param  sync  Whether to synchronize or not.
+     *  @param  __sync  Whether to synchronize or not.
      *  @return  True if the standard streams were previously synchronized.
      *
      *  The synchronization referred to is @e only that between the standard
@@ -676,7 +676,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // [27.4.2.3] ios_base locale functions
     /**
      *  @brief  Setting a new locale.
-     *  @param  loc  The new locale.
+     *  @param  __loc  The new locale.
      *  @return  The previous locale.
      *
      *  Sets the new locale for this stream, and then invokes each callback

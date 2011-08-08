@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include "diagnostic-core.h"
 
 #if GCC_VERSION < 3004
 
@@ -98,3 +99,76 @@ ffs_hwi (unsigned HOST_WIDE_INT x)
 }
 
 #endif /* GCC_VERSION < 3004 */
+
+/* Compute the absolute value of X.  */
+
+HOST_WIDE_INT
+abs_hwi (HOST_WIDE_INT x)
+{
+  gcc_checking_assert (x != HOST_WIDE_INT_MIN);
+  return x >= 0 ? x : -x;
+}
+
+/* Compute the greatest common divisor of two numbers A and B using
+   Euclid's algorithm.  */
+
+HOST_WIDE_INT
+gcd (HOST_WIDE_INT a, HOST_WIDE_INT b)
+{
+  HOST_WIDE_INT x, y, z;
+
+  x = abs_hwi (a);
+  y = abs_hwi (b);
+
+  while (x > 0)
+    {
+      z = y % x;
+      y = x;
+      x = z;
+    }
+
+  return y;
+}
+
+/* For X and Y positive integers, return X multiplied by Y and check
+   that the result does not overflow.  */
+
+HOST_WIDE_INT
+pos_mul_hwi (HOST_WIDE_INT x, HOST_WIDE_INT y)
+{
+  if (x != 0)
+    gcc_checking_assert ((HOST_WIDE_INT_MAX) / x >= y);
+
+  return x * y;
+}
+
+/* Return X multiplied by Y and check that the result does not
+   overflow.  */
+
+HOST_WIDE_INT
+mul_hwi (HOST_WIDE_INT x, HOST_WIDE_INT y)
+{
+  gcc_checking_assert (x != HOST_WIDE_INT_MIN
+		       && y != HOST_WIDE_INT_MIN);
+
+  if (x >= 0)
+    {
+      if (y >= 0)
+	return pos_mul_hwi (x, y);
+
+      return -pos_mul_hwi (x, -y);
+    }
+
+  if (y >= 0)
+    return -pos_mul_hwi (-x, y);
+
+  return pos_mul_hwi (-x, -y);
+}
+
+/* Compute the least common multiple of two numbers A and B .  */
+
+HOST_WIDE_INT
+least_common_multiple (HOST_WIDE_INT a, HOST_WIDE_INT b)
+{
+  return mul_hwi (abs_hwi (a) / gcd (a, b), abs_hwi (b));
+}

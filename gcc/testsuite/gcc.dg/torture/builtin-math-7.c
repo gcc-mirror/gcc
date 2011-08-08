@@ -5,7 +5,10 @@
    Origin: Kaveh R. Ghazi,  August 13, 2009.  */
 
 /* { dg-do run } */
+/* C6X fails due to -freciprocal-math default.  */
+/* { dg-skip-if "" { tic6x-*-* } "*" "" } */
 /* { dg-add-options ieee } */
+/* { dg-require-effective-target large_double } */
 
 extern void link_error(int);
 

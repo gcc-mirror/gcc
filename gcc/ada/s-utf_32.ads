@@ -120,7 +120,7 @@ package System.UTF_32 is
    function Is_UTF_32_Line_Terminator (U : UTF_32) return Boolean;
    pragma Inline (Is_UTF_32_Line_Terminator);
    --  Returns true iff U is an allowed line terminator for source programs,
-   --  if U is in the category Zp (Separator, Paragraph), or Zs (Separator,
+   --  if U is in the category Zp (Separator, Paragraph), or Zl (Separator,
    --  Line), or if U is a conventional line terminator (CR, LF, VT, FF).
    --  There is no category version for this function, since the set of
    --  characters does not correspond to a set of Unicode categories.

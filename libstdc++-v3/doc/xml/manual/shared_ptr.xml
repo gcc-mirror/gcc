@@ -495,44 +495,51 @@ the following types, depending on how the shared_ptr is constructed.
 
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm" class="uri">
-    </biblioid>
-    <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm">
       Improving shared_ptr for C++0x, Revision 2
-    </citetitle>    
+	</link>
+      </title>
+
     <subtitle>
       N2351
     </subtitle>
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2456.html" class="uri">
-    </biblioid>
-    <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2456.html">
       C++ Standard Library Active Issues List
-    </citetitle>
+	</link>
+      </title>
+
     <subtitle>
       N2456
     </subtitle>
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf" class="uri">
-    </biblioid>
-    <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf">
       Working Draft, Standard for Programming Language C++
-    </citetitle>
+	</link>
+      </title>
     <subtitle>
       N2461
     </subtitle>
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://boost.org/libs/smart_ptr/shared_ptr.htm" class="uri">shared_ptr
-    </biblioid>
-    <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://boost.org/libs/smart_ptr/shared_ptr.htm">
       Boost C++ Libraries documentation, shared_ptr
-    </citetitle>
+	</link>
+      </title>
+
     <subtitle>
       N2461
     </subtitle>

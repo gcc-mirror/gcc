@@ -30,10 +30,6 @@ TARGET_LIBGCC2_CFLAGS = -fPIC -mwarn-reloc -D__IN_LIBGCC2
 # own versions below and/or via direct expansion.
 LIB2FUNCS_EXCLUDE = _floatdisf _floatundisf _floattisf _floatunstisf
 
-# We provide our own version of __divdf3 that performs better and has
-# better support for non-default rounding modes.
-DPBIT_FUNCS := $(filter-out _div_df, $(DPBIT_FUNCS))
-
 LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/spu/float_unssidf.c \
 			 $(srcdir)/config/spu/float_unsdidf.c \
 			 $(srcdir)/config/spu/float_unsdisf.c \
@@ -46,21 +42,6 @@ LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/spu/float_unssidf.c \
 			 $(srcdir)/config/spu/multi3.c \
 			 $(srcdir)/config/spu/divmodti4.c \
 			 $(srcdir)/config/spu/divv2df3.c
-
-LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
-   $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
-
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c $(srcdir)/config/spu/t-spu-elf
-	cat $(srcdir)/config/fp-bit.c > dp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c $(srcdir)/config/spu/t-spu-elf
-	echo '#define FLOAT' > fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 # Build TImode conversion routines to support Fortran 128-bit
 # integer data types.

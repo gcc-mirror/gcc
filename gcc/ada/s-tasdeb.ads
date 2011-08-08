@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1997-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,7 +83,7 @@ package System.Tasking.Debug is
 
    subtype Event_Kind_Type is Positive range 1 .. 11;
    --  Event kinds currently defined for debugging, used globally
-   --  below and on a per taak basis.
+   --  below and on a per task basis.
 
    procedure Signal_Debug_Event
      (Event_Kind : Event_Kind_Type;

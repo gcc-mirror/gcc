@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,6 @@
 --  handling of private and full declarations, and the construction of dispatch
 --  tables for tagged types.
 
-with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -44,6 +43,7 @@ with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Output;   use Output;
+with Restrict; use Restrict;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
@@ -760,6 +760,13 @@ package body Sem_Ch7 is
       --  True when this package declaration is not a nested declaration
 
    begin
+      --  Analye aspect specifications immediately, since we need to recognize
+      --  things like Pure early enough to diagnose violations during analysis.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
+
       --  Ada 2005 (AI-217): Check if the package has been erroneously named
       --  in a limited-with clause of its own context. In this case the error
       --  has been previously notified by Analyze_Context.
@@ -768,7 +775,7 @@ package body Sem_Ch7 is
       --     package Pkg is ...
 
       if From_With_Type (Id) then
-         goto Leave;
+         return;
       end if;
 
       if Debug_Flag_C then
@@ -842,9 +849,6 @@ package body Sem_Ch7 is
          Write_Location (Sloc (N));
          Write_Eol;
       end if;
-
-      <<Leave>>
-         Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Package_Declaration;
 
    -----------------------------------
@@ -869,6 +873,10 @@ package body Sem_Ch7 is
       --  enclosing package. This requires a separate step to install these
       --  private_with_clauses, and remove them at the end of the nested
       --  package.
+
+      procedure Check_One_Tagged_Type_Or_Extension_At_Most;
+      --  Issue an error in SPARK mode if a package specification contains
+      --  more than one tagged type or type extension.
 
       procedure Clear_Constants (Id : Entity_Id; FE : Entity_Id);
       --  Clears constant indications (Never_Set_In_Source, Constant_Value, and
@@ -897,6 +905,58 @@ package body Sem_Ch7 is
       --  This has to be done at the point of entering the instance package's
       --  private part rather than being done in Sem_Ch12.Install_Parent
       --  (which is where the parents' visible declarations are installed).
+
+      ------------------------------------------------
+      -- Check_One_Tagged_Type_Or_Extension_At_Most --
+      ------------------------------------------------
+
+      procedure Check_One_Tagged_Type_Or_Extension_At_Most is
+         Previous : Node_Id;
+
+         procedure Check_Decls (Decls : List_Id);
+         --  Check that either Previous is Empty and Decls does not contain
+         --  more than one tagged type or type extension, or Previous is
+         --  already set and Decls contains no tagged type or type extension.
+
+         -----------------
+         -- Check_Decls --
+         -----------------
+
+         procedure Check_Decls (Decls : List_Id) is
+            Decl : Node_Id;
+
+         begin
+            Decl := First (Decls);
+            while Present (Decl) loop
+               if Nkind (Decl) = N_Full_Type_Declaration
+                 and then Is_Tagged_Type (Defining_Identifier (Decl))
+               then
+                  if No (Previous) then
+                     Previous := Decl;
+
+                  else
+                     Error_Msg_Sloc := Sloc (Previous);
+                     Check_SPARK_Restriction
+                       ("at most one tagged type or type extension allowed",
+                        "\\ previous declaration#",
+                        Decl);
+                  end if;
+               end if;
+
+               Next (Decl);
+            end loop;
+         end Check_Decls;
+
+      --  Start of processing for Check_One_Tagged_Type_Or_Extension_At_Most
+
+      begin
+         Previous := Empty;
+         Check_Decls (Vis_Decls);
+
+         if Present (Priv_Decls) then
+            Check_Decls (Priv_Decls);
+         end if;
+      end Check_One_Tagged_Type_Or_Extension_At_Most;
 
       ---------------------
       -- Clear_Constants --
@@ -1380,6 +1440,8 @@ package body Sem_Ch7 is
          Clear_Constants (Id, First_Entity (Id));
          Clear_Constants (Id, First_Private_Entity (Id));
       end if;
+
+      Check_One_Tagged_Type_Or_Extension_At_Most;
    end Analyze_Package_Specification;
 
    --------------------------------------
@@ -1403,7 +1465,10 @@ package body Sem_Ch7 is
 
       New_Private_Type (N, Id, N);
       Set_Depends_On_Private (Id);
-      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Private_Type_Declaration;
 
    ----------------------------------
@@ -1451,8 +1516,8 @@ package body Sem_Ch7 is
    procedure Declare_Inherited_Private_Subprograms (Id : Entity_Id) is
 
       function Is_Primitive_Of (T : Entity_Id; S : Entity_Id) return Boolean;
-      --  Check whether an inherited subprogram is an operation of an untagged
-      --  derived type.
+      --  Check whether an inherited subprogram S is an operation of an
+      --  untagged derived type T.
 
       ---------------------
       -- Is_Primitive_Of --
@@ -2067,39 +2132,6 @@ package body Sem_Ch7 is
            and then Is_Tagged_Type (Full)
            and then not Error_Posted (Full)
          then
-            if Priv_Is_Base_Type then
-
-               --  Ada 2005 (AI-345): The full view of a type implementing an
-               --  interface can be a task type.
-
-               --    type T is new I with private;
-               --  private
-               --    task type T is new I with ...
-
-               if Is_Interface (Etype (Priv))
-                 and then Is_Concurrent_Type (Base_Type (Full))
-               then
-                  --  Protect the frontend against previous errors
-
-                  if Present (Corresponding_Record_Type
-                               (Base_Type (Full)))
-                  then
-                     Set_Access_Disp_Table
-                       (Priv, Access_Disp_Table
-                               (Corresponding_Record_Type (Base_Type (Full))));
-
-                  --  Generic context, or previous errors
-
-                  else
-                     null;
-                  end if;
-
-               else
-                  Set_Access_Disp_Table
-                    (Priv, Access_Disp_Table (Base_Type (Full)));
-               end if;
-            end if;
-
             if Is_Tagged_Type (Priv) then
 
                --  If the type is tagged, the tag itself must be available on
@@ -2430,7 +2462,11 @@ package body Sem_Ch7 is
                while Present (Elmt) loop
                   Subp := Node (Elmt);
 
-                  if Is_Overloadable (Subp) then
+                  --  Is_Primitive is tested because there can be cases where
+                  --  nonprimitive subprograms (in nested packages) are added
+                  --  to the Private_Dependents list.
+
+                  if Is_Overloadable (Subp) and then Is_Primitive (Subp) then
                      Error_Msg_NE
                        ("type& must be completed in the private part",
                          Parent (Subp), Id);

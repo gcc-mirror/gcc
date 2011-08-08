@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,11 +37,12 @@ package Prj.Pars is
       Project           : out Project_Id;
       Project_File_Name : String;
       Packages_To_Check : String_List_Access := All_Packages;
-      Flags             : Processing_Flags;
       Reset_Tree        : Boolean := True;
-      In_Node_Tree      : Prj.Tree.Project_Node_Tree_Ref := null);
+      In_Node_Tree      : Prj.Tree.Project_Node_Tree_Ref := null;
+      Env               : in out Prj.Tree.Environment);
    --  Parse and process a project files and all its imported project files, in
    --  the project tree In_Tree.
+   --
    --  All the project files are parsed (through Prj.Tree) to create a tree in
    --  memory. That tree is then processed (through Prj.Proc) to create a
    --  expanded representation of the tree based on the current external

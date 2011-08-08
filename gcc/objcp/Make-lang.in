@@ -57,6 +57,7 @@ OBJCXX_OBJS = objcp/objcp-act.o objcp/objcp-lang.o objcp/objcp-decl.o \
    objcp/objc-gnu-runtime-abi-01.o \
    objcp/objc-next-runtime-abi-01.o \
    objcp/objc-next-runtime-abi-02.o \
+   objcp/objc-encoding.o \
    $(CXX_AND_OBJCXX_OBJS)
 
 obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
@@ -76,48 +77,91 @@ cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBDEPS)
 
 # Objective C++ language specific files.
 
-objcp/objcp-lang.o : objcp/objcp-lang.c $(START_HDRS) \
+objcp/objcp-lang.o : objcp/objcp-lang.c \
+  $(START_HDRS) \
+  $(GGC_H) \
   $(C_COMMON_H) $(LANGHOOKS_DEF_H) cp/cp-objcp-common.h \
   $(TARGET_H) gtype-objcp.h
 
 objcp/objcp-decl.o : objcp/objcp-decl.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) \
-   objc/objc-act.h objcp/objcp-decl.h c-family/c-objc.h
+   objc/objc-act.h c-family/c-objc.h \
+   objcp/objcp-decl.h
 
 objcp/objc-runtime-shared-support.o : objc/objc-runtime-shared-support.c \
-   $(START_HDRS) objc/objc-runtime-shared-support.h $(OBSTACK_H) \
-   objc/objc-next-metadata-tags.h gt-objc-objc-runtime-shared-support.h
+   gt-objc-objc-runtime-shared-support.h \
+   $(START_HDRS) \
+   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
+   objc/objc-encoding.h \
+   objc/objc-next-metadata-tags.h \
+   objc/objc-runtime-shared-support.h \
+   objcp/objcp-decl.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
 		$(OUTPUT_OPTION)
 
-objcp/objc-gnu-runtime-abi-01.o: objc/objc-gnu-runtime-abi-01.c $(START_HDRS) \
-   objc/objc-runtime-hooks.h $(GGC_H) \
-   gt-objc-objc-gnu-runtime-abi-01.h toplev.h 
+objcp/objc-gnu-runtime-abi-01.o: objc/objc-gnu-runtime-abi-01.c \
+   gt-objc-objc-gnu-runtime-abi-01.h \
+   $(START_HDRS) \
+   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
+   toplev.h \
+   objc/objc-encoding.h \
+   objc/objc-runtime-hooks.h \
+   objc/objc-runtime-shared-support.h \
+   objcp/objcp-decl.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
 		$(OUTPUT_OPTION)
 
-objcp/objc-next-runtime-abi-01.o: objc/objc-next-runtime-abi-01.c $(START_HDRS) \
-   $(GGC_H) objc/objc-runtime-hooks.h \
-   objc/objc-next-metadata-tags.h gt-objc-objc-next-runtime-abi-01.h output.h \
-   objc/objc-runtime-shared-support.h $(TARGET_H)
+objcp/objc-next-runtime-abi-01.o: objc/objc-next-runtime-abi-01.c \
+   gt-objc-objc-next-runtime-abi-01.h \
+   $(START_HDRS) \
+   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
+   $(TARGET_H) output.h \
+   objc/objc-encoding.h \
+   objc/objc-next-metadata-tags.h \
+   objc/objc-runtime-hooks.h \
+   objc/objc-runtime-shared-support.h \
+   objcp/objcp-decl.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
 		$(OUTPUT_OPTION)
 
-objcp/objc-next-runtime-abi-02.o: objc/objc-next-runtime-abi-02.c $(START_HDRS) \
-   $(GGC_H) objc/objc-runtime-hooks.h \
-   objc/objc-next-metadata-tags.h gt-objc-objc-next-runtime-abi-02.h $(TARGET_H) \
-   objc/objc-runtime-shared-support.h $(OBSTACK_H)
+objcp/objc-next-runtime-abi-02.o: objc/objc-next-runtime-abi-02.c \
+   gt-objc-objc-next-runtime-abi-02.h \
+   $(START_HDRS) \
+   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
+   $(TARGET_H) \
+   objc/objc-encoding.h \
+   objc/objc-next-metadata-tags.h \
+   objc/objc-runtime-hooks.h \
+   objc/objc-runtime-shared-support.h \
+   objcp/objcp-decl.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
 		$(OUTPUT_OPTION)
 
 
 # The following must be an explicit rule; please keep in sync with the implicit
 # one in Makefile.in.
-objcp/objcp-act.o : objc/objc-act.c $(START_HDRS) $(GGC_H) \
-   $(RTL_H) $(EXPR_H) $(TARGET_H) $(DIAGNOSTIC_H) toplev.h $(FLAGS_H) \
-   input.h $(FUNCTION_H) output.h debug.h $(OBSTACK_H) \
-   objcp/objcp-decl.h $(LANGHOOKS_DEF_H) $(HASHTAB_H) gt-objc-objc-act.h \
-   $(GIMPLE_H) objc/objc-runtime-hooks.h objc/objc-runtime-shared-support.h
+objcp/objcp-act.o : objc/objc-act.c \
+   gt-objc-objc-act.h \
+   $(START_HDRS) \
+   $(GGC_H) $(DIAGNOSTIC_H) $(FLAGS_H) input.h \
+   toplev.h $(FUNCTION_H) output.h debug.h $(LANGHOOKS_DEF_H) \
+   $(HASHTAB_H) $(GIMPLE_H) \
+   $(RTL_H) $(EXPR_H) $(TARGET_H) \
+   objcp/objcp-decl.h \
+   objc/objc-encoding.h \
+   objc/objc-runtime-hooks.h \
+   objc/objc-runtime-shared-support.h \
+   objcp/objcp-decl.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
+		$(OUTPUT_OPTION)
+
+objcp/objc-encoding.o : objc/objc-encoding.c \
+   $(START_HDRS) \
+   $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
+   $(OBSTACK_H) \
+   objc/objc-encoding.h \
+   objc/objc-runtime-shared-support.h \
+   objcp/objcp-decl.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
 		$(OUTPUT_OPTION)
 

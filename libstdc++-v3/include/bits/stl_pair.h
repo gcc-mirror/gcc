@@ -128,24 +128,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // DR 811.
       template<class _U1, class = typename
 	       enable_if<is_convertible<_U1, _T1>::value>::type>
-	pair(_U1&& __x, const _T2& __y)
+	constexpr pair(_U1&& __x, const _T2& __y)
 	: first(std::forward<_U1>(__x)), second(__y) { }
 
       template<class _U2, class = typename
 	       enable_if<is_convertible<_U2, _T2>::value>::type>
-	pair(const _T1& __x, _U2&& __y)
+	constexpr pair(const _T1& __x, _U2&& __y)
 	: first(__x), second(std::forward<_U2>(__y)) { }
 
       template<class _U1, class _U2, class = typename
 	       enable_if<__and_<is_convertible<_U1, _T1>,
 				is_convertible<_U2, _T2>>::value>::type>
-	pair(_U1&& __x, _U2&& __y)
+	constexpr pair(_U1&& __x, _U2&& __y)
 	: first(std::forward<_U1>(__x)), second(std::forward<_U2>(__y)) { }
 
       template<class _U1, class _U2, class = typename
 	       enable_if<__and_<is_convertible<_U1, _T1>,
 				is_convertible<_U2, _T2>>::value>::type>
-	pair(pair<_U1, _U2>&& __p)
+	constexpr pair(pair<_U1, _U2>&& __p)
 	: first(std::forward<_U1>(__p.first)),
 	  second(std::forward<_U2>(__p.second)) { }
 
@@ -262,8 +262,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief A convenience wrapper for creating a pair from two objects.
-   *  @param  x  The first object.
-   *  @param  y  The second object.
+   *  @param  __x  The first object.
+   *  @param  __y  The second object.
    *  @return   A newly-constructed pair<> object of the appropriate type.
    *
    *  The standard requires that the objects be passed by reference-to-const,
@@ -275,8 +275,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   // NB: DR 706.
   template<class _T1, class _T2>
-    inline pair<typename __decay_and_strip<_T1>::__type,
-		typename __decay_and_strip<_T2>::__type>
+    inline constexpr pair<typename __decay_and_strip<_T1>::__type,
+			  typename __decay_and_strip<_T2>::__type>
     make_pair(_T1&& __x, _T2&& __y)
     {
       typedef typename __decay_and_strip<_T1>::__type __ds_type1;

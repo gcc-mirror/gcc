@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -343,7 +343,7 @@ package System.OS_Lib is
    --  effect of "cp -p" on Unix systems, and None corresponds to the typical
    --  effect of "cp" on Unix systems.
 
-   --  Note: Time_Stamps and Full are not supported on VMS and VxWorks
+   --  Note: Time_Stamps and Full are not supported on VMS and VxWorks 5
 
    procedure Copy_File
      (Name     : String;
@@ -371,7 +371,7 @@ package System.OS_Lib is
    --  furthermore Dest must be writable. Success will be set to True if the
    --  operation was successful and False otherwise.
    --
-   --  Note: this procedure is not supported on VMS and VxWorks. On these
+   --  Note: this procedure is not supported on VMS and VxWorks 5. On these
    --  platforms, Success is always set to False.
 
    function Read

@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2007, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -31,4 +31,4 @@ MULTILIB_MATCHES = \
 MULTILIB_EXTRA_OPTS = mbest-lib-options
 INSTALL_LIBGCC = install-multilib
 LIBGCC = stmp-multilib
-CRTSTUFF_T_CFLAGS = $(LIBGCC2_CFLAGS) -moverride-best-lib-options
+CRTSTUFF_T_CFLAGS = -moverride-best-lib-options

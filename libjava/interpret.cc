@@ -1474,7 +1474,7 @@ _Jv_InterpMethod::check_handler (pc_t *pc, _Jv_InterpMethod *meth,
               if (exc[i].handler_type.i != 0)
                     handler
                       = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
-                                                                             ex$
+					     exc[i].handler_type.i)).clazz;
 #endif /* DIRECT_THREADED */
               if (handler == NULL || handler->isAssignableFrom (exc_class))
                 {
@@ -1626,7 +1626,7 @@ _Jv_InterpMethod::breakpoint_at (jlong index)
       return (insn->insn == breakpoint_insn->insn);
 #else
       pc_t code = reinterpret_cast<pc_t> (bytecode ());
-      return (code[index] == breakpoint_insn);
+      return (code[index] == bp_insn_opcode);
 #endif
     }
 

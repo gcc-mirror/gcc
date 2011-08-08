@@ -104,7 +104,7 @@ namespace __gnu_debug
    * may only be used by deriving from it and passing the name of the
    * derived class as its template parameter via the curiously
    * recurring template pattern. The derived class must have @c
-   * iterator and @const_iterator types that are instantiations of
+   * iterator and @c const_iterator types that are instantiations of
    * class template _Safe_iterator for this sequence. Iterators will
    * then be tracked automatically.
    */
@@ -113,16 +113,16 @@ namespace __gnu_debug
     {
     public:
       /** Invalidates all iterators @c x that reference this sequence,
-	  are not singular, and for which @c pred(x) returns @c
-	  true. @c pred will be invoked with the normal iterators nested
+	  are not singular, and for which @c __pred(x) returns @c
+	  true. @c __pred will be invoked with the normal iterators nested
 	  in the safe ones. */
       template<typename _Predicate>
         void
         _M_invalidate_if(_Predicate __pred);
 
       /** Transfers all iterators @c x that reference @c from sequence,
-	  are not singular, and for which @c pred(x) returns @c
-	  true. @c pred will be invoked with the normal iterators nested
+	  are not singular, and for which @c __pred(x) returns @c
+	  true. @c __pred will be invoked with the normal iterators nested
 	  in the safe ones. */
       template<typename _Predicate>
         void

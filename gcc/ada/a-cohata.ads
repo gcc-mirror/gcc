@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,8 @@
 --  containers.
 
 package Ada.Containers.Hash_Tables is
-   pragma Pure;  --  so this can be imported by Remote_Types packages
+   pragma Pure;
+   --  Declare Pure so this can be imported by Remote_Types packages
 
    generic
       type Node_Type (<>) is limited private;
@@ -42,13 +43,14 @@ package Ada.Containers.Hash_Tables is
       type Buckets_Type is array (Hash_Type range <>) of Node_Access;
 
       type Buckets_Access is access all Buckets_Type;
-      for Buckets_Access'Storage_Size use 0;  --  so this package can be Pure
+      for Buckets_Access'Storage_Size use 0;
+      --  Storage_Size of zero so this package can be Pure
 
       type Hash_Table_Type is tagged record
          Buckets : Buckets_Access;
          Length  : Count_Type := 0;
-         Busy    : Natural := 0;
-         Lock    : Natural := 0;
+         Busy    : Natural    := 0;
+         Lock    : Natural    := 0;
       end record;
    end Generic_Hash_Table_Types;
 
@@ -62,11 +64,11 @@ package Ada.Containers.Hash_Tables is
         (Capacity : Count_Type;
          Modulus  : Hash_Type) is
       tagged record
-         Length  : Count_Type := 0;
-         Busy    : Natural := 0;
-         Lock    : Natural := 0;
-         Free    : Count_Type'Base := -1;
-         Nodes   : Nodes_Type (1 .. Capacity);
+         Length  : Count_Type                  := 0;
+         Busy    : Natural                     := 0;
+         Lock    : Natural                     := 0;
+         Free    : Count_Type'Base             := -1;
+         Nodes   : Nodes_Type (1 .. Capacity)  := (others => <>);
          Buckets : Buckets_Type (1 .. Modulus) := (others => 0);
       end record;
    end Generic_Bounded_Hash_Table_Types;

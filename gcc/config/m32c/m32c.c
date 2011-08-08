@@ -318,44 +318,31 @@ reg_push_size (int regno)
     }
 }
 
-static int *class_sizes = 0;
-
 /* Given two register classes, find the largest intersection between
    them.  If there is no intersection, return RETURNED_IF_EMPTY
    instead.  */
-static int
-reduce_class (int original_class, int limiting_class, int returned_if_empty)
+static reg_class_t
+reduce_class (reg_class_t original_class, reg_class_t limiting_class,
+	      reg_class_t returned_if_empty)
 {
-  int cc = class_contents[original_class][0];
-  int i, best = NO_REGS;
-  int best_size = 0;
+  HARD_REG_SET cc;
+  int i;
+  reg_class_t best = NO_REGS;
+  unsigned int best_size = 0;
 
   if (original_class == limiting_class)
     return original_class;
 
-  if (!class_sizes)
-    {
-      int r;
-      class_sizes = (int *) xmalloc (LIM_REG_CLASSES * sizeof (int));
-      for (i = 0; i < LIM_REG_CLASSES; i++)
-	{
-	  class_sizes[i] = 0;
-	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
-	    if (class_contents[i][0] & (1 << r))
-	      class_sizes[i]++;
-	}
-    }
+  cc = reg_class_contents[original_class];
+  AND_HARD_REG_SET (cc, reg_class_contents[limiting_class]);
 
-  cc &= class_contents[limiting_class][0];
   for (i = 0; i < LIM_REG_CLASSES; i++)
     {
-      int ic = class_contents[i][0];
-
-      if ((~cc & ic) == 0)
-	if (best_size < class_sizes[i])
+      if (hard_reg_set_subset_p (reg_class_contents[i], cc))
+	if (best_size < reg_class_size[i])
 	  {
-	    best = i;
-	    best_size = class_sizes[i];
+	    best = (reg_class_t) i;
+	    best_size = reg_class_size[i];
 	  }
 
     }
@@ -845,7 +832,7 @@ m32c_secondary_reload_class (int rclass, enum machine_mode mode, rtx x)
   if (reg_classes_intersect_p (rclass, CR_REGS)
       && GET_CODE (x) == REG
       && REGNO (x) >= SB_REGNO && REGNO (x) <= SP_REGNO)
-    return TARGET_A16 ? HI_REGS : A_REGS;
+    return (TARGET_A16 || mode == HImode) ? HI_REGS : A_REGS;
   return NO_REGS;
 }
 
@@ -2644,8 +2631,12 @@ static char const *pushm_regs[] = {
   "fb", "sb", "a1", "a0", "r3", "r2", "r1", "r0"
 };
 
-/* Implements PRINT_OPERAND.  */
-void
+/* Implements TARGET_PRINT_OPERAND.  */
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND m32c_print_operand
+
+static void
 m32c_print_operand (FILE * file, rtx x, int code)
 {
   int i, j, b;
@@ -2998,18 +2989,28 @@ m32c_print_operand (FILE * file, rtx x, int code)
   return;
 }
 
-/* Implements PRINT_OPERAND_PUNCT_VALID_P.  See m32c_print_operand
-   above for descriptions of what these do.  */
-int
-m32c_print_operand_punct_valid_p (int c)
+/* Implements TARGET_PRINT_OPERAND_PUNCT_VALID_P.
+
+   See m32c_print_operand above for descriptions of what these do.  */
+
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P m32c_print_operand_punct_valid_p
+
+static bool 
+m32c_print_operand_punct_valid_p (unsigned char c)
 {
   if (c == '&' || c == '!')
-    return 1;
-  return 0;
+    return true;
+
+  return false;
 }
 
-/* Implements PRINT_OPERAND_ADDRESS.  Nothing unusual here.  */
-void
+/* Implements TARGET_PRINT_OPERAND_ADDRESS.  Nothing unusual here.  */
+
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS m32c_print_operand_address
+
+static void
 m32c_print_operand_address (FILE * stream, rtx address)
 {
   if (GET_CODE (address) == MEM)

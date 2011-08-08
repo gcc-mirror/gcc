@@ -418,10 +418,9 @@ maybe_mode_change (enum machine_mode orig_mode, enum machine_mode copy_mode,
 
       offset = ((WORDS_BIG_ENDIAN ? wordoffset : 0)
 		+ (BYTES_BIG_ENDIAN ? byteoffset : 0));
-      return gen_rtx_raw_REG (new_mode,
-			      regno + subreg_regno_offset (regno, orig_mode,
-							   offset,
-							   new_mode));
+      regno += subreg_regno_offset (regno, orig_mode, offset, new_mode);
+      if (HARD_REGNO_MODE_OK (regno, new_mode))
+	return gen_rtx_raw_REG (new_mode, regno);
     }
   return NULL_RTX;
 }

@@ -334,14 +334,20 @@ build_value_init (tree type, tsubst_flags_t complain)
 
   if (CLASS_TYPE_P (type))
     {
-      if (type_has_user_provided_constructor (type))
+      /* Instead of the above, only consider the user-providedness of the
+	 default constructor itself so value-initializing a class with an
+	 explicitly defaulted default constructor and another user-provided
+	 constructor works properly (c++std-core-19883).  */
+      if (type_has_user_provided_default_constructor (type)
+	  || (!TYPE_HAS_DEFAULT_CONSTRUCTOR (type)
+	      && type_has_user_provided_constructor (type)))
 	return build_aggr_init_expr
 	  (type,
 	   build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				      NULL, type, LOOKUP_NORMAL,
 				      complain),
 	   complain);
-      else if (type_build_ctor_call (type))
+      else if (TYPE_HAS_COMPLEX_DFLT (type))
 	{
 	  /* This is a class that needs constructing, but doesn't have
 	     a user-provided constructor.  So we need to zero-initialize
@@ -371,7 +377,7 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
      SFINAE-enabled.  */
   if (CLASS_TYPE_P (type))
     {
-      gcc_assert (!type_build_ctor_call (type));
+      gcc_assert (!TYPE_HAS_COMPLEX_DFLT (type));
 	
       if (TREE_CODE (type) != UNION_TYPE)
 	{
@@ -541,14 +547,17 @@ perform_member_init (tree member, tree init)
 	  finish_expr_stmt (init);
 	}
     }
-  else if (type_build_ctor_call (type))
+  else if (type_build_ctor_call (type)
+	   || (init && CLASS_TYPE_P (strip_array_types (type))))
     {
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{
 	  if (init)
 	    {
-	      gcc_assert (TREE_CHAIN (init) == NULL_TREE);
-	      init = TREE_VALUE (init);
+	      if (TREE_CHAIN (init))
+		init = error_mark_node;
+	      else
+		init = TREE_VALUE (init);
 	      if (BRACE_ENCLOSED_INITIALIZER_P (init))
 		init = digest_init (type, init, tf_warning_or_error);
 	    }
@@ -649,8 +658,6 @@ build_field_list (tree t, tree list, int *uses_unions_p)
 {
   tree fields;
 
-  *uses_unions_p = 0;
-
   /* Note whether or not T is a union.  */
   if (TREE_CODE (t) == UNION_TYPE)
     *uses_unions_p = 1;
@@ -704,7 +711,7 @@ sort_mem_initializers (tree t, tree mem_inits)
   tree next_subobject;
   VEC(tree,gc) *vbases;
   int i;
-  int uses_unions_p;
+  int uses_unions_p = 0;
 
   /* Build up a list of initializations.  The TREE_PURPOSE of entry
      will be the subobject (a FIELD_DECL or BINFO) to initialize.  The
@@ -1057,10 +1064,7 @@ expand_virtual_init (tree binfo, tree decl)
 
       /* Compute the value to use, when there's a VTT.  */
       vtt_parm = current_vtt_parm;
-      vtbl2 = build2 (POINTER_PLUS_EXPR,
-		      TREE_TYPE (vtt_parm),
-		      vtt_parm,
-		      vtt_index);
+      vtbl2 = fold_build_pointer_plus (vtt_parm, vtt_index);
       vtbl2 = cp_build_indirect_ref (vtbl2, RO_NULL, tf_warning_or_error);
       vtbl2 = convert (TREE_TYPE (vtbl), vtbl2);
 
@@ -1442,6 +1446,17 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
      out, then look hard.  */
   tree rval;
   VEC(tree,gc) *parms;
+
+  /* If we have direct-initialization from an initializer list, pull
+     it out of the TREE_LIST so the code below can see it.  */
+  if (init && TREE_CODE (init) == TREE_LIST
+      && BRACE_ENCLOSED_INITIALIZER_P (TREE_VALUE (init))
+      && CONSTRUCTOR_IS_DIRECT_INIT (TREE_VALUE (init)))
+    {
+      gcc_checking_assert ((flags & LOOKUP_ONLYCONVERTING) == 0
+			   && TREE_CHAIN (init) == NULL_TREE);
+      init = TREE_VALUE (init);
+    }
 
   if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CP_AGGREGATE_TYPE_P (type))
@@ -2293,16 +2308,14 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
       tree size_ptr_type;
 
       /* Adjust so we're pointing to the start of the object.  */
-      data_addr = build2 (POINTER_PLUS_EXPR, TREE_TYPE (alloc_node),
-			  alloc_node, cookie_size);
+      data_addr = fold_build_pointer_plus (alloc_node, cookie_size);
 
       /* Store the number of bytes allocated so that we can know how
 	 many elements to destroy later.  We use the last sizeof
 	 (size_t) bytes to store the number of elements.  */
       cookie_ptr = size_binop (MINUS_EXPR, cookie_size, size_in_bytes (sizetype));
-      cookie_ptr = fold_build2_loc (input_location,
-				POINTER_PLUS_EXPR, TREE_TYPE (alloc_node),
-				alloc_node, cookie_ptr);
+      cookie_ptr = fold_build_pointer_plus_loc (input_location,
+						alloc_node, cookie_ptr);
       size_ptr_type = build_pointer_type (sizetype);
       cookie_ptr = fold_convert (size_ptr_type, cookie_ptr);
       cookie = cp_build_indirect_ref (cookie_ptr, RO_NULL, complain);
@@ -2312,10 +2325,10 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
       if (targetm.cxx.cookie_has_size ())
 	{
 	  /* Also store the element size.  */
-	  cookie_ptr = build2 (POINTER_PLUS_EXPR, size_ptr_type, cookie_ptr,
+	  cookie_ptr = fold_build_pointer_plus (cookie_ptr,
 			       fold_build1_loc (input_location,
-					    NEGATE_EXPR, sizetype,
-					    size_in_bytes (sizetype)));
+						NEGATE_EXPR, sizetype,
+						size_in_bytes (sizetype)));
 
 	  cookie = cp_build_indirect_ref (cookie_ptr, RO_NULL, complain);
 	  cookie = build2 (MODIFY_EXPR, sizetype, cookie,
@@ -2379,24 +2392,31 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	      && BRACE_ENCLOSED_INITIALIZER_P (VEC_index (tree, *init, 0))
 	      && CONSTRUCTOR_IS_DIRECT_INIT (VEC_index (tree, *init, 0)))
 	    {
-	      tree arraytype, domain;
 	      vecinit = VEC_index (tree, *init, 0);
-	      if (TREE_CONSTANT (nelts))
-		domain = compute_array_index_type (NULL_TREE, nelts, complain);
+	      if (CONSTRUCTOR_NELTS (vecinit) == 0)
+		/* List-value-initialization, leave it alone.  */;
 	      else
 		{
-		  domain = NULL_TREE;
-		  if (CONSTRUCTOR_NELTS (vecinit) > 0)
-		    warning (0, "non-constant array size in new, unable to "
-			     "verify length of initializer-list");
+		  tree arraytype, domain;
+		  if (TREE_CONSTANT (nelts))
+		    domain = compute_array_index_type (NULL_TREE, nelts,
+						       complain);
+		  else
+		    {
+		      domain = NULL_TREE;
+		      if (CONSTRUCTOR_NELTS (vecinit) > 0)
+			warning (0, "non-constant array size in new, unable "
+				 "to verify length of initializer-list");
+		    }
+		  arraytype = build_cplus_array_type (type, domain);
+		  vecinit = digest_init (arraytype, vecinit, complain);
 		}
-	      arraytype = build_cplus_array_type (type, domain);
-	      vecinit = digest_init (arraytype, vecinit, complain);
 	    }
 	  else if (*init)
             {
               if (complain & tf_error)
-                permerror (input_location, "ISO C++ forbids initialization in array new");
+                permerror (input_location,
+			   "parenthesized initializer in array new");
               else
                 return error_mark_node;
 	      vecinit = build_tree_list_vec (*init);
@@ -2777,12 +2797,13 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 			     convert (sizetype, maxindex));
 
   tbase = create_temporary_var (ptype);
-  tbase_init = cp_build_modify_expr (tbase, NOP_EXPR,
-				     fold_build2_loc (input_location,
-						  POINTER_PLUS_EXPR, ptype,
-						  fold_convert (ptype, base),
-						  virtual_size),
-				     complain);
+  tbase_init
+    = cp_build_modify_expr (tbase, NOP_EXPR,
+			    fold_build_pointer_plus_loc (input_location,
+							 fold_convert (ptype,
+								       base),
+							 virtual_size),
+			    complain);
   if (tbase_init == error_mark_node)
     return error_mark_node;
   controller = build3 (BIND_EXPR, void_type_node, tbase,
@@ -2793,7 +2814,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 		 build2 (EQ_EXPR, boolean_type_node, tbase,
 			 fold_convert (ptype, base)));
   tmp = fold_build1_loc (input_location, NEGATE_EXPR, sizetype, size_exp);
-  tmp = build2 (POINTER_PLUS_EXPR, ptype, tbase, tmp);
+  tmp = fold_build_pointer_plus (tbase, tmp);
   tmp = cp_build_modify_expr (tbase, NOP_EXPR, tmp, complain);
   if (tmp == error_mark_node)
     return error_mark_node;
@@ -3073,9 +3094,23 @@ build_vec_init (tree base, tree maxindex, tree init,
       try_block = begin_try_block ();
     }
 
+  /* If the initializer is {}, then all elements are initialized from {}.
+     But for non-classes, that's the same as value-initialization.  */
+  if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
+      && CONSTRUCTOR_NELTS (init) == 0)
+    {
+      if (CLASS_TYPE_P (type))
+	/* Leave init alone.  */;
+      else
+	{
+	  init = NULL_TREE;
+	  explicit_value_init_p = true;
+	}
+    }
+
   /* Maybe pull out constant value when from_array? */
 
-  if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR)
+  else if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR)
     {
       /* Do non-default initialization of non-trivial arrays resulting from
 	 brace-enclosed initializers.  */
@@ -3193,7 +3228,7 @@ build_vec_init (tree base, tree maxindex, tree init,
      We do need to keep going if we're copying an array.  */
 
   if (from_array
-      || ((type_build_ctor_call (type) || explicit_value_init_p)
+      || ((type_build_ctor_call (type) || init || explicit_value_init_p)
 	  && ! (host_integerp (maxindex, 0)
 		&& (num_initialized_elts
 		    == tree_low_cst (maxindex, 0) + 1))))
@@ -3259,8 +3294,16 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
       else
 	{
-	  gcc_assert (type_build_ctor_call (type));
-	  elt_init = build_aggr_init (to, init, 0, complain);
+	  gcc_assert (type_build_ctor_call (type) || init);
+	  if (CLASS_TYPE_P (type))
+	    elt_init = build_aggr_init (to, init, 0, complain);
+	  else
+	    {
+	      if (TREE_CODE (init) == TREE_LIST)
+		init = build_x_compound_expr_from_list (init, ELK_INIT,
+							complain);
+	      elt_init = build2 (INIT_EXPR, type, to, init);
+	    }
 	}
 
       if (elt_init == error_mark_node)
@@ -3421,8 +3464,9 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 		}
 	      complete_p = false;
 	    }
-	  else if (warn_delnonvdtor && MAYBE_CLASS_TYPE_P (type)
-		   && !CLASSTYPE_FINAL (type) && TYPE_POLYMORPHIC_P (type))
+	  else if (auto_delete == sfk_deleting_destructor && warn_delnonvdtor
+	           && MAYBE_CLASS_TYPE_P (type) && !CLASSTYPE_FINAL (type)
+		   && TYPE_POLYMORPHIC_P (type))
 	    {
 	      tree dtor;
 	      dtor = CLASSTYPE_DESTRUCTORS (type);
@@ -3704,10 +3748,8 @@ build_vec_delete (tree base, tree maxindex,
       type = strip_array_types (TREE_TYPE (type));
       cookie_addr = fold_build1_loc (input_location, NEGATE_EXPR,
 				 sizetype, TYPE_SIZE_UNIT (sizetype));
-      cookie_addr = build2 (POINTER_PLUS_EXPR,
-			    size_ptr_type,
-			    fold_convert (size_ptr_type, base),
-			    cookie_addr);
+      cookie_addr = fold_build_pointer_plus (fold_convert (size_ptr_type, base),
+					     cookie_addr);
       maxindex = cp_build_indirect_ref (cookie_addr, RO_NULL, complain);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)

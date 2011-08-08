@@ -417,6 +417,17 @@ invoking @command{gcc -print-file-name=plugin} (replace if needed
 Inside plugins, this @code{plugin} directory name can be queried by
 calling @code{default_plugin_dir_name ()}.
 
+Plugins may know, when they are compiled, the GCC version for which
+@file{plugin-version.h} is provided.  The constant macros
+@code{GCCPLUGIN_VERSION_MAJOR}, @code{GCCPLUGIN_VERSION_MINOR},
+@code{GCCPLUGIN_VERSION_PATCHLEVEL}, @code{GCCPLUGIN_VERSION} are
+integer numbers, so a plugin could ensure it is built for GCC 4.7 with 
+@smallexample
+#if GCCPLUGIN_VERSION != 4007
+#error this GCC plugin is for GCC 4.7
+#endif
+@end smallexample
+
 The following GNU Makefile excerpt shows how to build a simple plugin:
 
 @smallexample
@@ -435,6 +446,6 @@ A single source file plugin may be built with @code{gcc -I`gcc
 plugin.so}, using backquote shell syntax to query the @file{plugin}
 directory.
 
-Plugins needing to use @command{gengtype} require a GCC build
-directory for the same version of GCC that they will be linked
-against.
+When a plugin needs to use @command{gengtype}, be sure that both
+@file{gengtype} and @file{gtype.state} have the same version as the
+GCC for which the plugin is built.

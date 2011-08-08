@@ -199,16 +199,16 @@ typedef enum
   ST_WRITE, ST_ASSIGNMENT, ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE,
   ST_SIMPLE_IF, ST_STATEMENT_FUNCTION, ST_DERIVED_DECL, ST_LABEL_ASSIGNMENT,
   ST_ENUM, ST_ENUMERATOR, ST_END_ENUM, ST_SELECT_TYPE, ST_TYPE_IS, ST_CLASS_IS,
-  ST_OMP_ATOMIC, ST_OMP_BARRIER, ST_OMP_CRITICAL, ST_OMP_END_CRITICAL,
-  ST_OMP_END_DO, ST_OMP_END_MASTER, ST_OMP_END_ORDERED, ST_OMP_END_PARALLEL,
-  ST_OMP_END_PARALLEL_DO, ST_OMP_END_PARALLEL_SECTIONS,
+  ST_OMP_ATOMIC, ST_OMP_BARRIER, ST_OMP_CRITICAL, ST_OMP_END_ATOMIC,
+  ST_OMP_END_CRITICAL, ST_OMP_END_DO, ST_OMP_END_MASTER, ST_OMP_END_ORDERED,
+  ST_OMP_END_PARALLEL, ST_OMP_END_PARALLEL_DO, ST_OMP_END_PARALLEL_SECTIONS,
   ST_OMP_END_PARALLEL_WORKSHARE, ST_OMP_END_SECTIONS, ST_OMP_END_SINGLE,
   ST_OMP_END_WORKSHARE, ST_OMP_DO, ST_OMP_FLUSH, ST_OMP_MASTER, ST_OMP_ORDERED,
   ST_OMP_PARALLEL, ST_OMP_PARALLEL_DO, ST_OMP_PARALLEL_SECTIONS,
   ST_OMP_PARALLEL_WORKSHARE, ST_OMP_SECTIONS, ST_OMP_SECTION, ST_OMP_SINGLE,
   ST_OMP_THREADPRIVATE, ST_OMP_WORKSHARE, ST_OMP_TASK, ST_OMP_END_TASK,
-  ST_OMP_TASKWAIT, ST_PROCEDURE, ST_GENERIC, ST_CRITICAL, ST_END_CRITICAL,
-  ST_GET_FCN_CHARACTERISTICS, ST_LOCK, ST_UNLOCK, ST_NONE
+  ST_OMP_TASKWAIT, ST_OMP_TASKYIELD, ST_PROCEDURE, ST_GENERIC, ST_CRITICAL,
+  ST_END_CRITICAL, ST_GET_FCN_CHARACTERISTICS, ST_LOCK, ST_UNLOCK, ST_NONE
 }
 gfc_statement;
 
@@ -1050,13 +1050,14 @@ enum gfc_omp_default_sharing
 typedef struct gfc_omp_clauses
 {
   struct gfc_expr *if_expr;
+  struct gfc_expr *final_expr;
   struct gfc_expr *num_threads;
   gfc_namelist *lists[OMP_LIST_NUM];
   enum gfc_omp_sched_kind sched_kind;
   struct gfc_expr *chunk_size;
   enum gfc_omp_default_sharing default_sharing;
   int collapse;
-  bool nowait, ordered, untied;
+  bool nowait, ordered, untied, mergeable;
 }
 gfc_omp_clauses;
 
@@ -2064,9 +2065,19 @@ typedef enum
   EXEC_OMP_PARALLEL_SECTIONS, EXEC_OMP_PARALLEL_WORKSHARE,
   EXEC_OMP_SECTIONS, EXEC_OMP_SINGLE, EXEC_OMP_WORKSHARE,
   EXEC_OMP_ATOMIC, EXEC_OMP_BARRIER, EXEC_OMP_END_NOWAIT,
-  EXEC_OMP_END_SINGLE, EXEC_OMP_TASK, EXEC_OMP_TASKWAIT
+  EXEC_OMP_END_SINGLE, EXEC_OMP_TASK, EXEC_OMP_TASKWAIT,
+  EXEC_OMP_TASKYIELD
 }
 gfc_exec_op;
+
+typedef enum
+{
+  GFC_OMP_ATOMIC_UPDATE,
+  GFC_OMP_ATOMIC_READ,
+  GFC_OMP_ATOMIC_WRITE,
+  GFC_OMP_ATOMIC_CAPTURE
+}
+gfc_omp_atomic_op;
 
 typedef struct gfc_code
 {
@@ -2118,6 +2129,7 @@ typedef struct gfc_code
     const char *omp_name;
     gfc_namelist *omp_namelist;
     bool omp_bool;
+    gfc_omp_atomic_op omp_atomic;
   }
   ext;		/* Points to additional structures required by statement */
 
@@ -2271,6 +2283,8 @@ typedef struct gfc_constructor
      gfc_component *component; /* Record the component being initialized.  */
   }
   n;
+  mpz_t repeat; /* Record the repeat number of initial values in data
+		  statement like "data a/5*10/".  */
 }
 gfc_constructor;
 
@@ -2731,8 +2745,10 @@ void gfc_expr_replace_comp (gfc_expr *, gfc_component *);
 
 bool gfc_is_proc_ptr_comp (gfc_expr *, gfc_component **);
 
+bool gfc_ref_this_image (gfc_ref *ref);
 bool gfc_is_coindexed (gfc_expr *);
-bool gfc_get_corank (gfc_expr *);
+bool gfc_is_coarray (gfc_expr *);
+int gfc_get_corank (gfc_expr *);
 bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);
 
@@ -2824,6 +2840,7 @@ bool gfc_arglist_matches_symbol (gfc_actual_arglist**, gfc_symbol*);
 bool gfc_check_operator_interface (gfc_symbol*, gfc_intrinsic_op, locus);
 int gfc_has_vector_subscript (gfc_expr*);
 gfc_intrinsic_op gfc_equivalent_op (gfc_intrinsic_op);
+gfc_try gfc_check_typebound_override (gfc_symtree*, gfc_symtree*);
 
 /* io.c */
 extern gfc_st_label format_asterisk;
@@ -2880,6 +2897,8 @@ int gfc_dep_compare_expr (gfc_expr *, gfc_expr *);
 
 /* check.c */
 gfc_try gfc_check_same_strlen (const gfc_expr*, const gfc_expr*, const char*);
+gfc_try gfc_calculate_transfer_sizes (gfc_expr*, gfc_expr*, gfc_expr*,
+				      size_t*, size_t*, size_t*);
 
 /* class.c */
 void gfc_add_component_ref (gfc_expr *, const char *);

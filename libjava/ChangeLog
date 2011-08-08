@@ -1,3 +1,37 @@
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (GCC_UNWIND_INCLUDE): Rename to
+	LIBGCC_UNWIND_INCLUDE.
+	Point to $(multi_basedir)/./libjava/../libgcc.
+	* configure: Regenerate.
+	* Makefile.am (GCC_UNWIND_INCLUDE): Reflect this.
+	* Makefile.in: Regenerate.
+
+2011-07-12  Andrew Haley  <aph@redhat.com>
+
+	* interpret.cc (check_handler): Fix bit rot.
+	(breakpoint_at): Likewise.
+
+2011-07-12  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClass.cc (finalize): Make sure that the class
+	really has an engine.
+
+2011-07-07  Matthias Klose  <doko@ubuntu.com>
+
+	* libtool-version: Bump soversion.
+
+2011-07-07  Matthias Klose  <doko@ubuntu.com>
+
+	* sysdep/x86-64: Remove empty directory.
+
+2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/39150
+	* configure.host (x86_64-*): Add -Usun to libgcj_flags.
+	(x86_64-*-solaris2.1[0-9]*): New case.
+	(i?86-*-solaris2*): Also accept x86_64-*-solaris2.1[0-9]*.
+
 2011-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libgcj/49314

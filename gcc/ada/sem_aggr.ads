@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,5 +32,8 @@ package Sem_Aggr is
 
    procedure Resolve_Aggregate           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Extension_Aggregate (N : Node_Id; Typ : Entity_Id);
+
+   function Is_Others_Aggregate (Aggr : Node_Id) return Boolean;
+   --  Returns True is aggregate Aggr consists of a single OTHERS choice
 
 end Sem_Aggr;

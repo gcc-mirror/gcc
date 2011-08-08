@@ -1456,7 +1456,7 @@ expand_block_move (rtx *operands)
 	  rtx from = adjust_automodify_address (src, BLKmode,
 						src_addr, copied);
 
-	  set_mem_size (from, GEN_INT (4));
+	  set_mem_size (from, 4);
 	  emit_insn (gen_movua (temp, from));
 	  emit_move_insn (src_addr, plus_constant (src_addr, 4));
 	  emit_move_insn (to, temp);
@@ -5274,9 +5274,7 @@ barrier_align (rtx barrier_or_label)
 	    slot = 0;
 	  credit -= get_attr_length (prev);
 	}
-      if (prev
-	  && JUMP_P (prev)
-	  && JUMP_LABEL (prev))
+      if (prev && jump_to_label_p (prev))
 	{
 	  rtx x;
 	  if (jump_to_next
@@ -5975,7 +5973,7 @@ split_branches (rtx first)
 			JUMP_LABEL (insn) = far_label;
 			LABEL_NUSES (far_label)++;
 		      }
-		    redirect_jump (insn, NULL_RTX, 1);
+		    redirect_jump (insn, ret_rtx, 1);
 		    far_label = 0;
 		  }
 	      }
@@ -7831,8 +7829,7 @@ sh_va_start (tree valist, rtx nextarg)
     nfp = 8 - nfp;
   else
     nfp = 0;
-  u = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, u,
-		   size_int (UNITS_PER_WORD * nfp));
+  u = fold_build_pointer_plus_hwi (u, UNITS_PER_WORD * nfp);
   t = build2 (MODIFY_EXPR, ptr_type_node, next_fp_limit, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -7846,8 +7843,7 @@ sh_va_start (tree valist, rtx nextarg)
     nint = 4 - nint;
   else
     nint = 0;
-  u = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, u,
-		   size_int (UNITS_PER_WORD * nint));
+  u = fold_build_pointer_plus_hwi (u, UNITS_PER_WORD * nint);
   t = build2 (MODIFY_EXPR, ptr_type_node, next_o_limit, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -7983,8 +7979,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  gimplify_assign (unshare_expr (next_fp_tmp), valist, pre_p);
 	  tmp = next_fp_limit;
 	  if (size > 4 && !is_double)
-	    tmp = build2 (POINTER_PLUS_EXPR, TREE_TYPE (tmp),
-			  unshare_expr (tmp), size_int (4 - size));
+	    tmp = fold_build_pointer_plus_hwi (unshare_expr (tmp), 4 - size);
 	  tmp = build2 (GE_EXPR, boolean_type_node,
 			unshare_expr (next_fp_tmp), unshare_expr (tmp));
 	  cmp = build3 (COND_EXPR, void_type_node, tmp,
@@ -7999,8 +7994,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	      tmp = fold_convert (sizetype, next_fp_tmp);
 	      tmp = build2 (BIT_AND_EXPR, sizetype, tmp,
 			    size_int (UNITS_PER_WORD));
-	      tmp = build2 (POINTER_PLUS_EXPR, ptr_type_node,
-			    unshare_expr (next_fp_tmp), tmp);
+	      tmp = fold_build_pointer_plus (unshare_expr (next_fp_tmp), tmp);
 	      gimplify_assign (unshare_expr (next_fp_tmp), tmp, pre_p);
 	    }
 	  if (is_double)
@@ -8045,8 +8039,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	}
       else
 	{
-	  tmp = build2 (POINTER_PLUS_EXPR, ptr_type_node,
-			unshare_expr (next_o), size_int (rsize));
+	  tmp = fold_build_pointer_plus_hwi (unshare_expr (next_o), rsize);
 	  tmp = build2 (GT_EXPR, boolean_type_node, tmp,
 			unshare_expr (next_o_limit));
 	  tmp = build3 (COND_EXPR, void_type_node, tmp,

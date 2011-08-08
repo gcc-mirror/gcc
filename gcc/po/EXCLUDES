@@ -22,9 +22,6 @@
 # .def are examined to begin with.
 
 #   These files are part of libgcc, or target headers provided by gcc.
-config/darwin-crt2.c
-config/fp-bit.c
-config/fp-bit.h
 config/vxlib.c
 crtstuff.c
 gbl-ctors.h
@@ -42,19 +39,9 @@ gthr-win32.h
 gthr.h
 libgcc2.c
 libgcc2.h
-libgcov.c
 limitx.h
 limity.h
 longlong.h
-unwind-c.c
-unwind-dw2-fde-darwin.c
-unwind-dw2-fde-glibc.c
-unwind-dw2-fde.c
-unwind-dw2-fde.h
-unwind-dw2.c
-unwind-pe.h
-unwind-sjlj.c
-unwind.h
 
 #   These programs are meant to be executed only by GCC maintainers or
 #   installers.  Such files do not need to be translated, as these

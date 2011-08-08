@@ -37,6 +37,13 @@ int optimize_size
 Variable
 int optimize_fast
 
+; True if this is the lto front end.  This is used to disable gimple
+; generation and lowering passes that are normally run on the output
+; of a front end.  These passes must be bypassed for lto since they
+; have already been done before the gimple was written.
+Variable
+bool in_lto_p = false
+
 ; 0 means straightforward implementation of complex divide acceptable.
 ; 1 means wide ranges of inputs must work for complex divide.
 ; 2 means C99-like requirements for complex multiply and divide.
@@ -2176,6 +2183,14 @@ Generate debug information in DWARF v2 (or later) format
 ggdb
 Common JoinedOrMissing
 Generate debug information in default extended format
+
+gno-record-gcc-switches
+Common RejectNegative Var(dwarf_record_gcc_switches,0) Init(0)
+Don't record gcc command line switches in DWARF DW_AT_producer.
+
+grecord-gcc-switches
+Common RejectNegative Var(dwarf_record_gcc_switches,1)
+Record gcc command line switches in DWARF DW_AT_producer.
 
 gstabs
 Common JoinedOrMissing Negative(gstabs+)

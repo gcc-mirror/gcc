@@ -65,65 +65,6 @@ static struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
 static struct cgraph_2node_hook_list *node_duplication_hook_holder;
 static struct cgraph_node_hook_list *function_insertion_hook_holder;
 
-/* Add cgraph NODE described by INFO to the worklist WL regardless of whether
-   it is in one or not.  It should almost never be used directly, as opposed to
-   ipa_push_func_to_list.  */
-
-void
-ipa_push_func_to_list_1 (struct ipa_func_list **wl,
-			 struct cgraph_node *node,
-			 struct ipa_node_params *info)
-{
-  struct ipa_func_list *temp;
-
-  info->node_enqueued = 1;
-  temp = XCNEW (struct ipa_func_list);
-  temp->node = node;
-  temp->next = *wl;
-  *wl = temp;
-}
-
-/* Initialize worklist to contain all functions.  */
-
-struct ipa_func_list *
-ipa_init_func_list (void)
-{
-  struct cgraph_node *node;
-  struct ipa_func_list * wl;
-
-  wl = NULL;
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed && !node->alias)
-      {
-	struct ipa_node_params *info = IPA_NODE_REF (node);
-	/* Unreachable nodes should have been eliminated before ipcp and
-	   inlining.  */
-	gcc_assert (node->needed || node->reachable);
-	ipa_push_func_to_list_1 (&wl, node, info);
-      }
-
-  return wl;
-}
-
-/* Remove a function from the worklist WL and return it.  */
-
-struct cgraph_node *
-ipa_pop_func_from_list (struct ipa_func_list **wl)
-{
-  struct ipa_node_params *info;
-  struct ipa_func_list *first;
-  struct cgraph_node *node;
-
-  first = *wl;
-  *wl = (*wl)->next;
-  node = first->node;
-  free (first);
-
-  info = IPA_NODE_REF (node);
-  info->node_enqueued = 0;
-  return node;
-}
-
 /* Return index of the formal whose tree is PTREE in function which corresponds
    to INFO.  */
 
@@ -134,7 +75,7 @@ ipa_get_param_decl_index (struct ipa_node_params *info, tree ptree)
 
   count = ipa_get_param_count (info);
   for (i = 0; i < count; i++)
-    if (ipa_get_param(info, i) == ptree)
+    if (ipa_get_param (info, i) == ptree)
       return i;
 
   return -1;
@@ -157,7 +98,8 @@ ipa_populate_param_decls (struct cgraph_node *node,
   param_num = 0;
   for (parm = fnargs; parm; parm = DECL_CHAIN (parm))
     {
-      info->params[param_num].decl = parm;
+      VEC_index (ipa_param_descriptor_t,
+		 info->descriptors, param_num)->decl = parm;
       param_num++;
     }
 }
@@ -165,7 +107,7 @@ ipa_populate_param_decls (struct cgraph_node *node,
 /* Return how many formal parameters FNDECL has.  */
 
 static inline int
-count_formal_params_1 (tree fndecl)
+count_formal_params (tree fndecl)
 {
   tree parm;
   int count = 0;
@@ -174,19 +116,6 @@ count_formal_params_1 (tree fndecl)
     count++;
 
   return count;
-}
-
-/* Count number of formal parameters in NOTE. Store the result to the
-   appropriate field of INFO.  */
-
-static void
-ipa_count_formal_params (struct cgraph_node *node,
-			 struct ipa_node_params *info)
-{
-  int param_num;
-
-  param_num = count_formal_params_1 (node->decl);
-  ipa_set_param_count (info, param_num);
 }
 
 /* Initialize the ipa_node_params structure associated with NODE by counting
@@ -198,12 +127,17 @@ ipa_initialize_node_params (struct cgraph_node *node)
 {
   struct ipa_node_params *info = IPA_NODE_REF (node);
 
-  if (!info->params)
+  if (!info->descriptors)
     {
-      ipa_count_formal_params (node, info);
-      info->params = XCNEWVEC (struct ipa_param_descriptor,
-				    ipa_get_param_count (info));
-      ipa_populate_param_decls (node, info);
+      int param_count;
+
+      param_count = count_formal_params (node->decl);
+      if (param_count)
+	{
+	  VEC_safe_grow_cleared (ipa_param_descriptor_t, heap,
+				 info->descriptors, param_count);
+	  ipa_populate_param_decls (node, info);
+	}
     }
 }
 
@@ -1497,7 +1431,7 @@ visit_ref_for_mod_analysis (gimple stmt ATTRIBUTE_UNUSED,
     {
       int index = ipa_get_param_decl_index (info, op);
       gcc_assert (index >= 0);
-      info->params[index].used = true;
+      ipa_set_param_used (info, index, true);
     }
 
   return false;
@@ -1529,7 +1463,7 @@ ipa_analyze_params_uses (struct cgraph_node *node,
 	 the flag during modification analysis.  */
       if (is_gimple_reg (parm)
 	  && gimple_default_def (DECL_STRUCT_FUNCTION (node->decl), parm))
-	info->params[i].used = true;
+	ipa_set_param_used (info, i, true);
     }
 
   func = DECL_STRUCT_FUNCTION (decl);
@@ -1936,8 +1870,11 @@ ipa_free_all_edge_args (void)
 void
 ipa_free_node_params_substructures (struct ipa_node_params *info)
 {
-  free (info->params);
-
+  VEC_free (ipa_param_descriptor_t, heap, info->descriptors);
+  free (info->lattices);
+  /* Lattice values and their sources are deallocated with their alocation
+     pool.  */
+  VEC_free (tree, heap, info->known_vals);
   memset (info, 0, sizeof (*info));
 }
 
@@ -1978,22 +1915,6 @@ ipa_node_removal_hook (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
       <= (unsigned)node->uid)
     return;
   ipa_free_node_params_substructures (IPA_NODE_REF (node));
-}
-
-/* Helper function to duplicate an array of size N that is at SRC and store a
-   pointer to it to DST.  Nothing is done if SRC is NULL.  */
-
-static void *
-duplicate_array (void *src, size_t n)
-{
-  void *p;
-
-  if (!src)
-    return NULL;
-
-  p = xmalloc (n);
-  memcpy (p, src, n);
-  return p;
 }
 
 static struct ipa_jump_func *
@@ -2040,22 +1961,15 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 			   ATTRIBUTE_UNUSED void *data)
 {
   struct ipa_node_params *old_info, *new_info;
-  int param_count, i;
 
   ipa_check_create_node_params ();
   old_info = IPA_NODE_REF (src);
   new_info = IPA_NODE_REF (dst);
-  param_count = ipa_get_param_count (old_info);
 
-  ipa_set_param_count (new_info, param_count);
-  new_info->params = (struct ipa_param_descriptor *)
-    duplicate_array (old_info->params,
-		     sizeof (struct ipa_param_descriptor) * param_count);
-  for (i = 0; i < param_count; i++)
-    new_info->params[i].types = VEC_copy (tree, heap,
- 					  old_info->params[i].types);
+  new_info->descriptors = VEC_copy (ipa_param_descriptor_t, heap,
+				    old_info->descriptors);
+  new_info->lattices = NULL;
   new_info->ipcp_orig_node = old_info->ipcp_orig_node;
-  new_info->count_scale = old_info->count_scale;
 
   new_info->called_with_var_arguments = old_info->called_with_var_arguments;
   new_info->uses_analysis_done = old_info->uses_analysis_done;
@@ -2127,6 +2041,8 @@ ipa_free_all_structures_after_ipa_cp (void)
     {
       ipa_free_all_edge_args ();
       ipa_free_all_node_params ();
+      free_alloc_pool (ipcp_sources_pool);
+      free_alloc_pool (ipcp_values_pool);
       ipa_unregister_cgraph_hooks ();
     }
 }
@@ -2142,6 +2058,10 @@ ipa_free_all_structures_after_iinln (void)
   ipa_free_all_edge_args ();
   ipa_free_all_node_params ();
   ipa_unregister_cgraph_hooks ();
+  if (ipcp_sources_pool)
+    free_alloc_pool (ipcp_sources_pool);
+  if (ipcp_values_pool)
+    free_alloc_pool (ipcp_values_pool);
 }
 
 /* Print ipa_tree_map data structures of all functions in the
@@ -2196,7 +2116,7 @@ ipa_get_vector_of_formal_parms (tree fndecl)
   int count;
   tree parm;
 
-  count = count_formal_params_1 (fndecl);
+  count = count_formal_params (fndecl);
   args = VEC_alloc (tree, heap, count);
   for (parm = DECL_ARGUMENTS (fndecl); parm; parm = DECL_CHAIN (parm))
     VEC_quick_push (tree, args, parm);
@@ -2859,7 +2779,7 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   gcc_assert (!info->node_enqueued);
   gcc_assert (!info->ipcp_orig_node);
   for (j = 0; j < ipa_get_param_count (info); j++)
-    bp_pack_value (&bp, info->params[j].used, 1);
+    bp_pack_value (&bp, ipa_is_param_used (info, j), 1);
   lto_output_bitpack (&bp);
   for (e = node->callees; e; e = e->next_callee)
     {
@@ -2900,7 +2820,7 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
     info->uses_analysis_done = true;
   info->node_enqueued = false;
   for (k = 0; k < ipa_get_param_count (info); k++)
-    info->params[k].used = bp_unpack_value (&bp, 1);
+    ipa_set_param_used (info, k, bp_unpack_value (&bp, 1));
   for (e = node->callees; e; e = e->next_callee)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
@@ -3064,82 +2984,3 @@ ipa_update_after_lto_read (void)
 	}
 }
 
-/* Given the jump function JFUNC, compute the lattice LAT that describes the
-   value coming down the callsite. INFO describes the caller node so that
-   pass-through jump functions can be evaluated.  */
-
-void
-ipa_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
-			 struct ipa_jump_func *jfunc)
-{
-  if (jfunc->type == IPA_JF_CONST)
-    {
-      lat->type = IPA_CONST_VALUE;
-      lat->constant = jfunc->value.constant;
-    }
-  else if (jfunc->type == IPA_JF_PASS_THROUGH)
-    {
-      struct ipcp_lattice *caller_lat;
-      tree cst;
-
-      caller_lat = ipa_get_lattice (info, jfunc->value.pass_through.formal_id);
-      lat->type = caller_lat->type;
-      if (caller_lat->type != IPA_CONST_VALUE)
-	return;
-      cst = caller_lat->constant;
-
-      if (jfunc->value.pass_through.operation != NOP_EXPR)
-	{
-	  tree restype;
-	  if (TREE_CODE_CLASS (jfunc->value.pass_through.operation)
-	      == tcc_comparison)
-	    restype = boolean_type_node;
-	  else
-	    restype = TREE_TYPE (cst);
-	  cst = fold_binary (jfunc->value.pass_through.operation,
-			     restype, cst, jfunc->value.pass_through.operand);
-	}
-      if (!cst || !is_gimple_ip_invariant (cst))
-	lat->type = IPA_BOTTOM;
-      lat->constant = cst;
-    }
-  else if (jfunc->type == IPA_JF_ANCESTOR)
-    {
-      struct ipcp_lattice *caller_lat;
-      tree t;
-
-      caller_lat = ipa_get_lattice (info, jfunc->value.ancestor.formal_id);
-      lat->type = caller_lat->type;
-      if (caller_lat->type != IPA_CONST_VALUE)
-	return;
-      if (TREE_CODE (caller_lat->constant) != ADDR_EXPR)
-	{
-	  /* This can happen when the constant is a NULL pointer.  */
-	  lat->type = IPA_BOTTOM;
-	  return;
-	}
-      t = TREE_OPERAND (caller_lat->constant, 0);
-      t = build_ref_for_offset (EXPR_LOCATION (t), t,
-				jfunc->value.ancestor.offset,
-				jfunc->value.ancestor.type, NULL, false);
-      lat->constant = build_fold_addr_expr (t);
-    }
-  else
-    lat->type = IPA_BOTTOM;
-}
-
-/* Determine whether JFUNC evaluates to a constant and if so, return it.
-   Otherwise return NULL. INFO describes the caller node so that pass-through
-   jump functions can be evaluated.  */
-
-tree
-ipa_cst_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
-{
-  struct ipcp_lattice lat;
-
-  ipa_lattice_from_jfunc (info, &lat, jfunc);
-  if (lat.type == IPA_CONST_VALUE)
-    return lat.constant;
-  else
-    return NULL_TREE;
-}

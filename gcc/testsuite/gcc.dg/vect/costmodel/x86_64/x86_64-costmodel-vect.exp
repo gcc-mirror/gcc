@@ -22,7 +22,7 @@ load_lib gcc-dg.exp
 
 # Exit immediately if this isn't a x86 target.
 if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
-     || ![is-effective-target lp64] } then {
+     || [is-effective-target ia32] } then {
   return
 }
 

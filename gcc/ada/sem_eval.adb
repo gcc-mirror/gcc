@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -964,6 +964,12 @@ package body Sem_Eval is
                      return Unknown;
                   end if;
                end if;
+
+            --  If the range of either operand cannot be determined, nothing
+            --  further can be inferred.
+
+            else
+               return Unknown;
             end if;
          end;
 

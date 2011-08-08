@@ -1,4 +1,4 @@
-# Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2003, 2004, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,9 +22,6 @@
 # so that the resulting libgcc_s.so has the necessary DT_NEEDED entry for
 # libunwind.
 SHLIB_LC = -lunwind -lc
-LIB2ADDEH = $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c \
-  $(srcdir)/unwind-compat.c $(srcdir)/unwind-dw2-fde-compat.c
-LIB2ADDEHSTATIC = $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
 
 T_CFLAGS += -DUSE_LIBUNWIND_EXCEPTIONS
 TARGET_LIBGCC2_CFLAGS += -DUSE_GAS_SYMVER

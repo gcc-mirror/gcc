@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options "-mthumb -Os -fdump-tree-ivopts -save-temps" } */
+/* { dg-options "-Os -fdump-tree-ivopts -save-temps" } */
 
 extern unsigned int foo (int*) __attribute__((pure));
 
@@ -17,5 +17,6 @@ tr2 (int array[], int n)
 /* { dg-final { scan-tree-dump-times "PHI <ivtmp" 1 "ivopts"} } */
 /* { dg-final { scan-tree-dump-times "PHI <x" 0 "ivopts"} } */
 /* { dg-final { scan-tree-dump-times ", x" 0 "ivopts"} } */
-/* { dg-final { object-size text <= 36 { target arm_thumb2_ok } } } */
+/* { dg-final { object-size text <= 36 { target arm_thumb2 } } } */
 /* { dg-final { cleanup-tree-dump "ivopts" } } */
+/* { dg-final { cleanup-saved-temps "ivopts" } } */

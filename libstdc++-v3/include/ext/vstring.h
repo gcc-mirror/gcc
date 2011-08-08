@@ -141,7 +141,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // NB: per LWG issue 42, semantics different from IS:
       /**
-       *  @brief  Construct string with copy of value of @a str.
+       *  @brief  Construct string with copy of value of @a __str.
        *  @param  __str  Source string.
        */
       __versa_string(const __versa_string& __str)
@@ -153,7 +153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __str  Source string.
        *
        *  The newly-constructed %string contains the exact contents of
-       *  @a str.  The contents of @a str are a valid, but unspecified
+       *  @a __str.  The contents of @a __str are a valid, but unspecified
        *  string.
        */
       __versa_string(__versa_string&& __str) noexcept
@@ -2022,14 +2022,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Compare substring against a character array.
-       *  @param __pos1  Index of first character of substring.
+       *  @param __pos  Index of first character of substring.
        *  @param __n1  Number of characters in substring.
        *  @param __s  character array to compare against.
        *  @param __n2  Number of characters of s.
        *  @return  Integer < 0, 0, or > 0.
        *
        *  Form the substring of this string from the @a __n1
-       *  characters starting at @a __pos1.  Form a string from the
+       *  characters starting at @a __pos.  Form a string from the
        *  first @a __n2 characters of @a __s.  Returns an integer < 0
        *  if this substring is ordered before the string from @a __s,
        *  0 if their values are equivalent, or > 0 if this substring
@@ -2037,11 +2037,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  effective length rlen of the strings to compare as the
        *  smallest of the length of the substring and @a __n2.  The
        *  function then compares the two strings by calling
-       *  traits::compare(substring.data(),s,rlen).  If the result of
+       *  traits::compare(substring.data(),__s,rlen).  If the result of
        *  the comparison is nonzero returns it, otherwise the shorter
        *  one is ordered first.
        *
-       *  NB: s must have at least n2 characters, <em>\\0</em> has no special
+       *  NB: __s must have at least n2 characters, <em>\\0</em> has no special
        *  meaning.
       */
       int

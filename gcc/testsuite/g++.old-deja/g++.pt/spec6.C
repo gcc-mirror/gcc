@@ -25,9 +25,9 @@ void h()
 {
   S1 s1;
   s1.f(3, 'c'); // { dg-error "" } no matching function
-  // { dg-message "candidate" "candidate note" { target *-*-* } 27 }
+  // { dg-message "(candidate|deduced conflicting types)" "candidate note" { target *-*-* } 27 }
 
   S2<char> s2;
   s2.f(3, 'c'); // { dg-error "" } no matching function
-  // { dg-message "candidate" "candidate note" { target *-*-* } 31 }
+  // { dg-message "(candidate|deduced conflicting types)" "candidate note" { target *-*-* } 31 }
 }

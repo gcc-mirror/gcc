@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "pretty-print.h"
 #include "bitmap.h"
+#include "params.h"
 
 
 /* Functions and data structures for expanding case statements.  */
@@ -1758,7 +1759,8 @@ expand_return (tree retval)
 
 	  /* Use bitpos for the source extraction (left justified) and
 	     xbitpos for the destination store (right justified).  */
-	  store_bit_field (dst, bitsize, xbitpos % BITS_PER_WORD, word_mode,
+	  store_bit_field (dst, bitsize, xbitpos % BITS_PER_WORD,
+			   0, 0, word_mode,
 			   extract_bit_field (src, bitsize,
 					      bitpos % BITS_PER_WORD, 1, false,
 					      NULL_RTX, word_mode, word_mode));
@@ -2270,6 +2272,20 @@ expand_switch_using_bit_tests_p (tree index_expr, tree range,
 	      || (uniq == 3 && count >= 6)));
 }
 
+/* Return the smallest number of different values for which it is best to use a
+   jump-table instead of a tree of conditional branches.  */
+
+static unsigned int
+case_values_threshold (void)
+{
+  unsigned int threshold = PARAM_VALUE (PARAM_CASE_VALUES_THRESHOLD);
+
+  if (threshold == 0)
+    threshold = targetm.case_values_threshold ();
+
+  return threshold;
+}
+
 /* Terminate a case (Pascal/Ada) or switch (C) statement
    in which ORIG_INDEX is the expression to be tested.
    If ORIG_TYPE is not NULL, it is the original ORIG_INDEX
@@ -2424,7 +2440,7 @@ expand_case (gimple stmt)
 	 If the switch-index is a constant, do it this way
 	 because we can optimize it.  */
 
-      else if (count < targetm.case_values_threshold ()
+      else if (count < case_values_threshold ()
 	       || compare_tree_int (range,
 				    (optimize_insn_for_size_p () ? 3 : 10) * count) > 0
 	       /* RANGE may be signed, and really large ranges will show up

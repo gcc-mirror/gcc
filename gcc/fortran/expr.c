@@ -1839,6 +1839,9 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  if (p->ref && p->ref->u.ss.end)
 	    gfc_extract_int (p->ref->u.ss.end, &end);
 
+	  if (end < 0)
+	    end = 0;
+
 	  s = gfc_get_wide_string (end - start + 2);
 	  memcpy (s, p->value.character.string + start,
 		  (end - start) * sizeof (gfc_char_t));
@@ -3286,7 +3289,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	     upper bounds are present, we may do rank remapping.  */
 	  for (dim = 0; dim < ref->u.ar.dimen; ++dim)
 	    {
-	      if (!ref->u.ar.start[dim])
+	      if (!ref->u.ar.start[dim]
+		  || ref->u.ar.dimen_type[dim] != DIMEN_RANGE)
 		{
 		  gfc_error ("Lower bound has to be present at %L",
 			     &lvalue->where);
@@ -4126,24 +4130,101 @@ gfc_expr_replace_comp (gfc_expr *expr, gfc_component *dest)
 
 
 bool
+gfc_ref_this_image (gfc_ref *ref)
+{
+  int n;
+
+  gcc_assert (ref->type == REF_ARRAY && ref->u.ar.codimen > 0);
+
+  for (n = ref->u.ar.dimen; n < ref->u.ar.dimen + ref->u.ar.codimen; n++)
+    if (ref->u.ar.dimen_type[n] != DIMEN_THIS_IMAGE)
+      return false;
+
+  return true;
+}
+
+
+bool
 gfc_is_coindexed (gfc_expr *e)
 {
   gfc_ref *ref;
 
   for (ref = e->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
-      {
-	int n;
-	for (n = ref->u.ar.dimen; n < ref->u.ar.dimen + ref->u.ar.codimen; n++)
-	  if (ref->u.ar.dimen_type[n] != DIMEN_THIS_IMAGE)
-	    return true;
-      }
+      return !gfc_ref_this_image (ref);
 
   return false;
 }
 
 
+/* Coarrays are variables with a corank but not being coindexed. However, also
+   the following is a coarray: A subobject of a coarray is a coarray if it does
+   not have any cosubscripts, vector subscripts, allocatable component
+   selection, or pointer component selection. (F2008, 2.4.7)  */
+
 bool
+gfc_is_coarray (gfc_expr *e)
+{
+  gfc_ref *ref;
+  gfc_symbol *sym;
+  gfc_component *comp;
+  bool coindexed;
+  bool coarray;
+  int i;
+
+  if (e->expr_type != EXPR_VARIABLE)
+    return false;
+
+  coindexed = false;
+  sym = e->symtree->n.sym;
+
+  if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
+    coarray = CLASS_DATA (sym)->attr.codimension;
+  else
+    coarray = sym->attr.codimension;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    switch (ref->type)
+    {
+      case REF_COMPONENT:
+	comp = ref->u.c.component;
+        if (comp->attr.pointer || comp->attr.allocatable)
+	  {
+	    coindexed = false;
+	    if (comp->ts.type == BT_CLASS && comp->attr.class_ok)
+	      coarray = CLASS_DATA (comp)->attr.codimension;
+	    else
+	      coarray = comp->attr.codimension;
+	  }
+        break;
+
+     case REF_ARRAY:
+	if (!coarray)
+	  break;
+
+	if (ref->u.ar.codimen > 0 && !gfc_ref_this_image (ref))
+	  {
+	    coindexed = true;
+	    break;
+	  }
+
+	for (i = 0; i < ref->u.ar.dimen; i++)
+	  if (ref->u.ar.dimen_type[i] == DIMEN_VECTOR)
+	    {
+	      coarray = false;
+	      break;
+	    }
+	break;
+
+     case REF_SUBSTRING:
+	break;
+    }
+
+  return coarray && !coindexed;
+}
+
+
+int
 gfc_get_corank (gfc_expr *e)
 {
   int corank;
@@ -4394,8 +4475,8 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       sym = e->value.function.esym ? e->value.function.esym : e->symtree->n.sym;
     }
 
-  if (!pointer && e->expr_type == EXPR_FUNCTION
-      && sym->result->attr.pointer)
+  attr = gfc_expr_attr (e);
+  if (!pointer && e->expr_type == EXPR_FUNCTION && attr.pointer)
     {
       if (!(gfc_option.allow_std & GFC_STD_F2008))
 	{
@@ -4432,7 +4513,6 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 
   /* Find out whether the expr is a pointer; this also means following
      component references to the last one.  */
-  attr = gfc_expr_attr (e);
   is_pointer = (attr.pointer || attr.proc_pointer);
   if (pointer && !is_pointer)
     {

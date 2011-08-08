@@ -2,7 +2,7 @@
 /* Origin: <Pawe Sikora <pluto@ds14.agh.edu.pl> */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-march=pentium3" } */
 
 int main() 

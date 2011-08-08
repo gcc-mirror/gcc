@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 
 void foo1(int i, int j) __attribute__((fastcall, cdecl)); /* { dg-error "not compatible" } */
 void foo2(int i, int j) __attribute__((fastcall, stdcall)); /* { dg-error "not compatible" } */

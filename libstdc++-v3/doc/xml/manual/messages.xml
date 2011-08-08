@@ -489,12 +489,13 @@ void test01()
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.opengroup.org/austin/" class="uri">
-    </biblioid>
-    <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.opengroup.org/austin">
       System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
-    </citetitle>
-    <copyright>
+	</link>
+      </title>
+        <copyright>
       <year>2008</year>
       <holder>
 	The Open Group/The Institute of Electrical and Electronics
@@ -541,24 +542,28 @@ void test01()
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://java.sun.com/reference/api/index.html" class="uri">
-      </biblioid>
-      <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://java.sun.com/reference/api/index.html">
 	API Specifications, Java Platform
-      </citetitle>
+	</link>
+      </title>
 
     <pagenums>java.util.Properties, java.text.MessageFormat,
 java.util.Locale, java.util.ResourceBundle
     </pagenums>
   </biblioentry>
 
+
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/software/gettext/" class="uri">
-    </biblioid>
-    <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.gnu.org/software/gettext">
       GNU gettext tools, version 0.10.38, Native Language Support
       Library and Tools.
-    </citetitle>
+	</link>
+      </title>
+
   </biblioentry>
 
 </bibliography>

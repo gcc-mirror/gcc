@@ -67,15 +67,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Allocates a temporary buffer.
-   *  @param  len  The number of objects of type Tp.
+   *  @param  __len  The number of objects of type Tp.
    *  @return See full description.
    *
    *  Reinventing the wheel, but this time with prettier spokes!
    *
-   *  This function tries to obtain storage for @c len adjacent Tp
+   *  This function tries to obtain storage for @c __len adjacent Tp
    *  objects.  The objects themselves are not constructed, of course.
    *  A pair<> is returned containing <em>the buffer s address and
-   *  capacity (in the units of sizeof(Tp)), or a pair of 0 values if
+   *  capacity (in the units of sizeof(_Tp)), or a pair of 0 values if
    *  no storage can be obtained.</em>  Note that the capacity obtained
    *  may be less than that requested if the memory is unavailable;
    *  you should compare len with the .second return value.
@@ -104,10 +104,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief The companion to get_temporary_buffer().
-   *  @param  p  A buffer previously allocated by get_temporary_buffer.
+   *  @param  __p  A buffer previously allocated by get_temporary_buffer.
    *  @return   None.
    *
-   *  Frees the memory pointed to by p.
+   *  Frees the memory pointed to by __p.
    */
   template<typename _Tp>
     inline void

@@ -27,6 +27,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libcaf.h"
 #include <stdio.h>  /* For fputs and fprintf.  */
 #include <stdlib.h> /* For exit and malloc.  */
+#include <string.h> /* For memcpy and memset.  */
+#include <stdarg.h> /* For variadic arguments.  */
 
 /* Define GFC_CAF_CHECK to enable run-time checking.  */
 /* #define GFC_CAF_CHECK  1  */
@@ -38,6 +40,21 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Global variables.  */
 caf_static_t *caf_static_list = NULL;
 
+
+/* Keep in sync with mpi.c.  */
+static void
+caf_runtime_error (const char *message, ...)
+{
+  va_list ap;
+  fprintf (stderr, "Fortran runtime error: ");
+  va_start (ap, message);
+  vfprintf (stderr, message, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+
+  /* FIXME: Shutdown the Fortran RTL to flush the buffer.  PR 43849.  */
+  exit (EXIT_FAILURE);
+}
 
 void
 _gfortran_caf_init (int *argc __attribute__ ((unused)),
@@ -61,14 +78,37 @@ _gfortran_caf_finalize (void)
 
 
 void *
-_gfortran_caf_register (ptrdiff_t size, caf_register_t type,
-			void **token)
+_gfortran_caf_register (ptrdiff_t size, caf_register_t type, void **token,
+			int *stat, char *errmsg, int errmsg_len)
 {
   void *local;
 
   local = malloc (size);
   token = malloc (sizeof (void*) * 1);
   token[0] = local;
+
+  if (unlikely (local == NULL || token == NULL))
+    {
+      const char msg[] = "Failed to allocate coarray";
+      if (stat)
+	{
+	  *stat = 1;
+	  if (errmsg_len > 0)
+	    {
+	      int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
+							  : (int) sizeof (msg);
+	      memcpy (errmsg, msg, len);
+	      if (errmsg_len > len)
+		memset (&errmsg[len], ' ', errmsg_len-len);
+	    }
+	  return NULL;
+	}
+      else
+	  caf_runtime_error (msg);
+    }
+
+  if (stat)
+    *stat = 0;
 
   if (type == CAF_REGTYPE_COARRAY_STATIC)
     {
@@ -113,7 +153,7 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
       {
 	fprintf (stderr, "COARRAY ERROR: Invalid image index %d to SYNC "
 		 "IMAGES", images[i]);
-	exit (1);
+	exit (EXIT_FAILURE);
       }
 #endif
 

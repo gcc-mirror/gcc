@@ -6,25 +6,23 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2009, AdaCore                     --
+--                     Copyright (C) 1998-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
--- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
--- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
--- Boston, MA 02110-1301, USA.                                              --
+-- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
--- As a special exception,  if other files  instantiate  generics from this --
--- unit, or you link  this unit with other files  to produce an executable, --
--- this  unit  does not  by itself cause  the resulting  executable  to  be --
--- covered  by the  GNU  General  Public  License.  This exception does not --
--- however invalidate  any other reasons why  the executable file  might be --
--- covered by the  GNU Public License.                                      --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
+--                                                                          --
+-- You should have received a copy of the GNU General Public License and    --
+-- a copy of the GCC Runtime Library Exception along with this program;     --
+-- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
+-- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -3853,7 +3851,8 @@ package body GNAT.Spitbol.Patterns is
 
                   begin
                      if Node_OnM.Pcode = PC_Assign_OnM then
-                        Set_String (Node_OnM.VP.all, Subject (Start .. Stop));
+                        Set_Unbounded_String
+                          (Node_OnM.VP.all, Subject (Start .. Stop));
 
                      elsif Node_OnM.Pcode = PC_Write_OnM then
                         Put_Line (Node_OnM.FP.all, Subject (Start .. Stop));
@@ -4064,7 +4063,7 @@ package body GNAT.Spitbol.Patterns is
          --  Assign immediate. This node performs the actual assignment
 
          when PC_Assign_Imm =>
-            Set_String
+            Set_Unbounded_String
               (Node.VP.all,
                Subject (Stack (Stack_Base - 1).Cursor + 1 .. Cursor));
             Pop_Region;
@@ -5230,7 +5229,8 @@ package body GNAT.Spitbol.Patterns is
 
                   begin
                      if Node_OnM.Pcode = PC_Assign_OnM then
-                        Set_String (Node_OnM.VP.all, Subject (Start .. Stop));
+                        Set_Unbounded_String
+                          (Node_OnM.VP.all, Subject (Start .. Stop));
                         Dout
                           (Img (Stack (S).Node) &
                            "deferred assignment of " &
@@ -5479,7 +5479,7 @@ package body GNAT.Spitbol.Patterns is
             Dout
               (Img (Node) & "executing immediate assignment of " &
                Image (Subject (Stack (Stack_Base - 1).Cursor + 1 .. Cursor)));
-            Set_String
+            Set_Unbounded_String
               (Node.VP.all,
                Subject (Stack (Stack_Base - 1).Cursor + 1 .. Cursor));
             Pop_Region;

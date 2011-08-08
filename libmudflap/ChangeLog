@@ -1,3 +1,72 @@
+2011-07-31  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/43513
+	* testsuite/libmudflap.c/fail31-frag.c: Adapt testcase to prevent
+	folding of alloca.
+
+2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Revert:
+	2011-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/49753
+	PR tree-optimization/49309
+	* testsuite/libmudflap.c++/pass68-frag.cxx: New test.
+
+2011-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/49753
+	PR tree-optimization/49309
+	* testsuite/libmudflap.c++/pass68-frag.cxx: New test.
+
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Don't create pth.
+	Check for library containing sched_yield.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+	* testsuite/lib/libmudflap.exp (libmudflap-init): Use
+	mfconfig_libs in -static check.
+
+2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libmudflap/49550
+	* mf-runtime.c (__wrap_main) [__sun__ && __svr4__]: Don't register
+	stdin, stdout, stderr.
+	Register __ctype, __ctype_mask.
+
+	* configure.ac: Check for mmap64.
+	Check for rawmemchr, stpcpy, mempcpy.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* mf-hooks1.c [HAVE_MMAP64] (__mf_0fn_mmap64): New function.
+	(mmap64): New wrapper function.
+	* mf-impl.h (__mf_dynamic_index) [HAVE_MMAP64]: Add dyn_mmap64.
+	* mf-runtime.c (__mf_dynamic) [HAVE_MMAP64]: Handle mmap64.
+
+	* mf-hooks2.c [HAVE_GETMNTENT && HAVE_SYS_MNTTAB_H]: Implement
+	getmntent wrapper.
+
+	* mf-hooks3.c (_REENTRANT): Define.
+
+	* testsuite/libmudflap.c/heap-scalestress.c (SCALE): Reduce to 10000.
+
+	* testsuite/libmudflap.c/pass-stratcliff.c: Include ../config.h.
+	(MIN): Define.
+	Use HAVE_RAWMEMCHR, HAVE_STPCPY, HAVE_MEMPCPY as guards.
+
+	* testsuite/libmudflap.c/pass47-frag.c: Expect __ctype warning on
+	*-*-solaris2.*.
+
+2011-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libmudflap/49549
+	* testsuite/lib/libmudflap.exp (load_gcc_lib): Load
+	target-supports.exp.
+	* testsuite/libmudflap.cth/cthfrags.exp: Only pass
+	--noinhibit-exec to GNU ld.
+
 2011-06-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libmudflap/38738

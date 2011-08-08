@@ -598,6 +598,7 @@ suitable_reference_p (struct data_reference *a, enum ref_step_type *ref_step)
   tree ref = DR_REF (a), step = DR_STEP (a);
 
   if (!step
+      || TREE_THIS_VOLATILE (ref)
       || !is_gimple_reg_type (TREE_TYPE (ref))
       || tree_could_throw_p (ref))
     return false;
@@ -1396,7 +1397,7 @@ ref_at_iteration (struct loop *loop, tree ref, int iter)
 	{
 	  val = fold_build2 (MULT_EXPR, sizetype, iv.step,
 			     size_int (iter));
-	  val = fold_build2 (POINTER_PLUS_EXPR, type, iv.base, val);
+	  val = fold_build_pointer_plus (iv.base, val);
 	}
       else
 	{

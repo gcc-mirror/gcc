@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,16 +29,25 @@ with Prj.Tree;  use Prj.Tree;
 
 package Prj.Part is
 
+   type Errout_Mode is
+     (Always_Finalize,
+      Finalize_If_Error,
+      Never_Finalize);
+   --  Whether Parse should call Errout.Finalize (which prints the error
+   --  messages on stdout). When Never_Finalize is used, Errout is not reset
+   --  either at the beginning of Parse.
+
    procedure Parse
-     (In_Tree                : Project_Node_Tree_Ref;
-      Project                : out Project_Node_Id;
-      Project_File_Name      : String;
-      Always_Errout_Finalize : Boolean;
-      Packages_To_Check      : String_List_Access := All_Packages;
-      Store_Comments         : Boolean := False;
-      Current_Directory      : String := "";
-      Is_Config_File         : Boolean;
-      Flags                  : Processing_Flags);
+     (In_Tree           : Project_Node_Tree_Ref;
+      Project           : out Project_Node_Id;
+      Project_File_Name : String;
+      Errout_Handling   : Errout_Mode := Always_Finalize;
+      Packages_To_Check : String_List_Access := All_Packages;
+      Store_Comments    : Boolean := False;
+      Current_Directory : String := "";
+      Is_Config_File    : Boolean;
+      Env               : in out Prj.Tree.Environment;
+      Target_Name       : String := "");
    --  Parse project file and all its imported project files and create a tree.
    --  Return the node for the project (or Empty_Node if parsing failed). If
    --  Always_Errout_Finalize is True, Errout.Finalize is called in all cases,
@@ -53,5 +62,9 @@ package Prj.Part is
    --
    --  Is_Config_File should be set to True if the project represents a config
    --  file (.cgpr) since some specific checks apply.
+   --
+   --  Target_Name will be used to initialize the default project path, unless
+   --  In_Tree.Project_Path has already been initialized (which is the
+   --  recommended use).
 
 end Prj.Part;

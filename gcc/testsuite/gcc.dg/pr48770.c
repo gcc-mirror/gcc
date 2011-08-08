@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O -fprofile-arcs -fPIC -fno-dce -fno-forward-propagate" } */
 
 int test_goto2 (int f)
@@ -19,3 +20,5 @@ int main ()
   test_goto2 (30);
   return 0;
 }
+
+/* { dg-final { cleanup-coverage-files } } */

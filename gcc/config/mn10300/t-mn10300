@@ -1,5 +1,5 @@
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001,
-# 2003, 2010 Free Software Foundation, Inc.
+# 2003, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,18 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
-
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	cat $(srcdir)/config/fp-bit.c > dp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 MULTILIB_OPTIONS = mam33/mam33-2/mam34
 MULTILIB_DIRNAMES = am33 am33-2 am34

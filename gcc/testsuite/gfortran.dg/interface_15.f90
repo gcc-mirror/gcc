@@ -19,4 +19,4 @@ CONTAINS
   END FUNCTION
 END MODULE
 
-! { dg-final { cleanup-modules "M1" } }
+! { dg-final { cleanup-modules "m1" } }

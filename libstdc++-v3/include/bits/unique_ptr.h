@@ -542,7 +542,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// std::hash specialization for unique_ptr.
   template<typename _Tp, typename _Dp>
     struct hash<unique_ptr<_Tp, _Dp>>
-    : public std::unary_function<unique_ptr<_Tp, _Dp>, size_t>
+    : public __hash_base<size_t, unique_ptr<_Tp, _Dp>>
     {
       size_t
       operator()(const unique_ptr<_Tp, _Dp>& __u) const

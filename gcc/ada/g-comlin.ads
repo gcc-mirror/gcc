@@ -6,25 +6,23 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2010, AdaCore                     --
+--                     Copyright (C) 1999-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
--- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
--- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
--- Boston, MA 02110-1301, USA.                                              --
+-- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
--- As a special exception,  if other files  instantiate  generics from this --
--- unit, or you link  this unit with other files  to produce an executable, --
--- this  unit  does not  by itself cause  the resulting  executable  to  be --
--- covered  by the  GNU  General  Public  License.  This exception does not --
--- however invalidate  any other reasons why  the executable file  might be --
--- covered by the  GNU Public License.                                      --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
+--                                                                          --
+-- You should have received a copy of the GNU General Public License and    --
+-- a copy of the GCC Runtime Library Exception along with this program;     --
+-- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
+-- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -585,6 +583,11 @@ package GNAT.Command_Line is
    --  assumed that the remainder of the switch ("uv") is a set of characters
    --  whose order is irrelevant. In fact, this package will sort them
    --  alphabetically.
+   --
+   --  When grouping switches that accept arguments (for instance "-gnatyL!"
+   --  as the definition, and "-gnatyaL12b" as the command line), only
+   --  numerical arguments are accepted. The above is equivalent to
+   --  "-gnatya -gnatyL12 -gnatyb".
 
    procedure Define_Switch
      (Config      : in out Command_Line_Configuration;
@@ -596,8 +599,7 @@ package GNAT.Command_Line is
    --  format (trailing ':', '?', etc for defining a switch with parameters).
    --
    --  Switch should also start with the leading '-' (or any other characters).
-   --  They should all start with the same character, though. If this
-   --  character is not '-', you will need to call Initialize_Option_Scan to
+   --  If this character is not '-', you need to call Initialize_Option_Scan to
    --  set the proper character for the parser.
    --
    --  The switches defined in the command_line_configuration object are used
@@ -770,7 +772,9 @@ package GNAT.Command_Line is
       Config : Command_Line_Configuration);
    function Get_Configuration
      (Cmd : Command_Line) return Command_Line_Configuration;
-   --  Set or retrieve the configuration used for that command line
+   --  Set or retrieve the configuration used for that command line. The Config
+   --  must have been initialized first, by calling one of the Define_Switches
+   --  subprograms.
 
    procedure Set_Command_Line
      (Cmd                : in out Command_Line;
@@ -782,7 +786,9 @@ package GNAT.Command_Line is
    --
    --  The parsing of Switches is done through calls to Getopt, by passing
    --  Getopt_Description as an argument. (A "*" is automatically prepended so
-   --  that all switches and command line arguments are accepted).
+   --  that all switches and command line arguments are accepted). If a config
+   --  was defined via Set_Configuration, the Getopt_Description parameter will
+   --  be ignored.
    --
    --  To properly handle switches that take parameters, you should document
    --  them in Getopt_Description. Otherwise, the switch and its parameter will
@@ -794,12 +800,18 @@ package GNAT.Command_Line is
    --  should be listed in the Sections parameter (as "-bargs -cargs").
    --
    --  This function can be used to reset Cmd by passing an empty string.
+   --
+   --  If an invalid switch is found on the command line (ie wasn't defined in
+   --  the configuration via Define_Switch), and the configuration wasn't set
+   --  to accept all switches (by defining "*" as a valid switch), then an
+   --  exception Invalid_Switch is raised. The exception message indicates the
+   --  invalid switch.
 
    procedure Add_Switch
      (Cmd        : in out Command_Line;
       Switch     : String;
       Parameter  : String    := "";
-      Separator  : Character := ' ';
+      Separator  : Character := ASCII.NUL;
       Section    : String    := "";
       Add_Before : Boolean   := False);
    --  Add a new switch to the command line, and combine/group it with existing
@@ -826,8 +838,25 @@ package GNAT.Command_Line is
    --  added if not already present. For example, to add the -g switch into the
    --  -cargs section, you need to call (Cmd, "-g", Section => "-cargs").
    --
-   --  [Separator] is ignored, and kept for backward compatibility only.
-   --  ??? It might be removed in future versions.
+   --  [Separator], if specified, overrides the separator that was defined
+   --  through Define_Switch. For instance, if the switch was defined as
+   --  "-from:", the separator defaults to a space. But if your application
+   --  uses unusual separators not supported by GNAT.Command_Line (for instance
+   --  it requires ":"), you can specify this separator here.
+   --
+   --  For instance,
+   --     Add_Switch(Cmd, "-from", "bar", ':')
+   --
+   --  results in
+   --     -from:bar
+   --
+   --  rather than the default
+   --     -from bar
+   --
+   --  Note however that Getopt doesn't know how to handle ":" as a separator.
+   --  So the recommendation is to declare the switch as "-from!" (ie no
+   --  space between the switch and its parameter). Then Getopt will return
+   --  ":bar" as the parameter, and you can trim the ":" in your application.
    --
    --  Invalid_Section is raised if Section was not defined in the
    --  configuration of the command line.
@@ -839,7 +868,7 @@ package GNAT.Command_Line is
      (Cmd        : in out Command_Line;
       Switch     : String;
       Parameter  : String    := "";
-      Separator  : Character := ' ';
+      Separator  : Character := ASCII.NUL;
       Section    : String    := "";
       Add_Before : Boolean   := False;
       Success    : out Boolean);
@@ -1085,6 +1114,11 @@ private
 
       Sections : GNAT.OS_Lib.Argument_List_Access;
       --  The list of sections
+
+      Star_Switch : Boolean := False;
+      --  Whether switches not described in this configuration should be
+      --  returned to the user (True). If False, an exception Invalid_Switch
+      --  is raised.
 
       Aliases  : Alias_Definitions_List;
       Usage    : GNAT.OS_Lib.String_Access;

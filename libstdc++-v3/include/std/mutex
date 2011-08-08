@@ -212,7 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef __gthread_mutex_t 		  	__native_type;
 
 #ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-    typedef chrono::monotonic_clock 	  	__clock_t;
+    typedef chrono::steady_clock 	  	__clock_t;
 #else
     typedef chrono::high_resolution_clock 	__clock_t;
 #endif
@@ -317,7 +317,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef __gthread_recursive_mutex_t		__native_type;
 
 #ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-    typedef chrono::monotonic_clock 		__clock_t;
+    typedef chrono::steady_clock 		__clock_t;
 #else
     typedef chrono::high_resolution_clock 	__clock_t;
 #endif
@@ -801,13 +801,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     call_once(once_flag& __once, _Callable&& __f, _Args&&... __args)
     {
 #ifdef _GLIBCXX_HAVE_TLS
-      auto __bound_functor = std::bind<void>(std::forward<_Callable>(__f),
+      auto __bound_functor = std::__bind_simple(std::forward<_Callable>(__f),
           std::forward<_Args>(__args)...);
       __once_callable = &__bound_functor;
       __once_call = &__once_call_impl<decltype(__bound_functor)>;
 #else
       unique_lock<mutex> __functor_lock(__get_once_mutex());
-      __once_functor = std::bind<void>(std::forward<_Callable>(__f),
+      __once_functor = std::__bind_simple(std::forward<_Callable>(__f),
           std::forward<_Args>(__args)...);
       __set_once_functor_lock_ptr(&__functor_lock);
 #endif

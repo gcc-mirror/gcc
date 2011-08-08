@@ -11,6 +11,7 @@
 
 class Gogo;
 class Traverse;
+class Statement_inserter;
 class Block;
 class Function;
 class Unnamed_label;
@@ -42,6 +43,7 @@ class Typed_identifier_list;
 class Bexpression;
 class Bstatement;
 class Bvariable;
+class Ast_dump_context;
 
 // This class is used to traverse assignments made by a statement
 // which makes assignments.
@@ -290,9 +292,11 @@ class Statement
   // simplify statements for further processing.  It returns the same
   // Statement or a new one.  FUNCTION is the function containing this
   // statement.  BLOCK is the block containing this statement.
+  // INSERTER can be used to insert new statements before this one.
   Statement*
-  lower(Gogo* gogo, Named_object* function, Block* block)
-  { return this->do_lower(gogo, function, block); }
+  lower(Gogo* gogo, Named_object* function, Block* block,
+	Statement_inserter* inserter)
+  { return this->do_lower(gogo, function, block, inserter); }
 
   // Set type information for unnamed constants.
   void
@@ -371,6 +375,10 @@ class Statement
   Bstatement*
   get_backend(Translate_context*);
 
+  // Dump AST representation of a statement to a dump context.
+  void
+  dump_statement(Ast_dump_context*) const;
+
  protected:
   // Implemented by child class: traverse the tree.
   virtual int
@@ -385,7 +393,7 @@ class Statement
   // Implemented by the child class: lower this statement to a simpler
   // one.
   virtual Statement*
-  do_lower(Gogo*, Named_object*, Block*)
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*)
   { return this; }
 
   // Implemented by child class: set type information for unnamed
@@ -410,6 +418,10 @@ class Statement
   // Implemented by child class: convert to backend representation.
   virtual Bstatement*
   do_get_backend(Translate_context*) = 0;
+
+  // Implemented by child class: dump ast representation.
+  virtual void
+  do_dump_statement(Ast_dump_context*) const = 0;
 
   // Traverse an expression in a statement.
   int
@@ -504,6 +516,9 @@ class Temporary_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context*);
 
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
  private:
   // The type of the temporary variable.
   Type* type_;
@@ -535,8 +550,14 @@ class Variable_declaration_statement : public Statement
   bool
   do_traverse_assignments(Traverse_assignments*);
 
+  Statement*
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
+
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   Named_object* var_;
@@ -566,7 +587,7 @@ class Return_statement : public Statement
   do_traverse_assignments(Traverse_assignments*);
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   bool
   do_may_fall_through() const
@@ -574,6 +595,9 @@ class Return_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // Return values.  This may be NULL.
@@ -610,6 +634,9 @@ class Send_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The channel on which to send the value.
@@ -671,6 +698,10 @@ class Select_clauses
   // Convert to the backend representation.
   Bstatement*
   get_backend(Translate_context*, Unnamed_label* break_label, source_location);
+
+  // Dump AST representation.
+  void
+  dump_clauses(Ast_dump_context*) const;
 
  private:
   // A single clause.
@@ -742,6 +773,10 @@ class Select_clauses
     Bstatement*
     get_statements_backend(Translate_context*);
 
+    // Dump AST representation.
+    void
+    dump_clause(Ast_dump_context*) const;
+
    private:
     // The channel.
     Expression* channel_;
@@ -806,7 +841,7 @@ class Select_statement : public Statement
   { return this->clauses_->traverse(traverse); }
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   void
   do_determine_types()
@@ -818,6 +853,9 @@ class Select_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The select clauses.
@@ -838,7 +876,7 @@ class Thunk_statement : public Statement
 
   // Return the call expression.
   Expression*
-  call()
+  call() const
   { return this->call_; }
 
   // Simplify a go or defer statement so that it only uses a single
@@ -908,6 +946,9 @@ class Go_statement : public Thunk_statement
  protected:
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 };
 
 // A defer statement.
@@ -922,6 +963,9 @@ class Defer_statement : public Thunk_statement
  protected:
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 };
 
 // A label statement.
@@ -945,6 +989,9 @@ class Label_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The label.
@@ -993,11 +1040,14 @@ class For_statement : public Statement
   { go_unreachable(); }
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The initialization statements.  This may be NULL.
@@ -1051,11 +1101,14 @@ class For_range_statement : public Statement
   { go_unreachable(); }
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   Expression*
@@ -1161,6 +1214,10 @@ class Case_clauses
 	      std::vector<std::vector<Bexpression*> >* all_cases,
 	      std::vector<Bstatement*>* all_statements) const;
 
+  // Dump the AST representation to a dump context.
+  void
+  dump_clauses(Ast_dump_context*) const;
+  
  private:
   // For a constant switch we need to keep a record of constants we
   // have already seen.
@@ -1231,6 +1288,10 @@ class Case_clauses
     get_backend(Translate_context*, Unnamed_label* break_label,
 		Case_constants*, std::vector<Bexpression*>* cases) const;
 
+    // Dump the AST representation to a dump context.
+    void
+    dump_clause(Ast_dump_context*) const;
+  
    private:
     // The list of case expressions.
     Expression_list* cases_;
@@ -1280,11 +1341,14 @@ class Switch_statement : public Statement
   do_traverse(Traverse*);
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The value to switch on.  This may be NULL.
@@ -1336,6 +1400,10 @@ class Type_case_clauses
   lower(Block*, Temporary_statement* descriptor_temp,
 	Unnamed_label* break_label) const;
 
+  // Dump the AST representation to a dump context.
+  void
+  dump_clauses(Ast_dump_context*) const;
+
  private:
   // One type case clause.
   class Type_case_clause
@@ -1375,6 +1443,10 @@ class Type_case_clauses
     void
     lower(Block*, Temporary_statement* descriptor_temp,
 	  Unnamed_label* break_label, Unnamed_label** stmts_label) const;
+
+    // Dump the AST representation to a dump context.
+    void
+    dump_clause(Ast_dump_context*) const;
 
    private:
     // The type for this type clause.
@@ -1426,11 +1498,14 @@ class Type_switch_statement : public Statement
   do_traverse(Traverse*);
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   Bstatement*
   do_get_backend(Translate_context*)
   { go_unreachable(); }
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
 
  private:
   // The variable holding the value we are switching on.

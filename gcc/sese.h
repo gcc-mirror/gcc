@@ -57,7 +57,7 @@ extern void free_sese (sese);
 extern void sese_insert_phis_for_liveouts (sese, basic_block, edge, edge);
 extern void build_sese_loop_nests (sese);
 extern edge copy_bb_and_scalar_dependences (basic_block, sese, edge,
-					    VEC (tree, heap) *);
+					    VEC (tree, heap) *, bool *);
 extern struct loop *outermost_loop_in_sese (sese, basic_block);
 extern void insert_loop_close_phis (htab_t, loop_p);
 extern void insert_guard_phis (basic_block, edge, edge, htab_t, htab_t);

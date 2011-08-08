@@ -544,8 +544,9 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
   /* To handle special cases like floating point comparison, it is easier and
      less error-prone to build a tree and gimplify it on the fly though it is
      less efficient.  */
-  cond = fold_build2 (gimple_cond_code (stmt), boolean_type_node,
-		      gimple_cond_lhs (stmt), gimple_cond_rhs (stmt));
+  cond = fold_build2_loc (gimple_location (stmt),
+			  gimple_cond_code (stmt), boolean_type_node,
+			  gimple_cond_lhs (stmt), gimple_cond_rhs (stmt));
 
   /* We need to know which is the true edge and which is the false
      edge so that we know when to invert the condition below.  */
@@ -554,7 +555,8 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
       || (e0 == false_edge && integer_onep (arg0))
       || (e1 == true_edge && integer_zerop (arg1))
       || (e1 == false_edge && integer_onep (arg1)))
-    cond = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (cond), cond);
+    cond = fold_build1_loc (gimple_location (stmt),
+			    TRUTH_NOT_EXPR, TREE_TYPE (cond), cond);
 
   /* Insert our new statements at the end of conditional block before the
      COND_STMT.  */
@@ -1452,7 +1454,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
         continue;
 
       then_store = DR_STMT (then_dr);
-      then_lhs = gimple_assign_lhs (then_store);
+      then_lhs = gimple_get_lhs (then_store);
       found = false;
 
       FOR_EACH_VEC_ELT (data_reference_p, else_datarefs, j, else_dr)
@@ -1461,7 +1463,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
             continue;
 
           else_store = DR_STMT (else_dr);
-          else_lhs = gimple_assign_lhs (else_store);
+          else_lhs = gimple_get_lhs (else_store);
 
           if (operand_equal_p (then_lhs, else_lhs, 0))
             {

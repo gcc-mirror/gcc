@@ -136,6 +136,16 @@ enum node_frequency {
   NODE_FREQUENCY_HOT
 };
 
+/* Possible initialization status of a variable.   When requested
+   by the user, this information is tracked and recorded in the DWARF
+   debug information, along with the variable's location.  */
+enum var_init_status
+{
+  VAR_INIT_STATUS_UNKNOWN,
+  VAR_INIT_STATUS_UNINITIALIZED,
+  VAR_INIT_STATUS_INITIALIZED
+};
+
 
 struct edge_def;
 typedef struct edge_def *edge;

@@ -23,8 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Unchecked_Deallocation;
-
 with Errout;   use Errout;
 with Lib.Writ; use Lib.Writ;
 with Opt;      use Opt;
@@ -54,20 +52,6 @@ package body Prepcomp is
    pragma Warnings (Off);
    No_Mapping : Prep.Symbol_Table.Instance;
    pragma Warnings (On);
-
-   type String_Ptr is access String;
-   type String_Array is array (Positive range <>) of String_Ptr;
-   type String_Array_Ptr is access String_Array;
-
-   procedure Free is
-      new Ada.Unchecked_Deallocation (String_Array, String_Array_Ptr);
-
-   Symbol_Definitions : String_Array_Ptr := new String_Array (1 .. 4);
-   --  An extensible array to temporarily stores symbol definitions specified
-   --  on the command line with -gnateD switches.
-
-   Last_Definition : Natural := 0;
-   --  Index of last symbol definition in array Symbol_Definitions
 
    type Preproc_Data is record
       Mapping      : Symbol_Table.Instance;
@@ -160,31 +144,6 @@ package body Prepcomp is
          Add_Preprocessing_Dependency (Dependencies.Table (Index));
       end loop;
    end Add_Dependencies;
-
-   ---------------------------
-   -- Add_Symbol_Definition --
-   ---------------------------
-
-   procedure Add_Symbol_Definition (Def : String) is
-   begin
-      --  If Symbol_Definitions is not large enough, double it
-
-      if Last_Definition = Symbol_Definitions'Last then
-         declare
-            New_Symbol_Definitions : constant String_Array_Ptr :=
-              new String_Array (1 .. 2 * Last_Definition);
-
-         begin
-            New_Symbol_Definitions (Symbol_Definitions'Range) :=
-              Symbol_Definitions.all;
-            Free (Symbol_Definitions);
-            Symbol_Definitions := New_Symbol_Definitions;
-         end;
-      end if;
-
-      Last_Definition := Last_Definition + 1;
-      Symbol_Definitions (Last_Definition) := new String'(Def);
-   end Add_Symbol_Definition;
 
    -------------------
    -- Check_Symbols --
@@ -740,12 +699,12 @@ package body Prepcomp is
       --  The command line definitions have been stored temporarily in
       --  array Symbol_Definitions.
 
-      for Index in 1 .. Last_Definition loop
+      for Index in 1 .. Preprocessing_Symbol_Last loop
          --  Check each symbol definition, fail immediately if syntax is not
          --  correct.
 
          Check_Command_Line_Symbol_Definition
-           (Definition => Symbol_Definitions (Index).all,
+           (Definition => Preprocessing_Symbol_Defs (Index).all,
             Data       => Symbol_Data);
          Found := False;
 

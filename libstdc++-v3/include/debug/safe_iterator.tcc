@@ -1,6 +1,6 @@
 // Debugging iterator implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -48,7 +48,7 @@ namespace __gnu_debug
 	{
 	  const_iterator __begin = _M_get_sequence()->_M_base().begin();
 	  std::pair<difference_type, _Distance_precision> __dist =
-	    this->_M_get_distance(__begin, base());
+	    __get_distance(__begin, base());
 	  bool __ok =  ((__dist.second == __dp_exact && __dist.first >= -__n)
 			|| (__dist.second != __dp_exact && __dist.first > 0));
 	  return __ok;
@@ -57,7 +57,7 @@ namespace __gnu_debug
 	{
 	  const_iterator __end = _M_get_sequence()->_M_base().end();
 	  std::pair<difference_type, _Distance_precision> __dist =
-	    this->_M_get_distance(base(), __end);
+	    __get_distance(base(), __end);
 	  bool __ok = ((__dist.second == __dp_exact && __dist.first >= __n)
 		       || (__dist.second != __dp_exact && __dist.first > 0));
 	  return __ok;
@@ -76,7 +76,7 @@ namespace __gnu_debug
 	/* Determine if we can order the iterators without the help of
 	   the container */
 	std::pair<difference_type, _Distance_precision> __dist =
-	  this->_M_get_distance(base(), __rhs.base());
+	  __get_distance(base(), __rhs.base());
 	switch (__dist.second) {
 	case __dp_equality:
 	  if (__dist.first == 0)

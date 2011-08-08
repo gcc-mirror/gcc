@@ -37,6 +37,8 @@ SHELL = @SHELL@
 
 cpu_type = @cpu_type@
 enable_shared = @enable_shared@
+double_type_size = @double_type_size@
+long_double_type_size = @long_double_type_size@
 decimal_float = @decimal_float@
 enable_decimal_float = @enable_decimal_float@
 fixed_point = @fixed_point@
@@ -253,7 +255,34 @@ objects = $(filter %$(objext),$^)
 # Collect any host-specific information from Makefile fragments.
 
 LIBGCC_VER_GNU_PREFIX = __
+LIBGCC_VER_FIXEDPOINT_GNU_PREFIX = __
 LIBGCC_VER_SYMBOLS_PREFIX =
+
+FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
+    _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
+    _lt_sf _le_sf _unord_sf _si_to_sf _sf_to_si _negate_sf _make_sf \
+    _sf_to_df _sf_to_tf _thenan_sf _sf_to_usi _usi_to_sf
+
+DPBIT_FUNCS = _pack_df _unpack_df _addsub_df _mul_df _div_df \
+    _fpcmp_parts_df _compare_df _eq_df _ne_df _gt_df _ge_df \
+    _lt_df _le_df _unord_df _si_to_df _df_to_si _negate_df _make_df \
+    _df_to_sf _df_to_tf _thenan_df _df_to_usi _usi_to_df
+
+TPBIT_FUNCS = _pack_tf _unpack_tf _addsub_tf _mul_tf _div_tf \
+    _fpcmp_parts_tf _compare_tf _eq_tf _ne_tf _gt_tf _ge_tf \
+    _lt_tf _le_tf _unord_tf _si_to_tf _tf_to_si _negate_tf _make_tf \
+    _tf_to_df _tf_to_sf _thenan_tf _tf_to_usi _usi_to_tf
+
+# Additional sources to handle exceptions; overridden by targets as needed.
+LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
+  $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
+LIB2ADDEHSTATIC = $(LIB2ADDEH)
+LIB2ADDEHSHARED = $(LIB2ADDEH)
+
+# Don't build libunwind by default.
+LIBUNWIND =
+SHLIBUNWIND_LINK =
+SHLIBUNWIND_INSTALL =
 
 tmake_file = @tmake_file@
 include $(srcdir)/empty.mk $(tmake_file)
@@ -314,6 +343,10 @@ endif
 endif
 
 LIB2ADD += enable-execute-stack.c
+
+LIB2ADDEH += $(srcdir)/emutls.c
+LIB2ADDEHSTATIC += $(srcdir)/emutls.c
+LIB2ADDEHSHARED += $(srcdir)/emutls.c
 
 # Library members defined in libgcc2.c.
 lib2funcs = _muldi3 _negdi2 _lshrdi3 _ashldi3 _ashrdi3 _cmpdi2 _ucmpdi2	   \
@@ -429,34 +462,25 @@ $(lib2-divmod-s-o): %_s$(objext): $(gcc_srcdir)/libgcc2.c
 libgcc-s-objects += $(lib2-divmod-s-o)
 endif
 
-# $(FPBIT) et al. are pathnames relative to the GCC build
-# directory; the supporting files are made by the GCC
-# Makefile.
-# FIXME: Soon we will be able to move this logic into this directory.
-
-ifneq ($(fpbit-in-libgcc),yes)
-FPBIT:=$(if $(FPBIT),$(gcc_objdir)/$(FPBIT),)
-DPBIT:=$(if $(DPBIT),$(gcc_objdir)/$(DPBIT),)
-TPBIT:=$(if $(TPBIT),$(gcc_objdir)/$(TPBIT),)
-endif
-
 ifeq ($(TPBIT),)
 # _sf_to_tf and _df_to_tf require tp-bit.c being compiled in.
 FPBIT_FUNCS := $(filter-out _sf_to_tf,$(FPBIT_FUNCS))
 DPBIT_FUNCS := $(filter-out _df_to_tf,$(DPBIT_FUNCS))
 endif
 
+fpbit-src := $(srcdir)/fp-bit.c
+
 # Build FPBIT.
 ifneq ($(FPBIT),)
 fpbit-o = $(patsubst %,%$(objext),$(FPBIT_FUNCS))
-$(fpbit-o): %$(objext): $(FPBIT)
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(FPBIT) $(vis_hide)
+$(fpbit-o): %$(objext): $(fpbit-src)
+	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DFLOAT $(FPBIT_CFLAGS) -c $< $(vis_hide)
 libgcc-objects += $(fpbit-o)
 
 ifeq ($(enable_shared),yes)
 fpbit-s-o = $(patsubst %,%_s$(objext),$(FPBIT_FUNCS))
-$(fpbit-s-o): %_s$(objext): $(FPBIT)
-	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(FPBIT)
+$(fpbit-s-o): %_s$(objext): $(fpbit-src)
+	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DFLOAT $(FPBIT_CFLAGS)  -c $<
 libgcc-s-objects += $(fpbit-s-o)
 endif
 endif
@@ -464,14 +488,14 @@ endif
 # Build DPBIT.
 ifneq ($(DPBIT),)
 dpbit-o = $(patsubst %,%$(objext),$(DPBIT_FUNCS))
-$(dpbit-o): %$(objext): $(DPBIT)
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(DPBIT) $(vis_hide)
+$(dpbit-o): %$(objext): $(fpbit-src)
+	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* $(DPBIT_CFLAGS) -c $< $(vis_hide)
 libgcc-objects += $(dpbit-o)
 
 ifeq ($(enable_shared),yes)
 dpbit-s-o = $(patsubst %,%_s$(objext),$(DPBIT_FUNCS))
-$(dpbit-s-o): %_s$(objext): $(DPBIT)
-	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(DPBIT)
+$(dpbit-s-o): %_s$(objext): $(fpbit-src)
+	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* $(DPBIT_CFLAGS) -c $<
 libgcc-s-objects += $(dpbit-s-o)
 endif
 endif
@@ -479,14 +503,14 @@ endif
 # Build TPBIT.
 ifneq ($(TPBIT),)
 tpbit-o = $(patsubst %,%$(objext),$(TPBIT_FUNCS))
-$(tpbit-o): %$(objext): $(TPBIT)
-	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(TPBIT) $(vis_hide)
+$(tpbit-o): %$(objext): $(fpbit-src)
+	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DTFLOAT $(TPBIT_CFLAGS) -c $< $(vis_hide)
 libgcc-objects += $(tpbit-o)
 
 ifeq ($(enable_shared),yes)
 tpbit-s-o = $(patsubst %,%_s$(objext),$(TPBIT_FUNCS))
-$(tpbit-s-o): %_s$(objext): $(TPBIT)
-	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -c $(TPBIT)
+$(tpbit-s-o): %_s$(objext): $(fpbit-src)
+	$(gcc_s_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DTFLOAT $(TPBIT_CFLAGS) -c $<
 libgcc-s-objects += $(tpbit-s-o)
 endif
 endif
@@ -554,6 +578,30 @@ endif
 libgcc-objects += $(decbits-objects)
 
 # Next build individual support functions.
+D32PBIT_FUNCS = _addsub_sd _div_sd _mul_sd _plus_sd _minus_sd \
+	_eq_sd _ne_sd _lt_sd _gt_sd _le_sd _ge_sd \
+	_sd_to_si _sd_to_di _sd_to_usi _sd_to_udi \
+	_si_to_sd _di_to_sd _usi_to_sd _udi_to_sd \
+	_sd_to_sf _sd_to_df _sd_to_xf _sd_to_tf \
+	_sf_to_sd _df_to_sd _xf_to_sd _tf_to_sd \
+	_sd_to_dd _sd_to_td _unord_sd _conv_sd
+
+D64PBIT_FUNCS = _addsub_dd _div_dd _mul_dd _plus_dd _minus_dd \
+	_eq_dd _ne_dd _lt_dd _gt_dd _le_dd _ge_dd \
+	_dd_to_si _dd_to_di _dd_to_usi _dd_to_udi \
+	_si_to_dd _di_to_dd _usi_to_dd _udi_to_dd \
+	_dd_to_sf _dd_to_df _dd_to_xf _dd_to_tf \
+	_sf_to_dd _df_to_dd _xf_to_dd _tf_to_dd \
+	_dd_to_sd _dd_to_td _unord_dd _conv_dd
+
+D128PBIT_FUNCS = _addsub_td _div_td _mul_td _plus_td _minus_td \
+	_eq_td _ne_td _lt_td _gt_td _le_td _ge_td \
+	_td_to_si _td_to_di _td_to_usi _td_to_udi \
+	_si_to_td _di_to_td _usi_to_td _udi_to_td \
+	_td_to_sf _td_to_df _td_to_xf _td_to_tf \
+	_sf_to_td _df_to_td _xf_to_td _tf_to_td \
+	_td_to_sd _td_to_dd _unord_td _conv_td
+
 ifeq ($(enable_decimal_float),bid)
 ifneq ($(D32PBIT),)
 D32PBIT_FUNCS:=$(filter-out _plus_sd _minus_sd _conv_sd, $(D32PBIT_FUNCS))
@@ -573,7 +621,7 @@ d32pbit-o = $(patsubst %,%$(objext),$(D32PBIT_FUNCS))
 ifeq ($(enable_decimal_float),bid)
 $(d32pbit-o): %$(objext): $(srcdir)/config/libbid/%.c
 else
-$(d32pbit-o): %$(objext): $(gcc_srcdir)/config/dfp-bit.c
+$(d32pbit-o): %$(objext): $(srcdir)/dfp-bit.c
 endif
 	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=32 -c $<
 libgcc-objects += $(d32pbit-o)
@@ -584,7 +632,7 @@ d64pbit-o = $(patsubst %,%$(objext),$(D64PBIT_FUNCS))
 ifeq ($(enable_decimal_float),bid)
 $(d64pbit-o): %$(objext): $(srcdir)/config/libbid/%.c
 else
-$(d64pbit-o): %$(objext): $(gcc_srcdir)/config/dfp-bit.c
+$(d64pbit-o): %$(objext): $(srcdir)/dfp-bit.c
 endif
 	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=64 -c $<
 libgcc-objects += $(d64pbit-o)
@@ -595,7 +643,7 @@ d128pbit-o = $(patsubst %,%$(objext),$(D128PBIT_FUNCS))
 ifeq ($(enable_decimal_float),bid)
 $(d128pbit-o): %$(objext): $(srcdir)/config/libbid/%.c
 else
-$(d128pbit-o): %$(objext): $(gcc_srcdir)/config/dfp-bit.c
+$(d128pbit-o): %$(objext): $(srcdir)/dfp-bit.c
 endif
 	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=128 -c $<
 libgcc-objects += $(d128pbit-o)
@@ -747,9 +795,19 @@ iter-items := $(LIBUNWIND)
 include $(iterator)
 
 # Build libgcov components.
+
+# Defined in libgcov.c, included only in gcov library
+LIBGCOV = _gcov _gcov_merge_add _gcov_merge_single _gcov_merge_delta \
+    _gcov_fork _gcov_execl _gcov_execlp _gcov_execle \
+    _gcov_execv _gcov_execvp _gcov_execve \
+    _gcov_interval_profiler _gcov_pow2_profiler _gcov_one_value_profiler \
+    _gcov_indirect_call_profiler _gcov_average_profiler _gcov_ior_profiler \
+    _gcov_merge_ior
+
 libgcov-objects = $(patsubst %,%$(objext),$(LIBGCOV))
-$(libgcov-objects): %$(objext): $(gcc_srcdir)/libgcov.c
-	$(gcc_compile) -DL$* -c $(gcc_srcdir)/libgcov.c
+
+$(libgcov-objects): %$(objext): $(srcdir)/libgcov.c
+	$(gcc_compile) -DL$* -c $(srcdir)/libgcov.c
 
 
 # Static libraries.
@@ -803,7 +861,8 @@ mapfile = libgcc.map
 endif
 
 libgcc-std.ver: $(srcdir)/libgcc-std.ver.in
-	sed -e 's/__PFX__/$(LIBGCC_VER_GNU_PREFIX)/g' < $< > $@
+	sed -e 's/__PFX__/$(LIBGCC_VER_GNU_PREFIX)/g' \
+	    -e 's/__FIXPTPFX__/$(LIBGCC_VER_FIXEDPOINT_GNU_PREFIX)/g' < $< > $@
 
 libgcc_s$(SHLIB_EXT): $(libgcc-s-objects) $(extra-parts)
 	# @multilib_flags@ is still needed because this may use
@@ -930,6 +989,12 @@ gcc-extra-parts:
 	done
 
 all: $(extra-parts)
+
+install-unwind_h:
+	cp unwind.h $(gcc_objdir)/include/unwind.h
+	chmod a+r $(gcc_objdir)/include/unwind.h
+
+all: install-unwind_h
 
 # Documentation targets (empty).
 .PHONY: info html dvi pdf install-info install-html install-pdf

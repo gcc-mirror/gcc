@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             G E T _ S C O S                               --
+--                             G E T _ S C O S                              --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@ generic
 
    with function Getc return Character is <>;
    --  Get next character, positioning the ALI file ready to read the following
-   --  character (equivalent to calling Skipc, then Nextc). If the end of file
+   --  character (equivalent to calling Nextc, then Skipc). If the end of file
    --  is encountered, the value Types.EOF is returned.
 
    with function Nextc return Character is <>;
@@ -54,5 +54,5 @@ procedure Get_SCOs;
 --  first character of the line following the SCO information (which will
 --  never start with a 'C').
 --
---  If a format error is detected in the input, then an exceptions is raised
+--  If a format error is detected in the input, then an exception is raised
 --  (Ada.IO_Exceptions.Data_Error), with the file positioned to the error.

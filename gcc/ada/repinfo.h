@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1999-2009 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1999-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -30,6 +30,10 @@
  ****************************************************************************/
 
 /* This file corresponds to the Ada file repinfo.ads.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef Uint Node_Ref;
 typedef Uint Node_Ref_Or_Val;
@@ -75,3 +79,7 @@ typedef char TCode;
 #define Create_Node repinfo__create_node
 extern Node_Ref Create_Node	(TCode, Node_Ref_Or_Val,
 				 Node_Ref_Or_Val, Node_Ref_Or_Val);
+
+#ifdef __cplusplus
+}
+#endif

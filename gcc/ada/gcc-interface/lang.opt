@@ -25,89 +25,92 @@
 Language
 Ada
 
+Language
+AdaWhy
+
 -all-warnings
-Ada Alias(Wall)
+Ada AdaWhy Alias(Wall)
 
 -include-barrier
-Ada Alias(I, -)
+Ada AdaWhy Alias(I, -)
 
 -include-directory
-Ada Separate Alias(I)
+Ada AdaWhy Separate Alias(I)
 
 -include-directory=
-Ada Joined Alias(I)
+Ada AdaWhy Joined Alias(I)
 
 -no-standard-includes
-Ada Alias(nostdinc)
+Ada AdaWhy Alias(nostdinc)
 
 -no-standard-libraries
-Ada Alias(nostdlib)
+Ada AdaWhy Alias(nostdlib)
 
 I
-Ada Joined Separate
+Ada AdaWhy Joined Separate
 ; Documented for C
 
 Wall
-Ada
+Ada AdaWhy
 ; Documented for C
 
 Wmissing-prototypes
-Ada
+Ada AdaWhy
 ; Documented for C
 
 Wstrict-prototypes
-Ada
+Ada AdaWhy
 ; Documented for C
 
 Wwrite-strings
-Ada
+Ada AdaWhy
 ; Documented for C
 
 Wlong-long
-Ada
+Ada AdaWhy
 ; Documented for C
 
 Wvariadic-macros
-Ada
+Ada AdaWhy
 ; Documented for C
 
 Wold-style-definition
-Ada
+Ada AdaWhy
 ; Documented for C
 
 Wmissing-format-attribute
-Ada
+Ada AdaWhy
 ; Documented for C
 
 Woverlength-strings
-Ada
+Ada AdaWhy
 ; Documented for C
 
 k8
 Driver
 
 nostdinc
-Ada RejectNegative
+Ada AdaWhy RejectNegative
 ; Don't look for source files
 
 nostdlib
-Ada
+Ada AdaWhy
 ; Don't look for object files
 
 fRTS=
-Ada Joined RejectNegative
+Ada AdaWhy Joined RejectNegative
 ; Selects the runtime
 
 gant
-Ada Joined Undocumented
+Ada AdaWhy Joined Undocumented
 ; Catches typos
 
 gnatO
-Ada Separate
+Ada AdaWhy Separate
 ; Sets name of output ALI file (internal switch)
 
 gnat
-Ada Joined
+Ada AdaWhy Joined
 -gnat<options>	Specify options to GNAT
 
 ; This comment is to ensure we retain the blank line above.

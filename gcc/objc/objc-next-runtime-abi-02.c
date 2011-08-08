@@ -50,16 +50,11 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "ggc.h"
 #include "target.h"
-#include "obstack.h"
 #include "tree-iterator.h"
 
-/* These are only used for encoding ivars.  */
-extern struct obstack util_obstack;
-extern char *util_firstobj;
-
 #include "objc-runtime-hooks.h"
-
 #include "objc-runtime-shared-support.h"
+#include "objc-encoding.h"
 
 /* ABI 2 Private definitions. */
 #define DEF_CONSTANT_STRING_CLASS_NAME "NSConstantString"
@@ -1386,8 +1381,7 @@ objc_v2_build_ivar_ref (tree datum, tree component)
 		       string_type_node, build_fold_addr_expr (datum));
 
   /* (char*)datum + offset */
-  expr = fold_build2_loc (input_location,
-			  POINTER_PLUS_EXPR, string_type_node, expr, offset);
+  expr = fold_build_pointer_plus_loc (input_location, expr, offset);
 
   /* (ftype*)((char*)datum + offset) */
   expr = build_c_cast (input_location, build_pointer_type (ftype), expr);
@@ -2852,15 +2846,9 @@ build_v2_ivar_list_initializer (tree class_name, tree type, tree field_decl)
 						meth_var_names));
 
       /* Set type.  */
-      encode_field_decl (field_decl,
-			 obstack_object_size (&util_obstack),
-			 OBJC_ENCODE_DONT_INLINE_DEFS);
-      /* Null terminate string.  */
-      obstack_1grow (&util_obstack, 0);
-      id = add_objc_string (get_identifier (XOBFINISH (&util_obstack, char *)),
+      id = add_objc_string (encode_field_decl (field_decl),
                             meth_var_types);
       CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE, id);
-      obstack_free (&util_obstack, util_firstobj);
 
       /* Set alignment.  */
       val = DECL_ALIGN_UNIT (field_decl);
@@ -3497,7 +3485,7 @@ objc2_build_ehtype_initializer (tree name, tree cls)
     }
   addr = build_fold_addr_expr_with_type (next_v2_ehvtable_decl, ptr_type_node);
   offs = size_int (2 * int_cst_value (TYPE_SIZE_UNIT (ptr_type_node)));
-  addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, addr, offs);
+  addr = fold_build_pointer_plus (addr, offs);
 
   CONSTRUCTOR_APPEND_ELT (initlist, NULL_TREE, addr);
 

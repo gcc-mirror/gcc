@@ -20,11 +20,18 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Solaris allows 64 bit out and global registers in 32 bit mode.
-   sparc_override_options will disable V8+ if not generating V9 code.  */
+/* Solaris allows 64-bit out and global registers to be used in 32-bit mode.
+   sparc_override_options will disable V8+ if either not generating V9 code
+   or generating 64-bit code.  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_V8PLUS + MASK_APP_REGS + MASK_FPU \
-			+ MASK_LONG_DOUBLE_128)
+#ifdef TARGET_64BIT_DEFAULT
+#define TARGET_DEFAULT \
+  (MASK_V9 + MASK_64BIT + MASK_PTR64 + MASK_STACK_BIAS + \
+   MASK_V8PLUS + MASK_APP_REGS + MASK_FPU + MASK_LONG_DOUBLE_128)
+#else
+#define TARGET_DEFAULT \
+  (MASK_V8PLUS + MASK_APP_REGS + MASK_FPU + MASK_LONG_DOUBLE_128)
+#endif
 
 /* The default code model used to be CM_MEDANY on Solaris
    but even Sun eventually found it to be quite wasteful
@@ -114,6 +121,10 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_CPU_DEFAULT_SPEC ASM_CPU32_DEFAULT_SPEC
 #endif
 
+/* Both Sun as and GNU as understand -K PIC.  */
+#undef ASM_SPEC
+#define ASM_SPEC ASM_SPEC_BASE ASM_PIC_SPEC
+
 #undef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
 %{mcpu=sparclet|mcpu=tsc701:-D__sparclet__} \
@@ -194,16 +205,6 @@ along with GCC; see the file COPYING3.  If not see
 %{!mcpu=niagara2:%{!mcpu=niagara:%{!mcpu=ultrasparc3:%{!mcpu=ultrasparc:%{!mcpu=v9:%{mcpu*:" DEF_ARCH32_SPEC("-xarch=v8") DEF_ARCH64_SPEC(AS_SPARC64_FLAG) "}}}}}} \
 %{!mcpu*:%(asm_cpu_default)} \
 "
-
-#undef ASM_CPU_DEFAULT_SPEC
-#define ASM_CPU_DEFAULT_SPEC \
-(DEFAULT_ARCH32_P ? "\
-%{m64:" ASM_CPU64_DEFAULT_SPEC "} \
-%{!m64:" ASM_CPU32_DEFAULT_SPEC "} \
-" : "\
-%{m32:" ASM_CPU32_DEFAULT_SPEC "} \
-%{!m32:" ASM_CPU64_DEFAULT_SPEC "} \
-")
 
 #undef ASM_ARCH32_SPEC
 #define ASM_ARCH32_SPEC ""
@@ -312,10 +313,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Use Solaris ELF section syntax with Sun as.  */
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION sparc_solaris_elf_asm_named_section
-
-/* Emit COMDAT group signature symbols for Sun as.  */
-#undef TARGET_ASM_CODE_END
-#define TARGET_ASM_CODE_END solaris_code_end
 
 /* Sun as requires doublequoted section names on SPARC.  While GNU as
    supports that, too, we prefer the standard variant.  */

@@ -11,10 +11,15 @@ foreach flags $MUDFLAP_FLAGS {
 	set bsrc [file tail $srcfile]
 	setenv MUDFLAP_OPTIONS "-viol-segv"
 	if {$libmudflapth} then {
-	    # --noinhibit-exec works around a ld problem that causes
-	    # "Dwarf Error: Invalid or unhandled FORM value: 14"
-	    # to fail builds unnecessarily.
-	    dg-runtest $srcfile $flags "-fmudflapth -lmudflapth -lpthread -Wl,--noinhibit-exec"
+	    if [check_effective_target_gld] {
+		# --noinhibit-exec works around a ld problem that causes
+		# "Dwarf Error: Invalid or unhandled FORM value: 14"
+		# to fail builds unnecessarily.
+		set noie_option " -Wl,--noinhibit-exec"
+	    } else {
+		set noie_option ""
+	    }
+	    dg-runtest $srcfile $flags "-fmudflapth -lmudflapth -lpthread $noie_option"
 	} else {
 	    if {$flags != ""} {set f " ($flags)"} {set f ""}
             untested "libmudflap.cth/$bsrc$f"

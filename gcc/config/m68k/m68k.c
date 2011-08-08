@@ -136,6 +136,7 @@ static bool m68k_can_eliminate (const int, const int);
 static void m68k_conditional_register_usage (void);
 static bool m68k_legitimate_address_p (enum machine_mode, rtx, bool);
 static void m68k_option_override (void);
+static void m68k_override_options_after_change (void);
 static rtx find_addr_reg (rtx);
 static const char *singlemove_string (rtx *);
 static void m68k_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
@@ -234,6 +235,9 @@ static bool m68k_cannot_force_const_mem (enum machine_mode mode, rtx x);
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE m68k_option_override
+
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE m68k_override_options_after_change
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m68k_rtx_costs
@@ -631,6 +635,19 @@ m68k_option_override (void)
 	m68k_sched_mac = MAC_CF_MAC;
       else
 	m68k_sched_mac = MAC_NO;
+    }
+}
+
+/* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */
+
+static void
+m68k_override_options_after_change (void)
+{
+  if (m68k_sched_cpu == CPU_UNKNOWN)
+    {
+      flag_schedule_insns = 0;
+      flag_schedule_insns_after_reload = 0;
+      flag_modulo_sched = 0;
     }
 }
 

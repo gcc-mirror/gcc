@@ -150,7 +150,7 @@ proc objc_target_compile { source dest type options } {
     # we need to add the include path for the gnu runtime if that is in 
     # use.
     # First set the default...
-    if { [istarget "*-*-darwin*"] } {
+    if { [istarget *-*-darwin*] } {
 	set nextruntime 1
     } else {
 	set nextruntime 0

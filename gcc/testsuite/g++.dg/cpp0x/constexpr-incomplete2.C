@@ -28,4 +28,4 @@ struct D
   C<D> c;
 };
 
-constexpr D d {};		// { dg-error "not a constexpr function" }
+constexpr D d {};		// { dg-error "non-constexpr function" }

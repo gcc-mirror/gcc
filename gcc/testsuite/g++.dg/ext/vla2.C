@@ -15,5 +15,5 @@ void bar(int i)
   char d[i] ;
   
   begin(d);  // { dg-error "no matching function" "" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 17 }
+  // { dg-message "(candidate|valid template argument)" "candidate note" { target *-*-* } 17 }
 }

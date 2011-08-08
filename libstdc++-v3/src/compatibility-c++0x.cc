@@ -1,6 +1,6 @@
 // Compatibility symbols for previous versions, C++0x bits -*- C++ -*-
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -81,4 +81,17 @@ namespace std _GLIBCXX_VISIBILITY(default)
       const size_t __tmp = std::_Hash_impl::hash(__e._M_value);
       return std::_Hash_impl::__hash_combine(__e._M_cat, __tmp);
     }
+
+
+  // gcc-4.7.0
+  // <chrono> changes is_monotonic to is_steady.
+  namespace chrono
+  {
+    struct system_clock
+    {
+      static constexpr bool is_monotonic = false;
+    };
+    constexpr bool system_clock::is_monotonic;
+  } // namespace chrono
 }
+

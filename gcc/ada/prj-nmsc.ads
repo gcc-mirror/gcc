@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,5 +41,17 @@ private package Prj.Nmsc is
    --  The result of this procedure is a filled-in data structure for
    --  Project_Id which contains all the information about the project. This
    --  information is only valid while the external references are preserved.
+
+   procedure Process_Aggregated_Projects
+     (Tree      : Project_Tree_Ref;
+      Project   : Project_Id;
+      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Flags     : Processing_Flags);
+   --  Assuming Project is an aggregate project, find out (based on the
+   --  current external references) what are the projects it aggregates.
+   --  This has to be done in phase 1 of the processing, so that we know the
+   --  full list of languages required for root_project and its aggregated
+   --  projects. As a result, it cannot be done as part of
+   --  Process_Naming_Scheme.
 
 end Prj.Nmsc;

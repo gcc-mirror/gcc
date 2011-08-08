@@ -13,4 +13,4 @@ contains
   end subroutine
 end module 
 
-! { dg-final { cleanup-modules "Overload_AnException_Impl" } }
+! { dg-final { cleanup-modules "overload_anexception_impl" } }

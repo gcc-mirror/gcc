@@ -156,7 +156,7 @@ T(16, int, x == -3 || x == -4 || x == -5,
   { -3 C -4 C -5 }, { -6 C -7 C -8 C -2 C -1 C 1 C 2 C INT_MAX C INT_MIN })
 T(17, unsigned int, (x >= -8U && x <= -3U) || x == -2U || x == -1U || x == 0 || x == 1 || x == 2,
   { -8U C -7U C -6U C -5U C -4U C -3U C -2U C -1U C 0 C 1 C 2 },
-  { -9U C -10U C 3 C 4 C 12 C -54U C INT_MAX C INT_MIN })
+  { -9U C -10U C 3 C 4 C 12 C -54U C INT_MAX C (unsigned int)INT_MIN })
 T(18, int, (x >= -8 && x <= -3) || x == -2 || x == -1 || x == 0 || x == 1 || x == 2,
   { -8 C -7 C -6 C -5 C -4 C -3 C -2 C -1 C 0 C 1 C 2 },
   { -9 C -10 C 3 C 4 C 12 C -54 C INT_MAX C INT_MIN })

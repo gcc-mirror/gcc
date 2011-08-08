@@ -33,4 +33,4 @@ program test
   call walk (node)
 end program
 
-! { dg-final { cleanup-modules "Tree_Nodes Merger_Trees Merger_Tree_Build" } }
+! { dg-final { cleanup-modules "tree_nodes merger_trees merger_tree_build" } }

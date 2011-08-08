@@ -1,0 +1,374 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         GNAT LIBRARY COMPONENTS                          --
+--                                                                          --
+--         A D A . C O N T A I N E R S . M U L T I W A Y _ T R E E S        --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--                                                                          --
+-- This specification is derived from the Ada Reference Manual for use with --
+-- GNAT. The copyright notice above, and the license provisions that follow --
+-- apply solely to the  contents of the part following the private keyword. --
+--                                                                          --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
+-- terms of the  GNU General Public License as published  by the Free Soft- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
+-- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
+-- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
+-- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
+--                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
+--                                                                          --
+-- You should have received a copy of the GNU General Public License and    --
+-- a copy of the GCC Runtime Library Exception along with this program;     --
+-- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
+-- <http://www.gnu.org/licenses/>.                                          --
+--                                                                          --
+-- This unit was originally developed by Matthew J Heaney.                  --
+------------------------------------------------------------------------------
+
+private with Ada.Finalization;
+private with Ada.Streams;
+
+generic
+   type Element_Type is private;
+
+   with function "=" (Left, Right : Element_Type) return Boolean is <>;
+
+package Ada.Containers.Multiway_Trees is
+   pragma Preelaborate;
+   pragma Remote_Types;
+
+   type Tree is tagged private;
+   pragma Preelaborable_Initialization (Tree);
+
+   type Cursor is private;
+   pragma Preelaborable_Initialization (Cursor);
+
+   Empty_Tree : constant Tree;
+
+   No_Element : constant Cursor;
+
+   function Equal_Subtree
+     (Left_Position  : Cursor;
+      Right_Position : Cursor) return Boolean;
+
+   function "=" (Left, Right : Tree) return Boolean;
+
+   function Is_Empty (Container : Tree) return Boolean;
+
+   function Node_Count (Container : Tree) return Count_Type;
+
+   function Subtree_Node_Count (Position : Cursor) return Count_Type;
+
+   function Depth (Position : Cursor) return Count_Type;
+
+   function Is_Root (Position : Cursor) return Boolean;
+
+   function Is_Leaf (Position : Cursor) return Boolean;
+
+   function Root (Container : Tree) return Cursor;
+
+   procedure Clear (Container : in out Tree);
+
+   function Element (Position : Cursor) return Element_Type;
+
+   procedure Replace_Element
+     (Container : in out Tree;
+      Position  : Cursor;
+      New_Item  : Element_Type);
+
+   procedure Query_Element
+     (Position : Cursor;
+      Process  : not null access procedure (Element : Element_Type));
+
+   procedure Update_Element
+     (Container : in out Tree;
+      Position  : Cursor;
+      Process   : not null access procedure (Element : in out Element_Type));
+
+   procedure Assign (Target : in out Tree; Source : Tree);
+
+   function Copy (Source : Tree) return Tree;
+
+   procedure Move (Target : in out Tree; Source : in out Tree);
+
+   procedure Delete_Leaf
+     (Container : in out Tree;
+      Position  : in out Cursor);
+
+   procedure Delete_Subtree
+     (Container : in out Tree;
+      Position  : in out Cursor);
+
+   procedure Swap
+     (Container : in out Tree;
+      I, J      : Cursor);
+
+   function Find
+     (Container : Tree;
+      Item      : Element_Type) return Cursor;
+
+   function Find_In_Subtree
+     (Container : Tree;
+      Item      : Element_Type;
+      Position  : Cursor) return Cursor;
+
+   function Ancestor_Find
+     (Container : Tree;
+      Item      : Element_Type;
+      Position  : Cursor) return Cursor;
+
+   function Contains
+     (Container : Tree;
+      Item      : Element_Type) return Boolean;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+   procedure Iterate
+     (Container : Tree;
+      Process   : not null access procedure (Position : Cursor));
+
+   procedure Iterate_Subtree
+     (Position  : Cursor;
+      Process   : not null access procedure (Position : Cursor));
+
+   function Child_Count (Parent : Cursor) return Count_Type;
+
+   function Child_Depth (Parent, Child : Cursor) return Count_Type;
+
+   procedure Insert_Child
+     (Container : in out Tree;
+      Parent    : Cursor;
+      Before    : Cursor;
+      New_Item  : Element_Type;
+      Count     : Count_Type := 1);
+
+   procedure Insert_Child
+     (Container : in out Tree;
+      Parent    : Cursor;
+      Before    : Cursor;
+      New_Item  : Element_Type;
+      Position  : out Cursor;
+      Count     : Count_Type := 1);
+
+   procedure Insert_Child
+     (Container : in out Tree;
+      Parent    : Cursor;
+      Before    : Cursor;
+      Position  : out Cursor;
+      Count     : Count_Type := 1);
+
+   procedure Prepend_Child
+     (Container : in out Tree;
+      Parent    : Cursor;
+      New_Item  : Element_Type;
+      Count     : Count_Type := 1);
+
+   procedure Append_Child
+     (Container : in out Tree;
+      Parent    : Cursor;
+      New_Item  : Element_Type;
+      Count     : Count_Type := 1);
+
+   procedure Delete_Children
+     (Container : in out Tree;
+      Parent    : Cursor);
+
+   procedure Copy_Subtree
+     (Target   : in out Tree;
+      Parent   : Cursor;
+      Before   : Cursor;
+      Source   : Cursor);
+
+   procedure Splice_Subtree
+     (Target   : in out Tree;
+      Parent   : Cursor;
+      Before   : Cursor;
+      Source   : in out Tree;
+      Position : in out Cursor);
+
+   procedure Splice_Subtree
+     (Container : in out Tree;
+      Parent    : Cursor;
+      Before    : Cursor;
+      Position  : Cursor);
+
+   procedure Splice_Children
+     (Target          : in out Tree;
+      Target_Parent   : Cursor;
+      Before          : Cursor;
+      Source          : in out Tree;
+      Source_Parent   : Cursor);
+
+   procedure Splice_Children
+     (Container       : in out Tree;
+      Target_Parent   : Cursor;
+      Before          : Cursor;
+      Source_Parent   : Cursor);
+
+   function Parent (Position : Cursor) return Cursor;
+
+   function First_Child (Parent : Cursor) return Cursor;
+
+   function First_Child_Element (Parent : Cursor) return Element_Type;
+
+   function Last_Child (Parent : Cursor) return Cursor;
+
+   function Last_Child_Element (Parent : Cursor) return Element_Type;
+
+   function Next_Sibling (Position : Cursor) return Cursor;
+
+   function Previous_Sibling (Position : Cursor) return Cursor;
+
+   procedure Next_Sibling (Position : in out Cursor);
+
+   procedure Previous_Sibling (Position : in out Cursor);
+
+   --  This version of the AI:
+   --   10-06-02  AI05-0136-1/07
+   --  declares Iterate_Children this way:
+   --
+   --  procedure Iterate_Children
+   --    (Container : Tree;
+   --     Parent    : Cursor;
+   --     Process   : not null access procedure (Position : Cursor));
+   --
+   --  It seems that the Container parameter is there by mistake, but we need
+   --  an official ruling from the ARG. ???
+
+   procedure Iterate_Children
+     (Parent  : Cursor;
+      Process : not null access procedure (Position : Cursor));
+
+   procedure Reverse_Iterate_Children
+     (Parent  : Cursor;
+      Process : not null access procedure (Position : Cursor));
+
+private
+
+   --  A node of this multiway tree comprises an element and a list of children
+   --  (that are themselves trees). The root node is distinguished because it
+   --  contains only children: it does not have an element itself.
+   --
+   --  This design feature puts two design goals in tension:
+   --   (1) treat the root node the same as any other node
+   --   (2) not declare any objects of type Element_Type unnecessarily
+   --
+   --  To satisfy (1), we could simply declare the Root node of the tree using
+   --  the normal Tree_Node_Type, but that would mean that (2) is not
+   --  satisfied. To resolve the tension (in favor of (2)), we declare the
+   --  component Root as having a different node type, without an Element
+   --  component (thus satisfying goal (2)) but otherwise identical to a normal
+   --  node, and then use Unchecked_Conversion to convert an access object
+   --  designating the Root node component to the access type designating a
+   --  normal, non-root node (thus satisfying goal (1)). We make an explicit
+   --  check for Root when there is any attempt to manipulate the Element
+   --  component of the node (a check required by the RM anyway).
+   --
+   --  In order to be explicit about node (and pointer) representation, we
+   --  specify that the respective node types have convention C, to ensure that
+   --  the layout of the components of the node records is the same, thus
+   --  guaranteeing that (unchecked) conversions between access types
+   --  designating each kind of node type is a meaningful conversion.
+
+   type Tree_Node_Type;
+   type Tree_Node_Access is access all Tree_Node_Type;
+   pragma Convention (C, Tree_Node_Access);
+
+   type Children_Type is record
+      First : Tree_Node_Access;
+      Last  : Tree_Node_Access;
+   end record;
+
+   --  See the comment above. This declaration must exactly match the
+   --  declaration of Root_Node_Type (except for the Element component).
+
+   type Tree_Node_Type is record
+      Parent   : Tree_Node_Access;
+      Prev     : Tree_Node_Access;
+      Next     : Tree_Node_Access;
+      Children : Children_Type;
+      Element  : Element_Type;
+   end record;
+   pragma Convention (C, Tree_Node_Type);
+
+   --  See the comment above. This declaration must match the declaration of
+   --  Tree_Node_Type (except for the Element component).
+
+   type Root_Node_Type is record
+      Parent   : Tree_Node_Access;
+      Prev     : Tree_Node_Access;
+      Next     : Tree_Node_Access;
+      Children : Children_Type;
+   end record;
+   pragma Convention (C, Root_Node_Type);
+
+   use Ada.Finalization;
+
+   --  The Count component of type Tree represents the number of nodes that
+   --  have been (dynamically) allocated. It does not include the root node
+   --  itself. As implementors, we decide to cache this value, so that the
+   --  selector function Node_Count can execute in O(1) time, in order to be
+   --  consistent with the behavior of the Length selector function for other
+   --  standard container library units. This does mean, however, that the
+   --  two-container forms for Splice_XXX (that move subtrees across tree
+   --  containers) will execute in O(n) time, because we must count the number
+   --  of nodes in the subtree(s) that get moved. (We resolve the tension
+   --  between Node_Count and Splice_XXX in favor of Node_Count, under the
+   --  assumption that Node_Count is the more common operation).
+
+   type Tree is new Controlled with record
+      Root  : aliased Root_Node_Type;
+      Busy  : Integer := 0;
+      Lock  : Integer := 0;
+      Count : Count_Type := 0;
+   end record;
+
+   overriding procedure Adjust (Container : in out Tree);
+
+   overriding procedure Finalize (Container : in out Tree) renames Clear;
+
+   use Ada.Streams;
+
+   procedure Write
+     (Stream    : not null access Root_Stream_Type'Class;
+      Container : Tree);
+
+   for Tree'Write use Write;
+
+   procedure Read
+     (Stream    : not null access Root_Stream_Type'Class;
+      Container : out Tree);
+
+   for Tree'Read use Read;
+
+   type Tree_Access is access all Tree;
+   for Tree_Access'Storage_Size use 0;
+
+   type Cursor is record
+      Container : Tree_Access;
+      Node      : Tree_Node_Access;
+   end record;
+
+   procedure Write
+     (Stream   : not null access Root_Stream_Type'Class;
+      Position : Cursor);
+
+   for Cursor'Write use Write;
+
+   procedure Read
+     (Stream   : not null access Root_Stream_Type'Class;
+      Position : out Cursor);
+
+   for Cursor'Read use Read;
+
+   Empty_Tree : constant Tree := (Controlled with others => <>);
+
+   No_Element : constant Cursor := (others => <>);
+
+end Ada.Containers.Multiway_Trees;

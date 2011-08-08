@@ -1,0 +1,4 @@
+ifeq ($(long_double_type_size),128)
+TPBIT = true
+TPBIT_CFLAGS = -DQUIET_NAN_NEGATED
+endif

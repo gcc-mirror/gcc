@@ -1,14 +1,8 @@
 #define _FP_W_TYPE_SIZE		64
 
-#ifdef _WIN64
- #define _FP_W_TYPE		unsigned long long
- #define _FP_WS_TYPE		signed long long
- #define _FP_I_TYPE		long long
-#else
- #define _FP_W_TYPE		unsigned long
- #define _FP_WS_TYPE		signed long
- #define _FP_I_TYPE		long
-#endif
+#define _FP_W_TYPE		unsigned long long
+#define _FP_WS_TYPE		signed long long
+#define _FP_I_TYPE		long long
 
 typedef int TItype __attribute__ ((mode (TI)));
 typedef unsigned int UTItype __attribute__ ((mode (TI)));

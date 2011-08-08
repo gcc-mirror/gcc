@@ -18,7 +18,11 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#ifdef GENERATOR_FILE
 #include "bconfig.h"
+#else
+#include "config.h"
+#endif
 #include "system.h"
 #include "errors.h"		/* for fatal */
 #include "getopt.h"
@@ -1560,7 +1564,7 @@ open_base_files (void)
       "tree-flow.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
       "cfglayout.h", "except.h", "output.h", "gimple.h", "cfgloop.h",
       "target.h", "ipa-prop.h", "lto-streamer.h", "target-globals.h",
-      "ipa-inline.h", NULL
+      "ipa-inline.h", "dwarf2out.h", NULL
     };
     const char *const *ifp;
     outf_p gtype_desc_c;

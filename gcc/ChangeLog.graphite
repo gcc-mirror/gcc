@@ -1,3 +1,57 @@
+2011-05-26  Alexey Kravets  <kayrick@ispras.ru>
+
+	PR middle-end/49147
+	* graphite-opencl-codegen.c
+	(opencl_get_perfect_nested_loop_depth): Use
+	enabled_dependency_in_clast_loop_p instead of
+	dependency_in_clast_loop_p.
+	* graphite-opencl.c (opencl_transform_stmt_list): Ditto.
+	(enabled_dependency_in_clast_loop_p): New.
+	* graphite-opencl.h (enabled_dependency_in_clast_loop_p): Export.
+
+	* gcc.dg/graphite/pr49147.c: New test.
+
+2011-05-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c (opencl_print_local_vars): Fix typo.
+
+2011-05-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (graphite_outer_subscript_bound): Remove
+	memory leaks, add one more assert.
+
+2011-05-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (build_alias_set_powerset): Remove
+	continue from loop, add one more assert.
+
+2011-05-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (graphite_outer_subscript_bound): Remove
+	unused parameter.
+	* graphite-dependences.h (graphite_outer_subscript_bound): Same.
+	* graphite-opencl-meta-clast.c (opencl_set_meta_rw_flags): Update
+	call to graphite_outer_subscript_bound.
+	* graphite-opencl.c (opencl_get_indirect_size): Same.
+
+2011-05-24  Alexey Kravets  <kayrick@ispras.ru>
+
+	* graphite-opencl.c (opencl_private_var_name_p): Removed.
+	(graphite_artificial_array_p): Removed.
+	(opencl_data_create): Use zero_dim_array_p instead of
+	graphite_artificial_array_p.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl.c (opencl_create_function_call): Use cl_khr_fp64
+	pragma extension only when it is defined.  Use cl_amd_fp64 when it
+	is defined.
+
+2011-01-23  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* doc/install.texi: Replace '/' by an or and give the exact
+			    version number of cloog-0.16.1
+
 2011-01-20  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (dr_indices_valid_in_loop): New.

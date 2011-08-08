@@ -38,10 +38,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MCOUNT_NAME "mcount"
 
 #undef SIZE_TYPE
-#define SIZE_TYPE (TARGET_64BIT ? "long unsigned int" : "unsigned int")
+#define SIZE_TYPE (TARGET_LP64 ? "long unsigned int" : "unsigned int")
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE (TARGET_64BIT ? "long int" : "int")
+#define PTRDIFF_TYPE (TARGET_LP64 ? "long int" : "int")
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"

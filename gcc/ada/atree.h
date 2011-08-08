@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,7 +29,11 @@
    atree.adb and must be kept synchronized with changes in these files.
 
    Note that only routines for reading the tree are included, since the tree
-   transformer is not supposed to modify the tree in any way. */
+   transformer is not supposed to modify the tree in any way.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Structure used for the first part of the node in the case where we have
    an Nkind.  */
@@ -427,6 +431,7 @@ extern Node_Id Current_Error_Node;
 #define Elist2(N)     Field2  (N)
 #define Elist3(N)     Field3  (N)
 #define Elist4(N)     Field4  (N)
+#define Elist5(N)     Field5  (N)
 #define Elist8(N)     Field8  (N)
 #define Elist10(N)    Field10 (N)
 #define Elist13(N)    Field13 (N)
@@ -435,6 +440,7 @@ extern Node_Id Current_Error_Node;
 #define Elist18(N)    Field18 (N)
 #define Elist21(N)    Field21 (N)
 #define Elist23(N)    Field23 (N)
+#define Elist24(N)    Field24 (N)
 #define Elist25(N)    Field25 (N)
 #define Elist26(N)    Field26 (N)
 
@@ -734,3 +740,6 @@ extern Node_Id Current_Error_Node;
 #define Flag253(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag71)
 #define Flag254(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag72)
 
+#ifdef __cplusplus
+}
+#endif

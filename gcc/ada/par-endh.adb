@@ -166,7 +166,10 @@ package body Endh is
    -- Check_End --
    ---------------
 
-   function Check_End (Decl : Node_Id := Empty) return Boolean is
+   function Check_End
+     (Decl   : Node_Id    := Empty;
+      Is_Loc : Source_Ptr := No_Location) return Boolean
+   is
       Name_On_Separate_Line : Boolean;
       --  Set True if the name on an END line is on a separate source line
       --  from the END. This is highly suspicious, but is allowed. The point
@@ -390,11 +393,31 @@ package body Endh is
 
          if End_Type /= E_Record then
 
-            --  Scan aspect specifications if permitted here
+            --  Scan aspect specifications
 
             if Aspect_Specifications_Present then
+
+               --  Aspect specifications not allowed
+
                if No (Decl) then
-                  P_Aspect_Specifications (Error);
+
+                  --  Package declaration case
+
+                  if Is_Loc /= No_Location then
+                     Error_Msg_SC
+                       ("misplaced aspects for package declaration");
+                     Error_Msg
+                       ("info: aspect specifications belong here", Is_Loc);
+                     P_Aspect_Specifications (Empty);
+
+                  --  Other cases where aspect specifications are not allowed
+
+                  else
+                     P_Aspect_Specifications (Error);
+                  end if;
+
+               --  Aspect specifications allowed
+
                else
                   P_Aspect_Specifications (Decl);
                end if;
@@ -653,14 +676,16 @@ package body Endh is
    --  Error recovery: cannot raise Error_Resync;
 
    procedure End_Statements
-     (Parent : Node_Id := Empty;
-      Decl   : Node_Id := Empty) is
+     (Parent  : Node_Id    := Empty;
+      Decl    : Node_Id    := Empty;
+      Is_Sloc : Source_Ptr := No_Location)
+   is
    begin
       --  This loop runs more than once in the case where Check_End rejects
       --  the END sequence, as indicated by Check_End returning False.
 
       loop
-         if Check_End (Decl) then
+         if Check_End (Decl, Is_Sloc) then
             if Present (Parent) then
                Set_End_Label (Parent, End_Labl);
             end if;

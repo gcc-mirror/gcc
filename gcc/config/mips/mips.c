@@ -5452,8 +5452,7 @@ mips_va_start (tree valist, rtx nextarg)
 	 words used by named arguments.  */
       t = make_tree (TREE_TYPE (ovfl), virtual_incoming_args_rtx);
       if (cum->stack_words > 0)
-	t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ovfl), t,
-		    size_int (cum->stack_words * UNITS_PER_WORD));
+	t = fold_build_pointer_plus_hwi (t, cum->stack_words * UNITS_PER_WORD);
       t = build2 (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -5469,8 +5468,7 @@ mips_va_start (tree valist, rtx nextarg)
       fpr_offset = gpr_save_area_size + UNITS_PER_FPVALUE - 1;
       fpr_offset &= -UNITS_PER_FPVALUE;
       if (fpr_offset)
-	t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ftop), t,
-		    size_int (-fpr_offset));
+	t = fold_build_pointer_plus_hwi (t, -fpr_offset);
       t = build2 (MODIFY_EXPR, TREE_TYPE (ftop), ftop, t);
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -5615,24 +5613,17 @@ mips_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	 addr_rtx = top - off + (BYTES_BIG_ENDIAN ? RSIZE - SIZE : 0).  */
       t = fold_convert (sizetype, t);
       t = fold_build1 (NEGATE_EXPR, sizetype, t);
-      t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (top), top, t);
+      t = fold_build_pointer_plus (top, t);
       if (BYTES_BIG_ENDIAN && rsize > size)
-	{
-	  u = size_int (rsize - size);
-	  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t, u);
-	}
+	t = fold_build_pointer_plus_hwi (t, rsize - size);
       COND_EXPR_THEN (addr) = t;
 
       if (osize > UNITS_PER_WORD)
 	{
 	  /* [9] Emit: ovfl = ((intptr_t) ovfl + osize - 1) & -osize.  */
-	  u = size_int (osize - 1);
-	  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ovfl),
-		      unshare_expr (ovfl), u);
-	  t = fold_convert (sizetype, t);
-	  u = size_int (-osize);
+	  t = fold_build_pointer_plus_hwi (unshare_expr (ovfl), osize - 1);
+	  u = build_int_cst (TREE_TYPE (t), -osize);
 	  t = build2 (BIT_AND_EXPR, sizetype, t, u);
-	  t = fold_convert (TREE_TYPE (ovfl), t);
 	  align = build2 (MODIFY_EXPR, TREE_TYPE (ovfl),
 			  unshare_expr (ovfl), t);
 	}
@@ -5645,10 +5636,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       u = fold_convert (TREE_TYPE (ovfl), build_int_cst (NULL_TREE, osize));
       t = build2 (POSTINCREMENT_EXPR, TREE_TYPE (ovfl), ovfl, u);
       if (BYTES_BIG_ENDIAN && osize > size)
-	{
-	  u = size_int (osize - size);
-	  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t, u);
-	}
+	t = fold_build_pointer_plus_hwi (t, osize - size);
 
       /* String [9] and [10, 11] together.  */
       if (align)
@@ -6862,7 +6850,7 @@ mips_get_unaligned_mem (rtx *op, HOST_WIDE_INT width, HOST_WIDE_INT bitpos,
   /* Adjust *OP to refer to the whole field.  This also has the effect
      of legitimizing *OP's address for BLKmode, possibly simplifying it.  */
   *op = adjust_address (*op, BLKmode, 0);
-  set_mem_size (*op, GEN_INT (width / BITS_PER_UNIT));
+  set_mem_size (*op, width / BITS_PER_UNIT);
 
   /* Get references to both ends of the field.  We deliberately don't
      use the original QImode *OP for FIRST since the new BLKmode one
@@ -6962,13 +6950,9 @@ mips_expand_ins_as_unaligned_store (rtx dest, rtx src, HOST_WIDE_INT width,
 bool
 mips_mem_fits_mode_p (enum machine_mode mode, rtx x)
 {
-  rtx size;
-
-  if (!MEM_P (x))
-    return false;
-
-  size = MEM_SIZE (x);
-  return size && INTVAL (size) == GET_MODE_SIZE (mode);
+  return (MEM_P (x)
+	  && MEM_SIZE_KNOWN_P (x)
+	  && MEM_SIZE (x) == GET_MODE_SIZE (mode));
 }
 
 /* Return true if (zero_extract OP WIDTH BITPOS) can be used as the
@@ -8202,13 +8186,6 @@ static rtx
 mips_frame_set (rtx mem, rtx reg)
 {
   rtx set;
-
-  /* If we're saving the return address register and the DWARF return
-     address column differs from the hard register number, adjust the
-     note reg to refer to the former.  */
-  if (REGNO (reg) == RETURN_ADDR_REGNUM
-      && DWARF_FRAME_RETURN_COLUMN != RETURN_ADDR_REGNUM)
-    reg = gen_rtx_REG (GET_MODE (reg), DWARF_FRAME_RETURN_COLUMN);
 
   set = gen_rtx_SET (VOIDmode, mem, reg);
   RTX_FRAME_RELATED_P (set) = 1;
@@ -13788,13 +13765,9 @@ r10k_safe_address_p (rtx x, rtx insn)
    a link-time-constant address.  */
 
 static bool
-r10k_safe_mem_expr_p (tree expr, rtx offset)
+r10k_safe_mem_expr_p (tree expr, HOST_WIDE_INT offset)
 {
-  if (expr == NULL_TREE
-      || offset == NULL_RTX
-      || !CONST_INT_P (offset)
-      || INTVAL (offset) < 0
-      || INTVAL (offset) >= int_size_in_bytes (TREE_TYPE (expr)))
+  if (offset < 0 || offset >= int_size_in_bytes (TREE_TYPE (expr)))
     return false;
 
   while (TREE_CODE (expr) == COMPONENT_REF)
@@ -13820,7 +13793,9 @@ r10k_needs_protection_p_1 (rtx *loc, void *data)
   if (!MEM_P (mem))
     return 0;
 
-  if (r10k_safe_mem_expr_p (MEM_EXPR (mem), MEM_OFFSET (mem)))
+  if (MEM_EXPR (mem)
+      && MEM_OFFSET_KNOWN_P (mem)
+      && r10k_safe_mem_expr_p (MEM_EXPR (mem), MEM_OFFSET (mem)))
     return -1;
 
   if (r10k_safe_address_p (XEXP (mem, 0), (rtx) data))

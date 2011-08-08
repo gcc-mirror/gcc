@@ -152,8 +152,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Creates a %multimap with no elements.
-       *  @param  comp  A comparison object.
-       *  @param  a  An allocator object.
+       *  @param  __comp  A comparison object.
+       *  @param  __a  An allocator object.
        */
       explicit
       multimap(const _Compare& __comp,
@@ -162,10 +162,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Multimap copy constructor.
-       *  @param  x  A %multimap of identical element and allocator types.
+       *  @param  __x  A %multimap of identical element and allocator types.
        *
        *  The newly-created %multimap uses a copy of the allocation object
-       *  used by @a x.
+       *  used by @a __x.
        */
       multimap(const multimap& __x)
       : _M_t(__x._M_t) { }
@@ -173,10 +173,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  %Multimap move constructor.
-       *  @param   x  A %multimap of identical element and allocator types.
+       *  @param   __x  A %multimap of identical element and allocator types.
        *
-       *  The newly-created %multimap contains the exact contents of @a x.
-       *  The contents of @a x are a valid, but unspecified %multimap.
+       *  The newly-created %multimap contains the exact contents of @a __x.
+       *  The contents of @a __x are a valid, but unspecified %multimap.
        */
       multimap(multimap&& __x)
       noexcept(is_nothrow_copy_constructible<_Compare>::value)
@@ -184,9 +184,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Builds a %multimap from an initializer_list.
-       *  @param  l  An initializer_list.
-       *  @param  comp  A comparison functor.
-       *  @param  a  An allocator object.
+       *  @param  __l  An initializer_list.
+       *  @param  __comp  A comparison functor.
+       *  @param  __a  An allocator object.
        *
        *  Create a %multimap consisting of copies of the elements from
        *  the initializer_list.  This is linear in N if the list is already
@@ -201,12 +201,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Builds a %multimap from a range.
-       *  @param  first  An input iterator.
-       *  @param  last  An input iterator.
+       *  @param  __first  An input iterator.
+       *  @param  __last  An input iterator.
        *
        *  Create a %multimap consisting of copies of the elements from
-       *  [first,last).  This is linear in N if the range is already sorted,
-       *  and NlogN otherwise (where N is distance(first,last)).
+       *  [__first,__last).  This is linear in N if the range is already sorted,
+       *  and NlogN otherwise (where N is distance(__first,__last)).
        */
       template<typename _InputIterator>
         multimap(_InputIterator __first, _InputIterator __last)
@@ -215,14 +215,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Builds a %multimap from a range.
-       *  @param  first  An input iterator.
-       *  @param  last  An input iterator.
-       *  @param  comp  A comparison functor.
-       *  @param  a  An allocator object.
+       *  @param  __first  An input iterator.
+       *  @param  __last  An input iterator.
+       *  @param  __comp  A comparison functor.
+       *  @param  __a  An allocator object.
        *
        *  Create a %multimap consisting of copies of the elements from
-       *  [first,last).  This is linear in N if the range is already sorted,
-       *  and NlogN otherwise (where N is distance(first,last)).
+       *  [__first,__last).  This is linear in N if the range is already sorted,
+       *  and NlogN otherwise (where N is distance(__first,__last)).
        */
       template<typename _InputIterator>
         multimap(_InputIterator __first, _InputIterator __last,
@@ -242,10 +242,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Multimap assignment operator.
-       *  @param  x  A %multimap of identical element and allocator types.
+       *  @param  __x  A %multimap of identical element and allocator types.
        *
-       *  All the elements of @a x are copied, but unlike the copy constructor,
-       *  the allocator object is not copied.
+       *  All the elements of @a __x are copied, but unlike the copy
+       *  constructor, the allocator object is not copied.
        */
       multimap&
       operator=(const multimap& __x)
@@ -257,10 +257,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  %Multimap move assignment operator.
-       *  @param  x  A %multimap of identical element and allocator types.
+       *  @param  __x  A %multimap of identical element and allocator types.
        *
-       *  The contents of @a x are moved into this multimap (without copying).
-       *  @a x is a valid, but unspecified multimap.
+       *  The contents of @a __x are moved into this multimap (without copying).
+       *  @a __x is a valid, but unspecified multimap.
        */
       multimap&
       operator=(multimap&& __x)
@@ -274,10 +274,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Multimap list assignment operator.
-       *  @param  l  An initializer_list.
+       *  @param  __l  An initializer_list.
        *
        *  This function fills a %multimap with copies of the elements
-       *  in the initializer list @a l.
+       *  in the initializer list @a __l.
        *
        *  Note that the assignment completely changes the %multimap and
        *  that the resulting %multimap's size is the same as the number
@@ -427,7 +427,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // modifiers
       /**
        *  @brief Inserts a std::pair into the %multimap.
-       *  @param  x  Pair to be inserted (see std::make_pair for easy creation
+       *  @param  __x  Pair to be inserted (see std::make_pair for easy creation
        *             of pairs).
        *  @return An iterator that points to the inserted (key,value) pair.
        *
@@ -452,10 +452,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Inserts a std::pair into the %multimap.
-       *  @param  position  An iterator that serves as a hint as to where the
-       *                    pair should be inserted.
-       *  @param  x  Pair to be inserted (see std::make_pair for easy creation
-       *             of pairs).
+       *  @param  __position  An iterator that serves as a hint as to where the
+       *                      pair should be inserted.
+       *  @param  __x  Pair to be inserted (see std::make_pair for easy creation
+       *               of pairs).
        *  @return An iterator that points to the inserted (key,value) pair.
        *
        *  This function inserts a (key, value) pair into the %multimap.
@@ -491,9 +491,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief A template function that attempts to insert a range
        *  of elements.
-       *  @param  first  Iterator pointing to the start of the range to be
-       *                 inserted.
-       *  @param  last  Iterator pointing to the end of the range.
+       *  @param  __first  Iterator pointing to the start of the range to be
+       *                   inserted.
+       *  @param  __last  Iterator pointing to the end of the range.
        *
        *  Complexity similar to that of the range constructor.
        */
@@ -505,8 +505,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief Attempts to insert a list of std::pairs into the %multimap.
-       *  @param  list  A std::initializer_list<value_type> of pairs to be
-       *                inserted.
+       *  @param  __l  A std::initializer_list<value_type> of pairs to be
+       *               inserted.
        *
        *  Complexity similar to that of the range constructor.
        */
@@ -520,7 +520,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // DR 130. Associative erase should return an iterator.
       /**
        *  @brief Erases an element from a %multimap.
-       *  @param  position  An iterator pointing to the element to be erased.
+       *  @param  __position  An iterator pointing to the element to be erased.
        *  @return An iterator pointing to the element immediately following
        *          @a position prior to the element being erased. If no such 
        *          element exists, end() is returned.
@@ -537,7 +537,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #else
       /**
        *  @brief Erases an element from a %multimap.
-       *  @param  position  An iterator pointing to the element to be erased.
+       *  @param  __position  An iterator pointing to the element to be erased.
        *
        *  This function erases an element, pointed to by the given iterator,
        *  from a %multimap.  Note that this function only erases the element,
@@ -552,7 +552,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Erases elements according to the provided key.
-       *  @param  x  Key of element to be erased.
+       *  @param  __x  Key of element to be erased.
        *  @return  The number of elements erased.
        *
        *  This function erases all elements located by the given key from a
@@ -570,10 +570,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // DR 130. Associative erase should return an iterator.
       /**
        *  @brief Erases a [first,last) range of elements from a %multimap.
-       *  @param  first  Iterator pointing to the start of the range to be
-       *                 erased.
-       *  @param  last  Iterator pointing to the end of the range to be erased.
-       *  @return The iterator @a last.
+       *  @param  __first  Iterator pointing to the start of the range to be
+       *                   erased.
+       *  @param __last Iterator pointing to the end of the range to be
+       *                erased .
+       *  @return The iterator @a __last.
        *
        *  This function erases a sequence of elements from a %multimap.
        *  Note that this function only erases the elements, and that if
@@ -589,9 +590,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // DR 130. Associative erase should return an iterator.
       /**
        *  @brief Erases a [first,last) range of elements from a %multimap.
-       *  @param  first  Iterator pointing to the start of the range to be
+       *  @param  __first  Iterator pointing to the start of the range to be
        *                 erased.
-       *  @param  last  Iterator pointing to the end of the range to be erased.
+       *  @param __last Iterator pointing to the end of the range to
+       *                be erased.
        *
        *  This function erases a sequence of elements from a %multimap.
        *  Note that this function only erases the elements, and that if
@@ -606,7 +608,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Swaps data with another %multimap.
-       *  @param  x  A %multimap of the same element and allocator types.
+       *  @param  __x  A %multimap of the same element and allocator types.
        *
        *  This exchanges the elements between two multimaps in constant time.
        *  (It is only swapping a pointer, an integer, and an instance of
@@ -649,7 +651,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // multimap operations
       /**
        *  @brief Tries to locate an element in a %multimap.
-       *  @param  x  Key of (key, value) pair to be located.
+       *  @param  __x  Key of (key, value) pair to be located.
        *  @return  Iterator pointing to sought-after element,
        *           or end() if not found.
        *
@@ -664,7 +666,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Tries to locate an element in a %multimap.
-       *  @param  x  Key of (key, value) pair to be located.
+       *  @param  __x  Key of (key, value) pair to be located.
        *  @return  Read-only (constant) iterator pointing to sought-after
        *           element, or end() if not found.
        *
@@ -679,7 +681,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds the number of elements with given key.
-       *  @param  x  Key of (key, value) pairs to be located.
+       *  @param  __x  Key of (key, value) pairs to be located.
        *  @return Number of elements with specified key.
        */
       size_type
@@ -688,7 +690,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds the beginning of a subsequence matching given key.
-       *  @param  x  Key of (key, value) pair to be located.
+       *  @param  __x  Key of (key, value) pair to be located.
        *  @return  Iterator pointing to first element equal to or greater
        *           than key, or end().
        *
@@ -703,14 +705,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds the beginning of a subsequence matching given key.
-       *  @param  x  Key of (key, value) pair to be located.
+       *  @param  __x  Key of (key, value) pair to be located.
        *  @return  Read-only (constant) iterator pointing to first element
        *           equal to or greater than key, or end().
        *
-       *  This function returns the first element of a subsequence of elements
-       *  that matches the given key.  If unsuccessful the iterator will point
-       *  to the next greatest element or, if no such greater element exists, to
-       *  end().
+       *  This function returns the first element of a subsequence of
+       *  elements that matches the given key.  If unsuccessful the
+       *  iterator will point to the next greatest element or, if no
+       *  such greater element exists, to end().
        */
       const_iterator
       lower_bound(const key_type& __x) const
@@ -718,7 +720,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds the end of a subsequence matching given key.
-       *  @param  x  Key of (key, value) pair to be located.
+       *  @param  __x  Key of (key, value) pair to be located.
        *  @return Iterator pointing to the first element
        *          greater than key, or end().
        */
@@ -728,7 +730,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds the end of a subsequence matching given key.
-       *  @param  x  Key of (key, value) pair to be located.
+       *  @param  __x  Key of (key, value) pair to be located.
        *  @return  Read-only (constant) iterator pointing to first iterator
        *           greater than key, or end().
        */
@@ -738,7 +740,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds a subsequence matching given key.
-       *  @param  x  Key of (key, value) pairs to be located.
+       *  @param  __x  Key of (key, value) pairs to be located.
        *  @return  Pair of iterators that possibly points to the subsequence
        *           matching given key.
        *
@@ -755,7 +757,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds a subsequence matching given key.
-       *  @param  x  Key of (key, value) pairs to be located.
+       *  @param  __x  Key of (key, value) pairs to be located.
        *  @return  Pair of read-only (constant) iterators that possibly points
        *           to the subsequence matching given key.
        *
@@ -783,8 +785,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
    *  @brief  Multimap equality comparison.
-   *  @param  x  A %multimap.
-   *  @param  y  A %multimap of the same type as @a x.
+   *  @param  __x  A %multimap.
+   *  @param  __y  A %multimap of the same type as @a __x.
    *  @return  True iff the size and elements of the maps are equal.
    *
    *  This is an equivalence relation.  It is linear in the size of the
@@ -799,8 +801,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
    *  @brief  Multimap ordering relation.
-   *  @param  x  A %multimap.
-   *  @param  y  A %multimap of the same type as @a x.
+   *  @param  __x  A %multimap.
+   *  @param  __y  A %multimap of the same type as @a __x.
    *  @return  True iff @a x is lexicographically less than @a y.
    *
    *  This is a total ordering relation.  It is linear in the size of the

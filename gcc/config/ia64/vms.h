@@ -139,9 +139,6 @@ STATIC func_ptr __CTOR_LIST__[1]                                             \
 /* Define this to be nonzero if static stack checking is supported.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
 
-#define UNW_IVMS_MODE(HEADER) (((HEADER) >> 44) & 0x3L)
-#define MD_UNW_COMPATIBLE_PERSONALITY_P(HEADER) (!UNW_IVMS_MODE (HEADER))
-
 /* Minimum amount of stack required to recover from an anticipated stack
    overflow detection.  The default value conveys an estimate of the amount
    of stack required to propagate an exception.  */

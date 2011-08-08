@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -247,6 +247,14 @@ begin
 
    Write_Str ("  -z       No main subprogram (zero main)");
    Write_Eol;
+   Write_Eol;
+
+   Write_Str ("  --create-map-file   Create map file mainprog.map");
+   Write_Eol;
+
+   Write_Str ("  --create-map-file=mapfile");
+   Write_Eol;
+   Write_Str ("                      Create map file mapfile");
    Write_Eol;
 
    Write_Str ("  --GCC=command       Use this gcc command");

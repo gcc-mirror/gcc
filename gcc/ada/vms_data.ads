@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -882,6 +882,12 @@ package VMS_Data is
    --   of the directory specified in the project file. If the subdirectory
    --   does not exist, it is created automatically.
 
+   S_Check_Template  : aliased constant S := "/TEMPLATE=@"                 &
+                                             "--write-rules=@";
+   --      /TEMPLATE=filename
+   --
+   --   Generate the rule template into the specified file.
+
    S_Check_Verb   : aliased constant S := "/VERBOSE "                      &
                                             "-v";
    --        /NOVERBOSE (D)
@@ -898,24 +904,25 @@ package VMS_Data is
    --   Specify the name of the output file.
 
    Check_Switches : aliased constant Switches :=
-                      (S_Check_Add    'Access,
-                       S_Check_All    'Access,
-                       S_Diagnosis    'Access,
-                       S_Check_Ext    'Access,
-                       S_Check_Files  'Access,
-                       S_Check_Follow 'Access,
-                       S_Check_Help   'Access,
-                       S_Check_Locs   'Access,
-                       S_Check_Mess   'Access,
-                       S_Check_Project'Access,
-                       S_Check_Quiet  'Access,
-                       S_Check_Time   'Access,
-                       S_Check_Log    'Access,
-                       S_Check_Short  'Access,
-                       S_Check_Include'Access,
-                       S_Check_Subdirs'Access,
-                       S_Check_Verb   'Access,
-                       S_Check_Out    'Access);
+                      (S_Check_Add     'Access,
+                       S_Check_All     'Access,
+                       S_Diagnosis     'Access,
+                       S_Check_Ext     'Access,
+                       S_Check_Files   'Access,
+                       S_Check_Follow  'Access,
+                       S_Check_Help    'Access,
+                       S_Check_Locs    'Access,
+                       S_Check_Mess    'Access,
+                       S_Check_Project 'Access,
+                       S_Check_Quiet   'Access,
+                       S_Check_Time    'Access,
+                       S_Check_Log     'Access,
+                       S_Check_Short   'Access,
+                       S_Check_Include 'Access,
+                       S_Check_Subdirs 'Access,
+                       S_Check_Template'Access,
+                       S_Check_Verb    'Access,
+                       S_Check_Out     'Access);
 
    ----------------------------
    -- Switches for GNAT CHOP --
@@ -1292,6 +1299,19 @@ package VMS_Data is
    --   mode, the compiler assumes that values may be invalid unless it can
    --   be sure that they are valid, and code is generated to allow for this
    --   possibility. The use of /ASSUME_VALID will improve the code.
+
+   S_GCC_CategW  : aliased constant S := "/CATEGORIZATION_WARNINGS "  &
+                                             "-gnateP";
+   --        /NO_CATEGORIZATION_WARNINGS (D)
+   --        /CATEGORIZATION_WARNINGS
+   --
+   --   Use to tell the compiler to disable categorization dependency errors.
+   --   Ada requires that units that WITH one another have compatible
+   --   categories, for example a Pure unit cannot WITH a Preelaborate unit.
+   --   If this switch is used, these errors become warnings (which can be
+   --   ignored, or suppressed in the usual manner). This can be useful in
+   --   some specialized circumstances such as the temporary use of special
+   --   test software.
 
    S_GCC_Checks  : aliased constant S := "/CHECKS="                        &
                                              "FULL "                       &
@@ -2299,6 +2319,10 @@ package VMS_Data is
                                                "-gnaty-B "                 &
                                             "COMMENTS "                    &
                                                "-gnatyc "                  &
+                                            "COMMENTS1 "                   &
+                                               "-gnatyC "                  &
+                                            "COMMENTS2 "                   &
+                                               "-gnatyc "                  &
                                             "NOCOMMENTS "                  &
                                                "-gnaty-c "                 &
                                             "DOS_LINE_ENDINGS "            &
@@ -2389,7 +2413,7 @@ package VMS_Data is
    --   input source code.  The following keywords are supported:
    --
    --      ALL_BUILTIN (D)      Equivalent to the following list of options:
-   --                           3, ATTRIBUTE, BLANKS, COMMENTS, END, VTABS,
+   --                           3, ATTRIBUTE, BLANKS, COMMENTS2, END, VTABS,
    --                           HTABS, IF_THEN, KEYWORD, LAYOUT, LINE_LENGTH,
    --                           PRAGMA, REFERENCES, SPECS, TOKEN.
    --
@@ -2421,8 +2445,8 @@ package VMS_Data is
    --                           enforce a canonical format for the use of
    --                           blanks to separate source tokens.
    --
-   --      COMMENTS             Check comments.
-   --                           Comments must meet the following set of rules:
+   --      COMMENTS2            Check comments.
+   --      COMMENTS             Comments must meet the following set of rules:
    --
    --                             * The "--" that starts the column must either
    --                               start in column one, or else at least one
@@ -2467,6 +2491,11 @@ package VMS_Data is
    --                               ---------------------------
    --                               -- This is a box comment --
    --                               ---------------------------
+   --
+   --      COMMENTS1            Check comments (single space).
+   --                           Like COMMENTS2, but the -- of a comment only
+   --                           requires one or more spaces following, instead
+   --                           of two or more spaces.
    --
    --      DOS_LINE_ENDINGS     Check that no DOS line terminators are present
    --                           All lines must be terminated by a single
@@ -3517,6 +3546,7 @@ package VMS_Data is
                      S_GCC_Add     'Access,
                      S_GCC_Asm     'Access,
                      S_GCC_AValid  'Access,
+                     S_GCC_CategW  'Access,
                      S_GCC_Checks  'Access,
                      S_GCC_ChecksX 'Access,
                      S_GCC_Compres 'Access,
@@ -5382,24 +5412,22 @@ package VMS_Data is
    S_Metric_Coupling : aliased constant S := "/COUPLING_METRICS="             &
                                            "ALL "                             &
                                            "--coupling-all "                  &
-                                           "NONE "                            &
-                                           "--no-coupling-all "               &
-                                           "PACKAGE_EFFERENT "                &
-                                           "--package-efferent-coupling "     &
-                                           "NOPACKAGE_EFFERENT "              &
-                                           "--no-package-efferent-coupling "  &
-                                           "PACKAGE_AFFERENT "                &
-                                           "--package-afferent-coupling "     &
-                                           "NOPACKAGE_AFFERENT "              &
-                                           "--no-package-afferent-coupling "  &
-                                           "CATEGORY_EFFERENT "               &
-                                           "--category-efferent-coupling "    &
-                                           "NOCATEGORY_EFFERENT "             &
-                                           "--no-category-efferent-coupling " &
-                                           "CATEGORY_AFFERENT "               &
-                                           "--category-afferent-coupling "    &
-                                           "NOCATEGORY_AFFERENT "             &
-                                           "--no-category-afferent-coupling";
+                                           "TAGGED_OUT "                      &
+                                           "--tagged-coupling-out "           &
+                                           "TAGGED_IN "                       &
+                                           "--tagged-coupling-in "            &
+                                           "HIERARCHY_OUT "                   &
+                                           "--hierarchy-coupling-out "        &
+                                           "HIERARCHY_IN "                    &
+                                           "--hierarchy-coupling-in "         &
+                                           "UNIT_OUT "                        &
+                                           "--unit-coupling-out "             &
+                                           "UNIT_IN "                         &
+                                           "--unit-coupling-in "              &
+                                           "CONTROL_OUT "                     &
+                                           "--control-coupling-out "          &
+                                           "CONTROL_IN "                      &
+                                           "--control-coupling-in";
 
    --      /COUPLING_METRICS=(option, option ...)
 
@@ -5407,16 +5435,17 @@ package VMS_Data is
    --
    --   option may be one of the following:
    --
-   --     ALL                   All the coupling metrics are computed
-   --     NONE (D)              None of coupling metrics is computed
-   --     PACKAGE_EFFERENT      Compute package efferent coupling
-   --     NOPACKAGE_EFFERENT    Do not compute package efferent coupling
-   --     PACKAGE_AFFERENT      Compute package afferent coupling
-   --     NOPACKAGE_AFFERENT    Do not compute package afferent coupling
-   --     CATEGORY_EFFERENT     Compute category efferent coupling
-   --     NOCATEGORY_EFFERENT   Do not compute category efferent coupling
-   --     CATEGORY_AFFERENT     Compute category afferent coupling
-   --     NOCATEGORY_AFFERENT   Do not compute category afferent coupling
+   --     ALL            All the coupling metrics are computed
+   --     NOALL (D)      None of coupling metrics is computed
+   --     TAGGED_OUT     Compute tagged (class) far-out coupling
+   --     TAGGED_IN      Compute tagged (class) far-in coupling
+   --     HIERARCHY_OUT  Compute hieraqrchy (category) far-out coupling
+   --     HIERARCHY_IN   Compute hieraqrchy (category) far-in coupling
+   --     UNIT_OUT       Compute unit far-out coupling
+   --     UNIT_IN        Compute unit far-in coupling
+   --     CONTROL_OUT    Compute control far-out coupling
+   --     CONTROL_IN     Compute control far-in coupling
+
    --
    --   All combinations of coupling metrics options are allowed.
 
@@ -5440,6 +5469,14 @@ package VMS_Data is
    --        /NO_EXITS_AS_GOTOS
    --
    --   Do not count EXIT statements as GOTOs when computing the Essential
+   --   Complexity.
+
+   S_Metric_No_Static_Loop : aliased constant S := "/NO_STATIC_LOOP " &
+                                                   "--no-static-loop";
+   --        /STATIC_LOOP (D)
+   --        /NO_STATIC_LOOP
+   --
+   --   Do not count static FOR loop statements when computing the Cyclomatic
    --   Complexity.
 
    S_Metric_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="      &
@@ -5540,6 +5577,7 @@ package VMS_Data is
                         S_Metric_Mess             'Access,
                         S_Metric_No_Exits_As_Gotos'Access,
                         S_Metric_No_Local         'Access,
+                        S_Metric_No_Static_Loop   'Access,
                         S_Metric_Project          'Access,
                         S_Metric_Quiet            'Access,
                         S_Metric_Suffix           'Access,

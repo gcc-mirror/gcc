@@ -2,7 +2,7 @@
 #define __netf2 __netf2_shared
 #endif
 
-#include "config/soft-fp/eqtf2.c"
+#include "soft-fp/eqtf2.c"
 
 #ifdef SHARED
 #undef __netf2

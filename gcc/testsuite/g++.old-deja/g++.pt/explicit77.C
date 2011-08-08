@@ -15,5 +15,5 @@ void g() {
   
   f<0>(s0, s2);
   f(s0, s2); // { dg-error "" } no matching function
-  // { dg-message "candidate" "candidate note" { target *-*-* } 17 }
+  // { dg-message "(candidate|deduced conflicting types|ambiguous base class)" "candidate note" { target *-*-* } 17 }
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -412,11 +412,9 @@ private
       HT : HT_Types.Hash_Table_Type;
    end record;
 
-   overriding
-   procedure Adjust (Container : in out Set);
+   overriding procedure Adjust (Container : in out Set);
 
-   overriding
-   procedure Finalize (Container : in out Set);
+   overriding procedure Finalize (Container : in out Set);
 
    use HT_Types;
    use Ada.Finalization;

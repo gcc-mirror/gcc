@@ -449,30 +449,37 @@ package body Ada.Strings.Wide_Wide_Fixed is
       High   : Natural;
       By     : Wide_Wide_String) return Wide_Wide_String
    is
-      Result_Length : Natural;
-
    begin
       if Low > Source'Last + 1 or else High < Source'First - 1 then
          raise Index_Error;
-      else
-         Result_Length :=
-           Source'Length - Natural'Max (High - Low + 1, 0) + By'Length;
+      end if;
 
+      if High >= Low then
          declare
+            Front_Len : constant Integer :=
+                          Integer'Max (0, Low - Source'First);
+            --  Length of prefix of Source copied to result
+
+            Back_Len : constant Integer :=
+                         Integer'Max (0, Source'Last - High);
+            --  Length of suffix of Source copied to result
+
+            Result_Length : constant Integer :=
+                              Front_Len + By'Length + Back_Len;
+            --  Length of result
+
             Result : Wide_Wide_String (1 .. Result_Length);
 
          begin
-            if High >= Low then
-               Result :=
-                  Source (Source'First .. Low - 1) & By &
-                  Source (High + 1 .. Source'Last);
-            else
-               Result := Source (Source'First .. Low - 1) & By &
-                         Source (Low .. Source'Last);
-            end if;
-
+            Result (1 .. Front_Len) := Source (Source'First .. Low - 1);
+            Result (Front_Len + 1 .. Front_Len + By'Length) := By;
+            Result (Front_Len + By'Length + 1 .. Result'Length) :=
+              Source (High + 1 .. Source'Last);
             return Result;
          end;
+
+      else
+         return Insert (Source, Before => Low, New_Item => By);
       end if;
    end Replace_Slice;
 

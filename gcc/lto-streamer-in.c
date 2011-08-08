@@ -657,14 +657,6 @@ lto_init_eh (void)
   flag_exceptions = 1;
   init_eh ();
 
-  /* Initialize dwarf2 tables.  Since dwarf2out_do_frame() returns
-     true only when exceptions are enabled, this initialization is
-     never done during lang_dependent_init.  */
-#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
-  if (dwarf2out_do_frame ())
-    dwarf2out_frame_init ();
-#endif
-
   eh_initialized_p = true;
 }
 
@@ -1563,7 +1555,10 @@ unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
   else
     bp_unpack_value (bp, 1);
   TREE_ASM_WRITTEN (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TREE_NO_WARNING (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (TYPE_P (expr))
+    TYPE_ARTIFICIAL (expr) = (unsigned) bp_unpack_value (bp, 1);
+  else
+    TREE_NO_WARNING (expr) = (unsigned) bp_unpack_value (bp, 1);
   TREE_USED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TREE_NOTHROW (expr) = (unsigned) bp_unpack_value (bp, 1);
   TREE_STATIC (expr) = (unsigned) bp_unpack_value (bp, 1);

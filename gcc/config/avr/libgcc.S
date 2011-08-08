@@ -34,7 +34,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    This can make better code because GCC knows exactly which
    of the call-used registers (not all of them) are clobbered.  */
 
-	.section .text.libgcc, "ax", @progbits
+/* FIXME:  At present, there is no SORT directive in the linker
+           script so that we must not assume that different modules
+           in the same input section like .libgcc.text.mul will be
+           located close together.  Therefore, we cannot use
+           RCALL/RJMP to call a function like __udivmodhi4 from
+           __divmodhi4 and have to use lengthy XCALL/XJMP even
+           though they are in the same input section and all same
+           input sections together are small enough to reach every
+           location with a RCALL/RJMP instruction.  */
 
 	.macro	mov_l  r_dest, r_src
 #if defined (__AVR_HAVE_MOVW__)
@@ -72,10 +80,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 .endm
 
 
+.section .text.libgcc.mul, "ax", @progbits
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 /* Note: mulqi3, mulhi3 are open-coded on the enhanced core.  */
 #if !defined (__AVR_HAVE_MUL__)
 /*******************************************************
-               Multiplication  8 x 8
+    Multiplication  8 x 8  without MUL
 *******************************************************/
 #if defined (L_mulqi3)
 
@@ -83,9 +94,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define	r_arg1 	r24		/* multiplier */
 #define r_res	__tmp_reg__	/* result */
 
-	.global	__mulqi3
-	.func	__mulqi3
-__mulqi3:
+DEFUN __mulqi3
 	clr	r_res		; clear result
 __mulqi3_loop:
 	sbrc	r_arg1,0
@@ -97,40 +106,36 @@ __mulqi3_loop:
 __mulqi3_exit:	
 	mov	r_arg1,r_res	; result to return register
 	ret
+ENDF __mulqi3
 
 #undef r_arg2  
 #undef r_arg1  
 #undef r_res   
 	
-.endfunc
 #endif 	/* defined (L_mulqi3) */
 
 #if defined (L_mulqihi3)
-	.global	__mulqihi3
-	.func	__mulqihi3
-__mulqihi3:
+DEFUN __mulqihi3
 	clr	r25
 	sbrc	r24, 7
 	dec	r25
 	clr	r23
 	sbrc	r22, 7
 	dec	r22
-	rjmp	__mulhi3
-	.endfunc
+	XJMP	__mulhi3
+ENDF __mulqihi3:
 #endif /* defined (L_mulqihi3) */
 
 #if defined (L_umulqihi3)
-	.global	__umulqihi3
-	.func	__umulqihi3
-__umulqihi3:
+DEFUN __umulqihi3
 	clr	r25
 	clr	r23
-	rjmp	__mulhi3
-	.endfunc
+	XJMP	__mulhi3
+ENDF __umulqihi3
 #endif /* defined (L_umulqihi3) */
 
 /*******************************************************
-               Multiplication  16 x 16
+    Multiplication  16 x 16  without MUL
 *******************************************************/
 #if defined (L_mulhi3)
 #define	r_arg1L	r24		/* multiplier Low */
@@ -140,9 +145,7 @@ __umulqihi3:
 #define r_resL	__tmp_reg__	/* result Low */
 #define r_resH  r21		/* result High */
 
-	.global	__mulhi3
-	.func	__mulhi3
-__mulhi3:
+DEFUN __mulhi3
 	clr	r_resH		; clear result
 	clr	r_resL		; clear result
 __mulhi3_loop:
@@ -166,6 +169,7 @@ __mulhi3_exit:
 	mov	r_arg1H,r_resH	; result to return register
 	mov	r_arg1L,r_resL
 	ret
+ENDF __mulhi3
 
 #undef r_arg1L
 #undef r_arg1H
@@ -174,51 +178,50 @@ __mulhi3_exit:
 #undef r_resL 	
 #undef r_resH 
 
-.endfunc
 #endif /* defined (L_mulhi3) */
-#endif /* !defined (__AVR_HAVE_MUL__) */
+
+/*******************************************************
+    Widening Multiplication  32 = 16 x 16  without MUL
+*******************************************************/
 
 #if defined (L_mulhisi3)
-	.global	__mulhisi3
-	.func	__mulhisi3
-__mulhisi3:
-	mov_l	r18, r24
-	mov_h	r19, r25
-	clr	r24
-	sbrc	r23, 7
-	dec	r24
-	mov	r25, r24
-	clr	r20
-	sbrc	r19, 7
-	dec	r20
-	mov	r21, r20
-	rjmp	__mulsi3
-	.endfunc
+DEFUN __mulhisi3
+;;; FIXME: This is dead code (noone calls it)
+    mov_l   r18, r24
+    mov_h   r19, r25
+    clr     r24
+    sbrc    r23, 7
+    dec     r24
+    mov     r25, r24
+    clr     r20
+    sbrc    r19, 7
+    dec     r20
+    mov     r21, r20
+    XJMP    __mulsi3
+ENDF __mulhisi3
 #endif /* defined (L_mulhisi3) */
 
 #if defined (L_umulhisi3)
-	.global	__umulhisi3
-	.func	__umulhisi3
-__umulhisi3:
-	mov_l	r18, r24
-	mov_h	r19, r25
-	clr	r24
-	clr	r25
-	clr	r20
-	clr	r21
-	rjmp	__mulsi3
-	.endfunc
+DEFUN __umulhisi3
+;;; FIXME: This is dead code (noone calls it)
+    mov_l   r18, r24
+    mov_h   r19, r25
+    clr     r24
+    clr     r25
+    mov_l   r20, r24
+    mov_h   r21, r25
+    XJMP    __mulsi3
+ENDF __umulhisi3
 #endif /* defined (L_umulhisi3) */
 
 #if defined (L_mulsi3)
 /*******************************************************
-               Multiplication  32 x 32
+    Multiplication  32 x 32  without MUL
 *******************************************************/
 #define r_arg1L  r22		/* multiplier Low */
 #define r_arg1H  r23
 #define	r_arg1HL r24
 #define	r_arg1HH r25		/* multiplier High */
-
 
 #define	r_arg2L  r18		/* multiplicand Low */
 #define	r_arg2H  r19	
@@ -230,43 +233,7 @@ __umulhisi3:
 #define r_resHL	 r30
 #define r_resHH  r31		/* result High */
 
-	
-	.global	__mulsi3
-	.func	__mulsi3
-__mulsi3:
-#if defined (__AVR_HAVE_MUL__)
-	mul	r_arg1L, r_arg2L
-	movw	r_resL, r0
-	mul	r_arg1H, r_arg2H
-	movw	r_resHL, r0
-	mul	r_arg1HL, r_arg2L
-	add	r_resHL, r0
-	adc	r_resHH, r1
-	mul	r_arg1L, r_arg2HL
-	add	r_resHL, r0
-	adc	r_resHH, r1
-	mul	r_arg1HH, r_arg2L
-	add	r_resHH, r0
-	mul	r_arg1HL, r_arg2H
-	add	r_resHH, r0
-	mul	r_arg1H, r_arg2HL
-	add	r_resHH, r0
-	mul	r_arg1L, r_arg2HH
-	add	r_resHH, r0
-	clr	r_arg1HH	; use instead of __zero_reg__ to add carry
-	mul	r_arg1H, r_arg2L
-	add	r_resH, r0
-	adc	r_resHL, r1
-	adc	r_resHH, r_arg1HH ; add carry
-	mul	r_arg1L, r_arg2H
-	add	r_resH, r0
-	adc	r_resHL, r1
-	adc	r_resHH, r_arg1HH ; add carry
-	movw	r_arg1L, r_resL
-	movw	r_arg1HL, r_resHL
-	clr	r1		; __zero_reg__ clobbered by "mul"
-	ret
-#else
+DEFUN __mulsi3
 	clr	r_resHH		; clear result
 	clr	r_resHL		; clear result
 	clr	r_resH		; clear result
@@ -298,12 +265,12 @@ __mulsi3_exit:
 	mov_h	r_arg1H,r_resH
 	mov_l	r_arg1L,r_resL
 	ret
-#endif /* defined (__AVR_HAVE_MUL__) */
+ENDF __mulsi3
+
 #undef r_arg1L 
 #undef r_arg1H 
 #undef r_arg1HL
 #undef r_arg1HH
-             
              
 #undef r_arg2L 
 #undef r_arg2H 
@@ -315,9 +282,183 @@ __mulsi3_exit:
 #undef r_resHL 
 #undef r_resHH 
 
-.endfunc
 #endif /* defined (L_mulsi3) */
+
+#endif /* !defined (__AVR_HAVE_MUL__) */
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#if defined (__AVR_HAVE_MUL__)    
+#define A0 26
+#define B0 18
+#define C0 22
+
+#define A1 A0+1
+
+#define B1 B0+1
+#define B2 B0+2
+#define B3 B0+3
+
+#define C1 C0+1
+#define C2 C0+2
+#define C3 C0+3
+
+/*******************************************************
+    Widening Multiplication  32 = 16 x 16
+*******************************************************/
+                              
+#if defined (L_mulhisi3)
+;;; R25:R22 = (signed long) R27:R26 * (signed long) R19:R18
+;;; C3:C0   = (signed long) A1:A0   * (signed long) B1:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __mulhisi3
+    XCALL   __umulhisi3
+    ;; Sign-extend B
+    tst     B1
+    brpl    1f
+    sub     C2, A0
+    sbc     C3, A1
+1:  ;; Sign-extend A
+    XJMP __usmulhisi3_tail
+ENDF __mulhisi3
+#endif /* L_mulhisi3 */
+
+#if defined (L_usmulhisi3)
+;;; R25:R22 = (signed long) R27:R26 * (unsigned long) R19:R18
+;;; C3:C0   = (signed long) A1:A0   * (unsigned long) B1:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __usmulhisi3
+    XCALL   __umulhisi3
+    ;; FALLTHRU
+ENDF __usmulhisi3
+
+DEFUN __usmulhisi3_tail
+    ;; Sign-extend A
+    sbrs    A1, 7
+    ret
+    sub     C2, B0
+    sbc     C3, B1
+    ret
+ENDF __usmulhisi3_tail
+#endif /* L_usmulhisi3 */
+
+#if defined (L_umulhisi3)
+;;; R25:R22 = (unsigned long) R27:R26 * (unsigned long) R19:R18
+;;; C3:C0   = (unsigned long) A1:A0   * (unsigned long) B1:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __umulhisi3
+    mul     A0, B0
+    movw    C0, r0
+    mul     A1, B1
+    movw    C2, r0
+    mul     A0, B1
+    rcall   1f
+    mul     A1, B0
+1:  add     C1, r0
+    adc     C2, r1
+    clr     __zero_reg__
+    adc     C3, __zero_reg__
+    ret
+ENDF __umulhisi3
+#endif /* L_umulhisi3 */
+
+/*******************************************************
+    Widening Multiplication  32 = 16 x 32
+*******************************************************/
+
+#if defined (L_mulshisi3)
+;;; R25:R22 = (signed long) R27:R26 * R21:R18
+;;; (C3:C0) = (signed long) A1:A0   * B3:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __mulshisi3
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
+    ;; Some cores have problem skipping 2-word instruction
+    tst     A1
+    brmi    __mulohisi3
+#else
+    sbrs    A1, 7
+#endif /* __AVR_HAVE_JMP_CALL__ */
+    XJMP    __muluhisi3
+    ;; FALLTHRU
+ENDF __mulshisi3
+    
+;;; R25:R22 = (one-extended long) R27:R26 * R21:R18
+;;; (C3:C0) = (one-extended long) A1:A0   * B3:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __mulohisi3
+    XCALL   __muluhisi3
+    ;; One-extend R27:R26 (A1:A0)
+    sub     C2, B0
+    sbc     C3, B1
+    ret
+ENDF __mulohisi3
+#endif /* L_mulshisi3 */
+
+#if defined (L_muluhisi3)
+;;; R25:R22 = (unsigned long) R27:R26 * R21:R18
+;;; (C3:C0) = (unsigned long) A1:A0   * B3:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __muluhisi3
+    XCALL   __umulhisi3
+    mul     A0, B3
+    add     C3, r0
+    mul     A1, B2
+    add     C3, r0
+    mul     A0, B2
+    add     C2, r0
+    adc     C3, r1
+    clr     __zero_reg__
+    ret
+ENDF __muluhisi3
+#endif /* L_muluhisi3 */
+
+/*******************************************************
+    Multiplication  32 x 32
+*******************************************************/
+
+#if defined (L_mulsi3)
+;;; R25:R22 = R25:R22 * R21:R18
+;;; (C3:C0) = C3:C0   * B3:B0
+;;; Clobbers: R26, R27, __tmp_reg__
+DEFUN __mulsi3
+    movw    A0, C0
+    push    C2
+    push    C3
+    XCALL   __muluhisi3
+    pop     A1
+    pop     A0
+    ;; A1:A0 now contains the high word of A
+    mul     A0, B0
+    add     C2, r0
+    adc     C3, r1
+    mul     A0, B1
+    add     C3, r0
+    mul     A1, B0
+    add     C3, r0
+    clr     __zero_reg__
+    ret
+ENDF __mulsi3
+#endif /* L_mulsi3 */
+
+#undef A0
+#undef A1
+
+#undef B0
+#undef B1
+#undef B2
+#undef B3
+
+#undef C0
+#undef C1
+#undef C2
+#undef C3
+
+#endif /* __AVR_HAVE_MUL__ */
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
+
+.section .text.libgcc.div, "ax", @progbits
+
 /*******************************************************
        Division 8 / 8 => (result + remainder)
 *******************************************************/
@@ -327,9 +468,7 @@ __mulsi3_exit:
 #define	r_cnt	r23	/* loop count */
 
 #if defined (L_udivmodqi4)
-	.global	__udivmodqi4
-	.func	__udivmodqi4
-__udivmodqi4:
+DEFUN __udivmodqi4
 	sub	r_rem,r_rem	; clear remainder and carry
 	ldi	r_cnt,9		; init loop counter
 	rjmp	__udivmodqi4_ep	; jump to entry point
@@ -345,13 +484,11 @@ __udivmodqi4_ep:
 	com	r_arg1		; complement result 
 				; because C flag was complemented in loop
 	ret
-	.endfunc
+ENDF __udivmodqi4
 #endif /* defined (L_udivmodqi4) */
 
 #if defined (L_divmodqi4)
-	.global	__divmodqi4
-	.func	__divmodqi4
-__divmodqi4:
+DEFUN __divmodqi4
         bst     r_arg1,7	; store sign of dividend
         mov     __tmp_reg__,r_arg1
         eor     __tmp_reg__,r_arg2; r0.7 is sign of result
@@ -359,7 +496,7 @@ __divmodqi4:
 	neg     r_arg1		; dividend negative : negate
         sbrc	r_arg2,7
 	neg     r_arg2		; divisor negative : negate
-	rcall	__udivmodqi4	; do the unsigned div/mod
+	XCALL	__udivmodqi4	; do the unsigned div/mod
 	brtc	__divmodqi4_1
 	neg	r_rem		; correct remainder sign
 __divmodqi4_1:
@@ -367,7 +504,7 @@ __divmodqi4_1:
 	neg	r_arg1		; correct result sign
 __divmodqi4_exit:
 	ret
-	.endfunc
+ENDF __divmodqi4
 #endif /* defined (L_divmodqi4) */
 
 #undef r_rem
@@ -393,9 +530,7 @@ __divmodqi4_exit:
 #define	r_cnt	r21	/* loop count */
 
 #if defined (L_udivmodhi4)
-	.global	__udivmodhi4
-	.func	__udivmodhi4
-__udivmodhi4:
+DEFUN __udivmodhi4
 	sub	r_remL,r_remL
 	sub	r_remH,r_remH	; clear remainder and carry
 	ldi	r_cnt,17	; init loop counter
@@ -421,13 +556,11 @@ __udivmodhi4_ep:
 	mov_l	r_arg1L, r_remL		; remainder
 	mov_h	r_arg1H, r_remH
 	ret
-	.endfunc
+ENDF __udivmodhi4
 #endif /* defined (L_udivmodhi4) */
 
 #if defined (L_divmodhi4)
-	.global	__divmodhi4
-	.func	__divmodhi4
-__divmodhi4:
+DEFUN __divmodhi4
 	.global	_div
 _div:
         bst     r_arg1H,7	; store sign of dividend
@@ -436,7 +569,7 @@ _div:
 	rcall	__divmodhi4_neg1 ; dividend negative : negate
 	sbrc	r_arg2H,7
 	rcall	__divmodhi4_neg2 ; divisor negative : negate
-	rcall	__udivmodhi4	; do the unsigned div/mod
+	XCALL	__udivmodhi4	; do the unsigned div/mod
 	rcall	__divmodhi4_neg1 ; correct remainder sign
 	tst	__tmp_reg__
 	brpl	__divmodhi4_exit
@@ -452,7 +585,7 @@ __divmodhi4_neg1:
 	neg	r_arg1L		; correct dividend/remainder sign
 	sbci	r_arg1H,0xff
 	ret
-	.endfunc
+ENDF __divmodhi4
 #endif /* defined (L_divmodhi4) */
 
 #undef r_remH  
@@ -489,9 +622,7 @@ __divmodhi4_neg1:
 #define	r_cnt __zero_reg__  /* loop count (0 after the loop!) */
 
 #if defined (L_udivmodsi4)
-	.global	__udivmodsi4
-	.func	__udivmodsi4
-__udivmodsi4:
+DEFUN __udivmodsi4
 	ldi	r_remL, 33	; init loop counter
 	mov	r_cnt, r_remL
 	sub	r_remL,r_remL
@@ -535,20 +666,18 @@ __udivmodsi4_ep:
 	mov_l	r_arg1HL, r_remHL
 	mov_h	r_arg1HH, r_remHH
 	ret
-	.endfunc
+ENDF __udivmodsi4
 #endif /* defined (L_udivmodsi4) */
 
 #if defined (L_divmodsi4)
-	.global	__divmodsi4
-	.func	__divmodsi4
-__divmodsi4:
+DEFUN __divmodsi4
         bst     r_arg1HH,7	; store sign of dividend
         mov     __tmp_reg__,r_arg1HH
         eor     __tmp_reg__,r_arg2HH   ; r0.7 is sign of result
 	rcall	__divmodsi4_neg1 ; dividend negative : negate
 	sbrc	r_arg2HH,7
 	rcall	__divmodsi4_neg2 ; divisor negative : negate
-	rcall	__udivmodsi4	; do the unsigned div/mod
+	XCALL	__udivmodsi4	; do the unsigned div/mod
 	rcall	__divmodsi4_neg1 ; correct remainder sign
 	rol	__tmp_reg__
 	brcc	__divmodsi4_exit
@@ -572,17 +701,18 @@ __divmodsi4_neg1:
 	sbci	r_arg1HL,0xff
 	sbci	r_arg1HH,0xff
 	ret
-	.endfunc
+ENDF __divmodsi4
 #endif /* defined (L_divmodsi4) */
 
+
+.section .text.libgcc.prologue, "ax", @progbits
+    
 /**********************************
  * This is a prologue subroutine
  **********************************/
 #if defined (L_prologue)
 
-	.global	__prologue_saves__
-	.func	__prologue_saves__
-__prologue_saves__:
+DEFUN __prologue_saves__
 	push r2
 	push r3
 	push r4
@@ -616,7 +746,7 @@ __prologue_saves__:
 	ijmp
 #endif
 
-.endfunc
+ENDF __prologue_saves__
 #endif /* defined (L_prologue) */
 
 /*
@@ -624,9 +754,7 @@ __prologue_saves__:
  */
 #if defined (L_epilogue)
 
-	.global	__epilogue_restores__
-	.func	__epilogue_restores__
-__epilogue_restores__:
+DEFUN __epilogue_restores__
 	ldd	r2,Y+18
 	ldd	r3,Y+17
 	ldd	r4,Y+16
@@ -655,17 +783,15 @@ __epilogue_restores__:
 	mov_l	r28, r26
 	mov_h	r29, r27
 	ret
-.endfunc
+ENDF __epilogue_restores__
 #endif /* defined (L_epilogue) */
 
 #ifdef L_exit
 	.section .fini9,"ax",@progbits
-	.global _exit
-	.func	_exit
-_exit:
+DEFUN _exit
 	.weak	exit
 exit:
-	.endfunc
+ENDF _exit
 
 	/* Code from .fini8 ... .fini1 sections inserted by ld script.  */
 
@@ -683,14 +809,17 @@ _cleanup:
 .endfunc
 #endif /* defined (L_cleanup) */
 
+
+.section .text.libgcc, "ax", @progbits
+    
 #ifdef L_tablejump
-	.global __tablejump2__
-	.func	__tablejump2__
-__tablejump2__:
+DEFUN __tablejump2__
 	lsl	r30
 	rol	r31
-	.global __tablejump__
-__tablejump__:
+    ;; FALLTHRU
+ENDF __tablejump2__
+
+DEFUN __tablejump__
 #if defined (__AVR_HAVE_LPMX__)
 	lpm	__tmp_reg__, Z+
 	lpm	r31, Z
@@ -713,13 +842,12 @@ __tablejump__:
 #endif
 	ret
 #endif
-	.endfunc
+ENDF __tablejump__
 #endif /* defined (L_tablejump) */
 
 #ifdef L_copy_data
 	.section .init4,"ax",@progbits
-	.global __do_copy_data
-__do_copy_data:
+DEFUN __do_copy_data
 #if defined(__AVR_HAVE_ELPMX__)
 	ldi	r17, hi8(__data_end)
 	ldi	r26, lo8(__data_start)
@@ -776,14 +904,14 @@ __do_copy_data:
 	cpc	r27, r17
 	brne	.L__do_copy_data_loop
 #endif /* !defined(__AVR_HAVE_ELPMX__) && !defined(__AVR_HAVE_ELPM__) */
+ENDF __do_copy_data
 #endif /* L_copy_data */
 
 /* __do_clear_bss is only necessary if there is anything in .bss section.  */
 
 #ifdef L_clear_bss
 	.section .init4,"ax",@progbits
-	.global __do_clear_bss
-__do_clear_bss:
+DEFUN __do_clear_bss
 	ldi	r17, hi8(__bss_end)
 	ldi	r26, lo8(__bss_start)
 	ldi	r27, hi8(__bss_start)
@@ -794,6 +922,7 @@ __do_clear_bss:
 	cpi	r26, lo8(__bss_end)
 	cpc	r27, r17
 	brne	.do_clear_bss_loop
+ENDF __do_clear_bss
 #endif /* L_clear_bss */
 
 /* __do_global_ctors and __do_global_dtors are only necessary
@@ -801,9 +930,8 @@ __do_clear_bss:
 
 #ifdef L_ctors
 	.section .init6,"ax",@progbits
-	.global	__do_global_ctors
+DEFUN __do_global_ctors
 #if defined(__AVR_HAVE_RAMPZ__)
-__do_global_ctors:
 	ldi	r17, hi8(__ctors_start)
 	ldi	r28, lo8(__ctors_end)
 	ldi	r29, hi8(__ctors_end)
@@ -823,7 +951,6 @@ __do_global_ctors:
 	cpc	r16, r24
 	brne	.L__do_global_ctors_loop
 #else
-__do_global_ctors:
 	ldi	r17, hi8(__ctors_start)
 	ldi	r28, lo8(__ctors_end)
 	ldi	r29, hi8(__ctors_end)
@@ -838,13 +965,13 @@ __do_global_ctors:
 	cpc	r29, r17
 	brne	.L__do_global_ctors_loop
 #endif /* defined(__AVR_HAVE_RAMPZ__) */
+ENDF __do_global_ctors
 #endif /* L_ctors */
 
 #ifdef L_dtors
 	.section .fini6,"ax",@progbits
-	.global	__do_global_dtors
+DEFUN __do_global_dtors
 #if defined(__AVR_HAVE_RAMPZ__)
-__do_global_dtors:
 	ldi	r17, hi8(__dtors_end)
 	ldi	r28, lo8(__dtors_start)
 	ldi	r29, hi8(__dtors_start)
@@ -864,7 +991,6 @@ __do_global_dtors:
 	cpc	r16, r24
 	brne	.L__do_global_dtors_loop
 #else
-__do_global_dtors:
 	ldi	r17, hi8(__dtors_end)
 	ldi	r28, lo8(__dtors_start)
 	ldi	r29, hi8(__dtors_start)
@@ -879,12 +1005,13 @@ __do_global_dtors:
 	cpc	r29, r17
 	brne	.L__do_global_dtors_loop
 #endif /* defined(__AVR_HAVE_RAMPZ__) */
+ENDF __do_global_dtors
 #endif /* L_dtors */
 
+.section .text.libgcc, "ax", @progbits
+    
 #ifdef L_tablejump_elpm
-	.global __tablejump_elpm__
-	.func	__tablejump_elpm__
-__tablejump_elpm__:
+DEFUN __tablejump_elpm__
 #if defined (__AVR_HAVE_ELPM__)
 #if defined (__AVR_HAVE_LPMX__)
 	elpm	__tmp_reg__, Z+
@@ -908,10 +1035,12 @@ __tablejump_elpm__:
 	ret
 #endif
 #endif /* defined (__AVR_HAVE_ELPM__) */
-	.endfunc
+ENDF __tablejump_elpm__
 #endif /* defined (L_tablejump_elpm) */
 
 
+.section .text.libgcc.builtins, "ax", @progbits
+
 /**********************************
  * Find first set Bit (ffs)
  **********************************/
@@ -945,9 +1074,15 @@ ENDF __ffssi2
 ;; clobbers: r26
 DEFUN __ffshi2
     clr  r26
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
+    ;; Some cores have problem skipping 2-word instruction
+    tst  r24
+    breq 2f
+#else
     cpse r24, __zero_reg__
+#endif /* __AVR_HAVE_JMP_CALL__ */
 1:  XJMP __loop_ffsqi2
-    ldi  r26, 8
+2:  ldi  r26, 8
     or   r24, r25
     brne 1b
     ret
@@ -977,12 +1112,12 @@ ENDF __loop_ffsqi2
 #if defined (L_ctzsi2)
 ;; count trailing zeros
 ;; r25:r24 = ctz32 (r25:r22)
-;; ctz(0) = 32
+;; clobbers: r26, r22
+;; ctz(0) = 255
+;; Note that ctz(0) in undefined for GCC
 DEFUN __ctzsi2
     XCALL __ffssi2
     dec  r24
-    sbrc r24, 7
-    ldi  r24, 32
     ret
 ENDF __ctzsi2
 #endif /* defined (L_ctzsi2) */
@@ -990,12 +1125,12 @@ ENDF __ctzsi2
 #if defined (L_ctzhi2)
 ;; count trailing zeros
 ;; r25:r24 = ctz16 (r25:r24)
-;; ctz(0) = 16
+;; clobbers: r26
+;; ctz(0) = 255
+;; Note that ctz(0) in undefined for GCC
 DEFUN __ctzhi2
     XCALL __ffshi2
     dec  r24
-    sbrc r24, 7
-    ldi  r24, 16
     ret
 ENDF __ctzhi2
 #endif /* defined (L_ctzhi2) */
@@ -1129,47 +1264,50 @@ ENDF __parityqi2
 #if defined (L_popcounthi2)
 ;; population count
 ;; r25:r24 = popcount16 (r25:r24)
-;; clobbers: r30, __tmp_reg__
+;; clobbers: __tmp_reg__
 DEFUN __popcounthi2
     XCALL __popcountqi2
-    mov  r30, r24
+    push r24
     mov  r24, r25
     XCALL __popcountqi2
-    add  r24, r30
     clr  r25
-    ret
+    ;; FALLTHRU
 ENDF __popcounthi2
+
+DEFUN __popcounthi2_tail
+    pop   __tmp_reg__
+    add   r24, __tmp_reg__
+    ret
+ENDF __popcounthi2_tail
 #endif /* defined (L_popcounthi2) */
 
 #if defined (L_popcountsi2)
 ;; population count
 ;; r25:r24 = popcount32 (r25:r22)
-;; clobbers: r26, r30, __tmp_reg__
+;; clobbers: __tmp_reg__
 DEFUN __popcountsi2
     XCALL __popcounthi2
-    mov   r26, r24
+    push  r24
     mov_l r24, r22
     mov_h r25, r23
     XCALL __popcounthi2
-    add   r24, r26
-    ret
+    XJMP  __popcounthi2_tail
 ENDF __popcountsi2
 #endif /* defined (L_popcountsi2) */
 
 #if defined (L_popcountdi2)
 ;; population count
 ;; r25:r24 = popcount64 (r25:r18)
-;; clobbers: r22, r23, r26, r27, r30, __tmp_reg__
+;; clobbers: r22, r23, __tmp_reg__
 DEFUN __popcountdi2
     XCALL __popcountsi2
-    mov   r27, r24
+    push  r24
     mov_l r22, r18
     mov_h r23, r19
     mov_l r24, r20
     mov_h r25, r21
     XCALL __popcountsi2
-    add   r24, r27
-    ret
+    XJMP  __popcounthi2_tail
 ENDF __popcountdi2
 #endif /* defined (L_popcountdi2) */
 
@@ -1301,3 +1439,93 @@ DEFUN __ashldi3
     ret
 ENDF __ashldi3
 #endif /* defined (L_ashldi3) */
+
+
+.section .text.libgcc.fmul, "ax", @progbits
+
+/***********************************************************/    
+;;; Softmul versions of FMUL, FMULS and FMULSU to implement
+;;; __builtin_avr_fmul* if !AVR_HAVE_MUL
+/***********************************************************/    
+
+#define A1 24
+#define B1 25
+#define C0 22
+#define C1 23
+#define A0 __tmp_reg__
+
+#ifdef L_fmuls
+;;; r23:r22 = fmuls (r24, r25) like in FMULS instruction
+;;; Clobbers: r24, r25, __tmp_reg__
+DEFUN __fmuls
+    ;; A0.7 = negate result?
+    mov  A0, A1
+    eor  A0, B1
+    ;; B1 = |B1|
+    sbrc B1, 7
+    neg  B1
+    XJMP __fmulsu_exit
+ENDF __fmuls
+#endif /* L_fmuls */
+
+#ifdef L_fmulsu
+;;; r23:r22 = fmulsu (r24, r25) like in FMULSU instruction
+;;; Clobbers: r24, r25, __tmp_reg__
+DEFUN __fmulsu
+    ;; A0.7 = negate result?
+    mov  A0, A1
+;; FALLTHRU
+ENDF __fmulsu
+
+;; Helper for __fmuls and __fmulsu
+DEFUN __fmulsu_exit
+    ;; A1 = |A1|
+    sbrc A1, 7
+    neg  A1
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
+    ;; Some cores have problem skipping 2-word instruction
+    tst  A0
+    brmi 1f
+#else
+    sbrs A0, 7
+#endif /* __AVR_HAVE_JMP_CALL__ */
+    XJMP  __fmul
+1:  XCALL __fmul
+    ;; C = -C iff A0.7 = 1
+    com  C1
+    neg  C0
+    sbci C1, -1
+    ret
+ENDF __fmulsu_exit
+#endif /* L_fmulsu */
+
+
+#ifdef L_fmul
+;;; r22:r23 = fmul (r24, r25) like in FMUL instruction
+;;; Clobbers: r24, r25, __tmp_reg__
+DEFUN __fmul
+    ; clear result
+    clr   C0
+    clr   C1
+    clr   A0
+1:  tst   B1
+    ;; 1.0 = 0x80, so test for bit 7 of B to see if A must to be added to C.
+2:  brpl  3f
+    ;; C += A
+    add   C0, A0
+    adc   C1, A1
+3:  ;; A >>= 1
+    lsr   A1
+    ror   A0
+    ;; B <<= 1
+    lsl   B1
+    brne  2b
+    ret
+ENDF __fmul
+#endif /* L_fmul */
+
+#undef A0
+#undef A1
+#undef B1
+#undef C0
+#undef C1

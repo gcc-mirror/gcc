@@ -3909,11 +3909,10 @@ build_unary_op (location_t location,
       if (val && TREE_CODE (val) == INDIRECT_REF
           && TREE_CONSTANT (TREE_OPERAND (val, 0)))
 	{
-	  tree op0 = fold_convert_loc (location, sizetype,
-				       fold_offsetof (arg, val)), op1;
+	  tree op0 = fold_offsetof (arg, val), op1;
 
 	  op1 = fold_convert_loc (location, argtype, TREE_OPERAND (val, 0));
-	  ret = fold_build2_loc (location, POINTER_PLUS_EXPR, argtype, op1, op0);
+	  ret = fold_build_pointer_plus_loc (location, op1, op0);
 	  goto return_build_unary_op;
 	}
 
@@ -10361,6 +10360,7 @@ build_binary_op (location_t location, enum tree_code code,
 		{
 		case MULT_EXPR:
 		case TRUNC_DIV_EXPR:
+		  op1 = c_save_expr (op1);
 		  imag = build2 (resultcode, real_type, imag, op1);
 		  /* Fall through.  */
 		case PLUS_EXPR:
@@ -10381,6 +10381,7 @@ build_binary_op (location_t location, enum tree_code code,
 	      switch (code)
 		{
 		case MULT_EXPR:
+		  op0 = c_save_expr (op0);
 		  imag = build2 (resultcode, real_type, op0, imag);
 		  /* Fall through.  */
 		case PLUS_EXPR:
@@ -10770,6 +10771,8 @@ c_finish_omp_clauses (tree clauses)
 		case PLUS_EXPR:
 		case MULT_EXPR:
 		case MINUS_EXPR:
+		case MIN_EXPR:
+		case MAX_EXPR:
 		  break;
 		case BIT_AND_EXPR:
 		  r_name = "&";
@@ -10886,6 +10889,8 @@ c_finish_omp_clauses (tree clauses)
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
+	case OMP_CLAUSE_FINAL:
+	case OMP_CLAUSE_MERGEABLE:
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
@@ -10915,6 +10920,10 @@ c_finish_omp_clauses (tree clauses)
 		case OMP_CLAUSE_DEFAULT_UNSPECIFIED:
 		  break;
 		case OMP_CLAUSE_DEFAULT_SHARED:
+		  /* const vars may be specified in firstprivate clause.  */
+		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+		      && TREE_READONLY (t))
+		    break;
 		  share_name = "shared";
 		  break;
 		case OMP_CLAUSE_DEFAULT_PRIVATE:

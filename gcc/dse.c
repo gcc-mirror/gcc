@@ -1355,11 +1355,10 @@ record_store (rtx body, bb_info_t bb_info)
 	}
       /* Handle (set (mem:BLK (addr) [... S36 ...]) (const_int 0))
 	 as memset (addr, 0, 36);  */
-      else if (!MEM_SIZE (mem)
-	       || !CONST_INT_P (MEM_SIZE (mem))
+      else if (!MEM_SIZE_KNOWN_P (mem)
+	       || MEM_SIZE (mem) <= 0
+	       || MEM_SIZE (mem) > MAX_OFFSET
 	       || GET_CODE (body) != SET
-	       || INTVAL (MEM_SIZE (mem)) <= 0
-	       || INTVAL (MEM_SIZE (mem)) > MAX_OFFSET
 	       || !CONST_INT_P (SET_SRC (body)))
 	{
 	  if (!store_is_unused)
@@ -1384,7 +1383,7 @@ record_store (rtx body, bb_info_t bb_info)
     }
 
   if (GET_MODE (mem) == BLKmode)
-    width = INTVAL (MEM_SIZE (mem));
+    width = MEM_SIZE (mem);
   else
     {
       width = GET_MODE_SIZE (GET_MODE (mem));
@@ -1722,8 +1721,7 @@ find_shift_sequence (int access_size,
       /* Try a wider mode if truncating the store mode to NEW_MODE
 	 requires a real instruction.  */
       if (GET_MODE_BITSIZE (new_mode) < GET_MODE_BITSIZE (store_mode)
-	  && !TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (new_mode),
-				     GET_MODE_BITSIZE (store_mode)))
+	  && !TRULY_NOOP_TRUNCATION_MODES_P (new_mode, store_mode))
 	continue;
 
       /* Also try a wider mode if the necessary punning is either not
@@ -2518,7 +2516,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
 		  && INTVAL (args[2]) > 0)
 		{
 		  rtx mem = gen_rtx_MEM (BLKmode, args[0]);
-		  set_mem_size (mem, args[2]);
+		  set_mem_size (mem, INTVAL (args[2]));
 		  body = gen_rtx_SET (VOIDmode, mem, args[1]);
 		  mems_found += record_store (body, bb_info);
 		  if (dump_file)

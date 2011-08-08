@@ -1,7 +1,6 @@
-/* { dg-options "-mthumb -Os -fpic -march=armv5te -fdump-rtl-hoist" }  */
+/* { dg-options "-mthumb -Os -fpic -fdump-rtl-hoist" }  */
 /* { dg-require-effective-target arm_thumb1_ok } */
 /* { dg-require-effective-target fpic } */
-/* { dg-prune-output "switch .* conflicts with" } */
 /* Make sure all calculations of gObj's address get hoisted to one location.  */
 /* { dg-final { scan-rtl-dump "PRE/HOIST: end of bb .* copying expression" "hoist" } } */
 

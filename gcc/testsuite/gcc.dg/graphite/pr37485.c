@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-graphite-all" } */
+/* { dg-options "-O2 -floop-block -fno-loop-strip-mine -fno-loop-interchange -ffast-math -fdump-tree-graphite-all" } */
 
 typedef unsigned char   UChar;
 typedef int             Int32;

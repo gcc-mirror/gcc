@@ -67,6 +67,7 @@ namespace __gnu_parallel
    *  @param __begin Begin iterator of input sequence.
    *  @param __end End iterator of input sequence.
    *  @param __comp Comparator.
+   *  @tparam __stable Sort stable.
    *  @callgraph 
    */
   template<bool __stable, typename _RAIter, typename _Compare>
@@ -90,6 +91,7 @@ namespace __gnu_parallel
    *  @param __begin Begin iterator of input sequence.
    *  @param __end End iterator of input sequence.
    *  @param __comp Comparator.
+   *  @tparam __stable Sort stable.
    *  @callgraph 
    */
   template<bool __stable, typename _RAIter, typename _Compare>
@@ -110,6 +112,7 @@ namespace __gnu_parallel
    *  @param __begin Begin iterator of input sequence.
    *  @param __end End iterator of input sequence.
    *  @param __comp Comparator.
+   *  @tparam __stable Sort stable.
    *  @callgraph 
    */
   template<bool __stable, typename _RAIter, typename _Compare>
@@ -129,6 +132,7 @@ namespace __gnu_parallel
    *  @param __begin Begin iterator of input sequence.
    *  @param __end End iterator of input sequence.
    *  @param __comp Comparator.
+   *  @tparam __stable Sort stable.
    *  @callgraph 
    */
   template<bool __stable, typename _RAIter, typename _Compare>
@@ -149,7 +153,7 @@ namespace __gnu_parallel
    *  @param __begin Begin iterator of input sequence.
    *  @param __end End iterator of input sequence.
    *  @param __comp Comparator.
-   *  @param __stable Sort __stable.
+   *  @tparam __stable Sort stable.
    *  @callgraph 
    */
    template<bool __stable, typename _RAIter, typename _Compare>
@@ -171,6 +175,7 @@ namespace __gnu_parallel
    *  @param __begin Begin iterator of input sequence.
    *  @param __end End iterator of input sequence.
    *  @param __comp Comparator.
+   *  @tparam __stable Sort stable.
    *  @callgraph 
    */
   template<bool __stable, typename _RAIter, typename _Compare>
@@ -190,7 +195,7 @@ namespace __gnu_parallel
    *  @param __begin Begin iterator of input sequence.
    *  @param __end End iterator of input sequence.
    *  @param __comp Comparator.
-   *  @param __stable Sort __stable.
+   *  @tparam __stable Sort stable.
    *  @callgraph 
    */
   template<bool __stable, typename _RAIter, typename _Compare>

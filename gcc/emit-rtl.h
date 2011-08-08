@@ -33,10 +33,16 @@ extern void set_mem_addr_space (rtx, addr_space_t);
 extern void set_mem_expr (rtx, tree);
 
 /* Set the offset for MEM to OFFSET.  */
-extern void set_mem_offset (rtx, rtx);
+extern void set_mem_offset (rtx, HOST_WIDE_INT);
+
+/* Clear the offset recorded for MEM.  */
+extern void clear_mem_offset (rtx);
 
 /* Set the size for MEM to SIZE.  */
-extern void set_mem_size (rtx, rtx);
+extern void set_mem_size (rtx, HOST_WIDE_INT);
+
+/* Clear the size recorded for MEM.  */
+extern void clear_mem_size (rtx);
 
 /* Set the attributes for MEM appropriate for a spill slot.  */
 extern void set_mem_attrs_for_spill (rtx);

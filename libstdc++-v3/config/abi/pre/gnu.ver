@@ -1284,6 +1284,14 @@ GLIBCXX_3.4.17 {
     # std::thread::hardware_concurrency
     _ZNSt6thread20hardware_concurrencyEv;
 
+    # __gnu_debug::_Safe_unordered_container_base and _Safe_local_iterator_base
+    _ZN11__gnu_debug30_Safe_unordered_container_base7_M_swapERS0_;
+    _ZN11__gnu_debug30_Safe_unordered_container_base13_M_detach_allEv;
+    _ZN11__gnu_debug25_Safe_local_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb;
+    _ZN11__gnu_debug25_Safe_local_iterator_base9_M_detachEv;
+
+    # std::chrono::steady_clock::now()
+    _ZNSt6chrono12steady_clock3nowEv;
 } GLIBCXX_3.4.16;
 
 # Symbols in the support library (libsupc++) have their own tag.

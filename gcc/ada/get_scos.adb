@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             G E T _ S C O S                               --
+--                             G E T _ S C O S                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -307,7 +307,7 @@ begin
 
          --  Decision entry
 
-         when 'I' | 'E' | 'P' | 'W' | 'X' =>
+         when 'I' | 'E' | 'G' | 'P' | 'W' | 'X' =>
             Dtyp := C;
             Skip_Spaces;
 
@@ -315,7 +315,6 @@ begin
 
             declare
                Loc : Source_Location;
-               C2v : Character;
 
             begin
                --  Acquire location information
@@ -326,18 +325,9 @@ begin
                   Get_Source_Location (Loc);
                end if;
 
-               --  C2 is a space except for pragmas where it is 'e' since
-               --  clearly the pragma is enabled if it was written out.
-
-               if C = 'P' then
-                  C2v := 'e';
-               else
-                  C2v := ' ';
-               end if;
-
                Add_SCO
                  (C1   => Dtyp,
-                  C2   => C2v,
+                  C2   => ' ',
                   From => Loc,
                   To   => No_Source_Location,
                   Last => False);

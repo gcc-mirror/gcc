@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,8 +73,8 @@ package body Fname.UF is
      Key        => Unit_Name_Type,
      Hash       => SFN_Hash,
      Equal      => "=");
-   --  Hash table allowing rapid access to SFN_Table, the element value
-   --  is an index into this table.
+   --  Hash table allowing rapid access to SFN_Table, the element value is an
+   --  index into this table.
 
    type SFN_Pattern_Entry is record
       Pat : String_Ptr;   -- File name pattern (with asterisk in it)
@@ -91,9 +91,8 @@ package body Fname.UF is
      Table_Initial        => 10,
      Table_Increment      => 100,
      Table_Name           => "SFN_Patterns");
-   --  Table recording all calls to Set_File_Name_Pattern. Note that the
-   --  first two entries are set to represent the standard GNAT rules
-   --  for file naming.
+   --  Table recording calls to Set_File_Name_Pattern. Note that the first two
+   --  entries are set to represent the standard GNAT rules for file naming.
 
    -----------------------
    -- File_Name_Of_Body --
@@ -127,9 +126,9 @@ package body Fname.UF is
      (Fname : File_Name_Type) return Expected_Unit_Type
    is
    begin
-      --  In syntax checking only mode or in multiple unit per file mode,
-      --  there can be more than one unit in a file, so the file name is
-      --  not a useful guide to the nature of the unit.
+      --  In syntax checking only mode or in multiple unit per file mode, there
+      --  can be more than one unit in a file, so the file name is not a useful
+      --  guide to the nature of the unit.
 
       if Operating_Mode = Check_Syntax
         or else Multiple_Unit_Index /= 0
@@ -137,8 +136,8 @@ package body Fname.UF is
          return Unknown;
       end if;
 
-      --  Search the file mapping table, if we find an entry for this
-      --  file we know whether it is a spec or a body.
+      --  Search the file mapping table, if we find an entry for this file we
+      --  know whether it is a spec or a body.
 
       for J in SFN_Table.First .. SFN_Table.Last loop
          if Fname = SFN_Table.Table (J).F then
@@ -150,8 +149,8 @@ package body Fname.UF is
          end if;
       end loop;
 
-      --  If no entry in file naming table, assume .ads/.adb for spec/body
-      --  and return unknown if we have neither of these two cases.
+      --  If no entry in file naming table, assume .ads/.adb for spec/body and
+      --  return unknown if we have neither of these two cases.
 
       Get_Name_String (Fname);
 
@@ -179,8 +178,8 @@ package body Fname.UF is
       --  Set to 's' or 'b' for spec or body or to 'u' for a subunit
 
       Unit_Char_Search : Character;
-      --  Same as Unit_Char, except that in the case of 'u' for a subunit,
-      --  we set Unit_Char_Search to 'b' if we do not find a subunit match.
+      --  Same as Unit_Char, except that in the case of 'u' for a subunit, we
+      --  set Unit_Char_Search to 'b' if we do not find a subunit match.
 
       N : Int;
 
@@ -189,8 +188,8 @@ package body Fname.UF is
       --  Path name and File name for mapping
 
    begin
-      --  Null or error name means that some previous error occurred
-      --  This is an unrecoverable error, so signal it.
+      --  Null or error name means that some previous error occurred. This is
+      --  an unrecoverable error, so signal it.
 
       if Uname in Error_Unit_Name_Or_No_Unit_Name then
          raise Unrecoverable_Error;
@@ -200,8 +199,8 @@ package body Fname.UF is
 
       Fname := Mapped_File_Name (Uname);
 
-      --  If the unit name is already mapped, return the corresponding
-      --  file name from the map.
+      --  If the unit name is already mapped, return the corresponding file
+      --  name from the map.
 
       if Fname /= No_File then
          return Fname;
@@ -232,9 +231,9 @@ package body Fname.UF is
 
       --    _and_.ads
 
-      --  which is bit peculiar, but we keep it that way. This means that
-      --  we avoid bombs due to writing a bad file name, and w get expected
-      --  error processing downstream, e.g. a compilation following gnatchop.
+      --  which is bit peculiar, but we keep it that way. This means that we
+      --  avoid bombs due to writing a bad file name, and w get expected error
+      --  processing downstream, e.g. a compilation following gnatchop.
 
       if Name_Buffer (1) = '"' then
          Get_Name_String (Uname);
@@ -283,12 +282,12 @@ package body Fname.UF is
       --  Start of search through pattern table
 
       begin
-         --  Search pattern table to find a matching entry. In the general
-         --  case we do two complete searches. The first time through we
-         --  stop only if a matching file is found, the second time through
-         --  we accept the first match regardless. Note that there will
-         --  always be a match the second time around, because of the
-         --  default entries at the end of the table.
+         --  Search pattern table to find a matching entry. In the general case
+         --  we do two complete searches. The first time through we stop only
+         --  if a matching file is found, the second time through we accept the
+         --  first match regardless. Note that there will always be a match the
+         --  second time around, because of the default entries at the end of
+         --  the table.
 
          for No_File_Check in False .. True loop
             Unit_Char_Search := Unit_Char;
@@ -345,8 +344,8 @@ package body Fname.UF is
 
                            J := J + Dotl;
 
-                        --  Skip past wide char sequences to avoid messing
-                        --  with dot characters that are part of a sequence.
+                        --  Skip past wide char sequences to avoid messing with
+                        --  dot characters that are part of a sequence.
 
                         elsif Name_Buffer (J) = ASCII.ESC
                           or else (Upper_Half_Encoding
@@ -421,8 +420,8 @@ package body Fname.UF is
                         Name_Len := Name_Len + Ext'Length;
                      end;
 
-                  --  Case of no extension present, straight krunch on
-                  --  the entire file name.
+                  --  Case of no extension present, straight krunch on the
+                  --  entire file name.
 
                   else
                      Krunch
@@ -435,9 +434,9 @@ package body Fname.UF is
                   Fnam := Name_Find;
 
                   --  If we are in the second search of the table, we accept
-                  --  the file name without checking, because we know that
-                  --  the file does not exist, except when May_Fail is True,
-                  --  in which case we return No_File.
+                  --  the file name without checking, because we know that the
+                  --  file does not exist, except when May_Fail is True, in
+                  --  which case we return No_File.
 
                   if No_File_Check then
                      if May_Fail then
@@ -451,31 +450,35 @@ package body Fname.UF is
                   else
                      Pname := Find_File (Fnam, Source);
 
-                     --  If it does exist, we add it to the mappings and
-                     --  return the file name.
+                     --  If it does exist, we add it to the mappings and return
+                     --  the file name.
 
                      if Pname /= No_File then
 
-                        --  Add to mapping, so that we don't do another
-                        --  path search in Find_File for this file name
-                        --  and, if we use a mapping file, we are ready
-                        --  to update it at the end of this compilation
-                        --  for the benefit of other compilation processes.
+                        --  Add to mapping, so that we don't do another path
+                        --  search in Find_File for this file name and, if we
+                        --  use a mapping file, we are ready to update it at
+                        --  the end of this compilation for the benefit of
+                        --  other compilation processes.
 
                         Add_To_File_Map (Get_File_Name.Uname, Fnam, Pname);
                         return Fnam;
 
-                     --  If there are only two entries, they are those of
-                     --  the default GNAT naming scheme. The file does
-                     --  not exist, but there is no point doing the
-                     --  second search, because we will end up with the
-                     --  same file name. Just return the file name.
+                     --  If there are only two entries, they are those of the
+                     --  default GNAT naming scheme. The file does not exist,
+                     --  but there is no point doing the second search, because
+                     --  we will end up with the same file name. Just return
+                     --  the file name, or No_File if May_Fail is True.
 
                      elsif SFN_Patterns.Last = 2 then
-                        return Fnam;
+                        if May_Fail then
+                           return No_File;
+                        else
+                           return Fnam;
+                        end if;
 
-                     --  The file does not exist, but there may be other
-                     --  naming scheme. Keep on searching.
+                     --  The file does not exist, but there may be other naming
+                     --  scheme. Keep on searching.
 
                      else
                         Fnam := No_File;
@@ -486,9 +489,9 @@ package body Fname.UF is
                Pent := Pent + 1;
             end loop;
 
-            --  If search failed, and was for a subunit, repeat the search
-            --  with Unit_Char_Search reset to 'b', since in the normal case
-            --  we simply treat subunits as bodies.
+            --  If search failed, and was for a subunit, repeat the search with
+            --  Unit_Char_Search reset to 'b', since in the normal case we
+            --  simply treat subunits as bodies.
 
             if Fnam = No_File and then Unit_Char_Search = 'u' then
                Unit_Char_Search := 'b';
@@ -499,8 +502,8 @@ package body Fname.UF is
 
          end loop;
 
-         --  Something is wrong if search fails completely, since the
-         --  default entries should catch all possibilities at this stage.
+         --  Something is wrong if search fails completely, since the default
+         --  entries should catch all possibilities at this stage.
 
          raise Program_Error;
       end;
@@ -529,8 +532,8 @@ package body Fname.UF is
       SFN_Table.Init;
       SFN_Patterns.Init;
 
-      --  Add default entries to SFN_Patterns.Table to represent the
-      --  standard default GNAT rules for file name translation.
+      --  Add default entries to SFN_Patterns.Table to represent the standard
+      --  default GNAT rules for file name translation.
 
       SFN_Patterns.Append (New_Val =>
         (Pat => new String'("*.ads"),
@@ -585,9 +588,9 @@ package body Fname.UF is
    begin
       SFN_Patterns.Increment_Last;
 
-      --  Move up the last two entries (the default ones) and then
-      --  put the new entry into the table just before them (we
-      --  always have the default entries be the last ones).
+      --  Move up the last two entries (the default ones) and then put the new
+      --  entry into the table just before them (we always have the default
+      --  entries be the last ones).
 
       SFN_Patterns.Table (L + 1) := SFN_Patterns.Table (L);
       SFN_Patterns.Table (L)     := SFN_Patterns.Table (L - 1);

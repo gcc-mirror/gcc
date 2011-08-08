@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,142 +35,155 @@ package Exp_Ch7 is
    -- Finalization Management --
    -----------------------------
 
-   function In_Finalization_Root (E : Entity_Id) return Boolean;
-   --  True if current scope is in package System.Finalization_Root. Used
-   --  to avoid certain expansions that would involve circularity in the
-   --  Rtsfind mechanism.
-
-   procedure Build_Final_List (N : Node_Id; Typ : Entity_Id);
-   --  Build finalization list for anonymous access types, and for access
-   --  types that are frozen before their designated types are known to
-   --  be controlled.
-
    procedure Build_Controlling_Procs (Typ : Entity_Id);
    --  Typ is a record, and array type having controlled components.
    --  Create the procedures Deep_Initialize, Deep_Adjust and Deep_Finalize
    --  that take care of finalization management at run-time.
 
+   procedure Build_Finalization_Collection
+     (Typ        : Entity_Id;
+      Ins_Node   : Node_Id := Empty;
+      Encl_Scope : Entity_Id := Empty);
+   --  Build a finalization collection for an access type. The designated type
+   --  may not necessarely be controlled or need finalization actions. The
+   --  routine creates a wrapper around a user-defined storage pool or the
+   --  general storage pool for access types. Ins_Nod and Encl_Scope are used
+   --  in conjunction with anonymous access types. Ins_Node designates the
+   --  insertion point before which the collection should be added. Encl_Scope
+   --  is the scope of the context, either the enclosing record or the scope
+   --  of the related function.
+
    procedure Build_Late_Proc (Typ : Entity_Id; Nam : Name_Id);
    --  Build one controlling procedure when a late body overrides one of
    --  the controlling operations.
 
-   function Controller_Component (Typ : Entity_Id) return Entity_Id;
-   --  Returns the entity of the component whose name is 'Name_uController'
+   function Build_Object_Declarations
+     (Loc         : Source_Ptr;
+      Abort_Id    : Entity_Id;
+      E_Id        : Entity_Id;
+      Raised_Id   : Entity_Id;
+      For_Package : Boolean := False) return List_Id;
+   --  Subsidiary to Make_Deep_Array_Body and Make_Deep_Record_Body. Return a
+   --  list containing the object declarations of boolean flag Abort_Id, the
+   --  exception occurrence E_Id and boolean flag Raised_Id.
+   --
+   --    Abort_Id  : constant Boolean :=
+   --                  Exception_Identity (Get_Current_Excep.all) =
+   --                    Standard'Abort_Signal'Identity;
+   --      <or>
+   --    Abort_Id  : constant Boolean := False;  --  no abort or For_Package
+   --
+   --    E_Id      : Exception_Occurrence;
+   --    Raised_Id : Boolean := False;
+
+   function Build_Raise_Statement
+     (Loc       : Source_Ptr;
+      Abort_Id  : Entity_Id;
+      E_Id      : Entity_Id;
+      Raised_Id : Entity_Id) return Node_Id;
+   --  Subsidiary to routines Build_Finalizer, Make_Deep_Array_Body and Make_
+   --  Deep_Record_Body. Generate the following conditional raise statement:
+   --
+   --    if Raised_Id then
+   --       Raise_From_Controlled_Operation (E_Id, Abort_Id);
+   --    end if;
+   --
+   --  Abort_Id is a local boolean flag which is set when the finalization was
+   --  triggered by an abort, E_Id denotes the defining identifier of a local
+   --  exception occurrence, Raised_Id is the entity of a local boolean flag.
 
    function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean;
    --  True if T is a class-wide type, or if it has controlled parts ("part"
-   --  means T or any of its subcomponents). This is the same as
-   --  Needs_Finalization, except when pragma Restrictions (No_Finalization)
-   --  applies, in which case we know that class-wide objects do not contain
-   --  controlled parts.
+   --  means T or any of its subcomponents). Same as Needs_Finalization, except
+   --  when pragma Restrictions (No_Finalization) applies, in which case we
+   --  know that class-wide objects do not contain controlled parts.
 
-   procedure Expand_Ctrl_Function_Call (N : Node_Id);
-   --  Expand a call to a function returning a controlled value. That is to
-   --  say attach the result of the call to the current finalization list,
-   --  which is the one of the transient scope created for such constructs.
-
-   function Find_Final_List
-     (E   : Entity_Id;
-      Ref : Node_Id := Empty) return Node_Id;
-   --  E is an entity representing a controlled object, a controlled type or a
-   --  scope. If Ref is not empty, it is a reference to a controlled record,
-   --  the closest Final list is in the controller component of the record
-   --  containing Ref, otherwise this function returns a reference to the final
-   --  list attached to the closest dynamic scope (which can be E itself),
-   --  creating this final list if necessary.
+   function Get_Global_Pool_For_Access_Type (T : Entity_Id) return Entity_Id;
+   --  Return the pool id for access type T.  This is generally the node
+   --  corresponding to System.Global_Pool.Global_Pool_Object except on
+   --  VMS if the access size is 32.
 
    function Has_New_Controlled_Component (E : Entity_Id) return Boolean;
    --  E is a type entity. Give the same result as Has_Controlled_Component
    --  except for tagged extensions where the result is True only if the
    --  latest extension contains a controlled component.
 
-   function Make_Attach_Call
-     (Obj_Ref     : Node_Id;
-      Flist_Ref   : Node_Id;
-      With_Attach : Node_Id) return Node_Id;
-   --  Attach the referenced object to the referenced Final Chain 'Flist_Ref'
-   --  With_Attach is an expression of type Short_Short_Integer which can be
-   --  either '0' to signify no attachment, '1' for attachment to a simply
-   --  linked list or '2' for attachment to a doubly linked list.
-
-   function Make_Init_Call
-     (Ref         : Node_Id;
-      Typ         : Entity_Id;
-      Flist_Ref   : Node_Id;
-      With_Attach : Node_Id) return List_Id;
-   --  Ref is an expression (with no-side effect and is not required to have
-   --  been previously analyzed) that references the object to be initialized.
-   --  Typ is the expected type of Ref, which is either a controlled type
-   --  (Is_Controlled) or a type with controlled components (Has_Controlled).
-   --  With_Attach is an integer expression which is the attachment level,
-   --  see System.Finalization_Implementation.Attach_To_Final_List for the
-   --  documentation of Nb_Link.
-   --
-   --  This function will generate the appropriate calls to make sure that the
-   --  objects referenced by Ref are initialized. The generated code is quite
-   --  different for an IS_Controlled type or a HAS_Controlled type, but this
-   --  is not the problem for the caller, the details are in the body.
-
    function Make_Adjust_Call
-     (Ref         : Node_Id;
-      Typ         : Entity_Id;
-      Flist_Ref   : Node_Id;
-      With_Attach : Node_Id;
-      Allocator   : Boolean := False) return List_Id;
-   --  Ref is an expression (with no-side effect and is not required to have
-   --  been previously analyzed) that references the object to be adjusted. Typ
-   --  is the expected type of Ref, which is a controlled type (Is_Controlled)
-   --  or a type with controlled components (Has_Controlled). With_Attach is an
-   --  integer expression giving the attachment level (see documentation of
-   --  Attach_To_Final_List.Nb_Link param documentation in s-finimp.ads.
-   --  Note: if Typ is Finalize_Storage_Only and the object is at library
-   --  level, then With_Attach will be ignored, and a zero link level will be
-   --  passed to Attach_To_Final_List.
+     (Obj_Ref    : Node_Id;
+      Typ        : Entity_Id;
+      For_Parent : Boolean := False) return Node_Id;
+   --  Create a call to either Adjust or Deep_Adjust depending on the structure
+   --  of type Typ. Obj_Ref is an expression with no-side effect (not required
+   --  to have been previously analyzed) that references the object to be
+   --  adjusted. Typ is the expected type of Obj_Ref. Flag For_Parent must be
+   --  set when an adjustment call is being created for field _parent.
+
+   function Make_Attach_Call
+     (Obj_Ref : Node_Id;
+      Ptr_Typ : Entity_Id) return Node_Id;
+   --  Create a call to prepend an object to a finalization collection. Obj_Ref
+   --  is the object, Ptr_Typ is the access type that owns the collection. This
+   --  is used only for .NET/JVM, that is, when VM_Target /= No_VM.
+   --  Generate the following:
    --
-   --  This function will generate the appropriate calls to make sure that the
-   --  objects referenced by Ref are adjusted. The generated code is quite
-   --  different depending on the fact the type IS_Controlled or HAS_Controlled
-   --  but this is not the problem of the caller, the details are in the body.
-   --  The objects must be attached when the adjust takes place after an
-   --  initialization expression but not when it takes place after a regular
-   --  assignment.
+   --    Ada.Finalization.Heap_Management.Attach
+   --      (<Ptr_Typ>FC,
+   --       System.Finalization_Root.Root_Controlled_Ptr (Obj_Ref));
+
+   function Make_Detach_Call (Obj_Ref : Node_Id) return Node_Id;
+   --  Create a call to unhook an object from an arbitrary list. Obj_Ref is the
+   --  object. Generate the following:
    --
-   --  If Allocator is True, we are adjusting a newly-created object. The
-   --  existing chaining pointers should not be left unchanged, because they
-   --  may come from a bit-for-bit copy of those from an initializing object.
-   --  So, when this flag is True, if the chaining pointers should otherwise
-   --  be left unset, instead they are reset to null.
+   --    Ada.Finalization.Heap_Management.Detach
+   --      (System.Finalization_Root.Root_Controlled_Ptr (Obj_Ref));
 
    function Make_Final_Call
-     (Ref         : Node_Id;
-      Typ         : Entity_Id;
-      With_Detach : Node_Id) return List_Id;
-   --  Ref is an expression (with no-side effect and is not required to have
-   --  been previously analyzed) that references the object to be Finalized.
-   --  Typ is the expected type of Ref, which is a controlled type
-   --  (Is_Controlled) or a type with controlled components (Has_Controlled).
-   --  With_Detach is a boolean expression indicating whether to detach the
-   --  controlled object from whatever finalization list it is currently
-   --  attached to.
-   --
-   --  This function will generate the appropriate calls to make sure that the
-   --  objects referenced by Ref are finalized. The generated code is quite
-   --  different depending on the fact the type IS_Controlled or HAS_Controlled
-   --  but this is not the problem of the caller, the details are in the body.
-   --  The objects must be detached when finalizing an unchecked deallocated
-   --  object but not when finalizing the target of an assignment, it is not
-   --  necessary either on scope exit.
+     (Obj_Ref    : Node_Id;
+      Typ        : Entity_Id;
+      For_Parent : Boolean := False) return Node_Id;
+   --  Create a call to either Finalize or Deep_Finalize depending on the
+   --  structure of type Typ. Obj_Ref is an expression (with no-side effect and
+   --  is not required to have been previously analyzed) that references the
+   --  object to be finalized. Typ is the expected type of Obj_Ref. Flag For_
+   --  Parent must be set when a finalization call is being created for field
+   --  _parent.
+
+   procedure Make_Finalize_Address_Body (Typ : Entity_Id);
+   --  Create the body of TSS routine Finalize_Address if Typ is controlled and
+   --  does not have a TSS entry for Finalize_Address. The procedure converts
+   --  an address into a pointer and subsequently calls Deep_Finalize on the
+   --  dereference.
+
+   function Make_Init_Call
+     (Obj_Ref : Node_Id;
+      Typ     : Entity_Id) return Node_Id;
+   --  Obj_Ref is an expression with no-side effect (not required to have been
+   --  previously analyzed) that references the object to be initialized. Typ
+   --  is the expected type of Obj_Ref, which is either a controlled type
+   --  (Is_Controlled) or a type with controlled components (Has_Controlled_
+   --  Components).
 
    function Make_Handler_For_Ctrl_Operation (Loc : Source_Ptr) return Node_Id;
    --  Generate an implicit exception handler with an 'others' choice,
    --  converting any occurrence to a raise of Program_Error.
 
-   function Needs_Finalization (T : Entity_Id) return Boolean;
-   --  True if T potentially needs finalization actions. True if T is
-   --  controlled, or has subcomponents. Also True if T is a class-wide type,
-   --  because some type extension might add controlled subcomponents, except
-   --  that if pragma Restrictions (No_Finalization) applies, this is False for
-   --  class-wide types.
+   function Make_Local_Deep_Finalize
+     (Typ : Entity_Id;
+      Nam : Entity_Id) return Node_Id;
+   --  Create a special version of Deep_Finalize with identifier Nam. The
+   --  routine has state information and can parform partial finalization.
+
+   function Make_Set_Finalize_Address_Ptr_Call
+     (Loc     : Source_Ptr;
+      Typ     : Entity_Id;
+      Ptr_Typ : Entity_Id) return Node_Id;
+   --  Generate the following call:
+   --
+   --    Set_Finalize_Address_Ptr (<Ptr_Typ>FC, <Typ>FD'Unrestricted_Access);
+   --
+   --  where Finalize_Address is the corresponding TSS primitive of type Typ
+   --  and Ptr_Typ is the access type of the related allocation. Loc is the
+   --  source location of the related allocator.
 
    --------------------------------------------
    -- Task and Protected Object finalization --
@@ -204,10 +217,8 @@ package Exp_Ch7 is
    --  Check whether composite type contains a simple protected component
 
    function Is_Simple_Protected_Type (T : Entity_Id) return Boolean;
-   --  Check whether argument is a protected type without entries. Protected
-   --  types with entries are controlled, and their cleanup is handled by the
-   --  standard finalization machinery. For simple protected types we generate
-   --  inline code to release their locks.
+   --  Determine whether T denotes a protected type without entires whose
+   --  _object field is of type System.Tasking.Protected_Objects.Protection.
 
    --------------------------------
    -- Transient Scope Management --
@@ -225,7 +236,7 @@ package Exp_Ch7 is
    --  secondary stack is brought in, otherwise it isn't.
 
    function Node_To_Be_Wrapped return Node_Id;
-   --  return the node to be wrapped if the current scope is transient
+   --  Return the node to be wrapped if the current scope is transient
 
    procedure Store_Before_Actions_In_Scope (L : List_Id);
    --  Append the list L of actions to the end of the before-actions store in

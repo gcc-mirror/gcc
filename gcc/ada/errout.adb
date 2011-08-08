@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -751,6 +751,13 @@ package body Errout is
          if In_Extended_Main_Source_Unit (Sptr) then
             null;
 
+         --  If the main unit has not been read yet. the warning must be on
+         --  a configuration file: gnat.adc or user-defined. This means we
+         --  are not parsing the main unit yet, so skip following checks.
+
+         elsif No (Cunit (Main_Unit)) then
+            null;
+
          --  If the flag location is not in the main extended source unit, then
          --  we want to eliminate the warning, unless it is in the extended
          --  main code unit and we want warnings on the instance.
@@ -1307,8 +1314,9 @@ package body Errout is
    ----------------
 
    function First_Node (C : Node_Id) return Node_Id is
-      L        : constant Source_Ptr        := Sloc (Original_Node (C));
-      Sfile    : constant Source_File_Index := Get_Source_File_Index (L);
+      Orig     : constant Node_Id           := Original_Node (C);
+      Loc      : constant Source_Ptr        := Sloc (Orig);
+      Sfile    : constant Source_File_Index := Get_Source_File_Index (Loc);
       Earliest : Node_Id;
       Eloc     : Source_Ptr;
 
@@ -1323,18 +1331,26 @@ package body Errout is
       ------------------
 
       function Test_Earlier (N : Node_Id) return Traverse_Result is
-         Loc : constant Source_Ptr := Sloc (Original_Node (N));
+         Norig : constant Node_Id    := Original_Node (N);
+         Loc   : constant Source_Ptr := Sloc (Norig);
 
       begin
-         --  Check for earlier. The tests for being in the same file ensures
-         --  against strange cases of foreign code somehow being present. We
-         --  don't want wild placement of messages if that happens, so it is
-         --  best to just ignore this situation.
+         --  Check for earlier
 
          if Loc < Eloc
+
+           --  Ignore nodes with no useful location information
+
+           and then Loc /= Standard_Location
+           and then Loc /= No_Location
+
+           --  Ignore nodes from a different file. This ensures against cases
+           --  of strange foreign code somehow being present. We don't want
+           --  wild placement of messages if that happens.
+
            and then Get_Source_File_Index (Loc) = Sfile
          then
-            Earliest := Original_Node (N);
+            Earliest := Norig;
             Eloc     := Loc;
          end if;
 
@@ -1344,10 +1360,15 @@ package body Errout is
    --  Start of processing for First_Node
 
    begin
-      Earliest := Original_Node (C);
-      Eloc := Sloc (Earliest);
-      Search_Tree_First (Original_Node (C));
-      return Earliest;
+      if Nkind (Orig) in N_Subexpr then
+         Earliest := Orig;
+         Eloc := Loc;
+         Search_Tree_First (Orig);
+         return Earliest;
+
+      else
+         return Orig;
+      end if;
    end First_Node;
 
    ----------------
@@ -2632,7 +2653,6 @@ package body Errout is
                if P <= Text'Last and then Text (P) = '$' then
                   P := P + 1;
                   Set_Msg_Insertion_Unit_Name (Suffix => False);
-
                else
                   Set_Msg_Insertion_Unit_Name;
                end if;

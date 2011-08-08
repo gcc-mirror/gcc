@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,6 +109,18 @@ package System.Parameters is
    --  Number of bits in type long and unsigned_long. The normal convention
    --  is that this is the same as type Long_Integer, but this is not true
    --  of all targets. For example, in OpenVMS long /= Long_Integer.
+
+   ptr_bits  : constant := 32;
+   subtype C_Address is System.Address
+     range -2 ** (ptr_bits - 1) .. 2 ** (ptr_bits - 1) - 1;
+   for C_Address'Object_Size use ptr_bits;
+   --  Number of bits in Interfaces.C pointers, normally a standard address,
+   --  except on 64-bit VMS where they are 32-bit addresses, for compatibility
+   --  with legacy code. System.Aux_DEC.Short_Address can't be used because of
+   --  elaboration circularity.
+
+   C_Malloc_Linkname : constant String := "__gnat_malloc32";
+   --  Name of runtime function used to allocate such a pointer
 
    ----------------------------------------------
    -- Behavior of Pragma Finalize_Storage_Only --

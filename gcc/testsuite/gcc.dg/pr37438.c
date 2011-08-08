@@ -1,7 +1,7 @@
 /* PR target/37438 */
 /* { dg-do compile } */
 /* { dg-options "-Os" } */
-/* { dg-options "-Os -march=i486" { target { { i686-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-Os -march=i486" { target { { i686-*-* x86_64-*-* } && ia32 } } } */
 
 extern int bar (unsigned long long int);
 extern int baz (const char *, unsigned int, unsigned short);

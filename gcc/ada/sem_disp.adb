@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,7 @@ with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
 with Sinfo;    use Sinfo;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -893,17 +894,17 @@ package body Sem_Disp is
            and then Is_Dispatching_Operation (Old_Subp)
          then
             pragma Assert
-             ((Ekind (Subp) = E_Function
-                and then Is_Dispatching_Operation (Old_Subp)
-                and then Is_Null_Extension (Base_Type (Etype (Subp))))
-               or else
-                (Ekind (Subp) = E_Procedure
-                  and then Is_Dispatching_Operation (Old_Subp)
-                  and then Present (Alias (Old_Subp))
-                  and then Is_Null_Interface_Primitive
+              ((Ekind (Subp) = E_Function
+                 and then Is_Dispatching_Operation (Old_Subp)
+                 and then Is_Null_Extension (Base_Type (Etype (Subp))))
+              or else
+               (Ekind (Subp) = E_Procedure
+                 and then Is_Dispatching_Operation (Old_Subp)
+                 and then Present (Alias (Old_Subp))
+                 and then Is_Null_Interface_Primitive
                              (Ultimate_Alias (Old_Subp)))
-               or else Get_TSS_Name (Subp) = TSS_Stream_Read
-               or else Get_TSS_Name (Subp) = TSS_Stream_Write);
+              or else Get_TSS_Name (Subp) = TSS_Stream_Read
+              or else Get_TSS_Name (Subp) = TSS_Stream_Write);
 
             Check_Controlling_Formals (Tagged_Type, Subp);
             Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);
@@ -1027,6 +1028,12 @@ package body Sem_Disp is
                                    ("\spec should appear immediately after" &
                                     " the type!", Subp);
                               end if;
+
+                           --  No code required to register primitives in VM
+                           --  targets
+
+                           elsif VM_Target /= No_VM then
+                              null;
 
                            else
                               Insert_Actions_After (Subp_Body,
@@ -1158,10 +1165,13 @@ package body Sem_Disp is
                   while Present (Elmt) loop
                      Prim := Node (Elmt);
 
+                     --  No code required to register primitives in VM targets
+
                      if Present (Alias (Prim))
                        and then Present (Interface_Alias (Prim))
                        and then Alias (Prim) = Subp
                        and then not Building_Static_DT (Tagged_Type)
+                       and then VM_Target = No_VM
                      then
                         Insert_Actions_After (Subp_Body,
                           Register_Primitive (Sloc (Subp_Body), Prim => Prim));
@@ -1279,11 +1289,10 @@ package body Sem_Disp is
 
       elsif Has_Controlled_Component (Tagged_Type)
         and then
-         (Chars (Subp) = Name_Initialize
-            or else
-          Chars (Subp) = Name_Adjust
-            or else
-          Chars (Subp) = Name_Finalize)
+          (Chars (Subp) = Name_Initialize or else
+           Chars (Subp) = Name_Adjust     or else
+           Chars (Subp) = Name_Finalize   or else
+           Chars (Subp) = Name_Finalize_Address)
       then
          declare
             F_Node   : constant Node_Id := Freeze_Node (Tagged_Type);
@@ -1292,15 +1301,17 @@ package body Sem_Disp is
             Old_Bod  : Node_Id;
             Old_Spec : Entity_Id;
 
-            C_Names : constant array (1 .. 3) of Name_Id :=
+            C_Names : constant array (1 .. 4) of Name_Id :=
                         (Name_Initialize,
                          Name_Adjust,
-                         Name_Finalize);
+                         Name_Finalize,
+                         Name_Finalize_Address);
 
-            D_Names : constant array (1 .. 3) of TSS_Name_Type :=
+            D_Names : constant array (1 .. 4) of TSS_Name_Type :=
                         (TSS_Deep_Initialize,
                          TSS_Deep_Adjust,
-                         TSS_Deep_Finalize);
+                         TSS_Deep_Finalize,
+                         TSS_Finalize_Address);
 
          begin
             --  Remove previous controlled function which was constructed and
@@ -1362,23 +1373,28 @@ package body Sem_Disp is
       Op1, Op2   : Elmt_Id;
       Prev       : Elmt_Id := No_Elmt;
 
-      function Derives_From (Proc : Entity_Id) return Boolean;
-      --  Check that Subp has the signature of an operation derived from Proc.
-      --  Subp has an access parameter that designates Typ.
+      function Derives_From (Parent_Subp : Entity_Id) return Boolean;
+      --  Check that Subp has profile of an operation derived from Parent_Subp.
+      --  Subp must have a parameter or result type that is Typ or an access
+      --  parameter or access result type that designates Typ.
 
       ------------------
       -- Derives_From --
       ------------------
 
-      function Derives_From (Proc : Entity_Id) return Boolean is
+      function Derives_From (Parent_Subp : Entity_Id) return Boolean is
          F1, F2 : Entity_Id;
 
       begin
-         if Chars (Proc) /= Chars (Subp) then
+         if Chars (Parent_Subp) /= Chars (Subp) then
             return False;
          end if;
 
-         F1 := First_Formal (Proc);
+         --  Check that the type of controlling formals is derived from the
+         --  parent subprogram's controlling formal type (or designated type
+         --  if the formal type is an anonymous access type).
+
+         F1 := First_Formal (Parent_Subp);
          F2 := First_Formal (Subp);
          while Present (F1) and then Present (F2) loop
             if Ekind (Etype (F1)) = E_Anonymous_Access_Type then
@@ -1393,13 +1409,44 @@ package body Sem_Disp is
             elsif Ekind (Etype (F2)) = E_Anonymous_Access_Type then
                return False;
 
-            elsif Etype (F1) /= Etype (F2) then
+            elsif Etype (F1) = Parent_Typ and then Etype (F2) /= Full then
                return False;
             end if;
 
             Next_Formal (F1);
             Next_Formal (F2);
          end loop;
+
+         --  Check that a controlling result type is derived from the parent
+         --  subprogram's result type (or designated type if the result type
+         --  is an anonymous access type).
+
+         if Ekind (Parent_Subp) = E_Function then
+            if Ekind (Subp) /= E_Function then
+               return False;
+
+            elsif Ekind (Etype (Parent_Subp)) = E_Anonymous_Access_Type then
+               if Ekind (Etype (Subp)) /= E_Anonymous_Access_Type then
+                  return False;
+
+               elsif Designated_Type (Etype (Parent_Subp)) = Parent_Typ
+                 and then Designated_Type (Etype (Subp)) /= Full
+               then
+                  return False;
+               end if;
+
+            elsif Ekind (Etype (Subp)) = E_Anonymous_Access_Type then
+               return False;
+
+            elsif Etype (Parent_Subp) = Parent_Typ
+              and then Etype (Subp) /= Full
+            then
+               return False;
+            end if;
+
+         elsif Ekind (Subp) = E_Function then
+            return False;
+         end if;
 
          return No (F1) and then No (F2);
       end Derives_From;
@@ -1460,17 +1507,16 @@ package body Sem_Disp is
          if Present (Tagged_Type) and then Is_Tagged_Type (Tagged_Type) then
             Append_Unique_Elmt (Old_Subp, Primitive_Operations (Tagged_Type));
 
-            --  If Old_Subp isn't already marked as dispatching then
-            --  this is the case of an operation of an untagged private
-            --  type fulfilled by a tagged type that overrides an
-            --  inherited dispatching operation, so we set the necessary
-            --  dispatching attributes here.
+            --  If Old_Subp isn't already marked as dispatching then this is
+            --  the case of an operation of an untagged private type fulfilled
+            --  by a tagged type that overrides an inherited dispatching
+            --  operation, so we set the necessary dispatching attributes here.
 
             if not Is_Dispatching_Operation (Old_Subp) then
 
                --  If the untagged type has no discriminants, and the full
-               --  view is constrained, there will be a spurious mismatch
-               --  of subtypes on the controlling arguments, because the tagged
+               --  view is constrained, there will be a spurious mismatch of
+               --  subtypes on the controlling arguments, because the tagged
                --  type is the internal base type introduced in the derivation.
                --  Use the original type to verify conformance, rather than the
                --  base type.
@@ -1718,9 +1764,9 @@ package body Sem_Disp is
 
             begin
                --  The original corresponding operation of Prim must be an
-               --  operation of a visible ancestor of the dispatching type
-               --  S, and the original corresponding operation of S2 must
-               --  be visible.
+               --  operation of a visible ancestor of the dispatching type S,
+               --  and the original corresponding operation of S2 must be
+               --  visible.
 
                Orig_Prim := Original_Corresponding_Operation (Prim);
 
@@ -1986,6 +2032,14 @@ package body Sem_Disp is
          if not Has_Controlling_Result (Nam) then
             return False;
 
+         --  The function may have a controlling result, but if the return type
+         --  is not visibly tagged, then this is not tag-indeterminate.
+
+         elsif Is_Access_Type (Etype (Nam))
+           and then not Is_Tagged_Type (Designated_Type (Etype (Nam)))
+         then
+            return False;
+
          --  An explicit dereference means that the call has already been
          --  expanded and there is no tag to propagate.
 
@@ -2003,7 +2057,9 @@ package body Sem_Disp is
                if Is_Controlling_Actual (Actual)
                  and then not Is_Tag_Indeterminate (Actual)
                then
-                  return False; -- one operand is dispatching
+                  --  One operand is dispatching
+
+                  return False;
                end if;
 
                Next_Actual (Actual);
@@ -2026,9 +2082,9 @@ package body Sem_Disp is
       then
          return True;
 
-      --  In Ada 2005 a function that returns an anonymous access type can
-      --  dispatching, and the dereference of a call to such a function
-      --  is also tag-indeterminate.
+      --  In Ada 2005, a function that returns an anonymous access type can be
+      --  dispatching, and the dereference of a call to such a function can
+      --  also be tag-indeterminate if the call itself is.
 
       elsif Nkind (Orig_Node) = N_Explicit_Dereference
         and then Ada_Version >= Ada_2005
@@ -2078,15 +2134,19 @@ package body Sem_Disp is
       --  The location of entities that come from source in the list of
       --  primitives of the tagged type must follow their order of occurrence
       --  in the sources to fulfill the C++ ABI. If the overridden entity is a
-      --  primitive of an interface that is not an ancestor of this tagged
-      --  type (that is, it is an entity added to the list of primitives by
-      --  Derive_Interface_Progenitors), then we must append the new entity
-      --  at the end of the list of primitives.
+      --  primitive of an interface that is not implemented by the parents of
+      --  this tagged type (that is, it is an alias of an interface primitive
+      --  generated by Derive_Interface_Progenitors), then we must append the
+      --  new entity at the end of the list of primitives.
 
       if Present (Alias (Prev_Op))
+        and then Etype (Tagged_Type) /= Tagged_Type
         and then Is_Interface (Find_Dispatching_Type (Alias (Prev_Op)))
         and then not Is_Ancestor (Find_Dispatching_Type (Alias (Prev_Op)),
-                                  Tagged_Type)
+                                  Tagged_Type, Use_Full_View => True)
+        and then not Implements_Interface
+                       (Etype (Tagged_Type),
+                        Find_Dispatching_Type (Alias (Prev_Op)))
       then
          Remove_Elmt (Primitive_Operations (Tagged_Type), Elmt);
          Append_Elmt (New_Op, Primitive_Operations (Tagged_Type));

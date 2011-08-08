@@ -549,6 +549,26 @@ dump_bb_info (basic_block bb, bool header, bool footer, int flags,
 	fputs (", maybe hot", file);
       if (cfun && probably_never_executed_bb_p (bb))
 	fputs (", probably never executed", file);
+      if (bb->flags)
+	{
+	  static const char * const bits[] = {
+	    "new", "reachable", "irr_loop", "superblock", "disable_sched",
+	    "hot_partition", "cold_partition", "duplicated",
+	    "non_local_goto_target", "rtl", "forwarder", "nonthreadable",
+	    "modified"
+	  };
+	  unsigned int flags;
+
+	  fputs (", flags:", file);
+	  for (flags = bb->flags; flags ; flags &= flags - 1)
+	    {
+	      unsigned i = ctz_hwi (flags);
+	      if (i < ARRAY_SIZE (bits))
+		fprintf (file, " %s", bits[i]);
+	      else
+		fprintf (file, " <%d>", i);
+	    }
+	}
       fputs (".\n", file);
 
       fprintf (file, "%sPredecessors: ", prefix);
@@ -700,7 +720,7 @@ dump_edge_info (FILE *file, edge e, int do_succ)
       static const char * const bitnames[] = {
 	"fallthru", "ab", "abcall", "eh", "fake", "dfs_back",
 	"can_fallthru", "irreducible", "sibcall", "loop_exit",
-	"true", "false", "exec"
+	"true", "false", "exec", "crossing", "preserve"
       };
       int comma = 0;
       int i, flags = e->flags;

@@ -657,22 +657,20 @@ read_logical (st_parameter_dt *dtp, int length)
     {
     case 't':
       v = 1;
-      if ((c = next_char (dtp)) == EOF)
-	goto bad_logical;
+      c = next_char (dtp);
       l_push_char (dtp, c);
 
-      if (!is_separator(c))
+      if (!is_separator(c) && c != EOF)
 	goto possible_name;
 
       unget_char (dtp, c);
       break;
     case 'f':
       v = 0;
-      if ((c = next_char (dtp)) == EOF)
-	goto bad_logical;
+      c = next_char (dtp);
       l_push_char (dtp, c);
 
-      if (!is_separator(c))
+      if (!is_separator(c) && c != EOF)
 	goto possible_name;
 
       unget_char (dtp, c);
@@ -837,6 +835,7 @@ read_integer (st_parameter_dt *dtp, int length)
 	  goto repeat;
 
 	CASE_SEPARATORS:	/* Not a repeat count.  */
+	case EOF:
 	  goto done;
 
 	default:
@@ -886,6 +885,7 @@ read_integer (st_parameter_dt *dtp, int length)
 	  break;
 
 	CASE_SEPARATORS:
+	case EOF:
 	  goto done;
 
 	default:
@@ -2213,7 +2213,6 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		      do not allow excess data to be processed.  */
 		  if (is_array_section == 1
 		      || !(compile_options.allow_std & GFC_STD_GNU)
-		      || !dtp->u.p.ionml->touched
 		      || dtp->u.p.ionml->type == BT_DERIVED)
 		    ls[dim].end = ls[dim].start;
 		  else

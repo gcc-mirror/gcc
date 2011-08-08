@@ -384,11 +384,11 @@ the function.
 
 mdispatch-scheduler
 Target RejectNegative Var(flag_dispatch_scheduler)
-Do dispatch scheduling if processor is bdver1 and Haifa scheduling
+Do dispatch scheduling if processor is bdver1 or bdver2 and Haifa scheduling
 is selected.
 
 mprefer-avx128
-Target Report Var(flag_prefer_avx128) Init(0)
+Target Report Mask(PREFER_AVX128) SAVE
 Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer.
 
 ;; ISA support
@@ -398,8 +398,12 @@ Target RejectNegative Negative(m64) Report InverseMask(ISA_64BIT) Var(ix86_isa_f
 Generate 32bit i386 code
 
 m64
-Target RejectNegative Negative(m32) Report Mask(ISA_64BIT) Var(ix86_isa_flags) Save
+Target RejectNegative Negative(mx32) Report Mask(ISA_64BIT) Var(ix86_isa_flags) Save
 Generate 64bit x86-64 code
+
+mx32
+Target RejectNegative Negative(m32) Report Mask(ISA_X32) Var(ix86_isa_flags) Save
+Generate 32bit x86-64 code
 
 mmmx
 Target Report Mask(ISA_MMX) Var(ix86_isa_flags) Save
@@ -484,6 +488,10 @@ Support code generation of popcnt instruction.
 mbmi
 Target Report Mask(ISA_BMI) Var(ix86_isa_flags) Save
 Support BMI built-in functions and code generation
+
+mlzcnt
+Target Report Mask(ISA_LZCNT) Var(ix86_isa_flags) Save
+Support LZCNT built-in function and code generation
 
 mtbm
 Target Report Mask(ISA_TBM) Var(ix86_isa_flags) Save

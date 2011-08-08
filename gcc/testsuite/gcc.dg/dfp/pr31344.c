@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mtune=i386" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-O -mtune=i386" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 /* { dg-options "-O" } */
 
 typedef struct

@@ -2303,7 +2303,7 @@ convert_debug_memory_address (enum machine_mode mode, rtx x,
   if (GET_MODE (x) == mode || GET_MODE (x) == VOIDmode)
     return x;
 
-  if (GET_MODE_BITSIZE (mode) < GET_MODE_BITSIZE (xmode))
+  if (GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (xmode))
     x = simplify_gen_subreg (mode, x, xmode,
 			     subreg_lowpart_offset
 			     (mode, xmode));
@@ -2358,8 +2358,60 @@ convert_debug_memory_address (enum machine_mode mode, rtx x,
   return x;
 }
 
-/* Return an RTX equivalent to the value of the tree expression
-   EXP.  */
+/* Return an RTX equivalent to the value of the parameter DECL.  */
+
+static rtx
+expand_debug_parm_decl (tree decl)
+{
+  rtx incoming = DECL_INCOMING_RTL (decl);
+
+  if (incoming
+      && GET_MODE (incoming) != BLKmode
+      && ((REG_P (incoming) && HARD_REGISTER_P (incoming))
+	  || (MEM_P (incoming)
+	      && REG_P (XEXP (incoming, 0))
+	      && HARD_REGISTER_P (XEXP (incoming, 0)))))
+    {
+      rtx rtl = gen_rtx_ENTRY_VALUE (GET_MODE (incoming));
+
+#ifdef HAVE_window_save
+      /* DECL_INCOMING_RTL uses the INCOMING_REGNO of parameter registers.
+	 If the target machine has an explicit window save instruction, the
+	 actual entry value is the corresponding OUTGOING_REGNO instead.  */
+      if (REG_P (incoming)
+	  && OUTGOING_REGNO (REGNO (incoming)) != REGNO (incoming))
+	incoming
+	  = gen_rtx_REG_offset (incoming, GET_MODE (incoming),
+				OUTGOING_REGNO (REGNO (incoming)), 0);
+      else if (MEM_P (incoming))
+	{
+	  rtx reg = XEXP (incoming, 0);
+	  if (OUTGOING_REGNO (REGNO (reg)) != REGNO (reg))
+	    {
+	      reg = gen_raw_REG (GET_MODE (reg), OUTGOING_REGNO (REGNO (reg)));
+	      incoming = replace_equiv_address_nv (incoming, reg);
+	    }
+	}
+#endif
+
+      ENTRY_VALUE_EXP (rtl) = incoming;
+      return rtl;
+    }
+
+  if (incoming
+      && GET_MODE (incoming) != BLKmode
+      && !TREE_ADDRESSABLE (decl)
+      && MEM_P (incoming)
+      && (XEXP (incoming, 0) == virtual_incoming_args_rtx
+	  || (GET_CODE (XEXP (incoming, 0)) == PLUS
+	      && XEXP (XEXP (incoming, 0), 0) == virtual_incoming_args_rtx
+	      && CONST_INT_P (XEXP (XEXP (incoming, 0), 1)))))
+    return incoming;
+
+  return NULL_RTX;
+}
+
+/* Return an RTX equivalent to the value of the tree expression EXP.  */
 
 static rtx
 expand_debug_expr (tree exp)
@@ -2558,7 +2610,7 @@ expand_debug_expr (tree exp)
 	      op0 = simplify_gen_unary (FIX, mode, op0, inner_mode);
 	  }
 	else if (CONSTANT_P (op0)
-		 || GET_MODE_BITSIZE (mode) <= GET_MODE_BITSIZE (inner_mode))
+		 || GET_MODE_PRECISION (mode) <= GET_MODE_PRECISION (inner_mode))
 	  op0 = simplify_gen_subreg (mode, op0, inner_mode,
 				     subreg_lowpart_offset (mode,
 							    inner_mode));
@@ -3169,36 +3221,12 @@ expand_debug_expr (tree exp)
 		if (SSA_NAME_IS_DEFAULT_DEF (exp)
 		    && TREE_CODE (SSA_NAME_VAR (exp)) == PARM_DECL)
 		  {
-		    rtx incoming = DECL_INCOMING_RTL (SSA_NAME_VAR (exp));
-		    if (incoming
-			&& GET_MODE (incoming) != BLKmode
-			&& ((REG_P (incoming) && HARD_REGISTER_P (incoming))
-			    || (MEM_P (incoming)
-				&& REG_P (XEXP (incoming, 0))
-				&& HARD_REGISTER_P (XEXP (incoming, 0)))))
-		      {
-			op0 = gen_rtx_ENTRY_VALUE (GET_MODE (incoming));
-			ENTRY_VALUE_EXP (op0) = incoming;
-			goto adjust_mode;
-		      }
-		    if (incoming
-			&& MEM_P (incoming)
-			&& !TREE_ADDRESSABLE (SSA_NAME_VAR (exp))
-			&& GET_MODE (incoming) != BLKmode
-			&& (XEXP (incoming, 0) == virtual_incoming_args_rtx
-			    || (GET_CODE (XEXP (incoming, 0)) == PLUS
-				&& XEXP (XEXP (incoming, 0), 0)
-				   == virtual_incoming_args_rtx
-				&& CONST_INT_P (XEXP (XEXP (incoming, 0),
-						      1)))))
-		      {
-			op0 = incoming;
-			goto adjust_mode;
-		      }
+		    op0 = expand_debug_parm_decl (SSA_NAME_VAR (exp));
+		    if (op0)
+		      goto adjust_mode;
 		    op0 = expand_debug_expr (SSA_NAME_VAR (exp));
-		    if (!op0)
-		      return NULL;
-		    goto adjust_mode;
+		    if (op0)
+		      goto adjust_mode;
 		  }
 		return NULL;
 	      }
@@ -3327,36 +3355,14 @@ expand_debug_source_expr (tree exp)
     {
     case PARM_DECL:
       {
-	rtx incoming = DECL_INCOMING_RTL (exp);
 	mode = DECL_MODE (exp);
-	if (incoming
-	    && GET_MODE (incoming) != BLKmode
-	    && ((REG_P (incoming) && HARD_REGISTER_P (incoming))
-		|| (MEM_P (incoming)
-		    && REG_P (XEXP (incoming, 0))
-		    && HARD_REGISTER_P (XEXP (incoming, 0)))))
-	  {
-	    op0 = gen_rtx_ENTRY_VALUE (GET_MODE (incoming));
-	    ENTRY_VALUE_EXP (op0) = incoming;
-	    break;
-	  }
-	if (incoming
-	    && MEM_P (incoming)
-	    && !TREE_ADDRESSABLE (exp)
-	    && GET_MODE (incoming) != BLKmode
-	    && (XEXP (incoming, 0) == virtual_incoming_args_rtx
-		|| (GET_CODE (XEXP (incoming, 0)) == PLUS
-		    && XEXP (XEXP (incoming, 0), 0)
-		       == virtual_incoming_args_rtx
-		    && CONST_INT_P (XEXP (XEXP (incoming, 0), 1)))))
-	  {
-	    op0 = incoming;
-	    break;
-	  }
+	op0 = expand_debug_parm_decl (exp);
+	if (op0)
+	   break;
 	/* See if this isn't an argument that has been completely
 	   optimized out.  */
 	if (!DECL_RTL_SET_P (exp)
-	    && incoming == NULL_RTX
+	    && !DECL_INCOMING_RTL (exp)
 	    && DECL_ABSTRACT_ORIGIN (current_function_decl))
 	  {
 	    tree aexp = exp;

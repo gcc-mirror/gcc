@@ -137,22 +137,25 @@ package body Snames is
    function Get_Convention_Id (N : Name_Id) return Convention_Id is
    begin
       case N is
-         when Name_Ada        => return Convention_Ada;
-         when Name_Assembler  => return Convention_Assembler;
-         when Name_C          => return Convention_C;
-         when Name_CIL        => return Convention_CIL;
-         when Name_COBOL      => return Convention_COBOL;
-         when Name_CPP        => return Convention_CPP;
-         when Name_Fortran    => return Convention_Fortran;
-         when Name_Intrinsic  => return Convention_Intrinsic;
-         when Name_Java       => return Convention_Java;
-         when Name_Stdcall    => return Convention_Stdcall;
-         when Name_Stubbed    => return Convention_Stubbed;
+         when Name_Ada                   => return Convention_Ada;
+         when Name_Ada_Pass_By_Copy      => return Convention_Ada_Pass_By_Copy;
+         when Name_Ada_Pass_By_Reference =>
+            return Convention_Ada_Pass_By_Reference;
+         when Name_Assembler             => return Convention_Assembler;
+         when Name_C                     => return Convention_C;
+         when Name_CIL                   => return Convention_CIL;
+         when Name_COBOL                 => return Convention_COBOL;
+         when Name_CPP                   => return Convention_CPP;
+         when Name_Fortran               => return Convention_Fortran;
+         when Name_Intrinsic             => return Convention_Intrinsic;
+         when Name_Java                  => return Convention_Java;
+         when Name_Stdcall               => return Convention_Stdcall;
+         when Name_Stubbed               => return Convention_Stubbed;
 
          --  If no direct match, then we must have a convention
          --  identifier pragma that has specified this name.
 
-         when others          =>
+         when others                     =>
             for J in 1 .. Convention_Identifiers.Last loop
                if N = Convention_Identifiers.Table (J).Name then
                   return Convention_Identifiers.Table (J).Convention;
@@ -170,19 +173,22 @@ package body Snames is
    function Get_Convention_Name (C : Convention_Id) return Name_Id is
    begin
       case C is
-         when Convention_Ada       => return Name_Ada;
-         when Convention_Assembler => return Name_Assembler;
-         when Convention_C         => return Name_C;
-         when Convention_CIL       => return Name_CIL;
-         when Convention_COBOL     => return Name_COBOL;
-         when Convention_CPP       => return Name_CPP;
-         when Convention_Entry     => return Name_Entry;
-         when Convention_Fortran   => return Name_Fortran;
-         when Convention_Intrinsic => return Name_Intrinsic;
-         when Convention_Java      => return Name_Java;
-         when Convention_Protected => return Name_Protected;
-         when Convention_Stdcall   => return Name_Stdcall;
-         when Convention_Stubbed   => return Name_Stubbed;
+         when Convention_Ada                   => return Name_Ada;
+         when Convention_Ada_Pass_By_Copy      => return Name_Ada_Pass_By_Copy;
+         when Convention_Ada_Pass_By_Reference =>
+            return Name_Ada_Pass_By_Reference;
+         when Convention_Assembler             => return Name_Assembler;
+         when Convention_C                     => return Name_C;
+         when Convention_CIL                   => return Name_CIL;
+         when Convention_COBOL                 => return Name_COBOL;
+         when Convention_CPP                   => return Name_CPP;
+         when Convention_Entry                 => return Name_Entry;
+         when Convention_Fortran               => return Name_Fortran;
+         when Convention_Intrinsic             => return Name_Intrinsic;
+         when Convention_Java                  => return Name_Java;
+         when Convention_Protected             => return Name_Protected;
+         when Convention_Stdcall               => return Name_Stdcall;
+         when Convention_Stubbed               => return Name_Stubbed;
       end case;
    end Get_Convention_Name;
 

@@ -97,6 +97,8 @@ reshape_16 (gfc_array_i16 * const restrict ret,
 
   if (ret->data == NULL)
     {
+      index_type alloc_size;
+
       rs = 1;
       for (n = 0; n < rdim; n++)
 	{
@@ -107,7 +109,13 @@ reshape_16 (gfc_array_i16 * const restrict ret,
 	  rs *= rex;
 	}
       ret->offset = 0;
-      ret->data = internal_malloc_size ( rs * sizeof (GFC_INTEGER_16));
+
+      if (unlikely (rs < 1))
+        alloc_size = 1;
+      else
+        alloc_size = rs * sizeof (GFC_INTEGER_16);
+
+      ret->data = internal_malloc_size (alloc_size);
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }
 

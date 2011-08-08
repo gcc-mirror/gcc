@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -303,6 +303,42 @@ package body Ada.Tags is
       return This - Offset_To_Top (This);
    end Base_Address;
 
+   ---------------
+   -- Check_TSD --
+   ---------------
+
+   procedure Check_TSD (TSD : Type_Specific_Data_Ptr) is
+      T : Tag;
+
+      E_Tag_Len : constant Integer := Length (TSD.External_Tag);
+      E_Tag     : String (1 .. E_Tag_Len);
+      for E_Tag'Address use TSD.External_Tag.all'Address;
+      pragma Import (Ada, E_Tag);
+
+      Dup_Ext_Tag : constant String := "duplicated external tag """;
+
+   begin
+      --  Verify that the external tag of this TSD is not registered in the
+      --  runtime hash table.
+
+      T := External_Tag_HTable.Get (To_Address (TSD.External_Tag));
+
+      if T /= null then
+
+         --  Avoid concatenation, as it is not allowed in no run time mode
+
+         declare
+            Msg : String (1 .. Dup_Ext_Tag'Length + E_Tag_Len + 1);
+         begin
+            Msg (1 .. Dup_Ext_Tag'Length) := Dup_Ext_Tag;
+            Msg (Dup_Ext_Tag'Length + 1 .. Dup_Ext_Tag'Length + E_Tag_Len) :=
+              E_Tag;
+            Msg (Msg'Last) := '"';
+            raise Program_Error with Msg;
+         end;
+      end if;
+   end Check_TSD;
+
    --------------------
    -- Descendant_Tag --
    --------------------
@@ -511,19 +547,6 @@ package body Ada.Tags is
       end if;
    end Get_Offset_Index;
 
-   -------------------
-   -- Get_RC_Offset --
-   -------------------
-
-   function Get_RC_Offset (T : Tag) return SSE.Storage_Offset is
-      TSD_Ptr : constant Addr_Ptr :=
-                  To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
-      TSD     : constant Type_Specific_Data_Ptr :=
-                  To_Type_Specific_Data_Ptr (TSD_Ptr.all);
-   begin
-      return TSD.RC_Offset;
-   end Get_RC_Offset;
-
    ---------------------
    -- Get_Tagged_Kind --
    ---------------------
@@ -713,6 +736,8 @@ package body Ada.Tags is
    -- Length --
    ------------
 
+   --  Should this be reimplemented using the strlen GCC builtin???
+
    function Length (Str : Cstring_Ptr) return Natural is
       Len : Integer;
 
@@ -750,6 +775,19 @@ package body Ada.Tags is
          return Curr_DT.Offset_To_Top;
       end if;
    end Offset_To_Top;
+
+   ------------------------
+   -- Needs_Finalization --
+   ------------------------
+
+   function Needs_Finalization (T : Tag) return Boolean is
+      TSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+      TSD     : constant Type_Specific_Data_Ptr :=
+                  To_Type_Specific_Data_Ptr (TSD_Ptr.all);
+   begin
+      return TSD.Needs_Finalization;
+   end Needs_Finalization;
 
    -----------------
    -- Parent_Size --
@@ -966,6 +1004,15 @@ package body Ada.Tags is
       TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
       return TSD.Type_Is_Abstract;
    end Type_Is_Abstract;
+
+   --------------------
+   -- Unregister_Tag --
+   --------------------
+
+   procedure Unregister_Tag (T : Tag) is
+   begin
+      External_Tag_HTable.Remove (Get_External_Tag (T));
+   end Unregister_Tag;
 
    ------------------------
    -- Wide_Expanded_Name --

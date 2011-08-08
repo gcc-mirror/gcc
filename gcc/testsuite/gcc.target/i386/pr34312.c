@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -march=pentium-m -fpic" } */
 

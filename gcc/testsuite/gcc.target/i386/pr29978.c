@@ -13,4 +13,4 @@ f (long long v)
 }
 
 /* Verify there are no redundant jumps jl .L2; jle .L2 */
-/* { dg-final { scan-assembler-not "jl\[^e\]*\\.L" { target ilp32 } } } */
+/* { dg-final { scan-assembler-not "jl\[^e\]*\\.L" { target ia32 } } } */

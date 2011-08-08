@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,6 @@
 with Debug;  use Debug;
 with Osint;  use Osint;
 with Opt;    use Opt;
-with Output; use Output;
 
 with System.WCh_Con; use System.WCh_Con;
 
@@ -165,14 +164,6 @@ package body Switch.B is
          when 'c' =>
             Ptr := Ptr + 1;
             Check_Only := True;
-
-         --  Processing for C switch
-
-         when 'C' =>
-            Ptr := Ptr + 1;
-            Ada_Bind_File := False;
-
-            Write_Line ("warning: gnatbind switch -C is obsolescent");
 
          --  Processing for d switch
 
@@ -363,6 +354,12 @@ package body Switch.B is
          when 'p' =>
             Ptr := Ptr + 1;
             Pessimistic_Elab_Order := True;
+
+         --  Processing for P switch
+
+         when 'P' =>
+            Ptr := Ptr + 1;
+            CodePeer_Mode := True;
 
          --  Processing for q switch
 

@@ -1,8 +1,8 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
 	 xml:id="manual.ext.allocator.bitmap" xreflabel="bitmap_allocator">
 <?dbhtml filename="bitmap_allocator.html"?>
 
-<info><title>bitmap_allocator</title>
+<info><title>The bitmap_allocator</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -558,4 +558,4 @@ equivalent.</para></listitem>
 
 </section>
 
-</section>
+</chapter>

@@ -1,5 +1,4 @@
-/* { dg-do link } */
-/* { dg-require-effective-target lp64 } */
+/* { dg-do link { target { ! { ia32 } } } } */
 /* { dg-options "-O2 -mbmi" } */
 
 #include <x86intrin.h>

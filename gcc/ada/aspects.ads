@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2010, Free Software Foundation, Inc.            --
+--         Copyright (C) 2010-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,9 @@
 --  aspect specifications from the tree. The semantic processing for aspect
 --  specifications is found in Sem_Ch13.Analyze_Aspect_Specifications.
 
-with Namet; use Namet;
-with Types; use Types;
+with Namet;  use Namet;
+with Snames; use Snames;
+with Types;  use Types;
 
 package Aspects is
 
@@ -43,51 +44,86 @@ package Aspects is
 
    type Aspect_Id is
      (No_Aspect,                            -- Dummy entry for no aspect
-      Aspect_Ada_2005,                      -- GNAT
-      Aspect_Ada_2012,                      -- GNAT
       Aspect_Address,
       Aspect_Alignment,
-      Aspect_Atomic,
-      Aspect_Atomic_Components,
       Aspect_Bit_Order,
       Aspect_Component_Size,
-      Aspect_Discard_Names,
+      Aspect_Constant_Indexing,
+      Aspect_Default_Component_Value,
+      Aspect_Default_Iterator,
+      Aspect_Default_Value,
+      Aspect_Dynamic_Predicate,
       Aspect_External_Tag,
-      Aspect_Favor_Top_Level,               -- GNAT
-      Aspect_Inline,
-      Aspect_Inline_Always,                 -- GNAT
+      Aspect_Implicit_Dereference,
       Aspect_Input,
       Aspect_Invariant,
+      Aspect_Iterator_Element,
       Aspect_Machine_Radix,
-      Aspect_No_Return,
       Aspect_Object_Size,                   -- GNAT
       Aspect_Output,
-      Aspect_Pack,
-      Aspect_Persistent_BSS,                -- GNAT
       Aspect_Post,
+      Aspect_Postcondition,
       Aspect_Pre,
-      Aspect_Predicate,                     -- GNAT???
-      Aspect_Preelaborable_Initialization,
-      Aspect_Pure_Function,                 -- GNAT
+      Aspect_Precondition,
+      Aspect_Predicate,                     -- GNAT
       Aspect_Read,
-      Aspect_Shared,                        -- GNAT (equivalent to Atomic)
       Aspect_Size,
+      Aspect_Static_Predicate,
       Aspect_Storage_Pool,
       Aspect_Storage_Size,
       Aspect_Stream_Size,
       Aspect_Suppress,
+      Aspect_Test_Case,                     -- GNAT
+      Aspect_Type_Invariant,
+      Aspect_Unsuppress,
+      Aspect_Value_Size,                    -- GNAT
+      Aspect_Variable_Indexing,
+      Aspect_Warnings,
+      Aspect_Write,
+
+      --  The following aspects correspond to library unit pragmas
+
+      Aspect_All_Calls_Remote,
+      Aspect_Compiler_Unit,                 -- GNAT
+      Aspect_Elaborate_Body,
+      Aspect_Preelaborate,
+      Aspect_Preelaborate_05,               -- GNAT
+      Aspect_Pure,
+      Aspect_Pure_05,                       -- GNAT
+      Aspect_Remote_Call_Interface,
+      Aspect_Remote_Types,
+      Aspect_Shared_Passive,
+      Aspect_Universal_Data,                -- GNAT
+
+      --  Remaining aspects have a static boolean value that turns the aspect
+      --  on or off. They all correspond to pragmas, but are only converted to
+      --  the pragmas where the value is True. A value of False normally means
+      --  that the aspect is ignored, except in the case of derived types where
+      --  the aspect value is inherited from the parent, in which case, we do
+      --  not allow False if we inherit a True value from the parent.
+
+      Aspect_Ada_2005,                      -- GNAT
+      Aspect_Ada_2012,                      -- GNAT
+      Aspect_Atomic,
+      Aspect_Atomic_Components,
+      Aspect_Discard_Names,
+      Aspect_Favor_Top_Level,               -- GNAT
+      Aspect_Inline,
+      Aspect_Inline_Always,                 -- GNAT
+      Aspect_No_Return,
+      Aspect_Pack,
+      Aspect_Persistent_BSS,                -- GNAT
+      Aspect_Preelaborable_Initialization,
+      Aspect_Pure_Function,                 -- GNAT
+      Aspect_Shared,                        -- GNAT (equivalent to Atomic)
       Aspect_Suppress_Debug_Info,           -- GNAT
       Aspect_Unchecked_Union,
       Aspect_Universal_Aliasing,            -- GNAT
       Aspect_Unmodified,                    -- GNAT
       Aspect_Unreferenced,                  -- GNAT
       Aspect_Unreferenced_Objects,          -- GNAT
-      Aspect_Unsuppress,
-      Aspect_Value_Size,                    -- GNAT
       Aspect_Volatile,
-      Aspect_Volatile_Components,
-      Aspect_Warnings,
-      Aspect_Write);                        -- GNAT
+      Aspect_Volatile_Components);
 
    --  The following array indicates aspects that accept 'Class
 
@@ -97,6 +133,34 @@ package Aspects is
                         Aspect_Predicate     => True,
                         Aspect_Post          => True,
                         others               => False);
+
+   --  The following array indicates aspects for which multiple occurrences of
+   --  the same aspect attached to the same declaration are allowed.
+
+   No_Duplicates_Allowed : constant array (Aspect_Id) of Boolean :=
+                             (Aspect_Test_Case => False,
+                              others           => True);
+
+   --  The following subtype defines aspects corresponding to library unit
+   --  pragmas, these can only validly appear as aspects for library units,
+   --  and result in a corresponding pragma being inserted immediately after
+   --  the occurrence of the aspect.
+
+   subtype Library_Unit_Aspects is
+     Aspect_Id range Aspect_All_Calls_Remote .. Aspect_Universal_Data;
+
+   --  The following subtype defines aspects accepting an optional static
+   --  boolean parameter indicating if the aspect should be active or
+   --  cancelling. If the parameter is missing the effective value is True,
+   --  enabling the aspect. If the parameter is present it must be a static
+   --  expression of type Standard.Boolean. If the value is True, then the
+   --  aspect is enabled. If it is False, the aspect is disabled.
+
+   subtype Boolean_Aspects is
+     Aspect_Id range Aspect_Ada_2005 .. Aspect_Id'Last;
+
+   subtype Pre_Post_Aspects is
+     Aspect_Id range Aspect_Post .. Aspect_Precondition;
 
    --  The following type is used for indicating allowed expression forms
 
@@ -108,52 +172,124 @@ package Aspects is
    --  The following array indicates what argument type is required
 
    Aspect_Argument : constant array (Aspect_Id) of Aspect_Expression :=
-                       (No_Aspect                           => Optional,
-                        Aspect_Ada_2005                     => Optional,
-                        Aspect_Ada_2012                     => Optional,
-                        Aspect_Address                      => Expression,
-                        Aspect_Alignment                    => Expression,
-                        Aspect_Atomic                       => Optional,
-                        Aspect_Atomic_Components            => Optional,
-                        Aspect_Bit_Order                    => Expression,
-                        Aspect_Component_Size               => Expression,
-                        Aspect_Discard_Names                => Optional,
-                        Aspect_External_Tag                 => Expression,
-                        Aspect_Favor_Top_Level              => Optional,
-                        Aspect_Inline                       => Optional,
-                        Aspect_Inline_Always                => Optional,
-                        Aspect_Input                        => Name,
-                        Aspect_Invariant                    => Expression,
-                        Aspect_Machine_Radix                => Expression,
-                        Aspect_No_Return                    => Optional,
-                        Aspect_Object_Size                  => Expression,
-                        Aspect_Output                       => Name,
-                        Aspect_Persistent_BSS               => Optional,
-                        Aspect_Pack                         => Optional,
-                        Aspect_Post                         => Expression,
-                        Aspect_Pre                          => Expression,
-                        Aspect_Predicate                    => Expression,
-                        Aspect_Preelaborable_Initialization => Optional,
-                        Aspect_Pure_Function                => Optional,
-                        Aspect_Read                         => Name,
-                        Aspect_Shared                       => Optional,
-                        Aspect_Size                         => Expression,
-                        Aspect_Storage_Pool                 => Name,
-                        Aspect_Storage_Size                 => Expression,
-                        Aspect_Stream_Size                  => Expression,
-                        Aspect_Suppress                     => Name,
-                        Aspect_Suppress_Debug_Info          => Optional,
-                        Aspect_Unchecked_Union              => Optional,
-                        Aspect_Universal_Aliasing           => Optional,
-                        Aspect_Unmodified                   => Optional,
-                        Aspect_Unreferenced                 => Optional,
-                        Aspect_Unreferenced_Objects         => Optional,
-                        Aspect_Unsuppress                   => Name,
-                        Aspect_Value_Size                   => Expression,
-                        Aspect_Volatile                     => Optional,
-                        Aspect_Volatile_Components          => Optional,
-                        Aspect_Warnings                     => Name,
-                        Aspect_Write                        => Name);
+                       (No_Aspect                      => Optional,
+                        Aspect_Address                 => Expression,
+                        Aspect_Alignment               => Expression,
+                        Aspect_Bit_Order               => Expression,
+                        Aspect_Component_Size          => Expression,
+                        Aspect_Constant_Indexing       => Name,
+                        Aspect_Default_Component_Value => Expression,
+                        Aspect_Default_Iterator        => Name,
+                        Aspect_Default_Value           => Expression,
+                        Aspect_Dynamic_Predicate       => Expression,
+                        Aspect_External_Tag            => Expression,
+                        Aspect_Implicit_Dereference    => Name,
+                        Aspect_Input                   => Name,
+                        Aspect_Invariant               => Expression,
+                        Aspect_Iterator_Element        => Name,
+                        Aspect_Machine_Radix           => Expression,
+                        Aspect_Object_Size             => Expression,
+                        Aspect_Output                  => Name,
+                        Aspect_Post                    => Expression,
+                        Aspect_Postcondition           => Expression,
+                        Aspect_Pre                     => Expression,
+                        Aspect_Precondition            => Expression,
+                        Aspect_Predicate               => Expression,
+                        Aspect_Read                    => Name,
+                        Aspect_Size                    => Expression,
+                        Aspect_Static_Predicate        => Expression,
+                        Aspect_Storage_Pool            => Name,
+                        Aspect_Storage_Size            => Expression,
+                        Aspect_Stream_Size             => Expression,
+                        Aspect_Suppress                => Name,
+                        Aspect_Test_Case               => Expression,
+                        Aspect_Type_Invariant          => Expression,
+                        Aspect_Unsuppress              => Name,
+                        Aspect_Value_Size              => Expression,
+                        Aspect_Variable_Indexing       => Name,
+                        Aspect_Warnings                => Name,
+                        Aspect_Write                   => Name,
+
+                        Library_Unit_Aspects           => Optional,
+                        Boolean_Aspects                => Optional);
+
+   -----------------------------------------
+   -- Table Linking Names and Aspect_Id's --
+   -----------------------------------------
+
+   --  Table linking aspect names and id's
+
+   Aspect_Names : constant array (Aspect_Id) of Name_Id := (
+     No_Aspect                           => No_Name,
+     Aspect_Ada_2005                     => Name_Ada_2005,
+     Aspect_Ada_2012                     => Name_Ada_2012,
+     Aspect_Address                      => Name_Address,
+     Aspect_Alignment                    => Name_Alignment,
+     Aspect_All_Calls_Remote             => Name_All_Calls_Remote,
+     Aspect_Atomic                       => Name_Atomic,
+     Aspect_Atomic_Components            => Name_Atomic_Components,
+     Aspect_Bit_Order                    => Name_Bit_Order,
+     Aspect_Compiler_Unit                => Name_Compiler_Unit,
+     Aspect_Component_Size               => Name_Component_Size,
+     Aspect_Constant_Indexing            => Name_Constant_Indexing,
+     Aspect_Default_Iterator             => Name_Default_Iterator,
+     Aspect_Default_Value                => Name_Default_Value,
+     Aspect_Default_Component_Value      => Name_Default_Component_Value,
+     Aspect_Discard_Names                => Name_Discard_Names,
+     Aspect_Dynamic_Predicate            => Name_Dynamic_Predicate,
+     Aspect_Elaborate_Body               => Name_Elaborate_Body,
+     Aspect_External_Tag                 => Name_External_Tag,
+     Aspect_Favor_Top_Level              => Name_Favor_Top_Level,
+     Aspect_Implicit_Dereference         => Name_Implicit_Dereference,
+     Aspect_Inline                       => Name_Inline,
+     Aspect_Inline_Always                => Name_Inline_Always,
+     Aspect_Input                        => Name_Input,
+     Aspect_Invariant                    => Name_Invariant,
+     Aspect_Iterator_Element             => Name_Iterator_Element,
+     Aspect_Machine_Radix                => Name_Machine_Radix,
+     Aspect_No_Return                    => Name_No_Return,
+     Aspect_Object_Size                  => Name_Object_Size,
+     Aspect_Output                       => Name_Output,
+     Aspect_Pack                         => Name_Pack,
+     Aspect_Persistent_BSS               => Name_Persistent_BSS,
+     Aspect_Post                         => Name_Post,
+     Aspect_Postcondition                => Name_Postcondition,
+     Aspect_Pre                          => Name_Pre,
+     Aspect_Precondition                 => Name_Precondition,
+     Aspect_Predicate                    => Name_Predicate,
+     Aspect_Preelaborable_Initialization => Name_Preelaborable_Initialization,
+     Aspect_Preelaborate                 => Name_Preelaborate,
+     Aspect_Preelaborate_05              => Name_Preelaborate_05,
+     Aspect_Pure                         => Name_Pure,
+     Aspect_Pure_05                      => Name_Pure_05,
+     Aspect_Pure_Function                => Name_Pure_Function,
+     Aspect_Read                         => Name_Read,
+     Aspect_Remote_Call_Interface        => Name_Remote_Call_Interface,
+     Aspect_Remote_Types                 => Name_Remote_Types,
+     Aspect_Shared                       => Name_Shared,
+     Aspect_Shared_Passive               => Name_Shared_Passive,
+     Aspect_Size                         => Name_Size,
+     Aspect_Static_Predicate             => Name_Static_Predicate,
+     Aspect_Storage_Pool                 => Name_Storage_Pool,
+     Aspect_Storage_Size                 => Name_Storage_Size,
+     Aspect_Stream_Size                  => Name_Stream_Size,
+     Aspect_Suppress                     => Name_Suppress,
+     Aspect_Suppress_Debug_Info          => Name_Suppress_Debug_Info,
+     Aspect_Test_Case                    => Name_Test_Case,
+     Aspect_Type_Invariant               => Name_Type_Invariant,
+     Aspect_Unchecked_Union              => Name_Unchecked_Union,
+     Aspect_Universal_Aliasing           => Name_Universal_Aliasing,
+     Aspect_Universal_Data               => Name_Universal_Data,
+     Aspect_Unmodified                   => Name_Unmodified,
+     Aspect_Unreferenced                 => Name_Unreferenced,
+     Aspect_Unreferenced_Objects         => Name_Unreferenced_Objects,
+     Aspect_Unsuppress                   => Name_Unsuppress,
+     Aspect_Value_Size                   => Name_Value_Size,
+     Aspect_Variable_Indexing            => Name_Variable_Indexing,
+     Aspect_Volatile                     => Name_Volatile,
+     Aspect_Volatile_Components          => Name_Volatile_Components,
+     Aspect_Warnings                     => Name_Warnings,
+     Aspect_Write                        => Name_Write);
 
    function Get_Aspect_Id (Name : Name_Id) return Aspect_Id;
    pragma Inline (Get_Aspect_Id);
@@ -208,6 +344,11 @@ package Aspects is
    --  False on entry. If Has_Aspects (From) is False, the call has no effect.
    --  Otherwise the aspects are moved and on return Has_Aspects (To) is True,
    --  and Has_Aspects (From) is False.
+
+   function Same_Aspect (A1 : Aspect_Id; A2 : Aspect_Id) return Boolean;
+   --  Returns True if A1 and A2 are (essentially) the same aspect. This is not
+   --  a simple equality test because e.g. Post and Postcondition are the same.
+   --  This is used for detecting duplicate aspects.
 
    procedure Tree_Write;
    --  Writes contents of Aspect_Specifications hash table to the tree file

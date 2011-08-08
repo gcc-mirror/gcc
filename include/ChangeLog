@@ -1,3 +1,44 @@
+2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* xregex.h (regoff_t): Define.
+
+2011-07-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (DW_AT_GNU_macros): New.
+	(enum dwarf_macro_record_type): New enum.  Add DW_MACRO_GNU_*.
+
+	PR c++/49756
+	* libiberty.h (stack_limit_increase): New prototype.
+
+2011-07-13  Sriraman Tallam  <tmsriram@google.com>
+	
+	* plugin-api.h
+	(ld_plugin_section): New struct.
+	(ld_plugin_get_section_count): New typedef.
+	(ld_plugin_get_section_type): New typedef.
+	(ld_plugin_get_section_name): New typedef.
+	(ld_plugin_get_section_contents): New typedef.
+	(ld_plugin_update_section_order): New typedef.
+	(ld_plugin_allow_section_ordering): New typedef.
+	(LDPT_GET_SECTION_COUNT): New enum value.
+	(LDPT_GET_SECTION_TYPE): New enum value.
+	(LDPT_GET_SECTION_NAME): New enum value.
+	(LDPT_GET_SECTION_CONTENTS): New enum value.
+	(LDPT_UPDATE_SECTION_ORDER): New enum value.
+	(LDPT_ALLOW_SECTION_ORDERING): New enum value.
+	(tv_get_section_count): New struct members.
+	(tv_get_section_type): New struct members.
+	(tv_get_section_name): New struct members.
+	(tv_get_section_contents): New struct members.
+	(tv_update_section_order): New struct members.
+	(tv_allow_section_ordering): New struct members.
+
+2011-07-01  Joel Brobecker  <brobecker@adacore.com>
+
+	* filenames.h (HAVE_CASE_INSENSITIVE_FILE_SYSTEM): Define
+	on Darwin, as well as on the systems that use a DOS-like
+	filesystem.
+
 2011-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/47858

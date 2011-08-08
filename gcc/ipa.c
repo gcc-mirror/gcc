@@ -865,31 +865,14 @@ function_and_variable_visibility (bool whole_program)
 	  decl_node = cgraph_function_node (decl_node->callees->callee, NULL);
 
 	  /* Thunks have the same visibility as function they are attached to.
-	     For some reason C++ frontend don't seem to care. I.e. in 
-	     g++.dg/torture/pr41257-2.C the thunk is not comdat while function
-	     it is attached to is.
-
-	     We also need to arrange the thunk into the same comdat group as
-	     the function it reffers to.  */
+	     Make sure the C++ front end set this up properly.  */
 	  if (DECL_ONE_ONLY (decl_node->decl))
 	    {
-	      DECL_COMDAT (node->decl) = DECL_COMDAT (decl_node->decl);
-	      DECL_COMDAT_GROUP (node->decl) = DECL_COMDAT_GROUP (decl_node->decl);
-	      if (DECL_ONE_ONLY (decl_node->decl) && !node->same_comdat_group)
-		{
-		  node->same_comdat_group = decl_node;
-		  if (!decl_node->same_comdat_group)
-		    decl_node->same_comdat_group = node;
-		  else
-		    {
-		      struct cgraph_node *n;
-		      for (n = decl_node->same_comdat_group;
-			   n->same_comdat_group != decl_node;
-			   n = n->same_comdat_group)
-			;
-		      n->same_comdat_group = node;
-		    }
-		}
+	      gcc_checking_assert (DECL_COMDAT (node->decl)
+				   == DECL_COMDAT (decl_node->decl));
+	      gcc_checking_assert (DECL_COMDAT_GROUP (node->decl)
+				   == DECL_COMDAT_GROUP (decl_node->decl));
+	      gcc_checking_assert (node->same_comdat_group);
 	    }
 	  if (DECL_EXTERNAL (decl_node->decl))
 	    DECL_EXTERNAL (node->decl) = 1;

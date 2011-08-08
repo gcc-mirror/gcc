@@ -29,5 +29,5 @@ program C
   A_var = initA()
 end program C
 
-! { dg-final { cleanup-modules "A B" } }
+! { dg-final { cleanup-modules "a b" } }
 

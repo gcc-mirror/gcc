@@ -8,5 +8,5 @@ enum COLOR
 {
     red,
     green = ULONG_MAX,
-    blue		     // { dg-error "too large for .unsigned long" }
+    blue		     // { dg-error "too large for .unsigned long|overflow" }
 };

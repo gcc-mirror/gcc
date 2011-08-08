@@ -1,6 +1,6 @@
 /* Verify that X86-64 only SSE registers aren't restored on IA-32.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2 -msse" } */
 /* { dg-final { scan-assembler-not "xmm8" } } */
 

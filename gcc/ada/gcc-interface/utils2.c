@@ -721,11 +721,6 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 unneeded sign conversions when sizetype is wider than integer.  */
       right_operand = convert (right_base_type, right_operand);
       right_operand = convert (sizetype, right_operand);
-
-      if (!TREE_CONSTANT (right_operand)
-	  || !TREE_CONSTANT (TYPE_MIN_VALUE (right_type)))
-	gnat_mark_addressable (left_operand);
-
       modulus = NULL_TREE;
       break;
 
@@ -1406,43 +1401,6 @@ build_compound_expr (tree result_type, tree stmt_operand, tree expr_operand)
     result = build_unary_op (INDIRECT_REF, NULL_TREE, result);
 
   return result;
-}
-/* Similar, but for RETURN_EXPR.  If RET_VAL is non-null, build a RETURN_EXPR
-   around the assignment of RET_VAL to RET_OBJ.  Otherwise just build a bare
-   RETURN_EXPR around RESULT_OBJ, which may be null in this case.  */
-
-tree
-build_return_expr (tree ret_obj, tree ret_val)
-{
-  tree result_expr;
-
-  if (ret_val)
-    {
-      /* The gimplifier explicitly enforces the following invariant:
-
-	      RETURN_EXPR
-		  |
-	      MODIFY_EXPR
-	      /        \
-	     /          \
-	 RET_OBJ        ...
-
-	 As a consequence, type consistency dictates that we use the type
-	 of the RET_OBJ as the operation type.  */
-      tree operation_type = TREE_TYPE (ret_obj);
-
-      /* Convert the right operand to the operation type.  Note that it's the
-	 same transformation as in the MODIFY_EXPR case of build_binary_op,
-	 with the assumption that the type cannot involve a placeholder.  */
-      if (operation_type != TREE_TYPE (ret_val))
-	ret_val = convert (operation_type, ret_val);
-
-      result_expr = build2 (MODIFY_EXPR, operation_type, ret_obj, ret_val);
-    }
-  else
-    result_expr = ret_obj;
-
-  return build1 (RETURN_EXPR, void_type_node, result_expr);
 }
 
 /* Build a CALL_EXPR to call FUNDECL with one argument, ARG.  Return

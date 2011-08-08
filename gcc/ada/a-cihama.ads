@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -285,11 +285,9 @@ private
    use Ada.Finalization;
    use Ada.Streams;
 
-   overriding
-   procedure Adjust (Container : in out Map);
+   overriding procedure Adjust (Container : in out Map);
 
-   overriding
-   procedure Finalize (Container : in out Map);
+   overriding procedure Finalize (Container : in out Map);
 
    type Map_Access is access constant Map;
    for Map_Access'Storage_Size use 0;

@@ -43,6 +43,7 @@ compilation is specified by a string called a "spec".  */
 #include "diagnostic.h"
 #include "flags.h"
 #include "opts.h"
+#include "params.h"
 #include "vec.h"
 #include "filenames.h"
 
@@ -437,7 +438,6 @@ or with constant text in a single argument.
           This may be combined with '.', '!', ',', '|', and '*' as above.
 
  %(Spec) processes a specification defined in a specs file as *Spec:
- %[Spec] as above, but put __ around -D arguments
 
 The conditional text X in a %{S:X} or similar construct may contain
 other nested % constructs or spaces, or even newlines.  They are
@@ -517,7 +517,7 @@ proper position among the other output files.  */
 /* XXX: should exactly match hooks provided by libmudflap.a */
 #define MFWRAP_SPEC " %{static: %{fmudflap|fmudflapth: \
  --wrap=malloc --wrap=free --wrap=calloc --wrap=realloc\
- --wrap=mmap --wrap=munmap --wrap=alloca\
+ --wrap=mmap --wrap=mmap64 --wrap=munmap --wrap=alloca\
 } %{fmudflapth: --wrap=pthread_create\
 }} %{fmudflap|fmudflapth: --wrap=main}"
 #endif
@@ -734,6 +734,7 @@ static const char *startfile_prefix_spec = STARTFILE_PREFIX_SPEC;
 static const char *sysroot_spec = SYSROOT_SPEC;
 static const char *sysroot_suffix_spec = SYSROOT_SUFFIX_SPEC;
 static const char *sysroot_hdrs_suffix_spec = SYSROOT_HEADERS_SUFFIX_SPEC;
+static const char *self_spec = "";
 
 /* Standard options to cpp, cc1, and as, to reduce duplication in specs.
    There should be no need to override these in target dependent files,
@@ -1158,8 +1159,8 @@ static const char *multilib_dir;
 static const char *multilib_os_dir;
 
 /* Structure to keep track of the specs that have been defined so far.
-   These are accessed using %(specname) or %[specname] in a compiler
-   or link spec.  */
+   These are accessed using %(specname) in a compiler or link
+   spec.  */
 
 struct spec_list
 {
@@ -1229,6 +1230,7 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("sysroot_spec",             &sysroot_spec),
   INIT_STATIC_SPEC ("sysroot_suffix_spec",	&sysroot_suffix_spec),
   INIT_STATIC_SPEC ("sysroot_hdrs_suffix_spec",	&sysroot_hdrs_suffix_spec),
+  INIT_STATIC_SPEC ("self_spec",		&self_spec),
 };
 
 #ifdef EXTRA_SPECS		/* additional specs needed */
@@ -3546,9 +3548,13 @@ set_option_handlers (struct cl_option_handlers *handlers)
   handlers->unknown_option_callback = driver_unknown_option_callback;
   handlers->wrong_lang_callback = driver_wrong_lang_callback;
   handlers->post_handling_callback = driver_post_handling_callback;
-  handlers->num_handlers = 1;
+  handlers->num_handlers = 3;
   handlers->handlers[0].handler = driver_handle_option;
   handlers->handlers[0].mask = CL_DRIVER;
+  handlers->handlers[1].handler = common_handle_option;
+  handlers->handlers[1].mask = CL_COMMON;
+  handlers->handlers[2].handler = target_handle_option;
+  handlers->handlers[2].mask = CL_TARGET;
 }
 
 /* Create the vector `switches' and its contents.
@@ -5221,11 +5227,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 	    /* Process a string found as the value of a spec given by name.
 	       This feature allows individual machine descriptions
-	       to add and use their own specs.
-	       %[...] modifies -D options the way %P does;
-	       %(...) uses the spec unmodified.  */
-	  case '[':
-	    warning (0, "use of obsolete %%[ operator in specs");
+	       to add and use their own specs.  */
 	  case '(':
 	    {
 	      const char *name = p;
@@ -5234,7 +5236,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 	      /* The string after the S/P is the name of a spec that is to be
 		 processed.  */
-	      while (*p && *p != ')' && *p != ']')
+	      while (*p && *p != ')')
 		p++;
 
 	      /* See if it's in the list.  */
@@ -5243,63 +5245,20 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		  {
 		    name = *(sl->ptr_spec);
 #ifdef DEBUG_SPECS
-		    fnotice (stderr, "Processing spec %c%s%c, which is '%s'\n",
-			    c, sl->name, (c == '(') ? ')' : ']', name);
+		    fnotice (stderr, "Processing spec (%s), which is '%s'\n",
+			     sl->name, name);
 #endif
 		    break;
 		  }
 
 	      if (sl)
 		{
-		  if (c == '(')
-		    {
-		      value = do_spec_1 (name, 0, NULL);
-		      if (value != 0)
-			return value;
-		    }
-		  else
-		    {
-		      char *x = (char *) alloca (strlen (name) * 2 + 1);
-		      char *buf = x;
-		      const char *y = name;
-		      int flag = 0;
-
-		      /* Copy all of NAME into BUF, but put __ after
-			 every -D and at the end of each arg.  */
-		      while (1)
-			{
-			  if (! strncmp (y, "-D", 2))
-			    {
-			      *x++ = '-';
-			      *x++ = 'D';
-			      *x++ = '_';
-			      *x++ = '_';
-			      y += 2;
-			      flag = 1;
-			      continue;
-			    }
-			  else if (flag
-				   && (*y == ' ' || *y == '\t' || *y == '='
-				       || *y == '}' || *y == 0))
-			    {
-			      *x++ = '_';
-			      *x++ = '_';
-			      flag = 0;
-			    }
-			  if (*y == 0)
-			    break;
-			  else
-			    *x++ = *y++;
-			}
-		      *x = 0;
-
-		      value = do_spec_1 (buf, 0, NULL);
-		      if (value != 0)
-			return value;
-		    }
+		  value = do_spec_1 (name, 0, NULL);
+		  if (value != 0)
+		    return value;
 		}
 
-	      /* Discard the closing paren or bracket.  */
+	      /* Discard the closing paren.  */
 	      if (*p)
 		p++;
 	    }
@@ -6170,7 +6129,11 @@ main (int argc, char **argv)
   if (argv != old_argv)
     at_file_supplied = true;
 
-  global_options = global_options_init;
+  /* Register the language-independent parameters.  */
+  global_init_params ();
+  finish_params ();
+
+  init_options_struct (&global_options, &global_options_set);
 
   decode_cmdline_options_to_array (argc, CONST_CAST2 (const char **, char **,
 						      argv),
@@ -6208,6 +6171,10 @@ main (int argc, char **argv)
      receive the signal.  A different setting is inheritable */
   signal (SIGCHLD, SIG_DFL);
 #endif
+
+  /* Parsing and gimplification sometimes need quite large stack.
+     Increase stack size limits if possible.  */
+  stack_limit_increase (64 * 1024 * 1024);
 
   /* Allocate the argument vector.  */
   alloc_args ();
@@ -6309,48 +6276,6 @@ main (int argc, char **argv)
 
   for (i = 0; i < ARRAY_SIZE (driver_self_specs); i++)
     do_self_spec (driver_self_specs[i]);
-
-  if (compare_debug)
-    {
-      enum save_temps save;
-
-      if (!compare_debug_second)
-	{
-	  n_switches_debug_check[1] = n_switches;
-	  n_switches_alloc_debug_check[1] = n_switches_alloc;
-	  switches_debug_check[1] = XDUPVEC (struct switchstr, switches,
-					     n_switches_alloc);
-
-	  do_self_spec ("%:compare-debug-self-opt()");
-	  n_switches_debug_check[0] = n_switches;
-	  n_switches_alloc_debug_check[0] = n_switches_alloc;
-	  switches_debug_check[0] = switches;
-
-	  n_switches = n_switches_debug_check[1];
-	  n_switches_alloc = n_switches_alloc_debug_check[1];
-	  switches = switches_debug_check[1];
-	}
-
-      /* Avoid crash when computing %j in this early.  */
-      save = save_temps_flag;
-      save_temps_flag = SAVE_TEMPS_NONE;
-
-      compare_debug = -compare_debug;
-      do_self_spec ("%:compare-debug-self-opt()");
-
-      save_temps_flag = save;
-
-      if (!compare_debug_second)
-	{
-	  n_switches_debug_check[1] = n_switches;
-	  n_switches_alloc_debug_check[1] = n_switches_alloc;
-	  switches_debug_check[1] = switches;
-	  compare_debug = -compare_debug;
-	  n_switches = n_switches_debug_check[0];
-	  n_switches_alloc = n_switches_debug_check[0];
-	  switches = switches_debug_check[0];
-	}
-    }
 
   /* If not cross-compiling, look for executables in the standard
      places.  */
@@ -6460,6 +6385,58 @@ main (int argc, char **argv)
 				    R_OK, true);
       read_specs (filename ? filename : uptr->filename, FALSE);
     }
+
+  /* Process any user self specs.  */
+  {
+    struct spec_list *sl;
+    for (sl = specs; sl; sl = sl->next)
+      if (sl->name_len == sizeof "self_spec" - 1
+	  && !strcmp (sl->name, "self_spec"))
+	do_self_spec (*sl->ptr_spec);
+  }
+
+  if (compare_debug)
+    {
+      enum save_temps save;
+
+      if (!compare_debug_second)
+	{
+	  n_switches_debug_check[1] = n_switches;
+	  n_switches_alloc_debug_check[1] = n_switches_alloc;
+	  switches_debug_check[1] = XDUPVEC (struct switchstr, switches,
+					     n_switches_alloc);
+
+	  do_self_spec ("%:compare-debug-self-opt()");
+	  n_switches_debug_check[0] = n_switches;
+	  n_switches_alloc_debug_check[0] = n_switches_alloc;
+	  switches_debug_check[0] = switches;
+
+	  n_switches = n_switches_debug_check[1];
+	  n_switches_alloc = n_switches_alloc_debug_check[1];
+	  switches = switches_debug_check[1];
+	}
+
+      /* Avoid crash when computing %j in this early.  */
+      save = save_temps_flag;
+      save_temps_flag = SAVE_TEMPS_NONE;
+
+      compare_debug = -compare_debug;
+      do_self_spec ("%:compare-debug-self-opt()");
+
+      save_temps_flag = save;
+
+      if (!compare_debug_second)
+	{
+	  n_switches_debug_check[1] = n_switches;
+	  n_switches_alloc_debug_check[1] = n_switches_alloc;
+	  switches_debug_check[1] = switches;
+	  compare_debug = -compare_debug;
+	  n_switches = n_switches_debug_check[0];
+	  n_switches_alloc = n_switches_debug_check[0];
+	  switches = switches_debug_check[0];
+	}
+    }
+
 
   /* If we have a GCC_EXEC_PREFIX envvar, modify it for cpp's sake.  */
   if (gcc_exec_prefix)

@@ -1,3 +1,132 @@
+2011-07-23  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* intrinsics/ctime.c: Include <stdlib.h>.
+	* intrinsics/getlog.c: Likewise.
+	* runtime/stop.c: Likewise.
+
+2011-07-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49791
+	* io/list_read.c (nml_parse_qualifier): Remove check to
+	enabled extended read for another case.
+
+2011-07-15  Daniel Carrera  <dcarrera@gmail.com>
+
+	* caf/mpi.c (caf_runtime_error): Change fprintf to vfprintf.
+	* caf/single.c (caf_runtime_error): Ditto.
+
+2011-07-14  Daniel Carrera  <dcarrera@gmail.com>
+
+	* caf/single.c:  Include stdarg.h header.
+	(caf_runtime_error): New function. Use "exit(EXIT_FAILURE)".
+	(_gfortran_caf_register): Use caf_runtime_error.
+	(_gfortran_caf_sync_images): Use "exit(EXIT_FAILURE)".
+	* caf/mpi.c (caf_runtime_error): Remove "error" parameter.
+	Return EXIT_FAILURE instead.
+	(_gfortran_caf_register): Update call to caf_runtime_error.
+	(_gfortran_caf_sync_all): Ditto.
+	(_gfortran_caf_sync_images): Ditto.
+	(_gfortran_caf_error_stop_str): Use "exit(EXIT_FAILURE)".
+
+2011-07-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/49296
+	* io/list_read.c (read_logical): Don't error out if a valid value
+	is followed by EOF instead of a normal separator.
+	(read_integer): Likewise.
+
+2011-07-09  Tobias Burnus  <burnus@net-b.de>
+
+	* runtime/error.c (sys_abort): Change argument list
+	from "()" to "(void)".
+
+2011-07-09  Tobias Burnus  <burnus@net-b.de>
+	    Daniel Carrera  <dcarrera@gmail.com>
+
+	* caf/mpi.c (runtime_error): New function.
+	(_gfortran_caf_register): Use it.
+	(_gfortran_caf_sync_all): Use it, add STAT_STOPPED_IMAGE
+	as possible status value.
+	(_gfortran_caf_sync_images): Ditto.
+
+2011-07-07  Tobias Burnus  <burnus@net-b.de>
+
+	* libcaf.h (__attribute__, unlikely, likely): New macros.
+	(caf_register_t): Update comment.
+	(_gfortran_caf_register): Add stat, errmsg, errmsg_len arguments.
+	* single.c (_gfortran_caf_register): Ditto; add error diagnostics.
+	* mpi.c (_gfortran_caf_register): Ditto.
+	(caf_is_finalized): New global variable.
+	(_gfortran_caf_finalize): Use it.
+
+2011-07-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* runtime/memory.c (internal_malloc_size):  If size is zero,
+	allocate a single byte.
+	* m4/pack.m4 (pack_'rtype_code`):  Don't check for zero size
+	for the argument of internal_malloc_size.
+	* m4/spread.m4 (spread_'rtype_code`):  Likewise.
+	* m4/eoshift1.m4 (eoshift1):  Don't allocate twice.  Don't check
+	for zero size for the argument of internal_malloc_size.
+	* m4/eoshift3.m4: Don't check for zero size for the argument of
+	internal_malloc_size.
+	* intrinsics/pack_generic.c (pack_internal):  Likewise.
+	(pack_s_internal):  Likewise.
+	* intrinsics/cshift0.c (cshift0):  Likewise.
+	* intrinsics/spread_generic.c (spread_internal):  Likewise.
+	* intrinsics/eoshift0.c (eoshift0):  Likewise.
+	* intrinsics/eoshift2.c (eoshift2):  Likewise.
+	* generated/eoshift1_16.c: Regenerated.
+	* generated/eoshift1_4.c: Regenerated.
+	* generated/eoshift1_8.c: Regenerated.
+	* generated/eoshift3_16.c: Regenerated.
+	* generated/eoshift3_4.c: Regenerated.
+	* generated/eoshift3_8.c: Regenerated.
+	* generated/pack_c10.c: Regenerated.
+	* generated/pack_c16.c: Regenerated.
+	* generated/pack_c4.c: Regenerated.
+	* generated/pack_c8.c: Regenerated.
+	* generated/pack_i16.c: Regenerated.
+	* generated/pack_i1.c: Regenerated.
+	* generated/pack_i2.c: Regenerated.
+	* generated/pack_i4.c: Regenerated.
+	* generated/pack_i8.c: Regenerated.
+	* generated/pack_r10.c: Regenerated.
+	* generated/pack_r16.c: Regenerated.
+	* generated/pack_r4.c: Regenerated.
+	* generated/pack_r8.c: Regenerated.
+	* generated/spread_c10.c: Regenerated.
+	* generated/spread_c16.c: Regenerated.
+	* generated/spread_c4.c: Regenerated.
+	* generated/spread_c8.c: Regenerated.
+	* generated/spread_i16.c: Regenerated.
+	* generated/spread_i1.c: Regenerated.
+	* generated/spread_i2.c: Regenerated.
+	* generated/spread_i4.c: Regenerated.
+	* generated/spread_i8.c: Regenerated.
+	* generated/spread_r10.c: Regenerated.
+	* generated/spread_r16.c: Regenerated.
+	* generated/spread_r4.c: Regenerated.
+	* generated/spread_r8.c: Regenerated.
+
+2011-06-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/49479
+	* m4/reshape.m4: If source allocation is smaller than one, set it
+	to one.
+	* intrinsics/reshape_generic.c:  Likewise.
+	* generated/reshape_r16.c: Regenerated.
+	* generated/reshape_c4.c: Regenerated.
+	* generated/reshape_c16.c: Regenerated.
+	* generated/reshape_c8.c: Regenerated.
+	* generated/reshape_r4.c: Regenerated.
+	* generated/reshape_i4.c: Regenerated.
+	* generated/reshape_r10.c: Regenerated.
+	* generated/reshape_r8.c: Regenerated.
+	* generated/reshape_c10.c: Regenerated.
+	* generated/reshape_i8.c: Regenerated.
+	* generated/reshape_i16.c: Regenerated.
+
 2011-06-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR libfortran/49296

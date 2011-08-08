@@ -2,7 +2,7 @@
 /* Expected errors for char16_t/char32_t in default std. */
 /* Ensure u and U prefixes are parsed as separate tokens in default std. */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=c++98" } */
 
 const static char16_t	c0	= 'a';	/* { dg-error "not name a type" } */
 const static char32_t	c1	= 'a';	/* { dg-error "not name a type" } */

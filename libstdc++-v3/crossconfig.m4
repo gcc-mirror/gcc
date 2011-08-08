@@ -173,14 +173,6 @@ case "${host}" in
       AC_DEFINE(HAVE_ISNANL)
     fi
     ;;
-  *-netware)
-    SECTION_FLAGS='-ffunction-sections -fdata-sections'
-    AC_SUBST(SECTION_FLAGS)
-    GLIBCXX_CHECK_LINKER_FEATURES
-    AC_DEFINE(HAVE_HYPOT)
-    AC_DEFINE(HAVE_ISINF)
-    AC_DEFINE(HAVE_ISNAN)
-    ;;
   *-qnx6.1* | *-qnx6.2*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
     AC_SUBST(SECTION_FLAGS) 

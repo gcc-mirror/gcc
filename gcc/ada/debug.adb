@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,7 +80,7 @@ package body Debug is
    --  dN   No file name information in exception messages
    --  dO   Output immediate error messages
    --  dP   Do not check for controlled objects in preelaborable packages
-   --  dQ
+   --  dQ   Do not generate runtime check for duplicated external tag
    --  dR   Bypass check for correct version of s-rpc
    --  dS   Never convert numbers to machine numbers in Sem_Eval
    --  dT   Convert to machine numbers only for constant declarations
@@ -92,7 +92,7 @@ package body Debug is
    --  dZ   Generate listing showing the contents of the dispatch tables
 
    --  d.a  Force Target_Strict_Alignment mode to True
-   --  d.b
+   --  d.b  Dump backend types
    --  d.c  Generate inline concatenation, do not call procedure
    --  d.d
    --  d.e
@@ -123,8 +123,8 @@ package body Debug is
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D
    --  d.E
-   --  d.F
-   --  d.G
+   --  d.F  ALFA mode
+   --  d.G  Precondition only mode for gnat2why
    --  d.H
    --  d.I  SCIL generation mode
    --  d.J  Disable parallel SCIL generation mode
@@ -133,7 +133,7 @@ package body Debug is
    --  d.M
    --  d.N
    --  d.O  Dump internal SCO tables
-   --  d.P
+   --  d.P  Previous (non-optimized) handling of length comparisons
    --  d.Q
    --  d.R
    --  d.S  Force Optimize_Alignment (Space)
@@ -193,7 +193,7 @@ package body Debug is
    --  de
    --  df  Only output file names, not path names, in log
    --  dg
-   --  dh
+   --  dh  Generate listing showing loading of name table hash chains
    --  di
    --  dj
    --  dk
@@ -428,6 +428,12 @@ package body Debug is
    --       in preelaborable packages, but this restriction is a huge pain,
    --       especially in the predefined library units.
 
+   --  dQ   Eliminate check for duplicate external tags. This check was added
+   --       as per AI 0113, and causes some backward compatibility problems.
+   --       It is never legitimate to have duplicate external tags, so the
+   --       check is certainly valid, but this debug switch can be useful for
+   --       enabling previous behavior of ignoring this problem.
+
    --  dR   Bypass the check for a proper version of s-rpc being present
    --       to use the -gnatz? switch. This allows debugging of the use
    --       of stubs generation without needing to have GLADE (or some
@@ -500,6 +506,9 @@ package body Debug is
    --       would normally be false. Can be used for testing strict alignment
    --       circuitry in the compiler.
 
+   --  d.b  Dump back end types. During Create_Standard, the back end is
+   --       queried for all available types. This option shows them.
+
    --  d.c  Generate inline concatenation, instead of calling one of the
    --       System.Concat_n.Str_Concat_n routines in cases where the latter
    --       routines would normally be called.
@@ -571,6 +580,14 @@ package body Debug is
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
 
+   --  d.F  ALFA mode. Generate AST in a form suitable for formal verification,
+   --       as well as additional cross reference information in ALI files to
+   --       compute effects of subprograms.
+
+   --  d.G  Precondition only mode for gnat2why. In this mode, gnat2why will
+   --       only generate Why code that checks for the well-guardedness of
+   --       preconditions.
+
    --  d.I  Generate SCIL mode. Generate intermediate code for the sake of
    --       of static analysis tools, and ensure additional tree consistency
    --       between different compilations of specs.
@@ -587,6 +604,11 @@ package body Debug is
    --  d.O  Dump internal SCO tables. Before outputting the SCO information to
    --       the ALI file, the internal SCO tables (SCO_Table/SCO_Unit_Table)
    --       are dumped for debugging purposes.
+
+   --  d.P  Previous non-optimized handling of length comparisons. Setting this
+   --       flag inhibits the effect of Optimize_Length_Comparison in Exp_Ch4.
+   --       This is there in case we find a situation where the optimization
+   --       malfunctions, to provide a work around.
 
    --  d.S  Force Optimize_Alignment (Space) mode as the default
 
@@ -697,6 +719,9 @@ package body Debug is
    --------------------------------------------
 
    --  df  Only output file names, not path names, in log
+
+   --  dh  Generate listing showing loading of name table hash chains,
+   --      same as for the compiler.
 
    --  dm  Issue a message indicating the maximum number of simultaneous
    --      compilations.

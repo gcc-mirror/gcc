@@ -28,4 +28,4 @@ CONTAINS
 
 END MODULE Compare_Float_Numbers
 
-! { dg-final { cleanup-modules "Compare_Float_Numbers" } }
+! { dg-final { cleanup-modules "compare_float_numbers" } }

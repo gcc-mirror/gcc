@@ -1,4 +1,4 @@
-<part xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<part xmlns="http://docbook.org/ns/docbook" version="5.0"
       xml:id="manual.ext" xreflabel="Extensions">
 <?dbhtml filename="extensions.html"?>
 
@@ -17,13 +17,12 @@
 </info>
 
 
-
 <preface><info><title/></info>
-  
 <para>
-  Here we will make an attempt at describing the non-Standard extensions to
-  the library.  Some of these are from SGI's STL, some of these are GNU's,
-  and some just seemed to appear on the doorstep.
+  Here we will make an attempt at describing the non-Standard
+  extensions to the library.  Some of these are from older versions of
+  standard library components, namely SGI's STL, and some of these are
+  GNU's.
 </para>
 <para><emphasis>Before</emphasis> you leap in and use any of these
 extensions, be aware of two things:
@@ -53,7 +52,7 @@ extensions, be aware of two things:
 <!-- Chapter 01 : Compile Time Checks -->
 <chapter xml:id="manual.ext.compile_checks" xreflabel="Compile Time Checks"><info><title>Compile Time Checks</title></info>
 <?dbhtml filename="ext_compile_checks.html"?>
-  
+
   <para>
     Also known as concept checking.
   </para>
@@ -100,59 +99,57 @@ extensions, be aware of two things:
 </chapter>
 
 <!-- Chapter 02 : Debug Mode -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="debug_mode.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml"
+	    href="debug_mode.xml">
 </xi:include>
 
 <!-- Chapter 03 : Parallel Mode -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="parallel_mode.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml"
+	    href="parallel_mode.xml">
 </xi:include>
 
 <!-- Chapter 04 : Profile Mode -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="profile_mode.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml"
+	    href="profile_mode.xml">
 </xi:include>
 
 
-<!-- Chapter 05 : Allocators -->
-<chapter xml:id="manual.ext.allocator" xreflabel="Allocators"><info><title>Allocators</title></info>
-<?dbhtml filename="ext_allocators.html"?>
-  
+<!-- XXX -->
+<!-- Allocators -->
+<!-- Chapter 05 : __mt_alloc -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml"
+	    href="mt_allocator.xml">
+</xi:include>
 
-  <!-- Section 01 : __mt_alloc -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="mt_allocator.xml">
-  </xi:include>
+<!-- Chapter 06 : bitmap_allocator -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml"
+	    href="bitmap_allocator.xml">
+</xi:include>
 
-  <!-- Section 02 : bitmap_allocator -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="bitmap_allocator.xml">
-  </xi:include>
+<!-- Containers -->
+<!-- Chapter 07 : Policy-Based Data Structures -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml"
+	    href="policy_data_structures.xml">
+</xi:include>
 
-</chapter>
-
-<!-- Chapter 06 : Containers -->
-<chapter xml:id="manual.ext.containers" xreflabel="Containers"><info><title>Containers</title></info>
+<!-- Chapter 08 : HP/SGI -->
+<chapter xml:id="manual.ext.containers" xreflabel="Containers">
+  <info><title>HP/SGI Extensions</title></info>
 <?dbhtml filename="ext_containers.html"?>
-  
-  <para>
-  </para>
-  <section xml:id="manual.ext.containers.pbds" xreflabel="Policy Based Data Structures"><info><title>Policy Based Data Structures</title></info>
-    
-    <para>
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/ext/pb_ds/index.html">More details here</link>.
-    </para>
-  </section>
 
-  <section xml:id="manual.ext.containers.sgi" xreflabel="SGI ext"><info><title>HP/SGI</title></info>
-    
-    <para>
+  <section xml:id="manual.ext.containers.sgi" xreflabel="SGI ext">
+    <info><title>Backwards Compatibility</title></info>
+
+    <para>A few extensions and nods to backwards-compatibility have
+    been made with containers.  Those dealing with older SGI-style
+    allocators are dealt with elsewhere.  The remaining ones all deal
+    with bits:
+    </para>
+    <para>The old pre-standard <code>bit_vector</code> class is
+    present for backwards compatibility.  It is simply a typedef for
+    the <code>vector&lt;bool&gt;</code> specialization.
     </para>
 
-<para>A few extensions and nods to backwards-compatibility have been made with
-   containers.  Those dealing with older SGI-style allocators are dealt with
-   elsewhere.  The remaining ones all deal with bits:
-</para>
-<para>The old pre-standard <code>bit_vector</code> class is present for
-   backwards compatibility.  It is simply a typedef for the
-   <code>vector&lt;bool&gt;</code> specialization.
-</para>
 <para>The <code>bitset</code> class has a number of extensions, described in the
    rest of this item.  First, we'll mention that this implementation of
    <code>bitset&lt;N&gt;</code> is specialized for cases where N number of
@@ -197,8 +194,8 @@ extensions, be aware of two things:
   </section>
 
 
-  <section xml:id="manual.ext.containers.deprecated_sgi" xreflabel="SGI ext dep"><info><title>Deprecated HP/SGI</title></info>
-    
+  <section xml:id="manual.ext.containers.deprecated_sgi" xreflabel="SGI ext dep"><info><title>Deprecated</title></info>
+
 
    <para>
      The SGI hashing classes <classname>hash_set</classname> and
@@ -262,10 +259,10 @@ extensions, be aware of two things:
   </section>
 </chapter>
 
-<!-- Chapter 07 : Utilities -->
+<!-- Chapter 09 : Utilities -->
 <chapter xml:id="manual.ext.util" xreflabel="Utilities"><info><title>Utilities</title></info>
 <?dbhtml filename="ext_utilities.html"?>
-  
+
   <para>
     The &lt;functional&gt; header contains many additional functors
     and helper functions, extending section 20.3.  They are
@@ -332,10 +329,10 @@ get_temporary_buffer(5, (int*)0);
 
 </chapter>
 
-<!-- Chapter 08 : Algorithms -->
+<!-- Chapter 10 : Algorithms -->
 <chapter xml:id="manual.ext.algorithms" xreflabel="Algorithms"><info><title>Algorithms</title></info>
 <?dbhtml filename="ext_algorithms.html"?>
-  
+
 <para>25.1.6 (count, count_if) is extended with two more versions of count
    and count_if.  The standard versions return their results.  The
    additional signatures return void, but take a final parameter by
@@ -370,10 +367,10 @@ get_temporary_buffer(5, (int*)0);
 
 </chapter>
 
-<!-- Chapter 09 : Numerics -->
+<!-- Chapter 11 : Numerics -->
 <chapter xml:id="manual.ext.numerics" xreflabel="Numerics"><info><title>Numerics</title></info>
 <?dbhtml filename="ext_numerics.html"?>
-  
+
 <para>26.4, the generalized numeric operations such as accumulate, are extended
    with the following functions:
 </para>
@@ -395,10 +392,10 @@ get_temporary_buffer(5, (int*)0);
    void iota(_ForwardIter first, _ForwardIter last, _Tp value);</programlisting>
 </chapter>
 
-<!-- Chapter 10 : Iterators -->
+<!-- Chapter 12 : Iterators -->
 <chapter xml:id="manual.ext.iterators" xreflabel="Iterators"><info><title>Iterators</title></info>
 <?dbhtml filename="ext_iterators.html"?>
-  
+
 <para>24.3.2 describes <code>struct iterator</code>, which didn't exist in the
    original HP STL implementation (the language wasn't rich enough at the
    time).  For backwards compatibility, base classes are provided which
@@ -419,10 +416,10 @@ get_temporary_buffer(5, (int*)0);
 
 </chapter>
 
-<!-- Chapter 11 : IO -->
+<!-- Chapter 13 : IO -->
 <chapter xml:id="manual.ext.io" xreflabel="IO"><info><title>Input and Output</title></info>
 <?dbhtml filename="ext_io.html"?>
-  
+
 
   <para>
     Extensions allowing <code>filebuf</code>s to be constructed from
@@ -430,7 +427,7 @@ get_temporary_buffer(5, (int*)0);
   </para>
 
   <section xml:id="manual.ext.io.filebuf_derived" xreflabel="Derived filebufs"><info><title>Derived filebufs</title></info>
-    
+
 
    <para>The v2 library included non-standard extensions to construct
       <code>std::filebuf</code>s from C stdio types such as
@@ -489,10 +486,10 @@ get_temporary_buffer(5, (int*)0);
   </section>
 </chapter>
 
-<!-- Chapter 12 : Demangling -->
+<!-- Chapter 14 : Demangling -->
 <chapter xml:id="manual.ext.demangle" xreflabel="Demangling"><info><title>Demangling</title></info>
 <?dbhtml filename="ext_demangling.html"?>
-  
+
   <para>
     Transforming C++ ABI identifiers (like RTTI symbols) into the
     original C++ source identifiers is called
@@ -574,7 +571,7 @@ int main()
    </para>
 </chapter>
 
-<!-- Chapter 13 : Concurrency -->
+<!-- Chapter 15 : Concurrency -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="concurrency_extensions.xml">
 </xi:include>
 

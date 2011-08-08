@@ -1,6 +1,6 @@
 /* PR target/39137 */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2 -mpreferred-stack-boundary=2" } */
 /* Make sure dynamic stack realignment isn't performed just because there
    are long long variables.  */

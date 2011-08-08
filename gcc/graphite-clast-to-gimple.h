@@ -63,16 +63,4 @@ eq_bb_pbb_map (const void *bb_pbb1, const void *bb_pbb2)
   return (bp1->bb->index == bp2->bb->index);
 }
 
-/* Returns the scattering dimension for STMTFOR.
-
-   The relationship between dimension in scattering matrix
-   and the DEPTH of the loop is:
-   DIMENSION = 2*DEPTH - 1
-*/
-
-static inline int get_scattering_level (int depth)
-{
-  return 2 * depth - 1;
-}
-
 #endif

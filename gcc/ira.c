@@ -1403,7 +1403,7 @@ setup_reg_class_nregs (void)
       for (cl = 0; cl < N_REG_CLASSES; cl++)
 	ira_reg_class_max_nregs[cl][m]
 	  = ira_reg_class_min_nregs[cl][m]
-	  = CLASS_MAX_NREGS ((enum reg_class) cl, (enum machine_mode) m);
+	  = targetm.class_max_nregs ((reg_class_t) cl, (enum machine_mode) m);
       for (cl = 0; cl < N_REG_CLASSES; cl++)
 	for (i = 0;
 	     (cl2 = alloc_reg_class_subclasses[cl][i]) != LIM_REG_CLASSES;

@@ -1,4 +1,4 @@
-/* { dg-options "-mthumb -O2" }  */
+/* { dg-options "-mthumb -O2 -fno-reorder-blocks" }  */
 /* { dg-require-effective-target arm_thumb2_ok } */
 /* { dg-final { scan-assembler-not "tbb" } } */
 /* { dg-final { scan-assembler-not "tbh" } } */

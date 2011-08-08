@@ -1,3 +1,28 @@
+2011-07-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Make-lang.in (objcp/objc-runtime-shared-support.o): Do not
+	depend on OBSTACK_H.
+	(objcp/objc-gnu-runtime-abi-01.o): Likewise.
+	(objcp/objc-next-runtime-abi-01.o): Likewise.
+	(objcp/objc-next-runtime-abi-02.o): Likewise.
+	(objcp/objcp-act.o): Likewise.
+
+2011-07-04  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Make-lang.in (OBJCXX_OBJS): Added objc-encoding.o.
+	(objcp/objcp-lang.o): Reordered dependencies.  Depend on GGC_H.
+	(objcp/objcp-decl.o): Reordered dependencies.
+	(objcp/objc-runtime-shared-support.o): Reordered dependencies.
+	Updated them to be identical to the corresponding new objc/ ones,
+	with the addition of objcp-decl.h.
+	(objcp/objc-runtime-shared-support.o): Likewise.
+	(objcp/objc-gnu-runtime-abi-01.o): Likewise.
+	(objcp/objc-next-runtime-abi-01.o): Likewise.
+	(objcp/objc-next-runtime-abi-02.o): Likewise.
+	(objcp/objcp-act.o): Reordered dependencies.  Added dependency on
+	objc-encoding.h.
+	(objcp/objc-encoding.o): New rule.
+	
 2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objcp-decl.c (objcp_finish_struct): Use

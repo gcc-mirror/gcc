@@ -42,19 +42,6 @@ darwin-driver.o: $(srcdir)/config/darwin-driver.c \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/config/darwin-driver.c
 
-# How to build crt3.o
-EXTRA_MULTILIB_PARTS=crt3.o
-# Pass -fno-tree-dominator-opts to work around bug 26840.
-$(T)crt3$(objext): $(srcdir)/config/darwin-crt3.c $(GCC_PASSES) \
-	$(TCONFIG_H) stmp-int-hdrs tsystem.h
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) \
-	  -fno-tree-dominator-opts $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) \
-	  -c $(srcdir)/config/darwin-crt3.c -o $(T)crt3$(objext)
-
-# Use unwind-dw2-fde-darwin
-LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-darwin.c \
-  $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
-
 # -pipe because there's an assembler bug, 4077127, which causes
 # it to not properly process the first # directive, causing temporary
 # file names to appear in stabs, causing the bootstrap to fail.  Using -pipe

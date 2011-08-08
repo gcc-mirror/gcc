@@ -1,4 +1,4 @@
-dnl Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+dnl Copyright (C) 2005, 2006, 2007, 2008, 2011 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GCC.
 dnl
@@ -583,7 +583,7 @@ AC_CACHE_CHECK([assembler for $1], [$2],
   if test $in_tree_gas = yes; then
     gcc_GAS_VERSION_GTE_IFELSE($3, [[$2]=yes])
   el])if test x$gcc_cv_as != x; then
-    echo ifelse(m4_substr([$5],0,1),[$], "[$5]", '[$5]') > conftest.s
+    AS_ECHO([ifelse(m4_substr([$5],0,1),[$], "[$5]", '[$5]')]) > conftest.s
     if AC_TRY_COMMAND([$gcc_cv_as $gcc_cv_as_flags $4 -o conftest.o conftest.s >&AS_MESSAGE_LOG_FD])
     then
 	ifelse([$6],, [$2]=yes, [$6])

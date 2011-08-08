@@ -296,6 +296,8 @@ rename_ssa_copies (void)
   FILE *debug;
   bool updated = false;
 
+  memset (&stats, 0, sizeof (stats));
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     debug = dump_file;
   else
@@ -355,16 +357,15 @@ rename_ssa_copies (void)
       if (!part_var)
         continue;
       var = ssa_name (x);
+      if (SSA_NAME_VAR (var) == SSA_NAME_VAR (part_var))
+	continue;
       if (debug)
         {
-	  if (SSA_NAME_VAR (var) != SSA_NAME_VAR (part_var))
-	    {
-	      fprintf (debug, "Coalesced ");
-	      print_generic_expr (debug, var, TDF_SLIM);
-	      fprintf (debug, " to ");
-	      print_generic_expr (debug, part_var, TDF_SLIM);
-	      fprintf (debug, "\n");
-	    }
+	  fprintf (debug, "Coalesced ");
+	  print_generic_expr (debug, var, TDF_SLIM);
+	  fprintf (debug, " to ");
+	  print_generic_expr (debug, part_var, TDF_SLIM);
+	  fprintf (debug, "\n");
 	}
       stats.coalesced++;
       replace_ssa_name_symbol (var, SSA_NAME_VAR (part_var));

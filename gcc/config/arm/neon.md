@@ -372,8 +372,8 @@
 })
 
 (define_expand "movmisalign<mode>"
-  [(set (match_operand:VDQX 0 "nonimmediate_operand"	      "")
-	(unspec:VDQX [(match_operand:VDQX 1 "general_operand" "")]
+  [(set (match_operand:VDQX 0 "neon_struct_or_register_operand")
+	(unspec:VDQX [(match_operand:VDQX 1 "neon_struct_or_register_operand")]
 		     UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
 {
@@ -386,7 +386,7 @@
 })
 
 (define_insn "*movmisalign<mode>_neon_store"
-  [(set (match_operand:VDX 0 "memory_operand"		       "=Um")
+  [(set (match_operand:VDX 0 "neon_struct_operand"	       "=Um")
 	(unspec:VDX [(match_operand:VDX 1 "s_register_operand" " w")]
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
@@ -394,15 +394,15 @@
   [(set_attr "neon_type" "neon_vst1_1_2_regs_vst2_2_regs")])
 
 (define_insn "*movmisalign<mode>_neon_load"
-  [(set (match_operand:VDX 0 "s_register_operand"	   "=w")
-	(unspec:VDX [(match_operand:VDX 1 "memory_operand" " Um")]
+  [(set (match_operand:VDX 0 "s_register_operand"		"=w")
+	(unspec:VDX [(match_operand:VDX 1 "neon_struct_operand" " Um")]
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vld1.<V_sz_elem>\t{%P0}, %A1"
   [(set_attr "neon_type" "neon_vld1_1_2_regs")])
 
 (define_insn "*movmisalign<mode>_neon_store"
-  [(set (match_operand:VQX 0 "memory_operand"		       "=Um")
+  [(set (match_operand:VQX 0 "neon_struct_operand"	       "=Um")
 	(unspec:VQX [(match_operand:VQX 1 "s_register_operand" " w")]
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
@@ -410,8 +410,8 @@
   [(set_attr "neon_type" "neon_vst1_1_2_regs_vst2_2_regs")])
 
 (define_insn "*movmisalign<mode>_neon_load"
-  [(set (match_operand:VQX 0 "s_register_operand"	   "=w")
-	(unspec:VQX [(match_operand:VQX 1 "memory_operand" " Um")]
+  [(set (match_operand:VQX 0 "s_register_operand"	         "=w")
+	(unspec:VQX [(match_operand:VQX 1 "neon_struct_operand" " Um")]
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vld1.<V_sz_elem>\t{%q0}, %A1"
@@ -1116,11 +1116,14 @@
 ;; shift-count granularity. That's good enough for the middle-end's current
 ;; needs.
 
+;; Note that it's not safe to perform such an operation in big-endian mode,
+;; due to element-ordering issues.
+
 (define_expand "vec_shr_<mode>"
   [(match_operand:VDQ 0 "s_register_operand" "")
    (match_operand:VDQ 1 "s_register_operand" "")
    (match_operand:SI 2 "const_multiple_of_8_operand" "")]
-  "TARGET_NEON"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
 {
   rtx zero_reg;
   HOST_WIDE_INT num_bits = INTVAL (operands[2]);
@@ -1148,7 +1151,7 @@
   [(match_operand:VDQ 0 "s_register_operand" "")
    (match_operand:VDQ 1 "s_register_operand" "")
    (match_operand:SI 2 "const_multiple_of_8_operand" "")]
-  "TARGET_NEON"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
 {
   rtx zero_reg;
   HOST_WIDE_INT num_bits = INTVAL (operands[2]);
@@ -1344,7 +1347,8 @@
 (define_expand "reduc_splus_<mode>"
   [(match_operand:VQ 0 "s_register_operand" "")
    (match_operand:VQ 1 "s_register_operand" "")]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)
+   && !BYTES_BIG_ENDIAN"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
   rtx res_d = gen_reg_rtx (<V_HALF>mode);
@@ -1360,7 +1364,7 @@
   [(set (match_operand:V2DI 0 "s_register_operand" "=w")
 	(unspec:V2DI [(match_operand:V2DI 1 "s_register_operand" "w")]
 		     UNSPEC_VPADD))]
-  "TARGET_NEON"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vadd.i64\t%e0, %e1, %f1"
   [(set_attr "neon_type" "neon_int_1")]
 )
@@ -1370,7 +1374,7 @@
 (define_expand "reduc_uplus_<mode>"
   [(match_operand:VDQI 0 "s_register_operand" "")
    (match_operand:VDQI 1 "s_register_operand" "")]
-  "TARGET_NEON"
+  "TARGET_NEON && (<Is_d_reg> || !BYTES_BIG_ENDIAN)"
 {
   emit_insn (gen_reduc_splus_<mode> (operands[0], operands[1]));
   DONE;
@@ -1389,7 +1393,8 @@
 (define_expand "reduc_smin_<mode>"
   [(match_operand:VQ 0 "s_register_operand" "")
    (match_operand:VQ 1 "s_register_operand" "")]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)
+   && !BYTES_BIG_ENDIAN"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
   rtx res_d = gen_reg_rtx (<V_HALF>mode);
@@ -1414,7 +1419,8 @@
 (define_expand "reduc_smax_<mode>"
   [(match_operand:VQ 0 "s_register_operand" "")
    (match_operand:VQ 1 "s_register_operand" "")]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)
+   && !BYTES_BIG_ENDIAN"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
   rtx res_d = gen_reg_rtx (<V_HALF>mode);
@@ -1439,7 +1445,7 @@
 (define_expand "reduc_umin_<mode>"
   [(match_operand:VQI 0 "s_register_operand" "")
    (match_operand:VQI 1 "s_register_operand" "")]
-  "TARGET_NEON"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
   rtx res_d = gen_reg_rtx (<V_HALF>mode);
@@ -1464,7 +1470,7 @@
 (define_expand "reduc_umax_<mode>"
   [(match_operand:VQI 0 "s_register_operand" "")
    (match_operand:VQI 1 "s_register_operand" "")]
-  "TARGET_NEON"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
   rtx res_d = gen_reg_rtx (<V_HALF>mode);
@@ -5423,7 +5429,7 @@
         (SE:<V_unpack> (vec_select:<V_HALF>
 			  (match_operand:VU 1 "register_operand" "w")
 			  (match_operand:VU 2 "vect_par_constant_low" ""))))]
-  "TARGET_NEON"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vmovl.<US><V_sz_elem> %q0, %e1"
   [(set_attr "neon_type" "neon_shift_1")]
 )
@@ -5433,7 +5439,7 @@
         (SE:<V_unpack> (vec_select:<V_HALF>
 			  (match_operand:VU 1 "register_operand" "w")
 			  (match_operand:VU 2 "vect_par_constant_high" ""))))]
-  "TARGET_NEON"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vmovl.<US><V_sz_elem> %q0, %f1"
   [(set_attr "neon_type" "neon_shift_1")]
 )
@@ -5441,7 +5447,7 @@
 (define_expand "vec_unpack<US>_hi_<mode>"
   [(match_operand:<V_unpack> 0 "register_operand" "")
    (SE:<V_unpack> (match_operand:VU 1 "register_operand"))]
- "TARGET_NEON"
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
   {
    rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
    rtx t1;
@@ -5460,7 +5466,7 @@
 (define_expand "vec_unpack<US>_lo_<mode>"
   [(match_operand:<V_unpack> 0 "register_operand" "")
    (SE:<V_unpack> (match_operand:VU 1 "register_operand" ""))]
- "TARGET_NEON"
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
   {
    rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
    rtx t1;
@@ -5483,7 +5489,7 @@
  		        (SE:<V_unpack> (vec_select:<V_HALF>
                            (match_operand:VU 3 "register_operand" "w") 
                            (match_dup 2)))))]
-  "TARGET_NEON"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vmull.<US><V_sz_elem> %q0, %e1, %e3"
   [(set_attr "neon_type" "neon_shift_1")]
 )
@@ -5492,7 +5498,7 @@
   [(match_operand:<V_unpack> 0 "register_operand" "")
    (SE:<V_unpack> (match_operand:VU 1 "register_operand" ""))
    (SE:<V_unpack> (match_operand:VU 2 "register_operand" ""))]
- "TARGET_NEON"
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
  {
    rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
    rtx t1;
@@ -5517,7 +5523,7 @@
 		       (SE:<V_unpack> (vec_select:<V_HALF>
 			    (match_operand:VU 3 "register_operand" "w") 
 			    (match_dup 2)))))]
-  "TARGET_NEON"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vmull.<US><V_sz_elem> %q0, %f1, %f3"
   [(set_attr "neon_type" "neon_shift_1")]
 )
@@ -5526,7 +5532,7 @@
   [(match_operand:<V_unpack> 0 "register_operand" "")
    (SE:<V_unpack> (match_operand:VU 1 "register_operand" ""))
    (SE:<V_unpack> (match_operand:VU 2 "register_operand" ""))]
- "TARGET_NEON"
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
  {
    rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
    rtx t1;
@@ -5620,6 +5626,10 @@
  }
 )
 
+; FIXME: These instruction patterns can't be used safely in big-endian mode
+; because the ordering of vector elements in Q registers is different from what
+; the semantics of the instructions require.
+
 (define_insn "vec_pack_trunc_<mode>"
  [(set (match_operand:<V_narrow_pack> 0 "register_operand" "=&w")
        (vec_concat:<V_narrow_pack> 
@@ -5627,7 +5637,7 @@
 			(match_operand:VN 1 "register_operand" "w"))
 		(truncate:<V_narrow>
 			(match_operand:VN 2 "register_operand" "w"))))]
- "TARGET_NEON"
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
  "vmovn.i<V_sz_elem>\t%e0, %q1\;vmovn.i<V_sz_elem>\t%f0, %q2"
  [(set_attr "neon_type" "neon_shift_1")
   (set_attr "length" "8")]
@@ -5637,7 +5647,7 @@
 (define_insn "neon_vec_pack_trunc_<mode>"
  [(set (match_operand:<V_narrow> 0 "register_operand" "=w")
        (truncate:<V_narrow> (match_operand:VN 1 "register_operand" "w")))]
- "TARGET_NEON"
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
  "vmovn.i<V_sz_elem>\t%P0, %q1"
  [(set_attr "neon_type" "neon_shift_1")]
 )
@@ -5646,7 +5656,7 @@
  [(match_operand:<V_narrow_pack> 0 "register_operand" "")
   (match_operand:VSHFT 1 "register_operand" "")
   (match_operand:VSHFT 2 "register_operand")]
- "TARGET_NEON"
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
 {
   rtx tempreg = gen_reg_rtx (<V_DOUBLE>mode);
   

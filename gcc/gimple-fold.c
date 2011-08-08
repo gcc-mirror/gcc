@@ -819,29 +819,59 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 					     gimple_assign_rhs1 (stmt),
 					     gimple_assign_rhs2 (stmt));
 	}
+      /* Try to canonicalize for boolean-typed X the comparisons
+	 X == 0, X == 1, X != 0, and X != 1.  */
+      else if (gimple_assign_rhs_code (stmt) == EQ_EXPR
+               || gimple_assign_rhs_code (stmt) == NE_EXPR)
+        {
+	  tree lhs = gimple_assign_lhs (stmt);
+	  tree op1 = gimple_assign_rhs1 (stmt);
+	  tree op2 = gimple_assign_rhs2 (stmt);
+	  tree type = TREE_TYPE (op1);
+
+	  /* Check whether the comparison operands are of the same boolean
+	     type as the result type is.
+	     Check that second operand is an integer-constant with value
+	     one or zero.  */
+	  if (TREE_CODE (op2) == INTEGER_CST
+	      && (integer_zerop (op2) || integer_onep (op2))
+	      && useless_type_conversion_p (TREE_TYPE (lhs), type))
+	    {
+	      enum tree_code cmp_code = gimple_assign_rhs_code (stmt);
+	      bool is_logical_not = false;
+
+	      /* X == 0 and X != 1 is a logical-not.of X
+	         X == 1 and X != 0 is X  */
+	      if ((cmp_code == EQ_EXPR && integer_zerop (op2))
+	          || (cmp_code == NE_EXPR && integer_onep (op2)))
+	        is_logical_not = true;
+
+	      if (is_logical_not == false)
+	        result = op1;
+	      /* Only for one-bit precision typed X the transformation
+	         !X -> ~X is valied.  */
+	      else if (TYPE_PRECISION (type) == 1)
+		result = build1_loc (gimple_location (stmt), BIT_NOT_EXPR,
+				     type, op1);
+	      /* Otherwise we use !X -> X ^ 1.  */
+	      else
+	        result = build2_loc (gimple_location (stmt), BIT_XOR_EXPR,
+				     type, op1, build_int_cst (type, 1));
+	     
+	    }
+	}
 
       if (!result)
         result = fold_binary_loc (loc, subcode,
-                              TREE_TYPE (gimple_assign_lhs (stmt)),
-                              gimple_assign_rhs1 (stmt),
-                              gimple_assign_rhs2 (stmt));
+				  TREE_TYPE (gimple_assign_lhs (stmt)),
+				  gimple_assign_rhs1 (stmt),
+				  gimple_assign_rhs2 (stmt));
 
       if (result)
         {
           STRIP_USELESS_TYPE_CONVERSION (result);
           if (valid_gimple_rhs_p (result))
 	    return result;
-
-	  /* Fold might have produced non-GIMPLE, so if we trust it blindly
-	     we lose canonicalization opportunities.  Do not go again
-	     through fold here though, or the same non-GIMPLE will be
-	     produced.  */
-          if (commutative_tree_code (subcode)
-              && tree_swap_operands_p (gimple_assign_rhs1 (stmt),
-                                       gimple_assign_rhs2 (stmt), false))
-            return build2 (subcode, TREE_TYPE (gimple_assign_lhs (stmt)),
-                           gimple_assign_rhs2 (stmt),
-                           gimple_assign_rhs1 (stmt));
         }
       break;
 
@@ -857,18 +887,6 @@ fold_gimple_assign (gimple_stmt_iterator *si)
           STRIP_USELESS_TYPE_CONVERSION (result);
           if (valid_gimple_rhs_p (result))
 	    return result;
-
-	  /* Fold might have produced non-GIMPLE, so if we trust it blindly
-	     we lose canonicalization opportunities.  Do not go again
-	     through fold here though, or the same non-GIMPLE will be
-	     produced.  */
-          if (commutative_ternary_tree_code (subcode)
-              && tree_swap_operands_p (gimple_assign_rhs1 (stmt),
-                                       gimple_assign_rhs2 (stmt), false))
-            return build3 (subcode, TREE_TYPE (gimple_assign_lhs (stmt)),
-			   gimple_assign_rhs2 (stmt),
-			   gimple_assign_rhs1 (stmt),
-			   gimple_assign_rhs3 (stmt));
         }
       break;
 
@@ -1581,8 +1599,22 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
     case GIMPLE_ASSIGN:
       {
 	unsigned old_num_ops = gimple_num_ops (stmt);
-	tree new_rhs = fold_gimple_assign (gsi);
+	enum tree_code subcode = gimple_assign_rhs_code (stmt);
 	tree lhs = gimple_assign_lhs (stmt);
+	tree new_rhs;
+	/* First canonicalize operand order.  This avoids building new
+	   trees if this is the only thing fold would later do.  */
+	if ((commutative_tree_code (subcode)
+	     || commutative_ternary_tree_code (subcode))
+	    && tree_swap_operands_p (gimple_assign_rhs1 (stmt),
+				     gimple_assign_rhs2 (stmt), false))
+	  {
+	    tree tem = gimple_assign_rhs1 (stmt);
+	    gimple_assign_set_rhs1 (stmt, gimple_assign_rhs2 (stmt));
+	    gimple_assign_set_rhs2 (stmt, tem);
+	    changed = true;
+	  }
+	new_rhs = fold_gimple_assign (gsi);
 	if (new_rhs
 	    && !useless_type_conversion_p (TREE_TYPE (lhs),
 					   TREE_TYPE (new_rhs)))
@@ -1951,17 +1983,15 @@ and_var_with_comparison_1 (gimple stmt,
 
   /* If the definition is an AND or OR expression, we may be able to
      simplify by reassociating.  */
-  if (innercode == TRUTH_AND_EXPR
-      || innercode == TRUTH_OR_EXPR
-      || (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
-	  && (innercode == BIT_AND_EXPR || innercode == BIT_IOR_EXPR)))
+  if (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
+      && (innercode == BIT_AND_EXPR || innercode == BIT_IOR_EXPR))
     {
       tree inner1 = gimple_assign_rhs1 (stmt);
       tree inner2 = gimple_assign_rhs2 (stmt);
       gimple s;
       tree t;
       tree partial = NULL_TREE;
-      bool is_and = (innercode == TRUTH_AND_EXPR || innercode == BIT_AND_EXPR);
+      bool is_and = (innercode == BIT_AND_EXPR);
       
       /* Check for boolean identities that don't require recursive examination
 	 of inner1/inner2:
@@ -2083,6 +2113,7 @@ and_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
   if (operand_equal_p (op1a, op2a, 0)
       && operand_equal_p (op1b, op2b, 0))
     {
+      /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ANDIF_EXPR, code1, code2,
 				    boolean_type_node, op1a, op1b);
@@ -2094,6 +2125,7 @@ and_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
   if (operand_equal_p (op1a, op2b, 0)
       && operand_equal_p (op1b, op2a, 0))
     {
+      /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ANDIF_EXPR, code1,
 				    swap_tree_comparison (code2),
@@ -2412,17 +2444,15 @@ or_var_with_comparison_1 (gimple stmt,
   
   /* If the definition is an AND or OR expression, we may be able to
      simplify by reassociating.  */
-  if (innercode == TRUTH_AND_EXPR
-      || innercode == TRUTH_OR_EXPR
-      || (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
-	  && (innercode == BIT_AND_EXPR || innercode == BIT_IOR_EXPR)))
+  if (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
+      && (innercode == BIT_AND_EXPR || innercode == BIT_IOR_EXPR))
     {
       tree inner1 = gimple_assign_rhs1 (stmt);
       tree inner2 = gimple_assign_rhs2 (stmt);
       gimple s;
       tree t;
       tree partial = NULL_TREE;
-      bool is_or = (innercode == TRUTH_OR_EXPR || innercode == BIT_IOR_EXPR);
+      bool is_or = (innercode == BIT_IOR_EXPR);
       
       /* Check for boolean identities that don't require recursive examination
 	 of inner1/inner2:
@@ -2545,6 +2575,7 @@ or_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
   if (operand_equal_p (op1a, op2a, 0)
       && operand_equal_p (op1b, op2b, 0))
     {
+      /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ORIF_EXPR, code1, code2,
 				    boolean_type_node, op1a, op1b);
@@ -2556,6 +2587,7 @@ or_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
   if (operand_equal_p (op1a, op2b, 0)
       && operand_equal_p (op1b, op2a, 0))
     {
+      /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ORIF_EXPR, code1,
 				    swap_tree_comparison (code2),
@@ -3245,7 +3277,7 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
       double_int bitoffset;
       double_int byte_offset_cst = tree_to_double_int (byte_offset);
       double_int bits_per_unit_cst = uhwi_to_double_int (BITS_PER_UNIT);
-      double_int bitoffset_end;
+      double_int bitoffset_end, access_end;
 
       /* Variable sized objects in static constructors makes no sense,
 	 but field_size can be NULL for flexible array members.  */
@@ -3266,20 +3298,24 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
       else
 	bitoffset_end = double_int_zero;
 
-      /* Is OFFSET in the range (BITOFFSET, BITOFFSET_END)?  */
-      if (double_int_cmp (uhwi_to_double_int (offset), bitoffset, 0) >= 0
+      access_end = double_int_add (uhwi_to_double_int (offset),
+				   uhwi_to_double_int (size));
+
+      /* Is there any overlap between [OFFSET, OFFSET+SIZE) and
+	 [BITOFFSET, BITOFFSET_END)?  */
+      if (double_int_cmp (access_end, bitoffset, 0) > 0
 	  && (field_size == NULL_TREE
 	      || double_int_cmp (uhwi_to_double_int (offset),
 				 bitoffset_end, 0) < 0))
 	{
-	  double_int access_end = double_int_add (uhwi_to_double_int (offset),
-						  uhwi_to_double_int (size));
 	  double_int inner_offset = double_int_sub (uhwi_to_double_int (offset),
 						    bitoffset);
 	  /* We do have overlap.  Now see if field is large enough to
 	     cover the access.  Give up for accesses spanning multiple
 	     fields.  */
 	  if (double_int_cmp (access_end, bitoffset_end, 0) > 0)
+	    return NULL_TREE;
+	  if (double_int_cmp (uhwi_to_double_int (offset), bitoffset, 0) < 0)
 	    return NULL_TREE;
 	  return fold_ctor_reference (type, cval,
 				      double_int_to_uhwi (inner_offset), size);

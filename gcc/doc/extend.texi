@@ -1629,7 +1629,7 @@ such an initializer, as shown here:
 char **foo = (char *[]) @{ "x", "y", "z" @};
 @end smallexample
 
-Compound literals for scalar types and union types are is
+Compound literals for scalar types and union types are
 also allowed, but then the compound literal is equivalent
 to a cast.
 
@@ -2819,15 +2819,15 @@ defined by shared libraries.
 @cindex @code{ms_abi} attribute
 @cindex @code{sysv_abi} attribute
 
-On 64-bit x86_64-*-* targets, you can use an ABI attribute to indicate
-which calling convention should be used for a function.  The @code{ms_abi}
-attribute tells the compiler to use the Microsoft ABI, while the
-@code{sysv_abi} attribute tells the compiler to use the ABI used on
-GNU/Linux and other systems.  The default is to use the Microsoft ABI
-when targeting Windows.  On all other systems, the default is the AMD ABI.
+On 32-bit and 64-bit (i?86|x86_64)-*-* targets, you can use an ABI attribute
+to indicate which calling convention should be used for a function.  The
+@code{ms_abi} attribute tells the compiler to use the Microsoft ABI,
+while the @code{sysv_abi} attribute tells the compiler to use the ABI
+used on GNU/Linux and other systems.  The default is to use the Microsoft ABI
+when targeting Windows.  On all other systems, the default is the x86/AMD ABI.
 
-Note, the @code{ms_abi} attribute for Windows targets currently requires
-the @option{-maccumulate-outgoing-args} option.
+Note, the @code{ms_abi} attribute for Windows 64-bit targets currently
+requires the @option{-maccumulate-outgoing-args} option.
 
 @item callee_pop_aggregate_return (@var{number})
 @cindex @code{callee_pop_aggregate_return} attribute
@@ -2836,11 +2836,11 @@ On 32-bit i?86-*-* targets, you can control by those attribute for
 aggregate return in memory, if the caller is responsible to pop the hidden
 pointer together with the rest of the arguments - @var{number} equal to
 zero -, or if the callee is responsible to pop hidden pointer - @var{number}
-equal to one.
+equal to one.  The default i386 ABI assumes that the callee pops the
+stack for hidden pointer.
 
-For i?86-netware, the caller pops the stack for the hidden arguments pointing
-to aggregate return value.  This differs from the default i386 ABI which assumes
-that the callee pops the stack for hidden pointer.
+Note, that on 32-bit i386 Windows targets the compiler assumes that the
+caller pops the stack for hidden pointer.
 
 @item ms_hook_prologue
 @cindex @code{ms_hook_prologue} attribute
@@ -3594,7 +3594,7 @@ away so that a longer more expensive calling sequence is required.
 @item cpu=@var{CPU}
 @cindex @code{target("cpu=@var{CPU}")} attribute
 Specify the architecture to generate code for when compiling the
-function.  If you select the @code{"target("cpu=power7)"} attribute when
+function.  If you select the @code{target("cpu=power7")} attribute when
 generating 32-bit code, VSX and Altivec instructions are not generated
 unless you use the @option{-mabi=altivec} option on the command line.
 
@@ -7975,6 +7975,7 @@ instructions, but allow the compiler to schedule those calls.
 * RX Built-in Functions::
 * SPARC VIS Built-in Functions::
 * SPU Built-in Functions::
+* TI C6X Built-in Functions::
 @end menu
 
 @node Alpha Built-in Functions
@@ -8226,8 +8227,8 @@ or if not a specific built-in is implemented or not. For example, if
 The following built-in functions map to the respective machine
 instruction, i.e. @code{nop}, @code{sei}, @code{cli}, @code{sleep},
 @code{wdr}, @code{swap}, @code{fmul}, @code{fmuls}
-resp. @code{fmulsu}. The latter three are only available if the AVR
-device actually supports multiplication.
+resp. @code{fmulsu}. The three @code{fmul*} built-ins are implemented
+as library call if no hardware multiplier is available.
 
 @smallexample
 void __builtin_avr_nop (void)
@@ -9675,6 +9676,11 @@ All of them generate the machine instruction that is part of the name.
 @smallexample
 unsigned int __builtin_ia32_bextr_u32(unsigned int, unsigned int);
 unsigned long long __builtin_ia32_bextr_u64 (unsigned long long, unsigned long long);
+@end smallexample
+
+The following built-in functions are available when @option{-mlzcnt} is used.
+All of them generate the machine instruction that is part of the name.
+@smallexample
 unsigned short __builtin_ia32_lzcnt_16(unsigned short);
 unsigned int __builtin_ia32_lzcnt_u32(unsigned int);
 unsigned long long __builtin_ia32_lzcnt_u64 (unsigned long long);
@@ -12792,6 +12798,45 @@ The extended version of @code{__builtin_expect} is not supported.
 specification is supported. Internally, GCC uses built-in functions to
 implement the required functionality, but these are not supported and
 are subject to change without notice.
+
+@node TI C6X Built-in Functions
+@subsection TI C6X Built-in Functions
+
+GCC provides intrinsics to access certain instructions of the TI C6X
+processors.  These intrinsics, listed below, are available after
+inclusion of the @code{c6x_intrinsics.h} header file.  They map directly
+to C6X instructions.
+
+@smallexample
+
+int _sadd (int, int)
+int _ssub (int, int)
+int _sadd2 (int, int)
+int _ssub2 (int, int)
+long long _mpy2 (int, int)
+long long _smpy2 (int, int)
+int _add4 (int, int)
+int _sub4 (int, int)
+int _saddu4 (int, int)
+
+int _smpy (int, int)
+int _smpyh (int, int)
+int _smpyhl (int, int)
+int _smpylh (int, int)
+
+int _sshl (int, int)
+int _subc (int, int)
+
+int _avg2 (int, int)
+int _avgu4 (int, int)
+
+int _clrr (int, int)
+int _extr (int, int)
+int _extru (int, int)
+int _abs (int)
+int _abs2 (int)
+
+@end smallexample
 
 @node Target Format Checks
 @section Format Checks Specific to Particular Target Machines

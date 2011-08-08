@@ -68,6 +68,7 @@ namespace __gnu_test
     operator=(rvalstruct&& in)
     {
       bool test __attribute__((unused)) = true;
+      VERIFY( this != &in );
       VERIFY( in.valid == true );
       val = in.val;
       in.valid = false;

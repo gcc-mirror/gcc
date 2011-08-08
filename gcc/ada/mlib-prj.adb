@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2010, AdaCore                     --
+--                     Copyright (C) 2001-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,23 +73,29 @@ package body MLib.Prj is
    --  Name_Id for "g-trasym.ads"
 
    Arguments : String_List_Access := No_Argument;
-   --  Used to accumulate arguments for the invocation of gnatbind and of
-   --  the compiler. Also used to collect the interface ALI when copying
-   --  the ALI files to the library directory.
+   --  Used to accumulate arguments for the invocation of gnatbind and of the
+   --  compiler. Also used to collect the interface ALI when copying the ALI
+   --  files to the library directory.
 
    Argument_Number : Natural := 0;
    --  Index of the last argument in Arguments
 
    Initial_Argument_Max : constant := 10;
+   --  Where does the magic constant 10 come from???
 
-   No_Main_String : aliased String := "-n";
-   No_Main : constant String_Access := No_Main_String'Access;
+   No_Main_String        : aliased String         := "-n";
+   No_Main               : constant String_Access := No_Main_String'Access;
 
-   Output_Switch_String : aliased String := "-o";
-   Output_Switch : constant String_Access := Output_Switch_String'Access;
+   Output_Switch_String  : aliased String         := "-o";
+   Output_Switch         : constant String_Access :=
+                             Output_Switch_String'Access;
 
-   Compile_Switch_String : aliased String := "-c";
-   Compile_Switch : constant String_Access := Compile_Switch_String'Access;
+   Compile_Switch_String : aliased String         := "-c";
+   Compile_Switch        : constant String_Access :=
+                             Compile_Switch_String'Access;
+
+   No_Warning_String     : aliased String         := "-gnatws";
+   No_Warning            : constant String_Access := No_Warning_String'Access;
 
    Auto_Initialize : constant String := "-a";
 
@@ -293,27 +299,24 @@ package body MLib.Prj is
    is
       Maximum_Size : Integer;
       pragma Import (C, Maximum_Size, "__gnat_link_max");
-      --  Maximum number of bytes to put in an invocation of the
-      --  gnatbind.
+      --  Maximum number of bytes to put in an invocation of gnatbind
 
       Size : Integer;
-      --  The number of bytes for the invocation of the gnatbind
+      --  The number of bytes for the invocation of gnatbind
 
       Warning_For_Library : Boolean := False;
-      --  Set to True for the first warning about a unit missing from the
-      --  interface set.
+      --  Set True for first warning for a unit missing from the interface set
 
       Current_Proj : Project_Id;
 
       Libgnarl_Needed   : Yes_No_Unknown := For_Project.Libgnarl_Needed;
-      --  Set to True if library needs to be linked with libgnarl
+      --  Set True if library needs to be linked with libgnarl
 
       Libdecgnat_Needed : Boolean := False;
-      --  On OpenVMS, set to True if library needs to be linked with libdecgnat
+      --  On OpenVMS, set True if library needs to be linked with libdecgnat
 
       Gtrasymobj_Needed : Boolean := False;
-      --  On OpenVMS, set to True if library needs to be linked with
-      --  g-trasym.obj.
+      --  On OpenVMS, set rue if library needs to be linked with g-trasym.obj
 
       Object_Directory_Path : constant String :=
                                 Get_Name_String
@@ -351,15 +354,14 @@ package body MLib.Prj is
       --  Initial size of Rpath, when first allocated
 
       Path_Option : String_Access := Linker_Library_Path_Option;
-      --  If null, Path Option is not supported.
-      --  Not a constant so that it can be deallocated.
+      --  If null, Path Option is not supported. Not a constant so that it can
+      --  be deallocated.
 
       First_ALI : File_Name_Type := No_File;
       --  Store the ALI file name of a source of the library (the first found)
 
       procedure Add_ALI_For (Source : File_Name_Type);
-      --  Add the name of the ALI file corresponding to Source to the
-      --  Arguments.
+      --  Add name of the ALI file corresponding to Source to the Arguments
 
       procedure Add_Rpath (Path : String);
       --  Add a path name to Rpath
@@ -372,8 +374,8 @@ package body MLib.Prj is
       --  to link with -lgnarl (this is the case when there is a dependency
       --  on s-osinte.ads). On OpenVMS, set Libdecgnat_Needed if the ALI file
       --  indicates that there is a need to link with -ldecgnat (this is the
-      --  case when there is a dependency on dec.ads), and set
-      --  Gtrasymobj_Needed if there is a dependency on g-trasym.ads.
+      --  case when there is a dependency on dec.ads). Set Gtrasymobj_Needed
+      --  if there is a dependency on g-trasym.ads.
 
       procedure Process (The_ALI : File_Name_Type);
       --  Check if the closure of a library unit which is or should be in the
@@ -862,7 +864,7 @@ package body MLib.Prj is
                Arguments := new String_List (1 .. Initial_Argument_Max);
             end if;
 
-            --  Add "-n -o b~<lib>.adb (b__<lib>.adb on VMS) -L<lib>"
+            --  Add "-n -o b~<lib>.adb (b__<lib>.adb on VMS) -L<lib>_"
 
             Argument_Number := 2;
             Arguments (1) := No_Main;
@@ -875,7 +877,17 @@ package body MLib.Prj is
             Add_Argument
               (B_Start.all
                & Get_Name_String (For_Project.Library_Name) & ".adb");
-            Add_Argument ("-L" & Get_Name_String (For_Project.Library_Name));
+
+            --  Make sure that the init procedure is never "adainit"
+
+            Get_Name_String (For_Project.Library_Name);
+
+            if Name_Buffer (1 .. Name_Len) = "ada" then
+               Add_Argument ("-Lada_");
+            else
+               Add_Argument
+                 ("-L" & Get_Name_String (For_Project.Library_Name));
+            end if;
 
             if For_Project.Lib_Auto_Init and then SALs_Use_Constructors then
                Add_Argument (Auto_Initialize);
@@ -889,7 +901,7 @@ package body MLib.Prj is
                                   Value_Of
                                     (Name        => Name_Binder,
                                      In_Packages => For_Project.Decl.Packages,
-                                     In_Tree     => In_Tree);
+                                     Shared      => In_Tree.Shared);
 
             begin
                if Binder_Package /= No_Package then
@@ -898,12 +910,12 @@ package body MLib.Prj is
                                   Value_Of
                                     (Name      => Name_Default_Switches,
                                      In_Arrays =>
-                                       In_Tree.Packages.Table
+                                       In_Tree.Shared.Packages.Table
                                          (Binder_Package).Decl.Arrays,
-                                     In_Tree   => In_Tree);
-                     Switches : Variable_Value := Nil_Variable_Value;
+                                     Shared    => In_Tree.Shared);
 
-                     Switch : String_List_Id := Nil_String;
+                     Switches : Variable_Value := Nil_Variable_Value;
+                     Switch   : String_List_Id := Nil_String;
 
                   begin
                      if Defaults /= No_Array_Element then
@@ -912,7 +924,7 @@ package body MLib.Prj is
                             (Index     => Name_Ada,
                              Src_Index => 0,
                              In_Array  => Defaults,
-                             In_Tree   => In_Tree);
+                             Shared    => In_Tree.Shared);
 
                         if not Switches.Default then
                            Switch := Switches.Values;
@@ -920,9 +932,9 @@ package body MLib.Prj is
                            while Switch /= Nil_String loop
                               Add_Argument
                                 (Get_Name_String
-                                   (In_Tree.String_Elements.Table
+                                   (In_Tree.Shared.String_Elements.Table
                                       (Switch).Value));
-                              Switch := In_Tree.String_Elements.
+                              Switch := In_Tree.Shared.String_Elements.
                                           Table (Switch).Next;
                            end loop;
                         end if;
@@ -950,16 +962,15 @@ package body MLib.Prj is
                then
                   if Check_Project (Unit.File_Names (Impl).Project) then
                      if Unit.File_Names (Spec) = null then
+
+                        --  Add the ALI file only if it is not a subunit
+
                         declare
-                           Src_Ind : Source_File_Index;
-
+                           Src_Ind : constant Source_File_Index :=
+                                       Sinput.P.Load_Project_File
+                                         (Get_Name_String
+                                           (Unit.File_Names (Impl).Path.Name));
                         begin
-                           Src_Ind := Sinput.P.Load_Project_File
-                                        (Get_Name_String
-                                          (Unit.File_Names (Impl).Path.Name));
-
-                           --  Add the ALI file only if it is not a subunit
-
                            if not
                              Sinput.P.Source_File_Is_Subunit (Src_Ind)
                            then
@@ -1168,15 +1179,15 @@ package body MLib.Prj is
 
             --  Invoke <gcc> -c b__<lib>.adb
 
-            --  Allocate Arguments, if it is the first time we see a standalone
-            --  library.
+            --  Allocate Arguments, if first time we see a standalone library
 
             if Arguments = No_Argument then
                Arguments := new String_List (1 .. Initial_Argument_Max);
             end if;
 
-            Argument_Number := 1;
+            Argument_Number := 2;
             Arguments (1) := Compile_Switch;
+            Arguments (2) := No_Warning;
 
             if OpenVMS_On_Target then
                B_Start := new String'("b__");
@@ -1234,8 +1245,7 @@ package body MLib.Prj is
                end;
             end if;
 
-            --  Now that all the arguments are set, compile the binder
-            --  generated file.
+            --  Now all the arguments are set, compile binder generated file
 
             Display (Gcc);
             Spawn
@@ -1249,7 +1259,7 @@ package body MLib.Prj is
 
             --  Process binder generated file for pragmas Linker_Options
 
-            Process_Binder_File (Arguments (2).all & ASCII.NUL);
+            Process_Binder_File (Arguments (3).all & ASCII.NUL);
          end if;
       end if;
 
@@ -1264,11 +1274,11 @@ package body MLib.Prj is
             Driver_Name := Name_Id (For_Project.Config.Shared_Lib_Driver);
          end if;
 
-         --  If attribute Library_Options was specified, add these additional
-         --  options.
+         --  If attribute Library_Options was specified, add these options
 
          Library_Options := Value_Of
-           (Name_Library_Options, For_Project.Decl.Attributes, In_Tree);
+           (Name_Library_Options, For_Project.Decl.Attributes,
+            In_Tree.Shared);
 
          if not Library_Options.Default then
             declare
@@ -1278,7 +1288,7 @@ package body MLib.Prj is
             begin
                Current := Library_Options.Values;
                while Current /= Nil_String loop
-                  Element := In_Tree.String_Elements.Table (Current);
+                  Element := In_Tree.Shared.String_Elements.Table (Current);
                   Get_Name_String (Element.Value);
 
                   if Name_Len /= 0 then
@@ -1294,8 +1304,8 @@ package body MLib.Prj is
 
          Lib_Dirpath  :=
            new String'(Get_Name_String (For_Project.Library_Dir.Display_Name));
-         Lib_Filename := new String'
-           (Get_Name_String (For_Project.Library_Name));
+         Lib_Filename :=
+           new String'(Get_Name_String (For_Project.Library_Name));
 
          case For_Project.Library_Kind is
             when Static =>
@@ -1340,7 +1350,7 @@ package body MLib.Prj is
          loop
             if Current_Proj.Object_Directory /= No_Path_Information then
 
-               --  The following code gets far too indented, I suggest some
+               --  The following code gets far too indented ... suggest some
                --  procedural abstraction here. How about making this declare
                --  block a named procedure???
 
@@ -1544,8 +1554,7 @@ package body MLib.Prj is
          Opts.Increment_Last;
          Opts.Table (Opts.Last) := new String'("-L" & Lib_Directory);
 
-         --  If Path Option is supported, add libgnat directory path name to
-         --  Rpath.
+         --  If Path Option supported, add libgnat directory path name to Rpath
 
          if Path_Option /= null then
             declare
@@ -1748,12 +1757,12 @@ package body MLib.Prj is
                while Iface /= Nil_String loop
                   ALI :=
                     File_Name_Type
-                      (In_Tree.String_Elements.Table (Iface).Value);
+                      (In_Tree.Shared.String_Elements.Table (Iface).Value);
                   Interface_ALIs.Set (ALI, True);
                   Get_Name_String
-                    (In_Tree.String_Elements.Table (Iface).Value);
+                    (In_Tree.Shared.String_Elements.Table (Iface).Value);
                   Add_Argument (Name_Buffer (1 .. Name_Len));
-                  Iface := In_Tree.String_Elements.Table (Iface).Next;
+                  Iface := In_Tree.Shared.String_Elements.Table (Iface).Next;
                end loop;
 
                Iface := For_Project.Lib_Interface_ALIs;
@@ -1767,9 +1776,10 @@ package body MLib.Prj is
                   while Iface /= Nil_String loop
                      ALI :=
                        File_Name_Type
-                         (In_Tree.String_Elements.Table (Iface).Value);
+                         (In_Tree.Shared.String_Elements.Table (Iface).Value);
                      Process (ALI);
-                     Iface := In_Tree.String_Elements.Table (Iface).Next;
+                     Iface :=
+                       In_Tree.Shared.String_Elements.Table (Iface).Next;
                   end loop;
                end if;
             end;

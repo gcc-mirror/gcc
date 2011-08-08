@@ -1,3 +1,40 @@
+2011-07-28  Gabriel Charette  <gchare@google.com>
+
+	* include/line-map.h (struct line_maps):
+	Remove unused field last_listed. Update all users.
+
+2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac: Set need_64bit_hwint to yes for x86 targets.
+	* configure: Regenerated.
+
+2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* system.h [__cplusplus]: Wrap C function declarations in extern "C".
+
+2011-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/49794
+	* configure.ac: Test AM_ICONV with CXX.
+	* configure: Regenerate.
+	* system.h (HAVE_DESIGNATED_INITIALIZERS): Never define for C++.
+
+2011-07-15  Dodji Seketeli  <dodji@redhat.com>
+
+	* directives.c (struct if_stack): Use source_location as type
+	here.
+	* include/cpplib.h (struct cpp_callbacks)<include, define, undef,
+	indent, def_pragma, used_define, used_undef>: Properly use
+	source_location as parameter type, rather than unsigned int.
+
+2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/39150
+	* configure.ac (host_wide_int): Handle x86_64-*-solaris2.1[0-9]
+	like i[34567]86-*-solaris2.1[0-9]*.
+	* configure: Regenerate.
+
 2011-06-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/45399

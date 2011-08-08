@@ -610,7 +610,7 @@ package body Sem_Dist is
       --  is active), and there are order of elaboration problems if we do try
       --  to generate an init proc for this created record type.
 
-      Set_Suppress_Init_Proc (Fat_Type);
+      Set_Suppress_Initialization (Fat_Type);
 
       if Expander_Active then
          Add_RAST_Features (Parent (User_Type));

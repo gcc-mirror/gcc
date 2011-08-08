@@ -1,6 +1,0 @@
-softfp_float_modes := tf
-softfp_int_modes := si di ti
-softfp_extensions := sftf dftf xftf
-softfp_truncations := tfsf tfdf tfxf
-softfp_machine_header := i386/sfp-machine.h
-softfp_exclude_libgcc2 := n

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2005-2010, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2005-2011, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -37,6 +37,10 @@
 #define _BSD
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
@@ -52,10 +56,25 @@
 #include <stdlib.h>
 #endif
 
-#if defined (__vxworks) \
-  && ! (defined (__RTP__) || defined (__COREOS__) || defined (__VXWORKSMILS__))
-#include "envLib.h"
-extern char** ppGlobalEnviron;
+#if defined (__vxworks)
+  #if defined (__RTP__)
+    /* On VxWorks 6 Real-Time process mode, environ is defined in unistd.h.  */
+    #include <unistd.h>
+  #elif defined (VTHREADS)
+    /* VTHREADS mode applies to both VxWorks 653 and VxWorks MILS. The
+       inclusion of vThreadsData.h is necessary to workaround a bug with
+       envLib.h on VxWorks MILS and VxWorks 653.  */
+    #include <vThreadsData.h>
+    #include <envLib.h>
+  #else
+    /* This should work for kernel mode on both VxWorks 5 and VxWorks 6.  */
+    #include <envLib.h>
+
+    /* In that mode environ is a macro which reference the following symbol.
+       As the symbol is not defined in any VxWorks include files we declare
+       it as extern.  */
+    extern char** ppGlobalEnviron;
+  #endif
 #endif
 
 /* We don't have libiberty, so use malloc.  */
@@ -67,6 +86,10 @@ extern char** ppGlobalEnviron;
 
 #if defined (__APPLE__)
 #include <crt_externs.h>
+#endif
+
+#ifdef VMS
+#include <vms/descrip.h>
 #endif
 
 #include "env.h"
@@ -89,17 +112,11 @@ __gnat_getenv (char *name, int *len, char **value)
 
 static char *to_host_path_spec (char *);
 
-struct descriptor_s
-{
-  unsigned short len, mbz;
-  __char_ptr32 adr;
-};
-
 typedef struct _ile3
 {
   unsigned short len, code;
   __char_ptr32 adr;
-  unsigned short *retlen_adr;
+  __char_ptr32 retlen_adr;
 } ile_s;
 
 #endif
@@ -108,18 +125,18 @@ void
 __gnat_setenv (char *name, char *value)
 {
 #if defined (VMS)
-  struct descriptor_s name_desc;
-  /* Put in JOB table for now, so that the project stuff at least works.  */
-  struct descriptor_s table_desc = {7, 0, "LNM$JOB"};
+  struct dsc$descriptor_s name_desc;
+  $DESCRIPTOR (table_desc, "LNM$PROCESS");
   char *host_pathspec = value;
   char *copy_pathspec;
   int num_dirs_in_pathspec = 1;
   char *ptr;
   long status;
 
-  name_desc.len = strlen (name);
-  name_desc.mbz = 0;
-  name_desc.adr = name;
+  name_desc.dsc$w_length = strlen (name);
+  name_desc.dsc$b_dtype = DSC$K_DTYPE_T;
+  name_desc.dsc$b_class = DSC$K_CLASS_S;
+  name_desc.dsc$a_pointer = name; /* ??? Danger, not 64bit safe.  */
 
   if (*host_pathspec == 0)
     /* deassign */
@@ -137,6 +154,7 @@ __gnat_setenv (char *name, char *value)
 
   {
     int i, status;
+    /* Alloca is guaranteed to be 32bit.  */
     ile_s *ile_array = alloca (sizeof (ile_s) * (num_dirs_in_pathspec + 1));
     char *copy_pathspec = alloca (strlen (host_pathspec) + 1);
     char *curr, *next;
@@ -197,8 +215,7 @@ __gnat_setenv (char *name, char *value)
 char **
 __gnat_environ (void)
 {
-#if defined (VMS) || defined (RTX) \
-   || (defined (VTHREADS) && ! defined (__VXWORKSMILS__))
+#if defined (VMS) || defined (RTX)
   /* Not implemented */
   return NULL;
 #elif defined (__APPLE__)
@@ -209,14 +226,10 @@ __gnat_environ (void)
 #elif defined (sun)
   extern char **_environ;
   return _environ;
-#else
-#if ! (defined (__vxworks) \
-   && ! (defined (__RTP__) || defined (__COREOS__) \
-   || defined (__VXWORKSMILS__)))
-  /* in VxWorks kernel mode environ is macro and not a variable */
-  /* same thing on 653 in the CoreOS and for VxWorks MILS vThreads */
+#elif ! (defined (__vxworks))
   extern char **environ;
-#endif
+  return environ;
+#else
   return environ;
 #endif
 }
@@ -313,13 +326,19 @@ void __gnat_clearenv (void) {
     /* create a string that contains "name" */
     size++;
     {
-      char expression[size];
+      char *expression;
+      expression = (char *) xmalloc (size * sizeof (char));
       strncpy (expression, env[0], size);
       expression[size - 1] = 0;
       __gnat_unsetenv (expression);
+      free (expression);
     }
   }
 #else
   clearenv ();
 #endif
 }
+
+#ifdef __cplusplus
+}
+#endif

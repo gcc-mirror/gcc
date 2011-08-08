@@ -27,4 +27,4 @@ END MODULE
   USE M2
   CALL S2
 END
-! { dg-final { cleanup-modules "M1 M2" } }
+! { dg-final { cleanup-modules "m1 m2" } }

@@ -1296,7 +1296,7 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
       case $lt_cv_prog_gnu_ld in
       yes*)
         case $host in
-        i?86-*-solaris*)
+        i?86-*-solaris* | x86_64-*-solaris2.1[[0-9]]*)
           LD="${LD-ld} -m elf_x86_64"
           ;;
         sparc*-*-solaris*)

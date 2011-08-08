@@ -35,6 +35,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr-common.h"
 #include "common/common-target.h"
 
+/* Indexed by enum debug_info_type.  */
+const char *const debug_type_names[] =
+{
+  "none", "stabs", "coff", "dwarf-2", "xcoff", "vms"
+};
+
 /* Parse the -femit-struct-debug-detailed option value
    and set the flag variables. */
 
@@ -760,11 +766,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       maybe_set_param_value (PARAM_STACK_FRAME_GROWTH, 40,
 			     opts->x_param_values, opts_set->x_param_values);
     }
-  if (opts->x_flag_wpa || opts->x_flag_ltrans)
-    {
-      /* These passes are not WHOPR compatible yet.  */
-      opts->x_flag_ipa_pta = 0;
-    }
 
   if (opts->x_flag_lto)
     {
@@ -986,7 +987,7 @@ print_filtered_help (unsigned int include_flags,
 
       /* With the -Q option enabled we change the descriptive text associated
 	 with an option to be an indication of its current setting.  */
-      if (!quiet_flag)
+      if (!opts->x_quiet_flag)
 	{
 	  void *flag_var = option_flag_var (i, opts);
 
@@ -1246,6 +1247,9 @@ common_handle_option (struct gcc_options *opts,
 	unsigned int undoc_mask;
 	unsigned int i;
 
+	if (lang_mask == CL_DRIVER)
+	  break;;
+
 	undoc_mask = ((opts->x_verbose_flag | opts->x_extra_warnings)
 		      ? 0
 		      : CL_UNDOCUMENTED);
@@ -1265,6 +1269,9 @@ common_handle_option (struct gcc_options *opts,
       }
 
     case OPT__target_help:
+      if (lang_mask == CL_DRIVER)
+	break;
+
       print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0, opts, lang_mask);
       opts->x_exit_after_options = true;
       break;
@@ -1279,6 +1286,9 @@ common_handle_option (struct gcc_options *opts,
 
 	   --help=target,^undocumented  */
 	unsigned int exclude_flags = 0;
+
+	if (lang_mask == CL_DRIVER)
+	  break;
 
 	/* Walk along the argument string, parsing each word in turn.
 	   The format is:
@@ -1390,6 +1400,9 @@ common_handle_option (struct gcc_options *opts,
       }
 
     case OPT__version:
+      if (lang_mask == CL_DRIVER)
+	break;
+
       opts->x_exit_after_options = true;
       break;
 
@@ -1400,6 +1413,9 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_Werror_:
+      if (lang_mask == CL_DRIVER)
+	break;
+
       enable_warning_as_error (arg, value, lang_mask, handlers,
 			       opts, opts_set, loc, dc);
       break;
@@ -1576,7 +1592,7 @@ common_handle_option (struct gcc_options *opts,
       /* FIXME: Instrumentation we insert makes ipa-reference bitmaps
 	 quadratic.  Disable the pass until better memory representation
 	 is done.  */
-      if (!opts_set->x_flag_ipa_reference && in_lto_p)
+      if (!opts_set->x_flag_ipa_reference && opts->x_in_lto_p)
         opts->x_flag_ipa_reference = false;
       break;
 
@@ -1666,7 +1682,7 @@ common_handle_option (struct gcc_options *opts,
       if (value < 2 || value > 4)
 	error_at (loc, "dwarf version %d is not supported", value);
       else
-	dwarf_version = value;
+	opts->x_dwarf_version = value;
       set_debug_level (DWARF2_DEBUG, false, "", opts, opts_set, loc);
       break;
 
@@ -1713,7 +1729,7 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_Wuninitialized:
       /* Also turn on maybe uninitialized warning.  */
-      warn_maybe_uninitialized = value;
+      opts->x_warn_maybe_uninitialized = value;
       break;
 
     default:

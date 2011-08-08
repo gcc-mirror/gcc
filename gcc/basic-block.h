@@ -65,31 +65,34 @@ DEF_VEC_P(edge);
 DEF_VEC_ALLOC_P(edge,gc);
 DEF_VEC_ALLOC_P(edge,heap);
 
-#define EDGE_FALLTHRU		1	/* 'Straight line' flow */
-#define EDGE_ABNORMAL		2	/* Strange flow, like computed
+/* Always update the table in cfg.c dump_edge_info.  */
+#define EDGE_FALLTHRU		0x0001	/* 'Straight line' flow */
+#define EDGE_ABNORMAL		0x0002	/* Strange flow, like computed
 					   label, or eh */
-#define EDGE_ABNORMAL_CALL	4	/* Call with abnormal exit
+#define EDGE_ABNORMAL_CALL	0x0004	/* Call with abnormal exit
 					   like an exception, or sibcall */
-#define EDGE_EH			8	/* Exception throw */
-#define EDGE_FAKE		16	/* Not a real edge (profile.c) */
-#define EDGE_DFS_BACK		32	/* A backwards edge */
-#define EDGE_CAN_FALLTHRU	64	/* Candidate for straight line
+#define EDGE_EH			0x0008	/* Exception throw */
+#define EDGE_FAKE		0x0010	/* Not a real edge (profile.c) */
+#define EDGE_DFS_BACK		0x0020	/* A backwards edge */
+#define EDGE_CAN_FALLTHRU	0x0040	/* Candidate for straight line
 					   flow.  */
-#define EDGE_IRREDUCIBLE_LOOP	128	/* Part of irreducible loop.  */
-#define EDGE_SIBCALL		256	/* Edge from sibcall to exit.  */
-#define EDGE_LOOP_EXIT		512	/* Exit of a loop.  */
-#define EDGE_TRUE_VALUE		1024	/* Edge taken when controlling
+#define EDGE_IRREDUCIBLE_LOOP	0x0080	/* Part of irreducible loop.  */
+#define EDGE_SIBCALL		0x0100	/* Edge from sibcall to exit.  */
+#define EDGE_LOOP_EXIT		0x0200	/* Exit of a loop.  */
+#define EDGE_TRUE_VALUE		0x0400	/* Edge taken when controlling
 					   predicate is nonzero.  */
-#define EDGE_FALSE_VALUE	2048	/* Edge taken when controlling
+#define EDGE_FALSE_VALUE	0x0800	/* Edge taken when controlling
 					   predicate is zero.  */
-#define EDGE_EXECUTABLE		4096	/* Edge is executable.  Only
+#define EDGE_EXECUTABLE		0x1000	/* Edge is executable.  Only
 					   valid during SSA-CCP.  */
-#define EDGE_CROSSING		8192    /* Edge crosses between hot
+#define EDGE_CROSSING		0x2000	/* Edge crosses between hot
 					   and cold sections, when we
 					   do partitioning.  */
-#define EDGE_ALL_FLAGS	       16383
+#define EDGE_PRESERVE		0x4000	/* Never merge blocks via this edge. */
+#define EDGE_ALL_FLAGS		0x7fff
 
-#define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
+#define EDGE_COMPLEX \
+  (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH | EDGE_PRESERVE)
 
 /* Counter summary from the last set of coverage counts read by
    profile.c.  */
@@ -203,7 +206,9 @@ DEF_VEC_ALLOC_P(basic_block,heap);
    the compilation, so they are never cleared.
 
    All other flags may be cleared by clear_bb_flags().  It is generally
-   a bad idea to rely on any flags being up-to-date.  */
+   a bad idea to rely on any flags being up-to-date.
+
+   Always update the table in cfg.c dump_bb_info.  */
 
 enum bb_flags
 {
@@ -799,6 +804,7 @@ extern rtx block_label (basic_block);
 extern bool purge_all_dead_edges (void);
 extern bool purge_dead_edges (basic_block);
 extern bool fixup_abnormal_edges (void);
+extern basic_block force_nonfallthru_and_redirect (edge, basic_block);
 
 /* In cfgbuild.c.  */
 extern void find_many_sub_basic_blocks (sbitmap);

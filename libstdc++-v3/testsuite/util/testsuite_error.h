@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Error handling utils for the C++ library testsuite. 
 //
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,8 @@ namespace __gnu_test
     test_category() {}
 
     virtual const char*
-    name() const 
-    { 
+    name() const noexcept
+    {
       const char* s = "__gnu_test::test_category";
       return s;
     }
@@ -48,8 +48,8 @@ namespace __gnu_test
     test_derived_category() {}
 
     virtual const char*
-    name() const 
-    { 
+    name() const noexcept
+    {
       const char* s = "__gnu_test::test_derived_category";
       return s;
     }

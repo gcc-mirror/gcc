@@ -1,5 +1,4 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target lp64 } */
+/* { dg-do compile { target { ! { ia32 } } } } */
 /* { dg-options "-mno-sse" } */
 
 double foo(void) { return 0; }	/* { dg-error "SSE disabled" } */

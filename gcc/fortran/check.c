@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "intrinsic.h"
 #include "constructor.h"
+#include "target-memory.h"
 
 
 /* Make sure an expression is a scalar.  */
@@ -2895,7 +2896,9 @@ gfc_check_present (gfc_expr *a)
 
   if (a->ref != NULL
       && !(a->ref->next == NULL && a->ref->type == REF_ARRAY
-	   && a->ref->u.ar.type == AR_FULL))
+	   && (a->ref->u.ar.type == AR_FULL
+	       || (a->ref->u.ar.type == AR_ELEMENT
+		   && a->ref->u.ar.as->rank == 0))))
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must not be a "
 		 "subobject of '%s'", gfc_current_intrinsic_arg[0]->name,
@@ -3862,11 +3865,68 @@ gfc_check_this_image (gfc_expr *coarray, gfc_expr *dim)
   return SUCCESS;
 }
 
+/* Calculate the sizes for transfer, used by gfc_check_transfer and also
+   by gfc_simplify_transfer.  Return FAILURE if we cannot do so.  */
 
 gfc_try
-gfc_check_transfer (gfc_expr *source ATTRIBUTE_UNUSED,
-		    gfc_expr *mold ATTRIBUTE_UNUSED, gfc_expr *size)
+gfc_calculate_transfer_sizes (gfc_expr *source, gfc_expr *mold, gfc_expr *size,
+			      size_t *source_size, size_t *result_size,
+			      size_t *result_length_p)
+
 {
+  size_t result_elt_size;
+  mpz_t tmp;
+  gfc_expr *mold_element;
+
+  if (source->expr_type == EXPR_FUNCTION)
+    return FAILURE;
+
+    /* Calculate the size of the source.  */
+  if (source->expr_type == EXPR_ARRAY
+      && gfc_array_size (source, &tmp) == FAILURE)
+    return FAILURE;
+
+  *source_size = gfc_target_expr_size (source);
+
+  mold_element = mold->expr_type == EXPR_ARRAY
+		 ? gfc_constructor_first (mold->value.constructor)->expr
+		 : mold;
+
+  /* Determine the size of the element.  */
+  result_elt_size = gfc_target_expr_size (mold_element);
+  if (result_elt_size == 0)
+    return FAILURE;
+
+  if (mold->expr_type == EXPR_ARRAY || mold->rank || size)
+    {
+      int result_length;
+
+      if (size)
+	result_length = (size_t)mpz_get_ui (size->value.integer);
+      else
+	{
+	  result_length = *source_size / result_elt_size;
+	  if (result_length * result_elt_size < *source_size)
+	    result_length += 1;
+	}
+
+      *result_size = result_length * result_elt_size;
+      if (result_length_p)
+	*result_length_p = result_length;
+    }
+  else
+    *result_size = result_elt_size;
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
+{
+  size_t source_size;
+  size_t result_size;
+
   if (mold->ts.type == BT_HOLLERITH)
     {
       gfc_error ("'MOLD' argument of 'TRANSFER' intrinsic at %L must not be %s",
@@ -3885,6 +3945,21 @@ gfc_check_transfer (gfc_expr *source ATTRIBUTE_UNUSED,
       if (nonoptional_check (size, 2) == FAILURE)
 	return FAILURE;
     }
+
+  if (!gfc_option.warn_surprising)
+    return SUCCESS;
+
+  /* If we can't calculate the sizes, we cannot check any more.
+     Return SUCCESS for that case.  */
+
+  if (gfc_calculate_transfer_sizes (source, mold, size, &source_size,
+				    &result_size, NULL) == FAILURE)
+    return SUCCESS;
+
+  if (source_size < result_size)
+    gfc_warning("Intrinsic TRANSFER at %L has partly undefined result: "
+		"source size %ld < result size %ld", &source->where,
+		(long) source_size, (long) result_size);
 
   return SUCCESS;
 }

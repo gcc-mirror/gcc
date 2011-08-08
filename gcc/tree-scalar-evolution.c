@@ -572,7 +572,7 @@ set_scalar_evolution (basic_block instantiated_below, tree scalar, tree chrec)
 
   if (dump_file)
     {
-      if (dump_flags & TDF_DETAILS)
+      if (dump_flags & TDF_SCEV)
 	{
 	  fprintf (dump_file, "(set_scalar_evolution \n");
 	  fprintf (dump_file, "  instantiated_below = %d \n",
@@ -600,7 +600,7 @@ get_scalar_evolution (basic_block instantiated_below, tree scalar)
 
   if (dump_file)
     {
-      if (dump_flags & TDF_DETAILS)
+      if (dump_flags & TDF_SCEV)
 	{
 	  fprintf (dump_file, "(get_scalar_evolution \n");
 	  fprintf (dump_file, "  (scalar = ");
@@ -628,7 +628,7 @@ get_scalar_evolution (basic_block instantiated_below, tree scalar)
       break;
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (scalar_evolution = ");
       print_generic_expr (dump_file, res, 0);
@@ -861,7 +861,7 @@ add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
     /* This should not happen.  */
     return chrec_dont_know;
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "(add_to_evolution \n");
       fprintf (dump_file, "  (loop_nb = %d)\n", loop_nb);
@@ -879,7 +879,7 @@ add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
 
   res = add_to_evolution_1 (loop_nb, chrec_before, to_add, at_stmt);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (res = ");
       print_generic_expr (dump_file, res, 0);
@@ -905,7 +905,7 @@ get_loop_exit_condition (const struct loop *loop)
   gimple res = NULL;
   edge exit_edge = single_exit (loop);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     fprintf (dump_file, "(get_loop_exit_condition \n  ");
 
   if (exit_edge)
@@ -917,7 +917,7 @@ get_loop_exit_condition (const struct loop *loop)
 	res = stmt;
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       print_gimple_stmt (dump_file, res, 0, 0);
       fprintf (dump_file, ")\n");
@@ -1461,7 +1461,7 @@ analyze_evolution_in_loop (gimple loop_phi_node,
   struct loop *loop = loop_containing_stmt (loop_phi_node);
   basic_block bb;
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "(analyze_evolution_in_loop \n");
       fprintf (dump_file, "  (loop_phi_node = ");
@@ -1517,7 +1517,7 @@ analyze_evolution_in_loop (gimple loop_phi_node,
       evolution_function = chrec_merge (evolution_function, ev_fn);
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (evolution_function = ");
       print_generic_expr (dump_file, evolution_function, 0);
@@ -1541,7 +1541,7 @@ analyze_initial_condition (gimple loop_phi_node)
   tree init_cond = chrec_not_analyzed_yet;
   struct loop *loop = loop_containing_stmt (loop_phi_node);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "(analyze_initial_condition \n");
       fprintf (dump_file, "  (loop_phi_node = \n");
@@ -1593,7 +1593,7 @@ analyze_initial_condition (gimple loop_phi_node)
 	init_cond = res;
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (init_cond = ");
       print_generic_expr (dump_file, init_cond, 0);
@@ -1642,8 +1642,8 @@ interpret_loop_phi (struct loop *loop, gimple loop_phi_node)
       else if (TREE_CODE (res) == POLYNOMIAL_CHREC)
 	new_init = CHREC_LEFT (res);
       STRIP_USELESS_TYPE_CONVERSION (new_init);
-      gcc_assert (TREE_CODE (new_init) != POLYNOMIAL_CHREC);
-      if (!operand_equal_p (init_cond, new_init, 0))
+      if (TREE_CODE (new_init) == POLYNOMIAL_CHREC
+	  || !operand_equal_p (init_cond, new_init, 0))
 	return chrec_dont_know;
     }
 
@@ -1942,7 +1942,7 @@ analyze_scalar_evolution (struct loop *loop, tree var)
 {
   tree res;
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "(analyze_scalar_evolution \n");
       fprintf (dump_file, "  (loop_nb = %d)\n", loop->num);
@@ -1954,7 +1954,7 @@ analyze_scalar_evolution (struct loop *loop, tree var)
   res = get_scalar_evolution (block_before_loop (loop), var);
   res = analyze_scalar_evolution_1 (loop, var, res);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     fprintf (dump_file, ")\n");
 
   return res;
@@ -2645,6 +2645,7 @@ instantiate_scev_r (basic_block instantiate_below,
 				   TREE_OPERAND (chrec, 0),
 				   fold_conversions, cache, size_expr);
 
+    case ADDR_EXPR:
     case SCEV_NOT_KNOWN:
       return chrec_dont_know;
 
@@ -2700,7 +2701,7 @@ instantiate_scev (basic_block instantiate_below, struct loop *evolution_loop,
   tree res;
   htab_t cache = htab_create (10, hash_scev_info, eq_scev_info, del_scev_info);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "(instantiate_scev \n");
       fprintf (dump_file, "  (instantiate_below = %d)\n", instantiate_below->index);
@@ -2713,7 +2714,7 @@ instantiate_scev (basic_block instantiate_below, struct loop *evolution_loop,
   res = instantiate_scev_r (instantiate_below, evolution_loop, chrec, false,
 			    cache, 0);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (res = ");
       print_generic_expr (dump_file, res, 0);
@@ -2779,7 +2780,7 @@ number_of_latch_executions (struct loop *loop)
 
   may_be_zero = NULL_TREE;
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     fprintf (dump_file, "(number_of_iterations_in_loop = \n");
 
   res = chrec_dont_know;
@@ -2804,7 +2805,7 @@ number_of_latch_executions (struct loop *loop)
   else
     res = chrec_dont_know;
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "  (set_nb_iterations_in_loop = ");
       print_generic_expr (dump_file, res, 0);

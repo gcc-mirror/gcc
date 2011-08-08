@@ -136,19 +136,38 @@ typedef struct
 
 /* Structure used to describe the attributes of a MEM.  These are hashed
    so MEMs that the same attributes share a data structure.  This means
-   they cannot be modified in place.  If any element is nonzero, it means
-   the value of the corresponding attribute is unknown.  */
-/* ALIGN and SIZE are the alignment and size of the MEM itself,
-   while EXPR can describe a larger underlying object, which might have a
-   stricter alignment; OFFSET is the offset of the MEM within that object.  */
+   they cannot be modified in place.  */
 typedef struct GTY(()) mem_attrs
 {
-  tree expr;			/* expr corresponding to MEM.  */
-  rtx offset;			/* Offset from start of DECL, as CONST_INT.  */
-  rtx size;			/* Size in bytes, as a CONST_INT.  */
-  alias_set_type alias;		/* Memory alias set.  */
-  unsigned int align;		/* Alignment of MEM in bits.  */
-  unsigned char addrspace;	/* Address space (0 for generic).  */
+  /* The expression that the MEM accesses, or null if not known.
+     This expression might be larger than the memory reference itself.
+     (In other words, the MEM might access only part of the object.)  */
+  tree expr;
+
+  /* The offset of the memory reference from the start of EXPR.
+     Only valid if OFFSET_KNOWN_P.  */
+  HOST_WIDE_INT offset;
+
+  /* The size of the memory reference in bytes.  Only valid if
+     SIZE_KNOWN_P.  */
+  HOST_WIDE_INT size;
+
+  /* The alias set of the memory reference.  */
+  alias_set_type alias;
+
+  /* The alignment of the reference in bits.  Always a multiple of
+     BITS_PER_UNIT.  Note that EXPR may have a stricter alignment
+     than the memory reference itself.  */
+  unsigned int align;
+
+  /* The address space that the memory reference uses.  */
+  unsigned char addrspace;
+
+  /* True if OFFSET is known.  */
+  bool offset_known_p;
+
+  /* True if SIZE is known.  */
+  bool size_known_p;
 } mem_attrs;
 
 /* Structure used to describe the attributes of a REG in similar way as
@@ -180,6 +199,7 @@ union rtunion_def
   mem_attrs *rt_mem;
   reg_attrs *rt_reg;
   struct constant_descriptor_rtx *rt_constant;
+  struct dw_cfi_struct *rt_cfi;
 };
 typedef union rtunion_def rtunion;
 
@@ -411,6 +431,9 @@ struct GTY((variable_size)) rtvec_def {
 #define JUMP_TABLE_DATA_P(INSN) \
   (JUMP_P (INSN) && (GET_CODE (PATTERN (INSN)) == ADDR_VEC || \
 		     GET_CODE (PATTERN (INSN)) == ADDR_DIFF_VEC))
+
+/* Predicate yielding nonzero iff X is a return.  */
+#define ANY_RETURN_P(X) ((X) == ret_rtx)
 
 /* 1 if X is a unary operator.  */
 
@@ -708,6 +731,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define XTREE(RTX, N)   (RTL_CHECK1 (RTX, N, 't').rt_tree)
 #define XBBDEF(RTX, N)	(RTL_CHECK1 (RTX, N, 'B').rt_bb)
 #define XTMPL(RTX, N)	(RTL_CHECK1 (RTX, N, 'T').rt_str)
+#define XCFI(RTX, N)	(RTL_CHECK1 (RTX, N, 'C').rt_cfi)
 
 #define XVECEXP(RTX, N, M)	RTVEC_ELT (XVEC (RTX, N), M)
 #define XVECLEN(RTX, N)		GET_NUM_ELEM (XVEC (RTX, N))
@@ -740,6 +764,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define XCMODE(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rt_type)
 #define XCTREE(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rt_tree)
 #define XCBBDEF(RTX, N, C)    (RTL_CHECKC1 (RTX, N, C).rt_bb)
+#define XCCFI(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_cfi)
 #define XCCSELIB(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rt_cselib)
 
 #define XCVECEXP(RTX, N, M, C)	RTVEC_ELT (XCVEC (RTX, N, C), M)
@@ -883,6 +908,8 @@ extern const char * const reg_note_name[];
 #define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 4, NOTE)
 #define NOTE_BASIC_BLOCK(INSN)	XCBBDEF (INSN, 4, NOTE)
 #define NOTE_VAR_LOCATION(INSN)	XCEXP (INSN, 4, NOTE)
+#define NOTE_CFI(INSN)		XCCFI (INSN, 4, NOTE)
+#define NOTE_LABEL_NUMBER(INSN)	XCINT (INSN, 4, NOTE)
 
 /* In a NOTE that is a line number, this is the line number.
    Other kinds of NOTEs are identified by negative numbers here.  */
@@ -943,16 +970,6 @@ extern const char * const reg_note_name[];
 
 /* PARM_DECL DEBUG_PARAMETER_REF references.  */
 #define DEBUG_PARAMETER_REF_DECL(RTX) XCTREE (RTX, 0, DEBUG_PARAMETER_REF)
-
-/* Possible initialization status of a variable.   When requested
-   by the user, this information is tracked and recorded in the DWARF
-   debug information, along with the variable's location.  */
-enum var_init_status
-{
-  VAR_INIT_STATUS_UNKNOWN,
-  VAR_INIT_STATUS_UNINITIALIZED,
-  VAR_INIT_STATUS_INITIALIZED
-};
 
 /* Codes that appear in the NOTE_KIND field for kinds of notes
    that are not line numbers.  These codes are all negative.
@@ -1294,39 +1311,40 @@ do {									\
    in the block and provide defaults if none specified.  */
 #define REG_ATTRS(RTX) X0REGATTR (RTX, 2)
 
+#ifndef GENERATOR_FILE
 /* For a MEM rtx, the alias set.  If 0, this MEM is not in any alias
    set, and may alias anything.  Otherwise, the MEM can only alias
    MEMs in a conflicting alias set.  This value is set in a
    language-dependent manner in the front-end, and should not be
    altered in the back-end.  These set numbers are tested with
    alias_sets_conflict_p.  */
-#define MEM_ALIAS_SET(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->alias)
+#define MEM_ALIAS_SET(RTX) (get_mem_attrs (RTX)->alias)
 
 /* For a MEM rtx, the decl it is known to refer to, if it is known to
    refer to part of a DECL.  It may also be a COMPONENT_REF.  */
-#define MEM_EXPR(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->expr)
+#define MEM_EXPR(RTX) (get_mem_attrs (RTX)->expr)
 
-/* For a MEM rtx, the offset from the start of MEM_EXPR, if known, as a
-   RTX that is always a CONST_INT.  */
-#define MEM_OFFSET(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->offset)
+/* For a MEM rtx, true if its MEM_OFFSET is known.  */
+#define MEM_OFFSET_KNOWN_P(RTX) (get_mem_attrs (RTX)->offset_known_p)
+
+/* For a MEM rtx, the offset from the start of MEM_EXPR.  */
+#define MEM_OFFSET(RTX) (get_mem_attrs (RTX)->offset)
 
 /* For a MEM rtx, the address space.  */
-#define MEM_ADDR_SPACE(RTX) (MEM_ATTRS (RTX) == 0 ? ADDR_SPACE_GENERIC \
-						  : MEM_ATTRS (RTX)->addrspace)
+#define MEM_ADDR_SPACE(RTX) (get_mem_attrs (RTX)->addrspace)
 
-/* For a MEM rtx, the size in bytes of the MEM, if known, as an RTX that
-   is always a CONST_INT.  */
-#define MEM_SIZE(RTX)							\
-(MEM_ATTRS (RTX) != 0 ? MEM_ATTRS (RTX)->size				\
- : GET_MODE (RTX) != BLKmode ? GEN_INT (GET_MODE_SIZE (GET_MODE (RTX)))	\
- : 0)
+/* For a MEM rtx, true if its MEM_SIZE is known.  */
+#define MEM_SIZE_KNOWN_P(RTX) (get_mem_attrs (RTX)->size_known_p)
+
+/* For a MEM rtx, the size in bytes of the MEM.  */
+#define MEM_SIZE(RTX) (get_mem_attrs (RTX)->size)
 
 /* For a MEM rtx, the alignment in bits.  We can use the alignment of the
    mode as a default when STRICT_ALIGNMENT, but not if not.  */
-#define MEM_ALIGN(RTX)							\
-(MEM_ATTRS (RTX) != 0 ? MEM_ATTRS (RTX)->align				\
- : (STRICT_ALIGNMENT && GET_MODE (RTX) != BLKmode			\
-    ? GET_MODE_ALIGNMENT (GET_MODE (RTX)) : BITS_PER_UNIT))
+#define MEM_ALIGN(RTX) (get_mem_attrs (RTX)->align)
+#else
+#define MEM_ADDR_SPACE(RTX) ADDR_SPACE_GENERIC
+#endif
 
 /* For a REG rtx, the decl it is known to refer to, if it is known to
    refer to part of a DECL.  */
@@ -1633,6 +1651,7 @@ extern rtx operand_subword (rtx, unsigned int, int, enum machine_mode);
 
 /* In emit-rtl.c */
 extern rtx operand_subword_force (rtx, unsigned int, enum machine_mode);
+extern bool paradoxical_subreg_p (const_rtx);
 extern int subreg_lowpart_p (const_rtx);
 extern unsigned int subreg_lowpart_offset (enum machine_mode,
 					   enum machine_mode);
@@ -1816,6 +1835,11 @@ extern rtx simplify_rtx (const_rtx);
 extern rtx avoid_constant_pool_reference (rtx);
 extern rtx delegitimize_mem_from_attrs (rtx);
 extern bool mode_signbit_p (enum machine_mode, const_rtx);
+extern bool val_signbit_p (enum machine_mode, unsigned HOST_WIDE_INT);
+extern bool val_signbit_known_set_p (enum machine_mode,
+				     unsigned HOST_WIDE_INT);
+extern bool val_signbit_known_clear_p (enum machine_mode,
+				       unsigned HOST_WIDE_INT);
 
 /* In reginfo.c  */
 extern enum machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
@@ -2119,6 +2143,9 @@ struct GTY(()) target_rtl {
   /* Static hunks of RTL used by the aliasing code; these are treated
      as persistent to avoid unnecessary RTL allocations.  */
   rtx x_static_reg_base_value[FIRST_PSEUDO_REGISTER];
+
+  /* The default memory attributes for each mode.  */
+  struct mem_attrs *x_mode_mem_attrs[(int) MAX_MACHINE_MODE];
 };
 
 extern GTY(()) struct target_rtl default_target_rtl;
@@ -2136,6 +2163,8 @@ extern struct target_rtl *this_target_rtl;
   (this_target_rtl->x_return_address_pointer_rtx)
 #define top_of_stack \
   (this_target_rtl->x_top_of_stack)
+#define mode_mem_attrs \
+  (this_target_rtl->x_mode_mem_attrs)
 
 /* Standard pieces of rtx, to be substituted directly into things.  */
 #define pc_rtx                  (global_rtl[GR_PC])
@@ -2149,6 +2178,20 @@ extern struct target_rtl *this_target_rtl;
 #define frame_pointer_rtx       (global_rtl[GR_FRAME_POINTER])
 #define hard_frame_pointer_rtx	(global_rtl[GR_HARD_FRAME_POINTER])
 #define arg_pointer_rtx		(global_rtl[GR_ARG_POINTER])
+
+#ifndef GENERATOR_FILE
+/* Return the attributes of a MEM rtx.  */
+static inline struct mem_attrs *
+get_mem_attrs (const_rtx x)
+{
+  struct mem_attrs *attrs;
+
+  attrs = MEM_ATTRS (x);
+  if (!attrs)
+    attrs = mode_mem_attrs[(int) GET_MODE (x)];
+  return attrs;
+}
+#endif
 
 /* Include the RTL generation functions.  */
 
@@ -2301,6 +2344,7 @@ extern void check_for_inc_dec (rtx insn);
 
 /* In jump.c */
 extern int comparison_dominates_p (enum rtx_code, enum rtx_code);
+extern bool jump_to_label_p (rtx);
 extern int condjump_p (const_rtx);
 extern int any_condjump_p (const_rtx);
 extern int any_uncondjump_p (const_rtx);
@@ -2427,6 +2471,7 @@ extern void emit_jump (rtx);
 /* In expr.c */
 extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 			   unsigned int, int);
+extern int fixup_args_size_notes (rtx, rtx, int);
 
 /* In cfgrtl.c */
 extern void print_rtl_with_bb (FILE *, const_rtx);

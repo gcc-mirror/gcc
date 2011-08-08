@@ -15,8 +15,6 @@
 /* AVR doesn't have the entire C99 runtime.  */
 #elif defined(__FreeBSD__) && (__FreeBSD__ < 9)
 /* FreeBSD up to version 8 lacks support for cexp and friends.  */
-#elif defined(__netware__)
-/* NetWare doesn't have the entire C99 runtime.  */
 #elif defined(__vxworks)
 /* VxWorks doesn't have a full C99 time.  (cabs is missing, for example.)  */
 #elif defined(_WIN32) && !defined(__CYGWIN__)

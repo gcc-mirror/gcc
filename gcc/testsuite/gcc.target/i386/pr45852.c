@@ -1,6 +1,6 @@
 /* PR middle-end/45852 */
 /* { dg-options "-O2 -mcmodel=small" } */
-/* { dg-do compile { target { { i?86-*-linux* x86_64-*-linux* } && lp64 } } } */
+/* { dg-do compile { target { { i?86-*-linux* x86_64-*-linux* } && { ! { ia32 } } } } } */
 /* { dg-require-visibility "" } */
 
 struct S { int s; };

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,8 +56,6 @@ with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
 with Validsw;  use Validsw;
 
 package body Exp_Ch5 is
@@ -1934,22 +1932,21 @@ package body Exp_Ch5 is
 
                --  If the type is tagged, we may as well use the predefined
                --  primitive assignment. This avoids inlining a lot of code
-               --  and in the class-wide case, the assignment is replaced by
-               --  dispatch call to _assign. Note that this cannot be done when
-               --  discriminant checks are locally suppressed (as in extension
-               --  aggregate expansions) because otherwise the discriminant
-               --  check will be performed within the _assign call. It is also
-               --  suppressed for assignments created by the expander that
-               --  correspond to initializations, where we do want to copy the
-               --  tag (No_Ctrl_Actions flag set True) by the expander and we
-               --  do not need to mess with tags ever (Expand_Ctrl_Actions flag
-               --  is set True in this case).
+               --  and in the class-wide case, the assignment is replaced
+               --  by a dispatching call to _assign. It is suppressed in the
+               --  case of assignments created by the expander that correspond
+               --  to initializations, where we do want to copy the tag
+               --  (Expand_Ctrl_Actions flag is set True in this case). It is
+               --  also suppressed if restriction No_Dispatching_Calls is in
+               --  force because in that case predefined primitives are not
+               --  generated.
 
                or else (Is_Tagged_Type (Typ)
                          and then not Is_Value_Type (Etype (Lhs))
                          and then Chars (Current_Scope) /= Name_uAssign
                          and then Expand_Ctrl_Actions
-                         and then not Discriminant_Checks_Suppressed (Empty))
+                         and then
+                           not Restriction_Active (No_Dispatching_Calls))
             then
                --  Fetch the primitive op _assign and proper type to call it.
                --  Because of possible conflicts between private and full view,
@@ -1981,17 +1978,17 @@ package body Exp_Ch5 is
                      Append_To (L,
                        Make_Raise_Constraint_Error (Loc,
                          Condition =>
-                             Make_Op_Ne (Loc,
-                               Left_Opnd =>
-                                 Make_Selected_Component (Loc,
-                                   Prefix        => Duplicate_Subexpr (Lhs),
-                                   Selector_Name =>
-                                     Make_Identifier (Loc, Name_uTag)),
-                               Right_Opnd =>
-                                 Make_Selected_Component (Loc,
-                                   Prefix        => Duplicate_Subexpr (Rhs),
-                                   Selector_Name =>
-                                     Make_Identifier (Loc, Name_uTag))),
+                           Make_Op_Ne (Loc,
+                             Left_Opnd =>
+                               Make_Selected_Component (Loc,
+                                 Prefix        => Duplicate_Subexpr (Lhs),
+                                 Selector_Name =>
+                                   Make_Identifier (Loc, Name_uTag)),
+                             Right_Opnd =>
+                               Make_Selected_Component (Loc,
+                                 Prefix        => Duplicate_Subexpr (Rhs),
+                                 Selector_Name =>
+                                   Make_Identifier (Loc, Name_uTag))),
                          Reason => CE_Tag_Check_Failed));
                   end if;
 
@@ -2282,6 +2279,8 @@ package body Exp_Ch5 is
       if Compile_Time_Known_Value (Expr) then
          Alt := Find_Static_Alternative (N);
 
+         Process_Statements_For_Controlled_Objects (Alt);
+
          --  Move statements from this alternative after the case statement.
          --  They are already analyzed, so will be skipped by the analyzer.
 
@@ -2293,21 +2292,21 @@ package body Exp_Ch5 is
          Kill_Dead_Code (Expression (N));
 
          declare
-            A : Node_Id;
+            Dead_Alt : Node_Id;
 
          begin
             --  Loop through case alternatives, skipping pragmas, and skipping
             --  the one alternative that we select (and therefore retain).
 
-            A := First (Alternatives (N));
-            while Present (A) loop
-               if A /= Alt
-                 and then Nkind (A) = N_Case_Statement_Alternative
+            Dead_Alt := First (Alternatives (N));
+            while Present (Dead_Alt) loop
+               if Dead_Alt /= Alt
+                 and then Nkind (Dead_Alt) = N_Case_Statement_Alternative
                then
-                  Kill_Dead_Code (Statements (A), Warn_On_Deleted_Code);
+                  Kill_Dead_Code (Statements (Dead_Alt), Warn_On_Deleted_Code);
                end if;
 
-               Next (A);
+               Next (Dead_Alt);
             end loop;
          end;
 
@@ -2354,12 +2353,16 @@ package body Exp_Ch5 is
          Len := List_Length (Alternatives (N));
 
          if Len = 1 then
-            --  We still need to evaluate the expression if it has any
-            --  side effects.
+
+            --  We still need to evaluate the expression if it has any side
+            --  effects.
 
             Remove_Side_Effects (Expression (N));
 
-            Insert_List_After (N, Statements (First (Alternatives (N))));
+            Alt := First (Alternatives (N));
+
+            Process_Statements_For_Controlled_Objects (Alt);
+            Insert_List_After (N, Statements (Alt));
 
             --  That leaves the case statement as a shell. The alternative that
             --  will be executed is reset to a null list. So now we can kill
@@ -2368,7 +2371,6 @@ package body Exp_Ch5 is
             Kill_Dead_Code (Expression (N));
             Rewrite (N, Make_Null_Statement (Loc));
             return;
-         end if;
 
          --  An optimization. If there are only two alternatives, and only
          --  a single choice, then rewrite the whole case statement as an
@@ -2377,7 +2379,7 @@ package body Exp_Ch5 is
          --  simple form, but also with generated code (discriminant check
          --  functions in particular)
 
-         if Len = 2 then
+         elsif Len = 2 then
             Chlist := Discrete_Choices (First (Alternatives (N)));
 
             if List_Length (Chlist) = 1 then
@@ -2454,6 +2456,14 @@ package body Exp_Ch5 is
               (Others_Node, Discrete_Choices (Last_Alt));
             Set_Discrete_Choices (Last_Alt, New_List (Others_Node));
          end if;
+
+         Alt := First (Alternatives (N));
+         while Present (Alt)
+           and then Nkind (Alt) = N_Case_Statement_Alternative
+         loop
+            Process_Statements_For_Controlled_Objects (Alt);
+            Next (Alt);
+         end loop;
       end;
    end Expand_N_Case_Statement;
 
@@ -2528,6 +2538,8 @@ package body Exp_Ch5 is
       --  these warnings for expander generated code.
 
    begin
+      Process_Statements_For_Controlled_Objects (N);
+
       Adjust_Condition (Condition (N));
 
       --  The following loop deals with constant conditions for the IF. We
@@ -2613,6 +2625,8 @@ package body Exp_Ch5 is
       if Present (Elsif_Parts (N)) then
          E := First (Elsif_Parts (N));
          while Present (E) loop
+            Process_Statements_For_Controlled_Objects (E);
+
             Adjust_Condition (Condition (E));
 
             --  If there are condition actions, then rewrite the if statement
@@ -2762,109 +2776,110 @@ package body Exp_Ch5 is
    --------------------------
 
    procedure Expand_Iterator_Loop (N : Node_Id) is
-      Loc        : constant Source_Ptr := Sloc (N);
-      Isc        : constant Node_Id    := Iteration_Scheme (N);
-      I_Spec     : constant Node_Id    := Iterator_Specification (Isc);
-      Id         : constant Entity_Id  := Defining_Identifier (I_Spec);
-      Container  : constant Entity_Id  :=  Entity (Name (I_Spec));
-      Typ        : constant Entity_Id  := Etype (Container);
+      Isc    : constant Node_Id    := Iteration_Scheme (N);
+      I_Spec : constant Node_Id    := Iterator_Specification (Isc);
+      Id     : constant Entity_Id  := Defining_Identifier (I_Spec);
+      Loc    : constant Source_Ptr := Sloc (N);
 
-      Cursor   : Entity_Id;
-      New_Loop : Node_Id;
-      Stats    : List_Id;
+      Container     : constant Node_Id   := Name (I_Spec);
+      Container_Typ : constant Entity_Id := Etype (Container);
+      Cursor        : Entity_Id;
+      New_Loop      : Node_Id;
+      Stats         : List_Id := Statements (N);
 
    begin
-      if Is_Array_Type (Typ) then
+      --  Processing for arrays
+
+      if Is_Array_Type (Container_Typ) then
+
+         --  for Element of Array loop
+         --
+         --  This case requires an internally generated cursor to iterate over
+         --  the array.
+
          if Of_Present (I_Spec) then
             Cursor := Make_Temporary (Loc, 'C');
 
-            --  for Elem of Arr loop ...
+            --  Generate:
+            --    Element : Component_Type renames Container (Cursor);
 
-            declare
-               Decl : constant Node_Id :=
-                        Make_Object_Renaming_Declaration (Loc,
-                          Defining_Identifier => Id,
-                          Subtype_Mark        =>
-                            New_Occurrence_Of (Component_Type (Typ), Loc),
-                          Name                =>
-                            Make_Indexed_Component (Loc,
-                              Prefix      =>
-                                New_Occurrence_Of (Container, Loc),
-                              Expressions =>
-                                New_List (New_Occurrence_Of (Cursor, Loc))));
-            begin
-               Stats := Statements (N);
-               Prepend (Decl, Stats);
+            Prepend_To (Stats,
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => Id,
+                Subtype_Mark =>
+                  New_Reference_To (Component_Type (Container_Typ), Loc),
+                Name =>
+                  Make_Indexed_Component (Loc,
+                    Prefix => Relocate_Node (Container),
+                    Expressions => New_List (
+                      New_Reference_To (Cursor, Loc)))));
 
-               New_Loop :=
-                 Make_Loop_Statement (Loc,
-                   Iteration_Scheme =>
-                     Make_Iteration_Scheme (Loc,
-                       Loop_Parameter_Specification =>
-                         Make_Loop_Parameter_Specification (Loc,
-                           Defining_Identifier         => Cursor,
-                           Discrete_Subtype_Definition =>
-                              Make_Attribute_Reference (Loc,
-                                Prefix         =>
-                                  New_Occurrence_Of (Container, Loc),
-                                Attribute_Name => Name_Range),
-                           Reverse_Present => Reverse_Present (I_Spec))),
-                   Statements       => Stats,
-                   End_Label        => Empty);
-            end;
+         --  for Index in Array loop
+         --
+         --  This case utilizes the already given cursor name
 
          else
-            --  for Index in Array loop ...
-
-            --  The cursor (index into the array) is the source Id
-
             Cursor := Id;
-            New_Loop :=
-              Make_Loop_Statement (Loc,
-                Iteration_Scheme =>
-                  Make_Iteration_Scheme (Loc,
-                    Loop_Parameter_Specification =>
-                      Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier         => Cursor,
-                        Discrete_Subtype_Definition =>
-                           Make_Attribute_Reference (Loc,
-                             Prefix         =>
-                               New_Occurrence_Of (Container, Loc),
-                             Attribute_Name => Name_Range),
-                        Reverse_Present => Reverse_Present (I_Spec))),
-                Statements       => Statements (N),
-                End_Label        => Empty);
          end if;
 
-      --  Iterators over containers
-
-      else
-         --  In both cases these require a cursor of the proper type
-
-         --    Cursor : P.Cursor_Type := Container.First;
-         --    while Cursor /= P.No_Element loop
-
-         --       Obj : P.Element_Type renames Element (Cursor);
-         --       --  For the "of" form, the element name renames the element
-         --       --  designated by the cursor.
-
-         --       Statements;
-         --       P.Next (Cursor);
+         --  Generate:
+         --    for Cursor in [reverse] Container'Range loop
+         --       Element : Component_Type renames Container (Cursor);
+         --       --  for the "of" form
+         --
+         --       <original loop statements>
          --    end loop;
 
-         --  with the obvious replacements if "reverse" is specified.
+         New_Loop :=
+           Make_Loop_Statement (Loc,
+             Iteration_Scheme =>
+               Make_Iteration_Scheme (Loc,
+                 Loop_Parameter_Specification =>
+                   Make_Loop_Parameter_Specification (Loc,
+                     Defining_Identifier => Cursor,
+                       Discrete_Subtype_Definition =>
+                         Make_Attribute_Reference (Loc,
+                           Prefix => Relocate_Node (Container),
+                           Attribute_Name => Name_Range),
+                      Reverse_Present => Reverse_Present (I_Spec))),
+              Statements => Stats,
+              End_Label  => Empty);
+
+      --  Processing for containers
+
+      else
+         --  The for loop is expanded into a while loop which uses a container
+         --  specific cursor to examine each element.
+
+         --    Cursor : Pack.Cursor := Container.First;
+         --    while Cursor /= Pack.No_Element loop
+         --       declare
+         --       --  the block is added when Element_Type is controlled
+
+         --          Obj : Pack.Element_Type := Element (Cursor);
+         --          --  for the "of" loop form
+         --       begin
+         --          <original loop statements>
+         --       end;
+
+         --       Pack.Next (Cursor);
+         --    end loop;
+
+         --  If "reverse" is present, then the initialization of the cursor
+         --  uses Last and the step becomes Prev. Pack is the name of the
+         --  package which instantiates the container.
 
          declare
-            Element_Type  : constant Entity_Id := Etype (Id);
-            Pack          : constant Entity_Id := Scope (Etype (Container));
-            Name_Init     : Name_Id;
-            Name_Step     : Name_Id;
-            Cond          : Node_Id;
-            Cursor_Decl   : Node_Id;
-            Renaming_Decl : Node_Id;
+            Element_Type : constant Entity_Id := Etype (Id);
+            Pack         : constant Entity_Id :=
+                             Scope (Base_Type (Container_Typ));
+            Decl         : Node_Id;
+            Cntr         : Node_Id;
+            Name_Init    : Name_Id;
+            Name_Step    : Name_Id;
 
          begin
-            Stats := Statements (N);
+            --  The "of" case uses an internally generated cursor
 
             if Of_Present (I_Spec) then
                Cursor := Make_Temporary (Loc, 'C');
@@ -2872,87 +2887,172 @@ package body Exp_Ch5 is
                Cursor := Id;
             end if;
 
+            --  The code below only handles containers where Element is not a
+            --  primitive operation of the container. This excludes for now the
+            --  Hi-Lite formal containers.
+
+            if Of_Present (I_Spec) then
+
+               --  Generate:
+               --    Id : Element_Type := Pack.Element (Cursor);
+
+               Decl :=
+                 Make_Object_Renaming_Declaration (Loc,
+                   Defining_Identifier => Id,
+                   Subtype_Mark =>
+                     New_Reference_To (Element_Type, Loc),
+                   Name =>
+                     Make_Indexed_Component (Loc,
+                       Prefix =>
+                         Make_Selected_Component (Loc,
+                           Prefix =>
+                             New_Reference_To (Pack, Loc),
+                           Selector_Name =>
+                             Make_Identifier (Loc, Chars => Name_Element)),
+                       Expressions => New_List (
+                         New_Reference_To (Cursor, Loc))));
+
+               --  When the container holds controlled objects, wrap the loop
+               --  statements and element renaming declaration with a block.
+               --  This ensures that the transient result of Element (Cursor)
+               --  is cleaned up after each iteration of the loop.
+
+               if Needs_Finalization (Element_Type) then
+
+                  --  Generate:
+                  --    declare
+                  --       Id : Element_Type := Pack.Element (Cursor);
+                  --    begin
+                  --       <original loop statements>
+                  --    end;
+
+                  Stats := New_List (
+                    Make_Block_Statement (Loc,
+                      Declarations => New_List (Decl),
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements => Stats)));
+               else
+                  Prepend_To (Stats, Decl);
+               end if;
+            end if;
+
+            --  Determine the advancement and initialization steps for the
+            --  cursor.
+
+            --  Must verify that the container has a reverse iterator ???
+
             if Reverse_Present (I_Spec) then
-
-               --  Must verify that the container has a reverse iterator ???
-
                Name_Init := Name_Last;
                Name_Step := Name_Previous;
-
             else
                Name_Init := Name_First;
                Name_Step := Name_Next;
             end if;
 
-            --  C : Cursor_Type := Container.First;
-
-            Cursor_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Cursor,
-                Object_Definition   =>
-                  Make_Selected_Component (Loc,
-                    Prefix        => New_Occurrence_Of (Pack, Loc),
-                    Selector_Name => Make_Identifier (Loc, Name_Cursor)),
-                Expression =>
-                  Make_Selected_Component (Loc,
-                    Prefix        => New_Occurrence_Of (Container, Loc),
-                    Selector_Name => Make_Identifier (Loc, Name_Init)));
-
-            Insert_Action (N, Cursor_Decl);
-
-            --  while C /= No_Element loop
-
-            Cond := Make_Op_Ne (Loc,
-                      Left_Opnd  => New_Occurrence_Of (Cursor, Loc),
-                      Right_Opnd => Make_Selected_Component (Loc,
-                         Prefix        => New_Occurrence_Of (Pack, Loc),
-                         Selector_Name =>
-                           Make_Identifier (Loc, Name_No_Element)));
-
-            if Of_Present (I_Spec) then
-
-               --  Id : Element_Type renames Pack.Element (Cursor);
-
-               Renaming_Decl :=
-                 Make_Object_Renaming_Declaration (Loc,
-                   Defining_Identifier => Id,
-                   Subtype_Mark        =>
-                     New_Occurrence_Of (Element_Type, Loc),
-                   Name                =>
-                     Make_Indexed_Component (Loc,
-                       Prefix =>
-                         Make_Selected_Component (Loc,
-                           Prefix        =>  New_Occurrence_Of (Pack, Loc),
-                           Selector_Name =>
-                             Make_Identifier (Loc, Chars => Name_Element)),
-                       Expressions =>
-                         New_List (New_Occurrence_Of (Cursor, Loc))));
-
-               Prepend (Renaming_Decl, Stats);
-            end if;
-
-            --  For both iterator forms, add call to step operation (Next or
-            --  Previous) to advance cursor.
+            --  For both iterator forms, add a call to the step operation to
+            --  advance the cursor. Generate:
+            --
+            --    Pack.[Next | Prev] (Cursor);
 
             Append_To (Stats,
               Make_Procedure_Call_Statement (Loc,
                 Name =>
                   Make_Selected_Component (Loc,
-                    Prefix        => New_Occurrence_Of (Pack, Loc),
-                    Selector_Name => Make_Identifier (Loc, Name_Step)),
-                Parameter_Associations =>
-                  New_List (New_Occurrence_Of (Cursor, Loc))));
+                    Prefix =>
+                      New_Reference_To (Pack, Loc),
+                    Selector_Name =>
+                      Make_Identifier (Loc, Name_Step)),
 
-            New_Loop := Make_Loop_Statement (Loc,
-              Iteration_Scheme =>
-                Make_Iteration_Scheme (Loc, Condition => Cond),
-              Statements       => Stats,
-              End_Label        => Empty);
+                Parameter_Associations => New_List (
+                  New_Reference_To (Cursor, Loc))));
+
+            --  Generate:
+            --    while Cursor /= Pack.No_Element loop
+            --       <Stats>
+            --    end loop;
+
+            New_Loop :=
+              Make_Loop_Statement (Loc,
+                Iteration_Scheme =>
+                  Make_Iteration_Scheme (Loc,
+                    Condition =>
+                      Make_Op_Ne (Loc,
+                        Left_Opnd =>
+                          New_Reference_To (Cursor, Loc),
+                        Right_Opnd =>
+                          Make_Selected_Component (Loc,
+                            Prefix =>
+                              New_Reference_To (Pack, Loc),
+                            Selector_Name =>
+                              Make_Identifier (Loc, Name_No_Element)))),
+                Statements => Stats,
+                End_Label  => Empty);
+
+            Cntr := Relocate_Node (Container);
+
+            --  When the container is provided by a function call, create an
+            --  explicit renaming of the function result. Generate:
+            --
+            --    Cnn : Container_Typ renames Func_Call (...);
+            --
+            --  The renaming avoids the generation of a transient scope when
+            --  initializing the cursor and the premature finalization of the
+            --  container.
+
+            if Nkind (Cntr) = N_Function_Call then
+               declare
+                  Ren_Id : constant Entity_Id := Make_Temporary (Loc, 'C');
+
+               begin
+                  Insert_Action (N,
+                    Make_Object_Renaming_Declaration (Loc,
+                      Defining_Identifier => Ren_Id,
+                      Subtype_Mark =>
+                        New_Reference_To (Container_Typ, Loc),
+                      Name => Cntr));
+
+                  Cntr := New_Reference_To (Ren_Id, Loc);
+               end;
+            end if;
+
+            --  Create the declaration of the cursor and insert it before the
+            --  source loop. Generate:
+            --
+            --    C : Pack.Cursor_Type := Container.[First | Last];
+
+            Insert_Action (N,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Cursor,
+                Object_Definition =>
+                  Make_Selected_Component (Loc,
+                    Prefix =>
+                      New_Reference_To (Pack, Loc),
+                    Selector_Name =>
+                      Make_Identifier (Loc, Name_Cursor)),
+
+                Expression =>
+                  Make_Selected_Component (Loc,
+                    Prefix => Cntr,
+                    Selector_Name =>
+                      Make_Identifier (Loc, Name_Init))));
+
+            --  The cursor is not modified in the source, but of course will
+            --  be updated in the generated code. Indicate that it is actually
+            --  set to prevent spurious warnings.
+
+            Set_Never_Set_In_Source (Cursor, False);
+
+            --  If the range of iteration is given by a function call that
+            --  returns a container, the finalization actions have been saved
+            --  in the Condition_Actions of the iterator. Insert them now at
+            --  the head of the loop.
+
+            if Present (Condition_Actions (Isc)) then
+               Insert_List_Before (N, Condition_Actions (Isc));
+            end if;
          end;
       end if;
-
-      --  Set_Analyzed (I_Spec);
-      --  Why is this commented out???
 
       Rewrite (N, New_Loop);
       Analyze (N);
@@ -2981,6 +3081,8 @@ package body Exp_Ch5 is
          Rewrite (N, Make_Null_Statement (Loc));
          return;
       end if;
+
+      Process_Statements_For_Controlled_Objects (N);
 
       --  Deal with condition for C/Fortran Boolean
 
@@ -3157,6 +3259,7 @@ package body Exp_Ch5 is
 
       elsif Present (Isc)
         and then Present (Condition_Actions (Isc))
+        and then Present (Condition (Isc))
       then
          declare
             ES : Node_Id;
@@ -3402,33 +3505,27 @@ package body Exp_Ch5 is
    ------------------------------
 
    function Make_Tag_Ctrl_Assignment (N : Node_Id) return List_Id is
-      Loc : constant Source_Ptr := Sloc (N);
+      Asn : constant Node_Id    := Relocate_Node (N);
       L   : constant Node_Id    := Name (N);
+      Loc : constant Source_Ptr := Sloc (N);
+      Res : constant List_Id    := New_List;
       T   : constant Entity_Id  := Underlying_Type (Etype (L));
 
+      Comp_Asn : constant Boolean := Is_Fully_Repped_Tagged_Type (T);
       Ctrl_Act : constant Boolean := Needs_Finalization (T)
                                        and then not No_Ctrl_Actions (N);
-
-      Component_Assign : constant Boolean :=
-                           Is_Fully_Repped_Tagged_Type (T);
-
       Save_Tag : constant Boolean := Is_Tagged_Type (T)
-                                       and then not Component_Assign
+                                       and then not Comp_Asn
                                        and then not No_Ctrl_Actions (N)
                                        and then Tagged_Type_Expansion;
       --  Tags are not saved and restored when VM_Target because VM tags are
       --  represented implicitly in objects.
 
-      Res      : List_Id;
-      Tag_Tmp  : Entity_Id;
-
-      Prev_Tmp : Entity_Id;
-      Next_Tmp : Entity_Id;
-      Ctrl_Ref : Node_Id;
+      Next_Id : Entity_Id;
+      Prev_Id : Entity_Id;
+      Tag_Id  : Entity_Id;
 
    begin
-      Res := New_List;
-
       --  Finalize the target of the assignment when controlled
 
       --  We have two exceptions here:
@@ -3459,471 +3556,147 @@ package body Exp_Ch5 is
          null;
 
       else
-         Append_List_To (Res,
+         Append_To (Res,
            Make_Final_Call
-             (Ref         => Duplicate_Subexpr_No_Checks (L),
-              Typ         => Etype (L),
-              With_Detach => New_Reference_To (Standard_False, Loc)));
+             (Obj_Ref => Duplicate_Subexpr_No_Checks (L),
+              Typ     => Etype (L)));
       end if;
 
-      --  Save the Tag in a local variable Tag_Tmp
+      --  Save the Tag in a local variable Tag_Id
 
       if Save_Tag then
-         Tag_Tmp := Make_Temporary (Loc, 'A');
+         Tag_Id := Make_Temporary (Loc, 'A');
 
          Append_To (Res,
            Make_Object_Declaration (Loc,
-             Defining_Identifier => Tag_Tmp,
-             Object_Definition => New_Reference_To (RTE (RE_Tag), Loc),
-             Expression =>
+             Defining_Identifier => Tag_Id,
+             Object_Definition   => New_Reference_To (RTE (RE_Tag), Loc),
+             Expression          =>
                Make_Selected_Component (Loc,
                  Prefix        => Duplicate_Subexpr_No_Checks (L),
-                 Selector_Name => New_Reference_To (First_Tag_Component (T),
-                                                    Loc))));
+                 Selector_Name =>
+                   New_Reference_To (First_Tag_Component (T), Loc))));
 
-      --  Otherwise Tag_Tmp not used
+      --  Otherwise Tag_Id is not used
 
       else
-         Tag_Tmp := Empty;
+         Tag_Id := Empty;
       end if;
 
-      if Ctrl_Act then
-         if VM_Target /= No_VM then
-
-            --  Cannot assign part of the object in a VM context, so instead
-            --  fallback to the previous mechanism, even though it is not
-            --  completely correct ???
-
-            --  Save the Finalization Pointers in local variables Prev_Tmp and
-            --  Next_Tmp. For objects with Has_Controlled_Component set, these
-            --  pointers are in the Record_Controller
-
-            Ctrl_Ref := Duplicate_Subexpr (L);
-
-            if Has_Controlled_Component (T) then
-               Ctrl_Ref :=
-                 Make_Selected_Component (Loc,
-                   Prefix => Ctrl_Ref,
-                   Selector_Name =>
-                     New_Reference_To (Controller_Component (T), Loc));
-            end if;
-
-            Prev_Tmp := Make_Temporary (Loc, 'B');
-
-            Append_To (Res,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Prev_Tmp,
-
-                Object_Definition =>
-                  New_Reference_To (RTE (RE_Finalizable_Ptr), Loc),
-
-                Expression =>
-                  Make_Selected_Component (Loc,
-                    Prefix =>
-                      Unchecked_Convert_To (RTE (RE_Finalizable), Ctrl_Ref),
-                    Selector_Name => Make_Identifier (Loc, Name_Prev))));
-
-            Next_Tmp := Make_Temporary (Loc, 'C');
-
-            Append_To (Res,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Next_Tmp,
-
-                Object_Definition   =>
-                  New_Reference_To (RTE (RE_Finalizable_Ptr), Loc),
-
-                Expression          =>
-                  Make_Selected_Component (Loc,
-                    Prefix =>
-                      Unchecked_Convert_To (RTE (RE_Finalizable),
-                        New_Copy_Tree (Ctrl_Ref)),
-                    Selector_Name => Make_Identifier (Loc, Name_Next))));
-
-            --  Do the Assignment
-
-            Append_To (Res, Relocate_Node (N));
-
-         else
-            --  Regular (non VM) processing for controlled types and types with
-            --  controlled components
-
-            --  Variables of such types contain pointers used to chain them in
-            --  finalization lists, in addition to user data. These pointers
-            --  are specific to each object of the type, not to the value being
-            --  assigned.
-
-            --  Thus they need to be left intact during the assignment. We
-            --  achieve this by constructing a Storage_Array subtype, and by
-            --  overlaying objects of this type on the source and target of the
-            --  assignment. The assignment is then rewritten to assignments of
-            --  slices of these arrays, copying the user data, and leaving the
-            --  pointers untouched.
-
-            Controlled_Actions : declare
-               Prev_Ref : Node_Id;
-               --  A reference to the Prev component of the record controller
-
-               First_After_Root : Node_Id := Empty;
-               --  Index of first byte to be copied (used to skip
-               --  Root_Controlled in controlled objects).
-
-               Last_Before_Hole : Node_Id := Empty;
-               --  Index of last byte to be copied before outermost record
-               --  controller data.
-
-               Hole_Length : Node_Id := Empty;
-               --  Length of record controller data (Prev and Next pointers)
-
-               First_After_Hole : Node_Id := Empty;
-               --  Index of first byte to be copied after outermost record
-               --  controller data.
-
-               Expr, Source_Size     : Node_Id;
-               Source_Actual_Subtype : Entity_Id;
-               --  Used for computation of the size of the data to be copied
-
-               Range_Type  : Entity_Id;
-               Opaque_Type : Entity_Id;
-
-               function Build_Slice
-                 (Rec : Entity_Id;
-                  Lo  : Node_Id;
-                  Hi  : Node_Id) return Node_Id;
-               --  Build and return a slice of an array of type S overlaid on
-               --  object Rec, with bounds specified by Lo and Hi. If either
-               --  bound is empty, a default of S'First (respectively S'Last)
-               --  is used.
-
-               -----------------
-               -- Build_Slice --
-               -----------------
-
-               function Build_Slice
-                 (Rec : Node_Id;
-                  Lo  : Node_Id;
-                  Hi  : Node_Id) return Node_Id
-               is
-                  Lo_Bound : Node_Id;
-                  Hi_Bound : Node_Id;
-
-                  Opaque : constant Node_Id :=
-                             Unchecked_Convert_To (Opaque_Type,
-                               Make_Attribute_Reference (Loc,
-                                 Prefix         => Rec,
-                                 Attribute_Name => Name_Address));
-                  --  Access value designating an opaque storage array of type
-                  --  S overlaid on record Rec.
-
-               begin
-                  --  Compute slice bounds using S'First (1) and S'Last as
-                  --  default values when not specified by the caller.
-
-                  if No (Lo) then
-                     Lo_Bound := Make_Integer_Literal (Loc, 1);
-                  else
-                     Lo_Bound := Lo;
-                  end if;
-
-                  if No (Hi) then
-                     Hi_Bound := Make_Attribute_Reference (Loc,
-                       Prefix => New_Occurrence_Of (Range_Type, Loc),
-                       Attribute_Name => Name_Last);
-                  else
-                     Hi_Bound := Hi;
-                  end if;
-
-                  return Make_Slice (Loc,
-                    Prefix =>
-                      Opaque,
-                    Discrete_Range => Make_Range (Loc,
-                      Lo_Bound, Hi_Bound));
-               end Build_Slice;
-
-            --  Start of processing for Controlled_Actions
-
-            begin
-               --  Create a constrained subtype of Storage_Array whose size
-               --  corresponds to the value being assigned.
-
-               --  subtype G is Storage_Offset range
-               --    1 .. (Expr'Size + Storage_Unit - 1) / Storage_Unit
-
-               Expr := Duplicate_Subexpr_No_Checks (Expression (N));
-
-               if Nkind (Expr) = N_Qualified_Expression then
-                  Expr := Expression (Expr);
-               end if;
-
-               Source_Actual_Subtype := Etype (Expr);
-
-               if Has_Discriminants (Source_Actual_Subtype)
-                 and then not Is_Constrained (Source_Actual_Subtype)
-               then
-                  Append_To (Res,
-                    Build_Actual_Subtype (Source_Actual_Subtype, Expr));
-                  Source_Actual_Subtype := Defining_Identifier (Last (Res));
-               end if;
-
-               Source_Size :=
-                 Make_Op_Add (Loc,
-                   Left_Opnd =>
-                     Make_Attribute_Reference (Loc,
-                       Prefix =>
-                         New_Occurrence_Of (Source_Actual_Subtype, Loc),
-                     Attribute_Name => Name_Size),
-                   Right_Opnd =>
-                     Make_Integer_Literal (Loc,
-                       Intval => System_Storage_Unit - 1));
-
-               Source_Size :=
-                 Make_Op_Divide (Loc,
-                   Left_Opnd => Source_Size,
-                   Right_Opnd =>
-                     Make_Integer_Literal (Loc,
-                       Intval => System_Storage_Unit));
-
-               Range_Type := Make_Temporary (Loc, 'G');
-
-               Append_To (Res,
-                 Make_Subtype_Declaration (Loc,
-                   Defining_Identifier => Range_Type,
-                   Subtype_Indication =>
-                     Make_Subtype_Indication (Loc,
-                       Subtype_Mark =>
-                         New_Reference_To (RTE (RE_Storage_Offset), Loc),
-                       Constraint   => Make_Range_Constraint (Loc,
-                         Range_Expression =>
-                           Make_Range (Loc,
-                             Low_Bound  => Make_Integer_Literal (Loc, 1),
-                             High_Bound => Source_Size)))));
-
-               --  subtype S is Storage_Array (G)
-
-               Append_To (Res,
-                 Make_Subtype_Declaration (Loc,
-                   Defining_Identifier => Make_Temporary (Loc, 'S'),
-                   Subtype_Indication  =>
-                     Make_Subtype_Indication (Loc,
-                       Subtype_Mark =>
-                         New_Reference_To (RTE (RE_Storage_Array), Loc),
-                       Constraint =>
-                         Make_Index_Or_Discriminant_Constraint (Loc,
-                           Constraints =>
-                             New_List (New_Reference_To (Range_Type, Loc))))));
-
-               --  type A is access S
-
-               Opaque_Type := Make_Temporary (Loc, 'A');
-
-               Append_To (Res,
-                 Make_Full_Type_Declaration (Loc,
-                   Defining_Identifier => Opaque_Type,
-                   Type_Definition     =>
-                     Make_Access_To_Object_Definition (Loc,
-                       Subtype_Indication =>
-                         New_Occurrence_Of (
-                           Defining_Identifier (Last (Res)), Loc))));
-
-               --  Generate appropriate slice assignments
-
-               First_After_Root := Make_Integer_Literal (Loc, 1);
-
-               --  For controlled object, skip Root_Controlled part
-
-               if Is_Controlled (T) then
-                  First_After_Root :=
-                    Make_Op_Add (Loc,
-                      First_After_Root,
-                      Make_Op_Divide (Loc,
-                        Make_Attribute_Reference (Loc,
-                          Prefix =>
-                            New_Occurrence_Of (RTE (RE_Root_Controlled), Loc),
-                          Attribute_Name => Name_Size),
-                        Make_Integer_Literal (Loc, System_Storage_Unit)));
-               end if;
-
-               --  For the case of a record with controlled components, skip
-               --  record controller Prev/Next components. These components
-               --  constitute a 'hole' in the middle of the data to be copied.
-
-               if Has_Controlled_Component (T) then
-                  Prev_Ref :=
-                    Make_Selected_Component (Loc,
-                      Prefix        =>
-                        Make_Selected_Component (Loc,
-                          Prefix => Duplicate_Subexpr_No_Checks (L),
-                          Selector_Name =>
-                            New_Reference_To (Controller_Component (T), Loc)),
-                      Selector_Name =>  Make_Identifier (Loc, Name_Prev));
-
-                  --  Last index before hole: determined by position of the
-                  --  _Controller.Prev component.
-
-                  Last_Before_Hole := Make_Temporary (Loc, 'L');
-
-                  Append_To (Res,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Last_Before_Hole,
-                      Object_Definition   => New_Occurrence_Of (
-                        RTE (RE_Storage_Offset), Loc),
-                      Constant_Present    => True,
-                      Expression          =>
-                        Make_Op_Add (Loc,
-                          Make_Attribute_Reference (Loc,
-                            Prefix => Prev_Ref,
-                            Attribute_Name => Name_Position),
-                          Make_Attribute_Reference (Loc,
-                            Prefix => New_Copy_Tree (Prefix (Prev_Ref)),
-                            Attribute_Name => Name_Position))));
-
-                  --  Hole length: size of the Prev and Next components
-
-                  Hole_Length :=
-                    Make_Op_Multiply (Loc,
-                      Left_Opnd  => Make_Integer_Literal (Loc, Uint_2),
-                      Right_Opnd =>
-                        Make_Op_Divide (Loc,
-                          Left_Opnd =>
-                            Make_Attribute_Reference (Loc,
-                              Prefix         => New_Copy_Tree (Prev_Ref),
-                              Attribute_Name => Name_Size),
-                          Right_Opnd =>
-                            Make_Integer_Literal (Loc,
-                              Intval => System_Storage_Unit)));
-
-                  --  First index after hole
-
-                  First_After_Hole := Make_Temporary (Loc, 'F');
-
-                  Append_To (Res,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => First_After_Hole,
-                      Object_Definition   => New_Occurrence_Of (
-                        RTE (RE_Storage_Offset), Loc),
-                      Constant_Present    => True,
-                      Expression          =>
-                        Make_Op_Add (Loc,
-                          Left_Opnd  =>
-                            Make_Op_Add (Loc,
-                              Left_Opnd  =>
-                                New_Occurrence_Of (Last_Before_Hole, Loc),
-                              Right_Opnd => Hole_Length),
-                          Right_Opnd => Make_Integer_Literal (Loc, 1))));
-
-                  Last_Before_Hole :=
-                    New_Occurrence_Of (Last_Before_Hole, Loc);
-                  First_After_Hole :=
-                    New_Occurrence_Of (First_After_Hole, Loc);
-               end if;
-
-               --  Assign the first slice (possibly skipping Root_Controlled,
-               --  up to the beginning of the record controller if present,
-               --  up to the end of the object if not).
-
-               Append_To (Res, Make_Assignment_Statement (Loc,
-                 Name       => Build_Slice (
-                   Rec => Duplicate_Subexpr_No_Checks (L),
-                   Lo  => First_After_Root,
-                   Hi  => Last_Before_Hole),
-
-                 Expression => Build_Slice (
-                   Rec => Expression (N),
-                   Lo  => First_After_Root,
-                   Hi  => New_Copy_Tree (Last_Before_Hole))));
-
-               if Present (First_After_Hole) then
-
-                  --  If a record controller is present, copy the second slice,
-                  --  from right after the _Controller.Next component up to the
-                  --  end of the object.
-
-                  Append_To (Res, Make_Assignment_Statement (Loc,
-                    Name       => Build_Slice (
-                      Rec => Duplicate_Subexpr_No_Checks (L),
-                      Lo  => First_After_Hole,
-                      Hi  => Empty),
-                    Expression => Build_Slice (
-                      Rec => Duplicate_Subexpr_No_Checks (Expression (N)),
-                      Lo  => New_Copy_Tree (First_After_Hole),
-                      Hi  => Empty)));
-               end if;
-            end Controlled_Actions;
-         end if;
-
-      --  Not controlled case
-
-      else
-         declare
-            Asn : constant Node_Id := Relocate_Node (N);
-
-         begin
-            --  If this is the case of a tagged type with a full rep clause,
-            --  we must expand it into component assignments, so we mark the
-            --  node as unanalyzed, to get it reanalyzed, but flag it has
-            --  requiring component-wise assignment so we don't get infinite
-            --  recursion.
-
-            if Component_Assign then
-               Set_Analyzed (Asn, False);
-               Set_Componentwise_Assignment (Asn, True);
-            end if;
-
-            Append_To (Res, Asn);
-         end;
+      --  Save the Prev and Next fields on .NET/JVM. This is not needed on non
+      --  VM targets since the fields are not part of the object.
+
+      if VM_Target /= No_VM
+        and then Is_Controlled (T)
+      then
+         Prev_Id := Make_Temporary (Loc, 'P');
+         Next_Id := Make_Temporary (Loc, 'N');
+
+         --  Generate:
+         --    Pnn : Root_Controlled_Ptr := Root_Controlled (L).Prev;
+
+         Append_To (Res,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Prev_Id,
+             Object_Definition   =>
+               New_Reference_To (RTE (RE_Root_Controlled_Ptr), Loc),
+             Expression          =>
+               Make_Selected_Component (Loc,
+                 Prefix        =>
+                   Unchecked_Convert_To
+                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
+                 Selector_Name =>
+                   Make_Identifier (Loc, Name_Prev))));
+
+         --  Generate:
+         --    Nnn : Root_Controlled_Ptr := Root_Controlled (L).Next;
+
+         Append_To (Res,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Next_Id,
+             Object_Definition   =>
+               New_Reference_To (RTE (RE_Root_Controlled_Ptr), Loc),
+             Expression          =>
+               Make_Selected_Component (Loc,
+                 Prefix        =>
+                   Unchecked_Convert_To
+                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
+                 Selector_Name =>
+                   Make_Identifier (Loc, Name_Next))));
       end if;
+
+      --  If the tagged type has a full rep clause, expand the assignment into
+      --  component-wise assignments. Mark the node as unanalyzed in order to
+      --  generate the proper code and propagate this scenario by setting a
+      --  flag to avoid infinite recursion.
+
+      if Comp_Asn then
+         Set_Analyzed (Asn, False);
+         Set_Componentwise_Assignment (Asn, True);
+      end if;
+
+      Append_To (Res, Asn);
 
       --  Restore the tag
 
       if Save_Tag then
          Append_To (Res,
            Make_Assignment_Statement (Loc,
-             Name =>
+             Name       =>
                Make_Selected_Component (Loc,
                  Prefix        => Duplicate_Subexpr_No_Checks (L),
-                 Selector_Name => New_Reference_To (First_Tag_Component (T),
-                                                    Loc)),
-             Expression => New_Reference_To (Tag_Tmp, Loc)));
+                 Selector_Name =>
+                   New_Reference_To (First_Tag_Component (T), Loc)),
+             Expression => New_Reference_To (Tag_Id, Loc)));
       end if;
 
+      --  Restore the Prev and Next fields on .NET/JVM
+
+      if VM_Target /= No_VM
+        and then Is_Controlled (T)
+      then
+         --  Generate:
+         --    Root_Controlled (L).Prev := Prev_Id;
+
+         Append_To (Res,
+           Make_Assignment_Statement (Loc,
+             Name       =>
+               Make_Selected_Component (Loc,
+                 Prefix        =>
+                   Unchecked_Convert_To
+                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
+                 Selector_Name =>
+                   Make_Identifier (Loc, Name_Prev)),
+             Expression => New_Reference_To (Prev_Id, Loc)));
+
+         --  Generate:
+         --    Root_Controlled (L).Next := Next_Id;
+
+         Append_To (Res,
+           Make_Assignment_Statement (Loc,
+             Name       =>
+               Make_Selected_Component (Loc,
+                 Prefix        =>
+                   Unchecked_Convert_To
+                     (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
+                 Selector_Name => Make_Identifier (Loc, Name_Next)),
+             Expression => New_Reference_To (Next_Id, Loc)));
+      end if;
+
+      --  Adjust the target after the assignment when controlled (not in the
+      --  init proc since it is an initialization more than an assignment).
+
       if Ctrl_Act then
-         if VM_Target /= No_VM then
-            --  Restore the finalization pointers
-
-            Append_To (Res,
-              Make_Assignment_Statement (Loc,
-                Name =>
-                  Make_Selected_Component (Loc,
-                    Prefix        =>
-                      Unchecked_Convert_To (RTE (RE_Finalizable),
-                        New_Copy_Tree (Ctrl_Ref)),
-                    Selector_Name => Make_Identifier (Loc, Name_Prev)),
-                Expression => New_Reference_To (Prev_Tmp, Loc)));
-
-            Append_To (Res,
-              Make_Assignment_Statement (Loc,
-                Name =>
-                  Make_Selected_Component (Loc,
-                    Prefix        =>
-                      Unchecked_Convert_To (RTE (RE_Finalizable),
-                        New_Copy_Tree (Ctrl_Ref)),
-                    Selector_Name => Make_Identifier (Loc, Name_Next)),
-                Expression => New_Reference_To (Next_Tmp, Loc)));
-         end if;
-
-         --  Adjust the target after the assignment when controlled (not in the
-         --  init proc since it is an initialization more than an assignment).
-
-         Append_List_To (Res,
-           Make_Adjust_Call (
-             Ref         => Duplicate_Subexpr_Move_Checks (L),
-             Typ         => Etype (L),
-             Flist_Ref   => New_Reference_To (RTE (RE_Global_Final_List), Loc),
-             With_Attach => Make_Integer_Literal (Loc, 0)));
+         Append_To (Res,
+           Make_Adjust_Call
+             (Obj_Ref => Duplicate_Subexpr_Move_Checks (L),
+              Typ     => Etype (L)));
       end if;
 
       return Res;
 
    exception
+
       --  Could use comment here ???
 
       when RE_Not_Available =>

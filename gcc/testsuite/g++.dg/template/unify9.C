@@ -14,5 +14,5 @@ const X *x;
  
 int main () { 
   f (*x, &X::g);  // {  dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 16 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 16 }
 } 

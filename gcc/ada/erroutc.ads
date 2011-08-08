@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -219,33 +219,33 @@ package Erroutc is
    --  error message table, since messages are not always inserted in sequence.
 
    Last_Error_Msg : Error_Msg_Id;
-   --  The last entry on the list of error messages. Note that this is not
-   --  the same as the physically last entry in the error message table, since
-   --  messages are not always inserted in sequence.
+   --  The last entry on the list of error messages. Note: this is not the same
+   --  as the physically last entry in the error message table, since messages
+   --  are not always inserted in sequence.
 
    --------------------------
    -- Warning Mode Control --
    --------------------------
 
-   --  Pragma Warnings allows warnings to be turned off for a specified
-   --  region of code, and the following tables are the data structure used
-   --  to keep track of these regions.
+   --  Pragma Warnings allows warnings to be turned off for a specified region
+   --  of code, and the following tables are the data structures used to keep
+   --  track of these regions.
 
-   --  The first table is used for the basic command line control, and for
-   --  the forms of Warning with a single ON or OFF parameter
+   --  The first table is used for the basic command line control, and for the
+   --  forms of Warning with a single ON or OFF parameter.
 
    --  It contains pairs of source locations, the first being the start
    --  location for a warnings off region, and the second being the end
-   --  location. When a pragma Warnings (Off) is encountered, a new entry
-   --  is established extending from the location of the pragma to the
-   --  end of the current source file. A subsequent pragma Warnings (On)
-   --  adjusts the end point of this entry appropriately.
+   --  location. When a pragma Warnings (Off) is encountered, a new entry is
+   --  established extending from the location of the pragma to the end of the
+   --  current source file. A subsequent pragma Warnings (On) adjusts the end
+   --  point of this entry appropriately.
 
-   --  If all warnings are suppressed by command switch, then there is a
-   --  dummy entry (put there by Errout.Initialize) at the start of the
-   --  table which covers all possible Source_Ptr values. Note that the
-   --  source pointer values in this table always reference the original
-   --  template, not an instantiation copy, in the generic case.
+   --  If all warnings are suppressed by command switch, then there is a dummy
+   --  entry (put there by Errout.Initialize) at the start of the table which
+   --  covers all possible Source_Ptr values. Note that the source pointer
+   --  values in this table always reference the original template, not an
+   --  instantiation copy, in the generic case.
 
    type Warnings_Entry is record
       Start : Source_Ptr;
@@ -280,9 +280,9 @@ package Erroutc is
       --  Set to True if entry has been used to suppress a warning
 
       Config : Boolean;
-      --  True if pragma is configuration pragma (in which case no matching
-      --  Off pragma is required, and it is not required that a specific
-      --  warning be suppressed).
+      --  True if pragma is configuration pragma (in which case no matching Off
+      --  pragma is required, and it is not required that a specific warning be
+      --  suppressed).
    end record;
 
    package Specific_Warnings is new Table.Table (
@@ -304,10 +304,10 @@ package Erroutc is
    --     end Mumble;
 
    --  The trouble is that the first pragma is technically a configuration
-   --  pragma, and yet it is clearly being used in the context of thinking
-   --  of it as a specific case. To deal with this, what we do is that the
-   --  On entry can match a configuration pragma from the same file, and if
-   --  we find such an On entry, we cancel the indication of it being the
+   --  pragma, and yet it is clearly being used in the context of thinking of
+   --  it as a specific case. To deal with this, what we do is that the On
+   --  entry can match a configuration pragma from the same file, and if we
+   --  find such an On entry, we cancel the indication of it being the
    --  configuration case. This seems to handle all cases we run into ok.
 
    -----------------
@@ -336,16 +336,16 @@ package Erroutc is
    --  output giving node number (of node N) if the debug X switch is set.
 
    procedure Check_Duplicate_Message (M1, M2 : Error_Msg_Id);
-   --  This function is passed the Id values of two error messages. If
-   --  either M1 or M2 is a continuation message, or is already deleted,
-   --  the call is ignored. Otherwise a check is made to see if M1 and M2
-   --  are duplicated or redundant. If so, the message to be deleted and
-   --  all its continuations are marked with the Deleted flag set to True.
+   --  This function is passed the Id values of two error messages. If either
+   --  M1 or M2 is a continuation message, or is already deleted, the call is
+   --  ignored. Otherwise a check is made to see if M1 and M2 are duplicated or
+   --  redundant. If so, the message to be deleted and all its continuations
+   --  are marked with the Deleted flag set to True.
 
    procedure Output_Error_Msgs (E : in out Error_Msg_Id);
-   --  Output source line, error flag, and text of stored error message and
-   --  all subsequent messages for the same line and unit. On return E is
-   --  set to be one higher than the last message output.
+   --  Output source line, error flag, and text of stored error message and all
+   --  subsequent messages for the same line and unit. On return E is set to be
+   --  one higher than the last message output.
 
    procedure Output_Line_Number (L : Logical_Line_Number);
    --  Output a line number as six digits (with leading zeroes suppressed),
@@ -366,9 +366,9 @@ package Erroutc is
    --  including the end points) will be deleted from the error listing.
 
    function Same_Error (M1, M2 : Error_Msg_Id) return Boolean;
-   --  See if two messages have the same text. Returns true if the text
-   --  of the two messages is identical, or if one of them is the same
-   --  as the other with an appended "instance at xxx" tag.
+   --  See if two messages have the same text. Returns true if the text of the
+   --  two messages is identical, or if one of them is the same as the other
+   --  with an appended "instance at xxx" tag.
 
    procedure Set_Msg_Blank;
    --  Sets a single blank in the message if the preceding character is a

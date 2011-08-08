@@ -808,7 +808,7 @@ c_cpp_builtins (cpp_reader *pfile)
     cpp_define (pfile, "__SSP__=1");
 
   if (flag_openmp)
-    cpp_define (pfile, "_OPENMP=200805");
+    cpp_define (pfile, "_OPENMP=201107");
 
   /* Add UPC defines */
   if (c_dialect_upc ())

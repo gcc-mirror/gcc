@@ -668,6 +668,7 @@ glibgo_toolexecdir
 glibgo_prefixdir
 WERROR
 WARN_FLAGS
+CC_FOR_BUILD
 enable_static
 enable_shared
 CPP
@@ -6422,7 +6423,7 @@ $as_echo "$lt_cv_cc_needs_belf" >&6; }
       case $lt_cv_prog_gnu_ld in
       yes*)
         case $host in
-        i?86-*-solaris*)
+        i?86-*-solaris* | x86_64-*-solaris2.1[0-9]*)
           LD="${LD-ld} -m elf_x86_64"
           ;;
         sparc*-*-solaris*)
@@ -10913,7 +10914,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10916 "configure"
+#line 10917 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11019,7 +11020,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11022 "configure"
+#line 11023 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13146,6 +13147,9 @@ CC="$lt_save_CC"
 
 
 
+
+
+CC_FOR_BUILD=${CC_FOR_BUILD:-gcc}
 
 
 WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual'

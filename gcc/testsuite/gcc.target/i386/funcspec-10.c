@@ -1,6 +1,6 @@
 /* PR target/36936 */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2 -march=i686" } */
 /* { dg-final { scan-assembler-not "cmov" } } */
 

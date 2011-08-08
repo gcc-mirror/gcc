@@ -409,15 +409,27 @@ and @code{TREE_OPERAND (@var{x}, 0)} contains the declaration,
 or another @code{COMPONENT_REF}, or null if there is no compile-time
 object associated with the reference.
 
+@findex MEM_OFFSET_KNOWN_P
+@item MEM_OFFSET_KNOWN_P (@var{x})
+True if the offset of the memory reference from @code{MEM_EXPR} is known.
+@samp{MEM_OFFSET (@var{x})} provides the offset if so.
+
 @findex MEM_OFFSET
 @item MEM_OFFSET (@var{x})
-The offset from the start of @code{MEM_EXPR} as a @code{CONST_INT} rtx.
+The offset from the start of @code{MEM_EXPR}.  The value is only valid if
+@samp{MEM_OFFSET_KNOWN_P (@var{x})} is true.
+
+@findex MEM_SIZE_KNOWN_P
+@item MEM_SIZE_KNOWN_P (@var{x})
+True if the size of the memory reference is known.
+@samp{MEM_SIZE (@var{x})} provides its size if so.
 
 @findex MEM_SIZE
 @item MEM_SIZE (@var{x})
-The size in bytes of the memory reference as a @code{CONST_INT} rtx.
+The size in bytes of the memory reference.
 This is mostly relevant for @code{BLKmode} references as otherwise
-the size is implied by the mode.
+the size is implied by the mode.  The value is only valid if
+@samp{MEM_SIZE_KNOWN_P (@var{x})} is true.
 
 @findex MEM_ALIGN
 @item MEM_ALIGN (@var{x})

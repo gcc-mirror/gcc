@@ -1049,8 +1049,10 @@ sysv, aix.
 @item --with-multilib-list=@var{list}
 @itemx --without-multilib-list
 Specify what multilibs to build.
-Currently only implemented for sh*-*-*.
+Currently only implemented for sh*-*-* and x86-64-*-linux*.
 
+@table @code
+@item sh*-*-*
 @var{list} is a comma separated list of CPU names.  These must be of the
 form @code{sh*} or @code{m*} (in which case they match the compiler option
 for that processor).  The list should not contain any endian options -
@@ -1081,6 +1083,16 @@ only little endian SH4AL:
 --with-cpu=sh4a --with-endian=little,big \
 --with-multilib-list=sh4al,!mb/m4al
 @end smallexample
+
+@item x86-64-*-linux*
+@var{list} is a comma separated list of @code{m32}, @code{m64} and
+@code{mx32} to enable 32-bit, 64-bit and x32 run-time libraries,
+respectively.  If @var{list} is empty, then there will be no multilibs
+and only the default run-time library will be enabled.
+
+If @option{--with-multilib-list} is not given, then only 32-bit and
+64-bit run-time libraries will be enabled.
+@end table
 
 @item --with-endian=@var{endians}
 Specify what endians to use.
@@ -1129,8 +1141,6 @@ DCE thread support.
 LynxOS thread support.
 @item mipssde
 MIPS SDE thread support.
-@item nks
-Novell Kernel Services thread support.
 @item no
 This is an alias for @samp{single}.
 @item posix
@@ -1245,7 +1255,7 @@ destructors, but requires __cxa_atexit in libc.  This option is currently
 only available on systems with GNU libc.  When enabled, this will cause
 @option{-fuse-cxa-atexit} to be passed by default.
 
-@item --enable-indirect-function
+@item --enable-gnu-indirect-function
 Define if you want to enable the @code{ifunc} attribute.  This option is
 currently only available on systems with GNU libc on certain targets.
 
@@ -1273,6 +1283,13 @@ will try to guess whether the @code{.init_array} and
 @item --enable-build-with-cxx
 Build GCC using a C++ compiler rather than a C compiler.  This is an
 experimental option which may become the default in a later release.
+
+@item --enable-build-poststage1-with-cxx
+When bootstrapping, build stages 2 and 3 of GCC using a C++ compiler
+rather than a C compiler.  Stage 1 is still built with a C compiler.
+This is an experimental option which may become the default in a later
+release.  This is enabled by default and may be disabled using
+@option{--disable-build-poststage1-with-cxx}.
 
 @item --enable-maintainer-mode
 The build rules that regenerate the Autoconf and Automake output files as
@@ -1391,8 +1408,8 @@ useful when you want a bi-arch compiler that defaults to 32-bit, and
 you are building a bi-arch or multi-arch binutils in a combined tree.
 On mips-linux, this will build a tri-arch compiler (ABI o32/n32/64),
 defaulted to o32.
-Currently, this option only affects sparc-linux, powerpc-linux, x86-linux
-and mips-linux.
+Currently, this option only affects sparc-linux, powerpc-linux, x86-linux,
+mips-linux and s390-linux.
 
 @item --enable-secureplt
 This option enables @option{-msecure-plt} by default for powerpc-linux.
@@ -1955,6 +1972,10 @@ Adds aot-compile-rpm to the list of installed scripts.
 
 @item --enable-browser-plugin
 Build the gcjwebplugin web browser plugin.
+
+@item --enable-static-libjava
+Build static libraries in libjava. The default is to only build shared
+libraries.
 
 @table @code
 @item ansi
@@ -2957,6 +2978,8 @@ information are.
 @item
 @uref{#alpha-dec-osf51,,alpha*-dec-osf5.1}
 @item
+@uref{#amd64-x-solaris210,,amd64-*-solaris2.10}
+@item
 @uref{#arm-x-elf,,arm-*-elf}
 @item
 @uref{#avr,,avr}
@@ -3053,9 +3076,13 @@ information are.
 @item
 @uref{#sparcv9-x-solaris2,,sparcv9-*-solaris2*}
 @item
+@uref{#c6x-x-x,,c6x-*-*}
+@item
 @uref{#x-x-vxworks,,*-*-vxworks*}
 @item
 @uref{#x86-64-x-x,,x86_64-*-*, amd64-*-*}
+@item
+@uref{#x86-64-x-solaris210,,x86_64-*-solaris2.1[0-9]*}
 @item
 @uref{#xtensa-x-elf,,xtensa*-*-elf}
 @item
@@ -3105,10 +3132,12 @@ Systems using processors that implement the DEC Alpha architecture and
 are running the DEC/Compaq/HP Unix (DEC OSF/1, Digital UNIX, or Compaq/HP
 Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
 
-As of GCC 3.2, versions before @code{alpha*-dec-osf4} are no longer
-supported.  (These are the versions which identify themselves as DEC
-OSF/1.)  As of GCC 4.6, support for Tru64 UNIX V4.0 and V5.0 has been
-removed.
+Support for Tru64 UNIX V5.1 has been obsoleted in GCC 4.7, but can still
+be enabled by configuring with @option{--enable-obsolete}.  Support will
+be removed in GCC 4.8.  As of GCC 4.6, support for Tru64 UNIX V4.0 and
+V5.0 has been removed.  As of GCC 3.2, versions before
+@code{alpha*-dec-osf4} are no longer supported.  (These are the versions
+which identify themselves as DEC OSF/1.)
 
 On Tru64 UNIX, virtual memory exhausted bootstrap failures
 may be fixed by reconfiguring Kernel Virtual Memory and Swap parameters
@@ -3151,6 +3180,13 @@ DBX@.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
 
 @c FIXME: still applicable?
+
+@html
+<hr />
+@end html
+@heading @anchor{amd64-x-solaris210}amd64-*-solaris2.1[0-9]*
+
+This is a synonym for @samp{x86_64-*-solaris2.1[0-9]*}.
 
 @html
 <hr />
@@ -3535,10 +3571,10 @@ you have the patch installed, you can configure GCC with an appropriate
 @end html
 @heading @anchor{ix86-x-solaris210}i?86-*-solaris2.10
 Use this for Solaris 10 or later on x86 and x86-64 systems.  This
-configuration is supported by GCC 4.0 and later versions only.  Unlike
-@samp{sparcv9-sun-solaris2*}, there is no corresponding 64-bit
-configuration like @samp{amd64-*-solaris2*} or @samp{x86_64-*-solaris2*}.
-@c FIXME: will there ever be?
+configuration is supported by GCC 4.0 and later versions only.  Starting
+with GCC 4.7, there is also a 64-bit @samp{amd64-*-solaris2.1[0-9]*} or
+@samp{x86_64-*-solaris2.1[0-9]*} configuration that corresponds to
+@samp{sparcv9-sun-solaris2*}.
 
 It is recommended that you configure GCC to use the GNU assembler, in
 @file{/usr/sfw/bin/gas}.  The versions included in Solaris 10, from GNU
@@ -3652,6 +3688,15 @@ The native @command{as} and @command{ld} are recommended for bootstrapping
 on AIX@.  The GNU Assembler, GNU Linker, and GNU Binutils version 2.20
 is required to bootstrap on AIX 5@.  The native AIX tools do
 interoperate with GCC@.
+
+AIX 5.3 TL10, AIX 6.1 TL05 and AIX 7.1 TL00 introduced an AIX
+assembler change that sometimes produces corrupt assembly files
+causing AIX linker errors.  The bug breaks GCC bootstrap on AIX and
+can cause compilation failures with existing GCC installations.  An
+AIX iFix for AIX 5.3 is available (APAR IZ98385 for AIX 5.3 TL10, APAR
+IZ98477 for AIX 5.3 TL11 and IZ98134 for AIX 5.3 TL12).  Fixes for AIX
+6.1 (APAR IZ98732 for AIX 6.1 TL05 and APAR IZ98861 for AIX 6.1 TL06)
+and AIX 7.1 are in verification and packaging phases.
 
 Building @file{libstdc++.a} requires a fix for an AIX Assembler bug
 APAR IY26685 (AIX 4.3) or APAR IY25528 (AIX 5.1).  It also requires a
@@ -3887,11 +3932,13 @@ Support for IRIX 5 has been removed in GCC 4.6.
 @end html
 @heading @anchor{mips-sgi-irix6}mips-sgi-irix6
 
-Support for IRIX 6 releases before 6.5 has been removed in GCC 4.6, as
-well as support for
-the O32 ABI.  It is @emph{strongly} recommended to upgrade to at least
-IRIX 6.5.18.  This release introduced full ISO C99 support, though for
-the N32 and N64 ABIs only.
+Support for IRIX 6.5 has been obsoleted in GCC 4.7, but can still be
+enabled by configuring with @option{--enable-obsolete}.  Support will be
+removed in GCC 4.8.  Support for IRIX 6 releases before 6.5 has been
+removed in GCC 4.6, as well as support for the O32 ABI.  It is
+@emph{strongly} recommended to upgrade to at least IRIX 6.5.18.  This
+release introduced full ISO C99 support, though for the N32 and N64 ABIs
+only.
 
 To build and use GCC on IRIX 6.5, you need the IRIX Development Foundation
 (IDF) and IRIX Development Libraries (IDL).  They are included with the
@@ -4351,6 +4398,13 @@ This is a synonym for @samp{sparc64-*-solaris2*}.
 @html
 <hr />
 @end html
+@heading @anchor{c6x-x-x}c6x-*-*
+
+The C6X family of processors. This port requires binutils-2.22 or newer.
+
+@html
+<hr />
+@end html
 @heading @anchor{x-x-vxworks}*-*-vxworks*
 Support for VxWorks is in flux.  At present GCC supports @emph{only} the
 very recent VxWorks 5.5 (aka Tornado 2.2) release, and only on PowerPC@.
@@ -4392,6 +4446,22 @@ GCC supports the x86-64 architecture implemented by the AMD64 processor
 (amd64-*-* is an alias for x86_64-*-*) on GNU/Linux, FreeBSD and NetBSD@.
 On GNU/Linux the default is a bi-arch compiler which is able to generate
 both 64-bit x86-64 and 32-bit x86 code (via the @option{-m32} switch).
+
+@html
+<hr />
+@end html
+@heading @anchor{x86-64-x-solaris2.10}x86_64-*-solaris2.1[0-9]*
+
+GCC also supports the x86-64 architecture implemented by the AMD64
+processor (@samp{amd64-*-*} is an alias for @samp{x86_64-*-*}) on
+Solaris 10 or later.  Unlike other systems, without special options a
+bi-arch compiler is built which generates 32-bit code by default, but
+can generate 64-bit x86-64 code with the @option{-m64} switch.  Since
+GCC 4.7, there is also configuration that defaults to 64-bit code, but
+can generate 32-bit code with @option{-m32}.  To configure and build
+this way, you have to provide all support libraries like @file{libgmp}
+as 64-bit code, configure with @option{--target=x86_64-pc-solaris2.1x}
+and @samp{CC=gcc -m64}.
 
 @html
 <hr />

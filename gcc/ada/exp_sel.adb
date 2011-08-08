@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,10 @@
 with Einfo;   use Einfo;
 with Nlists;  use Nlists;
 with Nmake;   use Nmake;
+with Opt;     use Opt;
 with Rtsfind; use Rtsfind;
+with Sinfo;   use Sinfo;
+with Snames;  use Snames;
 with Stand;   use Stand;
 with Tbuild;  use Tbuild;
 
@@ -144,8 +147,19 @@ package body Exp_Sel is
       Decls : List_Id;
       Obj   : Entity_Id) return Entity_Id
    is
-      K : constant Entity_Id := Make_Temporary (Loc, 'K');
+      K        : constant Entity_Id := Make_Temporary (Loc, 'K');
+      Tag_Node : Node_Id;
+
    begin
+      if Tagged_Type_Expansion then
+         Tag_Node := Unchecked_Convert_To (RTE (RE_Tag), Obj);
+      else
+         Tag_Node :=
+           Make_Attribute_Reference (Loc,
+             Prefix         => Obj,
+             Attribute_Name => Name_Tag);
+      end if;
+
       Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => K,
@@ -154,8 +168,7 @@ package body Exp_Sel is
           Expression          =>
             Make_Function_Call (Loc,
               Name => New_Reference_To (RTE (RE_Get_Tagged_Kind), Loc),
-              Parameter_Associations => New_List (
-                Unchecked_Convert_To (RTE (RE_Tag), Obj)))));
+              Parameter_Associations => New_List (Tag_Node))));
       return K;
    end Build_K;
 
@@ -186,16 +199,48 @@ package body Exp_Sel is
       Obj      : Entity_Id;
       Call_Ent : Entity_Id) return Node_Id
    is
+      Typ : constant Entity_Id := Etype (Obj);
+
    begin
-      return
-        Make_Assignment_Statement (Loc,
-          Name => New_Reference_To (S, Loc),
-          Expression =>
-            Make_Function_Call (Loc,
-              Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
-              Parameter_Associations => New_List (
-                Unchecked_Convert_To (RTE (RE_Tag), Obj),
-                Make_Integer_Literal (Loc, DT_Position (Call_Ent)))));
+      if Tagged_Type_Expansion then
+         return
+           Make_Assignment_Statement (Loc,
+             Name       => New_Reference_To (S, Loc),
+             Expression =>
+               Make_Function_Call (Loc,
+                 Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+                 Parameter_Associations => New_List (
+                   Unchecked_Convert_To (RTE (RE_Tag), Obj),
+                   Make_Integer_Literal (Loc, DT_Position (Call_Ent)))));
+
+      --  VM targets
+
+      else
+         return
+           Make_Assignment_Statement (Loc,
+             Name       => New_Reference_To (S, Loc),
+             Expression =>
+               Make_Function_Call (Loc,
+                 Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+
+                 Parameter_Associations => New_List (
+
+                     --  Obj_Typ
+
+                   Make_Attribute_Reference (Loc,
+                     Prefix => Obj,
+                     Attribute_Name => Name_Tag),
+
+                     --  Iface_Typ
+
+                   Make_Attribute_Reference (Loc,
+                     Prefix => New_Reference_To (Typ, Loc),
+                     Attribute_Name => Name_Tag),
+
+                     --  Position
+
+                   Make_Integer_Literal (Loc, DT_Position (Call_Ent)))));
+      end if;
    end Build_S_Assignment;
 
 end Exp_Sel;

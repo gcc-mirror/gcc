@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-mpreferred-stack-boundary=2" } */
 
 /* This case is to detect a compile time regression introduced in stack

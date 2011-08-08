@@ -37,6 +37,7 @@ for (i = 1; i <= n_headers; i++)
 	print "#include " quote headers[i] quote
 print "#include " quote "opts.h" quote
 print "#include " quote "intl.h" quote
+print "#include " quote "insn-attr-common.h" quote
 print ""
 
 if (n_extra_c_includes > 0) {

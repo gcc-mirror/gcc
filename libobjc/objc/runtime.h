@@ -497,10 +497,10 @@ objc_EXPORT const char * class_getName (Class class_);
 objc_EXPORT BOOL class_isMetaClass (Class class_);
 
 /* Return the superclass of 'class_'.  If 'class_' is Nil, or it is a
-   root class, return Nil.  If 'class_' is a class being constructed,
-   that is, a class returned by objc_allocateClassPair() but before it
-   has been registered with the runtime using
-   objc_registerClassPair(), return Nil.  */
+   root class, return Nil.  This function also works if 'class_' is a
+   class being constructed, that is, a class returned by
+   objc_allocateClassPair() but before it has been registered with the
+   runtime using objc_registerClassPair().  */
 objc_EXPORT Class class_getSuperclass (Class class_);
 
 /* Return the 'version' number of the class, which is an integer that

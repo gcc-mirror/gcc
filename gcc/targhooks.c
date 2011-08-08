@@ -614,6 +614,13 @@ default_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
   return PARM_BOUNDARY;
 }
 
+unsigned int
+default_function_arg_round_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
+				     const_tree type ATTRIBUTE_UNUSED)
+{
+  return PARM_BOUNDARY;
+}
+
 void
 hook_void_bitmap (bitmap regs ATTRIBUTE_UNUSED)
 {
@@ -1300,6 +1307,19 @@ bool
 default_class_likely_spilled_p (reg_class_t rclass)
 {
   return (reg_class_size[(int) rclass] == 1);
+}
+
+/* The default implementation of TARGET_CLASS_MAX_NREGS.  */
+
+unsigned char
+default_class_max_nregs (reg_class_t rclass ATTRIBUTE_UNUSED,
+			 enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+#ifdef CLASS_MAX_NREGS
+  return (unsigned char) CLASS_MAX_NREGS ((enum reg_class) rclass, mode);
+#else
+  return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
+#endif
 }
 
 /* Determine the debugging unwind mechanism for the target.  */

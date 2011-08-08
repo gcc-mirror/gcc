@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -w -fdump-tree-dse-vops" } */
+/* { dg-options "-O -w -fdump-tree-dse1-vops" } */
 
 __extension__ typedef __SIZE_TYPE__ size_t;
 typedef struct _IO_FILE FILE;
@@ -1520,4 +1520,4 @@ void func_encode(void)
 }
 
 /* { dg-final { scan-tree-dump-times " xxxinfo = {}" 1 "dse1"} } */
-/* { dg-final { cleanup-tree-dump "dse\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "dse1" } } */

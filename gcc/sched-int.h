@@ -173,7 +173,7 @@ extern struct ready_list ready;
 
 extern int max_issue (struct ready_list *, int, state_t, bool, int *);
 
-extern void ebb_compute_jump_reg_dependencies (rtx, regset, regset, regset);
+extern void ebb_compute_jump_reg_dependencies (rtx, regset);
 
 extern edge find_fallthru_edge_from (basic_block);
 
@@ -215,6 +215,9 @@ struct _dep
   /* Dependency status.  This field holds all dependency types and additional
      information for speculative dependencies.  */
   ds_t status;
+
+  /* Cached cost of the dependency.  */
+  int cost;
 };
 
 typedef struct _dep dep_def;
@@ -224,6 +227,9 @@ typedef dep_def *dep_t;
 #define DEP_CON(D) ((D)->con)
 #define DEP_TYPE(D) ((D)->type)
 #define DEP_STATUS(D) ((D)->status)
+#define DEP_COST(D) ((D)->cost)
+
+#define UNKNOWN_DEP_COST INT_MIN
 
 /* Functions to work with dep.  */
 
@@ -511,9 +517,6 @@ struct deps_desc
      in reg_last[N].{uses,sets,clobbers}.  */
   regset_head reg_last_in_use;
 
-  /* Element N is set for each register that is conditionally set.  */
-  regset_head reg_conditional_sets;
-
   /* Shows the last value of reg_pending_barrier associated with the insn.  */
   enum reg_pending_barrier_mode last_reg_pending_barrier;
 
@@ -596,6 +599,13 @@ struct haifa_sched_info
      If the second parameter is NULL, return the next basic block in EBB.
      The first parameter is the current basic block in EBB.  */
   basic_block (*advance_target_bb) (basic_block, rtx);
+
+  /* Allocate memory, store the frontend scheduler state in it, and
+     return it.  */
+  void *(*save_state) (void);
+  /* Restore frontend scheduler state from the argument, and free the
+     memory.  */
+  void (*restore_state) (void *);
 
   /* ??? FIXME: should use straight bitfields inside sched_info instead of
      this flag field.  */
@@ -756,9 +766,17 @@ struct _haifa_insn_data
      used to note timing constraints for the insns in the pending list.  */
   int tick;
 
+  /* For insns that are scheduled at a fixed difference from another,
+     this records the tick in which they must be ready.  */
+  int exact_tick;
+
   /* INTER_TICK is used to adjust INSN_TICKs of instructions from the
      subsequent blocks in a region.  */
   int inter_tick;
+
+  /* Used temporarily to estimate an INSN_TICK value for an insn given
+     current knowledge.  */
+  int tick_estimate;
 
   /* See comment on QUEUE_INDEX macro in haifa-sched.c.  */
   int queue_index;
@@ -769,6 +787,14 @@ struct _haifa_insn_data
      moved load insn and this one.  */
   unsigned int fed_by_spec_load : 1;
   unsigned int is_load_insn : 1;
+  /* Nonzero if this insn has negative-cost forward dependencies against
+     an already scheduled insn.  */
+  unsigned int feeds_backtrack_insn : 1;
+
+  /* Nonzero if this insn is a shadow of another, scheduled after a fixed
+     delay.  We only emit shadows at the end of a cycle, with no other
+     real insns following them.  */
+  unsigned int shadow_p : 1;
 
   /* '> 0' if priority is valid,
      '== 0' if priority was not yet computed,
@@ -1011,7 +1037,8 @@ enum SCHED_FLAGS {
      Results in generation of data and control speculative dependencies.
      Requires USE_DEPS_LIST set.  */
   DO_SPECULATION = USE_DEPS_LIST << 1,
-  SCHED_RGN = DO_SPECULATION << 1,
+  DO_BACKTRACKING = DO_SPECULATION << 1,
+  SCHED_RGN = DO_BACKTRACKING << 1,
   SCHED_EBB = SCHED_RGN << 1,
   /* Scheduler can possibly create new basic blocks.  Used for assertions.  */
   NEW_BBS = SCHED_EBB << 1,
@@ -1117,7 +1144,7 @@ struct sched_deps_info_def
   /* Called when computing dependencies for a JUMP_INSN.  This function
      should store the set of registers that must be considered as set by
      the jump in the regset.  */
-  void (*compute_jump_reg_dependencies) (rtx, regset, regset, regset);
+  void (*compute_jump_reg_dependencies) (rtx, regset);
 
   /* Start analyzing insn.  */
   void (*start_insn) (rtx);
@@ -1298,7 +1325,11 @@ extern int *ebb_head;
 extern int current_nr_blocks;
 extern int current_blocks;
 extern int target_bb;
+extern bool sched_no_dce;
 
+extern void record_delay_slot_pair (rtx, rtx, int);
+extern void free_delay_pairs (void);
+extern void add_delay_dependencies (rtx);
 extern bool sched_is_disabled_for_current_region_p (void);
 extern void sched_rgn_init (bool);
 extern void sched_rgn_finish (void);
@@ -1472,6 +1503,7 @@ extern dep_t sd_find_dep_between (rtx, rtx, bool);
 extern void sd_add_dep (dep_t, bool);
 extern enum DEPS_ADJUST_RESULT sd_add_or_update_dep (dep_t, bool);
 extern void sd_resolve_dep (sd_iterator_def);
+extern void sd_unresolve_dep (sd_iterator_def);
 extern void sd_copy_back_deps (rtx, rtx, bool);
 extern void sd_delete_dep (sd_iterator_def);
 extern void sd_debug_lists (rtx, sd_list_types_def);

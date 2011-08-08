@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_C_PRETTY_PRINTER
 
 #include "tree.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "pretty-print.h"
 
 

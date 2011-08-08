@@ -164,7 +164,7 @@ st_printf (const char * format, ...)
    core.  */
 
 void
-sys_abort ()
+sys_abort (void)
 {
   /* If backtracing is enabled, print backtrace and disable signal
      handler for ABRT.  */

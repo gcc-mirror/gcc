@@ -101,6 +101,15 @@ package Sem_Ch8 is
    --  of the full declaration as well. This procedure also has special
    --  processing for 'Class attribute references.
 
+   function Has_Loop_In_Inner_Open_Scopes (S : Entity_Id) return Boolean;
+   --  S is the entity of an open scope. This function determines if there is
+   --  an inner scope of S which is a loop (i.e. it appears somewhere in the
+   --  scope stack after S).
+
+   function In_Open_Scopes (S : Entity_Id) return Boolean;
+   --  S is the entity of a scope. This function determines if this scope is
+   --  currently open (i.e. it appears somewhere in the scope stack).
+
    procedure Initialize;
    --  Initializes data structures used for visibility analysis. Must be
    --  called before analyzing each new main source program.
@@ -115,18 +124,14 @@ package Sem_Ch8 is
    --  Analyze_Subunit.Re_Install_Use_Clauses to insure that, after the
    --  analysis of the subunit, the parent's environment is again identical.
 
-   function In_Open_Scopes (S : Entity_Id) return Boolean;
-   --  S is the entity of a scope. This function determines if this scope
-   --  is currently open (i.e. it appears somewhere in the scope stack).
-
    procedure Push_Scope (S : Entity_Id);
-   --  Make new scope stack entry, pushing S, the entity for a scope
-   --  onto the top of the scope table. The current setting of the scope
-   --  suppress flags is saved for restoration on exit.
+   --  Make new scope stack entry, pushing S, the entity for a scope onto the
+   --  top of the scope table. The current setting of the scope suppress flags
+   --  is saved for restoration on exit.
 
    procedure Pop_Scope;
-   --  Remove top entry from scope stack, restoring the saved setting
-   --  of the scope suppress flags.
+   --  Remove top entry from scope stack, restoring the saved setting of the
+   --  scope suppress flags.
 
    function Present_System_Aux (N : Node_Id := Empty) return Boolean;
    --  Return True if the auxiliary system file has been successfully loaded.

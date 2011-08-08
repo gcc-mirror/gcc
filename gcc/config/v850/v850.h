@@ -95,6 +95,7 @@ extern GTY(()) rtx v850_compare_op1;
   %{mv850e2:-D__v850e2__} \
   %{mv850es:-D__v850e1__} \
   %{mv850e1:-D__v850e1__} \
+  %{mv850e:-D__v850e__} \
   %{mv850:-D__v850__} \
   %(subtarget_cpp_spec)" \
   " %{mep:-D__EP__}"
@@ -339,12 +340,6 @@ enum reg_class
    || reg_renumber[regno] >= 0)
 
 #define REGNO_OK_FOR_INDEX_P(regno) 0
-
-/* Return the maximum number of consecutive registers
-   needed to represent mode MODE in a register of class CLASS.  */
-
-#define CLASS_MAX_NREGS(CLASS, MODE)	\
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Convenience wrappers around insn_const_int_ok_for_constraint.  */
 

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,9 +29,16 @@
  *                                                                          *
  ****************************************************************************/
 
-/*  This file contains host-specific parameters describing the behavior     */
-/*  of the linker. It is used by gnatlink as well as all tools that use     */
-/*  Mlib.                                                                   */
+/*  This file contains host-specific parameters describing the behavior of the
+    linker.  It is used by gnatlink as well as all tools that use Mlib.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef IN_GCC
+#include "auto-host.h"
+#endif
 
 #include <string.h>
 
@@ -157,36 +164,6 @@ const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_default_libgcc_subdir = "lib";
 
-#elif defined (VMS)
-const char *__gnat_object_file_option = "";
-const char *__gnat_run_path_option = "";
-char __gnat_shared_libgnat_default = STATIC;
-char __gnat_shared_libgcc_default = STATIC;
-int __gnat_link_max = 2147483647;
-unsigned char __gnat_objlist_file_supported = 0;
-unsigned char __gnat_using_gnu_linker = 0;
-const char *__gnat_object_library_extension = ".olb";
-unsigned char __gnat_separate_run_path_options = 0;
-const char *__gnat_default_libgcc_subdir = "lib";
-
-#elif defined (sun)
-const char *__gnat_object_file_option = "";
-const char *__gnat_run_path_option = "-Wl,-R";
-char __gnat_shared_libgnat_default = STATIC;
-char __gnat_shared_libgcc_default = STATIC;
-int __gnat_link_max = 2147483647;
-unsigned char __gnat_objlist_file_supported = 0;
-unsigned char __gnat_using_gnu_linker = 0;
-const char *__gnat_object_library_extension = ".a";
-unsigned char __gnat_separate_run_path_options = 0;
-#if defined (__sparc_v9__) || defined (__sparcv9)
-const char *__gnat_default_libgcc_subdir = "lib/sparcv9";
-#elif defined (__x86_64)
-const char *__gnat_default_libgcc_subdir = "lib/amd64";
-#else
-const char *__gnat_default_libgcc_subdir = "lib";
-#endif
-
 #elif defined (__FreeBSD__)
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "-Wl,-rpath,";
@@ -227,6 +204,51 @@ const char *__gnat_default_libgcc_subdir = "lib64";
 const char *__gnat_default_libgcc_subdir = "lib";
 #endif
 
+#elif (HAVE_GNU_LD)
+/*  These are the settings for all systems that use gnu ld. GNU style response
+    file is supported, the shared library default is STATIC.  */
+
+const char *__gnat_run_path_option = "";
+const char *__gnat_object_file_option = "";
+char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
+int __gnat_link_max = 8192;
+unsigned char __gnat_objlist_file_supported = 1;
+unsigned char __gnat_using_gnu_linker = 1;
+const char *__gnat_object_library_extension = ".a";
+unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
+
+#elif defined (VMS)
+const char *__gnat_object_file_option = "";
+const char *__gnat_run_path_option = "";
+char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
+int __gnat_link_max = 2147483647;
+unsigned char __gnat_objlist_file_supported = 0;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".olb";
+unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
+
+#elif defined (sun)
+const char *__gnat_object_file_option = "";
+const char *__gnat_run_path_option = "-Wl,-R";
+char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
+int __gnat_link_max = 2147483647;
+unsigned char __gnat_objlist_file_supported = 0;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".a";
+unsigned char __gnat_separate_run_path_options = 0;
+#if defined (__sparc_v9__) || defined (__sparcv9)
+const char *__gnat_default_libgcc_subdir = "lib/sparcv9";
+#elif defined (__x86_64)
+const char *__gnat_default_libgcc_subdir = "lib/amd64";
+#else
+const char *__gnat_default_libgcc_subdir = "lib";
+#endif
+
 #elif defined (__svr4__) && defined (i386)
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "";
@@ -253,4 +275,8 @@ unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_default_libgcc_subdir = "lib";
+#endif
+
+#ifdef __cplusplus
+}
 #endif

@@ -56,7 +56,7 @@ extern const char *out_movhi_r_mr (rtx insn, rtx op[], int *l);
 extern const char *out_movhi_mr_r (rtx insn, rtx op[], int *l);
 extern const char *out_movsi_r_mr (rtx insn, rtx op[], int *l);
 extern const char *out_movsi_mr_r (rtx insn, rtx op[], int *l);
-extern const char *output_movsisf (rtx insn, rtx operands[], int *l);
+extern const char *output_movsisf (rtx insn, rtx operands[], rtx clobber, int *l);
 extern const char *out_tstsi (rtx insn, rtx src, int *l);
 extern const char *out_tsthi (rtx insn, rtx src, int *l);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
@@ -85,7 +85,7 @@ extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
 extern int extra_constraint_Q (rtx x);
 extern int adjust_insn_length (rtx insn, int len);
 extern const char *output_reload_inhi (rtx insn, rtx *operands, int *len);
-extern const char *output_reload_insisf (rtx insn, rtx *operands, int *len);
+extern const char *output_reload_insisf (rtx insn, rtx *operands, rtx clobber, int *len);
 extern enum reg_class secondary_input_reload_class (enum reg_class,
 						    enum machine_mode,
 						    rtx);
@@ -109,10 +109,6 @@ extern void out_shift_with_cnt (const char *templ, rtx insn,
 				rtx operands[], int *len, int t_len);
 extern rtx avr_incoming_return_addr_rtx (void);
 #endif /* RTX_CODE */
-
-#ifdef HAVE_MACHINE_MODES
-extern int class_max_nregs (enum reg_class rclass, enum machine_mode mode);
-#endif /* HAVE_MACHINE_MODES */
 
 #ifdef REAL_VALUE_TYPE
 extern void asm_output_float (FILE *file, REAL_VALUE_TYPE n);

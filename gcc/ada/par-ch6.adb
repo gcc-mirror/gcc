@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,7 +82,7 @@ package body Ch6 is
 
    --  This routine scans out a subprogram declaration, subprogram body,
    --  subprogram renaming declaration or subprogram generic instantiation.
-   --  It also handles the new Ada 2012 parameterized expression form
+   --  It also handles the new Ada 2012 expression function form
 
    --  SUBPROGRAM_DECLARATION ::=
    --    SUBPROGRAM_SPECIFICATION
@@ -126,7 +126,7 @@ package body Ch6 is
    --  is classified as a basic declarative item, but it is parsed here, with
    --  other subprogram constructs.
 
-   --  PARAMETERIZED_EXPRESSION ::=
+   --  EXPRESSION_FUNCTION ::=
    --    FUNCTION SPECIFICATION IS (EXPRESSION);
 
    --  The value in Pf_Flags indicates which of these possible declarations
@@ -137,7 +137,7 @@ package body Ch6 is
    --    Pf_Flags.Pbod                 Set if proper body OK
    --    Pf_Flags.Rnam                 Set if renaming declaration OK
    --    Pf_Flags.Stub                 Set if body stub OK
-   --    Pf_Flags.Pexp                 Set if parameterized expression OK
+   --    Pf_Flags.Pexp                 Set if expression function OK
 
    --  If an inappropriate form is encountered, it is scanned out but an
    --  error message indicating that it is appearing in an inappropriate
@@ -598,7 +598,7 @@ package body Ch6 is
          end if;
       end if;
 
-      --  Processing for stub or subprogram body or parameterized expression
+      --  Processing for stub or subprogram body or expression function
 
       <<Subprogram_Body>>
 
@@ -623,21 +623,24 @@ package body Ch6 is
             TF_Semicolon;
             return Stub_Node;
 
-         --  Subprogram body or parameterized expression case
+         --  Subprogram body or expression function case
 
          else
-            Scan_Body_Or_Parameterized_Expression : declare
+            Scan_Body_Or_Expression_Function : declare
 
-               function Likely_Parameterized_Expression return Boolean;
-               --  Returns True if we have a probably case of a parameterized
-               --  expression omitting the parentheses, if so, returns True
+               Body_Is_Hidden_In_SPARK : Boolean;
+               Hidden_Region_Start     : Source_Ptr;
+
+               function Likely_Expression_Function return Boolean;
+               --  Returns True if we have a probable case of an expression
+               --  function omitting the parentheses, if so, returns True
                --  and emits an appropriate error message, else returns False.
 
-               -------------------------------------
-               -- Likely_Parameterized_Expression --
-               -------------------------------------
+               --------------------------------
+               -- Likely_Expression_Function --
+               --------------------------------
 
-               function Likely_Parameterized_Expression return Boolean is
+               function Likely_Expression_Function return Boolean is
                begin
                   --  If currently pointing to BEGIN or a declaration keyword
                   --  or a pragma, then we definitely have a subprogram body.
@@ -650,15 +653,15 @@ package body Ch6 is
                      return False;
 
                   --  Test for tokens which could only start an expression and
-                  --  thus signal the case of a parameterized expression.
+                  --  thus signal the case of a expression function.
 
-                  elsif Token in Token_Class_Literal
+                  elsif Token     in Token_Class_Literal
                     or else Token in Token_Class_Unary_Addop
-                    or else Token = Tok_Left_Paren
-                    or else Token = Tok_Abs
-                    or else Token = Tok_Null
-                    or else Token = Tok_New
-                    or else Token = Tok_Not
+                    or else Token =  Tok_Left_Paren
+                    or else Token =  Tok_Abs
+                    or else Token =  Tok_Null
+                    or else Token =  Tok_New
+                    or else Token =  Tok_Not
                   then
                      null;
 
@@ -680,12 +683,13 @@ package body Ch6 is
                      --  Otherwise we have to scan ahead. If the identifier is
                      --  followed by a colon or a comma, it is a declaration
                      --  and hence we have a subprogram body. Otherwise assume
-                     --  a parameterized expression.
+                     --  a expression function.
 
                      else
                         declare
                            Scan_State : Saved_Scan_State;
                            Tok        : Token_Type;
+
                         begin
                            Save_Scan_State (Scan_State);
                            Scan; -- past identifier
@@ -699,43 +703,41 @@ package body Ch6 is
                      end if;
                   end if;
 
-                  --  Fall through if we have a likely parameterized expression
+                  --  Fall through if we have a likely expression function
 
                   Error_Msg_SC
-                    ("parameterized expression must be "
-                     & "enclosed in parentheses");
+                    ("expression function must be enclosed in parentheses");
                   return True;
-               end Likely_Parameterized_Expression;
+               end Likely_Expression_Function;
 
-            --  Start of processing for Scan_Body_Or_Parameterized_Expression
+            --  Start of processing for Scan_Body_Or_Expression_Function
 
             begin
-               --  Parameterized_Expression case
+               --  Expression_Function case
 
                if Token = Tok_Left_Paren
-                 or else Likely_Parameterized_Expression
+                 or else Likely_Expression_Function
                then
-                  --  Check parameterized expression allowed here
+                  --  Check expression function allowed here
 
                   if not Pf_Flags.Pexp then
-                     Error_Msg_SC
-                       ("parameterized expression not allowed here!");
+                     Error_Msg_SC ("expression function not allowed here!");
                   end if;
 
                   --  Check we are in Ada 2012 mode
 
                   if Ada_Version < Ada_2012 then
                      Error_Msg_SC
-                       ("parameterized expression is an Ada 2012 feature!");
+                       ("expression function is an Ada 2012 feature!");
                      Error_Msg_SC
                        ("\unit must be compiled with -gnat2012 switch!");
                   end if;
 
-                  --  Parse out expression and build parameterized expression
+                  --  Parse out expression and build expression function
 
                   Body_Node :=
                     New_Node
-                      (N_Parameterized_Expression, Sloc (Specification_Node));
+                      (N_Expression_Function, Sloc (Specification_Node));
                   Set_Specification (Body_Node, Specification_Node);
                   Set_Expression (Body_Node, P_Expression);
                   T_Semicolon;
@@ -771,11 +773,30 @@ package body Ch6 is
                   Body_Node :=
                     New_Node (N_Subprogram_Body, Sloc (Specification_Node));
                   Set_Specification (Body_Node, Specification_Node);
+
+                  --  In SPARK, a HIDE directive can be placed at the beginning
+                  --  of a subprogram implementation, thus hiding the
+                  --  subprogram body from SPARK tool-set. No violation of the
+                  --  SPARK restriction should be issued on nodes in a hidden
+                  --  part, which is obtained by marking such hidden parts.
+
+                  if Token = Tok_SPARK_Hide then
+                     Body_Is_Hidden_In_SPARK := True;
+                     Hidden_Region_Start     := Token_Ptr;
+                     Scan; -- past HIDE directive
+                  else
+                     Body_Is_Hidden_In_SPARK := False;
+                  end if;
+
                   Parse_Decls_Begin_End (Body_Node);
+
+                  if Body_Is_Hidden_In_SPARK then
+                     Set_Hidden_Part_In_SPARK (Hidden_Region_Start, Token_Ptr);
+                  end if;
                end if;
 
                return Body_Node;
-            end Scan_Body_Or_Parameterized_Expression;
+            end Scan_Body_Or_Expression_Function;
          end if;
 
       --  Processing for subprogram declaration
@@ -1493,25 +1514,25 @@ package body Ch6 is
    -- 6.4  Function Call --
    ------------------------
 
-   --  Parsed by P_Call_Or_Name (4.1)
+   --  Parsed by P_Name (4.1)
 
    --------------------------------
    -- 6.4  Actual Parameter Part --
    --------------------------------
 
-   --  Parsed by P_Call_Or_Name (4.1)
+   --  Parsed by P_Name (4.1)
 
    --------------------------------
    -- 6.4  Parameter Association --
    --------------------------------
 
-   --  Parsed by P_Call_Or_Name (4.1)
+   --  Parsed by P_Name (4.1)
 
    ------------------------------------
    -- 6.4  Explicit Actual Parameter --
    ------------------------------------
 
-   --  Parsed by P_Call_Or_Name (4.1)
+   --  Parsed by P_Name (4.1)
 
    ---------------------------
    -- 6.5  Return Statement --

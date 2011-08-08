@@ -228,9 +228,6 @@ enum reg_class
 	 ? (GR_REGS)						\
 	 : (CLASS))))
 
-#define CLASS_MAX_NREGS(CLASS, MODE)    \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 
 /* Basic Stack Layout.  */
 

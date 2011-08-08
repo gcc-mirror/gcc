@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,8 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch7;  use Sem_Ch7;
@@ -43,7 +45,7 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
-with Stand;    use Stand;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Validsw;  use Validsw;
@@ -206,6 +208,92 @@ package body Exp_Ch13 is
       end case;
    end Expand_N_Attribute_Definition_Clause;
 
+   -----------------------------
+   -- Expand_N_Free_Statement --
+   -----------------------------
+
+   procedure Expand_N_Free_Statement (N : Node_Id) is
+      Expr : constant Node_Id := Expression (N);
+      Typ  : Entity_Id;
+
+   begin
+      --  Certain run-time configurations and targets do not provide support
+      --  for controlled types.
+
+      if Restriction_Active (No_Finalization) then
+         return;
+
+      --  Do not create a specialized Deallocate since .NET/JVM compilers do
+      --  not support pools and address arithmetic.
+
+      elsif VM_Target /= No_VM then
+         return;
+      end if;
+
+      --  Use the base type to perform the collection check
+
+      Typ := Etype (Expr);
+
+      if Ekind (Typ) = E_Access_Subtype then
+         Typ := Etype (Typ);
+      end if;
+
+      --  Handle private access types
+
+      if Is_Private_Type (Typ)
+        and then Present (Full_View (Typ))
+      then
+         Typ := Full_View (Typ);
+      end if;
+
+      --  Do not create a custom Deallocate when freeing an object with
+      --  suppressed finalization. In such cases the object is never attached
+      --  to a collection, so it does not need to be detached. Use a regular
+      --  free statement instead.
+
+      if No (Associated_Collection (Typ)) then
+         return;
+      end if;
+
+      --  Use a temporary to store the result of a complex expression. Perform
+      --  the following transformation:
+      --
+      --     Free (Complex_Expression);
+      --
+      --     Temp : constant Type_Of_Expression := Complex_Expression;
+      --     Free (Temp);
+
+      if Nkind (Expr) /= N_Identifier then
+         declare
+            Expr_Typ : constant Entity_Id  := Etype (Expr);
+            Loc      : constant Source_Ptr := Sloc (N);
+            New_Expr : Node_Id;
+            Temp_Id  : Entity_Id;
+
+         begin
+            Temp_Id := Make_Temporary (Loc, 'T');
+            Insert_Action (N,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp_Id,
+                Object_Definition =>
+                  New_Reference_To (Expr_Typ, Loc),
+                Expression =>
+                  Relocate_Node (Expr)));
+
+            New_Expr := New_Reference_To (Temp_Id, Loc);
+            Set_Etype (New_Expr, Expr_Typ);
+
+            Set_Expression (N, New_Expr);
+         end;
+      end if;
+
+      --  Create a custom Deallocate for a controlled object. This routine
+      --  ensures that the hidden list header will be deallocated along with
+      --  the actual object.
+
+      Build_Allocate_Deallocate_Proc (N, Is_Allocate => False);
+   end Expand_N_Free_Statement;
+
    ----------------------------
    -- Expand_N_Freeze_Entity --
    ----------------------------
@@ -213,7 +301,6 @@ package body Exp_Ch13 is
    procedure Expand_N_Freeze_Entity (N : Node_Id) is
       E              : constant Entity_Id := Entity (N);
       E_Scope        : Entity_Id;
-      S              : Entity_Id;
       In_Other_Scope : Boolean;
       In_Outer_Scope : Boolean;
       Decl           : Node_Id;
@@ -232,12 +319,22 @@ package body Exp_Ch13 is
             Ritem : Node_Id;
 
          begin
+            --  Look for aspect specs for this entity
+
             Ritem := First_Rep_Item (E);
             while Present (Ritem) loop
-               if Nkind (Ritem) = N_Aspect_Specification then
+               if Nkind (Ritem) = N_Aspect_Specification
+                 and then Entity (Ritem) = E
+               then
                   Aitem := Aspect_Rep_Item (Ritem);
-                  pragma Assert (Is_Delayed_Aspect (Aitem));
-                  Insert_Before (N, Aitem);
+
+                  --  Skip this for aspects (e.g. Current_Value) for which
+                  --  there is no corresponding pragma or attribute.
+
+                  if Present (Aitem) then
+                     pragma Assert (Is_Delayed_Aspect (Aitem));
+                     Insert_Before (N, Aitem);
+                  end if;
                end if;
 
                Next_Rep_Item (Ritem);
@@ -288,7 +385,7 @@ package body Exp_Ch13 is
 
       if Ekind (E_Scope) = E_Protected_Type
         or else (Ekind (E_Scope) = E_Task_Type
-                   and then not Has_Completion (E_Scope))
+                  and then not Has_Completion (E_Scope))
       then
          E_Scope := Scope (E_Scope);
 
@@ -296,13 +393,19 @@ package body Exp_Ch13 is
          E_Scope := Corresponding_Spec (Unit_Declaration_Node (E_Scope));
       end if;
 
-      S := Current_Scope;
-      while S /= Standard_Standard and then S /= E_Scope loop
-         S := Scope (S);
-      end loop;
+      --  If the scope of the entity is in open scopes, it is the current one
+      --  or an enclosing one, including a loop, a block, or a subprogram.
 
-      In_Other_Scope := not (S = E_Scope);
-      In_Outer_Scope := (not In_Other_Scope) and then (S /= Current_Scope);
+      if In_Open_Scopes (E_Scope) then
+         In_Other_Scope := False;
+         In_Outer_Scope := E_Scope /= Current_Scope;
+
+      --  Otherwise it is a local package or a different compilation unit
+
+      else
+         In_Other_Scope := True;
+         In_Outer_Scope := False;
+      end if;
 
       --  If the entity being frozen is defined in a scope that is not
       --  currently on the scope stack, we must establish the proper
@@ -310,7 +413,39 @@ package body Exp_Ch13 is
 
       if In_Other_Scope then
          Push_Scope (E_Scope);
-         Install_Visible_Declarations (E_Scope);
+
+         --  Finalizers are little odd in terms of freezing. The spec of the
+         --  procedure appears in the declarations while the body appears in
+         --  the statement part of a single construct. Since the finalizer must
+         --  be called by the At_End handler of the construct, the spec is
+         --  manually frozen right after its declaration. The only side effect
+         --  of this action appears in contexts where the construct is not in
+         --  its final resting place. These contexts are:
+
+         --    * Entry bodies - The declarations and statements are moved to
+         --      the procedure equivalen of the entry.
+         --    * Protected subprograms - The declarations and statements are
+         --      moved to the non-protected version of the subprogram.
+         --    * Task bodies - The declarations and statements are moved to the
+         --      task body procedure.
+
+         --  Visible declarations do not need to be installed in these three
+         --  cases since it does not make semantic sense to do so. All entities
+         --  referenced by a finalizer are visible and already resolved, plus
+         --  the enclosing scope may not have visible declarations at all.
+
+         if Ekind (E) = E_Procedure
+           and then Is_Finalizer (E)
+           and then
+             (Is_Entry (E_Scope)
+                or else (Is_Subprogram (E_Scope)
+                           and then Is_Protected_Type (Scope (E_Scope)))
+                or else Is_Task_Type (E_Scope))
+         then
+            null;
+         else
+            Install_Visible_Declarations (E_Scope);
+         end if;
 
          if Is_Package_Or_Generic_Package (E_Scope) or else
             Is_Protected_Type (E_Scope)             or else

@@ -1,5 +1,5 @@
 /* PR target/40838 */
-/* { dg-do compile { target { { ! *-*-darwin* } && ilp32 } } } */
+/* { dg-do compile { target { { ! *-*-darwin* } && ia32 } } } */
 /* { dg-options "-w -mstackrealign -O2 -mpreferred-stack-boundary=4" } */
 
 extern long long y(long long *s3);

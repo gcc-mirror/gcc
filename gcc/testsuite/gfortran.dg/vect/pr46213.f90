@@ -23,3 +23,4 @@ contains
 end program test
 
 ! { dg-final { cleanup-tree-dump "vect" } }
+! { dg-final { cleanup-modules "foo" } }

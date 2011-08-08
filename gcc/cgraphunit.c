@@ -450,6 +450,34 @@ cgraph_debug_gimple_stmt (struct function *this_cfun, gimple stmt)
   debug_gimple_stmt (stmt);
 }
 
+/* Verify that call graph edge E corresponds to DECL from the associated
+   statement.  Return true if the verification should fail.  */
+
+static bool
+verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
+{
+  struct cgraph_node *node;
+
+  if (!decl || e->callee->global.inlined_to)
+    return false;
+  node = cgraph_get_node (decl);
+
+  /* We do not know if a node from a different partition is an alias or what it
+     aliases and therefore cannot do the former_clone_of check reliably.  */
+  if (!node || node->in_other_partition)
+    return false;
+  node = cgraph_function_or_thunk_node (node, NULL);
+
+  if ((e->callee->former_clone_of != node->decl)
+      /* IPA-CP sometimes redirect edge to clone and then back to the former
+	 function.  This ping-pong has to go, eventaully.  */
+      && (node != cgraph_function_or_thunk_node (e->callee, NULL))
+      && !clone_of_p (node, e->callee))
+    return true;
+  else
+    return false;
+}
+
 /* Verify cgraph nodes of given cgraph node.  */
 DEBUG_FUNCTION void
 verify_cgraph_node (struct cgraph_node *node)
@@ -702,17 +730,7 @@ verify_cgraph_node (struct cgraph_node *node)
 			  }
 			if (!e->indirect_unknown_callee)
 			  {
-			    if (!e->callee->global.inlined_to
-			        && decl
-			        && cgraph_get_node (decl)
-			        && (e->callee->former_clone_of
-				    != cgraph_get_node (decl)->decl)
-				/* IPA-CP sometimes redirect edge to clone and then back to the former
-				   function.  This ping-pong has to go, eventaully.  */
-				&& (cgraph_function_or_thunk_node (cgraph_get_node (decl), NULL)
-				    != cgraph_function_or_thunk_node (e->callee, NULL))
-				&& !clone_of_p (cgraph_get_node (decl),
-					        e->callee))
+			    if (verify_edge_corresponds_to_fndecl (e, decl))
 			      {
 				error ("edge points to wrong declaration:");
 				debug_tree (e->callee->decl);
@@ -1446,11 +1464,10 @@ thunk_adjust (gimple_stmt_iterator * bsi,
   if (this_adjusting
       && fixed_offset != 0)
     {
-      stmt = gimple_build_assign (ptr,
-				  fold_build2_loc (input_location,
-						   POINTER_PLUS_EXPR,
-						   TREE_TYPE (ptr), ptr,
-						   size_int (fixed_offset)));
+      stmt = gimple_build_assign
+		(ptr, fold_build_pointer_plus_hwi_loc (input_location,
+						       ptr,
+						       fixed_offset));
       gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
     }
 
@@ -1496,12 +1513,9 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 
       /* Find the entry with the vcall offset.  */
       stmt = gimple_build_assign (vtabletmp2,
-				  fold_build2_loc (input_location,
-						   POINTER_PLUS_EXPR,
-						   TREE_TYPE (vtabletmp2),
-						   vtabletmp2,
-						   fold_convert (sizetype,
-								 virtual_offset)));
+				  fold_build_pointer_plus_loc (input_location,
+							       vtabletmp2,
+							       virtual_offset));
       gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
 
       /* Get the offset itself.  */
@@ -1521,9 +1535,7 @@ thunk_adjust (gimple_stmt_iterator * bsi,
       find_referenced_vars_in (stmt);
 
       /* Adjust the `this' pointer.  */
-      ptr = fold_build2_loc (input_location,
-			     POINTER_PLUS_EXPR, TREE_TYPE (ptr), ptr,
-			     offsettmp);
+      ptr = fold_build_pointer_plus_loc (input_location, ptr, offsettmp);
     }
 
   if (!this_adjusting
@@ -1542,9 +1554,8 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 	  mark_symbols_for_renaming (stmt);
 	  find_referenced_vars_in (stmt);
 	}
-      ptr = fold_build2_loc (input_location,
-			     POINTER_PLUS_EXPR, TREE_TYPE (ptrtmp), ptrtmp,
-			     size_int (fixed_offset));
+      ptr = fold_build_pointer_plus_hwi_loc (input_location,
+					     ptrtmp, fixed_offset);
     }
 
   /* Emit the statement and gimplify the adjustment expression.  */

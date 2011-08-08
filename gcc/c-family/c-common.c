@@ -996,6 +996,32 @@ fix_string_type (tree value)
   return value;
 }
 
+/* If DISABLE is true, stop issuing warnings.  This is used when
+   parsing code that we know will not be executed.  This function may
+   be called multiple times, and works as a stack.  */
+
+static void
+c_disable_warnings (bool disable)
+{
+  if (disable)
+    {
+      ++c_inhibit_evaluation_warnings;
+      fold_defer_overflow_warnings ();
+    }
+}
+
+/* If ENABLE is true, reenable issuing warnings.  */
+
+static void
+c_enable_warnings (bool enable)
+{
+  if (enable)
+    {
+      --c_inhibit_evaluation_warnings;
+      fold_undefer_and_ignore_overflow_warnings ();
+    }
+}
+
 /* Fully fold EXPR, an expression that was not folded (beyond integer
    constant expressions and null pointer constants) when being built
    up.  If IN_INIT, this is in a static initializer and certain
@@ -1062,7 +1088,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
   bool op0_const = true, op1_const = true, op2_const = true;
   bool op0_const_self = true, op1_const_self = true, op2_const_self = true;
   bool nowarning = TREE_NO_WARNING (expr);
-  int unused_p;
+  bool unused_p;
 
   /* This function is not relevant to C++ because C++ folds while
      parsing, and may need changes to be correct for C++ when C++
@@ -1311,10 +1337,10 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       unused_p = (op0 == (code == TRUTH_ANDIF_EXPR
 			  ? truthvalue_false_node
 			  : truthvalue_true_node));
-      c_inhibit_evaluation_warnings += unused_p;
+      c_disable_warnings (unused_p);
       op1 = c_fully_fold_internal (op1, in_init, &op1_const, &op1_const_self);
       STRIP_TYPE_NOPS (op1);
-      c_inhibit_evaluation_warnings -= unused_p;
+      c_enable_warnings (unused_p);
 
       if (op0 != orig_op0 || op1 != orig_op1 || in_init)
 	ret = in_init
@@ -1346,15 +1372,15 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       op0 = c_fully_fold_internal (op0, in_init, &op0_const, &op0_const_self);
 
       STRIP_TYPE_NOPS (op0);
-      c_inhibit_evaluation_warnings += (op0 == truthvalue_false_node);
+      c_disable_warnings (op0 == truthvalue_false_node);
       op1 = c_fully_fold_internal (op1, in_init, &op1_const, &op1_const_self);
       STRIP_TYPE_NOPS (op1);
-      c_inhibit_evaluation_warnings -= (op0 == truthvalue_false_node);
+      c_enable_warnings (op0 == truthvalue_false_node);
 
-      c_inhibit_evaluation_warnings += (op0 == truthvalue_true_node);
+      c_disable_warnings (op0 == truthvalue_true_node);
       op2 = c_fully_fold_internal (op2, in_init, &op2_const, &op2_const_self);
       STRIP_TYPE_NOPS (op2);
-      c_inhibit_evaluation_warnings -= (op0 == truthvalue_true_node);
+      c_enable_warnings (op0 == truthvalue_true_node);
 
       if (op0 != orig_op0 || op1 != orig_op1 || op2 != orig_op2)
 	ret = fold_build3_loc (loc, code, TREE_TYPE (expr), op0, op1, op2);
@@ -3712,7 +3738,7 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 
   /* If the pointer lives in UPC shared memory, then
      drop the 'shared' qualifier.  */
-  if (upc_shared_type_p (result_type))
+  if (TREE_SHARED (ptrop) || upc_shared_type_p (result_type))
     result_type = build_upc_unshared_type (result_type);
 
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
@@ -3798,7 +3824,7 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
   if (resultcode == MINUS_EXPR)
     intop = fold_build1_loc (loc, NEGATE_EXPR, sizetype, intop);
 
-  ret = fold_build2_loc (loc, POINTER_PLUS_EXPR, result_type, ptrop, intop);
+  ret = fold_build_pointer_plus_loc (loc, ptrop, intop);
 
   fold_undefer_and_ignore_overflow_warnings ();
 
@@ -4096,14 +4122,11 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
   if (type == error_mark_node)
     return;
 
-  if (((type_quals & TYPE_QUAL_CONST)
-       || (type && TREE_CODE (type) == REFERENCE_TYPE))
-      /* An object declared 'const' is only readonly after it is
-	 initialized.  We don't have any way of expressing this currently,
-	 so we need to be conservative and unset TREE_READONLY for types
-	 with constructors.  Otherwise aliasing code will ignore stores in
-	 an inline constructor.  */
-      && !(type && TYPE_NEEDS_CONSTRUCTING (type)))
+  if ((type_quals & TYPE_QUAL_CONST)
+      || (type && TREE_CODE (type) == REFERENCE_TYPE))
+    /* We used to check TYPE_NEEDS_CONSTRUCTING here, but now a constexpr
+       constructor can produce constant init, so rely on cp_finish_decl to
+       clear TREE_READONLY if the variable has non-constant init.  */
     TREE_READONLY (decl) = 1;
   if (type_quals & TYPE_QUAL_VOLATILE)
     {
@@ -4639,6 +4662,8 @@ c_common_nodes_and_builtins (void)
   tree va_list_ref_type_node;
   tree va_list_arg_type_node;
 
+  build_common_tree_nodes (flag_signed_char, flag_short_double);
+
   /* Define `int' and `char' first so that dbx will output them first.  */
   record_builtin_type (RID_INT, NULL, integer_type_node);
   record_builtin_type (RID_CHAR, "char", char_type_node);
@@ -4737,8 +4762,6 @@ c_common_nodes_and_builtins (void)
 
   pid_type_node =
     TREE_TYPE (identifier_global_value (get_identifier (PID_TYPE)));
-
-  build_common_tree_nodes_2 (flag_short_double);
 
   record_builtin_type (RID_FLOAT, NULL, float_type_node);
   record_builtin_type (RID_DOUBLE, NULL, double_type_node);
@@ -8395,6 +8418,8 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
     message = catenate_messages (gmsgid, " before %<#pragma%>");
   else if (token_type == CPP_PRAGMA_EOL)
     message = catenate_messages (gmsgid, " before end of line");
+  else if (token_type == CPP_DECLTYPE)
+    message = catenate_messages (gmsgid, " before %<decltype%>");
   else if (token_type < N_TTYPES)
     {
       message = catenate_messages (gmsgid, " before %qs token");

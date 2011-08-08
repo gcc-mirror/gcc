@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -62,9 +62,8 @@ package Ada.Text_IO is
       Append_File => 3); -- System.File_IO.File_Mode'Pos (Append_File)
 
    type Count is range 0 .. Natural'Last;
-   --  The value of Count'Last must be large enough so that the assumption
-   --  enough so that the assumption that the Line, Column and Page
-   --  counts can never exceed this value is a valid assumption.
+   --  The value of Count'Last must be large enough so that the assumption that
+   --  the Line, Column and Page counts can never exceed this value is valid.
 
    subtype Positive_Count is Count range 1 .. Count'Last;
 
@@ -72,9 +71,9 @@ package Ada.Text_IO is
    --  Line and page length
 
    subtype Field is Integer range 0 .. 255;
-   --  Note: if for any reason, there is a need to increase this value,
-   --  then it will be necessary to change the corresponding value in
-   --  System.Img_Real in file s-imgrea.adb.
+   --  Note: if for any reason, there is a need to increase this value, then it
+   --  will be necessary to change the corresponding value in System.Img_Real
+   --  in file s-imgrea.adb.
 
    subtype Number_Base is Integer range 2 .. 16;
 

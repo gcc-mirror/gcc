@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2002, 2003, 2004, 2009, 2010
+# Copyright (C) 2001, 2002, 2003, 2004, 2009, 2010, 2011
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@ proc load_gcc_lib { filename } {
 load_lib mfdg.exp
 load_lib libgloss.exp
 load_gcc_lib target-libpath.exp
+load_gcc_lib target-supports.exp
 load_gcc_lib timeout.exp
 load_gcc_lib timeout-dg.exp
 
@@ -123,9 +124,11 @@ proc libmudflap-init { language } {
 
     # If there is no static library then don't run tests with -static.
     global tool
+    global mfconfig_libs
     set opts "additional_flags=-static"
     lappend opts "additional_flags=-fmudflap"
     lappend opts "additional_flags=-lmudflap"
+    lappend opts "libs=$mfconfig_libs"
     set src stlm[pid].c
     set exe stlm[pid].x
 

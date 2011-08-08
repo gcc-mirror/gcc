@@ -87,8 +87,6 @@ static int h8300_os_task_function_p (tree);
 static void h8300_emit_stack_adjustment (int, HOST_WIDE_INT, bool);
 static HOST_WIDE_INT round_frame_size (HOST_WIDE_INT);
 static unsigned int compute_saved_regs (void);
-static void push (int);
-static void pop (int);
 static const char *cond_string (enum rtx_code);
 static unsigned int h8300_asm_insn_count (const char *);
 static tree h8300_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
@@ -556,7 +554,7 @@ compute_saved_regs (void)
 
 /* Emit an insn to push register RN.  */
 
-static void
+static rtx
 push (int rn)
 {
   rtx reg = gen_rtx_REG (word_mode, rn);
@@ -570,11 +568,12 @@ push (int rn)
     x = gen_push_h8300hs_normal (reg);
   x = F (emit_insn (x), true);
   add_reg_note (x, REG_INC, stack_pointer_rtx);
+  return x;
 }
 
 /* Emit an insn to pop register RN.  */
 
-static void
+static rtx
 pop (int rn)
 {
   rtx reg = gen_rtx_REG (word_mode, rn);
@@ -588,6 +587,7 @@ pop (int rn)
     x = gen_pop_h8300hs_normal (reg);
   x = emit_insn (x);
   add_reg_note (x, REG_INC, stack_pointer_rtx);
+  return x;
 }
 
 /* Emit an instruction to push or pop NREGS consecutive registers
@@ -2642,8 +2642,8 @@ h8sx_emit_movmd (rtx dest, rtx src, rtx length,
       first_dest = replace_equiv_address (dest, dest_reg);
       first_src = replace_equiv_address (src, src_reg);
 
-      set_mem_size (first_dest, GEN_INT (n & -factor));
-      set_mem_size (first_src, GEN_INT (n & -factor));
+      set_mem_size (first_dest, n & -factor);
+      set_mem_size (first_src, n & -factor);
 
       length = copy_to_mode_reg (HImode, gen_int_mode (n / factor, HImode));
       emit_insn (gen_movmd (first_dest, first_src, length, GEN_INT (factor)));
@@ -2678,7 +2678,16 @@ h8sx_emit_movmd (rtx dest, rtx src, rtx length,
 void
 h8300_swap_into_er6 (rtx addr)
 {
-  push (HARD_FRAME_POINTER_REGNUM);
+  rtx insn = push (HARD_FRAME_POINTER_REGNUM);
+  if (frame_pointer_needed)
+    add_reg_note (insn, REG_CFA_DEF_CFA,
+		  plus_constant (gen_rtx_MEM (Pmode, stack_pointer_rtx),
+				 2 * UNITS_PER_WORD));
+  else
+    add_reg_note (insn, REG_CFA_ADJUST_CFA,
+		  gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			       plus_constant (stack_pointer_rtx, 4)));
+
   emit_move_insn (hard_frame_pointer_rtx, addr);
   if (REGNO (addr) == SP_REG)
     emit_move_insn (hard_frame_pointer_rtx,
@@ -2692,9 +2701,20 @@ h8300_swap_into_er6 (rtx addr)
 void
 h8300_swap_out_of_er6 (rtx addr)
 {
+  rtx insn;
+
   if (REGNO (addr) != SP_REG)
     emit_move_insn (addr, hard_frame_pointer_rtx);
-  pop (HARD_FRAME_POINTER_REGNUM);
+
+  insn = pop (HARD_FRAME_POINTER_REGNUM);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  if (frame_pointer_needed)
+    add_reg_note (insn, REG_CFA_DEF_CFA,
+		  plus_constant (hard_frame_pointer_rtx, 2 * UNITS_PER_WORD));
+  else
+    add_reg_note (insn, REG_CFA_ADJUST_CFA,
+		  gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			       plus_constant (stack_pointer_rtx, -4)));
 }
 
 /* Return the length of mov instruction.  */
@@ -5812,6 +5832,40 @@ h8300_hard_regno_mode_ok (int regno, enum machine_mode mode)
     /* MAC register can only be of SImode.  Otherwise, anything
        goes.  */
     return regno == MAC_REG ? mode == SImode : 1;
+}
+
+/* Helper function for the move patterns.  Make sure a move is legitimate.  */
+
+bool
+h8300_move_ok (rtx dest, rtx src)
+{
+  rtx addr, other;
+
+  /* Validate that at least one operand is a register.  */
+  if (MEM_P (dest))
+    {
+      if (MEM_P (src) || CONSTANT_P (src))
+	return false;
+      addr = XEXP (dest, 0);
+      other = src;
+    }
+  else if (MEM_P (src))
+    {
+      addr = XEXP (src, 0);
+      other = dest;
+    }
+  else
+    return true;
+
+  /* Validate that auto-inc doesn't affect OTHER.  */
+  if (GET_RTX_CLASS (GET_CODE (addr)) != RTX_AUTOINC)
+    return true;
+  addr = XEXP (addr, 0);
+
+  if (addr == stack_pointer_rtx)
+    return register_no_sp_elim_operand (other, VOIDmode);
+  else
+    return !reg_overlap_mentioned_p(other, addr);
 }
 
 /* Perform target dependent optabs initialization.  */

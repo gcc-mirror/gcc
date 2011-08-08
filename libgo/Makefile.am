@@ -38,7 +38,7 @@ ACLOCAL_AMFLAGS = -I ./config -I ../config
 
 AM_CFLAGS = -fexceptions -fplan9-extensions $(SPLIT_STACK) $(WARN_CFLAGS) \
 	$(STRINGOPS_FLAG) \
-	-I $(srcdir)/../gcc -I $(MULTIBUILDTOP)../../gcc/include
+	-I $(srcdir)/../libgcc -I $(MULTIBUILDTOP)../../gcc/include
 
 if USING_SPLIT_STACK
 AM_LDFLAGS = -XCClinker $(SPLIT_STACK)
@@ -1619,7 +1619,7 @@ GOTESTFLAGS =
 
 # Check a package.
 CHECK = \
-	GC="$(GOC) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
+	GC="$(GOC) $(GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@ with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
+with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sinfo;    use Sinfo;
 with Sem_Aux;  use Sem_Aux;
@@ -70,16 +71,31 @@ package body Exp_Atag is
    ------------------------------------------------
 
    procedure Build_Common_Dispatching_Select_Statements
-     (Loc    : Source_Ptr;
-      DT_Ptr : Entity_Id;
+     (Typ    : Entity_Id;
       Stmts  : List_Id)
    is
+      Loc      : constant Source_Ptr := Sloc (Typ);
+      Tag_Node : Node_Id;
+
    begin
       --  Generate:
       --    C := get_prim_op_kind (tag! (<type>VP), S);
 
       --  where C is the out parameter capturing the call kind and S is the
       --  dispatch table slot number.
+
+      if Tagged_Type_Expansion then
+         Tag_Node :=
+           Unchecked_Convert_To (RTE (RE_Tag),
+             New_Reference_To
+              (Node (First_Elmt (Access_Disp_Table (Typ))), Loc));
+
+      else
+         Tag_Node :=
+           Make_Attribute_Reference (Loc,
+             Prefix => New_Reference_To (Typ, Loc),
+             Attribute_Name => Name_Tag);
+      end if;
 
       Append_To (Stmts,
         Make_Assignment_Statement (Loc,
@@ -88,8 +104,7 @@ package body Exp_Atag is
             Make_Function_Call (Loc,
               Name => New_Occurrence_Of (RTE (RE_Get_Prim_Op_Kind), Loc),
               Parameter_Associations => New_List (
-                Unchecked_Convert_To (RTE (RE_Tag),
-                  New_Reference_To (DT_Ptr, Loc)),
+                Tag_Node,
                 Make_Identifier (Loc, Name_uS)))));
 
       --  Generate:

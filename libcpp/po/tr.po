@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2011-03-24 16:45+0000\n"
+"POT-Creation-Date: 2011-06-21 10:26+0000\n"
 "PO-Revision-Date: 2007-05-23 01:17+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@buguner.name.tr>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -73,7 +73,7 @@ msgstr "evrensel karakter ismi %.*s tamamlanmamış"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s geçerli bir evrensel karakter değil"
 
-#: charset.c:1056 lex.c:1040
+#: charset.c:1056 lex.c:1041
 msgid "'$' in identifier or number"
 msgstr "belirteç ya da sayı içinde '$'"
 
@@ -122,6 +122,7 @@ msgstr "ISO standardı olmayan önceleme dizgesi, '\\%c'"
 
 #: charset.c:1321
 #, fuzzy, c-format
+#| msgid "unknown escape sequence '\\%c'"
 msgid "unknown escape sequence: '\\%c'"
 msgstr "bilinmeyen önceleme dizgesi '\\%c'"
 
@@ -163,6 +164,7 @@ msgstr "#%s bir GCC uzantısıdır"
 
 #: directives.c:361
 #, fuzzy, c-format
+#| msgid "#%s is a GCC extension"
 msgid "#%s is a deprecated GCC extension"
 msgstr "#%s bir GCC uzantısıdır"
 
@@ -311,11 +313,13 @@ msgstr "main dosyasında '#pragma once'"
 
 #: directives.c:1454
 #, fuzzy
+#| msgid "invalid #pragma GCC poison directive"
 msgid "invalid #pragma push_macro directive"
 msgstr "geçersiz #pragma GCC poison yönergesi"
 
 #: directives.c:1509
 #, fuzzy
+#| msgid "invalid #pragma GCC poison directive"
 msgid "invalid #pragma pop_macro directive"
 msgstr "geçersiz #pragma GCC poison yönergesi"
 
@@ -346,61 +350,61 @@ msgstr "mevcut dosya %s den daha eski"
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma bir parantezli dizge sabiti alır"
 
-#: directives.c:1917
+#: directives.c:1927
 msgid "#else without #if"
 msgstr "#if siz #else"
 
-#: directives.c:1922
+#: directives.c:1932
 msgid "#else after #else"
 msgstr "#else den sonra #else"
 
-#: directives.c:1924 directives.c:1957
+#: directives.c:1934 directives.c:1967
 msgid "the conditional began here"
 msgstr "koşul başlangıcı burası"
 
-#: directives.c:1950
+#: directives.c:1960
 msgid "#elif without #if"
 msgstr "#if siz #elif "
 
-#: directives.c:1955
+#: directives.c:1965
 msgid "#elif after #else"
 msgstr "#else den sonra #elif"
 
-#: directives.c:1993
+#: directives.c:2003
 msgid "#endif without #if"
 msgstr "#if siz #endif"
 
-#: directives.c:2073
+#: directives.c:2083
 msgid "missing '(' after predicate"
 msgstr "dayanaktan sonra '(' eksik"
 
-#: directives.c:2088
+#: directives.c:2098
 msgid "missing ')' to complete answer"
 msgstr "yanıtı tamamlayacak ')' eksik"
 
-#: directives.c:2108
+#: directives.c:2118
 msgid "predicate's answer is empty"
 msgstr "dayanakların cevabı boş"
 
-#: directives.c:2135
+#: directives.c:2145
 msgid "assertion without predicate"
 msgstr "dayanaksız olumlama"
 
-#: directives.c:2138
+#: directives.c:2148
 msgid "predicate must be an identifier"
 msgstr "dayanak bir tanımlayıcı olmalı"
 
-#: directives.c:2224
+#: directives.c:2234
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "\"%s\" tekrar olumlanmış"
 
-#: directives.c:2515
+#: directives.c:2525
 #, c-format
 msgid "unterminated #%s"
 msgstr "sonlandırılmamış #%s"
 
-#: directives-only.c:222 lex.c:2074 traditional.c:163
+#: directives-only.c:222 lex.c:2077 traditional.c:163
 msgid "unterminated comment"
 msgstr "sonlandırılmamış açıklama"
 
@@ -419,11 +423,13 @@ msgstr "sayı içindeki ondalık nokta sayısı çok fazla"
 
 #: expr.c:311 expr.c:396
 #, fuzzy
+#| msgid "imaginary constants are a GCC extension"
 msgid "fixed-point constants are a GCC extension"
 msgstr "sanal sabitler bir GCC genişletmesidir"
 
 #: expr.c:324
 #, fuzzy, c-format
+#| msgid "invalid digit \"%c\" in octal constant"
 msgid "invalid digit \"%c\" in binary constant"
 msgstr "sekizlik sabit içindeki \"%c\" geçersiz"
 
@@ -434,11 +440,13 @@ msgstr "sekizlik sabit içindeki \"%c\" geçersiz"
 
 #: expr.c:334
 #, fuzzy
+#| msgid "invalid suffix \"%.*s\" on floating constant"
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "gerçel sabitin \"%.*s\" soneki geçersiz"
 
 #: expr.c:339
 #, fuzzy
+#| msgid "use of C99 hexadecimal floating constant"
 msgid "no digits in hexadecimal floating constant"
 msgstr "C99 onaltılık gerçel sayı sabit kullanımı"
 
@@ -466,6 +474,7 @@ msgstr "geleneksel C \"%.*s\" sonekini kullanmaz"
 
 #: expr.c:383
 #, fuzzy
+#| msgid "imaginary constants are a GCC extension"
 msgid "suffix for double constant is a GCC extension"
 msgstr "sanal sabitler bir GCC genişletmesidir"
 
@@ -476,6 +485,7 @@ msgstr "onaltılık kayan sabitli \"%.*s\" soneki geçersiz"
 
 #: expr.c:400
 #, fuzzy
+#| msgid "imaginary constants are a GCC extension"
 msgid "decimal float constants are a GCC extension"
 msgstr "sanal sabitler bir GCC genişletmesidir"
 
@@ -486,6 +496,7 @@ msgstr "tamsayı sabitte sonek \"%.*s\" soneki geçersiz"
 
 #: expr.c:433
 #, fuzzy
+#| msgid "use of C99 long long integer constant"
 msgid "use of C++0x long long integer constant"
 msgstr "ISO C99 long long tamsayı sabitleri yasaklar"
 
@@ -499,6 +510,7 @@ msgstr "sanal sabitler bir GCC genişletmesidir"
 
 #: expr.c:451
 #, fuzzy
+#| msgid "imaginary constants are a GCC extension"
 msgid "binary constants are a GCC extension"
 msgstr "sanal sabitler bir GCC genişletmesidir"
 
@@ -527,106 +539,109 @@ msgstr "(C++'da \"%s\" \"%s\" için bir alternatif dizgeciktir)"
 msgid "this use of \"defined\" may not be portable"
 msgstr "\"defined\" bu kullanımıyla uyarlanabilir olmayabilir"
 
-#: expr.c:751
+#: expr.c:756
 msgid "floating constant in preprocessor expression"
 msgstr "önişlemci ifadesinde gerçel sayı taşması"
 
-#: expr.c:757
+#: expr.c:762
 msgid "imaginary number in preprocessor expression"
 msgstr "önişlemci ifadesinde sanal sayı"
 
-#: expr.c:804
+#: expr.c:809
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr "\"%s\" tanımlı değil"
 
-#: expr.c:816
+#: expr.c:821
 #, fuzzy
+#| msgid "#%s is a GCC extension"
 msgid "assertions are a GCC extension"
 msgstr "#%s bir GCC uzantısıdır"
 
-#: expr.c:819
+#: expr.c:824
 msgid "assertions are a deprecated extension"
 msgstr ""
 
-#: expr.c:952 expr.c:981
+#: expr.c:957 expr.c:986
 #, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr "\"%s\" dizgeciğinden önceki iki terimli işleç eksik"
 
-#: expr.c:972
+#: expr.c:977
 #, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "\"%s\" dizgeciği önişlemci ifadelerinde geçersizdir"
 
-#: expr.c:989
+#: expr.c:994
 msgid "missing expression between '(' and ')'"
 msgstr "'(' ve ')' arasında ifade eksik"
 
-#: expr.c:992
+#: expr.c:997
 #, fuzzy, c-format
+#| msgid "#if with no expression"
 msgid "%s with no expression"
 msgstr "#if ifadesiz"
 
-#: expr.c:995
+#: expr.c:1000
 #, c-format
 msgid "operator '%s' has no right operand"
 msgstr "`%s' işlecinin sağ tarafı yok"
 
-#: expr.c:1000
+#: expr.c:1005
 #, c-format
 msgid "operator '%s' has no left operand"
 msgstr "`%s' işlecinin sol terimi yok"
 
-#: expr.c:1026
+#: expr.c:1031
 msgid " ':' without preceding '?'"
 msgstr "':' den önce '?' yok"
 
-#: expr.c:1054
+#: expr.c:1059
 #, fuzzy, c-format
+#| msgid "unbalanced stack in #if"
 msgid "unbalanced stack in %s"
 msgstr "#if ifadesinde karşılıksız yığın"
 
-#: expr.c:1074
+#: expr.c:1079
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "işleç '%u' imkansız"
 
-#: expr.c:1175
+#: expr.c:1180
 msgid "missing ')' in expression"
 msgstr "ifadede ')' eksik"
 
-#: expr.c:1204
+#: expr.c:1209
 msgid "'?' without following ':'"
 msgstr "'?' dan sonra ':' yok"
 
-#: expr.c:1214
+#: expr.c:1219
 msgid "integer overflow in preprocessor expression"
 msgstr "önişlemci ifadesinde tamsayı taşması"
 
-#: expr.c:1219
+#: expr.c:1224
 msgid "missing '(' in expression"
 msgstr "ifadede '(' eksik"
 
-#: expr.c:1251
+#: expr.c:1256
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "\"%s\"in soldaki terimi yükseltgenirken işaret değiştiriyor"
 
-#: expr.c:1256
+#: expr.c:1261
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "\"%s\"in sağdaki terimi yükseltgenirken işaret değiştiriyor"
 
-#: expr.c:1515
+#: expr.c:1520
 msgid "traditional C rejects the unary plus operator"
 msgstr "geleneksel C tekil artı işlecini dışlar"
 
-#: expr.c:1598
+#: expr.c:1603
 msgid "comma operator in operand of #if"
 msgstr "#if'in teriminde virgül"
 
-#: expr.c:1734
+#: expr.c:1739
 msgid "division by zero in #if"
 msgstr "#if içinde sıfırla bölme"
 
@@ -700,97 +715,99 @@ msgstr "CPP half-integer'ı CPP character'dan daha dar"
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "Bu konaktaki CPP %lu bitten büyük karakter sabitleriyle çalışamaz, hedef ise %lu bit gerektiriyor"
 
-#: lex.c:834
+#: lex.c:835
 msgid "backslash and newline separated by space"
 msgstr "ters bölü ve satırsonu arasında boşluk var"
 
-#: lex.c:839
+#: lex.c:840
 msgid "backslash-newline at end of file"
 msgstr "dosyanın sonunda tersbölülü satırsonu"
 
-#: lex.c:855
+#: lex.c:856
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr "??%c üçlü harfi %c olarak dönüştürüldü"
 
-#: lex.c:863
+#: lex.c:864
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "??%c üçlü harfi yoksayıldı, yoksayılmaması için -trigraphs kullanın"
 
-#: lex.c:912
+#: lex.c:913
 msgid "\"/*\" within comment"
 msgstr "açıklama içinde \"/*\" bulundu"
 
-#: lex.c:970
+#: lex.c:971
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "önişlem yönergesi içinde %s"
 
-#: lex.c:979
+#: lex.c:980
 msgid "null character(s) ignored"
 msgstr "null karakter(ler) yoksayıldı"
 
-#: lex.c:1016
+#: lex.c:1017
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "`%.*s' NFKC'de yok"
 
-#: lex.c:1019
+#: lex.c:1020
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "`%.*s' NFC'de yok"
 
-#: lex.c:1087 lex.c:1164
+#: lex.c:1088 lex.c:1165
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "zehirli \"%s\" kullanılmaya çalışılıyor"
 
-#: lex.c:1095 lex.c:1172
+#: lex.c:1096 lex.c:1173
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__  sadece argümanlarının sayısı değişebilen bir C99 makrosunun genişleme alanında görünebilir"
 
-#: lex.c:1101 lex.c:1178
+#: lex.c:1102 lex.c:1179
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:1323
+#: lex.c:1324
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:1326
+#: lex.c:1327
 #, fuzzy, c-format
+#| msgid "universal character %.*s is not valid in an identifier"
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "evrensel karakter %.*s bir belirteç içinde geçerli değil"
 
-#: lex.c:1447 lex.c:1469
+#: lex.c:1450 lex.c:1472
 #, fuzzy
+#| msgid "unterminated #%s"
 msgid "unterminated raw string"
 msgstr "sonlandırılmamış #%s"
 
-#: lex.c:1484 lex.c:1583
+#: lex.c:1487 lex.c:1586
 msgid "null character(s) preserved in literal"
 msgstr "null karakter(ler) sabit içinde saklanmış"
 
-#: lex.c:1586
+#: lex.c:1589
 #, c-format
 msgid "missing terminating %c character"
 msgstr "sonlandıran %c karakteri eksik"
 
-#: lex.c:2085
+#: lex.c:2088
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ tarzı açıklamalara ISO C90'da izin verilmez"
 
-#: lex.c:2087
+#: lex.c:2090
 msgid "(this will be reported only once per input file)"
 msgstr "(her girdi dosyasında sadece bir kere raporlanacaktır)"
 
-#: lex.c:2092
+#: lex.c:2095
 msgid "multi-line comment"
 msgstr "çok satırlı açıklama"
 
-#: lex.c:2412
+#: lex.c:2415
 #, c-format
 msgid "unspellable token %s"
 msgstr "dizgecik %s okunabilir değil"
@@ -926,6 +943,7 @@ msgstr "önderlemeli başlık yazılırken"
 
 #: pch.c:608
 #, fuzzy, c-format
+#| msgid "%s: not used because `%s' is defined"
 msgid "%s: not used because `%.*s' is poisoned"
 msgstr "%s: `%s' tanımlı olduğundan kullanılmadı"
 
@@ -946,6 +964,7 @@ msgstr "%s: `%s' tanımlı olduğundan kullanılmadı"
 
 #: pch.c:703
 #, fuzzy, c-format
+#| msgid "%s: not used because `%s' is defined"
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s: `%s' tanımlı olduğundan kullanılmadı"
 

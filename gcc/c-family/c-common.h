@@ -328,6 +328,30 @@ struct c_common_resword
   const unsigned int disable   : 16;
 };
 
+/* Extra cpp_ttype values for C++.  */
+
+/* A token type for keywords, as opposed to ordinary identifiers.  */
+#define CPP_KEYWORD ((enum cpp_ttype) (N_TTYPES + 1))
+
+/* A token type for template-ids.  If a template-id is processed while
+   parsing tentatively, it is replaced with a CPP_TEMPLATE_ID token;
+   the value of the CPP_TEMPLATE_ID is whatever was returned by
+   cp_parser_template_id.  */
+#define CPP_TEMPLATE_ID ((enum cpp_ttype) (CPP_KEYWORD + 1))
+
+/* A token type for nested-name-specifiers.  If a
+   nested-name-specifier is processed while parsing tentatively, it is
+   replaced with a CPP_NESTED_NAME_SPECIFIER token; the value of the
+   CPP_NESTED_NAME_SPECIFIER is whatever was returned by
+   cp_parser_nested_name_specifier_opt.  */
+#define CPP_NESTED_NAME_SPECIFIER ((enum cpp_ttype) (CPP_TEMPLATE_ID + 1))
+
+/* A token type for pre-parsed C++0x decltype.  */
+#define CPP_DECLTYPE ((enum cpp_ttype) (CPP_NESTED_NAME_SPECIFIER + 1))
+
+/* The number of token types, including C++-specific ones.  */
+#define N_CP_TTYPES ((int) (CPP_DECLTYPE + 1))
+
 /* Disable mask.  Keywords are disabled if (reswords[i].disable &
    mask) is _true_.  Thus for keywords which are present in all
    languages the disable field is zero.  */
@@ -735,6 +759,7 @@ extern void c_register_addr_space (const char *str, addr_space_t as);
 extern bool in_late_binary_op;
 extern const char *c_addr_space_name (addr_space_t as);
 extern tree identifier_global_value (tree);
+extern tree c_linkage_bindings (tree);
 extern void record_builtin_type (enum rid, const char *, tree);
 extern tree build_void_list_node (void);
 extern void start_fname_decls (void);
@@ -1009,7 +1034,7 @@ extern void warn_for_sign_compare (location_t,
 				   enum tree_code resultcode);
 extern void do_warn_double_promotion (tree, tree, tree, const char *, 
 				      location_t);
-extern void set_underlying_type (tree x);
+extern void set_underlying_type (tree);
 extern VEC(tree,gc) *make_tree_vector (void);
 extern void release_tree_vector (VEC(tree,gc) *);
 extern VEC(tree,gc) *make_tree_vector_single (tree);
@@ -1053,9 +1078,11 @@ extern tree c_finish_omp_master (location_t, tree);
 extern tree c_finish_omp_critical (location_t, tree, tree);
 extern tree c_finish_omp_ordered (location_t, tree);
 extern void c_finish_omp_barrier (location_t);
-extern tree c_finish_omp_atomic (location_t, enum tree_code, tree, tree);
+extern tree c_finish_omp_atomic (location_t, enum tree_code, enum tree_code,
+				 tree, tree, tree, tree, tree);
 extern void c_finish_omp_flush (location_t);
 extern void c_finish_omp_taskwait (location_t);
+extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, tree, tree, tree, tree, tree, tree);
 extern void c_split_parallel_clauses (location_t, tree, tree *, tree *);
 extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);

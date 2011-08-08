@@ -1,3 +1,5 @@
+LIB2ADD += $(srcdir)/config/rs6000/ibm-ldouble.c
+
 LIB2ADD_ST += crtsavfpr.S crtresfpr.S \
   crtsavgpr.S crtresgpr.S \
   crtresxfpr.S crtresxgpr.S \

@@ -1635,7 +1635,8 @@ may_be_unaligned_p (tree ref, tree step)
   base = get_inner_reference (ref, &bitsize, &bitpos, &toffset, &mode,
 			      &unsignedp, &volatilep, true);
   base_type = TREE_TYPE (base);
-  base_align = TYPE_ALIGN (base_type);
+  base_align = get_object_alignment (base, BIGGEST_ALIGNMENT);
+  base_align = MAX (base_align, TYPE_ALIGN (base_type));
 
   if (mode != BLKmode)
     {
@@ -3586,9 +3587,7 @@ force_expr_to_var_cost (tree expr, bool speed)
 	  symbol_cost[i] = computation_cost (addr, i) + 1;
 
 	  address_cost[i]
-	    = computation_cost (build2 (POINTER_PLUS_EXPR, type,
-					addr,
-					build_int_cst (sizetype, 2000)), i) + 1;
+	    = computation_cost (fold_build_pointer_plus_hwi (addr, 2000), i) + 1;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "force_expr_to_var_cost %s costs:\n", i ? "speed" : "size");

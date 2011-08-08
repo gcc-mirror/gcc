@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-lim-details" } */
+/* { dg-options "-O2 -fdump-tree-lim1-details" } */
 
 int r[6];
 
@@ -18,4 +18,4 @@ void f (int n)
 
 
 /* { dg-final { scan-tree-dump-times "Executing store motion of r" 6 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "lim1" } } */

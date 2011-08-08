@@ -190,6 +190,114 @@ static long *bb_rank;
 /* Operand->rank hashtable.  */
 static struct pointer_map_t *operand_rank;
 
+/* Forward decls.  */
+static long get_rank (tree);
+
+
+/* Bias amount for loop-carried phis.  We want this to be larger than
+   the depth of any reassociation tree we can see, but not larger than
+   the rank difference between two blocks.  */
+#define PHI_LOOP_BIAS (1 << 15)
+
+/* Rank assigned to a phi statement.  If STMT is a loop-carried phi of
+   an innermost loop, and the phi has only a single use which is inside
+   the loop, then the rank is the block rank of the loop latch plus an
+   extra bias for the loop-carried dependence.  This causes expressions
+   calculated into an accumulator variable to be independent for each
+   iteration of the loop.  If STMT is some other phi, the rank is the
+   block rank of its containing block.  */
+static long
+phi_rank (gimple stmt)
+{
+  basic_block bb = gimple_bb (stmt);
+  struct loop *father = bb->loop_father;
+  tree res;
+  unsigned i;
+  use_operand_p use;
+  gimple use_stmt;
+
+  /* We only care about real loops (those with a latch).  */
+  if (!father->latch)
+    return bb_rank[bb->index];
+
+  /* Interesting phis must be in headers of innermost loops.  */
+  if (bb != father->header
+      || father->inner)
+    return bb_rank[bb->index];
+
+  /* Ignore virtual SSA_NAMEs.  */
+  res = gimple_phi_result (stmt);
+  if (!is_gimple_reg (SSA_NAME_VAR (res)))
+    return bb_rank[bb->index];
+
+  /* The phi definition must have a single use, and that use must be
+     within the loop.  Otherwise this isn't an accumulator pattern.  */
+  if (!single_imm_use (res, &use, &use_stmt)
+      || gimple_bb (use_stmt)->loop_father != father)
+    return bb_rank[bb->index];
+
+  /* Look for phi arguments from within the loop.  If found, bias this phi.  */
+  for (i = 0; i < gimple_phi_num_args (stmt); i++)
+    {
+      tree arg = gimple_phi_arg_def (stmt, i);
+      if (TREE_CODE (arg) == SSA_NAME
+	  && !SSA_NAME_IS_DEFAULT_DEF (arg))
+	{
+	  gimple def_stmt = SSA_NAME_DEF_STMT (arg);
+	  if (gimple_bb (def_stmt)->loop_father == father)
+	    return bb_rank[father->latch->index] + PHI_LOOP_BIAS;
+	}
+    }
+
+  /* Must be an uninteresting phi.  */
+  return bb_rank[bb->index];
+}
+
+/* If EXP is an SSA_NAME defined by a PHI statement that represents a
+   loop-carried dependence of an innermost loop, return TRUE; else
+   return FALSE.  */
+static bool
+loop_carried_phi (tree exp)
+{
+  gimple phi_stmt;
+  long block_rank;
+
+  if (TREE_CODE (exp) != SSA_NAME
+      || SSA_NAME_IS_DEFAULT_DEF (exp))
+    return false;
+
+  phi_stmt = SSA_NAME_DEF_STMT (exp);
+
+  if (gimple_code (SSA_NAME_DEF_STMT (exp)) != GIMPLE_PHI)
+    return false;
+
+  /* Non-loop-carried phis have block rank.  Loop-carried phis have
+     an additional bias added in.  If this phi doesn't have block rank,
+     it's biased and should not be propagated.  */
+  block_rank = bb_rank[gimple_bb (phi_stmt)->index];
+
+  if (phi_rank (phi_stmt) != block_rank)
+    return true;
+
+  return false;
+}
+
+/* Return the maximum of RANK and the rank that should be propagated
+   from expression OP.  For most operands, this is just the rank of OP.
+   For loop-carried phis, the value is zero to avoid undoing the bias
+   in favor of the phi.  */
+static long
+propagate_rank (long rank, tree op)
+{
+  long op_rank;
+
+  if (loop_carried_phi (op))
+    return rank;
+
+  op_rank = get_rank (op);
+
+  return MAX (rank, op_rank);
+}
 
 /* Look up the operand rank structure for expression E.  */
 
@@ -232,11 +340,38 @@ get_rank (tree e)
      I make no claims that this is optimal, however, it gives good
      results.  */
 
+  /* We make an exception to the normal ranking system to break
+     dependences of accumulator variables in loops.  Suppose we
+     have a simple one-block loop containing:
+
+       x_1 = phi(x_0, x_2)
+       b = a + x_1
+       c = b + d
+       x_2 = c + e
+
+     As shown, each iteration of the calculation into x is fully
+     dependent upon the iteration before it.  We would prefer to
+     see this in the form:
+
+       x_1 = phi(x_0, x_2)
+       b = a + d
+       c = b + e
+       x_2 = c + x_1
+
+     If the loop is unrolled, the calculations of b and c from
+     different iterations can be interleaved.
+
+     To obtain this result during reassociation, we bias the rank
+     of the phi definition x_1 upward, when it is recognized as an
+     accumulator pattern.  The artificial rank causes it to be 
+     added last, providing the desired independence.  */
+
   if (TREE_CODE (e) == SSA_NAME)
     {
       gimple stmt;
-      long rank, maxrank;
+      long rank;
       int i, n;
+      tree op;
 
       if (TREE_CODE (SSA_NAME_VAR (e)) == PARM_DECL
 	  && SSA_NAME_IS_DEFAULT_DEF (e))
@@ -245,6 +380,9 @@ get_rank (tree e)
       stmt = SSA_NAME_DEF_STMT (e);
       if (gimple_bb (stmt) == NULL)
 	return 0;
+
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	return phi_rank (stmt);
 
       if (!is_gimple_assign (stmt)
 	  || gimple_vdef (stmt))
@@ -255,30 +393,35 @@ get_rank (tree e)
       if (rank != -1)
 	return rank;
 
-      /* Otherwise, find the maximum rank for the operands, or the bb
-	 rank, whichever is less.   */
+      /* Otherwise, find the maximum rank for the operands.  As an
+	 exception, remove the bias from loop-carried phis when propagating
+	 the rank so that dependent operations are not also biased.  */
       rank = 0;
-      maxrank = bb_rank[gimple_bb(stmt)->index];
       if (gimple_assign_single_p (stmt))
 	{
 	  tree rhs = gimple_assign_rhs1 (stmt);
 	  n = TREE_OPERAND_LENGTH (rhs);
 	  if (n == 0)
-	    rank = MAX (rank, get_rank (rhs));
+	    rank = propagate_rank (rank, rhs);
 	  else
 	    {
-	      for (i = 0;
-		   i < n && TREE_OPERAND (rhs, i) && rank != maxrank; i++)
-		rank = MAX(rank, get_rank (TREE_OPERAND (rhs, i)));
+	      for (i = 0; i < n; i++)
+		{
+		  op = TREE_OPERAND (rhs, i);
+
+		  if (op != NULL_TREE)
+		    rank = propagate_rank (rank, op);
+		}
 	    }
 	}
       else
 	{
 	  n = gimple_num_ops (stmt);
-	  for (i = 1; i < n && rank != maxrank; i++)
+	  for (i = 1; i < n; i++)
 	    {
-	      gcc_assert (gimple_op (stmt, i));
-	      rank = MAX(rank, get_rank (gimple_op (stmt, i)));
+	      op = gimple_op (stmt, i);
+	      gcc_assert (op);
+	      rank = propagate_rank (rank, op);
 	    }
 	}
 

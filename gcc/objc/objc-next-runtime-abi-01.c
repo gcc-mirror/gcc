@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "objc-runtime-hooks.h"
 #include "objc-runtime-shared-support.h"
+#include "objc-encoding.h"
 
 /* NeXT ABI 0 and 1 private definitions.  */
 #define DEF_CONSTANT_STRING_CLASS_NAME "NSConstantString"

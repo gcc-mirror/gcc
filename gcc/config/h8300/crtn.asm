@@ -46,8 +46,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	.h8300sx
 #endif
 #endif
-	.section .init
+	.section .init, "ax", @progbits
 	rts
 
-	.section .fini
+	.section .fini, "ax", @progbits
 	rts

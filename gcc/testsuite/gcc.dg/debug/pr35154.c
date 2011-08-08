@@ -23,7 +23,7 @@ main()
    optb.f2 = 'D';
    i_outer = 'e';
 /* { dg-do compile } */
-/* { dg-skip-if "No stabs" { mmix-*-* *-*-netware* alpha*-*-* hppa*64*-*-* ia64-*-* *-*-vxworks* } { "*" } { "" } } */
+/* { dg-skip-if "No stabs" { mmix-*-* alpha*-*-* hppa*64*-*-* ia64-*-* *-*-vxworks* } { "*" } { "" } } */
 /* { dg-skip-if "stabs only" { *-*-* } { "*" } { "-gstabs" } } */
    return 0;
 }

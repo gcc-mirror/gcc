@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1993-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1993-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -37,6 +37,7 @@ package Interfaces.C.Strings is
    pragma Preelaborate;
 
    type char_array_access is access all char_array;
+   for char_array_access'Size use System.Parameters.ptr_bits;
 
    pragma No_Strict_Aliasing (char_array_access);
    --  Since this type is used for external interfacing, with the pointer
@@ -44,8 +45,9 @@ package Interfaces.C.Strings is
    --  strict aliasing assumptions for this type.
 
    type chars_ptr is private;
+   pragma Preelaborable_Initialization (chars_ptr);
 
-   type chars_ptr_array is array (size_t range <>) of chars_ptr;
+   type chars_ptr_array is array (size_t range <>) of aliased chars_ptr;
 
    Null_Ptr : constant chars_ptr;
 
@@ -91,7 +93,7 @@ package Interfaces.C.Strings is
 
 private
    type chars_ptr is access all Character;
-   pragma Convention (C, chars_ptr);
+   for chars_ptr'Size use System.Parameters.ptr_bits;
 
    pragma No_Strict_Aliasing (chars_ptr);
    --  Since this type is used for external interfacing, with the pointer

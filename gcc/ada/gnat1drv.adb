@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -388,6 +388,91 @@ procedure Gnat1drv is
 
       else
          Back_End_Handles_Limited_Types := False;
+      end if;
+
+      --  Set switches for formal verification mode
+
+      if Debug_Flag_Dot_FF then
+
+         ALFA_Mode := True;
+
+         --  Turn off inlining, which would confuse formal verification output
+         --  and gain nothing.
+
+         Front_End_Inlining := False;
+         Inline_Active      := False;
+
+         --  Disable front-end optimizations, to keep the tree as close to the
+         --  source code as possible, and also to avoid inconsistencies between
+         --  trees when using different optimization switches.
+
+         Optimization_Level := 0;
+
+         --  Enable some restrictions systematically to simplify the generated
+         --  code (and ease analysis). Note that restriction checks are also
+         --  disabled in ALFA mode, see Restrict.Check_Restriction, and user
+         --  specified Restrictions pragmas are ignored, see
+         --  Sem_Prag.Process_Restrictions_Or_Restriction_Warnings.
+
+         Restrict.Restrictions.Set (No_Initialize_Scalars) := True;
+
+         --  Suppress all language checks since they are handled implicitly by
+         --  the formal verification backend.
+         --  Turn off dynamic elaboration checks.
+         --  Turn off alignment checks.
+         --  Turn off validity checking.
+
+         Suppress_Options := (others => True);
+         Enable_Overflow_Checks := False;
+         Dynamic_Elaboration_Checks := False;
+         Reset_Validity_Check_Options;
+
+         --  Kill debug of generated code, since it messes up sloc values
+
+         Debug_Generated_Code := False;
+
+         --  Turn cross-referencing on in case it was disabled (e.g. by -gnatD)
+
+         Xref_Active := True;
+
+         --  Polling mode forced off, since it generates confusing junk
+
+         Polling_Required := False;
+
+         --  Set operating mode to Generate_Code to benefit from full front-end
+         --  expansion (e.g. default arguments).
+
+         Operating_Mode := Generate_Code;
+
+         --  Skip call to gigi
+
+         Debug_Flag_HH := True;
+
+         --  Enable assertions and debug pragmas, since they give valuable
+         --  extra information for formal verification.
+
+         Assertions_Enabled    := True;
+         Debug_Pragmas_Enabled := True;
+
+         --  Turn off style check options since we are not interested in any
+         --  front-end warnings when we are getting ALFA output.
+
+         Reset_Style_Check_Options;
+
+         --  Suppress compiler warnings, since what we are
+         --  interested in here is what formal verification can find out.
+
+         Warning_Mode := Suppress;
+
+         --  Suppress the generation of name tables for enumerations
+
+         Global_Discard_Names := True;
+
+         --  Always perform semantics and generate ALI files in ALFA mode,
+         --  so that a gnatmake -c -k will proceed further when possible.
+
+         Force_ALI_Tree_File := True;
+         Try_Semantics := True;
       end if;
    end Adjust_Global_Switches;
 
@@ -1034,6 +1119,21 @@ begin
       end if;
 
       Write_ALI (Object => (Back_End_Mode = Generate_Object));
+
+      if not Compilation_Errors then
+
+         --  In case of ada backends, we need to make sure that the generated
+         --  object file has a timestamp greater than the ALI file. We do this
+         --  to make gnatmake happy when checking the ALI and obj timestamps,
+         --  where it expects the object file being written after the ali file.
+
+         --  Gnatmake's assumption is true for gcc platforms where the gcc
+         --  wrapper needs to call the assembler after calling gnat1, but is
+         --  not true for ada backends, where the object files are created
+         --  directly by gnat1 (so are created before the ali file).
+
+         Back_End.Gen_Or_Update_Object_File;
+      end if;
 
       --  Generate ASIS tree after writing the ALI file, since in ASIS mode,
       --  Write_ALI may in fact result in further tree decoration from the

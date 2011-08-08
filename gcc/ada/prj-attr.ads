@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -152,6 +152,22 @@ package Prj.Attr is
      (Attribute : Attribute_Node_Id) return Attribute_Kind;
    --  Returns the attribute kind of a known attribute. Returns Unknown if
    --  Attribute is Empty_Attribute.
+   --
+   --  To use this function, the following code should be used:
+   --
+   --      Pkg : constant Package_Node_Id :=
+   --              Prj.Attr.Package_Node_Id_Of (Name => <package name>);
+   --      Att : constant Attribute_Node_Id :=
+   --              Prj.Attr.Attribute_Node_Id_Of
+   --                (Name        => <attribute name>,
+   --                 Starting_At => First_Attribute_Of (Pkg));
+   --      Kind : constant Attribute_Kind := Attribute_Kind_Of (Att);
+   --
+   --  However, do not use this function once you have an already parsed
+   --  project tree. Instead, given a Project_Node_Id corresponding to the
+   --  attribute declaration ("for Attr (index) use ..."), use for example:
+   --
+   --      if Case_Insensitive (Attr, Tree) then ...
 
    procedure Set_Attribute_Kind_Of
      (Attribute : Attribute_Node_Id;

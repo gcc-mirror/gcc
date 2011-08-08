@@ -1,3 +1,976 @@
+2011-08-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/alloc_traits.h: Fix doxygen @headername.
+
+2011-08-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PDF_HYPERLINKS): To NO.
+
+2011-08-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Add scoped_allocator.
+
+	* include/debug/safe_sequence.h: Fix doxygen markup.
+	* include/debug/safe_unordered_base.h: Same.
+	* include/debug/safe_local_iterator.tcc: Same.
+	* include/debug/safe_unordered_container.h: Same.
+	* include/std/valarray: Same.
+	* include/std/iomanip: Same.
+	* include/std/streambuf: Same.
+	* include/std/bitset: Same.
+	* include/std/fstream: Same.
+	* include/std/functional: Same.
+	* include/std/istream: Same.
+	* include/std/ostream: Same.
+	* include/std/scoped_allocator: Same.
+	* include/std/sstream: Same.
+	* include/parallel/multiway_merge.h: Same.
+	* include/parallel/base.h: Same.
+	* include/parallel/for_each_selectors.h: Same.
+	* include/parallel/multiway_mergesort.h: Same.
+	* include/parallel/search.h: Same.
+	* include/parallel/partial_sum.h: Same.
+	* include/parallel/queue.h: Same.
+	* include/parallel/sort.h: Same.
+	* include/parallel/random_number.h: Same.
+	* include/ext/vstring.h: Same.
+	* include/ext/algorithm: Same.
+	* include/ext/pb_ds/assoc_container.h: Same.
+	* include/ext/bitmap_allocator.h: Same.
+	* include/ext/stdio_filebuf.h: Same.
+	* include/ext/memory: Same.
+	* include/ext/functional: Same.
+	* include/bits/basic_ios.h: Same.
+	* include/bits/stl_list.h: Same.
+	* include/bits/stl_map.h: Same.
+	* include/bits/stl_algobase.h: Same.
+	* include/bits/stl_queue.h: Same.
+	* include/bits/gslice.h: Same.
+	* include/bits/locale_classes.h: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/bits/stl_stack.h: Same.
+	* include/bits/stl_heap.h: Same.
+	* include/bits/forward_list.h: Same.
+	* include/bits/stream_iterator.h: Same.
+	* include/bits/basic_string.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/stl_pair.h: Same.
+	* include/bits/ios_base.h: Same.
+	* include/bits/stl_numeric.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/codecvt.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/stl_uninitialized.h: Same.
+	* include/bits/ptr_traits.h: Same.
+	* include/bits/slice_array.h: Same.
+	* include/bits/stl_iterator_base_funcs.h: Same.
+	* include/bits/stl_algo.h: Same.
+	* include/bits/stl_iterator.h: Same.
+	* include/bits/stl_tempbuf.h: Same.
+	* include/bits/regex.h: Same.
+	* include/bits/range_access.h: Same.
+	* include/bits/random.h: Same.
+	* include/bits/alloc_traits.h: Same.
+	* include/bits/regex_error.h: Same.
+	* include/bits/locale_facets_nonio.h: Same.
+	* include/bits/stl_relops.h: Same.
+	* include/backward/auto_ptr.h: Same.
+	* libsupc++/initializer_list: Same.
+
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust line numbers.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Same.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Same.
+
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (GLIBCXX_EXPORT_INCLUDES): Point TOPLEVEL_INCLUDES
+	to $(toplevel_srcdir)/libgcc.
+	* configure: Regenerate.
+
+2011-08-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/build_hacking.xml: Use relative fileref for PNG
+	imagedata.
+	* doc/xml/manual/test_policy_data_structures.xml: Same.
+	* doc/xml/manual/policy_data_structures.xml: Same.
+
+	* doc/Makefile.am (stamp-html-docbook-images)
+	(stamp-html-docbook-lwg, stamp-html-docbook-data): New.
+	(xml_extra): Add lwg html file dependencies.
+	(xml_images): Add image html file dependencies.
+	* doc/Makefile.in: Regenerate.
+	(stamp-html): Change to stamp-html-docbook-data.
+	(stamp-html-copy): Remove.
+
+2011-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/atomic.cc: Use noexcept.
+	* include/std/atomic: Likewise.
+	* include/bits/atomic_0.h: Likewise.
+	* include/bits/atomic_2.h: Likewise.
+	* include/bits/atomic_base.h: Likewise.
+
+2011-08-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/performance/27_io/filebuf_sputn_unbuf.cc: Include
+	unistd.h for unlink.
+	* testsuite/performance/27_io/ofstream_insert_int.cc: Same.
+	* testsuite/performance/27_io/ifstream_extract_int.cc: Same.
+	* testsuite/performance/27_io/ifstream_getline-2.cc: Same.
+	* testsuite/performance/27_io/fstream_seek_write.cc: Same.
+	* testsuite/performance/27_io/ifstream_extract_chars.cc: Same.
+	* testsuite/performance/27_io/ofstream_insert_float.cc: Same.
+	* testsuite/performance/27_io/ifstream_extract_float.cc: Same.
+	* testsuite/performance/27_io/filebuf_sputc.cc: Same.
+
+2011-08-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/tuple: Mark more constructors constexpr.
+	* testsuite/20_util/tuple/cons/constexpr.cc: Split into and extend as:
+	* testsuite/20_util/tuple/cons/constexpr-2.cc: ...this.
+	* testsuite/20_util/tuple/cons/constexpr-3.cc: ... and this.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust line numbers.
+
+2011-08-03  Benjamin Kosnik  <bkoz@redhat.com>
+	    François Dumont  <francois.cppdevs@free.fr>
+
+	* testsuite/23_containers/array/at_neg.cc: Move...
+	* testsuite/23_containers/array/at.cc: ...here. Remove
+	-fno-exceptions, call const at member function.
+
+2011-08-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Generated.
+
+2011-08-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/49813
+	* include/c_global/cmath (isinf): Remove workaround.
+
+2011-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/49925
+	* include/bits/shared_ptr.h (make_shared): Qualify allocate_shared
+	with std::.
+	* include/bits/shared_ptr_base.h (__make_shared): Likewise.
+
+2011-07-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/build_hacking.xml: Markup imagedata changes.
+	* doc/xml/manual/policy_data_structures.xml: Same.
+
+	* doc/xml/class.txml: Remove biblioid.
+	* doc/xml/manual/allocator.xml: Same.
+	* doc/xml/manual/ctype.xml: Same.
+	* doc/xml/manual/codecvt.xml: Same.
+	* doc/xml/manual/backwards_compatibility.xml: Same.
+	* doc/xml/manual/abi.xml: Same.
+	* doc/xml/manual/shared_ptr.xml: Same.
+	* doc/xml/manual/using_exceptions.xml: Same.
+	* doc/xml/manual/messages.xml: Same.
+
+2011-07-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Docbook conversion of existing ext/pb_ds documentation.
+	* doc/Makefile.am (xml_sources_manual): Add
+	policy_data_structures.xml and
+	test_policy_data_structures.xml.
+	(stamp-html-copy): Remove special-case for ext/pb_ds directory.
+	(XSLTPROC_FLAGS): Split into XSLT_FLAGS and XSLT_PARAM, use.
+	* doc/Makefile.in: Regenerate.
+	* doc/xml/manual/policy_data_structures.xml: New, adapted from
+	  previous html-only instance in doc/html/ext/pb_ds.
+	* doc/xml/manual/test_policy_data_structures.xml: New, same as above.
+
+	* doc/xml/spine.xml: Update copyright.
+	* doc/xml/manual/spine.xml: Same.
+	* doc/xml/manual/extensions.xml: Adjust set, chapter, sections.
+	* doc/xml/manual/bitmap_allocator.xml: Same.
+	* doc/xml/manual/mt_allocator.xml: Same.
+
+	Populate image directory.
+	* doc/xml/images/(pbds_balls_and_bins.png,
+	pbds_binary_priority_queue_random_int_push_timing_test_local.pdf,
+	pbds_binary_priority_queue_random_int_push_timing_test_local.png,
+	pbds_binary_priority_queue_random_int_push_timing_test_local.svg,
+	pbds_cc_hash_random_int_find_timing_test_local.pdf,
+	pbds_cc_hash_random_int_find_timing_test_local.png,
+	pbds_cc_hash_random_int_find_timing_test_local.svg,
+	pbds_cc_hash_random_int_subscript_timing_test_find_local.pdf,
+	pbds_cc_hash_random_int_subscript_timing_test_find_local.png,
+	pbds_cc_hash_random_int_subscript_timing_test_find_local.svg,
+	pbds_cc_hash_random_int_subscript_timing_test_insert_local.pdf,
+	pbds_cc_hash_random_int_subscript_timing_test_insert_local.png,
+	pbds_cc_hash_random_int_subscript_timing_test_insert_local.svg,
+	pbds_container_tag_hierarchy.pdf,
+	pbds_container_tag_hierarchy.png,
+	pbds_container_tag_hierarchy.svg,
+	pbds_different_underlying_dss_1.png,
+	pbds_different_underlying_dss_2.png,
+	pbds_embedded_lists_1.png, pbds_embedded_lists_2.png,
+	pbds_embedded_lists_3.png, pbds_exception_hierarchy.pdf,
+	pbds_exception_hierarchy.png, pbds_exception_hierarchy.svg,
+	pbds_gp_hash_random_int_find_timing_test_local.pdf,
+	pbds_gp_hash_random_int_find_timing_test_local.png,
+	pbds_gp_hash_random_int_find_timing_test_local.svg,
+	pbds_gp_hash_random_int_subscript_timing_test_find_local.pdf,
+	pbds_gp_hash_random_int_subscript_timing_test_find_local.png,
+	pbds_gp_hash_random_int_subscript_timing_test_find_local.svg,
+	pbds_gp_hash_random_int_subscript_timing_test_insert_local.pdf,
+	pbds_gp_hash_random_int_subscript_timing_test_insert_local.png,
+	pbds_gp_hash_random_int_subscript_timing_test_insert_local.svg,
+	pbds_hash_policy_cd.png,
+	pbds_hash_random_int_erase_mem_usage_test_local.pdf,
+	pbds_hash_random_int_erase_mem_usage_test_local.png,
+	pbds_hash_random_int_erase_mem_usage_test_local.svg,
+	pbds_hash_ranged_hash_range_hashing_fns.png,
+	pbds_hash_range_hashing_seq_diagram2.png,
+	pbds_hash_range_hashing_seq_diagram.png,
+	pbds_hash_zlob_random_int_find_timing_test_local.pdf,
+	pbds_hash_zlob_random_int_find_timing_test_local.png,
+	pbds_hash_zlob_random_int_find_timing_test_local.svg,
+	pbds_insert_resize_sequence_diagram1.png,
+	pbds_insert_resize_sequence_diagram2.png,
+	pbds_insert_resize_sequence_diagram3.png,
+	pbds_invalidation_guarantee_erase.png,
+	pbds_invalidation_tag_hierarchy.pdf,
+	pbds_invalidation_tag_hierarchy.png,
+	pbds_invalidation_tag_hierarchy.svg, pbds_list_update.png,
+	pbds_multimap_text_find_timing_test_large_s2p_hash_local.pdf,
+	pbds_multimap_text_find_timing_test_large_s2p_hash_local.png,
+	pbds_multimap_text_find_timing_test_large_s2p_hash_local.svg,
+	pbds_multimap_text_find_timing_test_large_s2p_tree_local.pdf,
+	pbds_multimap_text_find_timing_test_large_s2p_tree_local.png,
+	pbds_multimap_text_find_timing_test_large_s2p_tree_local.svg,
+	pbds_multimap_text_find_timing_test_small_s2p_hash_local.pdf,
+	pbds_multimap_text_find_timing_test_small_s2p_hash_local.png,
+	pbds_multimap_text_find_timing_test_small_s2p_hash_local.svg,
+	pbds_multimap_text_find_timing_test_small_s2p_tree_local.pdf,
+	pbds_multimap_text_find_timing_test_small_s2p_tree_local.png,
+	pbds_multimap_text_find_timing_test_small_s2p_tree_local.svg,
+	pbds_multimap_text_insert_mem_usage_test_large_s2p_hash_local.pdf,
+	pbds_multimap_text_insert_mem_usage_test_large_s2p_hash_local.png,
+	pbds_multimap_text_insert_mem_usage_test_large_s2p_hash_local.svg,
+	pbds_multimap_text_insert_mem_usage_test_large_s2p_tree_local.pdf,
+	pbds_multimap_text_insert_mem_usage_test_large_s2p_tree_local.png,
+	pbds_multimap_text_insert_mem_usage_test_large_s2p_tree_local.svg,
+	pbds_multimap_text_insert_mem_usage_test_small_s2p_hash_local.pdf,
+	pbds_multimap_text_insert_mem_usage_test_small_s2p_hash_local.png,
+	pbds_multimap_text_insert_mem_usage_test_small_s2p_hash_local.svg,
+	pbds_multimap_text_insert_mem_usage_test_small_s2p_tree_local.pdf,
+	pbds_multimap_text_insert_mem_usage_test_small_s2p_tree_local.png,
+	pbds_multimap_text_insert_mem_usage_test_small_s2p_tree_local.svg,
+	pbds_multimap_text_insert_timing_test_large_s2p_hash_local.pdf,
+	pbds_multimap_text_insert_timing_test_large_s2p_hash_local.png,
+	pbds_multimap_text_insert_timing_test_large_s2p_hash_local.svg,
+	pbds_multimap_text_insert_timing_test_large_s2p_tree_local.pdf,
+	pbds_multimap_text_insert_timing_test_large_s2p_tree_local.png,
+	pbds_multimap_text_insert_timing_test_large_s2p_tree_local.svg,
+	pbds_multimap_text_insert_timing_test_small_s2p_hash_local.pdf,
+	pbds_multimap_text_insert_timing_test_small_s2p_hash_local.png,
+	pbds_multimap_text_insert_timing_test_small_s2p_hash_local.svg,
+	pbds_multimap_text_insert_timing_test_small_s2p_tree_local.pdf,
+	pbds_multimap_text_insert_timing_test_small_s2p_tree_local.png,
+	pbds_multimap_text_insert_timing_test_small_s2p_tree_local.svg,
+	pbds_node_invariants.png,
+	pbds_pairing_priority_queue_text_push_pop_timing_test_local.pdf,
+	pbds_pairing_priority_queue_text_push_pop_timing_test_local.png,
+	pbds_pairing_priority_queue_text_push_pop_timing_test_local.svg,
+	pbds_pairing_priority_queue_text_push_timing_test_local.pdf,
+	pbds_pairing_priority_queue_text_push_timing_test_local.png,
+	pbds_pairing_priority_queue_text_push_timing_test_local.svg,
+	pbds_pat_trie.png, pbds_point_iterator_hierarchy.png,
+	pbds_point_iterators_range_ops_1.png,
+	pbds_point_iterators_range_ops_2.png,
+	pbds_priority_queue_different_underlying_dss.png,
+	pbds_priority_queue_random_int_push_pop_timing_test_local.pdf,
+	pbds_priority_queue_random_int_push_pop_timing_test_local.png,
+	pbds_priority_queue_random_int_push_pop_timing_test_local.svg,
+	pbds_priority_queue_random_int_push_timing_test_local.pdf,
+	pbds_priority_queue_random_int_push_timing_test_local.png,
+	pbds_priority_queue_random_int_push_timing_test_local.svg,
+	pbds_priority_queue_tag_hierarchy.pdf,
+	pbds_priority_queue_tag_hierarchy.png,
+	pbds_priority_queue_tag_hierarchy.svg,
+	pbds_priority_queue_text_join_timing_test_local.pdf,
+	pbds_priority_queue_text_join_timing_test_local.png,
+	pbds_priority_queue_text_join_timing_test_local.svg,
+	pbds_priority_queue_text_modify_down_timing_test_local.pdf,
+	pbds_priority_queue_text_modify_down_timing_test_local.png,
+	pbds_priority_queue_text_modify_down_timing_test_local.svg,
+	pbds_priority_queue_text_modify_down_timing_test_pairing_thin_local.pdf,
+	pbds_priority_queue_text_modify_down_timing_test_pairing_thin_local.png,
+	pbds_priority_queue_text_modify_down_timing_test_pairing_thin_local.svg,
+	pbds_priority_queue_text_modify_up_timing_test_local.pdf,
+	pbds_priority_queue_text_modify_up_timing_test_local.png,
+	pbds_priority_queue_text_modify_up_timing_test_local.svg,
+	pbds_priority_queue_text_modify_up_timing_test_pairing_thin_local.pdf,
+	pbds_priority_queue_text_modify_up_timing_test_pairing_thin_local.png,
+	pbds_priority_queue_text_modify_up_timing_test_pairing_thin_local.svg,
+	pbds_priority_queue_text_pop_mem_usage_test_local.pdf,
+	pbds_priority_queue_text_pop_mem_usage_test_local.png,
+	pbds_priority_queue_text_pop_mem_usage_test_local.svg,
+	pbds_priority_queue_text_push_pop_timing_test_local.pdf,
+	pbds_priority_queue_text_push_pop_timing_test_local.png,
+	pbds_priority_queue_text_push_pop_timing_test_local.svg,
+	pbds_priority_queue_text_push_timing_test_local.pdf,
+	pbds_priority_queue_text_push_timing_test_local.png,
+	pbds_priority_queue_text_push_timing_test_local.svg,
+	pbds_rationale_null_node_updator.png,
+	pbds_resize_policy_cd.png, pbds_restoring_node_invariants.png,
+	pbds_simple_list.png,
+	pbds_text_find_timing_test_hash_local.pdf,
+	pbds_text_find_timing_test_hash_local.png,
+	pbds_text_find_timing_test_hash_local.svg,
+	pbds_text_find_timing_test_tree_like_local.pdf,
+	pbds_text_find_timing_test_tree_like_local.png,
+	pbds_text_find_timing_test_tree_like_local.svg,
+	pbds_tree_node_invalidations.png,
+	pbds_tree_node_invariants.png,
+	pbds_tree_node_updator_policy_cd.png,
+	pbds_tree_order_statistics_timing_test_local.pdf,
+	pbds_tree_order_statistics_timing_test_local.png,
+	pbds_tree_order_statistics_timing_test_local.svg,
+	pbds_tree_split_join_timing_test_local.pdf,
+	pbds_tree_split_join_timing_test_local.png,
+	pbds_tree_split_join_timing_test_local.svg,
+	pbds_tree_text_insert_timing_test_node_tree_local.pdf,
+	pbds_tree_text_insert_timing_test_node_tree_local.png,
+	pbds_tree_text_insert_timing_test_node_tree_local.svg,
+	pbds_tree_text_insert_timing_test_pat_trie_local.pdf,
+	pbds_tree_text_insert_timing_test_pat_trie_local.png,
+	pbds_tree_text_insert_timing_test_pat_trie_local.svg,
+	pbds_tree_text_insert_timing_test_vector_tree_local.pdf,
+	pbds_tree_text_insert_timing_test_vector_tree_local.png,
+	pbds_tree_text_insert_timing_test_vector_tree_local.svg,
+	pbds_tree_text_lor_find_timing_test_local.pdf,
+	pbds_tree_text_lor_find_timing_test_local.png,
+	pbds_tree_text_lor_find_timing_test_local.svg,
+	pbds_trie_node_updator_policy_cd.png,
+	pbds_update_seq_diagram.png): Add.
+
+	* doc/html/ext/pb_ds: Remove.
+	* doc/html/ext/pb_ds/(acks.html, assoc_container_tag_cd.png,
+	assoc_container_tag_cd.svg, assoc_container_traits.html,
+	assoc_design.html, assoc_examples.html,
+	associative_container_tag.html, assoc_performance_tests.html,
+	assoc_regression_tests.html, assoc_tests.html,
+	balls_and_bins.png, basic_hash_table.html,
+	basic_hash_tag.html, basic_invalidation_guarantee.html,
+	basic_tree_assoc_container_const_node_iterator.html,
+	basic_tree.html, basic_tree_tag.html, binary_heap_tag.html,
+	binary_priority_queue_random_int_push_timing_test_gcc.png,
+	binary_priority_queue_random_int_push_timing_test_local.png,
+	binary_priority_queue_random_int_push_timing_test_msvc.png,
+	binomial_heap_tag.html,
+	ccgp_hash_random_int_subscript_timing_test_insert_gcc.png,
+	ccgp_hash_random_int_subscript_timing_test_insert_local.png,
+	ccgp_hash_random_int_subscript_timing_test_insert_msvc.png,
+	cc_hash_max_collision_check_resize_trigger.html,
+	cc_hash_random_int_find_timing_test_gcc.png,
+	cc_hash_random_int_find_timing_test_local.png,
+	cc_hash_random_int_find_timing_test_msvc.png,
+	cc_hash_random_int_subscript_timing_test_find_gcc.png,
+	cc_hash_random_int_subscript_timing_test_find_local.png,
+	cc_hash_random_int_subscript_timing_test_find_msvc.png,
+	cc_hash_random_int_subscript_timing_test_insert_gcc.png,
+	cc_hash_random_int_subscript_timing_test_insert_local.png,
+	cc_hash_random_int_subscript_timing_test_insert_msvc.png,
+	cc_hash_table.html, cc_hash_tag.html, checked_by_tidy.gif
+	concepts.html, contact.html, container_base.html,
+	container_cd.png, container_cd.svg, container_tag.html,
+	counter_lu_policy.html, design.html,
+	different_underlying_dss.png, direct_mask_range_hashing.html,
+	direct_mod_range_hashing.html, disclaimer.html, ds_gen.html,
+	embedded_lists_1.png, embedded_lists_2.png,
+	embedded_lists_3.png, examples.html, exceptions.html,
+	gp_hash_random_int_find_timing_test_gcc.png,
+	gp_hash_random_int_find_timing_test_local.png,
+	gp_hash_random_int_find_timing_test_msvc.png,
+	gp_hash_random_int_subscript_timing_test_find_gcc.png,
+	gp_hash_random_int_subscript_timing_test_find_local.png,
+	gp_hash_random_int_subscript_timing_test_find_msvc.png,
+	gp_hash_random_int_subscript_timing_test_insert_gcc.png,
+	gp_hash_random_int_subscript_timing_test_insert_local.png,
+	gp_hash_random_int_subscript_timing_test_insert_msvc.png,
+	gp_hash_table.html, gp_hash_tag.html,
+	hash_based_containers.html, hash_exponential_size_policy.html,
+	hash_load_check_resize_trigger.html, hash_policy_cd.png,
+	hash_prime_size_policy.html,
+	hash_random_int_erase_mem_usage_test_gcc.png,
+	hash_random_int_erase_mem_usage_test.html,
+	hash_random_int_erase_mem_usage_test_local.png,
+	hash_random_int_erase_mem_usage_test_msvc.png,
+	hash_random_int_find_find_timing_test.html,
+	hash_random_int_subscript_find_timing_test.html,
+	hash_random_int_subscript_insert_timing_test.html,
+	hash_ranged_hash_range_hashing_fns.png,
+	hash_range_hashing_seq_diagram2.png,
+	hash_range_hashing_seq_diagram.png,
+	hash_standard_resize_policy.html,
+	hash_text_find_find_timing_test.html,
+	hash_zlob_random_int_find_find_timing_test.html,
+	hash_zlob_random_int_find_timing_test_gcc.png,
+	hash_zlob_random_int_find_timing_test_local.png,
+	hash_zlob_random_int_find_timing_test_msvc.png, index.html,
+	insert_error.html, insert_resize_sequence_diagram1.png,
+	insert_resize_sequence_diagram2.png,
+	insert_resize_sequence_diagram3.png, interface.html,
+	introduction.html, invalidation_guarantee_cd.png,
+	invalidation_guarantee_erase.png, join_error.html,
+	linear_probe_fn.html, list_update.html, list_update_tag.html,
+	lu_based_containers.html, lu.png, misc.html, motivation.html,
+	move_to_front_lu_policy.html,
+	multimap_text_find_timing_test_large.html,
+	multimap_text_find_timing_test_large_s2p_hash_gcc.png,
+	multimap_text_find_timing_test_large_s2p_hash_local.png,
+	multimap_text_find_timing_test_large_s2p_hash_msvc.png,
+	multimap_text_find_timing_test_large_s2p_tree_gcc.png,
+	multimap_text_find_timing_test_large_s2p_tree_local.png,
+	multimap_text_find_timing_test_large_s2p_tree_msvc.png,
+	multimap_text_find_timing_test_small.html,
+	multimap_text_find_timing_test_small_s2p_hash_gcc.png,
+	multimap_text_find_timing_test_small_s2p_hash_local.png,
+	multimap_text_find_timing_test_small_s2p_hash_msvc.png,
+	multimap_text_find_timing_test_small_s2p_tree_gcc.png,
+	multimap_text_find_timing_test_small_s2p_tree_local.png,
+	multimap_text_find_timing_test_small_s2p_tree_msvc.png,
+	multimap_text_insert_mem_usage_test_large.html,
+	multimap_text_insert_mem_usage_test_large_s2p_hash_gcc.png,
+	multimap_text_insert_mem_usage_test_large_s2p_hash_local.png,
+	multimap_text_insert_mem_usage_test_large_s2p_hash_msvc.png,
+	multimap_text_insert_mem_usage_test_large_s2p_tree_gcc.png,
+	multimap_text_insert_mem_usage_test_large_s2p_tree_local.png,
+	multimap_text_insert_mem_usage_test_large_s2p_tree_msvc.png,
+	multimap_text_insert_mem_usage_test_small.html,
+	multimap_text_insert_mem_usage_test_small_s2p_hash_gcc.png,
+	multimap_text_insert_mem_usage_test_small_s2p_hash_local.png,
+	multimap_text_insert_mem_usage_test_small_s2p_hash_msvc.png,
+	multimap_text_insert_mem_usage_test_small_s2p_tree_gcc.png,
+	multimap_text_insert_mem_usage_test_small_s2p_tree_local.png,
+	multimap_text_insert_mem_usage_test_small_s2p_tree_msvc.png,
+	multimap_text_insert_timing_test_large.html,
+	multimap_text_insert_timing_test_large_s2p_hash_gcc.png,
+	multimap_text_insert_timing_test_large_s2p_hash_local.png,
+	multimap_text_insert_timing_test_large_s2p_hash_msvc.png,
+	multimap_text_insert_timing_test_large_s2p_tree_gcc.png,
+	multimap_text_insert_timing_test_large_s2p_tree_local.png,
+	multimap_text_insert_timing_test_large_s2p_tree_msvc.png,
+	multimap_text_insert_timing_test_small.html,
+	multimap_text_insert_timing_test_small_s2p_hash_gcc.png,
+	multimap_text_insert_timing_test_small_s2p_hash_local.png,
+	multimap_text_insert_timing_test_small_s2p_hash_msvc.png,
+	multimap_text_insert_timing_test_small_s2p_tree_gcc.png,
+	multimap_text_insert_timing_test_small_s2p_tree_local.png,
+	multimap_text_insert_timing_test_small_s2p_tree_msvc.png,
+	node_invariant_invalidations.png, node_invariants.png,
+	null_hash_fn.html, null_lu_metadata.html,
+	null_mapped_type.html, null_probe_fn.html,
+	null_tree_node_update.html, null_trie_node_update.html,
+	ov_tree_tag.html, pairing_heap_tag.html,
+	pairing_priority_queue_text_push_pop_timing_test_gcc.png,
+	pairing_priority_queue_text_push_pop_timing_test_local.png,
+	pairing_priority_queue_text_push_pop_timing_test_msvc.png,
+	pairing_priority_queue_text_push_timing_test_gcc.png,
+	pairing_priority_queue_text_push_timing_test_local.png,
+	pairing_priority_queue_text_push_timing_test_msvc.png,
+	pat_trie.png, pat_trie_tag.html,
+	point_invalidation_guarantee.html, point_iterators_cd.png,
+	point_iterators_range_ops_1.png,
+	point_iterators_range_ops_2.png, pq_container_traits.html,
+	pq_design.html, pq_different_underlying_dss.png,
+	pq_examples.html, pq_performance_tests.html,
+	pq_regression_tests.html, pq_tests.html, prerequisites.html,
+	priority_queue.html,
+	priority_queue_random_int_push_pop_timing_test_gcc.png,
+	priority_queue_random_int_push_pop_timing_test.html,
+	priority_queue_random_int_push_pop_timing_test_local.png,
+	priority_queue_random_int_push_pop_timing_test_msvc.png,
+	priority_queue_random_int_push_timing_test_gcc.png,
+	priority_queue_random_int_push_timing_test.html,
+	priority_queue_random_int_push_timing_test_local.png,
+	priority_queue_random_int_push_timing_test_msvc.png,
+	priority_queue_tag_cd.png, priority_queue_tag_cd.svg,
+	priority_queue_tag.html,
+	priority_queue_text_join_timing_test_gcc.png,
+	priority_queue_text_join_timing_test.html,
+	priority_queue_text_join_timing_test_local.png,
+	priority_queue_text_join_timing_test_msvc.png,
+	priority_queue_text_modify_down_timing_test_gcc.png,
+	priority_queue_text_modify_down_timing_test.html,
+	priority_queue_text_modify_down_timing_test_local.png,
+	priority_queue_text_modify_down_timing_test_msvc.png,
+	priority_queue_text_modify_down_timing_test_pairing_thin_gcc.png,
+	priority_queue_text_modify_down_timing_test_pairing_thin_local.png,
+	priority_queue_text_modify_down_timing_test_pairing_thin_msvc.png,
+	priority_queue_text_modify_up_timing_test_gcc.png,
+	priority_queue_text_modify_up_timing_test.html,
+	priority_queue_text_modify_up_timing_test_local.png,
+	priority_queue_text_modify_up_timing_test_msvc.png,
+	priority_queue_text_modify_up_timing_test_pairing_thin_gcc.png,
+	priority_queue_text_modify_up_timing_test_pairing_thin_local.png,
+	priority_queue_text_modify_up_timing_test_pairing_thin_msvc.png,
+	priority_queue_text_pop_mem_usage_test_gcc.png,
+	priority_queue_text_pop_mem_usage_test.html,
+	priority_queue_text_pop_mem_usage_test_local.png,
+	priority_queue_text_pop_mem_usage_test_msvc.png,
+	priority_queue_text_push_pop_timing_test_gcc.png,
+	priority_queue_text_push_pop_timing_test.html,
+	priority_queue_text_push_pop_timing_test_local.png,
+	priority_queue_text_push_pop_timing_test_msvc.png,
+	priority_queue_text_push_timing_test_gcc.png,
+	priority_queue_text_push_timing_test.html,
+	priority_queue_text_push_timing_test_local.png,
+	priority_queue_text_push_timing_test_msvc.png,
+	PythonPoweredSmall.gif quadratic_probe_fn.html,
+	random_int_find_find_timing_test_tree_gcc.png,
+	random_int_find_find_timing_test_tree_local.png,
+	random_int_find_find_timing_test_tree_msvc.png,
+	range_invalidation_guarantee.html,
+	rationale_null_node_updator.png, rb_tree_tag.html,
+	rc_binomial_heap_tag.html, references.html, resize_error.html,
+	resize_policy_cd.png, restoring_node_invariants.png,
+	sample_probe_fn.html, sample_ranged_hash_fn.html,
+	sample_ranged_probe_fn.html, sample_range_hashing.html,
+	sample_resize_policy.html, sample_resize_trigger.html,
+	sample_size_policy.html, sample_tree_node_update.html,
+	sample_trie_access_traits.html, sample_trie_node_update.html,
+	sample_update_policy.html, simple_list.png,
+	splay_tree_tag.html, tests.html,
+	text_find_timing_test_hash_gcc.png,
+	text_find_timing_test_hash_local.png,
+	text_find_timing_test_hash_msvc.png,
+	text_find_timing_test_tree_like_gcc.png,
+	text_find_timing_test_tree_like_local.png,
+	text_find_timing_test_tree_like_msvc.png, thin_heap_tag.html,
+	tree_based_containers.html, tree.html,
+	tree_node_iterator.html, tree_node_updator_policy_cd.png,
+	tree_order_statistics_node_update.html,
+	tree_order_statistics_timing_test_gcc.png,
+	tree_order_statistics_timing_test.html,
+	tree_order_statistics_timing_test_local.png,
+	tree_order_statistics_timing_test_msvc.png,
+	tree_random_int_find_find_timing_test.html,
+	tree_split_join_timing_test_gcc.png,
+	tree_split_join_timing_test.html,
+	tree_split_join_timing_test_local.png,
+	tree_split_join_timing_test_msvc.png, tree_tag.html,
+	tree_text_find_find_timing_test.html,
+	tree_text_insert_timing_test.html,
+	tree_text_insert_timing_test_node_tree_gcc.png,
+	tree_text_insert_timing_test_node_tree_local.png,
+	tree_text_insert_timing_test_node_tree_msvc.png,
+	tree_text_insert_timing_test_pat_trie_gcc.png,
+	tree_text_insert_timing_test_pat_trie_local.png,
+	tree_text_insert_timing_test_pat_trie_msvc.png,
+	tree_text_insert_timing_test_vector_tree_gcc.png,
+	tree_text_insert_timing_test_vector_tree_local.png,
+	tree_text_insert_timing_test_vector_tree_msvc.png,
+	tree_text_lor_find_find_timing_test.html,
+	tree_text_lor_find_timing_test_gcc.png,
+	tree_text_lor_find_timing_test_local.png,
+	tree_text_lor_find_timing_test_msvc.png,
+	trie_based_containers.html, trie_const_node_iterator.html,
+	trie.html, trie_node_iterator.html,
+	trie_node_updator_policy_cd.png,
+	trie_order_statistics_node_update.html,
+	trie_prefix_search_node_update.html,
+	trie_string_access_traits.html, trie_tag.html,
+	trivial_iterator_tag.html, tutorial.html,
+	update_policy_cd.png, update_seq_diagram.png): Remove.
+
+2011-07-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/49813
+	* include/c_global/cmath: Use _GLIBCXX_CONSTEXPR and constexpr.
+
+2011-07-27  Jeffrey Yasskin  <jyasskin@google.com>
+
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Updated.
+
+2011-07-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/array (at): Remove constexpr when -fno-exceptions.
+	* testsuite/23_containers/array/at_neg.cc: Test.
+
+2011-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Nathan Ridge  <zeratul976@hotmail.com>
+
+	PR libstdc++/49836
+	* include/bits/stl_vector.h (vector<>::_M_emplace_back_aux):
+	Declare.
+	(vector<>::push_back(const value_type&)): Use it.
+	* include/bits/vector.tcc: Define.
+	(vector<>::emplace_back(_Args&&...)): Use it.
+	* testsuite/util/testsuite_tr1.h (CopyConsOnlyType, MoveConsOnlyType):
+	Add.
+	* testsuite/23_containers/vector/modifiers/push_back/49836.cc: New.
+	* testsuite/23_containers/deque/modifiers/push_back/49836.cc:
+	Likewise.
+	* testsuite/23_containers/deque/modifiers/push_front/49836.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2011-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable_policy.h (_Prime_rehash_policy::_M_next_bkt,
+	_M_bkt_for_elements, _M_need_rehash): Fix typos in the last commit.
+
+2011-07-24  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/bits/hashtable_policy.h (_Prime_rehash_policy): Use
+	__builtin_floor rather than __builtin_ceil to compute next resize
+	value.
+	* testsuite/23_containers/unordered_set/hash_policy/load_factor.cc:
+	New.
+
+2011-07-22  Benjamin Kosnik  <bkoz@redhat.com>
+	    Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* include/bits/move.h (move, forward): Mark constexpr.
+	* include/bits/stl_pair.h (pair): Mark move ctors constexpr.
+	* testsuite/20_util/pair/make_pair/constexpr.cc: New.
+	* testsuite/20_util/pair/cons/constexpr.cc: Add tests.
+
+2011-07-22  Ian Lance Taylor  <iant@google.com>
+
+	* fragment.am (CONFIG_CXXFLAGS): Add -frandom-seed.
+	* Makefile.in: Rebuild.
+	* doc/Makefile.in: Rebuild.
+	* include/Makefile.in: Rebuild.
+	* libsupc++/Makefile.in: Rebuild.
+	* po/Makefile.in: Rebuild.
+	* python/Makefile.in: Rebuild.
+	* src/Makefile.in: Rebuild.
+	* testsuite/Makefile.in: Rebuild.
+
+2011-07-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc: Move...
+	* testsuite/ext/pb_ds/regression/tree_set_rand.cc: ... here.
+	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand_debug.cc: Move...
+	* testsuite/ext/pb_ds/regression/tree_set_rand_debug.cc: ... here.
+	* testsuite/ext/pb_ds/regression/tree_data_map_rand.cc: Move...
+	* testsuite/ext/pb_ds/regression/tree_map_rand.cc: ... here.
+	* testsuite/ext/pb_ds/regression/tree_data_map_rand_debug.cc: Move...
+	* testsuite/ext/pb_ds/regression/tree_map_rand_debug.cc: ... here.
+
+	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand.cc: Move...
+	* testsuite/ext/pb_ds/regression/trie_set_rand.cc: ... here.
+	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand_debug.cc: Move...
+	* testsuite/ext/pb_ds/regression/trie_set_rand_debug.cc: ... here.
+	* testsuite/ext/pb_ds/regression/trie_data_map_rand.cc: Move...
+	* testsuite/ext/pb_ds/regression/trie_map_rand.cc: ... here.
+	* testsuite/ext/pb_ds/regression/trie_data_map_rand_debug.cc: Move...
+	* testsuite/ext/pb_ds/regression/trie_map_rand_debug.cc: ... here.
+
+	* testsuite/ext/pb_ds/regression/list_update_no_data_map_rand.cc: Move.
+	* testsuite/ext/pb_ds/regression/list_update_set_rand.cc: ...here.
+	* testsuite/ext/pb_ds/regression/list_update_no_data_map_rand_debug.cc:
+	Move...
+	* testsuite/ext/pb_ds/regression/list_update_set_rand_debug.cc: ...here.
+	* testsuite/ext/pb_ds/regression/list_update_data_map_rand.cc: Move...
+	* testsuite/ext/pb_ds/regression/list_update_map_rand.cc: ...here.
+	* testsuite/ext/pb_ds/regression/list_update_data_map_rand_debug.cc:
+	Move...
+	* testsuite/ext/pb_ds/regression/list_update_map_rand_debug.cc: ...here.
+
+	* testsuite/ext/pb_ds/regression/hash_no_data_map_rand.cc: Move...
+	* testsuite/ext/pb_ds/regression/hash_set_rand.cc: ...here.
+	* testsuite/ext/pb_ds/regression/hash_no_data_map_rand_debug.cc: Move...
+	* testsuite/ext/pb_ds/regression/hash_set_rand_debug.cc: ...here.
+
+	* testsuite/ext/pb_ds/regression/hash_data_map_rand.cc: Move...
+	* testsuite/ext/pb_ds/regression/hash_map_rand.cc: ...here.
+	* testsuite/ext/pb_ds/regression/hash_data_map_rand_debug.cc: Move...
+	* testsuite/ext/pb_ds/regression/hash_map_rand_debug.cc: ...here.
+
+2011-07-21  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/debug/safe_unordered_sequence.h,
+	safe_unordered_sequence.tcc: Rename respectively in...
+	* include/debug/safe_unordered_container.h,
+	safe_unordered_container.tcc: ...those. _Safe_unordered_sequence
+	rename _Safe_unordered_container.
+	* include/debug/safe_unordered_base.h: _Safe_unordered_sequence_base
+	rename _Safe_unordered_container_base.
+	* include/debug/unordered_map, unordered_set: Adapt to previous
+	modifications.
+	* config/abi/pre/gnu.ver: Likewise.
+	* src/debug.cc: Likewise.
+	* include/Makefile.am: Likewise.
+	* include/Makefile.in: Regenerate.
+
+2011-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/mutex (timed_mutex, recursive_timed_mutex): Update
+	to use steady_clock instead of monotonic_clock.
+	* config/abi/pre/gnu.ver: Export steady_clock::now.
+
+2011-07-20  Benjamin Kosnik  <bkoz@redhat.com>
+	    Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* include/std/array (array::at, array::operator[]): Mark constexpr.
+	* testsuite/23_containers/array/requirements/
+	constexpr_element_access.cc: Add.
+
+2011-07-20  Benjamin Kosnik  <bkoz@redhat.com>
+	    Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* include/std/chrono: (system_clock::is_steady): Update to N3291
+	from is_monotonic.
+	(time_point): Mark nonmember arithmetic operators constexpr.
+	* src/chrono.cc: Modify for above.
+	* src/compatibility-c++0x.cc: Same.
+	* testsuite/20_util/time_point/nonmember/constexpr.cc: New.
+	* testsuite/20_util/time_point/1.cc: Modify.
+	* testsuite/20_util/system_clock/constexpr_data.cc: Modify.
+	* testsuite/20_util/system_clock/1.cc: Modify.
+	* testsuite/20_util/monotonic_clock/constexpr_data.cc: Move to...
+	* testsuite/20_util/steady_clock/constexpr_data.cc: ...here.
+	* testsuite/30_threads/condition_variable/members/2.cc: Modify.
+	* testsuite/30_threads/condition_variable_any/members/2.cc: Modify.
+
+2011-07-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/system_error: Use noexcept.
+	* src/system_error.cc: Likewise.
+	* testsuite/19_diagnostics/error_condition/modifiers/39881.cc: Adjust.
+	* testsuite/19_diagnostics/error_condition/cons/39881.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/modifiers/39882.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/cons/39882.cc: Likewise.
+	* testsuite/util/testsuite_error.h: Likewise.
+
+	* include/std/system_error (error_code::error_code(_ErrorCodeEnum)):
+	Use enable_if on template parameter default.
+	(error_condition::error_condition(_ErrorConditionEnum)): Likewise.
+
+2011-07-20  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/precompiled/stdc++.h: Add scoped_allocator.
+
+2011-07-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/bitset (operator[]): Make constexpr.
+	* testsuite/23_containers/bitset/operations/constexpr.cc: New.
+
+2011-07-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/safe_local_iterator.h (_Safe_local_iterator<>::
+	_Safe_local_iterator(const _Iterator&, size_type, const _Sequence*)):
+	Fix typo.
+
+2011-07-19  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/debug/safe_unordered_base.h, safe_unordered_sequence.h,
+	safe_unordered_sequence.tcc, safe_local_iterator.h,
+	safe_local_iterator.tcc: New, support for unordered sequence safe
+	local iterators.
+	* include/Makefile.am: Add previous files.
+	* include/Makefile.in: Regenerate.
+	* include/debug/unordered_map, unordered_set: Implement
+	_Safe_unordered_sequence and expose _Safe_local_iterator.
+	* include/debug/safe_iterator.h, safe_iterator.tcc: Refactor
+	_Safe_iterator::_M_get_distance static method to expose it as
+	__get_distance function and use it in _Safe_local_iterator type.
+	* include/debug/formatter.h: Add __msg_local_iter_compare_bad
+	_Debug_msg_id enum entry to notify invalid comparison between local
+	iterators from different buckets. Add _Parameter constructor from
+	_Safe_local_iterator.
+	* include/debug/functions.h: Add __valid_range overload for
+	_Safe_local_iterator.
+	* src/debug.cc: Add _Safe_unordered_sequence_base and
+	_Safe_local_iterator_base methods implementations.
+	* config/abi/pre/gnu.ver: Add export of some
+	_Safe_unordered_sequence_base and _Safe_local_iterator_base methods.
+	* testsuite/util/debug/checks.h: Add use_invalid_iterator function to
+	simulate use of a singular iterator.
+	* testsuite/util/debug/unordered_checks.h: New, several functions
+	to simulate classic invalid usage of unordered sequence local
+	iterators.
+	* testsuite/23_containers/unordered_map/debug/
+	use_erased_local_iterator_neg.cc, invalid_local_iterator_range_neg.cc,
+	use_invalid_local_iterator_neg.cc, use_invalid_iterator_neg.cc,
+	invalid_local_iterator_compare_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/
+	use_erased_local_iterator_neg.cc, invalid_local_iterator_range_neg.cc,
+	use_invalid_local_iterator_neg.cc, use_invalid_iterator_neg.cc,
+	invalid_local_iterator_compare_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/
+	use_erased_local_iterator_neg.cc, invalid_local_iterator_range_neg.cc,
+	use_invalid_local_iterator_neg.cc, use_invalid_iterator_neg.cc,
+	invalid_local_iterator_compare_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/
+	use_erased_local_iterator_neg.cc, invalid_local_iterator_range_neg.cc,
+	use_invalid_local_iterator_neg.cc, use_invalid_iterator_neg.cc,
+	invalid_local_iterator_compare_neg.cc: New.
+
+2011-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48430
+	* include/bits/shared_ptr.h (struct hash<shared_ptr<>>): Use
+	__hash_base.
+	* include/bits/unique_ptr.h (struct hash<unique_ptr<>>): Likewise.
+
+2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* crossconfig.m4 (*-netware): Remove.
+	* configure: Regenerate.
+
+2011-07-15  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/locale/newlib/ctype_members.cc: New file.
+	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Add a new C locale
+	kind: newlib.  Configure to use the newlib specific
+	ctype_members.cc when with_newlib is enabled.
+	* configure: Regenerate.
+
+2011-07-15  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/49745
+	* acinclude.m4 ([GLIBCXX_CHECK_GTHREADS]): Check separately for
+	_POSIX_TIMEOUTS and define _GTHREADS_USE_MUTEX_TIMEDLOCK.
+	* libsupc++/guard.cc: Include <unistd.h>.
+	* testsuite/17_intro/headers/c++1998/49745.cc: New.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+
+2011-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/49559
+	* include/bits/stl_algo.h (__move_merge_backward): Remove.
+	(__move_merge_adaptive, __move_merge_adaptive_backward): New.
+	(__merge_adaptive): Use the latter two.
+	(__rotate_adaptive): Avoid self move-assignment.
+	* include/bits/stl_algobase.h (move_backward): Fix comment.
+	* testsuite/25_algorithms/stable_sort/49559.cc: New.
+	* testsuite/25_algorithms/inplace_merge/49559.cc: Likewise.
+	* testsuite/25_algorithms/inplace_merge/moveable.cc: Extend.
+	* testsuite/25_algorithms/inplace_merge/moveable2.cc: Likewise.
+	* testsuite/util/testsuite_rvalref.h (rvalstruct::operator=
+	(rvalstruct&&)): Check for self move-assignment.
+
+2011-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_allocator.h (propagating_allocator<>::
+	operator=(const propagating_allocator<>&)): Retun *this.
+
+2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/std/scoped_allocator: New.
+	* doc/xml/manual/status_cxx200x.xml: Update.
+	* testsuite/20_util/scoped_allocator/1.cc: New.
+	* testsuite/20_util/scoped_allocator/propagation.cc: New.
+	* testsuite/20_util/scoped_allocator/requirements/typedefs.cc: New.
+	* testsuite/20_util/scoped_allocator/requirements/
+	explicit_instantiation.cc: New.
+
+2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_vector.h: Use new allocator model in C++0x mode.
+	* include/bits/vector.tcc: Likewise.
+	* testsuite/util/testsuite_allocator.h (propagating_allocator): Define.
+	* testsuite/23_containers/vector/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/vector/allocator/noexcept.cc: New.
+	* testsuite/23_containers/vector/allocator/copy.cc: New.
+	* testsuite/23_containers/vector/allocator/swap.cc: New.
+	* testsuite/23_containers/vector/allocator/move_assign.cc: New.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/ext/alloc_traits.h (__allocator_always_compares_equal): New
+	trait, provide partial specializations for known allocators.
+	(__alloc_traits::construct, __alloc_traits::destroy): Overload for
+	non-standard pointer types.
+	(__alloc_traits::_S_always_equal): New trait for use with noexcept.
+	(__alloc_traits::_S_nothrow_move): Likewise.
+	(__alloc_traits::_S_nothrow_swap): Likewise.
+
+2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/ext/cast.h: Fix typo in include guard.
+	* include/ext/pointer.h (_Unqualified_type): Remove redundant
+	partial specializations for volatile types. Fix typos in comments.
+	(pointer_traits<_Pointer_adaptor<Tp>>::pointer_to): Define.
+
+2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/49668
+	* include/std/functional (__bind_simple): Define.
+	* include/std/future (_Task_setter): Parameterize by type of result
+	pointer instead of state object.
+	(_S_task_setter): Type deduction helper.
+	(_Task_state): Use _S_task_setter and __bind_simple.
+	(_Deferred_state, _Async_state): Store call wrapper directly not as
+	std::function. Use _S_task_setter and __bind_simple.
+	(_S_make_deferred_state, _S_make_async_state): Type deduction helpers.
+	(async): Use new functions and __bind_simple.
+	* include/std/mutex (call_once): Use __bind_simple.
+	* include/std/thread (thread): Likewise. Remove unused headers.
+	* src/thread.cc: Add header.
+	* testsuite/30_threads/async/49668.cc: New.
+	* testsuite/30_threads/call_once/49668.cc: New.
+	* testsuite/30_threads/thread/cons/49668.cc: New.
+	* testsuite/30_threads/thread/cons/moveable.cc: Remove unused bool.
+
+2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.host (abi_baseline_subdir_switch): Describe.
+	Provide default.
+	(*-*-solaris2.[89], *-*-solaris2.1[0-9]): Override.
+	* acinclude.m4 (GLIBCXX_CONFIGURE_TESTSUITE): Substitute
+	baseline_subdir_switch.
+	* testsuite/Makefile.am (site.exp): Emit it.
+	(baseline_subdir): Use it.
+	* testsuite/libstdc++-abi/abi.exp: Use it.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2011-06-29  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/debug/set.h, unordered_map, multiset.h, forward_list,
+	unordered_set, vector, deque, string, list, multimap.h: Remove
+	base class default constructor calls.
+	* include/debug/map.h: Likewise and cleanup several redefinition of
+	base iterator typedef.
+
+2011-06-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libsupc++/eh_arm.c (__cxa_type_match): Construct address of
+	thrown object here.  Return succeded_with_ptr_to_base for all
+	pointer cases.
+
 2011-06-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/tr1/6_containers/tuple/creation_functions/tie2.cc: Fix for
@@ -114,13 +1087,6 @@
 	* testsuite/23_containers/vector/bool/capacity/shrink_to_fit.cc:
 	Likewise.
 	* testsuite/23_containers/deque/debug/shrink_to_fit.cc: Likewise.
-
-2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
-
-	* testsuite/tr1/6_containers/tuple/creation_functions/tie2.cc: Fix for
-	C++0x mode.
-	* testsuite/25_algorithms/sort/35588.cc: Likewise.
-	* testsuite/26_numerics/headers/complex/synopsis.cc: Likewise.
 
 2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -1317,7 +2283,7 @@
 2011-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/tuple (tuple<>::operator=(tuple&&)): Specify as
-        noexcept.
+	noexcept.
 	(__get_helper): Likewise.
 	(_Head_base<>::_M_head, _Tuple_impl<>::_M_head, _M_tail): Likewise.
 	* include/bits/move.h (swap): Likewise.
@@ -2010,8 +2976,8 @@
 
 2011-03-31  Jeffrey Yasskin  <jyasskin@google.com>
 
-        * libsupc++/exception_ptr.h: Forward-declare std::type_info.
-        * libsupc++/nested_exception.h (__throw_with_nested): Remove a
+	* libsupc++/exception_ptr.h: Forward-declare std::type_info.
+	* libsupc++/nested_exception.h (__throw_with_nested): Remove a
 	redundant default argument from std::__throw_with_nested.
 
 2011-03-31  Paolo Carlini  <paolo.carlini@oracle.com>

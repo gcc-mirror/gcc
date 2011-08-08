@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fschedule-insns2 -fschedule-insns -g" } */
+/* { dg-require-effective-target scheduling } */
 
 template < class _T1, class _T2 > struct pair
 {

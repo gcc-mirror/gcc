@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -180,10 +180,16 @@ package body Sem_Aux is
          if No (S) then
             return Standard_Standard;
 
-         --  Quit if we get to standard or a dynamic scope
+         --  Quit if we get to standard or a dynamic scope. We must also
+         --  handle enclosing scopes that have a full view; required to
+         --  locate enclosing scopes that are synchronized private types
+         --  whose full view is a task type.
 
          elsif S = Standard_Standard
            or else Is_Dynamic_Scope (S)
+           or else (Is_Private_Type (S)
+                     and then Present (Full_View (S))
+                     and then Is_Dynamic_Scope (Full_View (S)))
          then
             return S;
 
@@ -210,13 +216,9 @@ package body Sem_Aux is
 
       --  The discriminants are not necessarily contiguous, because access
       --  discriminants will generate itypes. They are not the first entities
-      --  either, because tag and controller record must be ahead of them.
+      --  either because the tag must be ahead of them.
 
       if Chars (Ent) = Name_uTag then
-         Ent := Next_Entity (Ent);
-      end if;
-
-      if Chars (Ent) = Name_uController then
          Ent := Next_Entity (Ent);
       end if;
 
@@ -283,17 +285,11 @@ package body Sem_Aux is
          Ent := Next_Entity (Ent);
       end if;
 
-      if Chars (Ent) = Name_uController then
-         Ent := Next_Entity (Ent);
-      end if;
-
       if Has_Completely_Hidden_Discriminant (Ent) then
-
          while Present (Ent) loop
             exit when Is_Completely_Hidden (Ent);
             Ent := Next_Entity (Ent);
          end loop;
-
       end if;
 
       pragma Assert (Ekind (Ent) = E_Discriminant);
@@ -402,6 +398,16 @@ package body Sem_Aux is
 
       return Empty;
    end First_Tag_Component;
+
+   -------------------------------
+   -- Initialization_Suppressed --
+   -------------------------------
+
+   function Initialization_Suppressed (Typ : Entity_Id) return Boolean is
+   begin
+      return Suppress_Initialization (Typ)
+        or else Suppress_Initialization (Base_Type (Typ));
+   end Initialization_Suppressed;
 
    ----------------
    -- Initialize --

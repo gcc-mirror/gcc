@@ -28,6 +28,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef GCC_DEFAULTS_H
 #define GCC_DEFAULTS_H
 
+/* How to start an assembler comment.  */
+#ifndef ASM_COMMENT_START
+#define ASM_COMMENT_START ";#"
+#endif
+
 /* Store in OUTPUT a string (made with alloca) containing an
    assembler-name for a local static variable or function named NAME.
    LABELNO is an integer which is different for each call.  */
@@ -408,11 +413,66 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DWARF_FRAME_REGISTERS FIRST_PSEUDO_REGISTER
 #endif
 
+/* Offsets recorded in opcodes are a multiple of this alignment factor.  */
+#ifndef DWARF_CIE_DATA_ALIGNMENT
+#ifdef STACK_GROWS_DOWNWARD
+#define DWARF_CIE_DATA_ALIGNMENT (-((int) UNITS_PER_WORD))
+#else
+#define DWARF_CIE_DATA_ALIGNMENT ((int) UNITS_PER_WORD)
+#endif
+#endif
+
+/* The DWARF 2 CFA column which tracks the return address.  Normally this
+   is the column for PC, or the first column after all of the hard
+   registers.  */
+#ifndef DWARF_FRAME_RETURN_COLUMN
+#ifdef PC_REGNUM
+#define DWARF_FRAME_RETURN_COLUMN	DWARF_FRAME_REGNUM (PC_REGNUM)
+#else
+#define DWARF_FRAME_RETURN_COLUMN	DWARF_FRAME_REGISTERS
+#endif
+#endif
+
 /* How to renumber registers for dbx and gdb.  If not defined, assume
    no renumbering is necessary.  */
 
 #ifndef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
+#endif
+
+/* The mapping from gcc register number to DWARF 2 CFA column number.
+   By default, we just provide columns for all registers.  */
+#ifndef DWARF_FRAME_REGNUM
+#define DWARF_FRAME_REGNUM(REG) DBX_REGISTER_NUMBER (REG)
+#endif
+
+/* Map register numbers held in the call frame info that gcc has
+   collected using DWARF_FRAME_REGNUM to those that should be output in
+   .debug_frame and .eh_frame.  */
+#ifndef DWARF2_FRAME_REG_OUT
+#define DWARF2_FRAME_REG_OUT(REGNO, FOR_EH) (REGNO)
+#endif
+
+/* The size of addresses as they appear in the Dwarf 2 data.
+   Some architectures use word addresses to refer to code locations,
+   but Dwarf 2 info always uses byte addresses.  On such machines,
+   Dwarf 2 addresses need to be larger than the architecture's
+   pointers.  */
+#ifndef DWARF2_ADDR_SIZE
+#define DWARF2_ADDR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
+#endif
+
+/* The size in bytes of a DWARF field indicating an offset or length
+   relative to a debug info section, specified to be 4 bytes in the
+   DWARF-2 specification.  The SGI/MIPS ABI defines it to be the same
+   as PTR_SIZE.  */
+#ifndef DWARF_OFFSET_SIZE
+#define DWARF_OFFSET_SIZE 4
+#endif
+
+/* The size in bytes of a DWARF 4 type signature.  */
+#ifndef DWARF_TYPE_SIGNATURE_SIZE
+#define DWARF_TYPE_SIGNATURE_SIZE 8
 #endif
 
 /* Default sizes for base C types.  If the sizes are different for
@@ -880,6 +940,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    then the word-endianness is the same as for integers.  */
 #ifndef FLOAT_WORDS_BIG_ENDIAN
 #define FLOAT_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
+#endif
+
+#ifndef REG_WORDS_BIG_ENDIAN
+#define REG_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
 #endif
 
 #ifdef TARGET_FLT_EVAL_METHOD

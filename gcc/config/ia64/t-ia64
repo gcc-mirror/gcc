@@ -43,9 +43,6 @@ SHLIB_MAPFILES += $(srcdir)/config/ia64/libgcc-ia64.ver
 # Effectively disable the crtbegin/end rules using crtstuff.c
 T = disable
 
-LIB2ADDEH = $(srcdir)/config/ia64/unwind-ia64.c $(srcdir)/unwind-sjlj.c \
-  $(srcdir)/unwind-c.c
-
 ia64-c.o: $(srcdir)/config/ia64/ia64-c.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) $(CPPLIB_H) $(C_COMMON_H) $(C_PRAGMA_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \

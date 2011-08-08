@@ -47,11 +47,14 @@ static gimple vect_recog_widen_mult_pattern (VEC (gimple, heap) **, tree *,
 static gimple vect_recog_dot_prod_pattern (VEC (gimple, heap) **, tree *,
 					   tree *);
 static gimple vect_recog_pow_pattern (VEC (gimple, heap) **, tree *, tree *);
+static gimple vect_recog_over_widening_pattern (VEC (gimple, heap) **, tree *,
+                                                 tree *);
 static vect_recog_func_ptr vect_vect_recog_func_ptrs[NUM_PATTERNS] = {
 	vect_recog_widen_mult_pattern,
 	vect_recog_widen_sum_pattern,
 	vect_recog_dot_prod_pattern,
-	vect_recog_pow_pattern};
+	vect_recog_pow_pattern,
+        vect_recog_over_widening_pattern};
 
 
 /* Function widened_name_p
@@ -827,6 +830,419 @@ vect_recog_widen_sum_pattern (VEC (gimple, heap) **stmts, tree *type_in,
 }
 
 
+/* Return TRUE if the operation in STMT can be performed on a smaller type.
+
+   Input:
+   STMT - a statement to check.
+   DEF - we support operations with two operands, one of which is constant.
+         The other operand can be defined by a demotion operation, or by a
+         previous statement in a sequence of over-promoted operations.  In the
+         later case DEF is used to replace that operand.  (It is defined by a
+         pattern statement we created for the previous statement in the
+         sequence).
+
+   Input/output:
+   NEW_TYPE - Output: a smaller type that we are trying to use.  Input: if not
+         NULL, it's the type of DEF.
+   STMTS - additional pattern statements.  If a pattern statement (type
+         conversion) is created in this function, its original statement is
+         added to STMTS.
+
+   Output:
+   OP0, OP1 - if the operation fits a smaller type, OP0 and OP1 are the new
+         operands to use in the new pattern statement for STMT (will be created
+         in vect_recog_over_widening_pattern ()).
+   NEW_DEF_STMT - in case DEF has to be promoted, we create two pattern
+         statements for STMT: the first one is a type promotion and the second
+         one is the operation itself.  We return the type promotion statement
+         in NEW_DEF_STMT and further store it in STMT_VINFO_PATTERN_DEF_STMT of
+         the second pattern statement.  */
+
+static bool
+vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
+                                  tree *op0, tree *op1, gimple *new_def_stmt,
+                                  VEC (gimple, heap) **stmts)
+{
+  enum tree_code code;
+  tree const_oprnd, oprnd;
+  tree interm_type = NULL_TREE, half_type, tmp, new_oprnd, type;
+  gimple def_stmt, new_stmt;
+  bool first = false;
+
+  *new_def_stmt = NULL;
+
+  if (!is_gimple_assign (stmt))
+    return false;
+
+  code = gimple_assign_rhs_code (stmt);
+  if (code != LSHIFT_EXPR && code != RSHIFT_EXPR
+      && code != BIT_IOR_EXPR && code != BIT_XOR_EXPR && code != BIT_AND_EXPR)
+    return false;
+
+  oprnd = gimple_assign_rhs1 (stmt);
+  const_oprnd = gimple_assign_rhs2 (stmt);
+  type = gimple_expr_type (stmt);
+
+  if (TREE_CODE (oprnd) != SSA_NAME
+      || TREE_CODE (const_oprnd) != INTEGER_CST)
+    return false;
+
+  /* If we are in the middle of a sequence, we use DEF from a previous
+     statement.  Otherwise, OPRND has to be a result of type promotion.  */
+  if (*new_type)
+    {
+      half_type = *new_type;
+      oprnd = def;
+    }
+  else
+    {
+      first = true;
+      if (!widened_name_p (oprnd, stmt, &half_type, &def_stmt, false))
+        return false;
+    }
+
+  /* Can we perform the operation on a smaller type?  */
+  switch (code)
+    {
+      case BIT_IOR_EXPR:
+      case BIT_XOR_EXPR:
+      case BIT_AND_EXPR:
+        if (!int_fits_type_p (const_oprnd, half_type))
+          {
+            /* HALF_TYPE is not enough.  Try a bigger type if possible.  */
+            if (TYPE_PRECISION (type) < (TYPE_PRECISION (half_type) * 4))
+              return false;
+
+            interm_type = build_nonstandard_integer_type (
+                        TYPE_PRECISION (half_type) * 2, TYPE_UNSIGNED (type));
+            if (!int_fits_type_p (const_oprnd, interm_type))
+              return false;
+          }
+
+        break;
+
+      case LSHIFT_EXPR:
+        /* Try intermediate type - HALF_TYPE is not enough for sure.  */
+        if (TYPE_PRECISION (type) < (TYPE_PRECISION (half_type) * 4))
+          return false;
+
+        /* Check that HALF_TYPE size + shift amount <= INTERM_TYPE size.
+          (e.g., if the original value was char, the shift amount is at most 8
+           if we want to use short).  */
+        if (compare_tree_int (const_oprnd, TYPE_PRECISION (half_type)) == 1)
+          return false;
+
+        interm_type = build_nonstandard_integer_type (
+                        TYPE_PRECISION (half_type) * 2, TYPE_UNSIGNED (type));
+
+        if (!vect_supportable_shift (code, interm_type))
+          return false;
+
+        break;
+
+      case RSHIFT_EXPR:
+        if (vect_supportable_shift (code, half_type))
+          break;
+
+        /* Try intermediate type - HALF_TYPE is not supported.  */
+        if (TYPE_PRECISION (type) < (TYPE_PRECISION (half_type) * 4))
+          return false;
+
+        interm_type = build_nonstandard_integer_type (
+                        TYPE_PRECISION (half_type) * 2, TYPE_UNSIGNED (type));
+
+        if (!vect_supportable_shift (code, interm_type))
+          return false;
+
+        break;
+
+      default:
+        gcc_unreachable ();
+    }
+
+  /* There are four possible cases:
+     1. OPRND is defined by a type promotion (in that case FIRST is TRUE, it's
+        the first statement in the sequence)
+        a. The original, HALF_TYPE, is not enough - we replace the promotion
+           from HALF_TYPE to TYPE with a promotion to INTERM_TYPE.
+        b. HALF_TYPE is sufficient, OPRND is set as the RHS of the original
+           promotion.
+     2. OPRND is defined by a pattern statement we created.
+        a. Its type is not sufficient for the operation, we create a new stmt:
+           a type conversion for OPRND from HALF_TYPE to INTERM_TYPE.  We store
+           this statement in NEW_DEF_STMT, and it is later put in
+           STMT_VINFO_PATTERN_DEF_STMT of the pattern statement for STMT.
+        b. OPRND is good to use in the new statement.  */
+  if (first)
+    {
+      if (interm_type)
+        {
+          /* Replace the original type conversion HALF_TYPE->TYPE with
+             HALF_TYPE->INTERM_TYPE.  */
+          if (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt)))
+            {
+              new_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt));
+              /* Check if the already created pattern stmt is what we need.  */
+              if (!is_gimple_assign (new_stmt)
+                  || gimple_assign_rhs_code (new_stmt) != NOP_EXPR
+                  || TREE_TYPE (gimple_assign_lhs (new_stmt)) != interm_type)
+                return false;
+
+              oprnd = gimple_assign_lhs (new_stmt);
+            }
+          else
+            {
+              /* Create NEW_OPRND = (INTERM_TYPE) OPRND.  */
+              oprnd = gimple_assign_rhs1 (def_stmt);
+              tmp = create_tmp_reg (interm_type, NULL);
+              add_referenced_var (tmp);
+              new_oprnd = make_ssa_name (tmp, NULL);
+              new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd,
+                                                       oprnd, NULL_TREE);
+              SSA_NAME_DEF_STMT (new_oprnd) = new_stmt;
+              STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt)) = new_stmt;
+              VEC_safe_push (gimple, heap, *stmts, def_stmt);
+              oprnd = new_oprnd;
+            }
+        }
+      else
+        {
+          /* Retrieve the operand before the type promotion.  */
+          oprnd = gimple_assign_rhs1 (def_stmt);
+        }
+    }
+  else
+    {
+      if (interm_type)
+        {
+          /* Create a type conversion HALF_TYPE->INTERM_TYPE.  */
+          tmp = create_tmp_reg (interm_type, NULL);
+          add_referenced_var (tmp);
+          new_oprnd = make_ssa_name (tmp, NULL);
+          new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd,
+                                                   oprnd, NULL_TREE);
+          SSA_NAME_DEF_STMT (new_oprnd) = new_stmt;
+          oprnd = new_oprnd;
+          *new_def_stmt = new_stmt;
+        }
+
+      /* Otherwise, OPRND is already set.  */
+    }
+
+  if (interm_type)
+    *new_type = interm_type;
+  else
+    *new_type = half_type;
+
+  *op0 = oprnd;
+  *op1 = fold_convert (*new_type, const_oprnd);
+
+  return true;
+}
+
+
+/* Try to find a statement or a sequence of statements that can be performed
+   on a smaller type:
+
+     type x_t;
+     TYPE x_T, res0_T, res1_T;
+   loop:
+     S1  x_t = *p;
+     S2  x_T = (TYPE) x_t;
+     S3  res0_T = op (x_T, C0);
+     S4  res1_T = op (res0_T, C1);
+     S5  ... = () res1_T;  - type demotion
+
+   where type 'TYPE' is at least double the size of type 'type', C0 and C1 are
+   constants.
+   Check if S3 and S4 can be done on a smaller type than 'TYPE', it can either
+   be 'type' or some intermediate type.  For now, we expect S5 to be a type
+   demotion operation.  We also check that S3 and S4 have only one use.
+.
+
+*/
+static gimple
+vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
+                                  tree *type_in, tree *type_out)
+{
+  gimple stmt = VEC_pop (gimple, *stmts);
+  gimple pattern_stmt = NULL, new_def_stmt, prev_stmt = NULL, use_stmt = NULL;
+  tree op0, op1, vectype = NULL_TREE, lhs, use_lhs, use_type;
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  int nuses = 0;
+  tree var = NULL_TREE, new_type = NULL_TREE, tmp, new_oprnd;
+  bool first;
+  struct loop *loop = (gimple_bb (stmt))->loop_father;
+
+  first = true;
+  while (1)
+    {
+      if (!vinfo_for_stmt (stmt)
+          || STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt)))
+        return NULL;
+
+      new_def_stmt = NULL;
+      if (!vect_operation_fits_smaller_type (stmt, var, &new_type,
+                                             &op0, &op1, &new_def_stmt,
+                                             stmts))
+        {
+          if (first)
+            return NULL;
+          else
+            break;
+        }
+
+      /* STMT can be performed on a smaller type.  Check its uses.  */
+      lhs = gimple_assign_lhs (stmt);
+      nuses = 0;
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
+        {
+          if (is_gimple_debug (USE_STMT (use_p)))
+            continue;
+          use_stmt = USE_STMT (use_p);
+          nuses++;
+        }
+
+      if (nuses != 1 || !is_gimple_assign (use_stmt)
+          || !gimple_bb (use_stmt)
+          || !flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+        return NULL;
+
+      /* Create pattern statement for STMT.  */
+      vectype = get_vectype_for_scalar_type (new_type);
+      if (!vectype)
+        return NULL;
+
+      /* We want to collect all the statements for which we create pattern
+         statetments, except for the case when the last statement in the
+         sequence doesn't have a corresponding pattern statement.  In such
+         case we associate the last pattern statement with the last statement
+         in the sequence.  Therefore, we only add an original statetement to
+         the list if we know that it is not the last.  */
+      if (prev_stmt)
+        VEC_safe_push (gimple, heap, *stmts, prev_stmt);
+
+      var = vect_recog_temp_ssa_var (new_type, NULL);
+      pattern_stmt = gimple_build_assign_with_ops (
+                          gimple_assign_rhs_code (stmt), var, op0, op1);
+      SSA_NAME_DEF_STMT (var) = pattern_stmt;
+      STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt)) = pattern_stmt;
+      STMT_VINFO_PATTERN_DEF_STMT (vinfo_for_stmt (stmt)) = new_def_stmt;
+
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "created pattern stmt: ");
+          print_gimple_stmt (vect_dump, pattern_stmt, 0, TDF_SLIM);
+        }
+
+      prev_stmt = stmt;
+      stmt = use_stmt;
+
+      first = false;
+    }
+
+  /* We got a sequence.  We expect it to end with a type demotion operation.
+     Otherwise, we quit (for now).  There are three possible cases: the
+     conversion is to NEW_TYPE (we don't do anything), the conversion is to
+     a type bigger than NEW_TYPE and/or the signedness of USE_TYPE and
+     NEW_TYPE differs (we create a new conversion statement).  */
+  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt)))
+    {
+      use_lhs = gimple_assign_lhs (use_stmt);
+      use_type = TREE_TYPE (use_lhs);
+      /* Support only type promotion or signedess change.  */
+      if (!INTEGRAL_TYPE_P (use_type)
+          || TYPE_PRECISION (new_type) > TYPE_PRECISION (use_type))
+        return NULL;
+
+      if (TYPE_UNSIGNED (new_type) != TYPE_UNSIGNED (use_type)
+          || TYPE_PRECISION (new_type) != TYPE_PRECISION (use_type))
+        {
+          /* Create NEW_TYPE->USE_TYPE conversion.  */
+          tmp = create_tmp_reg (use_type, NULL);
+          add_referenced_var (tmp);
+          new_oprnd = make_ssa_name (tmp, NULL);
+          pattern_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd,
+                                                       var, NULL_TREE);
+          SSA_NAME_DEF_STMT (new_oprnd) = pattern_stmt;
+          STMT_VINFO_RELATED_STMT (vinfo_for_stmt (use_stmt)) = pattern_stmt;
+
+          *type_in = get_vectype_for_scalar_type (new_type);
+          *type_out = get_vectype_for_scalar_type (use_type);
+
+          /* We created a pattern statement for the last statement in the
+             sequence, so we don't need to associate it with the pattern
+             statement created for PREV_STMT.  Therefore, we add PREV_STMT
+             to the list in order to mark it later in vect_pattern_recog_1.  */
+          if (prev_stmt)
+            VEC_safe_push (gimple, heap, *stmts, prev_stmt);
+        }
+      else
+        {
+          if (prev_stmt)
+            STMT_VINFO_PATTERN_DEF_STMT (vinfo_for_stmt (use_stmt))
+               = STMT_VINFO_PATTERN_DEF_STMT (vinfo_for_stmt (prev_stmt));
+
+          *type_in = vectype;
+          *type_out = NULL_TREE;
+        }
+
+      VEC_safe_push (gimple, heap, *stmts, use_stmt);
+    }
+  else
+    /* TODO: support general case, create a conversion to the correct type.  */
+    return NULL;
+
+  /* Pattern detected.  */
+  if (vect_print_dump_info (REPORT_DETAILS))
+    {
+      fprintf (vect_dump, "vect_recog_over_widening_pattern: detected: ");
+      print_gimple_stmt (vect_dump, pattern_stmt, 0, TDF_SLIM);
+    }
+
+  return pattern_stmt;
+}
+
+
+/* Mark statements that are involved in a pattern.  */
+
+static inline void
+vect_mark_pattern_stmts (gimple orig_stmt, gimple pattern_stmt,
+                         tree pattern_vectype)
+{
+  stmt_vec_info pattern_stmt_info, def_stmt_info;
+  stmt_vec_info orig_stmt_info = vinfo_for_stmt (orig_stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (orig_stmt_info);
+  gimple def_stmt;
+
+  set_vinfo_for_stmt (pattern_stmt,
+                      new_stmt_vec_info (pattern_stmt, loop_vinfo, NULL));
+  gimple_set_bb (pattern_stmt, gimple_bb (orig_stmt));
+  pattern_stmt_info = vinfo_for_stmt (pattern_stmt);
+
+  STMT_VINFO_RELATED_STMT (pattern_stmt_info) = orig_stmt;
+  STMT_VINFO_DEF_TYPE (pattern_stmt_info)
+	= STMT_VINFO_DEF_TYPE (orig_stmt_info);
+  STMT_VINFO_VECTYPE (pattern_stmt_info) = pattern_vectype;
+  STMT_VINFO_IN_PATTERN_P (orig_stmt_info) = true;
+  STMT_VINFO_RELATED_STMT (orig_stmt_info) = pattern_stmt;
+  STMT_VINFO_PATTERN_DEF_STMT (pattern_stmt_info)
+	= STMT_VINFO_PATTERN_DEF_STMT (orig_stmt_info);
+  if (STMT_VINFO_PATTERN_DEF_STMT (pattern_stmt_info))
+    {
+      def_stmt = STMT_VINFO_PATTERN_DEF_STMT (pattern_stmt_info);
+      set_vinfo_for_stmt (def_stmt,
+                          new_stmt_vec_info (def_stmt, loop_vinfo, NULL));
+      gimple_set_bb (def_stmt, gimple_bb (orig_stmt));
+      def_stmt_info = vinfo_for_stmt (def_stmt);
+      STMT_VINFO_RELATED_STMT (def_stmt_info) = orig_stmt;
+      STMT_VINFO_DEF_TYPE (def_stmt_info)
+	= STMT_VINFO_DEF_TYPE (orig_stmt_info);
+      STMT_VINFO_VECTYPE (def_stmt_info) = pattern_vectype;
+    }
+}
+
 /* Function vect_pattern_recog_1
 
    Input:
@@ -856,7 +1272,6 @@ vect_pattern_recog_1 (
 {
   gimple stmt = gsi_stmt (si), pattern_stmt;
   stmt_vec_info stmt_info;
-  stmt_vec_info pattern_stmt_info;
   loop_vec_info loop_vinfo;
   tree pattern_vectype;
   tree type_in, type_out;
@@ -924,16 +1339,7 @@ vect_pattern_recog_1 (
     }
 
   /* Mark the stmts that are involved in the pattern. */
-  set_vinfo_for_stmt (pattern_stmt,
-		      new_stmt_vec_info (pattern_stmt, loop_vinfo, NULL));
-  gimple_set_bb (pattern_stmt, gimple_bb (stmt));
-  pattern_stmt_info = vinfo_for_stmt (pattern_stmt);
-
-  STMT_VINFO_RELATED_STMT (pattern_stmt_info) = stmt;
-  STMT_VINFO_DEF_TYPE (pattern_stmt_info) = STMT_VINFO_DEF_TYPE (stmt_info);
-  STMT_VINFO_VECTYPE (pattern_stmt_info) = pattern_vectype;
-  STMT_VINFO_IN_PATTERN_P (stmt_info) = true;
-  STMT_VINFO_RELATED_STMT (stmt_info) = pattern_stmt;
+  vect_mark_pattern_stmts (stmt, pattern_stmt, pattern_vectype);
 
   /* Patterns cannot be vectorized using SLP, because they change the order of
      computation.  */
@@ -941,9 +1347,9 @@ vect_pattern_recog_1 (
     if (next == stmt)
       VEC_ordered_remove (gimple, LOOP_VINFO_REDUCTIONS (loop_vinfo), i); 
 
-  /* In case of widen-mult by a constant, it is possible that an additional
-     pattern stmt is created and inserted in STMTS_TO_REPLACE.  We create a
-     stmt_info for it, and mark the relevant statements.  */
+  /* It is possible that additional pattern stmts are created and inserted in
+     STMTS_TO_REPLACE.  We create a stmt_info for each of them, and mark the
+     relevant statements.  */
   for (i = 0; VEC_iterate (gimple, stmts_to_replace, i, stmt)
               && (unsigned) i < (VEC_length (gimple, stmts_to_replace) - 1);
        i++)
@@ -956,16 +1362,7 @@ vect_pattern_recog_1 (
           print_gimple_stmt (vect_dump, pattern_stmt, 0, TDF_SLIM);
         }
 
-      set_vinfo_for_stmt (pattern_stmt,
-                      new_stmt_vec_info (pattern_stmt, loop_vinfo, NULL));
-      gimple_set_bb (pattern_stmt, gimple_bb (stmt));
-      pattern_stmt_info = vinfo_for_stmt (pattern_stmt);
-
-      STMT_VINFO_RELATED_STMT (pattern_stmt_info) = stmt;
-      STMT_VINFO_DEF_TYPE (pattern_stmt_info)
-        = STMT_VINFO_DEF_TYPE (stmt_info);
-      STMT_VINFO_VECTYPE (pattern_stmt_info) = STMT_VINFO_VECTYPE (stmt_info);
-      STMT_VINFO_IN_PATTERN_P (stmt_info) = true;
+      vect_mark_pattern_stmts (stmt, pattern_stmt, NULL_TREE);
     }
 
   VEC_free (gimple, heap, stmts_to_replace);
@@ -1016,10 +1413,8 @@ vect_pattern_recog_1 (
 
    If vectorization succeeds, vect_transform_stmt will skip over {S1,S2,S3}
    (because they are marked as irrelevant).  It will vectorize S6, and record
-   a pointer to the new vector stmt VS6 both from S6 (as usual), and also
-   from S4.  We do that so that when we get to vectorizing stmts that use the
-   def of S4 (like S5 that uses a_0), we'll know where to take the relevant
-   vector-def from.  S4 will be skipped, and S5 will be vectorized as usual:
+   a pointer to the new vector stmt VS6 from S6 (as usual).
+   S4 will be skipped, and S5 will be vectorized as usual:
 
                                   in_pattern_p  related_stmt    vec_stmt
          S1: a_i = ....                 -       -               -
@@ -1035,7 +1430,21 @@ vect_pattern_recog_1 (
    elsewhere), and we'll end up with:
 
         VS6: va_new = ....
-        VS5: ... = ..vuse(va_new)..  */
+        VS5: ... = ..vuse(va_new)..
+
+   In case of more than one pattern statements, e.g., widen-mult with
+   intermediate type:
+
+     S1  a_t = ;
+     S2  a_T = (TYPE) a_t;
+           '--> S3: a_it = (interm_type) a_t;
+     S4  prod_T = a_T * CONST;
+           '--> S5: prod_T' = a_it w* CONST;
+
+   there may be other users of a_T outside the pattern.  In that case S2 will
+   be marked as relevant (as well as S3), and both S2 and S3 will be analyzed
+   and vectorized.  The vector stmt VS2 will be recorded in S2, and VS3 will
+   be recorded in S3.  */
 
 void
 vect_pattern_recog (loop_vec_info loop_vinfo)

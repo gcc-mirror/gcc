@@ -6,18 +6,17 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- You should have received a copy of the GNU General Public License along  --
--- with this program; see file COPYING3.  If not see                        --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -320,8 +319,8 @@ package Errout is
    --      Precedes a character which is placed literally into the message.
    --      Used to insert characters into messages that are one of the
    --      insertion characters defined here. Also useful in inserting
-   --      sequences of upper case letters (e.g. RM) which are not to be
-   --      treated as keywords.
+   --      sequences of upper case letters which are not to be treated as
+   --      keywords.
 
    --    Insertion character \ (Backslash: continuation message)
    --      Indicates that the message is a continuation of a message
@@ -495,7 +494,9 @@ package Errout is
 
    --  Note: a special exception is that RM is never treated as a keyword
    --  but instead is copied literally into the message, this avoids the
-   --  need for writing 'R'M for all reference manual quotes.
+   --  need for writing 'R'M for all reference manual quotes. A similar
+   --  exception is applied to the occurrence of the string ALFA used in
+   --  error messages about the ALFA subset of Ada.
 
    --  In the case of names, the default mode for the error text processor
    --  is to surround the name by quotation marks automatically. The case
@@ -610,8 +611,7 @@ package Errout is
    --       (parameters ....)
 
    --  Any message marked with this -- CODEFIX comment should not be modified
-   --  without appropriate coordination. If new messages are added which may
-   --  be susceptible to automatic codefix action, they are marked using:
+   --  without appropriate coordination.
 
    ------------------------------
    -- Error Output Subprograms --
@@ -679,8 +679,7 @@ package Errout is
    --  error messages from the analyzer). The message text may contain a
    --  single & insertion, which will reference the given node. The message is
    --  suppressed if the node N already has a message posted, or if it is a
-   --  warning and warnings and N is an entity node for which warnings are
-   --  suppressed.
+   --  warning and N is an entity node for which warnings are suppressed.
 
    procedure Error_Msg_F (Msg : String; N : Node_Id);
    --  Similar to Error_Msg_N except that the message is placed on the first

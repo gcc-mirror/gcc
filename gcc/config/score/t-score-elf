@@ -16,13 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Additional Backend Files
-score7.o: $(srcdir)/config/score/score7.c $(CONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(TM_H) $(RTL_H) output.h flags.h $(TREE_H) \
-  expr.h toplev.h $(TM_P_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(srcdir)/config/score/score7.c
-
 # Assemble startup files.
 $(T)crti.o: $(srcdir)/config/score/crti.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \

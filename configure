@@ -556,6 +556,7 @@ enable_option_checking=no
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 compare_exclusions
+POSTSTAGE1_CONFIGURE_FLAGS
 stage2_werror_flag
 stage1_checking
 stage1_cflags
@@ -667,6 +668,7 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+EXTRA_CONFIGARGS_LIBJAVA
 target_subdir
 host_subdir
 build_subdir
@@ -746,7 +748,10 @@ enable_libquadmath
 enable_libquadmath_support
 enable_libada
 enable_libssp
+enable_static_libjava
+enable_bootstrap
 enable_build_with_cxx
+enable_build_poststage1_with_cxx
 with_mpc
 with_mpc_include
 with_mpc_lib
@@ -778,7 +783,6 @@ enable_objc_gc
 with_upc_pts
 with_build_sysroot
 with_debug_prefix_map
-enable_bootstrap
 with_build_config
 enable_serial_configure
 enable_upc_link_script
@@ -1462,7 +1466,12 @@ Optional Features:
                           disable libquadmath support for Fortran
   --enable-libada         build libada directory
   --enable-libssp         build libssp directory
+  --enable-static-libjava[=ARG]
+                          build static libjava [default=no]
+  --enable-bootstrap      enable bootstrapping [yes if native build]
   --enable-build-with-cxx build with C++ compiler instead of C compiler
+  --enable-build-poststage1-with-cxx
+                          build stages 2 and 3 with C++, not C
   --disable-ppl-version-check
                           disable check for PPL version
   --enable-cloog-backend[=BACKEND]
@@ -1476,7 +1485,6 @@ Optional Features:
                           Mostly useful for compiler development
   --enable-objc-gc        enable use of Boehm's garbage collector with the GNU
                           Objective-C runtime
-  --enable-bootstrap      enable bootstrapping [yes if native build]
   --enable-serial-[{host,target,build}-]configure
                           force sequential configuration of sub-packages for
                           the host, target or build machine, or all
@@ -3007,6 +3015,22 @@ no)
   ;;
 esac
 
+# Check whether --enable-static-libjava was given.
+if test "${enable_static_libjava+set}" = set; then :
+  enableval=$enable_static_libjava; ENABLE_STATIC_LIBJAVA=$enableval
+else
+  ENABLE_STATIC_LIBJAVA=no
+fi
+
+enable_static_libjava=
+if test "${ENABLE_STATIC_LIBJAVA}" = "yes" ; then
+  enable_static_libjava=yes
+fi
+
+if test x$enable_static_libjava != xyes ; then
+  EXTRA_CONFIGARGS_LIBJAVA=--disable-static
+fi
+
 
 # Disable libmudflap on some systems.
 if test x$enable_libmudflap = x ; then
@@ -3496,7 +3520,7 @@ case "${target}" in
   i[3456789]86-*-sco*)
     noconfigdirs="$noconfigdirs gprof target-libgloss"
     ;;
-  i[3456789]86-*-solaris2*)
+  i[3456789]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   i[3456789]86-*-sysv4*)
@@ -4978,12 +5002,68 @@ do_compare="$gcc_cv_prog_cmp_skip"
 
 
 
+# Check whether --enable-bootstrap was given.
+if test "${enable_bootstrap+set}" = set; then :
+  enableval=$enable_bootstrap;
+else
+  enable_bootstrap=default
+fi
+
+
+# Issue errors and warnings for invalid/strange bootstrap combinations.
+if test -r $srcdir/gcc/configure; then
+  have_compiler=yes
+else
+  have_compiler=no
+fi
+
+case "$have_compiler:$host:$target:$enable_bootstrap" in
+  *:*:*:no) ;;
+
+  # Default behavior.  Enable bootstrap if we have a compiler
+  # and we are in a native configuration.
+  yes:$build:$build:default)
+    enable_bootstrap=yes ;;
+
+  *:*:*:default)
+    enable_bootstrap=no ;;
+
+  # We have a compiler and we are in a native configuration, bootstrap is ok
+  yes:$build:$build:yes)
+    ;;
+
+  # Other configurations, but we have a compiler.  Assume the user knows
+  # what he's doing.
+  yes:*:*:yes)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: trying to bootstrap a cross compiler" >&5
+$as_echo "$as_me: WARNING: trying to bootstrap a cross compiler" >&2;}
+    ;;
+
+  # No compiler: if they passed --enable-bootstrap explicitly, fail
+  no:*:*:yes)
+    as_fn_error "cannot bootstrap without a compiler" "$LINENO" 5 ;;
+
+  # Fail if wrong command line
+  *)
+    as_fn_error "invalid option for --enable-bootstrap" "$LINENO" 5
+    ;;
+esac
+
 # See if we are building gcc with C++.
 # Check whether --enable-build-with-cxx was given.
 if test "${enable_build_with_cxx+set}" = set; then :
   enableval=$enable_build_with_cxx; ENABLE_BUILD_WITH_CXX=$enableval
 else
   ENABLE_BUILD_WITH_CXX=no
+fi
+
+
+# Build stage1 with C and build stages 2 and 3 with C++.
+# Check whether --enable-build-poststage1-with-cxx was given.
+if test "${enable_build_poststage1_with_cxx+set}" = set; then :
+  enableval=$enable_build_poststage1_with_cxx; ENABLE_BUILD_POSTSTAGE1_WITH_CXX=$enableval
+else
+  ENABLE_BUILD_POSTSTAGE1_WITH_CXX=yes
 fi
 
 
@@ -6008,7 +6088,7 @@ fi
 target_elf=no
 case $target in
   *-darwin* | *-aix* | *-cygwin* | *-mingw* | *-aout* | *-*coff* | \
-  *-msdosdjgpp* | *-netware* | *-vms* | *-wince* | *-*-pe* | \
+  *-msdosdjgpp* | *-vms* | *-wince* | *-*-pe* | \
   alpha*-dec-osf* | *-interix* | hppa[12]*-*-hpux*)
     target_elf=no
     ;;
@@ -6088,6 +6168,19 @@ if test -d ${srcdir}/gcc; then
     *,f95,*)
       echo configure.in: warning: 'f95' as language name is deprecated, use 'fortran' instead 1>&2
       enable_languages=`echo "${enable_languages}" | sed -e 's/f95/fortran/g'`
+      ;;
+  esac
+
+  # If bootstrapping, then using --enable-build-with-cxx or
+  # --enable-build-poststage1-with-cxx requires enabling C++.
+  case ",$enable_languages,:,$ENABLE_BUILD_WITH_CXX,$ENABLE_BUILD_POSTSTAGE1_WITH_CXX,:$enable_bootstrap" in
+    *,c++,*:*:*) ;;
+    *:*,yes,*:yes)
+      if test -f ${srcdir}/gcc/cp/config-lang.in; then
+        enable_languages="${enable_languages},c++"
+      else
+        as_fn_error "bootstrapping with --enable-build-with-cxx or --enable-build-poststage1-with-cxx requires c++ sources" "$LINENO" 5
+      fi
       ;;
   esac
 
@@ -6180,9 +6273,11 @@ if test -d ${srcdir}/gcc; then
           exit 1
         fi
 
-	if test "$language" = "c++" \
-	   && test "$ENABLE_BUILD_WITH_CXX" = "yes"; then
-	  boot_language=yes
+	if test "$language" = "c++"; then
+	  if test "$ENABLE_BUILD_WITH_CXX" = "yes" \
+	     || test "$ENABLE_BUILD_POSTSTAGE1_WITH_CXX" = "yes"; then
+	    boot_language=yes
+	  fi
 	fi
 
         case ,${enable_languages}, in
@@ -6912,59 +7007,6 @@ INSTALL_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-install-/g`
 # the substitutions up that way, but only to remain below the limit of
 # 99 commands in a script, for HP-UX sed.
 # Do not nest @if/@endif pairs, because configure will not warn you at all.
-
-# Check whether --enable-bootstrap was given.
-if test "${enable_bootstrap+set}" = set; then :
-  enableval=$enable_bootstrap;
-else
-  enable_bootstrap=default
-fi
-
-
-# Issue errors and warnings for invalid/strange bootstrap combinations.
-case "$configdirs" in
-  *gcc*) have_compiler=yes ;;
-  *) have_compiler=no ;;
-esac
-
-case "$have_compiler:$host:$target:$enable_bootstrap" in
-  *:*:*:no) ;;
-
-  # Default behavior.  Enable bootstrap if we have a compiler
-  # and we are in a native configuration.
-  yes:$build:$build:default)
-    enable_bootstrap=yes ;;
-
-  *:*:*:default)
-    enable_bootstrap=no ;;
-
-  # We have a compiler and we are in a native configuration, bootstrap is ok
-  yes:$build:$build:yes)
-    ;;
-
-  # Other configurations, but we have a compiler.  Assume the user knows
-  # what he's doing.
-  yes:*:*:yes)
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: trying to bootstrap a cross compiler" >&5
-$as_echo "$as_me: WARNING: trying to bootstrap a cross compiler" >&2;}
-    ;;
-
-  # No compiler: if they passed --enable-bootstrap explicitly, fail
-  no:*:*:yes)
-    as_fn_error "cannot bootstrap without a compiler" "$LINENO" 5 ;;
-
-  # Fail if wrong command line
-  *)
-    as_fn_error "invalid option for --enable-bootstrap" "$LINENO" 5
-    ;;
-esac
-
-case ",$enable_languages,:$ENABLE_BUILD_WITH_CXX:$enable_bootstrap" in
-  *,c++,*:yes:yes) ;;
-  *:yes:yes)
-    as_fn_error "bootstrapping with --enable-build-with-cxx requires c++ in --enable-languages" "$LINENO" 5
-    ;;
-esac
 
 case "$enable_bootstrap:$ENABLE_GOLD: $configdirs :,$stage1_languages," in
   yes:yes:*\ gold\ *:*,c++,*) ;;
@@ -14054,6 +14096,15 @@ case ${enable_werror} in
   yes) stage2_werror_flag="--enable-werror-always" ;;
   *) stage2_werror_flag="" ;;
 esac
+
+
+# If using ENABLE_BUILD_POSTSTAGE1_WITH_CXX, pass
+# --enable-build-with-cxx after stage1.
+if test "$ENABLE_BUILD_POSTSTAGE1_WITH_CXX" = "yes"; then
+  POSTSTAGE1_CONFIGURE_FLAGS=--enable-build-with-cxx
+else
+  POSTSTAGE1_CONFIGURE_FLAGS=
+fi
 
 
 # Specify what files to not compare during bootstrap.

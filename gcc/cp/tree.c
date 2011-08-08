@@ -511,6 +511,11 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
 				    complain);
   release_tree_vector (argvec);
 
+  /* For a trivial constructor, build_over_call creates a TARGET_EXPR.  But
+     we don't want one here because we aren't creating a temporary.  */
+  if (TREE_CODE (init) == TARGET_EXPR)
+    init = TARGET_EXPR_INITIAL (init);
+
   return init;
 }
 
@@ -540,9 +545,6 @@ build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
       && potential_constant_expression (elt_init))
     VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
-
-  init = build_target_expr (slot, init, complain);
-  TARGET_EXPR_IMPLICIT_P (init) = 1;
 
   return init;
 }
@@ -1414,6 +1416,7 @@ build_qualified_name (tree type, tree scope, tree name, bool template_p)
     return error_mark_node;
   t = build2 (SCOPE_REF, type, scope, name);
   QUALIFIED_NAME_IS_TEMPLATE (t) = template_p;
+  PTRMEM_OK_P (t) = true;
   if (type)
     t = convert_from_reference (t);
   return t;
@@ -3294,10 +3297,18 @@ stabilize_init (tree init, tree *initp)
     t = TARGET_EXPR_INITIAL (t);
   if (TREE_CODE (t) == COMPOUND_EXPR)
     t = expr_last (t);
-  if (TREE_CODE (t) == CONSTRUCTOR
-      && EMPTY_CONSTRUCTOR_P (t))
-    /* Default-initialization.  */
-    return true;
+  if (TREE_CODE (t) == CONSTRUCTOR)
+    {
+      /* Aggregate initialization: stabilize each of the field
+	 initializers.  */
+      unsigned i;
+      tree value;
+      bool good = true;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), i, value)
+	if (!stabilize_init (value, initp))
+	  good = false;
+      return good;
+    }
 
   /* If the initializer is a COND_EXPR, we can't preevaluate
      anything.  */

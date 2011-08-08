@@ -4590,14 +4590,12 @@ emit_save_or_restore_local_in_regs (rtx base, int offset, sorr_act_t action)
 			     save_local_or_in_reg_p, action, SORR_ADVANCE);
 }
 
-/* Generate a save_register_window insn.  */
+/* Emit a window_save insn.  */
 
 static rtx
-emit_save_register_window (rtx increment)
+emit_window_save (rtx increment)
 {
-  rtx insn;
-
-  insn = emit_insn (gen_save_register_window_1 (increment));
+  rtx insn = emit_insn (gen_window_save (increment));
   RTX_FRAME_RELATED_P (insn) = 1;
 
   /* The incoming return address (%o7) is saved in %i7.  */
@@ -4716,10 +4714,10 @@ sparc_expand_prologue (void)
       rtx size_int_rtx = GEN_INT (-size);
 
       if (size <= 4096)
-	emit_save_register_window (size_int_rtx);
+	emit_window_save (size_int_rtx);
       else if (size <= 8192)
 	{
-	  emit_save_register_window (GEN_INT (-4096));
+	  emit_window_save (GEN_INT (-4096));
 	  /* %sp is not the CFA register anymore.  */
 	  emit_insn (gen_stack_pointer_inc (GEN_INT (4096 - size)));
 	}
@@ -4727,7 +4725,7 @@ sparc_expand_prologue (void)
 	{
 	  rtx size_rtx = gen_rtx_REG (Pmode, 1);
 	  emit_move_insn (size_rtx, size_int_rtx);
-	  emit_save_register_window (size_rtx);
+	  emit_window_save (size_rtx);
 	}
     }
 
@@ -6679,8 +6677,7 @@ sparc_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   incr = valist;
   if (align)
     {
-      incr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, incr,
-			  size_int (align - 1));
+      incr = fold_build_pointer_plus_hwi (incr, align - 1);
       incr = fold_convert (sizetype, incr);
       incr = fold_build2 (BIT_AND_EXPR, sizetype, incr,
 			  size_int (-align));
@@ -6691,8 +6688,7 @@ sparc_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   addr = incr;
 
   if (BYTES_BIG_ENDIAN && size < rsize)
-    addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, incr,
-			size_int (rsize - size));
+    addr = fold_build_pointer_plus_hwi (incr, rsize - size);
 
   if (indirect)
     {
@@ -6716,8 +6712,7 @@ sparc_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   else
     addr = fold_convert (ptrtype, addr);
 
-  incr
-    = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, incr, size_int (rsize));
+  incr = fold_build_pointer_plus_hwi (incr, rsize);
   gimplify_assign (valist, incr, post_p);
 
   return build_va_arg_indirect_ref (addr);
@@ -10024,6 +10019,10 @@ sparc_file_end (void)
 
   if (NEED_INDICATE_EXEC_STACK)
     file_end_indicate_exec_stack ();
+
+#ifdef TARGET_SOLARIS
+  solaris_file_end ();
+#endif
 }
 
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING

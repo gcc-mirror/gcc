@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre1-details" } */
+/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1-details" } */
 
 int f();
 

@@ -237,10 +237,13 @@ POSTSTAGE1_CXX_EXPORT = \
 	CXX="$(STAGE_CC_WRAPPER) $$r/$(HOST_SUBDIR)/prev-gcc/g++$(exeext) \
 	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/ -nostdinc++ \
 	  -B$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs \
+	  -B$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/libsupc++/.libs \
 	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include/$(TARGET_SUBDIR) \
 	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include \
 	  -I$$s/libstdc++-v3/libsupc++ \
-	  -L$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs"; export CXX; \
+	  -L$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs \
+	  -L$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/libsupc++/.libs"; \
+	  export CXX; \
 	CXX_FOR_BUILD="$$CXX"; export CXX_FOR_BUILD;
 @endif target-libstdc++-v3-bootstrap
 
@@ -315,6 +318,8 @@ HOST_CLOOGINC = @clooginc@
 # Where to find libelf
 HOST_LIBELFLIBS = @libelflibs@
 HOST_LIBELFINC = @libelfinc@
+
+EXTRA_CONFIGARGS_LIBJAVA = @EXTRA_CONFIGARGS_LIBJAVA@
 
 # ----------------------------------------------
 # Programs producing files for the BUILD machine
@@ -413,6 +418,7 @@ TFLAGS =
 STAGE_CFLAGS = $(BOOT_CFLAGS)
 STAGE_TFLAGS = $(TFLAGS)
 STAGE_CONFIGURE_FLAGS=@stage2_werror_flag@
+POSTSTAGE1_CONFIGURE_FLAGS = @POSTSTAGE1_CONFIGURE_FLAGS@
 
 
 # Defaults for stage 1; some are overridden below.
@@ -423,7 +429,10 @@ STAGE1_CXXFLAGS = $(CXXFLAGS)
 STAGE1_CXXFLAGS = $(STAGE1_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGE1_TFLAGS = $(STAGE_TFLAGS)
-STAGE1_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
+# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
+# POSTSTAGE1_CONFIGURE_FLAGS here.
+STAGE1_CONFIGURE_FLAGS = \
+	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
 
 # Defaults for stage 2; some are overridden below.
 STAGE2_CFLAGS = $(STAGE_CFLAGS)
@@ -433,7 +442,10 @@ STAGE2_CXXFLAGS = $(CXXFLAGS)
 STAGE2_CXXFLAGS = $(STAGE2_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGE2_TFLAGS = $(STAGE_TFLAGS)
-STAGE2_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
+# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
+# POSTSTAGE1_CONFIGURE_FLAGS here.
+STAGE2_CONFIGURE_FLAGS = \
+	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
 
 # Defaults for stage 3; some are overridden below.
 STAGE3_CFLAGS = $(STAGE_CFLAGS)
@@ -443,7 +455,10 @@ STAGE3_CXXFLAGS = $(CXXFLAGS)
 STAGE3_CXXFLAGS = $(STAGE3_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGE3_TFLAGS = $(STAGE_TFLAGS)
-STAGE3_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
+# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
+# POSTSTAGE1_CONFIGURE_FLAGS here.
+STAGE3_CONFIGURE_FLAGS = \
+	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
 
 # Defaults for stage 4; some are overridden below.
 STAGE4_CFLAGS = $(STAGE_CFLAGS)
@@ -453,7 +468,10 @@ STAGE4_CXXFLAGS = $(CXXFLAGS)
 STAGE4_CXXFLAGS = $(STAGE4_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGE4_TFLAGS = $(STAGE_TFLAGS)
-STAGE4_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
+# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
+# POSTSTAGE1_CONFIGURE_FLAGS here.
+STAGE4_CONFIGURE_FLAGS = \
+	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
 
 # Defaults for stage profile; some are overridden below.
 STAGEprofile_CFLAGS = $(STAGE_CFLAGS)
@@ -463,7 +481,10 @@ STAGEprofile_CXXFLAGS = $(CXXFLAGS)
 STAGEprofile_CXXFLAGS = $(STAGEprofile_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGEprofile_TFLAGS = $(STAGE_TFLAGS)
-STAGEprofile_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
+# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
+# POSTSTAGE1_CONFIGURE_FLAGS here.
+STAGEprofile_CONFIGURE_FLAGS = \
+	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
 
 # Defaults for stage feedback; some are overridden below.
 STAGEfeedback_CFLAGS = $(STAGE_CFLAGS)
@@ -473,7 +494,10 @@ STAGEfeedback_CXXFLAGS = $(CXXFLAGS)
 STAGEfeedback_CXXFLAGS = $(STAGEfeedback_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGEfeedback_TFLAGS = $(STAGE_TFLAGS)
-STAGEfeedback_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
+# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
+# POSTSTAGE1_CONFIGURE_FLAGS here.
+STAGEfeedback_CONFIGURE_FLAGS = \
+	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
 
 
 # Only build the C compiler for stage1, because that is the only one that
@@ -491,6 +515,9 @@ STAGE1_LANGUAGES = @stage1_languages@
 #   the last argument when conflicting --enable arguments are passed.
 # * Likewise, we force-disable coverage flags, since the installed
 #   compiler probably has never heard of them.
+# * Don't remove this, because above we added
+#   POSTSTAGE1_CONFIGURE_FLAGS to STAGE_CONFIGURE_FLAGS, which
+#   we don't want for STAGE1_CONFIGURE_FLAGS.
 STAGE1_CONFIGURE_FLAGS = --disable-intermodule $(STAGE1_CHECKING) \
 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"
 
@@ -37366,7 +37393,7 @@ configure-target-libjava:
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias} $${srcdiroption} $(EXTRA_CONFIGARGS_LIBJAVA) \
 	  || exit 1
 @endif target-libjava
 
@@ -40593,6 +40620,13 @@ maintainer-clean-target-libgomp:
 
 
 
+@if target-libmudflap
+.PHONY: check-target-libmudflap-c++
+check-target-libmudflap-c++:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) c++frags.exp" check-target-libmudflap
+
+@endif target-libmudflap
+
 # ----------
 # GCC module
 # ----------
@@ -40626,8 +40660,8 @@ check-gcc-c++:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++);
-check-c++: check-gcc-c++ check-target-libstdc++-v3
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++ check-c++0x);
+check-c++: check-gcc-c++ check-target-libstdc++-v3 check-target-libmudflap-c++
 
 .PHONY: check-gcc-fortran check-fortran
 check-gcc-fortran:

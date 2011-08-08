@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -548,7 +548,8 @@ begin
    Write_Line ("        A    check array attribute indexes");
    Write_Line ("        b    check no blanks at end of lines");
    Write_Line ("        B    check no use of AND/OR for boolean expressions");
-   Write_Line ("        c    check comment format");
+   Write_Line ("        c    check comment format (two spaces)");
+   Write_Line ("        C    check comment format (one space)");
    Write_Line ("        d    check no DOS line terminators");
    Write_Line ("        e    check end/exit labels present");
    Write_Line ("        f    check no form feeds/vertical tabs in source");
@@ -594,7 +595,7 @@ begin
    --  Line for -gnat83 switch
 
    Write_Switch_Char ("83");
-   Write_Line ("Enforce Ada 83 restrictions");
+   Write_Line ("Ada 83 mode");
 
    --  Line for -gnat95 switch
 
@@ -603,27 +604,27 @@ begin
    if Ada_Version_Default = Ada_95 then
       Write_Line ("Ada 95 mode (default)");
    else
-      Write_Line ("Enforce Ada 95 restrictions");
+      Write_Line ("Ada 95 mode");
    end if;
 
-   --  Line for -gnat05 switch
+   --  Line for -gnat2005 switch
 
-   Write_Switch_Char ("05");
+   Write_Switch_Char ("2005");
 
    if Ada_Version_Default = Ada_2005 then
       Write_Line ("Ada 2005 mode (default)");
    else
-      Write_Line ("Enforce Ada 2005 restrictions");
+      Write_Line ("Ada 2005 mode");
    end if;
 
-   --  Line for -gnat12 switch
+   --  Line for -gnat2012 switch
 
-   Write_Switch_Char ("12");
+   Write_Switch_Char ("2012");
 
    if Ada_Version_Default = Ada_2012 then
       Write_Line ("Ada 2012 mode (default)");
    else
-      Write_Line ("Allow Ada 2012 extensions");
+      Write_Line ("Ada 2012 mode");
    end if;
 
    --  Line for -gnat-p switch

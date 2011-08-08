@@ -1,7 +1,7 @@
 /* Test that both arrays are initialized by store_by_pieces.  */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -mtune=i686" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-O2 -mtune=i686" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 struct A { char c[10]; };
 extern void baz (struct A *);

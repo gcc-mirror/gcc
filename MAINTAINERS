@@ -21,7 +21,9 @@ Maintainers
 			Global Reviewers
 
 Richard Earnshaw				richard.earnshaw@arm.com
+Richard Guenther				rguenther@suse.de
 Richard Henderson				rth@redhat.com
+Jakub Jelinek					jakub@redhat.com
 Geoffrey Keating				geoffk@geoffk.org
 Richard Kenner					kenner@nyu.edu
 Jeff Law					law@redhat.com
@@ -29,6 +31,7 @@ Michael Meissner				gnu@the-meissners.org
 Jason Merrill					jason@redhat.com
 David S. Miller					davem@redhat.com
 Mark Mitchell					mark@codesourcery.com
+Joseph Myers					joseph@codesourcery.com
 Diego Novillo					dnovillo@google.com
 Bernd Schmidt					bernds@codesourcery.com
 Ian Lance Taylor				ian@airs.com
@@ -50,6 +53,7 @@ avr port		Anatoly Sokolov		aesok@post.ru
 avr port		Eric Weddington		eric.weddington@atmel.com
 bfin port		Bernd Schmidt		bernds@codesourcery.com
 bfin port		Jie Zhang		jzhang918@gmail.com
+c6x port		Bernd Schmidt		bernds@codesourcery.com
 cris port		Hans-Peter Nilsson	hp@axis.com
 fr30 port		Nick Clifton		nickc@redhat.com
 frv port		Nick Clifton		nickc@redhat.com
@@ -231,6 +235,7 @@ reload			Ulrich Weigand		uweigand@de.ibm.com
 reload			Bernd Schmidt		bernds@codesourcery.com
 dfp.c, related		Ben Elliston		bje@gnu.org
 RTL optimizers		Eric Botcazou		ebotcazou@libertysurf.fr
+RTL optimizers		Richard Sandiford	rdsandiford@googlemail.com
 auto-vectorizer		Richard Guenther	rguenther@suse.de
 auto-vectorizer		Zdenek Dvorak		ook@ucw.cz
 auto-vectorizer		Ira Rosen		irar@il.ibm.com
@@ -238,6 +243,7 @@ loop infrastructure	Zdenek Dvorak		ook@ucw.cz
 OpenMP			Jakub Jelinek		jakub@redhat.com
 testsuite		Rainer Orth		ro@CeBiTec.Uni-Bielefeld.DE
 testsuite		Mike Stump		mikestump@comcast.net
+register allocation	Vladimir Makarov	vmakarov@redhat.com
 
 Note that individuals who maintain parts of the compiler need approval to
 check in changes outside of the parts of the compiler they maintain.
@@ -279,7 +285,6 @@ loop optimizer		Zdenek Dvorak		ook@ucw.cz
 Plugin			Diego Novillo		dnovillo@google.com
 Plugin			Le-Chun Wu		lcwu@google.com
 register allocation	Peter Bergner		bergner@vnet.ibm.com
-register allocation	Vladimir Makarov	vmakarov@redhat.com
 register allocation	Kenneth Zadeck		zadeck@naturalbridge.com
 register allocation	Seongbae Park		seongbae.park@gmail.com
 LTO			Diego Novillo		dnovillo@google.com
@@ -323,6 +328,7 @@ Julian Brown					julian@codesourcery.com
 Christian Bruel					christian.bruel@st.com
 Kevin Buettner					kevinb@redhat.com
 Andrew Cagney					cagney@redhat.com
+Daniel Carrera					dcarrera@gmail.com
 Stephane Carrez					stcarrez@nerim.fr
 Gabriel Charette				gchare@google.com
 Chandra Chavva					cchavva@redhat.com

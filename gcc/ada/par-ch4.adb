@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,13 +35,13 @@ package body Ch4 is
    --  Attributes that cannot have arguments
 
    Is_Parameterless_Attribute : constant Attribute_Class_Array :=
-     (Attribute_Body_Version => True,
+     (Attribute_Base         => True,
+      Attribute_Body_Version => True,
+      Attribute_Class        => True,
       Attribute_External_Tag => True,
       Attribute_Img          => True,
-      Attribute_Version      => True,
-      Attribute_Base         => True,
-      Attribute_Class        => True,
       Attribute_Stub_Type    => True,
+      Attribute_Version      => True,
       Attribute_Type_Key     => True,
       others                 => False);
    --  This map contains True for parameterless attributes that return a
@@ -606,8 +606,18 @@ package body Ch4 is
             raise Error_Resync;
 
          elsif Token /= Tok_Right_Paren then
-            T_Right_Paren;
-            raise Error_Resync;
+            if Token = Tok_Arrow then
+
+               --  This may be an aggregate that is missing a qualification
+
+               Error_Msg_SC
+                 ("context of aggregate must be a qualified expression");
+               raise Error_Resync;
+
+            else
+               T_Right_Paren;
+               raise Error_Resync;
+            end if;
 
          else
             Scan; -- past right paren
@@ -2435,9 +2445,16 @@ package body Ch4 is
 
                --  If this looks like a real if, defined as an IF appearing at
                --  the start of a new line, then we consider we have a missing
-               --  operand.
+               --  operand. If in Ada 2012 and the IF is not properly indented
+               --  for a statement, we prefer to issue a message about an ill-
+               --  parenthesized conditional expression.
 
-               if Token_Is_At_Start_Of_Line then
+               if Token_Is_At_Start_Of_Line
+                 and then not
+                   (Ada_Version >= Ada_2012
+                     and then Style_Check_Indentation /= 0
+                     and then Start_Column rem Style_Check_Indentation /= 0)
+               then
                   Error_Msg_AP ("missing operand");
                   return Error;
 
@@ -2461,9 +2478,16 @@ package body Ch4 is
 
                --  If this looks like a real case, defined as a CASE appearing
                --  the start of a new line, then we consider we have a missing
-               --  operand.
+               --  operand. If in Ada 2012 and the CASE is not properly
+               --  indented for a statement, we prefer to issue a message about
+               --  an ill-parenthesized case expression.
 
-               if Token_Is_At_Start_Of_Line then
+               if Token_Is_At_Start_Of_Line
+                 and then not
+                   (Ada_Version >= Ada_2012
+                     and then Style_Check_Indentation /= 0
+                     and then Start_Column rem Style_Check_Indentation /= 0)
+               then
                   Error_Msg_AP ("missing operand");
                   return Error;
 
@@ -2786,7 +2810,10 @@ package body Ch4 is
    --------------------
 
    --  ALLOCATOR ::=
-   --    new [NULL_EXCLUSION] SUBTYPE_INDICATION | new QUALIFIED_EXPRESSION
+   --      new [SUBPOOL_SPECIFICATION] SUBTYPE_INDICATION
+   --    | new [SUBPOOL_SPECIFICATION] QUALIFIED_EXPRESSION
+   --
+   --  SUBPOOL_SPECIFICATION ::= (subpool_handle_NAME)
 
    --  The caller has checked that the initial token is NEW
 
@@ -2801,7 +2828,24 @@ package body Ch4 is
       Alloc_Node := New_Node (N_Allocator, Token_Ptr);
       T_New;
 
+      --  Scan subpool_specification if present (Ada 2012 (AI05-0111-3))
+
       --  Scan Null_Exclusion if present (Ada 2005 (AI-231))
+
+      if Token = Tok_Left_Paren then
+         Scan; -- past (
+         Set_Subpool_Handle_Name (Alloc_Node, P_Name);
+         T_Right_Paren;
+
+         if Ada_Version < Ada_2012 then
+            Error_Msg_N
+              ("|subpool specification is an Ada 2012 feature",
+               Subpool_Handle_Name (Alloc_Node));
+            Error_Msg_N
+              ("\|unit must be compiled with -gnat2012 switch",
+               Subpool_Handle_Name (Alloc_Node));
+         end if;
+      end if;
 
       Null_Exclusion_Present := P_Null_Exclusion;
       Set_Null_Exclusion_Present (Alloc_Node, Null_Exclusion_Present);

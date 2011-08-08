@@ -845,7 +845,7 @@ DEFPARAM (PARAM_MAX_VARTRACK_SIZE,
 DEFPARAM (PARAM_MAX_VARTRACK_EXPR_DEPTH,
 	  "max-vartrack-expr-depth",
 	  "Max. recursion depth for expanding var tracking expressions",
-	  20, 0, 0)
+	  12, 0, 0)
 
 /* Set minimum insn uid for non-debug insns.  */
 
@@ -860,11 +860,17 @@ DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "a pointer to an aggregate with",
 	  2, 0, 0)
 
-DEFPARAM (PARAM_DEVIRT_TYPE_LIST_SIZE,
-	  "devirt-type-list-size",
-	  "Maximum size of a type list associated with each parameter for "
-	  "devirtualization",
+DEFPARAM (PARAM_IPA_CP_VALUE_LIST_SIZE,
+	  "ipa-cp-value-list-size",
+	  "Maximum size of a list of values associated with each parameter for "
+	  "interprocedural constant propagation",
 	  8, 0, 0)
+
+DEFPARAM (PARAM_IPA_CP_EVAL_THRESHOLD,
+	  "ipa-cp-eval-threshold",
+	  "Threshold ipa-cp opportunity evaluation that is still considered "
+	  "beneficial to clone.",
+	  500, 0, 0)
 
 /* WHOPR partitioning configuration.  */
 
@@ -891,6 +897,22 @@ DEFPARAM (PARAM_MAX_STORES_TO_SINK,
           "max-stores-to-sink",
           "Maximum number of conditional store pairs that can be sunk",
           2, 0, 0)
+
+/* Override CASE_VALUES_THRESHOLD of when to switch from doing switch
+   statements via if statements to using a table jump operation.  If the value
+   is 0, the default CASE_VALUES_THRESHOLD will be used.  */
+DEFPARAM (PARAM_CASE_VALUES_THRESHOLD,
+          "case-values-threshold",
+          "The smallest number of different values for which it is best to "
+	  "use a jump-table instead of a tree of conditional branches, "
+	  "if 0, use the default for the machine",
+          0, 0, 0)
+
+/* Data race flags for C++0x memory model compliance.  */
+DEFPARAM (PARAM_ALLOW_STORE_DATA_RACES,
+	  "allow-store-data-races",
+	  "Allow new data races on stores to be introduced",
+	  1, 0, 1)
 
 
 /*

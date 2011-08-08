@@ -104,7 +104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  @c binary_compose is constructed from three functors, @c f, @c g1,
    *  and @c g2.  Its @c operator() returns @c f(g1(x),g2(x)).  The function
-   *  @compose2 takes f, g1, and g2, and constructs the @c binary_compose
+   *  compose2 takes f, g1, and g2, and constructs the @c binary_compose
    *  instance for you.  For example, if @c f returns an int, then
    *  \code
    *  int answer = (compose2(f,g1,g2))(x);

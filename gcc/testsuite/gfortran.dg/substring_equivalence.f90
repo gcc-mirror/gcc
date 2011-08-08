@@ -7,4 +7,4 @@ module FLAGS
   equivalence ( encodings(1:1),at ), ( encodings(2:2),dev)
 end module FLAGS
 
-! { dg-final { cleanup-modules "FLAGS" } }
+! { dg-final { cleanup-modules "flags" } }

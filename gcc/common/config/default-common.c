@@ -21,12 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h" /* For TARGET_ASM_NAMED_SECTION used in default for
-		   TARGET_HAVE_NAMED_SECTIONS.  */
 #include "common/common-target.h"
 #include "common/common-target-def.h"
 
-/* FIXME: Do not include tm.h or tm_p.h here; if it is useful for a target to
+/* Do not include tm.h or tm_p.h here; if it is useful for a target to
    define some macros for the initializer in a header without defining
    targetm_common itself (for example, because of interactions with
    some hooks depending on the target OS and others on the target

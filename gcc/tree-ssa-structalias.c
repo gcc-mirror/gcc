@@ -362,7 +362,7 @@ new_var_info (tree t, const char *name)
 			  || (TREE_CODE (t) == VAR_DECL
 			      && DECL_HARD_REGISTER (t)));
   ret->solution = BITMAP_ALLOC (&pta_obstack);
-  ret->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
+  ret->oldsolution = NULL;
   ret->next = NULL;
 
   stats.total_vars++;
@@ -1504,13 +1504,12 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
 	}
 
       BITMAP_FREE (get_varinfo (from)->solution);
-      BITMAP_FREE (get_varinfo (from)->oldsolution);
+      if (get_varinfo (from)->oldsolution)
+	BITMAP_FREE (get_varinfo (from)->oldsolution);
 
-      if (stats.iterations > 0)
-	{
-	  BITMAP_FREE (get_varinfo (to)->oldsolution);
-	  get_varinfo (to)->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
-	}
+      if (stats.iterations > 0
+	  && get_varinfo (to)->oldsolution)
+	BITMAP_FREE (get_varinfo (to)->oldsolution);
     }
   if (valid_graph_edge (graph, to, to))
     {
@@ -2544,18 +2543,27 @@ solve_graph (constraint_graph_t graph)
 	      constraint_t c;
 	      bitmap solution;
 	      VEC(constraint_t,heap) *complex = graph->complex[i];
+	      varinfo_t vi = get_varinfo (i);
 	      bool solution_empty;
 
 	      /* Compute the changed set of solution bits.  */
-	      bitmap_and_compl (pts, get_varinfo (i)->solution,
-				get_varinfo (i)->oldsolution);
+	      if (vi->oldsolution)
+		bitmap_and_compl (pts, vi->solution, vi->oldsolution);
+	      else
+		bitmap_copy (pts, vi->solution);
 
 	      if (bitmap_empty_p (pts))
 		continue;
 
-	      bitmap_ior_into (get_varinfo (i)->oldsolution, pts);
+	      if (vi->oldsolution)
+		bitmap_ior_into (vi->oldsolution, pts);
+	      else
+		{
+		  vi->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
+		  bitmap_copy (vi->oldsolution, pts);
+		}
 
-	      solution = get_varinfo (i)->solution;
+	      solution = vi->solution;
 	      solution_empty = bitmap_empty_p (solution);
 
 	      /* Process the complex constraints */
@@ -3258,9 +3266,18 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
 
 	      /* If we are not taking the address then make sure to process
 		 all subvariables we might access.  */
+	      if (address_p)
+		return;
+
 	      cs = *VEC_last (ce_s, *results);
-	      if (address_p
-		  || cs.type != SCALAR)
+	      if (cs.type == DEREF)
+		{
+		  /* For dereferences this means we have to defer it
+		     to solving time.  */
+		  VEC_last (ce_s, *results)->offset = UNKNOWN_OFFSET;
+		  return;
+		}
+	      if (cs.type != SCALAR)
 		return;
 
 	      vi = get_varinfo (cs.var);
@@ -4002,7 +4019,6 @@ find_func_aliases_for_builtin_call (gimple t)
       case BUILT_IN_STPCPY_CHK:
       case BUILT_IN_STRCAT_CHK:
       case BUILT_IN_STRNCAT_CHK:
-      case BUILT_IN_ASSUME_ALIGNED:
 	{
 	  tree res = gimple_call_lhs (t);
 	  tree dest = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
@@ -4014,7 +4030,9 @@ find_func_aliases_for_builtin_call (gimple t)
 	      get_constraint_for (res, &lhsc);
 	      if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMPCPY
 		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY
-		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPNCPY)
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPNCPY
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMPCPY_CHK
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY_CHK)
 		get_constraint_for_ptr_offset (dest, NULL_TREE, &rhsc);
 	      else
 		get_constraint_for (dest, &rhsc);
@@ -4064,6 +4082,20 @@ find_func_aliases_for_builtin_call (gimple t)
 	  FOR_EACH_VEC_ELT (ce_s, lhsc, i, lhsp)
 	      process_constraint (new_constraint (*lhsp, ac));
 	  VEC_free (ce_s, heap, lhsc);
+	  return true;
+	}
+      case BUILT_IN_ASSUME_ALIGNED:
+	{
+	  tree res = gimple_call_lhs (t);
+	  tree dest = gimple_call_arg (t, 0);
+	  if (res != NULL_TREE)
+	    {
+	      get_constraint_for (res, &lhsc);
+	      get_constraint_for (dest, &rhsc);
+	      process_all_all_constraints (lhsc, rhsc);
+	      VEC_free (ce_s, heap, lhsc);
+	      VEC_free (ce_s, heap, rhsc);
+	    }
 	  return true;
 	}
       /* All the following functions do not return pointers, do not
@@ -5435,6 +5467,9 @@ create_variable_info_for (tree decl, const char *name)
 
   insert_vi_for_tree (decl, vi);
 
+  if (TREE_CODE (decl) != VAR_DECL)
+    return id;
+
   /* Create initial constraints for globals.  */
   for (; vi; vi = vi->next)
     {
@@ -5448,37 +5483,44 @@ create_variable_info_for (tree decl, const char *name)
 	  || vi->only_restrict_pointers)
 	make_constraint_from_restrict (vi, "GLOBAL_RESTRICT");
 
-      /* For escaped variables initialize them from nonlocal.  */
+      /* In non-IPA mode the initializer from nonlocal is all we need.  */
       if (!in_ipa_mode
-	  || DECL_EXTERNAL (decl) || TREE_PUBLIC (decl))
+	  || DECL_HARD_REGISTER (decl))
 	make_copy_constraint (vi, nonlocal_id);
 
-      /* If this is a global variable with an initializer and we are in
-	 IPA mode generate constraints for it.  In non-IPA mode
-	 the initializer from nonlocal is all we need.  */
-      if (in_ipa_mode
-	  && DECL_INITIAL (decl))
+      else
 	{
-	  VEC (ce_s, heap) *rhsc = NULL;
-	  struct constraint_expr lhs, *rhsp;
-	  unsigned i;
-	  get_constraint_for_rhs (DECL_INITIAL (decl), &rhsc);
-	  lhs.var = vi->id;
-	  lhs.offset = 0;
-	  lhs.type = SCALAR;
-	  FOR_EACH_VEC_ELT (ce_s, rhsc, i, rhsp)
-	    process_constraint (new_constraint (lhs, *rhsp));
-	  /* If this is a variable that escapes from the unit
-	     the initializer escapes as well.  */
-	  if (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl))
+	  struct varpool_node *vnode = varpool_get_node (decl);
+
+	  /* For escaped variables initialize them from nonlocal.  */
+	  if (!varpool_all_refs_explicit_p (vnode))
+	    make_copy_constraint (vi, nonlocal_id);
+
+	  /* If this is a global variable with an initializer and we are in
+	     IPA mode generate constraints for it.  */
+	  if (DECL_INITIAL (decl))
 	    {
-	      lhs.var = escaped_id;
+	      VEC (ce_s, heap) *rhsc = NULL;
+	      struct constraint_expr lhs, *rhsp;
+	      unsigned i;
+	      get_constraint_for_rhs (DECL_INITIAL (decl), &rhsc);
+	      lhs.var = vi->id;
 	      lhs.offset = 0;
 	      lhs.type = SCALAR;
 	      FOR_EACH_VEC_ELT (ce_s, rhsc, i, rhsp)
 		process_constraint (new_constraint (lhs, *rhsp));
+	      /* If this is a variable that escapes from the unit
+		 the initializer escapes as well.  */
+	      if (!varpool_all_refs_explicit_p (vnode))
+		{
+		  lhs.var = escaped_id;
+		  lhs.offset = 0;
+		  lhs.type = SCALAR;
+		  FOR_EACH_VEC_ELT (ce_s, rhsc, i, rhsp)
+		    process_constraint (new_constraint (lhs, *rhsp));
+		}
+	      VEC_free (ce_s, heap, rhsc);
 	    }
-	  VEC_free (ce_s, heap, rhsc);
 	}
     }
 
@@ -5542,7 +5584,8 @@ intra_create_variable_infos (void)
 	  varinfo_t vi;
 	  tree heapvar = build_fake_var_decl (TREE_TYPE (TREE_TYPE (t)));
 	  DECL_EXTERNAL (heapvar) = 1;
-	  vi = get_varinfo (create_variable_info_for (heapvar, "PARM_NOALIAS"));
+	  vi = create_variable_info_for_1 (heapvar, "PARM_NOALIAS");
+	  insert_vi_for_tree (heapvar, vi);
 	  lhsc.var = get_vi_for_tree (t)->id;
 	  lhsc.type = SCALAR;
 	  lhsc.offset = 0;
@@ -5551,6 +5594,13 @@ intra_create_variable_infos (void)
 	  rhsc.offset = 0;
 	  process_constraint (new_constraint (lhsc, rhsc));
 	  vi->is_restrict_var = 1;
+	  for (; vi; vi = vi->next)
+	    if (vi->may_have_pointers)
+	      {
+		if (vi->only_restrict_pointers)
+		  make_constraint_from_restrict (vi, "GLOBAL_RESTRICT");
+		make_copy_constraint (vi, nonlocal_id);
+	      }
 	  continue;
 	}
 
@@ -6729,6 +6779,12 @@ ipa_pta_execute (void)
 
   init_alias_vars ();
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      dump_cgraph (dump_file);
+      fprintf (dump_file, "\n");
+    }
+
   /* Build the constraints.  */
   for (node = cgraph_nodes; node; node = node->next)
     {
@@ -6736,9 +6792,10 @@ ipa_pta_execute (void)
       /* Nodes without a body are not interesting.  Especially do not
          visit clones at this point for now - we get duplicate decls
 	 there for inline clones at least.  */
-      if (!cgraph_function_with_gimple_body_p (node)
-	  || node->clone_of)
+      if (!cgraph_function_with_gimple_body_p (node))
 	continue;
+
+      gcc_assert (!node->clone_of);
 
       vi = create_function_info_for (node->decl,
 			             alias_get_name (node->decl));
@@ -6770,8 +6827,7 @@ ipa_pta_execute (void)
       tree old_func_decl;
 
       /* Nodes without a body are not interesting.  */
-      if (!cgraph_function_with_gimple_body_p (node)
-	  || node->clone_of)
+      if (!cgraph_function_with_gimple_body_p (node))
 	continue;
 
       if (dump_file)
@@ -6789,11 +6845,14 @@ ipa_pta_execute (void)
       push_cfun (func);
       current_function_decl = node->decl;
 
-      if (node->local.externally_visible)
+      /* For externally visible or attribute used annotated functions use
+	 local constraints for their arguments.
+	 For local functions we see all callers and thus do not need initial
+	 constraints for parameters.  */
+      if (node->reachable_from_other_partition
+	  || node->local.externally_visible
+	  || node->needed)
 	{
-	  /* For externally visible functions use local constraints for
-	     their arguments.  For local functions we see all callers
-	     and thus do not need initial constraints for parameters.  */
 	  intra_create_variable_infos ();
 
 	  /* We also need to make function return values escape.  Nothing
@@ -6879,8 +6938,7 @@ ipa_pta_execute (void)
       struct cgraph_edge *e;
 
       /* Nodes without a body are not interesting.  */
-      if (!cgraph_function_with_gimple_body_p (node)
-	  || node->clone_of)
+      if (!cgraph_function_with_gimple_body_p (node))
 	continue;
 
       fn = DECL_STRUCT_FUNCTION (node->decl);

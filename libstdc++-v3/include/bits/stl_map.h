@@ -154,8 +154,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Creates a %map with no elements.
-       *  @param  comp  A comparison object.
-       *  @param  a  An allocator object.
+       *  @param  __comp  A comparison object.
+       *  @param  __a  An allocator object.
        */
       explicit
       map(const _Compare& __comp,
@@ -164,10 +164,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Map copy constructor.
-       *  @param  x  A %map of identical element and allocator types.
+       *  @param  __x  A %map of identical element and allocator types.
        *
        *  The newly-created %map uses a copy of the allocation object
-       *  used by @a x.
+       *  used by @a __x.
        */
       map(const map& __x)
       : _M_t(__x._M_t) { }
@@ -175,10 +175,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  %Map move constructor.
-       *  @param  x  A %map of identical element and allocator types.
+       *  @param  __x  A %map of identical element and allocator types.
        *
-       *  The newly-created %map contains the exact contents of @a x.
-       *  The contents of @a x are a valid, but unspecified %map.
+       *  The newly-created %map contains the exact contents of @a __x.
+       *  The contents of @a __x are a valid, but unspecified %map.
        */
       map(map&& __x)
       noexcept(is_nothrow_copy_constructible<_Compare>::value)
@@ -186,30 +186,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Builds a %map from an initializer_list.
-       *  @param  l  An initializer_list.
-       *  @param  comp  A comparison object.
-       *  @param  a  An allocator object.
+       *  @param  __l  An initializer_list.
+       *  @param  __comp  A comparison object.
+       *  @param  __a  An allocator object.
        *
        *  Create a %map consisting of copies of the elements in the
-       *  initializer_list @a l.
+       *  initializer_list @a __l.
        *  This is linear in N if the range is already sorted, and NlogN
-       *  otherwise (where N is @a l.size()).
+       *  otherwise (where N is @a __l.size()).
        */
       map(initializer_list<value_type> __l,
-	  const _Compare& __c = _Compare(),
+	  const _Compare& __comp = _Compare(),
 	  const allocator_type& __a = allocator_type())
-      : _M_t(__c, __a)
+      : _M_t(__comp, __a)
       { _M_t._M_insert_unique(__l.begin(), __l.end()); }
 #endif
 
       /**
        *  @brief  Builds a %map from a range.
-       *  @param  first  An input iterator.
-       *  @param  last  An input iterator.
+       *  @param  __first  An input iterator.
+       *  @param  __last  An input iterator.
        *
-       *  Create a %map consisting of copies of the elements from [first,last).
-       *  This is linear in N if the range is already sorted, and NlogN
-       *  otherwise (where N is distance(first,last)).
+       *  Create a %map consisting of copies of the elements from
+       *  [__first,__last).  This is linear in N if the range is
+       *  already sorted, and NlogN otherwise (where N is
+       *  distance(__first,__last)).
        */
       template<typename _InputIterator>
         map(_InputIterator __first, _InputIterator __last)
@@ -218,14 +219,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Builds a %map from a range.
-       *  @param  first  An input iterator.
-       *  @param  last  An input iterator.
-       *  @param  comp  A comparison functor.
-       *  @param  a  An allocator object.
+       *  @param  __first  An input iterator.
+       *  @param  __last  An input iterator.
+       *  @param  __comp  A comparison functor.
+       *  @param  __a  An allocator object.
        *
-       *  Create a %map consisting of copies of the elements from [first,last).
-       *  This is linear in N if the range is already sorted, and NlogN
-       *  otherwise (where N is distance(first,last)).
+       *  Create a %map consisting of copies of the elements from
+       *  [__first,__last).  This is linear in N if the range is
+       *  already sorted, and NlogN otherwise (where N is
+       *  distance(__first,__last)).
        */
       template<typename _InputIterator>
         map(_InputIterator __first, _InputIterator __last,
@@ -245,10 +247,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Map assignment operator.
-       *  @param  x  A %map of identical element and allocator types.
+       *  @param  __x  A %map of identical element and allocator types.
        *
-       *  All the elements of @a x are copied, but unlike the copy constructor,
-       *  the allocator object is not copied.
+       *  All the elements of @a __x are copied, but unlike the copy
+       *  constructor, the allocator object is not copied.
        */
       map&
       operator=(const map& __x)
@@ -260,10 +262,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  %Map move assignment operator.
-       *  @param  x  A %map of identical element and allocator types.
+       *  @param  __x  A %map of identical element and allocator types.
        *
-       *  The contents of @a x are moved into this map (without copying).
-       *  @a x is a valid, but unspecified %map.
+       *  The contents of @a __x are moved into this map (without copying).
+       *  @a __x is a valid, but unspecified %map.
        */
       map&
       operator=(map&& __x)
@@ -277,10 +279,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Map list assignment operator.
-       *  @param  l  An initializer_list.
+       *  @param  __l  An initializer_list.
        *
        *  This function fills a %map with copies of the elements in the
-       *  initializer list @a l.
+       *  initializer list @a __l.
        *
        *  Note that the assignment completely changes the %map and
        *  that the resulting %map's size is the same as the number
@@ -432,7 +434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // [23.3.1.2] element access
       /**
        *  @brief  Subscript ( @c [] ) access to %map data.
-       *  @param  k  The key for which data should be retrieved.
+       *  @param  __k  The key for which data should be retrieved.
        *  @return  A reference to the data of the (key,data) %pair.
        *
        *  Allows for easy lookup with the subscript ( @c [] )
@@ -474,8 +476,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // DR 464. Suggestion for new member functions in standard containers.
       /**
        *  @brief  Access to %map data.
-       *  @param  k  The key for which data should be retrieved.
-       *  @return  A reference to the data whose key is equivalent to @a k, if
+       *  @param  __k  The key for which data should be retrieved.
+       *  @return  A reference to the data whose key is equivalent to @a __k, if
        *           such a data is present in the %map.
        *  @throw  std::out_of_range  If no such data is present.
        */
@@ -501,9 +503,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief Attempts to insert a std::pair into the %map.
 
-       *  @param  x  Pair to be inserted (see std::make_pair for easy creation 
-       *	     of pairs).
-
+       *  @param __x Pair to be inserted (see std::make_pair for easy
+       *	     creation of pairs).
+       *
        *  @return  A pair, of which the first element is an iterator that 
        *           points to the possibly inserted pair, and the second is 
        *           a bool that is true if the pair was actually inserted.
@@ -530,8 +532,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief Attempts to insert a list of std::pairs into the %map.
-       *  @param  list  A std::initializer_list<value_type> of pairs to be
-       *                inserted.
+       *  @param  __list  A std::initializer_list<value_type> of pairs to be
+       *                  inserted.
        *
        *  Complexity similar to that of the range constructor.
        */
@@ -542,12 +544,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Attempts to insert a std::pair into the %map.
-       *  @param  position  An iterator that serves as a hint as to where the
+       *  @param  __position  An iterator that serves as a hint as to where the
        *                    pair should be inserted.
-       *  @param  x  Pair to be inserted (see std::make_pair for easy creation
-       *             of pairs).
-       *  @return  An iterator that points to the element with key of @a x (may
-       *           or may not be the %pair passed in).
+       *  @param  __x  Pair to be inserted (see std::make_pair for easy creation
+       *               of pairs).
+       *  @return An iterator that points to the element with key of
+       *           @a __x (may or may not be the %pair passed in).
        *
 
        *  This function is not concerned about whether the insertion
@@ -583,9 +585,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Template function that attempts to insert a range of elements.
-       *  @param  first  Iterator pointing to the start of the range to be
-       *                 inserted.
-       *  @param  last  Iterator pointing to the end of the range.
+       *  @param  __first  Iterator pointing to the start of the range to be
+       *                   inserted.
+       *  @param  __last  Iterator pointing to the end of the range.
        *
        *  Complexity similar to that of the range constructor.
        */
@@ -599,7 +601,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // DR 130. Associative erase should return an iterator.
       /**
        *  @brief Erases an element from a %map.
-       *  @param  position  An iterator pointing to the element to be erased.
+       *  @param  __position  An iterator pointing to the element to be erased.
        *  @return An iterator pointing to the element immediately following
        *          @a position prior to the element being erased. If no such 
        *          element exists, end() is returned.
@@ -616,7 +618,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #else
       /**
        *  @brief Erases an element from a %map.
-       *  @param  position  An iterator pointing to the element to be erased.
+       *  @param  __position  An iterator pointing to the element to be erased.
        *
        *  This function erases an element, pointed to by the given
        *  iterator, from a %map.  Note that this function only erases
@@ -631,7 +633,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Erases elements according to the provided key.
-       *  @param  x  Key of element to be erased.
+       *  @param  __x  Key of element to be erased.
        *  @return  The number of elements erased.
        *
        *  This function erases all the elements located by the given key from
@@ -649,10 +651,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // DR 130. Associative erase should return an iterator.
       /**
        *  @brief Erases a [first,last) range of elements from a %map.
-       *  @param  first  Iterator pointing to the start of the range to be
-       *                 erased.
-       *  @param  last  Iterator pointing to the end of the range to be erased.
-       *  @return The iterator @a last.
+       *  @param  __first  Iterator pointing to the start of the range to be
+       *                   erased.
+       *  @param __last Iterator pointing to the end of the range to
+       *                be erased.
+       *  @return The iterator @a __last.
        *
        *  This function erases a sequence of elements from a %map.
        *  Note that this function only erases the element, and that if
@@ -664,10 +667,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return _M_t.erase(__first, __last); }
 #else
       /**
-       *  @brief Erases a [first,last) range of elements from a %map.
-       *  @param  first  Iterator pointing to the start of the range to be
-       *                 erased.
-       *  @param  last  Iterator pointing to the end of the range to be erased.
+       *  @brief Erases a [__first,__last) range of elements from a %map.
+       *  @param  __first  Iterator pointing to the start of the range to be
+       *                   erased.
+       *  @param __last Iterator pointing to the end of the range to
+       *                be erased.
        *
        *  This function erases a sequence of elements from a %map.
        *  Note that this function only erases the element, and that if
@@ -681,7 +685,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Swaps data with another %map.
-       *  @param  x  A %map of the same element and allocator types.
+       *  @param  __x  A %map of the same element and allocator types.
        *
        *  This exchanges the elements between two maps in constant
        *  time.  (It is only swapping a pointer, an integer, and an
@@ -724,7 +728,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // [23.3.1.3] map operations
       /**
        *  @brief Tries to locate an element in a %map.
-       *  @param  x  Key of (key, value) %pair to be located.
+       *  @param  __x  Key of (key, value) %pair to be located.
        *  @return  Iterator pointing to sought-after element, or end() if not
        *           found.
        *
@@ -739,7 +743,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Tries to locate an element in a %map.
-       *  @param  x  Key of (key, value) %pair to be located.
+       *  @param  __x  Key of (key, value) %pair to be located.
        *  @return  Read-only (constant) iterator pointing to sought-after
        *           element, or end() if not found.
        *
@@ -754,7 +758,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Finds the number of elements with given key.
-       *  @param  x  Key of (key, value) pairs to be located.
+       *  @param  __x  Key of (key, value) pairs to be located.
        *  @return  Number of elements with specified key.
        *
        *  This function only makes sense for multimaps; for map the result will
@@ -766,7 +770,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds the beginning of a subsequence matching given key.
-       *  @param  x  Key of (key, value) pair to be located.
+       *  @param  __x  Key of (key, value) pair to be located.
        *  @return  Iterator pointing to first element equal to or greater
        *           than key, or end().
        *
@@ -781,7 +785,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds the beginning of a subsequence matching given key.
-       *  @param  x  Key of (key, value) pair to be located.
+       *  @param  __x  Key of (key, value) pair to be located.
        *  @return  Read-only (constant) iterator pointing to first element
        *           equal to or greater than key, or end().
        *
@@ -796,7 +800,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds the end of a subsequence matching given key.
-       *  @param  x  Key of (key, value) pair to be located.
+       *  @param  __x  Key of (key, value) pair to be located.
        *  @return Iterator pointing to the first element
        *          greater than key, or end().
        */
@@ -806,7 +810,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds the end of a subsequence matching given key.
-       *  @param  x  Key of (key, value) pair to be located.
+       *  @param  __x  Key of (key, value) pair to be located.
        *  @return  Read-only (constant) iterator pointing to first iterator
        *           greater than key, or end().
        */
@@ -816,7 +820,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds a subsequence matching given key.
-       *  @param  x  Key of (key, value) pairs to be located.
+       *  @param  __x  Key of (key, value) pairs to be located.
        *  @return  Pair of iterators that possibly points to the subsequence
        *           matching given key.
        *
@@ -835,7 +839,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief Finds a subsequence matching given key.
-       *  @param  x  Key of (key, value) pairs to be located.
+       *  @param  __x  Key of (key, value) pairs to be located.
        *  @return  Pair of read-only (constant) iterators that possibly points
        *           to the subsequence matching given key.
        *
@@ -865,8 +869,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
    *  @brief  Map equality comparison.
-   *  @param  x  A %map.
-   *  @param  y  A %map of the same type as @a x.
+   *  @param  __x  A %map.
+   *  @param  __y  A %map of the same type as @a x.
    *  @return  True iff the size and elements of the maps are equal.
    *
    *  This is an equivalence relation.  It is linear in the size of the
@@ -881,8 +885,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
    *  @brief  Map ordering relation.
-   *  @param  x  A %map.
-   *  @param  y  A %map of the same type as @a x.
+   *  @param  __x  A %map.
+   *  @param  __y  A %map of the same type as @a x.
    *  @return  True iff @a x is lexicographically less than @a y.
    *
    *  This is a total ordering relation.  It is linear in the size of the

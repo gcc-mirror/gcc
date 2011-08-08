@@ -264,8 +264,15 @@ called_as_built_in (tree node)
   return is_builtin_name (name);
 }
 
-/* Return the alignment in bits of EXP, an object.
-   Don't return more than MAX_ALIGN no matter what.  */
+/* Compute values M and N such that M divides (address of EXP - N) and
+   such that N < M.  Store N in *BITPOSP and return M.
+
+   Note that the address (and thus the alignment) computed here is based
+   on the address to which a symbol resolves, whereas DECL_ALIGN is based
+   on the address at which an object is actually located.  These two
+   addresses are not always the same.  For example, on ARM targets,
+   the address &foo of a Thumb function foo() has the lowest bit set,
+   whereas foo() itself starts on an even address.  */
 
 unsigned int
 get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
@@ -287,7 +294,21 @@ get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
     exp = DECL_INITIAL (exp);
   if (DECL_P (exp)
       && TREE_CODE (exp) != LABEL_DECL)
-    align = DECL_ALIGN (exp);
+    {
+      if (TREE_CODE (exp) == FUNCTION_DECL)
+	{
+	  /* Function addresses can encode extra information besides their
+	     alignment.  However, if TARGET_PTRMEMFUNC_VBIT_LOCATION
+	     allows the low bit to be used as a virtual bit, we know
+	     that the address itself must be 2-byte aligned.  */
+	  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn)
+	    align = 2 * BITS_PER_UNIT;
+	  else
+	    align = BITS_PER_UNIT;
+	}
+      else
+	align = DECL_ALIGN (exp);
+    }
   else if (CONSTANT_CLASS_P (exp))
     {
       align = TYPE_ALIGN (TREE_TYPE (exp));
@@ -1217,9 +1238,8 @@ get_memory_rtx (tree exp, tree len)
 
 	  gcc_assert (TREE_CODE (inner) == COMPONENT_REF);
 
-	  if (MEM_OFFSET (mem)
-	      && CONST_INT_P (MEM_OFFSET (mem)))
-	    offset = INTVAL (MEM_OFFSET (mem));
+	  if (MEM_OFFSET_KNOWN_P (mem))
+	    offset = MEM_OFFSET (mem);
 
 	  if (offset >= 0 && len && host_integerp (len, 0))
 	    length = tree_low_cst (len, 0);
@@ -1274,11 +1294,14 @@ get_memory_rtx (tree exp, tree len)
 	  if (mem_expr != MEM_EXPR (mem))
 	    {
 	      set_mem_expr (mem, mem_expr);
-	      set_mem_offset (mem, offset >= 0 ? GEN_INT (offset) : NULL_RTX);
+	      if (offset >= 0)
+		set_mem_offset (mem, offset);
+	      else
+		clear_mem_offset (mem);
 	    }
 	}
       set_mem_alias_set (mem, 0);
-      set_mem_size (mem, NULL_RTX);
+      clear_mem_size (mem);
     }
 
   return mem;
@@ -3670,8 +3693,8 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     /* Set MEM_SIZE as appropriate.  */
     if (CONST_INT_P (arg3_rtx))
       {
-	set_mem_size (arg1_rtx, arg3_rtx);
-	set_mem_size (arg2_rtx, arg3_rtx);
+	set_mem_size (arg1_rtx, INTVAL (arg3_rtx));
+	set_mem_size (arg2_rtx, INTVAL (arg3_rtx));
       }
 
 #ifdef HAVE_cmpmemsi
@@ -4215,9 +4238,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       && !integer_zerop (TYPE_SIZE (type)))
     {
       t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
-		  fold_build2 (POINTER_PLUS_EXPR,
-			       TREE_TYPE (valist),
-			       valist_tmp, size_int (boundary - 1)));
+		  fold_build_pointer_plus_hwi (valist_tmp, boundary - 1));
       gimplify_and_add (t, pre_p);
 
       t = fold_convert (sizetype, valist_tmp);
@@ -4256,12 +4277,11 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 		       rounded_size, size_int (align));
       t = fold_build3 (COND_EXPR, sizetype, t, size_zero_node,
 		       size_binop (MINUS_EXPR, rounded_size, type_size));
-      addr = fold_build2 (POINTER_PLUS_EXPR,
-			  TREE_TYPE (addr), addr, t);
+      addr = fold_build_pointer_plus (addr, t);
     }
 
   /* Compute new value for AP.  */
-  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (valist), valist_tmp, rounded_size);
+  t = fold_build_pointer_plus (valist_tmp, rounded_size);
   t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
   gimplify_and_add (t, pre_p);
 
@@ -4817,7 +4837,7 @@ expand_builtin_init_trampoline (tree exp)
     {
       m_tramp = change_address (m_tramp, BLKmode, tmp);
       set_mem_align (m_tramp, TRAMPOLINE_ALIGNMENT);
-      set_mem_size (m_tramp, GEN_INT (TRAMPOLINE_SIZE));
+      set_mem_size (m_tramp, TRAMPOLINE_SIZE);
     }
 
   /* The FUNC argument should be the address of the nested function.
@@ -6243,13 +6263,22 @@ build_builtin_expect_predicate (location_t loc, tree pred, tree expected)
 static tree
 fold_builtin_expect (location_t loc, tree arg0, tree arg1)
 {
-  tree inner, fndecl;
+  tree inner, fndecl, inner_arg0;
   enum tree_code code;
+
+  /* Distribute the expected value over short-circuiting operators.
+     See through the cast from truthvalue_type_node to long.  */
+  inner_arg0 = arg0;
+  while (TREE_CODE (inner_arg0) == NOP_EXPR
+	 && INTEGRAL_TYPE_P (TREE_TYPE (inner_arg0))
+	 && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (inner_arg0, 0))))
+    inner_arg0 = TREE_OPERAND (inner_arg0, 0);
 
   /* If this is a builtin_expect within a builtin_expect keep the
      inner one.  See through a comparison against a constant.  It
      might have been added to create a thruthvalue.  */
-  inner = arg0;
+  inner = inner_arg0;
+
   if (COMPARISON_CLASS_P (inner)
       && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST)
     inner = TREE_OPERAND (inner, 0);
@@ -6260,14 +6289,7 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1)
       && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT)
     return arg0;
 
-  /* Distribute the expected value over short-circuiting operators.
-     See through the cast from truthvalue_type_node to long.  */
-  inner = arg0;
-  while (TREE_CODE (inner) == NOP_EXPR
-	 && INTEGRAL_TYPE_P (TREE_TYPE (inner))
-	 && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (inner, 0))))
-    inner = TREE_OPERAND (inner, 0);
-
+  inner = inner_arg0;
   code = TREE_CODE (inner);
   if (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
     {
@@ -6282,13 +6304,13 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1)
     }
 
   /* If the argument isn't invariant then there's nothing else we can do.  */
-  if (!TREE_CONSTANT (arg0))
+  if (!TREE_CONSTANT (inner_arg0))
     return NULL_TREE;
 
   /* If we expect that a comparison against the argument will fold to
      a constant return the constant.  In practice, this means a true
      constant or the address of a non-weak symbol.  */
-  inner = arg0;
+  inner = inner_arg0;
   STRIP_NOPS (inner);
   if (TREE_CODE (inner) == ADDR_EXPR)
     {
@@ -8201,8 +8223,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
     len = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (len), len,
 		       ssize_int (1));
 
-  len = fold_convert_loc (loc, sizetype, len);
-  dest = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (dest), dest, len);
+  dest = fold_build_pointer_plus_loc (loc, dest, len);
   dest = fold_convert_loc (loc, type, dest);
   if (expr)
     dest = omit_one_operand_loc (loc, type, dest, expr);
@@ -8278,8 +8299,7 @@ fold_builtin_stpcpy (location_t loc, tree fndecl, tree dest, tree src)
   call = build_call_expr_loc (loc, fn, 3, dest, src, lenp1);
 
   type = TREE_TYPE (TREE_TYPE (fndecl));
-  len = fold_convert_loc (loc, sizetype, len);
-  dest = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (dest), dest, len);
+  dest = fold_build_pointer_plus_loc (loc, dest, len);
   dest = fold_convert_loc (loc, type, dest);
   dest = omit_one_operand_loc (loc, type, dest, call);
   return dest;
@@ -8366,8 +8386,7 @@ fold_builtin_memchr (location_t loc, tree arg1, tree arg2, tree len, tree type)
 	  if (r == NULL)
 	    return build_int_cst (TREE_TYPE (arg1), 0);
 
-	  tem = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (arg1), arg1,
-			     size_int (r - p1));
+	  tem = fold_build_pointer_plus_hwi_loc (loc, arg1, r - p1);
 	  return fold_convert_loc (loc, type, tem);
 	}
       return NULL_TREE;
@@ -8626,8 +8645,9 @@ fold_builtin_signbit (location_t loc, tree arg, tree type)
 
   /* If ARG's format doesn't have signed zeros, return "arg < 0.0".  */
   if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg))))
-    return fold_build2_loc (loc, LT_EXPR, type, arg,
-			build_real (TREE_TYPE (arg), dconst0));
+    return fold_convert (type,
+			 fold_build2_loc (loc, LT_EXPR, boolean_type_node, arg,
+			build_real (TREE_TYPE (arg), dconst0)));
 
   return NULL_TREE;
 }
@@ -10754,8 +10774,7 @@ fold_builtin_strstr (location_t loc, tree s1, tree s2, tree type)
 	    return build_int_cst (TREE_TYPE (s1), 0);
 
 	  /* Return an offset into the constant string argument.  */
-	  tem = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (s1),
-			     s1, size_int (r - p1));
+	  tem = fold_build_pointer_plus_hwi_loc (loc, s1, r - p1);
 	  return fold_convert_loc (loc, type, tem);
 	}
 
@@ -10825,8 +10844,7 @@ fold_builtin_strchr (location_t loc, tree s1, tree s2, tree type)
 	    return build_int_cst (TREE_TYPE (s1), 0);
 
 	  /* Return an offset into the constant string argument.  */
-	  tem = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (s1),
-			     s1, size_int (r - p1));
+	  tem = fold_build_pointer_plus_hwi_loc (loc, s1, r - p1);
 	  return fold_convert_loc (loc, type, tem);
 	}
       return NULL_TREE;
@@ -10881,8 +10899,7 @@ fold_builtin_strrchr (location_t loc, tree s1, tree s2, tree type)
 	    return build_int_cst (TREE_TYPE (s1), 0);
 
 	  /* Return an offset into the constant string argument.  */
-	  tem = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (s1),
-			     s1, size_int (r - p1));
+	  tem = fold_build_pointer_plus_hwi_loc (loc, s1, r - p1);
 	  return fold_convert_loc (loc, type, tem);
 	}
 
@@ -10941,8 +10958,7 @@ fold_builtin_strpbrk (location_t loc, tree s1, tree s2, tree type)
 	    return build_int_cst (TREE_TYPE (s1), 0);
 
 	  /* Return an offset into the constant string argument.  */
-	  tem = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (s1),
-			     s1, size_int (r - p1));
+	  tem = fold_build_pointer_plus_hwi_loc (loc, s1, r - p1);
 	  return fold_convert_loc (loc, type, tem);
 	}
 
@@ -11026,8 +11042,7 @@ fold_builtin_strcat (location_t loc ATTRIBUTE_UNUSED, tree dst, tree src)
 	  newdst = build_call_expr_loc (loc, strlen_fn, 1, dst);
 	  /* Create (dst p+ strlen (dst)).  */
 
-	  newdst = fold_build2_loc (loc, POINTER_PLUS_EXPR,
-				TREE_TYPE (dst), dst, newdst);
+	  newdst = fold_build_pointer_plus_loc (loc, dst, newdst);
 	  newdst = builtin_save_expr (newdst);
 
 	  call = build_call_expr_loc (loc, strcpy_fn, 2, newdst, src);
@@ -11700,7 +11715,7 @@ expand_builtin_memory_chk (tree exp, rtx target, enum machine_mode mode,
 	      return expand_expr (dest, target, mode, EXPAND_NORMAL);
 	    }
 
-	  expr = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (dest), dest, len);
+	  expr = fold_build_pointer_plus (dest, len);
 	  return expand_expr (expr, target, mode, EXPAND_NORMAL);
 	}
 
@@ -11960,8 +11975,7 @@ fold_builtin_memory_chk (location_t loc, tree fndecl,
 				 dest, len);
       else
 	{
-	  tree temp = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (dest),
-				   dest, len);
+	  tree temp = fold_build_pointer_plus_loc (loc, dest, len);
 	  return fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)), temp);
 	}
     }

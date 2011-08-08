@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -497,6 +497,8 @@ package Lib.Writ is
    --              units in this file. All files in the partition that specify
    --              a default must specify the same default.
    --
+   --         PF  The unit has a library-level (package) finalizer
+   --
    --         PK  Unit is package, rather than a subprogram
    --
    --         PU  Unit has pragma Pure
@@ -708,6 +710,13 @@ package Lib.Writ is
 
    --  The Source Coverage Obligation (SCO) information follows the cross-
    --  reference data. See the spec of Par_SCO for full details of the format.
+
+   ----------------------
+   -- ALFA Information --
+   ----------------------
+
+   --  The ALFA information follows the SCO information. See the spec of Alfa
+   --  for full details of the format.
 
    ----------------------
    -- Global Variables --

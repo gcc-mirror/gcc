@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -212,6 +212,9 @@ package Scans is
       --  Used only in preprocessor scanning (to represent one of the
       --  characters '#', '$', '?', '@', '`', '\', '^', '~', or '_'. The
       --  character value itself is stored in Scans.Special_Character.
+
+      Tok_SPARK_Hide,
+      --  HIDE directive in SPARK
 
       No_Token);
       --  No_Token is used for initializing Token values to indicate that

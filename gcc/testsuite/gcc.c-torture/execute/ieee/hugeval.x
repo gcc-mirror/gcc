@@ -19,5 +19,11 @@ if {[istarget "*-*-vxworks*"]} {
     }
 }
 
+if { [istarget "tic6x-*-*"] && [check_effective_target_ti_c67x] } {
+    # C6X uses -freciprocal-math by default.
+    set torture_execute_xfail "$target_triplet"
+    return 1
+}
+
 return 0
 

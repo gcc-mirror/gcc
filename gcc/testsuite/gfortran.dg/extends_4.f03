@@ -49,4 +49,4 @@ end module mymod
   call check_b (q%b)
 end
 
-! { dg-final { cleanup-modules "persons person_education" } }
+! { dg-final { cleanup-modules "mymod" } }

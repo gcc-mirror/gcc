@@ -5,7 +5,7 @@
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,10 +63,10 @@ void test01()
       Mutex m;
       m.lock();
 
-      auto then = std::chrono::monotonic_clock::now();
+      auto then = std::chrono::steady_clock::now();
       std::cv_status result = c1.wait_until(m, then + ms);
       VERIFY( result == std::cv_status::timeout );
-      VERIFY( (std::chrono::monotonic_clock::now() - then) >= ms );
+      VERIFY( (std::chrono::steady_clock::now() - then) >= ms );
       VERIFY( m.locked );
     }
   catch (const std::system_error& e)

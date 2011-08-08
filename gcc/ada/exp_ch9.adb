@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -169,6 +169,19 @@ package body Exp_Ch9 is
    --  are evaluated before the call is queued. E is the entry in question,
    --  and Decl is the enclosing synchronized type declaration at whose
    --  freeze point the generated body is analyzed.
+
+   function Build_Renamed_Formal_Declaration
+     (New_F          : Entity_Id;
+      Formal         : Entity_Id;
+      Comp           : Entity_Id;
+      Renamed_Formal : Node_Id) return Node_Id;
+   --  Create a renaming declaration for a formal, within a protected entry
+   --  body or an accept body. The renamed object is a component of the
+   --  parameter block that is a parameter in the entry call.
+
+   --  In Ada2012,  If the formal is an incomplete tagged type, the renaming
+   --  does not dereference the corresponding component to prevent an illegal
+   --  use of the incomplete type (AI05-0151).
 
    procedure Build_Wrapper_Bodies
      (Loc : Source_Ptr;
@@ -341,8 +354,10 @@ package body Exp_Ch9 is
       Actuals  : out List_Id;
       Formals  : out List_Id);
    --  Given a dispatching call, extract the entity of the name of the call,
-   --  its object parameter, its actual parameters and the formal parameters
-   --  of the overridden interface-level version.
+   --  its actual dispatching object, its actual parameters and the formal
+   --  parameters of the overridden interface-level version. If the type of
+   --  the dispatching object is an access type then an explicit dereference
+   --  is returned in Object.
 
    procedure Extract_Entry
      (N       : Node_Id;
@@ -635,10 +650,11 @@ package body Exp_Ch9 is
       --  The name of the formal that holds the address of the parameter block
       --  for the call.
 
-      Comp   : Entity_Id;
-      Decl   : Node_Id;
-      Formal : Entity_Id;
-      New_F  : Entity_Id;
+      Comp            : Entity_Id;
+      Decl            : Node_Id;
+      Formal          : Entity_Id;
+      New_F           : Entity_Id;
+      Renamed_Formal  : Node_Id;
 
    begin
       Formal := First_Formal (Ent);
@@ -665,18 +681,16 @@ package body Exp_Ch9 is
 
          Set_Actual_Subtype (New_F, Actual_Subtype (Formal));
 
+         Renamed_Formal :=
+           Make_Selected_Component (Loc,
+             Prefix        =>
+               Unchecked_Convert_To (Entry_Parameters_Type (Ent),
+                 Make_Identifier (Loc, Chars (Ptr))),
+             Selector_Name => New_Reference_To (Comp, Loc));
+
          Decl :=
-           Make_Object_Renaming_Declaration (Loc,
-           Defining_Identifier => New_F,
-           Subtype_Mark =>
-             New_Reference_To (Etype (Formal), Loc),
-           Name =>
-             Make_Explicit_Dereference (Loc,
-               Make_Selected_Component (Loc,
-                 Prefix        =>
-                   Unchecked_Convert_To (Entry_Parameters_Type (Ent),
-                     Make_Identifier (Loc, Chars (Ptr))),
-                 Selector_Name => New_Reference_To (Comp, Loc))));
+           Build_Renamed_Formal_Declaration
+             (New_F, Formal, Comp, Renamed_Formal);
 
          Append (Decl, Decls);
          Set_Renamed_Object (Formal, New_F);
@@ -731,8 +745,8 @@ package body Exp_Ch9 is
             Obj_Ptr,
           Type_Definition =>
             Make_Access_To_Object_Definition (Loc,
-          Subtype_Indication =>
-            New_Reference_To (Rec_Typ, Loc)));
+              Subtype_Indication =>
+                New_Reference_To (Rec_Typ, Loc)));
       Set_Debug_Info_Needed (Defining_Identifier (Decl));
       Prepend_To (Decls, Decl);
    end Add_Object_Pointer;
@@ -907,10 +921,12 @@ package body Exp_Ch9 is
       Ent : Entity_Id;
       Pid : Node_Id) return Node_Id
    is
-      Loc         : constant Source_Ptr := Sloc (N);
-      Func_Id     : constant Entity_Id  := Barrier_Function (Ent);
       Ent_Formals : constant Node_Id    := Entry_Body_Formal_Part (N);
+      Cond        : constant Node_Id    := Condition (Ent_Formals);
+      Loc         : constant Source_Ptr := Sloc (Cond);
+      Func_Id     : constant Entity_Id  := Barrier_Function (Ent);
       Op_Decls    : constant List_Id    := New_List;
+      Stmt        : Node_Id;
       Func_Body   : Node_Id;
 
    begin
@@ -918,8 +934,32 @@ package body Exp_Ch9 is
       --  for the discriminals and privals and finally a declaration for the
       --  entry family index (if applicable).
 
-      Install_Private_Data_Declarations
-        (Loc, Func_Id, Pid, N, Op_Decls, True, Ekind (Ent) = E_Entry_Family);
+      Install_Private_Data_Declarations (Sloc (N),
+         Spec_Id  => Func_Id,
+         Conc_Typ => Pid,
+         Body_Nod => N,
+         Decls    => Op_Decls,
+         Barrier  => True,
+         Family   => Ekind (Ent) = E_Entry_Family);
+
+      --  If compiling with -fpreserve-control-flow, make sure we insert an
+      --  IF statement so that the back-end knows to generate a conditional
+      --  branch instruction, even if the condition is just the name of a
+      --  boolean object.
+
+      if Opt.Suppress_Control_Flow_Optimizations then
+         Stmt := Make_Implicit_If_Statement (Cond,
+                   Condition       => Cond,
+                   Then_Statements => New_List (
+                     Make_Simple_Return_Statement (Loc,
+                       New_Occurrence_Of (Standard_True, Loc))),
+                   Else_Statements => New_List (
+                     Make_Simple_Return_Statement (Loc,
+                       New_Occurrence_Of (Standard_False, Loc))));
+
+      else
+         Stmt := Make_Simple_Return_Statement (Loc, Cond);
+      end if;
 
       --  Note: the condition in the barrier function needs to be properly
       --  processed for the C/Fortran boolean possibility, but this happens
@@ -933,9 +973,7 @@ package body Exp_Ch9 is
           Declarations => Op_Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (
-                Make_Simple_Return_Statement (Loc,
-                  Expression => Condition (Ent_Formals)))));
+              Statements => New_List (Stmt)));
       Set_Is_Entry_Barrier_Function (Func_Body);
 
       return Func_Body;
@@ -1025,7 +1063,7 @@ package body Exp_Ch9 is
       --     for the task body.
 
       --  In fact the discriminals b) are used in the renaming declarations
-      --  for e). See details in  einfo (Handling of Discriminants).
+      --  for e). See details in einfo (Handling of Discriminants).
 
       if Present (Discriminant_Specifications (N)) then
          Dlist := New_List;
@@ -1170,10 +1208,6 @@ package body Exp_Ch9 is
       function Build_Set_Entry_Name_Call (Arg3 : Node_Id) return Node_Id;
       --  Generate the call to the runtime routine Set_Entry_Name with actuals
       --  _init._task_id or _init._object, Inn and Arg3.
-
-      function Find_Protection_Type (Conc_Typ : Entity_Id) return Entity_Id;
-      --  Given a protected type or its corresponding record, find the type of
-      --  field _object.
 
       procedure Increment_Index (Stmts : List_Id);
       --  Generate the following and add it to Stmts
@@ -1352,34 +1386,6 @@ package body Exp_Ch9 is
                New_Reference_To (Index, Loc),             --  Inn
                Arg3));                                    --  Val
       end Build_Set_Entry_Name_Call;
-
-      --------------------------
-      -- Find_Protection_Type --
-      --------------------------
-
-      function Find_Protection_Type (Conc_Typ : Entity_Id) return Entity_Id is
-         Comp : Entity_Id;
-         Typ  : Entity_Id := Conc_Typ;
-
-      begin
-         if Is_Concurrent_Type (Typ) then
-            Typ := Corresponding_Record_Type (Typ);
-         end if;
-
-         Comp := First_Component (Typ);
-         while Present (Comp) loop
-            if Chars (Comp) = Name_uObject then
-               return Base_Type (Etype (Comp));
-            end if;
-
-            Next_Component (Comp);
-         end loop;
-
-         --  The corresponding record of a protected type should always have an
-         --  _object field.
-
-         raise Program_Error;
-      end Find_Protection_Type;
 
       ---------------------
       -- Increment_Index --
@@ -1574,6 +1580,46 @@ package body Exp_Ch9 is
       return Rec_Nam;
    end Build_Parameter_Block;
 
+   --------------------------------------
+   -- Build_Renamed_Formal_Declaration --
+   --------------------------------------
+
+   function Build_Renamed_Formal_Declaration
+     (New_F          : Entity_Id;
+      Formal         : Entity_Id;
+      Comp           : Entity_Id;
+      Renamed_Formal : Node_Id) return Node_Id
+   is
+      Loc  : constant Source_Ptr := Sloc (New_F);
+      Decl : Node_Id;
+
+   begin
+      --  If the formal is a tagged incomplete type, it is already passed
+      --  by reference, so it is sufficient to rename the pointer component
+      --  that corresponds to the actual. Otherwise we need to dereference
+      --  the pointer component to obtain the actual.
+
+      if Is_Incomplete_Type (Etype (Formal))
+        and then Is_Tagged_Type (Etype (Formal))
+      then
+         Decl :=
+           Make_Object_Renaming_Declaration (Loc,
+             Defining_Identifier => New_F,
+             Subtype_Mark        => New_Reference_To (Etype (Comp), Loc),
+             Name                => Renamed_Formal);
+
+      else
+         Decl :=
+           Make_Object_Renaming_Declaration (Loc,
+             Defining_Identifier => New_F,
+             Subtype_Mark        => New_Reference_To (Etype (Formal), Loc),
+             Name                =>
+               Make_Explicit_Dereference (Loc, Renamed_Formal));
+      end if;
+
+      return Decl;
+   end Build_Renamed_Formal_Declaration;
+
    -----------------------
    -- Build_PPC_Wrapper --
    -----------------------
@@ -1614,7 +1660,7 @@ package body Exp_Ch9 is
          P : Node_Id;
 
       begin
-         P := Spec_PPC_List (E);
+         P := Spec_PPC_List (Contract (E));
          if No (P) then
             return;
          end if;
@@ -3742,6 +3788,27 @@ package body Exp_Ch9 is
                       Attribute_Name => Name_Unchecked_Access,
                     Prefix =>
                       New_Reference_To (Defining_Identifier (N_Node), Loc)));
+
+               --  If it is a VM_By_Copy_Actual, copy it to a new variable
+
+               elsif Is_VM_By_Copy_Actual (Actual) then
+                  N_Node :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Make_Temporary (Loc, 'J'),
+                      Aliased_Present     => True,
+                      Object_Definition   =>
+                        New_Reference_To (Etype (Formal), Loc),
+                      Expression => New_Copy_Tree (Actual));
+                  Set_Assignment_OK (N_Node);
+
+                  Append (N_Node, Decls);
+
+                  Append_To (Plist,
+                    Make_Attribute_Reference (Loc,
+                      Attribute_Name => Name_Unchecked_Access,
+                    Prefix =>
+                      New_Reference_To (Defining_Identifier (N_Node), Loc)));
+
                else
                   --  Interface class-wide formal
 
@@ -3893,7 +3960,8 @@ package body Exp_Ch9 is
 
             Set_Assignment_OK (Actual);
             while Present (Actual) loop
-               if Is_By_Copy_Type (Etype (Actual))
+               if (Is_By_Copy_Type (Etype (Actual))
+                     or else Is_VM_By_Copy_Actual (Actual))
                  and then Ekind (Formal) /= E_In_Parameter
                then
                   N_Node :=
@@ -4963,10 +5031,11 @@ package body Exp_Ch9 is
            and then Present (Handled_Statement_Sequence (N))
          then
             declare
-               Comp   : Entity_Id;
-               Decl   : Node_Id;
-               Formal : Entity_Id;
-               New_F  : Entity_Id;
+               Comp           : Entity_Id;
+               Decl           : Node_Id;
+               Formal         : Entity_Id;
+               New_F          : Entity_Id;
+               Renamed_Formal : Node_Id;
 
             begin
                Push_Scope (Ent);
@@ -4995,21 +5064,18 @@ package body Exp_Ch9 is
 
                   Set_Actual_Subtype (New_F, Actual_Subtype (Formal));
 
+                  Renamed_Formal :=
+                     Make_Selected_Component (Loc,
+                       Prefix        =>
+                         Unchecked_Convert_To (
+                           Entry_Parameters_Type (Ent),
+                           New_Reference_To (Ann, Loc)),
+                       Selector_Name =>
+                         New_Reference_To (Comp, Loc));
+
                   Decl :=
-                    Make_Object_Renaming_Declaration (Loc,
-                      Defining_Identifier =>
-                        New_F,
-                      Subtype_Mark =>
-                        New_Reference_To (Etype (Formal), Loc),
-                      Name =>
-                        Make_Explicit_Dereference (Loc,
-                          Make_Selected_Component (Loc,
-                            Prefix =>
-                              Unchecked_Convert_To (
-                                Entry_Parameters_Type (Ent),
-                                New_Reference_To (Ann, Loc)),
-                            Selector_Name =>
-                              New_Reference_To (Comp, Loc))));
+                    Build_Renamed_Formal_Declaration
+                      (New_F, Formal, Comp, Renamed_Formal);
 
                   if No (Declarations (N)) then
                      Set_Declarations (N, New_List);
@@ -5066,6 +5132,12 @@ package body Exp_Ch9 is
 
       Insert_After (N, Decl1);
       Analyze (Decl1);
+
+      --  Associate the access to subprogram with its original access to
+      --  protected subprogram type. Needed by the backend to know that this
+      --  type corresponds with an access to protected subprogram type.
+
+      Set_Original_Access_Type (D_T2, T);
 
       --  Create Equivalent_Type, a record with two components for an access to
       --  object and an access to subprogram.
@@ -5800,6 +5872,9 @@ package body Exp_Ch9 is
       T   : Entity_Id;  --  Additional status flag
 
    begin
+      Process_Statements_For_Controlled_Objects (Trig);
+      Process_Statements_For_Controlled_Objects (Abrt);
+
       Blk_Ent := Make_Temporary (Loc, 'A');
       Ecall   := Triggering_Statement (Trig);
 
@@ -6752,6 +6827,8 @@ package body Exp_Ch9 is
       S : Entity_Id;  --  Primitive operation slot
 
    begin
+      Process_Statements_For_Controlled_Objects (N);
+
       if Ada_Version >= Ada_2005
         and then Nkind (Blk) = N_Procedure_Call_Statement
       then
@@ -7258,7 +7335,6 @@ package body Exp_Ch9 is
                  Subtype_Indication => New_Reference_To (Rec_Ent, Loc)));
 
          Insert_After (Last_Decl, Decl);
-         Last_Decl := Decl;
       end if;
    end Expand_N_Entry_Declaration;
 
@@ -7365,9 +7441,6 @@ package body Exp_Ch9 is
       Num_Entries  : Natural := 0;
       Op_Body      : Node_Id;
       Op_Id        : Entity_Id;
-
-      Chain        : Entity_Id := Empty;
-      --  Finalization chain that may be attached to new body
 
       function Build_Dispatching_Subprogram_Body
         (N        : Node_Id;
@@ -7492,25 +7565,6 @@ package body Exp_Ch9 is
                then
                   New_Op_Body :=
                     Build_Unprotected_Subprogram_Body (Op_Body, Pid);
-
-                  --  Propagate the finalization chain to the new body. In the
-                  --  unlikely event that the subprogram contains a declaration
-                  --  or allocator for an object that requires finalization,
-                  --  the corresponding chain is created when analyzing the
-                  --  body, and attached to its entity. This entity is not
-                  --  further elaborated, and so the chain properly belongs to
-                  --  the newly created subprogram body.
-
-                  Chain :=
-                    Finalization_Chain_Entity (Defining_Entity (Op_Body));
-
-                  if Present (Chain) then
-                     Set_Finalization_Chain_Entity
-                       (Protected_Body_Subprogram
-                         (Corresponding_Spec (Op_Body)), Chain);
-                     Set_Analyzed
-                         (Handled_Statement_Sequence (New_Op_Body), False);
-                  end if;
 
                   Insert_After (Current_Node, New_Op_Body);
                   Current_Node := New_Op_Body;
@@ -8143,7 +8197,7 @@ package body Exp_Ch9 is
             Set_Protected_Body_Subprogram
               (Defining_Unit_Name (Specification (Comp)),
                Defining_Unit_Name (Specification (Sub)));
-               Check_Inlining (Defining_Unit_Name (Specification (Comp)));
+            Check_Inlining (Defining_Unit_Name (Specification (Comp)));
 
             --  Make the protected version of the subprogram available for
             --  expansion of external calls.
@@ -8689,14 +8743,39 @@ package body Exp_Ch9 is
          --      (Ada.Tags.Tag (Concval),
          --       <interface dispatch table position of Ename>)
 
-         Prepend_To (Params,
-           Make_Function_Call (Loc,
-             Name =>
-               New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+         if Tagged_Type_Expansion then
+            Prepend_To (Params,
+              Make_Function_Call (Loc,
+                Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+                Parameter_Associations => New_List (
+                  Unchecked_Convert_To (RTE (RE_Tag), Concval),
+                  Make_Integer_Literal (Loc, DT_Position (Entity (Ename))))));
 
-             Parameter_Associations => New_List (
-               Unchecked_Convert_To (RTE (RE_Tag), Concval),
-               Make_Integer_Literal (Loc, DT_Position (Entity (Ename))))));
+         --  VM targets
+
+         else
+            Prepend_To (Params,
+              Make_Function_Call (Loc,
+                Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+
+                Parameter_Associations => New_List (
+
+                  --  Obj_Typ
+
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => Concval,
+                    Attribute_Name => Name_Tag),
+
+                  --  Tag_Typ
+
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => New_Reference_To (Etype (Concval), Loc),
+                    Attribute_Name => Name_Tag),
+
+                  --  Position
+
+                  Make_Integer_Literal (Loc, DT_Position (Entity (Ename))))));
+         end if;
 
          --  Specific actuals for protected to XXX requeue
 
@@ -9586,6 +9665,8 @@ package body Exp_Ch9 is
    --  Start of processing for Expand_N_Selective_Accept
 
    begin
+      Process_Statements_For_Controlled_Objects (N);
+
       --  First insert some declarations before the select. The first is:
 
       --    Ann : Address
@@ -9605,6 +9686,7 @@ package body Exp_Ch9 is
 
       Alt := First (Alts);
       while Present (Alt) loop
+         Process_Statements_For_Controlled_Objects (Alt);
 
          if Nkind (Alt) = N_Accept_Alternative then
             Add_Accept (Alt);
@@ -10797,7 +10879,7 @@ package body Exp_Ch9 is
          Ent := First_Entity (Tasktyp);
          while Present (Ent) loop
             if Ekind_In (Ent, E_Entry, E_Entry_Family)
-              and then Present (Spec_PPC_List (Ent))
+              and then Present (Spec_PPC_List (Contract (Ent)))
             then
                Build_PPC_Wrapper (Ent, N);
             end if;
@@ -10872,7 +10954,7 @@ package body Exp_Ch9 is
    --              Ada.Tags.Get_Tagged_Kind (Ada.Tags.Tag (<object>));
    --       M  : Integer :=...;
    --       P  : Parameters := (Param1 .. ParamN);
-   --       S  : Iteger;
+   --       S  : Integer;
 
    --    begin
    --       if K = Ada.Tags.TK_Limited_Tagged then
@@ -10960,6 +11042,9 @@ package body Exp_Ch9 is
       if Restriction_Active (No_Select_Statements) then
          return;
       end if;
+
+      Process_Statements_For_Controlled_Objects (Entry_Call_Alternative (N));
+      Process_Statements_For_Controlled_Objects (Delay_Alternative (N));
 
       --  The arguments in the call may require dynamic allocation, and the
       --  call statement may have been transformed into a block. The block
@@ -11480,6 +11565,14 @@ package body Exp_Ch9 is
 
       if Present (Original_Node (Object)) then
          Object := Original_Node (Object);
+      end if;
+
+      --  If the type of the dispatching object is an access type then return
+      --  an explicit dereference.
+
+      if Is_Access_Type (Etype (Object)) then
+         Object := Make_Explicit_Dereference (Sloc (N), Object);
+         Analyze (Object);
       end if;
    end Extract_Dispatching_Call;
 

@@ -1,7 +1,7 @@
 /* PR debug/41340 */
 /* { dg-do compile } */
 /* { dg-options "-O3 -g -fcompare-debug" } */
-/* { dg-options "-O3 -g -fcompare-debug -march=i686" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-O3 -g -fcompare-debug -march=i686" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 /* { dg-skip-if "no long pointers" {  { ! ilp32 } && { ! lp64 } } } */
 
 typedef struct { int t; } *T;

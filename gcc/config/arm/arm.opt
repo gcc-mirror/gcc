@@ -235,7 +235,7 @@ Tune code for the given processor
 
 mwords-little-endian
 Target Report RejectNegative Mask(LITTLE_WORDS)
-Assume big endian bytes, little endian words
+Assume big endian bytes, little endian words.  This option is deprecated.
 
 mvectorize-with-neon-quad
 Target Report Mask(NEON_VECTORIZE_QUAD)

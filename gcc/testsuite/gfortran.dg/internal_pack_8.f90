@@ -30,4 +30,4 @@ END MODULE M1
 USE M1
 CALL S1
 END
-! { dg-final { cleanup-modules "M1" } }
+! { dg-final { cleanup-modules "m1" } }

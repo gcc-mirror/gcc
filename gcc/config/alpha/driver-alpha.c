@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2011 Free Software Foundation, Inc.
    Contributed by Arthur Loiret <aloiret@debian.org>
 
 This file is part of GCC.
@@ -23,6 +23,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 
+/* Chip family type IDs, returned by implver instruction.  */
+#define IMPLVER_EV4_FAMILY	0		/* LCA/EV4/EV45 */
+#define IMPLVER_EV5_FAMILY	1		/* EV5/EV56/PCA56 */
+#define IMPLVER_EV6_FAMILY	2		/* EV6 */
+#define IMPLVER_EV7_FAMILY	3		/* EV7 */
+
+/* Bit defines for amask instruction.  */
+#define AMASK_BWX          0x1          /* byte/word extension.  */
+#define AMASK_FIX          0x2          /* sqrt and f <-> i conversions 
+					   extension.  */
+#define AMASK_CIX          0x4          /* count extension.  */
+#define AMASK_MVI          0x100        /* multimedia extension.  */
+#define AMASK_PRECISE      0x200        /* Precise arithmetic traps.  */
+#define AMASK_LOCKPFTCHOK  0x1000       /* Safe to prefetch lock cache
+					   block.  */
+
 /* This will be called by the spec parser in gcc.c when it sees
    a %:local_cpu_detect(args) construct.  Currently it will be called
    with either "cpu" or "tune" as argument depending on if -mcpu=native
@@ -39,34 +55,23 @@ along with GCC; see the file COPYING3.  If not see
 const char *
 host_detect_local_cpu (int argc, const char **argv)
 {
-  const char *cpu = NULL;
-  char buf[128];
-  FILE *f;
-
-  static const struct cpu_names {
-   const char *const name;
-   const char *const cpu;
-  } cpu_names[] = {
-    { "EV79",	"ev67" },
-    { "EV7",	"ev67" },
-    { "EV69",	"ev67" },
-    { "EV68CX",	"ev67" },
-    { "EV68CB",	"ev67" },
-    { "EV68AL",	"ev67" },
-    { "EV67",	"ev67" },
-    { "EV6",	"ev6" },
-    { "PCA57",	"pca56" },
-    { "PCA56",	"pca56" },
-    { "EV56",	"ev56" },
-    { "EV5",	"ev5" },
-    { "LCA45",	"ev45" },
-    { "EV45",	"ev45" },
-    { "LCA4",	"ev4" },
-    { "EV4",	"ev4" },
-/*  { "EV3",	"ev3" },  */
-    { 0, 0 }
+  static const struct cpu_types {
+    long implver;
+    long amask;
+    const char *const cpu;
+  } cpu_types[] = {
+    { IMPLVER_EV7_FAMILY, AMASK_BWX|AMASK_MVI|AMASK_FIX|AMASK_CIX, "ev67" },
+    { IMPLVER_EV6_FAMILY, AMASK_BWX|AMASK_MVI|AMASK_FIX|AMASK_CIX, "ev67" },
+    { IMPLVER_EV6_FAMILY, AMASK_BWX|AMASK_MVI|AMASK_FIX, "ev6" },
+    { IMPLVER_EV5_FAMILY, AMASK_BWX|AMASK_MVI, "pca56" },
+    { IMPLVER_EV5_FAMILY, AMASK_BWX, "ev56" },
+    { IMPLVER_EV5_FAMILY, 0, "ev5" },
+    { IMPLVER_EV4_FAMILY, 0, "ev4" },
+    { 0, 0, NULL }
   };
-
+  long implver;
+  long amask;
+  const char *cpu;
   int i;
 
   if (argc < 1)
@@ -75,23 +80,17 @@ host_detect_local_cpu (int argc, const char **argv)
   if (strcmp (argv[0], "cpu") && strcmp (argv[0], "tune"))
     return NULL;
 
-  f = fopen ("/proc/cpuinfo", "r");
-  if (f == NULL)
-    return NULL;
+  implver = __builtin_alpha_implver ();
+  amask = __builtin_alpha_amask (~0L);
+  cpu = NULL;
 
-  while (fgets (buf, sizeof (buf), f) != NULL)
-    if (strncmp (buf, "cpu model", sizeof ("cpu model") - 1) == 0)
+  for (i = 0; cpu_types[i].cpu != NULL; i++)
+    if (implver == cpu_types[i].implver
+	&& (~amask & cpu_types[i].amask) == cpu_types[i].amask)
       {
-        for (i = 0; cpu_names [i].name; i++)
-          if (strstr (buf, cpu_names [i].name) != NULL)
-	    {
-	      cpu = cpu_names [i].cpu;
-	      break;
-	    }
+	cpu = cpu_types[i].cpu;
 	break;
       }
-
-  fclose (f);
 
   if (cpu == NULL)
     return NULL;

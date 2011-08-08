@@ -58,25 +58,31 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if TARGET_64BIT_DEFAULT
 #define SPEC_32 "m32"
-#define SPEC_64 "!m32"
+#define SPEC_64 "m32|mx32:;"
+#define SPEC_X32 "mx32"
 #else
-#define SPEC_32 "!m64"
+#define SPEC_32 "m64|mx32:;"
 #define SPEC_64 "m64"
+#define SPEC_X32 "mx32"
 #endif
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{" SPEC_32 ":--32} %{" SPEC_64 ":--64} \
+#define ASM_SPEC "%{" SPEC_32 ":--32} \
+ %{" SPEC_64 ":--64} \
+ %{" SPEC_X32 ":--x32} \
  %{!mno-sse2avx:%{mavx:-msse2avx}} %{msse2avx:%{!mavx:-msse2avx}}"
 
 #undef	LINK_SPEC
 #define LINK_SPEC "%{" SPEC_64 ":-m " GNU_USER_LINK_EMULATION64 "} \
                    %{" SPEC_32 ":-m " GNU_USER_LINK_EMULATION32 "} \
+                   %{" SPEC_X32 ":-m " GNU_USER_LINK_EMULATIONX32 "} \
   %{shared:-shared} \
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
       %{" SPEC_32 ":-dynamic-linker " GNU_USER_DYNAMIC_LINKER32 "} \
-      %{" SPEC_64 ":-dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}} \
+      %{" SPEC_64 ":-dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "} \
+      %{" SPEC_X32 ":-dynamic-linker " GNU_USER_DYNAMIC_LINKERX32 "}} \
     %{static:-static}}"
 
 /* Similar to standard GNU userspace, but adding -ffast-math support.  */
@@ -110,10 +116,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifdef TARGET_LIBC_PROVIDES_SSP
 /* i386 glibc provides __stack_chk_guard in %gs:0x14,
+   x32 glibc provides it in %fs:0x18. 
    x86_64 glibc provides it in %fs:0x28.  */
-#define TARGET_THREAD_SSP_OFFSET	(TARGET_64BIT ? 0x28 : 0x14)
+#define TARGET_THREAD_SSP_OFFSET \
+  (TARGET_64BIT ? (TARGET_X32 ? 0x18 : 0x28) : 0x14)
 
 /* We steal the last transactional memory word.  */
 #define TARGET_CAN_SPLIT_STACK
-#define TARGET_THREAD_SPLIT_STACK_OFFSET (TARGET_64BIT ? 0x70 : 0x30)
+#define TARGET_THREAD_SPLIT_STACK_OFFSET \
+  (TARGET_64BIT ? (TARGET_X32 ? 0x40 : 0x70) : 0x30)
 #endif

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@ with Einfo;    use Einfo;
 with Exp_Util; use Exp_Util;
 with Nmake;    use Nmake;
 with Sinfo;    use Sinfo;
+with Snames;   use Snames;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 
@@ -59,7 +60,9 @@ package body Exp_Ch12 is
              Condition =>
                Make_Op_Not (Loc,
                  Right_Opnd =>
-                   New_Occurrence_Of (Elaboration_Entity (Ent), Loc)),
+                   Make_Attribute_Reference (Loc,
+                     Attribute_Name => Name_Elaborated,
+                     Prefix         => New_Occurrence_Of (Ent, Loc))),
              Reason => PE_Access_Before_Elaboration));
       end if;
    end Expand_N_Generic_Instantiation;

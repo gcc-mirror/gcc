@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,7 @@ with Prj.Ext;
 with Prj.Pars;
 with Prj.Tree; use Prj.Tree;
 with Prj.Util; use Prj.Util;
+with Sdefault;
 with Snames;
 with Switch;   use Switch;
 with Table;
@@ -71,6 +72,10 @@ package body Clean is
    --  Prefix of binder generated file, and number of actual characters used.
    --  Changed to "b__" for VMS in the body of the package.
 
+   Project_Tree : constant Project_Tree_Ref :=
+                    new Project_Tree_Data (Is_Root_Tree => True);
+   --  The project tree
+
    Object_Directory_Path : String_Access := null;
    --  The path name of the object directory, set with switch -D
 
@@ -92,6 +97,8 @@ package body Clean is
    Project_File_Name : String_Access := null;
 
    Project_Node_Tree : Project_Node_Tree_Ref;
+
+   Root_Environment : Prj.Tree.Environment;
 
    Main_Project : Prj.Project_Id := Prj.No_Project;
 
@@ -134,34 +141,6 @@ package body Clean is
       Table_Name           => "Clean.Processed_Projects");
    --  Table to store all the source files of a library unit: spec, body and
    --  subunits, to detect .dg files and delete them.
-
-   ----------------------------
-   -- Queue (Q) manipulation --
-   ----------------------------
-
-   procedure Init_Q;
-   --  Must be called to initialize the Q
-
-   procedure Insert_Q (Lib_File  : File_Name_Type);
-   --  If Lib_File is not marked, inserts it at the end of Q and mark it
-
-   function Empty_Q return Boolean;
-   --  Returns True if Q is empty
-
-   procedure Extract_From_Q (Lib_File : out File_Name_Type);
-   --  Extracts the first element from the Q
-
-   Q_Front : Natural;
-   --  Points to the first valid element in the Q
-
-   package Q is new Table.Table (
-     Table_Component_Type => File_Name_Type,
-     Table_Index_Type     => Natural,
-     Table_Low_Bound      => 0,
-     Table_Initial        => 4000,
-     Table_Increment      => 100,
-     Table_Name           => "Clean.Q");
-   --  This is the actual queue
 
    -----------------------------
    -- Other local subprograms --
@@ -392,9 +371,11 @@ package body Clean is
 
       Text    : Text_Buffer_Ptr;
       The_ALI : ALI_Id;
+      Found   : Boolean;
+      Source  : Queue.Source_Info;
 
    begin
-      Init_Q;
+      Queue.Initialize (Queue_Per_Obj_Dir => False);
 
       --  It does not really matter if there is or not an object file
       --  corresponding to an ALI file: if there is one, it will be deleted.
@@ -407,13 +388,24 @@ package body Clean is
 
       for N_File in 1 .. Osint.Number_Of_Files loop
          Main_Source_File := Next_Main_Source;
-         Main_Lib_File := Osint.Lib_File_Name
-                             (Main_Source_File, Current_File_Index);
-         Insert_Q (Main_Lib_File);
+         Main_Lib_File :=
+           Osint.Lib_File_Name (Main_Source_File, Current_File_Index);
 
-         while not Empty_Q loop
+         if Main_Lib_File /= No_File then
+            Queue.Insert
+              ((Format  => Format_Gnatmake,
+                File    => Main_Lib_File,
+                Unit    => No_Unit_Name,
+                Index   => 0,
+                Project => No_Project));
+         end if;
+
+         while not Queue.Is_Empty loop
             Sources.Set_Last (0);
-            Extract_From_Q (Lib_File);
+            Queue.Extract (Found, Source);
+            pragma Assert (Found);
+            pragma Assert (Source.File /= No_File);
+            Lib_File := Source.File;
             Full_Lib_File := Osint.Full_Lib_File_Name (Lib_File);
 
             --  If we have existing ALI file that is not read-only, process it
@@ -442,7 +434,14 @@ package body Clean is
                         for K in ALI.Units.Table (J).First_With ..
                           ALI.Units.Table (J).Last_With
                         loop
-                           Insert_Q (Withs.Table (K).Afile);
+                           if Withs.Table (K).Afile /= No_File then
+                              Queue.Insert
+                                ((Format  => Format_Gnatmake,
+                                  File    => Withs.Table (K).Afile,
+                                  Unit    => No_Unit_Name,
+                                  Index   => 0,
+                                  Project => No_Project));
+                           end if;
                         end loop;
                      end loop;
 
@@ -1168,7 +1167,7 @@ package body Clean is
                   Executable :=
                     Executable_Of
                       (Main_Project,
-                       Project_Tree,
+                       Project_Tree.Shared,
                        Main_Source_File,
                        Current_File_Index);
 
@@ -1342,26 +1341,6 @@ package body Clean is
       end if;
    end Display_Copyright;
 
-   -------------
-   -- Empty_Q --
-   -------------
-
-   function Empty_Q return Boolean is
-   begin
-      return Q_Front >= Q.Last;
-   end Empty_Q;
-
-   --------------------
-   -- Extract_From_Q --
-   --------------------
-
-   procedure Extract_From_Q (Lib_File : out File_Name_Type) is
-      Lib : constant File_Name_Type := Q.Table (Q_Front);
-   begin
-      Q_Front  := Q_Front + 1;
-      Lib_File := Lib;
-   end Extract_From_Q;
-
    ---------------
    -- Gnatclean --
    ---------------
@@ -1405,7 +1384,7 @@ package body Clean is
             In_Tree           => Project_Tree,
             In_Node_Tree      => Project_Node_Tree,
             Project_File_Name => Project_File_Name.all,
-            Flags             => Gnatmake_Flags,
+            Env               => Root_Environment,
             Packages_To_Check => Packages_To_Check_By_Gnatmake);
 
          if Main_Project = No_Project then
@@ -1423,7 +1402,7 @@ package body Clean is
          --  Add source directories and object directories to the search paths
 
          Add_Source_Directories (Main_Project, Project_Tree);
-         Add_Object_Directories (Main_Project);
+         Add_Object_Directories (Main_Project, Project_Tree);
       end if;
 
       Osint.Add_Default_Search_Dirs;
@@ -1438,7 +1417,7 @@ package body Clean is
             Value : String_List_Id := Main_Project.Mains;
          begin
             while Value /= Prj.Nil_String loop
-               Main := Project_Tree.String_Elements.Table (Value);
+               Main := Project_Tree.Shared.String_Elements.Table (Value);
                Osint.Add_File
                  (File_Name => Get_Name_String (Main.Value),
                   Index     => Main.Index);
@@ -1529,16 +1508,6 @@ package body Clean is
       return False;
    end In_Extension_Chain;
 
-   ------------
-   -- Init_Q --
-   ------------
-
-   procedure Init_Q is
-   begin
-      Q_Front := Q.First;
-      Q.Set_Last (Q.First);
-   end Init_Q;
-
    ----------------
    -- Initialize --
    ----------------
@@ -1557,6 +1526,11 @@ package body Clean is
 
          Csets.Initialize;
          Snames.Initialize;
+
+         Prj.Tree.Initialize (Root_Environment, Gnatmake_Flags);
+         Prj.Env.Initialize_Default_Project_Path
+            (Root_Environment.Project_Path,
+             Target_Name => Sdefault.Target_Name.all);
 
          Project_Node_Tree := new Project_Node_Tree_Data;
          Prj.Tree.Initialize (Project_Node_Tree);
@@ -1585,24 +1559,6 @@ package body Clean is
       Main_Project := Prj.No_Project;
       All_Projects := False;
    end Initialize;
-
-   --------------
-   -- Insert_Q --
-   --------------
-
-   procedure Insert_Q (Lib_File : File_Name_Type) is
-   begin
-      --  Do not insert an empty name or an already marked source
-
-      if Lib_File /= No_File and then not Makeutl.Is_Marked (Lib_File) then
-         Q.Table (Q.Last) := Lib_File;
-         Q.Increment_Last;
-
-         --  Mark the source that has been just added to the Q
-
-         Makeutl.Mark (Lib_File);
-      end if;
-   end Insert_Q;
 
    ----------------------
    -- Object_File_Name --
@@ -1693,7 +1649,7 @@ package body Clean is
 
                         elsif Arg (3) = 'P' then
                            Prj.Env.Add_Directories
-                             (Project_Node_Tree.Project_Path,
+                             (Root_Environment.Project_Path,
                               Arg (4 .. Arg'Last));
 
                         else
@@ -1855,7 +1811,6 @@ package body Clean is
                            Ext_Asgn  : constant String := Arg (3 .. Arg'Last);
                            Start     : Positive := Ext_Asgn'First;
                            Stop      : Natural  := Ext_Asgn'Last;
-                           Equal_Pos : Natural;
                            OK        : Boolean  := True;
 
                         begin
@@ -1869,27 +1824,11 @@ package body Clean is
                               end if;
                            end if;
 
-                           Equal_Pos := Start;
-
-                           while Equal_Pos <= Stop
-                             and then Ext_Asgn (Equal_Pos) /= '='
-                           loop
-                              Equal_Pos := Equal_Pos + 1;
-                           end loop;
-
-                           if Equal_Pos = Start or else Equal_Pos > Stop then
-                              OK := False;
-                           end if;
-
-                           if OK then
-                              Prj.Ext.Add
-                                (Project_Node_Tree,
-                                 External_Name =>
-                                   Ext_Asgn (Start .. Equal_Pos - 1),
-                                 Value         =>
-                                   Ext_Asgn (Equal_Pos + 1 .. Stop));
-
-                           else
+                           if not OK
+                             or else not
+                               Prj.Ext.Check (Root_Environment.External,
+                                              Ext_Asgn (Start .. Stop))
+                           then
                               Fail
                                 ("illegal external assignment '"
                                  & Ext_Asgn

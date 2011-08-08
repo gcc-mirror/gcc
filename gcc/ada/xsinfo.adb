@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,6 +162,11 @@ begin
    end loop;
 
    Put_Line (Ofile, "");
+
+   Put_Line (Ofile, "#ifdef __cplusplus");
+   Put_Line (Ofile, "extern ""C"" {");
+   Put_Line (Ofile, "#endif");
+
    NKV := 0;
 
    --  Loop through node kind codes
@@ -248,6 +253,9 @@ exception
    when Done =>
       Close (InS);
       Put_Line (Ofile, "");
+      Put_Line (Ofile, "#ifdef __cplusplus");
+      Put_Line (Ofile, "}");
+      Put_Line (Ofile, "#endif");
       Close (Ofile);
       Set_Exit_Status (0);
 

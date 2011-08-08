@@ -37,14 +37,55 @@
 # include <bits/allocator.h>  // for __alloc_swap
 #endif
 
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  template<typename> struct allocator;
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
+
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  /**
-   * @brief  Uniform interface to C++98 and C++0x allocators.
-   * @ingroup allocators
-  */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+template<typename _Alloc>
+  struct __allocator_always_compares_equal
+  { static const bool value = false; };
+
+  template<typename _Tp>
+    struct __allocator_always_compares_equal<std::allocator<_Tp>>
+    { static const bool value = true; };
+
+  template<typename, typename> struct array_allocator;
+
+  template<typename _Tp, typename _Array>
+    struct __allocator_always_compares_equal<array_allocator<_Tp, _Array>>
+    { static const bool value = true; };
+
+  template<typename> struct mt_allocator;
+
+  template<typename _Tp>
+    struct __allocator_always_compares_equal<mt_allocator<_Tp>>
+    { static const bool value = true; };
+
+  template<typename> struct new_allocator;
+
+  template<typename _Tp>
+    struct __allocator_always_compares_equal<new_allocator<_Tp>>
+    { static const bool value = true; };
+
+  template<typename> struct pool_allocator;
+
+  template<typename _Tp>
+    struct __allocator_always_compares_equal<pool_allocator<_Tp>>
+    { static const bool value = true; };
+#endif
+
+/**
+ * @brief  Uniform interface to C++98 and C++0x allocators.
+ * @ingroup allocators
+*/
 template<typename _Alloc>
   struct __alloc_traits
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -66,6 +107,27 @@ template<typename _Alloc>
     using _Base_type::construct;
     using _Base_type::destroy;
 
+  private:
+    template<typename _Ptr>
+      struct __is_custom_pointer
+      : std::integral_constant<bool, std::is_same<pointer, _Ptr>::value
+                                     && !std::is_pointer<_Ptr>::value>
+      { };
+
+  public:
+    template<typename _Ptr, typename... _Args>
+      static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
+      construct(_Alloc& __a, _Ptr __p, _Args&&... __args)
+      {
+	_Base_type::construct(__a, std::addressof(*__p),
+			      std::forward<_Args>(__args)...);
+      }
+
+    template<typename _Ptr>
+      static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
+      destroy(_Alloc& __a, _Ptr __p)
+      { _Base_type::destroy(__a, std::addressof(*__p)); }
+
     static _Alloc _S_select_on_copy(const _Alloc& __a)
     { return _Base_type::select_on_container_copy_construction(__a); }
 
@@ -80,6 +142,19 @@ template<typename _Alloc>
 
     static constexpr bool _S_propagate_on_swap()
     { return _Base_type::propagate_on_container_swap::value; }
+
+    static constexpr bool _S_always_equal()
+    { return __allocator_always_compares_equal<_Alloc>::value; }
+
+    static constexpr bool _S_nothrow_move()
+    { return _S_propagate_on_move_assign() || _S_always_equal(); }
+
+    static constexpr bool _S_nothrow_swap()
+    {
+      using std::swap;
+      return !_S_propagate_on_swap()
+       	|| noexcept(swap(std::declval<_Alloc&>(), std::declval<_Alloc&>()));
+    }
 
 #else
 

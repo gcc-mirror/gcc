@@ -4,5 +4,5 @@ class A
 {
   template<class R>
   static void f(X&); // { dg-error "" }
-  inline void A::f<void>(X&); // { dg-error "f|expected" }
+  inline void A::f<void>(X&); // { dg-error "f|expected|not been declared" }
 };

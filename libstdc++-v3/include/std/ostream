@@ -157,7 +157,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       //@{
       /**
        *  @brief  Basic arithmetic inserters
-       *  @param  A variable of builtin type.
+       *  @param  __n, __f, __p A variable of builtin type.
        *  @return  @c *this if successful
        *
        *  These functions use the stream's current locale (specifically, the
@@ -229,21 +229,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Extracting from another streambuf.
-       *  @param  sb  A pointer to a streambuf
+       *  @param  __sb  A pointer to a streambuf
        *
        *  This function behaves like one of the basic arithmetic extractors,
        *  in that it also constructs a sentry object and has the same error
        *  handling behavior.
        *
-       *  If @a sb is NULL, the stream will set failbit in its error state.
+       *  If @a __sb is NULL, the stream will set failbit in its error state.
        *
-       *  Characters are extracted from @a sb and inserted into @c *this
+       *  Characters are extracted from @a __sb and inserted into @c *this
        *  until one of the following occurs:
        *
        *  - the input stream reaches end-of-file,
        *  - insertion into the output sequence fails (in this case, the
        *    character that would have been inserted is not extracted), or
-       *  - an exception occurs while getting a character from @a sb, which
+       *  - an exception occurs while getting a character from @a __sb, which
        *    sets failbit in the error state
        *
        *  If the function inserts no characters, failbit is set.
@@ -273,7 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       //@{
       /**
        *  @brief  Simple insertion.
-       *  @param  c  The character to insert.
+       *  @param  __c  The character to insert.
        *  @return  *this
        *
        *  Tries to insert @a c.
@@ -295,14 +295,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Character string insertion.
-       *  @param  s  The array to insert.
-       *  @param  n  Maximum number of characters to insert.
+       *  @param  __s  The array to insert.
+       *  @param  __n  Maximum number of characters to insert.
        *  @return  *this
        *
-       *  Characters are copied from @a s and inserted into the stream until
+       *  Characters are copied from @a __s and inserted into the stream until
        *  one of the following happens:
        *
-       *  - @a n characters are inserted
+       *  - @a __n characters are inserted
        *  - inserting into the output sequence fails (in this case, badbit
        *    will be set in the stream's error state)
        *
@@ -338,7 +338,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Changing the current write position.
-       *  @param  pos  A file position object.
+       *  @param  __pos  A file position object.
        *  @return  *this
        *
        *  If @c fail() is not true, calls @c rdbuf()->pubseekpos(pos).  If
@@ -349,8 +349,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        *  @brief  Changing the current write position.
-       *  @param  off  A file offset object.
-       *  @param  dir  The direction in which to seek.
+       *  @param  __off  A file offset object.
+       *  @param  __dir  The direction in which to seek.
        *  @return  *this
        *
        *  If @c fail() is not true, calls @c rdbuf()->pubseekoff(off,dir).
@@ -385,9 +385,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /**
        *  @brief  The constructor performs preparatory work.
-       *  @param  os  The output stream to guard.
+       *  @param  __os  The output stream to guard.
        *
-       *  If the stream state is good (@a os.good() is true), then if the
+       *  If the stream state is good (@a __os.good() is true), then if the
        *  stream is tied to another output stream, @c is.tie()->flush()
        *  is called to synchronize the output sequences.
        *
@@ -433,17 +433,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //@{
   /**
    *  @brief  Character inserters
-   *  @param  out  An output stream.
-   *  @param  c  A character.
+   *  @param  __out  An output stream.
+   *  @param  __c  A character.
    *  @return  out
    *
    *  Behaves like one of the formatted arithmetic inserters described in
    *  std::basic_ostream.  After constructing a sentry object with good
    *  status, this function inserts a single character and any required
-   *  padding (as determined by [22.2.2.2.2]).  @c out.width(0) is then
+   *  padding (as determined by [22.2.2.2.2]).  @c __out.width(0) is then
    *  called.
    *
-   *  If @a c is of type @c char and the character type of the stream is not
+   *  If @a __c is of type @c char and the character type of the stream is not
    *  @c char, the character is widened before insertion.
   */
   template<typename _CharT, typename _Traits>
@@ -477,16 +477,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //@{
   /**
    *  @brief  String inserters
-   *  @param  out  An output stream.
-   *  @param  s  A character string.
+   *  @param  __out  An output stream.
+   *  @param  __s  A character string.
    *  @return  out
    *  @pre  @a s must be a non-NULL pointer
    *
    *  Behaves like one of the formatted arithmetic inserters described in
    *  std::basic_ostream.  After constructing a sentry object with good
-   *  status, this function inserts @c traits::length(s) characters starting
-   *  at @a s, widened if necessary, followed by any required padding (as
-   *  determined by [22.2.2.2.2]).  @c out.width(0) is then called.
+   *  status, this function inserts @c traits::length(__s) characters starting
+   *  at @a __s, widened if necessary, followed by any required padding (as
+   *  determined by [22.2.2.2.2]).  @c __out.width(0) is then called.
   */
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
@@ -568,8 +568,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // [27.7.2.9] Rvalue stream insertion
   /**
    *  @brief  Generic inserter for rvalue stream
-   *  @param  os  An input stream.
-   *  @param  x  A reference to the object being inserted.
+   *  @param  __os  An input stream.
+   *  @param  __x  A reference to the object being inserted.
    *  @return  os
    *
    *  This is just a forwarding function to allow insertion to

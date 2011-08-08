@@ -883,7 +883,7 @@ merge_memattrs (rtx x, rtx y)
 	MEM_ATTRS (x) = 0;
       else
 	{
-	  rtx mem_size;
+	  HOST_WIDE_INT mem_size;
 
 	  if (MEM_ALIAS_SET (x) != MEM_ALIAS_SET (y))
 	    {
@@ -895,24 +895,28 @@ merge_memattrs (rtx x, rtx y)
 	    {
 	      set_mem_expr (x, 0);
 	      set_mem_expr (y, 0);
-	      set_mem_offset (x, 0);
-	      set_mem_offset (y, 0);
+	      clear_mem_offset (x);
+	      clear_mem_offset (y);
 	    }
-	  else if (MEM_OFFSET (x) != MEM_OFFSET (y))
+	  else if (MEM_OFFSET_KNOWN_P (x) != MEM_OFFSET_KNOWN_P (y)
+		   || (MEM_OFFSET_KNOWN_P (x)
+		       && MEM_OFFSET (x) != MEM_OFFSET (y)))
 	    {
-	      set_mem_offset (x, 0);
-	      set_mem_offset (y, 0);
+	      clear_mem_offset (x);
+	      clear_mem_offset (y);
 	    }
 
-	  if (!MEM_SIZE (x))
-	    mem_size = NULL_RTX;
-	  else if (!MEM_SIZE (y))
-	    mem_size = NULL_RTX;
+	  if (MEM_SIZE_KNOWN_P (x) && MEM_SIZE_KNOWN_P (y))
+	    {
+	      mem_size = MAX (MEM_SIZE (x), MEM_SIZE (y));
+	      set_mem_size (x, mem_size);
+	      set_mem_size (y, mem_size);
+	    }
 	  else
-	    mem_size = GEN_INT (MAX (INTVAL (MEM_SIZE (x)),
-				     INTVAL (MEM_SIZE (y))));
-	  set_mem_size (x, mem_size);
-	  set_mem_size (y, mem_size);
+	    {
+	      clear_mem_size (x);
+	      clear_mem_size (y);
+	    }
 
 	  set_mem_align (x, MIN (MEM_ALIGN (x), MEM_ALIGN (y)));
 	  set_mem_align (y, MEM_ALIGN (x));
@@ -1073,6 +1077,16 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
      NOTE_INSN_BASIC_BLOCK).  They may be crossjumped. */
   if (NOTE_INSN_BASIC_BLOCK_P (i1) && NOTE_INSN_BASIC_BLOCK_P (i2))
     return dir_both;
+
+  /* ??? Do not allow cross-jumping between different stack levels.  */
+  p1 = find_reg_note (i1, REG_ARGS_SIZE, NULL);
+  p2 = find_reg_note (i2, REG_ARGS_SIZE, NULL);
+  if (p1)
+    p1 = XEXP (p1, 0);
+  if (p2)
+    p2 = XEXP (p2, 0);
+  if (!rtx_equal_p (p1, p2))
+    return dir_none;
 
   p1 = PATTERN (i1);
   p2 = PATTERN (i2);

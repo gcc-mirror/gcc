@@ -22,6 +22,11 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+/** @file bits/alloc_traits.h
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{memory}
+ */
+
 #ifndef _ALLOC_TRAITS_H
 #define _ALLOC_TRAITS_H 1
 
@@ -346,8 +351,8 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
 
       /**
        *  @brief  Allocate memory.
-       *  @param  a  An allocator.
-       *  @param  n  The number of objects to allocate space for.
+       *  @param  __a  An allocator.
+       *  @param  __n  The number of objects to allocate space for.
        *
        *  Calls @c a.allocate(n)
       */
@@ -357,9 +362,9 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
 
       /**
        *  @brief  Allocate memory.
-       *  @param  a  An allocator.
-       *  @param  n  The number of objects to allocate space for.
-       *  @param  hint Aid to locality.
+       *  @param  __a  An allocator.
+       *  @param  __n  The number of objects to allocate space for.
+       *  @param  __hint Aid to locality.
        *  @return Memory of suitable size and alignment for @a n objects
        *          of type @c value_type
        *
@@ -372,9 +377,9 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
 
       /**
        *  @brief  Deallocate memory.
-       *  @param  a  An allocator.
-       *  @param  p  Pointer to the memory to deallocate.
-       *  @param  n  The number of objects space was allocated for.
+       *  @param  __a  An allocator.
+       *  @param  __p  Pointer to the memory to deallocate.
+       *  @param  __n  The number of objects space was allocated for.
        *
        *  Calls <tt> a.deallocate(p, n) </tt>
       */
@@ -382,27 +387,27 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
       { __a.deallocate(__p, __n); }
 
       /**
-       *  @brief  Construct an object of type @a Tp
-       *  @param  a  An allocator.
-       *  @param  p  Pointer to memory of suitable size and alignment for Tp
-       *  @param  args Constructor arguments.
+       *  @brief  Construct an object of type @a _Tp
+       *  @param  __a  An allocator.
+       *  @param  __p  Pointer to memory of suitable size and alignment for Tp
+       *  @param  __args Constructor arguments.
        *
-       *  Calls <tt> a.construct(p, std::forward<Args>(args)...) </tt>
+       *  Calls <tt> __a.construct(__p, std::forward<Args>(__args)...) </tt>
        *  if that expression is well-formed, otherwise uses placement-new
-       *  to construct an object of type @a Tp at location @a p from the
-       *  arguments @a args...
+       *  to construct an object of type @a _Tp at location @a __p from the
+       *  arguments @a __args...
       */
       template<typename _Tp, typename... _Args>
 	static void construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
 	{ _S_construct(__a, __p, std::forward<_Args>(__args)...); }
 
       /**
-       *  @brief  Destroy an object of type @a Tp
-       *  @param  a  An allocator.
-       *  @param  p  Pointer to the object to destroy
+       *  @brief  Destroy an object of type @a _Tp
+       *  @param  __a  An allocator.
+       *  @param  __p  Pointer to the object to destroy
        *
-       *  Calls @c a.destroy(p) if that expression is well-formed,
-       *  otherwise calls @c p->~Tp()
+       *  Calls @c __a.destroy(__p) if that expression is well-formed,
+       *  otherwise calls @c __p->~_Tp()
       */
       template <class _Tp>
 	static void destroy(_Alloc& __a, _Tp* __p)
@@ -410,10 +415,10 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
 
       /**
        *  @brief  The maximum supported allocation size
-       *  @param  a  An allocator.
-       *  @return @c a.max_size() or @c numeric_limits<size_type>::max()
+       *  @param  __a  An allocator.
+       *  @return @c __a.max_size() or @c numeric_limits<size_type>::max()
        *
-       *  Returns @c a.max_size() if that expression is well-formed,
+       *  Returns @c __a.max_size() if that expression is well-formed,
        *  otherwise returns @c numeric_limits<size_type>::max()
       */
       static size_type max_size(const _Alloc& __a)
@@ -421,11 +426,11 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
 
       /**
        *  @brief  Obtain an allocator to use when copying a container.
-       *  @param  rhs  An allocator.
-       *  @return @c rhs.select_on_container_copy_construction() or @a rhs
+       *  @param  __rhs  An allocator.
+       *  @return @c __rhs.select_on_container_copy_construction() or @a __rhs
        *
-       *  Returns @c rhs.select_on_container_copy_construction() if that
-       *  expression is well-formed, otherwise returns @a rhs
+       *  Returns @c __rhs.select_on_container_copy_construction() if that
+       *  expression is well-formed, otherwise returns @a __rhs
       */
       static _Alloc
       select_on_container_copy_construction(const _Alloc& __rhs)

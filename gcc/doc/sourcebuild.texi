@@ -1679,6 +1679,9 @@ Target might have errors of a few ULP in string to floating-point
 conversion functions and overflow is not always detected correctly by
 those functions.
 
+@item mmap
+Target supports @code{mmap}.
+
 @item newlib
 Target supports Newlib.
 
@@ -1759,6 +1762,9 @@ Target uses GNU @command{as}.
 
 @item gc_sections
 Target supports @option{--gc-sections}.
+
+@item gld
+Target uses GNU @command{ld}.
 
 @item keeps_null_pointer_checks
 Target keeps null pointer checks, either due to the use of

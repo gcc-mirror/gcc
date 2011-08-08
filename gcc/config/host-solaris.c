@@ -73,7 +73,7 @@ mmap_fixed (void *addr, size_t len, int prot, int flags, int fd, off_t off)
 #elif defined(__sparc__)
 # define TRY_EMPTY_VM_SPACE	0x80000000
 #elif defined(__x86_64__)
-# define TRY_EMPTY_VM_SPACE	0x8000000000000000
+# define TRY_EMPTY_VM_SPACE	0x80000000000
 #elif defined(__i386__)
 # define TRY_EMPTY_VM_SPACE	0xB0000000
 #else

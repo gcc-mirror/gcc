@@ -25,8 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* ??? Move all SDB stuff from alpha.h to osf.h.  */
 #undef SDB_DEBUGGING_INFO
+#undef MIPS_DEBUGGING_INFO
+#undef DBX_DEBUGGING_INFO
 
-#define DBX_DEBUGGING_INFO 1
 #define DWARF2_DEBUGGING_INFO 1
 
 #undef  PREFERRED_DEBUGGING_TYPE

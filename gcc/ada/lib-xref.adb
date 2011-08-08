@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,6 @@ with Atree;    use Atree;
 with Csets;    use Csets;
 with Elists;   use Elists;
 with Errout;   use Errout;
-with Lib.Util; use Lib.Util;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Restrict; use Restrict;
@@ -43,7 +42,6 @@ with Snames;   use Snames;
 with Stringt;  use Stringt;
 with Stand;    use Stand;
 with Table;    use Table;
-with Widechar; use Widechar;
 
 with GNAT.Heap_Sort_G;
 
@@ -83,6 +81,17 @@ package body Lib.Xref is
       --  Unit number corresponding to Loc. Value is undefined and not
       --  referenced if Loc is set to No_Location.
 
+      --  The following components are only used for ALFA cross-references
+
+      Ref_Scope : Entity_Id;
+      --  Entity of the closest subprogram or package enclosing the reference
+
+      Ent_Scope : Entity_Id;
+      --  Entity of the closest subprogram or package enclosing the definition,
+      --  which should be located in the same file as the definition itself.
+
+      Ent_Scope_File : Unit_Number_Type;
+      --  File for entity Ent_Scope
    end record;
 
    package Xrefs is new Table.Table (
@@ -93,15 +102,105 @@ package body Lib.Xref is
      Table_Increment      => Alloc.Xrefs_Increment,
      Table_Name           => "Xrefs");
 
+   ----------------------
+   -- ALFA Information --
+   ----------------------
+
+   package body ALFA is separate;
+
    ------------------------
    --  Local Subprograms --
    ------------------------
+
+   function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id;
+   --  Return the closest enclosing subprogram of package
 
    procedure Generate_Prim_Op_References (Typ : Entity_Id);
    --  For a tagged type, generate implicit references to its primitive
    --  operations, for source navigation. This is done right before emitting
    --  cross-reference information rather than at the freeze point of the type
    --  in order to handle late bodies that are primitive operations.
+
+   function Lt (T1, T2 : Xref_Entry) return Boolean;
+   --  Order cross-references
+
+   -------------------------------------
+   -- Enclosing_Subprogram_Or_Package --
+   -------------------------------------
+
+   function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id is
+      Result : Entity_Id;
+
+   begin
+      --  If N is the defining identifier for a subprogram, then return the
+      --  enclosing subprogram or package, not this subprogram.
+
+      if Nkind_In (N, N_Defining_Identifier, N_Defining_Operator_Symbol)
+        and then Nkind (Parent (N)) in N_Subprogram_Specification
+      then
+         Result := Parent (Parent (Parent (N)));
+      else
+         Result := N;
+      end if;
+
+      loop
+         exit when No (Result);
+
+         case Nkind (Result) is
+            when N_Package_Specification =>
+               Result := Defining_Unit_Name (Result);
+               exit;
+
+            when N_Package_Body =>
+               Result := Defining_Unit_Name (Result);
+               exit;
+
+            when N_Subprogram_Specification =>
+               Result := Defining_Unit_Name (Result);
+               exit;
+
+            when N_Subprogram_Declaration =>
+               Result := Defining_Unit_Name (Specification (Result));
+               exit;
+
+            when N_Subprogram_Body =>
+               Result := Defining_Unit_Name (Specification (Result));
+               exit;
+
+            --  The enclosing subprogram for a pre- or postconditions should be
+            --  the subprogram to which the pragma is attached. This is not
+            --  always the case in the AST, as the pragma may be declared after
+            --  the declaration of the subprogram. Return Empty in this case.
+
+            when N_Pragma =>
+               if Get_Pragma_Id (Result) = Pragma_Precondition
+                    or else
+                  Get_Pragma_Id (Result) = Pragma_Postcondition
+               then
+                  return Empty;
+               else
+                  Result := Parent (Result);
+               end if;
+
+            when others =>
+               Result := Parent (Result);
+         end case;
+      end loop;
+
+      if Nkind (Result) = N_Defining_Program_Unit_Name then
+         Result := Defining_Identifier (Result);
+      end if;
+
+      --  Do no return a scope without a proper location
+
+      if Present (Result)
+        and then Sloc (Result) = No_Location
+      then
+         return Empty;
+      end if;
+
+      return Result;
+   end Enclosing_Subprogram_Or_Package;
 
    -------------------------
    -- Generate_Definition --
@@ -146,11 +245,16 @@ package body Lib.Xref is
          Loc  := Original_Location (Sloc (E));
 
          Xrefs.Table (Indx).Ent := E;
+         Xrefs.Table (Indx).Typ := ' ';
          Xrefs.Table (Indx).Def := No_Location;
          Xrefs.Table (Indx).Loc := No_Location;
-         Xrefs.Table (Indx).Typ := ' ';
+
          Xrefs.Table (Indx).Eun := Get_Source_Unit (Loc);
-         Xrefs.Table (Indx).Lun := No_Unit;
+
+         Xrefs.Table (Indx).Ref_Scope      := Empty;
+         Xrefs.Table (Indx).Ent_Scope      := Empty;
+         Xrefs.Table (Indx).Ent_Scope_File := No_Unit;
+
          Set_Has_Xref_Entry (E);
 
          if In_Inlined_Body then
@@ -234,12 +338,12 @@ package body Lib.Xref is
          return;
       end if;
 
-      --  Ada 2005 (AI-345): For synchronized types generate reference
-      --  to the wrapper that allow us to dispatch calls through their
-      --  implemented abstract interface types.
+      --  Ada 2005 (AI-345): For synchronized types generate reference to the
+      --  wrapper that allow us to dispatch calls through their implemented
+      --  abstract interface types.
 
-      --  The check for Present here is to protect against previously
-      --  reported critical errors.
+      --  The check for Present here is to protect against previously reported
+      --  critical errors.
 
       Prim_List := Primitive_Operations (Base_T);
 
@@ -276,6 +380,9 @@ package body Lib.Xref is
       Ref  : Source_Ptr;
       Def  : Source_Ptr;
       Ent  : Entity_Id;
+
+      Ref_Scope     : Entity_Id;
+      Ent_Scope     : Entity_Id;
 
       Call   : Node_Id;
       Formal : Entity_Id;
@@ -495,6 +602,7 @@ package body Lib.Xref is
 
       if not In_Extended_Main_Source_Unit (N) then
          if Typ = 'e'
+           or else Typ = 'I'
            or else Typ = 'p'
            or else Typ = 'i'
            or else Typ = 'k'
@@ -838,6 +946,9 @@ package body Lib.Xref is
          Ref := Original_Location (Sloc (Nod));
          Def := Original_Location (Sloc (Ent));
 
+         Ref_Scope := Enclosing_Subprogram_Or_Package (N);
+         Ent_Scope := Enclosing_Subprogram_Or_Package (Ent);
+
          Xrefs.Increment_Last;
          Indx := Xrefs.Last;
 
@@ -857,6 +968,11 @@ package body Lib.Xref is
          Xrefs.Table (Indx).Eun := Get_Source_Unit (Def);
          Xrefs.Table (Indx).Lun := Get_Source_Unit (Ref);
          Xrefs.Table (Indx).Ent := Ent;
+
+         Xrefs.Table (Indx).Ref_Scope      := Ref_Scope;
+         Xrefs.Table (Indx).Ent_Scope      := Ent_Scope;
+         Xrefs.Table (Indx).Ent_Scope_File := Get_Source_Unit (Ent_Scope);
+
          Set_Has_Xref_Entry (Ent);
       end if;
    end Generate_Reference;
@@ -930,6 +1046,52 @@ package body Lib.Xref is
    begin
       Xrefs.Init;
    end Initialize;
+
+   --------
+   -- Lt --
+   --------
+
+   function Lt (T1, T2 : Xref_Entry) return Boolean is
+   begin
+      --  First test: if entity is in different unit, sort by unit
+
+      if T1.Eun /= T2.Eun then
+         return Dependency_Num (T1.Eun) < Dependency_Num (T2.Eun);
+
+      --  Second test: within same unit, sort by entity Sloc
+
+      elsif T1.Def /= T2.Def then
+         return T1.Def < T2.Def;
+
+      --  Third test: sort definitions ahead of references
+
+      elsif T1.Loc = No_Location then
+         return True;
+
+      elsif T2.Loc = No_Location then
+         return False;
+
+      --  Fourth test: for same entity, sort by reference location unit
+
+      elsif T1.Lun /= T2.Lun then
+         return Dependency_Num (T1.Lun) < Dependency_Num (T2.Lun);
+
+      --  Fifth test: order of location within referencing unit
+
+      elsif T1.Loc /= T2.Loc then
+         return T1.Loc < T2.Loc;
+
+      --  Finally, for two locations at the same address, we prefer
+      --  the one that does NOT have the type 'r' so that a modification
+      --  or extension takes preference, when there are more than one
+      --  reference at the same location. As a result, in the case of
+      --  entities that are in-out actuals, the read reference follows
+      --  the modify reference.
+
+      else
+         return T2.Typ = 'r';
+      end if;
+   end Lt;
 
    -----------------------
    -- Output_References --
@@ -1156,12 +1318,8 @@ package body Lib.Xref is
    --  Start of processing for Output_References
 
    begin
-      if not Opt.Xref_Active then
-         return;
-      end if;
-
-      --  First we add references to the primitive operations of tagged
-      --  types declared in the main unit.
+      --  First we add references to the primitive operations of tagged types
+      --  declared in the main unit.
 
       Handle_Prim_Ops : declare
          Ent  : Entity_Id;
@@ -1358,9 +1516,6 @@ package body Lib.Xref is
          Curru : Unit_Number_Type;
          --  Current reference unit for one entity
 
-         Cursrc : Source_Buffer_Ptr;
-         --  Current xref unit source text
-
          Curent : Entity_Id;
          --  Current entity
 
@@ -1376,6 +1531,9 @@ package body Lib.Xref is
 
          Ctyp : Character;
          --  Entity type character
+
+         Prevt : Character;
+         --  reference kind of previous reference
 
          Tref : Entity_Id;
          --  Type reference
@@ -1406,42 +1564,7 @@ package body Lib.Xref is
             T2 : Xref_Entry renames Xrefs.Table (Rnums (Nat (Op2)));
 
          begin
-            --  First test: if entity is in different unit, sort by unit
-
-            if T1.Eun /= T2.Eun then
-               return Dependency_Num (T1.Eun) < Dependency_Num (T2.Eun);
-
-            --  Second test: within same unit, sort by entity Sloc
-
-            elsif T1.Def /= T2.Def then
-               return T1.Def < T2.Def;
-
-            --  Third test: sort definitions ahead of references
-
-            elsif T1.Loc = No_Location then
-               return True;
-
-            elsif T2.Loc = No_Location then
-               return False;
-
-            --  Fourth test: for same entity, sort by reference location unit
-
-            elsif T1.Lun /= T2.Lun then
-               return Dependency_Num (T1.Lun) < Dependency_Num (T2.Lun);
-
-            --  Fifth test: order of location within referencing unit
-
-            elsif T1.Loc /= T2.Loc then
-               return T1.Loc < T2.Loc;
-
-            --  Finally, for two locations at the same address, we prefer
-            --  the one that does NOT have the type 'r' so that a modification
-            --  or extension takes preference, when there are more than one
-            --  reference at the same location.
-
-            else
-               return T2.Typ = 'r';
-            end if;
+            return Lt (T1, T2);
          end Lt;
 
          ----------
@@ -1519,24 +1642,16 @@ package body Lib.Xref is
          Curdef := No_Location;
          Curru  := No_Unit;
          Crloc  := No_Location;
+         Prevt  := 'm';
 
          --  Loop to output references
 
          for Refno in 1 .. Nrefs loop
             Output_One_Ref : declare
-               P2  : Source_Ptr;
                Ent : Entity_Id;
-
-               WC  : Char_Code;
-               Err : Boolean;
-               pragma Warnings (Off, WC);
-               pragma Warnings (Off, Err);
 
                XE : Xref_Entry renames Xrefs.Table (Rnums (Refno));
                --  The current entry to be accessed
-
-               P : Source_Ptr;
-               --  Used to index into source buffer to get entity name
 
                Left  : Character;
                Right : Character;
@@ -1846,19 +1961,30 @@ package body Lib.Xref is
                   end if;
                end if;
 
-               --  Only output reference if interesting type of entity, and
-               --  suppress self references, except for bodies that act as
-               --  specs. Also suppress definitions of body formals (we only
+               --  Only output reference if interesting type of entity
+
+               if Ctyp = ' '
+
+               --  Suppress references to object definitions, used for local
+               --  references.
+
+                 or else XE.Typ = 'D'
+                 or else XE.Typ = 'I'
+
+               --  Suppress self references, except for bodies that act as
+               --  specs.
+
+                 or else (XE.Loc = XE.Def
+                           and then
+                             (XE.Typ /= 'b'
+                               or else not Is_Subprogram (XE.Ent)))
+
+               --  Also suppress definitions of body formals (we only
                --  treat these as references, and the references were
                --  separately recorded).
 
-               if Ctyp = ' '
-                 or else (XE.Loc = XE.Def
-                            and then
-                              (XE.Typ /= 'b'
-                                or else not Is_Subprogram (XE.Ent)))
                  or else (Is_Formal (XE.Ent)
-                            and then Present (Spec_Entity (XE.Ent)))
+                           and then Present (Spec_Entity (XE.Ent)))
                then
                   null;
 
@@ -1871,7 +1997,6 @@ package body Lib.Xref is
                      end if;
 
                      Curxu := XE.Eun;
-                     Cursrc := Source_Text (Source_Index (Curxu));
 
                      Write_Info_Initiate ('X');
                      Write_Info_Char (' ');
@@ -2005,51 +2130,14 @@ package body Lib.Xref is
                      --  Output entity name. We use the occurrence from the
                      --  actual source program at the definition point.
 
-                     P := Original_Location (Sloc (XE.Ent));
-
-                     --  Entity is character literal
-
-                     if Cursrc (P) = ''' then
-                        Write_Info_Char (Cursrc (P));
-                        Write_Info_Char (Cursrc (P + 1));
-                        Write_Info_Char (Cursrc (P + 2));
-
-                     --  Entity is operator symbol
-
-                     elsif Cursrc (P) = '"' or else Cursrc (P) = '%' then
-                        Write_Info_Char (Cursrc (P));
-
-                        P2 := P;
-                        loop
-                           P2 := P2 + 1;
-                           Write_Info_Char (Cursrc (P2));
-                           exit when Cursrc (P2) = Cursrc (P);
+                     declare
+                        Ent_Name : constant String :=
+                                     Exact_Source_Name (Sloc (XE.Ent));
+                     begin
+                        for C in Ent_Name'Range loop
+                           Write_Info_Char (Ent_Name (C));
                         end loop;
-
-                     --  Entity is identifier
-
-                     else
-                        loop
-                           if Is_Start_Of_Wide_Char (Cursrc, P) then
-                              Scan_Wide (Cursrc, P, WC, Err);
-                           elsif not Identifier_Char (Cursrc (P)) then
-                              exit;
-                           else
-                              P := P + 1;
-                           end if;
-                        end loop;
-
-                        --  Write out the identifier by copying the exact
-                        --  source characters used in its declaration. Note
-                        --  that this means wide characters will be in their
-                        --  original encoded form.
-
-                        for J in
-                          Original_Location (Sloc (XE.Ent)) .. P - 1
-                        loop
-                           Write_Info_Char (Cursrc (J));
-                        end loop;
-                     end if;
+                     end;
 
                      --  See if we have a renaming reference
 
@@ -2193,12 +2281,17 @@ package body Lib.Xref is
                      Crloc := No_Location;
                   end if;
 
-                  --  Output the reference
+                  --  Output the reference if it is not as the same location
+                  --  as the previous one, or it is a read-reference that
+                  --  indicates that the entity is an in-out actual in a call.
 
                   if XE.Loc /= No_Location
-                     and then XE.Loc /= Crloc
+                    and then
+                      (XE.Loc /= Crloc
+                        or else (Prevt = 'm' and then  XE.Typ = 'r'))
                   then
                      Crloc := XE.Loc;
+                     Prevt := XE.Typ;
 
                      --  Start continuation if line full, else blank
 

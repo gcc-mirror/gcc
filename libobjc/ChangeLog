@@ -1,3 +1,31 @@
+2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/50002
+	* class.c (__objc_update_classes_with_methods): Iterate over meta
+	classes as well as normal classes when refreshing the method
+	implementations.  This fixes replacing class methods.
+
+2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* class.c (class_getSuperclass): Fixed to work with meta classes
+	still in construction too.
+
+2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* class.c (class_getSuperclass): Fixed typo in comment.
+	
+2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/49882
+	* class.c (class_getSuperclass): Return the superclass if the
+	class is in construction.
+	* objc/runtime.h (class_getSuperclass): Updated documentation.
+
+2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (INCLUDES): Search
+	$(srcdir)/$(MULTISRCTOP)../libgcc.
+
 2011-06-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc.h (__GNU_LIBOBJC__): Bumped to 20110608.

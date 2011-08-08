@@ -601,19 +601,6 @@ valid_gimple_rhs_p (tree expr)
           }
           break;
 
-	case TRUTH_NOT_EXPR:
-	  if (!is_gimple_val (TREE_OPERAND (expr, 0)))
-	    return false;
-	  break;
-
-	case TRUTH_AND_EXPR:
-	case TRUTH_XOR_EXPR:
-	case TRUTH_OR_EXPR:
-	  if (!is_gimple_val (TREE_OPERAND (expr, 0))
-	      || !is_gimple_val (TREE_OPERAND (expr, 1)))
-	    return false;
-	  break;
-
 	default:
 	  return false;
 	}
@@ -979,6 +966,9 @@ replace_phi_args_in (gimple phi, ssa_prop_get_value_fn get_value)
 
    DO_DCE is true if trivially dead stmts can be removed.
 
+   If DO_DCE is true, the statements within a BB are walked from
+   last to first element.  Otherwise we scan from first to last element.
+
    Return TRUE when something changed.  */
 
 bool
@@ -1059,9 +1049,10 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
 	for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
 	  replace_phi_args_in (gsi_stmt (i), get_value_fn);
 
-      /* Propagate known values into stmts.  Do a backward walk to expose
-	 more trivially deletable stmts.  */
-      for (i = gsi_last_bb (bb); !gsi_end_p (i);)
+      /* Propagate known values into stmts.  Do a backward walk if
+         do_dce is true. In some case it exposes
+	 more trivially deletable stmts to walk backward.  */
+      for (i = (do_dce ? gsi_last_bb (bb) : gsi_start_bb (bb)); !gsi_end_p (i);)
 	{
           bool did_replace;
 	  gimple stmt = gsi_stmt (i);
@@ -1070,7 +1061,10 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
 	  gimple_stmt_iterator oldi;
 
 	  oldi = i;
-	  gsi_prev (&i);
+	  if (do_dce)
+	    gsi_prev (&i);
+	  else
+	    gsi_next (&i);
 
 	  /* Ignore ASSERT_EXPRs.  They are used by VRP to generate
 	     range information for names and they are discarded

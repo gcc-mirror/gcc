@@ -1,7 +1,7 @@
 /* PR target/22362 */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 
 register unsigned int reg0 __asm__ ("esi");
 register unsigned int reg1 __asm__ ("edi");

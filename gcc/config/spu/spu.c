@@ -224,7 +224,6 @@ static enum machine_mode spu_addr_space_address_mode (addr_space_t);
 static bool spu_addr_space_subset_p (addr_space_t, addr_space_t);
 static rtx spu_addr_space_convert (rtx, tree, tree);
 static int spu_sms_res_mii (struct ddg *g);
-static void asm_file_start (void);
 static unsigned int spu_section_type_flags (tree, const char *, int);
 static section *spu_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void spu_unique_section (tree, int);
@@ -461,9 +460,6 @@ static void spu_setup_incoming_varargs (cumulative_args_t cum,
 
 #undef TARGET_SCHED_SMS_RES_MII
 #define TARGET_SCHED_SMS_RES_MII spu_sms_res_mii
-
-#undef TARGET_ASM_FILE_START
-#define TARGET_ASM_FILE_START asm_file_start
 
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS spu_section_type_flags
@@ -2703,9 +2699,11 @@ spu_machine_dependent_reorg (void)
     {
       /* We still do it for unoptimized code because an external
          function might have hinted a call or return. */
+      compute_bb_for_insn ();
       insert_hbrp ();
       pad_bb ();
       spu_var_tracking ();
+      free_bb_for_insn ();
       return;
     }
 
@@ -4183,17 +4181,15 @@ spu_va_start (tree valist, rtx nextarg)
   /* Find the __args area.  */
   t = make_tree (TREE_TYPE (args), nextarg);
   if (crtl->args.pretend_args_size > 0)
-    t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (args), t,
-		size_int (-STACK_POINTER_OFFSET));
+    t = fold_build_pointer_plus_hwi (t, -STACK_POINTER_OFFSET);
   t = build2 (MODIFY_EXPR, TREE_TYPE (args), args, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* Find the __skip area.  */
   t = make_tree (TREE_TYPE (skip), virtual_incoming_args_rtx);
-  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (skip), t,
-	      size_int (crtl->args.pretend_args_size
-			 - STACK_POINTER_OFFSET));
+  t = fold_build_pointer_plus_hwi (t, (crtl->args.pretend_args_size
+				       - STACK_POINTER_OFFSET));
   t = build2 (MODIFY_EXPR, TREE_TYPE (skip), skip, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -4223,7 +4219,7 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
   tree f_args, f_skip;
   tree args, skip;
   HOST_WIDE_INT size, rsize;
-  tree paddedsize, addr, tmp;
+  tree addr, tmp;
   bool pass_by_reference_p;
 
   f_args = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
@@ -4248,21 +4244,20 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
 
   /* build conditional expression to calculate addr. The expression
      will be gimplified later. */
-  paddedsize = size_int (rsize);
-  tmp = build2 (POINTER_PLUS_EXPR, ptr_type_node, unshare_expr (args), paddedsize);
+  tmp = fold_build_pointer_plus_hwi (unshare_expr (args), rsize);
   tmp = build2 (TRUTH_AND_EXPR, boolean_type_node,
 		build2 (GT_EXPR, boolean_type_node, tmp, unshare_expr (skip)),
 		build2 (LE_EXPR, boolean_type_node, unshare_expr (args),
 		unshare_expr (skip)));
 
   tmp = build3 (COND_EXPR, ptr_type_node, tmp,
-		build2 (POINTER_PLUS_EXPR, ptr_type_node, unshare_expr (skip),
-			size_int (32)), unshare_expr (args));
+		fold_build_pointer_plus_hwi (unshare_expr (skip), 32),
+		unshare_expr (args));
 
   gimplify_assign (addr, tmp, pre_p);
 
   /* update VALIST.__args */
-  tmp = build2 (POINTER_PLUS_EXPR, ptr_type_node, addr, paddedsize);
+  tmp = fold_build_pointer_plus_hwi (addr, rsize);
   gimplify_assign (unshare_expr (args), tmp, pre_p);
 
   addr = fold_convert (build_pointer_type_for_mode (type, ptr_mode, true),
@@ -5632,6 +5627,7 @@ spu_init_libfuncs (void)
   set_optab_libfunc (ffs_optab, DImode, "__ffsdi2");
   set_optab_libfunc (clz_optab, DImode, "__clzdi2");
   set_optab_libfunc (ctz_optab, DImode, "__ctzdi2");
+  set_optab_libfunc (clrsb_optab, DImode, "__clrsbdi2");
   set_optab_libfunc (popcount_optab, DImode, "__popcountdi2");
   set_optab_libfunc (parity_optab, DImode, "__paritydi2");
 
@@ -7037,14 +7033,6 @@ spu_libgcc_shift_count_mode (void)
 /* For SPU word mode is TI mode so it is better to use SImode
    for shift counts.  */
   return SImode;
-}
-
-/* An early place to adjust some flags after GCC has finished processing
- * them. */
-static void
-asm_file_start (void)
-{
-  default_file_start ();
 }
 
 /* Implement targetm.section_type_flags.  */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2010, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2011, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -295,6 +295,7 @@ package body Impunit is
      "g-ssvety",    -- GNAT.SSE.Vector_Types
      "g-table ",    -- GNAT.Table
      "g-tasloc",    -- GNAT.Task_Lock
+     "g-tastus",    -- GNAT.Task_Stack_Usage
      "g-thread",    -- GNAT.Threads
      "g-timsta",    -- GNAT.Time_Stamp
      "g-traceb",    -- GNAT.Traceback
@@ -512,7 +513,24 @@ package body Impunit is
      "a-cborse",    -- Ada.Containers.Bounded_Ordered_Sets
      "a-cborma",    -- Ada.Containers.Bounded_Ordered_Maps
      "a-cbhase",    -- Ada.Containers.Bounded_Hashed_Sets
-     "a-cbhama");   -- Ada.Containers.Bounded_Hashed_Maps
+     "a-cbhama",    -- Ada.Containers.Bounded_Hashed_Maps
+     "a-coinho",    -- Ada.Containers.Indefinite_Holders
+     "a-comutr",    -- Ada.Containers.Multiway_Trees
+     "a-cimutr",    -- Ada.Containers.Indefinite_Multiway_Trees
+     "a-cbmutr",    -- Ada.Containers.Bounded_Multiway_Trees
+     "a-extiin",    -- Ada.Execution_Time.Interrupts
+     "a-iteint",    -- Ada.Iterator_Interfaces
+
+   -----------------------------------------
+   -- GNAT Defined Additions to Ada 20012 --
+   -----------------------------------------
+
+     "a-cofove",    -- Ada.Containers.Formal_Vectors
+     "a-cfdlli",    -- Ada.Containers.Formal_Doubly_Linked_Lists
+     "a-cforse",    -- Ada.Containers.Formal_Ordered_Sets
+     "a-cforma",    -- Ada.Containers.Formal_Ordered_Maps
+     "a-cfhase",    -- Ada.Containers.Formal_Hashed_Sets
+     "a-cfhama");   -- Ada.Containers.Formal_Hashed_Maps
 
    -----------------------
    -- Alternative Units --

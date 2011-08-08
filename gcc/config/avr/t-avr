@@ -39,6 +39,11 @@ LIB1ASMSRC = avr/libgcc.S
 LIB1ASMFUNCS = \
 	_mulqi3 \
 	_mulhi3 \
+	_mulhisi3 \
+	_umulhisi3 \
+	_usmulhisi3 \
+	_muluhisi3 \
+	_mulshisi3 \
 	_mulsi3 \
 	_udivmodqi4 \
 	_divmodqi4 \
@@ -75,7 +80,8 @@ LIB1ASMFUNCS = \
 	_bswapdi2 \
 	_ashldi3 \
 	_ashrdi3 \
-	_lshrdi3
+	_lshrdi3 \
+	_fmul _fmuls _fmulsu
 
 LIB2FUNCS_EXCLUDE = \
 	_clz
@@ -84,19 +90,6 @@ LIB2FUNCS_EXCLUDE = \
 # Most of the C functions in libgcc2 use almost all registers,
 # so use -mcall-prologues for smaller code size.
 TARGET_LIBGCC2_CFLAGS = -DDF=SF -Dinhibit_libc -mcall-prologues -Os
-
-fp-bit.c: $(srcdir)/config/fp-bit.c $(srcdir)/config/avr/t-avr
-	echo '#define FLOAT' > fp-bit.c
-	echo '#define FLOAT_ONLY' >> fp-bit.c
-	echo '#define CMPtype QItype' >> fp-bit.c
-	echo '#define DF SF' >> fp-bit.c
-	echo '#define DI SI' >> fp-bit.c
-	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> fp-bit.c
-	echo '#define SMALL_MACHINE' >> fp-bit.c
-	echo 'typedef int QItype __attribute__ ((mode (QI)));' >> fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
-
-FPBIT = fp-bit.c
 
 MULTILIB_OPTIONS = mmcu=avr2/mmcu=avr25/mmcu=avr3/mmcu=avr31/mmcu=avr35/mmcu=avr4/mmcu=avr5/mmcu=avr51/mmcu=avr6
 MULTILIB_DIRNAMES = avr2 avr25 avr3 avr31 avr35 avr4 avr5 avr51 avr6

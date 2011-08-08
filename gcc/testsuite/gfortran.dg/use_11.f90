@@ -15,4 +15,4 @@ local1 = 5
 local2 = 3
 if (local1 .ne. local2) call abort ()
 end
-! { dg-final { cleanup-modules "test" } }
+! { dg-final { cleanup-modules "m" } }

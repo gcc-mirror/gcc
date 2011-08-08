@@ -227,9 +227,6 @@ enum reg_class
 #define SECONDARY_RELOAD_CLASS(CLASS, MODE, X)			\
   xstormy16_secondary_reload_class (CLASS, MODE, X)
 
-#define CLASS_MAX_NREGS(CLASS, MODE) \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 
 /* Basic Stack Layout.  */
 

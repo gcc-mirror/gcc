@@ -1150,14 +1150,6 @@ fully_constant_expression (pre_expr e)
 	vn_nary_op_t nary = PRE_EXPR_NARY (e);
 	switch (TREE_CODE_CLASS (nary->opcode))
 	  {
-	  case tcc_expression:
-	    if (nary->opcode == TRUTH_NOT_EXPR)
-	      goto do_unary;
-	    if (nary->opcode != TRUTH_AND_EXPR
-		&& nary->opcode != TRUTH_OR_EXPR
-		&& nary->opcode != TRUTH_XOR_EXPR)
-	      return e;
-	    /* Fallthrough.  */
 	  case tcc_binary:
 	  case tcc_comparison:
 	    {
@@ -1199,7 +1191,6 @@ fully_constant_expression (pre_expr e)
 	      return e;
 	    /* Fallthrough.  */
 	  case tcc_unary:
-do_unary:
 	    {
 	      /* We have to go from trees to pre exprs to value ids to
 		 constants.  */

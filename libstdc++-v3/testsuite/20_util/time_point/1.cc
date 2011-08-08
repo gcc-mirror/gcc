@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation
+// Copyright (C) 2008, 2009, 2011 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,8 +33,8 @@ test01()
   time_point<system_clock> t1;
   VERIFY(t1.time_since_epoch() == system_clock::duration::zero());
 
-  time_point<monotonic_clock> t2;
-  VERIFY(t2.time_since_epoch() == monotonic_clock::duration::zero());
+  time_point<steady_clock> t2;
+  VERIFY(t2.time_since_epoch() == steady_clock::duration::zero());
 
   time_point<high_resolution_clock> t3;
   VERIFY(t3.time_since_epoch() == high_resolution_clock::duration::zero());

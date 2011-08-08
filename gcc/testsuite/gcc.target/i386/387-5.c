@@ -1,6 +1,6 @@
 /* Verify that -mno-fancy-math-387 works.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=i386" } } */
 /* { dg-options "-O -ffast-math -mfpmath=387 -mno-fancy-math-387 -march=i386" } */
 /* { dg-final { scan-assembler "call\t(.*)atan" } } */

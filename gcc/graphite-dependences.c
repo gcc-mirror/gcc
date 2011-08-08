@@ -171,19 +171,16 @@ build_alias_set_powerset (ppl_Pointset_Powerset_C_Polyhedron_t alias_powerset,
 {
   ppl_dimension_type *ds;
   ppl_dimension_type access_dim;
-  unsigned i, pos = 0;
+  unsigned i, pos;
 
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (alias_powerset,
 						      &access_dim);
-  ds = XNEWVEC (ppl_dimension_type, access_dim-1);
-  for (i = 0; i < access_dim; i++)
-    {
-      if (i == alias_dim)
-	continue;
+  ds = XNEWVEC (ppl_dimension_type, access_dim - 1);
+  gcc_assert (alias_dim < access_dim);
 
-      ds[pos] = i;
-      pos++;
-    }
+  for (pos = 0, i = 0; i < access_dim; i++)
+    if (i != alias_dim)
+      ds[pos++] = i;
 
   ppl_Pointset_Powerset_C_Polyhedron_remove_space_dimensions (alias_powerset,
 							      ds,
@@ -748,11 +745,13 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
 {
   ppl_Pointset_Powerset_C_Polyhedron_t po;
   ppl_Pointset_Powerset_C_Polyhedron_t eqpp;
-  graphite_dim_t tdim1 = pbb_nb_scattering_transform (PDR_PBB (pdr1));
-  graphite_dim_t ddim1 = pbb_dim_iter_domain (PDR_PBB (pdr1));
+  poly_bb_p pbb = PDR_PBB (pdr1);
+  graphite_dim_t tdim1 = pbb_nb_scattering_transform (pbb);
+  graphite_dim_t ddim1 = pbb_dim_iter_domain (pbb);
   ppl_dimension_type dim;
   bool empty_p;
   poly_ddr_p pddr = new_poly_ddr (pdr1, pdr2, 1, false);
+  graphite_dim_t pos;
 
   if (PDDR_KIND (pddr) == unknown_dependence)
     {
@@ -768,7 +767,8 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
 
   po = PDDR_DDP (pddr);
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (po, &dim);
-  eqpp = build_pairwise_scheduling (dim, level, tdim1 + ddim1, 1);
+  pos = psct_dynamic_dim (pbb, level);
+  eqpp = build_pairwise_scheduling (dim, pos, tdim1 + ddim1, 1);
 
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (eqpp, po);
   empty_p = ppl_powerset_is_empty (eqpp);

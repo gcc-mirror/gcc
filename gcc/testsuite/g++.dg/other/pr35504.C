@@ -1,4 +1,4 @@
-// { dg-do run { target { { i?86-*-* x86_64-*-* } && ilp32 } } }
+// { dg-do run { target { { i?86-*-* x86_64-*-* } && ia32 } } }
 
 #define ATTR0 __attribute__((__regparm__(0)))
 #define ATTR1 __attribute__((__regparm__(1)))

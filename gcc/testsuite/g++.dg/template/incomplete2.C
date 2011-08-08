@@ -9,6 +9,6 @@ A a;  // { dg-error "incomplete type" }
 
 void bar()
 {
-  foo<a>();  // { dg-error "no matching function" }
+  foo<a>();  // { dg-error "(no matching function|could not convert)" }
   // { dg-message "candidate" "candidate note" { target *-*-* } 12 }
 }

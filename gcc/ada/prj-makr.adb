@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,12 @@ with Output;
 with Osint;    use Osint;
 with Prj;      use Prj;
 with Prj.Com;
+with Prj.Env;
 with Prj.Part;
 with Prj.PP;
 with Prj.Tree; use Prj.Tree;
 with Prj.Util; use Prj.Util;
+with Sdefault;
 with Snames;   use Snames;
 with Table;    use Table;
 
@@ -59,6 +61,8 @@ package body Prj.Makr is
 
    Tree : constant Project_Node_Tree_Ref := new Project_Node_Tree_Data;
    --  The project tree where the project file is parsed
+
+   Root_Environment : Prj.Tree.Environment;
 
    Args : Argument_List_Access;
    --  The list of arguments for calls to the compiler to get the unit names
@@ -794,7 +798,14 @@ package body Prj.Makr is
 
       Csets.Initialize;
       Snames.Initialize;
+
       Prj.Initialize (No_Project_Tree);
+
+      Prj.Tree.Initialize (Root_Environment, Flags);
+      Prj.Env.Initialize_Default_Project_Path
+        (Root_Environment.Project_Path,
+         Target_Name => Sdefault.Target_Name.all);
+
       Prj.Tree.Initialize (Tree);
 
       Sources.Set_Last (0);
@@ -860,10 +871,10 @@ package body Prj.Makr is
               (In_Tree                => Tree,
                Project                => Project_Node,
                Project_File_Name      => Output_Name.all,
-               Always_Errout_Finalize => False,
+               Errout_Handling        => Part.Finalize_If_Error,
                Store_Comments         => True,
                Is_Config_File         => False,
-               Flags                  => Flags,
+               Env                    => Root_Environment,
                Current_Directory      => Get_Current_Dir,
                Packages_To_Check      => Packages_To_Check_By_Gnatname);
 

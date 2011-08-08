@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fPIC" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-require-effective-target fpic } */
 
 typedef int tt, *lptt;

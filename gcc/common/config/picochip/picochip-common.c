@@ -31,9 +31,6 @@ static const struct default_options picochip_option_optimization_table[] =
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 
-#undef TARGET_HAVE_NAMED_SECTIONS
-#define TARGET_HAVE_NAMED_SECTIONS 1
-
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE picochip_option_optimization_table
 

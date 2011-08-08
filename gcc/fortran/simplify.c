@@ -6028,25 +6028,25 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   gfc_expr *mold_element;
   size_t source_size;
   size_t result_size;
-  size_t result_elt_size;
   size_t buffer_size;
   mpz_t tmp;
   unsigned char *buffer;
+  size_t result_length;
+
 
   if (!gfc_is_constant_expr (source)
 	|| (gfc_init_expr_flag && !gfc_is_constant_expr (mold))
 	|| !gfc_is_constant_expr (size))
     return NULL;
 
-  if (source->expr_type == EXPR_FUNCTION)
+  if (gfc_calculate_transfer_sizes (source, mold, size, &source_size,
+				    &result_size, &result_length) == FAILURE)
     return NULL;
 
   /* Calculate the size of the source.  */
   if (source->expr_type == EXPR_ARRAY
       && gfc_array_size (source, &tmp) == FAILURE)
     gfc_internal_error ("Failure getting length of a constant array.");
-
-  source_size = gfc_target_expr_size (source);
 
   /* Create an empty new expression with the appropriate characteristics.  */
   result = gfc_get_constant_expr (mold->ts.type, mold->ts.kind,
@@ -6064,44 +6064,16 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
     result->value.character.length = mold_element->value.character.length;
   
   /* Set the number of elements in the result, and determine its size.  */
-  result_elt_size = gfc_target_expr_size (mold_element);
-  if (result_elt_size == 0)
-    {
-      gfc_free_expr (result);
-      return NULL;
-    }
 
   if (mold->expr_type == EXPR_ARRAY || mold->rank || size)
     {
-      int result_length;
-
       result->expr_type = EXPR_ARRAY;
       result->rank = 1;
-
-      if (size)
-	result_length = (size_t)mpz_get_ui (size->value.integer);
-      else
-	{
-	  result_length = source_size / result_elt_size;
-	  if (result_length * result_elt_size < source_size)
-	    result_length += 1;
-	}
-
       result->shape = gfc_get_shape (1);
       mpz_init_set_ui (result->shape[0], result_length);
-
-      result_size = result_length * result_elt_size;
     }
   else
-    {
-      result->rank = 0;
-      result_size = result_elt_size;
-    }
-
-  if (gfc_option.warn_surprising && source_size < result_size)
-    gfc_warning("Intrinsic TRANSFER at %L has partly undefined result: "
-		"source size %ld < result size %ld", &source->where,
-		(long) source_size, (long) result_size);
+    result->rank = 0;
 
   /* Allocate the buffer to store the binary version of the source.  */
   buffer_size = MAX (source_size, result_size);
@@ -6112,7 +6084,7 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   gfc_target_encode_expr (source, buffer, buffer_size);
 
   /* And read the buffer back into the new expression.  */
-  gfc_target_interpret_expr (buffer, buffer_size, result);
+  gfc_target_interpret_expr (buffer, buffer_size, result, false);
 
   return result;
 }

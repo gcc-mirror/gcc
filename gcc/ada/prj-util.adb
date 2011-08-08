@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -129,7 +129,7 @@ package body Prj.Util is
 
    procedure Duplicate
      (This    : in out Name_List_Index;
-      In_Tree : Project_Tree_Ref)
+      Shared  : Shared_Project_Tree_Data_Access)
    is
       Old_Current : Name_List_Index;
       New_Current : Name_List_Index;
@@ -137,20 +137,20 @@ package body Prj.Util is
    begin
       if This /= No_Name_List then
          Old_Current := This;
-         Name_List_Table.Increment_Last (In_Tree.Name_Lists);
-         New_Current := Name_List_Table.Last (In_Tree.Name_Lists);
+         Name_List_Table.Increment_Last (Shared.Name_Lists);
+         New_Current := Name_List_Table.Last (Shared.Name_Lists);
          This := New_Current;
-         In_Tree.Name_Lists.Table (New_Current) :=
-           (In_Tree.Name_Lists.Table (Old_Current).Name, No_Name_List);
+         Shared.Name_Lists.Table (New_Current) :=
+           (Shared.Name_Lists.Table (Old_Current).Name, No_Name_List);
 
          loop
-            Old_Current := In_Tree.Name_Lists.Table (Old_Current).Next;
+            Old_Current := Shared.Name_Lists.Table (Old_Current).Next;
             exit when Old_Current = No_Name_List;
-            In_Tree.Name_Lists.Table (New_Current).Next := New_Current + 1;
-            Name_List_Table.Increment_Last (In_Tree.Name_Lists);
+            Shared.Name_Lists.Table (New_Current).Next := New_Current + 1;
+            Name_List_Table.Increment_Last (Shared.Name_Lists);
             New_Current := New_Current + 1;
-            In_Tree.Name_Lists.Table (New_Current) :=
-              (In_Tree.Name_Lists.Table (Old_Current).Name, No_Name_List);
+            Shared.Name_Lists.Table (New_Current) :=
+              (Shared.Name_Lists.Table (Old_Current).Name, No_Name_List);
          end loop;
       end if;
    end Duplicate;
@@ -174,7 +174,7 @@ package body Prj.Util is
 
    function Executable_Of
      (Project  : Project_Id;
-      In_Tree  : Project_Tree_Ref;
+      Shared   : Shared_Project_Tree_Data_Access;
       Main     : File_Name_Type;
       Index    : Int;
       Ada_Main : Boolean := True;
@@ -189,7 +189,7 @@ package body Prj.Util is
                           Prj.Util.Value_Of
                             (Name        => Name_Builder,
                              In_Packages => The_Packages,
-                             In_Tree     => In_Tree);
+                             Shared      => Shared);
 
       Executable : Variable_Value :=
                      Prj.Util.Value_Of
@@ -197,7 +197,7 @@ package body Prj.Util is
                         Index                   => Index,
                         Attribute_Or_Array_Name => Name_Executable,
                         In_Package              => Builder_Package,
-                        In_Tree                 => In_Tree);
+                        Shared                  => Shared);
 
       Lang   : Language_Ptr;
 
@@ -266,8 +266,8 @@ package body Prj.Util is
               Prj.Util.Value_Of
                 (Variable_Name => Name_Executable_Suffix,
                  In_Variables  =>
-                   In_Tree.Packages.Table (Builder_Package).Decl.Attributes,
-                 In_Tree       => In_Tree);
+                   Shared.Packages.Table (Builder_Package).Decl.Attributes,
+                 Shared        => Shared);
 
             if Suffix_From_Project /= Nil_Variable_Value
               and then Suffix_From_Project.Value /= No_Name
@@ -340,7 +340,7 @@ package body Prj.Util is
                        Index                   => 0,
                        Attribute_Or_Array_Name => Name_Executable,
                        In_Package              => Builder_Package,
-                       In_Tree                 => In_Tree);
+                       Shared                  => Shared);
                end if;
             end;
          end if;
@@ -554,24 +554,26 @@ package body Prj.Util is
       In_Tree    : Project_Tree_Ref;
       Lower_Case : Boolean := False)
    is
+      Shared  : constant Shared_Project_Tree_Data_Access := In_Tree.Shared;
+
       Current_Name : Name_List_Index;
       List         : String_List_Id;
       Element      : String_Element;
       Last         : Name_List_Index :=
-                       Name_List_Table.Last (In_Tree.Name_Lists);
+                       Name_List_Table.Last (Shared.Name_Lists);
       Value        : Name_Id;
 
    begin
       Current_Name := Into_List;
       while Current_Name /= No_Name_List
-        and then In_Tree.Name_Lists.Table (Current_Name).Next /= No_Name_List
+        and then Shared.Name_Lists.Table (Current_Name).Next /= No_Name_List
       loop
-         Current_Name := In_Tree.Name_Lists.Table (Current_Name).Next;
+         Current_Name := Shared.Name_Lists.Table (Current_Name).Next;
       end loop;
 
       List := From_List;
       while List /= Nil_String loop
-         Element := In_Tree.String_Elements.Table (List);
+         Element := Shared.String_Elements.Table (List);
          Value := Element.Value;
 
          if Lower_Case then
@@ -581,15 +583,14 @@ package body Prj.Util is
          end if;
 
          Name_List_Table.Append
-           (In_Tree.Name_Lists, (Name => Value, Next => No_Name_List));
+           (Shared.Name_Lists, (Name => Value, Next => No_Name_List));
 
          Last := Last + 1;
 
          if Current_Name = No_Name_List then
             Into_List := Last;
-
          else
-            In_Tree.Name_Lists.Table (Current_Name).Next := Last;
+            Shared.Name_Lists.Table (Current_Name).Next := Last;
          end if;
 
          Current_Name := Last;
@@ -808,8 +809,9 @@ package body Prj.Util is
    function Value_Of
      (Index    : Name_Id;
       In_Array : Array_Element_Id;
-      In_Tree  : Project_Tree_Ref) return Name_Id
+      Shared   : Shared_Project_Tree_Data_Access) return Name_Id
    is
+
       Current    : Array_Element_Id;
       Element    : Array_Element;
       Real_Index : Name_Id := Index;
@@ -821,7 +823,7 @@ package body Prj.Util is
          return No_Name;
       end if;
 
-      Element := In_Tree.Array_Elements.Table (Current);
+      Element := Shared.Array_Elements.Table (Current);
 
       if not Element.Index_Case_Sensitive then
          Get_Name_String (Index);
@@ -830,7 +832,7 @@ package body Prj.Util is
       end if;
 
       while Current /= No_Array_Element loop
-         Element := In_Tree.Array_Elements.Table (Current);
+         Element := Shared.Array_Elements.Table (Current);
 
          if Real_Index = Element.Index then
             exit when Element.Value.Kind /= Single;
@@ -848,7 +850,7 @@ package body Prj.Util is
      (Index                  : Name_Id;
       Src_Index              : Int := 0;
       In_Array               : Array_Element_Id;
-      In_Tree                : Project_Tree_Ref;
+      Shared                 : Shared_Project_Tree_Data_Access;
       Force_Lower_Case_Index : Boolean := False;
       Allow_Wildcards        : Boolean := False) return Variable_Value
    is
@@ -864,7 +866,7 @@ package body Prj.Util is
          return Nil_Variable_Value;
       end if;
 
-      Element := In_Tree.Array_Elements.Table (Current);
+      Element := Shared.Array_Elements.Table (Current);
 
       Real_Index_1 := Index;
 
@@ -877,7 +879,7 @@ package body Prj.Util is
       end if;
 
       while Current /= No_Array_Element loop
-         Element := In_Tree.Array_Elements.Table (Current);
+         Element := Shared.Array_Elements.Table (Current);
          Real_Index_2 := Element.Index;
 
          if not Element.Index_Case_Sensitive
@@ -912,7 +914,7 @@ package body Prj.Util is
       Index                   : Int := 0;
       Attribute_Or_Array_Name : Name_Id;
       In_Package              : Package_Id;
-      In_Tree                 : Project_Tree_Ref;
+      Shared                  : Shared_Project_Tree_Data_Access;
       Force_Lower_Case_Index  : Boolean := False;
       Allow_Wildcards         : Boolean := False) return Variable_Value
    is
@@ -927,14 +929,14 @@ package body Prj.Util is
          The_Array :=
            Value_Of
              (Name      => Attribute_Or_Array_Name,
-              In_Arrays => In_Tree.Packages.Table (In_Package).Decl.Arrays,
-              In_Tree   => In_Tree);
+              In_Arrays => Shared.Packages.Table (In_Package).Decl.Arrays,
+              Shared    => Shared);
          The_Attribute :=
            Value_Of
              (Index                  => Name,
               Src_Index              => Index,
               In_Array               => The_Array,
-              In_Tree                => In_Tree,
+              Shared                 => Shared,
               Force_Lower_Case_Index => Force_Lower_Case_Index,
               Allow_Wildcards        => Allow_Wildcards);
 
@@ -944,9 +946,9 @@ package body Prj.Util is
             The_Attribute :=
               Value_Of
                 (Variable_Name => Attribute_Or_Array_Name,
-                 In_Variables  => In_Tree.Packages.Table
-                                    (In_Package).Decl.Attributes,
-                 In_Tree       => In_Tree);
+                 In_Variables  => Shared.Packages.Table
+                   (In_Package).Decl.Attributes,
+                 Shared        => Shared);
          end if;
       end if;
 
@@ -957,7 +959,7 @@ package body Prj.Util is
      (Index     : Name_Id;
       In_Array  : Name_Id;
       In_Arrays : Array_Id;
-      In_Tree   : Project_Tree_Ref) return Name_Id
+      Shared    : Shared_Project_Tree_Data_Access) return Name_Id
    is
       Current   : Array_Id;
       The_Array : Array_Data;
@@ -965,10 +967,10 @@ package body Prj.Util is
    begin
       Current := In_Arrays;
       while Current /= No_Array loop
-         The_Array := In_Tree.Arrays.Table (Current);
+         The_Array := Shared.Arrays.Table (Current);
          if The_Array.Name = In_Array then
             return Value_Of
-              (Index, In_Array => The_Array.Value, In_Tree => In_Tree);
+              (Index, In_Array => The_Array.Value, Shared => Shared);
          else
             Current := The_Array.Next;
          end if;
@@ -980,7 +982,7 @@ package body Prj.Util is
    function Value_Of
      (Name      : Name_Id;
       In_Arrays : Array_Id;
-      In_Tree   : Project_Tree_Ref) return Array_Element_Id
+      Shared    : Shared_Project_Tree_Data_Access) return Array_Element_Id
    is
       Current   : Array_Id;
       The_Array : Array_Data;
@@ -988,7 +990,7 @@ package body Prj.Util is
    begin
       Current := In_Arrays;
       while Current /= No_Array loop
-         The_Array := In_Tree.Arrays.Table (Current);
+         The_Array := Shared.Arrays.Table (Current);
 
          if The_Array.Name = Name then
             return The_Array.Value;
@@ -1003,7 +1005,7 @@ package body Prj.Util is
    function Value_Of
      (Name        : Name_Id;
       In_Packages : Package_Id;
-      In_Tree     : Project_Tree_Ref) return Package_Id
+      Shared      : Shared_Project_Tree_Data_Access) return Package_Id
    is
       Current     : Package_Id;
       The_Package : Package_Element;
@@ -1011,7 +1013,7 @@ package body Prj.Util is
    begin
       Current := In_Packages;
       while Current /= No_Package loop
-         The_Package := In_Tree.Packages.Table (Current);
+         The_Package := Shared.Packages.Table (Current);
          exit when The_Package.Name /= No_Name
            and then The_Package.Name = Name;
          Current := The_Package.Next;
@@ -1023,7 +1025,7 @@ package body Prj.Util is
    function Value_Of
      (Variable_Name : Name_Id;
       In_Variables  : Variable_Id;
-      In_Tree       : Project_Tree_Ref) return Variable_Value
+      Shared        : Shared_Project_Tree_Data_Access) return Variable_Value
    is
       Current      : Variable_Id;
       The_Variable : Variable;
@@ -1031,8 +1033,7 @@ package body Prj.Util is
    begin
       Current := In_Variables;
       while Current /= No_Variable loop
-         The_Variable :=
-           In_Tree.Variable_Elements.Table (Current);
+         The_Variable := Shared.Variable_Elements.Table (Current);
 
          if Variable_Name = The_Variable.Name then
             return The_Variable.Value;

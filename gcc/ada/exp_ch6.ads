@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,26 +61,31 @@ package Exp_Ch6 is
    --  formals created for build-in-place functions. The order of the above
    --  enumeration literals matches the order in which the formals are
    --  declared. See Sem_Ch6.Create_Extra_Formals.
+
      (BIP_Alloc_Form,
       --  Present if result subtype is unconstrained, or if the result type
       --  is tagged. Indicates whether the return object is allocated by the
       --  caller or callee, and if the callee, whether to use the secondary
       --  stack or the heap. See Create_Extra_Formals.
-      BIP_Final_List,
+
+      BIP_Collection,
       --  Present if result type needs finalization. Pointer to caller's
-      --  finalization list.
+      --  finalization collection.
+
       BIP_Master,
       --  Present if result type contains tasks. Master associated with
       --  calling context.
+
       BIP_Activation_Chain,
       --  Present if result type contains tasks. Caller's activation chain
+
       BIP_Object_Access);
       --  Present for all build-in-place functions. Address at which to place
-      --  the return object, or null if BIP_Alloc_Form indicates
-      --  allocated by callee.
-      --  ??? We also need to be able to pass in some way to access a
-      --  user-defined storage pool at some point. And perhaps a constrained
-      --  flag.
+      --  the return object, or null if BIP_Alloc_Form indicates allocated by
+      --  callee.
+      --
+      --  ??? We also need to be able to pass in some way to access a user-
+      --  defined storage pool at some point. And perhaps a constrained flag.
 
    function BIP_Formal_Suffix (Kind : BIP_Formal_Kind) return String;
    --  Ada 2005 (AI-318-02): Returns a string to be used as the suffix of names
@@ -158,9 +163,8 @@ package Exp_Ch6 is
    --  for which Is_Build_In_Place_Call is True, or an N_Qualified_Expression
    --  node applied to such a function call.
 
-   function Needs_BIP_Final_List (E : Entity_Id) return Boolean;
-   --  ???pragma Precondition (Is_Build_In_Place_Function (E));
-   --  Ada 2005 (AI-318-02): Returns True if the function needs the
-   --  BIP_Final_List implicit parameter.
+   function Needs_BIP_Collection (Func_Id : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Return True if the function needs a finalization
+   --  collection implicit parameter.
 
 end Exp_Ch6;

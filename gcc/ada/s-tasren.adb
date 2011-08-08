@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1077,7 +1077,6 @@ package body System.Tasking.Rendezvous is
       Old_State     : constant Entry_Call_State := Entry_Call.State;
       Acceptor      : constant Task_Id := Entry_Call.Called_Task;
       Parent        : constant Task_Id := Acceptor.Common.Parent;
-      Parent_Locked : Boolean := False;
       Null_Body     : Boolean;
 
    begin
@@ -1102,27 +1101,26 @@ package body System.Tasking.Rendezvous is
 
       --  We rely that the call is off-queue for protection, that the caller
       --  will not exit the Entry_Caller_Sleep, and so will not reuse the call
-      --  record for another call.
-      --  We rely on the Caller's lock for call State mod's.
+      --  record for another call. We rely on the Caller's lock for call State
+      --  mod's.
 
-      --  We can't lock Acceptor.Parent while holding Acceptor,
-      --  so lock it in advance if we expect to need to lock it.
+      --  If Acceptor.Terminate_Alternative is True, we need to lock Parent and
+      --  Acceptor, in that order; otherwise, we only need a lock on Acceptor.
+      --  However, we can't check Acceptor.Terminate_Alternative until Acceptor
+      --  is locked. Therefore, we need to lock both. Attempts to avoid locking
+      --  Parent tend to result in race conditions. It would work to unlock
+      --  Parent immediately upon finding Acceptor.Terminate_Alternative to be
+      --  False, but that violates the rule of properly nested locking (see
+      --  System.Tasking).
 
-      if Acceptor.Terminate_Alternative then
-         STPO.Write_Lock (Parent);
-         Parent_Locked := True;
-      end if;
-
+      STPO.Write_Lock (Parent);
       STPO.Write_Lock (Acceptor);
 
       --  If the acceptor is not callable, abort the call and return False
 
       if not Acceptor.Callable then
          STPO.Unlock (Acceptor);
-
-         if Parent_Locked then
-            STPO.Unlock (Parent);
-         end if;
+         STPO.Unlock (Parent);
 
          pragma Assert (Entry_Call.State < Done);
 
@@ -1186,10 +1184,7 @@ package body System.Tasking.Rendezvous is
 
                   STPO.Wakeup (Acceptor, Acceptor_Sleep);
                   STPO.Unlock (Acceptor);
-
-                  if Parent_Locked then
-                     STPO.Unlock (Parent);
-                  end if;
+                  STPO.Unlock (Parent);
 
                   STPO.Write_Lock (Entry_Call.Self);
                   Initialization.Wakeup_Entry_Caller
@@ -1207,10 +1202,7 @@ package body System.Tasking.Rendezvous is
                   end if;
 
                   STPO.Unlock (Acceptor);
-
-                  if Parent_Locked then
-                     STPO.Unlock (Parent);
-                  end if;
+                  STPO.Unlock (Parent);
                end if;
 
                return True;
@@ -1236,10 +1228,7 @@ package body System.Tasking.Rendezvous is
             and then Entry_Call.Cancellation_Attempted)
       then
          STPO.Unlock (Acceptor);
-
-         if Parent_Locked then
-            STPO.Unlock (Parent);
-         end if;
+         STPO.Unlock (Parent);
 
          STPO.Write_Lock (Entry_Call.Self);
 
@@ -1261,10 +1250,7 @@ package body System.Tasking.Rendezvous is
            New_State (Entry_Call.With_Abort, Entry_Call.State);
 
          STPO.Unlock (Acceptor);
-
-         if Parent_Locked then
-            STPO.Unlock (Parent);
-         end if;
+         STPO.Unlock (Parent);
 
          if Old_State /= Entry_Call.State
            and then Entry_Call.State = Now_Abortable

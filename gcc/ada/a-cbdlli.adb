@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1486,10 +1486,9 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
            "attempt to tamper with cursors of Source (list is busy)";
       end if;
 
-      loop
-         Insert (Target, Before, Source.Nodes (Source.Last).Element);
-         Delete_Last (Source);
-         exit when Is_Empty (Source);
+      while not Is_Empty (Source) loop
+         Insert (Target, Before, Source.Nodes (Source.First).Element);
+         Delete_First (Source);
       end loop;
    end Splice;
 

@@ -30,4 +30,3 @@ int foo2(void)
 
 /* { dg-final { scan-rtl-dump-times "Decided to peel loop completely" 2 "loop2_unroll" } } */
 /* { dg-final { cleanup-rtl-dump "loop2_unroll" } } */
-/* { dg-excess-errors "extra notes" } */

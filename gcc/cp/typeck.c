@@ -3078,8 +3078,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
 	    return error_mark_node;
 	}
       /* ...and then the delta in the PMF.  */
-      instance_ptr = build2 (POINTER_PLUS_EXPR, TREE_TYPE (instance_ptr),
-			     instance_ptr, fold_convert (sizetype, delta));
+      instance_ptr = fold_build_pointer_plus (instance_ptr, delta);
 
       /* Hand back the adjusted 'this' argument to our caller.  */
       *instance_ptrptr = instance_ptr;
@@ -3094,9 +3093,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
       TREE_NO_WARNING (vtbl) = 1;
 
       /* Finally, extract the function pointer from the vtable.  */
-      e2 = fold_build2_loc (input_location,
-			POINTER_PLUS_EXPR, TREE_TYPE (vtbl), vtbl,
-			fold_convert (sizetype, idx));
+      e2 = fold_build_pointer_plus_loc (input_location, vtbl, idx);
       e2 = cp_build_indirect_ref (e2, RO_NULL, tf_warning_or_error);
       TREE_CONSTANT (e2) = 1;
 
@@ -4338,6 +4335,7 @@ cp_build_binary_op (location_t location,
 		{
 		case MULT_EXPR:
 		case TRUNC_DIV_EXPR:
+		  op1 = save_expr (op1);
 		  imag = build2 (resultcode, real_type, imag, op1);
 		  /* Fall through.  */
 		case PLUS_EXPR:
@@ -4356,6 +4354,7 @@ cp_build_binary_op (location_t location,
 	      switch (code)
 		{
 		case MULT_EXPR:
+		  op0 = save_expr (op0);
 		  imag = build2 (resultcode, real_type, op0, imag);
 		  /* Fall through.  */
 		case PLUS_EXPR:
@@ -4839,8 +4838,8 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
     {
       tree type = build_pointer_type (argtype);
       tree op0 = fold_convert (type, TREE_OPERAND (val, 0));
-      tree op1 = fold_convert (sizetype, fold_offsetof (arg, val));
-      return fold_build2 (POINTER_PLUS_EXPR, type, op0, op1);
+      tree op1 = fold_offsetof (arg, val);
+      return fold_build_pointer_plus (op0, op1);
     }
 
   /* Handle complex lvalues (when permitted)
@@ -5221,6 +5220,9 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	      }
 	    val = boolean_increment (code, arg);
 	  }
+	else if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
+	  /* An rvalue has no cv-qualifiers.  */
+	  val = build2 (code, cv_unqualified (TREE_TYPE (arg)), arg, inc);
 	else
 	  val = build2 (code, TREE_TYPE (arg), arg, inc);
 
@@ -5467,6 +5469,16 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
 				 tsubst_flags_t complain)
 {
   tree expr = TREE_VALUE (list);
+
+  if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+      && !CONSTRUCTOR_IS_DIRECT_INIT (expr))
+    {
+      if (complain & tf_error)
+	pedwarn (EXPR_LOC_OR_HERE (expr), 0, "list-initializer for "
+		 "non-class type must not be parenthesized");
+      else
+	return error_mark_node;
+    }
 
   if (TREE_CHAIN (list))
     {
@@ -6661,6 +6673,8 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	}
       else
 	{
+	  tree init = NULL_TREE;
+
 	  /* A binary op has been requested.  Combine the old LHS
 	     value with the RHS producing the value we should actually
 	     store into the LHS.  */
@@ -6668,7 +6682,17 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 			 && MAYBE_CLASS_TYPE_P (TREE_TYPE (lhstype)))
 			|| MAYBE_CLASS_TYPE_P (lhstype)));
 
+	  /* Preevaluate the RHS to make sure its evaluation is complete
+	     before the lvalue-to-rvalue conversion of the LHS:
+
+	     [expr.ass] With respect to an indeterminately-sequenced
+	     function call, the operation of a compound assignment is a
+	     single evaluation. [ Note: Therefore, a function call shall
+	     not intervene between the lvalue-to-rvalue conversion and the
+	     side effect associated with any single compound assignment
+	     operator. -- end note ]  */
 	  lhs = stabilize_reference (lhs);
+	  rhs = stabilize_expr (rhs, &init);
 	  newrhs = cp_build_binary_op (input_location,
 				       modifycode, lhs, rhs,
 				       complain);
@@ -6679,6 +6703,9 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 		       TREE_TYPE (lhs), TREE_TYPE (rhs));
 	      return error_mark_node;
 	    }
+
+	  if (init)
+	    newrhs = build2 (COMPOUND_EXPR, TREE_TYPE (newrhs), init, newrhs);
 
 	  /* Now it looks like a plain assignment.  */
 	  modifycode = NOP_EXPR;
@@ -6739,6 +6766,8 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	  if (check_array_initializer (lhs, lhstype, newrhs))
 	    return error_mark_node;
 	  newrhs = digest_init (lhstype, newrhs, complain);
+	  if (newrhs == error_mark_node)
+	    return error_mark_node;
 	}
 
       else if (!same_or_base_type_p (TYPE_MAIN_VARIANT (lhstype),
@@ -8125,15 +8154,13 @@ cp_apply_type_quals_to_decl (int type_quals, tree decl)
 		&& type_quals != TYPE_UNQUALIFIED));
 
   /* Avoid setting TREE_READONLY incorrectly.  */
-  if (/* If the object has a constructor, the constructor may modify
-	 the object.  */
-      TYPE_NEEDS_CONSTRUCTING (type)
-      /* If the type isn't complete, we don't know yet if it will need
-	 constructing.  */
-      || !COMPLETE_TYPE_P (type)
-      /* If the type has a mutable component, that component might be
-	 modified.  */
-      || TYPE_HAS_MUTABLE_P (type))
+  /* We used to check TYPE_NEEDS_CONSTRUCTING here, but now a constexpr
+     constructor can produce constant init, so rely on cp_finish_decl to
+     clear TREE_READONLY if the variable has non-constant init.  */
+
+  /* If the type has a mutable component, that component might be
+     modified.  */
+  if (TYPE_HAS_MUTABLE_P (type))
     type_quals &= ~TYPE_QUAL_CONST;
 
   c_apply_type_quals_to_decl (type_quals, decl);

@@ -269,7 +269,7 @@ get_emutls_init_templ_addr (tree decl)
 /* Create and return the control variable for the TLS variable DECL.  */
 
 static tree
-new_emutls_decl (tree decl)
+new_emutls_decl (tree decl, tree alias_of)
 {
   tree name, to;
 
@@ -333,8 +333,12 @@ new_emutls_decl (tree decl)
      not external one.  */
   if (DECL_EXTERNAL (to))
     varpool_node (to);
-  else
+  else if (!alias_of)
     varpool_finalize_decl (to);
+  else 
+    varpool_create_variable_alias (to,
+				   varpool_node_for_asm
+				    (DECL_ASSEMBLER_NAME (alias_of))->decl);
   return to;
 }
 
@@ -688,6 +692,40 @@ lower_emutls_function_body (struct cgraph_node *node)
   current_function_decl = NULL;
 }
 
+/* Create emutls variable for VAR, DATA is pointer to static
+   ctor body we can add constructors to.
+   Callback for varpool_for_variable_and_aliases.  */
+
+static bool
+create_emultls_var (struct varpool_node *var, void *data)
+{
+  tree cdecl;
+  struct varpool_node *cvar;
+
+  cdecl = new_emutls_decl (var->decl, var->alias_of);
+
+  cvar = varpool_get_node (cdecl);
+  VEC_quick_push (varpool_node_ptr, control_vars, cvar);
+
+  if (!var->alias)
+    {
+      /* Make sure the COMMON block control variable gets initialized.
+	 Note that there's no point in doing this for aliases; we only
+	 need to do this once for the main variable.  */
+      emutls_common_1 (var->decl, cdecl, (tree *)data);
+    }
+  if (var->alias && !var->alias_of)
+    cvar->alias = true;
+
+  /* Indicate that the value of the TLS variable may be found elsewhere,
+     preventing the variable from re-appearing in the GIMPLE.  We cheat
+     and use the control variable here (rather than a full call_expr),
+     which is special-cased inside the DWARF2 output routines.  */
+  SET_DECL_VALUE_EXPR (var->decl, cdecl);
+  DECL_HAS_VALUE_EXPR_P (var->decl) = 1;
+  return false;
+}
+
 /* Main entry point to the tls lowering pass.  */
 
 static unsigned int
@@ -708,6 +746,8 @@ ipa_lower_emutls (void)
 	gcc_checking_assert (TREE_STATIC (var->decl)
 			     || DECL_EXTERNAL (var->decl));
 	varpool_node_set_add (tls_vars, var);
+	if (var->alias && var->analyzed)
+	  varpool_node_set_add (tls_vars, varpool_variable_node (var, NULL));
       }
 
   /* If we found no TLS variables, then there is no further work to do.  */
@@ -728,34 +768,12 @@ ipa_lower_emutls (void)
   /* Create the control variables for each TLS variable.  */
   FOR_EACH_VEC_ELT (varpool_node_ptr, tls_vars->nodes, i, var)
     {
-      tree cdecl;
-      struct varpool_node *cvar;
-
       var = VEC_index (varpool_node_ptr, tls_vars->nodes, i);
-      cdecl = new_emutls_decl (var->decl);
 
-      cvar = varpool_get_node (cdecl);
-      VEC_quick_push (varpool_node_ptr, control_vars, cvar);
-
-      if (var->alias)
-	{
-	  any_aliases = true;
-	  cvar->alias = true;
-	}
-      else
-	{
-	  /* Make sure the COMMON block control variable gets initialized.
-	     Note that there's no point in doing this for aliases; we only
-	     need to do this once for the main variable.  */
-          emutls_common_1 (var->decl, cdecl, &ctor_body);
-	}
-
-      /* Indicate that the value of the TLS variable may be found elsewhere,
-	 preventing the variable from re-appearing in the GIMPLE.  We cheat
-	 and use the control variable here (rather than a full call_expr),
-	 which is special-cased inside the DWARF2 output routines.  */
-      SET_DECL_VALUE_EXPR (var->decl, cdecl);
-      DECL_HAS_VALUE_EXPR_P (var->decl) = 1;
+      if (var->alias && !var->alias_of)
+	any_aliases = true;
+      else if (!var->alias)
+	varpool_for_node_and_aliases (var, create_emultls_var, &ctor_body, true);
     }
 
   /* If there were any aliases, then frob the alias_pairs vector.  */

@@ -8,6 +8,7 @@
 #define GO_GOGO_H
 
 class Traverse;
+class Statement_inserter;
 class Type;
 class Type_hash_identical;
 class Type_equal;
@@ -366,7 +367,7 @@ class Gogo
 
   // Lower an expression.
   void
-  lower_expression(Named_object* function, Expression**);
+  lower_expression(Named_object* function, Statement_inserter*, Expression**);
 
   // Lower a constant.
   void
@@ -420,6 +421,10 @@ class Gogo
   // statements.
   void
   simplify_thunk_statements();
+
+  // Dump AST if -fgo-dump-ast is set 
+  void
+  dump_ast(const char* basename);
 
   // Convert named types to the backend representation.
   void
@@ -510,7 +515,6 @@ class Gogo
   static tree
   receive_as_64bit_integer(tree type, tree channel, bool blocking,
 			   bool for_select);
-
 
   // Make a trampoline which calls FNADDR passing CLOSURE.
   tree
@@ -1157,7 +1161,7 @@ class Variable
 
   // Lower the initialization expression after parsing is complete.
   void
-  lower_init_expression(Gogo*, Named_object*);
+  lower_init_expression(Gogo*, Named_object*, Statement_inserter*);
 
   // A special case: the init value is used only to determine the
   // type.  This is used if the variable is defined using := with the
@@ -1208,7 +1212,7 @@ class Variable
 
   // Traverse the initializer expression.
   int
-  traverse_expression(Traverse*);
+  traverse_expression(Traverse*, unsigned int traverse_mask);
 
   // Determine the type of the variable if necessary.
   void
@@ -2461,6 +2465,46 @@ class Traverse
   Types_seen* types_seen_;
   // Expressions which have been seen in this traversal.
   Expressions_seen* expressions_seen_;
+};
+
+// A class which makes it easier to insert new statements before the
+// current statement during a traversal.
+
+class Statement_inserter
+{
+ public:
+  // Empty constructor.
+  Statement_inserter()
+    : block_(NULL), pindex_(NULL), gogo_(NULL), var_(NULL)
+  { }
+
+  // Constructor for a statement in a block.
+  Statement_inserter(Block* block, size_t *pindex)
+    : block_(block), pindex_(pindex), gogo_(NULL), var_(NULL)
+  { }
+
+  // Constructor for a global variable.
+  Statement_inserter(Gogo* gogo, Variable* var)
+    : block_(NULL), pindex_(NULL), gogo_(gogo), var_(var)
+  { go_assert(var->is_global()); }
+
+  // We use the default copy constructor and assignment operator.
+
+  // Insert S before the statement we are traversing, or before the
+  // initialization expression of a global variable.
+  void
+  insert(Statement* s);
+
+ private:
+  // The block that the statement is in.
+  Block* block_;
+  // The index of the statement that we are traversing.
+  size_t* pindex_;
+  // The IR, needed when looking at an initializer expression for a
+  // global variable.
+  Gogo* gogo_;
+  // The global variable, when looking at an initializer expression.
+  Variable* var_;
 };
 
 // When translating the gogo IR into the backend data structure, this

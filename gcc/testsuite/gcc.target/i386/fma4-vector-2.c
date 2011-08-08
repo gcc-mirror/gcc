@@ -1,5 +1,4 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target lp64 } */
+/* { dg-do compile { target { ! { ia32 } } } } */
 /* { dg-options "-O2 -mfma4 -ftree-vectorize -mtune=generic" } */
 
 float r[256], s[256];

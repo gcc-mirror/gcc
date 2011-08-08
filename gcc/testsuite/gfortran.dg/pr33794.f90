@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-O2 -ffast-math -mfpmath=387" { target { { i?86-*-* x86_64-*-* } && lp64 } } }
+! { dg-options "-O2 -ffast-math -mfpmath=387" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } }
 ! { dg-options "-O2 -ffast-math" }
 
 module scc_m

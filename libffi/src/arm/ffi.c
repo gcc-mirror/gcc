@@ -341,12 +341,16 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
 ({ unsigned char *__tramp = (unsigned char*)(TRAMP);			\
    unsigned int  __fun = (unsigned int)(FUN);				\
    unsigned int  __ctx = (unsigned int)(CTX);				\
+   unsigned char *insns = (unsigned char *)(CTX);                       \
    *(unsigned int*) &__tramp[0] = 0xe92d000f; /* stmfd sp!, {r0-r3} */	\
    *(unsigned int*) &__tramp[4] = 0xe59f0000; /* ldr r0, [pc] */	\
    *(unsigned int*) &__tramp[8] = 0xe59ff000; /* ldr pc, [pc] */	\
    *(unsigned int*) &__tramp[12] = __ctx;				\
    *(unsigned int*) &__tramp[16] = __fun;				\
-   __clear_cache((&__tramp[0]), (&__tramp[19]));			\
+   __clear_cache((&__tramp[0]), (&__tramp[19])); /* Clear data mapping.  */ \
+   __clear_cache(insns, insns + 3 * sizeof (unsigned int));             \
+                                                 /* Clear instruction   \
+                                                    mapping.  */        \
  })
 
 

@@ -1,5 +1,5 @@
 /* Array and structure constructors
-   Copyright (C) 2009, 2010
+   Copyright (C) 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -81,6 +81,10 @@ gfc_constructor *gfc_constructor_first (gfc_constructor_base base);
    Returns NULL if there is no next expression.  */
 gfc_constructor *gfc_constructor_next (gfc_constructor *ctor);
 
-gfc_constructor *gfc_constructor_advance (gfc_constructor *ctor, int n);
+/* Remove the gfc_constructor node from the splay tree.  */
+void gfc_constructor_remove (gfc_constructor *);
+
+/* Return first constructor node after offset.  */
+gfc_constructor *gfc_constructor_lookup_next (gfc_constructor_base, int);
 
 #endif /* GFC_CONSTRUCTOR_H */

@@ -43,9 +43,6 @@ LIB2FUNCS_EXTRA = \
 LIB1ASMFUNCS = _mulsc3 _divsc3
 LIB1ASMSRC = picochip/libgccExtras/fake_libgcc.asm
 
-# Turn off the building of exception handling libraries.
-LIB2ADDEH =
-
 # Turn off ranlib on target libraries.
 RANLIB_FOR_TARGET = cat
 
@@ -64,16 +61,3 @@ MULTILIB_OPTIONS = mmul-type=none/mmul-type=mac/mmul-type=mul mno-byte-access/mb
 
 # Using a mul unit (currently) implies that byte access is available.
 MULTILIB_EXCEPTIONS = mmul-type=mul/mno-byte-access
-
-# We want fine grained libraries, so use the new code
-# to build the floating point emulation libraries.
-FPBIT = fp-bit.c
-
-# Software floating point support. Floating point is not properly
-# supported, but is existence can be useful for some types of testing.
-fp-bit.c:	$(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	echo '#define FLOAT_ONLY' >> fp-bit.c
-	echo '#define SMALL_MACHINE' >> fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
-

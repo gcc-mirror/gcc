@@ -74,6 +74,25 @@ static void ebb_add_block (basic_block, basic_block);
 static basic_block advance_target_bb (basic_block, rtx);
 static void ebb_fix_recovery_cfg (int, int, int);
 
+/* Allocate memory and store the state of the frontend.  Return the allocated
+   memory.  */
+static void *
+save_ebb_state (void)
+{
+  int *p = XNEW (int);
+  *p = sched_rgn_n_insns;
+  return p;
+}
+
+/* Restore the state of the frontend from P_, then free it.  */
+static void
+restore_ebb_state (void *p_)
+{
+  int *p = (int *)p_;
+  sched_rgn_n_insns = *p;
+  free (p_);
+}
+
 /* Return nonzero if there are more insns that should be scheduled.  */
 
 static int
@@ -238,28 +257,18 @@ ebb_contributes_to_priority (rtx next ATTRIBUTE_UNUSED,
   return 1;
 }
 
- /* INSN is a JUMP_INSN, COND_SET is the set of registers that are
-    conditionally set before INSN.  Store the set of registers that
-    must be considered as used by this jump in USED and that of
-    registers that must be considered as set in SET.  */
+ /* INSN is a JUMP_INSN.  Store the set of registers that
+    must be considered as used by this jump in USED.  */
 
 void
-ebb_compute_jump_reg_dependencies (rtx insn, regset cond_set, regset used,
-				   regset set)
+ebb_compute_jump_reg_dependencies (rtx insn, regset used)
 {
   basic_block b = BLOCK_FOR_INSN (insn);
   edge e;
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, b->succs)
-    if (e->flags & EDGE_FALLTHRU)
-      /* The jump may be a by-product of a branch that has been merged
-	 in the main codepath after being conditionalized.  Therefore
-	 it may guard the fallthrough block from using a value that has
-	 conditionally overwritten that of the main codepath.  So we
-	 consider that it restores the value of the main codepath.  */
-      bitmap_and (set, df_get_live_in (e->dest), cond_set);
-    else
+    if ((e->flags & EDGE_FALLTHRU) == 0)
       bitmap_ior_into (used, df_get_live_in (e->dest));
 }
 
@@ -295,6 +304,10 @@ static struct haifa_sched_info ebb_sched_info =
   begin_schedule_ready,
   begin_move_insn,
   advance_target_bb,
+
+  save_ebb_state,
+  restore_ebb_state,
+
   SCHED_EBB
   /* We can create new blocks in begin_schedule_ready ().  */
   | NEW_BBS
@@ -377,76 +390,83 @@ add_deps_for_risky_insns (rtx head, rtx tail)
   basic_block last_block = NULL, bb;
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
-    if (control_flow_insn_p (insn))
-      {
-	bb = BLOCK_FOR_INSN (insn);
-	bb->aux = last_block;
-	last_block = bb;
-	last_jump = insn;
-      }
-    else if (INSN_P (insn) && last_jump != NULL_RTX)
-      {
-	classification = haifa_classify_insn (insn);
-	prev = last_jump;
-	switch (classification)
-	  {
-	  case PFREE_CANDIDATE:
-	    if (flag_schedule_speculative_load)
-	      {
-		bb = earliest_block_with_similiar_load (last_block, insn);
-		if (bb)
-		  {
-		    bb = (basic_block) bb->aux;
-		    if (!bb)
-		      break;
-		    prev = BB_END (bb);
-		  }
-	      }
-	    /* Fall through.  */
-	  case TRAP_RISKY:
-	  case IRISKY:
-	  case PRISKY_CANDIDATE:
-	    /* ??? We could implement better checking PRISKY_CANDIDATEs
-	       analogous to sched-rgn.c.  */
-	    /* We can not change the mode of the backward
-	       dependency because REG_DEP_ANTI has the lowest
-	       rank.  */
-	    if (! sched_insns_conditions_mutex_p (insn, prev))
-	      {
-		dep_def _dep, *dep = &_dep;
+    {
+      add_delay_dependencies (insn);
+      if (control_flow_insn_p (insn))
+	{
+	  bb = BLOCK_FOR_INSN (insn);
+	  bb->aux = last_block;
+	  last_block = bb;
+	  /* Ensure blocks stay in the same order.  */
+	  if (last_jump)
+	    add_dependence (insn, last_jump, REG_DEP_ANTI);
+	  last_jump = insn;
+	}
+      else if (INSN_P (insn) && last_jump != NULL_RTX)
+	{
+	  classification = haifa_classify_insn (insn);
+	  prev = last_jump;
 
-		init_dep (dep, prev, insn, REG_DEP_ANTI);
+	  switch (classification)
+	    {
+	    case PFREE_CANDIDATE:
+	      if (flag_schedule_speculative_load)
+		{
+		  bb = earliest_block_with_similiar_load (last_block, insn);
+		  if (bb)
+		    {
+		      bb = (basic_block) bb->aux;
+		      if (!bb)
+			break;
+		      prev = BB_END (bb);
+		    }
+		}
+	      /* Fall through.  */
+	    case TRAP_RISKY:
+	    case IRISKY:
+	    case PRISKY_CANDIDATE:
+	      /* ??? We could implement better checking PRISKY_CANDIDATEs
+		 analogous to sched-rgn.c.  */
+	      /* We can not change the mode of the backward
+		 dependency because REG_DEP_ANTI has the lowest
+		 rank.  */
+	      if (! sched_insns_conditions_mutex_p (insn, prev))
+		{
+		  dep_def _dep, *dep = &_dep;
 
-		if (!(current_sched_info->flags & USE_DEPS_LIST))
-		  {
-		    enum DEPS_ADJUST_RESULT res;
+		  init_dep (dep, prev, insn, REG_DEP_ANTI);
 
-		    res = sd_add_or_update_dep (dep, false);
+		  if (!(current_sched_info->flags & USE_DEPS_LIST))
+		    {
+		      enum DEPS_ADJUST_RESULT res;
 
-		    /* We can't change an existing dependency with
-		       DEP_ANTI.  */
-		    gcc_assert (res != DEP_CHANGED);
-		  }
-		else
-		  {
-		    if ((current_sched_info->flags & DO_SPECULATION)
-			&& (spec_info->mask & BEGIN_CONTROL))
-		      DEP_STATUS (dep) = set_dep_weak (DEP_ANTI, BEGIN_CONTROL,
-						       MAX_DEP_WEAK);
+		      res = sd_add_or_update_dep (dep, false);
 
-		    sd_add_or_update_dep (dep, false);
+		      /* We can't change an existing dependency with
+			 DEP_ANTI.  */
+		      gcc_assert (res != DEP_CHANGED);
+		    }
+		  else
+		    {
+		      if ((current_sched_info->flags & DO_SPECULATION)
+			  && (spec_info->mask & BEGIN_CONTROL))
+			DEP_STATUS (dep) = set_dep_weak (DEP_ANTI, BEGIN_CONTROL,
+							 MAX_DEP_WEAK);
 
-		    /* Dep_status could have been changed.
-		       No assertion here.  */
-		  }
-	      }
+		      sd_add_or_update_dep (dep, false);
 
-            break;
+		      /* Dep_status could have been changed.
+			 No assertion here.  */
+		    }
+		}
 
-          default:
-            break;
-	  }
-      }
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+    }
   /* Maintain the invariant that bb->aux is clear after use.  */
   while (last_block)
     {

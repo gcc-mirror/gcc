@@ -642,29 +642,6 @@ cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
    is assigned.  */
 
 struct cgraph_node *
-cgraph_get_node_or_alias (const_tree decl)
-{
-  struct cgraph_node key, *node = NULL, **slot;
-
-  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
-
-  if (!cgraph_hash)
-    return NULL;
-
-  key.decl = CONST_CAST2 (tree, const_tree, decl);
-
-  slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key,
-						 NO_INSERT);
-
-  if (slot && *slot)
-    node = *slot;
-  return node;
-}
-
-/* Returns the cgraph node assigned to DECL or NULL if no cgraph node
-   is assigned.  */
-
-struct cgraph_node *
 cgraph_get_node (const_tree decl)
 {
   struct cgraph_node key, *node = NULL, **slot;
@@ -1630,6 +1607,31 @@ cgraph_remove_node (struct cgraph_node *node)
   free_nodes = node;
 }
 
+/* Add NEW_ to the same comdat group that OLD is in.  */
+
+void
+cgraph_add_to_same_comdat_group (struct cgraph_node *new_,
+				 struct cgraph_node *old)
+{
+  gcc_assert (DECL_ONE_ONLY (old->decl));
+  gcc_assert (!new_->same_comdat_group);
+  gcc_assert (new_ != old);
+
+  DECL_COMDAT_GROUP (new_->decl) = DECL_COMDAT_GROUP (old->decl);
+  new_->same_comdat_group = old;
+  if (!old->same_comdat_group)
+    old->same_comdat_group = new_;
+  else
+    {
+      struct cgraph_node *n;
+      for (n = old->same_comdat_group;
+	   n->same_comdat_group != old;
+	   n = n->same_comdat_group)
+	;
+      n->same_comdat_group = new_;
+    }
+}
+
 /* Remove the node from cgraph.  */
 
 void
@@ -1959,7 +1961,7 @@ change_decl_assembler_name (tree decl, tree name)
 
       if (assembler_name_hash
 	  && TREE_CODE (decl) == FUNCTION_DECL
-	  && (node = cgraph_get_node_or_alias (decl)) != NULL)
+	  && (node = cgraph_get_node (decl)) != NULL)
 	{
 	  tree old_name = DECL_ASSEMBLER_NAME (decl);
 	  slot = htab_find_slot_with_hash (assembler_name_hash, old_name,
@@ -1977,7 +1979,7 @@ change_decl_assembler_name (tree decl, tree name)
     }
   if (assembler_name_hash
       && TREE_CODE (decl) == FUNCTION_DECL
-      && (node = cgraph_get_node_or_alias (decl)) != NULL)
+      && (node = cgraph_get_node (decl)) != NULL)
     {
       slot = htab_find_slot_with_hash (assembler_name_hash, name,
 				       decl_assembler_name_hash (name),
@@ -2500,7 +2502,7 @@ cgraph_make_decl_local (tree decl)
 	  old_name  = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    {
-	      struct cgraph_node *node = cgraph_get_node_or_alias (decl);
+	      struct cgraph_node *node = cgraph_get_node (decl);
 	      change_decl_assembler_name (decl,
 					  clone_function_name (decl, "local"));
 	      if (node->local.lto_file_data)

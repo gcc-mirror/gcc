@@ -12,12 +12,13 @@ TEST=all-gcc
 #
 # v850e1-elf is rejected by config.sub
 LIST = alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
-  alpha-dec-osf5.1 alpha64-dec-vms alpha-dec-vms am33_2.0-linux \
+  alpha-dec-osf5.1OPT-enable-obsolete alpha64-dec-vms alpha-dec-vms \
+  am33_2.0-linux \
   arm-wrs-vxworks arm-freebsd6 arm-netbsdelf arm-linux \
   arm-linux-androideabi arm-uclinux_eabi arm-ecos-elf arm-eabi \
   arm-symbianelf arm-rtems arm-elf arm-wince-pe avr-rtems avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
-  cris-elf cris-linux crisv32-elf crisv32-linux fido-elf \
+  c6x-elf c6x-uclinux cris-elf cris-linux crisv32-elf crisv32-linux fido-elf \
   fr30-elf frv-elf frv-linux h8300-elf h8300-rtems hppa-linux-gnu \
   hppa-linux-gnuOPT-enable-sjlj-exceptions=yes hppa64-linux-gnu \
   hppa2.0-hpux10.1 hppa64-hpux11.3 \
@@ -26,7 +27,7 @@ LIST = alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
   i486-freebsd4 i686-freebsd6 i686-kfreebsd-gnu \
   i686-netbsdelf9 i686-knetbsd-gnu i686-openbsd i686-openbsd3.0 \
   i686-elf i686-kopensolaris-gnu i686-symbolics-gnu i686-pc-msdosdjgpp \
-  i686-lynxos i586-netwareOPT-with-ld=SCRIPTSnwld i686-nto-qnx \
+  i686-lynxos i686-nto-qnx \
   i686-rtems i686-solaris2.10 i686-wrs-vxworks \
   i686-wrs-vxworksae \
   i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elf \
@@ -35,7 +36,8 @@ LIST = alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
   m32r-linux m32rle-linux m68k-elf m68k-netbsdelf \
   m68k-openbsd m68k-uclinux m68k-linux m68k-rtems \
   mcore-elf mep-elf microblaze-linux microblaze-elf \
-  mips-sgi-irix6.5OPT-with-stabsOPT-enable-threads=posix mips-netbsd \
+  mips-sgi-irix6.5OPT-with-stabsOPT-enable-threads=posixOPT-enable-obsolete \
+  mips-netbsd \
   mips64el-st-linux-gnu mips64octeon-linux mipsisa64r2-linux \
   mipsisa32r2-linux-gnu mips-openbsd mipsisa64r2-sde-elf mipsisa32-elfoabi \
   mipsisa64-elfoabi mipsisa64r2el-elf mipsisa64sr71k-elf mipsisa64sb1-elf \
@@ -70,7 +72,7 @@ LOGFILES = $(patsubst %,log/%-make.out,$(LIST))
 all: $(LOGFILES)
 config: $(LIST)
 
-.PHONY: make-log-dir make-script-dir all config
+.PHONY: make-log-dir all config
 
 empty=
 
@@ -79,14 +81,7 @@ empty=
 make-log-dir: ../gcc/MAINTAINERS
 	mkdir log
 
-# The 'ix86-netware --with-ld=nwld' configuration needs a nwld executable to
-# configure.  See PR47104.
-make-script-dir:
-	mkdir scripts
-	echo ld $* > scripts/nwld
-	chmod u+x scripts/nwld
-
-$(LIST): make-log-dir make-script-dir
+$(LIST): make-log-dir
 	-mkdir $@
 	(cd $@ && \
 	../../gcc/configure \

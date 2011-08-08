@@ -762,8 +762,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
       else if (POINTER_TYPE_P (type))
 	noloop = fold_build2 (GT_EXPR, boolean_type_node,
 			      iv0->base,
-			      fold_build2 (POINTER_PLUS_EXPR, type,
-					   iv1->base, tmod));
+			      fold_build_pointer_plus (iv1->base, tmod));
       else
 	noloop = fold_build2 (GT_EXPR, boolean_type_node,
 			      iv0->base,
@@ -788,10 +787,9 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
 	noloop = boolean_false_node;
       else if (POINTER_TYPE_P (type))
 	noloop = fold_build2 (GT_EXPR, boolean_type_node,
-			      fold_build2 (POINTER_PLUS_EXPR, type,
-					   iv0->base,
-					   fold_build1 (NEGATE_EXPR,
-							type1, tmod)),
+			      fold_build_pointer_plus (iv0->base,
+						       fold_build1 (NEGATE_EXPR,
+								    type1, tmod)),
 			      iv1->base);
       else
 	noloop = fold_build2 (GT_EXPR, boolean_type_node,
@@ -1166,16 +1164,13 @@ number_of_iterations_le (tree type, affine_iv *iv0, affine_iv *iv1,
   if (integer_nonzerop (iv0->step))
     {
       if (POINTER_TYPE_P (type))
-	iv1->base = fold_build2 (POINTER_PLUS_EXPR, type, iv1->base,
-				 build_int_cst (type1, 1));
+	iv1->base = fold_build_pointer_plus_hwi (iv1->base, 1);
       else
 	iv1->base = fold_build2 (PLUS_EXPR, type1, iv1->base,
 				 build_int_cst (type1, 1));
     }
   else if (POINTER_TYPE_P (type))
-    iv0->base = fold_build2 (POINTER_PLUS_EXPR, type, iv0->base,
-			     fold_build1 (NEGATE_EXPR, type1,
-					  build_int_cst (type1, 1)));
+    iv0->base = fold_build_pointer_plus_hwi (iv0->base, -1);
   else
     iv0->base = fold_build2 (MINUS_EXPR, type1,
 			     iv0->base, build_int_cst (type1, 1));

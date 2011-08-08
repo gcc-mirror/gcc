@@ -2,7 +2,7 @@
 #define __gttf2 __gttf2_shared
 #endif
 
-#include "config/soft-fp/getf2.c"
+#include "soft-fp/getf2.c"
 
 #ifdef SHARED
 #undef __gttf2

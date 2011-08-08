@@ -28,6 +28,7 @@ proc lremove {list_variable value} {
 proc gnat-dg-test { prog do_what extra_tool_flags } {
     if { $do_what == "compile" } {
 	lappend extra_tool_flags "-c"
+	lappend extra_tool_flags "-u"
     }
     set result [gcc-dg-test-1 gnat_target_compile $prog $do_what $extra_tool_flags]
 

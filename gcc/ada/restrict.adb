@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -104,6 +104,69 @@ package body Restrict is
    begin
       Check_Restriction (No_Elaboration_Code, N);
    end Check_Elaboration_Code_Allowed;
+
+   -----------------------------
+   -- Check_SPARK_Restriction --
+   -----------------------------
+
+   procedure Check_SPARK_Restriction
+     (Msg   : String;
+      N     : Node_Id;
+      Force : Boolean := False)
+   is
+      Msg_Issued          : Boolean;
+      Save_Error_Msg_Sloc : Source_Ptr;
+   begin
+      if Force or else Comes_From_Source (N) then
+
+         if Restriction_Check_Required (SPARK)
+           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
+         then
+            return;
+         end if;
+
+         --  Since the call to Restriction_Msg from Check_Restriction may set
+         --  Error_Msg_Sloc to the location of the pragma restriction, save and
+         --  restore the previous value of the global variable around the call.
+
+         Save_Error_Msg_Sloc := Error_Msg_Sloc;
+         Check_Restriction (Msg_Issued, SPARK, First_Node (N));
+         Error_Msg_Sloc := Save_Error_Msg_Sloc;
+
+         if Msg_Issued then
+            Error_Msg_F ("\\| " & Msg, N);
+         end if;
+      end if;
+   end Check_SPARK_Restriction;
+
+   procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id) is
+      Msg_Issued          : Boolean;
+      Save_Error_Msg_Sloc : Source_Ptr;
+   begin
+      pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
+
+      if Comes_From_Source (N) then
+
+         if Restriction_Check_Required (SPARK)
+           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
+         then
+            return;
+         end if;
+
+         --  Since the call to Restriction_Msg from Check_Restriction may set
+         --  Error_Msg_Sloc to the location of the pragma restriction, save and
+         --  restore the previous value of the global variable around the call.
+
+         Save_Error_Msg_Sloc := Error_Msg_Sloc;
+         Check_Restriction (Msg_Issued, SPARK, First_Node (N));
+         Error_Msg_Sloc := Save_Error_Msg_Sloc;
+
+         if Msg_Issued then
+            Error_Msg_F ("\\| " & Msg1, N);
+            Error_Msg_F (Msg2, N);
+         end if;
+      end if;
+   end Check_SPARK_Restriction;
 
    -----------------------------------------
    -- Check_Implicit_Dynamic_Code_Allowed --
@@ -231,6 +294,18 @@ package body Restrict is
       N : Node_Id;
       V : Uint := Uint_Minus_1)
    is
+      Msg_Issued : Boolean;
+      pragma Unreferenced (Msg_Issued);
+   begin
+      Check_Restriction (Msg_Issued, R, N, V);
+   end Check_Restriction;
+
+   procedure Check_Restriction
+     (Msg_Issued : out Boolean;
+      R          : Restriction_Id;
+      N          : Node_Id;
+      V          : Uint := Uint_Minus_1)
+   is
       VV : Integer;
       --  V converted to integer form. If V is greater than Integer'Last,
       --  it is reset to minus 1 (unknown value).
@@ -298,12 +373,22 @@ package body Restrict is
    --  Start of processing for Check_Restriction
 
    begin
-      --  In CodePeer mode, we do not want to check for any restriction, or set
-      --  additional restrictions other than those already set in gnat1drv.adb
-      --  so that we have consistency between each compilation.
+      Msg_Issued := False;
 
-      if CodePeer_Mode then
+      --  In CodePeer and ALFA mode, we do not want to check for any
+      --  restriction, or set additional restrictions other than those already
+      --  set in gnat1drv.adb so that we have consistency between each
+      --  compilation.
+
+      if CodePeer_Mode or ALFA_Mode then
          return;
+      end if;
+
+      --  In SPARK mode, issue an error for any use of class-wide, even if the
+      --  No_Dispatch restriction is not set.
+
+      if R = No_Dispatch then
+         Check_SPARK_Restriction ("class-wide is not allowed", N);
       end if;
 
       if UI_Is_In_Int_Range (V) then
@@ -354,6 +439,7 @@ package body Restrict is
                    and then Restrictions.Value (R) = 0)
         or else Restrictions.Count (R) > Restrictions.Value (R)
       then
+         Msg_Issued := True;
          Restriction_Msg (R, N);
       end if;
    end Check_Restriction;
@@ -474,6 +560,25 @@ package body Restrict is
 
       return Not_A_Restriction_Id;
    end Get_Restriction_Id;
+
+   --------------------------------
+   -- Is_In_Hidden_Part_In_SPARK --
+   --------------------------------
+
+   function Is_In_Hidden_Part_In_SPARK (Loc : Source_Ptr) return Boolean is
+   begin
+      --  Loop through table of hidden ranges
+
+      for J in SPARK_Hides.First .. SPARK_Hides.Last loop
+         if SPARK_Hides.Table (J).Start <= Loc
+           and then Loc < SPARK_Hides.Table (J).Stop
+         then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Is_In_Hidden_Part_In_SPARK;
 
    -------------------------------
    -- No_Exception_Handlers_Set --
@@ -611,9 +716,10 @@ package body Restrict is
 
       procedure Id_Case (S : String; Quotes : Boolean := True);
       --  Given a string S, case it according to current identifier casing,
-      --  and store in Error_Msg_String. Then append `~` to the message buffer
-      --  to output the string unchanged surrounded in quotes. The quotes are
-      --  suppressed if Quotes = False.
+      --  except for SPARK (an acronym) which is set all upper case, and store
+      --  in Error_Msg_String. Then append `~` to the message buffer to output
+      --  the string unchanged surrounded in quotes. The quotes are suppressed
+      --  if Quotes = False.
 
       --------------
       -- Add_Char --
@@ -643,7 +749,13 @@ package body Restrict is
       begin
          Name_Buffer (1 .. S'Last) := S;
          Name_Len := S'Length;
-         Set_Casing (Identifier_Casing (Get_Source_File_Index (Sloc (N))));
+
+         if R = SPARK then
+            Set_All_Upper_Case;
+         else
+            Set_Casing (Identifier_Casing (Get_Source_File_Index (Sloc (N))));
+         end if;
+
          Error_Msg_Strlen := Name_Len;
          Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
 
@@ -766,6 +878,17 @@ package body Restrict is
          return False;
       end if;
    end Same_Unit;
+
+   ------------------------------
+   -- Set_Hidden_Part_In_SPARK --
+   ------------------------------
+
+   procedure Set_Hidden_Part_In_SPARK (Loc1, Loc2 : Source_Ptr) is
+   begin
+      SPARK_Hides.Increment_Last;
+      SPARK_Hides.Table (SPARK_Hides.Last).Start := Loc1;
+      SPARK_Hides.Table (SPARK_Hides.Last).Stop  := Loc2;
+   end Set_Hidden_Part_In_SPARK;
 
    ------------------------------
    -- Set_Profile_Restrictions --

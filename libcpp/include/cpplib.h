@@ -479,12 +479,12 @@ struct cpp_callbacks
   void (*file_change) (cpp_reader *, const struct line_map *);
 
   void (*dir_change) (cpp_reader *, const char *);
-  void (*include) (cpp_reader *, unsigned int, const unsigned char *,
+  void (*include) (cpp_reader *, source_location, const unsigned char *,
 		   const char *, int, const cpp_token **);
-  void (*define) (cpp_reader *, unsigned int, cpp_hashnode *);
-  void (*undef) (cpp_reader *, unsigned int, cpp_hashnode *);
-  void (*ident) (cpp_reader *, unsigned int, const cpp_string *);
-  void (*def_pragma) (cpp_reader *, unsigned int);
+  void (*define) (cpp_reader *, source_location, cpp_hashnode *);
+  void (*undef) (cpp_reader *, source_location, cpp_hashnode *);
+  void (*ident) (cpp_reader *, source_location, const cpp_string *);
+  void (*def_pragma) (cpp_reader *, source_location);
   int (*valid_pch) (cpp_reader *, const char *, int);
   void (*read_pch) (cpp_reader *, const char *, int, const char *);
   missing_header_cb missing_header;
@@ -501,8 +501,8 @@ struct cpp_callbacks
 
   /* Callbacks for when a macro is expanded, or tested (whether
      defined or not at the time) in #ifdef, #ifndef or "defined".  */
-  void (*used_define) (cpp_reader *, unsigned int, cpp_hashnode *);
-  void (*used_undef) (cpp_reader *, unsigned int, cpp_hashnode *);
+  void (*used_define) (cpp_reader *, source_location, cpp_hashnode *);
+  void (*used_undef) (cpp_reader *, source_location, cpp_hashnode *);
   /* Called before #define and #undef or other macro definition
      changes are processed.  */
   void (*before_define) (cpp_reader *);

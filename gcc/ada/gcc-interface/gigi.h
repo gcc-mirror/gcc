@@ -199,6 +199,10 @@ struct File_Info_Type
   Nat Num_Source_Lines;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* This is the main program of the back-end.  It sets up all the table
    structures and then generates code.  */
 extern void gigi (Node_Id gnat_root, int max_gnat_node,
@@ -217,6 +221,10 @@ extern void gigi (Node_Id gnat_root, int max_gnat_node,
                   Entity_Id standard_long_long_float,
                   Entity_Id standard_exception_type,
                   Int gigi_operating_mode);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* GNAT_NODE is the root of some GNAT tree.  Return the root of the
    GCC tree corresponding to that GNAT tree.  Normally, no code is generated;
@@ -698,10 +706,6 @@ extern tree build_vms_descriptor (tree type, Mechanism_Type mech,
 extern tree build_vms_descriptor32 (tree type, Mechanism_Type mech,
                                   Entity_Id gnat_entity);
 
-/* Build a stub for the subprogram specified by the GCC tree GNU_SUBPROG
-   and the GNAT node GNAT_SUBPROG.  */
-extern void build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog);
-
 /* Build a type to be used to represent an aliased object whose nominal type
    is an unconstrained array.  This consists of a RECORD_TYPE containing a
    field of TEMPLATE_TYPE and a field of OBJECT_TYPE, which is an ARRAY_TYPE.
@@ -804,12 +808,8 @@ extern tree build_cond_expr (tree result_type, tree condition_operand,
                              tree true_operand, tree false_operand);
 
 /* Similar, but for COMPOUND_EXPR.  */
-
 extern tree build_compound_expr (tree result_type, tree stmt_operand,
 				 tree expr_operand);
-
-/* Similar, but for RETURN_EXPR.  */
-extern tree build_return_expr (tree ret_obj, tree ret_val);
 
 /* Build a CALL_EXPR to call FUNDECL with one argument, ARG.  Return
    the CALL_EXPR.  */
@@ -885,6 +885,15 @@ extern tree build_allocator (tree type, tree init, tree result_type,
 extern tree fill_vms_descriptor (tree gnu_type, tree gnu_expr,
                                  Node_Id gnat_actual);
 
+/* Convert GNU_EXPR, a pointer to a VMS descriptor, to GNU_TYPE, a regular
+   pointer or fat pointer type.  GNU_EXPR_ALT_TYPE is the alternate (32-bit)
+   pointer type of GNU_EXPR.  BY_REF is true if the result is to be used by
+   reference.  GNAT_SUBPROG is the subprogram to which the VMS descriptor is
+   passed.  */
+extern tree convert_vms_descriptor (tree gnu_type, tree gnu_expr,
+				    tree gnu_expr_alt_type, bool by_ref,
+				    Entity_Id gnat_subprog);
+
 /* Indicate that we need to take the address of T and that it therefore
    should not be allocated in a register.  Returns true if successful.  */
 extern bool gnat_mark_addressable (tree t);
@@ -926,9 +935,12 @@ extern int fp_prec_to_size (int prec);
 /* Return the precision of the FP mode with size SIZE.  */
 extern int fp_size_to_prec (int size);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* These functions return the basic data type sizes and related parameters
    about the target machine.  */
-
 extern Pos get_target_bits_per_unit (void);
 extern Pos get_target_bits_per_word (void);
 extern Pos get_target_char_size (void);
@@ -952,6 +964,15 @@ extern Nat get_bits_be (void);
 extern Nat get_target_strict_alignment (void);
 extern Nat get_target_double_float_alignment (void);
 extern Nat get_target_double_scalar_alignment (void);
+
+/* This function is called by the front-end to enumerate all the supported
+   modes for the machine, as well as some predefined C types.  */
+extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
+					int));
+
+#ifdef __cplusplus
+}
+#endif
 
 /* Let code know whether we are targetting VMS without need of
    intrusive preprocessor directives.  */

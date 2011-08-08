@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,12 +25,11 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Util; use Sem_Util;
@@ -148,7 +147,9 @@ package body Exp_Strm is
       Decls  : List_Id;
       Ranges : List_Id;
       Stms   : List_Id;
+      Rstmt  : Node_Id;
       Indx   : Node_Id;
+      Odecl  : Node_Id;
 
    begin
       Decls := New_List;
@@ -192,38 +193,52 @@ package body Exp_Strm is
          Next_Index (Indx);
       end loop;
 
-      --  If the first subtype is constrained, use it directly. Otherwise
-      --  build a subtype indication with the proper bounds.
+      --  If the type is constrained, use it directly. Otherwise build a
+      --  subtype indication with the proper bounds.
 
-      if Is_Constrained (Stream_Base_Type (Typ)) then
-         Append_To (Decls,
+      if Is_Constrained (Typ) then
+         Odecl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
-             Object_Definition =>
-               New_Occurrence_Of (Stream_Base_Type (Typ), Loc)));
+             Object_Definition   => New_Occurrence_Of (Typ, Loc));
+
       else
-         Append_To (Decls,
+         Odecl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
-             Object_Definition =>
+             Object_Definition   =>
                Make_Subtype_Indication (Loc,
                  Subtype_Mark =>
                    New_Occurrence_Of (Stream_Base_Type (Typ), Loc),
-                 Constraint =>
-                   Make_Index_Or_Discriminant_Constraint (Loc,
-                     Constraints => Ranges))));
+                 Constraint   =>
+                   Make_Index_Or_Discriminant_Constraint (Loc, Ranges)));
       end if;
 
-      Stms := New_List (
-         Make_Attribute_Reference (Loc,
-           Prefix => New_Occurrence_Of (Typ, Loc),
-           Attribute_Name => Name_Read,
-           Expressions => New_List (
-             Make_Identifier (Loc, Name_S),
-             Make_Identifier (Loc, Name_V))),
+      Rstmt :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => New_Occurrence_Of (Typ, Loc),
+          Attribute_Name => Name_Read,
+          Expressions    => New_List (
+            Make_Identifier (Loc, Name_S),
+            Make_Identifier (Loc, Name_V)));
 
-         Make_Simple_Return_Statement (Loc,
-           Expression => Make_Identifier (Loc, Name_V)));
+      if Ada_Version >= Ada_2005 then
+         Stms := New_List (
+            Make_Extended_Return_Statement (Loc,
+              Return_Object_Declarations => New_List (Odecl),
+              Handled_Statement_Sequence =>
+                Make_Handled_Sequence_Of_Statements (Loc, New_List (Rstmt))));
+      else
+         --  pragma Assert (not Is_Limited_Type (Typ));
+         --  Returning a local object, shouldn't happen in the case of a
+         --  limited type, but currently occurs in DSA stubs in Ada 95 mode???
+
+         Stms := New_List (
+                   Odecl,
+                   Rstmt,
+                   Make_Simple_Return_Statement (Loc,
+                     Expression => Make_Identifier (Loc, Name_V)));
+      end if;
 
       Fnam :=
         Make_Defining_Identifier (Loc,
@@ -254,10 +269,10 @@ package body Exp_Strm is
       for J in 1 .. Number_Dimensions (Typ) loop
          Append_To (Stms,
            Make_Attribute_Reference (Loc,
-             Prefix =>
+             Prefix         =>
                New_Occurrence_Of (Stream_Base_Type (Etype (Indx)), Loc),
              Attribute_Name => Name_Write,
-             Expressions => New_List (
+             Expressions    => New_List (
                Make_Identifier (Loc, Name_S),
                Make_Attribute_Reference (Loc,
                  Prefix         => Make_Identifier (Loc, Name_V),
@@ -267,10 +282,10 @@ package body Exp_Strm is
 
          Append_To (Stms,
            Make_Attribute_Reference (Loc,
-             Prefix =>
+             Prefix         =>
                New_Occurrence_Of (Stream_Base_Type (Etype (Indx)), Loc),
              Attribute_Name => Name_Write,
-             Expressions => New_List (
+             Expressions    => New_List (
                Make_Identifier (Loc, Name_S),
                Make_Attribute_Reference (Loc,
                  Prefix         => Make_Identifier (Loc, Name_V),
@@ -285,7 +300,7 @@ package body Exp_Strm is
 
       Append_To (Stms,
         Make_Attribute_Reference (Loc,
-          Prefix => New_Occurrence_Of (Typ, Loc),
+          Prefix         => New_Occurrence_Of (Typ, Loc),
           Attribute_Name => Name_Write,
           Expressions => New_List (
             Make_Identifier (Loc, Name_S),
@@ -452,21 +467,11 @@ package body Exp_Strm is
       FST     : constant Entity_Id  := First_Subtype (U_Type);
       Strm    : constant Node_Id    := First (Expressions (N));
       Targ    : constant Node_Id    := Next (Strm);
-      P_Size  : Uint;
+      P_Size  : constant Uint       := Get_Stream_Size (FST);
       Res     : Node_Id;
       Lib_RE  : RE_Id;
 
    begin
-      Check_Restriction (No_Default_Stream_Attributes, N);
-
-      --  Compute the size of the stream element. This is either the size of
-      --  the first subtype or if given the size of the Stream_Size attribute.
-
-      if Has_Stream_Size_Clause (FST) then
-         P_Size := Static_Integer (Expression (Stream_Size_Clause (FST)));
-      else
-         P_Size := Esize (FST);
-      end if;
 
       --  Check first for Boolean and Character. These are enumeration types,
       --  but we treat them specially, since they may require special handling
@@ -559,6 +564,10 @@ package body Exp_Strm is
       --  then the representation is unsigned
 
       elsif not Is_Unsigned_Type (FST)
+
+        --  The following set of tests gets repeated many times, we should
+        --  have an abstraction defined ???
+
         and then
           (Is_Fixed_Point_Type (U_Type)
              or else
@@ -566,6 +575,7 @@ package body Exp_Strm is
              or else
            (Is_Signed_Integer_Type (U_Type)
               and then not Has_Biased_Representation (FST)))
+
       then
          if P_Size <= Standard_Short_Short_Integer_Size then
             Lib_RE := RE_I_SSI;
@@ -671,7 +681,6 @@ package body Exp_Strm is
       Libent  : Entity_Id;
 
    begin
-      Check_Restriction (No_Default_Stream_Attributes, N);
 
       --  Compute the size of the stream element. This is either the size of
       --  the first subtype or if given the size of the Stream_Size attribute.
@@ -902,10 +911,10 @@ package body Exp_Strm is
           Selector_Name => Make_Identifier (Loc, Name_V));
 
       --  Generate Reads for the discriminants of the type. The discriminants
-      --  need to be read before the rest of the components, so that
-      --  variants are initialized correctly. The discriminants must be read
-      --  into temporary variables so an incomplete Read (interrupted by an
-      --  exception, for example) does not alter the passed object.
+      --  need to be read before the rest of the components, so that variants
+      --  are initialized correctly. The discriminants must be read into temp
+      --  variables so an incomplete Read (interrupted by an exception, for
+      --  example) does not alter the passed object.
 
       while Present (Disc) loop
          Tmp_For_Disc := Make_Defining_Identifier (Loc,
@@ -919,9 +928,9 @@ package body Exp_Strm is
 
          Append_To (Stms,
            Make_Attribute_Reference (Loc,
-             Prefix => New_Occurrence_Of (Etype (Disc), Loc),
+             Prefix         => New_Occurrence_Of (Etype (Disc), Loc),
              Attribute_Name => Name_Read,
-             Expressions => New_List (
+             Expressions    => New_List (
                Make_Identifier (Loc, Name_S),
                New_Occurrence_Of (Tmp_For_Disc, Loc))));
 
@@ -937,14 +946,14 @@ package body Exp_Strm is
                  Left_Opnd  => New_Occurrence_Of (Tmp_For_Disc, Loc),
                  Right_Opnd =>
                    Make_Selected_Component (Loc,
-                     Prefix => New_Copy_Tree (Out_Formal),
+                     Prefix        => New_Copy_Tree (Out_Formal),
                      Selector_Name => New_Occurrence_Of (Disc, Loc))),
              Reason => CE_Discriminant_Check_Failed));
          Next_Discriminant (Disc);
       end loop;
 
-      --  Generate reads for the components of the record (including
-      --  those that depend on discriminants).
+      --  Generate reads for the components of the record (including those
+      --  that depend on discriminants).
 
       Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Read);
 
@@ -968,14 +977,14 @@ package body Exp_Strm is
       Constrained_Stms := Statements (Handled_Statement_Sequence (Decl));
       Append_To (Stms,
         Make_Block_Statement (Loc,
-          Declarations => Dcls,
+          Declarations               => Dcls,
           Handled_Statement_Sequence => Parent (Constrained_Stms)));
 
       Append_To (Constrained_Stms,
         Make_Implicit_If_Statement (Pnam,
           Condition =>
             Make_Attribute_Reference (Loc,
-              Prefix => New_Copy_Tree (Out_Formal),
+              Prefix         => New_Copy_Tree (Out_Formal),
               Attribute_Name => Name_Constrained),
           Then_Statements => Discriminant_Checks));
 
@@ -1189,13 +1198,13 @@ package body Exp_Strm is
              Return_Object_Declarations => New_List (Obj_Decl),
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 New_List (Make_Attribute_Reference (Loc,
-                             Prefix => New_Occurrence_Of (Typ, Loc),
-                             Attribute_Name => Name_Read,
-                             Expressions => New_List (
-                               Make_Identifier (Loc, Name_S),
-                               Make_Identifier (Loc, Name_V)))))));
-
+                 Statements => New_List (
+                   Make_Attribute_Reference (Loc,
+                     Prefix         => New_Occurrence_Of (Typ, Loc),
+                     Attribute_Name => Name_Read,
+                     Expressions    => New_List (
+                       Make_Identifier (Loc, Name_S),
+                       Make_Identifier (Loc, Name_V)))))));
       else
          Append_To (Decls, Obj_Decl);
 

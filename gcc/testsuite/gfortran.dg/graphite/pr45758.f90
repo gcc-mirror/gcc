@@ -38,4 +38,4 @@ CONTAINS
     ENDDO
   END SUBROUTINE create_destination_list
 END MODULE
-
+! { dg-final { cleanup-modules "util" } }

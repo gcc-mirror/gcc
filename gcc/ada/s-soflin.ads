@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,6 +59,11 @@ package System.Soft_Links is
 
    type No_Param_Proc     is access procedure;
    pragma Favor_Top_Level (No_Param_Proc);
+   pragma Suppress_Initialization (No_Param_Proc);
+   --  Some uninitialized objects of that type are initialized by the Binder
+   --  so it is important that such objects are not reset to null during
+   --  elaboration.
+
    type Addr_Param_Proc   is access procedure (Addr : Address);
    pragma Favor_Top_Level (Addr_Param_Proc);
    type EO_Param_Proc     is access procedure (Excep : EO);
@@ -146,7 +151,7 @@ package System.Soft_Links is
 
    function Check_Abort_Status_NT return Integer;
    --  Returns Boolean'Pos (True) iff abort signal should raise
-   --  Standard.Abort_Signal.
+   --  Standard'Abort_Signal.
 
    procedure Task_Lock_NT;
    --  Lock out other tasks (non-tasking case, does nothing)
@@ -157,9 +162,6 @@ package System.Soft_Links is
    procedure Task_Termination_NT (Excep : EO);
    --  Handle task termination routines for the environment task (non-tasking
    --  case, does nothing).
-
-   procedure Null_Finalize_Global_List;
-   --  Finalize global list for controlled objects (does nothing)
 
    procedure Adafinal_NT;
    --  Shuts down the runtime system (non-tasking case)
@@ -180,7 +182,7 @@ package System.Soft_Links is
 
    Check_Abort_Status : Get_Integer_Call := Check_Abort_Status_NT'Access;
    --  Called when Abort_Signal is delivered to the process.  Checks to
-   --  see if signal should result in raising Standard.Abort_Signal.
+   --  see if signal should result in raising Standard'Abort_Signal.
 
    Lock_Task : No_Param_Proc := Task_Lock_NT'Access;
    --  Locks out other tasks. Preceding a section of code by Task_Lock and
@@ -221,8 +223,10 @@ package System.Soft_Links is
    Task_Termination_Handler : EO_Param_Proc := Task_Termination_NT'Access;
    --  Handle task termination routines (task/non-task case as appropriate)
 
-   Finalize_Global_List : No_Param_Proc := Null_Finalize_Global_List'Access;
-   --  Performs finalization of global list for controlled objects
+   Finalize_Library_Objects : No_Param_Proc;
+   pragma Export (C, Finalize_Library_Objects,
+                  "__gnat_finalize_library_objects");
+   --  Will be initialized by the binder
 
    Adafinal : No_Param_Proc := Adafinal_NT'Access;
    --  Performs the finalization of the Ada Runtime
@@ -287,6 +291,16 @@ package System.Soft_Links is
    -- Exception Tracebacks Soft-Links --
    -------------------------------------
 
+   Library_Exception : EO;
+   pragma Export (Ada, Library_Exception, "__gnat_library_exception");
+   --  Library-level finalization routines use this common reference to store
+   --  the first library-level exception which occurs during finalization.
+
+   Library_Exception_Set : Boolean := False;
+   pragma Export (Ada, Library_Exception_Set, "__gnat_library_exception_set");
+   --  Used in conjunction with Library_Exception, set when an exception has
+   --  been stored.
+
    Traceback_Decorator_Wrapper : Traceback_Decorator_Wrapper_Call;
    --  Wrapper to the possible user specified traceback decorator to be
    --  called during automatic output of exception data.
@@ -300,6 +314,10 @@ package System.Soft_Links is
    --  Since concurrent read/write operations may occur on this variable.
    --  See the body of Tailored_Exception_Traceback in Ada.Exceptions for
    --  a more detailed description of the potential problems.
+
+   procedure Save_Library_Occurrence (E : Ada.Exceptions.Exception_Occurrence);
+   --  When invoked, this routine saves an exception occurrence into a hidden
+   --  reference. Subsequent calls will have no effect.
 
    ------------------------
    -- Task Specific Data --

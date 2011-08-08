@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1993-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1993-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -33,6 +33,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with System.Parameters;
+
 generic
    type Index is (<>);
    type Element is private;
@@ -43,6 +45,7 @@ package Interfaces.C.Pointers is
    pragma Preelaborate;
 
    type Pointer is access all Element;
+   for Pointer'Size use System.Parameters.ptr_bits;
 
    pragma No_Strict_Aliasing (Pointer);
    --  We turn off any strict aliasing assumptions for the pointer type,

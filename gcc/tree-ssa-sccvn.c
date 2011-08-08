@@ -391,11 +391,15 @@ vn_reference_op_eq (const void *p1, const void *p2)
   const_vn_reference_op_t const vro1 = (const_vn_reference_op_t) p1;
   const_vn_reference_op_t const vro2 = (const_vn_reference_op_t) p2;
 
-  return vro1->opcode == vro2->opcode
-    && types_compatible_p (vro1->type, vro2->type)
-    && expressions_equal_p (vro1->op0, vro2->op0)
-    && expressions_equal_p (vro1->op1, vro2->op1)
-    && expressions_equal_p (vro1->op2, vro2->op2);
+  return (vro1->opcode == vro2->opcode
+	  /* We do not care for differences in type qualification.  */
+	  && (vro1->type == vro2->type
+	      || (vro1->type && vro2->type
+		  && types_compatible_p (TYPE_MAIN_VARIANT (vro1->type),
+					 TYPE_MAIN_VARIANT (vro2->type))))
+	  && expressions_equal_p (vro1->op0, vro2->op0)
+	  && expressions_equal_p (vro1->op1, vro2->op1)
+	  && expressions_equal_p (vro1->op2, vro2->op2));
 }
 
 /* Compute the hash for a reference operand VRO1.  */
@@ -578,8 +582,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
       vn_reference_op_s temp;
 
       memset (&temp, 0, sizeof (temp));
-      /* We do not care for spurious type qualifications.  */
-      temp.type = TYPE_MAIN_VARIANT (TREE_TYPE (ref));
+      temp.type = TREE_TYPE (ref);
       temp.opcode = TREE_CODE (ref);
       temp.op0 = TMR_INDEX (ref);
       temp.op1 = TMR_STEP (ref);
@@ -610,8 +613,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
       vn_reference_op_s temp;
 
       memset (&temp, 0, sizeof (temp));
-      /* We do not care for spurious type qualifications.  */
-      temp.type = TYPE_MAIN_VARIANT (TREE_TYPE (ref));
+      temp.type = TREE_TYPE (ref);
       temp.opcode = TREE_CODE (ref);
       temp.off = -1;
 
@@ -676,16 +678,34 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 		temp.off = off.low;
 	    }
 	  break;
+	case VAR_DECL:
+	  if (DECL_HARD_REGISTER (ref))
+	    {
+	      temp.op0 = ref;
+	      break;
+	    }
+	  /* Fallthru.  */
+	case PARM_DECL:
+	case CONST_DECL:
+	case RESULT_DECL:
+	  /* Canonicalize decls to MEM[&decl] which is what we end up with
+	     when valueizing MEM[ptr] with ptr = &decl.  */
+	  temp.opcode = MEM_REF;
+	  temp.op0 = build_int_cst (build_pointer_type (TREE_TYPE (ref)), 0);
+	  temp.off = 0;
+	  VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+	  temp.opcode = ADDR_EXPR;
+	  temp.op0 = build_fold_addr_expr (ref);
+	  temp.type = TREE_TYPE (temp.op0);
+	  temp.off = -1;
+	  break;
 	case STRING_CST:
 	case INTEGER_CST:
 	case COMPLEX_CST:
 	case VECTOR_CST:
 	case REAL_CST:
+	case FIXED_CST:
 	case CONSTRUCTOR:
-	case VAR_DECL:
-	case PARM_DECL:
-	case CONST_DECL:
-	case RESULT_DECL:
 	case SSA_NAME:
 	  temp.op0 = ref;
 	  break;
@@ -1127,29 +1147,51 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 
 /* Transform any SSA_NAME's in a vector of vn_reference_op_s
    structures into their value numbers.  This is done in-place, and
-   the vector passed in is returned.  */
+   the vector passed in is returned.  *VALUEIZED_ANYTHING will specify
+   whether any operands were valueized.  */
 
 static VEC (vn_reference_op_s, heap) *
-valueize_refs (VEC (vn_reference_op_s, heap) *orig)
+valueize_refs_1 (VEC (vn_reference_op_s, heap) *orig, bool *valueized_anything)
 {
   vn_reference_op_t vro;
   unsigned int i;
+
+  *valueized_anything = false;
 
   FOR_EACH_VEC_ELT (vn_reference_op_s, orig, i, vro)
     {
       if (vro->opcode == SSA_NAME
 	  || (vro->op0 && TREE_CODE (vro->op0) == SSA_NAME))
 	{
-	  vro->op0 = SSA_VAL (vro->op0);
+	  tree tem = SSA_VAL (vro->op0);
+	  if (tem != vro->op0)
+	    {
+	      *valueized_anything = true;
+	      vro->op0 = tem;
+	    }
 	  /* If it transforms from an SSA_NAME to a constant, update
 	     the opcode.  */
 	  if (TREE_CODE (vro->op0) != SSA_NAME && vro->opcode == SSA_NAME)
 	    vro->opcode = TREE_CODE (vro->op0);
 	}
       if (vro->op1 && TREE_CODE (vro->op1) == SSA_NAME)
-	vro->op1 = SSA_VAL (vro->op1);
+	{
+	  tree tem = SSA_VAL (vro->op1);
+	  if (tem != vro->op1)
+	    {
+	      *valueized_anything = true;
+	      vro->op1 = tem;
+	    }
+	}
       if (vro->op2 && TREE_CODE (vro->op2) == SSA_NAME)
-	vro->op2 = SSA_VAL (vro->op2);
+	{
+	  tree tem = SSA_VAL (vro->op2);
+	  if (tem != vro->op2)
+	    {
+	      *valueized_anything = true;
+	      vro->op2 = tem;
+	    }
+	}
       /* If it transforms from an SSA_NAME to an address, fold with
 	 a preceding indirect reference.  */
       if (i > 0
@@ -1184,20 +1226,29 @@ valueize_refs (VEC (vn_reference_op_s, heap) *orig)
   return orig;
 }
 
+static VEC (vn_reference_op_s, heap) *
+valueize_refs (VEC (vn_reference_op_s, heap) *orig)
+{
+  bool tem;
+  return valueize_refs_1 (orig, &tem);
+}
+
 static VEC(vn_reference_op_s, heap) *shared_lookup_references;
 
 /* Create a vector of vn_reference_op_s structures from REF, a
    REFERENCE_CLASS_P tree.  The vector is shared among all callers of
-   this function.  */
+   this function.  *VALUEIZED_ANYTHING will specify whether any
+   operands were valueized.  */
 
 static VEC(vn_reference_op_s, heap) *
-valueize_shared_reference_ops_from_ref (tree ref)
+valueize_shared_reference_ops_from_ref (tree ref, bool *valueized_anything)
 {
   if (!ref)
     return NULL;
   VEC_truncate (vn_reference_op_s, shared_lookup_references, 0);
   copy_reference_ops_from_ref (ref, &shared_lookup_references);
-  shared_lookup_references = valueize_refs (shared_lookup_references);
+  shared_lookup_references = valueize_refs_1 (shared_lookup_references,
+					      valueized_anything);
   return shared_lookup_references;
 }
 
@@ -1580,7 +1631,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       op.op0 = build_int_cst (ptr_type_node, at - rhs_offset);
       op.off = at - lhs_offset + rhs_offset;
       VEC_replace (vn_reference_op_s, vr->operands, 0, &op);
-      op.type = TYPE_MAIN_VARIANT (TREE_TYPE (rhs));
+      op.type = TREE_TYPE (rhs);
       op.opcode = TREE_CODE (rhs);
       op.op0 = rhs;
       op.off = -1;
@@ -1675,12 +1726,14 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   VEC (vn_reference_op_s, heap) *operands;
   struct vn_reference_s vr1;
   tree cst;
+  bool valuezied_anything;
 
   if (vnresult)
     *vnresult = NULL;
 
   vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
-  vr1.operands = operands = valueize_shared_reference_ops_from_ref (op);
+  vr1.operands = operands
+    = valueize_shared_reference_ops_from_ref (op, &valuezied_anything);
   vr1.type = TREE_TYPE (op);
   vr1.set = get_alias_set (op);
   vr1.hashcode = vn_reference_compute_hash (&vr1);
@@ -1692,7 +1745,12 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
     {
       vn_reference_t wvnresult;
       ao_ref r;
-      ao_ref_init (&r, op);
+      /* Make sure to use a valueized reference if we valueized anything.
+         Otherwise preserve the full reference for advanced TBAA.  */
+      if (!valuezied_anything
+	  || !ao_ref_init_from_vn_reference (&r, vr1.set, vr1.type,
+					     vr1.operands))
+	ao_ref_init (&r, op);
       vn_walk_kind = kind;
       wvnresult =
 	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,

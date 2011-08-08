@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,18 +24,19 @@
 ------------------------------------------------------------------------------
 
 --  This package scans front end switches. Note that the body of Usage must be
---  coordinated with the switches that are recognized by this package.
---  The Usage package also acts as the official documentation for the
---  switches that are recognized. In addition, package Debug documents
---  the otherwise undocumented debug switches that are also recognized.
+--  be coordinated with the switches that are recognized by this package.
 
-with System.OS_Lib; use System.OS_Lib;
+--  The Usage package also acts as the official documentation for the switches
+--  that are recognized. In addition, package Debug documents the otherwise
+--  undocumented debug switches that are also recognized.
+
+with System.Strings; use System.Strings;
 
 package Switch.C is
 
    procedure Scan_Front_End_Switches
      (Switch_Chars : String;
-      Args         : Argument_List;
+      Args         : String_List;
       Arg_Rank     : Positive);
    --  Procedures to scan out front end switches stored in the given string.
    --  The first character is known to be a valid switch character, and there

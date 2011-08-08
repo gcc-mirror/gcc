@@ -39,3 +39,5 @@ contains
      if (not_refed /= 784) call abort()
   end subroutine uncalled
 end subroutine test
+
+! { dg-final { cleanup-modules "m" } }

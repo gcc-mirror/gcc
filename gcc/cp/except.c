@@ -452,10 +452,10 @@ expand_start_catch_block (tree decl)
 	 generic exception header.  */
       exp = build_exc_ptr ();
       exp = build1 (NOP_EXPR, build_pointer_type (type), exp);
-      exp = build2 (POINTER_PLUS_EXPR, TREE_TYPE (exp), exp,
+      exp = fold_build_pointer_plus (exp,
 		    fold_build1_loc (input_location,
-				 NEGATE_EXPR, sizetype,
-			 	 TYPE_SIZE_UNIT (TREE_TYPE (exp))));
+				     NEGATE_EXPR, sizetype,
+				     TYPE_SIZE_UNIT (TREE_TYPE (exp))));
       exp = cp_build_indirect_ref (exp, RO_NULL, tf_warning_or_error);
       initialize_handler_parm (decl, exp);
       return type;
@@ -1227,3 +1227,5 @@ build_noexcept_spec (tree expr, int complain)
       return build_tree_list (expr, NULL_TREE);
     }
 }
+
+#include "gt-cp-except.h"

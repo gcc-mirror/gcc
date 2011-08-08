@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-W -Wall" } */
 
 /* Verify that GCC correctly detects non-matching regparm attributes.  */

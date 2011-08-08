@@ -294,9 +294,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _UIntType1, _UIntType1 __a1, _UIntType1 __c1,
 	       _UIntType1 __m1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 		   const std::linear_congruential_engine<_UIntType1,
-		   __a1, __c1, __m1>&);
+		   __a1, __c1, __m1>& __lcr);
 
       /**
        * @brief Sets the state of the engine by reading its textual
@@ -314,9 +314,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _UIntType1, _UIntType1 __a1, _UIntType1 __c1,
 	       _UIntType1 __m1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
 		   std::linear_congruential_engine<_UIntType1, __a1,
-		   __c1, __m1>&);
+		   __c1, __m1>& __lcr);
 
     private:
       _UIntType _M_x;
@@ -355,17 +355,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * This algorithm was originally invented by Makoto Matsumoto and
    * Takuji Nishimura.
    *
-   * @var word_size   The number of bits in each element of the state vector.
-   * @var state_size  The degree of recursion.
-   * @var shift_size  The period parameter.
-   * @var mask_bits   The separation point bit index.
-   * @var parameter_a The last row of the twist matrix.
-   * @var output_u    The first right-shift tempering matrix parameter.
-   * @var output_s    The first left-shift tempering matrix parameter.
-   * @var output_b    The first left-shift tempering matrix mask.
-   * @var output_t    The second left-shift tempering matrix parameter.
-   * @var output_c    The second left-shift tempering matrix mask.
-   * @var output_l    The second right-shift tempering matrix parameter.
+   * @tparam __w  Word size, the number of bits in each element of 
+   *              the state vector.
+   * @tparam __n  The degree of recursion.
+   * @tparam __m  The period parameter.
+   * @tparam __r  The separation point bit index.
+   * @tparam __a  The last row of the twist matrix.
+   * @tparam __u  The first right-shift tempering matrix parameter.
+   * @tparam __d  The first right-shift tempering matrix mask.
+   * @tparam __s  The first left-shift tempering matrix parameter.
+   * @tparam __b  The first left-shift tempering matrix mask.
+   * @tparam __t  The second left-shift tempering matrix parameter.
+   * @tparam __c  The second left-shift tempering matrix mask.
+   * @tparam __l  The second right-shift tempering matrix parameter.
+   * @tparam __f  Initialization multiplier.
    */
   template<typename _UIntType, size_t __w,
 	   size_t __n, size_t __m, size_t __r,
@@ -511,10 +514,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _UIntType1 __c1, size_t __l1, _UIntType1 __f1,
 	       typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 		   const std::mersenne_twister_engine<_UIntType1, __w1, __n1,
 		   __m1, __r1, __a1, __u1, __d1, __s1, __b1, __t1, __c1,
-		   __l1, __f1>&);
+		   __l1, __f1>& __x);
 
       /**
        * @brief Extracts the current state of a % mersenne_twister_engine
@@ -537,10 +540,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _UIntType1 __c1, size_t __l1, _UIntType1 __f1,
 	       typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
 		   std::mersenne_twister_engine<_UIntType1, __w1, __n1, __m1,
 		   __r1, __a1, __u1, __d1, __s1, __b1, __t1, __c1,
-		   __l1, __f1>&);
+		   __l1, __f1>& __x);
 
     private:
       _UIntType _M_x[state_size];
@@ -801,21 +804,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @brief Copy constructs a %discard_block_engine engine.
        *
        * Copies an existing base class random number generator.
-       * @param rng An existing (base class) engine object.
+       * @param __rng An existing (base class) engine object.
        */
       explicit
-      discard_block_engine(const _RandomNumberEngine& __rne)
-      : _M_b(__rne), _M_n(0) { }
+      discard_block_engine(const _RandomNumberEngine& __rng)
+      : _M_b(__rng), _M_n(0) { }
 
       /**
        * @brief Move constructs a %discard_block_engine engine.
        *
        * Copies an existing base class random number generator.
-       * @param rng An existing (base class) engine object.
+       * @param __rng An existing (base class) engine object.
        */
       explicit
-      discard_block_engine(_RandomNumberEngine&& __rne)
-      : _M_b(std::move(__rne)), _M_n(0) { }
+      discard_block_engine(_RandomNumberEngine&& __rng)
+      : _M_b(std::move(__rng)), _M_n(0) { }
 
       /**
        * @brief Seed constructs a %discard_block_engine engine.
@@ -944,9 +947,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _RandomNumberEngine1, size_t __p1, size_t __r1,
 	       typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 		   const std::discard_block_engine<_RandomNumberEngine1,
-		   __p1, __r1>&);
+		   __p1, __r1>& __x);
 
       /**
        * @brief Extracts the current state of a % subtract_with_carry_engine
@@ -962,9 +965,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _RandomNumberEngine1, size_t __p1, size_t __r1,
 	       typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
 		   std::discard_block_engine<_RandomNumberEngine1,
-		   __p1, __r1>&);
+		   __p1, __r1>& __x);
 
     private:
       _RandomNumberEngine _M_b;
@@ -1019,21 +1022,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @brief Copy constructs a %independent_bits_engine engine.
        *
        * Copies an existing base class random number generator.
-       * @param rng An existing (base class) engine object.
+       * @param __rng An existing (base class) engine object.
        */
       explicit
-      independent_bits_engine(const _RandomNumberEngine& __rne)
-      : _M_b(__rne) { }
+      independent_bits_engine(const _RandomNumberEngine& __rng)
+      : _M_b(__rng) { }
 
       /**
        * @brief Move constructs a %independent_bits_engine engine.
        *
        * Copies an existing base class random number generator.
-       * @param rng An existing (base class) engine object.
+       * @param __rng An existing (base class) engine object.
        */
       explicit
-      independent_bits_engine(_RandomNumberEngine&& __rne)
-      : _M_b(std::move(__rne)) { }
+      independent_bits_engine(_RandomNumberEngine&& __rng)
+      : _M_b(std::move(__rng)) { }
 
       /**
        * @brief Seed constructs a %independent_bits_engine engine.
@@ -1238,22 +1241,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @brief Copy constructs a %shuffle_order_engine engine.
        *
        * Copies an existing base class random number generator.
-       * @param rng An existing (base class) engine object.
+       * @param __rng An existing (base class) engine object.
        */
       explicit
-      shuffle_order_engine(const _RandomNumberEngine& __rne)
-      : _M_b(__rne)
+      shuffle_order_engine(const _RandomNumberEngine& __rng)
+      : _M_b(__rng)
       { _M_initialize(); }
 
       /**
        * @brief Move constructs a %shuffle_order_engine engine.
        *
        * Copies an existing base class random number generator.
-       * @param rng An existing (base class) engine object.
+       * @param __rng An existing (base class) engine object.
        */
       explicit
-      shuffle_order_engine(_RandomNumberEngine&& __rne)
-      : _M_b(std::move(__rne))
+      shuffle_order_engine(_RandomNumberEngine&& __rng)
+      : _M_b(std::move(__rng))
       { _M_initialize(); }
 
       /**
@@ -1383,9 +1386,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _RandomNumberEngine1, size_t __k1,
 	       typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 		   const std::shuffle_order_engine<_RandomNumberEngine1,
-		   __k1>&);
+		   __k1>& __x);
 
       /**
        * @brief Extracts the current state of a % subtract_with_carry_engine
@@ -1401,8 +1404,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _RandomNumberEngine1, size_t __k1,
 	       typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::shuffle_order_engine<_RandomNumberEngine1, __k1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::shuffle_order_engine<_RandomNumberEngine1, __k1>& __x);
 
     private:
       void _M_initialize()
@@ -1816,8 +1819,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @brief Constructs a uniform_real_distribution object.
        *
-       * @param __min [IN]  The lower bound of the distribution.
-       * @param __max [IN]  The upper bound of the distribution.
+       * @param __a [IN]  The lower bound of the distribution.
+       * @param __b [IN]  The upper bound of the distribution.
        */
       explicit
       uniform_real_distribution(_RealType __a = _RealType(0),
@@ -2104,8 +2107,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::normal_distribution<_RealType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::normal_distribution<_RealType1>& __x);
 
       /**
        * @brief Extracts a %normal_distribution random number distribution
@@ -2119,8 +2122,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::normal_distribution<_RealType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::normal_distribution<_RealType1>& __x);
 
     private:
       param_type  _M_param;
@@ -2280,8 +2283,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::lognormal_distribution<_RealType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::lognormal_distribution<_RealType1>& __x);
 
       /**
        * @brief Extracts a %lognormal_distribution random number distribution
@@ -2295,8 +2298,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::lognormal_distribution<_RealType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::lognormal_distribution<_RealType1>& __x);
 
     private:
       param_type _M_param;
@@ -2473,8 +2476,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::gamma_distribution<_RealType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::gamma_distribution<_RealType1>& __x);
 
       /**
        * @brief Extracts a %gamma_distribution random number distribution
@@ -2487,8 +2490,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::gamma_distribution<_RealType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::gamma_distribution<_RealType1>& __x);
 
     private:
       param_type _M_param;
@@ -2637,8 +2640,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::chi_squared_distribution<_RealType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::chi_squared_distribution<_RealType1>& __x);
 
       /**
        * @brief Extracts a %chi_squared_distribution random number distribution
@@ -2652,8 +2655,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::chi_squared_distribution<_RealType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::chi_squared_distribution<_RealType1>& __x);
 
     private:
       param_type _M_param;
@@ -2821,8 +2824,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
-    operator<<(std::basic_ostream<_CharT, _Traits>&,
-	       const std::cauchy_distribution<_RealType>&);
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const std::cauchy_distribution<_RealType>& __x);
 
   /**
    * @brief Extracts a %cauchy_distribution random number distribution
@@ -2836,8 +2839,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_istream<_CharT, _Traits>&
-    operator>>(std::basic_istream<_CharT, _Traits>&,
-	       std::cauchy_distribution<_RealType>&);
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       std::cauchy_distribution<_RealType>& __x);
 
 
   /**
@@ -2992,8 +2995,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::fisher_f_distribution<_RealType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::fisher_f_distribution<_RealType1>& __x);
 
       /**
        * @brief Extracts a %fisher_f_distribution random number distribution
@@ -3007,8 +3010,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::fisher_f_distribution<_RealType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::fisher_f_distribution<_RealType1>& __x);
 
     private:
       param_type _M_param;
@@ -3165,8 +3168,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::student_t_distribution<_RealType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::student_t_distribution<_RealType1>& __x);
 
       /**
        * @brief Extracts a %student_t_distribution random number distribution
@@ -3180,8 +3183,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::student_t_distribution<_RealType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::student_t_distribution<_RealType1>& __x);
 
     private:
       param_type _M_param;
@@ -3359,8 +3362,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
-    operator<<(std::basic_ostream<_CharT, _Traits>&,
-	       const std::bernoulli_distribution&);
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const std::bernoulli_distribution& __x);
 
   /**
    * @brief Extracts a %bernoulli_distribution random number distribution
@@ -3545,8 +3548,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _IntType1,
 	       typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::binomial_distribution<_IntType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::binomial_distribution<_IntType1>& __x);
 
       /**
        * @brief Extracts a %binomial_distribution random number distribution
@@ -3561,8 +3564,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _IntType1,
 	       typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::binomial_distribution<_IntType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::binomial_distribution<_IntType1>& __x);
 
     private:
       template<typename _UniformRandomNumberGenerator>
@@ -3738,8 +3741,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _IntType,
 	   typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
-    operator<<(std::basic_ostream<_CharT, _Traits>&,
-	       const std::geometric_distribution<_IntType>&);
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const std::geometric_distribution<_IntType>& __x);
 
   /**
    * @brief Extracts a %geometric_distribution random number distribution
@@ -3753,8 +3756,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _IntType,
 	   typename _CharT, typename _Traits>
     std::basic_istream<_CharT, _Traits>&
-    operator>>(std::basic_istream<_CharT, _Traits>&,
-	       std::geometric_distribution<_IntType>&);
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       std::geometric_distribution<_IntType>& __x);
 
 
   /**
@@ -3898,8 +3901,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _IntType1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::negative_binomial_distribution<_IntType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::negative_binomial_distribution<_IntType1>& __x);
 
       /**
        * @brief Extracts a %negative_binomial_distribution random number
@@ -3913,8 +3916,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _IntType1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::negative_binomial_distribution<_IntType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::negative_binomial_distribution<_IntType1>& __x);
 
     private:
       param_type _M_param;
@@ -4085,8 +4088,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _IntType1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::poisson_distribution<_IntType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::poisson_distribution<_IntType1>& __x);
 
       /**
        * @brief Extracts a %poisson_distribution random number distribution
@@ -4100,8 +4103,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _IntType1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::poisson_distribution<_IntType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::poisson_distribution<_IntType1>& __x);
 
     private:
       param_type _M_param;
@@ -4281,8 +4284,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
-    operator<<(std::basic_ostream<_CharT, _Traits>&,
-	       const std::exponential_distribution<_RealType>&);
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const std::exponential_distribution<_RealType>& __x);
 
   /**
    * @brief Extracts a %exponential_distribution random number distribution
@@ -4296,8 +4299,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_istream<_CharT, _Traits>&
-    operator>>(std::basic_istream<_CharT, _Traits>&,
-	       std::exponential_distribution<_RealType>&);
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       std::exponential_distribution<_RealType>& __x);
 
 
   /**
@@ -4456,8 +4459,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
-    operator<<(std::basic_ostream<_CharT, _Traits>&,
-	       const std::weibull_distribution<_RealType>&);
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const std::weibull_distribution<_RealType>& __x);
 
   /**
    * @brief Extracts a %weibull_distribution random number distribution
@@ -4471,8 +4474,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_istream<_CharT, _Traits>&
-    operator>>(std::basic_istream<_CharT, _Traits>&,
-	       std::weibull_distribution<_RealType>&);
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       std::weibull_distribution<_RealType>& __x);
 
 
   /**
@@ -4631,8 +4634,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
-    operator<<(std::basic_ostream<_CharT, _Traits>&,
-	       const std::extreme_value_distribution<_RealType>&);
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const std::extreme_value_distribution<_RealType>& __x);
 
   /**
    * @brief Extracts a %extreme_value_distribution random number
@@ -4646,8 +4649,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_istream<_CharT, _Traits>&
-    operator>>(std::basic_istream<_CharT, _Traits>&,
-	       std::extreme_value_distribution<_RealType>&);
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       std::extreme_value_distribution<_RealType>& __x);
 
 
   /**
@@ -4808,8 +4811,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _IntType1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::discrete_distribution<_IntType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::discrete_distribution<_IntType1>& __x);
 
       /**
        * @brief Extracts a %discrete_distribution random number distribution
@@ -4824,8 +4827,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _IntType1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::discrete_distribution<_IntType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::discrete_distribution<_IntType1>& __x);
 
     private:
       param_type _M_param;
@@ -5047,8 +5050,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::piecewise_constant_distribution<_RealType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::piecewise_constant_distribution<_RealType1>& __x);
 
       /**
        * @brief Extracts a %piecewise_constan_distribution random
@@ -5063,8 +5066,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::piecewise_constant_distribution<_RealType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::piecewise_constant_distribution<_RealType1>& __x);
 
     private:
       param_type _M_param;
@@ -5289,8 +5292,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
-	operator<<(std::basic_ostream<_CharT, _Traits>&,
-		   const std::piecewise_linear_distribution<_RealType1>&);
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const std::piecewise_linear_distribution<_RealType1>& __x);
 
       /**
        * @brief Extracts a %piecewise_linear_distribution random number
@@ -5305,8 +5308,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       template<typename _RealType1, typename _CharT, typename _Traits>
 	friend std::basic_istream<_CharT, _Traits>&
-	operator>>(std::basic_istream<_CharT, _Traits>&,
-		   std::piecewise_linear_distribution<_RealType1>&);
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   std::piecewise_linear_distribution<_RealType1>& __x);
 
     private:
       param_type _M_param;

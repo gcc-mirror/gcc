@@ -170,10 +170,6 @@ struct access
   /* Is this particular access write access? */
   unsigned write : 1;
 
-  /* Is this access an artificial one created to scalarize some record
-     entirely? */
-  unsigned total_scalarization : 1;
-
   /* Is this access an access to a non-addressable field? */
   unsigned non_addressable : 1;
 
@@ -203,6 +199,10 @@ struct access
   /* Does this group contain a write access through a scalar type?  This flag
      is not propagated in the access tree in any direction.  */
   unsigned grp_scalar_write : 1;
+
+  /* Is this access an artificial one created to scalarize some record
+     entirely? */
+  unsigned grp_total_scalarization : 1;
 
   /* Other passes of the analysis use this bit to make function
      analyze_access_subtree create scalar replacements for this group if
@@ -377,26 +377,26 @@ dump_access (FILE *f, struct access *access, bool grp)
   fprintf (f, ", type = ");
   print_generic_expr (f, access->type, 0);
   if (grp)
-    fprintf (f, ", total_scalarization = %d, grp_read = %d, grp_write = %d, "
-	     "grp_assignment_read = %d, grp_assignment_write = %d, "
-	     "grp_scalar_read = %d, grp_scalar_write = %d, "
+    fprintf (f, ", grp_read = %d, grp_write = %d, grp_assignment_read = %d, "
+	     "grp_assignment_write = %d, grp_scalar_read = %d, "
+	     "grp_scalar_write = %d, grp_total_scalarization = %d, "
 	     "grp_hint = %d, grp_covered = %d, "
 	     "grp_unscalarizable_region = %d, grp_unscalarized_data = %d, "
 	     "grp_partial_lhs = %d, grp_to_be_replaced = %d, "
 	     "grp_maybe_modified = %d, "
 	     "grp_not_necessarilly_dereferenced = %d\n",
-	     access->total_scalarization, access->grp_read, access->grp_write,
-	     access->grp_assignment_read, access->grp_assignment_write,
-	     access->grp_scalar_read, access->grp_scalar_write,
+	     access->grp_read, access->grp_write, access->grp_assignment_read,
+	     access->grp_assignment_write, access->grp_scalar_read,
+	     access->grp_scalar_write, access->grp_total_scalarization,
 	     access->grp_hint, access->grp_covered,
 	     access->grp_unscalarizable_region, access->grp_unscalarized_data,
 	     access->grp_partial_lhs, access->grp_to_be_replaced,
 	     access->grp_maybe_modified,
 	     access->grp_not_necessarilly_dereferenced);
   else
-    fprintf (f, ", write = %d, total_scalarization = %d, "
+    fprintf (f, ", write = %d, grp_total_scalarization = %d, "
 	     "grp_partial_lhs = %d\n",
-	     access->write, access->total_scalarization,
+	     access->write, access->grp_total_scalarization,
 	     access->grp_partial_lhs);
 }
 
@@ -924,7 +924,7 @@ completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset,
 	    access = create_access_1 (base, pos, size);
 	    access->expr = nref;
 	    access->type = ft;
-	    access->total_scalarization = 1;
+	    access->grp_total_scalarization = 1;
 	    /* Accesses for intraprocedural SRA can have their stmt NULL.  */
 	  }
 	else
@@ -932,6 +932,23 @@ completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset,
       }
 }
 
+/* Create total_scalarization accesses for all scalar type fields in VAR and
+   for VAR a a whole.  VAR must be of a RECORD_TYPE conforming to
+   type_consists_of_records_p.   */
+
+static void
+completely_scalarize_var (tree var)
+{
+  HOST_WIDE_INT size = tree_low_cst (DECL_SIZE (var), 1);
+  struct access *access;
+
+  access = create_access_1 (var, 0, size);
+  access->expr = var;
+  access->type = TREE_TYPE (var);
+  access->grp_total_scalarization = 1;
+
+  completely_scalarize_record (var, var, 0, var);
+}
 
 /* Search the given tree for a declaration by skipping handled components and
    exclude it from the candidates.  */
@@ -1050,6 +1067,31 @@ disqualify_ops_if_throwing_stmt (gimple stmt, tree lhs, tree rhs)
   return false;
 }
 
+/* Return true iff type of EXP is not sufficiently aligned.  */
+
+static bool
+tree_non_mode_aligned_mem_p (tree exp)
+{
+  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+  unsigned int align;
+
+  if (TREE_CODE (exp) == VIEW_CONVERT_EXPR)
+    exp = TREE_OPERAND (exp, 0);
+
+  if (TREE_CODE (exp) == SSA_NAME
+      || TREE_CODE (exp) == MEM_REF
+      || mode == BLKmode
+      || is_gimple_min_invariant (exp)
+      || !STRICT_ALIGNMENT)
+    return false;
+
+  align = get_object_alignment (exp, BIGGEST_ALIGNMENT);
+  if (GET_MODE_ALIGNMENT (mode) > align)
+    return true;
+
+  return false;
+}
+
 /* Scan expressions occuring in STMT, create access structures for all accesses
    to candidates for scalarization and remove those candidates which occur in
    statements or expressions that prevent them from being split apart.  Return
@@ -1074,7 +1116,10 @@ build_accesses_from_assign (gimple stmt)
   lacc = build_access_from_expr_1 (lhs, stmt, true);
 
   if (lacc)
-    lacc->grp_assignment_write = 1;
+    {
+      lacc->grp_assignment_write = 1;
+      lacc->grp_unscalarizable_region |= tree_non_mode_aligned_mem_p (rhs);
+    }
 
   if (racc)
     {
@@ -1082,6 +1127,7 @@ build_accesses_from_assign (gimple stmt)
       if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
 	  && !is_gimple_reg_type (racc->type))
 	bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
+      racc->grp_unscalarizable_region |= tree_non_mode_aligned_mem_p (lhs);
     }
 
   if (lacc && racc
@@ -1690,7 +1736,7 @@ sort_and_splice_var_accesses (tree var)
       bool grp_assignment_read = access->grp_assignment_read;
       bool grp_assignment_write = access->grp_assignment_write;
       bool multiple_scalar_reads = false;
-      bool total_scalarization = access->total_scalarization;
+      bool total_scalarization = access->grp_total_scalarization;
       bool grp_partial_lhs = access->grp_partial_lhs;
       bool first_scalar = is_gimple_reg_type (access->type);
       bool unscalarizable_region = access->grp_unscalarizable_region;
@@ -1734,7 +1780,7 @@ sort_and_splice_var_accesses (tree var)
 	  grp_assignment_write |= ac2->grp_assignment_write;
 	  grp_partial_lhs |= ac2->grp_partial_lhs;
 	  unscalarizable_region |= ac2->grp_unscalarizable_region;
-	  total_scalarization |= ac2->total_scalarization;
+	  total_scalarization |= ac2->grp_total_scalarization;
 	  relink_to_new_repr (access, ac2);
 
 	  /* If there are both aggregate-type and scalar-type accesses with
@@ -1755,6 +1801,7 @@ sort_and_splice_var_accesses (tree var)
       access->grp_assignment_read = grp_assignment_read;
       access->grp_assignment_write = grp_assignment_write;
       access->grp_hint = multiple_scalar_reads || total_scalarization;
+      access->grp_total_scalarization = total_scalarization;
       access->grp_partial_lhs = grp_partial_lhs;
       access->grp_unscalarizable_region = unscalarizable_region;
       if (access->first_link)
@@ -2000,6 +2047,8 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	root->grp_write = 1;
       if (parent->grp_assignment_write)
 	root->grp_assignment_write = 1;
+      if (parent->grp_total_scalarization)
+	root->grp_total_scalarization = 1;
     }
 
   if (root->grp_unscalarizable_region)
@@ -2010,16 +2059,16 @@ analyze_access_subtree (struct access *root, struct access *parent,
 
   for (child = root->first_child; child; child = child->next_sibling)
     {
-      if (!hole && child->offset < covered_to)
-	hole = true;
-      else
-	covered_to += child->size;
-
+      hole |= covered_to < child->offset;
       sth_created |= analyze_access_subtree (child, root,
 					     allow_replacements && !scalar);
 
       root->grp_unscalarized_data |= child->grp_unscalarized_data;
-      hole |= !child->grp_covered;
+      root->grp_total_scalarization &= child->grp_total_scalarization;
+      if (child->grp_covered)
+	covered_to += child->size;
+      else
+	hole = true;
     }
 
   if (allow_replacements && scalar && !root->first_child
@@ -2040,10 +2089,16 @@ analyze_access_subtree (struct access *root, struct access *parent,
       sth_created = true;
       hole = false;
     }
-  else if (covered_to < limit)
-    hole = true;
+  else
+    {
+      if (covered_to < limit)
+	hole = true;
+      if (scalar)
+	root->grp_total_scalarization = 0;
+    }
 
-  if (sth_created && !hole)
+  if (sth_created
+      && (!hole || root->grp_total_scalarization))
     {
       root->grp_covered = 1;
       return true;
@@ -2261,16 +2316,24 @@ analyze_all_variable_accesses (void)
 	tree var = referenced_var (i);
 
 	if (TREE_CODE (var) == VAR_DECL
-	    && ((unsigned) tree_low_cst (TYPE_SIZE (TREE_TYPE (var)), 1)
-		<= max_total_scalarization_size)
 	    && type_consists_of_records_p (TREE_TYPE (var)))
 	  {
-	    completely_scalarize_record (var, var, 0, var);
-	    if (dump_file && (dump_flags & TDF_DETAILS))
+	    if ((unsigned) tree_low_cst (TYPE_SIZE (TREE_TYPE (var)), 1)
+		<= max_total_scalarization_size)
 	      {
-		fprintf (dump_file, "Will attempt to totally scalarize ");
+		completely_scalarize_var (var);
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  {
+		    fprintf (dump_file, "Will attempt to totally scalarize ");
+		    print_generic_expr (dump_file, var, 0);
+		    fprintf (dump_file, " (UID: %u): \n", DECL_UID (var));
+		  }
+	      }
+	    else if (dump_file && (dump_flags & TDF_DETAILS))
+	      {
+		fprintf (dump_file, "Too big to totally scalarize: ");
 		print_generic_expr (dump_file, var, 0);
-		fprintf (dump_file, " (UID: %u): \n", DECL_UID (var));
+		fprintf (dump_file, " (UID: %u)\n", DECL_UID (var));
 	      }
 	  }
       }
@@ -3243,7 +3306,8 @@ ptr_parm_has_direct_uses (tree parm)
 	      && TREE_OPERAND (lhs, 0) == name
 	      && integer_zerop (TREE_OPERAND (lhs, 1))
 	      && types_compatible_p (TREE_TYPE (lhs),
-				     TREE_TYPE (TREE_TYPE (name))))
+				     TREE_TYPE (TREE_TYPE (name)))
+	      && !TREE_THIS_VOLATILE (lhs))
 	    uses_ok++;
 	}
       if (gimple_assign_single_p (stmt))
@@ -3255,7 +3319,8 @@ ptr_parm_has_direct_uses (tree parm)
 	      && TREE_OPERAND (rhs, 0) == name
 	      && integer_zerop (TREE_OPERAND (rhs, 1))
 	      && types_compatible_p (TREE_TYPE (rhs),
-				     TREE_TYPE (TREE_TYPE (name))))
+				     TREE_TYPE (TREE_TYPE (name)))
+	      && !TREE_THIS_VOLATILE (rhs))
 	    uses_ok++;
 	}
       else if (is_gimple_call (stmt))
@@ -3270,7 +3335,8 @@ ptr_parm_has_direct_uses (tree parm)
 		  && TREE_OPERAND (arg, 0) == name
 		  && integer_zerop (TREE_OPERAND (arg, 1))
 		  && types_compatible_p (TREE_TYPE (arg),
-					 TREE_TYPE (TREE_TYPE (name))))
+					 TREE_TYPE (TREE_TYPE (name)))
+		  && !TREE_THIS_VOLATILE (arg))
 		uses_ok++;
 	    }
 	}

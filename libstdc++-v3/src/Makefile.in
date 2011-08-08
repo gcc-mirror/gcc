@@ -254,6 +254,7 @@ am__leading_dot = @am__leading_dot@
 am__tar = @am__tar@
 am__untar = @am__untar@
 baseline_dir = @baseline_dir@
+baseline_subdir_switch = @baseline_subdir_switch@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -330,7 +331,7 @@ toolexeclibdir = $(glibcxx_toolexeclibdir)
 # These bits are all figured out from configure.  Look in acinclude.m4
 # or configure.ac to see how they are set.  See GLIBCXX_EXPORT_FLAGS.
 CONFIG_CXXFLAGS = \
-	$(SECTION_FLAGS) $(EXTRA_CXX_FLAGS)
+	$(SECTION_FLAGS) $(EXTRA_CXX_FLAGS) -frandom-seed=$@
 
 WARN_CXXFLAGS = \
 	$(WARN_FLAGS) $(WERROR) -fdiagnostics-show-location=once

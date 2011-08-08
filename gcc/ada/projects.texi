@@ -18,6 +18,7 @@
 * Scenarios in Projects::
 * Library Projects::
 * Project Extension::
+* Aggregate Projects::
 * Project File Reference::
 @end menu
 
@@ -266,9 +267,9 @@ There are several ways of defining source directories:
 
 @item The attribute @b{Source_Dirs} can automatically include subdirectories
   using a special syntax inspired by some UNIX shells. If any of the path in
-  the list ends with @emph{"/**"}, then that path and all its subdirectories
+  the list ends with @emph{"**"}, then that path and all its subdirectories
   (recursively) are included in the list of source directories. For instance,
-  @file{./**} represent the complete directory tree rooted at ".".
+  @file{**} and @file{./**} represent the complete directory tree rooted at ".".
 @cindex Source directories, recursive
 
 @cindex @code{Excluded_Source_Dirs}
@@ -276,7 +277,7 @@ There are several ways of defining source directories:
   attribute @b{Excluded_Source_Dirs}, which is also a list of paths. Each entry
   specifies a directory whose immediate content, not including subdirs, is to
   be excluded. It is also possible to exclude a complete directory subtree
-  using the "/**" notation.
+  using the "**" notation.
 
 @cindex @code{Ignore_Source_Sub_Dirs}
   It is often desirable to remove, from the source directories, directory
@@ -396,13 +397,13 @@ Note that it is considered an error for a project file to have no sources
 attached to it unless explicitly declared as mentioned above.
 
 If the order of the source directories is known statically, that is if
-@code{"/**"} is not used in the string list @code{Source_Dirs}, then there may
+@code{"**"} is not used in the string list @code{Source_Dirs}, then there may
 be several files with the same source file name sitting in different
 directories of the project. In this case, only the file in the first directory
 is considered as a source of the project and the others are hidden. If
-@code{"/**"} is not used in the string list @code{Source_Dirs}, it is an error
+@code{"**"} is not used in the string list @code{Source_Dirs}, it is an error
 to have several files with the same source file name in the same directory
-@code{"/**"} subtree, since there would be an ambiguity as to which one should
+@code{"**"} subtree, since there would be an ambiguity as to which one should
 be used. However, two files with the same source file name may in two single
 directories or directory subtrees. In this case, the one in the first directory
 or directory subtree is a source of the project.
@@ -736,9 +737,10 @@ Notice the three steps described earlier:
 The default output of GPRbuild's execution is kept reasonably simple and easy
 to understand. In particular, some of the less frequently used commands are not
 shown, and some parameters are abbreviated. So it is not possible to rerun the
-effect of the gprbuild command by cut-and-pasting its output. GPRbuild's option
-@code{-v} provides a much more verbose output which includes, among other
-information, more complete compilation, post-compilation and link commands.
+effect of the @command{gprbuild} command by cut-and-pasting its output.
+GPRbuild's option @code{-v} provides a much more verbose output which includes,
+among other information, more complete compilation, post-compilation and link
+commands.
 
 @c ---------------------------------------------
 @node Executable File Names
@@ -1102,6 +1104,12 @@ and no project file with the @file{^.gpr^.GPR^} extension is found, then
 the file is searched for exactly as written in the @code{with} clause,
 that is with no extension.
 
+As mentioned above, the path after a @code{with} has to be a literal
+string, and you cannot use concatenation, or lookup the value of external
+variables to change the directories from which a project is loaded.
+A solution if you need something like this is to use aggregate projects
+(@pxref{Aggregate Projects}).
+
 @cindex project path
 When a relative path or a base name is used, the
 project files are searched relative to each of the directories in the
@@ -1112,6 +1120,7 @@ the search stops:
 @itemize @bullet
 @item First, the file is searched relative to the directory that contains the
   current project file.
+
 @item
 @cindex @code{ADA_PROJECT_PATH}
 @cindex @code{GPR_PROJECT_PATH}
@@ -1119,12 +1128,23 @@ the search stops:
   ^environment variables^logical names^ @b{GPR_PROJECT_PATH} and
   @b{ADA_PROJECT_PATH} (in that order) if they exist. The former is
   recommended, the latter is kept for backward compatibility.
-@item Finally, it is searched relative to the default project directories.
-  Such directories depends on the tool used. For @command{gnatmake}, there is
-  one default project directory: @file{<prefix>/lib/gnat/}. In our example,
-  @file{gtkada.gpr} is found in the predefined directory if it was installed at
-  the same root as GNAT.
 
+@item Finally, it is searched relative to the default project directories.
+  Such directories depends on the tool used. The different locations searched
+  in the specified order are:
+
+  @itemize @bullet
+  @item @file{<prefix>/<target>/lib/gnat}
+  (for @command{gnatmake} in all cases, and for @command{gprbuild} if option
+  @option{--target} is specified)
+  @item @file{<prefix>/share/gpr/}
+  (for @command{gnatmake} and @command{gprbuild})
+  @item @file{<prefix>/lib/gnat/}
+  (for @command{gnatmake} and @command{gprbuild})
+  @end itemize
+
+  In our example, @file{gtkada.gpr} is found in the predefined directory if
+  it was installed at the same root as GNAT.
 @end itemize
 
 @noindent
@@ -1607,7 +1627,7 @@ Other library-related attributes can be used to change the defaults:
 
 @item @b{Library_Options}:
 @cindex @code{Library_Options}
-  This attribute may be used to specified additional switches (last switches)
+  This attribute may be used to specify additional switches (last switches)
   when linking a shared library.
 
 @item @b{Leading_Library_Options}:
@@ -2098,6 +2118,501 @@ considered for recompilation, including the sources of @file{b.gpr} that are
 impacted by the changes in @code{A1} and @code{C1}.
 
 @c ---------------------------------------------
+@node Aggregate Projects
+@section Aggregate Projects
+@c ---------------------------------------------
+
+@noindent
+
+Aggregate projects are an extension of the project paradigm, and are
+meant to solve a few specific use cases that cannot be solved directly
+using standard projects. This section will go over a few of these use
+cases to try and explain what you can use aggregate projects for.
+
+@subsection Building all main units from a single project tree
+
+Most often, an application is organized into modules and submodules,
+which are very conveniently represented as a project tree or graph
+(the root project A @code{with}s the projects for each modules (say B and C),
+which in turn @code{with} projects for submodules.
+
+Very often, modules will build their own executables (for testing
+purposes for instance), or libraries (for easier reuse in various
+contexts).
+
+However, if you build your project through gnatmake or gprbuild, using
+a syntax similar to
+
+@smallexample
+   gprbuild -PA.gpr
+@end smallexample
+
+this will only rebuild the main units of project A, not those of the
+imported projects B and C. Therefore you have to spawn several
+gnatmake commands, one per project, to build all executables.
+This is a little inconvenient, but more importantly is inefficient
+(since gnatmake needs to do duplicate work to ensure that sources are
+up-to-date, and cannot easily compile things in parallel when using
+the -j switch).
+
+Also libraries are always rebuild when building a project.
+
+You could therefore define an aggregate project Agg that groups A, B
+and C. Then, when you build with
+
+@smallexample
+    gprbuild -PAgg.gpr
+@end smallexample
+
+this will build all main units from A, B and C.
+
+@smallexample @c projectfile
+   aggregate project Agg is
+      for Project_Files use ("a.gpr", "b.gpr", "c.gpr");
+   end Agg;
+@end smallexample
+
+If B or C do not define any main unit (through their Main
+attribute), all their sources are build. When you do not group them
+in the aggregate project, only those sources that are needed by A
+will be build.
+
+If you add a main unit to a project P not already explicitly referenced in the
+aggregate project, you will need to add "p.gpr" in the list of project
+files for the aggregate project, or the main unit will not be built when
+building the aggregate project.
+
+@subsection Building a set of projects with a single command
+
+One other case is when you have multiple applications and libraries
+that are build independently from each other (but they can be build in
+parallel). For instance, you have a project tree rooted at A, and
+another one (which might share some subprojects) rooted at B.
+
+Using only gprbuild, you could do
+
+@smallexample
+  gprbuild -PA.gpr
+  gprbuild -PB.gpr
+@end smallexample
+
+to build both. But again, gprbuild has to do some duplicate work for
+those files that are shared between the two, and cannot truly build
+things in parallel efficiently.
+
+If the two projects are really independent, share no sources other
+than through a common subproject, and have no source files with a
+common basename, you could create a project C that imports A and
+B. But these restrictions are often too strong, and one has to build
+them independently. An aggregate project does not have these
+limitations, and can aggregate two project trees that have common
+sources.
+
+@smallexample
+Aggregate projects can group projects with duplicate file names
+@end smallexample
+
+This scenario is particularly useful in environment like VxWork 653
+where the applications running in the multiple partitions can be build
+in parallel through a single gprbuild command. This also works nicely
+with Annex E.
+
+@smallexample
+   Aggregate projects can be used to build multiple partitions
+@end smallexample
+
+@subsection Define a build environment
+
+The environment variables at the time you launch gprbuild or gprbuild
+will influence the view these tools have of the project (PATH to find
+the compiler, ADA_PROJECT_PATH or GPR_PROJECT_PATH to find the
+projects, environment variables that are referenced in project files
+through the "external" statement,...). Several command line switches
+can be used to override those (-X or -aP), but on some systems and
+with some projects, this might make the command line too long, and on
+all systems often make it hard to read.
+
+An aggregate project can be used to set the environment for all
+projects build through that aggregate. One of the nice aspects is that
+you can put the aggregate project under configuration management, and
+make sure all your user have a consistent environment when
+building. The syntax looks like
+
+@smallexample @c projectfile
+   aggregate project Agg is
+      for Project_Files use ("A.gpr", "B.gpr");
+      for Project_Path use ("../dir1", "../dir1/dir2");
+      for External ("BUILD") use "PRODUCTION";
+
+      package Builder is
+         for Switches ("Ada") use ("-q");
+      end Builder;
+   end Agg;
+@end smallexample
+
+One of the often requested features in projects is to be able to
+reference external variables in @code{with} statements, as in
+
+@smallexample @c projectfile
+  with external("SETUP") & "path/prj.gpr";   --  ILLEGAL
+  project MyProject is
+     ...
+  end MyProject;
+@end smallexample
+
+For various reasons, this isn't authorized. But using aggregate
+projects provide an elegant solution. For instance, you could
+use a project file like:
+
+@smallexample @c projectfile
+aggregate project Agg is
+    for Project_Path use (external("SETUP") % "path");
+    for Project_Files use ("myproject.gpr");
+end Agg;
+
+
+with "prj.gpr";  --  searched on Agg'Project_Path
+project MyProject is
+   ...
+end MyProject;
+@end smallexample
+
+@subsection Performance improvements in builder
+
+The loading of aggregate projects is optimized in gprbuild and
+gnatmake, so that all files are searched for only once on the disk
+(thus reducing the number of system calls and contributing to faster
+compilation times especially on systems with sources on remote
+servers). As part of the loading, gprbuild and gnatmake compute how
+and where a source file should be compiled, and even if it is found
+several times in the aggregated projects it will be compiled only
+once.
+
+Since there is no ambiguity as to which switches should be used, files
+can be compiled in parallel (through the usual -j switch) and this can
+be done while maximizing the use of CPUs (compared to launching
+multiple gprbuild and gnatmake commands in parallel).
+
+@subsection Syntax of aggregate projects
+
+An aggregate project follows the general syntax of project files. The
+recommended extension is still @file{.gpr}. However, a special
+@code{aggregate} qualifier must be put before the keyword
+@code{project}.
+
+An aggregate project cannot @code{with} any other project (standard or
+aggregate), except an abstract project which can be used to share
+attribute values. Building other aggregate projects from an aggregate
+project is done through the Project_Files attribute (see below).
+
+An aggregate project does not have any source files directly (only
+through other standard projects). Therefore a number of the standard
+attributes and packages are forbidden in an aggregate project. Here is the
+(non exhaustive) list:
+
+@itemize @bullet
+@item Languages
+@item Source_files, Source_List_File and other attributes dealing with
+  list of sources.
+@item Source_Dirs, Exec_Dir and Object_Dir
+@item Library_Dir, Library_Name and other library-related attributes
+@item Main
+@item Roots
+@item Externally_Built
+@item Inherit_Source_Path
+@item Excluded_Source_Dirs
+@item Locally_Removed_Files
+@item Excluded_Source_Fies
+@item Excluded_Source_List_File
+@item Interfaces
+@end itemize
+
+The only package that is authorized (albeit optional) is
+Builder. Other packages (in particular Compiler, Binder and Linker)
+are forbidden. It is an error to have any of these
+(and such an error prevents the proper loading of the aggregate
+project).
+
+Three new attributes have been created, which can only be used in the
+context of aggregate projects:
+
+@table @asis
+@item @b{Project_Files}:
+@cindex @code{Project_Files}
+
+This attribute is compulsory (or else we are not aggregating any project,
+and thus not doing anything). It specifies a list of @file{.gpr} files
+that are grouped in the aggregate. The list may be empty. The project
+files can be either other aggregate projects, or standard projects. When
+grouping standard projects, you can have both the root of a project tree
+(and you do not need to specify all its imported projects), and any project
+within the tree.
+
+Basically, the idea is to specify all those projects that have
+main units you want to build and link, or libraries you want to
+build. You can even specify projects that do not use the Main
+attribute nor the @code{Library_*} attributes, and the result will be to
+build all their source files (not just the ones needed by other
+projects).
+
+The file can include paths (absolute or relative). Paths are
+relative to the location of the aggregate project file itself (if
+you use a base name, we expect to find the .gpr file in the same
+directory as the aggregate project file). The extension @file{.gpr} is
+mandatory, since this attribute contains file names, not project names.
+
+Paths can also include the @code{"*"} and @code{"**"} globbing patterns. The
+latter indicates that any subdirectory (recursively) will be
+searched for matching files. The latter (@code{"**"}) can only occur at the
+last position in the directory part (ie @code{"a/**/*.gpr"} is supported, but
+not @code{"**/a/*.gpr"}). Starting the pattern with @code{"**"} is equivalent
+to starting with @code{"./**"}.
+
+For now, the pattern @code{"*"} is only allowed in the filename part, not
+in the directory part. This is mostly for efficiency reasons to limit the
+number of system calls that are needed.
+
+Here are a few valid examples:
+
+@smallexample @c projectfile
+    for Project_Files use ("a.gpr", "subdir/b.gpr");
+    --  two specific projects relative to the directory of agg.gpr
+
+    for Project_Files use ("**/*.gpr");
+    --  all projects recursively
+@end smallexample
+
+@item @b{Project_Path}:
+@cindex @code{Project_Path}
+
+This attribute can be used to specify a list of directories in
+which to look for project files in @code{with} statements.
+
+When you specify a project in Project_Files
+say @code{"x/y/a.gpr"}), and this projects imports a project "b.gpr", only
+b.gpr is searched in the project path. a.gpr must be exactly at
+<dir of the aggregate>/x/y/a.gpr.
+
+This attribute, however, does not affect the search for the aggregated
+project files specified with @code{Project_Files}.
+
+Each aggregate project has its own (that is if agg1.gpr includes
+agg2.gpr, they can potentially both have a different project path).
+This project path is defined as the concatenation, in that order, of
+the current directory, followed by the command line -aP switches,
+then the directories from the Project_Path attribute, then the
+directories from the GPR_PROJECT_PATH and ADA_PROJECT_PATH env.
+variables, and finally the predefined directories.
+
+In the example above, agg2.gpr's project path is not influenced by
+the attribute agg1'Project_Path, nor is agg1 influenced by
+agg2'Project_Path.
+
+This can potentially lead to errors. In the following example:
+
+@smallexample
+     +---------------+                  +----------------+
+     | Agg1.gpr      |-=--includes--=-->| Agg2.gpr       |
+     |  'project_path|                  |  'project_path |
+     |               |                  |                |
+     +---------------+                  +----------------+
+           :                                   :
+           includes                        includes
+           :                                   :
+           v                                   v
+       +-------+                          +---------+
+       | P.gpr |<---------- withs --------|  Q.gpr  |
+       +-------+---------\                +---------+
+           |             |
+           withs         |
+           |             |
+           v             v
+       +-------+      +---------+
+       | R.gpr |      | R'.gpr  |
+       +-------+      +---------+
+@end smallexample
+
+When looking for p.gpr, both aggregates find the same physical file on
+the disk. However, it might happen that with their different project
+paths, both aggregate projects would in fact find a different r.gpr.
+Since we have a common project (p.gpr) "with"ing two different r.gpr,
+this will be reported as an error by the builder.
+
+Directories are relative to the location of the aggregate project file.
+
+Here are a few valid examples:
+
+@smallexample @c projectfile
+   for Project_Path use ("/usr/local/gpr", "gpr/");
+@end smallexample
+
+@item @b{External}:
+@cindex @code{External}
+
+This attribute can be used to set the value of environment
+variables as retrieved through the @code{external} statement
+in projects. It does not affect the environment variables
+themselves (so for instance you cannot use it to change the value
+of your PATH as seen from the spawned compiler).
+
+This attribute affects the external values as seen in the rest of
+the aggreate projects, and in the aggregated projects.
+
+The exact value of external a variable comes from one of three
+sources (each level overrides the previous levels):
+
+@itemize @bullet
+@item An External attribute in aggregate project, for instance
+    @code{for External ("BUILD_MODE") use "DEBUG"};
+
+@item Environment variables
+
+These override the value given by the attribute, so that
+users can override the value set in the (presumably shared
+with others in his team) aggregate project.
+
+@item The -X command line switch to gprbuild and gnatmake
+
+This always takes precedence.
+
+@end itemize
+
+This attribute is only taken into account in the main aggregate
+project (i.e. the one specified on the command line to gprbuild or
+natmake), and ignored in other aggregate projects. It is invalid
+in standard projects.
+The goal is to have a consistent value in all
+projects that are build through the aggregate, which would not
+be the case in the diamond case: A groups the aggregate
+projects B and C, which both (either directly or indirectly)
+build the project P. If B and C could set different values for
+the environment variables, we would have two different views of
+P, which in particular might impact the list of source files in P.
+
+@end table
+
+@subsection package Builder in aggregate projects
+
+As we mentioned before, only the package Builder can be specified in
+an aggregate project. In this package, only the following attributes
+are valid:
+
+@table @asis
+@item @b{Switches}:
+@cindex @code{Switches}
+This attribute gives the list of switches to use for the builder
+(gprbuild or gnatmake), depending on the language of the main file.
+For instance,
+
+@smallexample @c projectfile
+for Switches ("Ada") use ("-d", "-p");
+for Switches ("C")   use ("-p");
+@end smallexample
+
+These switches are only read from the main aggregate project (the
+one passed on the command line), and ignored in all other aggregate
+projects or projects.
+
+It can only contain builder switches, not compiler switches.
+
+@item @b{Global_Compilation_Switches}
+@cindex @code{Global_Compilation_Switches}
+
+This attribute gives the list of compiler switches for the various
+languages. For instance,
+
+@smallexample @c projectfile
+for Global_Compilation_Switches ("Ada") use ("-O1", "-g");
+for Global_Compilation_Switches ("C")   use ("-O2");
+@end smallexample
+
+This attribute is only taken into account in the aggregate project
+specified on the command line, not in other aggregate projects.
+
+In the projects grouped by that aggregate, the attribute
+Builder.Global_Compilation_Switches is also ignored. However, the
+attribute Compiler.Default_Switches will be taken into account (but
+that of the aggregate have higher priority). The attribute
+Compiler.Switches is also taken into account and can be used to
+override the switches for a specific file. As a result, it always
+has priority.
+
+The rules are meant to avoid ambiguities when compiling. For
+instance, aggregate project Agg groups the projects A and B, that
+both depend on C. Here is an extra for all of these projects:
+
+@smallexample @c projectfile
+      aggregate project Agg is
+          for Project_Files use ("a.gpr", "b.gpr");
+          package Builder is
+             for Global_Compilation_Switches ("Ada") use ("-O2");
+          end Builder;
+      end Agg;
+
+      with "c.gpr";
+      project A is
+          package Builder is
+             for Global_Compilation_Switches ("Ada") use ("-O1");
+             --  ignored
+          end Builder;
+
+          package Compiler is
+             for Default_Switches ("Ada") use ("-O1", "-g");
+             for Switches ("a_file1.adb") use ("-O0");
+          end Compiler;
+      end A;
+
+      with "c.gpr";
+      project B is
+          package Compiler is
+             for Default_Switches ("Ada") use ("-O0");
+          end Compiler;
+      end B;
+
+      project C is
+          package Compiler is
+             for Default_Switches ("Ada") use ("-O3, "-gnatn");
+             for Switches ("c_file1.adb") use ("-O0", "-g");
+          end Compiler;
+      end C;
+@end smallexample
+
+then the following switches are used:
+
+@itemize @bullet
+@item all files from project A except a_file1.adb are compiled
+      with "-O2 -g", since the aggregate project has priority.
+@item the file a_file1.adb is compiled with
+      "-O0", since the Compiler.Switches has priority
+@item all files from project B are compiled with
+      "-O2", since the aggregate project has priority
+@item all files from C are compiled with "-O2 -gnatn", except for
+      c_file1.adb which is compiled with "-O0 -g"
+@end itemize
+
+Even though C is seen through two paths (through A and through
+B), the switches used by the compiler are unambiguous.
+
+@item @b{Global_Configuration_Pragmas}
+@cindex @code{Global_Configuration_Pragmas}
+
+This attribute can be used to specify a file containing
+configuration pragmas, to be passed to the compiler.  Since we
+ignore the package Builder in other aggregate projects and projects,
+only those pragmas defined in the main aggregate project will be
+taken into account.
+
+Projects can locally add to those by using the
+@code{Compiler.Local_Configuration_Pragmas} attribute if they need.
+
+@end table
+
+For projects that are build through the aggregate, the package Builder
+is ignored, except for the Executable attribute which specifies the
+name of the executables resulting from the link of the main units, and
+for the Executable_Suffix.
+
+@c ---------------------------------------------
 @node Project File Reference
 @section Project File Reference
 @c ---------------------------------------------
@@ -2356,6 +2871,10 @@ The following packages are currently supported in project files
 @item Linker
   This package specifies the options used by the linker.
   @xref{Main Subprograms}.
+@item Makefile
+@cindex Makefile package in projects
+  This package is used by the GPS plugin Makefile.py. See the documentation
+  in that plugin (from GPS: /Tools/Plug-ins).
 @item Metrics
   This package specifies the options used when calling the tool
   @command{gnatmetric} via the @command{gnat} driver. Its attributes
@@ -2879,6 +3398,7 @@ system (file). The text is between brackets ([]) if the index is optional.
 @item Compiler_Command @tab string @tab IDE @tab insensitive (language)
 @item Debugger_Command @tab string @tab IDE @tab -
 @item Gnatlist @tab string @tab IDE @tab -
+@item Gnat @tab string @tab IDE @tab -
 @item VCS_Kind @tab string @tab IDE @tab -
 @item VCS_File_Check @tab string @tab IDE @tab -
 @item VCS_Log_Check @tab string @tab IDE @tab -
@@ -3715,7 +4235,7 @@ is specified for the source file.
 @group
 project Proj is
 
-   for Source_Dirs use ("./**");
+   for Source_Dirs use ("**");
 
    package gnatls is
       for Switches use
@@ -3868,10 +4388,16 @@ value is a list of switches to use when invoking that tool.
 This is a simple attribute.  Its value is a string that specifies the name
 of the @command{gnatls} utility to be used to retrieve information about the
 predefined path; e.g., @code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
+
 @item VCS_Kind
 This is a simple attribute. Its value is a string used to specify the
 Version Control System (VCS) to be used for this project, e.g.@: CVS, RCS
 ClearCase or Perforce.
+
+@item Gnat
+This is a simple attribute. Its value is a string that specifies the name
+of the @command{gnat} utility to be used when executing various tools from
+GPS, in particular @code{"gnat pp"}, @code{"gnat stub"},@dots{}
 
 @item VCS_File_Check
 This is a simple attribute. Its value is a string that specifies the

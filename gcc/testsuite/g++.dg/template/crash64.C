@@ -2,5 +2,5 @@
 
 struct A
 {
-  template<int> void foo()(0); // { dg-error "initializer" } 
+  template<int> void foo()(0); // { dg-error "" }
 };

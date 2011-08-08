@@ -80,7 +80,6 @@ namespace __gnu_parallel
       *  @param __result Begin iterator of output sequence.
       *  @param __bin_op Associative binary function.
       *  @param __n Length of sequence.
-      *  @param __num_threads Number of threads to use.
       *  @return End iterator of output sequence.
       */
   template<typename _IIter,

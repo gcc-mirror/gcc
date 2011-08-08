@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,22 +39,23 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 
-with System.CRTL;    use System.CRTL;
-with System.OS_Lib;  use System.OS_Lib;
-with System.Regexp;  use System.Regexp;
-with System.File_IO; use System.File_IO;
-with System;
+with System.CRTL;         use System.CRTL;
+with System.OS_Constants; use System.OS_Constants;
+with System.OS_Lib;       use System.OS_Lib;
+with System.Regexp;       use System.Regexp;
+with System.File_IO;      use System.File_IO;
+with System;              use System;
 
 package body Ada.Directories is
 
    Filename_Max : constant Integer := 1024;
    --  1024 is the value of FILENAME_MAX in stdio.h
 
-   type Dir_Type_Value is new System.Address;
+   type Dir_Type_Value is new Address;
    --  This is the low-level address directory structure as returned by the C
    --  opendir routine.
 
-   No_Dir : constant Dir_Type_Value := Dir_Type_Value (System.Null_Address);
+   No_Dir : constant Dir_Type_Value := Dir_Type_Value (Null_Address);
 
    Dir_Separator : constant Character;
    pragma Import (C, Dir_Separator, "__gnat_dir_separator");
@@ -383,7 +384,7 @@ package body Ada.Directories is
             end;
          end if;
 
-         --  The implementation uses System.OS_Lib.Copy_File
+         --  Do actual copy using System.OS_Lib.Copy_File
 
          Copy_File (Source_Name, Target_Name, Success, Mode, Preserve);
 
@@ -495,9 +496,7 @@ package body Ada.Directories is
       Path_Len : Natural := Max_Path;
       Buffer   : String (1 .. 1 + Max_Path + 1);
 
-      procedure Local_Get_Current_Dir
-        (Dir    : System.Address;
-         Length : System.Address);
+      procedure Local_Get_Current_Dir (Dir : Address; Length : Address);
       pragma Import (C, Local_Get_Current_Dir, "__gnat_get_current_dir");
 
    begin
@@ -562,7 +561,7 @@ package body Ada.Directories is
          raise Name_Error with "file """ & Name & """ does not exist";
 
       else
-         --  The implementation uses System.OS_Lib.Delete_File
+         --  Do actual deletion using System.OS_Lib.Delete_File
 
          Delete_File (Name, Success);
 
@@ -601,7 +600,7 @@ package body Ada.Directories is
                File_Name : constant String := Simple_Name (Dir_Ent);
 
             begin
-               if System.OS_Lib.Is_Directory (File_Name) then
+               if OS_Lib.Is_Directory (File_Name) then
                   if File_Name /= "." and then File_Name /= ".." then
                      Delete_Tree (File_Name);
                   end if;
@@ -697,7 +696,7 @@ package body Ada.Directories is
       Kind : File_Kind := Ordinary_File;
       --  Initialized to avoid a compilation warning
 
-      Filename_Addr : System.Address;
+      Filename_Addr : Address;
       Filename_Len  : aliased Integer;
 
       Buffer : array (0 .. Filename_Max + 12) of Character;
@@ -705,12 +704,10 @@ package body Ada.Directories is
       --  field for the filename.
 
       function readdir_gnat
-        (Directory : System.Address;
-         Buffer    : System.Address;
-         Last      : not null access Integer) return System.Address;
+        (Directory : Address;
+         Buffer    : Address;
+         Last      : not null access Integer) return Address;
       pragma Import (C, readdir_gnat, "__gnat_readdir");
-
-      use System;
 
    begin
       --  Search.Value.Is_Valid is always True when Fetch_Next_Entry is called
@@ -718,13 +715,13 @@ package body Ada.Directories is
       loop
          Filename_Addr :=
            readdir_gnat
-             (System.Address (Search.Value.Dir),
+             (Address (Search.Value.Dir),
               Buffer'Address,
               Filename_Len'Access);
 
          --  If no matching entry is found, set Is_Valid to False
 
-         if Filename_Addr = System.Null_Address then
+         if Filename_Addr = Null_Address then
             Search.Value.Is_Valid := False;
             exit;
          end if;
@@ -800,7 +797,7 @@ package body Ada.Directories is
    -----------------
 
    function File_Exists (Name : String) return Boolean is
-      function C_File_Exists (A : System.Address) return Integer;
+      function C_File_Exists (A : Address) return Integer;
       pragma Import (C, C_File_Exists, "__gnat_file_exists");
 
       C_Name : String (1 .. Name'Length + 1);
@@ -847,9 +844,11 @@ package body Ada.Directories is
 
          declare
             --  We need to resolve links because of A.16(47), since we must not
-            --  return alternative names for files
+            --  return alternative names for files.
+
             Value : constant String := Normalize_Pathname (Name);
             subtype Result is String (1 .. Value'Length);
+
          begin
             return Result (Value);
          end;
@@ -1055,13 +1054,26 @@ package body Ada.Directories is
            & """ designates a file that already exists";
 
       else
-         --  The implementation uses System.OS_Lib.Rename_File
+         --  Do actual rename using System.OS_Lib.Rename_File
 
          Rename_File (Old_Name, New_Name, Success);
 
          if not Success then
-            raise Use_Error with
-              "file """ & Old_Name & """ could not be renamed";
+
+            --  AI05-0231-1: Name_Error should be raised in case a directory
+            --  component of New_Name does not exist (as in New_Name =>
+            --  "/no-such-dir/new-filename"). ENOENT indicates that. ENOENT
+            --  also indicate that the Old_Name does not exist, but we already
+            --  checked for that above. All other errors are Use_Error.
+
+            if Errno = ENOENT then
+               raise Name_Error with
+                 "file """ & Containing_Directory (New_Name) & """ not found";
+
+            else
+               raise Use_Error with
+                 "file """ & Old_Name & """ could not be renamed";
+            end if;
          end if;
       end if;
    end Rename;
@@ -1141,9 +1153,10 @@ package body Ada.Directories is
          Cut_End := Path'Last;
 
          Check_For_Standard_Dirs : declare
-            BN               : constant String := Path (Cut_Start .. Cut_End);
+            BN : constant String := Path (Cut_Start .. Cut_End);
+
             Has_Drive_Letter : constant Boolean :=
-                                 System.OS_Lib.Path_Separator /= ':';
+                                 OS_Lib.Path_Separator /= ':';
             --  If Path separator is not ':' then we are on a DOS based OS
             --  where this character is used as a drive letter separator.
 
@@ -1208,7 +1221,7 @@ package body Ada.Directories is
    function Size (Name : String) return File_Size is
       C_Name : String (1 .. Name'Length + 1);
 
-      function C_Size (Name : System.Address) return Long_Integer;
+      function C_Size (Name : Address) return Long_Integer;
       pragma Import (C, C_Size, "__gnat_named_file_length");
 
    begin

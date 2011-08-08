@@ -31,20 +31,27 @@ along with GCC; see the file COPYING3.  If not see
 
 /* GNU as understands --32 and --64, but the native Solaris
    assembler requires -xarch=generic or -xarch=generic64 instead.  */
-#undef ASM_SPEC
 #ifdef USE_GAS
-#define ASM_SPEC "%{m32:--32} %{m64:--64} -s %(asm_cpu)"
+#define ASM_CPU32_DEFAULT_SPEC "--32"
+#define ASM_CPU64_DEFAULT_SPEC "--64"
 #else
-#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} " \
-		 "%{m32:-xarch=generic} %{m64:-xarch=generic64} " \
-		 "-s %(asm_cpu)"
+#define ASM_CPU32_DEFAULT_SPEC "-xarch=generic"
+#define ASM_CPU64_DEFAULT_SPEC "-xarch=generic64"
 #endif
+
+#undef ASM_CPU_SPEC
+#define ASM_CPU_SPEC "%(asm_cpu_default)"
+
+/* Don't let i386/x86-64.h override i386/sol2.h version.  Still cannot use
+   -K PIC with the Solaris 10+ assembler, it gives many warnings:
+	Absolute relocation is used for symbol "<symbol>"  */
+#undef ASM_SPEC
+#define ASM_SPEC ASM_SPEC_BASE
 
 /* We do not need to search a special directory for startup files.  */
 #undef MD_STARTFILE_PREFIX
 
-/* No 64-bit default configurations.  */
-#define DEFAULT_ARCH32_P 1
+#define DEFAULT_ARCH32_P !TARGET_64BIT_DEFAULT
 
 #define ARCH64_SUBDIR "amd64"
 

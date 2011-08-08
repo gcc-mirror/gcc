@@ -1,3 +1,17 @@
+2011-08-07  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 177548 into gupc branch.
+	* config/i386/i386.c (ix86_promote_function_mode):
+	  Do not promote UPC pointers-to-shared to Pmode.
+	* c-family/c-ommon.c (pointer_int_sum): 
+	  Also check the pointer operand, rather than just
+	  its type, when making the decision to derive
+	  the equivalent unshared type.
+	* tree.c (build2_stat): If the type of the result
+	  passed in as an argument is a UPC shared type,
+	  derive the unshared equivalent when calculating
+	  the result type of the node.
+
 2011-07-15  Nenad Vukicevic <nenad@intrepid.com>
 
 	* config/darwin.c: Disable var_tracking option

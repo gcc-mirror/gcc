@@ -1,3 +1,91 @@
+2011-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_atomic): Adjust prototype.
+	(c_finish_omp_taskyield): New prototype.
+	* c-omp.c (c_finish_omp_atomic): Add OPCODE, V, LHS1 and RHS1
+	arguments. Handle OMP_ATOMIC_READ, OMP_ATOMIC_CAPTURE_OLD and
+	OMP_ATOMIC_CAPTURE_NEW in addition to OMP_ATOMIC.  If LHS1
+	or RHS1 have side-effects, evaluate those too in the right spot,
+	if it is a decl and LHS is also a decl, error out if they
+	aren't the same.
+	(c_finish_omp_taskyield): New function.
+	* c-cppbuiltin.c (c_cpp_builtins): Change _OPENMP to 201107.
+	* c-pragma.c (omp_pragmas): Add taskyield.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_TASKYIELD.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_FINAL and
+	PRAGMA_OMP_CLAUSE_MERGEABLE.
+
+2011-07-25  Dodji Seketeli  <dodji@redhat.com>
+
+	* c-common.h (set_underlying_type): Remove parm name from
+	declaration.
+
+2011-07-25  Romain Geissler  <romain.geissler@gmail.com>
+
+	* c-pretty-print.h: Search c-common.h in c-family.
+	
+2011-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49793
+	* c.opt (Wnarrowing): New.
+
+	PR c++/30112
+	* c-common.h: Declare c_linkage_bindings.
+	* c-pragma.c (handle_pragma_redefine_extname): Use it.
+
+	PR c++/49813
+	* c-opts.c (set_std_cxx0x): Set flag_isoc94 and flag_isoc99.
+	* c-pretty-print.c (pp_c_cv_qualifiers): Check c_dialect_cxx as well
+	as flag_isoc99 for 'restrict'.
+	(pp_c_specifier_qualifier_list): Likewise for _Complex.
+
+2011-07-21  Ian Lance Taylor  <iant@google.com>
+
+	PR middle-end/49705
+	* c-common.c (c_disable_warnings): New static function.
+	(c_enable_warnings): New static function.
+	(c_fully_fold_internal): Change local unused_p to bool.  Call
+	c_disable_warnings and c_enable_warnings rather than change
+	c_inhibit_evaluation_warnings.
+
+2011-07-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/6709 (DR 743)
+	PR c++/42603 (DR 950)
+	* c-common.h (CPP_KEYWORD, CPP_TEMPLATE_ID): Move from cp/parser.h.
+	(CPP_NESTED_NAME_SPECIFIER, N_CP_TTYPES): Likewise.
+	(CPP_DECLTYPE): New.
+	* c-common.c (c_parse_error): Handle CPP_DECLTYPE.
+
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (pointer_int_sum): Use fold_build_pointer_plus.
+	* c-omp.c (c_finish_omp_for): Likewise.
+
+2011-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_nested_types): Put semi-colon after empty loop
+	body on the next line.
+
+2011-07-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45437
+	* c-omp.c (check_omp_for_incr_expr): Handle preevaluation.
+
+	PR c++/49673
+	* c-common.c (c_apply_type_quals_to_decl): Don't check
+	TYPE_NEEDS_CONSTRUCTING.
+
+2011-07-06  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (c_common_nodes_and_builtins):
+	Merge calls to build_common_tree_nodes and build_common_tree_nodes_2.
+
+2011-07-05  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (c_common_nodes_and_builtins): Build all common
+	tree nodes first.
+
 2011-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_tree_chain_next): New static inline function.

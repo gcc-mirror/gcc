@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@ with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Lib.Util; use Lib.Util;
 with Lib.Xref; use Lib.Xref;
+               use Lib.Xref.ALFA;
 with Nlists;   use Nlists;
 with Gnatvsn;  use Gnatvsn;
 with Opt;      use Opt;
@@ -460,6 +461,12 @@ package body Lib.Writ is
          Write_Info_Str (" O");
          Write_Info_Char (OA_Setting (Unit_Num));
 
+         if Ekind_In (Uent, E_Package, E_Package_Body)
+           and then Present (Finalizer (Uent))
+         then
+            Write_Info_Str (" PF");
+         end if;
+
          if Is_Preelaborated (Uent) then
             Write_Info_Str (" PR");
          end if;
@@ -860,6 +867,13 @@ package body Lib.Writ is
       if Original_Operating_Mode = Check_Syntax
         or flag_compare_debug /= 0
       then
+         return;
+      end if;
+
+      --  Generation of ALI files may be disabled, e.g. for formal verification
+      --  back-end.
+
+      if Disable_ALI_File then
          return;
       end if;
 
@@ -1293,12 +1307,21 @@ package body Lib.Writ is
 
       --  Output cross-references
 
-      Output_References;
+      if Opt.Xref_Active then
+         Output_References;
+      end if;
 
       --  Output SCO information if present
 
       if Generate_SCO then
          SCO_Output;
+      end if;
+
+      --  Output ALFA information if needed
+
+      if Opt.Xref_Active and then ALFA_Mode then
+         Collect_ALFA (Sdep_Table => Sdep_Table, Num_Sdep => Num_Sdep);
+         Output_ALFA;
       end if;
 
       --  Output final blank line and we are done. This final blank line is

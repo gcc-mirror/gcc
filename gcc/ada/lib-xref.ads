@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,9 @@
 --  This package contains for collecting and outputting cross-reference
 --  information.
 
-with Einfo; use Einfo;
+with Einfo;    use Einfo;
+with Lib.Util; use Lib.Util;
+with Put_ALFA;
 
 package Lib.Xref is
 
@@ -44,7 +46,7 @@ package Lib.Xref is
    --        This header precedes xref information (entities/references from
    --        the unit), identified by dependency number and file name. The
    --        dependency number is the index into the generated D lines and
-   --        is ones origin (i.e. 2 = reference to second generated D line).
+   --        is ones origin (e.g. 2 = reference to second generated D line).
 
    --        Note that the filename here will reflect the original name if
    --        a Source_Reference pragma was encountered (since all line number
@@ -52,7 +54,7 @@ package Lib.Xref is
 
    --  The lines following the header look like
 
-   --  line type col level entity renameref instref typeref overref ref  ref
+   --  line type col level entity renameref instref typeref overref ref ref
 
    --        line is the line number of the referenced entity. The name of
    --        the entity starts in column col. Columns are numbered from one,
@@ -61,17 +63,17 @@ package Lib.Xref is
    --        if the entity is the first token on the line, and is preceded
    --        by space-HT-space, then the column would be column 10.
 
-   --        type is a single letter identifying the type of the entity.
-   --        See next section (Cross-Reference Entity Identifiers) for a
-   --        full list of the characters used).
+   --        type is a single letter identifying the type of the entity. See
+   --        next section (Cross-Reference Entity Identifiers) for a full list
+   --        of the characters used).
 
    --        col is the column number of the referenced entity
 
-   --        level is a single character that separates the col and
-   --        entity fields. It is an asterisk (*) for a top level library
-   --        entity that is publicly visible, as well for an entity declared
-   --        in the visible part of a generic package, the plus sign (+) for
-   --        a C/C++ static entity, and space otherwise.
+   --        level is a single character that separates the col and entity
+   --        fields. It is an asterisk (*) for a top level library entity that
+   --        is publicly visible, as well for an entity declared in the visible
+   --        part of a generic package, the plus sign (+) for a C/C++ static
+   --        entity, and space otherwise.
 
    --        entity is the name of the referenced entity, with casing in
    --        the canonical casing for the source file where it is defined.
@@ -84,24 +86,23 @@ package Lib.Xref is
 
    --            =line:col
 
-   --        Here line:col give the reference to the identifier that
-   --        appears in the renaming declaration. Note that we never need
-   --        a file entry, since this identifier is always in the current
-   --        file in which the entity is declared. Currently, renameref
-   --        appears only for the simple renaming case. If the renaming
-   --        reference is a complex expressions, then renameref is omitted.
-   --        Here line/col give line/column as defined above.
+   --        Here line:col give the reference to the identifier that appears
+   --        in the renaming declaration. Note that we never need a file entry,
+   --        since this identifier is always in the current file in which the
+   --        entity is declared. Currently, renameref appears only for the
+   --        simple renaming case. If the renaming reference is a complex
+   --        expressions, then renameref is omitted. Here line/col give
+   --        line/column as defined above.
 
-   --        instref is only present for package and subprogram instances.
-   --        The information in instref is the location of the point of
-   --        declaration of the generic parent unit. This part has the form:
+   --        instref is only present for package and subprogram instances. The
+   --        information in instref is the location of the point of declaration
+   --        of the generic parent unit. This part has the form:
 
    --            [file|line]
 
    --        without column information, on the reasonable assumption that
-   --        there is only one unit per line (the same assumption is made
-   --        in references to entities that are declared within instances,
-   --        see below).
+   --        there is only one unit per line (the same assumption is made in
+   --        references to entities declared within instances, see below).
 
    --        typeref is the reference for a related type. This part is
    --        optional. It is present for the following cases:
@@ -122,15 +123,15 @@ package Lib.Xref is
    --          additional interfaces are stored in the list of references
    --          with a special type of Interface_Reference.
 
-   --          For an array type, there is an entry of the form LR=<> for
-   --          each of the index types appearing in the type declaration.
-   --          The index types follow the entry for the component type.
-   --          In the data structures of ali.ads, however, the list of index
-   --          types are output in the list of references with a special
-   --          Rtype set to Array_Index_Reference.
+   --          For an array type, there is an entry of the form LR=<> for each
+   --          of the index types appearing in the type declaration. The index
+   --          types follow the entry for the component type. In the data
+   --          structures of ali.ads, however, the list of index types are
+   --          output in the list of references with a special Rtype set to
+   --          Array_Index_Reference.
 
-   --          In the above list LR shows the brackets used in the output,
-   --          which has one of the two following forms:
+   --          In the above list LR shows the brackets used in the output which
+   --          has one of the two following forms:
 
    --            L file | line type col R      user entity
    --            L name-in-lower-case R        standard entity
@@ -172,6 +173,7 @@ package Lib.Xref is
    --              b = body entity
    --              c = completion of private or incomplete type
    --              d = discriminant of type
+   --              D = object definition
    --              e = end of spec
    --              H = abstract type
    --              i = implicit reference
@@ -194,13 +196,13 @@ package Lib.Xref is
    --              ^ = subprogram ACCESS parameter
 
    --           b is used for spec entities that are repeated in a body,
-   --           including the unit (subprogram, package, task, protected
-   --           body, protected entry) name itself, and in the case of a
-   --           subprogram, the formals. This letter is also used for the
-   --           occurrence of entry names in accept statements. Such entities
-   --           are not considered to be definitions for cross-referencing
-   --           purposes, but rather are considered to be references to the
-   --           corresponding spec entities, marked with this special type.
+   --           including the unit (subprogram, package, task, protected body,
+   --           protected entry) name itself, and in the case of a subprogram,
+   --           the formals. This letter is also used for the occurrence of
+   --           entry names in accept statements. Such entities are not
+   --           considered to be definitions for cross-referencing purposes,
+   --           but rather are considered to be references to the corresponding
+   --           spec entities, marked with this special type.
 
    --           c is similar to b but is used to mark the completion of a
    --           private or incomplete type. As with b, the completion is not
@@ -210,9 +212,9 @@ package Lib.Xref is
    --           d is used to identify a discriminant of a type. If this is
    --           an incomplete or private type with discriminants, the entry
    --           denotes the occurrence of the discriminant in the partial view
-   --           which is also the point of definition of the discriminant.
-   --           The occurrence of the same discriminant in the full view is
-   --           a regular reference to it.
+   --           which is also the point of definition of the discriminant. The
+   --           occurrence of the same discriminant in the full view is a
+   --           regular reference to it.
 
    --           e is used to identify the end of a construct in the following
    --           cases:
@@ -226,11 +228,11 @@ package Lib.Xref is
    --             Enumeration Definition );
 
    --           Note that 'e' entries are special in that they appear even
-   --           in referencing units (normally xref entries appear only
-   --           for references in the extended main source unit (see Lib) to
-   --           which the ali applies. But 'e' entries are really structural
-   --           and simply indicate where packages end. This information can
-   --           be used to reconstruct scope information for any entities
+   --           in referencing units (normally xref entries appear only for
+   --           references in the extended main source unit (see Lib) to which
+   --           the ali applies. But 'e' entries are really structural and
+   --           simply indicate where packages end. This information can be
+   --           used to reconstruct scope information for any entities
    --           referenced from within the package. The line/column values
    --           for these entries point to the semicolon ending the construct.
 
@@ -268,11 +270,10 @@ package Lib.Xref is
    --           entry in the section for the child duplicates this information
    --           but appears in the child rather than the parent.
 
-   --           l is used to identify the occurrence in the source of the
-   --           name on an end line. This is just a syntactic reference
-   --           which can be ignored for semantic purposes (such as call
-   --           graph construction). Again, in the case of an accept there
-   --           can be multiple l lines.
+   --           l is used to identify the occurrence in the source of the name
+   --           on an end line. This is just a syntactic reference which can be
+   --           ignored for semantic purposes (e.g. a call graph construction).
+   --           Again, in the case of an accept there can be multiple l lines.
 
    --           o is used for variables referenced from a SPARK 'own'
    --           definition. In the SPARK language, it is allowed to use a
@@ -313,14 +314,14 @@ package Lib.Xref is
    --           Note that in the case of accept statements, there can
    --           be multiple b and t entries for the same entity.
 
-   --           x is used to identify the reference as the entity from which
-   --           a tagged type is extended. This allows immediate access to
-   --           the parent of a tagged type.
+   --           x is used to identify the reference as the entity from which a
+   --           tagged type is extended. This allows immediate access to the
+   --           parent of a tagged type.
 
-   --           z is used on the cross-reference line for a generic unit, to
-   --           mark the definition of a generic formal of the unit.
-   --           This entry type is similar to 'k' and 'p' in that it is an
-   --           implicit reference for an entity with a different name.
+   --           z is used on the cross-reference line for a generic unit,
+   --           to mark the definition of a generic formal of the unit. This
+   --           entry type is similar to 'k' and 'p' in that it is an implicit
+   --           reference for an entity with a different name.
 
    --           The characters >, <. =, and ^ are used on the cross-reference
    --           line for a subprogram, to denote formal parameters and their
@@ -331,13 +332,12 @@ package Lib.Xref is
    --           references are present only if the entity in question is
    --           a generic entity, and in that case the [..] contains the
    --           reference for the instantiation. In the case of nested
-   --           instantiations, this can be nested [...[...[...]]] etc.
-   --           The reference is of the form [file|line] no column is
-   --           present since it is assumed that only one instantiation
-   --           appears on a single source line. Note that the appearance
-   --           of file numbers in such references follows the normal
-   --           rules (present only if needed, and resets the current
-   --           file for subsequent references).
+   --           instantiations, this can be nested [...[...[...]]] etc. The
+   --           reference is of the form [file|line] no column is present since
+   --           it is assumed that only one instantiation appears on a single
+   --           source line. Note that the appearance of file numbers in such
+   --           references follows the normal rules (present only if needed,
+   --           and resets the current file for subsequent references).
 
    --     Examples:
 
@@ -386,9 +386,9 @@ package Lib.Xref is
    --        10I3*Genv{integer} 3|4I10[6|12]
 
    --           This line gives a reference for the entity Genv in a generic
-   --           package. The reference in file 3, line 4, col 10, refers to
-   --           an instance of the generic where the instantiation can be
-   --           found in file 6 at line 12.
+   --           package. The reference in file 3, line 4, col 10, refers to an
+   --           instance of the generic where the instantiation can be found in
+   --           file 6 at line 12.
 
    --  Continuation lines are used if the reference list gets too long,
    --  a continuation line starts with a period, and then has references
@@ -408,26 +408,25 @@ package Lib.Xref is
    ----------------------------------------
 
    --  In the cross-reference section of the ali file, entity types are
-   --  identified by a single letter, indicating the entity type. The
-   --  following table indicates the letter. A space for an entry is
-   --  used for entities that do not appear in the cross-reference table.
+   --  identified by a single letter, indicating the entity type. The following
+   --  table indicates the letter. A space for an entry is used for entities
+   --  that do not appear in the cross-reference table.
 
-   --  For objects, the character * appears in this table. In the xref
-   --  listing, this character is replaced by the lower case letter that
-   --  corresponds to the type of the object. For example, if a variable
-   --  is of a Float type, then, since the type is represented by an
-   --  upper case F, the object would be represented by a lower case f.
+   --  For objects, the character * appears in this table. In the xref listing,
+   --  this character is replaced by the lower case letter that corresponds to
+   --  the type of the object. For example, if a variable is of a Float type,
+   --  then, since the type is represented by an upper case F, the object would
+   --  be represented by a lower case f.
 
-   --  A special exception is the case of booleans, whose entities are
-   --  normal E_Enumeration_Type or E_Enumeration_Subtype entities, but
-   --  which appear as B/b in the xref lines, rather than E/e.
+   --  A special exception is the case of booleans, whose entities are normal
+   --  E_Enumeration_Type or E_Enumeration_Subtype entities, but which appear
+   --  as B/b in the xref lines, rather than E/e.
 
-   --  For private types, the character + appears in the table. In this
-   --  case the kind of the underlying type is used, if available, to
-   --  determine the character to use in the xref listing. The listing
-   --  will still include a '+' for a generic private type, for example,
-   --  but will retain the '*' for an object or formal parameter of such
-   --  a type.
+   --  For private types, the character + appears in the table. In this case
+   --  the kind of the underlying type is used, if available, to determine the
+   --  character to use in the xref listing. The listing will still include a
+   --  '+' for a generic private type, for example, but will retain the '*' for
+   --  an object or formal parameter of such a type.
 
    --  For subprograms, the characters 'U' and 'V' appear in the table,
    --  indicating procedures and functions. If the operation is abstract,
@@ -523,11 +522,10 @@ package Lib.Xref is
       E_Return_Statement                           => ' ',
       E_Package                                    => 'K',
 
-      --  The following entities are not ones to which we gather
-      --  cross-references, since it does not make sense to do so
-      --  (e.g. references to a package are to the spec, not the body)
-      --  Indeed the occurrence of the body entity is considered to
-      --  be a reference to the spec entity.
+      --  The following entities are not ones to which we gather the cross-
+      --  references, since it does not make sense to do so (e.g. references to
+      --  a package are to the spec, not the body) Indeed the occurrence of the
+      --  body entity is considered to be a reference to the spec entity.
 
       E_Package_Body                               => ' ',
       E_Protected_Object                           => ' ',
@@ -535,8 +533,8 @@ package Lib.Xref is
       E_Task_Body                                  => ' ',
       E_Subprogram_Body                            => ' ');
 
-   --  The following table is for information purposes. It shows the
-   --  use of each character appearing as an entity type.
+   --  The following table is for information purposes. It shows the use of
+   --  each character appearing as an entity type.
 
    --  letter  lower case usage                UPPER CASE USAGE
 
@@ -571,18 +569,47 @@ package Lib.Xref is
    -- Handling of Imported Subprograms --
    --------------------------------------
 
-   --  If a pragma Import or Interface applies to a subprogram, the
-   --  pragma is the completion of the subprogram. This is noted in
-   --  the ALI file by making the occurrence of the subprogram in the
-   --  pragma into a body reference ('b') and by including the external
-   --  name of the subprogram and its language, bracketed by '<' and '>'
-   --  in that reference. For example:
+   --  If a pragma Import or Interface applies to a subprogram, the pragma is
+   --  the completion of the subprogram. This is noted in the ALI file by
+   --  making the occurrence of the subprogram in the pragma into a body
+   --  reference ('b') and by including the external name of the subprogram and
+   --  its language, bracketed by '<' and '>' in that reference. For example:
    --
    --     3U13*elsewhere 4b<c,there>21
    --
-   --  indicates that procedure elsewhere, declared at line 3, has a
-   --  pragma Import at line 4, that its body is in C, and that the link
-   --  name as given in the pragma is "there".
+   --  indicates that procedure elsewhere, declared at line 3, has a pragma
+   --  Import at line 4, that its body is in C, and that the link name as given
+   --  in the pragma is "there".
+
+   ----------------------
+   -- ALFA Information --
+   ----------------------
+
+   --  This package defines procedures for collecting ALFA information and
+   --  printing in ALI files.
+
+   package ALFA is
+
+      type Node_Processing is access procedure (N : Node_Id);
+
+      procedure Traverse_Compilation_Unit
+        (CU      : Node_Id;
+         Process : Node_Processing);
+
+      procedure Traverse_All_Compilation_Units (Process : Node_Processing);
+      --  Call Process on all declarations through all compilation units
+
+      procedure Collect_ALFA (Sdep_Table : Unit_Ref_Table; Num_Sdep : Nat);
+      --  Collect ALFA information from library units (for files and scopes)
+      --  and from cross-references. Fill in the tables in library package
+      --  called ALFA.
+
+      procedure Output_ALFA is new Put_ALFA;
+      --  Output ALFA information to the ALI files, based on the information
+      --  collected in the tables in library package called ALFA, and using
+      --  routines in Lib.Util.
+
+   end ALFA;
 
    -----------------
    -- Subprograms --
@@ -597,10 +624,10 @@ package Lib.Xref is
    --  Node N is an operator node, whose entity has been set. If this entity
    --  is a user defined operator (i.e. an operator not defined in package
    --  Standard), then a reference to the operator is recorded at node N.
-   --  T is the operand type of the operator. A reference to the operator
-   --  is an implicit reference to the type, and that needs to be recorded
-   --  to avoid spurious warnings on unused entities, when the operator is
-   --  a renaming of a predefined operator.
+   --  T is the operand type of the operator. A reference to the operator is an
+   --  implicit reference to the type, and that needs to be recorded to avoid
+   --  spurious warnings on unused entities, when the operator is a renaming of
+   --  a predefined operator.
 
    procedure Generate_Reference
      (E       : Entity_Id;
@@ -608,28 +635,19 @@ package Lib.Xref is
       Typ     : Character := 'r';
       Set_Ref : Boolean   := True;
       Force   : Boolean   := False);
-   --  This procedure is called to record a reference. N is the location
-   --  of the reference and E is the referenced entity. Typ is one of:
+   --  This procedure is called to record a reference. N is the location of the
+   --  reference and E is the referenced entity. Typ is one of:
    --
-   --    'b'  body entity
-   --    'c'  completion of incomplete or private type (see below)
-   --    'e'  end of construct
-   --    'i'  implicit reference
-   --    'l'  label on end line
-   --    'm'  modification
-   --    'p'  primitive operation
-   --    'r'  standard reference
-   --    't'  end of body
-   --    'x'  type extension
-   --    ' '  dummy reference (see below)
+   --    a character already described in the description of ref entries above
+   --    ' ' for dummy reference (see below)
    --
-   --  Note: all references to incomplete or private types are to the
-   --  original (incomplete or private type) declaration. The full
-   --  declaration is treated as a reference with type 'c'.
+   --  Note: all references to incomplete or private types are to the original
+   --  (incomplete or private type) declaration. The full declaration is
+   --  treated as a reference with type 'c'.
    --
-   --  Note: all references to packages or subprograms are to the entity
-   --  for the spec. The entity in the body is treated as a reference
-   --  with type 'b'. Similar handling for references to subprogram formals.
+   --  Note: all references to packages or subprograms are to the entity for
+   --  the spec. The entity in the body is treated as a reference with type
+   --  'b'. Similar handling for references to subprogram formals.
    --
    --  The call has no effect if N is not in the extended main source unit
    --  This check is omitted for type 'e' references (where it is useful to

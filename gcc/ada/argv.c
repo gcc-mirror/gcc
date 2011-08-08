@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2009, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2011, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -30,17 +30,21 @@
  ****************************************************************************/
 
 /* Routines for accessing command line arguments from both the runtime
-   library and from the compiler itself. In the former case, gnat_argc
+   library and from the compiler itself.  In the former case, gnat_argc
    and gnat_argv are the original argc and argv values as stored by the
    binder generated main program, and these routines are accessed from
-   the Ada.Command_Line package. In the compiler case, gnat_argc and
+   the Ada.Command_Line package.  In the compiler case, gnat_argc and
    gnat_argv are the values as modified by toplev, and these routines
-   are accessed from the Osint package. */
+   are accessed from the Osint package.  */
 
 /* Also routines for accessing the environment from the runtime library.
    Gnat_envp is the original envp value as stored by the binder generated
    main program, and these routines are accessed from the
-   Ada.Command_Line.Environment package. */
+   Ada.Command_Line.Environment package.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef IN_RTS
 #include "tconfig.h"
@@ -116,3 +120,7 @@ __gnat_fill_env (char *a, int i)
   if (gnat_envp != NULL)
     strncpy (a, gnat_envp[i], strlen (gnat_envp[i]));
 }
+
+#ifdef __cplusplus
+}
+#endif

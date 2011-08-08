@@ -1,5 +1,4 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target lp64 } */
+/* { dg-do compile { target { ! { ia32 } } } } */
 
 typedef int DItype __attribute__ ((mode (DI)));
 typedef unsigned int UDItype __attribute__ ((mode (DI)));

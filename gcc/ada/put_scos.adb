@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             P U T _ S C O S                               --
+--                             P U T _ S C O S                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with SCOs; use SCOs;
+with Par_SCO; use Par_SCO;
+with SCOs;    use SCOs;
 
 procedure Put_SCOs is
    Ctr : Nat;
@@ -94,7 +95,8 @@ begin
             pragma Assert (Start <= Stop);
 
             Output_SCO_Line : declare
-               T : SCO_Table_Entry renames SCO_Table.Table (Start);
+               T            : SCO_Table_Entry renames SCO_Table.Table (Start);
+               Continuation : Boolean;
 
             begin
                case T.C1 is
@@ -102,11 +104,25 @@ begin
                   --  Statements
 
                   when 'S' =>
-                     Write_Info_Initiate ('C');
-                     Write_Info_Char ('S');
-
                      Ctr := 0;
+                     Continuation := False;
                      loop
+                        if SCO_Pragma_Disabled
+                             (SCO_Table.Table (Start).Pragma_Sloc)
+                        then
+                           goto Next_Statement;
+                        end if;
+
+                        if Ctr = 0 then
+                           Write_Info_Initiate ('C');
+                           if not Continuation then
+                              Write_Info_Char ('S');
+                              Continuation := True;
+                           else
+                              Write_Info_Char ('s');
+                           end if;
+                        end if;
+
                         Write_Info_Char (' ');
 
                         if SCO_Table.Table (Start).C2 /= ' ' then
@@ -114,22 +130,20 @@ begin
                         end if;
 
                         Output_Range (SCO_Table.Table (Start));
-                        exit when SCO_Table.Table (Start).Last;
 
-                        Start := Start + 1;
-                        pragma Assert (SCO_Table.Table (Start).C1 = 's');
+                        --  Increment entry counter (up to 6 entries per line,
+                        --  continuation lines are marked Cs).
 
                         Ctr := Ctr + 1;
-
-                        --  Up to 6 items on a line, if more than 6 items,
-                        --  continuation lines are marked Cs.
-
                         if Ctr = 6 then
                            Write_Info_Terminate;
-                           Write_Info_Initiate ('C');
-                           Write_Info_Char ('s');
                            Ctr := 0;
                         end if;
+
+                     <<Next_Statement>>
+                        exit when SCO_Table.Table (Start).Last;
+                        Start := Start + 1;
+                        pragma Assert (SCO_Table.Table (Start).C1 = 's');
                      end loop;
 
                      Write_Info_Terminate;
@@ -142,12 +156,13 @@ begin
 
                   --  Decision
 
-                  when 'I' | 'E' | 'P' | 'W' | 'X' =>
+                  when 'I' | 'E' | 'G' | 'P' | 'W' | 'X' =>
                      Start := Start + 1;
 
-                     --  For disabled pragma, skip decision output
+                     --  For disabled pragma, or nested decision therein, skip
+                     --  decision output.
 
-                     if T.C1 = 'P' and then T.C2 = 'd' then
+                     if SCO_Pragma_Disabled (T.Pragma_Sloc) then
                         while not SCO_Table.Table (Start).Last loop
                            Start := Start + 1;
                         end loop;

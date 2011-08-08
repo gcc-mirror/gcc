@@ -158,8 +158,6 @@ static int replace_reloads;
 struct replacement
 {
   rtx *where;			/* Location to store in */
-  rtx *subreg_loc;		/* Location of SUBREG if WHERE is inside
-				   a SUBREG; 0 otherwise.  */
   int what;			/* which reload this is for */
   enum machine_mode mode;	/* mode it must have */
 };
@@ -349,9 +347,7 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 
   /* If X is a paradoxical SUBREG, use the inner value to determine both the
      mode and object being reloaded.  */
-  if (GET_CODE (x) == SUBREG
-      && (GET_MODE_SIZE (GET_MODE (x))
-	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+  if (paradoxical_subreg_p (x))
     {
       x = SUBREG_REG (x);
       reload_mode = GET_MODE (x);
@@ -925,7 +921,9 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
   int i;
   int dont_share = 0;
   int dont_remove_subreg = 0;
+#ifdef LIMIT_RELOAD_CLASS
   rtx *in_subreg_loc = 0, *out_subreg_loc = 0;
+#endif
   int secondary_in_reload = -1, secondary_out_reload = -1;
   enum insn_code secondary_in_icode = CODE_FOR_nothing;
   enum insn_code secondary_out_icode = CODE_FOR_nothing;
@@ -1026,20 +1024,20 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	  || (((REG_P (SUBREG_REG (in))
 		&& REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER)
 	       || MEM_P (SUBREG_REG (in)))
-	      && ((GET_MODE_SIZE (inmode)
-		   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
+	      && ((GET_MODE_PRECISION (inmode)
+		   > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
 #ifdef LOAD_EXTEND_OP
 		  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
 		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
 			  <= UNITS_PER_WORD)
-		      && (GET_MODE_SIZE (inmode)
-			  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
+		      && (GET_MODE_PRECISION (inmode)
+			  > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
 		      && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (in)))
 		      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (in))) != UNKNOWN)
 #endif
 #ifdef WORD_REGISTER_OPERATIONS
-		  || ((GET_MODE_SIZE (inmode)
-		       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
+		  || ((GET_MODE_PRECISION (inmode)
+		       < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
 		      && ((GET_MODE_SIZE (inmode) - 1) / UNITS_PER_WORD ==
 			  ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))) - 1)
 			   / UNITS_PER_WORD)))
@@ -1070,7 +1068,9 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 #endif
 	  ))
     {
+#ifdef LIMIT_RELOAD_CLASS
       in_subreg_loc = inloc;
+#endif
       inloc = &SUBREG_REG (in);
       in = *inloc;
 #if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
@@ -1132,11 +1132,11 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	  || (((REG_P (SUBREG_REG (out))
 		&& REGNO (SUBREG_REG (out)) >= FIRST_PSEUDO_REGISTER)
 	       || MEM_P (SUBREG_REG (out)))
-	      && ((GET_MODE_SIZE (outmode)
-		   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
+	      && ((GET_MODE_PRECISION (outmode)
+		   > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
 #ifdef WORD_REGISTER_OPERATIONS
-		  || ((GET_MODE_SIZE (outmode)
-		       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
+		  || ((GET_MODE_PRECISION (outmode)
+		       < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
 		      && ((GET_MODE_SIZE (outmode) - 1) / UNITS_PER_WORD ==
 			  ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))) - 1)
 			   / UNITS_PER_WORD)))
@@ -1165,7 +1165,9 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 #endif
 	  ))
     {
+#ifdef LIMIT_RELOAD_CLASS
       out_subreg_loc = outloc;
+#endif
       outloc = &SUBREG_REG (out);
       out = *outloc;
 #if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
@@ -1496,7 +1498,6 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	{
 	  struct replacement *r = &replacements[n_replacements++];
 	  r->what = i;
-	  r->subreg_loc = in_subreg_loc;
 	  r->where = inloc;
 	  r->mode = inmode;
 	}
@@ -1505,7 +1506,6 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	  struct replacement *r = &replacements[n_replacements++];
 	  r->what = i;
 	  r->where = outloc;
-	  r->subreg_loc = out_subreg_loc;
 	  r->mode = outmode;
 	}
     }
@@ -1634,7 +1634,6 @@ push_replacement (rtx *loc, int reloadnum, enum machine_mode mode)
       struct replacement *r = &replacements[n_replacements++];
       r->what = reloadnum;
       r->where = loc;
-      r->subreg_loc = 0;
       r->mode = mode;
     }
 }
@@ -1768,9 +1767,9 @@ combine_reloads (void)
 	&& rld[i].when_needed != RELOAD_FOR_OUTPUT_ADDRESS
 	&& rld[i].when_needed != RELOAD_FOR_OUTADDR_ADDRESS
 	&& rld[i].when_needed != RELOAD_OTHER
-	&& (CLASS_MAX_NREGS (rld[i].rclass, rld[i].inmode)
-	    == CLASS_MAX_NREGS (rld[output_reload].rclass,
-				rld[output_reload].outmode))
+	&& (ira_reg_class_max_nregs [(int)rld[i].rclass][(int) rld[i].inmode]
+	    == ira_reg_class_max_nregs [(int) rld[output_reload].rclass]
+				       [(int) rld[output_reload].outmode])
 	&& rld[i].inc == 0
 	&& rld[i].reg_rtx == 0
 #ifdef SECONDARY_MEMORY_NEEDED
@@ -2219,15 +2218,15 @@ operands_match_p (rtx x, rtx y)
       else
 	j = REGNO (y);
 
-      /* On a WORDS_BIG_ENDIAN machine, point to the last register of a
+      /* On a REG_WORDS_BIG_ENDIAN machine, point to the last register of a
 	 multiple hard register group of scalar integer registers, so that
 	 for example (reg:DI 0) and (reg:SI 1) will be considered the same
 	 register.  */
-      if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
+      if (REG_WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
 	  && SCALAR_INT_MODE_P (GET_MODE (x))
 	  && i < FIRST_PSEUDO_REGISTER)
 	i += hard_regno_nregs[i][GET_MODE (x)] - 1;
-      if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (y)) > UNITS_PER_WORD
+      if (REG_WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (y)) > UNITS_PER_WORD
 	  && SCALAR_INT_MODE_P (GET_MODE (y))
 	  && j < FIRST_PSEUDO_REGISTER)
 	j += hard_regno_nregs[j][GET_MODE (y)] - 1;
@@ -4543,7 +4542,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	       > GET_MODE_SIZE (rld[i].inmode)))
 	  ? rld[i].outmode : rld[i].inmode;
 
-      rld[i].nregs = CLASS_MAX_NREGS (rld[i].rclass, rld[i].mode);
+      rld[i].nregs = ira_reg_class_max_nregs [rld[i].rclass][rld[i].mode];
     }
 
   /* Special case a simple move with an input reload and a
@@ -4592,7 +4591,8 @@ alternative_allows_const_pool_ref (rtx mem ATTRIBUTE_UNUSED,
   /* Skip alternatives before the one requested.  */
   while (altnum > 0)
     {
-      while (*constraint++ != ',');
+      while (*constraint++ != ',')
+	;
       altnum--;
     }
   /* Scan the requested alternative for TARGET_MEM_CONSTRAINT or 'o'.
@@ -4751,16 +4751,15 @@ find_reloads_toplev (rtx x, int opnum, enum reload_type type,
 
       if (regno >= FIRST_PSEUDO_REGISTER
 #ifdef LOAD_EXTEND_OP
-	       && (GET_MODE_SIZE (GET_MODE (x))
-		   <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+	  && !paradoxical_subreg_p (x)
 #endif
-	       && (reg_equiv_address (regno) != 0
-		   || (reg_equiv_mem (regno) != 0
-		       && (! strict_memory_address_addr_space_p
-			       (GET_MODE (x), XEXP (reg_equiv_mem (regno), 0),
-				MEM_ADDR_SPACE (reg_equiv_mem (regno)))
-			   || ! offsettable_memref_p (reg_equiv_mem (regno))
-			   || num_not_at_initial_offset))))
+	  && (reg_equiv_address (regno) != 0
+	      || (reg_equiv_mem (regno) != 0
+		  && (! strict_memory_address_addr_space_p
+		      (GET_MODE (x), XEXP (reg_equiv_mem (regno), 0),
+		       MEM_ADDR_SPACE (reg_equiv_mem (regno)))
+		      || ! offsettable_memref_p (reg_equiv_mem (regno))
+		      || num_not_at_initial_offset))))
 	x = find_reloads_subreg_address (x, 1, opnum, type, ind_levels,
 					   insn, address_reloaded);
     }
@@ -5993,8 +5992,8 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 	  else
 	    {
 	      enum reg_class rclass = context_reg_class;
-	      if ((unsigned) CLASS_MAX_NREGS (rclass, GET_MODE (SUBREG_REG (x)))
-		  > reg_class_size[rclass])
+	      if (ira_reg_class_max_nregs [rclass][GET_MODE (SUBREG_REG (x))]
+		  > reg_class_size[(int) rclass])
 		{
 		  x = find_reloads_subreg_address (x, 0, opnum,
 						   ADDR_TYPE (type),
@@ -6138,11 +6137,11 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 
 	      XEXP (tem, 0) = plus_constant (XEXP (tem, 0), offset);
 	      PUT_MODE (tem, GET_MODE (x));
-	      if (MEM_OFFSET (tem))
-		set_mem_offset (tem, plus_constant (MEM_OFFSET (tem), offset));
-	      if (MEM_SIZE (tem)
-		  && INTVAL (MEM_SIZE (tem)) != (HOST_WIDE_INT) outer_size)
-		set_mem_size (tem, GEN_INT (outer_size));
+	      if (MEM_OFFSET_KNOWN_P (tem))
+		set_mem_offset (tem, MEM_OFFSET (tem) + offset);
+	      if (MEM_SIZE_KNOWN_P (tem)
+		  && MEM_SIZE (tem) != (HOST_WIDE_INT) outer_size)
+		set_mem_size (tem, outer_size);
 
 	      /* If this was a paradoxical subreg that we replaced, the
 		 resulting memory must be sufficiently aligned to allow
@@ -6287,33 +6286,7 @@ subst_reloads (rtx insn)
 	  if (GET_MODE (reloadreg) != r->mode && r->mode != VOIDmode)
 	    reloadreg = reload_adjust_reg_for_mode (reloadreg, r->mode);
 
-	  /* If we are putting this into a SUBREG and RELOADREG is a
-	     SUBREG, we would be making nested SUBREGs, so we have to fix
-	     this up.  Note that r->where == &SUBREG_REG (*r->subreg_loc).  */
-
-	  if (r->subreg_loc != 0 && GET_CODE (reloadreg) == SUBREG)
-	    {
-	      if (GET_MODE (*r->subreg_loc)
-		  == GET_MODE (SUBREG_REG (reloadreg)))
-		*r->subreg_loc = SUBREG_REG (reloadreg);
-	      else
-		{
-		  int final_offset =
-		    SUBREG_BYTE (*r->subreg_loc) + SUBREG_BYTE (reloadreg);
-
-		  /* When working with SUBREGs the rule is that the byte
-		     offset must be a multiple of the SUBREG's mode.  */
-		  final_offset = (final_offset /
-				  GET_MODE_SIZE (GET_MODE (*r->subreg_loc)));
-		  final_offset = (final_offset *
-				  GET_MODE_SIZE (GET_MODE (*r->subreg_loc)));
-
-		  *r->where = SUBREG_REG (reloadreg);
-		  SUBREG_BYTE (*r->subreg_loc) = final_offset;
-		}
-	    }
-	  else
-	    *r->where = reloadreg;
+	  *r->where = reloadreg;
 	}
       /* If reload got no reg and isn't optional, something's wrong.  */
       else
@@ -6327,10 +6300,6 @@ subst_reloads (rtx insn)
 void
 copy_replacements (rtx x, rtx y)
 {
-  /* We can't support X being a SUBREG because we might then need to know its
-     location if something inside it was replaced.  */
-  gcc_assert (GET_CODE (x) != SUBREG);
-
   copy_replacements_1 (&x, &y, n_replacements);
 }
 
@@ -6344,24 +6313,13 @@ copy_replacements_1 (rtx *px, rtx *py, int orig_replacements)
   const char *fmt;
 
   for (j = 0; j < orig_replacements; j++)
-    {
-      if (replacements[j].subreg_loc == px)
-	{
-	  r = &replacements[n_replacements++];
-	  r->where = replacements[j].where;
-	  r->subreg_loc = py;
-	  r->what = replacements[j].what;
-	  r->mode = replacements[j].mode;
-	}
-      else if (replacements[j].where == px)
-	{
-	  r = &replacements[n_replacements++];
-	  r->where = py;
-	  r->subreg_loc = 0;
-	  r->what = replacements[j].what;
-	  r->mode = replacements[j].mode;
-	}
-    }
+    if (replacements[j].where == px)
+      {
+	r = &replacements[n_replacements++];
+	r->where = py;
+	r->what = replacements[j].what;
+	r->mode = replacements[j].mode;
+      }
 
   x = *px;
   y = *py;
@@ -6387,13 +6345,8 @@ move_replacements (rtx *x, rtx *y)
   int i;
 
   for (i = 0; i < n_replacements; i++)
-    if (replacements[i].subreg_loc == x)
-      replacements[i].subreg_loc = y;
-    else if (replacements[i].where == x)
-      {
-	replacements[i].where = y;
-	replacements[i].subreg_loc = 0;
-      }
+    if (replacements[i].where == x)
+      replacements[i].where = y;
 }
 
 /* If LOC was scheduled to be replaced by something, return the replacement.
@@ -6411,36 +6364,19 @@ find_replacement (rtx *loc)
       if (reloadreg && r->where == loc)
 	{
 	  if (r->mode != VOIDmode && GET_MODE (reloadreg) != r->mode)
-	    reloadreg = gen_rtx_REG (r->mode, REGNO (reloadreg));
+	    reloadreg = reload_adjust_reg_for_mode (reloadreg, r->mode);
 
 	  return reloadreg;
 	}
-      else if (reloadreg && r->subreg_loc == loc)
+      else if (reloadreg && GET_CODE (*loc) == SUBREG
+	       && r->where == &SUBREG_REG (*loc))
 	{
-	  /* RELOADREG must be either a REG or a SUBREG.
+	  if (r->mode != VOIDmode && GET_MODE (reloadreg) != r->mode)
+	    reloadreg = reload_adjust_reg_for_mode (reloadreg, r->mode);
 
-	     ??? Is it actually still ever a SUBREG?  If so, why?  */
-
-	  if (REG_P (reloadreg))
-	    return gen_rtx_REG (GET_MODE (*loc),
-				(REGNO (reloadreg) +
-				 subreg_regno_offset (REGNO (SUBREG_REG (*loc)),
-						      GET_MODE (SUBREG_REG (*loc)),
-						      SUBREG_BYTE (*loc),
-						      GET_MODE (*loc))));
-	  else if (GET_MODE (reloadreg) == GET_MODE (*loc))
-	    return reloadreg;
-	  else
-	    {
-	      int final_offset = SUBREG_BYTE (reloadreg) + SUBREG_BYTE (*loc);
-
-	      /* When working with SUBREGs the rule is that the byte
-		 offset must be a multiple of the SUBREG's mode.  */
-	      final_offset = (final_offset / GET_MODE_SIZE (GET_MODE (*loc)));
-	      final_offset = (final_offset * GET_MODE_SIZE (GET_MODE (*loc)));
-	      return gen_rtx_SUBREG (GET_MODE (*loc), SUBREG_REG (reloadreg),
-				     final_offset);
-	    }
+	  return simplify_gen_subreg (GET_MODE (*loc), reloadreg,
+				      GET_MODE (SUBREG_REG (*loc)),
+				      SUBREG_BYTE (*loc));
 	}
     }
 
@@ -7316,7 +7252,7 @@ reload_adjust_reg_for_mode (rtx reloadreg, enum machine_mode mode)
 
   regno = REGNO (reloadreg);
 
-  if (WORDS_BIG_ENDIAN)
+  if (REG_WORDS_BIG_ENDIAN)
     regno += (int) hard_regno_nregs[regno][GET_MODE (reloadreg)]
       - (int) hard_regno_nregs[regno][mode];
 

@@ -35,6 +35,7 @@
 with System;
 
 package Interfaces.C.Extensions is
+   pragma Pure;
 
    --  Definitions for C "void" and "void *" types
 
@@ -45,11 +46,13 @@ package Interfaces.C.Extensions is
 
    subtype opaque_structure_def is System.Address;
    type opaque_structure_def_ptr is access opaque_structure_def;
+   for opaque_structure_def_ptr'Storage_Size use 0;
 
    --  Definitions for C++ incomplete/unknown classes
 
    subtype incomplete_class_def is System.Address;
    type incomplete_class_def_ptr is access incomplete_class_def;
+   for incomplete_class_def_ptr'Storage_Size use 0;
 
    --  C bool
 

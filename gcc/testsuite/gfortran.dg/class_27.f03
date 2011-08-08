@@ -64,4 +64,4 @@ module type1_type
     end function Type1_initProc 
 end module type1_type
 
-! { dg-final { cleanup-modules "type2_type extended2A_type type1_type" } }
+! { dg-final { cleanup-modules "type2_type extended2a_type type1_type" } }

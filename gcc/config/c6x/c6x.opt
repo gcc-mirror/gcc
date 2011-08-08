@@ -1,0 +1,67 @@
+; Option definitions for TI C6X.
+; Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+; Contributed by Bernd Schmidt <bernds@codesourcery.com>
+; Contributed by CodeSourcery.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation; either version 3, or (at your option)
+; any later version.
+;
+; GCC is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/c6x/c6x-opts.h
+
+SourceInclude
+config/c6x/c6x-opts.h
+
+mbig-endian
+Target Report RejectNegative Mask(BIG_ENDIAN)
+Use big-endian byte order
+
+mlittle-endian
+Target Report RejectNegative InverseMask(BIG_ENDIAN, LITTLE_ENDIAN)
+Use little-endian byte order
+
+msim
+Target RejectNegative
+Use simulator runtime
+
+msdata=
+Target RejectNegative Enum(c6x_sdata) Joined Var(c6x_sdata_mode) Init(C6X_SDATA_DEFAULT)
+Select method for sdata handling
+
+Enum
+Name(c6x_sdata) Type(enum c6x_sdata)
+Valid arguments for the -msdata= option
+
+EnumValue
+Enum(c6x_sdata) String(none) Value(C6X_SDATA_NONE)
+
+EnumValue
+Enum(c6x_sdata) String(default) Value(C6X_SDATA_DEFAULT)
+
+EnumValue
+Enum(c6x_sdata) String(all) Value(C6X_SDATA_ALL)
+
+mdsbt
+Target Mask(DSBT)
+Compile for the DSBT shared library ABI
+
+mlong-calls
+Target Report Mask(LONG_CALLS)
+Avoid generating pc-relative calls; use indirection
+
+march=
+Target RejectNegative Joined Enum(c6x_isa) Var(c6x_arch_option)
+Specify the name of the target architecture

@@ -590,6 +590,7 @@ dnl  GLIBCXX_TEST_WCHAR_T
 dnl  GLIBCXX_TEST_THREAD
 dnl Substs:
 dnl  baseline_dir
+dnl  baseline_subdir_switch
 dnl
 AC_DEFUN([GLIBCXX_CONFIGURE_TESTSUITE], [
   if $GLIBCXX_IS_NATIVE ; then
@@ -617,6 +618,8 @@ AC_DEFUN([GLIBCXX_CONFIGURE_TESTSUITE], [
   # Export file names for ABI checking.
   baseline_dir="$glibcxx_srcdir/config/abi/post/${abi_baseline_pair}"
   AC_SUBST(baseline_dir)
+  baseline_subdir_switch="$abi_baseline_subdir_switch"
+  AC_SUBST(baseline_subdir_switch)
 ])
 
 
@@ -682,9 +685,9 @@ AC_DEFUN([GLIBCXX_EXPORT_INCLUDES], [
   fi
 
   # Stuff in the actual top level.  Currently only used by libsupc++ to
-  # get unwind* headers from the gcc dir.
-  #TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include'
-  TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/gcc'
+  # get unwind* headers from the libgcc dir.
+  #TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/libgcc -I$(toplevel_srcdir)/include'
+  TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/libgcc'
 
   # Now, export this to all the little Makefiles....
   AC_SUBST(GLIBCXX_INCLUDES)
@@ -1753,7 +1756,7 @@ dnl
 AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
   GLIBCXX_ENABLE(clocale,auto,[[[=MODEL]]],
     [use MODEL for target locale package],
-    [permit generic|gnu|ieee_1003.1-2001|yes|no|auto])
+    [permit generic|gnu|ieee_1003.1-2001|newlib|yes|no|auto])
 
   # Deal with gettext issues.  Default to not using it (=no) until we detect
   # support for it later.  Let the user turn it off via --e/d, but let that
@@ -1764,7 +1767,7 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
     [],
     [enable_nls=yes])
 
-  # Either a known packaage, or "auto"
+  # Either a known package, or "auto"
   if test $enable_clocale = no || test $enable_clocale = yes; then
      enable_clocale=auto
   fi
@@ -1781,7 +1784,11 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
 	enable_clocale_flag=darwin
 	;;
       *)
-	enable_clocale_flag=generic
+	if test x"$with_newlib" = x"yes"; then
+	  enable_clocale_flag=newlib
+	else
+	  enable_clocale_flag=generic
+	fi
 	;;
     esac
   fi
@@ -1909,6 +1916,22 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
       CCTYPE_CC=config/locale/generic/ctype_members.cc
       CMESSAGES_H=config/locale/ieee_1003.1-2001/messages_members.h
       CMESSAGES_CC=config/locale/ieee_1003.1-2001/messages_members.cc
+      CMONEY_CC=config/locale/generic/monetary_members.cc
+      CNUMERIC_CC=config/locale/generic/numeric_members.cc
+      CTIME_H=config/locale/generic/time_members.h
+      CTIME_CC=config/locale/generic/time_members.cc
+      CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
+      ;;
+    newlib)
+      AC_MSG_RESULT(newlib)
+
+      CLOCALE_H=config/locale/generic/c_locale.h
+      CLOCALE_CC=config/locale/generic/c_locale.cc
+      CCODECVT_CC=config/locale/generic/codecvt_members.cc
+      CCOLLATE_CC=config/locale/generic/collate_members.cc
+      CCTYPE_CC=config/locale/newlib/ctype_members.cc
+      CMESSAGES_H=config/locale/generic/messages_members.h
+      CMESSAGES_CC=config/locale/generic/messages_members.cc
       CMONEY_CC=config/locale/generic/monetary_members.cc
       CNUMERIC_CC=config/locale/generic/numeric_members.cc
       CTIME_H=config/locale/generic/time_members.h
@@ -3152,6 +3175,22 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions -I${toplevel_srcdir}/gcc"
 
+  AC_MSG_CHECKING([check whether it can be safely assumed that mutex_timedlock is available])
+
+  AC_TRY_COMPILE([#include <unistd.h>],
+    [
+      #if !defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS < 0
+      #error
+      #endif
+    ], [ac_gthread_use_mutex_timedlock=1], [ac_gthread_use_mutex_timedlock=0])
+
+  AC_DEFINE_UNQUOTED(_GTHREAD_USE_MUTEX_TIMEDLOCK, $ac_gthread_use_mutex_timedlock,
+                     [Define to 1 if mutex_timedlock is available.])
+
+  if test $ac_gthread_use_mutex_timedlock = 1 ; then res_mutex_timedlock=yes ;
+  else res_mutex_timedlock=no ; fi
+  AC_MSG_RESULT([$res_mutex_timedlock])
+
   target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
   case $target_thread_file in
     posix)
@@ -3160,7 +3199,10 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
 
   AC_MSG_CHECKING([for gthreads library])
 
-  AC_TRY_COMPILE([#include "gthr.h"],
+  AC_TRY_COMPILE([
+                  #include "gthr.h"
+		  #include <unistd.h>
+                 ],
     [
       #ifndef __GTHREADS_CXX0X
       #error

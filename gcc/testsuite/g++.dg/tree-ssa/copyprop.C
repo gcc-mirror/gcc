@@ -1,7 +1,7 @@
 // PR 39548 verify ssa ICE
 //
 // { dg-do compile { target { lp64 } } }
-// { dg-options  "-Wno-error -fno-exceptions -fno-tree-vrp -O2 -fprofile-generate  -finline-limit=500"  } 
+// { dg-options  "-Wno-error -fno-exceptions -fno-tree-vrp -O2 -fprofile-generate  -finline-limit=500 -std=c++98"  }
 //
 
 #include <map>
@@ -85,7 +85,7 @@ template<class _Val, class _Key, class _HF, class _Ex, class _Eq, class _All>   
     while (__cur != 0)  { _M_delete_node(__cur); }
   }
 }
-template<class _Key, class _Tp, class _HashFn = hash<_Key>,     class _EqualKey = equal_to<_Key>, class _Alloc = allocator<_Tp> >   struct hash_map     {
+template<class _Key, class _Tp, class _HashFn = ::hash<_Key>,     class _EqualKey = equal_to<_Key>, class _Alloc = allocator<_Tp> >   struct hash_map     {
   typedef hashtable<pair<const _Key, _Tp>,_Key, _HashFn,    _Select1st<pair<const _Key, _Tp> >,    _EqualKey, _Alloc> _Ht;
   _Ht _M_ht;
   typedef typename _Ht::key_type key_type;

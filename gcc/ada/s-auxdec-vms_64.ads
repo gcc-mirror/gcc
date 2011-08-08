@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -285,9 +285,9 @@ package System.Aux_DEC is
    pragma Import (Intrinsic, Import_Address);
    pragma Import (Intrinsic, Import_Largest_Value);
 
-   --  For the following declarations, note that the declaration without
-   --  a Retry_Count parameter means to retry infinitely. A value of zero
-   --  for the Retry_Count parameter means do not retry.
+   --  For the following declarations, note that the declaration without a
+   --  Retry_Count parameter means to retry infinitely. A value of zero for
+   --  the Retry_Count parameter means do not retry.
 
    --  Interlocked-instruction procedures
 
@@ -303,8 +303,7 @@ package System.Aux_DEC is
       Value : Short_Integer;
    end record;
 
-   for Aligned_Word'Alignment use
-     Integer'Min (2, Standard'Maximum_Alignment);
+   for Aligned_Word'Alignment use Integer'Min (2, Standard'Maximum_Alignment);
 
    procedure Clear_Interlocked
      (Bit          : in out Boolean;
@@ -337,9 +336,9 @@ package System.Aux_DEC is
    for Aligned_Long_Integer'Alignment use
      Integer'Min (8, Standard'Maximum_Alignment);
 
-   --  For the following declarations, note that the declaration without
-   --  a Retry_Count parameter mean to retry infinitely. A value of zero
-   --  for the Retry_Count means do not retry.
+   --  For the following declarations, note that the declaration without a
+   --  Retry_Count parameter mean to retry infinitely. A value of zero for
+   --  the Retry_Count means do not retry.
 
    procedure Add_Atomic
      (To           : in out Aligned_Integer;
@@ -407,12 +406,11 @@ package System.Aux_DEC is
       Old_Value    : out Long_Integer;
       Success_Flag : out Boolean);
 
-   type Insq_Status is
-     (Fail_No_Lock, OK_Not_First, OK_First);
+   type Insq_Status is (Fail_No_Lock, OK_Not_First, OK_First);
 
    for Insq_Status use
      (Fail_No_Lock => -1,
-      OK_Not_First => 0,
+      OK_Not_First =>  0,
       OK_First     => +1);
 
    type Remq_Status is (
@@ -423,7 +421,7 @@ package System.Aux_DEC is
 
    for Remq_Status use
      (Fail_No_Lock   => -1,
-      Fail_Was_Empty => 0,
+      Fail_Was_Empty =>  0,
       OK_Not_Empty   => +1,
       OK_Empty       => +2);
 
@@ -453,7 +451,7 @@ private
    No_Addr      : constant Address := Null_Address;
 
    --  An AST_Handler value is from a typing point of view simply a pointer
-   --  to a procedure taking a single 64bit parameter. However, this
+   --  to a procedure taking a single 64 bit parameter. However, this
    --  is a bit misleading, because the data that this pointer references is
    --  highly stylized. See body of System.AST_Handling for full details.
 

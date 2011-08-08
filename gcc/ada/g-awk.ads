@@ -6,25 +6,23 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2006, AdaCore                     --
+--                     Copyright (C) 2000-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
--- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
--- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
--- Boston, MA 02110-1301, USA.                                              --
+-- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
--- As a special exception,  if other files  instantiate  generics from this --
--- unit, or you link  this unit with other files  to produce an executable, --
--- this  unit  does not  by itself cause  the resulting  executable  to  be --
--- covered  by the  GNU  General  Public  License.  This exception does not --
--- however invalidate  any other reasons why  the executable file  might be --
--- covered by the  GNU Public License.                                      --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
+--                                                                          --
+-- You should have received a copy of the GNU General Public License and    --
+-- a copy of the GCC Runtime Library Exception along with this program;     --
+-- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
+-- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -217,7 +215,7 @@ package GNAT.AWK is
    --  a full AWK run. The state comprises a list of files, the current file,
    --  the number of line processed, the current line, the number of fields in
    --  the current line... A default session is provided (see Set_Current,
-   --  Current_Session and Default_Session above).
+   --  Current_Session and Default_Session below).
 
    ----------------------------
    -- Package initialization --
@@ -231,12 +229,12 @@ package GNAT.AWK is
    --  Set the session to be used by default. This file will be used when the
    --  Session parameter in following services is not specified.
 
-   function Current_Session return Session_Type;
+   function Current_Session return not null access Session_Type;
    --  Returns the session used by default by all services. This is the
    --  latest session specified by Set_Current service or the session
    --  provided by default with this implementation.
 
-   function Default_Session return Session_Type;
+   function Default_Session return not null access Session_Type;
    --  Returns the default session provided by this package. Note that this is
    --  the session return by Current_Session if Set_Current has not been used.
 
@@ -635,6 +633,7 @@ private
 
    type Session_Type is new Ada.Finalization.Limited_Controlled with record
       Data : Session_Data_Access;
+      Self : not null access Session_Type := Session_Type'Unchecked_Access;
    end record;
 
    procedure Initialize (Session : in out Session_Type);

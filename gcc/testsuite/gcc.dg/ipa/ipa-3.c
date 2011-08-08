@@ -7,12 +7,12 @@
 
 #include <stdio.h>
 void t(void);
-int g (double b, double c)
+static int g (double b, double c)
 {
   t();
   return (int)(b+c);
 }
-int f (double a)
+static int f (double a)
 {
   if (a > 0)
     g (a, 3.1);
@@ -28,8 +28,9 @@ int main ()
 }
 
 
-/* { dg-final { scan-ipa-dump-times "versioned function" 2 "cp"  } } */
+/* { dg-final { scan-ipa-dump "Creating a specialized node of f" "cp" } } */
 /* { dg-final { scan-ipa-dump "replacing param a with const 7" "cp"  } } */
+/* { dg-final { scan-ipa-dump "Creating a specialized node of g" "cp" } } */
 /* { dg-final { scan-ipa-dump "replacing param b with const 7" "cp"  } } */
 /* { dg-final { scan-ipa-dump "replacing param c with const 3" "cp"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */

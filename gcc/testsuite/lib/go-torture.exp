@@ -356,14 +356,14 @@ proc go-torture { args } {
 #
 proc add-ieee-options { } {
     # Ensure that excess precision does not cause problems.
-    if { [istarget "i?86-*-*"]
-	 || [istarget "m68k-*-*"] } then {
+    if { [istarget i?86-*-*]
+	 || [istarget m68k-*-*] } then {
       uplevel 1 lappend additional_flags "-ffloat-store"
     }
 
     # Enable full IEEE compliance mode.
-    if { [istarget "alpha*-*-*"]
-         || [istarget "sh*-*-*"] } then {
+    if { [istarget alpha*-*-*]
+         || [istarget sh*-*-*] } then {
       uplevel 1 lappend additional_flags "-mieee"
     }
 }

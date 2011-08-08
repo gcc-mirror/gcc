@@ -99,7 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   static constexpr error_type error_space(_S_error_space);
 
   /**
-   * One of <em>*?+{<em> was not preceded by a valid regular expression.
+   * One of <em>*?+{</em> was not preceded by a valid regular expression.
    */
   static constexpr error_type error_badrepeat(_S_error_badrepeat);
 
@@ -136,7 +136,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /**
      * @brief Constructs a regex_error object.
      *
-     * @param ecode the regex error code.
+     * @param __ecode the regex error code.
      */
     explicit
     regex_error(regex_constants::error_type __ecode);

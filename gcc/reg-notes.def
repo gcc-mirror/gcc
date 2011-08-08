@@ -155,15 +155,22 @@ REG_NOTE (CFA_EXPRESSION)
    first pattern is the register to be restored.  */
 REG_NOTE (CFA_RESTORE)
 
-/* Attached to insn that is RTX_FRAME_RELATED_P, marks insn that sets
+/* Attached to insns that are RTX_FRAME_RELATED_P, marks insn that sets
    vDRAP from DRAP.  If vDRAP is a register, vdrap_reg is initalized
    to the argument, if it is a MEM, it is ignored.  */
 REG_NOTE (CFA_SET_VDRAP)
 
-/* Attached to insn that are RTX_FRAME_RELATED_P, indicating a window
+/* Attached to insns that are RTX_FRAME_RELATED_P, indicating a window
    save operation, i.e. will result in a DW_CFA_GNU_window_save.
    The argument is ignored.  */
 REG_NOTE (CFA_WINDOW_SAVE)
+
+/* Attached to insns that are RTX_FRAME_RELATED_P, marks the insn as
+   requiring that all queued information should be flushed *before* insn,
+   regardless of what is visible in the rtl.  The argument is ignored.
+   This is normally used for a call instruction which is not exposed to
+   the rest of the compiler as a CALL_INSN.  */
+REG_NOTE (CFA_FLUSH_QUEUE)
 
 /* Indicates that REG holds the exception context for the function.
    This context is shared by inline functions, so the code to acquire
@@ -194,3 +201,8 @@ REG_NOTE (CROSSING_JUMP)
 /* This kind of note is generated at each to `setjmp', and similar
    functions that can return twice.  */
 REG_NOTE (SETJMP)
+
+/* Indicates the cumulative offset of the stack pointer accounting
+   for pushed arguments.  This will only be generated when
+   ACCUMULATE_OUTGOING_ARGS is false.  */
+REG_NOTE (ARGS_SIZE)

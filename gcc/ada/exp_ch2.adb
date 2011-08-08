@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -520,9 +520,6 @@ package body Exp_Ch2 is
          then
             Note_Possible_Modification (N, Sure => True);
          end if;
-
-         Rewrite (N, New_Occurrence_Of (Renamed_Object (Entity (N)), Loc));
-         return;
       end if;
 
       --  What we need is a reference to the corresponding component of the
@@ -531,6 +528,9 @@ package body Exp_Ch2 is
       --  accept parameters record. We first have to do an unchecked conversion
       --  to turn this into a pointer to the parameter record and then we
       --  select the required parameter field.
+
+      --  The same processing applies to protected entries, where the Accept_
+      --  Address is also the address of the Parameters record.
 
       P_Comp_Ref :=
         Make_Selected_Component (Loc,

@@ -2528,6 +2528,7 @@ package body Ch3 is
    --  Note: this is an obsolescent feature in Ada 95 (I.3)
 
    --  Note: in Ada 83, the EXPRESSION must be a SIMPLE_EXPRESSION
+   --  (also true in formal modes).
 
    --  The caller has checked that the initial token is DELTA
 
@@ -2542,6 +2543,7 @@ package body Ch3 is
       Scan; -- past DELTA
       Expr_Node := P_Expression;
       Check_Simple_Expression_In_Ada_83 (Expr_Node);
+
       Set_Delta_Expression (Constraint_Node, Expr_Node);
 
       if Token = Tok_Range then
@@ -2776,9 +2778,15 @@ package body Ch3 is
          Set_High_Bound (Range_Node, Expr_Node);
          return Range_Node;
 
-      --  Otherwise we must have a subtype mark
+      --  Otherwise we must have a subtype mark, or an Ada 2012 iterator
 
       elsif Expr_Form = EF_Simple_Name then
+         return Expr_Node;
+
+      --  The domain of iteration must be a name. Semantics will determine that
+      --  the expression has the proper form.
+
+      elsif Ada_Version >= Ada_2012 then
          return Expr_Node;
 
       --  If incorrect, complain that we expect ..
@@ -3714,13 +3722,23 @@ package body Ch3 is
          end if;
 
          if Token = Tok_Comma then
-            Error_Msg_SC -- CODEFIX
-              (""","" should be ""'|""");
+            Scan; -- past comma
+
+            if Token = Tok_Vertical_Bar then
+               Error_Msg_SP -- CODEFIX
+                 ("|extra "","" ignored");
+               Scan; -- past |
+
+            else
+               Error_Msg_SP -- CODEFIX
+                 (""","" should be ""'|""");
+            end if;
+
          else
             exit when Token /= Tok_Vertical_Bar;
+            Scan; -- past |
          end if;
 
-         Scan; -- past | or comma
       end loop;
 
       return Choices;
@@ -4264,8 +4282,42 @@ package body Ch3 is
 
          when Tok_With =>
             Check_Bad_Layout;
-            Error_Msg_SC ("WITH can only appear in context clause");
-            raise Error_Resync;
+
+            if Aspect_Specifications_Present then
+
+               --  If we are after a semicolon, complain that it was ignored.
+               --  But we don't really ignore it, since we dump the aspects,
+               --  so we make the error message a normal fatal message which
+               --  will inhibit semantic analysis anyway).
+
+               if Prev_Token = Tok_Semicolon then
+                  Error_Msg_SP -- CODEFIX
+                    ("extra "";"" ignored");
+
+               --  If not just past semicolon, just complain that aspects are
+               --  not allowed at this point.
+
+               else
+                  Error_Msg_SC ("aspect specifications not allowed here");
+               end if;
+
+               declare
+                  Dummy_Node : constant Node_Id :=
+                                 New_Node (N_Package_Specification, Token_Ptr);
+                  pragma Warnings (Off, Dummy_Node);
+                  --  Dummy node to attach aspect specifications to. We will
+                  --  then throw them away.
+
+               begin
+                  P_Aspect_Specifications (Dummy_Node, Semicolon => True);
+               end;
+
+            --  Here if not aspect specifications case
+
+            else
+               Error_Msg_SC ("WITH can only appear in context clause");
+               raise Error_Resync;
+            end if;
 
          --  BEGIN terminates the scan of a sequence of declarations unless
          --  there is a missing subprogram body, see section on handling

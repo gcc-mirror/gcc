@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-skip-if "" { { i?86-*-* x86_64-*-* } && { ilp32 && { ! nonpic } } } { "*" } { "" } } */
+/* { dg-skip-if "" { { i?86-*-* x86_64-*-* } && { ia32 && { ! nonpic } } } { "*" } { "" } } */
 /* { dg-options "-O2 -fgcse-after-reload" } */
 
 extern void abort (void);

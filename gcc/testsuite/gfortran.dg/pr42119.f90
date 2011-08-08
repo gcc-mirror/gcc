@@ -22,3 +22,4 @@ program Main
 
   call Check(C_FUNLOC(Callback))
 end program Main
+! { dg-final { cleanup-modules "test" } }

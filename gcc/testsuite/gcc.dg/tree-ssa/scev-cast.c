@@ -12,7 +12,7 @@ void tst(void)
 
   for (i = 0; i < 129; i++) /* This truncation to char has to be preserved.  */
     blas ((signed char) i);
-  for (i = 0; i < 128; i++) /* This one is not necessary, but nothing eliminates it.  */
+  for (i = 0; i < 128; i++) /* This one is not necessary, VRP eliminates it.  */
     blas ((signed char) i);
   for (i = 0; i < 127; i++) /* This one is not necessary, IVOPTS eliminates it.  */
     blas ((signed char) i);
@@ -23,6 +23,6 @@ void tst(void)
 }
 
 /* { dg-final { scan-tree-dump-times "& 255" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "= \\(signed char\\)" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "= \\(signed char\\)" 1 "optimized" } } */
 
 /* { dg-final { cleanup-tree-dump "optimized" } } */

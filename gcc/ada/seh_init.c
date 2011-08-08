@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2005-2009, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2005-2011, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -31,6 +31,10 @@
 
 /*  This unit contains support for SEH (Structured Exception Handling).
     Right now the only implementation is for Win32.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef IN_RTS
 #include "tconfig.h"
@@ -208,20 +212,6 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
     unwinding is handled by the runtime using either the GNAT SJLJ mechanism
     or the ZCX GCC mechanism.
 
-    The current implementation is using the RtlAddFunctionTable. Here is for
-    information purposes the equivalent using a static .pdata section:
-
-         .section .rdata,"dr"
-         .align 4
-      Lunwind_info:
-         .byte 9,0,0,0
-         .rva ___gnat_SEH_error_handler
-         .section .pdata,"dr"
-         .align 4
-         .long 0
-         .rva etext
-         .rva Lunwind_info
-
     Solutions based on SetUnhandledExceptionFilter have been discarded as this
     function is mostly disabled on last Windows versions.
     Using AddVectoredExceptionHandler should also be discarded as it overrides
@@ -229,47 +219,30 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
     the loaded DLL (for example it results in unexpected behaviors in the
     Win32 subsystem.  */
 
-typedef struct _UNWIND_INFO {
-  BYTE VersionAndFlags;
-  BYTE PrologSize;
-  BYTE CountOfUnwindCodes;
-  BYTE FrameRegisterAndOffset;
-  ULONG AddressOfExceptionHandler;
-} UNWIND_INFO,*PUNWIND_INFO;
-
-static RUNTIME_FUNCTION Table[1];
-static UNWIND_INFO unwind_info[1];
-
-#define UNW_VERSION 0x01
-#define UNW_FLAG_EHANDLER 0x08
+asm
+(
+ " .section .rdata, \"dr\"\n"
+ " .align 4\n"
+ "unwind_info:\n"
+ " .byte 9\n" /* UNW_FLAG_EHANDLER | UNW_VERSION */
+ " .byte 0\n" /* Prologue size.  */
+ " .byte 0\n" /* Count of unwind code.  */
+ " .byte 0\n" /* Frame register and offset.  */
+ " .rva __gnat_SEH_error_handler\n"
+ "\n"
+ " .section .pdata, \"dr\"\n"
+ " .align 4\n"
+ " .long 0\n" /* ImageBase */
+ " .rva etext\n"
+ " .rva unwind_info\n"
+ "\n"
+ " .text\n"
+);
 
 void __gnat_install_SEH_handler (void *eh ATTRIBUTE_UNUSED)
 {
-  /* Get the end of the text section.  */
-  extern char etext[] asm("etext");
-  /* Get the base of the module.  */
-  extern char __ImageBase[];
-
-  /* Current version is always 1 and we are registering an
-     exception handler.  */
-  unwind_info[0].VersionAndFlags = UNW_FLAG_EHANDLER | UNW_VERSION;
-
-  /* We don't use the unwinding info so fill the structure with 0 values.  */
-  unwind_info[0].PrologSize = 0;
-  unwind_info[0].CountOfUnwindCodes = 0;
-  unwind_info[0].FrameRegisterAndOffset = 0;
-
-  /* Add the exception handler.  */
-  unwind_info[0].AddressOfExceptionHandler =
-    (DWORD)((char *)__gnat_SEH_error_handler - __ImageBase);
-
-  /* Set its scope to the entire program.  */
-  Table[0].BeginAddress = 0;
-  Table[0].EndAddress = (DWORD)(etext - __ImageBase);
-  Table[0].UnwindData = (DWORD)((char *)unwind_info - __ImageBase);
-
-  /* Register the unwind information.  */
-  RtlAddFunctionTable (Table, 1, (DWORD64)__ImageBase);
+  /* Nothing to do, the handler is statically installed by the asm statement
+     just above.  */
 }
 
 #else /* defined (_WIN64) */
@@ -309,5 +282,9 @@ __gnat_install_SEH_handler (void *ER)
 /* For all non Windows targets we provide a dummy SEH install handler.  */
 void __gnat_install_SEH_handler (void *eh ATTRIBUTE_UNUSED)
 {
+}
+#endif
+
+#ifdef __cplusplus
 }
 #endif

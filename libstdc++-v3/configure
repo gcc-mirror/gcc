@@ -639,6 +639,7 @@ DOT
 DOXYGEN
 BUILD_INFO_FALSE
 BUILD_INFO_TRUE
+baseline_subdir_switch
 baseline_dir
 GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
@@ -11488,7 +11489,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11491 "configure"
+#line 11492 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11594,7 +11595,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11597 "configure"
+#line 11598 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14952,7 +14953,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14955 "configure"
+#line 14956 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15320,7 +15321,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15323 "configure"
+#line 15324 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15357,7 +15358,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15360 "configure"
+#line 15361 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15394,7 +15395,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15397 "configure"
+#line 15398 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15432,7 +15433,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15435 "configure"
+#line 15436 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15508,7 +15509,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15511 "configure"
+#line 15512 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15642,7 +15643,7 @@ $as_echo "stdio" >&6; }
 if test "${enable_clocale+set}" = set; then :
   enableval=$enable_clocale;
       case "$enableval" in
-       generic|gnu|ieee_1003.1-2001|yes|no|auto) ;;
+       generic|gnu|ieee_1003.1-2001|newlib|yes|no|auto) ;;
        *) as_fn_error "Unknown argument to enable/disable clocale" "$LINENO" 5 ;;
 	  	        esac
 
@@ -15664,7 +15665,7 @@ else
 fi
 
 
-  # Either a known packaage, or "auto"
+  # Either a known package, or "auto"
   if test $enable_clocale = no || test $enable_clocale = yes; then
      enable_clocale=auto
   fi
@@ -15681,7 +15682,11 @@ fi
 	enable_clocale_flag=darwin
 	;;
       *)
-	enable_clocale_flag=generic
+	if test x"$with_newlib" = x"yes"; then
+	  enable_clocale_flag=newlib
+	else
+	  enable_clocale_flag=generic
+	fi
 	;;
     esac
   fi
@@ -15901,6 +15906,23 @@ $as_echo "IEEE 1003.1" >&6; }
       CCTYPE_CC=config/locale/generic/ctype_members.cc
       CMESSAGES_H=config/locale/ieee_1003.1-2001/messages_members.h
       CMESSAGES_CC=config/locale/ieee_1003.1-2001/messages_members.cc
+      CMONEY_CC=config/locale/generic/monetary_members.cc
+      CNUMERIC_CC=config/locale/generic/numeric_members.cc
+      CTIME_H=config/locale/generic/time_members.h
+      CTIME_CC=config/locale/generic/time_members.cc
+      CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
+      ;;
+    newlib)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: newlib" >&5
+$as_echo "newlib" >&6; }
+
+      CLOCALE_H=config/locale/generic/c_locale.h
+      CLOCALE_CC=config/locale/generic/c_locale.cc
+      CCODECVT_CC=config/locale/generic/codecvt_members.cc
+      CCOLLATE_CC=config/locale/generic/collate_members.cc
+      CCTYPE_CC=config/locale/newlib/ctype_members.cc
+      CMESSAGES_H=config/locale/generic/messages_members.h
+      CMESSAGES_CC=config/locale/generic/messages_members.cc
       CMONEY_CC=config/locale/generic/monetary_members.cc
       CNUMERIC_CC=config/locale/generic/numeric_members.cc
       CTIME_H=config/locale/generic/time_members.h
@@ -19426,6 +19448,42 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions -I${toplevel_srcdir}/gcc"
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking check whether it can be safely assumed that mutex_timedlock is available" >&5
+$as_echo_n "checking check whether it can be safely assumed that mutex_timedlock is available... " >&6; }
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+
+      #if !defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS < 0
+      #error
+      #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_gthread_use_mutex_timedlock=1
+else
+  ac_gthread_use_mutex_timedlock=0
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+
+cat >>confdefs.h <<_ACEOF
+#define _GTHREAD_USE_MUTEX_TIMEDLOCK $ac_gthread_use_mutex_timedlock
+_ACEOF
+
+
+  if test $ac_gthread_use_mutex_timedlock = 1 ; then res_mutex_timedlock=yes ;
+  else res_mutex_timedlock=no ; fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $res_mutex_timedlock" >&5
+$as_echo "$res_mutex_timedlock" >&6; }
+
   target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
   case $target_thread_file in
     posix)
@@ -19437,7 +19495,10 @@ $as_echo_n "checking for gthreads library... " >&6; }
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include "gthr.h"
+
+                  #include "gthr.h"
+		  #include <unistd.h>
+
 int
 main ()
 {
@@ -57023,155 +57084,6 @@ $as_echo "$ac_ld_relro" >&6; }
 
     fi
     ;;
-  *-netware)
-    SECTION_FLAGS='-ffunction-sections -fdata-sections'
-
-
-  # If we're not using GNU ld, then there's no point in even trying these
-  # tests.  Check for that first.  We should have already tested for gld
-  # by now (in libtool), but require it now just to be safe...
-  test -z "$SECTION_LDFLAGS" && SECTION_LDFLAGS=''
-  test -z "$OPT_LDFLAGS" && OPT_LDFLAGS=''
-
-
-
-  # The name set by libtool depends on the version of libtool.  Shame on us
-  # for depending on an impl detail, but c'est la vie.  Older versions used
-  # ac_cv_prog_gnu_ld, but now it's lt_cv_prog_gnu_ld, and is copied back on
-  # top of with_gnu_ld (which is also set by --with-gnu-ld, so that actually
-  # makes sense).  We'll test with_gnu_ld everywhere else, so if that isn't
-  # set (hence we're using an older libtool), then set it.
-  if test x${with_gnu_ld+set} != xset; then
-    if test x${ac_cv_prog_gnu_ld+set} != xset; then
-      # We got through "ac_require(ac_prog_ld)" and still not set?  Huh?
-      with_gnu_ld=no
-    else
-      with_gnu_ld=$ac_cv_prog_gnu_ld
-    fi
-  fi
-
-  # Start by getting the version number.  I think the libtool test already
-  # does some of this, but throws away the result.
-  glibcxx_ld_is_gold=no
-  if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
-$as_echo_n "checking for ld version... " >&6; }
-
-    if $LD --version 2>/dev/null | grep 'GNU gold' >/dev/null 2>&1; then
-      glibcxx_ld_is_gold=yes
-    fi
-    ldver=`$LD --version 2>/dev/null |
-	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
-
-    glibcxx_gnu_ld_version=`echo $ldver | \
-	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
-$as_echo "$glibcxx_gnu_ld_version" >&6; }
-  fi
-
-  # Set --gc-sections.
-  glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes"; then
-    if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
-      glibcxx_have_gc_sections=yes
-    fi
-  else
-    glibcxx_gcsections_min_ld=21602
-    if test x"$with_gnu_ld" = x"yes" &&
-	test $glibcxx_gnu_ld_version -gt $glibcxx_gcsections_min_ld ; then
-      glibcxx_have_gc_sections=yes
-    fi
-  fi
-  if test "$glibcxx_have_gc_sections" = "yes"; then
-    # Sufficiently young GNU ld it is!  Joy and bunny rabbits!
-    # NB: This flag only works reliably after 2.16.1. Configure tests
-    # for this are difficult, so hard wire a value that should work.
-
-    ac_test_CFLAGS="${CFLAGS+set}"
-    ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-Wl,--gc-sections'
-
-    # Check for -Wl,--gc-sections
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,--gc-sections" >&5
-$as_echo_n "checking for ld that supports -Wl,--gc-sections... " >&6; }
-    if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
- int one(void) { return 1; }
-     int two(void) { return 2; }
-
-int
-main ()
-{
- two();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_gcsections=yes
-else
-  ac_gcsections=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-    if test "$ac_gcsections" = "yes"; then
-      rm -f conftest.c
-      touch conftest.c
-      if $CC -c conftest.c; then
-	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
-	   grep "Warning: gc-sections option ignored" > /dev/null; then
-	  ac_gcsections=no
-	fi
-      fi
-      rm -f conftest.c conftest.o conftest
-    fi
-    if test "$ac_gcsections" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_gcsections" >&5
-$as_echo "$ac_gcsections" >&6; }
-
-    if test "$ac_test_CFLAGS" = set; then
-      CFLAGS="$ac_save_CFLAGS"
-    else
-      # this is the suspicious part
-      CFLAGS=''
-    fi
-  fi
-
-  # Set -z,relro.
-  # Note this is only for shared objects.
-  ac_ld_relro=no
-  if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
-$as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
-$as_echo "$ac_ld_relro" >&6; }
-  fi
-
-  # Set linker optimization flags.
-  if test x"$with_gnu_ld" = x"yes"; then
-    OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
-  fi
-
-
-
-
-    $as_echo "#define HAVE_HYPOT 1" >>confdefs.h
-
-    $as_echo "#define HAVE_ISINF 1" >>confdefs.h
-
-    $as_echo "#define HAVE_ISNAN 1" >>confdefs.h
-
-    ;;
   *-qnx6.1* | *-qnx6.2*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
 
@@ -65011,6 +64923,8 @@ done
   # Export file names for ABI checking.
   baseline_dir="$glibcxx_srcdir/config/abi/post/${abi_baseline_pair}"
 
+  baseline_subdir_switch="$abi_baseline_subdir_switch"
+
 
 
 # Define documentation rules conditionally.
@@ -65855,9 +65769,9 @@ $as_echo "$gxx_include_dir" >&6; }
   fi
 
   # Stuff in the actual top level.  Currently only used by libsupc++ to
-  # get unwind* headers from the gcc dir.
-  #TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include'
-  TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/gcc'
+  # get unwind* headers from the libgcc dir.
+  #TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/libgcc -I$(toplevel_srcdir)/include'
+  TOPLEVEL_INCLUDES='-I$(toplevel_srcdir)/libgcc'
 
   # Now, export this to all the little Makefiles....
 

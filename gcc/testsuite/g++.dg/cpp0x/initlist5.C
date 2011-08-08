@@ -1,5 +1,5 @@
 // Test for narrowing diagnostics
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++0x -pedantic-errors" }
 
 #include <initializer_list>
 
@@ -25,3 +25,7 @@ double d = 1.1;
 float fa[] = { d, 1.1 };      // { dg-error "narrowing conversion of 'd'" }
 constexpr double d2 = 1.1;
 float fa2[] = { d2, 1.1 };
+
+// PR c++/49577
+unsigned u{ -1 };		// { dg-error "narrowing" }
+char c = char{ u };		// { dg-error "narrowing" }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,8 +56,8 @@ with System.Soft_Links;
 --  These are procedure pointers to non-tasking routines that use task
 --  specific data. In the absence of tasking, these routines refer to global
 --  data. In the presence of tasking, they must be replaced with pointers to
---  task-specific versions. Also used for Create_TSD, Destroy_TSD,
---  Get_Current_Excep, Finalize_Global_List, Task_Termination, Handler.
+--  task-specific versions. Also used for Create_TSD, Destroy_TSD, Get_Current
+--  _Excep, Finalize_Library_Objects, Task_Termination, Handler.
 
 with System.Tasking.Initialization;
 pragma Elaborate_All (System.Tasking.Initialization);
@@ -854,9 +854,11 @@ package body System.Tasking.Stages is
 
       SSL.Task_Termination_Handler.all (Ada.Exceptions.Null_Occurrence);
 
-      --  Finalize the global list for controlled objects if needed
+      --  Finalize all library-level controlled objects
 
-      SSL.Finalize_Global_List.all;
+      if not SSL."=" (SSL.Finalize_Library_Objects, null) then
+         SSL.Finalize_Library_Objects.all;
+      end if;
 
       --  Reset the soft links to non-tasking
 
@@ -1025,31 +1027,10 @@ package body System.Tasking.Stages is
 
       Secondary_Stack : aliased SSE.Storage_Array (1 .. Secondary_Stack_Size);
 
-      pragma Warnings (Off);
-      --  Why are warnings being turned off here???
-
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
       --  Address of secondary stack. In the fixed secondary stack case, this
       --  value is not modified, causing a warning, hence the bracketing with
       --  Warnings (Off/On). But why is so much *more* bracketed???
-
-      Small_Overflow_Guard : constant := 12 * 1024;
-      --  Note: this used to be 4K, but was changed to 12K, since smaller
-      --  values resulted in segmentation faults from dynamic stack analysis.
-
-      Big_Overflow_Guard   : constant := 16 * 1024;
-      Small_Stack_Limit    : constant := 64 * 1024;
-      --  ??? These three values are experimental, and seems to work on most
-      --  platforms. They still need to be analyzed further. They also need
-      --  documentation, what are they???
-
-      Size : Natural :=
-               Natural (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size);
-
-      Overflow_Guard : Natural;
-      --  Size of the overflow guard, used by dynamic stack usage analysis
-
-      pragma Warnings (On);
 
       SEH_Table : aliased SSE.Storage_Array (1 .. 8);
       --  Structured Exception Registration table (2 words)
@@ -1114,7 +1095,6 @@ package body System.Tasking.Stages is
          Self_ID.Common.Compiler_Data.Sec_Stack_Addr :=
            Secondary_Stack'Address;
          SST.SS_Init (Secondary_Stack_Address, Integer (Secondary_Stack'Last));
-         Size := Size - Natural (Secondary_Stack_Size);
       end if;
 
       if Use_Alternate_Stack then
@@ -1134,24 +1114,69 @@ package body System.Tasking.Stages is
       --  Initialize dynamic stack usage
 
       if System.Stack_Usage.Is_Enabled then
-         Overflow_Guard :=
-           (if Size < Small_Stack_Limit
-              then Small_Overflow_Guard
-              else Big_Overflow_Guard);
+         declare
+            Guard_Page_Size : constant := 12 * 1024;
+            --  Part of the stack used as a guard page. This is an OS dependent
+            --  value, so we need to use the maximum. This value is only used
+            --  when the stack address is known, that is currently Windows.
 
-         STPO.Lock_RTS;
-         Initialize_Analyzer
-           (Self_ID.Common.Analyzer,
-            Self_ID.Common.Task_Image
-              (1 .. Self_ID.Common.Task_Image_Len),
-            Natural
-              (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size),
-            Size - Overflow_Guard,
-            SSE.To_Integer (Bottom_Of_Stack'Address),
-            SSE.To_Integer
-              (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Limit));
-         STPO.Unlock_RTS;
-         Fill_Stack (Self_ID.Common.Analyzer);
+            Small_Overflow_Guard : constant := 12 * 1024;
+            --  Note: this used to be 4K, but was changed to 12K, since
+            --  smaller values resulted in segmentation faults from dynamic
+            --  stack analysis.
+
+            Big_Overflow_Guard : constant := 16 * 1024;
+            Small_Stack_Limit  : constant := 64 * 1024;
+            --  ??? These three values are experimental, and seem to work on
+            --  most platforms. They still need to be analyzed further. They
+            --  also need documentation, what are they???
+
+            Pattern_Size : Natural :=
+              Natural (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size);
+            --  Size of the pattern
+
+            Stack_Base : Address;
+            --  Address of the base of the stack
+
+         begin
+            Stack_Base := Self_ID.Common.Compiler_Data.Pri_Stack_Info.Base;
+            if Stack_Base = Null_Address then
+
+               --  On many platforms, we don't know the real stack base
+               --  address. Estimate it using an address in the frame.
+
+               Stack_Base := Bottom_Of_Stack'Address;
+
+               --  Also reduce the size of the stack to take into account the
+               --  secondary stack array declared in this frame. This is for
+               --  sure very conservative.
+
+               if not Parameters.Sec_Stack_Dynamic then
+                  Pattern_Size :=
+                    Pattern_Size - Natural (Secondary_Stack_Size);
+               end if;
+
+               --  Adjustments for inner frames
+
+               Pattern_Size := Pattern_Size -
+                 (if Pattern_Size < Small_Stack_Limit
+                    then Small_Overflow_Guard
+                    else Big_Overflow_Guard);
+            else
+               --  Reduce by the size of the final guard page
+               Pattern_Size := Pattern_Size - Guard_Page_Size;
+            end if;
+
+            STPO.Lock_RTS;
+            Initialize_Analyzer
+              (Self_ID.Common.Analyzer,
+               Self_ID.Common.Task_Image (1 .. Self_ID.Common.Task_Image_Len),
+               Natural (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size),
+               SSE.To_Integer (Stack_Base),
+               Pattern_Size);
+            STPO.Unlock_RTS;
+            Fill_Stack (Self_ID.Common.Analyzer);
+         end;
       end if;
 
       --  We setup the SEH (Structured Exception Handling) handler if supported
@@ -2009,10 +2034,10 @@ package body System.Tasking.Stages is
 --  Package elaboration code
 
 begin
-   --  Establish the Adafinal oftlink
+   --  Establish the Adafinal softlink
 
    --  This is not done inside the central RTS initialization routine
-   --  to avoid with-ing this package from System.Tasking.Initialization.
+   --  to avoid with'ing this package from System.Tasking.Initialization.
 
    SSL.Adafinal := Finalize_Global_Tasks'Access;
 

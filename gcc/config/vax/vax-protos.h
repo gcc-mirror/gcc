@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 extern bool legitimate_constant_address_p (rtx);
 extern bool vax_mode_dependent_address_p (rtx);
+extern void vax_expand_prologue (void);
 
 #ifdef RTX_CODE
 extern const char *cond_name (rtx);

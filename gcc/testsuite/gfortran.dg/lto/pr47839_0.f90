@@ -6,3 +6,5 @@ MODULE globalvar_mod
 integer        :: xstop
 CONTAINS
 END MODULE globalvar_mod
+
+! { dg-final { cleanup-modules "globalvar_mod pec_mod" } }

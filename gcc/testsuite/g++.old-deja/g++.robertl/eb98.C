@@ -15,5 +15,5 @@
     void f()
     {
       extent(b);  // { dg-error "" } no matching function
-      // { dg-message "candidate" "candidate note" { target *-*-* } 17 }
+      // { dg-message "(candidate|mismatched types)" "candidate note" { target *-*-* } 17 }
     }

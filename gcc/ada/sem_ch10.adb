@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -755,8 +755,9 @@ package body Sem_Ch10 is
 
       --  If the unit is a subprogram body, then we similarly need to analyze
       --  its spec. However, things are a little simpler in this case, because
-      --  here, this analysis is done only for error checking and consistency
-      --  purposes, so there's nothing else to be done.
+      --  here, this analysis is done mostly for error checking and consistency
+      --  purposes (but not only, e.g. there could be a contract on the spec),
+      --  so there's nothing else to be done.
 
       elsif Nkind (Unit_Node) = N_Subprogram_Body then
          if Acts_As_Spec (N) then
@@ -2601,8 +2602,16 @@ package body Sem_Ch10 is
             Par_Name := Entity (Pref);
          end if;
 
-         Set_Entity_With_Style_Check (Pref, Par_Name);
-         Generate_Reference (Par_Name, Pref);
+         --  Guard against missing or misspelled child units
+
+         if Present (Par_Name) then
+            Set_Entity_With_Style_Check (Pref, Par_Name);
+            Generate_Reference (Par_Name, Pref);
+
+         else
+            Set_Name (N, Make_Null (Sloc (N)));
+            return;
+         end if;
       end if;
 
       --  If the withed unit is System, and a system extension pragma is
@@ -5267,9 +5276,11 @@ package body Sem_Ch10 is
       procedure Decorate_Tagged_Type
         (Loc  : Source_Ptr;
          T    : Entity_Id;
-         Scop : Entity_Id);
-      --  Set basic attributes of tagged type T, including its class_wide type.
-      --  The parameters Loc, Scope are used to decorate the class_wide type.
+         Scop : Entity_Id;
+         Mark : Boolean := False);
+      --  Set basic attributes of tagged type T, including its class-wide type.
+      --  The parameters Loc, Scope are used to decorate the class-wide type.
+      --  Use flag Mark to label the class-wide type as Materialize_Entity.
 
       procedure Build_Chain (Scope : Entity_Id; First_Decl : Node_Id);
       --  Construct list of shadow entities and attach it to entity of
@@ -5327,7 +5338,7 @@ package body Sem_Ch10 is
 
                if not Analyzed_Unit then
                   if Is_Tagged then
-                     Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope);
+                     Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope, True);
                   else
                      Decorate_Incomplete_Type (Comp_Typ, Scope);
                   end if;
@@ -5367,7 +5378,7 @@ package body Sem_Ch10 is
 
                if not Analyzed_Unit then
                   if Is_Tagged then
-                     Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope);
+                     Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope, True);
                   else
                      Decorate_Incomplete_Type (Comp_Typ, Scope);
                   end if;
@@ -5395,7 +5406,7 @@ package body Sem_Ch10 is
                Comp_Typ := Defining_Identifier (Decl);
 
                if not Analyzed_Unit then
-                  Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope);
+                  Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope, True);
                end if;
 
                --  Create shadow entity for type
@@ -5476,7 +5487,8 @@ package body Sem_Ch10 is
       procedure Decorate_Tagged_Type
         (Loc  : Source_Ptr;
          T    : Entity_Id;
-         Scop : Entity_Id)
+         Scop : Entity_Id;
+         Mark : Boolean := False)
       is
          CW : Entity_Id;
 
@@ -5490,7 +5502,7 @@ package body Sem_Ch10 is
          --  and the full-view.
 
          if No (Class_Wide_Type (T)) then
-            CW := Make_Temporary (Loc, 'S');
+            CW := New_External_Entity (E_Void, Scope (T), Loc, T, 'C', 0, 'T');
 
             --  Set parent to be the same as the parent of the tagged type.
             --  We need a parent field set, and it is supposed to point to
@@ -5514,6 +5526,7 @@ package body Sem_Ch10 is
             Set_Class_Wide_Type           (CW, CW);
             Set_Equivalent_Type           (CW, Empty);
             Set_From_With_Type            (CW, From_With_Type (T));
+            Set_Materialize_Entity        (CW, Mark);
 
             --  Link type to its class-wide type
 

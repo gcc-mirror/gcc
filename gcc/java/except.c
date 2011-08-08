@@ -488,7 +488,7 @@ build_exception_object_ref (tree type)
      The java object is immediately before the generic exception header.  */
   obj = build_exception_object_var ();
   obj = fold_convert (build_pointer_type (type), obj);
-  obj = build2 (POINTER_PLUS_EXPR, TREE_TYPE (obj), obj,
+  obj = fold_build_pointer_plus (obj,
 		fold_build1 (NEGATE_EXPR, sizetype,
 			     TYPE_SIZE_UNIT (TREE_TYPE (obj))));
   obj = build1 (INDIRECT_REF, type, obj);
