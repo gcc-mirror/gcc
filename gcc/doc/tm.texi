@@ -3725,6 +3725,24 @@ return @code{@var{regno}}.
 
 @end defmac
 
+@defmac REG_VALUE_IN_UNWIND_CONTEXT
+
+Define this macro if the target stores register values as
+@code{_Unwind_Word} type in unwind context.  It should be defined if
+target register size is larger than the size of @code{void *}.  The
+default is to store register values as @code{void *} type.
+
+@end defmac
+
+@defmac ASSUME_EXTENDED_UNWIND_CONTEXT
+
+Define this macro to be 1 if the target always uses extended unwind
+context with version, args_size and by_value fields.  If it is undefined,
+it will be defined to 1 when @code{REG_VALUE_IN_UNWIND_CONTEXT} is
+defined and 0 otherwise.
+
+@end defmac
+
 @node Elimination
 @subsection Eliminating Frame Pointer and Arg Pointer
 
