@@ -3688,6 +3688,9 @@ access_precludes_ipa_sra_p (struct access *access)
 	  || gimple_code (access->stmt) == GIMPLE_ASM))
     return true;
 
+  if (tree_non_mode_aligned_mem_p (access->expr))
+    return true;
+
   return false;
 }
 
