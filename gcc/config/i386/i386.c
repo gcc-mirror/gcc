@@ -11142,6 +11142,14 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   int retval = 1;
   enum ix86_address_seg seg = SEG_DEFAULT;
 
+  /* Allow zero-extended SImode addresses,
+     they will be emitted with addr32 prefix.  */
+  if (TARGET_64BIT
+      && GET_CODE (addr) == ZERO_EXTEND
+      && GET_MODE (addr) == DImode
+      && GET_MODE (XEXP (addr, 0)) == SImode)
+    addr = XEXP (addr, 0);
+ 
   if (REG_P (addr))
     base = addr;
   else if (GET_CODE (addr) == SUBREG)
@@ -14159,8 +14167,12 @@ ix86_print_operand_address (FILE *file, rtx addr)
     }
   else
     {
-      /* Print DImode registers on 64bit targets to avoid addr32 prefixes.  */
-      int code = TARGET_64BIT ? 'q' : 0;
+      int code = 0;
+
+      /* Print SImode registers for zero-extended addresses to force
+	 addr32 prefix.  Otherwise print DImode registers to avoid it.  */
+      if (TARGET_64BIT)
+	code = (GET_CODE (addr) == ZERO_EXTEND) ? 'l' : 'q';
 
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	{
@@ -21772,7 +21784,8 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
 }
 
 /* Calculate the length of the memory address in the instruction
-   encoding.  Does not include the one-byte modrm, opcode, or prefix.  */
+   encoding.  Includes addr32 prefix, does not include the one-byte modrm,
+   opcode, or other prefixes.  */
 
 int
 memory_address_length (rtx addr)
@@ -21799,7 +21812,9 @@ memory_address_length (rtx addr)
   base = parts.base;
   index = parts.index;
   disp = parts.disp;
-  len = 0;
+
+  /* Add length of addr32 prefix.  */
+  len = (GET_CODE (addr) == ZERO_EXTEND);
 
   /* Rule of thumb:
        - esp as the base always wants an index,
@@ -28233,6 +28248,15 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 		       enum machine_mode mode,
 		       secondary_reload_info *sri ATTRIBUTE_UNUSED)
 {
+  /* Double-word spills from general registers to non-offsettable memory
+     references (zero-extended addresses) go through XMM register.  */
+  if (TARGET_64BIT
+      && MEM_P (x)
+      && GET_MODE_SIZE (mode) > UNITS_PER_WORD
+      && rclass == GENERAL_REGS
+      && !offsettable_memref_p (x))
+    return SSE_REGS;
+
   /* QImode spills from non-QI registers require
      intermediate register on 32bit targets.  */
   if (!TARGET_64BIT

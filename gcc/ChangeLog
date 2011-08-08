@@ -1,8 +1,20 @@
+2011-08-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49781
+	* config/i386/i386.c (ix86_decompose_address): Allow zero-extended
+	SImode addresses.
+	(ix86_print_operand_address): Handle zero-extended addresses.
+	(memory_address_length): Add length of addr32 prefix for
+	zero-extended addresses.
+	(ix86_secondary_reload): Handle moves to/from double-word general
+	registers from/to zero-extended addresses.
+	* config/i386/predicates.md (lea_address_operand): Reject
+	zero-extended operands.
+
 2011-08-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/48007
-	* config.gcc (libgcc_tm_file): Add i386/value-unwind.h for
-	Linux/x86.
+	* config.gcc (libgcc_tm_file): Add i386/value-unwind.h for Linux/x86.
 
 	* system.h (REG_VALUE_IN_UNWIND_CONTEXT): Poisoned.
 	(ASSUME_EXTENDED_UNWIND_CONTEXT): Likewise.
@@ -43,10 +55,8 @@
 
 	* config/sparc/driver-sparc.c: New file.
 	* config/sparc/x-sparc: New file.
-	* config.host: Use driver-sparc.o, sparc/x-sparc on
-	sparc*-*-solaris2*.
-	* config/sparc/sparc.opt (native): New value for enum
-	processor_type.
+	* config.host: Use driver-sparc.o, sparc/x-sparc on sparc*-*-solaris2*.
+	* config/sparc/sparc.opt (native): New value for enum processor_type.
 	* config/sparc/sparc-opts.h (PROCESSOR_NATIVE): Declare.
 	* config/sparc/sparc.c (sparc_option_override): Abort if
 	PROCESSOR_NATIVE gets here.
@@ -93,7 +103,7 @@
 	(TARGET_INSTANTIATE_DECLS): New define.
 
 2011-08-06  Paolo Bonzini  <bonzini@gnu.org>
-            Mikael Morin   <mikael.morin@sfr.fr>
+	    Mikael Morin   <mikael.morin@sfr.fr>
 
 	* Makefile.in (INCLUDES_FOR_TARGET): New.
 	(LIBGCC2_CFLAGS): Use it.
