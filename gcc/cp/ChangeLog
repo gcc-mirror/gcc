@@ -1,3 +1,8 @@
+2011-08-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50011
+	* typeck2.c (check_narrowing): Fix integer logic.
+
 2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (g++$(exeext)): Add $(EXTRA_GCC_LIBS).

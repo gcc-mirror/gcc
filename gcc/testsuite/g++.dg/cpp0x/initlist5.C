@@ -29,3 +29,7 @@ float fa2[] = { d2, 1.1 };
 // PR c++/49577
 unsigned u{ -1 };		// { dg-error "narrowing" }
 char c = char{ u };		// { dg-error "narrowing" }
+
+// PR c++/50011
+short unsigned su;
+int i { su };
