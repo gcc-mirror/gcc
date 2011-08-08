@@ -1,3 +1,9 @@
+2011-08-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/49923
+	* tree-sra.c (access_precludes_ipa_sra_p): Also check access
+	memory alignment.
+
 2011-08-08   Diego Novillo  <dnovillo@google.com>
 
 	* Makefile.in (LTO_STREAMER_H): Add DIAGNOSTIC_H.
