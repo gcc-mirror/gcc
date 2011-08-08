@@ -1662,44 +1662,41 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
   count_preds = 0;
   count_succs = 0;
 
+  if (dump_file && (psp_not_empty || pss_not_empty))
+    {
+      fprintf (dump_file, "\nAnalyzing dependencies for node %d (INSN %d)"
+	       "; ii = %d\n\n", u_node->cuid, INSN_UID (u_node->insn), ii);
+      fprintf (dump_file, "%11s %11s %11s %11s %5s\n",
+	       "start", "early start", "late start", "end", "time");
+      fprintf (dump_file, "=========== =========== =========== ==========="
+	       " =====\n");
+    }
   /* Calculate early_start and limit end.  Both bounds are inclusive.  */
   if (psp_not_empty)
     for (e = u_node->in; e != 0; e = e->next_in)
       {
 	ddg_node_ptr v_node = e->src;
 
-	if (dump_file)
-	  {
-	    fprintf (dump_file, "\nProcessing edge: ");
-	    print_ddg_edge (dump_file, e);
-	    fprintf (dump_file,
-		     "\nScheduling %d (%d) in psp_not_empty,"
-		     " checking p %d (%d): ", u_node->cuid,
-		     INSN_UID (u_node->insn), v_node->cuid, INSN_UID
-		     (v_node->insn));
-	  }
-
 	if (TEST_BIT (sched_nodes, v_node->cuid))
 	  {
 	    int p_st = SCHED_TIME (v_node);
+	    int earliest = p_st + e->latency - (e->distance * ii);
+	    int latest = (e->data_type == MEM_DEP ? p_st + ii - 1 : INT_MAX);
 
-	    early_start = MAX (early_start,
-			       p_st + e->latency - (e->distance * ii));
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "%11s %11d %11s %11d %5d",
+			 "", earliest, "", latest, p_st);
+		print_ddg_edge (dump_file, e);
+		fprintf (dump_file, "\n");
+	      }
 
-	    if (e->data_type == MEM_DEP)
-	      end = MIN (end, p_st + ii - 1);
+	    early_start = MAX (early_start, earliest);
+	    end = MIN (end, latest);
 
 	    if (e->type == TRUE_DEP && e->data_type == REG_DEP)
 	      count_preds++;
-
-	    if (dump_file)
-	      fprintf (dump_file,
-		       "pred st = %d; early_start = %d; latency: %d;"
-		       " end: %d\n", p_st, early_start, e->latency, end);
-
 	  }
-	else if (dump_file)
-	  fprintf (dump_file, "the node is not scheduled\n");
       }
 
   /* Calculate late_start and limit start.  Both bounds are inclusive.  */
@@ -1708,39 +1705,36 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
       {
 	ddg_node_ptr v_node = e->dest;
 
-	if (dump_file)
-	  {
-	    fprintf (dump_file, "\nProcessing edge:");
-	    print_ddg_edge (dump_file, e);
-	    fprintf (dump_file,
-		     "\nScheduling %d (%d) in pss_not_empty,"
-		     " checking s %d (%d): ", u_node->cuid,
-		     INSN_UID (u_node->insn), v_node->cuid, INSN_UID
-		     (v_node->insn));
-	  }
-
 	if (TEST_BIT (sched_nodes, v_node->cuid))
 	  {
 	    int s_st = SCHED_TIME (v_node);
+	    int earliest = (e->data_type == MEM_DEP ? s_st - ii + 1 : INT_MIN);
+	    int latest = s_st - e->latency + (e->distance * ii);
 
-	    late_start = MIN (late_start,
-			      s_st - e->latency + (e->distance * ii));
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "%11d %11s %11d %11s %5d",
+			 earliest, "", latest, "", s_st);
+		print_ddg_edge (dump_file, e);
+		fprintf (dump_file, "\n");
+	      }
 
-	    if (e->data_type == MEM_DEP)
-	      start = MAX (start, s_st - ii + 1);
+	    start = MAX (start, earliest);
+	    late_start = MIN (late_start, latest);
 
 	    if (e->type == TRUE_DEP && e->data_type == REG_DEP)
 	      count_succs++;
-
-	    if (dump_file)
-	      fprintf (dump_file,
-		       "succ st = %d; late_start = %d; latency = %d;"
-		       " start=%d", s_st, late_start, e->latency, start);
-
 	  }
-	else if (dump_file)
-	  fprintf (dump_file, "the node is not scheduled\n");
       }
+
+  if (dump_file && (psp_not_empty || pss_not_empty))
+    {
+      fprintf (dump_file, "----------- ----------- ----------- -----------"
+	       " -----\n");
+      fprintf (dump_file, "%11d %11d %11d %11d %5s %s\n",
+	       start, early_start, late_start, end, "",
+	       "(max, max, min, min)");
+    }
 
   /* Get a target scheduling window no bigger than ii.  */
   if (early_start == INT_MIN && late_start == INT_MAX)
@@ -1752,6 +1746,10 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
   /* Apply memory dependence limits.  */
   start = MAX (start, early_start);
   end = MIN (end, late_start);
+
+  if (dump_file && (psp_not_empty || pss_not_empty))
+    fprintf (dump_file, "%11s %11d %11d %11s %5s final window\n",
+	     "", start, end, "", "");
 
   /* If there are at least as many successors as predecessors, schedule the
      node close to its successors.  */
@@ -1960,8 +1958,8 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
                                 &step, &end) == 0)
             {
               if (dump_file)
-                fprintf (dump_file, "\nTrying to schedule node %d \
-                        INSN = %d  in (%d .. %d) step %d\n", u, (INSN_UID
+                fprintf (dump_file, "\nTrying to schedule node %d "
+			 "INSN = %d  in (%d .. %d) step %d\n", u, (INSN_UID
                         (g->nodes[u].insn)), start, end, step);
 
               gcc_assert ((step > 0 && start < end)
