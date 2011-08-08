@@ -1873,7 +1873,7 @@ remap_predicate (struct inline_summary *info, struct inline_summary *callee_info
 		 /* See if we can remap condition operand to caller's operand.
 		    Otherwise give up.  */
 		 if (!operand_map
-		     || VEC_length (int, operand_map) <= c->operand_num
+		     || (int)VEC_length (int, operand_map) <= c->operand_num
 		     || VEC_index (int, operand_map, c->operand_num) == -1)
 		   cond_predicate = true_predicate ();
 		 else

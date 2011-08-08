@@ -1,3 +1,9 @@
+2011-08-08  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR tree-optimization/50005
+	* ipa-inline-analysis (remap_predicate): Add cast to
+	silence signed/unsigned comparison warning.
+
 2011-08-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* modulo-sched.c (get_sched_window): Use a table for the debug output.
