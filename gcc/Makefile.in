@@ -3989,7 +3989,8 @@ build/gengtype$(build_exeext) : build/gengtype-lex.o build/gengtype-parse.o \
 
 gengtype$(exeext) : gengtype.o gengtype-lex.o gengtype-parse.o \
               gengtype-state.o version.o errors.o $(LIBDEPS)
-	+$(LINKER) $(ALL_LINKERFLAGS) -o $@ $(filter-out ($LIBDEPS), $^) $(LIBS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	    $(filter-out ($LIBDEPS), $^) $(LIBS)
 
 # Rule for the generator programs:
 $(genprog:%=build/gen%$(build_exeext)): build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
