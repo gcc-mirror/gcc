@@ -1,0 +1,3 @@
+driver-sparc.o: $(srcdir)/config/sparc/driver-sparc.c \
+  $(CONFIG_H) $(SYSTEM_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
