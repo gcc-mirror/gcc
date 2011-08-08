@@ -1,5 +1,9 @@
 2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* Makefile.in (gengtype$(exeext)): Add $(LDFLAGS).
+
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* doc/invoke.texi (DEC Alpha Options, -mcpu): native support isn't
 	Linux/GNU-specific.
 	(DEC Alpha Options, -mtune): Likewise.
