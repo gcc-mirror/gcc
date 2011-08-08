@@ -1,3 +1,7 @@
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Make-lang.in (gccgo$(exeext)): Add $(EXTRA_GCC_LIBS).
+
 2011-08-02  Roberto Lublinerman  <rluble@gmail.com>
 
 	* Make-lang.in (GO_OBJS): Add go/ast-dump.o.

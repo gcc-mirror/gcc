@@ -17263,6 +17263,11 @@ for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{sparclet}, @samp{tsc701}, @samp{v9}, @samp{ultrasparc},
 @samp{ultrasparc3}, @samp{niagara} and @samp{niagara2}.
 
+Native Solaris toolchains also support the value @samp{native},
+which selects the best architecture option for the host processor.
+@option{-mcpu=native} has no effect if GCC does not recognize
+the processor.
+
 Default instruction scheduling parameters are used for values that select
 an architecture and not an implementation.  These are @samp{v7}, @samp{v8},
 @samp{sparclite}, @samp{sparclet}, @samp{v9}.
@@ -17327,7 +17332,8 @@ The same values for @option{-mcpu=@var{cpu_type}} can be used for
 that select a particular CPU implementation.  Those are @samp{cypress},
 @samp{supersparc}, @samp{hypersparc}, @samp{leon}, @samp{f930}, @samp{f934},
 @samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc}, @samp{ultrasparc3},
-@samp{niagara}, and @samp{niagara2}.
+@samp{niagara}, and @samp{niagara2}.  With native Solaris toolchains,
+@samp{native} can also be used.
 
 @item -mv8plus
 @itemx -mno-v8plus

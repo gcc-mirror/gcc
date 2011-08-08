@@ -1,3 +1,26 @@
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/driver-sparc.c: New file.
+	* config/sparc/x-sparc: New file.
+	* config.host: Use driver-sparc.o, sparc/x-sparc on
+	sparc*-*-solaris2*.
+	* config/sparc/sparc.opt (native): New value for enum
+	processor_type.
+	* config/sparc/sparc-opts.h (PROCESSOR_NATIVE): Declare.
+	* config/sparc/sparc.c (sparc_option_override): Abort if
+	PROCESSOR_NATIVE gets here.
+	* config/sparc/sol2.h [__sparc__] (host_detect_local_cpu): Declare.
+	(EXTRA_SPEC_FUNCTIONS, MCPU_MTUNE_NATIVE_SPECS,
+	DRIVER_SELF_SPECS): Define.
+	* doc/invoke.texi (SPARC Options, -mcpu): Document native.
+	(SPARC Options, -mtune): Likewise.
+	* configure.ac (EXTRA_GCC_LIBS): Check for libkstat.
+	Substitute result.
+	* configure: Regenerate.
+	* Makefile.in (EXTRA_GCC_LIBS): Set.
+	(xgcc$(exeext)): Add $(EXTRA_GCC_LIBS).
+	(cpp$(exeext)): Likewise.
+
 2011-08-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (extract_range_from_unary_expr_1): New function,

@@ -63,7 +63,8 @@ g++spec.o: $(srcdir)/cp/g++spec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
 GXX_OBJS = $(GCC_OBJS) g++spec.o
 g++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	  $(GXX_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
+	  $(GXX_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
 
 # Create a version of the g++ driver which calls the cross-compiler.
 g++-cross$(exeext): g++$(exeext)

@@ -1,3 +1,7 @@
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Make-lang.in ($(XGCJ)$(exeext)): Add $(EXTRA_GCC_LIBS).
+
 2011-07-19  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.c (static): Use fold_build_pointer_plus.

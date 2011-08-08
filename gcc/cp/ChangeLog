@@ -1,3 +1,7 @@
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Make-lang.in (g++$(exeext)): Add $(EXTRA_GCC_LIBS).
+
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48993
