@@ -43,6 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "pointer-set.h"
 #include "lto-streamer.h"
+#include "data-streamer.h"
+#include "tree-streamer.h"
 #include "gcov-io.h"
 
 static void output_varpool (cgraph_node_set, varpool_node_set);

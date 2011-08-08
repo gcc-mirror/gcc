@@ -1,3 +1,8 @@
+2011-08-08   Diego Novillo  <dnovillo@google.com>
+
+	* Make-lang.in (lto/lto.o): Add TREE_STREAMER_H.
+	* lto.c: Include tree-streamer.h.
+
 2011-07-06  Richard Guenther  <rguenther@suse.de>
 
 	* lto-lang.c (lto_init):
