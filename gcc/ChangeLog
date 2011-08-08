@@ -1,5 +1,11 @@
 2011-08-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* modulo-sched.c (get_sched_window): Use a table for the debug output.
+	Print the current ii.
+	(sms_schedule_by_order): Reduce whitespace in dump line.
+
+2011-08-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* modulo-sched.c (get_sched_window): Use just one loop for predecessors
 	and one loop for successors.  Fix upper bound of memory range.
 
