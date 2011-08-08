@@ -2805,48 +2805,18 @@ extract_range_from_binary_expr (value_range_t *vr,
   extract_range_from_binary_expr_1 (vr, code, expr_type, &vr0, &vr1);
 }
 
-/* Extract range information from a unary expression EXPR based on
-   the range of its operand and the expression code.  */
+/* Extract range information from a unary operation CODE based on
+   the range of its operand *VR0 with type OP0_TYPE with resulting type TYPE.
+   The The resulting range is stored in *VR.  */
 
 static void
-extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
-			       tree type, tree op0)
+extract_range_from_unary_expr_1 (value_range_t *vr,
+				 enum tree_code code, tree type,
+				 value_range_t *vr0_, tree op0_type)
 {
+  value_range_t vr0 = *vr0_;
   tree min, max;
   int cmp;
-  value_range_t vr0 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
-
-  /* Refuse to operate on certain unary expressions for which we
-     cannot easily determine a resulting range.  */
-  if (code == FIX_TRUNC_EXPR
-      || code == FLOAT_EXPR
-      || code == BIT_NOT_EXPR
-      || code == CONJ_EXPR)
-    {
-      /* We can still do constant propagation here.  */
-      if ((op0 = op_with_constant_singleton_value_range (op0)) != NULL_TREE)
-	{
-	  tree tem = fold_unary (code, type, op0);
-	  if (tem
-	      && is_gimple_min_invariant (tem)
-	      && !is_overflow_infinity (tem))
-	    {
-	      set_value_range (vr, VR_RANGE, tem, tem, NULL);
-	      return;
-	    }
-	}
-      set_value_range_to_varying (vr);
-      return;
-    }
-
-  /* Get value ranges for the operand.  For constant operands, create
-     a new value range with the operand to simplify processing.  */
-  if (TREE_CODE (op0) == SSA_NAME)
-    vr0 = *(get_value_range (op0));
-  else if (is_gimple_min_invariant (op0))
-    set_value_range_to_value (&vr0, op0, NULL);
-  else
-    set_value_range_to_varying (&vr0);
 
   /* If VR0 is UNDEFINED, so is the result.  */
   if (vr0.type == VR_UNDEFINED)
@@ -2855,10 +2825,20 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
       return;
     }
 
+  /* Refuse to operate on certain unary expressions for which we
+     cannot easily determine a resulting range.  */
+  if (code == FIX_TRUNC_EXPR
+      || code == FLOAT_EXPR
+      || code == CONJ_EXPR)
+    {
+      set_value_range_to_varying (vr);
+      return;
+    }
+
   /* Refuse to operate on symbolic ranges, or if neither operand is
      a pointer or integral type.  */
-  if ((!INTEGRAL_TYPE_P (TREE_TYPE (op0))
-       && !POINTER_TYPE_P (TREE_TYPE (op0)))
+  if ((!INTEGRAL_TYPE_P (op0_type)
+       && !POINTER_TYPE_P (op0_type))
       || (vr0.type != VR_VARYING
 	  && symbolic_range_p (&vr0)))
     {
@@ -2868,29 +2848,23 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 
   /* If the expression involves pointers, we are only interested in
      determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).  */
-  if (POINTER_TYPE_P (type) || POINTER_TYPE_P (TREE_TYPE (op0)))
+  if (POINTER_TYPE_P (type) || POINTER_TYPE_P (op0_type))
     {
-      bool sop;
-
-      sop = false;
-      if (range_is_nonnull (&vr0)
-	  || (tree_unary_nonzero_warnv_p (code, type, op0, &sop)
-	      && !sop))
+      if (range_is_nonnull (&vr0))
 	set_value_range_to_nonnull (vr, type);
       else if (range_is_null (&vr0))
 	set_value_range_to_null (vr, type);
       else
 	set_value_range_to_varying (vr);
-
       return;
     }
 
   /* Handle unary expressions on integer ranges.  */
   if (CONVERT_EXPR_CODE_P (code)
       && INTEGRAL_TYPE_P (type)
-      && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
+      && INTEGRAL_TYPE_P (op0_type))
     {
-      tree inner_type = TREE_TYPE (op0);
+      tree inner_type = op0_type;
       tree outer_type = type;
 
       /* If VR0 is varying and we increase the type precision, assume
@@ -3146,6 +3120,16 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 	    }
 	}
     }
+  else if (code == BIT_NOT_EXPR)
+    {
+      /* ~X is simply -1 - X, so re-use existing code that also handles
+         anti-ranges fine.  */
+      value_range_t minusone = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+      set_value_range_to_value (&minusone, build_int_cst (type, -1), NULL);
+      extract_range_from_binary_expr_1 (vr, MINUS_EXPR,
+					type, &minusone, &vr0);
+      return;
+    }
   else
     {
       /* Otherwise, operate on each end of the range.  */
@@ -3209,6 +3193,29 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
     }
   else
     set_value_range (vr, vr0.type, min, max, NULL);
+}
+
+
+/* Extract range information from a unary expression CODE OP0 based on
+   the range of its operand with resulting type TYPE.
+   The resulting range is stored in *VR.  */
+
+static void
+extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
+			       tree type, tree op0)
+{
+  value_range_t vr0 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+
+  /* Get value ranges for the operand.  For constant operands, create
+     a new value range with the operand to simplify processing.  */
+  if (TREE_CODE (op0) == SSA_NAME)
+    vr0 = *(get_value_range (op0));
+  else if (is_gimple_min_invariant (op0))
+    set_value_range_to_value (&vr0, op0, NULL);
+  else
+    set_value_range_to_varying (&vr0);
+
+  extract_range_from_unary_expr_1 (vr, code, type, &vr0, TREE_TYPE (op0));
 }
 
 
