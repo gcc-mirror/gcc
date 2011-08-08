@@ -1,3 +1,8 @@
+2011-08-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* modulo-sched.c (get_sched_window): Use just one loop for predecessors
+	and one loop for successors.  Fix upper bound of memory range.
+
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/50001
