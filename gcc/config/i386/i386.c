@@ -10242,9 +10242,11 @@ ix86_expand_prologue (void)
     emit_insn (gen_cld ());
 
   /* SEH requires that the prologue end within 256 bytes of the start of
-     the function.  Prevent instruction schedules that would extend that.  */
+     the function.  Prevent instruction schedules that would extend that.
+     Further, prevent alloca modifications to the stack pointer from being
+     combined with prologue modifications.  */
   if (TARGET_SEH)
-    emit_insn (gen_blockage ());
+    emit_insn (gen_prologue_use (stack_pointer_rtx));
 }
 
 /* Emit code to restore REG using a POP insn.  */

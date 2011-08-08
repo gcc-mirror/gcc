@@ -1,3 +1,10 @@
+2011-08-08  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/49990
+	* config/i386/i386.c (ix86_expand_prologue): Call
+	for SEH target gen_prologue_use instead of gen_blockage
+	at prologue's end.
+
 2011-08-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/49923
