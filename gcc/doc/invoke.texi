@@ -11533,7 +11533,7 @@ Schedules as an EV6 and supports the BWX, FIX, and MAX extensions.
 Schedules as an EV6 and supports the BWX, CIX, FIX, and MAX extensions.
 @end table
 
-Native Linux/GNU toolchains also support the value @samp{native},
+Native toolchains also support the value @samp{native},
 which selects the best architecture option for the host processor.
 @option{-mcpu=native} has no effect if GCC does not recognize
 the processor.
@@ -11543,7 +11543,7 @@ the processor.
 Set only the instruction scheduling parameters for machine type
 @var{cpu_type}.  The instruction set is not changed.
 
-Native Linux/GNU toolchains also support the value @samp{native},
+Native toolchains also support the value @samp{native},
 which selects the best architecture option for the host processor.
 @option{-mtune=native} has no effect if GCC does not recognize
 the processor.
@@ -14319,7 +14319,7 @@ The special value @samp{from-abi} selects the
 most compatible architecture for the selected ABI (that is,
 @samp{mips1} for 32-bit ABIs and @samp{mips3} for 64-bit ABIs)@.
 
-Native Linux/GNU toolchains also support the value @samp{native},
+Native Linux/GNU and IRIX toolchains also support the value @samp{native},
 which selects the best architecture option for the host processor.
 @option{-march=native} has no effect if GCC does not recognize
 the processor.

@@ -1,5 +1,12 @@
 2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* doc/invoke.texi (DEC Alpha Options, -mcpu): native support isn't
+	Linux/GNU-specific.
+	(DEC Alpha Options, -mtune): Likewise.
+	(MIPS Options, -march): native is supported on IRIX.
+
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/sparc/driver-sparc.c: New file.
 	* config/sparc/x-sparc: New file.
 	* config.host: Use driver-sparc.o, sparc/x-sparc on
