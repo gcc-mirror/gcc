@@ -735,6 +735,7 @@ LIBICONV_DEP
 LTLIBICONV
 LIBICONV
 LDEXP_LIB
+EXTRA_GCC_LIBS
 GNAT_LIBEXC
 COLLECT2_LIBS
 CXXCPP
@@ -8741,6 +8742,69 @@ if test "$ac_res" != no; then :
 fi
 
 GNAT_LIBEXC="$LIBS"
+LIBS="$save_LIBS"
+
+
+# To support -mcpu=native on Solaris/SPARC, we need libkstat.
+save_LIBS="$LIBS"
+LIBS=
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing kstat_open" >&5
+$as_echo_n "checking for library containing kstat_open... " >&6; }
+if test "${ac_cv_search_kstat_open+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char kstat_open ();
+int
+main ()
+{
+return kstat_open ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' kstat; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_kstat_open=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if test "${ac_cv_search_kstat_open+set}" = set; then :
+  break
+fi
+done
+if test "${ac_cv_search_kstat_open+set}" = set; then :
+
+else
+  ac_cv_search_kstat_open=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_kstat_open" >&5
+$as_echo "$ac_cv_search_kstat_open" >&6; }
+ac_res=$ac_cv_search_kstat_open
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
+EXTRA_GCC_LIBS="$LIBS"
 LIBS="$save_LIBS"
 
 
@@ -17763,7 +17827,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17766 "configure"
+#line 17830 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17869,7 +17933,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17872 "configure"
+#line 17936 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

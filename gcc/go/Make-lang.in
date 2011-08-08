@@ -39,7 +39,8 @@ gospec.o: $(srcdir)/go/gospec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
 GCCGO_OBJS = $(GCC_OBJS) gospec.o
 gccgo$(exeext): $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	  $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
+	  $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
 
 # Use strict warnings.
 go-warn = $(STRICT_WARN)

@@ -911,6 +911,8 @@ sparc_option_override (void)
     case PROCESSOR_NIAGARA2:
       sparc_costs = &niagara2_costs;
       break;
+    case PROCESSOR_NATIVE:
+      gcc_unreachable ();
     };
 
 #ifdef TARGET_DEFAULT_LONG_DOUBLE_128

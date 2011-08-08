@@ -714,6 +714,9 @@ EXTRA_OBJS = @extra_objs@
 # the gcc driver.
 EXTRA_GCC_OBJS =@extra_gcc_objs@
 
+# List of extra libraries that should be linked with the gcc driver.
+EXTRA_GCC_LIBS = @EXTRA_GCC_LIBS@
+
 # List of additional header files to install.
 EXTRA_HEADERS =@extra_headers_list@
 
@@ -1808,7 +1811,8 @@ libcommon.a: $(OBJS-libcommon)
 xgcc$(exeext): $(GCC_OBJS) gccspec.o libcommon-target.a $(LIBDEPS) \
 	$(EXTRA_GCC_OBJS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
-	  gccspec.o $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
+	  gccspec.o $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
 
 # cpp is to cpp0 as gcc is to cc1.
 # The only difference from xgcc is that it's linked with cppspec.o
@@ -1816,7 +1820,8 @@ xgcc$(exeext): $(GCC_OBJS) gccspec.o libcommon-target.a $(LIBDEPS) \
 cpp$(exeext): $(GCC_OBJS) cppspec.o libcommon-target.a $(LIBDEPS) \
 	$(EXTRA_GCC_OBJS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
-	  cppspec.o $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
+	  cppspec.o $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 $(SPECS): xgcc$(exeext)

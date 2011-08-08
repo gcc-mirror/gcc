@@ -1,3 +1,7 @@
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Make-lang.in (gfortran$(exeext)): Add $(EXTRA_GCC_LIBS).
+
 2011-08-07  Janus Weil  <janus@gcc.gnu.org>
 	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 
