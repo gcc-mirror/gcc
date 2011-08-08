@@ -1,3 +1,8 @@
+2011-08-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/49781
+	* gcc.target/i386/pr49781-1.c: New.
+
 2011-08-08  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/range-for20.C: Adjust to test 50020 as well.
