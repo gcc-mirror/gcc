@@ -1,3 +1,8 @@
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (THREADS): Remove posix95.
+	* configure: Regenerate.
+
 2011-08-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (GCC_UNWIND_INCLUDE): Rename to

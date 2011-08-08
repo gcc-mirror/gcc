@@ -135,7 +135,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    Currently supported threads packages are
      TPF threads with -D__tpf__
      POSIX/Unix98 threads with -D_PTHREADS
-     POSIX/Unix95 threads with -D_PTHREADS95
      DCE threads with -D_DCE_THREADS
 
 */
@@ -145,8 +144,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "gthr-tpf.h"
 #elif _PTHREADS
 #include "gthr-posix.h"
-#elif _PTHREADS95
-#include "gthr-posix95.h"
 #elif _DCE_THREADS
 #include "gthr-dce.h"
 

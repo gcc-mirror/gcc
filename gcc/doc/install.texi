@@ -1145,8 +1145,6 @@ MIPS SDE thread support.
 This is an alias for @samp{single}.
 @item posix
 Generic POSIX/Unix98 thread support.
-@item posix95
-Generic POSIX/Unix95 thread support.
 @item rtems
 RTEMS thread support.
 @item single
