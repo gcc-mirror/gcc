@@ -1,3 +1,10 @@
+2011-08-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/49990
+	* ira-costs.c (print_allocno_costs, print_pseudo_costs): Don't
+	ignore classes which can not change mode.
+	(find_costs_and_classes): Ditto.
+
 2011-08-08  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/49990
