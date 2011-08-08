@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "lto-streamer.h"
+#include "data-streamer.h"
+#include "tree-streamer.h"
 
 
 /* Intermediate information about a parameter that is only useful during the

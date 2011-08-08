@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto.h"
 #include "lto-tree.h"
 #include "lto-streamer.h"
+#include "tree-streamer.h"
 #include "splay-tree.h"
 #include "params.h"
 #include "ipa-inline.h"

@@ -995,7 +995,12 @@ DBGCNT_H = dbgcnt.h dbgcnt.def
 EBITMAP_H = ebitmap.h sbitmap.h
 LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) vecprim.h $(TREE_H) $(GIMPLE_H) \
-		$(GCOV_IO_H)
+		$(GCOV_IO_H) $(DIAGNOSTIC_H)
+DATA_STREAMER_H = data-streamer.h $(VEC_H) $(LTO_STREAMER_H)
+GIMPLE_STREAMER_H = gimple-streamer.h $(LTO_STREAMER_H) $(BASIC_BLOCK_H) \
+		    $(FUNCTION_H)
+TREE_STREAMER_H = tree-streamer.h $(TREE_H) $(LTO_STREAMER_H)
+STREAMER_HOOKS_H = streamer-hooks.h $(TREE_H)
 TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H)
 IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H) alloc-pool.h
 GSTAB_H = gstab.h stab.def
@@ -1239,6 +1244,9 @@ OBJS = \
 	cprop.o \
 	cse.o \
 	cselib.o \
+	data-streamer.o \
+	data-streamer-in.o \
+	data-streamer-out.o \
 	dbxout.o \
 	dbgcnt.o \
 	dce.o \
@@ -1275,6 +1283,8 @@ OBJS = \
 	gimple-fold.o \
 	gimple-low.o \
 	gimple-pretty-print.o \
+	gimple-streamer-in.o \
+	gimple-streamer-out.o \
 	gimplify.o \
 	godump.o \
 	graph.o \
@@ -1330,13 +1340,13 @@ OBJS = \
 	loop-unswitch.o \
 	lower-subreg.o \
 	lto-cgraph.o \
+	lto-streamer.o \
 	lto-streamer-in.o \
 	lto-streamer-out.o \
 	lto-section-in.o \
 	lto-section-out.o \
 	lto-symtab.o \
 	lto-opts.o \
-	lto-streamer.o \
 	lto-compress.o \
 	matrix-reorg.o \
 	mcf.o \
@@ -1391,6 +1401,7 @@ OBJS = \
 	stmt.o \
 	stor-layout.o \
 	store-motion.o \
+	streamer-hooks.o \
 	stringpool.o \
 	target-globals.o \
 	targhooks.o \
@@ -1467,6 +1478,9 @@ OBJS = \
 	tree-ssa.o \
 	tree-ssanames.o \
 	tree-stdarg.o \
+	tree-streamer.o \
+	tree-streamer-in.o \
+	tree-streamer-out.o \
 	tree-tailcall.o \
 	tree-vect-generic.o \
 	tree-vect-patterns.o \
@@ -2281,22 +2295,47 @@ lto-compress.o: lto-compress.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TREE_H) langhooks.h $(LTO_STREAMER_H) $(LTO_SECTION_H) \
 	lto-compress.h $(DIAGNOSTIC_CORE_H) $(DIAGNOSTIC_CORE_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(ZLIBINC) $< $(OUTPUT_OPTION)
-
+data-streamer-in.o: data-streamer-in.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+    $(DATA_STREAMER_H) $(DIAGNOSTIC_H)
+data-streamer-out.o: data-streamer-out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+    $(DATA_STREAMER_H)
+data-streamer.o: data-streamer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+    $(DATA_STREAMER_H)
+gimple-streamer-in.o: gimple-streamer-in.c $(CONFIG_H) $(SYSTEM_H) \
+    coretypes.h $(GIMPLE_STREAMER_H) $(TREE_FLOW_H) $(DATA_STREAMER_H) \
+    $(TREE_STREAMER_H) $(DIAGNOSTIC_H)
+gimple-streamer-out.o: gimple-streamer-out.c $(CONFIG_H) $(SYSTEM_H) \
+    coretypes.h $(GIMPLE_STREAMER_H) $(DATA_STREAMER_H) $(TREE_FLOW_H) \
+    $(LTO_STREAMER_H)
+tree-streamer.o: tree-streamer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+    $(TREE_STREAMER_H) $(STREAMER_HOOKS_H)
+tree-streamer-in.o: tree-streamer-in.c $(CONFIG_H) $(SYSTEM_H) \
+    coretypes.h $(DIAGNOSTIC_H) $(TREE_H) $(TREE_FLOW_H) $(TREE_STREAMER_H) \
+    $(DATA_STREAMER_H) $(STREAMER_HOOKS_H) $(LTO_STREAMER_H)
+tree-streamer-out.o: tree-streamer-out.c $(CONFIG_H) $(SYSTEM_H) \
+    coretypes.h $(DIAGNOSTIC_H) $(TREE_STREAMER_H) $(DATA_STREAMER_H) \
+    $(STREAMER_HOOKS_H)
+streamer-hooks.o: streamer-hooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+    $(STREAMER_HOOKS_H)
 lto-cgraph.o: lto-cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
    $(TM_H) $(DIAGNOSTIC_CORE_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) input.h \
    $(HASHTAB_H) langhooks.h $(BASIC_BLOCK_H) \
    $(TREE_FLOW_H) $(CGRAPH_H) $(FUNCTION_H) $(GGC_H) $(DIAGNOSTIC_CORE_H) \
-   $(EXCEPT_H) $(TIMEVAR_H) output.h pointer-set.h $(LTO_STREAMER_H) $(GCOV_IO_H)
+   $(EXCEPT_H) $(TIMEVAR_H) output.h pointer-set.h $(LTO_STREAMER_H) \
+   $(GCOV_IO_H) $(DATA_STREAMER_H) $(TREE_STREAMER_H)
 lto-streamer-in.o: lto-streamer-in.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) toplev.h $(DIAGNOSTIC_CORE_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) input.h \
    $(HASHTAB_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(TREE_PASS_H) $(CGRAPH_H) \
    $(FUNCTION_H) $(GGC_H) $(DIAGNOSTIC_H) $(LIBFUNCS_H) $(EXCEPT_H) debug.h \
-   $(TIMEVAR_H) output.h $(IPA_UTILS_H) $(LTO_STREAMER_H) toplev.h
+   $(TIMEVAR_H) output.h $(IPA_UTILS_H) $(LTO_STREAMER_H) toplev.h \
+   $(DATA_STREAMER_H) $(GIMPLE_STREAMER_H) $(TREE_STREAMER_H)
 lto-streamer-out.o : lto-streamer-out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(DIAGNOSTIC_CORE_H) $(TREE_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) input.h \
    $(HASHTAB_H) $(BASIC_BLOCK_H) tree-iterator.h \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(CGRAPH_H) $(FUNCTION_H) $(GGC_H) \
-   $(DIAGNOSTIC_CORE_H) $(EXCEPT_H) $(LTO_STREAMER_H) $(DIAGNOSTIC_CORE_H)
+   $(DIAGNOSTIC_CORE_H) $(EXCEPT_H) $(LTO_STREAMER_H) $(DIAGNOSTIC_CORE_H) \
+   $(DATA_STREAMER_H) $(STREAMER_HOOKS_H) $(GIMPLE_STREAMER_H) \
+   $(TREE_STREAMER_H)
 lto-section-in.o: lto-section-in.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(DIAGNOSTIC_CORE_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) input.h \
    $(HASHTAB_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(CGRAPH_H) $(FUNCTION_H) \
@@ -2315,7 +2354,8 @@ lto-opts.o: lto-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
    $(COMMON_TARGET_H) $(DIAGNOSTIC_H) $(LTO_STREAMER_H)
 lto-streamer.o: lto-streamer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
    $(TM_H) $(TREE_H) $(GIMPLE_H) $(BITMAP_H) $(LTO_STREAMER_H) $(FLAGS_H) \
-   $(TREE_FLOW_H) $(DIAGNOSTIC_CORE_H) $(LTO_SYMTAB_H) toplev.h $(DIAGNOSTIC_CORE_H)
+   $(TREE_FLOW_H) $(DIAGNOSTIC_CORE_H) $(LTO_SYMTAB_H) toplev.h \
+   $(DIAGNOSTIC_CORE_H) $(STREAMER_HOOKS_H)
 langhooks.o : langhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) toplev.h $(DIAGNOSTIC_CORE_H) $(TREE_INLINE_H) $(RTL_H) insn-config.h $(INTEGRATE_H) \
    langhooks.h $(TARGET_H) $(LANGHOOKS_DEF_H) $(FLAGS_H) $(GGC_H) $(DIAGNOSTIC_H) \
@@ -2995,7 +3035,8 @@ ipa-prop.o : ipa-prop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TM_H) $(TREE_PASS_H) $(FLAGS_H) $(TREE_H) \
    $(TREE_INLINE_H) $(GIMPLE_H) $(TIMEVAR_H) \
-   tree-pretty-print.h gimple-pretty-print.h $(LTO_STREAMER_H)
+   tree-pretty-print.h gimple-pretty-print.h $(LTO_STREAMER_H) \
+   $(DATA_STREAMER_H) $(TREE_STREAMER_H)
 ipa-ref.o : ipa-ref.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H)  $(TREE_H) $(TARGET_H) \
    $(TREE_FLOW_H) $(TM_H) $(TREE_PASS_H) $(FLAGS_H) $(TREE_H) $(GGC_H) 
@@ -3023,7 +3064,8 @@ ipa-inline-analysis.o : ipa-inline-analysis.c $(CONFIG_H) $(SYSTEM_H) coretypes.
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
    $(DIAGNOSTIC_H) $(PARAMS_H) $(TIMEVAR_H) $(TREE_PASS_H) \
    $(HASHTAB_H) $(COVERAGE_H) $(GGC_H) $(TREE_FLOW_H) $(IPA_PROP_H) \
-   gimple-pretty-print.h ipa-inline.h $(LTO_STREAMER_H)
+   gimple-pretty-print.h ipa-inline.h $(LTO_STREAMER_H) $(DATA_STREAMER_H) \
+   $(TREE_STREAMER_H)
 ipa-inline-transform.o : ipa-inline-transform.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
    $(DIAGNOSTIC_H) $(PARAMS_H) $(TIMEVAR_H) $(TREE_PASS_H) \
@@ -3043,7 +3085,7 @@ ipa-pure-const.o : ipa-pure-const.c $(CONFIG_H) $(SYSTEM_H) \
    pointer-set.h $(GGC_H) $(IPA_UTILS_H) $(TARGET_H) \
    $(GIMPLE_H) $(CGRAPH_H) output.h $(FLAGS_H) $(TREE_PASS_H) $(TIMEVAR_H) \
    $(DIAGNOSTIC_H) $(CFGLOOP_H) $(SCEV_H) $(LTO_STREAMER_H) \
-   gimple-pretty-print.h
+   gimple-pretty-print.h $(DATA_STREAMER_H) $(TREE_STREAMER_H)
 coverage.o : coverage.c $(GCOV_IO_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) $(TREE_H) $(FLAGS_H) output.h $(REGS_H) $(EXPR_H) \
    $(FUNCTION_H) $(BASIC_BLOCK_H) toplev.h $(DIAGNOSTIC_CORE_H) $(GGC_H) langhooks.h $(COVERAGE_H) \

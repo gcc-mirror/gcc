@@ -1,3 +1,222 @@
+2011-08-08   Diego Novillo  <dnovillo@google.com>
+
+	* Makefile.in (LTO_STREAMER_H): Add DIAGNOSTIC_H.
+	(DATA_STREAMER_H): New.
+	(GIMPLE_STREAMER_H): New.
+	(TREE_STREAMER_H): New.
+	(STREAMER_HOOKS_H): New.
+	(OBJS): Add data-streamer.o, data-streamer-in.o, data-streamer-out.o,
+	gimple-streamer-in.o, gimple-streamer-out.o, streamer-hooks.o,
+	tree-streamer.o, tree-streamer-in.o and tree-streamer-out.o.
+	(data-streamer.o): New.
+	(data-streamer-in.o): New.
+	(data-streamer-out.o): New.
+	(gimple-streamer-in.o): New.
+	(gimple-streamer-out.o): New.
+	(streamer-hooks.o): New.
+	(tree-streamer.o): New.
+	(tree-streamer-in.o): New.
+	(tree-streamer-out.o): New.
+	(lto-cgraph.o): Add dependency on DATA_STREAMER_H and
+	TREE_STREAMER_H.
+	(lto-streamer-in.o): Add dependency on DATA_STREAMER_H,
+	GIMPLE_STREAMER_H and TREE_STREAMER_H.
+	(lto-streamer-out.o): Add dependency on DATA_STREAMER_H,
+	GIMPLE_STREAMER_H and TREE_STREAMER_H.
+	(lto-streamer.o): Add dependency on STREAMER_HOOKS_H.
+	(ipa-prop.o): Add dependency on DATA_STREAMER_H and
+	TREE_STREAMER_H.
+	(ipa-inline-analysis.o): Likewise.
+	(ipa-pure-const.o): Likewise.
+	* data-streamer-in.c: New.
+	* data-streamer-out.c: New.
+	* data-streamer.c: New.
+	* data-streamer.h: New.
+	* gimple-streamer-in.c: New.
+	* gimple-streamer-out.c: New.
+	* gimple-streamer.h: New.
+	* ipa-inline-analysis.c: Include data-streamer.h.
+	* ipa-prop.c: Include data-streamer.h.
+	* ipa-pure-const.c: Include data-streamer.h.
+	* lto-cgraph.c: Include data-streamer.h.
+	* lto-section-in.c (lto_input_uleb128): Move to data-streamer-in.c.
+	(lto_input_widest_uint_uleb128): Likewise.
+	(lto_input_sleb128): Likewise.
+	(bp_unpack_var_len_unsigned): Likewise.
+	(bp_unpack_var_len_int): Likewise.
+	* lto-section-out.c (lto_output_uleb128_stream): Move to
+	data-streamer-out.c.
+	(lto_output_widest_uint_uleb128_stream): Likewise.
+	(lto_output_sleb128_stream): Likewise.
+	(bp_pack_var_len_unsigned): Likewise.
+	(bp_pack_var_len_int): Likewise.
+	* lto-streamer-in.c: Include data-streamer.h and
+	gimple-streamer.h.
+	(struct string_slot): Remove.  Update all users.
+	(lto_tag_check_set): Make extern.
+	(lto_tag_check_range): Move to lto-streamer.h.
+	(lto_tag_check): Likewise.
+	(hash_string_slot_node): Remove.  Update all users.
+	(eq_string_slot_node): Remove.  Update all users.
+	(string_for_index): Move to data-streamer-in.c
+	(input_string_internal): Likewise.
+	(input_string_cst): Move to tree-streamer-in.c.
+	(input_identifier): Likewise.
+	(lto_input_string): Move to data-streamer-in.c
+	(input_record_start): Move to data-streamer.h
+	(canon_file_name): Use new definition of struct string_slot
+	from data-streamer.h.
+	Set S_SLOT.LEN.
+	(lto_input_location): Make extern.
+	(lto_input_chain): Move to tree-streamer-in.c.
+	(lto_init_eh): Make extern.
+	(input_phi): Move to gimple-streamer-in.c.
+	(input_gimple_stmt): Likewise.
+	(input_bb): Likewise.
+	(unpack_ts_base_value_fields): Move to tree-streamer-in.c.
+	(unpack_ts_real_cst_value_fields): Likewise.
+	(unpack_ts_fixed_cst_value_fields): Likewise.
+	(unpack_ts_decl_common_value_fields): Likewise.
+	(unpack_ts_decl_wrtl_value_fields): Likewise.
+	(unpack_ts_decl_with_vis_value_fields): Likewise.
+	(unpack_ts_function_decl_value_fields): Likewise.
+	(unpack_ts_type_common_value_fields): Likewise.
+	(unpack_ts_block_value_fields): Likewise.
+	(unpack_ts_translation_unit_decl_value_fields): Likewise.
+	(unpack_value_fields): Likewise.
+	(lto_materialize_tree): Likewise.
+	(lto_input_ts_common_tree_pointers): Likewise.
+	(lto_input_ts_vector_tree_pointers): Likewise.
+	(lto_input_ts_complex_tree_pointers): Likewise.
+	(lto_input_ts_decl_minimal_tree_pointers): Likewise.
+	(lto_input_ts_decl_common_tree_pointers): Likewise.
+	(lto_input_ts_decl_non_common_tree_pointers): Likewise.
+	(lto_input_ts_decl_with_vis_tree_pointers): Likewise.
+	(lto_input_ts_field_decl_tree_pointers): Likewise.
+	(lto_input_ts_function_decl_tree_pointers): Likewise.
+	(lto_input_ts_type_common_tree_pointers): Likewise.
+	(lto_input_ts_type_non_common_tree_pointers): Likewise.
+	(lto_input_ts_list_tree_pointers): Likewise.
+	(lto_input_ts_vec_tree_pointers): Likewise.
+	(lto_input_ts_exp_tree_pointers): Likewise.
+	(lto_input_ts_block_tree_pointers): Likewise.
+	(lto_input_ts_binfo_tree_pointers): Likewise.
+	(lto_input_ts_constructor_tree_pointers): Likewise.
+	(lto_input_ts_target_option): Likewise.
+	(lto_input_ts_translation_unit_decl_tree_pointers): Likewise.
+	(lto_input_tree_pointers): Likewise.
+	(lto_get_pickled_tree): Likewise.
+	(lto_get_builtin_tree): Likewise.
+	(lto_read_tree): Likewise.
+	(lto_input_integer_cst): Likewise.
+	(lto_input_tree): Likewise.
+	* lto-streamer-out.c: Include data-streamer.h,
+	gimple-streamer.h and streamer-hooks.h.
+	(struct string_slot): Move to data-streamer.h.
+	(hash_string_slot_node): Likewise.
+	(eq_string_slot_node): Likewise.
+	(lto_string_index): Move to data-streamer-out.c.
+	(lto_output_string_with_length): Likewise.
+	(lto_output_string): Likewise.
+	(output_string_cst): Move to tree-streamer-out.c.
+	(output_identifier): Likewise.
+	(output_zero): Move to data-streamer-out.c
+	(output_uleb128): Likewise.
+	(output_sleb128): Likewise.
+	(output_record_start): Move to data-streamer.h
+	(pack_ts_base_value_fields): Move to tree-streamer-out.c.
+	(pack_ts_real_cst_value_fields): Likewise.
+	(pack_ts_fixed_cst_value_fields): Likewise.
+	(pack_ts_decl_common_value_fields): Likewise.
+	(pack_ts_decl_wrtl_value_fields): Likewise.
+	(pack_ts_decl_with_vis_value_fields): Likewise.
+	(pack_ts_function_decl_value_fields): Likewise.
+	(pack_ts_type_common_value_fields): Likewise.
+	(pack_ts_block_value_fields): Likewise.
+	(pack_ts_translation_unit_decl_value_fields): Likewise.
+	(pack_value_fields): Likewise.
+	(lto_output_chain): Likewise.
+	(lto_output_ts_common_tree_pointers): Likewise.
+	(lto_output_ts_vector_tree_pointers): Likewise.
+	(lto_output_ts_complex_tree_pointers): Likewise.
+	(lto_output_ts_decl_minimal_tree_pointers): Likewise.
+	(lto_output_ts_decl_common_tree_pointers): Likewise.
+	(lto_output_ts_decl_non_common_tree_pointers): Likewise.
+	(lto_output_ts_decl_with_vis_tree_pointers): Likewise.
+	(lto_output_ts_field_decl_tree_pointers): Likewise.
+	(lto_output_ts_function_decl_tree_pointers): Likewise.
+	(lto_output_ts_type_common_tree_pointers): Likewise.
+	(lto_output_ts_type_non_common_tree_pointers): Likewise.
+	(lto_output_ts_list_tree_pointers): Likewise.
+	(lto_output_ts_vec_tree_pointers): Likewise.
+	(lto_output_ts_exp_tree_pointers): Likewise.
+	(lto_output_ts_block_tree_pointers): Likewise.
+	(lto_output_ts_binfo_tree_pointers): Likewise.
+	(lto_output_ts_constructor_tree_pointers): Likewise.
+	(lto_output_ts_target_option): Likewise.
+	(lto_output_ts_translation_unit_decl_tree_pointers): Likewise.
+	(lto_output_tree_pointers): Likewise.
+	(lto_output_tree_header): Likewise.
+	(lto_output_builtin_tree): Likewise.
+	(lto_write_tree): Likewise.
+	(lto_output_integer_cst): Likewise.
+	(lto_output_tree): Likewise.
+	(output_phi): Move to gimple-streamer-out.c.
+	(output_gimple_stmt): Likewise.
+	(output_bb): Likewise.
+	* lto-streamer.c: Include tree-streamer.h and streamer-hooks.h.
+	(streamer_hooks): Move to streamer-hooks.c.
+	(check_handled_ts_structures): Move to tree-streamer.c
+	(lto_streamer_cache_add_to_node_array): Likewise.
+	(lto_streamer_cache_insert_1): Likewise.
+	(lto_streamer_cache_insert): Likewise.
+	(lto_streamer_cache_insert_at): Likewise.
+	(lto_streamer_cache_append): Likewise.
+	(lto_streamer_cache_lookup): Likewise.
+	(lto_streamer_cache_get): Likewise.
+	(lto_record_common_node): Likewise.
+	(lto_preload_common_nodes): Likewise.
+	(lto_streamer_cache_create): Likewise.
+	(lto_streamer_cache_delete): Likewise.
+	(streamer_hooks_init): Move to streamer-hooks.c.
+	* lto-streamer.h: Include diagnostic.h
+	(struct output_block, struct lto_input_block,
+	struct data_in, struct bitpack_d): Remove forward
+	declarations.
+	(struct bitpack_d): Move to data-streamer.h.
+	(struct lto_streamer_cache_d): Move to tree-streamer.h.
+	(struct streamer_hooks): Move to streamer-hooks.h.
+	(bp_pack_var_len_unsigned): Move to data-streamer.h.
+	(bp_pack_var_len_int): Likewise.
+	(bp_unpack_var_len_unsigned): Likewise.
+	(bp_unpack_var_len_int): Likewise.
+	(lto_input_location): Declare.
+	(lto_tag_check_set): Declare.
+	(lto_init_eh): Declare.
+	(lto_output_tree_ref): Declare.
+	(lto_output_location): Declare.
+	(bitpack_create): Move to data-streamer.h.
+	(bp_pack_value): Likewise.
+	(lto_output_bitpack): Likewise.
+	(lto_input_bitpack): Likewise.
+	(bp_unpack_value): Likewise.
+	(lto_output_1_stream): Likewise.
+	(lto_input_1_unsigned): Likewise.
+	(lto_output_int_in_range): Likewise.
+	(lto_input_int_in_range): Likewise.
+	(bp_pack_int_in_range): Likewise.
+	(bp_unpack_int_in_range): Likewise.
+	(lto_output_enum): Likewise.
+	(lto_input_enum): Likewise.
+	(bp_pack_enum): Likewise.
+	(bp_unpack_enum): Likewise.
+	* streamer-hooks.c: New.
+	* streamer-hooks.h: New.
+	* tree-streamer-in.c: New.
+	* tree-streamer-out.c: New.
+	* tree-streamer.c: New.
+	* tree-streamer.h: New.
+
 2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gthr-posix95.h: Remove.

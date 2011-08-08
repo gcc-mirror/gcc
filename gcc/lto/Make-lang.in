@@ -86,7 +86,7 @@ lto/lto.o: lto/lto.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
 	langhooks.h $(VEC_H) $(BITMAP_H) pointer-set.h $(IPA_PROP_H) \
 	$(COMMON_H) debug.h $(TIMEVAR_H) $(GIMPLE_H) $(LTO_H) $(LTO_TREE_H) \
 	$(LTO_TAGS_H) $(LTO_STREAMER_H) $(SPLAY_TREE_H) gt-lto-lto.h $(PARAMS_H) \
-	ipa-inline.h $(IPA_UTILS_H)
+	ipa-inline.h $(IPA_UTILS_H) $(TREE_STREAMER_H)
 lto/lto-object.o: lto/lto-object.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(DIAGNOSTIC_CORE_H) $(LTO_H) $(TM_H) $(LTO_STREAMER_H) \
 	../include/simple-object.h

@@ -84,6 +84,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "ipa-prop.h"
 #include "lto-streamer.h"
+#include "data-streamer.h"
+#include "tree-streamer.h"
 #include "ipa-inline.h"
 #include "alloc-pool.h"
 
