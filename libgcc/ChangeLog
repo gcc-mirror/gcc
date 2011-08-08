@@ -1,3 +1,8 @@
+2011-08-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/48007
+	* config/i386/value-unwind.h: New.
+
 2011-08-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config.host (*-*-darwin*, *-*-freebsd*, *-*-linux*, frv-*-*linux*)

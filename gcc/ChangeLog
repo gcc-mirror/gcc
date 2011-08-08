@@ -1,3 +1,33 @@
+2011-08-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/48007
+	* config.gcc (libgcc_tm_file): Add i386/value-unwind.h for
+	Linux/x86.
+
+	* system.h (REG_VALUE_IN_UNWIND_CONTEXT): Poisoned.
+	(ASSUME_EXTENDED_UNWIND_CONTEXT): Likewise.
+
+	* unwind-dw2.c (ASSUME_EXTENDED_UNWIND_CONTEXT): New.
+	(_Unwind_Context_Reg_Val): Likewise.
+	(_Unwind_Get_Unwind_Word): Likewise.
+	(_Unwind_Get_Unwind_Context_Reg_Val): Likewise.
+	(_Unwind_Context): Use _Unwind_Context_Reg_Val on the reg field.
+	(_Unwind_IsExtendedContext): Check ASSUME_EXTENDED_UNWIND_CONTEXT
+	for EXTENDED_CONTEXT_BIT.
+	(__frame_state_for): Likewise.
+	(uw_init_context_1): Likewise.
+	(_Unwind_GetGR): Updated.
+	(_Unwind_SetGR): Likewise.
+	(_Unwind_GetGRPtr): Likewise.
+	(_Unwind_SetGRPtr): Likewise.
+	(_Unwind_SetGRValue): Likewise.
+	(_Unwind_GRByValue): Likewise.
+	(uw_install_context_1): Likewise.
+
+	* doc/tm.texi.in: Document REG_VALUE_IN_UNWIND_CONTEXT and
+	ASSUME_EXTENDED_UNWIND_CONTEXT.
+	* doc/tm.texi: Regenerated.
+
 2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (gengtype$(exeext)): Add $(LDFLAGS).
