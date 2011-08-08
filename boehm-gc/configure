@@ -14712,7 +14712,7 @@ case "$THREADS" in
  no | none | single)
     THREADS=none
     ;;
- posix | posix95 | pthreads)
+ posix | pthreads)
     THREADS=posix
     THREADLIBS=-lpthread
     case "$host" in

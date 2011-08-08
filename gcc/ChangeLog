@@ -1,3 +1,12 @@
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gthr-posix95.h: Remove.
+	* gthr.h [_PTHREADS95]: Remove.
+	* configure.ac (enable_threads): Remove posix95.
+	* configure: Regenerate.
+	* doc/install.texi (Configuration, --enable-threads): Remove
+	posix95.
+
 2011-08-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49781
