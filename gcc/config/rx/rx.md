@@ -1598,7 +1598,7 @@
 		   (memex_commutative:SI (match_dup 0)
 					 (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])]
-  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  "peep2_regno_dead_p (2, REGNO (operands[0])) && (optimize < 3 || optimize_size)"
   [(parallel [(set:SI (match_dup 2)
 		      (memex_commutative:SI (match_dup 2)
 					    (extend_types:SI (match_dup 1))))
@@ -1612,7 +1612,7 @@
 		   (memex_commutative:SI (match_dup 2)
 					 (match_dup 0)))
 	      (clobber (reg:CC CC_REG))])]
-  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  "peep2_regno_dead_p (2, REGNO (operands[0])) && (optimize < 3 || optimize_size)"
   [(parallel [(set:SI (match_dup 2)
 		      (memex_commutative:SI (match_dup 2)
 					    (extend_types:SI (match_dup 1))))
@@ -1626,7 +1626,7 @@
 		   (memex_noncomm:SI (match_dup 2)
 				     (match_dup 0)))
 	      (clobber (reg:CC CC_REG))])]
-  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  "peep2_regno_dead_p (2, REGNO (operands[0])) && (optimize < 3 || optimize_size)"
   [(parallel [(set:SI (match_dup 2)
 		      (memex_noncomm:SI (match_dup 2)
 					(extend_types:SI (match_dup 1))))
@@ -1639,7 +1639,7 @@
    (set (match_operand:SI                               2 "register_operand")
 	(memex_nocc:SI (match_dup 0)
 		       (match_dup 2)))]
-  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  "peep2_regno_dead_p (2, REGNO (operands[0])) && (optimize < 3 || optimize_size)"
   [(set:SI (match_dup 2)
 	   (memex_nocc:SI (match_dup 2)
 			  (extend_types:SI (match_dup 1))))]
@@ -1651,7 +1651,7 @@
    (set (match_operand:SI                               2 "register_operand")
 	(memex_nocc:SI (match_dup 2)
 		       (match_dup 0)))]
-  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  "peep2_regno_dead_p (2, REGNO (operands[0])) && (optimize < 3 || optimize_size)"
   [(set:SI (match_dup 2)
 	   (memex_nocc:SI (match_dup 2)
 			  (extend_types:SI (match_dup 1))))]
@@ -1662,7 +1662,7 @@
 	(memex_commutative:SI (match_operand:SI                               1 "register_operand" "%0")
  		              (extend_types:SI (match_operand:small_int_modes 2 "rx_restricted_mem_operand" "Q"))))
    (clobber (reg:CC CC_REG))]
-  ""
+  "(optimize < 3 || optimize_size)"
   "<memex_commutative:op>\t%<extend_types:letter>2, %0"
   [(set_attr "timings" "33")
    (set_attr "length"  "5")] ;; Worst case sceanario.  FIXME: If we defined separate patterns 
@@ -1673,7 +1673,7 @@
 	(memex_noncomm:SI (match_operand:SI                               1 "register_operand" "0")
                           (extend_types:SI (match_operand:small_int_modes 2 "rx_restricted_mem_operand" "Q"))))
    (clobber (reg:CC CC_REG))]
-  ""
+  "(optimize < 3 || optimize_size)"
   "<memex_noncomm:op>\t%<extend_types:letter>2, %0"
   [(set_attr "timings" "33")
    (set_attr "length"  "5")] ;; Worst case sceanario.  FIXME: If we defined separate patterns 
@@ -1683,7 +1683,7 @@
   [(set (match_operand:SI                                              0 "register_operand" "=r")
 	(memex_nocc:SI (match_operand:SI                               1 "register_operand" "%0")
 		       (extend_types:SI (match_operand:small_int_modes 2 "rx_restricted_mem_operand" "Q"))))]
-  ""
+  "(optimize < 3 || optimize_size)"
   "<memex_nocc:op>\t%<extend_types:letter>2, %0"
   [(set_attr "timings" "33")
    (set_attr "length"  "5")] ;; Worst case sceanario.  FIXME: If we defined separate patterns 
@@ -1695,7 +1695,7 @@
    (set (reg:CC CC_REG)
 	(compare:CC (match_operand:SI                   2 "register_operand")
 		    (match_dup 0)))]
-  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  "peep2_regno_dead_p (2, REGNO (operands[0])) && (optimize < 3 || optimize_size)"
   [(set (reg:CC CC_REG)
 	(compare:CC (match_dup 2)
 		    (extend_types:SI (match_dup 1))))]
@@ -1734,7 +1734,7 @@
   [(set (reg:CC CC_REG)
 	(compare:CC (match_operand:SI                               0 "register_operand" "=r")
 		    (extend_types:SI (match_operand:small_int_modes 1 "rx_restricted_mem_operand" "Q"))))]
-  ""
+  "(optimize < 3 || optimize_size)"
   "cmp\t%<extend_types:letter>1, %0"
   [(set_attr "timings" "33")
    (set_attr "length"  "5")] ;; Worst case sceanario.  FIXME: If we defined separate patterns 

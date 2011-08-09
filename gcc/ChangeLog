@@ -1,3 +1,7 @@
+2011-08-09  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md: Disable extender peepholes at -O3.
+
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/50001
