@@ -1,8 +1,16 @@
+2011-08-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_emit_i387_round): New function.
+	* config/i386/i386-protos.h (ix86_emit_i387_round): Declare.
+	* config/i386/i386.md (round<mode>2): Use X87MODEF mode iterator.
+	Use ix86_emit_i387_round to expand round function for i387 math.
+	(lround<X87MODEF:mode><SWI248x:mode>2): Use X87MODEF mode iterator.
+	Use ix86_emit_i387_round to expand {l,ll}round function for i387 math.
+
 2011-08-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sync.c: Move to ../libgcc.
-	* Makefile.in (libgcc.mvars): Remove LIBGCC_SYNC,
-	LIBGCC_SYNC_CFLAGS.
+	* Makefile.in (libgcc.mvars): Remove LIBGCC_SYNC, LIBGCC_SYNC_CFLAGS.
 	* config/mips/t-libgcc-mips16 (LIBGCC_SYNC, LIBGCC_SYNC_CFLAGS):
 	Remove.
 

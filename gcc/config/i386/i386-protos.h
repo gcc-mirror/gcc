@@ -163,6 +163,7 @@ extern void x86_emit_floatuns (rtx [2]);
 extern void ix86_emit_fp_unordered_jump (rtx);
 
 extern void ix86_emit_i387_log1p (rtx, rtx);
+extern void ix86_emit_i387_round (rtx, rtx);
 extern void ix86_emit_swdivsf (rtx, rtx, rtx, enum machine_mode);
 extern void ix86_emit_swsqrtsf (rtx, rtx, enum machine_mode, bool);
 
