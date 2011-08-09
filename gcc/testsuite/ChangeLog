@@ -1,5 +1,9 @@
 2011-08-09  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* gfortran.dg/scratch_1.f90: Skip on spu-*-*.
+
+2011-08-09  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* gcc.dg/pr49948.c: Require pthread effective target.
 
 2011-08-09  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
