@@ -119,7 +119,7 @@
    (V16QI "") (V8HI "") (V4SI "") (V2DI "")
    (V8SF "256") (V4DF "256")
    (V4SF "") (V2DF "")])
- 
+
 ;; SSE instruction mode
 (define_mode_attr sseinsnmode
   [(V32QI "OI") (V16HI "OI") (V8SI "OI") (V4DI "OI")
@@ -1717,7 +1717,7 @@
   "TARGET_FMA"
   "@
    vfmadd132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
-   vfmadd312<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   vfmadd213<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
    vfmadd231<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1732,7 +1732,7 @@
   "TARGET_FMA"
   "@
    vfmsub132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
-   vfmsub312<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   vfmsub213<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
    vfmsub231<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1747,7 +1747,7 @@
   "TARGET_FMA"
   "@
    vfnmadd132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
-   vfnmadd312<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   vfnmadd213<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
    vfnmadd231<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1763,7 +1763,7 @@
   "TARGET_FMA"
   "@
    vfnmsub132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
-   vfnmsub312<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   vfnmsub231<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
    vfnmsub231<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2646,7 +2646,7 @@
 			   ix86_build_const_vector (V2DFmode, 1, x));
 
   operands[5] = gen_reg_rtx (V4SImode);
- 
+
   for (i = 6; i < 9; i++)
     operands[i] = gen_reg_rtx (V2DFmode);
 })
@@ -2771,7 +2771,7 @@
   "TARGET_SSE"
 {
   rtx dst = ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);
-  
+
   emit_insn (gen_sse_movhlps (dst, operands[1], operands[2]));
 
   /* Fix up the destination if needed.  */
@@ -2816,7 +2816,7 @@
   "TARGET_SSE"
 {
   rtx dst = ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);
-  
+
   emit_insn (gen_sse_movlhps (dst, operands[1], operands[2]));
 
   /* Fix up the destination if needed.  */
@@ -3182,7 +3182,7 @@
   "TARGET_SSE"
 {
   rtx dst = ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);
-  
+
   emit_insn (gen_sse_loadhps (dst, operands[1], operands[2]));
 
   /* Fix up the destination if needed.  */
@@ -3235,7 +3235,7 @@
   "TARGET_SSE"
 {
   rtx dst = ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);
-  
+
   emit_insn (gen_sse_loadlps (dst, operands[1], operands[2]));
 
   /* Fix up the destination if needed.  */
@@ -4034,7 +4034,7 @@
   [(V16QI "TARGET_SSE2")
    (V8HI "TARGET_SSE2")
    (V4SI "TARGET_SSE2")
-   (V2DI "TARGET_SSE2") 
+   (V2DI "TARGET_SSE2")
    (V8SF "TARGET_AVX") V4SF
    (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
 
@@ -4236,7 +4236,7 @@
   "TARGET_SSE2"
 {
   rtx dst = ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);
-  
+
   emit_insn (gen_sse2_loadhpd (dst, operands[1], operands[2]));
 
   /* Fix up the destination if needed.  */
@@ -4292,7 +4292,7 @@
   "TARGET_SSE2"
 {
   rtx dst = ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);
-  
+
   emit_insn (gen_sse2_loadlpd (dst, operands[1], operands[2]));
 
   /* Fix up the destination if needed.  */
@@ -7260,7 +7260,7 @@
   "@
    phsubd\t{%2, %0|%0, %2}
    vphsubd\t{%2, %1, %0|%0, %1, %2}"
-  
+
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseiadd")
    (set_attr "atom_unit" "complex")
@@ -10250,7 +10250,7 @@
   rtx op1 = operands[1];
   if (REG_P (op0))
     op0 = gen_rtx_REG (<ssehalfvecmode>mode, REGNO (op0));
-  else 
+  else
     op1 = gen_rtx_REG (<MODE>mode, REGNO (op1));
   emit_move_insn (op0, op1);
   DONE;
