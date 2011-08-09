@@ -28260,7 +28260,7 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
       sri->icode = (in_p
 		    ? CODE_FOR_reload_noff_load
 		    : CODE_FOR_reload_noff_store);
-      /* Add the cost of move to a temporary.  */
+      /* Add the cost of moving address to a temporary.  */
       sri->extra_cost = 1;
 
       return NO_REGS;
@@ -31729,6 +31729,139 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
   emit_insn (gen_fyl2xxf3_i387 (op0, tmp, tmp2));
 
   emit_label (label2);
+}
+
+/* Emit code for round calculation.  */
+void ix86_emit_i387_round (rtx op0, rtx op1)
+{
+  enum machine_mode inmode = GET_MODE (op1);
+  enum machine_mode outmode = GET_MODE (op0);
+  rtx e1, e2, res, tmp, tmp1, half;
+  rtx scratch = gen_reg_rtx (HImode);
+  rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx jump_label = gen_label_rtx ();
+  rtx insn;
+  rtx (*gen_abs) (rtx, rtx);
+  rtx (*gen_neg) (rtx, rtx);
+
+  switch (inmode)
+    {
+    case SFmode:
+      gen_abs = gen_abssf2;
+      break;
+    case DFmode:
+      gen_abs = gen_absdf2;
+      break;
+    case XFmode:
+      gen_abs = gen_absxf2;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (outmode)
+    {
+    case SFmode:
+      gen_neg = gen_negsf2;
+      break;
+    case DFmode:
+      gen_neg = gen_negdf2;
+      break;
+    case XFmode:
+      gen_neg = gen_negxf2;
+      break;
+    case HImode:
+      gen_neg = gen_neghi2;
+      break;
+    case SImode:
+      gen_neg = gen_negsi2;
+      break;
+    case DImode:
+      gen_neg = gen_negdi2;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  e1 = gen_reg_rtx (inmode);
+  e2 = gen_reg_rtx (inmode);
+  res = gen_reg_rtx (outmode);
+
+  half = CONST_DOUBLE_FROM_REAL_VALUE (dconsthalf, inmode);
+  
+  /* round(a) = sgn(a) * floor(fabs(a) + 0.5) */
+
+  /* scratch = fxam(op1) */
+  emit_insn (gen_rtx_SET (VOIDmode, scratch,
+			  gen_rtx_UNSPEC (HImode, gen_rtvec (1, op1),
+					  UNSPEC_FXAM)));
+  /* e1 = fabs(op1) */
+  emit_insn (gen_abs (e1, op1));
+
+  /* e2 = e1 + 0.5 */
+  half = force_reg (inmode, half);
+  emit_insn (gen_rtx_SET (VOIDmode, e2,
+			  gen_rtx_PLUS (inmode, e1, half)));
+
+  /* res = floor(e2) */
+  if (inmode != XFmode)
+    {
+      tmp1 = gen_reg_rtx (XFmode);
+
+      emit_insn (gen_rtx_SET (VOIDmode, tmp1,
+			      gen_rtx_FLOAT_EXTEND (XFmode, e2)));
+    }
+  else
+    tmp1 = e2;
+
+  switch (outmode)
+    {
+    case SFmode:
+    case DFmode:
+      {
+	rtx tmp0 = gen_reg_rtx (XFmode);
+
+	emit_insn (gen_frndintxf2_floor (tmp0, tmp1));
+
+	emit_insn (gen_rtx_SET (VOIDmode, res,
+				gen_rtx_UNSPEC (outmode, gen_rtvec (1, tmp0),
+						UNSPEC_TRUNC_NOOP)));
+      }
+      break;
+    case XFmode:
+      emit_insn (gen_frndintxf2_floor (res, tmp1));
+      break;
+    case HImode:
+      emit_insn (gen_lfloorxfhi2 (res, tmp1));
+      break;
+    case SImode:
+      emit_insn (gen_lfloorxfsi2 (res, tmp1));
+      break;
+    case DImode:
+      emit_insn (gen_lfloorxfdi2 (res, tmp1));
+	break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* flags = signbit(a) */
+  emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x02)));
+
+  /* if (flags) then res = -res */
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			      gen_rtx_EQ (VOIDmode, flags, const0_rtx),
+			      gen_rtx_LABEL_REF (VOIDmode, jump_label),
+			      pc_rtx);
+  insn = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
+  predict_jump (REG_BR_PROB_BASE * 50 / 100);
+  JUMP_LABEL (insn) = jump_label;
+
+  emit_insn (gen_neg (res, res));
+
+  emit_label (jump_label);
+  LABEL_NUSES (jump_label) = 1;
+
+  emit_move_insn (op0, res);
 }
 
 /* Output code to perform a Newton-Rhapson approximation of a single precision
