@@ -1,3 +1,9 @@
+2011-08-09  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50014
+	* tree-vect-loop.c (vectorizable_reduction): Get def type before
+	calling vect_get_vec_def_for_stmt_copy ().
+
 2011-08-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/49990
