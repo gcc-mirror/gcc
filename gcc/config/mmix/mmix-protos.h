@@ -26,8 +26,6 @@ extern int mmix_starting_frame_offset (void);
 extern int mmix_function_arg_regno_p (int, int);
 extern void mmix_function_profiler (FILE *, int);
 extern int mmix_reversible_cc_mode (enum machine_mode);
-extern int mmix_register_move_cost
-  (enum machine_mode, enum reg_class, enum reg_class);
 extern const char *mmix_text_section_asm_op (void);
 extern const char *mmix_data_section_asm_op (void);
 extern void mmix_output_quoted_string (FILE *, const char *, int);

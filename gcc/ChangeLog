@@ -1,3 +1,11 @@
+2011-08-09  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mmix/mmix.h (REGISTER_MOVE_COST): Remove macro.
+	* config/mmix/mmix-protos.h (mmix_register_move_cost): Remove.
+	* config/mmix/mmix.c (mmix_register_move_cost): Make static.
+	Change 'from' and 'to' arguments type to reg_class_t.
+	(TARGET_REGISTER_MOVE_COST): Define.
+
 2011-08-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/50026
