@@ -1,3 +1,12 @@
+2011-08-09  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+       * config/i386/i386.c: Remove traling spaces.
+       * config/i386/sse.md: Likewise.
+       (*fma_fmadd_<mode>): Update.
+       (*fma_fmsub_<mode>): Likewise.
+       (*fma_fnmadd_<mode>): Likewise.
+       (*fma_fnmsub_<mode>): Likewise.
+
 2011-08-09  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md: Disable extender peepholes at -O3.
