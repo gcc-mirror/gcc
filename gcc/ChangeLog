@@ -1,3 +1,13 @@
+2011-08-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49781
+	* config/i386/i386.md (reload_noff_load): New.
+	(reload_noff_store): Ditto.
+	* config/i386/i386.c (ix86_secondary_reload): Use
+	CODE_FOR_reload_noff_load and CODE_FOR_reload_noff_store to handle
+	double-word moves from/to non-offsetable addresses instead of
+	generating XMM temporary.
+
 2011-08-09  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/mmix/mmix.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P): Remove.
@@ -47,15 +57,13 @@
 	(tree-streamer.o): New.
 	(tree-streamer-in.o): New.
 	(tree-streamer-out.o): New.
-	(lto-cgraph.o): Add dependency on DATA_STREAMER_H and
-	TREE_STREAMER_H.
+	(lto-cgraph.o): Add dependency on DATA_STREAMER_H and TREE_STREAMER_H.
 	(lto-streamer-in.o): Add dependency on DATA_STREAMER_H,
 	GIMPLE_STREAMER_H and TREE_STREAMER_H.
 	(lto-streamer-out.o): Add dependency on DATA_STREAMER_H,
 	GIMPLE_STREAMER_H and TREE_STREAMER_H.
 	(lto-streamer.o): Add dependency on STREAMER_HOOKS_H.
-	(ipa-prop.o): Add dependency on DATA_STREAMER_H and
-	TREE_STREAMER_H.
+	(ipa-prop.o): Add dependency on DATA_STREAMER_H and TREE_STREAMER_H.
 	(ipa-inline-analysis.o): Likewise.
 	(ipa-pure-const.o): Likewise.
 	* data-streamer-in.c: New.
@@ -80,8 +88,7 @@
 	(lto_output_sleb128_stream): Likewise.
 	(bp_pack_var_len_unsigned): Likewise.
 	(bp_pack_var_len_int): Likewise.
-	* lto-streamer-in.c: Include data-streamer.h and
-	gimple-streamer.h.
+	* lto-streamer-in.c: Include data-streamer.h and gimple-streamer.h.
 	(struct string_slot): Remove.  Update all users.
 	(lto_tag_check_set): Make extern.
 	(lto_tag_check_range): Move to lto-streamer.h.
@@ -95,8 +102,7 @@
 	(lto_input_string): Move to data-streamer-in.c
 	(input_record_start): Move to data-streamer.h
 	(canon_file_name): Use new definition of struct string_slot
-	from data-streamer.h.
-	Set S_SLOT.LEN.
+	from data-streamer.h.  Set S_SLOT.LEN.
 	(lto_input_location): Make extern.
 	(lto_input_chain): Move to tree-streamer-in.c.
 	(lto_init_eh): Make extern.
@@ -211,8 +217,7 @@
 	(streamer_hooks_init): Move to streamer-hooks.c.
 	* lto-streamer.h: Include diagnostic.h
 	(struct output_block, struct lto_input_block,
-	struct data_in, struct bitpack_d): Remove forward
-	declarations.
+	struct data_in, struct bitpack_d): Remove forward declarations.
 	(struct bitpack_d): Move to data-streamer.h.
 	(struct lto_streamer_cache_d): Move to tree-streamer.h.
 	(struct streamer_hooks): Move to streamer-hooks.h.
@@ -253,10 +258,9 @@
 	* gthr.h [_PTHREADS95]: Remove.
 	* configure.ac (enable_threads): Remove posix95.
 	* configure: Regenerate.
-	* doc/install.texi (Configuration, --enable-threads): Remove
-	posix95.
+	* doc/install.texi (Configuration, --enable-threads): Remove posix95.
 
-2011-08-07  Uros Bizjak  <ubizjak@gmail.com>
+2011-08-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49781
 	* config/i386/i386.c (ix86_decompose_address): Allow zero-extended

@@ -28247,17 +28247,24 @@ ix86_preferred_output_reload_class (rtx x, reg_class_t regclass)
 
 static reg_class_t
 ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
-		       enum machine_mode mode,
-		       secondary_reload_info *sri ATTRIBUTE_UNUSED)
+		       enum machine_mode mode, secondary_reload_info *sri)
 {
   /* Double-word spills from general registers to non-offsettable memory
-     references (zero-extended addresses) go through XMM register.  */
+     references (zero-extended addresses) require special handling.  */
   if (TARGET_64BIT
       && MEM_P (x)
       && GET_MODE_SIZE (mode) > UNITS_PER_WORD
       && rclass == GENERAL_REGS
       && !offsettable_memref_p (x))
-    return SSE_REGS;
+    {
+      sri->icode = (in_p
+		    ? CODE_FOR_reload_noff_load
+		    : CODE_FOR_reload_noff_store);
+      /* Add the cost of move to a temporary.  */
+      sri->extra_cost = 1;
+
+      return NO_REGS;
+    }
 
   /* QImode spills from non-QI registers require
      intermediate register on 32bit targets.  */
