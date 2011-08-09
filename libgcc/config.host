@@ -472,7 +472,7 @@ ia64*-*-freebsd*)
 	;;
 ia64*-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
-	tmake_file="ia64/t-ia64 t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat ia64/t-glibc ia64/t-eh-ia64 t-libunwind"
+	tmake_file="ia64/t-ia64 t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat ia64/t-eh-ia64 t-libunwind ia64/t-glibc"
 	if test x$with_system_libunwind != xyes ; then
 		tmake_file="${tmake_file} t-libunwind-elf ia64/t-glibc-libunwind"
 	fi
