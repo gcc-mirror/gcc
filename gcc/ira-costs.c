@@ -1367,7 +1367,11 @@ print_allocno_costs (FILE *f)
       for (k = 0; k < cost_classes_ptr->num; k++)
 	{
 	  rclass = cost_classes[k];
-	  if (contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (regno)])
+	  if (contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (regno)]
+#ifdef CANNOT_CHANGE_MODE_CLASS
+	      && ! invalid_mode_change_p (regno, (enum reg_class) rclass)
+#endif
+	      )
 	    {
 	      fprintf (f, " %s:%d", reg_class_names[rclass],
 		       COSTS (costs, i)->cost[k]);
@@ -1405,7 +1409,11 @@ print_pseudo_costs (FILE *f)
       for (k = 0; k < cost_classes_ptr->num; k++)
 	{
 	  rclass = cost_classes[k];
-	  if (contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (regno)])
+	  if (contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (regno)]
+#ifdef CANNOT_CHANGE_MODE_CLASS
+	      && ! invalid_mode_change_p (regno, (enum reg_class) rclass)
+#endif
+	      )
 	    fprintf (f, " %s:%d", reg_class_names[rclass],
 		     COSTS (costs, regno)->cost[k]);
 	}
@@ -1642,7 +1650,11 @@ find_costs_and_classes (FILE *dump_file)
 	      rclass = cost_classes[k];
 	      /* Ignore classes that are too small or invalid for this
 		 operand.  */
-	      if (! contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (i)])
+	      if (! contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (i)]
+#ifdef CANNOT_CHANGE_MODE_CLASS
+		  || invalid_mode_change_p (i, (enum reg_class) rclass)
+#endif
+		  )
 		continue;
 	      if (i_costs[k] < best_cost)
 		{
@@ -1713,7 +1725,11 @@ find_costs_and_classes (FILE *dump_file)
 			continue;
 		      /* Ignore classes that are too small or invalid
 			 for this operand.  */
-		      if (! contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (i)])
+		      if (! contains_reg_of_mode[rclass][PSEUDO_REGNO_MODE (i)]
+#ifdef CANNOT_CHANGE_MODE_CLASS
+			  || invalid_mode_change_p (i, (enum reg_class) rclass)
+#endif
+			  )
 			;
 		      else if (total_a_costs[k] < best_cost)
 			{
