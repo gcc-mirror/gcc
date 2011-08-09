@@ -1,3 +1,8 @@
+2011-08-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config.host (ia64*-*-linux*): Move ia64/t-glibc after
+	t-libunwind.
+
 2011-08-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/48007
