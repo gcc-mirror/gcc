@@ -1,3 +1,11 @@
+2011-08-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sync.c: Move to ../libgcc.
+	* Makefile.in (libgcc.mvars): Remove LIBGCC_SYNC,
+	LIBGCC_SYNC_CFLAGS.
+	* config/mips/t-libgcc-mips16 (LIBGCC_SYNC, LIBGCC_SYNC_CFLAGS):
+	Remove.
+
 2011-08-09  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/mmix/mmix.h (REGISTER_MOVE_COST): Remove macro.
