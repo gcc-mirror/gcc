@@ -597,17 +597,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define MAX_REGS_PER_ADDRESS 2
 
-#ifndef REG_OK_STRICT
-# define REG_OK_FOR_BASE_P(X)			\
-  (REGNO (X) <= MMIX_LAST_GENERAL_REGISTER	\
-   || REGNO (X) == MMIX_ARG_POINTER_REGNUM	\
-   || REGNO (X) >= FIRST_PSEUDO_REGISTER)
-#else
-# define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-#endif /* REG_OK_STRICT */
-
-#define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
-
 
 /* Node: Condition Code */
 
