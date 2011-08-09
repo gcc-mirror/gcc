@@ -1,3 +1,8 @@
+2011-08-09  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50014
+	* gcc.dg/vect/pr50014.c: New test.
+
 2011-08-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/49923
