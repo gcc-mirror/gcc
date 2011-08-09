@@ -1,3 +1,10 @@
+2011-08-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (zero_nonzero_bits_from_vr): Also return precise
+	information for ranges with only negative values.
+	(extract_range_from_binary_expr_1): Adjust BIT_IOR_EXPR and
+	BIT_AND_EXPR handling to handle ranges with negative values.
+
 2011-08-09  Kirill Yukhin  <kirill.yukhin@intel.com>
 
        * config/i386/i386.c: Remove traling spaces.
