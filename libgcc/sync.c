@@ -1,5 +1,5 @@
 /* Out-of-line libgcc versions of __sync_* builtins.  */
-/* Copyright (C) 2008, 2009  Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,8 +22,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-/* This file is used by targets whose makefiles define LIBGCC_SYNC
-   to "yes".  It is compiled with LIBGCC_SYNC_CFLAGS and provides
+/* This file is used by targets whose makefiles define SYNC
+   to "yes".  It is compiled with SYNC_CFLAGS and provides
    out-of-line versions of all relevant __sync_* primitives.
 
    These routines are intended for targets like MIPS that have two

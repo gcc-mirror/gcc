@@ -1911,8 +1911,6 @@ libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
 	echo SHLIB_NM_FLAGS = '$(SHLIB_NM_FLAGS)' >> tmp-libgcc.mvars
 	echo LIBGCC2_CFLAGS = '$(LIBGCC2_CFLAGS)' >> tmp-libgcc.mvars
 	echo TARGET_LIBGCC2_CFLAGS = '$(TARGET_LIBGCC2_CFLAGS)' >> tmp-libgcc.mvars
-	echo LIBGCC_SYNC = '$(LIBGCC_SYNC)' >> tmp-libgcc.mvars
-	echo LIBGCC_SYNC_CFLAGS = '$(LIBGCC_SYNC_CFLAGS)' >> tmp-libgcc.mvars
 	echo CRTSTUFF_CFLAGS = '$(CRTSTUFF_CFLAGS)' >> tmp-libgcc.mvars
 	echo CRTSTUFF_T_CFLAGS = '$(CRTSTUFF_T_CFLAGS)' >> tmp-libgcc.mvars
 	echo CRTSTUFF_T_CFLAGS_S = '$(CRTSTUFF_T_CFLAGS_S)' >> tmp-libgcc.mvars
