@@ -2,7 +2,7 @@
 
        * config/i386/i386.c: Remove traling spaces.
        * config/i386/sse.md: Likewise.
-       (*fma_fmadd_<mode>): Update.
+       (*fma_fmadd_<mode>): Fix insn alternative 1 mnemonic.
        (*fma_fmsub_<mode>): Likewise.
        (*fma_fnmadd_<mode>): Likewise.
        (*fma_fnmsub_<mode>): Likewise.
