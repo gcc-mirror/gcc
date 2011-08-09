@@ -1,3 +1,9 @@
+2011-08-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/49923
+	* tree-sra.c (access_precludes_ipa_sra_p): Also check access
+	memory alignment.
+
 2011-08-09  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md: Disable extender peepholes at -O3.

@@ -1,3 +1,8 @@
+2011-08-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/49923
+	* gcc.dg/tree-ssa/pr49923.c: New test.
+
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48993
