@@ -1,3 +1,15 @@
+2011-08-10  Gary Funck  <gary@intrepid.com>
+
+	Define UPCFLAGS so that it is available in the Makefile,
+	and assign CFLAGS as its default value.
+
+	* configure.ac (UPCFLAGS): Default to CFLAGS if not set.
+	  (UPCFLAGS): Make it an AC_SUBST() so that it can
+	  be referenced in the Makefile.
+	* Makefile.am (AM_UPCFLAGS): Make sure that it is update
+	  the same as AM_CFLAGS.
+	* configure, Makefile.in: Re-generate.
+
 2011-06-06  Nenad Vukicevic <nenad@intrepid.com>
 
 	* smp/upc_config.h: Change default scheduling policy.

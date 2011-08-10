@@ -438,7 +438,7 @@ nodist_libsubinclude_HEADERS =
 @LIBUPC_SMP_RUNTIME_TRUE@AM_CPPFLAGS = $(IN_LIB_CPPFLAGS) $(addprefix \
 @LIBUPC_SMP_RUNTIME_TRUE@	-I, $(search_path))
 @LIBUPC_SMP_RUNTIME_TRUE@AM_CFLAGS = $(WARN_CFLAGS) $(XCFLAGS)
-@LIBUPC_SMP_RUNTIME_TRUE@AM_UPCFLAGS = $(AM_CFLAGS)
+@LIBUPC_SMP_RUNTIME_TRUE@AM_UPCFLAGS = $(WARN_CFLAGS) $(XCFLAGS)
 @LIBUPC_SMP_RUNTIME_TRUE@SUBDIRS = testsuite
 @LIBUPC_SMP_RUNTIME_TRUE@search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) \
 @LIBUPC_SMP_RUNTIME_TRUE@                $(addprefix $(top_srcdir)/, smp) \

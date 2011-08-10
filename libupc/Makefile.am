@@ -32,7 +32,7 @@ IN_LIB_CPPFLAGS  = -DIN_GCC -DIN_TARGET_LIBS
 WARN_CFLAGS = -W -Wall -Wwrite-strings -Wstrict-prototypes -Werror
 AM_CPPFLAGS = $(IN_LIB_CPPFLAGS)
 AM_CFLAGS = $(WARN_CFLAGS)
-AM_UPCFLAGS = $(AM_CFLAGS)
+AM_UPCFLAGS = $(WARN_CFLAGS)
 
 
 SUBDIRS = testsuite
@@ -46,6 +46,7 @@ vpath % $(strip $(search_path))
 
 AM_CPPFLAGS += $(addprefix -I, $(search_path))
 AM_CFLAGS += $(XCFLAGS)
+AM_UPCFLAGS += $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 
 ### Explicit build rules

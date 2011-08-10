@@ -660,8 +660,8 @@ am__fastdepUPC_FALSE
 am__fastdepUPC_TRUE
 UPCDEPMODE
 ac_ct_UPC
-UPCFLAGS
 UPC
+UPCFLAGS
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
 CCDEPMODE
@@ -4303,6 +4303,15 @@ fi
 
 
 
+
+
+
+#
+# If UPCFLAGS hasn't been set explicitly then default to "$CFLAGS".
+#
+if test x"$UPCFLAGS" = "x"; then
+  UPCFLAGS="$CFLAGS"
+fi
 
 
 
@@ -11390,7 +11399,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11393 "configure"
+#line 11402 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11496,7 +11505,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11499 "configure"
+#line 11508 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

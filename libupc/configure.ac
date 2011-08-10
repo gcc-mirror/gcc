@@ -181,6 +181,15 @@ m4_rename_force([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
 AC_SUBST(CFLAGS)
 
+#
+# If UPCFLAGS hasn't been set explicitly then default to "$CFLAGS".
+#
+if test x"$UPCFLAGS" = "x"; then
+  UPCFLAGS="$CFLAGS"
+fi
+
+AC_SUBST(UPCFLAGS)
+
 # In order to override CFLAGS_FOR_TARGET, all of our special flags go
 # in XCFLAGS.  But we need them in CFLAGS during configury.  So put them
 # in both places for now and restore CFLAGS at the end of config.
