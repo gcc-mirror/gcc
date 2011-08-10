@@ -3358,6 +3358,59 @@ fix = {
 
 
 /*
+ *  g++ rejects functions declared with both C and C++ linkage.
+ */
+fix = {
+    hackname  = solaris_cxx_linkage;
+    mach      = '*-*-solaris2*';
+    files     = "iso/stdlib_iso.h";
+    select    = "(#if __cplusplus >= 199711L)\n"
+	        "(extern \"C\\+\\+\" \\{\n)"
+	        "(.*(bsearch|qsort).*)";
+    c_fix     = format;
+    c_fix_arg = "%1 && !__GNUG__\n%2%3";
+
+    test_text =
+    "#if __cplusplus >= 199711L\n"
+    "extern \"C++\" {\n"
+    "	void *bsearch(const void *, const void *, size_t, size_t,";
+};
+
+
+/*
+ *  Solaris <iso/stdio_iso.h> doesn't declare getc for C++ with
+ *  _STRICT_STDC, but uses it.
+ */
+fix = {
+    hackname  = solaris_getc_strict_stdc;
+    mach      = "*-*-solaris2*";
+    files     = "iso/stdio_iso.h";
+    select    = "(.*&& )!defined\\(_STRICT_STDC\\)(.*)";
+    c_fix     = format;
+    c_fix_arg = "%1(!defined(_STRICT_STDC) || (__cplusplus >= 199711L))%2";
+
+    test_text =
+    "#if	!defined(_REENTRANT) && !defined(_LP64) && !defined(_STRICT_STDC)";
+};
+
+
+/*
+ *  Before Solaris 10, <iso/setjmp_iso.h> doesn't mark longjump noreturn.
+ */
+fix = {
+    hackname  = solaris_longjmp_noreturn;
+    mach      = "*-*-solaris2*";
+    files     = "iso/setjmp_iso.h";
+    bypass    = "__NORETURN";
+    select    = "(.*longjmp\\(jmp_buf.*[^)]+\\));";
+    c_fix     = format;
+    c_fix_arg = "%1 __attribute__ ((__noreturn__));";
+
+    test_text = "extern void longjmp(jmp_buf, int);";
+};
+
+
+/*
  * Sun Solaris 10 defines several C99 math macros in terms of
  * builtins specific to the Studio compiler, in particular not
  * compatible with the GNU compiler.
@@ -3526,6 +3579,24 @@ fix = {
     "	{{0, 0, 0, DEFAULT_TYPE, _MUTEX_MAGIC}, {{{0}}}, 0}\n"
     "#define	PTHREAD_COND_INITIALIZER		/* = DEFAULTCV */	\\\\\n"
     "	{{{0, 0, 0, 0}, DEFAULT_TYPE, _COND_MAGIC}, 0}";
+};
+
+
+/*
+ *  The pow overloads with int were removed in C++ 2011.
+ */
+fix = {
+    hackname  = solaris_pow_int_overload;
+    mach      = '*-*-solaris2*';
+    files     = "iso/math_iso.h";
+    select    = "^[ \t]*inline [a-z ]* pow\\([^()]*, int [^()]*\\)"
+		" *\\{[^{}]*\n[^{}]*\\}";
+    c_fix     = format;
+    c_fix_arg = "#ifndef __GXX_EXPERIMENTAL_CXX0X__\n%0\n#endif";
+
+    test_text =
+    "	inline long double pow(long double __X, int __Y) { return\n"
+    "		__powl(__X, (long double) (__Y)); }";
 };
 
 
@@ -3719,6 +3790,27 @@ fix = {
     test_text =
     "char *const argv[_RESTRICT_KYWD],\n"
     "char *const envp[_RESTRICT_KYWD]);";
+};
+
+
+/*
+ * Before Solaris 10, <stdio.h> lacks declarations of std::__filbuf and
+ * std::__flsbuf, but <iso/stdio_iso.h> uses them.
+ */
+fix = {
+    hackname  = solaris_std___filbuf;
+    files     = stdio.h;
+    mach      = '*-*-solaris2*';
+    bypass    = "using std::__filbuf";
+    select    = "(using std::perror;\n)(#endif)";
+    c_fix     = format;
+    c_fix_arg = "%1#ifndef _LP64\n"
+		"using std::__filbuf;\n"
+		"using std::__flsbuf;\n"
+		"#endif\n%2";
+
+    test_text = "using std::perror;\n"
+		"#endif";
 };
 
 
