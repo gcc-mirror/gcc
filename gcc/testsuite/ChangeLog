@@ -1,3 +1,11 @@
+2011-08-10  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
+
+	* gcc.c-torture/execute/scal-to-vec1.c: New test.
+	* gcc.c-torture/execute/scal-to-vec2.c: New test.
+	* gcc.c-torture/execute/scal-to-vec3.c: New test.
+	* gcc.dg/scal-to-vec1.c: New test.
+	* gcc.dg/scal-to-vec2.c: New test.
+
 2011-08-09  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/vrp57.c: Disable CCP.

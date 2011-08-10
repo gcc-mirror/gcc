@@ -6526,18 +6526,25 @@ In C it is possible to use shifting operators @code{<<}, @code{>>} on
 integer-type vectors. The operation is defined as following: @code{@{a0,
 a1, @dots{}, an@} >> @{b0, b1, @dots{}, bn@} == @{a0 >> b0, a1 >> b1,
 @dots{}, an >> bn@}}@. Vector operands must have the same number of
-elements.  Additionally second operands can be a scalar integer in which
-case the scalar is converted to the type used by the vector operand (with
-possible truncation) and each element of this new vector is the scalar's
-value.
+elements. 
+
+For the convenience in C it is allowed to use a binary vector operation
+where one operand is a scalar. In that case the compiler will transform
+the scalar operand into a vector where each element is the scalar from
+the operation. The transformation will happen only if the scalar could be
+safely converted to the vector-element type.
 Consider the following code.
 
 @smallexample
 typedef int v4si __attribute__ ((vector_size (16)));
 
-v4si a, b;
+v4si a, b, c;
+long l;
 
-b = a >> 1;     /* b = a >> @{1,1,1,1@}; */
+a = b + 1;    /* a = b + @{1,1,1,1@}; */
+a = 2 * b;    /* a = @{2,2,2,2@} * b; */
+
+a = l + a;    /* Error, cannot convert long to int. */
 @end smallexample
 
 In C vectors can be subscripted as if the vector were an array with

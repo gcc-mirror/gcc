@@ -1,3 +1,11 @@
+2011-08-10  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
+
+	* c-typeck.c (scalar_to_vector): New function. Try scalar to
+	vector conversion.
+	(stv_conv): New enum for scalar_to_vector return type.
+	(build_binary_op): Adjust.
+	* doc/extend.texi: Description of scalar to vector expansion.
+
 2011-08-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (get_pointer_alignment): Remove max-align argument.
