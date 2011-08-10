@@ -1528,13 +1528,13 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   else
     prob = 0;
   dest = gimple_call_arg (stmt, 0);
-  dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+  dest_align = get_pointer_alignment (dest);
   switch (fcode)
     {
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMPCPY:
       src = gimple_call_arg (stmt, 1);
-      src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
+      src_align = get_pointer_alignment (src);
       if (!can_move_by_pieces (val, MIN (dest_align, src_align)))
 	return false;
       break;

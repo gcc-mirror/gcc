@@ -1509,7 +1509,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 		  || use_stmt != stmt2))
 	    break;
 
-	  ptr1_align = get_pointer_alignment (ptr1, BIGGEST_ALIGNMENT);
+	  ptr1_align = get_pointer_alignment (ptr1);
 	  /* Construct the new source string literal.  */
 	  src_buf = XALLOCAVEC (char, src_len + 1);
 	  if (callee1)

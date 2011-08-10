@@ -1635,7 +1635,7 @@ may_be_unaligned_p (tree ref, tree step)
   base = get_inner_reference (ref, &bitsize, &bitpos, &toffset, &mode,
 			      &unsignedp, &volatilep, true);
   base_type = TREE_TYPE (base);
-  base_align = get_object_alignment (base, BIGGEST_ALIGNMENT);
+  base_align = get_object_alignment (base);
   base_align = MAX (base_align, TYPE_ALIGN (base_type));
 
   if (mode != BLKmode)
