@@ -51,6 +51,14 @@ enum impl_conv {
   ic_return
 };
 
+/* Possibe cases of scalar_to_vector conversion.  */
+enum stv_conv {
+  stv_error,        /* Error occured.  */
+  stv_nothing,      /* Nothing happened.  */
+  stv_firstarg,     /* First argument must be expanded.  */
+  stv_secondarg     /* Second argument must be expanded.  */
+};
+
 /* The level of nesting inside "__alignof__".  */
 int in_alignof;
 
@@ -9323,6 +9331,88 @@ push_cleanup (tree decl, tree cleanup, bool eh_only)
   TREE_OPERAND (stmt, 0) = list;
   STATEMENT_LIST_STMT_EXPR (list) = stmt_expr;
 }
+
+/* Convert scalar to vector for the range of operations.  */
+static enum stv_conv
+scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1)
+{
+  tree type0 = TREE_TYPE (op0);
+  tree type1 = TREE_TYPE (op1);
+  bool integer_only_op = false;
+  enum stv_conv ret = stv_firstarg;
+  
+  gcc_assert (TREE_CODE (type0) == VECTOR_TYPE 
+	      || TREE_CODE (type1) == VECTOR_TYPE);
+  switch (code)
+    {
+      case RSHIFT_EXPR:
+      case LSHIFT_EXPR:
+	if (TREE_CODE (type0) == INTEGER_TYPE
+	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
+	  {
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	      {
+		error_at (loc, "conversion of scalar to vector "
+			       "involves truncation");
+		return stv_error;
+	      }
+	    else
+	      return stv_firstarg;
+	  }
+	break;
+
+      case BIT_IOR_EXPR:
+      case BIT_XOR_EXPR:
+      case BIT_AND_EXPR:
+	integer_only_op = true;
+	/* ... fall through ...  */
+      
+      case PLUS_EXPR:
+      case MINUS_EXPR:
+      case MULT_EXPR:
+      case TRUNC_DIV_EXPR:
+      case TRUNC_MOD_EXPR:
+      case RDIV_EXPR:
+	if (TREE_CODE (type0) == VECTOR_TYPE)
+	  {
+	    tree tmp;
+	    ret = stv_secondarg;
+	    /* Swap TYPE0 with TYPE1 and OP0 with OP1  */
+	    tmp = type0; type0 = type1; type1 = tmp;
+	    tmp = op0; op0 = op1; op1 = tmp;
+	  }
+
+	if (TREE_CODE (type0) == INTEGER_TYPE
+	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE) 
+	  {
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	      {
+		error_at (loc, "conversion of scalar to vector "
+			       "involves truncation");
+		return stv_error;
+	      }
+	    return ret;
+	  }
+	else if (!integer_only_op
+		    /* Allow integer --> real conversion if safe.  */
+		 && (TREE_CODE (type0) == REAL_TYPE 
+		     || TREE_CODE (type0) == INTEGER_TYPE)
+		 && SCALAR_FLOAT_TYPE_P (TREE_TYPE (type1)))
+	  {
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	      {
+		error_at (loc, "conversion of scalar to vector "
+			       "involves truncation");
+		return stv_error;
+	      }
+	    return ret;
+	  }
+      default:
+	break;
+    }
+ 
+  return stv_nothing;
+}
 
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
@@ -9434,7 +9524,10 @@ build_binary_op (location_t location, enum tree_code code,
   else
     int_const = int_const_or_overflow = false;
 
-  if (convert_p)
+  /* Do not apply default conversion in mixed vector/scalar expression.  */
+  if (convert_p 
+      && !((TREE_CODE (TREE_TYPE (op0)) == VECTOR_TYPE) 
+	   != (TREE_CODE (TREE_TYPE (op1)) == VECTOR_TYPE)))
     {
       op0 = default_conversion (op0);
       op1 = default_conversion (op1);
@@ -9505,6 +9598,51 @@ build_binary_op (location_t location, enum tree_code code,
     }
 
   objc_ok = objc_compare_types (type0, type1, -3, NULL_TREE);
+
+  /* In case when one of the operands of the binary operation is
+     a vector and another is a scalar -- convert scalar to vector.  */
+  if ((code0 == VECTOR_TYPE) != (code1 == VECTOR_TYPE))
+    {
+      enum stv_conv convert_flag = scalar_to_vector (location, code, op0, op1);
+      
+      switch (convert_flag)
+	{
+	  case stv_error:
+	    return error_mark_node;
+	  case stv_firstarg:
+	    {
+              bool maybe_const = true;
+              tree sc;
+              sc = c_fully_fold (op0, false, &maybe_const);
+              sc = save_expr (sc);
+              sc = convert (TREE_TYPE (type1), sc);
+              op0 = build_vector_from_val (type1, sc);
+              if (!maybe_const)
+                op0 = c_wrap_maybe_const (op0, true);
+              orig_type0 = type0 = TREE_TYPE (op0);
+              code0 = TREE_CODE (type0);
+              converted = 1;
+              break;
+	    }
+	  case stv_secondarg:
+	    {
+	      bool maybe_const = true;
+	      tree sc;
+	      sc = c_fully_fold (op1, false, &maybe_const);
+	      sc = save_expr (sc);
+	      sc = convert (TREE_TYPE (type0), sc);
+	      op1 = build_vector_from_val (type0, sc);
+	      if (!maybe_const)
+		op0 = c_wrap_maybe_const (op1, true);
+	      orig_type1 = type1 = TREE_TYPE (op1);
+	      code1 = TREE_CODE (type1);
+	      converted = 1;
+	      break;
+	    }
+	  default:
+	    break;
+	}
+    }
 
   switch (code)
     {

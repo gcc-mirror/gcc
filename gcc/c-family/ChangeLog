@@ -1,3 +1,10 @@
+2011-08-10  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
+
+	* c-common.c (unsafe_conversion_p): New function. Check if it is
+	unsafe to convert an expression to the type.
+	(conversion_warning): Adjust, use unsafe_conversion_p.
+	* c-common.h (unsafe_conversion_p): New function declaration.
+
 2011-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_finish_omp_atomic): Adjust prototype.
