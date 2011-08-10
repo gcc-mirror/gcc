@@ -1,3 +1,9 @@
+2011-08-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49937
+	* tree-ssa-ccp.c (get_value_from_alignment): Re-implement
+	using get_object_alignment_1.
+
 2011-08-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_emit_i387_round): New function.
