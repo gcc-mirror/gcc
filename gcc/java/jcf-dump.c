@@ -790,7 +790,7 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
 	      /* Normal; add the implicit bit.  */
 	      mantissa |= ((uint32)1 << 23);
 	    
-	    f = frexp (mantissa, &dummy);
+	    f = frexp ((float) mantissa, &dummy);
 	    f = ldexp (f, exponent + 1);
 	    fprintf (out, "%.10g", f);
 	  }
@@ -833,7 +833,7 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
 	      /* Normal; add the implicit bit.  */
 	      mantissa |= ((uint64)1 << 52);
 
-	    d = frexp (mantissa, &dummy);
+	    d = frexp ((double) mantissa, &dummy);
 	    d = ldexp (d, exponent + 1);
 	    fprintf (out, "%.20g", d);
 	  }

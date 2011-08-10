@@ -1,6 +1,7 @@
 // Functions for Exception Support for Java.
 
-/* Copyright (C) 1998, 1999, 2001, 2002, 2006, 2010  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2002, 2006, 2010, 2011
+   Free Software Foundation
 
    This file is part of libgcj.
 
@@ -24,7 +25,7 @@ details.  */
 // stdlib.h's abort().
 namespace std
 {
-  static __attribute__ ((__noreturn__)) void
+  __attribute__ ((__noreturn__)) void
   abort ()
   {
     ::abort ();
