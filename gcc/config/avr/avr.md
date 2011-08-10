@@ -2263,6 +2263,88 @@
   [(set_attr "length" "6,0,2,2,4,10,10")
    (set_attr "cc" "clobber,none,set_n,clobber,set_n,clobber,clobber")])
 
+
+;; Insns like the following are generated when (implicitly) extending 8-bit shifts
+;; like char1 = char2 << char3.  Only the low-byte is needed in that situation.
+
+;; "*ashluqihiqi3"
+;; "*ashlsqihiqi3"
+(define_insn_and_split "*ashl<extend_prefix>qihiqi3"
+  [(set (match_operand:QI 0 "register_operand"                                     "=r")
+        (subreg:QI (ashift:HI (any_extend:HI (match_operand:QI 1 "register_operand" "0"))
+                              (match_operand:QI 2 "register_operand"                "r"))
+                   0))]
+  ""
+  "#"
+  ""
+  [(set (match_dup 0)
+        (ashift:QI (match_dup 1)
+                   (match_dup 2)))]
+  "")
+
+;; ??? Combiner does not recognize that it could split the following insn;
+;;     presumably because he has no register handy?
+
+;; "*ashluqihiqi3.mem"
+;; "*ashlsqihiqi3.mem"
+(define_insn_and_split "*ashl<extend_prefix>qihiqi3.mem"
+  [(set (match_operand:QI 0 "memory_operand" "=m")
+        (subreg:QI (ashift:HI (any_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                              (match_operand:QI 2 "register_operand" "r"))
+                   0))]
+  "!reload_completed"
+  { gcc_unreachable(); }
+  "&& 1"
+  [(set (match_dup 3)
+        (ashift:QI (match_dup 1)
+                   (match_dup 2)))
+   (set (match_dup 0)
+        (match_dup 3))]
+  {
+    operands[3] = force_reg (QImode, operands[0]);
+  })
+
+;; Similar.
+
+(define_insn_and_split "*ashlhiqi3"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r")
+        (subreg:QI (ashift:HI (match_operand:HI 1 "register_operand" "0")
+                              (match_operand:QI 2 "register_operand" "r")) 0))]
+  "!reload_completed"
+  { gcc_unreachable(); }
+  "&& 1"
+  [(set (match_dup 4)
+        (ashift:QI (match_dup 3)
+                   (match_dup 2)))
+   (set (match_dup 0)
+        (match_dup 4))]
+  {
+    operands[3] = simplify_gen_subreg (QImode, operands[1], HImode, 0);
+    operands[4] = force_reg (QImode, operands[0]);
+  })
+
+;; High part of 16-bit shift is unused after the instruction:
+;; No need to compute it, map to 8-bit shift.
+
+(define_peephole2
+  [(set (match_operand:HI 0 "register_operand" "")
+        (ashift:HI (match_dup 0)
+                   (match_operand:QI 1 "register_operand" "")))]
+  ""
+  [(set (match_dup 2)
+        (ashift:QI (match_dup 2)
+                   (match_dup 1)))
+   (clobber (match_dup 3))]
+  {
+    operands[3] = simplify_gen_subreg (QImode, operands[0], HImode, 1);
+
+    if (!peep2_reg_dead_p (1, operands[3]))
+      FAIL;
+
+    operands[2] = simplify_gen_subreg (QImode, operands[0], HImode, 0);
+  })
+
+
 (define_insn "ashlsi3"
   [(set (match_operand:SI 0 "register_operand"           "=r,r,r,r,r,r,r")
 	(ashift:SI (match_operand:SI 1 "register_operand" "0,0,0,r,0,0,0")

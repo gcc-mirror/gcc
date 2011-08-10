@@ -1,3 +1,12 @@
+2011-08-10  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/29560
+	* config/avr/avr.md (*ashlhiqi3): New insn-and-split.
+	(*ashl<extend_prefix>qihiqi3): New insn-and-splits.
+	(*ashl<extend_prefix>qihiqi3.mem): New insn-and-splits.
+	Add peephole2 to map ashlhi3 to ashlqi3 if high part of
+	shift target is unused.
+
 2011-08-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49937
