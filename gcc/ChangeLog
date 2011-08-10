@@ -1,3 +1,9 @@
+2011-08-10  DJ Delorie  <dj@redhat.com>
+
+	* expr.c (expand_expr_addr_expr_1): Detect a user request for
+	a local frame in a naked function, and produce a suitable
+	error for that specific case.
+
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/50001
@@ -50,6 +56,11 @@
 	PR target/47364
 	* config/i386/i386.md (strlensi): Enable for !TARGET_64BIT only.
 	(strlendi): Enable for TARGET_64BIT only.
+
+2011-07-29  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (rx_expand_builtin): Fix typo checking the setpsw
+	builtin.
 
 2011-07-19  Jakub Jelinek  <jakub@redhat.com>
 
