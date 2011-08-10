@@ -1,3 +1,14 @@
+2011-08-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Marc Glisse  <marc.glisse@normalesup.org>
+
+	PR libstdc++-v3/1773
+	* inclhack.def (solaris_cxx_linkage, solaris_getc_strict_stdc)
+	(solaris_longjmp_noreturn, solaris_pow_int_overload)
+	(solaris_std___filbuf): New fixes.
+	* tests/base/iso/math_iso.h, tests/base/iso/setjmp_iso.h,
+	tests/base/iso/stdio_iso.h, tests/base/iso/stdlib_iso.h: New tests.
+	* tests/base/stdio.h [SOLARIS_STD___FILBUF_CHECK]: New test.
+
 2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR c++/49347
