@@ -453,16 +453,6 @@ get_object_alignment (tree exp)
   return align;
 }
 
-/* Returns true iff we can trust that alignment information has been
-   calculated properly.  */
-
-bool
-can_trust_pointer_alignment (void)
-{
-  /* We rely on TER to compute accurate alignment information.  */
-  return (optimize && flag_tree_ter);
-}
-
 /* Return the alignment in bits of EXP, a pointer valued expression.
    The alignment returned is, by default, the alignment of the thing that
    EXP points to.  If it is not a POINTER_TYPE, 0 is returned.

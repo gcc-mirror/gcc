@@ -1,3 +1,8 @@
+2011-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (can_trust_pointer_alignment): Remove.
+	* builtins.c (can_trust_pointer_alignment): Remove.
+
 2011-08-10  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
 
 	* c-typeck.c (scalar_to_vector): New function. Try scalar to
