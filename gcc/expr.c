@@ -6943,6 +6943,14 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
 				modifier == EXPAND_INITIALIZER
 				? EXPAND_INITIALIZER : EXPAND_CONST_ADDRESS);
 
+	  if (TREE_ADDRESSABLE (exp)
+	      && ! MEM_P (result)
+	      && ! targetm.calls.allocate_stack_slots_for_args ())
+	    {
+	      error ("local frame unavailable (naked function?)");
+	      return result;
+	    }
+
 	  /* If the DECL isn't in memory, then the DECL wasn't properly
 	     marked TREE_ADDRESSABLE, which will be either a front-end
 	     or a tree optimizer bug.  */
