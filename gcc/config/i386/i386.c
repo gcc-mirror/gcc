@@ -7102,7 +7102,8 @@ function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
 	  return gen_rtx_REG (mode, AX_REG);
 	}
     }
-  else if (POINTER_TYPE_P (valtype))
+  else if (POINTER_TYPE_P (valtype)
+           && !upc_shared_type_p (TREE_TYPE (valtype)))
     {
       /* Pointers are always returned in Pmode. */
       mode = Pmode;

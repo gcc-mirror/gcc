@@ -1,3 +1,10 @@
+2011-08-10  Gary Funck  <gary@intrepid.com>
+
+	Implement additional fixes for recent merge with trunk.
+	* explow.c (promote_mode): Do not attempt to promote
+	  the mode for UPC pointer-to-shared types.
+	* config/i386/i386.c (function_value_64): Ditto.
+
 2011-08-07  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 177548 into gupc branch.

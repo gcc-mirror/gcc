@@ -834,6 +834,8 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, enum machine_mode mode,
     case REFERENCE_TYPE:
     case POINTER_TYPE:
       *punsignedp = POINTERS_EXTEND_UNSIGNED;
+      if (upc_shared_type_p (TREE_TYPE (type)))
+        return TYPE_MODE (upc_pts_type_node);
       return targetm.addr_space.address_mode
 	       (TYPE_ADDR_SPACE (TREE_TYPE (type)));
       break;
