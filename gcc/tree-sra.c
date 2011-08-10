@@ -1085,7 +1085,7 @@ tree_non_mode_aligned_mem_p (tree exp)
       || !STRICT_ALIGNMENT)
     return false;
 
-  align = get_object_alignment (exp, BIGGEST_ALIGNMENT);
+  align = get_object_alignment (exp);
   if (GET_MODE_ALIGNMENT (mode) > align)
     return true;
 

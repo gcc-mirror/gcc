@@ -860,8 +860,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 	  && tree_int_cst_compare (ssize_int (TYPE_ALIGN_UNIT (TREE_TYPE (
 						      TREE_TYPE (base_addr)))),
 				   alignment) >= 0)
-      || (get_pointer_alignment (base_addr, TYPE_ALIGN (vectype))
-	  >= TYPE_ALIGN (vectype)))
+      || (get_pointer_alignment (base_addr) >= TYPE_ALIGN (vectype)))
     base_aligned = true;
   else
     base_aligned = false;

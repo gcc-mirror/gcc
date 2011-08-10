@@ -341,7 +341,7 @@ get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
 	  align = MAX (pi->align * BITS_PER_UNIT, align);
 	}
       else if (TREE_CODE (addr) == ADDR_EXPR)
-	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0), ~0U));
+	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0)));
       bitpos += mem_ref_offset (exp).low * BITS_PER_UNIT;
     }
   else if (TREE_CODE (exp) == TARGET_MEM_REF)
@@ -365,7 +365,7 @@ get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
 	  align = MAX (pi->align * BITS_PER_UNIT, align);
 	}
       else if (TREE_CODE (addr) == ADDR_EXPR)
-	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0), ~0U));
+	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0)));
       if (TMR_OFFSET (exp))
 	bitpos += TREE_INT_CST_LOW (TMR_OFFSET (exp)) * BITS_PER_UNIT;
       if (TMR_INDEX (exp) && TMR_STEP (exp))
@@ -434,11 +434,10 @@ get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
   return align;
 }
 
-/* Return the alignment in bits of EXP, an object.
-   Don't return more than MAX_ALIGN no matter what.  */
+/* Return the alignment in bits of EXP, an object.  */
 
 unsigned int
-get_object_alignment (tree exp, unsigned int max_align)
+get_object_alignment (tree exp)
 {
   unsigned HOST_WIDE_INT bitpos = 0;
   unsigned int align;
@@ -451,7 +450,7 @@ get_object_alignment (tree exp, unsigned int max_align)
   if (bitpos != 0)
     align = (bitpos & -bitpos);
 
-  return MIN (align, max_align);
+  return align;
 }
 
 /* Returns true iff we can trust that alignment information has been
@@ -465,7 +464,6 @@ can_trust_pointer_alignment (void)
 }
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
-   But don't return more than MAX_ALIGN no matter what.
    The alignment returned is, by default, the alignment of the thing that
    EXP points to.  If it is not a POINTER_TYPE, 0 is returned.
 
@@ -473,12 +471,12 @@ can_trust_pointer_alignment (void)
    expression is actually pointing at an object whose alignment is tighter.  */
 
 unsigned int
-get_pointer_alignment (tree exp, unsigned int max_align)
+get_pointer_alignment (tree exp)
 {
   STRIP_NOPS (exp);
 
   if (TREE_CODE (exp) == ADDR_EXPR)
-    return get_object_alignment (TREE_OPERAND (exp, 0), max_align);
+    return get_object_alignment (TREE_OPERAND (exp, 0));
   else if (TREE_CODE (exp) == SSA_NAME
 	   && POINTER_TYPE_P (TREE_TYPE (exp)))
     {
@@ -490,7 +488,7 @@ get_pointer_alignment (tree exp, unsigned int max_align)
 	align = (pi->misalign & -pi->misalign);
       else
 	align = pi->align;
-      return MIN (max_align, align * BITS_PER_UNIT);
+      return align * BITS_PER_UNIT;
     }
 
   return POINTER_TYPE_P (TREE_TYPE (exp)) ? BITS_PER_UNIT : 0;
@@ -2926,7 +2924,7 @@ expand_builtin_strlen (tree exp, rtx target,
 	  return expand_expr (len, target, target_mode, EXPAND_NORMAL);
 	}
 
-      align = get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+      align = get_pointer_alignment (src) / BITS_PER_UNIT;
 
       /* If SRC is not a pointer type, don't do this operation inline.  */
       if (align == 0)
@@ -3026,9 +3024,8 @@ expand_builtin_memcpy (tree exp, rtx target)
       tree src = CALL_EXPR_ARG (exp, 1);
       tree len = CALL_EXPR_ARG (exp, 2);
       const char *src_str;
-      unsigned int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
-      unsigned int dest_align
-	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+      unsigned int src_align = get_pointer_alignment (src);
+      unsigned int dest_align = get_pointer_alignment (dest);
       rtx dest_mem, src_mem, dest_addr, len_rtx;
       HOST_WIDE_INT expected_size = -1;
       unsigned int expected_align = 0;
@@ -3135,9 +3132,8 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len,
   else
     {
       const char *src_str;
-      unsigned int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
-      unsigned int dest_align
-	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+      unsigned int src_align = get_pointer_alignment (src);
+      unsigned int dest_align = get_pointer_alignment (dest);
       rtx dest_mem, src_mem, len_rtx;
 
       /* If either SRC or DEST is not a pointer type, don't do this
@@ -3390,8 +3386,7 @@ expand_builtin_strncpy (tree exp, rtx target)
 	 use store_by_pieces, if it fails, punt.  */
       if (tree_int_cst_lt (slen, len))
 	{
-	  unsigned int dest_align
-	    = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+	  unsigned int dest_align = get_pointer_alignment (dest);
 	  const char *p = c_getstr (src);
 	  rtx dest_mem;
 
@@ -3495,7 +3490,7 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
   HOST_WIDE_INT expected_size = -1;
   unsigned int expected_align = 0;
 
-  dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+  dest_align = get_pointer_alignment (dest);
 
   /* If DEST is not a pointer type, don't do this operation in-line.  */
   if (dest_align == 0)
@@ -3657,10 +3652,8 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     tree arg2 = CALL_EXPR_ARG (exp, 1);
     tree len = CALL_EXPR_ARG (exp, 2);
 
-    unsigned int arg1_align
-      = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-    unsigned int arg2_align
-      = get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+    unsigned int arg1_align = get_pointer_alignment (arg1) / BITS_PER_UNIT;
+    unsigned int arg2_align = get_pointer_alignment (arg2) / BITS_PER_UNIT;
     enum machine_mode insn_mode;
 
 #ifdef HAVE_cmpmemsi
@@ -3759,10 +3752,8 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
       tree arg1 = CALL_EXPR_ARG (exp, 0);
       tree arg2 = CALL_EXPR_ARG (exp, 1);
 
-      unsigned int arg1_align
-	= get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-      unsigned int arg2_align
-	= get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+      unsigned int arg1_align = get_pointer_alignment (arg1) / BITS_PER_UNIT;
+      unsigned int arg2_align = get_pointer_alignment (arg2) / BITS_PER_UNIT;
 
       /* If we don't have POINTER_TYPE, call the function.  */
       if (arg1_align == 0 || arg2_align == 0)
@@ -3910,10 +3901,8 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     tree arg2 = CALL_EXPR_ARG (exp, 1);
     tree arg3 = CALL_EXPR_ARG (exp, 2);
 
-    unsigned int arg1_align
-      = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-    unsigned int arg2_align
-      = get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+    unsigned int arg1_align = get_pointer_alignment (arg1) / BITS_PER_UNIT;
+    unsigned int arg2_align = get_pointer_alignment (arg2) / BITS_PER_UNIT;
     enum machine_mode insn_mode
       = insn_data[(int) CODE_FOR_cmpstrnsi].operand[0].mode;
 
@@ -5087,7 +5076,7 @@ get_builtin_sync_mem (tree loc, enum machine_mode mode)
 
   /* The alignment needs to be at least according to that of the mode.  */
   set_mem_align (mem, MAX (GET_MODE_ALIGNMENT (mode),
-			   get_pointer_alignment (loc, BIGGEST_ALIGNMENT)));
+			   get_pointer_alignment (loc)));
   set_mem_alias_set (mem, ALIAS_SET_MEMORY_BARRIER);
   MEM_VOLATILE_P (mem) = 1;
 
@@ -7891,8 +7880,7 @@ fold_builtin_memset (location_t loc, tree dest, tree c, tree len,
 
   length = tree_low_cst (len, 1);
   if (GET_MODE_SIZE (TYPE_MODE (etype)) != length
-      || get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT
-	 < length)
+      || get_pointer_alignment (dest) / BITS_PER_UNIT < length)
     return NULL_TREE;
 
   if (length > HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT)
@@ -7982,8 +7970,8 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 
       if (endp == 3)
 	{
-	  src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
-	  dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+	  src_align = get_pointer_alignment (src);
+	  dest_align = get_pointer_alignment (dest);
 
 	  /* Both DEST and SRC must be pointer types.
 	     ??? This is what old code did.  Is the testing for pointer types
@@ -8131,8 +8119,8 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	  || TREE_ADDRESSABLE (desttype))
 	return NULL_TREE;
 
-      src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
-      dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+      src_align = get_pointer_alignment (src);
+      dest_align = get_pointer_alignment (dest);
       if (dest_align < TYPE_ALIGN (desttype)
 	  || src_align < TYPE_ALIGN (srctype))
 	return NULL_TREE;
@@ -11696,8 +11684,7 @@ expand_builtin_memory_chk (tree exp, rtx target, enum machine_mode mode,
     return NULL_RTX;
   else
     {
-      unsigned int dest_align
-	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+      unsigned int dest_align = get_pointer_alignment (dest);
 
       /* If DEST is not a pointer type, call the normal function.  */
       if (dest_align == 0)
@@ -11722,8 +11709,7 @@ expand_builtin_memory_chk (tree exp, rtx target, enum machine_mode mode,
       /* __memmove_chk special case.  */
       if (fcode == BUILT_IN_MEMMOVE_CHK)
 	{
-	  unsigned int src_align
-	    = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
+	  unsigned int src_align = get_pointer_alignment (src);
 
 	  if (src_align == 0)
 	    return NULL_RTX;

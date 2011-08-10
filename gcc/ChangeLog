@@ -1,3 +1,32 @@
+2011-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (get_pointer_alignment): Remove max-align argument.
+	(get_object_alignment): Likewise.
+	* builtins.c (get_object_alignment_1): Adjust.
+	(get_object_alignment): Remove max-align argument.
+	(get_pointer_alignment): Likewise.
+	(expand_builtin_strlen): Adjust.
+	(expand_builtin_memcpy): Likewise.
+	(expand_builtin_mempcpy_args): Likewise.
+	(expand_builtin_strncpy): Likewise.
+	(expand_builtin_memset_args): Likewise.
+	(expand_builtin_memcmp): Likewise.
+	(expand_builtin_strcmp): Likewise.
+	(expand_builtin_strncmp): Likewise.
+	(get_builtin_sync_mem): Likewise.
+	(fold_builtin_memset): Likewise.
+	(fold_builtin_memory_op): Likewise.
+	(expand_builtin_memory_chk): Likewise.
+	* emit-rtl.c (get_mem_align_offset): Likewise.
+	(set_mem_attributes_minus_bitpos): Likewise.
+	* expr.c (expand_assignment): Likewise.
+	(expand_expr_real_1): Likewise.
+	* tree-sra.c (tree_non_mode_aligned_mem_p): Likewise.
+	* tree-ssa-forwprop.c (simplify_builtin_call): Likewise.
+	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Likewise.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Likewise.
+	* value-prof.c (gimple_stringops_transform): Likewise.
+
 2011-08-10  Paulo J. Matos  <paulo.matos@csr.com>
 
 	* doc/tm.texi.in (CLASS_MAX_NREGS): Fix typo.

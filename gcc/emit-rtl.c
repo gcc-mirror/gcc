@@ -1466,7 +1466,7 @@ get_mem_align_offset (rtx mem, unsigned int align)
   /* This function can't use
      if (!MEM_EXPR (mem) || !MEM_OFFSET_KNOWN_P (mem)
 	 || (MAX (MEM_ALIGN (mem),
-	          get_object_alignment (MEM_EXPR (mem), align))
+	          MAX (align, get_object_alignment (MEM_EXPR (mem))))
 	     < align))
        return -1;
      else
@@ -1826,9 +1826,9 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  apply_bitpos = bitpos;
 	}
 
-      if (!align_computed && !INDIRECT_REF_P (t))
+      if (!align_computed)
 	{
-	  unsigned int obj_align = get_object_alignment (t, BIGGEST_ALIGNMENT);
+	  unsigned int obj_align = get_object_alignment (t);
 	  attrs.align = MAX (attrs.align, obj_align);
 	}
     }
