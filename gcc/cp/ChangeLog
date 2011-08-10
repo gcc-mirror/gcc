@@ -1,3 +1,7 @@
+2011-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* call.c (build_over_call): Call memcpy unconditionally.
+
 2011-08-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50020
