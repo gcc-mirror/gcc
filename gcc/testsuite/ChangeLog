@@ -1,3 +1,8 @@
+2011-08-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/sse4_1-blendps-2.c: Include <stdlib.h>.
+	(sse4_1_test): Initialize src3 with random value.
+
 2011-08-10  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
 
 	* gcc.c-torture/execute/scal-to-vec1.c: New test.
