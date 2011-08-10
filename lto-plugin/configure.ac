@@ -6,6 +6,7 @@ AM_INIT_AUTOMAKE([foreign no-dist])
 AM_MAINTAINER_MODE
 AC_PROG_CC
 AC_SYS_LARGEFILE
+ACX_PROG_CC_WARNING_OPTS([-Wall], [ac_lto_plugin_warn_cflags])
 AM_PROG_LIBTOOL
 ACX_LT_HOST_FLAGS
 AC_SUBST(target_noncanonical)
