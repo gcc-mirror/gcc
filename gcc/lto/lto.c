@@ -721,6 +721,8 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	    {
 	      TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (mv);
 	      TYPE_NEXT_VARIANT (mv) = t;
+	      if (RECORD_OR_UNION_TYPE_P (t))
+		TYPE_BINFO (t) = TYPE_BINFO (mv);
 	    }
 
 	  /* Finally adjust our main variant and fix it up.  */
