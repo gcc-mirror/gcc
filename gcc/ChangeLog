@@ -1,3 +1,12 @@
+2011-08-11   Kazuhiro Inaoka  <kazuhiro.inaoka.ud@renesas.com>
+
+	* config/rx/rx.md (movsicc): Allow register to register
+	transfers.
+	(*movsicc): Likewise.
+	(*stcc): Restrict this pattern to EQ and NE compares.
+	(*stcc_reg): New pattern.  Works for any comparison but only for
+	register transfers.
+
 2011-08-10  DJ Delorie  <dj@redhat.com>
 
 	* expr.c (expand_expr_addr_expr_1): Detect a user request for
