@@ -2956,7 +2956,10 @@ init_global_and_expr_for_insn (insn_t insn)
           /* Exception handling insns are always unique.  */
           || (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
           /* TRAP_IF though have an INSN code is control_flow_insn_p ().  */
-          || control_flow_insn_p (insn))
+          || control_flow_insn_p (insn)
+          || volatile_insn_p (PATTERN (insn))
+          || (targetm.cannot_copy_insn_p
+              && targetm.cannot_copy_insn_p (insn)))
         force_unique_p = true;
       else
         force_unique_p = false;
