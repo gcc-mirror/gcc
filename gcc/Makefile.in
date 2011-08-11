@@ -444,6 +444,7 @@ PARTITION_H = $(srcdir)/../include/partition.h
 MD5_H	    = $(srcdir)/../include/md5.h
 DWARF2_H    = $(srcdir)/../include/dwarf2.h
 XREGEX_H    =  $(srcdir)/../include/xregex.h
+FNMATCH_H   = $(srcdir)/../include/fnmatch.h
 
 # Linker plugin API headers
 LINKER_PLUGIN_API_H = $(srcdir)/../include/plugin-api.h
@@ -3939,10 +3940,10 @@ build/genattr-common.o : genattr-common.c $(RTL_BASE_H) $(BCONFIG_H)	\
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
 build/genattrtab.o : genattrtab.c $(RTL_BASE_H) $(OBSTACK_H)		\
   $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(GGC_H)	\
-  $(READ_MD_H) gensupport.h vecprim.h
+  $(READ_MD_H) gensupport.h vecprim.h $(FNMATCH_H)
 build/genautomata.o : genautomata.c $(RTL_BASE_H) $(OBSTACK_H)		\
   $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(VEC_H)	\
-  $(HASHTAB_H) gensupport.h
+  $(HASHTAB_H) gensupport.h $(FNMATCH_H)
 build/gencheck.o : gencheck.c all-tree.def $(BCONFIG_H) $(GTM_H)	\
 	$(SYSTEM_H) coretypes.h $(lang_tree_files) gimple.def
 build/genchecksum.o : genchecksum.c $(BCONFIG_H) $(SYSTEM_H) $(MD5_H)

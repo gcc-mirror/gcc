@@ -1,3 +1,22 @@
+2011-08-11  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* doc/md.texi (define_bypass): Say that the instruction names can
+	be filename-style globs.
+	* Makefile.in (FNMATCH_H): Define.
+	(build/genattrtab.o, build/genautomata.o): Depend on $(FNMATCH_H).
+	* genattrtab.c: Include fnmatch.h.
+	(bypass_list): Change field name from "insn" to "pattern".
+	(gen_bypass_1): Update accordingly.
+	(process_bypasses): Use fnmatch to check for matches between
+	insn reservations and define_bypasses.
+	* genautomata.c: Include fnmatch.h.
+	(bypass_decl): Rename in_insn_name and out_insn_name to in_pattern
+	and out_pattern respectively.
+	(gen_bypass, insert_bypass): Update accordingly.
+	(for_each_matching_insn, process_bypass_2, process_bypass_1)
+	(process_bypass): New functions.
+	(process_decls): Use process_bypass.  Update after field name changes.
+
 2011-08-11  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/49687
