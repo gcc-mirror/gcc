@@ -991,6 +991,7 @@ gcc-extra-parts:
 all: $(extra-parts)
 
 install-unwind_h:
+	rm -f $(gcc_objdir)/include/unwind.h
 	cp unwind.h $(gcc_objdir)/include/unwind.h
 	chmod a+r $(gcc_objdir)/include/unwind.h
 
