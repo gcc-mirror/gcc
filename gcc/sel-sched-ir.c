@@ -3940,9 +3940,39 @@ sel_luid_for_non_insn (rtx x)
   return -1;
 }
 
-/* Return seqno of the only predecessor of INSN.  */
+/*  Find the proper seqno for inserting at INSN by successors.
+    Return -1 if no successors with positive seqno exist.  */
 static int
-get_seqno_of_a_pred (insn_t insn)
+get_seqno_by_succs (rtx insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  rtx tmp = insn, end = BB_END (bb);
+  int seqno;
+  insn_t succ = NULL;
+  succ_iterator si;
+
+  while (tmp != end)
+    {
+      tmp = NEXT_INSN (tmp);
+      if (INSN_P (tmp))
+        return INSN_SEQNO (tmp);
+    }
+
+  seqno = INT_MAX;
+
+  FOR_EACH_SUCC_1 (succ, si, end, SUCCS_NORMAL)
+    if (INSN_SEQNO (succ) > 0)
+      seqno = MIN (seqno, INSN_SEQNO (succ));
+
+  if (seqno == INT_MAX)
+    return -1;
+
+  return seqno;
+}
+
+/* Compute seqno for INSN by its preds or succs.  */
+static int
+get_seqno_for_a_jump (insn_t insn)
 {
   int seqno;
 
@@ -3982,13 +4012,23 @@ get_seqno_of_a_pred (insn_t insn)
 	  int n;
 
 	  cfg_preds (BLOCK_FOR_INSN (insn), &preds, &n);
-	  gcc_assert (n == 1);
 
-	  seqno = INSN_SEQNO (preds[0]);
+	  gcc_assert (n > 0);
+	  /* For one predecessor, use simple method.  */
+	  if (n == 1)
+	    seqno = INSN_SEQNO (preds[0]);
+	  else
+	    seqno = get_seqno_by_preds (insn);
 
 	  free (preds);
 	}
     }
+
+  /* We were unable to find a good seqno among preds.  */
+  if (seqno < 0)
+    seqno = get_seqno_by_succs (insn);
+
+  gcc_assert (seqno >= 0);
 
   return seqno;
 }
@@ -4004,10 +4044,11 @@ get_seqno_by_preds (rtx insn)
   int n, i, seqno;
 
   while (tmp != head)
-    if (INSN_P (tmp))
-      return INSN_SEQNO (tmp);
-    else
+    {
       tmp = PREV_INSN (tmp);
+      if (INSN_P (tmp))
+        return INSN_SEQNO (tmp);
+    }
 
   cfg_preds (bb, &preds, &n);
   for (i = 0, seqno = -1; i < n; i++)
@@ -4179,7 +4220,7 @@ init_simplejump_data (insn_t insn)
   init_expr (INSN_EXPR (insn), vinsn_create (insn, false), 0,
 	     REG_BR_PROB_BASE, 0, 0, 0, 0, 0, 0, NULL, true, false, false,
 	     false, true);
-  INSN_SEQNO (insn) = get_seqno_of_a_pred (insn);
+  INSN_SEQNO (insn) = get_seqno_for_a_jump (insn);
   init_first_time_insn_data (insn);
 }
 
