@@ -499,27 +499,13 @@ deps_may_trap_p (const_rtx mem)
 
 /* Find the condition under which INSN is executed.  If REV is not NULL,
    it is set to TRUE when the returned comparison should be reversed
-   to get the actual condition.
-   We only do actual work the first time we come here for an insn; the
-   results are cached in INSN_COND and INSN_REVERSE_COND.  */
+   to get the actual condition.  */
 static rtx
-sched_get_condition_with_rev (const_rtx insn, bool *rev)
+sched_get_condition_with_rev_uncached (const_rtx insn, bool *rev)
 {
   rtx pat = PATTERN (insn);
   rtx src;
 
-  if (INSN_COND (insn) == const_true_rtx)
-    return NULL_RTX;
-
-  if (INSN_COND (insn) != NULL_RTX)
-    {
-      if (rev)
-	*rev = INSN_REVERSE_COND (insn);
-      return INSN_COND (insn);
-    }
-
-  INSN_COND (insn) = const_true_rtx;
-  INSN_REVERSE_COND (insn) = false;
   if (pat == 0)
     return 0;
 
@@ -527,10 +513,7 @@ sched_get_condition_with_rev (const_rtx insn, bool *rev)
     *rev = false;
 
   if (GET_CODE (pat) == COND_EXEC)
-    {
-      INSN_COND (insn) = COND_EXEC_TEST (pat);
-      return COND_EXEC_TEST (pat);
-    }
+    return COND_EXEC_TEST (pat);
 
   if (!any_condjump_p (insn) || !onlyjump_p (insn))
     return 0;
@@ -538,10 +521,7 @@ sched_get_condition_with_rev (const_rtx insn, bool *rev)
   src = SET_SRC (pc_set (insn));
 
   if (XEXP (src, 2) == pc_rtx)
-    {
-      INSN_COND (insn) = XEXP (src, 0);
-      return XEXP (src, 0);
-    }
+    return XEXP (src, 0);
   else if (XEXP (src, 1) == pc_rtx)
     {
       rtx cond = XEXP (src, 0);
@@ -552,12 +532,45 @@ sched_get_condition_with_rev (const_rtx insn, bool *rev)
 
       if (rev)
 	*rev = true;
-      INSN_COND (insn) = cond;
-      INSN_REVERSE_COND (insn) = true;
       return cond;
     }
 
   return 0;
+}
+
+/* Caching variant of sched_get_condition_with_rev_uncached.
+   We only do actual work the first time we come here for an insn; the
+   results are cached in INSN_CACHED_COND and INSN_REVERSE_COND.  */
+static rtx
+sched_get_condition_with_rev (const_rtx insn, bool *rev)
+{
+  bool tmp;
+
+  if (INSN_LUID (insn) == 0)
+    return sched_get_condition_with_rev_uncached (insn, rev);
+
+  if (INSN_CACHED_COND (insn) == const_true_rtx)
+    return NULL_RTX;
+
+  if (INSN_CACHED_COND (insn) != NULL_RTX)
+    {
+      if (rev)
+	*rev = INSN_REVERSE_COND (insn);
+      return INSN_CACHED_COND (insn);
+    }
+
+  INSN_CACHED_COND (insn) = sched_get_condition_with_rev_uncached (insn, &tmp);
+  INSN_REVERSE_COND (insn) = tmp;
+
+  if (INSN_CACHED_COND (insn) == NULL_RTX)
+    {
+      INSN_CACHED_COND (insn) = const_true_rtx;
+      return NULL_RTX;
+    }
+
+  if (rev)
+    *rev = INSN_REVERSE_COND (insn);
+  return INSN_CACHED_COND (insn);
 }
 
 /* True when we can find a condition under which INSN is executed.  */
@@ -2910,9 +2923,9 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 	      for (list = reg_last->uses; list; list = XEXP (list, 1))
 		{
 		  rtx other = XEXP (list, 0);
-		  if (INSN_COND (other) != const_true_rtx
-		      && refers_to_regno_p (i, i + 1, INSN_COND (other), NULL))
-		    INSN_COND (other) = const_true_rtx;
+		  if (INSN_CACHED_COND (other) != const_true_rtx
+		      && refers_to_regno_p (i, i + 1, INSN_CACHED_COND (other), NULL))
+		    INSN_CACHED_COND (other) = const_true_rtx;
 		}
 	    }
 	}

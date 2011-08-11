@@ -1,4 +1,15 @@
 2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
+	    Alexander Monakov  <amonakov@ispras.ru>
+
+	* sched-deps.c (sched_get_condition_with_rev): Rename to ...
+	(sched_get_condition_with_rev_uncached): ... this.  Factor out
+	condition caching logic into ...
+	(sched_get_condition_with_rev): ... this.  Reimplement.  Do not
+	attempt to use cache for instructions with zero luid.
+	(sched_analyze_insn): Use INSN_CACHED_COND instead of INSN_COND.
+	* sched-int.h (INSN_COND): Rename to INSN_CACHED_COND.
+
+2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
 
 	* sel-sched-ir.c (get_seqno_of_a_pred): Rename to
 	get_seqno_for_a_jump.  Update the caller.
