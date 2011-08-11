@@ -1,3 +1,11 @@
+2011-08-11  Romain Geissler  <romain.geissler@gmail.com>
+            Brian Hackett  <bhackett1024@gmail.com>
+
+	* plugin.def: Add event for finish_decl.
+	* plugin.c (register_callback, invoke_plugin_callbacks): Same.
+	* c-decl.c (finish_decl): Invoke callbacks on above event.
+	* doc/plugins.texi: Document above event.
+
 2011-08-11  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Avoid redundant
