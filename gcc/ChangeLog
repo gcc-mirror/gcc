@@ -1,5 +1,10 @@
 2011-08-11  Dmitry Melnik  <dm@ispras.ru>
 
+	* sel-sched-ir.c (init_global_and_expr_for_insn): Forbid copying of
+	recognized by cannot_copy_insn_p hook and volatile instructions.
+
+2011-08-11  Dmitry Melnik  <dm@ispras.ru>
+
 	* sel-sched-ir.c (merge_expr_data): Take maximum spec.
 
 2011-08-11  Richard Sandiford  <richard.sandiford@linaro.org>
