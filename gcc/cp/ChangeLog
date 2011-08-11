@@ -1,3 +1,8 @@
+2011-08-11  Romain Geissler  <romain.geissler@gmail.com>
+            Brian Hackett  <bhackett1024@gmail.com>
+
+	* decl.c (cp_finish_decl): Invoke callbacks on finish_decl event.
+
 2011-08-10  Richard Guenther  <rguenther@suse.de>
 
 	* call.c (build_over_call): Call memcpy unconditionally.

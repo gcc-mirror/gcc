@@ -24,6 +24,9 @@ DEFEVENT (PLUGIN_PASS_MANAGER_SETUP)
 /* After finishing parsing a type.  */
 DEFEVENT (PLUGIN_FINISH_TYPE)
 
+/* After finishing parsing a declaration. */
+DEFEVENT (PLUGIN_FINISH_DECL)
+
 /* Useful for summary processing.  */
 DEFEVENT (PLUGIN_FINISH_UNIT)
 

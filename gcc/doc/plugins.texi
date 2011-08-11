@@ -151,6 +151,7 @@ enum plugin_event
 @{
   PLUGIN_PASS_MANAGER_SETUP,    /* To hook into pass manager.  */
   PLUGIN_FINISH_TYPE,           /* After finishing parsing a type.  */
+  PLUGIN_FINISH_DECL,           /* After finishing parsing a declaration. */
   PLUGIN_FINISH_UNIT,           /* Useful for summary processing.  */
   PLUGIN_PRE_GENERICIZE,        /* Allows to see low level AST in C and C++ frontends.  */
   PLUGIN_FINISH,                /* Called before GCC exits.  */

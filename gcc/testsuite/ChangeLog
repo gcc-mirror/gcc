@@ -1,3 +1,10 @@
+2011-08-11  Romain Geissler  <romain.geissler@gmail.com>
+            Brian Hackett  <bhackett1024@gmail.com>
+
+	* g++.dg/plugin/decl_plugin.c: New.
+	* g++.dg/plugin/decl-plugin-test.C: New.
+	* g++.dg/plugin/plugin.exp: Add above testcase.
+
 2011-08-11  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/tree-ssa/pr41186.C: Un-XFAIL.
