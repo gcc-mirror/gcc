@@ -1,3 +1,18 @@
+2011-08-11  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/49687
+	* config/avr/avr.md (smulqi3_highpart): New insn.
+	(umulqi3_highpart): New insn.
+	(*subqi3.ashiftrt7): New insn.
+	(smulhi3_highpart): New expander.
+	(umulhi3_highpart): Nex expander.
+	(*smulhi3_highpart_call): New insn.
+	(*umulhi3_highpart_call): New insn.
+	(extend_u): New code attribute.
+	(extend_prefix): Rename code attribute to extend_su.
+	* config/avr/avr.c (avr_rtx_costs): Report costs of highpart of
+	widening QI/HI multiply.
+
 2011-08-11  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50039
