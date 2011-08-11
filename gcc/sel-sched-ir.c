@@ -4284,14 +4284,13 @@ free_lv_sets (void)
       free_lv_set (bb);
 }
 
-/* Initialize an invalid AV_SET for BB.
-   This set will be updated next time compute_av () process BB.  */
+/* Mark AV_SET for BB as invalid, so this set will be updated the next time
+   compute_av() processes BB.  This function is called when creating new basic
+   blocks, as well as for blocks (either new or existing) where new jumps are
+   created when the control flow is being updated.  */
 static void
 invalidate_av_set (basic_block bb)
 {
-  gcc_assert (BB_AV_LEVEL (bb) <= 0
-	      && BB_AV_SET (bb) == NULL);
-
   BB_AV_LEVEL (bb) = -1;
 }
 
