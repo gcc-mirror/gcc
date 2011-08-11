@@ -1,3 +1,12 @@
+2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
+
+	* sel-sched-ir.c (get_seqno_of_a_pred): Rename to
+	get_seqno_for_a_jump.  Update the caller.
+	(get_seqno_by_succs): New.  Use it ...
+	(get_seqno_for_a_jump): ... here to find a seqno if looking at
+	predecessors was not sufficient.
+	(get_seqno_by_preds): Include head in iteration range, exclude insn.
+
 2011-08-11  Dmitry Melnik  <dm@ispras.ru>
 
 	* sel-sched-ir.c (invalidate_av_set): Remove the assert.
