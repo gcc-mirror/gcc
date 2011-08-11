@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fgraphite-identity -m32" } */
+/* { dg-options "-O2 -fgraphite-identity" } */
 
 struct Foo {
   int **p;
