@@ -1810,9 +1810,9 @@ update_speculative_bits (expr_t to, expr_t from, insn_t split_point)
 void
 merge_expr_data (expr_t to, expr_t from, insn_t split_point)
 {
-  /* For now, we just set the spec of resulting expr to be minimum of the specs
-     of merged exprs.  */
-  if (EXPR_SPEC (to) > EXPR_SPEC (from))
+  /* Choose the maximum of the specs of merged exprs.  This is required
+     for correctness of bookkeeping.  */
+  if (EXPR_SPEC (to) < EXPR_SPEC (from))
     EXPR_SPEC (to) = EXPR_SPEC (from);
 
   if (split_point)
