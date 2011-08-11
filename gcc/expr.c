@@ -3567,8 +3567,10 @@ fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
       /* Look for a call_pop pattern.  */
       if (CALL_P (insn))
 	{
-	  /* We're not supposed to see non-pop call patterns here.  */
-	  gcc_assert (GET_CODE (pat) == PARALLEL);
+          /* We have to allow non-call_pop patterns for the case
+	     of emit_single_push_insn of a TLS address.  */
+	  if (GET_CODE (pat) != PARALLEL)
+	    continue;
 
 	  /* All call_pop have a stack pointer adjust in the parallel.
 	     The call itself is always first, and the stack adjust is
@@ -3583,7 +3585,8 @@ fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
 		break;
 	    }
 	  /* We'd better have found the stack pointer adjust.  */
-	  gcc_assert (i > 0);
+	  if (i == 0)
+	    continue;
 	  /* Fall through to process the extracted SET and DEST
 	     as if it was a standalone insn.  */
 	}
