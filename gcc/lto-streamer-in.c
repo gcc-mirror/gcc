@@ -195,7 +195,7 @@ lto_input_location (struct lto_input_block *ib, struct data_in *data_in)
    TAG is the expected node that should be found in IB, if TAG belongs
    to one of the indexable trees, expect to read a reference index to
    be looked up in one of the symbol tables, otherwise read the pysical
-   representation of the tree using lto_input_tree.  FN is the
+   representation of the tree using stream_read_tree.  FN is the
    function scope for the read tree.  */
 
 tree
@@ -280,9 +280,9 @@ lto_input_eh_catch_list (struct lto_input_block *ib, struct data_in *data_in,
 
       /* Read the catch node.  */
       n = ggc_alloc_cleared_eh_catch_d ();
-      n->type_list = lto_input_tree (ib, data_in);
-      n->filter_list = lto_input_tree (ib, data_in);
-      n->label = lto_input_tree (ib, data_in);
+      n->type_list = stream_read_tree (ib, data_in);
+      n->filter_list = stream_read_tree (ib, data_in);
+      n->label = stream_read_tree (ib, data_in);
 
       /* Register all the types in N->FILTER_LIST.  */
       for (list = n->filter_list; list; list = TREE_CHAIN (list))
@@ -351,8 +351,8 @@ input_eh_region (struct lto_input_block *ib, struct data_in *data_in, int ix)
 	  tree l;
 
 	  r->type = ERT_ALLOWED_EXCEPTIONS;
-	  r->u.allowed.type_list = lto_input_tree (ib, data_in);
-	  r->u.allowed.label = lto_input_tree (ib, data_in);
+	  r->u.allowed.type_list = stream_read_tree (ib, data_in);
+	  r->u.allowed.label = stream_read_tree (ib, data_in);
 	  r->u.allowed.filter = lto_input_uleb128 (ib);
 
 	  for (l = r->u.allowed.type_list; l ; l = TREE_CHAIN (l))
@@ -362,7 +362,7 @@ input_eh_region (struct lto_input_block *ib, struct data_in *data_in, int ix)
 
       case LTO_ert_must_not_throw:
 	r->type = ERT_MUST_NOT_THROW;
-	r->u.must_not_throw.failure_decl = lto_input_tree (ib, data_in);
+	r->u.must_not_throw.failure_decl = stream_read_tree (ib, data_in);
 	r->u.must_not_throw.failure_loc = lto_input_location (ib, data_in);
 	break;
 
@@ -397,7 +397,7 @@ input_eh_lp (struct lto_input_block *ib, struct data_in *data_in, int ix)
   gcc_assert (lp->index == ix);
   lp->next_lp = (eh_landing_pad) (intptr_t) lto_input_sleb128 (ib);
   lp->region = (eh_region) (intptr_t) lto_input_sleb128 (ib);
-  lp->post_landing_pad = lto_input_tree (ib, data_in);
+  lp->post_landing_pad = stream_read_tree (ib, data_in);
 
   return lp;
 }
@@ -542,7 +542,7 @@ input_eh_regions (struct lto_input_block *ib, struct data_in *data_in,
       VEC_safe_grow (tree, gc, fn->eh->ttype_data, len);
       for (i = 0; i < len; i++)
 	{
-	  tree ttype = lto_input_tree (ib, data_in);
+	  tree ttype = stream_read_tree (ib, data_in);
 	  VEC_replace (tree, fn->eh->ttype_data, i, ttype);
 	}
     }
@@ -557,7 +557,7 @@ input_eh_regions (struct lto_input_block *ib, struct data_in *data_in,
 	  VEC_safe_grow (tree, gc, fn->eh->ehspec_data.arm_eabi, len);
 	  for (i = 0; i < len; i++)
 	    {
-	      tree t = lto_input_tree (ib, data_in);
+	      tree t = stream_read_tree (ib, data_in);
 	      VEC_replace (tree, fn->eh->ehspec_data.arm_eabi, i, t);
 	    }
 	}
@@ -700,7 +700,7 @@ input_ssa_names (struct lto_input_block *ib, struct data_in *data_in,
 	VEC_quick_push (tree, SSANAMES (fn), NULL_TREE);
 
       is_default_def = (lto_input_1_unsigned (ib) != 0);
-      name = lto_input_tree (ib, data_in);
+      name = stream_read_tree (ib, data_in);
       ssa_name = make_ssa_name_fn (fn, name, gimple_build_nop ());
 
       if (is_default_def)
@@ -800,8 +800,8 @@ input_function (tree fn_decl, struct data_in *data_in,
   fn->curr_properties = lto_input_uleb128 (ib);
 
   /* Read the static chain and non-local goto save area.  */
-  fn->static_chain_decl = lto_input_tree (ib, data_in);
-  fn->nonlocal_goto_save_area = lto_input_tree (ib, data_in);
+  fn->static_chain_decl = stream_read_tree (ib, data_in);
+  fn->nonlocal_goto_save_area = stream_read_tree (ib, data_in);
 
   /* Read all the local symbols.  */
   len = lto_input_sleb128 (ib);
@@ -811,14 +811,14 @@ input_function (tree fn_decl, struct data_in *data_in,
       VEC_safe_grow (tree, gc, fn->local_decls, len);
       for (i = 0; i < len; i++)
 	{
-	  tree t = lto_input_tree (ib, data_in);
+	  tree t = stream_read_tree (ib, data_in);
 	  VEC_replace (tree, fn->local_decls, i, t);
 	}
     }
 
   /* Read all function arguments.  We need to re-map them here to the
      arguments of the merged function declaration.  */
-  args = lto_input_tree (ib, data_in);
+  args = stream_read_tree (ib, data_in);
   for (oarg = args, narg = DECL_ARGUMENTS (fn_decl);
        oarg && narg;
        oarg = TREE_CHAIN (oarg), narg = TREE_CHAIN (narg))
@@ -839,7 +839,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   input_eh_regions (ib, data_in, fn);
 
   /* Read the tree of lexical scopes for the function.  */
-  DECL_INITIAL (fn_decl) = lto_input_tree (ib, data_in);
+  DECL_INITIAL (fn_decl) = stream_read_tree (ib, data_in);
   gcc_assert (DECL_INITIAL (fn_decl));
   DECL_SAVED_TREE (fn_decl) = NULL_TREE;
   node = cgraph_get_create_node (fn_decl);
@@ -920,7 +920,7 @@ input_alias_pairs (struct lto_input_block *ib, struct data_in *data_in)
 
   clear_line_info (data_in);
 
-  var = lto_input_tree (ib, data_in);
+  var = stream_read_tree (ib, data_in);
   while (var)
     {
       const char *orig_name, *new_name;
@@ -928,7 +928,7 @@ input_alias_pairs (struct lto_input_block *ib, struct data_in *data_in)
 
       p = VEC_safe_push (alias_pair, gc, alias_pairs, NULL);
       p->decl = var;
-      p->target = lto_input_tree (ib, data_in);
+      p->target = stream_read_tree (ib, data_in);
 
       /* If the target is a static object, we may have registered a
 	 new name for it to avoid clashes between statics coming from
@@ -938,7 +938,7 @@ input_alias_pairs (struct lto_input_block *ib, struct data_in *data_in)
       if (strcmp (orig_name, new_name) != 0)
 	p->target = get_identifier (new_name);
 
-      var = lto_input_tree (ib, data_in);
+      var = stream_read_tree (ib, data_in);
     }
 }
 
@@ -1044,18 +1044,98 @@ lto_input_constructors_and_inits (struct lto_file_decl_data *file_data,
 }
 
 
-/* LTO streamer hook for reading GIMPLE trees.  IB and DATA_IN are as in
-   lto_read_tree.  EXPR is the tree was materialized by lto_read_tree and
-   needs GIMPLE specific data to be filled in.  */
+/* Read the physical representation of a tree node with tag TAG from
+   input block IB using the per-file context in DATA_IN.  */
 
-void
-lto_streamer_read_tree (struct lto_input_block *ib, struct data_in *data_in,
-			tree expr)
+static tree
+lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
+	       enum LTO_tags tag)
 {
-  if (DECL_P (expr)
-      && TREE_CODE (expr) != FUNCTION_DECL
-      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
-    DECL_INITIAL (expr) = lto_input_tree (ib, data_in);
+  /* Instantiate a new tree node.  */
+  tree result = lto_materialize_tree (ib, data_in, tag);
+
+  /* Enter RESULT in the reader cache.  This will make RESULT
+     available so that circular references in the rest of the tree
+     structure can be resolved in subsequent calls to stream_read_tree.  */
+  lto_streamer_cache_append (data_in->reader_cache, result);
+
+  /* Read all the bitfield values in RESULT.  Note that for LTO, we
+     only write language-independent bitfields, so no more unpacking is
+     needed.  */
+  tree_read_bitfields (ib, result);
+
+  /* Read all the pointer fields in RESULT.  */
+  lto_input_tree_pointers (ib, data_in, result);
+
+  /* Read any LTO-specific data not read by the tree streamer.  */
+  if (DECL_P (result)
+      && TREE_CODE (result) != FUNCTION_DECL
+      && TREE_CODE (result) != TRANSLATION_UNIT_DECL)
+    DECL_INITIAL (result) = stream_read_tree (ib, data_in);
+
+  /* We should never try to instantiate an MD or NORMAL builtin here.  */
+  if (TREE_CODE (result) == FUNCTION_DECL)
+    gcc_assert (!lto_stream_as_builtin_p (result));
+
+  /* end_marker = */ lto_input_1_unsigned (ib);
+
+#ifdef LTO_STREAMER_DEBUG
+  /* Remove the mapping to RESULT's original address set by
+     lto_materialize_tree.  */
+  lto_orig_address_remove (result);
+#endif
+
+  return result;
+}
+
+
+/* Read a tree from input block IB using the per-file context in
+   DATA_IN.  This context is used, for example, to resolve references
+   to previously read nodes.  */
+
+tree
+lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
+{
+  enum LTO_tags tag;
+  tree result;
+
+  tag = input_record_start (ib);
+  gcc_assert ((unsigned) tag < (unsigned) LTO_NUM_TAGS);
+
+  if (tag == LTO_null)
+    result = NULL_TREE;
+  else if (tag >= LTO_field_decl_ref && tag <= LTO_global_decl_ref)
+    {
+      /* If TAG is a reference to an indexable tree, the next value
+	 in IB is the index into the table where we expect to find
+	 that tree.  */
+      result = lto_input_tree_ref (ib, data_in, cfun, tag);
+    }
+  else if (tag == LTO_tree_pickle_reference)
+    {
+      /* If TAG is a reference to a previously read tree, look it up in
+	 the reader cache.  */
+      result = lto_get_pickled_tree (ib, data_in);
+    }
+  else if (tag == LTO_builtin_decl)
+    {
+      /* If we are going to read a built-in function, all we need is
+	 the code and class.  */
+      result = lto_get_builtin_tree (ib, data_in);
+    }
+  else if (tag == lto_tree_code_to_tag (INTEGER_CST))
+    {
+      /* For integer constants we only need the type and its hi/low
+	 words.  */
+      result = lto_input_integer_cst (ib, data_in);
+    }
+  else
+    {
+      /* Otherwise, materialize a new node from IB.  */
+      result = lto_read_tree (ib, data_in, tag);
+    }
+
+  return result;
 }
 
 

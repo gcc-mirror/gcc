@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "gimple-streamer.h"
 #include "lto-streamer.h"
+#include "tree-streamer.h"
 
 /* Output PHI function PHI to the main stream in OB.  */
 
@@ -40,7 +41,7 @@ output_phi (struct output_block *ob, gimple phi)
 
   for (i = 0; i < len; i++)
     {
-      lto_output_tree_ref (ob, gimple_phi_arg_def (phi, i));
+      stream_write_tree (ob, gimple_phi_arg_def (phi, i), true);
       output_uleb128 (ob, gimple_phi_arg_edge (phi, i)->src->index);
       lto_output_location (ob, gimple_phi_arg_location (phi, i));
     }
@@ -76,7 +77,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   lto_output_location (ob, gimple_location (stmt));
 
   /* Emit the lexical block holding STMT.  */
-  lto_output_tree (ob, gimple_block (stmt), true);
+  stream_write_tree (ob, gimple_block (stmt), true);
 
   /* Emit the operands.  */
   switch (gimple_code (stmt))
@@ -86,7 +87,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
       break;
 
     case GIMPLE_EH_MUST_NOT_THROW:
-      lto_output_tree_ref (ob, gimple_eh_must_not_throw_fndecl (stmt));
+      stream_write_tree (ob, gimple_eh_must_not_throw_fndecl (stmt), true);
       break;
 
     case GIMPLE_EH_DISPATCH:
@@ -133,7 +134,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
 		  TREE_THIS_VOLATILE (*basep) = volatilep;
 		}
 	    }
-	  lto_output_tree_ref (ob, op);
+	  stream_write_tree (ob, op, true);
 	}
       if (is_gimple_call (stmt))
 	{
@@ -141,7 +142,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
 	    lto_output_enum (ob->main_stream, internal_fn,
 			     IFN_LAST, gimple_call_internal_fn (stmt));
 	  else
-	    lto_output_tree_ref (ob, gimple_call_fntype (stmt));
+	    stream_write_tree (ob, gimple_call_fntype (stmt), true);
 	}
       break;
 

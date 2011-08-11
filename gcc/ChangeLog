@@ -1,3 +1,96 @@
+2011-08-11   Diego Novillo  <dnovillo@google.com>
+
+	* tree-streamer-out.c (lto_output_ts_decl_with_vis_tree_pointers):
+	Call stream_write_tree instead of output_record_start.
+	(lto_output_ts_binfo_tree_pointers): Likewise.
+
+	* streamer-hooks.h (stream_write_tree): Move from tree-streamer.h.
+	Convert it to a macro.
+	(stream_read_tree): Likewise.
+
+	* lto-streamer.h (lto_stream_as_builtin_p): Move ...
+	* tree-streamer.h (lto_stream_as_builtin_p): ... here.
+
+	* lto-streamer-in.c (lto_read_tree): Call lto_streamer_cache_append
+	and tree_read_bitfields.
+	* lto-streamer-out.c (lto_is_streamable): Move from lto-streamer.c
+	(lto_write_tree): Call it.
+	* lto-streamer.c (lto_is_streamable): Move to lto-streamer-out.c
+	* streamer-hooks.h (struct streamer_hooks): Remove fields
+	name, is_streamable and alloc_tree. Update all users.
+	* tree-streamer-in.c (tree_read_bitfields): Factor out of ...
+	(lto_materialize_tree): ... here.
+	Handle CALL_EXPR codes.
+	Remove call to lto_streamer_cache_append.
+	* tree-streamer-out.c (lto_output_tree_header): Handle
+	CALL_EXPR nodes.
+	* tree-streamer.h (tree_read_bitfields): Declare.
+
+	* Makefile.in (TREE_STREAMER_H): Add STREAMER_HOOKS_H.
+	(gimple-streamer-in.o): Add dependency on TREE_STREAMER_H.
+	* tree-streamer.h (stream_read_tree): New.  Replace all calls
+	to lto_input_tree with it.
+	(stream_write_tree): New.  Replace all calls to lto_output_tree,
+	lto_output_tree_ref and lto_output_tree_or_ref with it.
+	* lto-streamer-in.c (lto_read_tree): Inline code from
+	lto_streamer_read_tree.
+	(lto_input_tree): Move from tree-streamer-in.c.
+	* lto-streamer-out.c (lto_output_tree_ref): Make static.
+	Remove handling of NULL values for EXPR.
+	Do not handle EXPRs that are not indexable.
+	(lto_write_tree): Move from tree-streamer-out.c.
+	Inline lto_streamer_write_tree.
+	(lto_output_tree): Move from tree-streamer-out.c.
+	If REF_P is true and EXPR is indexable, call lto_output_tree_ref.
+	* lto-streamer.c (lto_record_common_node): Move to tree-streamer.c.
+	(lto_preload_common_nodes): Likewise.
+	Remove assertions and adjustments for nodes
+	main_identifier_node, ptrdiff_type_node and fileptr_type_node.
+	(lto_streamer_hooks_init): Set streamer_hooks.write_tree to
+	lto_output_tree and streamer_hooks.read_tree to
+	lto_input_tree.
+	* lto-streamer.h (lto_input_tree): Declare.
+	(lto_output_tree_ref): Remove.
+	* streamer-hooks.h (struct streamer_hooks): Remove fields
+	preload_common_nodes, indexable_with_decls_p,
+	pack_value_fields, unpack_value_fields and output_tree_header.
+	Update all users.
+	* tree-streamer-in.c (lto_materialize_tree): Make extern.
+	(lto_input_tree_pointers): Likewise.
+	(lto_read_tree): Move to lto-streamer-in.c.
+	(lto_input_integer_cst): Make extern.
+	(lto_get_pickled_tree): Likewise.
+	(lto_get_builtin_tree): Likewise.
+	(lto_input_tree): Move to lto-streamer-in.c.
+	* tree-streamer-out.c (pack_value_fields): Make extern.
+	(lto_output_tree_or_ref): Remove.  Replace all callers with
+	calls to stream_write_tree.
+	(lto_output_builtin_tree): Make extern.
+	(lto_streamer_write_tree): Inline into lto_write_tree.
+	(lto_output_tree_pointers): Make extern.
+	(lto_output_tree_header): Likewise.
+	(lto_output_integer_cst): Likewise.
+	(lto_write_tree): Move to lto-streamer-out.c.
+	(lto_output_tree): Likewise.
+	* tree-streamer.c (lto_record_common_node): Move from
+	lto-streamer.c
+	(preload_common_nodes): Likewise.
+	(lto_streamer_cache_create): Call it.
+	* tree-streamer.h: Include streamer-hooks.h.
+	(stream_write_tree): New.
+	(stream_read_tree): New.
+	(lto_input_tree): Remove.
+	(lto_materialize_tree): Declare.
+	(lto_input_tree_pointers): Declare.
+	(lto_get_pickled_tree): Declare.
+	(lto_get_builtin_tree): Declare.
+	(lto_input_integer_cst): Declare.
+	(lto_output_tree_header): Declare.
+	(pack_value_fields): Declare.
+	(lto_output_tree_pointers): Declare.
+	(lto_output_integer_cst): Declare.
+	(lto_output_builtin_tree): Declare.
+
 2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
 
 	* sel-sched-ir.c (get_seqno_of_a_pred): Rename to

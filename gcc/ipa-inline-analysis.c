@@ -2407,7 +2407,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  struct condition c;
 	  c.operand_num = lto_input_uleb128 (&ib);
 	  c.code = (enum tree_code) lto_input_uleb128 (&ib);
-	  c.val = lto_input_tree (&ib, data_in);
+	  c.val = stream_read_tree (&ib, data_in);
 	  VEC_safe_push (condition, gc, info->conds, &c);
 	}
       count2 = lto_input_uleb128 (&ib);
@@ -2552,7 +2552,7 @@ inline_write_summary (cgraph_node_set set,
 					 c->operand_num);
 	      lto_output_uleb128_stream (ob->main_stream,
 					 c->code);
-	      lto_output_tree (ob, c->val, true);
+	      stream_write_tree (ob, c->val, true);
 	    }
 	  lto_output_uleb128_stream (ob->main_stream,
 				     VEC_length (size_time_entry, info->entry));

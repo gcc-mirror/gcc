@@ -1000,7 +1000,8 @@ LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 DATA_STREAMER_H = data-streamer.h $(VEC_H) $(LTO_STREAMER_H)
 GIMPLE_STREAMER_H = gimple-streamer.h $(LTO_STREAMER_H) $(BASIC_BLOCK_H) \
 		    $(FUNCTION_H)
-TREE_STREAMER_H = tree-streamer.h $(TREE_H) $(LTO_STREAMER_H)
+TREE_STREAMER_H = tree-streamer.h $(TREE_H) $(LTO_STREAMER_H) \
+		  $(STREAMER_HOOKS_H)
 STREAMER_HOOKS_H = streamer-hooks.h $(TREE_H)
 TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H)
 IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H) alloc-pool.h
@@ -2305,7 +2306,7 @@ gimple-streamer-in.o: gimple-streamer-in.c $(CONFIG_H) $(SYSTEM_H) \
     $(TREE_STREAMER_H) $(DIAGNOSTIC_H)
 gimple-streamer-out.o: gimple-streamer-out.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(GIMPLE_STREAMER_H) $(DATA_STREAMER_H) $(TREE_FLOW_H) \
-    $(LTO_STREAMER_H)
+    $(LTO_STREAMER_H) $(TREE_STREAMER_H)
 tree-streamer.o: tree-streamer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
     $(TREE_STREAMER_H) $(STREAMER_HOOKS_H)
 tree-streamer-in.o: tree-streamer-in.c $(CONFIG_H) $(SYSTEM_H) \

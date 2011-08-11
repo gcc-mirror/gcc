@@ -257,86 +257,6 @@ print_lto_report (void)
 }
 
 
-/* Record NODE in CACHE.  */
-
-static void
-lto_record_common_node (struct lto_streamer_cache_d *cache, tree node)
-{
-  /* We have to make sure to fill exactly the same number of
-     elements for all frontends.  That can include NULL trees.
-     As our hash table can't deal with zero entries we'll simply stream
-     a random other tree.  A NULL tree never will be looked up so it
-     doesn't matter which tree we replace it with, just to be sure
-     use error_mark_node.  */
-  if (!node)
-    node = error_mark_node;
-
-  lto_streamer_cache_append (cache, node);
-
-  if (POINTER_TYPE_P (node)
-      || TREE_CODE (node) == COMPLEX_TYPE
-      || TREE_CODE (node) == ARRAY_TYPE)
-    lto_record_common_node (cache, TREE_TYPE (node));
-  else if (TREE_CODE (node) == RECORD_TYPE)
-    {
-      /* The FIELD_DECLs of structures should be shared, so that every
-	 COMPONENT_REF uses the same tree node when referencing a field.
-	 Pointer equality between FIELD_DECLs is used by the alias
-	 machinery to compute overlapping memory references (See
-	 nonoverlapping_component_refs_p).  */
-      tree f;
-      for (f = TYPE_FIELDS (node); f; f = TREE_CHAIN (f))
-	lto_record_common_node (cache, f);
-    }
-}
-
-/* Preload common nodes into CACHE and make sure they are merged
-   properly according to the gimple type table.  */
-
-static void
-lto_preload_common_nodes (struct lto_streamer_cache_d *cache)
-{
-  unsigned i;
-
-  /* The MAIN_IDENTIFIER_NODE is normally set up by the front-end, but the
-     LTO back-end must agree. Currently, the only languages that set this
-     use the name "main".  */
-  if (main_identifier_node)
-    {
-      const char *main_name = IDENTIFIER_POINTER (main_identifier_node);
-      gcc_assert (strcmp (main_name, "main") == 0);
-    }
-  else
-    main_identifier_node = get_identifier ("main");
-
-  gcc_assert (ptrdiff_type_node == integer_type_node);
-
-  /* FIXME lto.  In the C++ front-end, fileptr_type_node is defined as a
-     variant copy of of ptr_type_node, rather than ptr_node itself.  The
-     distinction should only be relevant to the front-end, so we always
-     use the C definition here in lto1.
-
-     These should be assured in pass_ipa_free_lang_data.  */
-  gcc_assert (fileptr_type_node == ptr_type_node);
-  gcc_assert (TYPE_MAIN_VARIANT (fileptr_type_node) == ptr_type_node);
-
-  for (i = 0; i < itk_none; i++)
-    /* Skip itk_char.  char_type_node is dependent on -f[un]signed-char.  */
-    if (i != itk_char)
-      lto_record_common_node (cache, integer_types[i]);
-
-  for (i = 0; i < TYPE_KIND_LAST; i++)
-    lto_record_common_node (cache, sizetype_tab[i]);
-
-  for (i = 0; i < TI_MAX; i++)
-    /* Skip boolean type and constants, they are frontend dependent.  */
-    if (i != TI_BOOLEAN_TYPE
-	&& i != TI_BOOLEAN_FALSE
-	&& i != TI_BOOLEAN_TRUE)
-      lto_record_common_node (cache, global_trees[i]);
-}
-
-
 #ifdef LTO_STREAMER_DEBUG
 static htab_t tree_htab;
 
@@ -464,41 +384,12 @@ lto_check_version (int major, int minor)
 }
 
 
-/* Return true if EXPR is a tree node that can be written to disk.  */
-static inline bool
-lto_is_streamable (tree expr)
-{
-  enum tree_code code = TREE_CODE (expr);
-
-  /* Notice that we reject SSA_NAMEs as well.  We only emit the SSA
-     name version in lto_output_tree_ref (see output_ssa_names).  */
-  return !is_lang_specific (expr)
-	 && code != SSA_NAME
-	 && code != CALL_EXPR
-	 && code != LANG_TYPE
-	 && code != MODIFY_EXPR
-	 && code != INIT_EXPR
-	 && code != TARGET_EXPR
-	 && code != BIND_EXPR
-	 && code != WITH_CLEANUP_EXPR
-	 && code != STATEMENT_LIST
-	 && code != OMP_CLAUSE
-	 && code != OPTIMIZATION_NODE
-	 && (code == CASE_LABEL_EXPR
-	     || code == DECL_EXPR
-	     || TREE_CODE_CLASS (code) != tcc_statement);
-}
-
-
 /* Initialize all the streamer hooks used for streaming GIMPLE.  */
 
 void
 lto_streamer_hooks_init (void)
 {
   streamer_hooks_init ();
-  streamer_hooks.name = "gimple";
-  streamer_hooks.preload_common_nodes = lto_preload_common_nodes;
-  streamer_hooks.is_streamable = lto_is_streamable;
-  streamer_hooks.write_tree = lto_streamer_write_tree;
-  streamer_hooks.read_tree = lto_streamer_read_tree;
+  streamer_hooks.write_tree = lto_output_tree;
+  streamer_hooks.read_tree = lto_input_tree;
 }

@@ -52,7 +52,7 @@ input_phi (struct lto_input_block *ib, basic_block bb, struct data_in *data_in,
      were in the original program.  */
   for (i = 0; i < len; i++)
     {
-      tree def = lto_input_tree (ib, data_in);
+      tree def = stream_read_tree (ib, data_in);
       int src_index = lto_input_uleb128 (ib);
       location_t arg_loc = lto_input_location (ib, data_in);
       basic_block sbb = BASIC_BLOCK_FOR_FUNCTION (fn, src_index);
@@ -103,7 +103,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
   gimple_set_location (stmt, lto_input_location (ib, data_in));
 
   /* Read lexical block reference.  */
-  gimple_set_block (stmt, lto_input_tree (ib, data_in));
+  gimple_set_block (stmt, stream_read_tree (ib, data_in));
 
   /* Read in all the operands.  */
   switch (code)
@@ -113,7 +113,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
       break;
 
     case GIMPLE_EH_MUST_NOT_THROW:
-      gimple_eh_must_not_throw_set_fndecl (stmt, lto_input_tree (ib, data_in));
+      gimple_eh_must_not_throw_set_fndecl (stmt, stream_read_tree (ib, data_in));
       break;
 
     case GIMPLE_EH_DISPATCH:
@@ -143,7 +143,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
     case GIMPLE_DEBUG:
       for (i = 0; i < num_ops; i++)
 	{
-	  tree op = lto_input_tree (ib, data_in);
+	  tree op = stream_read_tree (ib, data_in);
 	  gimple_set_op (stmt, i, op);
 	  if (!op)
 	    continue;
@@ -223,7 +223,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	    gimple_call_set_internal_fn
 	      (stmt, lto_input_enum (ib, internal_fn, IFN_LAST));
 	  else
-	    gimple_call_set_fntype (stmt, lto_input_tree (ib, data_in));
+	    gimple_call_set_fntype (stmt, stream_read_tree (ib, data_in));
 	}
       break;
 
