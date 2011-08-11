@@ -1581,7 +1581,7 @@ verify_target_availability (expr_t expr, regset used_regs,
   regno = expr_dest_regno (expr);
   mode = GET_MODE (EXPR_LHS (expr));
   target_available = EXPR_TARGET_AVAILABLE (expr) == 1;
-  n = reload_completed ? hard_regno_nregs[regno][mode] : 1;
+  n = HARD_REGISTER_NUM_P (regno) ? hard_regno_nregs[regno][mode] : 1;
 
   live_available = hard_available = true;
   for (i = 0; i < n; i++)
