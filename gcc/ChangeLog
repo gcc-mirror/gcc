@@ -1,5 +1,17 @@
+2011-08-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49781
+	* config/i386/i386.md (*lea_5_zext): New.
+	(*lea_6_zext): Ditto.
+	* config/i386/predicates.md (const_32bit_mask): New predicate.
+	(lea_address_operand): Reject AND.
+	* config/i386/i386.c (ix86_decompose_address): Allow Dimode AND with
+	const_32bit_mask immediate.
+	(ix86_print_operand_address): Handle AND.
+	(memory_address_length): Ditto.
+
 2011-08-11  Romain Geissler  <romain.geissler@gmail.com>
-            Brian Hackett  <bhackett1024@gmail.com>
+	    Brian Hackett  <bhackett1024@gmail.com>
 
 	* plugin.def: Add event for finish_decl.
 	* plugin.c (register_callback, invoke_plugin_callbacks): Same.
@@ -40,8 +52,7 @@
 
 2011-08-11   Kazuhiro Inaoka  <kazuhiro.inaoka.ud@renesas.com>
 
-	* config/rx/rx.md (movsicc): Allow register to register
-	transfers.
+	* config/rx/rx.md (movsicc): Allow register to register transfers.
 	(*movsicc): Likewise.
 	(*stcc): Restrict this pattern to EQ and NE compares.
 	(*stcc_reg): New pattern.  Works for any comparison but only for
@@ -71,8 +82,7 @@
 	(lto_materialize_tree): ... here.
 	Handle CALL_EXPR codes.
 	Remove call to lto_streamer_cache_append.
-	* tree-streamer-out.c (lto_output_tree_header): Handle
-	CALL_EXPR nodes.
+	* tree-streamer-out.c (lto_output_tree_header): Handle CALL_EXPR nodes.
 	* tree-streamer.h (tree_read_bitfields): Declare.
 
 	* Makefile.in (TREE_STREAMER_H): Add STREAMER_HOOKS_H.
@@ -96,8 +106,7 @@
 	Remove assertions and adjustments for nodes
 	main_identifier_node, ptrdiff_type_node and fileptr_type_node.
 	(lto_streamer_hooks_init): Set streamer_hooks.write_tree to
-	lto_output_tree and streamer_hooks.read_tree to
-	lto_input_tree.
+	lto_output_tree and streamer_hooks.read_tree to lto_input_tree.
 	* lto-streamer.h (lto_input_tree): Declare.
 	(lto_output_tree_ref): Remove.
 	* streamer-hooks.h (struct streamer_hooks): Remove fields
@@ -121,8 +130,7 @@
 	(lto_output_integer_cst): Likewise.
 	(lto_write_tree): Move to lto-streamer-out.c.
 	(lto_output_tree): Likewise.
-	* tree-streamer.c (lto_record_common_node): Move from
-	lto-streamer.c
+	* tree-streamer.c (lto_record_common_node): Move from lto-streamer.c
 	(preload_common_nodes): Likewise.
 	(lto_streamer_cache_create): Call it.
 	* tree-streamer.h: Include streamer-hooks.h.
@@ -281,7 +289,7 @@
 	* doc/tm.texi: Regenerate.
 
 2011-08-10  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/29560
 	* config/avr/avr.md (*ashlhiqi3): New insn-and-split.
 	(*ashl<extend_prefix>qihiqi3): New insn-and-splits.
@@ -337,12 +345,12 @@
 
 2011-08-09  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-       * config/i386/i386.c: Remove traling spaces.
-       * config/i386/sse.md: Likewise.
-       (*fma_fmadd_<mode>): Fix insn alternative 1 mnemonic.
-       (*fma_fmsub_<mode>): Likewise.
-       (*fma_fnmadd_<mode>): Likewise.
-       (*fma_fnmsub_<mode>): Likewise.
+	* config/i386/i386.c: Remove traling spaces.
+	* config/i386/sse.md: Likewise.
+	(*fma_fmadd_<mode>): Fix insn alternative 1 mnemonic.
+	(*fma_fmsub_<mode>): Likewise.
+	(*fma_fnmadd_<mode>): Likewise.
+	(*fma_fnmsub_<mode>): Likewise.
 
 2011-08-09  Nick Clifton  <nickc@redhat.com>
 
