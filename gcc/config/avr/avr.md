@@ -141,8 +141,12 @@
 (define_code_iterator any_extend2 [sign_extend zero_extend])
 
 ;; Define code attributes
-(define_code_attr extend_prefix
+(define_code_attr extend_su
   [(sign_extend "s")
+   (zero_extend "u")])
+
+(define_code_attr extend_u
+  [(sign_extend "")
    (zero_extend "u")])
 
 
@@ -1015,6 +1019,43 @@
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
+(define_insn "smulqi3_highpart"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(truncate:QI
+         (lshiftrt:HI (mult:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "d"))
+                               (sign_extend:HI (match_operand:QI 2 "register_operand" "d")))
+                      (const_int 8))))]
+  "AVR_HAVE_MUL"
+  "muls %1,%2
+	mov %0,r1
+	clr __zero_reg__"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+  
+(define_insn "umulqi3_highpart"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(truncate:QI
+         (lshiftrt:HI (mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                               (zero_extend:HI (match_operand:QI 2 "register_operand" "r")))
+                      (const_int 8))))]
+  "AVR_HAVE_MUL"
+  "mul %1,%2
+	mov %0,r1
+	clr __zero_reg__"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+;; Used when expanding div or mod inline for some special values
+(define_insn "*subqi3.ashiftrt7"
+  [(set (match_operand:QI 0 "register_operand"                       "=r")
+        (minus:QI (match_operand:QI 1 "register_operand"              "0")
+                  (ashiftrt:QI (match_operand:QI 2 "register_operand" "r")
+                               (const_int 7))))]
+  ""
+  "sbrc %2,7\;inc %0"
+  [(set_attr "length" "2")
+   (set_attr "cc" "clobber")])
+
 (define_insn "mulqihi3"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(mult:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "d"))
@@ -1367,9 +1408,7 @@
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
-;; Operand 2 (reg:SI 18) not clobbered on the enhanced core.
-;; All call-used registers clobbered otherwise - normal library call.
-;;    To support widening multiplicatioon with constant we postpone
+;; To support widening multiplicatioon with constant we postpone
 ;; expanding to the implicit library call until post combine and
 ;; prior to register allocation.  Clobber all hard registers that
 ;; might be used by the (widening) multiply until it is split and
@@ -1535,19 +1574,12 @@
         (reg:SI 22))]
   "")
 
-(define_expand "mulhisi3"
+;; "mulhisi3"
+;; "umulhisi3"
+(define_expand "<extend_u>mulhisi3"
   [(parallel [(set (match_operand:SI 0 "register_operand" "")
-                   (mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand" ""))
-                            (sign_extend:SI (match_operand:HI 2 "register_operand" ""))))
-              (clobber (reg:HI 26))
-              (clobber (reg:DI 18))])]
-  "AVR_HAVE_MUL"
-  "")
-
-(define_expand "umulhisi3"
-  [(parallel [(set (match_operand:SI 0 "register_operand" "")
-                   (mult:SI (zero_extend:SI (match_operand:HI 1 "register_operand" ""))
-                            (zero_extend:SI (match_operand:HI 2 "register_operand" ""))))
+                   (mult:SI (any_extend:SI (match_operand:HI 1 "register_operand" ""))
+                            (any_extend:SI (match_operand:HI 2 "register_operand" ""))))
               (clobber (reg:HI 26))
               (clobber (reg:DI 18))])]
   "AVR_HAVE_MUL"
@@ -1567,7 +1599,7 @@
 ;; "*sumulqihisi3" "*sumulhiqisi3" "*sumulhihisi3" "*sumulqiqisi3"
 ;; "*ssmulqihisi3" "*ssmulhiqisi3" "*ssmulhihisi3" "*ssmulqiqisi3"
 (define_insn_and_split
-  "*<any_extend:extend_prefix><any_extend2:extend_prefix>mul<QIHI:mode><QIHI2:mode>si3"
+  "*<any_extend:extend_su><any_extend2:extend_su>mul<QIHI:mode><QIHI2:mode>si3"
   [(set (match_operand:SI 0 "pseudo_register_operand"                            "=r")
         (mult:SI (any_extend:SI (match_operand:QIHI 1 "pseudo_register_operand"   "r"))
                  (any_extend2:SI (match_operand:QIHI2 2 "pseudo_register_operand" "r"))))
@@ -1618,6 +1650,24 @@
       }
   })
 
+;; "smulhi3_highpart"
+;; "umulhi3_highpart"
+(define_expand "<extend_su>mulhi3_highpart"
+  [(set (reg:HI 18)
+        (match_operand:HI 1 "nonmemory_operand" ""))
+   (set (reg:HI 26)
+        (match_operand:HI 2 "nonmemory_operand" ""))
+   (parallel [(set (reg:HI 24)
+                   (truncate:HI (lshiftrt:SI (mult:SI (any_extend:SI (reg:HI 18))
+                                                      (any_extend:SI (reg:HI 26)))
+                                             (const_int 16))))
+              (clobber (reg:HI 22))])
+   (set (match_operand:HI 0 "register_operand" "")
+        (reg:HI 24))]
+  "AVR_HAVE_MUL"
+  "")
+
+
 (define_insn "*mulsi3_call"
   [(set (reg:SI 22)
         (mult:SI (reg:SI 22)
@@ -1628,21 +1678,27 @@
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
-(define_insn "*mulhisi3_call"
+;; "*mulhisi3_call"
+;; "*umulhisi3_call"
+(define_insn "*<extend_u>mulhisi3_call"
   [(set (reg:SI 22)
-        (mult:SI (sign_extend:SI (reg:HI 18))
-                 (sign_extend:SI (reg:HI 26))))]
+        (mult:SI (any_extend:SI (reg:HI 18))
+                 (any_extend:SI (reg:HI 26))))]
   "AVR_HAVE_MUL"
-  "%~call __mulhisi3"
+  "%~call __<extend_u>mulhisi3"
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
-(define_insn "*umulhisi3_call"
-  [(set (reg:SI 22)
-        (mult:SI (zero_extend:SI (reg:HI 18))
-                 (zero_extend:SI (reg:HI 26))))]
+;; "*umulhi3_highpart_call"
+;; "*smulhi3_highpart_call"
+(define_insn "*<extend_su>mulhi3_highpart_call"
+  [(set (reg:HI 24)
+        (truncate:HI (lshiftrt:SI (mult:SI (any_extend:SI (reg:HI 18))
+                                           (any_extend:SI (reg:HI 26)))
+                                  (const_int 16))))
+   (clobber (reg:HI 22))]
   "AVR_HAVE_MUL"
-  "%~call __umulhisi3"
+  "%~call __<extend_u>mulhisi3"
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
@@ -1655,21 +1711,12 @@
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
-(define_insn "*muluhisi3_call"
+(define_insn "*mul<extend_su>hisi3_call"
   [(set (reg:SI 22)
-        (mult:SI (zero_extend:SI (reg:HI 26))
+        (mult:SI (any_extend:SI (reg:HI 26))
                  (reg:SI 18)))]
   "AVR_HAVE_MUL"
-  "%~call __muluhisi3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
-
-(define_insn "*mulshisi3_call"
-  [(set (reg:SI 22)
-        (mult:SI (sign_extend:SI (reg:HI 26))
-                 (reg:SI 18)))]
-  "AVR_HAVE_MUL"
-  "%~call __mulshisi3"
+  "%~call __mul<extend_su>hisi3"
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
@@ -2269,7 +2316,7 @@
 
 ;; "*ashluqihiqi3"
 ;; "*ashlsqihiqi3"
-(define_insn_and_split "*ashl<extend_prefix>qihiqi3"
+(define_insn_and_split "*ashl<extend_su>qihiqi3"
   [(set (match_operand:QI 0 "register_operand"                                     "=r")
         (subreg:QI (ashift:HI (any_extend:HI (match_operand:QI 1 "register_operand" "0"))
                               (match_operand:QI 2 "register_operand"                "r"))
@@ -2287,7 +2334,7 @@
 
 ;; "*ashluqihiqi3.mem"
 ;; "*ashlsqihiqi3.mem"
-(define_insn_and_split "*ashl<extend_prefix>qihiqi3.mem"
+(define_insn_and_split "*ashl<extend_su>qihiqi3.mem"
   [(set (match_operand:QI 0 "memory_operand" "=m")
         (subreg:QI (ashift:HI (any_extend:HI (match_operand:QI 1 "register_operand" "r"))
                               (match_operand:QI 2 "register_operand" "r"))
@@ -2301,7 +2348,7 @@
    (set (match_dup 0)
         (match_dup 3))]
   {
-    operands[3] = force_reg (QImode, operands[0]);
+    operands[3] = gen_reg_rtx (QImode);
   })
 
 ;; Similar.
@@ -2320,7 +2367,7 @@
         (match_dup 4))]
   {
     operands[3] = simplify_gen_subreg (QImode, operands[1], HImode, 0);
-    operands[4] = force_reg (QImode, operands[0]);
+    operands[4] = gen_reg_rtx (QImode);
   })
 
 ;; High part of 16-bit shift is unused after the instruction:
