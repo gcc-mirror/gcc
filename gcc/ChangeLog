@@ -1,3 +1,8 @@
+2011-08-11  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Avoid redundant
+	lookups, make looking through aggregate copies stronger.
+
 2011-08-11  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/50018
