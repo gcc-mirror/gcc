@@ -897,7 +897,8 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
   else
     {
       first = true;
-      if (!widened_name_p (oprnd, stmt, &half_type, &def_stmt, false))
+      if (!widened_name_p (oprnd, stmt, &half_type, &def_stmt, false)
+          || !vinfo_for_stmt (def_stmt))
         return false;
     }
 
