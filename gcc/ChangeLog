@@ -1,5 +1,15 @@
 2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
 
+	* sel-sched-ir.h (register_unavailable_p): Declare.
+	* sel-sched-ir.c (register_unavailable_p): New.  Use it...
+	(set_unavailable_target_for_expr): ... here to properly test
+	availability of a register.
+	(speculate_expr): Ditto.
+	* sel-sched.c (substitute_reg_in_expr): Ditto.
+	(av_set_could_be_blocked_by_bookkeeping_p): Ditto.
+
+2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
+
 	* sel-sched.c (verify_target_availability): Fix usage of
 	hard_regno_nregs.
 

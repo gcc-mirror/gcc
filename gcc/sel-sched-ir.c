@@ -1883,7 +1883,7 @@ set_unavailable_target_for_expr (expr_t expr, regset lv_set)
   if (EXPR_SEPARABLE_P (expr))
     {
       if (REG_P (EXPR_LHS (expr))
-          && bitmap_bit_p (lv_set, REGNO (EXPR_LHS (expr))))
+          && register_unavailable_p (lv_set, EXPR_LHS (expr)))
 	{
 	  /* If it's an insn like r1 = use (r1, ...), and it exists in
 	     different forms in each of the av_sets being merged, we can't say
@@ -1904,8 +1904,8 @@ set_unavailable_target_for_expr (expr_t expr, regset lv_set)
 	     miss a unifying code motion along both branches using a renamed
 	     register, but it won't affect a code correctness since upon
 	     an actual code motion a bookkeeping code would be generated.  */
-	  if (bitmap_bit_p (VINSN_REG_USES (EXPR_VINSN (expr)),
-			    REGNO (EXPR_LHS (expr))))
+	  if (register_unavailable_p (VINSN_REG_USES (EXPR_VINSN (expr)),
+				      EXPR_LHS (expr)))
 	    EXPR_TARGET_AVAILABLE (expr) = -1;
 	  else
 	    EXPR_TARGET_AVAILABLE (expr) = false;
@@ -1971,8 +1971,8 @@ speculate_expr (expr_t expr, ds_t ds)
 
         /* Do not allow clobbering the address register of speculative
            insns.  */
-        if (bitmap_bit_p (VINSN_REG_USES (EXPR_VINSN (expr)),
-                          expr_dest_regno (expr)))
+        if (register_unavailable_p (VINSN_REG_USES (EXPR_VINSN (expr)),
+				    expr_dest_reg (expr)))
           {
             EXPR_TARGET_AVAILABLE (expr) = false;
             return 2;
@@ -2025,6 +2025,25 @@ mark_unavailable_targets (av_set_t join_set, av_set_t av_set, regset lv_set)
       set_unavailable_target_for_expr (expr, lv_set);
 }
 
+
+/* Returns true if REG (at least partially) is present in REGS.  */
+bool
+register_unavailable_p (regset regs, rtx reg)
+{
+  unsigned regno, end_regno;
+
+  regno = REGNO (reg);
+  if (bitmap_bit_p (regs, regno))
+    return true;
+
+  end_regno = END_REGNO (reg);
+
+  while (++regno < end_regno)
+    if (bitmap_bit_p (regs, regno))
+      return true;
+
+  return false;
+}
 
 /* Av set functions.  */
 
