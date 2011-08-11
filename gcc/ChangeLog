@@ -1,3 +1,8 @@
+2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
+
+	* sel-sched.c (verify_target_availability): Fix usage of
+	hard_regno_nregs.
+
 2011-08-11  Dmitry Melnik  <dm@ispras.ru>
 
 	* sel-sched-ir.c (init_global_and_expr_for_insn): Forbid copying of
