@@ -3227,7 +3227,8 @@ has_dependence_note_reg_use (int regno)
 	  pro_spec_checked_ds = INSN_SPEC_CHECKED_DS (has_dependence_data.pro);
 	  pro_spec_checked_ds = ds_get_max_dep_weak (pro_spec_checked_ds);
 
-	  if (pro_spec_checked_ds != 0)
+	  if (pro_spec_checked_ds != 0
+	      && bitmap_bit_p (INSN_REG_SETS (has_dependence_data.pro), regno))
 	    /* Merge BE_IN_SPEC bits into *DSP.  */
 	    *dsp = ds_full_merge (*dsp, pro_spec_checked_ds,
 				  NULL_RTX, NULL_RTX);
