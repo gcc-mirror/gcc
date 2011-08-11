@@ -1953,7 +1953,8 @@ warn_uninitialized_phi (gimple phi, VEC(gimple, heap) **worklist,
     return;
 
   uninit_op = gimple_phi_arg_def (phi, MASK_FIRST_SET_BIT (uninit_opnds));
-  warn_uninit (OPT_Wmaybe_uninitialized, uninit_op,
+  warn_uninit (OPT_Wmaybe_uninitialized, uninit_op, SSA_NAME_VAR (uninit_op),
+	       SSA_NAME_VAR (uninit_op),
                "%qD may be used uninitialized in this function",
                uninit_use_stmt);
 

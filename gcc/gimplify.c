@@ -4483,6 +4483,7 @@ gimplify_modify_expr_complex_part (tree *expr_p, gimple_seq *pre_p,
 
   ocode = code == REALPART_EXPR ? IMAGPART_EXPR : REALPART_EXPR;
   other = build1 (ocode, TREE_TYPE (rhs), lhs);
+  TREE_NO_WARNING (other) = 1;
   other = get_formal_tmp_var (other, pre_p);
 
   realpart = code == REALPART_EXPR ? rhs : other;

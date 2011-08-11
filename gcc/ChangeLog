@@ -1,3 +1,19 @@
+2011-08-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50040
+	* gimplify.c (gimplify_modify_expr_complex_part): Mark the
+	load of the other piece with TREE_NO_WARNING.
+	* tree-flow.h (warn_uninit): Adjust prototype.
+	* tree-ssa.c (warn_uninit): Take uninitialized SSA name,
+	the base variable and the expression that is used separately.
+	Properly query all TREE_NO_WARNING flags.
+	(struct walk_data): Remove.
+	(warn_uninitialized_var): Likewise.
+	(warn_uninitialized_vars): Do not walk gimple pieces but simply
+	look at all SSA uses of the statement.  Handle unused memory
+	separately.
+	* tree-ssa-uninit.c (warn_uninitialized_phi): Adjust.
+
 2011-08-11   Kazuhiro Inaoka  <kazuhiro.inaoka.ud@renesas.com>
 
 	* config/rx/rx.md (movsicc): Allow register to register
