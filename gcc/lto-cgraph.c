@@ -1581,7 +1581,7 @@ output_node_opt_summary (struct output_block *ob,
          mechanism to store function local declarations into summaries.  */
       gcc_assert (parm);
       lto_output_uleb128_stream (ob->main_stream, parm_num);
-      lto_output_tree (ob, map->new_tree, true);
+      stream_write_tree (ob, map->new_tree, true);
       bp = bitpack_create (ob->main_stream);
       bp_pack_value (&bp, map->replace_p, 1);
       bp_pack_value (&bp, map->ref_p, 1);
@@ -1688,7 +1688,7 @@ input_node_opt_summary (struct cgraph_node *node,
 	parm_num --;
       map->parm_num = lto_input_uleb128 (ib_main);
       map->old_tree = NULL;
-      map->new_tree = lto_input_tree (ib_main, data_in);
+      map->new_tree = stream_read_tree (ib_main, data_in);
       bp = lto_input_bitpack (ib_main);
       map->replace_p = bp_unpack_value (&bp, 1);
       map->ref_p = bp_unpack_value (&bp, 1);

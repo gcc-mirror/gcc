@@ -2652,13 +2652,13 @@ ipa_write_jump_function (struct output_block *ob,
     case IPA_JF_UNKNOWN:
       break;
     case IPA_JF_KNOWN_TYPE:
-      lto_output_tree (ob, jump_func->value.base_binfo, true);
+      stream_write_tree (ob, jump_func->value.base_binfo, true);
       break;
     case IPA_JF_CONST:
-      lto_output_tree (ob, jump_func->value.constant, true);
+      stream_write_tree (ob, jump_func->value.constant, true);
       break;
     case IPA_JF_PASS_THROUGH:
-      lto_output_tree (ob, jump_func->value.pass_through.operand, true);
+      stream_write_tree (ob, jump_func->value.pass_through.operand, true);
       lto_output_uleb128_stream (ob->main_stream,
 				 jump_func->value.pass_through.formal_id);
       lto_output_uleb128_stream (ob->main_stream,
@@ -2667,13 +2667,13 @@ ipa_write_jump_function (struct output_block *ob,
     case IPA_JF_ANCESTOR:
       lto_output_uleb128_stream (ob->main_stream,
 				 jump_func->value.ancestor.offset);
-      lto_output_tree (ob, jump_func->value.ancestor.type, true);
+      stream_write_tree (ob, jump_func->value.ancestor.type, true);
       lto_output_uleb128_stream (ob->main_stream,
 				 jump_func->value.ancestor.formal_id);
       break;
     case IPA_JF_CONST_MEMBER_PTR:
-      lto_output_tree (ob, jump_func->value.member_cst.pfn, true);
-      lto_output_tree (ob, jump_func->value.member_cst.delta, false);
+      stream_write_tree (ob, jump_func->value.member_cst.pfn, true);
+      stream_write_tree (ob, jump_func->value.member_cst.delta, false);
       break;
     }
 }
@@ -2692,24 +2692,24 @@ ipa_read_jump_function (struct lto_input_block *ib,
     case IPA_JF_UNKNOWN:
       break;
     case IPA_JF_KNOWN_TYPE:
-      jump_func->value.base_binfo = lto_input_tree (ib, data_in);
+      jump_func->value.base_binfo = stream_read_tree (ib, data_in);
       break;
     case IPA_JF_CONST:
-      jump_func->value.constant = lto_input_tree (ib, data_in);
+      jump_func->value.constant = stream_read_tree (ib, data_in);
       break;
     case IPA_JF_PASS_THROUGH:
-      jump_func->value.pass_through.operand = lto_input_tree (ib, data_in);
+      jump_func->value.pass_through.operand = stream_read_tree (ib, data_in);
       jump_func->value.pass_through.formal_id = lto_input_uleb128 (ib);
       jump_func->value.pass_through.operation = (enum tree_code) lto_input_uleb128 (ib);
       break;
     case IPA_JF_ANCESTOR:
       jump_func->value.ancestor.offset = lto_input_uleb128 (ib);
-      jump_func->value.ancestor.type = lto_input_tree (ib, data_in);
+      jump_func->value.ancestor.type = stream_read_tree (ib, data_in);
       jump_func->value.ancestor.formal_id = lto_input_uleb128 (ib);
       break;
     case IPA_JF_CONST_MEMBER_PTR:
-      jump_func->value.member_cst.pfn = lto_input_tree (ib, data_in);
-      jump_func->value.member_cst.delta = lto_input_tree (ib, data_in);
+      jump_func->value.member_cst.pfn = stream_read_tree (ib, data_in);
+      jump_func->value.member_cst.delta = stream_read_tree (ib, data_in);
       break;
     }
 }
@@ -2733,7 +2733,7 @@ ipa_write_indirect_edge_info (struct output_block *ob,
   if (ii->polymorphic)
     {
       lto_output_sleb128_stream (ob->main_stream, ii->otr_token);
-      lto_output_tree (ob, ii->otr_type, true);
+      stream_write_tree (ob, ii->otr_type, true);
     }
 }
 
@@ -2755,7 +2755,7 @@ ipa_read_indirect_edge_info (struct lto_input_block *ib,
   if (ii->polymorphic)
     {
       ii->otr_token = (HOST_WIDE_INT) lto_input_sleb128 (ib);
-      ii->otr_type = lto_input_tree (ib, data_in);
+      ii->otr_type = stream_read_tree (ib, data_in);
     }
 }
 

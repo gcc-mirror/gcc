@@ -1099,6 +1099,7 @@ lto_init (void)
      distinction should only be relevant to the front-end, so we
      always use the C definition here in lto1.  */
   gcc_assert (fileptr_type_node == ptr_type_node);
+  gcc_assert (TYPE_MAIN_VARIANT (fileptr_type_node) == ptr_type_node);
 
   ptrdiff_type_node = integer_type_node;
 

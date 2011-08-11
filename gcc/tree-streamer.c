@@ -245,6 +245,66 @@ lto_streamer_cache_get (struct lto_streamer_cache_d *cache, unsigned ix)
   return VEC_index (tree, cache->nodes, ix);
 }
 
+
+/* Record NODE in CACHE.  */
+
+static void
+lto_record_common_node (struct lto_streamer_cache_d *cache, tree node)
+{
+  /* We have to make sure to fill exactly the same number of
+     elements for all frontends.  That can include NULL trees.
+     As our hash table can't deal with zero entries we'll simply stream
+     a random other tree.  A NULL tree never will be looked up so it
+     doesn't matter which tree we replace it with, just to be sure
+     use error_mark_node.  */
+  if (!node)
+    node = error_mark_node;
+
+  lto_streamer_cache_append (cache, node);
+
+  if (POINTER_TYPE_P (node)
+      || TREE_CODE (node) == COMPLEX_TYPE
+      || TREE_CODE (node) == ARRAY_TYPE)
+    lto_record_common_node (cache, TREE_TYPE (node));
+  else if (TREE_CODE (node) == RECORD_TYPE)
+    {
+      /* The FIELD_DECLs of structures should be shared, so that every
+	 COMPONENT_REF uses the same tree node when referencing a field.
+	 Pointer equality between FIELD_DECLs is used by the alias
+	 machinery to compute overlapping memory references (See
+	 nonoverlapping_component_refs_p).  */
+      tree f;
+      for (f = TYPE_FIELDS (node); f; f = TREE_CHAIN (f))
+	lto_record_common_node (cache, f);
+    }
+}
+
+
+/* Preload common nodes into CACHE and make sure they are merged
+   properly according to the gimple type table.  */
+
+static void
+preload_common_nodes (struct lto_streamer_cache_d *cache)
+{
+  unsigned i;
+
+  for (i = 0; i < itk_none; i++)
+    /* Skip itk_char.  char_type_node is dependent on -f[un]signed-char.  */
+    if (i != itk_char)
+      lto_record_common_node (cache, integer_types[i]);
+
+  for (i = 0; i < TYPE_KIND_LAST; i++)
+    lto_record_common_node (cache, sizetype_tab[i]);
+
+  for (i = 0; i < TI_MAX; i++)
+    /* Skip boolean type and constants, they are frontend dependent.  */
+    if (i != TI_BOOLEAN_TYPE
+	&& i != TI_BOOLEAN_FALSE
+	&& i != TI_BOOLEAN_TRUE)
+      lto_record_common_node (cache, global_trees[i]);
+}
+
+
 /* Create a cache of pickled nodes.  */
 
 struct lto_streamer_cache_d *
@@ -259,7 +319,7 @@ lto_streamer_cache_create (void)
   /* Load all the well-known tree nodes that are always created by
      the compiler on startup.  This prevents writing them out
      unnecessarily.  */
-  streamer_hooks.preload_common_nodes (cache);
+  preload_common_nodes (cache);
 
   return cache;
 }

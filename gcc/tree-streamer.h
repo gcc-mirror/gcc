@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_STREAMER_H
 
 #include "tree.h"
+#include "streamer-hooks.h"
 #include "lto-streamer.h"
 
 /* Cache of pickled nodes.  Used to avoid writing the same node more
@@ -51,14 +52,35 @@ struct lto_streamer_cache_d
   VEC(tree,heap) *nodes;
 };
 
+/* Return true if tree node EXPR should be streamed as a builtin.  For
+   these nodes, we just emit the class and function code.  */
+static inline bool
+lto_stream_as_builtin_p (tree expr)
+{
+  return (TREE_CODE (expr) == FUNCTION_DECL
+	  && DECL_IS_BUILTIN (expr)
+	  && (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_NORMAL
+	      || DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD));
+}
+
 /* In tree-streamer-in.c.  */
 tree input_string_cst (struct data_in *, struct lto_input_block *);
-tree lto_input_tree (struct lto_input_block *, struct data_in *);
-void lto_streamer_read_tree (struct lto_input_block *,
-				     struct data_in *, tree);
+void lto_streamer_read_tree (struct lto_input_block *, struct data_in *, tree);
+tree lto_materialize_tree (struct lto_input_block *, struct data_in *,
+			   enum LTO_tags);
+void lto_input_tree_pointers (struct lto_input_block *, struct data_in *, tree);
+tree lto_get_pickled_tree (struct lto_input_block *, struct data_in *);
+tree lto_get_builtin_tree (struct lto_input_block *, struct data_in *);
+tree lto_input_integer_cst (struct lto_input_block *, struct data_in *);
+struct bitpack_d tree_read_bitfields (struct lto_input_block *, tree);
 
 /* In tree-streamer-out.c.  */
-void lto_streamer_write_tree (struct output_block *, tree, bool);
+void lto_output_chain (struct output_block *, tree, bool);
+void lto_output_tree_header (struct output_block *, tree);
+void pack_value_fields (struct bitpack_d *, tree);
+void lto_output_tree_pointers (struct output_block *, tree, bool);
+void lto_output_integer_cst (struct output_block *, tree, bool);
+void lto_output_builtin_tree (struct output_block *, tree);
 
 /* In tree-streamer.c.  */
 void check_handled_ts_structures (void);

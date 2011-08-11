@@ -809,6 +809,7 @@ tree lto_input_tree_ref (struct lto_input_block *, struct data_in *,
 			 struct function *, enum LTO_tags);
 void lto_tag_check_set (enum LTO_tags, int, ...);
 void lto_init_eh (void);
+tree lto_input_tree (struct lto_input_block *, struct data_in *);
 
 
 /* In lto-streamer-out.c  */
@@ -822,7 +823,6 @@ void lto_output_decl_state_streams (struct output_block *,
 void lto_output_decl_state_refs (struct output_block *,
 			         struct lto_output_stream *,
 			         struct lto_out_decl_state *);
-void lto_output_tree_ref (struct output_block *, tree);
 void lto_output_location (struct output_block *, location_t);
 
 
@@ -1014,17 +1014,6 @@ static inline bool
 emit_label_in_global_context_p (tree label)
 {
   return DECL_NONLOCAL (label) || FORCED_LABEL (label);
-}
-
-/* Return true if tree node EXPR should be streamed as a builtin.  For
-   these nodes, we just emit the class and function code.  */
-static inline bool
-lto_stream_as_builtin_p (tree expr)
-{
-  return (TREE_CODE (expr) == FUNCTION_DECL
-	  && DECL_IS_BUILTIN (expr)
-	  && (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_NORMAL
-	      || DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD));
 }
 
 DEFINE_DECL_STREAM_FUNCS (TYPE, type)
