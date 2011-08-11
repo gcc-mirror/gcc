@@ -275,8 +275,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   // NB: DR 706.
   template<class _T1, class _T2>
-    inline constexpr pair<typename __decay_and_strip<_T1>::__type,
-			  typename __decay_and_strip<_T2>::__type>
+    constexpr pair<typename __decay_and_strip<_T1>::__type,
+                   typename __decay_and_strip<_T2>::__type>
     make_pair(_T1&& __x, _T2&& __y)
     {
       typedef typename __decay_and_strip<_T1>::__type __ds_type1;
