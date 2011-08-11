@@ -5594,7 +5594,7 @@ stmt_interesting_for_vrp (gimple stmt)
 	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
 	  && ((is_gimple_call (stmt)
 	       && gimple_call_fndecl (stmt) != NULL_TREE
-	       && DECL_IS_BUILTIN (gimple_call_fndecl (stmt)))
+	       && DECL_BUILT_IN (gimple_call_fndecl (stmt)))
 	      || !gimple_vuse (stmt)))
 	return true;
     }
@@ -6432,7 +6432,7 @@ vrp_visit_stmt (gimple stmt, edge *taken_edge_p, tree *output_p)
 	 builtin functions.  */
       if ((is_gimple_call (stmt)
 	   && gimple_call_fndecl (stmt) != NULL_TREE
-	   && DECL_IS_BUILTIN (gimple_call_fndecl (stmt)))
+	   && DECL_BUILT_IN (gimple_call_fndecl (stmt)))
 	  || !gimple_vuse (stmt))
 	return vrp_visit_assignment_or_call (stmt, output_p);
     }
