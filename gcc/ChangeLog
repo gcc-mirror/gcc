@@ -1,5 +1,11 @@
 2011-08-11  Richard Guenther  <rguenther@suse.de>
 
+	* lto-cgraph.c (input_node): Use DECL_BUILT_IN.
+	* tree-vrp.c (stmt_interesting_for_vrp): Likewise.
+	(vrp_visit_stmt): Likewise.
+
+2011-08-11  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/50040
 	* gimplify.c (gimplify_modify_expr_complex_part): Mark the
 	load of the other piece with TREE_NO_WARNING.
