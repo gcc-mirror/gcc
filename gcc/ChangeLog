@@ -1,3 +1,9 @@
+2011-08-11  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50039
+	* tree-vect-patterns.c (vect_operation_fits_smaller_type): Check
+	that DEF_STMT has a stmt_vec_info.
+
 2011-08-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (can_trust_pointer_alignment): Remove.
