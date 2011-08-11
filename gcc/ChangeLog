@@ -1,4 +1,9 @@
 2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
+
+	* sel-sched-ir.c (has_dependence_note_reg_use): Call ds_full_merge
+	only if producer writes to the register given by regno.
+
+2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
 	    Alexander Monakov  <amonakov@ispras.ru>
 
 	* sched-deps.c (sched_get_condition_with_rev): Rename to ...
