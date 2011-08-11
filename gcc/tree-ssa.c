@@ -1652,14 +1652,15 @@ walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data,
    again for plain uninitialized variables, since optimization may have
    changed conditionally uninitialized to unconditionally uninitialized.  */
 
-/* Emit a warning for T, an SSA_NAME, being uninitialized.  The exact
+/* Emit a warning for EXPR based on variable VAR at the point in the
+   program T, an SSA_NAME, is used being uninitialized.  The exact
    warning text is in MSGID and LOCUS may contain a location or be null.
    WC is the warning code.  */
 
 void
-warn_uninit (enum opt_code wc, tree t, const char *gmsgid, void *data)
+warn_uninit (enum opt_code wc, tree t,
+	     tree expr, tree var, const char *gmsgid, void *data)
 {
-  tree var = SSA_NAME_VAR (t);
   gimple context = (gimple) data;
   location_t location;
   expanded_location xloc, floc;
@@ -1669,11 +1670,11 @@ warn_uninit (enum opt_code wc, tree t, const char *gmsgid, void *data)
 
   /* TREE_NO_WARNING either means we already warned, or the front end
      wishes to suppress the warning.  */
-  if (TREE_NO_WARNING (var))
-    return;
-
-  /* Do not warn if it can be initialized outside this module.  */
-  if (is_global_var (var))
+  if ((context
+       && (gimple_no_warning_p (context)
+	   || (gimple_assign_single_p (context)
+	       && TREE_NO_WARNING (gimple_assign_rhs1 (context)))))
+      || TREE_NO_WARNING (expr))
     return;
 
   location = (context != NULL && gimple_has_location (context))
@@ -1681,9 +1682,9 @@ warn_uninit (enum opt_code wc, tree t, const char *gmsgid, void *data)
 	     : DECL_SOURCE_LOCATION (var);
   xloc = expand_location (location);
   floc = expand_location (DECL_SOURCE_LOCATION (cfun->decl));
-  if (warning_at (location, wc, gmsgid, var))
+  if (warning_at (location, wc, gmsgid, expr))
     {
-      TREE_NO_WARNING (var) = 1;
+      TREE_NO_WARNING (expr) = 1;
 
       if (location == DECL_SOURCE_LOCATION (var))
 	return;
@@ -1694,126 +1695,79 @@ warn_uninit (enum opt_code wc, tree t, const char *gmsgid, void *data)
     }
 }
 
-struct walk_data {
-  gimple stmt;
-  bool always_executed;
-  bool warn_possibly_uninitialized;
-};
-
-/* Called via walk_tree, look for SSA_NAMEs that have empty definitions
-   and warn about them.  */
-
-static tree
-warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data_)
-{
-  struct walk_stmt_info *wi = (struct walk_stmt_info *) data_;
-  struct walk_data *data = (struct walk_data *) wi->info;
-  tree t = *tp;
-
-  /* We do not care about LHS.  */
-  if (wi->is_lhs)
-    {
-      /* Except for operands of dereferences.  */
-      if (!INDIRECT_REF_P (t)
-	  && TREE_CODE (t) != MEM_REF)
-	return NULL_TREE;
-      t = TREE_OPERAND (t, 0);
-    }
-
-  switch (TREE_CODE (t))
-    {
-    case ADDR_EXPR:
-      /* Taking the address of an uninitialized variable does not
-	 count as using it.  */
-      *walk_subtrees = 0;
-      break;
-
-    case VAR_DECL:
-      {
-	/* A VAR_DECL in the RHS of a gimple statement may mean that
-	   this variable is loaded from memory.  */
-	use_operand_p vuse;
-	tree op;
-
-	/* If there is not gimple stmt,
-	   or alias information has not been computed,
-	   then we cannot check VUSE ops.  */
-	if (data->stmt == NULL)
-	  return NULL_TREE;
-
-	/* If the load happens as part of a call do not warn about it.  */
-	if (is_gimple_call (data->stmt))
-	  return NULL_TREE;
-
-	vuse = gimple_vuse_op (data->stmt);
-	if (vuse == NULL_USE_OPERAND_P)
-	  return NULL_TREE;
-
-	op = USE_FROM_PTR (vuse);
-	if (t != SSA_NAME_VAR (op)
-	    || !SSA_NAME_IS_DEFAULT_DEF (op))
-	  return NULL_TREE;
-	/* If this is a VUSE of t and it is the default definition,
-	   then warn about op.  */
-	t = op;
-	/* Fall through into SSA_NAME.  */
-      }
-
-    case SSA_NAME:
-      /* We only do data flow with SSA_NAMEs, so that's all we
-	 can warn about.  */
-      if (data->always_executed)
-        warn_uninit (OPT_Wuninitialized,
-	             t, "%qD is used uninitialized in this function",
-		     data->stmt);
-      else if (data->warn_possibly_uninitialized)
-        warn_uninit (OPT_Wuninitialized,
-	             t, "%qD may be used uninitialized in this function",
-		     data->stmt);
-      *walk_subtrees = 0;
-      break;
-
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
-      /* The total store transformation performed during gimplification
-	 creates uninitialized variable uses.  If all is well, these will
-	 be optimized away, so don't warn now.  */
-      if (TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME)
-	*walk_subtrees = 0;
-      break;
-
-    default:
-      if (IS_TYPE_OR_DECL_P (t))
-	*walk_subtrees = 0;
-      break;
-    }
-
-  return NULL_TREE;
-}
-
 unsigned int
 warn_uninitialized_vars (bool warn_possibly_uninitialized)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
-  struct walk_data data;
-
-  data.warn_possibly_uninitialized = warn_possibly_uninitialized;
-
 
   FOR_EACH_BB (bb)
     {
-      data.always_executed = dominated_by_p (CDI_POST_DOMINATORS,
+      bool always_executed = dominated_by_p (CDI_POST_DOMINATORS,
 					     single_succ (ENTRY_BLOCK_PTR), bb);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  struct walk_stmt_info wi;
-	  data.stmt = gsi_stmt (gsi);
-	  if (is_gimple_debug (data.stmt))
+	  gimple stmt = gsi_stmt (gsi);
+	  use_operand_p use_p;
+	  ssa_op_iter op_iter;
+	  tree use;
+
+	  if (is_gimple_debug (stmt))
 	    continue;
-	  memset (&wi, 0, sizeof (wi));
-	  wi.info = &data;
-	  walk_gimple_op (gsi_stmt (gsi), warn_uninitialized_var, &wi);
+
+	  /* We only do data flow with SSA_NAMEs, so that's all we
+	     can warn about.  */
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, op_iter, SSA_OP_USE)
+	    {
+	      use = USE_FROM_PTR (use_p);
+	      if (always_executed)
+		warn_uninit (OPT_Wuninitialized, use,
+			     SSA_NAME_VAR (use), SSA_NAME_VAR (use),
+			     "%qD is used uninitialized in this function",
+			     stmt);
+	      else if (warn_possibly_uninitialized)
+		warn_uninit (OPT_Wuninitialized, use,
+			     SSA_NAME_VAR (use), SSA_NAME_VAR (use),
+			     "%qD may be used uninitialized in this function",
+			     stmt);
+	    }
+
+	  /* For memory the only cheap thing we can do is see if we
+	     have a use of the default def of the virtual operand.
+	     ???  Note that at -O0 we do not have virtual operands.
+	     ???  Not so cheap would be to use the alias oracle via
+	     walk_aliased_vdefs, if we don't find any aliasing vdef
+	     warn as is-used-uninitialized, if we don't find an aliasing
+	     vdef that kills our use (stmt_kills_ref_p), warn as
+	     may-be-used-uninitialized.  But this walk is quadratic and
+	     so must be limited which means we would miss warning
+	     opportunities.  */
+	  use = gimple_vuse (stmt);
+	  if (use
+	      && gimple_assign_single_p (stmt)
+	      && !gimple_vdef (stmt)
+	      && SSA_NAME_IS_DEFAULT_DEF (use))
+	    {
+	      tree rhs = gimple_assign_rhs1 (stmt);
+	      tree base = get_base_address (rhs);
+
+	      /* Do not warn if it can be initialized outside this function.  */
+	      if (TREE_CODE (base) != VAR_DECL
+		  || DECL_HARD_REGISTER (base)
+		  || is_global_var (base))
+		continue;
+
+	      if (always_executed)
+		warn_uninit (OPT_Wuninitialized, use, gimple_assign_rhs1 (stmt),
+			     base,
+			     "%qE is used uninitialized in this function",
+			     stmt);
+	      else if (warn_possibly_uninitialized)
+		warn_uninit (OPT_Wuninitialized, use, gimple_assign_rhs1 (stmt),
+			     base,
+			     "%qE may be used uninitialized in this function",
+			     stmt);
+	    }
 	}
     }
 
