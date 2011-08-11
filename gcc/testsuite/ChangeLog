@@ -1,3 +1,7 @@
+2011-08-11  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/tree-ssa/pr41186.C: Un-XFAIL.
+
 2011-08-11  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/graphite/run-id-pr47593.c: Remove -m32.

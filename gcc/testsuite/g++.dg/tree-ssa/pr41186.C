@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre1-details" } */
+/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1-details" } */
 
 struct Foo {
   Foo() {};
@@ -30,6 +30,6 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump "Replaced b1.b with 1" "fre1" } } */
-/* { dg-final { scan-tree-dump "Replaced b1.i with 0" "fre1" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump "Replaced b1.f with 1" "fre1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "Replaced b1.D.\[0-9\]*.i with 0" "fre1" } } */
+/* { dg-final { scan-tree-dump "Replaced b1.D.\[0-9\]*.f with 1" "fre1" } } */
 /* { dg-final { cleanup-tree-dump "fre1" } } */
