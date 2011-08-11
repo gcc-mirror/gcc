@@ -11146,11 +11146,22 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 
   /* Allow zero-extended SImode addresses,
      they will be emitted with addr32 prefix.  */
-  if (TARGET_64BIT
-      && GET_CODE (addr) == ZERO_EXTEND
-      && GET_MODE (addr) == DImode
-      && GET_MODE (XEXP (addr, 0)) == SImode)
-    addr = XEXP (addr, 0);
+  if (TARGET_64BIT && GET_MODE (addr) == DImode)
+    {
+      if (GET_CODE (addr) == ZERO_EXTEND
+	  && GET_MODE (XEXP (addr, 0)) == SImode)
+	addr = XEXP (addr, 0);
+      else if (GET_CODE (addr) == AND
+	       && const_32bit_mask (XEXP (addr, 1), DImode))
+	{
+	  addr = XEXP (addr, 0);
+
+	  /* Strip subreg.  */
+	  if (GET_CODE (addr) == SUBREG
+	      && GET_MODE (SUBREG_REG (addr)) == SImode)
+	    addr = SUBREG_REG (addr);
+	}
+    }
 
   if (REG_P (addr))
     base = addr;
@@ -14174,7 +14185,10 @@ ix86_print_operand_address (FILE *file, rtx addr)
       /* Print SImode registers for zero-extended addresses to force
 	 addr32 prefix.  Otherwise print DImode registers to avoid it.  */
       if (TARGET_64BIT)
-	code = (GET_CODE (addr) == ZERO_EXTEND) ? 'l' : 'q';
+	code = ((GET_CODE (addr) == ZERO_EXTEND
+		 || GET_CODE (addr) == AND)
+		? 'l'
+		: 'q');
 
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	{
@@ -21785,9 +21799,9 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
   return s->rtl;
 }
 
-/* Calculate the length of the memory address in the instruction
-   encoding.  Includes addr32 prefix, does not include the one-byte modrm,
-   opcode, or other prefixes.  */
+/* Calculate the length of the memory address in the instruction encoding.
+   Includes addr32 prefix, does not include the one-byte modrm, opcode,
+   or other prefixes.  */
 
 int
 memory_address_length (rtx addr)
@@ -21816,7 +21830,8 @@ memory_address_length (rtx addr)
   disp = parts.disp;
 
   /* Add length of addr32 prefix.  */
-  len = (GET_CODE (addr) == ZERO_EXTEND);
+  len = (GET_CODE (addr) == ZERO_EXTEND
+	 || GET_CODE (addr) == AND);
 
   /* Rule of thumb:
        - esp as the base always wants an index,
