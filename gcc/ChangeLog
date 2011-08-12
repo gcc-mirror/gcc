@@ -152,7 +152,7 @@
 2011-08-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/arm/arm.c (get_label_padding): New function.
-	(create_fix_barrier, md_reorg): Likewise.
+	(create_fix_barrier, arm_reorg): Use it.
 
 2011-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
