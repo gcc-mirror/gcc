@@ -1,3 +1,8 @@
+2011-08-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/builtins-67.c: New test.
+	* gcc.target/i386/conversion.c: Ditto.
+
 2011-08-11  Romain Geissler  <romain.geissler@gmail.com>
             Brian Hackett  <bhackett1024@gmail.com>
 
