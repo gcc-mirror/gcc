@@ -4680,8 +4680,9 @@ byte by byte in lexicographic order starting at the beginning of each
 string.  The instruction is not allowed to prefetch more than one byte
 at a time since either string may end in the first byte and reading past
 that may access an invalid page or segment and cause a fault.  The
-effect of the instruction is to store a value in operand 0 whose sign
-indicates the result of the comparison.
+comparison terminates early if the fetched bytes are different or if
+they are equal to zero.  The effect of the instruction is to store a
+value in operand 0 whose sign indicates the result of the comparison.
 
 @cindex @code{cmpstr@var{m}} instruction pattern
 @item @samp{cmpstr@var{m}}
@@ -4699,8 +4700,10 @@ The two memory blocks specified are compared byte by byte in lexicographic
 order starting at the beginning of each string.  The instruction is not allowed
 to prefetch more than one byte at a time since either string may end in the
 first byte and reading past that may access an invalid page or segment and
-cause a fault.  The effect of the instruction is to store a value in operand 0
-whose sign indicates the result of the comparison.
+cause a fault.  The comparison will terminate when the fetched bytes
+are different or if they are equal to zero.  The effect of the
+instruction is to store a value in operand 0 whose sign indicates the
+result of the comparison.
 
 @cindex @code{cmpmem@var{m}} instruction pattern
 @item @samp{cmpmem@var{m}}
@@ -4708,9 +4711,10 @@ Block compare instruction, with five operands like the operands
 of @samp{cmpstr@var{m}}.  The two memory blocks specified are compared
 byte by byte in lexicographic order starting at the beginning of each
 block.  Unlike @samp{cmpstr@var{m}} the instruction can prefetch
-any bytes in the two memory blocks.  The effect of the instruction is
-to store a value in operand 0 whose sign indicates the result of the
-comparison.
+any bytes in the two memory blocks.  Also unlike @samp{cmpstr@var{m}}
+the comparison will not stop if both bytes are zero.  The effect of
+the instruction is to store a value in operand 0 whose sign indicates
+the result of the comparison.
 
 @cindex @code{strlen@var{m}} instruction pattern
 @item @samp{strlen@var{m}}
