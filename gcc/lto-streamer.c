@@ -291,7 +291,7 @@ lto_streamer_init (void)
      match exactly the structures defined in treestruct.def.  When a
      new TS_* astructure is added, the streamer should be updated to
      handle it.  */
-  check_handled_ts_structures ();
+  streamer_check_handled_ts_structures ();
 
 #ifdef LTO_STREAMER_DEBUG
   tree_htab = htab_create (31, hash_tree, eq_tree, NULL);

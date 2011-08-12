@@ -2326,7 +2326,7 @@ read_predicate (struct lto_input_block *ib)
   do 
     {
       gcc_assert (k <= MAX_CLAUSES);
-      clause = out.clause[k++] = lto_input_uleb128 (ib);
+      clause = out.clause[k++] = streamer_read_uhwi (ib);
     }
   while (clause);
 
@@ -2346,9 +2346,9 @@ read_inline_edge_summary (struct lto_input_block *ib, struct cgraph_edge *e)
   struct inline_edge_summary *es = inline_edge_summary (e);
   struct predicate p;
 
-  es->call_stmt_size = lto_input_uleb128 (ib);
-  es->call_stmt_time = lto_input_uleb128 (ib);
-  es->loop_depth = lto_input_uleb128 (ib);
+  es->call_stmt_size = streamer_read_uhwi (ib);
+  es->call_stmt_time = streamer_read_uhwi (ib);
+  es->loop_depth = streamer_read_uhwi (ib);
   p = read_predicate (ib);
   edge_set_predicate (e, &p);
 }
@@ -2376,7 +2376,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,
 			header->string_size, NULL);
-  f_count = lto_input_uleb128 (&ib);
+  f_count = streamer_read_uhwi (&ib);
   for (i = 0; i < f_count; i++)
     {
       unsigned int index;
@@ -2386,38 +2386,38 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       struct bitpack_d bp;
       struct cgraph_edge *e;
 
-      index = lto_input_uleb128 (&ib);
+      index = streamer_read_uhwi (&ib);
       encoder = file_data->cgraph_node_encoder;
       node = lto_cgraph_encoder_deref (encoder, index);
       info = inline_summary (node);
 
       info->estimated_stack_size
-	= info->estimated_self_stack_size = lto_input_uleb128 (&ib);
-      info->size = info->self_size = lto_input_uleb128 (&ib);
-      info->time = info->self_time = lto_input_uleb128 (&ib);
+	= info->estimated_self_stack_size = streamer_read_uhwi (&ib);
+      info->size = info->self_size = streamer_read_uhwi (&ib);
+      info->time = info->self_time = streamer_read_uhwi (&ib);
 
-      bp = lto_input_bitpack (&ib);
+      bp = streamer_read_bitpack (&ib);
       info->inlinable = bp_unpack_value (&bp, 1);
       info->versionable = bp_unpack_value (&bp, 1);
 
-      count2 = lto_input_uleb128 (&ib);
+      count2 = streamer_read_uhwi (&ib);
       gcc_assert (!info->conds);
       for (j = 0; j < count2; j++)
 	{
 	  struct condition c;
-	  c.operand_num = lto_input_uleb128 (&ib);
-	  c.code = (enum tree_code) lto_input_uleb128 (&ib);
+	  c.operand_num = streamer_read_uhwi (&ib);
+	  c.code = (enum tree_code) streamer_read_uhwi (&ib);
 	  c.val = stream_read_tree (&ib, data_in);
 	  VEC_safe_push (condition, gc, info->conds, &c);
 	}
-      count2 = lto_input_uleb128 (&ib);
+      count2 = streamer_read_uhwi (&ib);
       gcc_assert (!info->entry);
       for (j = 0; j < count2; j++)
 	{
 	  struct size_time_entry e;
 
-	  e.size = lto_input_uleb128 (&ib);
-	  e.time = lto_input_uleb128 (&ib);
+	  e.size = streamer_read_uhwi (&ib);
+	  e.time = streamer_read_uhwi (&ib);
 	  e.predicate = read_predicate (&ib);
 
 	  VEC_safe_push (size_time_entry, gc, info->entry, &e);
@@ -2480,10 +2480,9 @@ write_predicate (struct output_block *ob, struct predicate *p)
     for (j = 0; p->clause[j]; j++)
       {
 	 gcc_assert (j < MAX_CLAUSES);
-	 lto_output_uleb128_stream (ob->main_stream,
-				    p->clause[j]);
+	 streamer_write_uhwi (ob, p->clause[j]);
       }
-  lto_output_uleb128_stream (ob->main_stream, 0);
+  streamer_write_uhwi (ob, 0);
 }
 
 
@@ -2493,9 +2492,9 @@ static void
 write_inline_edge_summary (struct output_block *ob, struct cgraph_edge *e)
 {
   struct inline_edge_summary *es = inline_edge_summary (e);
-  lto_output_uleb128_stream (ob->main_stream, es->call_stmt_size);
-  lto_output_uleb128_stream (ob->main_stream, es->call_stmt_time);
-  lto_output_uleb128_stream (ob->main_stream, es->loop_depth);
+  streamer_write_uhwi (ob, es->call_stmt_size);
+  streamer_write_uhwi (ob, es->call_stmt_time);
+  streamer_write_uhwi (ob, es->loop_depth);
   write_predicate (ob, es->predicate);
 }
 
@@ -2517,7 +2516,7 @@ inline_write_summary (cgraph_node_set set,
   for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
     if (lto_cgraph_encoder_deref (encoder, i)->analyzed)
       count++;
-  lto_output_uleb128_stream (ob->main_stream, count);
+  streamer_write_uhwi (ob, count);
 
   for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
     {
@@ -2532,38 +2531,28 @@ inline_write_summary (cgraph_node_set set,
 	  struct condition *c;
 	  
 
-	  lto_output_uleb128_stream (ob->main_stream,
-				     lto_cgraph_encoder_encode (encoder, node));
-	  lto_output_sleb128_stream (ob->main_stream,
-				     info->estimated_self_stack_size);
-	  lto_output_sleb128_stream (ob->main_stream,
-				     info->self_size);
-	  lto_output_sleb128_stream (ob->main_stream,
-				     info->self_time);
+	  streamer_write_uhwi (ob, lto_cgraph_encoder_encode (encoder, node));
+	  streamer_write_hwi (ob, info->estimated_self_stack_size);
+	  streamer_write_hwi (ob, info->self_size);
+	  streamer_write_hwi (ob, info->self_time);
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, info->inlinable, 1);
 	  bp_pack_value (&bp, info->versionable, 1);
-	  lto_output_bitpack (&bp);
-	  lto_output_uleb128_stream (ob->main_stream,
-				     VEC_length (condition, info->conds));
+	  streamer_write_bitpack (&bp);
+	  streamer_write_uhwi (ob, VEC_length (condition, info->conds));
 	  for (i = 0; VEC_iterate (condition, info->conds, i, c); i++)
 	    {
-	      lto_output_uleb128_stream (ob->main_stream,
-					 c->operand_num);
-	      lto_output_uleb128_stream (ob->main_stream,
-					 c->code);
+	      streamer_write_uhwi (ob, c->operand_num);
+	      streamer_write_uhwi (ob, c->code);
 	      stream_write_tree (ob, c->val, true);
 	    }
-	  lto_output_uleb128_stream (ob->main_stream,
-				     VEC_length (size_time_entry, info->entry));
+	  streamer_write_uhwi (ob, VEC_length (size_time_entry, info->entry));
 	  for (i = 0;
 	       VEC_iterate (size_time_entry, info->entry, i, e);
 	       i++)
 	    {
-	      lto_output_uleb128_stream (ob->main_stream,
-					 e->size);
-	      lto_output_uleb128_stream (ob->main_stream,
-					 e->time);
+	      streamer_write_uhwi (ob, e->size);
+	      streamer_write_uhwi (ob, e->time);
 	      write_predicate (ob, &e->predicate);
 	    }
 	  for (edge = node->callees; edge; edge = edge->next_callee)
@@ -2572,7 +2561,7 @@ inline_write_summary (cgraph_node_set set,
 	    write_inline_edge_summary (ob, edge);
 	}
     }
-  lto_output_1_stream (ob->main_stream, 0);
+  streamer_write_char_stream (ob->main_stream, 0);
   produce_asm (ob, NULL);
   destroy_output_block (ob);
 

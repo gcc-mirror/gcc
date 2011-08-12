@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
      T.  The reconstructed T is inserted in some array so that when
      the reference index for T is found in the input stream, it can be
      used to look up into the array to get the reconstructed T.  */
-struct lto_streamer_cache_d
+struct streamer_tree_cache_d
 {
   /* The mapping between tree nodes and slots into the nodes array.  */
   struct pointer_map_t *node_map;
@@ -55,7 +55,7 @@ struct lto_streamer_cache_d
 /* Return true if tree node EXPR should be streamed as a builtin.  For
    these nodes, we just emit the class and function code.  */
 static inline bool
-lto_stream_as_builtin_p (tree expr)
+streamer_handle_as_builtin_p (tree expr)
 {
   return (TREE_CODE (expr) == FUNCTION_DECL
 	  && DECL_IS_BUILTIN (expr)
@@ -64,35 +64,35 @@ lto_stream_as_builtin_p (tree expr)
 }
 
 /* In tree-streamer-in.c.  */
-tree input_string_cst (struct data_in *, struct lto_input_block *);
-void lto_streamer_read_tree (struct lto_input_block *, struct data_in *, tree);
-tree lto_materialize_tree (struct lto_input_block *, struct data_in *,
-			   enum LTO_tags);
-void lto_input_tree_pointers (struct lto_input_block *, struct data_in *, tree);
-tree lto_get_pickled_tree (struct lto_input_block *, struct data_in *);
-tree lto_get_builtin_tree (struct lto_input_block *, struct data_in *);
-tree lto_input_integer_cst (struct lto_input_block *, struct data_in *);
-struct bitpack_d tree_read_bitfields (struct lto_input_block *, tree);
+tree streamer_read_string_cst (struct data_in *, struct lto_input_block *);
+tree streamer_read_chain (struct lto_input_block *, struct data_in *);
+tree streamer_alloc_tree (struct lto_input_block *, struct data_in *,
+		          enum LTO_tags);
+void streamer_read_tree_body (struct lto_input_block *, struct data_in *, tree);
+tree streamer_get_pickled_tree (struct lto_input_block *, struct data_in *);
+tree streamer_get_builtin_tree (struct lto_input_block *, struct data_in *);
+tree streamer_read_integer_cst (struct lto_input_block *, struct data_in *);
+struct bitpack_d streamer_read_tree_bitfields (struct lto_input_block *, tree);
 
 /* In tree-streamer-out.c.  */
-void lto_output_chain (struct output_block *, tree, bool);
-void lto_output_tree_header (struct output_block *, tree);
-void pack_value_fields (struct bitpack_d *, tree);
-void lto_output_tree_pointers (struct output_block *, tree, bool);
-void lto_output_integer_cst (struct output_block *, tree, bool);
-void lto_output_builtin_tree (struct output_block *, tree);
+void streamer_write_chain (struct output_block *, tree, bool);
+void streamer_write_tree_header (struct output_block *, tree);
+void streamer_pack_tree_bitfields (struct bitpack_d *, tree);
+void streamer_write_tree_body (struct output_block *, tree, bool);
+void streamer_write_integer_cst (struct output_block *, tree, bool);
+void streamer_write_builtin (struct output_block *, tree);
 
 /* In tree-streamer.c.  */
-void check_handled_ts_structures (void);
-bool lto_streamer_cache_insert (struct lto_streamer_cache_d *, tree,
- 			        unsigned *);
-bool lto_streamer_cache_insert_at (struct lto_streamer_cache_d *, tree,
- 				   unsigned);
-void lto_streamer_cache_append (struct lto_streamer_cache_d *, tree);
-bool lto_streamer_cache_lookup (struct lto_streamer_cache_d *, tree,
- 			        unsigned *);
-tree lto_streamer_cache_get (struct lto_streamer_cache_d *, unsigned);
-struct lto_streamer_cache_d *lto_streamer_cache_create (void);
-void lto_streamer_cache_delete (struct lto_streamer_cache_d *);
+void streamer_check_handled_ts_structures (void);
+bool streamer_tree_cache_insert (struct streamer_tree_cache_d *, tree,
+				 unsigned *);
+bool streamer_tree_cache_insert_at (struct streamer_tree_cache_d *, tree,
+				    unsigned);
+void streamer_tree_cache_append (struct streamer_tree_cache_d *, tree);
+bool streamer_tree_cache_lookup (struct streamer_tree_cache_d *, tree,
+				 unsigned *);
+tree streamer_tree_cache_get (struct streamer_tree_cache_d *, unsigned);
+struct streamer_tree_cache_d *streamer_tree_cache_create (void);
+void streamer_tree_cache_delete (struct streamer_tree_cache_d *);
 
 #endif  /* GCC_TREE_STREAMER_H  */

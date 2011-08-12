@@ -32,8 +32,8 @@ along with GCC; see the file COPYING3.  If not see
    duration of the OB and thus OB can keep pointer into it.  */
 
 unsigned
-lto_string_index (struct output_block *ob, const char *s, unsigned int len,
-		  bool persistent)
+streamer_string_index (struct output_block *ob, const char *s, unsigned int len,
+		       bool persistent)
 {
   struct string_slot **slot;
   struct string_slot s_slot;
@@ -64,7 +64,7 @@ lto_string_index (struct output_block *ob, const char *s, unsigned int len,
       new_slot->len = len;
       new_slot->slot_num = start;
       *slot = new_slot;
-      lto_output_uleb128_stream (string_stream, len);
+      streamer_write_uhwi_stream (string_stream, len);
       lto_output_data_stream (string_stream, string, len);
       return start + 1;
     }
@@ -83,15 +83,16 @@ lto_string_index (struct output_block *ob, const char *s, unsigned int len,
    duration of the OB and thus OB can keep pointer into it.  */
 
 void
-lto_output_string_with_length (struct output_block *ob,
-			       struct lto_output_stream *index_stream,
-			       const char *s, unsigned int len, bool persistent)
+streamer_write_string_with_length (struct output_block *ob,
+				   struct lto_output_stream *index_stream,
+				   const char *s, unsigned int len,
+				   bool persistent)
 {
   if (s)
-    lto_output_uleb128_stream (index_stream,
-			       lto_string_index (ob, s, len, persistent));
+    streamer_write_uhwi_stream (index_stream,
+			        streamer_string_index (ob, s, len, persistent));
   else
-    lto_output_1_stream (index_stream, 0);
+    streamer_write_char_stream (index_stream, 0);
 }
 
 
@@ -101,74 +102,51 @@ lto_output_string_with_length (struct output_block *ob,
    duration of the OB and thus OB can keep pointer into it.  */
 
 void
-lto_output_string (struct output_block *ob,
-	           struct lto_output_stream *index_stream,
-	           const char *string, bool persistent)
+streamer_write_string (struct output_block *ob,
+		       struct lto_output_stream *index_stream,
+		       const char *string, bool persistent)
 {
   if (string)
-    lto_output_string_with_length (ob, index_stream, string,
-				   strlen (string) + 1,
-				   persistent);
+    streamer_write_string_with_length (ob, index_stream, string,
+				       strlen (string) + 1,
+				       persistent);
   else
-    lto_output_1_stream (index_stream, 0);
+    streamer_write_char_stream (index_stream, 0);
 }
 
 
 /* Write a zero to the output stream.  */
 
 void
-output_zero (struct output_block *ob)
+streamer_write_zero (struct output_block *ob)
 {
-  lto_output_1_stream (ob->main_stream, 0);
+  streamer_write_char_stream (ob->main_stream, 0);
 }
 
 
-/* Output an unsigned LEB128 quantity to OB->main_stream.  */
+/* Write an unsigned HOST_WIDE_INT value WORK to OB->main_stream.  */
 
 void
-output_uleb128 (struct output_block *ob, unsigned HOST_WIDE_INT work)
+streamer_write_uhwi (struct output_block *ob, unsigned HOST_WIDE_INT work)
 {
-  lto_output_uleb128_stream (ob->main_stream, work);
+  streamer_write_uhwi_stream (ob->main_stream, work);
 }
 
 
-/* Output a signed LEB128 quantity to OB->main_stream.  */
+/* Write a HOST_WIDE_INT value WORK to OB->main_stream.  */
 
 void
-output_sleb128 (struct output_block *ob, HOST_WIDE_INT work)
+streamer_write_hwi (struct output_block *ob, HOST_WIDE_INT work)
 {
-  lto_output_sleb128_stream (ob->main_stream, work);
+  streamer_write_hwi_stream (ob->main_stream, work);
 }
 
 
-/* Output an unsigned LEB128 quantity to OBS.  */
+/* Write an unsigned HOST_WIDE_INT value WORK to OBS.  */
 
 void
-lto_output_uleb128_stream (struct lto_output_stream *obs,
-			   unsigned HOST_WIDE_INT work)
-{
-  do
-    {
-      unsigned int byte = (work & 0x7f);
-      work >>= 7;
-      if (work != 0)
-	/* More bytes to follow.  */
-	byte |= 0x80;
-
-      lto_output_1_stream (obs, byte);
-    }
-  while (work != 0);
-}
-
-
-/* Identical to output_uleb128_stream above except using unsigned
-   HOST_WIDEST_INT type.  For efficiency on host where unsigned HOST_WIDEST_INT
-   is not native, we only use this if we know that HOST_WIDE_INT is not wide
-   enough.  */
-
-void
-lto_output_widest_uint_uleb128_stream (struct lto_output_stream *obs,
-				       unsigned HOST_WIDEST_INT work)
+streamer_write_uhwi_stream (struct lto_output_stream *obs,
+                            unsigned HOST_WIDE_INT work)
 {
   do
     {
@@ -178,16 +156,16 @@ lto_output_widest_uint_uleb128_stream (struct lto_output_stream *obs,
 	/* More bytes to follow.  */
 	byte |= 0x80;
 
-      lto_output_1_stream (obs, byte);
+      streamer_write_char_stream (obs, byte);
     }
   while (work != 0);
 }
 
 
-/* Output a signed LEB128 quantity.  */
+/* Write a HOST_WIDE_INT value WORK to OBS.  */
 
 void
-lto_output_sleb128_stream (struct lto_output_stream *obs, HOST_WIDE_INT work)
+streamer_write_hwi_stream (struct lto_output_stream *obs, HOST_WIDE_INT work)
 {
   int more, byte;
 
@@ -201,7 +179,7 @@ lto_output_sleb128_stream (struct lto_output_stream *obs, HOST_WIDE_INT work)
       if (more)
 	byte |= 0x80;
 
-      lto_output_1_stream (obs, byte);
+      streamer_write_char_stream (obs, byte);
     }
   while (more);
 }

@@ -45,7 +45,7 @@ string_for_index (struct data_in *data_in, unsigned int loc, unsigned int *rlen)
   /* Get the string stored at location LOC in DATA_IN->STRINGS.  */
   LTO_INIT_INPUT_BLOCK (str_tab, data_in->strings, loc - 1,
 			data_in->strings_len);
-  len = lto_input_uleb128 (&str_tab);
+  len = streamer_read_uhwi (&str_tab);
   *rlen = len;
 
   if (str_tab.p + len > data_in->strings_len)
@@ -61,22 +61,22 @@ string_for_index (struct data_in *data_in, unsigned int loc, unsigned int *rlen)
    IB.  Write the length to RLEN.  */
 
 const char *
-input_string_internal (struct data_in *data_in, struct lto_input_block *ib,
-		       unsigned int *rlen)
+streamer_read_indexed_string (struct data_in *data_in,
+			      struct lto_input_block *ib, unsigned int *rlen)
 {
-  return string_for_index (data_in, lto_input_uleb128 (ib), rlen);
+  return string_for_index (data_in, streamer_read_uhwi (ib), rlen);
 }
 
 
 /* Read a NULL terminated string from the string table in DATA_IN.  */
 
 const char *
-lto_input_string (struct data_in *data_in, struct lto_input_block *ib)
+streamer_read_string (struct data_in *data_in, struct lto_input_block *ib)
 {
   unsigned int len;
   const char *ptr;
 
-  ptr = input_string_internal (data_in, ib, &len);
+  ptr = streamer_read_indexed_string (data_in, ib, &len);
   if (!ptr)
     return NULL;
   if (ptr[len - 1] != '\0')
@@ -86,10 +86,10 @@ lto_input_string (struct data_in *data_in, struct lto_input_block *ib)
 }
 
 
-/* Read an ULEB128 Number of IB.  */
+/* Read an unsigned HOST_WIDE_INT number from IB.  */
 
 unsigned HOST_WIDE_INT
-lto_input_uleb128 (struct lto_input_block *ib)
+streamer_read_uhwi (struct lto_input_block *ib)
 {
   unsigned HOST_WIDE_INT result = 0;
   int shift = 0;
@@ -97,7 +97,7 @@ lto_input_uleb128 (struct lto_input_block *ib)
 
   while (true)
     {
-      byte = lto_input_1_unsigned (ib);
+      byte = streamer_read_uchar (ib);
       result |= (byte & 0x7f) << shift;
       shift += 7;
       if ((byte & 0x80) == 0)
@@ -106,31 +106,10 @@ lto_input_uleb128 (struct lto_input_block *ib)
 }
 
 
-/* HOST_WIDEST_INT version of lto_input_uleb128.  IB is as in
-   lto_input_uleb128.  */
-
-unsigned HOST_WIDEST_INT
-lto_input_widest_uint_uleb128 (struct lto_input_block *ib)
-{
-  unsigned HOST_WIDEST_INT result = 0;
-  int shift = 0;
-  unsigned HOST_WIDEST_INT byte;
-
-  while (true)
-    {
-      byte = lto_input_1_unsigned (ib);
-      result |= (byte & 0x7f) << shift;
-      shift += 7;
-      if ((byte & 0x80) == 0)
-	return result;
-    }
-}
-
-
-/* Read an SLEB128 Number of IB.  */
+/* Read a HOST_WIDE_INT number from IB.  */
 
 HOST_WIDE_INT
-lto_input_sleb128 (struct lto_input_block *ib)
+streamer_read_hwi (struct lto_input_block *ib)
 {
   HOST_WIDE_INT result = 0;
   int shift = 0;
@@ -138,7 +117,7 @@ lto_input_sleb128 (struct lto_input_block *ib)
 
   while (true)
     {
-      byte = lto_input_1_unsigned (ib);
+      byte = streamer_read_uchar (ib);
       result |= (byte & 0x7f) << shift;
       shift += 7;
       if ((byte & 0x80) == 0)

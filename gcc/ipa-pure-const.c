@@ -950,7 +950,7 @@ pure_const_write_summary (cgraph_node_set set,
 	count++;
     }
 
-  lto_output_uleb128_stream (ob->main_stream, count);
+  streamer_write_uhwi_stream (ob->main_stream, count);
 
   /* Process all of the functions.  */
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
@@ -967,7 +967,7 @@ pure_const_write_summary (cgraph_node_set set,
 
 	  encoder = ob->decl_state->cgraph_node_encoder;
 	  node_ref = lto_cgraph_encoder_encode (encoder, node);
-	  lto_output_uleb128_stream (ob->main_stream, node_ref);
+	  streamer_write_uhwi_stream (ob->main_stream, node_ref);
 
 	  /* Note that flags will need to be read in the opposite
 	     order as we are pushing the bitflags into FLAGS.  */
@@ -977,7 +977,7 @@ pure_const_write_summary (cgraph_node_set set,
 	  bp_pack_value (&bp, fs->looping_previously_known, 1);
 	  bp_pack_value (&bp, fs->looping, 1);
 	  bp_pack_value (&bp, fs->can_throw, 1);
-	  lto_output_bitpack (&bp);
+	  streamer_write_bitpack (&bp);
 	}
     }
 
@@ -1006,7 +1006,7 @@ pure_const_read_summary (void)
       if (ib)
 	{
 	  unsigned int i;
-	  unsigned int count = lto_input_uleb128 (ib);
+	  unsigned int count = streamer_read_uhwi (ib);
 
 	  for (i = 0; i < count; i++)
 	    {
@@ -1017,7 +1017,7 @@ pure_const_read_summary (void)
 	      lto_cgraph_encoder_t encoder;
 
 	      fs = XCNEW (struct funct_state_d);
-	      index = lto_input_uleb128 (ib);
+	      index = streamer_read_uhwi (ib);
 	      encoder = file_data->cgraph_node_encoder;
 	      node = lto_cgraph_encoder_deref (encoder, index);
 	      set_function_state (node, fs);
@@ -1025,7 +1025,7 @@ pure_const_read_summary (void)
 	      /* Note that the flags must be read in the opposite
 		 order in which they were written (the bitflags were
 		 pushed into FLAGS).  */
-	      bp = lto_input_bitpack (ib);
+	      bp = streamer_read_bitpack (ib);
 	      fs->pure_const_state
 			= (enum pure_const_state_e) bp_unpack_value (&bp, 2);
 	      fs->state_previously_known

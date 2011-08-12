@@ -1,3 +1,110 @@
+2011-08-12   Diego Novillo  <dnovillo@google.com>
+
+	* data-streamer.h (streamer_write_zero): Rename from output_zero.
+ 	(streamer_write_uhwi): Rename from lto_output_uleb128.
+ 	(streamer_write_hwi): Rename from output_sleb128.
+ 	(streamer_write_string): Rename from lto_output_string.
+ 	(streamer_string_index): Rename from lto_string_index.
+ 	(streamer_write_string_with_length): Rename from
+ 	lto_output_string_with_length.
+ 	(streamer_write_uhwi_stream): Rename from lto_output_uleb128_stream.
+ 	(streamer_write_hwi_stream): Rename from lto_output_sleb128_stream.
+ 	(streamer_read_string): Rename from lto_input_string.
+ 	(streamer_read_indexed_string): Rename from input_string_internal.
+ 	(streamer_read_uhwi): Rename from lto_input_uleb128.
+ 	(streamer_read_hwi): Rename from lto_input_sleb128.
+ 	(streamer_write_hwi_in_range): Rename from lto_output_int_in_range.
+ 	(streamer_read_hwi_in_range): Rename from lto_input_int_in_range.
+ 	(streamer_write_enum): Rename from lto_output_enum.
+ 	(streamer_read_enum): Rename from lto_input_enum.
+ 	(streamer_write_record_start): Rename from output_record_start.
+ 	(streamer_read_record_start): Rename from input_record_start.
+ 	(streamer_write_bitpack): Rename from lto_output_bitpack.
+ 	(streamer_read_bitpack): Rename from lto_input_bitpack.
+ 	(streamer_write_char_stream): Rename from lto_output_1_stream.
+ 	(streamer_read_uchar): Rename from lto_input_1_unsigned.
+ 	* tree-streamer.h (streamer_cache_d): Rename from lto_streamer_cache_d.
+ 	(streamer_handle_as_builtin_p): Rename from lto_stream_as_builtin_p.
+ 	(streamer_read_string_cst): Rename from input_string_cst.
+ 	(streamer_read_chain): Rename from lto_input_chain.
+ 	(streamer_alloc_tree): Rename from lto_materialize_tree.
+ 	(streamer_read_tree_body): Rename from lto_input_tree_pointers.
+ 	(streamer_get_pickled_tree): Rename from lto_get_pickled_tree.
+ 	(streamer_get_builtin_tree): Rename from lto_get_builtin_tree.
+ 	(streamer_read_integer_cst): Rename from lto_input_integer_cst.
+ 	(streamer_read_tree_bitfields): Rename from tree_read_bitfields.
+ 	(streamer_write_chain): Rename from lto_output_chain.
+ 	(streamer_write_tree_header): Rename from lto_output_tree_header.
+ 	(streamer_pack_tree_bitfields): Rename from pack_value_fields.
+ 	(streamer_write_tree_body): Rename from lto_output_tree_pointers.
+ 	(streamer_write_integer_cst): Rename from lto_output_integer_cst.
+ 	(streamer_write_builtin): Rename from lto_output_builtin_tree.
+ 	(streamer_check_handled_ts_structures): Rename from
+ 	check_handled_ts_structures.
+ 	(streamer_tree_cache_insert): Rename from lto_streamer_cache_insert.
+ 	(streamer_tree_cache_insert_at): Rename from
+ 	lto_streamer_cache_insert_at.
+ 	(streamer_tree_cache_append): Rename from lto_streamer_cache_append.
+ 	(streamer_tree_cache_lookup): Rename from lto_streamer_cache_lookup.
+ 	(streamer_tree_cache_get): Rename from lto_streamer_cache_get.
+ 	(streamer_tree_cache_create): Rename from lto_streamer_cache_create.
+ 	(streamer_tree_cache_delete): Rename from lto_streamer_cache_delete.
+ 	* tree-streamer-out.c (write_string_cst): Rename from output_string_cst.
+ 	(write_identifier): Rename from output_identifier.
+ 	(write_ts_common_tree_pointers): Rename from
+ 	lto_output_ts_common_tree_pointers.
+ 	(write_ts_vector_tree_pointers): Rename from
+ 	lto_output_ts_vector_tree_pointers.
+ 	(write_ts_complex_tree_pointers): Rename from
+ 	lto_output_ts_complex_tree_pointers.
+ 	(write_ts_decl_minimal_tree_pointers): Rename from
+ 	lto_output_ts_decl_minimal_tree_pointers.
+ 	(write_ts_decl_common_tree_pointers): Rename from
+ 	lto_output_ts_decl_common_tree_pointers.
+ 	(write_ts_decl_non_common_tree_pointers): Rename from
+ 	lto_output_ts_decl_non_common_tree_pointers.
+ 	(write_ts_decl_with_vis_tree_pointers): Rename from
+ 	lto_output_ts_decl_with_vis_tree_pointers.
+ 	(write_ts_field_decl_tree_pointers): Rename from
+ 	lto_output_ts_field_decl_tree_pointers.
+ 	(write_ts_function_decl_tree_pointers): Rename from
+ 	lto_output_ts_function_decl_tree_pointers.
+ 	(write_ts_type_common_tree_pointers): Rename from
+ 	lto_output_ts_type_common_tree_pointers.
+ 	(write_ts_type_non_common_tree_pointers): Rename from
+ 	lto_output_ts_type_non_common_tree_pointers.
+ 	(write_ts_list_tree_pointers): Rename from
+ 	lto_output_ts_list_tree_pointers.
+ 	(write_ts_vec_tree_pointers): Rename from
+ 	lto_output_ts_vec_tree_pointers.
+ 	(write_ts_exp_tree_pointers): Rename from
+ 	lto_output_ts_exp_tree_pointers.
+ 	(write_ts_block_tree_pointers): Rename from
+ 	lto_output_ts_block_tree_pointers.
+ 	(write_ts_binfo_tree_pointers): Rename from
+ 	lto_output_ts_binfo_tree_pointers.
+ 	(write_ts_constructor_tree_pointers): Rename from
+ 	lto_output_ts_constructor_tree_pointers.
+ 	(write_ts_target_option): Rename from
+ 	lto_output_ts_target_option.
+ 	(write_ts_translation_unit_decl_tree_pointers): Rename from
+ 	lto_output_ts_translation_unit_decl_tree_pointers.
+ 	* tree-streamer.c (streamer_tree_cache_add_to_node_array):
+ 	Rename from lto_streamer_cache_add_to_node_array.
+ 	(streamer_tree_cache_insert_1): Rename from lto_streamer_cache_insert_1.
+ 	(record_common_node): Rename from lto_record_common_node.
+
+	* streamer-hooks.h (bitpack_d, lto_streamer_cache_d): Remove forward
+	declarations.
+	* data-streamer-in.c (lto_input_widest_uint_uleb128): Remove unused
+	function.
+	* data-streamer-out.c (lto_output_widest_uint_uleb128_stream): Remove
+	unused function.
+	* Makefile.in (lto-section-out.o): Add dependency on DATA_STREAMER_H.
+	(ipa-reference.o): Likewise.
+	* lto-section-out.c: Include data-streamer.h.
+	* ipa-reference.c: Include data-streamer.h.
+
 2011-08-12  Nick Clifton  <nickc@redhat.com>
 
 	* builtins.c (expand_builtin_memcmp): Do not use cmpstrnsi
