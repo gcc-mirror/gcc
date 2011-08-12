@@ -1,4 +1,9 @@
-2011-08-02  Romain Geissler  <romain.geissler@gmail.com>
+2011-08-12  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (extract_range_from_unary_expr_1): Implement
+	-X as 0 - X.
+
+2011-08-12  Romain Geissler  <romain.geissler@gmail.com>
 
 	* Makefile.in (PLUGIN_HEADERS): Add C_TREE_H.
 
