@@ -6766,19 +6766,22 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       else
 	{
-	  /* We must only copy the non-tail padding parts.
-	     Use __builtin_memcpy for the bitwise copy.  */
-	  tree arg0, arg1, arg2, t;
+	  /* We must only copy the non-tail padding parts.  */
+	  tree arg0, arg2, t;
+	  tree array_type, alias_set;
 
 	  arg2 = TYPE_SIZE_UNIT (as_base);
-	  arg1 = arg;
 	  arg0 = cp_build_addr_expr (to, complain);
 
-	  t = implicit_built_in_decls[BUILT_IN_MEMCPY];
-	  t = build_call_n (t, 3, arg0, arg1, arg2);
-
-	  t = convert (TREE_TYPE (arg0), t);
-	  val = cp_build_indirect_ref (t, RO_NULL, complain);
+	  array_type = build_array_type (char_type_node,
+					 build_index_type
+					   (size_binop (MINUS_EXPR,
+							arg2, size_int (1))));
+	  alias_set = build_int_cst (build_pointer_type (type), 0);
+	  t = build2 (MODIFY_EXPR, void_type_node,
+		      build2 (MEM_REF, array_type, arg0, alias_set),
+		      build2 (MEM_REF, array_type, arg, alias_set));
+	  val = build2 (COMPOUND_EXPR, TREE_TYPE (to), t, to);
           TREE_NO_WARNING (val) = 1;
 	}
 
