@@ -991,9 +991,10 @@ gcc-extra-parts:
 all: $(extra-parts)
 
 install-unwind_h:
-	rm -f $(gcc_objdir)/include/unwind.h
-	cp unwind.h $(gcc_objdir)/include/unwind.h
-	chmod a+r $(gcc_objdir)/include/unwind.h
+	dest=$(gcc_objdir)/include/tmp$$$$-unwind.h; \
+	cp unwind.h $$dest; \
+	chmod a+r $$dest; \
+	sh $(srcdir)/../move-if-change $$dest $(gcc_objdir)/include/unwind.h
 
 all: install-unwind_h
 
