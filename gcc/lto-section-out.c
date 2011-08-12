@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "bitmap.h"
 #include "langhooks.h"
+#include "data-streamer.h"
 #include "lto-streamer.h"
 #include "lto-compress.h"
 
@@ -303,7 +304,7 @@ lto_output_decl_index (struct lto_output_stream *obs,
     }
 
   if (obs)
-    lto_output_uleb128_stream (obs, index);
+    streamer_write_uhwi_stream (obs, index);
   *this_index = index;
   return new_entry_p;
 }

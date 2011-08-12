@@ -41,7 +41,7 @@ input_phi (struct lto_input_block *ib, basic_block bb, struct data_in *data_in,
   int i, len;
   gimple result;
 
-  ix = lto_input_uleb128 (ib);
+  ix = streamer_read_uhwi (ib);
   phi_result = VEC_index (tree, SSANAMES (fn), ix);
   len = EDGE_COUNT (bb->preds);
   result = create_phi_node (phi_result, bb);
@@ -53,7 +53,7 @@ input_phi (struct lto_input_block *ib, basic_block bb, struct data_in *data_in,
   for (i = 0; i < len; i++)
     {
       tree def = stream_read_tree (ib, data_in);
-      int src_index = lto_input_uleb128 (ib);
+      int src_index = streamer_read_uhwi (ib);
       location_t arg_loc = lto_input_location (ib, data_in);
       basic_block sbb = BASIC_BLOCK_FOR_FUNCTION (fn, src_index);
 
@@ -90,7 +90,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
   code = lto_tag_to_gimple_code (tag);
 
   /* Read the tuple header.  */
-  bp = lto_input_bitpack (ib);
+  bp = streamer_read_bitpack (ib);
   num_ops = bp_unpack_var_len_unsigned (&bp);
   stmt = gimple_alloc (code, num_ops);
   stmt->gsbase.no_warning = bp_unpack_value (&bp, 1);
@@ -109,7 +109,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
   switch (code)
     {
     case GIMPLE_RESX:
-      gimple_resx_set_region (stmt, lto_input_sleb128 (ib));
+      gimple_resx_set_region (stmt, streamer_read_hwi (ib));
       break;
 
     case GIMPLE_EH_MUST_NOT_THROW:
@@ -117,18 +117,18 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
       break;
 
     case GIMPLE_EH_DISPATCH:
-      gimple_eh_dispatch_set_region (stmt, lto_input_sleb128 (ib));
+      gimple_eh_dispatch_set_region (stmt, streamer_read_hwi (ib));
       break;
 
     case GIMPLE_ASM:
       {
 	/* FIXME lto.  Move most of this into a new gimple_asm_set_string().  */
 	tree str;
-	stmt->gimple_asm.ni = lto_input_uleb128 (ib);
-	stmt->gimple_asm.no = lto_input_uleb128 (ib);
-	stmt->gimple_asm.nc = lto_input_uleb128 (ib);
-	stmt->gimple_asm.nl = lto_input_uleb128 (ib);
-	str = input_string_cst (data_in, ib);
+	stmt->gimple_asm.ni = streamer_read_uhwi (ib);
+	stmt->gimple_asm.no = streamer_read_uhwi (ib);
+	stmt->gimple_asm.nc = streamer_read_uhwi (ib);
+	stmt->gimple_asm.nl = streamer_read_uhwi (ib);
+	str = streamer_read_string_cst (data_in, ib);
 	stmt->gimple_asm.string = TREE_STRING_POINTER (str);
       }
       /* Fallthru  */
@@ -221,7 +221,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	{
 	  if (gimple_call_internal_p (stmt))
 	    gimple_call_set_internal_fn
-	      (stmt, lto_input_enum (ib, internal_fn, IFN_LAST));
+	      (stmt, streamer_read_enum (ib, internal_fn, IFN_LAST));
 	  else
 	    gimple_call_set_fntype (stmt, stream_read_tree (ib, data_in));
 	}
@@ -286,21 +286,21 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
      basic GIMPLE routines that use CFUN.  */
   gcc_assert (cfun == fn);
 
-  index = lto_input_uleb128 (ib);
+  index = streamer_read_uhwi (ib);
   bb = BASIC_BLOCK_FOR_FUNCTION (fn, index);
 
-  bb->count = (lto_input_sleb128 (ib) * count_materialization_scale
+  bb->count = (streamer_read_hwi (ib) * count_materialization_scale
 	       + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
-  bb->loop_depth = lto_input_sleb128 (ib);
-  bb->frequency = lto_input_sleb128 (ib);
-  bb->flags = lto_input_sleb128 (ib);
+  bb->loop_depth = streamer_read_hwi (ib);
+  bb->frequency = streamer_read_hwi (ib);
+  bb->flags = streamer_read_hwi (ib);
 
   /* LTO_bb1 has statements.  LTO_bb0 does not.  */
   if (tag == LTO_bb0)
     return;
 
   bsi = gsi_start_bb (bb);
-  tag = input_record_start (ib);
+  tag = streamer_read_record_start (ib);
   while (tag)
     {
       gimple stmt = input_gimple_stmt (ib, data_in, fn, tag);
@@ -310,24 +310,24 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
 
       /* After the statement, expect a 0 delimiter or the EH region
 	 that the previous statement belongs to.  */
-      tag = input_record_start (ib);
+      tag = streamer_read_record_start (ib);
       lto_tag_check_set (tag, 2, LTO_eh_region, LTO_null);
 
       if (tag == LTO_eh_region)
 	{
-	  HOST_WIDE_INT region = lto_input_sleb128 (ib);
+	  HOST_WIDE_INT region = streamer_read_hwi (ib);
 	  gcc_assert (region == (int) region);
 	  add_stmt_to_eh_lp (stmt, region);
 	}
 
-      tag = input_record_start (ib);
+      tag = streamer_read_record_start (ib);
     }
 
-  tag = input_record_start (ib);
+  tag = streamer_read_record_start (ib);
   while (tag)
     {
       gimple phi = input_phi (ib, bb, data_in, fn);
       find_referenced_vars_in (phi);
-      tag = input_record_start (ib);
+      tag = streamer_read_record_start (ib);
     }
 }

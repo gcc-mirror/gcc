@@ -652,7 +652,7 @@ struct output_block
   bool global;
 
   /* Cache of nodes written in this section.  */
-  struct lto_streamer_cache_d *writer_cache;
+  struct streamer_tree_cache_d *writer_cache;
 
   /* All data persistent across whole duration of output block
      can go here.  */
@@ -690,7 +690,7 @@ struct data_in
   VEC(ld_plugin_symbol_resolution_t,heap) *globals_resolution;
 
   /* Cache of pickled nodes.  */
-  struct lto_streamer_cache_d *reader_cache;
+  struct streamer_tree_cache_d *reader_cache;
 };
 
 
@@ -712,10 +712,6 @@ extern const char *lto_get_section_data (struct lto_file_decl_data *,
 extern void lto_free_section_data (struct lto_file_decl_data *,
 				   enum lto_section_type,
 				   const char *, const char *, size_t);
-extern unsigned HOST_WIDE_INT lto_input_uleb128 (struct lto_input_block *);
-extern unsigned HOST_WIDEST_INT lto_input_widest_uint_uleb128 (
-						struct lto_input_block *);
-extern HOST_WIDE_INT lto_input_sleb128 (struct lto_input_block *);
 extern htab_t lto_create_renaming_table (void);
 extern void lto_record_renamed_decl (struct lto_file_decl_data *,
 				     const char *, const char *);
@@ -742,12 +738,6 @@ extern void lto_end_section (void);
 extern void lto_write_stream (struct lto_output_stream *);
 extern void lto_output_data_stream (struct lto_output_stream *, const void *,
 				    size_t);
-extern void lto_output_uleb128_stream (struct lto_output_stream *,
-       				       unsigned HOST_WIDE_INT);
-extern void lto_output_widest_uint_uleb128_stream (struct lto_output_stream *,
-       					           unsigned HOST_WIDEST_INT);
-extern void lto_output_sleb128_stream (struct lto_output_stream *,
-				       HOST_WIDE_INT);
 extern bool lto_output_decl_index (struct lto_output_stream *,
 			    struct lto_tree_ref_encoder *,
 			    tree, unsigned int *);

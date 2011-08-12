@@ -26,12 +26,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "streamer-hooks.h"
 #include "tree-streamer.h"
 
-/* Check that all the TS_* structures handled by the lto_output_* and
-   lto_input_* routines are exactly ALL the structures defined in
+/* Check that all the TS_* structures handled by the streamer_write_* and
+   streamer_read_* routines are exactly ALL the structures defined in
    treestruct.def.  */
 
 void
-check_handled_ts_structures (void)
+streamer_check_handled_ts_structures (void)
 {
   bool handled_p[LAST_TS_ENUM];
   unsigned i;
@@ -87,12 +87,12 @@ check_handled_ts_structures (void)
 }
 
 
-/* Helper for lto_streamer_cache_insert_1.  Add T to CACHE->NODES at
+/* Helper for streamer_tree_cache_insert_1.  Add T to CACHE->NODES at
    slot IX.  */
 
 static void
-lto_streamer_cache_add_to_node_array (struct lto_streamer_cache_d *cache,
-				      unsigned ix, tree t)
+streamer_tree_cache_add_to_node_array (struct streamer_tree_cache_d *cache,
+				       unsigned ix, tree t)
 {
   /* Make sure we're either replacing an old element or
      appending consecutively.  */
@@ -105,8 +105,8 @@ lto_streamer_cache_add_to_node_array (struct lto_streamer_cache_d *cache,
 }
 
 
-/* Helper for lto_streamer_cache_insert and lto_streamer_cache_insert_at.
-   CACHE, T, and IX_P are as in lto_streamer_cache_insert.
+/* Helper for streamer_tree_cache_insert and streamer_tree_cache_insert_at.
+   CACHE, T, and IX_P are as in streamer_tree_cache_insert.
 
    If INSERT_AT_NEXT_SLOT_P is true, T is inserted at the next available
    slot in the cache.  Otherwise, T is inserted at the position indicated
@@ -116,9 +116,9 @@ lto_streamer_cache_add_to_node_array (struct lto_streamer_cache_d *cache,
    return false.  */
 
 static bool
-lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
-			     tree t, unsigned *ix_p,
-			     bool insert_at_next_slot_p)
+streamer_tree_cache_insert_1 (struct streamer_tree_cache_d *cache,
+			      tree t, unsigned *ix_p,
+			      bool insert_at_next_slot_p)
 {
   void **slot;
   unsigned ix;
@@ -136,7 +136,7 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
 	ix = *ix_p;
        *slot = (void *)(size_t) (ix + 1);
 
-      lto_streamer_cache_add_to_node_array (cache, ix, t);
+      streamer_tree_cache_add_to_node_array (cache, ix, t);
 
       /* Indicate that the item was not present in the cache.  */
       existed_p = false;
@@ -151,7 +151,7 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
 	     location, and ENTRY->TO does not match *IX_P, add T to
 	     the requested location slot.  */
 	  ix = *ix_p;
-	  lto_streamer_cache_add_to_node_array (cache, ix, t);
+	  streamer_tree_cache_add_to_node_array (cache, ix, t);
 	}
 
       /* Indicate that T was already in the cache.  */
@@ -172,10 +172,10 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
    T has been stored.  */
 
 bool
-lto_streamer_cache_insert (struct lto_streamer_cache_d *cache, tree t,
-			   unsigned *ix_p)
+streamer_tree_cache_insert (struct streamer_tree_cache_d *cache, tree t,
+			    unsigned *ix_p)
 {
-  return lto_streamer_cache_insert_1 (cache, t, ix_p, true);
+  return streamer_tree_cache_insert_1 (cache, t, ix_p, true);
 }
 
 
@@ -183,20 +183,20 @@ lto_streamer_cache_insert (struct lto_streamer_cache_d *cache, tree t,
    existed in the cache return true.  Otherwise, return false.  */
 
 bool
-lto_streamer_cache_insert_at (struct lto_streamer_cache_d *cache,
-			      tree t, unsigned ix)
+streamer_tree_cache_insert_at (struct streamer_tree_cache_d *cache,
+			       tree t, unsigned ix)
 {
-  return lto_streamer_cache_insert_1 (cache, t, &ix, false);
+  return streamer_tree_cache_insert_1 (cache, t, &ix, false);
 }
 
 
 /* Appends tree node T to CACHE, even if T already existed in it.  */
 
 void
-lto_streamer_cache_append (struct lto_streamer_cache_d *cache, tree t)
+streamer_tree_cache_append (struct streamer_tree_cache_d *cache, tree t)
 {
   unsigned ix = VEC_length (tree, cache->nodes);
-  lto_streamer_cache_insert_1 (cache, t, &ix, false);
+  streamer_tree_cache_insert_1 (cache, t, &ix, false);
 }
 
 /* Return true if tree node T exists in CACHE, otherwise false.  If IX_P is
@@ -204,8 +204,8 @@ lto_streamer_cache_append (struct lto_streamer_cache_d *cache, tree t)
    ((unsigned)-1 if T is not found).  */
 
 bool
-lto_streamer_cache_lookup (struct lto_streamer_cache_d *cache, tree t,
-			   unsigned *ix_p)
+streamer_tree_cache_lookup (struct streamer_tree_cache_d *cache, tree t,
+			    unsigned *ix_p)
 {
   void **slot;
   bool retval;
@@ -235,7 +235,7 @@ lto_streamer_cache_lookup (struct lto_streamer_cache_d *cache, tree t,
 /* Return the tree node at slot IX in CACHE.  */
 
 tree
-lto_streamer_cache_get (struct lto_streamer_cache_d *cache, unsigned ix)
+streamer_tree_cache_get (struct streamer_tree_cache_d *cache, unsigned ix)
 {
   gcc_assert (cache);
 
@@ -249,7 +249,7 @@ lto_streamer_cache_get (struct lto_streamer_cache_d *cache, unsigned ix)
 /* Record NODE in CACHE.  */
 
 static void
-lto_record_common_node (struct lto_streamer_cache_d *cache, tree node)
+record_common_node (struct streamer_tree_cache_d *cache, tree node)
 {
   /* We have to make sure to fill exactly the same number of
      elements for all frontends.  That can include NULL trees.
@@ -260,12 +260,12 @@ lto_record_common_node (struct lto_streamer_cache_d *cache, tree node)
   if (!node)
     node = error_mark_node;
 
-  lto_streamer_cache_append (cache, node);
+  streamer_tree_cache_append (cache, node);
 
   if (POINTER_TYPE_P (node)
       || TREE_CODE (node) == COMPLEX_TYPE
       || TREE_CODE (node) == ARRAY_TYPE)
-    lto_record_common_node (cache, TREE_TYPE (node));
+    record_common_node (cache, TREE_TYPE (node));
   else if (TREE_CODE (node) == RECORD_TYPE)
     {
       /* The FIELD_DECLs of structures should be shared, so that every
@@ -275,7 +275,7 @@ lto_record_common_node (struct lto_streamer_cache_d *cache, tree node)
 	 nonoverlapping_component_refs_p).  */
       tree f;
       for (f = TYPE_FIELDS (node); f; f = TREE_CHAIN (f))
-	lto_record_common_node (cache, f);
+	record_common_node (cache, f);
     }
 }
 
@@ -284,35 +284,35 @@ lto_record_common_node (struct lto_streamer_cache_d *cache, tree node)
    properly according to the gimple type table.  */
 
 static void
-preload_common_nodes (struct lto_streamer_cache_d *cache)
+preload_common_nodes (struct streamer_tree_cache_d *cache)
 {
   unsigned i;
 
   for (i = 0; i < itk_none; i++)
     /* Skip itk_char.  char_type_node is dependent on -f[un]signed-char.  */
     if (i != itk_char)
-      lto_record_common_node (cache, integer_types[i]);
+      record_common_node (cache, integer_types[i]);
 
   for (i = 0; i < TYPE_KIND_LAST; i++)
-    lto_record_common_node (cache, sizetype_tab[i]);
+    record_common_node (cache, sizetype_tab[i]);
 
   for (i = 0; i < TI_MAX; i++)
     /* Skip boolean type and constants, they are frontend dependent.  */
     if (i != TI_BOOLEAN_TYPE
 	&& i != TI_BOOLEAN_FALSE
 	&& i != TI_BOOLEAN_TRUE)
-      lto_record_common_node (cache, global_trees[i]);
+      record_common_node (cache, global_trees[i]);
 }
 
 
 /* Create a cache of pickled nodes.  */
 
-struct lto_streamer_cache_d *
-lto_streamer_cache_create (void)
+struct streamer_tree_cache_d *
+streamer_tree_cache_create (void)
 {
-  struct lto_streamer_cache_d *cache;
+  struct streamer_tree_cache_d *cache;
 
-  cache = XCNEW (struct lto_streamer_cache_d);
+  cache = XCNEW (struct streamer_tree_cache_d);
 
   cache->node_map = pointer_map_create ();
 
@@ -328,7 +328,7 @@ lto_streamer_cache_create (void)
 /* Delete the streamer cache C.  */
 
 void
-lto_streamer_cache_delete (struct lto_streamer_cache_d *c)
+streamer_tree_cache_delete (struct streamer_tree_cache_d *c)
 {
   if (c == NULL)
     return;

@@ -204,7 +204,7 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
   uint32_t i, j;
   
   ix = *data++;
-  decl = lto_streamer_cache_get (data_in->reader_cache, ix);
+  decl = streamer_tree_cache_get (data_in->reader_cache, ix);
   if (TREE_CODE (decl) != FUNCTION_DECL)
     {
       gcc_assert (decl == void_type_node);
@@ -218,7 +218,7 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
       tree *decls = ggc_alloc_vec_tree (size);
 
       for (j = 0; j < size; j++)
-	decls[j] = lto_streamer_cache_get (data_in->reader_cache, data[j]);
+	decls[j] = streamer_tree_cache_get (data_in->reader_cache, data[j]);
 
       state->streams[i].size = size;
       state->streams[i].trees = decls;
@@ -563,7 +563,7 @@ lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
   if (TREE_PUBLIC (decl))
     {
       unsigned ix;
-      if (!lto_streamer_cache_lookup (data_in->reader_cache, decl, &ix))
+      if (!streamer_tree_cache_lookup (data_in->reader_cache, decl, &ix))
 	gcc_unreachable ();
       lto_symtab_register_decl (decl, get_resolution (data_in, ix),
 				data_in->file_data);
@@ -629,7 +629,7 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
   if (TREE_PUBLIC (decl) && !DECL_ABSTRACT (decl))
     {
       unsigned ix;
-      if (!lto_streamer_cache_lookup (data_in->reader_cache, decl, &ix))
+      if (!streamer_tree_cache_lookup (data_in->reader_cache, decl, &ix))
 	gcc_unreachable ();
       lto_symtab_register_decl (decl, get_resolution (data_in, ix),
 				data_in->file_data);
@@ -645,7 +645,7 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
 static void
 uniquify_nodes (struct data_in *data_in, unsigned from)
 {
-  struct lto_streamer_cache_d *cache = data_in->reader_cache;
+  struct streamer_tree_cache_d *cache = data_in->reader_cache;
   unsigned len = VEC_length (tree, cache->nodes);
   unsigned i;
 
@@ -756,7 +756,7 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 		  {
 		    unsigned ix;
 		    gcc_assert (f1 != f2 && DECL_NAME (f1) == DECL_NAME (f2));
-		    if (!lto_streamer_cache_lookup (cache, f2, &ix))
+		    if (!streamer_tree_cache_lookup (cache, f2, &ix))
 		      gcc_unreachable ();
 		    /* If we're going to replace an element which we'd
 		       still visit in the next iterations, we wouldn't
@@ -772,14 +772,14 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 		       operand handling.  */
 		    if (ix < i)
 		      lto_fixup_types (f2);
-		    lto_streamer_cache_insert_at (cache, f1, ix);
+		    streamer_tree_cache_insert_at (cache, f1, ix);
 		  }
 	    }
 
 	  /* If we found a tree that is equal to oldt replace it in the
 	     cache, so that further users (in the various LTO sections)
 	     make use of it.  */
-	  lto_streamer_cache_insert_at (cache, t, i);
+	  streamer_tree_cache_insert_at (cache, t, i);
 	}
     }
 

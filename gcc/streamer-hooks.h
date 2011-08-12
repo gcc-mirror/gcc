@@ -29,8 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 struct output_block;
 struct lto_input_block;
 struct data_in;
-struct bitpack_d;
-struct lto_streamer_cache_d;
 
 /* Streamer hooks.  These functions do additional processing as
    needed by the module.  There are two types of callbacks, those that

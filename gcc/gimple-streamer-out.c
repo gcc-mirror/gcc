@@ -36,13 +36,13 @@ output_phi (struct output_block *ob, gimple phi)
 {
   unsigned i, len = gimple_phi_num_args (phi);
 
-  output_record_start (ob, lto_gimple_code_to_tag (GIMPLE_PHI));
-  output_uleb128 (ob, SSA_NAME_VERSION (PHI_RESULT (phi)));
+  streamer_write_record_start (ob, lto_gimple_code_to_tag (GIMPLE_PHI));
+  streamer_write_uhwi (ob, SSA_NAME_VERSION (PHI_RESULT (phi)));
 
   for (i = 0; i < len; i++)
     {
       stream_write_tree (ob, gimple_phi_arg_def (phi, i), true);
-      output_uleb128 (ob, gimple_phi_arg_edge (phi, i)->src->index);
+      streamer_write_uhwi (ob, gimple_phi_arg_edge (phi, i)->src->index);
       lto_output_location (ob, gimple_phi_arg_location (phi, i));
     }
 }
@@ -61,7 +61,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   /* Emit identifying tag.  */
   code = gimple_code (stmt);
   tag = lto_gimple_code_to_tag (code);
-  output_record_start (ob, tag);
+  streamer_write_record_start (ob, tag);
 
   /* Emit the tuple header.  */
   bp = bitpack_create (ob->main_stream);
@@ -71,7 +71,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
     bp_pack_value (&bp, gimple_assign_nontemporal_move_p (stmt), 1);
   bp_pack_value (&bp, gimple_has_volatile_ops (stmt), 1);
   bp_pack_var_len_unsigned (&bp, stmt->gsbase.subcode);
-  lto_output_bitpack (&bp);
+  streamer_write_bitpack (&bp);
 
   /* Emit location information for the statement.  */
   lto_output_location (ob, gimple_location (stmt));
@@ -83,7 +83,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   switch (gimple_code (stmt))
     {
     case GIMPLE_RESX:
-      output_sleb128 (ob, gimple_resx_region (stmt));
+      streamer_write_hwi (ob, gimple_resx_region (stmt));
       break;
 
     case GIMPLE_EH_MUST_NOT_THROW:
@@ -91,15 +91,16 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
       break;
 
     case GIMPLE_EH_DISPATCH:
-      output_sleb128 (ob, gimple_eh_dispatch_region (stmt));
+      streamer_write_hwi (ob, gimple_eh_dispatch_region (stmt));
       break;
 
     case GIMPLE_ASM:
-      lto_output_uleb128_stream (ob->main_stream, gimple_asm_ninputs (stmt));
-      lto_output_uleb128_stream (ob->main_stream, gimple_asm_noutputs (stmt));
-      lto_output_uleb128_stream (ob->main_stream, gimple_asm_nclobbers (stmt));
-      lto_output_uleb128_stream (ob->main_stream, gimple_asm_nlabels (stmt));
-      lto_output_string (ob, ob->main_stream, gimple_asm_string (stmt), true);
+      streamer_write_uhwi (ob, gimple_asm_ninputs (stmt));
+      streamer_write_uhwi (ob, gimple_asm_noutputs (stmt));
+      streamer_write_uhwi (ob, gimple_asm_nclobbers (stmt));
+      streamer_write_uhwi (ob, gimple_asm_nlabels (stmt));
+      streamer_write_string (ob, ob->main_stream, gimple_asm_string (stmt),
+			     true);
       /* Fallthru  */
 
     case GIMPLE_ASSIGN:
@@ -139,8 +140,8 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
       if (is_gimple_call (stmt))
 	{
 	  if (gimple_call_internal_p (stmt))
-	    lto_output_enum (ob->main_stream, internal_fn,
-			     IFN_LAST, gimple_call_internal_fn (stmt));
+	    streamer_write_enum (ob->main_stream, internal_fn,
+				 IFN_LAST, gimple_call_internal_fn (stmt));
 	  else
 	    stream_write_tree (ob, gimple_call_fntype (stmt), true);
 	}
@@ -163,16 +164,16 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
 {
   gimple_stmt_iterator bsi = gsi_start_bb (bb);
 
-  output_record_start (ob,
-		       (!gsi_end_p (bsi)) || phi_nodes (bb)
-		        ? LTO_bb1
-			: LTO_bb0);
+  streamer_write_record_start (ob,
+			       (!gsi_end_p (bsi)) || phi_nodes (bb)
+			        ? LTO_bb1
+				: LTO_bb0);
 
-  output_uleb128 (ob, bb->index);
-  output_sleb128 (ob, bb->count);
-  output_sleb128 (ob, bb->loop_depth);
-  output_sleb128 (ob, bb->frequency);
-  output_sleb128 (ob, bb->flags);
+  streamer_write_uhwi (ob, bb->index);
+  streamer_write_hwi (ob, bb->count);
+  streamer_write_hwi (ob, bb->loop_depth);
+  streamer_write_hwi (ob, bb->frequency);
+  streamer_write_hwi (ob, bb->flags);
 
   if (!gsi_end_p (bsi) || phi_nodes (bb))
     {
@@ -189,14 +190,14 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
 	  region = lookup_stmt_eh_lp_fn (fn, stmt);
 	  if (region != 0)
 	    {
-	      output_record_start (ob, LTO_eh_region);
-	      output_sleb128 (ob, region);
+	      streamer_write_record_start (ob, LTO_eh_region);
+	      streamer_write_hwi (ob, region);
 	    }
 	  else
-	    output_record_start (ob, LTO_null);
+	    streamer_write_record_start (ob, LTO_null);
 	}
 
-      output_record_start (ob, LTO_null);
+      streamer_write_record_start (ob, LTO_null);
 
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
@@ -209,6 +210,6 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
 	    output_phi (ob, phi);
 	}
 
-      output_record_start (ob, LTO_null);
+      streamer_write_record_start (ob, LTO_null);
     }
 }

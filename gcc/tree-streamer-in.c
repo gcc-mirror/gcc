@@ -34,12 +34,12 @@ along with GCC; see the file COPYING3.  If not see
    block IB.  */
 
 tree
-input_string_cst (struct data_in *data_in, struct lto_input_block *ib)
+streamer_read_string_cst (struct data_in *data_in, struct lto_input_block *ib)
 {
   unsigned int len;
   const char * ptr;
 
-  ptr = input_string_internal (data_in, ib, &len);
+  ptr = streamer_read_indexed_string (data_in, ib, &len);
   if (!ptr)
     return NULL;
   return build_string (len, ptr);
@@ -55,7 +55,7 @@ input_identifier (struct data_in *data_in, struct lto_input_block *ib)
   unsigned int len;
   const char *ptr;
 
-  ptr = input_string_internal (data_in, ib, &len);
+  ptr = streamer_read_indexed_string (data_in, ib, &len);
   if (!ptr)
     return NULL;
   return get_identifier_with_length (ptr, len);
@@ -65,14 +65,14 @@ input_identifier (struct data_in *data_in, struct lto_input_block *ib)
 /* Read a chain of tree nodes from input block IB. DATA_IN contains
    tables and descriptors for the file being read.  */
 
-static tree
-lto_input_chain (struct lto_input_block *ib, struct data_in *data_in)
+tree
+streamer_read_chain (struct lto_input_block *ib, struct data_in *data_in)
 {
   int i, count;
   tree first, prev, curr;
 
   first = prev = NULL_TREE;
-  count = lto_input_sleb128 (ib);
+  count = streamer_read_hwi (ib);
   for (i = 0; i < count; i++)
     {
       curr = stream_read_tree (ib, data_in);
@@ -96,7 +96,7 @@ static void
 unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
 {
   /* Note that the code for EXPR has already been unpacked to create EXPR in
-     lto_materialize_tree.  */
+     streamer_alloc_tree.  */
   if (!TYPE_P (expr))
     {
       TREE_SIDE_EFFECTS (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -409,13 +409,13 @@ unpack_value_fields (struct bitpack_d *bp, tree expr)
    bitfield values that the writer may have written.  */
 
 struct bitpack_d
-tree_read_bitfields (struct lto_input_block *ib, tree expr)
+streamer_read_tree_bitfields (struct lto_input_block *ib, tree expr)
 {
   enum tree_code code;
   struct bitpack_d bp;
 
   /* Read the bitpack of non-pointer values from IB.  */
-  bp = lto_input_bitpack (ib);
+  bp = streamer_read_bitpack (ib);
 
   /* The first word in BP contains the code of the tree that we
      are about to read.  */
@@ -435,8 +435,8 @@ tree_read_bitfields (struct lto_input_block *ib, tree expr)
    *IX_P the index into the reader cache where the new tree is stored.  */
 
 tree
-lto_materialize_tree (struct lto_input_block *ib, struct data_in *data_in,
-		      enum LTO_tags tag)
+streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
+		     enum LTO_tags tag)
 {
   enum tree_code code;
   tree result;
@@ -450,7 +450,7 @@ lto_materialize_tree (struct lto_input_block *ib, struct data_in *data_in,
   /* Read the word representing the memory address for the tree
      as it was written by the writer.  This is useful when
      debugging differences between the writer and reader.  */
-  orig_address_in_writer = lto_input_sleb128 (ib);
+  orig_address_in_writer = streamer_read_hwi (ib);
   gcc_assert ((intptr_t) orig_address_in_writer == orig_address_in_writer);
 #endif
 
@@ -462,22 +462,22 @@ lto_materialize_tree (struct lto_input_block *ib, struct data_in *data_in,
 
   /* Instantiate a new tree using the header data.  */
   if (CODE_CONTAINS_STRUCT (code, TS_STRING))
-    result = input_string_cst (data_in, ib);
+    result = streamer_read_string_cst (data_in, ib);
   else if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     result = input_identifier (data_in, ib);
   else if (CODE_CONTAINS_STRUCT (code, TS_VEC))
     {
-      HOST_WIDE_INT len = lto_input_sleb128 (ib);
+      HOST_WIDE_INT len = streamer_read_hwi (ib);
       result = make_tree_vec (len);
     }
   else if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
     {
-      unsigned HOST_WIDE_INT len = lto_input_uleb128 (ib);
+      unsigned HOST_WIDE_INT len = streamer_read_uhwi (ib);
       result = make_tree_binfo (len);
     }
   else if (code == CALL_EXPR)
     {
-      unsigned HOST_WIDE_INT nargs = lto_input_uleb128 (ib);
+      unsigned HOST_WIDE_INT nargs = streamer_read_uhwi (ib);
       return build_vl_exp (CALL_EXPR, nargs + 3);
     }
   else
@@ -522,7 +522,7 @@ static void
 lto_input_ts_vector_tree_pointers (struct lto_input_block *ib,
 				   struct data_in *data_in, tree expr)
 {
-  TREE_VECTOR_CST_ELTS (expr) = lto_input_chain (ib, data_in);
+  TREE_VECTOR_CST_ELTS (expr) = streamer_read_chain (ib, data_in);
 }
 
 
@@ -570,7 +570,7 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
      dwarf2out.c.  */
 
   if (TREE_CODE (expr) == PARM_DECL)
-    TREE_CHAIN (expr) = lto_input_chain (ib, data_in);
+    TREE_CHAIN (expr) = streamer_read_chain (ib, data_in);
 
   if ((TREE_CODE (expr) == VAR_DECL
        || TREE_CODE (expr) == PARM_DECL)
@@ -638,7 +638,7 @@ lto_input_ts_field_decl_tree_pointers (struct lto_input_block *ib,
   DECL_QUALIFIER (expr) = stream_read_tree (ib, data_in);
   DECL_FIELD_BIT_OFFSET (expr) = stream_read_tree (ib, data_in);
   DECL_FCONTEXT (expr) = stream_read_tree (ib, data_in);
-  TREE_CHAIN (expr) = lto_input_chain (ib, data_in);
+  TREE_CHAIN (expr) = streamer_read_chain (ib, data_in);
 }
 
 
@@ -724,7 +724,7 @@ lto_input_ts_list_tree_pointers (struct lto_input_block *ib,
 {
   TREE_PURPOSE (expr) = stream_read_tree (ib, data_in);
   TREE_VALUE (expr) = stream_read_tree (ib, data_in);
-  TREE_CHAIN (expr) = lto_input_chain (ib, data_in);
+  TREE_CHAIN (expr) = streamer_read_chain (ib, data_in);
 }
 
 
@@ -738,7 +738,7 @@ lto_input_ts_vec_tree_pointers (struct lto_input_block *ib,
 {
   int i;
 
-  /* Note that TREE_VEC_LENGTH was read by lto_materialize_tree to
+  /* Note that TREE_VEC_LENGTH was read by streamer_alloc_tree to
      instantiate EXPR.  */
   for (i = 0; i < TREE_VEC_LENGTH (expr); i++)
     TREE_VEC_ELT (expr, i) = stream_read_tree (ib, data_in);
@@ -757,7 +757,7 @@ lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
   int i, length;
   location_t loc;
 
-  length = lto_input_sleb128 (ib);
+  length = streamer_read_hwi (ib);
   gcc_assert (length == TREE_OPERAND_LENGTH (expr));
 
   for (i = 0; i < length; i++)
@@ -780,7 +780,7 @@ lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
   /* Do not stream BLOCK_SOURCE_LOCATION.  We cannot handle debug information
      for early inlining so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
-  BLOCK_VARS (expr) = lto_input_chain (ib, data_in);
+  BLOCK_VARS (expr) = streamer_read_chain (ib, data_in);
 
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlining so drop it on the floor instead of ICEing in
@@ -827,7 +827,7 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
   tree t;
 
   /* Note that the number of slots in EXPR was read in
-     lto_materialize_tree when instantiating EXPR.  However, the
+     streamer_alloc_tree when instantiating EXPR.  However, the
      vector is empty so we cannot rely on VEC_length to know how many
      elements to read.  So, this list is emitted as a 0-terminated
      list on the writer side.  */
@@ -844,7 +844,7 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
   BINFO_VIRTUALS (expr) = stream_read_tree (ib, data_in);
   BINFO_VPTR_FIELD (expr) = stream_read_tree (ib, data_in);
 
-  len = lto_input_uleb128 (ib);
+  len = streamer_read_uhwi (ib);
   if (len > 0)
     {
       VEC_reserve_exact (tree, gc, BINFO_BASE_ACCESSES (expr), len);
@@ -871,7 +871,7 @@ lto_input_ts_constructor_tree_pointers (struct lto_input_block *ib,
 {
   unsigned i, len;
 
-  len = lto_input_uleb128 (ib);
+  len = streamer_read_uhwi (ib);
   for (i = 0; i < len; i++)
     {
       tree index, value;
@@ -892,7 +892,7 @@ lto_input_ts_target_option (struct lto_input_block *ib, tree expr)
   struct bitpack_d bp;
   struct cl_target_option *t = TREE_TARGET_OPTION (expr);
 
-  bp = lto_input_bitpack (ib);
+  bp = streamer_read_bitpack (ib);
   len = sizeof (struct cl_target_option);
   for (i = 0; i < len; i++)
     ((unsigned char *)t)[i] = bp_unpack_value (&bp, 8);
@@ -907,7 +907,7 @@ lto_input_ts_translation_unit_decl_tree_pointers (struct lto_input_block *ib,
 						  struct data_in *data_in,
 						  tree expr)
 {
-  TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (lto_input_string (data_in, ib));
+  TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (streamer_read_string (data_in, ib));
   VEC_safe_push (tree, gc, all_translation_units, expr);
 }
 
@@ -915,7 +915,7 @@ lto_input_ts_translation_unit_decl_tree_pointers (struct lto_input_block *ib,
    contains tables and descriptors for the file being read.  */
 
 void
-lto_input_tree_pointers (struct lto_input_block *ib, struct data_in *data_in,
+streamer_read_tree_body (struct lto_input_block *ib, struct data_in *data_in,
 			 tree expr)
 {
   enum tree_code code;
@@ -985,16 +985,16 @@ lto_input_tree_pointers (struct lto_input_block *ib, struct data_in *data_in,
    context in DATA_IN.  */
 
 tree
-lto_input_integer_cst (struct lto_input_block *ib, struct data_in *data_in)
+streamer_read_integer_cst (struct lto_input_block *ib, struct data_in *data_in)
 {
   tree result, type;
   HOST_WIDE_INT low, high;
   bool overflow_p;
 
   type = stream_read_tree (ib, data_in);
-  overflow_p = (lto_input_1_unsigned (ib) != 0);
-  low = lto_input_uleb128 (ib);
-  high = lto_input_uleb128 (ib);
+  overflow_p = (streamer_read_uchar (ib) != 0);
+  low = streamer_read_uhwi (ib);
+  high = streamer_read_uhwi (ib);
   result = build_int_cst_wide (type, low, high);
 
   /* If the original constant had overflown, build a replica of RESULT to
@@ -1013,16 +1013,16 @@ lto_input_integer_cst (struct lto_input_block *ib, struct data_in *data_in)
    DATA_IN->FILE_DATA->GLOBALS_INDEX[IX].  */
 
 tree
-lto_get_pickled_tree (struct lto_input_block *ib, struct data_in *data_in)
+streamer_get_pickled_tree (struct lto_input_block *ib, struct data_in *data_in)
 {
   unsigned HOST_WIDE_INT ix;
   tree result;
   enum LTO_tags expected_tag;
 
-  ix = lto_input_uleb128 (ib);
-  expected_tag = lto_input_enum (ib, LTO_tags, LTO_NUM_TAGS);
+  ix = streamer_read_uhwi (ib);
+  expected_tag = streamer_read_enum (ib, LTO_tags, LTO_NUM_TAGS);
 
-  result = lto_streamer_cache_get (data_in->reader_cache, ix);
+  result = streamer_tree_cache_get (data_in->reader_cache, ix);
   gcc_assert (result
               && TREE_CODE (result) == lto_tag_to_tree_code (expected_tag));
 
@@ -1034,17 +1034,17 @@ lto_get_pickled_tree (struct lto_input_block *ib, struct data_in *data_in)
    corresponding builtin.  DATA_IN is as in stream_read_tree.  */
 
 tree
-lto_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
+streamer_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
 {
   enum built_in_class fclass;
   enum built_in_function fcode;
   const char *asmname;
   tree result;
 
-  fclass = lto_input_enum (ib, built_in_class, BUILT_IN_LAST);
+  fclass = streamer_read_enum (ib, built_in_class, BUILT_IN_LAST);
   gcc_assert (fclass == BUILT_IN_NORMAL || fclass == BUILT_IN_MD);
 
-  fcode = (enum built_in_function) lto_input_uleb128 (ib);
+  fcode = (enum built_in_function) streamer_read_uhwi (ib);
 
   if (fclass == BUILT_IN_NORMAL)
     {
@@ -1062,11 +1062,11 @@ lto_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
   else
     gcc_unreachable ();
 
-  asmname = lto_input_string (data_in, ib);
+  asmname = streamer_read_string (data_in, ib);
   if (asmname)
     set_builtin_user_assembler_name (result, asmname);
 
-  lto_streamer_cache_append (data_in->reader_cache, result);
+  streamer_tree_cache_append (data_in->reader_cache, result);
 
   return result;
 }

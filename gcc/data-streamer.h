@@ -55,6 +55,35 @@ struct string_slot
   unsigned int slot_num;
 };
 
+/* In data-streamer.c  */
+void bp_pack_var_len_unsigned (struct bitpack_d *, unsigned HOST_WIDE_INT);
+void bp_pack_var_len_int (struct bitpack_d *, HOST_WIDE_INT);
+unsigned HOST_WIDE_INT bp_unpack_var_len_unsigned (struct bitpack_d *);
+HOST_WIDE_INT bp_unpack_var_len_int (struct bitpack_d *);
+
+/* In data-streamer-out.c  */
+void streamer_write_zero (struct output_block *);
+void streamer_write_uhwi (struct output_block *, unsigned HOST_WIDE_INT);
+void streamer_write_hwi (struct output_block *, HOST_WIDE_INT);
+void streamer_write_string (struct output_block *, struct lto_output_stream *,
+			    const char *, bool);
+unsigned streamer_string_index (struct output_block *, const char *,
+				unsigned int, bool);
+void streamer_write_string_with_length (struct output_block *,
+					struct lto_output_stream *,
+					const char *, unsigned int, bool);
+void streamer_write_uhwi_stream (struct lto_output_stream *,
+				 unsigned HOST_WIDE_INT);
+void streamer_write_hwi_stream (struct lto_output_stream *, HOST_WIDE_INT);
+
+/* In data-streamer-in.c  */
+const char *string_for_index (struct data_in *, unsigned int, unsigned int *);
+const char *streamer_read_string (struct data_in *, struct lto_input_block *);
+const char *streamer_read_indexed_string (struct data_in *,
+					  struct lto_input_block *,
+					  unsigned int *);
+unsigned HOST_WIDE_INT streamer_read_uhwi (struct lto_input_block *);
+HOST_WIDE_INT streamer_read_hwi (struct lto_input_block *);
 
 /* Returns a hash code for P.  Adapted from libiberty's htab_hash_string
    to support strings that may not end in '\0'.  */
@@ -111,7 +140,8 @@ bp_pack_value (struct bitpack_d *bp, bitpack_word_t val, unsigned nbits)
      next one.  */
   if (pos + nbits > BITS_PER_BITPACK_WORD)
     {
-      lto_output_uleb128_stream ((struct lto_output_stream *) bp->stream, word);
+      streamer_write_uhwi_stream ((struct lto_output_stream *) bp->stream,
+				  word);
       word = val;
       pos = nbits;
     }
@@ -126,20 +156,20 @@ bp_pack_value (struct bitpack_d *bp, bitpack_word_t val, unsigned nbits)
 
 /* Finishes bit-packing of BP.  */
 static inline void
-lto_output_bitpack (struct bitpack_d *bp)
+streamer_write_bitpack (struct bitpack_d *bp)
 {
-  lto_output_uleb128_stream ((struct lto_output_stream *) bp->stream,
-			     bp->word);
+  streamer_write_uhwi_stream ((struct lto_output_stream *) bp->stream,
+			      bp->word);
   bp->word = 0;
   bp->pos = 0;
 }
 
 /* Returns a new bit-packing context for bit-unpacking from IB.  */
 static inline struct bitpack_d
-lto_input_bitpack (struct lto_input_block *ib)
+streamer_read_bitpack (struct lto_input_block *ib)
 {
   struct bitpack_d bp;
-  bp.word = lto_input_uleb128 (ib);
+  bp.word = streamer_read_uhwi (ib);
   bp.pos = 0;
   bp.stream = (void *)ib;
   return bp;
@@ -160,7 +190,8 @@ bp_unpack_value (struct bitpack_d *bp, unsigned nbits)
      switch to the next one.  */
   if (pos + nbits > BITS_PER_BITPACK_WORD)
     {
-      bp->word = val = lto_input_uleb128 ((struct lto_input_block *)bp->stream);
+      bp->word = val 
+	= streamer_read_uhwi ((struct lto_input_block *)bp->stream);
       bp->pos = nbits;
       return val & mask;
     }
@@ -175,7 +206,7 @@ bp_unpack_value (struct bitpack_d *bp, unsigned nbits)
 /* Write a character to the output block.  */
 
 static inline void
-lto_output_1_stream (struct lto_output_stream *obs, char c)
+streamer_write_char_stream (struct lto_output_stream *obs, char c)
 {
   /* No space left.  */
   if (obs->left_in_block == 0)
@@ -192,7 +223,7 @@ lto_output_1_stream (struct lto_output_stream *obs, char c)
 /* Read byte from the input block.  */
 
 static inline unsigned char
-lto_input_1_unsigned (struct lto_input_block *ib)
+streamer_read_uchar (struct lto_input_block *ib)
 {
   if (ib->p >= ib->len)
     lto_section_overrun (ib);
@@ -204,10 +235,10 @@ lto_input_1_unsigned (struct lto_input_block *ib)
    Be host independent, limit range to 31bits.  */
 
 static inline void
-lto_output_int_in_range (struct lto_output_stream *obs,
-			 HOST_WIDE_INT min,
-			 HOST_WIDE_INT max,
-			 HOST_WIDE_INT val)
+streamer_write_hwi_in_range (struct lto_output_stream *obs,
+				  HOST_WIDE_INT min,
+				  HOST_WIDE_INT max,
+				  HOST_WIDE_INT val)
 {
   HOST_WIDE_INT range = max - min;
 
@@ -215,35 +246,35 @@ lto_output_int_in_range (struct lto_output_stream *obs,
 		       && range < 0x7fffffff);
 
   val -= min;
-  lto_output_1_stream (obs, val & 255);
+  streamer_write_char_stream (obs, val & 255);
   if (range >= 0xff)
-    lto_output_1_stream (obs, (val >> 8) & 255);
+    streamer_write_char_stream (obs, (val >> 8) & 255);
   if (range >= 0xffff)
-    lto_output_1_stream (obs, (val >> 16) & 255);
+    streamer_write_char_stream (obs, (val >> 16) & 255);
   if (range >= 0xffffff)
-    lto_output_1_stream (obs, (val >> 24) & 255);
+    streamer_write_char_stream (obs, (val >> 24) & 255);
 }
 
 /* Input VAL into OBS and verify it is in range MIN...MAX that is supposed
    to be compile time constant.  PURPOSE is used for error reporting.  */
 
 static inline HOST_WIDE_INT
-lto_input_int_in_range (struct lto_input_block *ib,
-			const char *purpose,
-			HOST_WIDE_INT min,
-			HOST_WIDE_INT max)
+streamer_read_hwi_in_range (struct lto_input_block *ib,
+				 const char *purpose,
+				 HOST_WIDE_INT min,
+				 HOST_WIDE_INT max)
 {
   HOST_WIDE_INT range = max - min;
-  HOST_WIDE_INT val = lto_input_1_unsigned (ib);
+  HOST_WIDE_INT val = streamer_read_uchar (ib);
 
   gcc_checking_assert (range > 0 && range < 0x7fffffff);
 
   if (range >= 0xff)
-    val |= ((HOST_WIDE_INT)lto_input_1_unsigned (ib)) << 8;
+    val |= ((HOST_WIDE_INT)streamer_read_uchar (ib)) << 8;
   if (range >= 0xffff)
-    val |= ((HOST_WIDE_INT)lto_input_1_unsigned (ib)) << 16;
+    val |= ((HOST_WIDE_INT)streamer_read_uchar (ib)) << 16;
   if (range >= 0xffffff)
-    val |= ((HOST_WIDE_INT)lto_input_1_unsigned (ib)) << 24;
+    val |= ((HOST_WIDE_INT)streamer_read_uchar (ib)) << 24;
   val += min;
   if (val < min || val > max)
     lto_value_range_error (purpose, val, min, max);
@@ -292,14 +323,14 @@ bp_unpack_int_in_range (struct bitpack_d *bp,
 
 /* Output VAL of type "enum enum_name" into OBS.
    Assume range 0...ENUM_LAST - 1.  */
-#define lto_output_enum(obs,enum_name,enum_last,val) \
-  lto_output_int_in_range ((obs), 0, (int)(enum_last) - 1, (int)(val))
+#define streamer_write_enum(obs,enum_name,enum_last,val) \
+  streamer_write_hwi_in_range ((obs), 0, (int)(enum_last) - 1, (int)(val))
 
 /* Input enum of type "enum enum_name" from IB.
    Assume range 0...ENUM_LAST - 1.  */
-#define lto_input_enum(ib,enum_name,enum_last) \
-  (enum enum_name)lto_input_int_in_range ((ib), #enum_name, 0, \
-					  (int)(enum_last) - 1)
+#define streamer_read_enum(ib,enum_name,enum_last) \
+  (enum enum_name)streamer_read_hwi_in_range ((ib), #enum_name, 0, \
+					      (int)(enum_last) - 1)
 
 /* Output VAL of type "enum enum_name" into BP.
    Assume range 0...ENUM_LAST - 1.  */
@@ -315,41 +346,17 @@ bp_unpack_int_in_range (struct bitpack_d *bp,
 /* Output the start of a record with TAG to output block OB.  */
 
 static inline void
-output_record_start (struct output_block *ob, enum LTO_tags tag)
+streamer_write_record_start (struct output_block *ob, enum LTO_tags tag)
 {
-  lto_output_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS, tag);
+  streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS, tag);
 }
 
 /* Return the next tag in the input block IB.  */
 
 static inline enum LTO_tags
-input_record_start (struct lto_input_block *ib)
+streamer_read_record_start (struct lto_input_block *ib)
 {
-  return lto_input_enum (ib, LTO_tags, LTO_NUM_TAGS);
+  return streamer_read_enum (ib, LTO_tags, LTO_NUM_TAGS);
 }
-
-/* In data-streamer.c  */
-void bp_pack_var_len_unsigned (struct bitpack_d *, unsigned HOST_WIDE_INT);
-void bp_pack_var_len_int (struct bitpack_d *, HOST_WIDE_INT);
-unsigned HOST_WIDE_INT bp_unpack_var_len_unsigned (struct bitpack_d *);
-HOST_WIDE_INT bp_unpack_var_len_int (struct bitpack_d *);
-
-/* In data-streamer-out.c  */
-void output_zero (struct output_block *);
-void output_uleb128 (struct output_block *, unsigned HOST_WIDE_INT);
-void output_sleb128 (struct output_block *, HOST_WIDE_INT);
-void lto_output_string (struct output_block *, struct lto_output_stream *,
-			const char *, bool);
-unsigned lto_string_index (struct output_block *, const char *, unsigned int,
-			   bool);
-void lto_output_string_with_length (struct output_block *,
-				    struct lto_output_stream *,
-				    const char *, unsigned int, bool);
-const char *input_string_internal (struct data_in *, struct lto_input_block *,
-				   unsigned int *);
-
-/* In data-streamer-in.c  */
-const char *string_for_index (struct data_in *, unsigned int, unsigned int *);
-const char *lto_input_string (struct data_in *, struct lto_input_block *);
 
 #endif  /* GCC_DATA_STREAMER_H  */
