@@ -1,3 +1,13 @@
+2011-08-12  Nick Clifton  <nickc@redhat.com>
+
+	* builtins.c (expand_builtin_memcmp): Do not use cmpstrnsi
+	pattern.
+	* doc/md.texi (cmpstrn): Note that the comparison stops if both
+	fetched bytes are zero.
+	(cmpstr): Likewise.
+	(cmpmem): Note that the comparison does not stop if both of the
+	fetched bytes are zero.
+
 2011-08-11   Kazuhiro Inaoka  <kazuhiro.inaoka.ud@renesas.com>
 
 	* config/rx/rx.md (movsicc): Allow register to register
