@@ -1,3 +1,9 @@
+2011-08-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50034
+	* call.c (convert_arg_to_ellipsis): force_rvalue only in
+	potentially evaluated context.
+
 2011-08-12  Richard Guenther  <rguenther@suse.de>
 
 	* call.c (build_over_call): Instead of memcpy use an

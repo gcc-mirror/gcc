@@ -1,3 +1,8 @@
+2011-08-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50034
+	* g++.dg/cpp0x/defaulted28.C: Add unevaluated case.
+
 2011-08-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/builtins-67.c: New test.

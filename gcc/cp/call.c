@@ -6097,7 +6097,7 @@ convert_arg_to_ellipsis (tree arg)
     {
       /* Build up a real lvalue-to-rvalue conversion in case the
 	 copy constructor is trivial but not callable.  */
-      if (CLASS_TYPE_P (arg_type))
+      if (!cp_unevaluated_operand && CLASS_TYPE_P (arg_type))
 	force_rvalue (arg, tf_warning_or_error);
 
       /* [expr.call] 5.2.2/7:
