@@ -1,3 +1,8 @@
+2011-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cmath (fmod(_Tp, _Up)): Add.
+	* include/c_std/cmath: Likewise.
+
 2011-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/future: constexpr functions are implicitly inline.
