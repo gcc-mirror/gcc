@@ -1906,7 +1906,7 @@ typedef struct
       : min >= -4096 && max < 4096					\
       ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 0, HImode)	\
       : SImode)								\
-   : ((min < 0 || max >= 0x2000 || !TARGET_THUMB2) ? SImode		\
+   : ((min < 0 || max >= 0x20000 || !TARGET_THUMB2) ? SImode		\
       : (max >= 0x200) ? HImode						\
       : QImode))
 
