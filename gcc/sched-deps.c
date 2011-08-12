@@ -2696,6 +2696,18 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
     add_dependence_list (insn, deps->last_function_call_may_noreturn,
 			 1, REG_DEP_ANTI);
 
+  /* We must avoid creating a situation in which two successors of the
+     current block have different unwind info after scheduling.  If at any
+     point the two paths re-join this leads to incorrect unwind info.  */
+  /* ??? There are certain situations involving a forced frame pointer in
+     which, with extra effort, we could fix up the unwind info at a later
+     CFG join.  However, it seems better to notice these cases earlier
+     during prologue generation and avoid marking the frame pointer setup
+     as frame-related at all.  */
+  if (RTX_FRAME_RELATED_P (insn))
+    deps->sched_before_next_jump
+      = alloc_INSN_LIST (insn, deps->sched_before_next_jump);
+
   if (code == COND_EXEC)
     {
       sched_analyze_2 (deps, COND_EXEC_TEST (x), insn);
@@ -3302,12 +3314,11 @@ deps_analyze_insn (struct deps_desc *deps, rtx insn)
   if (NONDEBUG_INSN_P (insn))
     sched_get_condition_with_rev (insn, NULL);
 
-  if (NONJUMP_INSN_P (insn) || DEBUG_INSN_P (insn) || JUMP_P (insn))
+  if (JUMP_P (insn))
     {
       /* Make each JUMP_INSN (but not a speculative check)
          a scheduling barrier for memory references.  */
       if (!deps->readonly
-          && JUMP_P (insn)
           && !(sel_sched_p ()
                && sel_insn_is_speculation_check (insn)))
         {
@@ -3326,6 +3337,15 @@ deps_analyze_insn (struct deps_desc *deps, rtx insn)
 	    }
         }
 
+      /* For each insn which shouldn't cross a jump, add a dependence.  */
+      add_dependence_list_and_free (deps, insn,
+				    &deps->sched_before_next_jump, 1,
+				    REG_DEP_ANTI);
+
+      sched_analyze_insn (deps, PATTERN (insn), insn);
+    }
+  else if (NONJUMP_INSN_P (insn) || DEBUG_INSN_P (insn))
+    {
       sched_analyze_insn (deps, PATTERN (insn), insn);
     }
   else if (CALL_P (insn))
@@ -3571,6 +3591,7 @@ init_deps (struct deps_desc *deps, bool lazy_reg_last)
   deps->last_function_call = 0;
   deps->last_function_call_may_noreturn = 0;
   deps->sched_before_next_call = 0;
+  deps->sched_before_next_jump = 0;
   deps->in_post_call_group_p = not_post_call;
   deps->last_debug_insn = 0;
   deps->last_reg_pending_barrier = NOT_A_BARRIER;

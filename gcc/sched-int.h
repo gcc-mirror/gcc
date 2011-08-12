@@ -496,6 +496,9 @@ struct deps_desc
      scheduling is done.  */
   rtx sched_before_next_call;
 
+  /* Similarly, a list of insns which should not cross a branch.  */
+  rtx sched_before_next_jump;
+
   /* Used to keep post-call pseudo/hard reg movements together with
      the call.  */
   enum post_call_group in_post_call_group_p;
