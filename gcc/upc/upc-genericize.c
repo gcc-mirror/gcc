@@ -57,14 +57,37 @@ along with GCC; see the file COPYING3.  If not see
 #include "upc-genericize.h"
 #include "langhooks.h"
 
-static tree upc_expand_get (location_t, tree);
+static tree upc_expand_get (location_t, tree, int);
 static tree upc_expand_put (location_t, tree, tree, int);
 static tree upc_create_tmp_var (tree);
 static tree upc_copy_value_to_tmp_var (tree *, tree);
 static tree upc_make_bit_field_ref (tree, tree, int, int);
+static tree upc_build_shared_var_addr (location_t, tree);
 static tree upc_shared_addr (location_t, tree);
+static tree upc_shared_addr_rep (location_t, tree);
 static tree upc_simplify_shared_ref (location_t, tree);
 static void upc_strip_useless_generic_pts_cvt (tree *);
+
+/* Given a shared variable's VAR_DECL node, map to another
+   VAR_DECL that has a similar external symbol name, with
+   the "shared" qualifier removed from its type.  This
+   "shadow variable" is used to generate conventional
+   address constants when referring to a shared variable.  */
+
+struct GTY (()) uid_tree_map
+{
+  unsigned int uid;
+  tree to;
+};
+static GTY ((param_is (struct uid_tree_map))) htab_t unshared_vars;
+static hashval_t uid_tree_map_hash (const void *);
+static int uid_tree_map_eq (const void *, const void *);
+static tree create_unshared_var (location_t, const tree);
+static tree lookup_unshared_var (const tree);
+static void map_unshared_var (const tree, const tree);
+static tree unshared_var_addr (location_t, const tree);
+static tree unshared_var_name (const tree);
+static void upc_free_unshared_var_table (void);
 
 static void upc_genericize_addr_expr (location_t, tree *);
 static void upc_genericize_array_ref (location_t, tree *);
@@ -125,13 +148,13 @@ upc_copy_value_to_tmp_var (tree *val_expr, tree val)
 }
 
 /* Generate a call to the runtime to implement a 'get' of a shared
-   object.  SRC_ADDR is a pointer to UPC shared value that references
-   the shared object.  */
+   object.  SRC is a reference to  a UPC shared value; it must
+   be addressable. */
 
 static tree
-upc_expand_get (location_t loc, tree src_addr)
+upc_expand_get (location_t loc, tree src, int want_stable_value)
 {
-  tree type = TREE_TYPE (TREE_TYPE (src_addr));
+  tree type = TREE_TYPE (src);
   /* Drop the shared qualifier.  */
   tree result_type = TYPE_MAIN_VARIANT (type);
   int strict_mode = TYPE_STRICT (type)
@@ -146,9 +169,9 @@ upc_expand_get (location_t loc, tree src_addr)
   enum machine_mode op_mode = (mode == TImode) ? BLKmode : mode;
   rtx lib_op = optab_libfunc (get_op, op_mode);
   const char *libfunc_name;
-  tree result, libfunc, lib_args, lib_call;
-  /* The runtime API expects the internal rep. of a UPC pointer-to-shared.  */
-  src_addr = build1 (NOP_EXPR, upc_pts_rep_type_node, src_addr);
+  tree src_addr, result, result_tmp, libfunc, lib_args, lib_call;
+  src_addr = upc_shared_addr_rep (loc, src);
+  gcc_assert (TREE_TYPE (src_addr) == upc_pts_rep_type_node);
   if (!lib_op)
     internal_error ("UPC runtime library operation for "
                     "get operation not found");
@@ -159,7 +182,7 @@ upc_expand_get (location_t loc, tree src_addr)
   if (op_mode == BLKmode)
     {
       tree size = size_in_bytes (result_type);
-      tree result_tmp, result_addr;
+      tree result_addr;
       result_tmp = upc_create_tmp_var (result_type);
       TREE_ADDRESSABLE (result_tmp) = 1;
       result_addr = build_fold_addr_expr_loc (loc, result_tmp);
@@ -183,21 +206,28 @@ upc_expand_get (location_t loc, tree src_addr)
       if (!lang_hooks.types_compatible_p (result_type, TREE_TYPE (lib_call)))
 	lib_call = build1 (NOP_EXPR, result_type, lib_call);
       result = lib_call;
+      if (want_stable_value)
+        {
+	  tree result_tmp_init_expr;
+          result_tmp = upc_copy_value_to_tmp_var (&result_tmp_init_expr,
+	                                          result);
+          result = build2 (COMPOUND_EXPR, result_type,
+	                   result_tmp_init_expr, result_tmp);
+	}
     }
   return result;
 }
 
 /* Generate a call to the runtime to implement a 'put' into a shared
-   object.  DEST_ADDR is a pointer-to-shared used to locate
-   the destination in UPC shared memory.  SRC is the value
-   to be stored into the destination.  If WANT_VALUE is set,
-   then return a compound expression that evaluates to
-   the value or SRC.  */
+   object.  DEST is a reference to the destination in UPC shared memory;
+   it must be addressable.  SRC is the value to be stored into the
+   destination.  If WANT_VALUE is set, then return a compound expression
+   which evaluates to the value of SRC.  */
 
 static tree
-upc_expand_put (location_t loc, tree dest_addr, tree src, int want_value)
+upc_expand_put (location_t loc, tree dest, tree src, int want_value)
 {
-  tree type = TREE_TYPE (TREE_TYPE (dest_addr));
+  tree type = TREE_TYPE (dest);
   int strict_mode = TYPE_STRICT (type)
     || (!TYPE_RELAXED (type) && get_upc_consistency_mode ());
   int doprofcall = flag_upc_instrument && get_upc_pupc_mode ();
@@ -216,12 +246,11 @@ upc_expand_put (location_t loc, tree dest_addr, tree src, int want_value)
 	&& (!is_gimple_addressable (src) || is_gimple_non_addressable (src)));
   int is_shared_copy = !local_copy && (op_mode == BLKmode) && is_src_shared;
   const char *libfunc_name;
-  tree libfunc, lib_args, src_tmp_init_expr, result;
+  tree dest_addr, libfunc, lib_args, src_tmp_init_expr, result;
+  dest_addr = upc_shared_addr_rep (loc, dest);
+  gcc_assert (TREE_TYPE (dest_addr) == upc_pts_rep_type_node);
   if (local_copy)
     src = upc_copy_value_to_tmp_var (&src_tmp_init_expr, src);
-  /* The runtime library expects the internal rep. of
-     of a UPC pointer-to-shared. */
-  dest_addr = build1 (NOP_EXPR, upc_pts_rep_type_node, dest_addr);
   lib_args = tree_cons (NULL_TREE, dest_addr, NULL_TREE);
   if (is_shared_copy)
     libfunc_name = doprofcall
@@ -241,10 +270,11 @@ upc_expand_put (location_t loc, tree dest_addr, tree src, int want_value)
   if (op_mode == BLKmode)
     {
       const tree size = tree_expr_size (src);
-      tree src_addr = build_fold_addr_expr_loc (loc, src);
+      tree src_addr;
       if (is_shared_copy)
-	src_addr = fold (build1 (VIEW_CONVERT_EXPR,
-				 upc_pts_rep_type_node, src_addr));
+	src_addr = upc_shared_addr_rep (loc, src);
+      else
+        src_addr = build_fold_addr_expr_loc (loc, src);
       lib_args = chainon (lib_args,
 			  tree_cons (NULL_TREE, src_addr,
 				     tree_cons (NULL_TREE, size, NULL_TREE)));
@@ -261,7 +291,7 @@ upc_expand_put (location_t loc, tree dest_addr, tree src, int want_value)
 	internal_error ("%s: UPC put operation argument precision mismatch",
 			libfunc_name);
       /* Avoid warnings about implicit conversion between
-         actual parameter value's type, and the type of the
+         the actual parameter value's type, and the type of the
          runtime routine's parameter. */
       if (!lang_hooks.types_compatible_p (src_type, TREE_TYPE (src)))
 	src = build1 (AGGREGATE_TYPE_P (TREE_TYPE (src))
@@ -292,10 +322,10 @@ upc_make_bit_field_ref (tree inner, tree type, int bitsize, int bitpos)
       tree size = TYPE_SIZE (TREE_TYPE (inner));
       if ((INTEGRAL_TYPE_P (TREE_TYPE (inner))
 	   || POINTER_TYPE_P (TREE_TYPE (inner)))
-	  && host_integerp (size, 0) && tree_low_cst (size, 0) == bitsize)
+	  && host_integerp (size, 0)
+	  && tree_low_cst (size, 0) == bitsize)
 	return fold_convert (type, inner);
     }
-
   result = build3 (BIT_FIELD_REF, type, inner,
 		   size_int (bitsize), bitsize_int (bitpos));
   return result;
@@ -313,15 +343,46 @@ upc_make_bit_field_ref (tree inner, tree type, int bitsize, int bitpos)
 static tree
 upc_simplify_shared_ref (location_t loc, tree exp)
 {
-  tree ref = 0;
-  enum machine_mode mode;
-  HOST_WIDE_INT bitsize;
-  HOST_WIDE_INT bitpos;
+  tree ref_type = TREE_TYPE (exp);
+  tree base, base_addr, ref, t_offset;
+  enum machine_mode mode = VOIDmode;
+  HOST_WIDE_INT bitsize = 0;
+  HOST_WIDE_INT bitpos = 0;
   int unsignedp = 0;
   int volatilep = 0;
-  tree type, inner, ptr_type, offset, base, t_offset;
+  tree offset = NULL_TREE;
+  base = get_inner_reference (exp, &bitsize, &bitpos, &offset,
+			      &mode, &unsignedp, &volatilep, false);
+  gcc_assert (upc_shared_type_p (TREE_TYPE (base)));
+  base_addr = build_fold_addr_expr (base);
+  if (bitpos)
+    {
+      t_offset = size_int (bitpos / BITS_PER_UNIT);
+      if (offset)
+	t_offset = fold (build_binary_op (loc, PLUS_EXPR,
+                         offset, t_offset, 0));
+    }
+  else
+    t_offset = offset;
+  if (t_offset)
+    {
+      const tree base_addr_type = TREE_TYPE (base_addr);
+      const enum tree_code cvt_op =
+          upc_types_compatible_p ( upc_char_pts_type_node, base_addr_type)
+          ? NOP_EXPR : CONVERT_EXPR;
+      /* Convert the base address to (shared [] char *), which may
+	 reset the pointer's phase to zero.  This is the behavior
+	 that is required to meaningfully add an offset to the
+	 base address.  */
+      base_addr = build1 (cvt_op, upc_char_pts_type_node, base_addr);
+      /* Adjust the base address so that it points to the
+	 simplified lvalue.  */
+      base_addr = fold (build_binary_op (loc, PLUS_EXPR,
+			base_addr, t_offset, 0));
+      base_addr = convert (base_addr_type, base_addr);
+    }
   /* We need to construct a pointer-to-shared type that
-     will be used to point to the component's value.  However,
+     will be used to point to the referenced value.  However,
      for a COMPONENT_REF, the original type will likely not have
      upc_shared_type_p() asserted, but rather, the expression node itself
      will have TREE_SHARED asserted.  We need to first propagate
@@ -329,92 +390,263 @@ upc_simplify_shared_ref (location_t loc, tree exp)
      used to build the required pointer-to-shared type.  Further,
      any pointer to a shared component must be constrained to have
      a blocking factor of zero.  */
-  type = TREE_TYPE (exp);
-  if (!upc_shared_type_p (type))
+  if (!upc_shared_type_p (ref_type))
     {
-      int quals = TYPE_QUALS (type) | TREE_QUALS (exp);
-      gcc_assert (quals & TYPE_QUAL_SHARED);
-      type = c_build_qualified_type (type, quals);
+      const int shared_quals = TYPE_QUALS (TREE_TYPE (exp))
+                               | TREE_QUALS (exp);
+      gcc_assert (shared_quals & TYPE_QUAL_SHARED);
+      ref_type = c_build_qualified_type (ref_type, shared_quals);
+      ref_type = upc_set_block_factor (ref_type, size_zero_node);
     }
-  /* A pointer to a component of a shared structure
-     must have a blocking factor of zero.  */
-  inner = strip_array_types (type);
-  if (!TYPE_BLOCK_FACTOR (inner)
-      || !integer_zerop (TYPE_BLOCK_FACTOR (inner)))
-    {
-      type = build_variant_type_copy (type);
-      if (TREE_CODE (type) == ARRAY_TYPE)
-	{
-	  tree last = type;
-	  while (TREE_CODE (TREE_TYPE (last)) == ARRAY_TYPE)
-	    last = TREE_TYPE (last);
-	  inner = build_variant_type_copy (TREE_TYPE (last));
-	  /* Push the blocking factor down to the array
-	     element type.  */
-	  TYPE_BLOCK_FACTOR (inner) = integer_zero_node;
-	  TREE_TYPE (last) = inner;
-	}
-    }
-  ptr_type = build_pointer_type (type);
-  base = get_inner_reference (exp, &bitsize, &bitpos, &offset,
-			      &mode, &unsignedp, &volatilep, false);
-  /* Calculate the base address, using the pointer type information
-     derived above.  */
-  if (INDIRECT_REF_P (base))
-    {
-      /* remove indirection */
-      base = TREE_OPERAND (base, 0);
-      /* The conversion below may set the phase field to zero.
-         This is the behavior we want, because subsequent
-         address calculations will ignore the phase.  */
-      if (TREE_TYPE (base) != ptr_type)
-	base = convert (ptr_type, base);
-    }
-  else if (TREE_CODE (base) == VAR_DECL)
-    base = upc_build_shared_var_addr (loc, ptr_type, base);
-  else
-    gcc_unreachable ();
-  t_offset = size_int (bitpos / BITS_PER_UNIT);
-  if (offset != 0)
-    t_offset = build_binary_op (loc, PLUS_EXPR, t_offset, offset, 0);
-  /* Make base point to the specified field. */
-  if (!integer_zerop (t_offset))
-    base = (*upc_pts.add_offset) (loc, base, t_offset);
-  /* Convert base back to an indirect ref. */
-  ref = build_fold_indirect_ref_loc (loc, base);
-  if (((bitpos % BITS_PER_UNIT) != 0) || ((bitsize % BITS_PER_UNIT) != 0))
-    {
-      tree field_type = lang_hooks.types.type_for_mode (mode, unsignedp);
-      /* We need to return a bit field reference. */
-      ref = upc_make_bit_field_ref (ref, field_type, bitsize, bitpos);
-    }
+  if (TREE_TYPE (TREE_TYPE (base_addr)) != ref_type)
+    base_addr = convert (build_pointer_type (ref_type), base_addr);
+  /* The simplified reference is an indirect ref., using
+     the adjusted base_addr  */
+  ref = build_fold_indirect_ref_loc (loc, base_addr);
+  /* If this is a BIT_FIELD_REF then adjust its base address.  */
+  if (TREE_CODE (exp) == BIT_FIELD_REF)
+    ref = upc_make_bit_field_ref (ref, ref_type, bitsize, bitpos);
   return ref;
 }
 
+/* Create and return a "shadow variable" that has the same type as VAR,
+   but with all UPC shared qualifiers removed from the type.
+   The assembler name of this shadow variable is the same
+   as that of the original variable, VAR.  */
+
+static tree
+create_unshared_var (location_t loc, const tree var)
+{
+  tree u_name, u_type, u;
+  gcc_assert (var && TREE_CODE (var) == VAR_DECL);
+  u_name = unshared_var_name (var);
+  u_type = build_upc_unshared_type (TREE_TYPE (var));
+  u = build_decl (loc, VAR_DECL, u_name, u_type);
+  TREE_USED (u) = 1;
+  TREE_ADDRESSABLE (u) = 1;
+  TREE_PUBLIC (u) = TREE_PUBLIC (var);
+  TREE_STATIC (u) = TREE_STATIC (var);
+  DECL_ARTIFICIAL (u) = 1;
+  DECL_IGNORED_P (u) = 1;
+  DECL_EXTERNAL (u) = DECL_EXTERNAL (var);
+  DECL_SECTION_NAME (u) = DECL_SECTION_NAME (var);
+  DECL_CONTEXT (u) = DECL_CONTEXT (var);
+
+  /* Alias the unshared variable to the shared variable.  */
+
+  SET_DECL_ASSEMBLER_NAME (u, DECL_ASSEMBLER_NAME (var));
+
+  /* Make sure the variable is referenced.  */
+
+  mark_decl_referenced (var);
+  return u;
+}
+
+/* Return a hash value given the argument P, which
+   is a pointer to a uid_tree_map.  The pointer
+   value is used directly to yield a hash value.  */
+
+static hashval_t
+uid_tree_map_hash (const void *p)
+{
+  const struct uid_tree_map *const map = (const struct uid_tree_map *) p;
+  return map->uid;
+}
+
+/* Return TRUE if the UID fields of two uid_tree_map
+   structures are equal.  This function is called by
+   the `htab_find_with_hash function' to match entries
+   in the `unshared_vars' hash table.  */
+
+static int
+uid_tree_map_eq (const void *va, const void *vb)
+{
+  const struct uid_tree_map *const a = (const struct uid_tree_map *) va;
+  const struct uid_tree_map *const b = (const struct uid_tree_map *) vb;
+  return a->uid == b->uid;
+}
+
+/* Return the "shadow variable" created for VAR that
+   has the same type as VAR, but with the UPC shared
+   qualifiers removed.  */
+
+static tree
+lookup_unshared_var (const tree var)
+{
+  const struct uid_tree_map *h;
+  struct uid_tree_map in;
+  unsigned int uid;
+  gcc_assert (var && TREE_CODE (var) == VAR_DECL);
+  uid = DECL_UID (var);
+  in.uid = uid;
+  in.to = NULL_TREE;
+  h = (struct uid_tree_map *) htab_find_with_hash (unshared_vars, &in, uid);
+  return h ? h->to : NULL_TREE;
+}
+
+#define UNSHARE_PREFIX "_u_"
+
+/* Return an identifier that will be used to declare the "shadow variable"
+   which has the same type as VAR, but with all UPC shared qualfiers
+   removed from the type.  The identifier has the same name as
+   that of VAR, prefixed with the string given by the
+   value of `UNSHARE_PREFIX'.  */
+
+static tree
+unshared_var_name (const tree var)
+{
+  const tree name = DECL_NAME (var);
+  const size_t len = IDENTIFIER_LENGTH (name);
+  char *tmp_name = (char *) alloca (len + sizeof (UNSHARE_PREFIX));
+  strcpy (tmp_name, UNSHARE_PREFIX);
+  strcat (tmp_name, IDENTIFIER_POINTER (name));
+  return get_identifier (tmp_name);
+}
+
+/* Register the mapping between the UPC shared variable, VAR,
+   and its unshared counter-part, U_VAR.  "unshared" in
+   this context means that the shadow variable U_VAR
+   has the same type as VAR, with the UPC shared,
+   strict, and relaxed qualifiers removed.  */
+
+static void
+map_unshared_var (const tree var, const tree u_var)
+{
+  struct uid_tree_map *h;
+  unsigned int uid;
+  void **loc;
+  gcc_assert (var && TREE_CODE (var) == VAR_DECL);
+  gcc_assert (u_var && TREE_CODE (u_var) == VAR_DECL);
+  uid = DECL_UID (var);
+  h = ggc_alloc_uid_tree_map ();
+  h->uid = uid;
+  h->to = u_var;
+  loc = htab_find_slot_with_hash (unshared_vars, h, uid, INSERT);
+  *(struct uid_tree_map **) loc = h;
+}
+
+/* Return a tree node that evaluates to the address that the
+   linker assigns to the UPC shared variable, VAR.  This is not
+   the final location of the UPC shared variable.  The linker is
+   used only to lay out a given UPC thread's contribution to the
+   UPC shared global memory region.
+
+   The address expression returned will point to a "shadow
+   variable" declaration that is created from the UPC shared
+   variable declaration, VAR.  This shadow variable has the same
+   type and other attributes as VAR, with the UPS shared type
+   qualifiers removed.  */
+
+static tree
+unshared_var_addr (location_t loc, const tree var)
+{
+  tree unshared_var, addr;
+  unshared_var = lookup_unshared_var (var);
+  if (!unshared_var)
+    {
+      unshared_var = create_unshared_var (loc, var);
+      map_unshared_var (var, unshared_var);
+    }
+  addr = build_fold_addr_expr (unshared_var);
+  TREE_CONSTANT (addr) = 1;
+  TREE_READONLY (addr) = 1;
+  return addr;
+}
+
+/* Free the hash table used to map UPC VAR_DECL's
+   into the "unshared" shadow variables that were created
+   in order to establish the offset of a UPC shared
+   variable with the special linker section that is
+   created to collect the UPC shared variables.  */
+
+static void
+upc_free_unshared_var_table (void)
+{
+  if (unshared_vars)
+    {
+      htab_delete (unshared_vars);
+      unshared_vars = NULL;
+    }
+}
+
+/* Convert the shared variable reference VAR into a UPC pointer-to-shared
+   value of the form {0, 0, &VAR}.  */
+
+static tree
+upc_build_shared_var_addr (location_t loc, tree var)
+{
+  tree var_addr, val;
+  gcc_assert (TREE_CODE (var) == VAR_DECL && TREE_SHARED (var));
+  /* Refer to a shadow variable that has the same type as VAR, but
+     with the shared qualifier removed.  */
+  var_addr = unshared_var_addr (loc, var);
+#ifdef HAVE_UPC_PTS_PACKED_REP
+  {
+    const tree char_ptr_type = build_pointer_type (char_type_node);
+    tree shared_vaddr_base;
+    /* Subtract off the shared section base address so that the
+       resulting quantity will fit into the vaddr field.  */
+    shared_vaddr_base =
+      identifier_global_value (get_identifier ("__upc_shared_start"));
+    if (!shared_vaddr_base)
+      shared_vaddr_base =
+	identifier_global_value (get_identifier ("UPCRL_shared_begin"));
+    if (!shared_vaddr_base)
+      fatal_error ("UPC shared section start address not found; "
+		   "cannot find a definition for either "
+		   "__upc_shared_start or UPCRL_shared_begin");
+    assemble_external (shared_vaddr_base);
+    TREE_USED (shared_vaddr_base) = 1;
+    shared_vaddr_base = build1 (ADDR_EXPR, char_ptr_type, shared_vaddr_base);
+    var_addr = build_binary_op (loc, MINUS_EXPR,
+				convert (ptrdiff_type_node, var_addr),
+				convert (ptrdiff_type_node,
+					 shared_vaddr_base), 0);
+  }
+#endif
+  val = (*upc_pts.build) (loc, build_pointer_type (TREE_TYPE (var)),
+                          var_addr, integer_zero_node, integer_zero_node);
+  return val;
+}
+
 /* Return the UPC shared address of the lvalue
-   identified by EXP.  */
+   identified by EXP.  The type of the result is
+   the UPC pointer-to-shared representation type.  */
+
+static tree
+upc_shared_addr_rep (location_t loc, tree exp)
+{
+  tree addr = upc_shared_addr (loc, exp);
+  /* Convert to internal UPC pointer-to-shared representation,
+     possibly removing an unecessary chain of VIEW_CONVERT_EXPR's.  */
+  addr = fold (build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node, addr));
+  return addr;
+}
+
+/* Return the UPC shared address of the lvalue
+   identified by EXP.  The type of the result is
+   the UPC pointer-to-shared representation type.  */
 
 static tree
 upc_shared_addr (location_t loc, tree exp)
 {
+  tree ref = exp;
   const enum tree_code code = TREE_CODE (exp);
-  const tree type = TREE_TYPE (exp);
-  tree addr, ref;
+  tree addr;
   switch (code)
     {
     case VAR_DECL:
-      addr = upc_build_shared_var_addr (loc, build_pointer_type (type), exp);
-      break;
-    case INDIRECT_REF:
-      addr = TREE_OPERAND (exp, 0);
+      addr = upc_build_shared_var_addr (loc, exp);
       break;
     case ARRAY_REF:
     case COMPONENT_REF:
       ref = upc_simplify_shared_ref (loc, exp);
       if (TREE_CODE (ref) == ERROR_MARK)
 	return ref;
+      addr = build_fold_addr_expr_loc (loc, ref);
+      break;
+    case INDIRECT_REF:
       /* Remove the indirection by taking the address and simplifying.  */
-      gcc_assert (INDIRECT_REF_P (ref));
       addr = build_fold_addr_expr_loc (loc, ref);
       break;
     case BIT_FIELD_REF:
@@ -443,7 +675,7 @@ static void
 upc_genericize_sync_stmt (location_t loc, tree *stmt_p)
 {
   /* The first operand is the synchronization operation, UPC_SYNC_OP:
-     UPC_SYNC_NOTIFY_OP 1       Notify operation
+     UPC_SYNC_NOTIFY_OP         1       Notify operation
      UPC_SYNC_WAIT_OP           2       Wait operation
      UPC_SYNC_BARRIER_OP        3       Barrier operation
      The second operand, UPC_SYNC_ID is the (optional) expression
@@ -486,8 +718,8 @@ upc_genericize_sync_stmt (location_t loc, tree *stmt_p)
 static void
 upc_genericize_shared_var_ref (location_t loc, tree *expr_p)
 {
-  tree src_addr = build_unary_op (loc, ADDR_EXPR, *expr_p, 1);
-  *expr_p = upc_expand_get (loc, src_addr);
+  tree src = *expr_p;
+  *expr_p = upc_expand_get (loc, src, 0);
 }
 
 /* Expand & of a UPC shared object into equivalent code. */
@@ -495,8 +727,7 @@ upc_genericize_shared_var_ref (location_t loc, tree *expr_p)
 static void
 upc_genericize_addr_expr (location_t loc, tree *expr_p)
 {
-  const tree exp = *expr_p;
-  const tree op0 = TREE_OPERAND (exp, 0);
+  const tree op0 = TREE_OPERAND (*expr_p, 0);
   *expr_p = upc_shared_addr (loc, op0);
 }
 
@@ -506,11 +737,8 @@ upc_genericize_addr_expr (location_t loc, tree *expr_p)
 static void
 upc_genericize_indirect_ref (location_t loc, tree *expr_p)
 {
-  tree src_addr;
-  /* Drop the indirect ref. to obtain the address of the
-     shared object. */
-  src_addr = TREE_OPERAND (*expr_p, 0);
-  *expr_p = upc_expand_get (loc, src_addr);
+  tree src = *expr_p;
+  *expr_p = upc_expand_get (loc, src, 0);
 }
 
 static void
@@ -573,15 +801,15 @@ upc_genericize_pts_cond_expr (location_t loc, tree *expr_p)
 static void
 upc_genericize_field_ref (location_t loc, tree *expr_p)
 {
-  tree ref = *expr_p;
-  ref = upc_simplify_shared_ref (loc, ref);
+  tree ref = upc_simplify_shared_ref (loc, *expr_p);
   if (TREE_CODE (ref) == BIT_FIELD_REF)
     {
       error ("accesses to UPC shared bit fields are not yet implemented");
       ref = error_mark_node;
     }
-  gcc_assert (INDIRECT_REF_P (ref));
-  *expr_p = upc_expand_get (loc, TREE_OPERAND (ref, 0));
+  else
+    ref = upc_expand_get (loc, ref, 0);
+  *expr_p = ref;
 }
 
 /* Expand the addition of UPC pointer-to-shared value and an integer.
@@ -710,24 +938,15 @@ upc_genericize_modify_expr (location_t loc, tree *expr_p, int want_value)
       || (TREE_TYPE (dest) && upc_shared_type_p (TREE_TYPE (dest))))
     {
       /* <shared dest> = <(shared|unshared) src> */
-      const tree dest_addr = build_fold_addr_expr_loc (loc, dest);
-      *expr_p = upc_expand_put (loc, dest_addr, src, want_value);
+      *expr_p = upc_expand_put (loc, dest, src, want_value);
     }
   else if (TREE_SHARED (src)
 	   || (TREE_TYPE (src) && upc_shared_type_p (TREE_TYPE (src))))
     {
       /* <unshared dest> = <shared src> */
-      const tree src_addr = upc_shared_addr (loc, src);
       /* We could check for BLKmode and in
          that case perform a upc_memget() here.  */
-      src = upc_expand_get (loc, src_addr);
-      if (want_value && TREE_CODE (src) != COMPOUND_EXPR)
-	{
-	  tree src_tmp, src_tmp_init_expr;
-	  src_tmp = upc_copy_value_to_tmp_var (&src_tmp_init_expr, src);
-	  src = build2 (COMPOUND_EXPR, TREE_TYPE (src_tmp),
-			src_tmp_init_expr, src_tmp);
-	}
+      src = upc_expand_get (loc, src, want_value);
       TREE_OPERAND (*expr_p, 1) = src;
     }
 }
@@ -741,13 +960,9 @@ typedef walk_data_t *walk_data_p;
 /* This routine is called to convert UPC specific constructs
    into GENERIC.  It is called from 'walk_tree' as it traverses
    the function body.
-
-   This routine looks for tree nodes that will likely
-   require a UPC-specific re-write, and then calls
-   the appropriate translation function.
    
    The DATA parameter will point to a 'walk_data_t'
-   structure, which presently has a single filed,
+   structure, which presently has a single field,
    'want_value'.  If 'want_value' is non-zero, it
    indicates that the value of the expression should
    be returned.  */
@@ -898,7 +1113,7 @@ upc_genericize_expr (tree *expr_p, int *walk_subtrees, void *data)
 
          Unsharing an integer constant requires special handling
          because an internal hash table is kept on a type by type
-         basis.  Thus, we can't rewrite the type directly.
+         basis.  Thus, we can't rewrite TREE_TYPE() directly.
          We re-create the constant with its unshared type to
          ensure that the hash table is updated.  */
       if (type && upc_shared_type_p (type))
@@ -953,7 +1168,7 @@ upc_genericize_expr (tree *expr_p, int *walk_subtrees, void *data)
       break;
     }
 
-  /* After evaluating the current node, we assert the
+  /* After evaluating the current node, assert the
      want_value flag so that all subtrees of this root node
      will be fully evaluated.  */
   if (!wdata->want_value)
@@ -1112,3 +1327,18 @@ upc_genericize (tree fndecl)
   upc_genericize_fndecl (fndecl);
   c_genericize (fndecl);
 }
+
+void
+upc_genericize_finish (void)
+{
+  upc_free_unshared_var_table ();
+}
+
+void
+upc_genericize_init (void)
+{
+  unshared_vars = htab_create_ggc (101, uid_tree_map_hash,
+                                   uid_tree_map_eq, NULL);
+}
+
+#include "gt-upc-upc-genericize.h"

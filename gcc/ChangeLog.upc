@@ -1,3 +1,29 @@
+2011-08-12  Gary Funck  <gary@intrepid.com>
+
+	Rework/simplify the UPC genericize pass.
+	* c-family/stub-upc.c (upc_apply_layout_qualifier,
+	  upc_build_pointer_type): New.
+	  (upc_set_block_factor): Adjust to new calling sequence.
+	  (upc_build_shared_var_addr): Delete.
+	* c-family/c-common.c (complete_array_type): Adjust call
+	  to upc_set_block_factor().
+	* c-family/c-upc.h (upc_apply_layout_qualifier,
+	  upc_build_pointer_type): New.
+	  (upc_build_shared_var_addr): Delete.
+	  (upc_set_block_factor): Adjust to new calling sequence.
+	* tree.h (TI_UPC_CHAR_PTS_TYPE, upc_char_pts_type_node): New.
+	* c-decl.c (grokdeclarator): Call newly defined
+	  upc_apply_layout_qualifier() instead of upc_set_block_factor().
+	* c-decl.c (grokdeclarator): Split long UPC-related error
+	  messages into two lines.
+	* c-typeck.c (build_unary_op): Do not call upc_build_shared_var_addr()
+	  directly.  Revert that change to trunk. (upc_genericize() will
+	  handle lowering the expressions that take the address of a
+	  UPC variable).
+	* config/i386/i386.c (ix86_promote_function_mode): For UPC
+	  pointers-to-shared, return the type mode of the UPC pointer-to-shared
+	  representation type.
+
 2011-08-10  Gary Funck  <gary@intrepid.com>
 
 	Implement additional fixes for recent merge with trunk.
@@ -23,8 +49,7 @@
 
 	* config/darwin.c: Disable var_tracking option
 	  on -O0 as it is supposed to run only when optimization
-	  is applied. See GCC bug 49743. 'upcfish' test was
-	  taking to long to compile.
+	  is applied. See GCC bug 49743.
           
 2011-07-06  Gary Funck  <gary@intrepid.com>
 

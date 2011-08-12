@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 /* define decl_default_tls_model() prototype */
 #include "rtl.h"
 
-static tree upc_pts_packed_build_add_offset (location_t, tree, tree);
 static tree upc_pts_packed_build_addrfield (location_t, tree);
 static tree upc_pts_packed_build_cond_expr (location_t, tree);
 static tree upc_pts_packed_build_constant (location_t, tree);
@@ -62,7 +61,6 @@ static int upc_pts_packed_is_null_p (tree);
 
 const upc_pts_ops_t upc_pts_packed_ops =
   {
-    upc_pts_packed_build_add_offset,
     upc_pts_packed_build_value,
     upc_pts_packed_build_cond_expr,
     upc_pts_packed_build_constant,
@@ -80,7 +78,7 @@ const upc_pts_ops_t upc_pts_packed_ops =
 static void
 upc_pts_packed_init_type (void)
 {
-  tree shared_void_type;
+  tree shared_void_type, shared_char_type;
   upc_pts_rep_type_node = c_common_type_for_size (UPC_PTS_SIZE, 1);
   gcc_assert (TYPE_MODE (upc_pts_rep_type_node) != BLKmode);
   record_builtin_type (RID_SHARED, "upc_shared_ptr_t",
@@ -88,6 +86,11 @@ upc_pts_packed_init_type (void)
   shared_void_type = build_variant_type_copy (void_type_node);
   TYPE_SHARED (shared_void_type) = 1;
   upc_pts_type_node = build_pointer_type (shared_void_type);
+  shared_char_type = build_variant_type_copy (char_type_node);
+  TYPE_SHARED (shared_char_type) = 1;
+  shared_char_type = upc_set_block_factor (shared_char_type,
+                                           size_zero_node);
+  upc_char_pts_type_node = build_pointer_type (shared_char_type);
   upc_vaddr_mask_node =
     build_int_cst (upc_pts_rep_type_node, UPC_PTS_VADDR_MASK);
   upc_thread_mask_node =
@@ -467,29 +470,6 @@ upc_pts_packed_build_diff (location_t loc, tree exp)
 						      block_factor, 0), 0),
 			    phase_diff, 0);
   result = fold_convert (result_type, result);
-  return result;
-}
-
-/* Return a tree that implements the Addition OFFSET into the address field
-   of the pointer-to-shared value, PTR.  */
-
-static tree
-upc_pts_packed_build_add_offset (location_t loc, tree ptr, tree offset)
-{
-  const tree ptr_as_pts_rep = fold (build1 (VIEW_CONVERT_EXPR,
-					    upc_pts_rep_type_node,
-					    save_expr (ptr)));
-  const tree sptr = save_expr (ptr_as_pts_rep);
-  tree result;
-  result = upc_pts_packed_build_value (loc, TREE_TYPE (ptr),
-				       build_binary_op (loc, PLUS_EXPR,
-				           upc_pts_packed_build_addrfield
-							(loc, sptr),
-							offset, 0),
-				       upc_pts_packed_build_threadof (loc,
-								      sptr),
-				       upc_pts_packed_build_phaseof (loc,
-								     sptr));
   return result;
 }
 

@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef struct upc_pts_ops_struct
   {
-    tree (*add_offset) (location_t, tree, tree);
     tree (*build) (location_t, tree, tree, tree, tree);
     tree (*cond_expr) (location_t, tree);
     tree (*constant) (location_t, tree);

@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 /* define decl_default_tls_model() prototype */
 #include "rtl.h"
 
-static tree upc_pts_struct_build_add_offset (location_t, tree, tree);
 static tree upc_pts_struct_build_cond_expr (location_t, tree);
 static tree upc_pts_struct_build_constant (location_t, tree);
 static tree upc_pts_struct_build_cvt (location_t, tree);
@@ -62,7 +61,6 @@ static int upc_pts_struct_is_null_p (tree);
 
 const upc_pts_ops_t upc_pts_struct_ops =
   {
-    upc_pts_struct_build_add_offset,
     upc_pts_struct_build_value,
     upc_pts_struct_build_cond_expr,
     upc_pts_struct_build_constant,
@@ -83,7 +81,7 @@ upc_pts_struct_init_type (void)
   tree fields = NULL_TREE;
   tree name = NULL_TREE;
   tree ref;
-  tree shared_void_type;
+  tree shared_void_type, shared_char_type;
   const location_t loc = UNKNOWN_LOCATION;
   struct c_struct_parse_info *null_struct_parse_info = NULL;
   int save_pedantic = pedantic;
@@ -132,17 +130,21 @@ upc_pts_struct_init_type (void)
   pedantic = 0;
   upc_pts_rep_type_node = finish_struct (loc, ref, fields, NULL_TREE,
 					 null_struct_parse_info);
-  gcc_assert (TYPE_MODE (upc_pts_rep_type_node) != BLKmode);
   pedantic = save_pedantic;
   record_builtin_type (RID_SHARED, "upc_shared_ptr_t",
 		       upc_pts_rep_type_node);
   shared_void_type = build_variant_type_copy (void_type_node);
   TYPE_SHARED (shared_void_type) = 1;
   upc_pts_type_node = build_pointer_type (shared_void_type);
+  shared_char_type = build_variant_type_copy (char_type_node);
+  TYPE_SHARED (shared_char_type) = 1;
+  shared_char_type = upc_set_block_factor (shared_char_type,
+                                           size_zero_node);
+  upc_char_pts_type_node = build_pointer_type (shared_char_type);
   upc_null_pts_node = upc_pts_struct_build_value (loc, upc_pts_type_node,
+				                  integer_zero_node,
 						  integer_zero_node,
-						  integer_zero_node,
-						  integer_zero_node);
+				                  integer_zero_node);
 }
 
 /* Called to expand a UPC specific constant into something the
@@ -229,12 +231,14 @@ upc_pts_struct_is_null_p (tree exp)
 	  && (TREE_TYPE (value) == upc_pts_rep_type_node)
 	  && TREE_CONSTANT (value))
 	{
-	  VEC (constructor_elt, gc) * c = CONSTRUCTOR_ELTS (value);
-	  const tree phase = VEC_index (constructor_elt, c, 0)->value;
+	  VEC (constructor_elt, gc) *c = CONSTRUCTOR_ELTS (value);
+	  /* Check that all the fields are zero, independent
+	     of whether vaddr comes first/last.  */
+	  const tree phase_or_vaddr = VEC_index (constructor_elt, c, 0)->value;
 	  const tree thread = VEC_index (constructor_elt, c, 1)->value;
-	  const tree vaddr = VEC_index (constructor_elt, c, 2)->value;
-	  result = integer_zerop (phase) && integer_zerop (thread)
-	    && integer_zerop (vaddr);
+	  const tree vaddr_or_phase = VEC_index (constructor_elt, c, 2)->value;
+	  result = integer_zerop (phase_or_vaddr) && integer_zerop (thread)
+	           && integer_zerop (vaddr_or_phase);
 	}
     }
   return result;
@@ -257,11 +261,9 @@ upc_pts_struct_build_threadof (location_t loc ATTRIBUTE_UNUSED, tree exp)
   return affinity;
 }
 
-
-/* Given, EXP, whose type must be the UPC pointer-to-shared
-   representation type, isolate the phase field,
-   and return it.  Caller must insure that EXP is a
-   stable reference, if required.  */
+/* Rewrite EXP, an expression involving addition of an
+   integer to a UPC pointer-to-shared, into representation-specific
+   lower level operations.  */
 
 static tree
 upc_pts_struct_build_sum (location_t loc, tree exp)
@@ -465,34 +467,6 @@ upc_pts_struct_build_diff (location_t loc, tree exp)
 						 block_factor, 0), 0),
 			    phase_diff, 0);
   result = fold_convert (result_type, result);
-  return result;
-}
-
-/* Return a tree that implements the Addition OFFSET into the address field
-   of the pointer-to-shared value, PTR.  */
-
-static tree
-upc_pts_struct_build_add_offset (location_t loc, tree ptr, tree offset)
-{
-  const tree p_t = TREE_TYPE (upc_phase_field_node);
-  const tree t_t = TREE_TYPE (upc_thread_field_node);
-  const tree v_t = TREE_TYPE (upc_vaddr_field_node);
-  const tree ptr_as_pts_rep = fold (build1 (VIEW_CONVERT_EXPR,
-					    upc_pts_rep_type_node, ptr));
-  const tree sptr = save_expr (ptr_as_pts_rep);
-  tree result;
-  result = upc_pts_struct_build_value (loc, TREE_TYPE (ptr),
-				       build_binary_op (loc, PLUS_EXPR,
-				           build3 (COMPONENT_REF, v_t,
-						   sptr, upc_vaddr_field_node,
-						   NULL_TREE),
-					   offset, 0),
-				       build3 (COMPONENT_REF, t_t,
-				               sptr, upc_thread_field_node,
-					       NULL_TREE),
-				       build3 (COMPONENT_REF, p_t,
-				               sptr, upc_phase_field_node,
-					       NULL_TREE));
   return result;
 }
 

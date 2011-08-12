@@ -57,7 +57,14 @@ upc_get_block_factor (tree type ATTRIBUTE_UNUSED)
 }
 
 tree
-upc_set_block_factor (
+upc_set_block_factor (tree type ATTRIBUTE_UNUSED,
+                      tree block_factor ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
+tree
+upc_apply_layout_qualifier (
     const enum tree_code decl_kind ATTRIBUTE_UNUSED,
     tree type ATTRIBUTE_UNUSED,
     tree layout_specifier ATTRIBUTE_UNUSED)
@@ -91,15 +98,6 @@ upc_set_decl_section (tree decl ATTRIBUTE_UNUSED)
 
 int
 upc_is_null_pts_p (tree p ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-tree
-upc_build_shared_var_addr (
-    location_t location ATTRIBUTE_UNUSED,
-    tree type ATTRIBUTE_UNUSED,
-    tree var ATTRIBUTE_UNUSED)
 {
   return 0;
 }
@@ -154,6 +152,12 @@ upc_build_sync_stmt (location_t ARG_UNUSED(loc),
 
 tree
 upc_blocksizeof (location_t ARG_UNUSED(loc), tree ARG_UNUSED (op))
+{
+  return NULL_TREE;
+}
+
+tree
+upc_build_pointer_type (tree ARG_UNUSED (op))
 {
   return NULL_TREE;
 }

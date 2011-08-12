@@ -43,7 +43,7 @@ stagestuff="cc1upc\$(exeext)"
 
 target_libs="target-libupc"
 
-gtfiles="\$(srcdir)/c-lang.h \$(srcdir)/c-tree.h \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-upc.h \$(srcdir)/upc/upc-act.h \$(srcdir)/c-decl.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.c \$(srcdir)/c-objc-common.c \$(srcdir)/c-parser.c \$(srcdir)/upc/upc-act.c"
+gtfiles="\$(srcdir)/c-lang.h \$(srcdir)/c-tree.h \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-upc.h \$(srcdir)/upc/upc-act.h \$(srcdir)/upc/upc-genericize.h \$(srcdir)/c-decl.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.c \$(srcdir)/c-objc-common.c \$(srcdir)/c-parser.c \$(srcdir)/upc/upc-act.c \$(srcdir)/upc/upc-genericize.c"
 
 #
 # UPC specific configuration definitions

@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef _UPC_GENERICIZE_H_
 #define _UPC_GENERICIZE_H_
 
+extern void upc_genericize_finish (void);
+extern void upc_genericize_init (void);
 extern void upc_genericize (tree);
 
 #endif /* !_UPC_GENERICIZE_H_ */

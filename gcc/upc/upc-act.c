@@ -28,9 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "system.h"
 #include "tree.h"
-#include "tree-iterator.h"
-#include "ggc.h"
-#include "hashtab.h"
 #include "input.h"
 #include "c-tree.h"
 #include "langhooks.h"
@@ -40,11 +37,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "toplev.h"
 #include "gimple.h"
+#include "ggc.h"
 #include "tm.h"
 #include "function.h"
 #include "target.h"
+#include "tree-iterator.h"
 #include "common/common-target.h"
 #include "upc-act.h"
+#include "upc-genericize.h"
 #include "upc-pts.h"
 #include "upc-rts-names.h"
 #include "cgraph.h"
@@ -70,37 +70,8 @@ static void upc_parse_init (void);
 static int upc_sizeof_type_check (const char *, tree);
 static void upc_write_init_func (void);
 
-/* Given a shared variable's VAR_DECL node, map to another
-   VAR_DECL that has a similar external symbol name, with
-   the "shared" qualifier removed from its type.  This
-   "shadow variable" is used to generate conventional
-   address constants when referring to a shared variable.  */
-
-struct GTY (()) uid_tree_map
-{
-  unsigned int uid;
-  tree to;
-};
-
-/* Hash the UID of a shared variable to its unshared shadow variable.  */
-
-static
-GTY ((param_is (struct uid_tree_map))) htab_t unshared_vars;
-
-static hashval_t uid_tree_map_hash (const void *);
-static int uid_tree_map_eq (const void *, const void *);
-
 static GTY (()) tree upc_init_stmt_list;
 static GTY (()) section *upc_init_array_section;
-
-static tree create_unshared_var (location_t, const tree);
-static tree lookup_unshared_var (const tree);
-static void map_unshared_var (const tree, const tree);
-static tree unshared_var_addr (location_t, const tree);
-static tree unshared_var_name (const tree);
-static void upc_free_unshared_var_table (void);
-
-
 
 /* Process UPC specific command line switches */
 
@@ -311,9 +282,40 @@ upc_parse_init (void)
   set_lang_layout_decl_p (upc_lang_layout_decl_p);
   set_lang_layout_decl (upc_lang_layout_decl);
   upc_pts_init ();
-  unshared_vars =
-    htab_create_ggc (101, uid_tree_map_hash, uid_tree_map_eq, NULL);
+  upc_genericize_init ();
   upc_init_stmt_list = NULL;
+}
+
+/* Return a UPC pointer-to-shared type with target type, TO_TYPE.
+   If the UPC pointer-to-shared representation has a "regsiter mode",
+   then build a pointer type with that mode.  If the UPC pointer-to-shared
+   representation type has BLKmode, then calculate its size based
+   upon the representation type.  */
+
+tree
+upc_build_pointer_type (tree to_type)
+{
+  enum machine_mode pointer_mode;
+  tree ptr_type;
+  if (to_type == NULL_TREE || TREE_CODE (to_type) == ERROR_MARK)
+    return error_mark_node;
+  pointer_mode = TYPE_MODE (upc_pts_rep_type_node);
+  ptr_type = build_pointer_type_for_mode (to_type, pointer_mode, false);
+  if (!integer_zerop (TYPE_SIZE (ptr_type)))
+    return ptr_type;
+  /* If the UPC pointer-to-shared representation has a size of zoro,
+     then it must have BLKmode.  In that case, calculate the sizes
+     and alignment from the underlying representation type.  This
+     situation may arise when the 'struct PTS' representation is
+     configured on targets that do not assign TImode to aligned
+     128 bit structs.  */
+  gcc_assert (pointer_mode == BLKmode);
+  TYPE_SIZE (ptr_type)      = TYPE_SIZE (upc_pts_rep_type_node);
+  TYPE_SIZE_UNIT (ptr_type) = TYPE_SIZE_UNIT (upc_pts_rep_type_node);
+  TYPE_ALIGN (ptr_type)     = TYPE_ALIGN (upc_pts_rep_type_node);
+  TYPE_UNSIGNED (ptr_type)  = TYPE_UNSIGNED (upc_pts_rep_type_node);
+  TYPE_PRECISION (ptr_type) = TYPE_PRECISION (upc_pts_rep_type_node);
+  return ptr_type;
 }
 
 /* For the given kind of UPC synchronization statement given
@@ -490,8 +492,6 @@ upc_localsizeof (location_t loc, tree type)
   return local_size;
 }
 
-/****** UPC tree-related checks, and operations **************/
-
 /* Traverse the expression and return the number of times
    THREADS is referenced.  This is used to check the restriction
    on UPC shared array declarations, that the predefined THREADS
@@ -592,7 +592,7 @@ set_upc_threads_refs_to_one (tree *expr)
   return;
 }
 
-/* Return the blocking factor of the UPC shared type, 'type'.
+/* Return the blocking factor of the UPC shared type, TYPE.
    If the blocking factor is NULL, then return the default blocking
    factor of 1.  */
 
@@ -607,16 +607,56 @@ upc_get_block_factor (const tree type)
   return block_factor;
 }
 
-/* Given a UPC layout qualifier, calculate the blocking factor
-   and the TYPE_BLOCK_FACTOR field of `type'.  The caller is responsible
-   for checking that the block factor is being applied to a
-   UPC shared type.  Return the new, augmented type. */
+/* Set the blocking factor of the UPC shared type, TYPE.
+   If BLOCK_FACTOR is 1, leave TYPE_BLOCK_FACTOR()
+   as NULL to normalize the representation.  The UPC spec
+   says all objects have a default blocking factor of 1
+   if none is specified, thus, a blocking factor of 1
+   is indicated with a null TYPE_BLOCK_FACTOR() pointer.  */
 
 tree
-upc_set_block_factor (const enum tree_code decl_kind,
-		      tree type, tree layout_qualifier)
+upc_set_block_factor (tree type, tree block_factor)
+{
+  gcc_assert (TREE_CODE (block_factor) == INTEGER_CST);
+  if (tree_int_cst_equal (block_factor, size_one_node))
+    return type;
+  block_factor = convert (sizetype, block_factor);
+  type = build_variant_type_copy (type);
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree last = type;
+      tree inner;
+      while (TREE_CODE (TREE_TYPE (last)) == ARRAY_TYPE)
+	last = TREE_TYPE (last);
+      inner = build_variant_type_copy (TREE_TYPE (last));
+      /* Push the blocking factor down to the array element type.  */
+      TYPE_BLOCK_FACTOR (inner) = block_factor;
+      TREE_TYPE (last) = inner;
+    }
+  else
+    TYPE_BLOCK_FACTOR (type) = block_factor;
+  return type;
+}
+
+/* As part of declaration processing, for a particular kind
+   of declaration, DECL_KIND, and a given LAYOUT_QUALIFIER,
+   calculate the resulting blocking factor and return a
+   variant of TYPE with its blocking factor set
+   to the specified value.  Issue an error diagnostic if the
+   LAYOUT_QUALIFIER specification is invalid.
+   The caller is responsible for checking that the
+   block factor is being applied to a UPC shared type.  */
+
+tree
+upc_apply_layout_qualifier (const enum tree_code decl_kind,
+	                    tree type, tree layout_qualifier)
 {
   tree block_factor = NULL_TREE;
+
+  /* The layout qualifier is given as the subscript operand
+     of an array ref. */
+  gcc_assert (TREE_CODE (layout_qualifier) == ARRAY_REF);
+  layout_qualifier = TREE_OPERAND (layout_qualifier, 1);
 
   if (!type || (TREE_CODE (type) == ERROR_MARK))
     return error_mark_node;
@@ -629,13 +669,6 @@ upc_set_block_factor (const enum tree_code decl_kind,
       error ("UPC layout qualifier cannot be applied to a void type");
       return type;
     }
-
-  /* The layout qualifier is given as the subscript operand
-     of an array ref. */
-
-  if (TREE_CODE (layout_qualifier) != ARRAY_REF)
-    abort ();
-  layout_qualifier = TREE_OPERAND (layout_qualifier, 1);
 
   if (layout_qualifier == NULL_TREE)
     {
@@ -664,7 +697,7 @@ upc_set_block_factor (const enum tree_code decl_kind,
 	  return type;
 	}
       /* The blocking factor is given by this expression:
-         ( sizeof(a) / upc_elemsizeof(a) + THREADS - 1 ) / THREADS,
+         (sizeof (a) / upc_elemsizeof (a) + (THREADS - 1)) / THREADS,
          where 'a' is the array being distributed. */
       elt_type = strip_array_types (type);
       elt_size = TYPE_SIZE (elt_type);
@@ -695,29 +728,17 @@ upc_set_block_factor (const enum tree_code decl_kind,
     {
       STRIP_NOPS (layout_qualifier);
       if (TREE_CODE (layout_qualifier) != INTEGER_CST)
-	error ("UPC layout qualifier is not an integral constant");
+        {
+	  error ("UPC layout qualifier is not an integral constant");
+          block_factor = size_one_node;
+	}
+      else if (tree_low_cst (layout_qualifier, 0) < 0)
+        {
+	  error ("UPC layout qualifier must be a non-negative integral constant");
+          block_factor = size_one_node;
+	}
       else
 	block_factor = fold (layout_qualifier);
-    }
-
-  if (!block_factor)
-    return type;
-
-  gcc_assert (TREE_CODE (block_factor) == INTEGER_CST);
-
-  /* If the blocking factor is 1, leave TYPE_BLOCK_FACTOR()
-     as NULL to normalize the representation.  The UPC spec
-     says all objects have a blocking factor of 1 if none
-     is specified, so we always represent a blocking factor
-     of 1 as a NULL. */
-
-  if (tree_int_cst_equal (block_factor, size_one_node))
-    return type;
-
-  if (tree_int_cst_compare (block_factor, integer_zero_node) < 0)
-    {
-      error ("UPC layout qualifier must be a non-negative integral constant");
-      return type;
     }
 
   if (TREE_OVERFLOW_P (block_factor)
@@ -725,27 +746,17 @@ upc_set_block_factor (const enum tree_code decl_kind,
     {
       error ("the maximum UPC block size in this implementation is %ld",
 	     (long int) UPC_MAX_BLOCK_SIZE);
-      block_factor = size_one_node;
+      return type;
     }
 
-  block_factor = convert (sizetype, block_factor);
-  type = build_variant_type_copy (type);
-  if (TREE_CODE (type) == ARRAY_TYPE)
+  if (tree_int_cst_compare (block_factor, integer_zero_node) < 0)
     {
-      tree last = type;
-      tree inner;
-      while (TREE_CODE (TREE_TYPE (last)) == ARRAY_TYPE)
-	last = TREE_TYPE (last);
-      inner = build_variant_type_copy (TREE_TYPE (last));
-      /* Push the blocking factor down to the array
-         element type.  */
-      TYPE_BLOCK_FACTOR (inner) = block_factor;
-      TREE_TYPE (last) = inner;
+      error ("UPC layout qualifier must be a non-negative integral constant");
+      return type;
     }
-  else
-    {
-      TYPE_BLOCK_FACTOR (type) = block_factor;
-    }
+
+  type = upc_set_block_factor (type, block_factor);
+
   return type;
 }
 
@@ -886,7 +897,6 @@ upc_lang_layout_decl_p (tree decl, tree type)
 
   return need_to_size_shared_array_decl;
 }
-
 
 /* Assign DECL to a specific linker section, if required.
    UPC shared variables are given their own link section on
@@ -1137,7 +1147,7 @@ upc_types_compatible_p (tree x, tree y)
 	  if (VOID_TYPE_P (ttx) && VOID_TYPE_P (tty))
 	    return 1;
 	  /* Intermediate conversions to (shared void *) (defined
-	     to be a "generic pointer-to-shared" the UPC
+	     to be a "generic pointer-to-shared" in the UPC
 	     specification) cannot always be optimized away.
 	     For example,
 	       p1 = (shared void *) p2;
@@ -1189,8 +1199,6 @@ upc_types_compatible_p (tree x, tree y)
      UPC exceptions.  */
   return 1;
 }
-
-/************* UPC SUPPORT *************/
 
 /* Return the value of THREADS.
 
@@ -1263,186 +1271,6 @@ upc_diagnose_deprecated_stmt (location_t loc, tree id)
 	}
     }
   return 0;
-}
-
-/* Return a hash value given the argument P, which
-   is a pointer to a uid_tree_map.  The pointer
-   value is used directly to yield a hash value.  */
-
-static hashval_t
-uid_tree_map_hash (const void *p)
-{
-  const struct uid_tree_map *const map = (const struct uid_tree_map *) p;
-  return map->uid;
-}
-
-/* Return TRUE if the UID fields of two uid_tree_map
-   structures are equal.  This function is called by
-   the `htab_find_with_hash function' to match entries
-   in the `unshared_vars' hash table.  */
-
-static int
-uid_tree_map_eq (const void *va, const void *vb)
-{
-  const struct uid_tree_map *const a = (const struct uid_tree_map *) va;
-  const struct uid_tree_map *const b = (const struct uid_tree_map *) vb;
-  return a->uid == b->uid;
-}
-
-/* Return the "shadow variable" created for VAR that
-   has the same type as VAR, but with the UPC shared
-   qualifiers removed.  */
-
-static tree
-lookup_unshared_var (const tree var)
-{
-  const struct uid_tree_map *h;
-  struct uid_tree_map in;
-  unsigned int uid;
-  gcc_assert (var && TREE_CODE (var) == VAR_DECL);
-  uid = DECL_UID (var);
-  in.uid = uid;
-  in.to = NULL_TREE;
-  h = (struct uid_tree_map *) htab_find_with_hash (unshared_vars, &in, uid);
-  return h ? h->to : NULL_TREE;
-}
-
-#define UNSHARE_PREFIX "_u_"
-
-/* Return an identifier that will be used to declare the "shadow variable"
-   which has the same type as VAR, but with all UPC shared qualfiers
-   removed from the type.  The identifier has the same name as
-   that of VAR, prefixed with the string given by the
-   value of `UNSHARE_PREFIX'.  */
-
-static tree
-unshared_var_name (const tree var)
-{
-  const tree name = DECL_NAME (var);
-  const size_t len = IDENTIFIER_LENGTH (name);
-  char *tmp_name = (char *) alloca (len + sizeof (UNSHARE_PREFIX));
-  strcpy (tmp_name, UNSHARE_PREFIX);
-  strcat (tmp_name, IDENTIFIER_POINTER (name));
-  return get_identifier (tmp_name);
-}
-
-/* Create and return a "shadow variable" that has the same type as VAR,
-   but with all UPC shared qualifiers removed from the type.
-   The assembler name of this shadow variable is the same
-   as that of the original variable, VAR.  */
-
-static tree
-create_unshared_var (location_t loc, const tree var)
-{
-  tree u_name, u_type, u;
-  gcc_assert (var && TREE_CODE (var) == VAR_DECL);
-  u_name = unshared_var_name (var);
-  u_type = build_upc_unshared_type (TREE_TYPE (var));
-  u = build_decl (loc, VAR_DECL, u_name, u_type);
-  TREE_USED (u) = 1;
-  TREE_ADDRESSABLE (u) = 1;
-  TREE_PUBLIC (u) = TREE_PUBLIC (var);
-  TREE_STATIC (u) = TREE_STATIC (var);
-  DECL_ARTIFICIAL (u) = 1;
-  DECL_IGNORED_P (u) = 1;
-  DECL_EXTERNAL (u) = DECL_EXTERNAL (var);
-  DECL_SECTION_NAME (u) = DECL_SECTION_NAME (var);
-  DECL_CONTEXT (u) = DECL_CONTEXT (var);
-
-  /* Alias the unshared variable to the shared variable.  */
-
-  SET_DECL_ASSEMBLER_NAME (u, DECL_ASSEMBLER_NAME (var));
-
-  /* Make sure the variable is referenced.  */
-
-  mark_decl_referenced (var);
-  return u;
-}
-
-static void
-map_unshared_var (const tree var, const tree u_var)
-{
-  struct uid_tree_map *h;
-  unsigned int uid;
-  void **loc;
-  gcc_assert (var && TREE_CODE (var) == VAR_DECL);
-  gcc_assert (u_var && TREE_CODE (u_var) == VAR_DECL);
-  uid = DECL_UID (var);
-  h = ggc_alloc_uid_tree_map ();
-  h->uid = uid;
-  h->to = u_var;
-  loc = htab_find_slot_with_hash (unshared_vars, h, uid, INSERT);
-  *(struct uid_tree_map **) loc = h;
-}
-
-/* Return a tree node that evaluates to the address that the
-   linker assigns to the UPC shared variable, VAR.  This is not
-   the final location of the UPC shared variable.  The linker is
-   used only to lay out a given UPC thread's contribution to the
-   UPC shared global memory region.
-
-   The address expression returned will point to a "shadow
-   variable" declaration that is created from the UPC shared
-   variable declaration, VAR.  This shadow variable has the same
-   type and other attributes as VAR, with the UPS shared type
-   qualifiers removed.  */
-
-static tree
-unshared_var_addr (location_t loc, const tree var)
-{
-  tree unshared_var, addr;
-  unshared_var = lookup_unshared_var (var);
-  if (!unshared_var)
-    {
-      unshared_var = create_unshared_var (loc, var);
-      map_unshared_var (var, unshared_var);
-    }
-  addr = build_fold_addr_expr (unshared_var);
-  TREE_CONSTANT (addr) = 1;
-  TREE_READONLY (addr) = 1;
-  return addr;
-}
-
-/* Convert shared variable reference VAR into a UPC pointer-to-shared
-   value of the form {0, 0, &VAR} */
-
-tree
-upc_build_shared_var_addr (location_t loc, tree type, tree var)
-{
-  tree var_addr, val;
-  gcc_assert (TREE_CODE (var) == VAR_DECL && TREE_SHARED (var));
-  gcc_assert (TREE_CODE (type) == POINTER_TYPE
-	      && upc_shared_type_p (TREE_TYPE (type)));
-  /* Refer to a shadow variable that has the same type as VAR, but
-     with the shared qualifier removed.  */
-  var_addr = unshared_var_addr (loc, var);
-#ifdef HAVE_UPC_PTS_PACKED_REP
-  {
-    const tree char_ptr_type = build_pointer_type (char_type_node);
-    tree shared_vaddr_base;
-    /* Subtract off the shared section base address so that the
-       resulting quantity will fit into the vaddr field.  */
-    shared_vaddr_base =
-      identifier_global_value (get_identifier ("__upc_shared_start"));
-    if (!shared_vaddr_base)
-      shared_vaddr_base =
-	identifier_global_value (get_identifier ("UPCRL_shared_begin"));
-    if (!shared_vaddr_base)
-      fatal_error ("UPC shared section start address not found; "
-		   "cannot find a definition for either "
-		   "__upc_shared_start or UPCRL_shared_begin");
-    assemble_external (shared_vaddr_base);
-    TREE_USED (shared_vaddr_base) = 1;
-    shared_vaddr_base = build1 (ADDR_EXPR, char_ptr_type, shared_vaddr_base);
-    var_addr = build_binary_op (loc, MINUS_EXPR,
-				convert (ptrdiff_type_node, var_addr),
-				convert (ptrdiff_type_node,
-					 shared_vaddr_base), 0);
-  }
-#endif
-  val = (*upc_pts.build) (loc, type,
-			  var_addr, integer_zero_node, integer_zero_node);
-  return val;
 }
 
 /* Expand the pre/post increment/decrement of UPC pointer-to-shared
@@ -1600,6 +1428,10 @@ upc_pts_is_valid_p (tree exp)
     && upc_shared_type_p (TREE_TYPE (type));
 }
 
+/* Build a function that will be called by the UPC runtime
+   to initilize UPC shared variables.  STMT_LIST is a
+   list of initialization statements.  */
+
 static void
 upc_build_init_func (const tree stmt_list)
 {
@@ -1658,25 +1490,10 @@ upc_write_init_func (void)
     }
 }
 
-/* Free the hash table used to map UPC VAR_DECL's
-   into the "unshared" shadow variables that were created
-   in order to establish the offset of a UPC shared
-   variable with the special linker section that is
-   created to collect the UPC shared variables.  */
-
-static void
-upc_free_unshared_var_table (void)
-{
-  if (unshared_vars)
-    {
-      htab_delete (unshared_vars);
-      unshared_vars = NULL;
-    }
-}
-
 /* Write out the UPC global initialization function, if required
-   and free the hash table used to track the "shadow" variables
-   that are created to generate addresses of UPC shared variables.
+   and call upc_genericize_finish() to free the hash table
+   used to track the "shadow" variables that are created
+   to generate addresses of UPC shared variables.
 
    This function is called from c_common_parse_file(), just after
    parsing the main source file.  */
@@ -1685,7 +1502,7 @@ void
 upc_write_global_declarations (void)
 {
   upc_write_init_func ();
-  upc_free_unshared_var_table ();
+  upc_genericize_finish ();
 }
 
 #include "gt-upc-upc-act.h"

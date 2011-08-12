@@ -3916,10 +3916,7 @@ build_unary_op (location_t location,
 	  goto return_build_unary_op;
 	}
 
-      if (TREE_CODE (arg) == VAR_DECL && TREE_SHARED (arg))
-	val = upc_build_shared_var_addr (location, argtype, arg);
-      else
-        val = build1 (ADDR_EXPR, argtype, arg);
+      val = build1 (ADDR_EXPR, argtype, arg);
 
       ret = val;
       goto return_build_unary_op;
@@ -10972,13 +10969,15 @@ c_build_qualified_type (tree type, int type_quals)
       for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
 	{
 	  const tree t_elem_type = strip_array_types (t);
-	  const tree t_elem_block_factor = TYPE_BLOCK_FACTOR (t_elem_type);
+	  tree t_elem_block_factor = TYPE_BLOCK_FACTOR (t_elem_type);
 	  /* UPC requires that the blocking factors are either both
-	     empty or equal in value.  The check for pointer equality
+	     empty or equal in value.  When the
 	     generally works because blocking factors are stored
 	     as integer constants, and integer constants are commonized
 	     so that identical integer constant values are represented
 	     by a single tree node.  */
+	  if (!t_elem_block_factor)
+	    t_elem_block_factor = size_one_node;
 	  if (TYPE_QUALS (t_elem_type) == type_quals
 	      && TYPE_NAME (t) == TYPE_NAME (type)
 	      && TYPE_CONTEXT (t) == TYPE_CONTEXT (type)

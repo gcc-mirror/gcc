@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef _UPC_ACT_H_
 #define _UPC_ACT_H_
 
-
 extern bool upc_handle_option (size_t, const char *, int, int, location_t,
                               const struct cl_option_handlers *);
 extern bool upc_lang_init (void);

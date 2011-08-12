@@ -8931,10 +8931,8 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   type = *ptype;
   if (upc_shared_type_p (type))
     {
-      /* Force a indefinte layout factor.  */ 
-      const tree layout_qualifier = build4 (ARRAY_REF, NULL_TREE, NULL_TREE,
-                                             size_zero_node, NULL_TREE, NULL_TREE);
-      type = upc_set_block_factor (ARRAY_TYPE, type, layout_qualifier);
+      /* Force an indefinte layout factor.  */ 
+      type = upc_set_block_factor (type, size_zero_node);
     }
   elt = TREE_TYPE (type);
   quals = TYPE_QUALS (strip_array_types (elt));

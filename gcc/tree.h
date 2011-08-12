@@ -3807,6 +3807,7 @@ enum tree_index
 
   TI_UPC_PTS_TYPE,
   TI_UPC_PTS_REP_TYPE,
+  TI_UPC_CHAR_PTS_TYPE,
   TI_UPC_PHASE_FIELD,
   TI_UPC_THREAD_FIELD,
   TI_UPC_VADDR_FIELD,
@@ -3981,6 +3982,7 @@ extern GTY(()) tree global_trees[TI_MAX];
 /* The UPC type `void *'.  */
 #define upc_pts_type_node	global_trees[TI_UPC_PTS_TYPE]
 #define upc_pts_rep_type_node	global_trees[TI_UPC_PTS_REP_TYPE]
+#define upc_char_pts_type_node	global_trees[TI_UPC_CHAR_PTS_TYPE]
 #define upc_phase_field_node	global_trees[TI_UPC_PHASE_FIELD]
 #define upc_thread_field_node	global_trees[TI_UPC_THREAD_FIELD]
 #define upc_vaddr_field_node	global_trees[TI_UPC_VADDR_FIELD]

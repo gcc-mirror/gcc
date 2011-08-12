@@ -128,6 +128,7 @@ upc/upc-genericize.o : upc/upc-genericize.c \
    toplev.h flags.h input.h function.h output.h debug.h langhooks.h \
    $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-family/c-pragma.h \
    upc/upc-genericize.h upc/upc-tree.h upc/upc-act.h upc/upc-pts.h \
+   gtype-upc.h gt-upc-upc-genericize.h upc/upc-act.h upc/upc-pts.h \
    upc/upc-rts-names.h
 
 upc/upc-pts-packed.o: upc/upc-pts-packed.c \

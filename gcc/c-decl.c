@@ -5044,7 +5044,8 @@ grokdeclarator (const struct c_declarator *declarator,
         {
           tree t = build_variant_type_copy (element_type);
 	  TYPE_BLOCK_FACTOR (t) = NULL_TREE;
-	  t = upc_set_block_factor (TREE_CODE (t), t, layout_qualifier);
+	  t = upc_apply_layout_qualifier (TREE_CODE (t), t,
+	                                  layout_qualifier);
 	  if (t != NULL_TREE && t != error_mark_node)
 	    {
               const tree b1 = upc_get_block_factor (element_type);
@@ -5081,9 +5082,11 @@ grokdeclarator (const struct c_declarator *declarator,
     error_at (loc, "UPC shared variable %qE is declared "
                    "both strict and relaxed", name);
   if (strictp && !sharedp)
-    error_at (loc, "%qE is declared with UPC strict qualifier but not shared", name);
+    error_at (loc, "%qE is declared with UPC strict qualifier "
+                   "but not shared", name);
   if (relaxedp && !sharedp)
-    error_at (loc, "%qE is declared with UPC relaxed qualifier but not shared", name);
+    error_at (loc, "%qE is declared with UPC relaxed qualifier "
+                   "but not shared", name);
 
   if (!ADDR_SPACE_GENERIC_P (as1) && !ADDR_SPACE_GENERIC_P (as2) && as1 != as2)
     error_at (loc, "conflicting named address spaces (%s vs %s)",
@@ -5730,7 +5733,8 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	    /* Add UPC-defined block size, if supplied */
 	    if (layout_qualifier)
-	      type = upc_set_block_factor (POINTER_TYPE, type, layout_qualifier);
+	      type = upc_apply_layout_qualifier (POINTER_TYPE, type,
+	                                         layout_qualifier);
 
 	    size_varies = false;
 	    upc_threads_ref = 0;
@@ -5850,7 +5854,8 @@ grokdeclarator (const struct c_declarator *declarator,
   /* Check for UPC's layout qualifier.  */
   if (layout_qualifier)
     {
-      type = upc_set_block_factor (TREE_CODE (type), type, layout_qualifier);
+      type = upc_apply_layout_qualifier (TREE_CODE (type), type,
+                                         layout_qualifier);
       layout_qualifier = 0;
     }
 
@@ -5884,7 +5889,8 @@ grokdeclarator (const struct c_declarator *declarator,
 
       /* Add UPC-defined block size, if supplied */
       if (layout_qualifier)
-        type = upc_set_block_factor (TYPE_DECL, type, layout_qualifier);
+        type = upc_apply_layout_qualifier (TYPE_DECL, type,
+	                                   layout_qualifier);
 
       decl = build_decl (declarator->id_loc,
 			 TYPE_DECL, declarator->u.id, type);
@@ -6162,7 +6168,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	/* Block sizes don't make much sense for scalar variables,
            but UPC permits them. */
 	if (layout_qualifier)
-	  type = upc_set_block_factor (VAR_DECL, type, layout_qualifier);
+	  type = upc_apply_layout_qualifier (VAR_DECL, type,
+	                                     layout_qualifier);
 
 	/* C99 6.2.2p7: It is invalid (compile-time undefined
 	   behavior) to create an 'extern' declaration for a
