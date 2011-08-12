@@ -3635,9 +3635,9 @@ expand_builtin_bzero (tree exp)
 }
 
 /* Expand expression EXP, which is a call to the memcmp built-in function.
-   Return NULL_RTX if we failed and the
-   caller should emit a normal call, otherwise try to get the result in
-   TARGET, if convenient (and in mode MODE, if that's convenient).  */
+   Return NULL_RTX if we failed and the caller should emit a normal call,
+   otherwise try to get the result in TARGET, if convenient (and in mode
+   MODE, if that's convenient).  */
 
 static rtx
 expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
@@ -3649,7 +3649,10 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
  			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
-#if defined HAVE_cmpmemsi || defined HAVE_cmpstrnsi
+  /* Note: The cmpstrnsi pattern, if it exists, is not suitable for
+     implementing memcmp because it will stop if it encounters two
+     zero bytes.  */
+#if defined HAVE_cmpmemsi
   {
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result;
@@ -3662,16 +3665,9 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     unsigned int arg2_align = get_pointer_alignment (arg2) / BITS_PER_UNIT;
     enum machine_mode insn_mode;
 
-#ifdef HAVE_cmpmemsi
     if (HAVE_cmpmemsi)
       insn_mode = insn_data[(int) CODE_FOR_cmpmemsi].operand[0].mode;
     else
-#endif
-#ifdef HAVE_cmpstrnsi
-    if (HAVE_cmpstrnsi)
-      insn_mode = insn_data[(int) CODE_FOR_cmpstrnsi].operand[0].mode;
-    else
-#endif
       return NULL_RTX;
 
     /* If we don't have POINTER_TYPE, call the function.  */
@@ -3696,18 +3692,10 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
 	set_mem_size (arg2_rtx, INTVAL (arg3_rtx));
       }
 
-#ifdef HAVE_cmpmemsi
     if (HAVE_cmpmemsi)
       insn = gen_cmpmemsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
 			   GEN_INT (MIN (arg1_align, arg2_align)));
     else
-#endif
-#ifdef HAVE_cmpstrnsi
-    if (HAVE_cmpstrnsi)
-      insn = gen_cmpstrnsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
-			    GEN_INT (MIN (arg1_align, arg2_align)));
-    else
-#endif
       gcc_unreachable ();
 
     if (insn)
@@ -3733,7 +3721,7 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     else
       return convert_to_mode (mode, result, 0);
   }
-#endif
+#endif /* HAVE_cmpmemsi.  */
 
   return NULL_RTX;
 }
