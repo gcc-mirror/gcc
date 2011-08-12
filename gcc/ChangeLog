@@ -1,3 +1,9 @@
+2011-08-12  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+        PR target/48328
+	* config/arm/arm.h (CASE_VECTOR_SHORTEN_MODE): Fix distance
+	for tbh instructions.
+
 2011-08-12   Diego Novillo  <dnovillo@google.com>
 
 	* data-streamer.h (streamer_write_zero): Rename from output_zero.
