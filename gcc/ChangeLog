@@ -1,3 +1,11 @@
+2011-08-12  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/49994
+	* sched-init.h (struct deps_desc): Add sched_before_next_jump.
+	* sched-deps.c (init_deps): Clear it.
+	(deps_analyze_insn): Consume it.
+	(sched_analyze_insn): Fill it.
+
 2011-08-12  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
         PR target/48328
