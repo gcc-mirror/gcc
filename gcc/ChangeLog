@@ -1,3 +1,22 @@
+2011-08-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* builtins.def (BUILT_IN_ICEIL{,F,L}, BUILT_IN_IFLOOR{,F,L}
+	BUILT_IN_IRINT{,F,L}, BUILT_IN_IROUND{,F,L}: New builtin definitions.
+	* convert.c (convert_to_integer): Convert to BUILT_IN_ICEIL,
+	BUILT_IN_IFLOOR, BUILT_IN_IRINT or BUILT_INT_IROUND when converting
+	to integer_type_node.
+	* fold-const.c (tree_call_nonnegative_warnv_p): Handle BUILT_IN_ICEIL,
+	BUILT_IN_IFLOOR, BUILT_IN_IRINT and BUILT_INT_IROUND.
+	* builtins.c (expand_builtin_in): Ditto.
+	(mathfn_built_in_1): Ditto.
+	(expand_builtin_int_roundingfn): Handle BUILT_IN_ICEIL and
+	BUILT_IN_IFLOOR.
+	(expand_builtin_int_roundingfn_2): Handle BUILT_IN_IRINT and
+	BUILT_IN_IROUND.
+	(fold_fixed_mathfn): Canonicalize BUILT_IN_ICEIL, BUILTIN_IN_IFLOOR
+	BUILT_IN_IRINT and BUILT_IN_IROUND to BUILT_IN_LCEIL,
+	BUILTIN_IN_LFLOOR, BUILT_IN_LRINT and BUILT_IN_LROUND on ILP32 targets.
+
 2011-08-12  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (extract_range_from_unary_expr_1): Implement

@@ -440,9 +440,12 @@ convert_to_integer (tree type, tree expr)
 	  /* Only convert in ISO C99 mode.  */
 	  if (!TARGET_C99_FUNCTIONS)
 	    break;
-	  if (outprec < TYPE_PRECISION (long_integer_type_node)
-	      || (outprec == TYPE_PRECISION (long_integer_type_node)
+	  if (outprec < TYPE_PRECISION (integer_type_node)
+	      || (outprec == TYPE_PRECISION (integer_type_node)
 		  && !TYPE_UNSIGNED (type)))
+	    fn = mathfn_built_in (s_intype, BUILT_IN_ICEIL);
+	  else if (outprec == TYPE_PRECISION (long_integer_type_node)
+		   && !TYPE_UNSIGNED (type))
 	    fn = mathfn_built_in (s_intype, BUILT_IN_LCEIL);
 	  else if (outprec == TYPE_PRECISION (long_long_integer_type_node)
 		   && !TYPE_UNSIGNED (type))
@@ -453,9 +456,12 @@ convert_to_integer (tree type, tree expr)
 	  /* Only convert in ISO C99 mode.  */
 	  if (!TARGET_C99_FUNCTIONS)
 	    break;
-	  if (outprec < TYPE_PRECISION (long_integer_type_node)
-	      || (outprec == TYPE_PRECISION (long_integer_type_node)
+	  if (outprec < TYPE_PRECISION (integer_type_node)
+	      || (outprec == TYPE_PRECISION (integer_type_node)
 		  && !TYPE_UNSIGNED (type)))
+	    fn = mathfn_built_in (s_intype, BUILT_IN_IFLOOR);
+	  else if (outprec == TYPE_PRECISION (long_integer_type_node)
+		   && !TYPE_UNSIGNED (type))
 	    fn = mathfn_built_in (s_intype, BUILT_IN_LFLOOR);
 	  else if (outprec == TYPE_PRECISION (long_long_integer_type_node)
 		   && !TYPE_UNSIGNED (type))
@@ -463,9 +469,12 @@ convert_to_integer (tree type, tree expr)
 	  break;
 
 	CASE_FLT_FN (BUILT_IN_ROUND):
-	  if (outprec < TYPE_PRECISION (long_integer_type_node)
-	      || (outprec == TYPE_PRECISION (long_integer_type_node)
+	  if (outprec < TYPE_PRECISION (integer_type_node)
+	      || (outprec == TYPE_PRECISION (integer_type_node)
 		  && !TYPE_UNSIGNED (type)))
+	    fn = mathfn_built_in (s_intype, BUILT_IN_IROUND);
+	  else if (outprec == TYPE_PRECISION (long_integer_type_node)
+		   && !TYPE_UNSIGNED (type))
 	    fn = mathfn_built_in (s_intype, BUILT_IN_LROUND);
 	  else if (outprec == TYPE_PRECISION (long_long_integer_type_node)
 		   && !TYPE_UNSIGNED (type))
@@ -478,9 +487,12 @@ convert_to_integer (tree type, tree expr)
 	    break;
 	  /* ... Fall through ...  */
 	CASE_FLT_FN (BUILT_IN_RINT):
-	  if (outprec < TYPE_PRECISION (long_integer_type_node)
-	      || (outprec == TYPE_PRECISION (long_integer_type_node)
+	  if (outprec < TYPE_PRECISION (integer_type_node)
+	      || (outprec == TYPE_PRECISION (integer_type_node)
 		  && !TYPE_UNSIGNED (type)))
+	    fn = mathfn_built_in (s_intype, BUILT_IN_IRINT);
+	  else if (outprec < TYPE_PRECISION (long_integer_type_node)
+		   && !TYPE_UNSIGNED (type))
 	    fn = mathfn_built_in (s_intype, BUILT_IN_LRINT);
 	  else if (outprec == TYPE_PRECISION (long_long_integer_type_node)
 		   && !TYPE_UNSIGNED (type))

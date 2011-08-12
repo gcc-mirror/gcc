@@ -1837,7 +1837,11 @@ mathfn_built_in_1 (tree type, enum built_in_function fn, bool implicit)
       CASE_MATHFN (BUILT_IN_HUGE_VAL)
       CASE_MATHFN (BUILT_IN_HYPOT)
       CASE_MATHFN (BUILT_IN_ILOGB)
+      CASE_MATHFN (BUILT_IN_ICEIL)
+      CASE_MATHFN (BUILT_IN_IFLOOR)
       CASE_MATHFN (BUILT_IN_INF)
+      CASE_MATHFN (BUILT_IN_IRINT)
+      CASE_MATHFN (BUILT_IN_IROUND)
       CASE_MATHFN (BUILT_IN_ISINF)
       CASE_MATHFN (BUILT_IN_J0)
       CASE_MATHFN (BUILT_IN_J1)
@@ -2662,12 +2666,14 @@ expand_builtin_int_roundingfn (tree exp, rtx target)
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
+    CASE_FLT_FN (BUILT_IN_ICEIL):
     CASE_FLT_FN (BUILT_IN_LCEIL):
     CASE_FLT_FN (BUILT_IN_LLCEIL):
       builtin_optab = lceil_optab;
       fallback_fn = BUILT_IN_CEIL;
       break;
 
+    CASE_FLT_FN (BUILT_IN_IFLOOR):
     CASE_FLT_FN (BUILT_IN_LFLOOR):
     CASE_FLT_FN (BUILT_IN_LLFLOOR):
       builtin_optab = lfloor_optab;
@@ -2720,26 +2726,32 @@ expand_builtin_int_roundingfn (tree exp, rtx target)
 
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
+	case BUILT_IN_ICEIL:
 	case BUILT_IN_LCEIL:
 	case BUILT_IN_LLCEIL:
 	  name = "ceil";
 	  break;
+	case BUILT_IN_ICEILF:
 	case BUILT_IN_LCEILF:
 	case BUILT_IN_LLCEILF:
 	  name = "ceilf";
 	  break;
+	case BUILT_IN_ICEILL:
 	case BUILT_IN_LCEILL:
 	case BUILT_IN_LLCEILL:
 	  name = "ceill";
 	  break;
+	case BUILT_IN_IFLOOR:
 	case BUILT_IN_LFLOOR:
 	case BUILT_IN_LLFLOOR:
 	  name = "floor";
 	  break;
+	case BUILT_IN_IFLOORF:
 	case BUILT_IN_LFLOORF:
 	case BUILT_IN_LLFLOORF:
 	  name = "floorf";
 	  break;
+	case BUILT_IN_IFLOORL:
 	case BUILT_IN_LFLOORL:
 	case BUILT_IN_LLFLOORL:
 	  name = "floorl";
@@ -2791,12 +2803,16 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
+    CASE_FLT_FN (BUILT_IN_IRINT):
     CASE_FLT_FN (BUILT_IN_LRINT):
     CASE_FLT_FN (BUILT_IN_LLRINT):
       builtin_optab = lrint_optab; break;
+
+    CASE_FLT_FN (BUILT_IN_IROUND):
     CASE_FLT_FN (BUILT_IN_LROUND):
     CASE_FLT_FN (BUILT_IN_LLROUND):
       builtin_optab = lround_optab; break;
+
     default:
       gcc_unreachable ();
     }
@@ -5401,17 +5417,21 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
+    CASE_FLT_FN (BUILT_IN_ICEIL):
     CASE_FLT_FN (BUILT_IN_LCEIL):
     CASE_FLT_FN (BUILT_IN_LLCEIL):
     CASE_FLT_FN (BUILT_IN_LFLOOR):
+    CASE_FLT_FN (BUILT_IN_IFLOOR):
     CASE_FLT_FN (BUILT_IN_LLFLOOR):
       target = expand_builtin_int_roundingfn (exp, target);
       if (target)
 	return target;
       break;
 
+    CASE_FLT_FN (BUILT_IN_IRINT):
     CASE_FLT_FN (BUILT_IN_LRINT):
     CASE_FLT_FN (BUILT_IN_LLRINT):
+    CASE_FLT_FN (BUILT_IN_IROUND):
     CASE_FLT_FN (BUILT_IN_LROUND):
     CASE_FLT_FN (BUILT_IN_LLROUND):
       target = expand_builtin_int_roundingfn_2 (exp, target);
@@ -6521,6 +6541,42 @@ fold_fixed_mathfn (location_t loc, tree fndecl, tree arg)
 				fold_convert_loc (loc, newtype, arg0));
     }
 
+  /* Canonicalize iround (x) to lround (x) on ILP32 targets where
+     sizeof (int) == sizeof (long).  */
+  if (TYPE_PRECISION (integer_type_node)
+      == TYPE_PRECISION (long_integer_type_node))
+    {
+      tree newfn = NULL_TREE;
+      switch (fcode)
+	{
+	CASE_FLT_FN (BUILT_IN_ICEIL):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LCEIL);
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_IFLOOR):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LFLOOR);
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_IROUND):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LROUND);
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_IRINT):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LRINT);
+	  break;
+
+	default:
+	  break;
+	}
+
+      if (newfn)
+	{
+	  tree newcall = build_call_expr_loc (loc, newfn, 1, arg);
+	  return fold_convert_loc (loc,
+				   TREE_TYPE (TREE_TYPE (fndecl)), newcall);
+	}
+    }
+
   /* Canonicalize llround (x) to lround (x) on LP64 targets where
      sizeof (long long) == sizeof (long).  */
   if (TYPE_PRECISION (long_long_integer_type_node)
@@ -7220,16 +7276,19 @@ fold_builtin_int_roundingfn (location_t loc, tree fndecl, tree arg)
 
 	  switch (DECL_FUNCTION_CODE (fndecl))
 	    {
+	    CASE_FLT_FN (BUILT_IN_IFLOOR):
 	    CASE_FLT_FN (BUILT_IN_LFLOOR):
 	    CASE_FLT_FN (BUILT_IN_LLFLOOR):
 	      real_floor (&r, TYPE_MODE (ftype), &x);
 	      break;
 
+	    CASE_FLT_FN (BUILT_IN_ICEIL):
 	    CASE_FLT_FN (BUILT_IN_LCEIL):
 	    CASE_FLT_FN (BUILT_IN_LLCEIL):
 	      real_ceil (&r, TYPE_MODE (ftype), &x);
 	      break;
 
+	    CASE_FLT_FN (BUILT_IN_IROUND):
 	    CASE_FLT_FN (BUILT_IN_LROUND):
 	    CASE_FLT_FN (BUILT_IN_LLROUND):
 	      real_round (&r, TYPE_MODE (ftype), &x);
@@ -9758,14 +9817,18 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
     CASE_FLT_FN (BUILT_IN_RINT):
       return fold_trunc_transparent_mathfn (loc, fndecl, arg0);
 
+    CASE_FLT_FN (BUILT_IN_ICEIL):
     CASE_FLT_FN (BUILT_IN_LCEIL):
     CASE_FLT_FN (BUILT_IN_LLCEIL):
     CASE_FLT_FN (BUILT_IN_LFLOOR):
+    CASE_FLT_FN (BUILT_IN_IFLOOR):
     CASE_FLT_FN (BUILT_IN_LLFLOOR):
+    CASE_FLT_FN (BUILT_IN_IROUND):
     CASE_FLT_FN (BUILT_IN_LROUND):
     CASE_FLT_FN (BUILT_IN_LLROUND):
       return fold_builtin_int_roundingfn (loc, fndecl, arg0);
 
+    CASE_FLT_FN (BUILT_IN_IRINT):
     CASE_FLT_FN (BUILT_IN_LRINT):
     CASE_FLT_FN (BUILT_IN_LLRINT):
       return fold_fixed_mathfn (loc, fndecl, arg0);
