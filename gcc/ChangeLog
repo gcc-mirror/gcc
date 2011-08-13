@@ -1,17 +1,15 @@
 2011-08-12  Nick Clifton  <nickc@redhat.com>
 
-	* builtins.c (expand_builtin_memcmp): Do not use cmpstrnsi
-	pattern.
+	* builtins.c (expand_builtin_memcmp): Do not use cmpstrnsi pattern.
 	* doc/md.texi (cmpstrn): Note that the comparison stops if both
 	fetched bytes are zero.
 	(cmpstr): Likewise.
 	(cmpmem): Note that the comparison does not stop if both of the
 	fetched bytes are zero.
 
-2011-08-11   Kazuhiro Inaoka  <kazuhiro.inaoka.ud@renesas.com>
+2011-08-11  Kazuhiro Inaoka  <kazuhiro.inaoka.ud@renesas.com>
 
-	* config/rx/rx.md (movsicc): Allow register to register
-	transfers.
+	* config/rx/rx.md (movsicc): Allow register to register transfers.
 	(*movsicc): Likewise.
 	(*stcc): Restrict this pattern to EQ and NE compares.
 	(*stcc_reg): New pattern.  Works for any comparison but only for
@@ -226,7 +224,7 @@
 2011-06-30  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	Backport from mainline
-	2011-02-07 Mike Stump  <mikestump@comcast.net>
+	2011-02-07  Mike Stump  <mikestump@comcast.net>
 
 	PR target/42333
 	Add __ieee_divdc3 entry point.
@@ -518,7 +516,7 @@
 
 	2010-04-29  Bernd Schmidt  <bernds@codesourcery.com>
 
-	From Dominique d'Humieres <dominiq@lps.ens.fr>
+	From Dominique d'Humieres  <dominiq@lps.ens.fr>
 	PR bootstrap/43858
 	* ifcvt.c (dead_or_predicable): Use df_simulate_find_defs to compute
 	test_set.
@@ -990,7 +988,7 @@
 	PR target/48171
 	* config/i386/i386.opt: Add Save to -mavx and -mfma.
 
-2011-03-16  Pat Haugen <pthaugen@us.ibm.com>
+2011-03-16  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR target/47862
 	* caller-save.c (insert_restore, insert_save): Use non-validate
@@ -1063,10 +1061,10 @@
 	* cgraph.c (cgraph_function_body_availability): Use decl_replaceable_p.
 	* tree-inline.c (inlinable_function_p): Likewise.
 
-2011-03-07  Pat Haugen <pthaugen@us.ibm.com>
+2011-03-07  Pat Haugen  <pthaugen@us.ibm.com>
 
 	Backport from mainline
-	2011-03-07  Pat Haugen <pthaugen@us.ibm.com>
+	2011-03-07  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR target/47862
 	* config/rs6000/rs6000.h (HARD_REGNO_CALLER_SAVE_MODE): Define.
@@ -1082,7 +1080,7 @@
 	(ssse3_pmaddubsw128): Ditto.
 	(ssse3_pmaddubsw): Ditto.
 
-2011-03-03  Denis Chertykov <chertykov@gmail.com>
+2011-03-03  Denis Chertykov  <chertykov@gmail.com>
 
 	Backport from mainline
 	2011-02-22  Georg-Johann Lay  <avr@gjlay.de>
@@ -1162,7 +1160,7 @@
 	origin of assertions.
 	Update copyright years.
 
-2011-02-25  Andriy Gapon <avg@freebsd.org>
+2011-02-25  Andriy Gapon  <avg@freebsd.org>
 
 	PR target/45808
 	* config/freebsd-spec.h (FBSD_LIB_SPEC): Handle the shared case.
@@ -2355,7 +2353,7 @@
 	debug isnsn.  Skip them when searching for cc0 setter.
 	(set_live_p): Skip debug insns when searching for cc0 user.
 
-2010-10-09  Ralf Corsépius <ralf.corsepius@rtems.org>
+2010-10-09  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (bfin*-rtems*): Add newlib-stdint.h.
 	* config.gcc (lm32*-rtems*): Add newlib-stdint.h.
@@ -2379,7 +2377,7 @@
 2010-10-06  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	Backport from mainline
-	2010-04-26  Jack Howarth <howarth@bromo.med.uc.edu>
+	2010-04-26  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR 43715
 	* configure.ac: Pass -g for export_sym_check on darwin.
@@ -2636,11 +2634,11 @@
 	insns instead.  Rewrite the movement code to support moving through
 	several basic blocks.
 
-2010-09-10  Jack Howarth <howarth@bromo.med.uc.edu>
+2010-09-10  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	Backport from mainline
 	2010-09-07  H.J. Lu  <hjl.tools@gmail.com>
-		    Jack Howarth <howarth@bromo.med.uc.edu>
+		    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/36502
 	PR target/42313
@@ -4692,7 +4690,7 @@
 	* tree-tailcall.c (find_tail_calls): Verify the tail call
 	properly.
 
-2010-04-19 Ira Rosen  <irar@il.ibm.com>
+2010-04-19  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/43771
 	* tree-vect-slp.c (vect_supported_load_permutation_p): Check that
