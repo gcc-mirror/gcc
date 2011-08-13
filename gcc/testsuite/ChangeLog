@@ -1,3 +1,7 @@
+2011-08-12  David Li  <davidxl@google.com>
+
+	* g++.dg/abi/vbase15.C: New test.
+
 2011-08-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50034
