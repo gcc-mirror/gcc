@@ -1,4 +1,4 @@
-# Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2007, 2008, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -37,9 +37,6 @@ LIB1ASMFUNCS = _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
 	_m16stubsc9 _m16stubsc10 \
 	_m16stubdc0 _m16stubdc1 _m16stubdc2 _m16stubdc5 _m16stubdc6 \
 	_m16stubdc9 _m16stubdc10
-
-LIBGCC_SYNC = yes
-LIBGCC_SYNC_CFLAGS = -mno-mips16
 
 # Version these symbols if building libgcc.so.
 SHLIB_MAPFILES += $(srcdir)/config/mips/libgcc-mips16.ver

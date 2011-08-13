@@ -3556,14 +3556,42 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
 	}
 
       /* FIXME:  Do more comprehensive checking (including, for instance, the
-	 rank and array-shape).  */
+	 array-shape).  */
       gcc_assert (proc_target->result && old_target->result);
-      if (!gfc_compare_types (&proc_target->result->ts,
-			      &old_target->result->ts))
+      if (!compare_type_rank (proc_target->result, old_target->result))
 	{
 	  gfc_error ("'%s' at %L and the overridden FUNCTION should have"
-		     " matching result types", proc->name, &where);
+		     " matching result types and ranks", proc->name, &where);
 	  return FAILURE;
+	}
+	
+      /* Check string length.  */
+      if (proc_target->result->ts.type == BT_CHARACTER
+	  && proc_target->result->ts.u.cl && old_target->result->ts.u.cl)
+	{
+	  int compval = gfc_dep_compare_expr (proc_target->result->ts.u.cl->length,
+					      old_target->result->ts.u.cl->length);
+	  switch (compval)
+	  {
+	    case -1:
+	    case 1:
+	      gfc_error ("Character length mismatch between '%s' at '%L' and "
+			 "overridden FUNCTION", proc->name, &where);
+	      return FAILURE;
+
+	    case -2:
+	      gfc_warning ("Possible character length mismatch between '%s' at"
+			   " '%L' and overridden FUNCTION", proc->name, &where);
+	      break;
+
+	    case 0:
+	      break;
+
+	    default:
+	      gfc_internal_error ("gfc_check_typebound_override: Unexpected "
+				  "result %i of gfc_dep_compare_expr", compval);
+	      break;
+	  }
 	}
     }
 

@@ -1573,6 +1573,7 @@ extern void sel_init_global_and_expr (bb_vec_t);
 extern void sel_finish_global_and_expr (void);
 
 extern regset compute_live (insn_t);
+extern bool register_unavailable_p (regset, rtx);
 
 /* Dependence analysis functions.  */
 extern void sel_clear_has_dependence (void);

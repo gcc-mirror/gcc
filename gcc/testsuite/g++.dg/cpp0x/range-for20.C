@@ -1,4 +1,5 @@
 // PR c++/49834
+// PR c++/50020
 // { dg-options -std=c++0x }
 
 struct A
@@ -17,16 +18,19 @@ struct C
 };
 
 template <typename Ret>
-Ret f(const C &p)
+struct D
 {
-  for (const B &i: p)		// OK
-    i.second.get_value<int>();
-  for (const auto &i: p)	// ERROR
-    i.second.get_value<int>();
-  return Ret(0);
-}
+  Ret f(const C &p)
+  {
+    for (const B &i: p)		// OK
+      i.second.get_value<int>();
+    for (const auto &i: p)	// ERROR
+      i.second.get_value<int>();
+    return Ret(0);
+  }
+};
 
 void g()
 {
-  f<int>(C());
+  D<int>().f(C());
 }

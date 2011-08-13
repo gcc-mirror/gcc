@@ -282,6 +282,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   fmod(long double __x, long double __y)
   { return __builtin_fmodl(__x, __y); }
 
+  template<typename _Tp, typename _Up>
+    inline _GLIBCXX_CONSTEXPR
+    typename __gnu_cxx::__promote_2<
+    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
+				    && __is_arithmetic<_Up>::__value,
+				    _Tp>::__type, _Up>::__type
+    fmod(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return fmod(__type(__x), __type(__y));
+    }
+
   using ::frexp;
 
   inline _GLIBCXX_CONSTEXPR float
@@ -313,8 +325,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX_CONSTEXPR
     typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
                                     double>::__type
-  ldexp(_Tp __x, int __exp)
-  { return __builtin_ldexp(__x, __exp); }
+    ldexp(_Tp __x, int __exp)
+    { return __builtin_ldexp(__x, __exp); }
 
   using ::log;
 

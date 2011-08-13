@@ -1,3 +1,877 @@
+2011-08-12  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+        PR target/48328
+	* config/arm/arm.h (CASE_VECTOR_SHORTEN_MODE): Fix distance
+	for tbh instructions.
+
+2011-08-12   Diego Novillo  <dnovillo@google.com>
+
+	* data-streamer.h (streamer_write_zero): Rename from output_zero.
+ 	(streamer_write_uhwi): Rename from lto_output_uleb128.
+ 	(streamer_write_hwi): Rename from output_sleb128.
+ 	(streamer_write_string): Rename from lto_output_string.
+ 	(streamer_string_index): Rename from lto_string_index.
+ 	(streamer_write_string_with_length): Rename from
+ 	lto_output_string_with_length.
+ 	(streamer_write_uhwi_stream): Rename from lto_output_uleb128_stream.
+ 	(streamer_write_hwi_stream): Rename from lto_output_sleb128_stream.
+ 	(streamer_read_string): Rename from lto_input_string.
+ 	(streamer_read_indexed_string): Rename from input_string_internal.
+ 	(streamer_read_uhwi): Rename from lto_input_uleb128.
+ 	(streamer_read_hwi): Rename from lto_input_sleb128.
+ 	(streamer_write_hwi_in_range): Rename from lto_output_int_in_range.
+ 	(streamer_read_hwi_in_range): Rename from lto_input_int_in_range.
+ 	(streamer_write_enum): Rename from lto_output_enum.
+ 	(streamer_read_enum): Rename from lto_input_enum.
+ 	(streamer_write_record_start): Rename from output_record_start.
+ 	(streamer_read_record_start): Rename from input_record_start.
+ 	(streamer_write_bitpack): Rename from lto_output_bitpack.
+ 	(streamer_read_bitpack): Rename from lto_input_bitpack.
+ 	(streamer_write_char_stream): Rename from lto_output_1_stream.
+ 	(streamer_read_uchar): Rename from lto_input_1_unsigned.
+ 	* tree-streamer.h (streamer_cache_d): Rename from lto_streamer_cache_d.
+ 	(streamer_handle_as_builtin_p): Rename from lto_stream_as_builtin_p.
+ 	(streamer_read_string_cst): Rename from input_string_cst.
+ 	(streamer_read_chain): Rename from lto_input_chain.
+ 	(streamer_alloc_tree): Rename from lto_materialize_tree.
+ 	(streamer_read_tree_body): Rename from lto_input_tree_pointers.
+ 	(streamer_get_pickled_tree): Rename from lto_get_pickled_tree.
+ 	(streamer_get_builtin_tree): Rename from lto_get_builtin_tree.
+ 	(streamer_read_integer_cst): Rename from lto_input_integer_cst.
+ 	(streamer_read_tree_bitfields): Rename from tree_read_bitfields.
+ 	(streamer_write_chain): Rename from lto_output_chain.
+ 	(streamer_write_tree_header): Rename from lto_output_tree_header.
+ 	(streamer_pack_tree_bitfields): Rename from pack_value_fields.
+ 	(streamer_write_tree_body): Rename from lto_output_tree_pointers.
+ 	(streamer_write_integer_cst): Rename from lto_output_integer_cst.
+ 	(streamer_write_builtin): Rename from lto_output_builtin_tree.
+ 	(streamer_check_handled_ts_structures): Rename from
+ 	check_handled_ts_structures.
+ 	(streamer_tree_cache_insert): Rename from lto_streamer_cache_insert.
+ 	(streamer_tree_cache_insert_at): Rename from
+ 	lto_streamer_cache_insert_at.
+ 	(streamer_tree_cache_append): Rename from lto_streamer_cache_append.
+ 	(streamer_tree_cache_lookup): Rename from lto_streamer_cache_lookup.
+ 	(streamer_tree_cache_get): Rename from lto_streamer_cache_get.
+ 	(streamer_tree_cache_create): Rename from lto_streamer_cache_create.
+ 	(streamer_tree_cache_delete): Rename from lto_streamer_cache_delete.
+ 	* tree-streamer-out.c (write_string_cst): Rename from output_string_cst.
+ 	(write_identifier): Rename from output_identifier.
+ 	(write_ts_common_tree_pointers): Rename from
+ 	lto_output_ts_common_tree_pointers.
+ 	(write_ts_vector_tree_pointers): Rename from
+ 	lto_output_ts_vector_tree_pointers.
+ 	(write_ts_complex_tree_pointers): Rename from
+ 	lto_output_ts_complex_tree_pointers.
+ 	(write_ts_decl_minimal_tree_pointers): Rename from
+ 	lto_output_ts_decl_minimal_tree_pointers.
+ 	(write_ts_decl_common_tree_pointers): Rename from
+ 	lto_output_ts_decl_common_tree_pointers.
+ 	(write_ts_decl_non_common_tree_pointers): Rename from
+ 	lto_output_ts_decl_non_common_tree_pointers.
+ 	(write_ts_decl_with_vis_tree_pointers): Rename from
+ 	lto_output_ts_decl_with_vis_tree_pointers.
+ 	(write_ts_field_decl_tree_pointers): Rename from
+ 	lto_output_ts_field_decl_tree_pointers.
+ 	(write_ts_function_decl_tree_pointers): Rename from
+ 	lto_output_ts_function_decl_tree_pointers.
+ 	(write_ts_type_common_tree_pointers): Rename from
+ 	lto_output_ts_type_common_tree_pointers.
+ 	(write_ts_type_non_common_tree_pointers): Rename from
+ 	lto_output_ts_type_non_common_tree_pointers.
+ 	(write_ts_list_tree_pointers): Rename from
+ 	lto_output_ts_list_tree_pointers.
+ 	(write_ts_vec_tree_pointers): Rename from
+ 	lto_output_ts_vec_tree_pointers.
+ 	(write_ts_exp_tree_pointers): Rename from
+ 	lto_output_ts_exp_tree_pointers.
+ 	(write_ts_block_tree_pointers): Rename from
+ 	lto_output_ts_block_tree_pointers.
+ 	(write_ts_binfo_tree_pointers): Rename from
+ 	lto_output_ts_binfo_tree_pointers.
+ 	(write_ts_constructor_tree_pointers): Rename from
+ 	lto_output_ts_constructor_tree_pointers.
+ 	(write_ts_target_option): Rename from
+ 	lto_output_ts_target_option.
+ 	(write_ts_translation_unit_decl_tree_pointers): Rename from
+ 	lto_output_ts_translation_unit_decl_tree_pointers.
+ 	* tree-streamer.c (streamer_tree_cache_add_to_node_array):
+ 	Rename from lto_streamer_cache_add_to_node_array.
+ 	(streamer_tree_cache_insert_1): Rename from lto_streamer_cache_insert_1.
+ 	(record_common_node): Rename from lto_record_common_node.
+
+	* streamer-hooks.h (bitpack_d, lto_streamer_cache_d): Remove forward
+	declarations.
+	* data-streamer-in.c (lto_input_widest_uint_uleb128): Remove unused
+	function.
+	* data-streamer-out.c (lto_output_widest_uint_uleb128_stream): Remove
+	unused function.
+	* Makefile.in (lto-section-out.o): Add dependency on DATA_STREAMER_H.
+	(ipa-reference.o): Likewise.
+	* lto-section-out.c: Include data-streamer.h.
+	* ipa-reference.c: Include data-streamer.h.
+
+2011-08-12  Nick Clifton  <nickc@redhat.com>
+
+	* builtins.c (expand_builtin_memcmp): Do not use cmpstrnsi
+	pattern.
+	* doc/md.texi (cmpstrn): Note that the comparison stops if both
+	fetched bytes are zero.
+	(cmpstr): Likewise.
+	(cmpmem): Note that the comparison does not stop if both of the
+	fetched bytes are zero.
+
+2011-08-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* builtins.def (BUILT_IN_ICEIL{,F,L}, BUILT_IN_IFLOOR{,F,L}
+	BUILT_IN_IRINT{,F,L}, BUILT_IN_IROUND{,F,L}: New builtin definitions.
+	* convert.c (convert_to_integer): Convert to BUILT_IN_ICEIL,
+	BUILT_IN_IFLOOR, BUILT_IN_IRINT or BUILT_INT_IROUND when converting
+	to integer_type_node.
+	* fold-const.c (tree_call_nonnegative_warnv_p): Handle BUILT_IN_ICEIL,
+	BUILT_IN_IFLOOR, BUILT_IN_IRINT and BUILT_INT_IROUND.
+	* builtins.c (expand_builtin_in): Ditto.
+	(mathfn_built_in_1): Ditto.
+	(expand_builtin_int_roundingfn): Handle BUILT_IN_ICEIL and
+	BUILT_IN_IFLOOR.
+	(expand_builtin_int_roundingfn_2): Handle BUILT_IN_IRINT and
+	BUILT_IN_IROUND.
+	(fold_fixed_mathfn): Canonicalize BUILT_IN_ICEIL, BUILTIN_IN_IFLOOR
+	BUILT_IN_IRINT and BUILT_IN_IROUND to BUILT_IN_LCEIL,
+	BUILTIN_IN_LFLOOR, BUILT_IN_LRINT and BUILT_IN_LROUND on ILP32 targets.
+
+2011-08-12  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (extract_range_from_unary_expr_1): Implement
+	-X as 0 - X.
+
+2011-08-12  Romain Geissler  <romain.geissler@gmail.com>
+
+	* Makefile.in (PLUGIN_HEADERS): Add C_TREE_H.
+
+2011-08-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/arm/arm.c (get_label_padding): New function.
+	(create_fix_barrier, md_reorg): Likewise.
+
+2011-08-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49781
+	* config/i386/i386.md (*lea_5_zext): New.
+	(*lea_6_zext): Ditto.
+	* config/i386/predicates.md (const_32bit_mask): New predicate.
+	(lea_address_operand): Reject AND.
+	* config/i386/i386.c (ix86_decompose_address): Allow Dimode AND with
+	const_32bit_mask immediate.
+	(ix86_print_operand_address): Handle AND.
+	(memory_address_length): Ditto.
+
+2011-08-11  Romain Geissler  <romain.geissler@gmail.com>
+	    Brian Hackett  <bhackett1024@gmail.com>
+
+	* plugin.def: Add event for finish_decl.
+	* plugin.c (register_callback, invoke_plugin_callbacks): Same.
+	* c-decl.c (finish_decl): Invoke callbacks on above event.
+	* doc/plugins.texi: Document above event.
+
+2011-08-11  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Avoid redundant
+	lookups, make looking through aggregate copies stronger.
+
+2011-08-11  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/50018
+	* expr.c (fixup_args_size_notes): Accept and ignore normal calls.
+
+2011-08-11  Richard Guenther  <rguenther@suse.de>
+
+	* lto-cgraph.c (input_node): Use DECL_BUILT_IN.
+	* tree-vrp.c (stmt_interesting_for_vrp): Likewise.
+	(vrp_visit_stmt): Likewise.
+
+2011-08-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50040
+	* gimplify.c (gimplify_modify_expr_complex_part): Mark the
+	load of the other piece with TREE_NO_WARNING.
+	* tree-flow.h (warn_uninit): Adjust prototype.
+	* tree-ssa.c (warn_uninit): Take uninitialized SSA name,
+	the base variable and the expression that is used separately.
+	Properly query all TREE_NO_WARNING flags.
+	(struct walk_data): Remove.
+	(warn_uninitialized_var): Likewise.
+	(warn_uninitialized_vars): Do not walk gimple pieces but simply
+	look at all SSA uses of the statement.  Handle unused memory
+	separately.
+	* tree-ssa-uninit.c (warn_uninitialized_phi): Adjust.
+
+2011-08-11   Kazuhiro Inaoka  <kazuhiro.inaoka.ud@renesas.com>
+
+	* config/rx/rx.md (movsicc): Allow register to register transfers.
+	(*movsicc): Likewise.
+	(*stcc): Restrict this pattern to EQ and NE compares.
+	(*stcc_reg): New pattern.  Works for any comparison but only for
+	register transfers.
+
+2011-08-11   Diego Novillo  <dnovillo@google.com>
+
+	* tree-streamer-out.c (lto_output_ts_decl_with_vis_tree_pointers):
+	Call stream_write_tree instead of output_record_start.
+	(lto_output_ts_binfo_tree_pointers): Likewise.
+
+	* streamer-hooks.h (stream_write_tree): Move from tree-streamer.h.
+	Convert it to a macro.
+	(stream_read_tree): Likewise.
+
+	* lto-streamer.h (lto_stream_as_builtin_p): Move ...
+	* tree-streamer.h (lto_stream_as_builtin_p): ... here.
+
+	* lto-streamer-in.c (lto_read_tree): Call lto_streamer_cache_append
+	and tree_read_bitfields.
+	* lto-streamer-out.c (lto_is_streamable): Move from lto-streamer.c
+	(lto_write_tree): Call it.
+	* lto-streamer.c (lto_is_streamable): Move to lto-streamer-out.c
+	* streamer-hooks.h (struct streamer_hooks): Remove fields
+	name, is_streamable and alloc_tree. Update all users.
+	* tree-streamer-in.c (tree_read_bitfields): Factor out of ...
+	(lto_materialize_tree): ... here.
+	Handle CALL_EXPR codes.
+	Remove call to lto_streamer_cache_append.
+	* tree-streamer-out.c (lto_output_tree_header): Handle CALL_EXPR nodes.
+	* tree-streamer.h (tree_read_bitfields): Declare.
+
+	* Makefile.in (TREE_STREAMER_H): Add STREAMER_HOOKS_H.
+	(gimple-streamer-in.o): Add dependency on TREE_STREAMER_H.
+	* tree-streamer.h (stream_read_tree): New.  Replace all calls
+	to lto_input_tree with it.
+	(stream_write_tree): New.  Replace all calls to lto_output_tree,
+	lto_output_tree_ref and lto_output_tree_or_ref with it.
+	* lto-streamer-in.c (lto_read_tree): Inline code from
+	lto_streamer_read_tree.
+	(lto_input_tree): Move from tree-streamer-in.c.
+	* lto-streamer-out.c (lto_output_tree_ref): Make static.
+	Remove handling of NULL values for EXPR.
+	Do not handle EXPRs that are not indexable.
+	(lto_write_tree): Move from tree-streamer-out.c.
+	Inline lto_streamer_write_tree.
+	(lto_output_tree): Move from tree-streamer-out.c.
+	If REF_P is true and EXPR is indexable, call lto_output_tree_ref.
+	* lto-streamer.c (lto_record_common_node): Move to tree-streamer.c.
+	(lto_preload_common_nodes): Likewise.
+	Remove assertions and adjustments for nodes
+	main_identifier_node, ptrdiff_type_node and fileptr_type_node.
+	(lto_streamer_hooks_init): Set streamer_hooks.write_tree to
+	lto_output_tree and streamer_hooks.read_tree to lto_input_tree.
+	* lto-streamer.h (lto_input_tree): Declare.
+	(lto_output_tree_ref): Remove.
+	* streamer-hooks.h (struct streamer_hooks): Remove fields
+	preload_common_nodes, indexable_with_decls_p,
+	pack_value_fields, unpack_value_fields and output_tree_header.
+	Update all users.
+	* tree-streamer-in.c (lto_materialize_tree): Make extern.
+	(lto_input_tree_pointers): Likewise.
+	(lto_read_tree): Move to lto-streamer-in.c.
+	(lto_input_integer_cst): Make extern.
+	(lto_get_pickled_tree): Likewise.
+	(lto_get_builtin_tree): Likewise.
+	(lto_input_tree): Move to lto-streamer-in.c.
+	* tree-streamer-out.c (pack_value_fields): Make extern.
+	(lto_output_tree_or_ref): Remove.  Replace all callers with
+	calls to stream_write_tree.
+	(lto_output_builtin_tree): Make extern.
+	(lto_streamer_write_tree): Inline into lto_write_tree.
+	(lto_output_tree_pointers): Make extern.
+	(lto_output_tree_header): Likewise.
+	(lto_output_integer_cst): Likewise.
+	(lto_write_tree): Move to lto-streamer-out.c.
+	(lto_output_tree): Likewise.
+	* tree-streamer.c (lto_record_common_node): Move from lto-streamer.c
+	(preload_common_nodes): Likewise.
+	(lto_streamer_cache_create): Call it.
+	* tree-streamer.h: Include streamer-hooks.h.
+	(stream_write_tree): New.
+	(stream_read_tree): New.
+	(lto_input_tree): Remove.
+	(lto_materialize_tree): Declare.
+	(lto_input_tree_pointers): Declare.
+	(lto_get_pickled_tree): Declare.
+	(lto_get_builtin_tree): Declare.
+	(lto_input_integer_cst): Declare.
+	(lto_output_tree_header): Declare.
+	(pack_value_fields): Declare.
+	(lto_output_tree_pointers): Declare.
+	(lto_output_integer_cst): Declare.
+	(lto_output_builtin_tree): Declare.
+
+2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
+
+	* sel-sched-ir.c (has_dependence_note_reg_use): Call ds_full_merge
+	only if producer writes to the register given by regno.
+
+2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
+	    Alexander Monakov  <amonakov@ispras.ru>
+
+	* sched-deps.c (sched_get_condition_with_rev): Rename to ...
+	(sched_get_condition_with_rev_uncached): ... this.  Factor out
+	condition caching logic into ...
+	(sched_get_condition_with_rev): ... this.  Reimplement.  Do not
+	attempt to use cache for instructions with zero luid.
+	(sched_analyze_insn): Use INSN_CACHED_COND instead of INSN_COND.
+	* sched-int.h (INSN_COND): Rename to INSN_CACHED_COND.
+
+2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
+
+	* sel-sched-ir.c (get_seqno_of_a_pred): Rename to
+	get_seqno_for_a_jump.  Update the caller.
+	(get_seqno_by_succs): New.  Use it ...
+	(get_seqno_for_a_jump): ... here to find a seqno if looking at
+	predecessors was not sufficient.
+	(get_seqno_by_preds): Include head in iteration range, exclude insn.
+
+2011-08-11  Dmitry Melnik  <dm@ispras.ru>
+
+	* sel-sched-ir.c (invalidate_av_set): Remove the assert.
+
+2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
+
+	* sel-sched-ir.h (register_unavailable_p): Declare.
+	* sel-sched-ir.c (register_unavailable_p): New.  Use it...
+	(set_unavailable_target_for_expr): ... here to properly test
+	availability of a register.
+	(speculate_expr): Ditto.
+	* sel-sched.c (substitute_reg_in_expr): Ditto.
+	(av_set_could_be_blocked_by_bookkeeping_p): Ditto.
+
+2011-08-11  Sergey Grechanik  <mouseentity@ispras.ru>
+
+	* sel-sched.c (verify_target_availability): Fix usage of
+	hard_regno_nregs.
+
+2011-08-11  Dmitry Melnik  <dm@ispras.ru>
+
+	* sel-sched-ir.c (init_global_and_expr_for_insn): Forbid copying of
+	recognized by cannot_copy_insn_p hook and volatile instructions.
+
+2011-08-11  Dmitry Melnik  <dm@ispras.ru>
+
+	* sel-sched-ir.c (merge_expr_data): Take maximum spec.
+
+2011-08-11  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* doc/md.texi (define_bypass): Say that the instruction names can
+	be filename-style globs.
+	* Makefile.in (FNMATCH_H): Define.
+	(build/genattrtab.o, build/genautomata.o): Depend on $(FNMATCH_H).
+	* genattrtab.c: Include fnmatch.h.
+	(bypass_list): Change field name from "insn" to "pattern".
+	(gen_bypass_1): Update accordingly.
+	(process_bypasses): Use fnmatch to check for matches between
+	insn reservations and define_bypasses.
+	* genautomata.c: Include fnmatch.h.
+	(bypass_decl): Rename in_insn_name and out_insn_name to in_pattern
+	and out_pattern respectively.
+	(gen_bypass, insert_bypass): Update accordingly.
+	(for_each_matching_insn, process_bypass_2, process_bypass_1)
+	(process_bypass): New functions.
+	(process_decls): Use process_bypass.  Update after field name changes.
+
+2011-08-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49687
+	* config/avr/avr.md (smulqi3_highpart): New insn.
+	(umulqi3_highpart): New insn.
+	(*subqi3.ashiftrt7): New insn.
+	(smulhi3_highpart): New expander.
+	(umulhi3_highpart): Nex expander.
+	(*smulhi3_highpart_call): New insn.
+	(*umulhi3_highpart_call): New insn.
+	(extend_u): New code attribute.
+	(extend_prefix): Rename code attribute to extend_su.
+	* config/avr/avr.c (avr_rtx_costs): Report costs of highpart of
+	widening QI/HI multiply.
+
+2011-08-11  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50039
+	* tree-vect-patterns.c (vect_operation_fits_smaller_type): Check
+	that DEF_STMT has a stmt_vec_info.
+
+2011-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (can_trust_pointer_alignment): Remove.
+	* builtins.c (can_trust_pointer_alignment): Remove.
+
+2011-08-10  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
+
+	* c-typeck.c (scalar_to_vector): New function. Try scalar to
+	vector conversion.
+	(stv_conv): New enum for scalar_to_vector return type.
+	(build_binary_op): Adjust.
+	* doc/extend.texi: Description of scalar to vector expansion.
+
+2011-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (get_pointer_alignment): Remove max-align argument.
+	(get_object_alignment): Likewise.
+	* builtins.c (get_object_alignment_1): Adjust.
+	(get_object_alignment): Remove max-align argument.
+	(get_pointer_alignment): Likewise.
+	(expand_builtin_strlen): Adjust.
+	(expand_builtin_memcpy): Likewise.
+	(expand_builtin_mempcpy_args): Likewise.
+	(expand_builtin_strncpy): Likewise.
+	(expand_builtin_memset_args): Likewise.
+	(expand_builtin_memcmp): Likewise.
+	(expand_builtin_strcmp): Likewise.
+	(expand_builtin_strncmp): Likewise.
+	(get_builtin_sync_mem): Likewise.
+	(fold_builtin_memset): Likewise.
+	(fold_builtin_memory_op): Likewise.
+	(expand_builtin_memory_chk): Likewise.
+	* emit-rtl.c (get_mem_align_offset): Likewise.
+	(set_mem_attributes_minus_bitpos): Likewise.
+	* expr.c (expand_assignment): Likewise.
+	(expand_expr_real_1): Likewise.
+	* tree-sra.c (tree_non_mode_aligned_mem_p): Likewise.
+	* tree-ssa-forwprop.c (simplify_builtin_call): Likewise.
+	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Likewise.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Likewise.
+	* value-prof.c (gimple_stringops_transform): Likewise.
+
+2011-08-10  Paulo J. Matos  <paulo.matos@csr.com>
+
+	* doc/tm.texi.in (CLASS_MAX_NREGS): Fix typo.
+	* doc/tm.texi: Regenerate.
+
+2011-08-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/29560
+	* config/avr/avr.md (*ashlhiqi3): New insn-and-split.
+	(*ashl<extend_prefix>qihiqi3): New insn-and-splits.
+	(*ashl<extend_prefix>qihiqi3.mem): New insn-and-splits.
+	Add peephole2 to map ashlhi3 to ashlqi3 if high part of
+	shift target is unused.
+
+2011-08-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49937
+	* tree-ssa-ccp.c (get_value_from_alignment): Re-implement
+	using get_object_alignment_1.
+
+2011-08-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_emit_i387_round): New function.
+	* config/i386/i386-protos.h (ix86_emit_i387_round): Declare.
+	* config/i386/i386.md (round<mode>2): Use X87MODEF mode iterator.
+	Use ix86_emit_i387_round to expand round function for i387 math.
+	(lround<X87MODEF:mode><SWI248x:mode>2): Use X87MODEF mode iterator.
+	Use ix86_emit_i387_round to expand {l,ll}round function for i387 math.
+
+2011-08-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sync.c: Move to ../libgcc.
+	* Makefile.in (libgcc.mvars): Remove LIBGCC_SYNC, LIBGCC_SYNC_CFLAGS.
+	* config/mips/t-libgcc-mips16 (LIBGCC_SYNC, LIBGCC_SYNC_CFLAGS):
+	Remove.
+
+2011-08-09  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mmix/mmix.h (REGISTER_MOVE_COST): Remove macro.
+	* config/mmix/mmix-protos.h (mmix_register_move_cost): Remove.
+	* config/mmix/mmix.c (mmix_register_move_cost): Make static.
+	Change 'from' and 'to' arguments type to reg_class_t.
+	(TARGET_REGISTER_MOVE_COST): Define.
+
+2011-08-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/50026
+	Revert:
+	PR rtl-optimization/49990
+	* ira-costs.c (print_allocno_costs, print_pseudo_costs): Don't
+	ignore classes which can not change mode.
+	(find_costs_and_classes): Ditto.
+
+2011-08-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (zero_nonzero_bits_from_vr): Also return precise
+	information for ranges with only negative values.
+	(extract_range_from_binary_expr_1): Adjust BIT_IOR_EXPR and
+	BIT_AND_EXPR handling to handle ranges with negative values.
+
+2011-08-09  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/i386.c: Remove traling spaces.
+	* config/i386/sse.md: Likewise.
+	(*fma_fmadd_<mode>): Fix insn alternative 1 mnemonic.
+	(*fma_fmsub_<mode>): Likewise.
+	(*fma_fnmadd_<mode>): Likewise.
+	(*fma_fnmsub_<mode>): Likewise.
+
+2011-08-09  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md: Disable extender peepholes at -O3.
+
+2011-08-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49781
+	* config/i386/i386.md (reload_noff_load): New.
+	(reload_noff_store): Ditto.
+	* config/i386/i386.c (ix86_secondary_reload): Use
+	CODE_FOR_reload_noff_load and CODE_FOR_reload_noff_store to handle
+	double-word moves from/to non-offsetable addresses instead of
+	generating XMM temporary.
+
+2011-08-09  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mmix/mmix.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P): Remove.
+
+2011-08-09  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50014
+	* tree-vect-loop.c (vectorizable_reduction): Get def type before
+	calling vect_get_vec_def_for_stmt_copy ().
+
+2011-08-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/49990
+	* ira-costs.c (print_allocno_costs, print_pseudo_costs): Don't
+	ignore classes which can not change mode.
+	(find_costs_and_classes): Ditto.
+
+2011-08-08  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/49990
+	* config/i386/i386.c (ix86_expand_prologue): Call
+	for SEH target gen_prologue_use instead of gen_blockage
+	at prologue's end.
+
+2011-08-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/49923
+	* tree-sra.c (access_precludes_ipa_sra_p): Also check access
+	memory alignment.
+
+2011-08-08   Diego Novillo  <dnovillo@google.com>
+
+	* Makefile.in (LTO_STREAMER_H): Add DIAGNOSTIC_H.
+	(DATA_STREAMER_H): New.
+	(GIMPLE_STREAMER_H): New.
+	(TREE_STREAMER_H): New.
+	(STREAMER_HOOKS_H): New.
+	(OBJS): Add data-streamer.o, data-streamer-in.o, data-streamer-out.o,
+	gimple-streamer-in.o, gimple-streamer-out.o, streamer-hooks.o,
+	tree-streamer.o, tree-streamer-in.o and tree-streamer-out.o.
+	(data-streamer.o): New.
+	(data-streamer-in.o): New.
+	(data-streamer-out.o): New.
+	(gimple-streamer-in.o): New.
+	(gimple-streamer-out.o): New.
+	(streamer-hooks.o): New.
+	(tree-streamer.o): New.
+	(tree-streamer-in.o): New.
+	(tree-streamer-out.o): New.
+	(lto-cgraph.o): Add dependency on DATA_STREAMER_H and TREE_STREAMER_H.
+	(lto-streamer-in.o): Add dependency on DATA_STREAMER_H,
+	GIMPLE_STREAMER_H and TREE_STREAMER_H.
+	(lto-streamer-out.o): Add dependency on DATA_STREAMER_H,
+	GIMPLE_STREAMER_H and TREE_STREAMER_H.
+	(lto-streamer.o): Add dependency on STREAMER_HOOKS_H.
+	(ipa-prop.o): Add dependency on DATA_STREAMER_H and TREE_STREAMER_H.
+	(ipa-inline-analysis.o): Likewise.
+	(ipa-pure-const.o): Likewise.
+	* data-streamer-in.c: New.
+	* data-streamer-out.c: New.
+	* data-streamer.c: New.
+	* data-streamer.h: New.
+	* gimple-streamer-in.c: New.
+	* gimple-streamer-out.c: New.
+	* gimple-streamer.h: New.
+	* ipa-inline-analysis.c: Include data-streamer.h.
+	* ipa-prop.c: Include data-streamer.h.
+	* ipa-pure-const.c: Include data-streamer.h.
+	* lto-cgraph.c: Include data-streamer.h.
+	* lto-section-in.c (lto_input_uleb128): Move to data-streamer-in.c.
+	(lto_input_widest_uint_uleb128): Likewise.
+	(lto_input_sleb128): Likewise.
+	(bp_unpack_var_len_unsigned): Likewise.
+	(bp_unpack_var_len_int): Likewise.
+	* lto-section-out.c (lto_output_uleb128_stream): Move to
+	data-streamer-out.c.
+	(lto_output_widest_uint_uleb128_stream): Likewise.
+	(lto_output_sleb128_stream): Likewise.
+	(bp_pack_var_len_unsigned): Likewise.
+	(bp_pack_var_len_int): Likewise.
+	* lto-streamer-in.c: Include data-streamer.h and gimple-streamer.h.
+	(struct string_slot): Remove.  Update all users.
+	(lto_tag_check_set): Make extern.
+	(lto_tag_check_range): Move to lto-streamer.h.
+	(lto_tag_check): Likewise.
+	(hash_string_slot_node): Remove.  Update all users.
+	(eq_string_slot_node): Remove.  Update all users.
+	(string_for_index): Move to data-streamer-in.c
+	(input_string_internal): Likewise.
+	(input_string_cst): Move to tree-streamer-in.c.
+	(input_identifier): Likewise.
+	(lto_input_string): Move to data-streamer-in.c
+	(input_record_start): Move to data-streamer.h
+	(canon_file_name): Use new definition of struct string_slot
+	from data-streamer.h.  Set S_SLOT.LEN.
+	(lto_input_location): Make extern.
+	(lto_input_chain): Move to tree-streamer-in.c.
+	(lto_init_eh): Make extern.
+	(input_phi): Move to gimple-streamer-in.c.
+	(input_gimple_stmt): Likewise.
+	(input_bb): Likewise.
+	(unpack_ts_base_value_fields): Move to tree-streamer-in.c.
+	(unpack_ts_real_cst_value_fields): Likewise.
+	(unpack_ts_fixed_cst_value_fields): Likewise.
+	(unpack_ts_decl_common_value_fields): Likewise.
+	(unpack_ts_decl_wrtl_value_fields): Likewise.
+	(unpack_ts_decl_with_vis_value_fields): Likewise.
+	(unpack_ts_function_decl_value_fields): Likewise.
+	(unpack_ts_type_common_value_fields): Likewise.
+	(unpack_ts_block_value_fields): Likewise.
+	(unpack_ts_translation_unit_decl_value_fields): Likewise.
+	(unpack_value_fields): Likewise.
+	(lto_materialize_tree): Likewise.
+	(lto_input_ts_common_tree_pointers): Likewise.
+	(lto_input_ts_vector_tree_pointers): Likewise.
+	(lto_input_ts_complex_tree_pointers): Likewise.
+	(lto_input_ts_decl_minimal_tree_pointers): Likewise.
+	(lto_input_ts_decl_common_tree_pointers): Likewise.
+	(lto_input_ts_decl_non_common_tree_pointers): Likewise.
+	(lto_input_ts_decl_with_vis_tree_pointers): Likewise.
+	(lto_input_ts_field_decl_tree_pointers): Likewise.
+	(lto_input_ts_function_decl_tree_pointers): Likewise.
+	(lto_input_ts_type_common_tree_pointers): Likewise.
+	(lto_input_ts_type_non_common_tree_pointers): Likewise.
+	(lto_input_ts_list_tree_pointers): Likewise.
+	(lto_input_ts_vec_tree_pointers): Likewise.
+	(lto_input_ts_exp_tree_pointers): Likewise.
+	(lto_input_ts_block_tree_pointers): Likewise.
+	(lto_input_ts_binfo_tree_pointers): Likewise.
+	(lto_input_ts_constructor_tree_pointers): Likewise.
+	(lto_input_ts_target_option): Likewise.
+	(lto_input_ts_translation_unit_decl_tree_pointers): Likewise.
+	(lto_input_tree_pointers): Likewise.
+	(lto_get_pickled_tree): Likewise.
+	(lto_get_builtin_tree): Likewise.
+	(lto_read_tree): Likewise.
+	(lto_input_integer_cst): Likewise.
+	(lto_input_tree): Likewise.
+	* lto-streamer-out.c: Include data-streamer.h,
+	gimple-streamer.h and streamer-hooks.h.
+	(struct string_slot): Move to data-streamer.h.
+	(hash_string_slot_node): Likewise.
+	(eq_string_slot_node): Likewise.
+	(lto_string_index): Move to data-streamer-out.c.
+	(lto_output_string_with_length): Likewise.
+	(lto_output_string): Likewise.
+	(output_string_cst): Move to tree-streamer-out.c.
+	(output_identifier): Likewise.
+	(output_zero): Move to data-streamer-out.c
+	(output_uleb128): Likewise.
+	(output_sleb128): Likewise.
+	(output_record_start): Move to data-streamer.h
+	(pack_ts_base_value_fields): Move to tree-streamer-out.c.
+	(pack_ts_real_cst_value_fields): Likewise.
+	(pack_ts_fixed_cst_value_fields): Likewise.
+	(pack_ts_decl_common_value_fields): Likewise.
+	(pack_ts_decl_wrtl_value_fields): Likewise.
+	(pack_ts_decl_with_vis_value_fields): Likewise.
+	(pack_ts_function_decl_value_fields): Likewise.
+	(pack_ts_type_common_value_fields): Likewise.
+	(pack_ts_block_value_fields): Likewise.
+	(pack_ts_translation_unit_decl_value_fields): Likewise.
+	(pack_value_fields): Likewise.
+	(lto_output_chain): Likewise.
+	(lto_output_ts_common_tree_pointers): Likewise.
+	(lto_output_ts_vector_tree_pointers): Likewise.
+	(lto_output_ts_complex_tree_pointers): Likewise.
+	(lto_output_ts_decl_minimal_tree_pointers): Likewise.
+	(lto_output_ts_decl_common_tree_pointers): Likewise.
+	(lto_output_ts_decl_non_common_tree_pointers): Likewise.
+	(lto_output_ts_decl_with_vis_tree_pointers): Likewise.
+	(lto_output_ts_field_decl_tree_pointers): Likewise.
+	(lto_output_ts_function_decl_tree_pointers): Likewise.
+	(lto_output_ts_type_common_tree_pointers): Likewise.
+	(lto_output_ts_type_non_common_tree_pointers): Likewise.
+	(lto_output_ts_list_tree_pointers): Likewise.
+	(lto_output_ts_vec_tree_pointers): Likewise.
+	(lto_output_ts_exp_tree_pointers): Likewise.
+	(lto_output_ts_block_tree_pointers): Likewise.
+	(lto_output_ts_binfo_tree_pointers): Likewise.
+	(lto_output_ts_constructor_tree_pointers): Likewise.
+	(lto_output_ts_target_option): Likewise.
+	(lto_output_ts_translation_unit_decl_tree_pointers): Likewise.
+	(lto_output_tree_pointers): Likewise.
+	(lto_output_tree_header): Likewise.
+	(lto_output_builtin_tree): Likewise.
+	(lto_write_tree): Likewise.
+	(lto_output_integer_cst): Likewise.
+	(lto_output_tree): Likewise.
+	(output_phi): Move to gimple-streamer-out.c.
+	(output_gimple_stmt): Likewise.
+	(output_bb): Likewise.
+	* lto-streamer.c: Include tree-streamer.h and streamer-hooks.h.
+	(streamer_hooks): Move to streamer-hooks.c.
+	(check_handled_ts_structures): Move to tree-streamer.c
+	(lto_streamer_cache_add_to_node_array): Likewise.
+	(lto_streamer_cache_insert_1): Likewise.
+	(lto_streamer_cache_insert): Likewise.
+	(lto_streamer_cache_insert_at): Likewise.
+	(lto_streamer_cache_append): Likewise.
+	(lto_streamer_cache_lookup): Likewise.
+	(lto_streamer_cache_get): Likewise.
+	(lto_record_common_node): Likewise.
+	(lto_preload_common_nodes): Likewise.
+	(lto_streamer_cache_create): Likewise.
+	(lto_streamer_cache_delete): Likewise.
+	(streamer_hooks_init): Move to streamer-hooks.c.
+	* lto-streamer.h: Include diagnostic.h
+	(struct output_block, struct lto_input_block,
+	struct data_in, struct bitpack_d): Remove forward declarations.
+	(struct bitpack_d): Move to data-streamer.h.
+	(struct lto_streamer_cache_d): Move to tree-streamer.h.
+	(struct streamer_hooks): Move to streamer-hooks.h.
+	(bp_pack_var_len_unsigned): Move to data-streamer.h.
+	(bp_pack_var_len_int): Likewise.
+	(bp_unpack_var_len_unsigned): Likewise.
+	(bp_unpack_var_len_int): Likewise.
+	(lto_input_location): Declare.
+	(lto_tag_check_set): Declare.
+	(lto_init_eh): Declare.
+	(lto_output_tree_ref): Declare.
+	(lto_output_location): Declare.
+	(bitpack_create): Move to data-streamer.h.
+	(bp_pack_value): Likewise.
+	(lto_output_bitpack): Likewise.
+	(lto_input_bitpack): Likewise.
+	(bp_unpack_value): Likewise.
+	(lto_output_1_stream): Likewise.
+	(lto_input_1_unsigned): Likewise.
+	(lto_output_int_in_range): Likewise.
+	(lto_input_int_in_range): Likewise.
+	(bp_pack_int_in_range): Likewise.
+	(bp_unpack_int_in_range): Likewise.
+	(lto_output_enum): Likewise.
+	(lto_input_enum): Likewise.
+	(bp_pack_enum): Likewise.
+	(bp_unpack_enum): Likewise.
+	* streamer-hooks.c: New.
+	* streamer-hooks.h: New.
+	* tree-streamer-in.c: New.
+	* tree-streamer-out.c: New.
+	* tree-streamer.c: New.
+	* tree-streamer.h: New.
+
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gthr-posix95.h: Remove.
+	* gthr.h [_PTHREADS95]: Remove.
+	* configure.ac (enable_threads): Remove posix95.
+	* configure: Regenerate.
+	* doc/install.texi (Configuration, --enable-threads): Remove posix95.
+
+2011-08-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49781
+	* config/i386/i386.c (ix86_decompose_address): Allow zero-extended
+	SImode addresses.
+	(ix86_print_operand_address): Handle zero-extended addresses.
+	(memory_address_length): Add length of addr32 prefix for
+	zero-extended addresses.
+	(ix86_secondary_reload): Handle moves to/from double-word general
+	registers from/to zero-extended addresses.
+	* config/i386/predicates.md (lea_address_operand): Reject
+	zero-extended operands.
+
+2011-08-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/48007
+	* config.gcc (libgcc_tm_file): Add i386/value-unwind.h for Linux/x86.
+
+	* system.h (REG_VALUE_IN_UNWIND_CONTEXT): Poisoned.
+	(ASSUME_EXTENDED_UNWIND_CONTEXT): Likewise.
+
+	* unwind-dw2.c (ASSUME_EXTENDED_UNWIND_CONTEXT): New.
+	(_Unwind_Context_Reg_Val): Likewise.
+	(_Unwind_Get_Unwind_Word): Likewise.
+	(_Unwind_Get_Unwind_Context_Reg_Val): Likewise.
+	(_Unwind_Context): Use _Unwind_Context_Reg_Val on the reg field.
+	(_Unwind_IsExtendedContext): Check ASSUME_EXTENDED_UNWIND_CONTEXT
+	for EXTENDED_CONTEXT_BIT.
+	(__frame_state_for): Likewise.
+	(uw_init_context_1): Likewise.
+	(_Unwind_GetGR): Updated.
+	(_Unwind_SetGR): Likewise.
+	(_Unwind_GetGRPtr): Likewise.
+	(_Unwind_SetGRPtr): Likewise.
+	(_Unwind_SetGRValue): Likewise.
+	(_Unwind_GRByValue): Likewise.
+	(uw_install_context_1): Likewise.
+
+	* doc/tm.texi.in: Document REG_VALUE_IN_UNWIND_CONTEXT and
+	ASSUME_EXTENDED_UNWIND_CONTEXT.
+	* doc/tm.texi: Regenerated.
+
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (gengtype$(exeext)): Add $(LDFLAGS).
+
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/invoke.texi (DEC Alpha Options, -mcpu): native support isn't
+	Linux/GNU-specific.
+	(DEC Alpha Options, -mtune): Likewise.
+	(MIPS Options, -march): native is supported on IRIX.
+
+2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/driver-sparc.c: New file.
+	* config/sparc/x-sparc: New file.
+	* config.host: Use driver-sparc.o, sparc/x-sparc on sparc*-*-solaris2*.
+	* config/sparc/sparc.opt (native): New value for enum processor_type.
+	* config/sparc/sparc-opts.h (PROCESSOR_NATIVE): Declare.
+	* config/sparc/sparc.c (sparc_option_override): Abort if
+	PROCESSOR_NATIVE gets here.
+	* config/sparc/sol2.h [__sparc__] (host_detect_local_cpu): Declare.
+	(EXTRA_SPEC_FUNCTIONS, MCPU_MTUNE_NATIVE_SPECS,
+	DRIVER_SELF_SPECS): Define.
+	* doc/invoke.texi (SPARC Options, -mcpu): Document native.
+	(SPARC Options, -mtune): Likewise.
+	* configure.ac (EXTRA_GCC_LIBS): Check for libkstat.
+	Substitute result.
+	* configure: Regenerate.
+	* Makefile.in (EXTRA_GCC_LIBS): Set.
+	(xgcc$(exeext)): Add $(EXTRA_GCC_LIBS).
+	(cpp$(exeext)): Likewise.
+
+2011-08-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (extract_range_from_unary_expr_1): New function,
+	split out from ...
+	(extract_range_from_unary_expr): ... here.  Handle BIT_NOT_EXPR
+	by composition.
+
+2011-08-08  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR tree-optimization/50005
+	* ipa-inline-analysis (remap_predicate): Add cast to
+	silence signed/unsigned comparison warning.
+
+2011-08-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* modulo-sched.c (get_sched_window): Use a table for the debug output.
+	Print the current ii.
+	(sms_schedule_by_order): Reduce whitespace in dump line.
+
+2011-08-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* modulo-sched.c (get_sched_window): Use just one loop for predecessors
+	and one loop for successors.  Fix upper bound of memory range.
+
 2011-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/50001
@@ -5,7 +879,7 @@
 	(TARGET_INSTANTIATE_DECLS): New define.
 
 2011-08-06  Paolo Bonzini  <bonzini@gnu.org>
-            Mikael Morin   <mikael.morin@sfr.fr>
+	    Mikael Morin   <mikael.morin@sfr.fr>
 
 	* Makefile.in (INCLUDES_FOR_TARGET): New.
 	(LIBGCC2_CFLAGS): Use it.

@@ -268,6 +268,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   fmod(long double __x, long double __y)
   { return __builtin_fmodl(__x, __y); }
 
+  template<typename _Tp, typename _Up>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value
+    					   && __is_integer<_Up>::__value, 
+					   double>::__type
+    fmod(_Tp __x, _Up __y)
+    { return __builtin_fmod(__x, __y); }
+
   using ::frexp;
 
   inline float

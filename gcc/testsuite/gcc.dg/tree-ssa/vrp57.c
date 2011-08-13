@@ -1,6 +1,6 @@
 /* PR40052 */
 /* { dg-do compile } */
-/* { dg-options "-O -ftree-vrp -fdump-tree-optimized" } */
+/* { dg-options "-O -ftree-vrp -fno-tree-ccp -fdump-tree-optimized" } */
 
 int foo(_Bool b)
 {

@@ -531,12 +531,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Values
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   template<typename _Tp>
-    inline constexpr _Tp
+    constexpr _Tp
     real(const complex<_Tp>& __z)
     { return __z.real(); }
-    
+
   template<typename _Tp>
-    inline constexpr _Tp
+    constexpr _Tp
     imag(const complex<_Tp>& __z)
     { return __z.imag(); }
 #else

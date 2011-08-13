@@ -114,6 +114,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "read-md.h"
 #include "gensupport.h"
 #include "vecprim.h"
+#include "fnmatch.h"
 
 /* Flags for make_internal_attr's `special' parameter.  */
 #define ATTR_NONE		0
@@ -4553,7 +4554,7 @@ gen_insn_reserv (rtx def)
 struct bypass_list
 {
   struct bypass_list *next;
-  const char *insn;
+  const char *pattern;
 };
 
 static struct bypass_list *all_bypasses;
@@ -4569,11 +4570,11 @@ gen_bypass_1 (const char *s, size_t len)
 
   s = attr_string (s, len);
   for (b = all_bypasses; b; b = b->next)
-    if (s == b->insn)
+    if (s == b->pattern)
       return;  /* already got that one */
 
   b = oballoc (struct bypass_list);
-  b->insn = s;
+  b->pattern = s;
   b->next = all_bypasses;
   all_bypasses = b;
   n_bypasses++;
@@ -4607,7 +4608,7 @@ process_bypasses (void)
      list.  */
   for (r = all_insn_reservs; r; r = r->next)
     for (b = all_bypasses; b; b = b->next)
-      if (r->name == b->insn)
+      if (fnmatch (b->pattern, r->name, 0) == 0)
 	r->bypassed = true;
 }
 

@@ -1630,9 +1630,11 @@ sms_schedule (void)
 
 static int
 get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
-		  sbitmap sched_nodes, int ii, int *start_p, int *step_p, int *end_p)
+		  sbitmap sched_nodes, int ii, int *start_p, int *step_p,
+		  int *end_p)
 {
   int start, step, end;
+  int early_start, late_start;
   ddg_edge_ptr e;
   sbitmap psp = sbitmap_alloc (ps->g->num_nodes);
   sbitmap pss = sbitmap_alloc (ps->g->num_nodes);
@@ -1640,6 +1642,8 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
   sbitmap u_node_succs = NODE_SUCCESSORS (u_node);
   int psp_not_empty;
   int pss_not_empty;
+  int count_preds;
+  int count_succs;
 
   /* 1. compute sched window for u (start, end, step).  */
   sbitmap_zero (psp);
@@ -1647,214 +1651,119 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
   psp_not_empty = sbitmap_a_and_b_cg (psp, u_node_preds, sched_nodes);
   pss_not_empty = sbitmap_a_and_b_cg (pss, u_node_succs, sched_nodes);
 
-  if (psp_not_empty && !pss_not_empty)
+  /* We first compute a forward range (start <= end), then decide whether
+     to reverse it.  */
+  early_start = INT_MIN;
+  late_start = INT_MAX;
+  start = INT_MIN;
+  end = INT_MAX;
+  step = 1;
+
+  count_preds = 0;
+  count_succs = 0;
+
+  if (dump_file && (psp_not_empty || pss_not_empty))
     {
-      int early_start = INT_MIN;
+      fprintf (dump_file, "\nAnalyzing dependencies for node %d (INSN %d)"
+	       "; ii = %d\n\n", u_node->cuid, INSN_UID (u_node->insn), ii);
+      fprintf (dump_file, "%11s %11s %11s %11s %5s\n",
+	       "start", "early start", "late start", "end", "time");
+      fprintf (dump_file, "=========== =========== =========== ==========="
+	       " =====\n");
+    }
+  /* Calculate early_start and limit end.  Both bounds are inclusive.  */
+  if (psp_not_empty)
+    for (e = u_node->in; e != 0; e = e->next_in)
+      {
+	ddg_node_ptr v_node = e->src;
 
-      end = INT_MAX;
-      for (e = u_node->in; e != 0; e = e->next_in)
-	{
-	  ddg_node_ptr v_node = e->src;
+	if (TEST_BIT (sched_nodes, v_node->cuid))
+	  {
+	    int p_st = SCHED_TIME (v_node);
+	    int earliest = p_st + e->latency - (e->distance * ii);
+	    int latest = (e->data_type == MEM_DEP ? p_st + ii - 1 : INT_MAX);
 
-          if (dump_file)
-            {
-	      fprintf (dump_file, "\nProcessing edge: ");
-              print_ddg_edge (dump_file, e);
-	      fprintf (dump_file,
-		       "\nScheduling %d (%d) in psp_not_empty,"
-		       " checking p %d (%d): ", u_node->cuid,
-		       INSN_UID (u_node->insn), v_node->cuid, INSN_UID
-		       (v_node->insn));
-            }
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "%11s %11d %11s %11d %5d",
+			 "", earliest, "", latest, p_st);
+		print_ddg_edge (dump_file, e);
+		fprintf (dump_file, "\n");
+	      }
 
-	  if (TEST_BIT (sched_nodes, v_node->cuid))
-	    {
-              int p_st = SCHED_TIME (v_node);
+	    early_start = MAX (early_start, earliest);
+	    end = MIN (end, latest);
 
-              early_start =
-                MAX (early_start, p_st + e->latency - (e->distance * ii));
+	    if (e->type == TRUE_DEP && e->data_type == REG_DEP)
+	      count_preds++;
+	  }
+      }
 
-              if (dump_file)
-                fprintf (dump_file,
-                         "pred st = %d; early_start = %d; latency: %d",
-                         p_st, early_start, e->latency);
+  /* Calculate late_start and limit start.  Both bounds are inclusive.  */
+  if (pss_not_empty)
+    for (e = u_node->out; e != 0; e = e->next_out)
+      {
+	ddg_node_ptr v_node = e->dest;
 
-	      if (e->data_type == MEM_DEP)
-		end = MIN (end, SCHED_TIME (v_node) + ii - 1);
-	    }
-         else if (dump_file)
-            fprintf (dump_file, "the node is not scheduled\n");
-	}
-      start = early_start;
-      end = MIN (end, early_start + ii);
-      /* Schedule the node close to it's predecessors.  */
-      step = 1;
+	if (TEST_BIT (sched_nodes, v_node->cuid))
+	  {
+	    int s_st = SCHED_TIME (v_node);
+	    int earliest = (e->data_type == MEM_DEP ? s_st - ii + 1 : INT_MIN);
+	    int latest = s_st - e->latency + (e->distance * ii);
 
-      if (dump_file)
-        fprintf (dump_file,
-		 "\nScheduling %d (%d) in a window (%d..%d) with step %d\n",
-		 u_node->cuid, INSN_UID (u_node->insn), start, end, step);
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "%11d %11s %11d %11s %5d",
+			 earliest, "", latest, "", s_st);
+		print_ddg_edge (dump_file, e);
+		fprintf (dump_file, "\n");
+	      }
+
+	    start = MAX (start, earliest);
+	    late_start = MIN (late_start, latest);
+
+	    if (e->type == TRUE_DEP && e->data_type == REG_DEP)
+	      count_succs++;
+	  }
+      }
+
+  if (dump_file && (psp_not_empty || pss_not_empty))
+    {
+      fprintf (dump_file, "----------- ----------- ----------- -----------"
+	       " -----\n");
+      fprintf (dump_file, "%11d %11d %11d %11d %5s %s\n",
+	       start, early_start, late_start, end, "",
+	       "(max, max, min, min)");
     }
 
-  else if (!psp_not_empty && pss_not_empty)
+  /* Get a target scheduling window no bigger than ii.  */
+  if (early_start == INT_MIN && late_start == INT_MAX)
+    early_start = SCHED_ASAP (u_node);
+  else if (early_start == INT_MIN)
+    early_start = late_start - (ii - 1);
+  late_start = MIN (late_start, early_start + (ii - 1));
+
+  /* Apply memory dependence limits.  */
+  start = MAX (start, early_start);
+  end = MIN (end, late_start);
+
+  if (dump_file && (psp_not_empty || pss_not_empty))
+    fprintf (dump_file, "%11s %11d %11d %11s %5s final window\n",
+	     "", start, end, "", "");
+
+  /* If there are at least as many successors as predecessors, schedule the
+     node close to its successors.  */
+  if (pss_not_empty && count_succs >= count_preds)
     {
-      int late_start = INT_MAX;
-
-      end = INT_MIN;
-      for (e = u_node->out; e != 0; e = e->next_out)
-	{
-	  ddg_node_ptr v_node = e->dest;
-
-          if (dump_file)
-            {
-              fprintf (dump_file, "\nProcessing edge:");
-              print_ddg_edge (dump_file, e);
-              fprintf (dump_file,
-                       "\nScheduling %d (%d) in pss_not_empty,"
-                       " checking s %d (%d): ", u_node->cuid,
-                       INSN_UID (u_node->insn), v_node->cuid, INSN_UID
-                       (v_node->insn));
-            }
-
-	  if (TEST_BIT (sched_nodes, v_node->cuid))
-	    {
-              int s_st = SCHED_TIME (v_node);
-
-              late_start = MIN (late_start,
-                                s_st - e->latency + (e->distance * ii));
-
-              if (dump_file)
-                fprintf (dump_file,
-                         "succ st = %d; late_start = %d; latency = %d",
-                         s_st, late_start, e->latency);
-
-	      if (e->data_type == MEM_DEP)
-		end = MAX (end, SCHED_TIME (v_node) - ii + 1);
-             if (dump_file)
-                 fprintf (dump_file, "end = %d\n", end);
-
-	    }
-          else if (dump_file)
-            fprintf (dump_file, "the node is not scheduled\n");
-
-	}
-      start = late_start;
-      end = MAX (end, late_start - ii);
-      /* Schedule the node close to it's successors.  */
+      int tmp = end;
+      end = start;
+      start = tmp;
       step = -1;
-
-      if (dump_file)
-        fprintf (dump_file,
-                 "\nScheduling %d (%d) in a window (%d..%d) with step %d\n",
-                 u_node->cuid, INSN_UID (u_node->insn), start, end, step);
-
     }
 
-  else if (psp_not_empty && pss_not_empty)
-    {
-      int early_start = INT_MIN;
-      int late_start = INT_MAX;
-      int count_preds = 0;
-      int count_succs = 0;
-
-      start = INT_MIN;
-      end = INT_MAX;
-      for (e = u_node->in; e != 0; e = e->next_in)
-	{
-	  ddg_node_ptr v_node = e->src;
-
-	  if (dump_file)
-	    {
-              fprintf (dump_file, "\nProcessing edge:");
-              print_ddg_edge (dump_file, e);
-	      fprintf (dump_file,
-		       "\nScheduling %d (%d) in psp_pss_not_empty,"
-		       " checking p %d (%d): ", u_node->cuid, INSN_UID
-		       (u_node->insn), v_node->cuid, INSN_UID
-		       (v_node->insn));
-	    }
-
-	  if (TEST_BIT (sched_nodes, v_node->cuid))
-	    {
-              int p_st = SCHED_TIME (v_node);
-
-	      early_start = MAX (early_start,
-				 p_st + e->latency
-				 - (e->distance * ii));
-
-              if (dump_file)
-                fprintf (dump_file,
-                         "pred st = %d; early_start = %d; latency = %d",
-                         p_st, early_start, e->latency);
-
-              if (e->type == TRUE_DEP && e->data_type == REG_DEP)
-                count_preds++;
-
-	      if (e->data_type == MEM_DEP)
-		end = MIN (end, SCHED_TIME (v_node) + ii - 1);
-	    }
-          else if (dump_file)
-            fprintf (dump_file, "the node is not scheduled\n");
-
-	}
-      for (e = u_node->out; e != 0; e = e->next_out)
-	{
-	  ddg_node_ptr v_node = e->dest;
-
-	  if (dump_file)
-	    {
-              fprintf (dump_file, "\nProcessing edge:");
-              print_ddg_edge (dump_file, e);
-	      fprintf (dump_file,
-		       "\nScheduling %d (%d) in psp_pss_not_empty,"
-		       " checking s %d (%d): ", u_node->cuid, INSN_UID
-		       (u_node->insn), v_node->cuid, INSN_UID
-		       (v_node->insn));
-	    }
-
-	  if (TEST_BIT (sched_nodes, v_node->cuid))
-	    {
-              int s_st = SCHED_TIME (v_node);
-
-	      late_start = MIN (late_start,
-				s_st - e->latency
-				+ (e->distance * ii));
-
-              if (dump_file)
-                fprintf (dump_file,
-                         "succ st = %d; late_start = %d; latency = %d",
-                         s_st, late_start, e->latency);
-
-               if (e->type == TRUE_DEP && e->data_type == REG_DEP)
-                 count_succs++;
-
-	      if (e->data_type == MEM_DEP)
-		start = MAX (start, SCHED_TIME (v_node) - ii + 1);
-	    }
-          else if (dump_file)
-            fprintf (dump_file, "the node is not scheduled\n");
-
-	}
-      start = MAX (start, early_start);
-      end = MIN (end, MIN (early_start + ii, late_start + 1));
-      step = 1;
-      /* If there are more successors than predecessors schedule the
-         node close to it's successors.  */
-      if (count_succs >= count_preds)
-        {
-          int old_start = start;
-
-          start = end - 1;
-          end = old_start - 1;
-          step = -1;
-        }
-    }
-  else /* psp is empty && pss is empty.  */
-    {
-      start = SCHED_ASAP (u_node);
-      end = start + ii;
-      step = 1;
-    }
+  /* Now that we've finalized the window, make END an exclusive rather
+     than an inclusive bound.  */
+  end += step;
 
   *start_p = start;
   *step_p = step;
@@ -1867,10 +1776,10 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
       if (dump_file)
 	fprintf (dump_file, "\nEmpty window: start=%d, end=%d, step=%d\n",
 		 start, end, step);
-    return -1;
+      return -1;
     }
 
-    return 0;
+  return 0;
 }
 
 /* Calculate MUST_PRECEDE/MUST_FOLLOW bitmaps of U_NODE; which is the
@@ -2049,8 +1958,8 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
                                 &step, &end) == 0)
             {
               if (dump_file)
-                fprintf (dump_file, "\nTrying to schedule node %d \
-                        INSN = %d  in (%d .. %d) step %d\n", u, (INSN_UID
+                fprintf (dump_file, "\nTrying to schedule node %d "
+			 "INSN = %d  in (%d .. %d) step %d\n", u, (INSN_UID
                         (g->nodes[u].insn)), start, end, step);
 
               gcc_assert ((step > 0 && start < end)

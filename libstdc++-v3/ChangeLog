@@ -1,3 +1,16 @@
+2011-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cmath (fmod(_Tp, _Up)): Add.
+	* include/c_std/cmath: Likewise.
+
+2011-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/future: constexpr functions are implicitly inline.
+	* include/std/chrono: Likewise.
+	* include/std/complex: Likewise.
+	* include/bits/move.h: Likewise.
+	* include/bits/stl_pair.h: Likewise.
+
 2011-08-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/alloc_traits.h: Fix doxygen @headername.

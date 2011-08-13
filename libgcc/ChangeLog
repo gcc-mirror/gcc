@@ -1,3 +1,48 @@
+2011-08-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/50047
+	* Makefile.in (install-unwind_h): Create
+	$(gcc_objdir)/include/unwind.h atomically.
+
+2011-08-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (install-unwind_h): Remove destination file first.
+
+2011-08-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* sync.c: New file.
+	* config/mips/t-mips16: New file.
+	* config.host (mips64*-*-linux*): Add mips/t-mips16 to tmake_file.
+	(mips*-*-linux*): Likewise.
+	(mips*-sde-elf*): Likewise.
+	(mipsisa32-*-elf*): Join with mipsisa32r2-*-elf*,
+	mipsisa64-*-elf*, mipsisa64r2-*-elf*.
+	Add mips/t-mips16 to tmake_file.
+	(mipsisa64sb1-*-elf*): Add mips/t-mips16 to tmake_file.
+	(mips-*-elf*): Likewise.
+	(mips64-*-elf*): Likewise.
+	(mips64orion-*-elf*): Likewise.
+	(mips*-*-rtems*): Likewise.
+	(mipstx39-*-elf*): Likewise.
+	* Makefile.in: Use SYNC instead of LIBGCC_SYNC.
+	($(libgcc-sync-size-funcs-o)): Use SYNC_CFLAGS instead of
+	LIBGCC_SYNC_CFLAGS.
+	Use $(srcdir) to refer to sync.c.
+	Use $<.
+	($(libgcc-sync-funcs-o)): Likewise.
+	($(libgcc-sync-size-funcs-s-o)): Likewise.
+	($(libgcc-sync-funcs-s-o)): Likewise.
+
+2011-08-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config.host (ia64*-*-linux*): Move ia64/t-glibc after
+	t-libunwind.
+
+2011-08-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/48007
+	* config/i386/value-unwind.h: New.
+
 2011-08-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config.host (*-*-darwin*, *-*-freebsd*, *-*-linux*, frv-*-*linux*)

@@ -651,7 +651,7 @@ endif
 
 endif
 
-ifeq ($(LIBGCC_SYNC),yes)
+ifeq ($(SYNC),yes)
 libgcc-sync-size-funcs := $(foreach op, add sub or and xor nand, \
 			    sync_fetch_and_$(op) \
 			    sync_$(op)_and_fetch) \
@@ -664,37 +664,37 @@ libgcc-sync-size-funcs := $(foreach prefix, $(libgcc-sync-size-funcs), \
 			      $(prefix)_$(suffix)))
 
 libgcc-sync-size-funcs-o = $(patsubst %,%$(objext),$(libgcc-sync-size-funcs))
-$(libgcc-sync-size-funcs-o): %$(objext): $(gcc_srcdir)/config/sync.c
-	$(gcc_compile) $(LIBGCC_SYNC_CFLAGS) \
+$(libgcc-sync-size-funcs-o): %$(objext): $(srcdir)/sync.c
+	$(gcc_compile) $(SYNC_CFLAGS) \
 	  -DFN=`echo "$*" | sed 's/_[^_]*$$//'` \
 	  -DSIZE=`echo "$*" | sed 's/.*_//'` \
-	  -c $(gcc_srcdir)/config/sync.c $(vis_hide)
+	  -c $< $(vis_hide)
 libgcc-objects += $(libgcc-sync-size-funcs-o)
 
 libgcc-sync-funcs := sync_synchronize
 
 libgcc-sync-funcs-o = $(patsubst %,%$(objext),$(libgcc-sync-funcs))
-$(libgcc-sync-funcs-o): %$(objext): $(gcc_srcdir)/config/sync.c
-	$(gcc_compile) $(LIBGCC_SYNC_CFLAGS) \
+$(libgcc-sync-funcs-o): %$(objext): $(srcdir)/sync.c
+	$(gcc_compile) $(SYNC_CFLAGS) \
 	  -DL$* \
-	  -c $(gcc_srcdir)/config/sync.c $(vis_hide)
+	  -c $< $(vis_hide)
 libgcc-objects += $(libgcc-sync-funcs-o)
 
 ifeq ($(enable_shared),yes)
 libgcc-sync-size-funcs-s-o = $(patsubst %,%_s$(objext), \
 			       $(libgcc-sync-size-funcs))
-$(libgcc-sync-size-funcs-s-o): %_s$(objext): $(gcc_srcdir)/config/sync.c
-	$(gcc_s_compile) $(LIBGCC_SYNC_CFLAGS) \
+$(libgcc-sync-size-funcs-s-o): %_s$(objext): $(srcdir)/sync.c
+	$(gcc_s_compile) $(SYNC_CFLAGS) \
 	  -DFN=`echo "$*" | sed 's/_[^_]*$$//'` \
 	  -DSIZE=`echo "$*" | sed 's/.*_//'` \
-	  -c $(gcc_srcdir)/config/sync.c
+	  -c $<
 libgcc-s-objects += $(libgcc-sync-size-funcs-s-o)
 
 libgcc-sync-funcs-s-o = $(patsubst %,%_s$(objext),$(libgcc-sync-funcs))
-$(libgcc-sync-funcs-s-o): %_s$(objext): $(gcc_srcdir)/config/sync.c
-	$(gcc_s_compile) $(LIBGCC_SYNC_CFLAGS) \
+$(libgcc-sync-funcs-s-o): %_s$(objext): $(srcdir)/sync.c
+	$(gcc_s_compile) $(SYNC_CFLAGS) \
 	  -DL$*	\
-	  -c $(gcc_srcdir)/config/sync.c
+	  -c $<
 libgcc-s-objects += $(libgcc-sync-funcs-s-o)
 endif
 endif
@@ -991,8 +991,10 @@ gcc-extra-parts:
 all: $(extra-parts)
 
 install-unwind_h:
-	cp unwind.h $(gcc_objdir)/include/unwind.h
-	chmod a+r $(gcc_objdir)/include/unwind.h
+	dest=$(gcc_objdir)/include/tmp$$$$-unwind.h; \
+	cp unwind.h $$dest; \
+	chmod a+r $$dest; \
+	sh $(srcdir)/../move-if-change $$dest $(gcc_objdir)/include/unwind.h
 
 all: install-unwind_h
 

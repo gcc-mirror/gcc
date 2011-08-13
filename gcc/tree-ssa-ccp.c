@@ -505,74 +505,25 @@ value_to_double_int (prop_value_t val)
 static prop_value_t
 get_value_from_alignment (tree expr)
 {
+  tree type = TREE_TYPE (expr);
   prop_value_t val;
-  HOST_WIDE_INT bitsize, bitpos;
-  tree base, offset;
-  enum machine_mode mode;
-  int align;
+  unsigned HOST_WIDE_INT bitpos;
+  unsigned int align;
 
   gcc_assert (TREE_CODE (expr) == ADDR_EXPR);
 
-  base = get_inner_reference (TREE_OPERAND (expr, 0),
-			      &bitsize, &bitpos, &offset,
-			      &mode, &align, &align, false);
-  if (TREE_CODE (base) == MEM_REF)
-    val = bit_value_binop (PLUS_EXPR, TREE_TYPE (expr),
-			   TREE_OPERAND (base, 0), TREE_OPERAND (base, 1));
-  else if (base
-	   && ((align = get_object_alignment (base, BIGGEST_ALIGNMENT))
-		> BITS_PER_UNIT))
-    {
-      val.lattice_val = CONSTANT;
-      /* We assume pointers are zero-extended.  */
-      val.mask = double_int_and_not
-	           (double_int_mask (TYPE_PRECISION (TREE_TYPE (expr))),
-		    uhwi_to_double_int (align / BITS_PER_UNIT - 1));
-      val.value = build_int_cst (TREE_TYPE (expr), 0);
-    }
+  align = get_object_alignment_1 (TREE_OPERAND (expr, 0), &bitpos);
+  val.mask
+    = double_int_and_not (POINTER_TYPE_P (type) || TYPE_UNSIGNED (type)
+			  ? double_int_mask (TYPE_PRECISION (type))
+			  : double_int_minus_one,
+			  uhwi_to_double_int (align / BITS_PER_UNIT - 1));
+  val.lattice_val = double_int_minus_one_p (val.mask) ? VARYING : CONSTANT;
+  if (val.lattice_val == CONSTANT)
+    val.value
+      = double_int_to_tree (type, uhwi_to_double_int (bitpos / BITS_PER_UNIT));
   else
-    {
-      val.lattice_val = VARYING;
-      val.mask = double_int_minus_one;
-      val.value = NULL_TREE;
-    }
-  if (bitpos != 0)
-    {
-      double_int value, mask;
-      bit_value_binop_1 (PLUS_EXPR, TREE_TYPE (expr), &value, &mask,
-			 TREE_TYPE (expr), value_to_double_int (val), val.mask,
-			 TREE_TYPE (expr),
-			 shwi_to_double_int (bitpos / BITS_PER_UNIT),
-			 double_int_zero);
-      val.lattice_val = double_int_minus_one_p (mask) ? VARYING : CONSTANT;
-      val.mask = mask;
-      if (val.lattice_val == CONSTANT)
-	val.value = double_int_to_tree (TREE_TYPE (expr), value);
-      else
-	val.value = NULL_TREE;
-    }
-  /* ???  We should handle i * 4 and more complex expressions from
-     the offset, possibly by just expanding get_value_for_expr.  */
-  if (offset != NULL_TREE)
-    {
-      double_int value, mask;
-      prop_value_t oval = get_value_for_expr (offset, true);
-      bit_value_binop_1 (PLUS_EXPR, TREE_TYPE (expr), &value, &mask,
-			 TREE_TYPE (expr), value_to_double_int (val), val.mask,
-			 TREE_TYPE (expr), value_to_double_int (oval),
-			 oval.mask);
-      val.mask = mask;
-      if (double_int_minus_one_p (mask))
-	{
-	  val.lattice_val = VARYING;
-	  val.value = NULL_TREE;
-	}
-      else
-	{
-	  val.lattice_val = CONSTANT;
-	  val.value = double_int_to_tree (TREE_TYPE (expr), value);
-	}
-    }
+    val.value = NULL_TREE;
 
   return val;
 }

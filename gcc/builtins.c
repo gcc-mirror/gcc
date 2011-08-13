@@ -341,7 +341,7 @@ get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
 	  align = MAX (pi->align * BITS_PER_UNIT, align);
 	}
       else if (TREE_CODE (addr) == ADDR_EXPR)
-	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0), ~0U));
+	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0)));
       bitpos += mem_ref_offset (exp).low * BITS_PER_UNIT;
     }
   else if (TREE_CODE (exp) == TARGET_MEM_REF)
@@ -365,7 +365,7 @@ get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
 	  align = MAX (pi->align * BITS_PER_UNIT, align);
 	}
       else if (TREE_CODE (addr) == ADDR_EXPR)
-	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0), ~0U));
+	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0)));
       if (TMR_OFFSET (exp))
 	bitpos += TREE_INT_CST_LOW (TMR_OFFSET (exp)) * BITS_PER_UNIT;
       if (TMR_INDEX (exp) && TMR_STEP (exp))
@@ -434,11 +434,10 @@ get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
   return align;
 }
 
-/* Return the alignment in bits of EXP, an object.
-   Don't return more than MAX_ALIGN no matter what.  */
+/* Return the alignment in bits of EXP, an object.  */
 
 unsigned int
-get_object_alignment (tree exp, unsigned int max_align)
+get_object_alignment (tree exp)
 {
   unsigned HOST_WIDE_INT bitpos = 0;
   unsigned int align;
@@ -451,21 +450,10 @@ get_object_alignment (tree exp, unsigned int max_align)
   if (bitpos != 0)
     align = (bitpos & -bitpos);
 
-  return MIN (align, max_align);
-}
-
-/* Returns true iff we can trust that alignment information has been
-   calculated properly.  */
-
-bool
-can_trust_pointer_alignment (void)
-{
-  /* We rely on TER to compute accurate alignment information.  */
-  return (optimize && flag_tree_ter);
+  return align;
 }
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
-   But don't return more than MAX_ALIGN no matter what.
    The alignment returned is, by default, the alignment of the thing that
    EXP points to.  If it is not a POINTER_TYPE, 0 is returned.
 
@@ -473,12 +461,12 @@ can_trust_pointer_alignment (void)
    expression is actually pointing at an object whose alignment is tighter.  */
 
 unsigned int
-get_pointer_alignment (tree exp, unsigned int max_align)
+get_pointer_alignment (tree exp)
 {
   STRIP_NOPS (exp);
 
   if (TREE_CODE (exp) == ADDR_EXPR)
-    return get_object_alignment (TREE_OPERAND (exp, 0), max_align);
+    return get_object_alignment (TREE_OPERAND (exp, 0));
   else if (TREE_CODE (exp) == SSA_NAME
 	   && POINTER_TYPE_P (TREE_TYPE (exp)))
     {
@@ -490,7 +478,7 @@ get_pointer_alignment (tree exp, unsigned int max_align)
 	align = (pi->misalign & -pi->misalign);
       else
 	align = pi->align;
-      return MIN (max_align, align * BITS_PER_UNIT);
+      return align * BITS_PER_UNIT;
     }
 
   return POINTER_TYPE_P (TREE_TYPE (exp)) ? BITS_PER_UNIT : 0;
@@ -1849,7 +1837,11 @@ mathfn_built_in_1 (tree type, enum built_in_function fn, bool implicit)
       CASE_MATHFN (BUILT_IN_HUGE_VAL)
       CASE_MATHFN (BUILT_IN_HYPOT)
       CASE_MATHFN (BUILT_IN_ILOGB)
+      CASE_MATHFN (BUILT_IN_ICEIL)
+      CASE_MATHFN (BUILT_IN_IFLOOR)
       CASE_MATHFN (BUILT_IN_INF)
+      CASE_MATHFN (BUILT_IN_IRINT)
+      CASE_MATHFN (BUILT_IN_IROUND)
       CASE_MATHFN (BUILT_IN_ISINF)
       CASE_MATHFN (BUILT_IN_J0)
       CASE_MATHFN (BUILT_IN_J1)
@@ -2674,12 +2666,14 @@ expand_builtin_int_roundingfn (tree exp, rtx target)
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
+    CASE_FLT_FN (BUILT_IN_ICEIL):
     CASE_FLT_FN (BUILT_IN_LCEIL):
     CASE_FLT_FN (BUILT_IN_LLCEIL):
       builtin_optab = lceil_optab;
       fallback_fn = BUILT_IN_CEIL;
       break;
 
+    CASE_FLT_FN (BUILT_IN_IFLOOR):
     CASE_FLT_FN (BUILT_IN_LFLOOR):
     CASE_FLT_FN (BUILT_IN_LLFLOOR):
       builtin_optab = lfloor_optab;
@@ -2732,26 +2726,32 @@ expand_builtin_int_roundingfn (tree exp, rtx target)
 
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
+	case BUILT_IN_ICEIL:
 	case BUILT_IN_LCEIL:
 	case BUILT_IN_LLCEIL:
 	  name = "ceil";
 	  break;
+	case BUILT_IN_ICEILF:
 	case BUILT_IN_LCEILF:
 	case BUILT_IN_LLCEILF:
 	  name = "ceilf";
 	  break;
+	case BUILT_IN_ICEILL:
 	case BUILT_IN_LCEILL:
 	case BUILT_IN_LLCEILL:
 	  name = "ceill";
 	  break;
+	case BUILT_IN_IFLOOR:
 	case BUILT_IN_LFLOOR:
 	case BUILT_IN_LLFLOOR:
 	  name = "floor";
 	  break;
+	case BUILT_IN_IFLOORF:
 	case BUILT_IN_LFLOORF:
 	case BUILT_IN_LLFLOORF:
 	  name = "floorf";
 	  break;
+	case BUILT_IN_IFLOORL:
 	case BUILT_IN_LFLOORL:
 	case BUILT_IN_LLFLOORL:
 	  name = "floorl";
@@ -2803,12 +2803,16 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
+    CASE_FLT_FN (BUILT_IN_IRINT):
     CASE_FLT_FN (BUILT_IN_LRINT):
     CASE_FLT_FN (BUILT_IN_LLRINT):
       builtin_optab = lrint_optab; break;
+
+    CASE_FLT_FN (BUILT_IN_IROUND):
     CASE_FLT_FN (BUILT_IN_LROUND):
     CASE_FLT_FN (BUILT_IN_LLROUND):
       builtin_optab = lround_optab; break;
+
     default:
       gcc_unreachable ();
     }
@@ -2926,7 +2930,7 @@ expand_builtin_strlen (tree exp, rtx target,
 	  return expand_expr (len, target, target_mode, EXPAND_NORMAL);
 	}
 
-      align = get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+      align = get_pointer_alignment (src) / BITS_PER_UNIT;
 
       /* If SRC is not a pointer type, don't do this operation inline.  */
       if (align == 0)
@@ -3026,9 +3030,8 @@ expand_builtin_memcpy (tree exp, rtx target)
       tree src = CALL_EXPR_ARG (exp, 1);
       tree len = CALL_EXPR_ARG (exp, 2);
       const char *src_str;
-      unsigned int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
-      unsigned int dest_align
-	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+      unsigned int src_align = get_pointer_alignment (src);
+      unsigned int dest_align = get_pointer_alignment (dest);
       rtx dest_mem, src_mem, dest_addr, len_rtx;
       HOST_WIDE_INT expected_size = -1;
       unsigned int expected_align = 0;
@@ -3135,9 +3138,8 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len,
   else
     {
       const char *src_str;
-      unsigned int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
-      unsigned int dest_align
-	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+      unsigned int src_align = get_pointer_alignment (src);
+      unsigned int dest_align = get_pointer_alignment (dest);
       rtx dest_mem, src_mem, len_rtx;
 
       /* If either SRC or DEST is not a pointer type, don't do this
@@ -3390,8 +3392,7 @@ expand_builtin_strncpy (tree exp, rtx target)
 	 use store_by_pieces, if it fails, punt.  */
       if (tree_int_cst_lt (slen, len))
 	{
-	  unsigned int dest_align
-	    = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+	  unsigned int dest_align = get_pointer_alignment (dest);
 	  const char *p = c_getstr (src);
 	  rtx dest_mem;
 
@@ -3495,7 +3496,7 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
   HOST_WIDE_INT expected_size = -1;
   unsigned int expected_align = 0;
 
-  dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+  dest_align = get_pointer_alignment (dest);
 
   /* If DEST is not a pointer type, don't do this operation in-line.  */
   if (dest_align == 0)
@@ -3634,9 +3635,9 @@ expand_builtin_bzero (tree exp)
 }
 
 /* Expand expression EXP, which is a call to the memcmp built-in function.
-   Return NULL_RTX if we failed and the
-   caller should emit a normal call, otherwise try to get the result in
-   TARGET, if convenient (and in mode MODE, if that's convenient).  */
+   Return NULL_RTX if we failed and the caller should emit a normal call,
+   otherwise try to get the result in TARGET, if convenient (and in mode
+   MODE, if that's convenient).  */
 
 static rtx
 expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
@@ -3648,7 +3649,10 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
  			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
-#if defined HAVE_cmpmemsi || defined HAVE_cmpstrnsi
+  /* Note: The cmpstrnsi pattern, if it exists, is not suitable for
+     implementing memcmp because it will stop if it encounters two
+     zero bytes.  */
+#if defined HAVE_cmpmemsi
   {
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result;
@@ -3657,22 +3661,13 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     tree arg2 = CALL_EXPR_ARG (exp, 1);
     tree len = CALL_EXPR_ARG (exp, 2);
 
-    unsigned int arg1_align
-      = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-    unsigned int arg2_align
-      = get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+    unsigned int arg1_align = get_pointer_alignment (arg1) / BITS_PER_UNIT;
+    unsigned int arg2_align = get_pointer_alignment (arg2) / BITS_PER_UNIT;
     enum machine_mode insn_mode;
 
-#ifdef HAVE_cmpmemsi
     if (HAVE_cmpmemsi)
       insn_mode = insn_data[(int) CODE_FOR_cmpmemsi].operand[0].mode;
     else
-#endif
-#ifdef HAVE_cmpstrnsi
-    if (HAVE_cmpstrnsi)
-      insn_mode = insn_data[(int) CODE_FOR_cmpstrnsi].operand[0].mode;
-    else
-#endif
       return NULL_RTX;
 
     /* If we don't have POINTER_TYPE, call the function.  */
@@ -3697,18 +3692,10 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
 	set_mem_size (arg2_rtx, INTVAL (arg3_rtx));
       }
 
-#ifdef HAVE_cmpmemsi
     if (HAVE_cmpmemsi)
       insn = gen_cmpmemsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
 			   GEN_INT (MIN (arg1_align, arg2_align)));
     else
-#endif
-#ifdef HAVE_cmpstrnsi
-    if (HAVE_cmpstrnsi)
-      insn = gen_cmpstrnsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
-			    GEN_INT (MIN (arg1_align, arg2_align)));
-    else
-#endif
       gcc_unreachable ();
 
     if (insn)
@@ -3734,7 +3721,7 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     else
       return convert_to_mode (mode, result, 0);
   }
-#endif
+#endif /* HAVE_cmpmemsi.  */
 
   return NULL_RTX;
 }
@@ -3759,10 +3746,8 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
       tree arg1 = CALL_EXPR_ARG (exp, 0);
       tree arg2 = CALL_EXPR_ARG (exp, 1);
 
-      unsigned int arg1_align
-	= get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-      unsigned int arg2_align
-	= get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+      unsigned int arg1_align = get_pointer_alignment (arg1) / BITS_PER_UNIT;
+      unsigned int arg2_align = get_pointer_alignment (arg2) / BITS_PER_UNIT;
 
       /* If we don't have POINTER_TYPE, call the function.  */
       if (arg1_align == 0 || arg2_align == 0)
@@ -3910,10 +3895,8 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     tree arg2 = CALL_EXPR_ARG (exp, 1);
     tree arg3 = CALL_EXPR_ARG (exp, 2);
 
-    unsigned int arg1_align
-      = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-    unsigned int arg2_align
-      = get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+    unsigned int arg1_align = get_pointer_alignment (arg1) / BITS_PER_UNIT;
+    unsigned int arg2_align = get_pointer_alignment (arg2) / BITS_PER_UNIT;
     enum machine_mode insn_mode
       = insn_data[(int) CODE_FOR_cmpstrnsi].operand[0].mode;
 
@@ -5087,7 +5070,7 @@ get_builtin_sync_mem (tree loc, enum machine_mode mode)
 
   /* The alignment needs to be at least according to that of the mode.  */
   set_mem_align (mem, MAX (GET_MODE_ALIGNMENT (mode),
-			   get_pointer_alignment (loc, BIGGEST_ALIGNMENT)));
+			   get_pointer_alignment (loc)));
   set_mem_alias_set (mem, ALIAS_SET_MEMORY_BARRIER);
   MEM_VOLATILE_P (mem) = 1;
 
@@ -5422,17 +5405,21 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
+    CASE_FLT_FN (BUILT_IN_ICEIL):
     CASE_FLT_FN (BUILT_IN_LCEIL):
     CASE_FLT_FN (BUILT_IN_LLCEIL):
     CASE_FLT_FN (BUILT_IN_LFLOOR):
+    CASE_FLT_FN (BUILT_IN_IFLOOR):
     CASE_FLT_FN (BUILT_IN_LLFLOOR):
       target = expand_builtin_int_roundingfn (exp, target);
       if (target)
 	return target;
       break;
 
+    CASE_FLT_FN (BUILT_IN_IRINT):
     CASE_FLT_FN (BUILT_IN_LRINT):
     CASE_FLT_FN (BUILT_IN_LLRINT):
+    CASE_FLT_FN (BUILT_IN_IROUND):
     CASE_FLT_FN (BUILT_IN_LROUND):
     CASE_FLT_FN (BUILT_IN_LLROUND):
       target = expand_builtin_int_roundingfn_2 (exp, target);
@@ -6542,6 +6529,42 @@ fold_fixed_mathfn (location_t loc, tree fndecl, tree arg)
 				fold_convert_loc (loc, newtype, arg0));
     }
 
+  /* Canonicalize iround (x) to lround (x) on ILP32 targets where
+     sizeof (int) == sizeof (long).  */
+  if (TYPE_PRECISION (integer_type_node)
+      == TYPE_PRECISION (long_integer_type_node))
+    {
+      tree newfn = NULL_TREE;
+      switch (fcode)
+	{
+	CASE_FLT_FN (BUILT_IN_ICEIL):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LCEIL);
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_IFLOOR):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LFLOOR);
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_IROUND):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LROUND);
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_IRINT):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LRINT);
+	  break;
+
+	default:
+	  break;
+	}
+
+      if (newfn)
+	{
+	  tree newcall = build_call_expr_loc (loc, newfn, 1, arg);
+	  return fold_convert_loc (loc,
+				   TREE_TYPE (TREE_TYPE (fndecl)), newcall);
+	}
+    }
+
   /* Canonicalize llround (x) to lround (x) on LP64 targets where
      sizeof (long long) == sizeof (long).  */
   if (TYPE_PRECISION (long_long_integer_type_node)
@@ -7241,16 +7264,19 @@ fold_builtin_int_roundingfn (location_t loc, tree fndecl, tree arg)
 
 	  switch (DECL_FUNCTION_CODE (fndecl))
 	    {
+	    CASE_FLT_FN (BUILT_IN_IFLOOR):
 	    CASE_FLT_FN (BUILT_IN_LFLOOR):
 	    CASE_FLT_FN (BUILT_IN_LLFLOOR):
 	      real_floor (&r, TYPE_MODE (ftype), &x);
 	      break;
 
+	    CASE_FLT_FN (BUILT_IN_ICEIL):
 	    CASE_FLT_FN (BUILT_IN_LCEIL):
 	    CASE_FLT_FN (BUILT_IN_LLCEIL):
 	      real_ceil (&r, TYPE_MODE (ftype), &x);
 	      break;
 
+	    CASE_FLT_FN (BUILT_IN_IROUND):
 	    CASE_FLT_FN (BUILT_IN_LROUND):
 	    CASE_FLT_FN (BUILT_IN_LLROUND):
 	      real_round (&r, TYPE_MODE (ftype), &x);
@@ -7891,8 +7917,7 @@ fold_builtin_memset (location_t loc, tree dest, tree c, tree len,
 
   length = tree_low_cst (len, 1);
   if (GET_MODE_SIZE (TYPE_MODE (etype)) != length
-      || get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT
-	 < length)
+      || get_pointer_alignment (dest) / BITS_PER_UNIT < length)
     return NULL_TREE;
 
   if (length > HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT)
@@ -7982,8 +8007,8 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 
       if (endp == 3)
 	{
-	  src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
-	  dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+	  src_align = get_pointer_alignment (src);
+	  dest_align = get_pointer_alignment (dest);
 
 	  /* Both DEST and SRC must be pointer types.
 	     ??? This is what old code did.  Is the testing for pointer types
@@ -8131,8 +8156,8 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	  || TREE_ADDRESSABLE (desttype))
 	return NULL_TREE;
 
-      src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
-      dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+      src_align = get_pointer_alignment (src);
+      dest_align = get_pointer_alignment (dest);
       if (dest_align < TYPE_ALIGN (desttype)
 	  || src_align < TYPE_ALIGN (srctype))
 	return NULL_TREE;
@@ -9780,14 +9805,18 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
     CASE_FLT_FN (BUILT_IN_RINT):
       return fold_trunc_transparent_mathfn (loc, fndecl, arg0);
 
+    CASE_FLT_FN (BUILT_IN_ICEIL):
     CASE_FLT_FN (BUILT_IN_LCEIL):
     CASE_FLT_FN (BUILT_IN_LLCEIL):
     CASE_FLT_FN (BUILT_IN_LFLOOR):
+    CASE_FLT_FN (BUILT_IN_IFLOOR):
     CASE_FLT_FN (BUILT_IN_LLFLOOR):
+    CASE_FLT_FN (BUILT_IN_IROUND):
     CASE_FLT_FN (BUILT_IN_LROUND):
     CASE_FLT_FN (BUILT_IN_LLROUND):
       return fold_builtin_int_roundingfn (loc, fndecl, arg0);
 
+    CASE_FLT_FN (BUILT_IN_IRINT):
     CASE_FLT_FN (BUILT_IN_LRINT):
     CASE_FLT_FN (BUILT_IN_LLRINT):
       return fold_fixed_mathfn (loc, fndecl, arg0);
@@ -11696,8 +11725,7 @@ expand_builtin_memory_chk (tree exp, rtx target, enum machine_mode mode,
     return NULL_RTX;
   else
     {
-      unsigned int dest_align
-	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+      unsigned int dest_align = get_pointer_alignment (dest);
 
       /* If DEST is not a pointer type, call the normal function.  */
       if (dest_align == 0)
@@ -11722,8 +11750,7 @@ expand_builtin_memory_chk (tree exp, rtx target, enum machine_mode mode,
       /* __memmove_chk special case.  */
       if (fcode == BUILT_IN_MEMMOVE_CHK)
 	{
-	  unsigned int src_align
-	    = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
+	  unsigned int src_align = get_pointer_alignment (src);
 
 	  if (src_align == 0)
 	    return NULL_RTX;

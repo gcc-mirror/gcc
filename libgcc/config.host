@@ -472,7 +472,7 @@ ia64*-*-freebsd*)
 	;;
 ia64*-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
-	tmake_file="ia64/t-ia64 t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat ia64/t-glibc ia64/t-eh-ia64 t-libunwind"
+	tmake_file="ia64/t-ia64 t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat ia64/t-eh-ia64 t-libunwind ia64/t-glibc"
 	if test x$with_system_libunwind != xyes ; then
 		tmake_file="${tmake_file} t-libunwind-elf ia64/t-glibc-libunwind"
 	fi
@@ -539,12 +539,12 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
 mips64*-*-linux* | mipsisa64*-*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} t-crtfm mips/t-tpbit"
+	tmake_file="${tmake_file} t-crtfm mips/t-mips16 mips/t-tpbit"
 	md_unwind_header=mips/linux-unwind.h
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} t-crtfm"
+	tmake_file="${tmake_file} t-crtfm mips/t-mips16"
 	md_unwind_header=mips/linux-unwind.h
 	;;
 mips*-*-openbsd*)
@@ -559,33 +559,38 @@ mips*-sde-elf*)
 	    tmake_file=mips/t-sdemtk
 	    ;;
 	esac
+	tmake_file="$tmake_file mips/t-mips16"
 	;;
-mipsisa32-*-elf* | mipsisa32el-*-elf*)
-	;;
-mipsisa32r2-*-elf* | mipsisa32r2el-*-elf*)
-	;;
-mipsisa64-*-elf* | mipsisa64el-*-elf*)
-	;;
+mipsisa32-*-elf* | mipsisa32el-*-elf* | \
+mipsisa32r2-*-elf* | mipsisa32r2el-*-elf* | \
+mipsisa64-*-elf* | mipsisa64el-*-elf* | \
 mipsisa64r2-*-elf* | mipsisa64r2el-*-elf*)
+	tmake_file="$tmake_file mips/t-mips16"
 	;;
 mipsisa64sr71k-*-elf*)
 	tmake_file=t-fdpbit
         ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
+	tmake_file="$tmake_file mips/t-mips16"
 	;;
 mips-*-elf* | mipsel-*-elf*)
+	tmake_file="$tmake_file mips/t-mips16"
 	;;
 mips64-*-elf* | mips64el-*-elf*)
+	tmake_file="$tmake_file mips/t-mips16"
 	;;
 mips64vr-*-elf* | mips64vrel-*-elf*)
         ;;
 mips64orion-*-elf* | mips64orionel-*-elf*)
+	tmake_file="$tmake_file mips/t-mips16"
 	;;
 mips*-*-rtems*)
+	tmake_file="$tmake_file mips/t-mips16"
 	;;
 mips-wrs-vxworks)
 	;;
 mipstx39-*-elf* | mipstx39el-*-elf*)
+	tmake_file="$tmake_file mips/t-mips16"
 	;;
 mmix-knuth-mmixware)
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"

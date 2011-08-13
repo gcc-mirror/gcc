@@ -1810,9 +1810,9 @@ update_speculative_bits (expr_t to, expr_t from, insn_t split_point)
 void
 merge_expr_data (expr_t to, expr_t from, insn_t split_point)
 {
-  /* For now, we just set the spec of resulting expr to be minimum of the specs
-     of merged exprs.  */
-  if (EXPR_SPEC (to) > EXPR_SPEC (from))
+  /* Choose the maximum of the specs of merged exprs.  This is required
+     for correctness of bookkeeping.  */
+  if (EXPR_SPEC (to) < EXPR_SPEC (from))
     EXPR_SPEC (to) = EXPR_SPEC (from);
 
   if (split_point)
@@ -1883,7 +1883,7 @@ set_unavailable_target_for_expr (expr_t expr, regset lv_set)
   if (EXPR_SEPARABLE_P (expr))
     {
       if (REG_P (EXPR_LHS (expr))
-          && bitmap_bit_p (lv_set, REGNO (EXPR_LHS (expr))))
+          && register_unavailable_p (lv_set, EXPR_LHS (expr)))
 	{
 	  /* If it's an insn like r1 = use (r1, ...), and it exists in
 	     different forms in each of the av_sets being merged, we can't say
@@ -1904,8 +1904,8 @@ set_unavailable_target_for_expr (expr_t expr, regset lv_set)
 	     miss a unifying code motion along both branches using a renamed
 	     register, but it won't affect a code correctness since upon
 	     an actual code motion a bookkeeping code would be generated.  */
-	  if (bitmap_bit_p (VINSN_REG_USES (EXPR_VINSN (expr)),
-			    REGNO (EXPR_LHS (expr))))
+	  if (register_unavailable_p (VINSN_REG_USES (EXPR_VINSN (expr)),
+				      EXPR_LHS (expr)))
 	    EXPR_TARGET_AVAILABLE (expr) = -1;
 	  else
 	    EXPR_TARGET_AVAILABLE (expr) = false;
@@ -1971,8 +1971,8 @@ speculate_expr (expr_t expr, ds_t ds)
 
         /* Do not allow clobbering the address register of speculative
            insns.  */
-        if (bitmap_bit_p (VINSN_REG_USES (EXPR_VINSN (expr)),
-                          expr_dest_regno (expr)))
+        if (register_unavailable_p (VINSN_REG_USES (EXPR_VINSN (expr)),
+				    expr_dest_reg (expr)))
           {
             EXPR_TARGET_AVAILABLE (expr) = false;
             return 2;
@@ -2025,6 +2025,25 @@ mark_unavailable_targets (av_set_t join_set, av_set_t av_set, regset lv_set)
       set_unavailable_target_for_expr (expr, lv_set);
 }
 
+
+/* Returns true if REG (at least partially) is present in REGS.  */
+bool
+register_unavailable_p (regset regs, rtx reg)
+{
+  unsigned regno, end_regno;
+
+  regno = REGNO (reg);
+  if (bitmap_bit_p (regs, regno))
+    return true;
+
+  end_regno = END_REGNO (reg);
+
+  while (++regno < end_regno)
+    if (bitmap_bit_p (regs, regno))
+      return true;
+
+  return false;
+}
 
 /* Av set functions.  */
 
@@ -2956,7 +2975,10 @@ init_global_and_expr_for_insn (insn_t insn)
           /* Exception handling insns are always unique.  */
           || (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
           /* TRAP_IF though have an INSN code is control_flow_insn_p ().  */
-          || control_flow_insn_p (insn))
+          || control_flow_insn_p (insn)
+          || volatile_insn_p (PATTERN (insn))
+          || (targetm.cannot_copy_insn_p
+              && targetm.cannot_copy_insn_p (insn)))
         force_unique_p = true;
       else
         force_unique_p = false;
@@ -3205,7 +3227,8 @@ has_dependence_note_reg_use (int regno)
 	  pro_spec_checked_ds = INSN_SPEC_CHECKED_DS (has_dependence_data.pro);
 	  pro_spec_checked_ds = ds_get_max_dep_weak (pro_spec_checked_ds);
 
-	  if (pro_spec_checked_ds != 0)
+	  if (pro_spec_checked_ds != 0
+	      && bitmap_bit_p (INSN_REG_SETS (has_dependence_data.pro), regno))
 	    /* Merge BE_IN_SPEC bits into *DSP.  */
 	    *dsp = ds_full_merge (*dsp, pro_spec_checked_ds,
 				  NULL_RTX, NULL_RTX);
@@ -3918,9 +3941,39 @@ sel_luid_for_non_insn (rtx x)
   return -1;
 }
 
-/* Return seqno of the only predecessor of INSN.  */
+/*  Find the proper seqno for inserting at INSN by successors.
+    Return -1 if no successors with positive seqno exist.  */
 static int
-get_seqno_of_a_pred (insn_t insn)
+get_seqno_by_succs (rtx insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  rtx tmp = insn, end = BB_END (bb);
+  int seqno;
+  insn_t succ = NULL;
+  succ_iterator si;
+
+  while (tmp != end)
+    {
+      tmp = NEXT_INSN (tmp);
+      if (INSN_P (tmp))
+        return INSN_SEQNO (tmp);
+    }
+
+  seqno = INT_MAX;
+
+  FOR_EACH_SUCC_1 (succ, si, end, SUCCS_NORMAL)
+    if (INSN_SEQNO (succ) > 0)
+      seqno = MIN (seqno, INSN_SEQNO (succ));
+
+  if (seqno == INT_MAX)
+    return -1;
+
+  return seqno;
+}
+
+/* Compute seqno for INSN by its preds or succs.  */
+static int
+get_seqno_for_a_jump (insn_t insn)
 {
   int seqno;
 
@@ -3960,13 +4013,23 @@ get_seqno_of_a_pred (insn_t insn)
 	  int n;
 
 	  cfg_preds (BLOCK_FOR_INSN (insn), &preds, &n);
-	  gcc_assert (n == 1);
 
-	  seqno = INSN_SEQNO (preds[0]);
+	  gcc_assert (n > 0);
+	  /* For one predecessor, use simple method.  */
+	  if (n == 1)
+	    seqno = INSN_SEQNO (preds[0]);
+	  else
+	    seqno = get_seqno_by_preds (insn);
 
 	  free (preds);
 	}
     }
+
+  /* We were unable to find a good seqno among preds.  */
+  if (seqno < 0)
+    seqno = get_seqno_by_succs (insn);
+
+  gcc_assert (seqno >= 0);
 
   return seqno;
 }
@@ -3982,10 +4045,11 @@ get_seqno_by_preds (rtx insn)
   int n, i, seqno;
 
   while (tmp != head)
-    if (INSN_P (tmp))
-      return INSN_SEQNO (tmp);
-    else
+    {
       tmp = PREV_INSN (tmp);
+      if (INSN_P (tmp))
+        return INSN_SEQNO (tmp);
+    }
 
   cfg_preds (bb, &preds, &n);
   for (i = 0, seqno = -1; i < n; i++)
@@ -4157,7 +4221,7 @@ init_simplejump_data (insn_t insn)
   init_expr (INSN_EXPR (insn), vinsn_create (insn, false), 0,
 	     REG_BR_PROB_BASE, 0, 0, 0, 0, 0, 0, NULL, true, false, false,
 	     false, true);
-  INSN_SEQNO (insn) = get_seqno_of_a_pred (insn);
+  INSN_SEQNO (insn) = get_seqno_for_a_jump (insn);
   init_first_time_insn_data (insn);
 }
 
@@ -4262,14 +4326,13 @@ free_lv_sets (void)
       free_lv_set (bb);
 }
 
-/* Initialize an invalid AV_SET for BB.
-   This set will be updated next time compute_av () process BB.  */
+/* Mark AV_SET for BB as invalid, so this set will be updated the next time
+   compute_av() processes BB.  This function is called when creating new basic
+   blocks, as well as for blocks (either new or existing) where new jumps are
+   created when the control flow is being updated.  */
 static void
 invalidate_av_set (basic_block bb)
 {
-  gcc_assert (BB_AV_LEVEL (bb) <= 0
-	      && BB_AV_SET (bb) == NULL);
-
   BB_AV_LEVEL (bb) = -1;
 }
 

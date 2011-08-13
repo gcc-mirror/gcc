@@ -120,7 +120,7 @@ check_avx256_stores (rtx dest, const_rtx set, void *data)
 /* Helper function for move_or_delete_vzeroupper_1.  Look for vzeroupper
    in basic block BB.  Delete it if upper 128bit AVX registers are
    unused.  If it isn't deleted, move it to just before a jump insn.
-   
+
    STATE is state of the upper 128bits of AVX registers at entry.  */
 
 static void
@@ -2168,7 +2168,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
      the auto-vectorizer.  */
-  m_BDVER 
+  m_BDVER
 };
 
 /* Feature tests against the various architecture variations.  */
@@ -3786,7 +3786,7 @@ ix86_option_override_internal (bool main_args_p)
 	    target_flags |= MASK_PREFER_AVX128;
 	}
     }
-  else 
+  else
     {
       /* Disable vzeroupper pass if TARGET_AVX is disabled.  */
       target_flags &= ~MASK_VZEROUPPER;
@@ -4707,8 +4707,8 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
      optimize any indirect call, or a direct call to a global function,
      as the PLT requires %ebx be live. (Darwin does not have a PLT.)  */
   if (!TARGET_MACHO
-      && !TARGET_64BIT 
-      && flag_pic 
+      && !TARGET_64BIT
+      && flag_pic
       && (!decl || !targetm.binds_local_p (decl)))
     return false;
 
@@ -7529,7 +7529,7 @@ setup_incoming_varargs_ms_64 (CUMULATIVE_ARGS *cum)
      before.  */
   ix86_varargs_gpr_size = 0;
   ix86_varargs_fpr_size = 0;
-  
+
   for (i = cum->regno; i < X86_64_MS_REGPARM_MAX; i++)
     {
       rtx reg, mem;
@@ -8911,7 +8911,7 @@ choose_baseaddr_len (unsigned int regno, HOST_WIDE_INT offset)
 
   return len;
 }
-  
+
 /* Return an RTX that points to CFA_OFFSET within the stack frame.
    The valid base registers are taken from CFUN->MACHINE->FS.  */
 
@@ -10257,9 +10257,11 @@ ix86_expand_prologue (void)
     emit_insn (gen_cld ());
 
   /* SEH requires that the prologue end within 256 bytes of the start of
-     the function.  Prevent instruction schedules that would extend that.  */
+     the function.  Prevent instruction schedules that would extend that.
+     Further, prevent alloca modifications to the stack pointer from being
+     combined with prologue modifications.  */
   if (TARGET_SEH)
-    emit_insn (gen_blockage ());
+    emit_insn (gen_prologue_use (stack_pointer_rtx));
 }
 
 /* Emit code to restore REG using a POP insn.  */
@@ -10374,7 +10376,7 @@ ix86_emit_restore_regs_using_mov (HOST_WIDE_INT cfa_offset,
       {
 	rtx reg = gen_rtx_REG (Pmode, regno);
 	rtx insn, mem;
-	
+
 	mem = choose_baseaddr (cfa_offset);
 	mem = gen_frame_mem (Pmode, mem);
 	insn = emit_move_insn (reg, mem);
@@ -10722,7 +10724,7 @@ ix86_expand_epilogue (int style)
   if (TARGET_VZEROUPPER
       && !TREE_THIS_VOLATILE (cfun->decl)
       && !cfun->machine->caller_return_avx256_p)
-    emit_insn (gen_avx_vzeroupper (GEN_INT (call_no_avx256))); 
+    emit_insn (gen_avx_vzeroupper (GEN_INT (call_no_avx256)));
 
   if (crtl->args.pops_args && crtl->args.size)
     {
@@ -11156,6 +11158,25 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   rtx tmp;
   int retval = 1;
   enum ix86_address_seg seg = SEG_DEFAULT;
+
+  /* Allow zero-extended SImode addresses,
+     they will be emitted with addr32 prefix.  */
+  if (TARGET_64BIT && GET_MODE (addr) == DImode)
+    {
+      if (GET_CODE (addr) == ZERO_EXTEND
+	  && GET_MODE (XEXP (addr, 0)) == SImode)
+	addr = XEXP (addr, 0);
+      else if (GET_CODE (addr) == AND
+	       && const_32bit_mask (XEXP (addr, 1), DImode))
+	{
+	  addr = XEXP (addr, 0);
+
+	  /* Strip subreg.  */
+	  if (GET_CODE (addr) == SUBREG
+	      && GET_MODE (SUBREG_REG (addr)) == SImode)
+	    addr = SUBREG_REG (addr);
+	}
+    }
 
   if (REG_P (addr))
     base = addr;
@@ -14174,8 +14195,15 @@ ix86_print_operand_address (FILE *file, rtx addr)
     }
   else
     {
-      /* Print DImode registers on 64bit targets to avoid addr32 prefixes.  */
-      int code = TARGET_64BIT ? 'q' : 0;
+      int code = 0;
+
+      /* Print SImode registers for zero-extended addresses to force
+	 addr32 prefix.  Otherwise print DImode registers to avoid it.  */
+      if (TARGET_64BIT)
+	code = ((GET_CODE (addr) == ZERO_EXTEND
+		 || GET_CODE (addr) == AND)
+		? 'l'
+		: 'q');
 
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	{
@@ -15085,7 +15113,7 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 	}
     }
 
-  if ((flag_pic || MACHOPIC_INDIRECT) 
+  if ((flag_pic || MACHOPIC_INDIRECT)
       && symbolic_operand (op1, mode))
     {
       if (TARGET_MACHO && !TARGET_64BIT)
@@ -15913,7 +15941,7 @@ ix86_split_idivmod (enum machine_mode mode, rtx operands[],
     insn = emit_move_insn (operands[1], tmp1);
   else
     {
-      /* Need a new scratch register since the old one has result 
+      /* Need a new scratch register since the old one has result
 	 of 8bit divide.  */
       scratch = gen_reg_rtx (mode);
       emit_move_insn (scratch, tmp1);
@@ -21786,8 +21814,9 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
   return s->rtl;
 }
 
-/* Calculate the length of the memory address in the instruction
-   encoding.  Does not include the one-byte modrm, opcode, or prefix.  */
+/* Calculate the length of the memory address in the instruction encoding.
+   Includes addr32 prefix, does not include the one-byte modrm, opcode,
+   or other prefixes.  */
 
 int
 memory_address_length (rtx addr)
@@ -21814,7 +21843,10 @@ memory_address_length (rtx addr)
   base = parts.base;
   index = parts.index;
   disp = parts.disp;
-  len = 0;
+
+  /* Add length of addr32 prefix.  */
+  len = (GET_CODE (addr) == ZERO_EXTEND
+	 || GET_CODE (addr) == AND);
 
   /* Rule of thumb:
        - esp as the base always wants an index,
@@ -22959,7 +22991,7 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	    case AX_REG:
 	      opcode = 0xb8; break;
 	    case CX_REG:
-	      opcode = 0xb9; break;	
+	      opcode = 0xb9; break;
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -28245,9 +28277,25 @@ ix86_preferred_output_reload_class (rtx x, reg_class_t regclass)
 
 static reg_class_t
 ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
-		       enum machine_mode mode,
-		       secondary_reload_info *sri ATTRIBUTE_UNUSED)
+		       enum machine_mode mode, secondary_reload_info *sri)
 {
+  /* Double-word spills from general registers to non-offsettable memory
+     references (zero-extended addresses) require special handling.  */
+  if (TARGET_64BIT
+      && MEM_P (x)
+      && GET_MODE_SIZE (mode) > UNITS_PER_WORD
+      && rclass == GENERAL_REGS
+      && !offsettable_memref_p (x))
+    {
+      sri->icode = (in_p
+		    ? CODE_FOR_reload_noff_load
+		    : CODE_FOR_reload_noff_store);
+      /* Add the cost of moving address to a temporary.  */
+      sri->extra_cost = 1;
+
+      return NO_REGS;
+    }
+
   /* QImode spills from non-QI registers require
      intermediate register on 32bit targets.  */
   if (!TARGET_64BIT
@@ -28273,7 +28321,7 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 
   /* This condition handles corner case where an expression involving
      pointers gets vectorized.  We're trying to use the address of a
-     stack slot as a vector initializer.  
+     stack slot as a vector initializer.
 
      (set (reg:V2DI 74 [ vect_cst_.2 ])
           (vec_duplicate:V2DI (reg/f:DI 20 frame)))
@@ -29990,7 +30038,7 @@ ix86_pad_returns (void)
 /* Count the minimum number of instructions in BB.  Return 4 if the
    number of instructions >= 4.  */
 
-static int 
+static int
 ix86_count_insn_bb (basic_block bb)
 {
   rtx insn;
@@ -30019,10 +30067,10 @@ ix86_count_insn_bb (basic_block bb)
 }
 
 
-/* Count the minimum number of instructions in code path in BB.  
+/* Count the minimum number of instructions in code path in BB.
    Return 4 if the number of instructions >= 4.  */
 
-static int 
+static int
 ix86_count_insn (basic_block bb)
 {
   edge e;
@@ -31711,6 +31759,139 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
   emit_insn (gen_fyl2xxf3_i387 (op0, tmp, tmp2));
 
   emit_label (label2);
+}
+
+/* Emit code for round calculation.  */
+void ix86_emit_i387_round (rtx op0, rtx op1)
+{
+  enum machine_mode inmode = GET_MODE (op1);
+  enum machine_mode outmode = GET_MODE (op0);
+  rtx e1, e2, res, tmp, tmp1, half;
+  rtx scratch = gen_reg_rtx (HImode);
+  rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx jump_label = gen_label_rtx ();
+  rtx insn;
+  rtx (*gen_abs) (rtx, rtx);
+  rtx (*gen_neg) (rtx, rtx);
+
+  switch (inmode)
+    {
+    case SFmode:
+      gen_abs = gen_abssf2;
+      break;
+    case DFmode:
+      gen_abs = gen_absdf2;
+      break;
+    case XFmode:
+      gen_abs = gen_absxf2;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (outmode)
+    {
+    case SFmode:
+      gen_neg = gen_negsf2;
+      break;
+    case DFmode:
+      gen_neg = gen_negdf2;
+      break;
+    case XFmode:
+      gen_neg = gen_negxf2;
+      break;
+    case HImode:
+      gen_neg = gen_neghi2;
+      break;
+    case SImode:
+      gen_neg = gen_negsi2;
+      break;
+    case DImode:
+      gen_neg = gen_negdi2;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  e1 = gen_reg_rtx (inmode);
+  e2 = gen_reg_rtx (inmode);
+  res = gen_reg_rtx (outmode);
+
+  half = CONST_DOUBLE_FROM_REAL_VALUE (dconsthalf, inmode);
+  
+  /* round(a) = sgn(a) * floor(fabs(a) + 0.5) */
+
+  /* scratch = fxam(op1) */
+  emit_insn (gen_rtx_SET (VOIDmode, scratch,
+			  gen_rtx_UNSPEC (HImode, gen_rtvec (1, op1),
+					  UNSPEC_FXAM)));
+  /* e1 = fabs(op1) */
+  emit_insn (gen_abs (e1, op1));
+
+  /* e2 = e1 + 0.5 */
+  half = force_reg (inmode, half);
+  emit_insn (gen_rtx_SET (VOIDmode, e2,
+			  gen_rtx_PLUS (inmode, e1, half)));
+
+  /* res = floor(e2) */
+  if (inmode != XFmode)
+    {
+      tmp1 = gen_reg_rtx (XFmode);
+
+      emit_insn (gen_rtx_SET (VOIDmode, tmp1,
+			      gen_rtx_FLOAT_EXTEND (XFmode, e2)));
+    }
+  else
+    tmp1 = e2;
+
+  switch (outmode)
+    {
+    case SFmode:
+    case DFmode:
+      {
+	rtx tmp0 = gen_reg_rtx (XFmode);
+
+	emit_insn (gen_frndintxf2_floor (tmp0, tmp1));
+
+	emit_insn (gen_rtx_SET (VOIDmode, res,
+				gen_rtx_UNSPEC (outmode, gen_rtvec (1, tmp0),
+						UNSPEC_TRUNC_NOOP)));
+      }
+      break;
+    case XFmode:
+      emit_insn (gen_frndintxf2_floor (res, tmp1));
+      break;
+    case HImode:
+      emit_insn (gen_lfloorxfhi2 (res, tmp1));
+      break;
+    case SImode:
+      emit_insn (gen_lfloorxfsi2 (res, tmp1));
+      break;
+    case DImode:
+      emit_insn (gen_lfloorxfdi2 (res, tmp1));
+	break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* flags = signbit(a) */
+  emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x02)));
+
+  /* if (flags) then res = -res */
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			      gen_rtx_EQ (VOIDmode, flags, const0_rtx),
+			      gen_rtx_LABEL_REF (VOIDmode, jump_label),
+			      pc_rtx);
+  insn = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
+  predict_jump (REG_BR_PROB_BASE * 50 / 100);
+  JUMP_LABEL (insn) = jump_label;
+
+  emit_insn (gen_neg (res, res));
+
+  emit_label (jump_label);
+  LABEL_NUSES (jump_label) = 1;
+
+  emit_move_insn (op0, res);
 }
 
 /* Output code to perform a Newton-Rhapson approximation of a single precision
@@ -34932,7 +35113,7 @@ ix86_autovectorize_vector_sizes (void)
 #undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P ix86_print_operand_punct_valid_p
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
-#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA i386_asm_output_addr_const_extra 
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA i386_asm_output_addr_const_extra
 
 #undef TARGET_SCHED_INIT_GLOBAL
 #define TARGET_SCHED_INIT_GLOBAL ix86_sched_init_global

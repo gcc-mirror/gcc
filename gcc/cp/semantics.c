@@ -2042,12 +2042,14 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 	 expressions with no type as being dependent.  */
       if (type_dependent_expression_p (fn)
 	  || any_type_dependent_arguments_p (*args)
-	  /* For a non-static member function, we need to specifically
+	  /* For a non-static member function that doesn't have an
+	     explicit object argument, we need to specifically
 	     test the type dependency of the "this" pointer because it
 	     is not included in *ARGS even though it is considered to
 	     be part of the list of arguments.  Note that this is
 	     related to CWG issues 515 and 1005.  */
-	  || (non_static_member_function_p (fn)
+	  || (TREE_CODE (fn) != COMPONENT_REF
+	      && non_static_member_function_p (fn)
 	      && current_class_ref
 	      && type_dependent_expression_p (current_class_ref)))
 	{

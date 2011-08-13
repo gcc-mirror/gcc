@@ -1351,17 +1351,27 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
     {
       VEC (vn_reference_op_s, heap) *tem;
       tree lhs = gimple_assign_lhs (def_stmt);
+      bool valueized_anything = false;
       /* Avoid re-allocation overhead.  */
       VEC_truncate (vn_reference_op_s, lhs_ops, 0);
       copy_reference_ops_from_ref (lhs, &lhs_ops);
       tem = lhs_ops;
-      lhs_ops = valueize_refs (lhs_ops);
+      lhs_ops = valueize_refs_1 (lhs_ops, &valueized_anything);
       gcc_assert (lhs_ops == tem);
-      lhs_ref_ok = ao_ref_init_from_vn_reference (&lhs_ref, get_alias_set (lhs),
-						  TREE_TYPE (lhs), lhs_ops);
-      if (lhs_ref_ok
-	  && !refs_may_alias_p_1 (ref, &lhs_ref, true))
-	return NULL;
+      if (valueized_anything)
+	{
+	  lhs_ref_ok = ao_ref_init_from_vn_reference (&lhs_ref,
+						      get_alias_set (lhs),
+						      TREE_TYPE (lhs), lhs_ops);
+	  if (lhs_ref_ok
+	      && !refs_may_alias_p_1 (ref, &lhs_ref, true))
+	    return NULL;
+	}
+      else
+	{
+	  ao_ref_init (&lhs_ref, lhs);
+	  lhs_ref_ok = true;
+	}
     }
 
   base = ao_ref_base (ref);
@@ -1468,6 +1478,20 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  i--;
 	  j--;
 	}
+
+      /* ???  The innermost op should always be a MEM_REF and we already
+         checked that the assignment to the lhs kills vr.  Thus for
+	 aggregate copies using char[] types the vn_reference_op_eq
+	 may fail when comparing types for compatibility.  But we really
+	 don't care here - further lookups with the rewritten operands
+	 will simply fail if we messed up types too badly.  */
+      if (j == 0 && i == 0
+	  && VEC_index (vn_reference_op_s, lhs_ops, 0)->opcode == MEM_REF
+	  && VEC_index (vn_reference_op_s, vr->operands, i)->opcode == MEM_REF
+	  && tree_int_cst_equal
+	       (VEC_index (vn_reference_op_s, lhs_ops, 0)->op0,
+		VEC_index (vn_reference_op_s, vr->operands, i)->op0))
+	i--, j--;
 
       /* i now points to the first additional op.
 	 ???  LHS may not be completely contained in VR, one or more

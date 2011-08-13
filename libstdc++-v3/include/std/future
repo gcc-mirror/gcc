@@ -129,25 +129,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     deferred = 2
   };
 
-  inline constexpr launch operator&(launch __x, launch __y)
+  constexpr launch operator&(launch __x, launch __y)
   {
     return static_cast<launch>(
 	static_cast<int>(__x) & static_cast<int>(__y));
   }
 
-  inline constexpr launch operator|(launch __x, launch __y)
+  constexpr launch operator|(launch __x, launch __y)
   {
     return static_cast<launch>(
 	static_cast<int>(__x) | static_cast<int>(__y));
   }
 
-  inline constexpr launch operator^(launch __x, launch __y)
+  constexpr launch operator^(launch __x, launch __y)
   {
     return static_cast<launch>(
 	static_cast<int>(__x) ^ static_cast<int>(__y));
   }
 
-  inline constexpr launch operator~(launch __x)
+  constexpr launch operator~(launch __x)
   { return static_cast<launch>(~static_cast<int>(__x)); }
 
   inline launch& operator&=(launch& __x, launch __y)

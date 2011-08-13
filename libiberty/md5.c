@@ -76,15 +76,19 @@ md5_init_ctx (struct md5_ctx *ctx)
 /* Put result from CTX in first 16 bytes following RESBUF.  The result
    must be in little endian byte order.
 
-   IMPORTANT: On some systems it is required that RESBUF is correctly
-   aligned for a 32 bits value.  */
+   IMPORTANT: RESBUF may not be aligned as strongly as MD5_UNIT32 so we
+   put things in a local (aligned) buffer first, then memcpy into RESBUF.  */
 void *
 md5_read_ctx (const struct md5_ctx *ctx, void *resbuf)
 {
-  ((md5_uint32 *) resbuf)[0] = SWAP (ctx->A);
-  ((md5_uint32 *) resbuf)[1] = SWAP (ctx->B);
-  ((md5_uint32 *) resbuf)[2] = SWAP (ctx->C);
-  ((md5_uint32 *) resbuf)[3] = SWAP (ctx->D);
+  md5_uint32 buffer[4];
+
+  buffer[0] = SWAP (ctx->A);
+  buffer[1] = SWAP (ctx->B);
+  buffer[2] = SWAP (ctx->C);
+  buffer[3] = SWAP (ctx->D);
+
+  memcpy (resbuf, buffer, 16);
 
   return resbuf;
 }

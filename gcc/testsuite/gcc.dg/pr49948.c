@@ -1,5 +1,6 @@
 /* PR tree-optimization/49948 */
 /* { dg-do compile } */
+/* { dg-require-effective-target pthread } */
 /* { dg-options "-O3 -ftree-parallelize-loops=2" } */
 
 extern int a, *b;

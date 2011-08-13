@@ -45,15 +45,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "output.h"
 #include "ipa-utils.h"
+#include "data-streamer.h"
+#include "gimple-streamer.h"
 #include "lto-streamer.h"
+#include "tree-streamer.h"
 #include "tree-pass.h"
-
-/* Data structure used to hash file names in the source_location field.  */
-struct string_slot
-{
-  const char *s;
-  unsigned int slot_num;
-};
 
 /* The table to hold the file names.  */
 static htab_t file_name_hash_table;
@@ -62,7 +58,7 @@ static htab_t file_name_hash_table;
 /* Check that tag ACTUAL has one of the given values.  NUM_TAGS is the
    number of valid tag values to check.  */
 
-static void
+void
 lto_tag_check_set (enum LTO_tags actual, int ntags, ...)
 {
   va_list ap;
@@ -81,128 +77,6 @@ lto_tag_check_set (enum LTO_tags actual, int ntags, ...)
 }
 
 
-/* Check that tag ACTUAL is in the range [TAG1, TAG2].  */
-
-static void
-lto_tag_check_range (enum LTO_tags actual, enum LTO_tags tag1,
-		     enum LTO_tags tag2)
-{
-  if (actual < tag1 || actual > tag2)
-    internal_error ("bytecode stream: tag %s is not in the expected range "
-		    "[%s, %s]",
-		    lto_tag_name (actual),
-		    lto_tag_name (tag1),
-		    lto_tag_name (tag2));
-}
-
-
-/* Check that tag ACTUAL == EXPECTED.  */
-
-static void
-lto_tag_check (enum LTO_tags actual, enum LTO_tags expected)
-{
-  if (actual != expected)
-    internal_error ("bytecode stream: expected tag %s instead of %s",
-		    lto_tag_name (expected), lto_tag_name (actual));
-}
-
-
-/* Return a hash code for P.  */
-
-static hashval_t
-hash_string_slot_node (const void *p)
-{
-  const struct string_slot *ds = (const struct string_slot *) p;
-  return (hashval_t) htab_hash_string (ds->s);
-}
-
-
-/* Returns nonzero if P1 and P2 are equal.  */
-
-static int
-eq_string_slot_node (const void *p1, const void *p2)
-{
-  const struct string_slot *ds1 = (const struct string_slot *) p1;
-  const struct string_slot *ds2 = (const struct string_slot *) p2;
-  return strcmp (ds1->s, ds2->s) == 0;
-}
-
-
-/* Read a string from the string table in DATA_IN using input block
-   IB.  Write the length to RLEN.  */
-
-static const char *
-string_for_index (struct data_in *data_in,
-		  unsigned int loc,
-		  unsigned int *rlen)
-{
-  struct lto_input_block str_tab;
-  unsigned int len;
-  const char *result;
-
-  if (!loc)
-    {
-      *rlen = 0;
-      return NULL;
-    }
-
-  /* Get the string stored at location LOC in DATA_IN->STRINGS.  */
-  LTO_INIT_INPUT_BLOCK (str_tab, data_in->strings, loc - 1, data_in->strings_len);
-  len = lto_input_uleb128 (&str_tab);
-  *rlen = len;
-
-  if (str_tab.p + len > data_in->strings_len)
-    internal_error ("bytecode stream: string too long for the string table");
-
-  result = (const char *)(data_in->strings + str_tab.p);
-
-  return result;
-}
-
-
-/* Read a string from the string table in DATA_IN using input block
-   IB.  Write the length to RLEN.  */
-
-static const char *
-input_string_internal (struct data_in *data_in, struct lto_input_block *ib,
-		       unsigned int *rlen)
-{
-  return string_for_index (data_in, lto_input_uleb128 (ib), rlen);
-}
-
-
-/* Read a STRING_CST from the string table in DATA_IN using input
-   block IB.  */
-
-static tree
-input_string_cst (struct data_in *data_in, struct lto_input_block *ib)
-{
-  unsigned int len;
-  const char * ptr;
-
-  ptr = input_string_internal (data_in, ib, &len);
-  if (!ptr)
-    return NULL;
-  return build_string (len, ptr);
-}
-
-
-/* Read an IDENTIFIER from the string table in DATA_IN using input
-   block IB.  */
-
-static tree
-input_identifier (struct data_in *data_in, struct lto_input_block *ib)
-{
-  unsigned int len;
-  const char *ptr;
-
-  ptr = input_string_internal (data_in, ib, &len);
-  if (!ptr)
-    return NULL;
-  return get_identifier_with_length (ptr, len);
-}
-
-
 /* Read LENGTH bytes from STREAM to ADDR.  */
 
 void
@@ -212,34 +86,7 @@ lto_input_data_block (struct lto_input_block *ib, void *addr, size_t length)
   unsigned char *const buffer = (unsigned char *const) addr;
 
   for (i = 0; i < length; i++)
-    buffer[i] = lto_input_1_unsigned (ib);
-}
-
-
-/* Read a NULL terminated string from the string table in DATA_IN.  */
-
-const char *
-lto_input_string (struct data_in *data_in, struct lto_input_block *ib)
-{
-  unsigned int len;
-  const char *ptr;
-
-  ptr = input_string_internal (data_in, ib, &len);
-  if (!ptr)
-    return NULL;
-  if (ptr[len - 1] != '\0')
-    internal_error ("bytecode stream: found non-null terminated string");
-
-  return ptr;
-}
-
-
-/* Return the next tag in the input block IB.  */
-
-static inline enum LTO_tags
-input_record_start (struct lto_input_block *ib)
-{
-  return lto_input_enum (ib, LTO_tags, LTO_NUM_TAGS);
+    buffer[i] = streamer_read_uchar (ib);
 }
 
 
@@ -252,6 +99,7 @@ canon_file_name (const char *string)
   void **slot;
   struct string_slot s_slot;
   s_slot.s = string;
+  s_slot.len = strlen (string);
 
   slot = htab_find_slot (file_name_hash_table, &s_slot, INSERT);
   if (*slot == NULL)
@@ -333,12 +181,12 @@ lto_input_location_bitpack (struct data_in *data_in, struct bitpack_d *bp)
 
 /* Read a location from input block IB.  */
 
-static location_t
+location_t
 lto_input_location (struct lto_input_block *ib, struct data_in *data_in)
 {
   struct bitpack_d bp;
 
-  bp = lto_input_bitpack (ib);
+  bp = streamer_read_bitpack (ib);
   return lto_input_location_bitpack (data_in, &bp);
 }
 
@@ -347,10 +195,10 @@ lto_input_location (struct lto_input_block *ib, struct data_in *data_in)
    TAG is the expected node that should be found in IB, if TAG belongs
    to one of the indexable trees, expect to read a reference index to
    be looked up in one of the symbol tables, otherwise read the pysical
-   representation of the tree using lto_input_tree.  FN is the
+   representation of the tree using stream_read_tree.  FN is the
    function scope for the read tree.  */
 
-static tree
+tree
 lto_input_tree_ref (struct lto_input_block *ib, struct data_in *data_in,
 		    struct function *fn, enum LTO_tags tag)
 {
@@ -362,32 +210,32 @@ lto_input_tree_ref (struct lto_input_block *ib, struct data_in *data_in,
   switch (tag)
     {
     case LTO_type_ref:
-      ix_u = lto_input_uleb128 (ib);
+      ix_u = streamer_read_uhwi (ib);
       result = lto_file_decl_data_get_type (data_in->file_data, ix_u);
       break;
 
     case LTO_ssa_name_ref:
-      ix_u = lto_input_uleb128 (ib);
+      ix_u = streamer_read_uhwi (ib);
       result = VEC_index (tree, SSANAMES (fn), ix_u);
       break;
 
     case LTO_field_decl_ref:
-      ix_u = lto_input_uleb128 (ib);
+      ix_u = streamer_read_uhwi (ib);
       result = lto_file_decl_data_get_field_decl (data_in->file_data, ix_u);
       break;
 
     case LTO_function_decl_ref:
-      ix_u = lto_input_uleb128 (ib);
+      ix_u = streamer_read_uhwi (ib);
       result = lto_file_decl_data_get_fn_decl (data_in->file_data, ix_u);
       break;
 
     case LTO_type_decl_ref:
-      ix_u = lto_input_uleb128 (ib);
+      ix_u = streamer_read_uhwi (ib);
       result = lto_file_decl_data_get_type_decl (data_in->file_data, ix_u);
       break;
 
     case LTO_namespace_decl_ref:
-      ix_u = lto_input_uleb128 (ib);
+      ix_u = streamer_read_uhwi (ib);
       result = lto_file_decl_data_get_namespace_decl (data_in->file_data, ix_u);
       break;
 
@@ -397,7 +245,7 @@ lto_input_tree_ref (struct lto_input_block *ib, struct data_in *data_in,
     case LTO_imported_decl_ref:
     case LTO_label_decl_ref:
     case LTO_translation_unit_decl_ref:
-      ix_u = lto_input_uleb128 (ib);
+      ix_u = streamer_read_uhwi (ib);
       result = lto_file_decl_data_get_var_decl (data_in->file_data, ix_u);
       break;
 
@@ -408,33 +256,6 @@ lto_input_tree_ref (struct lto_input_block *ib, struct data_in *data_in,
   gcc_assert (result);
 
   return result;
-}
-
-
-/* Read a chain of tree nodes from input block IB. DATA_IN contains
-   tables and descriptors for the file being read.  */
-
-static tree
-lto_input_chain (struct lto_input_block *ib, struct data_in *data_in)
-{
-  int i, count;
-  tree first, prev, curr;
-
-  first = prev = NULL_TREE;
-  count = lto_input_sleb128 (ib);
-  for (i = 0; i < count; i++)
-    {
-      curr = lto_input_tree (ib, data_in);
-      if (prev)
-	TREE_CHAIN (prev) = curr;
-      else
-	first = curr;
-
-      TREE_CHAIN (curr) = NULL_TREE;
-      prev = curr;
-    }
-
-  return first;
 }
 
 
@@ -449,7 +270,7 @@ lto_input_eh_catch_list (struct lto_input_block *ib, struct data_in *data_in,
   enum LTO_tags tag;
 
   *last_p = first = NULL;
-  tag = input_record_start (ib);
+  tag = streamer_read_record_start (ib);
   while (tag)
     {
       tree list;
@@ -459,9 +280,9 @@ lto_input_eh_catch_list (struct lto_input_block *ib, struct data_in *data_in,
 
       /* Read the catch node.  */
       n = ggc_alloc_cleared_eh_catch_d ();
-      n->type_list = lto_input_tree (ib, data_in);
-      n->filter_list = lto_input_tree (ib, data_in);
-      n->label = lto_input_tree (ib, data_in);
+      n->type_list = stream_read_tree (ib, data_in);
+      n->filter_list = stream_read_tree (ib, data_in);
+      n->label = stream_read_tree (ib, data_in);
 
       /* Register all the types in N->FILTER_LIST.  */
       for (list = n->filter_list; list; list = TREE_CHAIN (list))
@@ -477,7 +298,7 @@ lto_input_eh_catch_list (struct lto_input_block *ib, struct data_in *data_in,
       if (first == NULL)
 	first = n;
 
-      tag = input_record_start (ib);
+      tag = streamer_read_record_start (ib);
     }
 
   return first;
@@ -494,20 +315,20 @@ input_eh_region (struct lto_input_block *ib, struct data_in *data_in, int ix)
   eh_region r;
 
   /* Read the region header.  */
-  tag = input_record_start (ib);
+  tag = streamer_read_record_start (ib);
   if (tag == LTO_null)
     return NULL;
 
   r = ggc_alloc_cleared_eh_region_d ();
-  r->index = lto_input_sleb128 (ib);
+  r->index = streamer_read_hwi (ib);
 
   gcc_assert (r->index == ix);
 
   /* Read all the region pointers as region numbers.  We'll fix up
      the pointers once the whole array has been read.  */
-  r->outer = (eh_region) (intptr_t) lto_input_sleb128 (ib);
-  r->inner = (eh_region) (intptr_t) lto_input_sleb128 (ib);
-  r->next_peer = (eh_region) (intptr_t) lto_input_sleb128 (ib);
+  r->outer = (eh_region) (intptr_t) streamer_read_hwi (ib);
+  r->inner = (eh_region) (intptr_t) streamer_read_hwi (ib);
+  r->next_peer = (eh_region) (intptr_t) streamer_read_hwi (ib);
 
   switch (tag)
     {
@@ -530,9 +351,9 @@ input_eh_region (struct lto_input_block *ib, struct data_in *data_in, int ix)
 	  tree l;
 
 	  r->type = ERT_ALLOWED_EXCEPTIONS;
-	  r->u.allowed.type_list = lto_input_tree (ib, data_in);
-	  r->u.allowed.label = lto_input_tree (ib, data_in);
-	  r->u.allowed.filter = lto_input_uleb128 (ib);
+	  r->u.allowed.type_list = stream_read_tree (ib, data_in);
+	  r->u.allowed.label = stream_read_tree (ib, data_in);
+	  r->u.allowed.filter = streamer_read_uhwi (ib);
 
 	  for (l = r->u.allowed.type_list; l ; l = TREE_CHAIN (l))
 	    add_type_for_runtime (TREE_VALUE (l));
@@ -541,7 +362,7 @@ input_eh_region (struct lto_input_block *ib, struct data_in *data_in, int ix)
 
       case LTO_ert_must_not_throw:
 	r->type = ERT_MUST_NOT_THROW;
-	r->u.must_not_throw.failure_decl = lto_input_tree (ib, data_in);
+	r->u.must_not_throw.failure_decl = stream_read_tree (ib, data_in);
 	r->u.must_not_throw.failure_loc = lto_input_location (ib, data_in);
 	break;
 
@@ -549,7 +370,7 @@ input_eh_region (struct lto_input_block *ib, struct data_in *data_in, int ix)
 	gcc_unreachable ();
     }
 
-  r->landing_pads = (eh_landing_pad) (intptr_t) lto_input_sleb128 (ib);
+  r->landing_pads = (eh_landing_pad) (intptr_t) streamer_read_hwi (ib);
 
   return r;
 }
@@ -565,18 +386,18 @@ input_eh_lp (struct lto_input_block *ib, struct data_in *data_in, int ix)
   eh_landing_pad lp;
 
   /* Read the landing pad header.  */
-  tag = input_record_start (ib);
+  tag = streamer_read_record_start (ib);
   if (tag == LTO_null)
     return NULL;
 
   lto_tag_check_range (tag, LTO_eh_landing_pad, LTO_eh_landing_pad);
 
   lp = ggc_alloc_cleared_eh_landing_pad_d ();
-  lp->index = lto_input_sleb128 (ib);
+  lp->index = streamer_read_hwi (ib);
   gcc_assert (lp->index == ix);
-  lp->next_lp = (eh_landing_pad) (intptr_t) lto_input_sleb128 (ib);
-  lp->region = (eh_region) (intptr_t) lto_input_sleb128 (ib);
-  lp->post_landing_pad = lto_input_tree (ib, data_in);
+  lp->next_lp = (eh_landing_pad) (intptr_t) streamer_read_hwi (ib);
+  lp->region = (eh_region) (intptr_t) streamer_read_hwi (ib);
+  lp->post_landing_pad = stream_read_tree (ib, data_in);
 
   return lp;
 }
@@ -641,7 +462,7 @@ fixup_eh_region_pointers (struct function *fn, HOST_WIDE_INT root_region)
 
 /* Initialize EH support.  */
 
-static void
+void
 lto_init_eh (void)
 {
   static bool eh_initialized_p = false;
@@ -671,7 +492,7 @@ input_eh_regions (struct lto_input_block *ib, struct data_in *data_in,
   HOST_WIDE_INT i, root_region, len;
   enum LTO_tags tag;
 
-  tag = input_record_start (ib);
+  tag = streamer_read_record_start (ib);
   if (tag == LTO_null)
     return;
 
@@ -684,11 +505,11 @@ input_eh_regions (struct lto_input_block *ib, struct data_in *data_in,
 
   gcc_assert (fn->eh);
 
-  root_region = lto_input_sleb128 (ib);
+  root_region = streamer_read_hwi (ib);
   gcc_assert (root_region == (int) root_region);
 
   /* Read the EH region array.  */
-  len = lto_input_sleb128 (ib);
+  len = streamer_read_hwi (ib);
   gcc_assert (len == (int) len);
   if (len > 0)
     {
@@ -701,7 +522,7 @@ input_eh_regions (struct lto_input_block *ib, struct data_in *data_in,
     }
 
   /* Read the landing pads.  */
-  len = lto_input_sleb128 (ib);
+  len = streamer_read_hwi (ib);
   gcc_assert (len == (int) len);
   if (len > 0)
     {
@@ -714,20 +535,20 @@ input_eh_regions (struct lto_input_block *ib, struct data_in *data_in,
     }
 
   /* Read the runtime type data.  */
-  len = lto_input_sleb128 (ib);
+  len = streamer_read_hwi (ib);
   gcc_assert (len == (int) len);
   if (len > 0)
     {
       VEC_safe_grow (tree, gc, fn->eh->ttype_data, len);
       for (i = 0; i < len; i++)
 	{
-	  tree ttype = lto_input_tree (ib, data_in);
+	  tree ttype = stream_read_tree (ib, data_in);
 	  VEC_replace (tree, fn->eh->ttype_data, i, ttype);
 	}
     }
 
   /* Read the table of action chains.  */
-  len = lto_input_sleb128 (ib);
+  len = streamer_read_hwi (ib);
   gcc_assert (len == (int) len);
   if (len > 0)
     {
@@ -736,7 +557,7 @@ input_eh_regions (struct lto_input_block *ib, struct data_in *data_in,
 	  VEC_safe_grow (tree, gc, fn->eh->ehspec_data.arm_eabi, len);
 	  for (i = 0; i < len; i++)
 	    {
-	      tree t = lto_input_tree (ib, data_in);
+	      tree t = stream_read_tree (ib, data_in);
 	      VEC_replace (tree, fn->eh->ehspec_data.arm_eabi, i, t);
 	    }
 	}
@@ -745,7 +566,7 @@ input_eh_regions (struct lto_input_block *ib, struct data_in *data_in,
 	  VEC_safe_grow (uchar, gc, fn->eh->ehspec_data.other, len);
 	  for (i = 0; i < len; i++)
 	    {
-	      uchar c = lto_input_1_unsigned (ib);
+	      uchar c = streamer_read_uchar (ib);
 	      VEC_replace (uchar, fn->eh->ehspec_data.other, i, c);
 	    }
 	}
@@ -755,7 +576,7 @@ input_eh_regions (struct lto_input_block *ib, struct data_in *data_in,
      pointers.  */
   fixup_eh_region_pointers (fn, root_region);
 
-  tag = input_record_start (ib);
+  tag = streamer_read_record_start (ib);
   lto_tag_check_range (tag, LTO_null, LTO_null);
 }
 
@@ -790,9 +611,10 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
   init_empty_tree_cfg_for_function (fn);
   init_ssa_operands ();
 
-  profile_status_for_function (fn) = lto_input_enum (ib, profile_status_d, PROFILE_LAST);
+  profile_status_for_function (fn) = streamer_read_enum (ib, profile_status_d,
+							 PROFILE_LAST);
 
-  bb_count = lto_input_uleb128 (ib);
+  bb_count = streamer_read_uhwi (ib);
 
   last_basic_block_for_function (fn) = bb_count;
   if (bb_count > VEC_length (basic_block, basic_block_info_for_function (fn)))
@@ -803,7 +625,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
     VEC_safe_grow_cleared (basic_block, gc,
 			   label_to_block_map_for_function (fn), bb_count);
 
-  index = lto_input_sleb128 (ib);
+  index = streamer_read_hwi (ib);
   while (index != -1)
     {
       basic_block bb = BASIC_BLOCK_FOR_FUNCTION (fn, index);
@@ -812,7 +634,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
       if (bb == NULL)
 	bb = make_new_block (fn, index);
 
-      edge_count = lto_input_uleb128 (ib);
+      edge_count = streamer_read_uhwi (ib);
 
       /* Connect up the CFG.  */
       for (i = 0; i < edge_count; i++)
@@ -824,11 +646,11 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 	  gcov_type count;
 	  edge e;
 
-	  dest_index = lto_input_uleb128 (ib);
-	  probability = (int) lto_input_sleb128 (ib);
-	  count = ((gcov_type) lto_input_sleb128 (ib) * count_materialization_scale
+	  dest_index = streamer_read_uhwi (ib);
+	  probability = (int) streamer_read_hwi (ib);
+	  count = ((gcov_type) streamer_read_hwi (ib) * count_materialization_scale
 		   + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
-	  edge_flags = lto_input_uleb128 (ib);
+	  edge_flags = streamer_read_uhwi (ib);
 
 	  dest = BASIC_BLOCK_FOR_FUNCTION (fn, dest_index);
 
@@ -840,64 +662,19 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 	  e->count = count;
 	}
 
-      index = lto_input_sleb128 (ib);
+      index = streamer_read_hwi (ib);
     }
 
   p_bb = ENTRY_BLOCK_PTR_FOR_FUNCTION(fn);
-  index = lto_input_sleb128 (ib);
+  index = streamer_read_hwi (ib);
   while (index != -1)
     {
       basic_block bb = BASIC_BLOCK_FOR_FUNCTION (fn, index);
       bb->prev_bb = p_bb;
       p_bb->next_bb = bb;
       p_bb = bb;
-      index = lto_input_sleb128 (ib);
+      index = streamer_read_hwi (ib);
     }
-}
-
-
-/* Read a PHI function for basic block BB in function FN.  DATA_IN is
-   the file being read.  IB is the input block to use for reading.  */
-
-static gimple
-input_phi (struct lto_input_block *ib, basic_block bb, struct data_in *data_in,
-	   struct function *fn)
-{
-  unsigned HOST_WIDE_INT ix;
-  tree phi_result;
-  int i, len;
-  gimple result;
-
-  ix = lto_input_uleb128 (ib);
-  phi_result = VEC_index (tree, SSANAMES (fn), ix);
-  len = EDGE_COUNT (bb->preds);
-  result = create_phi_node (phi_result, bb);
-  SSA_NAME_DEF_STMT (phi_result) = result;
-
-  /* We have to go through a lookup process here because the preds in the
-     reconstructed graph are generally in a different order than they
-     were in the original program.  */
-  for (i = 0; i < len; i++)
-    {
-      tree def = lto_input_tree (ib, data_in);
-      int src_index = lto_input_uleb128 (ib);
-      location_t arg_loc = lto_input_location (ib, data_in);
-      basic_block sbb = BASIC_BLOCK_FOR_FUNCTION (fn, src_index);
-
-      edge e = NULL;
-      int j;
-
-      for (j = 0; j < len; j++)
-	if (EDGE_PRED (bb, j)->src == sbb)
-	  {
-	    e = EDGE_PRED (bb, j);
-	    break;
-	  }
-
-      add_phi_arg (result, def, e, arg_loc);
-    }
-
-  return result;
 }
 
 
@@ -910,10 +687,10 @@ input_ssa_names (struct lto_input_block *ib, struct data_in *data_in,
 {
   unsigned int i, size;
 
-  size = lto_input_uleb128 (ib);
+  size = streamer_read_uhwi (ib);
   init_ssanames (fn, size);
 
-  i = lto_input_uleb128 (ib);
+  i = streamer_read_uhwi (ib);
   while (i)
     {
       tree ssa_name, name;
@@ -923,274 +700,17 @@ input_ssa_names (struct lto_input_block *ib, struct data_in *data_in,
       while (VEC_length (tree, SSANAMES (fn)) < i)
 	VEC_quick_push (tree, SSANAMES (fn), NULL_TREE);
 
-      is_default_def = (lto_input_1_unsigned (ib) != 0);
-      name = lto_input_tree (ib, data_in);
+      is_default_def = (streamer_read_uchar (ib) != 0);
+      name = stream_read_tree (ib, data_in);
       ssa_name = make_ssa_name_fn (fn, name, gimple_build_nop ());
 
       if (is_default_def)
 	set_default_def (SSA_NAME_VAR (ssa_name), ssa_name);
 
-      i = lto_input_uleb128 (ib);
+      i = streamer_read_uhwi (ib);
     }
 }
 
-/* Read a statement with tag TAG in function FN from block IB using
-   descriptors in DATA_IN.  */
-
-static gimple
-input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
-		   struct function *fn, enum LTO_tags tag)
-{
-  gimple stmt;
-  enum gimple_code code;
-  unsigned HOST_WIDE_INT num_ops;
-  size_t i;
-  struct bitpack_d bp;
-
-  code = lto_tag_to_gimple_code (tag);
-
-  /* Read the tuple header.  */
-  bp = lto_input_bitpack (ib);
-  num_ops = bp_unpack_var_len_unsigned (&bp);
-  stmt = gimple_alloc (code, num_ops);
-  stmt->gsbase.no_warning = bp_unpack_value (&bp, 1);
-  if (is_gimple_assign (stmt))
-    stmt->gsbase.nontemporal_move = bp_unpack_value (&bp, 1);
-  stmt->gsbase.has_volatile_ops = bp_unpack_value (&bp, 1);
-  stmt->gsbase.subcode = bp_unpack_var_len_unsigned (&bp);
-
-  /* Read location information.  */
-  gimple_set_location (stmt, lto_input_location (ib, data_in));
-
-  /* Read lexical block reference.  */
-  gimple_set_block (stmt, lto_input_tree (ib, data_in));
-
-  /* Read in all the operands.  */
-  switch (code)
-    {
-    case GIMPLE_RESX:
-      gimple_resx_set_region (stmt, lto_input_sleb128 (ib));
-      break;
-
-    case GIMPLE_EH_MUST_NOT_THROW:
-      gimple_eh_must_not_throw_set_fndecl (stmt, lto_input_tree (ib, data_in));
-      break;
-
-    case GIMPLE_EH_DISPATCH:
-      gimple_eh_dispatch_set_region (stmt, lto_input_sleb128 (ib));
-      break;
-
-    case GIMPLE_ASM:
-      {
-	/* FIXME lto.  Move most of this into a new gimple_asm_set_string().  */
-	tree str;
-	stmt->gimple_asm.ni = lto_input_uleb128 (ib);
-	stmt->gimple_asm.no = lto_input_uleb128 (ib);
-	stmt->gimple_asm.nc = lto_input_uleb128 (ib);
-	stmt->gimple_asm.nl = lto_input_uleb128 (ib);
-	str = input_string_cst (data_in, ib);
-	stmt->gimple_asm.string = TREE_STRING_POINTER (str);
-      }
-      /* Fallthru  */
-
-    case GIMPLE_ASSIGN:
-    case GIMPLE_CALL:
-    case GIMPLE_RETURN:
-    case GIMPLE_SWITCH:
-    case GIMPLE_LABEL:
-    case GIMPLE_COND:
-    case GIMPLE_GOTO:
-    case GIMPLE_DEBUG:
-      for (i = 0; i < num_ops; i++)
-	{
-	  tree op = lto_input_tree (ib, data_in);
-	  gimple_set_op (stmt, i, op);
-	  if (!op)
-	    continue;
-
-	  /* Fixup FIELD_DECLs in COMPONENT_REFs, they are not handled
-	     by decl merging.  */
-	  if (TREE_CODE (op) == ADDR_EXPR)
-	    op = TREE_OPERAND (op, 0);
-	  while (handled_component_p (op))
-	    {
-	      if (TREE_CODE (op) == COMPONENT_REF)
-		{
-		  tree field, type, tem;
-		  tree closest_match = NULL_TREE;
-		  field = TREE_OPERAND (op, 1);
-		  type = DECL_CONTEXT (field);
-		  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
-		    {
-		      if (tem == field)
-			break;
-		      if (DECL_NONADDRESSABLE_P (tem)
-			  == DECL_NONADDRESSABLE_P (field)
-			  && gimple_compare_field_offset (tem, field))
-			{
-			  if (types_compatible_p (TREE_TYPE (tem),
-						  TREE_TYPE (field)))
-			    break;
-			  else
-			    closest_match = tem;
-			}
-		    }
-		  /* In case of type mismatches across units we can fail
-		     to unify some types and thus not find a proper
-		     field-decl here.  */
-		  if (tem == NULL_TREE)
-		    {
-		      /* Thus, emit a ODR violation warning.  */
-		      if (warning_at (gimple_location (stmt), 0,
-				      "use of type %<%E%> with two mismatching "
-				      "declarations at field %<%E%>",
-				      type, TREE_OPERAND (op, 1)))
-			{
-			  if (TYPE_FIELDS (type))
-			    inform (DECL_SOURCE_LOCATION (TYPE_FIELDS (type)),
-				    "original type declared here");
-			  inform (DECL_SOURCE_LOCATION (TREE_OPERAND (op, 1)),
-				  "field in mismatching type declared here");
-			  if (TYPE_NAME (TREE_TYPE (field))
-			      && (TREE_CODE (TYPE_NAME (TREE_TYPE (field)))
-				  == TYPE_DECL))
-			    inform (DECL_SOURCE_LOCATION
-				      (TYPE_NAME (TREE_TYPE (field))),
-				    "type of field declared here");
-			  if (closest_match
-			      && TYPE_NAME (TREE_TYPE (closest_match))
-			      && (TREE_CODE (TYPE_NAME
-				   (TREE_TYPE (closest_match))) == TYPE_DECL))
-			    inform (DECL_SOURCE_LOCATION
-				      (TYPE_NAME (TREE_TYPE (closest_match))),
-				    "type of mismatching field declared here");
-			}
-		      /* And finally fixup the types.  */
-		      TREE_OPERAND (op, 0)
-			= build1 (VIEW_CONVERT_EXPR, type,
-				  TREE_OPERAND (op, 0));
-		    }
-		  else
-		    TREE_OPERAND (op, 1) = tem;
-		}
-
-	      op = TREE_OPERAND (op, 0);
-	    }
-	}
-      if (is_gimple_call (stmt))
-	{
-	  if (gimple_call_internal_p (stmt))
-	    gimple_call_set_internal_fn
-	      (stmt, lto_input_enum (ib, internal_fn, IFN_LAST));
-	  else
-	    gimple_call_set_fntype (stmt, lto_input_tree (ib, data_in));
-	}
-      break;
-
-    case GIMPLE_NOP:
-    case GIMPLE_PREDICT:
-      break;
-
-    default:
-      internal_error ("bytecode stream: unknown GIMPLE statement tag %s",
-		      lto_tag_name (tag));
-    }
-
-  /* Update the properties of symbols, SSA names and labels associated
-     with STMT.  */
-  if (code == GIMPLE_ASSIGN || code == GIMPLE_CALL)
-    {
-      tree lhs = gimple_get_lhs (stmt);
-      if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	SSA_NAME_DEF_STMT (lhs) = stmt;
-    }
-  else if (code == GIMPLE_LABEL)
-    gcc_assert (emit_label_in_global_context_p (gimple_label_label (stmt))
-	        || DECL_CONTEXT (gimple_label_label (stmt)) == fn->decl);
-  else if (code == GIMPLE_ASM)
-    {
-      unsigned i;
-
-      for (i = 0; i < gimple_asm_noutputs (stmt); i++)
-	{
-	  tree op = TREE_VALUE (gimple_asm_output_op (stmt, i));
-	  if (TREE_CODE (op) == SSA_NAME)
-	    SSA_NAME_DEF_STMT (op) = stmt;
-	}
-    }
-
-  /* Reset alias information.  */
-  if (code == GIMPLE_CALL)
-    gimple_call_reset_alias_info (stmt);
-
-  /* Mark the statement modified so its operand vectors can be filled in.  */
-  gimple_set_modified (stmt, true);
-
-  return stmt;
-}
-
-
-/* Read a basic block with tag TAG from DATA_IN using input block IB.
-   FN is the function being processed.  */
-
-static void
-input_bb (struct lto_input_block *ib, enum LTO_tags tag,
-	  struct data_in *data_in, struct function *fn,
-	  int count_materialization_scale)
-{
-  unsigned int index;
-  basic_block bb;
-  gimple_stmt_iterator bsi;
-
-  /* This routine assumes that CFUN is set to FN, as it needs to call
-     basic GIMPLE routines that use CFUN.  */
-  gcc_assert (cfun == fn);
-
-  index = lto_input_uleb128 (ib);
-  bb = BASIC_BLOCK_FOR_FUNCTION (fn, index);
-
-  bb->count = (lto_input_sleb128 (ib) * count_materialization_scale
-	       + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
-  bb->loop_depth = lto_input_sleb128 (ib);
-  bb->frequency = lto_input_sleb128 (ib);
-  bb->flags = lto_input_sleb128 (ib);
-
-  /* LTO_bb1 has statements.  LTO_bb0 does not.  */
-  if (tag == LTO_bb0)
-    return;
-
-  bsi = gsi_start_bb (bb);
-  tag = input_record_start (ib);
-  while (tag)
-    {
-      gimple stmt = input_gimple_stmt (ib, data_in, fn, tag);
-      if (!is_gimple_debug (stmt))
-	find_referenced_vars_in (stmt);
-      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
-
-      /* After the statement, expect a 0 delimiter or the EH region
-	 that the previous statement belongs to.  */
-      tag = input_record_start (ib);
-      lto_tag_check_set (tag, 2, LTO_eh_region, LTO_null);
-
-      if (tag == LTO_eh_region)
-	{
-	  HOST_WIDE_INT region = lto_input_sleb128 (ib);
-	  gcc_assert (region == (int) region);
-	  add_stmt_to_eh_lp (stmt, region);
-	}
-
-      tag = input_record_start (ib);
-    }
-
-  tag = input_record_start (ib);
-  while (tag)
-    {
-      gimple phi = input_phi (ib, bb, data_in, fn);
-      find_referenced_vars_in (phi);
-      tag = input_record_start (ib);
-    }
-}
 
 /* Go through all NODE edges and fixup call_stmt pointers
    so they point to STMTS.  */
@@ -1250,14 +770,14 @@ input_function (tree fn_decl, struct data_in *data_in,
   int len;
 
   fn = DECL_STRUCT_FUNCTION (fn_decl);
-  tag = input_record_start (ib);
+  tag = streamer_read_record_start (ib);
   clear_line_info (data_in);
 
   gimple_register_cfg_hooks ();
   lto_tag_check (tag, LTO_function);
 
   /* Read all the attributes for FN.  */
-  bp = lto_input_bitpack (ib);
+  bp = streamer_read_bitpack (ib);
   fn->is_thunk = bp_unpack_value (&bp, 1);
   fn->has_local_explicit_reg_vars = bp_unpack_value (&bp, 1);
   fn->after_tree_profile = bp_unpack_value (&bp, 1);
@@ -1278,38 +798,38 @@ input_function (tree fn_decl, struct data_in *data_in,
   fn->function_end_locus = lto_input_location (ib, data_in);
 
   /* Input the current IL state of the function.  */
-  fn->curr_properties = lto_input_uleb128 (ib);
+  fn->curr_properties = streamer_read_uhwi (ib);
 
   /* Read the static chain and non-local goto save area.  */
-  fn->static_chain_decl = lto_input_tree (ib, data_in);
-  fn->nonlocal_goto_save_area = lto_input_tree (ib, data_in);
+  fn->static_chain_decl = stream_read_tree (ib, data_in);
+  fn->nonlocal_goto_save_area = stream_read_tree (ib, data_in);
 
   /* Read all the local symbols.  */
-  len = lto_input_sleb128 (ib);
+  len = streamer_read_hwi (ib);
   if (len > 0)
     {
       int i;
       VEC_safe_grow (tree, gc, fn->local_decls, len);
       for (i = 0; i < len; i++)
 	{
-	  tree t = lto_input_tree (ib, data_in);
+	  tree t = stream_read_tree (ib, data_in);
 	  VEC_replace (tree, fn->local_decls, i, t);
 	}
     }
 
   /* Read all function arguments.  We need to re-map them here to the
      arguments of the merged function declaration.  */
-  args = lto_input_tree (ib, data_in);
+  args = stream_read_tree (ib, data_in);
   for (oarg = args, narg = DECL_ARGUMENTS (fn_decl);
        oarg && narg;
        oarg = TREE_CHAIN (oarg), narg = TREE_CHAIN (narg))
     {
       unsigned ix;
       bool res;
-      res = lto_streamer_cache_lookup (data_in->reader_cache, oarg, &ix);
+      res = streamer_tree_cache_lookup (data_in->reader_cache, oarg, &ix);
       gcc_assert (res);
       /* Replace the argument in the streamer cache.  */
-      lto_streamer_cache_insert_at (data_in->reader_cache, narg, ix);
+      streamer_tree_cache_insert_at (data_in->reader_cache, narg, ix);
     }
   gcc_assert (!oarg && !narg);
 
@@ -1320,18 +840,18 @@ input_function (tree fn_decl, struct data_in *data_in,
   input_eh_regions (ib, data_in, fn);
 
   /* Read the tree of lexical scopes for the function.  */
-  DECL_INITIAL (fn_decl) = lto_input_tree (ib, data_in);
+  DECL_INITIAL (fn_decl) = stream_read_tree (ib, data_in);
   gcc_assert (DECL_INITIAL (fn_decl));
   DECL_SAVED_TREE (fn_decl) = NULL_TREE;
   node = cgraph_get_create_node (fn_decl);
 
   /* Read all the basic blocks.  */
-  tag = input_record_start (ib);
+  tag = streamer_read_record_start (ib);
   while (tag)
     {
       input_bb (ib, tag, data_in, fn,
 		node->count_materialization_scale);
-      tag = input_record_start (ib);
+      tag = streamer_read_record_start (ib);
     }
 
   /* Fix up the call statements that are mentioned in the callgraph
@@ -1401,7 +921,7 @@ input_alias_pairs (struct lto_input_block *ib, struct data_in *data_in)
 
   clear_line_info (data_in);
 
-  var = lto_input_tree (ib, data_in);
+  var = stream_read_tree (ib, data_in);
   while (var)
     {
       const char *orig_name, *new_name;
@@ -1409,7 +929,7 @@ input_alias_pairs (struct lto_input_block *ib, struct data_in *data_in)
 
       p = VEC_safe_push (alias_pair, gc, alias_pairs, NULL);
       p->decl = var;
-      p->target = lto_input_tree (ib, data_in);
+      p->target = stream_read_tree (ib, data_in);
 
       /* If the target is a static object, we may have registered a
 	 new name for it to avoid clashes between statics coming from
@@ -1419,7 +939,7 @@ input_alias_pairs (struct lto_input_block *ib, struct data_in *data_in)
       if (strcmp (orig_name, new_name) != 0)
 	p->target = get_identifier (new_name);
 
-      var = lto_input_tree (ib, data_in);
+      var = stream_read_tree (ib, data_in);
     }
 }
 
@@ -1525,952 +1045,6 @@ lto_input_constructors_and_inits (struct lto_file_decl_data *file_data,
 }
 
 
-/* Unpack all the non-pointer fields of the TS_BASE structure of
-   expression EXPR from bitpack BP.  */
-
-static void
-unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
-{
-  /* Note that the code for EXPR has already been unpacked to create EXPR in
-     lto_materialize_tree.  */
-  if (!TYPE_P (expr))
-    {
-      TREE_SIDE_EFFECTS (expr) = (unsigned) bp_unpack_value (bp, 1);
-      TREE_CONSTANT (expr) = (unsigned) bp_unpack_value (bp, 1);
-      TREE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
-
-      /* TREE_PUBLIC is used on types to indicate that the type
-	 has a TYPE_CACHED_VALUES vector.  This is not streamed out,
-	 so we skip it here.  */
-      TREE_PUBLIC (expr) = (unsigned) bp_unpack_value (bp, 1);
-    }
-  else
-    bp_unpack_value (bp, 4);
-  TREE_ADDRESSABLE (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TREE_THIS_VOLATILE (expr) = (unsigned) bp_unpack_value (bp, 1);
-  if (DECL_P (expr))
-    DECL_UNSIGNED (expr) = (unsigned) bp_unpack_value (bp, 1);
-  else if (TYPE_P (expr))
-    TYPE_UNSIGNED (expr) = (unsigned) bp_unpack_value (bp, 1);
-  else
-    bp_unpack_value (bp, 1);
-  TREE_ASM_WRITTEN (expr) = (unsigned) bp_unpack_value (bp, 1);
-  if (TYPE_P (expr))
-    TYPE_ARTIFICIAL (expr) = (unsigned) bp_unpack_value (bp, 1);
-  else
-    TREE_NO_WARNING (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TREE_USED (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TREE_NOTHROW (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TREE_STATIC (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TREE_PRIVATE (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TREE_PROTECTED (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TREE_DEPRECATED (expr) = (unsigned) bp_unpack_value (bp, 1);
-  if (TYPE_P (expr))
-    TYPE_SATURATING (expr) = (unsigned) bp_unpack_value (bp, 1);
-  else if (TREE_CODE (expr) == SSA_NAME)
-    SSA_NAME_IS_DEFAULT_DEF (expr) = (unsigned) bp_unpack_value (bp, 1);
-  else
-    bp_unpack_value (bp, 1);
-}
-
-
-/* Unpack all the non-pointer fields of the TS_REAL_CST structure of
-   expression EXPR from bitpack BP.  */
-
-static void
-unpack_ts_real_cst_value_fields (struct bitpack_d *bp, tree expr)
-{
-  unsigned i;
-  REAL_VALUE_TYPE r;
-  REAL_VALUE_TYPE *rp;
-
-  r.cl = (unsigned) bp_unpack_value (bp, 2);
-  r.decimal = (unsigned) bp_unpack_value (bp, 1);
-  r.sign = (unsigned) bp_unpack_value (bp, 1);
-  r.signalling = (unsigned) bp_unpack_value (bp, 1);
-  r.canonical = (unsigned) bp_unpack_value (bp, 1);
-  r.uexp = (unsigned) bp_unpack_value (bp, EXP_BITS);
-  for (i = 0; i < SIGSZ; i++)
-    r.sig[i] = (unsigned long) bp_unpack_value (bp, HOST_BITS_PER_LONG);
-
-  rp = ggc_alloc_real_value ();
-  memcpy (rp, &r, sizeof (REAL_VALUE_TYPE));
-  TREE_REAL_CST_PTR (expr) = rp;
-}
-
-
-/* Unpack all the non-pointer fields of the TS_FIXED_CST structure of
-   expression EXPR from bitpack BP.  */
-
-static void
-unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
-{
-  struct fixed_value fv;
-
-  fv.mode = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
-  fv.data.low = bp_unpack_var_len_int (bp);
-  fv.data.high = bp_unpack_var_len_int (bp);
-  TREE_FIXED_CST (expr) = fv;
-}
-
-
-/* Unpack all the non-pointer fields of the TS_DECL_COMMON structure
-   of expression EXPR from bitpack BP.  */
-
-static void
-unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
-{
-  DECL_MODE (expr) = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
-  DECL_NONLOCAL (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_VIRTUAL_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_IGNORED_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_ABSTRACT (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_ARTIFICIAL (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_PRESERVE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_DEBUG_EXPR_IS_FROM (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_EXTERNAL (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_GIMPLE_REG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_ALIGN (expr) = (unsigned) bp_unpack_var_len_unsigned (bp);
-
-  if (TREE_CODE (expr) == LABEL_DECL)
-    {
-      DECL_ERROR_ISSUED (expr) = (unsigned) bp_unpack_value (bp, 1);
-      EH_LANDING_PAD_NR (expr) = (int) bp_unpack_var_len_unsigned (bp);
-
-      /* Always assume an initial value of -1 for LABEL_DECL_UID to
-	 force gimple_set_bb to recreate label_to_block_map.  */
-      LABEL_DECL_UID (expr) = -1;
-    }
-
-  if (TREE_CODE (expr) == FIELD_DECL)
-    {
-      DECL_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
-      DECL_NONADDRESSABLE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-      expr->decl_common.off_align = bp_unpack_value (bp, 8);
-    }
-
-  if (TREE_CODE (expr) == RESULT_DECL
-      || TREE_CODE (expr) == PARM_DECL
-      || TREE_CODE (expr) == VAR_DECL)
-    {
-      DECL_BY_REFERENCE (expr) = (unsigned) bp_unpack_value (bp, 1);
-      if (TREE_CODE (expr) == VAR_DECL
-	  || TREE_CODE (expr) == PARM_DECL)
-	DECL_HAS_VALUE_EXPR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-      DECL_RESTRICTED_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-    }
-}
-
-
-/* Unpack all the non-pointer fields of the TS_DECL_WRTL structure
-   of expression EXPR from bitpack BP.  */
-
-static void
-unpack_ts_decl_wrtl_value_fields (struct bitpack_d *bp, tree expr)
-{
-  DECL_REGISTER (expr) = (unsigned) bp_unpack_value (bp, 1);
-}
-
-
-/* Unpack all the non-pointer fields of the TS_DECL_WITH_VIS structure
-   of expression EXPR from bitpack BP.  */
-
-static void
-unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
-{
-  DECL_DEFER_OUTPUT (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_COMMON (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_DLLIMPORT_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_WEAK (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_SEEN_IN_BIND_EXPR_P (expr) = (unsigned) bp_unpack_value (bp,  1);
-  DECL_COMDAT (expr) = (unsigned) bp_unpack_value (bp,  1);
-  DECL_VISIBILITY (expr) = (enum symbol_visibility) bp_unpack_value (bp,  2);
-  DECL_VISIBILITY_SPECIFIED (expr) = (unsigned) bp_unpack_value (bp,  1);
-
-  if (TREE_CODE (expr) == VAR_DECL)
-    {
-      DECL_HARD_REGISTER (expr) = (unsigned) bp_unpack_value (bp, 1);
-      DECL_IN_TEXT_SECTION (expr) = (unsigned) bp_unpack_value (bp, 1);
-      DECL_IN_CONSTANT_POOL (expr) = (unsigned) bp_unpack_value (bp, 1);
-      DECL_TLS_MODEL (expr) = (enum tls_model) bp_unpack_value (bp,  3);
-    }
-
-  if (VAR_OR_FUNCTION_DECL_P (expr))
-    {
-      priority_type p;
-      p = (priority_type) bp_unpack_var_len_unsigned (bp);
-      SET_DECL_INIT_PRIORITY (expr, p);
-    }
-}
-
-
-/* Unpack all the non-pointer fields of the TS_FUNCTION_DECL structure
-   of expression EXPR from bitpack BP.  */
-
-static void
-unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
-{
-  DECL_BUILT_IN_CLASS (expr) = bp_unpack_enum (bp, built_in_class,
-					       BUILT_IN_LAST);
-  DECL_STATIC_CONSTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_STATIC_DESTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_UNINLINABLE (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_POSSIBLY_INLINED (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_IS_NOVOPS (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_IS_RETURNS_TWICE (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_IS_MALLOC (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_IS_OPERATOR_NEW (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_DECLARED_INLINE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_STATIC_CHAIN (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_NO_INLINE_WARNING_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (expr)
-    			= (unsigned) bp_unpack_value (bp, 1);
-  DECL_NO_LIMIT_STACK (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_DISREGARD_INLINE_LIMITS (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_LOOPING_CONST_OR_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  if (DECL_BUILT_IN_CLASS (expr) != NOT_BUILT_IN)
-    {
-      DECL_FUNCTION_CODE (expr) = (enum built_in_function) bp_unpack_value (bp, 11);
-      if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_NORMAL
-	  && DECL_FUNCTION_CODE (expr) >= END_BUILTINS)
-	fatal_error ("machine independent builtin code out of range");
-      else if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD)
-	{
-          tree result = targetm.builtin_decl (DECL_FUNCTION_CODE (expr), true);
-	  if (!result || result == error_mark_node)
-	    fatal_error ("target specific builtin not available");
-	}
-    }
-  if (DECL_STATIC_DESTRUCTOR (expr))
-    {
-      priority_type p;
-      p = (priority_type) bp_unpack_var_len_unsigned (bp);
-      SET_DECL_FINI_PRIORITY (expr, p);
-    }
-}
-
-
-/* Unpack all the non-pointer fields of the TS_TYPE_COMMON structure
-   of expression EXPR from bitpack BP.  */
-
-static void
-unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
-{
-  enum machine_mode mode;
-
-  mode = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
-  SET_TYPE_MODE (expr, mode);
-  TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_NO_FORCE_BLK (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_NEEDS_CONSTRUCTING (expr) = (unsigned) bp_unpack_value (bp, 1);
-  if (RECORD_OR_UNION_TYPE_P (expr))
-    TYPE_TRANSPARENT_AGGR (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr)
-    	= (unsigned) bp_unpack_value (bp, 2);
-  TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_PRECISION (expr) = bp_unpack_var_len_unsigned (bp);
-  TYPE_ALIGN (expr) = bp_unpack_var_len_unsigned (bp);
-  TYPE_ALIAS_SET (expr) = bp_unpack_var_len_int (bp);
-}
-
-
-/* Unpack all the non-pointer fields of the TS_BLOCK structure
-   of expression EXPR from bitpack BP.  */
-
-static void
-unpack_ts_block_value_fields (struct bitpack_d *bp, tree expr)
-{
-  BLOCK_ABSTRACT (expr) = (unsigned) bp_unpack_value (bp, 1);
-  /* BLOCK_NUMBER is recomputed.  */
-}
-
-/* Unpack all the non-pointer fields of the TS_TRANSLATION_UNIT_DECL
-   structure of expression EXPR from bitpack BP.  */
-
-static void
-unpack_ts_translation_unit_decl_value_fields (struct bitpack_d *bp ATTRIBUTE_UNUSED, tree expr ATTRIBUTE_UNUSED)
-{
-}
-
-/* Unpack all the non-pointer fields in EXPR into a bit pack.  */
-
-static void
-unpack_value_fields (struct bitpack_d *bp, tree expr)
-{
-  enum tree_code code;
-
-  code = TREE_CODE (expr);
-
-  /* Note that all these functions are highly sensitive to changes in
-     the types and sizes of each of the fields being packed.  */
-  unpack_ts_base_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
-    unpack_ts_real_cst_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
-    unpack_ts_fixed_cst_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
-    unpack_ts_decl_common_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
-    unpack_ts_decl_wrtl_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
-    unpack_ts_decl_with_vis_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
-    unpack_ts_function_decl_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
-    unpack_ts_type_common_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
-    unpack_ts_block_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
-    unpack_ts_translation_unit_decl_value_fields (bp, expr);
-
-  if (streamer_hooks.unpack_value_fields)
-    streamer_hooks.unpack_value_fields (bp, expr);
-}
-
-
-/* Materialize a new tree from input block IB using descriptors in
-   DATA_IN.  The code for the new tree should match TAG.  Store in
-   *IX_P the index into the reader cache where the new tree is stored.  */
-
-static tree
-lto_materialize_tree (struct lto_input_block *ib, struct data_in *data_in,
-		      enum LTO_tags tag)
-{
-  struct bitpack_d bp;
-  enum tree_code code;
-  tree result;
-#ifdef LTO_STREAMER_DEBUG
-  HOST_WIDEST_INT orig_address_in_writer;
-#endif
-
-  result = NULL_TREE;
-
-#ifdef LTO_STREAMER_DEBUG
-  /* Read the word representing the memory address for the tree
-     as it was written by the writer.  This is useful when
-     debugging differences between the writer and reader.  */
-  orig_address_in_writer = lto_input_sleb128 (ib);
-  gcc_assert ((intptr_t) orig_address_in_writer == orig_address_in_writer);
-#endif
-
-  code = lto_tag_to_tree_code (tag);
-
-  /* We should never see an SSA_NAME tree.  Only the version numbers of
-     SSA names are ever written out.  See input_ssa_names.  */
-  gcc_assert (code != SSA_NAME);
-
-  /* Instantiate a new tree using the header data.  */
-  if (CODE_CONTAINS_STRUCT (code, TS_STRING))
-    result = input_string_cst (data_in, ib);
-  else if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
-    result = input_identifier (data_in, ib);
-  else if (CODE_CONTAINS_STRUCT (code, TS_VEC))
-    {
-      HOST_WIDE_INT len = lto_input_sleb128 (ib);
-      result = make_tree_vec (len);
-    }
-  else if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    {
-      unsigned HOST_WIDE_INT len = lto_input_uleb128 (ib);
-      result = make_tree_binfo (len);
-    }
-  else
-    {
-      /* For all other nodes, see if the streamer knows how to allocate
-	 it.  */
-      if (streamer_hooks.alloc_tree)
-	result = streamer_hooks.alloc_tree (code, ib, data_in);
-
-      /* If the hook did not handle it, materialize the tree with a raw
-	 make_node call.  */
-      if (result == NULL_TREE)
-	result = make_node (code);
-    }
-
-#ifdef LTO_STREAMER_DEBUG
-  /* Store the original address of the tree as seen by the writer
-     in RESULT's aux field.  This is useful when debugging streaming
-     problems.  This way, a debugging session can be started on
-     both writer and reader with a breakpoint using this address
-     value in both.  */
-  lto_orig_address_map (result, (intptr_t) orig_address_in_writer);
-#endif
-
-  /* Read the bitpack of non-pointer values from IB.  */
-  bp = lto_input_bitpack (ib);
-
-  /* The first word in BP contains the code of the tree that we
-     are about to read.  */
-  code = (enum tree_code) bp_unpack_value (&bp, 16);
-  lto_tag_check (lto_tree_code_to_tag (code), tag);
-
-  /* Unpack all the value fields from BP.  */
-  unpack_value_fields (&bp, result);
-
-  /* Enter RESULT in the reader cache.  This will make RESULT
-     available so that circular references in the rest of the tree
-     structure can be resolved in subsequent calls to lto_input_tree.  */
-  lto_streamer_cache_append (data_in->reader_cache, result);
-
-  return result;
-}
-
-
-/* Read all pointer fields in the TS_COMMON structure of EXPR from input
-   block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-
-static void
-lto_input_ts_common_tree_pointers (struct lto_input_block *ib,
-				   struct data_in *data_in, tree expr)
-{
-  if (TREE_CODE (expr) != IDENTIFIER_NODE)
-    TREE_TYPE (expr) = lto_input_tree (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_VECTOR structure of EXPR from input
-   block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_vector_tree_pointers (struct lto_input_block *ib,
-				   struct data_in *data_in, tree expr)
-{
-  TREE_VECTOR_CST_ELTS (expr) = lto_input_chain (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_COMPLEX structure of EXPR from input
-   block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_complex_tree_pointers (struct lto_input_block *ib,
-				    struct data_in *data_in, tree expr)
-{
-  TREE_REALPART (expr) = lto_input_tree (ib, data_in);
-  TREE_IMAGPART (expr) = lto_input_tree (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_DECL_MINIMAL structure of EXPR
-   from input block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_decl_minimal_tree_pointers (struct lto_input_block *ib,
-					 struct data_in *data_in, tree expr)
-{
-  DECL_NAME (expr) = lto_input_tree (ib, data_in);
-  DECL_CONTEXT (expr) = lto_input_tree (ib, data_in);
-  DECL_SOURCE_LOCATION (expr) = lto_input_location (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_DECL_COMMON structure of EXPR from
-   input block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
-					struct data_in *data_in, tree expr)
-{
-  DECL_SIZE (expr) = lto_input_tree (ib, data_in);
-  DECL_SIZE_UNIT (expr) = lto_input_tree (ib, data_in);
-  DECL_ATTRIBUTES (expr) = lto_input_tree (ib, data_in);
-
-  /* Do not stream DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
-
-  if (TREE_CODE (expr) == PARM_DECL)
-    TREE_CHAIN (expr) = lto_input_chain (ib, data_in);
-
-  if ((TREE_CODE (expr) == VAR_DECL
-       || TREE_CODE (expr) == PARM_DECL)
-      && DECL_HAS_VALUE_EXPR_P (expr))
-    SET_DECL_VALUE_EXPR (expr, lto_input_tree (ib, data_in));
-
-  if (TREE_CODE (expr) == VAR_DECL)
-    {
-      tree dexpr = lto_input_tree (ib, data_in);
-      if (dexpr)
-	SET_DECL_DEBUG_EXPR (expr, dexpr);
-    }
-}
-
-
-/* Read all pointer fields in the TS_DECL_NON_COMMON structure of
-   EXPR from input block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_decl_non_common_tree_pointers (struct lto_input_block *ib,
-					    struct data_in *data_in, tree expr)
-{
-  if (TREE_CODE (expr) == FUNCTION_DECL)
-    {
-      DECL_ARGUMENTS (expr) = lto_input_tree (ib, data_in);
-      DECL_RESULT (expr) = lto_input_tree (ib, data_in);
-    }
-  DECL_VINDEX (expr) = lto_input_tree (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_DECL_WITH_VIS structure of EXPR
-   from input block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_decl_with_vis_tree_pointers (struct lto_input_block *ib,
-				          struct data_in *data_in, tree expr)
-{
-  tree id;
-
-  id = lto_input_tree (ib, data_in);
-  if (id)
-    {
-      gcc_assert (TREE_CODE (id) == IDENTIFIER_NODE);
-      SET_DECL_ASSEMBLER_NAME (expr, id);
-    }
-
-  DECL_SECTION_NAME (expr) = lto_input_tree (ib, data_in);
-  DECL_COMDAT_GROUP (expr) = lto_input_tree (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_FIELD_DECL structure of EXPR from
-   input block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_field_decl_tree_pointers (struct lto_input_block *ib,
-				       struct data_in *data_in, tree expr)
-{
-  DECL_FIELD_OFFSET (expr) = lto_input_tree (ib, data_in);
-  DECL_BIT_FIELD_TYPE (expr) = lto_input_tree (ib, data_in);
-  DECL_QUALIFIER (expr) = lto_input_tree (ib, data_in);
-  DECL_FIELD_BIT_OFFSET (expr) = lto_input_tree (ib, data_in);
-  DECL_FCONTEXT (expr) = lto_input_tree (ib, data_in);
-  TREE_CHAIN (expr) = lto_input_chain (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_FUNCTION_DECL structure of EXPR
-   from input block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
-					  struct data_in *data_in, tree expr)
-{
-  /* DECL_STRUCT_FUNCTION is handled by lto_input_function.  FIXME lto,
-     maybe it should be handled here?  */
-  DECL_FUNCTION_PERSONALITY (expr) = lto_input_tree (ib, data_in);
-  DECL_FUNCTION_SPECIFIC_TARGET (expr) = lto_input_tree (ib, data_in);
-  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = lto_input_tree (ib, data_in);
-
-  /* If the file contains a function with an EH personality set,
-     then it was compiled with -fexceptions.  In that case, initialize
-     the backend EH machinery.  */
-  if (DECL_FUNCTION_PERSONALITY (expr))
-    lto_init_eh ();
-}
-
-
-/* Read all pointer fields in the TS_TYPE_COMMON structure of EXPR from
-   input block IB.  DATA_IN contains tables and descriptors for the file
-   being read.  */
-
-static void
-lto_input_ts_type_common_tree_pointers (struct lto_input_block *ib,
-					struct data_in *data_in, tree expr)
-{
-  TYPE_SIZE (expr) = lto_input_tree (ib, data_in);
-  TYPE_SIZE_UNIT (expr) = lto_input_tree (ib, data_in);
-  TYPE_ATTRIBUTES (expr) = lto_input_tree (ib, data_in);
-  TYPE_NAME (expr) = lto_input_tree (ib, data_in);
-  /* Do not stream TYPE_POINTER_TO or TYPE_REFERENCE_TO.  They will be
-     reconstructed during fixup.  */
-  /* Do not stream TYPE_NEXT_VARIANT, we reconstruct the variant lists
-     during fixup.  */
-  TYPE_MAIN_VARIANT (expr) = lto_input_tree (ib, data_in);
-  TYPE_CONTEXT (expr) = lto_input_tree (ib, data_in);
-  /* TYPE_CANONICAL gets re-computed during type merging.  */
-  TYPE_CANONICAL (expr) = NULL_TREE;
-  TYPE_STUB_DECL (expr) = lto_input_tree (ib, data_in);
-}
-
-/* Read all pointer fields in the TS_TYPE_NON_COMMON structure of EXPR
-   from input block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_type_non_common_tree_pointers (struct lto_input_block *ib,
-					    struct data_in *data_in,
-					    tree expr)
-{
-  if (TREE_CODE (expr) == ENUMERAL_TYPE)
-    TYPE_VALUES (expr) = lto_input_tree (ib, data_in);
-  else if (TREE_CODE (expr) == ARRAY_TYPE)
-    TYPE_DOMAIN (expr) = lto_input_tree (ib, data_in);
-  else if (RECORD_OR_UNION_TYPE_P (expr))
-    TYPE_FIELDS (expr) = lto_input_tree (ib, data_in);
-  else if (TREE_CODE (expr) == FUNCTION_TYPE
-	   || TREE_CODE (expr) == METHOD_TYPE)
-    TYPE_ARG_TYPES (expr) = lto_input_tree (ib, data_in);
-
-  if (!POINTER_TYPE_P (expr))
-    TYPE_MINVAL (expr) = lto_input_tree (ib, data_in);
-  TYPE_MAXVAL (expr) = lto_input_tree (ib, data_in);
-  if (RECORD_OR_UNION_TYPE_P (expr))
-    TYPE_BINFO (expr) = lto_input_tree (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_LIST structure of EXPR from input
-   block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_list_tree_pointers (struct lto_input_block *ib,
-				 struct data_in *data_in, tree expr)
-{
-  TREE_PURPOSE (expr) = lto_input_tree (ib, data_in);
-  TREE_VALUE (expr) = lto_input_tree (ib, data_in);
-  TREE_CHAIN (expr) = lto_input_chain (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_VEC structure of EXPR from input
-   block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_vec_tree_pointers (struct lto_input_block *ib,
-				struct data_in *data_in, tree expr)
-{
-  int i;
-
-  /* Note that TREE_VEC_LENGTH was read by lto_materialize_tree to
-     instantiate EXPR.  */
-  for (i = 0; i < TREE_VEC_LENGTH (expr); i++)
-    TREE_VEC_ELT (expr, i) = lto_input_tree (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_EXP structure of EXPR from input
-   block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-
-static void
-lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
-			        struct data_in *data_in, tree expr)
-{
-  int i, length;
-  location_t loc;
-
-  length = lto_input_sleb128 (ib);
-  gcc_assert (length == TREE_OPERAND_LENGTH (expr));
-
-  for (i = 0; i < length; i++)
-    TREE_OPERAND (expr, i) = lto_input_tree (ib, data_in);
-
-  loc = lto_input_location (ib, data_in);
-  SET_EXPR_LOCATION (expr, loc);
-  TREE_BLOCK (expr) = lto_input_tree (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_BLOCK structure of EXPR from input
-   block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
-				  struct data_in *data_in, tree expr)
-{
-  /* Do not stream BLOCK_SOURCE_LOCATION.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
-  BLOCK_VARS (expr) = lto_input_chain (ib, data_in);
-
-  /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
-
-  BLOCK_SUPERCONTEXT (expr) = lto_input_tree (ib, data_in);
-  /* Do not stream BLOCK_ABSTRACT_ORIGIN.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
-  BLOCK_FRAGMENT_ORIGIN (expr) = lto_input_tree (ib, data_in);
-  BLOCK_FRAGMENT_CHAIN (expr) = lto_input_tree (ib, data_in);
-  /* We re-compute BLOCK_SUBBLOCKS of our parent here instead
-     of streaming it.  For non-BLOCK BLOCK_SUPERCONTEXTs we still
-     stream the child relationship explicitly.  */
-  if (BLOCK_SUPERCONTEXT (expr)
-      && TREE_CODE (BLOCK_SUPERCONTEXT (expr)) == BLOCK)
-    {
-      BLOCK_CHAIN (expr) = BLOCK_SUBBLOCKS (BLOCK_SUPERCONTEXT (expr));
-      BLOCK_SUBBLOCKS (BLOCK_SUPERCONTEXT (expr)) = expr;
-    }
-  /* The global block is rooted at the TU decl.  Hook it here to
-     avoid the need to stream in this block during WPA time.  */
-  else if (BLOCK_SUPERCONTEXT (expr)
-	   && TREE_CODE (BLOCK_SUPERCONTEXT (expr)) == TRANSLATION_UNIT_DECL)
-    DECL_INITIAL (BLOCK_SUPERCONTEXT (expr)) = expr;
-  /* The function-level block is connected at the time we read in
-     function bodies for the same reason.  */
-}
-
-
-/* Read all pointer fields in the TS_BINFO structure of EXPR from input
-   block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
-				  struct data_in *data_in, tree expr)
-{
-  unsigned i, len;
-  tree t;
-
-  /* Note that the number of slots in EXPR was read in
-     lto_materialize_tree when instantiating EXPR.  However, the
-     vector is empty so we cannot rely on VEC_length to know how many
-     elements to read.  So, this list is emitted as a 0-terminated
-     list on the writer side.  */
-  do
-    {
-      t = lto_input_tree (ib, data_in);
-      if (t)
-	VEC_quick_push (tree, BINFO_BASE_BINFOS (expr), t);
-    }
-  while (t);
-
-  BINFO_OFFSET (expr) = lto_input_tree (ib, data_in);
-  BINFO_VTABLE (expr) = lto_input_tree (ib, data_in);
-  BINFO_VIRTUALS (expr) = lto_input_tree (ib, data_in);
-  BINFO_VPTR_FIELD (expr) = lto_input_tree (ib, data_in);
-
-  len = lto_input_uleb128 (ib);
-  if (len > 0)
-    {
-      VEC_reserve_exact (tree, gc, BINFO_BASE_ACCESSES (expr), len);
-      for (i = 0; i < len; i++)
-	{
-	  tree a = lto_input_tree (ib, data_in);
-	  VEC_quick_push (tree, BINFO_BASE_ACCESSES (expr), a);
-	}
-    }
-
-  BINFO_INHERITANCE_CHAIN (expr) = lto_input_tree (ib, data_in);
-  BINFO_SUBVTT_INDEX (expr) = lto_input_tree (ib, data_in);
-  BINFO_VPTR_INDEX (expr) = lto_input_tree (ib, data_in);
-}
-
-
-/* Read all pointer fields in the TS_CONSTRUCTOR structure of EXPR from
-   input block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_ts_constructor_tree_pointers (struct lto_input_block *ib,
-				        struct data_in *data_in, tree expr)
-{
-  unsigned i, len;
-
-  len = lto_input_uleb128 (ib);
-  for (i = 0; i < len; i++)
-    {
-      tree index, value;
-
-      index = lto_input_tree (ib, data_in);
-      value = lto_input_tree (ib, data_in);
-      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (expr), index, value);
-    }
-}
-
-
-/* Input a TS_TARGET_OPTION tree from IB into EXPR.  */
-
-static void
-lto_input_ts_target_option (struct lto_input_block *ib, tree expr)
-{
-  unsigned i, len;
-  struct bitpack_d bp;
-  struct cl_target_option *t = TREE_TARGET_OPTION (expr);
-
-  bp = lto_input_bitpack (ib);
-  len = sizeof (struct cl_target_option);
-  for (i = 0; i < len; i++)
-    ((unsigned char *)t)[i] = bp_unpack_value (&bp, 8);
-  if (bp_unpack_value (&bp, 32) != 0x12345678)
-    fatal_error ("cl_target_option size mismatch in LTO reader and writer");
-}
-
-/* Input a TS_TRANSLATION_UNIT_DECL tree from IB and DATA_IN into EXPR.  */
-
-static void
-lto_input_ts_translation_unit_decl_tree_pointers (struct lto_input_block *ib,
-						  struct data_in *data_in,
-						  tree expr)
-{
-  TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (lto_input_string (data_in, ib));
-  VEC_safe_push (tree, gc, all_translation_units, expr);
-}
-
-/* Helper for lto_input_tree.  Read all pointer fields in EXPR from
-   input block IB.  DATA_IN contains tables and descriptors for the
-   file being read.  */
-
-static void
-lto_input_tree_pointers (struct lto_input_block *ib, struct data_in *data_in,
-			 tree expr)
-{
-  enum tree_code code;
-
-  code = TREE_CODE (expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
-    lto_input_ts_common_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
-    lto_input_ts_vector_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
-    lto_input_ts_complex_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
-    lto_input_ts_decl_minimal_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
-    lto_input_ts_decl_common_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
-    lto_input_ts_decl_non_common_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
-    lto_input_ts_decl_with_vis_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
-    lto_input_ts_field_decl_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
-    lto_input_ts_function_decl_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
-    lto_input_ts_type_common_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
-    lto_input_ts_type_non_common_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_LIST))
-    lto_input_ts_list_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_VEC))
-    lto_input_ts_vec_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
-    lto_input_ts_exp_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
-    lto_input_ts_block_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    lto_input_ts_binfo_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
-    lto_input_ts_constructor_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    lto_input_ts_target_option (ib, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
-    lto_input_ts_translation_unit_decl_tree_pointers (ib, data_in, expr);
-}
-
-
-/* Read an index IX from input block IB and return the tree node at
-   DATA_IN->FILE_DATA->GLOBALS_INDEX[IX].  */
-
-static tree
-lto_get_pickled_tree (struct lto_input_block *ib, struct data_in *data_in)
-{
-  unsigned HOST_WIDE_INT ix;
-  tree result;
-  enum LTO_tags expected_tag;
-
-  ix = lto_input_uleb128 (ib);
-  expected_tag = lto_input_enum (ib, LTO_tags, LTO_NUM_TAGS);
-
-  result = lto_streamer_cache_get (data_in->reader_cache, ix);
-  gcc_assert (result
-              && TREE_CODE (result) == lto_tag_to_tree_code (expected_tag));
-
-  return result;
-}
-
-
-/* Read a code and class from input block IB and return the
-   corresponding builtin.  DATA_IN is as in lto_input_tree.  */
-
-static tree
-lto_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
-{
-  enum built_in_class fclass;
-  enum built_in_function fcode;
-  const char *asmname;
-  tree result;
-
-  fclass = lto_input_enum (ib, built_in_class, BUILT_IN_LAST);
-  gcc_assert (fclass == BUILT_IN_NORMAL || fclass == BUILT_IN_MD);
-
-  fcode = (enum built_in_function) lto_input_uleb128 (ib);
-
-  if (fclass == BUILT_IN_NORMAL)
-    {
-      if (fcode >= END_BUILTINS)
-	fatal_error ("machine independent builtin code out of range");
-      result = built_in_decls[fcode];
-      gcc_assert (result);
-    }
-  else if (fclass == BUILT_IN_MD)
-    {
-      result = targetm.builtin_decl (fcode, true);
-      if (!result || result == error_mark_node)
-	fatal_error ("target specific builtin not available");
-    }
-  else
-    gcc_unreachable ();
-
-  asmname = lto_input_string (data_in, ib);
-  if (asmname)
-    set_builtin_user_assembler_name (result, asmname);
-
-  lto_streamer_cache_append (data_in->reader_cache, result);
-
-  return result;
-}
-
-
 /* Read the physical representation of a tree node with tag TAG from
    input block IB using the per-file context in DATA_IN.  */
 
@@ -2478,72 +1052,39 @@ static tree
 lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
 	       enum LTO_tags tag)
 {
-  tree result;
+  /* Instantiate a new tree node.  */
+  tree result = streamer_alloc_tree (ib, data_in, tag);
 
-  result = lto_materialize_tree (ib, data_in, tag);
+  /* Enter RESULT in the reader cache.  This will make RESULT
+     available so that circular references in the rest of the tree
+     structure can be resolved in subsequent calls to stream_read_tree.  */
+  streamer_tree_cache_append (data_in->reader_cache, result);
+
+  /* Read all the bitfield values in RESULT.  Note that for LTO, we
+     only write language-independent bitfields, so no more unpacking is
+     needed.  */
+  streamer_read_tree_bitfields (ib, result);
 
   /* Read all the pointer fields in RESULT.  */
-  lto_input_tree_pointers (ib, data_in, result);
+  streamer_read_tree_body (ib, data_in, result);
 
-  /* Call back into the streaming module to read anything else it
-     may need.  */
-  if (streamer_hooks.read_tree)
-    streamer_hooks.read_tree (ib, data_in, result);
+  /* Read any LTO-specific data not read by the tree streamer.  */
+  if (DECL_P (result)
+      && TREE_CODE (result) != FUNCTION_DECL
+      && TREE_CODE (result) != TRANSLATION_UNIT_DECL)
+    DECL_INITIAL (result) = stream_read_tree (ib, data_in);
 
   /* We should never try to instantiate an MD or NORMAL builtin here.  */
   if (TREE_CODE (result) == FUNCTION_DECL)
-    gcc_assert (!lto_stream_as_builtin_p (result));
+    gcc_assert (!streamer_handle_as_builtin_p (result));
 
-  /* end_marker = */ lto_input_1_unsigned (ib);
+  /* end_marker = */ streamer_read_uchar (ib);
 
 #ifdef LTO_STREAMER_DEBUG
   /* Remove the mapping to RESULT's original address set by
-     lto_materialize_tree.  */
+     streamer_alloc_tree.  */
   lto_orig_address_remove (result);
 #endif
-
-  return result;
-}
-
-
-/* LTO streamer hook for reading GIMPLE trees.  IB and DATA_IN are as in
-   lto_read_tree.  EXPR is the tree was materialized by lto_read_tree and
-   needs GIMPLE specific data to be filled in.  */
-
-void
-lto_streamer_read_tree (struct lto_input_block *ib, struct data_in *data_in,
-			tree expr)
-{
-  if (DECL_P (expr)
-      && TREE_CODE (expr) != FUNCTION_DECL
-      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
-    DECL_INITIAL (expr) = lto_input_tree (ib, data_in);
-}
-
-
-/* Read and INTEGER_CST node from input block IB using the per-file
-   context in DATA_IN.  */
-
-static tree
-lto_input_integer_cst (struct lto_input_block *ib, struct data_in *data_in)
-{
-  tree result, type;
-  HOST_WIDE_INT low, high;
-  bool overflow_p;
-
-  type = lto_input_tree (ib, data_in);
-  overflow_p = (lto_input_1_unsigned (ib) != 0);
-  low = lto_input_uleb128 (ib);
-  high = lto_input_uleb128 (ib);
-  result = build_int_cst_wide (type, low, high);
-
-  /* If the original constant had overflown, build a replica of RESULT to
-     avoid modifying the shared constant returned by build_int_cst_wide.  */
-  if (overflow_p)
-    {
-      result = copy_node (result);
-      TREE_OVERFLOW (result) = 1;
-    }
 
   return result;
 }
@@ -2559,7 +1100,7 @@ lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
   enum LTO_tags tag;
   tree result;
 
-  tag = input_record_start (ib);
+  tag = streamer_read_record_start (ib);
   gcc_assert ((unsigned) tag < (unsigned) LTO_NUM_TAGS);
 
   if (tag == LTO_null)
@@ -2575,19 +1116,19 @@ lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
     {
       /* If TAG is a reference to a previously read tree, look it up in
 	 the reader cache.  */
-      result = lto_get_pickled_tree (ib, data_in);
+      result = streamer_get_pickled_tree (ib, data_in);
     }
   else if (tag == LTO_builtin_decl)
     {
       /* If we are going to read a built-in function, all we need is
 	 the code and class.  */
-      result = lto_get_builtin_tree (ib, data_in);
+      result = streamer_get_builtin_tree (ib, data_in);
     }
   else if (tag == lto_tree_code_to_tag (INTEGER_CST))
     {
       /* For integer constants we only need the type and its hi/low
 	 words.  */
-      result = lto_input_integer_cst (ib, data_in);
+      result = streamer_read_integer_cst (ib, data_in);
     }
   else
     {
@@ -2624,7 +1165,7 @@ lto_data_in_create (struct lto_file_decl_data *file_data, const char *strings,
   data_in->strings = strings;
   data_in->strings_len = len;
   data_in->globals_resolution = resolutions;
-  data_in->reader_cache = lto_streamer_cache_create ();
+  data_in->reader_cache = streamer_tree_cache_create ();
 
   return data_in;
 }
@@ -2636,7 +1177,7 @@ void
 lto_data_in_delete (struct data_in *data_in)
 {
   VEC_free (ld_plugin_symbol_resolution_t, heap, data_in->globals_resolution);
-  lto_streamer_cache_delete (data_in->reader_cache);
+  streamer_tree_cache_delete (data_in->reader_cache);
   free (data_in->labels);
   free (data_in);
 }

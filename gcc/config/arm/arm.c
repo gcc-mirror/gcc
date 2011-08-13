@@ -11719,6 +11719,19 @@ get_jump_table_size (rtx insn)
   return 0;
 }
 
+/* Return the maximum amount of padding that will be inserted before
+   label LABEL.  */
+
+static HOST_WIDE_INT
+get_label_padding (rtx label)
+{
+  HOST_WIDE_INT align, min_insn_size;
+
+  align = 1 << label_to_alignment (label);
+  min_insn_size = TARGET_THUMB ? 2 : 4;
+  return align > min_insn_size ? align - min_insn_size : 0;
+}
+
 /* Move a minipool fix MP from its current location to before MAX_MP.
    If MAX_MP is NULL, then MP doesn't need moving, but the addressing
    constraints may need updating.  */
@@ -12265,8 +12278,12 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
 	 within range.  */
       gcc_assert (GET_CODE (from) != BARRIER);
 
-      /* Count the length of this insn.  */
-      count += get_attr_length (from);
+      /* Count the length of this insn.  This must stay in sync with the
+	 code that pushes minipool fixes.  */
+      if (LABEL_P (from))
+	count += get_label_padding (from);
+      else
+	count += get_attr_length (from);
 
       /* If there is a jump table, add its length.  */
       tmp = is_jump_table (from);
@@ -12696,6 +12713,11 @@ arm_reorg (void)
 	      insn = table;
 	    }
 	}
+      else if (LABEL_P (insn))
+	/* Add the worst-case padding due to alignment.  We don't add
+	   the _current_ padding because the minipool insertions
+	   themselves might change it.  */
+	address += get_label_padding (insn);
     }
 
   fix = minipool_fix_head;

@@ -4318,7 +4318,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   VEC (tree, heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL, *vect_defs = NULL;
   VEC (gimple, heap) *phis = NULL;
   int vec_num;
-  tree def0, def1, tem;
+  tree def0, def1, tem, op0, op1 = NULL_TREE;
 
   /* In case of reduction chain we switch to the first stmt in the chain, but
      we don't update STMT_INFO, since only the last stmt is marked as reduction
@@ -4775,8 +4775,6 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       /* Handle uses.  */
       if (j == 0)
         {
-          tree op0, op1 = NULL_TREE;
-
           op0 = ops[!reduc_index];
           if (op_type == ternary_op)
             {
@@ -4806,11 +4804,19 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
         {
           if (!slp_node)
             {
-              enum vect_def_type dt = vect_unknown_def_type; /* Dummy */
-              loop_vec_def0 = vect_get_vec_def_for_stmt_copy (dt, loop_vec_def0);
+              enum vect_def_type dt;
+              gimple dummy_stmt;
+              tree dummy;
+
+              vect_is_simple_use (ops[!reduc_index], loop_vinfo, NULL,
+                                  &dummy_stmt, &dummy, &dt);
+              loop_vec_def0 = vect_get_vec_def_for_stmt_copy (dt,
+                                                              loop_vec_def0);
               VEC_replace (tree, vec_oprnds0, 0, loop_vec_def0);
               if (op_type == ternary_op)
                 {
+                  vect_is_simple_use (op1, loop_vinfo, NULL, &dummy_stmt,
+                                      &dummy, &dt);
                   loop_vec_def1 = vect_get_vec_def_for_stmt_copy (dt,
                                                                 loop_vec_def1);
                   VEC_replace (tree, vec_oprnds1, 0, loop_vec_def1);

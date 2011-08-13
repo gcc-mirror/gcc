@@ -2138,49 +2138,49 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
    the bit is 1, otherwise it might be 0 or 1.  */
 
 static bool
-zero_nonzero_bits_from_vr (value_range_t *vr, double_int *may_be_nonzero,
+zero_nonzero_bits_from_vr (value_range_t *vr,
+			   double_int *may_be_nonzero,
 			   double_int *must_be_nonzero)
 {
-  may_be_nonzero->low = ALL_ONES;
-  may_be_nonzero->high = ALL_ONES;
-  must_be_nonzero->low = 0;
-  must_be_nonzero->high = 0;
-  if (range_int_cst_p (vr))
+  *may_be_nonzero = double_int_minus_one;
+  *must_be_nonzero = double_int_zero;
+  if (!range_int_cst_p (vr))
+    return false;
+
+  if (range_int_cst_singleton_p (vr))
     {
-      if (range_int_cst_singleton_p (vr))
-	{
-	  *may_be_nonzero = tree_to_double_int (vr->min);
-	  *must_be_nonzero = *may_be_nonzero;
-	}
-      else if (tree_int_cst_sgn (vr->min) >= 0)
-	{
-	  double_int dmin = tree_to_double_int (vr->min);
-	  double_int dmax = tree_to_double_int (vr->max);
-	  double_int xor_mask = double_int_xor (dmin, dmax);
-	  *may_be_nonzero = double_int_ior (dmin, dmax);
-	  *must_be_nonzero = double_int_and (dmin, dmax);
-	  if (xor_mask.high != 0)
-	    {
-	      unsigned HOST_WIDE_INT mask
-		= ((unsigned HOST_WIDE_INT) 1
-		   << floor_log2 (xor_mask.high)) - 1;
-	      may_be_nonzero->low = ALL_ONES;
-	      may_be_nonzero->high |= mask;
-	      must_be_nonzero->low = 0;
-	      must_be_nonzero->high &= ~mask;
-	    }
-	  else if (xor_mask.low != 0)
-	    {
-	      unsigned HOST_WIDE_INT mask
-		= ((unsigned HOST_WIDE_INT) 1
-		   << floor_log2 (xor_mask.low)) - 1;
-	      may_be_nonzero->low |= mask;
-	      must_be_nonzero->low &= ~mask;
-	    }
-	}
-      return true;
+      *may_be_nonzero = tree_to_double_int (vr->min);
+      *must_be_nonzero = *may_be_nonzero;
     }
-  return false;
+  else if (tree_int_cst_sgn (vr->min) >= 0
+	   || tree_int_cst_sgn (vr->max) < 0)
+    {
+      double_int dmin = tree_to_double_int (vr->min);
+      double_int dmax = tree_to_double_int (vr->max);
+      double_int xor_mask = double_int_xor (dmin, dmax);
+      *may_be_nonzero = double_int_ior (dmin, dmax);
+      *must_be_nonzero = double_int_and (dmin, dmax);
+      if (xor_mask.high != 0)
+	{
+	  unsigned HOST_WIDE_INT mask
+	      = ((unsigned HOST_WIDE_INT) 1
+		 << floor_log2 (xor_mask.high)) - 1;
+	  may_be_nonzero->low = ALL_ONES;
+	  may_be_nonzero->high |= mask;
+	  must_be_nonzero->low = 0;
+	  must_be_nonzero->high &= ~mask;
+	}
+      else if (xor_mask.low != 0)
+	{
+	  unsigned HOST_WIDE_INT mask
+	      = ((unsigned HOST_WIDE_INT) 1
+		 << floor_log2 (xor_mask.low)) - 1;
+	  may_be_nonzero->low |= mask;
+	  must_be_nonzero->low &= ~mask;
+	}
+    }
+
+  return true;
 }
 
 
@@ -2650,50 +2650,63 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
       type = VR_RANGE;
       if (code == BIT_AND_EXPR)
 	{
+	  double_int dmax;
 	  min = double_int_to_tree (expr_type,
 				    double_int_and (must_be_nonzero0,
 						    must_be_nonzero1));
-	  max = double_int_to_tree (expr_type,
-				    double_int_and (may_be_nonzero0,
-						    may_be_nonzero1));
-	  if (tree_int_cst_sgn (min) < 0)
-	    min = NULL_TREE;
-	  if (tree_int_cst_sgn (max) < 0)
-	    max = NULL_TREE;
+	  dmax = double_int_and (may_be_nonzero0, may_be_nonzero1);
+	  /* If both input ranges contain only negative values we can
+	     truncate the result range maximum to the minimum of the
+	     input range maxima.  */
+	  if (int_cst_range0 && int_cst_range1
+	      && tree_int_cst_sgn (vr0.max) < 0
+	      && tree_int_cst_sgn (vr1.max) < 0)
+	    {
+	      dmax = double_int_min (dmax, tree_to_double_int (vr0.max),
+				     TYPE_UNSIGNED (expr_type));
+	      dmax = double_int_min (dmax, tree_to_double_int (vr1.max),
+				     TYPE_UNSIGNED (expr_type));
+	    }
+	  /* If either input range contains only non-negative values
+	     we can truncate the result range maximum to the respective
+	     maximum of the input range.  */
 	  if (int_cst_range0 && tree_int_cst_sgn (vr0.min) >= 0)
-	    {
-	      if (min == NULL_TREE)
-		min = build_int_cst (expr_type, 0);
-	      if (max == NULL_TREE || tree_int_cst_lt (vr0.max, max))
-		max = vr0.max;
-	    }
+	    dmax = double_int_min (dmax, tree_to_double_int (vr0.max),
+				   TYPE_UNSIGNED (expr_type));
 	  if (int_cst_range1 && tree_int_cst_sgn (vr1.min) >= 0)
-	    {
-	      if (min == NULL_TREE)
-		min = build_int_cst (expr_type, 0);
-	      if (max == NULL_TREE || tree_int_cst_lt (vr1.max, max))
-		max = vr1.max;
-	    }
+	    dmax = double_int_min (dmax, tree_to_double_int (vr1.max),
+				   TYPE_UNSIGNED (expr_type));
+	  max = double_int_to_tree (expr_type, dmax);
 	}
       else if (code == BIT_IOR_EXPR)
 	{
-	  min = double_int_to_tree (expr_type,
-				    double_int_ior (must_be_nonzero0,
-						    must_be_nonzero1));
+	  double_int dmin;
 	  max = double_int_to_tree (expr_type,
 				    double_int_ior (may_be_nonzero0,
 						    may_be_nonzero1));
-	  if (tree_int_cst_sgn (max) < 0)
-	    max = NULL_TREE;
-	  if (int_cst_range0)
+	  dmin = double_int_ior (must_be_nonzero0, must_be_nonzero1);
+	  /* If the input ranges contain only positive values we can
+	     truncate the minimum of the result range to the maximum
+	     of the input range minima.  */
+	  if (int_cst_range0 && int_cst_range1
+	      && tree_int_cst_sgn (vr0.min) >= 0
+	      && tree_int_cst_sgn (vr1.min) >= 0)
 	    {
-	      if (tree_int_cst_sgn (min) < 0)
-		min = vr0.min;
-	      else
-		min = vrp_int_const_binop (MAX_EXPR, min, vr0.min);
+	      dmin = double_int_max (dmin, tree_to_double_int (vr0.min),
+				     TYPE_UNSIGNED (expr_type));
+	      dmin = double_int_max (dmin, tree_to_double_int (vr1.min),
+				     TYPE_UNSIGNED (expr_type));
 	    }
-	  if (int_cst_range1)
-	    min = vrp_int_const_binop (MAX_EXPR, min, vr1.min);
+	  /* If either input range contains only negative values
+	     we can truncate the minimum of the result range to the
+	     respective minimum range.  */
+	  if (int_cst_range0 && tree_int_cst_sgn (vr0.max) < 0)
+	    dmin = double_int_max (dmin, tree_to_double_int (vr0.min),
+				   TYPE_UNSIGNED (expr_type));
+	  if (int_cst_range1 && tree_int_cst_sgn (vr1.max) < 0)
+	    dmin = double_int_max (dmin, tree_to_double_int (vr1.min),
+				   TYPE_UNSIGNED (expr_type));
+	  min = double_int_to_tree (expr_type, dmin);
 	}
       else if (code == BIT_XOR_EXPR)
 	{
@@ -2714,14 +2727,12 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  max = double_int_to_tree (expr_type,
 				    double_int_not (result_zero_bits));
 	  min = double_int_to_tree (expr_type, result_one_bits);
-	  /* Return a [min, max] range if we know the
-	     result range is either positive or negative.  */
-	  if (tree_int_cst_sgn (max) >= 0)
-	    /* The range is bound by a lower value of 0.  */;
-	  else if (tree_int_cst_sgn (min) < 0)
-	    /* The range is bound by an upper value of -1.  */;
+	  /* If the range has all positive or all negative values the
+	     result is better than VARYING.  */
+	  if (tree_int_cst_sgn (min) < 0
+	      || tree_int_cst_sgn (max) >= 0)
+	    ;
 	  else
-	    /* We don't know whether the sign bit is set or not.  */
 	    max = min = NULL_TREE;
 	}
       else
@@ -2805,48 +2816,18 @@ extract_range_from_binary_expr (value_range_t *vr,
   extract_range_from_binary_expr_1 (vr, code, expr_type, &vr0, &vr1);
 }
 
-/* Extract range information from a unary expression EXPR based on
-   the range of its operand and the expression code.  */
+/* Extract range information from a unary operation CODE based on
+   the range of its operand *VR0 with type OP0_TYPE with resulting type TYPE.
+   The The resulting range is stored in *VR.  */
 
 static void
-extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
-			       tree type, tree op0)
+extract_range_from_unary_expr_1 (value_range_t *vr,
+				 enum tree_code code, tree type,
+				 value_range_t *vr0_, tree op0_type)
 {
+  value_range_t vr0 = *vr0_;
   tree min, max;
   int cmp;
-  value_range_t vr0 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
-
-  /* Refuse to operate on certain unary expressions for which we
-     cannot easily determine a resulting range.  */
-  if (code == FIX_TRUNC_EXPR
-      || code == FLOAT_EXPR
-      || code == BIT_NOT_EXPR
-      || code == CONJ_EXPR)
-    {
-      /* We can still do constant propagation here.  */
-      if ((op0 = op_with_constant_singleton_value_range (op0)) != NULL_TREE)
-	{
-	  tree tem = fold_unary (code, type, op0);
-	  if (tem
-	      && is_gimple_min_invariant (tem)
-	      && !is_overflow_infinity (tem))
-	    {
-	      set_value_range (vr, VR_RANGE, tem, tem, NULL);
-	      return;
-	    }
-	}
-      set_value_range_to_varying (vr);
-      return;
-    }
-
-  /* Get value ranges for the operand.  For constant operands, create
-     a new value range with the operand to simplify processing.  */
-  if (TREE_CODE (op0) == SSA_NAME)
-    vr0 = *(get_value_range (op0));
-  else if (is_gimple_min_invariant (op0))
-    set_value_range_to_value (&vr0, op0, NULL);
-  else
-    set_value_range_to_varying (&vr0);
 
   /* If VR0 is UNDEFINED, so is the result.  */
   if (vr0.type == VR_UNDEFINED)
@@ -2855,10 +2836,20 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
       return;
     }
 
+  /* Refuse to operate on certain unary expressions for which we
+     cannot easily determine a resulting range.  */
+  if (code == FIX_TRUNC_EXPR
+      || code == FLOAT_EXPR
+      || code == CONJ_EXPR)
+    {
+      set_value_range_to_varying (vr);
+      return;
+    }
+
   /* Refuse to operate on symbolic ranges, or if neither operand is
      a pointer or integral type.  */
-  if ((!INTEGRAL_TYPE_P (TREE_TYPE (op0))
-       && !POINTER_TYPE_P (TREE_TYPE (op0)))
+  if ((!INTEGRAL_TYPE_P (op0_type)
+       && !POINTER_TYPE_P (op0_type))
       || (vr0.type != VR_VARYING
 	  && symbolic_range_p (&vr0)))
     {
@@ -2868,29 +2859,23 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 
   /* If the expression involves pointers, we are only interested in
      determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).  */
-  if (POINTER_TYPE_P (type) || POINTER_TYPE_P (TREE_TYPE (op0)))
+  if (POINTER_TYPE_P (type) || POINTER_TYPE_P (op0_type))
     {
-      bool sop;
-
-      sop = false;
-      if (range_is_nonnull (&vr0)
-	  || (tree_unary_nonzero_warnv_p (code, type, op0, &sop)
-	      && !sop))
+      if (range_is_nonnull (&vr0))
 	set_value_range_to_nonnull (vr, type);
       else if (range_is_null (&vr0))
 	set_value_range_to_null (vr, type);
       else
 	set_value_range_to_varying (vr);
-
       return;
     }
 
   /* Handle unary expressions on integer ranges.  */
   if (CONVERT_EXPR_CODE_P (code)
       && INTEGRAL_TYPE_P (type)
-      && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
+      && INTEGRAL_TYPE_P (op0_type))
     {
-      tree inner_type = TREE_TYPE (op0);
+      tree inner_type = op0_type;
       tree outer_type = type;
 
       /* If VR0 is varying and we increase the type precision, assume
@@ -2961,67 +2946,14 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 
   /* Apply the operation to each end of the range and see what we end
      up with.  */
-  if (code == NEGATE_EXPR
-      && !TYPE_UNSIGNED (type))
+  if (code == NEGATE_EXPR)
     {
-      /* NEGATE_EXPR flips the range around.  We need to treat
-	 TYPE_MIN_VALUE specially.  */
-      if (is_positive_overflow_infinity (vr0.max))
-	min = negative_overflow_infinity (type);
-      else if (is_negative_overflow_infinity (vr0.max))
-	min = positive_overflow_infinity (type);
-      else if (!vrp_val_is_min (vr0.max))
-	min = fold_unary_to_constant (code, type, vr0.max);
-      else if (needs_overflow_infinity (type))
-	{
-	  if (supports_overflow_infinity (type)
-	      && !is_overflow_infinity (vr0.min)
-	      && !vrp_val_is_min (vr0.min))
-	    min = positive_overflow_infinity (type);
-	  else
-	    {
-	      set_value_range_to_varying (vr);
-	      return;
-	    }
-	}
-      else
-	min = TYPE_MIN_VALUE (type);
-
-      if (is_positive_overflow_infinity (vr0.min))
-	max = negative_overflow_infinity (type);
-      else if (is_negative_overflow_infinity (vr0.min))
-	max = positive_overflow_infinity (type);
-      else if (!vrp_val_is_min (vr0.min))
-	max = fold_unary_to_constant (code, type, vr0.min);
-      else if (needs_overflow_infinity (type))
-	{
-	  if (supports_overflow_infinity (type))
-	    max = positive_overflow_infinity (type);
-	  else
-	    {
-	      set_value_range_to_varying (vr);
-	      return;
-	    }
-	}
-      else
-	max = TYPE_MIN_VALUE (type);
-    }
-  else if (code == NEGATE_EXPR
-	   && TYPE_UNSIGNED (type))
-    {
-      if (!range_includes_zero_p (&vr0))
-	{
-	  max = fold_unary_to_constant (code, type, vr0.min);
-	  min = fold_unary_to_constant (code, type, vr0.max);
-	}
-      else
-	{
-	  if (range_is_null (&vr0))
-	    set_value_range_to_null (vr, type);
-	  else
-	    set_value_range_to_varying (vr);
-	  return;
-	}
+      /* -X is simply 0 - X, so re-use existing code that also handles
+         anti-ranges fine.  */
+      value_range_t zero = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+      set_value_range_to_value (&zero, build_int_cst (type, 0), NULL);
+      extract_range_from_binary_expr_1 (vr, MINUS_EXPR, type, &zero, &vr0);
+      return;
     }
   else if (code == ABS_EXPR
            && !TYPE_UNSIGNED (type))
@@ -3146,6 +3078,16 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 	    }
 	}
     }
+  else if (code == BIT_NOT_EXPR)
+    {
+      /* ~X is simply -1 - X, so re-use existing code that also handles
+         anti-ranges fine.  */
+      value_range_t minusone = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+      set_value_range_to_value (&minusone, build_int_cst (type, -1), NULL);
+      extract_range_from_binary_expr_1 (vr, MINUS_EXPR,
+					type, &minusone, &vr0);
+      return;
+    }
   else
     {
       /* Otherwise, operate on each end of the range.  */
@@ -3209,6 +3151,29 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
     }
   else
     set_value_range (vr, vr0.type, min, max, NULL);
+}
+
+
+/* Extract range information from a unary expression CODE OP0 based on
+   the range of its operand with resulting type TYPE.
+   The resulting range is stored in *VR.  */
+
+static void
+extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
+			       tree type, tree op0)
+{
+  value_range_t vr0 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+
+  /* Get value ranges for the operand.  For constant operands, create
+     a new value range with the operand to simplify processing.  */
+  if (TREE_CODE (op0) == SSA_NAME)
+    vr0 = *(get_value_range (op0));
+  else if (is_gimple_min_invariant (op0))
+    set_value_range_to_value (&vr0, op0, NULL);
+  else
+    set_value_range_to_varying (&vr0);
+
+  extract_range_from_unary_expr_1 (vr, code, type, &vr0, TREE_TYPE (op0));
 }
 
 
@@ -5576,7 +5541,7 @@ stmt_interesting_for_vrp (gimple stmt)
 	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
 	  && ((is_gimple_call (stmt)
 	       && gimple_call_fndecl (stmt) != NULL_TREE
-	       && DECL_IS_BUILTIN (gimple_call_fndecl (stmt)))
+	       && DECL_BUILT_IN (gimple_call_fndecl (stmt)))
 	      || !gimple_vuse (stmt)))
 	return true;
     }
@@ -6414,7 +6379,7 @@ vrp_visit_stmt (gimple stmt, edge *taken_edge_p, tree *output_p)
 	 builtin functions.  */
       if ((is_gimple_call (stmt)
 	   && gimple_call_fndecl (stmt) != NULL_TREE
-	   && DECL_IS_BUILTIN (gimple_call_fndecl (stmt)))
+	   && DECL_BUILT_IN (gimple_call_fndecl (stmt)))
 	  || !gimple_vuse (stmt))
 	return vrp_visit_assignment_or_call (stmt, output_p);
     }

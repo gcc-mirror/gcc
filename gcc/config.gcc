@@ -2663,6 +2663,7 @@ esac
 case ${target} in
 i[34567]86-*-linux* | x86_64-*-linux*)
 	tmake_file="${tmake_file} i386/t-pmm_malloc i386/t-i386"
+	libgcc_tm_file="${libgcc_tm_file} i386/value-unwind.h"
 	;;
 i[34567]86-*-* | x86_64-*-*)
 	tmake_file="${tmake_file} i386/t-gmm_malloc i386/t-i386"

@@ -4,7 +4,7 @@
 struct a { int mode; };
 int sys_msgctl (void)
 {
-  struct a setbuf;  /* { dg-warning "'setbuf.mode' is used" "" { xfail *-*-* } } */
-  return setbuf.mode;
+  struct a setbuf;
+  return setbuf.mode;  /* { dg-warning "'setbuf.a::mode' is used" "" } */
 }
 

@@ -5954,6 +5954,20 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED, int *total,
       *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code, speed);
       return true;
 
+    case TRUNCATE:
+      if (AVR_HAVE_MUL
+          && LSHIFTRT == GET_CODE (XEXP (x, 0))
+          && MULT == GET_CODE (XEXP (XEXP (x, 0), 0))
+          && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
+        {
+          if (QImode == mode || HImode == mode)
+            {
+              *total = COSTS_N_INSNS (2);
+              return true;
+            }
+        }
+      break;
+
     default:
       break;
     }

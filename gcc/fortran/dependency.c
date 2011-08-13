@@ -123,8 +123,18 @@ are_identical_variables (gfc_expr *e1, gfc_expr *e2)
 {
   gfc_ref *r1, *r2;
 
-  if (e1->symtree->n.sym != e2->symtree->n.sym)
-    return false;
+  if (e1->symtree->n.sym->attr.dummy && e2->symtree->n.sym->attr.dummy)
+    {
+      /* Dummy arguments: Only check for equal names.  */
+      if (e1->symtree->n.sym->name != e2->symtree->n.sym->name)
+	return false;
+    }
+  else
+    {
+      /* Check for equal symbols.  */
+      if (e1->symtree->n.sym != e2->symtree->n.sym)
+	return false;
+    }
 
   /* Volatile variables should never compare equal to themselves.  */
 

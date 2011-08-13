@@ -597,6 +597,12 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) == 128")))
 
+;; Match exactly 0x0FFFFFFFF in anddi as a zero-extension operation
+(define_predicate "const_32bit_mask"
+  (and (match_code "const_int")
+       (match_test "trunc_int_for_mode (INTVAL (op), DImode)
+		    == (HOST_WIDE_INT) 0xffffffff")))
+
 ;; Match 2, 4, or 8.  Used for leal multiplicands.
 (define_predicate "const248_operand"
   (match_code "const_int")
@@ -800,6 +806,11 @@
 {
   struct ix86_address parts;
   int ok;
+
+  /*  LEA handles zero-extend by itself.  */
+  if (GET_CODE (op) == ZERO_EXTEND
+      || GET_CODE (op) == AND)
+    return false;
 
   ok = ix86_decompose_address (op, &parts);
   gcc_assert (ok);

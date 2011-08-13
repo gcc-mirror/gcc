@@ -3567,8 +3567,10 @@ fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
       /* Look for a call_pop pattern.  */
       if (CALL_P (insn))
 	{
-	  /* We're not supposed to see non-pop call patterns here.  */
-	  gcc_assert (GET_CODE (pat) == PARALLEL);
+          /* We have to allow non-call_pop patterns for the case
+	     of emit_single_push_insn of a TLS address.  */
+	  if (GET_CODE (pat) != PARALLEL)
+	    continue;
 
 	  /* All call_pop have a stack pointer adjust in the parallel.
 	     The call itself is always first, and the stack adjust is
@@ -3583,7 +3585,8 @@ fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
 		break;
 	    }
 	  /* We'd better have found the stack pointer adjust.  */
-	  gcc_assert (i > 0);
+	  if (i == 0)
+	    continue;
 	  /* Fall through to process the extracted SET and DEST
 	     as if it was a standalone insn.  */
 	}
@@ -4440,8 +4443,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
   if ((TREE_CODE (to) == MEM_REF
        || TREE_CODE (to) == TARGET_MEM_REF)
       && mode != BLKmode
-      && ((align = MAX (TYPE_ALIGN (TREE_TYPE (to)),
-			get_object_alignment (to, BIGGEST_ALIGNMENT)))
+      && ((align = MAX (TYPE_ALIGN (TREE_TYPE (to)), get_object_alignment (to)))
 	  < (signed) GET_MODE_ALIGNMENT (mode))
       && ((icode = optab_handler (movmisalign_optab, mode))
 	  != CODE_FOR_nothing))
@@ -9046,8 +9048,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	temp = gen_rtx_MEM (mode, op0);
 	set_mem_attributes (temp, exp, 0);
 	set_mem_addr_space (temp, as);
-	align = MAX (TYPE_ALIGN (TREE_TYPE (exp)),
-		     get_object_alignment (exp, BIGGEST_ALIGNMENT));
+	align = MAX (TYPE_ALIGN (TREE_TYPE (exp)), get_object_alignment (exp));
 	if (mode != BLKmode
 	    && (unsigned) align < GET_MODE_ALIGNMENT (mode)
 	    /* If the target does not have special handling for unaligned
@@ -9127,8 +9128,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			   gimple_assign_rhs1 (def_stmt), mask);
 	    TREE_OPERAND (exp, 0) = base;
 	  }
-	align = MAX (TYPE_ALIGN (TREE_TYPE (exp)),
-		     get_object_alignment (exp, BIGGEST_ALIGNMENT));
+	align = MAX (TYPE_ALIGN (TREE_TYPE (exp)), get_object_alignment (exp));
 	op0 = expand_expr (base, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address_addr_space (address_mode, op0, as);
 	if (!integer_zerop (TREE_OPERAND (exp, 1)))

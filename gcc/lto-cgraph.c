@@ -43,6 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "pointer-set.h"
 #include "lto-streamer.h"
+#include "data-streamer.h"
+#include "tree-streamer.h"
 #include "gcov-io.h"
 
 static void output_varpool (cgraph_node_set, varpool_node_set);
@@ -265,24 +267,24 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   struct bitpack_d bp;
 
   if (edge->indirect_unknown_callee)
-    lto_output_enum (ob->main_stream, LTO_cgraph_tags, LTO_cgraph_last_tag,
-		     LTO_cgraph_indirect_edge);
+    streamer_write_enum (ob->main_stream, LTO_cgraph_tags, LTO_cgraph_last_tag,
+			 LTO_cgraph_indirect_edge);
   else
-    lto_output_enum (ob->main_stream, LTO_cgraph_tags, LTO_cgraph_last_tag,
-		     LTO_cgraph_edge);
+    streamer_write_enum (ob->main_stream, LTO_cgraph_tags, LTO_cgraph_last_tag,
+			 LTO_cgraph_edge);
 
   ref = lto_cgraph_encoder_lookup (encoder, edge->caller);
   gcc_assert (ref != LCC_NOT_FOUND);
-  lto_output_sleb128_stream (ob->main_stream, ref);
+  streamer_write_hwi_stream (ob->main_stream, ref);
 
   if (!edge->indirect_unknown_callee)
     {
       ref = lto_cgraph_encoder_lookup (encoder, edge->callee);
       gcc_assert (ref != LCC_NOT_FOUND);
-      lto_output_sleb128_stream (ob->main_stream, ref);
+      streamer_write_hwi_stream (ob->main_stream, ref);
     }
 
-  lto_output_sleb128_stream (ob->main_stream, edge->count);
+  streamer_write_hwi_stream (ob->main_stream, edge->count);
 
   bp = bitpack_create (ob->main_stream);
   uid = (!gimple_has_body_p (edge->caller->decl)
@@ -310,7 +312,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
 			     | ECF_LEAF
 			     | ECF_NOVOPS)));
     }
-  lto_output_bitpack (&bp);
+  streamer_write_bitpack (&bp);
 }
 
 /* Return if LIST contain references from other partitions.  */
@@ -421,7 +423,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   else
     tag = LTO_cgraph_unavail_node;
 
-  lto_output_enum (ob->main_stream, LTO_cgraph_tags, LTO_cgraph_last_tag, tag);
+  streamer_write_enum (ob->main_stream, LTO_cgraph_tags, LTO_cgraph_last_tag,
+		       tag);
 
   /* In WPA mode, we only output part of the call-graph.  Also, we
      fake cgraph node attributes.  There are two cases that we care.
@@ -457,14 +460,14 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   if (LTO_cgraph_analyzed_node)
     gcc_assert (clone_of || !node->clone_of);
   if (!clone_of)
-    lto_output_sleb128_stream (ob->main_stream, LCC_NOT_FOUND);
+    streamer_write_hwi_stream (ob->main_stream, LCC_NOT_FOUND);
   else
-    lto_output_sleb128_stream (ob->main_stream, ref);
+    streamer_write_hwi_stream (ob->main_stream, ref);
 
 
   lto_output_fn_decl_index (ob->decl_state, ob->main_stream, node->decl);
-  lto_output_sleb128_stream (ob->main_stream, node->count);
-  lto_output_sleb128_stream (ob->main_stream, node->count_materialization_scale);
+  streamer_write_hwi_stream (ob->main_stream, node->count);
+  streamer_write_hwi_stream (ob->main_stream, node->count_materialization_scale);
 
   if (tag == LTO_cgraph_analyzed_node)
     {
@@ -476,7 +479,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
       else
 	ref = LCC_NOT_FOUND;
 
-      lto_output_sleb128_stream (ob->main_stream, ref);
+      streamer_write_hwi_stream (ob->main_stream, ref);
     }
 
   if (node->same_comdat_group && !boundary_p)
@@ -486,7 +489,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
     }
   else
     ref = LCC_NOT_FOUND;
-  lto_output_sleb128_stream (ob->main_stream, ref);
+  streamer_write_hwi_stream (ob->main_stream, ref);
 
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, node->local.local, 1);
@@ -511,23 +514,21 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->thunk.thunk_p && !boundary_p, 1);
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
 	        LDPR_NUM_KNOWN, node->resolution);
-  lto_output_bitpack (&bp);
+  streamer_write_bitpack (&bp);
 
   if (node->thunk.thunk_p && !boundary_p)
     {
-      lto_output_uleb128_stream
+      streamer_write_uhwi_stream
 	 (ob->main_stream,
 	  1 + (node->thunk.this_adjusting != 0) * 2
 	  + (node->thunk.virtual_offset_p != 0) * 4);
-      lto_output_uleb128_stream (ob->main_stream,
-				 node->thunk.fixed_offset);
-      lto_output_uleb128_stream (ob->main_stream,
-				 node->thunk.virtual_value);
+      streamer_write_uhwi_stream (ob->main_stream, node->thunk.fixed_offset);
+      streamer_write_uhwi_stream (ob->main_stream, node->thunk.virtual_value);
     }
   if ((node->alias || node->thunk.thunk_p) && !boundary_p)
     {
-      lto_output_int_in_range (ob->main_stream, 0, 1,
-			       node->thunk.alias != NULL);
+      streamer_write_hwi_in_range (ob->main_stream, 0, 1,
+					node->thunk.alias != NULL);
       if (node->thunk.alias != NULL)
         lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
 			          node->thunk.alias);
@@ -571,7 +572,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
 							   set, vset), 1);
       bp_pack_value (&bp, boundary_p, 1);  /* in_other_partition.  */
     }
-  lto_output_bitpack (&bp);
+  streamer_write_bitpack (&bp);
   if (node->alias_of)
     lto_output_var_decl_index (ob->decl_state, ob->main_stream, node->alias_of);
   if (node->same_comdat_group && !boundary_p)
@@ -581,9 +582,9 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
     }
   else
     ref = LCC_NOT_FOUND;
-  lto_output_sleb128_stream (ob->main_stream, ref);
-  lto_output_enum (ob->main_stream, ld_plugin_symbol_resolution,
-		   LDPR_NUM_KNOWN, node->resolution);
+  streamer_write_hwi_stream (ob->main_stream, ref);
+  streamer_write_enum (ob->main_stream, ld_plugin_symbol_resolution,
+		       LDPR_NUM_KNOWN, node->resolution);
 }
 
 /* Output the varpool NODE to OB. 
@@ -598,19 +599,19 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, ref->refered_type, 1);
   bp_pack_value (&bp, ref->use, 2);
-  lto_output_bitpack (&bp);
+  streamer_write_bitpack (&bp);
   if (ref->refered_type == IPA_REF_CGRAPH)
     {
       int nref = lto_cgraph_encoder_lookup (encoder, ipa_ref_node (ref));
       gcc_assert (nref != LCC_NOT_FOUND);
-      lto_output_sleb128_stream (ob->main_stream, nref);
+      streamer_write_hwi_stream (ob->main_stream, nref);
     }
   else
     {
       int nref = lto_varpool_encoder_lookup (varpool_encoder,
 				             ipa_ref_varpool_node (ref));
       gcc_assert (nref != LCC_NOT_FOUND);
-      lto_output_sleb128_stream (ob->main_stream, nref);
+      streamer_write_hwi_stream (ob->main_stream, nref);
     }
 }
 
@@ -625,11 +626,11 @@ output_profile_summary (struct lto_simple_output_block *ob)
 	 GCC profile feedback and they are difficult to merge from multiple
 	 units.  */
       gcc_assert (profile_info->runs);
-      lto_output_uleb128_stream (ob->main_stream, profile_info->runs);
-      lto_output_uleb128_stream (ob->main_stream, profile_info->sum_max);
+      streamer_write_uhwi_stream (ob->main_stream, profile_info->runs);
+      streamer_write_uhwi_stream (ob->main_stream, profile_info->sum_max);
     }
   else
-    lto_output_uleb128_stream (ob->main_stream, 0);
+    streamer_write_uhwi_stream (ob->main_stream, 0);
 }
 
 /* Add NODE into encoder as well as nodes it is cloned from.
@@ -707,15 +708,15 @@ output_refs (cgraph_node_set set, varpool_node_set vset,
       count = ipa_ref_list_nreferences (&node->ref_list);
       if (count)
 	{
-	  lto_output_uleb128_stream (ob->main_stream, count);
-	  lto_output_uleb128_stream (ob->main_stream,
+	  streamer_write_uhwi_stream (ob->main_stream, count);
+	  streamer_write_uhwi_stream (ob->main_stream,
 				     lto_cgraph_encoder_lookup (encoder, node));
 	  for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
 	    lto_output_ref (ob, ref, encoder, varpool_encoder);
 	}
     }
 
-  lto_output_uleb128_stream (ob->main_stream, 0);
+  streamer_write_uhwi_stream (ob->main_stream, 0);
 
   for (vsi = vsi_start (vset); !vsi_end_p (vsi); vsi_next (&vsi))
     {
@@ -724,8 +725,8 @@ output_refs (cgraph_node_set set, varpool_node_set vset,
       count = ipa_ref_list_nreferences (&node->ref_list);
       if (count)
 	{
-	  lto_output_uleb128_stream (ob->main_stream, count);
-	  lto_output_uleb128_stream (ob->main_stream,
+	  streamer_write_uhwi_stream (ob->main_stream, count);
+	  streamer_write_uhwi_stream (ob->main_stream,
 				     lto_varpool_encoder_lookup (varpool_encoder,
 								 node));
 	  for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
@@ -733,7 +734,7 @@ output_refs (cgraph_node_set set, varpool_node_set vset,
 	}
     }
 
-  lto_output_uleb128_stream (ob->main_stream, 0);
+  streamer_write_uhwi_stream (ob->main_stream, 0);
 
   lto_destroy_simple_output_block (ob);
 }
@@ -850,7 +851,7 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
       output_outgoing_cgraph_edges (node->indirect_calls, ob, encoder);
     }
 
-  lto_output_uleb128_stream (ob->main_stream, 0);
+  streamer_write_uhwi_stream (ob->main_stream, 0);
 
   /* Emit toplevel asms.
      When doing WPA we must output every asm just once.  Since we do not partition asm
@@ -862,14 +863,14 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
       for (can = cgraph_asm_nodes; can; can = can->next)
 	{
 	  int len = TREE_STRING_LENGTH (can->asm_str);
-	  lto_output_uleb128_stream (ob->main_stream, len);
+	  streamer_write_uhwi_stream (ob->main_stream, len);
 	  for (i = 0; i < len; ++i)
-	    lto_output_1_stream (ob->main_stream,
-				 TREE_STRING_POINTER (can->asm_str)[i]);
+	    streamer_write_char_stream (ob->main_stream,
+					TREE_STRING_POINTER (can->asm_str)[i]);
 	}
     }
 
-  lto_output_uleb128_stream (ob->main_stream, 0);
+  streamer_write_uhwi_stream (ob->main_stream, 0);
 
   lto_destroy_simple_output_block (ob);
   output_varpool (set, vset);
@@ -936,7 +937,7 @@ output_varpool (cgraph_node_set set, varpool_node_set vset)
   lto_varpool_encoder_t varpool_encoder = ob->decl_state->varpool_node_encoder;
   int len = lto_varpool_encoder_size (varpool_encoder), i;
 
-  lto_output_uleb128_stream (ob->main_stream, len);
+  streamer_write_uhwi_stream (ob->main_stream, len);
 
   /* Write out the nodes.  We must first output a node and then its clones,
      otherwise at a time reading back the node there would be nothing to clone
@@ -967,9 +968,9 @@ input_node (struct lto_file_decl_data *file_data,
   int ref = LCC_NOT_FOUND, ref2 = LCC_NOT_FOUND;
   int clone_ref;
 
-  clone_ref = lto_input_sleb128 (ib);
+  clone_ref = streamer_read_hwi (ib);
 
-  decl_index = lto_input_uleb128 (ib);
+  decl_index = streamer_read_uhwi (ib);
   fn_decl = lto_file_decl_data_get_fn_decl (file_data, decl_index);
 
   if (clone_ref != LCC_NOT_FOUND)
@@ -980,23 +981,23 @@ input_node (struct lto_file_decl_data *file_data,
   else
     node = cgraph_get_create_node (fn_decl);
 
-  node->count = lto_input_sleb128 (ib);
-  node->count_materialization_scale = lto_input_sleb128 (ib);
+  node->count = streamer_read_hwi (ib);
+  node->count_materialization_scale = streamer_read_hwi (ib);
 
   if (tag == LTO_cgraph_analyzed_node)
-    ref = lto_input_sleb128 (ib);
+    ref = streamer_read_hwi (ib);
 
-  ref2 = lto_input_sleb128 (ib);
+  ref2 = streamer_read_hwi (ib);
 
   /* Make sure that we have not read this node before.  Nodes that
      have already been read will have their tag stored in the 'aux'
      field.  Since built-in functions can be referenced in multiple
      functions, they are expected to be read more than once.  */
-  if (node->aux && !DECL_IS_BUILTIN (node->decl))
+  if (node->aux && !DECL_BUILT_IN (node->decl))
     internal_error ("bytecode stream: found multiple instances of cgraph "
 		    "node %d", node->uid);
 
-  bp = lto_input_bitpack (ib);
+  bp = streamer_read_bitpack (ib);
   input_overwrite_node (file_data, node, tag, &bp);
 
   /* Store a reference for now, and fix up later to be a pointer.  */
@@ -1007,9 +1008,9 @@ input_node (struct lto_file_decl_data *file_data,
 
   if (node->thunk.thunk_p)
     {
-      int type = lto_input_uleb128 (ib);
-      HOST_WIDE_INT fixed_offset = lto_input_uleb128 (ib);
-      HOST_WIDE_INT virtual_value = lto_input_uleb128 (ib);
+      int type = streamer_read_uhwi (ib);
+      HOST_WIDE_INT fixed_offset = streamer_read_uhwi (ib);
+      HOST_WIDE_INT virtual_value = streamer_read_uhwi (ib);
 
       node->thunk.fixed_offset = fixed_offset;
       node->thunk.this_adjusting = (type & 2);
@@ -1018,9 +1019,9 @@ input_node (struct lto_file_decl_data *file_data,
     }
   if (node->thunk.thunk_p || node->alias)
     {
-      if (lto_input_int_in_range (ib, "alias nonzero flag", 0, 1))
+      if (streamer_read_hwi_in_range (ib, "alias nonzero flag", 0, 1))
 	{
-          decl_index = lto_input_uleb128 (ib);
+          decl_index = streamer_read_uhwi (ib);
           node->thunk.alias = lto_file_decl_data_get_fn_decl (file_data,
 							      decl_index);
 	}
@@ -1042,12 +1043,12 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   int ref = LCC_NOT_FOUND;
   bool non_null_aliasof;
 
-  decl_index = lto_input_uleb128 (ib);
+  decl_index = streamer_read_uhwi (ib);
   var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
   node = varpool_node (var_decl);
   node->lto_file_data = file_data;
 
-  bp = lto_input_bitpack (ib);
+  bp = streamer_read_bitpack (ib);
   node->externally_visible = bp_unpack_value (&bp, 1);
   node->force_output = bp_unpack_value (&bp, 1);
   node->finalized = bp_unpack_value (&bp, 1);
@@ -1065,14 +1066,14 @@ input_varpool_node (struct lto_file_decl_data *file_data,
     varpool_mark_needed_node (node);
   if (non_null_aliasof)
     {
-      decl_index = lto_input_uleb128 (ib);
+      decl_index = streamer_read_uhwi (ib);
       node->alias_of = lto_file_decl_data_get_var_decl (file_data, decl_index);
     }
-  ref = lto_input_sleb128 (ib);
+  ref = streamer_read_hwi (ib);
   /* Store a reference for now, and fix up later to be a pointer.  */
   node->same_comdat_group = (struct varpool_node *) (intptr_t) ref;
-  node->resolution = lto_input_enum (ib, ld_plugin_symbol_resolution,
-				     LDPR_NUM_KNOWN);
+  node->resolution = streamer_read_enum (ib, ld_plugin_symbol_resolution,
+					 LDPR_NUM_KNOWN);
 
   return node;
 }
@@ -1093,13 +1094,14 @@ input_ref (struct lto_input_block *ib,
   enum ipa_ref_type type;
   enum ipa_ref_use use;
 
-  bp = lto_input_bitpack (ib);
+  bp = streamer_read_bitpack (ib);
   type = (enum ipa_ref_type) bp_unpack_value (&bp, 1);
   use = (enum ipa_ref_use) bp_unpack_value (&bp, 2);
   if (type == IPA_REF_CGRAPH)
-    node = VEC_index (cgraph_node_ptr, nodes, lto_input_sleb128 (ib));
+    node = VEC_index (cgraph_node_ptr, nodes, streamer_read_hwi (ib));
   else
-    varpool_node = VEC_index (varpool_node_ptr, varpool_nodes, lto_input_sleb128 (ib));
+    varpool_node = VEC_index (varpool_node_ptr, varpool_nodes,
+			      streamer_read_hwi (ib));
   ipa_record_reference (refering_node, refering_varpool_node,
 		        node, varpool_node, use, NULL);
 }
@@ -1122,22 +1124,22 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
   struct bitpack_d bp;
   int ecf_flags = 0;
 
-  caller = VEC_index (cgraph_node_ptr, nodes, lto_input_sleb128 (ib));
+  caller = VEC_index (cgraph_node_ptr, nodes, streamer_read_hwi (ib));
   if (caller == NULL || caller->decl == NULL_TREE)
     internal_error ("bytecode stream: no caller found while reading edge");
 
   if (!indirect)
     {
-      callee = VEC_index (cgraph_node_ptr, nodes, lto_input_sleb128 (ib));
+      callee = VEC_index (cgraph_node_ptr, nodes, streamer_read_hwi (ib));
       if (callee == NULL || callee->decl == NULL_TREE)
 	internal_error ("bytecode stream: no callee found while reading edge");
     }
   else
     callee = NULL;
 
-  count = (gcov_type) lto_input_sleb128 (ib);
+  count = (gcov_type) streamer_read_hwi (ib);
 
-  bp = lto_input_bitpack (ib);
+  bp = streamer_read_bitpack (ib);
   inline_failed = bp_unpack_enum (&bp, cgraph_inline_failed_enum, CIF_N_REASONS);
   stmt_id = bp_unpack_var_len_unsigned (&bp);
   freq = (int) bp_unpack_var_len_unsigned (&bp);
@@ -1183,7 +1185,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   unsigned i;
   unsigned HOST_WIDE_INT len;
 
-  tag = lto_input_enum (ib, LTO_cgraph_tags, LTO_cgraph_last_tag);
+  tag = streamer_read_enum (ib, LTO_cgraph_tags, LTO_cgraph_last_tag);
   while (tag)
     {
       if (tag == LTO_cgraph_edge)
@@ -1199,20 +1201,20 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 	  lto_cgraph_encoder_encode (file_data->cgraph_node_encoder, node);
 	}
 
-      tag = lto_input_enum (ib, LTO_cgraph_tags, LTO_cgraph_last_tag);
+      tag = streamer_read_enum (ib, LTO_cgraph_tags, LTO_cgraph_last_tag);
     }
 
   /* Input toplevel asms.  */
-  len = lto_input_uleb128 (ib);
+  len = streamer_read_uhwi (ib);
   while (len)
     {
       char *str = (char *)xmalloc (len + 1);
       for (i = 0; i < len; ++i)
-	str[i] = lto_input_1_unsigned (ib);
+	str[i] = streamer_read_uchar (ib);
       cgraph_add_asm_node (build_string (len, str));
       free (str);
 
-      len = lto_input_uleb128 (ib);
+      len = streamer_read_uhwi (ib);
     }
   /* AUX pointers should be all non-zero for nodes read from the stream.  */
 #ifdef ENABLE_CHECKING
@@ -1258,7 +1260,7 @@ input_varpool_1 (struct lto_file_decl_data *file_data,
   int i;
   struct varpool_node *node;
 
-  len = lto_input_uleb128 (ib);
+  len = streamer_read_uhwi (ib);
   while (len)
     {
       VEC_safe_push (varpool_node_ptr, heap, varpool,
@@ -1300,10 +1302,10 @@ input_refs (struct lto_input_block *ib,
   while (true)
     {
       struct cgraph_node *node;
-      count = lto_input_uleb128 (ib);
+      count = streamer_read_uhwi (ib);
       if (!count)
 	break;
-      idx = lto_input_uleb128 (ib);
+      idx = streamer_read_uhwi (ib);
       node = VEC_index (cgraph_node_ptr, nodes, idx);
       while (count)
 	{
@@ -1314,10 +1316,11 @@ input_refs (struct lto_input_block *ib,
   while (true)
     {
       struct varpool_node *node;
-      count = lto_input_uleb128 (ib);
+      count = streamer_read_uhwi (ib);
       if (!count)
 	break;
-      node = VEC_index (varpool_node_ptr, varpool, lto_input_uleb128 (ib));
+      node = VEC_index (varpool_node_ptr, varpool,
+			streamer_read_uhwi (ib));
       while (count)
 	{
 	  input_ref (ib, NULL, node, nodes, varpool);
@@ -1334,11 +1337,11 @@ static void
 input_profile_summary (struct lto_input_block *ib,
 		       struct lto_file_decl_data *file_data)
 {
-  unsigned int runs = lto_input_uleb128 (ib);
+  unsigned int runs = streamer_read_uhwi (ib);
   if (runs)
     {
       file_data->profile_info.runs = runs;
-      file_data->profile_info.sum_max = lto_input_uleb128 (ib);
+      file_data->profile_info.sum_max = streamer_read_uhwi (ib);
     }
 
 }
@@ -1526,10 +1529,9 @@ output_edge_opt_summary (struct output_block *ob,
 			 struct cgraph_edge *edge)
 {
   if (edge->indirect_info)
-    lto_output_sleb128_stream (ob->main_stream,
-			       edge->indirect_info->thunk_delta);
+    streamer_write_hwi (ob, edge->indirect_info->thunk_delta);
   else
-    lto_output_sleb128_stream (ob->main_stream, 0);
+    streamer_write_hwi (ob, 0);
 }
 
 /* Output optimization summary for NODE to OB.  */
@@ -1548,24 +1550,22 @@ output_node_opt_summary (struct output_block *ob,
 
   if (node->clone.args_to_skip)
     {
-      lto_output_uleb128_stream (ob->main_stream,
-				 bitmap_count_bits (node->clone.args_to_skip));
+      streamer_write_uhwi (ob, bitmap_count_bits (node->clone.args_to_skip));
       EXECUTE_IF_SET_IN_BITMAP (node->clone.args_to_skip, 0, index, bi)
-	lto_output_uleb128_stream (ob->main_stream, index);
+	streamer_write_uhwi (ob, index);
     }
   else
-    lto_output_uleb128_stream (ob->main_stream, 0);
+    streamer_write_uhwi (ob, 0);
   if (node->clone.combined_args_to_skip)
     {
-      lto_output_uleb128_stream (ob->main_stream,
-				 bitmap_count_bits (node->clone.combined_args_to_skip));
+      streamer_write_uhwi (ob, bitmap_count_bits (node->clone.combined_args_to_skip));
       EXECUTE_IF_SET_IN_BITMAP (node->clone.combined_args_to_skip, 0, index, bi)
-	lto_output_uleb128_stream (ob->main_stream, index);
+	streamer_write_uhwi (ob, index);
     }
   else
-    lto_output_uleb128_stream (ob->main_stream, 0);
-  lto_output_uleb128_stream (ob->main_stream,
-		             VEC_length (ipa_replace_map_p, node->clone.tree_map));
+    streamer_write_uhwi (ob, 0);
+  streamer_write_uhwi (ob, VEC_length (ipa_replace_map_p,
+			               node->clone.tree_map));
   FOR_EACH_VEC_ELT (ipa_replace_map_p, node->clone.tree_map, i, map)
     {
       int parm_num;
@@ -1578,12 +1578,12 @@ output_node_opt_summary (struct output_block *ob,
       /* At the moment we assume all old trees to be PARM_DECLs, because we have no
          mechanism to store function local declarations into summaries.  */
       gcc_assert (parm);
-      lto_output_uleb128_stream (ob->main_stream, parm_num);
-      lto_output_tree (ob, map->new_tree, true);
+      streamer_write_uhwi (ob, parm_num);
+      stream_write_tree (ob, map->new_tree, true);
       bp = bitpack_create (ob->main_stream);
       bp_pack_value (&bp, map->replace_p, 1);
       bp_pack_value (&bp, map->ref_p, 1);
-      lto_output_bitpack (&bp);
+      streamer_write_bitpack (&bp);
     }
 
   if (cgraph_node_in_set_p (node, set))
@@ -1614,13 +1614,13 @@ output_cgraph_opt_summary (cgraph_node_set set)
     if (output_cgraph_opt_summary_p (lto_cgraph_encoder_deref (encoder, i),
 				     set))
       count++;
-  lto_output_uleb128_stream (ob->main_stream, count);
+  streamer_write_uhwi (ob, count);
   for (i = 0; i < n_nodes; i++)
     {
       node = lto_cgraph_encoder_deref (encoder, i);
       if (output_cgraph_opt_summary_p (node, set))
 	{
-	  lto_output_uleb128_stream (ob->main_stream, i);
+	  streamer_write_uhwi (ob, i);
 	  output_node_opt_summary (ob, node, set);
 	}
     }
@@ -1635,7 +1635,7 @@ input_edge_opt_summary (struct cgraph_edge *edge,
 			struct lto_input_block *ib_main)
 {
   HOST_WIDE_INT thunk_delta;
-  thunk_delta = lto_input_sleb128 (ib_main);
+  thunk_delta = streamer_read_hwi (ib_main);
   if (thunk_delta != 0)
     {
       gcc_assert (!edge->indirect_info);
@@ -1657,23 +1657,23 @@ input_node_opt_summary (struct cgraph_node *node,
   struct bitpack_d bp;
   struct cgraph_edge *e;
 
-  count = lto_input_uleb128 (ib_main);
+  count = streamer_read_uhwi (ib_main);
   if (count)
     node->clone.args_to_skip = BITMAP_GGC_ALLOC ();
   for (i = 0; i < count; i++)
     {
-      bit = lto_input_uleb128 (ib_main);
+      bit = streamer_read_uhwi (ib_main);
       bitmap_set_bit (node->clone.args_to_skip, bit);
     }
-  count = lto_input_uleb128 (ib_main);
+  count = streamer_read_uhwi (ib_main);
   if (count)
     node->clone.combined_args_to_skip = BITMAP_GGC_ALLOC ();
   for (i = 0; i < count; i++)
     {
-      bit = lto_input_uleb128 (ib_main);
+      bit = streamer_read_uhwi (ib_main);
       bitmap_set_bit (node->clone.combined_args_to_skip, bit);
     }
-  count = lto_input_uleb128 (ib_main);
+  count = streamer_read_uhwi (ib_main);
   for (i = 0; i < count; i++)
     {
       int parm_num;
@@ -1684,10 +1684,10 @@ input_node_opt_summary (struct cgraph_node *node,
       for (parm_num = 0, parm = DECL_ARGUMENTS (node->decl); parm_num;
 	   parm = DECL_CHAIN (parm))
 	parm_num --;
-      map->parm_num = lto_input_uleb128 (ib_main);
+      map->parm_num = streamer_read_uhwi (ib_main);
       map->old_tree = NULL;
-      map->new_tree = lto_input_tree (ib_main, data_in);
-      bp = lto_input_bitpack (ib_main);
+      map->new_tree = stream_read_tree (ib_main, data_in);
+      bp = streamer_read_bitpack (ib_main);
       map->replace_p = bp_unpack_value (&bp, 1);
       map->ref_p = bp_unpack_value (&bp, 1);
     }
@@ -1720,11 +1720,11 @@ input_cgraph_opt_section (struct lto_file_decl_data *file_data,
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,
 			header->string_size, NULL);
-  count = lto_input_uleb128 (&ib_main);
+  count = streamer_read_uhwi (&ib_main);
 
   for (i = 0; i < count; i++)
     {
-      int ref = lto_input_uleb128 (&ib_main);
+      int ref = streamer_read_uhwi (&ib_main);
       input_node_opt_summary (VEC_index (cgraph_node_ptr, nodes, ref),
 			      &ib_main, data_in);
     }

@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "diagnostic.h"
 #include "langhooks.h"
+#include "data-streamer.h"
 #include "lto-streamer.h"
 
 static void remove_node_data (struct cgraph_node *node,
@@ -992,17 +993,17 @@ stream_out_bitmap (struct lto_simple_output_block *ob,
   bitmap_iterator bi;
   if (bits == all_module_statics)
     {
-      lto_output_sleb128_stream (ob->main_stream, -1);
+      streamer_write_hwi_stream (ob->main_stream, -1);
       return;
     }
   EXECUTE_IF_AND_IN_BITMAP (bits, ltrans_statics, 0, index, bi)
     count ++;
   if (count == ltrans_statics_bitcount)
     {
-      lto_output_sleb128_stream (ob->main_stream, -1);
+      streamer_write_hwi_stream (ob->main_stream, -1);
       return;
     }
-  lto_output_sleb128_stream (ob->main_stream, count);
+  streamer_write_hwi_stream (ob->main_stream, count);
   if (!count)
     return;
   EXECUTE_IF_AND_IN_BITMAP (bits, ltrans_statics, 0, index, bi)
@@ -1054,7 +1055,7 @@ ipa_reference_write_optimization_summary (cgraph_node_set set,
 				set, vset, ltrans_statics))
 	  count++;
 
-  lto_output_uleb128_stream (ob->main_stream, count);
+  streamer_write_uhwi_stream (ob->main_stream, count);
   if (count)
     stream_out_bitmap (ob, ltrans_statics, ltrans_statics,
 		       -1);
@@ -1071,7 +1072,7 @@ ipa_reference_write_optimization_summary (cgraph_node_set set,
 
 	    info = get_reference_optimization_summary (node);
 	    node_ref = lto_cgraph_encoder_encode (encoder, node);
-	    lto_output_uleb128_stream (ob->main_stream, node_ref);
+	    streamer_write_uhwi_stream (ob->main_stream, node_ref);
 
 	    stream_out_bitmap (ob, info->statics_not_read, ltrans_statics,
 			       ltrans_statics_bitcount);
@@ -1112,16 +1113,16 @@ ipa_reference_read_optimization_summary (void)
       if (ib)
 	{
 	  unsigned int i;
-	  unsigned int f_count = lto_input_uleb128 (ib);
+	  unsigned int f_count = streamer_read_uhwi (ib);
 	  int b_count;
 	  if (!f_count)
 	    continue;
-	  b_count = lto_input_sleb128 (ib);
+	  b_count = streamer_read_hwi (ib);
 	  if (dump_file)
 	    fprintf (dump_file, "all module statics:");
 	  for (i = 0; i < (unsigned int)b_count; i++)
 	    {
-	      unsigned int var_index = lto_input_uleb128 (ib);
+	      unsigned int var_index = streamer_read_uhwi (ib);
 	      tree v_decl = lto_file_decl_data_get_var_decl (file_data,
 							     var_index);
 	      bitmap_set_bit (all_module_statics, DECL_UID (v_decl));
@@ -1138,7 +1139,7 @@ ipa_reference_read_optimization_summary (void)
 	      int v_count;
 	      lto_cgraph_encoder_t encoder;
 
-	      index = lto_input_uleb128 (ib);
+	      index = streamer_read_uhwi (ib);
 	      encoder = file_data->cgraph_node_encoder;
 	      node = lto_cgraph_encoder_deref (encoder, index);
 	      info = XCNEW (struct ipa_reference_optimization_summary_d);
@@ -1151,7 +1152,7 @@ ipa_reference_read_optimization_summary (void)
 			 cgraph_node_name (node), node->uid);
 
 	      /* Set the statics not read.  */
-	      v_count = lto_input_sleb128 (ib);
+	      v_count = streamer_read_hwi (ib);
 	      if (v_count == -1)
 		{
 		  info->statics_not_read = all_module_statics;
@@ -1161,7 +1162,7 @@ ipa_reference_read_optimization_summary (void)
 	      else
 		for (j = 0; j < (unsigned int)v_count; j++)
 		  {
-		    unsigned int var_index = lto_input_uleb128 (ib);
+		    unsigned int var_index = streamer_read_uhwi (ib);
 		    tree v_decl = lto_file_decl_data_get_var_decl (file_data,
 								   var_index);
 		    bitmap_set_bit (info->statics_not_read, DECL_UID (v_decl));
@@ -1174,7 +1175,7 @@ ipa_reference_read_optimization_summary (void)
 		fprintf (dump_file,
 			 "\n  static not written:");
 	      /* Set the statics not written.  */
-	      v_count = lto_input_sleb128 (ib);
+	      v_count = streamer_read_hwi (ib);
 	      if (v_count == -1)
 		{
 		  info->statics_not_written = all_module_statics;
@@ -1184,7 +1185,7 @@ ipa_reference_read_optimization_summary (void)
 	      else
 		for (j = 0; j < (unsigned int)v_count; j++)
 		  {
-		    unsigned int var_index = lto_input_uleb128 (ib);
+		    unsigned int var_index = streamer_read_uhwi (ib);
 		    tree v_decl = lto_file_decl_data_get_var_decl (file_data,
 								   var_index);
 		    bitmap_set_bit (info->statics_not_written, DECL_UID (v_decl));

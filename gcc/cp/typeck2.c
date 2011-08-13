@@ -740,8 +740,10 @@ check_narrowing (tree type, tree init)
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (ftype)
 	   && CP_INTEGRAL_TYPE_P (type))
     {
-      if ((TYPE_PRECISION (type) < TYPE_PRECISION (ftype)
-	   || TYPE_UNSIGNED (type) != TYPE_UNSIGNED (ftype))
+      if ((tree_int_cst_lt (TYPE_MAX_VALUE (type),
+			    TYPE_MAX_VALUE (ftype))
+	   || tree_int_cst_lt (TYPE_MIN_VALUE (ftype),
+			       TYPE_MIN_VALUE (type)))
 	  && (TREE_CODE (init) != INTEGER_CST
 	      || !int_fits_type_p (init, type)))
 	ok = false;
