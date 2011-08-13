@@ -82,6 +82,7 @@ upc_pts_struct_init_type (void)
   tree name = NULL_TREE;
   tree ref;
   tree shared_void_type, shared_char_type;
+  enum machine_mode pts_mode;
   const location_t loc = UNKNOWN_LOCATION;
   struct c_struct_parse_info *null_struct_parse_info = NULL;
   int save_pedantic = pedantic;
@@ -131,6 +132,14 @@ upc_pts_struct_init_type (void)
   upc_pts_rep_type_node = finish_struct (loc, ref, fields, NULL_TREE,
 					 null_struct_parse_info);
   pedantic = save_pedantic;
+  gcc_assert (TYPE_SIZE (upc_pts_rep_type_node));
+  gcc_assert (host_integerp (TYPE_SIZE (upc_pts_rep_type_node), 1));
+  gcc_assert ((unsigned HOST_WIDE_INT)
+                tree_low_cst (TYPE_SIZE (upc_pts_rep_type_node), 1)
+		== 2 * POINTER_SIZE);
+  pts_mode = mode_for_size_tree (TYPE_SIZE (upc_pts_rep_type_node), MODE_INT, 0);
+  gcc_assert (pts_mode != BLKmode);
+  SET_TYPE_MODE(upc_pts_rep_type_node, pts_mode);
   record_builtin_type (RID_SHARED, "upc_shared_ptr_t",
 		       upc_pts_rep_type_node);
   shared_void_type = build_variant_type_copy (void_type_node);

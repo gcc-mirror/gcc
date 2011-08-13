@@ -1754,10 +1754,6 @@ do {							\
 #define BRANCH_COST(speed_p, predictable_p) \
   (!(speed_p) ? 2 : (predictable_p) ? 0 : ix86_branch_cost)
 
-/* An integer expression for the size in bits of the largest integer machine
-   mode that should actually be used.  We allow pairs of registers.  */
-#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_64BIT ? TImode : DImode)
-
 /* Define this macro as a C expression which is nonzero if accessing
    less than a word of memory (i.e. a `char' or a `short') is no
    faster than accessing a word of memory, i.e., if such access

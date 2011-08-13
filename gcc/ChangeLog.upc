@@ -1,5 +1,14 @@
 2011-08-12  Gary Funck  <gary@intrepid.com>
 
+	* config/i386/i386.h (MAX_FIXED_MODE_SIZE): Delete
+	  (revert to trunk).
+	* upc/upc-pts-struct.c (upc_pts_struct_init_type):
+	  Set mode of UPC pointer-to-shared rep. to an
+	  integral mode of size at least as large as the
+	  size of the representation's struct type.
+
+2011-08-12  Gary Funck  <gary@intrepid.com>
+
 	Rework/simplify the UPC genericize pass.
 	* c-family/stub-upc.c (upc_apply_layout_qualifier,
 	  upc_build_pointer_type): New.
