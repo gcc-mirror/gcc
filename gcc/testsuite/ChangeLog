@@ -1,3 +1,8 @@
+2011-08-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50059
+	* g++.dg/diagnostic/expr1.C: New.
+
 2011-08-12  David Li  <davidxl@google.com>
 
 	* g++.dg/abi/vbase15.C: New test.
