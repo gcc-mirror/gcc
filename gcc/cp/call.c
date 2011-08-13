@@ -8820,12 +8820,6 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
 		    (build_pointer_type (base_conv_type), expr,
 		     complain));
 	  expr = build_nop (type, expr);
-	  if (DECL_DECLARED_CONSTEXPR_P (decl))
-	    {
-	      expr = cxx_constant_value (expr);
-	      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
-		= reduced_constant_expression_p (expr);
-	    }
 	}
     }
   else
