@@ -1,3 +1,8 @@
+2011-08-12  David Li  <davidxl@google.com>
+
+	* cp/class.c (update_vtable_entry_for_fn): Set
+	LOST_PRIMARY bit properly.
+
 2011-08-12  Nick Clifton  <nickc@redhat.com>
 
 	* builtins.c (expand_builtin_memcmp): Do not use cmpstrnsi

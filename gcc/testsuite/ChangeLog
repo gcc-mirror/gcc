@@ -1,3 +1,7 @@
+2011-08-12  David Li  <davidxl@google.com>
+
+	* g++.dg/abi/vbase15.C: New test.
+
 2011-08-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/49923
