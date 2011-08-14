@@ -1,5 +1,8 @@
 2011-08-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50075
+	* g++.dg/cpp0x/decltype32.C: New.
+
 	PR c++/50059
 	* g++.dg/diagnostic/expr1.C: New.
 

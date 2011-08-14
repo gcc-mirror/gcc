@@ -456,7 +456,7 @@ unqualified_name_lookup_error (tree name)
 	}
       /* Prevent repeated error messages by creating a VAR_DECL with
 	 this NAME in the innermost block scope.  */
-      if (current_function_decl)
+      if (local_bindings_p ())
 	{
 	  tree decl;
 	  decl = build_decl (input_location,
