@@ -32676,6 +32676,52 @@ ix86_expand_round (rtx operand0, rtx operand1)
 
   emit_move_insn (operand0, res);
 }
+
+/* Expand SSE sequence for computing round
+   from OP1 storing into OP0 using sse4 round insn.  */
+void
+ix86_expand_round_sse4 (rtx op0, rtx op1)
+{
+  enum machine_mode mode = GET_MODE (op0);
+  rtx e1, e2, e3, res, half, mask;
+  const struct real_format *fmt;
+  REAL_VALUE_TYPE pred_half, half_minus_pred_half;
+  rtx (*gen_round) (rtx, rtx, rtx);
+
+  switch (mode)
+    {
+    case SFmode:
+      gen_round = gen_sse4_1_roundsf2;
+      break;
+    case DFmode:
+      gen_round = gen_sse4_1_rounddf2;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* e1 = fabs(op1) */
+  e1 = ix86_expand_sse_fabs (op1, &mask);
+
+  /* load nextafter (0.5, 0.0) */
+  fmt = REAL_MODE_FORMAT (mode);
+  real_2expN (&half_minus_pred_half, -(fmt->p) - 1, mode);
+  REAL_ARITHMETIC (pred_half, MINUS_EXPR, dconsthalf, half_minus_pred_half);
+
+  /* e2 = e1 + 0.5 */
+  half = force_reg (mode, const_double_from_real_value (pred_half, mode));
+  e2 = expand_simple_binop (mode, PLUS, e1, half, NULL_RTX, 0, OPTAB_DIRECT);
+
+  /* e3 = trunc(e2) */
+  e3 = gen_reg_rtx (mode);
+  emit_insn (gen_round (e3, e2, GEN_INT (ROUND_TRUNC)));
+
+  /* res = copysign (e3, op1) */
+  res = gen_reg_rtx (mode);
+  ix86_sse_copysign_to_positive (res, e3, op1, mask);
+
+  emit_move_insn (op0, res);
+}
 
 
 /* Table of valid machine attributes.  */
