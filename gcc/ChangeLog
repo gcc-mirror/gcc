@@ -1,3 +1,8 @@
+2011-08-14  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mmix/mmix.c (TARGET_PREFERRED_OUTPUT_RELOAD_CLASS): Redefine
+	as mmix_preferred_output_reload_class.
+
 2011-08-14  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* PR target/49903
