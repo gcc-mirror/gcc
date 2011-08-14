@@ -1,5 +1,10 @@
 2011-08-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50075
+	* name-lookup.c (local_bindings_p): New.
+	* name-lookup.h: Declare it.
+	* lex.c (unqualified_name_lookup_error): Use it.
+
 	PR c++/50059
 	* error.c (dump_expr): Handle MODIFY_EXPR properly.
 
