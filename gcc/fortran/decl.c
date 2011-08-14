@@ -1729,6 +1729,30 @@ match_pointer_init (gfc_expr **init, int procptr)
 }
 
 
+static gfc_try
+check_function_name (char *name)
+{
+  /* In functions that have a RESULT variable defined, the function name always
+     refers to function calls.  Therefore, the name is not allowed to appear in
+     specification statements. When checking this, be careful about
+     'hidden' procedure pointer results ('ppr@').  */
+
+  if (gfc_current_state () == COMP_FUNCTION)
+    {
+      gfc_symbol *block = gfc_current_block ();
+      if (block && block->result && block->result != block
+	  && strcmp (block->result->name, "ppr@") != 0
+	  && strcmp (block->name, name) == 0)
+	{
+	  gfc_error ("Function name '%s' not allowed at %C", name);
+	  return FAILURE;
+	}
+    }
+
+  return SUCCESS;
+}
+
+
 /* Match a variable name with an optional initializer.  When this
    subroutine is called, a variable is expected to be parsed next.
    Depending on what is happening at the moment, updates either the
@@ -1935,17 +1959,9 @@ variable_decl (int elem)
 	    goto cleanup;
 	}
     }
-
-  /* In functions that have a RESULT variable defined, the function
-     name always refers to function calls.  Therefore, the name is
-     not allowed to appear in specification statements.  */
-  if (gfc_current_state () == COMP_FUNCTION
-      && gfc_current_block () != NULL
-      && gfc_current_block ()->result != NULL
-      && gfc_current_block ()->result != gfc_current_block ()
-      && strcmp (gfc_current_block ()->name, name) == 0)
+    
+  if (check_function_name (name) == FAILURE)
     {
-      gfc_error ("Function name '%s' not allowed at %C", name);
       m = MATCH_ERROR;
       goto cleanup;
     }
@@ -5995,6 +6011,12 @@ attr_decl1 (void)
   if (find_special (name, &sym, false))
     return MATCH_ERROR;
 
+  if (check_function_name (name) == FAILURE)
+    {
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+  
   var_locus = gfc_current_locus;
 
   /* Deal with possible array specification for certain attributes.  */
