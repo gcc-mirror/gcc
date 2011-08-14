@@ -56,6 +56,7 @@
    UNSPEC_FMULS
    UNSPEC_FMULSU
    UNSPEC_COPYSIGN
+   UNSPEC_IDENTITY
    ])
 
 (define_c_enum "unspecv"
@@ -3339,15 +3340,35 @@
 (define_insn "branch"
   [(set (pc)
         (if_then_else (match_operator 1 "simple_comparison_operator"
-                        [(cc0)
-                         (const_int 0)])
+                                      [(cc0)
+                                       (const_int 0)])
                       (label_ref (match_operand 0 "" ""))
                       (pc)))]
   ""
-  "*
-   return ret_cond_branch (operands[1], avr_jump_mode (operands[0],insn), 0);"
+  {
+    return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 0);
+  }
   [(set_attr "type" "branch")
    (set_attr "cc" "clobber")])
+
+
+;; Same as above but wrap SET_SRC so that this branch won't be transformed
+;; or optimized in the remainder.
+
+(define_insn "branch_unspec"
+  [(set (pc)
+        (unspec [(if_then_else (match_operator 1 "simple_comparison_operator"
+                                               [(cc0)
+                                                (const_int 0)])
+                               (label_ref (match_operand 0 "" ""))
+                               (pc))
+                 ] UNSPEC_IDENTITY))]
+  ""
+  {
+    return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 0);
+  }
+  [(set_attr "type" "branch")
+   (set_attr "cc" "none")])
 
 ;; ****************************************************************
 ;; AVR does not have following conditional jumps: LE,LEU,GT,GTU.

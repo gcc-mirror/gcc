@@ -1,3 +1,16 @@
+2011-08-14  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* PR target/49903
+	* config/avr/avr.md (UNSPEC_IDENTITY): New c_enum.
+	(branch_unspec): New insn.
+	(branch): Beauty farm.
+	* config/avr/avr.c (compare_condition): Use JUMP_P.  Test SET_SRC
+	to be IF_THEN_ELSE.
+	(avr_compare_pattern, avr_reorg_remove_redundant_compare):
+	New static functions.
+	(avr_reorg): Use them.  Use next_real_insn instead of NEXT_INSN.
+	Use CONST_INT_P.  Beauty.
+
 2011-08-12  David Li  <davidxl@google.com>
 
 	* cp/class.c (update_vtable_entry_for_fn): Set
