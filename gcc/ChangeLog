@@ -1,3 +1,30 @@
+2011-08-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/50022
+	* config/arm/arm.c (output_move_double): Add 2 parameters
+	to count the number of insns emitted and whether to emit or not.
+	Use the flag to decide when to emit and count number of instructions
+	that will be emitted.
+	Handle case where output_move_double might be called for calculating
+	lengths with an invalid constant.
+	(arm_count_output_move_double_insns): Define.
+	* config/arm/arm-protos.h (arm_count_output_move_double_insns): Declare.
+	(output_move_double): Adjust prototype.
+	* config/arm/vfp.md ("*movdi_vfp"): Adjust call to
+	output_move_double.
+	("*movdi_vfp_cortexa8"): Likewise and add attribute
+	for ce_count.
+	* config/arm/arm.md ("*arm_movdi"): Adjust call to output_move_double.
+	("*movdf_soft_insn"): Likewise.
+	* config/arm/cirrus.md ("*cirrus_arm_movdi"): Likewise.
+	("*cirrus_thumb2_movdi"): Likewise.
+	("*thumb2_cirrus_movdf_hard_insn"): Likewise.
+	("*cirrus_movdf_hard_insn"): Likewise.
+	* config/arm/neon.md (*neon_mov<mode> VD): Likewise.
+	* config/arm/iwmmxt.md ("*iwmmxt_arm_movdi"): Likewise.
+	("mov<mode>_internal VMMX"): Likewise.
+	* config/arm/fpa.md (*movdf_fpa, *thumb2_movdf_fpa): Likewise.
+
 2011-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_round_sse4): New function.

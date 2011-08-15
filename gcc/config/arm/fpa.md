@@ -567,7 +567,7 @@
     case 0: return \"ldm%(ia%)\\t%m1, %M0\\t%@ double\";
     case 1: return \"stm%(ia%)\\t%m0, %M1\\t%@ double\";
     case 2: return \"#\";
-    case 3: case 4: return output_move_double (operands);
+    case 3: case 4: return output_move_double (operands, true, NULL);
     case 5: return \"mvf%?d\\t%0, %1\";
     case 6: return \"mnf%?d\\t%0, #%N1\";
     case 7: return \"ldf%?d\\t%0, %1\";
@@ -657,7 +657,7 @@
     default:
     case 0: return \"ldm%(ia%)\\t%m1, %M0\\t%@ double\";
     case 1: return \"stm%(ia%)\\t%m0, %M1\\t%@ double\";
-    case 2: case 3: case 4: return output_move_double (operands);
+    case 2: case 3: case 4: return output_move_double (operands, true, NULL);
     case 5: return \"mvf%?d\\t%0, %1\";
     case 6: return \"mnf%?d\\t%0, #%N1\";
     case 7: return \"ldf%?d\\t%0, %1\";
