@@ -1,5 +1,9 @@
 2011-08-14  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* doc/xml/images/*: Image and image filename changes.
+
+2011-08-14  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/data/make_graph_test_infos.xml: Edit.
 	* testsuite/data/make_graph_htmls.xml: Remove
 	* scripts/make_graph.py: Edit, fix.
