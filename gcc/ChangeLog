@@ -1,5 +1,13 @@
 2011-08-15  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/50082
+	* fold-const.c (maybe_canonicalize_comparison_1): Properly
+	convert the modified operand to the other operand type.
+	(fold_comparison): Call maybe_canonicalize_comparison_1 with
+	useless conversions stripped from comparison operands.
+
+2011-08-15  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vrp.c (value_range_nonnegative_p): Fix anti-range case.
 	(extract_range_from_unary_expr_1): Restructure.
 
