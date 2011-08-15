@@ -1375,6 +1375,9 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   else if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
     probe_stack_range (STACK_CHECK_PROTECT, size);
 
+  /* Don't let anti_adjust_stack emit notes.  */
+  suppress_reg_args_size = true;
+
   /* Perform the required allocation from the stack.  Some systems do
      this differently than simply incrementing/decrementing from the
      stack pointer, such as acquiring the space by calling malloc().  */
@@ -1425,7 +1428,6 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	}
 
       saved_stack_pointer_delta = stack_pointer_delta;
-      suppress_reg_args_size = true;
 
       if (flag_stack_check && STACK_CHECK_MOVING_SP)
 	anti_adjust_stack_and_probe (size, false);
@@ -1436,12 +1438,13 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	 The constant size alloca should preserve
 	 crtl->preferred_stack_boundary alignment.  */
       stack_pointer_delta = saved_stack_pointer_delta;
-      suppress_reg_args_size = false;
 
 #ifdef STACK_GROWS_DOWNWARD
       emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif
     }
+
+  suppress_reg_args_size = false;
 
   /* Finish up the split stack handling.  */
   if (final_label != NULL_RTX)

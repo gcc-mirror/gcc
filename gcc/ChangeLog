@@ -1,3 +1,11 @@
+2011-08-15  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/50006
+	* explow.c (allocate_dynamic_stack_space): Move suppress_reg_args_size
+	setting out to include allocate_stack named pattern as well.
+	* builtins.c (expand_builtin_apply): Add ARG_SIZE 0 note.
+	* stmt.c (expand_stack_restore): Likewise.
+
 2011-08-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/50082

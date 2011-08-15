@@ -2016,10 +2016,13 @@ expand_stack_save (void)
 void
 expand_stack_restore (tree var)
 {
-  rtx sa = expand_normal (var);
+  rtx prev, sa = expand_normal (var);
 
   sa = convert_memory_address (Pmode, sa);
+
+  prev = get_last_insn ();
   emit_stack_restore (SAVE_BLOCK, sa);
+  fixup_args_size_notes (prev, get_last_insn (), 0);
 }
 
 /* Do the insertion of a case label into case_list.  The labels are

@@ -1680,6 +1680,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   else
 #endif
     emit_stack_restore (SAVE_BLOCK, old_stack_level);
+  fixup_args_size_notes (call_insn, get_last_insn(), 0);
 
   OK_DEFER_POP;
 
