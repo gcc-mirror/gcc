@@ -1,3 +1,8 @@
+2011-08-12  David Li  <davidxl@google.com>
+
+	* class.c (update_vtable_entry_for_fn): Set
+	LOST_PRIMARY bit properly.
+
 2011-08-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48993
