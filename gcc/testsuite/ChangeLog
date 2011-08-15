@@ -1,6 +1,6 @@
 2011-08-15  Hans-Peter Nilsson  <hp@axis.com>
 
-	* gcc.dg/tree-ssa/vrp61.c: : Use -fdump-tree-vrp1-nouid instead of
+	* gcc.dg/tree-ssa/vrp61.c: Use -fdump-tree-vrp1-nouid instead of
 	-fdump-tree-vrp1.
 
 2011-08-14  Janus Weil  <janus@gcc.gnu.org>
