@@ -102,11 +102,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_text_find_timing_test_hash_local.pdf"/>
+			   fileref="../images/pbds_hash_text_find.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_text_find_timing_test_hash_local.png"/>
+			   fileref="../images/pbds_hash_text_find.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -162,7 +162,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map
+		    cc_hash_mod_prime_1div1_nsth_map
 		  </entry>
 		</row>
 
@@ -208,7 +208,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mask_exp_nea_lc_1div8_1div2_sth_map
+		    cc_hash_mask_exp_1div2_sth_map
 		  </entry>
 		</row>
 
@@ -256,7 +256,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mask_exp_nea_lc_1div8_1div1_nsth_map
+		    cc_hash_mask_exp_1div1_nsth_map
 		  </entry>
 		</row>
 
@@ -302,7 +302,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_map
+		    cc_hash_mask_exp_1div2_nsth_map
 		  </entry>
 		</row>
 		<row>
@@ -429,11 +429,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_cc_hash_random_int_find_timing_test_local.pdf"/>
+			   fileref="../images/pbds_cc_hash_int_find.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_cc_hash_random_int_find_timing_test_local.png"/>
+			   fileref="../images/pbds_cc_hash_int_find.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -489,7 +489,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map
+		    cc_hash_mod_prime_1div1_nsth_map
 		  </entry>
 		</row>
 
@@ -535,7 +535,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mod_prime_nea_lc_1div8_1div2_nsth_map
+		    cc_hash_mod_prime_1div2_nsth_map
 		  </entry>
 		</row>
 
@@ -583,7 +583,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mask_exp_nea_lc_1div8_1div1_nsth_map
+		    cc_hash_mask_exp_1div1_nsth_map
 		  </entry>
 		</row>
 
@@ -629,7 +629,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_map
+		    cc_hash_mask_exp_1div2_nsth_map
 		  </entry>
 		</row>
 		<row>
@@ -690,11 +690,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_gp_hash_random_int_find_timing_test_local.pdf"/>
+			   fileref="../images/pbds_gp_hash_int_find.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_gp_hash_random_int_find_timing_test_local.png"/>
+			   fileref="../images/pbds_gp_hash_int_find.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -750,7 +750,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    gp_hash_mod_quadp_prime_nea_lc_1div8_1div2_nsth_map
+		    gp_hash_mod_quadp_prime_1div2_nsth_map
 		  </entry>
 		</row>
 
@@ -806,7 +806,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    gp_hash_mask_linp_exp_nea_lc_1div8_1div2_nsth_map
+		    gp_hash_mask_linp_exp_1div2_nsth_map
 		  </entry>
 		</row>
 
@@ -949,11 +949,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_cc_hash_random_int_subscript_timing_test_find_local.pdf"/>
+			   fileref="../images/pbds_cc_hash_int_subscript_find.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_cc_hash_random_int_subscript_timing_test_find_local.png"/>
+			   fileref="../images/pbds_cc_hash_int_subscript_find.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -1008,7 +1008,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map
+		    cc_hash_mod_prime_1div1_nsth_map
 		  </entry>
 		</row>
 
@@ -1054,7 +1054,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mod_prime_nea_lc_1div8_1div2_nsth_map
+		    cc_hash_mod_prime_1div2_nsth_map
 		  </entry>
 		</row>
 
@@ -1100,7 +1100,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mask_exp_nea_lc_1div8_1div1_nsth_map
+		    cc_hash_mask_exp_1div1_nsth_map
 		  </entry>
 		</row>
 
@@ -1146,7 +1146,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_map
+		    cc_hash_mask_exp_1div2_nsth_map
 		  </entry>
 		</row>
 		<row>
@@ -1208,11 +1208,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_gp_hash_random_int_subscript_timing_test_find_local.pdf"/>
+			   fileref="../images/pbds_gp_hash_int_subscript_find.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_gp_hash_random_int_subscript_timing_test_find_local.png"/>
+			   fileref="../images/pbds_gp_hash_int_subscript_find.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -1268,7 +1268,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    gp_hash_mod_quadp_prime_nea_lc_1div8_1div2_nsth_map
+		    gp_hash_mod_quadp_prime_1div2_nsth_map
 		  </entry>
 		</row>
 
@@ -1324,7 +1324,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    gp_hash_mask_linp_exp_nea_lc_1div8_1div2_nsth_map
+		    gp_hash_mask_linp_exp_1div2_nsth_map
 		  </entry>
 		</row>
 
@@ -1448,11 +1448,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_cc_hash_random_int_subscript_timing_test_insert_local.pdf"/>
+			   fileref="../images/pbds_cc_hash_int_subscript_insert.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_cc_hash_random_int_subscript_timing_test_insert_local.png"/>
+			   fileref="../images/pbds_cc_hash_int_subscript_insert.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -1507,7 +1507,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map
+		    cc_hash_mod_prime_1div1_nsth_map
 		  </entry>
 		</row>
 
@@ -1553,7 +1553,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mod_prime_nea_lc_1div8_1div2_nsth_map
+		    cc_hash_mod_prime_1div2_nsth_map
 		  </entry>
 		</row>
 
@@ -1599,7 +1599,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mask_exp_nea_lc_1div8_1div1_nsth_map
+		    cc_hash_mask_exp_1div1_nsth_map
 		  </entry>
 		</row>
 
@@ -1645,7 +1645,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_map
+		    cc_hash_mask_exp_1div2_nsth_map
 		  </entry>
 		</row>
 		<row>
@@ -1707,11 +1707,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_gp_hash_random_int_subscript_timing_test_insert_local.pdf"/>
+			   fileref="../images/pbds_gp_hash_int_subscript_insert.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_gp_hash_random_int_subscript_timing_test_insert_local.png"/>
+			   fileref="../images/pbds_gp_hash_int_subscript_insert.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -1767,7 +1767,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    gp_hash_mod_quadp_prime_nea_lc_1div8_1div2_nsth_map
+		    gp_hash_mod_quadp_prime_1div2_nsth_map
 		  </entry>
 		</row>
 
@@ -1823,7 +1823,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    gp_hash_mask_linp_exp_nea_lc_1div8_1div2_nsth_map
+		    gp_hash_mask_linp_exp_1div2_nsth_map
 		  </entry>
 		</row>
 
@@ -1979,11 +1979,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_hash_zlob_random_int_find_timing_test_local.pdf"/>
+			   fileref="../images/pbds_hash_zlob_int_find.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_hash_zlob_random_int_find_timing_test_local.png"/>
+			   fileref="../images/pbds_hash_zlob_int_find.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -2039,7 +2039,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map
+		    cc_hash_mod_prime_1div1_nsth_map
 		  </entry>
 		</row>
 
@@ -2085,7 +2085,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mask_exp_nea_lc_1div8_1div1_nsth_map
+		    cc_hash_mask_exp_1div1_nsth_map
 		  </entry>
 		</row>
 
@@ -2133,7 +2133,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    gp_hash_mod_quadp_prime_nea_lc_1div8_1div2_nsth_map
+		    gp_hash_mod_quadp_prime_1div2_nsth_map
 		  </entry>
 		</row>
 
@@ -2278,11 +2278,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_hash_random_int_erase_mem_usage_test_local.pdf"/>
+			   fileref="../images/pbds_hash_int_erase_mem.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_hash_random_int_erase_mem_usage_test_local.png"/>
+			   fileref="../images/pbds_hash_int_erase_mem.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -2338,7 +2338,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map
+		    cc_hash_mod_prime_1div1_nsth_map
 		  </entry>
 		</row>
 
@@ -2384,7 +2384,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_map
+		    cc_hash_mask_exp_1div2_nsth_map
 		  </entry>
 		</row>
 
@@ -2432,7 +2432,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c5">
-		    gp_hash_mask_linp_exp_nea_lc_1div8_1div2_nsth_set
+		    gp_hash_mask_linp_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -2564,11 +2564,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_tree_text_insert_timing_test_node_tree_local.pdf"/>
+			   fileref="../images/pbds_tree_text_insert_node.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_tree_text_insert_timing_test_node_tree_local.png"/>
+			   fileref="../images/pbds_tree_text_insert_node.png"/>
 	      </imageobject>
 	    </mediaobject>
 
@@ -2683,11 +2683,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_tree_text_insert_timing_test_vector_tree_local.pdf"/>
+			   fileref="../images/pbds_tree_text_insert_vector.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_tree_text_insert_timing_test_vector_tree_local.png"/>
+			   fileref="../images/pbds_tree_text_insert_vector.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -2775,11 +2775,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_tree_text_insert_timing_test_pat_trie_local.pdf"/>
+			   fileref="../images/pbds_tree_text_insert_trie.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_tree_text_insert_timing_test_pat_trie_local.png"/>
+			   fileref="../images/pbds_tree_text_insert_trie.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -2937,11 +2937,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_text_find_timing_test_tree_like_local.pdf"/>
+			   fileref="../images/pbds_tree_text_find.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_text_find_timing_test_tree_like_local.png"/>
+			   fileref="../images/pbds_tree_text_find.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -3209,11 +3209,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_tree_text_lor_find_timing_test_local.pdf"/>
+			   fileref="../images/pbds_tree_text_lor_find.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_tree_text_lor_find_timing_test_local.png"/>
+			   fileref="../images/pbds_tree_text_lor_find.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -3452,11 +3452,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_tree_split_join_timing_test_local.pdf"/>
+			   fileref="../images/pbds_tree_split_join.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_tree_split_join_timing_test_local.png"/>
+			   fileref="../images/pbds_tree_split_join.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -3712,11 +3712,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_tree_order_statistics_timing_test_local.pdf"/>
+			   fileref="../images/pbds_tree_order_statistics.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_tree_order_statistics_timing_test_local.png"/>
+			   fileref="../images/pbds_tree_order_statistics.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -3909,11 +3909,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_find_timing_test_small_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_small_s2p_tree.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_find_timing_test_small_s2p_tree_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_find_small_s2p_tree.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -4013,7 +4013,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -4095,11 +4095,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_find_timing_test_small_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_small_s2p_hash.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_find_timing_test_small_s2p_hash_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_find_small_s2p_hash.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -4217,7 +4217,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -4374,11 +4374,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_large_s2p_tree.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_tree_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_find_large_s2p_tree.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -4478,7 +4478,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -4560,11 +4560,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_large_s2p_hash.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_find_large_s2p_hash.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -4682,7 +4682,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -4843,11 +4843,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_insert_timing_test_small_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_insert_small_s2p_tree.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_insert_timing_test_small_s2p_tree_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_insert_small_s2p_tree.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -4947,7 +4947,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -5029,11 +5029,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_find_timing_test_small_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_small_s2p_hash.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_find_timing_test_small_s2p_hash_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_find_small_s2p_hash.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -5151,7 +5151,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -5312,11 +5312,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_insert_timing_test_large_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_insert_large_s2p_tree.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_insert_timing_test_large_s2p_tree_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_insert_large_s2p_tree.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -5416,7 +5416,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -5498,11 +5498,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_large_s2p_hash.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_find_large_s2p_hash.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -5620,7 +5620,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -5775,11 +5775,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_insert_mem_usage_test_small_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_insert_mem_small_s2p_tree.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_insert_mem_usage_test_small_s2p_tree_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_insert_mem_small_s2p_tree.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -5879,7 +5879,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -5961,11 +5961,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_large_s2p_hash.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_find_large_s2p_hash.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -6083,7 +6083,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -6237,11 +6237,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_insert_mem_usage_test_large_s2p_tree_local.png"/>
+			   fileref="../images/pbds_multimap_text_insert_mem_large_s2p_tree.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_insert_mem_usage_test_large_s2p_tree_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_insert_mem_large_s2p_tree.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -6341,7 +6341,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -6423,11 +6423,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png"/>
+			   fileref="../images/pbds_multimap_text_find_large_s2p_hash.png"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="33"
-			   fileref="../images/pbds_multimap_text_find_timing_test_large_s2p_hash_local.pdf"/>
+			   fileref="../images/pbds_multimap_text_find_large_s2p_hash.pdf"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -6545,7 +6545,7 @@
 		<row>
 		  <?dbhtml bgcolor="#B0B0B0" ?>
 		  <entry namest="c1" nameend="c7">
-		    rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set
+		    rb_tree_mmap_cc_hash_mask_exp_1div2_nsth_set
 		  </entry>
 		</row>
 
@@ -6706,11 +6706,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_priority_queue_text_push_timing_test_local.pdf"/>
+			   fileref="../images/pbds_priority_queue_text_push.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_priority_queue_text_push_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_push.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -6894,11 +6894,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_pairing_priority_queue_text_push_timing_test_local.pdf"/>
+			   fileref="../images/pbds_pairing_priority_queue_text_push.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_pairing_priority_queue_text_push_timing_test_local.png"/>
+			   fileref="../images/pbds_pairing_priority_queue_text_push.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -7093,11 +7093,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_priority_queue_text_push_pop_timing_test_local.pdf"/>
+			   fileref="../images/pbds_priority_queue_text_push_pop.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_priority_queue_text_push_pop_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_push_pop.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -7281,11 +7281,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_pairing_priority_queue_text_push_pop_timing_test_local.pdf"/>
+			   fileref="../images/pbds_pairing_priority_queue_text_push_pop.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_pairing_priority_queue_text_push_pop_timing_test_local.png"/>
+			   fileref="../images/pbds_pairing_priority_queue_text_push_pop.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -7460,11 +7460,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_priority_queue_random_int_push_timing_test_local.pdf"/>
+			   fileref="../images/pbds_priority_queue_int_push.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_priority_queue_random_int_push_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_int_push.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -7648,11 +7648,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_binary_priority_queue_random_int_push_timing_test_local.pdf"/>
+			   fileref="../images/pbds_binary_priority_queue_int_push.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_binary_priority_queue_random_int_push_timing_test_local.png"/>
+			   fileref="../images/pbds_binary_priority_queue_int_push.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -7812,11 +7812,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_priority_queue_random_int_push_pop_timing_test_local.pdf"/>
+			   fileref="../images/pbds_priority_queue_int_push_pop.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_priority_queue_random_int_push_pop_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_int_push_pop.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -8077,11 +8077,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_priority_queue_text_pop_mem_usage_test_local.pdf"/>
+			   fileref="../images/pbds_priority_queue_text_pop_mem.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_priority_queue_text_pop_mem_usage_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_pop_mem.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -8329,11 +8329,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_priority_queue_text_join_timing_test_local.pdf"/>
+			   fileref="../images/pbds_priority_queue_text_join.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_priority_queue_text_join_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_join.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -8588,11 +8588,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_priority_queue_text_modify_up_timing_test_local.pdf"/>
+			   fileref="../images/pbds_priority_queue_text_modify_up.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_priority_queue_text_modify_up_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_modify_up.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -8776,11 +8776,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_priority_queue_text_modify_up_timing_test_pairing_thin_local.pdf"/>
+			   fileref="../images/pbds_pairing_priority_queue_text_modify_up_thin.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_priority_queue_text_modify_up_timing_test_pairing_thin_local.png"/>
+			   fileref="../images/pbds_pairing_priority_queue_text_modify_up_thin.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -8950,11 +8950,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_priority_queue_text_modify_down_timing_test_local.pdf"/>
+			   fileref="../images/pbds_priority_queue_text_modify_down.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_priority_queue_text_modify_down_timing_test_local.png"/>
+			   fileref="../images/pbds_priority_queue_text_modify_down.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
@@ -9138,11 +9138,11 @@
 	    <mediaobject>
 	      <imageobject>
 		<imagedata align="center" format="PDF" scale="75"
-			   fileref="../images/pbds_priority_queue_text_modify_down_timing_test_pairing_thin_local.pdf"/>
+			   fileref="../images/pbds_pairing_priority_queue_text_modify_down_thin.pdf"/>
 	      </imageobject>
 	      <imageobject>
 		<imagedata align="center" format="PNG" scale="100"
-			   fileref="../images/pbds_priority_queue_text_modify_down_timing_test_pairing_thin_local.png"/>
+			   fileref="../images/pbds_pairing_priority_queue_text_modify_down_thin.png"/>
 	      </imageobject>
 	    </mediaobject>
 	  </informalfigure>
