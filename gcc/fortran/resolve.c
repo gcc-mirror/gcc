@@ -12246,29 +12246,41 @@ resolve_symbol (gfc_symbol *sym)
   /* F2008, C542.  */
   if (sym->ts.type == BT_DERIVED && sym->attr.dummy
       && sym->attr.intent == INTENT_OUT && sym->attr.lock_comp)
-    gfc_error ("Dummy argument '%s' at %L of LOCK_TYPE shall not be "
-	       "INTENT(OUT)", sym->name, &sym->declared_at);
+    {
+      gfc_error ("Dummy argument '%s' at %L of LOCK_TYPE shall not be "
+		 "INTENT(OUT)", sym->name, &sym->declared_at);
+      return;
+    }
 
-  /* F2008, C526.  */
+  /* F2008, C525.  */
   if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
        || sym->attr.codimension)
-      && sym->attr.result)
-    gfc_error ("Function result '%s' at %L shall not be a coarray or have "
-	       "a coarray component", sym->name, &sym->declared_at);
+      && (sym->attr.result || sym->result == sym))
+    {
+      gfc_error ("Function result '%s' at %L shallolvnot be a coarray or have "
+	         "a coarray component", sym->name, &sym->declared_at);
+      return;
+    }
 
   /* F2008, C524.  */
   if (sym->attr.codimension && sym->ts.type == BT_DERIVED
       && sym->ts.u.derived->ts.is_iso_c)
-    gfc_error ("Variable '%s' at %L of TYPE(C_PTR) or TYPE(C_FUNPTR) "
-	       "shall not be a coarray", sym->name, &sym->declared_at);
+    {
+      gfc_error ("Variable '%s' at %L of TYPE(C_PTR) or TYPE(C_FUNPTR) "
+		 "shall not be a coarray", sym->name, &sym->declared_at);
+      return;
+    }
 
   /* F2008, C525.  */
   if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp
       && (sym->attr.codimension || sym->attr.pointer || sym->attr.dimension
 	  || sym->attr.allocatable))
-    gfc_error ("Variable '%s' at %L with coarray component "
-	       "shall be a nonpointer, nonallocatable scalar",
-	       sym->name, &sym->declared_at);
+    {
+      gfc_error ("Variable '%s' at %L with coarray component "
+		 "shall be a nonpointer, nonallocatable scalar",
+		 sym->name, &sym->declared_at);
+      return;
+    }
 
   /* F2008, C526.  The function-result case was handled above.  */
   if (sym->attr.codimension
@@ -12277,32 +12289,46 @@ resolve_symbol (gfc_symbol *sym)
 	   || sym->ns->proc_name->attr.flavor == FL_MODULE
 	   || sym->ns->proc_name->attr.is_main_program
 	   || sym->attr.function || sym->attr.result || sym->attr.use_assoc))
-    gfc_error ("Variable '%s' at %L is a coarray and is not ALLOCATABLE, SAVE "
-	       "nor a dummy argument", sym->name, &sym->declared_at);
+    {
+      gfc_error ("Variable '%s' at %L is a coarray and is not ALLOCATABLE, SAVE "
+		 "nor a dummy argument", sym->name, &sym->declared_at);
+      return;
+    }
   /* F2008, C528.  */  /* FIXME: sym->as check due to PR 43412.  */
   else if (sym->attr.codimension && !sym->attr.allocatable
       && sym->as && sym->as->cotype == AS_DEFERRED)
-    gfc_error ("Coarray variable '%s' at %L shall not have codimensions with "
-		"deferred shape", sym->name, &sym->declared_at);
+    {
+      gfc_error ("Coarray variable '%s' at %L shall not have codimensions with "
+		 "deferred shape", sym->name, &sym->declared_at);
+      return;
+    }
   else if (sym->attr.codimension && sym->attr.allocatable
       && (sym->as->type != AS_DEFERRED || sym->as->cotype != AS_DEFERRED))
-    gfc_error ("Allocatable coarray variable '%s' at %L must have "
-	       "deferred shape", sym->name, &sym->declared_at);
-
+    {
+      gfc_error ("Allocatable coarray variable '%s' at %L must have "
+		 "deferred shape", sym->name, &sym->declared_at);
+      return;
+    }
 
   /* F2008, C541.  */
   if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
        || (sym->attr.codimension && sym->attr.allocatable))
       && sym->attr.dummy && sym->attr.intent == INTENT_OUT)
-    gfc_error ("Variable '%s' at %L is INTENT(OUT) and can thus not be an "
-	       "allocatable coarray or have coarray components",
-	       sym->name, &sym->declared_at);
+    {
+      gfc_error ("Variable '%s' at %L is INTENT(OUT) and can thus not be an "
+		 "allocatable coarray or have coarray components",
+		 sym->name, &sym->declared_at);
+      return;
+    }
 
   if (sym->attr.codimension && sym->attr.dummy
       && sym->ns->proc_name && sym->ns->proc_name->attr.is_bind_c)
-    gfc_error ("Coarray dummy variable '%s' at %L not allowed in BIND(C) "
-	       "procedure '%s'", sym->name, &sym->declared_at,
-	       sym->ns->proc_name->name);
+    {
+      gfc_error ("Coarray dummy variable '%s' at %L not allowed in BIND(C) "
+		 "procedure '%s'", sym->name, &sym->declared_at,
+		 sym->ns->proc_name->name);
+      return;
+    }
 
   switch (sym->attr.flavor)
     {
