@@ -8446,6 +8446,7 @@ maybe_canonicalize_comparison_1 (location_t loc, enum tree_code code, tree type,
 		       cst0, build_int_cst (TREE_TYPE (cst0), 1));
   if (code0 != INTEGER_CST)
     t = fold_build2_loc (loc, code0, TREE_TYPE (arg0), TREE_OPERAND (arg0, 0), t);
+  t = fold_convert (TREE_TYPE (arg1), t);
 
   /* If swapping might yield to a more canonical form, do so.  */
   if (swap)
@@ -8935,7 +8936,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
       return fold_build2_loc (loc, cmp_code, type, variable1, const2);
     }
 
-  tem = maybe_canonicalize_comparison (loc, code, type, op0, op1);
+  tem = maybe_canonicalize_comparison (loc, code, type, arg0, arg1);
   if (tem)
     return tem;
 
