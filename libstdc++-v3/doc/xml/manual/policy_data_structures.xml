@@ -1196,10 +1196,9 @@
       results in compilation, execution, or both.</para>
 
       <para>
-	Further dependencies are necessary to create the visual output for the
-	performance tests. To create these graphs, two additional packages
-	will be needed: <command>pychart</command> and <command>Beautiful
-	Soup</command>.
+	Further dependencies are necessary to create the visual output
+	for the performance tests. To create these graphs, an
+	additional package is needed: <command>pychart</command>.
       </para>
     </section>
 

@@ -1,3 +1,81 @@
+2011-08-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/data/make_graph_test_infos.xml: Edit.
+	* testsuite/data/make_graph_htmls.xml: Remove
+	* scripts/make_graph.py: Edit, fix.
+	* scripts/make_graphs.py: Remove.
+
+	* doc/Makefile.am (doc-svg-performance): New.
+	(doc-html-performance): Remove.
+	* doc/Makefile.in: Regenerate.
+
+	* doc/xml/manual/test_policy_data_structures.xml: Markup changes.
+	* doc/xml/manual/policy_data_structures.xml: Same.
+	* doc/xml/manual/locale.xml: Same.
+
+	Testsuite renames.
+	* performance/ext/pb_ds/priority_queue_text_modify_down_timing.cc:
+	Rename.
+	* performance/ext/pb_ds/random_int_find_timing.cc: Same.
+	* performance/ext/pb_ds/multimap_text_insert_mem_usage.hpp
+	* performance/ext/pb_ds/multimap_text_find_timing.hpp
+	* performance/ext/pb_ds/priority_queue_random_int_push_timing.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_modify_timing.hpp
+	* performance/ext/pb_ds/tree_order_statistics_timing.cc: Same.
+	* performance/ext/pb_ds/multimap_text_insert_mem_usage_large.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_push_pop_timing.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_join_timing.cc: Same.
+	* performance/ext/pb_ds/multimap_text_insert_timing_small.cc: Same.
+	* performance/ext/pb_ds/random_int_subscript_insert_timing.cc: Same.
+	* performance/ext/pb_ds/tree_text_lor_find_timing.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_pop_mem_usage.cc: Same.
+	* performance/ext/pb_ds/multimap_text_find_timing_small.cc: Same.
+	* performance/ext/pb_ds/text_find_timing.cc: Same.
+	* performance/ext/pb_ds/tree_text_insert_timing.cc: Same.
+	* performance/ext/pb_ds/hash_random_int_erase_mem_usage.cc: Same.
+	* performance/ext/pb_ds/random_int_subscript_find_timing.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_push_timing.cc: Same.
+	* performance/ext/pb_ds/tree_split_join_timing.cc: Same.
+	* performance/ext/pb_ds/multimap_text_insert_timing_large.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_modify_up_timing.cc: Same.
+	* performance/ext/pb_ds/multimap_text_find_timing_large.cc: Same.
+	* performance/ext/pb_ds/priority_queue_random_int_push_pop_timing.cc:
+	Same.
+	* performance/ext/pb_ds/multimap_text_insert_timing.hpp
+	* performance/ext/pb_ds/multimap_text_insert_mem_usage_small.cc: Same.
+	* performance/ext/pb_ds/hash_zlob_random_int_find_timing.cc: Same.
+
+	* performance/ext/pb_ds/all_int_find.cc: To these new files...
+	* performance/ext/pb_ds/all_int_subscript_find.cc: ...this.
+	* performance/ext/pb_ds/all_int_subscript_insert.cc: ...this.
+	* performance/ext/pb_ds/all_text_find.cc: ...this.
+	* performance/ext/pb_ds/hash_int_erase_mem.cc: ...this.
+	* performance/ext/pb_ds/hash_zlob_int_find.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_find.hpp
+	* performance/ext/pb_ds/multimap_text_find_large.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_find_small.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_insert.hpp
+	* performance/ext/pb_ds/multimap_text_insert_large.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_insert_mem.hpp
+	* performance/ext/pb_ds/multimap_text_insert_mem_large.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_insert_mem_small.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_insert_small.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_int_push.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_int_push_pop.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_join.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_modify_down.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_modify.hpp
+	* performance/ext/pb_ds/priority_queue_text_modify_up.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_pop_mem.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_push.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_push_pop.cc: ...this.
+	* performance/ext/pb_ds/tree_order_statistics.cc: ...this.
+	* performance/ext/pb_ds/tree_split_join.cc: ...this.
+	* performance/ext/pb_ds/tree_text_insert.cc: ...this.
+	* performance/ext/pb_ds/tree_text_lor_find.cc: ...this.
+
+	* doc/xml/images/*: Image and image filename changes.
+
 2011-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/c_global/cmath (fmod(_Tp, _Up)): Add.
