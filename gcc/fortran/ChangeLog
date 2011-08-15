@@ -1,3 +1,7 @@
+2011-08-15  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (resolve_symbol): Fix coarray result-var check.
+
 2011-08-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* module.c (use_iso_fortran_env_module):  Spell 'referrenced' correctly.
