@@ -13284,11 +13284,24 @@ output_mov_double_arm_from_fpa (rtx *operands)
 /* Output a move between double words.  It must be REG<-MEM
    or MEM<-REG.  */
 const char *
-output_move_double (rtx *operands)
+output_move_double (rtx *operands, bool emit, int *count)
 {
   enum rtx_code code0 = GET_CODE (operands[0]);
   enum rtx_code code1 = GET_CODE (operands[1]);
   rtx otherops[3];
+  if (count)
+    *count = 1;
+
+  /* The only case when this might happen is when 
+     you are looking at the length of a DImode instruction
+     that has an invalid constant in it.  */
+  if (code0 == REG && code1 != MEM)
+    {
+      gcc_assert (!emit);
+      *count = 2;
+      return "";
+    }
+      
 
   if (code0 == REG)
     {
@@ -13301,35 +13314,49 @@ output_move_double (rtx *operands)
       switch (GET_CODE (XEXP (operands[1], 0)))
 	{
 	case REG:
-	  if (TARGET_LDRD
-	      && !(fix_cm3_ldrd && reg0 == REGNO(XEXP (operands[1], 0))))
-	    output_asm_insn ("ldr%(d%)\t%0, [%m1]", operands);
-	  else
-	    output_asm_insn ("ldm%(ia%)\t%m1, %M0", operands);
+
+	  if (emit)
+	    {
+	      if (TARGET_LDRD
+		  && !(fix_cm3_ldrd && reg0 == REGNO(XEXP (operands[1], 0))))
+		output_asm_insn ("ldr%(d%)\t%0, [%m1]", operands);
+	      else
+		output_asm_insn ("ldm%(ia%)\t%m1, %M0", operands);
+	    }
 	  break;
 
 	case PRE_INC:
 	  gcc_assert (TARGET_LDRD);
-	  output_asm_insn ("ldr%(d%)\t%0, [%m1, #8]!", operands);
+	  if (emit)
+	    output_asm_insn ("ldr%(d%)\t%0, [%m1, #8]!", operands);
+	  
 	  break;
 
 	case PRE_DEC:
-	  if (TARGET_LDRD)
-	    output_asm_insn ("ldr%(d%)\t%0, [%m1, #-8]!", operands);
-	  else
-	    output_asm_insn ("ldm%(db%)\t%m1!, %M0", operands);
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("ldr%(d%)\t%0, [%m1, #-8]!", operands);
+	      else
+		output_asm_insn ("ldm%(db%)\t%m1!, %M0", operands);
+	    }
 	  break;
 
 	case POST_INC:
-	  if (TARGET_LDRD)
-	    output_asm_insn ("ldr%(d%)\t%0, [%m1], #8", operands);
-	  else
-	    output_asm_insn ("ldm%(ia%)\t%m1!, %M0", operands);
+	  
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("ldr%(d%)\t%0, [%m1], #8", operands);
+	      else
+		output_asm_insn ("ldm%(ia%)\t%m1!, %M0", operands);
+	    }
 	  break;
 
 	case POST_DEC:
 	  gcc_assert (TARGET_LDRD);
-	  output_asm_insn ("ldr%(d%)\t%0, [%m1], #-8", operands);
+	  if (emit)
+	    output_asm_insn ("ldr%(d%)\t%0, [%m1], #-8", operands);
 	  break;
 
 	case PRE_MODIFY:
@@ -13347,8 +13374,13 @@ output_move_double (rtx *operands)
 	      if (reg_overlap_mentioned_p (otherops[0], otherops[2]))
 		{
 		  /* Registers overlap so split out the increment.  */
-		  output_asm_insn ("add%?\t%1, %1, %2", otherops);
-		  output_asm_insn ("ldr%(d%)\t%0, [%1] @split", otherops);
+		  if (emit)
+		    {
+		      output_asm_insn ("add%?\t%1, %1, %2", otherops);
+		      output_asm_insn ("ldr%(d%)\t%0, [%1] @split", otherops);
+		    }
+		  if (count)
+		    *count = 2;
 		}
 	      else
 		{
@@ -13359,11 +13391,20 @@ output_move_double (rtx *operands)
 		      || GET_CODE (otherops[2]) != CONST_INT
 		      || (INTVAL (otherops[2]) > -256
 			  && INTVAL (otherops[2]) < 256))
-		    output_asm_insn ("ldr%(d%)\t%0, [%1, %2]!", otherops);
+		    {
+		      if (emit)
+			output_asm_insn ("ldr%(d%)\t%0, [%1, %2]!", otherops);
+		    }
 		  else
 		    {
-		      output_asm_insn ("ldr%?\t%0, [%1, %2]!", otherops);
-		      output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
+		      if (emit)
+			{
+			  output_asm_insn ("ldr%?\t%0, [%1, %2]!", otherops);
+			  output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
+			}
+		      if (count)
+			*count = 2;
+
 		    }
 		}
 	    }
@@ -13376,11 +13417,19 @@ output_move_double (rtx *operands)
 		  || GET_CODE (otherops[2]) != CONST_INT
 		  || (INTVAL (otherops[2]) > -256
 		      && INTVAL (otherops[2]) < 256))
-		output_asm_insn ("ldr%(d%)\t%0, [%1], %2", otherops);
+		{
+		  if (emit)
+		    output_asm_insn ("ldr%(d%)\t%0, [%1], %2", otherops);
+		}
 	      else
 		{
-		  output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
-		  output_asm_insn ("ldr%?\t%0, [%1], %2", otherops);
+		  if (emit)
+		    {
+		      output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
+		      output_asm_insn ("ldr%?\t%0, [%1], %2", otherops);
+		    }
+		  if (count)
+		    *count = 2;
 		}
 	    }
 	  break;
@@ -13393,12 +13442,19 @@ output_move_double (rtx *operands)
 	  /* Use the second register of the pair to avoid problematic
 	     overlap.  */
 	  otherops[1] = operands[1];
-	  output_asm_insn ("adr%?\t%0, %1", otherops);
+	  if (emit)
+	    output_asm_insn ("adr%?\t%0, %1", otherops);
 	  operands[1] = otherops[0];
-	  if (TARGET_LDRD)
-	    output_asm_insn ("ldr%(d%)\t%0, [%1]", operands);
-	  else
-	    output_asm_insn ("ldm%(ia%)\t%1, %M0", operands);
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("ldr%(d%)\t%0, [%1]", operands);
+	      else
+		output_asm_insn ("ldm%(ia%)\t%1, %M0", operands);
+	    }
+
+	  if (count)
+	    *count = 2;
 	  break;
 
 	  /* ??? This needs checking for thumb2.  */
@@ -13417,17 +13473,20 @@ output_move_double (rtx *operands)
 		      switch ((int) INTVAL (otherops[2]))
 			{
 			case -8:
-			  output_asm_insn ("ldm%(db%)\t%1, %M0", otherops);
+			  if (emit)
+			    output_asm_insn ("ldm%(db%)\t%1, %M0", otherops);
 			  return "";
 			case -4:
 			  if (TARGET_THUMB2)
 			    break;
-			  output_asm_insn ("ldm%(da%)\t%1, %M0", otherops);
+			  if (emit)
+			    output_asm_insn ("ldm%(da%)\t%1, %M0", otherops);
 			  return "";
 			case 4:
 			  if (TARGET_THUMB2)
 			    break;
-			  output_asm_insn ("ldm%(ib%)\t%1, %M0", otherops);
+			  if (emit)
+			    output_asm_insn ("ldm%(ib%)\t%1, %M0", otherops);
 			  return "";
 			}
 		    }
@@ -13455,34 +13514,50 @@ output_move_double (rtx *operands)
 		      if (reg_overlap_mentioned_p (operands[0], otherops[2])
 			  || (fix_cm3_ldrd && reg0 == REGNO (otherops[1])))
 			{
-			  output_asm_insn ("add%?\t%0, %1, %2", otherops);
-			  output_asm_insn ("ldr%(d%)\t%0, [%1]", operands);
+			  if (emit)
+			    {
+			      output_asm_insn ("add%?\t%0, %1, %2", otherops);
+			      output_asm_insn ("ldr%(d%)\t%0, [%1]", operands);
+			    }
+			  if (count)
+			    *count = 2;
 			}
 		      else
 			{
 			  otherops[0] = operands[0];
-			  output_asm_insn ("ldr%(d%)\t%0, [%1, %2]", otherops);
+			  if (emit)
+			    output_asm_insn ("ldr%(d%)\t%0, [%1, %2]", otherops);
 			}
 		      return "";
 		    }
 
 		  if (GET_CODE (otherops[2]) == CONST_INT)
-		    {
-		      if (!(const_ok_for_arm (INTVAL (otherops[2]))))
-			output_asm_insn ("sub%?\t%0, %1, #%n2", otherops);
-		      else
-			output_asm_insn ("add%?\t%0, %1, %2", otherops);
+		    {							
+		      if (emit)
+			{
+			  if (!(const_ok_for_arm (INTVAL (otherops[2]))))
+			    output_asm_insn ("sub%?\t%0, %1, #%n2", otherops);
+			  else
+			    output_asm_insn ("add%?\t%0, %1, %2", otherops);
+			}
+			
 		    }
 		  else
-		    output_asm_insn ("add%?\t%0, %1, %2", otherops);
+		    {
+		      if (emit)
+			output_asm_insn ("add%?\t%0, %1, %2", otherops);
+		    }
 		}
 	      else
-		output_asm_insn ("sub%?\t%0, %1, %2", otherops);
+		{
+		  if (emit)
+		    output_asm_insn ("sub%?\t%0, %1, %2", otherops);
+		}
 
 	      if (TARGET_LDRD)
 		return "ldr%(d%)\t%0, [%1]";
-
-	      return "ldm%(ia%)\t%1, %M0";
+	      
+		return "ldm%(ia%)\t%1, %M0";
 	    }
 	  else
 	    {
@@ -13490,13 +13565,24 @@ output_move_double (rtx *operands)
 	      /* Take care of overlapping base/data reg.  */
 	      if (reg_mentioned_p (operands[0], operands[1]))
 		{
-		  output_asm_insn ("ldr%?\t%0, %1", otherops);
-		  output_asm_insn ("ldr%?\t%0, %1", operands);
+		  if (emit)
+		    {
+		      output_asm_insn ("ldr%?\t%0, %1", otherops);
+		      output_asm_insn ("ldr%?\t%0, %1", operands);
+		    }
+		  if (count)
+		    *count = 2;
+
 		}
 	      else
 		{
-		  output_asm_insn ("ldr%?\t%0, %1", operands);
-		  output_asm_insn ("ldr%?\t%0, %1", otherops);
+		  if (emit)
+		    {
+		      output_asm_insn ("ldr%?\t%0, %1", operands);
+		      output_asm_insn ("ldr%?\t%0, %1", otherops);
+		    }
+		  if (count)
+		    *count = 2;
 		}
 	    }
 	}
@@ -13510,34 +13596,45 @@ output_move_double (rtx *operands)
       switch (GET_CODE (XEXP (operands[0], 0)))
         {
 	case REG:
-	  if (TARGET_LDRD)
-	    output_asm_insn ("str%(d%)\t%1, [%m0]", operands);
-	  else
-	    output_asm_insn ("stm%(ia%)\t%m0, %M1", operands);
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("str%(d%)\t%1, [%m0]", operands);
+	      else
+		output_asm_insn ("stm%(ia%)\t%m0, %M1", operands);
+	    }
 	  break;
 
         case PRE_INC:
 	  gcc_assert (TARGET_LDRD);
-	  output_asm_insn ("str%(d%)\t%1, [%m0, #8]!", operands);
+	  if (emit)
+	    output_asm_insn ("str%(d%)\t%1, [%m0, #8]!", operands);
 	  break;
 
         case PRE_DEC:
-	  if (TARGET_LDRD)
-	    output_asm_insn ("str%(d%)\t%1, [%m0, #-8]!", operands);
-	  else
-	    output_asm_insn ("stm%(db%)\t%m0!, %M1", operands);
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("str%(d%)\t%1, [%m0, #-8]!", operands);
+	      else
+		output_asm_insn ("stm%(db%)\t%m0!, %M1", operands);
+	    }
 	  break;
 
         case POST_INC:
-	  if (TARGET_LDRD)
-	    output_asm_insn ("str%(d%)\t%1, [%m0], #8", operands);
-	  else
-	    output_asm_insn ("stm%(ia%)\t%m0!, %M1", operands);
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("str%(d%)\t%1, [%m0], #8", operands);
+	      else
+		output_asm_insn ("stm%(ia%)\t%m0!, %M1", operands);
+	    }
 	  break;
 
         case POST_DEC:
 	  gcc_assert (TARGET_LDRD);
-	  output_asm_insn ("str%(d%)\t%1, [%m0], #-8", operands);
+	  if (emit)
+	    output_asm_insn ("str%(d%)\t%1, [%m0], #-8", operands);
 	  break;
 
 	case PRE_MODIFY:
@@ -13555,19 +13652,35 @@ output_move_double (rtx *operands)
 	    {
 	      if (GET_CODE (XEXP (operands[0], 0)) == PRE_MODIFY)
 		{
-		  output_asm_insn ("str%?\t%0, [%1, %2]!", otherops);
-		  output_asm_insn ("str%?\t%H0, [%1, #4]", otherops);
+		  if (emit)
+		    {
+		      output_asm_insn ("str%?\t%0, [%1, %2]!", otherops);
+		      output_asm_insn ("str%?\t%H0, [%1, #4]", otherops);
+		    }
+		  if (count)
+		    *count = 2;
 		}
 	      else
 		{
-		  output_asm_insn ("str%?\t%H0, [%1, #4]", otherops);
-		  output_asm_insn ("str%?\t%0, [%1], %2", otherops);
+		  if (emit)
+		    {
+		      output_asm_insn ("str%?\t%H0, [%1, #4]", otherops);
+		      output_asm_insn ("str%?\t%0, [%1], %2", otherops);
+		    }
+		  if (count)
+		    *count = 2;
 		}
 	    }
 	  else if (GET_CODE (XEXP (operands[0], 0)) == PRE_MODIFY)
-	    output_asm_insn ("str%(d%)\t%0, [%1, %2]!", otherops);
+	    {
+	      if (emit)
+		output_asm_insn ("str%(d%)\t%0, [%1, %2]!", otherops);
+	    }
 	  else
-	    output_asm_insn ("str%(d%)\t%0, [%1], %2", otherops);
+	    {
+	      if (emit)
+		output_asm_insn ("str%(d%)\t%0, [%1], %2", otherops);
+	    }
 	  break;
 
 	case PLUS:
@@ -13577,19 +13690,22 @@ output_move_double (rtx *operands)
 	      switch ((int) INTVAL (XEXP (XEXP (operands[0], 0), 1)))
 		{
 		case -8:
-		  output_asm_insn ("stm%(db%)\t%m0, %M1", operands);
+		  if (emit)
+		    output_asm_insn ("stm%(db%)\t%m0, %M1", operands);
 		  return "";
 
 		case -4:
 		  if (TARGET_THUMB2)
 		    break;
-		  output_asm_insn ("stm%(da%)\t%m0, %M1", operands);
+		  if (emit)
+		    output_asm_insn ("stm%(da%)\t%m0, %M1", operands);
 		  return "";
 
 		case 4:
 		  if (TARGET_THUMB2)
 		    break;
-		  output_asm_insn ("stm%(ib%)\t%m0, %M1", operands);
+		  if (emit)
+		    output_asm_insn ("stm%(ib%)\t%m0, %M1", operands);
 		  return "";
 		}
 	    }
@@ -13602,7 +13718,8 @@ output_move_double (rtx *operands)
 	    {
 	      otherops[0] = operands[1];
 	      otherops[1] = XEXP (XEXP (operands[0], 0), 0);
-	      output_asm_insn ("str%(d%)\t%0, [%1, %2]", otherops);
+	      if (emit)
+		output_asm_insn ("str%(d%)\t%0, [%1, %2]", otherops);
 	      return "";
 	    }
 	  /* Fall through */
@@ -13610,8 +13727,14 @@ output_move_double (rtx *operands)
         default:
 	  otherops[0] = adjust_address (operands[0], SImode, 4);
 	  otherops[1] = operands[1];
-	  output_asm_insn ("str%?\t%1, %0", operands);
-	  output_asm_insn ("str%?\t%H1, %0", otherops);
+	  if (emit)
+	    {
+	      output_asm_insn ("str%?\t%1, %0", operands);
+	      output_asm_insn ("str%?\t%H1, %0", otherops);
+	    }
+	  if (count)
+	    *count = 2;
+
 	}
     }
 
@@ -24203,6 +24326,15 @@ arm_attr_length_push_multi(rtx parallel_op, rtx first_op)
   if (!hi_reg)
     return 2;
   return 4;
+}
+
+/* Compute the number of instructions emitted by output_move_double.  */
+int
+arm_count_output_move_double_insns (rtx *operands)
+{
+  int count;
+  output_move_double (operands, false, &count);
+  return count;
 }
 
 #include "gt-arm.h"

@@ -76,7 +76,7 @@
   switch (which_alternative)
     {
     default:
-      return output_move_double (operands);
+      return output_move_double (operands, true, NULL);
     case 0:
       return \"#\";
     case 3:
@@ -173,7 +173,7 @@
    case 3: return \"tmrrc%?\\t%Q0, %R0, %1\";
    case 4: return \"tmcrr%?\\t%0, %Q1, %R1\";
    case 5: return \"#\";
-   default: return output_move_double (operands);
+   default: return output_move_double (operands, true, NULL);
    }"
   [(set_attr "predicable" "yes")
    (set_attr "length"         "4,     4,   4,4,4,8,   8,8")
