@@ -1,5 +1,10 @@
 2011-08-15  Richard Guenther  <rguenther@suse.de>
 
+	* tree-vrp.c (value_range_nonnegative_p): Fix anti-range case.
+	(extract_range_from_unary_expr_1): Restructure.
+
+2011-08-15  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/50058
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Relax aggregate
 	copy matching.

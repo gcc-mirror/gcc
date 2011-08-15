@@ -1398,15 +1398,13 @@ range_includes_zero_p (value_range_t *vr)
 static inline bool
 value_range_nonnegative_p (value_range_t *vr)
 {
+  /* Testing for VR_ANTI_RANGE is not useful here as any anti-range
+     which would return a useful value should be encoded as a 
+     VR_RANGE.  */
   if (vr->type == VR_RANGE)
     {
       int result = compare_values (vr->min, integer_zero_node);
       return (result == 0 || result == 1);
-    }
-  else if (vr->type == VR_ANTI_RANGE)
-    {
-      int result = compare_values (vr->max, integer_zero_node);
-      return result == -1;
     }
 
   return false;
@@ -2826,8 +2824,16 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 				 value_range_t *vr0_, tree op0_type)
 {
   value_range_t vr0 = *vr0_;
-  tree min, max;
-  int cmp;
+
+  /* VRP only operates on integral and pointer types.  */
+  if (!(INTEGRAL_TYPE_P (op0_type)
+	|| POINTER_TYPE_P (op0_type))
+      || !(INTEGRAL_TYPE_P (type)
+	   || POINTER_TYPE_P (type)))
+    {
+      set_value_range_to_varying (vr);
+      return;
+    }
 
   /* If VR0 is UNDEFINED, so is the result.  */
   if (vr0.type == VR_UNDEFINED)
@@ -2836,51 +2842,33 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
       return;
     }
 
-  /* Refuse to operate on certain unary expressions for which we
-     cannot easily determine a resulting range.  */
-  if (code == FIX_TRUNC_EXPR
-      || code == FLOAT_EXPR
-      || code == CONJ_EXPR)
-    {
-      set_value_range_to_varying (vr);
-      return;
-    }
-
-  /* Refuse to operate on symbolic ranges, or if neither operand is
-     a pointer or integral type.  */
-  if ((!INTEGRAL_TYPE_P (op0_type)
-       && !POINTER_TYPE_P (op0_type))
-      || (vr0.type != VR_VARYING
-	  && symbolic_range_p (&vr0)))
-    {
-      set_value_range_to_varying (vr);
-      return;
-    }
-
-  /* If the expression involves pointers, we are only interested in
-     determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).  */
-  if (POINTER_TYPE_P (type) || POINTER_TYPE_P (op0_type))
-    {
-      if (range_is_nonnull (&vr0))
-	set_value_range_to_nonnull (vr, type);
-      else if (range_is_null (&vr0))
-	set_value_range_to_null (vr, type);
-      else
-	set_value_range_to_varying (vr);
-      return;
-    }
-
-  /* Handle unary expressions on integer ranges.  */
-  if (CONVERT_EXPR_CODE_P (code)
-      && INTEGRAL_TYPE_P (type)
-      && INTEGRAL_TYPE_P (op0_type))
+  if (CONVERT_EXPR_CODE_P (code))
     {
       tree inner_type = op0_type;
       tree outer_type = type;
 
+      /* If the expression evaluates to a pointer, we are only interested in
+	 determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).  */
+      if (POINTER_TYPE_P (type))
+	{
+	  if (CONVERT_EXPR_CODE_P (code))
+	    {
+	      if (range_is_nonnull (&vr0))
+		set_value_range_to_nonnull (vr, type);
+	      else if (range_is_null (&vr0))
+		set_value_range_to_null (vr, type);
+	      else
+		set_value_range_to_varying (vr);
+	    }
+	  else
+	    set_value_range_to_varying (vr);
+	  return;
+	}
+
       /* If VR0 is varying and we increase the type precision, assume
 	 a full range for the following transformation.  */
       if (vr0.type == VR_VARYING
+	  && INTEGRAL_TYPE_P (inner_type)
 	  && TYPE_PRECISION (inner_type) < TYPE_PRECISION (outer_type))
 	{
 	  vr0.type = VR_RANGE;
@@ -2933,20 +2921,7 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
       set_value_range_to_varying (vr);
       return;
     }
-
-  /* Conversion of a VR_VARYING value to a wider type can result
-     in a usable range.  So wait until after we've handled conversions
-     before dropping the result to VR_VARYING if we had a source
-     operand that is VR_VARYING.  */
-  if (vr0.type == VR_VARYING)
-    {
-      set_value_range_to_varying (vr);
-      return;
-    }
-
-  /* Apply the operation to each end of the range and see what we end
-     up with.  */
-  if (code == NEGATE_EXPR)
+  else if (code == NEGATE_EXPR)
     {
       /* -X is simply 0 - X, so re-use existing code that also handles
          anti-ranges fine.  */
@@ -2955,17 +2930,35 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
       extract_range_from_binary_expr_1 (vr, MINUS_EXPR, type, &zero, &vr0);
       return;
     }
-  else if (code == ABS_EXPR
-           && !TYPE_UNSIGNED (type))
+  else if (code == ABS_EXPR)
     {
+      tree min, max;
+      int cmp;
+
+      /* Pass through vr0 in the easy cases.  */
+      if (TYPE_UNSIGNED (type)
+	  || value_range_nonnegative_p (&vr0))
+	{
+	  copy_value_range (vr, &vr0);
+	  return;
+	}
+
+      /* For the remaining varying or symbolic ranges we can't do anything
+	 useful.  */
+      if (vr0.type == VR_VARYING
+	  || symbolic_range_p (&vr0))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+
       /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
          useful range.  */
       if (!TYPE_OVERFLOW_UNDEFINED (type)
 	  && ((vr0.type == VR_RANGE
 	       && vrp_val_is_min (vr0.min))
 	      || (vr0.type == VR_ANTI_RANGE
-		  && !vrp_val_is_min (vr0.min)
-		  && !range_includes_zero_p (&vr0))))
+		  && !vrp_val_is_min (vr0.min))))
 	{
 	  set_value_range_to_varying (vr);
 	  return;
@@ -3077,6 +3070,18 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 	      max = t;
 	    }
 	}
+
+      cmp = compare_values (min, max);
+      if (cmp == -2 || cmp == 1)
+	{
+	  /* If the new range has its limits swapped around (MIN > MAX),
+	     then the operation caused one of them to wrap around, mark
+	     the new range VARYING.  */
+	  set_value_range_to_varying (vr);
+	}
+      else
+	set_value_range (vr, vr0.type, min, max, NULL);
+      return;
     }
   else if (code == BIT_NOT_EXPR)
     {
@@ -3088,69 +3093,15 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 					type, &minusone, &vr0);
       return;
     }
-  else
+  else if (code == PAREN_EXPR)
     {
-      /* Otherwise, operate on each end of the range.  */
-      min = fold_unary_to_constant (code, type, vr0.min);
-      max = fold_unary_to_constant (code, type, vr0.max);
-
-      if (needs_overflow_infinity (type))
-	{
-	  gcc_assert (code != NEGATE_EXPR && code != ABS_EXPR);
-
-	  /* If both sides have overflowed, we don't know
-	     anything.  */
-	  if ((is_overflow_infinity (vr0.min)
-	       || TREE_OVERFLOW (min))
-	      && (is_overflow_infinity (vr0.max)
-		  || TREE_OVERFLOW (max)))
-	    {
-	      set_value_range_to_varying (vr);
-	      return;
-	    }
-
-	  if (is_overflow_infinity (vr0.min))
-	    min = vr0.min;
-	  else if (TREE_OVERFLOW (min))
-	    {
-	      if (supports_overflow_infinity (type))
-		min = (tree_int_cst_sgn (min) >= 0
-		       ? positive_overflow_infinity (TREE_TYPE (min))
-		       : negative_overflow_infinity (TREE_TYPE (min)));
-	      else
-		{
-		  set_value_range_to_varying (vr);
-		  return;
-		}
-	    }
-
-	  if (is_overflow_infinity (vr0.max))
-	    max = vr0.max;
-	  else if (TREE_OVERFLOW (max))
-	    {
-	      if (supports_overflow_infinity (type))
-		max = (tree_int_cst_sgn (max) >= 0
-		       ? positive_overflow_infinity (TREE_TYPE (max))
-		       : negative_overflow_infinity (TREE_TYPE (max)));
-	      else
-		{
-		  set_value_range_to_varying (vr);
-		  return;
-		}
-	    }
-	}
+      copy_value_range (vr, &vr0);
+      return;
     }
 
-  cmp = compare_values (min, max);
-  if (cmp == -2 || cmp == 1)
-    {
-      /* If the new range has its limits swapped around (MIN > MAX),
-	 then the operation caused one of them to wrap around, mark
-	 the new range VARYING.  */
-      set_value_range_to_varying (vr);
-    }
-  else
-    set_value_range (vr, vr0.type, min, max, NULL);
+  /* For unhandled operations fall back to varying.  */
+  set_value_range_to_varying (vr);
+  return;
 }
 
 
