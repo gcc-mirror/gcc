@@ -1,3 +1,8 @@
+2011-08-15  Gabriel Charette  <gchare@google.com>
+
+	* include/line-map.h (LINEMAP_POSITION_FOR_COLUMN): Remove.
+	Update all users to use linemap_position_for_column instead.
+
 2011-07-28  Gabriel Charette  <gchare@google.com>
 
 	* include/line-map.h (struct line_maps):

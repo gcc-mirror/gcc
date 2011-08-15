@@ -518,9 +518,7 @@ Lex::require_line()
 source_location
 Lex::location() const
 {
-  source_location location;
-  LINEMAP_POSITION_FOR_COLUMN(location, line_table, this->lineoff_ + 1);
-  return location;
+  return linemap_position_for_column (line_table, this->lineoff_ + 1);
 }
 
 // Get a location slightly before the current one.  This is used for
@@ -529,9 +527,7 @@ Lex::location() const
 source_location
 Lex::earlier_location(int chars) const
 {
-  source_location location;
-  LINEMAP_POSITION_FOR_COLUMN(location, line_table, this->lineoff_ + 1 - chars);
-  return location;
+  return linemap_position_for_column (line_table, this->lineoff_ + 1 - chars);
 }
 
 // Get the next token.

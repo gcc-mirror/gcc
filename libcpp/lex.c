@@ -1975,8 +1975,8 @@ _cpp_lex_direct (cpp_reader *pfile)
     }
   c = *buffer->cur++;
 
-  LINEMAP_POSITION_FOR_COLUMN (result->src_loc, pfile->line_table,
-			       CPP_BUF_COLUMN (buffer, buffer->cur));
+  result->src_loc = linemap_position_for_column (pfile->line_table,
+			                                    CPP_BUF_COLUMN (buffer, buffer->cur));
 
   switch (c)
     {

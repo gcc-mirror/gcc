@@ -142,7 +142,7 @@ _cpp_preprocess_dir_only (cpp_reader *pfile,
 	    flags |= DO_LINE_COMMENT;
 	  else if (!(flags & DO_SPECIAL))
 	    /* Mark the position for possible error reporting. */
-	    LINEMAP_POSITION_FOR_COLUMN (loc, pfile->line_table, col);
+	    loc = linemap_position_for_column (pfile->line_table, col);
 
 	  break;
 
