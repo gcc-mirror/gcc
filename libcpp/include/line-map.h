@@ -165,23 +165,6 @@ extern const struct line_map *linemap_lookup
 /* Nonzero if the map is at the bottom of the include stack.  */
 #define MAIN_FILE_P(MAP) ((MAP)->included_from < 0)
 
-/* Set LOC to a source position that is the same line as the most recent
-   linemap_line_start, but with the specified TO_COLUMN column number.  */
-
-#define LINEMAP_POSITION_FOR_COLUMN(LOC, SET, TO_COLUMN) do { \
-  unsigned int to_column = (TO_COLUMN); \
-  struct line_maps *set = (SET); \
-  if (__builtin_expect (to_column >= set->max_column_hint, 0)) \
-    (LOC) = linemap_position_for_column (set, to_column); \
-  else { \
-    source_location r = set->highest_line; \
-    r = r + to_column; \
-    if (r >= set->highest_location) \
-      set->highest_location = r; \
-    (LOC) = r;			 \
-  }} while (0)
-    
-
 extern source_location
 linemap_position_for_column (struct line_maps *set, unsigned int to_column);
 
