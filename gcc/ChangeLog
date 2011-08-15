@@ -82,11 +82,6 @@
 	(avr_reorg): Use them.  Use next_real_insn instead of NEXT_INSN.
 	Use CONST_INT_P.  Beauty.
 
-2011-08-12  David Li  <davidxl@google.com>
-
-	* cp/class.c (update_vtable_entry_for_fn): Set
-	LOST_PRIMARY bit properly.
-
 2011-08-12  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/49994
