@@ -145,7 +145,7 @@ build_polynomial_chrec (unsigned loop_num,
 
   /* Types of left and right sides of a chrec should be compatible.  */
   if (POINTER_TYPE_P (TREE_TYPE (left)))
-    gcc_assert (sizetype == TREE_TYPE (right));
+    gcc_assert (ptrofftype_p (TREE_TYPE (right)));
   else
     gcc_assert (TREE_TYPE (left) == TREE_TYPE (right));
 
