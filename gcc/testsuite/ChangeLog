@@ -1,3 +1,10 @@
+2011-08-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/42051
+	PR fortran/43896
+	PR fortran/49962
+	* gfortran.dg/class_23.f03: New test.
+
 2011-07-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49920
