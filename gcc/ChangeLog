@@ -1,3 +1,10 @@
+2011-08-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (extract_range_from_multiplicative_op_1): New
+	helper factored out from ...
+	(extract_range_from_binary_expr_1): ... here.  Re-structure
+	to not glob handling too different tree codes.
+
 2011-08-15  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/50006
