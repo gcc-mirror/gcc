@@ -390,6 +390,17 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define MAX_REGS_PER_ADDRESS 2
 
+#define LEGITIMIZE_RELOAD_ADDRESS(AD, MODE, OPNUM, TYPE, IND, WIN)	\
+do {									\
+  rtx new_rtx = spu_legitimize_reload_address (AD, MODE, OPNUM,		\
+					       (int)(TYPE));		\
+  if (new_rtx)								\
+    {									\
+      (AD) = new_rtx;							\
+      goto WIN;								\
+    }									\
+} while (0)
+
 
 /* Costs */
 
