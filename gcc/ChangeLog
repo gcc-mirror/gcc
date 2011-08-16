@@ -1,3 +1,8 @@
+2011-08-16  Liang Wang  <lwang1@marvell.com>
+
+	* ggc.h (ggc_alloc_rtvec_sized): Change arguments of
+	ggc_alloc_zone_vec_rtvec_def.
+
 2011-08-12  Nick Clifton  <nickc@redhat.com>
 
 	* builtins.c (expand_builtin_memcmp): Do not use cmpstrnsi

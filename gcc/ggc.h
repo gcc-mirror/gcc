@@ -266,8 +266,9 @@ extern struct alloc_zone tree_zone;
 extern struct alloc_zone tree_id_zone;
 
 #define ggc_alloc_rtvec_sized(NELT)                                     \
-    (ggc_alloc_zone_vec_rtvec_def (sizeof (rtx),                        \
-                                   sizeof (struct rtvec_def) + ((NELT) - 1), \
+    (ggc_alloc_zone_vec_rtvec_def (1,                                   \
+                                   sizeof (struct rtvec_def)            \
+				   + ((NELT) - 1) * sizeof (rtx),	\
                                    &rtl_zone))
 
 #if defined (GGC_ZONE) && !defined (GENERATOR_FILE)
