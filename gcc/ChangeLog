@@ -1,3 +1,7 @@
+2011-08-16  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/mingw32.h (GOMP_SELF_SPEC): Add -pthread option.
+
 2011-08-16  Richard GUenther  <rguenther@suse.de>
 
 	PR tree-optimization/50082
