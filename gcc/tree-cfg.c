@@ -2772,13 +2772,11 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  error ("invalid operand to pointer plus, first operand is not a pointer");
 	  return t;
 	}
-      /* Check to make sure the second operand is an integer with type of
-	 sizetype.  */
-      if (!useless_type_conversion_p (sizetype,
-				     TREE_TYPE (TREE_OPERAND (t, 1))))
+      /* Check to make sure the second operand is a ptrofftype.  */
+      if (!ptrofftype_p (TREE_TYPE (TREE_OPERAND (t, 1))))
 	{
 	  error ("invalid operand to pointer plus, second operand is not an "
-		 "integer with type of sizetype");
+		 "integer type of appropriate width");
 	  return t;
 	}
       /* FALLTHROUGH */
@@ -3525,7 +3523,7 @@ verify_gimple_assign_binary (gimple stmt)
 do_pointer_plus_expr_check:
 	if (!POINTER_TYPE_P (rhs1_type)
 	    || !useless_type_conversion_p (lhs_type, rhs1_type)
-	    || !useless_type_conversion_p (sizetype, rhs2_type))
+	    || !ptrofftype_p (rhs2_type))
 	  {
 	    error ("type mismatch in pointer plus expression");
 	    debug_generic_stmt (lhs_type);

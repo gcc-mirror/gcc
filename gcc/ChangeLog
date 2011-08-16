@@ -1,3 +1,14 @@
+2011-08-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (ptrofftype_p): New helper function.
+	* tree-cfg.c (verify_expr): Use ptrofftype_p for POINTER_PLUS_EXPR
+	offset verification.
+	(verify_gimple_assign_binary): Likewise.
+	* tree.c (build2_stat): Likewise.
+	* tree-chrec.c (chrec_fold_plus_poly_poly): Likewise.
+	(reset_evolution_in_loop): Likewise.
+	* tree-chrec.h (build_polynomial_chrec): Likewise.
+
 2011-08-16  Liang Wang  <lwang1@marvell.com>
 
 	* ggc.h (ggc_alloc_rtvec_sized): Change arguments of
