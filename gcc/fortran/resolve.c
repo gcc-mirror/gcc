@@ -12257,7 +12257,7 @@ resolve_symbol (gfc_symbol *sym)
        || sym->attr.codimension)
       && (sym->attr.result || sym->result == sym))
     {
-      gfc_error ("Function result '%s' at %L shallolvnot be a coarray or have "
+      gfc_error ("Function result '%s' at %L shall not be a coarray or have "
 	         "a coarray component", sym->name, &sym->declared_at);
       return;
     }

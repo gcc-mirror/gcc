@@ -1,3 +1,9 @@
+2011-08-16  Tobias Burnus  <burnus@net-b.de>
+	    Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	PR fortran/50094
+	* resolve.c (resolve_symbol): Fix stupid typo.
+
 2011-08-15  Tobias Burnus  <burnus@net-b.de>
 
 	* resolve.c (resolve_symbol): Fix coarray result-var check.
