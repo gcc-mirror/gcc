@@ -982,6 +982,27 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
 	  }
     }
 
+  /* However, if we generate an integer result, performing a reverse test
+     would require an extra negation, so avoid that where possible.  */
+  if (GET_CODE (op1) == CONST_INT && is_set == 1)
+    {
+      HOST_WIDE_INT val = INTVAL (op1) + 1;
+      if (trunc_int_for_mode (val, GET_MODE (op0)) == val)
+	switch (code)
+	  {
+	  case LE:
+	    op1 = GEN_INT (val);
+	    code = LT;
+	    break;
+	  case LEU:
+	    op1 = GEN_INT (val);
+	    code = LTU;
+	    break;
+	  default:
+	    break;
+	  }
+    }
+
   comp_mode = SImode;
   op_mode = GET_MODE (op0);
 
@@ -1113,7 +1134,8 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
 
   if (is_set == 0 && op1 == const0_rtx
       && (GET_MODE (op0) == SImode
-	  || GET_MODE (op0) == HImode) && scode == SPU_EQ)
+	  || GET_MODE (op0) == HImode
+	  || GET_MODE (op0) == QImode) && scode == SPU_EQ)
     {
       /* Don't need to set a register with the result when we are 
          comparing against zero and branching. */
