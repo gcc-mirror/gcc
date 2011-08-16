@@ -1,3 +1,14 @@
+2011-08-16  Richard GUenther  <rguenther@suse.de>
+
+	PR tree-optimization/50082
+	* tree-ssa-forwprop.c (combine_cond_expr_cond): Handle overflow
+	warnings here, instead of ...
+	(ssa_forward_propagate_and_combine): ... here.
+	(forward_propagate_into_comparison_1): Adjust.
+	(forward_propagate_into_comparison): Likewise.
+	(forward_propagate_into_gimple_cond): Likewise.
+	(forward_propagate_into_cond): Likewise.
+
 2011-08-16  Andreas Schwab  <schwab@redhat.com>
 
 	* ggc.h (ggc_alloc_rtvec_sized): Use ggc_alloc_zone_rtvec_def
