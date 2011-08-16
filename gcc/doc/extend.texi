@@ -3647,6 +3647,10 @@ for the function even if it appears that the function is not referenced.
 This is useful, for example, when the function is referenced only in
 inline assembly.
 
+When applied to a member function of a C++ class template, the
+attribute also means that the function will be instantiated if the
+class itself is instantiated.
+
 @item version_id
 @cindex @code{version_id} attribute
 This IA64 HP-UX attribute, attached to a global variable or function, renames a
@@ -4456,6 +4460,10 @@ variable.
 @item used
 This attribute, attached to a variable, means that the variable must be
 emitted even if it appears that the variable is not referenced.
+
+When applied to a static data member of a C++ class template, the
+attribute also means that the member will be instantiated if the
+class itself is instantiated.
 
 @item vector_size (@var{bytes})
 This attribute specifies the vector size for the variable, measured in

@@ -8675,6 +8675,9 @@ instantiate_class_template_1 (tree type)
 		--processing_template_decl;
 	      set_current_access_from_decl (r);
 	      finish_member_declaration (r);
+	      /* Instantiate members marked with attribute used.  */
+	      if (r != error_mark_node && DECL_PRESERVE_P (r))
+		mark_used (r);
 	    }
 	  else
 	    {
@@ -8724,6 +8727,9 @@ instantiate_class_template_1 (tree type)
 			 /*init_const_expr_p=*/false,
 			 /*asmspec_tree=*/NULL_TREE,
 			 /*flags=*/0);
+		      /* Instantiate members marked with attribute used.  */
+		      if (r != error_mark_node && DECL_PRESERVE_P (r))
+			mark_used (r);
 		    }
 		  else if (TREE_CODE (r) == FIELD_DECL)
 		    {
