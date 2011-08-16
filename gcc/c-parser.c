@@ -8661,6 +8661,11 @@ c_parser_upc_sync_statement (c_parser *parser, int sync_kind)
       expr = c_parser_expression (parser).value;
       if (expr == error_mark_node)
         expr = NULL;
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (expr)))
+        {
+	  c_parser_error (parser, "expected integer expression");
+	  expr = NULL;
+	}
     }
   stmt = size_int (sync_kind);
   (void) upc_build_sync_stmt (loc, stmt, expr);

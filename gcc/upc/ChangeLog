@@ -1,3 +1,12 @@
+2011-08-16  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c (upc_decl_init): Do not attempt to expand
+	  an error mark node.  Fixes ICE after error diagnostic.
+	* upc-cmd.c (main): detect missing option argument for
+	  options that require an argument, and print error diagnostic.
+	  (get_print_cmd): Re-direct error output to /dev/null to
+	  avoid issuing duplicate error messages.
+
 2011-08-12  Gary Funck  <gary@intrepid.com>
 
 	Rework/simplify the UPC genericize pass.

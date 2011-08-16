@@ -1,3 +1,8 @@
+2011-08-16  Gary Funck  <gary@intrepid.com>
+
+	* smp/upc_barrier.c (__upc_notify, __upc_wait):
+	  Improve error messages.
+
 2011-08-10  Gary Funck  <gary@intrepid.com>
 
 	Define UPCFLAGS so that it is available in the Makefile,
@@ -13,7 +18,7 @@
 2011-06-06  Nenad Vukicevic <nenad@intrepid.com>
 
 	* smp/upc_config.h: Change default scheduling policy.
-	  Allow for kernel to schedule UPC threads on its own.
+	  Allow the kernel to schedule UPC threads on its own.
 
 2011-05-17  Gary Funck  <gary@intrepid.com>
 

@@ -1,3 +1,8 @@
+2011-08-16  Gary Funck  <gary@intrepid.com>
+
+	* c-parser.c (c_parser_upc_sync_statement): issue error diagnostic if
+	  the barrier id expression is not an integer expression.
+
 2011-08-12  Gary Funck  <gary@intrepid.com>
 
 	* config/i386/i386.h (MAX_FIXED_MODE_SIZE): Delete

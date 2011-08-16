@@ -864,6 +864,8 @@ void
 upc_decl_init (tree decl, tree init)
 {
   tree init_stmt;
+  if (TREE_CODE (init) == ERROR_MARK)
+    return;
   if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
     {
       error ("initialization of UPC shared arrays "

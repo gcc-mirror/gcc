@@ -221,29 +221,45 @@ get_print_cmd (const char *exec_args[], int n_args, const char *print_cmd)
   char *cmd;
   char *s;
   const char *result = NULL;
+  const char * const err_null = "2>/dev/null";
   FILE *pipe;
-  for (i = 0, len = strlen (print_cmd) + 1; i < n_args; ++i)
+  for (i = 0, len = strlen (print_cmd) + 1 + strlen (err_null) + 1;
+       i < n_args; ++i)
     len += strlen (shell_escape (exec_args[i])) + 1;
-  cmd = (char *) xmalloc (len);
+  cmd = (char *) xmalloc (len + 1);
   for (i = 0, s = cmd; i < n_args; ++i)
     {
       char *p = shell_escape (exec_args[i]);
-      while (*p)
-	*s++ = *p++;
-      *s++ = ' ';
+      if (i != 0)
+        *s++ = ' ';
+      strcpy (s, p);
+      s += strlen (p);
     }
+  *s++ = ' ';
   strcpy (s, print_cmd);
+  s += strlen (print_cmd);
+  *s++ = ' ';
+  strcpy (s, err_null);
+  s += strlen (err_null);
+  if (debug)
+    fprintf (stderr, "get_print_cmd: cmd='%s'\n", cmd);
   pipe = popen (cmd, "r");
   if (pipe)
     {
-      char buf[256];
+      int exit_status;
+      char buf[4096];
       int slen;
       (void) fgets (buf, sizeof (buf), pipe);
       slen = strlen (buf);
       if (buf[slen - 1] == '\n')
 	buf[slen - 1] = '\0';
-      (void) pclose (pipe);
-      result = (const char *) xstrdup (buf);
+      exit_status = pclose (pipe);
+      if (!exit_status)
+        {
+          result = (const char *) xstrdup (buf);
+	  if (debug)
+	    fprintf (stderr, "get_print_cmd: result='%s'\n", result);
+        }
     }
   return result;
 }
@@ -381,8 +397,15 @@ main (int argc, char *argv[])
 	  if (((arg[2] == '\0') && GCC_SWITCH_TAKES_ARG (arg[1]))
 	      || GCC_WORD_SWITCH_TAKES_ARG (&arg[1])
 	      || ((arg[1] == '-') && GCC_WORD_SWITCH_TAKES_ARG (&arg[2])))
-	    /* skip the following argument */
-	    ++i;
+            {
+	      if ((i + 1) == argc)
+	        {
+		  fprintf (stderr, "'%s' option must have argument\n", arg);
+		  exit (1);
+		}
+	      /* skip the following argument */
+	      ++i;
+	    }
 	}
       else
 	/* an argument that is not a switch implies that we'll do something. */
