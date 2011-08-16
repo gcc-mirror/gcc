@@ -417,8 +417,6 @@ enum reg_class
 #define REGNO_OK_FOR_BASE_P(NUM) m32c_regno_ok_for_base_p (NUM)
 #define REGNO_OK_FOR_INDEX_P(NUM) 0
 
-#define PREFERRED_RELOAD_CLASS(X,CLASS) m32c_preferred_reload_class (X, CLASS)
-#define PREFERRED_OUTPUT_RELOAD_CLASS(X,CLASS) m32c_preferred_output_reload_class (X, CLASS)
 #define LIMIT_RELOAD_CLASS(MODE,CLASS) \
   (enum reg_class) m32c_limit_reload_class (MODE, CLASS)
 

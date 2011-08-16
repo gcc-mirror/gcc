@@ -1,3 +1,17 @@
+2011-08-16  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32c/m32c.h (PREFERRED_RELOAD_CLASS,
+	PREFERRED_OUTPUT_RELOAD_CLASS): Remove macro.
+	* config/m32c/m32c-protos.h (m32c_preferred_reload_class,
+	m32c_preferred_output_reload_class): Remove.
+	* config/m32c/m32c.c (m32c_preferred_reload_class): Make static.
+	Change rclass argument and return types to reg_class_t. Use
+	reg_class_subset_p instead of class_sizes.
+	(m32c_preferred_output_reload_class): Make static. Change rclass
+	argument and return types to reg_class_t.
+	(TARGET_PREFERRED_RELOAD_CLASS,
+	TARGET_PREFERRED_OUTPUT_RELOAD_CLASS): Define.
+
 2011-08-16  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/mingw32.h (GOMP_SELF_SPEC): Add -pthread option.
