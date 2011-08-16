@@ -1,5 +1,8 @@
 2011-08-16  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (instantiate_class_template_1): If DECL_PRESERVE_P is set
+	on a member function or static data member, call mark_used.
+
 	PR c++/50054
 	* typeck2.c (cxx_incomplete_type_diagnostic): Handle
 	init_list_type_node.
