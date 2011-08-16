@@ -76,6 +76,7 @@ extern void spu_builtin_insert (rtx ops[]);
 extern void spu_builtin_promote (rtx ops[]);
 extern void spu_expand_sign_extend (rtx ops[]);
 extern void spu_expand_vector_init (rtx target, rtx vals);
+extern rtx spu_legitimize_reload_address (rtx, enum machine_mode, int, int);
 #endif /* RTX_CODE  */
 
 extern void spu_init_expanders (void);

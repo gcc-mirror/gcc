@@ -1,3 +1,12 @@
+2011-08-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.h (LEGITIMIZE_RELOAD_ADDRESS): New macro.
+	* config/spu/spu-protos.h (spu_legitimize_reload_address): Add
+	prototype.
+	* config/spu/spu.c (spu_legitimize_reload_address): New function.
+	(spu_legitimate_address_p): Do not check displacement if the base
+	is an eliminable stack register.
+
 2011-08-16  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/m32c/m32c.h (PREFERRED_RELOAD_CLASS,
