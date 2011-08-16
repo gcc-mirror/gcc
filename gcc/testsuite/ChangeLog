@@ -1,5 +1,8 @@
 2011-08-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50086
+	* g++.dg/cpp0x/variadic-unresolved.C: New.
+
 	* g++.old-deja/g++.brendan/README: Add R.I.P.
 
 	* g++.dg/ext/attr-used-1.C: New.
