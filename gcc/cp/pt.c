@@ -15434,7 +15434,6 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
         tree arg = TREE_VEC_ELT (packed_args, i);
 	tree arg_expr = NULL_TREE;
         int arg_strict = strict;
-        bool skip_arg_p = false;
 
         if (call_args_p)
           {
@@ -15477,19 +15476,15 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
                     if (resolve_overloaded_unification
                         (tparms, targs, parm, arg,
 			 (unification_kind_t) strict,
-			 sub_strict, explain_p)
-                        != 0)
-                      return 1;
-                    skip_arg_p = true;
+			 sub_strict, explain_p))
+		      goto unified;
+		    return unify_overload_resolution_failure (explain_p, arg);
                   }
 
-                if (!skip_arg_p)
-                  {
-		    arg_expr = arg;
-                    arg = unlowered_expr_type (arg);
-                    if (arg == error_mark_node)
-                      return 1;
-                  }
+		arg_expr = arg;
+		arg = unlowered_expr_type (arg);
+		if (arg == error_mark_node)
+		  return unify_invalid (explain_p);
               }
       
             arg_strict = sub_strict;
@@ -15500,16 +15495,14 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 						  &parm, &arg, arg_expr);
           }
 
-        if (!skip_arg_p)
-          {
-	    /* For deduction from an init-list we need the actual list.  */
-	    if (arg_expr && BRACE_ENCLOSED_INITIALIZER_P (arg_expr))
-	      arg = arg_expr;
-	    RECUR_AND_CHECK_FAILURE (tparms, targs, parm, arg, arg_strict,
-				     explain_p);
-          }
+	/* For deduction from an init-list we need the actual list.  */
+	if (arg_expr && BRACE_ENCLOSED_INITIALIZER_P (arg_expr))
+	  arg = arg_expr;
+	RECUR_AND_CHECK_FAILURE (tparms, targs, parm, arg, arg_strict,
+				 explain_p);
       }
 
+    unified:
       /* For each parameter pack, collect the deduced value.  */
       for (pack = packs; pack; pack = TREE_CHAIN (pack))
         {

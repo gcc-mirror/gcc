@@ -1,5 +1,9 @@
 2011-08-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50086
+	* pt.c (unify_pack_expansion): Correct overloaded unification
+	logic.
+
 	* pt.c (instantiate_class_template_1): If DECL_PRESERVE_P is set
 	on a member function or static data member, call mark_used.
 
