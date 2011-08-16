@@ -1,3 +1,9 @@
+2011-08-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50054
+	* typeck2.c (cxx_incomplete_type_diagnostic): Handle
+	init_list_type_node.
+
 2011-08-12  David Li  <davidxl@google.com>
 
 	* class.c (update_vtable_entry_for_fn): Set

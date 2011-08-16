@@ -1,3 +1,8 @@
+2011-08-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50054
+	* g++.dg/cpp0x/initlist56.C: New.
+
 2011-08-12  David Li  <davidxl@google.com>
 
 	* g++.dg/abi/vbase15.C: New test.
