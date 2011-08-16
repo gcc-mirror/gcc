@@ -1,9 +1,3 @@
-2011-08-15  Gabriel Charette  <gchare@google.com>
-
-	* gofrontend/lex.cc (Lex::location): Update to use
-	linemap_position_for_column instead.
-	(Lex::earlier_location): Likewise.
-
 2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (gccgo$(exeext)): Add $(EXTRA_GCC_LIBS).
