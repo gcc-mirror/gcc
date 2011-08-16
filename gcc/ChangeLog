@@ -1,5 +1,11 @@
 2011-08-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/spu/spu.c (spu_emit_branch_or_set): Avoid reverse tests
+	when generating an integer result where possible.  Short-cut
+	comparison against 0 also for QImode.
+
+2011-08-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/spu/spu.h (LEGITIMIZE_RELOAD_ADDRESS): New macro.
 	* config/spu/spu-protos.h (spu_legitimize_reload_address): Add
 	prototype.
