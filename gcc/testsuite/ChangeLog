@@ -1,5 +1,8 @@
 2011-08-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50086
+	* g++.dg/cpp0x/variadic-unresolved.C: New.
+
 	PR c++/50054
 	* g++.dg/cpp0x/initlist56.C: New.
 

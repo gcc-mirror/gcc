@@ -1,5 +1,9 @@
 2011-08-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50086
+	* pt.c (unify_pack_expansion): Correct overloaded unification
+	logic.
+
 	PR c++/50054
 	* typeck2.c (cxx_incomplete_type_diagnostic): Handle
 	init_list_type_node.
