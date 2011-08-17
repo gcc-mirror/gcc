@@ -10169,15 +10169,22 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 
       if (!gfc_is_constant_expr (e)
 	  && !(e->expr_type == EXPR_VARIABLE
-	       && e->symtree->n.sym->attr.flavor == FL_PARAMETER)
-	  && sym->ns->proc_name
-	  && (sym->ns->proc_name->attr.flavor == FL_MODULE
-	      || sym->ns->proc_name->attr.is_main_program)
-	  && !sym->attr.use_assoc)
+	       && e->symtree->n.sym->attr.flavor == FL_PARAMETER))
 	{
-	  gfc_error ("'%s' at %L must have constant character length "
-		     "in this context", sym->name, &sym->declared_at);
-	  return FAILURE;
+	  if (!sym->attr.use_assoc && sym->ns->proc_name
+	      && (sym->ns->proc_name->attr.flavor == FL_MODULE
+		  || sym->ns->proc_name->attr.is_main_program))
+	    {
+	      gfc_error ("'%s' at %L must have constant character length "
+			"in this context", sym->name, &sym->declared_at);
+	      return FAILURE;
+	    }
+	  if (sym->attr.in_common)
+	    {
+	      gfc_error ("COMMON variable '%s' at %L must have constant "
+			 "character length", sym->name, &sym->declared_at);
+	      return FAILURE;
+	    }
 	}
     }
 
