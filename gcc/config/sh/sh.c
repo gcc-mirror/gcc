@@ -11711,10 +11711,6 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     }
 
   sh_reorg ();
-
-  if (optimize > 0 && flag_delayed_branch)
-    dbr_schedule (insns);
-
   shorten_branches (insns);
   final_start_function (insns, file, 1);
   final (insns, file, 1);
