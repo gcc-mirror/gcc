@@ -1,3 +1,8 @@
+2011-08-17  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/50068
+	* config/sh/sh.c (sh_output_mi_thunk): Don't call dbr_schedule.
+
 2011-08-17  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (convert_to_ptrofftype_loc): New function.
