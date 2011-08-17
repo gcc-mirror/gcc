@@ -1,3 +1,8 @@
+2011-08-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50070
+	* gfortran.dg/common_13.f90: New.
+
 2011-08-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50086

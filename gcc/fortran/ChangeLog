@@ -1,3 +1,9 @@
+2011-08-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50070
+	* resolve.c (resolve_fl_variable): Reject non-constant character lengths
+	in COMMON variables.
+
 2011-08-16  Tobias Burnus  <burnus@net-b.de>
 	    Dominique Dhumieres  <dominiq@lps.ens.fr>
 
