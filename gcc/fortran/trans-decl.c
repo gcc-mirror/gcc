@@ -4453,6 +4453,9 @@ generate_local_decl (gfc_symbol * sym)
 		    || sym->attr.in_namelist))
 	gfc_warning ("Unused variable '%s' declared at %L", sym->name,
 		     &sym->declared_at);
+      else if (warn_unused_variable && sym->attr.use_only)
+	gfc_warning ("Unused module variable '%s' which has been explicitly "
+		     "imported at %L", sym->name, &sym->declared_at);
 
       /* For variable length CHARACTER parameters, the PARM_DECL already
 	 references the length variable, so force gfc_get_symbol_decl
@@ -4497,10 +4500,15 @@ generate_local_decl (gfc_symbol * sym)
   else if (sym->attr.flavor == FL_PARAMETER)
     {
       if (warn_unused_parameter
-           && !sym->attr.referenced
-           && !sym->attr.use_assoc)
-	gfc_warning ("Unused parameter '%s' declared at %L", sym->name,
-		     &sym->declared_at);
+           && !sym->attr.referenced)
+	{
+           if (!sym->attr.use_assoc)
+	     gfc_warning ("Unused parameter '%s' declared at %L", sym->name,
+			  &sym->declared_at);
+	   else if (sym->attr.use_only)
+	     gfc_warning ("Unused parameter '%s' which has been explicitly "
+			  "imported at %L", sym->name, &sym->declared_at);
+	}
     }
   else if (sym->attr.flavor == FL_PROCEDURE)
     {
