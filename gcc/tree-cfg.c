@@ -3246,17 +3246,17 @@ verify_gimple_assign_unary (gimple stmt)
       {
 	/* Allow conversions between integral types and pointers only if
 	   there is no sign or zero extension involved.
-	   For targets were the precision of sizetype doesn't match that
+	   For targets were the precision of ptrofftype doesn't match that
 	   of pointers we need to allow arbitrary conversions from and
-	   to sizetype.  */
+	   to ptrofftype.  */
 	if ((POINTER_TYPE_P (lhs_type)
 	     && INTEGRAL_TYPE_P (rhs1_type)
 	     && (TYPE_PRECISION (lhs_type) >= TYPE_PRECISION (rhs1_type)
-		 || rhs1_type == sizetype))
+		 || ptrofftype_p (rhs1_type)))
 	    || (POINTER_TYPE_P (rhs1_type)
 		&& INTEGRAL_TYPE_P (lhs_type)
 		&& (TYPE_PRECISION (rhs1_type) >= TYPE_PRECISION (lhs_type)
-		    || lhs_type == sizetype)))
+		    || ptrofftype_p (sizetype))))
 	  return false;
 
 	/* Allow conversion from integer to offset type and vice versa.  */

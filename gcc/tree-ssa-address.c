@@ -279,7 +279,8 @@ tree_mem_ref_addr (tree type, tree mem_ref)
   if (act_elem)
     {
       if (step)
-	act_elem = fold_build2 (MULT_EXPR, sizetype, act_elem, step);
+	act_elem = fold_build2 (MULT_EXPR, TREE_TYPE (act_elem),
+				act_elem, step);
       addr_off = act_elem;
     }
 
@@ -287,16 +288,17 @@ tree_mem_ref_addr (tree type, tree mem_ref)
   if (act_elem)
     {
       if (addr_off)
-	addr_off = fold_build2 (PLUS_EXPR, sizetype, addr_off, act_elem);
+	addr_off = fold_build2 (PLUS_EXPR, TREE_TYPE (addr_off),
+				addr_off, act_elem);
       else
 	addr_off = act_elem;
     }
 
   if (offset && !integer_zerop (offset))
     {
-      offset = fold_convert (sizetype, offset);
       if (addr_off)
-	addr_off = fold_build2 (PLUS_EXPR, sizetype, addr_off, offset);
+	addr_off = fold_build2 (PLUS_EXPR, TREE_TYPE (addr_off), addr_off,
+				fold_convert (TREE_TYPE (addr_off), offset));
       else
 	addr_off = offset;
     }

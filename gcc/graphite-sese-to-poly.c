@@ -3219,9 +3219,6 @@ rewrite_commutative_reductions_out_of_ssa (scop_p scop)
     }
 }
 
-/* Java does not initialize long_long_integer_type_node.  */
-#define my_long_long (long_long_integer_type_node ? long_long_integer_type_node : ssizetype)
-
 /* Can all ivs be represented by a signed integer?
    As CLooG might generate negative values in its expressions, signed loop ivs
    are required in the backend. */
@@ -3246,15 +3243,13 @@ scop_ivs_can_be_represented (scop_p scop)
 	  tree type = TREE_TYPE (res);
 
 	  if (TYPE_UNSIGNED (type)
-	      && TYPE_PRECISION (type) >= TYPE_PRECISION (my_long_long))
+	      && TYPE_PRECISION (type) >= TYPE_PRECISION (long_long_integer_type_node))
 	    return false;
 	}
     }
 
   return true;
 }
-
-#undef my_long_long
 
 /* Builds the polyhedral representation for a SESE region.  */
 

@@ -100,9 +100,9 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
     {
       if (TREE_CODE (base) == ADDR_EXPR)
 	mark_addressable (TREE_OPERAND (base, 0));
-      step = fold_convert (sizetype, step);
+      step = convert_to_ptrofftype (step);
       if (incr_op == MINUS_EXPR)
-	step = fold_build1 (NEGATE_EXPR, sizetype, step);
+	step = fold_build1 (NEGATE_EXPR, TREE_TYPE (step), step);
       incr_op = POINTER_PLUS_EXPR;
     }
   /* Gimplify the step if necessary.  We put the computations in front of the
@@ -705,7 +705,7 @@ determine_exit_conditions (struct loop *loop, struct tree_niter_desc *desc,
   enum tree_code cmp = desc->cmp;
   tree cond = boolean_true_node, assum;
 
-  /* For pointers, do the arithmetics in the type of step (sizetype).  */
+  /* For pointers, do the arithmetics in the type of step.  */
   base = fold_convert (type, base);
   bound = fold_convert (type, bound);
 

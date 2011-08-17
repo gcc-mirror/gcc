@@ -7231,9 +7231,7 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
       {
 	tree tem = TREE_OPERAND (exp, 0);
 	if (!integer_zerop (TREE_OPERAND (exp, 1)))
-	  tem = build2 (POINTER_PLUS_EXPR, TREE_TYPE (TREE_OPERAND (exp, 1)),
-			tem,
-			double_int_to_tree (sizetype, mem_ref_offset (exp)));
+	  tem = fold_build_pointer_plus (tem, TREE_OPERAND (exp, 1));
 	return expand_expr (tem, target, tmode, modifier);
       }
 

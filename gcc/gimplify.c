@@ -2208,7 +2208,7 @@ gimplify_self_mod_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   /* For POINTERs increment, use POINTER_PLUS_EXPR.  */
   if (POINTER_TYPE_P (TREE_TYPE (lhs)))
     {
-      rhs = fold_convert_loc (loc, sizetype, rhs);
+      rhs = convert_to_ptrofftype_loc (loc, rhs);
       if (arith_code == MINUS_EXPR)
 	rhs = fold_build1_loc (loc, NEGATE_EXPR, TREE_TYPE (rhs), rhs);
       arith_code = POINTER_PLUS_EXPR;

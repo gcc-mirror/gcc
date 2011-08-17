@@ -3260,7 +3260,7 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
 	    {
 	      struct constraint_expr cs;
 	      varinfo_t vi, curr;
-	      tree off = double_int_to_tree (sizetype, mem_ref_offset (t));
+	      tree off = convert_to_ptrofftype (TREE_OPERAND (t, 1));
 	      get_constraint_for_ptr_offset (TREE_OPERAND (t, 0), off, results);
 	      do_deref (results);
 

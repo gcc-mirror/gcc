@@ -4218,8 +4218,7 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
     {
       if (value != 0 && !TREE_OVERFLOW (value))
 	{
-	  low = fold_convert_loc (loc, sizetype, low);
-	  low = fold_build1_loc (loc, NEGATE_EXPR, sizetype, low);
+	  low = fold_build1_loc (loc, NEGATE_EXPR, TREE_TYPE (low), low);
           return build_range_check (loc, type,
 			     	    fold_build_pointer_plus_loc (loc, exp, low),
 			            1, build_int_cst (etype, 0), value);
@@ -7862,10 +7861,8 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	  tree arg00 = TREE_OPERAND (arg0, 0);
 	  tree arg01 = TREE_OPERAND (arg0, 1);
 
-	  return fold_build2_loc (loc,
-			      TREE_CODE (arg0), type,
-			      fold_convert_loc (loc, type, arg00),
-			      fold_convert_loc (loc, sizetype, arg01));
+	  return fold_build_pointer_plus_loc
+		   (loc, fold_convert_loc (loc, type, arg00), arg01);
 	}
 
       /* Convert (T1)(~(T2)X) into ~(T1)X if T1 and T2 are integral types

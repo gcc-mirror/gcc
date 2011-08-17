@@ -4628,9 +4628,10 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 static unsigned HOST_WIDE_INT
 array_size_for_constructor (tree val)
 {
-  tree max_index, i;
+  tree max_index;
   unsigned HOST_WIDE_INT cnt;
   tree index, value, tmp;
+  double_int i;
 
   /* This code used to attempt to handle string constants that are not
      arrays of single-bytes, but nothing else does, so there's no point in
@@ -4652,14 +4653,15 @@ array_size_for_constructor (tree val)
 
   /* Compute the total number of array elements.  */
   tmp = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)));
-  i = size_binop (MINUS_EXPR, fold_convert (sizetype, max_index),
-		  fold_convert (sizetype, tmp));
-  i = size_binop (PLUS_EXPR, i, size_one_node);
+  i = double_int_sub (tree_to_double_int (max_index), tree_to_double_int (tmp));
+  i = double_int_add (i, double_int_one);
 
   /* Multiply by the array element unit size to find number of bytes.  */
-  i = size_binop (MULT_EXPR, i, TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
+  i = double_int_mul (i, tree_to_double_int
+		           (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val)))));
 
-  return tree_low_cst (i, 1);
+  gcc_assert (double_int_fits_in_uhwi_p (i));
+  return i.low;
 }
 
 /* Other datastructures + helpers for output_constructor.  */
