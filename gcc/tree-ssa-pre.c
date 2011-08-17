@@ -3099,12 +3099,12 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 							 stmts, domstmt);
 	      if (!genop1 || !genop2)
 		return NULL_TREE;
-	      /* Ensure op2 is a sizetype for POINTER_PLUS_EXPR.  It
+	      /* Ensure op2 is a ptrofftype for POINTER_PLUS_EXPR.  It
 		 may be a constant with the wrong type.  */
 	      if (nary->opcode == POINTER_PLUS_EXPR)
 		{
 		  genop1 = fold_convert (nary->type, genop1);
-		  genop2 = fold_convert (sizetype, genop2);
+		  genop2 = convert_to_ptrofftype (genop2);
 		}
 	      else
 		{

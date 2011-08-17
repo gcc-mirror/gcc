@@ -1,3 +1,47 @@
+2011-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (convert_to_ptrofftype_loc): New function.
+	(convert_to_ptrofftype): Define.
+	* builtins.c (expand_builtin_bzero): Use size_type_node.
+	(fold_builtin_bzero): Likewise.
+	(std_gimplify_va_arg_expr): Build the BIT_AND_EXPR on the pointer.
+	* c-typeck.c (build_unary_op): Use convert_to_ptrofftype_loc.
+	* cgraphunit.c (thunk_adjust): Use fold_build_pointer_plus_loc.
+	(cgraph_redirect_edge_call_stmt_to_callee): Use size_int.
+	* expr.c (expand_expr_addr_expr_1): Use fold_build_pointer_plus.
+	* fold-const.c (build_range_check): Negate using the original
+	type.
+	(fold_unary_loc): Use fold_build_pointer_plus_loc.
+	* gimple-fold.c (gimple_adjust_this_by_delta): Use
+	convert_to_ptrofftype.
+	* gimplify.c (gimplify_self_mod_expr): Likewise.
+	* graphite-clast-to-gimple.c (clast_to_gcc_expression): Likewise.
+	(graphite_create_new_loop_guard): Likewise.
+	* graphite-sese-to-poly.c (my_long_long): Remove.
+	(scop_ivs_can_be_represented): Adjust.
+	* tree-cfg.c (verify_gimple_assign_unary): Use ptrofftype_p.
+	* tree-chrec.c (chrec_fold_plus_1): Use fold_build_pointer_plus.
+	* tree-loop-distribution.c (build_size_arg_loc): Use
+	size_type_node.
+	(generate_memset_zero): Simplify.
+	* tree-mudflap.c: Use fold_convert, not convert.
+	* tree-predcom.c (suitable_reference_p): Expand DR_OFFSET in
+	its own type.
+	(determine_offset): Likewise for DR_STEP.
+	(valid_initializer_p): Likewise.
+	* tree-profile.c (prepare_instrumented_value): Convert the pointer
+	to an integer type of same size.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Do not refer
+	to sizetype without need.
+	* tree-ssa-address.c (tree_mem_ref_addr): Likewise.
+	* tree-ssa-loop-ivopts.c (find_bivs): Use convert_to_ptrofftype.
+	* tree-ssa-loop-manip.c (create_iv): Likewise.
+	(determine_exit_conditions): Adjust comment.
+	* tree-ssa-pre.c (create_expression_by_pieces): Use
+	convert_to_ptrofftype.
+	* tree-ssa-structalias.c (get_constraint_for_1): Likewise.
+	* varasm.c (array_size_for_constructor): Compute using double_ints.
+
 2011-08-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (spu_emit_branch_or_set): Avoid reverse tests

@@ -618,11 +618,12 @@ suitable_reference_p (struct data_reference *a, enum ref_step_type *ref_step)
 static void
 aff_combination_dr_offset (struct data_reference *dr, aff_tree *offset)
 {
+  tree type = TREE_TYPE (DR_OFFSET (dr));
   aff_tree delta;
 
-  tree_to_aff_combination_expand (DR_OFFSET (dr), sizetype, offset,
+  tree_to_aff_combination_expand (DR_OFFSET (dr), type, offset,
 				  &name_expansions);
-  aff_combination_const (&delta, sizetype, tree_to_double_int (DR_INIT (dr)));
+  aff_combination_const (&delta, type, tree_to_double_int (DR_INIT (dr)));
   aff_combination_add (offset, &delta);
 }
 
@@ -667,7 +668,7 @@ determine_offset (struct data_reference *a, struct data_reference *b,
   aff_combination_scale (&baseb, double_int_minus_one);
   aff_combination_add (&diff, &baseb);
 
-  tree_to_aff_combination_expand (DR_STEP (a), sizetype,
+  tree_to_aff_combination_expand (DR_STEP (a), TREE_TYPE (DR_STEP (a)),
 				  &step, &name_expansions);
   return aff_combination_constant_multiple_p (&diff, &step, off);
 }
@@ -1050,8 +1051,8 @@ valid_initializer_p (struct data_reference *ref,
   aff_combination_scale (&base, double_int_minus_one);
   aff_combination_add (&diff, &base);
 
-  tree_to_aff_combination_expand (DR_STEP (root), sizetype, &step,
-				  &name_expansions);
+  tree_to_aff_combination_expand (DR_STEP (root), TREE_TYPE (DR_STEP (root)),
+				  &step, &name_expansions);
   if (!aff_combination_constant_multiple_p (&diff, &step, &off))
     return false;
 

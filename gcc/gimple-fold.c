@@ -1436,7 +1436,7 @@ gimple_adjust_this_by_delta (gimple_stmt_iterator *gsi, tree delta)
   tree parm, tmp;
   gimple new_stmt;
 
-  delta = fold_convert (sizetype, delta);
+  delta = convert_to_ptrofftype (delta);
   gcc_assert (gimple_call_num_args (call_stmt) >= 1);
   parm = gimple_call_arg (call_stmt, 0);
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (parm)));

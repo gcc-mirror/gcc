@@ -1035,7 +1035,7 @@ find_bivs (struct ivopts_data *data)
       if (step)
 	{
 	  if (POINTER_TYPE_P (type))
-	    step = fold_convert (sizetype, step);
+	    step = convert_to_ptrofftype (step);
 	  else
 	    step = fold_convert (type, step);
 	}
