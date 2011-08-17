@@ -1,3 +1,9 @@
+2011-08-17  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/50090
+	* config/arm/bpabi-lib.h (RENAME_LIBRARY): Use a C-level alias
+	instead of an assembly one.
+
 2011-08-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/50047
