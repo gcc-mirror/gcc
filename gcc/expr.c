@@ -6506,7 +6506,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
     {
       double_int tem = tree_to_double_int (offset);
       tem = double_int_sext (tem, TYPE_PRECISION (sizetype));
-      tem = double_int_lshift (tree_to_double_int (offset),
+      tem = double_int_lshift (tem,
 			       BITS_PER_UNIT == 8
 			       ? 3 : exact_log2 (BITS_PER_UNIT),
 			       HOST_BITS_PER_DOUBLE_INT, true);

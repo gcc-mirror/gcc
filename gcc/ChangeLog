@@ -1,3 +1,7 @@
+2011-08-18  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (get_inner_reference): Fix typo in last change.
+
 2011-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
