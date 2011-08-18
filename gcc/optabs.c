@@ -1218,7 +1218,7 @@ avoid_expensive_constant (enum machine_mode mode, optab binoptab,
   if (mode != VOIDmode
       && optimize
       && CONSTANT_P (x)
-      && rtx_cost (x, binoptab->code, speed) > rtx_cost (x, SET, speed))
+      && rtx_cost (x, binoptab->code, speed) > set_src_cost (x, speed))
     {
       if (CONST_INT_P (x))
 	{

@@ -1234,6 +1234,24 @@ get_full_set_rtx_cost (rtx x, struct full_rtx_costs *c)
 {
   get_full_rtx_cost (x, INSN, c);
 }
+
+/* Return the cost of moving X into a register, relative to the cost
+   of a register move.  SPEED_P is true if optimizing for speed rather
+   than size.  */
+
+static inline int
+set_src_cost (rtx x, bool speed_p)
+{
+  return rtx_cost (x, SET, speed_p);
+}
+
+/* Like set_src_cost, but return both the speed and size costs in C.  */
+
+static inline void
+get_full_set_src_cost (rtx x, struct full_rtx_costs *c)
+{
+  get_full_rtx_cost (x, SET, c);
+}
 #endif
 
 /* 1 if RTX is a subreg containing a reg that is already known to be

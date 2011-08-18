@@ -2126,7 +2126,7 @@ noce_try_sign_mask (struct noce_if_info *if_info)
      && (if_info->insn_b == NULL_RTX
 	 || BLOCK_FOR_INSN (if_info->insn_b) == if_info->test_bb));
   if (!(t_unconditional
-	|| (rtx_cost (t, SET, optimize_bb_for_speed_p (if_info->test_bb))
+	|| (set_src_cost (t, optimize_bb_for_speed_p (if_info->test_bb))
 	    < COSTS_N_INSNS (2))))
     return FALSE;
 

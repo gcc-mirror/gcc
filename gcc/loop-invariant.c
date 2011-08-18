@@ -719,7 +719,7 @@ create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
     }
   else
     {
-      inv->cost = rtx_cost (SET_SRC (set), SET, speed);
+      inv->cost = set_src_cost (SET_SRC (set), speed);
       inv->cheap_address = false;
     }
 
