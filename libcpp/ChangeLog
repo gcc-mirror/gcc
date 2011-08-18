@@ -1,3 +1,11 @@
+2011-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add rliterals.
+	* init.c  (struct lang_flags, lang_defaults): Add rliterals.
+	(cpp_set_lang): Set rliterals option.
+	(cpp_init_builtins): Define __STDC_UTF_16__ and __STDC_UTF_32__.
+	* lex.c (_cpp_lex_direct): Only accept raw strings if rliterals.
+
 2011-08-15  Gabriel Charette  <gchare@google.com>
 
 	* include/line-map.h (LINEMAP_POSITION_FOR_COLUMN): Remove.
