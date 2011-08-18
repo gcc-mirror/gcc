@@ -1,3 +1,7 @@
+2011-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c1x-pointer-float-1.c: New test.
+
 2011-08-18  Mikael Morin  <mikael.morin@sfr.fr>
 
 	PR fortran/50071
