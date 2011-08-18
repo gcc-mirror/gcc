@@ -1,5 +1,8 @@
 2011-08-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/50009
+	* gcc.c-torture/compile/pr50009.c: New test.
+
 	PR target/50092
 	* gcc.dg/torture/pr50092.c: New test.
 

@@ -1,5 +1,9 @@
 2011-08-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/50009
+	* stor-layout.c (update_alignment_for_field): Don't ICE on
+	packed flexible array members if ms_bitfield_layout_p.
+
 	PR target/50092
 	* config/i386/i386.c (assign_386_stack_local): Call validize_mem
 	on the result before returning it.
