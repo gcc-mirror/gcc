@@ -1,5 +1,9 @@
 2011-08-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/50092
+	* config/i386/i386.c (assign_386_stack_local): Call validize_mem
+	on the result before returning it.
+
 	PR debug/50017
 	* tree-vect-stmts.c (vect_finish_stmt_generation): If gsi_stmt (*gsi)
 	is a debug stmt, use location of the first non-debug stmt after it.
