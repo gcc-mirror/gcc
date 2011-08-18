@@ -1,3 +1,8 @@
+2011-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/50092
+	* gcc.dg/torture/pr50092.c: New test.
+
 2011-08-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50086

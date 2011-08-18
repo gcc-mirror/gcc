@@ -22152,7 +22152,7 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
 
   for (s = ix86_stack_locals; s; s = s->next)
     if (s->mode == mode && s->n == n)
-      return copy_rtx (s->rtl);
+      return validize_mem (copy_rtx (s->rtl));
 
   s = ggc_alloc_stack_local_entry ();
   s->n = n;
@@ -22161,7 +22161,7 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
 
   s->next = ix86_stack_locals;
   ix86_stack_locals = s;
-  return s->rtl;
+  return validize_mem (s->rtl);
 }
 
 /* Construct the SYMBOL_REF for the tls_get_addr function.  */
