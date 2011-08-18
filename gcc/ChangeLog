@@ -1,3 +1,8 @@
+2011-08-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/arm/arm.c (arm_rtx_costs_1): Don't modify the costs of SET.
+	(arm_size_rtx_costs): Likewise.
+
 2011-08-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (tree_int_cst_msb): Remove.
