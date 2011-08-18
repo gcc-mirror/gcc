@@ -1,7 +1,7 @@
 /* CPP Library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -79,22 +79,23 @@ struct lang_flags
   char cplusplus_comments;
   char digraphs;
   char uliterals;
+  char rliterals;
 };
 
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum xid std  //   digr ulit */
-  /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1,   0 },
-  /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1,   1 },
-  /* GNUC1X   */  { 1,  0,  1,   0,  0,   1,   1,   1 },
-  /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0,   0 },
-  /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1,   0 },
-  /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1,   0 },
-  /* STDC1X   */  { 1,  0,  1,   0,  1,   1,   1,   0 },
-  /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1,   0 },
-  /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1,   0 },
-  /* GNUCXX0X */  { 1,  1,  1,   0,  0,   1,   1,   1 },
-  /* CXX0X    */  { 1,  1,  1,   0,  1,   1,   1,   1 },
-  /* ASM      */  { 0,  0,  1,   0,  0,   1,   0,   0 }
+{ /*              c99 c++ xnum xid std  //   digr ulit rlit */
+  /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1,   0,   0 },
+  /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1 },
+  /* GNUC1X   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1 },
+  /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0,   0,   0 },
+  /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1,   0,   0 },
+  /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1,   0,   0 },
+  /* STDC1X   */  { 1,  0,  1,   0,  1,   1,   1,   1,   0 },
+  /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1,   0,   0 },
+  /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1,   0,   0 },
+  /* GNUCXX0X */  { 1,  1,  1,   0,  0,   1,   1,   1,   1 },
+  /* CXX0X    */  { 1,  1,  1,   0,  1,   1,   1,   1,   1 },
+  /* ASM      */  { 0,  0,  1,   0,  0,   1,   0,   0,   0 }
   /* xid should be 1 for GNUC99, STDC99, GNUCXX, CXX98, GNUCXX0X, and
      CXX0X when no longer experimental (when all uses of identifiers
      in the compiler have been audited for correct handling of
@@ -118,6 +119,7 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, cplusplus_comments)	 = l->cplusplus_comments;
   CPP_OPTION (pfile, digraphs)			 = l->digraphs;
   CPP_OPTION (pfile, uliterals)			 = l->uliterals;
+  CPP_OPTION (pfile, rliterals)			 = l->rliterals;
 }
 
 /* Initialize library global state.  */
@@ -463,6 +465,13 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 201000L");
   else if (CPP_OPTION (pfile, c99))
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199901L");
+
+  if (CPP_OPTION (pfile, uliterals)
+      && !CPP_OPTION (pfile, cplusplus))
+    {
+      _cpp_define_builtin (pfile, "__STDC_UTF_16__ 1");
+      _cpp_define_builtin (pfile, "__STDC_UTF_32__ 1");
+    }
 
   if (hosted)
     _cpp_define_builtin (pfile, "__STDC_HOSTED__ 1");
