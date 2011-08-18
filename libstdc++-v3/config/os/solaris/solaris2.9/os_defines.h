@@ -1,6 +1,6 @@
-// Specific definitions for Solaris 7,8  -*- C++ -*-
+// Specific definitions for Solaris 9+  -*- C++ -*-
 
-// Copyright (C) 2000, 2002, 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2005, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +27,14 @@
 
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
+
+// FIXME: Autoconf if possible.
+#if __cplusplus >= 199711L
+#define __CORRECT_ISO_CPP_MATH_H_PROTO1
+#define __CORRECT_ISO_CPP_STDLIB_H_PROTO
+#define __CORRECT_ISO_CPP_STRING_H_PROTO
+#define __CORRECT_ISO_CPP_WCHAR_H_PROTO
+#endif
 
 #endif
 

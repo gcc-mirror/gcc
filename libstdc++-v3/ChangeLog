@@ -1,3 +1,63 @@
+2011-08-18  Marc Glisse  <marc.glisse@normalesup.org>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++-v3/1773
+	* config/os/solaris2.7: Rename to config/os/solaris2.9.
+	* config/os/solaris/solaris2.9/os_defines.h
+	(__CORRECT_ISO_CPP_MATH_H_PROTO1)
+	(__CORRECT_ISO_CPP_STDLIB_H_PROTO)
+	(__CORRECT_ISO_CPP_STRING_H_PROTO)
+	(__CORRECT_ISO_CPP_WCHAR_H_PROTO): Define.
+	* config/os/solaris2.8/ctype_base.h,
+	config/os/solaris2.8/ctype_configure_char.cc,
+	config/solaris2.8/ctype_inline.h,
+	config/os/solaris2.8/os_defines.h: New files.
+
+	* configure.host (solaris2.[89], solaris2.1[0-9]):
+	Split into ...
+	(solaris2.8): ... this.
+	Use os/solaris/solaris2.8.
+	(solaris2.9, solaris2.1[0-9]): ... and this.
+	Use os/solaris/solaris2.9.
+
+	* include/c_global/cmath (double abs(double)): Wrap in
+	!__CORRECT_ISO_CPP_MATH_H_PROTO1 &&
+	!__CORRECT_ISO_CPP_MATH_H_PROTO2.
+	(float abs(float), long double abs(long double): Wrap in
+	!__CORRECT_ISO_CPP_MATH_H_PROTO1.
+	(float acos(float), long double acos(long double)): Likewise.
+	(float asin(float), long double asin(long double)): Likewise.
+	(float atan(float), long double atan(long double)): Likewise.
+	(float atan2(float, float), long double atan2(long double, long
+	double)): Likewise.
+	(float ceil(float), long double ceil(long double)): Likewise.
+	(float cos(float), long double cos(long double)): Likewise.
+	(float cosh(float), long double cosh(long double)): Likewise.
+	(float exp(float), long double exp(long double)): Likewise.
+	(float fabs(float), long double fabs(long double)): Likewise.
+	(float floor(float), long double floor(long double)): Likewise.
+	(float fmod(float, float), long double fmod(long double, long
+	double)): Likewise.
+	(float frexp(float, int*), long double frexp(long double, int*)):
+	Likewise.
+	(float ldexp(float, int), long double ldexp(long double, int)):
+	Likewise.
+	(float log(float), long double log(long double)): Likewise.
+	(float log10(float), long double log10(long double)): Likewise.
+	(float modf(float, float*), long double modf(long double, long
+	double*))): Likewise.
+	(float pow(float, float), long double pow(long double, long
+	double)): Likewise.
+	(float sin(float), long double sin(long double)): Likewise.
+	(float sinh(float), long double sinh(long double)): Likewise.
+	(float sqrt(float), long double sqrt(long double)): Likewise.
+	(float tan(float), long double tan(long double)): Likewise.
+	(float tanh(float), long double tanh(long double)): Likewise.
+	* include/c_global/cstdlib (long abs(long), ldiv_t div(long,
+	long)): Wrap in !__CORRECT_ISO_CPP_STDLIB_H_PROTO.
+	* include/tr1/cmath (float fabs(float), long double fabs(long
+	double)): Wrap in !__CORRECT_ISO_CPP_MATH_H_PROTO1.
+
 2011-08-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/images/*: Image and image filename changes.
