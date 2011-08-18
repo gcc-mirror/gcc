@@ -1,3 +1,8 @@
+2011-08-18  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/50071
+	* gfortran.dg/duplicate_labels_2.f: New test.
+
 2011-08-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c1x-noreturn-1.c, gcc.dg/c1x-noreturn-2.c,
