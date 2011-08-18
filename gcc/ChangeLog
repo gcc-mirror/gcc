@@ -1,3 +1,12 @@
+2011-08-18  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (get_inner_reference): Sign-extend the constant
+	twos-complement offset before doing arbitrary precision
+	arithmetic on it.
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset): Likewise.
+	(get_constraint_for_1): Pass the offset of a MEM_REF unchanged
+	to get_constraint_for_ptr_offset.
+
 2011-08-17  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/50068
