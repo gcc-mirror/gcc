@@ -747,6 +747,11 @@ write_encoding (const tree decl)
 static tree
 decl_mangling_context (tree decl)
 {
+  tree tcontext = targetm.cxx.decl_mangling_context (decl);
+
+  if (tcontext != NULL_TREE)
+    return tcontext;
+
   if (TREE_CODE (decl) == TYPE_DECL
       && LAMBDA_TYPE_P (TREE_TYPE (decl)))
     {
@@ -857,7 +862,7 @@ write_name (tree decl, const int ignore_local_scope)
 static void
 write_unscoped_name (const tree decl)
 {
-  tree context = CP_DECL_CONTEXT (decl);
+  tree context = decl_mangling_context (decl);
 
   MANGLE_TRACE_TREE ("unscoped-name", decl);
 

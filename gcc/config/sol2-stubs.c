@@ -1,6 +1,5 @@
-/* Operating system specific prototypes to be used when targeting GCC for any
-   Solaris 2 system.
-   Copyright 2004, 2007, 2010, 2011 Free Software Foundation, Inc.
+/* Stubs for C++ specific Solaris system support.
+   Copyright (C) 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,15 +17,17 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* In sol2.c.  */
-extern void solaris_assemble_visibility (tree, int);
-extern void solaris_elf_asm_comdat_section (const char *, unsigned int, tree);
-extern void solaris_file_end (void);
-extern void solaris_insert_attributes (tree, tree *);
-extern void solaris_output_init_fini (FILE *, tree);
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tree.h"
+#include "tm.h"
+#include "tm_p.h"
 
-/* In sol2-c.c.  */
-extern void solaris_register_pragmas (void);
-
-/* In sol2-cxx.c.  */
-extern tree solaris_cxx_decl_mangling_context (const_tree);
+/* Stub implemenation of TARGET_CXX_DECL_MANGLING_CONTEXT for non-C++
+   frontends.  */
+tree
+solaris_cxx_decl_mangling_context (const_tree decl ATTRIBUTE_UNUSED)
+{
+  return NULL_TREE;
+}

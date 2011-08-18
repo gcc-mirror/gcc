@@ -10178,6 +10178,10 @@ unloaded. The default is to return false.
 @var{type} is a C++ class (i.e., RECORD_TYPE or UNION_TYPE) that has just been defined.  Use this hook to make adjustments to the class (eg, tweak visibility or perform any other required target modifications).
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_CXX_DECL_MANGLING_CONTEXT (const_tree @var{decl})
+Return target-specific mangling context of @var{decl} or @code{NULL_TREE}.
+@end deftypefn
+
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces
