@@ -1683,9 +1683,9 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx insn)
       struct full_rtx_costs oldcst, newcst;
       rtx tem = gen_rtx_PLUS (GET_MODE (reg), reg, new_src);
 
-      get_full_rtx_cost (pat, SET, &oldcst);
+      get_full_set_rtx_cost (pat, &oldcst);
       SET_SRC (pat) = tem;
-      get_full_rtx_cost (pat, SET, &newcst);
+      get_full_set_rtx_cost (pat, &newcst);
       SET_SRC (pat) = src;
 
       if (costs_lt_p (&newcst, &oldcst, speed)
@@ -1752,7 +1752,7 @@ move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx insn)
   rtx plus_expr;
 
   init_costs_to_max (&mincst);
-  get_full_rtx_cost (pat, SET, &oldcst);
+  get_full_set_rtx_cost (pat, &oldcst);
 
   plus_expr = gen_rtx_PLUS (GET_MODE (reg), reg, const0_rtx);
   SET_SRC (pat) = plus_expr;
@@ -1781,7 +1781,7 @@ move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx insn)
 	else
 	  {
 	    XEXP (plus_expr, 1) = new_src;
-	    get_full_rtx_cost (pat, SET, &newcst);
+	    get_full_set_rtx_cost (pat, &newcst);
 
 	    if (costs_lt_p (&newcst, &mincst, speed))
 	      {
@@ -1934,7 +1934,7 @@ reload_cse_move2add (rtx first)
 			  struct full_rtx_costs oldcst, newcst;
 			  rtx tem = gen_rtx_PLUS (GET_MODE (reg), reg, new_src);
 
-			  get_full_rtx_cost (set, SET, &oldcst);
+			  get_full_set_rtx_cost (set, &oldcst);
 			  SET_SRC (set) = tem;
 			  get_full_rtx_cost (tem, SET, &newcst);
 			  SET_SRC (set) = old_src;

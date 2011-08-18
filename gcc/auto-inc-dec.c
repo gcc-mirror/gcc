@@ -484,7 +484,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
   XEXP (mem_tmp, 0) = new_addr;
 
   old_cost = (rtx_cost (mem, SET, speed)
-	      + rtx_cost (PATTERN (inc_insn.insn), SET, speed));
+	      + set_rtx_cost (PATTERN (inc_insn.insn), speed));
   new_cost = rtx_cost (mem_tmp, SET, speed);
 
   /* The first item of business is to see if this is profitable.  */

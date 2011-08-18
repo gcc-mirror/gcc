@@ -1,3 +1,12 @@
+2011-08-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* rtl.h (set_rtx_cost, get_full_set_rtx_cost): New functions.
+	* auto-inc-dec.c (attempt_change): Use set_rtx_cost.
+	* cfgloopanal.c (seq_cost): Likewise.
+	* loop-invariant.c (create_new_invariant): Likewise.
+	* postreload.c (move2add_use_add2_insn, move2add_use_add3_insn)
+	(reload_cse_move2add): Use get_full_set_rtx_cost.
+
 2011-08-18  Richard Guenther  <rguenther@suse.de>
 
 	* expr.c (get_inner_reference): Fix typo in last change.
