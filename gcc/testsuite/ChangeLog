@@ -1,3 +1,9 @@
+2011-08-19  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/50071
+	* gfortran.dg/end_block_label_1.f90: New test.
+	* gfortran.dg/end_associate_label_1.f90: New test.
+
 2011-08-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c1x-pointer-float-1.c: New test.

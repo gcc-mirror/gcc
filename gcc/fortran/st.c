@@ -89,6 +89,7 @@ gfc_free_statement (gfc_code *p)
     {
     case EXEC_NOP:
     case EXEC_END_BLOCK:
+    case EXEC_END_NESTED_BLOCK:
     case EXEC_ASSIGN:
     case EXEC_INIT_ASSIGN:
     case EXEC_GOTO:

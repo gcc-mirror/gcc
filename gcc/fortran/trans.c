@@ -1188,6 +1188,7 @@ trans_code (gfc_code * code, tree cond)
 	{
 	case EXEC_NOP:
 	case EXEC_END_BLOCK:
+	case EXEC_END_NESTED_BLOCK:
 	case EXEC_END_PROCEDURE:
 	  res = NULL_TREE;
 	  break;

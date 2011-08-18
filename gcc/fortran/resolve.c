@@ -8202,7 +8202,7 @@ find_reachable_labels (gfc_code *block)
      up through the code_stack.  */
   for (c = block; c; c = c->next)
     {
-      if (c->here && c->op != EXEC_END_BLOCK)
+      if (c->here && c->op != EXEC_END_NESTED_BLOCK)
 	bitmap_set_bit (cs_base->reachable_labels, c->here->value);
     }
 
@@ -8381,7 +8381,7 @@ resolve_branch (gfc_st_label *label, gfc_code *code)
 
   if (stack)
     {
-      gcc_assert (stack->current->next->op == EXEC_END_BLOCK);
+      gcc_assert (stack->current->next->op == EXEC_END_NESTED_BLOCK);
       return;
     }
 
@@ -9117,6 +9117,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	{
 	case EXEC_NOP:
 	case EXEC_END_BLOCK:
+	case EXEC_END_NESTED_BLOCK:
 	case EXEC_CYCLE:
 	case EXEC_PAUSE:
 	case EXEC_STOP:
