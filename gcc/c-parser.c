@@ -621,6 +621,7 @@ c_token_starts_declspecs (c_token *token)
 	case RID_REGISTER:
 	case RID_TYPEDEF:
 	case RID_INLINE:
+	case RID_NORETURN:
 	case RID_AUTO:
 	case RID_THREAD:
 	case RID_UNSIGNED:
@@ -2080,12 +2081,13 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	case RID_REGISTER:
 	case RID_TYPEDEF:
 	case RID_INLINE:
+	case RID_NORETURN:
 	case RID_AUTO:
 	case RID_THREAD:
 	  if (!scspec_ok)
 	    goto out;
 	  attrs_ok = true;
-	  /* TODO: Distinguish between function specifiers (inline)
+	  /* TODO: Distinguish between function specifiers (inline, noreturn)
 	     and storage class specifiers, either here or in
 	     declspecs_add_scspec.  */
 	  declspecs_add_scspec (specs, c_parser_peek_token (parser)->value);
@@ -3428,6 +3430,7 @@ c_parser_attributes (c_parser *parser)
 		case RID_TYPEDEF:
 		case RID_SHORT:
 		case RID_INLINE:
+		case RID_NORETURN:
 		case RID_VOLATILE:
 		case RID_SIGNED:
 		case RID_AUTO:

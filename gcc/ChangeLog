@@ -1,3 +1,16 @@
+2011-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (shadow_tag_warned): Check for _Noreturn.
+	(quals_from_declspecs): Assert _Noreturn not present.
+	(grokdeclarator): Handle _Noreturn.
+	(build_null_declspecs): Initialize noreturn_p.
+	(declspecs_add_scspec): Handle RID_NORETURN.
+	* c-parser.c (c_token_starts_declspecs, c_parser_declspecs)
+	(c_parser_attributes): Handle RID_NORETURN.
+	* c-tree.h (struct c_declspecs): Add noreturn_p.
+	* ginclude/stdnoreturn.h: New.
+	* Makefile.in (USER_H): Add stdnoreturn.h.
+
 2011-08-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX2_SET): New.

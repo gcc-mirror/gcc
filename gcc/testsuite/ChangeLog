@@ -1,5 +1,11 @@
 2011-08-18  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/c1x-noreturn-1.c, gcc.dg/c1x-noreturn-2.c,
+	gcc.dg/c1x-noreturn-3.c, gcc.dg/c1x-noreturn-4.c,
+	gcc.dg/c1x-noreturn-5.c: New tests.
+
+2011-08-18  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/c1x-uni-string-1.c, gcc.dg/c1x-uni-string-2.c: New tests.
 
 2011-08-18  Tobias Burnus  <burnus@net-b.de>

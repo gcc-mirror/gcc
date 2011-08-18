@@ -58,7 +58,7 @@ never after.
 /* Reserved identifiers.  This is the union of all the keywords for C,
    C++, and Objective-C.  All the type modifiers have to be in one
    block at the beginning, because they are used as mask bits.  There
-   are 27 type modifiers; if we add many more we will have to redesign
+   are 28 type modifiers; if we add many more we will have to redesign
    the mask mechanism.  */
 
 enum rid
@@ -69,6 +69,7 @@ enum rid
   RID_UNSIGNED, RID_LONG,    RID_CONST, RID_EXTERN,
   RID_REGISTER, RID_TYPEDEF, RID_SHORT, RID_INLINE,
   RID_VOLATILE, RID_SIGNED,  RID_AUTO,  RID_RESTRICT,
+  RID_NORETURN,
 
   /* C extensions */
   RID_COMPLEX, RID_THREAD, RID_SAT,

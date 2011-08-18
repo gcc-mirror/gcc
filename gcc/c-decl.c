@@ -3714,6 +3714,12 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
       warned = 1;
     }
 
+  if (declspecs->noreturn_p)
+    {
+      error ("%<_Noreturn%> in empty declaration");
+      warned = 1;
+    }
+
   if (current_scope == file_scope && declspecs->storage_class == csc_auto)
     {
       error ("%<auto%> in file-scope empty declaration");
@@ -3780,6 +3786,7 @@ quals_from_declspecs (const struct c_declspecs *specs)
 	      && !specs->unsigned_p
 	      && !specs->complex_p
 	      && !specs->inline_p
+	      && !specs->noreturn_p
 	      && !specs->thread_p);
   return quals;
 }
@@ -5734,6 +5741,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
       if (declspecs->inline_p)
 	pedwarn (loc, 0,"typedef %q+D declared %<inline%>", decl);
+      if (declspecs->noreturn_p)
+	pedwarn (loc, 0,"typedef %q+D declared %<_Noreturn%>", decl);
 
       if (warn_cxx_compat && declarator->u.id != NULL_TREE)
 	{
@@ -5765,7 +5774,7 @@ grokdeclarator (const struct c_declarator *declarator,
       /* Note that the grammar rejects storage classes in typenames
 	 and fields.  */
       gcc_assert (storage_class == csc_none && !threadp
-		  && !declspecs->inline_p);
+		  && !declspecs->inline_p && !declspecs->noreturn_p);
       if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
 	  && type_quals)
 	pedwarn (loc, OPT_pedantic,
@@ -5862,13 +5871,15 @@ grokdeclarator (const struct c_declarator *declarator,
 	DECL_ARG_TYPE (decl) = promoted_type;
 	if (declspecs->inline_p)
 	  pedwarn (loc, 0, "parameter %q+D declared %<inline%>", decl);
+	if (declspecs->noreturn_p)
+	  pedwarn (loc, 0, "parameter %q+D declared %<_Noreturn%>", decl);
       }
     else if (decl_context == FIELD)
       {
 	/* Note that the grammar rejects storage classes in typenames
 	   and fields.  */
 	gcc_assert (storage_class == csc_none && !threadp
-		    && !declspecs->inline_p);
+		    && !declspecs->inline_p && !declspecs->noreturn_p);
 
 	/* Structure field.  It may not be a function.  */
 
@@ -5960,15 +5971,23 @@ grokdeclarator (const struct c_declarator *declarator,
 	if (declspecs->default_int_p)
 	  C_FUNCTION_IMPLICIT_INT (decl) = 1;
 
-	/* Record presence of `inline', if it is reasonable.  */
+	/* Record presence of `inline' and `_Noreturn', if it is
+	   reasonable.  */
 	if (flag_hosted && MAIN_NAME_P (declarator->u.id))
 	  {
 	    if (declspecs->inline_p)
 	      pedwarn (loc, 0, "cannot inline function %<main%>");
+	    if (declspecs->noreturn_p)
+	      pedwarn (loc, 0, "%<main%> declared %<_Noreturn%>");
 	  }
-	else if (declspecs->inline_p)
-	  /* Record that the function is declared `inline'.  */
-	  DECL_DECLARED_INLINE_P (decl) = 1;
+	else
+	  {
+	    if (declspecs->inline_p)
+	      /* Record that the function is declared `inline'.  */
+	      DECL_DECLARED_INLINE_P (decl) = 1;
+	    if (declspecs->noreturn_p)
+	      TREE_THIS_VOLATILE (decl) = 1;
+	  }
       }
     else
       {
@@ -6004,6 +6023,8 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	if (declspecs->inline_p)
 	  pedwarn (loc, 0, "variable %q+D declared %<inline%>", decl);
+	if (declspecs->noreturn_p)
+	  pedwarn (loc, 0, "variable %q+D declared %<_Noreturn%>", decl);
 
 	/* At file scope, an initialized extern declaration may follow
 	   a static declaration.  In that case, DECL_EXTERNAL will be
@@ -8646,6 +8667,7 @@ build_null_declspecs (void)
   ret->unsigned_p = false;
   ret->complex_p = false;
   ret->inline_p = false;
+  ret->noreturn_p = false;
   ret->thread_p = false;
   ret->const_p = false;
   ret->volatile_p = false;
@@ -9366,6 +9388,11 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
 	 difference between gnu89 and C99 inline.  */
       dupe = false;
       specs->inline_p = true;
+      break;
+    case RID_NORETURN:
+      /* Duplicate _Noreturn is permitted.  */
+      dupe = false;
+      specs->noreturn_p = true;
       break;
     case RID_THREAD:
       dupe = specs->thread_p;
