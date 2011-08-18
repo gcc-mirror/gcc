@@ -1,3 +1,22 @@
+2011-08-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX2_SET): New.
+	(OPTION_MASK_ISA_AVX_UNSET): Update.
+	(OPTION_MASK_ISA_AVX2_UNSET): New.
+	(ix86_handle_option): Handle OPT_mavx2 case.
+	* config/i386/cpuid.h (bit_AVX2): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	AVX2 feature.
+	* config/i386/i386-c.c (ix86_target_macros_internal):
+	Conditionally define __AVX2__.
+	* config/i386/i386.c (ix86_option_override_internal): Define
+	PTA_AVX2.  Define "core-avx2" processor alias.  Handle avx2
+	option.
+	(ix86_valid_target_attribute_inner_p): Handle avx2 option.
+	* config/i386/i386.h (TARGET_AVX2): New.
+	* config/i386/i386.opt (mavx2): New.
+	* doc/invoke.texi: Document -mavx2.
+
 2011-08-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/49890

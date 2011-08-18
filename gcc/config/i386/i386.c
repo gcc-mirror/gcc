@@ -2920,6 +2920,7 @@ ix86_option_override_internal (bool main_args_p)
 #define PTA_SSSE3		(HOST_WIDE_INT_1 << 27)
 #define PTA_TBM		 	(HOST_WIDE_INT_1 << 28)
 #define PTA_XOP		 	(HOST_WIDE_INT_1 << 29)
+#define PTA_AVX2		(HOST_WIDE_INT_1 << 30)
 /* if this reaches 64, need to widen struct pta flags below */
 
   static struct pta
@@ -2973,6 +2974,12 @@ ix86_option_override_internal (bool main_args_p)
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL | PTA_FSGSBASE
 	| PTA_RDRND | PTA_F16C},
+      {"core-avx2", PROCESSOR_COREI7_64, CPU_COREI7,
+	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX | PTA_AVX2
+	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL | PTA_FSGSBASE
+	| PTA_RDRND | PTA_F16C | PTA_BMI | PTA_LZCNT | PTA_FMA
+	| PTA_MOVBE},
       {"atom", PROCESSOR_ATOM, CPU_ATOM,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16 | PTA_MOVBE},
@@ -3263,6 +3270,9 @@ ix86_option_override_internal (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_AVX
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX))
 	  ix86_isa_flags |= OPTION_MASK_ISA_AVX;
+	if (processor_alias_table[i].flags & PTA_AVX2
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX2))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AVX2;
 	if (processor_alias_table[i].flags & PTA_FMA
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_FMA))
 	  ix86_isa_flags |= OPTION_MASK_ISA_FMA;
@@ -4047,6 +4057,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("tbm",	OPT_mtbm),
     IX86_ATTR_ISA ("aes",	OPT_maes),
     IX86_ATTR_ISA ("avx",	OPT_mavx),
+    IX86_ATTR_ISA ("avx2",	OPT_mavx2),
     IX86_ATTR_ISA ("mmx",	OPT_mmmx),
     IX86_ATTR_ISA ("pclmul",	OPT_mpclmul),
     IX86_ATTR_ISA ("popcnt",	OPT_mpopcnt),
