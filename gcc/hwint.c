@@ -109,6 +109,14 @@ abs_hwi (HOST_WIDE_INT x)
   return x >= 0 ? x : -x;
 }
 
+/* Compute the absolute value of X as an unsigned type.  */
+
+unsigned HOST_WIDE_INT
+absu_hwi (HOST_WIDE_INT x)
+{
+  return x >= 0 ? (unsigned HOST_WIDE_INT)x : -(unsigned HOST_WIDE_INT)x;
+}
+
 /* Compute the greatest common divisor of two numbers A and B using
    Euclid's algorithm.  */
 

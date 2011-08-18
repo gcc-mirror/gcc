@@ -1,3 +1,14 @@
+2011-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR tree-optimization/49963
+	* hwint.c (absu_hwi): Define.
+	* hwint.h (absu_hwi): Declare.
+	* fold-const.c (fold_plusminus_mult_expr): Use absu_hwi instead
+	of abs_hwi.
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): Likewise.
+	* tree-ssa-loop-prefetch.c (prune_ref_by_group_reuse): Likewise.
+
 2011-08-18  Richard Guenther  <rguenther@suse.de>
 
 	* expr.c (get_inner_reference): Sign-extend the constant
