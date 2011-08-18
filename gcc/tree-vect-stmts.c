@@ -1,5 +1,5 @@
 /* Statement Analysis and Transformation for Vectorization
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
@@ -1419,6 +1419,7 @@ vect_finish_stmt_generation (gimple stmt, gimple vec_stmt,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
+  gimple_stmt_iterator si;
 
   gcc_assert (gimple_code (stmt) != GIMPLE_LABEL);
 
@@ -1433,7 +1434,13 @@ vect_finish_stmt_generation (gimple stmt, gimple vec_stmt,
       print_gimple_stmt (vect_dump, vec_stmt, 0, TDF_SLIM);
     }
 
-  gimple_set_location (vec_stmt, gimple_location (gsi_stmt (*gsi)));
+  si = *gsi;
+  if (is_gimple_debug (gsi_stmt (si)))
+    {
+      gsi_next_nondebug (&si);
+      gcc_assert (!gsi_end_p (si));
+    }
+  gimple_set_location (vec_stmt, gimple_location (gsi_stmt (si)));
 }
 
 /* Checks if CALL can be vectorized in type VECTYPE.  Returns

@@ -1,3 +1,9 @@
+2011-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/50017
+	* tree-vect-stmts.c (vect_finish_stmt_generation): If gsi_stmt (*gsi)
+	is a debug stmt, use location of the first non-debug stmt after it.
+
 2011-08-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/arm/arm.c (arm_rtx_costs_1): Don't modify the costs of SET.
