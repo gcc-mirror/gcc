@@ -1088,9 +1088,14 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	break;
 
     case CLVC_EQUAL:
-	*(int *) flag_var = (value
-			     ? option->var_value
-			     : !option->var_value);
+	if (option->cl_host_wide_int) 
+	  *(HOST_WIDE_INT *) flag_var = (value
+					 ? option->var_value
+					 : !option->var_value);
+	else
+	  *(int *) flag_var = (value
+			       ? option->var_value
+			       : !option->var_value);
 	if (set_flag_var)
 	  *(int *) set_flag_var = 1;
 	break;
@@ -1098,11 +1103,26 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
     case CLVC_BIT_CLEAR:
     case CLVC_BIT_SET:
 	if ((value != 0) == (option->var_type == CLVC_BIT_SET))
-	  *(int *) flag_var |= option->var_value;
+	  {
+	    if (option->cl_host_wide_int) 
+	      *(HOST_WIDE_INT *) flag_var |= option->var_value;
+	    else 
+	      *(int *) flag_var |= option->var_value;
+	  }
 	else
-	  *(int *) flag_var &= ~option->var_value;
+	  {
+	    if (option->cl_host_wide_int) 
+	      *(HOST_WIDE_INT *) flag_var &= ~option->var_value;
+	    else 
+	      *(int *) flag_var &= ~option->var_value;
+	  }
 	if (set_flag_var)
-	  *(int *) set_flag_var |= option->var_value;
+	  {
+	    if (option->cl_host_wide_int) 
+	      *(HOST_WIDE_INT *) set_flag_var |= option->var_value;
+	    else
+	      *(int *) set_flag_var |= option->var_value;
+	  }
 	break;
 
     case CLVC_STRING:
@@ -1173,13 +1193,22 @@ option_enabled (int opt_idx, void *opts)
 	return *(int *) flag_var != 0;
 
       case CLVC_EQUAL:
-	return *(int *) flag_var == option->var_value;
+	if (option->cl_host_wide_int) 
+	  return *(HOST_WIDE_INT *) flag_var == option->var_value;
+	else
+	  return *(int *) flag_var == option->var_value;
 
       case CLVC_BIT_CLEAR:
-	return (*(int *) flag_var & option->var_value) == 0;
+	if (option->cl_host_wide_int) 
+	  return (*(HOST_WIDE_INT *) flag_var & option->var_value) == 0;
+	else
+	  return (*(int *) flag_var & option->var_value) == 0;
 
       case CLVC_BIT_SET:
-	return (*(int *) flag_var & option->var_value) != 0;
+	if (option->cl_host_wide_int) 
+	  return (*(HOST_WIDE_INT *) flag_var & option->var_value) != 0;
+	else 
+	  return (*(int *) flag_var & option->var_value) != 0;
 
       case CLVC_STRING:
       case CLVC_ENUM:
@@ -1206,7 +1235,9 @@ get_option_state (struct gcc_options *opts, int option,
     case CLVC_BOOLEAN:
     case CLVC_EQUAL:
       state->data = flag_var;
-      state->size = sizeof (int);
+      state->size = (cl_options[option].cl_host_wide_int
+		     ? sizeof (HOST_WIDE_INT)
+		     : sizeof (int));
       break;
 
     case CLVC_BIT_CLEAR:

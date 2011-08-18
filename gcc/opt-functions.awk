@@ -110,6 +110,11 @@ function switch_flags (flags)
 # Return bit-field initializers for option flags FLAGS.
 function switch_bit_fields (flags)
 {
+	vn = var_name(flags);
+	if (host_wide_int[vn] == "yes")
+		hwi = "Host_Wide_Int"
+	else
+		hwi = ""
 	result = ""
 	sep_args = opt_args("Args", flags)
 	if (sep_args == "")
@@ -126,6 +131,7 @@ function switch_bit_fields (flags)
 	  flag_init("RejectNegative", flags) \
 	  flag_init("JoinedOrMissing", flags) \
 	  flag_init("UInteger", flags) \
+	  flag_init("Host_Wide_Int", hwi) \
 	  flag_init("ToLower", flags) \
 	  flag_init("Report", flags)
 
@@ -138,6 +144,17 @@ function switch_bit_fields (flags)
 function var_name(flags)
 {
 	return nth_arg(0, opt_args("Var", flags))
+}
+
+# Return the name of the variable if FLAGS has a HOST_WIDE_INT variable. 
+# Return the empty string otherwise.
+function host_wide_int_var_name(flags)
+{
+	split (flags, array, "[ \t]+")
+	if (array[1] == "HOST_WIDE_INT")
+		return array[2]
+	else
+		return ""
 }
 
 # Return true if the option described by FLAGS has a globally-visible state.
@@ -197,8 +214,12 @@ function var_type_struct(flags)
 		return enum_type[en] " "
 	}
 	else if (!flag_set_p("Joined.*", flags) && !flag_set_p("Separate", flags)) {
-		if (flag_set_p(".*Mask.*", flags))
-			return "int "
+		if (flag_set_p(".*Mask.*", flags)) {
+			if (host_wide_int[var_name(flags)] == "yes")
+				return "HOST_WIDE_INT "
+			else
+				return "int "
+		}
 		else
 			return "signed char "
 	}

@@ -96,6 +96,8 @@ struct cl_option
   BOOL_BITFIELD cl_missing_ok : 1;
   /* Argument is an integer >=0.  */
   BOOL_BITFIELD cl_uinteger : 1;
+  /* Argument is a HOST_WIDE_INT.  */
+  BOOL_BITFIELD cl_host_wide_int : 1;
   /* Argument should be converted to lowercase.  */
   BOOL_BITFIELD cl_tolower : 1;
   /* Report argument with -fverbose-asm  */
@@ -109,7 +111,7 @@ struct cl_option
   /* How this option's value is determined and sets a field.  */
   enum cl_var_type var_type;
   /* Value or bit-mask with which to set a field.  */
-  int var_value;
+  HOST_WIDE_INT var_value;
 };
 
 /* Records that the state of an option consists of SIZE bytes starting

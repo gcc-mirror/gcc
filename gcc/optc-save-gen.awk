@@ -363,10 +363,16 @@ print "{";
 print "  fputs (\"\\n\", file);";
 for (i = 0; i < n_target_other; i++) {
 	print "  if (ptr->x_" var_target_other[i] ")";
-	print "    fprintf (file, \"%*s%s (%#lx)\\n\",";
+	if (host_wide_int[var_target_other[i]] == "yes")
+		print "    fprintf (file, \"%*s%s (%#\" HOST_WIDE_INT_PRINT \"x)\\n\",";
+	else
+		print "    fprintf (file, \"%*s%s (%#x)\\n\",";
 	print "             indent, \"\",";
 	print "             \"" var_target_other[i] "\",";
-	print "             (unsigned long)ptr->x_" var_target_other[i] ");";
+	if (host_wide_int[var_target_other[i]] == "yes")
+		print "             ptr->x_" var_target_other[i] ");";
+	else
+		print "             (unsigned long)ptr->x_" var_target_other[i] ");";
 	print "";
 }
 
