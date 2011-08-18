@@ -1,3 +1,10 @@
+2011-08-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (tree_int_cst_msb): Remove.
+	* tree.c (tree_int_cst_msb): Likewise.
+	(tree_int_cst_sign_bit): Move from ...
+	* tree-ssa-loop-ivopts.c (tree_int_cst_sign_bit): ... here.
+
 2011-08-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/tm.texi.in (TARGET_RTX_COSTS): Add an opno paramter.
