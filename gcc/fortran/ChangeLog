@@ -1,3 +1,9 @@
+2011-08-18  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/50071
+	* symbol.c (gfc_get_st_label): Use the derived type namespace when
+	we are parsing a derived type definition.
+
 2011-08-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
