@@ -1,5 +1,9 @@
 2011-08-18  Joseph Myers  <joseph@codesourcery.com>
 
+	* include/cpplib.h (struct cpp_options): Fix typo.
+
+2011-08-18  Joseph Myers  <joseph@codesourcery.com>
+
 	* include/cpplib.h (struct cpp_options): Add rliterals.
 	* init.c  (struct lang_flags, lang_defaults): Add rliterals.
 	(cpp_set_lang): Set rliterals option.
