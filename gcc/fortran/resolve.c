@@ -6806,7 +6806,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 
       /* Check F2008, C642.  */
       if (code->expr3->ts.type == BT_DERIVED
-	  && ((codimension &&  gfc_expr_attr (code->expr3).lock_comp)
+	  && ((codimension && gfc_expr_attr (code->expr3).lock_comp)
 	      || (code->expr3->ts.u.derived->from_intmod
 		     == INTMOD_ISO_FORTRAN_ENV
 		  && code->expr3->ts.u.derived->intmod_sym_id
@@ -8224,10 +8224,9 @@ resolve_lock_unlock (gfc_code *code)
       || code->expr1->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
       || code->expr1->ts.u.derived->intmod_sym_id != ISOFORTRAN_LOCK_TYPE
       || code->expr1->rank != 0
-      || !(gfc_expr_attr (code->expr1).codimension
-	   || gfc_is_coindexed (code->expr1)))
-    gfc_error ("Lock variable at %L must be a scalar coarray of type "
-	       "LOCK_TYPE", &code->expr1->where);
+      || (!gfc_is_coarray (code->expr1) && !gfc_is_coindexed (code->expr1)))
+    gfc_error ("Lock variable at %L must be a scalar of type LOCK_TYPE",
+	       &code->expr1->where);
 
   /* Check STAT.  */
   if (code->expr2
@@ -12221,12 +12220,14 @@ resolve_symbol (gfc_symbol *sym)
 
   /* F2008, C1302.  */
   if (sym->ts.type == BT_DERIVED
-      && sym->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
-      && sym->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE
-      && !sym->attr.codimension)
+      && ((sym->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	   && sym->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE)
+	  || sym->ts.u.derived->attr.lock_comp)
+      && !sym->attr.codimension && !sym->ts.u.derived->attr.coarray_comp)
     {
-      gfc_error ("Variable '%s' at %L of type LOCK_TYPE must be a coarray",
-		 sym->name, &sym->declared_at);
+      gfc_error ("Variable %s at %L of type LOCK_TYPE or with subcomponent of "
+		 "type LOCK_TYPE must be a coarray", sym->name,
+		 &sym->declared_at);
       return;
     }
 

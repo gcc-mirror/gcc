@@ -1,3 +1,12 @@
+2011-08-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* parse.c (parse_derived): Add lock_type
+	checks, improve coarray_comp handling.
+	* resolve.c (resolve_allocate_expr,
+	resolve_lock_unlock, resolve_symbol): Fix lock_type
+	constraint checks.
+
 2011-08-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/31461
