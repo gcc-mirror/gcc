@@ -1,3 +1,9 @@
+2011-08-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/49890
+	* ira-costs.c (setup_regno_cost_classes_by_aclass): Don't exclude
+	subclasses of class which is superset of a pressure class.
+
 2011-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 	    Igor Zamyatin <igor.zamyatin@intel.com>
 
