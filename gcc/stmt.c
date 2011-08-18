@@ -2134,8 +2134,8 @@ bool lshift_cheap_p (void)
   if (!init[speed_p])
     {
       rtx reg = gen_rtx_REG (word_mode, 10000);
-      int cost = rtx_cost (gen_rtx_ASHIFT (word_mode, const1_rtx, reg), SET,
-      			   speed_p);
+      int cost = set_src_cost (gen_rtx_ASHIFT (word_mode, const1_rtx, reg),
+			       speed_p);
       cheap[speed_p] = cost < COSTS_N_INSNS (3);
       init[speed_p] = true;
     }

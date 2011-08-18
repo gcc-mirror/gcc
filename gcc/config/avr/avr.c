@@ -1637,7 +1637,7 @@ final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
 
       if (set)
         fprintf (asm_out_file, "/* DEBUG: cost = %d.  */\n",
-                 rtx_cost (SET_SRC (set), SET, optimize_insn_for_speed_p()));
+                 set_src_cost (SET_SRC (set), optimize_insn_for_speed_p ()));
       else
         fprintf (asm_out_file, "/* DEBUG: pattern-cost = %d.  */\n",
                  rtx_cost (PATTERN (insn), INSN, optimize_insn_for_speed_p()));

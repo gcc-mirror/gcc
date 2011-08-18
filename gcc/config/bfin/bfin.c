@@ -2837,11 +2837,11 @@ bfin_rtx_costs (rtx x, int code_i, int outer_code_i, int *total, bool speed)
 	  *total = cost2;
 	  if (GET_CODE (op0) != REG
 	      && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	    *total += rtx_cost (op0, SET, speed);
+	    *total += set_src_cost (op0, speed);
 #if 0 /* We'd like to do this for accuracy, but it biases the loop optimizer
 	 towards creating too many induction variables.  */
 	  if (!reg_or_7bit_operand (op1, SImode))
-	    *total += rtx_cost (op1, SET, speed);
+	    *total += set_src_cost (op1, speed);
 #endif
 	}
       else if (GET_MODE (x) == DImode)

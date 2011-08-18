@@ -2754,7 +2754,7 @@ seq_cost (rtx seq, bool speed)
     {
       set = single_set (seq);
       if (set)
-	cost += rtx_cost (SET_SRC (set), SET, speed);
+	cost += set_src_cost (SET_SRC (set), speed);
       else
 	cost++;
     }
@@ -2876,7 +2876,7 @@ computation_cost (tree expr, bool speed)
     cost += address_cost (XEXP (rslt, 0), TYPE_MODE (type),
 			  TYPE_ADDR_SPACE (type), speed);
   else if (!REG_P (rslt))
-    cost += rtx_cost (rslt, SET, speed);
+    cost += set_src_cost (rslt, speed);
 
   return cost;
 }

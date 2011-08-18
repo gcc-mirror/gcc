@@ -3333,7 +3333,7 @@ mips_binary_cost (rtx x, int single_cost, int double_cost, bool speed)
   else
     cost = single_cost;
   return (cost
-	  + rtx_cost (XEXP (x, 0), SET, speed)
+	  + set_src_cost (XEXP (x, 0), speed)
 	  + rtx_cost (XEXP (x, 1), GET_CODE (x), speed));
 }
 
@@ -3550,7 +3550,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 	  && UINTVAL (XEXP (x, 1)) == 0xffffffff)
 	{
 	  *total = (mips_zero_extend_cost (mode, XEXP (x, 0))
-		    + rtx_cost (XEXP (x, 0), SET, speed));
+		    + set_src_cost (XEXP (x, 0), speed));
 	  return true;
 	}
       /* Fall through.  */
@@ -3585,7 +3585,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
     case LO_SUM:
       /* Low-part immediates need an extended MIPS16 instruction.  */
       *total = (COSTS_N_INSNS (TARGET_MIPS16 ? 2 : 1)
-		+ rtx_cost (XEXP (x, 0), SET, speed));
+		+ set_src_cost (XEXP (x, 0), speed));
       return true;
 
     case LT:
@@ -3626,17 +3626,17 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 	  if (GET_CODE (op0) == MULT && GET_CODE (XEXP (op0, 0)) == NEG)
 	    {
 	      *total = (mips_fp_mult_cost (mode)
-			+ rtx_cost (XEXP (XEXP (op0, 0), 0), SET, speed)
-			+ rtx_cost (XEXP (op0, 1), SET, speed)
-			+ rtx_cost (op1, SET, speed));
+			+ set_src_cost (XEXP (XEXP (op0, 0), 0), speed)
+			+ set_src_cost (XEXP (op0, 1), speed)
+			+ set_src_cost (op1, speed));
 	      return true;
 	    }
 	  if (GET_CODE (op1) == MULT)
 	    {
 	      *total = (mips_fp_mult_cost (mode)
-			+ rtx_cost (op0, SET, speed)
-			+ rtx_cost (XEXP (op1, 0), SET, speed)
-			+ rtx_cost (XEXP (op1, 1), SET, speed));
+			+ set_src_cost (op0, speed)
+			+ set_src_cost (XEXP (op1, 0), speed)
+			+ set_src_cost (XEXP (op1, 1), speed));
 	      return true;
 	    }
 	}
@@ -3678,9 +3678,9 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 	      && GET_CODE (XEXP (op, 0)) == MULT)
 	    {
 	      *total = (mips_fp_mult_cost (mode)
-			+ rtx_cost (XEXP (XEXP (op, 0), 0), SET, speed)
-			+ rtx_cost (XEXP (XEXP (op, 0), 1), SET, speed)
-			+ rtx_cost (XEXP (op, 1), SET, speed));
+			+ set_src_cost (XEXP (XEXP (op, 0), 0), speed)
+			+ set_src_cost (XEXP (XEXP (op, 0), 1), speed)
+			+ set_src_cost (XEXP (op, 1), speed));
 	      return true;
 	    }
 	}
@@ -3718,10 +3718,10 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 	  if (outer_code == SQRT || GET_CODE (XEXP (x, 1)) == SQRT)
 	    /* An rsqrt<mode>a or rsqrt<mode>b pattern.  Count the
 	       division as being free.  */
-	    *total = rtx_cost (XEXP (x, 1), SET, speed);
+	    *total = set_src_cost (XEXP (x, 1), speed);
 	  else
 	    *total = (mips_fp_div_cost (mode)
-		      + rtx_cost (XEXP (x, 1), SET, speed));
+		      + set_src_cost (XEXP (x, 1), speed));
 	  return true;
 	}
       /* Fall through.  */
@@ -3749,7 +3749,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 	      && CONST_INT_P (XEXP (x, 1))
 	      && exact_log2 (INTVAL (XEXP (x, 1))) >= 0)
 	    {
-	      *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), SET, speed);
+	      *total = COSTS_N_INSNS (2) + set_src_cost (XEXP (x, 0), speed);
 	      return true;
 	    }
 	  *total = COSTS_N_INSNS (mips_idiv_insns ());

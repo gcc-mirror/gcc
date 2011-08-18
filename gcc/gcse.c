@@ -732,7 +732,7 @@ want_to_gcse_p (rtx x, int *max_distance_ptr)
   /* GCSE'ing constants:
 
      We do not specifically distinguish between constant and non-constant
-     expressions in PRE and Hoist.  We use rtx_cost below to limit
+     expressions in PRE and Hoist.  We use set_src_cost below to limit
      the maximum distance simple expressions can travel.
 
      Nevertheless, constants are much easier to GCSE, and, hence,
@@ -773,7 +773,7 @@ want_to_gcse_p (rtx x, int *max_distance_ptr)
 
 	  gcc_assert (!optimize_function_for_speed_p (cfun)
 		      && optimize_function_for_size_p (cfun));
-	  cost = rtx_cost (x, SET, 0);
+	  cost = set_src_cost (x, 0);
 
 	  if (cost < COSTS_N_INSNS (GCSE_UNRESTRICTED_COST))
 	    {
