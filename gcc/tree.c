@@ -6513,21 +6513,23 @@ tree_low_cst (const_tree t, int pos)
   return TREE_INT_CST_LOW (t);
 }
 
-/* Return the most significant bit of the integer constant T.  */
+/* Return the most significant (sign) bit of T.  */
 
 int
-tree_int_cst_msb (const_tree t)
+tree_int_cst_sign_bit (const_tree t)
 {
-  int prec;
-  HOST_WIDE_INT h;
-  unsigned HOST_WIDE_INT l;
+  unsigned bitno = TYPE_PRECISION (TREE_TYPE (t)) - 1;
+  unsigned HOST_WIDE_INT w;
 
-  /* Note that using TYPE_PRECISION here is wrong.  We care about the
-     actual bits, not the (arbitrary) range of the type.  */
-  prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (t))) - 1;
-  rshift_double (TREE_INT_CST_LOW (t), TREE_INT_CST_HIGH (t), prec,
-		 2 * HOST_BITS_PER_WIDE_INT, &l, &h, 0);
-  return (l & 1) == 1;
+  if (bitno < HOST_BITS_PER_WIDE_INT)
+    w = TREE_INT_CST_LOW (t);
+  else
+    {
+      w = TREE_INT_CST_HIGH (t);
+      bitno -= HOST_BITS_PER_WIDE_INT;
+    }
+
+  return (w >> bitno) & 1;
 }
 
 /* Return an indication of the sign of the integer constant T.

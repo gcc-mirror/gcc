@@ -2892,26 +2892,6 @@ var_at_stmt (struct loop *loop, struct iv_cand *cand, gimple stmt)
     return cand->var_before;
 }
 
-/* Return the most significant (sign) bit of T.  Similar to tree_int_cst_msb,
-   but the bit is determined from TYPE_PRECISION, not MODE_BITSIZE.  */
-
-int
-tree_int_cst_sign_bit (const_tree t)
-{
-  unsigned bitno = TYPE_PRECISION (TREE_TYPE (t)) - 1;
-  unsigned HOST_WIDE_INT w;
-
-  if (bitno < HOST_BITS_PER_WIDE_INT)
-    w = TREE_INT_CST_LOW (t);
-  else
-    {
-      w = TREE_INT_CST_HIGH (t);
-      bitno -= HOST_BITS_PER_WIDE_INT;
-    }
-
-  return (w >> bitno) & 1;
-}
-
 /* If A is (TYPE) BA and B is (TYPE) BB, and the types of BA and BB have the
    same precision that is at least as wide as the precision of TYPE, stores
    BA to A and BB to B, and returns the type of BA.  Otherwise, returns the
