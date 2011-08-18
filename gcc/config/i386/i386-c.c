@@ -34,14 +34,14 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool ix86_pragma_target_parse (tree, tree);
 static void ix86_target_macros_internal
-  (int, enum processor_type, enum processor_type, enum fpmath_unit,
+  (HOST_WIDE_INT, enum processor_type, enum processor_type, enum fpmath_unit,
    void (*def_or_undef) (cpp_reader *, const char *));
 
 
 /* Internal function to either define or undef the appropriate system
    macros.  */
 static void
-ix86_target_macros_internal (int isa_flag,
+ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
 			     enum processor_type arch,
 			     enum processor_type tune,
 			     enum fpmath_unit fpmath,
@@ -301,9 +301,9 @@ ix86_pragma_target_parse (tree args, tree pop_target)
   tree cur_tree;
   struct cl_target_option *prev_opt;
   struct cl_target_option *cur_opt;
-  int prev_isa;
-  int cur_isa;
-  int diff_isa;
+  HOST_WIDE_INT prev_isa;
+  HOST_WIDE_INT cur_isa;
+  HOST_WIDE_INT diff_isa;
   enum processor_type prev_arch;
   enum processor_type prev_tune;
   enum processor_type cur_arch;
