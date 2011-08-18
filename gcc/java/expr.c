@@ -2544,12 +2544,12 @@ expand_invoke (int opcode, int method_ref_index, int nargs ATTRIBUTE_UNUSED)
       return;
     }
 
-  method_type = TREE_TYPE (method);
-  arg_list = pop_arguments (method_type);
+  arg_list = pop_arguments (TREE_TYPE (method));
   flush_quick_stack ();
 
   maybe_rewrite_invocation (&method, &arg_list, &method_signature,
 			    &special);
+  method_type = TREE_TYPE (method);
 
   func = NULL_TREE;
   if (opcode == OPCODE_invokestatic)
