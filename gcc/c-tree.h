@@ -266,6 +266,8 @@ struct c_declspecs {
   BOOL_BITFIELD complex_p : 1;
   /* Whether "inline" was specified.  */
   BOOL_BITFIELD inline_p : 1;
+  /* Whether "_Noreturn" was speciied.  */
+  BOOL_BITFIELD noreturn_p : 1;
   /* Whether "__thread" was specified.  */
   BOOL_BITFIELD thread_p : 1;
   /* Whether "const" was specified.  */
