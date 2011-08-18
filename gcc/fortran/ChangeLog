@@ -1,3 +1,18 @@
+2011-08-19  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/50071
+	* gfortran.h (gfc_exec_op): New constant EXEC_END_NESTED_BLOCK.
+	* parse.c (check_statement_label): Accept ST_END_BLOCK and
+	ST_END_ASSOCIATE as valid branch target.
+	(accept_statement): Change EXEC_END_BLOCK to EXEC_END_NESTED_BLOCK.
+	Add EXEC_END_BLOCK code in the ST_END_BLOCK and ST_END_ASSOCIATE cases.
+	* resolve.c (find_reachable_labels): Change EXEC_END_BLOCK to
+	EXEC_END_NESTED_BLOCK.
+	(resolve_branch): Ditto.
+	(resolve_code): Add EXEC_END_NESTED_BLOCK case.
+	* st.c (gfc_free_statement): Ditto.
+	* trans.c (trans_code): Ditto.
+
 2011-08-18  Mikael Morin  <mikael.morin@sfr.fr>
 
 	PR fortran/50071

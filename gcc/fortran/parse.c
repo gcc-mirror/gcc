@@ -1115,6 +1115,8 @@ check_statement_label (gfc_statement st)
     case ST_ENDIF:
     case ST_END_SELECT:
     case ST_END_CRITICAL:
+    case ST_END_BLOCK:
+    case ST_END_ASSOCIATE:
     case_executable:
     case_exec_markers:
       type = ST_LABEL_TARGET;
@@ -1625,6 +1627,18 @@ accept_statement (gfc_statement st)
     case ST_ENDIF:
     case ST_END_SELECT:
     case ST_END_CRITICAL:
+      if (gfc_statement_label != NULL)
+	{
+	  new_st.op = EXEC_END_NESTED_BLOCK;
+	  add_statement ();
+	}
+      break;
+
+      /* In the case of BLOCK and ASSOCIATE blocks, there cannot be more than
+	 one parallel block.  Thus, we add the special code to the nested block
+	 itself, instead of the parent one.  */
+    case ST_END_BLOCK:
+    case ST_END_ASSOCIATE:
       if (gfc_statement_label != NULL)
 	{
 	  new_st.op = EXEC_END_BLOCK;
