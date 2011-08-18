@@ -1323,17 +1323,17 @@ hard_reg_set_size (HARD_REG_SET set)
 }
 
 /* The function returns TRUE if hard registers starting with
-   HARD_REGNO and containing value of MODE are not in set
+   HARD_REGNO and containing value of MODE are fully in set
    HARD_REGSET.  */
 static inline bool
-ira_hard_reg_not_in_set_p (int hard_regno, enum machine_mode mode,
-			   HARD_REG_SET hard_regset)
+ira_hard_reg_in_set_p (int hard_regno, enum machine_mode mode,
+		       HARD_REG_SET hard_regset)
 {
   int i;
 
   ira_assert (hard_regno >= 0);
   for (i = hard_regno_nregs[hard_regno][mode] - 1; i >= 0; i--)
-    if (TEST_HARD_REG_BIT (hard_regset, hard_regno + i))
+    if (!TEST_HARD_REG_BIT (hard_regset, hard_regno + i))
       return false;
   return true;
 }

@@ -2072,9 +2072,9 @@ ira_tune_allocno_costs (void)
 	      skip_p = false;
 	      FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
 		{
-		  if (! ira_hard_reg_not_in_set_p (regno, mode,
-						   OBJECT_CONFLICT_HARD_REGS
-						   (obj)))
+		  if (ira_hard_reg_set_intersection_p (regno, mode,
+						       OBJECT_CONFLICT_HARD_REGS
+						       (obj)))
 		    {
 		      skip_p = true;
 		      break;
@@ -2084,7 +2084,7 @@ ira_tune_allocno_costs (void)
 		continue;
 	      rclass = REGNO_REG_CLASS (regno);
 	      cost = 0;
-	      if (! ira_hard_reg_not_in_set_p (regno, mode, call_used_reg_set)
+	      if (ira_hard_reg_set_intersection_p (regno, mode, call_used_reg_set)
 		  || HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
 		cost += (ALLOCNO_CALL_FREQ (a)
 			 * (ira_memory_move_cost[mode][rclass][0]

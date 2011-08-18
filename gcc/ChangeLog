@@ -1,3 +1,26 @@
+2011-08-17  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/50107
+	* ira-int.h (ira_hard_reg_not_in_set_p): Remove.
+	(ira_hard_reg_in_set_p): New.
+
+	* ira-color.c (calculate_saved_nregs): New.
+	(assign_hard_reg): Use it.  Set up allocated_hard_reg_p for all
+	hard regs.
+	(allocno_reload_assign, fast_allocation): Use
+	ira_hard_reg_set_intersection_p instead of
+	ira_hard_reg_not_in_set_p.
+
+	* ira.c (setup_reg_renumber): Use
+	ira_hard_reg_set_intersection_p instead of
+	ira_hard_reg_not_in_set_p.
+	(setup_allocno_assignment_flags, calculate_allocation_cost): Use
+	ira_hard_reg_in_set_p instead of ira_hard_reg_not_in_set_p.
+
+	* ira-costs.c (ira_tune_allocno_costs): Use
+	ira_hard_reg_set_intersection_p instead of
+	ira_hard_reg_not_in_set_p.
+
 2011-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 	    Igor Zamyatin <igor.zamyatin@intel.com>
 

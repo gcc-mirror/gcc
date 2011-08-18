@@ -1953,8 +1953,8 @@ setup_reg_renumber (void)
 				      reg_class_contents[pclass]);
 	    }
 	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0
-	      && ! ira_hard_reg_not_in_set_p (hard_regno, ALLOCNO_MODE (a),
-					      call_used_reg_set))
+	      && ira_hard_reg_set_intersection_p (hard_regno, ALLOCNO_MODE (a),
+						  call_used_reg_set))
 	    {
 	      ira_assert (!optimize || flag_caller_saves
 			  || regno >= ira_reg_equiv_len
@@ -1992,10 +1992,10 @@ setup_allocno_assignment_flags (void)
 				|| ALLOCNO_EMIT_DATA (a)->mem_optimized_dest_p
 				|| (ALLOCNO_MEMORY_COST (a)
 				    - ALLOCNO_CLASS_COST (a)) < 0);
-      ira_assert (hard_regno < 0
-		  || ! ira_hard_reg_not_in_set_p (hard_regno, ALLOCNO_MODE (a),
-						  reg_class_contents
-						  [ALLOCNO_CLASS (a)]));
+      ira_assert
+	(hard_regno < 0
+	 || ira_hard_reg_in_set_p (hard_regno, ALLOCNO_MODE (a),
+				   reg_class_contents[ALLOCNO_CLASS (a)]));
     }
 }
 
@@ -2013,9 +2013,9 @@ calculate_allocation_cost (void)
     {
       hard_regno = ALLOCNO_HARD_REGNO (a);
       ira_assert (hard_regno < 0
-		  || ! ira_hard_reg_not_in_set_p
-		       (hard_regno, ALLOCNO_MODE (a),
-			reg_class_contents[ALLOCNO_CLASS (a)]));
+		  || (ira_hard_reg_in_set_p
+		      (hard_regno, ALLOCNO_MODE (a),
+		       reg_class_contents[ALLOCNO_CLASS (a)])));
       if (hard_regno < 0)
 	{
 	  cost = ALLOCNO_MEMORY_COST (a);
