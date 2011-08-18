@@ -20,12 +20,6 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#if defined (__thumb__)
-#define RENAME_LIBRARY_SET ".thumb_set"
-#else
-#define RENAME_LIBRARY_SET ".set"
-#endif
-
 /* Make __aeabi_AEABI_NAME an alias for __GCC_NAME.  */
 #define RENAME_LIBRARY(GCC_NAME, AEABI_NAME)		\
   typeof (__##GCC_NAME) __aeabi_##AEABI_NAME \
