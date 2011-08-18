@@ -1,7 +1,14 @@
+2011-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/50119
+	* include/bits/stl_algo.h (__copy_n(_InputIterator, _Size,
+	_OutputIterator, input_iterator_tag)): Fix.
+	* testsuite/25_algorithms/copy_n/50119.cc: New.
+
 2011-08-18  Marc Glisse  <marc.glisse@normalesup.org>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	PR libstdc++-v3/1773
+	PR libstdc++/1773
 	* config/os/solaris2.7: Rename to config/os/solaris2.9.
 	* config/os/solaris/solaris2.9/os_defines.h
 	(__CORRECT_ISO_CPP_MATH_H_PROTO1)

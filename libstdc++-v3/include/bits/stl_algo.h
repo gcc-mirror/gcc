@@ -979,11 +979,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __copy_n(_InputIterator __first, _Size __n,
 	     _OutputIterator __result, input_iterator_tag)
     {
-      for (; __n > 0; --__n)
+      if (__n > 0)
 	{
-	  *__result = *__first;
-	  ++__first;
-	  ++__result;
+	  while (true)
+	    {
+	      *__result = *__first;
+	      ++__result;
+	      if (--__n > 0)
+		++__first;
+	      else
+		break;
+	    }
 	}
       return __result;
     }
