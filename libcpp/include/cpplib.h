@@ -315,7 +315,7 @@ struct cpp_options
   /* Nonzero means process u/U prefix literals (UTF-16/32).  */
   unsigned char uliterals;
 
-  /* Nonzero means process r/R rax strings.  If this is set, uliterals
+  /* Nonzero means process r/R raw strings.  If this is set, uliterals
      must be set as well.  */
   unsigned char rliterals;
 
