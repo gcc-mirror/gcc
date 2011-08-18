@@ -6502,12 +6502,14 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   /* If OFFSET is constant, see if we can return the whole thing as a
      constant bit position.  Make sure to handle overflow during
      this conversion.  */
-  if (host_integerp (offset, 0))
+  if (TREE_CODE (offset) == INTEGER_CST)
     {
-      double_int tem = double_int_lshift (tree_to_double_int (offset),
-					  BITS_PER_UNIT == 8
-					  ? 3 : exact_log2 (BITS_PER_UNIT),
-					  HOST_BITS_PER_DOUBLE_INT, true);
+      double_int tem = tree_to_double_int (offset);
+      tem = double_int_sext (tem, TYPE_PRECISION (sizetype));
+      tem = double_int_lshift (tree_to_double_int (offset),
+			       BITS_PER_UNIT == 8
+			       ? 3 : exact_log2 (BITS_PER_UNIT),
+			       HOST_BITS_PER_DOUBLE_INT, true);
       tem = double_int_add (tem, bit_offset);
       if (double_int_fits_in_shwi_p (tem))
 	{
