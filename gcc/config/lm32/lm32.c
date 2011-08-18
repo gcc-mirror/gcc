@@ -68,8 +68,8 @@ static bool lm32_in_small_data_p (const_tree);
 static void lm32_setup_incoming_varargs (cumulative_args_t cum,
 					 enum machine_mode mode, tree type,
 					 int *pretend_size, int no_rtl);
-static bool lm32_rtx_costs (rtx x, int code, int outer_code, int *total,
-			    bool speed);
+static bool lm32_rtx_costs (rtx x, int code, int outer_code, int opno,
+			    int *total, bool speed);
 static bool lm32_can_eliminate (const int, const int);
 static bool
 lm32_legitimate_address_p (enum machine_mode mode, rtx x, bool strict);
@@ -928,7 +928,8 @@ nonpic_symbol_mentioned_p (rtx x)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-lm32_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
+lm32_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+		int *total, bool speed)
 {
   enum machine_mode mode = GET_MODE (x);
   bool small_mode;

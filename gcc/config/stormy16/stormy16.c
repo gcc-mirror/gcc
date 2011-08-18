@@ -57,7 +57,7 @@ static void xstormy16_asm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 
 static void xstormy16_init_builtins (void);
 static rtx xstormy16_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static bool xstormy16_rtx_costs (rtx, int, int, int *, bool);
+static bool xstormy16_rtx_costs (rtx, int, int, int, int *, bool);
 static int xstormy16_address_cost (rtx, bool);
 static bool xstormy16_return_in_memory (const_tree, const_tree);
 
@@ -69,7 +69,8 @@ static GTY(()) section *bss100_section;
 
 static bool
 xstormy16_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
-		     int *total, bool speed ATTRIBUTE_UNUSED)
+		     int opno ATTRIBUTE_UNUSED, int *total,
+		     bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {

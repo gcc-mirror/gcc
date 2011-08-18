@@ -1204,21 +1204,21 @@ commutative_optab_p (optab binoptab)
 	  || binoptab == umul_highpart_optab);
 }
 
-/* X is to be used in mode MODE as an operand to BINOPTAB.  If we're
+/* X is to be used in mode MODE as operand OPN to BINOPTAB.  If we're
    optimizing, and if the operand is a constant that costs more than
    1 instruction, force the constant into a register and return that
    register.  Return X otherwise.  UNSIGNEDP says whether X is unsigned.  */
 
 static rtx
 avoid_expensive_constant (enum machine_mode mode, optab binoptab,
-			  rtx x, bool unsignedp)
+			  int opn, rtx x, bool unsignedp)
 {
   bool speed = optimize_insn_for_speed_p ();
 
   if (mode != VOIDmode
       && optimize
       && CONSTANT_P (x)
-      && rtx_cost (x, binoptab->code, speed) > set_src_cost (x, speed))
+      && rtx_cost (x, binoptab->code, opn, speed) > set_src_cost (x, speed))
     {
       if (CONST_INT_P (x))
 	{
@@ -1265,9 +1265,9 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
     }
 
   /* If we are optimizing, force expensive constants into a register.  */
-  xop0 = avoid_expensive_constant (xmode0, binoptab, xop0, unsignedp);
+  xop0 = avoid_expensive_constant (xmode0, binoptab, 0, xop0, unsignedp);
   if (!shift_optab_p (binoptab))
-    xop1 = avoid_expensive_constant (xmode1, binoptab, xop1, unsignedp);
+    xop1 = avoid_expensive_constant (xmode1, binoptab, 1, xop1, unsignedp);
 
   /* In case the insn wants input operands in modes different from
      those of the actual operands, convert the operands.  It would
@@ -1479,10 +1479,10 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 		&& mclass == MODE_INT)
 	      {
 		no_extend = 1;
-		xop0 = avoid_expensive_constant (mode, binoptab,
+		xop0 = avoid_expensive_constant (mode, binoptab, 0,
 						 xop0, unsignedp);
 		if (binoptab != ashl_optab)
-		  xop1 = avoid_expensive_constant (mode, binoptab,
+		  xop1 = avoid_expensive_constant (mode, binoptab, 1,
 						   xop1, unsignedp);
 	      }
 
@@ -2216,8 +2216,8 @@ expand_twoval_binop (optab binoptab, rtx op0, rtx op1, rtx targ0, rtx targ1,
       rtx xop0 = op0, xop1 = op1;
 
       /* If we are optimizing, force expensive constants into a register.  */
-      xop0 = avoid_expensive_constant (mode0, binoptab, xop0, unsignedp);
-      xop1 = avoid_expensive_constant (mode1, binoptab, xop1, unsignedp);
+      xop0 = avoid_expensive_constant (mode0, binoptab, 0, xop0, unsignedp);
+      xop1 = avoid_expensive_constant (mode1, binoptab, 1, xop1, unsignedp);
 
       create_fixed_operand (&ops[0], targ0);
       create_convert_operand_from (&ops[1], op0, mode, unsignedp);
@@ -3790,12 +3790,12 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 
   /* If we are optimizing, force expensive constants into a register.  */
   if (CONSTANT_P (x) && optimize
-      && (rtx_cost (x, COMPARE, optimize_insn_for_speed_p ())
+      && (rtx_cost (x, COMPARE, 0, optimize_insn_for_speed_p ())
           > COSTS_N_INSNS (1)))
     x = force_reg (mode, x);
 
   if (CONSTANT_P (y) && optimize
-      && (rtx_cost (y, COMPARE, optimize_insn_for_speed_p ())
+      && (rtx_cost (y, COMPARE, 1, optimize_insn_for_speed_p ())
           > COSTS_N_INSNS (1)))
     y = force_reg (mode, y);
 

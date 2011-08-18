@@ -4772,7 +4772,8 @@ shift_p (rtx x, enum rtx_code code, int amount)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-c6x_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
+c6x_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
+	       bool speed)
 {
   int cost2 = COSTS_N_INSNS (1);
   rtx op0, op1;
@@ -4826,8 +4827,8 @@ c6x_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 		*total = COSTS_N_INSNS (2);
 	      else
 		*total = COSTS_N_INSNS (12);
-	      *total += rtx_cost (XEXP (op0, 0), code0, speed);
-	      *total += rtx_cost (XEXP (op1, 0), code1, speed);
+	      *total += rtx_cost (XEXP (op0, 0), code0, 0, speed);
+	      *total += rtx_cost (XEXP (op1, 0), code1, 0, speed);
 	      return true;
 	    }
 	}
@@ -4855,8 +4856,8 @@ c6x_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 	      || INTVAL (XEXP (op0, 1)) == 4
 	      || (code == PLUS && INTVAL (XEXP (op0, 1)) == 8)))
 	{
-	  *total += rtx_cost (XEXP (op0, 0), ASHIFT, speed);
-	  *total += rtx_cost (op1, (enum rtx_code)code, speed);
+	  *total += rtx_cost (XEXP (op0, 0), ASHIFT, 0, speed);
+	  *total += rtx_cost (op1, (enum rtx_code) code, 1, speed);
 	  return true;
 	}
       return false;
@@ -4926,10 +4927,10 @@ c6x_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 
       if (GET_CODE (op0) != REG
 	  && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	*total += rtx_cost (op0, MULT, speed);
+	*total += rtx_cost (op0, MULT, 0, speed);
       if (op1 && GET_CODE (op1) != REG
 	  && (GET_CODE (op1) != SUBREG || GET_CODE (SUBREG_REG (op1)) != REG))
-	*total += rtx_cost (op1, MULT, speed);
+	*total += rtx_cost (op1, MULT, 1, speed);
       return true;
 
     case UDIV:
@@ -4947,7 +4948,8 @@ c6x_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 	  && XEXP (op0, 1) == const0_rtx
 	  && rtx_equal_p (XEXP (x, 1), XEXP (op0, 0)))
 	{
-	  *total = rtx_cost (XEXP (x, 1), (enum rtx_code)outer_code, speed);
+	  *total = rtx_cost (XEXP (x, 1), (enum rtx_code) outer_code,
+			     opno, speed);
 	  return false;
 	}
       return false;

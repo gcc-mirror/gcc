@@ -28825,7 +28825,8 @@ ix86_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total, bool speed)
+ix86_rtx_costs (rtx x, int code, int outer_code_i, int opno, int *total,
+		bool speed)
 {
   enum rtx_code outer_code = (enum rtx_code) outer_code_i;
   enum machine_mode mode = GET_MODE (x);
@@ -28949,18 +28950,18 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total, bool speed)
         /* ??? SSE scalar/vector cost should be used here.  */
         /* ??? Bald assumption that fma has the same cost as fmul.  */
         *total = cost->fmul;
-	*total += rtx_cost (XEXP (x, 1), FMA, speed);
+	*total += rtx_cost (XEXP (x, 1), FMA, 1, speed);
 
         /* Negate in op0 or op2 is free: FMS, FNMA, FNMS.  */
 	sub = XEXP (x, 0);
 	if (GET_CODE (sub) == NEG)
 	  sub = XEXP (sub, 0);
-	*total += rtx_cost (sub, FMA, speed);
+	*total += rtx_cost (sub, FMA, 0, speed);
 
 	sub = XEXP (x, 2);
 	if (GET_CODE (sub) == NEG)
 	  sub = XEXP (sub, 0);
-	*total += rtx_cost (sub, FMA, speed);
+	*total += rtx_cost (sub, FMA, 2, speed);
 	return true;
       }
 
@@ -29022,7 +29023,8 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total, bool speed)
 
   	  *total = (cost->mult_init[MODE_INDEX (mode)]
 		    + nbits * cost->mult_bit
-	            + rtx_cost (op0, outer_code, speed) + rtx_cost (op1, outer_code, speed));
+	            + rtx_cost (op0, outer_code, opno, speed)
+		    + rtx_cost (op1, outer_code, opno, speed));
 
           return true;
 	}
@@ -29056,10 +29058,11 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total, bool speed)
 	      if (val == 2 || val == 4 || val == 8)
 		{
 		  *total = cost->lea;
-		  *total += rtx_cost (XEXP (XEXP (x, 0), 1), outer_code, speed);
+		  *total += rtx_cost (XEXP (XEXP (x, 0), 1),
+				      outer_code, opno, speed);
 		  *total += rtx_cost (XEXP (XEXP (XEXP (x, 0), 0), 0),
-				      outer_code, speed);
-		  *total += rtx_cost (XEXP (x, 1), outer_code, speed);
+				      outer_code, opno, speed);
+		  *total += rtx_cost (XEXP (x, 1), outer_code, opno, speed);
 		  return true;
 		}
 	    }
@@ -29070,17 +29073,20 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total, bool speed)
 	      if (val == 2 || val == 4 || val == 8)
 		{
 		  *total = cost->lea;
-		  *total += rtx_cost (XEXP (XEXP (x, 0), 0), outer_code, speed);
-		  *total += rtx_cost (XEXP (x, 1), outer_code, speed);
+		  *total += rtx_cost (XEXP (XEXP (x, 0), 0),
+				      outer_code, opno, speed);
+		  *total += rtx_cost (XEXP (x, 1), outer_code, opno, speed);
 		  return true;
 		}
 	    }
 	  else if (GET_CODE (XEXP (x, 0)) == PLUS)
 	    {
 	      *total = cost->lea;
-	      *total += rtx_cost (XEXP (XEXP (x, 0), 0), outer_code, speed);
-	      *total += rtx_cost (XEXP (XEXP (x, 0), 1), outer_code, speed);
-	      *total += rtx_cost (XEXP (x, 1), outer_code, speed);
+	      *total += rtx_cost (XEXP (XEXP (x, 0), 0),
+				  outer_code, opno, speed);
+	      *total += rtx_cost (XEXP (XEXP (x, 0), 1),
+				  outer_code, opno, speed);
+	      *total += rtx_cost (XEXP (x, 1), outer_code, opno, speed);
 	      return true;
 	    }
 	}
@@ -29112,9 +29118,9 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total, bool speed)
       if (!TARGET_64BIT && mode == DImode)
 	{
 	  *total = (cost->add * 2
-		    + (rtx_cost (XEXP (x, 0), outer_code, speed)
+		    + (rtx_cost (XEXP (x, 0), outer_code, opno, speed)
 		       << (GET_MODE (XEXP (x, 0)) != DImode))
-		    + (rtx_cost (XEXP (x, 1), outer_code, speed)
+		    + (rtx_cost (XEXP (x, 1), outer_code, opno, speed)
 	               << (GET_MODE (XEXP (x, 1)) != DImode)));
 	  return true;
 	}
@@ -29156,8 +29162,8 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total, bool speed)
 	  /* This kind of construct is implemented using test[bwl].
 	     Treat it as if we had an AND.  */
 	  *total = (cost->add
-		    + rtx_cost (XEXP (XEXP (x, 0), 0), outer_code, speed)
-		    + rtx_cost (const1_rtx, outer_code, speed));
+		    + rtx_cost (XEXP (XEXP (x, 0), 0), outer_code, opno, speed)
+		    + rtx_cost (const1_rtx, outer_code, opno, speed));
 	  return true;
 	}
       return false;

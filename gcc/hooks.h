@@ -53,7 +53,8 @@ extern bool hook_bool_const_tree_hwi_hwi_const_tree_true (const_tree,
 extern bool hook_bool_rtx_false (rtx);
 extern bool hook_bool_rtx_int_false (rtx, int);
 extern bool hook_bool_uintp_uintp_false (unsigned int *, unsigned int *);
-extern bool hook_bool_rtx_int_int_intp_bool_false (rtx, int, int, int *, bool);
+extern bool hook_bool_rtx_int_int_int_intp_bool_false (rtx, int, int, int,
+						       int *, bool);
 extern bool hook_bool_tree_tree_false (tree, tree);
 extern bool hook_bool_tree_tree_true (tree, tree);
 extern bool hook_bool_tree_bool_false (tree, bool);

@@ -6357,10 +6357,15 @@ Define this macro if a non-short-circuit operation produced by
 This target hook describes the relative costs of RTL expressions.
 
 The cost may depend on the precise form of the expression, which is
-available for examination in @var{x}, and the rtx code of the expression
-in which it is contained, found in @var{outer_code}.  @var{code} is the
-expression code---redundant, since it can be obtained with
-@code{GET_CODE (@var{x})}.
+available for examination in @var{x}, and the fact that @var{x} appears
+as operand @var{opno} of an expression with rtx code @var{outer_code}.
+That is, the hook can assume that there is some rtx @var{y} such
+that @samp{GET_CODE (@var{y}) == @var{outer_code}} and such that
+either (a) @samp{XEXP (@var{y}, @var{opno}) == @var{x}} or
+(b) @samp{XVEC (@var{y}, @var{opno})} contains @var{x}.
+
+@var{code} is @var{x}'s expression code---redundant, since it can be
+obtained with @code{GET_CODE (@var{x})}.
 
 In implementing this hook, you can use the construct
 @code{COSTS_N_INSNS (@var{n})} to specify a cost equal to @var{n} fast

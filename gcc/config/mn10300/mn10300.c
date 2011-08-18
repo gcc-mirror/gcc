@@ -2182,7 +2182,7 @@ mn10300_address_cost (rtx x, bool speed)
       return speed ? 2 : 6;
 
     default:
-      return rtx_cost (x, MEM, speed);
+      return rtx_cost (x, MEM, 0, speed);
     }
 }
 
@@ -2296,7 +2296,8 @@ mn10300_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    to represent cycles.  Size-relative costs are in bytes.  */
 
 static bool
-mn10300_rtx_costs (rtx x, int code, int outer_code, int *ptotal, bool speed)
+mn10300_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+		   int *ptotal, bool speed)
 {
   /* This value is used for SYMBOL_REF etc where we want to pretend
      we have a full 32-bit constant.  */
@@ -2387,7 +2388,7 @@ mn10300_rtx_costs (rtx x, int code, int outer_code, int *ptotal, bool speed)
 	  i = INTVAL (XEXP (x, 1));
 	  if (i == 1 || i == 4)
 	    {
-	      total = 1 + rtx_cost (XEXP (x, 0), PLUS, speed);
+	      total = 1 + rtx_cost (XEXP (x, 0), PLUS, 0, speed);
 	      goto alldone;
 	    }
 	}
