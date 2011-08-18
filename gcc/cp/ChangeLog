@@ -1,3 +1,9 @@
+2011-08-18  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/45625
+	* pt.c (parameter_of_template_p): Handle comparison with DECLs of
+	template parameters as created by process_template_parm.
+
 2011-08-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50086
