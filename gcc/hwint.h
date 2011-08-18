@@ -233,6 +233,7 @@ exact_log2 (unsigned HOST_WIDE_INT x)
 #define HOST_WIDE_INT_MAX (~(HOST_WIDE_INT_MIN))
 
 extern HOST_WIDE_INT abs_hwi (HOST_WIDE_INT);
+extern unsigned HOST_WIDE_INT absu_hwi (HOST_WIDE_INT);
 extern HOST_WIDE_INT gcd (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT pos_mul_hwi (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT mul_hwi (HOST_WIDE_INT, HOST_WIDE_INT);

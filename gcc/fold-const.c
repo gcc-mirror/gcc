@@ -7036,7 +7036,7 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
       int11 = TREE_INT_CST_LOW (arg11);
 
       /* Move min of absolute values to int11.  */
-      if (abs_hwi (int01) < abs_hwi (int11))
+      if (absu_hwi (int01) < absu_hwi (int11))
         {
 	  tmp = int01, int01 = int11, int11 = tmp;
 	  alt0 = arg00, arg00 = arg10, arg10 = alt0;
@@ -7046,7 +7046,7 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
       else
 	maybe_same = arg11;
 
-      if (exact_log2 (abs_hwi (int11)) > 0 && int01 % int11 == 0
+      if (exact_log2 (absu_hwi (int11)) > 0 && int01 % int11 == 0
 	  /* The remainder should not be a constant, otherwise we
 	     end up folding i * 4 + 2 to (i * 2 + 1) * 2 which has
 	     increased the number of multiplications necessary.  */
