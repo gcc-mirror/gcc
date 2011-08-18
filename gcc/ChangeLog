@@ -1,3 +1,27 @@
+2011-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+	    Igor Zamyatin <igor.zamyatin@intel.com>
+
+	* hwint.h (HOST_WIDE_INT_1): New.
+
+	* opt-functions.awk (switch_bit_fields): Initialize the
+	host_wide_int field.
+	(host_wide_int_var_name): New.
+	(var_type_struct): Check and return HOST_WIDE_INT.
+
+	* opt-read.awk: Handle HOST_WIDE_INT for "Variable".
+
+	* optc-save-gen.awk: Support HOST_WIDE_INT on var_target_other.
+
+	* opth-gen.awk: Use HOST_WIDE_INT_1 on HOST_WIDE_INT.  Properly
+	check masks for HOST_WIDE_INT.
+
+	* opts-common.c (set_option): Support HOST_WIDE_INT flag_var.
+	(option_enabled): Likewise.
+	(get_option_state): Likewise.
+
+	* opts.h (cl_option): Add cl_host_wide_int.  Change var_value
+	to HOST_WIDE_INT.
+
 2011-08-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Marc Glisse  <marc.glisse@normalesup.org>
 
