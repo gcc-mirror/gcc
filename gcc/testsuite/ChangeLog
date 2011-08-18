@@ -2,6 +2,9 @@
 
 	* g++.dg/plugin/decl_plugin.c: Include diagnostic.h.
 
+	PR debug/50017
+	* gcc.dg/pr50017.c: New test.
+
 2011-08-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/45625
