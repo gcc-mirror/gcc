@@ -19,11 +19,21 @@ module m
   type t
     type(lock_type), allocatable :: x(:)[:]
   end type t
-
-  type t2
-    type(lock_type), allocatable :: x
-  end type t2
 end module m
+
+module m2
+  use iso_fortran_env
+  type t2
+    type(lock_type), allocatable :: x ! { dg-error "Allocatable component x at .1. of type LOCK_TYPE must have a codimension" }
+  end type t2
+end module m2
+
+module m3
+  use iso_fortran_env
+  type t3
+    type(lock_type) :: x ! OK
+  end type t3
+end module m3
 
 subroutine sub(x)
   use iso_fortran_env
@@ -46,15 +56,15 @@ subroutine sub3(x) ! { dg-error "with coarray component shall be a nonpointer, n
 end subroutine sub3
 
 subroutine sub4(x)
-  use m
-  type(t2), intent(inout) :: x[*] ! OK
+  use m3
+  type(t3), intent(inout) :: x[*] ! OK
 end subroutine sub4
 
 subroutine lock_test
   use iso_fortran_env
   type t
   end type t
-  type(lock_type) :: lock ! { dg-error "type LOCK_TYPE must be a coarray" }
+  type(lock_type) :: lock ! { dg-error "of type LOCK_TYPE or with subcomponent of type LOCK_TYPE must be a coarray" }
 end subroutine lock_test
 
 subroutine lock_test2
@@ -65,10 +75,10 @@ subroutine lock_test2
   type(t) :: x
   type(lock_type), save :: lock[*],lock2(2)[*]
   lock(t) ! { dg-error "Syntax error in LOCK statement" }
-  lock(x) ! { dg-error "must be a scalar coarray of type LOCK_TYPE" }
+  lock(x) ! { dg-error "must be a scalar of type LOCK_TYPE" }
   lock(lock)
   lock(lock2(1))
-  lock(lock2) ! { dg-error "must be a scalar coarray of type LOCK_TYPE" }
+  lock(lock2) ! { dg-error "must be a scalar of type LOCK_TYPE" }
   lock(lock[1]) ! OK
 end subroutine lock_test2
 
@@ -104,4 +114,4 @@ contains
   end subroutine test
 end subroutine argument_check
 
-! { dg-final { cleanup-modules "m" } }
+! { dg-final { cleanup-modules "m m2 m3" } }
