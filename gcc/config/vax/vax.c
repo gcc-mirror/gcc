@@ -54,7 +54,7 @@ static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				 HOST_WIDE_INT, tree);
 static int vax_address_cost_1 (rtx);
 static int vax_address_cost (rtx, bool);
-static bool vax_rtx_costs (rtx, int, int, int *, bool);
+static bool vax_rtx_costs (rtx, int, int, int, int *, bool);
 static rtx vax_function_arg (cumulative_args_t, enum machine_mode,
 			     const_tree, bool);
 static void vax_function_arg_advance (cumulative_args_t, enum machine_mode,
@@ -745,8 +745,8 @@ vax_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
    costs on a per cpu basis.  */
 
 static bool
-vax_rtx_costs (rtx x, int code, int outer_code, int *total,
-	       bool speed ATTRIBUTE_UNUSED)
+vax_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+	       int *total, bool speed ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = GET_MODE (x);
   int i = 0;				   /* may be modified in switch */

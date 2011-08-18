@@ -101,7 +101,8 @@ int picochip_sched_reorder (FILE * file, int verbose, rtx * ready,
 void picochip_init_builtins (void);
 rtx picochip_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 
-bool picochip_rtx_costs (rtx x, int code, int outer_code, int* total, bool speed);
+bool picochip_rtx_costs (rtx x, int code, int outer_code, int opno,
+			 int* total, bool speed);
 bool picochip_return_in_memory(const_tree type,
                               const_tree fntype ATTRIBUTE_UNUSED);
 bool picochip_legitimate_address_p (enum machine_mode, rtx, bool);
@@ -3741,7 +3742,8 @@ gen_SImode_mem(rtx opnd1,rtx opnd2)
 }
 
 bool
-picochip_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int* total, bool speed)
+picochip_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
+		    int opno ATTRIBUTE_UNUSED, int* total, bool speed)
 {
 
   int localTotal = 0;

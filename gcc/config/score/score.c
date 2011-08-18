@@ -1074,7 +1074,8 @@ score_address_insns (rtx x, enum machine_mode mode)
 
 /* Implement TARGET_RTX_COSTS macro.  */
 bool
-score_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed ATTRIBUTE_UNUSED)
+score_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+		 int *total, bool speed ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = GET_MODE (x);
 

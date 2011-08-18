@@ -948,8 +948,8 @@ static int rs6000_variable_issue (FILE *, int, rtx, int);
 static int rs6000_register_move_cost (enum machine_mode,
 				      reg_class_t, reg_class_t);
 static int rs6000_memory_move_cost (enum machine_mode, reg_class_t, bool);
-static bool rs6000_rtx_costs (rtx, int, int, int *, bool);
-static bool rs6000_debug_rtx_costs (rtx, int, int, int *, bool);
+static bool rs6000_rtx_costs (rtx, int, int, int, int *, bool);
+static bool rs6000_debug_rtx_costs (rtx, int, int, int, int *, bool);
 static int rs6000_debug_address_cost (rtx, bool);
 static int rs6000_adjust_cost (rtx, rtx, rtx, int);
 static int rs6000_debug_adjust_cost (rtx, rtx, rtx, int);
@@ -25730,8 +25730,8 @@ rs6000_xcoff_file_end (void)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-rs6000_rtx_costs (rtx x, int code, int outer_code, int *total,
-		  bool speed)
+rs6000_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+		  int *total, bool speed)
 {
   enum machine_mode mode = GET_MODE (x);
 
@@ -26074,17 +26074,18 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total,
 /* Debug form of r6000_rtx_costs that is selected if -mdebug=cost.  */
 
 static bool
-rs6000_debug_rtx_costs (rtx x, int code, int outer_code, int *total,
+rs6000_debug_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
 			bool speed)
 {
-  bool ret = rs6000_rtx_costs (x, code, outer_code, total, speed);
+  bool ret = rs6000_rtx_costs (x, code, outer_code, opno, total, speed);
 
   fprintf (stderr,
 	   "\nrs6000_rtx_costs, return = %s, code = %s, outer_code = %s, "
-	   "total = %d, speed = %s, x:\n",
+	   "opno = %d, total = %d, speed = %s, x:\n",
 	   ret ? "complete" : "scan inner",
 	   GET_RTX_NAME (code),
 	   GET_RTX_NAME (outer_code),
+	   opno,
 	   *total,
 	   speed ? "true" : "false");
 

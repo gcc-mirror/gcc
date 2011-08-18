@@ -310,6 +310,7 @@ static bool
 v850_rtx_costs (rtx x,
                 int codearg,
                 int outer_code ATTRIBUTE_UNUSED,
+		int opno ATTRIBUTE_UNUSED,
                 int * total, bool speed)
 {
   enum rtx_code code = (enum rtx_code) codearg;

@@ -203,7 +203,7 @@ static int mem_is_padded_component_ref (rtx x);
 static int reg_aligned_for_addr (rtx x);
 static bool spu_assemble_integer (rtx x, unsigned int size, int aligned_p);
 static void spu_asm_globalize_label (FILE * file, const char *name);
-static bool spu_rtx_costs (rtx x, int code, int outer_code,
+static bool spu_rtx_costs (rtx x, int code, int outer_code, int opno,
 			   int *total, bool speed);
 static bool spu_function_ok_for_sibcall (tree decl, tree exp);
 static void spu_init_libfuncs (void);
@@ -5482,7 +5482,8 @@ spu_asm_globalize_label (FILE * file, const char *name)
 }
 
 static bool
-spu_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total,
+spu_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
+	       int opno ATTRIBUTE_UNUSED, int *total,
 	       bool speed ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = GET_MODE (x);

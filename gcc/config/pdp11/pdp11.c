@@ -141,7 +141,7 @@ decode_pdp11_d (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
 static const char *singlemove_string (rtx *);
 static bool pdp11_assemble_integer (rtx, unsigned int, int);
-static bool pdp11_rtx_costs (rtx, int, int, int *, bool);
+static bool pdp11_rtx_costs (rtx, int, int, int, int *, bool);
 static bool pdp11_return_in_memory (const_tree, const_tree);
 static rtx pdp11_function_value (const_tree, const_tree, bool);
 static rtx pdp11_libcall_value (enum machine_mode, const_rtx);
@@ -888,7 +888,8 @@ pdp11_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 static bool
-pdp11_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total,
+pdp11_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
+		 int opno ATTRIBUTE_UNUSED, int *total,
 		 bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)

@@ -1,5 +1,75 @@
 2011-08-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* doc/tm.texi.in (TARGET_RTX_COSTS): Add an opno paramter.
+	* doc/tm.texi: Regenerate.
+	* target.def (rtx_costs): Add an opno parameter.
+	* hooks.h (hook_bool_rtx_int_int_intp_bool_false): Replace with...
+	(hook_bool_rtx_int_int_int_intp_bool_false): ...this.
+	* hooks.c (hook_bool_rtx_int_int_intp_bool_false): Replace with...
+	(hook_bool_rtx_int_int_int_intp_bool_false): ...this.
+	* cse.c (COST_IN): Add an opno parameter.
+	(notreg_cost): Likewise.  Update call to rtx_cost.
+	(COST, fold_rtx): Update accordingly.
+	* dojump.c (prefer_and_bit_test): Update call to rtx_cost.
+	* expmed.c (emit_store_flag): Likewise.
+	* optabs.c (avoid_expensive_constant): Add an opno parameter.
+	Update call to rtx_cost.
+	(expand_binop_directly, expand_binop): Likewise.
+	(expand_twoval_binop, prepare_cmp_insn): Likewise.
+	* rtl.h (rtx_cost, get_full_rtx_cost): Add opno parameters.
+	(set_src_cost, get_full_set_src_cost): Update accordingly.
+	* rtlanal.c (rtx_cost): Add an opno parameter.  Update call
+	to target hook.
+	(get_full_rtx_cost): Add an opno paramter.  Update calls to rtx_cost.
+	(default_adress_cost): Update calls to rtx_cost.
+
+	* config/arm/arm.c (arm_rtx_costs_1, arm_size_rtx_costs)
+	(arm_slowmul_rtx_costs): Adjust calls to rtx_cost.
+	(arm_rtx_costs): Add an opno parameter.
+	* config/alpha/alpha.c (alpha_rtx_costs): Add an opno parameter and
+	adjust any recursive rtx-cost calls.
+	* config/avr/avr.c (avr_operand_rtx_cost, avr_rtx_costs): Likewise.
+	* config/bfin/bfin.c (bfin_rtx_costs): Likewise.
+	* config/c6x/c6x.c (c6x_rtx_costs): Likewise.
+	* config/cris/cris.c (cris_rtx_costs): Likewise.
+	* config/frv/frv.c (frv_rtx_costs): Likewise.
+	* config/h8300/h8300.c (h8300_rtx_costs): Likewise.
+	* config/i386/i386.c (ix86_rtx_costs): Likewise.
+	* config/ia64/ia64.c (ia64_rtx_costs): Likewise.
+	* config/iq2000/iq2000.c (iq2000_rtx_costs): Likewise.
+	* config/lm32/lm32.c (lm32_rtx_costs): Likewise.
+	* config/m32c/m32c.c (m32c_rtx_costs): Likewise.
+	* config/m32r/m32r.c (m32r_rtx_costs): Likewise.
+	* config/m68k/m68k.c (m68k_rtx_costs): Likewise.
+	* config/mcore/mcore.c (mcore_rtx_costs): Likewise.
+	* config/mep/mep.c (mep_rtx_cost): Likewise.
+	* config/microblaze/microblaze.c (microblaze_rtx_costs): Likewise.
+	* config/mips/mips.c (mips_binary_cost): Update call to rtx_cost.
+	(mips_zero_extend_cost): Add an opno parameter.
+	* config/mmix/mmix.c (mmix_rtx_costs): Likewise.
+	* config/mn10300/mn10300.c (mn10300_address_cost): Update call
+	to rtx_cost.
+	(mn10300_rtx_costs): Add an opno parameter and adjust any recursive
+	rtx-cost calls.
+	* config/pa/pa.c (hppa_rtx_costs): Likewise.
+	* config/pdp11/pdp11.c (pdp11_rtx_costs): Likewise.
+	* config/picochip/picochip.c (picochip_rtx_costs): Likewise.
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Likewise.
+	(rs6000_debug_rtx_costs): Likewise.
+	* config/s390/s390.c (s390_rtx_costs): Likewise.
+	* config/score/score-protos.h (score_rtx_costs): Likewise.
+	* config/score/score.c (score_rtx_costs): Likewise.
+	* config/sh/sh.c (andcosts): Update call to rtx_cost.
+	(sh_rtx_costs): Add an opno parameter.
+	* config/sparc/sparc.c (sparc_rtx_costs): Likewise.
+	* config/spu/spu.c (spu_rtx_costs): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_rtx_costs): Likewise.
+	* config/v850/v850.c (v850_rtx_costs): Likewise.
+	* config/vax/vax.c (vax_rtx_costs): Likewise.
+	* config/xtensa/xtensa.c (xtensa_rtx_costs): Likewise.
+
+2011-08-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* rtl.h (set_src_cost, get_full_set_src_cost): New functions.
 	* auto-inc-dec.c (attempt_change): Use set_src_cost instead of
 	rtx_cost.

@@ -217,7 +217,7 @@ static int ia64_register_move_cost (enum machine_mode, reg_class_t,
                                     reg_class_t);
 static int ia64_memory_move_cost (enum machine_mode mode, reg_class_t,
 				  bool);
-static bool ia64_rtx_costs (rtx, int, int, int *, bool);
+static bool ia64_rtx_costs (rtx, int, int, int, int *, bool);
 static int ia64_unspec_may_trap_p (const_rtx, unsigned);
 static void fix_range (const char *);
 static struct machine_function * ia64_init_machine_status (void);
@@ -5244,8 +5244,8 @@ ia64_print_operand (FILE * file, rtx x, int code)
 /* ??? This is incomplete.  */
 
 static bool
-ia64_rtx_costs (rtx x, int code, int outer_code, int *total,
-		bool speed ATTRIBUTE_UNUSED)
+ia64_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+		int *total, bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {
