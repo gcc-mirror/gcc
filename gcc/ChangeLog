@@ -1,3 +1,28 @@
+2011-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+	    Igor Zamyatin <igor.zamyatin@intel.com>
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): Replace int
+	with HOST_WIDE_INT for isa_flag.
+	(ix86_pragma_target_parse): Replace int with HOST_WIDE_INT for
+	isa variables.
+
+	* config/i386/i386.c (ix86_target_string): Replace int with
+	HOST_WIDE_INT for isa.  Use HOST_WIDE_INT_PRINT to print isa.
+	(ix86_target_opts): Replace int with HOST_WIDE_INT on mask.
+	(pta_flags): Removed.
+	(PTA_XXX): Redefined as (HOST_WIDE_INT_1 << X).
+	(pta): Use HOST_WIDE_INT on flags.
+	(builtin_isa): Use HOST_WIDE_INT on isa.
+	(ix86_add_new_builtins): Likewise.
+	(def_builtin): Use HOST_WIDE_INT on mask.
+	(def_builtin_const): Likewise.
+	(builtin_description): Likewise.
+
+	* config/i386/i386.opt (ix86_isa_flags): Replace int with
+	HOST_WIDE_INT.
+	(ix86_isa_flags_explicit): Likewise.
+	(x_ix86_isa_flags_explicit): Likewise.
+
 2011-08-17  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/50107

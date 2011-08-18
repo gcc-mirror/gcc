@@ -2500,7 +2500,7 @@ static int ix86_function_regparm (const_tree, const_tree);
 static void ix86_compute_frame_layout (struct ix86_frame *);
 static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
 						 rtx, rtx, int);
-static void ix86_add_new_builtins (int);
+static void ix86_add_new_builtins (HOST_WIDE_INT);
 static rtx ix86_expand_vec_perm_builtin (tree);
 static tree ix86_canonical_va_list_type (tree);
 static void predict_jump (int);
@@ -2514,8 +2514,8 @@ enum ix86_function_specific_strings
   IX86_FUNCTION_SPECIFIC_MAX
 };
 
-static char *ix86_target_string (int, int, const char *, const char *,
-				 enum fpmath_unit, bool);
+static char *ix86_target_string (HOST_WIDE_INT, int, const char *,
+				 const char *, enum fpmath_unit, bool);
 static void ix86_debug_options (void) ATTRIBUTE_UNUSED;
 static void ix86_function_specific_save (struct cl_target_option *);
 static void ix86_function_specific_restore (struct cl_target_option *);
@@ -2633,13 +2633,14 @@ ix86_using_red_zone (void)
    responsible for freeing the string.  */
 
 static char *
-ix86_target_string (int isa, int flags, const char *arch, const char *tune,
-		    enum fpmath_unit fpmath, bool add_nl_p)
+ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
+		    const char *tune, enum fpmath_unit fpmath,
+		    bool add_nl_p)
 {
   struct ix86_target_opts
   {
     const char *option;		/* option string */
-    int mask;			/* isa mask options */
+    HOST_WIDE_INT mask;		/* isa mask options */
   };
 
   /* This table is ordered so that options like -msse4.2 that imply
@@ -2747,7 +2748,8 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
   if (isa && add_nl_p)
     {
       opts[num++][0] = isa_other;
-      sprintf (isa_other, "(other isa: %#x)", isa);
+      sprintf (isa_other, "(other isa: %#" HOST_WIDE_INT_PRINT "x)",
+	       isa);
     }
 
   /* Add flag options.  */
@@ -2888,47 +2890,44 @@ ix86_option_override_internal (bool main_args_p)
   const char *suffix;
   const char *sw;
 
-  enum pta_flags
-    {
-      PTA_SSE = 1 << 0,
-      PTA_SSE2 = 1 << 1,
-      PTA_SSE3 = 1 << 2,
-      PTA_MMX = 1 << 3,
-      PTA_PREFETCH_SSE = 1 << 4,
-      PTA_3DNOW = 1 << 5,
-      PTA_3DNOW_A = 1 << 6,
-      PTA_64BIT = 1 << 7,
-      PTA_SSSE3 = 1 << 8,
-      PTA_CX16 = 1 << 9,
-      PTA_POPCNT = 1 << 10,
-      PTA_ABM = 1 << 11,
-      PTA_SSE4A = 1 << 12,
-      PTA_NO_SAHF = 1 << 13,
-      PTA_SSE4_1 = 1 << 14,
-      PTA_SSE4_2 = 1 << 15,
-      PTA_AES = 1 << 16,
-      PTA_PCLMUL = 1 << 17,
-      PTA_AVX = 1 << 18,
-      PTA_FMA = 1 << 19,
-      PTA_MOVBE = 1 << 20,
-      PTA_FMA4 = 1 << 21,
-      PTA_XOP = 1 << 22,
-      PTA_LWP = 1 << 23,
-      PTA_FSGSBASE = 1 << 24,
-      PTA_RDRND = 1 << 25,
-      PTA_F16C = 1 << 26,
-      PTA_BMI = 1 << 27,
-      PTA_TBM = 1 << 28,
-      PTA_LZCNT = 1 << 29
-      /* if this reaches 32, need to widen struct pta flags below */
-    };
+#define PTA_3DNOW	 	(HOST_WIDE_INT_1 << 0)
+#define PTA_3DNOW_A	 	(HOST_WIDE_INT_1 << 1)
+#define PTA_64BIT		(HOST_WIDE_INT_1 << 2)
+#define PTA_ABM			(HOST_WIDE_INT_1 << 3)
+#define PTA_AES		 	(HOST_WIDE_INT_1 << 4)
+#define PTA_AVX			(HOST_WIDE_INT_1 << 5)
+#define PTA_BMI		 	(HOST_WIDE_INT_1 << 6)
+#define PTA_CX16		(HOST_WIDE_INT_1 << 7)
+#define PTA_F16C		(HOST_WIDE_INT_1 << 8)
+#define PTA_FMA			(HOST_WIDE_INT_1 << 9)
+#define PTA_FMA4	 	(HOST_WIDE_INT_1 << 10)
+#define PTA_FSGSBASE		(HOST_WIDE_INT_1 << 11)
+#define PTA_LWP		 	(HOST_WIDE_INT_1 << 12)
+#define PTA_LZCNT	 	(HOST_WIDE_INT_1 << 13)
+#define PTA_MMX			(HOST_WIDE_INT_1 << 14)
+#define PTA_MOVBE		(HOST_WIDE_INT_1 << 15)
+#define PTA_NO_SAHF		(HOST_WIDE_INT_1 << 16)
+#define PTA_PCLMUL		(HOST_WIDE_INT_1 << 17)
+#define PTA_POPCNT		(HOST_WIDE_INT_1 << 18)
+#define PTA_PREFETCH_SSE	(HOST_WIDE_INT_1 << 19)
+#define PTA_RDRND	 	(HOST_WIDE_INT_1 << 20)
+#define PTA_SSE			(HOST_WIDE_INT_1 << 21)
+#define PTA_SSE2		(HOST_WIDE_INT_1 << 22)
+#define PTA_SSE3		(HOST_WIDE_INT_1 << 23)
+#define PTA_SSE4_1	 	(HOST_WIDE_INT_1 << 24)
+#define PTA_SSE4_2	 	(HOST_WIDE_INT_1 << 25)
+#define PTA_SSE4A		(HOST_WIDE_INT_1 << 26)
+#define PTA_SSSE3		(HOST_WIDE_INT_1 << 27)
+#define PTA_TBM		 	(HOST_WIDE_INT_1 << 28)
+#define PTA_XOP		 	(HOST_WIDE_INT_1 << 29)
+/* if this reaches 64, need to widen struct pta flags below */
 
   static struct pta
     {
       const char *const name;		/* processor name or nickname.  */
       const enum processor_type processor;
       const enum attr_cpu schedule;
-      const unsigned /*enum pta_flags*/ flags;
+      const unsigned HOST_WIDE_INT flags;
     }
   const processor_alias_table[] =
     {
@@ -24099,7 +24098,7 @@ static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX];
 struct builtin_isa {
   const char *name;		/* function name */
   enum ix86_builtin_func_type tcode; /* type to use in the declaration */
-  int isa;			/* isa_flags this builtin is defined for */
+  HOST_WIDE_INT isa;		/* isa_flags this builtin is defined for */
   bool const_p;			/* true if the declaration is constant */
   bool set_and_not_built_p;
 };
@@ -24124,7 +24123,8 @@ static struct builtin_isa ix86_builtins_isa[(int) IX86_BUILTIN_MAX];
    errors if a builtin is added in the middle of a function scope.  */
 
 static inline tree
-def_builtin (int mask, const char *name, enum ix86_builtin_func_type tcode,
+def_builtin (HOST_WIDE_INT mask, const char *name,
+	     enum ix86_builtin_func_type tcode,
 	     enum ix86_builtins code)
 {
   tree decl = NULL_TREE;
@@ -24162,7 +24162,7 @@ def_builtin (int mask, const char *name, enum ix86_builtin_func_type tcode,
 /* Like def_builtin, but also marks the function decl "const".  */
 
 static inline tree
-def_builtin_const (int mask, const char *name,
+def_builtin_const (HOST_WIDE_INT mask, const char *name,
 		   enum ix86_builtin_func_type tcode, enum ix86_builtins code)
 {
   tree decl = def_builtin (mask, name, tcode, code);
@@ -24179,7 +24179,7 @@ def_builtin_const (int mask, const char *name,
    declarations to the tree, even if we didn't use them.  */
 
 static void
-ix86_add_new_builtins (int isa)
+ix86_add_new_builtins (HOST_WIDE_INT isa)
 {
   int i;
 
@@ -24213,7 +24213,7 @@ ix86_add_new_builtins (int isa)
 
 struct builtin_description
 {
-  const unsigned int mask;
+  const HOST_WIDE_INT mask;
   const enum insn_code icode;
   const char *const name;
   const enum ix86_builtins code;
