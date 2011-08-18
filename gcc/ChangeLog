@@ -1,3 +1,18 @@
+2011-08-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Marc Glisse  <marc.glisse@normalesup.org>
+
+	PR libstdc++-v3/1773
+	* target.def (decl_mangling_context): New C++ hook.
+	* doc/tm.texi: Regenerate.
+	* config/sol2-cxx.c, config/sol2-stubs.c: New files.
+	* config/sol2-protos.h: Group by source file.
+	(solaris_cxx_decl_mangling_context): Declare.
+	* config/sol2.h (TARGET_CXX_DECL_MANGLING_CONTEXT): Define.
+	* config/t-sol2 (sol2-cxx.o, sol2-stubs.o): New targets.
+	Use $<.
+	* config.gcc (*-*-solaris2*): Add sol2-cxx.o to cxx_target_objs.
+	Add sol2-stubs.o to extra_objs.
+
 2011-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/50009

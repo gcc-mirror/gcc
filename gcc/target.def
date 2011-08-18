@@ -2451,6 +2451,12 @@ DEFHOOK
  void, (tree type),
  hook_void_tree)
 
+DEFHOOK
+(decl_mangling_context,
+ "Return target-specific mangling context of @var{decl} or @code{NULL_TREE}.",
+ tree, (const_tree decl),
+ hook_tree_const_tree_null)
+
 HOOK_VECTOR_END (cxx)
 
 /* Functions and data for emulated TLS support.  */
