@@ -863,27 +863,26 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
     }
 
   if (nest
-      && (INDIRECT_REF_P (aref)
-	  || TREE_CODE (aref) == MEM_REF))
+      && TREE_CODE (aref) == MEM_REF)
     {
       op = TREE_OPERAND (aref, 0);
       access_fn = analyze_scalar_evolution (loop, op);
       access_fn = instantiate_scev (before_loop, loop, access_fn);
       base = initial_condition (access_fn);
       split_constant_offset (base, &base, &off);
-      if (TREE_CODE (aref) == MEM_REF)
-	off = size_binop (PLUS_EXPR, off,
-			  fold_convert (ssizetype, TREE_OPERAND (aref, 1)));
+      if (!integer_zerop (TREE_OPERAND (aref, 1)))
+	{
+	  off = size_binop (PLUS_EXPR, off,
+			    fold_convert (ssizetype, TREE_OPERAND (aref, 1)));
+	  TREE_OPERAND (aref, 1)
+	    = build_int_cst (TREE_TYPE (TREE_OPERAND (aref, 1)), 0);
+	}
       access_fn = chrec_replace_initial_condition (access_fn,
 			fold_convert (TREE_TYPE (base), off));
 
       TREE_OPERAND (aref, 0) = base;
       VEC_safe_push (tree, heap, access_fns, access_fn);
     }
-
-  if (TREE_CODE (aref) == MEM_REF)
-    TREE_OPERAND (aref, 1)
-      = build_int_cst (TREE_TYPE (TREE_OPERAND (aref, 1)), 0);
 
   if (TREE_CODE (ref) == MEM_REF
       && TREE_CODE (TREE_OPERAND (ref, 0)) == ADDR_EXPR
