@@ -1,3 +1,8 @@
+2011-08-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50109
+	* gfortran.dg/namelist_73.f90: New.
+
 2011-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/50092

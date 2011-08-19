@@ -353,16 +353,7 @@ eat_separator (st_parameter_dt *dtp)
 		  err = eat_line (dtp);
 		  if (err)
 		    return err;
-		  if ((c = next_char (dtp)) == EOF)
-		    return LIBERROR_END;
-		  if (c == '!')
-		    {
-		      err = eat_line (dtp);
-		      if (err)
-			return err;
-		      if ((c = next_char (dtp)) == EOF)
-			return LIBERROR_END;
-		    }
+		  c = '\n';
 		}
 	    }
 	  while (c == '\n' || c == '\r' || c == ' ' || c == '\t');
