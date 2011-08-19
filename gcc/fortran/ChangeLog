@@ -1,3 +1,13 @@
+2011-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/49792
+	* trans-expr.c (gfc_trans_assignment_1): Set OMPWS_SCALARIZER_WS
+	bit in ompws_flags only if loop.temp_ss is NULL, and clear it if
+	lhs needs reallocation.
+	* trans-openmp.c (gfc_trans_omp_workshare): Don't return early if
+	code is NULL, emit a barrier if workshare emitted no code at all
+	and NOWAIT clause isn't present.
+
 2011-08-05  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49112

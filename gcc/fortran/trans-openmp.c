@@ -1640,9 +1640,6 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 
   pushlevel (0);
 
-  if (!code)
-    return build_empty_stmt (input_location);
-
   gfc_start_block (&block);
   pblock = &block;
 
@@ -1778,6 +1775,9 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
     }
   else
     poplevel (0, 0, 0);
+
+  if (IS_EMPTY_STMT (stmt) && !clauses->nowait)
+    stmt = gfc_trans_omp_barrier ();
 
   ompws_flags = 0;
   return stmt;
