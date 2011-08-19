@@ -2,6 +2,7 @@
 
 /* { dg-do link } */
 /* { dg-options "-ffast-math" }  */
+/* { dg-add-options c99_runtime } */
 
 #include "../../gcc.dg/builtins-config.h"
 
