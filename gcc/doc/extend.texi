@@ -7511,6 +7511,18 @@ future revisions.
 
 @end deftypefn
 
+@deftypefn {Built-in Function} @var{type} __builtin_complex (@var{real}, @var{imag})
+
+The built-in function @code{__builtin_complex} is provided for use in
+implementing the ISO C1X macros @code{CMPLXF}, @code{CMPLX} and
+@code{CMPLXL}.  @var{real} and @var{imag} must have the same type, a
+real binary floating-point type, and the result has the corresponding
+complex type with real and imaginary parts @var{real} and @var{imag}.
+Unlike @samp{@var{real} + I * @var{imag}}, this works even when
+infinities, NaNs and negative zeros are involved.
+
+@end deftypefn
+
 @deftypefn {Built-in Function} int __builtin_constant_p (@var{exp})
 You can use the built-in function @code{__builtin_constant_p} to
 determine if a value is known to be constant at compile-time and hence

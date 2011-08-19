@@ -1,3 +1,9 @@
+2011-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_postfix_expression): Handle
+	RID_BUILTIN_COMPLEX.
+	* doc/extend.texi (__builtin_complex): Document.
+
 2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
 
 	* tree-ssa-math-opts.c (is_widening_mult_rhs_p): Handle constants
