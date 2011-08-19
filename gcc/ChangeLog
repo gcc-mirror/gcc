@@ -1,3 +1,9 @@
+2011-08-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/49721
+	* explow.c (convert_memory_address_addr_space): Also permute the
+	conversion and addition of constant for zero-extend.
+
 2011-08-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (c_parser_postfix_expression): Handle

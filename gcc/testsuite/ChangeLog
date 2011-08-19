@@ -1,3 +1,9 @@
+2011-08-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/49721
+	* gfortran.dg/pr49721-1.f: New.
+	* gfortran.fortran-torture/compile/pr49721-1.f: Likewise.
+
 2011-08-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/builtin-complex-err-1.c, gcc.dg/builtin-complex-err-2.c,
