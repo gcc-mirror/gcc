@@ -8003,19 +8003,16 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	{
 	  enum machine_mode innermode = TYPE_MODE (TREE_TYPE (treeop0));
 	  this_optab = usmul_widen_optab;
-	  if (mode == GET_MODE_2XWIDER_MODE (innermode))
+	  if (find_widening_optab_handler (this_optab, mode, innermode, 0)
+		!= CODE_FOR_nothing)
 	    {
-	      if (widening_optab_handler (this_optab, mode, innermode)
-		    != CODE_FOR_nothing)
-		{
-		  if (TYPE_UNSIGNED (TREE_TYPE (treeop0)))
-		    expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
-				     EXPAND_NORMAL);
-		  else
-		    expand_operands (treeop0, treeop1, NULL_RTX, &op1, &op0,
-				     EXPAND_NORMAL);
-		  goto binop3;
-		}
+	      if (TYPE_UNSIGNED (TREE_TYPE (treeop0)))
+		expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
+				 EXPAND_NORMAL);
+	      else
+		expand_operands (treeop0, treeop1, NULL_RTX, &op1, &op0,
+				 EXPAND_NORMAL);
+	      goto binop3;
 	    }
 	}
       /* Check for a multiplication with matching signedness.  */
@@ -8030,10 +8027,9 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	  optab other_optab = zextend_p ? smul_widen_optab : umul_widen_optab;
 	  this_optab = zextend_p ? umul_widen_optab : smul_widen_optab;
 
-	  if (mode == GET_MODE_2XWIDER_MODE (innermode)
-	      && TREE_CODE (treeop0) != INTEGER_CST)
+	  if (TREE_CODE (treeop0) != INTEGER_CST)
 	    {
-	      if (widening_optab_handler (this_optab, mode, innermode)
+	      if (find_widening_optab_handler (this_optab, mode, innermode, 0)
 		    != CODE_FOR_nothing)
 		{
 		  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
@@ -8042,7 +8038,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 					       unsignedp, this_optab);
 		  return REDUCE_BIT_FIELD (temp);
 		}
-	      if (widening_optab_handler (other_optab, mode, innermode)
+	      if (find_widening_optab_handler (other_optab, mode, innermode, 0)
 		    != CODE_FOR_nothing
 		  && innermode == word_mode)
 		{
