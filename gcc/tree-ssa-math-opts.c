@@ -2136,6 +2136,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
 			    enum tree_code code)
 {
   gimple rhs1_stmt = NULL, rhs2_stmt = NULL;
+  gimple conv1_stmt = NULL, conv2_stmt = NULL, conv_stmt;
   tree type, type1, type2, tmp;
   tree lhs, rhs1, rhs2, mult_rhs1, mult_rhs2, add_rhs;
   enum tree_code rhs1_code = ERROR_MARK, rhs2_code = ERROR_MARK;
@@ -2178,6 +2179,38 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   else
     return false;
 
+  /* Allow for one conversion statement between the multiply
+     and addition/subtraction statement.  If there are more than
+     one conversions then we assume they would invalidate this
+     transformation.  If that's not the case then they should have
+     been folded before now.  */
+  if (CONVERT_EXPR_CODE_P (rhs1_code))
+    {
+      conv1_stmt = rhs1_stmt;
+      rhs1 = gimple_assign_rhs1 (rhs1_stmt);
+      if (TREE_CODE (rhs1) == SSA_NAME)
+	{
+	  rhs1_stmt = SSA_NAME_DEF_STMT (rhs1);
+	  if (is_gimple_assign (rhs1_stmt))
+	    rhs1_code = gimple_assign_rhs_code (rhs1_stmt);
+	}
+      else
+	return false;
+    }
+  if (CONVERT_EXPR_CODE_P (rhs2_code))
+    {
+      conv2_stmt = rhs2_stmt;
+      rhs2 = gimple_assign_rhs1 (rhs2_stmt);
+      if (TREE_CODE (rhs2) == SSA_NAME)
+	{
+	  rhs2_stmt = SSA_NAME_DEF_STMT (rhs2);
+	  if (is_gimple_assign (rhs2_stmt))
+	    rhs2_code = gimple_assign_rhs_code (rhs2_stmt);
+	}
+      else
+	return false;
+    }
+
   /* If code is WIDEN_MULT_EXPR then it would seem unnecessary to call
      is_widening_mult_p, but we still need the rhs returns.
 
@@ -2191,6 +2224,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
 			       &type2, &mult_rhs2))
 	return false;
       add_rhs = rhs2;
+      conv_stmt = conv1_stmt;
     }
   else if (rhs2_code == MULT_EXPR || rhs2_code == WIDEN_MULT_EXPR)
     {
@@ -2198,6 +2232,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
 			       &type2, &mult_rhs2))
 	return false;
       add_rhs = rhs1;
+      conv_stmt = conv2_stmt;
     }
   else
     return false;
@@ -2207,6 +2242,33 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
 
   if (TYPE_UNSIGNED (type1) != TYPE_UNSIGNED (type2))
     return false;
+
+  /* If there was a conversion between the multiply and addition
+     then we need to make sure it fits a multiply-and-accumulate.
+     The should be a single mode change which does not change the
+     value.  */
+  if (conv_stmt)
+    {
+      tree from_type = TREE_TYPE (gimple_assign_rhs1 (conv_stmt));
+      tree to_type = TREE_TYPE (gimple_assign_lhs (conv_stmt));
+      int data_size = TYPE_PRECISION (type1) + TYPE_PRECISION (type2);
+      bool is_unsigned = TYPE_UNSIGNED (type1) && TYPE_UNSIGNED (type2);
+
+      if (TYPE_PRECISION (from_type) > TYPE_PRECISION (to_type))
+	{
+	  /* Conversion is a truncate.  */
+	  if (TYPE_PRECISION (to_type) < data_size)
+	    return false;
+	}
+      else if (TYPE_PRECISION (from_type) < TYPE_PRECISION (to_type))
+	{
+	  /* Conversion is an extend.  Check it's the right sort.  */
+	  if (TYPE_UNSIGNED (from_type) != is_unsigned
+	      && !(is_unsigned && TYPE_PRECISION (from_type) > data_size))
+	    return false;
+	}
+      /* else convert is a no-op for our purposes.  */
+    }
 
   /* Verify that the machine can perform a widening multiply
      accumulate in this mode/signedness combination, otherwise

@@ -1,5 +1,10 @@
 2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
 
+	* gcc.target/arm/wmul-5.c: New file.
+	* gcc.target/arm/no-wmla-1.c: New file.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
 	* gcc.target/arm/wmul-bitfield-1.c: New file.
 
 2011-08-19  Joseph Myers  <joseph@codesourcery.com>
