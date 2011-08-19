@@ -46,10 +46,12 @@ along with GCC; see the file COPYING3.  If not see
    used.  $A and $B are replaced with the full name of the mode; $a and $b
    are replaced with the short form of the name, as above.
 
-   If $N is present in the pattern, it means the two modes must be consecutive
-   widths in the same mode class (e.g, QImode and HImode).  $I means that
-   only full integer modes should be considered for the next mode, and $F
-   means that only float modes should be considered.
+   If $N is present in the pattern, it means the two modes must be in
+   the same mode class, and $b must be greater than $a (e.g, QImode
+   and HImode).
+
+   $I means that only full integer modes should be considered for the
+   next mode, and $F means that only float modes should be considered.
    $P means that both full and partial integer modes should be considered.
    $Q means that only fixed-point modes should be considered.
 
@@ -99,17 +101,17 @@ static const char * const optabs[] =
   "set_optab_handler (smulv_optab, $A, CODE_FOR_$(mulv$I$a3$))",
   "set_optab_handler (umul_highpart_optab, $A, CODE_FOR_$(umul$a3_highpart$))",
   "set_optab_handler (smul_highpart_optab, $A, CODE_FOR_$(smul$a3_highpart$))",
-  "set_optab_handler (smul_widen_optab, $B, CODE_FOR_$(mul$a$b3$)$N)",
-  "set_optab_handler (umul_widen_optab, $B, CODE_FOR_$(umul$a$b3$)$N)",
-  "set_optab_handler (usmul_widen_optab, $B, CODE_FOR_$(usmul$a$b3$)$N)",
-  "set_optab_handler (smadd_widen_optab, $B, CODE_FOR_$(madd$a$b4$)$N)",
-  "set_optab_handler (umadd_widen_optab, $B, CODE_FOR_$(umadd$a$b4$)$N)",
-  "set_optab_handler (ssmadd_widen_optab, $B, CODE_FOR_$(ssmadd$a$b4$)$N)",
-  "set_optab_handler (usmadd_widen_optab, $B, CODE_FOR_$(usmadd$a$b4$)$N)",
-  "set_optab_handler (smsub_widen_optab, $B, CODE_FOR_$(msub$a$b4$)$N)",
-  "set_optab_handler (umsub_widen_optab, $B, CODE_FOR_$(umsub$a$b4$)$N)",
-  "set_optab_handler (ssmsub_widen_optab, $B, CODE_FOR_$(ssmsub$a$b4$)$N)",
-  "set_optab_handler (usmsub_widen_optab, $B, CODE_FOR_$(usmsub$a$b4$)$N)",
+  "set_widening_optab_handler (smul_widen_optab, $B, $A, CODE_FOR_$(mul$a$b3$)$N)",
+  "set_widening_optab_handler (umul_widen_optab, $B, $A, CODE_FOR_$(umul$a$b3$)$N)",
+  "set_widening_optab_handler (usmul_widen_optab, $B, $A, CODE_FOR_$(usmul$a$b3$)$N)",
+  "set_widening_optab_handler (smadd_widen_optab, $B, $A, CODE_FOR_$(madd$a$b4$)$N)",
+  "set_widening_optab_handler (umadd_widen_optab, $B, $A, CODE_FOR_$(umadd$a$b4$)$N)",
+  "set_widening_optab_handler (ssmadd_widen_optab, $B, $A, CODE_FOR_$(ssmadd$a$b4$)$N)",
+  "set_widening_optab_handler (usmadd_widen_optab, $B, $A, CODE_FOR_$(usmadd$a$b4$)$N)",
+  "set_widening_optab_handler (smsub_widen_optab, $B, $A, CODE_FOR_$(msub$a$b4$)$N)",
+  "set_widening_optab_handler (umsub_widen_optab, $B, $A, CODE_FOR_$(umsub$a$b4$)$N)",
+  "set_widening_optab_handler (ssmsub_widen_optab, $B, $A, CODE_FOR_$(ssmsub$a$b4$)$N)",
+  "set_widening_optab_handler (usmsub_widen_optab, $B, $A, CODE_FOR_$(usmsub$a$b4$)$N)",
   "set_optab_handler (sdiv_optab, $A, CODE_FOR_$(div$a3$))",
   "set_optab_handler (ssdiv_optab, $A, CODE_FOR_$(ssdiv$Q$a3$))",
   "set_optab_handler (sdivv_optab, $A, CODE_FOR_$(div$V$I$a3$))",
@@ -305,7 +307,7 @@ gen_insn (rtx insn)
     {
       int force_float = 0, force_int = 0, force_partial_int = 0;
       int force_fixed = 0;
-      int force_consec = 0;
+      int force_wider = 0;
       int matches = 1;
 
       for (pp = optabs[pindex]; pp[0] != '$' || pp[1] != '('; pp++)
@@ -323,7 +325,7 @@ gen_insn (rtx insn)
 	    switch (*++pp)
 	      {
 	      case 'N':
-		force_consec = 1;
+		force_wider = 1;
 		break;
 	      case 'I':
 		force_int = 1;
@@ -392,7 +394,10 @@ gen_insn (rtx insn)
 			    || mode_class[i] == MODE_VECTOR_FRACT
 			    || mode_class[i] == MODE_VECTOR_UFRACT
 			    || mode_class[i] == MODE_VECTOR_ACCUM
-			    || mode_class[i] == MODE_VECTOR_UACCUM))
+			    || mode_class[i] == MODE_VECTOR_UACCUM)
+			&& (! force_wider
+			    || *pp == 'a'
+			    || m1 < i))
 		      break;
 		  }
 
@@ -412,8 +417,7 @@ gen_insn (rtx insn)
 	}
 
       if (matches && pp[0] == '$' && pp[1] == ')'
-	  && *np == 0
-	  && (! force_consec || (int) GET_MODE_WIDER_MODE(m1) == m2))
+	  && *np == 0)
 	break;
     }
 

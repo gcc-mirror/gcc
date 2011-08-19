@@ -1,3 +1,20 @@
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* expr.c (expand_expr_real_2): Use widening_optab_handler.
+	* genopinit.c (optabs): Use set_widening_optab_handler for $N.
+	(gen_insn): $N now means $a must be wider than $b, not consecutive.
+	* optabs.c (widened_mode): New function.
+	(expand_widen_pattern_expr): Use widening_optab_handler.
+	(expand_binop_directly): Likewise.
+	(expand_binop): Likewise.
+	* optabs.h (widening_optab_handlers): New struct.
+	(optab_d): New member, 'widening'.
+	(widening_optab_handler): New function.
+	(set_widening_optab_handler): New function.
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Use
+	widening_optab_handler.
+	(convert_plusminus_to_widen): Likewise.
+
 2011-08-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (grokdeclarator): Diagnose _Noreturn for non-C1X if

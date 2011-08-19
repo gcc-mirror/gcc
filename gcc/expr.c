@@ -8005,7 +8005,8 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	  this_optab = usmul_widen_optab;
 	  if (mode == GET_MODE_2XWIDER_MODE (innermode))
 	    {
-	      if (optab_handler (this_optab, mode) != CODE_FOR_nothing)
+	      if (widening_optab_handler (this_optab, mode, innermode)
+		    != CODE_FOR_nothing)
 		{
 		  if (TYPE_UNSIGNED (TREE_TYPE (treeop0)))
 		    expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
@@ -8032,7 +8033,8 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	  if (mode == GET_MODE_2XWIDER_MODE (innermode)
 	      && TREE_CODE (treeop0) != INTEGER_CST)
 	    {
-	      if (optab_handler (this_optab, mode) != CODE_FOR_nothing)
+	      if (widening_optab_handler (this_optab, mode, innermode)
+		    != CODE_FOR_nothing)
 		{
 		  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
 				   EXPAND_NORMAL);
@@ -8040,7 +8042,8 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 					       unsignedp, this_optab);
 		  return REDUCE_BIT_FIELD (temp);
 		}
-	      if (optab_handler (other_optab, mode) != CODE_FOR_nothing
+	      if (widening_optab_handler (other_optab, mode, innermode)
+		    != CODE_FOR_nothing
 		  && innermode == word_mode)
 		{
 		  rtx htem, hipart;
