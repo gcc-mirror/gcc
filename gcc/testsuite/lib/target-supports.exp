@@ -2116,6 +2116,19 @@ proc check_effective_target_arm_thumb2 { } {
     } ""]
 }
 
+# Return 1 if this is an ARM cortex-M profile cpu
+
+proc check_effective_target_arm_cortex_m { } {
+    return [check_no_compiler_messages arm_cortex_m assembly {
+	#if !defined(__ARM_ARCH_7M__) \
+            && !defined (__ARM_ARCH_7EM__) \
+            && !defined (__ARM_ARCH_6M__)
+	#error FOO
+	#endif
+	int i;
+    } "-mthumb"]
+}
+
 # Return 1 if the target supports executing NEON instructions, 0
 # otherwise.  Cache the result.
 
