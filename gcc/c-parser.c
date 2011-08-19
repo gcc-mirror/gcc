@@ -1905,6 +1905,9 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
    C99 6.7.4:
    function-specifier:
      inline
+     _Noreturn
+
+   (_Noreturn is new in C1X.)
 
    C90 6.5.2, C99 6.7.2:
    type-specifier:

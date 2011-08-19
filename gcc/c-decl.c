@@ -5986,7 +5986,18 @@ grokdeclarator (const struct c_declarator *declarator,
 	      /* Record that the function is declared `inline'.  */
 	      DECL_DECLARED_INLINE_P (decl) = 1;
 	    if (declspecs->noreturn_p)
-	      TREE_THIS_VOLATILE (decl) = 1;
+	      {
+		if (!flag_isoc1x)
+		  {
+		    if (flag_isoc99)
+		      pedwarn (loc, OPT_pedantic,
+			       "ISO C99 does not support %<_Noreturn%>");
+		    else
+		      pedwarn (loc, OPT_pedantic,
+			       "ISO C90 does not support %<_Noreturn%>");
+		  }
+		TREE_THIS_VOLATILE (decl) = 1;
+	      }
 	  }
       }
     else

@@ -1,5 +1,13 @@
 2011-08-19  Joseph Myers  <joseph@codesourcery.com>
 
+	* c-decl.c (grokdeclarator): Diagnose _Noreturn for non-C1X if
+	pedantic.
+	* c-parser.c (c_parser_declspecs): Include _Noreturn in syntax
+	comment.
+	* ginclude/stdnoreturn.h (noreturn): Don't define for C++.
+
+2011-08-19  Joseph Myers  <joseph@codesourcery.com>
+
 	* opth-gen.awk: Do not declare target save/restore structures and
 	functions if IN_RTS defined.
 
