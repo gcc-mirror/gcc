@@ -1,3 +1,7 @@
+2011-08-19  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.c-torture/execute/20101011-1.c (DO_TEST): Skip on ARM.
+
 2011-08-19  Mikael Morin  <mikael.morin@sfr.fr>
 
 	PR fortran/50071
