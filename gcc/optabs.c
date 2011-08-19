@@ -225,6 +225,30 @@ add_equal_note (rtx insns, rtx target, enum rtx_code code, rtx op0, rtx op1)
   return 1;
 }
 
+/* Given two input operands, OP0 and OP1, determine what the correct from_mode
+   for a widening operation would be.  In most cases this would be OP0, but if
+   that's a constant it'll be VOIDmode, which isn't useful.  */
+
+static enum machine_mode
+widened_mode (enum machine_mode to_mode, rtx op0, rtx op1)
+{
+  enum machine_mode m0 = GET_MODE (op0);
+  enum machine_mode m1 = GET_MODE (op1);
+  enum machine_mode result;
+
+  if (m0 == VOIDmode && m1 == VOIDmode)
+    return to_mode;
+  else if (m0 == VOIDmode || GET_MODE_SIZE (m0) < GET_MODE_SIZE (m1))
+    result = m1;
+  else
+    result = m0;
+
+  if (GET_MODE_SIZE (result) > GET_MODE_SIZE (to_mode))
+    return to_mode;
+
+  return result;
+}
+
 /* Widen OP to MODE and return the rtx for the widened operand.  UNSIGNEDP
    says whether OP is signed or unsigned.  NO_EXTEND is nonzero if we need
    not actually do a sign-extend or zero-extend, but can leave the
@@ -515,8 +539,8 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
     optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
   if (ops->code == WIDEN_MULT_PLUS_EXPR
       || ops->code == WIDEN_MULT_MINUS_EXPR)
-    icode = optab_handler (widen_pattern_optab,
-			   TYPE_MODE (TREE_TYPE (ops->op2)));
+    icode = widening_optab_handler (widen_pattern_optab,
+				    TYPE_MODE (TREE_TYPE (ops->op2)), tmode0);
   else
     icode = optab_handler (widen_pattern_optab, tmode0);
   gcc_assert (icode != CODE_FOR_nothing);
@@ -1242,7 +1266,8 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
 		       rtx target, int unsignedp, enum optab_methods methods,
 		       rtx last)
 {
-  enum insn_code icode = optab_handler (binoptab, mode);
+  enum machine_mode from_mode = widened_mode (mode, op0, op1);
+  enum insn_code icode = widening_optab_handler (binoptab, mode, from_mode);
   enum machine_mode xmode0 = insn_data[(int) icode].operand[1].mode;
   enum machine_mode xmode1 = insn_data[(int) icode].operand[2].mode;
   enum machine_mode mode0, mode1, tmp_mode;
@@ -1389,7 +1414,9 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
   /* If we can do it with a three-operand insn, do so.  */
 
   if (methods != OPTAB_MUST_WIDEN
-      && optab_handler (binoptab, mode) != CODE_FOR_nothing)
+      && widening_optab_handler (binoptab, mode,
+				 widened_mode (mode, op0, op1))
+	    != CODE_FOR_nothing)
     {
       temp = expand_binop_directly (mode, binoptab, op0, op1, target,
 				    unsignedp, methods, last);
@@ -1429,8 +1456,9 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
   if (binoptab == smul_optab
       && GET_MODE_2XWIDER_MODE (mode) != VOIDmode
-      && (optab_handler ((unsignedp ? umul_widen_optab : smul_widen_optab),
-			 GET_MODE_2XWIDER_MODE (mode))
+      && (widening_optab_handler ((unsignedp ? umul_widen_optab
+					     : smul_widen_optab),
+				  GET_MODE_2XWIDER_MODE (mode), mode)
 	  != CODE_FOR_nothing))
     {
       temp = expand_binop (GET_MODE_2XWIDER_MODE (mode),
@@ -1460,9 +1488,10 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	if (optab_handler (binoptab, wider_mode) != CODE_FOR_nothing
 	    || (binoptab == smul_optab
 		&& GET_MODE_WIDER_MODE (wider_mode) != VOIDmode
-		&& (optab_handler ((unsignedp ? umul_widen_optab
-				    : smul_widen_optab),
-				   GET_MODE_WIDER_MODE (wider_mode))
+		&& (widening_optab_handler ((unsignedp ? umul_widen_optab
+						       : smul_widen_optab),
+					    GET_MODE_WIDER_MODE (wider_mode),
+					    mode)
 		    != CODE_FOR_nothing)))
 	  {
 	    rtx xop0 = op0, xop1 = op1;
@@ -1895,8 +1924,8 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       && optab_handler (add_optab, word_mode) != CODE_FOR_nothing)
     {
       rtx product = NULL_RTX;
-
-      if (optab_handler (umul_widen_optab, mode) != CODE_FOR_nothing)
+      if (widening_optab_handler (umul_widen_optab, mode, word_mode)
+	    != CODE_FOR_nothing)
 	{
 	  product = expand_doubleword_mult (mode, op0, op1, target,
 					    true, methods);
@@ -1905,7 +1934,8 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	}
 
       if (product == NULL_RTX
-	  && optab_handler (smul_widen_optab, mode) != CODE_FOR_nothing)
+	  && widening_optab_handler (smul_widen_optab, mode, word_mode)
+		!= CODE_FOR_nothing)
 	{
 	  product = expand_doubleword_mult (mode, op0, op1, target,
 					    false, methods);
@@ -1997,6 +2027,8 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
 	{
 	  if (optab_handler (binoptab, wider_mode) != CODE_FOR_nothing
+	      || widening_optab_handler (binoptab, wider_mode, mode)
+		  != CODE_FOR_nothing
 	      || (methods == OPTAB_LIB
 		  && optab_libfunc (binoptab, wider_mode)))
 	    {

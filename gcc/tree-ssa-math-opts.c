@@ -2056,6 +2056,8 @@ convert_mult_to_widen (gimple stmt)
 {
   tree lhs, rhs1, rhs2, type, type1, type2;
   enum insn_code handler;
+  enum machine_mode to_mode, from_mode;
+  optab op;
 
   lhs = gimple_assign_lhs (stmt);
   type = TREE_TYPE (lhs);
@@ -2065,12 +2067,17 @@ convert_mult_to_widen (gimple stmt)
   if (!is_widening_mult_p (stmt, &type1, &rhs1, &type2, &rhs2))
     return false;
 
+  to_mode = TYPE_MODE (type);
+  from_mode = TYPE_MODE (type1);
+
   if (TYPE_UNSIGNED (type1) && TYPE_UNSIGNED (type2))
-    handler = optab_handler (umul_widen_optab, TYPE_MODE (type));
+    op = umul_widen_optab;
   else if (!TYPE_UNSIGNED (type1) && !TYPE_UNSIGNED (type2))
-    handler = optab_handler (smul_widen_optab, TYPE_MODE (type));
+    op = smul_widen_optab;
   else
-    handler = optab_handler (usmul_widen_optab, TYPE_MODE (type));
+    op = usmul_widen_optab;
+
+  handler = widening_optab_handler (op, to_mode, from_mode);
 
   if (handler == CODE_FOR_nothing)
     return false;
@@ -2172,7 +2179,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
      accumulate in this mode/signedness combination, otherwise
      this transformation is likely to pessimize code.  */
   this_optab = optab_for_tree_code (wmult_code, type1, optab_default);
-  if (optab_handler (this_optab, TYPE_MODE (type)) == CODE_FOR_nothing)
+  if (widening_optab_handler (this_optab, TYPE_MODE (type), TYPE_MODE (type1))
+	== CODE_FOR_nothing)
     return false;
 
   /* ??? May need some type verification here?  */
