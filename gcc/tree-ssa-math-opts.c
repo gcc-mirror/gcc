@@ -1995,7 +1995,16 @@ is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
 	      : rhs_code != FIXED_CONVERT_EXPR)
 	    rhs1 = rhs;
 	  else
-	    rhs1 = gimple_assign_rhs1 (stmt);
+	    {
+	      rhs1 = gimple_assign_rhs1 (stmt);
+
+	      if (TREE_CODE (rhs1) == INTEGER_CST)
+		{
+		  *new_rhs_out = rhs1;
+		  *type_out = NULL;
+		  return true;
+		}
+	    }
 	}
       else
 	rhs1 = rhs;
@@ -2164,6 +2173,12 @@ convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
       rhs2 = build_and_insert_cast (gsi, loc, tmp, rhs2);
     }
 
+  /* Handle constants.  */
+  if (TREE_CODE (rhs1) == INTEGER_CST)
+    rhs1 = fold_convert (type1, rhs1);
+  if (TREE_CODE (rhs2) == INTEGER_CST)
+    rhs2 = fold_convert (type2, rhs2);
+
   gimple_assign_set_rhs1 (stmt, rhs1);
   gimple_assign_set_rhs2 (stmt, rhs2);
   gimple_assign_set_rhs_code (stmt, WIDEN_MULT_EXPR);
@@ -2215,8 +2230,6 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
       if (is_gimple_assign (rhs1_stmt))
 	rhs1_code = gimple_assign_rhs_code (rhs1_stmt);
     }
-  else
-    return false;
 
   if (TREE_CODE (rhs2) == SSA_NAME)
     {
@@ -2224,8 +2237,6 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
       if (is_gimple_assign (rhs2_stmt))
 	rhs2_code = gimple_assign_rhs_code (rhs2_stmt);
     }
-  else
-    return false;
 
   /* Allow for one conversion statement between the multiply
      and addition/subtraction statement.  If there are more than
@@ -2372,6 +2383,12 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   if (!useless_type_conversion_p (type, TREE_TYPE (add_rhs)))
     add_rhs = build_and_insert_cast (gsi, loc, create_tmp_var (type, NULL),
 				     add_rhs);
+
+  /* Handle constants.  */
+  if (TREE_CODE (mult_rhs1) == INTEGER_CST)
+    rhs1 = fold_convert (type1, mult_rhs1);
+  if (TREE_CODE (mult_rhs2) == INTEGER_CST)
+    rhs2 = fold_convert (type2, mult_rhs2);
 
   gimple_assign_set_rhs_with_ops_1 (gsi, wmult_code, mult_rhs1, mult_rhs2,
 				    add_rhs);

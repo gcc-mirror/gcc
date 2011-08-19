@@ -1,5 +1,14 @@
 2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
 
+	* tree-ssa-math-opts.c (is_widening_mult_rhs_p): Handle constants
+	beyond conversions.
+	(convert_mult_to_widen): Convert constant inputs to the right type.
+	(convert_plusminus_to_widen): Don't automatically reject inputs that
+	are not an SSA_NAME.
+	Convert constant inputs to the right type.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
 	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Convert add_rhs
 	to the correct type.
 
