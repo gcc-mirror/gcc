@@ -6428,7 +6428,13 @@ c_parser_postfix_expression (c_parser *parser)
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				     "expected %<)%>");
 	  mark_exp_read (e1.value);
+	  if (TREE_CODE (e1.value) == EXCESS_PRECISION_EXPR)
+	    e1.value = convert (TREE_TYPE (e1.value),
+				TREE_OPERAND (e1.value, 0));
 	  mark_exp_read (e2.value);
+	  if (TREE_CODE (e2.value) == EXCESS_PRECISION_EXPR)
+	    e2.value = convert (TREE_TYPE (e2.value),
+				TREE_OPERAND (e2.value, 0));
 	  if (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (e1.value))
 	      || DECIMAL_FLOAT_TYPE_P (TREE_TYPE (e1.value))
 	      || !SCALAR_FLOAT_TYPE_P (TREE_TYPE (e2.value))

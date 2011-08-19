@@ -1,3 +1,8 @@
+2011-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_postfix_expression): Convert operands of
+	__builtin_complex to their semantic types.
+
 2011-08-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/49721
