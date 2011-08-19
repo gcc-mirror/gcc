@@ -1,3 +1,8 @@
+2011-08-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/builtins-67.c: Use dg-add-options c99_runtime.
+	* gcc.target/i386/conversion.c: Likewise.
+
 2011-08-19  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/torture/pr50067-1.c: New testcase.
