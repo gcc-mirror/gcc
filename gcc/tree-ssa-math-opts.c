@@ -2115,9 +2115,18 @@ convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
     {
       if (op != smul_widen_optab)
 	{
-	  from_mode = GET_MODE_WIDER_MODE (from_mode);
-	  if (GET_MODE_SIZE (to_mode) <= GET_MODE_SIZE (from_mode))
-	    return false;
+	  /* We can use a signed multiply with unsigned types as long as
+	     there is a wider mode to use, or it is the smaller of the two
+	     types that is unsigned.  Note that type1 >= type2, always.  */
+	  if ((TYPE_UNSIGNED (type1)
+	       && TYPE_PRECISION (type1) == GET_MODE_PRECISION (from_mode))
+	      || (TYPE_UNSIGNED (type2)
+		  && TYPE_PRECISION (type2) == GET_MODE_PRECISION (from_mode)))
+	    {
+	      from_mode = GET_MODE_WIDER_MODE (from_mode);
+	      if (GET_MODE_SIZE (to_mode) <= GET_MODE_SIZE (from_mode))
+		return false;
+	    }
 
 	  op = smul_widen_optab;
 	  handler = find_widening_optab_handler_and_mode (op, to_mode,
@@ -2284,14 +2293,20 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   /* There's no such thing as a mixed sign madd yet, so use a wider mode.  */
   if (from_unsigned1 != from_unsigned2)
     {
-      enum machine_mode mode = GET_MODE_WIDER_MODE (from_mode);
-      if (GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (to_mode))
+      /* We can use a signed multiply with unsigned types as long as
+	 there is a wider mode to use, or it is the smaller of the two
+	 types that is unsigned.  Note that type1 >= type2, always.  */
+      if ((from_unsigned1
+	   && TYPE_PRECISION (type1) == GET_MODE_PRECISION (from_mode))
+	  || (from_unsigned2
+	      && TYPE_PRECISION (type2) == GET_MODE_PRECISION (from_mode)))
 	{
-	  from_mode = mode;
-	  from_unsigned1 = from_unsigned2 = false;
+	  from_mode = GET_MODE_WIDER_MODE (from_mode);
+	  if (GET_MODE_SIZE (from_mode) >= GET_MODE_SIZE (to_mode))
+	    return false;
 	}
-      else
-	return false;
+
+      from_unsigned1 = from_unsigned2 = false;
     }
 
   /* If there was a conversion between the multiply and addition
