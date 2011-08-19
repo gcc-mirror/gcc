@@ -2068,12 +2068,13 @@ is_widening_mult_p (gimple stmt,
 static bool
 convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
 {
-  tree lhs, rhs1, rhs2, type, type1, type2, tmp;
+  tree lhs, rhs1, rhs2, type, type1, type2, tmp = NULL;
   enum insn_code handler;
   enum machine_mode to_mode, from_mode, actual_mode;
   optab op;
   int actual_precision;
   location_t loc = gimple_location (stmt);
+  bool from_unsigned1, from_unsigned2;
 
   lhs = gimple_assign_lhs (stmt);
   type = TREE_TYPE (lhs);
@@ -2085,10 +2086,12 @@ convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
 
   to_mode = TYPE_MODE (type);
   from_mode = TYPE_MODE (type1);
+  from_unsigned1 = TYPE_UNSIGNED (type1);
+  from_unsigned2 = TYPE_UNSIGNED (type2);
 
-  if (TYPE_UNSIGNED (type1) && TYPE_UNSIGNED (type2))
+  if (from_unsigned1 && from_unsigned2)
     op = umul_widen_optab;
-  else if (!TYPE_UNSIGNED (type1) && !TYPE_UNSIGNED (type2))
+  else if (!from_unsigned1 && !from_unsigned2)
     op = smul_widen_optab;
   else
     op = usmul_widen_optab;
@@ -2097,22 +2100,45 @@ convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
 						  0, &actual_mode);
 
   if (handler == CODE_FOR_nothing)
-    return false;
+    {
+      if (op != smul_widen_optab)
+	{
+	  from_mode = GET_MODE_WIDER_MODE (from_mode);
+	  if (GET_MODE_SIZE (to_mode) <= GET_MODE_SIZE (from_mode))
+	    return false;
+
+	  op = smul_widen_optab;
+	  handler = find_widening_optab_handler_and_mode (op, to_mode,
+							  from_mode, 0,
+							  &actual_mode);
+
+	  if (handler == CODE_FOR_nothing)
+	    return false;
+
+	  from_unsigned1 = from_unsigned2 = false;
+	}
+      else
+	return false;
+    }
 
   /* Ensure that the inputs to the handler are in the correct precison
      for the opcode.  This will be the full mode size.  */
   actual_precision = GET_MODE_PRECISION (actual_mode);
-  if (actual_precision != TYPE_PRECISION (type1))
+  if (actual_precision != TYPE_PRECISION (type1)
+      || from_unsigned1 != TYPE_UNSIGNED (type1))
     {
       tmp = create_tmp_var (build_nonstandard_integer_type
-				(actual_precision, TYPE_UNSIGNED (type1)),
+				(actual_precision, from_unsigned1),
 			    NULL);
       rhs1 = build_and_insert_cast (gsi, loc, tmp, rhs1);
-
+    }
+  if (actual_precision != TYPE_PRECISION (type2)
+      || from_unsigned2 != TYPE_UNSIGNED (type2))
+    {
       /* Reuse the same type info, if possible.  */
-      if (TYPE_UNSIGNED (type1) != TYPE_UNSIGNED (type2))
+      if (!tmp || from_unsigned1 != from_unsigned2)
 	tmp = create_tmp_var (build_nonstandard_integer_type
-				(actual_precision, TYPE_UNSIGNED (type2)),
+				(actual_precision, from_unsigned2),
 			      NULL);
       rhs2 = build_and_insert_cast (gsi, loc, tmp, rhs2);
     }
@@ -2137,7 +2163,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
 {
   gimple rhs1_stmt = NULL, rhs2_stmt = NULL;
   gimple conv1_stmt = NULL, conv2_stmt = NULL, conv_stmt;
-  tree type, type1, type2, tmp;
+  tree type, type1, type2, optype, tmp = NULL;
   tree lhs, rhs1, rhs2, mult_rhs1, mult_rhs2, add_rhs;
   enum tree_code rhs1_code = ERROR_MARK, rhs2_code = ERROR_MARK;
   optab this_optab;
@@ -2146,6 +2172,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   enum machine_mode to_mode, from_mode, actual_mode;
   location_t loc = gimple_location (stmt);
   int actual_precision;
+  bool from_unsigned1, from_unsigned2;
 
   lhs = gimple_assign_lhs (stmt);
   type = TREE_TYPE (lhs);
@@ -2239,9 +2266,21 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
 
   to_mode = TYPE_MODE (type);
   from_mode = TYPE_MODE (type1);
+  from_unsigned1 = TYPE_UNSIGNED (type1);
+  from_unsigned2 = TYPE_UNSIGNED (type2);
 
-  if (TYPE_UNSIGNED (type1) != TYPE_UNSIGNED (type2))
-    return false;
+  /* There's no such thing as a mixed sign madd yet, so use a wider mode.  */
+  if (from_unsigned1 != from_unsigned2)
+    {
+      enum machine_mode mode = GET_MODE_WIDER_MODE (from_mode);
+      if (GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (to_mode))
+	{
+	  from_mode = mode;
+	  from_unsigned1 = from_unsigned2 = false;
+	}
+      else
+	return false;
+    }
 
   /* If there was a conversion between the multiply and addition
      then we need to make sure it fits a multiply-and-accumulate.
@@ -2249,6 +2288,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
      value.  */
   if (conv_stmt)
     {
+      /* We use the original, unmodified data types for this.  */
       tree from_type = TREE_TYPE (gimple_assign_rhs1 (conv_stmt));
       tree to_type = TREE_TYPE (gimple_assign_lhs (conv_stmt));
       int data_size = TYPE_PRECISION (type1) + TYPE_PRECISION (type2);
@@ -2273,7 +2313,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   /* Verify that the machine can perform a widening multiply
      accumulate in this mode/signedness combination, otherwise
      this transformation is likely to pessimize code.  */
-  this_optab = optab_for_tree_code (wmult_code, type1, optab_default);
+  optype = build_nonstandard_integer_type (from_mode, from_unsigned1);
+  this_optab = optab_for_tree_code (wmult_code, optype, optab_default);
   handler = find_widening_optab_handler_and_mode (this_optab, to_mode,
 						  from_mode, 0, &actual_mode);
 
@@ -2283,13 +2324,21 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   /* Ensure that the inputs to the handler are in the correct precison
      for the opcode.  This will be the full mode size.  */
   actual_precision = GET_MODE_PRECISION (actual_mode);
-  if (actual_precision != TYPE_PRECISION (type1))
+  if (actual_precision != TYPE_PRECISION (type1)
+      || from_unsigned1 != TYPE_UNSIGNED (type1))
     {
       tmp = create_tmp_var (build_nonstandard_integer_type
-				(actual_precision, TYPE_UNSIGNED (type1)),
+				(actual_precision, from_unsigned1),
 			    NULL);
-
       mult_rhs1 = build_and_insert_cast (gsi, loc, tmp, mult_rhs1);
+    }
+  if (actual_precision != TYPE_PRECISION (type2)
+      || from_unsigned2 != TYPE_UNSIGNED (type2))
+    {
+      if (!tmp || from_unsigned1 != from_unsigned2)
+	tmp = create_tmp_var (build_nonstandard_integer_type
+				(actual_precision, from_unsigned2),
+			      NULL);
       mult_rhs2 = build_and_insert_cast (gsi, loc, tmp, mult_rhs2);
     }
 
