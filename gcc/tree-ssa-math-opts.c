@@ -1966,7 +1966,8 @@ struct gimple_opt_pass pass_optimize_bswap =
  }
 };
 
-/* Return true if RHS is a suitable operand for a widening multiplication.
+/* Return true if RHS is a suitable operand for a widening multiplication,
+   assuming a target type of TYPE.
    There are two cases:
 
      - RHS makes some value at least twice as wide.  Store that value
@@ -1976,27 +1977,31 @@ struct gimple_opt_pass pass_optimize_bswap =
        but leave *TYPE_OUT untouched.  */
 
 static bool
-is_widening_mult_rhs_p (tree rhs, tree *type_out, tree *new_rhs_out)
+is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
+			tree *new_rhs_out)
 {
   gimple stmt;
-  tree type, type1, rhs1;
+  tree type1, rhs1;
   enum tree_code rhs_code;
 
   if (TREE_CODE (rhs) == SSA_NAME)
     {
-      type = TREE_TYPE (rhs);
       stmt = SSA_NAME_DEF_STMT (rhs);
-      if (!is_gimple_assign (stmt))
-	return false;
+      if (is_gimple_assign (stmt))
+	{
+	  rhs_code = gimple_assign_rhs_code (stmt);
+	  if (TREE_CODE (type) == INTEGER_TYPE
+	      ? !CONVERT_EXPR_CODE_P (rhs_code)
+	      : rhs_code != FIXED_CONVERT_EXPR)
+	    rhs1 = rhs;
+	  else
+	    rhs1 = gimple_assign_rhs1 (stmt);
+	}
+      else
+	rhs1 = rhs;
 
-      rhs_code = gimple_assign_rhs_code (stmt);
-      if (TREE_CODE (type) == INTEGER_TYPE
-	  ? !CONVERT_EXPR_CODE_P (rhs_code)
-	  : rhs_code != FIXED_CONVERT_EXPR)
-	return false;
-
-      rhs1 = gimple_assign_rhs1 (stmt);
       type1 = TREE_TYPE (rhs1);
+
       if (TREE_CODE (type1) != TREE_CODE (type)
 	  || TYPE_PRECISION (type1) * 2 > TYPE_PRECISION (type))
 	return false;
@@ -2016,28 +2021,27 @@ is_widening_mult_rhs_p (tree rhs, tree *type_out, tree *new_rhs_out)
   return false;
 }
 
-/* Return true if STMT performs a widening multiplication.  If so,
-   store the unwidened types of the operands in *TYPE1_OUT and *TYPE2_OUT
-   respectively.  Also fill *RHS1_OUT and *RHS2_OUT such that converting
-   those operands to types *TYPE1_OUT and *TYPE2_OUT would give the
-   operands of the multiplication.  */
+/* Return true if STMT performs a widening multiplication, assuming the
+   output type is TYPE.  If so, store the unwidened types of the operands
+   in *TYPE1_OUT and *TYPE2_OUT respectively.  Also fill *RHS1_OUT and
+   *RHS2_OUT such that converting those operands to types *TYPE1_OUT
+   and *TYPE2_OUT would give the operands of the multiplication.  */
 
 static bool
-is_widening_mult_p (gimple stmt,
+is_widening_mult_p (tree type, gimple stmt,
 		    tree *type1_out, tree *rhs1_out,
 		    tree *type2_out, tree *rhs2_out)
 {
-  tree type;
-
-  type = TREE_TYPE (gimple_assign_lhs (stmt));
   if (TREE_CODE (type) != INTEGER_TYPE
       && TREE_CODE (type) != FIXED_POINT_TYPE)
     return false;
 
-  if (!is_widening_mult_rhs_p (gimple_assign_rhs1 (stmt), type1_out, rhs1_out))
+  if (!is_widening_mult_rhs_p (type, gimple_assign_rhs1 (stmt), type1_out,
+			       rhs1_out))
     return false;
 
-  if (!is_widening_mult_rhs_p (gimple_assign_rhs2 (stmt), type2_out, rhs2_out))
+  if (!is_widening_mult_rhs_p (type, gimple_assign_rhs2 (stmt), type2_out,
+			       rhs2_out))
     return false;
 
   if (*type1_out == NULL)
@@ -2089,7 +2093,7 @@ convert_mult_to_widen (gimple stmt, gimple_stmt_iterator *gsi)
   if (TREE_CODE (type) != INTEGER_TYPE)
     return false;
 
-  if (!is_widening_mult_p (stmt, &type1, &rhs1, &type2, &rhs2))
+  if (!is_widening_mult_p (type, stmt, &type1, &rhs1, &type2, &rhs2))
     return false;
 
   to_mode = TYPE_MODE (type);
@@ -2255,7 +2259,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   if (code == PLUS_EXPR
       && (rhs1_code == MULT_EXPR || rhs1_code == WIDEN_MULT_EXPR))
     {
-      if (!is_widening_mult_p (rhs1_stmt, &type1, &mult_rhs1,
+      if (!is_widening_mult_p (type, rhs1_stmt, &type1, &mult_rhs1,
 			       &type2, &mult_rhs2))
 	return false;
       add_rhs = rhs2;
@@ -2263,7 +2267,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
     }
   else if (rhs2_code == MULT_EXPR || rhs2_code == WIDEN_MULT_EXPR)
     {
-      if (!is_widening_mult_p (rhs2_stmt, &type1, &mult_rhs1,
+      if (!is_widening_mult_p (type, rhs2_stmt, &type1, &mult_rhs1,
 			       &type2, &mult_rhs2))
 	return false;
       add_rhs = rhs1;

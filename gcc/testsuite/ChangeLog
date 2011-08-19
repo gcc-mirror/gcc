@@ -1,5 +1,9 @@
 2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
 
+	* gcc.target/arm/wmul-8.c: New file.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
 	* gcc.target/arm/wmul-7.c: New file.
 
 2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
