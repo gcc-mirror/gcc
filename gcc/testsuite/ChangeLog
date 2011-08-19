@@ -1,5 +1,12 @@
 2011-08-19  Joey Ye  <joey.ye@arm.com>
 
+	PR target/49437
+	* gcc.target/arm/handler-align.c: New test.
+	* lib/target-supports.exp (check_effective_target_arm_cortex_m):
+	New Function.
+
+2011-08-19  Joey Ye  <joey.ye@arm.com>
+
 	* gcc.c-torture/execute/20101011-1.c (DO_TEST): Skip on ARM.
 
 2011-08-19  Mikael Morin  <mikael.morin@sfr.fr>

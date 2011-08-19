@@ -15230,6 +15230,7 @@ arm_output_epilogue (rtx sibling)
 		  && !crtl->calls_eh_return
 		  && bit_count(saved_regs_mask) * 4 == count
 		  && !IS_INTERRUPT (func_type)
+		  && !IS_STACKALIGN (func_type)
 		  && !crtl->tail_call_emit)
 		{
 		  unsigned long mask;
