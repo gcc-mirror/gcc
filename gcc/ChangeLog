@@ -1,3 +1,9 @@
+2011-08-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50067
+	* tree-data-ref.c (dr_analyze_indices): Simplify, strip MEM_REF
+	offset only if we accounted for it.
+
 2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/arm.md (maddhidi4): Remove '*' from name.
