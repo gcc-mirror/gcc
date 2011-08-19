@@ -1501,6 +1501,10 @@ ira_init_register_move_cost (enum machine_mode mode)
 	  sizeof (move_table) * N_REG_CLASSES);
   for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
     {
+      /* Some subclasses are to small to have enough registers to hold
+	 a value of MODE.  Just ignore them.  */
+      if (! contains_reg_of_mode[cl1][mode])
+	continue;
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl1]);
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
       if (hard_reg_set_empty_p (temp_hard_regset))
