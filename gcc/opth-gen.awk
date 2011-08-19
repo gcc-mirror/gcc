@@ -127,7 +127,7 @@ print ""
 # Also, order the structure so that pointer fields occur first, then int
 # fields, and then char fields to provide the best packing.
 
-print "#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS)"
+print "#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)"
 print ""
 print "/* Structure to save/restore optimization and target specific options.  */";
 print "struct GTY(()) cl_optimization";
