@@ -1,3 +1,8 @@
+2011-08-19  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr50067-1.c: New testcase.
+	* gcc.dg/torture/pr50067-2.c: Likewise.
+
 2011-08-19  Joey Ye  <joey.ye@arm.com>
 
 	PR target/49437
