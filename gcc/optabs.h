@@ -807,6 +807,15 @@ extern rtx expand_copysign (rtx, rtx, rtx);
 extern void emit_unop_insn (enum insn_code, rtx, rtx, enum rtx_code);
 extern bool maybe_emit_unop_insn (enum insn_code, rtx, rtx, enum rtx_code);
 
+/* Find a widening optab even if it doesn't widen as much as we want.  */
+#define find_widening_optab_handler(A,B,C,D) \
+  find_widening_optab_handler_and_mode (A, B, C, D, NULL)
+extern enum insn_code find_widening_optab_handler_and_mode (optab,
+							    enum machine_mode,
+							    enum machine_mode,
+							    int,
+							    enum machine_mode *);
+
 /* An extra flag to control optab_for_tree_code's behavior.  This is needed to
    distinguish between machines with a vector shift that takes a scalar for the
    shift amount vs. machines that take a vector for the shift amount.  */

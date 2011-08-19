@@ -1857,7 +1857,7 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "*maddhidi4"
+(define_insn "maddhidi4"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
 	(plus:DI
 	  (mult:DI (sign_extend:DI

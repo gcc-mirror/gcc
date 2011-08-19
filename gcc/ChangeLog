@@ -1,5 +1,25 @@
 2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/arm/arm.md (maddhidi4): Remove '*' from name.
+	* expr.c (expand_expr_real_2): Use find_widening_optab_handler.
+	* optabs.c (find_widening_optab_handler_and_mode): New function.
+	(expand_widen_pattern_expr): Use find_widening_optab_handler.
+	(expand_binop_directly): Likewise.
+	(expand_binop): Likewise.
+	* optabs.h (find_widening_optab_handler): New macro define.
+	(find_widening_optab_handler_and_mode): New prototype.
+	* tree-cfg.c (verify_gimple_assign_binary): Adjust WIDEN_MULT_EXPR
+	type precision rules.
+	(verify_gimple_assign_ternary): Likewise for WIDEN_MULT_PLUS_EXPR.
+	* tree-ssa-math-opts.c (build_and_insert_cast): New function.
+	(is_widening_mult_rhs_p): Allow widening by more than one mode.
+	Explicitly disallow mis-matched input types.
+	(convert_mult_to_widen): Use find_widening_optab_handler, and cast
+	input types to fit the new handler.
+	(convert_plusminus_to_widen): Likewise.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
 	* expr.c (expand_expr_real_2): Use widening_optab_handler.
 	* genopinit.c (optabs): Use set_widening_optab_handler for $N.
 	(gen_insn): $N now means $a must be wider than $b, not consecutive.

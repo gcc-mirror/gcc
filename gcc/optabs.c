@@ -249,6 +249,37 @@ widened_mode (enum machine_mode to_mode, rtx op0, rtx op1)
   return result;
 }
 
+/* Find a widening optab even if it doesn't widen as much as we want.
+   E.g. if from_mode is HImode, and to_mode is DImode, and there is no
+   direct HI->SI insn, then return SI->DI, if that exists.
+   If PERMIT_NON_WIDENING is non-zero then this can be used with
+   non-widening optabs also.  */
+
+enum insn_code
+find_widening_optab_handler_and_mode (optab op, enum machine_mode to_mode,
+				      enum machine_mode from_mode,
+				      int permit_non_widening,
+				      enum machine_mode *found_mode)
+{
+  for (; (permit_non_widening || from_mode != to_mode)
+	 && GET_MODE_SIZE (from_mode) <= GET_MODE_SIZE (to_mode)
+	 && from_mode != VOIDmode;
+       from_mode = GET_MODE_WIDER_MODE (from_mode))
+    {
+      enum insn_code handler = widening_optab_handler (op, to_mode,
+						       from_mode);
+
+      if (handler != CODE_FOR_nothing)
+	{
+	  if (found_mode)
+	    *found_mode = from_mode;
+	  return handler;
+	}
+    }
+
+  return CODE_FOR_nothing;
+}
+
 /* Widen OP to MODE and return the rtx for the widened operand.  UNSIGNEDP
    says whether OP is signed or unsigned.  NO_EXTEND is nonzero if we need
    not actually do a sign-extend or zero-extend, but can leave the
@@ -539,8 +570,9 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
     optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
   if (ops->code == WIDEN_MULT_PLUS_EXPR
       || ops->code == WIDEN_MULT_MINUS_EXPR)
-    icode = widening_optab_handler (widen_pattern_optab,
-				    TYPE_MODE (TREE_TYPE (ops->op2)), tmode0);
+    icode = find_widening_optab_handler (widen_pattern_optab,
+					 TYPE_MODE (TREE_TYPE (ops->op2)),
+					 tmode0, 0);
   else
     icode = optab_handler (widen_pattern_optab, tmode0);
   gcc_assert (icode != CODE_FOR_nothing);
@@ -1267,7 +1299,8 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
 		       rtx last)
 {
   enum machine_mode from_mode = widened_mode (mode, op0, op1);
-  enum insn_code icode = widening_optab_handler (binoptab, mode, from_mode);
+  enum insn_code icode = find_widening_optab_handler (binoptab, mode,
+						      from_mode, 1);
   enum machine_mode xmode0 = insn_data[(int) icode].operand[1].mode;
   enum machine_mode xmode1 = insn_data[(int) icode].operand[2].mode;
   enum machine_mode mode0, mode1, tmp_mode;
@@ -1414,8 +1447,8 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
   /* If we can do it with a three-operand insn, do so.  */
 
   if (methods != OPTAB_MUST_WIDEN
-      && widening_optab_handler (binoptab, mode,
-				 widened_mode (mode, op0, op1))
+      && find_widening_optab_handler (binoptab, mode,
+				      widened_mode (mode, op0, op1), 1)
 	    != CODE_FOR_nothing)
     {
       temp = expand_binop_directly (mode, binoptab, op0, op1, target,
@@ -1488,10 +1521,11 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	if (optab_handler (binoptab, wider_mode) != CODE_FOR_nothing
 	    || (binoptab == smul_optab
 		&& GET_MODE_WIDER_MODE (wider_mode) != VOIDmode
-		&& (widening_optab_handler ((unsignedp ? umul_widen_optab
-						       : smul_widen_optab),
-					    GET_MODE_WIDER_MODE (wider_mode),
-					    mode)
+		&& (find_widening_optab_handler ((unsignedp
+						  ? umul_widen_optab
+						  : smul_widen_optab),
+						 GET_MODE_WIDER_MODE (wider_mode),
+						 mode, 0)
 		    != CODE_FOR_nothing)))
 	  {
 	    rtx xop0 = op0, xop1 = op1;
@@ -2026,8 +2060,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	   wider_mode != VOIDmode;
 	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
 	{
-	  if (optab_handler (binoptab, wider_mode) != CODE_FOR_nothing
-	      || widening_optab_handler (binoptab, wider_mode, mode)
+	  if (find_widening_optab_handler (binoptab, wider_mode, mode, 1)
 		  != CODE_FOR_nothing
 	      || (methods == OPTAB_LIB
 		  && optab_libfunc (binoptab, wider_mode)))
