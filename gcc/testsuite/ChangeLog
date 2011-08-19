@@ -1,3 +1,9 @@
+2011-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/builtin-complex-err-1.c, gcc.dg/builtin-complex-err-2.c,
+	gcc.dg/dfp/builtin-complex.c, gcc.dg/torture/builtin-complex-1.c:
+	New tests.
+
 2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.target/arm/wmul-11.c: New file.
