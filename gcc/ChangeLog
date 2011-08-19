@@ -1,5 +1,10 @@
 2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
 
+	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Convert add_rhs
+	to the correct type.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
 	* tree-ssa-math-opts.c (convert_mult_to_widen): Better handle
 	unsigned inputs of different modes.
 	(convert_plusminus_to_widen): Likewise.

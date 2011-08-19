@@ -2369,6 +2369,10 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
       mult_rhs2 = build_and_insert_cast (gsi, loc, tmp, mult_rhs2);
     }
 
+  if (!useless_type_conversion_p (type, TREE_TYPE (add_rhs)))
+    add_rhs = build_and_insert_cast (gsi, loc, create_tmp_var (type, NULL),
+				     add_rhs);
+
   gimple_assign_set_rhs_with_ops_1 (gsi, wmult_code, mult_rhs1, mult_rhs2,
 				    add_rhs);
   update_stmt (gsi_stmt (*gsi));
