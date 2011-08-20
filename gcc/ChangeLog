@@ -1,3 +1,9 @@
+2011-08-20  Uros Bizjak  <ubizjak@gmail.com>
+	    Michael Matz  <matz@suse.de>
+
+	* config/i386/i386.c (ix86_expand_round_sse4): Expand as
+	trunc (a + copysign (nextafter (0.5, 0.0), a)).
+
 2011-08-20  Anatoly Sokolov  <aesok@post.ru>
 
 	* doc/tm.texi.in (PREFERRED_OUTPUT_RELOAD_CLASS): Remove.
@@ -10,9 +16,8 @@
 
 	PR tree-optimization/48739
 	* tree-ssa.c: Include cfgloop.h.
-	(execute_update_addresses_taken): When updating ssa, if in
-	loop closed SSA form, call rewrite_into_loop_closed_ssa instead of
-	update_ssa.
+	(execute_update_addresses_taken): When updating ssa, if in loop closed
+	SSA form, call rewrite_into_loop_closed_ssa instead of update_ssa.
 	* Makefile.in (tree-ssa.o): Depend on $(CFGLOOP_H).
 
 2011-08-19  Vladimir Makarov  <vmakarov@redhat.com>
@@ -34,8 +39,7 @@
 
 2011-08-19  Joseph Myers  <joseph@codesourcery.com>
 
-	* c-parser.c (c_parser_postfix_expression): Handle
-	RID_BUILTIN_COMPLEX.
+	* c-parser.c (c_parser_postfix_expression): Handle RID_BUILTIN_COMPLEX.
 	* doc/extend.texi (__builtin_complex): Document.
 
 2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
@@ -133,8 +137,7 @@
 
 	* c-decl.c (grokdeclarator): Diagnose _Noreturn for non-C1X if
 	pedantic.
-	* c-parser.c (c_parser_declspecs): Include _Noreturn in syntax
-	comment.
+	* c-parser.c (c_parser_declspecs): Include _Noreturn in syntax comment.
 	* ginclude/stdnoreturn.h (noreturn): Don't define for C++.
 
 2011-08-19  Joseph Myers  <joseph@codesourcery.com>
@@ -172,9 +175,8 @@
 	AVX2 feature.
 	* config/i386/i386-c.c (ix86_target_macros_internal):
 	Conditionally define __AVX2__.
-	* config/i386/i386.c (ix86_option_override_internal): Define
-	PTA_AVX2.  Define "core-avx2" processor alias.  Handle avx2
-	option.
+	* config/i386/i386.c (ix86_option_override_internal): Define PTA_AVX2.
+	Define "core-avx2" processor alias.  Handle avx2 option.
 	(ix86_valid_target_attribute_inner_p): Handle avx2 option.
 	* config/i386/i386.h (TARGET_AVX2): New.
 	* config/i386/i386.opt (mavx2): New.
@@ -447,8 +449,7 @@
 	* cgraphunit.c (thunk_adjust): Use fold_build_pointer_plus_loc.
 	(cgraph_redirect_edge_call_stmt_to_callee): Use size_int.
 	* expr.c (expand_expr_addr_expr_1): Use fold_build_pointer_plus.
-	* fold-const.c (build_range_check): Negate using the original
-	type.
+	* fold-const.c (build_range_check): Negate using the original type.
 	(fold_unary_loc): Use fold_build_pointer_plus_loc.
 	* gimple-fold.c (gimple_adjust_this_by_delta): Use
 	convert_to_ptrofftype.
@@ -646,11 +647,11 @@
 
 2011-08-12  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-        PR target/48328
+	PR target/48328
 	* config/arm/arm.h (CASE_VECTOR_SHORTEN_MODE): Fix distance
 	for tbh instructions.
 
-2011-08-12   Diego Novillo  <dnovillo@google.com>
+2011-08-12  Diego Novillo  <dnovillo@google.com>
 
 	* data-streamer.h (streamer_write_zero): Rename from output_zero.
 	(streamer_write_uhwi): Rename from lto_output_uleb128.
@@ -786,8 +787,7 @@
 
 2011-08-12  Richard Guenther  <rguenther@suse.de>
 
-	* tree-vrp.c (extract_range_from_unary_expr_1): Implement
-	-X as 0 - X.
+	* tree-vrp.c (extract_range_from_unary_expr_1): Implement -X as 0 - X.
 
 2011-08-12  Romain Geissler  <romain.geissler@gmail.com>
 

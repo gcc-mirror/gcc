@@ -32700,42 +32700,44 @@ void
 ix86_expand_round_sse4 (rtx op0, rtx op1)
 {
   enum machine_mode mode = GET_MODE (op0);
-  rtx e1, e2, e3, res, half, mask;
+  rtx e1, e2, res, half;
   const struct real_format *fmt;
   REAL_VALUE_TYPE pred_half, half_minus_pred_half;
+  rtx (*gen_copysign) (rtx, rtx, rtx);
   rtx (*gen_round) (rtx, rtx, rtx);
 
   switch (mode)
     {
     case SFmode:
+      gen_copysign = gen_copysignsf3;
       gen_round = gen_sse4_1_roundsf2;
       break;
     case DFmode:
+      gen_copysign = gen_copysigndf3;
       gen_round = gen_sse4_1_rounddf2;
       break;
     default:
       gcc_unreachable ();
     }
 
-  /* e1 = fabs(op1) */
-  e1 = ix86_expand_sse_fabs (op1, &mask);
+  /* round (a) = trunc (a + copysign (0.5, a)) */
 
   /* load nextafter (0.5, 0.0) */
   fmt = REAL_MODE_FORMAT (mode);
   real_2expN (&half_minus_pred_half, -(fmt->p) - 1, mode);
   REAL_ARITHMETIC (pred_half, MINUS_EXPR, dconsthalf, half_minus_pred_half);
+  half = const_double_from_real_value (pred_half, mode);
 
-  /* e2 = e1 + 0.5 */
-  half = force_reg (mode, const_double_from_real_value (pred_half, mode));
-  e2 = expand_simple_binop (mode, PLUS, e1, half, NULL_RTX, 0, OPTAB_DIRECT);
+  /* e1 = copysign (0.5, op1) */
+  e1 = gen_reg_rtx (mode);
+  emit_insn (gen_copysign (e1, half, op1));
 
-  /* e3 = trunc(e2) */
-  e3 = gen_reg_rtx (mode);
-  emit_insn (gen_round (e3, e2, GEN_INT (ROUND_TRUNC)));
+  /* e2 = op1 + e1 */
+  e2 = expand_simple_binop (mode, PLUS, op1, e1, NULL_RTX, 0, OPTAB_DIRECT);
 
-  /* res = copysign (e3, op1) */
+  /* res = trunc (e2) */
   res = gen_reg_rtx (mode);
-  ix86_sse_copysign_to_positive (res, e3, op1, mask);
+  emit_insn (gen_round (res, e2, GEN_INT (ROUND_TRUNC)));
 
   emit_move_insn (op0, res);
 }
