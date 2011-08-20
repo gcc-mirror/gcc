@@ -1,3 +1,12 @@
+2011-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48739
+	* tree-ssa.c: Include cfgloop.h.
+	(execute_update_addresses_taken): When updating ssa, if in
+	loop closed SSA form, call rewrite_into_loop_closed_ssa instead of
+	update_ssa.
+	* Makefile.in (tree-ssa.o): Depend on $(CFGLOOP_H).
+
 2011-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/50092

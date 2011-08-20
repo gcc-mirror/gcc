@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "tree-pass.h"
 #include "diagnostic-core.h"
+#include "cfgloop.h"
 
 /* Pointer map of variable mappings, keyed by edge.  */
 static struct pointer_map_t *edge_var_maps;
@@ -2222,7 +2223,10 @@ execute_update_addresses_taken (void)
 	  }
 
       /* Update SSA form here, we are called as non-pass as well.  */
-      update_ssa (TODO_update_ssa);
+      if (number_of_loops () > 1 && loops_state_satisfies_p (LOOP_CLOSED_SSA))
+	rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+      else
+	update_ssa (TODO_update_ssa);
     }
 
   BITMAP_FREE (not_reg_needs);
