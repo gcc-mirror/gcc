@@ -3574,7 +3574,8 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
 	  switch (compval)
 	  {
 	    case -1:
-	    case 1:
+	    case  1:
+	    case -3:
 	      gfc_error ("Character length mismatch between '%s' at '%L' and "
 			 "overridden FUNCTION", proc->name, &where);
 	      return FAILURE;
