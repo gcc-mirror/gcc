@@ -2587,15 +2587,6 @@ this feature to discourage usage of 387 registers when math is done in
 the SSE registers (and vice versa).
 @end defmac
 
-@defmac PREFERRED_OUTPUT_RELOAD_CLASS (@var{x}, @var{class})
-Like @code{PREFERRED_RELOAD_CLASS}, but for output reloads instead of
-input reloads.  If you don't define this macro, the default is to use
-@var{class}, unchanged.
-
-You can also use @code{PREFERRED_OUTPUT_RELOAD_CLASS} to discourage
-reload from using some alternatives, like @code{PREFERRED_RELOAD_CLASS}.
-@end defmac
-
 @hook TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
 Like @code{TARGET_PREFERRED_RELOAD_CLASS}, but for output reloads instead of
 input reloads.
