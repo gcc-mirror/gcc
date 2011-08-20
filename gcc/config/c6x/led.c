@@ -27,8 +27,8 @@
    License along with GCC; see the file COPYING.LIB.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#include "config/soft-fp/soft-fp.h"
-#include "config/soft-fp/double.h"
+#include <soft-fp/soft-fp.h>
+#include <soft-fp/double.h>
 
 CMPtype __c6xabi_led(DFtype a, DFtype b)
 {
