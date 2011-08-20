@@ -1287,11 +1287,7 @@ reg_class_t
 default_preferred_output_reload_class (rtx x ATTRIBUTE_UNUSED,
 				       reg_class_t rclass)
 {
-#ifdef PREFERRED_OUTPUT_RELOAD_CLASS
-  return PREFERRED_OUTPUT_RELOAD_CLASS (x, (enum reg_class) rclass);
-#else
   return rclass;
-#endif
 }
 
 /* The default implementation of TARGET_PREFERRED_RENAME_CLASS.  */
