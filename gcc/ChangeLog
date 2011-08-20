@@ -1,5 +1,10 @@
 2011-08-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (mips_class_max_nregs): Check that the mode is
+	OK for ST_REGS and FP_REGS before taking those classes into account.
+
+2011-08-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.c (mips_reorg_process_insns): Check for jumps
 	before checking for annulled branches.
 
