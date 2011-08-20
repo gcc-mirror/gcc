@@ -1,3 +1,8 @@
+2011-08-20  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/50129
+	* parse.c (parse_where): Undo changes after emitting an error. 
+
 2011-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/49792
