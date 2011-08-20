@@ -1,4 +1,9 @@
 2011-08-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_binary_operator_ok): Use
+	satisfies_constraint_L.
+
+2011-08-20  Uros Bizjak  <ubizjak@gmail.com>
 	    Michael Matz  <matz@suse.de>
 
 	* config/i386/i386.c (ix86_expand_round_sse4): Expand as
