@@ -1,3 +1,22 @@
+2011-08-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/46770
+	* config.gcc (tm_file): Add initfini-array.h if
+	.init_arrary/.fini_array are supported.
+
+	* crtstuff.c: Don't generate .ctors nor .dtors sections if
+	USE_INITFINI_ARRAY is defined.
+
+	* output.h (default_elf_init_array_asm_out_constructor): New.
+	(default_elf_fini_array_asm_out_destructor): Likewise.
+	* varasm.c (elf_init_array_section): Likewise.
+	(elf_fini_array_section): Likewise.
+	(get_elf_initfini_array_priority_section): Likewise.
+	(default_elf_init_array_asm_out_constructor): Likewise.
+	(default_elf_fini_array_asm_out_destructor): Likewise.
+
+	* config/initfini-array.h: New.
+
 2011-08-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_class_max_nregs): Check that the mode is
