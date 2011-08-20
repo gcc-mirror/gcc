@@ -14831,6 +14831,7 @@ mips_reorg_process_insns (void)
 		 executed.  */
 	      else if (recog_memoized (insn) == CODE_FOR_r10k_cache_barrier
 		       && last_insn
+		       && JUMP_P (SEQ_BEGIN (last_insn))
 		       && INSN_ANNULLED_BRANCH_P (SEQ_BEGIN (last_insn)))
 		delete_insn (insn);
 	      else
