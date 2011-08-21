@@ -1,3 +1,9 @@
+2011-08-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (any_div): Remove.
+	(sgnprefix): Update for removal.
+	(u): Ditto.
+
 2011-08-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-lives.c (mark_pseudo_regno_subword_live): Use allocno class
@@ -8,7 +14,7 @@
 2011-08-20  Richard Henderson  <rth@redhat.com>
 
 	* config/c6x/eqd.c, config/c6x/eqf.c, config/c6x/ged.c,
-	config/c6x/gef.c, config/c6x/gtd.c, config/c6x/gtf.c, 
+	config/c6x/gef.c, config/c6x/gtd.c, config/c6x/gtf.c,
 	config/c6x/led.c, config/c6x/lef.c, config/c6x/ltd.c,
 	config/c6x/ltf.c: Adjust include path for soft-fp.
 
