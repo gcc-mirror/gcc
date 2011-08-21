@@ -1,5 +1,13 @@
 2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/47659
+	* expr.c (gfc_check_assign): Check for type conversions when the
+	right-hand side is a constant REAL/COMPLEX contstant the left-hand
+	side is also REAL/COMPLEX.  Don't warn when a narrowing conversion
+	for REAL does not change the value of the constant.
+
+2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/50130
 	* resolve.c (resolve_array_ref):  Don't calculate upper bound
 	if the stride is zero.
