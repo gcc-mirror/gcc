@@ -3286,7 +3286,7 @@
 
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
-	* prj-pp.adb (Pretty_Print): remove trailing blank line in the file
+	* prj-pp.adb (Pretty_Print): Remove trailing blank line.
 
 2011-08-03  Javier Miranda  <miranda@adacore.com>
 
@@ -3295,9 +3295,9 @@
 
 2011-08-03  Yannick Moy  <moy@adacore.com>
 
-	* sem_res.adb
-	(Resolve_Op_Concat_Arg): do not issue a SPARK violation when argument of
-	concatenation is the name of a constant
+	* sem_res.adb (Resolve_Op_Concat_Arg): Do not issue a SPARK
+	violation when the argument of concatenation is the name of a
+	constant.
 
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
