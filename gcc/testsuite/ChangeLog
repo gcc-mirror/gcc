@@ -1,5 +1,12 @@
 2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/47659
+	* gfortran.dg/warn_conversion_2.f90:  Also warn about conversion
+	of a constant resulting from simplification.
+	* gfortran.dg/warn_conversion_3.f90:  New test.
+
+2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/50130
 	* gfortran.dg/zero_stride_1.f90:  New test.
 
