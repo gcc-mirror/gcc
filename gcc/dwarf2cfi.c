@@ -2427,7 +2427,7 @@ scan_trace (dw_trace_info *trace)
 	    notice_eh_throw (control);
 	  dwarf2out_flush_queued_reg_saves ();
 
-	  if (INSN_ANNULLED_BRANCH_P (control))
+	  if (JUMP_P (control) && INSN_ANNULLED_BRANCH_P (control))
 	    {
 	      /* ??? Hopefully multiple delay slots are not annulled.  */
 	      gcc_assert (n == 2);

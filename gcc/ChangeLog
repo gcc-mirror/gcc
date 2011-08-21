@@ -1,3 +1,13 @@
+2011-08-21  Richard Henderson  <rth@redhat.com>
+
+	* rtl.h (INSN_ANNULLED_BRANCH_P): Only allow JUMP_INSN.
+	* dwarf2cfi.c (scan_trace): Test JUMP_P before INSN_ANNULLED_BRANCH_P.
+	* resource.c (next_insn_no_annul): Likewise.
+	(mark_set_resources): Likewise.
+	* reorg.c (delete_from_delay_slot): Likewise.
+	(dbr_schedule, redundant_insn, try_merge_delay_insns): Likewise.
+	(get_branch_condition): Test pc_rtx and LABEL_REF before dereferencing.
+
 2011-08-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (any_div): Remove.
