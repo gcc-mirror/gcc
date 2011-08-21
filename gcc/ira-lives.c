@@ -285,7 +285,7 @@ static void
 mark_pseudo_regno_subword_live (int regno, int subword)
 {
   ira_allocno_t a = ira_curr_regno_allocno_map[regno];
-  int n, nregs;
+  int n;
   enum reg_class pclass;
   ira_object_t obj;
 
@@ -303,14 +303,14 @@ mark_pseudo_regno_subword_live (int regno, int subword)
     }
 
   pclass = ira_pressure_class_translate[ALLOCNO_CLASS (a)];
-  nregs = ira_reg_class_max_nregs[pclass][ALLOCNO_MODE (a)];
-  gcc_assert (nregs == n);
+  gcc_assert
+    (n == ira_reg_class_max_nregs[ALLOCNO_CLASS (a)][ALLOCNO_MODE (a)]);
   obj = ALLOCNO_OBJECT (a, subword);
 
   if (sparseset_bit_p (objects_live, OBJECT_CONFLICT_ID (obj)))
     return;
 
-  inc_register_pressure (pclass, nregs);
+  inc_register_pressure (pclass, 1);
   make_object_born (obj);
 }
 
@@ -414,7 +414,7 @@ static void
 mark_pseudo_regno_subword_dead (int regno, int subword)
 {
   ira_allocno_t a = ira_curr_regno_allocno_map[regno];
-  int n, nregs;
+  int n;
   enum reg_class cl;
   ira_object_t obj;
 
@@ -430,8 +430,8 @@ mark_pseudo_regno_subword_dead (int regno, int subword)
     return;
 
   cl = ira_pressure_class_translate[ALLOCNO_CLASS (a)];
-  nregs = ira_reg_class_max_nregs[cl][ALLOCNO_MODE (a)];
-  gcc_assert (nregs == n);
+  gcc_assert
+    (n == ira_reg_class_max_nregs[ALLOCNO_CLASS (a)][ALLOCNO_MODE (a)]);
 
   obj = ALLOCNO_OBJECT (a, subword);
   if (!sparseset_bit_p (objects_live, OBJECT_CONFLICT_ID (obj)))
