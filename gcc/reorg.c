@@ -667,7 +667,7 @@ delete_from_delay_slot (rtx insn)
      annul flag.  */
   if (delay_list)
     trial = emit_delay_sequence (trial, delay_list, XVECLEN (seq, 0) - 2);
-  else if (INSN_P (trial))
+  else if (JUMP_P (trial))
     INSN_ANNULLED_BRANCH_P (trial) = 0;
 
   INSN_FROM_TARGET_P (insn) = 0;
@@ -1060,13 +1060,15 @@ get_branch_condition (rtx insn, rtx target)
     return const_true_rtx;
 
   else if (GET_CODE (src) == IF_THEN_ELSE
-	   && XEXP (XEXP (src, 1), 0) == target
-	   && XEXP (src, 2) == pc_rtx)
+	   && XEXP (src, 2) == pc_rtx
+	   && GET_CODE (XEXP (src, 1)) == LABEL_REF
+	   && XEXP (XEXP (src, 1), 0) == target)
     return XEXP (src, 0);
 
   else if (GET_CODE (src) == IF_THEN_ELSE
-	   && XEXP (XEXP (src, 2), 0) == target
-	   && XEXP (src, 1) == pc_rtx)
+	   && XEXP (src, 1) == pc_rtx
+	   && GET_CODE (XEXP (src, 2)) == LABEL_REF
+	   && XEXP (XEXP (src, 2), 0) == target)
     {
       enum rtx_code rev;
       rev = reversed_comparison_code (XEXP (src, 0), insn);
@@ -1433,7 +1435,7 @@ try_merge_delay_insns (rtx insn, rtx thread)
 {
   rtx trial, next_trial;
   rtx delay_insn = XVECEXP (PATTERN (insn), 0, 0);
-  int annul_p = INSN_ANNULLED_BRANCH_P (delay_insn);
+  int annul_p = JUMP_P (delay_insn) && INSN_ANNULLED_BRANCH_P (delay_insn);
   int slot_number = 1;
   int num_slots = XVECLEN (PATTERN (insn), 0);
   rtx next_to_match = XVECEXP (PATTERN (insn), 0, slot_number);
@@ -1517,7 +1519,8 @@ try_merge_delay_insns (rtx insn, rtx thread)
   if (slot_number != num_slots
       && trial && NONJUMP_INSN_P (trial)
       && GET_CODE (PATTERN (trial)) == SEQUENCE
-      && ! INSN_ANNULLED_BRANCH_P (XVECEXP (PATTERN (trial), 0, 0)))
+      && !(JUMP_P (XVECEXP (PATTERN (trial), 0, 0))
+           && INSN_ANNULLED_BRANCH_P (XVECEXP (PATTERN (trial), 0, 0))))
     {
       rtx pat = PATTERN (trial);
       rtx filled_insn = XVECEXP (pat, 0, 0);
@@ -1756,23 +1759,29 @@ redundant_insn (rtx insn, rtx target, rtx delay_list)
 
       if (GET_CODE (pat) == SEQUENCE)
 	{
+	  bool annul_p = false;
+          rtx control = XVECEXP (pat, 0, 0);
+
 	  /* If this is a CALL_INSN and its delay slots, it is hard to track
 	     the resource needs properly, so give up.  */
-	  if (CALL_P (XVECEXP (pat, 0, 0)))
+	  if (CALL_P (control))
 	    return 0;
 
 	  /* If this is an INSN or JUMP_INSN with delayed effects, it
 	     is hard to track the resource needs properly, so give up.  */
 
 #ifdef INSN_SETS_ARE_DELAYED
-	  if (INSN_SETS_ARE_DELAYED (XVECEXP (pat, 0, 0)))
+	  if (INSN_SETS_ARE_DELAYED (control))
 	    return 0;
 #endif
 
 #ifdef INSN_REFERENCES_ARE_DELAYED
-	  if (INSN_REFERENCES_ARE_DELAYED (XVECEXP (pat, 0, 0)))
+	  if (INSN_REFERENCES_ARE_DELAYED (control))
 	    return 0;
 #endif
+
+	  if (JUMP_P (control))
+	    annul_p = INSN_ANNULLED_BRANCH_P (control);
 
 	  /* See if any of the insns in the delay slot match, updating
 	     resource requirements as we go.  */
@@ -1783,8 +1792,7 @@ redundant_insn (rtx insn, rtx target, rtx delay_list)
 	      /* If an insn will be annulled if the branch is false, it isn't
 		 considered as a possible duplicate insn.  */
 	      if (rtx_equal_p (PATTERN (candidate), ipat)
-		  && ! (INSN_ANNULLED_BRANCH_P (XVECEXP (pat, 0, 0))
-			&& INSN_FROM_TARGET_P (candidate)))
+		  && ! (annul_p && INSN_FROM_TARGET_P (candidate)))
 		{
 		  /* Show that this insn will be used in the sequel.  */
 		  INSN_FROM_TARGET_P (candidate) = 0;
@@ -1793,15 +1801,14 @@ redundant_insn (rtx insn, rtx target, rtx delay_list)
 
 	      /* Unless this is an annulled insn from the target of a branch,
 		 we must stop if it sets anything needed or set by INSN.  */
-	      if ((! INSN_ANNULLED_BRANCH_P (XVECEXP (pat, 0, 0))
-		   || ! INSN_FROM_TARGET_P (candidate))
+	      if ((!annul_p || !INSN_FROM_TARGET_P (candidate))
 		  && insn_sets_resource_p (candidate, &needed, true))
 		return 0;
 	    }
 
 	  /* If the insn requiring the delay slot conflicts with INSN, we
 	     must stop.  */
-	  if (insn_sets_resource_p (XVECEXP (pat, 0, 0), &needed, true))
+	  if (insn_sets_resource_p (control, &needed, true))
 	    return 0;
 	}
       else
@@ -3867,7 +3874,8 @@ dbr_schedule (rtx first)
     {
       rtx target;
 
-      INSN_ANNULLED_BRANCH_P (insn) = 0;
+      if (JUMP_P (insn))
+        INSN_ANNULLED_BRANCH_P (insn) = 0;
       INSN_FROM_TARGET_P (insn) = 0;
 
       /* Skip vector tables.  We can't get attributes for them.  */
@@ -3977,10 +3985,12 @@ dbr_schedule (rtx first)
 	    {
 	      if (GET_CODE (PATTERN (insn)) == SEQUENCE)
 		{
+                  rtx control;
 		  j = XVECLEN (PATTERN (insn), 0) - 1;
 		  if (j > MAX_DELAY_HISTOGRAM)
 		    j = MAX_DELAY_HISTOGRAM;
-		  if (INSN_ANNULLED_BRANCH_P (XVECEXP (PATTERN (insn), 0, 0)))
+                  control = XVECEXP (PATTERN (insn), 0, 0);
+		  if (JUMP_P (control) && INSN_ANNULLED_BRANCH_P (control))
 		    total_annul_slots[j]++;
 		  else
 		    total_delay_slots[j]++;
