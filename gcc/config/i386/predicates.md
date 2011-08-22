@@ -611,6 +611,14 @@
   return i == 2 || i == 4 || i == 8;
 })
 
+;; Match 1, 2, 4, or 8
+(define_predicate "const1248_operand"
+  (match_code "const_int")
+{
+  HOST_WIDE_INT i = INTVAL (op);
+  return i == 1 || i == 2 || i == 4 || i == 8;
+})
+
 ;; Match 3, 5, or 9.  Used for leal multiplicands.
 (define_predicate "const359_operand"
   (match_code "const_int")

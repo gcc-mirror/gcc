@@ -56,6 +56,10 @@
 #include <avxintrin.h>
 #endif
 
+#ifdef __AVX2__
+#include <avx2intrin.h>
+#endif
+
 #ifdef __RDRND__
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
