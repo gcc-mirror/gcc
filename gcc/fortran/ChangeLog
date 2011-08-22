@@ -1,7 +1,14 @@
+2011-08-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/50130
+	* resolve.c (resolve_array_ref):  Don't calculate upper bound
+	if the stride is zero.
+
 2011-08-20  Mikael Morin  <mikael.morin@sfr.fr>
 
 	PR fortran/50129
-	* parse.c (parse_where): Undo changes after emitting an error. 
+	* parse.c (parse_where): Undo changes after emitting an error.
 
 2011-08-19  Jakub Jelinek  <jakub@redhat.com>
 

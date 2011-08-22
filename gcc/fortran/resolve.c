@@ -4555,10 +4555,11 @@ resolve_array_ref (gfc_array_ref *ar)
       /* Fill in the upper bound, which may be lower than the
 	 specified one for something like a(2:10:5), which is
 	 identical to a(2:7:5).  Only relevant for strides not equal
-	 to one.  */
+	 to one.  Don't try a division by zero.  */
       if (ar->dimen_type[i] == DIMEN_RANGE
 	  && ar->stride[i] != NULL && ar->stride[i]->expr_type == EXPR_CONSTANT
-	  && mpz_cmp_si (ar->stride[i]->value.integer, 1L) != 0)
+	  && mpz_cmp_si (ar->stride[i]->value.integer, 1L) != 0
+	  && mpz_cmp_si (ar->stride[i]->value.integer, 0L) != 0)
 	{
 	  mpz_t size, end;
 
