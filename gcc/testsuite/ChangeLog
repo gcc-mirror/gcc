@@ -1,5 +1,8 @@
 2011-08-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/50133
+	* gcc.dg/pr50133.c: New test.
+
 	PR middle-end/50141
 	* c-c++-common/cxxbitfields-6.c: New test.
 
