@@ -1,3 +1,13 @@
+2011-08-22  Matthias Klose <doko@debian.org>
+
+	Revert:
+	2011-07-11  Arthur Loiret  <aloiret@debian.org>
+		    Matthias Klose <doko@debian.org>
+	* config/mips/t-linux64 (MULTILIB_DIRNAMES): Set to 'n32 . 64' if
+	tm_defines contains MIPS_ABI_DEFAULT ABI_32, to follow the glibc
+	convention.
+	* config.gcc (tm_defines): Add MIPS_ABI_DEFAULT=ABI_32.
+
 2011-08-22  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR bootstrap/50146
