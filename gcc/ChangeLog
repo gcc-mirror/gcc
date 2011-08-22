@@ -1,3 +1,9 @@
+2011-08-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/50141
+	* expr.c (get_bit_range): Only use DECL_THREAD_LOCAL_P if
+	innerdecl is a VAR_DECL.
+
 2011-08-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/avx2intrin.h: New file.

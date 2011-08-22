@@ -4354,7 +4354,8 @@ get_bit_range (unsigned HOST_WIDE_INT *bitstart,
 	   || TREE_CODE (innerdecl) == TARGET_MEM_REF)
 	  && !ptr_deref_may_alias_global_p (TREE_OPERAND (innerdecl, 0)))
       || (DECL_P (innerdecl)
-	  && (DECL_THREAD_LOCAL_P (innerdecl)
+	  && ((TREE_CODE (innerdecl) == VAR_DECL
+	       && DECL_THREAD_LOCAL_P (innerdecl))
 	      || !TREE_STATIC (innerdecl))))
     {
       *bitstart = *bitend = 0;
