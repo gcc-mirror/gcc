@@ -223,6 +223,9 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
   /* Initialize table for push_macro/pop_macro.  */
   pfile->pushed_macros = 0;
 
+  /* Do not force token locations by default.  */
+  pfile->forced_token_location_p = NULL;
+
   /* The expression parser stack.  */
   _cpp_expand_op_stack (pfile);
 
