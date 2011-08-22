@@ -10705,6 +10705,9 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+#ifndef __ELF__
+#error Not an ELF OS
+#endif
 #ifdef __ia64__
 /* We turn on .preinit_array/.init_array/.fini_array support for ia64
    if it can be used.  */
@@ -17827,7 +17830,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17830 "configure"
+#line 17833 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17933,7 +17936,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17936 "configure"
+#line 17939 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
