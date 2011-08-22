@@ -1,3 +1,9 @@
+2011-08-22  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR bootstrap/50146
+	* ira-color.c (assign_hard_reg): Move saved_nregs declaration
+	to #ifndef HONOR_REG_ALLOC_ORDER block.
+
 2011-08-21  Richard Henderson  <rth@redhat.com>
 
 	* rtl.h (INSN_ANNULLED_BRANCH_P): Only allow JUMP_INSN.
