@@ -425,8 +425,6 @@ enum reg_class
 
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
-#define CLASS_MAX_NREGS(C,M) m32c_class_max_nregs (C, M)
-
 #define CANNOT_CHANGE_MODE_CLASS(F,T,C) m32c_cannot_change_mode_class(F,T,C)
 
 #define CONST_OK_FOR_CONSTRAINT_P(VALUE,C,STR) \
