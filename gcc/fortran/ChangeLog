@@ -1,3 +1,17 @@
+2011-08-22  Mikael Morin  <mikael.morin@gcc.gnu.org>
+
+	PR fortran/50050
+	* gfortran.h (gfc_clear_shape, gfc_free_shape): New prototypes.
+	* expr.c (gfc_clear_shape, gfc_free_shape): New functions.
+	(free_expr0): Re-use gfc_free_shape.
+	* trans-expr.c (gfc_trans_subarray_assign): Ditto.
+	* trans-io.c (transfer_array_component): Ditto.
+	* resolve.c (check_host_association): Ditto.
+	(gfc_expr_to_initialize): Don't force the rank value and free the shape
+	after updating the expression. Recalculate shape and rank.
+	(resolve_where_shape): Re-use gfc_clear_shape.
+	* array.c (gfc_array_ref_shape): Ditto.
+
 2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/47659
@@ -18,7 +32,7 @@
 	* dependency.c (gfc_dep_compare_expr): Add new result value "-3".
 	(gfc_check_element_vs_section,gfc_check_element_vs_element): Handle
 	result value "-3".
-        * frontend-passes.c (optimize_comparison): Ditto.
+	* frontend-passes.c (optimize_comparison): Ditto.
 	* interface.c (gfc_check_typebound_override): Ditto.
 
 2011-08-19  Mikael Morin  <mikael.morin@sfr.fr>
