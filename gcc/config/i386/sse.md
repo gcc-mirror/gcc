@@ -73,6 +73,12 @@
    (V8SI "TARGET_AVX") V4SI
    (V4DI "TARGET_AVX") V2DI])
 
+(define_mode_iterator VI_AVX2
+  [(V32QI "TARGET_AVX2") V16QI
+   (V16HI "TARGET_AVX2") V8HI
+   (V8SI "TARGET_AVX2") V4SI
+   (V4DI "TARGET_AVX2") V2DI])
+
 ;; All QImode vector integer modes
 (define_mode_iterator VI1
   [(V32QI "TARGET_AVX") V16QI])
@@ -124,8 +130,8 @@
   [V4SI V4DI])
 
 (define_mode_iterator V48_AVX2
-  [(V4SF "TARGET_SSE") (V2DF "TARGET_SSE2")
-   (V8SF "TARGET_AVX") (V4DF "TARGET_AVX")
+  [V4SF V2DF
+   V8SF V4DF
    (V4SI "TARGET_AVX2") (V2DI "TARGET_AVX2")
    (V8SI "TARGET_AVX2") (V4DI "TARGET_AVX2")])
 
@@ -169,9 +175,6 @@
 
 (define_mode_attr ssebytemode
   [(V4DI "V32QI") (V2DI "V16QI")])
-
-(define_mode_attr shortmode
-  [(V4DI "v4si") (V2DI "v2si")])
 
 ;; All 128bit vector integer modes
 (define_mode_iterator VI_128 [V16QI V8HI V4SI V2DI])
@@ -4641,18 +4644,18 @@
   "operands[2] = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));")
 
 (define_expand "<plusminus_insn><mode>3"
-  [(set (match_operand:VI 0 "register_operand" "")
-	(plusminus:VI
-	  (match_operand:VI 1 "nonimmediate_operand" "")
-	  (match_operand:VI 2 "nonimmediate_operand" "")))]
+  [(set (match_operand:VI_AVX2 0 "register_operand" "")
+	(plusminus:VI_AVX2
+	  (match_operand:VI_AVX2 1 "nonimmediate_operand" "")
+	  (match_operand:VI_AVX2 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*<plusminus_insn><mode>3"
-  [(set (match_operand:VI 0 "register_operand" "=x,x")
-	(plusminus:VI
-	  (match_operand:VI 1 "nonimmediate_operand" "<comm>0,x")
-	  (match_operand:VI 2 "nonimmediate_operand" "xm,xm")))]
+  [(set (match_operand:VI_AVX2 0 "register_operand" "=x,x")
+	(plusminus:VI_AVX2
+	  (match_operand:VI_AVX2 1 "nonimmediate_operand" "<comm>0,x")
+	  (match_operand:VI_AVX2 2 "nonimmediate_operand" "xm,xm")))]
   "TARGET_SSE2 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
    p<plusminus_mnemonic><ssemodesuffix>\t{%2, %0|%0, %2}
@@ -6161,10 +6164,10 @@
 })
 
 (define_expand "<sse2_avx2>_andnot<mode>3"
-  [(set (match_operand:VI 0 "register_operand" "")
-	(and:VI
-	  (not:VI (match_operand:VI 1 "register_operand" ""))
-	  (match_operand:VI 2 "nonimmediate_operand" "")))]
+  [(set (match_operand:VI_AVX2 0 "register_operand" "")
+	(and:VI_AVX2
+	  (not:VI_AVX2 (match_operand:VI_AVX2 1 "register_operand" ""))
+	  (match_operand:VI_AVX2 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2")
 
 (define_insn "*andnot<mode>3"
@@ -6176,9 +6179,29 @@
 {
   static char buf[32];
   const char *ops;
-  const char *tmp
-    = ((get_attr_mode (insn) == MODE_TI) ||
-       (get_attr_mode (insn) == MODE_OI)) ? "pandn" : "andnps";
+  const char *tmp;
+
+  switch (get_attr_mode (insn))
+    {
+    case MODE_OI:
+      gcc_assert (TARGET_AVX2);
+    case MODE_TI:
+      gcc_assert (TARGET_SSE2);
+
+      tmp = "pandn";
+      break;
+
+   case MODE_V8SF:
+      gcc_assert (TARGET_AVX);
+   case MODE_V4SF:
+      gcc_assert (TARGET_SSE);
+
+      tmp = "andnps";
+      break;
+
+   default:
+      gcc_unreachable ();
+   }
 
   switch (which_alternative)
     {
@@ -6205,12 +6228,12 @@
        (const_string "*")))
    (set_attr "prefix" "orig,vex")
    (set (attr "mode")
-     (cond [(ne (symbol_ref "GET_MODE_SIZE (<MODE>mode) > 128") (const_int 0))
+     (cond [(ne (symbol_ref "TARGET_AVX2") (const_int 0))
+	      (const_string "OI")
+	    (ne (symbol_ref "GET_MODE_SIZE (<MODE>mode) > 128") (const_int 0))
 	      (const_string "V8SF")
 	    (ne (symbol_ref "TARGET_SSE2") (const_int 0))
 	      (const_string "TI")
-	    (ne (symbol_ref "TARGET_AVX2") (const_int 0))
-	      (const_string "OI")
 	   ]
 	   (const_string "V4SF")))])
 
@@ -6232,9 +6255,29 @@
 {
   static char buf[32];
   const char *ops;
-  const char *tmp
-    = (get_attr_mode (insn) == MODE_TI)||
-      (get_attr_mode (insn) == MODE_OI) ? "p<logic>" : "<logic>ps";
+  const char *tmp;
+
+  switch (get_attr_mode (insn))
+    {
+    case MODE_OI:
+      gcc_assert (TARGET_AVX2);
+    case MODE_TI:
+      gcc_assert (TARGET_SSE2);
+
+      tmp = "p<logic>";
+      break;
+
+   case MODE_V8SF:
+      gcc_assert (TARGET_AVX);
+   case MODE_V4SF:
+      gcc_assert (TARGET_SSE);
+
+      tmp = "<logic>ps";
+      break;
+
+   default:
+      gcc_unreachable ();
+   }
 
   switch (which_alternative)
     {
@@ -6261,12 +6304,12 @@
        (const_string "*")))
    (set_attr "prefix" "orig,vex")
    (set (attr "mode")
-     (cond [(ne (symbol_ref "GET_MODE_SIZE (<MODE>mode) > 128") (const_int 0))
+     (cond [(ne (symbol_ref "TARGET_AVX2") (const_int 0))
+	      (const_string "OI")
+	    (ne (symbol_ref "GET_MODE_SIZE (<MODE>mode) > 128") (const_int 0))
 	      (const_string "V8SF")
 	    (ne (symbol_ref "TARGET_SSE2") (const_int 0))
 	      (const_string "TI")
-	    (ne (symbol_ref "TARGET_AVX2") (const_int 0))
-	      (const_string "OI")
 	   ]
 	   (const_string "V4SF")))])
 
