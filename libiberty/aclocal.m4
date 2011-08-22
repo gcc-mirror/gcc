@@ -1,6 +1,7 @@
 sinclude(../config/acx.m4)
 sinclude(../config/no-executables.m4)
 sinclude(../config/override.m4)
+sinclude(../config/picflag.m4)
 sinclude(../config/warnings.m4)
 
 dnl See whether strncmp reads past the end of its string parameters.

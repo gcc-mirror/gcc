@@ -784,6 +784,7 @@ loose_warn
 EGREP
 GREP
 CPP
+PICFLAG_FOR_TARGET
 OUTPUT_OPTION
 NO_MINUS_C_MINUS_O
 GNATMAKE
@@ -4871,6 +4872,88 @@ case "$CC" in
   */prev-gcc/xgcc*) ;;
   *) CFLAGS=`echo $CFLAGS | sed "s/-O[s0-9]* *//" ` ;;
 esac
+
+
+# Determine PICFLAG for target gnatlib.
+
+
+
+
+case "${target}" in
+    # PIC is the default on some targets or must not be used.
+    *-*-darwin*)
+	# PIC is the default on this platform
+	# Common symbols not allowed in MH_DYLIB files
+	PICFLAG_FOR_TARGET=-fno-common
+	;;
+    alpha*-dec-osf5*)
+	# PIC is the default.
+	;;
+    hppa*64*-*-hpux*)
+	# PIC is the default for 64-bit PA HP-UX.
+	;;
+    i[34567]86-*-cygwin* | i[34567]86-*-mingw* | x86_64-*-mingw*)
+	;;
+    i[34567]86-*-interix3*)
+	# Interix 3.x gcc -fpic/-fPIC options generate broken code.
+	# Instead, we relocate shared libraries at runtime.
+	;;
+    i[34567]86-*-nto-qnx*)
+	# QNX uses GNU C++, but need to define -shared option too, otherwise
+	# it will coredump.
+	PICFLAG_FOR_TARGET='-fPIC -shared'
+	;;
+    i[34567]86-pc-msdosdjgpp*)
+	# DJGPP does not support shared libraries at all.
+	;;
+    ia64*-*-hpux*)
+	# On IA64 HP-UX, PIC is the default but the pic flag
+	# sets the default TLS model and affects inlining.
+	PICFLAG_FOR_TARGET=-fPIC
+	;;
+    mips-sgi-irix6*)
+	# PIC is the default.
+	;;
+    rs6000-ibm-aix* | powerpc-ibm-aix*)
+	# All AIX code is PIC.
+	;;
+
+    # Some targets support both -fPIC and -fpic, but prefer the latter.
+    # FIXME: Why?
+    i[34567]86-*-* | x86_64-*-*)
+	PICFLAG_FOR_TARGET=-fpic
+	;;
+    m68k-*-*)
+	PICFLAG_FOR_TARGET=-fpic
+	;;
+    s390*-*-*)
+	PICFLAG_FOR_TARGET=-fpic
+	;;
+    # FIXME: Override -fPIC default in libgcc only?
+    sh-*-linux* | sh[2346lbe]*-*-linux*)
+	PICFLAG_FOR_TARGET=-fpic
+	;;
+    # FIXME: Simplify to sh*-*-netbsd*?
+    sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
+      sh64-*-netbsd* | sh64l*-*-netbsd*)
+	PICFLAG_FOR_TARGET=-fpic
+	;;
+    # Default to -fPIC unless specified otherwise.
+    *)
+	PICFLAG_FOR_TARGET=-fPIC
+	;;
+esac
+
+# If the user explicitly uses -fpic/-fPIC, keep that.
+case "${CFLAGS_FOR_TARGET}" in
+    *-fpic*)
+	PICFLAG_FOR_TARGET=-fpic
+	;;
+    *-fPIC*)
+	PICFLAG_FOR_TARGET=-fPIC
+	;;
+esac
+
 
 
 # -------------------------
@@ -17830,7 +17913,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17833 "configure"
+#line 17916 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17936,7 +18019,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17939 "configure"
+#line 18022 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
