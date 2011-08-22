@@ -1,3 +1,8 @@
+2011-08-22  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* gcc.dg/pr49994-2.c: Add dg-require-effective-target scheduling.
+	* gcc.dg/pr49994-3.c: Ditto.
+
 2011-08-22  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/50145
