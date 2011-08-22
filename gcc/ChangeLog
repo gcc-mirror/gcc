@@ -1,3 +1,8 @@
+2011-08-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/c6x/c6x.md (indirect_jump_shadow): Tweak representation
+	to make computed_jump_p return true.
+
 2011-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (GCC_PICFLAG_FOR_TARGET): Call it.
