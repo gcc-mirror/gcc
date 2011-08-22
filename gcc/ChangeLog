@@ -1,3 +1,8 @@
+2011-08-22  Dodji Seketeli  <dodji@redhat.com>
+
+	* c-family/c-pch.c (c_common_read_pch): Re-set line table right
+	after reading in the pch.
+
 2011-08-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): Error if __ELF__ isn't
