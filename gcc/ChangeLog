@@ -5,6 +5,7 @@
 	* config/i386/sse.md (VI_AVX2): New.
 	(<plusminus_insn><mode>3): Use VI_AVX2 mode iterator.
 	(*<plusminus_insn><mode>3): Ditto.
+	(<sse2_avx2>_andnot<mode>3): Ditto.
 	(*andnot<mode>3): Fix order of cond operands.
 	Add asserts for correct TARGET_xxx.
 	(*<any_logic:code><mode>3): Ditto.
