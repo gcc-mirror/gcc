@@ -264,8 +264,7 @@
 	* config/i386/immintrin.h: Include avx2intrin.h when __AVX2__
 	is defined.
 	* config/i386/predicates.md (const1248_operand): New.
-	* config/i386/sse.md (VI_AVX2): New mode iterator.
-	(VI1_AVX2): Likewise.
+	* config/i386/sse.md (VI1_AVX2): New mode iterator.
 	(VI2_AVX2): Likewise.
 	(VI4_AVX2): Likewise.
 	(VI8_AVX2): Likewise.
@@ -371,57 +370,58 @@
 	(*avx2_gatherdi<mode>): Likewise.
 	(avx2_gatherdi<mode>256): Likewise.
 	(*avx2_gatherdi<mode>256): Likewise.
-	(*<plusminus_insn><mode>3): Update for AVX2.
+	(<plusminus_insn><mode>3): Use VI mode iterator.
+	(*<plusminus_insn><mode>3): Use VI mode iterator.
 	(<sse2_avx2>_<plusminus_insn><mode>3): Rename from
 	sse2_<plusminus_insn><mode>3.  Use VI12_AVX2 mode iterator.
 	(*<sse2_avx2>_<plusminus_insn><mode>3): Rename from
 	*sse2_<plusminus_insn><mode>3.  Use VI12_AVX2 mode iterator.
-	(mul<mode>3): Rename from mulv8hi3.  Use VI4_AVX2 mode iterator.
-	(*mul<mode>3): Rename from *mulv8hi3.  Use VI4_AVX2 mode iterator.
-	Update for VI2_AVX2.
+	(mul<mode>3): Rename from mulv8hi3.  Use VI2_AVX2 mode iterator.
+	(*mul<mode>3): Rename from *mulv8hi3.  Use VI2_AVX2 mode iterator.
 	(<s>mul<mode>3_highpart): Rename from <s>mulv8hi3_highpart.
 	Use VI2_AVX2 mode iterator.
 	(*<s>mul<mode>3_highpart): Rename from *<s>mulv8hi3_highpart.
-	Use VI2_AVX2 mode iterator.  Update for AVX2.
-	(*sse4_1_mulv2siv2di3): Update for AVX2.
-	(ashr<mode>3): Use VI24_AVX2 mode iterator.  Update for AVX2.
-	(lshr<mode>3): Use VI248_AVX2 mode iterator.  Update for AVX2.
-	(<sse2_avx2>_ashl<mode>3): Rename from sse2_ashlv1ti3.  Use VIMAX_AVX2
-	mode iterator.  Update for AVX2.
-	(<sse2_avx2>_andnot<mode>3): Rename from sse2_andnot<mode>3.  Use VI
-	mode iterator.
-	(*andnot<mode>3): Likewise.  Update for AVX2.
-	(<any_logic:code><mode>3): Use VI mode iterator.
-	(*<any_logic:code><mode>3): Likewise.  Update for AVX2.
+	Use VI2_AVX2 mode iterator.
+	(mul<mode>3): Rename from mulv4si3.  Use VI4_AVX2 mode iterator.
+	(*mul<mode>3): Rename from *mulv4si3.  Use VI4_AVX2 mode iterator.
+	(*<sse4_1_avx2>_mulv2siv2di3): Rename from *sse4_1_mulv4si3.
+	Use VI4_AVX2 mode iterator.
+	(ashr<mode>3): Use VI24_AVX2 mode iterator.
+	(lshr<mode>3): Use VI248_AVX2 mode iterator.
+	(<sse2_avx2>_ashl<mode>3): Rename from sse2_ashlv1ti3.
+	Use VIMAX_AVX2 mode iterator.
+	(<sse2_avx2>_andnot<mode>3): Rename from sse2_andnot<mode>3.
+	Use VI mode iterator.
+	(*andnot<mode>3): Update for AVX2.
+	(*<any_logic:code><mode>3): Likewise.
 	(<sse2_avx2>_packsswb): Rename from sse2_packsswb.
-	Use VI1_AVX mode iterator.  Update for AVX2.
+	Use VI1_AVX mode iterator.
 	(<sse2_avx2>_packssdw):  Rename from sse2_packssdw.
-	Use VI2_AVX mode iterator.  Update for AVX2.
+	Use VI2_AVX mode iterator.
 	(<sse2_avx2>_packuswb): Rename from sse2_packsswb.
-	Use VI1_AVX mode iterator.  Update for AVX2.
-	(<sse2_avx2>_psadbw): Rename from sse2_psadbw.	Use VI8_AVX2
-	mode iterator.  Update for AVX2.
-	(<ssse3_avx2>_pshufb<mode>3): Rename from ssse3_pshufbv16qi3.  Use
-	Vi1_AVX2 mode iterator.  Update for AVX2.
-	(<ssse3_avx2>_psign<mode>3): Rename from ssse3_psign<mode>3.  Use
-	VI124_AVX2 mode iterator.  Update for AVX2.
-	(<ssse3_avx2>_palignr<mode>): Rename from ssse3_palignrti.  Use
-	SSESCALARMODE mode iterator.  Update for AVX2.
-	(abs<mode>2): Use VI124_AVX2 mode iterator.  Update for AVX2.
-	(<sse4_1_avx2>_movntdqa): Rename from sse4_1_movntdqa.  Use VI8_AVX2
-	mode iterator.  Update for AVX2.
-	(<sse4_1_avx2>_mpsadbw): Rename from sse4_1_mpsadbw.  Use VI1_AVX2
-	mode iterator.  Update for AVX2.
-	(<sse4_1_avx2>_pblendvb): Rename from sse4_1_pblendvb.  Use VI1_AVX2
-	mode iterator.  Update for AVX2.
-	(<sse4_1_avx2>_pblendw): Rename from sse4_1_pblendvb.  Use VI2_AVX2
-	mode iterator.  Update for AVX2.
+	Use VI1_AVX mode iterator.
+	(<sse2_avx2>_psadbw): Rename from sse2_psadbw.
+	Use VI8_AVX2 mode iterator.
+	(<ssse3_avx2>_pshufb<mode>3): Rename from ssse3_pshufbv16qi3.
+	Use VI1_AVX2 mode iterator.
+	(<ssse3_avx2>_psign<mode>3): Rename from ssse3_psign<mode>3.
+	Use VI124_AVX2 mode iterator.
+	(<ssse3_avx2>_palignr<mode>): Rename from ssse3_palignrti.
+	Use SSESCALARMODE mode iterator.
+	(abs<mode>2): Use VI124_AVX2 mode iterator.
+	(<sse4_1_avx2>_movntdqa): Rename from sse4_1_movntdqa.
+	Use VI8_AVX2 mode iterator.
+	(<sse4_1_avx2>_mpsadbw): Rename from sse4_1_mpsadbw.
+	Use VI1_AVX2 mode iterator.
+	(<sse4_1_avx2>_pblendvb): Rename from sse4_1_pblendvb.
+	Use VI1_AVX2 mode iterator.
+	(<sse4_1_avx2>_pblendw): Rename from sse4_1_pblendvb.
+	Use VI2_AVX2 mode iterator.
 	(<avx_avx2>_maskload<avx2modesuffix><avxmodesuffix>): Rename from
-	avx_maskload<ssemodesuffix><avxsizesuffix>. Use VI48_AVX2
-	mode iterator.
+	avx_maskload<ssemodesuffix><avxsizesuffix>. Use V48_AVX2 mode iterator.
 	(<avx_avx2>_maskstore<avx2modesuffix><avxmodesuffix>): Rename from
-	avx_maskstore<ssemodesuffix><avxsizesuffix>. Use VI48_AVX2
-	mode iterator.
+	avx_maskstore<ssemodesuffix><avxsizesuffix>.
+	Use V48_AVX2 mode iterator.
 	* doc/extend.texi: Document AVX2 built-in functions.
 	* doc/invoke.texi: Document -mavx2.
 
