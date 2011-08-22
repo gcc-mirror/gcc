@@ -1,3 +1,10 @@
+2011-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (GCC_PICFLAG_FOR_TARGET): Call it.
+	(PICFLAG_FOR_TARGET): Substitute.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2011-08-22  Dodji Seketeli  <dodji@redhat.com>
 
 	* c-family/c-pch.c (c_common_read_pch): Re-set line table right

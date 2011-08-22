@@ -4840,6 +4840,86 @@ if [ -n "${frag}" ]; then
   frag=${libiberty_topdir}/libiberty/config/$frag
 fi
 
+
+
+
+
+case "${host}" in
+    # PIC is the default on some targets or must not be used.
+    *-*-darwin*)
+	# PIC is the default on this platform
+	# Common symbols not allowed in MH_DYLIB files
+	PICFLAG=-fno-common
+	;;
+    alpha*-dec-osf5*)
+	# PIC is the default.
+	;;
+    hppa*64*-*-hpux*)
+	# PIC is the default for 64-bit PA HP-UX.
+	;;
+    i[34567]86-*-cygwin* | i[34567]86-*-mingw* | x86_64-*-mingw*)
+	;;
+    i[34567]86-*-interix3*)
+	# Interix 3.x gcc -fpic/-fPIC options generate broken code.
+	# Instead, we relocate shared libraries at runtime.
+	;;
+    i[34567]86-*-nto-qnx*)
+	# QNX uses GNU C++, but need to define -shared option too, otherwise
+	# it will coredump.
+	PICFLAG='-fPIC -shared'
+	;;
+    i[34567]86-pc-msdosdjgpp*)
+	# DJGPP does not support shared libraries at all.
+	;;
+    ia64*-*-hpux*)
+	# On IA64 HP-UX, PIC is the default but the pic flag
+	# sets the default TLS model and affects inlining.
+	PICFLAG=-fPIC
+	;;
+    mips-sgi-irix6*)
+	# PIC is the default.
+	;;
+    rs6000-ibm-aix* | powerpc-ibm-aix*)
+	# All AIX code is PIC.
+	;;
+
+    # Some targets support both -fPIC and -fpic, but prefer the latter.
+    # FIXME: Why?
+    i[34567]86-*-* | x86_64-*-*)
+	PICFLAG=-fpic
+	;;
+    m68k-*-*)
+	PICFLAG=-fpic
+	;;
+    s390*-*-*)
+	PICFLAG=-fpic
+	;;
+    # FIXME: Override -fPIC default in libgcc only?
+    sh-*-linux* | sh[2346lbe]*-*-linux*)
+	PICFLAG=-fpic
+	;;
+    # FIXME: Simplify to sh*-*-netbsd*?
+    sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
+      sh64-*-netbsd* | sh64l*-*-netbsd*)
+	PICFLAG=-fpic
+	;;
+    # Default to -fPIC unless specified otherwise.
+    *)
+	PICFLAG=-fPIC
+	;;
+esac
+
+# If the user explicitly uses -fpic/-fPIC, keep that.
+case "${CFLAGS}" in
+    *-fpic*)
+	PICFLAG=-fpic
+	;;
+    *-fPIC*)
+	PICFLAG=-fPIC
+	;;
+esac
+
+
 # If they didn't specify --enable-shared, don't generate shared libs.
 case "${enable_shared}" in
   yes) shared=yes ;;
@@ -4847,27 +4927,8 @@ case "${enable_shared}" in
   "") shared=no ;;
   *) shared=yes ;;
 esac
-if [ "${shared}" = "yes" ]; then
-  case "${host}" in
-    *-*-cygwin*)	;;
-    alpha*-*-linux*)	PICFLAG=-fPIC ;;
-    arm*-*-*)		PICFLAG=-fPIC ;;
-    hppa*-*-*)		PICFLAG=-fPIC ;;
-    i370-*-*)		PICFLAG=-fPIC ;;
-    ia64-*-*)		PICFLAG=-fpic ;;
-    i[34567]86-*-* | x86_64-*-*)
-			PICFLAG=-fpic ;;
-    m68k-*-*)		PICFLAG=-fpic ;;
-    mips*-*-linux*)	PICFLAG=-fPIC ;;
-    powerpc*-*-aix*)	;;
-    powerpc*-*-*)	PICFLAG=-fPIC ;;
-    sparc*-*-*)		case "${CFLAGS}" in
-			  *-fpic* ) PICFLAG=-fpic ;;
-			  * ) PICFLAG=-fPIC ;;
-			esac ;;
-    s390*-*-*)		PICFLAG=-fpic ;;
-    sh*-*-*)		PICFLAG=-fPIC ;;
-  esac
+if [ "${shared}" != "yes" ]; then
+  PICFLAG=
 fi
 
 

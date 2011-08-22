@@ -1,3 +1,14 @@
+2011-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Include ../config/picflag.m4.
+	(GCC_PICFLAG): Call it.
+	Substitute.
+	* configure: Regenerate.
+	* Makefile.in (TARGET_LIBGCC2_CFLAGS): Replace by PICFLAG.
+	(GNATLIBCFLAGS_FOR_C): Replace TARGET_LIBGCC2_CFLAGS by PICFLAG.
+	(LIBADA_FLAGS_TO_PASS): Pass PICFLAG as PICFLAG_FOR_TARGET.
+	Don't include $(GCC_DIR)/libgcc.mvars.
+
 2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/46202

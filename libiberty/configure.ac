@@ -191,6 +191,8 @@ if [[ -n "${frag}" ]]; then
   frag=${libiberty_topdir}/libiberty/config/$frag
 fi
 
+GCC_PICFLAG
+
 # If they didn't specify --enable-shared, don't generate shared libs.
 case "${enable_shared}" in
   yes) shared=yes ;;
@@ -198,27 +200,8 @@ case "${enable_shared}" in
   "") shared=no ;;
   *) shared=yes ;;
 esac
-if [[ "${shared}" = "yes" ]]; then
-  case "${host}" in
-    *-*-cygwin*)	;;
-    alpha*-*-linux*)	PICFLAG=-fPIC ;;
-    arm*-*-*)		PICFLAG=-fPIC ;;
-    hppa*-*-*)		PICFLAG=-fPIC ;;
-    i370-*-*)		PICFLAG=-fPIC ;;
-    ia64-*-*)		PICFLAG=-fpic ;;
-    i[[34567]]86-*-* | x86_64-*-*)
-			PICFLAG=-fpic ;;
-    m68k-*-*)		PICFLAG=-fpic ;;
-    mips*-*-linux*)	PICFLAG=-fPIC ;;
-    powerpc*-*-aix*)	;;
-    powerpc*-*-*)	PICFLAG=-fPIC ;;
-    sparc*-*-*)		case "${CFLAGS}" in
-			  *-fpic* ) PICFLAG=-fpic ;;
-			  * ) PICFLAG=-fPIC ;;
-			esac ;;
-    s390*-*-*)		PICFLAG=-fpic ;;
-    sh*-*-*)		PICFLAG=-fPIC ;;
-  esac
+if [[ "${shared}" != "yes" ]]; then
+  PICFLAG=
 fi
 AC_SUBST(PICFLAG)
 

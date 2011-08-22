@@ -297,6 +297,10 @@ case "$CC" in
 esac
 AC_SUBST(CFLAGS)
 
+# Determine PICFLAG for target gnatlib.
+GCC_PICFLAG_FOR_TARGET
+AC_SUBST(PICFLAG_FOR_TARGET)
+
 # -------------------------
 # Check C compiler features
 # -------------------------

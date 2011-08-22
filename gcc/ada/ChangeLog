@@ -1,3 +1,12 @@
+2011-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in (PICFLAG_FOR_TARGET): New.
+	(GNATLIBCFLAGS_FOR_C): Replace
+	TARGET_LIBGCC2_CFLAGS by PICFLAG_FOR_TARGET.
+	(gnatlib-shared-default, gnatlib-shared-dual-win32)
+	(gnatlib-shared-win32, gnatlib-shared-darwin, gnatlib-shared)
+	(gnatlib-sjlj, gnatlib-zcx): Likewise.
+
 2011-08-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (raise-gcc.o): Fix previous change.
