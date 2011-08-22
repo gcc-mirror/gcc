@@ -1,3 +1,8 @@
+2011-08-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/50141
+	* c-c++-common/cxxbitfields-6.c: New test.
+
 2011-08-22  Mikael Morin  <mikael.morin@gcc.gnu.org>
 
 	PR fortran/50050
