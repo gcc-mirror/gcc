@@ -1,3 +1,13 @@
+2011-08-22  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32c/m32c.h (CLASS_MAX_NREGS): Remove macro.
+	* config/m32c/m32c-protos.h (m32c_class_max_nregs): Remove.
+	* config/m32c/m32c.c (m32c_class_max_nregs): Make static. Change
+	regclass argument type to reg_class_t. Change 'max' and 'v' vars
+	and return types to unsigned char. Use reg_class_contents instead
+	of class_contents.
+	(TARGET_CLASS_MAX_NREGS): Define.
+
 2011-08-22  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/c6x/c6x.md (indirect_jump_shadow): Tweak representation

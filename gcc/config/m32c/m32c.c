@@ -859,18 +859,23 @@ m32c_class_likely_spilled_p (reg_class_t regclass)
   return (reg_class_size[(int) regclass] == 1);
 }
 
-/* Implements CLASS_MAX_NREGS.  We calculate this according to its
+/* Implements TARGET_CLASS_MAX_NREGS.  We calculate this according to its
    documented meaning, to avoid potential inconsistencies with actual
    class definitions.  */
-int
-m32c_class_max_nregs (int regclass, enum machine_mode mode)
+
+#undef TARGET_CLASS_MAX_NREGS
+#define TARGET_CLASS_MAX_NREGS m32c_class_max_nregs
+
+static unsigned char
+m32c_class_max_nregs (reg_class_t regclass, enum machine_mode mode)
 {
-  int rn, max = 0;
+  int rn;
+  unsigned char max = 0;
 
   for (rn = 0; rn < FIRST_PSEUDO_REGISTER; rn++)
-    if (class_contents[regclass][0] & (1 << rn))
+    if (TEST_HARD_REG_BIT (reg_class_contents[(int) regclass], rn))
       {
-	int n = m32c_hard_regno_nregs (rn, mode);
+	unsigned char n = m32c_hard_regno_nregs (rn, mode);
 	if (max < n)
 	  max = n;
       }
