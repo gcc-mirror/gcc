@@ -239,7 +239,7 @@
 	IX86_BUILTIN_GATHERSIV8SI, IX86_BUILTIN_GATHERDIV4SI,
 	IX86_BUILTIN_GATHERDIV8SI.
 	(ix86_preferred_simd_mode): Support AVX2 modes.
-	(ix86_expand_args_builtin): Support AVX2 built-ins.
+	(ix86_expand_args_builtin): Support AVX2 builtins.
 	(ix86_expand_special_args_builtin): Likewise.
 	(ix86_expand_builtin): Likewise.
 	* config/i386/i386.md (UNSPEC_VPERMSI): New.
@@ -252,7 +252,7 @@
 	* config/i386/immintrin.h: Include avx2intrin.h when __AVX2__
 	is defined.
 	* config/i386/predicates.md (const1248_operand): New.
-	* config/i386/sse.md (VI_AVX2):
+	* config/i386/sse.md (VI_AVX2): New mode iterator.
 	(VI1_AVX2): Likewise.
 	(VI2_AVX2): Likewise.
 	(VI4_AVX2): Likewise.
@@ -261,111 +261,53 @@
 	(SSESCALARMODE): Likewise.
 	(VI12_AVX2): Likewise.
 	(VI24_AVX2): Likewise.
-	(VI124_AVX2): Likeuse_submit_for_speed = 1
-	wise.
+	(VI124_AVX2): Likewise.
 	(VI248_AVX2): Likewise.
 	(VI48_AVX2): Likewise.
 	(VI4SD_AVX2): Likewise.
 	(V48_AVX2): Likewise.
-	(avx2modesuffix): Likewise.
-	(sse_avx2): Likewise.
-	(sse2_avx2): Likewise.
+	(AVX256MODE2P): Likewise.
+	(AVXMODE48P_DI): Likewise.
+	(sse2_avx2): New mode attribute.
 	(ssse3_avx2): Likewise.
 	(sse4_1_avx2): Likewise.
 	(avx_avx2): Likewise.
-	(lshift)<code_oterator>: Likewise.
-	(lshift_insn): Likewise.
-	(lshift)<code_attr>: Likewise.
-	(SSESHORTMODE): Likewise.
-	(SSELONGMODE): Likewise.
-	(SSEBYTEMODE): Likewise.
+	(ssebytemode): Likewise.
 	(AVXTOSSEMODE): Likewise.
-	(shortmode): Likewise.
-	(ssescalarmodesuffix): Update.
-	(sseunpackmode): Likewise.
-	(ssepackmode): Likewise.
-	(AVX256MODEI): New.
-	(AVX256MODE124): Likewise.
-	(AVX256MODE1248): Likewise.
-	(AVX256MODE248): Likewise.
-	(AVXMODE48P_SI): Likewise.
-	(AVXMODE48P_SI): Likewise.
-	(AVXMODE48P_DI): Likewise.
 	(AVXMODE48P_DI): Likewise.
 	(gthrfirstp): Likewise.
 	(gthrlastp): Likewise.
-	(avx2): Likwise.
-	(ssevecsize): Likewise.
-	(ssedoublesizemode): Likewise.
-	(avxvecmode): Likewise.
-	(avxvecsize): Likewise.
-	(avxhalfvecmode): Likewise.
-	(avxscalarmode): Likewise.
-	(avxpermvecmode): Likewise.
-	(avxmodesuffixp): Likewise.
-	(avxmodesuffix): Likewise.
-	(avx2_vec_dupv4sf): New.
+	(lshift): New code_iterator
+	(lshift): New code attribute.
+	(lshift): Likewise.
+	(ssescalarmodesuffix): Update.
+	(sseunpackmode): Likewise.
+	(ssepackmode): Likewise.
+	(avx2_vec_dupv4sf): New insn pattern.
 	(avx2_vec_dupv8sf): Likewise.
 	(avx2_interleave_highv4di): Likewise.
 	(avx2_interleave_lowv4di): Likewise.
-	(<plusminus_insn><mode>3): Update.
-	(*<plusminus_insn><mode>3): Likewise.
-	(sse2_<plusminus_insn><mode>3): Rename to ...
-	("<sse2_avx2>_<plusminus_insn><mode>3): ... this. updated.
-	(*sse2_<plusminus_insn><mode>3): Likewise.
-	(*<sse2_avx2>_<plusminus_insn><mode>3): Likewise.
-	(mulv8hi3): Likewise.
-	(mul<mode>3): Likewise.
-	(*mulv8hi3): Likewise.
-	(*mul<mode>3): Likewise.
-	(<s>mulv8hi3_highpart): Likewise.
-	(<s>mul<mode>3_highpart): Likewise.
-	(*<s>mulv8hi3_highpart): Likewise.
-	(*<s>mul<mode>3_highpart): Likewise.
-	(avx2_umulv4siv4di3): Likewise.
-	(*avx_umulv4siv4di3): Likewise.
-	(sse4_1_mulv2siv2di3): Likewise.
-	(<sse4_1_avx2>_mul<shortmode><mode>3): Likewise.
-	(*sse4_1_mulv2siv2di3): Likewise.
-	(*<sse4_1_avx2>_mulv2siv2di3): Likewise.
-	(avx2_pmaddwd): New.
+	(avx2_umulv4siv4di3): Likewise
+	(*avx2_umulv4siv4di3): Likewise
+	(avx2_pmaddwd): Likewise.
 	(*avx2_pmaddwd): Likewise.
-	(mulv4si3): Rename to ...
-	(mul<mode>3): ... this. Update.
-	(*sse4_1_mulv4si3): Likewise.
-	(*<sse4_1_avx2>_mul<mode>3): Likewise.
-	(ashr<mode>3): Update.
-	(avx2_lshrqv4di3): New.
-	(lshr<mode>3): Update.
-	(avx2_lshlqv4di3): New.
+	(avx2_lshrqv4di3): Likewise.
+	(avx2_lshlqv4di3): Likewise.
 	(avx2_lshl<mode>3): Likewise.
-	(sse2_ashlv1ti3): Rename to ...
-	(<sse2_avx2>_ashl<mode>3): ... this. Update.
-	(avx2_<code><mode>3)<umaxmin>: New.
-	(*avx2_<code><mode>3)<umaxmin>: Likewise.
-	(avx2_<code><mode>3)<smaxmin>: New.
-	(*avx2_<code><mode>3)<smaxmin>: Likewise.
+	(avx2_<umaxmin:code><mode>3): Likewise.
+	(*avx2_<umaxmin:code><mode>3): Likewise.
+	(avx2_<smaxmin:code><mode>3): Likewise.
+	(*avx2_<smaxmin:code><mode>3): Likewise.
 	(avx2_eq<mode>3): Likewise.
 	(*avx2_eq<mode>3): Likewise.
 	(avx2_gt<mode>3): Likewise.
-	(sse2_andnot<mode>3): Rename to ...
-	(<sse2_avx2>_andnot<mode>3): ... this. Update.
-	(*andnot<mode>3): Update.
-	(<code><mode>3)<any_logic>: Update.
-	(*<code><mode>3)<any_logic>: Likewise.
-	(sse2_packsswb): Rename to ...
-	(<sse2_avx2>_packsswb): ... this. Update.
-	(sse2_packssdw): Likewise.
-	(<sse2_avx2>_packssdw): Likewise.
-	(sse2_packuswb): Likewise.
-	(<sse2_avx2>_packuswb): Likewise.
 	(avx2_interleave_highv32qi): New.
 	(avx2_interleave_lowv32qi): Likewise.
 	(avx2_interleave_highv16hi): Likewise.
 	(avx2_interleave_lowv16hi): Likewise.
 	(avx2_interleave_highv8si): Likewise.
 	(avx2_interleave_lowv8si): Likewise.
-	(avx2_pshufd): New
+	(avx2_pshufd): Likewise.
 	(avx2_pshufd_1): Likewise.
 	(avx2_pshuflwv3): Likewise.
 	(avx2_pshuflw_1): Likewise.
@@ -375,9 +317,7 @@
 	(*avx2_uavgv32qi3): Likewise.
 	(avx2_uavgv16hi3): Likewise.
 	(*avx2_uavgv16hi3): Likewise.
-	(sse2_psadbw): Rename to ...
-	(<sse2_avx2>_psadbw): ... this. Update.
-	(avx2_pmovmskb): New.
+	(avx2_pmovmskb): Likewise.
 	(avx2_phaddwv16hi3): Likewise.
 	(avx2_phadddv8si3): Likewise.
 	(avx2_phaddswv16hi3): Likewise.
@@ -387,23 +327,8 @@
 	(avx2_pmaddubsw256): Likewise.
 	(avx2_umulhrswv16hi3): Likewise.
 	(*avx2_umulhrswv16hi3): Likewise.
-	(ssse3_pshufbv16qi3): Rename to ...
-	(<ssse3_avx2>_pshufb<mode>3): ... this. Update.
-	(ssse3_psign<mode>3): Likewise.
-	(<ssse3_avx2>_psign<mode>3): Likewise.
-	(ssse3_palignrti): Likewise.
-	(<ssse3_avx2>_palignr<mode>): Likewise.
-	(abs<mode>2): Likewise.
-	(sse4_1_movntdqa): Rename to ...
-	(<sse4_1_avx2>_movntdqa): ... this. Update.
-	(sse4_1_mpsadbw): Likewise.
-	(<sse4_1_avx2>_mpsadbw): Likewise.
-	(avx2_packusdw): New.
-	(sse4_1_pblendvb): Rename to ...
-	(<sse4_1_avx2>_pblendvb): ... this. Update.
-	(sse4_1_pblendw): Likewise.
-	(<sse4_1_avx2>_pblendw): Likewise.
-	(avx2_pblendd<mode>): New.
+	(avx2_packusdw): Likewise.
+	(avx2_pblendd<mode>): Likewise.
 	(avx2_<code>v16qiv16hi2): Likewise.
 	(avx2_<code>v8qiv8si2): Likewise.
 	(avx2_<code>v8hiv8si2): Likewise.
@@ -420,12 +345,7 @@
 	(avx2_vbroadcasti128_<mode>): Likewise.
 	(avx2_vec_set_lo_v4di): Likewise.
 	(avx2_vec_set_hi_v4di): Likewise.
-	(avx_maskload<ssemodesuffix><avxsizesuffix>): Rename to ...
-	(<avx_avx2>_maskload<avx2modesuffix><avxmodesuffix>): ... this.
-	Update.
-	(avx_maskstore<ssemodesuffix><avxsizesuffix>): Likewise.
-	(<avx_avx2>_maskstore<avx2modesuffix><avxmodesuffix>): Likewise.
-	(*avx2_maskmov<avx2modesuffix><avxmodesuffix>): New.
+	(*avx2_maskmov<avx2modesuffix><avxmodesuffix>): Likewise.
 	(avx2_extracti128): Likewise.
 	(avx2_inserti128): Likewise.
 	(avx2_ashrvv8si): Likewise.
@@ -439,6 +359,57 @@
 	(*avx2_gatherdi<mode>): Likewise.
 	(avx2_gatherdi<mode>256): Likewise.
 	(*avx2_gatherdi<mode>256): Likewise.
+	(*<plusminus_insn><mode>3): Update for AVX2.
+	(<sse2_avx2>_<plusminus_insn><mode>3): Rename from
+	sse2_<plusminus_insn><mode>3.  Use VI12_AVX2 mode iterator.
+	(*<sse2_avx2>_<plusminus_insn><mode>3): Rename from
+	*sse2_<plusminus_insn><mode>3.  Use VI12_AVX2 mode iterator.
+	(mul<mode>3): Rename from mulv8hi3.  Use VI4_AVX2 mode iterator.
+	(*mul<mode>3): Rename from *mulv8hi3.  Use VI4_AVX2 mode iterator.
+	Update for VI2_AVX2.
+	(<s>mul<mode>3_highpart): Rename from <s>mulv8hi3_highpart.
+	Use VI2_AVX2 mode iterator.
+	(*<s>mul<mode>3_highpart): Rename from *<s>mulv8hi3_highpart.
+	Use VI2_AVX2 mode iterator.  Update for AVX2.
+	(*sse4_1_mulv2siv2di3): Update for AVX2.
+	(ashr<mode>3): Use VI24_AVX2 mode iterator.  Update for AVX2.
+	(lshr<mode>3): Use VI248_AVX2 mode iterator.  Update for AVX2.
+	(<sse2_avx2>_ashl<mode>3): Rename from sse2_ashlv1ti3.  Use VIMAX_AVX2
+	mode iterator.  Update for AVX2.
+	(<sse2_avx2>_andnot<mode>3): Rename from sse2_andnot<mode>3.  Use VI
+	mode iterator.
+	(*andnot<mode>3): Likewise.  Update for AVX2.
+	(<any_logic:code><mode>3): Use VI mode iterator.
+	(*<any_logic:code><mode>3): Likewise.  Update for AVX2.
+	(<sse2_avx2>_packsswb): Rename from sse2_packsswb.
+	Use VI1_AVX mode iterator.  Update for AVX2.
+	(<sse2_avx2>_packssdw):  Rename from sse2_packssdw.
+	Use VI2_AVX mode iterator.  Update for AVX2.
+	(<sse2_avx2>_packuswb): Rename from sse2_packsswb.
+	Use VI1_AVX mode iterator.  Update for AVX2.
+	(<sse2_avx2>_psadbw): Rename from sse2_psadbw.	Use VI8_AVX2
+	mode iterator.  Update for AVX2.
+	(<ssse3_avx2>_pshufb<mode>3): Rename from ssse3_pshufbv16qi3.  Use
+	Vi1_AVX2 mode iterator.  Update for AVX2.
+	(<ssse3_avx2>_psign<mode>3): Rename from ssse3_psign<mode>3.  Use
+	VI124_AVX2 mode iterator.  Update for AVX2.
+	(<ssse3_avx2>_palignr<mode>): Rename from ssse3_palignrti.  Use
+	SSESCALARMODE mode iterator.  Update for AVX2.
+	(abs<mode>2): Use VI124_AVX2 mode iterator.  Update for AVX2.
+	(<sse4_1_avx2>_movntdqa): Rename from sse4_1_movntdqa.  Use VI8_AVX2
+	mode iterator.  Update for AVX2.
+	(<sse4_1_avx2>_mpsadbw): Rename from sse4_1_mpsadbw.  Use VI1_AVX2
+	mode iterator.  Update for AVX2.
+	(<sse4_1_avx2>_pblendvb): Rename from sse4_1_pblendvb.  Use VI1_AVX2
+	mode iterator.  Update for AVX2.
+	(<sse4_1_avx2>_pblendw): Rename from sse4_1_pblendvb.  Use VI2_AVX2
+	mode iterator.  Update for AVX2.
+	(<avx_avx2>_maskload<avx2modesuffix><avxmodesuffix>): Rename from
+	avx_maskload<ssemodesuffix><avxsizesuffix>. Use VI48_AVX2
+	mode iterator.
+	(<avx_avx2>_maskstore<avx2modesuffix><avxmodesuffix>): Rename from
+	avx_maskstore<ssemodesuffix><avxsizesuffix>. Use VI48_AVX2
+	mode iterator.
 	* doc/extend.texi: Document AVX2 built-in functions.
 	* doc/invoke.texi: Document -mavx2.
 
