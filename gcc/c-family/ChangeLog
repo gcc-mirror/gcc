@@ -1,3 +1,8 @@
+011-08-22  Gabriel Charette  <gchare@google.com>
+
+	* c-opts.c (c_finish_options): Force BUILTINS_LOCATION for tokens
+	defined in cpp_init_builtins and c_cpp_builtins.
+
 2011-08-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (c_common_reswords): Add __builtin_complex.
