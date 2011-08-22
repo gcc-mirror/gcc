@@ -1,3 +1,9 @@
+2011-08-22  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/50145
+	* gcc.dg/torture/pr50067-1.c: Run on little-endian systems only.
+	* gcc.dg/torture/pr50067-2.c: Likewise.
+
 2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/47659

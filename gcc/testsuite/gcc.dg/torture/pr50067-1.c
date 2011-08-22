@@ -9,10 +9,15 @@ short a[32] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
 short b[32] = { 4, 0, 5, 0, 6, 0, 7, 0, 8, 0, };
 int main()
 {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
   int i;
-  for (i = 0; i < 32; ++i)
-    (*((unsigned short(*)[32])&a[0]))[i] = (*((char(*)[32])&a[0]))[i+8];
-  if (memcmp (&a, &b, sizeof (a)) != 0)
-    abort ();
+  if (sizeof (short) == 2)
+    {
+      for (i = 0; i < 32; ++i)
+	(*((unsigned short(*)[32])&a[0]))[i] = (*((char(*)[32])&a[0]))[i+8];
+      if (memcmp (&a, &b, sizeof (a)) != 0)
+	abort ();
+    }
+#endif
   return 0;
 }
