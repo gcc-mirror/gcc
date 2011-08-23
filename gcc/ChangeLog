@@ -1,3 +1,12 @@
+2011-08-23  Mark Heffernan  <meheff@google.com>
+
+	PR middle-end/38509
+	* common.opt (Wfree-nonheap-object): New option.
+	* doc/invoke.texi (Warning options): Document -Wfree-nonheap-object.
+	* builtins.c (maybe_emit_free_warning): Add OPT_Wfree_nonheap_object
+	to warning.
+	(expand_builtin): Make warning conditional.
+
 2011-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (type): Add imulx, ishiftx and rotatex.
