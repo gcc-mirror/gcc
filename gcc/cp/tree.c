@@ -288,6 +288,7 @@ static tree
 build_target_expr (tree decl, tree value, tsubst_flags_t complain)
 {
   tree t;
+  tree type = TREE_TYPE (decl);
 
 #ifdef ENABLE_CHECKING
   gcc_assert (VOID_TYPE_P (TREE_TYPE (value))
@@ -302,12 +303,14 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
   t = cxx_maybe_build_cleanup (decl, complain);
   if (t == error_mark_node)
     return error_mark_node;
-  t = build4 (TARGET_EXPR, TREE_TYPE (decl), decl, value, t, NULL_TREE);
+  t = build4 (TARGET_EXPR, type, decl, value, t, NULL_TREE);
   /* We always set TREE_SIDE_EFFECTS so that expand_expr does not
      ignore the TARGET_EXPR.  If there really turn out to be no
      side-effects, then the optimizer should be able to get rid of
      whatever code is generated anyhow.  */
   TREE_SIDE_EFFECTS (t) = 1;
+  if (literal_type_p (type))
+    TREE_CONSTANT (t) = TREE_CONSTANT (value);
 
   return t;
 }

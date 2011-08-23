@@ -1684,9 +1684,6 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
     {
       exp = build_value_init (type, complain);
       exp = get_target_expr_sfinae (exp, complain);
-      /* FIXME this is wrong */
-      if (literal_type_p (type))
-	TREE_CONSTANT (exp) = true;
       return exp;
     }
 

@@ -1,5 +1,11 @@
 2011-08-23  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (build_target_expr): Set TREE_CONSTANT on
+	literal TARGET_EXPR if the value is constant.
+	* typeck2.c (build_functional_cast): Don't set it here.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
 	Core 903 (partial)
 	* call.c (null_ptr_cst_p): Only 0 qualifies in C++11.
 
