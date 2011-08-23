@@ -88,8 +88,11 @@
 ;; We use the Y prefix to denote any number of conditional register sets:
 ;;  z	First SSE register.
 ;;  2	SSE2 enabled
+;;  3	SSE3 enabled
+;;  4	SSE4_1 enabled
 ;;  i	SSE2 inter-unit moves enabled
 ;;  m	MMX inter-unit moves enabled
+;;  p	Integer register when TARGET_PARTIAL_REG_STALL is disabled
 ;;  d	Integer register when integer DFmode moves are enabled
 ;;  x	Integer register when integer XFmode moves are enabled
 
@@ -112,6 +115,10 @@
 (define_register_constraint "Ym"
  "TARGET_MMX && TARGET_INTER_UNIT_MOVES ? MMX_REGS : NO_REGS"
  "@internal Any MMX register, when inter-unit moves are enabled.")
+
+(define_register_constraint "Yp"
+ "TARGET_PARTIAL_REG_STALL ? NO_REGS : GENERAL_REGS"
+ "@internal Any integer register when TARGET_PARTIAL_REG_STALL is disabled.")
 
 (define_register_constraint "Yd"
  "(TARGET_64BIT
