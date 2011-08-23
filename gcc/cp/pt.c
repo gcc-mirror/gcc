@@ -18909,6 +18909,10 @@ build_non_dependent_expr (tree expr)
   if (TREE_CODE (expr) == THROW_EXPR)
     return expr;
 
+  /* Don't wrap an initializer list, we need to be able to look inside.  */
+  if (BRACE_ENCLOSED_INITIALIZER_P (expr))
+    return expr;
+
   if (TREE_CODE (expr) == COND_EXPR)
     return build3 (COND_EXPR,
 		   TREE_TYPE (expr),

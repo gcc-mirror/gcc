@@ -1,3 +1,10 @@
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50024
+	* semantics.c (maybe_constant_value): Don't try to fold { }.
+	* pt.c (build_non_dependent_expr): Don't wrap { }.
+	* init.c (build_value_init): Allow scalar value-init in templates.
+
 2011-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/46862

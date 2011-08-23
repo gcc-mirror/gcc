@@ -332,7 +332,7 @@ build_value_init (tree type, tsubst_flags_t complain)
      constructor.  */
 
   /* The AGGR_INIT_EXPR tweaking below breaks in templates.  */
-  gcc_assert (!processing_template_decl);
+  gcc_assert (!processing_template_decl || SCALAR_TYPE_P (type));
 
   if (CLASS_TYPE_P (type))
     {

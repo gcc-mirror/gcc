@@ -7300,6 +7300,7 @@ maybe_constant_value (tree t)
 
   if (type_dependent_expression_p (t)
       || type_unknown_p (t)
+      || BRACE_ENCLOSED_INITIALIZER_P (t)
       || !potential_constant_expression (t)
       || value_dependent_expression_p (t))
     return t;
