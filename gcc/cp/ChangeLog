@@ -1,5 +1,13 @@
 2011-08-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49045
+	Core 1321
+	* tree.c (dependent_name): New.
+	(cp_tree_equal): Two calls with the same dependent name are
+	equivalent even if the overload sets are different.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
 	* tree.c (build_target_expr): Set TREE_CONSTANT on
 	literal TARGET_EXPR if the value is constant.
 	* typeck2.c (build_functional_cast): Don't set it here.
