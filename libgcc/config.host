@@ -134,6 +134,9 @@ s390*-*-*)
 sh[123456789lbe]*-*-*)
 	cpu_type=sh
 	;;
+ba-*)
+	cpu_type=ba
+	;;
 esac
 
 # Common parts for widely ported systems.
@@ -252,6 +255,14 @@ fido-*-elf)
 fr30-*-elf)
 	;;
 frv-*-elf)
+	;;
+ba-*-elf*)
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crti.o crtn.o"
+	tmake_file="ba/t-default"
+	;;
+ba-*linux*)
+	extra_parts="$extra_parts crti.o crtn.o"
+	tmake_file="ba/t-default"
 	;;
 frv-*-*linux*)
 	;;
