@@ -273,6 +273,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__ABM__");
   if (isa_flag & OPTION_MASK_ISA_BMI)
     def_or_undef (parse_in, "__BMI__");
+  if (isa_flag & OPTION_MASK_ISA_BMI2)
+    def_or_undef (parse_in, "__BMI2__");
   if (isa_flag & OPTION_MASK_ISA_LZCNT)
     def_or_undef (parse_in, "__LZCNT__");
   if (isa_flag & OPTION_MASK_ISA_TBM)

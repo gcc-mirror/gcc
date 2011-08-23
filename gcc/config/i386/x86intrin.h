@@ -81,6 +81,10 @@
 #include <bmiintrin.h>
 #endif
 
+#ifdef __BMI2__
+#include <bmi2intrin.h>
+#endif
+
 #ifdef __TBM__
 #include <tbmintrin.h>
 #endif

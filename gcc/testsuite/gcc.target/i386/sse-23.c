@@ -147,7 +147,7 @@
 #define __builtin_ia32_bextri_u32(X, Y) __builtin_ia32_bextr_u32 (X, 1)
 #define __builtin_ia32_bextri_u64(X, Y) __builtin_ia32_bextr_u64 (X, 1)
 
-#pragma GCC target ("sse4a,3dnow,avx,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,tbm,lwp,fsgsbase,rdrnd,f16c")
+#pragma GCC target ("sse4a,3dnow,avx,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c")
 #include <wmmintrin.h>
 #include <smmintrin.h>
 #include <mm3dnow.h>

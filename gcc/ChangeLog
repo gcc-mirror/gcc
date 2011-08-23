@@ -1,3 +1,81 @@
+2011-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (type): Add imulx, ishiftx and rotatex.
+	(length_immediate): Handle imulx, ishiftx and rotatex.
+	(imm_disp): Ditto.
+	(isa): Add bmi2.
+	(enabled): Handle bmi2.
+	(w): New mode attribute.
+	(*mul<mode><dwi>3): Split from *<u>mul<mode><dwi>3.
+	(*umul<mode><dwi>3): Ditto.  Add imulx BMI2 alternative.
+	(*bmi2_umulditi3_1): New insn pattern.
+	(*bmi2_umulsidi3_1): Ditto.
+	(*umul<mode><dwi>3 splitter): New splitter to avoid flags
+	dependency.
+	(*bmi2_ashl<mode>3_1): New insn pattern.
+	(*ashl<mode>3_1): Add ishiftx BMI2 alternative.
+	(*ashl<mode>3_1 splitter): New splitter to avoid flags
+	dependency.
+	(*bmi2_ashlsi3_1_zext): New insn pattern.
+	(*ashlsi3_1_zext): Add ishiftx BMI2 alternative.
+	(*ashlsi3_1_zext splitter): New splitter to avoid flags
+	dependency.
+	(*bmi2_<shiftrt_insn><mode>3_1): New insn pattern.
+	(*<shiftrt_insn><mode>3_1): Add ishiftx BMI2 alternative.
+	(*<shiftrt_insn><mode>3_1 splitter): New splitter to avoid
+	flags dependency.
+	(*bmi2_<shiftrt_insn>si3_1_zext): New insn pattern.
+	(*<shiftrt_insn>si3_1_zext): Add ishiftx BMI2 alternative.
+	(*<shiftrt_insn>si3_1_zext splitter): New splitter to avoid
+	flags dependency.
+	(*bmi2_rorx<mode>3_1): New insn pattern.
+	(*<rotate_insn><mode>3_1): Add rotatex BMI2 alternative.
+	(*rotate<mode>3_1 splitter): New splitter to avoid flags
+	dependency.
+	(*rotatert<mode>3_1 splitter): Ditto.
+	(*bmi2_rorxsi3_1_zext): New insn pattern.
+	(*<rotate_insn>si3_1_zext): Add rotatex BMI2 alternative.
+	(*rotatesi3_1_zext splitter): New splitter to avoid flags
+	dependency.
+	(*rotatertsi3_1_zext splitter): Ditto.
+
+2011-08-23  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_BMI2_SET):
+	New.
+	(OPTION_MASK_ISA_BMI2_UNSET): Likewise.
+	(ix86_handle_option): Handle OPT_mbmi2 case.
+	* config.gcc (i[34567]86-*-*): Add bmi2intrin.h.
+	(x86_64-*-*): Likewise.
+	* config/i386/bmi2intrin.h: New file.
+	* config/i386/cpuid.h (bit_BMI2): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	BMI2 feature.
+	* config/i386/i386-c.c (ix86_target_macros_internal):
+	Conditionally define __BMI2__.
+	* config/i386/i386.c (ix86_option_override_internal): Define PTA_BMI2.
+	Handle BMI2 option.
+	(ix86_valid_target_attribute_inner_p): Handle BMI2 option.
+	(print_reg): New code.
+	(ix86_print_operand): Likewise.
+	(ix86_builtins): Add IX86_BUILTIN_BZHI32, IX86_BUILTIN_BZHI64,
+	IX86_BUILTIN_PDEP32, IX86_BUILTIN_PDEP64, IX86_BUILTIN_PEXT32,
+	IX86_BUILTIN_PEXT64.
+	(bdesc_args): Add IX86_BUILTIN_BZHI32, IX86_BUILTIN_BZHI64,
+	IX86_BUILTIN_PDEP32, IX86_BUILTIN_PDEP64, IX86_BUILTIN_PEXT32,
+	IX86_BUILTIN_PEXT64.
+	* config/i386/i386.h (TARGET_BMI2): New.
+	* config/i386/i386.md (UNSPEC_PDEP): New.
+	(UNSPEC_PEXT): Likewise.
+	(*bmi2_bzhi_<mode>3): Likewise.
+	(*bmi2_pdep_<mode>3): Likewise.
+	(*bmi2_pext_<mode>3): Likewise.
+	* config/i386/i386.opt (mbmi2): New.
+	* config/i386/x86intrin.h: Include bmi2intrin.h when __BMI2__
+	is defined.
+	* doc/extend.texi: Document BMI2 built-in functions.
+	* doc/invoke.texi: Document -mbmi2.
+
 2011-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/50161
