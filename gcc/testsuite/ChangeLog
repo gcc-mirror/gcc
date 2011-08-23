@@ -1,5 +1,10 @@
 2011-08-23  Jason Merrill  <jason@redhat.com>
 
+	Core 903
+	* g++.dg/cpp0x/constexpr-nullptr.C: Now ill-formed.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
 	Core 975
 	* g++.dg/cpp0x/lambda/lambda-deduce-ext-neg2.C: Now accepted.
 	* g++.dg/cpp0x/lambda/lambda-deduce-ext-neg.C: Adjust.

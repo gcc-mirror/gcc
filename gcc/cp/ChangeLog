@@ -1,5 +1,10 @@
 2011-08-23  Jason Merrill  <jason@redhat.com>
 
+	Core 903 (partial)
+	* call.c (null_ptr_cst_p): Only 0 qualifies in C++11.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
 	Core 975
 	* decl.c (cxx_init_decl_processing): Initialize
 	dependent_lambda_return_type_node.
