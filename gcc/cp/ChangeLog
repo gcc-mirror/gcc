@@ -1,3 +1,9 @@
+2011-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46862
+	* class.c (finish_struct_1): If TYPE_TRANSPARENT_AGGR is set on a type
+	which doesn't have any fields, clear it and diagnose.
+
 2011-08-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50086

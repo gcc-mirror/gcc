@@ -1,6 +1,6 @@
 /* Functions related to building classes and their related objects.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -5703,6 +5703,12 @@ finish_struct_1 (tree t)
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, ! LOCAL_CLASS_P (t));
+
+  if (TYPE_TRANSPARENT_AGGR (t) && first_field (t) == NULL_TREE)
+    {
+      error ("type transparent class %qT does not have any fields", t);
+      TYPE_TRANSPARENT_AGGR (t) = 0;
+    }
 }
 
 /* When T was built up, the member declarations were added in reverse
