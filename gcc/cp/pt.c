@@ -8887,7 +8887,16 @@ instantiate_class_template_1 (tree type)
     }
 
   if (CLASSTYPE_LAMBDA_EXPR (type))
-    maybe_add_lambda_conv_op (type);
+    {
+      tree lambda = CLASSTYPE_LAMBDA_EXPR (type);
+      if (LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (lambda))
+	{
+	  apply_lambda_return_type (lambda, void_type_node);
+	  LAMBDA_EXPR_RETURN_TYPE (lambda) = NULL_TREE;
+	}
+      instantiate_decl (lambda_function (type), false, false);
+      maybe_add_lambda_conv_op (type);
+    }
 
   /* Set the file and line number information to whatever is given for
      the class itself.  This puts error messages involving generated
@@ -11420,8 +11429,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	if (DECLTYPE_FOR_LAMBDA_CAPTURE (t))
 	  type = lambda_capture_field_type (type);
-	else if (DECLTYPE_FOR_LAMBDA_RETURN (t))
-	  type = lambda_return_type (type);
 	else if (DECLTYPE_FOR_LAMBDA_PROXY (t))
 	  type = lambda_proxy_type (type);
 	else
@@ -13882,10 +13889,17 @@ tsubst_copy_and_build (tree t,
 	LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
 	LAMBDA_EXPR_DISCRIMINATOR (r)
 	  = (LAMBDA_EXPR_DISCRIMINATOR (t));
-	LAMBDA_EXPR_CAPTURE_LIST (r)
-	  = RECUR (LAMBDA_EXPR_CAPTURE_LIST (t));
 	LAMBDA_EXPR_EXTRA_SCOPE (r)
 	  = RECUR (LAMBDA_EXPR_EXTRA_SCOPE (t));
+	if (LAMBDA_EXPR_RETURN_TYPE (t) == dependent_lambda_return_type_node)
+	  {
+	    LAMBDA_EXPR_RETURN_TYPE (r) = dependent_lambda_return_type_node;
+	    LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (r) = true;
+	  }
+	else
+	  LAMBDA_EXPR_RETURN_TYPE (r)
+	    = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
+
 	gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 		    && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
 
@@ -13895,9 +13909,10 @@ tsubst_copy_and_build (tree t,
 	   declaration of the op() for later calls to lambda_function.  */
 	complete_type (type);
 
-	type = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
-	if (type)
-	  apply_lambda_return_type (r, type);
+	/* The capture list refers to closure members, so this needs to
+	   wait until after we finish instantiating the type.  */
+	LAMBDA_EXPR_CAPTURE_LIST (r)
+	  = RECUR (LAMBDA_EXPR_CAPTURE_LIST (t));
 
 	return build_lambda_object (r);
       }

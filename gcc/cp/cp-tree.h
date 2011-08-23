@@ -83,7 +83,6 @@ c-common.h, not after.
       STMT_IS_FULL_EXPR_P (in _STMT)
       TARGET_EXPR_LIST_INIT_P (in TARGET_EXPR)
       LAMBDA_EXPR_MUTABLE_P (in LAMBDA_EXPR)
-      DECLTYPE_FOR_LAMBDA_RETURN (in DECLTYPE_TYPE)
       DECL_FINAL_P (in FUNCTION_DECL)
       QUALIFIED_NAME_IS_TEMPLATE (in SCOPE_REF)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
@@ -775,6 +774,7 @@ enum cp_tree_index
     CPTI_CLASS_TYPE,
     CPTI_UNKNOWN_TYPE,
     CPTI_INIT_LIST_TYPE,
+    CPTI_DEPENDENT_LAMBDA_RETURN_TYPE,
     CPTI_VTBL_TYPE,
     CPTI_VTBL_PTR_TYPE,
     CPTI_STD,
@@ -846,6 +846,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define class_type_node			cp_global_trees[CPTI_CLASS_TYPE]
 #define unknown_type_node		cp_global_trees[CPTI_UNKNOWN_TYPE]
 #define init_list_type_node		cp_global_trees[CPTI_INIT_LIST_TYPE]
+#define dependent_lambda_return_type_node cp_global_trees[CPTI_DEPENDENT_LAMBDA_RETURN_TYPE]
 #define vtbl_type_node			cp_global_trees[CPTI_VTBL_TYPE]
 #define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
 #define std_node			cp_global_trees[CPTI_STD]
@@ -3425,12 +3426,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (DECLTYPE_TYPE_CHECK (NODE))->type_common.string_flag
 
 /* These flags indicate that we want different semantics from normal
-   decltype: lambda capture just drops references, lambda return also does
-   type decay, lambda proxies look through implicit dereference.  */
+   decltype: lambda capture just drops references, lambda proxies look
+   through implicit dereference.  */
 #define DECLTYPE_FOR_LAMBDA_CAPTURE(NODE) \
   TREE_LANG_FLAG_0 (DECLTYPE_TYPE_CHECK (NODE))
-#define DECLTYPE_FOR_LAMBDA_RETURN(NODE) \
-  TREE_LANG_FLAG_1 (DECLTYPE_TYPE_CHECK (NODE))
 #define DECLTYPE_FOR_LAMBDA_PROXY(NODE) \
   TREE_LANG_FLAG_2 (DECLTYPE_TYPE_CHECK (NODE))
 

@@ -1,6 +1,5 @@
-// Test that in pedantic mode, we warn about the extension to allow return
-// type deduction when the lambda contains more than just a single
-// return-statement.
+// Test that this is accepted even when pedantic now that it's part
+// of the standard.
 
 // { dg-options "-std=c++0x -pedantic" }
 
@@ -11,7 +10,7 @@ T f (T t)
   [=] { return t+1; };		// OK
   return [=] {
     auto i = t+1;
-    return i+1;			// { dg-warning "only statement" }
+    return i+1;
   }();
 }
 

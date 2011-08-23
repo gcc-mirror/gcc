@@ -3597,6 +3597,10 @@ cxx_init_decl_processing (void)
   init_list_type_node = make_node (LANG_TYPE);
   record_unknown_type (init_list_type_node, "init list");
 
+  dependent_lambda_return_type_node = make_node (LANG_TYPE);
+  record_unknown_type (dependent_lambda_return_type_node,
+		       "undeduced lambda return type");
+
   {
     /* Make sure we get a unique function type, so we can give
        its pointer type a name.  (This wins for gdb.) */
