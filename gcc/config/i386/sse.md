@@ -4761,7 +4761,7 @@
 		(match_operand:VI2_AVX2 2 "nonimmediate_operand" "")))
 	    (const_int 16))))]
   "TARGET_SSE2"
-  "ix86_fixup_binary_operands_no_copy (MULT, V8HImode, operands);")
+  "ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);")
 
 (define_insn "*<s>mul<mode>3_highpart"
   [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,x")

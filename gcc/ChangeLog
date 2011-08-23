@@ -1,3 +1,7 @@
+2011-08-23  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/sse.md (<s>mul<mode>3_highpart): Update.
+
 2011-08-23  Mark Heffernan  <meheff@google.com>
 
 	PR middle-end/38509
