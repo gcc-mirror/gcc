@@ -1,3 +1,8 @@
+2011-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/50161
+	* gcc.dg/pr50161.c: New test.
+
 2011-08-23  Siddhesh Poyarekar  <siddhesh.poyarekar@gmail.com>
 
 	PR c++/50055

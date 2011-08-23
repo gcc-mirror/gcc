@@ -216,7 +216,32 @@ add_equal_note (rtx insns, rtx target, enum rtx_code code, rtx op0, rtx op1)
     }
 
   if (GET_RTX_CLASS (code) == RTX_UNARY)
-    note = gen_rtx_fmt_e (code, GET_MODE (target), copy_rtx (op0));
+    switch (code)
+      {
+      case FFS:
+      case CLZ:
+      case CTZ:
+      case CLRSB:
+      case POPCOUNT:
+      case PARITY:
+      case BSWAP:
+	if (GET_MODE (op0) != VOIDmode && GET_MODE (target) != GET_MODE (op0))
+	  {
+	    note = gen_rtx_fmt_e (code, GET_MODE (op0), copy_rtx (op0));
+	    if (GET_MODE_SIZE (GET_MODE (op0))
+		> GET_MODE_SIZE (GET_MODE (target)))
+	      note = simplify_gen_unary (TRUNCATE, GET_MODE (target),
+					 note, GET_MODE (op0));
+	    else
+	      note = simplify_gen_unary (ZERO_EXTEND, GET_MODE (target),
+					 note, GET_MODE (op0));
+	    break;
+	  }
+	/* FALLTHRU */
+      default:
+	note = gen_rtx_fmt_e (code, GET_MODE (target), copy_rtx (op0));
+	break;
+      }
   else
     note = gen_rtx_fmt_ee (code, GET_MODE (target), copy_rtx (op0), copy_rtx (op1));
 

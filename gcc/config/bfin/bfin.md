@@ -1,5 +1,5 @@
 ;;- Machine description for Blackfin for GNU compiler
-;;  Copyright 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+;;  Copyright 2005, 2006, 2007, 2008, 2011 Free Software Foundation, Inc.
 ;;  Contributed by Analog Devices.
 
 ;; This file is part of GCC.
@@ -1463,7 +1463,7 @@
 
 (define_expand "clrsbsi2"
   [(set (match_dup 2)
-	(clrsb:HI (match_operand:SI 1 "register_operand" "d")))
+	(truncate:HI (clrsb:SI (match_operand:SI 1 "register_operand" "d"))))
    (set (match_operand:SI 0 "register_operand")
 	(zero_extend:SI (match_dup 2)))]
   ""
@@ -1473,7 +1473,7 @@
 
 (define_insn "signbitssi2"
   [(set (match_operand:HI 0 "register_operand" "=d")
-	(clrsb:HI (match_operand:SI 1 "register_operand" "d")))]
+	(truncate:HI (clrsb:SI (match_operand:SI 1 "register_operand" "d"))))]
   ""
   "%h0 = signbits %1%!"
   [(set_attr "type" "dsp32")])

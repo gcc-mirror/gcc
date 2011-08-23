@@ -1,3 +1,24 @@
+2011-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/50161
+	* simplify-rtx.c (simplify_const_unary_operation): If
+	op is CONST_INT, don't look at op_mode, but use instead
+	mode.
+	* optabs.c (add_equal_note): For FFS, CLZ, CTZ,
+	CLRSB, POPCOUNT, PARITY and BSWAP use operand mode for
+	operation and TRUNCATE/ZERO_EXTEND if needed.
+	* doc/rtl.texi (ffs, clrsb, clz, ctz, popcount, parity, bswap):
+	Document that operand mode must be same as operation mode,
+	or VOIDmode.
+	* config/avr/avr.md (paritysi2, *parityqihi2.libgcc,
+	*paritysihi2.libgcc, popcountsi2, *popcountsi2.libgcc,
+	*popcountqihi2.libgcc, clzsi2, *clzsihi2.libgcc, ctzsi2,
+	*ctzsihi2.libgcc, ffssi2, *ffssihi2.libgcc): For unary ops
+	use the mode of operand for the operation and add truncate
+	or zero_extend around if needed.
+	* config/c6x/c6x.md (ctzdi2): Likewise.
+	* config/bfin/bfin.md (clrsbsi2, signbitssi2): Likewise.
+
 2011-08-12  Michael Matz  <matz@suse.de>
 
 	* cfgexpand.c (expand_one_register_var): Use get_pointer_alignment.
