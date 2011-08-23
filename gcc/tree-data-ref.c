@@ -844,19 +844,34 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
   if (nest)
     before_loop = block_before_loop (nest);
 
+  /* Analyze access functions of dimensions we know to be independent.  */
   while (handled_component_p (aref))
     {
+      /* For ARRAY_REFs the base is the reference with the index replaced
+	 by zero.  */
       if (TREE_CODE (aref) == ARRAY_REF)
 	{
 	  op = TREE_OPERAND (aref, 1);
 	  if (nest)
 	    {
-  	      access_fn = analyze_scalar_evolution (loop, op);
+	      access_fn = analyze_scalar_evolution (loop, op);
 	      access_fn = instantiate_scev (before_loop, loop, access_fn);
 	      VEC_safe_push (tree, heap, access_fns, access_fn);
 	    }
-
 	  TREE_OPERAND (aref, 1) = build_int_cst (TREE_TYPE (op), 0);
+	}
+      /* REALPART_EXPR and IMAGPART_EXPR can be handled like accesses
+	 into a two element array with a constant index.  The base is
+	 then just the immediate underlying object.  */
+      else if (TREE_CODE (aref) == REALPART_EXPR)
+	{
+	  ref = TREE_OPERAND (ref, 0);
+	  VEC_safe_push (tree, heap, access_fns, integer_zero_node);
+	}
+      else if (TREE_CODE (aref) == IMAGPART_EXPR)
+	{
+	  ref = TREE_OPERAND (ref, 0);
+	  VEC_safe_push (tree, heap, access_fns, integer_one_node);
 	}
 
       aref = TREE_OPERAND (aref, 0);
@@ -956,6 +971,7 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple stmt,
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
+      unsigned i;
       fprintf (dump_file, "\tbase_address: ");
       print_generic_expr (dump_file, DR_BASE_ADDRESS (dr), TDF_SLIM);
       fprintf (dump_file, "\n\toffset from base address: ");
@@ -969,6 +985,11 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple stmt,
       fprintf (dump_file, "\n\tbase_object: ");
       print_generic_expr (dump_file, DR_BASE_OBJECT (dr), TDF_SLIM);
       fprintf (dump_file, "\n");
+      for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
+	{
+	  fprintf (dump_file, "\tAccess function %d: ", i);
+	  print_generic_stmt (dump_file, DR_ACCESS_FN (dr, i), TDF_SLIM);
+	}
     }
 
   return dr;
