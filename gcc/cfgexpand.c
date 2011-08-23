@@ -909,7 +909,7 @@ expand_one_register_var (tree var)
     mark_user_reg (x);
 
   if (POINTER_TYPE_P (type))
-    mark_reg_pointer (x, TYPE_ALIGN (TREE_TYPE (type)));
+    mark_reg_pointer (x, get_pointer_alignment (var));
 }
 
 /* A subroutine of expand_one_var.  Called to assign rtl to a VAR_DECL that
@@ -4263,6 +4263,31 @@ gimple_expand_cfg (void)
 	  if (MEM_P (SA.partition_to_pseudo[i]))
 	    set_mem_expr (SA.partition_to_pseudo[i], NULL);
 	}
+    }
+
+  /* If we have a class containing differently aligned pointers
+     we need to merge those into the corresponding RTL pointer
+     alignment.  */
+  for (i = 1; i < num_ssa_names; i++)
+    {
+      tree name = ssa_name (i);
+      int part;
+      rtx r;
+
+      if (!name
+	  || !POINTER_TYPE_P (TREE_TYPE (name))
+	  /* We might have generated new SSA names in
+	     update_alias_info_with_stack_vars.  They will have a NULL
+	     defining statements, and won't be part of the partitioning,
+	     so ignore those.  */
+	  || !SSA_NAME_DEF_STMT (name))
+	continue;
+      part = var_to_partition (SA.map, name);
+      if (part == NO_PARTITION)
+	continue;
+      r = SA.partition_to_pseudo[part];
+      if (REG_P (r))
+	mark_reg_pointer (r, get_pointer_alignment (name));
     }
 
   /* If this function is `main', emit a call to `__main'
