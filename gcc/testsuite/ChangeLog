@@ -1,5 +1,13 @@
 2011-08-23  Jason Merrill  <jason@redhat.com>
 
+	Core 975
+	* g++.dg/cpp0x/lambda/lambda-deduce-ext-neg2.C: Now accepted.
+	* g++.dg/cpp0x/lambda/lambda-deduce-ext-neg.C: Adjust.
+	* g++.dg/cpp0x/lambda/lambda-deduce2.C: Test returning overload.
+	* g++.dg/cpp0x/lambda/lambda-deduce-neg.C: Remove #include.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
 	PR c++/50024
 	* g++.dg/cpp0x/constexpr-initlist5.C: New.
 

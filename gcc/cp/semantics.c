@@ -8323,18 +8323,14 @@ tree
 lambda_return_type (tree expr)
 {
   tree type;
-  if (BRACE_ENCLOSED_INITIALIZER_P (expr))
+  if (type_unknown_p (expr)
+      || BRACE_ENCLOSED_INITIALIZER_P (expr))
     {
-      warning (0, "cannot deduce lambda return type from a braced-init-list");
+      cxx_incomplete_type_error (expr, TREE_TYPE (expr));
       return void_type_node;
     }
   if (type_dependent_expression_p (expr))
-    {
-      type = cxx_make_type (DECLTYPE_TYPE);
-      DECLTYPE_TYPE_EXPR (type) = expr;
-      DECLTYPE_FOR_LAMBDA_RETURN (type) = true;
-      SET_TYPE_STRUCTURAL_EQUALITY (type);
-    }
+    type = dependent_lambda_return_type_node;
   else
     type = cv_unqualified (type_decays_to (unlowered_expr_type (expr)));
   return type;
@@ -8394,11 +8390,9 @@ apply_lambda_return_type (tree lambda, tree return_type)
 
   LAMBDA_EXPR_RETURN_TYPE (lambda) = return_type;
 
-  /* If we got a DECLTYPE_TYPE, don't stick it in the function yet,
-     it would interfere with instantiating the closure type.  */
-  if (dependent_type_p (return_type))
-    return;
   if (return_type == error_mark_node)
+    return;
+  if (TREE_TYPE (TREE_TYPE (fco)) == return_type)
     return;
 
   /* TREE_TYPE (FUNCTION_DECL) == METHOD_TYPE
@@ -8412,6 +8406,7 @@ apply_lambda_return_type (tree lambda, tree return_type)
   /* We already have a DECL_RESULT from start_preparsed_function.
      Now we need to redo the work it and allocate_struct_function
      did to reflect the new type.  */
+  gcc_assert (current_function_decl == fco);
   result = build_decl (input_location, RESULT_DECL, NULL_TREE,
 		       TYPE_MAIN_VARIANT (return_type));
   DECL_ARTIFICIAL (result) = 1;

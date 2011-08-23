@@ -1953,7 +1953,7 @@ write_type (tree type)
             case DECLTYPE_TYPE:
 	      /* These shouldn't make it into mangling.  */
 	      gcc_assert (!DECLTYPE_FOR_LAMBDA_CAPTURE (type)
-			  && !DECLTYPE_FOR_LAMBDA_RETURN (type));
+			  && !DECLTYPE_FOR_LAMBDA_PROXY (type));
 
 	      /* In ABI <5, we stripped decltype of a plain decl.  */
 	      if (!abi_version_at_least (5)
