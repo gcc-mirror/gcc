@@ -1,3 +1,9 @@
+2011-08-23  Steve Ellcey  <sje@cup.hp.com>
+
+	PR libstdc++/50153
+	* inclhack.def (hpux11_abs): Extend to all hpux machines.
+	* fixincl.x: Regenerate.
+
 2011-08-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Marc Glisse  <marc.glisse@normalesup.org>
 
