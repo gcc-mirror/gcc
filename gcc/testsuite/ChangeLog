@@ -1,5 +1,8 @@
 2011-08-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/50158
+	* g++.dg/warn/Wunused-var-16.C: New test.
+
 	PR middle-end/50161
 	* gcc.dg/pr50161.c: New test.
 
