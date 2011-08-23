@@ -1,3 +1,9 @@
+2011-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/64/sfp-machine.h (ASM_INVALID): New define.
+	(ASM_DIVZERO): Ditto.
+	(FP_HANLDE_EXCEPTIONS): Use ASM_INVALID and ASM_DIVZERO.
+
 2011-06-27  Release Manager
 
 	* GCC 4.6.1 released.
