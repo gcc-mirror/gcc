@@ -1,3 +1,12 @@
+2011-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (Yp): New register constraint.
+	* config/i386/i386.md (*addhi_1): Merge with *addhi_1_lea using
+	Yp register constraint.
+	(*addqi_1): Merge with *addqi_1_lea using Yp register constraint.
+	(*ashlhi3_1): Merge with *ashlhi3_1_lea using Yp register constraint.
+	(*ashlqi3_1): Merge with *ashlqi3_1_lea using Yp register constraint.
+
 2011-08-23  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/sse.md (<s>mul<mode>3_highpart): Update.
@@ -18,21 +27,17 @@
 	(imm_disp): Ditto.
 	(isa): Add bmi2.
 	(enabled): Handle bmi2.
-	(w): New mode attribute.
 	(*mul<mode><dwi>3): Split from *<u>mul<mode><dwi>3.
 	(*umul<mode><dwi>3): Ditto.  Add imulx BMI2 alternative.
 	(*bmi2_umulditi3_1): New insn pattern.
 	(*bmi2_umulsidi3_1): Ditto.
-	(*umul<mode><dwi>3 splitter): New splitter to avoid flags
-	dependency.
+	(*umul<mode><dwi>3 splitter): New splitter to avoid flags dependency.
 	(*bmi2_ashl<mode>3_1): New insn pattern.
 	(*ashl<mode>3_1): Add ishiftx BMI2 alternative.
-	(*ashl<mode>3_1 splitter): New splitter to avoid flags
-	dependency.
+	(*ashl<mode>3_1 splitter): New splitter to avoid flags dependency.
 	(*bmi2_ashlsi3_1_zext): New insn pattern.
 	(*ashlsi3_1_zext): Add ishiftx BMI2 alternative.
-	(*ashlsi3_1_zext splitter): New splitter to avoid flags
-	dependency.
+	(*ashlsi3_1_zext splitter): New splitter to avoid flags dependency.
 	(*bmi2_<shiftrt_insn><mode>3_1): New insn pattern.
 	(*<shiftrt_insn><mode>3_1): Add ishiftx BMI2 alternative.
 	(*<shiftrt_insn><mode>3_1 splitter): New splitter to avoid
@@ -43,19 +48,16 @@
 	flags dependency.
 	(*bmi2_rorx<mode>3_1): New insn pattern.
 	(*<rotate_insn><mode>3_1): Add rotatex BMI2 alternative.
-	(*rotate<mode>3_1 splitter): New splitter to avoid flags
-	dependency.
+	(*rotate<mode>3_1 splitter): New splitter to avoid flags dependency.
 	(*rotatert<mode>3_1 splitter): Ditto.
 	(*bmi2_rorxsi3_1_zext): New insn pattern.
 	(*<rotate_insn>si3_1_zext): Add rotatex BMI2 alternative.
-	(*rotatesi3_1_zext splitter): New splitter to avoid flags
-	dependency.
+	(*rotatesi3_1_zext splitter): New splitter to avoid flags dependency.
 	(*rotatertsi3_1_zext splitter): Ditto.
 
 2011-08-23  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* common/config/i386/i386-common.c (OPTION_MASK_ISA_BMI2_SET):
-	New.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_BMI2_SET): New.
 	(OPTION_MASK_ISA_BMI2_UNSET): Likewise.
 	(ix86_handle_option): Handle OPT_mbmi2 case.
 	* config.gcc (i[34567]86-*-*): Add bmi2intrin.h.
@@ -93,8 +95,7 @@
 
 	PR middle-end/50161
 	* simplify-rtx.c (simplify_const_unary_operation): If
-	op is CONST_INT, don't look at op_mode, but use instead
-	mode.
+	op is CONST_INT, don't look at op_mode, but use instead mode.
 	* optabs.c (add_equal_note): For FFS, CLZ, CTZ,
 	CLRSB, POPCOUNT, PARITY and BSWAP use operand mode for
 	operation and TRUNCATE/ZERO_EXTEND if needed.
@@ -144,8 +145,7 @@
 
 	* tree-data-ref.c (dr_analyze_indices): Add comments, handle
 	REALPART_EXPR and IMAGPART_EXPR similar to ARRAY_REFs.
-	(create_data_ref): Also dump access functions for the created
-	data-ref.
+	(create_data_ref): Also dump access functions for the created data-ref.
 
 2011-08-22  Uros Bizjak  <ubizjak@gmail.com>
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
