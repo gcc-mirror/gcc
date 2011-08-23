@@ -1,5 +1,11 @@
 2011-08-23  Jason Merrill  <jason@redhat.com>
 
+	* typeck2.c (build_functional_cast): Don't try to avoid calling
+	build_value_init.
+	* pt.c (instantiate_class_template_1): Don't copy TYPE_HAS_* flags.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
 	PR c++/49045
 	Core 1321
 	* tree.c (dependent_name): New.
