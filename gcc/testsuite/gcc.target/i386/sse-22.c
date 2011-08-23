@@ -46,7 +46,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("sse4a,3dnow,avx,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
@@ -159,7 +159,7 @@ test_4 (_mm_cmpestro, int, __m128i, int, __m128i, int, 1)
 test_4 (_mm_cmpestrs, int, __m128i, int, __m128i, int, 1)
 test_4 (_mm_cmpestrz, int, __m128i, int, __m128i, int, 1)
 
-/* immintrin.h (AVX/RDRND/FSGSBASE/F16C) */
+/* immintrin.h (AVX/AVX2/RDRND/FSGSBASE/F16C) */
 #ifdef DIFFERENT_PRAGMAS
 #pragma GCC target ("avx,rdrnd,fsgsbase,f16c")
 #endif
@@ -248,3 +248,36 @@ test_1 ( __bextri_u32, unsigned int, unsigned int, 1)
 #ifdef __x86_64__
 test_1 ( __bextri_u64, unsigned long long, unsigned long long, 1)
 #endif
+
+/* avx2intrin.h */
+test_2 ( _mm256_mpsadbw_epu8, __m256i, __m256i, __m256i, 1)
+test_2 ( _mm256_alignr_epi8, __m256i, __m256i, __m256i, 1)
+test_2 ( _mm256_blend_epi16, __m256i, __m256i, __m256i, 1)
+test_1 ( _mm256_shuffle_epi32, __m256i, __m256i, 1)
+test_1 ( _mm256_shufflehi_epi16, __m256i, __m256i, 1)
+test_1 ( _mm256_shufflelo_epi16, __m256i, __m256i, 1)
+test_1 ( _mm256_slli_si256, __m256i, __m256i, 8)
+test_1 ( _mm256_srli_si256, __m256i, __m256i, 8)
+test_2 ( _mm_blend_epi32, __m128i, __m128i, __m128i, 1)
+test_2 ( _mm256_blend_epi32, __m256i, __m256i, __m256, 1)
+test_1 ( _mm256_permute4x64_pd, __m256d, __m256d, 1)
+test_1 ( _mm256_permute4x64_epi64, __m256i, __m256i, 1)
+test_2 ( _mm256_permute2x128_si256, __m256i, __m256i, __m256i, 1)
+test_1 ( _mm256_extracti128_si256, __m128i, __m256i, 1)
+test_2 ( _mm256_inserti128_si256, __m256i, __m256i, __m128i, 1)
+test_2 ( _mm_i32gather_pd, __m128d, double const *, __m128i, 1)
+test_2 ( _mm256_i32gather_pd, __m256d, double const *, __m128i, 1)
+test_2 ( _mm_i64gather_pd, __m128d, double const *, __m128i, 1)
+test_2 ( _mm256_i64gather_pd, __m256d, double const *, __m256i, 1)
+test_2 ( _mm_i32gather_ps, __m128, float const *, __m128i, 1)
+test_2 ( _mm256_i32gather_ps, __m256, float const *, __m256i, 1)
+test_2 ( _mm_i64gather_ps, __m128, float const *, __m128i, 1)
+test_2 ( _mm256_i64gather_ps, __m128, float const *, __m256i, 1)
+test_2 ( _mm_i32gather_epi64, __m128i, long long int const *, __m128i, 1)
+test_2 ( _mm256_i32gather_epi64, __m256i, long long int const *, __m128i, 1)
+test_2 ( _mm_i64gather_epi64, __m128i, long long int const *, __m128i, 1)
+test_2 ( _mm256_i64gather_epi64,  __m256i, long long int const *, __m256i, 1)
+test_2 ( _mm_i32gather_epi32, __m128i, int const *, __m128i, 1)
+test_2 ( _mm256_i32gather_epi32, __m256i, int const *, __m256i, 1)
+test_2 ( _mm_i64gather_epi32, __m128i, int const *, __m128i, 1)
+test_2 ( _mm256_i64gather_epi32, __m128i, int const *, __m256i, 1)

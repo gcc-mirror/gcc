@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx  -maes -mpclmul" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul" } */
 
 #include <mm_malloc.h>
 
@@ -49,6 +49,39 @@
 #define __builtin_ia32_vinsertf128_si256(X, Y, C) __builtin_ia32_vinsertf128_si256(X, Y, 1)
 #define __builtin_ia32_roundpd256(V, M) __builtin_ia32_roundpd256(V, 1)
 #define __builtin_ia32_roundps256(V, M) __builtin_ia32_roundps256(V, 1)
+#define __builtin_ia32_mpsadbw256(X, Y, M) __builtin_ia32_mpsadbw256(X, Y, 1)
+#define __builtin_ia32_palignr256(X, Y, M) __builtin_ia32_palignr256(X, Y, 8)
+#define __builtin_ia32_pblendw256(X, Y, M) __builtin_ia32_pblendw256(X, Y, 8)
+#define __builtin_ia32_pshufd256(X, M) __builtin_ia32_pshufd256(X, 8)
+#define __builtin_ia32_pshufhw256(X, M) __builtin_ia32_pshufhw256(X, 8)
+#define __builtin_ia32_pshuflw256(X, M) __builtin_ia32_pshuflw256(X, 8)
+#define __builtin_ia32_pslldqi256(X, M) __builtin_ia32_pslldqi256(X, 8)
+#define __builtin_ia32_psrldqi256(X, M) __builtin_ia32_psrldqi256(X, 8)
+#define __builtin_ia32_pblendd128(X, Y, M) __builtin_ia32_pblendd128(X, Y, 1)
+#define __builtin_ia32_pblendd256(X, Y, M) __builtin_ia32_pblendd256(X, Y, 1)
+#define __builtin_ia32_permdf256(X, M) __builtin_ia32_permdf256(X, 1)
+#define __builtin_ia32_permdi256(X, M) __builtin_ia32_permdi256(X, 1)
+#define __builtin_ia32_permti256(X, Y, M) __builtin_ia32_permti256(X, Y, 1)
+#define __builtin_ia32_extract128i256(X, M) __builtin_ia32_extract128i256(X, 1)
+#define __builtin_ia32_insert128i256(X, Y, M) __builtin_ia32_insert128i256(X, Y, 1)
+#define __builtin_ia32_gathersiv2df(A, B, C, D, M) __builtin_ia32_gathersiv2df(A, B, C, D, 1)
+#define __builtin_ia32_gathersiv4df(A, B, C, D, M) __builtin_ia32_gathersiv4df(A, B, C, D, 1)
+#define __builtin_ia32_gatherdiv2df(A, B, C, D, M) __builtin_ia32_gatherdiv2df(A, B, C, D, 1)
+#define __builtin_ia32_gatherdiv4df(A, B, C, D, M) __builtin_ia32_gatherdiv4df(A, B, C, D, 1)
+#define __builtin_ia32_gathersiv4sf(A, B, C, D, M) __builtin_ia32_gathersiv4sf(A, B, C, D, 1)
+#define __builtin_ia32_gathersiv8sf(A, B, C, D, M) __builtin_ia32_gathersiv8sf(A, B, C, D, 1)
+#define __builtin_ia32_gatherdiv4sf(A, B, C, D, M) __builtin_ia32_gatherdiv4sf(A, B, C, D, 1)
+#define __builtin_ia32_gatherdiv4sf256(A, B, C, D, M) \
+  __builtin_ia32_gatherdiv4sf256(A, B, C, D, 1)
+#define __builtin_ia32_gathersiv2di(A, B, C, D, M) __builtin_ia32_gathersiv2di(A, B, C, D, 1)
+#define __builtin_ia32_gathersiv4di(A, B, C, D, M) __builtin_ia32_gathersiv4di(A, B, C, D, 1)
+#define __builtin_ia32_gatherdiv2di(A, B, C, D, M) __builtin_ia32_gatherdiv2di(A, B, C, D, 1)
+#define __builtin_ia32_gatherdiv4di(A, B, C, D, M) __builtin_ia32_gatherdiv4di(A, B, C, D, 1)
+#define __builtin_ia32_gathersiv4si(A, B, C, D, M) __builtin_ia32_gathersiv4si(A, B, C, D, 1)
+#define __builtin_ia32_gathersiv8si(A, B, C, D, M) __builtin_ia32_gathersiv8si(A, B, C, D, 1)
+#define __builtin_ia32_gatherdiv4si(A, B, C, D, M) __builtin_ia32_gatherdiv4si(A, B, C, D, 1)
+#define __builtin_ia32_gatherdiv4si256(A, B, C, D, M) \
+  __builtin_ia32_gatherdiv4si256(A, B, C, D, 1)
 
 /* wmmintrin.h */
 #define __builtin_ia32_aeskeygenassist128(X, C) __builtin_ia32_aeskeygenassist128(X, 1)
