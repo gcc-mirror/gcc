@@ -7681,21 +7681,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
     case IDENTIFIER_NODE:
       /* We can see a FIELD_DECL in a pointer-to-member expression.  */
     case FIELD_DECL:
-      return true;
-
     case PARM_DECL:
-      /* -- this (5.1) unless it appears as the postfix-expression in a
-            class member access expression, including the result of the
-            implicit transformation in the body of the non-static
-            member function (9.3.1);  */
-      /* FIXME this restriction seems pointless since the standard dropped
-	 "potential constant expression".  */
-      if (is_this_parameter (t))
-        {
-          if (flags & tf_error)
-            error ("%qE is not a potential constant expression", t);
-          return false;
-        }
       return true;
 
     case AGGR_INIT_EXPR:
