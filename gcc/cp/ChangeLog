@@ -1,3 +1,9 @@
+2011-08-23  Siddhesh Poyarekar  <siddhesh.poyarekar@gmail.com>
+
+	PR c++/50055
+	* except.c (begin_eh_spec_block): Build EH_SPEC block on the
+	same line as the function.
+
 2011-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/46862

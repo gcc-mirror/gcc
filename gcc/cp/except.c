@@ -527,15 +527,17 @@ tree
 begin_eh_spec_block (void)
 {
   tree r;
+  location_t spec_location = DECL_SOURCE_LOCATION (current_function_decl);
+
   /* A noexcept specification (or throw() with -fnothrow-opt) is a
      MUST_NOT_THROW_EXPR.  */
   if (TYPE_NOEXCEPT_P (TREE_TYPE (current_function_decl)))
     {
-      r = build_stmt (input_location, MUST_NOT_THROW_EXPR, NULL_TREE);
+      r = build_stmt (spec_location, MUST_NOT_THROW_EXPR, NULL_TREE);
       TREE_SIDE_EFFECTS (r) = 1;
     }
   else
-    r = build_stmt (input_location, EH_SPEC_BLOCK, NULL_TREE, NULL_TREE);
+    r = build_stmt (spec_location, EH_SPEC_BLOCK, NULL_TREE, NULL_TREE);
   add_stmt (r);
   TREE_OPERAND (r, 0) = push_stmt_list ();
   return r;
