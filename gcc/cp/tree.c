@@ -1450,6 +1450,21 @@ is_overloaded_fn (tree x)
 	   || TREE_CODE (x) == OVERLOAD);
 }
 
+/* X is the CALL_EXPR_FN of a CALL_EXPR.  If X represents a dependent name
+   (14.6.2), return the IDENTIFIER_NODE for that name.  Otherwise, return
+   NULL_TREE.  */
+
+static tree
+dependent_name (tree x)
+{
+  if (TREE_CODE (x) == IDENTIFIER_NODE)
+    return x;
+  if (TREE_CODE (x) != COMPONENT_REF
+      && is_overloaded_fn (x))
+    return DECL_NAME (get_first_fn (x));
+  return NULL_TREE;
+}
+
 /* Returns true iff X is an expression for an overloaded function
    whose type cannot be known without performing overload
    resolution.  */
@@ -2187,7 +2202,12 @@ cp_tree_equal (tree t1, tree t2)
       {
 	tree arg1, arg2;
 	call_expr_arg_iterator iter1, iter2;
-	if (!cp_tree_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
+	/* Core 1321: dependent names are equivalent even if the
+	   overload sets are different.  */
+	tree name1 = dependent_name (CALL_EXPR_FN (t1));
+	tree name2 = dependent_name (CALL_EXPR_FN (t2));
+	if (!(name1 && name2 && name1 == name2)
+	    && !cp_tree_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
 	  return false;
 	for (arg1 = first_call_expr_arg (t1, &iter1),
 	       arg2 = first_call_expr_arg (t2, &iter2);

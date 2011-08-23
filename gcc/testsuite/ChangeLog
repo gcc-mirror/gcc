@@ -1,5 +1,11 @@
 2011-08-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49045
+	Core 1321
+	* g++.dg/cpp0x/overload2.C: New.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
 	Core 903
 	* g++.dg/cpp0x/constexpr-nullptr.C: Now ill-formed.
 
