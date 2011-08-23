@@ -5727,6 +5727,9 @@ gfc_use_module (void)
   int c, line, start;
   gfc_symtree *mod_symtree;
   gfc_use_list *use_stmt;
+  locus old_locus = gfc_current_locus;
+
+  gfc_current_locus = use_locus;
 
   filename = (char *) alloca (strlen (module_name) + strlen (MODULE_EXTENSION)
 			      + 1);
@@ -5748,6 +5751,7 @@ gfc_use_module (void)
 			     "intrinsic module at %C") != FAILURE)
        {
 	 use_iso_fortran_env_module ();
+	 gfc_current_locus = old_locus;
 	 return;
        }
 
@@ -5756,6 +5760,7 @@ gfc_use_module (void)
 			     "ISO_C_BINDING module at %C") != FAILURE)
 	{
 	  import_iso_c_binding_module();
+	  gfc_current_locus = old_locus;
 	  return;
 	}
 
@@ -5845,6 +5850,8 @@ gfc_use_module (void)
   gfc_rename_list = NULL;
   use_stmt->next = gfc_current_ns->use_stmts;
   gfc_current_ns->use_stmts = use_stmt;
+
+  gfc_current_locus = old_locus;
 }
 
 
