@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1994, 1997, 1998, 1999, 2000, 2001, 2002,
-@c 2003, 2004, 2005, 2006, 2007, 2008, 2010
+@c 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -2408,9 +2408,8 @@ Most often @var{m} will be a floating point mode.
 @item (ffs:@var{m} @var{x})
 Represents one plus the index of the least significant 1-bit in
 @var{x}, represented as an integer of mode @var{m}.  (The value is
-zero if @var{x} is zero.)  The mode of @var{x} need not be @var{m};
-depending on the target machine, various mode combinations may be
-valid.
+zero if @var{x} is zero.)  The mode of @var{x} must be @var{m}
+or @code{VOIDmode}.
 
 @findex clrsb
 @item (clrsb:@var{m} @var{x})
@@ -2418,7 +2417,7 @@ Represents the number of redundant leading sign bits in @var{x},
 represented as an integer of mode @var{m}, starting at the most
 significant bit position.  This is one less than the number of leading
 sign bits (either 0 or 1), with no special cases.  The mode of @var{x}
-will usually be an integer mode and may differ from @var{m}.
+must be @var{m} or @code{VOIDmode}.
 
 @findex clz
 @item (clz:@var{m} @var{x})
@@ -2427,7 +2426,7 @@ integer of mode @var{m}, starting at the most significant bit position.
 If @var{x} is zero, the value is determined by
 @code{CLZ_DEFINED_VALUE_AT_ZERO} (@pxref{Misc}).  Note that this is one of
 the few expressions that is not invariant under widening.  The mode of
-@var{x} will usually be an integer mode.
+@var{x} must be @var{m} or @code{VOIDmode}.
 
 @findex ctz
 @item (ctz:@var{m} @var{x})
@@ -2436,23 +2435,24 @@ integer of mode @var{m}, starting at the least significant bit position.
 If @var{x} is zero, the value is determined by
 @code{CTZ_DEFINED_VALUE_AT_ZERO} (@pxref{Misc}).  Except for this case,
 @code{ctz(x)} is equivalent to @code{ffs(@var{x}) - 1}.  The mode of
-@var{x} will usually be an integer mode.
+@var{x} must be @var{m} or @code{VOIDmode}.
 
 @findex popcount
 @item (popcount:@var{m} @var{x})
 Represents the number of 1-bits in @var{x}, represented as an integer of
-mode @var{m}.  The mode of @var{x} will usually be an integer mode.
+mode @var{m}.  The mode of @var{x} must be @var{m} or @code{VOIDmode}.
 
 @findex parity
 @item (parity:@var{m} @var{x})
 Represents the number of 1-bits modulo 2 in @var{x}, represented as an
-integer of mode @var{m}.  The mode of @var{x} will usually be an integer
-mode.
+integer of mode @var{m}.  The mode of @var{x} must be @var{m} or
+@code{VOIDmode}.
 
 @findex bswap
 @item (bswap:@var{m} @var{x})
 Represents the value @var{x} with the order of bytes reversed, carried out
 in mode @var{m}, which must be a fixed-point machine mode.
+The mode of @var{x} must be @var{m} or @code{VOIDmode}.
 @end table
 
 @node Comparisons

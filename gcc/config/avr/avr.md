@@ -1,7 +1,7 @@
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
 ;;   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008,
-;;   2009, 2010 Free Software Foundation, Inc.
+;;   2009, 2010, 2011 Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (chertykov@gmail.com)
 
 ;; This file is part of GCC.
@@ -4124,7 +4124,7 @@
   [(set (reg:SI 22)
         (match_operand:SI 1 "register_operand" ""))
    (set (reg:HI 24)
-        (parity:HI (reg:SI 22)))
+	(truncate:HI (parity:SI (reg:SI 22))))
    (set (match_dup 2)
         (reg:HI 24))
    (set (match_operand:SI 0 "register_operand" "")
@@ -4144,7 +4144,7 @@
 
 (define_insn "*parityqihi2.libgcc"
   [(set (reg:HI 24)
-        (parity:HI (reg:QI 24)))]
+	(zero_extend:HI (parity:QI (reg:QI 24))))]
   ""
   "%~call __parityqi2"
   [(set_attr "type" "xcall")
@@ -4152,7 +4152,7 @@
 
 (define_insn "*paritysihi2.libgcc"
   [(set (reg:HI 24)
-        (parity:HI (reg:SI 22)))]
+	(truncate:HI (parity:SI (reg:SI 22))))]
   ""
   "%~call __paritysi2"
   [(set_attr "type" "xcall")
@@ -4175,7 +4175,7 @@
   [(set (reg:SI 22)
         (match_operand:SI 1 "register_operand" ""))
    (set (reg:HI 24)
-        (popcount:HI (reg:SI 22)))
+	(truncate:HI (popcount:SI (reg:SI 22))))
    (set (match_dup 2)
         (reg:HI 24))
    (set (match_operand:SI 0 "register_operand" "")
@@ -4195,7 +4195,7 @@
 
 (define_insn "*popcountsi2.libgcc"
   [(set (reg:HI 24)
-        (popcount:HI (reg:SI 22)))]
+	(truncate:HI (popcount:SI (reg:SI 22))))]
   ""
   "%~call __popcountsi2"
   [(set_attr "type" "xcall")
@@ -4211,7 +4211,7 @@
 
 (define_insn_and_split "*popcountqihi2.libgcc"
   [(set (reg:HI 24)
-        (popcount:HI (reg:QI 24)))]
+	(zero_extend:HI (popcount:QI (reg:QI 24))))]
   ""
   "#"
   ""
@@ -4238,7 +4238,7 @@
   [(set (reg:SI 22)
         (match_operand:SI 1 "register_operand" ""))
    (parallel [(set (reg:HI 24)
-                   (clz:HI (reg:SI 22)))
+		   (truncate:HI (clz:SI (reg:SI 22))))
               (clobber (reg:QI 26))])
    (set (match_dup 2)
         (reg:HI 24))
@@ -4260,7 +4260,7 @@
 
 (define_insn "*clzsihi2.libgcc"
   [(set (reg:HI 24)
-        (clz:HI (reg:SI 22)))
+	(truncate:HI (clz:SI (reg:SI 22))))
    (clobber (reg:QI 26))]
   ""
   "%~call __clzsi2"
@@ -4284,7 +4284,7 @@
   [(set (reg:SI 22)
         (match_operand:SI 1 "register_operand" ""))
    (parallel [(set (reg:HI 24)
-                   (ctz:HI (reg:SI 22)))
+		   (truncate:HI (ctz:SI (reg:SI 22))))
               (clobber (reg:QI 22))
               (clobber (reg:QI 26))])
    (set (match_dup 2)
@@ -4307,7 +4307,7 @@
 
 (define_insn "*ctzsihi2.libgcc"
   [(set (reg:HI 24)
-        (ctz:HI (reg:SI 22)))
+	(truncate:HI (ctz:SI (reg:SI 22))))
    (clobber (reg:QI 22))
    (clobber (reg:QI 26))]
   ""
@@ -4332,7 +4332,7 @@
   [(set (reg:SI 22)
         (match_operand:SI 1 "register_operand" ""))
    (parallel [(set (reg:HI 24)
-                   (ffs:HI (reg:SI 22)))
+		   (truncate:HI (ffs:SI (reg:SI 22))))
               (clobber (reg:QI 22))
               (clobber (reg:QI 26))])
    (set (match_dup 2)
@@ -4355,7 +4355,7 @@
 
 (define_insn "*ffssihi2.libgcc"
   [(set (reg:HI 24)
-        (ffs:HI (reg:SI 22)))
+	(truncate:HI (ffs:SI (reg:SI 22))))
    (clobber (reg:QI 22))
    (clobber (reg:QI 26))]
   ""
