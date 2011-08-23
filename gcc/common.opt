@@ -543,6 +543,10 @@ Wframe-larger-than=
 Common RejectNegative Joined UInteger
 -Wframe-larger-than=<number>	Warn if a function's stack frame requires more than <number> bytes
 
+Wfree-nonheap-object
+Common Var(warn_free_nonheap_object) Init(1) Warning
+Warn when attempting to free a non-heap object
+
 Winline
 Common Var(warn_inline) Warning
 Warn when an inlined function cannot be inlined

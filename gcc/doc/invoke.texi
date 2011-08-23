@@ -244,7 +244,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
 -Wformat-security  -Wformat-y2k @gol
--Wframe-larger-than=@var{len} -Wjump-misses-init -Wignored-qualifiers @gol
+-Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
+-Wignored-qualifiers @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline -Wmaybe-uninitialized @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
@@ -3959,6 +3960,12 @@ even if you do not get a warning.  In addition, any space allocated
 via @code{alloca}, variable-length arrays, or related constructs
 is not included by the compiler when determining
 whether or not to issue a warning.
+
+@item -Wno-free-nonheap-object
+@opindex Wno-free-nonheap-object
+@opindex Wfree-nonheap-object
+Do not warn when attempting to free an object which was not allocated
+on the heap.
 
 @item -Wstack-usage=@var{len}
 @opindex Wstack-usage
