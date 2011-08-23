@@ -206,6 +206,17 @@ proc check_effective_target_bmi { } {
     } "-mbmi" ]
 }
 
+# Return 1 if bmi2 instructions can be compiled.
+proc check_effective_target_bmi2 { } {
+    return [check_no_compiler_messages bmi2 object {
+	unsigned int
+	_bzhi_u32 (unsigned int __X, unsigned int __Y)
+	{
+	    return __builtin_ia32_bzhi_si (__X, __Y);
+	}
+    } "-mbmi2" ]
+}
+
 # If the linker used understands -M <mapfile>, pass it to clear hardware
 # capabilities set by the Sun assembler.
 set clearcap_ldflags "-Wl,-M,$srcdir/$subdir/clearcap.map"

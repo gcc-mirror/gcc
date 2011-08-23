@@ -46,7 +46,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("sse4a,3dnow,avx,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,tbm,lwp,fsgsbase,rdrnd,f16c")
+#pragma GCC target ("sse4a,3dnow,avx,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
@@ -220,9 +220,9 @@ test_2 (_mm_clmulepi64_si128, __m128i, __m128i, __m128i, 1)
 #endif
 #include <popcntintrin.h>
 
-/* x86intrin.h (FMA4/XOP/LWP/BMI/TBM/LZCNT). */
+/* x86intrin.h (FMA4/XOP/LWP/BMI/BMI2/TBM/LZCNT). */
 #ifdef DIFFERENT_PRAGMAS
-#pragma GCC target ("fma4,xop,lwp,bmi,tbm,lzcnt")
+#pragma GCC target ("fma4,xop,lwp,bmi,bmi2,tbm,lzcnt")
 #endif
 #include <x86intrin.h>
 /* xopintrin.h */

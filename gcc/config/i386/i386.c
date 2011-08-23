@@ -2664,6 +2664,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mmmx",		OPTION_MASK_ISA_MMX },
     { "-mabm",		OPTION_MASK_ISA_ABM },
     { "-mbmi",		OPTION_MASK_ISA_BMI },
+    { "-mbmi2", 	OPTION_MASK_ISA_BMI2 },
     { "-mlzcnt",	OPTION_MASK_ISA_LZCNT },
     { "-mtbm",		OPTION_MASK_ISA_TBM },
     { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
@@ -2921,6 +2922,7 @@ ix86_option_override_internal (bool main_args_p)
 #define PTA_TBM		 	(HOST_WIDE_INT_1 << 28)
 #define PTA_XOP		 	(HOST_WIDE_INT_1 << 29)
 #define PTA_AVX2		(HOST_WIDE_INT_1 << 30)
+#define PTA_BMI2	 	(HOST_WIDE_INT_1 << 31)
 /* if this reaches 64, need to widen struct pta flags below */
 
   static struct pta
@@ -2978,8 +2980,8 @@ ix86_option_override_internal (bool main_args_p)
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX | PTA_AVX2
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL | PTA_FSGSBASE
-	| PTA_RDRND | PTA_F16C | PTA_BMI | PTA_LZCNT | PTA_FMA
-	| PTA_MOVBE},
+	| PTA_RDRND | PTA_F16C | PTA_BMI | PTA_BMI2 | PTA_LZCNT
+        | PTA_FMA | PTA_MOVBE},
       {"atom", PROCESSOR_ATOM, CPU_ATOM,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16 | PTA_MOVBE},
@@ -3300,6 +3302,9 @@ ix86_option_override_internal (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_TBM
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_TBM))
 	  ix86_isa_flags |= OPTION_MASK_ISA_TBM;
+	if (processor_alias_table[i].flags & PTA_BMI2
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_BMI2))
+	  ix86_isa_flags |= OPTION_MASK_ISA_BMI2;
 	if (processor_alias_table[i].flags & PTA_CX16
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_CX16))
 	  ix86_isa_flags |= OPTION_MASK_ISA_CX16;
@@ -4053,6 +4058,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("3dnow",	OPT_m3dnow),
     IX86_ATTR_ISA ("abm",	OPT_mabm),
     IX86_ATTR_ISA ("bmi",	OPT_mbmi),
+    IX86_ATTR_ISA ("bmi2",	OPT_mbmi2),
     IX86_ATTR_ISA ("lzcnt",	OPT_mlzcnt),
     IX86_ATTR_ISA ("tbm",	OPT_mtbm),
     IX86_ATTR_ISA ("aes",	OPT_maes),
@@ -24242,6 +24248,13 @@ enum ix86_builtins
   IX86_BUILTIN_BEXTRI32,
   IX86_BUILTIN_BEXTRI64,
 
+  /* BMI2 instructions. */
+  IX86_BUILTIN_BZHI32,
+  IX86_BUILTIN_BZHI64,
+  IX86_BUILTIN_PDEP32,
+  IX86_BUILTIN_PDEP64,
+  IX86_BUILTIN_PEXT32,
+  IX86_BUILTIN_PEXT64,
 
   /* FSGSBASE instructions.  */
   IX86_BUILTIN_RDFSBASE32,
@@ -25375,6 +25388,14 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_F16C, CODE_FOR_vcvtph2ps256, "__builtin_ia32_vcvtph2ps256", IX86_BUILTIN_CVTPH2PS256, UNKNOWN, (int) V8SF_FTYPE_V8HI },
   { OPTION_MASK_ISA_F16C, CODE_FOR_vcvtps2ph, "__builtin_ia32_vcvtps2ph", IX86_BUILTIN_CVTPS2PH, UNKNOWN, (int) V8HI_FTYPE_V4SF_INT },
   { OPTION_MASK_ISA_F16C, CODE_FOR_vcvtps2ph256, "__builtin_ia32_vcvtps2ph256", IX86_BUILTIN_CVTPS2PH256, UNKNOWN, (int) V8HI_FTYPE_V8SF_INT },
+
+  /* BMI2 */
+  { OPTION_MASK_ISA_BMI2, CODE_FOR_bmi2_bzhi_si3, "__builtin_ia32_bzhi_si", IX86_BUILTIN_BZHI32, UNKNOWN, (int) UINT_FTYPE_UINT_UINT },
+  { OPTION_MASK_ISA_BMI2, CODE_FOR_bmi2_bzhi_di3, "__builtin_ia32_bzhi_di", IX86_BUILTIN_BZHI64, UNKNOWN, (int) UINT64_FTYPE_UINT64_UINT64 },
+  { OPTION_MASK_ISA_BMI2, CODE_FOR_bmi2_pdep_si3, "__builtin_ia32_pdep_si", IX86_BUILTIN_PDEP32, UNKNOWN, (int) UINT_FTYPE_UINT_UINT },
+  { OPTION_MASK_ISA_BMI2, CODE_FOR_bmi2_pdep_di3, "__builtin_ia32_pdep_di", IX86_BUILTIN_PDEP64, UNKNOWN, (int) UINT64_FTYPE_UINT64_UINT64 },
+  { OPTION_MASK_ISA_BMI2, CODE_FOR_bmi2_pext_si3, "__builtin_ia32_pext_si", IX86_BUILTIN_PEXT32, UNKNOWN, (int) UINT_FTYPE_UINT_UINT },
+  { OPTION_MASK_ISA_BMI2, CODE_FOR_bmi2_pext_di3, "__builtin_ia32_pext_di", IX86_BUILTIN_PEXT64, UNKNOWN, (int) UINT64_FTYPE_UINT64_UINT64 },
 };
 
 /* FMA4 and XOP.  */
