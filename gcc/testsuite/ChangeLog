@@ -1,5 +1,9 @@
 2011-08-23  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/crash7.C: Adjust expected errors.
+
+2011-08-23  Jason Merrill  <jason@redhat.com>
+
 	PR c++/49045
 	Core 1321
 	* g++.dg/cpp0x/overload2.C: New.
