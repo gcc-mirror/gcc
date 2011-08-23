@@ -1835,33 +1835,6 @@ analyze_memory_references (void)
   create_vop_ref_mapping ();
 }
 
-/* Returns true if a region of size SIZE1 at position 0 and a region of
-   size SIZE2 at position DIFF cannot overlap.  */
-
-static bool
-cannot_overlap_p (aff_tree *diff, double_int size1, double_int size2)
-{
-  double_int d, bound;
-
-  /* Unless the difference is a constant, we fail.  */
-  if (diff->n != 0)
-    return false;
-
-  d = diff->offset;
-  if (double_int_negative_p (d))
-    {
-      /* The second object is before the first one, we succeed if the last
-	 element of the second object is before the start of the first one.  */
-      bound = double_int_add (d, double_int_add (size2, double_int_minus_one));
-      return double_int_negative_p (bound);
-    }
-  else
-    {
-      /* We succeed if the second object starts after the first one ends.  */
-      return double_int_scmp (size1, d) <= 0;
-    }
-}
-
 /* Returns true if MEM1 and MEM2 may alias.  TTAE_CACHE is used as a cache in
    tree_to_aff_combination_expand.  */
 
@@ -1890,7 +1863,7 @@ mem_refs_may_alias_p (tree mem1, tree mem2, struct pointer_map_t **ttae_cache)
   aff_combination_scale (&off1, double_int_minus_one);
   aff_combination_add (&off2, &off1);
 
-  if (cannot_overlap_p (&off2, size1, size2))
+  if (aff_comb_cannot_overlap_p (&off2, size1, size2))
     return false;
 
   return true;

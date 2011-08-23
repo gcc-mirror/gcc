@@ -1,5 +1,24 @@
 2011-08-23  Richard Guenther  <rguenther@suse.de>
 
+	* Makefile.in (tree-data-ref.o): Add tree-affine.h dependency.
+	* tree-affine.h (aff_comb_cannot_overlap_p): Declare.
+	* tree-affine.c (aff_comb_cannot_overlap_p): New function, moved
+	from ...
+	* tree-ssa-loop-im.c (cannot_overlap_p): ... here.
+	(mem_refs_may_alias_p): Adjust.
+	* tree-data-ref.h (dr_may_alias_p): Adjust.
+	* tree-data-ref.c: Include tree-affine.h.
+	(dr_analyze_indices): Do nothing for the non-loop case.
+	(dr_may_alias_p): Distinguish loop and non-loop case.  Disambiguate
+	more cases in the non-loop case.
+	* graphite-sese-to-poly.c (write_alias_graph_to_ascii_dimacs): Adjust
+	calls to dr_may_alias_p.
+	(write_alias_graph_to_ascii_ecc): Likewise.
+	(write_alias_graph_to_ascii_dot): Likewise.
+	(build_alias_set_optimal_p): Likewise.
+
+2011-08-23  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/50162
 	* tree-vect-stmts.c (vectorizable_call): Fix argument lookup.
 

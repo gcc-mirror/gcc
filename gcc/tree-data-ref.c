@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
 #include "langhooks.h"
+#include "tree-affine.h"
 
 static struct datadep_stats
 {
@@ -841,8 +842,14 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
   tree base, off, access_fn = NULL_TREE;
   basic_block before_loop = NULL;
 
-  if (nest)
-    before_loop = block_before_loop (nest);
+  if (!nest)
+    {
+      DR_BASE_OBJECT (dr) = ref;
+      DR_ACCESS_FNS (dr) = NULL;
+      return;
+    }
+
+  before_loop = block_before_loop (nest);
 
   /* Analyze access functions of dimensions we know to be independent.  */
   while (handled_component_p (aref))
@@ -852,12 +859,9 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
       if (TREE_CODE (aref) == ARRAY_REF)
 	{
 	  op = TREE_OPERAND (aref, 1);
-	  if (nest)
-	    {
-	      access_fn = analyze_scalar_evolution (loop, op);
-	      access_fn = instantiate_scev (before_loop, loop, access_fn);
-	      VEC_safe_push (tree, heap, access_fns, access_fn);
-	    }
+	  access_fn = analyze_scalar_evolution (loop, op);
+	  access_fn = instantiate_scev (before_loop, loop, access_fn);
+	  VEC_safe_push (tree, heap, access_fns, access_fn);
 	  TREE_OPERAND (aref, 1) = build_int_cst (TREE_TYPE (op), 0);
 	}
       /* REALPART_EXPR and IMAGPART_EXPR can be handled like accesses
@@ -877,8 +881,7 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
       aref = TREE_OPERAND (aref, 0);
     }
 
-  if (nest
-      && TREE_CODE (aref) == MEM_REF)
+  if (TREE_CODE (aref) == MEM_REF)
     {
       op = TREE_OPERAND (aref, 0);
       access_fn = analyze_scalar_evolution (loop, op);
@@ -1286,13 +1289,32 @@ object_address_invariant_in_loop_p (const struct loop *loop, const_tree obj)
 }
 
 /* Returns false if we can prove that data references A and B do not alias,
-   true otherwise.  */
+   true otherwise.  If LOOP_NEST is false no cross-iteration aliases are
+   considered.  */
 
 bool
-dr_may_alias_p (const struct data_reference *a, const struct data_reference *b)
+dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
+		bool loop_nest)
 {
   tree addr_a = DR_BASE_OBJECT (a);
   tree addr_b = DR_BASE_OBJECT (b);
+
+  /* If we are not processing a loop nest but scalar code we
+     do not need to care about possible cross-iteration dependences
+     and thus can process the full original reference.  Do so,
+     similar to how loop invariant motion applies extra offset-based
+     disambiguation.  */
+  if (!loop_nest)
+    {
+      aff_tree off1, off2;
+      double_int size1, size2;
+      get_inner_reference_aff (DR_REF (a), &off1, &size1);
+      get_inner_reference_aff (DR_REF (b), &off2, &size2);
+      aff_combination_scale (&off1, double_int_minus_one);
+      aff_combination_add (&off2, &off1);
+      if (aff_comb_cannot_overlap_p (&off2, size1, size2))
+	return false;
+    }
 
   if (DR_IS_WRITE (a) && DR_IS_WRITE (b))
     return refs_output_dependent_p (addr_a, addr_b);
@@ -1331,7 +1353,7 @@ initialize_data_dependence_relation (struct data_reference *a,
     }
 
   /* If the data references do not alias, then they are independent.  */
-  if (!dr_may_alias_p (a, b))
+  if (!dr_may_alias_p (a, b, loop_nest != NULL))
     {
       DDR_ARE_DEPENDENT (res) = chrec_known;
       return res;

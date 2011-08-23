@@ -431,7 +431,7 @@ extern tree find_data_references_in_bb (struct loop *, basic_block,
 
 extern void create_rdg_vertices (struct graph *, VEC (gimple, heap) *);
 extern bool dr_may_alias_p (const struct data_reference *,
-			    const struct data_reference *);
+			    const struct data_reference *, bool);
 extern bool dr_equal_offsets_p (struct data_reference *,
                                 struct data_reference *);
 
