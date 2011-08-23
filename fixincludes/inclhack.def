@@ -1862,7 +1862,7 @@ fix = {
  */
 fix = {
     hackname  = hpux11_abs;
-    mach      = "ia64-hp-hpux11*";
+    mach      = "*-hp-hpux11*";
     files     = stdlib.h;
     select    = "ifndef _MATH_INCLUDED";
     c_fix     = format;
