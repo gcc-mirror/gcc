@@ -1,3 +1,8 @@
+2011-08-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira.c (ira_init_register_move_cost): Check small subclasses
+	through ira_reg_class_max_nregs and ira_available_class_regs.
+
 2011-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/constraints.md (Yp): New register constraint.
