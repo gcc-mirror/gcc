@@ -1,5 +1,10 @@
 2011-08-23  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/50162
+	* tree-vect-stmts.c (vectorizable_call): Fix argument lookup.
+
+2011-08-23  Richard Guenther  <rguenther@suse.de>
+
 	* tree-data-ref.c (dr_analyze_indices): Add comments, handle
 	REALPART_EXPR and IMAGPART_EXPR similar to ARRAY_REFs.
 	(create_data_ref): Also dump access functions for the created
