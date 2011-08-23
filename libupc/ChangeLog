@@ -1,3 +1,23 @@
+2011-08-23  Nenad Vukicevic <nenad@intrepid.com>
+
+	* configure.ac: Enable detection of large file support on
+	  32-bit machines.
+	* configure: Re-generate.
+	* config.h.in: Added define for large file support on 32-bit
+	  machines.
+	* smp/upc_config.h: Limit number of VM pages to the number
+	  of configured VADDR bits.
+	* smp/upc_sup.h: Prototype change.
+	* smp/upc_vm.c (__upc_vm_alloc): Return an error if no
+	  more virtual pages can be allocated.
+	  (__upc_vm_alloc): Abort if initial number of VM pages cannot
+	  be allocated.
+	  (__upc_vm_get_cur_page_alloc): Check for error before NUMA
+	  memory region mapping.
+	* smp/upc_alloc.upc (__upc_global_heap_alloc): Return NULL pointer
+	  if VM pages cannot be allocated.
+	  (__upc_local_alloc): Return NULL pointer if memory is not available.
+
 2011-08-16  Gary Funck  <gary@intrepid.com>
 
 	* smp/upc_barrier.c (__upc_notify, __upc_wait):

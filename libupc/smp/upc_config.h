@@ -105,16 +105,28 @@ typedef unsigned int u_intTI_t __attribute__ ((__mode__(__TI__)));
 //begin lib_config_vm
 #if GUPCR_TARGET64
 /* On 64-bit machines, use page size of 32M (25 bits) and a max per thread
-   offset of 128G (38 bits).  This leaves 13 bits for the per thread
+   offset of 256G (38 bits).  This leaves 13 bits for the per thread
    number of pages.  */
 #define GUPCR_VM_OFFSET_BITS 25 
-#define GUPCR_VM_MAX_PAGES_PER_THREAD (1 << (38 - GUPCR_VM_OFFSET_BITS))
+#if GUPCR_PTS_VADDR_SIZE > 38
+#define GUPCR_VM_MAX_PAGES_PER_THREAD \
+	(1 << (38 - GUPCR_VM_OFFSET_BITS))
+#else
+#define GUPCR_VM_MAX_PAGES_PER_THREAD \
+	(1 << (GUPCR_PTS_VADDR_SIZE - GUPCR_VM_OFFSET_BITS))
+#endif
 #else
 /* On 32-bit machines, use page size of 4M (22 bits) and a max per thread
    offset of 4G (32 bits).  This leaves 10 bits for the per thread
    number of pages.  */
 #define GUPCR_VM_OFFSET_BITS 22
-#define GUPCR_VM_MAX_PAGES_PER_THREAD (1 << (32 - GUPCR_VM_OFFSET_BITS))
+#if GUPCR_PTS_VADDR_SIZE > 32
+#define GUPCR_VM_MAX_PAGES_PER_THREAD \
+	(1 << (32 - GUPCR_VM_OFFSET_BITS))
+#else
+#define GUPCR_VM_MAX_PAGES_PER_THREAD \
+	(1 << (GUPCR_PTS_VADDR_SIZE - GUPCR_VM_OFFSET_BITS))
+#endif
 #endif /* GUPCR_TARGET64 */
 
 /* Derive some VM specific constants. */

@@ -63,7 +63,7 @@ extern void __upc_release_alloc_lock (void);
 //begin lib_vm_api
 
 extern void *__upc_vm_map_addr (upc_shared_ptr_t);
-extern void __upc_vm_alloc (upc_page_num_t);
+extern int __upc_vm_alloc (upc_page_num_t);
 extern upc_page_num_t __upc_vm_get_cur_page_alloc (void);
 //end lib_vm_api
 

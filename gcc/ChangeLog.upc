@@ -1,3 +1,10 @@
+2011-08-23  Nenad Vukicevic <nenad@intrepid.com>
+
+	* configure.ac: Fix the name for --with-upc-pts-packed-bits
+	  option. Support --with-upc-packed-bits as deprecated. Fix the code to 
+	  correctly check packed bits. 
+	* configure: Re-generate.
+
 2011-08-16  Gary Funck  <gary@intrepid.com>
 
 	* c-parser.c (c_parser_upc_sync_statement): issue error diagnostic if

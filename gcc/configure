@@ -885,7 +885,8 @@ enable_tls
 enable_objc_gc
 with_upc_pts
 with_upc_pts_vaddr_order
-with_packed_upc_pts_bits
+with_upc_packed_bits
+with_upc_pts_packed_bits
 enable_upc_link_script
 with_dwarf2
 enable_shared
@@ -1663,7 +1664,8 @@ Optional Packages:
   --with-upc-pts-vaddr-order={last,first}
                           choose position of the address field in UPC
                           pointer-to-shared representation
-  --with-packed-upc-pts-bits=phase,thread,vaddr
+
+  --with-upc-pts-packed-bits=phase,thread,vaddr
                           choose bit distribution in packed UPC
                           pointer-to-shared representation
   --with-dwarf2           force the default debug format to be DWARF 2
@@ -7152,32 +7154,44 @@ fi
 
 
 
-# Check whether --with-packed-upc-pts-bits was given.
-if test "${with_packed_upc_pts_bits+set}" = set; then :
-  withval=$with_packed_upc_pts_bits;
+# Check whether --with-upc-packed-bits was given.
+if test "${with_upc_packed_bits+set}" = set; then :
+  withval=$with_upc_packed_bits;
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: --with-upc-packed-bits is deprecated.
+Use --with-upc-pts-packed-bits instead." >&5
+$as_echo "$as_me: WARNING: --with-upc-packed-bits is deprecated.
+Use --with-upc-pts-packed-bits instead." >&2;}
+  with_upc_pts_packed_bits="$withval";
+
+fi
+
+
+
+# Check whether --with-upc-pts-packed-bits was given.
+if test "${with_upc_pts_packed_bits+set}" = set; then :
+  withval=$with_upc_pts_packed_bits;
 if test x"$lang_upc_enabled" = x"yes" ; then
   if test x"$upc_pts_rep" = x"packed"; then
-    upc_packed_bits="$withval";
     UPC_PTS_PHASE_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
 						  print $1 if ($1+$2+$3 == 64) && $1>=1;'`
     UPC_PTS_THREAD_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
 						  print $2 if ($1+$2+$3 == 64) && $2>=1;'`
     UPC_PTS_VADDR_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
 						  print $3 if ($1+$2+$3 == 64) && $3>=20;'`
-    if test -z $UPC_PTS_PHASE_SIZE -o \
-	    -z $UPC_PTS_THREAD_SIZE -o \
-	    -z $UPC_PTS_VADDR_SIZE ; then
-      as_fn_error "--with-packed-upc-pts-bits=phase,thread,vaddr requires
+    if test -z "$UPC_PTS_PHASE_SIZE" \
+       || test -z "$UPC_PTS_THREAD_SIZE" \
+       || test -z "$UPC_PTS_VADDR_SIZE" ; then
+      as_fn_error "--with-upc-pts-packed-bits=phase,thread,vaddr requires
   phase+thread+vaddr=64 and phase >= 1 and thread >= 1 and vaddr >= 20" "$LINENO" 5
     fi
   else
-    as_fn_error "--with-packed-upc-pts-bits is only supported for
+    as_fn_error "--with-upc-pts-packed-bits is only supported for
 the packed UPC pointer-to-shared representation" "$LINENO" 5
   fi
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: --with-packed-upc-pts-bits is allowed only when UPC
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: --with-upc-pts-packed-bits is allowed only when UPC
 support has been enabled" >&5
-$as_echo "$as_me: WARNING: --with-packed-upc-pts-bits is allowed only when UPC
+$as_echo "$as_me: WARNING: --with-upc-pts-packed-bits is allowed only when UPC
 support has been enabled" >&2;}
 fi
 
@@ -7185,9 +7199,17 @@ else
 
 if test x"$lang_upc_enabled" = x"yes" ; then
   # GCC UPC packed pointer representation defaults.
-  UPC_PTS_PHASE_SIZE=20
-  UPC_PTS_THREAD_SIZE=10
-  UPC_PTS_VADDR_SIZE=34
+  case "$target" in
+    i35686* )
+      UPC_PTS_PHASE_SIZE=20
+      UPC_PTS_THREAD_SIZE=12
+      UPC_PTS_VADDR_SIZE=32
+      ;;
+    * )
+      UPC_PTS_PHASE_SIZE=20
+      UPC_PTS_THREAD_SIZE=10
+      UPC_PTS_VADDR_SIZE=34
+  esac
 fi
 
 fi
@@ -18070,7 +18092,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18073 "configure"
+#line 18095 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18176,7 +18198,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18179 "configure"
+#line 18201 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

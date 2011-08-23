@@ -322,6 +322,8 @@
    code using `volatile' can become incorrect without. Disable with care. */
 #undef volatile
 
+/* Number of bits in a file offset, on hosts where this is settable. */
+#undef _FILE_OFFSET_BITS
 
 #ifndef ARG_UNUSED
 # define ARG_UNUSED(NAME) NAME __attribute__ ((__unused__))

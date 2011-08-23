@@ -752,41 +752,56 @@ if test x"$lang_upc_enabled" = x"yes" ; then
 fi
 ])
 
-AC_ARG_WITH([packed-upc-pts-bits],
+AC_ARG_WITH([upc-packed-bits],,
+[
+  AC_MSG_WARN([--with-upc-packed-bits is deprecated. 
+Use --with-upc-pts-packed-bits instead.])
+  with_upc_pts_packed_bits="$withval";
+],
+[])
+
+AC_ARG_WITH([upc-pts-packed-bits],
 AS_HELP_STRING(
-[--with-packed-upc-pts-bits=phase,thread,vaddr],
+[--with-upc-pts-packed-bits=phase,thread,vaddr],
 [choose bit distribution in packed UPC pointer-to-shared representation]),
 [
 if test x"$lang_upc_enabled" = x"yes" ; then
   if test x"$upc_pts_rep" = x"packed"; then
-    upc_packed_bits="$withval";
     UPC_PTS_PHASE_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
 						  print $1 if ($1+$2+$3 == 64) && $1>=1;'`
     UPC_PTS_THREAD_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
 						  print $2 if ($1+$2+$3 == 64) && $2>=1;'`
     UPC_PTS_VADDR_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
 						  print $3 if ($1+$2+$3 == 64) && $3>=20;'`
-    if test -z $UPC_PTS_PHASE_SIZE -o \
-	    -z $UPC_PTS_THREAD_SIZE -o \
-	    -z $UPC_PTS_VADDR_SIZE ; then
-      AC_MSG_ERROR([--with-packed-upc-pts-bits=phase,thread,vaddr requires
+    if test -z "$UPC_PTS_PHASE_SIZE" \
+       || test -z "$UPC_PTS_THREAD_SIZE" \
+       || test -z "$UPC_PTS_VADDR_SIZE" ; then
+      AC_MSG_ERROR([--with-upc-pts-packed-bits=phase,thread,vaddr requires
   phase+thread+vaddr=64 and phase >= 1 and thread >= 1 and vaddr >= 20])
     fi
   else
-    AC_MSG_ERROR([--with-packed-upc-pts-bits is only supported for
+    AC_MSG_ERROR([--with-upc-pts-packed-bits is only supported for
 the packed UPC pointer-to-shared representation])
   fi
 else
-  AC_MSG_WARN([--with-packed-upc-pts-bits is allowed only when UPC
+  AC_MSG_WARN([--with-upc-pts-packed-bits is allowed only when UPC
 support has been enabled])
 fi
 ],
 [
 if test x"$lang_upc_enabled" = x"yes" ; then
   # GCC UPC packed pointer representation defaults.
-  UPC_PTS_PHASE_SIZE=20
-  UPC_PTS_THREAD_SIZE=10
-  UPC_PTS_VADDR_SIZE=34
+  case "$target" in
+    i[356]86* )
+      UPC_PTS_PHASE_SIZE=20
+      UPC_PTS_THREAD_SIZE=12
+      UPC_PTS_VADDR_SIZE=32
+      ;;
+    * )
+      UPC_PTS_PHASE_SIZE=20
+      UPC_PTS_THREAD_SIZE=10
+      UPC_PTS_VADDR_SIZE=34
+  esac
 fi
 ])
 

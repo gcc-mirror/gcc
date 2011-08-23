@@ -290,6 +290,7 @@ AC_FUNC_STAT
 AC_CHECK_FUNCS([ftruncate gethostbyname gethostname memset munmap socket strerror])
 AC_CHECK_FUNCS([getloadavg clock_gettime strtoull])
 AC_CHECK_FUNCS([backtrace backtrace_symbols backtrace_symbols_fd])
+AC_SYS_LARGEFILE
 
 # Check for broken semaphore implementation on darwin.
 # sem_init returns: sem_init error: Function not implemented.

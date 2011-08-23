@@ -35,6 +35,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif /* __sgi__ */
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #define DEBUG_ALLOC 1
 #undef DEBUG_ALLOC
@@ -262,7 +263,8 @@ __upc_global_heap_alloc (size_t alloc_size)
       printf ("%d: __upc_global_heap_alloc: extend heap by %d pages\n",
          MYTHREAD, vm_alloc_pages);
 #endif /* DEBUG_ALLOC */
-      __upc_vm_alloc (vm_alloc_pages);
+      if (!__upc_vm_alloc (vm_alloc_pages))
+        return NULL;
       upc_memset (new_alloc, '\0', sizeof (upc_heap_t));
       new_alloc->size = vm_alloc_size;
       new_alloc->next = NULL;
@@ -321,29 +323,29 @@ __upc_local_alloc (size_t size)
       alloc = __upc_heap_alloc (heap_p, alloc_size, 0);
       if (!alloc)
 	{
-          const size_t chunk_size = GUPCR_ROUND (size + GUPCR_HEAP_OVERHEAD,
-                                              GUPCR_HEAP_CHUNK_SIZE);
+	  int chunk_seq;
+	  int t;
+	  size_t chunk_size = GUPCR_ROUND (size + GUPCR_HEAP_OVERHEAD,
+                                                  GUPCR_HEAP_CHUNK_SIZE);
 	  upc_heap_p chunk = __upc_global_heap_alloc (chunk_size);
-	  if (chunk)
+	  if (!chunk)
+	    return NULL;
+	  chunk_size = chunk->size;
+	  chunk_seq = chunk->alloc_seq;
+	  /* distribute this chunk over each local free list */
+	  for (t = 0; t < THREADS; ++t)
 	    {
-	      size_t chunk_size = chunk->size;
-	      int chunk_seq = chunk->alloc_seq;
-	      int t;
-	      /* distribute this chunk over each local free list */
-	      for (t = 0; t < THREADS; ++t)
-		{
-		  shared upc_heap_p *local_heap_p = &__upc_local_heap[t];
-		  /* Set the thread to 't' so that we can link
-		     this chunk onto the thread's local heap.  */
-		  upc_heap_p local_chunk = __upc_alloc_build_pts (
-		                                upc_addrfield (chunk), t);
-		  upc_fence;
-		  /* add this local chunk onto the local free list */
-		  upc_memset (local_chunk, '\0', sizeof (upc_heap_t));
-		  local_chunk->size = chunk_size;
-		  local_chunk->alloc_seq = chunk_seq;
-		  __upc_heap_free (local_heap_p, local_chunk);
-		}
+	      shared upc_heap_p *local_heap_p = &__upc_local_heap[t];
+	      /* Set the thread to 't' so that we can link
+	         this chunk onto the thread's local heap.  */
+	      upc_heap_p local_chunk = __upc_alloc_build_pts (
+		                          upc_addrfield (chunk), t);
+	      upc_fence;
+	      /* add this local chunk onto the local free list */
+	      upc_memset (local_chunk, '\0', sizeof (upc_heap_t));
+	      local_chunk->size = chunk_size;
+	      local_chunk->alloc_seq = chunk_seq;
+	      __upc_heap_free (local_heap_p, local_chunk);
 	    }
 	  alloc = __upc_heap_alloc (heap_p, alloc_size, 0);
 	}

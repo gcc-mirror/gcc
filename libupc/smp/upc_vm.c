@@ -133,14 +133,14 @@ __upc_vm_get_cur_page_alloc ()
 	                             region_size * GUPCR_VM_PAGE_SIZE,
 				     PROT_READ | PROT_WRITE, MAP_SHARED,
 				     u->smem_fd, global_mem_offset);
-              /* set affinity to this region */
-	      __upc_numa_memory_region_affinity_set (u, MYTHREAD, region_base,
-                                                       region_size * GUPCR_VM_PAGE_SIZE);
 	      if (region_base == MAP_ERROR)
 	        {
 		  perror ("UPC runtime error: can't map local region");
 		  abort ();
 	        }
+              /* set affinity to this region */
+	      __upc_numa_memory_region_affinity_set (u, MYTHREAD, region_base,
+                                                       region_size * GUPCR_VM_PAGE_SIZE);
 	      /* Update the local page table */
 	      for (j = 0; j < region_size; ++j)
 	        {
@@ -237,7 +237,8 @@ __upc_vm_map_global_page (int t, upc_page_num_t p)
 void 
 __upc_vm_init (upc_page_num_t num_init_local_pages)
 {
-  __upc_vm_alloc (num_init_local_pages);
+  if (!__upc_vm_alloc (num_init_local_pages))
+    { perror ("UPC runtime error: can't allocate global memory"); abort (); }
 }
 
 /* Per thread VM initialization.  Create the Local Page Table (lpt)
@@ -274,7 +275,7 @@ __upc_vm_init_per_thread ()
    'alloc_pages' per thread.  Update the '__upc_cur_page_alloc'
    field in the UPC info. block to reflect the size increase.  */
 
-void
+int
 __upc_vm_alloc (upc_page_num_t alloc_pages)
 {
   const upc_info_p u = __upc_info;
@@ -290,10 +291,16 @@ __upc_vm_alloc (upc_page_num_t alloc_pages)
   GUPCR_READ_FENCE ();
   new_page_alloc = __upc_cur_page_alloc + alloc_pages;
   if (new_page_alloc > GUPCR_VM_MAX_PAGES_PER_THREAD)
-    __upc_fatal ("Maximum shared address space size exceeded");
+    {
+      __upc_release_lock (&u->lock);
+      return 0;
+    }
   smem_size = ((off_t)(new_page_alloc * THREADS)) << GUPCR_VM_OFFSET_BITS;
   if (ftruncate (u->smem_fd, smem_size))
-    { perror ("Cannot extend shared memory file" ": UPC Error"); abort (); }
+    {
+      __upc_release_lock (&u->lock);
+      return 0;
+    }
   for (i = 0; i < alloc_pages; ++i)
     {
       const upc_page_num_t p = page_alloc + i;
@@ -308,6 +315,7 @@ __upc_vm_alloc (upc_page_num_t alloc_pages)
   u->cur_page_alloc = new_page_alloc;
   GUPCR_FENCE ();
   __upc_release_lock (&u->lock);
+  return 1;
 }
 
 /* Convert a non-null shared pointer into an address mapped
