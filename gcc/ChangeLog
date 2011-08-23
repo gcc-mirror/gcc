@@ -1,3 +1,9 @@
+2011-08-12  Michael Matz  <matz@suse.de>
+
+	* cfgexpand.c (expand_one_register_var): Use get_pointer_alignment.
+	(gimple_expand_cfg): Merge alignment info for coalesced pointer
+	SSA names.
+
 2011-08-23  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in (tree-data-ref.o): Add tree-affine.h dependency.
