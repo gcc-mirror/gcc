@@ -1,3 +1,8 @@
+2011-08-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_builtin): Convert to Pmode if
+	needed.
+
 2011-08-24  Richard Guenther  <rguenther@suse.de>
 
 	* tree-data-ref.c (dr_analyze_indices): Avoid unsharing the

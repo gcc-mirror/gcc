@@ -27880,6 +27880,8 @@ rdrand_step:
       /* Force memory operand only with base register here.  But we
 	 don't want to do it on memory operand for other builtin
 	 functions.  */
+      if (GET_MODE (op1) != Pmode)
+	op1 = convert_to_mode (Pmode, op1, 1);
       op1 = force_reg (Pmode, op1);
       op1 = gen_rtx_MEM (mode1, op1);
 
