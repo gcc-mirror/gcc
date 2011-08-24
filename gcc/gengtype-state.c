@@ -1194,8 +1194,6 @@ write_state (const char *state_path)
   fprintf (state_file,
 	   ";;; This file should be parsed by the same %s which wrote it.\n",
 	   progname);
-  fprintf (state_file, ";;; file %s generated on %s\n", state_path,
-	   ctime (&now));
   /* The first non-comment significant line gives the version string.  */
   write_state_version (version_string);
   write_state_srcdir ();
