@@ -560,7 +560,7 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
       cpp_define (pfile, "__FINITE_MATH_ONLY__=1");
     }
-  else if (!prev->x_flag_finite_math_only && cur->x_flag_finite_math_only)
+  else if (prev->x_flag_finite_math_only && !cur->x_flag_finite_math_only)
     {
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
       cpp_define (pfile, "__FINITE_MATH_ONLY__=0");
