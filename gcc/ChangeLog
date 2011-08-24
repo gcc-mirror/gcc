@@ -1,3 +1,7 @@
+2011-08-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (ALL_CXXFLAGS): Include $(CFLAGS-$@).
+
 2011-08-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50067
