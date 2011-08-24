@@ -1,5 +1,10 @@
 2011-08-24  Richard Guenther  <rguenther@suse.de>
 
+	* fold-const.c (fold_comparison): Fold &a < &a + 4 even
+	with -fno-strict-overflow.
+
+2011-08-24  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vectorizer.c (vect_print_dump_info): Avoid the
 	file and location clutter when dumping to dump files.
 
