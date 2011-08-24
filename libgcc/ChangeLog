@@ -1,3 +1,9 @@
+2011-08-24  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/50090
+	* config/arm/bpabi-lib.h (RENAME_LIBRARY_SET): Delete.
+	(RENAME_LIBRARY): Use a C-level alias instead of an assembly one.
+
 2011-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/64/sfp-machine.h (ASM_INVALID): New define.
