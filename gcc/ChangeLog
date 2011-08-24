@@ -1,3 +1,8 @@
+2011-08-24  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vectorizer.c (vect_print_dump_info): Avoid the
+	file and location clutter when dumping to dump files.
+
 2011-08-24  Simon Baldwin  <simonb@google.com>
 
 	* gengtype-state.c (write_state): Remove timestamped header line.
