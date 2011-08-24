@@ -838,44 +838,52 @@ static void
 dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 {
   VEC (tree, heap) *access_fns = NULL;
-  tree ref = unshare_expr (DR_REF (dr)), aref = ref, op;
-  tree base, off, access_fn = NULL_TREE;
-  basic_block before_loop = NULL;
+  tree ref, aref, op;
+  tree base, off, access_fn;
+  basic_block before_loop;
 
+  /* If analyzing a basic-block there are no indices to analyze
+     and thus no access functions.  */
   if (!nest)
     {
-      DR_BASE_OBJECT (dr) = ref;
+      DR_BASE_OBJECT (dr) = DR_REF (dr);
       DR_ACCESS_FNS (dr) = NULL;
       return;
     }
 
+  ref = unshare_expr (DR_REF (dr));
   before_loop = block_before_loop (nest);
 
+  /* REALPART_EXPR and IMAGPART_EXPR can be handled like accesses
+     into a two element array with a constant index.  The base is
+     then just the immediate underlying object.  */
+  if (TREE_CODE (ref) == REALPART_EXPR)
+    {
+      ref = TREE_OPERAND (ref, 0);
+      VEC_safe_push (tree, heap, access_fns, integer_zero_node);
+    }
+  else if (TREE_CODE (ref) == IMAGPART_EXPR)
+    {
+      ref = TREE_OPERAND (ref, 0);
+      VEC_safe_push (tree, heap, access_fns, integer_one_node);
+    }
+
   /* Analyze access functions of dimensions we know to be independent.  */
+  aref = ref;
   while (handled_component_p (aref))
     {
-      /* For ARRAY_REFs the base is the reference with the index replaced
-	 by zero.  */
       if (TREE_CODE (aref) == ARRAY_REF)
 	{
 	  op = TREE_OPERAND (aref, 1);
 	  access_fn = analyze_scalar_evolution (loop, op);
 	  access_fn = instantiate_scev (before_loop, loop, access_fn);
 	  VEC_safe_push (tree, heap, access_fns, access_fn);
-	  TREE_OPERAND (aref, 1) = build_int_cst (TREE_TYPE (op), 0);
-	}
-      /* REALPART_EXPR and IMAGPART_EXPR can be handled like accesses
-	 into a two element array with a constant index.  The base is
-	 then just the immediate underlying object.  */
-      else if (TREE_CODE (aref) == REALPART_EXPR)
-	{
-	  ref = TREE_OPERAND (ref, 0);
-	  VEC_safe_push (tree, heap, access_fns, integer_zero_node);
-	}
-      else if (TREE_CODE (aref) == IMAGPART_EXPR)
-	{
-	  ref = TREE_OPERAND (ref, 0);
-	  VEC_safe_push (tree, heap, access_fns, integer_one_node);
+	  /* For ARRAY_REFs the base is the reference with the index replaced
+	     by zero if we can not strip it as the outermost component.  */
+	  if (aref == ref)
+	    ref = TREE_OPERAND (ref, 0);
+	  else
+	    TREE_OPERAND (aref, 1) = build_int_cst (TREE_TYPE (op), 0);
 	}
 
       aref = TREE_OPERAND (aref, 0);
@@ -908,18 +916,6 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 	  VEC_safe_push (tree, heap, access_fns, access_fn);
 	}
     }
-
-  if (TREE_CODE (ref) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (ref, 0)) == ADDR_EXPR
-      && integer_zerop (TREE_OPERAND (ref, 1)))
-    ref = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
-
-  /* For canonicalization purposes we'd like to strip all outermost
-     zero-offset component-refs.
-     ???  For now simply handle zero-index array-refs.  */
-  while (TREE_CODE (ref) == ARRAY_REF
-	 && integer_zerop (TREE_OPERAND (ref, 1)))
-    ref = TREE_OPERAND (ref, 0);
 
   DR_BASE_OBJECT (dr) = ref;
   DR_ACCESS_FNS (dr) = access_fns;

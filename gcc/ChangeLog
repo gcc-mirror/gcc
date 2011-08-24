@@ -1,5 +1,12 @@
 2011-08-24  Richard Guenther  <rguenther@suse.de>
 
+	* tree-data-ref.c (dr_analyze_indices): Avoid unsharing the
+	ref in the basic-block case.  Move stripping array-refs
+	to the place we create an access-function for it.  Remove
+	bogus stripping down a MEM_REF to its base.
+
+2011-08-24  Richard Guenther  <rguenther@suse.de>
+
 	* fold-const.c (fold_comparison): Fold &a < &a + 4 even
 	with -fno-strict-overflow.
 
