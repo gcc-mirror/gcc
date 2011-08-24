@@ -19,9 +19,9 @@
 
 // The -fgo-dump-ast flag to activate AST dumps.
 
-Go_dump ast_dump_context_flag("ast");
+Go_dump ast_dump_flag("ast");
 
-// This class is used to traverse the tree to look for blocks and 
+// This class is used to traverse the tree to look for blocks and
 // function headers.
 
 class Ast_dump_traverse_blocks_and_functions : public Traverse
@@ -33,9 +33,9 @@ class Ast_dump_traverse_blocks_and_functions : public Traverse
   { }
 
  protected:
-  int 
+  int
   block(Block*);
- 
+
   int
   function(Named_object*);
 
@@ -79,7 +79,7 @@ int Ast_dump_traverse_blocks_and_functions::block(Block * block)
 
   return TRAVERSE_SKIP_COMPONENTS;
 }
- 
+
 // Dump each traversed statement.
 
 int
@@ -87,7 +87,7 @@ Ast_dump_traverse_statements::statement(Block* block, size_t* pindex,
                                         Statement* statement)
 {
   statement->dump_statement(this->ast_dump_context_);
- 
+
   if (statement->is_block_statement())
     {
       Ast_dump_traverse_blocks_and_functions adtbf(this->ast_dump_context_);
@@ -103,49 +103,51 @@ int
 Ast_dump_traverse_blocks_and_functions::function(Named_object* no)
 {
   this->ast_dump_context_->ostream() << no->name();
- 
+
   go_assert(no->is_function());
   Function* func = no->func_value();
-  
-  this->ast_dump_context_->ostream() << "("; 
+
+  this->ast_dump_context_->ostream() << "(";
   this->ast_dump_context_->dump_typed_identifier_list(
                               func->type()->parameters());
-  
-  this->ast_dump_context_->ostream() << ")"; 
-  
+
+  this->ast_dump_context_->ostream() << ")";
+
   Function::Results* res = func->result_variables();
   if (res != NULL && !res->empty())
-    {  
-      this->ast_dump_context_->ostream() << " ("; 
-      
-      for (Function::Results::const_iterator it = res->begin(); 
-          it != res->end(); 
+    {
+      this->ast_dump_context_->ostream() << " (";
+
+      for (Function::Results::const_iterator it = res->begin();
+          it != res->end();
           it++)
         {
           if (it != res->begin())
             this->ast_dump_context_->ostream() << ",";
           Named_object* no = (*it);
-          
+
           this->ast_dump_context_->ostream() << no->name() << " ";
           go_assert(no->is_result_variable());
           Result_variable* resvar = no->result_var_value();
-          
+
           this->ast_dump_context_->dump_type(resvar->type());
-        
+
         }
       this->ast_dump_context_->ostream() << ")";
     }
-    
+
   this->ast_dump_context_->ostream() << " : ";
   this->ast_dump_context_->dump_type(func->type());
   this->ast_dump_context_->ostream() << std::endl;
-  
+
   return TRAVERSE_CONTINUE;
 }
 
 // Class Ast_dump_context.
 
-Ast_dump_context::Ast_dump_context() : ostream_(NULL)
+Ast_dump_context::Ast_dump_context(std::ostream* out /* = NULL */,
+				   bool dump_subblocks /* = true */)
+  :  indent_(0), dump_subblocks_(dump_subblocks), ostream_(out), gogo_(NULL)
 {
 }
 
@@ -168,8 +170,7 @@ Ast_dump_context::dump(Gogo* gogo, const char* basename)
       error("cannot open %s:%m, -fgo-dump-ast ignored", dumpname.c_str());
       return;
     }
-  
-  this->indent_ = 0;
+
   this->gogo_ = gogo;
   this->ostream_ = out;
 
@@ -188,9 +189,10 @@ Ast_dump_context::dump_type(const Type* t)
   if (t == NULL)
     this->ostream() << "(nil type)";
   else
-    // FIXME: write a type pretty printer instead of 
+    // FIXME: write a type pretty printer instead of
     // using mangled names.
-    this->ostream() << "(" << t->mangled_name(this->gogo_) <<  ")"; 
+    if (this->gogo_ != NULL)
+      this->ostream() << "(" << t->mangled_name(this->gogo_) <<  ")";
 }
 
 // Dump a textual representation of a block to the
@@ -216,18 +218,28 @@ Ast_dump_context::dump_expression(const Expression* e)
 // the dump file.
 
 void
-Ast_dump_context::dump_expression_list(const Expression_list* el)
+Ast_dump_context::dump_expression_list(const Expression_list* el,
+				       bool as_pairs /* = false */)
 {
   if (el == NULL)
     return;
-  
-  for (std::vector<Expression*>::const_iterator it = el->begin(); 
+
+  for (std::vector<Expression*>::const_iterator it = el->begin();
        it != el->end();
        it++)
     {
       if ( it != el->begin())
         this->ostream() << ",";
-      (*it)->dump_expression(this);
+      if (*it != NULL)
+	(*it)->dump_expression(this);
+      else
+        this->ostream() << "NULL";
+      if (as_pairs)
+        {
+	  this->ostream() << ":";
+	  ++it;
+	  (*it)->dump_expression(this);
+        }
     }
 }
 
@@ -246,13 +258,13 @@ Ast_dump_context::dump_typed_identifier(const Typed_identifier* ti)
 
 void
 Ast_dump_context::dump_typed_identifier_list(
-    const Typed_identifier_list* ti_list)         
+    const Typed_identifier_list* ti_list)
 {
   if (ti_list == NULL)
     return;
-  
-  for (Typed_identifier_list::const_iterator it = ti_list->begin(); 
-       it != ti_list->end(); 
+
+  for (Typed_identifier_list::const_iterator it = ti_list->begin();
+       it != ti_list->end();
        it++)
     {
       if (it != ti_list->begin())
@@ -300,6 +312,8 @@ op_string(Operator op)
       return "!";
     case OPERATOR_XOR:
       return "^";
+    case OPERATOR_OR:
+      return "|";
     case OPERATOR_AND:
       return "&";
     case OPERATOR_MULT:
@@ -415,9 +429,41 @@ Ast_dump_context::print_indent()
 
 void Gogo::dump_ast(const char* basename)
 {
-  if (ast_dump_context_flag.is_enabled())
+  if (::ast_dump_flag.is_enabled())
     {
       Ast_dump_context adc;
       adc.dump(this, basename);
     }
+}
+
+// Implementation of String_dump interface.
+
+void
+Ast_dump_context::write_c_string(const char* s)
+{
+  this->ostream() << s;
+}
+
+void
+Ast_dump_context::write_string(const std::string& s)
+{
+  this->ostream() << s;
+}
+
+// Dump statment to stream.
+
+void
+Ast_dump_context::dump_to_stream(const Statement* stm, std::ostream* out)
+{
+  Ast_dump_context adc(out, false);
+  stm->dump_statement(&adc);
+}
+
+// Dump expression to stream.
+
+void
+Ast_dump_context::dump_to_stream(const Expression* expr, std::ostream* out)
+{
+  Ast_dump_context adc(out, false);
+  expr->dump_expression(&adc);
 }

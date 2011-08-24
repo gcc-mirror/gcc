@@ -7,6 +7,8 @@
 #ifndef GO_AST_DUMP_H
 #define GO_AST_DUMP_H
 
+#include "string-dump.h"
+
 class Expression;
 class Expression_list;
 class Named_object;
@@ -16,10 +18,10 @@ class Gogo;
 // This class implements fgo-dump-ast. the
 // Abstract syntax tree dump of the Go program.
 
-class Ast_dump_context 
+class Ast_dump_context : public String_dump
 {
  public:
-  Ast_dump_context();
+  Ast_dump_context(std::ostream* out = NULL, bool dump_subblocks = true);
 
   // Initialize the dump context.
   void
@@ -28,38 +30,43 @@ class Ast_dump_context
   // Dump spaces to dumpfile as indentation.
   void
   print_indent();
-  
+
   // Increase current indentation for print_indent().
   void
-  indent() 
+  indent()
   { ++this->indent_;}
 
   // Decrease current indentation for print_indent().
   void
-  unindent() 
+  unindent()
   { --this->indent_;}
 
+  // Whether subblocks should be dumped or not.
+  bool
+  dump_subblocks()
+  { return this->dump_subblocks_; }
+
   // Get dump output stream.
-  std::ostream& 
-  ostream() 
+  std::ostream&
+  ostream()
   { return *this->ostream_;}
 
   // Dump a Block to dump file.
-  void 
+  void
   dump_block(Block*);
-  
+
   // Dump a type to dump file.
-  void 
+  void
   dump_type(const Type*);
-  
+
   // Dump an expression to dump file.
-  void 
+  void
   dump_expression(const Expression*);
 
   // Dump an expression list to dump file.
-  void 
-  dump_expression_list(const Expression_list*);
-  
+  void
+  dump_expression_list(const Expression_list*, bool as_pairs = false);
+
   // Dump a typed identifier to dump file.
   void
   dump_typed_identifier(const  Typed_identifier*);
@@ -67,7 +74,7 @@ class Ast_dump_context
   // Dump a typed identifier list to dump file.
   void
   dump_typed_identifier_list(const Typed_identifier_list*);
-  
+
   // Dump temporary variable name to dump file.
   void
   dump_temp_variable_name(const Statement*);
@@ -79,17 +86,36 @@ class Ast_dump_context
   // Dump operator symbol to dump file.
   void
   dump_operator(Operator);
-    
+
+  // Implementation of String_dump interface.
+  void
+  write_c_string(const char*);
+
+  // Implements the String_dump interface.
+  void
+  write_string(const std::string& s);
+
+  // Dump statement to stream.
+  static void
+  dump_to_stream(const Statement*, std::ostream*);
+
+  // Dump expression to stream.
+  static void
+  dump_to_stream(const Expression* expr, std::ostream* out);
+
  private:
    // Current indent level.
   int indent_;
-  
+
   // Indentation offset.
   static const int offset_;
-  
+
+  // Whether subblocks of composite statements should be dumped or not.
+  bool dump_subblocks_;
+
   // Stream on output dump file.
   std::ostream* ostream_;
-    
+
   Gogo* gogo_;
 };
 

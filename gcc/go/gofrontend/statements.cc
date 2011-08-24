@@ -308,11 +308,11 @@ Variable_declaration_statement::do_dump_statement(
     Ast_dump_context* ast_dump_context) const
 {
   ast_dump_context->print_indent();
-  
+
   go_assert(var_->is_variable());
   ast_dump_context->ostream() << "var " << this->var_->name() <<  " ";
   Variable* var = this->var_->var_value();
-  if (var->has_type()) 
+  if (var->has_type())
     {
       ast_dump_context->dump_type(var->type());
       ast_dump_context->ostream() << " ";
@@ -478,7 +478,6 @@ Temporary_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
     {
       ast_dump_context->ostream() << " ";
       ast_dump_context->dump_type(this->type_);
-      
     }
   if (this->init_ != NULL)
     {
@@ -797,7 +796,7 @@ Assignment_operation_statement::do_dump_statement(
 {
   ast_dump_context->print_indent();
   ast_dump_context->dump_expression(this->lhs_);
-  ast_dump_context->dump_operator(this->op_); 
+  ast_dump_context->dump_operator(this->op_);
   ast_dump_context->dump_expression(this->rhs_);
   ast_dump_context->ostream() << std::endl;
 }
@@ -1548,7 +1547,7 @@ Tuple_type_guard_assignment_statement::lower_to_object_type(
 
 // Dump the AST representation for a tuple type guard statement.
 
-void 
+void
 Tuple_type_guard_assignment_statement::do_dump_statement(
     Ast_dump_context* ast_dump_context) const
 {
@@ -1652,7 +1651,7 @@ Expression_statement::do_get_backend(Translate_context* context)
 
 // Dump the AST representation for an expression statement
 
-void 
+void
 Expression_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
     const
 {
@@ -2269,7 +2268,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
 
   // For a defer statement, start with a call to
   // __go_set_defer_retaddr.  */
-  Label* retaddr_label = NULL; 
+  Label* retaddr_label = NULL;
   if (may_call_recover)
     {
       retaddr_label = gogo->add_label_reference("retaddr");
@@ -2757,12 +2756,12 @@ Bc_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 {
   ast_dump_context->print_indent();
   ast_dump_context->ostream() << (this->is_break_ ? "break" : "continue");
-  if (this->label_ != NULL) 
+  if (this->label_ != NULL)
     {
-      ast_dump_context->ostream() << " "; 
+      ast_dump_context->ostream() << " ";
       ast_dump_context->dump_label_name(this->label_);
     }
-  ast_dump_context->ostream() << std::endl; 
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a break statement.
@@ -3098,12 +3097,15 @@ If_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
   ast_dump_context->ostream() << "if ";
   ast_dump_context->dump_expression(this->cond_);
   ast_dump_context->ostream() << std::endl;
-  ast_dump_context->dump_block(this->then_block_);
-  if (this->else_block_ != NULL) 
+  if (ast_dump_context->dump_subblocks())
     {
-      ast_dump_context->print_indent();
-      ast_dump_context->ostream() << "else" << std::endl;
-      ast_dump_context->dump_block(this->else_block_);
+      ast_dump_context->dump_block(this->then_block_);
+      if (this->else_block_ != NULL)
+	{
+	  ast_dump_context->print_indent();
+	  ast_dump_context->ostream() << "else" << std::endl;
+	  ast_dump_context->dump_block(this->else_block_);
+	}
     }
 }
 
@@ -3401,7 +3403,7 @@ Case_clauses::Case_clause::get_backend(Translate_context* context,
 // Dump the AST representation for a case clause
 
 void
-Case_clauses::Case_clause::dump_clause(Ast_dump_context* ast_dump_context) 
+Case_clauses::Case_clause::dump_clause(Ast_dump_context* ast_dump_context)
     const
 {
   ast_dump_context->print_indent();
@@ -3508,7 +3510,6 @@ Case_clauses::lower(Block* b, Temporary_statement* val_temp,
   if (default_case != NULL)
     default_case->lower(b, val_temp, default_start_label,
 			default_finish_label);
-      
 }
 
 // Determine types.
@@ -3592,7 +3593,7 @@ Case_clauses::dump_clauses(Ast_dump_context* ast_dump_context) const
 {
   for (Clauses::const_iterator p = this->clauses_.begin();
        p != this->clauses_.end();
-       ++p)    
+       ++p)
     p->dump_clause(ast_dump_context);
 }
 
@@ -3716,9 +3717,15 @@ Constant_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
   ast_dump_context->print_indent();
   ast_dump_context->ostream() << "switch ";
   ast_dump_context->dump_expression(this->val_);
-  ast_dump_context->ostream() << " {" << std::endl;
-  this->clauses_->dump_clauses(ast_dump_context);
-  ast_dump_context->ostream() << "}" << std::endl;
+
+  if (ast_dump_context->dump_subblocks())
+    {
+      ast_dump_context->ostream() << " {" << std::endl;
+      this->clauses_->dump_clauses(ast_dump_context);
+      ast_dump_context->ostream() << "}";
+    }
+
+   ast_dump_context->ostream() << std::endl;
 }
 
 // Class Switch_statement.
@@ -3806,12 +3813,15 @@ Switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
   if (this->val_ != NULL)
     {
       ast_dump_context->dump_expression(this->val_);
-      ast_dump_context->ostream() << " ";
     }
-  ast_dump_context->ostream() << "{" << std::endl;
-  this->clauses_->dump_clauses(ast_dump_context);
-  ast_dump_context->print_indent();
-  ast_dump_context->ostream() << "}" << std::endl;
+  if (ast_dump_context->dump_subblocks())
+    {
+      ast_dump_context->ostream() << " {" << std::endl;
+      this->clauses_->dump_clauses(ast_dump_context);
+      ast_dump_context->print_indent();
+      ast_dump_context->ostream() << "}";
+    }
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a switch statement.
@@ -3951,7 +3961,7 @@ Type_case_clauses::Type_case_clause::dump_clause(
     }
   else
     {
-      ast_dump_context->ostream() << "case "; 
+      ast_dump_context->ostream() << "case ";
       ast_dump_context->dump_type(this->type_);
       ast_dump_context->ostream() << ":" ;
     }
@@ -4040,7 +4050,7 @@ Type_case_clauses::dump_clauses(Ast_dump_context* ast_dump_context) const
 {
   for (Type_clauses::const_iterator p = this->clauses_.begin();
        p != this->clauses_.end();
-       ++p)    
+       ++p)
     p->dump_clause(ast_dump_context);
 }
 
@@ -4150,15 +4160,20 @@ Type_switch_statement::break_label()
 // Dump the AST representation for a type switch statement
 
 void
-Type_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context) 
+Type_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
     const
 {
   ast_dump_context->print_indent();
   ast_dump_context->ostream() << "switch " << this->var_->name() << " = ";
   ast_dump_context->dump_expression(this->expr_);
-  ast_dump_context->ostream() << " .(type) {" << std::endl;
-  this->clauses_->dump_clauses(ast_dump_context);
-  ast_dump_context->ostream() << "}" << std::endl;
+  ast_dump_context->ostream() << " .(type)";
+  if (ast_dump_context->dump_subblocks())
+    {
+      ast_dump_context->ostream() << " {" << std::endl;
+      this->clauses_->dump_clauses(ast_dump_context);
+      ast_dump_context->ostream() << "}";
+    }
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a type switch statement.
@@ -4554,7 +4569,7 @@ Select_clauses::Select_clause::dump_clause(
           ast_dump_context->ostream() << " <- " ;
           ast_dump_context->dump_expression(this->val_);
         }
-      else 
+      else
         {
 	  if (this->val_ != NULL)
 	    ast_dump_context->dump_expression(this->val_);
@@ -4567,7 +4582,7 @@ Select_clauses::Select_clause::dump_clause(
           if (this->closedvar_ != NULL ||
               this->var_ != NULL)
             ast_dump_context->ostream() << " := " ;
-            
+
           ast_dump_context->ostream() << " <- " ;
           ast_dump_context->dump_expression(this->channel_);
         }
@@ -4842,7 +4857,7 @@ Select_clauses::add_clause_backend(
 			  ? clause->location()
 			  : clause->statements()->end_location());
   Bstatement* g = bottom_label->get_goto(context, gloc);
-				
+
   if (s == NULL)
     (*clauses)[index] = g;
   else
@@ -4856,7 +4871,7 @@ Select_clauses::dump_clauses(Ast_dump_context* ast_dump_context) const
 {
   for (Clauses::const_iterator p = this->clauses_.begin();
        p != this->clauses_.end();
-       ++p)    
+       ++p)
     p->dump_clause(ast_dump_context);
 }
 
@@ -4902,13 +4917,18 @@ Select_statement::do_get_backend(Translate_context* context)
 
 // Dump the AST representation for a select statement.
 
-void 
+void
 Select_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 {
   ast_dump_context->print_indent();
-  ast_dump_context->ostream() << "select {" << std::endl;
-  this->clauses_->dump_clauses(ast_dump_context);
-  ast_dump_context->ostream() << "}" << std::endl;
+  ast_dump_context->ostream() << "select";
+  if (ast_dump_context->dump_subblocks())
+    {
+      ast_dump_context->ostream() << " {" << std::endl;
+      this->clauses_->dump_clauses(ast_dump_context);
+      ast_dump_context->ostream() << "}";
+    }
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a select statement.
@@ -5051,7 +5071,7 @@ For_statement::set_break_continue_labels(Unnamed_label* break_label,
 void
 For_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 {
-  if (this->init_ != NULL)
+  if (this->init_ != NULL && ast_dump_context->dump_subblocks())
     {
       ast_dump_context->print_indent();
       ast_dump_context->indent();
@@ -5063,19 +5083,24 @@ For_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
   ast_dump_context->ostream() << "for ";
   if (this->cond_ != NULL)
     ast_dump_context->dump_expression(this->cond_);
-  ast_dump_context->ostream() << " {" << std::endl;
-  ast_dump_context->indent();
 
-  ast_dump_context->dump_block(this->statements_);
-  if (this->init_ != NULL)
+  if (ast_dump_context->dump_subblocks())
     {
+      ast_dump_context->ostream() << " {" << std::endl;
+      ast_dump_context->dump_block(this->statements_);
+      if (this->init_ != NULL)
+	{
+	  ast_dump_context->print_indent();
+	  ast_dump_context->ostream() << "// POST " << std::endl;
+	  ast_dump_context->dump_block(this->post_);
+	}
+      ast_dump_context->unindent();
+
       ast_dump_context->print_indent();
-      ast_dump_context->ostream() << "// POST " << std::endl;
-      ast_dump_context->dump_block(this->post_);
+      ast_dump_context->ostream() << "}";
     }
-  ast_dump_context->unindent();
-  ast_dump_context->print_indent();
-  ast_dump_context->ostream() << "}" << std::endl;
+
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a for statement.
@@ -5701,7 +5726,7 @@ For_range_statement::continue_label()
 void
 For_range_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
 {
-  
+
   ast_dump_context->print_indent();
   ast_dump_context->ostream() << "for ";
   ast_dump_context->dump_expression(this->index_var_);
@@ -5710,17 +5735,22 @@ For_range_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
       ast_dump_context->ostream() << ", ";
       ast_dump_context->dump_expression(this->value_var_);
     }
-    
-  ast_dump_context->ostream() << " = range ";      
+
+  ast_dump_context->ostream() << " = range ";
   ast_dump_context->dump_expression(this->range_);
-  ast_dump_context->ostream() << " {" << std::endl;
-  ast_dump_context->indent();
+  if (ast_dump_context->dump_subblocks())
+    {
+      ast_dump_context->ostream() << " {" << std::endl;
 
-  ast_dump_context->dump_block(this->statements_);
+      ast_dump_context->indent();
 
-  ast_dump_context->unindent();
-  ast_dump_context->print_indent();
-  ast_dump_context->ostream() << "}" << std::endl;
+      ast_dump_context->dump_block(this->statements_);
+
+      ast_dump_context->unindent();
+      ast_dump_context->print_indent();
+      ast_dump_context->ostream() << "}";
+    }
+  ast_dump_context->ostream() << std::endl;
 }
 
 // Make a for statement with a range clause.
