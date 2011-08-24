@@ -1,3 +1,11 @@
+2011-08-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/Make-lang.in (CFLAGS-ada/tracebak.o)
+	(CFLAGS-ada/targext.o, CFLAGS-ada/cio.o, CFLAGS-ada/init.o)
+	(CFLAGS-ada/initialize.o, CFLAGS-ada/raise.o): New.
+	(ada/tracebak.o, ada/targext.o, ada/cio.o, ada/init.o)
+	(ada/initialize.o, ada/raise.o): Remove explicit compilation rules.
+
 2011-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc-interface/Makefile.in (PICFLAG_FOR_TARGET): New.

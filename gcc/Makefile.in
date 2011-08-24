@@ -2052,12 +2052,11 @@ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 		$(COLLECT2_OBJS) $(LIBS) $(COLLECT2_LIBS)
 	mv -f T$@ $@
 
+CFLAGS-collect2.o += -DTARGET_MACHINE=\"$(target_noncanonical)\" \
+	@TARGET_SYSTEM_ROOT_DEFINE@
 collect2.o : collect2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h \
 	$(OBSTACK_H) $(DEMANGLE_H) collect2.h collect2-aix.h version.h \
 	$(DIAGNOSTIC_H)
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS)  \
-	-DTARGET_MACHINE=\"$(target_noncanonical)\" \
-	-c $(srcdir)/collect2.c $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
 
 collect2-aix.o : collect2-aix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     collect2-aix.h
@@ -2066,7 +2065,7 @@ tlink.o: tlink.c $(DEMANGLE_H) $(HASHTAB_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h 
     $(OBSTACK_H) collect2.h intl.h $(DIAGNOSTIC_CORE_H)
 
 lto-wrapper$(exeext): lto-wrapper.o $(LIBDEPS)
-	+$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ lto-wrapper.o $(LIBS)
+	+$(LINKER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ lto-wrapper.o $(LIBS)
 	mv -f T$@ $@
 
 lto-wrapper.o: lto-wrapper.c $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h \
@@ -2088,8 +2087,6 @@ c-family/c-cppbuiltin.o : c-family/c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(TM_H) $(TREE_H) version.h $(C_COMMON_H) $(C_PRAGMA_H) \
 	$(FLAGS_H) output.h $(TREE_H) $(TARGET_H) $(COMMON_TARGET_H) \
 	$(TM_P_H) debug.h $(CPP_ID_DATA_H) cppbuiltin.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-		$< $(OUTPUT_OPTION)
 
 c-family/c-dump.o : c-family/c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(TREE_H) $(TREE_DUMP_H)
@@ -2113,20 +2110,18 @@ c-family/c-lex.o : c-family/c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 c-family/c-omp.o : c-family/c-omp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TREE_H) $(C_COMMON_H) $(GIMPLE_H) langhooks.h
 
+CFLAGS-c-family/c-opts.o += @TARGET_SYSTEM_ROOT_DEFINE@
 c-family/c-opts.o : c-family/c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
         $(TREE_H) $(C_PRAGMA_H) $(FLAGS_H) toplev.h langhooks.h \
         $(DIAGNOSTIC_H) intl.h debug.h $(C_COMMON_H) $(C_TARGET_H) \
         $(OPTS_H) $(OPTIONS_H) $(MKDEPS_H) incpath.h cppdefault.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
 
+CFLAGS-c-family/c-pch.o += -DHOST_MACHINE=\"$(host)\" \
+	-DTARGET_MACHINE=\"$(target)\"
 c-family/c-pch.o : c-family/c-pch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(CPPLIB_H) $(TREE_H) $(C_COMMON_H) output.h $(C_PRAGMA_H) \
 	$(GGC_H) debug.h langhooks.h $(FLAGS_H) hosthooks.h version.h \
 	$(TARGET_H) $(OPTS_H) $(TIMEVAR_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-	  -DHOST_MACHINE=\"$(host)\" -DTARGET_MACHINE=\"$(target)\" \
-	  $< $(OUTPUT_OPTION)
 
 c-family/c-ppoutput.o : c-family/c-ppoutput.c $(CONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(C_COMMON_H) $(TREE_H) $(CPPLIB_H) $(CPP_INTERNAL_H) \
@@ -2169,11 +2164,9 @@ incpath.o: incpath.c incpath.h $(CONFIG_H) $(SYSTEM_H) $(CPPLIB_H) \
 		intl.h prefix.h coretypes.h $(TM_H) cppdefault.h $(TARGET_H) \
 		$(MACHMODE_H)
 
+CFLAGS-prefix.o += -DPREFIX=\"$(prefix)\" -DBASEVER=$(BASEVER_s)
 prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h prefix.h \
 	$(COMMON_TARGET_H) Makefile $(BASEVER)
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-	-DPREFIX=\"$(prefix)\" -DBASEVER=$(BASEVER_s) \
-	  -c $(srcdir)/prefix.c $(OUTPUT_OPTION)
 
 # Language-independent files.
 
@@ -2251,12 +2244,11 @@ options-save.o: options-save.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) $
 
 dumpvers: dumpvers.c
 
-version.o: version.c version.h $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-	-DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
+CFLAGS-version.o += -DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
 	-DREVISION=$(REVISION_s) \
 	-DDEVPHASE=$(DEVPHASE_s) -DPKGVERSION=$(PKGVERSION_s) \
-	-DBUGURL=$(BUGURL_s) -c $(srcdir)/version.c $(OUTPUT_OPTION)
+	-DBUGURL=$(BUGURL_s)
+version.o: version.c version.h $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 
 gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(HASHTAB_H) $(SPLAY_TREE_H) $(OBSTACK_H) $(BITMAP_H) \
@@ -2292,10 +2284,10 @@ double-int.o: double-int.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	toplev.h $(TREE_H)
 
 # lto-compress.o needs $(ZLIBINC) added to the include flags.
+CFLAGS-lto-compress.o += $(ZLIBINC)
 lto-compress.o: lto-compress.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TREE_H) langhooks.h $(LTO_STREAMER_H) $(LTO_SECTION_H) \
 	lto-compress.h $(DIAGNOSTIC_CORE_H) $(DIAGNOSTIC_CORE_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(ZLIBINC) $< $(OUTPUT_OPTION)
 data-streamer-in.o: data-streamer-in.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
     $(DATA_STREAMER_H) $(DIAGNOSTIC_H)
 data-streamer-out.o: data-streamer-out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
@@ -2836,6 +2828,7 @@ s-bversion: BASE-VER
 
 input.o : input.c $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h $(INPUT_H)
 
+CFLAGS-toplev.o += -DTARGET_NAME=\"$(target_noncanonical)\"
 toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    version.h $(RTL_H) $(FUNCTION_H) $(FLAGS_H) xcoffout.h $(INPUT_H) \
    $(INSN_ATTR_H) output.h $(DIAGNOSTIC_H) debug.h insn-config.h intl.h \
@@ -2847,9 +2840,6 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(OPTS_H) params.def tree-mudflap.h $(TREE_PASS_H) $(GIMPLE_H) \
    tree-ssa-alias.h $(PLUGIN_H) realmpfr.h tree-diagnostic.h \
    tree-pretty-print.h opts-diagnostic.h $(COMMON_TARGET_H)
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-	  -DTARGET_NAME=\"$(target_noncanonical)\" \
-	  -c $(srcdir)/toplev.c $(OUTPUT_OPTION)
 
 hwint.o : hwint.c $(CONFIG_H) $(SYSTEM_H) $(DIAGNOSTIC_CORE_H)
 
@@ -4054,10 +4044,8 @@ gengtype-lex.c : gengtype-lex.l
 
 #
 # Remake internationalization support.
+CFLAGS-intl.o += -DLOCALEDIR=\"$(localedir)\"
 intl.o: intl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h Makefile
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-	  -DLOCALEDIR=\"$(localedir)\" \
-	  -c $(srcdir)/intl.c $(OUTPUT_OPTION)
 
 #
 # Remake cpp.
@@ -4075,17 +4063,13 @@ PREPROCESSOR_DEFINES = \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc/\" \
   @TARGET_SYSTEM_ROOT_DEFINE@
 
+CFLAGS-cppbuiltin.o += $(PREPROCESSOR_DEFINES) -DBASEVER=$(BASEVER_s)
 cppbuiltin.o: cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	cppbuiltin.h Makefile
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-	  $(PREPROCESSOR_DEFINES) -DBASEVER=$(BASEVER_s) \
-	  -c $(srcdir)/cppbuiltin.c $(OUTPUT_OPTION)
 
+CFLAGS-cppdefault.o += $(PREPROCESSOR_DEFINES)
 cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	cppdefault.h Makefile
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-	  $(PREPROCESSOR_DEFINES) \
-	  -c $(srcdir)/cppdefault.c $(OUTPUT_OPTION)
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).

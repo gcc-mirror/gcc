@@ -1,5 +1,17 @@
 2011-08-24  Joseph Myers  <joseph@codesourcery.com>
 
+	* Makefile.in (CFLAGS-collect2.o, CFLAGS-c-family/c-opts.o)
+	(CFLAGS-c-family/c-pch.o, CFLAGS-prefix.o, CFLAGS-version.o)
+	(CFLAGS-lto-compress.o, CFLAGS-toplev.o, CFLAGS-intl.o)
+	(CFLAGS-cppbuiltin.o, CFLAGS-cppdefault.o): New.
+	(collect2.o, c-family/c-cppbuiltin.o, c-family/c-opts.o)
+	(c-family/c-pch.o, prefix.o, version.o, lto-compress.o, toplev.o)
+	(intl.o, cppbuiltin.o, cppdefault.o): Remove explicit compilation
+	rules.
+	(lto-wrapper$(exeext)): Use $(LINKER) not $(COMPILER).
+
+2011-08-24  Joseph Myers  <joseph@codesourcery.com>
+
 	* Makefile.in (ALL_CXXFLAGS): Include $(CFLAGS-$@).
 
 2011-08-24  Richard Guenther  <rguenther@suse.de>
