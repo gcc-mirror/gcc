@@ -43,6 +43,7 @@ class Import;
 class Temporary_statement;
 class Label;
 class Ast_dump_context;
+class String_dump;
 
 // The base class for all expressions.
 
@@ -1042,6 +1043,10 @@ class String_expression : public Expression
 
   tree
   do_get_tree(Translate_context*);
+
+  // Write string literal to a string dump.
+  static void
+  export_string(String_dump* exp, const String_expression* str);
 
   void
   do_export(Export*) const;

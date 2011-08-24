@@ -1345,7 +1345,13 @@ Func_expression::do_get_tree(Translate_context* context)
 void
 Func_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  ast_dump_context->ostream() << this->function_->name() ;
+  ast_dump_context->ostream() << this->function_->name();
+  if (this->closure_ != NULL)
+    {
+      ast_dump_context->ostream() << " {closure =  ";
+      this->closure_->dump_expression(ast_dump_context);
+      ast_dump_context->ostream() << "}";
+    }
 }
 
 // Make a reference to a function in an expression.
@@ -1423,7 +1429,6 @@ Unknown_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
   ast_dump_context->ostream() << "_Unknown_(" << this->named_object_->name()
 			      << ")";
-   
 }
 
 // Make a reference to an unknown name.
@@ -1563,16 +1568,17 @@ String_expression::do_get_tree(Translate_context* context)
   return context->gogo()->go_string_constant_tree(this->val_);
 }
 
-// Export a string expression.
+ // Write string literal to string dump.
 
 void
-String_expression::do_export(Export* exp) const
+String_expression::export_string(String_dump* exp,
+				 const String_expression* str)
 {
   std::string s;
-  s.reserve(this->val_.length() * 4 + 2);
+  s.reserve(str->val_.length() * 4 + 2);
   s += '"';
-  for (std::string::const_iterator p = this->val_.begin();
-       p != this->val_.end();
+  for (std::string::const_iterator p = str->val_.begin();
+       p != str->val_.end();
        ++p)
     {
       if (*p == '\\' || *p == '"')
@@ -1598,6 +1604,14 @@ String_expression::do_export(Export* exp) const
     }
   s += '"';
   exp->write_string(s);
+}
+
+// Export a string expression.
+
+void
+String_expression::do_export(Export* exp) const
+{
+  String_expression::export_string(exp, this);
 }
 
 // Import a string expression.
@@ -1647,8 +1661,7 @@ String_expression::do_import(Import* imp)
 void
 String_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  // FIXME: Do proper backshlash quoting for this->val_
-  ast_dump_context->ostream() << "\"" << this->val_ << "\"";
+  String_expression::export_string(ast_dump_context, this);
 }
 
 // Make a string expression.
@@ -1676,9 +1689,9 @@ class Integer_expression : public Expression
   static bool
   check_constant(mpz_t val, Type*, source_location);
 
-  // Write VAL to export data.
+  // Write VAL to string dump.
   static void
-  export_integer(Export* exp, const mpz_t val);
+  export_integer(String_dump* exp, const mpz_t val);
 
   // Write VAL to dump context.
   static void
@@ -1861,7 +1874,7 @@ Integer_expression::do_get_tree(Translate_context* context)
 // Write VAL to export data.
 
 void
-Integer_expression::export_integer(Export* exp, const mpz_t val)
+Integer_expression::export_integer(String_dump* exp, const mpz_t val)
 {
   char* s = mpz_get_str(NULL, 10, val);
   exp->write_c_string(s);
@@ -1962,27 +1975,12 @@ Integer_expression::do_import(Import* imp)
       return ret;
     }
 }
-
-// Write integer to dump context.
-
-void
-Integer_expression::dump_integer(Ast_dump_context* ast_dump_context, 
-                                 const mpz_t val)
-{
-  // FIXME: refactor this code so that is used both by dump and export. Extract
-  // a common interface for Ast_dump_context and Export.
-  char* s = mpz_get_str(NULL, 10, val);
-  ast_dump_context->ostream() << s ;
-  free(s);
-}
-
-
 // Ast dump for integer expression.
 
 void
 Integer_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  Integer_expression::dump_integer(ast_dump_context, this->val_);
+  Integer_expression::export_integer(ast_dump_context, this->val_);
 }
 
 // Build a new integer value.
@@ -2016,8 +2014,8 @@ class Float_expression : public Expression
 
   // Write VAL to export data.
   static void
-  export_float(Export* exp, const mpfr_t val);
-  
+  export_float(String_dump* exp, const mpfr_t val);
+
   // Write VAL to dump file.
   static void
   dump_float(Ast_dump_context* ast_dump_context, const mpfr_t val);
@@ -2203,10 +2201,10 @@ Float_expression::do_get_tree(Translate_context* context)
   return Expression::float_constant_tree(this->val_, type);
 }
 
-// Write a floating point number to export data.
+// Write a floating point number to a string dump.
 
 void
-Float_expression::export_float(Export *exp, const mpfr_t val)
+Float_expression::export_float(String_dump *exp, const mpfr_t val)
 {
   mp_exp_t exponent;
   char* s = mpfr_get_str(NULL, &exponent, 10, 0, val, GMP_RNDN);
@@ -2230,33 +2228,12 @@ Float_expression::do_export(Export* exp) const
   exp->write_c_string(" ");
 }
 
-// Write  a floating point number to a dump context.
-
-void
-Float_expression::dump_float(Ast_dump_context* ast_dump_context, 
-                                  const mpfr_t val)
-{
-  // FIXME: this code should be refactored so that the same code is used here
-  // and in export_float.
-
-  mp_exp_t exponent;
-  char* s = mpfr_get_str(NULL, &exponent, 10, 0, val, GMP_RNDN);
-  if (*s == '-')
-    ast_dump_context->ostream() << "-";
-  ast_dump_context->ostream() << "0.";
-  ast_dump_context->ostream() << (*s == '-' ? s + 1 : s);
-  mpfr_free_str(s);
-  char buf[30];
-  snprintf(buf, sizeof buf, "E%ld", exponent);
-  ast_dump_context->ostream()  << buf;
-}
-
 // Dump a floating point number to the dump file.
 
 void
 Float_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  Float_expression::dump_float(ast_dump_context, this->val_);
+  Float_expression::export_float(ast_dump_context, this->val_);
 }
 
 // Make a float expression.
@@ -2289,9 +2266,9 @@ class Complex_expression : public Expression
   static bool
   check_constant(mpfr_t real, mpfr_t imag, Type*, source_location);
 
-  // Write REAL/IMAG to export data.
+  // Write REAL/IMAG to string dump.
   static void
-  export_complex(Export* exp, const mpfr_t real, const mpfr_t val);
+  export_complex(String_dump* exp, const mpfr_t real, const mpfr_t val);
 
   // Write REAL/IMAG to dump context.
   static void
@@ -2477,7 +2454,7 @@ Complex_expression::do_get_tree(Translate_context* context)
 // Write REAL/IMAG to export data.
 
 void
-Complex_expression::export_complex(Export* exp, const mpfr_t real,
+Complex_expression::export_complex(String_dump* exp, const mpfr_t real,
 				   const mpfr_t imag)
 {
   if (!mpfr_zero_p(real))
@@ -2500,30 +2477,12 @@ Complex_expression::do_export(Export* exp) const
   exp->write_c_string(" ");
 }
 
-// Write a complex number to a dump context.
-
-void
-Complex_expression::dump_complex(Ast_dump_context* ast_dump_context,
-                                    const mpfr_t real, const mpfr_t imag) 
-{
-  // FIXME: this code should be refactored so that it is used both here
-  // and by export _complex
-  if (!mpfr_zero_p(real))
-    {
-      Float_expression::dump_float(ast_dump_context, real);
-      if (mpfr_sgn(imag) > 0)
-        ast_dump_context->ostream() << "+";
-    }
-  Float_expression::dump_float(ast_dump_context, imag);
-  ast_dump_context->ostream() << "i";
-}
-
 // Dump a complex expression to the dump file.
 
 void
 Complex_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  Complex_expression::dump_complex(ast_dump_context, 
+  Complex_expression::export_complex(ast_dump_context,
                                       this->real_,
                                       this->imag_);
 }
@@ -11622,7 +11581,6 @@ void
 Struct_construction_expression::do_dump_expression(
     Ast_dump_context* ast_dump_context) const
 {
-
   ast_dump_context->dump_type(this->type_);
   ast_dump_context->ostream() << "{";
   ast_dump_context->dump_expression_list(this->vals_);
@@ -11875,6 +11833,15 @@ void
 Array_construction_expression::do_dump_expression(
     Ast_dump_context* ast_dump_context) const
 {
+  Expression* length = this->type_->array_type() != NULL ?
+			 this->type_->array_type()->length() : NULL;
+
+  ast_dump_context->ostream() << "[" ;
+  if (length != NULL)
+    {
+      ast_dump_context->dump_expression(length);
+    }
+  ast_dump_context->ostream() << "]" ;
   ast_dump_context->dump_type(this->type_);
   ast_dump_context->ostream() << "{" ;
   ast_dump_context->dump_expression_list(this->vals_);
@@ -11910,6 +11877,9 @@ class Fixed_array_construction_expression :
 
   tree
   do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context*);
 };
 
 // Return a tree for constructing a fixed array.
@@ -11922,6 +11892,22 @@ Fixed_array_construction_expression::do_get_tree(Translate_context* context)
   return this->get_constructor_tree(context, type_to_tree(btype));
 }
 
+// Dump ast representation of an array construction expressin.
+
+void
+Fixed_array_construction_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context)
+{
+
+  ast_dump_context->ostream() << "[";
+  ast_dump_context->dump_expression (this->type()->array_type()->length());
+  ast_dump_context->ostream() << "]";
+  ast_dump_context->dump_type(this->type());
+  ast_dump_context->ostream() << "{";
+  ast_dump_context->dump_expression_list(this->vals());
+  ast_dump_context->ostream() << "}";
+
+}
 // Construct an open array.
 
 class Open_array_construction_expression : public Array_construction_expression
@@ -12410,9 +12396,8 @@ void
 Map_construction_expression::do_dump_expression(
     Ast_dump_context* ast_dump_context) const
 {
-  // FIXME: We should print key:value pairs here.
   ast_dump_context->ostream() << "{" ;
-  ast_dump_context->dump_expression_list(this->vals_);
+  ast_dump_context->dump_expression_list(this->vals_, true);
   ast_dump_context->ostream() << "}";
 }
 
@@ -12866,11 +12851,10 @@ void
 Composite_literal_expression::do_dump_expression(
                                Ast_dump_context* ast_dump_context) const
 {
-  // FIXME: We should print colons if this->has_keys_ is true
-  ast_dump_context->ostream() << "composite_literal(" ;
+  ast_dump_context->ostream() << "composite(";
   ast_dump_context->dump_type(this->type_);
   ast_dump_context->ostream() << ", {";
-  ast_dump_context->dump_expression_list(this->vals_);
+  ast_dump_context->dump_expression_list(this->vals_, this->has_keys_);
   ast_dump_context->ostream() << "})";
 }
 
