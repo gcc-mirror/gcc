@@ -1,3 +1,8 @@
+2011-08-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50163
+	* expr.c (check_init_expr): Return when an error occured.
+
 2011-08-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (fortran/cpp.o): Remove explicit compilation rule.
