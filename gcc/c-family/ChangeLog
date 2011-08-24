@@ -1,4 +1,9 @@
-011-08-22  Gabriel Charette  <gchare@google.com>
+2011-08-24  Richard Guenther  <rguenther@suse.de>
+
+	PR c/49396
+	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Fix conditional.
+
+2011-08-22  Gabriel Charette  <gchare@google.com>
 
 	* c-opts.c (c_finish_options): Force BUILTINS_LOCATION for tokens
 	defined in cpp_init_builtins and c_cpp_builtins.
