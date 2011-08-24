@@ -1,3 +1,10 @@
+2011-08-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50067
+	* tree-data-ref.c (dr_analyze_indices): Do not add an access
+	function for a MEM_REF base that has no evolution in the loop
+	nest or that is not analyzable.
+
 2011-08-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira.c (ira_init_register_move_cost): Check small subclasses
