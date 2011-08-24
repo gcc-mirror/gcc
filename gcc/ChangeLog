@@ -1,5 +1,6 @@
 2011-08-24  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/50172
 	* config/i386/i386.c (ix86_expand_builtin): Convert to Pmode if
 	needed.
 
