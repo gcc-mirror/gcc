@@ -1,3 +1,7 @@
+2011-08-24  Simon Baldwin  <simonb@google.com>
+
+	* gengtype-state.c (write_state): Remove timestamped header line.
+
 2011-08-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.in (CFLAGS-collect2.o, CFLAGS-c-family/c-opts.o)
