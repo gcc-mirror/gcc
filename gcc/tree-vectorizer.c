@@ -149,7 +149,10 @@ vect_print_dump_info (enum vect_verbosity_levels vl)
   if (!current_function_decl || !vect_dump)
     return false;
 
-  if (vect_location == UNKNOWN_LOC)
+  if (dump_file)
+    fprintf (vect_dump, "\n");
+
+  else if (vect_location == UNKNOWN_LOC)
     fprintf (vect_dump, "\n%s:%d: note: ",
 	     DECL_SOURCE_FILE (current_function_decl),
 	     DECL_SOURCE_LINE (current_function_decl));
