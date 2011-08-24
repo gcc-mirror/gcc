@@ -324,18 +324,16 @@ java/java-gimplify.o: java/java-gimplify.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(JAVA_TREE_H) $(GIMPLE_H)
 
 # jcf-io.o needs $(ZLIBINC) added to cflags.
+CFLAGS-java/jcf-io.o += $(ZLIBINC)
 java/jcf-io.o: java/jcf-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(JAVA_TREE_H) java/zipfile.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(ZLIBINC) $(srcdir)/java/jcf-io.c $(OUTPUT_OPTION)
 
 # jcf-path.o needs a -D.
+CFLAGS-java/jcf-path.o += \
+	-DLIBGCJ_ZIP_FILE='"$(datadir)/java/libgcj-$(version).jar"' \
+	-DDEFAULT_TARGET_VERSION=\"$(version)\"
 java/jcf-path.o: java/jcf-path.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   java/jcf.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -DLIBGCJ_ZIP_FILE='"$(datadir)/java/libgcj-$(version).jar"' \
-	  -DDEFAULT_TARGET_VERSION=\"$(version)\" \
-	  $(srcdir)/java/jcf-path.c $(OUTPUT_OPTION)
 
 TEXI_JAVA_FILES = java/gcj.texi $(gcc_docdir)/include/fdl.texi		\
 	 $(gcc_docdir)/include/gpl_v3.texi $(gcc_docdir)/include/gcc-common.texi   \

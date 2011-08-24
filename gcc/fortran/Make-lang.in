@@ -367,5 +367,3 @@ fortran/resolve.o: fortran/dependency.h fortran/data.h fortran/target-memory.h
 fortran/data.o: fortran/data.h
 fortran/options.o: $(PARAMS_H) $(TARGET_H) fortran/cpp.h
 fortran/cpp.o: fortran/cpp.c incpath.h incpath.o cppbuiltin.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-		$< $(OUTPUT_OPTION)

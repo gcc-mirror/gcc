@@ -1,3 +1,8 @@
+2011-08-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (CFLAGS-go/go-lang.o): New.
+	(go/go-lang.o): Remove explicit compilation rule.
+
 2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (gccgo$(exeext)): Add $(EXTRA_GCC_LIBS).
