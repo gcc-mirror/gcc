@@ -252,12 +252,18 @@ static arc_t next_out_arc              (arc_t);
 #define V_OPTION "-v"
 #define W_OPTION "-w"
 #define NDFA_OPTION "-ndfa"
+#define COLLAPSE_OPTION "-collapse-ndfa"
 #define PROGRESS_OPTION "-progress"
 
 /* The following flags are set up by function `initiate_automaton_gen'.  */
 
 /* Make automata with nondeterministic reservation by insns (`-ndfa').  */
 static int ndfa_flag;
+
+/* When making an NDFA, produce additional transitions that collapse
+   NDFA state into a deterministic one suitable for querying CPU units.
+   Provide avance-state transitions only for deterministic states.  */
+static int collapse_flag;
 
 /* Do not make minimization of DFA (`-no-minimization').  */
 static int no_minimization_flag;
@@ -604,7 +610,7 @@ struct regexp
    NDFA.  */
 struct description
 {
-  int decls_num;
+  int decls_num, normal_decls_num;
 
   /* The following fields are defined by checker.  */
 
@@ -624,9 +630,8 @@ struct description
   automaton_t first_automaton;
 
   /* The following field is created by pipeline hazard parser and
-     contains all declarations.  We allocate additional entry for
-     special insn "cycle advancing" which is added by the automaton
-     generator.  */
+     contains all declarations.  We allocate additional entries for
+     two special insns which are added by the automaton generator.  */
   decl_t decls [1];
 };
 
@@ -811,6 +816,9 @@ struct automaton
   /* The following field value is the list of insn declarations for
      given automaton.  */
   ainsn_t ainsn_list;
+  /* Pointers to the ainsns corresponding to the special reservations.  */
+  ainsn_t advance_ainsn, collapse_ainsn;
+
   /* The following field value is the corresponding automaton
      declaration.  This field is not NULL only if the automatic
      partition on automata is not used.  */
@@ -1529,6 +1537,8 @@ gen_automata_option (rtx def)
     w_flag = 1;
   else if (strcmp (XSTR (def, 0), NDFA_OPTION + 1) == 0)
     ndfa_flag = 1;
+  else if (strcmp (XSTR (def, 0), COLLAPSE_OPTION + 1) == 0)
+    collapse_flag = 1;
   else if (strcmp (XSTR (def, 0), PROGRESS_OPTION + 1) == 0)
     progress_flag = 1;
   else
@@ -3202,6 +3212,10 @@ static ticker_t all_time;
 
 /* Pseudo insn decl which denotes advancing cycle.  */
 static decl_t advance_cycle_insn_decl;
+/* Pseudo insn decl which denotes collapsing the NDFA state.  */
+static decl_t collapse_ndfa_insn_decl;
+
+/* Create and record a decl for the special advance-cycle transition.  */
 static void
 add_advance_cycle_insn_decl (void)
 {
@@ -3215,6 +3229,31 @@ add_advance_cycle_insn_decl (void)
   description->decls [description->decls_num] = advance_cycle_insn_decl;
   description->decls_num++;
   description->insns_num++;
+}
+
+/* Create and record a decl for the special collapse-NDFA transition.  */
+static void
+add_collapse_ndfa_insn_decl (void)
+{
+  collapse_ndfa_insn_decl = XCREATENODE (struct decl);
+  collapse_ndfa_insn_decl->mode = dm_insn_reserv;
+  collapse_ndfa_insn_decl->pos = no_pos;
+  DECL_INSN_RESERV (collapse_ndfa_insn_decl)->regexp = NULL;
+  DECL_INSN_RESERV (collapse_ndfa_insn_decl)->name = "$collapse_ndfa";
+  DECL_INSN_RESERV (collapse_ndfa_insn_decl)->insn_num
+    = description->insns_num;
+  description->decls [description->decls_num] = collapse_ndfa_insn_decl;
+  description->decls_num++;
+  description->insns_num++;
+}
+
+/* True if DECL is either of the two special decls we created.  */
+static bool
+special_decl_p (struct insn_reserv_decl *decl)
+{
+  return (decl == DECL_INSN_RESERV (advance_cycle_insn_decl)
+	  || (collapse_flag
+	      && decl == DECL_INSN_RESERV (collapse_ndfa_insn_decl)));
 }
 
 
@@ -3971,7 +4010,12 @@ find_arc (state_t from_state, state_t to_state, ainsn_t insn)
   arc_t arc;
 
   for (arc = first_out_arc (from_state); arc != NULL; arc = next_out_arc (arc))
-    if (arc->to_state == to_state && arc->insn == insn)
+    if (arc->insn == insn
+	&& (arc->to_state == to_state
+	    || (collapse_flag
+		/* Any arc is good enough for a collapse-ndfa transition.  */
+		&& (insn->insn_reserv_decl
+		    == DECL_INSN_RESERV (collapse_ndfa_insn_decl)))))
       return arc;
   return NULL;
 }
@@ -4956,12 +5000,14 @@ transform_insn_regexps (void)
 
   transform_time = create_ticker ();
   add_advance_cycle_insn_decl ();
+  if (collapse_flag)
+    add_collapse_ndfa_insn_decl ();
   if (progress_flag)
     fprintf (stderr, "Reservation transformation...");
-  for (i = 0; i < description->decls_num; i++)
+  for (i = 0; i < description->normal_decls_num; i++)
     {
       decl = description->decls [i];
-      if (decl->mode == dm_insn_reserv && decl != advance_cycle_insn_decl)
+      if (decl->mode == dm_insn_reserv)
 	DECL_INSN_RESERV (decl)->transformed_regexp
 	  = transform_regexp (copy_insn_regexp
 			      (DECL_INSN_RESERV (decl)->regexp));
@@ -5432,7 +5478,7 @@ create_alt_states (automaton_t automaton)
        curr_ainsn = curr_ainsn->next_ainsn)
     {
       reserv_decl = curr_ainsn->insn_reserv_decl;
-      if (reserv_decl != DECL_INSN_RESERV (advance_cycle_insn_decl))
+      if (!special_decl_p (reserv_decl))
         {
           curr_ainsn->alt_states = NULL;
           process_alts_for_forming_states (reserv_decl->transformed_regexp,
@@ -5461,8 +5507,7 @@ form_ainsn_with_same_reservs (automaton_t automaton)
   for (curr_ainsn = automaton->ainsn_list;
        curr_ainsn != NULL;
        curr_ainsn = curr_ainsn->next_ainsn)
-    if (curr_ainsn->insn_reserv_decl
-	== DECL_INSN_RESERV (advance_cycle_insn_decl))
+    if (special_decl_p (curr_ainsn->insn_reserv_decl))
       {
         curr_ainsn->next_same_reservs_insn = NULL;
         curr_ainsn->first_insn_with_same_reservs = 1;
@@ -5530,7 +5575,6 @@ make_automaton (automaton_t automaton)
   state_t state;
   state_t start_state;
   state_t state2;
-  ainsn_t advance_cycle_ainsn;
   VEC(state_t, heap) *state_stack = VEC_alloc(state_t, heap, 150);
   int states_n;
   reserv_sets_t reservs_matter = form_reservs_matter (automaton);
@@ -5544,14 +5588,13 @@ make_automaton (automaton_t automaton)
   while (VEC_length (state_t, state_stack) != 0)
     {
       state = VEC_pop (state_t, state_stack);
-      advance_cycle_ainsn = NULL;
       for (ainsn = automaton->ainsn_list;
 	   ainsn != NULL;
 	   ainsn = ainsn->next_ainsn)
         if (ainsn->first_insn_with_same_reservs)
           {
             insn_reserv_decl = ainsn->insn_reserv_decl;
-            if (insn_reserv_decl != DECL_INSN_RESERV (advance_cycle_insn_decl))
+            if (!special_decl_p (insn_reserv_decl))
               {
 		/* We process alt_states in the same order as they are
                    present in the description.  */
@@ -5578,8 +5621,6 @@ make_automaton (automaton_t automaton)
                       }
                   }
               }
-            else
-              advance_cycle_ainsn = ainsn;
           }
       /* Add transition to advance cycle.  */
       state2 = state_shift (state, reservs_matter);
@@ -5591,8 +5632,7 @@ make_automaton (automaton_t automaton)
 	  if (progress_flag && states_n % 100 == 0)
 	    fprintf (stderr, ".");
         }
-      gcc_assert (advance_cycle_ainsn);
-      add_arc (state, state2, advance_cycle_ainsn);
+      add_arc (state, state2, automaton->advance_ainsn);
     }
   VEC_free (state_t, heap, state_stack);
 }
@@ -5700,7 +5740,13 @@ create_composed_state (state_t original_state, arc_t arcs_marked_by_insn,
                 for (curr_arc = first_out_arc (curr_alt_state->state);
                      curr_arc != NULL;
                      curr_arc = next_out_arc (curr_arc))
-		  add_arc (state, curr_arc->to_state, curr_arc->insn);
+		  if (!collapse_flag
+		      /* When producing collapse-NDFA transitions, we
+			 only add advance-cycle transitions to the
+			 collapsed states.  */
+		      || (curr_arc->insn->insn_reserv_decl
+			  != DECL_INSN_RESERV (advance_cycle_insn_decl)))
+		    add_arc (state, curr_arc->to_state, curr_arc->insn);
             }
           arcs_marked_by_insn->to_state = state;
           for (alts_number = 0,
@@ -5750,6 +5796,7 @@ NDFA_to_DFA (automaton_t automaton)
 	{
 	  decl = description->decls [i];
 	  if (decl->mode == dm_insn_reserv
+	      && decl != collapse_ndfa_insn_decl
 	      && create_composed_state
 	         (state, DECL_INSN_RESERV (decl)->arcs_marked_by_insn,
 		  &state_stack))
@@ -5758,6 +5805,22 @@ NDFA_to_DFA (automaton_t automaton)
 	      if (progress_flag && states_n % 100 == 0)
 		fprintf (stderr, ".");
 	    }
+	}
+      /* Add a transition to collapse the NDFA.  */
+      if (collapse_flag)
+	{
+	  if (state->component_states != NULL)
+	    {
+	      state_t state2 = state->component_states->state;
+	      if (!state2->it_was_placed_in_stack_for_DFA_forming)
+		{
+		  state2->it_was_placed_in_stack_for_DFA_forming = 1;
+		  VEC_safe_push (state_t, heap, state_stack, state2);
+		}
+	      add_arc (state, state2, automaton->collapse_ainsn);
+	    }
+	  else
+	    add_arc (state, state, automaton->collapse_ainsn);
 	}
     }
   VEC_free (state_t, heap, state_stack);
@@ -5814,8 +5877,7 @@ add_achieved_state (state_t state)
 
 /* The function sets up equivalence numbers of insns which mark all
    out arcs of STATE by equiv_class_num_1 (if ODD_ITERATION_FLAG has
-   nonzero value) or by equiv_class_num_2 of the destination state.
-   The function returns number of out arcs of STATE.  */
+   nonzero value) or by equiv_class_num_2 of the destination state.  */
 static void
 set_out_arc_insns_equiv_num (state_t state, int odd_iteration_flag)
 {
@@ -6583,8 +6645,8 @@ units_to_automata_heuristic_distr (void)
 /* The functions creates automaton insns for each automata.  Automaton
    insn is simply insn for given automaton which makes reservation
    only of units of the automaton.  */
-static ainsn_t
-create_ainsns (void)
+static void
+create_ainsns (automaton_t automaton)
 {
   decl_t decl;
   ainsn_t first_ainsn;
@@ -6607,10 +6669,14 @@ create_ainsns (void)
 	    first_ainsn = curr_ainsn;
 	  else
 	    prev_ainsn->next_ainsn = curr_ainsn;
+	  if (decl == advance_cycle_insn_decl)
+	    automaton->advance_ainsn = curr_ainsn;
+	  else if (decl == collapse_ndfa_insn_decl)
+	    automaton->collapse_ainsn = curr_ainsn;
 	  prev_ainsn = curr_ainsn;
 	}
     }
-  return first_ainsn;
+  automaton->ainsn_list = first_ainsn;
 }
 
 /* The function assigns automata to units according to constructions
@@ -6658,7 +6724,7 @@ create_automata (void)
            curr_automaton_num++, prev_automaton = curr_automaton)
         {
 	  curr_automaton = XCREATENODE (struct automaton);
-	  curr_automaton->ainsn_list = create_ainsns ();
+	  create_ainsns (curr_automaton);
 	  curr_automaton->corresponding_automaton_decl = NULL;
 	  curr_automaton->next_automaton = NULL;
           curr_automaton->automaton_order_num = curr_automaton_num;
@@ -6679,7 +6745,7 @@ create_automata (void)
 	      && DECL_AUTOMATON (decl)->automaton_is_used)
 	    {
 	      curr_automaton = XCREATENODE (struct automaton);
-	      curr_automaton->ainsn_list = create_ainsns ();
+	      create_ainsns (curr_automaton);
 	      curr_automaton->corresponding_automaton_decl
 		= DECL_AUTOMATON (decl);
 	      curr_automaton->next_automaton = NULL;
@@ -6696,7 +6762,7 @@ create_automata (void)
       if (curr_automaton_num == 0)
 	{
 	  curr_automaton = XCREATENODE (struct automaton);
-	  curr_automaton->ainsn_list = create_ainsns ();
+	  create_ainsns (curr_automaton);
 	  curr_automaton->corresponding_automaton_decl = NULL;
 	  curr_automaton->next_automaton = NULL;
 	  description->first_automaton = curr_automaton;
@@ -6925,10 +6991,11 @@ output_temp_chip_member_name (FILE *f, automaton_t automaton)
   output_chip_member_name (f, automaton);
 }
 
-/* This is name of macro value which is code of pseudo_insn
-   representing advancing cpu cycle.  Its value is used as internal
-   code unknown insn.  */
+/* This is name of macro value which is code of pseudo_insns
+   representing advancing cpu cycle and collapsing the NDFA.
+   Its value is used as internal code unknown insn.  */
 #define ADVANCE_CYCLE_VALUE_NAME "DFA__ADVANCE_CYCLE"
+#define COLLAPSE_NDFA_VALUE_NAME "NDFA__COLLAPSE"
 
 /* Output name of translate vector for given automaton.  */
 static void
@@ -7803,6 +7870,9 @@ output_tables (void)
     }
   fprintf (output_file, "\n#define %s %d\n\n", ADVANCE_CYCLE_VALUE_NAME,
            DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num);
+  if (collapse_flag)
+    fprintf (output_file, "\n#define %s %d\n\n", COLLAPSE_NDFA_VALUE_NAME,
+	     DECL_INSN_RESERV (collapse_ndfa_insn_decl)->insn_num);
 }
 
 /* The function outputs definition and value of PHR interface variable
@@ -8080,13 +8150,20 @@ output_internal_insn_code_evaluation (const char *insn_name,
 				      const char *insn_code_name,
 				      int code)
 {
-  fprintf (output_file, "\n  if (%s != 0)\n    {\n", insn_name);
+  fprintf (output_file, "\n  if (%s == 0)\n", insn_name);
+  fprintf (output_file, "    %s = %s;\n\n",
+	   insn_code_name, ADVANCE_CYCLE_VALUE_NAME);
+  if (collapse_flag)
+    {
+      fprintf (output_file, "\n  else if (%s == const0_rtx)\n", insn_name);
+      fprintf (output_file, "    %s = %s;\n\n",
+	       insn_code_name, COLLAPSE_NDFA_VALUE_NAME);
+    }
+  fprintf (output_file, "\n  else\n    {\n");
   fprintf (output_file, "      %s = %s (%s);\n", insn_code_name,
 	   DFA_INSN_CODE_FUNC_NAME, insn_name);
-  fprintf (output_file, "      if (%s > %s)\n        return %d;\n",
+  fprintf (output_file, "      if (%s > %s)\n        return %d;\n    }\n",
 	   insn_code_name, ADVANCE_CYCLE_VALUE_NAME, code);
-  fprintf (output_file, "    }\n  else\n    %s = %s;\n\n",
-	   insn_code_name, ADVANCE_CYCLE_VALUE_NAME);
 }
 
 
@@ -8287,9 +8364,8 @@ output_default_latencies (void)
   fprintf (output_file, "  static const %s default_latencies[] =\n    {",
 	   tabletype);
 
-  for (i = 0, j = 0, col = 7; i < description->decls_num; i++)
-    if (description->decls[i]->mode == dm_insn_reserv
-	&& description->decls[i] != advance_cycle_insn_decl)
+  for (i = 0, j = 0, col = 7; i < description->normal_decls_num; i++)
+    if (description->decls[i]->mode == dm_insn_reserv)
       {
 	if ((col = (col+1) % 8) == 0)
 	  fputs ("\n     ", output_file);
@@ -8298,7 +8374,7 @@ output_default_latencies (void)
 	fprintf (output_file, "% 4d,",
 		 DECL_INSN_RESERV (decl)->default_latency);
       }
-  gcc_assert (j == DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num);
+  gcc_assert (j == description->insns_num - (collapse_flag ? 2 : 1));
   fputs ("\n    };\n", output_file);
 }
 
@@ -8479,10 +8555,10 @@ output_print_reservation_func (void)
   fputs ("  static const char *const reservation_names[] =\n    {",
 	 output_file);
 
-  for (i = 0, j = 0; i < description->decls_num; i++)
+  for (i = 0, j = 0; i < description->normal_decls_num; i++)
     {
       decl = description->decls [i];
-      if (decl->mode == dm_insn_reserv && decl != advance_cycle_insn_decl)
+      if (decl->mode == dm_insn_reserv)
 	{
 	  gcc_assert (j == DECL_INSN_RESERV (decl)->insn_num);
 	  j++;
@@ -8492,7 +8568,7 @@ output_print_reservation_func (void)
 	  finish_regexp_representation ();
 	}
     }
-  gcc_assert (j == DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num);
+  gcc_assert (j == description->insns_num - (collapse_flag ? 2 : 1));
 
   fprintf (output_file, "\n      \"%s\"\n    };\n  int %s;\n\n",
 	   NOTHING_NAME, INTERNAL_INSN_CODE_NAME);
@@ -8802,7 +8878,7 @@ output_description (void)
 	}
     }
   fprintf (output_description_file, "\n");
-  for (i = 0; i < description->decls_num; i++)
+  for (i = 0; i < description->normal_decls_num; i++)
     {
       decl = description->decls [i];
       if (decl->mode == dm_reserv)
@@ -8812,7 +8888,7 @@ output_description (void)
           output_regexp (DECL_RESERV (decl)->regexp);
           fprintf (output_description_file, "\n");
         }
-      else if (decl->mode == dm_insn_reserv && decl != advance_cycle_insn_decl)
+      else if (decl->mode == dm_insn_reserv)
         {
           fprintf (output_description_file, "insn reservation %s ",
 		   DECL_INSN_RESERV (decl)->name);
@@ -9218,6 +9294,8 @@ initiate_automaton_gen (int argc, char **argv)
       w_flag = 1;
     else if (strcmp (argv [i], NDFA_OPTION) == 0)
       ndfa_flag = 1;
+    else if (strcmp (argv [i], COLLAPSE_OPTION) == 0)
+      collapse_flag = 1;
     else if (strcmp (argv [i], PROGRESS_OPTION) == 0)
       progress_flag = 1;
     else if (strcmp (argv [i], "-split") == 0)
@@ -9260,7 +9338,8 @@ check_automata_insn_issues (void)
       for (ainsn = automaton->ainsn_list;
 	   ainsn != NULL;
 	   ainsn = ainsn->next_ainsn)
-	if (ainsn->first_insn_with_same_reservs && !ainsn->arc_exists_p)
+	if (ainsn->first_insn_with_same_reservs && !ainsn->arc_exists_p
+	    && ainsn != automaton->collapse_ainsn)
 	  {
 	    for (reserv_ainsn = ainsn;
 		 reserv_ainsn != NULL;
@@ -9374,9 +9453,10 @@ expand_automata (void)
 
   description = XCREATENODEVAR (struct description,
 				sizeof (struct description)
-				/* One entry for cycle advancing insn.  */
-				+ sizeof (decl_t) * VEC_length (decl_t, decls));
+				/* Two entries for special insns.  */
+				+ sizeof (decl_t) * (VEC_length (decl_t, decls) + 1));
   description->decls_num = VEC_length (decl_t, decls);
+  description->normal_decls_num = description->decls_num;
   description->query_units_num = 0;
   for (i = 0; i < description->decls_num; i++)
     {
