@@ -2482,6 +2482,9 @@ check_init_expr (gfc_expr *e)
 	    m = MATCH_ERROR;
 	  }
 
+	if (m == MATCH_ERROR)
+	  return FAILURE;
+
 	/* Try to scalarize an elemental intrinsic function that has an
 	   array argument.  */
 	isym = gfc_find_function (e->symtree->n.sym->name);

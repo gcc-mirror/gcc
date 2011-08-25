@@ -1,3 +1,8 @@
+2011-08-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50163
+	* check_init_expr (check_init_expr): Return when an error occured.
+
 2011-08-22  Mikael Morin  <mikael.morin@gcc.gnu.org>
 
 	PR fortran/50050
