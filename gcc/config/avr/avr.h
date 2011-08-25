@@ -376,8 +376,6 @@ typedef struct avr_args {
 
 #define FUNCTION_ARG_REGNO_P(r) function_arg_regno_p(r)
 
-extern int avr_reg_order[];
-
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 #define EPILOGUE_USES(REGNO) avr_epilogue_uses(REGNO)

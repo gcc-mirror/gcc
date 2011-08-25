@@ -1,5 +1,14 @@
 2011-08-25  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr-protos.h (byte_immediate_operand): Remove Prototype.
+	(secondary_input_reload_class): Remove Prototype.
+	* config/avr/avr.c (byte_immediate_operand): Remove Function.
+	* config/avr/avr.md (setmemhi): Use u8_operand.
+	(strlenhi): Use const0_rtx for comparison.
+	* config/avr/avr.h (avr_reg_order): Remove Declaration.
+
+2011-08-25  Georg-Johann Lay  <avr@gjlay.de>
+
 	* config/avr/avr.c (reg_class_tab): Make local to
 	avr_regno_reg_class.  Return smallest register class available.
 	
