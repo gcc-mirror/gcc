@@ -1,3 +1,8 @@
+2011-08-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50157
+	* call.c (convert_like_real): Exit early if bad and !tf_error.
+
 2011-08-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50024
