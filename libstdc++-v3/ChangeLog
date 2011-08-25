@@ -1,3 +1,10 @@
+2011-08-25  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/simple.cc: New file.
+	* testsuite/lib/gdb-test.exp: New file.
+	* testsuite/libstdc++-prettyprinters/prettyprinters.exp: New
+	file.
+
 2011-08-18  Marc Glisse  <marc.glisse@normalesup.org>
 
 	* include/tr1/cmath: Extend/update comment.
