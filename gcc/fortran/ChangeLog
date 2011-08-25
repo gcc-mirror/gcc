@@ -1,3 +1,10 @@
+2011-08-25  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-array.c (structure_alloc_comps): Fix for allocatable
+	scalar coarray components.
+	* trans-expr.c (gfc_conv_component_ref): Ditto.
+	* trans-type.c (gfc_get_derived_type): Ditto.
+
 2011-08-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50163
