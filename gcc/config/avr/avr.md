@@ -591,18 +591,16 @@
   ""
   "{
   rtx addr0;
-  int cnt8;
   enum machine_mode mode;
 
   /* If value to set is not zero, use the library routine.  */
   if (operands[2] != const0_rtx)
     FAIL;
 
-  if (GET_CODE (operands[1]) != CONST_INT)
+  if (!CONST_INT_P (operands[1]))
     FAIL;
 
-  cnt8 = byte_immediate_operand (operands[1], GET_MODE (operands[1]));
-  mode = cnt8 ? QImode : HImode;
+  mode = u8_operand (operands[1], VOIDmode) ? QImode : HImode;
   operands[5] = gen_rtx_SCRATCH (mode);
   operands[1] = copy_to_mode_reg (mode,
                                   gen_int_mode (INTVAL (operands[1]), mode));
@@ -660,7 +658,7 @@
    ""
    "{
   rtx addr;
-  if (! (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) == 0))
+  if (operands[2] != const0_rtx)
     FAIL;
   addr = copy_to_mode_reg (Pmode, XEXP (operands[1],0));
   operands[1] = gen_rtx_MEM (BLKmode, addr); 
