@@ -1,3 +1,10 @@
+2011-08-25  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr.c (STR_PREFIX_P): New Define.
+	(avr_asm_declare_function_name): Use it.
+	(avr_asm_named_section): Use it.
+	(avr_section_type_flags): Use it.
+
 2011-08-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* doc/md.texi (automata_option): Document collapse-ndfa.
