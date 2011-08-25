@@ -1,3 +1,42 @@
+2011-08-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (isa): Add sse2, sse2_noavx, sse3,
+	sse4 and sse4_noavx.
+	(enabled): Handle sse2, sse2_noavx, sse3, sse4 and sse4_noavx.
+	(*pushdf_rex64): Change Y2 register constraint to x.
+	(*movdf_internal_rex64): Ditto.
+	(*zero_extendsidi2_rex64): Ditto.
+	(*movdi_internal): Change Y2 register constraint to x
+	and update "isa" attribute.
+	(*pushdf): Ditto.
+	(*movdf internal): Ditto.
+	(zero_extendsidi2_1): Ditto.
+	(*truncdfdf_mixed): Ditto.
+	(*truncxfdf2_mixed): Ditto.
+	* config/i386/mmx.md (*mov<mode>_internal_rex64): Change Y2
+	register constraint to x.
+	(*movv2sf_internal_rex64): Ditto.
+	(*mov<mode>_internal): Change Y2 register constraint to x
+	and add "isa" attribute.
+	(*movv2sf_internal): Ditto.
+	(*vec_extractv2si_1): Ditto.
+	* config/i386/sse.md ("vec_set<mode>_0): Change Y2 and Y4 register
+	constraints to x and update "isa" attribute.
+	(*vec_interleave_highv2df): Change Y3 registerconstraint
+	to x and update "isa" attribute.
+	(*vec_interleave_lowv2df): Ditto.
+	(*vec_concatv2df): Change Y2 register constraint to x and
+	update "isa" attribute.
+	(sse2_loadld): Ditto.
+	(*vec_extractv2di_1): Ditto.
+	(*vec_dupv4si): Ditto.
+	(*vec_dupv2di): Ditto.
+	(*vec_concatv4si): Ditto.
+	(vec_concatv2di): Ditto.
+	* config/i386/constraints.md (Y2): Remove.
+	(Y3): Ditto.
+	(Y4): Ditto.
+
 2011-08-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* regrename.c (scan_rtx_reg, scan_rtx_address, build_def_use,
@@ -18,7 +57,7 @@
 
 	* config/avr/avr.c (reg_class_tab): Make local to
 	avr_regno_reg_class.  Return smallest register class available.
-	
+
 2011-08-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (STR_PREFIX_P): New Define.
@@ -36,13 +75,11 @@
 	(gen_automata_option): Check for COLLAPSE_OPTION.
 	(collapse_ndfa_insn_decl): New static variable.
 	(add_collapse_ndfa_insn_decl, special_decl_p): New functions.
-	(find_arc): If insn is the collapse-ndfa insn, accept any arc we
-	find.
+	(find_arc): If insn is the collapse-ndfa insn, accept any arc we find.
 	(transform_insn_regexps): Call add_collapse_ndfa_insn_decl if
 	necessary.  Use normal_decls_num rather than decls_num, remove
 	test for special decls.
-	(create_alt_states, form_ainsn_with_same_reservs): Use
-	special_decl_p.
+	(create_alt_states, form_ainsn_with_same_reservs): Use special_decl_p.
 	(make_automaton); Likewise.  Use the new advance_cycle_insn member
 	of struct automaton.
 	(create_composed_state): Disallow advance-cycle arcs if collapse_flag
@@ -90,8 +127,7 @@
 2011-08-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/50172
-	* config/i386/i386.c (ix86_expand_builtin): Convert to Pmode if
-	needed.
+	* config/i386/i386.c (ix86_expand_builtin): Convert to Pmode if needed.
 
 2011-08-24  Richard Guenther  <rguenther@suse.de>
 
