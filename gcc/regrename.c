@@ -138,14 +138,8 @@ static int this_tick = 0;
 static struct obstack rename_obstack;
 
 static void do_replace (struct du_head *, int);
-static void scan_rtx_reg (rtx, rtx *, enum reg_class,
-			  enum scan_actions, enum op_type);
-static void scan_rtx_address (rtx, rtx *, enum reg_class,
-			      enum scan_actions, enum machine_mode);
 static void scan_rtx (rtx, rtx *, enum reg_class, enum scan_actions,
 		      enum op_type);
-static struct du_head *build_def_use (basic_block);
-static void dump_def_use_chain (struct du_head *);
 
 typedef struct du_head *du_head_p;
 DEF_VEC_P (du_head_p);
@@ -202,6 +196,84 @@ free_chain_data (void)
     bitmap_clear (&ptr->conflicts);
 
   VEC_free (du_head_p, heap, id_to_chain);
+}
+
+/* Walk all chains starting with CHAINS and record that they conflict with
+   another chain whose id is ID.  */
+
+static void
+mark_conflict (struct du_head *chains, unsigned id)
+{
+  while (chains)
+    {
+      bitmap_set_bit (&chains->conflicts, id);
+      chains = chains->next_chain;
+    }
+}
+
+/* Create a new chain for THIS_NREGS registers starting at THIS_REGNO,
+   and record its occurrence in *LOC, which is being written to in INSN.
+   This access requires a register of class CL.  */
+
+static void
+create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
+		  rtx insn, enum reg_class cl)
+{
+  struct du_head *head = XOBNEW (&rename_obstack, struct du_head);
+  struct du_chain *this_du;
+  int nregs;
+
+  head->next_chain = open_chains;
+  open_chains = head;
+  head->regno = this_regno;
+  head->nregs = this_nregs;
+  head->need_caller_save_reg = 0;
+  head->cannot_rename = 0;
+
+  VEC_safe_push (du_head_p, heap, id_to_chain, head);
+  head->id = current_id++;
+
+  bitmap_initialize (&head->conflicts, &bitmap_default_obstack);
+  bitmap_copy (&head->conflicts, &open_chains_set);
+  mark_conflict (open_chains, head->id);
+
+  /* Since we're tracking this as a chain now, remove it from the
+     list of conflicting live hard registers and track it in
+     live_in_chains instead.  */
+  nregs = head->nregs;
+  while (nregs-- > 0)
+    {
+      SET_HARD_REG_BIT (live_in_chains, head->regno + nregs);
+      CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
+    }
+
+  COPY_HARD_REG_SET (head->hard_conflicts, live_hard_regs);
+  bitmap_set_bit (&open_chains_set, head->id);
+
+  open_chains = head;
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Creating chain %s (%d)",
+	       reg_names[head->regno], head->id);
+      if (insn != NULL_RTX)
+	fprintf (dump_file, " at insn %d", INSN_UID (insn));
+      fprintf (dump_file, "\n");
+    }
+
+  if (insn == NULL_RTX)
+    {
+      head->first = head->last = NULL;
+      return;
+    }
+
+  this_du = XOBNEW (&rename_obstack, struct du_chain);
+  head->first = head->last = this_du;
+
+  this_du->next_use = 0;
+  this_du->loc = loc;
+  this_du->insn = insn;
+  this_du->cl = cl;
 }
 
 /* For a def-use chain HEAD, find which registers overlap its lifetime and
@@ -416,52 +488,6 @@ rename_chains (du_head_p all_chains)
     }
 }
 
-/* Perform register renaming on the current function.  */
-
-static unsigned int
-regrename_optimize (void)
-{
-  basic_block bb;
-  char *first_obj;
-
-  df_set_flags (DF_LR_RUN_DCE);
-  df_note_add_problem ();
-  df_analyze ();
-  df_set_flags (DF_DEFER_INSN_RESCAN);
-
-  memset (tick, 0, sizeof tick);
-
-  gcc_obstack_init (&rename_obstack);
-  first_obj = XOBNEWVAR (&rename_obstack, char, 0);
-
-  FOR_EACH_BB (bb)
-    {
-      struct du_head *all_chains = 0;
-
-      id_to_chain = VEC_alloc (du_head_p, heap, 0);
-
-      if (dump_file)
-	fprintf (dump_file, "\nBasic block %d:\n", bb->index);
-
-      all_chains = build_def_use (bb);
-
-      if (dump_file)
-	dump_def_use_chain (all_chains);
-
-      rename_chains (all_chains);
-
-      free_chain_data ();
-      obstack_free (&rename_obstack, first_obj);
-    }
-
-  obstack_free (&rename_obstack, NULL);
-
-  if (dump_file)
-    fputc ('\n', dump_file);
-
-  return 0;
-}
-
 static void
 do_replace (struct du_head *head, int reg)
 {
@@ -491,19 +517,6 @@ do_replace (struct du_head *head, int reg)
     }
 }
 
-
-/* Walk all chains starting with CHAINS and record that they conflict with
-   another chain whose id is ID.  */
-
-static void
-mark_conflict (struct du_head *chains, unsigned id)
-{
-  while (chains)
-    {
-      bitmap_set_bit (&chains->conflicts, id);
-      chains = chains->next_chain;
-    }
-}
 
 /* True if we found a register with a size mismatch, which means that we
    can't track its lifetime accurately.  If so, we abort the current block
@@ -568,71 +581,6 @@ note_sets_clobbers (rtx x, const_rtx set, void *data)
   add_to_hard_reg_set (&live_hard_regs, GET_MODE (x), REGNO (x));
   for (chain = open_chains; chain; chain = chain->next_chain)
     add_to_hard_reg_set (&chain->hard_conflicts, GET_MODE (x), REGNO (x));
-}
-
-/* Create a new chain for THIS_NREGS registers starting at THIS_REGNO,
-   and record its occurrence in *LOC, which is being written to in INSN.
-   This access requires a register of class CL.  */
-
-static void
-create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
-		  rtx insn, enum reg_class cl)
-{
-  struct du_head *head = XOBNEW (&rename_obstack, struct du_head);
-  struct du_chain *this_du;
-  int nregs;
-
-  head->next_chain = open_chains;
-  open_chains = head;
-  head->regno = this_regno;
-  head->nregs = this_nregs;
-  head->need_caller_save_reg = 0;
-  head->cannot_rename = 0;
-
-  VEC_safe_push (du_head_p, heap, id_to_chain, head);
-  head->id = current_id++;
-
-  bitmap_initialize (&head->conflicts, &bitmap_default_obstack);
-  bitmap_copy (&head->conflicts, &open_chains_set);
-  mark_conflict (open_chains, head->id);
-
-  /* Since we're tracking this as a chain now, remove it from the
-     list of conflicting live hard registers and track it in
-     live_in_chains instead.  */
-  nregs = head->nregs;
-  while (nregs-- > 0)
-    {
-      SET_HARD_REG_BIT (live_in_chains, head->regno + nregs);
-      CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
-    }
-
-  COPY_HARD_REG_SET (head->hard_conflicts, live_hard_regs);
-  bitmap_set_bit (&open_chains_set, head->id);
-
-  open_chains = head;
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "Creating chain %s (%d)",
-	       reg_names[head->regno], head->id);
-      if (insn != NULL_RTX)
-	fprintf (dump_file, " at insn %d", INSN_UID (insn));
-      fprintf (dump_file, "\n");
-    }
-
-  if (insn == NULL_RTX)
-    {
-      head->first = head->last = NULL;
-      return;
-    }
-
-  this_du = XOBNEW (&rename_obstack, struct du_chain);
-  head->first = head->last = this_du;
-
-  this_du->next_use = 0;
-  this_du->loc = loc;
-  this_du->insn = insn;
-  this_du->cl = cl;
 }
 
 static void
@@ -1398,6 +1346,52 @@ build_def_use (basic_block bb)
   /* Since we close every chain when we find a REG_DEAD note, anything that
      is still open lives past the basic block, so it can't be renamed.  */
   return closed_chains;
+}
+
+/* Perform register renaming on the current function.  */
+
+static unsigned int
+regrename_optimize (void)
+{
+  basic_block bb;
+  char *first_obj;
+
+  df_set_flags (DF_LR_RUN_DCE);
+  df_note_add_problem ();
+  df_analyze ();
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+
+  memset (tick, 0, sizeof tick);
+
+  gcc_obstack_init (&rename_obstack);
+  first_obj = XOBNEWVAR (&rename_obstack, char, 0);
+
+  FOR_EACH_BB (bb)
+    {
+      struct du_head *all_chains = 0;
+
+      id_to_chain = VEC_alloc (du_head_p, heap, 0);
+
+      if (dump_file)
+	fprintf (dump_file, "\nBasic block %d:\n", bb->index);
+
+      all_chains = build_def_use (bb);
+
+      if (dump_file)
+	dump_def_use_chain (all_chains);
+
+      rename_chains (all_chains);
+
+      free_chain_data ();
+      obstack_free (&rename_obstack, first_obj);
+    }
+
+  obstack_free (&rename_obstack, NULL);
+
+  if (dump_file)
+    fputc ('\n', dump_file);
+
+  return 0;
 }
 
 static bool

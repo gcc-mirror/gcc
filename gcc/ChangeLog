@@ -1,3 +1,10 @@
+2011-08-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* regrename.c (scan_rtx_reg, scan_rtx_address, build_def_use,
+	dump_def_use_chain): Don't declare.
+	(mark_conflict, create_new_chain): Move before users.
+	(regrename_optimize): Move to near end of file.
+
 2011-08-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr-protos.h (byte_immediate_operand): Remove Prototype.
@@ -13,7 +20,7 @@
 	avr_regno_reg_class.  Return smallest register class available.
 	
 2011-08-25  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/avr.c (STR_PREFIX_P): New Define.
 	(avr_asm_declare_function_name): Use it.
 	(avr_asm_named_section): Use it.
