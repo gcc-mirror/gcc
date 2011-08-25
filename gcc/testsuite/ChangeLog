@@ -1,3 +1,7 @@
+2011-08-25  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/Wshadow-3.c: Restore original content destroyed by r148442.
+
 2011-08-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50163
