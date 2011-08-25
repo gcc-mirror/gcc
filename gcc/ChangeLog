@@ -1,3 +1,7 @@
+2011-08-25  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr.md: Fix indentation from r177991.
+
 2011-08-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* regrename.c (struct du_head): Remove member terminated.
