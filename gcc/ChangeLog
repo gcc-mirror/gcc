@@ -1,3 +1,18 @@
+2011-08-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* regrename.c (struct du_head): Remove member terminated.
+	(create_new_chain): Don't initialize it.
+	(scan_rtx_reg): Don't set or test it, test the open_chains_set
+	bitmap instead.
+	(tick, this_tick): New global variables, moved out of
+	regrename_optimize.
+	(current_id, open_chains, closed_chains, open_chains_set,
+	live_in_chains, live_hard_regs): Reorder declarations.
+	(dump_def_use_chain): Move function earlier in the file.
+	(rename_chains): New static function, broken out of
+	regrename_optimize.
+	(regrename_optimize): Use it.  Remove #if 0'ed code.
+
 2011-08-25  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* varasm.c: (default_binds_local_p_1): Commentary typo fix.
