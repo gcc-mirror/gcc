@@ -906,21 +906,17 @@ class Thunk_statement : public Statement
   bool
   is_simple(Function_type*) const;
 
+  // Return whether the thunk function is a constant.
+  bool
+  is_constant_function() const;
+
   // Build the struct to use for a complex case.
   Struct_type*
   build_struct(Function_type* fntype);
 
   // Build the thunk.
   void
-  build_thunk(Gogo*, const std::string&, Function_type* fntype);
-
-  // The field name used in the thunk structure for the function
-  // pointer.
-  static const char* const thunk_field_fn;
-
-  // The field name used in the thunk structure for the receiver, if
-  // there is one.
-  static const char* const thunk_field_receiver;
+  build_thunk(Gogo*, const std::string&);
 
   // Set the name to use for thunk field N.
   void

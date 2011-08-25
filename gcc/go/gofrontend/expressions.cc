@@ -6798,9 +6798,7 @@ Expression::comparison_tree(Translate_context* context, Operator op,
 int
 Bound_method_expression::do_traverse(Traverse* traverse)
 {
-  if (Expression::traverse(&this->expr_, traverse) == TRAVERSE_EXIT)
-    return TRAVERSE_EXIT;
-  return Expression::traverse(&this->method_, traverse);
+  return Expression::traverse(&this->expr_, traverse);
 }
 
 // Return the type of a bound method expression.  The type of this
@@ -6811,7 +6809,12 @@ Bound_method_expression::do_traverse(Traverse* traverse)
 Type*
 Bound_method_expression::do_type()
 {
-  return this->method_->type();
+  if (this->method_->is_function())
+    return this->method_->func_value()->type();
+  else if (this->method_->is_function_declaration())
+    return this->method_->func_declaration_value()->type();
+  else
+    return Type::make_error_type();
 }
 
 // Determine the types of a method expression.
@@ -6819,9 +6822,7 @@ Bound_method_expression::do_type()
 void
 Bound_method_expression::do_determine_type(const Type_context*)
 {
-  this->method_->determine_type_no_context();
-  Type* mtype = this->method_->type();
-  Function_type* fntype = mtype == NULL ? NULL : mtype->function_type();
+  Function_type* fntype = this->type()->function_type();
   if (fntype == NULL || !fntype->is_method())
     this->expr_->determine_type_no_context();
   else
@@ -6836,14 +6837,12 @@ Bound_method_expression::do_determine_type(const Type_context*)
 void
 Bound_method_expression::do_check_types(Gogo*)
 {
-  Type* type = this->method_->type()->deref();
-  if (type == NULL
-      || type->function_type() == NULL
-      || !type->function_type()->is_method())
+  if (!this->method_->is_function()
+      && !this->method_->is_function_declaration())
     this->report_error(_("object is not a method"));
   else
     {
-      Type* rtype = type->function_type()->receiver()->type()->deref();
+      Type* rtype = this->type()->function_type()->receiver()->type()->deref();
       Type* etype = (this->expr_type_ != NULL
 		     ? this->expr_type_
 		     : this->expr_->type());
@@ -6881,14 +6880,13 @@ Bound_method_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
       ast_dump_context->ostream() << ")";
     }
     
-  ast_dump_context->ostream() << ".";
-  ast_dump_context->dump_expression(method_);
+  ast_dump_context->ostream() << "." << this->method_->name();
 }
 
 // Make a method expression.
 
 Bound_method_expression*
-Expression::make_bound_method(Expression* expr, Expression* method,
+Expression::make_bound_method(Expression* expr, Named_object* method,
 			      source_location location)
 {
   return new Bound_method_expression(expr, method, location);
@@ -9257,6 +9255,9 @@ Call_expression::bound_method_function(Translate_context* context,
 				       Bound_method_expression* bound_method,
 				       tree* first_arg_ptr)
 {
+  Gogo* gogo = context->gogo();
+  source_location loc = this->location();
+
   Expression* first_argument = bound_method->first_argument();
   tree first_arg = first_argument->get_tree(context);
   if (first_arg == error_mark_node)
@@ -9272,7 +9273,7 @@ Call_expression::bound_method_function(Translate_context* context,
 	  || TREE_CODE(first_arg) == INDIRECT_REF
 	  || TREE_CODE(first_arg) == COMPONENT_REF)
 	{
-	  first_arg = build_fold_addr_expr(first_arg);
+	  first_arg = build_fold_addr_expr_loc(loc, first_arg);
 	  if (DECL_P(first_arg))
 	    TREE_ADDRESSABLE(first_arg) = 1;
 	}
@@ -9282,9 +9283,10 @@ Call_expression::bound_method_function(Translate_context* context,
 				    get_name(first_arg));
 	  DECL_IGNORED_P(tmp) = 0;
 	  DECL_INITIAL(tmp) = first_arg;
-	  first_arg = build2(COMPOUND_EXPR, pointer_to_arg_type,
-			     build1(DECL_EXPR, void_type_node, tmp),
-			     build_fold_addr_expr(tmp));
+	  first_arg = build2_loc(loc, COMPOUND_EXPR, pointer_to_arg_type,
+				 build1_loc(loc, DECL_EXPR, void_type_node,
+					    tmp),
+				 build_fold_addr_expr_loc(loc, tmp));
 	  TREE_ADDRESSABLE(tmp) = 1;
 	}
       if (first_arg == error_mark_node)
@@ -9296,8 +9298,8 @@ Call_expression::bound_method_function(Translate_context* context,
     {
       if (fatype->points_to() == NULL)
 	fatype = Type::make_pointer_type(fatype);
-      Btype* bfatype = fatype->get_backend(context->gogo());
-      first_arg = fold_convert(type_to_tree(bfatype), first_arg);
+      Btype* bfatype = fatype->get_backend(gogo);
+      first_arg = fold_convert_loc(loc, type_to_tree(bfatype), first_arg);
       if (first_arg == error_mark_node
 	  || TREE_TYPE(first_arg) == error_mark_node)
 	return error_mark_node;
@@ -9305,7 +9307,21 @@ Call_expression::bound_method_function(Translate_context* context,
 
   *first_arg_ptr = first_arg;
 
-  return bound_method->method()->get_tree(context);
+  Named_object* method = bound_method->method();
+  tree id = method->get_id(gogo);
+  if (id == error_mark_node)
+    return error_mark_node;
+
+  tree fndecl;
+  if (method->is_function())
+    fndecl = method->func_value()->get_or_make_decl(gogo, method, id);
+  else if (method->is_function_declaration())
+    fndecl = method->func_declaration_value()->get_or_make_decl(gogo, method,
+								id);
+  else
+    go_unreachable();
+
+  return build_fold_addr_expr_loc(loc, fndecl);
 }
 
 // Get the function and the first argument to use when calling an
