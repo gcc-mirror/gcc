@@ -340,14 +340,13 @@ case $vcs_type in
 	# corresponding to the extra: tag, so need to use hg log --debug
 	# to extract the info.
 	parents=`$GCC_HG parents --template '{rev}'`
-	revision=`$GCC_HG log --debug -r$parents | \
+	convert_revision=`$GCC_HG log --debug -r$parents | \
 	    sed -ne "/^extra:.*convert_revision=svn:/ {
-	        s%^.*@%%
+	        s%^[^/]*/%%
 		p
 	    }"`
-	branch=`$GCC_HG branch`
-	# trunk in SVN parlance shows up as default branch in hg.
-	[ x$branch = x"default" ] && branch="trunk"
+	revision=`echo $convert_revision | sed -e 's/.*@//'`
+	branch=`echo $convert_revision | sed -e 's%branches/%%' -e 's/@.*//'`
 	;;
 
     svn)
