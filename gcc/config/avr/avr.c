@@ -1628,15 +1628,6 @@ ret_cond_branch (rtx x, int len, int reverse)
   return "";
 }
 
-/* Predicate function for immediate operand which fits to byte (8bit) */
-
-int
-byte_immediate_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT
-          && INTVAL (op) <= 0xff && INTVAL (op) >= 0);
-}
-
 /* Output insn cost for next insn.  */
 
 void
