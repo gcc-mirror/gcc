@@ -1,4 +1,9 @@
 2011-08-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (reg_class_tab): Make local to
+	avr_regno_reg_class.  Return smallest register class available.
+	
+2011-08-25  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* config/avr/avr.c (STR_PREFIX_P): New Define.
 	(avr_asm_declare_function_name): Use it.
