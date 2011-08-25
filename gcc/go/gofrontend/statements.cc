@@ -1808,10 +1808,6 @@ Statement::make_dec_statement(Expression* expr)
 // Class Thunk_statement.  This is the base class for go and defer
 // statements.
 
-const char* const Thunk_statement::thunk_field_fn = "fn";
-
-const char* const Thunk_statement::thunk_field_receiver = "receiver";
-
 // Constructor.
 
 Thunk_statement::Thunk_statement(Statement_classification classification,
@@ -1991,6 +1987,30 @@ Gogo::simplify_thunk_statements()
   this->traverse(&thunk_traverse);
 }
 
+// Return true if the thunk function is a constant, which means that
+// it does not need to be passed to the thunk routine.
+
+bool
+Thunk_statement::is_constant_function() const
+{
+  Call_expression* ce = this->call_->call_expression();
+  Function_type* fntype = ce->get_function_type();
+  if (fntype == NULL)
+    {
+      go_assert(saw_errors());
+      return false;
+    }
+  if (fntype->is_builtin())
+    return true;
+  Expression* fn = ce->fn();
+  if (fn->func_expression() != NULL)
+    return fn->func_expression()->closure() == NULL;
+  if (fn->bound_method_expression() != NULL
+      || fn->interface_field_reference_expression() != NULL)
+    return true;
+  return false;
+}
+
 // Simplify complex thunk statements into simple ones.  A complicated
 // thunk statement is one which takes anything other than zero
 // parameters or a single pointer parameter.  We rewrite it into code
@@ -2031,14 +2051,13 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   Bound_method_expression* bound_method = fn->bound_method_expression();
   Interface_field_reference_expression* interface_method =
     fn->interface_field_reference_expression();
-  const bool is_method = bound_method != NULL || interface_method != NULL;
 
   source_location location = this->location();
 
   std::string thunk_name = Gogo::thunk_name();
 
   // Build the thunk.
-  this->build_thunk(gogo, thunk_name, fntype);
+  this->build_thunk(gogo, thunk_name);
 
   // Generate code to call the thunk.
 
@@ -2046,15 +2065,14 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   // argument to the thunk.
 
   Expression_list* vals = new Expression_list();
-  if (fntype->is_builtin())
-    ;
-  else if (!is_method)
+  if (!this->is_constant_function())
     vals->push_back(fn);
-  else if (interface_method != NULL)
+
+  if (interface_method != NULL)
     vals->push_back(interface_method->expr());
-  else if (bound_method != NULL)
+
+  if (bound_method != NULL)
     {
-      vals->push_back(bound_method->method());
       Expression* first_arg = bound_method->first_argument();
 
       // We always pass a pointer when calling a method.
@@ -2076,8 +2094,6 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
 
       vals->push_back(first_arg);
     }
-  else
-    go_unreachable();
 
   if (ce->args() != NULL)
     {
@@ -2152,33 +2168,26 @@ Thunk_statement::build_struct(Function_type* fntype)
   Call_expression* ce = this->call_->call_expression();
   Expression* fn = ce->fn();
 
+  if (!this->is_constant_function())
+    {
+      // The function to call.
+      fields->push_back(Struct_field(Typed_identifier("fn", fntype,
+						      location)));
+    }
+
+  // If this thunk statement calls a method on an interface, we pass
+  // the interface object to the thunk.
   Interface_field_reference_expression* interface_method =
     fn->interface_field_reference_expression();
   if (interface_method != NULL)
     {
-      // If this thunk statement calls a method on an interface, we
-      // pass the interface object to the thunk.
-      Typed_identifier tid(Thunk_statement::thunk_field_fn,
-			   interface_method->expr()->type(),
+      Typed_identifier tid("object", interface_method->expr()->type(),
 			   location);
       fields->push_back(Struct_field(tid));
     }
-  else if (!fntype->is_builtin())
-    {
-      // The function to call.
-      Typed_identifier tid(Go_statement::thunk_field_fn, fntype, location);
-      fields->push_back(Struct_field(tid));
-    }
-  else if (ce->is_recover_call())
-    {
-      // The predeclared recover function has no argument.  However,
-      // we add an argument when building recover thunks.  Handle that
-      // here.
-      fields->push_back(Struct_field(Typed_identifier("can_recover",
-						      Type::lookup_bool_type(),
-						      location)));
-    }
 
+  // If this is a method call, pass down the expression we are
+  // calling.
   if (fn->bound_method_expression() != NULL)
     {
       go_assert(fntype->is_method());
@@ -2186,9 +2195,17 @@ Thunk_statement::build_struct(Function_type* fntype)
       // We always pass the receiver as a pointer.
       if (rtype->points_to() == NULL)
 	rtype = Type::make_pointer_type(rtype);
-      Typed_identifier tid(Thunk_statement::thunk_field_receiver, rtype,
-			   location);
+      Typed_identifier tid("receiver", rtype, location);
       fields->push_back(Struct_field(tid));
+    }
+
+  // The predeclared recover function has no argument.  However, we
+  // add an argument when building recover thunks.  Handle that here.
+  if (ce->is_recover_call())
+    {
+      fields->push_back(Struct_field(Typed_identifier("can_recover",
+						      Type::lookup_bool_type(),
+						      location)));
     }
 
   const Expression_list* args = ce->args();
@@ -2213,8 +2230,7 @@ Thunk_statement::build_struct(Function_type* fntype)
 // artificial, function.
 
 void
-Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
-			     Function_type* fntype)
+Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 {
   source_location location = this->location();
 
@@ -2307,37 +2323,37 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
 
   Expression* func_to_call;
   unsigned int next_index;
-  if (!fntype->is_builtin())
+  if (this->is_constant_function())
+    {
+      func_to_call = ce->fn();
+      next_index = 0;
+    }
+  else
     {
       func_to_call = Expression::make_field_reference(thunk_parameter,
 						      0, location);
       next_index = 1;
     }
-  else
-    {
-      go_assert(bound_method == NULL && interface_method == NULL);
-      func_to_call = ce->fn();
-      next_index = 0;
-    }
 
   if (bound_method != NULL)
     {
-      Expression* r = Expression::make_field_reference(thunk_parameter, 1,
+      go_assert(next_index == 0);
+      Expression* r = Expression::make_field_reference(thunk_parameter, 0,
 						       location);
-      // The main program passes in a function pointer from the
-      // interface expression, so here we can make a bound method in
-      // all cases.
-      func_to_call = Expression::make_bound_method(r, func_to_call,
+      func_to_call = Expression::make_bound_method(r, bound_method->method(),
 						   location);
-      next_index = 2;
+      next_index = 1;
     }
   else if (interface_method != NULL)
     {
       // The main program passes the interface object.
+      go_assert(next_index == 0);
+      Expression* r = Expression::make_field_reference(thunk_parameter, 0,
+						       location);
       const std::string& name(interface_method->name());
-      func_to_call = Expression::make_interface_field_reference(func_to_call,
-								name,
+      func_to_call = Expression::make_interface_field_reference(r, name,
 								location);
+      next_index = 1;
     }
 
   Expression_list* call_params = new Expression_list();

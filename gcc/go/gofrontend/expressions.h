@@ -192,7 +192,7 @@ class Expression
   // Make an expression which is a method bound to its first
   // parameter.
   static Bound_method_expression*
-  make_bound_method(Expression* object, Expression* method, source_location);
+  make_bound_method(Expression* object, Named_object* method, source_location);
 
   // Make an index or slice expression.  This is a parser expression
   // which represents LEFT[START:END].  END may be NULL, meaning an
@@ -1636,7 +1636,7 @@ class Map_index_expression : public Expression
 class Bound_method_expression : public Expression
 {
  public:
-  Bound_method_expression(Expression* expr, Expression* method,
+  Bound_method_expression(Expression* expr, Named_object* method,
 			  source_location location)
     : Expression(EXPRESSION_BOUND_METHOD, location),
       expr_(expr), expr_type_(NULL), method_(method)
@@ -1654,8 +1654,8 @@ class Bound_method_expression : public Expression
   first_argument_type() const
   { return this->expr_type_; }
 
-  // Return the reference to the method function.
-  Expression*
+  // Return the method function.
+  Named_object*
   method()
   { return this->method_; }
 
@@ -1680,8 +1680,7 @@ class Bound_method_expression : public Expression
   Expression*
   do_copy()
   {
-    return new Bound_method_expression(this->expr_->copy(),
-				       this->method_->copy(),
+    return new Bound_method_expression(this->expr_->copy(), this->method_,
 				       this->location());
   }
 
@@ -1699,8 +1698,8 @@ class Bound_method_expression : public Expression
   // NULL in the normal case, non-NULL when using a method from an
   // anonymous field which does not require a stub.
   Type* expr_type_;
-  // The method itself.  This is a Func_expression.
-  Expression* method_;
+  // The method itself.
+  Named_object* method_;
 };
 
 // A reference to a field in a struct.

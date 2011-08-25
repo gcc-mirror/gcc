@@ -6085,10 +6085,7 @@ Method::bind_method(Expression* expr, source_location location) const
       // the child class.
       return this->do_bind_method(expr, location);
     }
-
-  Expression* func = Expression::make_func_reference(this->stub_, NULL,
-						     location);
-  return Expression::make_bound_method(expr, func, location);
+  return Expression::make_bound_method(expr, this->stub_, location);
 }
 
 // Return the named object associated with a method.  This may only be
@@ -6130,9 +6127,8 @@ Named_method::do_receiver_location() const
 Expression*
 Named_method::do_bind_method(Expression* expr, source_location location) const
 {
-  Expression* func = Expression::make_func_reference(this->named_object_, NULL,
-						     location);
-  Bound_method_expression* bme = Expression::make_bound_method(expr, func,
+  Named_object* no = this->named_object_;
+  Bound_method_expression* bme = Expression::make_bound_method(expr, no,
 							       location);
   // If this is not a local method, and it does not use a stub, then
   // the real method expects a different type.  We need to cast the
