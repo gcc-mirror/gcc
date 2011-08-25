@@ -3548,6 +3548,129 @@ mem_autoinc_base (rtx mem)
    verified, via immediate operand or auto-inc.  If the adjustment
    cannot be trivially extracted, the return value is INT_MIN.  */
 
+HOST_WIDE_INT
+find_args_size_adjust (rtx insn)
+{
+  rtx dest, set, pat;
+  int i;
+
+  pat = PATTERN (insn);
+  set = NULL;
+
+  /* Look for a call_pop pattern.  */
+  if (CALL_P (insn))
+    {
+      /* We have to allow non-call_pop patterns for the case
+	 of emit_single_push_insn of a TLS address.  */
+      if (GET_CODE (pat) != PARALLEL)
+	return 0;
+
+      /* All call_pop have a stack pointer adjust in the parallel.
+	 The call itself is always first, and the stack adjust is
+	 usually last, so search from the end.  */
+      for (i = XVECLEN (pat, 0) - 1; i > 0; --i)
+	{
+	  set = XVECEXP (pat, 0, i);
+	  if (GET_CODE (set) != SET)
+	    continue;
+	  dest = SET_DEST (set);
+	  if (dest == stack_pointer_rtx)
+	    break;
+	}
+      /* We'd better have found the stack pointer adjust.  */
+      if (i == 0)
+	return 0;
+      /* Fall through to process the extracted SET and DEST
+	 as if it was a standalone insn.  */
+    }
+  else if (GET_CODE (pat) == SET)
+    set = pat;
+  else if ((set = single_set (insn)) != NULL)
+    ;
+  else if (GET_CODE (pat) == PARALLEL)
+    {
+      /* ??? Some older ports use a parallel with a stack adjust
+	 and a store for a PUSH_ROUNDING pattern, rather than a
+	 PRE/POST_MODIFY rtx.  Don't force them to update yet...  */
+      /* ??? See h8300 and m68k, pushqi1.  */
+      for (i = XVECLEN (pat, 0) - 1; i >= 0; --i)
+	{
+	  set = XVECEXP (pat, 0, i);
+	  if (GET_CODE (set) != SET)
+	    continue;
+	  dest = SET_DEST (set);
+	  if (dest == stack_pointer_rtx)
+	    break;
+
+	  /* We do not expect an auto-inc of the sp in the parallel.  */
+	  gcc_checking_assert (mem_autoinc_base (dest) != stack_pointer_rtx);
+	  gcc_checking_assert (mem_autoinc_base (SET_SRC (set))
+			       != stack_pointer_rtx);
+	}
+      if (i < 0)
+	return 0;
+    }
+  else
+    return 0;
+
+  dest = SET_DEST (set);
+
+  /* Look for direct modifications of the stack pointer.  */
+  if (REG_P (dest) && REGNO (dest) == STACK_POINTER_REGNUM)
+    {
+      /* Look for a trivial adjustment, otherwise assume nothing.  */
+      /* Note that the SPU restore_stack_block pattern refers to
+	 the stack pointer in V4SImode.  Consider that non-trivial.  */
+      if (SCALAR_INT_MODE_P (GET_MODE (dest))
+	  && GET_CODE (SET_SRC (set)) == PLUS
+	  && XEXP (SET_SRC (set), 0) == stack_pointer_rtx
+	  && CONST_INT_P (XEXP (SET_SRC (set), 1)))
+	return INTVAL (XEXP (SET_SRC (set), 1));
+      /* ??? Reload can generate no-op moves, which will be cleaned
+	 up later.  Recognize it and continue searching.  */
+      else if (rtx_equal_p (dest, SET_SRC (set)))
+	return 0;
+      else
+	return HOST_WIDE_INT_MIN;
+    }
+  else
+    {
+      rtx mem, addr;
+
+      /* Otherwise only think about autoinc patterns.  */
+      if (mem_autoinc_base (dest) == stack_pointer_rtx)
+	{
+	  mem = dest;
+	  gcc_checking_assert (mem_autoinc_base (SET_SRC (set))
+			       != stack_pointer_rtx);
+	}
+      else if (mem_autoinc_base (SET_SRC (set)) == stack_pointer_rtx)
+	mem = SET_SRC (set);
+      else
+	return 0;
+
+      addr = XEXP (mem, 0);
+      switch (GET_CODE (addr))
+	{
+	case PRE_INC:
+	case POST_INC:
+	  return GET_MODE_SIZE (GET_MODE (mem));
+	case PRE_DEC:
+	case POST_DEC:
+	  return -GET_MODE_SIZE (GET_MODE (mem));
+	case PRE_MODIFY:
+	case POST_MODIFY:
+	  addr = XEXP (addr, 1);
+	  gcc_assert (GET_CODE (addr) == PLUS);
+	  gcc_assert (XEXP (addr, 0) == stack_pointer_rtx);
+	  gcc_assert (CONST_INT_P (XEXP (addr, 1)));
+	  return INTVAL (XEXP (addr, 1));
+	default:
+	  gcc_unreachable ();
+	}
+    }
+}
+
 int
 fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
 {
@@ -3557,121 +3680,18 @@ fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
 
   for (insn = last; insn != prev; insn = PREV_INSN (insn))
     {
-      rtx dest, set, pat;
-      HOST_WIDE_INT this_delta = 0;
-      int i;
+      HOST_WIDE_INT this_delta;
 
       if (!NONDEBUG_INSN_P (insn))
 	continue;
-      pat = PATTERN (insn);
-      set = NULL;
 
-      /* Look for a call_pop pattern.  */
-      if (CALL_P (insn))
-	{
-          /* We have to allow non-call_pop patterns for the case
-	     of emit_single_push_insn of a TLS address.  */
-	  if (GET_CODE (pat) != PARALLEL)
-	    continue;
-
-	  /* All call_pop have a stack pointer adjust in the parallel.
-	     The call itself is always first, and the stack adjust is
-	     usually last, so search from the end.  */
-	  for (i = XVECLEN (pat, 0) - 1; i > 0; --i)
-	    {
-	      set = XVECEXP (pat, 0, i);
-	      if (GET_CODE (set) != SET)
-		continue;
-	      dest = SET_DEST (set);
-	      if (dest == stack_pointer_rtx)
-		break;
-	    }
-	  /* We'd better have found the stack pointer adjust.  */
-	  if (i == 0)
-	    continue;
-	  /* Fall through to process the extracted SET and DEST
-	     as if it was a standalone insn.  */
-	}
-      else if (GET_CODE (pat) == SET)
-	set = pat;
-      else if ((set = single_set (insn)) != NULL)
-	;
-      else if (GET_CODE (pat) == PARALLEL)
-	{
-	  /* ??? Some older ports use a parallel with a stack adjust
-	     and a store for a PUSH_ROUNDING pattern, rather than a
-	     PRE/POST_MODIFY rtx.  Don't force them to update yet...  */
-	  /* ??? See h8300 and m68k, pushqi1.  */
-	  for (i = XVECLEN (pat, 0) - 1; i >= 0; --i)
-	    {
-	      set = XVECEXP (pat, 0, i);
-	      if (GET_CODE (set) != SET)
-		continue;
-	      dest = SET_DEST (set);
-	      if (dest == stack_pointer_rtx)
-		break;
-
-	      /* We do not expect an auto-inc of the sp in the parallel.  */
-	      gcc_checking_assert (mem_autoinc_base (dest)
-				   != stack_pointer_rtx);
-	      gcc_checking_assert (mem_autoinc_base (SET_SRC (set))
-				   != stack_pointer_rtx);
-	    }
-	  if (i < 0)
-	    continue;
-	}
-      else
+      this_delta = find_args_size_adjust (insn);
+      if (this_delta == 0)
 	continue;
-      dest = SET_DEST (set);
 
-      /* Look for direct modifications of the stack pointer.  */
-      if (REG_P (dest) && REGNO (dest) == STACK_POINTER_REGNUM)
-	{
-	  gcc_assert (!saw_unknown);
-	  /* Look for a trivial adjustment, otherwise assume nothing.  */
-	  /* Note that the SPU restore_stack_block pattern refers to
-	     the stack pointer in V4SImode.  Consider that non-trivial.  */
-	  if (SCALAR_INT_MODE_P (GET_MODE (dest))
-	      && GET_CODE (SET_SRC (set)) == PLUS
-	      && XEXP (SET_SRC (set), 0) == stack_pointer_rtx
-	      && CONST_INT_P (XEXP (SET_SRC (set), 1)))
-	    this_delta = INTVAL (XEXP (SET_SRC (set), 1));
-	  /* ??? Reload can generate no-op moves, which will be cleaned
-	     up later.  Recognize it and continue searching.  */
-	  else if (rtx_equal_p (dest, SET_SRC (set)))
-	    this_delta = 0;
-	  else
-	    saw_unknown = true;
-	}
-      /* Otherwise only think about autoinc patterns.  */
-      else if (mem_autoinc_base (dest) == stack_pointer_rtx)
-	{
-	  rtx addr = XEXP (dest, 0);
-	  gcc_assert (!saw_unknown);
-	  switch (GET_CODE (addr))
-	    {
-	    case PRE_INC:
-	    case POST_INC:
-	      this_delta = GET_MODE_SIZE (GET_MODE (dest));
-	      break;
-	    case PRE_DEC:
-	    case POST_DEC:
-	      this_delta = -GET_MODE_SIZE (GET_MODE (dest));
-	      break;
-	    case PRE_MODIFY:
-	    case POST_MODIFY:
-	      addr = XEXP (addr, 1);
-	      gcc_assert (GET_CODE (addr) == PLUS);
-	      gcc_assert (XEXP (addr, 0) == stack_pointer_rtx);
-	      gcc_assert (CONST_INT_P (XEXP (addr, 1)));
-	      this_delta = INTVAL (XEXP (addr, 1));
-	      break;
-	    default:
-	      gcc_unreachable ();
-	    }
-	}
-      else
-	continue;
+      gcc_assert (!saw_unknown);
+      if (this_delta == HOST_WIDE_INT_MIN)
+	saw_unknown = true;
 
       add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (args_size));
 #ifdef STACK_GROWS_DOWNWARD
