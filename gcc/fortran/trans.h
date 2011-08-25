@@ -750,12 +750,16 @@ struct GTY((variable_size)) lang_decl {
   tree stringlen;
   tree addr;
   tree span;
+  /* For assumed-shape coarrays.  */
+  tree token, caf_offset;
 };
 
 
 #define GFC_DECL_ASSIGN_ADDR(node) DECL_LANG_SPECIFIC(node)->addr
 #define GFC_DECL_STRING_LEN(node) DECL_LANG_SPECIFIC(node)->stringlen
 #define GFC_DECL_SPAN(node) DECL_LANG_SPECIFIC(node)->span
+#define GFC_DECL_TOKEN(node) DECL_LANG_SPECIFIC(node)->token
+#define GFC_DECL_CAF_OFFSET(node) DECL_LANG_SPECIFIC(node)->caf_offset
 #define GFC_DECL_SAVED_DESCRIPTOR(node) \
   (DECL_LANG_SPECIFIC(node)->saved_descriptor)
 #define GFC_DECL_PACKED_ARRAY(node) DECL_LANG_FLAG_0(node)

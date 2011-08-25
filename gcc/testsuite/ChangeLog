@@ -1,5 +1,9 @@
 2011-08-25  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/coarray_lib_token_4.f90: New.
+
+2011-08-25  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/coarray/alloc_comp_1.f90: New.
 
 2011-08-25  Richard Guenther  <rguenther@suse.de>
