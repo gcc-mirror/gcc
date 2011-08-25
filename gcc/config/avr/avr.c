@@ -281,22 +281,6 @@ avr_option_override (void)
   init_machine_status = avr_init_machine_status;
 }
 
-/*  return register class from register number.  */
-
-static const enum reg_class reg_class_tab[]={
-  GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,
-  GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,
-  GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,
-  GENERAL_REGS, /* r0 - r15 */
-  LD_REGS,LD_REGS,LD_REGS,LD_REGS,LD_REGS,LD_REGS,LD_REGS,
-  LD_REGS,                      /* r16 - 23 */
-  ADDW_REGS,ADDW_REGS,          /* r24,r25 */
-  POINTER_X_REGS,POINTER_X_REGS, /* r26,27 */
-  POINTER_Y_REGS,POINTER_Y_REGS, /* r28,r29 */
-  POINTER_Z_REGS,POINTER_Z_REGS, /* r30,r31 */
-  STACK_REG,STACK_REG           /* SPL,SPH */
-};
-
 /* Function to set up the backend function structure.  */
 
 static struct machine_function *
@@ -310,8 +294,32 @@ avr_init_machine_status (void)
 enum reg_class
 avr_regno_reg_class (int r)
 {
+  static const enum reg_class reg_class_tab[] =
+    {
+      R0_REG,
+      /* r1 - r15 */
+      NO_LD_REGS, NO_LD_REGS, NO_LD_REGS,
+      NO_LD_REGS, NO_LD_REGS, NO_LD_REGS, NO_LD_REGS,
+      NO_LD_REGS, NO_LD_REGS, NO_LD_REGS, NO_LD_REGS,
+      NO_LD_REGS, NO_LD_REGS, NO_LD_REGS, NO_LD_REGS,
+      /* r16 - r23 */
+      SIMPLE_LD_REGS, SIMPLE_LD_REGS, SIMPLE_LD_REGS, SIMPLE_LD_REGS,
+      SIMPLE_LD_REGS, SIMPLE_LD_REGS, SIMPLE_LD_REGS, SIMPLE_LD_REGS,
+      /* r24, r25 */
+      ADDW_REGS, ADDW_REGS,
+      /* X: r26, 27 */
+      POINTER_X_REGS, POINTER_X_REGS,
+      /* Y: r28, r29 */
+      POINTER_Y_REGS, POINTER_Y_REGS,
+      /* Z: r30, r31 */
+      POINTER_Z_REGS, POINTER_Z_REGS,
+      /* SP: SPL, SPH */
+      STACK_REG, STACK_REG
+    };
+
   if (r <= 33)
     return reg_class_tab[r];
+  
   return ALL_REGS;
 }
 
