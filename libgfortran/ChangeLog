@@ -1,3 +1,8 @@
+2011-08-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50109
+	* io/list_read.c (eat_separator): Fix skipping over "!" lines.
+
 2011-07-23  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* intrinsics/ctime.c: Include <stdlib.h>.

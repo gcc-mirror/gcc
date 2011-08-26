@@ -58,7 +58,7 @@ never after.
 /* Reserved identifiers.  This is the union of all the keywords for C,
    C++, Objective-C, and UPC.  All the type modifiers have to be in one
    block at the beginning, because they are used as mask bits.  There
-   are 30 type modifiers; if we add many more we will have to redesign
+   are 31 type modifiers; if we add many more we will have to redesign
    the mask mechanism.  */
 
 enum rid
@@ -69,6 +69,7 @@ enum rid
   RID_UNSIGNED, RID_LONG,    RID_CONST, RID_EXTERN,
   RID_REGISTER, RID_TYPEDEF, RID_SHORT, RID_INLINE,
   RID_VOLATILE, RID_SIGNED,  RID_AUTO,  RID_RESTRICT,
+  RID_NORETURN,
 
   /* UPC type qualifiers */
   RID_SHARED, RID_RELAXED, RID_STRICT,
@@ -105,7 +106,7 @@ enum rid
   /* C extensions */
   RID_ASM,       RID_TYPEOF,   RID_ALIGNOF,  RID_ATTRIBUTE,  RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
-  RID_TYPES_COMPATIBLE_P,
+  RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
   RID_FRACT, RID_ACCUM,
 

@@ -6097,7 +6097,7 @@ convert_arg_to_ellipsis (tree arg)
     {
       /* Build up a real lvalue-to-rvalue conversion in case the
 	 copy constructor is trivial but not callable.  */
-      if (CLASS_TYPE_P (arg_type))
+      if (!cp_unevaluated_operand && CLASS_TYPE_P (arg_type))
 	force_rvalue (arg, tf_warning_or_error);
 
       /* [expr.call] 5.2.2/7:
@@ -8820,12 +8820,6 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
 		    (build_pointer_type (base_conv_type), expr,
 		     complain));
 	  expr = build_nop (type, expr);
-	  if (DECL_DECLARED_CONSTEXPR_P (decl))
-	    {
-	      expr = cxx_constant_value (expr);
-	      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
-		= reduced_constant_expression_p (expr);
-	    }
 	}
     }
   else

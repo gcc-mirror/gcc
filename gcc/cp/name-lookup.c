@@ -1608,6 +1608,15 @@ namespace_bindings_p (void)
   return b->kind == sk_namespace;
 }
 
+/* True if the innermost non-class scope is a block scope.  */
+
+bool
+local_bindings_p (void)
+{
+  cp_binding_level *b = innermost_nonclass_level ();
+  return b->kind < sk_function_parms || b->kind == sk_omp;
+}
+
 /* True if the current level needs to have a BLOCK made.  */
 
 bool

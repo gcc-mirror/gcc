@@ -42,6 +42,11 @@ struct optab_handlers
   int insn_code;
 };
 
+struct widening_optab_handlers
+{
+  struct optab_handlers handlers[NUM_MACHINE_MODES][NUM_MACHINE_MODES];
+};
+
 struct optab_d
 {
   enum rtx_code code;
@@ -50,6 +55,7 @@ struct optab_d
   void (*libcall_gen)(struct optab_d *, const char *name, char suffix,
 		      enum machine_mode);
   struct optab_handlers handlers[NUM_MACHINE_MODES];
+  struct widening_optab_handlers *widening;
 };
 typedef struct optab_d * optab;
 
@@ -841,6 +847,15 @@ extern rtx expand_copysign (rtx, rtx, rtx);
 extern void emit_unop_insn (enum insn_code, rtx, rtx, enum rtx_code);
 extern bool maybe_emit_unop_insn (enum insn_code, rtx, rtx, enum rtx_code);
 
+/* Find a widening optab even if it doesn't widen as much as we want.  */
+#define find_widening_optab_handler(A,B,C,D) \
+  find_widening_optab_handler_and_mode (A, B, C, D, NULL)
+extern enum insn_code find_widening_optab_handler_and_mode (optab,
+							    enum machine_mode,
+							    enum machine_mode,
+							    int,
+							    enum machine_mode *);
+
 /* An extra flag to control optab_for_tree_code's behavior.  This is needed to
    distinguish between machines with a vector shift that takes a scalar for the
    shift amount vs. machines that take a vector for the shift amount.  */
@@ -919,12 +934,49 @@ optab_handler (optab op, enum machine_mode mode)
 			   + (int) CODE_FOR_nothing);
 }
 
+/* Like optab_handler, but for widening_operations that have a TO_MODE and
+  a FROM_MODE.  */
+
+static inline enum insn_code
+widening_optab_handler (optab op, enum machine_mode to_mode,
+			enum machine_mode from_mode)
+{
+  if (to_mode == from_mode || from_mode == VOIDmode)
+    return optab_handler (op, to_mode);
+
+  if (op->widening)
+    return (enum insn_code) (op->widening->handlers[(int) to_mode][(int) from_mode].insn_code
+			     + (int) CODE_FOR_nothing);
+
+  return CODE_FOR_nothing;
+}
+
 /* Record that insn CODE should be used to implement mode MODE of OP.  */
 
 static inline void
 set_optab_handler (optab op, enum machine_mode mode, enum insn_code code)
 {
   op->handlers[(int) mode].insn_code = (int) code - (int) CODE_FOR_nothing;
+}
+
+/* Like set_optab_handler, but for widening operations that have a TO_MODE
+   and a FROM_MODE.  */
+
+static inline void
+set_widening_optab_handler (optab op, enum machine_mode to_mode,
+			    enum machine_mode from_mode, enum insn_code code)
+{
+  if (to_mode == from_mode)
+    set_optab_handler (op, to_mode, code);
+  else
+    {
+      if (op->widening == NULL)
+	op->widening = (struct widening_optab_handlers *)
+	      xcalloc (1, sizeof (struct widening_optab_handlers));
+
+      op->widening->handlers[(int) to_mode][(int) from_mode].insn_code
+	  = (int) code - (int) CODE_FOR_nothing;
+    }
 }
 
 /* Return the insn used to perform conversion OP from mode FROM_MODE

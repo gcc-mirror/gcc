@@ -278,7 +278,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      constants pool.
      1 in a CALL_INSN logically equivalent to ECF_CONST and TREE_READONLY.
      1 in a NOTE, or EXPR_LIST for a const call.
-     1 in a JUMP_INSN, CALL_INSN, or INSN of an annulling branch.  */
+     1 in a JUMP_INSN of an annulling branch.  */
   unsigned int unchanging : 1;
   /* 1 in a MEM or ASM_OPERANDS expression if the memory reference is volatile.
      1 in an INSN, CALL_INSN, JUMP_INSN, CODE_LABEL, BARRIER, or NOTE
@@ -834,7 +834,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 /* 1 if RTX is a jump_insn, call_insn, or insn that is an annulling branch.  */
 #define INSN_ANNULLED_BRANCH_P(RTX)					\
-  (RTL_FLAG_CHECK3("INSN_ANNULLED_BRANCH_P", (RTX), JUMP_INSN, CALL_INSN, INSN)->unchanging)
+  (RTL_FLAG_CHECK1("INSN_ANNULLED_BRANCH_P", (RTX), JUMP_INSN)->unchanging)
 
 /* 1 if RTX is an insn in a delay slot and is from the target of the branch.
    If the branch insn has INSN_ANNULLED_BRANCH_P set, this insn should only be
@@ -1196,9 +1196,10 @@ costs_add_n_insns (struct full_rtx_costs *c, int n)
 }
 
 extern void init_rtlanal (void);
-extern int rtx_cost (rtx, enum rtx_code, bool);
+extern int rtx_cost (rtx, enum rtx_code, int, bool);
 extern int address_cost (rtx, enum machine_mode, addr_space_t, bool);
-extern void get_full_rtx_cost (rtx, enum rtx_code, struct full_rtx_costs *);
+extern void get_full_rtx_cost (rtx, enum rtx_code, int,
+			       struct full_rtx_costs *);
 extern unsigned int subreg_lsb (const_rtx);
 extern unsigned int subreg_lsb_1 (enum machine_mode, enum machine_mode,
 				  unsigned int);
@@ -1217,6 +1218,42 @@ extern bool constant_pool_constant_p (rtx);
 extern bool truncated_to_mode (enum machine_mode, const_rtx);
 extern int low_bitmask_len (enum machine_mode, unsigned HOST_WIDE_INT);
 
+#ifndef GENERATOR_FILE
+/* Return the cost of SET X.  SPEED_P is true if optimizing for speed
+   rather than size.  */
+
+static inline int
+set_rtx_cost (rtx x, bool speed_p)
+{
+  return rtx_cost (x, INSN, 4, speed_p);
+}
+
+/* Like set_rtx_cost, but return both the speed and size costs in C.  */
+
+static inline void
+get_full_set_rtx_cost (rtx x, struct full_rtx_costs *c)
+{
+  get_full_rtx_cost (x, INSN, 4, c);
+}
+
+/* Return the cost of moving X into a register, relative to the cost
+   of a register move.  SPEED_P is true if optimizing for speed rather
+   than size.  */
+
+static inline int
+set_src_cost (rtx x, bool speed_p)
+{
+  return rtx_cost (x, SET, 1, speed_p);
+}
+
+/* Like set_src_cost, but return both the speed and size costs in C.  */
+
+static inline void
+get_full_set_src_cost (rtx x, struct full_rtx_costs *c)
+{
+  get_full_rtx_cost (x, SET, 1, c);
+}
+#endif
 
 /* 1 if RTX is a subreg containing a reg that is already known to be
    sign- or zero-extended from the mode of the subreg to the mode of

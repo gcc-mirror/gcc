@@ -346,7 +346,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e, ivs_params_p ip)
 		tree name = clast_name_to_gcc (t->var, ip);
 
 		if (POINTER_TYPE_P (TREE_TYPE (name)) != POINTER_TYPE_P (type))
-		  name = fold_convert (sizetype, name);
+		  name = convert_to_ptrofftype (name);
 
 		name = fold_convert (type, name);
 		return name;
@@ -357,7 +357,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e, ivs_params_p ip)
 		tree name = clast_name_to_gcc (t->var, ip);
 
 		if (POINTER_TYPE_P (TREE_TYPE (name)) != POINTER_TYPE_P (type))
-		  name = fold_convert (sizetype, name);
+		  name = convert_to_ptrofftype (name);
 
 		name = fold_convert (type, name);
 
@@ -369,7 +369,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e, ivs_params_p ip)
 		tree cst = gmp_cst_to_tree (type, t->val);
 
 		if (POINTER_TYPE_P (TREE_TYPE (name)) != POINTER_TYPE_P (type))
-		  name = fold_convert (sizetype, name);
+		  name = convert_to_ptrofftype (name);
 
 		name = fold_convert (type, name);
 
@@ -1064,7 +1064,7 @@ graphite_create_new_loop_guard (edge entry_edge, struct clast_for *stmt,
   else
     {
       tree one = (POINTER_TYPE_P (*type)
-		  ? size_one_node
+		  ? convert_to_ptrofftype (integer_one_node)
 		  : fold_convert (*type, integer_one_node));
       /* Adding +1 and using LT_EXPR helps with loop latches that have a
 	 loop iteration count of "PARAMETER - 1".  For PARAMETER == 0 this becomes

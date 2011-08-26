@@ -5577,7 +5577,7 @@ use_iso_fortran_env_module (void)
 	      u->found = 1;
 
 	      if (gfc_notify_std (symbol[i].standard, "The symbol '%s', "
-				  "referrenced at %C, is not in the selected "
+				  "referenced at %C, is not in the selected "
 				  "standard", symbol[i].name) == FAILURE)
 	        continue;
 

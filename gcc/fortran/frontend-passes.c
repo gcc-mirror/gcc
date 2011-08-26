@@ -682,7 +682,7 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 	  && op1->ts.type != BT_COMPLEX && op2->ts.type != BT_COMPLEX))
     {
       eq = gfc_dep_compare_expr (op1, op2);
-      if (eq == -2)
+      if (eq <= -2)
 	{
 	  /* Replace A // B < A // C with B < C, and A // B < C // B
 	     with A < C.  */

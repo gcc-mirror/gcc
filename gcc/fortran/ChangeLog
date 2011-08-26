@@ -1,3 +1,104 @@
+2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/47659
+	* expr.c (gfc_check_assign): Check for type conversions when the
+	right-hand side is a constant REAL/COMPLEX contstant the left-hand
+	side is also REAL/COMPLEX.  Don't warn when a narrowing conversion
+	for REAL does not change the value of the constant.
+
+2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50130
+	* resolve.c (resolve_array_ref):  Don't calculate upper bound
+	if the stride is zero.
+
+2011-08-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49638
+	* dependency.c (gfc_dep_compare_expr): Add new result value "-3".
+	(gfc_check_element_vs_section,gfc_check_element_vs_element): Handle
+	result value "-3".
+        * frontend-passes.c (optimize_comparison): Ditto.
+	* interface.c (gfc_check_typebound_override): Ditto.
+
+2011-08-19  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/50129
+	* parse.c (parse_where): Undo changes after emitting an error. 
+
+2011-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/49792
+	* trans-expr.c (gfc_trans_assignment_1): Set OMPWS_SCALARIZER_WS
+	bit in ompws_flags only if loop.temp_ss is NULL, and clear it if
+	lhs needs reallocation.
+	* trans-openmp.c (gfc_trans_omp_workshare): Don't return early if
+	code is NULL, emit a barrier if workshare emitted no code at all
+	and NOWAIT clause isn't present.
+
+2011-08-19  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/50071
+	* gfortran.h (gfc_exec_op): New constant EXEC_END_NESTED_BLOCK.
+	* parse.c (check_statement_label): Accept ST_END_BLOCK and
+	ST_END_ASSOCIATE as valid branch target.
+	(accept_statement): Change EXEC_END_BLOCK to EXEC_END_NESTED_BLOCK.
+	Add EXEC_END_BLOCK code in the ST_END_BLOCK and ST_END_ASSOCIATE cases.
+	* resolve.c (find_reachable_labels): Change EXEC_END_BLOCK to
+	EXEC_END_NESTED_BLOCK.
+	(resolve_branch): Ditto.
+	(resolve_code): Add EXEC_END_NESTED_BLOCK case.
+	* st.c (gfc_free_statement): Ditto.
+	* trans.c (trans_code): Ditto.
+
+2011-08-18  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/50071
+	* symbol.c (gfc_get_st_label): Use the derived type namespace when
+	we are parsing a derived type definition.
+
+2011-08-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* parse.c (parse_derived): Add lock_type
+	checks, improve coarray_comp handling.
+	* resolve.c (resolve_allocate_expr,
+	resolve_lock_unlock, resolve_symbol): Fix lock_type
+	constraint checks.
+
+2011-08-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31461
+	* trans-decl.c (generate_local_decl): Warn about
+	unused explicitly imported module variables/parameters.
+
+2011-08-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50070
+	* resolve.c (resolve_fl_variable): Reject non-constant character lengths
+	in COMMON variables.
+
+2011-08-16  Tobias Burnus  <burnus@net-b.de>
+	    Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	PR fortran/50094
+	* resolve.c (resolve_symbol): Fix stupid typo.
+
+2011-08-15  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (resolve_symbol): Fix coarray result-var check.
+
+2011-08-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* module.c (use_iso_fortran_env_module):  Spell 'referrenced' correctly.
+
+2011-08-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50073
+	* decl.c (check_function_name): New function, separated off from
+	'variable_decl' and slightly extended.
+	(variable_decl,attr_decl1): Call it.
+
 2011-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (gfortran$(exeext)): Add $(EXTRA_GCC_LIBS).

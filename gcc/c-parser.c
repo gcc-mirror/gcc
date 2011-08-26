@@ -637,6 +637,7 @@ c_token_starts_declspecs (c_token *token)
 	case RID_REGISTER:
 	case RID_TYPEDEF:
 	case RID_INLINE:
+	case RID_NORETURN:
 	case RID_AUTO:
 	case RID_THREAD:
 	case RID_UNSIGNED:
@@ -1931,6 +1932,9 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
    C99 6.7.4:
    function-specifier:
      inline
+     _Noreturn
+
+   (_Noreturn is new in C1X.)
 
    C90 6.5.2, C99 6.7.2:
    type-specifier:
@@ -2107,12 +2111,13 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	case RID_REGISTER:
 	case RID_TYPEDEF:
 	case RID_INLINE:
+	case RID_NORETURN:
 	case RID_AUTO:
 	case RID_THREAD:
 	  if (!scspec_ok)
 	    goto out;
 	  attrs_ok = true;
-	  /* TODO: Distinguish between function specifiers (inline)
+	  /* TODO: Distinguish between function specifiers (inline, noreturn)
 	     and storage class specifiers, either here or in
 	     declspecs_add_scspec.  */
 	  declspecs_add_scspec (specs, c_parser_peek_token (parser)->value);
@@ -3466,6 +3471,7 @@ c_parser_attributes (c_parser *parser)
 		case RID_TYPEDEF:
 		case RID_SHORT:
 		case RID_INLINE:
+		case RID_NORETURN:
 		case RID_VOLATILE:
 		case RID_SIGNED:
 		case RID_AUTO:
@@ -6264,6 +6270,7 @@ c_parser_alignof_expression (c_parser *parser)
 			     assignment-expression ,
 			     assignment-expression )
      __builtin_types_compatible_p ( type-name , type-name )
+     __builtin_complex ( assignment-expression , assignment-expression )
 
    offsetof-member-designator:
      identifier
@@ -6645,6 +6652,58 @@ c_parser_postfix_expression (c_parser *parser)
 	    expr.value
 	      = comptypes (e1, e2) ? integer_one_node : integer_zero_node;
 	  }
+	  break;
+	case RID_BUILTIN_COMPLEX:
+	  c_parser_consume_token (parser);
+	  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+	    {
+	      expr.value = error_mark_node;
+	      break;
+	    }
+	  loc = c_parser_peek_token (parser)->location;
+	  e1 = c_parser_expr_no_commas (parser, NULL);
+	  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+	    {
+	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+	      expr.value = error_mark_node;
+	      break;
+	    }
+	  e2 = c_parser_expr_no_commas (parser, NULL);
+	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+				     "expected %<)%>");
+	  mark_exp_read (e1.value);
+	  if (TREE_CODE (e1.value) == EXCESS_PRECISION_EXPR)
+	    e1.value = convert (TREE_TYPE (e1.value),
+				TREE_OPERAND (e1.value, 0));
+	  mark_exp_read (e2.value);
+	  if (TREE_CODE (e2.value) == EXCESS_PRECISION_EXPR)
+	    e2.value = convert (TREE_TYPE (e2.value),
+				TREE_OPERAND (e2.value, 0));
+	  if (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (e1.value))
+	      || DECIMAL_FLOAT_TYPE_P (TREE_TYPE (e1.value))
+	      || !SCALAR_FLOAT_TYPE_P (TREE_TYPE (e2.value))
+	      || DECIMAL_FLOAT_TYPE_P (TREE_TYPE (e2.value)))
+	    {
+	      error_at (loc, "%<__builtin_complex%> operand "
+			"not of real binary floating-point type");
+	      expr.value = error_mark_node;
+	      break;
+	    }
+	  if (TYPE_MAIN_VARIANT (TREE_TYPE (e1.value))
+	      != TYPE_MAIN_VARIANT (TREE_TYPE (e2.value)))
+	    {
+	      error_at (loc,
+			"%<__builtin_complex%> operands of different types");
+	      expr.value = error_mark_node;
+	      break;
+	    }
+	  if (!flag_isoc99)
+	    pedwarn (loc, OPT_pedantic,
+		     "ISO C90 does not support complex types");
+	  expr.value = build2 (COMPLEX_EXPR,
+			       build_complex_type (TYPE_MAIN_VARIANT
+						   (TREE_TYPE (e1.value))),
+			       e1.value, e2.value);
 	  break;
 	case RID_AT_SELECTOR:
 	  gcc_assert (c_dialect_objc ());

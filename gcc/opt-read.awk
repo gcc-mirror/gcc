@@ -51,6 +51,9 @@ BEGIN {
 		else if ($1 == "Variable") {
 			extra_vars[n_extra_vars] = $2
 			n_extra_vars++
+			name = host_wide_int_var_name($2)
+			if (name != "")
+				host_wide_int[name] = "yes"
 		}
 		else if ($1 == "TargetVariable") {
 			# Combination of TargetSave and Variable

@@ -1478,7 +1478,6 @@ thunk_adjust (gimple_stmt_iterator * bsi,
       tree vtabletmp;
       tree vtabletmp2;
       tree vtabletmp3;
-      tree offsettmp;
 
       if (!vtable_entry_type)
 	{
@@ -1527,15 +1526,10 @@ thunk_adjust (gimple_stmt_iterator * bsi,
       mark_symbols_for_renaming (stmt);
       find_referenced_vars_in (stmt);
 
-      /* Cast to sizetype.  */
-      offsettmp = create_tmp_var (sizetype, "offset");
-      stmt = gimple_build_assign (offsettmp, fold_convert (sizetype, vtabletmp3));
-      gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
-      mark_symbols_for_renaming (stmt);
-      find_referenced_vars_in (stmt);
-
       /* Adjust the `this' pointer.  */
-      ptr = fold_build_pointer_plus_loc (input_location, ptr, offsettmp);
+      ptr = fold_build_pointer_plus_loc (input_location, ptr, vtabletmp3);
+      ptr = force_gimple_operand_gsi (bsi, ptr, true, NULL_TREE, false,
+				      GSI_CONTINUE_LINKING);
     }
 
   if (!this_adjusting
@@ -2417,8 +2411,7 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
       gsi = gsi_for_stmt (e->call_stmt);
       gsi_computed = true;
       gimple_adjust_this_by_delta (&gsi,
-				   build_int_cst (sizetype,
-					       e->indirect_info->thunk_delta));
+				   size_int (e->indirect_info->thunk_delta));
       e->indirect_info->thunk_delta = 0;
     }
 

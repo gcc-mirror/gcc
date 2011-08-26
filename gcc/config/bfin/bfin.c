@@ -2779,7 +2779,8 @@ bfin_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 }
 
 static bool
-bfin_rtx_costs (rtx x, int code_i, int outer_code_i, int *total, bool speed)
+bfin_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
+		bool speed)
 {
   enum rtx_code code = (enum rtx_code) code_i;
   enum rtx_code outer_code = (enum rtx_code) outer_code_i;
@@ -2829,19 +2830,19 @@ bfin_rtx_costs (rtx x, int code_i, int outer_code_i, int *total, bool speed)
 	      if (val == 2 || val == 4)
 		{
 		  *total = cost2;
-		  *total += rtx_cost (XEXP (op0, 0), outer_code, speed);
-		  *total += rtx_cost (op1, outer_code, speed);
+		  *total += rtx_cost (XEXP (op0, 0), outer_code, opno, speed);
+		  *total += rtx_cost (op1, outer_code, opno, speed);
 		  return true;
 		}
 	    }
 	  *total = cost2;
 	  if (GET_CODE (op0) != REG
 	      && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	    *total += rtx_cost (op0, SET, speed);
+	    *total += set_src_cost (op0, speed);
 #if 0 /* We'd like to do this for accuracy, but it biases the loop optimizer
 	 towards creating too many induction variables.  */
 	  if (!reg_or_7bit_operand (op1, SImode))
-	    *total += rtx_cost (op1, SET, speed);
+	    *total += set_src_cost (op1, speed);
 #endif
 	}
       else if (GET_MODE (x) == DImode)
@@ -2849,10 +2850,10 @@ bfin_rtx_costs (rtx x, int code_i, int outer_code_i, int *total, bool speed)
 	  *total = 6 * cost2;
 	  if (GET_CODE (op1) != CONST_INT
 	      || !satisfies_constraint_Ks7 (op1))
-	    *total += rtx_cost (op1, PLUS, speed);
+	    *total += rtx_cost (op1, PLUS, 1, speed);
 	  if (GET_CODE (op0) != REG
 	      && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	    *total += rtx_cost (op0, PLUS, speed);
+	    *total += rtx_cost (op0, PLUS, 0, speed);
 	}
       return true;
 
@@ -2875,7 +2876,7 @@ bfin_rtx_costs (rtx x, int code_i, int outer_code_i, int *total, bool speed)
       op1 = XEXP (x, 1);
       if (GET_CODE (op0) != REG
 	  && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	*total += rtx_cost (op0, code, speed);
+	*total += rtx_cost (op0, code, 0, speed);
 
       return true;
 	  
@@ -2900,7 +2901,7 @@ bfin_rtx_costs (rtx x, int code_i, int outer_code_i, int *total, bool speed)
 
       if (GET_CODE (op0) != REG
 	  && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	*total += rtx_cost (op0, code, speed);
+	*total += rtx_cost (op0, code, 0, speed);
 
       if (GET_MODE (x) == DImode)
 	{
@@ -2914,12 +2915,12 @@ bfin_rtx_costs (rtx x, int code_i, int outer_code_i, int *total, bool speed)
       if (code == AND)
 	{
 	  if (! rhs_andsi3_operand (XEXP (x, 1), SImode))
-	    *total += rtx_cost (XEXP (x, 1), code, speed);
+	    *total += rtx_cost (XEXP (x, 1), code, 1, speed);
 	}
       else
 	{
 	  if (! regorlog2_operand (XEXP (x, 1), SImode))
-	    *total += rtx_cost (XEXP (x, 1), code, speed);
+	    *total += rtx_cost (XEXP (x, 1), code, 1, speed);
 	}
 
       return true;
@@ -2959,10 +2960,10 @@ bfin_rtx_costs (rtx x, int code_i, int outer_code_i, int *total, bool speed)
 
 	  if (GET_CODE (op0) != REG
 	      && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
-	    *total += rtx_cost (op0, MULT, speed);
+	    *total += rtx_cost (op0, MULT, 0, speed);
 	  if (GET_CODE (op1) != REG
 	      && (GET_CODE (op1) != SUBREG || GET_CODE (SUBREG_REG (op1)) != REG))
-	    *total += rtx_cost (op1, MULT, speed);
+	    *total += rtx_cost (op1, MULT, 1, speed);
 	}
       return true;
 

@@ -190,7 +190,7 @@
     case 2: gcc_unreachable ();
     case 4: return "vmov\t%Q0, %R0, %P1  @ <mode>";
     case 5: return "vmov\t%P0, %Q1, %R1  @ <mode>";
-    default: return output_move_double (operands);
+    default: return output_move_double (operands, true, NULL);
     }
 }
  [(set_attr "neon_type" "neon_int_1,*,neon_vmov,*,neon_mrrc,neon_mcr_2_mcrr,*,*,*")

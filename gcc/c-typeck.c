@@ -3766,7 +3766,7 @@ build_unary_op (location_t location,
 	      return upc_pts_increment (location, code, arg);
 
 	    inc = c_size_in_bytes (TREE_TYPE (argtype));
-	    inc = fold_convert_loc (location, sizetype, inc);
+	    inc = convert_to_ptrofftype_loc (location, inc);
 	  }
 	else if (FRACT_MODE_P (TYPE_MODE (argtype)))
 	  {

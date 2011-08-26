@@ -3286,7 +3286,7 @@
 
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
-	* prj-pp.adb (Pretty_Print): remove trailing blank line in the file
+	* prj-pp.adb (Pretty_Print): Remove trailing blank line.
 
 2011-08-03  Javier Miranda  <miranda@adacore.com>
 
@@ -3295,9 +3295,9 @@
 
 2011-08-03  Yannick Moy  <moy@adacore.com>
 
-	* sem_res.adb
-	(Resolve_Op_Concat_Arg): do not issue a SPARK violation when argument of
-	concatenation is the name of a constant
+	* sem_res.adb (Resolve_Op_Concat_Arg): Do not issue a SPARK
+	violation when the argument of concatenation is the name of a
+	constant.
 
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
@@ -3307,14 +3307,14 @@
 
 2011-08-03  Yannick Moy  <moy@adacore.com>
 
-	* alfa.ads Update format of ALFA section in ALI file in order to add a
-	mapping from bodies to specs when both are present
-	(ALFA_Scope_Record): add components for spec file/scope
-	* get_alfa.adb (Get_ALFA): read the new file/scope for spec when present
-	* lib-xref-alfa.adb
-	(Collect_ALFA): after all scopes have been collected, fill in the spec
-	 information when relevant
-	* put_alfa.adb (Put_ALFA): write the new file/scope for spec when
+	* alfa.ads: Update format of ALFA section in ALI file in order to
+	add a mapping from bodies to specs when both are present.
+	(ALFA_Scope_Record): Add components for spec file/scope.
+	* get_alfa.adb (Get_ALFA): Read the new file/scope for spec when
+	present.
+	* lib-xref-alfa.adb (Collect_ALFA): After all scopes have been
+	collected, fill in the spec information when relevant.
+	* put_alfa.adb (Put_ALFA): Write the new file/scope for spec when
 	present.
 
 2011-08-03  Eric Botcazou  <ebotcazou@adacore.com>
@@ -3325,13 +3325,12 @@
 2011-08-03  Javier Miranda  <miranda@adacore.com>
 
 	* sem_aux.ads, sem_aux.adb (Is_VM_By_Copy_Actual): New subprogram.
-	* exp_ch9.adb
-	(Build_Simple_Entry_Call): Handle actuals that must be handled by copy
-	in VM targets.
+	* exp_ch9.adb (Build_Simple_Entry_Call): Handle actuals that must
+	be handled by copy in VM targets.
 
 2011-08-03  Emmanuel Briot  <briot@adacore.com>
 
-	* make.adb, makeutl.adb, makeutl.ads (Make.Switches_Of): now shares
+	* make.adb, makeutl.adb, makeutl.ads (Make.Switches_Of): Share
 	code with Makeutl.Get_Switches.
 	* prj-tree.adb: Update comment.
 

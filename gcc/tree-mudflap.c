@@ -851,7 +851,7 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
 
         limit = fold_build2_loc (location, MINUS_EXPR, mf_uintptr_type,
                              fold_build2_loc (location, PLUS_EXPR, mf_uintptr_type,
-					  convert (mf_uintptr_type, addr),
+					  fold_convert (mf_uintptr_type, addr),
 					  size),
                              integer_one_node);
       }
@@ -897,20 +897,17 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
           return;
 
         bpu = bitsize_int (BITS_PER_UNIT);
-        ofs = convert (bitsizetype, TREE_OPERAND (t, 2));
+        ofs = fold_convert (bitsizetype, TREE_OPERAND (t, 2));
         rem = size_binop_loc (location, TRUNC_MOD_EXPR, ofs, bpu);
-        ofs = fold_convert_loc (location,
-				sizetype,
-				size_binop_loc (location,
-						TRUNC_DIV_EXPR, ofs, bpu));
+        ofs = size_binop_loc (location, TRUNC_DIV_EXPR, ofs, bpu);
 
-        size = convert (bitsizetype, TREE_OPERAND (t, 1));
+        size = fold_convert (bitsizetype, TREE_OPERAND (t, 1));
         size = size_binop_loc (location, PLUS_EXPR, size, rem);
         size = size_binop_loc (location, CEIL_DIV_EXPR, size, bpu);
-        size = convert (sizetype, size);
+        size = fold_convert (sizetype, size);
 
         addr = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-        addr = convert (ptr_type_node, addr);
+        addr = fold_convert (ptr_type_node, addr);
         addr = fold_build_pointer_plus_loc (location, addr, ofs);
 
         base = addr;
@@ -1049,7 +1046,8 @@ mx_register_decls (tree decl, gimple_seq seq, location_t location)
 
 	  /* Variable-sized objects should have sizes already been
 	     gimplified when we got here. */
-	  size = convert (size_type_node, TYPE_SIZE_UNIT (TREE_TYPE (decl)));
+	  size = fold_convert (size_type_node,
+			       TYPE_SIZE_UNIT (TREE_TYPE (decl)));
 	  gcc_assert (is_gimple_val (size));
 
 
@@ -1233,11 +1231,11 @@ mudflap_register_call (tree obj, tree object_size, tree varname)
   tree arg, call_stmt;
 
   arg = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (obj)), obj);
-  arg = convert (ptr_type_node, arg);
+  arg = fold_convert (ptr_type_node, arg);
 
   call_stmt = build_call_expr (mf_register_fndecl, 4,
 			       arg,
-			       convert (size_type_node, object_size),
+			       fold_convert (size_type_node, object_size),
 			       /* __MF_TYPE_STATIC */
 			       build_int_cst (integer_type_node, 4),
 			       varname);

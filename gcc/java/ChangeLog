@@ -1,3 +1,8 @@
+2011-08-18  Peter Collingbourne  <peter@pcc.me.uk>
+
+	* expr.c (expand_invoke) Use the type of the method rewrite
+	target.
+
 2011-08-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* jcf-dump.c (print_constant): Cast first frexp arg.

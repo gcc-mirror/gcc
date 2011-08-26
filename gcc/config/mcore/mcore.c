@@ -121,7 +121,8 @@ static const char *mcore_strip_name_encoding	(const char *);
 static int        mcore_const_costs            	(rtx, RTX_CODE);
 static int        mcore_and_cost               	(rtx);
 static int        mcore_ior_cost               	(rtx);
-static bool       mcore_rtx_costs		(rtx, int, int, int *, bool);
+static bool       mcore_rtx_costs		(rtx, int, int, int,
+						 int *, bool);
 static void       mcore_external_libcall	(rtx);
 static bool       mcore_return_in_memory	(const_tree, const_tree);
 static int        mcore_arg_partial_bytes       (cumulative_args_t,
@@ -508,8 +509,8 @@ mcore_ior_cost (rtx x)
 }
 
 static bool
-mcore_rtx_costs (rtx x, int code, int outer_code, int * total,
-		 bool speed ATTRIBUTE_UNUSED)
+mcore_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+		 int * total, bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {

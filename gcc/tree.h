@@ -4477,7 +4477,6 @@ tree_low_cst (const_tree t, int pos)
   return TREE_INT_CST_LOW (t);
 }
 #endif
-extern int tree_int_cst_msb (const_tree);
 extern int tree_int_cst_sgn (const_tree);
 extern int tree_int_cst_sign_bit (const_tree);
 extern unsigned int tree_int_cst_min_precision (tree, bool);
@@ -5415,6 +5414,25 @@ truth_value_p (enum tree_code code)
 	  || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
 	  || code == TRUTH_XOR_EXPR || code == TRUTH_NOT_EXPR);
 }
+
+/* Return whether TYPE is a type suitable for an offset for
+   a POINTER_PLUS_EXPR.  */
+static inline bool
+ptrofftype_p (tree type)
+{
+  return (INTEGRAL_TYPE_P (type)
+	  && TYPE_PRECISION (type) == TYPE_PRECISION (sizetype)
+	  && TYPE_UNSIGNED (type) == TYPE_UNSIGNED (sizetype));
+}
+
+/* Return OFF converted to a pointer offset type suitable as offset for
+   POINTER_PLUS_EXPR.  Use location LOC for this conversion.  */
+static inline tree
+convert_to_ptrofftype_loc (location_t loc, tree off)
+{
+  return fold_convert_loc (loc, sizetype, off);
+}
+#define convert_to_ptrofftype(t) convert_to_ptrofftype_loc (UNKNOWN_LOCATION, t)
 
 /* Build and fold a POINTER_PLUS_EXPR at LOC offsetting PTR by OFF.  */
 static inline tree

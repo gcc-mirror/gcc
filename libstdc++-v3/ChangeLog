@@ -1,3 +1,156 @@
+2011-08-18  Marc Glisse  <marc.glisse@normalesup.org>
+
+	* include/tr1/cmath: Extend/update comment.
+
+2011-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/50119
+	* include/bits/stl_algo.h (__copy_n(_InputIterator, _Size,
+	_OutputIterator, input_iterator_tag)): Fix.
+	* testsuite/25_algorithms/copy_n/50119.cc: New.
+
+2011-08-18  Marc Glisse  <marc.glisse@normalesup.org>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/1773
+	* config/os/solaris2.7: Rename to config/os/solaris2.9.
+	* config/os/solaris/solaris2.9/os_defines.h
+	(__CORRECT_ISO_CPP_MATH_H_PROTO1)
+	(__CORRECT_ISO_CPP_STDLIB_H_PROTO)
+	(__CORRECT_ISO_CPP_STRING_H_PROTO)
+	(__CORRECT_ISO_CPP_WCHAR_H_PROTO): Define.
+	* config/os/solaris2.8/ctype_base.h,
+	config/os/solaris2.8/ctype_configure_char.cc,
+	config/solaris2.8/ctype_inline.h,
+	config/os/solaris2.8/os_defines.h: New files.
+
+	* configure.host (solaris2.[89], solaris2.1[0-9]):
+	Split into ...
+	(solaris2.8): ... this.
+	Use os/solaris/solaris2.8.
+	(solaris2.9, solaris2.1[0-9]): ... and this.
+	Use os/solaris/solaris2.9.
+
+	* include/c_global/cmath (double abs(double)): Wrap in
+	!__CORRECT_ISO_CPP_MATH_H_PROTO1 &&
+	!__CORRECT_ISO_CPP_MATH_H_PROTO2.
+	(float abs(float), long double abs(long double): Wrap in
+	!__CORRECT_ISO_CPP_MATH_H_PROTO1.
+	(float acos(float), long double acos(long double)): Likewise.
+	(float asin(float), long double asin(long double)): Likewise.
+	(float atan(float), long double atan(long double)): Likewise.
+	(float atan2(float, float), long double atan2(long double, long
+	double)): Likewise.
+	(float ceil(float), long double ceil(long double)): Likewise.
+	(float cos(float), long double cos(long double)): Likewise.
+	(float cosh(float), long double cosh(long double)): Likewise.
+	(float exp(float), long double exp(long double)): Likewise.
+	(float fabs(float), long double fabs(long double)): Likewise.
+	(float floor(float), long double floor(long double)): Likewise.
+	(float fmod(float, float), long double fmod(long double, long
+	double)): Likewise.
+	(float frexp(float, int*), long double frexp(long double, int*)):
+	Likewise.
+	(float ldexp(float, int), long double ldexp(long double, int)):
+	Likewise.
+	(float log(float), long double log(long double)): Likewise.
+	(float log10(float), long double log10(long double)): Likewise.
+	(float modf(float, float*), long double modf(long double, long
+	double*))): Likewise.
+	(float pow(float, float), long double pow(long double, long
+	double)): Likewise.
+	(float sin(float), long double sin(long double)): Likewise.
+	(float sinh(float), long double sinh(long double)): Likewise.
+	(float sqrt(float), long double sqrt(long double)): Likewise.
+	(float tan(float), long double tan(long double)): Likewise.
+	(float tanh(float), long double tanh(long double)): Likewise.
+	* include/c_global/cstdlib (long abs(long), ldiv_t div(long,
+	long)): Wrap in !__CORRECT_ISO_CPP_STDLIB_H_PROTO.
+	* include/tr1/cmath (float fabs(float), long double fabs(long
+	double)): Wrap in !__CORRECT_ISO_CPP_MATH_H_PROTO1.
+
+2011-08-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/images/*: Image and image filename changes.
+
+2011-08-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/data/make_graph_test_infos.xml: Edit.
+	* testsuite/data/make_graph_htmls.xml: Remove
+	* scripts/make_graph.py: Edit, fix.
+	* scripts/make_graphs.py: Remove.
+
+	* doc/Makefile.am (doc-svg-performance): New.
+	(doc-html-performance): Remove.
+	* doc/Makefile.in: Regenerate.
+
+	* doc/xml/manual/test_policy_data_structures.xml: Markup changes.
+	* doc/xml/manual/policy_data_structures.xml: Same.
+	* doc/xml/manual/locale.xml: Same.
+
+	Testsuite renames.
+	* performance/ext/pb_ds/priority_queue_text_modify_down_timing.cc:
+	Rename.
+	* performance/ext/pb_ds/random_int_find_timing.cc: Same.
+	* performance/ext/pb_ds/multimap_text_insert_mem_usage.hpp
+	* performance/ext/pb_ds/multimap_text_find_timing.hpp
+	* performance/ext/pb_ds/priority_queue_random_int_push_timing.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_modify_timing.hpp
+	* performance/ext/pb_ds/tree_order_statistics_timing.cc: Same.
+	* performance/ext/pb_ds/multimap_text_insert_mem_usage_large.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_push_pop_timing.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_join_timing.cc: Same.
+	* performance/ext/pb_ds/multimap_text_insert_timing_small.cc: Same.
+	* performance/ext/pb_ds/random_int_subscript_insert_timing.cc: Same.
+	* performance/ext/pb_ds/tree_text_lor_find_timing.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_pop_mem_usage.cc: Same.
+	* performance/ext/pb_ds/multimap_text_find_timing_small.cc: Same.
+	* performance/ext/pb_ds/text_find_timing.cc: Same.
+	* performance/ext/pb_ds/tree_text_insert_timing.cc: Same.
+	* performance/ext/pb_ds/hash_random_int_erase_mem_usage.cc: Same.
+	* performance/ext/pb_ds/random_int_subscript_find_timing.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_push_timing.cc: Same.
+	* performance/ext/pb_ds/tree_split_join_timing.cc: Same.
+	* performance/ext/pb_ds/multimap_text_insert_timing_large.cc: Same.
+	* performance/ext/pb_ds/priority_queue_text_modify_up_timing.cc: Same.
+	* performance/ext/pb_ds/multimap_text_find_timing_large.cc: Same.
+	* performance/ext/pb_ds/priority_queue_random_int_push_pop_timing.cc:
+	Same.
+	* performance/ext/pb_ds/multimap_text_insert_timing.hpp
+	* performance/ext/pb_ds/multimap_text_insert_mem_usage_small.cc: Same.
+	* performance/ext/pb_ds/hash_zlob_random_int_find_timing.cc: Same.
+
+	* performance/ext/pb_ds/all_int_find.cc: To these new files...
+	* performance/ext/pb_ds/all_int_subscript_find.cc: ...this.
+	* performance/ext/pb_ds/all_int_subscript_insert.cc: ...this.
+	* performance/ext/pb_ds/all_text_find.cc: ...this.
+	* performance/ext/pb_ds/hash_int_erase_mem.cc: ...this.
+	* performance/ext/pb_ds/hash_zlob_int_find.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_find.hpp
+	* performance/ext/pb_ds/multimap_text_find_large.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_find_small.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_insert.hpp
+	* performance/ext/pb_ds/multimap_text_insert_large.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_insert_mem.hpp
+	* performance/ext/pb_ds/multimap_text_insert_mem_large.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_insert_mem_small.cc: ...this.
+	* performance/ext/pb_ds/multimap_text_insert_small.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_int_push.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_int_push_pop.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_join.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_modify_down.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_modify.hpp
+	* performance/ext/pb_ds/priority_queue_text_modify_up.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_pop_mem.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_push.cc: ...this.
+	* performance/ext/pb_ds/priority_queue_text_push_pop.cc: ...this.
+	* performance/ext/pb_ds/tree_order_statistics.cc: ...this.
+	* performance/ext/pb_ds/tree_split_join.cc: ...this.
+	* performance/ext/pb_ds/tree_text_insert.cc: ...this.
+	* performance/ext/pb_ds/tree_text_lor_find.cc: ...this.
+
+	* doc/xml/images/*: Image and image filename changes.
+
 2011-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/c_global/cmath (fmod(_Tp, _Up)): Add.

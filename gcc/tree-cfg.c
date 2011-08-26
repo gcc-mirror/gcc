@@ -2772,13 +2772,11 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  error ("invalid operand to pointer plus, first operand is not a pointer");
 	  return t;
 	}
-      /* Check to make sure the second operand is an integer with type of
-	 sizetype.  */
-      if (!useless_type_conversion_p (sizetype,
-				     TREE_TYPE (TREE_OPERAND (t, 1))))
+      /* Check to make sure the second operand is a ptrofftype.  */
+      if (!ptrofftype_p (TREE_TYPE (TREE_OPERAND (t, 1))))
 	{
 	  error ("invalid operand to pointer plus, second operand is not an "
-		 "integer with type of sizetype");
+		 "integer type of appropriate width");
 	  return t;
 	}
       /* FALLTHROUGH */
@@ -3248,17 +3246,17 @@ verify_gimple_assign_unary (gimple stmt)
       {
 	/* Allow conversions between integral types and pointers only if
 	   there is no sign or zero extension involved.
-	   For targets were the precision of sizetype doesn't match that
+	   For targets were the precision of ptrofftype doesn't match that
 	   of pointers we need to allow arbitrary conversions from and
-	   to sizetype.  */
+	   to ptrofftype.  */
 	if ((POINTER_TYPE_P (lhs_type)
 	     && INTEGRAL_TYPE_P (rhs1_type)
 	     && (TYPE_PRECISION (lhs_type) >= TYPE_PRECISION (rhs1_type)
-		 || rhs1_type == sizetype))
+		 || ptrofftype_p (rhs1_type)))
 	    || (POINTER_TYPE_P (rhs1_type)
 		&& INTEGRAL_TYPE_P (lhs_type)
 		&& (TYPE_PRECISION (rhs1_type) >= TYPE_PRECISION (lhs_type)
-		    || lhs_type == sizetype)))
+		    || ptrofftype_p (sizetype))))
 	  return false;
 
 	/* Allow conversion from integer to offset type and vice versa.  */
@@ -3525,7 +3523,7 @@ verify_gimple_assign_binary (gimple stmt)
 do_pointer_plus_expr_check:
 	if (!POINTER_TYPE_P (rhs1_type)
 	    || !useless_type_conversion_p (lhs_type, rhs1_type)
-	    || !useless_type_conversion_p (sizetype, rhs2_type))
+	    || !ptrofftype_p (rhs2_type))
 	  {
 	    error ("type mismatch in pointer plus expression");
 	    debug_generic_stmt (lhs_type);
@@ -3566,7 +3564,7 @@ do_pointer_plus_expr_check:
     case WIDEN_MULT_EXPR:
       if (TREE_CODE (lhs_type) != INTEGER_TYPE)
 	return true;
-      return ((2 * TYPE_PRECISION (rhs1_type) != TYPE_PRECISION (lhs_type))
+      return ((2 * TYPE_PRECISION (rhs1_type) > TYPE_PRECISION (lhs_type))
 	      || (TYPE_PRECISION (rhs1_type) != TYPE_PRECISION (rhs2_type)));
 
     case WIDEN_SUM_EXPR:
@@ -3657,7 +3655,7 @@ verify_gimple_assign_ternary (gimple stmt)
 	   && !FIXED_POINT_TYPE_P (rhs1_type))
 	  || !useless_type_conversion_p (rhs1_type, rhs2_type)
 	  || !useless_type_conversion_p (lhs_type, rhs3_type)
-	  || 2 * TYPE_PRECISION (rhs1_type) != TYPE_PRECISION (lhs_type)
+	  || 2 * TYPE_PRECISION (rhs1_type) > TYPE_PRECISION (lhs_type)
 	  || TYPE_PRECISION (rhs1_type) != TYPE_PRECISION (rhs2_type))
 	{
 	  error ("type mismatch in widening multiply-accumulate expression");

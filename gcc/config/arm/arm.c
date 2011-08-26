@@ -151,7 +151,7 @@ static bool arm_slowmul_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, boo
 static bool arm_fastmul_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
 static bool arm_xscale_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
 static bool arm_9e_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
-static bool arm_rtx_costs (rtx, int, int, int *, bool);
+static bool arm_rtx_costs (rtx, int, int, int, int *, bool);
 static int arm_address_cost (rtx, bool);
 static bool arm_memory_load_p (rtx);
 static bool arm_cirrus_insn_p (rtx);
@@ -6881,7 +6881,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       if (GET_CODE (XEXP (x, 1)) == REG)
 	*total = COSTS_N_INSNS (1); /* Need to subtract from 32 */
       else if (GET_CODE (XEXP (x, 1)) != CONST_INT)
-	*total = rtx_cost (XEXP (x, 1), code, speed);
+	*total = rtx_cost (XEXP (x, 1), code, 1, speed);
 
       /* Fall through */
     case ROTATERT:
@@ -6893,7 +6893,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 
       /* Fall through */
     case ASHIFT: case LSHIFTRT: case ASHIFTRT:
-      *total += rtx_cost (XEXP (x, 0), code, speed);
+      *total += rtx_cost (XEXP (x, 0), code, 0, speed);
       if (mode == DImode)
 	{
 	  *total += COSTS_N_INSNS (3);
@@ -6916,14 +6916,14 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	  if (GET_CODE (XEXP (x, 0)) == CONST_INT
 	      && const_ok_for_arm (INTVAL (XEXP (x, 0))))
 	    {
-	      *total += rtx_cost (XEXP (x, 1), code, speed);
+	      *total += rtx_cost (XEXP (x, 1), code, 1, speed);
 	      return true;
 	    }
 
 	  if (GET_CODE (XEXP (x, 1)) == CONST_INT
 	      && const_ok_for_arm (INTVAL (XEXP (x, 1))))
 	    {
-	      *total += rtx_cost (XEXP (x, 0), code, speed);
+	      *total += rtx_cost (XEXP (x, 0), code, 0, speed);
 	      return true;
 	    }
 
@@ -6940,14 +6940,14 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	      if (GET_CODE (XEXP (x, 0)) == CONST_DOUBLE
 		  && arm_const_double_rtx (XEXP (x, 0)))
 		{
-		  *total += rtx_cost (XEXP (x, 1), code, speed);
+		  *total += rtx_cost (XEXP (x, 1), code, 1, speed);
 		  return true;
 		}
 
 	      if (GET_CODE (XEXP (x, 1)) == CONST_DOUBLE
 		  && arm_const_double_rtx (XEXP (x, 1)))
 		{
-		  *total += rtx_cost (XEXP (x, 0), code, speed);
+		  *total += rtx_cost (XEXP (x, 0), code, 0, speed);
 		  return true;
 		}
 
@@ -6961,7 +6961,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       if (GET_CODE (XEXP (x, 0)) == CONST_INT
 	  && const_ok_for_arm (INTVAL (XEXP (x, 0))))
 	{
-	  *total += rtx_cost (XEXP (x, 1), code, speed);
+	  *total += rtx_cost (XEXP (x, 1), code, 1, speed);
 	  return true;
 	}
 
@@ -6970,8 +6970,8 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	  || subcode == LSHIFTRT
 	  || subcode == ROTATE || subcode == ROTATERT)
 	{
-	  *total += rtx_cost (XEXP (x, 0), code, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 1), 0), subcode, speed);
+	  *total += rtx_cost (XEXP (x, 0), code, 0, speed);
+	  *total += rtx_cost (XEXP (XEXP (x, 1), 0), subcode, 0, speed);
 	  return true;
 	}
 
@@ -6979,23 +6979,23 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       if (GET_CODE (XEXP (x, 0)) == MULT
 	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
 	{
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), code, speed);
-	  *total += rtx_cost (XEXP (x, 1), code, speed);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), code, 0, speed);
+	  *total += rtx_cost (XEXP (x, 1), code, 1, speed);
 	  return true;
 	}
 
       if (subcode == MULT
 	  && power_of_two_operand (XEXP (XEXP (x, 1), 1), SImode))
 	{
-	  *total += rtx_cost (XEXP (x, 0), code, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 1), 0), subcode, speed);
+	  *total += rtx_cost (XEXP (x, 0), code, 0, speed);
+	  *total += rtx_cost (XEXP (XEXP (x, 1), 0), subcode, 0, speed);
 	  return true;
 	}
 
       if (GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == RTX_COMPARE
 	  || GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == RTX_COMM_COMPARE)
 	{
-	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), code, speed);
+	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), code, 0, speed);
 	  if (GET_CODE (XEXP (XEXP (x, 1), 0)) == REG
 	      && REGNO (XEXP (XEXP (x, 1), 0)) != CC_REGNUM)
 	    *total += COSTS_N_INSNS (1);
@@ -7012,8 +7012,8 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	{
 	  *total = COSTS_N_INSNS (1);
 	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), GET_CODE (XEXP (x, 0)),
-			      speed);
-	  *total += rtx_cost (XEXP (x, 1), code, speed);
+			      0, speed);
+	  *total += rtx_cost (XEXP (x, 1), code, 1, speed);
 	  return true;
 	}
 
@@ -7037,7 +7037,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	      if (GET_CODE (XEXP (x, 1)) == CONST_DOUBLE
 		  && arm_const_double_rtx (XEXP (x, 1)))
 		{
-		  *total += rtx_cost (XEXP (x, 0), code, speed);
+		  *total += rtx_cost (XEXP (x, 0), code, 0, speed);
 		  return true;
 		}
 
@@ -7051,7 +7051,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == RTX_COMPARE
 	  || GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == RTX_COMM_COMPARE)
 	{
-	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 1), code, speed);
+	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 1), code, 1, speed);
 	  if (GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
 	      && REGNO (XEXP (XEXP (x, 0), 0)) != CC_REGNUM)
 	    *total += COSTS_N_INSNS (1);
@@ -7078,7 +7078,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	  if (GET_CODE (XEXP (x, 1)) == CONST_INT
 	      && const_ok_for_op (INTVAL (XEXP (x, 1)), code))
 	    {
-	      *total += rtx_cost (XEXP (x, 0), code, speed);
+	      *total += rtx_cost (XEXP (x, 0), code, 0, speed);
 	      return true;
 	    }
 
@@ -7089,7 +7089,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && const_ok_for_op (INTVAL (XEXP (x, 1)), code))
 	{
-	  *total += rtx_cost (XEXP (x, 0), code, speed);
+	  *total += rtx_cost (XEXP (x, 0), code, 0, speed);
 	  return true;
 	}
       subcode = GET_CODE (XEXP (x, 0));
@@ -7097,16 +7097,16 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	  || subcode == LSHIFTRT
 	  || subcode == ROTATE || subcode == ROTATERT)
 	{
-	  *total += rtx_cost (XEXP (x, 1), code, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, speed);
+	  *total += rtx_cost (XEXP (x, 1), code, 1, speed);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, 0, speed);
 	  return true;
 	}
 
       if (subcode == MULT
 	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
 	{
-	  *total += rtx_cost (XEXP (x, 1), code, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, speed);
+	  *total += rtx_cost (XEXP (x, 1), code, 1, speed);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, 0, speed);
 	  return true;
 	}
 
@@ -7132,7 +7132,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	  && (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == ZERO_EXTEND
 	      || GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == SIGN_EXTEND))
 	{
-	  *total = rtx_cost (XEXP (XEXP (x, 0), 0), LSHIFTRT, speed);
+	  *total = rtx_cost (XEXP (XEXP (x, 0), 0), LSHIFTRT, 0, speed);
 	  return true;
 	}
       *total = COSTS_N_INSNS (2); /* Plus the cost of the MULT */
@@ -7164,11 +7164,11 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	      || (subcode == MULT
 		  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode)))
 	    {
-	      *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, speed);
+	      *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, 0, speed);
 	      /* Register shifts cost an extra cycle.  */
 	      if (GET_CODE (XEXP (XEXP (x, 0), 1)) != CONST_INT)
 		*total += COSTS_N_INSNS (1) + rtx_cost (XEXP (XEXP (x, 0), 1),
-							subcode, speed);
+							subcode, 1, speed);
 	      return true;
 	    }
 	}
@@ -7189,14 +7189,14 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	    && GET_CODE (XEXP (operand, 0)) == REG
 	    && REGNO (XEXP (operand, 0)) == CC_REGNUM))
 	*total += COSTS_N_INSNS (1);
-      *total += (rtx_cost (XEXP (x, 1), code, speed)
-		 + rtx_cost (XEXP (x, 2), code, speed));
+      *total += (rtx_cost (XEXP (x, 1), code, 1, speed)
+		 + rtx_cost (XEXP (x, 2), code, 2, speed));
       return true;
 
     case NE:
       if (mode == SImode && XEXP (x, 1) == const0_rtx)
 	{
-	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), code, speed);
+	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), code, 0, speed);
 	  return true;
 	}
       goto scc_insn;
@@ -7205,7 +7205,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       if ((GET_CODE (XEXP (x, 0)) != REG || REGNO (XEXP (x, 0)) != CC_REGNUM)
 	  && mode == SImode && XEXP (x, 1) == const0_rtx)
 	{
-	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), code, speed);
+	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), code, 0, speed);
 	  return true;
 	}
       goto scc_insn;
@@ -7214,7 +7214,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       if ((GET_CODE (XEXP (x, 0)) != REG || REGNO (XEXP (x, 0)) != CC_REGNUM)
 	  && mode == SImode && XEXP (x, 1) == const0_rtx)
 	{
-	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), code, speed);
+	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), code, 0, speed);
 	  return true;
 	}
       goto scc_insn;
@@ -7255,7 +7255,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && const_ok_for_op (INTVAL (XEXP (x, 1)), code))
 	{
-	  *total += rtx_cost (XEXP (x, 0), code, speed);
+	  *total += rtx_cost (XEXP (x, 0), code, 0, speed);
 	  return true;
 	}
 
@@ -7264,16 +7264,16 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	  || subcode == LSHIFTRT
 	  || subcode == ROTATE || subcode == ROTATERT)
 	{
-	  *total += rtx_cost (XEXP (x, 1), code, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, speed);
+	  *total += rtx_cost (XEXP (x, 1), code, 1, speed);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, 0, speed);
 	  return true;
 	}
 
       if (subcode == MULT
 	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
 	{
-	  *total += rtx_cost (XEXP (x, 1), code, speed);
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, speed);
+	  *total += rtx_cost (XEXP (x, 1), code, 1, speed);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, 0, speed);
 	  return true;
 	}
       
@@ -7283,10 +7283,10 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
     case UMAX:
     case SMIN:
     case SMAX:
-      *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), code, speed);
+      *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), code, 0, speed);
       if (GET_CODE (XEXP (x, 1)) != CONST_INT
 	  || !const_ok_for_arm (INTVAL (XEXP (x, 1))))
-	*total += rtx_cost (XEXP (x, 1), code, speed);
+	*total += rtx_cost (XEXP (x, 1), code, 1, speed);
       return true;
 
     case ABS:
@@ -7363,7 +7363,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
-      *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), code, speed);
+      *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), code, 0, speed);
       return true;
 
     case CONST_INT:
@@ -7388,7 +7388,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 
     case LO_SUM:
       *total = COSTS_N_INSNS (1);
-      *total += rtx_cost (XEXP (x, 0), code, speed);
+      *total += rtx_cost (XEXP (x, 0), code, 0, speed);
       return true;
 
     case CONST_DOUBLE:
@@ -7398,6 +7398,9 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       else
 	*total = COSTS_N_INSNS (4);
       return true;
+
+    case SET:
+      return false;
 
     default:
       *total = COSTS_N_INSNS (4);
@@ -7574,7 +7577,7 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
     case ROTATE:
       if (mode == SImode && GET_CODE (XEXP (x, 1)) == REG)
 	{
-	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), code, false);
+	  *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), code, 0, false);
 	  return true;
 	}
       /* Fall through */
@@ -7584,15 +7587,15 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
     case ASHIFTRT:
       if (mode == DImode && GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
-	  *total = COSTS_N_INSNS (3) + rtx_cost (XEXP (x, 0), code, false);
+	  *total = COSTS_N_INSNS (3) + rtx_cost (XEXP (x, 0), code, 0, false);
 	  return true;
 	}
       else if (mode == SImode)
 	{
-	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), code, false);
+	  *total = COSTS_N_INSNS (1) + rtx_cost (XEXP (x, 0), code, 0, false);
 	  /* Slightly disparage register shifts, but not by much.  */
 	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
-	    *total += 1 + rtx_cost (XEXP (x, 1), code, false);
+	    *total += 1 + rtx_cost (XEXP (x, 1), code, 1, false);
 	  return true;
 	}
 
@@ -7644,8 +7647,8 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
 	{
 	  *total = COSTS_N_INSNS (TARGET_THUMB2 ? 2 : 1);
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), code, false);
-	  *total += rtx_cost (XEXP (x, 1), code, false);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), code, 0, false);
+	  *total += rtx_cost (XEXP (x, 1), code, 1, false);
 	  return true;
 	}
 
@@ -7746,6 +7749,9 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       *total = COSTS_N_INSNS (1) + 1;
       return true;
 
+    case SET:
+      return false;
+
     default:
       if (mode != VOIDmode)
 	*total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
@@ -7757,8 +7763,8 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
 /* RTX costs when optimizing for size.  */
 static bool
-arm_rtx_costs (rtx x, int code, int outer_code, int *total,
-	       bool speed)
+arm_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+	       int *total, bool speed)
 {
   if (!speed)
     return arm_size_rtx_costs (x, (enum rtx_code) code,
@@ -7811,7 +7817,7 @@ arm_slowmul_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	    }
 
 	  *total = COSTS_N_INSNS (cost);
-	  *total += rtx_cost (XEXP (x, 0), code, speed);
+	  *total += rtx_cost (XEXP (x, 0), code, 0, speed);
 	  return true;
 	}
 
@@ -13284,11 +13290,24 @@ output_mov_double_arm_from_fpa (rtx *operands)
 /* Output a move between double words.  It must be REG<-MEM
    or MEM<-REG.  */
 const char *
-output_move_double (rtx *operands)
+output_move_double (rtx *operands, bool emit, int *count)
 {
   enum rtx_code code0 = GET_CODE (operands[0]);
   enum rtx_code code1 = GET_CODE (operands[1]);
   rtx otherops[3];
+  if (count)
+    *count = 1;
+
+  /* The only case when this might happen is when 
+     you are looking at the length of a DImode instruction
+     that has an invalid constant in it.  */
+  if (code0 == REG && code1 != MEM)
+    {
+      gcc_assert (!emit);
+      *count = 2;
+      return "";
+    }
+      
 
   if (code0 == REG)
     {
@@ -13301,35 +13320,49 @@ output_move_double (rtx *operands)
       switch (GET_CODE (XEXP (operands[1], 0)))
 	{
 	case REG:
-	  if (TARGET_LDRD
-	      && !(fix_cm3_ldrd && reg0 == REGNO(XEXP (operands[1], 0))))
-	    output_asm_insn ("ldr%(d%)\t%0, [%m1]", operands);
-	  else
-	    output_asm_insn ("ldm%(ia%)\t%m1, %M0", operands);
+
+	  if (emit)
+	    {
+	      if (TARGET_LDRD
+		  && !(fix_cm3_ldrd && reg0 == REGNO(XEXP (operands[1], 0))))
+		output_asm_insn ("ldr%(d%)\t%0, [%m1]", operands);
+	      else
+		output_asm_insn ("ldm%(ia%)\t%m1, %M0", operands);
+	    }
 	  break;
 
 	case PRE_INC:
 	  gcc_assert (TARGET_LDRD);
-	  output_asm_insn ("ldr%(d%)\t%0, [%m1, #8]!", operands);
+	  if (emit)
+	    output_asm_insn ("ldr%(d%)\t%0, [%m1, #8]!", operands);
+	  
 	  break;
 
 	case PRE_DEC:
-	  if (TARGET_LDRD)
-	    output_asm_insn ("ldr%(d%)\t%0, [%m1, #-8]!", operands);
-	  else
-	    output_asm_insn ("ldm%(db%)\t%m1!, %M0", operands);
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("ldr%(d%)\t%0, [%m1, #-8]!", operands);
+	      else
+		output_asm_insn ("ldm%(db%)\t%m1!, %M0", operands);
+	    }
 	  break;
 
 	case POST_INC:
-	  if (TARGET_LDRD)
-	    output_asm_insn ("ldr%(d%)\t%0, [%m1], #8", operands);
-	  else
-	    output_asm_insn ("ldm%(ia%)\t%m1!, %M0", operands);
+	  
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("ldr%(d%)\t%0, [%m1], #8", operands);
+	      else
+		output_asm_insn ("ldm%(ia%)\t%m1!, %M0", operands);
+	    }
 	  break;
 
 	case POST_DEC:
 	  gcc_assert (TARGET_LDRD);
-	  output_asm_insn ("ldr%(d%)\t%0, [%m1], #-8", operands);
+	  if (emit)
+	    output_asm_insn ("ldr%(d%)\t%0, [%m1], #-8", operands);
 	  break;
 
 	case PRE_MODIFY:
@@ -13347,8 +13380,13 @@ output_move_double (rtx *operands)
 	      if (reg_overlap_mentioned_p (otherops[0], otherops[2]))
 		{
 		  /* Registers overlap so split out the increment.  */
-		  output_asm_insn ("add%?\t%1, %1, %2", otherops);
-		  output_asm_insn ("ldr%(d%)\t%0, [%1] @split", otherops);
+		  if (emit)
+		    {
+		      output_asm_insn ("add%?\t%1, %1, %2", otherops);
+		      output_asm_insn ("ldr%(d%)\t%0, [%1] @split", otherops);
+		    }
+		  if (count)
+		    *count = 2;
 		}
 	      else
 		{
@@ -13359,11 +13397,20 @@ output_move_double (rtx *operands)
 		      || GET_CODE (otherops[2]) != CONST_INT
 		      || (INTVAL (otherops[2]) > -256
 			  && INTVAL (otherops[2]) < 256))
-		    output_asm_insn ("ldr%(d%)\t%0, [%1, %2]!", otherops);
+		    {
+		      if (emit)
+			output_asm_insn ("ldr%(d%)\t%0, [%1, %2]!", otherops);
+		    }
 		  else
 		    {
-		      output_asm_insn ("ldr%?\t%0, [%1, %2]!", otherops);
-		      output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
+		      if (emit)
+			{
+			  output_asm_insn ("ldr%?\t%0, [%1, %2]!", otherops);
+			  output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
+			}
+		      if (count)
+			*count = 2;
+
 		    }
 		}
 	    }
@@ -13376,11 +13423,19 @@ output_move_double (rtx *operands)
 		  || GET_CODE (otherops[2]) != CONST_INT
 		  || (INTVAL (otherops[2]) > -256
 		      && INTVAL (otherops[2]) < 256))
-		output_asm_insn ("ldr%(d%)\t%0, [%1], %2", otherops);
+		{
+		  if (emit)
+		    output_asm_insn ("ldr%(d%)\t%0, [%1], %2", otherops);
+		}
 	      else
 		{
-		  output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
-		  output_asm_insn ("ldr%?\t%0, [%1], %2", otherops);
+		  if (emit)
+		    {
+		      output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
+		      output_asm_insn ("ldr%?\t%0, [%1], %2", otherops);
+		    }
+		  if (count)
+		    *count = 2;
 		}
 	    }
 	  break;
@@ -13393,12 +13448,19 @@ output_move_double (rtx *operands)
 	  /* Use the second register of the pair to avoid problematic
 	     overlap.  */
 	  otherops[1] = operands[1];
-	  output_asm_insn ("adr%?\t%0, %1", otherops);
+	  if (emit)
+	    output_asm_insn ("adr%?\t%0, %1", otherops);
 	  operands[1] = otherops[0];
-	  if (TARGET_LDRD)
-	    output_asm_insn ("ldr%(d%)\t%0, [%1]", operands);
-	  else
-	    output_asm_insn ("ldm%(ia%)\t%1, %M0", operands);
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("ldr%(d%)\t%0, [%1]", operands);
+	      else
+		output_asm_insn ("ldm%(ia%)\t%1, %M0", operands);
+	    }
+
+	  if (count)
+	    *count = 2;
 	  break;
 
 	  /* ??? This needs checking for thumb2.  */
@@ -13417,17 +13479,20 @@ output_move_double (rtx *operands)
 		      switch ((int) INTVAL (otherops[2]))
 			{
 			case -8:
-			  output_asm_insn ("ldm%(db%)\t%1, %M0", otherops);
+			  if (emit)
+			    output_asm_insn ("ldm%(db%)\t%1, %M0", otherops);
 			  return "";
 			case -4:
 			  if (TARGET_THUMB2)
 			    break;
-			  output_asm_insn ("ldm%(da%)\t%1, %M0", otherops);
+			  if (emit)
+			    output_asm_insn ("ldm%(da%)\t%1, %M0", otherops);
 			  return "";
 			case 4:
 			  if (TARGET_THUMB2)
 			    break;
-			  output_asm_insn ("ldm%(ib%)\t%1, %M0", otherops);
+			  if (emit)
+			    output_asm_insn ("ldm%(ib%)\t%1, %M0", otherops);
 			  return "";
 			}
 		    }
@@ -13455,34 +13520,50 @@ output_move_double (rtx *operands)
 		      if (reg_overlap_mentioned_p (operands[0], otherops[2])
 			  || (fix_cm3_ldrd && reg0 == REGNO (otherops[1])))
 			{
-			  output_asm_insn ("add%?\t%0, %1, %2", otherops);
-			  output_asm_insn ("ldr%(d%)\t%0, [%1]", operands);
+			  if (emit)
+			    {
+			      output_asm_insn ("add%?\t%0, %1, %2", otherops);
+			      output_asm_insn ("ldr%(d%)\t%0, [%1]", operands);
+			    }
+			  if (count)
+			    *count = 2;
 			}
 		      else
 			{
 			  otherops[0] = operands[0];
-			  output_asm_insn ("ldr%(d%)\t%0, [%1, %2]", otherops);
+			  if (emit)
+			    output_asm_insn ("ldr%(d%)\t%0, [%1, %2]", otherops);
 			}
 		      return "";
 		    }
 
 		  if (GET_CODE (otherops[2]) == CONST_INT)
-		    {
-		      if (!(const_ok_for_arm (INTVAL (otherops[2]))))
-			output_asm_insn ("sub%?\t%0, %1, #%n2", otherops);
-		      else
-			output_asm_insn ("add%?\t%0, %1, %2", otherops);
+		    {							
+		      if (emit)
+			{
+			  if (!(const_ok_for_arm (INTVAL (otherops[2]))))
+			    output_asm_insn ("sub%?\t%0, %1, #%n2", otherops);
+			  else
+			    output_asm_insn ("add%?\t%0, %1, %2", otherops);
+			}
+			
 		    }
 		  else
-		    output_asm_insn ("add%?\t%0, %1, %2", otherops);
+		    {
+		      if (emit)
+			output_asm_insn ("add%?\t%0, %1, %2", otherops);
+		    }
 		}
 	      else
-		output_asm_insn ("sub%?\t%0, %1, %2", otherops);
+		{
+		  if (emit)
+		    output_asm_insn ("sub%?\t%0, %1, %2", otherops);
+		}
 
 	      if (TARGET_LDRD)
 		return "ldr%(d%)\t%0, [%1]";
-
-	      return "ldm%(ia%)\t%1, %M0";
+	      
+		return "ldm%(ia%)\t%1, %M0";
 	    }
 	  else
 	    {
@@ -13490,13 +13571,24 @@ output_move_double (rtx *operands)
 	      /* Take care of overlapping base/data reg.  */
 	      if (reg_mentioned_p (operands[0], operands[1]))
 		{
-		  output_asm_insn ("ldr%?\t%0, %1", otherops);
-		  output_asm_insn ("ldr%?\t%0, %1", operands);
+		  if (emit)
+		    {
+		      output_asm_insn ("ldr%?\t%0, %1", otherops);
+		      output_asm_insn ("ldr%?\t%0, %1", operands);
+		    }
+		  if (count)
+		    *count = 2;
+
 		}
 	      else
 		{
-		  output_asm_insn ("ldr%?\t%0, %1", operands);
-		  output_asm_insn ("ldr%?\t%0, %1", otherops);
+		  if (emit)
+		    {
+		      output_asm_insn ("ldr%?\t%0, %1", operands);
+		      output_asm_insn ("ldr%?\t%0, %1", otherops);
+		    }
+		  if (count)
+		    *count = 2;
 		}
 	    }
 	}
@@ -13510,34 +13602,45 @@ output_move_double (rtx *operands)
       switch (GET_CODE (XEXP (operands[0], 0)))
         {
 	case REG:
-	  if (TARGET_LDRD)
-	    output_asm_insn ("str%(d%)\t%1, [%m0]", operands);
-	  else
-	    output_asm_insn ("stm%(ia%)\t%m0, %M1", operands);
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("str%(d%)\t%1, [%m0]", operands);
+	      else
+		output_asm_insn ("stm%(ia%)\t%m0, %M1", operands);
+	    }
 	  break;
 
         case PRE_INC:
 	  gcc_assert (TARGET_LDRD);
-	  output_asm_insn ("str%(d%)\t%1, [%m0, #8]!", operands);
+	  if (emit)
+	    output_asm_insn ("str%(d%)\t%1, [%m0, #8]!", operands);
 	  break;
 
         case PRE_DEC:
-	  if (TARGET_LDRD)
-	    output_asm_insn ("str%(d%)\t%1, [%m0, #-8]!", operands);
-	  else
-	    output_asm_insn ("stm%(db%)\t%m0!, %M1", operands);
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("str%(d%)\t%1, [%m0, #-8]!", operands);
+	      else
+		output_asm_insn ("stm%(db%)\t%m0!, %M1", operands);
+	    }
 	  break;
 
         case POST_INC:
-	  if (TARGET_LDRD)
-	    output_asm_insn ("str%(d%)\t%1, [%m0], #8", operands);
-	  else
-	    output_asm_insn ("stm%(ia%)\t%m0!, %M1", operands);
+	  if (emit)
+	    {
+	      if (TARGET_LDRD)
+		output_asm_insn ("str%(d%)\t%1, [%m0], #8", operands);
+	      else
+		output_asm_insn ("stm%(ia%)\t%m0!, %M1", operands);
+	    }
 	  break;
 
         case POST_DEC:
 	  gcc_assert (TARGET_LDRD);
-	  output_asm_insn ("str%(d%)\t%1, [%m0], #-8", operands);
+	  if (emit)
+	    output_asm_insn ("str%(d%)\t%1, [%m0], #-8", operands);
 	  break;
 
 	case PRE_MODIFY:
@@ -13555,19 +13658,35 @@ output_move_double (rtx *operands)
 	    {
 	      if (GET_CODE (XEXP (operands[0], 0)) == PRE_MODIFY)
 		{
-		  output_asm_insn ("str%?\t%0, [%1, %2]!", otherops);
-		  output_asm_insn ("str%?\t%H0, [%1, #4]", otherops);
+		  if (emit)
+		    {
+		      output_asm_insn ("str%?\t%0, [%1, %2]!", otherops);
+		      output_asm_insn ("str%?\t%H0, [%1, #4]", otherops);
+		    }
+		  if (count)
+		    *count = 2;
 		}
 	      else
 		{
-		  output_asm_insn ("str%?\t%H0, [%1, #4]", otherops);
-		  output_asm_insn ("str%?\t%0, [%1], %2", otherops);
+		  if (emit)
+		    {
+		      output_asm_insn ("str%?\t%H0, [%1, #4]", otherops);
+		      output_asm_insn ("str%?\t%0, [%1], %2", otherops);
+		    }
+		  if (count)
+		    *count = 2;
 		}
 	    }
 	  else if (GET_CODE (XEXP (operands[0], 0)) == PRE_MODIFY)
-	    output_asm_insn ("str%(d%)\t%0, [%1, %2]!", otherops);
+	    {
+	      if (emit)
+		output_asm_insn ("str%(d%)\t%0, [%1, %2]!", otherops);
+	    }
 	  else
-	    output_asm_insn ("str%(d%)\t%0, [%1], %2", otherops);
+	    {
+	      if (emit)
+		output_asm_insn ("str%(d%)\t%0, [%1], %2", otherops);
+	    }
 	  break;
 
 	case PLUS:
@@ -13577,19 +13696,22 @@ output_move_double (rtx *operands)
 	      switch ((int) INTVAL (XEXP (XEXP (operands[0], 0), 1)))
 		{
 		case -8:
-		  output_asm_insn ("stm%(db%)\t%m0, %M1", operands);
+		  if (emit)
+		    output_asm_insn ("stm%(db%)\t%m0, %M1", operands);
 		  return "";
 
 		case -4:
 		  if (TARGET_THUMB2)
 		    break;
-		  output_asm_insn ("stm%(da%)\t%m0, %M1", operands);
+		  if (emit)
+		    output_asm_insn ("stm%(da%)\t%m0, %M1", operands);
 		  return "";
 
 		case 4:
 		  if (TARGET_THUMB2)
 		    break;
-		  output_asm_insn ("stm%(ib%)\t%m0, %M1", operands);
+		  if (emit)
+		    output_asm_insn ("stm%(ib%)\t%m0, %M1", operands);
 		  return "";
 		}
 	    }
@@ -13602,7 +13724,8 @@ output_move_double (rtx *operands)
 	    {
 	      otherops[0] = operands[1];
 	      otherops[1] = XEXP (XEXP (operands[0], 0), 0);
-	      output_asm_insn ("str%(d%)\t%0, [%1, %2]", otherops);
+	      if (emit)
+		output_asm_insn ("str%(d%)\t%0, [%1, %2]", otherops);
 	      return "";
 	    }
 	  /* Fall through */
@@ -13610,8 +13733,14 @@ output_move_double (rtx *operands)
         default:
 	  otherops[0] = adjust_address (operands[0], SImode, 4);
 	  otherops[1] = operands[1];
-	  output_asm_insn ("str%?\t%1, %0", operands);
-	  output_asm_insn ("str%?\t%H1, %0", otherops);
+	  if (emit)
+	    {
+	      output_asm_insn ("str%?\t%1, %0", operands);
+	      output_asm_insn ("str%?\t%H1, %0", otherops);
+	    }
+	  if (count)
+	    *count = 2;
+
 	}
     }
 
@@ -15101,6 +15230,7 @@ arm_output_epilogue (rtx sibling)
 		  && !crtl->calls_eh_return
 		  && bit_count(saved_regs_mask) * 4 == count
 		  && !IS_INTERRUPT (func_type)
+		  && !IS_STACKALIGN (func_type)
 		  && !crtl->tail_call_emit)
 		{
 		  unsigned long mask;
@@ -24203,6 +24333,15 @@ arm_attr_length_push_multi(rtx parallel_op, rtx first_op)
   if (!hi_reg)
     return 2;
   return 4;
+}
+
+/* Compute the number of instructions emitted by output_move_double.  */
+int
+arm_count_output_move_double_insns (rtx *operands)
+{
+  int count;
+  output_move_double (operands, false, &count);
+  return count;
 }
 
 #include "gt-arm.h"

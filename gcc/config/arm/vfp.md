@@ -150,7 +150,7 @@
     case 4:
     case 5:
     case 6:
-      return output_move_double (operands);
+      return output_move_double (operands, true, NULL);
     case 7:
       return \"fmdrr%?\\t%P0, %Q1, %R1\\t%@ int\";
     case 8:
@@ -199,7 +199,7 @@
     case 4:
     case 5:
     case 6:
-      return output_move_double (operands);
+      return output_move_double (operands, true, NULL);
     case 7:
       return \"fmdrr%?\\t%P0, %Q1, %R1\\t%@ int\";
     case 8:
@@ -213,10 +213,19 @@
     }
   "
   [(set_attr "type" "*,*,*,*,load2,load2,store2,r_2_f,f_2_r,ffarithd,f_loadd,f_stored")
-   (set_attr "length" "4,8,12,16,8,8,8,4,4,4,4,4")
+   (set (attr "length") (cond [(eq_attr "alternative" "1") (const_int 8)
+                               (eq_attr "alternative" "2") (const_int 12)
+                               (eq_attr "alternative" "3") (const_int 16)
+                               (eq_attr "alternative" "4,5,6") 
+			       (symbol_ref 
+				"arm_count_output_move_double_insns (operands) \
+                                 * 4")]
+                              (const_int 4)))
    (set_attr "predicable"    "yes")
    (set_attr "pool_range"     "*,*,*,*,1020,4096,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,1008,0,*,*,*,*,1008,*")
+   (set (attr "ce_count") 
+	(symbol_ref "get_attr_length (insn) / 4"))
    (set_attr "arch"           "t2,any,any,any,a,t2,any,any,any,any,any,any")]
  )
 
@@ -427,7 +436,7 @@
       case 3: case 4:
 	return output_move_vfp (operands);
       case 5: case 6:
-	return output_move_double (operands);
+	return output_move_double (operands, true, NULL);
       case 7:
 	if (TARGET_VFP_SINGLE)
 	  return \"fcpys%?\\t%0, %1\;fcpys%?\\t%p0, %p1\";
@@ -473,7 +482,7 @@
       case 3: case 4:
 	return output_move_vfp (operands);
       case 5: case 6: case 8:
-	return output_move_double (operands);
+	return output_move_double (operands, true, NULL);
       case 7:
 	if (TARGET_VFP_SINGLE)
 	  return \"fcpys%?\\t%0, %1\;fcpys%?\\t%p0, %p1\";

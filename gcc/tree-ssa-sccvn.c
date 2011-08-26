@@ -1485,12 +1485,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	 may fail when comparing types for compatibility.  But we really
 	 don't care here - further lookups with the rewritten operands
 	 will simply fail if we messed up types too badly.  */
-      if (j == 0 && i == 0
+      if (j == 0 && i >= 0
 	  && VEC_index (vn_reference_op_s, lhs_ops, 0)->opcode == MEM_REF
-	  && VEC_index (vn_reference_op_s, vr->operands, i)->opcode == MEM_REF
-	  && tree_int_cst_equal
-	       (VEC_index (vn_reference_op_s, lhs_ops, 0)->op0,
-		VEC_index (vn_reference_op_s, vr->operands, i)->op0))
+	  && VEC_index (vn_reference_op_s, lhs_ops, 0)->off != -1
+	  && (VEC_index (vn_reference_op_s, lhs_ops, 0)->off
+	      == VEC_index (vn_reference_op_s, vr->operands, i)->off))
 	i--, j--;
 
       /* i now points to the first additional op.

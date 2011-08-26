@@ -3398,9 +3398,9 @@ compress_float_constant (rtx x, rtx y)
   REAL_VALUE_FROM_CONST_DOUBLE (r, y);
 
   if (targetm.legitimate_constant_p (dstmode, y))
-    oldcost = rtx_cost (y, SET, speed);
+    oldcost = set_src_cost (y, speed);
   else
-    oldcost = rtx_cost (force_const_mem (dstmode, y), SET, speed);
+    oldcost = set_src_cost (force_const_mem (dstmode, y), speed);
 
   for (srcmode = GET_CLASS_NARROWEST_MODE (GET_MODE_CLASS (orig_srcmode));
        srcmode != orig_srcmode;
@@ -3427,7 +3427,8 @@ compress_float_constant (rtx x, rtx y)
 	  if (!insn_operand_matches (ic, 1, trunc_y))
 	    continue;
 	  /* This is valid, but may not be cheaper than the original. */
-	  newcost = rtx_cost (gen_rtx_FLOAT_EXTEND (dstmode, trunc_y), SET, speed);
+	  newcost = set_src_cost (gen_rtx_FLOAT_EXTEND (dstmode, trunc_y),
+				  speed);
 	  if (oldcost < newcost)
 	    continue;
 	}
@@ -3435,7 +3436,8 @@ compress_float_constant (rtx x, rtx y)
 	{
 	  trunc_y = force_const_mem (srcmode, trunc_y);
 	  /* This is valid, but may not be cheaper than the original. */
-	  newcost = rtx_cost (gen_rtx_FLOAT_EXTEND (dstmode, trunc_y), SET, speed);
+	  newcost = set_src_cost (gen_rtx_FLOAT_EXTEND (dstmode, trunc_y),
+				  speed);
 	  if (oldcost < newcost)
 	    continue;
 	  trunc_y = validize_mem (trunc_y);
@@ -6502,12 +6504,14 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   /* If OFFSET is constant, see if we can return the whole thing as a
      constant bit position.  Make sure to handle overflow during
      this conversion.  */
-  if (host_integerp (offset, 0))
+  if (TREE_CODE (offset) == INTEGER_CST)
     {
-      double_int tem = double_int_lshift (tree_to_double_int (offset),
-					  BITS_PER_UNIT == 8
-					  ? 3 : exact_log2 (BITS_PER_UNIT),
-					  HOST_BITS_PER_DOUBLE_INT, true);
+      double_int tem = tree_to_double_int (offset);
+      tem = double_int_sext (tem, TYPE_PRECISION (sizetype));
+      tem = double_int_lshift (tem,
+			       BITS_PER_UNIT == 8
+			       ? 3 : exact_log2 (BITS_PER_UNIT),
+			       HOST_BITS_PER_DOUBLE_INT, true);
       tem = double_int_add (tem, bit_offset);
       if (double_int_fits_in_shwi_p (tem))
 	{
@@ -7231,9 +7235,7 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
       {
 	tree tem = TREE_OPERAND (exp, 0);
 	if (!integer_zerop (TREE_OPERAND (exp, 1)))
-	  tem = build2 (POINTER_PLUS_EXPR, TREE_TYPE (TREE_OPERAND (exp, 1)),
-			tem,
-			double_int_to_tree (sizetype, mem_ref_offset (exp)));
+	  tem = fold_build_pointer_plus (tem, TREE_OPERAND (exp, 1));
 	return expand_expr (tem, target, tmode, modifier);
       }
 
@@ -8001,18 +8003,16 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	{
 	  enum machine_mode innermode = TYPE_MODE (TREE_TYPE (treeop0));
 	  this_optab = usmul_widen_optab;
-	  if (mode == GET_MODE_2XWIDER_MODE (innermode))
+	  if (find_widening_optab_handler (this_optab, mode, innermode, 0)
+		!= CODE_FOR_nothing)
 	    {
-	      if (optab_handler (this_optab, mode) != CODE_FOR_nothing)
-		{
-		  if (TYPE_UNSIGNED (TREE_TYPE (treeop0)))
-		    expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
-				     EXPAND_NORMAL);
-		  else
-		    expand_operands (treeop0, treeop1, NULL_RTX, &op1, &op0,
-				     EXPAND_NORMAL);
-		  goto binop3;
-		}
+	      if (TYPE_UNSIGNED (TREE_TYPE (treeop0)))
+		expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
+				 EXPAND_NORMAL);
+	      else
+		expand_operands (treeop0, treeop1, NULL_RTX, &op1, &op0,
+				 EXPAND_NORMAL);
+	      goto binop3;
 	    }
 	}
       /* Check for a multiplication with matching signedness.  */
@@ -8027,10 +8027,10 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	  optab other_optab = zextend_p ? smul_widen_optab : umul_widen_optab;
 	  this_optab = zextend_p ? umul_widen_optab : smul_widen_optab;
 
-	  if (mode == GET_MODE_2XWIDER_MODE (innermode)
-	      && TREE_CODE (treeop0) != INTEGER_CST)
+	  if (TREE_CODE (treeop0) != INTEGER_CST)
 	    {
-	      if (optab_handler (this_optab, mode) != CODE_FOR_nothing)
+	      if (find_widening_optab_handler (this_optab, mode, innermode, 0)
+		    != CODE_FOR_nothing)
 		{
 		  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
 				   EXPAND_NORMAL);
@@ -8038,7 +8038,8 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 					       unsignedp, this_optab);
 		  return REDUCE_BIT_FIELD (temp);
 		}
-	      if (optab_handler (other_optab, mode) != CODE_FOR_nothing
+	      if (find_widening_optab_handler (other_optab, mode, innermode, 0)
+		    != CODE_FOR_nothing
 		  && innermode == word_mode)
 		{
 		  rtx htem, hipart;

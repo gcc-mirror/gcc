@@ -203,7 +203,7 @@ static int mem_is_padded_component_ref (rtx x);
 static int reg_aligned_for_addr (rtx x);
 static bool spu_assemble_integer (rtx x, unsigned int size, int aligned_p);
 static void spu_asm_globalize_label (FILE * file, const char *name);
-static bool spu_rtx_costs (rtx x, int code, int outer_code,
+static bool spu_rtx_costs (rtx x, int code, int outer_code, int opno,
 			   int *total, bool speed);
 static bool spu_function_ok_for_sibcall (tree decl, tree exp);
 static void spu_init_libfuncs (void);
@@ -982,6 +982,27 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
 	  }
     }
 
+  /* However, if we generate an integer result, performing a reverse test
+     would require an extra negation, so avoid that where possible.  */
+  if (GET_CODE (op1) == CONST_INT && is_set == 1)
+    {
+      HOST_WIDE_INT val = INTVAL (op1) + 1;
+      if (trunc_int_for_mode (val, GET_MODE (op0)) == val)
+	switch (code)
+	  {
+	  case LE:
+	    op1 = GEN_INT (val);
+	    code = LT;
+	    break;
+	  case LEU:
+	    op1 = GEN_INT (val);
+	    code = LTU;
+	    break;
+	  default:
+	    break;
+	  }
+    }
+
   comp_mode = SImode;
   op_mode = GET_MODE (op0);
 
@@ -1113,7 +1134,8 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
 
   if (is_set == 0 && op1 == const0_rtx
       && (GET_MODE (op0) == SImode
-	  || GET_MODE (op0) == HImode) && scode == SPU_EQ)
+	  || GET_MODE (op0) == HImode
+	  || GET_MODE (op0) == QImode) && scode == SPU_EQ)
     {
       /* Don't need to set a register with the result when we are 
          comparing against zero and branching. */
@@ -3803,8 +3825,14 @@ spu_legitimate_address_p (enum machine_mode mode,
 	if (GET_CODE (op0) == REG
 	    && INT_REG_OK_FOR_BASE_P (op0, reg_ok_strict)
 	    && GET_CODE (op1) == CONST_INT
-	    && INTVAL (op1) >= -0x2000
-	    && INTVAL (op1) <= 0x1fff
+	    && ((INTVAL (op1) >= -0x2000 && INTVAL (op1) <= 0x1fff)
+		/* If virtual registers are involved, the displacement will
+		   change later on anyway, so checking would be premature.
+		   Reload will make sure the final displacement after
+		   register elimination is OK.  */
+		|| op0 == arg_pointer_rtx
+		|| op0 == frame_pointer_rtx
+		|| op0 == virtual_stack_vars_rtx)
 	    && (!aligned || (INTVAL (op1) & 15) == 0))
 	  return TRUE;
 	if (GET_CODE (op0) == REG
@@ -3875,6 +3903,45 @@ spu_addr_space_legitimize_address (rtx x, rtx oldx, enum machine_mode mode,
     return x;
 
   return spu_legitimize_address (x, oldx, mode);
+}
+
+/* Reload reg + const_int for out-of-range displacements.  */
+rtx
+spu_legitimize_reload_address (rtx ad, enum machine_mode mode ATTRIBUTE_UNUSED,
+			       int opnum, int type)
+{
+  bool removed_and = false;
+
+  if (GET_CODE (ad) == AND
+      && CONST_INT_P (XEXP (ad, 1))
+      && INTVAL (XEXP (ad, 1)) == (HOST_WIDE_INT) - 16)
+    {
+      ad = XEXP (ad, 0);
+      removed_and = true;
+    }
+
+  if (GET_CODE (ad) == PLUS
+      && REG_P (XEXP (ad, 0))
+      && CONST_INT_P (XEXP (ad, 1))
+      && !(INTVAL (XEXP (ad, 1)) >= -0x2000
+	   && INTVAL (XEXP (ad, 1)) <= 0x1fff))
+    {
+      /* Unshare the sum.  */
+      ad = copy_rtx (ad);
+
+      /* Reload the displacement.  */
+      push_reload (XEXP (ad, 1), NULL_RTX, &XEXP (ad, 1), NULL,
+		   BASE_REG_CLASS, GET_MODE (ad), VOIDmode, 0, 0,
+		   opnum, (enum reload_type) type);
+
+      /* Add back AND for alignment if we stripped it.  */
+      if (removed_and)
+	ad = gen_rtx_AND (GET_MODE (ad), ad, GEN_INT (-16));
+
+      return ad;
+    }
+
+  return NULL_RTX;
 }
 
 /* Handle an attribute requiring a FUNCTION_DECL; arguments as in
@@ -5415,7 +5482,8 @@ spu_asm_globalize_label (FILE * file, const char *name)
 }
 
 static bool
-spu_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total,
+spu_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
+	       int opno ATTRIBUTE_UNUSED, int *total,
 	       bool speed ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = GET_MODE (x);

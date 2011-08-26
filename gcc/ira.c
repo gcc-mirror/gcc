@@ -1501,6 +1501,10 @@ ira_init_register_move_cost (enum machine_mode mode)
 	  sizeof (move_table) * N_REG_CLASSES);
   for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
     {
+      /* Some subclasses are to small to have enough registers to hold
+	 a value of MODE.  Just ignore them.  */
+      if (! contains_reg_of_mode[cl1][mode])
+	continue;
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl1]);
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
       if (hard_reg_set_empty_p (temp_hard_regset))
@@ -1953,8 +1957,8 @@ setup_reg_renumber (void)
 				      reg_class_contents[pclass]);
 	    }
 	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0
-	      && ! ira_hard_reg_not_in_set_p (hard_regno, ALLOCNO_MODE (a),
-					      call_used_reg_set))
+	      && ira_hard_reg_set_intersection_p (hard_regno, ALLOCNO_MODE (a),
+						  call_used_reg_set))
 	    {
 	      ira_assert (!optimize || flag_caller_saves
 			  || regno >= ira_reg_equiv_len
@@ -1992,10 +1996,10 @@ setup_allocno_assignment_flags (void)
 				|| ALLOCNO_EMIT_DATA (a)->mem_optimized_dest_p
 				|| (ALLOCNO_MEMORY_COST (a)
 				    - ALLOCNO_CLASS_COST (a)) < 0);
-      ira_assert (hard_regno < 0
-		  || ! ira_hard_reg_not_in_set_p (hard_regno, ALLOCNO_MODE (a),
-						  reg_class_contents
-						  [ALLOCNO_CLASS (a)]));
+      ira_assert
+	(hard_regno < 0
+	 || ira_hard_reg_in_set_p (hard_regno, ALLOCNO_MODE (a),
+				   reg_class_contents[ALLOCNO_CLASS (a)]));
     }
 }
 
@@ -2013,9 +2017,9 @@ calculate_allocation_cost (void)
     {
       hard_regno = ALLOCNO_HARD_REGNO (a);
       ira_assert (hard_regno < 0
-		  || ! ira_hard_reg_not_in_set_p
-		       (hard_regno, ALLOCNO_MODE (a),
-			reg_class_contents[ALLOCNO_CLASS (a)]));
+		  || (ira_hard_reg_in_set_p
+		      (hard_regno, ALLOCNO_MODE (a),
+		       reg_class_contents[ALLOCNO_CLASS (a)])));
       if (hard_regno < 0)
 	{
 	  cost = ALLOCNO_MEMORY_COST (a);

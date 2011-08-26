@@ -136,7 +136,7 @@ static unsigned int xtensa_multibss_section_type_flags (tree, const char *,
 							int) ATTRIBUTE_UNUSED;
 static section *xtensa_select_rtx_section (enum machine_mode, rtx,
 					   unsigned HOST_WIDE_INT);
-static bool xtensa_rtx_costs (rtx, int, int, int *, bool);
+static bool xtensa_rtx_costs (rtx, int, int, int, int *, bool);
 static int xtensa_register_move_cost (enum machine_mode, reg_class_t,
 				      reg_class_t);
 static int xtensa_memory_move_cost (enum machine_mode, reg_class_t, bool);
@@ -3342,8 +3342,8 @@ xtensa_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-xtensa_rtx_costs (rtx x, int code, int outer_code, int *total,
-		  bool speed ATTRIBUTE_UNUSED)
+xtensa_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+		  int *total, bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {

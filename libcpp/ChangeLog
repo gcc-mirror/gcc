@@ -1,3 +1,25 @@
+2011-08-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/1773
+	* init.c (cpp_init_builtins): Define __cplusplus 19971L.
+
+2011-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Fix typo.
+
+2011-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add rliterals.
+	* init.c  (struct lang_flags, lang_defaults): Add rliterals.
+	(cpp_set_lang): Set rliterals option.
+	(cpp_init_builtins): Define __STDC_UTF_16__ and __STDC_UTF_32__.
+	* lex.c (_cpp_lex_direct): Only accept raw strings if rliterals.
+
+2011-08-15  Gabriel Charette  <gchare@google.com>
+
+	* include/line-map.h (LINEMAP_POSITION_FOR_COLUMN): Remove.
+	Update all users to use linemap_position_for_column instead.
+
 2011-07-28  Gabriel Charette  <gchare@google.com>
 
 	* include/line-map.h (struct line_maps):

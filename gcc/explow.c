@@ -384,18 +384,23 @@ convert_memory_address_addr_space (enum machine_mode to_mode ATTRIBUTE_UNUSED,
 
     case PLUS:
     case MULT:
-      /* For addition we can safely permute the conversion and addition
-	 operation if one operand is a constant and converting the constant
-	 does not change it or if one operand is a constant and we are
-	 using a ptr_extend instruction  (POINTERS_EXTEND_UNSIGNED < 0).
+      /* FIXME: For addition, we used to permute the conversion and
+	 addition operation only if one operand is a constant and
+	 converting the constant does not change it or if one operand
+	 is a constant and we are using a ptr_extend instruction
+	 (POINTERS_EXTEND_UNSIGNED < 0) even if the resulting address
+	 may overflow/underflow.  We relax the condition to include
+	 zero-extend (POINTERS_EXTEND_UNSIGNED > 0) since the other
+	 parts of the compiler depend on it.  See PR 49721.
+
 	 We can always safely permute them if we are making the address
 	 narrower.  */
       if (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)
 	  || (GET_CODE (x) == PLUS
 	      && CONST_INT_P (XEXP (x, 1))
-	      && (XEXP (x, 1) == convert_memory_address_addr_space
-				   (to_mode, XEXP (x, 1), as)
-                 || POINTERS_EXTEND_UNSIGNED < 0)))
+	      && (POINTERS_EXTEND_UNSIGNED != 0
+		  || XEXP (x, 1) == convert_memory_address_addr_space
+		  			(to_mode, XEXP (x, 1), as))))
 	return gen_rtx_fmt_ee (GET_CODE (x), to_mode,
 			       convert_memory_address_addr_space
 				 (to_mode, XEXP (x, 0), as),
@@ -1377,6 +1382,9 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   else if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
     probe_stack_range (STACK_CHECK_PROTECT, size);
 
+  /* Don't let anti_adjust_stack emit notes.  */
+  suppress_reg_args_size = true;
+
   /* Perform the required allocation from the stack.  Some systems do
      this differently than simply incrementing/decrementing from the
      stack pointer, such as acquiring the space by calling malloc().  */
@@ -1427,7 +1435,6 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	}
 
       saved_stack_pointer_delta = stack_pointer_delta;
-      suppress_reg_args_size = true;
 
       if (flag_stack_check && STACK_CHECK_MOVING_SP)
 	anti_adjust_stack_and_probe (size, false);
@@ -1438,12 +1445,13 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	 The constant size alloca should preserve
 	 crtl->preferred_stack_boundary alignment.  */
       stack_pointer_delta = saved_stack_pointer_delta;
-      suppress_reg_args_size = false;
 
 #ifdef STACK_GROWS_DOWNWARD
       emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif
     }
+
+  suppress_reg_args_size = false;
 
   /* Finish up the split stack handling.  */
   if (final_label != NULL_RTX)

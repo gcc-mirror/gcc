@@ -10,6 +10,6 @@ integer :: s
 character(len=3) :: c
 logical :: bool
 
-LOCK (a, stat=s, acquired_lock=bool, errmsg=c) ! { dg-error "must be a scalar coarray of type LOCK_TYPE" }
-UNLOCK (a, stat=s, errmsg=c) ! { dg-error "must be a scalar coarray of type LOCK_TYPE" }
+LOCK (a, stat=s, acquired_lock=bool, errmsg=c) ! { dg-error "must be a scalar of type LOCK_TYPE" }
+UNLOCK (a, stat=s, errmsg=c) ! { dg-error "must be a scalar of type LOCK_TYPE" }
 end

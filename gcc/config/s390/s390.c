@@ -2374,8 +2374,8 @@ s390_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    of the superexpression of x.  */
 
 static bool
-s390_rtx_costs (rtx x, int code, int outer_code, int *total,
-		bool speed ATTRIBUTE_UNUSED)
+s390_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+		int *total, bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {
@@ -2480,9 +2480,9 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total,
       /* Negate in the third argument is free: FMSUB.  */
       if (GET_CODE (XEXP (x, 2)) == NEG)
 	{
-	  *total += (rtx_cost (XEXP (x, 0), FMA, speed)
-		     + rtx_cost (XEXP (x, 1), FMA, speed)
-		     + rtx_cost (XEXP (XEXP (x, 2), 0), FMA, speed));
+	  *total += (rtx_cost (XEXP (x, 0), FMA, 0, speed)
+		     + rtx_cost (XEXP (x, 1), FMA, 1, speed)
+		     + rtx_cost (XEXP (XEXP (x, 2), 0), FMA, 2, speed));
 	  return true;
 	}
       return false;

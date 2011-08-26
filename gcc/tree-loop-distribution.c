@@ -242,9 +242,10 @@ build_size_arg_loc (location_t loc, tree nb_iter, tree op,
 		    gimple_seq *stmt_list)
 {
   gimple_seq stmts;
-  tree x = size_binop_loc (loc, MULT_EXPR,
-  			   fold_convert_loc (loc, sizetype, nb_iter),
-			   TYPE_SIZE_UNIT (TREE_TYPE (op)));
+  tree x = fold_build2_loc (loc, MULT_EXPR, size_type_node,
+			    fold_convert_loc (loc, size_type_node, nb_iter),
+			    fold_convert_loc (loc, size_type_node,
+					      TYPE_SIZE_UNIT (TREE_TYPE (op))));
   x = force_gimple_operand (x, &stmts, true, NULL);
   gimple_seq_add_seq (stmt_list, stmts);
 
@@ -275,9 +276,7 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   addr_base = fold_convert_loc (loc, sizetype, addr_base);
 
   /* Test for a negative stride, iterating over every element.  */
-  if (integer_zerop (size_binop (PLUS_EXPR,
-				 TYPE_SIZE_UNIT (TREE_TYPE (op0)),
-				 fold_convert (sizetype, DR_STEP (dr)))))
+  if (tree_int_cst_sgn (DR_STEP (dr)) == -1)
     {
       addr_base = size_binop_loc (loc, MINUS_EXPR, addr_base,
 				  fold_convert_loc (loc, sizetype, nb_bytes));

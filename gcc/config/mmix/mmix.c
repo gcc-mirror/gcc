@@ -140,7 +140,7 @@ static void mmix_setup_incoming_varargs
   (cumulative_args_t, enum machine_mode, tree, int *, int);
 static void mmix_file_start (void);
 static void mmix_file_end (void);
-static bool mmix_rtx_costs (rtx, int, int, int *, bool);
+static bool mmix_rtx_costs (rtx, int, int, int, int *, bool);
 static int mmix_register_move_cost (enum machine_mode,
 				    reg_class_t, reg_class_t);
 static rtx mmix_struct_value_rtx (tree, int);
@@ -260,7 +260,7 @@ static void mmix_conditional_register_usage (void);
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS mmix_preferred_reload_class
 #undef TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
-#define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS mmix_preferred_reload_class
+#define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS mmix_preferred_output_reload_class
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mmix_legitimate_address_p
@@ -1229,6 +1229,7 @@ static bool
 mmix_rtx_costs (rtx x ATTRIBUTE_UNUSED,
 		int code ATTRIBUTE_UNUSED,
 		int outer_code ATTRIBUTE_UNUSED,
+		int opno ATTRIBUTE_UNUSED,
 		int *total ATTRIBUTE_UNUSED,
 		bool speed ATTRIBUTE_UNUSED)
 {

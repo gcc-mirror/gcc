@@ -8,6 +8,7 @@
 #include "tree.h"
 #include "tree-pass.h"
 #include "intl.h"
+#include "diagnostic.h"
 
 int plugin_is_GPL_compatible;
 

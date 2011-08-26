@@ -704,7 +704,7 @@ create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
      the loop.  Otherwise we save only cost of the computation.  */
   if (def)
     {
-      inv->cost = rtx_cost (set, SET, speed);
+      inv->cost = set_rtx_cost (set, speed);
       /* ??? Try to determine cheapness of address computation.  Unfortunately
          the address cost is only a relative measure, we can't really compare
 	 it with any absolute number, but only with other address costs.
@@ -719,7 +719,7 @@ create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
     }
   else
     {
-      inv->cost = rtx_cost (SET_SRC (set), SET, speed);
+      inv->cost = set_src_cost (SET_SRC (set), speed);
       inv->cheap_address = false;
     }
 

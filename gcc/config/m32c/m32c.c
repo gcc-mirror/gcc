@@ -729,12 +729,16 @@ m32c_regno_ok_for_base_p (int regno)
 
 #define DEBUG_RELOAD 0
 
-/* Implements PREFERRED_RELOAD_CLASS.  In general, prefer general
+/* Implements TARGET_PREFERRED_RELOAD_CLASS.  In general, prefer general
    registers of the appropriate size.  */
-int
-m32c_preferred_reload_class (rtx x, int rclass)
+
+#undef TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS m32c_preferred_reload_class
+
+static reg_class_t
+m32c_preferred_reload_class (rtx x, reg_class_t rclass)
 {
-  int newclass = rclass;
+  reg_class_t newclass = rclass;
 
 #if DEBUG_RELOAD
   fprintf (stderr, "\npreferred_reload_class for %s is ",
@@ -759,7 +763,7 @@ m32c_preferred_reload_class (rtx x, int rclass)
   else if (newclass == QI_REGS && GET_MODE_SIZE (GET_MODE (x)) > 2)
     newclass = SI_REGS;
   else if (GET_MODE_SIZE (GET_MODE (x)) > 4
-	   && ~class_contents[rclass][0] & 0x000f)
+	   && ! reg_class_subset_p (R03_REGS, rclass))
     newclass = DI_REGS;
 
   rclass = reduce_class (rclass, newclass, rclass);
@@ -779,9 +783,13 @@ m32c_preferred_reload_class (rtx x, int rclass)
   return rclass;
 }
 
-/* Implements PREFERRED_OUTPUT_RELOAD_CLASS.  */
-int
-m32c_preferred_output_reload_class (rtx x, int rclass)
+/* Implements TARGET_PREFERRED_OUTPUT_RELOAD_CLASS.  */
+
+#undef TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
+#define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS m32c_preferred_output_reload_class
+
+static reg_class_t
+m32c_preferred_output_reload_class (rtx x, reg_class_t rclass)
 {
   return m32c_preferred_reload_class (x, rclass);
 }
@@ -2421,8 +2429,8 @@ m32c_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m32c_rtx_costs
 static bool
-m32c_rtx_costs (rtx x, int code, int outer_code, int *total,
-		bool speed ATTRIBUTE_UNUSED)
+m32c_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
+		int *total, bool speed ATTRIBUTE_UNUSED)
 {
   switch (code)
     {

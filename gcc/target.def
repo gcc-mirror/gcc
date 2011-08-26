@@ -1645,8 +1645,8 @@ DEFHOOKPOD
 DEFHOOK
 (rtx_costs,
  "",
- bool, (rtx x, int code, int outer_code, int *total, bool speed),
- hook_bool_rtx_int_int_intp_bool_false)
+ bool, (rtx x, int code, int outer_code, int opno, int *total, bool speed),
+ hook_bool_rtx_int_int_int_intp_bool_false)
 
 /* Compute the cost of X, used as an address.  Never called with
    invalid addresses.  */
@@ -2450,6 +2450,12 @@ DEFHOOK
  visibility or perform any other required target modifications).",
  void, (tree type),
  hook_void_tree)
+
+DEFHOOK
+(decl_mangling_context,
+ "Return target-specific mangling context of @var{decl} or @code{NULL_TREE}.",
+ tree, (const_tree decl),
+ hook_tree_const_tree_null)
 
 HOOK_VECTOR_END (cxx)
 

@@ -654,6 +654,8 @@ extern void file_end_indicate_split_stack (void);
 
 extern void default_elf_asm_output_external (FILE *file, tree,
 					     const char *);
+extern void default_elf_init_array_asm_out_constructor (rtx, int);
+extern void default_elf_fini_array_asm_out_destructor (rtx, int);
 extern int maybe_assemble_visibility (tree);
 
 extern int default_address_cost (rtx, bool);

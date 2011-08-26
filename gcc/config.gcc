@@ -718,8 +718,8 @@ case ${target} in
   tm_p_file="${tm_p_file} sol2-protos.h"
   tmake_file="${tmake_file} t-sol2 t-slibgcc-dummy"
   c_target_objs="${c_target_objs} sol2-c.o"
-  cxx_target_objs="${cxx_target_objs} sol2-c.o"
-  extra_objs="sol2.o"
+  cxx_target_objs="${cxx_target_objs} sol2-c.o sol2-cxx.o"
+  extra_objs="sol2.o sol2-stubs.o"
   extra_options="${extra_options} sol2.opt"
   case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
     "":yes:* | yes:yes:* )
@@ -3056,6 +3056,11 @@ if test x$with_schedule = x; then
 		with_schedule=7100LC
 		;;
 	esac
+fi
+
+# Support --enable-initfini-array.
+if test x$enable_initfini_array = xyes; then
+  tm_file="${tm_file} initfini-array.h"
 fi
 
 # Validate and mark as valid any --with options supported

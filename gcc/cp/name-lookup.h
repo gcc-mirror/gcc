@@ -292,6 +292,7 @@ extern bool kept_level_p (void);
 extern bool global_bindings_p (void);
 extern bool toplevel_bindings_p	(void);
 extern bool namespace_bindings_p (void);
+extern bool local_bindings_p (void);
 extern bool template_parm_scope_p (void);
 extern scope_kind innermost_scope_kind (void);
 extern cp_binding_level *begin_scope (scope_kind, tree);

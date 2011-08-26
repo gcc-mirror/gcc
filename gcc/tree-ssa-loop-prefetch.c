@@ -795,7 +795,7 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
       prefetch_before = (hit_from - delta_r + step - 1) / step;
 
       /* Do not reduce prefetch_before if we meet beyond cache size.  */
-      if (prefetch_before > (unsigned) abs_hwi (L2_CACHE_SIZE_BYTES / step))
+      if (prefetch_before > absu_hwi (L2_CACHE_SIZE_BYTES / step))
         prefetch_before = PREFETCH_ALL;
       if (prefetch_before < ref->prefetch_before)
 	ref->prefetch_before = prefetch_before;

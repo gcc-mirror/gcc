@@ -73,7 +73,8 @@ extern const char * score_select (rtx *ops, const char *inst_pre, bool commu,
 extern const char * score_output_casesi (rtx *operands);
 extern const char * score_rpush (rtx *ops);
 extern const char * score_rpop (rtx *ops);
-extern bool score_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed);
+extern bool score_rtx_costs (rtx x, int code, int outer_code, int opno,
+			     int *total, bool speed);
 
 #ifdef RTX_CODE
 extern enum machine_mode score_select_cc_mode (enum rtx_code op, rtx x, rtx y);

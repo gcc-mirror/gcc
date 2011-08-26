@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-nouid" } */
 
 int f (int x, int y)
 {

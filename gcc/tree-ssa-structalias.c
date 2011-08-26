@@ -2876,7 +2876,7 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
 {
   struct constraint_expr c;
   unsigned int j, n;
-  HOST_WIDE_INT rhsunitoffset, rhsoffset;
+  HOST_WIDE_INT rhsoffset;
 
   /* If we do not do field-sensitive PTA adding offsets to pointers
      does not change the points-to solution.  */
@@ -2891,15 +2891,24 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
      solution which includes all sub-fields of all pointed-to
      variables of ptr.  */
   if (offset == NULL_TREE
-      || !host_integerp (offset, 0))
+      || TREE_CODE (offset) != INTEGER_CST)
     rhsoffset = UNKNOWN_OFFSET;
   else
     {
-      /* Make sure the bit-offset also fits.  */
-      rhsunitoffset = TREE_INT_CST_LOW (offset);
-      rhsoffset = rhsunitoffset * BITS_PER_UNIT;
-      if (rhsunitoffset != rhsoffset / BITS_PER_UNIT)
+      /* Sign-extend the offset.  */
+      double_int soffset
+	= double_int_sext (tree_to_double_int (offset),
+			   TYPE_PRECISION (TREE_TYPE (offset)));
+      if (!double_int_fits_in_shwi_p (soffset))
 	rhsoffset = UNKNOWN_OFFSET;
+      else
+	{
+	  /* Make sure the bit-offset also fits.  */
+	  HOST_WIDE_INT rhsunitoffset = soffset.low;
+	  rhsoffset = rhsunitoffset * BITS_PER_UNIT;
+	  if (rhsunitoffset != rhsoffset / BITS_PER_UNIT)
+	    rhsoffset = UNKNOWN_OFFSET;
+	}
     }
 
   get_constraint_for_rhs (ptr, results);
@@ -3260,8 +3269,8 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
 	    {
 	      struct constraint_expr cs;
 	      varinfo_t vi, curr;
-	      tree off = double_int_to_tree (sizetype, mem_ref_offset (t));
-	      get_constraint_for_ptr_offset (TREE_OPERAND (t, 0), off, results);
+	      get_constraint_for_ptr_offset (TREE_OPERAND (t, 0),
+					     TREE_OPERAND (t, 1), results);
 	      do_deref (results);
 
 	      /* If we are not taking the address then make sure to process

@@ -1,6 +1,6 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1975,8 +1975,8 @@ _cpp_lex_direct (cpp_reader *pfile)
     }
   c = *buffer->cur++;
 
-  LINEMAP_POSITION_FOR_COLUMN (result->src_loc, pfile->line_table,
-			       CPP_BUF_COLUMN (buffer, buffer->cur));
+  result->src_loc = linemap_position_for_column (pfile->line_table,
+			                                    CPP_BUF_COLUMN (buffer, buffer->cur));
 
   switch (c)
     {
@@ -2007,18 +2007,20 @@ _cpp_lex_direct (cpp_reader *pfile)
     case 'R':
       /* 'L', 'u', 'U', 'u8' or 'R' may introduce wide characters,
 	 wide strings or raw strings.  */
-      if (c == 'L' || CPP_OPTION (pfile, uliterals))
+      if (c == 'L' || CPP_OPTION (pfile, rliterals)
+	  || (c != 'R' && CPP_OPTION (pfile, uliterals)))
 	{
 	  if ((*buffer->cur == '\'' && c != 'R')
 	      || *buffer->cur == '"'
 	      || (*buffer->cur == 'R'
 		  && c != 'R'
 		  && buffer->cur[1] == '"'
-		  && CPP_OPTION (pfile, uliterals))
+		  && CPP_OPTION (pfile, rliterals))
 	      || (*buffer->cur == '8'
 		  && c == 'u'
 		  && (buffer->cur[1] == '"'
-		      || (buffer->cur[1] == 'R' && buffer->cur[2] == '"'))))
+		      || (buffer->cur[1] == 'R' && buffer->cur[2] == '"'
+			  && CPP_OPTION (pfile, rliterals)))))
 	    {
 	      lex_string (pfile, result, buffer->cur - 1);
 	      break;

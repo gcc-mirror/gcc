@@ -1,7 +1,7 @@
 /* Garbage collection for the GNU compiler.
 
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007,
-   2008, 2009, 2010 Free Software Foundation, Inc.
+   2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -266,9 +266,9 @@ extern struct alloc_zone tree_zone;
 extern struct alloc_zone tree_id_zone;
 
 #define ggc_alloc_rtvec_sized(NELT)                                     \
-    (ggc_alloc_zone_vec_rtvec_def (sizeof (rtx),                        \
-                                   sizeof (struct rtvec_def) + ((NELT) - 1), \
-                                   &rtl_zone))
+  ggc_alloc_zone_rtvec_def (sizeof (struct rtvec_def)			\
+			    + ((NELT) - 1) * sizeof (rtx),		\
+			    &rtl_zone)
 
 #if defined (GGC_ZONE) && !defined (GENERATOR_FILE)
 

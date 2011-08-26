@@ -1,3 +1,54 @@
+2011-08-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Marc Glisse  <marc.glisse@normalesup.org>
+
+	PR libstdc++-v3/1773
+	* mangle.c (decl_mangling_context): Call
+	targetm.cxx.decl_mangling_context.
+	(write_unscoped_name): Use decl_mangling_context.
+
+2011-08-18  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/45625
+	* pt.c (parameter_of_template_p): Handle comparison with DECLs of
+	template parameters as created by process_template_parm.
+
+2011-08-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50086
+	* pt.c (unify_pack_expansion): Correct overloaded unification
+	logic.
+
+	* pt.c (instantiate_class_template_1): If DECL_PRESERVE_P is set
+	on a member function or static data member, call mark_used.
+
+	PR c++/50054
+	* typeck2.c (cxx_incomplete_type_diagnostic): Handle
+	init_list_type_node.
+
+2011-08-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50075
+	* name-lookup.c (local_bindings_p): New.
+	* name-lookup.h: Declare it.
+	* lex.c (unqualified_name_lookup_error): Use it.
+
+	PR c++/50059
+	* error.c (dump_expr): Handle MODIFY_EXPR properly.
+
+	* decl.c (grok_reference_init): Handle constexpr here.
+	* call.c (initialize_reference): Not here.
+
+2011-08-12  David Li  <davidxl@google.com>
+
+	* class.c (update_vtable_entry_for_fn): Set
+	LOST_PRIMARY bit properly.
+
+2011-08-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50034
+	* call.c (convert_arg_to_ellipsis): force_rvalue only in
+	potentially evaluated context.
+
 2011-08-12  Richard Guenther  <rguenther@suse.de>
 
 	* call.c (build_over_call): Instead of memcpy use an

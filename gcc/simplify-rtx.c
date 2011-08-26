@@ -2033,7 +2033,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      coeff = immed_double_int_const (val, mode);
 
 	      tem = simplify_gen_binary (MULT, mode, lhs, coeff);
-	      return rtx_cost (tem, SET, speed) <= rtx_cost (orig, SET, speed)
+	      return set_src_cost (tem, speed) <= set_src_cost (orig, speed)
 		? tem : 0;
 	    }
 	}
@@ -2214,7 +2214,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      coeff = immed_double_int_const (val, mode);
 
 	      tem = simplify_gen_binary (MULT, mode, lhs, coeff);
-	      return rtx_cost (tem, SET, speed) <= rtx_cost (orig, SET, speed)
+	      return set_src_cost (tem, speed) <= set_src_cost (orig, speed)
 		? tem : 0;
 	    }
 	}

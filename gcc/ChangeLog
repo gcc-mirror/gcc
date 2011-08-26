@@ -1,104 +1,814 @@
+2011-08-21  Richard Henderson  <rth@redhat.com>
+
+	* rtl.h (INSN_ANNULLED_BRANCH_P): Only allow JUMP_INSN.
+	* dwarf2cfi.c (scan_trace): Test JUMP_P before INSN_ANNULLED_BRANCH_P.
+	* resource.c (next_insn_no_annul): Likewise.
+	(mark_set_resources): Likewise.
+	* reorg.c (delete_from_delay_slot): Likewise.
+	(dbr_schedule, redundant_insn, try_merge_delay_insns): Likewise.
+	(get_branch_condition): Test pc_rtx and LABEL_REF before dereferencing.
+
+2011-08-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (any_div): Remove.
+	(sgnprefix): Update for removal.
+	(u): Ditto.
+
+2011-08-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-lives.c (mark_pseudo_regno_subword_live): Use allocno class
+	for ira_reg_class_max_nregs.  Increase pressure by 1.
+	(mark_pseudo_regno_subword_dead): Use allocno class
+	for ira_reg_class_max_nregs.
+
+2011-08-20  Richard Henderson  <rth@redhat.com>
+
+	* config/c6x/eqd.c, config/c6x/eqf.c, config/c6x/ged.c,
+	config/c6x/gef.c, config/c6x/gtd.c, config/c6x/gtf.c,
+	config/c6x/led.c, config/c6x/lef.c, config/c6x/ltd.c,
+	config/c6x/ltf.c: Adjust include path for soft-fp.
+
+2011-08-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/46770
+	* config.gcc (tm_file): Add initfini-array.h if
+	.init_arrary/.fini_array are supported.
+
+	* crtstuff.c: Don't generate .ctors nor .dtors sections if
+	USE_INITFINI_ARRAY is defined.
+
+	* output.h (default_elf_init_array_asm_out_constructor): New.
+	(default_elf_fini_array_asm_out_destructor): Likewise.
+	* varasm.c (elf_init_array_section): Likewise.
+	(elf_fini_array_section): Likewise.
+	(get_elf_initfini_array_priority_section): Likewise.
+	(default_elf_init_array_asm_out_constructor): Likewise.
+	(default_elf_fini_array_asm_out_destructor): Likewise.
+
+	* config/initfini-array.h: New.
+
+2011-08-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_class_max_nregs): Check that the mode is
+	OK for ST_REGS and FP_REGS before taking those classes into account.
+
+2011-08-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_reorg_process_insns): Check for jumps
+	before checking for annulled branches.
+
+2011-08-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_binary_operator_ok): Use
+	satisfies_constraint_L.
+
+2011-08-20  Uros Bizjak  <ubizjak@gmail.com>
+	    Michael Matz  <matz@suse.de>
+
+	* config/i386/i386.c (ix86_expand_round_sse4): Expand as
+	trunc (a + copysign (nextafter (0.5, 0.0), a)).
+
+2011-08-20  Anatoly Sokolov  <aesok@post.ru>
+
+	* doc/tm.texi.in (PREFERRED_OUTPUT_RELOAD_CLASS): Remove.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_preferred_output_reload_class): Don't use
+	PREFERRED_OUTPUT_RELOAD_CLASS macro.
+	* system.h (PREFERRED_OUTPUT_RELOAD_CLASS): Poison.
+
+2011-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48739
+	* tree-ssa.c: Include cfgloop.h.
+	(execute_update_addresses_taken): When updating ssa, if in loop closed
+	SSA form, call rewrite_into_loop_closed_ssa instead of update_ssa.
+	* Makefile.in (tree-ssa.o): Depend on $(CFGLOOP_H).
+
+2011-08-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/49936
+	* ira.c (ira_init_register_move_cost): Ignore too small subclasses
+	for calculation of max register move costs.
+
+2011-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_postfix_expression): Convert operands of
+	__builtin_complex to their semantic types.
+
+2011-08-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/49721
+	* explow.c (convert_memory_address_addr_space): Also permute the
+	conversion and addition of constant for zero-extend.
+
+2011-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_postfix_expression): Handle RID_BUILTIN_COMPLEX.
+	* doc/extend.texi (__builtin_complex): Document.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-ssa-math-opts.c (is_widening_mult_rhs_p): Handle constants
+	beyond conversions.
+	(convert_mult_to_widen): Convert constant inputs to the right type.
+	(convert_plusminus_to_widen): Don't automatically reject inputs that
+	are not an SSA_NAME.
+	Convert constant inputs to the right type.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Convert add_rhs
+	to the correct type.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Better handle
+	unsigned inputs of different modes.
+	(convert_plusminus_to_widen): Likewise.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-ssa-math-opts.c (is_widening_mult_rhs_p): Add new argument
+	'type'.
+	Use 'type' from caller, not inferred from 'rhs'.
+	Don't reject non-conversion statements. Do return lhs in this case.
+	(is_widening_mult_p): Add new argument 'type'.
+	Use 'type' from caller, not inferred from 'stmt'.
+	Pass type to is_widening_mult_rhs_p.
+	(convert_mult_to_widen): Pass type to is_widening_mult_p.
+	(convert_plusminus_to_widen): Likewise.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-ssa-math-opts.c (is_widening_mult_p): Remove FIXME.
+	Ensure the the larger type is the first operand.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Convert
+	unsupported unsigned multiplies to signed.
+	(convert_plusminus_to_widen): Likewise.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Permit a single
+	conversion statement separating multiply-and-accumulate.
+
+2011-08-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50067
+	* tree-data-ref.c (dr_analyze_indices): Simplify, strip MEM_REF
+	offset only if we accounted for it.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm.md (maddhidi4): Remove '*' from name.
+	* expr.c (expand_expr_real_2): Use find_widening_optab_handler.
+	* optabs.c (find_widening_optab_handler_and_mode): New function.
+	(expand_widen_pattern_expr): Use find_widening_optab_handler.
+	(expand_binop_directly): Likewise.
+	(expand_binop): Likewise.
+	* optabs.h (find_widening_optab_handler): New macro define.
+	(find_widening_optab_handler_and_mode): New prototype.
+	* tree-cfg.c (verify_gimple_assign_binary): Adjust WIDEN_MULT_EXPR
+	type precision rules.
+	(verify_gimple_assign_ternary): Likewise for WIDEN_MULT_PLUS_EXPR.
+	* tree-ssa-math-opts.c (build_and_insert_cast): New function.
+	(is_widening_mult_rhs_p): Allow widening by more than one mode.
+	Explicitly disallow mis-matched input types.
+	(convert_mult_to_widen): Use find_widening_optab_handler, and cast
+	input types to fit the new handler.
+	(convert_plusminus_to_widen): Likewise.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* expr.c (expand_expr_real_2): Use widening_optab_handler.
+	* genopinit.c (optabs): Use set_widening_optab_handler for $N.
+	(gen_insn): $N now means $a must be wider than $b, not consecutive.
+	* optabs.c (widened_mode): New function.
+	(expand_widen_pattern_expr): Use widening_optab_handler.
+	(expand_binop_directly): Likewise.
+	(expand_binop): Likewise.
+	* optabs.h (widening_optab_handlers): New struct.
+	(optab_d): New member, 'widening'.
+	(widening_optab_handler): New function.
+	(set_widening_optab_handler): New function.
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Use
+	widening_optab_handler.
+	(convert_plusminus_to_widen): Likewise.
+
+2011-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (grokdeclarator): Diagnose _Noreturn for non-C1X if
+	pedantic.
+	* c-parser.c (c_parser_declspecs): Include _Noreturn in syntax comment.
+	* ginclude/stdnoreturn.h (noreturn): Don't define for C++.
+
+2011-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* opth-gen.awk: Do not declare target save/restore structures and
+	functions if IN_RTS defined.
+
+2011-08-19  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	PR target/49437
+	* config/arm/arm.c (arm_output_epilogue): Properly handle epilogue
+	when stack was realigned in interrupt handler prologue.
+
+2011-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (shadow_tag_warned): Check for _Noreturn.
+	(quals_from_declspecs): Assert _Noreturn not present.
+	(grokdeclarator): Handle _Noreturn.
+	(build_null_declspecs): Initialize noreturn_p.
+	(declspecs_add_scspec): Handle RID_NORETURN.
+	* c-parser.c (c_token_starts_declspecs, c_parser_declspecs)
+	(c_parser_attributes): Handle RID_NORETURN.
+	* c-tree.h (struct c_declspecs): Add noreturn_p.
+	* ginclude/stdnoreturn.h: New.
+	* Makefile.in (USER_H): Add stdnoreturn.h.
+
+2011-08-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX2_SET): New.
+	(OPTION_MASK_ISA_AVX_UNSET): Update.
+	(OPTION_MASK_ISA_AVX2_UNSET): New.
+	(ix86_handle_option): Handle OPT_mavx2 case.
+	* config/i386/cpuid.h (bit_AVX2): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	AVX2 feature.
+	* config/i386/i386-c.c (ix86_target_macros_internal):
+	Conditionally define __AVX2__.
+	* config/i386/i386.c (ix86_option_override_internal): Define PTA_AVX2.
+	Define "core-avx2" processor alias.  Handle avx2 option.
+	(ix86_valid_target_attribute_inner_p): Handle avx2 option.
+	* config/i386/i386.h (TARGET_AVX2): New.
+	* config/i386/i386.opt (mavx2): New.
+	* doc/invoke.texi: Document -mavx2.
+
+2011-08-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/49890
+	* ira-costs.c (setup_regno_cost_classes_by_aclass): Don't exclude
+	subclasses of class which is superset of a pressure class.
+
+2011-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+	    Igor Zamyatin <igor.zamyatin@intel.com>
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): Replace int
+	with HOST_WIDE_INT for isa_flag.
+	(ix86_pragma_target_parse): Replace int with HOST_WIDE_INT for
+	isa variables.
+
+	* config/i386/i386.c (ix86_target_string): Replace int with
+	HOST_WIDE_INT for isa.  Use HOST_WIDE_INT_PRINT to print isa.
+	(ix86_target_opts): Replace int with HOST_WIDE_INT on mask.
+	(pta_flags): Removed.
+	(PTA_XXX): Redefined as (HOST_WIDE_INT_1 << X).
+	(pta): Use HOST_WIDE_INT on flags.
+	(builtin_isa): Use HOST_WIDE_INT on isa.
+	(ix86_add_new_builtins): Likewise.
+	(def_builtin): Use HOST_WIDE_INT on mask.
+	(def_builtin_const): Likewise.
+	(builtin_description): Likewise.
+
+	* config/i386/i386.opt (ix86_isa_flags): Replace int with
+	HOST_WIDE_INT.
+	(ix86_isa_flags_explicit): Likewise.
+	(x_ix86_isa_flags_explicit): Likewise.
+
+2011-08-17  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/50107
+	* ira-int.h (ira_hard_reg_not_in_set_p): Remove.
+	(ira_hard_reg_in_set_p): New.
+
+	* ira-color.c (calculate_saved_nregs): New.
+	(assign_hard_reg): Use it.  Set up allocated_hard_reg_p for all
+	hard regs.
+	(allocno_reload_assign, fast_allocation): Use
+	ira_hard_reg_set_intersection_p instead of
+	ira_hard_reg_not_in_set_p.
+
+	* ira.c (setup_reg_renumber): Use
+	ira_hard_reg_set_intersection_p instead of
+	ira_hard_reg_not_in_set_p.
+	(setup_allocno_assignment_flags, calculate_allocation_cost): Use
+	ira_hard_reg_in_set_p instead of ira_hard_reg_not_in_set_p.
+
+	* ira-costs.c (ira_tune_allocno_costs): Use
+	ira_hard_reg_set_intersection_p instead of
+	ira_hard_reg_not_in_set_p.
+
+2011-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+	    Igor Zamyatin <igor.zamyatin@intel.com>
+
+	* hwint.h (HOST_WIDE_INT_1): New.
+
+	* opt-functions.awk (switch_bit_fields): Initialize the
+	host_wide_int field.
+	(host_wide_int_var_name): New.
+	(var_type_struct): Check and return HOST_WIDE_INT.
+
+	* opt-read.awk: Handle HOST_WIDE_INT for "Variable".
+
+	* optc-save-gen.awk: Support HOST_WIDE_INT on var_target_other.
+
+	* opth-gen.awk: Use HOST_WIDE_INT_1 on HOST_WIDE_INT.  Properly
+	check masks for HOST_WIDE_INT.
+
+	* opts-common.c (set_option): Support HOST_WIDE_INT flag_var.
+	(option_enabled): Likewise.
+	(get_option_state): Likewise.
+
+	* opts.h (cl_option): Add cl_host_wide_int.  Change var_value
+	to HOST_WIDE_INT.
+
+2011-08-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Marc Glisse  <marc.glisse@normalesup.org>
+
+	PR libstdc++-v3/1773
+	* target.def (decl_mangling_context): New C++ hook.
+	* doc/tm.texi: Regenerate.
+	* config/sol2-cxx.c, config/sol2-stubs.c: New files.
+	* config/sol2-protos.h: Group by source file.
+	(solaris_cxx_decl_mangling_context): Declare.
+	* config/sol2.h (TARGET_CXX_DECL_MANGLING_CONTEXT): Define.
+	* config/t-sol2 (sol2-cxx.o, sol2-stubs.o): New targets.
+	Use $<.
+	* config.gcc (*-*-solaris2*): Add sol2-cxx.o to cxx_target_objs.
+	Add sol2-stubs.o to extra_objs.
+
+2011-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/50009
+	* stor-layout.c (update_alignment_for_field): Don't ICE on
+	packed flexible array members if ms_bitfield_layout_p.
+
+	PR target/50092
+	* config/i386/i386.c (assign_386_stack_local): Call validize_mem
+	on the result before returning it.
+
+	PR debug/50017
+	* tree-vect-stmts.c (vect_finish_stmt_generation): If gsi_stmt (*gsi)
+	is a debug stmt, use location of the first non-debug stmt after it.
+
+2011-08-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/arm/arm.c (arm_rtx_costs_1): Don't modify the costs of SET.
+	(arm_size_rtx_costs): Likewise.
+
+2011-08-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (tree_int_cst_msb): Remove.
+	* tree.c (tree_int_cst_msb): Likewise.
+	(tree_int_cst_sign_bit): Move from ...
+	* tree-ssa-loop-ivopts.c (tree_int_cst_sign_bit): ... here.
+
+2011-08-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* doc/tm.texi.in (TARGET_RTX_COSTS): Add an opno paramter.
+	* doc/tm.texi: Regenerate.
+	* target.def (rtx_costs): Add an opno parameter.
+	* hooks.h (hook_bool_rtx_int_int_intp_bool_false): Replace with...
+	(hook_bool_rtx_int_int_int_intp_bool_false): ...this.
+	* hooks.c (hook_bool_rtx_int_int_intp_bool_false): Replace with...
+	(hook_bool_rtx_int_int_int_intp_bool_false): ...this.
+	* cse.c (COST_IN): Add an opno parameter.
+	(notreg_cost): Likewise.  Update call to rtx_cost.
+	(COST, fold_rtx): Update accordingly.
+	* dojump.c (prefer_and_bit_test): Update call to rtx_cost.
+	* expmed.c (emit_store_flag): Likewise.
+	* optabs.c (avoid_expensive_constant): Add an opno parameter.
+	Update call to rtx_cost.
+	(expand_binop_directly, expand_binop): Likewise.
+	(expand_twoval_binop, prepare_cmp_insn): Likewise.
+	* rtl.h (rtx_cost, get_full_rtx_cost): Add opno parameters.
+	(set_src_cost, get_full_set_src_cost): Update accordingly.
+	* rtlanal.c (rtx_cost): Add an opno parameter.  Update call
+	to target hook.
+	(get_full_rtx_cost): Add an opno paramter.  Update calls to rtx_cost.
+	(default_adress_cost): Update calls to rtx_cost.
+
+	* config/arm/arm.c (arm_rtx_costs_1, arm_size_rtx_costs)
+	(arm_slowmul_rtx_costs): Adjust calls to rtx_cost.
+	(arm_rtx_costs): Add an opno parameter.
+	* config/alpha/alpha.c (alpha_rtx_costs): Add an opno parameter and
+	adjust any recursive rtx-cost calls.
+	* config/avr/avr.c (avr_operand_rtx_cost, avr_rtx_costs): Likewise.
+	* config/bfin/bfin.c (bfin_rtx_costs): Likewise.
+	* config/c6x/c6x.c (c6x_rtx_costs): Likewise.
+	* config/cris/cris.c (cris_rtx_costs): Likewise.
+	* config/frv/frv.c (frv_rtx_costs): Likewise.
+	* config/h8300/h8300.c (h8300_rtx_costs): Likewise.
+	* config/i386/i386.c (ix86_rtx_costs): Likewise.
+	* config/ia64/ia64.c (ia64_rtx_costs): Likewise.
+	* config/iq2000/iq2000.c (iq2000_rtx_costs): Likewise.
+	* config/lm32/lm32.c (lm32_rtx_costs): Likewise.
+	* config/m32c/m32c.c (m32c_rtx_costs): Likewise.
+	* config/m32r/m32r.c (m32r_rtx_costs): Likewise.
+	* config/m68k/m68k.c (m68k_rtx_costs): Likewise.
+	* config/mcore/mcore.c (mcore_rtx_costs): Likewise.
+	* config/mep/mep.c (mep_rtx_cost): Likewise.
+	* config/microblaze/microblaze.c (microblaze_rtx_costs): Likewise.
+	* config/mips/mips.c (mips_binary_cost): Update call to rtx_cost.
+	(mips_zero_extend_cost): Add an opno parameter.
+	* config/mmix/mmix.c (mmix_rtx_costs): Likewise.
+	* config/mn10300/mn10300.c (mn10300_address_cost): Update call
+	to rtx_cost.
+	(mn10300_rtx_costs): Add an opno parameter and adjust any recursive
+	rtx-cost calls.
+	* config/pa/pa.c (hppa_rtx_costs): Likewise.
+	* config/pdp11/pdp11.c (pdp11_rtx_costs): Likewise.
+	* config/picochip/picochip.c (picochip_rtx_costs): Likewise.
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Likewise.
+	(rs6000_debug_rtx_costs): Likewise.
+	* config/s390/s390.c (s390_rtx_costs): Likewise.
+	* config/score/score-protos.h (score_rtx_costs): Likewise.
+	* config/score/score.c (score_rtx_costs): Likewise.
+	* config/sh/sh.c (andcosts): Update call to rtx_cost.
+	(sh_rtx_costs): Add an opno parameter.
+	* config/sparc/sparc.c (sparc_rtx_costs): Likewise.
+	* config/spu/spu.c (spu_rtx_costs): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_rtx_costs): Likewise.
+	* config/v850/v850.c (v850_rtx_costs): Likewise.
+	* config/vax/vax.c (vax_rtx_costs): Likewise.
+	* config/xtensa/xtensa.c (xtensa_rtx_costs): Likewise.
+
+2011-08-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* rtl.h (set_src_cost, get_full_set_src_cost): New functions.
+	* auto-inc-dec.c (attempt_change): Use set_src_cost instead of
+	rtx_cost.
+	* calls.c (precompute_register_parameters): Likewise.
+	* combine.c (expand_compound_operation, make_extraction): Likewise.
+	(force_to_mode, distribute_and_simplify_rtx): Likewise.
+	* dse.c (find_shift_sequence): Likewise.
+	* expmed.c (init_expmed, expand_mult, expand_smod_pow2): Likewise.
+	* expr.c (compress_float_constant): Likewise.
+	* fwprop.c (should_replace_address, try_fwprop_subst): Likewise.
+	* gcse.c (want_to_gcse_p): Likewise.
+	* ifcvt.c (noce_try_sign_mask): Likewise.
+	* loop-doloop.c (doloop_optimize): Likewise.
+	* loop-invariant.c (create_new_invariant): Likewise.
+	* optabs.c (avoid_expensive_constant): Likewise.
+	* postreload.c (reload_cse_simplify_set, reload_cse_simplify_operands)
+	(try_replace_in_use, reload_cse_move2add): Likewise.
+	* reload1.c (calculate_elim_costs_all_insns): Likewise.
+	(note_reg_elim_costly): Likewise.
+	* rtlanal.c (insn_rtx_cost): Likewise.
+	* simplify-rtx.c (simplify_binary_operation_1): Likewise.
+	* stmt.c (lshift_cheap_p): Likewise.
+	* tree-ssa-loop-ivopts.c (seq_cost, computation_cost): Likewise.
+	* config/avr/avr.c (final_prescan_insn): Likewise.
+	* config/bfin/bfin.c (bfin_rtx_costs): Likewise.
+	* config/mips/mips.c (mips_binary_cost, mips_rtx_costs): Likewise.
+
+2011-08-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* rtl.h (set_rtx_cost, get_full_set_rtx_cost): New functions.
+	* auto-inc-dec.c (attempt_change): Use set_rtx_cost.
+	* cfgloopanal.c (seq_cost): Likewise.
+	* loop-invariant.c (create_new_invariant): Likewise.
+	* postreload.c (move2add_use_add2_insn, move2add_use_add3_insn)
+	(reload_cse_move2add): Use get_full_set_rtx_cost.
+
+2011-08-18  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (get_inner_reference): Fix typo in last change.
+
+2011-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR tree-optimization/49963
+	* hwint.c (absu_hwi): Define.
+	* hwint.h (absu_hwi): Declare.
+	* fold-const.c (fold_plusminus_mult_expr): Use absu_hwi instead
+	of abs_hwi.
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): Likewise.
+	* tree-ssa-loop-prefetch.c (prune_ref_by_group_reuse): Likewise.
+
+2011-08-18  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (get_inner_reference): Sign-extend the constant
+	twos-complement offset before doing arbitrary precision
+	arithmetic on it.
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset): Likewise.
+	(get_constraint_for_1): Pass the offset of a MEM_REF unchanged
+	to get_constraint_for_ptr_offset.
+
+2011-08-17  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/50068
+	* config/sh/sh.c (sh_output_mi_thunk): Don't call dbr_schedule.
+
+2011-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (convert_to_ptrofftype_loc): New function.
+	(convert_to_ptrofftype): Define.
+	* builtins.c (expand_builtin_bzero): Use size_type_node.
+	(fold_builtin_bzero): Likewise.
+	(std_gimplify_va_arg_expr): Build the BIT_AND_EXPR on the pointer.
+	* c-typeck.c (build_unary_op): Use convert_to_ptrofftype_loc.
+	* cgraphunit.c (thunk_adjust): Use fold_build_pointer_plus_loc.
+	(cgraph_redirect_edge_call_stmt_to_callee): Use size_int.
+	* expr.c (expand_expr_addr_expr_1): Use fold_build_pointer_plus.
+	* fold-const.c (build_range_check): Negate using the original type.
+	(fold_unary_loc): Use fold_build_pointer_plus_loc.
+	* gimple-fold.c (gimple_adjust_this_by_delta): Use
+	convert_to_ptrofftype.
+	* gimplify.c (gimplify_self_mod_expr): Likewise.
+	* graphite-clast-to-gimple.c (clast_to_gcc_expression): Likewise.
+	(graphite_create_new_loop_guard): Likewise.
+	* graphite-sese-to-poly.c (my_long_long): Remove.
+	(scop_ivs_can_be_represented): Adjust.
+	* tree-cfg.c (verify_gimple_assign_unary): Use ptrofftype_p.
+	* tree-chrec.c (chrec_fold_plus_1): Use fold_build_pointer_plus.
+	* tree-loop-distribution.c (build_size_arg_loc): Use
+	size_type_node.
+	(generate_memset_zero): Simplify.
+	* tree-mudflap.c: Use fold_convert, not convert.
+	* tree-predcom.c (suitable_reference_p): Expand DR_OFFSET in
+	its own type.
+	(determine_offset): Likewise for DR_STEP.
+	(valid_initializer_p): Likewise.
+	* tree-profile.c (prepare_instrumented_value): Convert the pointer
+	to an integer type of same size.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Do not refer
+	to sizetype without need.
+	* tree-ssa-address.c (tree_mem_ref_addr): Likewise.
+	* tree-ssa-loop-ivopts.c (find_bivs): Use convert_to_ptrofftype.
+	* tree-ssa-loop-manip.c (create_iv): Likewise.
+	(determine_exit_conditions): Adjust comment.
+	* tree-ssa-pre.c (create_expression_by_pieces): Use
+	convert_to_ptrofftype.
+	* tree-ssa-structalias.c (get_constraint_for_1): Likewise.
+	* varasm.c (array_size_for_constructor): Compute using double_ints.
+
+2011-08-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (spu_emit_branch_or_set): Avoid reverse tests
+	when generating an integer result where possible.  Short-cut
+	comparison against 0 also for QImode.
+
+2011-08-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.h (LEGITIMIZE_RELOAD_ADDRESS): New macro.
+	* config/spu/spu-protos.h (spu_legitimize_reload_address): Add
+	prototype.
+	* config/spu/spu.c (spu_legitimize_reload_address): New function.
+	(spu_legitimate_address_p): Do not check displacement if the base
+	is an eliminable stack register.
+
+2011-08-16  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32c/m32c.h (PREFERRED_RELOAD_CLASS,
+	PREFERRED_OUTPUT_RELOAD_CLASS): Remove macro.
+	* config/m32c/m32c-protos.h (m32c_preferred_reload_class,
+	m32c_preferred_output_reload_class): Remove.
+	* config/m32c/m32c.c (m32c_preferred_reload_class): Make static.
+	Change rclass argument and return types to reg_class_t. Use
+	reg_class_subset_p instead of class_sizes.
+	(m32c_preferred_output_reload_class): Make static. Change rclass
+	argument and return types to reg_class_t.
+	(TARGET_PREFERRED_RELOAD_CLASS,
+	TARGET_PREFERRED_OUTPUT_RELOAD_CLASS): Define.
+
+2011-08-16  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/mingw32.h (GOMP_SELF_SPEC): Add -pthread option.
+
+2011-08-16  Richard GUenther  <rguenther@suse.de>
+
+	PR tree-optimization/50082
+	* tree-ssa-forwprop.c (combine_cond_expr_cond): Handle overflow
+	warnings here, instead of ...
+	(ssa_forward_propagate_and_combine): ... here.
+	(forward_propagate_into_comparison_1): Adjust.
+	(forward_propagate_into_comparison): Likewise.
+	(forward_propagate_into_gimple_cond): Likewise.
+	(forward_propagate_into_cond): Likewise.
+
+2011-08-16  Andreas Schwab  <schwab@redhat.com>
+
+	* ggc.h (ggc_alloc_rtvec_sized): Use ggc_alloc_zone_rtvec_def
+	instead of ggc_alloc_zone_vec_rtvec_def.
+
+2011-08-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (ptrofftype_p): New helper function.
+	* tree-cfg.c (verify_expr): Use ptrofftype_p for POINTER_PLUS_EXPR
+	offset verification.
+	(verify_gimple_assign_binary): Likewise.
+	* tree.c (build2_stat): Likewise.
+	* tree-chrec.c (chrec_fold_plus_poly_poly): Likewise.
+	(reset_evolution_in_loop): Likewise.
+	* tree-chrec.h (build_polynomial_chrec): Likewise.
+
+2011-08-16  Liang Wang  <lwang1@marvell.com>
+
+	* ggc.h (ggc_alloc_rtvec_sized): Change arguments of
+	ggc_alloc_zone_vec_rtvec_def.
+
+2011-08-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (extract_range_from_multiplicative_op_1): New
+	helper factored out from ...
+	(extract_range_from_binary_expr_1): ... here.  Re-structure
+	to not glob handling too different tree codes.
+
+2011-08-15  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/50006
+	* explow.c (allocate_dynamic_stack_space): Move suppress_reg_args_size
+	setting out to include allocate_stack named pattern as well.
+	* builtins.c (expand_builtin_apply): Add ARG_SIZE 0 note.
+	* stmt.c (expand_stack_restore): Likewise.
+
+2011-08-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/50082
+	* fold-const.c (maybe_canonicalize_comparison_1): Properly
+	convert the modified operand to the other operand type.
+	(fold_comparison): Call maybe_canonicalize_comparison_1 with
+	useless conversions stripped from comparison operands.
+
+2011-08-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (value_range_nonnegative_p): Fix anti-range case.
+	(extract_range_from_unary_expr_1): Restructure.
+
+2011-08-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50058
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Relax aggregate
+	copy matching.
+
+2011-08-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/50022
+	* config/arm/arm.c (output_move_double): Add 2 parameters
+	to count the number of insns emitted and whether to emit or not.
+	Use the flag to decide when to emit and count number of instructions
+	that will be emitted.
+	Handle case where output_move_double might be called for calculating
+	lengths with an invalid constant.
+	(arm_count_output_move_double_insns): Define.
+	* config/arm/arm-protos.h (arm_count_output_move_double_insns): Declare.
+	(output_move_double): Adjust prototype.
+	* config/arm/vfp.md ("*movdi_vfp"): Adjust call to
+	output_move_double.
+	("*movdi_vfp_cortexa8"): Likewise and add attribute
+	for ce_count.
+	* config/arm/arm.md ("*arm_movdi"): Adjust call to output_move_double.
+	("*movdf_soft_insn"): Likewise.
+	* config/arm/cirrus.md ("*cirrus_arm_movdi"): Likewise.
+	("*cirrus_thumb2_movdi"): Likewise.
+	("*thumb2_cirrus_movdf_hard_insn"): Likewise.
+	("*cirrus_movdf_hard_insn"): Likewise.
+	* config/arm/neon.md (*neon_mov<mode> VD): Likewise.
+	* config/arm/iwmmxt.md ("*iwmmxt_arm_movdi"): Likewise.
+	("mov<mode>_internal VMMX"): Likewise.
+	* config/arm/fpa.md (*movdf_fpa, *thumb2_movdf_fpa): Likewise.
+
+2011-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_round_sse4): New function.
+	* config/i386/i386-protos.h (ix86_expand_round_sse4): New prototype.
+	* config/i386/i386.md (round<mode>2): Use ix86_expand_round_sse4
+	for TARGET_ROUND.
+
+	(rint<mode>2): Simplify TARGET_ROUND check.
+	(floor<mode>2): Ditto.
+	(ceil<mode>2): Ditto.
+	(btrunc<mode>2): Ditto.
+
+2011-08-14  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mmix/mmix.c (TARGET_PREFERRED_OUTPUT_RELOAD_CLASS): Redefine
+	as mmix_preferred_output_reload_class.
+
+2011-08-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* PR target/49903
+	* config/avr/avr.md (UNSPEC_IDENTITY): New c_enum.
+	(branch_unspec): New insn.
+	(branch): Beauty farm.
+	* config/avr/avr.c (compare_condition): Use JUMP_P.  Test SET_SRC
+	to be IF_THEN_ELSE.
+	(avr_compare_pattern, avr_reorg_remove_redundant_compare):
+	New static functions.
+	(avr_reorg): Use them.  Use next_real_insn instead of NEXT_INSN.
+	Use CONST_INT_P.  Beauty.
+
+2011-08-12  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/49994
+	* sched-init.h (struct deps_desc): Add sched_before_next_jump.
+	* sched-deps.c (init_deps): Clear it.
+	(deps_analyze_insn): Consume it.
+	(sched_analyze_insn): Fill it.
+
 2011-08-12  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-        PR target/48328
+	PR target/48328
 	* config/arm/arm.h (CASE_VECTOR_SHORTEN_MODE): Fix distance
 	for tbh instructions.
 
-2011-08-12   Diego Novillo  <dnovillo@google.com>
+2011-08-12  Diego Novillo  <dnovillo@google.com>
 
 	* data-streamer.h (streamer_write_zero): Rename from output_zero.
- 	(streamer_write_uhwi): Rename from lto_output_uleb128.
- 	(streamer_write_hwi): Rename from output_sleb128.
- 	(streamer_write_string): Rename from lto_output_string.
- 	(streamer_string_index): Rename from lto_string_index.
- 	(streamer_write_string_with_length): Rename from
- 	lto_output_string_with_length.
- 	(streamer_write_uhwi_stream): Rename from lto_output_uleb128_stream.
- 	(streamer_write_hwi_stream): Rename from lto_output_sleb128_stream.
- 	(streamer_read_string): Rename from lto_input_string.
- 	(streamer_read_indexed_string): Rename from input_string_internal.
- 	(streamer_read_uhwi): Rename from lto_input_uleb128.
- 	(streamer_read_hwi): Rename from lto_input_sleb128.
- 	(streamer_write_hwi_in_range): Rename from lto_output_int_in_range.
- 	(streamer_read_hwi_in_range): Rename from lto_input_int_in_range.
- 	(streamer_write_enum): Rename from lto_output_enum.
- 	(streamer_read_enum): Rename from lto_input_enum.
- 	(streamer_write_record_start): Rename from output_record_start.
- 	(streamer_read_record_start): Rename from input_record_start.
- 	(streamer_write_bitpack): Rename from lto_output_bitpack.
- 	(streamer_read_bitpack): Rename from lto_input_bitpack.
- 	(streamer_write_char_stream): Rename from lto_output_1_stream.
- 	(streamer_read_uchar): Rename from lto_input_1_unsigned.
- 	* tree-streamer.h (streamer_cache_d): Rename from lto_streamer_cache_d.
- 	(streamer_handle_as_builtin_p): Rename from lto_stream_as_builtin_p.
- 	(streamer_read_string_cst): Rename from input_string_cst.
- 	(streamer_read_chain): Rename from lto_input_chain.
- 	(streamer_alloc_tree): Rename from lto_materialize_tree.
- 	(streamer_read_tree_body): Rename from lto_input_tree_pointers.
- 	(streamer_get_pickled_tree): Rename from lto_get_pickled_tree.
- 	(streamer_get_builtin_tree): Rename from lto_get_builtin_tree.
- 	(streamer_read_integer_cst): Rename from lto_input_integer_cst.
- 	(streamer_read_tree_bitfields): Rename from tree_read_bitfields.
- 	(streamer_write_chain): Rename from lto_output_chain.
- 	(streamer_write_tree_header): Rename from lto_output_tree_header.
- 	(streamer_pack_tree_bitfields): Rename from pack_value_fields.
- 	(streamer_write_tree_body): Rename from lto_output_tree_pointers.
- 	(streamer_write_integer_cst): Rename from lto_output_integer_cst.
- 	(streamer_write_builtin): Rename from lto_output_builtin_tree.
- 	(streamer_check_handled_ts_structures): Rename from
- 	check_handled_ts_structures.
- 	(streamer_tree_cache_insert): Rename from lto_streamer_cache_insert.
- 	(streamer_tree_cache_insert_at): Rename from
- 	lto_streamer_cache_insert_at.
- 	(streamer_tree_cache_append): Rename from lto_streamer_cache_append.
- 	(streamer_tree_cache_lookup): Rename from lto_streamer_cache_lookup.
- 	(streamer_tree_cache_get): Rename from lto_streamer_cache_get.
- 	(streamer_tree_cache_create): Rename from lto_streamer_cache_create.
- 	(streamer_tree_cache_delete): Rename from lto_streamer_cache_delete.
- 	* tree-streamer-out.c (write_string_cst): Rename from output_string_cst.
- 	(write_identifier): Rename from output_identifier.
- 	(write_ts_common_tree_pointers): Rename from
- 	lto_output_ts_common_tree_pointers.
- 	(write_ts_vector_tree_pointers): Rename from
- 	lto_output_ts_vector_tree_pointers.
- 	(write_ts_complex_tree_pointers): Rename from
- 	lto_output_ts_complex_tree_pointers.
- 	(write_ts_decl_minimal_tree_pointers): Rename from
- 	lto_output_ts_decl_minimal_tree_pointers.
- 	(write_ts_decl_common_tree_pointers): Rename from
- 	lto_output_ts_decl_common_tree_pointers.
- 	(write_ts_decl_non_common_tree_pointers): Rename from
- 	lto_output_ts_decl_non_common_tree_pointers.
- 	(write_ts_decl_with_vis_tree_pointers): Rename from
- 	lto_output_ts_decl_with_vis_tree_pointers.
- 	(write_ts_field_decl_tree_pointers): Rename from
- 	lto_output_ts_field_decl_tree_pointers.
- 	(write_ts_function_decl_tree_pointers): Rename from
- 	lto_output_ts_function_decl_tree_pointers.
- 	(write_ts_type_common_tree_pointers): Rename from
- 	lto_output_ts_type_common_tree_pointers.
- 	(write_ts_type_non_common_tree_pointers): Rename from
- 	lto_output_ts_type_non_common_tree_pointers.
- 	(write_ts_list_tree_pointers): Rename from
- 	lto_output_ts_list_tree_pointers.
- 	(write_ts_vec_tree_pointers): Rename from
- 	lto_output_ts_vec_tree_pointers.
- 	(write_ts_exp_tree_pointers): Rename from
- 	lto_output_ts_exp_tree_pointers.
- 	(write_ts_block_tree_pointers): Rename from
- 	lto_output_ts_block_tree_pointers.
- 	(write_ts_binfo_tree_pointers): Rename from
- 	lto_output_ts_binfo_tree_pointers.
- 	(write_ts_constructor_tree_pointers): Rename from
- 	lto_output_ts_constructor_tree_pointers.
- 	(write_ts_target_option): Rename from
- 	lto_output_ts_target_option.
- 	(write_ts_translation_unit_decl_tree_pointers): Rename from
- 	lto_output_ts_translation_unit_decl_tree_pointers.
- 	* tree-streamer.c (streamer_tree_cache_add_to_node_array):
- 	Rename from lto_streamer_cache_add_to_node_array.
- 	(streamer_tree_cache_insert_1): Rename from lto_streamer_cache_insert_1.
- 	(record_common_node): Rename from lto_record_common_node.
+	(streamer_write_uhwi): Rename from lto_output_uleb128.
+	(streamer_write_hwi): Rename from output_sleb128.
+	(streamer_write_string): Rename from lto_output_string.
+	(streamer_string_index): Rename from lto_string_index.
+	(streamer_write_string_with_length): Rename from
+	lto_output_string_with_length.
+	(streamer_write_uhwi_stream): Rename from lto_output_uleb128_stream.
+	(streamer_write_hwi_stream): Rename from lto_output_sleb128_stream.
+	(streamer_read_string): Rename from lto_input_string.
+	(streamer_read_indexed_string): Rename from input_string_internal.
+	(streamer_read_uhwi): Rename from lto_input_uleb128.
+	(streamer_read_hwi): Rename from lto_input_sleb128.
+	(streamer_write_hwi_in_range): Rename from lto_output_int_in_range.
+	(streamer_read_hwi_in_range): Rename from lto_input_int_in_range.
+	(streamer_write_enum): Rename from lto_output_enum.
+	(streamer_read_enum): Rename from lto_input_enum.
+	(streamer_write_record_start): Rename from output_record_start.
+	(streamer_read_record_start): Rename from input_record_start.
+	(streamer_write_bitpack): Rename from lto_output_bitpack.
+	(streamer_read_bitpack): Rename from lto_input_bitpack.
+	(streamer_write_char_stream): Rename from lto_output_1_stream.
+	(streamer_read_uchar): Rename from lto_input_1_unsigned.
+	* tree-streamer.h (streamer_cache_d): Rename from lto_streamer_cache_d.
+	(streamer_handle_as_builtin_p): Rename from lto_stream_as_builtin_p.
+	(streamer_read_string_cst): Rename from input_string_cst.
+	(streamer_read_chain): Rename from lto_input_chain.
+	(streamer_alloc_tree): Rename from lto_materialize_tree.
+	(streamer_read_tree_body): Rename from lto_input_tree_pointers.
+	(streamer_get_pickled_tree): Rename from lto_get_pickled_tree.
+	(streamer_get_builtin_tree): Rename from lto_get_builtin_tree.
+	(streamer_read_integer_cst): Rename from lto_input_integer_cst.
+	(streamer_read_tree_bitfields): Rename from tree_read_bitfields.
+	(streamer_write_chain): Rename from lto_output_chain.
+	(streamer_write_tree_header): Rename from lto_output_tree_header.
+	(streamer_pack_tree_bitfields): Rename from pack_value_fields.
+	(streamer_write_tree_body): Rename from lto_output_tree_pointers.
+	(streamer_write_integer_cst): Rename from lto_output_integer_cst.
+	(streamer_write_builtin): Rename from lto_output_builtin_tree.
+	(streamer_check_handled_ts_structures): Rename from
+	check_handled_ts_structures.
+	(streamer_tree_cache_insert): Rename from lto_streamer_cache_insert.
+	(streamer_tree_cache_insert_at): Rename from
+	lto_streamer_cache_insert_at.
+	(streamer_tree_cache_append): Rename from lto_streamer_cache_append.
+	(streamer_tree_cache_lookup): Rename from lto_streamer_cache_lookup.
+	(streamer_tree_cache_get): Rename from lto_streamer_cache_get.
+	(streamer_tree_cache_create): Rename from lto_streamer_cache_create.
+	(streamer_tree_cache_delete): Rename from lto_streamer_cache_delete.
+	* tree-streamer-out.c (write_string_cst): Rename from output_string_cst.
+	(write_identifier): Rename from output_identifier.
+	(write_ts_common_tree_pointers): Rename from
+	lto_output_ts_common_tree_pointers.
+	(write_ts_vector_tree_pointers): Rename from
+	lto_output_ts_vector_tree_pointers.
+	(write_ts_complex_tree_pointers): Rename from
+	lto_output_ts_complex_tree_pointers.
+	(write_ts_decl_minimal_tree_pointers): Rename from
+	lto_output_ts_decl_minimal_tree_pointers.
+	(write_ts_decl_common_tree_pointers): Rename from
+	lto_output_ts_decl_common_tree_pointers.
+	(write_ts_decl_non_common_tree_pointers): Rename from
+	lto_output_ts_decl_non_common_tree_pointers.
+	(write_ts_decl_with_vis_tree_pointers): Rename from
+	lto_output_ts_decl_with_vis_tree_pointers.
+	(write_ts_field_decl_tree_pointers): Rename from
+	lto_output_ts_field_decl_tree_pointers.
+	(write_ts_function_decl_tree_pointers): Rename from
+	lto_output_ts_function_decl_tree_pointers.
+	(write_ts_type_common_tree_pointers): Rename from
+	lto_output_ts_type_common_tree_pointers.
+	(write_ts_type_non_common_tree_pointers): Rename from
+	lto_output_ts_type_non_common_tree_pointers.
+	(write_ts_list_tree_pointers): Rename from
+	lto_output_ts_list_tree_pointers.
+	(write_ts_vec_tree_pointers): Rename from
+	lto_output_ts_vec_tree_pointers.
+	(write_ts_exp_tree_pointers): Rename from
+	lto_output_ts_exp_tree_pointers.
+	(write_ts_block_tree_pointers): Rename from
+	lto_output_ts_block_tree_pointers.
+	(write_ts_binfo_tree_pointers): Rename from
+	lto_output_ts_binfo_tree_pointers.
+	(write_ts_constructor_tree_pointers): Rename from
+	lto_output_ts_constructor_tree_pointers.
+	(write_ts_target_option): Rename from lto_output_ts_target_option.
+	(write_ts_translation_unit_decl_tree_pointers): Rename from
+	lto_output_ts_translation_unit_decl_tree_pointers.
+	* tree-streamer.c (streamer_tree_cache_add_to_node_array):
+	Rename from lto_streamer_cache_add_to_node_array.
+	(streamer_tree_cache_insert_1): Rename from lto_streamer_cache_insert_1.
+	(record_common_node): Rename from lto_record_common_node.
 
 	* streamer-hooks.h (bitpack_d, lto_streamer_cache_d): Remove forward
 	declarations.
@@ -113,8 +823,7 @@
 
 2011-08-12  Nick Clifton  <nickc@redhat.com>
 
-	* builtins.c (expand_builtin_memcmp): Do not use cmpstrnsi
-	pattern.
+	* builtins.c (expand_builtin_memcmp): Do not use cmpstrnsi pattern.
 	* doc/md.texi (cmpstrn): Note that the comparison stops if both
 	fetched bytes are zero.
 	(cmpstr): Likewise.
@@ -142,8 +851,7 @@
 
 2011-08-12  Richard Guenther  <rguenther@suse.de>
 
-	* tree-vrp.c (extract_range_from_unary_expr_1): Implement
-	-X as 0 - X.
+	* tree-vrp.c (extract_range_from_unary_expr_1): Implement -X as 0 - X.
 
 2011-08-12  Romain Geissler  <romain.geissler@gmail.com>
 
@@ -152,7 +860,7 @@
 2011-08-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/arm/arm.c (get_label_padding): New function.
-	(create_fix_barrier, md_reorg): Likewise.
+	(create_fix_barrier, arm_reorg): Use it.
 
 2011-08-11  Uros Bizjak  <ubizjak@gmail.com>
 

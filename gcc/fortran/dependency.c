@@ -230,8 +230,12 @@ gfc_dep_compare_functions (gfc_expr *e1, gfc_expr *e2, bool impure_ok)
 	return -2;      
 }
 
-/* Compare two values.  Returns 0 if e1 == e2, -1 if e1 < e2, +1 if e1 > e2,
-   and -2 if the relationship could not be determined.  */
+/* Compare two expressions.  Return values:
+   * +1 if e1 > e2
+   * 0 if e1 == e2
+   * -1 if e1 < e2
+   * -2 if the relationship could not be determined
+   * -3 if e1 /= e2, but we cannot tell which one is larger.  */
 
 int
 gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
@@ -304,9 +308,9 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	  r = gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op2);
 	  if (l == 0 && r == 0)
 	    return 0;
-	  if (l == 0 && r != -2)
+	  if (l == 0 && r > -2)
 	    return r;
-	  if (l != -2 && r == 0)
+	  if (l > -2 && r == 0)
 	    return l;
 	  if (l == 1 && r == 1)
 	    return 1;
@@ -317,9 +321,9 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	  r = gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op1);
 	  if (l == 0 && r == 0)
 	    return 0;
-	  if (l == 0 && r != -2)
+	  if (l == 0 && r > -2)
 	    return r;
-	  if (l != -2 && r == 0)
+	  if (l > -2 && r == 0)
 	    return l;
 	  if (l == 1 && r == 1)
 	    return 1;
@@ -354,9 +358,9 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	  r = gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op2);
 	  if (l == 0 && r == 0)
 	    return 0;
-	  if (l != -2 && r == 0)
+	  if (l > -2 && r == 0)
 	    return l;
-	  if (l == 0 && r != -2)
+	  if (l == 0 && r > -2)
 	    return -r;
 	  if (l == 1 && r == -1)
 	    return 1;
@@ -375,8 +379,8 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
       l = gfc_dep_compare_expr (e1->value.op.op1, e2->value.op.op1);
       r = gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op2);
 
-      if (l == -2)
-	return -2;
+      if (l <= -2)
+	return l;
 
       if (l == 0)
 	{
@@ -387,7 +391,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	  if (e1_left->expr_type == EXPR_CONSTANT
 	      && e2_left->expr_type == EXPR_CONSTANT
 	      && e1_left->value.character.length
-	        != e2_left->value.character.length)
+		 != e2_left->value.character.length)
 	    return -2;
 	  else
 	    return r;
@@ -411,7 +415,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
     }
 
   if (e1->expr_type != e2->expr_type)
-    return -2;
+    return -3;
 
   switch (e1->expr_type)
     {
@@ -434,7 +438,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
       if (are_identical_variables (e1, e2))
 	return 0;
       else
-	return -2;
+	return -3;
 
     case EXPR_OP:
       /* Intrinsic operators are the same if their operands are the same.  */
@@ -1406,7 +1410,7 @@ gfc_check_element_vs_section( gfc_ref *lref, gfc_ref *rref, int n)
       if (!start || !end)
 	return GFC_DEP_OVERLAP;
       s = gfc_dep_compare_expr (start, end);
-      if (s == -2)
+      if (s <= -2)
 	return GFC_DEP_OVERLAP;
       /* Assume positive stride.  */
       if (s == -1)
@@ -1553,7 +1557,7 @@ gfc_check_element_vs_element (gfc_ref *lref, gfc_ref *rref, int n)
   if (contains_forall_index_p (r_start) || contains_forall_index_p (l_start))
     return GFC_DEP_OVERLAP;
 
-  if (i != -2)
+  if (i > -2)
     return GFC_DEP_NODEP;
   return GFC_DEP_EQUAL;
 }

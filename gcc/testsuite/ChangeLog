@@ -1,3 +1,230 @@
+2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/47659
+	* gfortran.dg/warn_conversion_2.f90:  Also warn about conversion
+	of a constant resulting from simplification.
+	* gfortran.dg/warn_conversion_3.f90:  New test.
+
+2011-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50130
+	* gfortran.dg/zero_stride_1.f90:  New test.
+
+2011-08-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49638
+	* gfortran.dg/typebound_override_1.f90: Modified.
+
+2011-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48739
+	* gcc.dg/pr48739-1.c: New test.
+	* gcc.dg/pr48739-2.c: New test.
+
+2011-08-20  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/graphite/interchange-1.f: Remove xfail.
+
+2011-08-19  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/50129
+	* gfortran.dg/where_3.f90: New test.
+
+2011-08-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/49721
+	* gfortran.dg/pr49721-1.f: New.
+	* gfortran.fortran-torture/compile/pr49721-1.f: Likewise.
+
+2011-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/builtin-complex-err-1.c, gcc.dg/builtin-complex-err-2.c,
+	gcc.dg/dfp/builtin-complex.c, gcc.dg/torture/builtin-complex-1.c:
+	New tests.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/wmul-11.c: New file.
+	* gcc.target/arm/wmul-12.c: New file.
+	* gcc.target/arm/wmul-13.c: New file.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/wmul-10.c: New file.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/wmul-9.c: New file.
+	* gcc.target/arm/wmul-bitfield-2.c: New file.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/wmul-8.c: New file.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/wmul-7.c: New file.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/wmul-6.c: New file.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/wmul-5.c: New file.
+	* gcc.target/arm/no-wmla-1.c: New file.
+
+2011-08-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/wmul-bitfield-1.c: New file.
+
+2011-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c90-noreturn-1.c, gcc.dg/c99-noreturn-1.c: New tests.
+
+2011-08-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/builtins-67.c: Use dg-add-options c99_runtime.
+	* gcc.target/i386/conversion.c: Likewise.
+
+2011-08-19  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr50067-1.c: New testcase.
+	* gcc.dg/torture/pr50067-2.c: Likewise.
+
+2011-08-19  Joey Ye  <joey.ye@arm.com>
+
+	PR target/49437
+	* gcc.target/arm/handler-align.c: New test.
+	* lib/target-supports.exp (check_effective_target_arm_cortex_m):
+	New Function.
+
+2011-08-19  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.c-torture/execute/20101011-1.c (DO_TEST): Skip on ARM.
+
+2011-08-19  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/50071
+	* gfortran.dg/end_block_label_1.f90: New test.
+	* gfortran.dg/end_associate_label_1.f90: New test.
+
+2011-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c1x-pointer-float-1.c: New test.
+
+2011-08-18  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/50071
+	* gfortran.dg/duplicate_labels_2.f: New test.
+
+2011-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c1x-noreturn-1.c, gcc.dg/c1x-noreturn-2.c,
+	gcc.dg/c1x-noreturn-3.c, gcc.dg/c1x-noreturn-4.c,
+	gcc.dg/c1x-noreturn-5.c: New tests.
+
+2011-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c1x-uni-string-1.c, gcc.dg/c1x-uni-string-2.c: New tests.
+
+2011-08-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_lock_1.f90: Update dg-error.
+	* gfortran.dg/coarray_lock_3.f90: Fix test.
+	* gfortran.dg/coarray_lock_4.f90: New.
+	* gfortran.dg/coarray_lock_5.f90: New.
+
+2011-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/50009
+	* gcc.c-torture/compile/pr50009.c: New test.
+
+	PR target/50092
+	* gcc.dg/torture/pr50092.c: New test.
+
+2011-08-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50109
+	* gfortran.dg/namelist_73.f90: New.
+
+2011-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/plugin/decl_plugin.c: Include diagnostic.h.
+
+	PR debug/50017
+	* gcc.dg/pr50017.c: New test.
+
+2011-08-18  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/45625
+	* g++.dg/lookup/hidden-var1.C: New test case.
+
+2011-08-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31461
+	* gfortran.dg/warn_unused_var_2.f90: New.
+	* gfortran.dg/warn_unused_var_3.f90: New.
+
+2011-08-17  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43597
+	* gcc.target/arm/pr43597.c: New test.
+
+2011-08-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50070
+	* gfortran.dg/common_13.f90: New.
+
+2011-08-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50086
+	* g++.dg/cpp0x/variadic-unresolved.C: New.
+
+	* g++.old-deja/g++.brendan/README: Add R.I.P.
+
+	* g++.dg/ext/attr-used-1.C: New.
+
+	PR c++/50054
+	* g++.dg/cpp0x/initlist56.C: New.
+
+2011-08-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/50085
+	* g++.dg/opt/life1.C: Only run on Linux.
+
+2011-08-15  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_26.f90: New.
+
+2011-08-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/tree-ssa/vrp61.c: Use -fdump-tree-vrp1-nouid instead of
+	-fdump-tree-vrp1.
+
+2011-08-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50073
+	* gfortran.dg/func_result_7.f90: New.
+
+2011-08-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50075
+	* g++.dg/cpp0x/decltype32.C: New.
+
+	PR c++/50059
+	* g++.dg/diagnostic/expr1.C: New.
+
+2011-08-12  David Li  <davidxl@google.com>
+
+	* g++.dg/abi/vbase15.C: New test.
+
+2011-08-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50034
+	* g++.dg/cpp0x/defaulted28.C: Add unevaluated case.
+
 2011-08-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/builtins-67.c: New test.

@@ -360,97 +360,104 @@ xml_sources = \
 	${xml_sources_manual} \
 	${xml_sources_extra}
 
-image_dir = ${xml_dir}/images
-xml_images = \
-	${image_dir}/confdeps.png \
-	${image_dir}/pbds_balls_and_bins.png \
-	${image_dir}/pbds_binary_priority_queue_random_int_push_timing_test_local.png \
-	${image_dir}/pbds_cc_hash_random_int_find_timing_test_local.png \
-	${image_dir}/pbds_cc_hash_random_int_subscript_timing_test_find_local.png \
-	${image_dir}/pbds_cc_hash_random_int_subscript_timing_test_insert_local.png \
-	${image_dir}/pbds_container_tag_hierarchy.png \
-	${image_dir}/pbds_different_underlying_dss_1.png \
-	${image_dir}/pbds_different_underlying_dss_2.png \
-	${image_dir}/pbds_embedded_lists_1.png \
-	${image_dir}/pbds_embedded_lists_2.png \
-	${image_dir}/pbds_embedded_lists_3.png \
-	${image_dir}/pbds_exception_hierarchy.png \
-	${image_dir}/pbds_gp_hash_random_int_find_timing_test_local.png \
-	${image_dir}/pbds_gp_hash_random_int_subscript_timing_test_find_local.png \
-	${image_dir}/pbds_gp_hash_random_int_subscript_timing_test_insert_local.png \
-	${image_dir}/pbds_hash_policy_cd.png \
-	${image_dir}/pbds_hash_random_int_erase_mem_usage_test_local.png \
-	${image_dir}/pbds_hash_ranged_hash_range_hashing_fns.png \
-	${image_dir}/pbds_hash_range_hashing_seq_diagram2.png \
-	${image_dir}/pbds_hash_range_hashing_seq_diagram.png \
-	${image_dir}/pbds_hash_zlob_random_int_find_timing_test_local.png \
-	${image_dir}/pbds_insert_resize_sequence_diagram1.png \
-	${image_dir}/pbds_insert_resize_sequence_diagram2.png \
-	${image_dir}/pbds_insert_resize_sequence_diagram3.png \
-	${image_dir}/pbds_invalidation_guarantee_erase.png \
-	${image_dir}/pbds_invalidation_tag_hierarchy.png \
-	${image_dir}/pbds_list_update.png \
-	${image_dir}/pbds_multimap_text_find_timing_test_large_s2p_hash_local.png \
-	${image_dir}/pbds_multimap_text_find_timing_test_large_s2p_tree_local.png \
-	${image_dir}/pbds_multimap_text_find_timing_test_small_s2p_hash_local.png \
-	${image_dir}/pbds_multimap_text_find_timing_test_small_s2p_tree_local.png \
-	${image_dir}/pbds_multimap_text_insert_mem_usage_test_large_s2p_hash_local.png \
-	${image_dir}/pbds_multimap_text_insert_mem_usage_test_large_s2p_tree_local.png \
-	${image_dir}/pbds_multimap_text_insert_mem_usage_test_small_s2p_hash_local.png \
-	${image_dir}/pbds_multimap_text_insert_mem_usage_test_small_s2p_tree_local.png \
-	${image_dir}/pbds_multimap_text_insert_timing_test_large_s2p_hash_local.png \
-	${image_dir}/pbds_multimap_text_insert_timing_test_large_s2p_tree_local.png \
-	${image_dir}/pbds_multimap_text_insert_timing_test_small_s2p_hash_local.png \
-	${image_dir}/pbds_multimap_text_insert_timing_test_small_s2p_tree_local.png \
-	${image_dir}/pbds_node_invariants.png \
-	${image_dir}/pbds_pairing_priority_queue_text_push_pop_timing_test_local.png \
-	${image_dir}/pbds_pairing_priority_queue_text_push_timing_test_local.png \
-	${image_dir}/pbds_pat_trie.png \
-	${image_dir}/pbds_point_iterator_hierarchy.png \
-	${image_dir}/pbds_point_iterators_range_ops_1.png \
-	${image_dir}/pbds_point_iterators_range_ops_2.png \
-	${image_dir}/pbds_priority_queue_different_underlying_dss.png \
-	${image_dir}/pbds_priority_queue_random_int_push_pop_timing_test_local.png \
-	${image_dir}/pbds_priority_queue_random_int_push_timing_test_local.png \
-	${image_dir}/pbds_priority_queue_tag_hierarchy.png \
-	${image_dir}/pbds_priority_queue_text_join_timing_test_local.png \
-	${image_dir}/pbds_priority_queue_text_modify_down_timing_test_local.png \
-	${image_dir}/pbds_priority_queue_text_modify_down_timing_test_pairing_thin_local.png \
-	${image_dir}/pbds_priority_queue_text_modify_up_timing_test_local.png \
-	${image_dir}/pbds_priority_queue_text_modify_up_timing_test_pairing_thin_local.png \
-	${image_dir}/pbds_priority_queue_text_pop_mem_usage_test_local.png \
-	${image_dir}/pbds_priority_queue_text_push_pop_timing_test_local.png \
-	${image_dir}/pbds_priority_queue_text_push_timing_test_local.png \
-	${image_dir}/pbds_rationale_null_node_updator.png \
-	${image_dir}/pbds_resize_policy_cd.png \
-	${image_dir}/pbds_restoring_node_invariants.png \
-	${image_dir}/pbds_simple_list.png \
-	${image_dir}/pbds_text_find_timing_test_hash_local.png \
-	${image_dir}/pbds_text_find_timing_test_tree_like_local.png \
-	${image_dir}/pbds_tree_node_invalidations.png \
-	${image_dir}/pbds_tree_node_invariants.png \
-	${image_dir}/pbds_tree_node_updator_policy_cd.png \
-	${image_dir}/pbds_tree_order_statistics_timing_test_local.png \
-	${image_dir}/pbds_tree_split_join_timing_test_local.png \
-	${image_dir}/pbds_tree_text_insert_timing_test_node_tree_local.png \
-	${image_dir}/pbds_tree_text_insert_timing_test_pat_trie_local.png \
-	${image_dir}/pbds_tree_text_insert_timing_test_vector_tree_local.png \
-	${image_dir}/pbds_tree_text_lor_find_timing_test_local.png \
-	${image_dir}/pbds_trie_node_updator_policy_cd.png \
-	${image_dir}/pbds_update_seq_diagram.png
+xml_image_dir = ${xml_dir}/images
+xml_image_basic = \
+	${xml_image_dir}/confdeps.png \
+	${xml_image_dir}/pbds_balls_and_bins.png \
+	${xml_image_dir}/pbds_container_tag_hierarchy.png \
+	${xml_image_dir}/pbds_different_underlying_dss_1.png \
+	${xml_image_dir}/pbds_different_underlying_dss_2.png \
+	${xml_image_dir}/pbds_embedded_lists_1.png \
+	${xml_image_dir}/pbds_embedded_lists_2.png \
+	${xml_image_dir}/pbds_embedded_lists_3.png \
+	${xml_image_dir}/pbds_exception_hierarchy.png \
+	${xml_image_dir}/pbds_hash_policy_cd.png \
+	${xml_image_dir}/pbds_hash_ranged_hash_range_hashing_fns.png \
+	${xml_image_dir}/pbds_hash_range_hashing_seq_diagram2.png \
+	${xml_image_dir}/pbds_hash_range_hashing_seq_diagram.png \
+	${xml_image_dir}/pbds_insert_resize_sequence_diagram1.png \
+	${xml_image_dir}/pbds_insert_resize_sequence_diagram2.png \
+	${xml_image_dir}/pbds_insert_resize_sequence_diagram3.png \
+	${xml_image_dir}/pbds_invalidation_guarantee_erase.png \
+	${xml_image_dir}/pbds_invalidation_tag_hierarchy.png \
+	${xml_image_dir}/pbds_list_update.png \
+	${xml_image_dir}/pbds_node_invariants.png \
+	${xml_image_dir}/pbds_pat_trie.png \
+	${xml_image_dir}/pbds_point_iterator_hierarchy.png \
+	${xml_image_dir}/pbds_point_iterators_range_ops_1.png \
+	${xml_image_dir}/pbds_point_iterators_range_ops_2.png \
+	${xml_image_dir}/pbds_priority_queue_different_underlying_dss.png \
+	${xml_image_dir}/pbds_priority_queue_tag_hierarchy.png \
+	${xml_image_dir}/pbds_rationale_null_node_updator.png \
+	${xml_image_dir}/pbds_resize_policy_cd.png \
+	${xml_image_dir}/pbds_restoring_node_invariants.png \
+	${xml_image_dir}/pbds_simple_list.png \
+	${xml_image_dir}/pbds_tree_node_invalidations.png \
+	${xml_image_dir}/pbds_tree_node_invariants.png \
+	${xml_image_dir}/pbds_tree_node_updator_policy_cd.png \
+	${xml_image_dir}/pbds_trie_node_updator_policy_cd.png \
+	${xml_image_dir}/pbds_update_seq_diagram.png 
+
+xml_image_generated = \
+	${xml_image_dir}/pbds_binary_priority_queue_int_push_pop.png \
+	${xml_image_dir}/pbds_binary_priority_queue_int_push.png \
+	${xml_image_dir}/pbds_ccgp_hash_int_subscript_insert.png \
+	${xml_image_dir}/pbds_cc_hash_int_find.png \
+	${xml_image_dir}/pbds_cc_hash_int_subscript_find.png \
+	${xml_image_dir}/pbds_cc_hash_int_subscript_insert.png \
+	${xml_image_dir}/pbds_gp_hash_int_find.png \
+	${xml_image_dir}/pbds_gp_hash_int_subscript_find.png \
+	${xml_image_dir}/pbds_gp_hash_int_subscript_insert.png \
+	${xml_image_dir}/pbds_hash_int_erase_mem.png \
+	${xml_image_dir}/pbds_hash_text_find.png \
+	${xml_image_dir}/pbds_hash_zlob_int_find.png \
+	${xml_image_dir}/pbds_multimap_text_find_large_s2p_hash.png \
+	${xml_image_dir}/pbds_multimap_text_find_large_s2p_tree.png \
+	${xml_image_dir}/pbds_multimap_text_find_small_s2p_hash.png \
+	${xml_image_dir}/pbds_multimap_text_find_small_s2p_tree.png \
+	${xml_image_dir}/pbds_multimap_text_insert_large_s2p_hash.png \
+	${xml_image_dir}/pbds_multimap_text_insert_large_s2p_tree.png \
+	${xml_image_dir}/pbds_multimap_text_insert_mem_large_s2p_hash.png \
+	${xml_image_dir}/pbds_multimap_text_insert_mem_large_s2p_tree.png \
+	${xml_image_dir}/pbds_multimap_text_insert_mem_small_s2p_hash.png \
+	${xml_image_dir}/pbds_multimap_text_insert_mem_small_s2p_tree.png \
+	${xml_image_dir}/pbds_multimap_text_insert_small_s2p_hash.png \
+	${xml_image_dir}/pbds_multimap_text_insert_small_s2p_tree.png \
+	${xml_image_dir}/pbds_pairing_priority_queue_text_modify_down_thin.png \
+	${xml_image_dir}/pbds_pairing_priority_queue_text_modify_up_thin.png \
+	${xml_image_dir}/pbds_pairing_priority_queue_text_push_pop.png \
+	${xml_image_dir}/pbds_pairing_priority_queue_text_push.png \
+	${xml_image_dir}/pbds_priority_queue_int_push_pop.png \
+	${xml_image_dir}/pbds_priority_queue_int_push.png \
+	${xml_image_dir}/pbds_priority_queue_text_join.png \
+	${xml_image_dir}/pbds_priority_queue_text_modify_down.png \
+	${xml_image_dir}/pbds_priority_queue_text_modify_up.png \
+	${xml_image_dir}/pbds_priority_queue_text_pop_mem.png \
+	${xml_image_dir}/pbds_priority_queue_text_push_pop.png \
+	${xml_image_dir}/pbds_priority_queue_text_push.png \
+	${xml_image_dir}/pbds_tree_int_find.png \
+	${xml_image_dir}/pbds_tree_order_statistics.png \
+	${xml_image_dir}/pbds_tree_split_join.png \
+	${xml_image_dir}/pbds_tree_text_find.png \
+	${xml_image_dir}/pbds_tree_text_insert_node.png \
+	${xml_image_dir}/pbds_tree_text_insert_trie.png \
+	${xml_image_dir}/pbds_tree_text_insert_vector.png \
+	${xml_image_dir}/pbds_tree_text_lor_find.png
+
+xml_images = ${xml_image_basic} ${xml_image_generated}
 
 xml_extradir = ${glibcxx_srcdir}/doc/html/ext
 xml_extra = \
 	${xml_extradir}/lwg-active.html \
 	${xml_extradir}/lwg-closed.html \
-	${xml_extradir}/lwg-defects.html 
+	${xml_extradir}/lwg-defects.html
 
 xml_noinst = \
 	${xml_dir}/book.txml \
 	${xml_dir}/chapter.txml \
 	${xml_dir}/class.txml \
-	${image_dir}/confdeps.dot \
-	${image_dir}/confdeps.pdf
+	${xml_image_dir}/confdeps.dot \
+	${xml_image_dir}/confdeps.pdf
 
 XSLTPROC       = xsltproc
 XSLT_FLAGS = --nonet --xinclude
@@ -481,6 +488,7 @@ ${docbook_outdir}/texinfo:
 
 ${docbook_outdir}/xml:
 	mkdir -p ${docbook_outdir}/xml
+	mkdir -p ${docbook_outdir}/xml/images
 
 # Validate existing XML structure.
 XMLLINT = xmllint
@@ -553,7 +561,7 @@ doc-fo-docbook: stamp-fo-docbook
 
 # PDF, via dblatex
 manual_pdf = ${docbook_outdir}/pdf/libstdc++-manual.pdf
-DBLATEX_FLAGS = --dump --verbose --pdf 
+DBLATEX_FLAGS = --dump --verbose --pdf
 stamp-pdf-docbook: $(xml_sources) ${docbook_outdir}/pdf
 	@echo "Generating pdf dblatex files..."
 	dblatex $(DBLATEX_FLAGS) \
@@ -599,16 +607,14 @@ doc-epub-docbook: stamp-epub-docbook
 
 # Performance doc and graph configuration.
 # Assumes pychart, beautiful soup installed.
-# Generates the plots and graphs for performance testing.
-# XXX this needs to be re-worked to create only the SVG charts
-doc_performance_script=${top_srcdir}/scripts/make_graphs.py
-doc-html-performance:
+# Generates the plots/graph imagery for performance testing.
+doc_performance_script=${top_srcdir}/scripts/make_graph.py
+doc-svg-performance: ${docbook_outdir}/xml
 	-@(chmod + ${doc_performance_script}; \
-	${doc_performance_script} ${top_srcdir} \
+	${doc_performance_script} \
+	${top_srcdir}/testsuite/data/make_graph_test_infos.xml \
 	${glibcxx_builddir}/testsuite \
-	${top_srcdir}/testsuite/data/make_graph_htmls.xml \
-	${top_srcdir}/testsuite/data/make_graph_test_infos.xml local g++)
-
+	${glibcxx_builddir}/doc/docbook/xml/images)
 
 .PHONY: doc-doxygen-html doc-doxygen-man doc-performance
 

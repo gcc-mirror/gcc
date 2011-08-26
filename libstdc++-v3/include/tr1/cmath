@@ -567,8 +567,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Note: we deal with fabs in a special way, because an using std::fabs
   // would bring in also the overloads for complex types, which in C++0x
   // mode have a different return type.
+  // With __CORRECT_ISO_CPP_MATH_H_PROTO1, math.h imports std::fabs in the
+  // global namespace after the declarations of the float / double / long
+  // double overloads but before the std::complex overloads.
   using ::fabs;
 
+#ifndef __CORRECT_ISO_CPP_MATH_H_PROTO1
   inline float
   fabs(float __x)
   { return __builtin_fabsf(__x); }
@@ -582,6 +586,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					   double>::__type
     fabs(_Tp __x)
     { return __builtin_fabs(__x); }
+#endif
 
   inline float
   fdim(float __x, float __y)

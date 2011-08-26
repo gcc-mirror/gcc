@@ -95,14 +95,14 @@ chrec_fold_plus_poly_poly (enum tree_code code,
   tree left, right;
   struct loop *loop0 = get_chrec_loop (poly0);
   struct loop *loop1 = get_chrec_loop (poly1);
-  tree rtype = code == POINTER_PLUS_EXPR ? sizetype : type;
+  tree rtype = code == POINTER_PLUS_EXPR ? chrec_type (poly1) : type;
 
   gcc_assert (poly0);
   gcc_assert (poly1);
   gcc_assert (TREE_CODE (poly0) == POLYNOMIAL_CHREC);
   gcc_assert (TREE_CODE (poly1) == POLYNOMIAL_CHREC);
   if (POINTER_TYPE_P (chrec_type (poly0)))
-    gcc_assert (chrec_type (poly1) == sizetype);
+    gcc_assert (ptrofftype_p (chrec_type (poly1)));
   else
     gcc_assert (chrec_type (poly0) == chrec_type (poly1));
   gcc_assert (type == chrec_type (poly0));
@@ -262,8 +262,6 @@ static tree
 chrec_fold_plus_1 (enum tree_code code, tree type,
 		   tree op0, tree op1)
 {
-  tree op1_type = code == POINTER_PLUS_EXPR ? sizetype : type;
-
   if (automatically_generated_chrec_p (op0)
       || automatically_generated_chrec_p (op1))
     return chrec_fold_automatically_generated_operands (op0, op1);
@@ -327,9 +325,15 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 		&& size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
 	      return build2 (code, type, op0, op1);
 	    else if (size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
-	      return fold_build2 (code, type,
-				  fold_convert (type, op0),
-				  fold_convert (op1_type, op1));
+	      {
+		if (code == POINTER_PLUS_EXPR)
+		  return fold_build_pointer_plus (fold_convert (type, op0),
+						  op1);
+		else
+		  return fold_build2 (code, type,
+				      fold_convert (type, op0),
+				      fold_convert (type, op1));
+	      }
 	    else
 	      return chrec_dont_know;
 	  }
@@ -831,7 +835,7 @@ reset_evolution_in_loop (unsigned loop_num,
   struct loop *loop = get_loop (loop_num);
 
   if (POINTER_TYPE_P (chrec_type (chrec)))
-    gcc_assert (sizetype == chrec_type (new_evol));
+    gcc_assert (ptrofftype_p (chrec_type (new_evol)));
   else
     gcc_assert (chrec_type (chrec) == chrec_type (new_evol));
 

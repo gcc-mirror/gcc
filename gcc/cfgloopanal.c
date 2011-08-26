@@ -314,7 +314,7 @@ seq_cost (const_rtx seq, bool speed)
     {
       set = single_set (seq);
       if (set)
-	cost += rtx_cost (set, SET, speed);
+	cost += set_rtx_cost (set, speed);
       else
 	cost++;
     }

@@ -7,5 +7,5 @@
   x = 2.0
   sqrt2 = sqrt(x)      ! { dg-warning "Conversion" }
 
-  sqrt2 = sqrt(2.0)    ! no warning; simplified to a constant and range checked
+  sqrt2 = sqrt(2.0)    ! { dg-warning "Conversion" }
 end

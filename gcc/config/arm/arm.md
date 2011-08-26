@@ -1857,7 +1857,7 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "*maddhidi4"
+(define_insn "maddhidi4"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
 	(plus:DI
 	  (mult:DI (sign_extend:DI
@@ -4981,7 +4981,7 @@
     case 2:
       return \"#\";
     default:
-      return output_move_double (operands);
+      return output_move_double (operands, true, NULL);
     }
   "
   [(set_attr "length" "8,12,16,8,8")
@@ -6341,7 +6341,7 @@
     case 2:
       return \"#\";
     default:
-      return output_move_double (operands);
+      return output_move_double (operands, true, NULL);
     }
   "
   [(set_attr "length" "8,12,16,8,8")

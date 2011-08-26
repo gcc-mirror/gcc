@@ -23,7 +23,7 @@ module m
      procedure, nopass :: b => b2  ! { dg-error "should have matching result types and ranks" }
      procedure, nopass :: c => c2  ! { dg-warning "Possible character length mismatch" }
      procedure, nopass :: d => d2  ! valid, check for commutativity (+,*)
-     procedure, nopass :: e => e2  ! { dg-warning "Possible character length mismatch" }
+     procedure, nopass :: e => e2  ! { dg-error "Character length mismatch" }
   end type
 
 contains

@@ -1,5 +1,13 @@
 2011-08-26  Gary Funck  <gary@intrepid.com>
 
+	Merge trunk version 177949 into gupc branch.
+	* c-family/c-common.h (enum rid): Bump the number of type modifiers
+	  in the comment.
+        * ../libcpp/init.c (struct lang_flags): Adjust the entry for UPC
+	  to add new rliterals column value.
+
+2011-08-26  Gary Funck  <gary@intrepid.com>
+
 	* convert.c (convert_to_integer): Fix the check for the
 	  difference between two UPC pointers-to-shared values.
 

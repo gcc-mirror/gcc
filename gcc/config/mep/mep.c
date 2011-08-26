@@ -211,7 +211,7 @@ static void mep_move_ready_insn (rtx *, int, rtx);
 static int mep_sched_reorder (FILE *, int, rtx *, int *, int);
 static rtx mep_make_bundle (rtx, rtx);
 static void mep_bundle_insns (rtx);
-static bool mep_rtx_cost (rtx, int, int, int *, bool);
+static bool mep_rtx_cost (rtx, int, int, int, int *, bool);
 static int mep_address_cost (rtx, bool);
 static void mep_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
 					tree, int *, int);
@@ -7261,7 +7261,9 @@ mep_expand_binary_intrinsic (int ATTRIBUTE_UNUSED immediate,
 }
 
 static bool
-mep_rtx_cost (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total, bool ATTRIBUTE_UNUSED speed_t)
+mep_rtx_cost (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
+	      int opno ATTRIBUTE_UNUSED, int *total,
+	      bool ATTRIBUTE_UNUSED speed_t)
 {
   switch (code)
     {

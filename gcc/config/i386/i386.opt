@@ -24,12 +24,12 @@ config/i386/i386-opts.h
 
 ; Bit flags that specify the ISA we are compiling for.
 Variable
-int ix86_isa_flags = TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_ISA_DEFAULT
+HOST_WIDE_INT ix86_isa_flags = TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_ISA_DEFAULT
 
 ; A mask of ix86_isa_flags that includes bit X if X was set or cleared
 ; on the command line.
 Variable
-int ix86_isa_flags_explicit
+HOST_WIDE_INT ix86_isa_flags_explicit
 
 ;; Definitions to add to the cl_target_option structure
 ;; -march= processor
@@ -50,7 +50,7 @@ unsigned char branch_cost
 
 ;; which flags were passed by the user
 TargetSave
-int x_ix86_isa_flags_explicit
+HOST_WIDE_INT x_ix86_isa_flags_explicit
 
 ;; which flags were passed by the user
 TargetSave
@@ -456,6 +456,10 @@ Target Undocumented Alias(mavx) Warn(%<-msse5%> was removed)
 mavx
 Target Report Mask(ISA_AVX) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation
+
+mavx2
+Target Report Mask(ISA_AVX2) Var(ix86_isa_flags) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation
 
 mfma
 Target Report Mask(ISA_FMA) Var(ix86_isa_flags) Save

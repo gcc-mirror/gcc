@@ -4569,10 +4569,11 @@ resolve_array_ref (gfc_array_ref *ar)
       /* Fill in the upper bound, which may be lower than the
 	 specified one for something like a(2:10:5), which is
 	 identical to a(2:7:5).  Only relevant for strides not equal
-	 to one.  */
+	 to one.  Don't try a division by zero.  */
       if (ar->dimen_type[i] == DIMEN_RANGE
 	  && ar->stride[i] != NULL && ar->stride[i]->expr_type == EXPR_CONSTANT
-	  && mpz_cmp_si (ar->stride[i]->value.integer, 1L) != 0)
+	  && mpz_cmp_si (ar->stride[i]->value.integer, 1L) != 0
+	  && mpz_cmp_si (ar->stride[i]->value.integer, 0L) != 0)
 	{
 	  mpz_t size, end;
 
@@ -6806,7 +6807,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 
       /* Check F2008, C642.  */
       if (code->expr3->ts.type == BT_DERIVED
-	  && ((codimension &&  gfc_expr_attr (code->expr3).lock_comp)
+	  && ((codimension && gfc_expr_attr (code->expr3).lock_comp)
 	      || (code->expr3->ts.u.derived->from_intmod
 		     == INTMOD_ISO_FORTRAN_ENV
 		  && code->expr3->ts.u.derived->intmod_sym_id
@@ -8202,7 +8203,7 @@ find_reachable_labels (gfc_code *block)
      up through the code_stack.  */
   for (c = block; c; c = c->next)
     {
-      if (c->here && c->op != EXEC_END_BLOCK)
+      if (c->here && c->op != EXEC_END_NESTED_BLOCK)
 	bitmap_set_bit (cs_base->reachable_labels, c->here->value);
     }
 
@@ -8224,10 +8225,9 @@ resolve_lock_unlock (gfc_code *code)
       || code->expr1->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
       || code->expr1->ts.u.derived->intmod_sym_id != ISOFORTRAN_LOCK_TYPE
       || code->expr1->rank != 0
-      || !(gfc_expr_attr (code->expr1).codimension
-	   || gfc_is_coindexed (code->expr1)))
-    gfc_error ("Lock variable at %L must be a scalar coarray of type "
-	       "LOCK_TYPE", &code->expr1->where);
+      || (!gfc_is_coarray (code->expr1) && !gfc_is_coindexed (code->expr1)))
+    gfc_error ("Lock variable at %L must be a scalar of type LOCK_TYPE",
+	       &code->expr1->where);
 
   /* Check STAT.  */
   if (code->expr2
@@ -8382,7 +8382,7 @@ resolve_branch (gfc_st_label *label, gfc_code *code)
 
   if (stack)
     {
-      gcc_assert (stack->current->next->op == EXEC_END_BLOCK);
+      gcc_assert (stack->current->next->op == EXEC_END_NESTED_BLOCK);
       return;
     }
 
@@ -9118,6 +9118,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	{
 	case EXEC_NOP:
 	case EXEC_END_BLOCK:
+	case EXEC_END_NESTED_BLOCK:
 	case EXEC_CYCLE:
 	case EXEC_PAUSE:
 	case EXEC_STOP:
@@ -10169,15 +10170,22 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 
       if (!gfc_is_constant_expr (e)
 	  && !(e->expr_type == EXPR_VARIABLE
-	       && e->symtree->n.sym->attr.flavor == FL_PARAMETER)
-	  && sym->ns->proc_name
-	  && (sym->ns->proc_name->attr.flavor == FL_MODULE
-	      || sym->ns->proc_name->attr.is_main_program)
-	  && !sym->attr.use_assoc)
+	       && e->symtree->n.sym->attr.flavor == FL_PARAMETER))
 	{
-	  gfc_error ("'%s' at %L must have constant character length "
-		     "in this context", sym->name, &sym->declared_at);
-	  return FAILURE;
+	  if (!sym->attr.use_assoc && sym->ns->proc_name
+	      && (sym->ns->proc_name->attr.flavor == FL_MODULE
+		  || sym->ns->proc_name->attr.is_main_program))
+	    {
+	      gfc_error ("'%s' at %L must have constant character length "
+			"in this context", sym->name, &sym->declared_at);
+	      return FAILURE;
+	    }
+	  if (sym->attr.in_common)
+	    {
+	      gfc_error ("COMMON variable '%s' at %L must have constant "
+			 "character length", sym->name, &sym->declared_at);
+	      return FAILURE;
+	    }
 	}
     }
 
@@ -12214,12 +12222,14 @@ resolve_symbol (gfc_symbol *sym)
 
   /* F2008, C1302.  */
   if (sym->ts.type == BT_DERIVED
-      && sym->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
-      && sym->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE
-      && !sym->attr.codimension)
+      && ((sym->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	   && sym->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE)
+	  || sym->ts.u.derived->attr.lock_comp)
+      && !sym->attr.codimension && !sym->ts.u.derived->attr.coarray_comp)
     {
-      gfc_error ("Variable '%s' at %L of type LOCK_TYPE must be a coarray",
-		 sym->name, &sym->declared_at);
+      gfc_error ("Variable %s at %L of type LOCK_TYPE or with subcomponent of "
+		 "type LOCK_TYPE must be a coarray", sym->name,
+		 &sym->declared_at);
       return;
     }
 
@@ -12246,29 +12256,41 @@ resolve_symbol (gfc_symbol *sym)
   /* F2008, C542.  */
   if (sym->ts.type == BT_DERIVED && sym->attr.dummy
       && sym->attr.intent == INTENT_OUT && sym->attr.lock_comp)
-    gfc_error ("Dummy argument '%s' at %L of LOCK_TYPE shall not be "
-	       "INTENT(OUT)", sym->name, &sym->declared_at);
+    {
+      gfc_error ("Dummy argument '%s' at %L of LOCK_TYPE shall not be "
+		 "INTENT(OUT)", sym->name, &sym->declared_at);
+      return;
+    }
 
-  /* F2008, C526.  */
+  /* F2008, C525.  */
   if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
        || sym->attr.codimension)
-      && sym->attr.result)
-    gfc_error ("Function result '%s' at %L shall not be a coarray or have "
-	       "a coarray component", sym->name, &sym->declared_at);
+      && (sym->attr.result || sym->result == sym))
+    {
+      gfc_error ("Function result '%s' at %L shall not be a coarray or have "
+	         "a coarray component", sym->name, &sym->declared_at);
+      return;
+    }
 
   /* F2008, C524.  */
   if (sym->attr.codimension && sym->ts.type == BT_DERIVED
       && sym->ts.u.derived->ts.is_iso_c)
-    gfc_error ("Variable '%s' at %L of TYPE(C_PTR) or TYPE(C_FUNPTR) "
-	       "shall not be a coarray", sym->name, &sym->declared_at);
+    {
+      gfc_error ("Variable '%s' at %L of TYPE(C_PTR) or TYPE(C_FUNPTR) "
+		 "shall not be a coarray", sym->name, &sym->declared_at);
+      return;
+    }
 
   /* F2008, C525.  */
   if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp
       && (sym->attr.codimension || sym->attr.pointer || sym->attr.dimension
 	  || sym->attr.allocatable))
-    gfc_error ("Variable '%s' at %L with coarray component "
-	       "shall be a nonpointer, nonallocatable scalar",
-	       sym->name, &sym->declared_at);
+    {
+      gfc_error ("Variable '%s' at %L with coarray component "
+		 "shall be a nonpointer, nonallocatable scalar",
+		 sym->name, &sym->declared_at);
+      return;
+    }
 
   /* F2008, C526.  The function-result case was handled above.  */
   if (sym->attr.codimension
@@ -12277,32 +12299,46 @@ resolve_symbol (gfc_symbol *sym)
 	   || sym->ns->proc_name->attr.flavor == FL_MODULE
 	   || sym->ns->proc_name->attr.is_main_program
 	   || sym->attr.function || sym->attr.result || sym->attr.use_assoc))
-    gfc_error ("Variable '%s' at %L is a coarray and is not ALLOCATABLE, SAVE "
-	       "nor a dummy argument", sym->name, &sym->declared_at);
+    {
+      gfc_error ("Variable '%s' at %L is a coarray and is not ALLOCATABLE, SAVE "
+		 "nor a dummy argument", sym->name, &sym->declared_at);
+      return;
+    }
   /* F2008, C528.  */  /* FIXME: sym->as check due to PR 43412.  */
   else if (sym->attr.codimension && !sym->attr.allocatable
       && sym->as && sym->as->cotype == AS_DEFERRED)
-    gfc_error ("Coarray variable '%s' at %L shall not have codimensions with "
-		"deferred shape", sym->name, &sym->declared_at);
+    {
+      gfc_error ("Coarray variable '%s' at %L shall not have codimensions with "
+		 "deferred shape", sym->name, &sym->declared_at);
+      return;
+    }
   else if (sym->attr.codimension && sym->attr.allocatable
       && (sym->as->type != AS_DEFERRED || sym->as->cotype != AS_DEFERRED))
-    gfc_error ("Allocatable coarray variable '%s' at %L must have "
-	       "deferred shape", sym->name, &sym->declared_at);
-
+    {
+      gfc_error ("Allocatable coarray variable '%s' at %L must have "
+		 "deferred shape", sym->name, &sym->declared_at);
+      return;
+    }
 
   /* F2008, C541.  */
   if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
        || (sym->attr.codimension && sym->attr.allocatable))
       && sym->attr.dummy && sym->attr.intent == INTENT_OUT)
-    gfc_error ("Variable '%s' at %L is INTENT(OUT) and can thus not be an "
-	       "allocatable coarray or have coarray components",
-	       sym->name, &sym->declared_at);
+    {
+      gfc_error ("Variable '%s' at %L is INTENT(OUT) and can thus not be an "
+		 "allocatable coarray or have coarray components",
+		 sym->name, &sym->declared_at);
+      return;
+    }
 
   if (sym->attr.codimension && sym->attr.dummy
       && sym->ns->proc_name && sym->ns->proc_name->attr.is_bind_c)
-    gfc_error ("Coarray dummy variable '%s' at %L not allowed in BIND(C) "
-	       "procedure '%s'", sym->name, &sym->declared_at,
-	       sym->ns->proc_name->name);
+    {
+      gfc_error ("Coarray dummy variable '%s' at %L not allowed in BIND(C) "
+		 "procedure '%s'", sym->name, &sym->declared_at,
+		 sym->ns->proc_name->name);
+      return;
+    }
 
   switch (sym->attr.flavor)
     {

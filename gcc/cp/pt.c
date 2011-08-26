@@ -7890,8 +7890,13 @@ parameter_of_template_p (tree parm, tree templ)
   parms = INNERMOST_TEMPLATE_PARMS (parms);
 
   for (i = 0; i < TREE_VEC_LENGTH (parms); ++i)
-    if (parm == TREE_VALUE (TREE_VEC_ELT (parms, i)))
-      return true;
+    {
+      tree p = TREE_VALUE (TREE_VEC_ELT (parms, i));
+      if (parm == p
+	  || (DECL_INITIAL (parm)
+	      && DECL_INITIAL (parm) == DECL_INITIAL (p)))
+	return true;
+    }
 
   return false;
 }
@@ -8675,6 +8680,9 @@ instantiate_class_template_1 (tree type)
 		--processing_template_decl;
 	      set_current_access_from_decl (r);
 	      finish_member_declaration (r);
+	      /* Instantiate members marked with attribute used.  */
+	      if (r != error_mark_node && DECL_PRESERVE_P (r))
+		mark_used (r);
 	    }
 	  else
 	    {
@@ -8724,6 +8732,9 @@ instantiate_class_template_1 (tree type)
 			 /*init_const_expr_p=*/false,
 			 /*asmspec_tree=*/NULL_TREE,
 			 /*flags=*/0);
+		      /* Instantiate members marked with attribute used.  */
+		      if (r != error_mark_node && DECL_PRESERVE_P (r))
+			mark_used (r);
 		    }
 		  else if (TREE_CODE (r) == FIELD_DECL)
 		    {
@@ -15428,7 +15439,6 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
         tree arg = TREE_VEC_ELT (packed_args, i);
 	tree arg_expr = NULL_TREE;
         int arg_strict = strict;
-        bool skip_arg_p = false;
 
         if (call_args_p)
           {
@@ -15471,19 +15481,15 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
                     if (resolve_overloaded_unification
                         (tparms, targs, parm, arg,
 			 (unification_kind_t) strict,
-			 sub_strict, explain_p)
-                        != 0)
-                      return 1;
-                    skip_arg_p = true;
+			 sub_strict, explain_p))
+		      goto unified;
+		    return unify_overload_resolution_failure (explain_p, arg);
                   }
 
-                if (!skip_arg_p)
-                  {
-		    arg_expr = arg;
-                    arg = unlowered_expr_type (arg);
-                    if (arg == error_mark_node)
-                      return 1;
-                  }
+		arg_expr = arg;
+		arg = unlowered_expr_type (arg);
+		if (arg == error_mark_node)
+		  return unify_invalid (explain_p);
               }
       
             arg_strict = sub_strict;
@@ -15494,16 +15500,14 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 						  &parm, &arg, arg_expr);
           }
 
-        if (!skip_arg_p)
-          {
-	    /* For deduction from an init-list we need the actual list.  */
-	    if (arg_expr && BRACE_ENCLOSED_INITIALIZER_P (arg_expr))
-	      arg = arg_expr;
-	    RECUR_AND_CHECK_FAILURE (tparms, targs, parm, arg, arg_strict,
-				     explain_p);
-          }
+	/* For deduction from an init-list we need the actual list.  */
+	if (arg_expr && BRACE_ENCLOSED_INITIALIZER_P (arg_expr))
+	  arg = arg_expr;
+	RECUR_AND_CHECK_FAILURE (tparms, targs, parm, arg, arg_strict,
+				 explain_p);
       }
 
+    unified:
       /* For each parameter pack, collect the deduced value.  */
       for (pack = packs; pack; pack = TREE_CHAIN (pack))
         {
