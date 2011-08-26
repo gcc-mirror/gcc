@@ -1,5 +1,8 @@
 2011-08-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/cmpxchg16b-1.c: Match also space after the
+	instruction.
+
 	PR c/50179
 	* c-c++-common/Wunused-var-14.c: New test.
 
