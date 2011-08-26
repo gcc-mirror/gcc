@@ -1,3 +1,8 @@
+2011-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/50179
+	* c-c++-common/Wunused-var-14.c: New test.
+
 2011-08-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50157

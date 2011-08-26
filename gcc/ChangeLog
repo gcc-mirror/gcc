@@ -1,3 +1,9 @@
+2011-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/50179
+	* c-typeck.c (c_process_expr_stmt): Skip over nops and
+	call mark_exp_read even if exprv is ADDR_EXPR.
+
 2011-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48739
