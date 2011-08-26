@@ -1,3 +1,23 @@
+2011-08-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm.c (struct four_ints): New type.
+	(count_insns_for_constant): Delete function.
+	(find_best_start): Delete function.
+	(optimal_immediate_sequence): New function.
+	(optimal_immediate_sequence_1): New function.
+	(arm_gen_constant): Move constant splitting code to
+	optimal_immediate_sequence.
+	Rewrite constant negation/invertion code.
+
+2011-08-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm-protos.h (const_ok_for_op): Add prototype.
+	* config/arm/arm.c (const_ok_for_op): Add support for addw/subw.
+	Remove prototype. Remove static function type.
+	* config/arm/arm.md (*arm_addsi3): Add addw/subw support.
+	Add arch attribute.
+	* config/arm/constraints.md (Pj, PJ): New constraints.
+
 2011-08-26  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
        * config/arm/cortex-a9.md ("cortex_a9_mult_long"): New.
