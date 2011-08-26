@@ -4309,6 +4309,7 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
   gfc_add_block_to_block (&block, &loop.pre);
   gfc_add_block_to_block (&block, &loop.post);
 
+  gcc_assert (lss->shape != NULL);
   gfc_free_shape (&lss->shape, cm->as->rank);
   gfc_cleanup_loop (&loop);
 

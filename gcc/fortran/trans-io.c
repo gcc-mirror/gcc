@@ -2005,6 +2005,7 @@ transfer_array_component (tree expr, gfc_component * cm, locus * where)
   gfc_add_block_to_block (&block, &loop.pre);
   gfc_add_block_to_block (&block, &loop.post);
 
+  gcc_assert (ss->shape != NULL);
   gfc_free_shape (&ss->shape, cm->as->rank);
   gfc_cleanup_loop (&loop);
 

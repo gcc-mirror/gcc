@@ -5184,8 +5184,7 @@ check_host_association (gfc_expr *e)
 	      && sym->attr.contained)
 	{
 	  /* Clear the shape, since it might not be valid.  */
-	  if (e->shape != NULL)
-	    gfc_free_shape (&e->shape, e->rank);
+	  gfc_free_shape (&e->shape, e->rank);
 
 	  /* Give the expression the right symtree!  */
 	  gfc_find_sym_tree (e->symtree->name, NULL, 1, &st);
