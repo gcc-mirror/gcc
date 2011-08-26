@@ -1,3 +1,7 @@
+2011-08-26  Richard Guenther  <rguenther@suse.de>
+
+	* varasm.c (decode_addr_const): Handle MEM_REF[&X, OFF].
+
 2011-08-26  Zdenek Dvorak  <ook@ucw.cz>
 	    Tom de Vries  <tom@codesourcery.com>
 
