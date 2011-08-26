@@ -68,7 +68,8 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
   "cortex_a9_mac_m1*2, cortex_a9_mac_m2, cortex_a9_p0_wb")
 (define_reservation "cortex_a9_mac"
   "cortex_a9_multcycle1*2 ,cortex_a9_mac_m2, cortex_a9_p0_wb")
-
+(define_reservation "cortex_a9_mult_long"
+  "cortex_a9_mac_m1*3, cortex_a9_mac_m2, cortex_a9_p0_wb")
 
 ;; Issue at the same time along the load store pipeline and
 ;; the VFP / Neon pipeline is not possible.
@@ -139,16 +140,20 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
        (eq_attr "insn" "smlaxy"))
   "cortex_a9_mac16")
 
-
 (define_insn_reservation "cortex_a9_multiply" 4
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "insn" "mul"))
+       (eq_attr "insn" "mul,smmul,smmulr"))
        "cortex_a9_mult")
 
 (define_insn_reservation "cortex_a9_mac" 4
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "insn" "mla"))
+       (eq_attr "insn" "mla,smmla"))
        "cortex_a9_mac")
+
+(define_insn_reservation "cortex_a9_multiply_long" 5
+  (and (eq_attr "tune" "cortexa9")
+       (eq_attr "insn" "smull,umull,smulls,umulls,smlal,smlals,umlal,umlals"))
+       "cortex_a9_mult_long")
 
 ;; An instruction with a result in E2 can be forwarded
 ;; to E2 or E1 or M1 or the load store unit in the next cycle.
@@ -156,12 +161,14 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 (define_bypass 1 "cortex_a9_dp"
                  "cortex_a9_dp_shift, cortex_a9_multiply,
  cortex_a9_load1_2, cortex_a9_dp, cortex_a9_store1_2,
- cortex_a9_mult16, cortex_a9_mac16, cortex_a9_mac, cortex_a9_store3_4, cortex_a9_load3_4")
+ cortex_a9_mult16, cortex_a9_mac16, cortex_a9_mac, cortex_a9_store3_4, cortex_a9_load3_4, 
+ cortex_a9_multiply_long")
 
 (define_bypass 2 "cortex_a9_dp_shift"
                  "cortex_a9_dp_shift, cortex_a9_multiply,
  cortex_a9_load1_2, cortex_a9_dp, cortex_a9_store1_2,
- cortex_a9_mult16, cortex_a9_mac16, cortex_a9_mac, cortex_a9_store3_4, cortex_a9_load3_4")
+ cortex_a9_mult16, cortex_a9_mac16, cortex_a9_mac, cortex_a9_store3_4, cortex_a9_load3_4,
+ cortex_a9_multiply_long")
 
 ;; An instruction in the load store pipeline can provide
 ;; read access to a DP instruction in the P0 default pipeline
@@ -212,7 +219,7 @@ cortex_a9_store3_4, cortex_a9_store1_2,  cortex_a9_load3_4")
 
 (define_bypass 1
   "cortex_a9_fps"
-  "cortex_a9_fadd, cortex_a9_fps, cortex_a9_fcmp, cortex_a9_dp, cortex_a9_dp_shift, cortex_a9_multiply")
+  "cortex_a9_fadd, cortex_a9_fps, cortex_a9_fcmp, cortex_a9_dp, cortex_a9_dp_shift, cortex_a9_multiply, cortex_a9_multiply_long")
 
 ;; Scheduling on the FP_ADD pipeline.
 (define_reservation "ca9fp_add" "ca9_issue_vfp_neon + ca9fp_add1, ca9fp_add2, ca9fp_add3, ca9fp_add4")
