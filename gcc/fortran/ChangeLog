@@ -1,3 +1,10 @@
+2011-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c (get_proc_pointer_decl): Set DECL_TLS_MODEL
+	if threadprivate.
+	* symbol.c (check_conflict): Allow threadprivate attribute with
+	FL_PROCEDURE if proc_pointer.
+
 2011-08-25  Mikael Morin  <mikael.morin@gcc.gnu.org>
 
 	PR fortran/50050
