@@ -1,3 +1,7 @@
+2011-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* rtlanal.c (nonzero_bits1): Handle CLRSB.
+
 2011-08-26  Richard Guenther  <rguenther@suse.de>
 
 	* expr.c (string_constant): Handle &MEM_REF.
