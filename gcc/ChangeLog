@@ -1,3 +1,11 @@
+2011-08-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/50083
+	* convert.c (convert_to_integer) <BUIT_IN_ROUND{,F,L}>: Convert
+	only when TARGET_C99_FUNCTIONS.
+	<BUILT_IN_NEARBYINT{,F,L}>: Ditto.
+	<BUILT_IN_RINT{,F,L}>: Ditto.
+
 2011-08-26  Michael Matz  <matz@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
@@ -66,12 +74,12 @@
 
 2011-08-26  Jiangning Liu  <jiangning.liu@arm.com>
 
-       * config/arm/arm.md (*ior_scc_scc): Enable for Thumb2 as well.
-       (*ior_scc_scc_cmp): Likewise
-       (*and_scc_scc): Likewise.
-       (*and_scc_scc_cmp): Likewise.
-       (*and_scc_scc_nodom): Likewise.
-       (*cmp_ite0, *cmp_ite1, *cmp_and, *cmp_ior): Handle Thumb2.
+	* config/arm/arm.md (*ior_scc_scc): Enable for Thumb2 as well.
+	(*ior_scc_scc_cmp): Likewise
+	(*and_scc_scc): Likewise.
+	(*and_scc_scc_cmp): Likewise.
+	(*and_scc_scc_nodom): Likewise.
+	(*cmp_ite0, *cmp_ite1, *cmp_and, *cmp_ior): Handle Thumb2.
 
 2011-08-26  Jakub Jelinek  <jakub@redhat.com>
 
@@ -103,11 +111,11 @@
 
 2011-08-26  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-       * config/arm/cortex-a9.md ("cortex_a9_mult_long"): New.
-       ("cortex_a9_multiply_long"): New and use above.  Handle all
+	* config/arm/cortex-a9.md ("cortex_a9_mult_long"): New.
+	("cortex_a9_multiply_long"): New and use above.  Handle all
 	long multiply cases.
-       ("cortex_a9_multiply"): Handle smmul and smmulr.
-       ("cortex_a9_mac"): Handle smmla.
+	("cortex_a9_multiply"): Handle smmul and smmulr.
+	("cortex_a9_mac"): Handle smmla.
 
 2011-08-25  Richard Henderson  <rth@redhat.com>
 
@@ -489,8 +497,7 @@
 
 2011-08-22  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): Error if __ELF__ isn't
-	defined.
+	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): Error if __ELF__ isn't defined.
 	* configure: Regenerated.
 
 2011-08-22  Jakub Jelinek  <jakub@redhat.com>
