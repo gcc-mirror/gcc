@@ -1,3 +1,8 @@
+2011-08-26  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* df-problems.c (df_note_bb_compute): Pass uses rather than defs
+	to df_set_dead_notes_for_mw.
+
 2011-08-26  Richard Guenther  <rguenther@suse.de>
 
 	* varasm.c (decode_addr_const): Handle MEM_REF[&X, OFF].
