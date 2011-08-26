@@ -1,3 +1,27 @@
+2011-08-26  Zdenek Dvorak  <ook@ucw.cz>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-loop-ivopts.c (struct cost_pair): Add comp field.
+	(struct ivopts_data): Add loop_single_exit_p field.
+	(niter_for_exit): Change parameter desc_p into return value.  Return
+	desc if	desc->may_be_zero.  Free desc if unused.
+	(niter_for_single_dom_exit): Change return type.
+	(find_induction_variables): Handle changed return type of
+	niter_for_single_dom_exit.  Dump may_be_zero.
+	(add_candidate_1): Keep original base and step type for IP_ORIGINAL.
+	(set_use_iv_cost): Add and handle comp parameter.
+	(determine_use_iv_cost_generic, determine_use_iv_cost_address): Add
+	comp argument to set_use_iv_cost.
+	(strip_wrap_conserving_type_conversions, expr_equal_p)
+	(difference_cannot_overflow_p, iv_elimination_compare_lt): New function.
+	(may_eliminate_iv): Add comp parameter.  Handle new return type of
+	niter_for_exit.  Use loop_single_exit_p.  Use iv_elimination_compare_lt.
+	(determine_use_iv_cost_condition): Add comp argument to set_use_iv_cost
+	and may_eliminate_iv.
+	(rewrite_use_compare): Move call to iv_elimination_compare to ...
+	(may_eliminate_iv): Here.
+	(tree_ssa_iv_optimize_loop): Initialize loop_single_exit_p.
+
 2011-08-26  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-pretty-print (dump_generic_node): Test for NULL_TREE before
