@@ -673,7 +673,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	  conf2 (codimension);
 	  conf2 (dimension);
 	  conf2 (function);
-	  conf2 (threadprivate);
+	  if (!attr->proc_pointer)
+	    conf2 (threadprivate);
 	}
 
       if (!attr->proc_pointer)
