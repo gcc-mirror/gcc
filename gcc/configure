@@ -10888,6 +10888,8 @@ void (*const dtors65535) ()
 int
 main ()
 {
+  if (count != 65535)
+    abort ();
   return 0;
 }
 #endif
@@ -17913,7 +17915,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17916 "configure"
+#line 17918 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18019,7 +18021,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18022 "configure"
+#line 18024 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

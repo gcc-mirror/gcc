@@ -1,3 +1,9 @@
+2011-08-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/50166
+	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): Check count in main.
+	* configure: Regenerate.
+
 2011-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/50179

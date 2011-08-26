@@ -477,6 +477,8 @@ void (*const dtors65535[]) ()
 int
 main ()
 {
+  if (count != 65535)
+    abort ();
   return 0;
 }
 #endif
