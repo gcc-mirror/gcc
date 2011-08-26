@@ -1,3 +1,10 @@
+2011-08-26  Michael Matz  <matz@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/50165
+	* lto-streamer-in.c (canon_file_name): Initialize new_slot->len;
+	don't call strlen twice, use memcpy.
+
 2011-08-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/bmi2intrin.h: Allow in <immintrin.h>.
