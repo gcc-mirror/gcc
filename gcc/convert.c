@@ -432,7 +432,7 @@ convert_to_integer (tree type, tree expr)
       && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0)))
       && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 1)))
       && upc_shared_type_p (TREE_TYPE (TREE_TYPE (TREE_OPERAND (expr, 0))))
-      && upc_shared_type_p (TREE_TYPE (TREE_TYPE (TREE_OPERAND (expr, 0)))))
+      && upc_shared_type_p (TREE_TYPE (TREE_TYPE (TREE_OPERAND (expr, 1)))))
   {
       return build1 (CONVERT_EXPR, type, expr);
   }

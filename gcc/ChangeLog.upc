@@ -1,3 +1,8 @@
+2011-08-26  Gary Funck  <gary@intrepid.com>
+
+	* convert.c (convert_to_integer): Fix the check for the
+	  difference between two UPC pointers-to-shared values.
+
 2011-08-23  Nenad Vukicevic <nenad@intrepid.com>
 
 	* configure.ac: Fix the name for --with-upc-pts-packed-bits
