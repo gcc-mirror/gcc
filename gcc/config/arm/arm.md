@@ -49,6 +49,15 @@
    (DOM_CC_X_OR_Y   2)
   ]
 )
+;; conditional compare combination
+(define_constants
+  [(CMP_CMP 0)
+   (CMN_CMP 1)
+   (CMP_CMN 2)
+   (CMN_CMN 3)
+   (NUM_OF_COND_CMP 4)
+  ]
+)
 
 ;; UNSPEC Usage:
 ;; Note: sin and cos are no-longer used.
@@ -8984,40 +8993,85 @@
    (set_attr "length" "8,12")]
 )
 
-;; ??? Is it worth using these conditional patterns in Thumb-2 mode?
 (define_insn "*cmp_ite0"
   [(set (match_operand 6 "dominant_cc_register" "")
 	(compare
 	 (if_then_else:SI
 	  (match_operator 4 "arm_comparison_operator"
-	   [(match_operand:SI 0 "s_register_operand" "r,r,r,r")
-	    (match_operand:SI 1 "arm_add_operand" "rI,L,rI,L")])
+	   [(match_operand:SI 0 "s_register_operand"
+	        "l,l,l,r,r,r,r,r,r")
+	    (match_operand:SI 1 "arm_add_operand"
+	        "lPy,lPy,lPy,rI,L,rI,L,rI,L")])
 	  (match_operator:SI 5 "arm_comparison_operator"
-	   [(match_operand:SI 2 "s_register_operand" "r,r,r,r")
-	    (match_operand:SI 3 "arm_add_operand" "rI,rI,L,L")])
+	   [(match_operand:SI 2 "s_register_operand"
+	        "l,r,r,l,l,r,r,r,r")
+	    (match_operand:SI 3 "arm_add_operand"
+	        "lPy,rI,L,lPy,lPy,rI,rI,L,L")])
 	  (const_int 0))
 	 (const_int 0)))]
-  "TARGET_ARM"
+  "TARGET_32BIT"
   "*
   {
-    static const char * const opcodes[4][2] =
+    static const char * const cmp1[NUM_OF_COND_CMP][2] =
     {
-      {\"cmp\\t%2, %3\;cmp%d5\\t%0, %1\",
-       \"cmp\\t%0, %1\;cmp%d4\\t%2, %3\"},
-      {\"cmp\\t%2, %3\;cmn%d5\\t%0, #%n1\",
-       \"cmn\\t%0, #%n1\;cmp%d4\\t%2, %3\"},
-      {\"cmn\\t%2, #%n3\;cmp%d5\\t%0, %1\",
-       \"cmp\\t%0, %1\;cmn%d4\\t%2, #%n3\"},
-      {\"cmn\\t%2, #%n3\;cmn%d5\\t%0, #%n1\",
-       \"cmn\\t%0, #%n1\;cmn%d4\\t%2, #%n3\"}
+      {\"cmp%d5\\t%0, %1\",
+       \"cmp%d4\\t%2, %3\"},
+      {\"cmn%d5\\t%0, #%n1\",
+       \"cmp%d4\\t%2, %3\"},
+      {\"cmp%d5\\t%0, %1\",
+       \"cmn%d4\\t%2, #%n3\"},
+      {\"cmn%d5\\t%0, #%n1\",
+       \"cmn%d4\\t%2, #%n3\"}
     };
+    static const char * const cmp2[NUM_OF_COND_CMP][2] =
+    {
+      {\"cmp\\t%2, %3\",
+       \"cmp\\t%0, %1\"},
+      {\"cmp\\t%2, %3\",
+       \"cmn\\t%0, #%n1\"},
+      {\"cmn\\t%2, #%n3\",
+       \"cmp\\t%0, %1\"},
+      {\"cmn\\t%2, #%n3\",
+       \"cmn\\t%0, #%n1\"}
+    };
+    static const char * const ite[2] =
+    {
+      \"it\\t%d5\",
+      \"it\\t%d4\"
+    };
+    static const int cmp_idx[9] = {CMP_CMP, CMP_CMP, CMP_CMN,
+                                   CMP_CMP, CMN_CMP, CMP_CMP,
+                                   CMN_CMP, CMP_CMN, CMN_CMN};
     int swap =
       comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
 
-    return opcodes[which_alternative][swap];
+    output_asm_insn (cmp2[cmp_idx[which_alternative]][swap], operands);
+    if (TARGET_THUMB2) {
+      output_asm_insn (ite[swap], operands);
+    }
+    output_asm_insn (cmp1[cmp_idx[which_alternative]][swap], operands);
+    return \"\";
   }"
   [(set_attr "conds" "set")
-   (set_attr "length" "8")]
+   (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr_alternative "length"
+      [(const_int 6)
+       (const_int 8)
+       (const_int 8)
+       (const_int 8)
+       (const_int 8)
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))])]
 )
 
 (define_insn "*cmp_ite1"
@@ -9025,35 +9079,81 @@
 	(compare
 	 (if_then_else:SI
 	  (match_operator 4 "arm_comparison_operator"
-	   [(match_operand:SI 0 "s_register_operand" "r,r,r,r")
-	    (match_operand:SI 1 "arm_add_operand" "rI,L,rI,L")])
+	   [(match_operand:SI 0 "s_register_operand"
+	        "l,l,l,r,r,r,r,r,r")
+	    (match_operand:SI 1 "arm_add_operand"
+	        "lPy,lPy,lPy,rI,L,rI,L,rI,L")])
 	  (match_operator:SI 5 "arm_comparison_operator"
-	   [(match_operand:SI 2 "s_register_operand" "r,r,r,r")
-	    (match_operand:SI 3 "arm_add_operand" "rI,rI,L,L")])
+	   [(match_operand:SI 2 "s_register_operand"
+	        "l,r,r,l,l,r,r,r,r")
+	    (match_operand:SI 3 "arm_add_operand"
+	        "lPy,rI,L,lPy,lPy,rI,rI,L,L")])
 	  (const_int 1))
 	 (const_int 0)))]
-  "TARGET_ARM"
+  "TARGET_32BIT"
   "*
   {
-    static const char * const opcodes[4][2] =
+    static const char * const cmp1[NUM_OF_COND_CMP][2] =
     {
-      {\"cmp\\t%0, %1\;cmp%d4\\t%2, %3\",
-       \"cmp\\t%2, %3\;cmp%D5\\t%0, %1\"},
-      {\"cmn\\t%0, #%n1\;cmp%d4\\t%2, %3\",
-       \"cmp\\t%2, %3\;cmn%D5\\t%0, #%n1\"},
-      {\"cmp\\t%0, %1\;cmn%d4\\t%2, #%n3\",
-       \"cmn\\t%2, #%n3\;cmp%D5\\t%0, %1\"},
-      {\"cmn\\t%0, #%n1\;cmn%d4\\t%2, #%n3\",
-       \"cmn\\t%2, #%n3\;cmn%D5\\t%0, #%n1\"}
+      {\"cmp\\t%0, %1\",
+       \"cmp\\t%2, %3\"},
+      {\"cmn\\t%0, #%n1\",
+       \"cmp\\t%2, %3\"},
+      {\"cmp\\t%0, %1\",
+       \"cmn\\t%2, #%n3\"},
+      {\"cmn\\t%0, #%n1\",
+       \"cmn\\t%2, #%n3\"}
     };
+    static const char * const cmp2[NUM_OF_COND_CMP][2] =
+    {
+      {\"cmp%d4\\t%2, %3\",
+       \"cmp%D5\\t%0, %1\"},
+      {\"cmp%d4\\t%2, %3\",
+       \"cmn%D5\\t%0, #%n1\"},
+      {\"cmn%d4\\t%2, #%n3\",
+       \"cmp%D5\\t%0, %1\"},
+      {\"cmn%d4\\t%2, #%n3\",
+       \"cmn%D5\\t%0, #%n1\"}
+    };
+    static const char * const ite[2] =
+    {
+      \"it\\t%d4\",
+      \"it\\t%D5\"
+    };
+    static const int cmp_idx[9] = {CMP_CMP, CMP_CMP, CMP_CMN,
+                                   CMP_CMP, CMN_CMP, CMP_CMP,
+                                   CMN_CMP, CMP_CMN, CMN_CMN};
     int swap =
       comparison_dominates_p (GET_CODE (operands[5]),
 			      reverse_condition (GET_CODE (operands[4])));
 
-    return opcodes[which_alternative][swap];
+    output_asm_insn (cmp1[cmp_idx[which_alternative]][swap], operands);
+    if (TARGET_THUMB2) {
+      output_asm_insn (ite[swap], operands);
+    }
+    output_asm_insn (cmp2[cmp_idx[which_alternative]][swap], operands);
+    return \"\";
   }"
   [(set_attr "conds" "set")
-   (set_attr "length" "8")]
+   (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr_alternative "length"
+      [(const_int 6)
+       (const_int 8)
+       (const_int 8)
+       (const_int 8)
+       (const_int 8)
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))])]
 )
 
 (define_insn "*cmp_and"
@@ -9061,34 +9161,80 @@
 	(compare
 	 (and:SI
 	  (match_operator 4 "arm_comparison_operator"
-	   [(match_operand:SI 0 "s_register_operand" "r,r,r,r")
-	    (match_operand:SI 1 "arm_add_operand" "rI,L,rI,L")])
+	   [(match_operand:SI 0 "s_register_operand" 
+	        "l,l,l,r,r,r,r,r,r")
+	    (match_operand:SI 1 "arm_add_operand" 
+	        "lPy,lPy,lPy,rI,L,rI,L,rI,L")])
 	  (match_operator:SI 5 "arm_comparison_operator"
-	   [(match_operand:SI 2 "s_register_operand" "r,r,r,r")
-	    (match_operand:SI 3 "arm_add_operand" "rI,rI,L,L")]))
+	   [(match_operand:SI 2 "s_register_operand" 
+	        "l,r,r,l,l,r,r,r,r")
+	    (match_operand:SI 3 "arm_add_operand" 
+	        "lPy,rI,L,lPy,lPy,rI,rI,L,L")]))
 	 (const_int 0)))]
-  "TARGET_ARM"
+  "TARGET_32BIT"
   "*
   {
-    static const char *const opcodes[4][2] =
+    static const char *const cmp1[NUM_OF_COND_CMP][2] =
     {
-      {\"cmp\\t%2, %3\;cmp%d5\\t%0, %1\",
-       \"cmp\\t%0, %1\;cmp%d4\\t%2, %3\"},
-      {\"cmp\\t%2, %3\;cmn%d5\\t%0, #%n1\",
-       \"cmn\\t%0, #%n1\;cmp%d4\\t%2, %3\"},
-      {\"cmn\\t%2, #%n3\;cmp%d5\\t%0, %1\",
-       \"cmp\\t%0, %1\;cmn%d4\\t%2, #%n3\"},
-      {\"cmn\\t%2, #%n3\;cmn%d5\\t%0, #%n1\",
-       \"cmn\\t%0, #%n1\;cmn%d4\\t%2, #%n3\"}
+      {\"cmp%d5\\t%0, %1\",
+       \"cmp%d4\\t%2, %3\"},
+      {\"cmn%d5\\t%0, #%n1\",
+       \"cmp%d4\\t%2, %3\"},
+      {\"cmp%d5\\t%0, %1\",
+       \"cmn%d4\\t%2, #%n3\"},
+      {\"cmn%d5\\t%0, #%n1\",
+       \"cmn%d4\\t%2, #%n3\"}
     };
+    static const char *const cmp2[NUM_OF_COND_CMP][2] =
+    {
+      {\"cmp\\t%2, %3\",
+       \"cmp\\t%0, %1\"},
+      {\"cmp\\t%2, %3\",
+       \"cmn\\t%0, #%n1\"},
+      {\"cmn\\t%2, #%n3\",
+       \"cmp\\t%0, %1\"},
+      {\"cmn\\t%2, #%n3\",
+       \"cmn\\t%0, #%n1\"}
+    };
+    static const char *const ite[2] =
+    {
+      \"it\\t%d5\",
+      \"it\\t%d4\"
+    };
+    static const int cmp_idx[9] = {CMP_CMP, CMP_CMP, CMP_CMN,
+                                   CMP_CMP, CMN_CMP, CMP_CMP,
+                                   CMN_CMP, CMP_CMN, CMN_CMN};
     int swap =
       comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
 
-    return opcodes[which_alternative][swap];
+    output_asm_insn (cmp2[cmp_idx[which_alternative]][swap], operands);
+    if (TARGET_THUMB2) {
+      output_asm_insn (ite[swap], operands);
+    }
+    output_asm_insn (cmp1[cmp_idx[which_alternative]][swap], operands);
+    return \"\";
   }"
   [(set_attr "conds" "set")
    (set_attr "predicable" "no")
-   (set_attr "length" "8")]
+   (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr_alternative "length"
+      [(const_int 6)
+       (const_int 8)
+       (const_int 8)
+       (const_int 8)
+       (const_int 8)
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))])]
 )
 
 (define_insn "*cmp_ior"
@@ -9096,34 +9242,80 @@
 	(compare
 	 (ior:SI
 	  (match_operator 4 "arm_comparison_operator"
-	   [(match_operand:SI 0 "s_register_operand" "r,r,r,r")
-	    (match_operand:SI 1 "arm_add_operand" "rI,L,rI,L")])
+	   [(match_operand:SI 0 "s_register_operand"
+	        "l,l,l,r,r,r,r,r,r")
+	    (match_operand:SI 1 "arm_add_operand"
+	        "lPy,lPy,lPy,rI,L,rI,L,rI,L")])
 	  (match_operator:SI 5 "arm_comparison_operator"
-	   [(match_operand:SI 2 "s_register_operand" "r,r,r,r")
-	    (match_operand:SI 3 "arm_add_operand" "rI,rI,L,L")]))
+	   [(match_operand:SI 2 "s_register_operand"
+	        "l,r,r,l,l,r,r,r,r")
+	    (match_operand:SI 3 "arm_add_operand"
+	        "lPy,rI,L,lPy,lPy,rI,rI,L,L")]))
 	 (const_int 0)))]
-  "TARGET_ARM"
+  "TARGET_32BIT"
   "*
-{
-  static const char *const opcodes[4][2] =
   {
-    {\"cmp\\t%0, %1\;cmp%D4\\t%2, %3\",
-     \"cmp\\t%2, %3\;cmp%D5\\t%0, %1\"},
-    {\"cmn\\t%0, #%n1\;cmp%D4\\t%2, %3\",
-     \"cmp\\t%2, %3\;cmn%D5\\t%0, #%n1\"},
-    {\"cmp\\t%0, %1\;cmn%D4\\t%2, #%n3\",
-     \"cmn\\t%2, #%n3\;cmp%D5\\t%0, %1\"},
-    {\"cmn\\t%0, #%n1\;cmn%D4\\t%2, #%n3\",
-     \"cmn\\t%2, #%n3\;cmn%D5\\t%0, #%n1\"}
-  };
-  int swap =
-    comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
+    static const char *const cmp1[NUM_OF_COND_CMP][2] =
+    {
+      {\"cmp\\t%0, %1\",
+       \"cmp\\t%2, %3\"},
+      {\"cmn\\t%0, #%n1\",
+       \"cmp\\t%2, %3\"},
+      {\"cmp\\t%0, %1\",
+       \"cmn\\t%2, #%n3\"},
+      {\"cmn\\t%0, #%n1\",
+       \"cmn\\t%2, #%n3\"}
+    };
+    static const char *const cmp2[NUM_OF_COND_CMP][2] =
+    {
+      {\"cmp%D4\\t%2, %3\",
+       \"cmp%D5\\t%0, %1\"},
+      {\"cmp%D4\\t%2, %3\",
+       \"cmn%D5\\t%0, #%n1\"},
+      {\"cmn%D4\\t%2, #%n3\",
+       \"cmp%D5\\t%0, %1\"},
+      {\"cmn%D4\\t%2, #%n3\",
+       \"cmn%D5\\t%0, #%n1\"}
+    };
+    static const char *const ite[2] =
+    {
+      \"it\\t%D4\",
+      \"it\\t%D5\"
+    };
+    static const int cmp_idx[9] = {CMP_CMP, CMP_CMP, CMP_CMN,
+                                   CMP_CMP, CMN_CMP, CMP_CMP,
+                                   CMN_CMP, CMP_CMN, CMN_CMN};
+    int swap =
+      comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
 
-  return opcodes[which_alternative][swap];
-}
-"
+    output_asm_insn (cmp1[cmp_idx[which_alternative]][swap], operands);
+    if (TARGET_THUMB2) {
+      output_asm_insn (ite[swap], operands);
+    }
+    output_asm_insn (cmp2[cmp_idx[which_alternative]][swap], operands);
+    return \"\";
+  }
+  "
   [(set_attr "conds" "set")
-   (set_attr "length" "8")]
+   (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr_alternative "length"
+      [(const_int 6)
+       (const_int 8)
+       (const_int 8)
+       (const_int 8)
+       (const_int 8)
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))
+       (if_then_else (eq_attr "is_thumb" "no")
+           (const_int 8)
+           (const_int 10))])]
 )
 
 (define_insn_and_split "*ior_scc_scc"
@@ -9135,11 +9327,11 @@
 		 [(match_operand:SI 4 "s_register_operand" "r")
 		  (match_operand:SI 5 "arm_add_operand" "rIL")])))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM
+  "TARGET_32BIT
    && (arm_select_dominance_cc_mode (operands[3], operands[6], DOM_CC_X_OR_Y)
        != CCmode)"
   "#"
-  "TARGET_ARM && reload_completed"
+  "TARGET_32BIT && reload_completed"
   [(set (match_dup 7)
 	(compare
 	 (ior:SI
@@ -9168,9 +9360,9 @@
    (set (match_operand:SI 7 "s_register_operand" "=r")
 	(ior:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])
 		(match_op_dup 6 [(match_dup 4) (match_dup 5)])))]
-  "TARGET_ARM"
+  "TARGET_32BIT"
   "#"
-  "TARGET_ARM && reload_completed"
+  "TARGET_32BIT && reload_completed"
   [(set (match_dup 0)
 	(compare
 	 (ior:SI
@@ -9191,11 +9383,11 @@
 		 [(match_operand:SI 4 "s_register_operand" "r")
 		  (match_operand:SI 5 "arm_add_operand" "rIL")])))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM
+  "TARGET_32BIT
    && (arm_select_dominance_cc_mode (operands[3], operands[6], DOM_CC_X_AND_Y)
        != CCmode)"
   "#"
-  "TARGET_ARM && reload_completed
+  "TARGET_32BIT && reload_completed
    && (arm_select_dominance_cc_mode (operands[3], operands[6], DOM_CC_X_AND_Y)
        != CCmode)"
   [(set (match_dup 7)
@@ -9226,9 +9418,9 @@
    (set (match_operand:SI 7 "s_register_operand" "=r")
 	(and:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])
 		(match_op_dup 6 [(match_dup 4) (match_dup 5)])))]
-  "TARGET_ARM"
+  "TARGET_32BIT"
   "#"
-  "TARGET_ARM && reload_completed"
+  "TARGET_32BIT && reload_completed"
   [(set (match_dup 0)
 	(compare
 	 (and:SI
@@ -9253,11 +9445,11 @@
 		 [(match_operand:SI 4 "s_register_operand" "r,r,r")
 		  (match_operand:SI 5 "arm_add_operand" "rIL,rIL,rIL")])))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM
+  "TARGET_32BIT
    && (arm_select_dominance_cc_mode (operands[3], operands[6], DOM_CC_X_AND_Y)
        == CCmode)"
   "#"
-  "TARGET_ARM && reload_completed"
+  "TARGET_32BIT && reload_completed"
   [(parallel [(set (match_dup 0)
 		   (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
 	      (clobber (reg:CC CC_REGNUM))])
