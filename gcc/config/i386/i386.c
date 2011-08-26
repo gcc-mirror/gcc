@@ -16512,52 +16512,29 @@ ix86_expand_convert_uns_sisf_sse (rtx target, rtx input)
 rtx
 ix86_build_const_vector (enum machine_mode mode, bool vect, rtx value)
 {
+  int i, n_elt;
   rtvec v;
+  enum machine_mode scalar_mode;
+
   switch (mode)
     {
     case V4SImode:
-      gcc_assert (vect);
-      v = gen_rtvec (4, value, value, value, value);
-      return gen_rtx_CONST_VECTOR (V4SImode, v);
-
     case V2DImode:
       gcc_assert (vect);
-      v = gen_rtvec (2, value, value);
-      return gen_rtx_CONST_VECTOR (V2DImode, v);
-
     case V8SFmode:
-      if (vect)
-	v = gen_rtvec (8, value, value, value, value,
-		       value, value, value, value);
-      else
-	v = gen_rtvec (8, value, CONST0_RTX (SFmode),
-		       CONST0_RTX (SFmode), CONST0_RTX (SFmode),
-		       CONST0_RTX (SFmode), CONST0_RTX (SFmode),
-		       CONST0_RTX (SFmode), CONST0_RTX (SFmode));
-      return gen_rtx_CONST_VECTOR (V8SFmode, v);
-
     case V4SFmode:
-      if (vect)
-	v = gen_rtvec (4, value, value, value, value);
-      else
-	v = gen_rtvec (4, value, CONST0_RTX (SFmode),
-		       CONST0_RTX (SFmode), CONST0_RTX (SFmode));
-      return gen_rtx_CONST_VECTOR (V4SFmode, v);
-
     case V4DFmode:
-      if (vect)
-	v = gen_rtvec (4, value, value, value, value);
-      else
-	v = gen_rtvec (4, value, CONST0_RTX (DFmode),
-		       CONST0_RTX (DFmode), CONST0_RTX (DFmode));
-      return gen_rtx_CONST_VECTOR (V4DFmode, v);
-
     case V2DFmode:
-      if (vect)
-	v = gen_rtvec (2, value, value);
-      else
-	v = gen_rtvec (2, value, CONST0_RTX (DFmode));
-      return gen_rtx_CONST_VECTOR (V2DFmode, v);
+      n_elt = GET_MODE_NUNITS (mode);
+      v = rtvec_alloc (n_elt);
+      scalar_mode = GET_MODE_INNER (mode);
+
+      RTVEC_ELT (v, 0) = value;
+
+      for (i = 1; i < n_elt; ++i)
+	RTVEC_ELT (v, i) = vect ? value : CONST0_RTX (scalar_mode);
+
+      return gen_rtx_CONST_VECTOR (mode, v);
 
     default:
       gcc_unreachable ();

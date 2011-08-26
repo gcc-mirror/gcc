@@ -1,5 +1,15 @@
 2011-08-26  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (round<mode>2): New expander.
+	* config/i386/i386.c (enum ix86_builtins): Add
+	IX86_BUILTIN_ROUND{PS,PD}_AZ{,256}.
+	(struct builtin_description): Add __builtin_ia32_round{ps,pd}_az{,256}
+	descriptions.
+	(ix86_builtin_vectorized_function): Handle BUILT_IN_ROUND{,F} builtins.
+	(ix86_build_const_vector): Rewrite using loop with RTVEC_ELT accessor.
+
+2011-08-26  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR middle-end/50083
 	* convert.c (convert_to_integer) <BUIT_IN_ROUND{,F,L}>: Convert
 	only when TARGET_C99_FUNCTIONS.
