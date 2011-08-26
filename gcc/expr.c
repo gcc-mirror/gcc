@@ -10168,6 +10168,17 @@ string_constant (tree arg, tree *ptr_offset)
 				    fold_convert (sizetype, lower_bound));
 	    }
 	}
+      else if (TREE_CODE (TREE_OPERAND (arg, 0)) == MEM_REF)
+	{
+	  array = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
+	  offset = TREE_OPERAND (TREE_OPERAND (arg, 0), 1);
+	  if (TREE_CODE (array) != ADDR_EXPR)
+	    return 0;
+	  array = TREE_OPERAND (array, 0);
+	  if (TREE_CODE (array) != STRING_CST
+	      && TREE_CODE (array) != VAR_DECL)
+	    return 0;
+	}
       else
 	return 0;
     }

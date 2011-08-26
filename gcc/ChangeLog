@@ -1,3 +1,7 @@
+2011-08-26  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (string_constant): Handle &MEM_REF.
+
 2011-08-26  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/arm.c (struct four_ints): New type.
