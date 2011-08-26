@@ -9646,6 +9646,40 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<MODE>")])
 
+(define_expand "round<mode>2"
+  [(set (match_dup 4)
+	(plus:VF
+	  (match_operand:VF 1 "nonimmediate_operand" "")
+	  (match_dup 3)))
+   (set (match_operand:VF 0 "register_operand" "")
+	(unspec:VF
+	  [(match_dup 4) (match_dup 5)]
+	  UNSPEC_ROUND))]
+  "TARGET_ROUND && !flag_trapping_math"
+{
+  enum machine_mode scalar_mode;
+  const struct real_format *fmt;
+  REAL_VALUE_TYPE pred_half, half_minus_pred_half;
+  rtx half, vec_half;
+
+  scalar_mode = GET_MODE_INNER (<MODE>mode);
+
+  /* load nextafter (0.5, 0.0) */
+  fmt = REAL_MODE_FORMAT (scalar_mode);
+  real_2expN (&half_minus_pred_half, -(fmt->p) - 1, scalar_mode);
+  REAL_ARITHMETIC (pred_half, MINUS_EXPR, dconsthalf, half_minus_pred_half);
+  half = const_double_from_real_value (pred_half, scalar_mode);
+
+  vec_half = ix86_build_const_vector (<MODE>mode, true, half);
+  vec_half = force_reg (<MODE>mode, vec_half);
+
+  operands[3] = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_copysign<mode>3 (operands[3], vec_half, operands[1]));
+
+  operands[4] = gen_reg_rtx (<MODE>mode);
+  operands[5] = GEN_INT (ROUND_TRUNC);
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Intel SSE4.2 string/text processing instructions

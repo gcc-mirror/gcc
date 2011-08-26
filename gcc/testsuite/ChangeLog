@@ -1,3 +1,10 @@
+2011-08-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse_4_1-round-vec.c: New test.
+	* gcc.target/i386/sse_4_1-roundf-vec.c: New test.
+	* gcc.target/i386/avx-round-vec.c: New test.
+	* gcc.target/i386/avx-roundf-vec.c: New test.
+
 2011-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/cmpxchg16b-1.c: Match also space after the
@@ -12,10 +19,10 @@
 
 2011-08-26  Jiangning Liu  <jiangning.liu@arm.com>
 
-       * gcc.target/arm/thumb2-cond-cmp-1.c: New.
-       * gcc.target/arm/thumb2-cond-cmp-2.c: Likewise.
-       * gcc.target/arm/thumb2-cond-cmp-3.c: Likewise.
-       * gcc.target/arm/thumb2-cond-cmp-4.c: Likewise.
+	* gcc.target/arm/thumb2-cond-cmp-1.c: New.
+	* gcc.target/arm/thumb2-cond-cmp-2.c: Likewise.
+	* gcc.target/arm/thumb2-cond-cmp-3.c: Likewise.
+	* gcc.target/arm/thumb2-cond-cmp-4.c: Likewise.
 
 2011-08-26  Andrew Stubbs  <ams@codesourcery.com>
 
