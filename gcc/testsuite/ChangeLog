@@ -1,3 +1,10 @@
+2011-08-26  Jiangning Liu  <jiangning.liu@arm.com>
+
+       * gcc.target/arm/thumb2-cond-cmp-1.c: New.
+       * gcc.target/arm/thumb2-cond-cmp-2.c: Likewise.
+       * gcc.target/arm/thumb2-cond-cmp-3.c: Likewise.
+       * gcc.target/arm/thumb2-cond-cmp-4.c: Likewise.
+
 2011-08-26  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.target/arm/thumb2-replicated-constant1.c: New file.
