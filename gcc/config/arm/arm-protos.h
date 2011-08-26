@@ -47,6 +47,7 @@ extern bool arm_vector_mode_supported_p (enum machine_mode);
 extern bool arm_small_register_classes_for_mode_p (enum machine_mode);
 extern int arm_hard_regno_mode_ok (unsigned int, enum machine_mode);
 extern int const_ok_for_arm (HOST_WIDE_INT);
+extern int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 extern int arm_split_constant (RTX_CODE, enum machine_mode, rtx,
 			       HOST_WIDE_INT, rtx, rtx, int);
 extern RTX_CODE arm_canonicalize_comparison (RTX_CODE, rtx *, rtx *);

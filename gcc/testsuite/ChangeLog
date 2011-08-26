@@ -1,3 +1,10 @@
+2011-08-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/thumb2-replicated-constant1.c: New file.
+	* gcc.target/arm/thumb2-replicated-constant2.c: New file.
+	* gcc.target/arm/thumb2-replicated-constant3.c: New file.
+	* gcc.target/arm/thumb2-replicated-constant4.c: New file.
+
 2011-08-25  Mikael Morin  <mikael.morin@gcc.gnu.org>
 
 	PR fortran/50050
