@@ -1,4 +1,4 @@
-/* Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -21,7 +21,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef _X86INTRIN_H_INCLUDED
+#if !defined _X86INTRIN_H_INCLUDED && !defined _IMMINTRIN_H_INCLUDED
 # error "Never use <bmi2intrin.h> directly; include <x86intrin.h> instead."
 #endif
 

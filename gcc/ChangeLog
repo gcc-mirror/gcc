@@ -1,3 +1,12 @@
+2011-08-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/bmi2intrin.h: Allow in <immintrin.h>.
+	* config/i386/bmiintrin.h: Likewise.
+	* config/i386/lzcntintrin.h: Likewise.
+
+	* config/i386/immintrin.h: Include <lzcntintrin.h>,
+	<bmiintrin.h> and <bmi2intrin.h>.
+
 2011-08-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/50166
