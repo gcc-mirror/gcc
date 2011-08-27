@@ -648,7 +648,7 @@
    (use (match_operand:VF 2 "nonimmediate_operand"    "xm,0, xm,x"))]
   "TARGET_SSE"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(const_int 0)]
 {
   enum rtx_code absneg_op;
@@ -3708,7 +3708,7 @@
 	(vec_select:<ssehalfvecmode>
 	  (match_operand:VI8F_256 1 "nonimmediate_operand" "xm,x")
 	  (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_AVX"
+  "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -3742,7 +3742,7 @@
 	  (match_operand:VI4F_256 1 "nonimmediate_operand" "xm,x")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)])))]
-  "TARGET_AVX"
+  "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -3779,7 +3779,7 @@
 		     (const_int 2) (const_int 3)
 		     (const_int 4) (const_int 5)
 		     (const_int 6) (const_int 7)])))]
-  "TARGET_AVX"
+  "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -3822,7 +3822,7 @@
 		     (const_int 10) (const_int 11)
 		     (const_int 12) (const_int 13)
 		     (const_int 14) (const_int 15)])))]
-  "TARGET_AVX"
+  "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -3876,9 +3876,9 @@
        (vec_select:SF
 	 (match_operand:V4SF 1 "memory_operand" "o")
 	 (parallel [(match_operand 2 "const_0_to_3_operand" "n")])))]
-  ""
+  "TARGET_SSE"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(const_int 0)]
 {
   int i = INTVAL (operands[2]);
@@ -4726,6 +4726,9 @@
 
   /* Extract the even bytes and merge them back together.  */
   ix86_expand_vec_extract_even_odd (operands[0], t[5], t[4], 0);
+
+  set_unique_reg_note (get_last_insn (), REG_EQUAL,
+		       gen_rtx_MULT (V16QImode, operands[1], operands[2]));
   DONE;
 })
 
@@ -5179,6 +5182,9 @@
 
   /* Merge the parts back together.  */
   emit_insn (gen_vec_interleave_lowv4si (op0, t5, t6));
+
+  set_unique_reg_note (get_last_insn (), REG_EQUAL,
+		       gen_rtx_MULT (V4SImode, operands[1], operands[2]));
   DONE;
 })
 
@@ -5261,6 +5267,9 @@
       emit_insn (gen_addv2di3 (t6, t1, t4));
       emit_insn (gen_addv2di3 (op0, t6, t5));
     }
+
+  set_unique_reg_note (get_last_insn (), REG_EQUAL,
+		       gen_rtx_MULT (V2DImode, operands[1], operands[2]));
   DONE;
 })
 

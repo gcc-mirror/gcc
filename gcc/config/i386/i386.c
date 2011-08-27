@@ -12268,7 +12268,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	  tp = get_thread_pointer (true);
 	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, tp, dest));
 
-	  set_unique_reg_note (get_last_insn (), REG_EQUIV, x);
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL, x);
 	}
       else
 	{
@@ -12315,7 +12315,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	    emit_insn (gen_tls_dynamic_gnu2_32 (base, tmp, pic));
 
 	  tp = get_thread_pointer (true);
-	  set_unique_reg_note (get_last_insn (), REG_EQUIV,
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL,
 			       gen_rtx_MINUS (Pmode, tmp, tp));
 	}
       else
@@ -12331,7 +12331,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	      insns = get_insns ();
 	      end_sequence ();
 
-	      /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
+	      /* Attach a unique REG_EQUAL, to allow the RTL optimizers to
 		 share the LD_BASE result with other LD model accesses.  */
 	      eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
 				    UNSPEC_TLS_LD_BASE);
@@ -12352,7 +12352,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	{
 	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, dest, tp));
 
-	  set_unique_reg_note (get_last_insn (), REG_EQUIV, x);
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL, x);
 	}
       break;
 
