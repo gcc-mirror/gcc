@@ -4992,6 +4992,20 @@ some class of functions only requires one instruction to implement a
 return.  Normally, the applicable functions are those which do not need
 to save any registers or allocate stack space.
 
+It is valid for this pattern to expand to an instruction using
+@code{simple_return} if no epilogue is required.
+
+@cindex @code{simple_return} instruction pattern
+@item @samp{simple_return}
+Subroutine return instruction.  This instruction pattern name should be
+defined only if a single instruction can do all the work of returning
+from a function on a path where no epilogue is required.  This pattern
+is very similar to the @code{return} instruction pattern, but it is emitted
+only by the shrink-wrapping optimization on paths where the function
+prologue has not been executed, and a function return should occur without
+any of the effects of the epilogue.  Additional uses may be introduced on
+paths where both the prologue and the epilogue have executed.
+
 @findex reload_completed
 @findex leaf_function_p
 For such machines, the condition specified in this pattern should only

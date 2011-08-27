@@ -3181,6 +3181,7 @@ df_uses_record (struct df_collection_rec *collection_rec,
       }
 
     case RETURN:
+    case SIMPLE_RETURN:
       break;
 
     case ASM_OPERANDS:

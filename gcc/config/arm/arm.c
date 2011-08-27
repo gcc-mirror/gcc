@@ -17836,6 +17836,7 @@ arm_final_prescan_insn (rtx insn)
 
   /* If we start with a return insn, we only succeed if we find another one.  */
   int seeking_return = 0;
+  enum rtx_code return_code = UNKNOWN;
 
   /* START_INSN will hold the insn from where we start looking.  This is the
      first insn after the following code_label if REVERSE is true.  */
@@ -17874,7 +17875,7 @@ arm_final_prescan_insn (rtx insn)
 	  else
 	    return;
 	}
-      else if (GET_CODE (body) == RETURN)
+      else if (ANY_RETURN_P (body))
         {
 	  start_insn = next_nonnote_insn (start_insn);
 	  if (GET_CODE (start_insn) == BARRIER)
@@ -17885,6 +17886,7 @@ arm_final_prescan_insn (rtx insn)
 	    {
 	      reverse = TRUE;
 	      seeking_return = 1;
+	      return_code = GET_CODE (body);
 	    }
 	  else
 	    return;
@@ -17925,11 +17927,15 @@ arm_final_prescan_insn (rtx insn)
 	  label = XEXP (XEXP (SET_SRC (body), 2), 0);
 	  then_not_else = FALSE;
 	}
-      else if (GET_CODE (XEXP (SET_SRC (body), 1)) == RETURN)
-	seeking_return = 1;
-      else if (GET_CODE (XEXP (SET_SRC (body), 2)) == RETURN)
+      else if (ANY_RETURN_P (XEXP (SET_SRC (body), 1)))
+	{
+	  seeking_return = 1;
+	  return_code = GET_CODE (XEXP (SET_SRC (body), 1));
+	}
+      else if (ANY_RETURN_P (XEXP (SET_SRC (body), 2)))
         {
 	  seeking_return = 1;
+	  return_code = GET_CODE (XEXP (SET_SRC (body), 2));
 	  then_not_else = FALSE;
         }
       else
@@ -18026,12 +18032,11 @@ arm_final_prescan_insn (rtx insn)
 		}
 	      /* Fail if a conditional return is undesirable (e.g. on a
 		 StrongARM), but still allow this if optimizing for size.  */
-	      else if (GET_CODE (scanbody) == RETURN
+	      else if (GET_CODE (scanbody) == return_code
 		       && !use_return_insn (TRUE, NULL)
 		       && !optimize_size)
 		fail = TRUE;
-	      else if (GET_CODE (scanbody) == RETURN
-		       && seeking_return)
+	      else if (GET_CODE (scanbody) == return_code)
 	        {
 		  arm_ccfsm_state = 2;
 		  succeed = TRUE;

@@ -6303,7 +6303,7 @@ simplify_set (rtx x)
   rtx *cc_use;
 
   /* (set (pc) (return)) gets written as (return).  */
-  if (GET_CODE (dest) == PC && GET_CODE (src) == RETURN)
+  if (GET_CODE (dest) == PC && ANY_RETURN_P (src))
     return src;
 
   /* Now that we know for sure which bits of SRC we are using, see if we can

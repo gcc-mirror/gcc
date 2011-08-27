@@ -554,6 +554,9 @@ print_pattern (char *buf, const_rtx x, int verbose)
     case RETURN:
       sprintf (buf, "return");
       break;
+    case SIMPLE_RETURN:
+      sprintf (buf, "simple_return");
+      break;
     case CALL:
       print_exp (buf, x, verbose);
       break;

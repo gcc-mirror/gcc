@@ -10453,7 +10453,8 @@ mips_expand_epilogue (bool sibcall_p)
 	    regno = GP_REG_FIRST + 7;
 	  else
 	    regno = RETURN_ADDR_REGNUM;
-	  emit_jump_insn (gen_return_internal (gen_rtx_REG (Pmode, regno)));
+	  emit_jump_insn (gen_simple_return_internal (gen_rtx_REG (Pmode,
+								   regno)));
 	}
     }
 

@@ -5306,7 +5306,11 @@ static void
 emit_return_into_block (basic_block bb)
 {
   rtx jump = emit_jump_insn_after (gen_return (), BB_END (bb));
-  JUMP_LABEL (jump) = ret_rtx;
+  rtx pat = PATTERN (jump);
+  if (GET_CODE (pat) == PARALLEL)
+    pat = XVECEXP (pat, 0, 0);
+  gcc_assert (ANY_RETURN_P (pat));
+  JUMP_LABEL (jump) = pat;
 }
 #endif /* HAVE_return */
 
