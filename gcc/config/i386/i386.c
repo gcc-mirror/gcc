@@ -12702,7 +12702,7 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 	{
 	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, tp, dest));
 
-	  set_unique_reg_note (get_last_insn (), REG_EQUIV, x);
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL, x);
 	}
       break;
 
@@ -12733,7 +12733,7 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 	{
 	  rtx x = ix86_tls_module_base ();
 
-	  set_unique_reg_note (get_last_insn (), REG_EQUIV,
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL,
 			       gen_rtx_MINUS (Pmode, x, tp));
 	}
 
@@ -12746,7 +12746,7 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 	{
 	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, dest, tp));
 
-	  set_unique_reg_note (get_last_insn (), REG_EQUIV, x);
+	  set_unique_reg_note (get_last_insn (), REG_EQUAL, x);
 	}
 
       break;

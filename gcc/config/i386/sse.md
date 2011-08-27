@@ -4189,7 +4189,7 @@
 	(vec_select:<avxhalfvecmode>
 	  (match_operand:AVX256MODE4P 1 "nonimmediate_operand" "xm,x")
 	  (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_AVX"
+  "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -4223,7 +4223,7 @@
 	  (match_operand:AVX256MODE8P 1 "nonimmediate_operand" "xm,x")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)])))]
-  "TARGET_AVX"
+  "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -4260,7 +4260,7 @@
 		     (const_int 2) (const_int 3)
 		     (const_int 4) (const_int 5)
 		     (const_int 6) (const_int 7)])))]
-  "TARGET_AVX"
+  "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -4303,7 +4303,7 @@
 		     (const_int 10) (const_int 11)
 		     (const_int 12) (const_int 13)
 		     (const_int 14) (const_int 15)])))]
-  "TARGET_AVX"
+  "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -4357,9 +4357,9 @@
        (vec_select:SF
 	 (match_operand:V4SF 1 "memory_operand" "o")
 	 (parallel [(match_operand 2 "const_0_to_3_operand" "n")])))]
-  ""
+  "TARGET_SSE"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(const_int 0)]
 {
   int i = INTVAL (operands[2]);

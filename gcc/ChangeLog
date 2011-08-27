@@ -1,5 +1,14 @@
 2011-08-27  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/sse.md (vec_extract_lo_<mode>): Prevent both
+	operands in memory.
+	(vec_extract_lo_v16hi): Ditto.
+	(*vec_extract_v4sf_mem): Add TARGET_SSE insn constraint.
+	* config/i386/i386.c (legitimize_tls_address): Change REG_EQIV
+	notes to REG_EQUAL.
+
+2011-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/50202
 	* config/i386/sse.md (sse4_2_pcmpestr): Emit NOTE_INSN_DELETED note
 	when all outputs are unused.
