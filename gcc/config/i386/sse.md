@@ -9734,6 +9734,9 @@
 					   operands[2], operands[3],
 					   operands[4], operands[5],
 					   operands[6]));
+  if (!(flags || ecx || xmm0))
+    emit_note (NOTE_INSN_DELETED);
+
   DONE;
 }
   [(set_attr "type" "sselog")
@@ -9861,6 +9864,9 @@
     emit_insn (gen_sse4_2_pcmpistr_cconly (NULL, NULL,
 					   operands[2], operands[3],
 					   operands[4]));
+  if (!(flags || ecx || xmm0))
+    emit_note (NOTE_INSN_DELETED);
+
   DONE;
 }
   [(set_attr "type" "sselog")
