@@ -1117,10 +1117,13 @@ rtl_redirect_edge_and_branch (edge e, basic_block target)
 }
 
 /* Like force_nonfallthru below, but additionally performs redirection
-   Used by redirect_edge_and_branch_force.  */
+   Used by redirect_edge_and_branch_force.  JUMP_LABEL is used only
+   when redirecting to the EXIT_BLOCK, it is either ret_rtx or
+   simple_return_rtx, indicating which kind of returnjump to create.
+   It should be NULL otherwise.  */
 
 basic_block
-force_nonfallthru_and_redirect (edge e, basic_block target)
+force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 {
   basic_block jump_block, new_bb = NULL, src = e->src;
   rtx note;
@@ -1252,12 +1255,25 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
   e->flags &= ~EDGE_FALLTHRU;
   if (target == EXIT_BLOCK_PTR)
     {
+      if (jump_label == ret_rtx)
+	{
 #ifdef HAVE_return
-	emit_jump_insn_after_setloc (gen_return (), BB_END (jump_block), loc);
-	JUMP_LABEL (BB_END (jump_block)) = ret_rtx;
+	  emit_jump_insn_after_setloc (gen_return (), BB_END (jump_block), loc);
 #else
-	gcc_unreachable ();
+	  gcc_unreachable ();
 #endif
+	}
+      else
+	{
+	  gcc_assert (jump_label == simple_return_rtx);
+#ifdef HAVE_simple_return
+	  emit_jump_insn_after_setloc (gen_simple_return (),
+				       BB_END (jump_block), loc);
+#else
+	  gcc_unreachable ();
+#endif
+	}
+      JUMP_LABEL (BB_END (jump_block)) = jump_label;
     }
   else
     {
@@ -1284,7 +1300,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
 static basic_block
 rtl_force_nonfallthru (edge e)
 {
-  return force_nonfallthru_and_redirect (e, e->dest);
+  return force_nonfallthru_and_redirect (e, e->dest, NULL_RTX);
 }
 
 /* Redirect edge even at the expense of creating new jump insn or
@@ -1301,7 +1317,7 @@ rtl_redirect_edge_and_branch_force (edge e, basic_block target)
   /* In case the edge redirection failed, try to force it to be non-fallthru
      and redirect newly created simplejump.  */
   df_set_bb_dirty (e->src);
-  return force_nonfallthru_and_redirect (e, target);
+  return force_nonfallthru_and_redirect (e, target, NULL_RTX);
 }
 
 /* The given edge should potentially be a fallthru edge.  If that is in

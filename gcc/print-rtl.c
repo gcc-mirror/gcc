@@ -328,6 +328,8 @@ print_rtx (const_rtx in_rtx)
 	    fprintf (outfile, "\n%s%*s -> ", print_rtx_head, indent * 2, "");
 	    if (GET_CODE (JUMP_LABEL (in_rtx)) == RETURN)
 	      fprintf (outfile, "return");
+	    else if (GET_CODE (JUMP_LABEL (in_rtx)) == SIMPLE_RETURN)
+	      fprintf (outfile, "simple_return");
 	    else
 	      fprintf (outfile, "%d", INSN_UID (JUMP_LABEL (in_rtx)));
 	  }

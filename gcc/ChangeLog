@@ -1,3 +1,66 @@
+2011-08-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* doc/rtl.texi (simple_return): Document.
+	(parallel, PATTERN): Here too.
+	* doc/md.texi (return): Mention it's allowed to expand to simple_return
+	in some cases.
+	(simple_return): Document standard pattern.
+	* gengenrtl.c (special_rtx): SIMPLE_RETURN is special.
+	* final.c (final_scan_insn): Use ANY_RETURN_P on body.
+	* reorg.c (function_return_label, function_simple_return_label):
+	New static variables, replacing...
+	(end_of_function_label): ... this.
+	(simplejump_or_return_p): New static function.
+	(optimize_skip, steal_delay_list_from_fallthrough,
+	fill_slots_from_thread): Use it.
+	(relax_delay_slots): Likewise.  Use ANY_RETURN_P on body.
+	(rare_destination, follow_jumps): Use ANY_RETURN_P on body.
+	(find_end_label): Take a new arg which is one of the two return
+	rtxs.  Depending on which, set either function_return_label or
+	function_simple_return_label.  All callers changed.
+	(make_return_insns): Make both kinds.
+	(dbr_schedule): Adjust for two kinds of end labels.
+	* function.c (emit_return_into_block): Set JUMP_LABEL properly.
+	* genemit.c (gen_exp): Handle SIMPLE_RETURN.
+	(gen_expand, gen_split): Use ANY_RETURN_P.
+	* df-scan.c (df_uses_record): Handle SIMPLE_RETURN.
+	* rtl.def (SIMPLE_RETURN): New code.
+	* ifcvt.c (find_if_case_1): Be more careful about
+	redirecting jumps to the EXIT_BLOCK.
+	* jump.c (condjump_p, condjump_in_parallel_p, any_condjump_p,
+	returnjump_p_1): Handle SIMPLE_RETURNs.
+	* print-rtl.c (print_rtx): Likewise.
+	* rtl.c (copy_rtx): Likewise.
+	* bt-load.c (compute_defs_uses_and_gen): Use ANY_RETURN_P.
+	* combine.c (simplify_set): Likewise.
+	* resource.c (find_dead_or_set_registers, mark_set_resources):
+	Likewise.
+	* emit-rtl.c (verify_rtx_sharing, classify_insn, copy_insn_1,
+	copy_rtx_if_shared_1, mark_used_flags): Handle SIMPLE_RETURNs.
+	(init_emit_regs): Initialize simple_return_rtx.
+	* cfglayout.c (fixup_reorder_chain): Pass a JUMP_LABEL to
+	force_nonfallthru_and_redirect.
+	* rtl.h (ANY_RETURN_P): Allow SIMPLE_RETURN.
+	(GR_SIMPLE_RETURN): New enum value.
+	(simple_return_rtx): New macro.
+	* basic-block.h (force_nonfallthru_and_redirect): Adjust
+	declaration.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Take a new jump_label
+	argument.  All callers changed.  Be careful about what kinds of
+	returnjumps to generate.
+	* config/i386/3i86.c (ix86_pad_returns, ix86_count_insn_bb,
+	ix86_pad_short_function): Likewise.
+	* config/arm/arm.c (arm_final_prescan_insn): Handle both kinds
+	of return.
+	* config/mips/mips.md (any_return): New code_iterator.
+	(optab): Add cases for return and simple_return.
+	(return): Expand to a simple_return.
+	(simple_return): New pattern.
+	(*<optab>, *<optab>_internal for any_return): New patterns.
+	(return_internal): Remove.
+	* config/mips/mips.c (mips_expand_epilogue): Make the last insn
+	a simple_return_internal.
+
 2011-08-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*absneg<mode>2): Fix split condition.

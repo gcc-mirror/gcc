@@ -3796,6 +3796,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest;
   basic_block new_bb;
+  rtx else_target = NULL_RTX;
   int then_bb_index;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
@@ -3845,6 +3846,13 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 				    predictable_edge_p (then_edge)))))
     return FALSE;
 
+  if (else_bb == EXIT_BLOCK_PTR)
+    {
+      rtx jump = BB_END (else_edge->src);
+      gcc_assert (JUMP_P (jump));
+      else_target = JUMP_LABEL (jump);
+    }
+
   /* Registers set are dead, or are predicable.  */
   if (! dead_or_predicable (test_bb, then_bb, else_bb,
 			    single_succ_edge (then_bb), 1))
@@ -3864,6 +3872,9 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
       redirect_edge_succ (FALLTHRU_EDGE (test_bb), else_bb);
       new_bb = 0;
     }
+  else if (else_bb == EXIT_BLOCK_PTR)
+    new_bb = force_nonfallthru_and_redirect (FALLTHRU_EDGE (test_bb),
+					     else_bb, else_target);
   else
     new_bb = redirect_edge_and_branch_force (FALLTHRU_EDGE (test_bb),
 					     else_bb);

@@ -777,6 +777,8 @@
 (define_code_iterator any_lt [lt ltu])
 (define_code_iterator any_le [le leu])
 
+(define_code_iterator any_return [return simple_return])
+
 ;; <u> expands to an empty string when doing a signed operation and
 ;; "u" when doing an unsigned operation.
 (define_code_attr u [(sign_extend "") (zero_extend "u")
@@ -798,7 +800,9 @@
 			 (xor "xor")
 			 (and "and")
 			 (plus "add")
-			 (minus "sub")])
+			 (minus "sub")
+			 (return "return")
+			 (simple_return "simple_return")])
 
 ;; <insn> expands to the name of the insn that implements a particular code.
 (define_code_attr insn [(ashift "sll")
@@ -5713,21 +5717,26 @@
 ;; allows jump optimizations to work better.
 
 (define_expand "return"
-  [(return)]
+  [(simple_return)]
   "mips_can_use_return_insn ()"
   { mips_expand_before_return (); })
 
-(define_insn "*return"
-  [(return)]
-  "mips_can_use_return_insn ()"
+(define_expand "simple_return"
+  [(simple_return)]
+  ""
+  { mips_expand_before_return (); })
+
+(define_insn "*<optab>"
+  [(any_return)]
+  ""
   "%*j\t$31%/"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
 
 ;; Normal return.
 
-(define_insn "return_internal"
-  [(return)
+(define_insn "<optab>_internal"
+  [(any_return)
    (use (match_operand 0 "pmode_register_operand" ""))]
   ""
   "%*j\t%0%/"

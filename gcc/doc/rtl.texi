@@ -2915,6 +2915,13 @@ placed in @code{pc} to return to the caller.
 Note that an insn pattern of @code{(return)} is logically equivalent to
 @code{(set (pc) (return))}, but the latter form is never used.
 
+@findex simple_return
+@item (simple_return)
+Like @code{(return)}, but truly represents only a function return, while
+@code{(return)} may represent an insn that also performs other functions
+of the function epilogue.  Like @code{(return)}, this may also occur in
+conditional jumps.
+
 @findex call
 @item (call @var{function} @var{nargs})
 Represents a function call.  @var{function} is a @code{mem} expression
@@ -3044,7 +3051,7 @@ Represents several side effects performed in parallel.  The square
 brackets stand for a vector; the operand of @code{parallel} is a
 vector of expressions.  @var{x0}, @var{x1} and so on are individual
 side effect expressions---expressions of code @code{set}, @code{call},
-@code{return}, @code{clobber} or @code{use}.
+@code{return}, @code{simple_return}, @code{clobber} or @code{use}.
 
 ``In parallel'' means that first all the values used in the individual
 side-effects are computed, and second all the actual side-effects are
@@ -3683,14 +3690,16 @@ and @code{call_insn} insns:
 @table @code
 @findex PATTERN
 @item PATTERN (@var{i})
-An expression for the side effect performed by this insn.  This must be
-one of the following codes: @code{set}, @code{call}, @code{use},
-@code{clobber}, @code{return}, @code{asm_input}, @code{asm_output},
-@code{addr_vec}, @code{addr_diff_vec}, @code{trap_if}, @code{unspec},
-@code{unspec_volatile}, @code{parallel}, @code{cond_exec}, or @code{sequence}.  If it is a @code{parallel},
-each element of the @code{parallel} must be one these codes, except that
-@code{parallel} expressions cannot be nested and @code{addr_vec} and
-@code{addr_diff_vec} are not permitted inside a @code{parallel} expression.
+An expression for the side effect performed by this insn.  This must
+be one of the following codes: @code{set}, @code{call}, @code{use},
+@code{clobber}, @code{return}, @code{simple_return}, @code{asm_input},
+@code{asm_output}, @code{addr_vec}, @code{addr_diff_vec},
+@code{trap_if}, @code{unspec}, @code{unspec_volatile},
+@code{parallel}, @code{cond_exec}, or @code{sequence}.  If it is a
+@code{parallel}, each element of the @code{parallel} must be one these
+codes, except that @code{parallel} expressions cannot be nested and
+@code{addr_vec} and @code{addr_diff_vec} are not permitted inside a
+@code{parallel} expression.
 
 @findex INSN_CODE
 @item INSN_CODE (@var{i})

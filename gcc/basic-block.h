@@ -804,7 +804,7 @@ extern rtx block_label (basic_block);
 extern bool purge_all_dead_edges (void);
 extern bool purge_dead_edges (basic_block);
 extern bool fixup_abnormal_edges (void);
-extern basic_block force_nonfallthru_and_redirect (edge, basic_block);
+extern basic_block force_nonfallthru_and_redirect (edge, basic_block, rtx);
 
 /* In cfgbuild.c.  */
 extern void find_many_sub_basic_blocks (sbitmap);

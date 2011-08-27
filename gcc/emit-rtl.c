@@ -2518,6 +2518,7 @@ verify_rtx_sharing (rtx orig, rtx insn)
     case PC:
     case CC0:
     case RETURN:
+    case SIMPLE_RETURN:
     case SCRATCH:
       return;
       /* SCRATCH must be shared because they represent distinct values.  */
@@ -2725,6 +2726,7 @@ repeat:
     case PC:
     case CC0:
     case RETURN:
+    case SIMPLE_RETURN:
     case SCRATCH:
       /* SCRATCH must be shared because they represent distinct values.  */
       return;
@@ -2845,6 +2847,7 @@ repeat:
     case PC:
     case CC0:
     case RETURN:
+    case SIMPLE_RETURN:
       return;
 
     case DEBUG_INSN:
@@ -5008,7 +5011,7 @@ classify_insn (rtx x)
     return CODE_LABEL;
   if (GET_CODE (x) == CALL)
     return CALL_INSN;
-  if (GET_CODE (x) == RETURN)
+  if (ANY_RETURN_P (x))
     return JUMP_INSN;
   if (GET_CODE (x) == SET)
     {
@@ -5264,6 +5267,7 @@ copy_insn_1 (rtx orig)
     case PC:
     case CC0:
     case RETURN:
+    case SIMPLE_RETURN:
       return orig;
     case CLOBBER:
       if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER)
@@ -5521,6 +5525,7 @@ init_emit_regs (void)
   /* Assign register numbers to the globally defined register rtx.  */
   pc_rtx = gen_rtx_fmt_ (PC, VOIDmode);
   ret_rtx = gen_rtx_fmt_ (RETURN, VOIDmode);
+  simple_return_rtx = gen_rtx_fmt_ (SIMPLE_RETURN, VOIDmode);
   cc0_rtx = gen_rtx_fmt_ (CC0, VOIDmode);
   stack_pointer_rtx = gen_raw_REG (Pmode, STACK_POINTER_REGNUM);
   frame_pointer_rtx = gen_raw_REG (Pmode, FRAME_POINTER_REGNUM);

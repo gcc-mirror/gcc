@@ -296,6 +296,12 @@ DEF_RTL_EXPR(CALL, "call", "ee", RTX_EXTRA)
 
 DEF_RTL_EXPR(RETURN, "return", "", RTX_EXTRA)
 
+/* Like RETURN, but truly represents only a function return, while
+   RETURN may represent an insn that also performs other functions
+   of the function epilogue.  Like RETURN, this may also occur in
+   conditional jumps.  */
+DEF_RTL_EXPR(SIMPLE_RETURN, "simple_return", "", RTX_EXTRA)
+
 /* Special for EH return from subroutine.  */
 
 DEF_RTL_EXPR(EH_RETURN, "eh_return", "", RTX_EXTRA)
