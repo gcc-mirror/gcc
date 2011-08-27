@@ -1,3 +1,10 @@
+2011-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/50202
+	* config/i386/sse.md (sse4_2_pcmpestr): Emit NOTE_INSN_DELETED note
+	when all outputs are unused.
+	(sse4_2_pcmpistr): Ditto.
+
 2011-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/50179
@@ -34,7 +41,7 @@
 	(cmpmem): Note that the comparison does not stop if both of the
 	fetched bytes are zero.
 
-2011-08-11   Kazuhiro Inaoka  <kazuhiro.inaoka.ud@renesas.com>
+2011-08-11  Kazuhiro Inaoka  <kazuhiro.inaoka.ud@renesas.com>
 
 	* config/rx/rx.md (movsicc): Allow register to register
 	transfers.
@@ -174,8 +181,8 @@
 
 	Backport from mainline
 	2011-05-16  Uros Bizjak  <ubizjak@gmail.com>
-        
-        * config/i386/constraints.md (z): New constraint.
+
+	* config/i386/constraints.md (z): New constraint.
 
 2011-07-25  Andrew Pinski  <apinski@cavium.com>
 
@@ -187,7 +194,7 @@
 	arguments are not volatile references.
 
 2011-07-25  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/39386
 	Backport from mainline r176756
 	2011-07-25  Georg-Johann Lay
@@ -612,7 +619,7 @@
 2011-06-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	Backport from mainline.
-        2011-06-13  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+	2011-06-13  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR target/48454
 	* config/arm/neon.md (vec_pack_trunc): Set the lengths
