@@ -1,3 +1,16 @@
+2011-08-26  Jason Merrill  <jason@redhat.com>
+
+	Core DR 342
+	PR c++/48582
+	* pt.c (check_valid_ptrmem_cst_expr): A null member pointer value
+	is valid in C++11.
+	(convert_nontype_argument): Likewise.  Implicitly convert nullptr
+	and do constant folding.
+	* mangle.c (write_template_arg_literal): Mangle null member
+	pointer values as 0.
+	* call.c (null_member_pointer_value_p): New.
+	* cp-tree.h: Declare it.
+
 2011-08-25  Jason Merrill  <jason@redhat.com>
 
 	* call.c (convert_like_real): Remove redundant complain checks.

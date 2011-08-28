@@ -5240,6 +5240,8 @@ check_valid_ptrmem_cst_expr (tree type, tree expr,
   STRIP_NOPS (expr);
   if (expr && (null_ptr_cst_p (expr) || TREE_CODE (expr) == PTRMEM_CST))
     return true;
+  if (cxx_dialect >= cxx0x && null_member_pointer_value_p (expr))
+    return true;
   if (complain & tf_error)
     {
       error ("%qE is not a valid template argument for type %qT",
@@ -5550,6 +5552,17 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
   else
     expr = mark_rvalue_use (expr);
 
+  /* 14.3.2/5: The null pointer{,-to-member} conversion is applied
+     to a non-type argument of "nullptr".  */
+  if (expr == nullptr_node
+      && (TYPE_PTR_P (type) || TYPE_PTR_TO_MEMBER_P (type)))
+    expr = convert (type, expr);
+
+  /* In C++11, non-type template arguments can be arbitrary constant
+     expressions.  But don't fold a PTRMEM_CST to a CONSTRUCTOR yet.  */
+  if (cxx_dialect >= cxx0x && TREE_CODE (expr) != PTRMEM_CST)
+    expr = maybe_constant_value (expr);
+
   /* HACK: Due to double coercion, we can get a
      NOP_EXPR<REFERENCE_TYPE>(ADDR_EXPR<POINTER_TYPE> (arg)) here,
      which is the tree that we built on the first call (see
@@ -5658,6 +5671,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       if (DECL_P (expr) && DECL_TEMPLATE_PARM_P (expr))
 	/* Non-type template parameters are OK.  */
 	;
+      else if (cxx_dialect >= cxx0x && integer_zerop (expr))
+	/* Null pointer values are OK in C++11.  */;
       else if (TREE_CODE (expr) != ADDR_EXPR
 	       && TREE_CODE (expr_type) != ARRAY_TYPE)
 	{
@@ -5784,6 +5799,10 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	  if (expr == error_mark_node)
 	    return error_mark_node;
 	}
+
+      if (cxx_dialect >= cxx0x && integer_zerop (expr))
+	/* Null pointer values are OK in C++11.  */
+	return perform_qualification_conversions (type, expr);
 
       expr = convert_nontype_argument_function (type, expr);
       if (!expr || expr == error_mark_node)

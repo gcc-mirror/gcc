@@ -553,6 +553,23 @@ null_ptr_cst_p (tree t)
   return false;
 }
 
+/* Returns true iff T is a null member pointer value (4.11).  */
+
+bool
+null_member_pointer_value_p (tree t)
+{
+  tree type = TREE_TYPE (t);
+  if (!type)
+    return false;
+  else if (TYPE_PTRMEMFUNC_P (type))
+    return (TREE_CODE (t) == CONSTRUCTOR
+	    && integer_zerop (CONSTRUCTOR_ELT (t, 0)->value));
+  else if (TYPE_PTRMEM_P (type))
+    return integer_all_onesp (t);
+  else
+    return false;
+}
+
 /* Returns nonzero if PARMLIST consists of only default parms,
    ellipsis, and/or undeduced parameter packs.  */
 

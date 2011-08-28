@@ -4722,6 +4722,7 @@ extern tree build_addr_func			(tree);
 extern tree build_call_a			(tree, int, tree*);
 extern tree build_call_n			(tree, int, ...);
 extern bool null_ptr_cst_p			(tree);
+extern bool null_member_pointer_value_p		(tree);
 extern bool sufficient_parms_p			(const_tree);
 extern tree type_decays_to			(tree);
 extern tree build_user_type_conversion		(tree, tree, int);
