@@ -1,3 +1,9 @@
+2011-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/move.h (swap(_Tp(&)[_Nm], _Tp(&)[_Nm])): Remove
+	workaround for c++/49045.
+	* include/bits/algorithmfwd.h: Likewise.
+
 2011-08-25  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/simple.cc: New file.

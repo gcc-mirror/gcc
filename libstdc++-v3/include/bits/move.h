@@ -152,21 +152,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __b = _GLIBCXX_MOVE(__tmp);
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-  // To work around c++/49045.
-  template<typename _Tp>
-    struct __is_nothrow_swappable
-    { static const bool value = noexcept(swap(std::declval<_Tp&>(),
-					      std::declval<_Tp&>())); };
-#endif
-
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 809. std::swap should be overloaded for array types.
   template<typename _Tp, size_t _Nm>
     inline void
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-    noexcept(__is_nothrow_swappable<_Tp>::value)
+    noexcept(noexcept(swap(*__a, *__b)))
 #endif
     {
       for (size_t __n = 0; __n < _Nm; ++__n)
