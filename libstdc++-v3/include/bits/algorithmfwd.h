@@ -558,9 +558,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, size_t _Nm>
     void
-    swap(_Tp (&)[_Nm], _Tp (&)[_Nm])
+    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-    noexcept(__is_nothrow_swappable<_Tp>::value)
+    noexcept(noexcept(swap(*__a, *__b)))
 #endif
     ;
 
