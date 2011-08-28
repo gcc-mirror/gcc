@@ -1,3 +1,8 @@
+2011-08-28  Dodji Seketeli  <dodji@redhat.com>
+
+	* scanner.c (load_file): Don't abuse LC_RENAME reason while
+    	(indirectly) calling linemap_add.
+
 2011-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-decl.c (get_proc_pointer_decl): Set DECL_TLS_MODEL

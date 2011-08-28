@@ -1,3 +1,8 @@
+2011-08-28  Dodji Seketeli  <dodji@redhat.com>
+
+	* line-map.c (linemap_add): Assert that reason must not be
+	LC_RENAME when called for the first time on a "main input file".
+
 2011-08-22  Gabriel Charette  <gchare@google.com>
 
 	* init.c (cpp_create_reader): Inititalize forced_token_location_p.

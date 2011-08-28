@@ -114,11 +114,10 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   if (reason == LC_RENAME_VERBATIM)
     reason = LC_RENAME;
 
-  /* If we don't keep our line maps consistent, we can easily
-     segfault.  Don't rely on the client to do it for us.  */
-  if (set->depth == 0)
-    reason = LC_ENTER;
-  else if (reason == LC_LEAVE)
+  if (set->depth == 0 && reason == LC_RENAME)
+    abort ();
+
+  if (reason == LC_LEAVE)
     {
       struct line_map *from;
       bool error;

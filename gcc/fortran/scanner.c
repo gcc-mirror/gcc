@@ -1887,6 +1887,11 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
   int len, line_len;
   bool first_line;
   const char *filename;
+  /* If realfilename and displayedname are different and non-null then
+     surely realfilename is the preprocessed form of
+     displayedname.  */
+  bool preprocessed_p = (realfilename && displayedname
+			 && strcmp (realfilename, displayedname));
 
   filename = displayedname ? displayedname : realfilename;
 
@@ -1925,9 +1930,24 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	}
     }
 
-  /* Load the file.  */
+  /* Load the file.
 
-  f = get_file (filename, initial ? LC_RENAME : LC_ENTER);
+     A "non-initial" file means a file that is being included.  In
+     that case we are creating an LC_ENTER map.
+
+     An "initial" file means a main file; one that is not included.
+     That file has already got at least one (surely more) line map(s)
+     created by gfc_init.  So the subsequent map created in that case
+     must have LC_RENAME reason.
+
+     This latter case is not true for a preprocessed file.  In that
+     case, although the file is "initial", the line maps created by
+     gfc_init was used during the preprocessing of the file.  Now that
+     the preprocessing is over and we are being fed the result of that
+     preprocessing, we need to create a brand new line map for the
+     preprocessed file, so the reason is going to be LC_ENTER.  */
+
+  f = get_file (filename, (initial && !preprocessed_p) ? LC_RENAME : LC_ENTER);
   if (!initial)
     add_file_change (f->filename, f->inclusion_line);
   current_file = f;

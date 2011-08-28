@@ -1,3 +1,8 @@
+2011-08-28  Dodji Seketeli  <dodji@redhat.com>
+
+	* c-pch.c (c_common_read_pch): Call linemap_add with LC_ENTER as
+	it's the first time it's being called on this main TU.
+
 2011-08-24  Richard Guenther  <rguenther@suse.de>
 
 	PR c/49396
