@@ -83,13 +83,12 @@ upc_pts_packed_init_type (void)
   gcc_assert (TYPE_MODE (upc_pts_rep_type_node) != BLKmode);
   record_builtin_type (RID_SHARED, "upc_shared_ptr_t",
 		       upc_pts_rep_type_node);
-  shared_void_type = build_variant_type_copy (void_type_node);
-  TYPE_SHARED (shared_void_type) = 1;
+  shared_void_type = c_build_qualified_type_1 (void_type_node,
+                                               TYPE_QUAL_SHARED, NULL_TREE);
   upc_pts_type_node = build_pointer_type (shared_void_type);
-  shared_char_type = build_variant_type_copy (char_type_node);
-  TYPE_SHARED (shared_char_type) = 1;
-  shared_char_type = upc_set_block_factor (shared_char_type,
-                                           size_zero_node);
+  shared_char_type = c_build_qualified_type_1 (char_type_node,
+                                               TYPE_QUAL_SHARED,
+					       size_zero_node);
   upc_char_pts_type_node = build_pointer_type (shared_char_type);
   upc_vaddr_mask_node =
     build_int_cst (upc_pts_rep_type_node, UPC_PTS_VADDR_MASK);

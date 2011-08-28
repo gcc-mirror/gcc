@@ -321,6 +321,11 @@ qualify_type (tree type, tree like)
   addr_space_t as_type = TYPE_ADDR_SPACE (type);
   addr_space_t as_like = TYPE_ADDR_SPACE (like);
   addr_space_t as_common;
+  int result_quals;
+  tree result_block_factor = NULL_TREE;
+
+  gcc_assert (type && TREE_CODE (type) != ARRAY_TYPE);
+  gcc_assert (like && TREE_CODE (like) != ARRAY_TYPE);
 
   /* If the two named address spaces are different, determine the common
      superset address space.  If there isn't one, raise an error.  */
@@ -331,22 +336,29 @@ qualify_type (tree type, tree like)
 	     type, like);
     }
 
-  result_type = c_build_qualified_type (type,
-			   TYPE_QUALS_NO_ADDR_SPACE (type)
-			   | TYPE_QUALS_NO_ADDR_SPACE (like)
-			   | ENCODE_QUAL_ADDR_SPACE (as_common));
+  result_quals = TYPE_QUALS_NO_ADDR_SPACE (type)
+	         | TYPE_QUALS_NO_ADDR_SPACE (like)
+		 | ENCODE_QUAL_ADDR_SPACE (as_common);
 
-  if (upc_shared_type_p (result_type))
+  if (result_quals & TYPE_QUAL_SHARED)
     {
       tree b1 = TYPE_BLOCK_FACTOR (type);
       tree b2 = TYPE_BLOCK_FACTOR (like);
-      if (!b1 || (b2 && tree_int_cst_equal (b1, b2)))
-        TYPE_BLOCK_FACTOR (result_type) = b2;
-      else if (b1 && !b2)
-        TYPE_BLOCK_FACTOR (result_type) = b1;
-      else
-        gcc_unreachable ();
+      /* We can merge in a new UPC blocking factor only
+         if one/other is NULL.  Otherwise, they must match.  */
+      if (b1 != b2)
+        {
+	  if (b1 && !b2)
+            result_block_factor = b1;
+	  else if (!b1 && b2)
+            result_block_factor = b2;
+	  else
+	    gcc_unreachable ();
+        }
     }
+
+  result_type = c_build_qualified_type_1 (type, result_quals,
+			                  result_block_factor);
 
   return result_type;
 }
@@ -639,6 +651,7 @@ common_pointer_type (tree t1, tree t2)
   tree pointed_to_2, mv2;
   tree target;
   unsigned target_quals;
+  tree target_block_factor = NULL_TREE;
   addr_space_t as1, as2, as_common;
   int quals1, quals2;
 
@@ -680,6 +693,10 @@ common_pointer_type (tree t1, tree t2)
   else
     target_quals = (quals1 | quals2);
 
+  if (target_quals & TYPE_QUAL_SHARED)
+    target_block_factor = TYPE_BLOCK_FACTOR (
+                            strip_array_types (pointed_to_1));
+
   /* If the two named address spaces are different, determine the common
      superset address space.  This is guaranteed to exist due to the
      assumption that comp_target_type returned non-zero.  */
@@ -689,32 +706,7 @@ common_pointer_type (tree t1, tree t2)
     gcc_unreachable ();
 
   target_quals |= ENCODE_QUAL_ADDR_SPACE (as_common);
-  t2 = c_build_qualified_type (target, target_quals);
-
-  if (upc_shared_type_p (t2))
-    {
-      const tree elem_type = strip_array_types (pointed_to_1);
-      if (TYPE_BLOCK_FACTOR (elem_type))
-        {
-	  t2 = build_variant_type_copy (t2);
-	  if (TREE_CODE (t2) == ARRAY_TYPE)
-	    {
-	      tree last = t2;
-	      tree inner;
-	      while (TREE_CODE (TREE_TYPE (last)) == ARRAY_TYPE)
-		last = TREE_TYPE (last);
-	      inner = build_variant_type_copy (TREE_TYPE (last));
-	      /* Push the blocking factor down to the array
-		 element type.  */
-	      TYPE_BLOCK_FACTOR (inner) = TYPE_BLOCK_FACTOR (elem_type);
-	      TREE_TYPE (last) = inner;
-	    }
-	  else
-	    {
-	      TYPE_BLOCK_FACTOR (t2) = TYPE_BLOCK_FACTOR (elem_type);
-	    }
-	}
-    }
+  t2 = c_build_qualified_type_1 (target, target_quals, target_block_factor);
 
   t1 = build_pointer_type (t2);
   return build_type_attribute_variant (t1, attributes);
@@ -2202,6 +2194,7 @@ build_component_ref (location_t loc, tree datum, tree component)
 	  error_at (loc, "%qT has no member named %qE", type, component);
 	  return error_mark_node;
 	}
+      gcc_assert (!TREE_SHARED (field));
 
       /* Chain the COMPONENT_REFs if necessary down to the FIELD.
 	 This might be better solved in future the way the C++ front
@@ -2211,6 +2204,8 @@ build_component_ref (location_t loc, tree datum, tree component)
       do
 	{
 	  tree subdatum = TREE_VALUE (field);
+	  tree sub_elem_type = strip_array_types (TREE_TYPE (subdatum));
+	  tree upc_block_factor = NULL_TREE;
 	  int quals;
 	  tree subtype;
 	  bool use_datum_quals;
@@ -2225,10 +2220,15 @@ build_component_ref (location_t loc, tree datum, tree component)
 	  use_datum_quals = (datum_lvalue
 			     || TREE_CODE (TREE_TYPE (subdatum)) != ARRAY_TYPE);
 
-	  quals = TYPE_QUALS (strip_array_types (TREE_TYPE (subdatum)));
+	  quals = TYPE_QUALS (sub_elem_type);
 	  if (use_datum_quals)
 	    quals |= TYPE_QUALS (TREE_TYPE (datum));
-	  subtype = c_build_qualified_type (TREE_TYPE (subdatum), quals);
+	  /* All references to UPC shared struct components
+	     are defined to have an indefinite (zero) blocking factor.  */
+	  if (quals & TYPE_QUAL_SHARED)
+	    upc_block_factor = size_zero_node;
+	  subtype = c_build_qualified_type_1 (TREE_TYPE (subdatum),
+	                                      quals, upc_block_factor);
 
 	  ref = build3 (COMPONENT_REF, subtype, datum, subdatum,
 			NULL_TREE);
@@ -2239,36 +2239,8 @@ build_component_ref (location_t loc, tree datum, tree component)
 	  if (TREE_THIS_VOLATILE (subdatum)
 	      || (use_datum_quals && TREE_THIS_VOLATILE (datum)))
 	    TREE_THIS_VOLATILE (ref) = 1;
-
           if (TREE_SHARED (datum))
-           {
-	     tree ref_type;
-             /* For shared record types, mark the reference
-	        Push the shared attribute down to the field type,
-		and set the field's blocking factor to 0,
-		so that references to arrays declared within a structure
-		come up with the required zero blocksize.  */
-             TREE_SHARED (ref) = 1;
-	     gcc_assert (!TREE_SHARED (field));
-	     ref_type = build_variant_type_copy (TREE_TYPE (ref));
-	     if (TREE_CODE (ref_type) == ARRAY_TYPE)
-	       {
-		 tree last = ref_type;
-		 tree inner;
-		 while (TREE_CODE (TREE_TYPE (last)) == ARRAY_TYPE)
-		   last = TREE_TYPE (last);
-		 inner = build_variant_type_copy (TREE_TYPE (last));
-		 TYPE_BLOCK_FACTOR (inner) = size_zero_node;
-		 TYPE_SHARED (inner) = 1;
-		 TREE_TYPE (last) = inner;
-	       }
-	     else
-	       {
-	         TYPE_BLOCK_FACTOR (ref_type) = size_zero_node;
-		 TYPE_SHARED (ref_type) = 1;
-	       }
-	     TREE_TYPE (ref) = ref_type;
-           }
+	    TREE_SHARED (ref) = 1;
 
 	  if (TREE_DEPRECATED (subdatum))
 	    warn_deprecated_use (subdatum, NULL_TREE);
@@ -11091,35 +11063,27 @@ c_finish_omp_clauses (tree clauses)
    down to the element type of an array.  */
 
 tree
-c_build_qualified_type (tree type, int type_quals)
+c_build_qualified_type_1 (tree type, int type_quals, tree layout_qualifier)
 {
   if (type == error_mark_node)
     return type;
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      const tree element_type = c_build_qualified_type (TREE_TYPE (type),
-						  type_quals);
-      const tree elem_block_factor = upc_get_block_factor (element_type);
       tree t;
+      tree element_type = c_build_qualified_type_1 (TREE_TYPE (type),
+						    type_quals,
+						    layout_qualifier);
 
       /* See if we already have an identically qualified type.  */
       for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
 	{
 	  const tree t_elem_type = strip_array_types (t);
 	  tree t_elem_block_factor = TYPE_BLOCK_FACTOR (t_elem_type);
-	  /* UPC requires that the blocking factors are either both
-	     empty or equal in value.  When the
-	     generally works because blocking factors are stored
-	     as integer constants, and integer constants are commonized
-	     so that identical integer constant values are represented
-	     by a single tree node.  */
-	  if (!t_elem_block_factor)
-	    t_elem_block_factor = size_one_node;
 	  if (TYPE_QUALS (t_elem_type) == type_quals
+	      && t_elem_block_factor == layout_qualifier
 	      && TYPE_NAME (t) == TYPE_NAME (type)
 	      && TYPE_CONTEXT (t) == TYPE_CONTEXT (type)
-	      && t_elem_block_factor == elem_block_factor
 	      && attribute_list_equal (TYPE_ATTRIBUTES (t),
 				       TYPE_ATTRIBUTES (type)))
 	    break;
@@ -11142,7 +11106,8 @@ c_build_qualified_type (tree type, int type_quals)
                                     domain? TYPE_CANONICAL (domain)
                                           : NULL_TREE);
               TYPE_CANONICAL (t)
-                = c_build_qualified_type (unqualified_canon, type_quals);
+                = c_build_qualified_type_1 (unqualified_canon, type_quals,
+		                            layout_qualifier);
             }
           else
             TYPE_CANONICAL (t) = t;
@@ -11161,7 +11126,7 @@ c_build_qualified_type (tree type, int type_quals)
       type_quals &= ~TYPE_QUAL_RESTRICT;
     }
 
-  return build_qualified_type (type, type_quals);
+  return build_qualified_type_1 (type, type_quals, layout_qualifier);
 }
 
 /* Build a VA_ARG_EXPR for the C parser.  */

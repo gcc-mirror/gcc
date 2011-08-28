@@ -45,7 +45,8 @@ extern void push_upc_consistency_mode (void);
 extern void set_upc_consistency_mode (int);
 extern void set_upc_threads_refs_to_one (tree *);
 extern tree upc_affinity_test (location_t, tree);
-extern tree upc_apply_layout_qualifier (enum tree_code, tree, tree);
+extern tree upc_grok_layout_qualifier (location_t, enum tree_code,
+                                       tree, tree, tree);
 extern tree upc_blocksizeof (location_t, tree);
 extern tree upc_build_pointer_type (tree);
 extern tree upc_build_sync_stmt (location_t, tree, tree);
@@ -64,7 +65,6 @@ extern tree upc_pts_diff (tree, tree);
 extern tree upc_pts_increment (location_t, enum tree_code, tree);
 extern tree upc_pts_int_sum (location_t, enum tree_code, tree, tree);
 extern tree upc_rts_forall_depth_var (void);
-extern tree upc_set_block_factor (tree, tree);
 extern void upc_set_decl_section (tree);
 extern void upc_write_global_declarations (void);
 

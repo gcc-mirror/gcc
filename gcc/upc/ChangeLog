@@ -1,3 +1,24 @@
+2011-08-28  Gary Funck  <gary@intrepid.com>
+
+	Re-work the type machinery to fully support and to unify support
+	for the UPC layout qualifier (blocking factor).
+	* upc-genericize.c (upc_simplify_shared_ref): Call
+	c_build_qualified_type_1() instead of upc_set_block_factor()
+	to assert a zero blocking factor.
+	* upc-pts-struct.c (upc_pts_struct_init_type): Call
+	c_build_qualified_type_1() to build predefined shared
+	qualified types, instead of build_variant_type_copy().
+	* upc-pts-packed.c (upc_pts_packed_init_type): Call
+	c_build_qualified_type_1() to build predefined shared
+	qualified types, instead of build_variant_type_copy().
+	* upc-act.c (upc_set_block_factor): Delete.
+	(upc_grok_layout_qualifier): Rename from upc_apply_layout_qualifier().
+	Rework logic so that it returns a blocking factor rather than
+	a qualified type.  Add 'loc' argument and call error_at().
+	Add an ELEM_BLOCK_FACTOR argument and Implement logic that merges
+	the block size of the element type into the result type, and checks
+	for errors due to an attempt to merge differing blocking factors.
+
 2011-08-16  Gary Funck  <gary@intrepid.com>
 
 	* upc-act.c (upc_decl_init): Do not attempt to expand
@@ -74,7 +95,6 @@
 2011-07-06  Gary Funck  <gary@intrepid.com>
 
 	Improve/simplify the logic in upc_genericize.
-
 	* upc-genericize.c (upc_create_tmp_var): Delete the
 	  PREFIX argument.  Aways use "UPC" as the prefix.
 	  (upc_genericize_compound_expr): Add a WANT_VALUE argument.

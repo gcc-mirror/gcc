@@ -1,3 +1,50 @@
+2011-08-28  Gary Funck  <gary@intrepid.com>
+
+	Re-work the type machinery to fully support and to unify support
+	for the UPC layout qualifier (blocking factor).
+	* c-family/stub-upc.c (upc_set_block_factor): Delete.
+	  (upc_grok_layout_qualifier): rename from upc_apply_layout_qualifier()
+	  and update prototype.
+	* c-family/c-common.c (complete_array_type): call newly
+	  defined c_build_qualified_type_1() instead of
+	  upc_set_block_factor().
+	* c-family/c-upc.h (pc_grok_layout_qualifier): rename from
+	  upc_apply_layout_qualifier() and update prototype.
+	  (upc_set_block_factor): Delete prototype.
+	* c-family/c-common.h (c_build_qualified_type): redefine
+	  as a pre-processor macro that invokes c_build_qualified_type_1()
+	  with a null UPC layout qualifier.
+	  (c_build_qualified_type_1): New.  Add layout qualifier argument
+	  to old c_build_qualified_type() prototype.
+	* tree.c (set_type_quals, check_qualified_type):
+	  Add layout qualifier as argument.
+	  (check_aligned_type): Add check for UPC block factor equality.
+	  (get_qualified_type_1): Rename from get_qualified_type() and
+	  add layout qualifier as argument.
+	  (build_qualified_type_1): Rename from build_qualified_type() and
+	  add layout qualifier as argument.
+	* tree.h (check_qualified_type): Add layout qualifier as argument
+	  to the prototype.
+	  (get_qualified_type): Re-define as a as a pre-processor macro
+	  that invokes get_qualified_type_1() with a null
+	  UPC layout qualifier.
+	  (get_qualified_type_1): Rename from get_qualified_type() and
+	  add layout qualifier as argument.
+	* cp/tree.c (c_build_qualified_type_1): Rename from
+	  c_build_qualified_type() and add (unused) layout qualifier
+	  argument.
+	* c-decl.c (finish_decl): re-format long error messages.
+	  (grokdeclarator): Re-work the logic so that it calls
+	  upc_grok_layout_qualifier() to handle the UPC layout
+	  qualifier, if present.
+	* c-typeck.c (qualify_type, common_pointer_type,
+	  build_component_ref): Re-work the logic so that it calls
+	  upc_grok_layout_qualifier() to handle the UPC layout qualifier,
+	  if present.
+	  (c_build_qualified_type_1): Rename from c_build_qualified_type()
+	  and add layout qualifier argument.
+	* print_tree.c (print_node): Re-format a long line.
+
 2011-08-26  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 177949 into gupc branch.

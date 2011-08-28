@@ -866,7 +866,7 @@ move (tree expr)
    the C version of this function does not properly maintain canonical
    types (which are not used in C).  */
 tree
-c_build_qualified_type (tree type, int type_quals)
+c_build_qualified_type_1 (tree type, int type_quals, tree ARG_UNUSED(layout_qualiefier))
 {
   return cp_build_qualified_type (type, type_quals);
 }
@@ -1593,7 +1593,7 @@ build_exception_variant (tree type, tree raises)
 
   type_quals = TYPE_QUALS (type);
   for (v = TYPE_MAIN_VARIANT (type); v; v = TYPE_NEXT_VARIANT (v))
-    if (check_qualified_type (v, type, type_quals)
+    if (check_qualified_type (v, type, type_quals, 0)
 	&& comp_except_specs (raises, TYPE_RAISES_EXCEPTIONS (v), ce_exact))
       return v;
 

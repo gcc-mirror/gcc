@@ -842,7 +842,8 @@ extern tree shorten_compare (tree *, tree *, tree *, enum tree_code *);
 extern tree pointer_int_sum (location_t, enum tree_code, tree, tree);
 
 /* Add qualifiers to a type, in the fashion for C.  */
-extern tree c_build_qualified_type (tree, int);
+extern tree c_build_qualified_type_1 (tree, int, tree);
+#define c_build_qualified_type(TYPE, QUALS) c_build_qualified_type_1 (TYPE, QUALS, 0)
 
 /* Build tree nodes and builtin functions common to both C and C++ language
    frontends.  */

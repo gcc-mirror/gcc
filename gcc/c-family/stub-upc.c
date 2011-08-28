@@ -57,16 +57,11 @@ upc_get_block_factor (tree type ATTRIBUTE_UNUSED)
 }
 
 tree
-upc_set_block_factor (tree type ATTRIBUTE_UNUSED,
-                      tree block_factor ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-tree
-upc_apply_layout_qualifier (
+upc_grok_layout_qualifier (
+    location_t loc ATTRIBUTE_UNUSED,
     const enum tree_code decl_kind ATTRIBUTE_UNUSED,
     tree type ATTRIBUTE_UNUSED,
+    tree elem_block_factor ATTRIBUTE_UNUSED,
     tree layout_specifier ATTRIBUTE_UNUSED)
 {
   return 0;

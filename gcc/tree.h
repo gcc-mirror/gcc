@@ -4680,20 +4680,24 @@ extern tree handle_dll_attribute (tree *, tree, tree, int, bool *);
 #endif
 
 /* Check whether CAND is suitable to be returned from get_qualified_type
-   (BASE, TYPE_QUALS).  */
+   (BASE, TYPE_QUALS, LAYOUT_QUALIFER).  */
 
-extern bool check_qualified_type (const_tree, const_tree, int);
+extern bool check_qualified_type (const_tree, const_tree, int, tree);
 
 /* Return a version of the TYPE, qualified as indicated by the
-   TYPE_QUALS, if one exists.  If no qualified version exists yet,
-   return NULL_TREE.  */
+   TYPE_QUALS and LAYOUT_QUALIFIER, if one exists.
+   If no qualified version exists yet, return NULL_TREE.  */
 
-extern tree get_qualified_type (tree, int);
+extern tree get_qualified_type_1 (tree, int, tree);
+#define get_qualified_type(TYPE, QUALS) \
+          get_qualified_type_1 (TYPE, QUALS, 0)
 
 /* Like get_qualified_type, but creates the type if it does not
    exist.  This function never returns NULL_TREE.  */
 
-extern tree build_qualified_type (tree, int);
+extern tree build_qualified_type_1 (tree, int, tree);
+#define build_qualified_type(TYPE, QUALS) \
+   build_qualified_type_1 (TYPE, QUALS, 0)
 
 /* Create a variant of type T with alignment ALIGN.  */
 

@@ -660,7 +660,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       print_node (file, "size", TYPE_SIZE (node), indent + 4);
       print_node (file, "unit size", TYPE_SIZE_UNIT (node), indent + 4);
       if (TYPE_BLOCK_FACTOR (node))
-	print_node (file, "block_factor", TYPE_BLOCK_FACTOR (node), indent + 4);
+	print_node (file, "block_factor", TYPE_BLOCK_FACTOR (node),
+	            indent + 4);
       indent_to (file, indent + 3);
 
       if (TYPE_USER_ALIGN (node))

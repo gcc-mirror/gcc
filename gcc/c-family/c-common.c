@@ -8958,11 +8958,9 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
     }
 
   type = *ptype;
+  /* Force an indefinite layout factor.  */ 
   if (upc_shared_type_p (type))
-    {
-      /* Force an indefinte layout factor.  */ 
-      type = upc_set_block_factor (type, size_zero_node);
-    }
+    type = c_build_qualified_type_1 (type, TYPE_QUAL_SHARED, size_zero_node);
   elt = TREE_TYPE (type);
   quals = TYPE_QUALS (strip_array_types (elt));
   if (quals == 0)

@@ -210,7 +210,7 @@ static GTY ((if_marked ("tree_priority_map_marked_p"),
 	     param_is (struct tree_priority_map)))
   htab_t init_priority_for_decl;
 
-static void set_type_quals (tree, int);
+static void set_type_quals (tree, int, tree);
 static int type_hash_eq (const void *, const void *);
 static hashval_t type_hash_hash (const void *);
 static hashval_t int_cst_hash_hash (const void *);
@@ -5653,10 +5653,11 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 #endif /* TARGET_DLLIMPORT_DECL_ATTRIBUTES  */
 
 /* Set the type qualifiers for TYPE to TYPE_QUALS, which is a bitmask
-   of the various TYPE_QUAL values.  */
+   of the various TYPE_QUAL values.  Also, set the UPC layout qualifier,
+   which is either null or a reference to an integral constant.  */
 
 static void
-set_type_quals (tree type, int type_quals)
+set_type_quals (tree type, int type_quals, tree layout_qualifier)
 {
   TYPE_READONLY (type) = (type_quals & TYPE_QUAL_CONST) != 0;
   TYPE_VOLATILE (type) = (type_quals & TYPE_QUAL_VOLATILE) != 0;
@@ -5665,20 +5666,21 @@ set_type_quals (tree type, int type_quals)
   TYPE_SHARED (type) = (type_quals & TYPE_QUAL_SHARED) != 0;
   TYPE_STRICT (type) = (type_quals & TYPE_QUAL_STRICT) != 0;
   TYPE_RELAXED (type) = (type_quals & TYPE_QUAL_RELAXED) != 0;
+  TYPE_BLOCK_FACTOR (type) = layout_qualifier;
 }
 
-/* Returns true iff CAND is equivalent to BASE with TYPE_QUALS.  */
+/* Returns true iff CAND is equivalent to BASE with
+   TYPE_QUALS and LAYOUT_QUALIFIER.  */
 
 bool
-check_qualified_type (const_tree cand, const_tree base, int type_quals)
+check_qualified_type (const_tree cand, const_tree base,
+                      int type_quals, tree layout_qualifier)
 {
   return (TYPE_QUALS (cand) == type_quals
+	  && TYPE_BLOCK_FACTOR (cand) == layout_qualifier
 	  && TYPE_NAME (cand) == TYPE_NAME (base)
 	  /* Apparently this is needed for Objective-C.  */
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
-	  /* For UPC, the blocking factors have to be equal. */
-	  && tree_int_cst_equal (TYPE_BLOCK_FACTOR (cand),
-	                         TYPE_BLOCK_FACTOR (base))
 	  /* Check alignment.  */
 	  && TYPE_ALIGN (cand) == TYPE_ALIGN (base)
 	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
@@ -5691,6 +5693,7 @@ static bool
 check_aligned_type (const_tree cand, const_tree base, unsigned int align)
 {
   return (TYPE_QUALS (cand) == TYPE_QUALS (base)
+	  && TYPE_BLOCK_FACTOR (cand) == TYPE_BLOCK_FACTOR (base)
 	  && TYPE_NAME (cand) == TYPE_NAME (base)
 	  /* Apparently this is needed for Objective-C.  */
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
@@ -5705,7 +5708,7 @@ check_aligned_type (const_tree cand, const_tree base, unsigned int align)
    return NULL_TREE.  */
 
 tree
-get_qualified_type (tree type, int type_quals)
+get_qualified_type_1 (tree type, int type_quals, tree layout_qualifier)
 {
   tree t;
 
@@ -5716,28 +5719,28 @@ get_qualified_type (tree type, int type_quals)
      like the one we need to have.  If so, use that existing one.  We must
      preserve the TYPE_NAME, since there is code that depends on this.  */
   for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-    if (check_qualified_type (t, type, type_quals))
+    if (check_qualified_type (t, type, type_quals, layout_qualifier))
       return t;
 
   return NULL_TREE;
 }
 
-/* Like get_qualified_type, but creates the type if it does not
+/* Like get_qualified_type_1, but creates the type if it does not
    exist.  This function never returns NULL_TREE.  */
 
 tree
-build_qualified_type (tree type, int type_quals)
+build_qualified_type_1 (tree type, int type_quals, tree layout_qualifier)
 {
   tree t;
 
   /* See if we already have the appropriate qualified variant.  */
-  t = get_qualified_type (type, type_quals);
+  t = get_qualified_type_1 (type, type_quals, layout_qualifier);
 
   /* If not, build it.  */
   if (!t)
     {
       t = build_variant_type_copy (type);
-      set_type_quals (t, type_quals);
+      set_type_quals (t, type_quals, layout_qualifier);
 
       if (TYPE_STRUCTURAL_EQUALITY_P (type))
 	/* Propagate structural equality. */

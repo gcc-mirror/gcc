@@ -607,68 +607,45 @@ upc_get_block_factor (const tree type)
   return block_factor;
 }
 
-/* Set the blocking factor of the UPC shared type, TYPE.
-   If BLOCK_FACTOR is 1, leave TYPE_BLOCK_FACTOR()
-   as NULL to normalize the representation.  The UPC spec
-   says all objects have a default blocking factor of 1
-   if none is specified, thus, a blocking factor of 1
-   is indicated with a null TYPE_BLOCK_FACTOR() pointer.  */
-
-tree
-upc_set_block_factor (tree type, tree block_factor)
-{
-  gcc_assert (TREE_CODE (block_factor) == INTEGER_CST);
-  if (tree_int_cst_equal (block_factor, size_one_node))
-    return type;
-  block_factor = convert (sizetype, block_factor);
-  type = build_variant_type_copy (type);
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    {
-      tree last = type;
-      tree inner;
-      while (TREE_CODE (TREE_TYPE (last)) == ARRAY_TYPE)
-	last = TREE_TYPE (last);
-      inner = build_variant_type_copy (TREE_TYPE (last));
-      /* Push the blocking factor down to the array element type.  */
-      TYPE_BLOCK_FACTOR (inner) = block_factor;
-      TREE_TYPE (last) = inner;
-    }
-  else
-    TYPE_BLOCK_FACTOR (type) = block_factor;
-  return type;
-}
-
 /* As part of declaration processing, for a particular kind
-   of declaration, DECL_KIND, and a given LAYOUT_QUALIFIER,
-   calculate the resulting blocking factor and return a
-   variant of TYPE with its blocking factor set
-   to the specified value.  Issue an error diagnostic if the
-   LAYOUT_QUALIFIER specification is invalid.
-   The caller is responsible for checking that the
-   block factor is being applied to a UPC shared type.  */
+   of declaration, DECL_KIND, and a given LAYOUT_QUALIFIER, calculate
+   the resulting blocking factor and return it.  Issue an error
+   diagnostic if the LAYOUT_QUALIFIER specification is invalid.
+   For array types, the TYPE parameter may be the MAIN_VARIANT,
+   and not shared qualified; in that case - ELEM_BLOCK_FACTOR
+   is the blocking factor derived from the original element type.
+   If LAYOUT_QUALIFIER is NULL and ELEM_BLOCK_FACTOR is non-null,
+   then the ELEM_BLOCK_FACTOR will be used.  This situation occurs
+   when the element type is a typedef, for example.  If both
+   LAYOUT_QUALIFIER and ELEM_BLOCK_FACTOR are non-NULL, then thye
+   must be equal.  */
 
 tree
-upc_apply_layout_qualifier (const enum tree_code decl_kind,
-	                    tree type, tree layout_qualifier)
+upc_grok_layout_qualifier (location_t loc, const enum tree_code decl_kind,
+	                   tree type, tree elem_block_factor,
+			   tree layout_qualifier)
 {
   tree block_factor = NULL_TREE;
-
-  /* The layout qualifier is given as the subscript operand
-     of an array ref. */
-  gcc_assert (TREE_CODE (layout_qualifier) == ARRAY_REF);
-  layout_qualifier = TREE_OPERAND (layout_qualifier, 1);
 
   if (!type || (TREE_CODE (type) == ERROR_MARK))
     return error_mark_node;
 
-  if (!layout_qualifier || (TREE_CODE (layout_qualifier) == ERROR_MARK))
-    return type;
-
   if (TREE_CODE (type) == VOID_TYPE)
     {
-      error ("UPC layout qualifier cannot be applied to a void type");
-      return type;
+      error_at (loc, "UPC layout qualifier cannot be applied to a void type");
+      return NULL_TREE;
     }
+
+  /* If no explicit layout qualifier was supplied, then
+     use the blocking factor derived from the element type.  */
+  if (!layout_qualifier && elem_block_factor)
+    return elem_block_factor;
+
+  /* The layout qualifier is given as the subscript operand
+     of an array ref. */
+  gcc_assert (layout_qualifier);
+  gcc_assert (TREE_CODE (layout_qualifier) == ARRAY_REF);
+  layout_qualifier = TREE_OPERAND (layout_qualifier, 1);
 
   if (layout_qualifier == NULL_TREE)
     {
@@ -685,16 +662,15 @@ upc_apply_layout_qualifier (const enum tree_code decl_kind,
 	 elements over all the UPC threads.  */
       if (!COMPLETE_TYPE_P (type))
 	{
-	  error
-	    ("UPC layout qualifier of the form [*] cannot be applied "
-	     "to an incomplete type");
-	  return type;
+	  error_at (loc, "UPC layout qualifier of the form [*] cannot be "
+	                 "applied to an incomplete type");
+	  return NULL_TREE;
 	}
       if (decl_kind == POINTER_TYPE)
 	{
-	  error
-	    ("UPC [*] qualifier may not be used in declaration of pointers");
-	  return type;
+	  error_at (loc, "UPC [*] qualifier may not be used in "
+	                 "declaration of pointers");
+	  return NULL_TREE;
 	}
       /* The blocking factor is given by this expression:
          (sizeof (a) / upc_elemsizeof (a) + (THREADS - 1)) / THREADS,
@@ -709,9 +685,9 @@ upc_apply_layout_qualifier (const enum tree_code decl_kind,
 	  n_threads = convert (bitsizetype, upc_num_threads ());
 	  if (TREE_CODE (n_threads) != INTEGER_CST)
 	    {
-	      error ("a UPC layout qualifier of '[*]' requires that "
-		     "the array size is either an integral constant "
-		     "or an integral multiple of THREADS");
+	      error_at (loc, "a UPC layout qualifier of '[*]' requires that "
+		             "the array size is either an integral constant "
+		             "or an integral multiple of THREADS");
 	      block_factor = size_one_node;
 	    }
 	  else
@@ -729,12 +705,13 @@ upc_apply_layout_qualifier (const enum tree_code decl_kind,
       STRIP_NOPS (layout_qualifier);
       if (TREE_CODE (layout_qualifier) != INTEGER_CST)
         {
-	  error ("UPC layout qualifier is not an integral constant");
+	  error_at (loc, "UPC layout qualifier is not an integral constant");
           block_factor = size_one_node;
 	}
       else if (tree_low_cst (layout_qualifier, 0) < 0)
         {
-	  error ("UPC layout qualifier must be a non-negative integral constant");
+	  error_at (loc, "UPC layout qualifier must be a non-negative "
+	                 "integral constant");
           block_factor = size_one_node;
 	}
       else
@@ -744,20 +721,38 @@ upc_apply_layout_qualifier (const enum tree_code decl_kind,
   if (TREE_OVERFLOW_P (block_factor)
       || tree_low_cst (block_factor, 1) > (HOST_WIDE_INT) UPC_MAX_BLOCK_SIZE)
     {
-      error ("the maximum UPC block size in this implementation is %ld",
-	     (long int) UPC_MAX_BLOCK_SIZE);
-      return type;
+      error_at (loc, "the maximum UPC block size in this implementation "
+                     "is %ld", (long int) UPC_MAX_BLOCK_SIZE);
+      return NULL_TREE;
     }
 
   if (tree_int_cst_compare (block_factor, integer_zero_node) < 0)
     {
-      error ("UPC layout qualifier must be a non-negative integral constant");
-      return type;
+      error_at (loc, "UPC layout qualifier must be a "
+                     "non-negative integral constant");
+      return NULL_TREE;
     }
 
-  type = upc_set_block_factor (type, block_factor);
+  if ((block_factor && elem_block_factor)
+      && block_factor != elem_block_factor)
+    {
+       error_at (loc, "UPC layout qualifier is incompatible with "
+		      "the referenced type");
+       return elem_block_factor;
+    }
 
-  return type;
+  /* Make sure that the UPC blocking factors are of type
+     'size_t' so that a compare of the tree pointers
+     is sufficient to match block sizes.  */
+  if (block_factor)
+    block_factor = convert (sizetype, block_factor);
+
+  /* A block size of [1] is the same as specifying no
+     block size at all.  */
+  if (block_factor == size_one_node)
+    block_factor = NULL_TREE;
+
+  return block_factor;
 }
 
 /* If DECL is a UPC shared variable, make sure that it ends up
