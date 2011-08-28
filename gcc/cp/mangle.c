@@ -2762,29 +2762,34 @@ write_template_arg_literal (const tree value)
   write_char ('L');
   write_type (TREE_TYPE (value));
 
-  switch (TREE_CODE (value))
-    {
-    case CONST_DECL:
-      write_integer_cst (DECL_INITIAL (value));
-      break;
+  /* Write a null member pointer value as (type)0, regardless of its
+     real representation.  */
+  if (null_member_pointer_value_p (value))
+    write_integer_cst (integer_zero_node);
+  else
+    switch (TREE_CODE (value))
+      {
+      case CONST_DECL:
+	write_integer_cst (DECL_INITIAL (value));
+	break;
 
-    case INTEGER_CST:
-      gcc_assert (!same_type_p (TREE_TYPE (value), boolean_type_node)
-		  || integer_zerop (value) || integer_onep (value));
-      write_integer_cst (value);
-      break;
+      case INTEGER_CST:
+	gcc_assert (!same_type_p (TREE_TYPE (value), boolean_type_node)
+		    || integer_zerop (value) || integer_onep (value));
+	write_integer_cst (value);
+	break;
 
-    case REAL_CST:
-      write_real_cst (value);
-      break;
+      case REAL_CST:
+	write_real_cst (value);
+	break;
 
-    case STRING_CST:
-      sorry ("string literal in function template signature");
-      break;
+      case STRING_CST:
+	sorry ("string literal in function template signature");
+	break;
 
-    default:
-      gcc_unreachable ();
-    }
+      default:
+	gcc_unreachable ();
+      }
 
   write_char ('E');
 }
@@ -2845,7 +2850,8 @@ write_template_arg (tree node)
     /* A template appearing as a template arg is a template template arg.  */
     write_template_template_arg (node);
   else if ((TREE_CODE_CLASS (code) == tcc_constant && code != PTRMEM_CST)
-	   || (abi_version_at_least (2) && code == CONST_DECL))
+	   || (abi_version_at_least (2) && code == CONST_DECL)
+	   || null_member_pointer_value_p (node))
     write_template_arg_literal (node);
   else if (DECL_P (node))
     {
