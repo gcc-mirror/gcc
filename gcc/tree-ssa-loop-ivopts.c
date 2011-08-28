@@ -4757,7 +4757,7 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
   bool ok;
   int elim_inv_expr_id = -1, express_inv_expr_id = -1, inv_expr_id;
   tree *control_var, *bound_cst;
-  enum tree_code comp;
+  enum tree_code comp = ERROR_MARK;
 
   /* Only consider real candidates.  */
   if (!cand->iv)

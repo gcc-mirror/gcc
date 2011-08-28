@@ -1,3 +1,9 @@
+2011-08-28  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR bootstrap/50218
+	* tree-ssa-loop-ivopts.c (determine_use_iv_cost_condition): Initialize
+	comp.
+
 2011-08-27  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* doc/rtl.texi (simple_return): Document.
