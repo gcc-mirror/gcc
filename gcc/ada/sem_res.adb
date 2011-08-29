@@ -4388,9 +4388,9 @@ package body Sem_Res is
                Discr : constant Entity_Id :=
                          Defining_Identifier (Associated_Node_For_Itype (Typ));
             begin
-               --  Ada2012-B052: If the designated type of the allocator is
-               --  limited, then the allocator shall not be used to define the
-               --  value of an access discriminant, unless the discriminated
+               --  Ada 2012 AI05-0052: If the designated type of the allocator
+               --  is limited, then the allocator shall not be used to define
+               --  the value of an access discriminant unless the discriminated
                --  type is immutably limited.
 
                if Ada_Version >= Ada_2012
@@ -4398,9 +4398,8 @@ package body Sem_Res is
                  and then not Is_Immutably_Limited_Type (Scope (Discr))
                then
                   Error_Msg_N
-                    ("only immutably limited types can have anonymous ", N);
-                  Error_Msg_N
-                    ("\discriminants of limited designated type", N);
+                    ("only immutably limited types can have anonymous "
+                     & "access discriminants designating a limited type", N);
                end if;
             end;
 

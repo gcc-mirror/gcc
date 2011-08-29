@@ -342,8 +342,8 @@ package body Sem_Ch12 is
       Def : Node_Id);
    --  Creates a new private type, which does not require completion
 
-   procedure Analyze_Formal_Incomplete_Type (T   : Entity_Id; Def : Node_Id);
-   --  Ada2012: Creates a new incomplete type whose actual does not freeze
+   procedure Analyze_Formal_Incomplete_Type (T : Entity_Id; Def : Node_Id);
+   --  Ada 2012: Creates a new incomplete type whose actual does not freeze
 
    procedure Analyze_Generic_Formal_Part (N : Node_Id);
    --  Analyze generic formal part
@@ -1304,8 +1304,8 @@ package body Sem_Ch12 is
                        Assoc);
 
                      --  An instantiation is a freeze point for the actuals,
-                     --  unless this is a rewritten formal package, and
-                     --  unless it is an Ada2012 formal incomplete type.
+                     --  unless this is a rewritten formal package, or the
+                     --  formal is an Ada 2012 formal incomplete type.
 
                      if Nkind (I_Node) /= N_Formal_Package_Declaration
                        and then
@@ -1316,9 +1316,8 @@ package body Sem_Ch12 is
                      end if;
                   end if;
 
-                  --  A remote access-to-class-wide type must not be an
-                  --  actual parameter for a generic formal of an access
-                  --  type (E.2.2 (17)).
+                  --  A remote access-to-class-wide type is not a legal actual
+                  --  for a generic formal of an access type (E.2.2(17)).
 
                   if Nkind (Analyzed_Formal) = N_Formal_Type_Declaration
                     and then
@@ -9483,9 +9482,9 @@ package body Sem_Ch12 is
       procedure Validate_Interface_Type_Instance;
       procedure Validate_Private_Type_Instance;
       procedure Validate_Incomplete_Type_Instance;
-      --  These procedures perform validation tests for the named case
+      --  These procedures perform validation tests for the named case.
       --  Validate_Discriminated_Formal_Type is shared by formal private
-      --  types and Ada2012 formal incomplete types.
+      --  types and Ada 2012 formal incomplete types.
 
       function Subtypes_Match (Gen_T, Act_T : Entity_Id) return Boolean;
       --  Check that base types are the same and that the subtypes match

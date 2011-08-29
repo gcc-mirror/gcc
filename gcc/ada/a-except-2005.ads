@@ -50,8 +50,6 @@ with System.Parameters;
 with System.Standard_Library;
 with System.Traceback_Entries;
 
-with Ada.Unchecked_Conversion;
-
 package Ada.Exceptions is
    pragma Warnings (Off);
    pragma Preelaborate_05;
@@ -230,16 +228,13 @@ private
    --  system to return here rather than to the original location.
 
    procedure Raise_From_Controlled_Operation
-     (X          : Ada.Exceptions.Exception_Occurrence;
-      From_Abort : Boolean);
+     (X : Ada.Exceptions.Exception_Occurrence);
    pragma No_Return (Raise_From_Controlled_Operation);
    pragma Export
      (Ada, Raise_From_Controlled_Operation,
            "__gnat_raise_from_controlled_operation");
    --  Raise Program_Error, providing information about X (an exception raised
-   --  during a controlled operation) in the exception message. However, if the
-   --  finalization was triggered by abort, keep aborting instead of raising
-   --  Program_Error.
+   --  during a controlled operation) in the exception message.
 
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);
@@ -358,19 +353,5 @@ private
      Num_Tracebacks   => 0,
      Tracebacks       => (others => TBE.Null_TB_Entry),
      Private_Data     => System.Null_Address);
-
-   --  Common binding to __builtin_longjmp for sjlj variants.
-
-   --  The builtin expects a pointer type for the jmpbuf address argument, and
-   --  System.Address doesn't work because this is really an integer type.
-
-   type Jmpbuf_Address is access Character;
-
-   function To_Jmpbuf_Address is new
-     Ada.Unchecked_Conversion (System.Address, Jmpbuf_Address);
-
-   procedure builtin_longjmp (buffer : Jmpbuf_Address; Flag : Integer);
-   pragma No_Return (builtin_longjmp);
-   pragma Import (Intrinsic, builtin_longjmp, "__builtin_longjmp");
 
 end Ada.Exceptions;

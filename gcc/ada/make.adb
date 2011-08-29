@@ -5931,29 +5931,6 @@ package body Make is
            ("nothing to do for a main project that is externally built");
       end if;
 
-      --  Special processing for VM targets
-
-      if Targparm.VM_Target /= No_VM then
-
-         --  Set proper processing commands
-
-         case Targparm.VM_Target is
-            when Targparm.JVM_Target =>
-
-               --  Do not check for an object file (".o") when compiling to
-               --  JVM machine since ".class" files are generated instead.
-
-               Check_Object_Consistency := False;
-               Gcc := new String'("jvm-gnatcompile");
-
-            when Targparm.CLI_Target =>
-               Gcc := new String'("dotnet-gnatcompile");
-
-            when Targparm.No_VM =>
-               raise Program_Error;
-         end case;
-      end if;
-
       --  If no project file is used, we just put the gcc switches
       --  from the command line in the Gcc_Switches table.
 
@@ -6124,6 +6101,29 @@ package body Make is
                when Unrecoverable_Error =>
                   Make_Failed ("*** make failed.");
             end;
+
+            --  Special processing for VM targets
+
+            if Targparm.VM_Target /= No_VM then
+
+               --  Set proper processing commands
+
+               case Targparm.VM_Target is
+               when Targparm.JVM_Target =>
+
+                  --  Do not check for an object file (".o") when compiling to
+                  --  JVM machine since ".class" files are generated instead.
+
+                  Check_Object_Consistency := False;
+                  Gcc := new String'("jvm-gnatcompile");
+
+               when Targparm.CLI_Target =>
+                  Gcc := new String'("dotnet-gnatcompile");
+
+               when Targparm.No_VM =>
+                  raise Program_Error;
+               end case;
+            end if;
 
             Is_First_Main := False;
          end if;
