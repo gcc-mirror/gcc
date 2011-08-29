@@ -1030,6 +1030,7 @@ package body System.Interrupts is
          end if;
 
          --  Flush interrupt server semaphores, so they can terminate
+
          Finalize_Interrupt_Servers;
          raise;
    end Interrupt_Manager;

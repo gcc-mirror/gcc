@@ -374,11 +374,16 @@ package body Endh is
                   Set_Comes_From_Source (End_Labl, False);
                   End_Labl_Present := False;
 
-                  --  Do style check for missing label
+                  --  Do style check for label permitted but not present. Note:
+                  --  for the case of a block statement, the label is required
+                  --  to be repeated, and this legality rule is enforced
+                  --  independently.
 
                   if Style_Check
                     and then End_Type = E_Name
                     and then Explicit_Start_Label (Scope.Last)
+                    and then Nkind (Parent (Scope.Table (Scope.Last).Labl))
+                               /= N_Block_Statement
                   then
                      Style.No_End_Name (Scope.Table (Scope.Last).Labl);
                   end if;

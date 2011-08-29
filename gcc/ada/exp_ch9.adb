@@ -6487,8 +6487,7 @@ package body Exp_Ch9 is
          Append_To (Stmts,
            Make_Implicit_If_Statement (N,
              Condition => Make_Function_Call (Loc,
-               Name => New_Reference_To (
-                 RTE (RE_Enqueued), Loc),
+               Name => New_Reference_To (RTE (RE_Enqueued), Loc),
                Parameter_Associations => New_List (
                  New_Reference_To (Cancel_Param, Loc))),
              Then_Statements => Astats));
@@ -6507,9 +6506,12 @@ package body Exp_Ch9 is
 
          if VM_Target = No_VM then
             if Exception_Mechanism = Back_End_Exceptions then
+
                --  Aborts are not deferred at beginning of exception handlers
                --  in ZCX.
+
                Handler_Stmt := Make_Null_Statement (Loc);
+
             else
                Handler_Stmt := Make_Procedure_Call_Statement (Loc,
                  Name => New_Reference_To (RTE (RE_Abort_Undefer), Loc),
@@ -6518,9 +6520,10 @@ package body Exp_Ch9 is
          else
             Handler_Stmt := Make_Procedure_Call_Statement (Loc,
               Name => New_Reference_To (RTE (RE_Update_Exception), Loc),
-              Parameter_Associations => New_List (Make_Function_Call (Loc,
-                Name => New_Occurrence_Of (RTE (RE_Current_Target_Exception),
-                                           Loc))));
+              Parameter_Associations => New_List (
+                Make_Function_Call (Loc,
+                  Name => New_Occurrence_Of
+                            (RTE (RE_Current_Target_Exception), Loc))));
          end if;
 
          Stmts := New_List (

@@ -10430,11 +10430,10 @@ package body Exp_Dist is
                   --  A variant part
 
                   declare
-                     Discriminant_Type : constant Entity_Id :=
-                                           Etype (Name (Field));
+                     Disc_Type : constant Entity_Id := Etype (Name (Field));
 
                      Is_Enum : constant Boolean :=
-                                 Is_Enumeration_Type (Discriminant_Type);
+                                 Is_Enumeration_Type (Disc_Type);
 
                      Union_TC_Params : List_Id;
 
@@ -10465,8 +10464,7 @@ package body Exp_Dist is
                      -- Add_Params_For_Variant_Components --
                      ---------------------------------------
 
-                     procedure Add_Params_For_Variant_Components
-                     is
+                     procedure Add_Params_For_Variant_Components is
                         S_Name : constant Name_Id :=
                                    New_External_Name (U_Name, 'S', -1);
 
@@ -10510,8 +10508,7 @@ package body Exp_Dist is
                      --  Build union parameters
 
                      Add_TypeCode_Parameter
-                       (Build_TypeCode_Call
-                          (Loc, Discriminant_Type, Decls),
+                       (Build_TypeCode_Call (Loc, Disc_Type, Decls),
                         Union_TC_Params);
 
                      Add_Long_Parameter (Default, Union_TC_Params);
@@ -10536,13 +10533,13 @@ package body Exp_Dist is
                                  begin
                                     while J <= H loop
                                        if Is_Enum then
-                                          Expr := New_Occurrence_Of (
-                                            Get_Enum_Lit_From_Pos (
-                                              Discriminant_Type, J, Loc), Loc);
+                                          Expr := Get_Enum_Lit_From_Pos
+                                                    (Disc_Type, J, Loc);
                                        else
                                           Expr :=
                                             Make_Integer_Literal (Loc, J);
                                        end if;
+                                       Set_Etype (Expr, Disc_Type);
                                        Append_To (Union_TC_Params,
                                          Build_To_Any_Call (Expr, Decls));
 
@@ -10553,11 +10550,10 @@ package body Exp_Dist is
 
                               when N_Others_Choice =>
 
-                                 --  This variant possess a default choice.
-                                 --  We must therefore set the default
-                                 --  parameter to the current choice index. The
-                                 --  default parameter is by construction the
-                                 --  fourth in the Union_TC_Params list.
+                                 --  This variant has a default choice. We must
+                                 --  therefore set the default parameter to the
+                                 --  current choice index. This parameter is by
+                                 --  construction the 4th in Union_TC_Params.
 
                                  declare
                                     Default_Node : constant Node_Id :=
@@ -10573,25 +10569,24 @@ package body Exp_Dist is
                                            Make_Integer_Literal
                                              (Loc, Choice_Index)));
                                  begin
-                                    Insert_Before (
-                                      Default_Node,
-                                      New_Default_Node);
+                                    Insert_Before
+                                      (Default_Node, New_Default_Node);
 
                                     Remove (Default_Node);
                                  end;
 
-                                 --  Add a placeholder member label
-                                 --  for the default case.
-                                 --  It must be of the discriminant type.
+                                 --  Add a placeholder member label for the
+                                 --  default case, which must have the
+                                 --  discriminant type.
 
                                  declare
                                     Exp : constant Node_Id :=
                                       Make_Attribute_Reference (Loc,
-                                       Prefix => New_Occurrence_Of
-                                         (Discriminant_Type, Loc),
+                                       Prefix         => New_Occurrence_Of
+                                                           (Disc_Type, Loc),
                                        Attribute_Name => Name_First);
                                  begin
-                                    Set_Etype (Exp, Discriminant_Type);
+                                    Set_Etype (Exp, Disc_Type);
                                     Append_To (Union_TC_Params,
                                       Build_To_Any_Call (Exp, Decls));
                                  end;
