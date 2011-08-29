@@ -435,14 +435,14 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    begin
       if Parent = No_Element then
          return 0;
-      end if;
 
-      if Parent.Container.Count = 0 then
+      elsif Parent.Container.Count = 0 then
          pragma Assert (Is_Root (Parent));
          return 0;
-      end if;
 
-      return Child_Count (Parent.Container.all, Parent.Node);
+      else
+         return Child_Count (Parent.Container.all, Parent.Node);
+      end if;
    end Child_Count;
 
    function Child_Count
