@@ -1195,7 +1195,8 @@ package body Sem_Ch7 is
       while Present (E) loop
 
          --  Check on incomplete types
-         --  AI05-213 : a formal incomplete type has no completion.
+
+         --  AI05-0213: a formal incomplete type has no completion
 
          if Ekind (E) = E_Incomplete_Type
            and then No (Full_View (E))

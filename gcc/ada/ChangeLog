@@ -1,3 +1,13 @@
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads, sem_ch7.adb: Minor reformatting.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): Check No_Nested_Finalization
+	restriction on allocators, as required by AI05-0013-1.
+	* restrict.ads: Minor comment fix.
+
 2011-08-29  Tristan Gingold  <gingold@adacore.com>
 
 	* a-exexpr.adb, a-except-2005.ads (Jmpbuf_Address): Move to a-exexpr.adb
