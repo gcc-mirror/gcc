@@ -235,7 +235,7 @@ package body Sem_Ch13 is
       --  Processing depends on version of Ada
 
       --  For Ada 95, we just renumber bits within a storage unit. We do the
-      --  same for Ada 83 mode, since we recognize attribute Bit_Order in
+      --  same for Ada 83 mode, since we recognize the Bit_Order attribute in
       --  Ada 83, and are free to add this extension.
 
       if Ada_Version < Ada_2005 then

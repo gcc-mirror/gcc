@@ -627,7 +627,7 @@ package body Sem_Type is
                      --  within the instance must not be included.
 
                      if (Scope (H) = Scope (Ent)
-                           or else Scope (H) = Scope (Scope (Ent)))
+                          or else Scope (H) = Scope (Scope (Ent)))
                         and then In_Instance
                         and then H /= Renamed_Entity (Ent)
                         and then not Is_Inherited_Operation (H)

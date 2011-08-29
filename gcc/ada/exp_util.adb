@@ -6430,13 +6430,15 @@ package body Exp_Util is
          then
             Typ := Entity (Decl);
 
-            if (Is_Access_Type (Typ)
-                  and then not Is_Access_Subprogram_Type (Typ)
-                  and then Needs_Finalization
-                             (Available_View (Designated_Type (Typ))))
-              or else
-               (Is_Type (Typ)
-                  and then Needs_Finalization (Typ))
+            if ((Is_Access_Type (Typ)
+                   and then not Is_Access_Subprogram_Type (Typ)
+                   and then Needs_Finalization
+                              (Available_View (Designated_Type (Typ))))
+                 or else
+                (Is_Type (Typ)
+                   and then Needs_Finalization (Typ)))
+              and then Requires_Cleanup_Actions
+                         (Actions (Decl), For_Package, Nested_Constructs)
             then
                return True;
             end if;

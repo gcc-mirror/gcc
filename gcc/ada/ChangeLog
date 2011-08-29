@@ -1,3 +1,21 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_type.adb, einfo.ads, freeze.adb, exp_ch4.adb, sem_ch13.adb:
+	Minor reformatting.
+
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Requires_Cleanup_Actions (List_Id, Boolean, Boolean)):
+	Correct the check which involves the freeze node of a controlled or
+	access-to-controlled type.
+
+2011-08-29  Geert Bosch  <bosch@adacore.com>
+
+	* sem_warn.adb (Check_Code_Statement): Remove check for consecutive Asm
+	statements.
+	* s-vaflop-vms-alpha.adb: Remove bogus Volatile => True arguments from
+	Asm statements.
+
 2011-08-29  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch3.adb (Array_Type_Declaration): Insert a subtype declaration
