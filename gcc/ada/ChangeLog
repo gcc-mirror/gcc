@@ -1,3 +1,14 @@
+2011-08-29  Steve Baird  <baird@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Expon): Suppress N_Op_Expon node expansion
+	for CodePeer and ALFA modes.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Collect_Interps): Within an instance, collect a homonym
+	that comes from an enclosing scope if it is not the renaming of an
+	actual, to handle properly a spurious ambiguity in an instance.
+
 2011-08-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch13.adb (Alignment_Check_For_Esize_Change): Rename to...
