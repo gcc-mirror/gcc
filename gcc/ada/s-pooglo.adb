@@ -46,13 +46,19 @@ package body System.Pool_Global is
       Storage_Size : SSE.Storage_Count;
       Alignment    : SSE.Storage_Count)
    is
+      use SSE;
       pragma Warnings (Off, Pool);
-      pragma Warnings (Off, Alignment);
 
-      Allocated : System.Address;
+      Aligned_Size    : Storage_Count := Storage_Size;
+      Aligned_Address : System.Address;
+      Allocated       : System.Address;
 
    begin
-      Allocated := Memory.Alloc (Memory.size_t (Storage_Size));
+      if Alignment > Standard'System_Allocator_Alignment then
+         Aligned_Size := Aligned_Size + Alignment;
+      end if;
+
+      Allocated := Memory.Alloc (Memory.size_t (Aligned_Size));
 
       --  The call to Alloc returns an address whose alignment is compatible
       --  with the worst case alignment requirement for the machine; thus the
@@ -60,6 +66,24 @@ package body System.Pool_Global is
 
       if Allocated = Null_Address then
          raise Storage_Error;
+      end if;
+
+      if Alignment > Standard'System_Allocator_Alignment then
+         --  Realign the returned address.
+         Aligned_Address := To_Address
+           (To_Integer (Allocated) + Integer_Address (Alignment)
+              - (To_Integer (Allocated) mod Integer_Address (Alignment)));
+         --  Save the block address.
+         declare
+            Saved_Address : System.Address;
+            pragma Import (Ada, Saved_Address);
+            for Saved_Address'Address use
+               Aligned_Address
+               - Storage_Offset (System.Address'Size / Storage_Unit);
+         begin
+            Saved_Address := Allocated;
+         end;
+         Address := Aligned_Address;
       else
          Address := Allocated;
       end if;
@@ -75,12 +99,24 @@ package body System.Pool_Global is
       Storage_Size : SSE.Storage_Count;
       Alignment    : SSE.Storage_Count)
    is
+      use System.Storage_Elements;
       pragma Warnings (Off, Pool);
       pragma Warnings (Off, Storage_Size);
-      pragma Warnings (Off, Alignment);
 
    begin
-      Memory.Free (Address);
+      if Alignment > Standard'System_Allocator_Alignment then
+         --  Retrieve the block address.
+         declare
+            Saved_Address : System.Address;
+            pragma Import (Ada, Saved_Address);
+            for Saved_Address'Address use
+              Address - Storage_Offset (System.Address'Size / Storage_Unit);
+         begin
+            Memory.Free (Saved_Address);
+         end;
+      else
+         Memory.Free (Address);
+      end if;
    end Deallocate;
 
    ------------------
