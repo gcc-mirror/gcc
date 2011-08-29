@@ -2616,7 +2616,7 @@ package body Exp_Ch3 is
                      Make_Raise_Statement (Loc)))));
             end;
          else
-            Set_Exception_Handlers (Handled_Stmt_Node, Empty_List);
+            Set_Exception_Handlers (Handled_Stmt_Node, No_List);
          end if;
 
          Set_Handled_Statement_Sequence (Body_Node, Handled_Stmt_Node);
