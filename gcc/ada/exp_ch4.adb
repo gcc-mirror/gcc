@@ -1042,6 +1042,24 @@ package body Exp_Ch4 is
                          Prefix => New_Reference_To (Temp, Loc))),
                    Typ => T));
             end if;
+
+            --  Generate:
+            --    Set_Finalize_Address (<PtrT>FM, <T>FD'Unrestricted_Access);
+
+            --  Since .NET/JVM compilers do not support address arithmetic,
+            --  this call is skipped. The same is done for CodePeer because
+            --  primitive Finalize_Address is never generated.
+
+            if VM_Target = No_VM
+              and then not CodePeer_Mode
+              and then Present (Finalization_Master (PtrT))
+            then
+               Insert_Action (N,
+                 Make_Set_Finalize_Address_Call
+                   (Loc     => Loc,
+                    Typ     => T,
+                    Ptr_Typ => PtrT));
+            end if;
          end if;
 
          Rewrite (N, New_Reference_To (Temp, Loc));
@@ -3342,9 +3360,13 @@ package body Exp_Ch4 is
       if Ekind (PtrT) = E_Anonymous_Access_Type
         and then Needs_Finalization (Dtyp)
       then
-         --  Anonymous access-to-controlled types allocate on the global pool
+         --  Anonymous access-to-controlled types allocate on the global pool.
+         --  Do not set this attribute on .NET/JVM since those targets do not
+         --  support pools.
 
-         if No (Associated_Storage_Pool (PtrT)) then
+         if No (Associated_Storage_Pool (PtrT))
+           and then VM_Target = No_VM
+         then
             Set_Associated_Storage_Pool (PtrT,
               Get_Global_Pool_For_Access_Type (PtrT));
          end if;
@@ -3828,22 +3850,39 @@ package body Exp_Ch4 is
                       (Obj_Ref => New_Copy_Tree (Init_Arg1),
                        Typ     => T));
 
-                  --  Special processing for .NET/JVM, the allocated object is
-                  --  attached to the finalization master. Generate:
+                  if Present (Finalization_Master (PtrT)) then
 
-                  --    Attach (<PtrT>FC, Root_Controlled_Ptr (Init_Arg1));
+                     --  Special processing for .NET/JVM, the allocated object
+                     --  is attached to the finalization master. Generate:
 
-                  --  Types derived from [Limited_]Controlled are the only
-                  --  ones considered since they have fields Prev and Next.
+                     --    Attach (<PtrT>FM, Root_Controlled_Ptr (Init_Arg1));
 
-                  if VM_Target /= No_VM
-                    and then Present (Finalization_Master (PtrT))
-                    and then Is_Controlled (T)
-                  then
-                     Insert_Action (N,
-                       Make_Attach_Call
-                         (Obj_Ref => New_Copy_Tree (Init_Arg1),
-                          Ptr_Typ => PtrT));
+                     --  Types derived from [Limited_]Controlled are the only
+                     --  ones considered since they have fields Prev and Next.
+
+                     if VM_Target /= No_VM
+                       and then Is_Controlled (T)
+                     then
+                        Insert_Action (N,
+                          Make_Attach_Call
+                            (Obj_Ref => New_Copy_Tree (Init_Arg1),
+                             Ptr_Typ => PtrT));
+
+                     --  Default case, generate:
+
+                     --    Set_Finalize_Address
+                     --      (<PtrT>FM, <T>FD'Unrestricted_Access);
+
+                     --  Do not generate the above for CodePeer compilations
+                     --  because primitive Finalize_Address is never built.
+
+                     elsif not CodePeer_Mode then
+                        Insert_Action (N,
+                          Make_Set_Finalize_Address_Call
+                            (Loc     => Loc,
+                             Typ     => T,
+                             Ptr_Typ => PtrT));
+                     end if;
                   end if;
                end if;
 

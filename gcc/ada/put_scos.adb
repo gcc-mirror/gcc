@@ -178,7 +178,9 @@ begin
                         pragma Assert (SCO_Table.Table (Start).C1 = 's');
                      end loop;
 
-                     Write_Info_Terminate;
+                     if Ctr > 0 then
+                        Write_Info_Terminate;
+                     end if;
 
                   --  Statement continuations should not occur since they
                   --  are supposed to have been handled in the loop above.

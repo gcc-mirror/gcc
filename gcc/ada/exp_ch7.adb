@@ -7435,6 +7435,83 @@ package body Exp_Ch7 is
               Statements => Make_Deep_Record_Body (Finalize_Case, Typ, True)));
    end Make_Local_Deep_Finalize;
 
+   ------------------------------------
+   -- Make_Set_Finalize_Address_Call --
+   ------------------------------------
+
+   function Make_Set_Finalize_Address_Call
+     (Loc : Source_Ptr;
+      Typ   : Entity_Id;
+      Ptr_Typ : Entity_Id) return Node_Id
+   is
+      Desig_Typ : constant Entity_Id :=
+                    Available_View (Designated_Type (Ptr_Typ));
+      Utyp      : Entity_Id;
+
+   begin
+      --  If the context is a class-wide allocator, we use the class-wide type
+      --  to obtain the proper Finalize_Address routine.
+
+      if Is_Class_Wide_Type (Desig_Typ) then
+         Utyp := Desig_Typ;
+
+      else
+         Utyp := Typ;
+
+         if Is_Private_Type (Utyp) and then Present (Full_View (Utyp)) then
+            Utyp := Full_View (Utyp);
+         end if;
+
+         if Is_Concurrent_Type (Utyp) then
+            Utyp := Corresponding_Record_Type (Utyp);
+         end if;
+      end if;
+
+      Utyp := Underlying_Type (Base_Type (Utyp));
+
+      --  Deal with non-tagged derivation of private views. If the parent is
+      --  now known to be protected, the finalization routine is the one
+      --  defined on the corresponding record of the ancestor (corresponding
+      --  records do not automatically inherit operations, but maybe they
+      --  should???)
+
+      if Is_Untagged_Derivation (Typ) then
+         if Is_Protected_Type (Typ) then
+            Utyp := Corresponding_Record_Type (Root_Type (Base_Type (Typ)));
+         else
+            Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
+
+            if Is_Protected_Type (Utyp) then
+               Utyp := Corresponding_Record_Type (Utyp);
+            end if;
+         end if;
+      end if;
+
+      --  If the underlying_type is a subtype, we are dealing with the
+      --  completion of a private type. We need to access the base type and
+      --  generate a conversion to it.
+
+      if Utyp /= Base_Type (Utyp) then
+         pragma Assert (Is_Private_Type (Typ));
+
+         Utyp := Base_Type (Utyp);
+      end if;
+
+      --  Generate:
+      --    Set_Finalize_Address (<Ptr_Typ>FM, <Utyp>FD'Unrestricted_Access);
+
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name =>
+            New_Reference_To (RTE (RE_Set_Finalize_Address), Loc),
+          Parameter_Associations => New_List (
+            New_Reference_To (Finalization_Master (Ptr_Typ), Loc),
+            Make_Attribute_Reference (Loc,
+              Prefix =>
+                New_Reference_To (TSS (Utyp, TSS_Finalize_Address), Loc),
+              Attribute_Name => Name_Unrestricted_Access)));
+   end Make_Set_Finalize_Address_Call;
+
    --------------------------
    -- Make_Transient_Block --
    --------------------------

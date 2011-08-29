@@ -119,8 +119,8 @@ package body Exception_Propagation is
    --  alignment below.
 
    type GCC_Exception_Access is access all Unwind_Exception;
-   pragma Convention (C, GCC_Exception_Access);
-   --  Pointer to a GCC exception
+   --  Pointer to a GCC exception. Do not use convention C as on VMS this
+   --  would imply the use of 32-bits pointers.
 
    procedure Unwind_DeleteException (Excp : not null GCC_Exception_Access);
    pragma Import (C, Unwind_DeleteException, "_Unwind_DeleteException");
@@ -166,7 +166,6 @@ package body Exception_Propagation is
    --  to maintain anyway.
 
    type GNAT_GCC_Exception_Access is access all GNAT_GCC_Exception;
-   pragma Convention (C, GNAT_GCC_Exception_Access);
 
    function To_GCC_Exception is new
      Unchecked_Conversion (GNAT_GCC_Exception_Access, GCC_Exception_Access);

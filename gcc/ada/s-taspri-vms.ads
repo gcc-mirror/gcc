@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,10 +78,6 @@ package System.Task_Primitives is
 
 private
 
-   type Exc_Stack_T is array (0 .. 8192) of aliased Character;
-   for Exc_Stack_T'Alignment use Standard'Maximum_Alignment;
-   type Exc_Stack_Ptr_T is access all Exc_Stack_T;
-
    type Lock is record
       L         : aliased System.OS_Interface.pthread_mutex_t;
       Prio      : Interfaces.C.int;
@@ -120,9 +116,6 @@ private
 
       L : aliased RTS_Lock;
       --  Protection for all components is lock L
-
-      Exc_Stack_Ptr : Exc_Stack_Ptr_T;
-      --  ??? This needs comments
 
       AST_Pending : Boolean;
       --  Used to detect delay and sleep timeouts
