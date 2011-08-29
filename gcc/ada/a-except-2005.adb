@@ -855,9 +855,11 @@ package body Ada.Exceptions is
       --  Go ahead and raise appropriate exception
 
       Exception_Data.Set_Exception_Msg (EF, Message);
+
       if not ZCX_By_Default then
          Abort_Defer.all;
       end if;
+
       Raise_Current_Excep (EF);
    end Raise_Exception;
 
@@ -882,57 +884,41 @@ package body Ada.Exceptions is
    -------------------------------------
 
    procedure Raise_From_Controlled_Operation
-     (X          : Ada.Exceptions.Exception_Occurrence;
-      From_Abort : Boolean)
+     (X : Ada.Exceptions.Exception_Occurrence)
    is
+      Prefix             : constant String := "adjust/finalize raised ";
+      Orig_Msg           : constant String := Exception_Message (X);
+      Orig_Prefix_Length : constant Natural :=
+                             Integer'Min (Prefix'Length, Orig_Msg'Length);
+      Orig_Prefix        : String renames Orig_Msg
+                             (Orig_Msg'First ..
+                              Orig_Msg'First + Orig_Prefix_Length - 1);
    begin
-      --  When finalization was triggered by an abort, keep propagating the
-      --  abort signal rather than raising Program_Error.
+      --  Message already has the proper prefix, just re-raise
 
-      if From_Abort then
-         raise Standard'Abort_Signal;
-
-      --  Otherwise, raise Program_Error
+      if Orig_Prefix = Prefix then
+         Raise_Exception_No_Defer
+           (E       => Program_Error'Identity,
+            Message => Orig_Msg);
 
       else
          declare
-            Prefix             : constant String := "adjust/finalize raised ";
-            Orig_Msg           : constant String := Exception_Message (X);
-            Orig_Prefix_Length : constant Natural :=
-                                   Integer'Min
-                                     (Prefix'Length, Orig_Msg'Length);
-            Orig_Prefix        : String renames Orig_Msg
-                                   (Orig_Msg'First ..
-                                    Orig_Msg'First + Orig_Prefix_Length - 1);
+            New_Msg  : constant String := Prefix & Exception_Name (X);
 
          begin
-            --  Message already has the proper prefix, just re-raise
+            --  No message present, just provide our own
 
-            if Orig_Prefix = Prefix then
+            if Orig_Msg = "" then
                Raise_Exception_No_Defer
                  (E       => Program_Error'Identity,
-                  Message => Orig_Msg);
+                  Message => New_Msg);
+
+            --  Message present, add informational prefix
 
             else
-               declare
-                  New_Msg  : constant String := Prefix & Exception_Name (X);
-
-               begin
-                  --  No message present, just provide our own
-
-                  if Orig_Msg = "" then
-                     Raise_Exception_No_Defer
-                       (E       => Program_Error'Identity,
-                        Message => New_Msg);
-
-                  --  Message present, add informational prefix
-
-                  else
-                     Raise_Exception_No_Defer
-                       (E       => Program_Error'Identity,
-                        Message => New_Msg & ": " & Orig_Msg);
-                  end if;
-               end;
+               Raise_Exception_No_Defer
+                 (E       => Program_Error'Identity,
+                  Message => New_Msg & ": " & Orig_Msg);
             end if;
          end;
       end if;
@@ -948,9 +934,11 @@ package body Ada.Exceptions is
    is
    begin
       Exception_Data.Set_Exception_C_Msg (E, M);
+
       if not ZCX_By_Default then
          Abort_Defer.all;
       end if;
+
       Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
       Exception_Propagation.Propagate_Exception
         (E => E, From_Signal_Handler => True);
@@ -1021,9 +1009,11 @@ package body Ada.Exceptions is
    is
    begin
       Exception_Data.Set_Exception_C_Msg (E, F, L, C, M);
+
       if not ZCX_By_Default then
          Abort_Defer.all;
       end if;
+
       Raise_Current_Excep (E);
    end Raise_With_Location_And_Msg;
 
@@ -1042,9 +1032,14 @@ package body Ada.Exceptions is
       Excep.Num_Tracebacks   := 0;
       Excep.Cleanup_Flag     := False;
       Excep.Pid              := Local_Partition_ID;
+
+      --  The following is a common pattern, should be abstracted
+      --  into a procedure call ???
+
       if not ZCX_By_Default then
          Abort_Defer.all;
       end if;
+
       Raise_Current_Excep (E);
    end Raise_With_Msg;
 
@@ -1303,6 +1298,7 @@ package body Ada.Exceptions is
          if not ZCX_By_Default then
             Abort_Defer.all;
          end if;
+
          Exception_Propagation.Setup_Exception
            (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
          Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
@@ -1319,6 +1315,7 @@ package body Ada.Exceptions is
       if not ZCX_By_Default then
          Abort_Defer.all;
       end if;
+
       Exception_Propagation.Setup_Exception
         (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
       Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);

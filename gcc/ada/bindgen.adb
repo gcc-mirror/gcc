@@ -1455,9 +1455,8 @@ package body Bindgen is
             Write_Statement_Buffer;
 
             Set_String ("            procedure Raise_From_Controlled_");
-            Set_String ("Operation ");
-            Set_String ("(X : Ada.Exceptions.Exception_Occurrence; ");
-            Set_String (" From_Abort : Boolean);");
+            Set_String ("Operation (X : Ada.Exceptions.Exception_");
+            Set_String ("Occurrence);");
             Write_Statement_Buffer;
 
             Set_String ("            pragma Import (Ada, Raise_From_");
@@ -1466,7 +1465,7 @@ package body Bindgen is
             Write_Statement_Buffer;
 
             WBI ("         begin");
-            WBI ("            Raise_From_Controlled_Operation (LE, False);");
+            WBI ("            Raise_From_Controlled_Operation (LE);");
             WBI ("         end;");
 
          --  VM-specific code, use regular Ada to produce the desired behavior
