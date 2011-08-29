@@ -2029,8 +2029,7 @@ package body Freeze is
             Next_Entity (Comp);
          end loop;
 
-         --  Deal with Bit_Order attribute definition specifying a non-default
-         --  bit order.
+         --  Deal with Bit_Order aspect specifying a non-default bit order
 
          if Reverse_Bit_Order (Rec) and then Base_Type (Rec) = Rec then
             if not Placed_Component then

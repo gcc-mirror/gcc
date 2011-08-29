@@ -211,18 +211,6 @@ package body Sem_Warn is
            ("?code statement with no outputs should usually be Volatile!", N);
          return;
       end if;
-
-      --  Check multiple code statements in a row
-
-      if Is_List_Member (N)
-        and then Present (Prev (N))
-        and then Nkind (Prev (N)) = N_Code_Statement
-      then
-         Error_Msg_F
-           ("?code statements in sequence should usually be Volatile!", N);
-         Error_Msg_F
-           ("\?(suggest using template with multiple instructions)!", N);
-      end if;
    end Check_Code_Statement;
 
    ---------------------------------

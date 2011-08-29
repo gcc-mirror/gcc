@@ -3515,12 +3515,12 @@ package Einfo is
 --       by-reference-type or because it uses explicitly the secondary stack.
 
 --    Reverse_Bit_Order (Flag164) [base type only]
---       Present in all record type entities. Set if a valid pragma an
---       attribute representation clause for Bit_Order has reversed the order
---       of bits from the default value. When this flag is set, a component
---       clause must specify a set of bits entirely contained in a single
---       storage unit (Ada 95) or a single machine scalar (see Ada 2005
---       AI-133), or must occupy in integral number of storage units.
+--       Present in all record type entities. Set if entity has a Bit_Order
+--       aspect (set by an aspect clause or attribute definition clause) that
+--       has reversed the order of bits from the default value. When this flag
+--       is set, a component clause must specify a set of bits entirely within
+--       a single storage unit (Ada 95) or within a single machine scalar (see
+--       Ada 2005 AI-133), or must occupy an integral number of storage units.
 
 --    RM_Size (Uint13)
 --       Present in all type and subtype entities. Contains the value of

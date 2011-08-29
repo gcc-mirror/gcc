@@ -6193,6 +6193,12 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
+      --  CodePeer and GNATprove want to see the unexpanded N_Op_Expon node
+
+      if CodePeer_Mode or ALFA_Mode then
+         return;
+      end if;
+
       --  If either operand is of a private type, then we have the use of an
       --  intrinsic operator, and we get rid of the privateness, by using root
       --  types of underlying types for the actual operation. Otherwise the
@@ -6200,18 +6206,10 @@ package body Exp_Ch4 is
       --  shifts etc. We also do this transformation if the result type is
       --  different from the base type.
 
-      if CodePeer_Mode or ALFA_Mode then
-         --  CodePeer and GNATprove want to see the unexpanded N_Op_Expon node
-         return;
-      end if;
-
       if Is_Private_Type (Etype (Base))
-           or else
-         Is_Private_Type (Typ)
-           or else
-         Is_Private_Type (Exptyp)
-           or else
-         Rtyp /= Root_Type (Bastyp)
+        or else Is_Private_Type (Typ)
+        or else Is_Private_Type (Exptyp)
+        or else Rtyp /= Root_Type (Bastyp)
       then
          declare
             Bt : constant Entity_Id := Root_Type (Underlying_Type (Bastyp));
