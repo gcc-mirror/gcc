@@ -2467,7 +2467,7 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 	          $(LN_S) $(fsrcpfx)ada/$(word 2,$(subst <, ,$(PAIR))) \
 	                $(RTSDIR)/$(word 1,$(subst <, ,$(PAIR)));)
 # Copy tsystem.h
-	$(CP) $(srcdir)/tsystem.h rts
+	$(CP) $(srcdir)/tsystem.h $(RTSDIR)
 # Copy generated target dependent sources
 	$(RM) $(RTSDIR)/s-oscons.ads
 	(cd $(RTSDIR); $(LN_S) ../s-oscons.ads s-oscons.ads)
