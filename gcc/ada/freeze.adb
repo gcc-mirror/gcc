@@ -2820,7 +2820,7 @@ package body Freeze is
 
                --  Note: we inhibit this check for objects that do not come
                --  from source because there is at least one case (the
-               --  expansion of x'class'input where x is abstract) where we
+               --  expansion of x'Class'Input where x is abstract) where we
                --  legitimately generate an abstract object.
 
                if Is_Abstract_Type (Etype (E))
@@ -3712,7 +3712,7 @@ package body Freeze is
             --     package Pkg is
             --        type T is tagged private;
             --        type DT is new T with private;
-            --        procedure Prim (X : in out T; Y : in out DT'class);
+            --        procedure Prim (X : in out T; Y : in out DT'Class);
             --     private
             --        type T is tagged null record;
             --        Obj : T;

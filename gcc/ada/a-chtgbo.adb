@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -296,7 +296,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
 
       --  Find the first node of hash table L
 
-      L_Index := 0;
+      L_Index := L.Buckets'First;
       loop
          L_Node := L.Buckets (L_Index);
          exit when L_Node /= 0;
@@ -314,7 +314,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
 
          N := N - 1;
 
-         L_Node := Next (L, L_Node);
+         L_Node := Next (L.Nodes (L_Node));
 
          if L_Node = 0 then
             --  We have exhausted the nodes in this bucket

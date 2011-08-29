@@ -2034,7 +2034,7 @@ package body Ada.Containers.Vectors is
    end Iterate;
 
    function Iterate (Container : Vector)
-      return Vector_Iterator_Interfaces.Reversible_Iterator'class
+      return Vector_Iterator_Interfaces.Reversible_Iterator'Class
    is
       It : constant Iterator := (Container'Unchecked_Access, Index_Type'First);
    begin
@@ -2042,7 +2042,7 @@ package body Ada.Containers.Vectors is
    end Iterate;
 
    function Iterate (Container : Vector; Start : Cursor)
-      return Vector_Iterator_Interfaces.Forward_Iterator'class
+      return Vector_Iterator_Interfaces.Forward_Iterator'Class
    is
       It : constant Iterator :=
              (Container'Unchecked_Access, Start.Index);

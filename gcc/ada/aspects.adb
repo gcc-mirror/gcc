@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Einfo;    use Einfo;
 with Nlists;   use Nlists;
 with Sinfo;    use Sinfo;
 with Tree_IO;  use Tree_IO;
@@ -117,6 +118,32 @@ package body Aspects is
    begin
       return Aspect_Id_Hash_Table.Get (Name);
    end Get_Aspect_Id;
+
+   -----------------
+   -- Find_Aspect --
+   -----------------
+
+   function Find_Aspect (Ent : Entity_Id; A : Aspect_Id) return Node_Id is
+      Ritem : Node_Id;
+
+   begin
+      Ritem := First_Rep_Item (Ent);
+      while Present (Ritem) loop
+         if Nkind (Ritem) = N_Aspect_Specification
+           and then Get_Aspect_Id (Chars (Identifier (Ritem))) = A
+         then
+            if A = Aspect_Default_Iterator then
+               return Expression (Aspect_Rep_Item (Ritem));
+            else
+               return Expression (Ritem);
+            end if;
+         end if;
+
+         Next_Rep_Item (Ritem);
+      end loop;
+
+      return Empty;
+   end Find_Aspect;
 
    ------------------
    -- Move_Aspects --

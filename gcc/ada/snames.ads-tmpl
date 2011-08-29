@@ -1219,7 +1219,10 @@ package Snames is
    Name_Cursor                           : constant Name_Id := N + $;
    Name_Element                          : constant Name_Id := N + $;
    Name_Element_Type                     : constant Name_Id := N + $;
+   Name_Has_Element                      : constant Name_Id := N + $;
    Name_No_Element                       : constant Name_Id := N + $;
+   Name_Forward_Iterator                 : constant Name_Id := N + $;
+   Name_Reversible_Iterator              : constant Name_Id := N + $;
    Name_Previous                         : constant Name_Id := N + $;
 
    --  Ada 2005 reserved words

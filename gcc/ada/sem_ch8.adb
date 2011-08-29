@@ -1834,7 +1834,7 @@ package body Sem_Ch8 is
             Result := Defining_Entity (New_Decl);
          end if;
 
-         --  Return the class-wide operation if one was created.
+         --  Return the class-wide operation if one was created
 
          return Result;
       end Check_Class_Wide_Actual;
@@ -2482,7 +2482,7 @@ package body Sem_Ch8 is
 
             --  If this a defaulted subprogram for a class-wide actual there is
             --  no check for mode conformance,  given that the signatures don't
-            --  match (the source mentions T but the actual mentions T'class).
+            --  match (the source mentions T but the actual mentions T'Class).
 
             if CW_Actual then
                null;
@@ -5141,7 +5141,7 @@ package body Sem_Ch8 is
                            Next_Entity (Id);
                         end loop;
 
-                        --  If not found,  standard error message.
+                        --  If not found,  standard error message
 
                         Error_Msg_NE ("& not declared in&", N, Selector);
 

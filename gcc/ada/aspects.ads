@@ -359,6 +359,9 @@ package Aspects is
    --  node that has its Has_Aspects flag set True on entry, or with L being an
    --  empty list or No_List.
 
+   function Find_Aspect (Ent : Entity_Id; A : Aspect_Id) return Node_Id;
+   --  Find value of a given aspect from aspect list of entity.
+
    procedure Move_Aspects (From : Node_Id; To : Node_Id);
    --  Moves aspects from 'From' node to 'To' node. Has_Aspects (To) must be
    --  False on entry. If Has_Aspects (From) is False, the call has no effect.

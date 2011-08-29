@@ -981,6 +981,30 @@ package body Sem_Util is
       Set_Has_Fully_Qualified_Name (Elab_Ent);
    end Build_Elaboration_Entity;
 
+   --------------------------------
+   -- Build_Explicit_Dereference --
+   --------------------------------
+
+   procedure Build_Explicit_Dereference
+     (Expr : Node_Id;
+      Disc : Entity_Id)
+   is
+      Loc : constant Source_Ptr := Sloc (Expr);
+
+   begin
+      Set_Is_Overloaded (Expr, False);
+      Rewrite (Expr,
+        Make_Explicit_Dereference (Loc,
+          Prefix =>
+            Make_Selected_Component (Loc,
+              Prefix => Relocate_Node (Expr),
+              Selector_Name =>
+            New_Occurrence_Of (Disc, Loc))));
+
+      Set_Etype (Prefix (Expr), Etype (Disc));
+      Set_Etype (Expr, Designated_Type (Etype (Disc)));
+   end Build_Explicit_Dereference;
+
    -----------------------------------
    -- Cannot_Raise_Constraint_Error --
    -----------------------------------
@@ -7144,6 +7168,79 @@ package body Sem_Util is
       end if;
    end Is_Fully_Initialized_Variant;
 
+   -----------------
+   -- Is_Iterator --
+   -----------------
+
+   function Is_Iterator (Typ : Entity_Id) return Boolean is
+      Ifaces_List : Elist_Id;
+      Iface_Elmt  : Elmt_Id;
+      Iface       : Entity_Id;
+
+   begin
+      if not Is_Tagged_Type (Typ)
+        or else not Is_Derived_Type (Typ)
+      then
+         return False;
+
+      else
+         Collect_Interfaces (Typ, Ifaces_List);
+
+         Iface_Elmt := First_Elmt (Ifaces_List);
+         while Present (Iface_Elmt) loop
+            Iface := Node (Iface_Elmt);
+            if Chars (Iface) = Name_Forward_Iterator
+              and then
+                Is_Predefined_File_Name
+                  (Unit_File_Name (Get_Source_Unit (Iface)))
+            then
+               return True;
+            end if;
+
+            Next_Elmt (Iface_Elmt);
+         end loop;
+
+         return False;
+      end if;
+
+   end Is_Iterator;
+
+   ----------------------------
+   -- Is_Reversible_Iterator --
+   ----------------------------
+
+   function Is_Reversible_Iterator (Typ : Entity_Id) return Boolean is
+      Ifaces_List : Elist_Id;
+      Iface_Elmt  : Elmt_Id;
+      Iface       : Entity_Id;
+
+   begin
+      if not Is_Tagged_Type (Typ)
+        or else not Is_Derived_Type (Typ)
+      then
+         return False;
+      else
+
+         Collect_Interfaces (Typ, Ifaces_List);
+
+         Iface_Elmt := First_Elmt (Ifaces_List);
+         while Present (Iface_Elmt) loop
+            Iface := Node (Iface_Elmt);
+            if Chars (Iface) = Name_Reversible_Iterator
+              and then
+                Is_Predefined_File_Name
+                  (Unit_File_Name (Get_Source_Unit (Iface)))
+            then
+               return True;
+            end if;
+
+            Next_Elmt (Iface_Elmt);
+         end loop;
+
+      end if;
+      return False;
+   end Is_Reversible_Iterator;
+
    ------------
    -- Is_LHS --
    ------------
@@ -7369,8 +7466,21 @@ package body Sem_Util is
       --  original node is a conversion, then Is_Variable will not be true
       --  but we still want to allow the conversion if it converts a variable).
 
+      --  In Ada2012, the explicit dereference may be a rewritten call
+      --  to a Reference function.
+
       elsif Original_Node (AV) /= AV then
-         return Is_OK_Variable_For_Out_Formal (Original_Node (AV));
+         if Ada_Version >= Ada_2012
+           and then Nkind (Original_Node (AV)) = N_Function_Call
+           and then
+             Has_Implicit_Dereference
+               (Etype (Name (Original_Node (AV))))
+         then
+            return True;
+
+         else
+            return Is_OK_Variable_For_Out_Formal (Original_Node (AV));
+         end if;
 
       --  All other non-variables are rejected
 

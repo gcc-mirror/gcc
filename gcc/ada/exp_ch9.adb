@@ -7930,12 +7930,6 @@ package body Exp_Ch9 is
    --  Start of processing for Expand_N_Protected_Type_Declaration
 
    begin
-      --  Do not expand tasking constructs in formal verification mode
-
-      if ALFA_Mode then
-         return;
-      end if;
-
       if Present (Corresponding_Record_Type (Prot_Typ)) then
          return;
       else

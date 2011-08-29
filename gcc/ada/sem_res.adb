@@ -1754,15 +1754,6 @@ package body Sem_Res is
       It1       : Interp;
       Seen      : Entity_Id := Empty; -- prevent junk warning
 
-      procedure Build_Explicit_Dereference
-        (Expr : Node_Id;
-         Disc : Entity_Id);
-      --  AI05-139: Names with implicit dereference. If the expression N is a
-      --  reference type and the context imposes the corresponding designated
-      --  type, convert N into N.Disc.all. Such expressions are always over-
-      --  loaded with both interpretations, and the dereference interpretation
-      --  carries the name of the reference discriminant.
-
       function Comes_From_Predefined_Lib_Unit (Nod : Node_Id) return Boolean;
       --  Determine whether a node comes from a predefined library unit or
       --  Standard.
@@ -1777,29 +1768,6 @@ package body Sem_Res is
 
       procedure Resolution_Failed;
       --  Called when attempt at resolving current expression fails
-
-      --------------------------------
-      -- Build_Explicit_Dereference --
-      --------------------------------
-
-      procedure Build_Explicit_Dereference
-        (Expr : Node_Id;
-         Disc : Entity_Id)
-      is
-         Loc : constant Source_Ptr := Sloc (Expr);
-
-      begin
-         Set_Is_Overloaded (Expr, False);
-         Rewrite (Expr,
-           Make_Explicit_Dereference (Loc,
-             Prefix =>
-               Make_Selected_Component (Loc,
-                 Prefix        => Relocate_Node (Expr),
-                 Selector_Name => New_Occurrence_Of (Disc, Loc))));
-
-         Set_Etype (Prefix (Expr), Etype (Disc));
-         Set_Etype (Expr, Typ);
-      end Build_Explicit_Dereference;
 
       ------------------------------------
       -- Comes_From_Predefined_Lib_Unit --
