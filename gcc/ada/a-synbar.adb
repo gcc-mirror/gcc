@@ -40,8 +40,11 @@ package body Ada.Synchronous_Barriers is
       --  The condition "Wait'Count = Release_Threshold" opens the barrier when
       --  the required number of tasks is reached. The condition "Keep_Open"
       --  leaves the barrier open while there are queued tasks. While there are
-      --  tasks in the queue no new task will be queued, guaranteeing that the
-      --  barrier will remain open only for those tasks already inside.
+      --  tasks in the queue no new task will be queued (no new protected
+      --  action can be started on a protected object while another protected
+      --  action on the same protected object is underway, RM 9.5.1 (4)),
+      --  guaranteeing that the barrier will remain open only for those tasks
+      --  already inside the queue when the barrier was open.
 
       entry Wait (Notified : out Boolean)
         when Keep_Open or else Wait'Count = Release_Threshold

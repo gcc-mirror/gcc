@@ -81,4 +81,9 @@ package System.Exceptions is
 private
    ZCX_By_Default : constant Boolean := System.ZCX_By_Default;
 
+   Foreign_Exception : exception;
+   pragma Unreferenced (Foreign_Exception);
+   --  This hidden exception is used to represent non-Ada exception to
+   --  Ada handlers. It is in fact referenced by its linking name.
+
 end System.Exceptions;

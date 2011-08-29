@@ -500,24 +500,13 @@ package body Sem_Prag is
 
       procedure Check_Test_Case;
       --  Called to process a test-case pragma. The treatment is similar to the
-      --  one for pre- and postcondition in Check_Precondition_Postcondition.
-      --  There are three cases:
-      --
-      --    The pragma appears after a subprogram spec
-      --
-      --      The first step is to analyze the pragma, but this is skipped if
-      --      the subprogram spec appears within a package specification
-      --      (because this is the case where we delay analysis till the end of
-      --      the spec). Then (whether or not it was analyzed), the pragma is
-      --      chained to the subprogram in question (using Spec_TC_List and
-      --      Next_Pragma).
-      --
-      --    The pragma appears at the start of subprogram body declarations
-      --
-      --      In this case an immediate return to the caller is made, and the
-      --      pragma is NOT analyzed.
-      --
-      --    In all other cases, an error message for bad placement is given
+      --  one for pre- and postcondition in Check_Precondition_Postcondition,
+      --  except the placement rules for the test-case pragma are stricter.
+      --  This pragma may only occur after a subprogram spec declared directly
+      --  in a package spec unit. In this case, the pragma is chained to the
+      --  subprogram in question (using Spec_TC_List and Next_Pragma) and
+      --  analysis of the pragma is delayed till the end of the spec. In
+      --  all other cases, an error message for bad placement is given.
 
       procedure Check_Valid_Configuration_Pragma;
       --  Legality checks for placement of a configuration pragma
@@ -1972,9 +1961,9 @@ package body Sem_Prag is
          PO : Node_Id;
 
          procedure Chain_TC (PO : Node_Id);
-         --  If PO is an entry or a [generic] subprogram declaration node, then
-         --  the test-case applies to this subprogram and the processing for
-         --  the pragma is completed. Otherwise the pragma is misplaced.
+         --  If PO is a [generic] subprogram declaration node, then the
+         --  test-case applies to this subprogram and the processing for the
+         --  pragma is completed. Otherwise the pragma is misplaced.
 
          --------------
          -- Chain_TC --
@@ -1993,20 +1982,22 @@ package body Sem_Prag is
                     ("pragma% cannot be applied to abstract subprogram");
                end if;
 
+            elsif Nkind (PO) = N_Entry_Declaration then
+               if From_Aspect_Specification (N) then
+                  Error_Pragma ("aspect% cannot be applied to entry");
+               else
+                  Error_Pragma ("pragma% cannot be applied to entry");
+               end if;
+
             elsif not Nkind_In (PO, N_Subprogram_Declaration,
-                                    N_Generic_Subprogram_Declaration,
-                                    N_Entry_Declaration)
+                                    N_Generic_Subprogram_Declaration)
             then
                Pragma_Misplaced;
             end if;
 
-            --  Here if we have [generic] subprogram or entry declaration
+            --  Here if we have [generic] subprogram declaration
 
-            if Nkind (PO) = N_Entry_Declaration then
-               S := Defining_Entity (PO);
-            else
-               S := Defining_Unit_Name (Specification (PO));
-            end if;
+            S := Defining_Unit_Name (Specification (PO));
 
             --  Note: we do not analyze the pragma at this point. Instead we
             --  delay this analysis until the end of the declarative part in
@@ -2054,6 +2045,16 @@ package body Sem_Prag is
             Pragma_Misplaced;
          end if;
 
+         --  Test cases should only appear in package spec unit
+
+         if Get_Source_Unit (N) = No_Unit
+           or else not Nkind_In (Sinfo.Unit (Cunit (Get_Source_Unit (N))),
+                                 N_Package_Declaration,
+                                 N_Generic_Package_Declaration)
+         then
+            Pragma_Misplaced;
+         end if;
+
          --  Search prior declarations
 
          P := N;
@@ -2082,21 +2083,24 @@ package body Sem_Prag is
             elsif not Comes_From_Source (PO) then
                null;
 
-            --  Only remaining possibility is subprogram declaration
+            --  Only remaining possibility is subprogram declaration. First
+            --  check that it is declared directly in a package declaration.
+            --  This may be either the package declaration for the current unit
+            --  being defined or a local package declaration.
+
+            elsif not Present (Parent (Parent (PO)))
+              or else not Present (Parent (Parent (Parent (PO))))
+              or else not Nkind_In (Parent (Parent (PO)),
+                                    N_Package_Declaration,
+                                    N_Generic_Package_Declaration)
+            then
+               Pragma_Misplaced;
 
             else
                Chain_TC (PO);
                return;
             end if;
          end loop;
-
-         --  If we fall through loop, pragma is at start of list, so see if it
-         --  is in the pragmas after a library level subprogram.
-
-         if Nkind (Parent (N)) = N_Compilation_Unit_Aux then
-            Chain_TC (Unit (Parent (Parent (N))));
-            return;
-         end if;
 
          --  If we fall through, pragma was misplaced
 
@@ -13301,7 +13305,7 @@ package body Sem_Prag is
          --                  [, Requires =>  Boolean_EXPRESSION]
          --                  [, Ensures  =>  Boolean_EXPRESSION]);
 
-         --  MODE_TYPE ::= Normal | Robustness
+         --  MODE_TYPE ::= Nominal | Robustness
 
          when Pragma_Test_Case => Test_Case : declare
          begin
@@ -13314,7 +13318,7 @@ package body Sem_Prag is
             Check_Optional_Identifier (Arg1, Name_Name);
             Check_Arg_Is_Static_Expression (Arg1, Standard_String);
             Check_Optional_Identifier (Arg2, Name_Mode);
-            Check_Arg_Is_One_Of (Arg2, Name_Normal, Name_Robustness);
+            Check_Arg_Is_One_Of (Arg2, Name_Nominal, Name_Robustness);
 
             if Arg_Count = 4 then
                Check_Identifier (Arg3, Name_Requires);
