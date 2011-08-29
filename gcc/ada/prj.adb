@@ -27,6 +27,7 @@ with Debug;
 with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Attr;
+with Prj.Com;
 with Prj.Err;  use Prj.Err;
 with Snames;   use Snames;
 with Uintp;    use Uintp;
@@ -112,6 +113,28 @@ package body Prj is
       To (Last + 1 .. Last + S'Length) := S;
       Last := Last + S'Length;
    end Add_To_Buffer;
+
+   ---------------------------------
+   -- Current_Object_Path_File_Of --
+   ---------------------------------
+
+   function Current_Object_Path_File_Of
+     (Shared : Shared_Project_Tree_Data_Access)
+      return Path_Name_Type is
+   begin
+      return Shared.Private_Part.Current_Object_Path_File;
+   end Current_Object_Path_File_Of;
+
+   ---------------------------------
+   -- Current_Source_Path_File_Of --
+   ---------------------------------
+
+   function Current_Source_Path_File_Of
+     (Shared : Shared_Project_Tree_Data_Access)
+      return Path_Name_Type is
+   begin
+      return Shared.Private_Part.Current_Source_Path_File;
+   end Current_Source_Path_File_Of;
 
    ---------------------------
    -- Delete_Temporary_File --
@@ -1028,6 +1051,46 @@ package body Prj is
       Free_List (Tree.Projects, Free_Project => True);
       Free_Units (Tree.Units_HT);
    end Reset;
+
+   -------------------------------------
+   -- Set_Current_Object_Path_File_Of --
+   -------------------------------------
+
+   procedure Set_Current_Object_Path_File_Of
+     (Shared : Shared_Project_Tree_Data_Access;
+      To     : Path_Name_Type)
+   is
+   begin
+      Shared.Private_Part.Current_Object_Path_File := To;
+   end Set_Current_Object_Path_File_Of;
+
+   -------------------------------------
+   -- Set_Current_Source_Path_File_Of --
+   -------------------------------------
+
+   procedure Set_Current_Source_Path_File_Of
+     (Shared : Shared_Project_Tree_Data_Access;
+      To     : Path_Name_Type)
+   is
+   begin
+      Shared.Private_Part.Current_Source_Path_File := To;
+   end Set_Current_Source_Path_File_Of;
+
+   -----------------------
+   -- Set_Path_File_Var --
+   -----------------------
+
+   procedure Set_Path_File_Var (Name : String; Value : String) is
+      Host_Spec : String_Access := To_Host_File_Spec (Value);
+   begin
+      if Host_Spec = null then
+         Prj.Com.Fail
+           ("could not convert file name """ & Value & """ to host spec");
+      else
+         Setenv (Name, Host_Spec.all);
+         Free (Host_Spec);
+      end if;
+   end Set_Path_File_Var;
 
    -------------------
    -- Switches_Name --

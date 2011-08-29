@@ -32,12 +32,11 @@ with Hostparm;
 with Osint;    use Osint;
 with Output;   use Output;
 with Opt;      use Opt;
+with Prj.Com;
 with Prj.Err;
 with Prj.Ext;
 with Prj.Util; use Prj.Util;
 with Sinput.P;
-with Snames;   use Snames;
-with Table;
 with Tempdir;
 
 with Ada.Command_Line;           use Ada.Command_Line;
@@ -680,6 +679,118 @@ package body Makeutl is
 
       return False;
    end File_Not_A_Source_Of;
+
+   ---------------------
+   -- Get_Directories --
+   ---------------------
+
+   procedure Get_Directories
+     (Project_Tree : Project_Tree_Ref;
+      For_Project  : Project_Id;
+      Activity     : Activity_Type;
+      Languages    : Name_Ids)
+   is
+
+      procedure Recursive_Add
+        (Project  : Project_Id;
+         Tree     : Project_Tree_Ref;
+         Extended : in out Boolean);
+      --  Add all the source directories of a project to the path only if
+      --  this project has not been visited. Calls itself recursively for
+      --  projects being extended, and imported projects.
+
+      procedure Add_Dir (Value : Path_Name_Type);
+      --  Add directory Value in table Directories, if it is defined and not
+      --  already there.
+
+      -------------
+      -- Add_Dir --
+      -------------
+
+      procedure Add_Dir (Value : Path_Name_Type) is
+         Add_It : Boolean := True;
+
+      begin
+         if Value /= No_Path then
+            for Index in 1 .. Directories.Last loop
+               if Directories.Table (Index) = Value then
+                  Add_It := False;
+                  exit;
+               end if;
+            end loop;
+
+            if Add_It then
+               Directories.Increment_Last;
+               Directories.Table (Directories.Last) := Value;
+            end if;
+         end if;
+      end Add_Dir;
+
+      -------------------
+      -- Recursive_Add --
+      -------------------
+
+      procedure Recursive_Add
+        (Project  : Project_Id;
+         Tree     : Project_Tree_Ref;
+         Extended : in out Boolean)
+      is
+         Current   : String_List_Id;
+         Dir       : String_Element;
+         OK        : Boolean := False;
+         Lang_Proc : Language_Ptr := Project.Languages;
+      begin
+         --  Add to path all directories of this project
+
+         if Activity = Compilation then
+            Lang_Loop :
+            while Lang_Proc /= No_Language_Index loop
+               for J in Languages'Range loop
+                  OK := Lang_Proc.Name = Languages (J);
+                  exit Lang_Loop when OK;
+               end loop;
+
+               Lang_Proc := Lang_Proc.Next;
+            end loop Lang_Loop;
+
+            if OK then
+               Current := Project.Source_Dirs;
+
+               while Current /= Nil_String loop
+                  Dir := Tree.Shared.String_Elements.Table (Current);
+                  Add_Dir (Path_Name_Type (Dir.Value));
+                  Current := Dir.Next;
+               end loop;
+            end if;
+
+         elsif Project.Library then
+            if Activity = SAL_Binding and then Extended then
+               Add_Dir (Project.Object_Directory.Display_Name);
+
+            else
+               Add_Dir (Project.Library_ALI_Dir.Display_Name);
+            end if;
+
+         else
+            Add_Dir (Project.Object_Directory.Display_Name);
+         end if;
+
+         if Project.Extends = No_Project then
+            Extended := False;
+         end if;
+      end Recursive_Add;
+
+      procedure For_All_Projects is
+        new For_Every_Project_Imported (Boolean, Recursive_Add);
+
+      Extended : Boolean := True;
+
+      --  Start of processing for Get_Directories
+
+   begin
+      Directories.Init;
+      For_All_Projects (For_Project, Project_Tree, Extended);
+   end Get_Directories;
 
    ------------------
    -- Get_Switches --
@@ -3207,5 +3318,34 @@ package body Makeutl is
          end loop;
       end if;
    end Compute_Builder_Switches;
+
+   ---------------------
+   -- Write_Path_File --
+   ---------------------
+
+   procedure Write_Path_File (FD : File_Descriptor) is
+      Last : Natural;
+      Status : Boolean;
+   begin
+      Name_Len := 0;
+
+      for Index in Directories.First .. Directories.Last loop
+         Add_Str_To_Name_Buffer (Get_Name_String (Directories.Table (Index)));
+         Add_Char_To_Name_Buffer (ASCII.LF);
+      end loop;
+
+      Last := Write (FD, Name_Buffer (1)'Address, Name_Len);
+
+      if Last = Name_Len then
+         Close (FD, Status);
+
+      else
+         Status := False;
+      end if;
+
+      if not Status then
+         Prj.Com.Fail ("could not write temporary file");
+      end if;
+   end Write_Path_File;
 
 end Makeutl;

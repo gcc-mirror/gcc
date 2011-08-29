@@ -1511,6 +1511,7 @@ package body Exp_Ch5 is
 
    procedure Expand_N_Assignment_Statement (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
+      Crep : constant Boolean    := Change_Of_Representation (N);
       Lhs  : constant Node_Id    := Name (N);
       Rhs  : constant Node_Id    := Expression (N);
       Typ  : constant Entity_Id  := Underlying_Type (Etype (Lhs));
@@ -1780,7 +1781,7 @@ package body Exp_Ch5 is
          --  Skip discriminant check if change of representation. Will be
          --  done when the change of representation is expanded out.
 
-         if not Change_Of_Representation (N) then
+         if not Crep then
             Apply_Discriminant_Check (Rhs, Etype (Lhs), Lhs);
          end if;
 
@@ -1830,7 +1831,7 @@ package body Exp_Ch5 is
             --  Skip discriminant check if change of representation. Will be
             --  done when the change of representation is expanded out.
 
-            if not Change_Of_Representation (N) then
+            if not Crep then
                Apply_Discriminant_Check (Rhs, Etype (Lhs));
             end if;
 
@@ -1883,10 +1884,13 @@ package body Exp_Ch5 is
          Apply_Constraint_Check (Rhs, Etype (Lhs));
       end if;
 
-      --  Case of assignment to a bit packed array element
+      --  Case of assignment to a bit packed array element. If there is a
+      --  change of representation this must be expanded into components,
+      --  otherwise this is a bit-field assignment.
 
       if Nkind (Lhs) = N_Indexed_Component
         and then Is_Bit_Packed_Array (Etype (Prefix (Lhs)))
+        and then not Crep
       then
          Expand_Bit_Packed_Element_Set (N);
          return;
