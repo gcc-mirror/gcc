@@ -1,3 +1,17 @@
+2011-08-29  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb: Minor reformatting.
+
+2011-08-29  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-exetim.ads (Interrupt_Clocks_Supported,
+	Separate_Interrupt_Clocks_Supported, Clock_For_Interrupts): Add these
+	definitions to be compliant with AI-0171.
+
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-ngelfu.adb: Add comments.
+
 2011-08-29  Geert Bosch  <bosch@adacore.com>
 
 	* a-ngelfu.adb (Tan): Do not raise Constraint_Error if the argument is
