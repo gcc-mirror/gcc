@@ -1,3 +1,15 @@
+2011-08-29  Kai Tietz  <ktietz@redhat.com>
+
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR)  Add
+	checks for ECHILD, ENOSPC, EPERM, ETIMEDOUT, and
+	EWOULDBLOCK.
+	*  config/os/mingw32/error_constants.h (errc): Add
+	enumerator values no_child_process, no_space_on_device,
+	not_supported, operation_not_permitted, operation_would_block,
+	timed_out, and value_too_large,
+
 2011-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/50118
