@@ -617,7 +617,6 @@ package body Exception_Data is
       Excep.Num_Tracebacks   := 0;
       Excep.Pid              := Local_Partition_ID;
       Excep.Msg_Length       := 0;
-      Excep.Cleanup_Flag     := False;
 
       while To_Ptr (Msg1) (Excep.Msg_Length + 1) /= ASCII.NUL
         and then Excep.Msg_Length < Exception_Msg_Max_Length
@@ -668,7 +667,6 @@ package body Exception_Data is
       Excep.Id               := Id;
       Excep.Num_Tracebacks   := 0;
       Excep.Pid              := Local_Partition_ID;
-      Excep.Cleanup_Flag     := False;
 
    end Set_Exception_Msg;
 

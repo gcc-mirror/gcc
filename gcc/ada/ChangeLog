@@ -1,5 +1,51 @@
 2011-08-29  Tristan Gingold  <gingold@adacore.com>
 
+	* a-exstat.adb (String_To_EO): Do no set Cleanup_Flag.
+	* a-exexda.adb (Set_Exception_C_Msg): Ditto.
+	(Set_Exception_Msg): Ditto.
+	* a-exexpr-gcc.adb (Setup_Current_Excep): Ditto.  Do not set
+	Private_Data.
+	* a-except.adb, a-except-2005.adb (Save_Occurrence_No_Private): Remove.
+	Use Save_Occurrence instead of Save_Occurrence_No_Private.
+	(Raise_With_Msg): Remove Cleanup_Flag.
+	* a-except.ads, a-except-2005.ads (Exception_Occurrence): Remove
+	Clean_Flag and Private_Data components.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Ignore packing in Alfa mode, like
+	in CodePeer mode.
+	* sem_ch3.adb (Signed_Integer_Type_Declaration): Correct the generation
+	of an explicitly declared type, so that the base types of the original
+	type and this generated type are the same, and a "type" (not a subtype
+	like previously).
+	* errout.adb (Special_Msg_Delete): Do not issue messages "Size too
+	small" in Alfa mode, like in CodePeer mode.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Ignore rep
+	clauses in Alfa mode.
+
+2011-08-29  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.ads, exp_ch6.adb (Is_Null_Procedure): Move the spec of this
+	function to the package spec.
+	* sem_ch6.adb (Find_Corresponding_Spec, New_Overloaded_Entity): For
+	internally generated bodies of null procedures locate the internally
+	generated spec enforcing mode conformance.
+	(Is_Interface_Conformant): Ensure that the controlling formal of the
+	primitives match.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Inline): In an instance, do not
+	reject the pragma if it appears to apply to a formal subprogram.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Use consistent name for
+	inner expression, to prevent double evaluation.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
 	* a-exexpr.adb (Propagate_Exception): Remove all the parameters as
 	they were unused.
 	* a-exexpr-gcc.adb (Propagate_Exception): Ditto.

@@ -2832,10 +2832,10 @@ package body Errout is
 
       elsif Msg = "size for& too small, minimum allowed is ^" then
 
-         --  Suppress "size too small" errors in CodePeer mode, since pragma
-         --  Pack is also ignored in this configuration.
+         --  Suppress "size too small" errors in CodePeer mode and ALFA mode,
+         --  since pragma Pack is also ignored in this configuration.
 
-         if CodePeer_Mode then
+         if CodePeer_Mode or ALFA_Mode then
             return True;
 
          --  When a size is wrong for a frozen type there is no explicit size

@@ -4694,9 +4694,12 @@ package body Sem_Prag is
 
                   --  Inline is a program unit pragma (RM 10.1.5) and cannot
                   --  appear in a formal part to apply to a formal subprogram.
+                  --  Do not apply check within an instance or a formal package
+                  --  the test will have been applied to the original generic.
 
                   elsif Nkind (Decl) in N_Formal_Subprogram_Declaration
                     and then List_Containing (Decl) = List_Containing (N)
+                    and then not In_Instance
                   then
                      Error_Msg_N
                        ("Inline cannot apply to a formal subprogram", N);

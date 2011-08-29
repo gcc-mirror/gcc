@@ -6362,7 +6362,19 @@ package body Sem_Ch6 is
                   end if;
                end if;
 
-               if not Has_Completion (E) then
+               --  Ada 2012 (AI05-0165): For internally generated bodies of
+               --  null procedures locate the internally generated spec. We
+               --  enforce mode conformance since a tagged type may inherit
+               --  from interfaces several null primitives which differ only
+               --  in the mode of the formals.
+
+               if not (Comes_From_Source (E))
+                 and then Is_Null_Procedure (E)
+                 and then not Mode_Conformant (Designator, E)
+               then
+                  null;
+
+               elsif not Has_Completion (E) then
                   if Nkind (N) /= N_Subprogram_Body_Stub then
                      Set_Corresponding_Spec (N, E);
                   end if;
@@ -7037,6 +7049,30 @@ package body Sem_Ch6 is
       Iface : constant Entity_Id := Find_Dispatching_Type (Iface_Prim);
       Typ   : constant Entity_Id := Find_Dispatching_Type (Prim);
 
+      function Controlling_Formal (Prim : Entity_Id) return Entity_Id;
+      --  Return the controlling formal of Prim
+
+      function Controlling_Formal (Prim : Entity_Id) return Entity_Id is
+         E : Entity_Id := First_Entity (Prim);
+      begin
+         while Present (E) loop
+            if Is_Formal (E) and then Is_Controlling_Formal (E) then
+               return E;
+            end if;
+
+            Next_Entity (E);
+         end loop;
+
+         return Empty;
+      end Controlling_Formal;
+
+      --  Local variables
+
+      Iface_Ctrl_F : constant Entity_Id := Controlling_Formal (Iface_Prim);
+      Prim_Ctrl_F  : constant Entity_Id := Controlling_Formal (Prim);
+
+   --  Start of processing for Is_Interface_Conformant
+
    begin
       pragma Assert (Is_Subprogram (Iface_Prim)
         and then Is_Subprogram (Prim)
@@ -7060,8 +7096,17 @@ package body Sem_Ch6 is
       then
          return False;
 
-      --  Case of a procedure, or a function that does not have a controlling
-      --  result (I or access I).
+      --  The mode of the controlling formals must match
+
+      elsif Present (Iface_Ctrl_F)
+         and then Present (Prim_Ctrl_F)
+         and then Ekind (Iface_Ctrl_F) /= Ekind (Prim_Ctrl_F)
+      then
+         return False;
+
+      --  Case of a procedure, or a function whose result type matches the
+      --  result type of the interface primitive, or a function that has no
+      --  controlling result (I or access I).
 
       elsif Ekind (Iface_Prim) = E_Procedure
         or else Etype (Prim) = Etype (Iface_Prim)
@@ -8252,6 +8297,18 @@ package body Sem_Ch6 is
             --  Definitely not interesting if not in the current scope
 
             if Scope (E) /= Current_Scope then
+               null;
+
+            --  Ada 2012 (AI05-0165): For internally generated bodies of
+            --  null procedures locate the internally generated spec. We
+            --  enforce mode conformance since a tagged type may inherit
+            --  from interfaces several null primitives which differ only
+            --  in the mode of the formals.
+
+            elsif not Comes_From_Source (S)
+              and then Is_Null_Procedure (S)
+              and then not Mode_Conformant (E, S)
+            then
                null;
 
             --  Check if we have type conformance

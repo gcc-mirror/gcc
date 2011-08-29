@@ -2246,12 +2246,14 @@ package body Freeze is
 
            and then RM_Size (Rec) >= Scalar_Component_Total_RM_Size
 
-           --  Never do implicit packing in CodePeer mode since we don't do
-           --  any packing in this mode, since this generates over-complex
-           --  code that confuses CodePeer, and in general, CodePeer does not
-           --  care about the internal representation of objects.
+           --  Never do implicit packing in CodePeer or ALFA modes since
+           --  we don't do any packing in this mode, since this generates
+           --  over-complex code that confuses static analysis, and in
+           --  general, neither CodePeer not GNATprove care about the
+           --  internal representation of objects.
 
            and then not CodePeer_Mode
+           and then not ALFA_Mode
          then
             --  If implicit packing enabled, do it
 
@@ -3066,6 +3068,7 @@ package body Freeze is
                     and then not Is_Packed (Root_Type (E))
                     and then not Has_Component_Size_Clause (Root_Type (E))
                     and then not CodePeer_Mode
+                    and then not ALFA_Mode
                   then
                      Get_Index_Bounds (First_Index (E), Lo, Hi);
 

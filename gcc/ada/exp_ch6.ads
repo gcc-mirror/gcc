@@ -119,6 +119,10 @@ package Exp_Ch6 is
    --  that requires handling as a build-in-place call or is a qualified
    --  expression applied to such a call; otherwise returns False.
 
+   function Is_Null_Procedure (Subp : Entity_Id) return Boolean;
+   --  Predicate to recognize stubbed procedures and null procedures, which
+   --  can be inlined unconditionally in all cases.
+
    procedure Make_Build_In_Place_Call_In_Allocator
      (Allocator     : Node_Id;
       Function_Call : Node_Id);
