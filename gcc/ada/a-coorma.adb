@@ -37,6 +37,23 @@ pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Keys);
 
 package body Ada.Containers.Ordered_Maps is
 
+   type Iterator is new
+     Map_Iterator_Interfaces.Reversible_Iterator with record
+        Container : Map_Access;
+        Node      : Node_Access;
+     end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
    -----------------------------
    -- Node Access Subprograms --
    -----------------------------
@@ -445,6 +462,18 @@ package body Ada.Containers.Ordered_Maps is
       return Cursor'(Container'Unrestricted_Access, T.First);
    end First;
 
+   function First (Object : Iterator) return Cursor is
+      M : constant Map_Access  := Object.Container;
+      N : constant Node_Access := M.Tree.First;
+
+   begin
+      if N = null then
+         return No_Element;
+      end if;
+
+      return Cursor'(Object.Container.all'Unchecked_Access, N);
+   end First;
+
    -------------------
    -- First_Element --
    -------------------
@@ -744,6 +773,24 @@ package body Ada.Containers.Ordered_Maps is
       B := B - 1;
    end Iterate;
 
+   function Iterate
+     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'class
+   is
+      Node : constant Node_Access := Container.Tree.First;
+      It   : constant Iterator := (Container'Unrestricted_Access, Node);
+
+   begin
+      return It;
+   end Iterate;
+
+   function Iterate (Container : Map; Start : Cursor)
+      return Map_Iterator_Interfaces.Reversible_Iterator'class
+   is
+      It : constant Iterator := (Container'Unrestricted_Access, Start.Node);
+   begin
+      return It;
+   end Iterate;
+
    ---------
    -- Key --
    ---------
@@ -774,6 +821,18 @@ package body Ada.Containers.Ordered_Maps is
       end if;
 
       return Cursor'(Container'Unrestricted_Access, T.Last);
+   end Last;
+
+   function Last (Object : Iterator) return Cursor is
+      M : constant Map_Access  := Object.Container;
+      N : constant Node_Access := M.Tree.Last;
+
+   begin
+      if N = null then
+         return No_Element;
+      end if;
+
+      return Cursor'(Object.Container.all'Unchecked_Access, N);
    end Last;
 
    ------------------
@@ -867,6 +926,18 @@ package body Ada.Containers.Ordered_Maps is
       end;
    end Next;
 
+   function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
+   begin
+      if Position.Node = null then
+         return No_Element;
+      else
+         return (Object.Container, Tree_Operations.Next (Position.Node));
+      end if;
+   end Next;
+
    ------------
    -- Parent --
    ------------
@@ -907,6 +978,17 @@ package body Ada.Containers.Ordered_Maps is
       end;
    end Previous;
 
+   function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
+   begin
+      if Position.Node = null then
+         return No_Element;
+      else
+         return (Object.Container, Tree_Operations.Previous (Position.Node));
+      end if;
+   end Previous;
    -------------------
    -- Query_Element --
    -------------------
@@ -999,6 +1081,38 @@ package body Ada.Containers.Ordered_Maps is
    begin
       raise Program_Error with "attempt to stream map cursor";
    end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference (Container : Map; Key : Key_Type)
+   return Constant_Reference_Type is
+   begin
+      return (Element => Container.Element (Key)'Unrestricted_Access);
+   end Constant_Reference;
+
+   function Reference (Container : Map; Key : Key_Type)
+   return Reference_Type is
+   begin
+      return (Element => Container.Element (Key)'Unrestricted_Access);
+   end Reference;
 
    -------------
    -- Replace --
@@ -1239,6 +1353,22 @@ package body Ada.Containers.Ordered_Maps is
    is
    begin
       raise Program_Error with "attempt to stream map cursor";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
    end Write;
 
 end Ada.Containers.Ordered_Maps;

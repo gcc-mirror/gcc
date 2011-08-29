@@ -32,7 +32,8 @@
 ------------------------------------------------------------------------------
 
 private with Ada.Containers.Hash_Tables;
-private with Ada.Streams;
+with Ada.Streams; use Ada.Streams;
+with Ada.Iterator_Interfaces;
 
 generic
    type Key_Type is private;
@@ -46,7 +47,13 @@ package Ada.Containers.Bounded_Hashed_Maps is
    pragma Pure;
    pragma Remote_Types;
 
-   type Map (Capacity : Count_Type; Modulus : Hash_Type) is tagged private;
+   type Map (Capacity : Count_Type; Modulus : Hash_Type) is tagged private
+   with
+      Constant_Indexing => Constant_Reference,
+      Variable_Indexing => Reference,
+      Default_Iterator  => Iterate,
+      Iterator_Element  => Element_Type;
+
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
@@ -59,6 +66,12 @@ package Ada.Containers.Bounded_Hashed_Maps is
    No_Element : constant Cursor;
    --  Cursor objects declared without an initialization expression are
    --  initialized to the value No_Element.
+
+   function Has_Element (Position : Cursor) return Boolean;
+   --  Equivalent to Position /= No_Element
+
+   package Map_Iterator_Interfaces is new
+     Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    function "=" (Left, Right : Map) return Boolean;
    --  For each key/element pair in Left, equality attempts to find the key in
@@ -253,9 +266,6 @@ package Ada.Containers.Bounded_Hashed_Maps is
    function Element (Container : Map; Key : Key_Type) return Element_Type;
    --  Equivalent to Element (Find (Container, Key))
 
-   function Has_Element (Position : Cursor) return Boolean;
-   --  Equivalent to Position /= No_Element
-
    function Equivalent_Keys (Left, Right : Cursor) return Boolean;
    --  Returns the result of calling Equivalent_Keys with the keys of the nodes
    --  designated by cursors Left and Right.
@@ -273,6 +283,50 @@ package Ada.Containers.Bounded_Hashed_Maps is
       Process   : not null access procedure (Position : Cursor));
    --  Calls Process for each node in the map
 
+   function Iterate (Container : Map)
+      return Map_Iterator_Interfaces.Forward_Iterator'class;
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is
+   private
+   with
+      Implicit_Dereference => Element;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   type Reference_Type (Element : not null access Element_Type) is private
+   with
+      Implicit_Dereference => Element;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type);
+
+   for Reference_Type'Write use Write;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type);
+
+   for Reference_Type'Read use Read;
+
+   function Constant_Reference
+     (Container : Map; Key : Key_Type)    --  SHOULD BE ALIASED
+   return Constant_Reference_Type;
+
+   function Reference (Container : Map; Key : Key_Type)
+   return Reference_Type;
+
 private
    --  pragma Inline ("=");
    pragma Inline (Length);
@@ -285,7 +339,7 @@ private
    pragma Inline (Capacity);
    pragma Inline (Reserve_Capacity);
    pragma Inline (Has_Element);
-   pragma Inline (Equivalent_Keys);
+   --  pragma Inline (Equivalent_Keys);
    pragma Inline (Next);
 
    type Node_Type is record
@@ -301,7 +355,6 @@ private
       new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
 
    use HT_Types;
-   use Ada.Streams;
 
    procedure Write
      (Stream    : not null access Root_Stream_Type'Class;
@@ -334,6 +387,12 @@ private
       Item   : Cursor);
 
    for Cursor'Write use Write;
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is null record;
+
+   type Reference_Type
+      (Element : not null access Element_Type) is null record;
 
    No_Element : constant Cursor := (Container => null, Node => 0);
 
