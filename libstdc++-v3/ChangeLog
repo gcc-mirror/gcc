@@ -1,3 +1,7 @@
+2011-08-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/20_util/duration/arithmetic/constexpr.cc: Add.
+
 2011-08-29  Kai Tietz  <ktietz@redhat.com>
 
 	* configure: Regenerated.
