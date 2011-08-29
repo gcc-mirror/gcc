@@ -4397,9 +4397,12 @@ package body Sem_Res is
 
       --  Ada 2012 (AI05-0111-3): Issue a warning whenever allocating a task
       --  or a type containing tasks on a subpool since the deallocation of
-      --  the subpool may lead to undefined task behavior.
+      --  the subpool may lead to undefined task behavior. Perform the check
+      --  only when the allocator has not been converted into a Program_Error
+      --  due to a previous error.
 
       if Ada_Version >= Ada_2012
+        and then Nkind (N) = N_Allocator
         and then Present (Subpool_Handle_Name (N))
         and then Has_Task (Desig_T)
       then
