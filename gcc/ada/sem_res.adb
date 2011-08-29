@@ -3987,14 +3987,17 @@ package body Sem_Res is
                     ("& is not a dispatching operation of &!", A, Nam);
                end if;
 
+            --  Apply the checks described in 3.10.2(27): if the context is a
+            --  specific access-to-object, the actual cannot be class-wide.
+            --  Use base type to exclude access_to_subprogram cases.
+
             elsif Is_Access_Type (A_Typ)
               and then Is_Access_Type (F_Typ)
-              and then Ekind (F_Typ) /= E_Access_Subprogram_Type
-              and then Ekind (F_Typ) /= E_Anonymous_Access_Subprogram_Type
+              and then not Is_Access_Subprogram_Type (Base_Type (F_Typ))
               and then (Is_Class_Wide_Type (Designated_Type (A_Typ))
                          or else (Nkind (A) = N_Attribute_Reference
                                    and then
-                                     Is_Class_Wide_Type (Etype (Prefix (A)))))
+                                  Is_Class_Wide_Type (Etype (Prefix (A)))))
               and then not Is_Class_Wide_Type (Designated_Type (F_Typ))
               and then not Is_Controlling_Formal (F)
 
@@ -4008,9 +4011,7 @@ package body Sem_Res is
                Error_Msg_N
                  ("access to class-wide argument not allowed here!", A);
 
-               if Is_Subprogram (Nam)
-                 and then Comes_From_Source (Nam)
-               then
+               if Is_Subprogram (Nam) and then Comes_From_Source (Nam) then
                   Error_Msg_Node_2 := Designated_Type (F_Typ);
                   Error_Msg_NE
                     ("& is not a dispatching operation of &!", A, Nam);

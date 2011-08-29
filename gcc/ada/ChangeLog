@@ -1,3 +1,9 @@
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Use base type to determine whether an
+	access subtype is access_to_subprogram, when applying checks for
+	RM 3.10.2 (27).
+
 2011-08-29  Matthew Heaney  <heaney@adacore.com>
 
 	* a-comutr.adb, a-cimutr.adb, a-cbmutr.adb (Splice_Subtree): Only check
