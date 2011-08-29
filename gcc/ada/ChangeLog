@@ -1,3 +1,12 @@
+2011-08-29  Johannes Kanig  <kanig@adacore.com>
+
+	* exp_ch4.adb (Expand_Quantified_Expression): Do not expand in ALFA
+	mode.
+	* gnat1drv.adb (Adjust_Global_Switches): Set
+	Use_Expressions_With_Actions to False in ALFA mode.
+	* sem_res.adb (Resolve_Quantified_Expression): Simpler treatment in
+	ALFA mode.
+
 2011-08-29  Yannick Moy  <moy@adacore.com>
 
 	* exp_ch13.adb (Expand_N_Freeze_Entity): Do nothing in Alfa mode.
