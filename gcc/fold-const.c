@@ -1867,9 +1867,6 @@ fold_convert_loc (location_t loc, tree type, tree arg)
       || TREE_CODE (orig) == ERROR_MARK)
     return error_mark_node;
 
-  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (orig))
-    return fold_build1_loc (loc, NOP_EXPR, type, arg);
-
   switch (TREE_CODE (type))
     {
     case POINTER_TYPE:
@@ -2017,6 +2014,8 @@ fold_convert_loc (location_t loc, tree type, tree arg)
       return fold_build1_loc (loc, NOP_EXPR, type, tem);
 
     default:
+      if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (orig))
+	return fold_build1_loc (loc, NOP_EXPR, type, arg);
       gcc_unreachable ();
     }
  fold_convert_exit:
@@ -5929,17 +5928,22 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 }
 
 /* Return a node which has the indicated constant VALUE (either 0 or
-   1), and is of the indicated TYPE.  */
+   1 for scalars or {-1,-1,..} or {0,0,...} for vectors),
+   and is of the indicated TYPE.  */
 
 tree
-constant_boolean_node (int value, tree type)
+constant_boolean_node (bool value, tree type)
 {
   if (type == integer_type_node)
     return value ? integer_one_node : integer_zero_node;
   else if (type == boolean_type_node)
     return value ? boolean_true_node : boolean_false_node;
+  else if (TREE_CODE (type) == VECTOR_TYPE)
+    return build_vector_from_val (type,
+				  build_int_cst (TREE_TYPE (type),
+						 value ? -1 : 0));
   else
-    return build_int_cst (type, value);
+    return fold_convert (type, value ? integer_one_node : integer_zero_node);
 }
 
 
@@ -7668,8 +7672,8 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 			       TREE_OPERAND (op0, 1));
 	  else if (!INTEGRAL_TYPE_P (type))
 	    return build3_loc (loc, COND_EXPR, type, op0,
-			       fold_convert (type, boolean_true_node),
-			       fold_convert (type, boolean_false_node));
+			       constant_boolean_node (true, type),
+			       constant_boolean_node (false, type));
 	}
 
       /* Handle cases of two conversions in a row.  */
@@ -13202,8 +13206,7 @@ fold_binary_loc (location_t loc,
 	return build_complex (type, arg0, arg1);
       if (TREE_CODE (arg0) == REALPART_EXPR
 	  && TREE_CODE (arg1) == IMAGPART_EXPR
-	  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg0, 0)))
-	      == TYPE_MAIN_VARIANT (type))
+	  && TREE_TYPE (TREE_OPERAND (arg0, 0)) == type
 	  && operand_equal_p (TREE_OPERAND (arg0, 0),
 			      TREE_OPERAND (arg1, 0), 0))
 	return omit_one_operand_loc (loc, type, TREE_OPERAND (arg0, 0),

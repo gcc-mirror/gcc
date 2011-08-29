@@ -7349,7 +7349,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		{
 		  tree type = TREE_TYPE (TREE_OPERAND (*expr_p, 1));
 
-		  if (!AGGREGATE_TYPE_P (type))
+		  /* Vector comparisons need no boolification.  */
+		  if (TREE_CODE (type) == VECTOR_TYPE)
+		    goto expr_2;
+		  else if (!AGGREGATE_TYPE_P (type))
 		    {
 		      tree org_type = TREE_TYPE (*expr_p);
 		      *expr_p = gimple_boolify (*expr_p);

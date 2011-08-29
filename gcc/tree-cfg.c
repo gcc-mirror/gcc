@@ -3193,22 +3193,52 @@ verify_gimple_comparison (tree type, tree op0, tree op1)
      effective type the comparison is carried out in.  Instead
      we require that either the first operand is trivially
      convertible into the second, or the other way around.
-     The resulting type of a comparison may be any integral type.
      Because we special-case pointers to void we allow
      comparisons of pointers with the same mode as well.  */
-  if ((!useless_type_conversion_p (op0_type, op1_type)
-       && !useless_type_conversion_p (op1_type, op0_type)
-       && (!POINTER_TYPE_P (op0_type)
-	   || !POINTER_TYPE_P (op1_type)
-	   || TYPE_MODE (op0_type) != TYPE_MODE (op1_type)))
-      || !INTEGRAL_TYPE_P (type)
-      || (TREE_CODE (type) != BOOLEAN_TYPE
-	  && TYPE_PRECISION (type) != 1))
+  if (!useless_type_conversion_p (op0_type, op1_type)
+      && !useless_type_conversion_p (op1_type, op0_type)
+      && (!POINTER_TYPE_P (op0_type)
+	  || !POINTER_TYPE_P (op1_type)
+	  || TYPE_MODE (op0_type) != TYPE_MODE (op1_type)))
     {
-      error ("type mismatch in comparison expression");
-      debug_generic_expr (type);
+      error ("mismatching comparison operand types");
       debug_generic_expr (op0_type);
       debug_generic_expr (op1_type);
+      return true;
+    }
+
+  /* The resulting type of a comparison may be an effective boolean type.  */
+  if (INTEGRAL_TYPE_P (type)
+      && (TREE_CODE (type) == BOOLEAN_TYPE
+	  || TYPE_PRECISION (type) == 1))
+    ;
+  /* Or an integer vector type with the same size and element count
+     as the comparison operand types.  */
+  else if (TREE_CODE (type) == VECTOR_TYPE
+	   && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE)
+    {
+      if (TREE_CODE (op0_type) != VECTOR_TYPE
+	  || TREE_CODE (op1_type) != VECTOR_TYPE)
+        {
+          error ("non-vector operands in vector comparison");
+          debug_generic_expr (op0_type);
+          debug_generic_expr (op1_type);
+          return true;
+        }
+
+      if (TYPE_VECTOR_SUBPARTS (type) != TYPE_VECTOR_SUBPARTS (op0_type)
+	  || (GET_MODE_SIZE (TYPE_MODE (type))
+	      != GET_MODE_SIZE (TYPE_MODE (op0_type))))
+        {
+          error ("invalid vector comparison resulting type");
+          debug_generic_expr (type);
+          return true;
+        }
+    }
+  else
+    {
+      error ("bogus comparison result type");
+      debug_generic_expr (type);
       return true;
     }
 
