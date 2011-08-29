@@ -443,7 +443,29 @@ package body Sem_Ch4 is
          end loop;
       end if;
 
-      --  Analyze the allocator
+      --  Ada 2012 (AI05-0111-3): Analyze the subpool_specification, if
+      --  any. The expected type for the name is any type. A non-overloading
+      --  rule then requires it to be of a type descended from
+      --  System.Storage_Pools.Subpools.Subpool_Handle. This isn't exactly what
+      --  the AI says, but I think it's the right rule. The AI should be fixed.
+
+      declare
+         Subpool : constant Node_Id := Subpool_Handle_Name (N);
+      begin
+         if Present (Subpool) then
+            Analyze (Subpool);
+            if Is_Overloaded (Subpool) then
+               Error_Msg_N ("ambiguous subpool handle", Subpool);
+            end if;
+
+            --  ???We need to check that Etype (Subpool) is descended from
+            --  Subpool_Handle
+
+            Resolve (Subpool);
+         end if;
+      end;
+
+      --  Analyze the qualified expression or subtype indication
 
       if Nkind (E) = N_Qualified_Expression then
          Acc_Type := Create_Itype (E_Allocator_Type, N);
