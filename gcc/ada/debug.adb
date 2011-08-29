@@ -128,7 +128,7 @@ package body Debug is
    --  d.H  Standard package only mode for gnat2why
    --  d.I  SCIL generation mode
    --  d.J  Disable parallel SCIL generation mode
-   --  d.K
+   --  d.K  Alfa detection only mode for gnat2why
    --  d.L  Depend on back end for limited types in conditional expressions
    --  d.M
    --  d.N
@@ -599,6 +599,9 @@ package body Debug is
    --  d.J  Disable parallel SCIL generation. Normally SCIL file generation is
    --       done in parallel to speed processing. This switch disables this
    --       behavior.
+
+   --  d.K  Alfa detection only mode for gnat2why. In this mode, gnat2why
+   --       will only generate the .alfa file, but no Why code.
 
    --  d.L  Normally the front end generates special expansion for conditional
    --       expressions of a limited type. This debug flag removes this special
