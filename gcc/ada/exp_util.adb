@@ -5483,9 +5483,17 @@ package body Exp_Util is
                  Statements => L));
       end Wrap_Statements_In_Block;
 
+      --  Local variables
+
+      Block : Node_Id;
+
    --  Start of processing for Process_Statements_For_Controlled_Objects
 
    begin
+      --  Whenever a non-handled statement list is wrapped in a block, the
+      --  block must be explicitly analyzed to redecorate all entities in the
+      --  list and ensure that a finalizer is properly built.
+
       case Nkind (N) is
          when N_Elsif_Part             |
               N_If_Statement           |
@@ -5500,8 +5508,10 @@ package body Exp_Util is
               and then Requires_Cleanup_Actions
                          (Then_Statements (N), False, False)
             then
-               Set_Then_Statements (N, New_List (
-                 Wrap_Statements_In_Block (Then_Statements (N))));
+               Block := Wrap_Statements_In_Block (Then_Statements (N));
+               Set_Then_Statements (N, New_List (Block));
+
+               Analyze (Block);
             end if;
 
             --  Check the "else statements" for conditional entry calls, if
@@ -5515,8 +5525,10 @@ package body Exp_Util is
               and then Requires_Cleanup_Actions
                          (Else_Statements (N), False, False)
             then
-               Set_Else_Statements (N, New_List (
-                 Wrap_Statements_In_Block (Else_Statements (N))));
+               Block := Wrap_Statements_In_Block (Else_Statements (N));
+               Set_Else_Statements (N, New_List (Block));
+
+               Analyze (Block);
             end if;
 
          when N_Abortable_Part             |
@@ -5532,8 +5544,10 @@ package body Exp_Util is
               and then not Are_Wrapped (Statements (N))
               and then Requires_Cleanup_Actions (Statements (N), False, False)
             then
-               Set_Statements (N, New_List (
-                 Wrap_Statements_In_Block (Statements (N))));
+               Block := Wrap_Statements_In_Block (Statements (N));
+               Set_Statements (N, New_List (Block));
+
+               Analyze (Block);
             end if;
 
          when others                       =>

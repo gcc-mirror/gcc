@@ -1806,14 +1806,6 @@ package Sinfo is
    --    library unit of the with_clause and as a result loads its body.
    --    Used for a more precise unit traversal for CodePeer.
 
-   --  Zero_Cost_Handling (Flag5-Sem)
-   --    This flag is set in all handled sequence of statement and exception
-   --    handler nodes if exceptions are to be handled using the zero-cost
-   --    mechanism (see Ada.Exceptions and System.Exceptions in files
-   --    a-except.ads/adb and s-except.ads for full details). What gigi needs
-   --    to do for such a handler is simply to put the code in the handler
-   --    somewhere. The front end has generated all necessary labels.
-
    --------------------------------------------------
    -- Note on Use of End_Label and End_Span Fields --
    --------------------------------------------------
@@ -5957,7 +5949,6 @@ package Sinfo is
       --  Exception_Handlers (List5) (set to No_List if none present)
       --  At_End_Proc (Node1) (set to Empty if no clean up procedure)
       --  First_Real_Statement (Node2-Sem)
-      --  Zero_Cost_Handling (Flag5-Sem)
 
       --  Note: the parent always contains a Declarations field which contains
       --  declarations associated with the handled sequence of statements. This
@@ -5983,7 +5974,6 @@ package Sinfo is
       --  Exception_Choices (List4)
       --  Statements (List3)
       --  Exception_Label (Node5-Sem) (set to Empty of not present)
-      --  Zero_Cost_Handling (Flag5-Sem)
       --  Local_Raise_Statements (Elist1-Sem) (set to No_Elist if not present)
       --  Local_Raise_Not_OK (Flag7-Sem)
       --  Has_Local_Raise (Flag8-Sem)
@@ -9001,9 +8991,6 @@ package Sinfo is
    function Withed_Body
      (N : Node_Id) return Node_Id;    -- Node1
 
-   function Zero_Cost_Handling
-     (N : Node_Id) return Boolean;    -- Flag5
-
    --  End functions (note used by xsinfo utility program to end processing)
 
    ----------------------------
@@ -9972,9 +9959,6 @@ package Sinfo is
 
    procedure Set_Withed_Body
      (N : Node_Id; Val : Node_Id);            -- Node1
-
-   procedure Set_Zero_Cost_Handling
-     (N : Node_Id; Val : Boolean := True);    -- Flag5
 
    -------------------------
    -- Iterator Procedures --
@@ -12037,7 +12021,6 @@ package Sinfo is
    pragma Inline (Used_Operations);
    pragma Inline (Was_Originally_Stub);
    pragma Inline (Withed_Body);
-   pragma Inline (Zero_Cost_Handling);
 
    pragma Inline (Set_ABE_Is_Certain);
    pragma Inline (Set_Abort_Present);
@@ -12357,7 +12340,6 @@ package Sinfo is
    pragma Inline (Set_Used_Operations);
    pragma Inline (Set_Was_Originally_Stub);
    pragma Inline (Set_Withed_Body);
-   pragma Inline (Set_Zero_Cost_Handling);
 
    --------------
    -- Synonyms --

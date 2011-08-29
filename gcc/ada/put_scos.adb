@@ -156,7 +156,7 @@ begin
 
                   --  Decision
 
-                  when 'I' | 'E' | 'G' | 'P' | 'W' | 'X' =>
+                  when 'E' | 'G' | 'I' | 'P' | 'W' | 'X' =>
                      Start := Start + 1;
 
                      --  For disabled pragma, or nested decision therein, skip

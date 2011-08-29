@@ -152,7 +152,6 @@ package SCOs is
    --      E  EXIT statement
    --      F  FOR loop statement (from FOR through end of iteration scheme)
    --      I  IF statement (from IF through end of condition)
-   --      p  disabled PRAGMA
    --      P  PRAGMA
    --      R  extended RETURN statement
    --      W  WHILE loop statement (from WHILE through end of condition)
@@ -227,15 +226,15 @@ package SCOs is
 
    --    Here * is one of the following characters:
 
-   --      I  decision in IF statement or conditional expression
    --      E  decision in EXIT WHEN statement
    --      G  decision in entry guard
+   --      I  decision in IF statement or conditional expression
    --      P  decision in pragma Assert/Check/Pre_Condition/Post_Condition
    --      W  decision in WHILE iteration scheme
    --      X  decision appearing in some other expression context
 
-   --    For I, E, G, P, W, sloc is the source location of the IF, EXIT,
-   --    ENTRY, PRAGMA or WHILE token, respectively
+   --    For E, G, I, P, W, sloc is the source location of the EXIT, ENTRY, IF,
+   --    PRAGMA or WHILE token, respectively
 
    --    For X, sloc is omitted
 
@@ -388,10 +387,16 @@ package SCOs is
    --    statements on a single CS line (possibly followed by Cs continuation
    --    lines).
 
-   --    Decision (IF/EXIT/WHILE)
-   --      C1   = 'I'/'E'/'W' (for IF/EXIT/WHILE)
+   --    Note: for a pragma that may be disabled (Debug, Assert, PPC, Check),
+   --    the entry is initially created with C2 = 'p', to mark it as disabled.
+   --    Later on during semantic analysis, if the pragma is enabled,
+   --    Set_SCO_Pragma_Enabled changes C2 to 'P' to cause the entry to be
+   --    emitted in Put_SCOs.
+
+   --    Decision (EXIT/entry guard/IF/WHILE)
+   --      C1   = 'E'/'G'/'I'/'W' (for EXIT/entry Guard/IF/WHILE)
    --      C2   = ' '
-   --      From = IF/EXIT/WHILE token
+   --      From = EXIT/ENTRY/IF/WHILE token
    --      To   = No_Source_Location
    --      Last = unused
 
@@ -402,14 +407,12 @@ package SCOs is
    --      To   = No_Source_Location
    --      Last = unused
 
-   --      Note: when the parse tree is first scanned, we unconditionally build
-   --      a pragma decision entry for any decision in a pragma (here as always
-   --      in SCO contexts, the only pragmas with decisions are Assert, Check,
-   --      dyadic Debug, Precondition and Postcondition).
-   --
-   --      During analysis, if the pragma is enabled, Set_SCO_Pragma_Enabled
-   --      marks the statement SCO table entry as enaabled (C1 changed from 'p'
-   --      to 'P') to cause the entry to be emitted in Put_SCOs.
+   --    Note: when the parse tree is first scanned, we unconditionally build a
+   --    pragma decision entry for any decision in a pragma (here as always in
+   --    SCO contexts, the only pragmas with decisions are Assert, Check,
+   --    dyadic Debug, Precondition and Postcondition). These entries will
+   --    be omitted in output if the pragma is disabled (see comments for
+   --    statement entries).
 
    --    Decision (Expression)
    --      C1   = 'X'

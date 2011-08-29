@@ -1423,7 +1423,7 @@ package body Par_SCO is
                            --  Output for disabled pragmas is suppressed later
                            --  on, when we output the decision line in
                            --  Put_SCOs, depending on marker sets by
-                           --  Set_SCO_Pragma_Disabled.
+                           --  Set_SCO_Pragma_Enabled.
 
                            if Nam = Name_Check then
                               Next (Arg);
