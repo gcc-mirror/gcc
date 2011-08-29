@@ -1904,7 +1904,7 @@ package body Sem_Ch13 is
                Get_First_Interp (Expr, I, It);
                while Present (It.Nam) loop
                   if not Check_Primitive_Function (It.Nam)
-                    or else Valid_Default_Iterator (It.Nam)
+                    or else not Valid_Default_Iterator (It.Nam)
                   then
                      Remove_Interp (I);
 
@@ -5767,8 +5767,13 @@ package body Sem_Ch13 is
             A_Id = Aspect_Default_Iterator  or else
             A_Id = Aspect_Iterator_Element
       then
+         --  Make type unfrozen before analysis, to prevent spurious
+         --  errors about late attributes.
+
+         Set_Is_Frozen (Ent, False);
          Analyze (End_Decl_Expr);
          Analyze (Aspect_Rep_Item (ASN));
+         Set_Is_Frozen (Ent, True);
 
          --  If the end of declarations comes before any other freeze
          --  point, the Freeze_Expr is not analyzed: no check needed.

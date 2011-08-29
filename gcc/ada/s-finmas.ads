@@ -31,7 +31,6 @@
 
 with Ada.Finalization;
 with Ada.Unchecked_Conversion;
-
 with System.Storage_Elements;
 with System.Storage_Pools;
 
@@ -69,9 +68,10 @@ package System.Finalization_Masters is
 
    --  Finalization master type structure. A unique master is associated with
    --  each access-to-controlled or access-to-class-wide type. Masters also act
-   --  as components of subpools.
+   --  as components of subpools. By default, a master contains objects of the
+   --  same designated type but it may also accomodate heterogeneous objects.
 
-   type Finalization_Master is
+   type Finalization_Master (Is_Homogeneous : Boolean := True) is
      new Ada.Finalization.Limited_Controlled with
    record
       Base_Pool : Any_Storage_Pool_Ptr := null;
@@ -83,7 +83,8 @@ package System.Finalization_Masters is
       --  objects allocated in a [sub]pool.
 
       Finalize_Address : Finalize_Address_Ptr := null;
-      --  A reference to the routine reponsible for object finalization
+      --  A reference to the routine reponsible for object finalization. This
+      --  is used only when the master is in homogeneous mode.
 
       Finalization_Started : Boolean := False;
       pragma Atomic (Finalization_Started);
@@ -114,6 +115,10 @@ package System.Finalization_Masters is
    --  Return a reference to the underlying storage pool on which the master
    --  operates.
 
+   procedure Delete_Finalize_Address (Obj : System.Address);
+   --  Destroy the relation pair object - Finalize_Address from the internal
+   --  hash table.
+
    procedure Detach (N : not null FM_Node_Ptr);
    --  Remove a node from an arbitrary finalization master
 
@@ -121,6 +126,11 @@ package System.Finalization_Masters is
    --  Lock the master to prevent allocations during finalization. Iterate over
    --  the list of allocated controlled objects, finalizing each one by calling
    --  its specific Finalize_Address. In the end, deallocate the dummy head.
+
+   function Get_Finalize_Address
+     (Obj : System.Address) return Finalize_Address_Ptr;
+   --  Retrieve the Finalize_Address primitive associated with a particular
+   --  object.
 
    function Header_Offset return System.Storage_Elements.Storage_Offset;
    --  Return the size of type FM_Node as Storage_Offset
@@ -131,7 +141,7 @@ package System.Finalization_Masters is
    overriding procedure Initialize (Master : in out Finalization_Master);
    --  Initialize the dummy head of a finalization master
 
-   procedure pm (Master : Finalization_Master);
+   procedure Print_Master (Master : Finalization_Master);
    --  Debug routine, outputs the contents of a master
 
    procedure Set_Base_Pool
@@ -143,5 +153,10 @@ package System.Finalization_Masters is
      (Master       : in out Finalization_Master;
       Fin_Addr_Ptr : Finalize_Address_Ptr);
    --  Set the clean up routine of a finalization master
+
+   procedure Set_Finalize_Address
+     (Obj          : System.Address;
+      Fin_Addr_Ptr : Finalize_Address_Ptr);
+   --  Add a relation pair object - Finalize_Address to the internal hash table
 
 end System.Finalization_Masters;

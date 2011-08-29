@@ -12472,21 +12472,56 @@ package body Sem_Util is
 
    function Unique_Defining_Entity (N : Node_Id) return Entity_Id is
    begin
-      case Nkind (N) is
-         when N_Package_Body =>
-            return Corresponding_Spec (N);
+      return Unique_Entity (Defining_Entity (N));
+   end Unique_Defining_Entity;
 
-         when N_Subprogram_Body =>
-            if Acts_As_Spec (N) then
-               return Defining_Entity (N);
+   -------------------
+   -- Unique_Entity --
+   -------------------
+
+   function Unique_Entity (E : Entity_Id) return Entity_Id is
+      U : Entity_Id := E;
+      P : Node_Id;
+
+   begin
+      case Ekind (E) is
+         when Type_Kind =>
+            if Present (Full_View (E)) then
+               U := Full_View (E);
+            end if;
+
+         when E_Package_Body =>
+            P := Parent (E);
+
+            if Nkind (P) = N_Defining_Program_Unit_Name then
+               P := Parent (P);
+            end if;
+
+            U := Corresponding_Spec (P);
+
+         when E_Subprogram_Body =>
+            P := Parent (E);
+
+            if Nkind (P) = N_Defining_Program_Unit_Name then
+               P := Parent (P);
+            end if;
+
+            P := Parent (P);
+
+            if Nkind (P) = N_Subprogram_Body_Stub then
+               if Present (Library_Unit (P)) then
+                  U := Get_Body_From_Stub (P);
+               end if;
             else
-               return Corresponding_Spec (N);
+               U := Corresponding_Spec (P);
             end if;
 
          when others =>
-            return Defining_Entity (N);
+            null;
       end case;
-   end Unique_Defining_Entity;
+
+      return U;
+   end Unique_Entity;
 
    -----------------
    -- Unique_Name --
