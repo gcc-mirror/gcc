@@ -1,3 +1,8 @@
+2011-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48722
+	* gcc.target/i386/pr48722.c: New test.
+
 2011-08-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/50192
