@@ -1,3 +1,8 @@
+2011-08-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50225
+	* gfortran.dg/class_result_1.f03: New.
+
 2011-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48722

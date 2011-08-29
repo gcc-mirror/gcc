@@ -5215,17 +5215,25 @@ gfc_generate_function_code (gfc_namespace * ns)
     {
       tree result = get_proc_result (sym);
 
-      if (result != NULL_TREE
-	    && sym->attr.function
-	    && !sym->attr.pointer)
+      if (result != NULL_TREE && sym->attr.function && !sym->attr.pointer)
 	{
 	  if (sym->attr.allocatable && sym->attr.dimension == 0
 	      && sym->result == sym)
 	    gfc_add_modify (&init, result, fold_convert (TREE_TYPE (result),
 							 null_pointer_node));
+	  else if (sym->ts.type == BT_CLASS
+		   && CLASS_DATA (sym)->attr.allocatable
+		   && sym->attr.dimension == 0 && sym->result == sym)
+	    {
+	      tmp = CLASS_DATA (sym)->backend_decl;
+	      tmp = fold_build3_loc (input_location, COMPONENT_REF,
+				     TREE_TYPE (tmp), result, tmp, NULL_TREE);
+	      gfc_add_modify (&init, tmp, fold_convert (TREE_TYPE (tmp),
+							null_pointer_node));
+	    }
 	  else if (sym->ts.type == BT_DERIVED
-	      && sym->ts.u.derived->attr.alloc_comp
-	      && !sym->attr.allocatable)
+		   && sym->ts.u.derived->attr.alloc_comp
+		   && !sym->attr.allocatable)
 	    {
 	      rank = sym->as ? sym->as->rank : 0;
 	      tmp = gfc_nullify_alloc_comp (sym->ts.u.derived, result, rank);
