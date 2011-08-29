@@ -13313,7 +13313,7 @@ package body Sem_Prag is
          when Pragma_Test_Case => Test_Case : declare
          begin
             GNAT_Pragma;
-            Check_At_Least_N_Arguments (3);
+            Check_At_Least_N_Arguments (2);
             Check_At_Most_N_Arguments (4);
             Check_Arg_Order
                  ((Name_Name, Name_Mode, Name_Requires, Name_Ensures));
@@ -13326,7 +13326,7 @@ package body Sem_Prag is
             if Arg_Count = 4 then
                Check_Identifier (Arg3, Name_Requires);
                Check_Identifier (Arg4, Name_Ensures);
-            else
+            elsif Arg_Count = 3 then
                Check_Identifier_Is_One_Of (Arg3, Name_Requires, Name_Ensures);
             end if;
 

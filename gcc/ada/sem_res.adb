@@ -1685,6 +1685,7 @@ package body Sem_Res is
       Tsk : Node_Id := Empty;
 
       function Process_Discr (Nod : Node_Id) return Traverse_Result;
+      --  Comment needed???
 
       -------------------
       -- Process_Discr --
@@ -1793,9 +1794,8 @@ package body Sem_Res is
            Make_Explicit_Dereference (Loc,
              Prefix =>
                Make_Selected_Component (Loc,
-                 Prefix => Relocate_Node (Expr),
-                 Selector_Name =>
-               New_Occurrence_Of (Disc, Loc))));
+                 Prefix        => Relocate_Node (Expr),
+                 Selector_Name => New_Occurrence_Of (Disc, Loc))));
 
          Set_Etype (Prefix (Expr), Etype (Disc));
          Set_Etype (Expr, Typ);
@@ -1819,18 +1819,14 @@ package body Sem_Res is
 
       procedure Patch_Up_Value (N : Node_Id; Typ : Entity_Id) is
       begin
-         if Nkind (N) = N_Integer_Literal
-           and then Is_Real_Type (Typ)
-         then
+         if Nkind (N) = N_Integer_Literal and then Is_Real_Type (Typ) then
             Rewrite (N,
               Make_Real_Literal (Sloc (N),
                 Realval => UR_From_Uint (Intval (N))));
             Set_Etype (N, Universal_Real);
             Set_Is_Static_Expression (N);
 
-         elsif Nkind (N) = N_Real_Literal
-           and then Is_Integer_Type (Typ)
-         then
+         elsif Nkind (N) = N_Real_Literal and then Is_Integer_Type (Typ) then
             Rewrite (N,
               Make_Integer_Literal (Sloc (N),
                 Intval => UR_To_Uint (Realval (N))));
@@ -1838,7 +1834,7 @@ package body Sem_Res is
             Set_Is_Static_Expression (N);
 
          elsif Nkind (N) = N_String_Literal
-           and then Is_Character_Type (Typ)
+                 and then Is_Character_Type (Typ)
          then
             Set_Character_Literal_Name (Char_Code (Character'Pos ('A')));
             Rewrite (N,
@@ -1849,15 +1845,13 @@ package body Sem_Res is
             Set_Etype (N, Any_Character);
             Set_Is_Static_Expression (N);
 
-         elsif Nkind (N) /= N_String_Literal
-           and then Is_String_Type (Typ)
-         then
+         elsif Nkind (N) /= N_String_Literal and then Is_String_Type (Typ) then
             Rewrite (N,
               Make_String_Literal (Sloc (N),
                 Strval => End_String));
 
          elsif Nkind (N) = N_Range then
-            Patch_Up_Value (Low_Bound (N), Typ);
+            Patch_Up_Value (Low_Bound (N),  Typ);
             Patch_Up_Value (High_Bound (N), Typ);
          end if;
       end Patch_Up_Value;
@@ -1878,7 +1872,7 @@ package body Sem_Res is
          then
             Error_Msg_NE ("ambiguous call to&", Arg, Name (Arg));
 
-            --  Could use comments on what is going on here ???
+            --  Could use comments on what is going on here???
 
             Get_First_Interp (Name (Arg), I, It);
             while Present (It.Nam) loop
@@ -1926,8 +1920,8 @@ package body Sem_Res is
          return;
       end if;
 
-      --  Access attribute on remote subprogram cannot be used for
-      --  a non-remote access-to-subprogram type.
+      --  Access attribute on remote subprogram cannot be used for a non-remote
+      --  access-to-subprogram type.
 
       if Nkind (N) = N_Attribute_Reference
         and then (Attribute_Name (N) = Name_Access              or else
@@ -8095,7 +8089,7 @@ package body Sem_Res is
       else
 
          --  In ALFA_Mode, no such magic needs to happen, we just resolve the
-         --  underlying nodes
+         --  underlying nodes.
 
          Resolve (Condition (N), Typ);
       end if;
