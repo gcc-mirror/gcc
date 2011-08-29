@@ -1,3 +1,20 @@
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb (Unwind_Action) Rewrite as an integer with constants.
+	(GNAT_GCC_Exception): Remove N_Cleanups_To_Trigger component.
+	(Adjust_N_CLeanups_For): Remove.
+	(CleanupUnwind_Handler): Call Unhandled_Exception_Terminate when end of
+	stack is reached.
+	(Propgate_Exception): Adjust.
+	* raise-gcc.c: Add a few static/const.
+	(Adjust_N_Cleanups_For): Remove declaration.
+	(PERSONALITY_FUNCTION): Remove code dealing with N_Cleanups_To_Trigger.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb: Use type of function return when rewriting as object
+	declaration.
+
 2011-08-29  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_type.adb: Minor reformatting.

@@ -814,7 +814,7 @@ package body Sem_Ch8 is
 
          if Nkind (Nam) = N_Function_Call
            and then Is_Immutably_Limited_Type (Etype (Nam))
-           and then not Is_Constrained (T)
+           and then not Is_Constrained (Etype (Nam))
            and then Comes_From_Source (N)
          then
             Set_Etype (Id, T);
@@ -823,7 +823,7 @@ package body Sem_Ch8 is
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Id,
                 Constant_Present    => True,
-                Object_Definition   => New_Occurrence_Of (T, Loc),
+                Object_Definition   => New_Occurrence_Of (Etype (Nam), Loc),
                 Expression          => Relocate_Node (Nam)));
             return;
          end if;
@@ -851,9 +851,9 @@ package body Sem_Ch8 is
 
          --  Ada 2005 AI05-105: if the declaration has an anonymous access
          --  type, the renamed object must also have an anonymous type, and
-         --  this is a name resolution rule. This was implicit in the last
-         --  part of the first sentence in 8.5.1.(3/2), and is made explicit
-         --  by this recent AI.
+         --  this is a name resolution rule. This was implicit in the last part
+         --  of the first sentence in 8.5.1(3/2), and is made explicit by this
+         --  recent AI.
 
          if not Is_Overloaded (Nam) then
             if Ekind (Etype (Nam)) /= Ekind (T) then
@@ -994,7 +994,7 @@ package body Sem_Ch8 is
 
       T2 := Etype (Nam);
 
-      --  (Ada 2005: AI-326): Handle wrong use of incomplete type
+      --  Ada 2005 (AI-326): Handle wrong use of incomplete type
 
       if Nkind (Nam) = N_Explicit_Dereference
         and then Ekind (Etype (T2)) = E_Incomplete_Type

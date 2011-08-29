@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2010, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2011, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -128,7 +128,7 @@ typedef struct
   char * description;
 } phase_descriptor;
 
-static phase_descriptor phase_descriptors[]
+static const phase_descriptor phase_descriptors[]
   = {{ _UA_SEARCH_PHASE,  "SEARCH_PHASE" },
      { _UA_CLEANUP_PHASE, "CLEANUP_PHASE" },
      { _UA_HANDLER_FRAME, "HANDLER_FRAME" },
@@ -622,7 +622,7 @@ typedef enum
 } action_kind;
 
 /* filter value for cleanup actions.  */
-const int cleanup_filter = 0;
+static const int cleanup_filter = 0;
 
 typedef struct
 {
@@ -842,7 +842,6 @@ get_call_site_action_for (_Unwind_Context *uw_context,
 #define Language_For          __gnat_language_for
 #define Import_Code_For       __gnat_import_code_for
 #define EID_For               __gnat_eid_for
-#define Adjust_N_Cleanups_For __gnat_adjust_n_cleanups_for
 
 extern bool Is_Handled_By_Others (_Unwind_Ptr eid);
 extern char Language_For (_Unwind_Ptr eid);
@@ -850,7 +849,6 @@ extern char Language_For (_Unwind_Ptr eid);
 extern Exception_Code Import_Code_For (_Unwind_Ptr eid);
 
 extern Exception_Id EID_For (_GNAT_Exception * e);
-extern void Adjust_N_Cleanups_For (_GNAT_Exception * e, int n);
 
 static int
 is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
@@ -1142,7 +1140,6 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
     {
       if (action.kind == cleanup)
 	{
-	  Adjust_N_Cleanups_For (gnat_exception, 1);
 	  return _URC_CONTINUE_UNWIND;
 	}
       else
@@ -1159,14 +1156,6 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
      or a cleanup for a handled occurrence, or a cleanup for an unhandled
      occurrence (we are in a FORCED_UNWIND phase in this case). Install the
      context to get there.  */
-
-  /* If we are going to install a cleanup context, decrement the cleanup
-     count.  This is required in a FORCED_UNWINDing phase (for an unhandled
-     exception), as this is used from the forced unwinding handler in
-     Ada.Exceptions.Exception_Propagation to decide whether unwinding should
-     proceed further or Unhandled_Exception_Terminate should be called.  */
-  if (action.kind == cleanup)
-    Adjust_N_Cleanups_For (gnat_exception, -1);
 
   setup_to_install
     (uw_context, uw_exception, action.landing_pad, action.ttype_filter);
