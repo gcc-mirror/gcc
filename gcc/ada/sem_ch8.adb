@@ -5542,7 +5542,6 @@ package body Sem_Ch8 is
                                 Scope_Depth (Old_S)
                               then
                                  return Old_S;
-
                               else
                                  return It.Nam;
                               end if;
@@ -5555,7 +5554,7 @@ package body Sem_Ch8 is
                            return Report_Overload;
                         end if;
 
-                     --  If not within an instance, ambiguity is real.
+                     --  If not within an instance, ambiguity is real
 
                      else
                         return Report_Overload;

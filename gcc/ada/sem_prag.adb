@@ -13326,6 +13326,7 @@ package body Sem_Prag is
             if Arg_Count = 4 then
                Check_Identifier (Arg3, Name_Requires);
                Check_Identifier (Arg4, Name_Ensures);
+
             elsif Arg_Count = 3 then
                Check_Identifier_Is_One_Of (Arg3, Name_Requires, Name_Ensures);
             end if;

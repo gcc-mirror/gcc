@@ -7593,6 +7593,9 @@ package body Exp_Ch4 is
       Test         : Node_Id;
 
    begin
+      --  Do not expand quantified expressions in ALFA mode
+      --  why not???
+
       if ALFA_Mode then
          return;
       end if;
