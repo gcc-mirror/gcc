@@ -2858,7 +2858,7 @@ package body Exp_Ch5 is
                       New_Reference_To (Iterator, Loc)))));
 
          --  for Index in Array loop
-         --
+
          --  This case utilizes the already given iterator name
 
          else
@@ -2869,7 +2869,7 @@ package body Exp_Ch5 is
          --    for Iterator in [reverse] Container'Range loop
          --       Element : Component_Type renames Container (Iterator);
          --       --  for the "of" form
-         --
+
          --       <original loop statements>
          --    end loop;
 
@@ -2952,10 +2952,12 @@ package body Exp_Ch5 is
 
             if Of_Present (I_Spec) then
                declare
-                  Default_Iter  : constant Entity_Id :=
-                    Entity (
-                      Find_Aspect
-                         (Etype (Container), Aspect_Default_Iterator));
+                  Default_Iter : constant Entity_Id :=
+                                   Entity
+                                     (Find_Aspect
+                                       (Etype (Container),
+                                        Aspect_Default_Iterator));
+
                   Container_Arg : Node_Id;
                   Ent           : Entity_Id;
 
@@ -2975,7 +2977,7 @@ package body Exp_Ch5 is
                      --  inherited from the scope of the parent.
 
                      if Base_Type (Etype (Container)) =
-                       Base_Type (Etype (First_Formal (Default_Iter)))
+                        Base_Type (Etype (First_Formal (Default_Iter)))
                      then
                         Container_Arg := New_Copy_Tree (Container);
 
@@ -2985,8 +2987,8 @@ package body Exp_Ch5 is
                         Container_Arg :=
                           Make_Type_Conversion (Loc,
                             Subtype_Mark =>
-                              New_Occurrence_Of (
-                                Etype (First_Formal (Default_Iter)), Loc),
+                              New_Occurrence_Of
+                                (Etype (First_Formal (Default_Iter)), Loc),
                             Expression => New_Copy_Tree (Container));
                      end if;
 
@@ -3015,11 +3017,11 @@ package body Exp_Ch5 is
                   Decl :=
                     Make_Object_Renaming_Declaration (Loc,
                       Defining_Identifier => Id,
-                         Subtype_Mark =>
+                      Subtype_Mark        =>
                         New_Reference_To (Element_Type, Loc),
-                      Name =>
+                      Name                =>
                         Make_Indexed_Component (Loc,
-                          Prefix => Make_Selected_Component (Loc,
+                          Prefix      => Make_Selected_Component (Loc,
                               Prefix        => New_Reference_To (Pack, Loc),
                               Selector_Name =>
                                 Make_Identifier (Loc, Chars => Name_Element)),
@@ -3042,7 +3044,7 @@ package body Exp_Ch5 is
 
                      Stats := New_List (
                        Make_Block_Statement (Loc,
-                         Declarations => New_List (Decl),
+                         Declarations               => New_List (Decl),
                          Handled_Statement_Sequence =>
                            Make_Handled_Sequence_Of_Statements (Loc,
                               Statements => Stats)));
@@ -3078,10 +3080,12 @@ package body Exp_Ch5 is
 
             --  For both iterator forms, add a call to the step operation to
             --  advance the cursor. Generate:
-            --
-            --    Cursor := Iterator.Next (Cursor);
+
+            --     Cursor := Iterator.Next (Cursor);
+
             --   or else
-            --    Cursor := Next (Cursor);
+
+            --     Cursor := Next (Cursor);
 
             declare
                Rhs : Node_Id;
@@ -3089,9 +3093,9 @@ package body Exp_Ch5 is
             begin
                Rhs :=
                  Make_Function_Call (Loc,
-                   Name =>
+                   Name                   =>
                      Make_Selected_Component (Loc,
-                       Prefix => New_Reference_To (Iterator, Loc),
+                       Prefix        => New_Reference_To (Iterator, Loc),
                        Selector_Name => Make_Identifier (Loc, Name_Step)),
                    Parameter_Associations => New_List (
                       New_Reference_To (Cursor, Loc)));
@@ -3113,7 +3117,7 @@ package body Exp_Ch5 is
                   Make_Iteration_Scheme (Loc,
                     Condition =>
                       Make_Function_Call (Loc,
-                        Name =>
+                        Name                   =>
                           Make_Selected_Component (Loc,
                            Prefix => New_Occurrence_Of (Pack, Loc),
                            Selector_Name =>
@@ -3127,7 +3131,7 @@ package body Exp_Ch5 is
 
             --  Create the declarations for Iterator and cursor and insert then
             --  before the source loop. Generate:
-            --
+
             --    I : Iterator_Type := Iterate (Container);
             --    C : Pack.Cursor_Type := Container.[First | Last];
 
@@ -3146,12 +3150,11 @@ package body Exp_Ch5 is
                Decl2 :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Cursor,
-                   Object_Definition =>
+                   Object_Definition   =>
                      New_Occurrence_Of (Etype (Cursor), Loc),
-
-                   Expression =>
+                   Expression          =>
                      Make_Selected_Component (Loc,
-                       Prefix => New_Reference_To (Iterator, Loc),
+                       Prefix        => New_Reference_To (Iterator, Loc),
                        Selector_Name =>
                          Make_Identifier (Loc, Name_Init)));
 

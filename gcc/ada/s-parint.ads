@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1995-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,8 +47,9 @@ package System.Partition_Interface is
 
    PCS_Version : constant := 1;
    --  Version of the PCS API (for Exp_Dist consistency check).
-   --  This version number is matched against Gnatvsn.PCS_Version_Number to
-   --  ensure that the versions of Exp_Dist and the PCS are consistent.
+   --  This version number is matched against corresponding element of
+   --  Exp_Dist.PCS_Version_Number to ensure that the versions of Exp_Dist and
+   --  the PCS are consistent.
 
    --  RCI receiving stubs contain a table of descriptors for
    --  all user subprograms exported by the unit.

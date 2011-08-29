@@ -5215,9 +5215,10 @@ package body Exp_Aggr is
       -------------------------
 
       function Top_Level_Aggregate (N : Node_Id) return Node_Id is
-         Aggr : Node_Id := N;
+         Aggr : Node_Id;
 
       begin
+         Aggr := N;
          while Present (Parent (Aggr))
            and then Nkind_In (Parent (Aggr), N_Component_Association,
                                              N_Aggregate)

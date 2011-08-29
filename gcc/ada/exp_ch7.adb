@@ -3062,7 +3062,7 @@ package body Exp_Ch7 is
       if RTE_Available (RE_Raise_From_Controlled_Operation) then
          Stmt :=
            Make_Procedure_Call_Statement (Loc,
-              Name =>
+              Name                   =>
                 New_Reference_To
                   (RTE (RE_Raise_From_Controlled_Operation), Loc),
               Parameter_Associations =>
@@ -3087,7 +3087,7 @@ package body Exp_Ch7 is
 
       return
         Make_If_Statement (Loc,
-          Condition =>
+          Condition       =>
             Make_And_Then (Loc,
               Left_Opnd  => New_Reference_To (Raised_Id, Loc),
               Right_Opnd =>

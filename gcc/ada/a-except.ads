@@ -222,7 +222,7 @@ private
    --  abort is already deferred.
 
    function Triggered_By_Abort return Boolean;
-   --  Determine whether the current exception (if exists) is an instance of
+   --  Determine whether the current exception (if it exists) is an instance of
    --  Standard'Abort_Signal.
 
    -----------------------

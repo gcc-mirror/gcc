@@ -2672,7 +2672,8 @@ package body Ch3 is
             Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
          end if;
 
-         --  AI95-406 makes "aliased" legal (and useless) in this context.
+         --  AI95-406 makes "aliased" legal (and useless) in this context so
+         --  followintg code which used to be needed is commented out.
 
          --  if Aliased_Present then
          --     Error_Msg_SP ("ALIASED not allowed here");
@@ -3449,7 +3450,8 @@ package body Ch3 is
                   Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
                end if;
 
-               --  AI95-406 makes "aliased" legal (and useless) here.
+               --  AI95-406 makes "aliased" legal (and useless) here, so the
+               --  following code which used to be required is commented out.
 
                --  if Aliased_Present then
                --     Error_Msg_SP ("ALIASED not allowed here");

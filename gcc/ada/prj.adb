@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Debug;
+with Opt;
 with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Attr;
@@ -697,6 +698,11 @@ package body Prj is
          The_Empty_String := Name_Find;
 
          Prj.Attr.Initialize;
+
+         --  Make sure that new reserved words after Ada 95 may be used as
+         --  identifiers.
+
+         Opt.Ada_Version := Opt.Ada_95;
 
          Set_Name_Table_Byte (Name_Project,  Token_Type'Pos (Tok_Project));
          Set_Name_Table_Byte (Name_Extends,  Token_Type'Pos (Tok_Extends));

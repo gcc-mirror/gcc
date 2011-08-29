@@ -7178,16 +7178,15 @@ package body Sem_Util is
       if Is_Class_Wide_Type (Typ)
         and then
           (Chars (Etype (Typ)) = Name_Forward_Iterator
-            or else Chars (Etype (Typ)) = Name_Reversible_Iterator)
+             or else
+           Chars (Etype (Typ)) = Name_Reversible_Iterator)
         and then
           Is_Predefined_File_Name
             (Unit_File_Name (Get_Source_Unit (Etype (Typ))))
       then
          return True;
 
-      elsif not Is_Tagged_Type (Typ)
-        or else not Is_Derived_Type (Typ)
-      then
+      elsif not Is_Tagged_Type (Typ) or else not Is_Derived_Type (Typ) then
          return False;
 
       else
@@ -7210,50 +7209,6 @@ package body Sem_Util is
          return False;
       end if;
    end Is_Iterator;
-
-   ----------------------------
-   -- Is_Reversible_Iterator --
-   ----------------------------
-
-   function Is_Reversible_Iterator (Typ : Entity_Id) return Boolean is
-      Ifaces_List : Elist_Id;
-      Iface_Elmt  : Elmt_Id;
-      Iface       : Entity_Id;
-
-   begin
-      if Is_Class_Wide_Type (Typ)
-        and then  Chars (Etype (Typ)) = Name_Reversible_Iterator
-        and then
-          Is_Predefined_File_Name
-            (Unit_File_Name (Get_Source_Unit (Etype (Typ))))
-      then
-         return True;
-
-      elsif not Is_Tagged_Type (Typ)
-        or else not Is_Derived_Type (Typ)
-      then
-         return False;
-      else
-
-         Collect_Interfaces (Typ, Ifaces_List);
-
-         Iface_Elmt := First_Elmt (Ifaces_List);
-         while Present (Iface_Elmt) loop
-            Iface := Node (Iface_Elmt);
-            if Chars (Iface) = Name_Reversible_Iterator
-              and then
-                Is_Predefined_File_Name
-                  (Unit_File_Name (Get_Source_Unit (Iface)))
-            then
-               return True;
-            end if;
-
-            Next_Elmt (Iface_Elmt);
-         end loop;
-
-      end if;
-      return False;
-   end Is_Reversible_Iterator;
 
    ------------
    -- Is_LHS --
@@ -7897,6 +7852,50 @@ package body Sem_Util is
 
       return False;
    end Is_Renamed_Entry;
+
+   ----------------------------
+   -- Is_Reversible_Iterator --
+   ----------------------------
+
+   function Is_Reversible_Iterator (Typ : Entity_Id) return Boolean is
+      Ifaces_List : Elist_Id;
+      Iface_Elmt  : Elmt_Id;
+      Iface       : Entity_Id;
+
+   begin
+      if Is_Class_Wide_Type (Typ)
+        and then  Chars (Etype (Typ)) = Name_Reversible_Iterator
+        and then
+          Is_Predefined_File_Name
+            (Unit_File_Name (Get_Source_Unit (Etype (Typ))))
+      then
+         return True;
+
+      elsif not Is_Tagged_Type (Typ)
+        or else not Is_Derived_Type (Typ)
+      then
+         return False;
+
+      else
+         Collect_Interfaces (Typ, Ifaces_List);
+
+         Iface_Elmt := First_Elmt (Ifaces_List);
+         while Present (Iface_Elmt) loop
+            Iface := Node (Iface_Elmt);
+            if Chars (Iface) = Name_Reversible_Iterator
+              and then
+                Is_Predefined_File_Name
+                  (Unit_File_Name (Get_Source_Unit (Iface)))
+            then
+               return True;
+            end if;
+
+            Next_Elmt (Iface_Elmt);
+         end loop;
+      end if;
+
+      return False;
+   end Is_Reversible_Iterator;
 
    ----------------------
    -- Is_Selector_Name --

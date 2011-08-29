@@ -2117,14 +2117,12 @@ package body Exp_Disp is
       if Is_Interface (Typ) then
          return
            Make_Subprogram_Body (Loc,
-             Specification =>
-               Make_Disp_Asynchronous_Select_Spec (Typ),
-             Declarations =>
-               New_List,
+             Specification => Make_Disp_Asynchronous_Select_Spec (Typ),
+             Declarations  => New_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  New_List (Make_Assignment_Statement (Loc,
-                   Name => Make_Identifier (Loc, Name_uF),
+                   Name       => Make_Identifier (Loc, Name_uF),
                    Expression => New_Reference_To (Standard_False, Loc)))));
       end if;
 
@@ -2270,7 +2268,7 @@ package body Exp_Disp is
 
             Append_To (Stmts,
               Make_Assignment_Statement (Loc,
-                Name => Make_Identifier (Loc, Name_uF),
+                Name       => Make_Identifier (Loc, Name_uF),
                 Expression => New_Reference_To (Standard_False, Loc)));
 
          else
@@ -2313,16 +2311,15 @@ package body Exp_Disp is
 
          Append_To (Stmts,
            Make_Assignment_Statement (Loc,
-             Name => Make_Identifier (Loc, Name_uF),
+             Name       => Make_Identifier (Loc, Name_uF),
              Expression => New_Reference_To (Standard_False, Loc)));
       end if;
 
       return
         Make_Subprogram_Body (Loc,
-          Specification =>
+          Specification              =>
             Make_Disp_Asynchronous_Select_Spec (Typ),
-          Declarations =>
-            Decls,
+          Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Stmts));
    end Make_Disp_Asynchronous_Select_Body;
@@ -2490,7 +2487,7 @@ package body Exp_Disp is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  New_List (Make_Assignment_Statement (Loc,
-                   Name => Make_Identifier (Loc, Name_uF),
+                   Name       => Make_Identifier (Loc, Name_uF),
                    Expression => New_Reference_To (Standard_False, Loc)))));
       end if;
 
@@ -2696,20 +2693,19 @@ package body Exp_Disp is
 
          Append_To (Stmts,
            Make_Assignment_Statement (Loc,
-             Name => Make_Identifier (Loc, Name_uF),
+             Name       => Make_Identifier (Loc, Name_uF),
              Expression => New_Reference_To (Standard_False, Loc)));
          Append_To (Stmts,
            Make_Assignment_Statement (Loc,
-             Name => Make_Identifier (Loc, Name_uC),
+             Name       => Make_Identifier (Loc, Name_uC),
              Expression => New_Reference_To (RTE (RE_POK_Function), Loc)));
       end if;
 
       return
         Make_Subprogram_Body (Loc,
-          Specification =>
+          Specification              =>
             Make_Disp_Conditional_Select_Spec (Typ),
-          Declarations =>
-            Decls,
+          Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Stmts));
    end Make_Disp_Conditional_Select_Body;
@@ -3346,9 +3342,10 @@ package body Exp_Disp is
                New_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 New_List (Make_Assignment_Statement (Loc,
-                   Name => Make_Identifier (Loc, Name_uF),
-                   Expression => New_Reference_To (Standard_False, Loc)))));
+                 New_List (
+                   Make_Assignment_Statement (Loc,
+                     Name       => Make_Identifier (Loc, Name_uF),
+                     Expression => New_Reference_To (Standard_False, Loc)))));
       end if;
 
       if Is_Concurrent_Record_Type (Typ) then
@@ -3362,10 +3359,8 @@ package body Exp_Disp is
 
          Append_To (Decls,
            Make_Object_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uI),
-             Object_Definition =>
-               New_Reference_To (Standard_Integer, Loc)));
+             Defining_Identifier => Make_Defining_Identifier (Loc, Name_uI),
+             Object_Definition   => New_Reference_To (Standard_Integer, Loc)));
 
          --  Generate:
          --    C := Get_Prim_Op_Kind (tag! (<type>VP), S);
@@ -3394,7 +3389,7 @@ package body Exp_Disp is
          else
             Tag_Node :=
               Make_Attribute_Reference (Loc,
-                Prefix => New_Reference_To (Typ, Loc),
+                Prefix         => New_Reference_To (Typ, Loc),
                 Attribute_Name => Name_Tag);
          end if;
 
@@ -3403,8 +3398,7 @@ package body Exp_Disp is
              Name       => Make_Identifier (Loc, Name_uI),
              Expression =>
                Make_Function_Call (Loc,
-                 Name =>
-                   New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
+                 Name => New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
                  Parameter_Associations =>
                    New_List (
                      Tag_Node,
@@ -3531,20 +3525,18 @@ package body Exp_Disp is
 
          Append_To (Stmts,
            Make_Assignment_Statement (Loc,
-             Name => Make_Identifier (Loc, Name_uF),
+             Name       => Make_Identifier (Loc, Name_uF),
              Expression => New_Reference_To (Standard_False, Loc)));
          Append_To (Stmts,
            Make_Assignment_Statement (Loc,
-             Name => Make_Identifier (Loc, Name_uC),
+             Name       => Make_Identifier (Loc, Name_uC),
              Expression => New_Reference_To (RTE (RE_POK_Function), Loc)));
       end if;
 
       return
         Make_Subprogram_Body (Loc,
-          Specification =>
-            Make_Disp_Timed_Select_Spec (Typ),
-          Declarations =>
-            Decls,
+          Specification              => Make_Disp_Timed_Select_Spec (Typ),
+          Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Stmts));
    end Make_Disp_Timed_Select_Body;
