@@ -111,7 +111,6 @@ package body Impunit is
      "a-titest",    -- Ada.Text_IO.Text_Streams
      "a-unccon",    -- Ada.Unchecked_Conversion
      "a-uncdea",    -- Ada.Unchecked_Deallocation
-     "a-undesu",    -- Ada.Unchecked_Deallocate_Subpool
      "a-witeio",    -- Ada.Wide_Text_IO
      "a-wtcoio",    -- Ada.Wide_Text_IO.Complex_IO
      "a-wtedit",    -- Ada.Wide_Text_IO.Editing
@@ -340,7 +339,6 @@ package body Impunit is
      "s-rpc   ",    -- System.Rpc
      "s-stoele",    -- System.Storage_Elements
      "s-stopoo",    -- System.Storage_Pools
-     "s-stposu",    -- System.Storage_Pools.Subpools
 
    --------------------------------------
    -- GNAT Defined Additions to System --
@@ -522,6 +520,7 @@ package body Impunit is
      "a-cbmutr",    -- Ada.Containers.Bounded_Multiway_Trees
      "a-extiin",    -- Ada.Execution_Time.Interrupts
      "a-iteint",    -- Ada.Iterator_Interfaces
+     "a-synbar",    -- Ada.Synchronous_Barriers
 
    -----------------------------------------
    -- GNAT Defined Additions to Ada 20012 --
