@@ -1,4 +1,4 @@
-// Specific definitions for Solaris 8  -*- C++ -*-
+// Specific definitions for Solaris 8+  -*- C++ -*-
 
 // Copyright (C) 2000, 2002, 2005, 2009, 2011 Free Software Foundation, Inc.
 //
@@ -28,9 +28,12 @@
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
 
-// FIXME: Autoconf if possible.
 #if __cplusplus >= 199711L
-#define __CORRECT_ISO_CPP_MATH_H_PROTO2
+// Overloads in <iso/math_iso.h> and <iso/stdlib_iso.h> changed with
+// Solaris 8 patches.  Since <bits/c++config.h> includes
+// <bits/os_defines.h> before configure results,
+// __CORRECT_ISO_CPP_MATH_H_PROTO[12] and __CORRECT_ISO_CPP_STDLIB_H_PROTO
+// must be defined via acinclude.m4.
 #define __CORRECT_ISO_CPP_STRING_H_PROTO
 #define __CORRECT_ISO_CPP_WCHAR_H_PROTO
 #endif

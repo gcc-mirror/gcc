@@ -1693,6 +1693,100 @@ AC_DEFUN([GLIBCXX_COMPUTE_STDIO_INTEGER_CONSTANTS], [
 ])
 
 dnl
+dnl Check whether required C++ overloads are present in <math.h>.
+dnl
+
+AC_DEFUN([GLIBCXX_CHECK_MATH_PROTO], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  case "$host" in
+    *-*-solaris2.*)
+      # Solaris 8 FCS only had an overload for double std::abs(double) in
+      # <iso/math_iso.h>.  Patches 111721-04 (SPARC) and 112757-01 (x86)
+      # introduced the full set also found from Solaris 9 onwards.
+      AC_MSG_CHECKING([for float std::abs(float) overload])
+      AC_CACHE_VAL(glibcxx_cv_abs_float, [
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+	  [#include <math.h>
+	   namespace std {
+	     inline float abs(float __x)
+	     {  return __builtin_fabsf(__x); }
+	   }
+	])],
+        [glibcxx_cv_abs_float=no],
+        [glibcxx_cv_abs_float=yes]
+      )])
+
+      # autoheader cannot handle indented templates.
+      AH_VERBATIM([__CORRECT_ISO_CPP_MATH_H_PROTO1],
+        [/* Define if all C++ overloads are available in <math.h>.  */
+#if __cplusplus >= 199711L
+#undef __CORRECT_ISO_CPP_MATH_H_PROTO1
+#endif])
+      AH_VERBATIM([__CORRECT_ISO_CPP_MATH_H_PROTO2],
+        [/* Define if only double std::abs(double) is available in <math.h>.  */
+#if __cplusplus >= 199711L
+#undef __CORRECT_ISO_CPP_MATH_H_PROTO2
+#endif])
+
+      if test $glibcxx_cv_abs_float = yes; then
+        AC_DEFINE(__CORRECT_ISO_CPP_MATH_H_PROTO1)
+      else
+        AC_DEFINE(__CORRECT_ISO_CPP_MATH_H_PROTO2)
+      fi
+      AC_MSG_RESULT($glibcxx_cv_abs_float)
+      ;;
+  esac
+
+  AC_LANG_RESTORE
+])
+
+dnl
+dnl Check whether required C++ overloads are present in <stdlib.h>.
+dnl
+
+AC_DEFUN([GLIBCXX_CHECK_STDLIB_PROTO], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  case "$host" in
+    *-*-solaris2.*)
+      # Solaris 8 FCS lacked the overloads for long std::abs(long) and
+      # ldiv_t std::div(long, long) in <iso/stdlib_iso.h>.  Patches 109607-02
+      # (SPARC) and 109608-02 (x86) introduced them.
+      AC_MSG_CHECKING([for long std::abs(long) overload])
+      AC_CACHE_VAL(glibcxx_cv_abs_long, [
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+	  [#include <stdlib.h>
+	   namespace std {
+	     inline long
+	     abs(long __i) { return labs(__i); }
+	   }
+        ])],
+        [glibcxx_cv_abs_long=no],
+        [glibcxx_cv_abs_long=yes]
+      )])
+
+      # autoheader cannot handle indented templates.
+      AH_VERBATIM([__CORRECT_ISO_CPP_STDLIB_H_PROTO],
+        [/* Define if all C++ overloads are available in <stdlib.h>.  */
+#if __cplusplus >= 199711L
+#undef __CORRECT_ISO_CPP_STDLIB_H_PROTO
+#endif])
+      if test $glibcxx_cv_abs_long = yes; then
+        AC_DEFINE(__CORRECT_ISO_CPP_STDLIB_H_PROTO, 1)
+      fi
+      AC_MSG_RESULT($glibcxx_cv_abs_long)
+      ;;
+  esac
+
+  AC_LANG_RESTORE
+])
+
+dnl
 dnl Check whether macros, etc are present for <system_error>
 dnl
 AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
