@@ -1,3 +1,25 @@
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Array_Type_Declaration): Create declarations for Itypes
+	created in Alfa mode, instead of inserting artificial declarations of
+	non-Itypes in the tree.
+	* sem_util.adb, sem_util.ads (Itype_Has_Declaration): New function to
+	know if an Itype has a corresponding declaration, as defined in
+	itypes.ads.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb: Minor rewrite.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* s-tasuti.adb (Make_Passive): Work around race condition in
+	Make_Independent, which can cause Wait_Count to be zero. So instead of
+	asserting that Wait_Count > 0, and then decrementing it, decrement it
+	only if Wait_Count > 0.
+	* s-taskin.ads (Wait_Count, Alive_Count, Awake_Count): All of these
+	should be nonnegative, so declare them Natural instead of Integer.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, sem_ch3.adb, a-cihama.adb, a-cihama.ads, exp_ch7.adb,

@@ -4741,26 +4741,20 @@ package body Sem_Ch3 is
 
          Make_Index (Index, P, Related_Id, Nb_Index);
 
-         --  In formal verification mode, create an explicit subtype for every
-         --  index if not already a subtype_mark, and replace the existing type
-         --  of index by this new type. Having a declaration for all type
+         --  In formal verification mode, create an explicit declaration for
+         --  Itypes created for index types. Having a declaration for all type
          --  entities facilitates the task of the formal verification back-end.
+         --  Notice that this declaration is not attached to the tree.
 
          if ALFA_Mode
-           and then not Nkind_In (Index, N_Identifier, N_Expanded_Name)
+           and then Is_Itype (Etype (Index))
          then
             declare
                Loc     : constant Source_Ptr := Sloc (Def);
-               New_E   : Entity_Id;
-               Decl    : Entity_Id;
                Sub_Ind : Node_Id;
+               Decl    : Entity_Id;
 
             begin
-               New_E :=
-                 New_External_Entity
-                   (E_Void, Current_Scope, Sloc (P), Related_Id, 'D',
-                    Nb_Index, 'T');
-
                if Nkind (Index) = N_Subtype_Indication then
                   Sub_Ind := Relocate_Node (Index);
                else
@@ -4775,11 +4769,10 @@ package body Sem_Ch3 is
 
                Decl :=
                  Make_Subtype_Declaration (Loc,
-                   Defining_Identifier => New_E,
+                   Defining_Identifier => Etype (Index),
                    Subtype_Indication  => Sub_Ind);
 
-               Insert_Action (Parent (Def), Decl);
-               Set_Etype (Index, New_E);
+               Analyze (Decl);
             end;
          end if;
 
@@ -4799,34 +4792,29 @@ package body Sem_Ch3 is
 
       if Present (Component_Typ) then
 
-         --  In formal verification mode, create an explicit subtype for the
-         --  component type if not already a subtype_mark. Having a declaration
-         --  for all type entities facilitates the task of the formal
-         --  verification back-end.
+         Element_Type := Process_Subtype (Component_Typ, P, Related_Id, 'C');
+
+         --  In formal verification mode, create an explicit declaration for
+         --  the Itype created for a component type. Having a declaration for
+         --  all type entities facilitates the task of the formal verification
+         --  back-end. Notice that this declaration is not attached to the
+         --  tree.
 
          if ALFA_Mode
-           and then Nkind (Component_Typ) = N_Subtype_Indication
+           and then Is_Itype (Element_Type)
          then
             declare
                Loc  : constant Source_Ptr := Sloc (Def);
                Decl : Entity_Id;
 
             begin
-               Element_Type :=
-                 New_External_Entity
-                   (E_Void, Current_Scope, Sloc (P), Related_Id, 'C', 0, 'T');
-
                Decl :=
                  Make_Subtype_Declaration (Loc,
                    Defining_Identifier => Element_Type,
                    Subtype_Indication  => Relocate_Node (Component_Typ));
 
-               Insert_Action (Parent (Def), Decl);
+               Analyze (Decl);
             end;
-
-         else
-            Element_Type :=
-              Process_Subtype (Component_Typ, P, Related_Id, 'C');
          end if;
 
          Set_Etype (Component_Typ, Element_Type);
@@ -4914,6 +4902,30 @@ package body Sem_Ch3 is
          Set_Finalize_Storage_Only
                                (Implicit_Base, Finalize_Storage_Only
                                                         (Element_Type));
+
+         --  In ALFA mode, generate a declaration for Itype T, so that the
+         --  formal verification back-end can use it.
+
+         if ALFA_Mode
+           and then Is_Itype (T)
+         then
+            declare
+               Loc  : constant Source_Ptr := Sloc (Def);
+               Decl : Node_Id;
+
+            begin
+               Decl := Make_Full_Type_Declaration (Loc,
+                  Defining_Identifier => T,
+                  Type_Definition     =>
+                   Make_Constrained_Array_Definition (Loc,
+                     Discrete_Subtype_Definitions =>
+                       New_Copy_List (Discrete_Subtype_Definitions (Def)),
+                     Component_Definition         =>
+                       Relocate_Node (Component_Definition (Def))));
+
+               Analyze (Decl);
+            end;
+         end if;
 
       --  Unconstrained array case
 
