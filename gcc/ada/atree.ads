@@ -429,9 +429,6 @@ package Atree is
    --  Source to be Empty, in which case Relocate_Node simply returns
    --  Empty as the result.
 
-   function Copy_Separate_List (Source : List_Id) return List_Id;
-   --  Apply the following to a list of nodes
-
    function Copy_Separate_Tree (Source : Node_Id) return Node_Id;
    --  Given a node that is the root of a subtree, Copy_Separate_Tree copies
    --  the entire syntactic subtree, including recursively any descendants
@@ -443,6 +440,10 @@ package Atree is
    --  is called on an unanalyzed tree, and no semantic information is copied.
    --  However, to ensure that no entities are shared between the two when the
    --  source is already analyzed, entity fields in the copy are zeroed out.
+
+   function Copy_Separate_List (Source : List_Id) return List_Id;
+   --  Applies Copy_Separate_Tree to each element of the Source list, returning
+   --  a new list of the results of these copy operations.
 
    procedure Exchange_Entities (E1 : Entity_Id; E2 : Entity_Id);
    --  Exchange the contents of two entities. The parent pointers are switched

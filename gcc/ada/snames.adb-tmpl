@@ -306,6 +306,9 @@ package body Snames is
 
    function Is_Attribute_Name (N : Name_Id) return Boolean is
    begin
+      --  Don't consider Name_Elab_Subp_Body to be a valid attribute name
+      --  unless we are working in CodePeer mode.
+
       return N in First_Attribute_Name .. Last_Attribute_Name
         and then (CodePeer_Mode or else N /= Name_Elab_Subp_Body);
    end Is_Attribute_Name;

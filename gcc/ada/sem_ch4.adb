@@ -446,20 +446,23 @@ package body Sem_Ch4 is
       --  Ada 2012 (AI05-0111-3): Analyze the subpool_specification, if
       --  any. The expected type for the name is any type. A non-overloading
       --  rule then requires it to be of a type descended from
-      --  System.Storage_Pools.Subpools.Subpool_Handle. This isn't exactly what
-      --  the AI says, but I think it's the right rule. The AI should be fixed.
+      --  System.Storage_Pools.Subpools.Subpool_Handle.
+
+      --  This isn't exactly what the AI says, but it seems to be the right
+      --  rule. The AI should be fixed.???
 
       declare
          Subpool : constant Node_Id := Subpool_Handle_Name (N);
+
       begin
          if Present (Subpool) then
             Analyze (Subpool);
+
             if Is_Overloaded (Subpool) then
                Error_Msg_N ("ambiguous subpool handle", Subpool);
             end if;
 
-            --  ???We need to check that Etype (Subpool) is descended from
-            --  Subpool_Handle
+            --  Check that Etype (Subpool) is descended from Subpool_Handle
 
             Resolve (Subpool);
          end if;
@@ -473,7 +476,7 @@ package body Sem_Ch4 is
          Find_Type (Subtype_Mark (E));
 
          --  Analyze the qualified expression, and apply the name resolution
-         --  rule given in  4.7 (3).
+         --  rule given in  4.7(3).
 
          Analyze (E);
          Type_Id := Etype (E);

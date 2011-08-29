@@ -10990,11 +10990,11 @@ package body Exp_Ch9 is
    --          end if;
    --       end if;
    --    end;
-   --
-   --  The triggering statement and the timed statements have not been
-   --  analyzed yet (see Analyzed_Timed_Entry_Call).  They may contain local
-   --  declarations, and therefore the copies that are made during expansion
-   --  must be disjoint, as for any other inlining.
+
+   --  The triggering statement and the sequence of timed statements have not
+   --  been analyzed yet (see Analyzed_Timed_Entry_Call). They may contain
+   --  local declarations, and therefore the copies that are made during
+   --  expansion must be disjoint, as for any other inlining.
 
    procedure Expand_N_Timed_Entry_Call (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);

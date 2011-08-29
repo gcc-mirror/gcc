@@ -72,8 +72,8 @@ package body Prj is
    --  Free memory allocated for the list of languages or sources
 
    procedure Reset_Units_In_Table (Table : in out Units_Htable.Instance);
-   --  reset to No_Unit_Index Unit.File_Names (Spec).Unit &
-   --  Unit.File_Names (Impl).Unit for all Unis of the Table
+   --  Resets all Units to No_Unit_Index Unit.File_Names (Spec).Unit &
+   --  Unit.File_Names (Impl).Unit in the given table.
 
    procedure Free_Units (Table : in out Units_Htable.Instance);
    --  Free memory allocated for unit information in the project
@@ -123,8 +123,8 @@ package body Prj is
    ---------------------------------
 
    function Current_Object_Path_File_Of
-     (Shared : Shared_Project_Tree_Data_Access)
-      return Path_Name_Type is
+     (Shared : Shared_Project_Tree_Data_Access) return Path_Name_Type
+   is
    begin
       return Shared.Private_Part.Current_Object_Path_File;
    end Current_Object_Path_File_Of;
@@ -965,7 +965,6 @@ package body Prj is
 
          Unit := Units_Htable.Get_Next (Table);
       end loop;
-
    end Reset_Units_In_Table;
 
    ----------------
@@ -982,7 +981,7 @@ package body Prj is
       Unit := Units_Htable.Get_First (Table);
       while Unit /= No_Unit_Index loop
 
-         --  we cannot reset Unit.File_Names (Impl or Spec).Unit here as
+         --  We cannot reset Unit.File_Names (Impl or Spec).Unit here as
          --  Source_Data buffer is freed by the following instruction
          --  Free_List (Tree.Projects, Free_Project => True);
 
