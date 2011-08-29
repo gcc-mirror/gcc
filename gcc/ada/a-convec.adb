@@ -2176,12 +2176,10 @@ package body Ada.Containers.Vectors is
       return No_Element;
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor
-   is
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
    begin
       if Position.Index = Object.Container.Last then
          return  No_Element;
-
       else
          return (Object.Container, Position.Index + 1);
       end if;
@@ -2255,8 +2253,7 @@ package body Ada.Containers.Vectors is
       return No_Element;
    end Previous;
 
-   function Previous (Object : Iterator; Position : Cursor) return Cursor
-   is
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
    begin
       if Position.Index > Index_Type'First then
          return (Object.Container, Position.Index - 1);

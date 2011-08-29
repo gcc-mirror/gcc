@@ -166,6 +166,7 @@ package body Exception_Propagation is
    --  to maintain anyway.
 
    type GNAT_GCC_Exception_Access is access all GNAT_GCC_Exception;
+   pragma Convention (C, GNAT_GCC_Exception_Access);
 
    function To_GCC_Exception is new
      Unchecked_Conversion (GNAT_GCC_Exception_Access, GCC_Exception_Access);

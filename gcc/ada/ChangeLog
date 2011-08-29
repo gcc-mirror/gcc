@@ -1,3 +1,11 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-convec.adb, exp_disp.adb: Minor reformatting.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb (GNAT_GCC_Exception_Access): Set to convention C.
+
 2011-08-29  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch3.adb (Build_Record_Init_Proc.Build_Init_Procedure): Set
