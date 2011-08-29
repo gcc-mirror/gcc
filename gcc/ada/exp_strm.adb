@@ -867,7 +867,7 @@ package body Exp_Strm is
       Dcls : constant List_Id := New_List;
       --  Declarations for the 'Read body
 
-      Stms : List_Id := New_List;
+      Stms : constant List_Id := New_List;
       --  Statements for the 'Read body
 
       Disc : Entity_Id;
@@ -895,15 +895,29 @@ package body Exp_Strm is
       --  Statements within the block where we have the constrained temporary
 
    begin
-
-      Disc := First_Discriminant (Typ);
-
       --  A mutable type cannot be a tagged type, so we generate a new name
       --  for the stream procedure.
 
       Pnam :=
         Make_Defining_Identifier (Loc,
           Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Read));
+
+      if Is_Unchecked_Union (Typ) then
+
+         --  If this is an unchecked union, the stream procedure is erroneous,
+         --  because there are no discriminants to read.
+
+         --  This should generate a warning ???
+
+         Append_To (Stms,
+           Make_Raise_Program_Error (Loc,
+             Reason => PE_Unchecked_Union_Restriction));
+
+         Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, Outp => True);
+         return;
+      end if;
+
+      Disc := First_Discriminant (Typ);
 
       Out_Formal :=
         Make_Selected_Component (Loc,
@@ -957,6 +971,14 @@ package body Exp_Strm is
 
       Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Read);
 
+      --  Save original statement sequence for component assignments, and
+      --  replace it with Stms.
+
+      Constrained_Stms := Statements (Handled_Statement_Sequence (Decl));
+      Set_Handled_Statement_Sequence (Decl,
+        Make_Handled_Sequence_Of_Statements (Loc,
+          Statements => Stms));
+
       --  If Typ has controlled components (i.e. if it is classwide
       --  or Has_Controlled), or components constrained using the discriminants
       --  of Typ, then we need to ensure that all component assignments
@@ -974,13 +996,10 @@ package body Exp_Strm is
                 Make_Index_Or_Discriminant_Constraint (Loc,
                   Constraints => Cstr))));
 
-      Constrained_Stms := Statements (Handled_Statement_Sequence (Decl));
-      Append_To (Stms,
-        Make_Block_Statement (Loc,
-          Declarations               => Dcls,
-          Handled_Statement_Sequence => Parent (Constrained_Stms)));
+      --  AI05-023-1: Insert discriminant check prior to initialization of the
+      --  constrained temporary.
 
-      Append_To (Constrained_Stms,
+      Append_To (Stms,
         Make_Implicit_If_Statement (Pnam,
           Condition =>
             Make_Attribute_Reference (Loc,
@@ -988,28 +1007,20 @@ package body Exp_Strm is
               Attribute_Name => Name_Constrained),
           Then_Statements => Discriminant_Checks));
 
+      --  Now insert back original component assignments, wrapped in a block
+      --  in which V is the constrained temporary.
+
+      Append_To (Stms,
+        Make_Block_Statement (Loc,
+          Declarations               => Dcls,
+          Handled_Statement_Sequence => Parent (Constrained_Stms)));
+
       Append_To (Constrained_Stms,
         Make_Assignment_Statement (Loc,
           Name       => Out_Formal,
           Expression => Make_Identifier (Loc, Name_V)));
 
-      if Is_Unchecked_Union (Typ) then
-
-         --  If this is an unchecked union, the stream procedure is erroneous,
-         --  because there are no discriminants to read.
-
-         --  This should generate a warning ???
-
-         Stms :=
-           New_List (
-             Make_Raise_Program_Error (Loc,
-               Reason => PE_Unchecked_Union_Restriction));
-      end if;
-
       Set_Declarations (Decl, Tmps_For_Discs);
-      Set_Handled_Statement_Sequence (Decl,
-        Make_Handled_Sequence_Of_Statements (Loc,
-          Statements => Stms));
    end Build_Mutable_Record_Read_Procedure;
 
    ------------------------------------------
