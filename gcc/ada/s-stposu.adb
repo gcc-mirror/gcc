@@ -46,6 +46,12 @@ package body System.Storage_Pools.Subpools is
    procedure Detach (N : not null SP_Node_Ptr);
    --  Unhook a subpool node from an arbitrary subpool list
 
+   function Nearest_Multiple_Rounded_Up
+     (Size      : Storage_Count;
+      Alignment : Storage_Count) return Storage_Count;
+   --  Given arbitrary values of storage size and alignment, calculate the
+   --  nearest multiple of the alignment rounded up where size can fit.
+
    --------------
    -- Allocate --
    --------------
@@ -191,11 +197,10 @@ package body System.Storage_Pools.Subpools is
          --  Account for possible padding space before the header due to a
          --  larger alignment.
 
-         if Alignment > Header_Size then
-            Header_And_Padding := Alignment;
-         else
-            Header_And_Padding := Header_Size;
-         end if;
+         Header_And_Padding :=
+           Nearest_Multiple_Rounded_Up
+             (Size      => Header_Size,
+              Alignment => Alignment);
 
          N_Size := Storage_Size + Header_And_Padding;
 
@@ -307,11 +312,14 @@ package body System.Storage_Pools.Subpools is
       --  Step 1: Detachment
 
       if Is_Controlled then
-         if Alignment > Header_Size then
-            Header_And_Padding := Alignment;
-         else
-            Header_And_Padding := Header_Size;
-         end if;
+
+         --  Account for possible padding space before the header due to a
+         --  larger alignment.
+
+         Header_And_Padding :=
+           Nearest_Multiple_Rounded_Up
+             (Size      => Header_Size,
+              Alignment => Alignment);
 
          --    N_Addr  N_Ptr           Addr (from input)
          --    |       |               |
@@ -496,6 +504,26 @@ package body System.Storage_Pools.Subpools is
       Pool.Subpools.Next := Pool.Subpools'Unchecked_Access;
       Pool.Subpools.Prev := Pool.Subpools'Unchecked_Access;
    end Initialize_Pool;
+
+   ---------------------------------
+   -- Nearest_Multiple_Rounded_Up --
+   ---------------------------------
+
+   function Nearest_Multiple_Rounded_Up
+     (Size      : Storage_Count;
+      Alignment : Storage_Count) return Storage_Count
+   is
+   begin
+      if Size mod Alignment = 0 then
+         return Size;
+
+      --  Add enough padding to reach the nearest multiple of the alignment
+      --  rounding up.
+
+      else
+         return ((Size + Alignment - 1) / Alignment) * Alignment;
+      end if;
+   end Nearest_Multiple_Rounded_Up;
 
    ---------------------
    -- Pool_Of_Subpool --
