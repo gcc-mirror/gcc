@@ -1,3 +1,7 @@
+2011-08-29  Johannes Kanig  <kanig@adacore.com>
+
+	* debug.adb: Add comments.
+
 2011-08-29  Thomas Quinot  <quinot@adacore.com>
 
 	* a-except.adb, a-except-2005.adb: Minor comment rewording and
@@ -117,11 +121,6 @@
 
 	* exp_ch5.adb (Expand_Iterator_Loop): Handle properly a loop over a
 	container of a derived type.
-
-2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
-
-	* impunit.adb, s-stposu.adb, s-stposu.ads, exp_ch4.adb, s-finmas.adb,
-	s-finmas.ads: Revert previous change.
 
 2011-08-29  Ed Schonberg  <schonberg@adacore.com>
 
