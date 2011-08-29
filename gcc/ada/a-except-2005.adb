@@ -239,22 +239,6 @@ package body Ada.Exceptions is
       -- Exception propagation routines --
       ------------------------------------
 
-      procedure Setup_Exception
-        (Excep    : EOA;
-         Current  : EOA;
-         Reraised : Boolean := False);
-      --  Perform the necessary operations to prepare the propagation of Excep
-      --  in a task where Current is the current occurrence. Excep is assumed
-      --  to be a valid (non null) pointer.
-      --
-      --  This should be called before any (re-)setting of the current
-      --  occurrence. Any such (re-)setting shall take care *not* to clobber
-      --  the Private_Data component.
-      --
-      --  Having Current provided as an argument (instead of retrieving it via
-      --  Get_Current_Excep internally) is required to allow one task to setup
-      --  an exception for another task, which is used by Transfer_Occurrence.
-
       procedure Propagate_Exception
         (E                   : Exception_Id;
          From_Signal_Handler : Boolean);
@@ -1025,8 +1009,6 @@ package body Ada.Exceptions is
       Excep : constant EOA := Get_Current_Excep.all;
 
    begin
-      Exception_Propagation.Setup_Exception (Excep, Excep);
-
       Excep.Exception_Raised := False;
       Excep.Id               := E;
       Excep.Num_Tracebacks   := 0;
@@ -1284,7 +1266,6 @@ package body Ada.Exceptions is
       if not ZCX_By_Default then
          Abort_Defer.all;
       end if;
-      Exception_Propagation.Setup_Exception (Excep, Excep, Reraised => True);
       Raise_Current_Excep (Excep.Id);
    end Reraise;
 
@@ -1299,8 +1280,6 @@ package body Ada.Exceptions is
             Abort_Defer.all;
          end if;
 
-         Exception_Propagation.Setup_Exception
-           (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
          Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
          Raise_Current_Excep (X.Id);
       end if;
@@ -1316,8 +1295,6 @@ package body Ada.Exceptions is
          Abort_Defer.all;
       end if;
 
-      Exception_Propagation.Setup_Exception
-        (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
       Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
       Raise_Current_Excep (X.Id);
    end Reraise_Occurrence_Always;
@@ -1328,8 +1305,6 @@ package body Ada.Exceptions is
 
    procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence) is
    begin
-      Exception_Propagation.Setup_Exception
-        (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
       Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
       Raise_Current_Excep (X.Id);
    end Reraise_Occurrence_No_Defer;
@@ -1384,13 +1359,6 @@ package body Ada.Exceptions is
       Source : Exception_Occurrence)
    is
    begin
-      --  Setup Target as an exception to be propagated in the calling task
-      --  (rendezvous-wise), taking care not to clobber the associated private
-      --  data.  Target is expected to be a pointer to the calling task's
-      --  fixed TSD occurrence, which is very different from Get_Current_Excep
-      --  here because this subprogram is called from the called task.
-
-      Exception_Propagation.Setup_Exception (Target, Target);
       Save_Occurrence_No_Private (Target.all, Source);
    end Transfer_Occurrence;
 
