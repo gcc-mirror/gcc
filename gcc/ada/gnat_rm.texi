@@ -239,6 +239,7 @@ Implementation Defined Attributes
 * Elaborated::
 * Elab_Body::
 * Elab_Spec::
+* Elab_Subp_Body::
 * Emax::
 * Enabled::
 * Enum_Rep::
@@ -5719,6 +5720,7 @@ consideration, you should minimize the use of these attributes.
 * Elaborated::
 * Elab_Body::
 * Elab_Spec::
+* Elab_Subp_Body::
 * Emax::
 * Enabled::
 * Enum_Rep::
@@ -5965,6 +5967,17 @@ in any other context.  However, there may be specialized situations in
 which it is useful to be able to call this elaboration procedure from
 Ada code, e.g.@: if it is necessary to do selective re-elaboration to fix
 some error.
+
+@node Elab_Subp_Body
+@unnumberedsec Elab_Subp_Body
+@findex Elab_Subp_Body
+@noindent
+This attribute can only be applied to a library level subprogram
+name and is only allowed in CodePeer mode. It returns the entity
+for the corresponding elaboration procedure for elaborating the body
+of the referenced subprogram unit. This is used in the main generated
+elaboration procedure by the binder in CodePeer mode only and is unrecognized
+otherwise.
 
 @node Emax
 @unnumberedsec Emax
