@@ -1,3 +1,14 @@
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Array_Type_Declaration): Insert a subtype declaration
+	for every index type and component type that is not a subtype_mark.
+	(Process_Subtype): Set Etype of subtype.
+
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-cbmutr.adb, a-cimutr.adb, a-comutr.adb, prj-nmsc.adb: Minor code
+	reorganization.  Minor reformatting.
+
 2011-08-29  Steve Baird  <baird@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Op_Expon): Suppress N_Op_Expon node expansion

@@ -4741,6 +4741,47 @@ package body Sem_Ch3 is
 
          Make_Index (Index, P, Related_Id, Nb_Index);
 
+         --  In formal verification mode, create an explicit subtype for every
+         --  index if not already a subtype_mark, and replace the existing type
+         --  of index by this new type. Why are we doing this ???
+
+         if ALFA_Mode
+           and then not Nkind_In (Index, N_Identifier, N_Expanded_Name)
+         then
+            declare
+               Loc     : constant Source_Ptr := Sloc (Def);
+               New_E   : Entity_Id;
+               Decl    : Entity_Id;
+               Sub_Ind : Node_Id;
+
+            begin
+               New_E :=
+                 New_External_Entity
+                   (E_Void, Current_Scope, Sloc (P), Related_Id, 'D',
+                    Nb_Index, 'T');
+
+               if Nkind (Index) = N_Subtype_Indication then
+                  Sub_Ind := Relocate_Node (Index);
+               else
+                  Sub_Ind :=
+                    Make_Subtype_Indication (Loc,
+                      Subtype_Mark =>
+                        New_Occurrence_Of (Base_Type (Etype (Index)), Loc),
+                      Constraint =>
+                        Make_Range_Constraint (Loc,
+                          Range_Expression => Relocate_Node (Index)));
+               end if;
+
+               Decl :=
+                 Make_Subtype_Declaration (Loc,
+                   Defining_Identifier => New_E,
+                   Subtype_Indication  => Sub_Ind);
+
+               Insert_Action (Parent (Def), Decl);
+               Set_Etype (Index, New_E);
+            end;
+         end if;
+
          --  Check error of subtype with predicate for index type
 
          Bad_Predicated_Subtype_Use
@@ -4756,7 +4797,36 @@ package body Sem_Ch3 is
       --  Process subtype indication if one is present
 
       if Present (Component_Typ) then
-         Element_Type := Process_Subtype (Component_Typ, P, Related_Id, 'C');
+
+         --  In formal verification mode, create an explicit subtype for the
+         --  component type if not already a subtype_mark. Why do this ???
+
+         if ALFA_Mode
+           and then Nkind (Component_Typ) = N_Subtype_Indication
+         then
+            declare
+               Loc  : constant Source_Ptr := Sloc (Def);
+               Decl : Entity_Id;
+
+            begin
+               Element_Type :=
+                 New_External_Entity
+                   (E_Void, Current_Scope, Sloc (P), Related_Id, 'C', 0, 'T');
+
+               Decl :=
+                 Make_Subtype_Declaration (Loc,
+                   Defining_Identifier => Element_Type,
+                   Subtype_Indication  => Relocate_Node (Component_Typ));
+
+               Insert_Action (Parent (Def), Decl);
+            end;
+
+         else
+            Element_Type :=
+              Process_Subtype (Component_Typ, P, Related_Id, 'C');
+         end if;
+
+         Set_Etype (Component_Typ, Element_Type);
 
          if not Nkind_In (Component_Typ, N_Identifier, N_Expanded_Name) then
             Check_SPARK_Restriction ("subtype mark required", Component_Typ);

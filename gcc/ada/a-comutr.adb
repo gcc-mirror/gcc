@@ -299,9 +299,9 @@ package body Ada.Containers.Multiway_Trees is
    begin
       if Parent = No_Element then
          return 0;
+      else
+         return Child_Count (Parent.Node.Children);
       end if;
-
-      return Child_Count (Parent.Node.Children);
    end Child_Count;
 
    function Child_Count (Children : Children_Type) return Count_Type is
