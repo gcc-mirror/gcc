@@ -141,6 +141,15 @@ package Sem_Util is
    --  the compilation unit, and install it in the Elaboration_Entity field
    --  of Spec_Id, the entity for the compilation unit.
 
+      procedure Build_Explicit_Dereference
+        (Expr : Node_Id;
+         Disc : Entity_Id);
+      --  AI05-139: Names with implicit dereference. If the expression N is a
+      --  reference type and the context imposes the corresponding designated
+      --  type, convert N into N.Disc.all. Such expressions are always over-
+      --  loaded with both interpretations, and the dereference interpretation
+      --  carries the name of the reference discriminant.
+
    function Cannot_Raise_Constraint_Error (Expr : Node_Id) return Boolean;
    --  Returns True if the expression cannot possibly raise Constraint_Error.
    --  The response is conservative in the sense that a result of False does
@@ -798,6 +807,13 @@ package Sem_Util is
      (E : Entity_Id; Typ : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
    --  by the derived type declaration for type Typ.
+
+   function Is_Iterator (Typ : Entity_Id) return Boolean;
+   --  AI05-0139-2 : check whether Typ is derived from the predefined interface
+   --  Ada.Iterator_Interfaces.Forward_Iterator.
+
+   function Is_Reversible_Iterator (Typ : Entity_Id) return Boolean;
+   --  Ditto for Ada.Iterator_Interfaces.Reversible_Iterator.
 
    function Is_LHS (N : Node_Id) return Boolean;
    --  Returns True iff N is used as Name in an assignment statement

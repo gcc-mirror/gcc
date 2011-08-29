@@ -202,6 +202,9 @@ procedure GNATCmd is
    --  indicate that the underlying tool (gnatcheck, gnatpp or gnatmetric)
    --  should be invoked for all sources of all projects.
 
+   Max_OpenVMS_Logical_Length : constant Integer := 255;
+   --  The maximum length of OpenVMS logicals
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -1419,6 +1422,15 @@ begin
       Add_Char_To_Name_Buffer (' ');
       Add_Str_To_Name_Buffer (Argument (J));
    end loop;
+
+   --  On OpenVMS, setenv creates a logical whose length is limited to
+   --  255 bytes.
+
+   if OpenVMS and then Name_Len > Max_OpenVMS_Logical_Length then
+      Name_Buffer (Max_OpenVMS_Logical_Length - 2
+                     .. Max_OpenVMS_Logical_Length) := "...";
+      Name_Len := Max_OpenVMS_Logical_Length;
+   end if;
 
    Setenv ("GNAT_DRIVER_COMMAND_LINE", Name_Buffer (1 .. Name_Len));
 

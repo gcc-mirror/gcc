@@ -40,6 +40,19 @@ pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Set_Operations);
 
 package body Ada.Containers.Ordered_Sets is
 
+   type Iterator is new
+     Ordered_Set_Iterator_Interfaces.Reversible_Iterator with record
+      Container : access constant Set;
+      Node      : Node_Access;
+   end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
+   overriding function Next  (Object : Iterator; Position : Cursor)
+     return Cursor;
+   overriding function Previous (Object : Iterator; Position : Cursor)
+     return Cursor;
+
    ------------------------------
    -- Access to Fields of Node --
    ------------------------------
@@ -510,6 +523,12 @@ package body Ada.Containers.Ordered_Sets is
       end if;
 
       return Cursor'(Container'Unrestricted_Access, Container.Tree.First);
+   end First;
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      return Cursor'(
+       Object.Container.all'Unrestricted_Access, Object.Container.Tree.First);
    end First;
 
    -------------------
@@ -1115,6 +1134,23 @@ package body Ada.Containers.Ordered_Sets is
       B := B - 1;
    end Iterate;
 
+   function Iterate (Container : Set)
+     return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class
+   is
+      It : constant Iterator :=
+             (Container'Unchecked_Access, Container.Tree.First);
+   begin
+      return It;
+   end Iterate;
+
+   function Iterate (Container : Set; Start : Cursor)
+     return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class
+   is
+      It : constant Iterator := (Container'Unchecked_Access, Start.Node);
+   begin
+      return It;
+   end Iterate;
+
    ----------
    -- Last --
    ----------
@@ -1126,6 +1162,16 @@ package body Ada.Containers.Ordered_Sets is
       end if;
 
       return Cursor'(Container'Unrestricted_Access, Container.Tree.Last);
+   end Last;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      if Object.Container.Tree.Last = null then
+         return No_Element;
+      end if;
+
+      return Cursor'(
+        Object.Container.all'Unrestricted_Access, Object.Container.Tree.Last);
    end Last;
 
    ------------------
@@ -1202,6 +1248,14 @@ package body Ada.Containers.Ordered_Sets is
       Position := Next (Position);
    end Next;
 
+   function Next  (Object : Iterator; Position : Cursor)
+   return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
+
    -------------
    -- Overlap --
    -------------
@@ -1251,6 +1305,13 @@ package body Ada.Containers.Ordered_Sets is
       Position := Previous (Position);
    end Previous;
 
+   overriding function Previous (Object : Iterator; Position : Cursor)
+   return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Previous (Position);
+   end Previous;
    -------------------
    -- Query_Element --
    -------------------
@@ -1338,6 +1399,50 @@ package body Ada.Containers.Ordered_Sets is
    begin
       raise Program_Error with "attempt to stream set cursor";
    end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Constant_Reference (Container : Set; Position : Cursor)
+   return Constant_Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      return (Element => Position.Node.Element'Access);
+   end Constant_Reference;
+
+   function Reference (Container : Set; Position : Cursor)
+   return Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      if Position.Container = null then
+         raise Constraint_Error with "Position cursor has no element";
+      end if;
+
+      return (Element => Position.Node.Element'Access);
+   end Reference;
 
    -------------
    -- Replace --
@@ -1652,6 +1757,22 @@ package body Ada.Containers.Ordered_Sets is
    is
    begin
       raise Program_Error with "attempt to stream set cursor";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
    end Write;
 
 end Ada.Containers.Ordered_Sets;

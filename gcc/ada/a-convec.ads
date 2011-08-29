@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -355,10 +355,10 @@ package Ada.Containers.Vectors is
       Process   : not null access procedure (Position : Cursor));
 
    function Iterate (Container : Vector)
-      return Vector_Iterator_Interfaces.Reversible_Iterator'class;
+      return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
    function Iterate (Container : Vector; Start : Cursor)
-      return Vector_Iterator_Interfaces.Forward_Iterator'class;
+      return Vector_Iterator_Interfaces.Forward_Iterator'Class;
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;

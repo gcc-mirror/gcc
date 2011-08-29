@@ -5669,6 +5669,12 @@ package body Sem_Ch6 is
          then
             return True;
 
+         elsif From_With_Type (T1)
+           and then From_With_Type (T2)
+           and then Available_View (T1) = Available_View (T2)
+         then
+            return True;
+
          else
             return False;
          end if;

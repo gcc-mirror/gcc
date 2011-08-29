@@ -5977,54 +5977,6 @@ package body Make is
       Gnatbind_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatbind.all);
       Gnatlink_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatlink.all);
 
-      --  If we have specified -j switch both from the project file
-      --  and on the command line, the one from the command line takes
-      --  precedence.
-
-      if Saved_Maximum_Processes = 0 then
-         Saved_Maximum_Processes := Maximum_Processes;
-      end if;
-
-      if Debug.Debug_Flag_M then
-         Write_Line ("Maximum number of simultaneous compilations =" &
-                     Saved_Maximum_Processes'Img);
-      end if;
-
-      --  Allocate as many temporary mapping file names as the maximum number
-      --  of compilations processed, for each possible project.
-
-      declare
-         Data : Project_Compilation_Access;
-         Proj : Project_List;
-
-      begin
-         Proj := Project_Tree.Projects;
-         while Proj /= null loop
-            Data := new Project_Compilation_Data'
-              (Mapping_File_Names        => new Temp_Path_Names
-                                              (1 .. Saved_Maximum_Processes),
-               Last_Mapping_File_Names   => 0,
-               Free_Mapping_File_Indexes => new Free_File_Indexes
-                                              (1 .. Saved_Maximum_Processes),
-               Last_Free_Indexes         => 0);
-
-            Project_Compilation_Htable.Set
-              (Project_Compilation, Proj.Project, Data);
-            Proj := Proj.Next;
-         end loop;
-
-         Data := new Project_Compilation_Data'
-           (Mapping_File_Names        => new Temp_Path_Names
-                                           (1 .. Saved_Maximum_Processes),
-            Last_Mapping_File_Names   => 0,
-            Free_Mapping_File_Indexes => new Free_File_Indexes
-                                           (1 .. Saved_Maximum_Processes),
-            Last_Free_Indexes         => 0);
-
-         Project_Compilation_Htable.Set
-           (Project_Compilation, No_Project, Data);
-      end;
-
       Bad_Compilation.Init;
 
       --  If project files are used, create the mapping of all the sources, so
@@ -6125,6 +6077,54 @@ package body Make is
                      raise Program_Error;
                end case;
             end if;
+
+            --  If we have specified -j switch both from the project file
+            --  and on the command line, the one from the command line takes
+            --  precedence.
+
+            if Saved_Maximum_Processes = 0 then
+               Saved_Maximum_Processes := Maximum_Processes;
+            end if;
+
+            if Debug.Debug_Flag_M then
+               Write_Line ("Maximum number of simultaneous compilations =" &
+                           Saved_Maximum_Processes'Img);
+            end if;
+
+            --  Allocate as many temporary mapping file names as the maximum
+            --  number of compilations processed, for each possible project.
+
+            declare
+               Data : Project_Compilation_Access;
+               Proj : Project_List;
+
+            begin
+               Proj := Project_Tree.Projects;
+               while Proj /= null loop
+                  Data := new Project_Compilation_Data'
+                    (Mapping_File_Names        => new Temp_Path_Names
+                       (1 .. Saved_Maximum_Processes),
+                     Last_Mapping_File_Names   => 0,
+                     Free_Mapping_File_Indexes => new Free_File_Indexes
+                       (1 .. Saved_Maximum_Processes),
+                     Last_Free_Indexes         => 0);
+
+                  Project_Compilation_Htable.Set
+                    (Project_Compilation, Proj.Project, Data);
+                  Proj := Proj.Next;
+               end loop;
+
+               Data := new Project_Compilation_Data'
+                 (Mapping_File_Names        => new Temp_Path_Names
+                    (1 .. Saved_Maximum_Processes),
+                  Last_Mapping_File_Names   => 0,
+                  Free_Mapping_File_Indexes => new Free_File_Indexes
+                    (1 .. Saved_Maximum_Processes),
+                  Last_Free_Indexes         => 0);
+
+               Project_Compilation_Htable.Set
+                 (Project_Compilation, No_Project, Data);
+            end;
 
             Is_First_Main := False;
          end if;
