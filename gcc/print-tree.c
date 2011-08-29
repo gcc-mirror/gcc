@@ -645,12 +645,15 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	fputs (" type_1", file);
       if (TYPE_LANG_FLAG_2 (node))
 	fputs (" type_2", file);
-      if (TYPE_LANG_FLAG_3 (node))
-	fputs (" type_3", file);
-      if (TYPE_LANG_FLAG_4 (node))
-	fputs (" type_4", file);
-      if (TYPE_LANG_FLAG_5 (node))
-	fputs (" type_5", file);
+      if (!TYPE_SHARED (node))
+        {
+	  if (TYPE_LANG_FLAG_3 (node))
+	    fputs (" type_3", file);
+	  if (TYPE_LANG_FLAG_4 (node))
+	    fputs (" type_4", file);
+	  if (TYPE_LANG_FLAG_5 (node))
+	    fputs (" type_5", file);
+	}
       if (TYPE_LANG_FLAG_6 (node))
 	fputs (" type_6", file);
 
@@ -659,9 +662,14 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       print_node (file, "size", TYPE_SIZE (node), indent + 4);
       print_node (file, "unit size", TYPE_SIZE_UNIT (node), indent + 4);
-      if (TYPE_BLOCK_FACTOR (node))
-	print_node (file, "block_factor", TYPE_BLOCK_FACTOR (node),
-	            indent + 4);
+      if (TYPE_SHARED (node))
+        {
+          if (TYPE_HAS_THREADS_FACTOR(node))
+	    fputs (" THREADS factor", file);
+	  if (TYPE_HAS_BLOCK_FACTOR (node))
+	    print_node (file, "block factor",
+	                TYPE_BLOCK_FACTOR (node), indent + 4);
+        }
       indent_to (file, indent + 3);
 
       if (TYPE_USER_ALIGN (node))

@@ -1,3 +1,16 @@
+2011-08-29  Gary Funck  <gary@intrepid.com>
+
+	Implement a hash table to record UPC block factors.
+	* upc-act.c (upc_block_factor_for_type): New garbage-collected
+	hash table.
+	(upc_lang_init, upc_finish): Move to end of source file.
+	(upc_lang_init): create  upc_block_factor_for_type hash table.
+	(upc_block_factor_lookup, upc_block_factor_insert): New.
+	(upc_grok_layout_qualifier, upc_lang_layout_decl, upc_pts_int_sum):
+	Rename UPC_TYPE_HAS_THREADS_FACTOR() to TYPE_HAS_THREADS_FACTOR().
+	(upc_grok_layout_qualifier): convert blocking factor to sizetype
+	before checking for equality to element type's blocking factor.
+
 2011-08-28  Gary Funck  <gary@intrepid.com>
 
 	Re-work the type machinery to fully support and to unify support

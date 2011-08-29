@@ -4419,7 +4419,7 @@ c_sizeof_or_alignof_type (location_t loc,
 
   if (is_sizeof && (TREE_CODE (type) == ARRAY_TYPE)
       && upc_shared_type_p (type)
-      && UPC_TYPE_HAS_THREADS_FACTOR (type))
+      && TYPE_HAS_THREADS_FACTOR (type))
     {
       const tree n_threads = convert (sizetype, upc_num_threads ());
       value = size_binop (MULT_EXPR, value, n_threads);

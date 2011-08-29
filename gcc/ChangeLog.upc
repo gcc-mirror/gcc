@@ -1,3 +1,30 @@
+2011-08-29  Gary Funck  <gary@intrepid.com>
+
+	Implement a hash table to record UPC block factors.
+	* c-family/stub-upc.c (upc_block_factor_insert,
+	upc_block_factor_lookup): New dummy stub procedures.
+	* c-family/c-common.c (c_sizeof_or_alignof_type):
+	Rename UPC_TYPE_HAS_THREADS_FACTOR() to TYPE_HAS_THREADS_FACTOR().
+	* tree.c (copy_node_stat): call SET_TYPE_BLOCK_FACTOR()
+	to copy (hashed) UPC blocking factor.
+	(set_type_quals): Likewise.
+	* tree.h: Rename UPC_TYPE_HAS_THREADS_FACTOR() to
+	TYPE_HAS_THREADS_FACTOR().
+	(type_common.block_factor): Delete.
+	(TYPE_HAS_BLOCK_FACTOR_0, TYPE_HAS_BLOCK_FACTOR_X,
+	TYPE_HAS_BLOCK_FACTOR, SET_TYPE_BLOCK_FACTOR): New.
+	(TYPE_BLOCK_FACTOR): Re-implement, using hash table for
+	UPC blocking factors greater than one.
+	* dwarf2out.c (modified_type_die): Re-implement
+	logic that records UPC blocking factor in the generated
+	DWARF2 debugging information.
+	(add_subscript_info): Rename UPC_TYPE_HAS_THREADS_FACTOR() to
+	TYPE_HAS_THREADS_FACTOR().
+	* c-decl.c (finish_decl, grokdeclarator):
+	Rename UPC_TYPE_HAS_THREADS_FACTOR() to TYPE_HAS_THREADS_FACTOR().
+	* print-tree.c (print_node): Check for TYPE_LANG_FLAG_* flags
+	used by UPC, and print UPC-specific information.
+
 2011-08-28  Gary Funck  <gary@intrepid.com>
 
 	Re-work the type machinery to fully support and to unify support

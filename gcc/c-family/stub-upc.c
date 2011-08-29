@@ -145,6 +145,18 @@ upc_build_sync_stmt (location_t ARG_UNUSED(loc),
   return NULL_TREE;
 }
 
+void
+upc_block_factor_insert (tree ARG_UNUSED(type),
+                         tree ARG_UNUSED(block_factor))
+{
+}
+
+tree
+upc_block_factor_lookup (tree ARG_UNUSED(type))
+{
+  return NULL_TREE;
+}
+
 tree
 upc_blocksizeof (location_t ARG_UNUSED(loc), tree ARG_UNUSED (op))
 {

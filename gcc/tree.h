@@ -1184,7 +1184,63 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* Record that we are processing a UPC shared array declaration
    or type definition that refers to THREADS in its array dimension.*/
-#define UPC_TYPE_HAS_THREADS_FACTOR(TYPE) TYPE_LANG_FLAG_3 (TYPE)
+#define TYPE_HAS_THREADS_FACTOR(TYPE) TYPE_LANG_FLAG_3 (TYPE)
+
+/* Non-zero if the UPC blocking factor is 0.  */
+#define TYPE_HAS_BLOCK_FACTOR_0(TYPE) TYPE_LANG_FLAG_4 (TYPE)
+
+/* Non-zero if the UPC blocking factor is greater than 1.
+   In this case, the blocking factor value is stored in a hash table.  */
+#define TYPE_HAS_BLOCK_FACTOR_X(TYPE) TYPE_LANG_FLAG_5 (TYPE)
+
+/* Non-zero if the UPC blocking factor is not equal to 1 (the default).  */
+#define TYPE_HAS_BLOCK_FACTOR(TYPE) \
+  (TYPE_SHARED(TYPE) \
+   && (TYPE_HAS_BLOCK_FACTOR_0 (TYPE) \
+       || TYPE_HAS_BLOCK_FACTOR_X (TYPE)))
+
+extern void upc_block_factor_insert (tree, tree);
+extern tree upc_block_factor_lookup (tree);
+
+/* Return the UPC blocking factor of the type given by NODE..
+   The default block factor is one.  The additional flag bits
+   over-ride the default.  */
+#define TYPE_BLOCK_FACTOR(NODE) \
+  (TYPE_SHARED (NODE) \
+    ? (TYPE_HAS_BLOCK_FACTOR_0 (NODE) ? size_zero_node \
+      : TYPE_HAS_BLOCK_FACTOR_X (NODE) ? upc_block_factor_lookup (NODE) \
+      : NULL_TREE) \
+    : NULL_TREE)
+
+/* Set the UPC block factor in the type described by NODE.
+   For a zero blocking factor set TYPE_BLOCK_FACTOR_0 (NODE). 
+   For a blocking factor greater than 1, insert the value
+   into a hash table indexed by NODE, and then set the
+   flag TYPE_BLOCK_FACTOR_X (NODE).  */
+#define SET_TYPE_BLOCK_FACTOR(NODE, VAL) \
+  do { \
+    if (TYPE_SHARED (NODE)) \
+      { \
+	TYPE_HAS_BLOCK_FACTOR_0 (NODE) = 0; \
+	TYPE_HAS_BLOCK_FACTOR_X (NODE) = 0; \
+	if (VAL) \
+	  { \
+	    gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (VAL))); \
+	    if (!integer_onep (VAL)) \
+	      { \
+		if (integer_zerop (VAL)) \
+		  TYPE_HAS_BLOCK_FACTOR_0 (NODE) = 1; \
+		else \
+		  { \
+		    TYPE_HAS_BLOCK_FACTOR_X (NODE) = 1; \
+		    upc_block_factor_insert (NODE, VAL); \
+		  } \
+	      } \
+          } \
+      } \
+    else \
+      gcc_assert (!VAL); \
+  } while (0)
 
 /* Return TRUE if TYPE is a UPC shared type.  For arrays,
    the element type must be queried, because array types
@@ -2187,7 +2243,6 @@ struct GTY(()) tree_block {
 #define TYPE_SIZE_UNIT(NODE) (TYPE_CHECK (NODE)->type_common.size_unit)
 #define TYPE_POINTER_TO(NODE) (TYPE_CHECK (NODE)->type_common.pointer_to)
 #define TYPE_REFERENCE_TO(NODE) (TYPE_CHECK (NODE)->type_common.reference_to)
-#define TYPE_BLOCK_FACTOR(NODE) (TYPE_CHECK (NODE)->type_common.block_factor)
 #define TYPE_PRECISION(NODE) (TYPE_CHECK (NODE)->type_common.precision)
 #define TYPE_NAME(NODE) (TYPE_CHECK (NODE)->type_common.name)
 #define TYPE_NEXT_VARIANT(NODE) (TYPE_CHECK (NODE)->type_common.next_variant)
@@ -2483,8 +2538,6 @@ struct GTY(()) tree_type_common {
   alias_set_type alias_set;
   tree pointer_to;
   tree reference_to;
-  /* UPC: for block-distributed arrays */
-  tree block_factor;
 
   union tree_type_symtab {
     int GTY ((tag ("TYPE_SYMTAB_IS_ADDRESS"))) address;

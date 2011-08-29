@@ -1001,6 +1001,9 @@ copy_node_stat (tree node MEM_STAT_DECL)
 	  TYPE_CACHED_VALUES_P (t) = 0;
 	  TYPE_CACHED_VALUES (t) = NULL_TREE;
 	}
+
+      if (TYPE_HAS_BLOCK_FACTOR (node))
+        SET_TYPE_BLOCK_FACTOR (t, TYPE_BLOCK_FACTOR (node));
     }
 
   return t;
@@ -5666,7 +5669,8 @@ set_type_quals (tree type, int type_quals, tree layout_qualifier)
   TYPE_SHARED (type) = (type_quals & TYPE_QUAL_SHARED) != 0;
   TYPE_STRICT (type) = (type_quals & TYPE_QUAL_STRICT) != 0;
   TYPE_RELAXED (type) = (type_quals & TYPE_QUAL_RELAXED) != 0;
-  TYPE_BLOCK_FACTOR (type) = layout_qualifier;
+  if (TYPE_SHARED (type))
+    SET_TYPE_BLOCK_FACTOR (type, layout_qualifier);
 }
 
 /* Returns true iff CAND is equivalent to BASE with

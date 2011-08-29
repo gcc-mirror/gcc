@@ -4318,7 +4318,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	      if (upc_shared_type_p (TREE_TYPE (decl)))
 	        {
 		  gcc_assert (!flag_upc_threads);
-		  if (UPC_TYPE_HAS_THREADS_FACTOR (TREE_TYPE (decl)))
+		  if (TYPE_HAS_THREADS_FACTOR (TREE_TYPE (decl)))
 		    error ("in the UPC dynamic translation environment, "                                  "THREADS may not appear in declarations "
 		            "of shared arrays with indefinite block size; "
 		            "the storage size of %q+D cannot be calculated",
@@ -4996,7 +4996,7 @@ grokdeclarator (const struct c_declarator *declarator,
 
   size_varies = C_TYPE_VARIABLE_SIZE (type) != 0;
 
-  upc_threads_ref = UPC_TYPE_HAS_THREADS_FACTOR (type);
+  upc_threads_ref = TYPE_HAS_THREADS_FACTOR (type);
 
   /* Diagnose defaulting to "int".  */
 
@@ -5571,7 +5571,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		       a re-used non- UPC shared array type node.  */
 		    if (size && TREE_CODE (size) == INTEGER_CST)
 		      type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
-	            UPC_TYPE_HAS_THREADS_FACTOR (type) = 1; 
+	            TYPE_HAS_THREADS_FACTOR (type) = 1; 
                   }
 
 		/* The GCC extension for zero-length arrays differs from

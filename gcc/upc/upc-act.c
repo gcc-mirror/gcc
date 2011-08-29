@@ -72,6 +72,9 @@ static void upc_write_init_func (void);
 
 static GTY (()) tree upc_init_stmt_list;
 static GTY (()) section *upc_init_array_section;
+static GTY ((if_marked ("tree_map_marked_p"),
+           param_is (struct tree_map)))
+     htab_t upc_block_factor_for_type;
 
 /* Process UPC specific command line switches */
 
@@ -142,34 +145,6 @@ upc_handle_option (size_t scode, const char *arg, int value, int kind,
       break;
     }
   return result;
-}
-
-/* UPC language-specific initialization ('init' hook).  */
-
-bool
-upc_lang_init (void)
-{
-  if (!targetm_common.have_named_sections)
-    {
-      fatal_error ("UPC is not implemented on this target; "
-		   "the target linker does not support separately "
-		   "linked sections");
-    }
-
-  /* c_obj_common_init is also called from regular 'C'
-     It will return 'false' if we're pre-processing only. */
-
-  if (c_objc_common_init () == false)
-    return false;
-  upc_parse_init ();
-  return true;
-}
-
-/* UPC Language-specific 'finish' hook (currently unused).  */
-
-void
-upc_finish (void)
-{
 }
 
 /* Generate UPC specific pre-defined macros. */
@@ -607,6 +582,41 @@ upc_get_block_factor (const tree type)
   return block_factor;
 }
 
+/* Lookup the UPC block size of TYPE, and return it if we find one.  */
+
+tree
+upc_block_factor_lookup (tree type)
+{
+  struct tree_map *h, in;
+  in.base.from = type;
+
+  h = (struct tree_map *)
+      htab_find_with_hash (upc_block_factor_for_type, &in, TYPE_HASH (type));
+  if (h)
+    return h->to;
+  return NULL_TREE;
+}
+
+/* Insert a mapping TYPE->BLOCK_FACTOR in the UPC block factor  hashtable.  */
+
+void
+upc_block_factor_insert (tree type,
+                         tree block_factor)
+{
+  struct tree_map *h;
+  void **loc;
+
+  gcc_assert (type && TYPE_P (type));
+  gcc_assert (block_factor && INTEGRAL_TYPE_P (TREE_TYPE (block_factor)));
+  gcc_assert (!(integer_zerop (block_factor) || integer_onep (block_factor)));
+  h = ggc_alloc_tree_map ();
+  h->base.from = type;
+  h->to = (tree) block_factor;
+  loc = htab_find_slot_with_hash (upc_block_factor_for_type,
+                                  h, TYPE_HASH (type), INSERT);
+  *(struct tree_map **) loc = h;
+}
+
 /* As part of declaration processing, for a particular kind
    of declaration, DECL_KIND, and a given LAYOUT_QUALIFIER, calculate
    the resulting blocking factor and return it.  Issue an error
@@ -677,7 +687,7 @@ upc_grok_layout_qualifier (location_t loc, const enum tree_code decl_kind,
          where 'a' is the array being distributed. */
       elt_type = strip_array_types (type);
       elt_size = TYPE_SIZE (elt_type);
-      if (UPC_TYPE_HAS_THREADS_FACTOR (type))
+      if (TYPE_HAS_THREADS_FACTOR (type))
 	block_factor =
 	  size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type), elt_size);
       else
@@ -733,6 +743,12 @@ upc_grok_layout_qualifier (location_t loc, const enum tree_code decl_kind,
       return NULL_TREE;
     }
 
+  /* Make sure that the UPC blocking factors are of type
+     'size_t' so that a compare of the tree pointers
+     is sufficient to match block sizes.  */
+  if (block_factor)
+    block_factor = convert (sizetype, block_factor);
+
   if ((block_factor && elem_block_factor)
       && block_factor != elem_block_factor)
     {
@@ -740,12 +756,6 @@ upc_grok_layout_qualifier (location_t loc, const enum tree_code decl_kind,
 		      "the referenced type");
        return elem_block_factor;
     }
-
-  /* Make sure that the UPC blocking factors are of type
-     'size_t' so that a compare of the tree pointers
-     is sufficient to match block sizes.  */
-  if (block_factor)
-    block_factor = convert (sizetype, block_factor);
 
   /* A block size of [1] is the same as specifying no
      block size at all.  */
@@ -954,12 +964,12 @@ upc_lang_layout_decl (tree decl, tree type)
     {
       const tree elt_type = TREE_TYPE (t);
       const tree elt_size = TYPE_SIZE (elt_type);
-      const tree block_factor = TYPE_BLOCK_FACTOR (elt_type)
+      const tree block_factor = TYPE_HAS_BLOCK_FACTOR (elt_type)
 	? convert (bitsizetype, TYPE_BLOCK_FACTOR (elt_type)) : NULL;
       if (block_factor && integer_zerop (block_factor))
 	{
 	  /* Allocate the entire UPC shared array on thread 0. */
-	  if (UPC_TYPE_HAS_THREADS_FACTOR (type))
+	  if (TYPE_HAS_THREADS_FACTOR (type))
 	    {
 	      const tree n_threads =
 		convert (bitsizetype, upc_num_threads ());
@@ -973,7 +983,7 @@ upc_lang_layout_decl (tree decl, tree type)
 	  const tree t_size = TYPE_SIZE (type);
 	  const tree n_elem = size_binop (FLOOR_DIV_EXPR, t_size, elt_size);
 	  const tree n_threads = convert (bitsizetype, upc_num_threads ());
-	  if (UPC_TYPE_HAS_THREADS_FACTOR (type))
+	  if (TYPE_HAS_THREADS_FACTOR (type))
 	    {
 	      if (block_factor)
 		{
@@ -1344,7 +1354,7 @@ upc_pts_int_sum (location_t loc,
 	  int size = TREE_INT_CST_LOW (TYPE_SIZE (result_targ_type));
 	  int elt_size = TREE_INT_CST_LOW (TYPE_SIZE (base_type));
 	  elt_cnt = size_int (size / elt_size);
-	  if (UPC_TYPE_HAS_THREADS_FACTOR (result_targ_type))
+	  if (TYPE_HAS_THREADS_FACTOR (result_targ_type))
 	    elt_cnt = size_binop (MULT_EXPR, n_threads, elt_cnt);
 	}
       else
@@ -1500,6 +1510,36 @@ upc_write_global_declarations (void)
 {
   upc_write_init_func ();
   upc_genericize_finish ();
+}
+
+/* UPC Language-specific 'finish' hook (currently unused).  */
+
+void
+upc_finish (void)
+{
+}
+
+/* UPC language-specific initialization ('init' hook).  */
+
+bool
+upc_lang_init (void)
+{
+  if (!targetm_common.have_named_sections)
+    {
+      fatal_error ("UPC is not implemented on this target; "
+		   "the target linker does not support separately "
+		   "linked sections");
+    }
+
+  /* c_obj_common_init is also called from regular 'C'
+     It will return 'false' if we're pre-processing only. */
+
+  if (c_objc_common_init () == false)
+    return false;
+  upc_parse_init ();
+  upc_block_factor_for_type = htab_create_ggc (512, tree_map_hash,
+					       tree_map_eq, 0);
+  return true;
 }
 
 #include "gt-upc-upc-act.h"

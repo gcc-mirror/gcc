@@ -9800,9 +9800,7 @@ modified_type_die (tree type, int type_quals,
            && (type_quals & TYPE_QUAL_SHARED))
     {
       HOST_WIDE_INT block_factor = 1;
-          
-      mod_type_die = new_die (DW_TAG_upc_shared_type,
-                                  comp_unit_die (), type);
+
       /* Inside the compiler,
          "shared int x;" TYPE_BLOCK_FACTOR is null.
          "shared [] int *p;" TYPE_BLOCK_FACTOR is zero.
@@ -9813,15 +9811,14 @@ modified_type_die (tree type, int type_quals,
          "shared [10] int x[50];" DW_AT_count: 10
          The logic below handles thse various contingencies. */
 
-      if (TYPE_BLOCK_FACTOR (type)
-          && TREE_CODE (TYPE_BLOCK_FACTOR (type)) == INTEGER_CST
-          && host_integerp (TYPE_BLOCK_FACTOR (type), 1))
-        {
-          block_factor = TREE_INT_CST_LOW (TYPE_BLOCK_FACTOR (type));
-        }
+      mod_type_die = new_die (DW_TAG_upc_shared_type,
+                                  comp_unit_die (), type);
+
+      if (TYPE_HAS_BLOCK_FACTOR (type))
+        block_factor = TREE_INT_CST_LOW (TYPE_BLOCK_FACTOR (type));
 
       if (block_factor != 0)
-          add_AT_unsigned (mod_type_die, DW_AT_count, block_factor);
+        add_AT_unsigned (mod_type_die, DW_AT_count, block_factor);
 
       sub_die = modified_type_die (type,
                            type_quals & ~TYPE_QUAL_SHARED,
@@ -15664,7 +15661,7 @@ add_subscript_info (dw_die_ref type_die, tree type, bool collapse_p)
 	 here.  */
       subrange_die = new_die (DW_TAG_subrange_type, type_die, NULL);
 
-      if (use_upc_dwarf2_extensions && UPC_TYPE_HAS_THREADS_FACTOR (type))
+      if (use_upc_dwarf2_extensions && TYPE_HAS_THREADS_FACTOR (type))
         {
 	  add_AT_flag (subrange_die, DW_AT_upc_threads_scaled, 1);
 	}
