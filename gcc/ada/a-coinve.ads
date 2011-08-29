@@ -32,7 +32,8 @@
 ------------------------------------------------------------------------------
 
 private with Ada.Finalization;
-with Ada.Streams; use Ada.Streams;
+
+with Ada.Streams;             use Ada.Streams;
 with Ada.Iterator_Interfaces;
 
 generic
@@ -344,7 +345,9 @@ package Ada.Containers.Indefinite_Vectors is
    function Iterate (Container : Vector)
       return Vector_Iterator_Interfaces.Reversible_Iterator'class;
 
-   function Iterate (Container : Vector; Start : Cursor)
+   function Iterate
+     (Container : Vector;
+      Start     : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'class;
 
    procedure Reverse_Iterate
@@ -398,10 +401,10 @@ private
    end record;
 
    type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is null record;
+     (Element : not null access constant Element_Type) is null record;
 
    type Reference_Type
-      (Element : not null access Element_Type) is null record;
+     (Element : not null access Element_Type) is null record;
 
    overriding procedure Adjust (Container : in out Vector);
 

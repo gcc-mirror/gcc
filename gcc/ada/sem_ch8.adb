@@ -5141,7 +5141,7 @@ package body Sem_Ch8 is
                            Next_Entity (Id);
                         end loop;
 
-                        --  If not found,  standard error message
+                        --  If not found, standard error message
 
                         Error_Msg_NE ("& not declared in&", N, Selector);
 

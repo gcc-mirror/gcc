@@ -46,11 +46,16 @@ package body Ada.Containers.Indefinite_Vectors is
    end record;
 
    overriding function First (Object : Iterator) return Cursor;
-   overriding function Last  (Object : Iterator) return Cursor;
-   overriding function Next  (Object : Iterator; Position : Cursor)
-     return Cursor;
-   overriding function Previous (Object : Iterator; Position : Cursor)
-     return Cursor;
+
+   overriding function Last (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    ---------
    -- "&" --
@@ -2433,7 +2438,9 @@ package body Ada.Containers.Indefinite_Vectors is
       return It;
    end Iterate;
 
-   function Iterate (Container : Vector; Start : Cursor)
+   function Iterate
+     (Container : Vector;
+      Start     : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'class
    is
       It : constant Iterator :=
@@ -2583,10 +2590,6 @@ package body Ada.Containers.Indefinite_Vectors is
          return (Object.Container, Position.Index + 1);
       end if;
    end Next;
-
-   ----------
-   -- Next --
-   ----------
 
    procedure Next (Position : in out Cursor) is
    begin

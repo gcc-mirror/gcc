@@ -1,3 +1,9 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-cdlili.adb, a-cdlili.ads, a-coinve.adb, a-coinve.ads,
+	sem_util.adb, sem_util.ads, a-cohama.adb, a-cohama.ads, a-coorse.adb,
+	a-coorse.ads, aspects.ads, sem_ch8.adb: Minor reformatting.
+
 2011-08-29  Thomas Quinot  <quinot@adacore.com>
 
 	* system-freebsd-x86_64.ads (Backend_Overflow_Checks): Set true True.

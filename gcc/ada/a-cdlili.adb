@@ -38,12 +38,16 @@ package body Ada.Containers.Doubly_Linked_Lists is
         Node      : Node_Access;
    end record;
 
-   overriding function First    (Object : Iterator) return Cursor;
-   overriding function Last     (Object : Iterator) return Cursor;
-   overriding function Next     (Object : Iterator; Position : Cursor)
-     return Cursor;
-   overriding function Previous (Object : Iterator; Position : Cursor)
-     return Cursor;
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --
@@ -918,6 +922,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
       declare
          Next_Node : constant Node_Access := Position.Node.Next;
+
       begin
          if Next_Node = null then
             return No_Element;
@@ -927,11 +932,13 @@ package body Ada.Containers.Doubly_Linked_Lists is
       end;
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
+   function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
    begin
       if Position.Node = Object.Container.Last then
          return No_Element;
-
       else
          return (Object.Container, Position.Node.Next);
       end if;
@@ -969,6 +976,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
       declare
          Prev_Node : constant Node_Access := Position.Node.Prev;
+
       begin
          if Prev_Node = null then
             return No_Element;
@@ -978,11 +986,13 @@ package body Ada.Containers.Doubly_Linked_Lists is
       end;
    end Previous;
 
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+   function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
    begin
       if Position.Node = Position.Container.First then
          return No_Element;
-
       else
          return (Object.Container, Position.Node.Prev);
       end if;

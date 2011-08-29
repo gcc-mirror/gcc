@@ -39,13 +39,15 @@ package body Ada.Containers.Hashed_Maps is
 
    type Iterator is new
      Map_Iterator_Interfaces.Forward_Iterator with record
-      Container : Map_Access;
-      Node      : Node_Access;
-   end record;
+        Container : Map_Access;
+        Node      : Node_Access;
+     end record;
 
    overriding function First (Object : Iterator) return Cursor;
-   overriding function Next  (Object : Iterator; Position : Cursor)
-     return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --
@@ -599,8 +601,8 @@ package body Ada.Containers.Hashed_Maps is
       B := B - 1;
    end Iterate;
 
-   function Iterate (Container : Map)
-      return Map_Iterator_Interfaces.Forward_Iterator'class
+   function Iterate
+     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'class
    is
       Node : constant Node_Access := HT_Ops.First (Container.HT);
       It   : constant Iterator := (Container'Unrestricted_Access, Node);
@@ -680,11 +682,13 @@ package body Ada.Containers.Hashed_Maps is
       Position := Next (Position);
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
+   function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
    begin
       if Position.Node = null then
          return No_Element;
-
       else
          return (Object.Container, Next (Position).Node);
       end if;

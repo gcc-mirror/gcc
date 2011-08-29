@@ -804,16 +804,14 @@ package Sem_Util is
    --  by a derived type declaration.
 
    function Is_Inherited_Operation_For_Type
-     (E : Entity_Id; Typ : Entity_Id) return Boolean;
+     (E   : Entity_Id;
+      Typ : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
    --  by the derived type declaration for type Typ.
 
    function Is_Iterator (Typ : Entity_Id) return Boolean;
-   --  AI05-0139-2 : check whether Typ is derived from the predefined interface
+   --  AI05-0139-2: Check whether Typ is derived from the predefined interface
    --  Ada.Iterator_Interfaces.Forward_Iterator.
-
-   function Is_Reversible_Iterator (Typ : Entity_Id) return Boolean;
-   --  Ditto for Ada.Iterator_Interfaces.Reversible_Iterator.
 
    function Is_LHS (N : Node_Id) return Boolean;
    --  Returns True iff N is used as Name in an assignment statement
@@ -881,6 +879,10 @@ package Sem_Util is
 
    function Is_Renamed_Entry (Proc_Nam : Entity_Id) return Boolean;
    --  Return True if Proc_Nam is a procedure renaming of an entry
+
+   function Is_Reversible_Iterator (Typ : Entity_Id) return Boolean;
+   --  AI05-0139-2: Check whether Typ is derived from the predefined interface
+   --  Ada.Iterator_Interfaces.Reversible_Iterator.
 
    function Is_Selector_Name (N : Node_Id) return Boolean;
    --  Given an N_Identifier node N, determines if it is a Selector_Name.
