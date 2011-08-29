@@ -1026,6 +1026,7 @@ package body Sem_Ch13 is
                     Aspect_Output         |
                     Aspect_Read           |
                     Aspect_Size           |
+                    Aspect_Small          |
                     Aspect_Storage_Pool   |
                     Aspect_Storage_Size   |
                     Aspect_Stream_Size    |
@@ -1134,6 +1135,36 @@ package body Sem_Ch13 is
                   Delay_Required := True;
                   Set_Is_Delayed_Aspect (Aspect);
                   Set_Has_Default_Aspect (Base_Type (Entity (Ent)));
+
+               when Aspect_Attach_Handler =>
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Attach_Handler),
+                      Pragma_Argument_Associations =>
+                        New_List (Ent, Relocate_Node (Expr)));
+
+                  Set_From_Aspect_Specification (Aitem, True);
+
+               when Aspect_Priority | Aspect_Interrupt_Priority => declare
+                  Pname : Name_Id;
+
+               begin
+                  if A_Id = Aspect_Priority then
+                     Pname := Name_Priority;
+                  else
+                     Pname := Name_Interrupt_Priority;
+                  end if;
+
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Pname),
+                      Pragma_Argument_Associations =>
+                        New_List (Relocate_Node (Expr)));
+
+                  Set_From_Aspect_Specification (Aitem, True);
+               end;
 
                --  Aspects Pre/Post generate Precondition/Postcondition pragmas
                --  with a first argument that is the expression, and a second
@@ -1433,18 +1464,64 @@ package body Sem_Ch13 is
                --  Here if not compilation unit case
 
                else
-                  --  For Pre/Post cases, insert immediately after the entity
-                  --  declaration, since that is the required pragma placement.
+                  case A_Id is
+                     --  For Pre/Post cases, insert immediately after the
+                     --  entity declaration, since that is the required pragma
+                     --  placement.
 
-                  if A_Id in Pre_Post_Aspects then
-                     Insert_After (N, Aitem);
+                     when Pre_Post_Aspects =>
+                        Insert_After (N, Aitem);
+
+                     --  For Priority aspects, insert into the task or
+                     --  protected definition, which we need to create if it's
+                     --  not there.
+
+                     when Aspect_Priority | Aspect_Interrupt_Priority =>
+                        declare
+                           T : Node_Id; -- the type declaration
+                           L : List_Id; -- list of decls of task/protected
+
+                        begin
+                           if Nkind (N) = N_Object_Declaration then
+                              T := Parent (Etype (Defining_Identifier (N)));
+
+                           else
+                              T := N;
+                           end if;
+
+                           if Nkind (T) = N_Protected_Type_Declaration then
+                              pragma Assert
+                                (Present (Protected_Definition (T)));
+
+                              L := Visible_Declarations
+                                     (Protected_Definition (T));
+
+                           elsif Nkind (T) = N_Task_Type_Declaration then
+                              if No (Task_Definition (T)) then
+                                 Set_Task_Definition
+                                   (T,
+                                    Make_Task_Definition
+                                      (Sloc (T),
+                                       Visible_Declarations => New_List,
+                                       End_Label => Empty));
+                              end if;
+
+                              L := Visible_Declarations
+                                     (Task_Definition (T));
+
+                           else
+                              raise Program_Error;
+                           end if;
+
+                           Prepend (Aitem, To => L);
+                        end;
 
                   --  For all other cases, insert in sequence
 
-                  else
-                     Insert_After (Ins_Node, Aitem);
-                     Ins_Node := Aitem;
-                  end if;
+                     when others =>
+                        Insert_After (Ins_Node, Aitem);
+                        Ins_Node := Aitem;
+                  end case;
                end if;
             end if;
          end;
@@ -5758,6 +5835,9 @@ package body Sem_Ch13 is
          when Aspect_Test_Case =>
             raise Program_Error;
 
+         when Aspect_Attach_Handler =>
+            T := RTE (RE_Interrupt_ID);
+
          --  Default_Value is resolved with the type entity in question
 
          when Aspect_Default_Value =>
@@ -5778,6 +5858,12 @@ package body Sem_Ch13 is
 
          when Aspect_External_Tag =>
             T := Standard_String;
+
+         when Aspect_Priority | Aspect_Interrupt_Priority =>
+            T := Standard_Integer;
+
+         when Aspect_Small =>
+            T := Universal_Real;
 
          when Aspect_Storage_Pool =>
             T := Class_Wide_Type (RTE (RE_Root_Storage_Pool));
