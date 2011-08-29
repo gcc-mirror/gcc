@@ -1,3 +1,10 @@
+2011-08-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_rm.texi: Add doc for 'Elab_Subp_Body.
+	* bindgen.adb: Add comments.
+	* snames.adb-tmpl (Is_Attribute_Name): Only recognize 'Elab_Subp_Body
+	in CodePeer mode.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* exp_attr.adb: Minor reformatting.
