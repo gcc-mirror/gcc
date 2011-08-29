@@ -1,3 +1,33 @@
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_sel.ads (Build_Abort_BLock_Handler): New function spec.
+	Adjust comment.
+	* exp_sel.adb (Build_Abort_Block): Use Build_Abort_Block_Handler.
+	(Build_Abort_Block_Handler): New function to build an Abort_Signal
+	exception handler.
+	* exp_ch9.adb (Expand_N_Asynchronous_Select): Call
+	Build_Abort_Block_Handler to build the exception handler. Do not
+	undefer aborts for the Abort_Signal exception handler if back-end
+	exception mechanism.
+	* exp_ch11.adb (Expand_Exception_Handlers): Do not undefer aborts if
+	back_end exceptions for all others and abort_signal.
+	* s-except.ads (ZCX_By_Default): New constant.
+	* a-except-2005.adb (Raise_Exception): Do not defer abort if ZCX.
+	(Raise_Exception_Always): Ditto.
+	(Raise_From_Signal_Handler): Ditto.
+	(Raise_With_Location_And_Msg): Ditto.
+	(Raise_With_Msg): Ditto.
+	(Reraise): Ditto.
+	(Reraise_Occurence): Ditto.
+	(Reraise_Occurrence_Always): Ditto.
+	* s-tasren.adb (Exceptional_Complete_Rendezvous): Defer aborts if ZCX.
+	* s-tpobop.adb: (Exceptional_Complete_Body): Undefer abort if ZCX.
+	* s-interr-hwint.adb (Interrupt_Manager): Defer abort if ZCX.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.ads (Get_Enum_Lit_From_Pos): Clarify documentation.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* snames.adb-tmpl, sem_ch13.adb: Minor reformatting

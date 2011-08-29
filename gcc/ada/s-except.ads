@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,9 @@ package System.Exceptions is
    pragma Preelaborate_05;
    --  To let Ada.Exceptions "with" us and let us "with" Standard_Library
 
+   ZCX_By_Default : constant Boolean;
+   --  Visible copy to allow Ada.Exceptions to know the exception model.
+
    package SSL renames System.Standard_Library;
    --  To let some of the hooks below have formal parameters typed in
    --  accordance with what GDB expects.
@@ -74,5 +77,8 @@ package System.Exceptions is
    --    goto Handler
    --
    --  The argument is the address of the exception data
+
+private
+   ZCX_By_Default : constant Boolean := System.ZCX_By_Default;
 
 end System.Exceptions;

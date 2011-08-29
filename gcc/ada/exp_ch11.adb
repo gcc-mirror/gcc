@@ -1097,7 +1097,9 @@ package body Exp_Ch11 is
                   --  any case this entire handling is relevant only if aborts
                   --  are allowed!
 
-               elsif Abort_Allowed then
+               elsif Abort_Allowed
+                 and then Exception_Mechanism /= Back_End_Exceptions
+               then
 
                   --  There are some special cases in which we do not do the
                   --  undefer. In particular a finalization (AT END) handler
@@ -1122,7 +1124,6 @@ package body Exp_Ch11 is
                       (Others_Choice
                         and then
                           All_Others (First (Exception_Choices (Handler))))
-                    and then Abort_Allowed
                   then
                      Prepend_Call_To_Handler (RE_Abort_Undefer);
                   end if;
