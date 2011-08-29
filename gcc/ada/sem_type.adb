@@ -621,10 +621,15 @@ package body Sem_Type is
 
                      --  A homograph in the same scope can occur within an
                      --  instantiation, the resulting ambiguity has to be
-                     --  resolved later.
+                     --  resolved later. The homographs may both be local
+                     --  functions or actuals, or may be declared at different
+                     --  levels within the instance. The renaming of an actual
+                     --  within the instance must not be included.
 
-                     if Scope (H) = Scope (Ent)
+                     if (Scope (H) = Scope (Ent)
+                           or else Scope (H) = Scope (Scope (Ent)))
                         and then In_Instance
+                        and then H /= Renamed_Entity (Ent)
                         and then not Is_Inherited_Operation (H)
                      then
                         All_Interp.Table (All_Interp.Last) :=

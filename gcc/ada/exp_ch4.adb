@@ -6200,6 +6200,11 @@ package body Exp_Ch4 is
       --  shifts etc. We also do this transformation if the result type is
       --  different from the base type.
 
+      if CodePeer_Mode or ALFA_Mode then
+         --  CodePeer and GNATprove want to see the unexpanded N_Op_Expon node
+         return;
+      end if;
+
       if Is_Private_Type (Etype (Base))
            or else
          Is_Private_Type (Typ)
