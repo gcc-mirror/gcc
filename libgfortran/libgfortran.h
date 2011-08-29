@@ -1284,6 +1284,10 @@ extern int compare_string_char4 (gfc_charlen_type, const gfc_char4_t *,
 				 gfc_charlen_type, const gfc_char4_t *);
 iexport_proto(compare_string_char4);
 
+extern int memcmp_char4 (const void *, const void *, size_t);
+internal_proto(memcmp_char4);
+
+
 /* random.c */
 
 extern void random_seed_i4 (GFC_INTEGER_4 * size, gfc_array_i4 * put,
