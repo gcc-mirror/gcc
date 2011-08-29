@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,8 @@ package body Ada.Containers.Ordered_Maps is
      end record;
 
    overriding function First (Object : Iterator) return Cursor;
-   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Last (Object : Iterator) return Cursor;
 
    overriding function Next
      (Object   : Iterator;
@@ -266,8 +267,7 @@ package body Ada.Containers.Ordered_Maps is
    -- Clear --
    -----------
 
-   procedure Clear is
-      new Tree_Operations.Generic_Clear (Delete_Tree);
+   procedure Clear is new Tree_Operations.Generic_Clear (Delete_Tree);
 
    procedure Clear (Container : in out Map) is
    begin
@@ -282,6 +282,18 @@ package body Ada.Containers.Ordered_Maps is
    begin
       return Node.Color;
    end Color;
+
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : Map;
+      Key       : Key_Type) return Constant_Reference_Type
+   is
+   begin
+      return (Element => Container.Element (Key)'Unrestricted_Access);
+   end Constant_Reference;
 
    --------------
    -- Contains --
@@ -453,25 +465,23 @@ package body Ada.Containers.Ordered_Maps is
 
    function First (Container : Map) return Cursor is
       T : Tree_Type renames Container.Tree;
-
    begin
       if T.First = null then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, T.First);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, T.First);
    end First;
 
    function First (Object : Iterator) return Cursor is
       M : constant Map_Access  := Object.Container;
       N : constant Node_Access := M.Tree.First;
-
    begin
       if N = null then
          return No_Element;
+      else
+         return Cursor'(Object.Container.all'Unchecked_Access, N);
       end if;
-
-      return Cursor'(Object.Container.all'Unchecked_Access, N);
    end First;
 
    -------------------
@@ -484,9 +494,9 @@ package body Ada.Containers.Ordered_Maps is
    begin
       if T.First = null then
          raise Constraint_Error with "map is empty";
+      else
+         return T.First.Element;
       end if;
-
-      return T.First.Element;
    end First_Element;
 
    ---------------
@@ -495,13 +505,12 @@ package body Ada.Containers.Ordered_Maps is
 
    function First_Key (Container : Map) return Key_Type is
       T : Tree_Type renames Container.Tree;
-
    begin
       if T.First = null then
          raise Constraint_Error with "map is empty";
+      else
+         return T.First.Key;
       end if;
-
-      return T.First.Key;
    end First_Key;
 
    -----------
@@ -510,13 +519,12 @@ package body Ada.Containers.Ordered_Maps is
 
    function Floor (Container : Map; Key : Key_Type) return Cursor is
       Node : constant Node_Access := Key_Ops.Floor (Container.Tree, Key);
-
    begin
       if Node = null then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
    end Floor;
 
    ----------
@@ -693,7 +701,8 @@ package body Ada.Containers.Ordered_Maps is
    ------------------------
 
    function Is_Equal_Node_Node
-     (L, R : Node_Access) return Boolean is
+     (L, R : Node_Access) return Boolean
+   is
    begin
       if L.Key < R.Key then
          return False;
@@ -715,7 +724,7 @@ package body Ada.Containers.Ordered_Maps is
       Right : Node_Access) return Boolean
    is
    begin
-      --  k > node same as node < k
+      --  Left > Right same as Right < Left
 
       return Right.Key < Left;
    end Is_Greater_Key_Node;
@@ -814,25 +823,23 @@ package body Ada.Containers.Ordered_Maps is
 
    function Last (Container : Map) return Cursor is
       T : Tree_Type renames Container.Tree;
-
    begin
       if T.Last = null then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, T.Last);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, T.Last);
    end Last;
 
    function Last (Object : Iterator) return Cursor is
       M : constant Map_Access  := Object.Container;
       N : constant Node_Access := M.Tree.Last;
-
    begin
       if N = null then
          return No_Element;
+      else
+         return Cursor'(Object.Container.all'Unchecked_Access, N);
       end if;
-
-      return Cursor'(Object.Container.all'Unchecked_Access, N);
    end Last;
 
    ------------------
@@ -841,13 +848,12 @@ package body Ada.Containers.Ordered_Maps is
 
    function Last_Element (Container : Map) return Element_Type is
       T : Tree_Type renames Container.Tree;
-
    begin
       if T.Last = null then
          raise Constraint_Error with "map is empty";
+      else
+         return T.Last.Element;
       end if;
-
-      return T.Last.Element;
    end Last_Element;
 
    --------------
@@ -856,13 +862,12 @@ package body Ada.Containers.Ordered_Maps is
 
    function Last_Key (Container : Map) return Key_Type is
       T : Tree_Type renames Container.Tree;
-
    begin
       if T.Last = null then
          raise Constraint_Error with "map is empty";
+      else
+         return T.Last.Key;
       end if;
-
-      return T.Last.Key;
    end Last_Key;
 
    ----------
@@ -1102,14 +1107,11 @@ package body Ada.Containers.Ordered_Maps is
    -- Reference --
    ---------------
 
-   function Constant_Reference (Container : Map; Key : Key_Type)
-   return Constant_Reference_Type is
-   begin
-      return (Element => Container.Element (Key)'Unrestricted_Access);
-   end Constant_Reference;
-
-   function Reference (Container : Map; Key : Key_Type)
-   return Reference_Type is
+   function Reference
+     (Container : Map;
+      Key       : Key_Type)
+      return Reference_Type
+   is
    begin
       return (Element => Container.Element (Key)'Unrestricted_Access);
    end Reference;
@@ -1195,7 +1197,7 @@ package body Ada.Containers.Ordered_Maps is
 
       B : Natural renames Container.Tree'Unrestricted_Access.all.Busy;
 
-      --  Start of processing for Reverse_Iterate
+   --  Start of processing for Reverse_Iterate
 
    begin
       B := B + 1;

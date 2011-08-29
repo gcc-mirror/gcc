@@ -33,7 +33,7 @@
 
 private with Ada.Finalization;
 
-with Ada.Streams;             use Ada.Streams;
+with Ada.Streams; use Ada.Streams;
 with Ada.Iterator_Interfaces;
 
 generic

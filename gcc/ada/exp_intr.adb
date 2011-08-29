@@ -974,29 +974,7 @@ package body Exp_Intr is
                      Obj_Ref => Deref,
                      Typ     => Desig_T)),
                  Exception_Handlers => New_List (
-                   Make_Exception_Handler (Loc,
-                     Exception_Choices => New_List (
-                       Make_Others_Choice (Loc)),
-                     Statements => New_List (
-                       Make_Assignment_Statement (Loc,
-                         Name =>
-                           New_Reference_To (Raised_Id, Loc),
-                         Expression =>
-                           New_Reference_To (Standard_True, Loc)),
-                       Make_Procedure_Call_Statement (Loc,
-                         Name =>
-                           New_Reference_To (RTE (RE_Save_Occurrence), Loc),
-                         Parameter_Associations => New_List (
-                           New_Reference_To (E_Id, Loc),
-                           Make_Explicit_Dereference (Loc,
-                             Prefix =>
-                               Make_Function_Call (Loc,
-                                 Name =>
-                                   Make_Explicit_Dereference (Loc,
-                                     Prefix =>
-                                       New_Reference_To
-                                         (RTE (RE_Get_Current_Excep),
-                                          Loc))))))))))));
+                   Build_Exception_Handler (Loc, E_Id, Raised_Id)))));
 
          --  For .NET/JVM, detach the object from the containing finalization
          --  collection before finalizing it.

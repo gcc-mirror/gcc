@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 private with Ada.Containers.Red_Black_Trees;
+
 with Ada.Streams; use Ada.Streams;
 with Ada.Iterator_Interfaces;
 
@@ -48,8 +49,7 @@ package Ada.Containers.Bounded_Ordered_Maps is
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
-   type Map (Capacity : Count_Type) is tagged private
-   with
+   type Map (Capacity : Count_Type) is tagged private with
       constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
@@ -63,6 +63,7 @@ package Ada.Containers.Bounded_Ordered_Maps is
    Empty_Map : constant Map;
 
    No_Element : constant Cursor;
+
    function Has_Element (Position : Cursor) return Boolean;
 
    package Map_Iterator_Interfaces is new
@@ -94,7 +95,7 @@ package Ada.Containers.Bounded_Ordered_Maps is
      (Container : in out Map;
       Position  : Cursor;
       Process   : not null access
-                   procedure (Key : Key_Type; Element : in out Element_Type));
+                    procedure (Key : Key_Type; Element : in out Element_Type));
 
    procedure Assign (Target : in out Map; Source : Map);
 
@@ -216,20 +217,22 @@ package Ada.Containers.Bounded_Ordered_Maps is
    for Reference_Type'Write use Write;
 
    function Constant_Reference
-     (Container : Map; Key : Key_Type)    --  SHOULD BE ALIASED
-   return Constant_Reference_Type;
+     (Container : Map;
+      Key       : Key_Type)    --  SHOULD BE ALIASED ???
+      return Constant_Reference_Type;
 
-   function Reference (Container : Map; Key : Key_Type)
-   return Reference_Type;
+   function Reference (Container : Map; Key : Key_Type) return Reference_Type;
 
    procedure Iterate
      (Container : Map;
       Process   : not null access procedure (Position : Cursor));
 
-   function Iterate (Container : Map)
-      return Map_Iterator_Interfaces.Forward_Iterator'class;
+   function Iterate
+     (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'class;
 
-   function Iterate (Container : Map; Start : Cursor)
+   function Iterate
+     (Container : Map;
+      Start     : Cursor)
       return Map_Iterator_Interfaces.Reversible_Iterator'class;
 
    procedure Reverse_Iterate

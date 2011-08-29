@@ -1328,8 +1328,10 @@ package body System.Tasking.Stages is
             TH.all (Cause, Self_ID, EO);
 
          exception
+
+            --  RM-C.7.3 requires all exceptions raised here to be ignored
+
             when others =>
-               --  RM-C.7.3 requires these exceptions to be ignored
                null;
          end;
       end if;

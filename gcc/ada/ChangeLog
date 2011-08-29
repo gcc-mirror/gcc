@@ -1,5 +1,20 @@
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
+	* a-cdlili.ads, a-coinve.ads, a-coorma.adb, a-coorma.ads, s-tassta.adb,
+	a-cborma.adb, a-cborma.ads, a-cohama.ads, a-coorse.ads, a-cbhama.ads,
+	a-cborse.ads, a-cobove.adb, a-cobove.ads, a-cbhase.ads: Minor
+	reformatting.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch7.adb, exp_ch7.ads (Build_Exception_Handler): Move its spec to
+	package spec.
+	* exp_intr.adb (Expand_Unc_Deallocation): Use Build_Exception_Handler.
+	* a-except.adb, a-except-2005.adb (Rcheck_22): Do not defer aborts
+	while raising PE.
+
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
 	* a-cbhama.adb, a-cbhama.ads: Minor reformatting.
 
 2011-08-29  Javier Miranda  <miranda@adacore.com>

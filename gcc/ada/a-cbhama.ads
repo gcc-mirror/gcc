@@ -33,7 +33,7 @@
 
 private with Ada.Containers.Hash_Tables;
 
-with Ada.Streams;             use Ada.Streams;
+with Ada.Streams; use Ada.Streams;
 with Ada.Iterator_Interfaces;
 
 generic
@@ -321,11 +321,11 @@ package Ada.Containers.Bounded_Hashed_Maps is
    for Reference_Type'Read use Read;
 
    function Constant_Reference
-     (Container : Map; Key : Key_Type)    --  SHOULD BE ALIASED
-   return Constant_Reference_Type;
+     (Container : Map;
+      Key       : Key_Type)    --  SHOULD BE ALIASED???
+      return Constant_Reference_Type;
 
-   function Reference (Container : Map; Key : Key_Type)
-   return Reference_Type;
+   function Reference (Container : Map; Key : Key_Type) return Reference_Type;
 
 private
    pragma Inline (Length);
@@ -368,6 +368,12 @@ private
 
    type Map_Access is access all Map;
    for Map_Access'Storage_Size use 0;
+
+   --  Note: If a Cursor object has no explicit initialization expression,
+   --  it must default initialize to the same value as constant No_Element.
+   --  The Node component of type Cursor has scalar type Count_Type, so it
+   --  requires an explicit initialization expression of its own declaration,
+   --  in order for objects of record type Cursor to properly initialize.
 
    type Cursor is record
       Container : Map_Access;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -34,7 +34,7 @@
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Finalization;
 
-with Ada.Streams;             use Ada.Streams;
+with Ada.Streams; use Ada.Streams;
 with Ada.Iterator_Interfaces;
 
 generic
