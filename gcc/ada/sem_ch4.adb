@@ -702,6 +702,16 @@ package body Sem_Ch4 is
          Check_Restriction (No_Task_Allocators, N);
       end if;
 
+      --  AI05-0013-1: No_Nested_Finalization forbids allocators if the access
+      --  type is nested, and the designated type needs finalization. The rule
+      --  is conservative in that class-wide types need finalization.
+
+      if Needs_Finalization (Designated_Type (Acc_Type))
+        and then not Is_Library_Level_Entity (Acc_Type)
+      then
+         Check_Restriction (No_Nested_Finalization, N);
+      end if;
+
       --  Check that an allocator of a nested access type doesn't create a
       --  protected object when restriction No_Local_Protected_Objects applies.
       --  We don't have an equivalent to Has_Task for protected types, so only

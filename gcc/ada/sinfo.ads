@@ -943,11 +943,11 @@ package Sinfo is
    --    there is no requirement that these match, and there are obscure cases
    --    of generated code where they do not match.
 
-   --    Note: Aspect specifications, introduced in Ada2012, require additional
-   --    links between identifiers and various attributes. These attributes
-   --    can be of arbitrary types, and the entity field of identifiers that
-   --    denote aspects must be used to store arbitrary expressions for later
-   --    semantic checks. See section on Aspect specifications for details.
+   --    Note: Ada 2012 aspect specifications require additional links between
+   --    identifiers and various attributes. These attributes can be of
+   --    arbitrary types, and the entity field of identifiers that denote
+   --    aspects must be used to store arbitrary expressions for later semantic
+   --    checks. See section on aspect specifications for details.
 
    --  Entity_Or_Associated_Node (Node4-Sem)
    --    A synonym for both Entity and Associated_Node. Used by convention in
@@ -6237,9 +6237,9 @@ package Sinfo is
       --  | FORMAL_INTERFACE_TYPE_DEFINITION
       --  | FORMAL_INCOMPLETE_TYPE_DEFINITION
 
-      --  The Ada2012 syntax introduces two new non-terminals;
-      --  Formal_[Complete_| Incomplete_] Type_Declaration just to introduce
-      --  the later category. Here we introduce an incomplete type definition
+      --  The Ada 2012 syntax introduces two new non-terminals:
+      --  Formal_{Complete,Incomplete}_Type_Declaration just to introduce
+      --  the latter category. Here we introduce an incomplete type definition
       --  in order to preserve as much as possible the existing structure.
 
       ---------------------------------------------
