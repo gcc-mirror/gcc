@@ -4640,13 +4640,16 @@ package body Sem_Res is
       --  universal real, since in this case we don't do a conversion to a
       --  specific fixed-point type (instead the expander handles the case).
 
+      --  Set the type of the node to its universal interpretation because
+      --  legality checks on an exponentiation operand need the context.
+
       elsif (B_Typ = Universal_Integer or else B_Typ = Universal_Real)
         and then Present (Universal_Interpretation (L))
         and then Present (Universal_Interpretation (R))
       then
+         Set_Etype (N, B_Typ);
          Resolve (L, Universal_Interpretation (L));
          Resolve (R, Universal_Interpretation (R));
-         Set_Etype (N, B_Typ);
 
       elsif (B_Typ = Universal_Real
               or else Etype (N) = Universal_Fixed

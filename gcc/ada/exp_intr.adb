@@ -1232,7 +1232,7 @@ package body Exp_Intr is
 
       --  Generate:
       --    if Raised and then not Abort then
-      --       Reraise_Occurrence (E);               --  for .NET and
+      --       raise Program_Error;                  --  for .NET and
       --                                             --  restricted RTS
       --         <or>
       --       Raise_From_Controlled_Operation (E);  --  all other cases

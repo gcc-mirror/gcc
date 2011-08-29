@@ -710,7 +710,7 @@ package body Sem_Ch13 is
       --  or attribute definition node in either case to activate special
       --  processing (e.g. not traversing the list of homonyms for inline).
 
-      Delay_Required : Boolean;
+      Delay_Required : Boolean := False;
       --  Set True if delay is required
 
    begin
@@ -904,7 +904,7 @@ package body Sem_Ch13 is
 
                   --  Never need to delay for boolean aspects
 
-                  Delay_Required := False;
+                  pragma Assert (not Delay_Required);
 
                --  Library unit aspects. These are boolean aspects, but we
                --  have to do special things with the insertion, since the
@@ -944,7 +944,7 @@ package body Sem_Ch13 is
 
                   --  If not package declaration, no delay is required
 
-                  Delay_Required := False;
+                  pragma Assert (not Delay_Required);
 
                --  Aspects related to container iterators. These aspects denote
                --  subprograms, and thus must be delayed.
@@ -1046,7 +1046,8 @@ package body Sem_Ch13 is
                   --  to take care of it right away.
 
                   if Nkind_In (Expr, N_Integer_Literal, N_String_Literal) then
-                     Delay_Required := False;
+                     pragma Assert (not Delay_Required);
+                     null;
                   else
                      Delay_Required := True;
                      Set_Is_Delayed_Aspect (Aspect);
@@ -1073,7 +1074,7 @@ package body Sem_Ch13 is
                   --  We don't have to play the delay game here, since the only
                   --  values are check names which don't get analyzed anyway.
 
-                  Delay_Required := False;
+                  pragma Assert (not Delay_Required);
 
                --  Aspects corresponding to pragmas with two arguments, where
                --  the second argument is a local name referring to the entity,
@@ -1095,7 +1096,7 @@ package body Sem_Ch13 is
                   --  We don't have to play the delay game here, since the only
                   --  values are ON/OFF which don't get analyzed anyway.
 
-                  Delay_Required := False;
+                  pragma Assert (not Delay_Required);
 
                --  Default_Value and Default_Component_Value aspects. These
                --  are specially handled because they have no corresponding
@@ -1146,6 +1147,8 @@ package body Sem_Ch13 is
 
                   Set_From_Aspect_Specification (Aitem, True);
 
+                  pragma Assert (not Delay_Required);
+
                when Aspect_Priority | Aspect_Interrupt_Priority => declare
                   Pname : Name_Id;
 
@@ -1164,6 +1167,8 @@ package body Sem_Ch13 is
                         New_List (Relocate_Node (Expr)));
 
                   Set_From_Aspect_Specification (Aitem, True);
+
+                  pragma Assert (not Delay_Required);
                end;
 
                --  Aspects Pre/Post generate Precondition/Postcondition pragmas
@@ -1523,7 +1528,7 @@ package body Sem_Ch13 is
                            Prepend (Aitem, To => L);
                         end;
 
-                  --  For all other cases, insert in sequence
+                     --  For all other cases, insert in sequence
 
                      when others =>
                         Insert_After (Ins_Node, Aitem);

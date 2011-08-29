@@ -7373,15 +7373,15 @@ package body Make is
 
          end if;
 
-      --  Then check if we are dealing with -cargs/-bargs/-largs/-margs
+      --  Then check if we are dealing with -cargs/-bargs/-largs/-margs. These
+      --  options are taken as is when found in package Compiler, Binder or
+      --  Linker of the main project file.
 
-      elsif Argv = "-bargs"
-              or else
-            Argv = "-cargs"
-              or else
-            Argv = "-largs"
-              or else
-            Argv = "-margs"
+      elsif (And_Save or else Program_Args = None)
+        and then (Argv = "-bargs" or else
+                  Argv = "-cargs" or else
+                  Argv = "-largs" or else
+                  Argv = "-margs")
       then
          case Argv (2) is
             when 'c' => Program_Args := Compiler;

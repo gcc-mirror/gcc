@@ -282,10 +282,10 @@ package body ALFA is
       end if;
 
       case Ekind (E) is
-         when E_Function =>
+         when E_Function | E_Generic_Function =>
             Typ := 'V';
 
-         when E_Procedure =>
+         when E_Procedure | E_Generic_Procedure =>
             Typ := 'U';
 
          when E_Subprogram_Body =>
@@ -308,7 +308,7 @@ package body ALFA is
                end if;
             end;
 
-         when E_Package | E_Package_Body =>
+         when E_Package | E_Package_Body | E_Generic_Package =>
             Typ := 'K';
 
          when E_Void =>
