@@ -1,3 +1,9 @@
+2011-08-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50225
+	* trans-decl.c (gfc_generate_function_code): Nullify polymorphic
+	allocatable function results.
+
 2011-08-29  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-decl.c (generate_coarray_sym_init): Use
