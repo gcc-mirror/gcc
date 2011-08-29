@@ -3698,8 +3698,9 @@ package body Exp_Disp is
          Typ         : Entity_Id)
       is
          Comp : Entity_Id;
-         function Is_Actual_For_Formal_Incomplete_Type (T : Entity_Id)
-            return Boolean;
+
+         function Is_Actual_For_Formal_Incomplete_Type
+           (T : Entity_Id) return Boolean;
          --  In Ada2012, if a nested generic has an incomplete formal type, the
          --  actual may be (and usually is) a private type whose completion
          --  appears later. It is safe to build the dispatch table in this
@@ -3709,11 +3710,12 @@ package body Exp_Disp is
          -- Is_Actual_For_Formal_Incomplete_Type --
          ------------------------------------------
 
-         function Is_Actual_For_Formal_Incomplete_Type (T : Entity_Id)
-            return Boolean
+         function Is_Actual_For_Formal_Incomplete_Type
+           (T : Entity_Id) return Boolean
          is
             Gen_Par : Entity_Id;
             F       : Node_Id;
+
          begin
             if not Is_Generic_Instance (Current_Scope)
               or else not Used_As_Generic_Actual (T)
@@ -3739,6 +3741,8 @@ package body Exp_Disp is
             return False;
          end Is_Actual_For_Formal_Incomplete_Type;
 
+      --  Start of processing for Check_Premature_Freezing
+
       begin
          if Present (N)
            and then Is_Private_Type (Typ)
@@ -3761,7 +3765,7 @@ package body Exp_Disp is
               and then Present (Comp)
               and then not Is_Frozen (Comp)
               and then
-               not Is_Actual_For_Formal_Incomplete_Type (Comp)
+                not Is_Actual_For_Formal_Incomplete_Type (Comp)
             then
                Error_Msg_Sloc := Sloc (Subp);
                Error_Msg_Node_2 := Subp;
