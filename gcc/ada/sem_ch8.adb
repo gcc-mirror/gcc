@@ -682,9 +682,10 @@ package body Sem_Ch8 is
    -----------------------------
 
    procedure Analyze_Object_Renaming (N : Node_Id) is
-      Id  : constant Entity_Id := Defining_Identifier (N);
+      Loc : constant Source_Ptr := Sloc (N);
+      Id  : constant Entity_Id  := Defining_Identifier (N);
       Dec : Node_Id;
-      Nam : constant Node_Id   := Name (N);
+      Nam : constant Node_Id    := Name (N);
       T   : Entity_Id;
       T2  : Entity_Id;
 
@@ -704,7 +705,6 @@ package body Sem_Ch8 is
       ------------------------------
 
       procedure Check_Constrained_Object is
-         Loc  : constant Source_Ptr := Sloc (N);
          Subt : Entity_Id;
 
       begin
@@ -804,6 +804,29 @@ package body Sem_Ch8 is
          end if;
 
          Resolve (Nam, T);
+
+         --  If the renamed object is a function call of a limited type,
+         --  the expansion of the renaming is complicated by the presence
+         --  of various temporaries and subtypes that capture constraints
+         --  of the renamed object. Rewrite node as an object declaration,
+         --  whose expansion is simpler. Given that the object is limited
+         --  there is no copy involved and no performance hit.
+
+         if Nkind (Nam) = N_Function_Call
+           and then Is_Immutably_Limited_Type (Etype (Nam))
+           and then not Is_Constrained (T)
+           and then Comes_From_Source (N)
+         then
+            Set_Etype (Id, T);
+            Set_Ekind (Id, E_Constant);
+            Rewrite (N,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Id,
+                Constant_Present    => True,
+                Object_Definition   => New_Occurrence_Of (T, Loc),
+                Expression          => Relocate_Node (Nam)));
+            return;
+         end if;
 
          --  Check that a class-wide object is not being renamed as an object
          --  of a specific type. The test for access types is needed to exclude
@@ -2330,9 +2353,7 @@ package body Sem_Ch8 is
          --  of a generic, its entity is set to the first available homonym.
          --  We must first disambiguate the name, then set the proper entity.
 
-         if Is_Actual
-           and then Is_Overloaded (Nam)
-         then
+         if Is_Actual and then Is_Overloaded (Nam) then
             Set_Entity (Nam, Old_S);
          end if;
       end if;
@@ -2403,9 +2424,7 @@ package body Sem_Ch8 is
       end if;
 
       if Old_S /= Any_Id then
-         if Is_Actual
-           and then From_Default (N)
-         then
+         if Is_Actual and then From_Default (N) then
             --  This is an implicit reference to the default actual
 
             Generate_Reference (Old_S, Nam, Typ => 'i', Force => True);

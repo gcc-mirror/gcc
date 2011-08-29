@@ -1,3 +1,21 @@
+2011-08-29  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_type.adb: Minor reformatting.
+
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* makeutl.adb: Minor reformatting.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): If the renamed object is a
+	function call of a limited type, the expansion of the renaming is
+	complicated by the presence of various temporaries and subtypes that
+	capture constraints of the renamed object.
+	Rewrite node as an object declaration, whose expansion is simpler.
+	Given that the object is limited there is no copy involved and no
+	performance hit.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, sinfo.ads, make.adb, s-pooglo.adb, sem_ch12.adb,
