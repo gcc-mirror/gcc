@@ -882,6 +882,7 @@ package Snames is
    First_Entity_Attribute_Name         : constant Name_Id := N + $;
    Name_Elab_Body                      : constant Name_Id := N + $; -- GNAT
    Name_Elab_Spec                      : constant Name_Id := N + $; -- GNAT
+   Name_Elab_Subp_Body                 : constant Name_Id := N + $; -- GNAT
    Name_Storage_Pool                   : constant Name_Id := N + $;
 
    --  These attributes are the ones that return types
@@ -1414,6 +1415,7 @@ package Snames is
 
       Attribute_Elab_Body,
       Attribute_Elab_Spec,
+      Attribute_Elab_Subp_Body,
       Attribute_Storage_Pool,
 
       --  Type attributes

@@ -1813,13 +1813,14 @@ package body Exp_Attr is
       --  and then the Elab_Body/Spec attribute is replaced by a reference
       --  to this defining identifier.
 
-      when Attribute_Elab_Body |
-           Attribute_Elab_Spec =>
+      when Attribute_Elab_Body      |
+           Attribute_Elab_Subp_Body |
+           Attribute_Elab_Spec      =>
 
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
          --  back-end knows how to handle this attribute directly.
 
-         if CodePeer_Mode then
+         if CodePeer_Mode or else Id = Attribute_Elab_Subp_Body then
             return;
          end if;
 

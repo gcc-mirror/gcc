@@ -1,5 +1,23 @@
 2011-08-29  Thomas Quinot  <quinot@adacore.com>
 
+	* get_scos.adb: Ignore chaining indicators not currently supported
+	by Ada.
+
+2011-08-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* system.ads: Minor editing.
+
+2011-08-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* bindgen.adb (Gen_Elab_Calls): Generate calls to subp'Elab_Subp_Body in
+	CodePeer mode.
+	* sem_attr.ads, sem_attr.adb, exp_Attr.adb, sem_ch6.adb: Add handling of
+	Attribute_Elab_Subp_Body.
+	* snames.ads-tmpl (Attribute_Elab_Subp_Body, Name_Elab_Subp_Body): New.
+	* sem_util.adb: Update comments.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
 	* par_sco.adb, scos.adb, scos.ads, put_scos.adb, get_scos.adb: Record
 	pragma name for each SCO statement corresponding to a pragma.
 

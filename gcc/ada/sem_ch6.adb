@@ -1156,11 +1156,12 @@ package body Sem_Ch6 is
          end loop;
       end if;
 
-      --  Special processing for Elab_Spec and Elab_Body calls
+      --  Special processing for Elab_Spec, Elab_Body and Elab_Subp_Body calls
 
       if Nkind (P) = N_Attribute_Reference
         and then (Attribute_Name (P) = Name_Elab_Spec
-                   or else Attribute_Name (P) = Name_Elab_Body)
+                   or else Attribute_Name (P) = Name_Elab_Body
+                   or else Attribute_Name (P) = Name_Elab_Subp_Body)
       then
          if Present (Actuals) then
             Error_Msg_N

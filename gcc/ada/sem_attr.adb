@@ -1945,6 +1945,8 @@ package body Sem_Attr is
            and then
          Aname /= Name_Elab_Spec
            and then
+         Aname /= Name_Elab_Subp_Body
+           and then
          Aname /= Name_UET_Address
            and then
          Aname /= Name_Enabled
@@ -3014,7 +3016,10 @@ package body Sem_Attr is
 
       --  Also handles processing for Elab_Spec
 
-      when Attribute_Elab_Body | Attribute_Elab_Spec =>
+      when Attribute_Elab_Body      |
+           Attribute_Elab_Spec      |
+           Attribute_Elab_Subp_Body =>
+
          Check_E0;
          Check_Unit_Name (P);
          Set_Etype (N, Standard_Void_Type);
@@ -7712,6 +7717,7 @@ package body Sem_Attr is
            Attribute_Elaborated               |
            Attribute_Elab_Body                |
            Attribute_Elab_Spec                |
+           Attribute_Elab_Subp_Body           |
            Attribute_Enabled                  |
            Attribute_External_Tag             |
            Attribute_Fast_Math                |

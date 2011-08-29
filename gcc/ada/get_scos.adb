@@ -387,6 +387,18 @@ begin
                elsif C = ' ' then
                   Skip_Spaces;
 
+               elsif C = 'T' or else C = 'F' then
+
+                  --  Chaining indicator: skip for now???
+
+                  declare
+                     Loc1, Loc2 : Source_Location;
+                     pragma Unreferenced (Loc1, Loc2);
+                  begin
+                     Skipc;
+                     Get_Source_Location_Range (Loc1, Loc2);
+                  end;
+
                else
                   raise Data_Error;
                end if;
