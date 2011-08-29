@@ -1,3 +1,9 @@
+2011-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/50215
+	* var-tracking.c (create_entry_value): Call cselib_lookup_from_insn
+	before adding ENTRY_VALUE to val->locs.
+
 2011-08-28  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR bootstrap/50218
