@@ -533,7 +533,7 @@ package body Ch12 is
 
       if Token = Tok_Semicolon then
 
-         --  Ada2012: Incomplete formal type
+         --  Ada 2012: Incomplete formal type
 
          Scan; -- past semicolon
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,12 +34,28 @@
 
 with System.Storage_Elements;  use System.Storage_Elements;
 
+with Ada.Unchecked_Conversion;
+
 pragma Warnings (Off);
 --  Since several constructs give warnings in 3.14a1, including unreferenced
 --  variables and pragma Unreferenced itself.
 
 separate (Ada.Exceptions)
 package body Exception_Propagation is
+
+   --  Common binding to __builtin_longjmp for sjlj variants.
+
+   --  The builtin expects a pointer type for the jmpbuf address argument, and
+   --  System.Address doesn't work because this is really an integer type.
+
+   type Jmpbuf_Address is access Character;
+
+   function To_Jmpbuf_Address is new
+     Ada.Unchecked_Conversion (System.Address, Jmpbuf_Address);
+
+   procedure builtin_longjmp (buffer : Jmpbuf_Address; Flag : Integer);
+   pragma No_Return (builtin_longjmp);
+   pragma Import (Intrinsic, builtin_longjmp, "__builtin_longjmp");
 
    ---------------------
    -- Setup_Exception --
