@@ -32,7 +32,8 @@
 ------------------------------------------------------------------------------
 
 private with Ada.Containers.Hash_Tables;
-with Ada.Streams; use Ada.Streams;
+
+with Ada.Streams;             use Ada.Streams;
 with Ada.Iterator_Interfaces;
 
 generic
@@ -47,8 +48,7 @@ package Ada.Containers.Bounded_Hashed_Maps is
    pragma Pure;
    pragma Remote_Types;
 
-   type Map (Capacity : Count_Type; Modulus : Hash_Type) is tagged private
-   with
+   type Map (Capacity : Count_Type; Modulus : Hash_Type) is tagged private with
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
@@ -328,7 +328,6 @@ package Ada.Containers.Bounded_Hashed_Maps is
    return Reference_Type;
 
 private
-   --  pragma Inline ("=");
    pragma Inline (Length);
    pragma Inline (Is_Empty);
    pragma Inline (Clear);
@@ -339,7 +338,6 @@ private
    pragma Inline (Capacity);
    pragma Inline (Reserve_Capacity);
    pragma Inline (Has_Element);
-   --  pragma Inline (Equivalent_Keys);
    pragma Inline (Next);
 
    type Node_Type is record
