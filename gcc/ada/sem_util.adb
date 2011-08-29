@@ -10696,8 +10696,14 @@ package body Sem_Util is
    --  Start of processing for Object_Access_Level
 
    begin
-      if Is_Entity_Name (Obj) then
-         E := Entity (Obj);
+      if Nkind (Obj) = N_Defining_Identifier
+        or else Is_Entity_Name (Obj)
+      then
+         if Nkind (Obj) = N_Defining_Identifier then
+            E := Obj;
+         else
+            E := Entity (Obj);
+         end if;
 
          if Is_Prival (E) then
             E := Prival_Link (E);

@@ -1,3 +1,13 @@
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Freeze_Type): Generate an accessibility check which
+	ensures that the level of the subpool access type is not deeper than
+	that of the pool object.
+	* sem_util.adb (Object_Access_Level): Expand to handle defining
+	identifiers.
+	* sem_res.adb (Resolve_Allocator): Add a guard to avoid examining the
+	subpool handle name of a rewritten allocator.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* impunit.adb, exp_ch4.adb, s-finmas.adb: Minor reformatting.
