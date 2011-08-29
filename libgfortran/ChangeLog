@@ -1,3 +1,12 @@
+2011-08-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/50192
+	* intrinsics/string_intrinsics.c (memcmp_char4):  New function.
+	* intrinsics/string_intrinsics_inc.c:  New macro MEMCMP, either
+	set to memcmp or memcmp_char4.
+	(compare_string):  Use MEMCMP, with correct size for it.
+	* libgfortran.h:  Add prototype for memcmp_char4.
+
 2011-08-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/40866
