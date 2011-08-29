@@ -799,10 +799,10 @@ package body Endh is
       --  In the following test we protect the call to Comes_From_Source
       --  against lines containing previously reported syntax errors.
 
-      elsif (Etyp = E_Loop
-               or else Etyp = E_Name
-               or else Etyp = E_Suspicious_Is
-               or else Etyp = E_Bad_Is)
+      elsif (Etyp = E_Loop          or else
+             Etyp = E_Name          or else
+             Etyp = E_Suspicious_Is or else
+             Etyp = E_Bad_Is)
          and then Comes_From_Source (L)
       then
          return True;
@@ -818,7 +818,6 @@ package body Endh is
 
    procedure Output_End_Deleted is
    begin
-
       if End_Type = E_Loop then
          Error_Msg_SC ("no LOOP for this `END LOOP`!");
 
@@ -1042,9 +1041,9 @@ package body Endh is
          --  We also reserve an end with a name before the end of file if the
          --  name is the one we expect at the outer level.
 
-         if (Token = Tok_EOF
-               or else Token = Tok_With
-               or else Token = Tok_Separate)
+         if (Token = Tok_EOF  or else
+             Token = Tok_With or else
+             Token = Tok_Separate)
            and then End_Type >= E_Name
            and then (not End_Labl_Present
                       or else Same_Label (End_Labl, Scope.Table (1).Labl))

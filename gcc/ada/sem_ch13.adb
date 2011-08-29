@@ -1539,6 +1539,13 @@ package body Sem_Ch13 is
       --  attribute has the proper type structure. If the name is overloaded,
       --  check that all interpretations are legal.
 
+      procedure Check_Iterator_Functions;
+      --  Check that there is a single function in Default_Iterator attribute
+      --  that  has the  proper type structure.
+
+      function Check_Primitive_Function (Subp : Entity_Id) return Boolean;
+      --  Common legality check for the previoous two.
+
       -----------------------------------
       -- Analyze_Stream_TSS_Definition --
       -----------------------------------
@@ -1681,8 +1688,6 @@ package body Sem_Ch13 is
       ------------------------------
 
       procedure Check_Indexing_Functions is
-         Ctrl : Entity_Id;
-
          procedure Check_One_Function (Subp : Entity_Id);
          --  Check one possible interpretation
 
@@ -1692,34 +1697,10 @@ package body Sem_Ch13 is
 
          procedure Check_One_Function (Subp : Entity_Id) is
          begin
-            if Ekind (Subp) /= E_Function then
-               Error_Msg_N ("indexing requires a function", Subp);
-            end if;
-
-            if No (First_Formal (Subp)) then
-               Error_Msg_N
-                 ("function for indexing must have parameters", Subp);
-            else
-               Ctrl := Etype (First_Formal (Subp));
-            end if;
-
-            if Ctrl = Ent
-              or else Ctrl = Class_Wide_Type (Ent)
-              or else
-                (Ekind (Ctrl) = E_Anonymous_Access_Type
-                  and then
-                    (Designated_Type (Ctrl) = Ent
-                      or else Designated_Type (Ctrl) = Class_Wide_Type (Ent)))
-            then
-               null;
-
-            else
-               Error_Msg_N ("indexing function must apply to type&", Subp);
-            end if;
-
-            if No (Next_Formal (First_Formal (Subp))) then
-               Error_Msg_N
-                 ("function for indexing must have two parameters", Subp);
+            if not Check_Primitive_Function (Subp) then
+               Error_Msg_NE
+                 ("aspect Indexing requires a function that applies to type&",
+                   Subp, Ent);
             end if;
 
             if not Has_Implicit_Dereference (Etype (Subp)) then
@@ -1731,6 +1712,10 @@ package body Sem_Ch13 is
       --  Start of processing for Check_Indexing_Functions
 
       begin
+         if In_Instance then
+            return;
+         end if;
+
          Analyze (Expr);
 
          if not Is_Overloaded (Expr) then
@@ -1758,6 +1743,138 @@ package body Sem_Ch13 is
             end;
          end if;
       end Check_Indexing_Functions;
+
+      ------------------------------
+      -- Check_Iterator_Functions --
+      ------------------------------
+
+      procedure Check_Iterator_Functions is
+         Default : Entity_Id;
+
+         function Valid_Default_Iterator (Subp : Entity_Id) return Boolean;
+         --  Check one possible interpretation.
+
+         ----------------------------
+         -- Valid_Default_Iterator --
+         ----------------------------
+
+         function Valid_Default_Iterator (Subp : Entity_Id) return Boolean is
+            Formal : Entity_Id;
+
+         begin
+            if not Check_Primitive_Function (Subp) then
+               return False;
+            else
+               Formal := First_Formal (Subp);
+            end if;
+
+            Formal := Next_Formal (Formal);
+
+            --  I don't see why the if is required here, we will return
+            --  True anyway if Present (Formal) is false on first loop ???
+
+            if No (Formal) then
+               return True;
+
+            else
+               while Present (Formal) loop
+                  if No (Expression (Parent (Formal))) then
+                     return False;
+                  end if;
+
+                  Next_Formal (Formal);
+               end loop;
+            end if;
+
+            return True;
+         end Valid_Default_Iterator;
+
+      --  Start of processing for Check_Iterator_Functions
+
+      begin
+         Analyze (Expr);
+
+         if not Is_Entity_Name (Expr) then
+            Error_Msg_N ("aspect Iterator must be a function name", Expr);
+         end if;
+
+         if not Is_Overloaded (Expr) then
+            if not Check_Primitive_Function (Entity (Expr)) then
+               Error_Msg_NE
+                 ("aspect Indexing requires a function that applies to type&",
+                   Entity (Expr), Ent);
+            end if;
+
+            if not Valid_Default_Iterator (Entity (Expr)) then
+               Error_Msg_N ("improper function for default iterator", Expr);
+            end if;
+
+         else
+            Default := Empty;
+            declare
+               I : Interp_Index;
+               It : Interp;
+
+            begin
+               Get_First_Interp (Expr, I, It);
+               while Present (It.Nam) loop
+                  if not Check_Primitive_Function (It.Nam)
+                    or else Valid_Default_Iterator (It.Nam)
+                  then
+                     Remove_Interp (I);
+
+                  elsif Present (Default) then
+                     Error_Msg_N ("default iterator must be unique", Expr);
+
+                  else
+                     Default := It.Nam;
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+            end;
+
+            if Present (Default) then
+               Set_Entity (Expr, Default);
+               Set_Is_Overloaded (Expr, False);
+            end if;
+         end if;
+      end Check_Iterator_Functions;
+
+      -------------------------------
+      -- Check_Primitive_Function  --
+      -------------------------------
+
+      function Check_Primitive_Function (Subp : Entity_Id) return Boolean is
+         Ctrl : Entity_Id;
+
+      begin
+         if Ekind (Subp) /= E_Function then
+            return False;
+         end if;
+
+         if No (First_Formal (Subp)) then
+            return False;
+         else
+            Ctrl := Etype (First_Formal (Subp));
+         end if;
+
+         if Ctrl = Ent
+           or else Ctrl = Class_Wide_Type (Ent)
+           or else
+             (Ekind (Ctrl) = E_Anonymous_Access_Type
+               and then
+                 (Designated_Type (Ctrl) = Ent
+                   or else Designated_Type (Ctrl) = Class_Wide_Type (Ent)))
+         then
+            null;
+
+         else
+            return False;
+         end if;
+
+         return True;
+      end Check_Primitive_Function;
 
       ----------------------
       -- Duplicate_Clause --
@@ -2385,6 +2502,39 @@ package body Sem_Ch13 is
          when Attribute_Constant_Indexing =>
             Check_Indexing_Functions;
 
+         ----------------------
+         -- Default_Iterator --
+         ----------------------
+
+         when Attribute_Default_Iterator =>  Default_Iterator : declare
+            Func : Entity_Id;
+
+         begin
+            if not Is_Tagged_Type (U_Ent) then
+               Error_Msg_N
+                 ("aspect Default_Iterator applies to  tagged type", Nam);
+            end if;
+
+            Check_Iterator_Functions;
+
+            Analyze (Expr);
+
+            if not Is_Entity_Name (Expr)
+              or else Ekind (Entity (Expr)) /= E_Function
+            then
+               Error_Msg_N ("aspect Iterator must be a function", Expr);
+            else
+               Func := Entity (Expr);
+            end if;
+
+            if No (First_Formal (Func))
+              or else Etype (First_Formal (Func)) /= U_Ent
+            then
+               Error_Msg_NE
+                 ("Default Iterator must be a primitive of&", Func, U_Ent);
+            end if;
+         end Default_Iterator;
+
          ------------------
          -- External_Tag --
          ------------------
@@ -2431,9 +2581,10 @@ package body Sem_Ch13 is
 
          when Attribute_Implicit_Dereference =>
 
-            --  Legality checks already performed above
+            --  Legality checks already performed at the point of
+            --  the type declaration, aspect is not delayed.
 
-            null;   --  TBD???
+            null;
 
          -----------
          -- Input --
@@ -2442,6 +2593,19 @@ package body Sem_Ch13 is
          when Attribute_Input =>
             Analyze_Stream_TSS_Definition (TSS_Stream_Input);
             Set_Has_Specified_Stream_Input (Ent);
+
+         ----------------------
+         -- Iterator_Element --
+         ----------------------
+
+         when Attribute_Iterator_Element =>
+            Analyze (Expr);
+
+            if not Is_Entity_Name (Expr)
+              or else not Is_Type (Entity (Expr))
+            then
+               Error_Msg_N ("aspect Iterator_Element must be a type", Expr);
+            end if;
 
          -------------------
          -- Machine_Radix --
@@ -3546,6 +3710,7 @@ package body Sem_Ch13 is
                if Nkind (Ritem) = N_Aspect_Specification
                  and then Entity (Ritem) = E
                  and then Is_Delayed_Aspect (Ritem)
+                 and then Scope (E) = Current_Scope
                then
                   Check_Aspect_At_Freeze_Point (Ritem);
                end if;
@@ -5482,7 +5647,7 @@ package body Sem_Ch13 is
       Ident : constant Node_Id   := Identifier (ASN);
 
       Freeze_Expr : constant Node_Id := Expression (ASN);
-      --  Preanalyzed expression from call to Check_Aspect_At_Freeze_Point
+      --  Expression from call to Check_Aspect_At_Freeze_Point
 
       End_Decl_Expr : constant Node_Id := Entity (Ident);
       --  Expression to be analyzed at end of declarations
@@ -5512,11 +5677,20 @@ package body Sem_Ch13 is
          Err := Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
 
       elsif A_Id = Aspect_Variable_Indexing or else
-            A_Id = Aspect_Constant_Indexing
+            A_Id = Aspect_Constant_Indexing or else
+            A_Id = Aspect_Default_Iterator  or else
+            A_Id = Aspect_Iterator_Element
       then
          Analyze (End_Decl_Expr);
          Analyze (Aspect_Rep_Item (ASN));
-         Err := Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
+
+         --  If the end of declarations comes before any other freeze
+         --  point, the Freeze_Expr is not analyzed: no check needed.
+
+         Err :=
+           Analyzed (Freeze_Expr)
+             and then not In_Instance
+             and then Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
 
       --  All other cases
 
