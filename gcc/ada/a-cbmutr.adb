@@ -286,21 +286,21 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    -------------------
 
    function Ancestor_Find
-     (Container : Tree;
-      Item      : Element_Type;
-      Position  : Cursor) return Cursor
+     (Position : Cursor;
+      Item     : Element_Type) return Cursor
    is
-      R : constant Count_Type := Root_Node (Container);
-      N : Count_Type;
+      R, N : Count_Type;
 
    begin
       if Position = No_Element then
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      if Position.Container /= Container'Unrestricted_Access then
-         raise Program_Error with "Position cursor not in container";
-      end if;
+      --  Commented-out pending ruling by ARG.  ???
+
+      --  if Position.Container /= Container'Unrestricted_Access then
+      --     raise Program_Error with "Position cursor not in container";
+      --  end if;
 
       --  AI-0136 says to raise PE if Position equals the root node. This does
       --  not seem correct, as this value is just the limiting condition of the
@@ -311,13 +311,14 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       --     raise Program_Error with "Position cursor designates root";
       --  end if;
 
+      R := Root_Node (Position.Container.all);
       N := Position.Node;
       while N /= R loop
-         if Container.Elements (N) = Item then
-            return Cursor'(Container'Unrestricted_Access, N);
+         if Position.Container.Elements (N) = Item then
+            return Cursor'(Position.Container, N);
          end if;
 
-         N := Container.Nodes (N).Parent;
+         N := Position.Container.Nodes (N).Parent;
       end loop;
 
       return No_Element;
@@ -1289,9 +1290,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
    ---------------------
 
    function Find_In_Subtree
-     (Container : Tree;
-      Item      : Element_Type;
-      Position  : Cursor) return Cursor
+     (Position : Cursor;
+      Item     : Element_Type) return Cursor
    is
       Result : Count_Type;
 
@@ -1300,27 +1300,35 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      if Position.Container /= Container'Unrestricted_Access then
-         raise Program_Error with "Position cursor not in container";
-      end if;
+      --  Commented-out pending ruling by ARG.  ???
 
-      if Container.Count = 0 then
+      --  if Position.Container /= Container'Unrestricted_Access then
+      --     raise Program_Error with "Position cursor not in container";
+      --  end if;
+
+      if Position.Container.Count = 0 then
          pragma Assert (Is_Root (Position));
          return No_Element;
       end if;
 
       if Is_Root (Position) then
-         Result := Find_In_Children (Container, Position.Node, Item);
+         Result := Find_In_Children
+                     (Container => Position.Container.all,
+                      Subtree   => Position.Node,
+                      Item      => Item);
 
       else
-         Result := Find_In_Subtree (Container, Position.Node, Item);
+         Result := Find_In_Subtree
+                     (Container => Position.Container.all,
+                      Subtree   => Position.Node,
+                      Item      => Item);
       end if;
 
       if Result = 0 then
          return No_Element;
       end if;
 
-      return Cursor'(Container'Unrestricted_Access, Result);
+      return Cursor'(Position.Container, Result);
    end Find_In_Subtree;
 
    function Find_In_Subtree

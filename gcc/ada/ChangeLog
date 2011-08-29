@@ -1,7 +1,19 @@
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: Additional semantic checks for aspects involved in
+	iterators.
+
+2011-08-29  Matthew Heaney  <heaney@adacore.com>
+
+	* a-comutr.ads, a-comutr.adb, a-cimutr.ads, a-cimutr.adb,
+	a-cbmutr.ads, a-cbmutr.adb (Find_In_Subtree): Remove superfluous
+	Container parameter.
+	(Ancestor_Find): ditto.
+
 2011-08-29  Thomas Quinot  <quinot@adacore.com>
 
 	* par-endh.adb: Minor reformatting.
-z
+
 2011-08-29  Tristan Gingold  <gingold@adacore.com>
 
 	* a-exexpr-gcc.adb (Unwind_Action) Rewrite as an integer with constants.
