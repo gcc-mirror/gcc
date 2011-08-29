@@ -1,3 +1,8 @@
+2011-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/Makefile.in (../stamp-gnatlib1-$(RTSDIR)): Copy
+	tsystem.h into $(RTSDIR) instead of rts.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch10.adb, a-coorse.adb, exp_dist.adb, exp_ch3.adb: Minor
