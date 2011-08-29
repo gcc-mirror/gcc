@@ -1324,7 +1324,14 @@ package body System.Tasking.Stages is
       --  Execute the task termination handler if we found it
 
       if TH /= null then
-         TH.all (Cause, Self_ID, EO);
+         begin
+            TH.all (Cause, Self_ID, EO);
+
+         exception
+            when others =>
+               --  RM-C.7.3 requires these exceptions to be ignored
+               null;
+         end;
       end if;
 
       if System.Stack_Usage.Is_Enabled then

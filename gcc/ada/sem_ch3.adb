@@ -4791,28 +4791,22 @@ package body Sem_Ch3 is
       --  Process subtype indication if one is present
 
       if Present (Component_Typ) then
-
          Element_Type := Process_Subtype (Component_Typ, P, Related_Id, 'C');
 
          --  In formal verification mode, create an explicit declaration for
          --  the Itype created for a component type. Having a declaration for
          --  all type entities facilitates the task of the formal verification
-         --  back-end. Notice that this declaration is not attached to the
-         --  tree.
+         --  back-end. Note: this declaration is not attached to the tree.
 
-         if ALFA_Mode
-           and then Is_Itype (Element_Type)
-         then
+         if ALFA_Mode and then Is_Itype (Element_Type) then
             declare
                Loc  : constant Source_Ptr := Sloc (Def);
                Decl : Entity_Id;
-
             begin
                Decl :=
                  Make_Subtype_Declaration (Loc,
                    Defining_Identifier => Element_Type,
                    Subtype_Indication  => Relocate_Node (Component_Typ));
-
                Analyze (Decl);
             end;
          end if;
@@ -4906,23 +4900,20 @@ package body Sem_Ch3 is
          --  In ALFA mode, generate a declaration for Itype T, so that the
          --  formal verification back-end can use it.
 
-         if ALFA_Mode
-           and then Is_Itype (T)
-         then
+         if ALFA_Mode and then Is_Itype (T) then
             declare
                Loc  : constant Source_Ptr := Sloc (Def);
                Decl : Node_Id;
-
             begin
-               Decl := Make_Full_Type_Declaration (Loc,
-                  Defining_Identifier => T,
-                  Type_Definition     =>
-                   Make_Constrained_Array_Definition (Loc,
-                     Discrete_Subtype_Definitions =>
-                       New_Copy_List (Discrete_Subtype_Definitions (Def)),
-                     Component_Definition         =>
-                       Relocate_Node (Component_Definition (Def))));
-
+               Decl :=
+                 Make_Full_Type_Declaration (Loc,
+                   Defining_Identifier => T,
+                   Type_Definition     =>
+                     Make_Constrained_Array_Definition (Loc,
+                       Discrete_Subtype_Definitions =>
+                         New_Copy_List (Discrete_Subtype_Definitions (Def)),
+                       Component_Definition         =>
+                         Relocate_Node (Component_Definition (Def))));
                Analyze (Decl);
             end;
          end if;
