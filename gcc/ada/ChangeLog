@@ -1,3 +1,32 @@
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* s-excdeb.ads, s-excdeb.adb: New files, created from s-except.
+	* rtsfind.ads (RTU_Id): Replaces System_Exceptions by
+	System_Exceptions_Debug
+	(RE_Unit_Table): Search RE_Local_Raise in System_Exceptions_Debug
+	* a-except.adb: With and use System.Exceptions_Debug instead of
+	System.Exceptions.
+	* a-except-2005.adb: Likewise.
+	* s-assert.adb: Likewise.
+	* s-except.adb, s-except.ads: Move debugging hooks to s-excdeb.
+	* Makefile.rtl: Add s-excdeb.  Adjust compilation rule.
+	* gcc-interfaces/Makefile.in, gcc-interface/Make-lang.in: Add
+	s-excdeb. Update dependencies.
+	(GNATRTL_LINEARALGEBRA_OBJS): Remove a-nlrear.o a-nurear.o a-nllrar.o
+	as these no longer need external libraries.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Op_Expon): Additional check to reject an
+	exponentiation operator on universal values in a context that requires
+	a fixed-point type.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c (personnality_routine): Fix thinko.  Set Ada occurrence
+	before calling notify_handled_exception.
+	* a-exextr.adb: Fix comment.
+
 2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Expand_Allocator_Expression): Add code to set attribute

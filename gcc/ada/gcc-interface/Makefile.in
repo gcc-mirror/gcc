@@ -2263,8 +2263,8 @@ LIBGNAT_OBJS = adadecode.o adaint.o argv.o cio.o cstreams.o ctrl_c.o	\
 
 include $(fsrcdir)/ada/Makefile.rtl
 
-GNATRTL_LINEARALGEBRA_OBJS = a-nlcoar.o a-nllcar.o a-nllrar.o a-nlrear.o \
-  a-nucoar.o a-nurear.o i-forbla.o i-forlap.o s-gearop.o
+GNATRTL_LINEARALGEBRA_OBJS = a-nlcoar.o a-nllcar.o \
+  a-nucoar.o i-forbla.o i-forlap.o s-gearop.o
 
 GNATRTL_OBJS = $(GNATRTL_NONTASKING_OBJS) $(GNATRTL_TASKING_OBJS) \
   $(GNATRTL_LINEARALGEBRA_OBJS) g-trasym.o memtrack.o
@@ -2774,11 +2774,11 @@ a-except.o  : a-except.adb a-except.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O1 -fno-inline \
 	      $(NO_REORDER_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
-# compile s-except.o without optimization and with debug info to let the
+# compile s-excdeb.o without optimization and with debug info to let the
 # debugger set breakpoints and inspect subprogram parameters on exception
 # related events.
 
-s-except.o  : s-except.adb s-except.ads
+s-excdeb.o  : s-excdeb.adb s-excdeb.ads s-except.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \
 	      $< $(OUTPUT_OPTION)
 

@@ -29,13 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains internal routines used as debugger helpers.
---  It should be compiled without optimization to let debuggers inspect
---  parameter values reliably from breakpoints on the routines.
-
 pragma Compiler_Unit;
-
-with System.Standard_Library;
 
 package System.Exceptions is
 
@@ -44,39 +38,6 @@ package System.Exceptions is
 
    ZCX_By_Default : constant Boolean;
    --  Visible copy to allow Ada.Exceptions to know the exception model.
-
-   package SSL renames System.Standard_Library;
-   --  To let some of the hooks below have formal parameters typed in
-   --  accordance with what GDB expects.
-
-   procedure Debug_Raise_Exception (E : SSL.Exception_Data_Ptr);
-   pragma Export
-     (Ada, Debug_Raise_Exception, "__gnat_debug_raise_exception");
-   --  Hook called at a "raise" point for an exception E, when it is
-   --  just about to be propagated.
-
-   procedure Debug_Unhandled_Exception (E : SSL.Exception_Data_Ptr);
-   pragma Export
-     (Ada, Debug_Unhandled_Exception, "__gnat_unhandled_exception");
-   --  Hook called during the propagation process of an exception E, as soon
-   --  as it is known to be unhandled.
-
-   procedure Debug_Raise_Assert_Failure;
-   pragma Export
-     (Ada, Debug_Raise_Assert_Failure, "__gnat_debug_raise_assert_failure");
-   --  Hook called when an assertion failed. This is used by the debugger to
-   --  intercept assertion failures, and treat them specially.
-
-   procedure Local_Raise (Excep : System.Address);
-   pragma Export (Ada, Local_Raise);
-   --  This is a dummy routine, used only by the debugger for the purpose of
-   --  logging local raise statements that were transformed into a direct goto
-   --  to the handler code. The compiler in this case generates:
-   --
-   --    Local_Raise (exception_data'address);
-   --    goto Handler
-   --
-   --  The argument is the address of the exception data
 
 private
    ZCX_By_Default : constant Boolean := System.ZCX_By_Default;

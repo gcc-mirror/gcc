@@ -7839,6 +7839,14 @@ package body Sem_Res is
       if Is_Fixed_Point_Type (Typ) and then Comes_From_Source (N) then
          Error_Msg_N ("exponentiation not available for fixed point", N);
          return;
+
+      elsif Nkind (Parent (N)) in N_Op
+        and then Is_Fixed_Point_Type (Etype (Parent (N)))
+        and then Etype (N) = Universal_Real
+        and then Comes_From_Source (N)
+      then
+         Error_Msg_N ("exponentiation not available for fixed point", N);
+         return;
       end if;
 
       if Comes_From_Source (N)

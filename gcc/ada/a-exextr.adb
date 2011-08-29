@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,11 +92,6 @@ package body Exception_Traces is
       --  Output the exception information required by the Exception_Trace
       --  configuration. Take care not to output information about internal
       --  exceptions.
-
-      --  ??? In the Front-End ZCX case, the traceback entries we have at this
-      --  point only include the ones we stored while walking up the stack *up
-      --  to the handler*. All the frames above the subprogram in which the
-      --  handler is found are missing.
 
       if not Excep.Id.Not_Handled_By_Others
         and then

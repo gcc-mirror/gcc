@@ -226,7 +226,7 @@ package Rtsfind is
       System_DSA_Services,
       System_DSA_Types,
       System_Exception_Table,
-      System_Exceptions,
+      System_Exceptions_Debug,
       System_Exn_Int,
       System_Exn_LLF,
       System_Exn_LLI,
@@ -753,7 +753,7 @@ package Rtsfind is
 
      RE_Register_Exception,              -- System.Exception_Table
 
-     RE_Local_Raise,                     -- System.Exceptions
+     RE_Local_Raise,                     -- System.Exceptions_Debug
 
      RE_Exn_Integer,                     -- System.Exn_Int
 
@@ -1940,7 +1940,7 @@ package Rtsfind is
 
      RE_Register_Exception               => System_Exception_Table,
 
-     RE_Local_Raise                      => System_Exceptions,
+     RE_Local_Raise                      => System_Exceptions_Debug,
 
      RE_Exn_Integer                      => System_Exn_Int,
 

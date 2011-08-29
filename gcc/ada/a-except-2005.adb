@@ -46,6 +46,7 @@ pragma Polling (Off);
 
 with System;                  use System;
 with System.Exceptions;       use System.Exceptions;
+with System.Exceptions_Debug; use System.Exceptions_Debug;
 with System.Standard_Library; use System.Standard_Library;
 with System.Soft_Links;       use System.Soft_Links;
 with System.WCh_Con;          use System.WCh_Con;
