@@ -44,7 +44,7 @@ package body Ada.Synchronous_Barriers is
       --  barrier will remain open only for those tasks already inside.
 
       entry Wait (Notified : out Boolean)
-        when Wait'Count = Release_Threshold or else Keep_Open
+        when Keep_Open or else Wait'Count = Release_Threshold
       is
       begin
          --  If we are executing the entry it means that the required number of

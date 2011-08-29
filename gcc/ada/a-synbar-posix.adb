@@ -52,7 +52,6 @@ package body Ada.Synchronous_Barriers is
    --  when count waiters arrived. If attr is null the default barrier
    --  attributes shall be used.
 
-   --  Destroy a previously dynamically initialized barrier
    function pthread_barrier_destroy
      (barrier : not null access pthread_barrier_t) return int;
    pragma Import (C, pthread_barrier_destroy, "pthread_barrier_destroy");
@@ -106,4 +105,5 @@ package body Ada.Synchronous_Barriers is
 
       Notified := (Result = PTHREAD_BARRIER_SERIAL_THREAD);
    end Wait_For_Release;
+
 end Ada.Synchronous_Barriers;

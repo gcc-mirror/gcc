@@ -1,3 +1,33 @@
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* a-synbar-posix.adb: Minor reformatting.
+
+2011-08-29  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-exetim-posix.adb, a-exetim-mingw.adb, a-exetim-mingw.ads,
+	a-exetim-default.ads (Interrupt_Clocks_Supported,
+	Separate_Interrupt_Clocks_Supported, Clock_For_Interrupts): Add these
+	definitions to be compliant with AI-0171. The target systems do not
+	support separate account for the execution time of interrupt handlers.
+
+2011-08-29  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-synbar.adb (Wait): Change the order of evaluation of the conditions
+	in the barrier to put first the easiest to evaluate (and the one which
+	will be True more often). More efficient.
+
+2011-08-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-atocou-x86.adb: Fix constraint in machine code insertion.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* aspects.ads, aspects.adb: Add new aspects for various pragmas and
+	attributes that are now aspects, as specified by AI05-0229-1.
+	* sem_ch13.adb (Analyze_Aspect_Specifications,
+	Check_Aspect_At_Freeze_Point): Analyze the new aspects. Turn them into
+	pragmas or attribute references, as appropriate.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* a-synbar.ads, a-synbar.adb, a-synbar-posix.adb,
