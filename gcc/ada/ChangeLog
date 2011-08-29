@@ -1,3 +1,57 @@
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Reject test-case on
+	library-level subprogram.
+	* sem_prag.adb (Check_Test_Case): Stricter rules for test-case
+	placement.
+	(Analyze_Pragma): Change name "Normal" for "Nominal" in test-case
+	component.
+	* snames.ads-tmpl: Change name "Normal" for "Nominal" in test-case
+	component.
+	* gnat_rm.texi: Update doc for Test_Case pragma.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb (Unwind_Exception): Remove default value, made it
+	convention C.
+	(GCC_Exception_Access): New type.
+	(Unwind_DeleteException): New imported procedure
+	(Foreign_Exception): Import it.
+	(GNAT_GCC_Exception): Simply have the occurrence inside.
+	(To_GCC_Exception): New function.
+	(To_GNAT_GCC_Exception): New function.
+	(GNAT_GCC_Exception_Cleanup): New procedure..
+	(Propagate_GCC_Exception): New procedure.
+	(Reraise_GCC_Exception): New procedure.
+	(Setup_Current_Excep): New procedure.
+	(CleanupUnwind_Handler): Change type of UW_Exception parameter.
+	(Unwind_RaiseException): Ditto.
+	(Unwind_ForcedUnwind): Ditto.
+	(Remove): Removed.
+	(Begin_Handler): Change type of parameter.
+	(End_Handler): Ditto. Now delete the exception if still present.
+	(Setup_Key): Removed.
+	(Is_Setup_And_Not_Propagated): Removed.
+	(Set_Setup_And_Not_Propagated): Ditto.
+	(Clear_Setup_And_Not_Propagated): Ditto.
+	(Save_Occurrence_And_Private): Ditto.
+	(EID_For): Add 'not null' constraint on parameter.
+	(Setup_Exception): Does nothing.
+	(Propagate_Exception): Simplified.
+	* exp_ch11.adb (Expand_N_Raise_Statement): In back-end exception model,
+	re-raise is not expanded anymore.
+	* s-except.ads (Foreign_Exception): New exception - placeholder for
+	non Ada exceptions.
+	* raise-gcc.c (__gnat_setup_current_excep): Declare
+	(CXX_EXCEPTION_CLASS): Define (not yet used)
+	(GNAT_EXCEPTION_CLASS): Define.
+	(is_handled_by): Handle foreign exceptions.
+	(PERSONALITY_FUNCTION): Call __gnat_setup_current_excep.
+
+2011-08-29  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-synbar.adb (Synchronous_Barrier): Some additional clarification.
+
 2011-08-29  Thomas Quinot  <quinot@adacore.com>
 
 	* a-synbar-posix.adb: Minor reformatting.

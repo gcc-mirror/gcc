@@ -101,6 +101,7 @@ __gnat_Unwind_RaiseException (_Unwind_Exception *);
 _Unwind_Reason_Code
 __gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
 
+extern void __gnat_setup_current_excep (_Unwind_Exception *);
 
 #ifdef IN_RTS   /* For eh personality routine */
 
@@ -108,6 +109,10 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
 #include "unwind-dw2-fde.h"
 #include "unwind-pe.h"
 
+/* The known and handled exception classes.  */
+
+#define CXX_EXCEPTION_CLASS 0x474e5543432b2b00ULL
+#define GNAT_EXCEPTION_CLASS 0x474e552d41646100ULL
 
 /* --------------------------------------------------------------
    -- The DB stuff below is there for debugging purposes only. --
@@ -853,39 +858,51 @@ extern Exception_Id EID_For (_GNAT_Exception * e);
 static int
 is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
 {
-  /* Pointer to the GNAT exception data corresponding to the propagated
-     occurrence.  */
-  _Unwind_Ptr E = (_Unwind_Ptr) EID_For (propagated_exception);
+  if (propagated_exception->common.exception_class == GNAT_EXCEPTION_CLASS)
+    {
+      /* Pointer to the GNAT exception data corresponding to the propagated
+         occurrence.  */
+      _Unwind_Ptr E = (_Unwind_Ptr) EID_For (propagated_exception);
 
-  /* Base matching rules: An exception data (id) matches itself, "when
-     all_others" matches anything and "when others" matches anything unless
-     explicitly stated otherwise in the propagated occurrence.  */
+      /* Base matching rules: An exception data (id) matches itself, "when
+         all_others" matches anything and "when others" matches anything
+         unless explicitly stated otherwise in the propagated occurrence.  */
 
-  bool is_handled =
-    choice == E
-    || choice == GNAT_ALL_OTHERS
-    || (choice == GNAT_OTHERS && Is_Handled_By_Others (E));
+      bool is_handled =
+        choice == E
+        || choice == GNAT_ALL_OTHERS
+        || (choice == GNAT_OTHERS && Is_Handled_By_Others (E));
 
-  /* In addition, on OpenVMS, Non_Ada_Error matches VMS exceptions, and we
-     may have different exception data pointers that should match for the
-     same condition code, if both an export and an import have been
-     registered.  The import code for both the choice and the propagated
-     occurrence are expected to have been masked off regarding severity
-     bits already (at registration time for the former and from within the
-     low level exception vector for the latter).  */
+      /* In addition, on OpenVMS, Non_Ada_Error matches VMS exceptions, and we
+         may have different exception data pointers that should match for the
+         same condition code, if both an export and an import have been
+         registered.  The import code for both the choice and the propagated
+         occurrence are expected to have been masked off regarding severity
+         bits already (at registration time for the former and from within the
+         low level exception vector for the latter).  */
 #ifdef VMS
-  #define Non_Ada_Error system__aux_dec__non_ada_error
-  extern struct Exception_Data Non_Ada_Error;
+#     define Non_Ada_Error system__aux_dec__non_ada_error
+      extern struct Exception_Data Non_Ada_Error;
 
-  is_handled |=
-    (Language_For (E) == 'V'
-     && choice != GNAT_OTHERS && choice != GNAT_ALL_OTHERS
-     && ((Language_For (choice) == 'V' && Import_Code_For (choice) != 0
-	  && Import_Code_For (choice) == Import_Code_For (E))
-	 || choice == (_Unwind_Ptr)&Non_Ada_Error));
+      is_handled |=
+        (Language_For (E) == 'V'
+         && choice != GNAT_OTHERS && choice != GNAT_ALL_OTHERS
+         && ((Language_For (choice) == 'V' && Import_Code_For (choice) != 0
+              && Import_Code_For (choice) == Import_Code_For (E))
+             || choice == (_Unwind_Ptr)&Non_Ada_Error));
 #endif
 
-  return is_handled;
+      return is_handled;
+    }
+  else
+    {
+#     define Foreign_Exception system__exceptions__foreign_exception;
+      extern struct Exception_Data Foreign_Exception;
+
+      return choice == GNAT_ALL_OTHERS
+        || choice == GNAT_OTHERS
+        || choice == (_Unwind_Ptr)&Foreign_Exception;
+    }
 }
 
 /* Fill out the ACTION to be taken from propagating UW_EXCEPTION up to
@@ -1079,9 +1096,6 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
      Condition Handling Facility.  */
   int uw_version = (int) version_arg;
   _Unwind_Action uw_phases = (_Unwind_Action) phases_arg;
-
-  _GNAT_Exception * gnat_exception = (_GNAT_Exception *) uw_exception;
-
   region_descriptor region;
   action_descriptor action;
 
@@ -1089,7 +1103,7 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
      possible variation on VMS for IA64.  */
   if (uw_version != 1)
     {
-      #if defined (VMS) && defined (__IA64)
+#if defined (VMS) && defined (__IA64)
 
       /* Assume we're called with sigargs/mechargs arguments if really
 	 unexpected bits are set in our first two formals.  Redirect to the
@@ -1103,7 +1117,7 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
       if ((unsigned int)uw_version & version_unexpected_bits_mask
 	  && (unsigned int)uw_phases & phases_unexpected_bits_mask)
 	return __gnat_handle_vms_condition (version_arg, phases_arg);
-      #endif
+#endif
 
       return _URC_FATAL_PHASE1_ERROR;
     }
@@ -1159,6 +1173,9 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
 
   setup_to_install
     (uw_context, uw_exception, action.landing_pad, action.ttype_filter);
+
+  /* Write current exception, so that it can be retrieved from Ada.  */
+  __gnat_setup_current_excep (uw_exception);
 
   return _URC_INSTALL_CONTEXT;
 }

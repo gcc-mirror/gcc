@@ -1365,6 +1365,12 @@ package body Sem_Ch13 is
                begin
                   Args := New_List;
 
+                  if Nkind (Parent (N)) = N_Compilation_Unit then
+                     Error_Msg_N
+                       ("incorrect placement of aspect `Test_Case`", E);
+                     goto Continue;
+                  end if;
+
                   if Nkind (Expr) /= N_Aggregate then
                      Error_Msg_NE
                        ("wrong syntax for aspect `Test_Case` for &", Id, E);

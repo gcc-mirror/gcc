@@ -1665,6 +1665,15 @@ package body Exp_Ch11 is
       --  does not have a choice parameter specification, then we provide one.
 
       else
+
+         --  Don't expand if back end exception handling active
+
+         if VM_Target = No_VM
+           and then Exception_Mechanism = Back_End_Exceptions
+         then
+            return;
+         end if;
+
          --  Find innermost enclosing exception handler (there must be one,
          --  since the semantics has already verified that this raise statement
          --  is valid, and a raise with no arguments is only permitted in the
