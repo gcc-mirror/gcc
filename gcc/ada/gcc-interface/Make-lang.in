@@ -241,8 +241,7 @@ GNAT_ADA_OBJS =	\
  ada/g-spchge.o	\
  ada/g-speche.o	\
  ada/g-u3spch.o	\
- ada/get_alfa.o \
- ada/get_scos.o	\
+ ada/get_alfa.o	\
  ada/get_targ.o	\
  ada/gnat.o	\
  ada/gnatvsn.o	\
@@ -2801,12 +2800,6 @@ ada/get_alfa.o : ada/ada.ads ada/a-ioexce.ads ada/a-unccon.ads \
    ada/s-string.ads ada/s-unstyp.ads ada/types.ads ada/unchconv.ads \
    ada/unchdeal.ads 
 
-ada/get_scos.o : ada/ada.ads ada/a-ioexce.ads ada/a-unccon.ads \
-   ada/get_scos.ads ada/get_scos.adb ada/gnat.ads ada/g-table.ads \
-   ada/g-table.adb ada/scos.ads ada/scos.adb ada/system.ads \
-   ada/s-exctab.ads ada/s-memory.ads ada/s-stalib.ads ada/s-unstyp.ads \
-   ada/types.ads ada/unchconv.ads ada/unchdeal.ads 
-
 ada/get_targ.o : ada/ada.ads ada/a-unccon.ads ada/get_targ.ads \
    ada/get_targ.adb ada/system.ads ada/s-exctab.ads ada/s-stalib.ads \
    ada/s-unstyp.ads ada/types.ads ada/unchconv.ads ada/unchdeal.ads 
@@ -3362,7 +3355,7 @@ ada/put_scos.o : ada/ada.ads ada/a-unccon.ads ada/gnat.ads ada/g-table.ads \
    ada/g-table.adb ada/par_sco.ads ada/put_scos.ads ada/put_scos.adb \
    ada/scos.ads ada/scos.adb ada/system.ads ada/s-exctab.ads \
    ada/s-memory.ads ada/s-stalib.ads ada/s-unstyp.ads ada/types.ads \
-   ada/unchconv.ads ada/unchdeal.ads 
+   ada/unchconv.ads ada/unchdeal.ads ada/snames.ads
 
 ada/repinfo.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
@@ -3651,7 +3644,7 @@ ada/scng.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
 ada/scos.o : ada/ada.ads ada/a-unccon.ads ada/gnat.ads ada/g-table.ads \
    ada/g-table.adb ada/scos.ads ada/scos.adb ada/system.ads \
    ada/s-exctab.ads ada/s-memory.ads ada/s-stalib.ads ada/s-unstyp.ads \
-   ada/types.ads ada/unchconv.ads ada/unchdeal.ads 
+   ada/types.ads ada/unchconv.ads ada/unchdeal.ads ada/snames.ads
 
 ada/sem.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads ada/a-uncdea.ads \
    ada/alloc.ads ada/aspects.ads ada/atree.ads ada/atree.adb \

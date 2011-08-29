@@ -114,6 +114,10 @@ package Rtsfind is
       RTU_Null,
       --  Used as a null entry (will cause an error if referenced)
 
+      --  Package Ada
+
+      Ada,
+
       --  Children of Ada
 
       Ada_Calendar,

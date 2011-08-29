@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -187,6 +187,10 @@ package Ttypes is
    Maximum_Alignment : constant Pos := Get_Maximum_Alignment;
    --  The maximum alignment, in storage units, that an object or
    --  type may require on the target machine.
+
+   System_Allocator_Alignment : constant Pos :=
+     Get_System_Allocator_Alignment;
+   --  The alignment, in storage units, of addresses returned by malloc.
 
    Max_Unaligned_Field : constant Pos := Get_Max_Unaligned_Field;
    --  The maximum supported size in bits for a field that is not aligned

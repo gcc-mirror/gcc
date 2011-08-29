@@ -1,3 +1,30 @@
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* rtsfind.ads, exp_ch3.adb (In_Runtime): Minor code improvement, use
+	Is_RTU instead of using Chars comparisons.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_strm.adb (Build_Mutable_Record_Read_Procedure): Do not create a
+	temporary object if the actual is constrained, and the discriminants
+	read from the stream don't match.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_attr.adb, exp_attr.adb: Add handling of
+	Attribute_System_Allocator_Alignment
+	* snames.ads-tmpl: Add Name_System_Allocator_Alignment and
+	Attribute_System_Allocator_Alignment.
+	* ttypes.ads, get_targ.ads: Add Get_System_Allocator_Alignment.
+	* gcc-interface/targtyps.c, gcc-interface/utils2.c,
+	gcc-interface/gigi.h: Renames get_target_default_allocator_alignment to
+	get_target_system_allocator_alignment.
+
+2011-08-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Update
+	dependencies.
+
 2011-08-29  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_ch3.adb (In_Runtime): Fix typo.

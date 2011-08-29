@@ -270,6 +270,7 @@ Implementation Defined Attributes
 * Small::
 * Storage_Unit::
 * Stub_Type::
+* System_Allocator_Alignment::
 * Target_Name::
 * Tick::
 * To_Address::
@@ -5752,6 +5753,7 @@ consideration, you should minimize the use of these attributes.
 * Small::
 * Storage_Unit::
 * Stub_Type::
+* System_Allocator_Alignment::
 * Target_Name::
 * Tick::
 * To_Address::
@@ -6489,6 +6491,18 @@ By construction, the layout of @code{T'Stub_Type} is identical to that of
 type @code{RACW_Stub_Type} declared in the internal implementation-defined
 unit @code{System.Partition_Interface}. Use of this attribute will create
 an implicit dependency on this unit.
+
+@node System_Allocator_Alignment
+@unnumberedsec System_Allocator_Alignment
+@cindex Alignment, allocator
+@findex System_Allocator_Alignment
+@noindent
+@code{Standard'System_Allocator_Alignment} (@code{Standard} is the only
+permissible prefix) provides the observable guaranted to be honored by
+the system allocator (malloc). This is a static value that can be used
+in user storage pools based on malloc either to reject allocation
+with alignment too large or to enable a realignment circuitry if the
+alignment request is larger than this value.
 
 @node Target_Name
 @unnumberedsec Target_Name

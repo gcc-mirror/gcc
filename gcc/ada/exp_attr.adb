@@ -5379,6 +5379,7 @@ package body Exp_Attr is
            Attribute_Small                        |
            Attribute_Storage_Unit                 |
            Attribute_Stub_Type                    |
+           Attribute_System_Allocator_Alignment   |
            Attribute_Target_Name                  |
            Attribute_Type_Class                   |
            Attribute_Type_Key                     |

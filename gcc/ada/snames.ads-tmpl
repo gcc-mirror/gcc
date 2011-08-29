@@ -814,6 +814,7 @@ package Snames is
    Name_Storage_Size                   : constant Name_Id := N + $;
    Name_Storage_Unit                   : constant Name_Id := N + $; -- GNAT
    Name_Stream_Size                    : constant Name_Id := N + $; -- Ada 05
+   Name_System_Allocator_Alignment     : constant Name_Id := N + $; -- GNAT
    Name_Tag                            : constant Name_Id := N + $;
    Name_Target_Name                    : constant Name_Id := N + $; -- GNAT
    Name_Terminated                     : constant Name_Id := N + $;
@@ -1354,6 +1355,7 @@ package Snames is
       Attribute_Storage_Size,
       Attribute_Storage_Unit,
       Attribute_Stream_Size,
+      Attribute_System_Allocator_Alignment,
       Attribute_Tag,
       Attribute_Target_Name,
       Attribute_Terminated,
