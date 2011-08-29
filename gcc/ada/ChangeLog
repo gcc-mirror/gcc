@@ -1,3 +1,17 @@
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr.adb (Setup_Exception): Removed.
+	* a-exexpr-gcc.adb (Setup_Exception): Removed.
+	* a-except.adb (Exception_Propagation): Removed.
+	* a-except-2005.adb (Setup_Exception): Removed.
+	(Reraise): Remove call to Setup_Exception.
+	(Reraise_Occurrence): Ditto.
+	(Reraise_Occurrence_Always): Ditto.
+	(Reraise_Occurrence_No_Defer): Ditto.
+	(Transfer_Occurrence): Ditto.
+	* a-exexda.adb (Set_Exception_C_Msg): Remove call to Setup_Exception.
+	(Set_Exception_Msg): Ditto.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* a-convec.adb, exp_disp.adb: Minor reformatting.

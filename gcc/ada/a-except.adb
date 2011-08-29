@@ -209,16 +209,6 @@ package body Ada.Exceptions is
 
    end Exception_Traces;
 
-   package Exception_Propagation is
-
-      procedure Setup_Exception
-        (Excep    : EOA;
-         Current  : EOA;
-         Reraised : Boolean := False);
-      --  Dummy routine used to share a-exexda.adb, do nothing
-
-   end Exception_Propagation;
-
    package Stream_Attributes is
 
       --------------------------------
@@ -676,22 +666,6 @@ package body Ada.Exceptions is
    package body Exception_Data is separate;
    --  This package can be easily dummied out if we do not want the basic
    --  support for exception messages (such as in Ada 83).
-
-   package body Exception_Propagation is
-
-      procedure Setup_Exception
-        (Excep    : EOA;
-         Current  : EOA;
-         Reraised : Boolean := False)
-      is
-         pragma Warnings (Off, Excep);
-         pragma Warnings (Off, Current);
-         pragma Warnings (Off, Reraised);
-      begin
-         null;
-      end Setup_Exception;
-
-   end Exception_Propagation;
 
    ----------------------
    -- Exception_Traces --
