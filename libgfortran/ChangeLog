@@ -1,3 +1,13 @@
+2011-08-29  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_deregister): Update prototype.
+	* caf/mpi.c (_gfortran_caf_deregister): Modify prototype,
+	actually free memory and add error diagnostic.
+	(_gfortran_caf_finalize): Add additional free calls.
+	* caf/single.c (_gfortran_caf_deregister): Modify prototype,
+	actually free memory and add error diagnostic.
+	(_gfortran_caf_finalize): Add additional free calls.
+
 2011-08-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/50192

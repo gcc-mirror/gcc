@@ -4241,7 +4241,7 @@ generate_coarray_sym_init (gfc_symbol *sym)
 
   tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_register, 6, size,
 			     build_int_cst (integer_type_node,
-					    GFC_CAF_COARRAY_ALLOC), /* type.  */
+					    GFC_CAF_COARRAY_STATIC), /* type.  */
 			     token, null_pointer_node, /* token, stat.  */
 			     null_pointer_node, /* errgmsg, errmsg_len.  */
 			     build_int_cst (integer_type_node, 0));
