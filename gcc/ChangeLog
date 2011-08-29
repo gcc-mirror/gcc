@@ -1,3 +1,20 @@
+20011-08-29  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (constant_boolean_node): Adjust prototype.
+	* fold-const.c (fold_convert_loc): Move aggregate conversion
+	leeway down.
+	(constant_boolean_node): Make value parameter boolean, add
+	vector type handling.
+	(fold_unary_loc): Use constant_boolean_node.
+	(fold_binary_loc): Preserve types properly when folding
+	COMPLEX_EXPR <__real x, __imag x>.
+	* gimplify.c (gimplify_expr): Handle vector comparison.
+	* tree.def (EQ_EXPR, ...): Document behavior on vector typed
+	comparison.
+	* tree-cfg.c (verify_gimple_comparison): Verify vector typed
+	comparisons.
+
 2011-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48722
