@@ -277,13 +277,15 @@ package body Exception_Propagation is
 
    procedure GNAT_GCC_Exception_Cleanup
      (Reason : Unwind_Reason_Code;
-      Excep  : not null GNAT_GCC_Exception_Access) is
+      Excep  : not null GNAT_GCC_Exception_Access)
+   is
       pragma Unreferenced (Reason);
 
       procedure Free is new Unchecked_Deallocation
         (GNAT_GCC_Exception, GNAT_GCC_Exception_Access);
 
       Copy : GNAT_GCC_Exception_Access := Excep;
+
    begin
       --  Simply free the memory
 
@@ -303,6 +305,7 @@ package body Exception_Propagation is
       UW_Argument  : System.Address) return Unwind_Reason_Code
    is
       pragma Unreferenced (UW_Version, UW_Eclass, UW_Context, UW_Argument);
+
    begin
       --  Terminate when the end of the stack is reached
 
@@ -332,6 +335,7 @@ package body Exception_Propagation is
       Reraised : Boolean := False)
    is
       pragma Unreferenced (Excep, Current, Reraised);
+
    begin
       --  In the GNAT-SJLJ case this "stack" only exists implicitly, by way of
       --  local occurrence declarations together with save/restore operations
@@ -345,8 +349,10 @@ package body Exception_Propagation is
    -------------------------
 
    procedure Setup_Current_Excep
-     (GCC_Exception : not null GCC_Exception_Access) is
+     (GCC_Exception : not null GCC_Exception_Access)
+   is
       Excep : constant EOA := Get_Current_Excep.all;
+
    begin
       --  Setup the exception occurrence
 
@@ -356,7 +362,7 @@ package body Exception_Propagation is
 
          declare
             GNAT_Occurrence : constant GNAT_GCC_Exception_Access :=
-              To_GNAT_GCC_Exception (GCC_Exception);
+                                To_GNAT_GCC_Exception (GCC_Exception);
          begin
             Excep.all := GNAT_Occurrence.Occurrence;
          end;
@@ -404,7 +410,8 @@ package body Exception_Propagation is
    -----------------------------
 
    procedure Reraise_GCC_Exception
-     (GCC_Exception : not null GCC_Exception_Access) is
+     (GCC_Exception : not null GCC_Exception_Access)
+   is
    begin
       --  Simply propagate it
       Propagate_GCC_Exception (GCC_Exception);
@@ -418,7 +425,8 @@ package body Exception_Propagation is
    --  the two phase scheme it implements.
 
    procedure Propagate_GCC_Exception
-     (GCC_Exception : not null GCC_Exception_Access) is
+     (GCC_Exception : not null GCC_Exception_Access)
+   is
    begin
       --  Perform a standard raise first. If a regular handler is found, it
       --  will be entered after all the intermediate cleanups have run. If
@@ -436,15 +444,15 @@ package body Exception_Propagation is
 
       --  Now, un a forced unwind to trigger cleanups. Control should not
       --  resume there, if there are cleanups and in any cases as the
-      --  unwinding hook calls Unhandled_Exception_Terminate when end of stack
-      --  is reached.
+      --  unwinding hook calls Unhandled_Exception_Terminate when end of
+      --  stack is reached.
 
       Unwind_ForcedUnwind (GCC_Exception,
                            CleanupUnwind_Handler'Address,
                            System.Null_Address);
 
-      --  We get here in case of error.
-      --  The debugger has been notified before the second step above.
+      --  We get here in case of error. The debugger has been notified before
+      --  the second step above.
 
       Setup_Current_Excep (GCC_Exception);
       Unhandled_Exception_Terminate;
@@ -455,8 +463,8 @@ package body Exception_Propagation is
    -------------------------
 
    --  Build an object suitable for the libgcc processing and call
-   --  Unwind_RaiseException to actually throw, taking care of handling
-   --  the two phase scheme it implements.
+   --  Unwind_RaiseException to actually do the raise, taking care of
+   --  handling the two phase scheme it implements.
 
    procedure Propagate_Exception
      (E                   : Exception_Id;
@@ -494,14 +502,16 @@ package body Exception_Propagation is
 
       --  Allocate the GCC exception
 
-      GCC_Exception := new GNAT_GCC_Exception'
-        (Header    => (Class => GNAT_Exception_Class,
-                       Cleanup => GNAT_GCC_Exception_Cleanup'Address,
-                       Private1 => 0,
-                       Private2 => 0),
-         Occurrence => Excep.all);
+      GCC_Exception :=
+        new GNAT_GCC_Exception'
+          (Header     => (Class => GNAT_Exception_Class,
+                          Cleanup => GNAT_GCC_Exception_Cleanup'Address,
+                          Private1 => 0,
+                          Private2 => 0),
+           Occurrence => Excep.all);
 
-      --  Propagate it.
+      --  Propagate it
+
       Propagate_GCC_Exception (To_GCC_Exception (GCC_Exception));
    end Propagate_Exception;
 

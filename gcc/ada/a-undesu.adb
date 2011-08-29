@@ -17,20 +17,15 @@
 
 --  ??? What is the header version here, see a-uncdea.adb. No GPL?
 
-with System.Storage_Pools.Subpools; use System.Storage_Pools.Subpools;
+with System.Storage_Pools.Subpools,
+     System.Storage_Pools.Subpools.Finalization;
+
+use System.Storage_Pools.Subpools,
+    System.Storage_Pools.Subpools.Finalization;
 
 procedure Ada.Unchecked_Deallocate_Subpool
   (Subpool : in out System.Storage_Pools.Subpools.Subpool_Handle)
 is
 begin
-   --  Finalize all controlled objects allocated on the input subpool
-
-   --  ??? It is awkward to create a child of Storage_Pools.Subpools for the
-   --  sole purpose of exporting Finalize_Subpool.
-
---   Finalize_Subpool (Subpool);
-
-   --  Dispatch to the user-defined implementation of Deallocate_Subpool
-
-   Deallocate_Subpool (Pool_Of_Subpool (Subpool).all, Subpool);
+   Finalize_And_Deallocate (Subpool);
 end Ada.Unchecked_Deallocate_Subpool;

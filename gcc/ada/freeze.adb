@@ -1439,27 +1439,24 @@ package body Freeze is
                end loop;
             end;
 
-         --  We add finalization collections to access types whose designated
-         --  types require finalization. This is normally done when freezing
-         --  the type, but this misses recursive type definitions where the
-         --  later members of the recursion introduce controlled components
-         --  (such as can happen when incomplete types are involved), as well
-         --  cases where a component type is private and the controlled full
-         --  type occurs after the access type is frozen. Cases that don't
-         --  need a finalization collection are generic formal types (the
-         --  actual type will have it) and types with Java and CIL conventions,
-         --  since those are used for API bindings. (Are there any other cases
-         --  that should be excluded here???)
+         --  We add finalization masters to access types whose designated types
+         --  require finalization. This is normally done when freezing the
+         --  type, but this misses recursive type definitions where the later
+         --  members of the recursion introduce controlled components (such as
+         --  can happen when incomplete types are involved), as well cases
+         --  where a component type is private and the controlled full type
+         --  occurs after the access type is frozen. Cases that don't need a
+         --  finalization master are generic formal types (the actual type will
+         --  have it) and types with Java and CIL conventions, since those are
+         --  used for API bindings. (Are there any other cases that should be
+         --  excluded here???)
 
          elsif Is_Access_Type (E)
            and then Comes_From_Source (E)
            and then not Is_Generic_Type (E)
            and then Needs_Finalization (Designated_Type (E))
-           and then No (Associated_Collection (E))
-           and then Convention (Designated_Type (E)) /= Convention_Java
-           and then Convention (Designated_Type (E)) /= Convention_CIL
          then
-            Build_Finalization_Collection (E);
+            Build_Finalization_Master (E);
          end if;
 
          Next_Entity (E);

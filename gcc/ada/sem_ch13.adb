@@ -1471,6 +1471,7 @@ package body Sem_Ch13 is
 
                else
                   case A_Id is
+
                      --  For Pre/Post cases, insert immediately after the
                      --  entity declaration, since that is the required pragma
                      --  placement.

@@ -1,3 +1,23 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-exexpr-gcc.adb, a-synbar.adb, sem_ch13.adb: Minor reformatting.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggr_Expr): Call this routine even in the case
+	of <>, because this is the routine that checks for dimensionality
+	errors (for example, for a two-dimensional array, (others => <>) should
+	be (others => (others => <>)).
+
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* impunit.adb: Add new run-time units.
+	* freeze.adb, exp_ch7.ads, exp_ch7.adb, exp_util.ads, exp_util.adb,
+	s-stposu.ads, s-stposu.adb: Code clean up.
+	Handle protected class-wide or task class-wide types
+	Handle C/C++/CIL/Java types.
+	* s-spsufi.adb, s-spsufi.ads: New files.
+
 2011-08-29  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications): Reject test-case on
