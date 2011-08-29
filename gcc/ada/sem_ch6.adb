@@ -2348,7 +2348,7 @@ package body Sem_Ch6 is
          --  the proper back-annotations.
 
          if not Is_Frozen (Spec_Id)
-           and then (Expander_Active or else ASIS_Mode)
+           and then (Expander_Active or ASIS_Mode)
          then
             --  Force the generation of its freezing node to ensure proper
             --  management of access types in the backend.

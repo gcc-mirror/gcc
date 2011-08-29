@@ -5483,7 +5483,7 @@ package body Exp_Ch3 is
                end if;
 
             --  ??? Now that masters acts as heterogeneous lists, it might be
-            --  worthed to revisit the global master approach.
+            --  worthwhile to revisit the global master approach.
 
             elsif Ekind (Comp_Typ) = E_Anonymous_Access_Type
               and then Needs_Finalization (Directly_Designated_Type (Comp_Typ))

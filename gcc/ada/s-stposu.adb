@@ -8,10 +8,6 @@
 --                                                                          --
 --            Copyright (C) 2011, Free Software Foundation, Inc.            --
 --                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
---                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
@@ -259,6 +255,7 @@ package body System.Storage_Pools.Subpools is
          --  object. This operation effectively hides the list header.
 
          Addr := N_Addr + Header_And_Padding;
+
       else
          Addr := N_Addr;
       end if;
@@ -346,6 +343,7 @@ package body System.Storage_Pools.Subpools is
          --  hidden list header.
 
          N_Size := Storage_Size + Header_And_Padding;
+
       else
          N_Addr := Addr;
          N_Size := Storage_Size;

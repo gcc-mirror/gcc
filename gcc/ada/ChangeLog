@@ -1,5 +1,22 @@
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch6.adb, exp_ch3.adb, s-stposu.adb, a-undesu.ads,
+	a-undesu.adb: Minor reformatting.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Check_Premature_Freezing): When building a dispatch
+	table, accept an unfrozen untagged component if it is an actual for a
+	formal incomplete type.
+	* a-convec.ads, a-convec.adb: Instantiate Ada.Iterator_Interfaces to
+	provide new iterator forms over vectors.
+	Introduce type Iterator in package body to implement operations of
+	Reversible_Iterator interface.
+	* a-iteint.ads: Make package pure so it is usable with new container
+	packages, that are categorized Remote_Types.
+
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
 	* a-exexpr-gcc.adb, a-synbar.adb, sem_ch13.adb: Minor reformatting.
 
 2011-08-29  Bob Duff  <duff@adacore.com>

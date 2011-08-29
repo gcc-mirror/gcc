@@ -3698,6 +3698,46 @@ package body Exp_Disp is
          Typ         : Entity_Id)
       is
          Comp : Entity_Id;
+         function Is_Actual_For_Formal_Incomplete_Type (T : Entity_Id)
+            return Boolean;
+         --  In Ada2012, if a nested generic has an incomplete formal type, the
+         --  actual may be (and usually is) a private type whose completion
+         --  appears later. It is safe to build the dispatch table in this
+         --  case, gigi will have full views available.
+
+         ------------------------------------------
+         -- Is_Actual_For_Formal_Incomplete_Type --
+         ------------------------------------------
+
+         function Is_Actual_For_Formal_Incomplete_Type (T : Entity_Id)
+            return Boolean
+         is
+            Gen_Par : Entity_Id;
+            F       : Node_Id;
+         begin
+            if not Is_Generic_Instance (Current_Scope)
+              or else not Used_As_Generic_Actual (T)
+            then
+               return False;
+
+            else
+               Gen_Par := Generic_Parent (Parent (Current_Scope));
+            end if;
+
+            F :=
+              First
+                (Generic_Formal_Declarations
+                     (Unit_Declaration_Node (Gen_Par)));
+            while Present (F) loop
+               if Ekind (Defining_Identifier (F)) = E_Incomplete_Type then
+                  return True;
+               end if;
+
+               Next (F);
+            end loop;
+
+            return False;
+         end Is_Actual_For_Formal_Incomplete_Type;
 
       begin
          if Present (N)
@@ -3720,6 +3760,8 @@ package body Exp_Disp is
             if not Is_Tagged_Type (Typ)
               and then Present (Comp)
               and then not Is_Frozen (Comp)
+              and then
+               not Is_Actual_For_Formal_Incomplete_Type (Comp)
             then
                Error_Msg_Sloc := Sloc (Subp);
                Error_Msg_Node_2 := Subp;
