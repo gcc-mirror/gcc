@@ -722,7 +722,7 @@ package body Prj.Conf is
          --  Hash table to keep the languages used in the project tree
 
          IDE : constant Package_Id :=
-           Value_Of (Name_Ide, Project.Decl.Packages, Shared);
+                 Value_Of (Name_Ide, Project.Decl.Packages, Shared);
 
          procedure Add_Config_Switches_For_Project
            (Project    : Project_Id;
@@ -744,6 +744,7 @@ package body Prj.Conf is
             Lang          : Name_Id;
             List          : String_List_Id;
             Elem          : String_Element;
+
          begin
             if Might_Have_Sources (Project) then
                Variable :=
@@ -813,12 +814,17 @@ package body Prj.Conf is
 
          procedure For_Every_Imported_Project is new For_Every_Project_Imported
            (State => Integer, Action => Add_Config_Switches_For_Project);
+         --  Document this procedure ???
+
+         --  Local variables
 
          Name     : Name_Id;
          Count    : Natural;
          Result   : Argument_List_Access;
          Variable : Variable_Value;
          Dummy    : Integer := 0;
+
+      --  Start of processing for Get_Config_Switches
 
       begin
          For_Every_Imported_Project
@@ -839,6 +845,7 @@ package body Prj.Conf is
          Count := 1;
          Name  := Language_Htable.Get_First;
          while Name /= No_Name loop
+
             --  Check if IDE'Compiler_Command is declared for the language.
             --  If it is, use its value to invoke gprconfig.
 

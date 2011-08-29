@@ -455,14 +455,18 @@ procedure Gnat1drv is
 
          Reset_Style_Check_Options;
 
-         --  Suppress compiler warnings, since what we are
-         --  interested in here is what formal verification can find out.
+         --  Suppress compiler warnings, since what we are interested in here
+         --  is what formal verification can find out.
 
          Warning_Mode := Suppress;
 
          --  Suppress the generation of name tables for enumerations
 
          Global_Discard_Names := True;
+
+         --  Suppress the expansion of tagged types and dispatching calls
+
+         Tagged_Type_Expansion := False;
       end if;
    end Adjust_Global_Switches;
 

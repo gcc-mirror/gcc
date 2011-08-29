@@ -7440,8 +7440,8 @@ package body Exp_Ch7 is
    ------------------------------------
 
    function Make_Set_Finalize_Address_Call
-     (Loc : Source_Ptr;
-      Typ   : Entity_Id;
+     (Loc     : Source_Ptr;
+      Typ     : Entity_Id;
       Ptr_Typ : Entity_Id) return Node_Id
    is
       Desig_Typ : constant Entity_Id :=
@@ -7502,12 +7502,12 @@ package body Exp_Ch7 is
 
       return
         Make_Procedure_Call_Statement (Loc,
-          Name =>
+          Name                   =>
             New_Reference_To (RTE (RE_Set_Finalize_Address), Loc),
           Parameter_Associations => New_List (
             New_Reference_To (Finalization_Master (Ptr_Typ), Loc),
             Make_Attribute_Reference (Loc,
-              Prefix =>
+              Prefix         =>
                 New_Reference_To (TSS (Utyp, TSS_Finalize_Address), Loc),
               Attribute_Name => Name_Unrestricted_Access)));
    end Make_Set_Finalize_Address_Call;

@@ -17237,9 +17237,8 @@ package body Sem_Ch3 is
             --  worst, and therefore defaults are not allowed if the parent is
             --  a generic formal private type (see ACATS B370001).
 
-            if Is_Access_Type (Discr_Type) then
+            if Is_Access_Type (Discr_Type) and then Default_Present then
                if Ekind (Discr_Type) /= E_Anonymous_Access_Type
-                 or else not Default_Present
                  or else Is_Limited_Record (Current_Scope)
                  or else Is_Concurrent_Type (Current_Scope)
                  or else Is_Concurrent_Record_Type (Current_Scope)

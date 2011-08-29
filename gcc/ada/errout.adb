@@ -2833,7 +2833,7 @@ package body Errout is
       elsif Msg = "size for& too small, minimum allowed is ^" then
 
          --  Suppress "size too small" errors in CodePeer mode and ALFA mode,
-         --  since pragma Pack is also ignored in this configuration.
+         --  since pragma Pack is also ignored in these configurations.
 
          if CodePeer_Mode or ALFA_Mode then
             return True;

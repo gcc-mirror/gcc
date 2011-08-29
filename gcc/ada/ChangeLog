@@ -1,3 +1,36 @@
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch13.adb (Expand_N_Freeze_Entity): Do nothing in Alfa mode.
+	* exp_ch9.adb: Do not expand tasking constructs in Alfa mode.
+	* gnat1drv.adb (Adjust_Global_Switches): Suppress the expansion of
+	tagged types and dispatching calls in Alfa mode.
+
+2011-08-29  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Process_Discriminants): Add missing check to ensure that
+	we do not report an error on an Empty node.
+
+2011-08-29  Geert Bosch  <bosch@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJECTS): Add a-nllrar.o,
+	a-nlrear.o and a-nurear.o.
+
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Minor code reorganization.
+	Minor reformatting.
+	* sem_util.adb, errout.adb, exp_ch11.adb, a-ngrear.adb, s-gearop.adb,
+	sem_ch6.adb: Minor reformatting
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* s-except.ads, s-except.adb: Provide dummy body.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_warn.adb (Within_Postcondition): Take into account the case of
+	an Ensures component in a Test_Case.
+
 2011-08-29  Tristan Gingold  <gingold@adacore.com>
 
 	* s-excdeb.ads, s-excdeb.adb: New files, created from s-except.

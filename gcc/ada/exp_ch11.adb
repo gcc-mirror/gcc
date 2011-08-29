@@ -1665,7 +1665,6 @@ package body Exp_Ch11 is
       --  does not have a choice parameter specification, then we provide one.
 
       else
-
          --  Bypass expansion to a run-time call when back-end exception
          --  handling is active, unless the target is a VM or CodePeer.
 

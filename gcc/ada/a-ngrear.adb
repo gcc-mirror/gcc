@@ -48,24 +48,24 @@ package body Ada.Numerics.Generic_Real_Arrays is
    function Is_Non_Zero (X : Real'Base) return Boolean is (X /= 0.0);
 
    procedure Back_Substitute is new Ops.Back_Substitute
-       (Scalar        => Real'Base,
-        Matrix        => Real_Matrix,
-        Is_Non_Zero   => Is_Non_Zero);
+     (Scalar        => Real'Base,
+      Matrix        => Real_Matrix,
+      Is_Non_Zero   => Is_Non_Zero);
 
    function Diagonal is new Ops.Diagonal
-        (Scalar       => Real'Base,
-         Vector       => Real_Vector,
-         Matrix       => Real_Matrix);
+     (Scalar       => Real'Base,
+      Vector       => Real_Vector,
+      Matrix       => Real_Matrix);
 
    procedure Forward_Eliminate is new Ops.Forward_Eliminate
-       (Scalar        => Real'Base,
-        Matrix        => Real_Matrix,
-        Zero          => 0.0,
-        One           => 1.0);
+    (Scalar        => Real'Base,
+     Matrix        => Real_Matrix,
+     Zero          => 0.0,
+     One           => 1.0);
 
    procedure Swap_Column is new Ops.Swap_Column
-       (Scalar        => Real'Base,
-        Matrix        => Real_Matrix);
+    (Scalar        => Real'Base,
+     Matrix        => Real_Matrix);
 
    procedure Transpose is new  Ops.Transpose
        (Scalar        => Real'Base,
@@ -100,7 +100,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
    --  Sort Values and associated Vectors by decreasing absolute value
 
    procedure Swap (Left, Right : in out Real);
-   --  Exchange Left and Right.
+   --  Exchange Left and Right
 
    function Sqrt (X : Real) return Real;
    --  Sqrt is implemented locally here, in order to avoid dragging in all of
@@ -132,7 +132,6 @@ package body Ada.Numerics.Generic_Real_Arrays is
       if not (X > 0.0) then
          if X = 0.0 then
             return X;
-
          else
             raise Argument_Error;
          end if;
@@ -158,9 +157,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
       for J in 1 .. 8 loop
          Next := (Root + X / Root) / 2.0;
-
          exit when Root = Next;
-
          Root := Next;
       end loop;
 
@@ -401,29 +398,29 @@ package body Ada.Numerics.Generic_Real_Arrays is
    ---------
 
    function "+" (Right : Real_Vector) return Real_Vector
-      renames Instantiations."+";
+     renames Instantiations."+";
 
    function "+" (Right : Real_Matrix) return Real_Matrix
-      renames Instantiations."+";
+     renames Instantiations."+";
 
    function "+" (Left, Right : Real_Vector) return Real_Vector
-      renames Instantiations."+";
+     renames Instantiations."+";
 
    function "+" (Left, Right : Real_Matrix) return Real_Matrix
-      renames Instantiations."+";
+     renames Instantiations."+";
 
    ---------
    -- "-" --
    ---------
 
    function "-" (Right : Real_Vector) return Real_Vector
-      renames Instantiations."-";
+     renames Instantiations."-";
 
    function "-" (Right : Real_Matrix) return Real_Matrix
-      renames Instantiations."-";
+     renames Instantiations."-";
 
    function "-" (Left, Right : Real_Vector) return Real_Vector
-      renames Instantiations."-";
+     renames Instantiations."-";
 
    function "-" (Left, Right : Real_Matrix) return Real_Matrix
       renames Instantiations."-";
@@ -435,58 +432,58 @@ package body Ada.Numerics.Generic_Real_Arrays is
    --  Scalar multiplication
 
    function "*" (Left : Real'Base; Right : Real_Vector) return Real_Vector
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    function "*" (Left : Real_Vector; Right : Real'Base) return Real_Vector
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    function "*" (Left : Real'Base; Right : Real_Matrix) return Real_Matrix
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    function "*" (Left : Real_Matrix; Right : Real'Base) return Real_Matrix
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    --  Vector multiplication
 
    function "*" (Left, Right : Real_Vector) return Real'Base
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    function "*" (Left, Right : Real_Vector) return Real_Matrix
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    function "*" (Left : Real_Vector; Right : Real_Matrix) return Real_Vector
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    function "*" (Left : Real_Matrix; Right : Real_Vector) return Real_Vector
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    --  Matrix Multiplication
 
    function "*" (Left, Right : Real_Matrix) return Real_Matrix
-      renames Instantiations."*";
+     renames Instantiations."*";
 
    ---------
    -- "/" --
    ---------
 
    function "/" (Left : Real_Vector; Right : Real'Base) return Real_Vector
-      renames Instantiations."/";
+     renames Instantiations."/";
 
    function "/" (Left : Real_Matrix; Right : Real'Base) return Real_Matrix
-      renames Instantiations."/";
+     renames Instantiations."/";
 
    -----------
    -- "abs" --
    -----------
 
    function "abs" (Right : Real_Vector) return Real'Base
-      renames Instantiations."abs";
+     renames Instantiations."abs";
 
    function "abs" (Right : Real_Vector) return Real_Vector
-      renames Instantiations."abs";
+     renames Instantiations."abs";
 
    function "abs" (Right : Real_Matrix) return Real_Matrix
-      renames Instantiations."abs";
+     renames Instantiations."abs";
 
    -----------------
    -- Determinant --
@@ -496,10 +493,8 @@ package body Ada.Numerics.Generic_Real_Arrays is
       M : Real_Matrix := A;
       B : Real_Matrix (A'Range (1), 1 .. 0);
       R : Real'Base;
-
    begin
       Forward_Eliminate (M, B, R);
-
       return R;
    end Determinant;
 
@@ -527,7 +522,6 @@ package body Ada.Numerics.Generic_Real_Arrays is
    begin
       Jacobi (A, Values, Vectors, Compute_Vectors => False);
       Sort_Eigensystem (Values, Vectors);
-
       return Values;
    end Eigenvalues;
 
@@ -574,7 +568,6 @@ package body Ada.Numerics.Generic_Real_Arrays is
       --        values of type Real.
 
       Max_Iterations  : constant := 50;
-
       N               : constant Natural := Length (A);
 
       subtype Square_Matrix is Real_Matrix (1 .. N, 1 .. N);
@@ -606,6 +599,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
       function Sum_Strict_Upper (M : Square_Matrix) return Real is
          Sum : Real := 0.0;
+
       begin
          for Row in 1 .. N - 1 loop
             for Col in Row + 1 .. N loop
@@ -803,7 +797,6 @@ package body Ada.Numerics.Generic_Real_Arrays is
      (Values  : in out Real_Vector;
       Vectors : in out Real_Matrix)
    is
-
       procedure Swap (Left, Right : Integer);
       --  Swap Values (Left) with Values (Right), and also swap the
       --  corresponding eigenvectors. Note that lowerbounds may differ.
@@ -834,7 +827,6 @@ package body Ada.Numerics.Generic_Real_Arrays is
       R : Real_Matrix (X'Range (2), X'Range (1));
    begin
       Transpose (X, R);
-
       return R;
    end Transpose;
 

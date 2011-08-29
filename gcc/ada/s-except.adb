@@ -29,4 +29,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma No_Body;
+--  This package does not require a body, since it is a package renaming. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not interfere.
+
+--  pragma No_Body;
+
+--  The above pragma is commented out, since for now we can't use No_Body in
+--  a unit marked as a Compiler_Unit, since this requires GNAT 6.1, and we
+--  do not yet require this for bootstrapping. So instead we use a dummy Taft
+--  amendment type to require the body:
+
+package body System.Exceptions is
+   type Require_Body is new Integer;
+end System.Exceptions;
