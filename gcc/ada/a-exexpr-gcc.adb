@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,19 +76,20 @@ package body Exception_Propagation is
 
    --  Phase identifiers
 
-   type Unwind_Action is
+   type Unwind_Action is new Integer;
+   pragma Convention (C, Unwind_Action);
+
+   UA_SEARCH_PHASE  : constant Unwind_Action := 1;
+   UA_CLEANUP_PHASE : constant Unwind_Action := 2;
+   UA_HANDLER_FRAME : constant Unwind_Action := 4;
+   UA_FORCE_UNWIND  : constant Unwind_Action := 8;
+   UA_END_OF_STACK  : constant Unwind_Action := 16;  --  GCC extension ?
+
+   pragma Unreferenced
      (UA_SEARCH_PHASE,
       UA_CLEANUP_PHASE,
       UA_HANDLER_FRAME,
       UA_FORCE_UNWIND);
-
-   for Unwind_Action use
-      (UA_SEARCH_PHASE  => 1,
-       UA_CLEANUP_PHASE => 2,
-       UA_HANDLER_FRAME => 4,
-       UA_FORCE_UNWIND  => 8);
-
-   pragma Convention (C, Unwind_Action);
 
    --  Mandatory common header for any exception object handled by the
    --  GCC unwinding runtime.
@@ -131,13 +132,6 @@ package body Exception_Propagation is
       --  GNAT Exception identifier.  This is filled by Propagate_Exception
       --  and then used by the personality routine to determine if the context
       --  it examines contains a handler for the exception being propagated.
-
-      N_Cleanups_To_Trigger : Integer;
-      --  Number of cleanup only frames encountered in SEARCH phase.  This is
-      --  initialized to 0 by Propagate_Exception and maintained by the
-      --  personality routine to control a forced unwinding phase triggering
-      --  all the cleanups before calling Unhandled_Exception_Terminate when
-      --  an exception is not handled.
 
       Next_Exception : EOA;
       --  Used to create a linked list of exception occurrences
@@ -264,11 +258,6 @@ package body Exception_Propagation is
      return Exception_Id;
    pragma Export (C, EID_For, "__gnat_eid_for");
 
-   procedure Adjust_N_Cleanups_For
-     (GNAT_Exception : GNAT_GCC_Exception_Access;
-      Adjustment     : Integer);
-   pragma Export (C, Adjust_N_Cleanups_For, "__gnat_adjust_n_cleanups_for");
-
    ---------------------------------------------------------------------------
    -- Objects to materialize "others" and "all others" in the GCC EH tables --
    ---------------------------------------------------------------------------
@@ -357,19 +346,18 @@ package body Exception_Propagation is
       UW_Argument  : System.Address) return Unwind_Reason_Code
    is
       pragma Unreferenced
-        (UW_Version, UW_Phases, UW_Eclass, UW_Context, UW_Argument);
+        (UW_Version, UW_Eclass, UW_Exception, UW_Context, UW_Argument);
 
    begin
-      --  Terminate as soon as we know there is nothing more to run. The
-      --  count is maintained by the personality routine.
+      --  Terminate when the end of the stack is reached
 
-      if UW_Exception.N_Cleanups_To_Trigger = 0 then
+      if UW_Phases >= UA_END_OF_STACK then
          Unhandled_Exception_Terminate;
       end if;
 
       --  We know there is at least one cleanup further up. Return so that it
       --  is searched and entered, after which Unwind_Resume will be called
-      --  and this hook will gain control (with an updated count) again.
+      --  and this hook will gain control again.
 
       return URC_NO_REASON;
    end CleanupUnwind_Handler;
@@ -553,7 +541,6 @@ package body Exception_Propagation is
       Clear_Setup_And_Not_Propagated (Excep);
 
       GCC_Exception.Id := Excep.Id;
-      GCC_Exception.N_Cleanups_To_Trigger := 0;
 
       --  Compute the backtrace for this occurrence if the corresponding
       --  binder option has been set. Call_Chain takes care of the reraise
@@ -581,8 +568,7 @@ package body Exception_Propagation is
       --  Perform a standard raise first. If a regular handler is found, it
       --  will be entered after all the intermediate cleanups have run. If
       --  there is no regular handler, control will get back to after the
-      --  call, with N_Cleanups_To_Trigger set to the number of frames with
-      --  cleanups found on the way up, and none of these already run.
+      --  call.
 
       Unwind_RaiseException (GCC_Exception);
 
@@ -593,35 +579,20 @@ package body Exception_Propagation is
 
       Notify_Unhandled_Exception;
 
-      --  Now, if cleanups have been found, run a forced unwind to trigger
-      --  them. Control should not resume there, as the unwinding hook calls
-      --  Unhandled_Exception_Terminate as soon as the last cleanup has been
-      --  triggered.
+      --  Now, un a forced unwind to trigger cleanups. Control should not
+      --  resume there, if there are cleanups and in any cases as the
+      --  unwinding hook calls Unhandled_Exception_Terminate when end of stack
+      --  is reached.
 
-      if GCC_Exception.N_Cleanups_To_Trigger /= 0 then
-         Unwind_ForcedUnwind (GCC_Exception,
-                              CleanupUnwind_Handler'Address,
-                              System.Null_Address);
-      end if;
+      Unwind_ForcedUnwind (GCC_Exception,
+                           CleanupUnwind_Handler'Address,
+                           System.Null_Address);
 
-      --  We get here when there is no handler or cleanup to be run at all.
+      --  We get here in case of error.
       --  The debugger has been notified before the second step above.
 
       Unhandled_Exception_Terminate;
    end Propagate_Exception;
-
-   ---------------------------
-   -- Adjust_N_Cleanups_For --
-   ---------------------------
-
-   procedure Adjust_N_Cleanups_For
-     (GNAT_Exception : GNAT_GCC_Exception_Access;
-      Adjustment     : Integer)
-   is
-   begin
-      GNAT_Exception.N_Cleanups_To_Trigger :=
-        GNAT_Exception.N_Cleanups_To_Trigger + Adjustment;
-   end Adjust_N_Cleanups_For;
 
    -------------
    -- EID_For --
