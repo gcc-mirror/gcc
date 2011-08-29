@@ -4059,7 +4059,7 @@ package body Sem_Res is
 
    procedure Resolve_Allocator (N : Node_Id; Typ : Entity_Id) is
       Desig_T  : constant Entity_Id := Designated_Type (Typ);
-      E        : constant Node_Id := Expression (N);
+      E        : constant Node_Id   := Expression (N);
       Subtyp   : Entity_Id;
       Discrim  : Entity_Id;
       Constr   : Node_Id;
@@ -4387,6 +4387,7 @@ package body Sem_Res is
             declare
                Discr : constant Entity_Id :=
                          Defining_Identifier (Associated_Node_For_Itype (Typ));
+
             begin
                --  Ada 2012 AI05-0052: If the designated type of the allocator
                --  is limited, then the allocator shall not be used to define

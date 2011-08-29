@@ -6109,19 +6109,20 @@ package body Make is
                --  Set proper processing commands
 
                case Targparm.VM_Target is
-               when Targparm.JVM_Target =>
+                  when Targparm.JVM_Target =>
 
-                  --  Do not check for an object file (".o") when compiling to
-                  --  JVM machine since ".class" files are generated instead.
+                     --  Do not check for an object file (".o") when compiling
+                     --  to JVM machine since ".class" files are generated
+                     --  instead.
 
-                  Check_Object_Consistency := False;
-                  Gcc := new String'("jvm-gnatcompile");
+                     Check_Object_Consistency := False;
+                     Gcc := new String'("jvm-gnatcompile");
 
-               when Targparm.CLI_Target =>
-                  Gcc := new String'("dotnet-gnatcompile");
+                  when Targparm.CLI_Target =>
+                     Gcc := new String'("dotnet-gnatcompile");
 
-               when Targparm.No_VM =>
-                  raise Program_Error;
+                  when Targparm.No_VM =>
+                     raise Program_Error;
                end case;
             end if;
 

@@ -1229,13 +1229,13 @@ package body Exp_Intr is
       --  Generate a test of whether any earlier finalization raised an
       --  exception, and in that case raise Program_Error with the previous
       --  exception occurrence.
-      --
+
       --  Generate:
-      --    if Raised then
-      --       Reraise_Occurrence (E);                      --  for .NET and
-      --                                                    --  restricted RTS
+      --    if Raised and then not Abort then
+      --       Reraise_Occurrence (E);               --  for .NET and
+      --                                             --  restricted RTS
       --         <or>
-      --       Raise_From_Controlled_Operation (E, Abort);  --  all other cases
+      --       Raise_From_Controlled_Operation (E);  --  all other cases
       --    end if;
 
       if Present (Raised_Id) then

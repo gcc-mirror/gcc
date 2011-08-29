@@ -1196,7 +1196,7 @@ package body Sem_Ch7 is
 
          --  Check on incomplete types
 
-         --  AI05-0213: a formal incomplete type has no completion
+         --  AI05-0213: A formal incomplete type has no completion
 
          if Ekind (E) = E_Incomplete_Type
            and then No (Full_View (E))
