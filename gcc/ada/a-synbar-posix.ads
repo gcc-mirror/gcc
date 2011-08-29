@@ -47,8 +47,9 @@ package Ada.Synchronous_Barriers is
    type Synchronous_Barrier (Release_Threshold : Barrier_Limit) is
       limited private;
 
-   procedure Wait_For_Release (The_Barrier : in out Synchronous_Barrier;
-                               Notified    :    out Boolean);
+   procedure Wait_For_Release
+     (The_Barrier : in out Synchronous_Barrier;
+      Notified    : out Boolean);
 
 private
    --  POSIX barrier data type
@@ -56,8 +57,8 @@ private
    SIZEOF_PTHREAD_BARRIER_T : constant :=
      (if System.Word_Size = 64 then 32 else 20);
    --  Value defined according to the linux definition in pthreadtypes.h. On
-   --  other system, MIPS IRIX, the object is smaller, so it works correctly
-   --  although we are wasting some space.
+   --  other system, e.g. MIPS IRIX, the object is smaller, so it works
+   --  correctly although we are wasting some space.
 
    type pthread_barrier_t_view is (size_based, align_based);
 
@@ -74,9 +75,9 @@ private
 
    type Synchronous_Barrier (Release_Threshold : Barrier_Limit) is
      new Ada.Finalization.Limited_Controlled with
-      record
-         POSIX_Barrier : aliased pthread_barrier_t;
-      end record;
+        record
+           POSIX_Barrier : aliased pthread_barrier_t;
+        end record;
 
    overriding procedure Initialize (Barrier : in out Synchronous_Barrier);
    overriding procedure Finalize   (Barrier : in out Synchronous_Barrier);

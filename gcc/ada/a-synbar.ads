@@ -41,8 +41,9 @@ package Ada.Synchronous_Barriers is
    type Synchronous_Barrier (Release_Threshold : Barrier_Limit) is
       limited private;
 
-   procedure Wait_For_Release (The_Barrier : in out Synchronous_Barrier;
-                               Notified    :    out Boolean);
+   procedure Wait_For_Release
+     (The_Barrier : in out Synchronous_Barrier;
+      Notified    : out Boolean);
 
 private
    protected type Synchronous_Barrier (Release_Threshold : Barrier_Limit) is

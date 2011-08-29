@@ -46,8 +46,7 @@ package body Ada.Synchronous_Barriers is
    function pthread_barrier_init
      (barrier : not null access pthread_barrier_t;
       attr    : System.Address := System.Null_Address;
-      count   : unsigned)
-     return int;
+      count   : unsigned) return int;
    pragma Import (C, pthread_barrier_init, "pthread_barrier_init");
    --  Initialize barrier with the attributes in attr. The barrier is opened
    --  when count waiters arrived. If attr is null the default barrier
@@ -70,7 +69,6 @@ package body Ada.Synchronous_Barriers is
 
    overriding procedure Finalize (Barrier : in out Synchronous_Barrier) is
       Result : int;
-
    begin
       Result := pthread_barrier_destroy (Barrier.POSIX_Barrier'Access);
       pragma Assert (Result = 0);
@@ -78,7 +76,6 @@ package body Ada.Synchronous_Barriers is
 
    overriding procedure Initialize (Barrier : in out Synchronous_Barrier) is
       Result : int;
-
    begin
       Result := pthread_barrier_init
         (barrier => Barrier.POSIX_Barrier'Access,
@@ -93,7 +90,7 @@ package body Ada.Synchronous_Barriers is
 
    procedure Wait_For_Release
      (The_Barrier : in out Synchronous_Barrier;
-      Notified    : out    Boolean)
+      Notified    : out Boolean)
    is
       Result : int;
 

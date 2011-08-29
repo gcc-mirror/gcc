@@ -1,3 +1,12 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-synbar.ads, a-synbar.adb, a-synbar-posix.adb,
+	a-synbar-posix.ads: Minor reformatting.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* snames.ads-tmpl: Add name Force.
+
 2011-08-29  Pascal Obry  <obry@adacore.com>
 
 	* prj-nmsc.adb: Minor reformatting.
