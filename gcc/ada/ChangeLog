@@ -1,11 +1,22 @@
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): Analyze the subpool specification.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): If the entity is tagged
+	and a separate tag assignment is generated, ensure that the tag
+	assignment is analyzed.
+
 2011-08-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* atree.ads, atree.adb (Copy_Separate_List): New function that applies
 	Copy_Separate_Tree to a list of nodes. Used to create disjoint copies
 	of statement lists that may contain local declarations.
-	(Expand_N_Timed_Entry_Call): Use Copy_Separate_List to duplicate the
-	triggering statements needed for the expansion of this construct, when
-	the trigger is a dispatching call to a synchronized primitive.
+	* exp_ch9.adb (Expand_N_Timed_Entry_Call): Use Copy_Separate_List to
+	duplicate the triggering statements needed for the expansion of this
+	construct, when the trigger is a dispatching call to a synchronized
+	primitive.
 
 2011-08-29  Arnaud Charlet  <charlet@adacore.com>
 

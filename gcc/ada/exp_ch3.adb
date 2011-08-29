@@ -5108,25 +5108,24 @@ package body Exp_Ch3 is
 
                begin
                   --  The re-assignment of the tag has to be done even if the
-                  --  object is a constant.
+                  --  object is a constant. The assignment must be analyzed
+                  --  after the declaration.
 
                   New_Ref :=
                     Make_Selected_Component (Loc,
-                       Prefix => New_Reference_To (Def_Id, Loc),
+                       Prefix => New_Occurrence_Of (Def_Id, Loc),
                        Selector_Name =>
                          New_Reference_To (First_Tag_Component (Full_Typ),
                                            Loc));
                   Set_Assignment_OK (New_Ref);
 
-                  Insert_After (Init_After,
+                  Insert_Action_After (Init_After,
                     Make_Assignment_Statement (Loc,
-                      Name => New_Ref,
+                      Name       => New_Ref,
                       Expression =>
                         Unchecked_Convert_To (RTE (RE_Tag),
                           New_Reference_To
-                            (Node
-                              (First_Elmt
-                                (Access_Disp_Table (Full_Typ))),
+                            (Node (First_Elmt (Access_Disp_Table (Full_Typ))),
                              Loc))));
                end;
 
@@ -5196,10 +5195,6 @@ package body Exp_Ch3 is
          if (Is_Possibly_Unaligned_Slice (Expr)
                or else (Is_Possibly_Unaligned_Object (Expr)
                           and then not Represented_As_Scalar (Etype (Expr))))
-
-            --  The exclusion of the unconstrained case is wrong, but for now
-            --  it is too much trouble ???
-
            and then not (Is_Array_Type (Etype (Expr))
                            and then not Is_Constrained (Etype (Expr)))
          then
@@ -5302,7 +5297,7 @@ package body Exp_Ch3 is
 
    --  If the last variant does not contain the Others choice, replace it with
    --  an N_Others_Choice node since Gigi always wants an Others. Note that we
-   --  do not bother to call Analyze on the modified variant part, since it's
+   --  do not bother to call Analyze on the modified variant part, since its
    --  only effect would be to compute the Others_Discrete_Choices node
    --  laboriously, and of course we already know the list of choices that
    --  corresponds to the others choice (it's the list we are replacing!)
@@ -6838,7 +6833,7 @@ package body Exp_Ch3 is
                (Get_Rep_Item_For_Entity
                  (First_Subtype (T), Name_Default_Value)));
 
-      --  Othersie, for scalars, we must have normalize/initialize scalars
+      --  Otherwise, for scalars, we must have normalize/initialize scalars
       --  case, or if the node N is an 'Invalid_Value attribute node.
 
       elsif Is_Scalar_Type (T) then
@@ -6854,8 +6849,8 @@ package body Exp_Ch3 is
             Size_To_Use := Size;
          end if;
 
-         --  Maximum size to use is 64 bits, since we will create values
-         --  of type Unsigned_64 and the range must fit this type.
+         --  Maximum size to use is 64 bits, since we will create values of
+         --  type Unsigned_64 and the range must fit this type.
 
          if Size_To_Use /= No_Uint and then Size_To_Use > Uint_64 then
             Size_To_Use := Uint_64;
@@ -6883,7 +6878,7 @@ package body Exp_Ch3 is
 
             --  For signed integer types that have no negative values, either
             --  there is room for negative values, or there is not. If there
-            --  is, then all 1 bits may be interpreted as minus one, which is
+            --  is, then all 1-bits may be interpreted as minus one, which is
             --  certainly invalid. Alternatively it is treated as the largest
             --  positive value, in which case the observation for modular types
             --  still applies.
@@ -6897,8 +6892,8 @@ package body Exp_Ch3 is
             then
                Val := Make_Integer_Literal (Loc, 2 ** Size_To_Use - 1);
 
-               --  Resolve as Unsigned_64, because the largest number we
-               --  can generate is out of range of universal integer.
+               --  Resolve as Unsigned_64, because the largest number we can
+               --  generate is out of range of universal integer.
 
                Analyze_And_Resolve (Val, RTE (RE_Unsigned_64));
 
@@ -6910,10 +6905,10 @@ package body Exp_Ch3 is
                                   UI_Min (Uint_63, Size_To_Use - 1);
 
                begin
-                  --  Normally we like to use the most negative number. The
-                  --  one exception is when this number is in the known
-                  --  subtype range and the largest positive number is not in
-                  --  the known subtype range.
+                  --  Normally we like to use the most negative number. The one
+                  --  exception is when this number is in the known subtype
+                  --  range and the largest positive number is not in the known
+                  --  subtype range.
 
                   --  For this exceptional case, use largest positive value
 
@@ -6923,7 +6918,7 @@ package body Exp_Ch3 is
                   then
                      Val := Make_Integer_Literal (Loc, 2 ** Signed_Size - 1);
 
-                     --  Normal case of largest negative value
+                  --  Normal case of largest negative value
 
                   else
                      Val := Make_Integer_Literal (Loc, -(2 ** Signed_Size));
@@ -6992,14 +6987,14 @@ package body Exp_Ch3 is
 
          --  The final expression is obtained by doing an unchecked conversion
          --  of this result to the base type of the required subtype. We use
-         --  the base type to avoid the unchecked conversion from chopping
+         --  the base type to prevent the unchecked conversion from chopping
          --  bits, and then we set Kill_Range_Check to preserve the "bad"
          --  value.
 
          Result := Unchecked_Convert_To (Base_Type (T), Val);
 
-         --  Ensure result is not truncated, since we want the "bad" bits
-         --  and also kill range check on result.
+         --  Ensure result is not truncated, since we want the "bad" bits, and
+         --  also kill range check on result.
 
          if Nkind (Result) = N_Unchecked_Type_Conversion then
             Set_No_Truncation (Result);
@@ -7031,12 +7026,11 @@ package body Exp_Ch3 is
       --  Access type is initialized to null
 
       elsif Is_Access_Type (T) then
-         return
-           Make_Null (Loc);
+         return Make_Null (Loc);
 
-      --  No other possibilities should arise, since we should only be
-      --  calling Get_Simple_Init_Val if Needs_Simple_Initialization
-      --  returned True, indicating one of the above cases held.
+      --  No other possibilities should arise, since we should only be calling
+      --  Get_Simple_Init_Val if Needs_Simple_Initialization returned True,
+      --  indicating one of the above cases held.
 
       else
          raise Program_Error;
@@ -7085,7 +7079,7 @@ package body Exp_Ch3 is
          S1 := Scope (S1);
       end loop;
 
-      return Chars (S1) = Name_System or else Chars (S1) = Name_Ada;
+      return Is_RTU (S1, RU_System) or else Is_RTU (S1, RU_Ada);
    end In_Runtime;
 
    ----------------------------
