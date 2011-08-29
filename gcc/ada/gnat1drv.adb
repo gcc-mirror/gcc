@@ -324,11 +324,7 @@ procedure Gnat1drv is
       --  Set and check exception mechanism
 
       if Targparm.ZCX_By_Default_On_Target then
-         if Targparm.GCC_ZCX_Support_On_Target then
-            Exception_Mechanism := Back_End_Exceptions;
-         else
-            Osint.Fail ("Zero Cost Exceptions not supported on this target");
-         end if;
+         Exception_Mechanism := Back_End_Exceptions;
       end if;
 
       --  Set proper status for overflow checks. We turn on overflow checks if

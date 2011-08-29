@@ -6106,8 +6106,9 @@ package body Make is
             Current_Work_Dir => Current_Work_Dir.all);
 
          if Is_First_Main then
-            --  Put the default source dirs in the source path only now,
-            --  so that we take the correct ones in the case when --RTS= is
+
+            --  Put the default source dirs in the source path only now, so
+            --  that we take the correct ones in the case where --RTS= is
             --  specified in the Builder switches.
 
             Osint.Add_Default_Search_Dirs;

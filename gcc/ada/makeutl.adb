@@ -1562,11 +1562,16 @@ package body Makeutl is
                            Main_Id := Create_Name (Base);
                         else
                            declare
+                              --  Always resolve links here, so that users
+                              --  can be specify any name on the command line.
+                              --  If the project itself uses links, the user
+                              --  will be using -eL anyway, and thus files are
+                              --  also stored with resolved names.
                               Absolute : constant String :=
                                            Normalize_Pathname
                                              (Name           => Main,
                                               Directory      => "",
-                                              Resolve_Links  => False,
+                                              Resolve_Links  => True,
                                               Case_Sensitive => False);
                            begin
                               File.File := Create_Name (Absolute);

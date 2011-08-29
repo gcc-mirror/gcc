@@ -139,7 +139,6 @@ private
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := True;
-   GCC_ZCX_Support           : constant Boolean := True;
 
    --  Note: Denorm is False because denormals are only handled properly
    --  if the -mieee switch is set, and we do not require this usage.

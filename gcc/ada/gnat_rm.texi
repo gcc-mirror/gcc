@@ -527,7 +527,7 @@ isolate and clearly document any sections of your program that make use
 of these features in a non-portable manner.
 
 @ifset PROEDITION
-For ease of exposition, ``GNAT Pro'' will be referred to simply as
+For ease of exposition, ``@value{EDITION}'' will be referred to simply as
 ``GNAT'' in the remainder of this document.
 @end ifset
 
@@ -5879,7 +5879,7 @@ the containing record @var{R}.
 @code{Standard'Compiler_Version} (@code{Standard} is the only allowed
 prefix) yields a static string identifying the version of the compiler
 being used to compile the unit containing the attribute reference. A
-typical result would be something like "GNAT Pro 6.3.0w (20090221)".
+typical result would be something like "@value{EDITION} @value{gnat_version} (20090221)".
 
 @node Code_Address
 @unnumberedsec Code_Address

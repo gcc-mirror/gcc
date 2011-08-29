@@ -68,6 +68,9 @@ package body System.Pool_Global is
          raise Storage_Error;
       end if;
 
+      --  Case where alignment requested is greater than the alignment that is
+      --  guaranteed to be provided by the system allocator.
+
       if Alignment > Standard'System_Allocator_Alignment then
 
          --  Realign the returned address
@@ -87,7 +90,9 @@ package body System.Pool_Global is
          begin
             Saved_Address := Allocated;
          end;
+
          Address := Aligned_Address;
+
       else
          Address := Allocated;
       end if;
@@ -108,6 +113,10 @@ package body System.Pool_Global is
       pragma Warnings (Off, Storage_Size);
 
    begin
+      --  Case where the alignment of the block exceeds the guaranteed
+      --  alignment required by the system storage allocator, meaning that
+      --  this was specially wrapped at allocation time.
+
       if Alignment > Standard'System_Allocator_Alignment then
 
          --  Retrieve the block address
@@ -120,6 +129,7 @@ package body System.Pool_Global is
          begin
             Memory.Free (Saved_Address);
          end;
+
       else
          Memory.Free (Address);
       end if;

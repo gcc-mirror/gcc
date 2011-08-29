@@ -188,7 +188,7 @@ package body System.Task_Primitives.Operations is
       --  It is not safe to raise an exception when using ZCX and the GCC
       --  exception handling mechanism.
 
-      if ZCX_By_Default and then GCC_ZCX_Support then
+      if ZCX_By_Default then
          return;
       end if;
 

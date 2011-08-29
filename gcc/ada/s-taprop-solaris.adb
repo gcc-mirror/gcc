@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -265,7 +265,7 @@ package body System.Task_Primitives.Operations is
       --  cases (e.g. shutdown of the Server_Task in System.Interrupts) we
       --  need to send the Abort signal to a task.
 
-      if ZCX_By_Default and then GCC_ZCX_Support then
+      if ZCX_By_Default then
          return;
       end if;
 

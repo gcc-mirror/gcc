@@ -308,9 +308,6 @@ package Targparm is
    --  front-end setjmp/longjmp approach, and this is the default. If
    --  this variable is True, then GCC ZCX is used.
 
-   GCC_ZCX_Support_On_Target  : Boolean := False;
-   --  Indicates that the target supports GCC Exceptions
-
    ------------------------------------
    -- Run-Time Library Configuration --
    ------------------------------------

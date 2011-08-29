@@ -343,9 +343,10 @@ package body Sem_Ch12 is
    --  Creates a new private type, which does not require completion
 
    procedure Analyze_Formal_Incomplete_Type (T   : Entity_Id; Def : Node_Id);
-   --  Ada2012 : Creates a new incomplete type, whose actual does not freeze.
+   --  Ada2012: Creates a new incomplete type whose actual does not freeze
 
    procedure Analyze_Generic_Formal_Part (N : Node_Id);
+   --  Analyze generic formal part
 
    procedure Analyze_Generic_Access_Type (T : Entity_Id; Def : Node_Id);
    --  Create a new access type with the given designated type

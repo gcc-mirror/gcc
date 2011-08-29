@@ -533,7 +533,7 @@ package body Ch12 is
 
       if Token = Tok_Semicolon then
 
-         --  Ada2012 :  incomplete formal type
+         --  Ada2012: Incomplete formal type
 
          Scan; -- past semicolon
 
@@ -546,7 +546,7 @@ package body Ch12 is
 
          Set_Formal_Type_Definition
            (Decl_Node,
-             New_Node (N_Formal_Incomplete_Type_Definition, Token_Ptr));
+            New_Node (N_Formal_Incomplete_Type_Definition, Token_Ptr));
          return Decl_Node;
 
       else

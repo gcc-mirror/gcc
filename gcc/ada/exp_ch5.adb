@@ -1891,11 +1891,15 @@ package body Exp_Ch5 is
       if Nkind (Lhs) = N_Indexed_Component
         and then Is_Bit_Packed_Array (Etype (Prefix (Lhs)))
       then
+         --  Normal case, no change of representation
+
          if not Crep then
             Expand_Bit_Packed_Element_Set (N);
             return;
-         else
 
+         --  Change of representation case
+
+         else
             --  Generate the following, to force component-by-component
             --  assignments in an efficient way. Otherwise each component
             --  will require a temporary and two bit-field manipulations.
@@ -1909,16 +1913,18 @@ package body Exp_Ch5 is
                Stats : List_Id;
 
             begin
-               Stats := New_List (
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Tnn,
-                   Object_Definition => New_Occurrence_Of (Etype (Lhs), Loc)),
-                Make_Assignment_Statement (Loc,
-                  Name => New_Occurrence_Of (Tnn, Loc),
-                  Expression => Relocate_Node (Rhs)),
-                Make_Assignment_Statement (Loc,
-                  Name => Relocate_Node (Lhs),
-                  Expression => New_Occurrence_Of (Tnn, Loc)));
+               Stats :=
+                 New_List (
+                   Make_Object_Declaration (Loc,
+                     Defining_Identifier => Tnn,
+                     Object_Definition   =>
+                       New_Occurrence_Of (Etype (Lhs), Loc)),
+                   Make_Assignment_Statement (Loc,
+                     Name       => New_Occurrence_Of (Tnn, Loc),
+                     Expression => Relocate_Node (Rhs)),
+                   Make_Assignment_Statement (Loc,
+                     Name       => Relocate_Node (Lhs),
+                     Expression => New_Occurrence_Of (Tnn, Loc)));
 
                Insert_Actions (N, Stats);
                Rewrite (N, Make_Null_Statement (Loc));
