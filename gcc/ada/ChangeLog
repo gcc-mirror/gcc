@@ -1,3 +1,18 @@
+2011-08-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Alignment_Check_For_Esize_Change): Rename to...
+	(Alignment_Check_For_Size_Change): ...this.  Add SIZE parameter and
+	use it instead of the Esize of the first parameter.
+	(Analyze_Attribute_Definition_Clause) <Object_Size>: Adjust call to
+	above change.
+	<Size>: Likewise.  Call it for composite types on the RM size.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Not): Do not expand not on array.
+	* sem_util.adb (Unique_Name): Correct behaviour for names of
+	compilation units.
+
 2011-08-29  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Check_Precondition_Postcondition): In formal

@@ -12384,7 +12384,9 @@ package body Sem_Util is
       if E = Standard_Standard then
          return Get_Name_String (Name_Standard);
 
-      elsif Scope (E) = Standard_Standard then
+      elsif Scope (E) = Standard_Standard
+        and then not (Ekind (E) = E_Package or else Is_Subprogram (E))
+      then
          return Get_Name_String (Name_Standard) & "__" &
            Get_Name_String (Chars (E));
 
