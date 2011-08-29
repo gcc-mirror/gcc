@@ -1,5 +1,18 @@
 2011-08-29  Tristan Gingold  <gingold@adacore.com>
 
+	* a-exexpr.adb (Propagate_Exception): Remove all the parameters as
+	they were unused.
+	* a-exexpr-gcc.adb (Propagate_Exception): Ditto.
+	* a-except-2005.adb (Propagate_Exception): Adjust spec.
+	(Raise_Current_Excep): Adjust call.
+	(Raise_From_Signal_Handler): Call now simply call Raise_Current_Excep.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_disp.adb: Minor reformatting.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
 	* a-exexpr.adb (Setup_Exception): Removed.
 	* a-exexpr-gcc.adb (Setup_Exception): Removed.
 	* a-except.adb (Exception_Propagation): Removed.

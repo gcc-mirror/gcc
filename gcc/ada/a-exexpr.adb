@@ -32,28 +32,14 @@
 --  This is the default version, using the __builtin_setjmp/longjmp EH
 --  mechanism.
 
-with System.Storage_Elements;  use System.Storage_Elements;
-
 with Ada.Unchecked_Conversion;
-
-pragma Warnings (Off);
---  Since several constructs give warnings in 3.14a1, including unreferenced
---  variables and pragma Unreferenced itself.
 
 separate (Ada.Exceptions)
 package body Exception_Propagation is
 
    --  Common binding to __builtin_longjmp for sjlj variants.
 
-   --  The builtin expects a pointer type for the jmpbuf address argument, and
-   --  System.Address doesn't work because this is really an integer type.
-
-   type Jmpbuf_Address is access Character;
-
-   function To_Jmpbuf_Address is new
-     Ada.Unchecked_Conversion (System.Address, Jmpbuf_Address);
-
-   procedure builtin_longjmp (buffer : Jmpbuf_Address; Flag : Integer);
+   procedure builtin_longjmp (buffer : System.Address; Flag : Integer);
    pragma No_Return (builtin_longjmp);
    pragma Import (Intrinsic, builtin_longjmp, "__builtin_longjmp");
 
@@ -62,11 +48,7 @@ package body Exception_Propagation is
    -------------------------
 
    procedure Propagate_Exception
-     (E                   : Exception_Id;
-      From_Signal_Handler : Boolean)
    is
-      pragma Inspection_Point (E);
-
       Jumpbuf_Ptr : constant Address := Get_Jmpbuf_Address.all;
       Excep       : constant EOA := Get_Current_Excep.all;
    begin
@@ -108,7 +90,7 @@ package body Exception_Propagation is
             Exception_Traces.Notify_Handled_Exception;
          end if;
 
-         builtin_longjmp (To_Jmpbuf_Address (Jumpbuf_Ptr), 1);
+         builtin_longjmp (Jumpbuf_Ptr, 1);
 
       else
          Exception_Traces.Notify_Unhandled_Exception;

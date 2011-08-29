@@ -239,9 +239,7 @@ package body Ada.Exceptions is
       -- Exception propagation routines --
       ------------------------------------
 
-      procedure Propagate_Exception
-        (E                   : Exception_Id;
-         From_Signal_Handler : Boolean);
+      procedure Propagate_Exception;
       pragma No_Return (Propagate_Exception);
       --  This procedure propagates the exception represented by the occurrence
       --  referenced by Current_Excep in the TSD for the current task.
@@ -268,8 +266,7 @@ package body Ada.Exceptions is
    procedure Raise_Current_Excep (E : Exception_Id);
    pragma No_Return (Raise_Current_Excep);
    pragma Export (C, Raise_Current_Excep, "__gnat_raise_nodefer_with_msg");
-   --  This is a simple wrapper to Exception_Propagation.Propagate_Exception
-   --  setting the From_Signal_Handler argument to False.
+   --  This is a simple wrapper to Exception_Propagation.Propagate_Exception.
    --
    --  This external name for Raise_Current_Excep is historical, and probably
    --  should be changed but for now we keep it, because gdb and gigi know
@@ -815,8 +812,7 @@ package body Ada.Exceptions is
    procedure Raise_Current_Excep (E : Exception_Id) is
    begin
       Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
-      Exception_Propagation.Propagate_Exception
-        (E => E, From_Signal_Handler => False);
+      Exception_Propagation.Propagate_Exception;
    end Raise_Current_Excep;
 
    ---------------------
@@ -923,9 +919,7 @@ package body Ada.Exceptions is
          Abort_Defer.all;
       end if;
 
-      Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
-      Exception_Propagation.Propagate_Exception
-        (E => E, From_Signal_Handler => True);
+      Raise_Current_Excep (E);
    end Raise_From_Signal_Handler;
 
    -------------------------

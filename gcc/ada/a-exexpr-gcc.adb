@@ -445,12 +445,7 @@ package body Exception_Propagation is
    --  handling the two phase scheme it implements.
 
    procedure Propagate_Exception
-     (E                   : Exception_Id;
-      From_Signal_Handler : Boolean)
    is
-      pragma Inspection_Point (E);
-      pragma Unreferenced (From_Signal_Handler);
-
       Excep         : constant EOA := Get_Current_Excep.all;
       GCC_Exception : GNAT_GCC_Exception_Access;
 
