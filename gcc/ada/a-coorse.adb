@@ -42,16 +42,21 @@ package body Ada.Containers.Ordered_Sets is
 
    type Iterator is new
      Ordered_Set_Iterator_Interfaces.Reversible_Iterator with record
-      Container : access constant Set;
-      Node      : Node_Access;
-   end record;
+        Container : access constant Set;
+        Node      : Node_Access;
+     end record;
 
    overriding function First (Object : Iterator) return Cursor;
-   overriding function Last  (Object : Iterator) return Cursor;
-   overriding function Next  (Object : Iterator; Position : Cursor)
-     return Cursor;
-   overriding function Previous (Object : Iterator; Position : Cursor)
-     return Cursor;
+
+   overriding function Last (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    ------------------------------
    -- Access to Fields of Node --
@@ -1248,9 +1253,7 @@ package body Ada.Containers.Ordered_Sets is
       Position := Next (Position);
    end Next;
 
-   function Next  (Object : Iterator; Position : Cursor)
-   return Cursor
-   is
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
       pragma Unreferenced (Object);
    begin
       return Next (Position);
@@ -1305,13 +1308,12 @@ package body Ada.Containers.Ordered_Sets is
       Position := Previous (Position);
    end Previous;
 
-   overriding function Previous (Object : Iterator; Position : Cursor)
-   return Cursor
-   is
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
       pragma Unreferenced (Object);
    begin
       return Previous (Position);
    end Previous;
+
    -------------------
    -- Query_Element --
    -------------------

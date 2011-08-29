@@ -33,7 +33,8 @@
 
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Finalization;
-with Ada.Streams; use Ada.Streams;
+
+with Ada.Streams;             use Ada.Streams;
 with Ada.Iterator_Interfaces;
 
 generic
@@ -254,10 +255,13 @@ package Ada.Containers.Ordered_Sets is
      (Container : Set;
       Process   : not null access procedure (Position : Cursor));
 
-   function Iterate (Container : Set)
+   function Iterate
+     (Container : Set)
       return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class;
 
-   function Iterate (Container : Set; Start : Cursor)
+   function Iterate
+     (Container : Set;
+      Start     : Cursor)
       return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class;
 
    generic
