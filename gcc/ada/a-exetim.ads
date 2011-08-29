@@ -72,6 +72,11 @@ package Ada.Execution_Time is
        TS : Ada.Real_Time.Time_Span := Ada.Real_Time.Time_Span_Zero)
        return CPU_Time;
 
+   Interrupt_Clocks_Supported          : constant Boolean := False;
+   Separate_Interrupt_Clocks_Supported : constant Boolean := False;
+
+   function Clock_For_Interrupts return CPU_Time;
+
 private
 
    type CPU_Time is new Ada.Real_Time.Time;

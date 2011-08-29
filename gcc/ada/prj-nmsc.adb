@@ -151,9 +151,9 @@ package body Prj.Nmsc is
    --  be discarded as soon as we have finished processing the project
 
    type Tree_Processing_Data is record
-      Tree           : Project_Tree_Ref;
-      Node_Tree      : Prj.Tree.Project_Node_Tree_Ref;
-      Flags          : Prj.Processing_Flags;
+      Tree      : Project_Tree_Ref;
+      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Flags     : Prj.Processing_Flags;
    end record;
    --  Temporary data which is needed while parsing a project. It does not need
    --  to be kept in memory once a project has been fully loaded, but is
@@ -6851,8 +6851,8 @@ package body Prj.Nmsc is
       --  several times, and to avoid cycles that may be introduced by symbolic
       --  links.
 
-      File_Pattern    : GNAT.Regexp.Regexp;
-      --  Pattern to use when matching file names.
+      File_Pattern : GNAT.Regexp.Regexp;
+      --  Pattern to use when matching file names
 
       Visited : Recursive_Dirs.Instance;
 

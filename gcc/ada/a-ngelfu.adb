@@ -916,6 +916,11 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          return X;
       end if;
 
+      --  Note: if X is exactly pi/2, then we should raise an exception, since
+      --  the result would overflow. But for all floating-point formats we deal
+      --  with, it is impossible for X to be exactly pi/2, and the result is
+      --  always in range.
+
       return Float_Type'Base (Aux.Tan (Double (X)));
    end Tan;
 
