@@ -1421,8 +1421,16 @@ package Sem_Util is
    --  specified we check only for the given stream operation.
 
    function Unique_Defining_Entity (N : Node_Id) return Entity_Id;
-   --  Return the entity which represents declaration N, so that matching
-   --  declaration and body have the same entity.
+   --  Return the entity which represents declaration N, so that different
+   --  views of the same entity have the same unique defining entity:
+   --  * package spec and body;
+   --  * subprogram declaration, subprogram stub and subprogram body;
+   --  * private view and full view of a type.
+   --  In other cases, return the defining entity for N.
+
+   function Unique_Entity (E : Entity_Id) return Entity_Id;
+   --  Return the unique entity for entity E, which would be returned by
+   --  Unique_Defining_Entity if applied to the enclosing declaration of E.
 
    function Unique_Name (E : Entity_Id) return String;
    --  Return a unique name for entity E, which could be used to identify E

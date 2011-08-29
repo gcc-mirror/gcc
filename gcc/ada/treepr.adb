@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -263,10 +263,39 @@ package body Treepr is
    -- pn --
    --------
 
-   procedure pn (N : Node_Id) is
+   procedure pn (N : Union_Id) is
    begin
-      Print_Tree_Node (N);
+      case N is
+         when List_Low_Bound .. List_High_Bound - 1 =>
+            pl (Int (N));
+         when Node_Range =>
+            Print_Tree_Node (Node_Id (N));
+         when Elist_Range =>
+            Print_Tree_Elist (Elist_Id (N));
+         when Elmt_Range =>
+            raise Program_Error;
+         when Names_Range =>
+            Namet.wn (Name_Id (N));
+         when Strings_Range =>
+            Write_String_Table_Entry (String_Id (N));
+         when Uint_Range =>
+            Uintp.pid (From_Union (N));
+         when Ureal_Range =>
+            Urealp.pr (From_Union (N));
+         when others =>
+            Write_Str ("Invalid Union_Id: ");
+            Write_Int (Int (N));
+      end case;
    end pn;
+
+   --------
+   -- pp --
+   --------
+
+   procedure pp (N : Union_Id) is
+   begin
+      pn (N);
+   end pp;
 
    ----------------
    -- Print_Char --
@@ -1470,6 +1499,15 @@ package body Treepr is
    begin
       Print_Node_Subtree (N);
    end pt;
+
+   ---------
+   -- ppp --
+   ---------
+
+   procedure ppp (N : Node_Id) is
+   begin
+      pt (N);
+   end ppp;
 
    -------------------
    -- Serial_Number --

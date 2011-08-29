@@ -9749,12 +9749,13 @@ package body Sem_Ch6 is
          if AS_Needed then
             if Nkind (N) = N_Accept_Statement then
 
-               --  If expansion is active, The formal is replaced by a local
+               --  If expansion is active, the formal is replaced by a local
                --  variable that renames the corresponding entry of the
                --  parameter block, and it is this local variable that may
-               --  require an actual subtype.
+               --  require an actual subtype. In ALFA mode, expansion of accept
+               --  statements is skipped.
 
-               if Expander_Active then
+               if Expander_Active and not ALFA_Mode then
                   Decl := Build_Actual_Subtype (T, Renamed_Object (Formal));
                else
                   Decl := Build_Actual_Subtype (T, Formal);
@@ -9794,6 +9795,7 @@ package body Sem_Ch6 is
 
             if Nkind (N) = N_Accept_Statement
               and then Expander_Active
+              and then not ALFA_Mode
             then
                Set_Actual_Subtype (Renamed_Object (Formal),
                  Defining_Identifier (Decl));

@@ -30,6 +30,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
+with Expander; use Expander;
 with Fname;    use Fname;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
@@ -2235,6 +2236,10 @@ package body Sem_Ch4 is
                      Check_Implicit_Dereference (N, CT);
                   end;
                end if;
+
+            elsif Try_Container_Indexing (N, P, First (Exprs)) then
+               return;
+
             end if;
 
             Get_Next_Interp (I, It);
@@ -3340,6 +3345,7 @@ package body Sem_Ch4 is
       Iterator : Node_Id;
 
    begin
+      Expander_Mode_Save_And_Set (False);
       Check_SPARK_Restriction ("quantified expression is not allowed", N);
 
       Set_Etype  (Ent,  Standard_Void_Type);
@@ -3373,8 +3379,8 @@ package body Sem_Ch4 is
 
       Analyze (Condition (N));
       End_Scope;
-
       Set_Etype (N, Standard_Boolean);
+      Expander_Mode_Restore;
    end Analyze_Quantified_Expression;
 
    -------------------
@@ -6366,7 +6372,18 @@ package body Sem_Ch4 is
       --  diagnosed in caller.
 
       if No (Func_Name) then
-         return False;
+
+         --  The prefix itself may be an indexing of a container
+         --  rewrite as such and re-analyze.
+
+         if Has_Implicit_Dereference (Etype (Prefix)) then
+            Build_Explicit_Dereference
+              (Prefix, First_Discriminant (Etype (Prefix)));
+            return Try_Container_Indexing (N, Prefix, Expr);
+
+         else
+            return False;
+         end if;
       end if;
 
       if Is_Var

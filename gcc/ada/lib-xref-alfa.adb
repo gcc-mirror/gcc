@@ -835,38 +835,22 @@ package body ALFA is
             declare
                Srec : ALFA_Scope_Record renames ALFA_Scope_Table.Table (S);
 
-               Body_Entity : Entity_Id;
-               Spec_Entity : Entity_Id;
-               Spec_Scope  : Scope_Index;
+               Spec_Entity : constant Entity_Id :=
+                               Unique_Entity (Srec.Scope_Entity);
+               Spec_Scope  : constant Scope_Index :=
+                               Entity_Hash_Table.Get (Spec_Entity);
 
             begin
-               if Ekind (Srec.Scope_Entity) = E_Subprogram_Body then
-                  Body_Entity := Parent (Parent (Srec.Scope_Entity));
-               elsif Ekind (Srec.Scope_Entity) = E_Package_Body then
-                  Body_Entity := Parent (Srec.Scope_Entity);
-               else
-                  Body_Entity := Empty;
-               end if;
+               --  Spec of generic may be missing, in which case Spec_Scope is
+               --  zero.
 
-               if Present (Body_Entity) then
-                  if Nkind (Body_Entity) = N_Defining_Program_Unit_Name then
-                     Body_Entity := Parent (Body_Entity);
-                  elsif Nkind (Body_Entity) = N_Subprogram_Body_Stub then
-                     Body_Entity :=
-                       Proper_Body (Unit (Library_Unit (Body_Entity)));
-                  end if;
-
-                  Spec_Entity := Corresponding_Spec (Body_Entity);
-                  Spec_Scope := Entity_Hash_Table.Get (Spec_Entity);
-
-                  --  Spec of generic may be missing
-
-                  if Spec_Scope /= 0 then
-                     Srec.Spec_File_Num :=
-                       ALFA_Scope_Table.Table (Spec_Scope).File_Num;
-                     Srec.Spec_Scope_Num :=
-                       ALFA_Scope_Table.Table (Spec_Scope).Scope_Num;
-                  end if;
+               if Spec_Entity /= Srec.Scope_Entity
+                 and then Spec_Scope /= 0
+               then
+                  Srec.Spec_File_Num :=
+                    ALFA_Scope_Table.Table (Spec_Scope).File_Num;
+                  Srec.Spec_Scope_Num :=
+                    ALFA_Scope_Table.Table (Spec_Scope).Scope_Num;
                end if;
             end;
          end loop;
@@ -1019,16 +1003,18 @@ package body ALFA is
                end if;
 
             when N_Package_Body_Stub =>
-               declare
-                  Body_N : constant Node_Id := Get_Body_From_Stub (N);
-               begin
-                  if Inside_Stubs
-                    and then
-                      Ekind (Defining_Entity (Body_N)) /= E_Generic_Package
-                  then
-                     Traverse_Package_Body (Body_N, Process, Inside_Stubs);
-                  end if;
-               end;
+               if Present (Library_Unit (N)) then
+                  declare
+                     Body_N : constant Node_Id := Get_Body_From_Stub (N);
+                  begin
+                     if Inside_Stubs
+                       and then
+                         Ekind (Defining_Entity (Body_N)) /= E_Generic_Package
+                     then
+                        Traverse_Package_Body (Body_N, Process, Inside_Stubs);
+                     end if;
+                  end;
+               end if;
 
             --  Subprogram declaration
 
@@ -1048,16 +1034,19 @@ package body ALFA is
                end if;
 
             when N_Subprogram_Body_Stub =>
-               declare
-                  Body_N : constant Node_Id := Get_Body_From_Stub (N);
-               begin
-                  if Inside_Stubs
-                    and then
-                      not Is_Generic_Subprogram (Defining_Entity (Body_N))
-                  then
-                     Traverse_Subprogram_Body (Body_N, Process, Inside_Stubs);
-                  end if;
-               end;
+               if Present (Library_Unit (N)) then
+                  declare
+                     Body_N : constant Node_Id := Get_Body_From_Stub (N);
+                  begin
+                     if Inside_Stubs
+                       and then
+                         not Is_Generic_Subprogram (Defining_Entity (Body_N))
+                     then
+                        Traverse_Subprogram_Body
+                          (Body_N, Process, Inside_Stubs);
+                     end if;
+                  end;
+               end if;
 
             --  Block statement
 

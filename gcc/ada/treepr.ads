@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,25 +57,36 @@ package Treepr is
    --  Prints the subtree consisting of the given element list and all its
    --  referenced descendants.
 
+   --  The following debugging procedures are intended to be called from gdb
+
+   procedure pp (N : Union_Id);
+   pragma Export (Ada, pp);
+   --  Prints a node, node list, uint, or anything else that falls under
+   --  Union_Id.
+
+   procedure ppp (N : Node_Id);
+   pragma Export (Ada, ppp);
+   --  Same as Print_Node_Subtree
+
+   --  The following are no longer needed; you can use pp or ppp instead
+
    procedure pe (E : Elist_Id);
    pragma Export (Ada, pe);
-   --  Debugging procedure (to be called within gdb), same as Print_Tree_Elist
+   --  Same as Print_Tree_Elist
 
    procedure pl (L : Int);
    pragma Export (Ada, pl);
-   --  Debugging procedure (to be called within gdb), same as Print_Tree_List,
-   --  except that you can use e.g. 66 instead of -99999966. In other words
-   --  for the positive case we fill out to 8 digits on the left and add a
-   --  minus sign. This just saves some typing in the debugger.
+   --  Same as Print_Tree_List, except that you can use e.g. 66 instead of
+   --  -99999966. In other words for the positive case we fill out to 8 digits
+   --  on the left and add a minus sign. This just saves some typing in the
+   --  debugger.
 
-   procedure pn (N : Node_Id);
+   procedure pn (N : Union_Id);
    pragma Export (Ada, pn);
-   --  Debugging procedure (to be called within gdb)
-   --  same as Print_Tree_Node with Label = ""
+   --  Same as pp
 
    procedure pt (N : Node_Id);
    pragma Export (Ada, pt);
-   --  Debugging procedure (to be called within gdb)
-   --  same as Print_Node_Subtree
+   --  Same as ppp
 
 end Treepr;

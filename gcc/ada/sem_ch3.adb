@@ -15003,6 +15003,12 @@ package body Sem_Ch3 is
             Set_Has_Private_Declaration (Prev);
             Set_Has_Private_Declaration (Id);
 
+            --  Preserve aspect and iterator flags, that may have been
+            --  set on the partial view.
+
+            Set_Has_Delayed_Aspects (Prev, Has_Delayed_Aspects (Id));
+            Set_Has_Implicit_Dereference (Prev, Has_Implicit_Dereference (Id));
+
             --  If no error, propagate freeze_node from private to full view.
             --  It may have been generated for an early operational item.
 

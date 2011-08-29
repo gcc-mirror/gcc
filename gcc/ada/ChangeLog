@@ -1,3 +1,110 @@
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Restore expansion of tagged
+	types and dispatching calls in Alfa mode.
+	* lib-xref-alfa.adb (Collect_ALFA): Rewrite computation of
+	correspondance between body and spec scopes, to reuse utility functions
+	(Traverse_Declarations_Or_Statements): Protect access to body for stub
+	by testing the presence of the library unit for the body
+	* sem_ch6.adb (Set_Actual_Subtypes): take into account that in Alfa
+	mode the expansion of accept statements is skipped
+	* sem_util.adb, sem_util.ads (Unique_Entity): New function returning
+	the unique entity corresponding to the one returned by
+	Unique_Defining_Entity applied to the enclosing declaration of the
+	argument.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* treepr.ads: Improve debugging facilities. pn(x) no longer crashes in
+	gdb when x is not a node (it can be a node list, name_id, etc). pp is
+	an alias for pn. ppp is an alias for pt.
+
+2011-08-29  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Expand_Record_Aggregate): Use the top-level enclosing
+	aggregate to take a consistent decision on the need to convert into
+	assignments aggregates that initialize constant objects.
+
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Add a call to
+	Build_Allocate_Deallocate_Proc in order to handle allocation of
+	non-controlled objects on subpools.
+	* impunit.adb: Remove s-finmas and s-spsufi since they were never meant
+	to be end-user visible.
+	* s-finmas.adb: Add with and use clause for System.HTable.
+	Add an instantiation of Simple_HTable which provides a mapping between
+	the address of a controlled object and the corresponding
+	Finalize_Address used to clean up the object. The table is used when a
+	master is operating in heterogeneous mode.
+	(Attach): Explain why the input node is not verified on being already
+	attached.
+	(Delete_Finalize_Address): New routine.
+	(Detach): Add pragma Assert which ensures that a node is already
+	attached.
+	(Finalize): Add local variable Cleanup. Rewrite the iteration scheme
+	since nodes are no longer removed on traversal. Explain why node
+	detachment is undesirable in this case.
+	(Get_Finalize_Address): New routine.
+	(Hash): New routine.
+	(Is_Empty_List): Removed.
+	(pm): Renamed to Print_Master. Add output for discriminant
+	Is_Homogeneous.
+	Comment reformatting.
+	(Set_Finalize_Address (Address, Finalize_Address_Ptr)): New routine.
+	* s-finmas.ads: Various comments additions / improvements.
+	Type Finalization_Master has a discriminant which determines the mode of
+	operation.
+	(Delete_Finalize_Address): New routine.
+	(Get_Finalize_Address): New routine.
+	(pm): Renamed to Print_Master.
+	(Set_Finalize_Address (Address, Finalize_Address_Ptr)): New routine.
+	* s-stposu.adb: Add with clause for System.Address_Image; Add with and
+	use clause for System.IO.
+	(Allocate_Any_Controlled): Add machinery to set TSS primitive
+	Finalize_Address depending on the mode of allocation and the mode of
+	the master.
+	(Deallocate_Any_Controlled): Remove the relation pair object -
+	Finalize_Address regardless of the master mode. Add comment explaining
+	the reason.
+	(Detach): Ensure that fields Prev and Next are null after detachment.
+	(Finalize_Pool): Remove local variable Next_Ptr. Rewrite the iteration
+	scheme to check whether the list of subpools is empty. There is no
+	longer need to store the next subpool or advance the current pointer.
+	(Is_Empty_List): New routine.
+	(Print_Pool): New routine.
+	(Print_Subpool): New routine.
+	* s-stposu.ads: Various comments additions / improvements.
+	Field Master of type Root_Subpool is now a heterogeneous collection.
+	(Print_Pool): New routine.
+	(Print_Subpool): New routine.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Iterator_Loop): Implement Ada2012 loop iterator
+	forms, using aspects of container types.
+	* sem_ch3.adb (Find_Type_Name): Preserve Has_Delayed_Aspects and
+	Has_Implicit_Dereference flags, that may be set on the partial view.
+	* sem_ch4.adb (Process_Overloaded_Indexed_Component): Prefix may be a
+	container type with an indexing aspect.
+	(Analyze_Quantified_Expression): Analyze construct with expansion
+	disabled, because it will be rewritten as a loop during expansion.
+	(Try_Container_Indexing): The prefix itself may be a container type
+	with an indexing aspect, as with a vector of vectors.
+	* sem_ch5.adb (Analyze_Iteration_Scheme): In a generic context, analyze
+	the original doamin of iteration, for name capture.
+	(Analyze_Iterator_Specification): If the domain is an expression that
+	needs finalization, create a separate declaration for it.
+	For an iterator with "of" retrieve default iterator info from aspect of
+	container type. For "in" iterator, retrieve type of Iterate function.
+	* sem_ch13.adb (Check_Iterator_Function): Fix typo.
+	(Check_Aspect_At_End_Of_Declaration): Make type unfrozen before
+	analysis, to prevent spurious errors about late attributes.
+	* sprint.adb: Handle quantified expression with either loop or iterator
+	specification.
+	* a-convec.ads, a-convec.adb: Iterate function returns a reversible
+	iterator.
+
 2011-08-29  Vincent Celier  <celier@adacore.com>
 
 	* make.adb (Scan_Make_Arg): Take any option as is in packages Compiler,

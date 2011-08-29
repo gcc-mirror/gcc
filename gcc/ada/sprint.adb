@@ -2709,7 +2709,12 @@ package body Sprint is
                Write_Str (" some ");
             end if;
 
-            Sprint_Node (Loop_Parameter_Specification (Node));
+            if Present (Iterator_Specification (Node)) then
+               Sprint_Node (Iterator_Specification (Node));
+            else
+               Sprint_Node (Loop_Parameter_Specification (Node));
+            end if;
+
             Write_Str (" => ");
             Sprint_Node (Condition (Node));
 
