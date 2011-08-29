@@ -7158,9 +7158,10 @@ package body Exp_Ch4 is
          end;
       end if;
 
-      --  Only array types need any other processing
+      --  Only array types need any other processing. In formal verification
+      --  mode, no other processing is done.
 
-      if not Is_Array_Type (Typ) then
+      if not Is_Array_Type (Typ) or else ALFA_Mode then
          return;
       end if;
 

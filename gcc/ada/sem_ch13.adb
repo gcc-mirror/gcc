@@ -73,11 +73,11 @@ package body Sem_Ch13 is
    -- Local Subprograms --
    -----------------------
 
-   procedure Alignment_Check_For_Esize_Change (Typ : Entity_Id);
-   --  This routine is called after setting the Esize of type entity Typ.
-   --  The purpose is to deal with the situation where an alignment has been
-   --  inherited from a derived type that is no longer appropriate for the
-   --  new Esize value. In this case, we reset the Alignment to unknown.
+   procedure Alignment_Check_For_Size_Change (Typ : Entity_Id; Size : Uint);
+   --  This routine is called after setting one of the sizes of type entity
+   --  Typ to Size. The purpose is to deal with the situation of a derived
+   --  type whose inherited alignment is no longer appropriate for the new
+   --  size value. In this case, we reset the Alignment to unknown.
 
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ,
@@ -661,11 +661,11 @@ package body Sem_Ch13 is
       end if;
    end Adjust_Record_For_Reverse_Bit_Order;
 
-   --------------------------------------
-   -- Alignment_Check_For_Esize_Change --
-   --------------------------------------
+   -------------------------------------
+   -- Alignment_Check_For_Size_Change --
+   -------------------------------------
 
-   procedure Alignment_Check_For_Esize_Change (Typ : Entity_Id) is
+   procedure Alignment_Check_For_Size_Change (Typ : Entity_Id; Size : Uint) is
    begin
       --  If the alignment is known, and not set by a rep clause, and is
       --  inconsistent with the size being set, then reset it to unknown,
@@ -674,11 +674,11 @@ package body Sem_Ch13 is
 
       if Known_Alignment (Typ)
         and then not Has_Alignment_Clause (Typ)
-        and then Esize (Typ) mod (Alignment (Typ) * SSU) /= 0
+        and then Size mod (Alignment (Typ) * SSU) /= 0
       then
          Init_Alignment (Typ);
       end if;
-   end Alignment_Check_For_Esize_Change;
+   end Alignment_Check_For_Size_Change;
 
    -----------------------------------
    -- Analyze_Aspect_Specifications --
@@ -2510,7 +2510,7 @@ package body Sem_Ch13 is
 
                Set_Esize (U_Ent, Size);
                Set_Has_Object_Size_Clause (U_Ent);
-               Alignment_Check_For_Esize_Change (U_Ent);
+               Alignment_Check_For_Size_Change (U_Ent, Size);
             end if;
          end Object_Size;
 
@@ -2603,6 +2603,9 @@ package body Sem_Ch13 is
                   --  (object size) unset, the back end will set it from the
                   --  size and alignment in an appropriate manner.
 
+                  --  In both cases, we check whether the alignment must be
+                  --  reset in the wake of the size change.
+
                   if Is_Elementary_Type (U_Ent) then
                      if Size <= System_Storage_Unit then
                         Init_Esize (U_Ent, System_Storage_Unit);
@@ -2614,7 +2617,9 @@ package body Sem_Ch13 is
                         Set_Esize  (U_Ent, (Size + 63) / 64 * 64);
                      end if;
 
-                     Alignment_Check_For_Esize_Change (U_Ent);
+                     Alignment_Check_For_Size_Change (U_Ent, Esize (U_Ent));
+                  else
+                     Alignment_Check_For_Size_Change (U_Ent, Size);
                   end if;
 
                --  For objects, set Esize only
