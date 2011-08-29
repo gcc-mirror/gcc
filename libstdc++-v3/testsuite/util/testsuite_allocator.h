@@ -434,6 +434,20 @@ namespace __gnu_test
 
 #endif
 
+  template<typename Tp>
+    struct ExplicitConsAlloc : std::allocator<Tp>
+    {
+      ExplicitConsAlloc() { }
+
+      template<typename Up>
+        explicit
+        ExplicitConsAlloc(const ExplicitConsAlloc<Up>&) { }
+
+      template<typename Up>
+        struct rebind
+        { typedef ExplicitConsAlloc<Up> other; };
+    };
+
 } // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_ALLOCATOR_H

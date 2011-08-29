@@ -1,8 +1,6 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
-// { dg-error "no matching" "" { target *-*-* } 1211 }
 
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +17,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <forward_list>
-#include <utility>
+// This file tests explicit instantiation of library containers
 
-void f()
-{
-  typedef std::forward_list<std::forward_list<std::pair<char, char> > > test_type;
-  test_type l('a', 'b');
-}
+#include <forward_list>
+#include <testsuite_allocator.h>
+
+// { dg-do compile }
+
+// libstdc++/50118
+template class std::forward_list<int, __gnu_test::ExplicitConsAlloc<int>>;
+template class std::forward_list<int, __gnu_test::ExplicitConsAlloc<char>>;

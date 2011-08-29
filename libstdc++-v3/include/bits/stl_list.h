@@ -359,7 +359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       : _M_impl()
       { _M_init(); }
 
-      _List_base(const allocator_type& __a)
+      _List_base(const _Node_alloc_type& __a)
       : _M_impl(__a)
       { _M_init(); }
 
@@ -441,6 +441,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       typedef _List_base<_Tp, _Alloc>                    _Base;
       typedef typename _Base::_Tp_alloc_type		 _Tp_alloc_type;
+      typedef typename _Base::_Node_alloc_type		 _Node_alloc_type;
 
     public:
       typedef _Tp                                        value_type;
@@ -525,7 +526,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       explicit
       list(const allocator_type& __a)
-      : _Base(__a) { }
+      : _Base(_Node_alloc_type(__a)) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
@@ -550,7 +551,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       list(size_type __n, const value_type& __value,
 	   const allocator_type& __a = allocator_type())
-      : _Base(__a)
+      : _Base(_Node_alloc_type(__a))
       { _M_fill_initialize(__n, __value); }
 #else
       /**
@@ -564,7 +565,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       explicit
       list(size_type __n, const value_type& __value = value_type(),
 	   const allocator_type& __a = allocator_type())
-      : _Base(__a)
+      : _Base(_Node_alloc_type(__a))
       { _M_fill_initialize(__n, __value); }
 #endif
 
@@ -600,7 +601,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       list(initializer_list<value_type> __l,
            const allocator_type& __a = allocator_type())
-      : _Base(__a)
+      : _Base(_Node_alloc_type(__a))
       { _M_initialize_dispatch(__l.begin(), __l.end(), __false_type()); }
 #endif
 
@@ -617,7 +618,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _InputIterator>
         list(_InputIterator __first, _InputIterator __last,
 	     const allocator_type& __a = allocator_type())
-        : _Base(__a)
+	: _Base(_Node_alloc_type(__a))
         { 
 	  // Check whether it's an integral type.  If so, it's not an iterator.
 	  typedef typename std::__is_integer<_InputIterator>::__type _Integral;
@@ -1100,8 +1101,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       insert(iterator __position, size_type __n, const value_type& __x)
-      {  
-	list __tmp(__n, __x, _M_get_Node_allocator());
+      {
+	list __tmp(__n, __x, get_allocator());
 	splice(__position, __tmp);
       }
 
@@ -1123,7 +1124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         insert(iterator __position, _InputIterator __first,
 	       _InputIterator __last)
         {
-	  list __tmp(__first, __last, _M_get_Node_allocator());
+	  list __tmp(__first, __last, get_allocator());
 	  splice(__position, __tmp);
 	}
 
