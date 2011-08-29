@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -566,7 +566,7 @@ package System.Tasking is
       --  Protection: Set by Activator before Self is activated, and only read
       --  and modified by Self after that.
 
-      Wait_Count : Integer;
+      Wait_Count : Natural;
       --  This count is used by a task that is waiting for other tasks. At all
       --  other times, the value should be zero. It is used differently in
       --  several different states. Since a task cannot be in more than one of
@@ -942,13 +942,13 @@ package System.Tasking is
       --  not write this field until the master is complete, the
       --  synchronization should be adequate to prevent races.
 
-      Alive_Count : Integer := 0;
+      Alive_Count : Natural := 0;
       --  Number of tasks directly dependent on this task (including itself)
       --  that are still "alive", i.e. not terminated.
       --
       --  Protection: Self.L
 
-      Awake_Count : Integer := 0;
+      Awake_Count : Natural := 0;
       --  Number of tasks directly dependent on this task (including itself)
       --  still "awake", i.e., are not terminated and not waiting on a
       --  terminate alternative.

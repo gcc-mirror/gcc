@@ -969,6 +969,11 @@ package Sem_Util is
    --  for something actually declared as volatile, not for an object that gets
    --  treated as volatile (see Einfo.Treat_As_Volatile).
 
+   function Itype_Has_Declaration (Id : Entity_Id) return Boolean;
+   --  Applies to Itypes. True if the Itype is attached to a declaration for
+   --  the type through its Parent field, which may or not be present in the
+   --  tree.
+
    procedure Kill_Current_Values (Last_Assignment_Only : Boolean := False);
    --  This procedure is called to clear all constant indications from all
    --  entities in the current scope and in any parent scopes if the current

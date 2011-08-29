@@ -8507,6 +8507,20 @@ package body Sem_Util is
       end if;
    end Is_Volatile_Object;
 
+   ---------------------------
+   -- Itype_Has_Declaration --
+   ---------------------------
+
+   function Itype_Has_Declaration (Id : Entity_Id) return Boolean is
+   begin
+      pragma Assert (Is_Itype (Id));
+      return Present (Parent (Id))
+        and then Nkind_In (Parent (Id),
+                           N_Full_Type_Declaration,
+                           N_Subtype_Declaration)
+        and then Defining_Entity (Parent (Id)) = Id;
+   end Itype_Has_Declaration;
+
    -------------------------
    -- Kill_Current_Values --
    -------------------------
