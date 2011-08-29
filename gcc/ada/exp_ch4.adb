@@ -7593,6 +7593,10 @@ package body Exp_Ch4 is
       Test         : Node_Id;
 
    begin
+      if ALFA_Mode then
+         return;
+      end if;
+
       Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Tnn,

@@ -351,9 +351,10 @@ procedure Gnat1drv is
       if Debug_Flag_Dot_XX then
          Use_Expression_With_Actions := True;
 
-      --  Debug flag -gnatd.Y decisively sets usage off
+      --  Debug flag -gnatd.Y and -gnatd.F (Alfa Mode) decisively set usage
+      --  off
 
-      elsif Debug_Flag_Dot_YY then
+      elsif Debug_Flag_Dot_YY or Debug_Flag_Dot_FF then
          Use_Expression_With_Actions := False;
 
       --  Otherwise this feature is implemented, so we allow its use
