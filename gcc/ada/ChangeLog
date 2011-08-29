@@ -1,3 +1,34 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.adb, exp_ch4.adb, s-finmas.adb: Minor reformatting.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (TC_Rec_Add_Process_Element): For a choice with multiple
+	values, we generate multiple triples of parameters in the TypeCode.
+	Bump Choice_Index for each such triple so that a subsequent default
+	choice is associated with the correct index in the typecode.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cdlili.adb (Iterate): Initialize properly an iterator over a null
+	container.
+	(First, Last): Handle properly an iterator over a null container.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* sem_ch10.adb (Analyze_With_Clause,Install_Withed_Unit): Abandon
+	processing if we run across a node with no Scope. This can happen if
+	we're with-ing an library-level instance, and that instance got errors
+	that caused "instantiation abandoned".
+	* sem_util.adb (Unit_Declaration_Node): Make it more robust, by raising
+	an exception instead of using Assert, so it won't go into an infinite
+	loop, even when assertions are turned off.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-coorse.adb: Proper handling of empty ordered sets.
+
 2011-08-29  Johannes Kanig  <kanig@adacore.com>
 
 	* debug.adb: Add comments.

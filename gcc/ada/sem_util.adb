@@ -12638,7 +12638,13 @@ package body Sem_Util is
         and then Nkind (N) not in N_Generic_Renaming_Declaration
       loop
          N := Parent (N);
-         pragma Assert (Present (N));
+
+         --  We don't use Assert here, because that causes an infinite loop
+         --  when assertions are turned off. Better to crash.
+
+         if No (N) then
+            raise Program_Error;
+         end if;
       end loop;
 
       return N;

@@ -664,6 +664,8 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Allocator_Expression
 
    begin
+      --  WOuld be nice to comment the branches of this very long if ???
+
       if Is_Tagged_Type (T)
         or else Needs_Finalization (T)
       then
@@ -1136,6 +1138,7 @@ package body Exp_Ch4 is
 
             Rewrite (Exp, New_Copy (Expression (Exp)));
          end if;
+
       else
          Build_Allocate_Deallocate_Proc (N, True);
 

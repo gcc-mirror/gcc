@@ -29,7 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Exceptions;          use Ada.Exceptions;
+with Ada.Exceptions; use Ada.Exceptions;
+
 with System.Address_Image;
 with System.HTable;           use System.HTable;
 with System.IO;               use System.IO;
@@ -241,12 +242,10 @@ package body System.Finalization_Masters is
      (Obj : System.Address) return Finalize_Address_Ptr
    is
       Result : Finalize_Address_Ptr;
-
    begin
       Lock_Task.all;
       Result := Finalize_Address_Table.Get (Obj);
       Unlock_Task.all;
-
       return Result;
    end Finalize_Address;
 

@@ -412,9 +412,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
    end First;
 
    function First (Object : Iterator) return Cursor is
-      C : constant Cursor := (Object.Container, Object.Container.First);
    begin
-      return C;
+      if Object.Container = null then
+         return No_Element;
+      else
+         return (Object.Container, Object.Container.First);
+      end if;
    end First;
 
    -------------------
@@ -819,9 +822,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
    function Iterate (Container : List)
      return List_Iterator_Interfaces.Reversible_Iterator'class
    is
-      It : constant Iterator := (Container'Unchecked_Access, Container.First);
    begin
-      return It;
+      if Container.Length = 0 then
+         return Iterator'(null, null);
+      else
+         return Iterator'(Container'Unchecked_Access, Container.First);
+      end if;
    end Iterate;
 
    function Iterate (Container : List; Start : Cursor)
@@ -846,9 +852,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
    end Last;
 
    function Last (Object : Iterator) return Cursor is
-      C : constant Cursor := (Object.Container, Object.Container.Last);
    begin
-      return C;
+      if Object.Container = null then
+         return No_Element;
+      else
+         return (Object.Container, Object.Container.Last);
+      end if;
    end Last;
 
    ------------------
