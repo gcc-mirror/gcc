@@ -850,57 +850,41 @@ package body Ada.Exceptions is
    -------------------------------------
 
    procedure Raise_From_Controlled_Operation
-     (X          : Ada.Exceptions.Exception_Occurrence;
-      From_Abort : Boolean)
+     (X : Ada.Exceptions.Exception_Occurrence)
    is
+      Prefix             : constant String := "adjust/finalize raised ";
+      Orig_Msg           : constant String := Exception_Message (X);
+      Orig_Prefix_Length : constant Natural :=
+                             Integer'Min (Prefix'Length, Orig_Msg'Length);
+      Orig_Prefix        : String renames Orig_Msg
+                            (Orig_Msg'First ..
+                             Orig_Msg'First + Orig_Prefix_Length - 1);
    begin
-      --  When finalization was triggered by an abort, keep propagating the
-      --  abort signal rather than raising Program_Error.
+      --  Message already has proper prefix, just re-reraise
 
-      if From_Abort then
-         raise Standard'Abort_Signal;
-
-      --  Otherwise, raise Program_Error
+      if Orig_Prefix = Prefix then
+         Raise_Exception_No_Defer
+           (E       => Program_Error'Identity,
+            Message => Orig_Msg);
 
       else
          declare
-            Prefix             : constant String := "adjust/finalize raised ";
-            Orig_Msg           : constant String := Exception_Message (X);
-            Orig_Prefix_Length : constant Natural :=
-                                   Integer'Min
-                                     (Prefix'Length, Orig_Msg'Length);
-            Orig_Prefix        : String renames Orig_Msg
-                                   (Orig_Msg'First ..
-                                    Orig_Msg'First + Orig_Prefix_Length - 1);
+            New_Msg  : constant String := Prefix & Exception_Name (X);
 
          begin
-            --  Message already has proper prefix, just re-reraise
+            --  No message present, just provide our own
 
-            if Orig_Prefix = Prefix then
+            if Orig_Msg = "" then
                Raise_Exception_No_Defer
                  (E       => Program_Error'Identity,
-                  Message => Orig_Msg);
+                  Message => New_Msg);
+
+            --  Message present, add informational prefix
 
             else
-               declare
-                  New_Msg  : constant String := Prefix & Exception_Name (X);
-
-               begin
-                  --  No message present, just provide our own
-
-                  if Orig_Msg = "" then
-                     Raise_Exception_No_Defer
-                       (E       => Program_Error'Identity,
-                        Message => New_Msg);
-
-                  --  Message present, add informational prefix
-
-                  else
-                     Raise_Exception_No_Defer
-                       (E       => Program_Error'Identity,
-                        Message => New_Msg & ": " & Orig_Msg);
-                  end if;
-               end;
+               Raise_Exception_No_Defer
+                 (E       => Program_Error'Identity,
+                  Message => New_Msg & ": " & Orig_Msg);
             end if;
          end;
       end if;
