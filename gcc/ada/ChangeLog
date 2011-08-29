@@ -1,3 +1,8 @@
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb, scos.adb, scos.ads, put_scos.adb, get_scos.adb: Record
+	pragma name for each SCO statement corresponding to a pragma.
+
 2011-08-29  Arnaud Charlet  <charlet@adacore.com>
 
 	* opt.ads: Minor editing.

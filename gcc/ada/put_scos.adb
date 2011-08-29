@@ -25,6 +25,7 @@
 
 with Par_SCO; use Par_SCO;
 with SCOs;    use SCOs;
+with Snames;  use Snames;
 
 procedure Put_SCOs is
    Ctr : Nat;
@@ -34,6 +35,9 @@ procedure Put_SCOs is
 
    procedure Output_Source_Location (Loc : Source_Location);
    --  Output source location in line:col format
+
+   procedure Output_String (S : String);
+   --  Output S
 
    ------------------
    -- Output_Range --
@@ -56,6 +60,17 @@ procedure Put_SCOs is
       Write_Info_Char (':');
       Write_Info_Nat  (Nat (Loc.Col));
    end Output_Source_Location;
+
+   -------------------
+   -- Output_String --
+   -------------------
+
+   procedure Output_String (S : String) is
+   begin
+      for J in S'Range loop
+         Write_Info_Char (S (J));
+      end loop;
+   end Output_String;
 
 --  Start of processing for Put_SCOs
 
@@ -81,9 +96,7 @@ begin
             Write_Info_Nat (SUT.Dep_Num);
             Write_Info_Char (' ');
 
-            for N in SUT.File_Name'Range loop
-               Write_Info_Char (SUT.File_Name (N));
-            end loop;
+            Output_String (SUT.File_Name.all);
 
             Write_Info_Terminate;
          end if;
@@ -125,11 +138,30 @@ begin
 
                         Write_Info_Char (' ');
 
-                        if SCO_Table.Table (Start).C2 /= ' ' then
-                           Write_Info_Char (SCO_Table.Table (Start).C2);
-                        end if;
+                        declare
+                           Sent : SCO_Table_Entry
+                                    renames SCO_Table.Table (Start);
+                        begin
+                           if Sent.C2 /= ' ' then
+                              Write_Info_Char (Sent.C2);
+                              if Sent.C2 = 'P'
+                                   and then Sent.Pragma_Name /= Unknown_Pragma
+                              then
+                                 declare
+                                    Pnam : constant String :=
+                                             Sent.Pragma_Name'Img;
+                                 begin
+                                    --  Strip leading "PRAGMA_"
 
-                        Output_Range (SCO_Table.Table (Start));
+                                    Output_String
+                                      (Pnam (Pnam'First + 7 .. Pnam'Last));
+                                    Write_Info_Char (':');
+                                 end;
+                              end if;
+                           end if;
+
+                           Output_Range (Sent);
+                        end;
 
                         --  Increment entry counter (up to 6 entries per line,
                         --  continuation lines are marked Cs).

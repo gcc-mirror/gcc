@@ -28,7 +28,11 @@
 --  the ALI file, and by Get_SCO/Put_SCO to read and write the text form that
 --  is used in the ALI file.
 
-with Types; use Types;
+with Snames; use Snames;
+--  Note: used for Pragma_Id only, no other feature from Snames should be used,
+--  as a simplified version is maintained in Xcov.
+
+with Types;  use Types;
 
 with GNAT.Table;
 
@@ -143,18 +147,18 @@ package SCOs is
    --    where each sloc-range corresponds to a single statement, and * is
    --    one of:
 
-   --      t  type declaration
-   --      s  subtype declaration
-   --      o  object declaration
-   --      r  renaming declaration
-   --      i  generic instantiation
-   --      C  CASE statement (from CASE through end of expression)
-   --      E  EXIT statement
-   --      F  FOR loop statement (from FOR through end of iteration scheme)
-   --      I  IF statement (from IF through end of condition)
-   --      P  PRAGMA
-   --      R  extended RETURN statement
-   --      W  WHILE loop statement (from WHILE through end of condition)
+   --      t        type declaration
+   --      s        subtype declaration
+   --      o        object declaration
+   --      r        renaming declaration
+   --      i        generic instantiation
+   --      C        CASE statement (from CASE through end of expression)
+   --      E        EXIT statement
+   --      F        FOR loop (from FOR through end of iteration scheme)
+   --      I        IF statement (from IF through end of condition)
+   --      P[name:] PRAGMA with the indicated name
+   --      R        extended RETURN statement
+   --      W        WHILE loop statement (from WHILE through end of condition)
 
    --      Note: for I and W, condition above is in the RM syntax sense (this
    --      condition is a decision in SCO terminology).
@@ -352,16 +356,19 @@ package SCOs is
    No_Source_Location : Source_Location := (No_Line_Number, No_Column_Number);
 
    type SCO_Table_Entry is record
-      From : Source_Location;
-      To   : Source_Location;
-      C1   : Character;
-      C2   : Character;
-      Last : Boolean;
+      From : Source_Location := No_Source_Location;
+      To   : Source_Location := No_Source_Location;
+      C1   : Character       := ' ';
+      C2   : Character       := ' ';
+      Last : Boolean         := False;
 
       Pragma_Sloc : Source_Ptr := No_Location;
       --  For the statement SCO for a pragma, or for any expression SCO nested
       --  in a pragma Debug/Assert/PPC, location of PRAGMA token (used for
       --  control of SCO output, value not recorded in ALI file).
+
+      Pragma_Name : Pragma_Id := Unknown_Pragma;
+      --  For the statement SCO for a pragma, gives the pragma name
    end record;
 
    package SCO_Table is new GNAT.Table (
@@ -485,14 +492,5 @@ package SCOs is
 
    procedure Initialize;
    --  Reset tables for a new compilation
-
-   procedure Add_SCO
-     (From        : Source_Location := No_Source_Location;
-      To          : Source_Location := No_Source_Location;
-      C1          : Character       := ' ';
-      C2          : Character       := ' ';
-      Last        : Boolean         := False;
-      Pragma_Sloc : Source_Ptr      := No_Location);
-   --  Adds one entry to SCO table with given field values
 
 end SCOs;
