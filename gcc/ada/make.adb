@@ -6621,7 +6621,7 @@ package body Make is
          Add_Object_Directories (Main_Project, Project_Tree);
 
          Recursive_Compute_Depth (Main_Project);
-         Compute_All_Imported_Projects (Project_Tree);
+         Compute_All_Imported_Projects (Main_Project, Project_Tree);
 
       else
 

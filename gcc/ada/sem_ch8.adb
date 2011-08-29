@@ -4841,7 +4841,9 @@ package body Sem_Ch8 is
             Set_Entity_Or_Discriminal (N, E);
 
             if Ada_Version >= Ada_2012
-              and then Nkind (Parent (N)) in N_Subexpr
+              and then
+                (Nkind (Parent (N)) in N_Subexpr
+                  or else Nkind (Parent (N)) = N_Object_Declaration)
             then
                Check_Implicit_Dereference (N, Etype (E));
             end if;
@@ -5531,12 +5533,29 @@ package body Sem_Ch8 is
 
                      if Present (Inst) then
                         if Within (It.Nam, Inst) then
-                           return (It.Nam);
+                           if Within (Old_S, Inst) then
+
+                              --  Choose the innermost subprogram, which would
+                              --  have hidden the outer one in the generic.
+
+                              if Scope_Depth (It.Nam) <
+                                Scope_Depth (Old_S)
+                              then
+                                 return Old_S;
+
+                              else
+                                 return It.Nam;
+                              end if;
+                           end if;
+
                         elsif Within (Old_S, Inst) then
                            return (Old_S);
+
                         else
                            return Report_Overload;
                         end if;
+
+                     --  If not within an instance, ambiguity is real.
 
                      else
                         return Report_Overload;
