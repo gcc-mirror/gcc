@@ -1,3 +1,12 @@
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* atree.ads, atree.adb (Copy_Separate_List): New function that applies
+	Copy_Separate_Tree to a list of nodes. Used to create disjoint copies
+	of statement lists that may contain local declarations.
+	(Expand_N_Timed_Entry_Call): Use Copy_Separate_List to duplicate the
+	triggering statements needed for the expansion of this construct, when
+	the trigger is a dispatching call to a synchronized primitive.
+
 2011-08-29  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat_rm.texi: Add doc for 'Elab_Subp_Body.
