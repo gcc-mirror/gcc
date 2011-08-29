@@ -4716,7 +4716,7 @@ package body Sem_Ch6 is
                --  Grouping (use of comma in param lists) must be the same
                --  This is where we catch a misconformance like:
 
-               --    A,B : Integer
+               --    A, B : Integer
                --    A : Integer; B : Integer
 
                --  which are represented identically in the tree except

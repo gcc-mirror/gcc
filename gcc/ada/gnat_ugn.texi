@@ -21373,7 +21373,7 @@ information about several specific platforms.
 @item @code{@ @ @ @ }Tasking    @tab native Win32 threads
 @item @code{@ @ @ @ }Exceptions @tab ZCX
 @*
-@item @code{@ @ }@i{rts-sjlj (default)}
+@item @code{@ @ }@i{rts-sjlj}
 @item @code{@ @ @ @ }Tasking    @tab native Win32 threads
 @item @code{@ @ @ @ }Exceptions @tab SJLJ
 @*

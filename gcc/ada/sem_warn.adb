@@ -3340,12 +3340,12 @@ package body Sem_Warn is
                         if Is_Elementary_Type (Etype (Act1))
                           and then Ekind (Form2) = E_In_Parameter
                         then
-                           null;  --  no real aliasing.
+                           null;  --  No real aliasing
 
                         elsif Is_Elementary_Type (Etype (Act2))
                           and then Ekind (Form2) = E_In_Parameter
                         then
-                           null;  --  ditto
+                           null;  --  Ditto
 
                         --  If the call was written in prefix notation, and
                         --  thus its prefix before rewriting was a selected

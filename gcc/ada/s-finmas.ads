@@ -56,9 +56,8 @@ package System.Finalization_Masters is
    type FM_Node_Ptr is access all FM_Node;
 
    type FM_Node is record
-      Prev             : FM_Node_Ptr := null;
-      Next             : FM_Node_Ptr := null;
-      Finalize_Address : Finalize_Address_Ptr := null;
+      Prev : FM_Node_Ptr := null;
+      Next : FM_Node_Ptr := null;
    end record;
 
    --  A reference to any derivation from Root_Storage_Pool. Since this type
@@ -82,6 +81,9 @@ package System.Finalization_Masters is
       Objects : aliased FM_Node;
       --  A doubly linked list which contains the headers of all controlled
       --  objects allocated in a [sub]pool.
+
+      Finalize_Address : Finalize_Address_Ptr := null;
+      --  A reference to the routine reponsible for object finalization
 
       Finalization_Started : Boolean := False;
       pragma Atomic (Finalization_Started);
@@ -120,11 +122,11 @@ package System.Finalization_Masters is
    --  the list of allocated controlled objects, finalizing each one by calling
    --  its specific Finalize_Address. In the end, deallocate the dummy head.
 
-   function Header_Size return System.Storage_Elements.Storage_Count;
-   --  Return the size of type FM_Node as Storage_Count
-
    function Header_Offset return System.Storage_Elements.Storage_Offset;
    --  Return the size of type FM_Node as Storage_Offset
+
+   function Header_Size return System.Storage_Elements.Storage_Count;
+   --  Return the size of type FM_Node as Storage_Count
 
    overriding procedure Initialize (Master : in out Finalization_Master);
    --  Initialize the dummy head of a finalization master

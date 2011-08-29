@@ -4168,6 +4168,15 @@ package body Sem_Util is
       end if;
    end Get_Actual_Subtype_If_Available;
 
+   ------------------------
+   -- Get_Body_From_Stub --
+   ------------------------
+
+   function Get_Body_From_Stub (N : Node_Id) return Node_Id is
+   begin
+      return Proper_Body (Unit (Library_Unit (N)));
+   end Get_Body_From_Stub;
+
    -------------------------------
    -- Get_Default_External_Name --
    -------------------------------
@@ -7938,6 +7947,22 @@ package body Sem_Util is
         Nkind (N) in N_Statement_Other_Than_Procedure_Call
           or else Nkind (N) = N_Procedure_Call_Statement;
    end Is_Statement;
+
+   --------------------------------------------------
+   -- Is_Subprogram_Stub_Without_Prior_Declaration --
+   --------------------------------------------------
+
+   function Is_Subprogram_Stub_Without_Prior_Declaration
+     (N : Node_Id) return Boolean is
+
+   begin
+      --  A subprogram stub without prior declaration serves as declaration for
+      --  the actual subprogram body. As such, it has an attached defining
+      --  entity of E_[Generic_]Function or E_[Generic_]Procedure.
+
+      return Nkind (N) = N_Subprogram_Body_Stub
+        and then Ekind (Defining_Entity (N)) /= E_Subprogram_Body;
+   end Is_Subprogram_Stub_Without_Prior_Declaration;
 
    ---------------------------------
    -- Is_Synchronized_Tagged_Type --

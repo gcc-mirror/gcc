@@ -628,9 +628,13 @@ package body Exp_Util is
 
             --  d) Finalize_Address
 
-            Fin_Addr_Id := Find_Finalize_Address (Desig_Typ);
+            --  Primitive Finalize_Address is never generated in CodePeer mode
+            --  since it contains an Unchecked_Conversion.
 
-            if Needs_Finalization (Desig_Typ) then
+            if Needs_Finalization (Desig_Typ)
+              and then not CodePeer_Mode
+            then
+               Fin_Addr_Id := Find_Finalize_Address (Desig_Typ);
                pragma Assert (Present (Fin_Addr_Id));
 
                Append_To (Actuals,

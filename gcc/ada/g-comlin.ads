@@ -492,11 +492,12 @@ package GNAT.Command_Line is
 
    Invalid_Parameter : exception;
    --  Raised when a parameter is missing, or an attempt is made to obtain a
-   --  parameter for a switch that does not allow a parameter
+   --  parameter for a switch that does not allow a parameter.
 
    -----------------------------------------
    -- Expansion of command line arguments --
    -----------------------------------------
+
    --  These subprograms take care of of expanding globbing patterns on the
    --  command line. On Unix, such expansion is done by the shell before your
    --  application is called. But on Windows you must do this expansion

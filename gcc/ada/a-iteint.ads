@@ -33,6 +33,7 @@
 generic
    type Cursor;
    with function Has_Element (Position : Cursor) return Boolean;
+   pragma Unreferenced (Has_Element);
 package Ada.Iterator_Interfaces is
    pragma Pure;
 

@@ -1237,10 +1237,10 @@ package Einfo is
 --       representation pragmas nodes and representation clause nodes that
 --       apply to the entity, linked using Next_Rep_Item, with Empty marking
 --       the end of the list. In the case of derived types and subtypes, the
---       new entity inherits the chain at the point of declaration. This
---       means that it is possible to have multiple instances of the same
---       kind of rep item on the chain, in which case it is the first one
---       that applies to the entity.
+--       new entity inherits the chain at the point of declaration. This means
+--       that it is possible to have multiple instances of the same kind of rep
+--       item on the chain, in which case it is the first one that applies to
+--       the entity.
 --
 --       Note: pragmas that can apply to more than one overloadable entity,
 --       (Convention, Interface, Inline, Inline_Always, Import, Export,
@@ -1260,8 +1260,8 @@ package Einfo is
 --          Linker_Section pragma
 --          Weak_External pragma
 --
---       If any of these items are present, then the flag Has_Gigi_Rep_Item
---       is set, indicating that Gigi should search the chain.
+--       If any of these items are present, then the flag Has_Gigi_Rep_Item is
+--       set, indicating that Gigi should search the chain.
 --
 --       Other representation items are included in the chain so that error
 --       messages can easily locate the relevant nodes for posting errors.
@@ -1274,10 +1274,10 @@ package Einfo is
 --       the floating-point representation to be used.
 
 --    Freeze_Node (Node7)
---       Present in all entities. If there is an associated freeze node for
---       the entity, this field references this freeze node. If no freeze
---       node is associated with the entity, then this field is Empty. See
---       package Freeze for further details.
+--       Present in all entities. If there is an associated freeze node for the
+--       entity, this field references this freeze node. If no freeze node is
+--       associated with the entity, then this field is Empty. See package
+--       Freeze for further details.
 
 --    From_With_Type (Flag159)
 --       Present in package and type entities. Indicates that the entity
@@ -3265,7 +3265,7 @@ package Einfo is
 
 --    Package_Instantiation (Node26)
 --       Present in packages and generic packages. When present, this field
---       references an N_Package_Instantiation node associated with an
+--       references an N_Generic_Instantiation node associated with an
 --       instantiated package. In the case where the referenced node has
 --       been rewritten to an N_Package_Specification, the instantiation
 --       node is available from the Original_Node field of the package spec

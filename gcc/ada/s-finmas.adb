@@ -128,27 +128,23 @@ package body System.Finalization_Masters is
 
       Curr_Ptr := Master.Objects.Next;
       while Curr_Ptr /= Master.Objects'Unchecked_Access loop
+
+         --  If primitive Finalize_Address is not set, then the expansion of
+         --  the designated type or that of the allocator failed. This is a
+         --  serious error.
+
+         if Master.Finalize_Address = null then
+            raise Program_Error
+              with "primitive Finalize_Address not available";
+         end if;
+
+         --  Skip the list header in order to offer proper object layout for
+         --  finalization and call Finalize_Address.
+
+         Obj_Addr := Curr_Ptr.all'Address + Header_Offset;
+
          begin
-            --  If primitive Finalize_Address is not set, then the expansion of
-            --  the designated type or that of the allocator failed. This is a
-            --  serious error.
-
-            --  Note: The Program_Error must be raised from the same block as
-            --  the finalization call. If Finalize_Address is not present for
-            --  a particular object, this should not stop the finalization of
-            --  the remaining objects.
-
-            if Curr_Ptr.Finalize_Address = null then
-               raise Program_Error
-                 with "primitive Finalize_Address not available";
-
-            --  Skip the list header in order to offer proper object layout for
-            --  finalization and call Finalize_Address.
-
-            else
-               Obj_Addr := Curr_Ptr.all'Address + Header_Offset;
-               Curr_Ptr.Finalize_Address (Obj_Addr);
-            end if;
+            Master.Finalize_Address (Obj_Addr);
 
          exception
             when Fin_Occur : others =>
