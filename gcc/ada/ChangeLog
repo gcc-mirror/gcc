@@ -1,3 +1,15 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch7.adb, make.adb, sem_res.adb, exp_intr.adb,
+	exp_dist.adb: Minor code reorganization.
+	Minor reformatting.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_cat.adb (Validate_RACW_Primitive): The return type of an RACW
+	primitive operation must support external streaming if it is not a
+	controlling access result.
+
 2011-08-29  Thomas Quinot  <quinot@adacore.com>
 
 	* sinfo.ads, sem_ch7.adb: Minor reformatting.

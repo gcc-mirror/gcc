@@ -10539,6 +10539,7 @@ package body Exp_Dist is
                                           Expr :=
                                             Make_Integer_Literal (Loc, J);
                                        end if;
+
                                        Set_Etype (Expr, Disc_Type);
                                        Append_To (Union_TC_Params,
                                          Build_To_Any_Call (Expr, Decls));
@@ -10566,8 +10567,9 @@ package body Exp_Dist is
                                            (RTE (RE_TA_I32), Loc),
                                        Parameter_Associations =>
                                          New_List (
-                                           Make_Integer_Literal
-                                             (Loc, Choice_Index)));
+                                           Make_Integer_Literal (Loc,
+                                             Intval => Choice_Index)));
+
                                  begin
                                     Insert_Before
                                       (Default_Node, New_Default_Node);
@@ -10581,10 +10583,10 @@ package body Exp_Dist is
 
                                  declare
                                     Exp : constant Node_Id :=
-                                      Make_Attribute_Reference (Loc,
-                                       Prefix         => New_Occurrence_Of
-                                                           (Disc_Type, Loc),
-                                       Attribute_Name => Name_First);
+                                            Make_Attribute_Reference (Loc,
+                                              Prefix => New_Occurrence_Of
+                                                          (Disc_Type, Loc),
+                                              Attribute_Name => Name_First);
                                  begin
                                     Set_Etype (Exp, Disc_Type);
                                     Append_To (Union_TC_Params,
