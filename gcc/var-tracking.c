@@ -8488,13 +8488,13 @@ create_entry_value (rtx rtl, cselib_val *val)
   cselib_val *val2;
   struct elt_loc_list *el;
   el = (struct elt_loc_list *) ggc_alloc_cleared_atomic (sizeof (*el));
-  el->next = val->locs;
   el->loc = gen_rtx_ENTRY_VALUE (GET_MODE (rtl));
   ENTRY_VALUE_EXP (el->loc) = rtl;
-  el->setting_insn = get_insns ();
-  val->locs = el;
   val2 = cselib_lookup_from_insn (el->loc, GET_MODE (rtl), true,
 				  VOIDmode, get_insns ());
+  el->next = val->locs;
+  el->setting_insn = get_insns ();
+  val->locs = el;
   if (val2
       && val2 != val
       && val2->locs
