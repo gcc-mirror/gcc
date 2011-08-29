@@ -3701,8 +3701,8 @@ package body Exp_Disp is
 
          function Is_Actual_For_Formal_Incomplete_Type
            (T : Entity_Id) return Boolean;
-         --  In Ada2012, if a nested generic has an incomplete formal type, the
-         --  actual may be (and usually is) a private type whose completion
+         --  In Ada 2012, if a nested generic has an incomplete formal type,
+         --  the actual may be (and usually is) a private type whose completion
          --  appears later. It is safe to build the dispatch table in this
          --  case, gigi will have full views available.
 
