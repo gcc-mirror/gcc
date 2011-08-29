@@ -1,3 +1,19 @@
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Process_Statements_For_Controlled_Objects): Whenever a
+	statement list is wrapped in a block, the block is explicitly analyzed
+	in order to properly redecorate the entities and create a servicing
+	finalizer.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Zero_Cost_Handling): Remove.
+	(Set_Zero_Cost_Handling): Remove.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb, scos.ads, put_scos.adb, get_scos.adb: Minor reformatting
+
 2011-08-29  Geert Bosch  <bosch@adacore.com>
 
 	* s-vaflop-vms-alpha.adb (Neg_F): Use subtraction instead of negation
