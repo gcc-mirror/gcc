@@ -8076,6 +8076,8 @@ package body Sem_Res is
 
    procedure Resolve_Quantified_Expression (N : Node_Id; Typ : Entity_Id) is
    begin
+      --  Normal mode (not ALFA)
+
       if not ALFA_Mode then
 
          --  The loop structure is already resolved during its analysis, only
@@ -8086,11 +8088,10 @@ package body Sem_Res is
          Expander_Mode_Save_And_Set (False);
          Resolve (Condition (N), Typ);
          Expander_Mode_Restore;
+
+      --  In ALFA_Mode, no magic needed, we just resolve the underlying nodes
+
       else
-
-         --  In ALFA_Mode, no such magic needs to happen, we just resolve the
-         --  underlying nodes.
-
          Resolve (Condition (N), Typ);
       end if;
    end Resolve_Quantified_Expression;

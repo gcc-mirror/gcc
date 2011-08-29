@@ -4274,7 +4274,7 @@ package body Sem_Util is
 
    function Get_Ensures_From_Test_Case_Pragma (N : Node_Id) return Node_Id is
       Args : constant List_Id := Pragma_Argument_Associations (N);
-      Res  : Node_Id := Empty;
+      Res  : Node_Id;
 
    begin
       if List_Length (Args) = 4 then
@@ -4282,9 +4282,13 @@ package body Sem_Util is
 
       elsif List_Length (Args) = 3 then
          Res := Pick (Args, 3);
+
          if Chars (Res) /= Name_Ensures then
             Res := Empty;
          end if;
+
+      else
+         Res := Empty;
       end if;
 
       return Res;
@@ -4436,14 +4440,18 @@ package body Sem_Util is
 
    function Get_Requires_From_Test_Case_Pragma (N : Node_Id) return Node_Id is
       Args : constant List_Id := Pragma_Argument_Associations (N);
-      Res  : Node_Id := Empty;
+      Res  : Node_Id;
 
    begin
       if List_Length (Args) >= 3 then
          Res := Pick (Args, 3);
+
          if Chars (Res) /= Name_Requires then
             Res := Empty;
          end if;
+
+      else
+         Res := Empty;
       end if;
 
       return Res;

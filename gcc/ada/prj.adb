@@ -1288,7 +1288,8 @@ package body Prj is
       Tree         : Project_Tree_Ref)
    is
       procedure Analyze_Tree
-        (Local_Root : Project_Id; Local_Tree : Project_Tree_Ref);
+        (Local_Root : Project_Id;
+         Local_Tree : Project_Tree_Ref);
       --  Process Project and all its aggregated project to analyze their own
       --  imported projects.
 
@@ -1297,7 +1298,8 @@ package body Prj is
       ------------------
 
       procedure Analyze_Tree
-        (Local_Root : Project_Id; Local_Tree : Project_Tree_Ref)
+        (Local_Root : Project_Id;
+         Local_Tree : Project_Tree_Ref)
       is
          pragma Unreferenced (Local_Root);
 
@@ -1320,8 +1322,8 @@ package body Prj is
             Dummy : in out Boolean)
          is
             pragma Unreferenced (Dummy, Tree);
-            List    : Project_List;
-            Prj2    : Project_Id;
+            List : Project_List;
+            Prj2 : Project_Id;
 
          begin
             --  A project is not importing itself
@@ -1357,6 +1359,7 @@ package body Prj is
 
          Dummy   : Boolean := False;
          List    : Project_List;
+
       begin
          List := Local_Tree.Projects;
          while List /= null loop
@@ -1371,6 +1374,8 @@ package body Prj is
 
       procedure For_Aggregates is
         new For_Project_And_Aggregated (Analyze_Tree);
+
+   --  Start of processing for Compute_All_Imported_Projects
 
    begin
       For_Aggregates (Root_Project, Tree);

@@ -351,7 +351,7 @@ procedure Gnat1drv is
       if Debug_Flag_Dot_XX then
          Use_Expression_With_Actions := True;
 
-      --  Debug flag -gnatd.Y decisively set usage off
+      --  Debug flag -gnatd.Y decisively sets usage off
 
       elsif Debug_Flag_Dot_YY then
          Use_Expression_With_Actions := False;
@@ -445,6 +445,7 @@ procedure Gnat1drv is
          Debug_Flag_HH := True;
 
          --  Disable Expressions_With_Actions nodes
+
          --  The gnat2why backend does not deal with Expressions_With_Actions
          --  in all places (in particular assertions). It is difficult to
          --  determine in the frontend which cases are allowed, so we disable

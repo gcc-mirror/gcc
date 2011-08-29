@@ -1,3 +1,13 @@
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch13.adb: Adjust previous change.
+
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, prj.adb, sem_util.adb, sem_res.adb, gnat1drv.adb,
+	exp_ch4.adb, sem_ch8.adb: Minor code reorganization
+	Minor reformatting.
+
 2011-08-29  Emmanuel Briot  <briot@adacore.com>
 
 	* make.adb, prj.adb, prj.ads (Compute_All_Imported_Projects): Also
