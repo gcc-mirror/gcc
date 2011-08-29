@@ -1814,13 +1814,12 @@ package body Exp_Attr is
       --  to this defining identifier.
 
       when Attribute_Elab_Body      |
-           Attribute_Elab_Subp_Body |
            Attribute_Elab_Spec      =>
 
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
-         --  back-end knows how to handle this attribute directly.
+         --  back-end knows how to handle these attributes directly.
 
-         if CodePeer_Mode or else Id = Attribute_Elab_Subp_Body then
+         if CodePeer_Mode then
             return;
          end if;
 
@@ -1908,6 +1907,17 @@ package body Exp_Attr is
             Set_Entity (N, Ent);
             Rewrite (N, New_Occurrence_Of (Ent, Loc));
          end Elab_Body;
+
+      --------------------
+      -- Elab_Subp_Body --
+      --------------------
+
+      --  Always ignored. In CodePeer mode, gnat2scil knows how to handle
+      --  this attribute directly, and if we are not in CodePeer mode it is
+      --  entirely ignored ???
+
+      when Attribute_Elab_Subp_Body =>
+         return;
 
       ----------------
       -- Elaborated --

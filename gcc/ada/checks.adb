@@ -2325,7 +2325,8 @@ package body Checks is
       Target_Type : constant Entity_Id := Etype (N);
       Target_Base : constant Entity_Id := Base_Type (Target_Type);
       Expr        : constant Node_Id   := Expression (N);
-      Expr_Type   : constant Entity_Id := Underlying_Type (Etype (Expr));
+
+      Expr_Type : constant Entity_Id := Underlying_Type (Etype (Expr));
       --  Note: if Etype (Expr) is a private type without discriminants, its
       --  full view might have discriminants with defaults, so we need the
       --  full view here to retrieve the constraints.

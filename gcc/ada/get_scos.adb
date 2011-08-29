@@ -24,6 +24,9 @@
 ------------------------------------------------------------------------------
 
 pragma Ada_2005;
+--  This unit is not part of the compiler proper, it is used in tools that
+--  read SCO information from ALI files (Xcov and sco_test). Ada 2005
+--  constructs may therefore be used freely (and are indeed).
 
 with SCOs;   use SCOs;
 with Snames; use Snames;
@@ -297,12 +300,14 @@ begin
                            exit when Nextc = ':';
                            N := N + 1;
                         end loop;
+
                         begin
                            Pid := Pragma_Id'Value (Buf (1 .. N));
                         exception
                            when Constraint_Error =>
                               Pid := Unknown_Pragma;
                         end;
+
                         Skipc;
                      end if;
                   end if;

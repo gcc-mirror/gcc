@@ -3014,7 +3014,7 @@ package body Sem_Attr is
       -- Elab_Body --
       ---------------
 
-      --  Also handles processing for Elab_Spec
+      --  Also handles processing for Elab_Spec and Elab_Subp_Body
 
       when Attribute_Elab_Body      |
            Attribute_Elab_Spec      |

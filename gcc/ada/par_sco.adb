@@ -1431,9 +1431,8 @@ package body Par_SCO is
                            --  must generate a P entry for the decision. Note
                            --  that this is done unconditionally at this stage.
                            --  Output for disabled pragmas is suppressed later
-                           --  on, when we output the decision line in
-                           --  Put_SCOs, depending on marker sets by
-                           --  Set_SCO_Pragma_Enabled.
+                           --  on when we output the decision line in Put_SCOs,
+                           --  depending on setting by Set_SCO_Pragma_Enabled.
 
                            if Nam = Name_Check then
                               Next (Arg);
