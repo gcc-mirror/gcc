@@ -1025,9 +1025,6 @@ package body System.Interrupts is
 
    exception
       when Standard'Abort_Signal =>
-         if ZCX_By_Default then
-            Initialization.Defer_Abort_Nestable (STPO.Self);
-         end if;
 
          --  Flush interrupt server semaphores, so they can terminate
 

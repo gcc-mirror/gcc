@@ -1,3 +1,22 @@
+2011-08-29  Geert Bosch  <bosch@adacore.com>
+
+	* a-ngelfu.adb (Tan): Do not raise Constraint_Error if the argument is
+	the closest machine number to Pi / 2.0.
+
+2011-08-29  Jose Ruiz  <ruiz@adacore.com>
+
+	* impunit.adb (Non_Imp_File_Names_12): Add a-synbar for new Ada 2012
+	package Ada.Synchronous_Barriers.
+	* a-synbar.ads, a-synbar.adb, a-synbar-posix.ads, a-synbar-posix.adb:
+	Add new specs and bodies for Ada.Synchronous_Barriers. There is a
+	default implementation using protected objects and another one
+	a-synbar-posix using POSIX barriers as the underlying support.
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS for Linux (x86,
+	x86_64, ia64) and MIPS IRIX): Use the a-synbar-posix implementation of
+	Ada.Synchronous_Barriers which uses POSIX barriers (more efficient).
+	Clean up dependencies.
+	* Makefile.rtl (GNATRTL_TASKING_OBJS): Add a-synbar.o
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch7.adb, make.adb, sem_res.adb, exp_intr.adb,
@@ -93,7 +112,6 @@
 	(Reraise_Occurrence_Always): Ditto.
 	* s-tasren.adb (Exceptional_Complete_Rendezvous): Defer aborts if ZCX.
 	* s-tpobop.adb: (Exceptional_Complete_Body): Undefer abort if ZCX.
-	* s-interr-hwint.adb (Interrupt_Manager): Defer abort if ZCX.
 
 2011-08-29  Thomas Quinot  <quinot@adacore.com>
 
