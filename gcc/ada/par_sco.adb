@@ -1204,7 +1204,6 @@ package body Par_SCO is
                when N_Subprogram_Declaration =>
                   Process_Decisions_Defer
                     (Parameter_Specifications (Specification (N)), 'X');
-                  Set_Statement_Entry;
 
                --  Generic subprogram declaration
 
@@ -1213,7 +1212,6 @@ package body Par_SCO is
                     (Generic_Formal_Declarations (N), 'X');
                   Process_Decisions_Defer
                     (Parameter_Specifications (Specification (N)), 'X');
-                  Set_Statement_Entry;
 
                --  Task or subprogram body
 

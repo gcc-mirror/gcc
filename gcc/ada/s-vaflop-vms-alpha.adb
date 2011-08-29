@@ -536,7 +536,7 @@ package body System.Vax_Float_Operations is
       C    : F;
    begin
       Asm ("ldf %0,%1", S'Asm_Output ("=f", A), F'Asm_Input ("m", X));
-      Asm ("cpysn %1,%1,%0", S'Asm_Output ("=f", B), S'Asm_Input ("f", A));
+      Asm ("subf $f31,%1,%0", S'Asm_Output ("=f", B), S'Asm_Input ("f", A));
       Asm ("stf %1,%0", F'Asm_Output ("=m", C), S'Asm_Input ("f", B));
       return C;
    end Neg_F;
@@ -550,7 +550,7 @@ package body System.Vax_Float_Operations is
       C    : G;
    begin
       Asm ("ldg %0,%1", T'Asm_Output ("=f", A), G'Asm_Input ("m", X));
-      Asm ("cpysn %1,%1,%0", T'Asm_Output ("=f", B), T'Asm_Input ("f", A));
+      Asm ("subg $f31,%1,%0", T'Asm_Output ("=f", B), T'Asm_Input ("f", A));
       Asm ("stg %1,%0", G'Asm_Output ("=m", C), T'Asm_Input ("f", B));
       return C;
    end Neg_G;

@@ -4743,7 +4743,8 @@ package body Sem_Ch3 is
 
          --  In formal verification mode, create an explicit subtype for every
          --  index if not already a subtype_mark, and replace the existing type
-         --  of index by this new type. Why are we doing this ???
+         --  of index by this new type. Having a declaration for all type
+         --  entities facilitates the task of the formal verification back-end.
 
          if ALFA_Mode
            and then not Nkind_In (Index, N_Identifier, N_Expanded_Name)
@@ -4799,7 +4800,9 @@ package body Sem_Ch3 is
       if Present (Component_Typ) then
 
          --  In formal verification mode, create an explicit subtype for the
-         --  component type if not already a subtype_mark. Why do this ???
+         --  component type if not already a subtype_mark. Having a declaration
+         --  for all type entities facilitates the task of the formal
+         --  verification back-end.
 
          if ALFA_Mode
            and then Nkind (Component_Typ) = N_Subtype_Indication
