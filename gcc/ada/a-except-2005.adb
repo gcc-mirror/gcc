@@ -422,7 +422,6 @@ package body Ada.Exceptions is
    procedure Rcheck_19 (File : System.Address; Line : Integer);
    procedure Rcheck_20 (File : System.Address; Line : Integer);
    procedure Rcheck_21 (File : System.Address; Line : Integer);
-   procedure Rcheck_22 (File : System.Address; Line : Integer);
    procedure Rcheck_23 (File : System.Address; Line : Integer);
    procedure Rcheck_24 (File : System.Address; Line : Integer);
    procedure Rcheck_25 (File : System.Address; Line : Integer);
@@ -444,6 +443,14 @@ package body Ada.Exceptions is
      (File : System.Address; Line, Column, Index, First, Last : Integer);
    procedure Rcheck_12_Ext
      (File : System.Address; Line, Column, Index, First, Last : Integer);
+
+   procedure Rcheck_22 (File : System.Address; Line : Integer);
+   --  This routine is separated out because it has quite different behavior
+   --  from the others. This is the "finalize/adjust raised exception". This
+   --  subprogram is always called with abort deferred, unlike all other
+   --  Rcheck_* routines, it needs to call Raise_Exception_No_Defer.
+   --
+   --  It should probably have a distinguished name ???
 
    pragma Export (C, Rcheck_00, "__gnat_rcheck_00");
    pragma Export (C, Rcheck_01, "__gnat_rcheck_01");
@@ -1151,19 +1158,6 @@ package body Ada.Exceptions is
       Raise_Program_Error_Msg (File, Line, Rmsg_21'Address);
    end Rcheck_21;
 
-   procedure Rcheck_22 (File : System.Address; Line : Integer) is
-      E : constant Exception_Id := Program_Error_Def'Access;
-   begin
-      --  This is "finalize/adjust raised exception".
-      --  As this exception is only raised with aborts defered, it must
-      --  call Raise_Exception_No_Defer, contrary to all other Rcheck
-      --  subprograms (which defer aborts).
-      --  This is coherent with Raise_From_Controlled_Operation.
-
-      Exception_Data.Set_Exception_C_Msg (E, File, Line, 0, Rmsg_22'Address);
-      Raise_Current_Excep (E);
-   end Rcheck_22;
-
    procedure Rcheck_23 (File : System.Address; Line : Integer) is
    begin
       Raise_Program_Error_Msg (File, Line, Rmsg_23'Address);
@@ -1261,6 +1255,24 @@ package body Ada.Exceptions is
    begin
       Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
    end Rcheck_12_Ext;
+
+   ---------------
+   -- Rcheck_22 --
+   ---------------
+
+   procedure Rcheck_22 (File : System.Address; Line : Integer) is
+      E : constant Exception_Id := Program_Error_Def'Access;
+
+   begin
+      --  This is "finalize/adjust raised exception". This subprogram is always
+      --  called with abort deferred, unlike all other Rcheck_* routines, it
+      --  needs to call Raise_Exception_No_Defer.
+
+      --  This is consistent with Raise_From_Controlled_Operation
+
+      Exception_Data.Set_Exception_C_Msg (E, File, Line, 0, Rmsg_22'Address);
+      Raise_Current_Excep (E);
+   end Rcheck_22;
 
    -------------
    -- Reraise --
