@@ -119,7 +119,8 @@ private
    --  full view of Limited_Controlled, which is NOT limited. Note that default
    --  initialization does not happen for this type (the pointers will not be
    --  automatically set to null), because of the games we're playing with
-   --  address arithmetic.
+   --  address arithmetic. Code in the body assumes that the size of
+   --  this record is a power of 2 to deal with alignment.
 
    type Node is record
       Prev : Node_Ptr;

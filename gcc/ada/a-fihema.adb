@@ -51,10 +51,6 @@ package body Ada.Finalization.Heap_Management is
    --  Allocate/Deallocate to determine the Storage_Size passed to the
    --  underlying pool.
 
-   Header_Offset : constant Storage_Offset := Header_Size;
-   --  Offset from the header to the actual object. Used to get from the
-   --  address of a header to the address of the actual object, and vice-versa.
-
    function Address_To_Node_Ptr is
      new Ada.Unchecked_Conversion (Address, Node_Ptr);
 
@@ -136,10 +132,21 @@ package body Ada.Finalization.Heap_Management is
          end if;
 
          declare
-            N_Addr : Address;
-            N_Ptr  : Node_Ptr;
+            Header_Offset : Storage_Offset;
+            N_Addr        : Address;
+            N_Ptr         : Node_Ptr;
 
          begin
+            --  Offset from the header to the actual object. The header is
+            --  just in front of the object. There may be padding space before
+            --  the header.
+
+            if Alignment > Header_Size then
+               Header_Offset := Alignment;
+            else
+               Header_Offset := Header_Size;
+            end if;
+
             --  Use the underlying pool to allocate enough space for the object
             --  and the list header. The returned address points to the list
             --  header. If locking is necessary, it will be done by the
@@ -148,13 +155,14 @@ package body Ada.Finalization.Heap_Management is
             Allocate
               (Collection.Base_Pool.all,
                N_Addr,
-               Storage_Size + Header_Size,
+               Storage_Size + Header_Offset,
                Alignment);
 
             --  Map the allocated memory into a Node record. This converts the
             --  top of the allocated bits into a list header.
 
-            N_Ptr := Address_To_Node_Ptr (N_Addr);
+            N_Ptr := Address_To_Node_Ptr
+              (N_Addr + Header_Offset - Header_Size);
             Attach (N_Ptr, Collection.Objects'Unchecked_Access);
 
             --  Move the address from Prev to the start of the object. This
@@ -224,18 +232,27 @@ package body Ada.Finalization.Heap_Management is
 
       if Has_Header then
          declare
-            N_Addr : Address;
-            N_Ptr  : Node_Ptr;
+            Header_Offset : Storage_Offset;
+            N_Addr        : Address;
+            N_Ptr         : Node_Ptr;
 
          begin
-            --  Move address from the object to beginning of the list header
+            --  Offset from the header to the actual object.
+
+            if Alignment > Header_Size then
+               Header_Offset := Alignment;
+            else
+               Header_Offset := Header_Size;
+            end if;
+
+            --  Converts from the object to the list header
+
+            N_Ptr := Address_To_Node_Ptr (Addr - Header_Size);
+            Detach (N_Ptr);
+
+            --  Converts the bits preceding the object the block address.
 
             N_Addr := Addr - Header_Offset;
-
-            --  Converts the bits preceding the object into a list header
-
-            N_Ptr := Address_To_Node_Ptr (N_Addr);
-            Detach (N_Ptr);
 
             --  Use the underlying pool to destroy the object along with the
             --  list header.
@@ -340,7 +357,7 @@ package body Ada.Finalization.Heap_Management is
             if Collection.Finalize_Address /= null then
                declare
                   Object_Address : constant Address :=
-                                     Node.all'Address + Header_Offset;
+                                     Node.all'Address + Header_Size;
                   --  Get address of object from address of header
 
                begin

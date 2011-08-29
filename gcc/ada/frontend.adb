@@ -100,6 +100,7 @@ begin
 
    --  If the -gnatd.H flag is present, we are only interested in the Standard
    --  package, so the frontend has done its job here.
+
    if Debug_Flag_Dot_HH then
       return;
    end if;
