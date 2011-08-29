@@ -1,5 +1,10 @@
+2011-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gthr-posix.h (__gthread_active_p): Do not use preprocessor
+	conditionals and comments inside macro arguments.
+
 20011-08-29  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
-	Richard Guenther  <rguenther@suse.de>
+	     Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (constant_boolean_node): Adjust prototype.
 	* fold-const.c (fold_convert_loc): Move aggregate conversion
