@@ -1,7 +1,12 @@
+2011-08-29  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (generate_coarray_sym_init): Use
+	GFC_CAF_COARRAY_STATIC for static coarrays.
+
 2011-08-28  Dodji Seketeli  <dodji@redhat.com>
 
 	* scanner.c (load_file): Don't abuse LC_RENAME reason while
-    	(indirectly) calling linemap_add.
+	(indirectly) calling linemap_add.
 
 2011-08-26  Jakub Jelinek  <jakub@redhat.com>
 

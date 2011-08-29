@@ -69,7 +69,7 @@ void _gfortran_caf_finalize (void);
 
 void * _gfortran_caf_register (ptrdiff_t, caf_register_t, void **, int *,
 			       char *, int);
-int _gfortran_caf_deregister (void **);
+void _gfortran_caf_deregister (void **, int *, char *, int);
 
 
 void _gfortran_caf_sync_all (int *, char *, int);
