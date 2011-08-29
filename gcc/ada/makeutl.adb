@@ -1560,13 +1560,17 @@ package body Makeutl is
 
                         if Is_Absolute_Path (Main) then
                            Main_Id := Create_Name (Base);
+
+                        --  Not an absolute path
+
                         else
+                           --  Always resolve links here, so that users can be
+                           --  specify any name on the command line. If the
+                           --  project itself uses links, the user will be
+                           --  using -eL anyway, and thus files are also stored
+                           --  with resolved names.
+
                            declare
-                              --  Always resolve links here, so that users
-                              --  can be specify any name on the command line.
-                              --  If the project itself uses links, the user
-                              --  will be using -eL anyway, and thus files are
-                              --  also stored with resolved names.
                               Absolute : constant String :=
                                            Normalize_Pathname
                                              (Name           => Main,
