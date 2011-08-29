@@ -1545,7 +1545,7 @@ package body Checks is
    --          Lo_OK be True.
    --      (3) If I'Last < 0, then let Hi be F'Succ (I'Last) and let Hi_OK
    --          be False. Otherwise let Hi be F'Pred (I'Last + 1) and let
-   --          Hi_OK be False
+   --          Hi_OK be True.
 
    procedure Apply_Float_Conversion_Check
      (Ck_Node    : Node_Id;
@@ -2325,7 +2325,10 @@ package body Checks is
       Target_Type : constant Entity_Id := Etype (N);
       Target_Base : constant Entity_Id := Base_Type (Target_Type);
       Expr        : constant Node_Id   := Expression (N);
-      Expr_Type   : constant Entity_Id := Etype (Expr);
+      Expr_Type   : constant Entity_Id := Underlying_Type (Etype (Expr));
+      --  Note: if Etype (Expr) is a private type without discriminants, its
+      --  full view might have discriminants with defaults, so we need the
+      --  full view here to retrieve the constraints.
 
    begin
       if Inside_A_Generic then
@@ -2383,7 +2386,7 @@ package body Checks is
         and then not Is_Constrained (Target_Type)
         and then Present (Stored_Constraint (Target_Type))
       then
-         --  An unconstrained derived type may have inherited discriminant
+         --  An unconstrained derived type may have inherited discriminant.
          --  Build an actual discriminant constraint list using the stored
          --  constraint, to verify that the expression of the parent type
          --  satisfies the constraints imposed by the (unconstrained!)
