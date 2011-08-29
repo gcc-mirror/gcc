@@ -8515,9 +8515,8 @@ package body Sem_Util is
    begin
       pragma Assert (Is_Itype (Id));
       return Present (Parent (Id))
-        and then Nkind_In (Parent (Id),
-                           N_Full_Type_Declaration,
-                           N_Subtype_Declaration)
+        and then Nkind_In (Parent (Id), N_Full_Type_Declaration,
+                                        N_Subtype_Declaration)
         and then Defining_Entity (Parent (Id)) = Id;
    end Itype_Has_Declaration;
 

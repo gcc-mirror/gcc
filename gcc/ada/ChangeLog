@@ -1,3 +1,18 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_util.adb, gnat1drv.adb, s-parint.ads: Minor
+	reformatting.
+
+2011-08-29  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cbhama.ads, a-cbhase.ads (Cursor): Default-initialize all
+	components of record type.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* s-tassta.adb (Task_Wrapper): Handle and ignore exceptions propagated
+	by the termination handler.
+
 2011-08-29  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch3.adb (Array_Type_Declaration): Create declarations for Itypes

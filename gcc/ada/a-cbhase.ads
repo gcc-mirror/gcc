@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -431,7 +431,7 @@ private
 
    type Cursor is record
       Container : Set_Access;
-      Node      : Count_Type;
+      Node      : Count_Type := 0;
    end record;
 
    procedure Write
