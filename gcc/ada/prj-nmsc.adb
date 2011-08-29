@@ -281,8 +281,8 @@ package body Prj.Nmsc is
    --  Copy Str into Name_Buffer, replacing Pattern with Replacement. Str is
    --  converted to lower-case at the same time.
 
-   procedure Check_Ada_Name (Name : String; Unit : out Name_Id);
-   --  Check that a name is a valid Ada unit name
+   procedure Check_Unit_Name (Name : String; Unit : out Name_Id);
+   --  Check that a name is a valid unit name
 
    procedure Check_Package_Naming
      (Project : Project_Id;
@@ -1112,11 +1112,11 @@ package body Prj.Nmsc is
       Debug_Decrease_Indent ("done check");
    end Check;
 
-   --------------------
-   -- Check_Ada_Name --
-   --------------------
+   ---------------------
+   -- Check_Unit_Name --
+   ---------------------
 
-   procedure Check_Ada_Name (Name : String; Unit : out Name_Id) is
+   procedure Check_Unit_Name (Name : String; Unit : out Name_Id) is
       The_Name        : String := Name;
       Real_Name       : Name_Id;
       Need_Letter     : Boolean := True;
@@ -1164,7 +1164,7 @@ package body Prj.Nmsc is
          end if;
       end Is_Reserved;
 
-   --  Start of processing for Check_Ada_Name
+   --  Start of processing for Check_Unit_Name
 
    begin
       To_Lower (The_Name);
@@ -1293,7 +1293,7 @@ package body Prj.Nmsc is
 
          Unit := No_Name;
       end if;
-   end Check_Ada_Name;
+   end Check_Unit_Name;
 
    -------------------------
    -- Check_Configuration --
@@ -1492,6 +1492,26 @@ package body Prj.Nmsc is
 
                      if Lang_Index /= No_Language_Index then
                         case Current_Array.Name is
+                        when Name_Dependency_Kind =>
+
+                           --  Attribute Dependency_Kind (<language>)
+
+                           Get_Name_String (Element.Value.Value);
+
+                           begin
+                              Lang_Index.Config.Dependency_Kind :=
+                                Dependency_File_Kind'Value
+                                  (Name_Buffer (1 .. Name_Len));
+
+                           exception
+                              when Constraint_Error =>
+                                 Error_Msg
+                                   (Data.Flags,
+                                    "illegal value for Dependency_Kind",
+                                    Element.Value.Location,
+                                    Project);
+                           end;
+
                         when Name_Dependency_Switches =>
 
                            --  Attribute Dependency_Switches (<language>)
@@ -1526,6 +1546,25 @@ package body Prj.Nmsc is
                                    In_Tree   => Data.Tree);
                            end if;
 
+                        when Name_Language_Kind =>
+                           --  Attribute Language_Kind (<language>)
+
+                           Get_Name_String (Element.Value.Value);
+
+                           begin
+                              Lang_Index.Config.Kind :=
+                                Language_Kind'Value
+                                  (Name_Buffer (1 .. Name_Len));
+
+                           exception
+                              when Constraint_Error =>
+                                 Error_Msg
+                                   (Data.Flags,
+                                    "illegal value for Language_Kind",
+                                    Element.Value.Location,
+                                    Project);
+                           end;
+
                         when Name_Include_Switches =>
 
                            --  Attribute Include_Switches (<language>)
@@ -1554,7 +1593,7 @@ package body Prj.Nmsc is
                            --  Attribute Include_Path_File (<language>)
 
                            Lang_Index.Config.Include_Path_File :=
-                               Element.Value.Value;
+                             Element.Value.Value;
 
                         when Name_Driver =>
 
@@ -1566,15 +1605,15 @@ package body Prj.Nmsc is
                         when Name_Required_Switches |
                              Name_Leading_Required_Switches =>
                            Put (Into_List =>
-                                  Lang_Index.Config.
-                                    Compiler_Leading_Required_Switches,
+                                Lang_Index.Config.
+                                  Compiler_Leading_Required_Switches,
                                 From_List => Element.Value.Values,
                                 In_Tree   => Data.Tree);
 
                         when Name_Trailing_Required_Switches =>
                            Put (Into_List =>
-                                  Lang_Index.Config.
-                                    Compiler_Trailing_Required_Switches,
+                                Lang_Index.Config.
+                                  Compiler_Trailing_Required_Switches,
                                 From_List => Element.Value.Values,
                                 In_Tree   => Data.Tree);
 
@@ -2575,7 +2614,7 @@ package body Prj.Nmsc is
 
       Lang_Index := Project.Languages;
       while Lang_Index /= No_Language_Index loop
-         if Lang_Index.Name = Name_Ada then
+         if Lang_Index.Config.Kind = Unit_Based then
             Lang_Index.Config.Naming_Data.Casing := Casing;
             Lang_Index.Config.Naming_Data.Dot_Replacement := Dot_Replacement;
 
@@ -2627,7 +2666,7 @@ package body Prj.Nmsc is
                Prev_Index.Next := Lang_Index.Next;
             end if;
 
-         elsif Lang_Index.Name = Name_Ada then
+         elsif Lang_Index.Config.Kind = Unit_Based then
             Prev_Index := Lang_Index;
 
             --  For unit based languages, Dot_Replacement, Spec_Suffix and
@@ -2636,21 +2675,24 @@ package body Prj.Nmsc is
             if Lang_Index.Config.Naming_Data.Dot_Replacement = No_File then
                Error_Msg
                  (Data.Flags,
-                  "Dot_Replacement not specified for Ada",
+                  "Dot_Replacement not specified for " &
+                  Get_Name_String (Lang_Index.Name),
                   No_Location, Project);
             end if;
 
             if Lang_Index.Config.Naming_Data.Spec_Suffix = No_File then
                Error_Msg
                  (Data.Flags,
-                  "Spec_Suffix not specified for Ada",
+                  "Spec_Suffix not specified for " &
+                  Get_Name_String (Lang_Index.Name),
                   No_Location, Project);
             end if;
 
             if Lang_Index.Config.Naming_Data.Body_Suffix = No_File then
                Error_Msg
                  (Data.Flags,
-                  "Body_Suffix not specified for Ada",
+                  "Body_Suffix not specified for " &
+                  Get_Name_String (Lang_Index.Name),
                   No_Location, Project);
             end if;
 
@@ -3189,7 +3231,6 @@ package body Prj.Nmsc is
         (Lang_Id : Language_Ptr;
          Kind    : Source_Kind)
       is
-         Lang       : constant Name_Id := Lang_Id.Name;
          Exceptions : Array_Element_Id;
          Element    : Array_Element;
          Unit       : Name_Id;
@@ -3236,22 +3277,19 @@ package body Prj.Nmsc is
 
             Get_Name_String (Element.Index);
             To_Lower (Name_Buffer (1 .. Name_Len));
-            Unit  := Name_Find;
             Index := Element.Value.Index;
 
-            --  For Ada, check if it is a valid unit name
+            --  Check if it is a valid unit name
 
-            if Lang = Name_Ada then
-               Get_Name_String (Element.Index);
-               Check_Ada_Name (Name_Buffer (1 .. Name_Len), Unit);
+            Get_Name_String (Element.Index);
+            Check_Unit_Name (Name_Buffer (1 .. Name_Len), Unit);
 
-               if Unit = No_Name then
-                  Err_Vars.Error_Msg_Name_1 := Element.Index;
-                  Error_Msg
-                    (Data.Flags,
-                     "%% is not a valid unit name.",
-                     Element.Value.Location, Project);
-               end if;
+            if Unit = No_Name then
+               Err_Vars.Error_Msg_Name_1 := Element.Index;
+               Error_Msg
+                 (Data.Flags,
+                  "%% is not a valid unit name.",
+                  Element.Value.Location, Project);
             end if;
 
             if Unit /= No_Name then
@@ -4344,13 +4382,6 @@ package body Prj.Nmsc is
          Project.Languages := Lang;
          Lang.Name         := Name;
          Lang.Display_Name := Display_Name;
-
-         if Name = Name_Ada then
-            Lang.Config.Kind            := Unit_Based;
-            Lang.Config.Dependency_Kind := ALI_File;
-         else
-            Lang.Config.Kind := File_Based;
-         end if;
       end Add_Language;
 
    --  Start of processing for Check_Programming_Languages
@@ -5690,7 +5721,7 @@ package body Prj.Nmsc is
       --  Name_Buffer contains the name of the unit in lower-cases. Check
       --  that this is a valid unit name
 
-      Check_Ada_Name (Name_Buffer (1 .. Name_Len), Unit);
+      Check_Unit_Name (Name_Buffer (1 .. Name_Len), Unit);
 
       --  If there is a naming exception for the same unit, the file is not
       --  a source for the unit.

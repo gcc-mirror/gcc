@@ -125,7 +125,7 @@ package body Debug is
    --  d.E
    --  d.F  ALFA mode
    --  d.G  Precondition only mode for gnat2why
-   --  d.H
+   --  d.H  Standard package only mode for gnat2why
    --  d.I  SCIL generation mode
    --  d.J  Disable parallel SCIL generation mode
    --  d.K
@@ -587,6 +587,10 @@ package body Debug is
    --  d.G  Precondition only mode for gnat2why. In this mode, gnat2why will
    --       only generate Why code that checks for the well-guardedness of
    --       preconditions.
+
+   --  d.H  Standard package only mode for gnat2why. In this mode, gnat2why
+   --       will only generate Why code for package Standard. Any given input
+   --       file will be ignored.
 
    --  d.I  Generate SCIL mode. Generate intermediate code for the sake of
    --       of static analysis tools, and ensure additional tree consistency

@@ -1093,6 +1093,7 @@ package Snames is
    Name_Default_Language                 : constant Name_Id := N + $;
    Name_Default_Switches                 : constant Name_Id := N + $;
    Name_Dependency_Driver                : constant Name_Id := N + $;
+   Name_Dependency_Kind                  : constant Name_Id := N + $;
    Name_Dependency_Switches              : constant Name_Id := N + $;
    Name_Driver                           : constant Name_Id := N + $;
    Name_Excluded_Source_Dirs             : constant Name_Id := N + $;
@@ -1121,6 +1122,7 @@ package Snames is
    Name_Include_Path_File                : constant Name_Id := N + $;
    Name_Inherit_Source_Path              : constant Name_Id := N + $;
    Name_Languages                        : constant Name_Id := N + $;
+   Name_Language_Kind                    : constant Name_Id := N + $;
    Name_Leading_Library_Options          : constant Name_Id := N + $;
    Name_Leading_Required_Switches        : constant Name_Id := N + $;
    Name_Leading_Switches                 : constant Name_Id := N + $;

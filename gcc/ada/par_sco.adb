@@ -1082,7 +1082,7 @@ package body Par_SCO is
                Pragma_Sloc : Source_Ptr := No_Location;
             begin
                --  For the case of a statement SCO for a pragma controlled by
-               --  Set_SCO_Pragma_Enable, set Pragma_Sloc so that the SCO (and
+               --  Set_SCO_Pragma_Enabled, set Pragma_Sloc so that the SCO (and
                --  those of any nested decision) is emitted only if the pragma
                --  is enabled.
 
