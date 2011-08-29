@@ -123,11 +123,11 @@ private
    -- System Implementation Parameters --
    --------------------------------------
 
-   --  These parameters provide information about the target that is used
-   --  by the compiler. They are in the private part of System, where they
-   --  can be accessed using the special circuitry in the Targparm unit
-   --  whose source should be consulted for more detailed descriptions
-   --  of the individual switch values.
+   --  These parameters provide information about the target that is used by
+   --  the compiler. They are in the private part of System, where they can be
+   --  accessed using the special circuitry in the Targparm unit whose source
+   --  should be consulted for more detailed descriptions of the individual
+   --  switch values.
 
    --  This version of system.ads is used only for building the compiler.
    --  We really ought to use the proper target system (i.e. the one that

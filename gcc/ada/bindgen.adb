@@ -984,7 +984,12 @@ package body Bindgen is
 
             --  Case of no elaboration code
 
-            elsif U.No_Elab then
+            elsif U.No_Elab
+              and then (not CodePeer_Mode
+                        or else U.Utype = Is_Spec
+                        or else U.Utype = Is_Spec_Only
+                        or else U.Unit_Kind /= 's')
+            then
 
                --  The only case in which we have to do something is if this
                --  is a body, with a separate spec, where the separate spec
@@ -1019,10 +1024,7 @@ package body Bindgen is
             --  The uname_E increment is skipped if this is a separate spec,
             --  since it will be done when we process the body.
 
-            --  Ignore subprograms in CodePeer mode, since no useful
-            --  elaboration subprogram is needed by CodePeer.
-
-            elsif U.Unit_Kind /= 's' or else not CodePeer_Mode then
+            else
                Check_Elab_Flag :=
                  not CodePeer_Mode
                    and then (Force_Checking_Of_Elaboration_Flags
@@ -1055,12 +1057,18 @@ package body Bindgen is
                   if Name_Buffer (Name_Len) = 's' then
                      Name_Buffer (Name_Len - 1 .. Name_Len + 8) :=
                        "'elab_spec";
+                     Name_Len := Name_Len + 8;
+
+                  elsif U.Unit_Kind = 's' and CodePeer_Mode then
+                     Name_Buffer (Name_Len - 1 .. Name_Len + 13) :=
+                       "'elab_subp_body";
+                     Name_Len := Name_Len + 13;
+
                   else
                      Name_Buffer (Name_Len - 1 .. Name_Len + 8) :=
                        "'elab_body";
+                     Name_Len := Name_Len + 8;
                   end if;
-
-                  Name_Len := Name_Len + 8;
                end if;
 
                Set_Casing (U.Icasing);
