@@ -47,7 +47,7 @@
 	forward_list(_InputIterator, _InputIterator, const _Alloc&),
 	forward_list(std::initializer_list<>, const _Alloc&),
 	get_allocator): Adjust.
-	* include/bits/forward_list.tcc
+	* include/bits/forward_list.tcc: Adjust.
 	* testsuite/util/testsuite_allocator.h (ExplicitConsAlloc): Add.
 	* testsuite/23_containers/unordered_map/requirements/
 	explicit_instantiation/5.cc: New.
