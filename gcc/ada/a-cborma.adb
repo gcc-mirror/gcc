@@ -46,7 +46,8 @@ package body Ada.Containers.Bounded_Ordered_Maps is
      end record;
 
    overriding function First (Object : Iterator) return Cursor;
-   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Last (Object : Iterator) return Cursor;
 
    overriding function Next
      (Object   : Iterator;
@@ -255,7 +256,6 @@ package body Ada.Containers.Bounded_Ordered_Maps is
 
       declare
          LN : Node_Type renames Left.Container.Nodes (Left.Node);
-
       begin
          return Right < LN.Key;
       end;
@@ -514,13 +514,12 @@ package body Ada.Containers.Bounded_Ordered_Maps is
 
    function Element (Container : Map; Key : Key_Type) return Element_Type is
       Node : constant Count_Type := Key_Ops.Find (Container, Key);
-
    begin
       if Node = 0 then
          raise Constraint_Error with "key not in map";
+      else
+         return Container.Nodes (Node).Element;
       end if;
-
-      return Container.Nodes (Node).Element;
    end Element;
 
    ---------------------
@@ -558,13 +557,12 @@ package body Ada.Containers.Bounded_Ordered_Maps is
 
    function Find (Container : Map; Key : Key_Type) return Cursor is
       Node : constant Count_Type := Key_Ops.Find (Container, Key);
-
    begin
       if Node = 0 then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
    end Find;
 
    -----------
@@ -575,9 +573,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
    begin
       if Container.First = 0 then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Container.First);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Container.First);
    end First;
 
    function First (Object : Iterator) return Cursor is
@@ -585,10 +583,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
    begin
       if F = 0 then
          return No_Element;
+      else
+         return Cursor'(Object.Container.all'Unchecked_Access, F);
       end if;
-
-      return
-        Cursor'(Object.Container.all'Unchecked_Access, F);
    end First;
 
    -------------------
@@ -599,9 +596,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
    begin
       if Container.First = 0 then
          raise Constraint_Error with "map is empty";
+      else
+         return Container.Nodes (Container.First).Element;
       end if;
-
-      return Container.Nodes (Container.First).Element;
    end First_Element;
 
    ---------------
@@ -612,9 +609,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
    begin
       if Container.First = 0 then
          raise Constraint_Error with "map is empty";
+      else
+         return Container.Nodes (Container.First).Key;
       end if;
-
-      return Container.Nodes (Container.First).Key;
    end First_Key;
 
    -----------
@@ -623,13 +620,12 @@ package body Ada.Containers.Bounded_Ordered_Maps is
 
    function Floor (Container : Map; Key : Key_Type) return Cursor is
       Node : constant Count_Type := Key_Ops.Floor (Container, Key);
-
    begin
       if Node = 0 then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Node);
    end Floor;
 
    -----------------
@@ -664,7 +660,6 @@ package body Ada.Containers.Bounded_Ordered_Maps is
 
          declare
             N : Node_Type renames Container.Nodes (Position.Node);
-
          begin
             N.Key := Key;
             N.Element := New_Item;
@@ -714,7 +709,6 @@ package body Ada.Containers.Bounded_Ordered_Maps is
 
       function New_Node return Count_Type is
          Result : Count_Type;
-
       begin
          Allocate (Container, Result);
          return Result;
@@ -778,6 +772,8 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       procedure Assign (Node : in out Node_Type) is
       begin
          Node.Key := Key;
+
+         --  Why is the following commented out ???
          --  Node.Element := New_Item;
       end Assign;
 
@@ -787,7 +783,6 @@ package body Ada.Containers.Bounded_Ordered_Maps is
 
       function New_Node return Count_Type is
          Result : Count_Type;
-
       begin
          Allocate (Container, Result);
          return Result;
@@ -823,7 +818,7 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       Right : Node_Type) return Boolean
    is
    begin
-      --  k > node same as node < k
+      --  Left > Right same as Right < Left
 
       return Right.Key < Left;
    end Is_Greater_Key_Node;
@@ -885,12 +880,14 @@ package body Ada.Containers.Bounded_Ordered_Maps is
      (Container : Map) return Map_Iterator_Interfaces.Forward_Iterator'class
    is
       It : constant Iterator :=
-                      (Container'Unrestricted_Access, Container.First);
+             (Container'Unrestricted_Access, Container.First);
    begin
       return It;
    end Iterate;
 
-   function Iterate (Container : Map; Start : Cursor)
+   function Iterate
+     (Container : Map;
+      Start     : Cursor)
       return Map_Iterator_Interfaces.Reversible_Iterator'class
    is
       It : constant Iterator := (Container'Unrestricted_Access, Start.Node);
@@ -923,9 +920,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
    begin
       if Container.Last = 0 then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Container.Last);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Container.Last);
    end Last;
 
    function Last (Object : Iterator) return Cursor is
@@ -933,10 +930,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
    begin
       if F = 0 then
          return No_Element;
+      else
+         return Cursor'(Object.Container.all'Unchecked_Access, F);
       end if;
-
-      return
-        Cursor'(Object.Container.all'Unchecked_Access, F);
    end Last;
 
    ------------------
@@ -947,9 +943,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
    begin
       if Container.Last = 0 then
          raise Constraint_Error with "map is empty";
+      else
+         return Container.Nodes (Container.Last).Element;
       end if;
-
-      return Container.Nodes (Container.Last).Element;
    end Last_Element;
 
    --------------
@@ -960,9 +956,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
    begin
       if Container.Last = 0 then
          raise Constraint_Error with "map is empty";
+      else
+         return Container.Nodes (Container.Last).Key;
       end if;
-
-      return Container.Nodes (Container.Last).Key;
    end Last_Key;
 
    ----------
@@ -1199,15 +1195,17 @@ package body Ada.Containers.Bounded_Ordered_Maps is
    -- Reference --
    ---------------
 
-   function Constant_Reference (Container : Map; Key : Key_Type)
-     return Constant_Reference_Type
+   function Constant_Reference
+     (Container : Map;
+      Key       : Key_Type) return Constant_Reference_Type
    is
    begin
       return (Element => Container.Element (Key)'Unrestricted_Access);
    end Constant_Reference;
 
-   function Reference (Container : Map; Key : Key_Type)
-     return Reference_Type
+   function Reference
+     (Container : Map;
+      Key       : Key_Type) return Reference_Type
    is
    begin
       return (Element => Container.Element (Key)'Unrestricted_Access);
@@ -1299,7 +1297,7 @@ package body Ada.Containers.Bounded_Ordered_Maps is
 
       B : Natural renames Container'Unrestricted_Access.all.Busy;
 
-      --  Start of processing for Reverse_Iterate
+   --  Start of processing for Reverse_Iterate
 
    begin
       B := B + 1;

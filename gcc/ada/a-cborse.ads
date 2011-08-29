@@ -255,6 +255,12 @@ private
    type Set_Access is access all Set;
    for Set_Access'Storage_Size use 0;
 
+   --  Note: If a Cursor object has no explicit initialization expression,
+   --  it must default initialize to the same value as constant No_Element.
+   --  The Node component of type Cursor has scalar type Count_Type, so it
+   --  requires an explicit initialization expression of its own declaration,
+   --  in order for objects of record type Cursor to properly initialize.
+
    type Cursor is record
       Container : Set_Access;
       Node      : Count_Type := 0;

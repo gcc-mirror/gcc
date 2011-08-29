@@ -301,33 +301,6 @@ package body Exp_Ch7 is
    --  context does not contain the above constructs, the routine returns an
    --  empty list.
 
-   function Build_Exception_Handler
-     (Loc         : Source_Ptr;
-      E_Id        : Entity_Id;
-      Raised_Id   : Entity_Id;
-      For_Library : Boolean := False) return Node_Id;
-   --  Subsidiary to Build_Finalizer, Make_Deep_Array_Body and Make_Deep_Record
-   --  _Body. Create an exception handler of the following form:
-   --
-   --    when others =>
-   --       if not Raised_Id then
-   --          Raised_Id := True;
-   --          Save_Occurrence (E_Id, Get_Current_Excep.all.all);
-   --       end if;
-   --
-   --  If flag For_Library is set (and not in restricted profile):
-   --
-   --    when others =>
-   --       if not Raised_Id then
-   --          Raised_Id := True;
-   --          Save_Library_Occurrence (Get_Current_Excep.all.all);
-   --       end if;
-   --
-   --  E_Id denotes the defining identifier of a local exception occurrence.
-   --  Raised_Id is the entity of a local boolean flag. Flag For_Library is
-   --  used when operating at the library level, when enabled the current
-   --  exception will be saved to a global location.
-
    procedure Build_Finalizer
      (N           : Node_Id;
       Clean_Stmts : List_Id;

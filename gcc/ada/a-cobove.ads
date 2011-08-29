@@ -50,8 +50,7 @@ package Ada.Containers.Bounded_Vectors is
 
    No_Index : constant Extended_Index := Extended_Index'First;
 
-   type Vector (Capacity : Count_Type) is tagged private
-   with
+   type Vector (Capacity : Count_Type) is tagged private with
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
@@ -300,10 +299,13 @@ package Ada.Containers.Bounded_Vectors is
      (Container : Vector;
       Process   : not null access procedure (Position : Cursor));
 
-   function Iterate (Container : Vector)
+   function Iterate
+     (Container : Vector)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
-   function Iterate (Container : Vector; Start : Cursor)
+   function Iterate
+     (Container : Vector;
+      Start     : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'class;
 
    type Constant_Reference_Type
