@@ -520,6 +520,7 @@ package Rtsfind is
      RE_Reraise_Occurrence_Always,       -- Ada.Exceptions
      RE_Reraise_Occurrence_No_Defer,     -- Ada.Exceptions
      RE_Save_Occurrence,                 -- Ada.Exceptions
+     RE_Triggered_By_Abort,              -- Ada.Exceptions
 
      RE_Interrupt_ID,                    -- Ada.Interrupts
      RE_Is_Reserved,                     -- Ada.Interrupts
@@ -1707,6 +1708,7 @@ package Rtsfind is
      RE_Reraise_Occurrence_Always        => Ada_Exceptions,
      RE_Reraise_Occurrence_No_Defer      => Ada_Exceptions,
      RE_Save_Occurrence                  => Ada_Exceptions,
+     RE_Triggered_By_Abort               => Ada_Exceptions,
 
      RE_Interrupt_ID                     => Ada_Interrupts,
      RE_Is_Reserved                      => Ada_Interrupts,

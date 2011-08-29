@@ -39,6 +39,11 @@ with System.Storage_Elements;     use System.Storage_Elements;
 
 package body System.Storage_Pools.Subpools is
 
+   Finalize_Address_Table_In_Use : Boolean := False;
+   --  This flag should be set only when a successfull allocation on a subpool
+   --  has been performed and the associated Finalize_Address has been added to
+   --  the hash table in System.Finalization_Masters.
+
    procedure Attach (N : not null SP_Node_Ptr; L : not null SP_Node_Ptr);
    --  Attach a subpool node to a pool
 
@@ -269,6 +274,7 @@ package body System.Storage_Pools.Subpools is
             pragma Assert (not Master.Is_Homogeneous);
 
             Set_Finalize_Address (Addr, Fin_Address);
+            Finalize_Address_Table_In_Use := True;
 
          --  Normal allocations chain objects on homogeneous collections
 
@@ -335,12 +341,11 @@ package body System.Storage_Pools.Subpools is
       if Is_Controlled then
 
          --  Destroy the relation pair object - Finalize_Address since it is no
-         --  longer needed. If the object was chained on a homogeneous master,
-         --  this call does nothing. This is unconditional destruction since we
-         --  do not want to drag in additional data to determine the master
-         --  kind.
+         --  longer needed.
 
-         Delete_Finalize_Address (Addr);
+         if Finalize_Address_Table_In_Use then
+            Delete_Finalize_Address (Addr);
+         end if;
 
          --  Account for possible padding space before the header due to a
          --  larger alignment.

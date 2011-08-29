@@ -1083,7 +1083,11 @@ package body Ch3 is
    begin
       Constr_Node := P_Constraint_Opt;
 
-      if No (Constr_Node) then
+      if No (Constr_Node)
+        or else
+          (Nkind (Constr_Node) = N_Range_Constraint
+             and then Nkind (Range_Expression (Constr_Node)) = N_Error)
+      then
          return Subtype_Mark;
       else
          if Not_Null_Present then
@@ -2668,9 +2672,11 @@ package body Ch3 is
             Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
          end if;
 
-         if Aliased_Present then
-            Error_Msg_SP ("ALIASED not allowed here");
-         end if;
+         --  AI95-406 makes "aliased" legal (and useless) in this context.
+
+         --  if Aliased_Present then
+         --     Error_Msg_SP ("ALIASED not allowed here");
+         --  end if;
 
          Set_Subtype_Indication     (CompDef_Node, Empty);
          Set_Aliased_Present        (CompDef_Node, False);
@@ -3443,9 +3449,11 @@ package body Ch3 is
                   Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
                end if;
 
-               if Aliased_Present then
-                  Error_Msg_SP ("ALIASED not allowed here");
-               end if;
+               --  AI95-406 makes "aliased" legal (and useless) here.
+
+               --  if Aliased_Present then
+               --     Error_Msg_SP ("ALIASED not allowed here");
+               --  end if;
 
                Set_Subtype_Indication (CompDef_Node, Empty);
                Set_Aliased_Present    (CompDef_Node, False);

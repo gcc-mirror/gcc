@@ -221,6 +221,10 @@ private
    --  occurrence. This is used in generated code when it is known that
    --  abort is already deferred.
 
+   function Triggered_By_Abort return Boolean;
+   --  Determine whether the current exception (if exists) is an instance of
+   --  Standard'Abort_Signal.
+
    -----------------------
    -- Polling Interface --
    -----------------------
