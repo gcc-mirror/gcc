@@ -1,3 +1,15 @@
+2011-08-29  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cbhama.ads, a-cbhase.ads (Move): Clear Source following assignment
+	to Target.
+
+2011-08-29  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cborma.ads, a-cborse.ads (Cursor): Default-initialize all
+	components of record type.
+	* a-cborma.adb, a-cborse.adb (Move): Clear Source following assignmentw
+	to Target.
+
 2011-08-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* a-cbhama.adb, a-cbhama.ads, a-cborma.adb, a-cborma.ads, a-cobove.adb,

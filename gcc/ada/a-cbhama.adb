@@ -728,7 +728,8 @@ package body Ada.Containers.Bounded_Hashed_Maps is
            "attempt to tamper with cursors (container is busy)";
       end if;
 
-      Assign (Target => Target, Source => Source);
+      Target.Assign (Source);
+      Source.Clear;
    end Move;
 
    ----------
