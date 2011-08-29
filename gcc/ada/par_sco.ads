@@ -50,9 +50,9 @@ package Par_SCO is
    --  original tree associated with Cond.
 
    procedure Set_SCO_Pragma_Enabled (Loc : Source_Ptr);
-   --  This procedure is called from Sem_Prag when a pragma is disabled (i.e.
-   --  when the Pragma_Enabled flag is unset). Loc is the Sloc of the N_Pragma
-   --  node. This is used to disable the corresponding SCO table entry. Note
+   --  This procedure is called from Sem_Prag when a pragma is enabled (i.e.
+   --  when the Pragma_Enabled flag is set). Loc is the Sloc of the N_Pragma
+   --  node. This is used to enable the corresponding statement SCO entry. Note
    --  that we use the Sloc as the key here, since in the generic case, the
    --  analysis is on a copy of the node, which is different from the node
    --  seen by Par_SCO in the parse tree (but the Sloc values are the same).

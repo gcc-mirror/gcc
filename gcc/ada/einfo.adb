@@ -519,10 +519,10 @@ package body Einfo is
    --    Is_Safe_To_Reevaluate           Flag249
    --    Has_Predicates                  Flag250
 
-   --    (Has_Implicit_Dereference)      Flag251
+   --    Has_Implicit_Dereference        Flag251
    --    Is_Processed_Transient          Flag252
-   --    Is_Postcondition_Proc           Flag253
 
+   --    (unused)                        Flag253
    --    (unused)                        Flag254
 
    -----------------------
@@ -1986,12 +1986,6 @@ package body Einfo is
    begin
       return Flag138 (Id);
    end Is_Packed_Array_Type;
-
-   function Is_Postcondition_Proc (Id : E) return B is
-   begin
-      pragma Assert (Ekind (Id) = E_Procedure);
-      return Flag253 (Id);
-   end Is_Postcondition_Proc;
 
    function Is_Potentially_Use_Visible (Id : E) return B is
    begin
@@ -4510,12 +4504,6 @@ package body Einfo is
    begin
       Set_Flag138 (Id, V);
    end Set_Is_Packed_Array_Type;
-
-   procedure Set_Is_Postcondition_Proc (Id : E; V : B := True) is
-   begin
-      pragma Assert (Ekind (Id) = E_Procedure);
-      Set_Flag253 (Id, V);
-   end Set_Is_Postcondition_Proc;
 
    procedure Set_Is_Potentially_Use_Visible (Id : E; V : B := True) is
    begin
@@ -7558,7 +7546,6 @@ package body Einfo is
       W ("Is_Package_Body_Entity",          Flag160 (Id));
       W ("Is_Packed",                       Flag51  (Id));
       W ("Is_Packed_Array_Type",            Flag138 (Id));
-      W ("Is_Postcondition_Proc",           Flag253 (Id));
       W ("Is_Potentially_Use_Visible",      Flag9   (Id));
       W ("Is_Preelaborated",                Flag59  (Id));
       W ("Is_Primitive",                    Flag218 (Id));

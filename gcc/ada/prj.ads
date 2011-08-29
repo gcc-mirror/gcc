@@ -410,8 +410,8 @@ package Prj is
 
    type Language_Config is record
       Kind : Language_Kind := File_Based;
-      --  Kind of language. All languages are file based, except Ada which is
-      --  unit based.
+      --  Kind of language. Most languages are file based. A few, such as Ada,
+      --  are unit based.
 
       Naming_Data : Lang_Naming_Data;
       --  The naming data for the languages (prefixes, etc.)

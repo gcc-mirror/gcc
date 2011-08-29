@@ -1360,7 +1360,7 @@ package body Sem_Util is
          return;
       end if;
 
-      --  Ada 2012 AI04-0144-2: Dangerous order dependence. Actuals in nested
+      --  Ada 2012 AI05-0144-2: Dangerous order dependence. Actuals in nested
       --  calls within a construct have been collected. If one of them is
       --  writable and overlaps with another one, evaluation of the enclosing
       --  construct is nondeterministic. This is illegal in Ada 2012, but is
@@ -11677,10 +11677,10 @@ package body Sem_Util is
    -- Set_Current_Entity --
    ------------------------
 
-   --  The given entity is to be set as the currently visible definition
-   --  of its associated name (i.e. the Node_Id associated with its name).
-   --  All we have to do is to get the name from the identifier, and
-   --  then set the associated Node_Id to point to the given entity.
+   --  The given entity is to be set as the currently visible definition of its
+   --  associated name (i.e. the Node_Id associated with its name). All we have
+   --  to do is to get the name from the identifier, and then set the
+   --  associated Node_Id to point to the given entity.
 
    procedure Set_Current_Entity (E : Entity_Id) is
    begin
@@ -12377,6 +12377,8 @@ package body Sem_Util is
             return Get_Scoped_Name (Scope (E)) & "__" & Name;
          end if;
       end Get_Scoped_Name;
+
+   --  Start of processing for Unique_Name
 
    begin
       if E = Standard_Standard then

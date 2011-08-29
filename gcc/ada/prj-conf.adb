@@ -382,8 +382,9 @@ package body Prj.Conf is
 
       --  Local variables
 
-      Name   : Name_Id;
-      Naming : Project_Node_Id;
+      Name     : Name_Id;
+      Naming   : Project_Node_Id;
+      Compiler : Project_Node_Id;
 
    --  Start of processing for Add_Default_GNAT_Naming_Scheme
 
@@ -432,6 +433,12 @@ package body Prj.Conf is
          --  gnatmake).
 
          Create_Attribute (Name_Default_Language, "ada");
+
+         Compiler := Create_Package (Project_Tree, Config_File, "compiler");
+         Create_Attribute
+           (Name_Language_Kind, "unit_based", "ada", Pkg => Compiler);
+         Create_Attribute
+           (Name_Dependency_Kind, "ALI_File", "ada", Pkg => Compiler);
 
          Naming := Create_Package (Project_Tree, Config_File, "naming");
          Create_Attribute (Name_Spec_Suffix, ".ads", "ada",     Pkg => Naming);

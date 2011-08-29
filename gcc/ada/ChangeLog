@@ -1,3 +1,46 @@
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Check_Precondition_Postcondition): In formal
+	verification mode, analyze pragma expression for correctness, for
+	pre/post on library-level subprogram, as it is not expanded later.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): Do not expand array aggregates
+	in formal verification.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb: Minor reformatting.
+	* freeze.adb, sem_ch13.adb: Fix comment: Bit_Order is an attribute,
+	there's no pragma.
+	* par_sco.ads, par_sco.adb: Update comments.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* einfo.adb, einfo.ads: Remove flag Is_Postcondition_Proc and
+	associated getter/setter.
+	* sem_ch6.adb: Remove reference to Is_Postcondition_Proc.
+
+2011-08-29  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New Compiler attribute Dependency_Kind and Language_Kind
+	* prj-conf.adb: Add_Default_GNAT_Naming_Scheme: Add a package Compiler
+	with declarations for Language_Kind and Dependency_Kind for Ada.
+	* prj-nmsc.adb (Check_Unit_Name): New name of procedure Check_Ada_Name
+	(Process_Compiler): Take into account the new attributes Dependency_Kind
+	and Language_Kind.
+	(Check_Configuration): Check if language kind is unit based, not if the
+	language name is Ada.
+	(Process_Exceptions_Unit_Based): Ditto
+	(Add_Language): Remove default additions of language and dependency kind
+	* prj.ads: Minor comment change
+	* snames.ads-tmpl: New standard names Dependency_Kind and Language_Kind
+
+2011-08-29  Johannes Kanig  <kanig@adacore.com>
+
+	* debug.adb: Update comments.
+
 2011-08-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/Make-lang.in (CFLAGS-ada/tracebak.o)
