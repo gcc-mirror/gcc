@@ -3028,6 +3028,11 @@ package body Exp_Util is
                N_Task_Body_Stub                         |
                N_Task_Type_Declaration                  |
 
+               --  Use clauses can appear in lists of declarations
+
+               N_Use_Package_Clause                     |
+               N_Use_Type_Clause                        |
+
                --  Freeze entity behaves like a declaration or statement
 
                N_Freeze_Entity
@@ -3328,8 +3333,6 @@ package body Exp_Util is
                N_Unconstrained_Array_Definition         |
                N_Unused_At_End                          |
                N_Unused_At_Start                        |
-               N_Use_Package_Clause                     |
-               N_Use_Type_Clause                        |
                N_Variant                                |
                N_Variant_Part                           |
                N_Validate_Unchecked_Conversion          |

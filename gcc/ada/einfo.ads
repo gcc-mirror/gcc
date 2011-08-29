@@ -1088,9 +1088,9 @@ package Einfo is
 --       is itself another entity. For a type entity, points to the parent
 --       type for a derived type, or if the type is not derived, points to
 --       itself. For a subtype entity, Etype points to the base type. For
---       a class wide type, points to the parent type. For a subprogram or
---       subprogram type, Etype has the return type of a function or is set
---       to Standard_Void_Type to represent a procedure.
+--       a class wide type, points to the corresponding specific type. For a
+--       subprogram or subprogram type, Etype has the return type of a function
+--       or is set to Standard_Void_Type to represent a procedure.
 --
 --       Note one obscure case: for pragma Default_Storage_Pool (null), the
 --       Etype of the N_Null node is Empty.

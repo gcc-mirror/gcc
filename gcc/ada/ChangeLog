@@ -1,3 +1,24 @@
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* s-pooglo.adb: Minor reformatting.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): if the left-hand side is
+	an indexed component of a packed array whose element type is a record
+	with a representation clause different from that of the right-hand
+	side, generate a temporary to minimuze the number of bit-field
+	operations generated.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Insert_Actions): Use clauses can be part of lists of
+	declarations, and thus are likely insertion points for actions.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads: Minor comment fix.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* frontend.adb, gnat1drv.adb: Minor reformatting.
