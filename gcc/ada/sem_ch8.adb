@@ -1634,11 +1634,6 @@ package body Sem_Ch8 is
    procedure Analyze_Subprogram_Renaming (N : Node_Id) is
       Formal_Spec : constant Node_Id := Corresponding_Formal_Spec (N);
       Is_Actual   : constant Boolean := Present (Formal_Spec);
-
-      CW_Actual : Boolean := False;
-      --  True if the renaming is for a defaulted formal subprogram when the
-      --  actual for a related formal type is class-wide. For AI05-0071.
-
       Inst_Node   : Node_Id                   := Empty;
       Nam         : constant Node_Id          := Name (N);
       New_S       : Entity_Id;
@@ -1691,6 +1686,11 @@ package body Sem_Ch8 is
       --  This rule only applies if there is no explicit visible class-wide
       --  operation at the point of the instantiation.
 
+      function Has_Class_Wide_Actual return Boolean;
+      --  Ada 2012 (AI05-071, AI05-0131): True if N is the renaming for a
+      --  defaulted formal subprogram when the actual for the controlling
+      --  formal type is class-wide.
+
       -----------------------------
       -- Check_Class_Wide_Actual --
       -----------------------------
@@ -1729,7 +1729,7 @@ package body Sem_Ch8 is
                Next (F);
             end loop;
 
-            if Ekind (Prim_Op) = E_Function then
+            if Ekind_In (Prim_Op, E_Function, E_Operator) then
                return Make_Simple_Return_Statement (Loc,
                   Expression =>
                     Make_Function_Call (Loc,
@@ -1780,6 +1780,7 @@ package body Sem_Ch8 is
          F := First_Formal (Formal_Spec);
          while Present (F) loop
             if Has_Unknown_Discriminants (Etype (F))
+              and then not Is_Class_Wide_Type (Etype (F))
               and then Is_Class_Wide_Type (Get_Instance_Of (Etype (F)))
             then
                Formal_Type := Etype (F);
@@ -1791,7 +1792,6 @@ package body Sem_Ch8 is
          end loop;
 
          if Present (Formal_Type) then
-            CW_Actual := True;
 
             --  Create declaration and body for class-wide operation
 
@@ -1893,6 +1893,41 @@ package body Sem_Ch8 is
          end if;
       end Check_Null_Exclusion;
 
+      ---------------------------
+      -- Has_Class_Wide_Actual --
+      ---------------------------
+
+      function Has_Class_Wide_Actual return Boolean is
+         F_Nam  : Entity_Id;
+         F_Spec : Entity_Id;
+
+      begin
+         if Is_Actual
+           and then Nkind (Nam) in N_Has_Entity
+           and then Present (Entity (Nam))
+           and then Is_Dispatching_Operation (Entity (Nam))
+         then
+            F_Nam  := First_Entity (Entity (Nam));
+            F_Spec := First_Formal (Formal_Spec);
+            while Present (F_Nam)
+              and then Present (F_Spec)
+            loop
+               if Is_Controlling_Formal (F_Nam)
+                 and then Has_Unknown_Discriminants (Etype (F_Spec))
+                 and then not Is_Class_Wide_Type (Etype (F_Spec))
+                 and then Is_Class_Wide_Type (Get_Instance_Of (Etype (F_Spec)))
+               then
+                  return True;
+               end if;
+
+               Next_Entity (F_Nam);
+               Next_Formal (F_Spec);
+            end loop;
+         end if;
+
+         return False;
+      end Has_Class_Wide_Actual;
+
       -------------------------
       -- Original_Subprogram --
       -------------------------
@@ -1937,6 +1972,11 @@ package body Sem_Ch8 is
             return Subp;
          end if;
       end Original_Subprogram;
+
+      CW_Actual : constant Boolean := Has_Class_Wide_Actual;
+      --  Ada 2012 (AI05-071, AI05-0131): True if the renaming is for a
+      --  defaulted formal subprogram when the actual for a related formal
+      --  type is class-wide.
 
    --  Start of processing for Analyze_Subprogram_Renaming
 
@@ -2058,7 +2098,14 @@ package body Sem_Ch8 is
       if Is_Actual then
          Inst_Node := Unit_Declaration_Node (Formal_Spec);
 
-         if Is_Entity_Name (Nam)
+         --  Check whether the renaming is for a defaulted actual subprogram
+         --  with a class-wide actual.
+
+         if CW_Actual then
+            New_S := Analyze_Subprogram_Specification (Spec);
+            Old_S := Check_Class_Wide_Actual;
+
+         elsif Is_Entity_Name (Nam)
            and then Present (Entity (Nam))
            and then not Comes_From_Source (Nam)
            and then not Is_Overloaded (Nam)
@@ -2417,16 +2464,6 @@ package body Sem_Ch8 is
               ("renamed entity cannot be "
                & "subprogram that requires overriding (RM 8.5.4 (5.1))", N);
          end if;
-      end if;
-
-      --  If no renamed entity was found, check whether the renaming is for
-      --  a defaulted actual subprogram with a class-wide actual.
-
-      if Old_S = Any_Id
-        and then Is_Actual
-        and then From_Default (N)
-      then
-         Old_S := Check_Class_Wide_Actual;
       end if;
 
       if Old_S /= Any_Id then

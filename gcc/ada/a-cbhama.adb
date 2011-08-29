@@ -424,15 +424,14 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    end First;
 
    function First (Object : Iterator) return Cursor is
-      M : constant Map_Access  := Object.Container;
-      N : constant Count_Type  := HT_Ops.First (M.all);
-
+      M : constant Map_Access := Object.Container;
+      N : constant Count_Type := HT_Ops.First (M.all);
    begin
       if N = 0 then
          return No_Element;
+      else
+         return Cursor'(Object.Container.all'Unchecked_Access, N);
       end if;
-
-      return Cursor'(Object.Container.all'Unchecked_Access, N);
    end First;
 
    -----------------

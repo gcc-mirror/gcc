@@ -1,3 +1,13 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-cbhama.adb, a-cbhama.ads: Minor reformatting.
+
+2011-08-29  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Complete support for
+	renamings of formal subprograms when the actual for a formal type is
+	class-wide.
+
 2011-08-29  Matthew Heaney  <heaney@adacore.com>
 
 	* a-cbhama.ads, a-cbhase.ads (Move): Clear Source following assignment
