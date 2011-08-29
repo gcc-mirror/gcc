@@ -1,3 +1,10 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb: Minor reformatting.
+	Minor code reorganization and commenting.
+	* par_sco.adb, checks.adb, sem_attr.adb, get_scos.adb: Minor
+	reformatting.
+
 2011-08-29  Thomas Quinot  <quinot@adacore.com>
 
 	* get_scos.adb: Ignore chaining indicators not currently supported
