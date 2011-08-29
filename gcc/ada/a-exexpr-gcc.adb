@@ -567,8 +567,7 @@ package body Exception_Propagation is
 
       --  Perform a standard raise first. If a regular handler is found, it
       --  will be entered after all the intermediate cleanups have run. If
-      --  there is no regular handler, control will get back to after the
-      --  call.
+      --  there is no regular handler, it will return.
 
       Unwind_RaiseException (GCC_Exception);
 

@@ -7638,7 +7638,10 @@ preprocessing is triggered and parameterized.
 @cindex @option{-gnatep} (@command{gcc})
 This switch indicates to the compiler the file name (without directory
 information) of the preprocessor data file to use. The preprocessor data file
-should be found in the source directories.
+should be found in the source directories. Note that when the compiler is
+called by a builder (@command{gnatmake} or @command{gprbuild}) with a project
+file, if the object directory is not also a source directory, the builder needs
+to be called with @option{-x}.
 
 @noindent
 A preprocessing data file is a text file with significant lines indicating
