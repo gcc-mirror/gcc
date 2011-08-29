@@ -34,6 +34,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Finalization;
+
 with System.Finalization_Masters;
 with System.Storage_Elements;
 
@@ -240,8 +241,8 @@ private
       Owner : Any_Storage_Pool_With_Subpools_Ptr := null;
       --  A reference to the master pool_with_subpools
 
-      Master : aliased System.Finalization_Masters.Finalization_Master (False);
-      --  A heterogeneous collection of controlled objects
+      Master : aliased System.Finalization_Masters.Finalization_Master;
+      --  A collection of controlled objects
 
       Node : SP_Node_Ptr := null;
       --  A link to the doubly linked list node which contains the subpool.
@@ -334,11 +335,5 @@ private
 
    procedure Initialize_Pool (Pool : in out Root_Storage_Pool_With_Subpools);
    --  Setup the doubly linked list of subpools
-
-   procedure Print_Pool (Pool : Root_Storage_Pool_With_Subpools);
-   --  Debug routine, output the contents of a pool_with_subpools
-
-   procedure Print_Subpool (Subpool : Subpool_Handle);
-   --  Debug routine, output the contents of a subpool
 
 end System.Storage_Pools.Subpools;

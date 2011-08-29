@@ -2952,9 +2952,12 @@ package body Exp_Ch5 is
 
             if Of_Present (I_Spec) then
                declare
-                  Default_Iter : constant Entity_Id :=
-                    Find_Aspect (Etype (Container), Aspect_Default_Iterator);
-                  Ent : Entity_Id;
+                  Default_Iter  : constant Entity_Id :=
+                    Entity (
+                      Find_Aspect
+                         (Etype (Container), Aspect_Default_Iterator));
+                  Container_Arg : Node_Id;
+                  Ent           : Entity_Id;
 
                begin
                   Cursor := Make_Temporary (Loc, 'I');
@@ -2963,23 +2966,39 @@ package body Exp_Ch5 is
                      null;
 
                   else
-                     Iter_Type :=
-                        Etype
-                         (Find_Aspect
-                              (Etype (Container), Aspect_Default_Iterator));
+                     Iter_Type := Etype (Default_Iter);
 
                      --  Rewrite domain of iteration as a call to the default
-                     --  iterator for the container type.
+                     --  iterator for the container type. If the container is
+                     --  a derived type and the aspect is inherited, convert
+                     --  container to parent type. The Cursor type is also
+                     --  inherited from the scope of the parent.
+
+                     if Base_Type (Etype (Container)) =
+                       Base_Type (Etype (First_Formal (Default_Iter)))
+                     then
+                        Container_Arg := New_Copy_Tree (Container);
+
+                     else
+                        Pack := Scope (Default_Iter);
+
+                        Container_Arg :=
+                          Make_Type_Conversion (Loc,
+                            Subtype_Mark =>
+                              New_Occurrence_Of (
+                                Etype (First_Formal (Default_Iter)), Loc),
+                            Expression => New_Copy_Tree (Container));
+                     end if;
 
                      Rewrite (Name (I_Spec),
                        Make_Function_Call (Loc,
-                         Name => Default_Iter,
+                         Name => New_Occurrence_Of (Default_Iter, Loc),
                          Parameter_Associations =>
-                           New_List (Relocate_Node (Name (I_Spec)))));
+                           New_List (Container_Arg)));
                      Analyze_And_Resolve (Name (I_Spec));
                   end if;
 
-                  --  Find cursor type in container package.
+                  --  Find cursor type in proper container package.
 
                   Ent := First_Entity (Pack);
                   while Present (Ent) loop

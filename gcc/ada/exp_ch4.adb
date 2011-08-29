@@ -1137,8 +1137,6 @@ package body Exp_Ch4 is
             Rewrite (Exp, New_Copy (Expression (Exp)));
          end if;
       else
-         Build_Allocate_Deallocate_Proc (N, True);
-
          --  If we have:
          --    type A is access T1;
          --    X : A := new T2'(...);

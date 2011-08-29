@@ -1,3 +1,18 @@
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop): Handle properly a loop over a
+	container of a derived type.
+
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* impunit.adb, s-stposu.adb, s-stposu.ads, exp_ch4.adb, s-finmas.adb,
+	s-finmas.ads: Revert previous change.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cidlli.adb, a-cidlli.ads, a-cihama.adb, a-cihama.ads,
+	a-ciorse.adb, a-ciorse.ads: Add iterator machinery to containers.
+
 2011-08-29  Pascal Obry  <obry@adacore.com>
 
 	* exp_disp.adb: Minor comment fix.

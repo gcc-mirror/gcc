@@ -346,6 +346,7 @@ package body Impunit is
 
      "s-addima",    -- System.Address_Image
      "s-assert",    -- System.Assertions
+     "s-finmas",    -- System.Finalization_Masters
      "s-memory",    -- System.Memory
      "s-parint",    -- System.Partition_Interface
      "s-pooglo",    -- System.Pool_Global
@@ -528,6 +529,7 @@ package body Impunit is
    -- GNAT Defined Additions to Ada 20012 --
    -----------------------------------------
 
+     "s-spsufi",    -- System.Storage_Pools.Subpools.Finalization
      "a-cofove",    -- Ada.Containers.Formal_Vectors
      "a-cfdlli",    -- Ada.Containers.Formal_Doubly_Linked_Lists
      "a-cforse",    -- Ada.Containers.Formal_Ordered_Sets
