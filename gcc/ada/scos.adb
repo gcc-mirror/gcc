@@ -25,22 +25,6 @@
 
 package body SCOs is
 
-   -------------
-   -- Add_SCO --
-   -------------
-
-   procedure Add_SCO
-     (From        : Source_Location := No_Source_Location;
-      To          : Source_Location := No_Source_Location;
-      C1          : Character       := ' ';
-      C2          : Character       := ' ';
-      Last        : Boolean         := False;
-      Pragma_Sloc : Source_Ptr      := No_Location)
-   is
-   begin
-      SCO_Table.Append ((From, To, C1, C2, Last, Pragma_Sloc));
-   end Add_SCO;
-
    ----------------
    -- Initialize --
    ----------------
