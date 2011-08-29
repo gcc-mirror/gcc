@@ -1268,6 +1268,12 @@ Lower_parse_tree::function(Named_object* no)
 int
 Lower_parse_tree::statement(Block* block, size_t* pindex, Statement* sorig)
 {
+  // Because we explicitly traverse the statement's contents
+  // ourselves, we want to skip block statements here.  There is
+  // nothing to lower in a block statement.
+  if (sorig->is_block_statement())
+    return TRAVERSE_CONTINUE;
+
   Statement_inserter hold_inserter(this->inserter_);
   this->inserter_ = Statement_inserter(block, pindex);
 
