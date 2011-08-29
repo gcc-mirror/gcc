@@ -1,3 +1,13 @@
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* a-except.adb, a-except-2005.adb: Minor comment rewording and
+	reformatting.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Array_Type_Declaration): Remove insertion of
+	declaration for Itypes in Alfa mode.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* a-cdlili.ads, a-coinve.ads, a-coorma.adb, a-coorma.ads, s-tassta.adb,

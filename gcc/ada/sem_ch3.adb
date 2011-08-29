@@ -4741,41 +4741,6 @@ package body Sem_Ch3 is
 
          Make_Index (Index, P, Related_Id, Nb_Index);
 
-         --  In formal verification mode, create an explicit declaration for
-         --  Itypes created for index types. Having a declaration for all type
-         --  entities facilitates the task of the formal verification back-end.
-         --  Notice that this declaration is not attached to the tree.
-
-         if ALFA_Mode
-           and then Is_Itype (Etype (Index))
-         then
-            declare
-               Loc     : constant Source_Ptr := Sloc (Def);
-               Sub_Ind : Node_Id;
-               Decl    : Entity_Id;
-
-            begin
-               if Nkind (Index) = N_Subtype_Indication then
-                  Sub_Ind := Relocate_Node (Index);
-               else
-                  Sub_Ind :=
-                    Make_Subtype_Indication (Loc,
-                      Subtype_Mark =>
-                        New_Occurrence_Of (Base_Type (Etype (Index)), Loc),
-                      Constraint =>
-                        Make_Range_Constraint (Loc,
-                          Range_Expression => Relocate_Node (Index)));
-               end if;
-
-               Decl :=
-                 Make_Subtype_Declaration (Loc,
-                   Defining_Identifier => Etype (Index),
-                   Subtype_Indication  => Sub_Ind);
-
-               Analyze (Decl);
-            end;
-         end if;
-
          --  Check error of subtype with predicate for index type
 
          Bad_Predicated_Subtype_Use
@@ -4792,24 +4757,6 @@ package body Sem_Ch3 is
 
       if Present (Component_Typ) then
          Element_Type := Process_Subtype (Component_Typ, P, Related_Id, 'C');
-
-         --  In formal verification mode, create an explicit declaration for
-         --  the Itype created for a component type. Having a declaration for
-         --  all type entities facilitates the task of the formal verification
-         --  back-end. Note: this declaration is not attached to the tree.
-
-         if ALFA_Mode and then Is_Itype (Element_Type) then
-            declare
-               Loc  : constant Source_Ptr := Sloc (Def);
-               Decl : Entity_Id;
-            begin
-               Decl :=
-                 Make_Subtype_Declaration (Loc,
-                   Defining_Identifier => Element_Type,
-                   Subtype_Indication  => Relocate_Node (Component_Typ));
-               Analyze (Decl);
-            end;
-         end if;
 
          Set_Etype (Component_Typ, Element_Type);
 
@@ -4896,27 +4843,6 @@ package body Sem_Ch3 is
          Set_Finalize_Storage_Only
                                (Implicit_Base, Finalize_Storage_Only
                                                         (Element_Type));
-
-         --  In ALFA mode, generate a declaration for Itype T, so that the
-         --  formal verification back-end can use it.
-
-         if ALFA_Mode and then Is_Itype (T) then
-            declare
-               Loc  : constant Source_Ptr := Sloc (Def);
-               Decl : Node_Id;
-            begin
-               Decl :=
-                 Make_Full_Type_Declaration (Loc,
-                   Defining_Identifier => T,
-                   Type_Definition     =>
-                     Make_Constrained_Array_Definition (Loc,
-                       Discrete_Subtype_Definitions =>
-                         New_Copy_List (Discrete_Subtype_Definitions (Def)),
-                       Component_Definition         =>
-                         Relocate_Node (Component_Definition (Def))));
-               Analyze (Decl);
-            end;
-         end if;
 
       --  Unconstrained array case
 
