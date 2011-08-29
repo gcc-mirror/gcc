@@ -1858,8 +1858,7 @@ Thunk_statement::is_simple(Function_type* fntype) const
   // If this calls something which is not a simple function, then we
   // need a thunk.
   Expression* fn = this->call_->call_expression()->fn();
-  if (fn->bound_method_expression() != NULL
-      || fn->interface_field_reference_expression() != NULL)
+  if (fn->interface_field_reference_expression() != NULL)
     return false;
 
   return true;
@@ -1913,14 +1912,6 @@ Thunk_statement::do_check_types(Gogo*)
       if (!this->call_->is_error_expression())
 	this->report_error("expected call expression");
       return;
-    }
-  Function_type* fntype = ce->get_function_type();
-  if (fntype != NULL && fntype->is_method())
-    {
-      Expression* fn = ce->fn();
-      if (fn->bound_method_expression() == NULL
-	  && fn->interface_field_reference_expression() == NULL)
-	this->report_error(_("no object for method call"));
     }
 }
 
@@ -2005,8 +1996,7 @@ Thunk_statement::is_constant_function() const
   Expression* fn = ce->fn();
   if (fn->func_expression() != NULL)
     return fn->func_expression()->closure() == NULL;
-  if (fn->bound_method_expression() != NULL
-      || fn->interface_field_reference_expression() != NULL)
+  if (fn->interface_field_reference_expression() != NULL)
     return true;
   return false;
 }
@@ -2048,7 +2038,6 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
     return false;
 
   Expression* fn = ce->fn();
-  Bound_method_expression* bound_method = fn->bound_method_expression();
   Interface_field_reference_expression* interface_method =
     fn->interface_field_reference_expression();
 
@@ -2070,30 +2059,6 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
 
   if (interface_method != NULL)
     vals->push_back(interface_method->expr());
-
-  if (bound_method != NULL)
-    {
-      Expression* first_arg = bound_method->first_argument();
-
-      // We always pass a pointer when calling a method.
-      if (first_arg->type()->points_to() == NULL)
-	first_arg = Expression::make_unary(OPERATOR_AND, first_arg, location);
-
-      // If we are calling a method which was inherited from an
-      // embedded struct, and the method did not get a stub, then the
-      // first type may be wrong.
-      Type* fatype = bound_method->first_argument_type();
-      if (fatype != NULL)
-	{
-	  if (fatype->points_to() == NULL)
-	    fatype = Type::make_pointer_type(fatype);
-	  Type* unsafe = Type::make_pointer_type(Type::make_void_type());
-	  first_arg = Expression::make_cast(unsafe, first_arg, location);
-	  first_arg = Expression::make_cast(fatype, first_arg, location);
-	}
-
-      vals->push_back(first_arg);
-    }
 
   if (ce->args() != NULL)
     {
@@ -2183,19 +2148,6 @@ Thunk_statement::build_struct(Function_type* fntype)
     {
       Typed_identifier tid("object", interface_method->expr()->type(),
 			   location);
-      fields->push_back(Struct_field(tid));
-    }
-
-  // If this is a method call, pass down the expression we are
-  // calling.
-  if (fn->bound_method_expression() != NULL)
-    {
-      go_assert(fntype->is_method());
-      Type* rtype = fntype->receiver()->type();
-      // We always pass the receiver as a pointer.
-      if (rtype->points_to() == NULL)
-	rtype = Type::make_pointer_type(rtype);
-      Typed_identifier tid("receiver", rtype, location);
       fields->push_back(Struct_field(tid));
     }
 
@@ -2317,7 +2269,6 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   thunk_parameter = Expression::make_unary(OPERATOR_MULT, thunk_parameter,
 					   location);
 
-  Bound_method_expression* bound_method = ce->fn()->bound_method_expression();
   Interface_field_reference_expression* interface_method =
     ce->fn()->interface_field_reference_expression();
 
@@ -2335,16 +2286,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
       next_index = 1;
     }
 
-  if (bound_method != NULL)
-    {
-      go_assert(next_index == 0);
-      Expression* r = Expression::make_field_reference(thunk_parameter, 0,
-						       location);
-      func_to_call = Expression::make_bound_method(r, bound_method->method(),
-						   location);
-      next_index = 1;
-    }
-  else if (interface_method != NULL)
+  if (interface_method != NULL)
     {
       // The main program passes the interface object.
       go_assert(next_index == 0);
@@ -2389,6 +2331,13 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 
   Call_expression* call = Expression::make_call(func_to_call, call_params,
 						false, location);
+
+  // This call expression was already lowered before entering the
+  // thunk statement.  Don't try to lower varargs again, as that will
+  // cause confusion for, e.g., method calls which already have a
+  // receiver parameter.
+  call->set_varargs_are_lowered();
+
   Statement* call_statement = Statement::make_statement(call);
 
   gogo->add_statement(call_statement);

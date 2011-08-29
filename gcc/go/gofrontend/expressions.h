@@ -1244,6 +1244,11 @@ class Call_expression : public Expression
   is_varargs() const
   { return this->is_varargs_; }
 
+  // Note that varargs have already been lowered.
+  void
+  set_varargs_are_lowered()
+  { this->varargs_are_lowered_ = true; }
+
   // Whether this call is being deferred.
   bool
   is_deferred() const
@@ -1307,7 +1312,7 @@ class Call_expression : public Expression
   { this->args_ = args; }
 
   // Let a builtin expression lower varargs.
-  Expression*
+  void
   lower_varargs(Gogo*, Named_object* function, Statement_inserter* inserter,
 		Type* varargs_type, size_t param_count);
 
@@ -1322,9 +1327,6 @@ class Call_expression : public Expression
  private:
   bool
   check_argument_type(int, const Type*, const Type*, source_location, bool);
-
-  tree
-  bound_method_function(Translate_context*, Bound_method_expression*, tree*);
 
   tree
   interface_method_function(Translate_context*,
