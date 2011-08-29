@@ -1,3 +1,8 @@
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* system-freebsd-x86_64.ads (Backend_Overflow_Checks): Set true True.
+	Remove unused variables.
+
 2011-08-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb: Remove Build_Explicit_Dereference.
