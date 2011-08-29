@@ -36,7 +36,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     _Fwd_list_base<_Tp, _Alloc>::
-    _Fwd_list_base(const _Fwd_list_base& __lst, const _Alloc& __a)
+    _Fwd_list_base(const _Fwd_list_base& __lst, const _Node_alloc_type& __a)
     : _M_impl(__a)
     {
       this->_M_impl._M_head._M_next = 0;
@@ -250,7 +250,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       if (__n)
 	{
-	  forward_list __tmp(__n, __val, this->_M_get_Node_allocator());
+	  forward_list __tmp(__n, __val, get_allocator());
 	  return _M_splice_after(__pos, std::move(__tmp));
 	}
       else
@@ -264,7 +264,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       insert_after(const_iterator __pos,
 		   _InputIterator __first, _InputIterator __last)
       {
-	forward_list __tmp(__first, __last, this->_M_get_Node_allocator());
+	forward_list __tmp(__first, __last, get_allocator());
 	if (!__tmp.empty())
 	  return _M_splice_after(__pos, std::move(__tmp));
 	else
@@ -278,7 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       if (__il.size())
 	{
-	  forward_list __tmp(__il, this->_M_get_Node_allocator());
+	  forward_list __tmp(__il, get_allocator());
 	  return _M_splice_after(__pos, std::move(__tmp));
 	}
       else

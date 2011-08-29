@@ -146,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       explicit
       set(const _Compare& __comp,
 	  const allocator_type& __a = allocator_type())
-      : _M_t(__comp, __a) { }
+      : _M_t(__comp, _Key_alloc_type(__a)) { }
 
       /**
        *  @brief  Builds a %set from a range.
@@ -179,8 +179,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	set(_InputIterator __first, _InputIterator __last,
 	    const _Compare& __comp,
 	    const allocator_type& __a = allocator_type())
-	: _M_t(__comp, __a)
-	{ _M_t._M_insert_unique(__first, __last); }
+	: _M_t(__comp, _Key_alloc_type(__a))
+        { _M_t._M_insert_unique(__first, __last); }
 
       /**
        *  @brief  %Set copy constructor.
@@ -217,7 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       set(initializer_list<value_type> __l,
 	  const _Compare& __comp = _Compare(),
 	  const allocator_type& __a = allocator_type())
-      : _M_t(__comp, __a)
+      : _M_t(__comp, _Key_alloc_type(__a))
       { _M_t._M_insert_unique(__l.begin(), __l.end()); }
 #endif
 
@@ -286,7 +286,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       ///  Returns the allocator object with which the %set was constructed.
       allocator_type
       get_allocator() const _GLIBCXX_NOEXCEPT
-      { return _M_t.get_allocator(); }
+      { return allocator_type(_M_t.get_allocator()); }
 
       /**
        *  Returns a read-only (constant) iterator that points to the first

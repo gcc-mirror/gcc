@@ -1,3 +1,101 @@
+2011-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/50118
+	* include/bits/stl_list.h (_List_base<>::
+	_List_base(const allocator_type&)): Remove.
+	(_List_base<>::_List_base(const _Node_alloc_type&)): Add.
+	(list<>:list(const allocator_type&), list(size_type, const
+	value_type&, const allocator_type&),
+	list(initializer_list<, const allocator_type&),
+	list(_InputIterator, _InputIterator, const allocator_type&),
+	insert(iterator, size_type, const value_type&),
+	insert(iterator, _InputIterator, _InputIterator)): Adjust.
+	* include/bits/stl_tree.h (_Rb_tree<>::_Rb_tree(const _Compare&,
+	const allocator_type&)): Fix.
+	* include/bits/stl_map.h (map<>::map(const _Compare&,
+ 	const allocator_type&), map(initializer_list<>,
+	const _Compare&, const allocator_type&), map(_InputIterator,
+	_InputIterator, const _Compare&, const allocator_type&),
+	get_allocator): Adjust.
+	* include/bits/stl_set.h (set<>::set(const _Compare&,
+ 	const allocator_type&), set(initializer_list<>,
+	const _Compare&, const allocator_type&), set(_InputIterator,
+	_InputIterator, const _Compare&, const allocator_type&),
+	get_allocator): Likewise.
+	* include/bits/stl_multimap.h (multimap<>::multimap(const _Compare&,
+ 	const allocator_type&), multimap(initializer_list<>,
+	const _Compare&, const allocator_type&), multimap(_InputIterator,
+	_InputIterator, const _Compare&, const allocator_type&),
+	get_allocator): Likewise.
+	* include/bits/stl_multiset.h (multiset<>::multiset(const _Compare&,
+ 	const allocator_type&), multiset(initializer_list<>,
+	const _Compare&, const allocator_type&), multiset(_InputIterator,
+	_InputIterator, const _Compare&, const allocator_type&),
+	get_allocator): Likewise.
+	* include/bits/forward_list.h (_Fwd_list_base<>::
+	_Fwd_list_base(const _Alloc&), _Fwd_list_base(const _Fwd_list_base&,
+	const _Alloc&), _Fwd_list_base(_Fwd_list_base&&, const _Alloc&)):
+	Remove.
+	(_Fwd_list_base<>::_Fwd_list_base(const _Node_alloc_type&),
+	_Fwd_list_base(const _Fwd_list_base&,
+	const _Node_alloc_type&), _Fwd_list_base(_Fwd_list_base&&,
+	const _Node_alloc_type&)): Add.
+	(forward_list<>::forward_list(const _Alloc&),
+	forward_list(const forward_list&, const _Alloc&),
+	forward_list(forward_list&&, const _Alloc&),
+	forward_list(size_type, const _Tp&, const _Alloc&),
+	forward_list(_InputIterator, _InputIterator, const _Alloc&),
+	forward_list(std::initializer_list<>, const _Alloc&),
+	get_allocator): Adjust.
+	* include/bits/forward_list.tcc
+	* testsuite/util/testsuite_allocator.h (ExplicitConsAlloc): Add.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/5.cc: New.
+	* testsuite/23_containers/multimap/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	* testsuite/23_containers/multimap/requirements/
+	explicit_instantiation/5_c++0x.cc: Likewise.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/
+	5.cc: Likewise.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	testsuite/23_containers/multiset/requirements/explicit_instantiation/
+	5.cc: Likewise.
+	* testsuite/23_containers/multiset/requirements/
+	explicit_instantiation/5_c++0x.cc: Likewise.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	5.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	5.cc: Likewise.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2011-08-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* acinclude.m4 (GLIBCXX_CHECK_MATH_PROTO)
