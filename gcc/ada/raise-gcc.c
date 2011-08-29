@@ -1149,7 +1149,9 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
       else
 	{
 	  /* Trigger the appropriate notification routines before the second
-	     phase starts, which ensures the stack is still intact. */
+	     phase starts, which ensures the stack is still intact.
+             First, setup the Ada occurrence.  */
+          __gnat_setup_current_excep (uw_exception);
 	  __gnat_notify_handled_exception ();
 
 	  return _URC_HANDLER_FOUND;
