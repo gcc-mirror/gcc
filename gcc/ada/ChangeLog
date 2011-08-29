@@ -1,3 +1,19 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, s-tasren.adb, exp_sel.adb, exp_sel.ads, exp_ch11.adb,
+	s-interr-hwint.adb, s-tpobop.adb, sem_ch13.adb: Minor reformatting.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* par-endh.adb (Check_End): For an END where it is mandatory to repeat
+	the scope name, do not report a missing label as a style violation (it
+	will be diagnosed as an illegality).
+	* exp_dist.adb (Add_Params_For_Variant_Components): Fix handling of
+	variant records: Get_Enum_Lit_From_Pos already returns a usage
+	occurrence of the literal, no need to use New_Occurrence_Of. Set Etype
+	on Expr in Integer_Literal case so that it can be used by
+	Build_To_Any_Call.
+
 2011-08-29  Tristan Gingold  <gingold@adacore.com>
 
 	* exp_sel.ads (Build_Abort_BLock_Handler): New function spec.

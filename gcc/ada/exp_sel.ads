@@ -45,8 +45,7 @@ package Exp_Sel is
    --  of the encapsulated cleanup block, Blk is the actual block name.
    --  The exception handler code is built by Build_Abort_Block_Handler.
 
-   function Build_Abort_Block_Handler
-     (Loc : Source_Ptr) return Node_Id;
+   function Build_Abort_Block_Handler (Loc : Source_Ptr) return Node_Id;
    --  Generate if front-end exception:
    --    when others =>
    --      Abort_Under;

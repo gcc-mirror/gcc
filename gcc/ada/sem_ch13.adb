@@ -1544,7 +1544,7 @@ package body Sem_Ch13 is
       --  has the proper type structure.
 
       function Check_Primitive_Function (Subp : Entity_Id) return Boolean;
-      --  Common legality check for the previoous two
+      --  Common legality check for the previous two
 
       -----------------------------------
       -- Analyze_Stream_TSS_Definition --

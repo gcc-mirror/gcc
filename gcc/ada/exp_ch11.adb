@@ -1100,7 +1100,6 @@ package body Exp_Ch11 is
                elsif Abort_Allowed
                  and then Exception_Mechanism /= Back_End_Exceptions
                then
-
                   --  There are some special cases in which we do not do the
                   --  undefer. In particular a finalization (AT END) handler
                   --  wants to operate with aborts still deferred.
