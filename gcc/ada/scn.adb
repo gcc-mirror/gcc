@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -472,18 +472,9 @@ package body Scn is
       Token_Name := Name_Find;
 
       if not Used_As_Identifier (Token) or else Force_Msg then
-
-         --  If "some" is made into a reserved work in Ada2012, the following
-         --  check will make it into a regular identifier in earlier versions
-         --  of the language.
-
-         if Token = Tok_Some and then Ada_Version < Ada_2012 then
-            null;
-         else
-            Error_Msg_Name_1 := Token_Name;
-            Error_Msg_SC ("reserved word* cannot be used as identifier!");
-            Used_As_Identifier (Token) := True;
-         end if;
+         Error_Msg_Name_1 := Token_Name;
+         Error_Msg_SC ("reserved word* cannot be used as identifier!");
+         Used_As_Identifier (Token) := True;
       end if;
 
       Token := Tok_Identifier;

@@ -1432,19 +1432,9 @@ package body Ch4 is
          --  that doesn't belong to us!
 
          if Token in Token_Class_Eterm then
-
-            --  If Some becomes a keyword, the following is needed to make it
-            --  acceptable in older versions of Ada.
-
-            if Token = Tok_Some
-              and then Ada_Version < Ada_2012
-            then
-               Scan_Reserved_Identifier (False);
-            else
-               Error_Msg_AP
-                 ("expecting expression or component association");
-               exit;
-            end if;
+            Error_Msg_AP
+              ("expecting expression or component association");
+            exit;
          end if;
 
          --  Deal with misused box
@@ -2564,13 +2554,7 @@ package body Ch4 is
       if Token = Tok_All then
          Set_All_Present (Node1);
 
-      --  We treat Some as a non-reserved keyword, so it appears to the scanner
-      --  as an identifier. If Some is made into a reserved word, the check
-      --  below is against Tok_Some.
-
-      elsif Token /= Tok_Identifier
-        or else Chars (Token_Node) /= Name_Some
-      then
+      elsif Token /= Tok_Some then
          Error_Msg_AP ("missing quantifier");
          raise Error_Resync;
       end if;

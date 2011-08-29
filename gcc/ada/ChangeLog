@@ -1,3 +1,32 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb: Minor reformatting.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* par-ch2.adb (P_Identifier): Warn that "some" is reserved in Ada 2012.
+	* par-ch4.adb (P_Quantified_Expression): Remove unnecessary code for
+	treating "some" as unreserved in earlier Ada versions. This is now
+	handled in Snames.Is_Keyword_Name. Parse "for some" using Tok_Some,
+	rather than Name_Some, since Tok_Some is now recognized as reserved.
+	* scans.adb (Initialize_Ada_Keywords): Handle Tok_Some like any other
+	reserved word.
+	* scans.ads: Minor comment fixes.
+	* snames.adb-tmpl (Is_Keyword_Name): Handle Ada 2012 reserved words as
+	for other language versions.
+	* scn.adb (Scan_Reserved_Identifier): Remove unnecessary code for
+	treating "some" as unreserved in earlier Ada versions. This is now
+	handled in Snames.Is_Keyword_Name.
+	* par-ch3.adb (P_Defining_Identifier): Warn that "some" is reserved in
+	Ada 2012.
+	(P_Subtype_Mark_Resync): Remove unnecessary code for treating "some" as
+	unreserved in earlier Ada versions. This is now handled in
+	Snames.Is_Keyword_Name.
+	* snames.ads-tmpl (Ada_2012_Reserved_Words): Handle Ada 2012 reserved
+	words as for other language versions.
+	* gnat_ugn.texi (-gnatwy): Fix documentation: this switch applies to
+	Ada 2012, not just Ada 2005.
+
 2011-08-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb: Additional semantic checks for aspects involved in
