@@ -1,3 +1,9 @@
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cbhama.adb, a-cbhama.ads, a-cborma.adb, a-cborma.ads, a-cobove.adb,
+	a-cobove.ads, a-coorma.adb, a-coorma.ads: Add iterator machinery to
+	container packages.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_util.adb, gnat1drv.adb, s-parint.ads: Minor
