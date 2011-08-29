@@ -10990,6 +10990,11 @@ package body Exp_Ch9 is
    --          end if;
    --       end if;
    --    end;
+   --
+   --  The triggering statement and the timed statements have not been
+   --  analyzed yet (see Analyzed_Timed_Entry_Call).  They may contain local
+   --  declarations, and therefore the copies that are made during expansion
+   --  must be disjoint, as for any other inlining.
 
    procedure Expand_N_Timed_Entry_Call (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
@@ -11284,7 +11289,7 @@ package body Exp_Ch9 is
          --       <timed-statements>
          --    end if;
 
-         N_Stats := New_Copy_List_Tree (E_Stats);
+         N_Stats := Copy_Separate_List (E_Stats);
 
          Prepend_To (N_Stats,
            Make_If_Statement (Loc,
@@ -11327,7 +11332,7 @@ package body Exp_Ch9 is
          --    <dispatching-call>;
          --    <triggering-statements>
 
-         Lim_Typ_Stmts := New_Copy_List_Tree (E_Stats);
+         Lim_Typ_Stmts := Copy_Separate_List (E_Stats);
          Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (E_Call));
 
          --  Generate:
