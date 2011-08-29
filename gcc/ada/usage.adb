@@ -501,8 +501,8 @@ begin
    Write_Line ("        X    turn off warnings for export/import");
    Write_Line ("        .x+  turn on warnings for non-local exception");
    Write_Line ("        .X*  turn off warnings for non-local exception");
-   Write_Line ("        y*+  turn on warnings for Ada 2005 incompatibility");
-   Write_Line ("        Y    turn off warnings for Ada 2005 incompatibility");
+   Write_Line ("        y*+  turn on warnings for Ada compatibility issues");
+   Write_Line ("        Y    turn off warnings for Ada compatibility issues");
    Write_Line ("        z*+  turn on warnings for suspicious " &
                                                   "unchecked conversion");
    Write_Line ("        Z    turn off warnings for suspicious " &

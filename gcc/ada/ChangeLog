@@ -1,5 +1,25 @@
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
+	* snames.adb-tmpl, sem_ch13.adb: Minor reformatting
+	Minor code reorganization.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* usage.adb (-gnatwy): Fix documentation: this switch applies to Ada
+	2012, not just Ada 2005.
+
+2011-08-29  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Indicate that when the compiler is called by gnatmake
+	with a project file or with gprbuid, if -gnatep= is specified, the
+	builder may need to be invoked with -x.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb: Minor comment fix.
+
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch8.adb: Minor reformatting.
 
 2011-08-29  Bob Duff  <duff@adacore.com>

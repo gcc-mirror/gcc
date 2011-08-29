@@ -1541,10 +1541,10 @@ package body Sem_Ch13 is
 
       procedure Check_Iterator_Functions;
       --  Check that there is a single function in Default_Iterator attribute
-      --  that  has the  proper type structure.
+      --  has the proper type structure.
 
       function Check_Primitive_Function (Subp : Entity_Id) return Boolean;
-      --  Common legality check for the previoous two.
+      --  Common legality check for the previoous two
 
       -----------------------------------
       -- Analyze_Stream_TSS_Definition --
@@ -1688,6 +1688,7 @@ package body Sem_Ch13 is
       ------------------------------
 
       procedure Check_Indexing_Functions is
+
          procedure Check_One_Function (Subp : Entity_Id);
          --  Check one possible interpretation
 
@@ -1752,7 +1753,7 @@ package body Sem_Ch13 is
          Default : Entity_Id;
 
          function Valid_Default_Iterator (Subp : Entity_Id) return Boolean;
-         --  Check one possible interpretation.
+         --  Check one possible interpretation for validity
 
          ----------------------------
          -- Valid_Default_Iterator --
@@ -1768,23 +1769,18 @@ package body Sem_Ch13 is
                Formal := First_Formal (Subp);
             end if;
 
+            --  False if any subsequent formal has no default expression
+
             Formal := Next_Formal (Formal);
+            while Present (Formal) loop
+               if No (Expression (Parent (Formal))) then
+                  return False;
+               end if;
 
-            --  I don't see why the if is required here, we will return
-            --  True anyway if Present (Formal) is false on first loop ???
+               Next_Formal (Formal);
+            end loop;
 
-            if No (Formal) then
-               return True;
-
-            else
-               while Present (Formal) loop
-                  if No (Expression (Parent (Formal))) then
-                     return False;
-                  end if;
-
-                  Next_Formal (Formal);
-               end loop;
-            end if;
+            --  True if all subsequent formals have default expressions
 
             return True;
          end Valid_Default_Iterator;
