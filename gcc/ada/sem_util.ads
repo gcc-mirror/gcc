@@ -507,11 +507,11 @@ package Sem_Util is
      (T   : Entity_Id;
       Pos : Uint;
       Loc : Source_Ptr) return Node_Id;
-   --  This function obtains the E_Enumeration_Literal entity for the specified
-   --  value from the enumeration type or subtype T and returns an identifier
-   --  node referencing this value. The second argument is the Pos value, which
-   --  is assumed to be in range. The third argument supplies a source location
-   --  for constructed nodes returned by this function.
+   --  This function returns an identifier denoting the E_Enumeration_Literal
+   --  entity for the specified value from the enumeration type or subtype T.
+   --  The second argument is the Pos value, which is assumed to be in range.
+   --  The third argument supplies a source location for constructed nodes
+   --  returned by this function.
 
    procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id);
    --  Retrieve the fully expanded name of the library unit declared by
@@ -1297,7 +1297,7 @@ package Sem_Util is
    procedure Set_Current_Entity (E : Entity_Id);
    pragma Inline (Set_Current_Entity);
    --  Establish the entity E as the currently visible definition of its
-   --  associated name (i.e. the Node_Id associated with its name)
+   --  associated name (i.e. the Node_Id associated with its name).
 
    procedure Set_Debug_Info_Needed (T : Entity_Id);
    --  Sets the Debug_Info_Needed flag on entity T , and also on any entities

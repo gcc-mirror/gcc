@@ -855,7 +855,9 @@ package body Ada.Exceptions is
       --  Go ahead and raise appropriate exception
 
       Exception_Data.Set_Exception_Msg (EF, Message);
-      Abort_Defer.all;
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
       Raise_Current_Excep (EF);
    end Raise_Exception;
 
@@ -869,7 +871,9 @@ package body Ada.Exceptions is
    is
    begin
       Exception_Data.Set_Exception_Msg (E, Message);
-      Abort_Defer.all;
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
       Raise_Current_Excep (E);
    end Raise_Exception_Always;
 
@@ -944,7 +948,9 @@ package body Ada.Exceptions is
    is
    begin
       Exception_Data.Set_Exception_C_Msg (E, M);
-      Abort_Defer.all;
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
       Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
       Exception_Propagation.Propagate_Exception
         (E => E, From_Signal_Handler => True);
@@ -1015,7 +1021,9 @@ package body Ada.Exceptions is
    is
    begin
       Exception_Data.Set_Exception_C_Msg (E, F, L, C, M);
-      Abort_Defer.all;
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
       Raise_Current_Excep (E);
    end Raise_With_Location_And_Msg;
 
@@ -1034,7 +1042,9 @@ package body Ada.Exceptions is
       Excep.Num_Tracebacks   := 0;
       Excep.Cleanup_Flag     := False;
       Excep.Pid              := Local_Partition_ID;
-      Abort_Defer.all;
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
       Raise_Current_Excep (E);
    end Raise_With_Msg;
 
@@ -1276,7 +1286,9 @@ package body Ada.Exceptions is
    procedure Reraise is
       Excep : constant EOA := Get_Current_Excep.all;
    begin
-      Abort_Defer.all;
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
       Exception_Propagation.Setup_Exception (Excep, Excep, Reraised => True);
       Raise_Current_Excep (Excep.Id);
    end Reraise;
@@ -1288,7 +1300,9 @@ package body Ada.Exceptions is
    procedure Reraise_Occurrence (X : Exception_Occurrence) is
    begin
       if X.Id /= null then
-         Abort_Defer.all;
+         if not ZCX_By_Default then
+            Abort_Defer.all;
+         end if;
          Exception_Propagation.Setup_Exception
            (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
          Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
@@ -1302,7 +1316,9 @@ package body Ada.Exceptions is
 
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence) is
    begin
-      Abort_Defer.all;
+      if not ZCX_By_Default then
+         Abort_Defer.all;
+      end if;
       Exception_Propagation.Setup_Exception
         (X'Unrestricted_Access, Get_Current_Excep.all, Reraised => True);
       Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);

@@ -553,6 +553,11 @@ package body System.Tasking.Rendezvous is
          end if;
 
          Initialization.Defer_Abort_Nestable (Self_Id);
+
+      elsif ZCX_By_Default then
+         --  With ZCX, aborts are not automatically deferred in handlers
+
+         Initialization.Defer_Abort_Nestable (Self_Id);
       end if;
 
       --  We need to clean up any accepts which Self may have
