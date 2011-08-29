@@ -293,22 +293,28 @@ begin
                      Typ := ' ';
                   else
                      Skipc;
-                     if Typ = 'P' and then Nextc not in '1' .. '9' then
-                        N := 1;
-                        loop
-                           Buf (N) := Getc;
-                           exit when Nextc = ':';
-                           N := N + 1;
-                        end loop;
+                     if Typ = 'P' then
+                        Pid := Unknown_Pragma;
 
-                        begin
-                           Pid := Pragma_Id'Value (Buf (1 .. N));
-                        exception
-                           when Constraint_Error =>
-                              Pid := Unknown_Pragma;
-                        end;
+                        if Nextc not in '1' .. '9' then
+                           N := 1;
+                           loop
+                              Buf (N) := Getc;
+                              exit when Nextc = ':';
+                              N := N + 1;
+                           end loop;
+                           Skipc;
 
-                        Skipc;
+                           begin
+                              Pid := Pragma_Id'Value (Buf (1 .. N));
+                           exception
+                              when Constraint_Error =>
+
+                                 --  Pid remains set to Unknown_Pragma
+
+                                 null;
+                           end;
+                        end if;
                      end if;
                   end if;
 

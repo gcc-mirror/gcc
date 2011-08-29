@@ -102,9 +102,6 @@ package body Prj.Env is
    --  Add Object_Dir to object path table. Make sure it is not duplicate
    --  and it is the last one in the current table.
 
-   procedure Set_Path_File_Var (Name : String; Value : String);
-   --  Call Setenv, after calling To_Host_File_Spec
-
    ----------------------
    -- Ada_Include_Path --
    ----------------------
@@ -1775,22 +1772,6 @@ package body Prj.Env is
 
       Free (Buffer);
    end Set_Ada_Paths;
-
-   -----------------------
-   -- Set_Path_File_Var --
-   -----------------------
-
-   procedure Set_Path_File_Var (Name : String; Value : String) is
-      Host_Spec : String_Access := To_Host_File_Spec (Value);
-   begin
-      if Host_Spec = null then
-         Prj.Com.Fail
-           ("could not convert file name """ & Value & """ to host spec");
-      else
-         Setenv (Name, Host_Spec.all);
-         Free (Host_Spec);
-      end if;
-   end Set_Path_File_Var;
 
    ---------------------
    -- Add_Directories --

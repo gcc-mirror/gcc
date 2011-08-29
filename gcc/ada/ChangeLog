@@ -1,5 +1,41 @@
 2011-08-29  Thomas Quinot  <quinot@adacore.com>
 
+	* get_scos.adb: When reading a P statement SCO without a pragma name
+	(from an older ALI file), ensure that the Pragma_Name component is set
+	to Unknown_Pragma (not left uninitialized).
+
+2011-08-29  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Get_Directories): New procedure moved from Buildgpr and
+	modified to compute correctly the object path of a SAL project that is
+	extending another library project.
+	(Write_Path_File): New procedure.
+	* makeutl.ads (Directories): New table moved from Buildgpr
+	(Get_Directories): New procedure moved from Buildgpr
+	(Write_Path_File): New procedure
+	* mlib-prj.adb (Build_Library): Use Makeutl.Get_Directories to set the
+	paths before binding SALs, instead of Set_Ada_Paths.
+	* prj-env.adb (Set_Path_File_Var): Procedure has been moved to package
+	Prj.
+	* prj.adb (Set_Path_File_Var): New procedure moved from Prj.Env
+	(Current_Source_Path_File_Of): New function
+	(Set_Current_Object_Path_File_Of): New procedure
+	(Current_Source_Object_File_Of): New function
+	(Set_Current_Object_Path_File_Of): New procedure
+	* prj.ads (Set_Path_File_Var): New procedure moved from Prj.Env
+	(Current_Source_Path_File_Of): New function
+	(Set_Current_Object_Path_File_Of): New procedure
+	(Current_Source_Object_File_Of): New function
+	(Set_Current_Object_Path_File_Of): New procedure
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): For an assignment to a
+	packed entity, use a bit-field assignment only if there is no change of
+	representation.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
 	* rtsfind.ads, exp_ch3.adb (In_Runtime): Minor code improvement, use
 	Is_RTU instead of using Chars comparisons.
 
