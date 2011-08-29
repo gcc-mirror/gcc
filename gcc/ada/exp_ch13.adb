@@ -230,7 +230,7 @@ package body Exp_Ch13 is
          return;
       end if;
 
-      --  Use the base type to perform the collection check
+      --  Use the base type to perform the check for finalization master
 
       Typ := Etype (Expr);
 
@@ -248,10 +248,10 @@ package body Exp_Ch13 is
 
       --  Do not create a custom Deallocate when freeing an object with
       --  suppressed finalization. In such cases the object is never attached
-      --  to a collection, so it does not need to be detached. Use a regular
-      --  free statement instead.
+      --  to a master, so it does not need to be detached. Use a regular free
+      --  statement instead.
 
-      if No (Associated_Collection (Typ)) then
+      if No (Finalization_Master (Typ)) then
          return;
       end if;
 

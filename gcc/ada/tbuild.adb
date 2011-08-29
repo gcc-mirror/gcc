@@ -717,6 +717,7 @@ package body Tbuild is
      (Def_Id : Entity_Id;
       Loc    : Source_Ptr) return Node_Id
    is
+      pragma Assert (Nkind (Def_Id) in N_Entity);
       Occurrence : Node_Id;
    begin
       Occurrence := New_Node (N_Identifier, Loc);

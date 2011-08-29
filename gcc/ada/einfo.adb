@@ -195,11 +195,11 @@ package body Einfo is
    --    Scope_Depth_Value               Uint22
    --    Shared_Var_Procs_Instance       Node22
 
-   --    Associated_Collection           Node23
    --    CR_Discriminant                 Node23
    --    Entry_Cancel_Parameter          Node23
    --    Enum_Pos_To_Rep                 Node23
    --    Extra_Constrained               Node23
+   --    Finalization_Master             Node23
    --    Generic_Renamings               Elist23
    --    Inner_Instances                 Elist23
    --    Limited_View                    Node23
@@ -611,12 +611,6 @@ package body Einfo is
                                              E_Variable));
       return Uint14 (Id);
    end Alignment;
-
-   function Associated_Collection (Id : E) return E is
-   begin
-      pragma Assert (Is_Access_Type (Id));
-      return Node23 (Id);
-   end Associated_Collection;
 
    function Associated_Formal_Package (Id : E) return E is
    begin
@@ -1074,6 +1068,12 @@ package body Einfo is
       pragma Assert (Is_Access_Subprogram_Type (Base_Type (Id)));
       return Flag229 (Base_Type (Id));
    end Can_Use_Internal_Rep;
+
+   function Finalization_Master (Id : E) return E is
+   begin
+      pragma Assert (Is_Access_Type (Id));
+      return Node23 (Root_Type (Id));
+   end Finalization_Master;
 
    function Finalize_Storage_Only (Id : E) return B is
    begin
@@ -3051,12 +3051,6 @@ package body Einfo is
       Set_Elist16 (Id, V);
    end Set_Access_Disp_Table;
 
-   procedure Set_Associated_Collection (Id : E; V : E) is
-   begin
-      pragma Assert (Is_Access_Type (Id));
-      Set_Node23 (Id, V);
-   end Set_Associated_Collection;
-
    procedure Set_Associated_Formal_Package (Id : E; V : E) is
    begin
       Set_Node12 (Id, V);
@@ -3543,6 +3537,12 @@ package body Einfo is
         (Is_Access_Subprogram_Type (Id) and then Is_Base_Type (Id));
       Set_Flag229 (Id, V);
    end Set_Can_Use_Internal_Rep;
+
+   procedure Set_Finalization_Master (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Access_Type (Id) and then Is_Base_Type (Id));
+      Set_Node23 (Id, V);
+   end Set_Finalization_Master;
 
    procedure Set_Finalize_Storage_Only (Id : E; V : B := True) is
    begin
@@ -6941,15 +6941,7 @@ package body Einfo is
       if Ekind (T) = E_Class_Wide_Type then
          return Etype (T);
 
-      elsif Ekind (T) = E_Class_Wide_Subtype then
-         return Etype (Base_Type (T));
-
-         --  ??? T comes from Base_Type, how can it be a subtype?
-         --  Also Base_Type is supposed to be idempotent, so either way
-         --  this is equivalent to "return Etype (T)" and should be merged
-         --  with the E_Class_Wide_Type case.
-
-      --  All other cases
+      --  Other cases
 
       else
          loop
@@ -8459,9 +8451,6 @@ package body Einfo is
    procedure Write_Field23_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Access_Kind                                  =>
-            Write_Str ("Associated_Collection");
-
          when E_Discriminant                               =>
             Write_Str ("CR_Discriminant");
 
@@ -8474,6 +8463,9 @@ package body Einfo is
          when Formal_Kind                                  |
               E_Variable                                   =>
             Write_Str ("Extra_Constrained");
+
+         when Access_Kind                                  =>
+            Write_Str ("Finalization_Master");
 
          when E_Generic_Function                           |
               E_Generic_Package                            |

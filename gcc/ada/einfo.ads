@@ -427,12 +427,6 @@ package Einfo is
 --       definition clause with an (obsolescent) mod clause is converted
 --       into an attribute definition clause for this purpose.
 
---    Associated_Collection (Node23)
---       Present in non-subprogram access type entities. Contains the entity of
---       the finalization collection on which dynamically allocated objects
---       referenced by the access type are stored. Empty when the access type
---       cannot reference a controlled object.
-
 --    Associated_Formal_Package (Node12)
 --       Present in packages that are the actuals of formal_packages. Points
 --       to the entity in the declaration for the formal package.
@@ -1143,6 +1137,13 @@ package Einfo is
 --       variable's constrained status has been transmitted by the caller and
 --       must be retrieved through the entity designed by this field instead of
 --       being computed.
+
+--    Finalization_Master (Node23) [root type only]
+--       Present in access-to-controlled or access-to-class-wide types. The
+--       field contains the entity of the finalization master which handles
+--       dynamically allocated controlled objects referenced by the access
+--       type. Empty for access-to-subprogram types. Empty for access types
+--       whose designated type does not need finalization actions.
 
 --    Finalize_Storage_Only (Flag158) [base type only]
 --       Present in all types. Set on direct controlled types to which a
@@ -4943,7 +4944,7 @@ package Einfo is
    --    Master_Id                           (Node17)
    --    Directly_Designated_Type            (Node20)
    --    Associated_Storage_Pool             (Node22)   (base type only)
-   --    Associated_Collection               (Node23)   (base type only)
+   --    Finalization_Master                 (Node23)   (base type only)
    --    Has_Pragma_Controlled               (Flag27)   (base type only)
    --    Has_Storage_Size_Clause             (Flag23)   (base type only)
    --    Is_Access_Constant                  (Flag69)
@@ -4971,7 +4972,7 @@ package Einfo is
    --  E_Anonymous_Access_Type
    --    Storage_Size_Variable               (Node15)   ??? is this needed ???
    --    Directly_Designated_Type            (Node20)
-   --    Associated_Collection               (Node23)
+   --    Finalization_Master                 (Node23)
    --    (plus type attributes)
 
    --  E_Array_Type
@@ -5278,7 +5279,7 @@ package Einfo is
    --    Master_Id                           (Node17)
    --    Directly_Designated_Type            (Node20)
    --    Associated_Storage_Pool             (Node22)   (root type only)
-   --    Associated_Collection               (Node23)
+   --    Finalization_Master                 (Node23)   (root type only)
    --    (plus type attributes)
 
    --  E_Generic_In_Parameter
@@ -5974,7 +5975,6 @@ package Einfo is
    function Address_Taken                       (Id : E) return B;
    function Alias                               (Id : E) return E;
    function Alignment                           (Id : E) return U;
-   function Associated_Collection               (Id : E) return E;
    function Associated_Formal_Package           (Id : E) return E;
    function Associated_Node_For_Itype           (Id : E) return N;
    function Associated_Storage_Pool             (Id : E) return E;
@@ -6050,6 +6050,7 @@ package Einfo is
    function Extra_Formal                        (Id : E) return E;
    function Extra_Formals                       (Id : E) return E;
    function Can_Use_Internal_Rep                (Id : E) return B;
+   function Finalization_Master                 (Id : E) return E;
    function Finalize_Storage_Only               (Id : E) return B;
    function Finalizer                           (Id : E) return E;
    function First_Entity                        (Id : E) return E;
@@ -6563,7 +6564,6 @@ package Einfo is
    procedure Set_Address_Taken                   (Id : E; V : B := True);
    procedure Set_Alias                           (Id : E; V : E);
    procedure Set_Alignment                       (Id : E; V : U);
-   procedure Set_Associated_Collection           (Id : E; V : E);
    procedure Set_Associated_Formal_Package       (Id : E; V : E);
    procedure Set_Associated_Node_For_Itype       (Id : E; V : N);
    procedure Set_Associated_Storage_Pool         (Id : E; V : E);
@@ -6637,6 +6637,7 @@ package Einfo is
    procedure Set_Extra_Formal                    (Id : E; V : E);
    procedure Set_Extra_Formals                   (Id : E; V : E);
    procedure Set_Can_Use_Internal_Rep            (Id : E; V : B := True);
+   procedure Set_Finalization_Master             (Id : E; V : E);
    procedure Set_Finalize_Storage_Only           (Id : E; V : B := True);
    procedure Set_Finalizer                       (Id : E; V : E);
    procedure Set_First_Entity                    (Id : E; V : E);
@@ -7259,7 +7260,6 @@ package Einfo is
    pragma Inline (Address_Taken);
    pragma Inline (Alias);
    pragma Inline (Alignment);
-   pragma Inline (Associated_Collection);
    pragma Inline (Associated_Formal_Package);
    pragma Inline (Associated_Node_For_Itype);
    pragma Inline (Associated_Storage_Pool);
@@ -7335,6 +7335,7 @@ package Einfo is
    pragma Inline (Extra_Formal);
    pragma Inline (Extra_Formals);
    pragma Inline (Can_Use_Internal_Rep);
+   pragma Inline (Finalization_Master);
    pragma Inline (Finalizer);
    pragma Inline (First_Entity);
    pragma Inline (First_Exit_Statement);
@@ -7703,7 +7704,6 @@ package Einfo is
    pragma Inline (Set_Address_Taken);
    pragma Inline (Set_Alias);
    pragma Inline (Set_Alignment);
-   pragma Inline (Set_Associated_Collection);
    pragma Inline (Set_Associated_Formal_Package);
    pragma Inline (Set_Associated_Node_For_Itype);
    pragma Inline (Set_Associated_Storage_Pool);
@@ -7778,6 +7778,7 @@ package Einfo is
    pragma Inline (Set_Extra_Formal);
    pragma Inline (Set_Extra_Formals);
    pragma Inline (Set_Can_Use_Internal_Rep);
+   pragma Inline (Set_Finalization_Master);
    pragma Inline (Set_Finalizer);
    pragma Inline (Set_First_Entity);
    pragma Inline (Set_First_Exit_Statement);

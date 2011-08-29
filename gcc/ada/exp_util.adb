@@ -332,6 +332,9 @@ package body Exp_Util is
       Desig_Typ : constant Entity_Id :=
                     Available_View (Designated_Type (Ptr_Typ));
 
+      function Find_Finalize_Address (Typ : Entity_Id) return Entity_Id;
+      --  Locate TSS primitive Finalize_Address in type Typ
+
       function Find_Object (E : Node_Id) return Node_Id;
       --  Given an arbitrary expression of an allocator, try to find an object
       --  reference in it, otherwise return the original expression.
@@ -339,6 +342,57 @@ package body Exp_Util is
       function Is_Allocate_Deallocate_Proc (Subp : Entity_Id) return Boolean;
       --  Determine whether subprogram Subp denotes a custom allocate or
       --  deallocate.
+
+      ---------------------------
+      -- Find_Finalize_Address --
+      ---------------------------
+
+      function Find_Finalize_Address (Typ : Entity_Id) return Entity_Id is
+         Utyp : Entity_Id := Typ;
+
+      begin
+         if Is_Private_Type (Utyp)
+           and then Present (Full_View (Utyp))
+         then
+            Utyp := Full_View (Utyp);
+         end if;
+
+         if Is_Concurrent_Type (Utyp) then
+            Utyp := Corresponding_Record_Type (Utyp);
+         end if;
+
+         Utyp := Underlying_Type (Base_Type (Utyp));
+
+         --  Deal with non-tagged derivation of private views. If the parent is
+         --  now known to be protected, the finalization routine is the one
+         --  defined on the corresponding record of the ancestor (corresponding
+         --  records do not automatically inherit operations, but maybe they
+         --  should???)
+
+         if Is_Untagged_Derivation (Typ) then
+            if Is_Protected_Type (Typ) then
+               Utyp := Corresponding_Record_Type (Root_Type (Base_Type (Typ)));
+            else
+               Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
+
+               if Is_Protected_Type (Utyp) then
+                  Utyp := Corresponding_Record_Type (Utyp);
+               end if;
+            end if;
+         end if;
+
+         --  If the underlying_type is a subtype, we are dealing with the
+         --  completion of a private type. We need to access the base type and
+         --  generate a conversion to it.
+
+         if Utyp /= Base_Type (Utyp) then
+            pragma Assert (Is_Private_Type (Typ));
+
+            Utyp := Base_Type (Utyp);
+         end if;
+
+         return TSS (Utyp, TSS_Finalize_Address);
+      end Find_Finalize_Address;
 
       -----------------
       -- Find_Object --
@@ -375,8 +429,7 @@ package body Exp_Util is
       function Is_Allocate_Deallocate_Proc (Subp : Entity_Id) return Boolean is
       begin
          --  Look for a subprogram body with only one statement which is a
-         --  call to one of the Allocate / Deallocate routines in package
-         --  Ada.Finalization.Heap_Management.
+         --  call to Allocate_Any_Controlled / Deallocate_Any_Controlled.
 
          if Ekind (Subp) = E_Procedure
            and then Nkind (Parent (Parent (Subp))) = N_Subprogram_Body
@@ -394,8 +447,8 @@ package body Exp_Util is
                   Proc := Entity (Name (First (Statements (HSS))));
 
                   return
-                    Is_RTE (Proc, RE_Allocate)
-                      or else Is_RTE (Proc, RE_Deallocate);
+                    Is_RTE (Proc, RE_Allocate_Any_Controlled)
+                      or else Is_RTE (Proc, RE_Deallocate_Any_Controlled);
                end if;
             end;
          end if;
@@ -430,137 +483,191 @@ package body Exp_Util is
          Size_Id : constant Entity_Id := Make_Temporary (Loc, 'S');
 
          Actuals      : List_Id;
-         Collect_Act  : Node_Id;
-         Collect_Id   : Entity_Id;
-         Collect_Typ  : Entity_Id;
+         Fin_Addr_Id  : Entity_Id;
+         Fin_Mas_Act  : Node_Id;
+         Fin_Mas_Id   : Entity_Id;
+         Fin_Mas_Typ  : Entity_Id;
          Proc_To_Call : Entity_Id;
 
       begin
-         --  When dealing with an access subtype, use the collection of the
-         --  base type.
+         --  When dealing with an access subtype, always use the base type
+         --  since it carries all the attributes.
 
          if Ekind (Ptr_Typ) = E_Access_Subtype then
-            Collect_Typ := Base_Type (Ptr_Typ);
+            Fin_Mas_Typ := Base_Type (Ptr_Typ);
          else
-            Collect_Typ := Ptr_Typ;
+            Fin_Mas_Typ := Ptr_Typ;
          end if;
 
-         Collect_Id  := Associated_Collection (Collect_Typ);
-         Collect_Act := New_Reference_To (Collect_Id, Loc);
+         Actuals := New_List;
 
-         --  Handle the case where the collection is actually a pointer to a
-         --  collection. This case arises in build-in-place functions.
+         --  Step 1: Construct all the actuals for the call to library routine
+         --  Allocate_Any_Controlled / Deallocate_Any_Controlled.
 
-         if Is_Access_Type (Etype (Collect_Id)) then
-            Collect_Act :=
-              Make_Explicit_Dereference (Loc,
-                Prefix => Collect_Act);
+         --  a) Storage pool
+
+         Append_To (Actuals,
+           New_Reference_To (Associated_Storage_Pool (Fin_Mas_Typ), Loc));
+
+         if Is_Allocate then
+
+            --  b) Subpool
+
+            if Present (Subpool_Handle_Name (Expr)) then
+               Append_To (Actuals,
+                 New_Reference_To (Entity (Subpool_Handle_Name (Expr)), Loc));
+            else
+               Append_To (Actuals, Make_Null (Loc));
+            end if;
+
+            --  c) Finalization master
+
+            if Needs_Finalization (Desig_Typ) then
+               Fin_Mas_Id  := Finalization_Master (Fin_Mas_Typ);
+               Fin_Mas_Act := New_Reference_To (Fin_Mas_Id, Loc);
+
+               --  Handle the case where the master is actually a pointer to a
+               --  master. This case arises in build-in-place functions.
+
+               if Is_Access_Type (Etype (Fin_Mas_Id)) then
+                  Append_To (Actuals, Fin_Mas_Act);
+               else
+                  Append_To (Actuals,
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => Fin_Mas_Act,
+                      Attribute_Name => Name_Unrestricted_Access));
+               end if;
+            else
+               Append_To (Actuals, Make_Null (Loc));
+            end if;
+
+            --  d) Finalize_Address
+
+            Fin_Addr_Id := Find_Finalize_Address (Desig_Typ);
+
+            if Present (Fin_Addr_Id) then
+               Append_To (Actuals,
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Reference_To (Fin_Addr_Id, Loc),
+                   Attribute_Name => Name_Unrestricted_Access));
+            else
+               Append_To (Actuals, Make_Null (Loc));
+            end if;
          end if;
 
-         --  Create the actuals for the call to Allocate / Deallocate
+         --  e) Address
+         --  f) Storage_Size
+         --  g) Alignment
 
-         Actuals := New_List (
-           Collect_Act,
-           New_Reference_To (Addr_Id, Loc),
-           New_Reference_To (Size_Id, Loc),
-           New_Reference_To (Alig_Id, Loc));
+         Append_To (Actuals, New_Reference_To (Addr_Id, Loc));
+         Append_To (Actuals, New_Reference_To (Size_Id, Loc));
+         Append_To (Actuals, New_Reference_To (Alig_Id, Loc));
+
+         --  h) Is_Controlled
 
          --  Generate a run-time check to determine whether a class-wide object
          --  is truly controlled.
 
-         if Is_Class_Wide_Type (Desig_Typ)
-           or else Is_Generic_Actual_Type (Desig_Typ)
-         then
-            declare
-               Flag_Id   : constant Entity_Id := Make_Temporary (Loc, 'F');
-               Flag_Expr : Node_Id;
-               Param     : Node_Id;
-               Temp      : Node_Id;
+         if Needs_Finalization (Desig_Typ) then
+            if Is_Class_Wide_Type (Desig_Typ)
+              or else Is_Generic_Actual_Type (Desig_Typ)
+            then
+               declare
+                  Flag_Id   : constant Entity_Id := Make_Temporary (Loc, 'F');
+                  Flag_Expr : Node_Id;
+                  Param     : Node_Id;
+                  Temp      : Node_Id;
 
-            begin
-               if Is_Allocate then
-                  Temp := Find_Object (Expression (Expr));
-               else
-                  Temp := Expr;
-               end if;
-
-               --  Processing for generic actuals
-
-               if Is_Generic_Actual_Type (Desig_Typ) then
-                  Flag_Expr :=
-                    New_Reference_To (Boolean_Literals
-                      (Needs_Finalization (Base_Type (Desig_Typ))), Loc);
-
-               --  Processing for subtype indications
-
-               elsif Nkind (Temp) in N_Has_Entity
-                 and then Is_Type (Entity (Temp))
-               then
-                  Flag_Expr :=
-                    New_Reference_To (Boolean_Literals
-                      (Needs_Finalization (Entity (Temp))), Loc);
-
-               --  Generate a runtime check to test the controlled state of an
-               --  object for the purposes of allocation / deallocation.
-
-               else
-                  --  The following case arises when allocating through an
-                  --  interface class-wide type, generate:
-                  --
-                  --    Temp.all
-
-                  if Is_RTE (Etype (Temp), RE_Tag_Ptr) then
-                     Param :=
-                       Make_Explicit_Dereference (Loc,
-                         Prefix =>
-                           Relocate_Node (Temp));
-
-                  --  Generate:
-                  --    Temp'Tag
-
+               begin
+                  if Is_Allocate then
+                     Temp := Find_Object (Expression (Expr));
                   else
-                     Param :=
-                       Make_Attribute_Reference (Loc,
-                         Prefix =>
-                           Relocate_Node (Temp),
-                         Attribute_Name => Name_Tag);
+                     Temp := Expr;
                   end if;
 
-                  --  Generate:
-                  --    Needs_Finalization (Param)
+                  --  Processing for generic actuals
 
-                  Flag_Expr :=
-                    Make_Function_Call (Loc,
-                      Name =>
-                        New_Reference_To (RTE (RE_Needs_Finalization), Loc),
-                      Parameter_Associations => New_List (Param));
-               end if;
+                  if Is_Generic_Actual_Type (Desig_Typ) then
+                     Flag_Expr :=
+                       New_Reference_To (Boolean_Literals
+                         (Needs_Finalization (Base_Type (Desig_Typ))), Loc);
 
-               --  Create the temporary which represents the finalization state
-               --  of the expression. Generate:
-               --
-               --    F : constant Boolean := <Flag_Expr>;
+                  --  Processing for subtype indications
 
-               Insert_Action (N,
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Flag_Id,
-                   Constant_Present => True,
-                   Object_Definition =>
-                     New_Reference_To (Standard_Boolean, Loc),
-                   Expression => Flag_Expr));
+                  elsif Nkind (Temp) in N_Has_Entity
+                    and then Is_Type (Entity (Temp))
+                  then
+                     Flag_Expr :=
+                       New_Reference_To (Boolean_Literals
+                         (Needs_Finalization (Entity (Temp))), Loc);
 
-               --  The flag acts as the fifth actual
+                  --  Generate a runtime check to test the controlled state of
+                  --  an object for the purposes of allocation / deallocation.
 
-               Append_To (Actuals, New_Reference_To (Flag_Id, Loc));
-            end;
+                  else
+                     --  The following case arises when allocating through an
+                     --  interface class-wide type, generate:
+                     --
+                     --    Temp.all
+
+                     if Is_RTE (Etype (Temp), RE_Tag_Ptr) then
+                        Param :=
+                          Make_Explicit_Dereference (Loc,
+                            Prefix =>
+                              Relocate_Node (Temp));
+
+                     --  Generate:
+                     --    Temp'Tag
+
+                     else
+                        Param :=
+                          Make_Attribute_Reference (Loc,
+                            Prefix =>
+                              Relocate_Node (Temp),
+                            Attribute_Name => Name_Tag);
+                     end if;
+
+                     --  Generate:
+                     --    Needs_Finalization (<Param>)
+
+                     Flag_Expr :=
+                       Make_Function_Call (Loc,
+                         Name =>
+                           New_Reference_To (RTE (RE_Needs_Finalization), Loc),
+                         Parameter_Associations => New_List (Param));
+                  end if;
+
+                  --  Create the temporary which represents the finalization
+                  --  state of the expression. Generate:
+                  --
+                  --    F : constant Boolean := <Flag_Expr>;
+
+                  Insert_Action (N,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Flag_Id,
+                      Constant_Present => True,
+                      Object_Definition =>
+                        New_Reference_To (Standard_Boolean, Loc),
+                      Expression => Flag_Expr));
+
+                  --  The flag acts as the last actual
+
+                  Append_To (Actuals, New_Reference_To (Flag_Id, Loc));
+               end;
+            end if;
+         else
+            Append_To (Actuals, New_Reference_To (Standard_False, Loc));
          end if;
+
+         --  Step 2: Build a wrapper Allocate / Deallocate which internally
+         --  calls Allocate_Any_Controlled / Deallocate_Any_Controlled.
 
          --  Select the proper routine to call
 
          if Is_Allocate then
-            Proc_To_Call := RTE (RE_Allocate);
+            Proc_To_Call := RTE (RE_Allocate_Any_Controlled);
          else
-            Proc_To_Call := RTE (RE_Deallocate);
+            Proc_To_Call := RTE (RE_Deallocate_Any_Controlled);
          end if;
 
          --  Create a custom Allocate / Deallocate routine which has identical
@@ -611,10 +718,6 @@ package body Exp_Util is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (
-
-                  --  Allocate / Deallocate
-                  --    (<Ptr_Typ collection>, A, S, L[, F]);
-
                    Make_Procedure_Call_Statement (Loc,
                      Name =>
                        New_Reference_To (Proc_To_Call, Loc),
@@ -3752,7 +3855,7 @@ package body Exp_Util is
           and then Nkind (Rel_Node) /= N_Simple_Return_Statement
 
          --  Do not consider transient objects allocated on the heap since they
-         --  are attached to a finalization collection.
+         --  are attached to a finalization master.
 
           and then not Is_Allocated (Obj_Id)
 
@@ -6431,16 +6534,16 @@ package body Exp_Util is
                return True;
             end if;
 
-         --  Inspect the freeze node of an access-to-controlled type and
-         --  look for a delayed finalization collection. This case arises
-         --  when the freeze actions are inserted at a later time than the
-         --  expansion of the context. Since Build_Finalizer is never called
-         --  on a single construct twice, the collection will be ultimately
-         --  left out and never finalized. This is also needed for freeze
-         --  actions of designated types themselves, since in some cases the
-         --  finalization collection is associated with a designated type's
-         --  freeze node rather than that of the access type (see handling
-         --  for freeze actions in Build_Finalization_Collection).
+         --  Inspect the freeze node of an access-to-controlled type and look
+         --  for a delayed finalization master. This case arises when the
+         --  freeze actions are inserted at a later time than the expansion of
+         --  the context. Since Build_Finalizer is never called on a single
+         --  construct twice, the master will be ultimately left out and never
+         --  finalized. This is also needed for freeze actions of designated
+         --  types themselves, since in some cases the finalization master is
+         --  associated with a designated type's freeze node rather than that
+         --  of the access type (see handling for freeze actions in
+         --  Build_Finalization_Master).
 
          elsif Nkind (Decl) = N_Freeze_Entity
            and then Present (Actions (Decl))
@@ -6451,9 +6554,9 @@ package body Exp_Util is
                   and then not Is_Access_Subprogram_Type (Typ)
                   and then Needs_Finalization
                              (Available_View (Designated_Type (Typ))))
-                 or else
-                   (Is_Type (Typ)
-                     and then Needs_Finalization (Typ)))
+               or else
+                (Is_Type (Typ)
+                   and then Needs_Finalization (Typ)))
               and then Requires_Cleanup_Actions
                          (Actions (Decl), For_Package, Nested_Constructs)
             then

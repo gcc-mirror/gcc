@@ -1,3 +1,165 @@
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-fihema.ads, a-fihema.adb: Unit removed.
+	* a-undesu.ads, a-undesu.adb: New unit implementing
+	Ada.Unchecked_Deallocate_Subpool.
+	* einfo.adb: Remove Associated_Collection from the node usage.
+	Add Finalization_Master to the node usage.
+	(Associated_Collection): Removed.
+	(Finalization_Master): New routine.
+	(Set_Associated_Collection): Removed.
+	(Set_Finalization_Master): New routine.
+	(Write_Field23_Name): Remove Associated_Collection from the output. Add
+	Finalization_Master to the output.
+	* einfo.ads: Remove attribute Associated_Collection and its uses in
+	entities.
+	Add new attribute Finalization_Master along with its uses in entitites.
+	(Associated_Collection): Removed along with its pragma import.
+	(Finalization_Master): New routine along with a pragma import.
+	(Set_Associated_Collection): Removed along with its pragma import.
+	(Set_Finalization_Master): New routine along with a pragma import.
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Replace call to
+	Build_Finalization_Collection with Build_Finalization_Master.
+	(Expand_Freeze_Record_Type): Move the generation of Finalize_Address
+	before the bodies of the predefined routines. Add comment explaining
+	this. Replace call to Build_Finalization_Collection with
+	Build_Finalization_Master.
+	(Freeze_Type): Replace call to Build_Finalization_Collection with
+	Build_Finalization_Master.
+	(Make_Finalize_Address_Body): Comment reformatting.
+	(Make_Predefined_Primitive_Specs): Code reformatting.
+	(Stream_Operation_OK): Update comment mentioning finalization
+	collections. Replace RE_Finalization_Collection with
+	RE_Finalization_Master.
+	* exp_ch4.adb (Complete_Controlled_Allocation): Replace call to
+	Associated_Collection with Finalization_Master. Replace call to
+	Build_Finalization_Collection with Build_Finalization_Master.
+	(Expand_Allocator_Expression): Replace call to Associated_Collection
+	with Finalization_Master. Replace call to Set_Associated_Collection with
+	Set_Finalization_Master. Remove the generation of
+	Set_Finalize_Address_Ptr.
+	(Expand_N_Allocator): Replace call to Associated_Collection with
+	Finalization_Master. Remove the generation of Set_Finalize_Address_Ptr.
+	* exp_ch6.adb (Add_Collection_Actual_To_Build_In_Place_Call): Renamed to
+	Add_Finalization_Master_Actual_To_Build_In_Place_Call. Update the
+	comment on usage. Replace call to Needs_BIP_Collection with
+	Needs_BIP_Finalization_Master Remplace BIP_Collection with
+	BIP_Finalization_Master. Update all comments which mention finalization
+	collections. Replace Associated_Collection with
+	Finalization_Master. Replace Build_Finalization_Collection with
+	Build_Finalization_Master.
+	(BIP_Formal_Suffix): Update BIP_Collection's case.
+	(Build_Heap_Allocator): Update the related comment. Rename local
+	variable Collect to Fin_Mas_Id and update its occurrences. Update
+	comments which mention finalization collections. Replace
+	Set_Associated_Collection with Set_Finalization_Master.
+	(Expand_Call): Update the code which detects a special piece of library
+	code for .NET/JVM.
+	(Make_Build_In_Place_Call_In_Allocator): Replace the call to
+	Add_Collection_Actual_To_Build_In_Place_Call with
+	Add_Finalization_Master_Actual_To_Build_In_Place_Call. Remove the code
+	which generates a call to Make_Set_Finalize_Address_Ptr_Call.
+	(Make_Build_In_Place_Call_In_Anonymous_Context): Replace call to
+	Add_Collection_Actual_To_Build_In_Place_Call with
+	Add_Finalization_Master_Actual_To_Build_In_Place_Call.
+	(Make_Build_In_Place_Call_In_Assignment): Replace call to
+	Add_Collection_Actual_To_Build_In_Place_Call with
+	Add_Finalization_Master_Actual_To_Build_In_Place_Call.
+	(Needs_BIP_Collection): Renamed to Needs_BIP_Finalization_Master.
+	* exp_ch6.ads: Rename BIP_Collection to BIP_Finalization_Master.
+	(Needs_BIP_Collection): Renamed to Needs_BIP_Finalization_Master.
+	* exp_ch7.adb (Build_BIP_Cleanup_Stmts): Update comment on usage.
+	Rename local variable Collect to Fin_Mas_Id and update its occurrences.
+	Replace call to Set_Associated_Collection with Set_Finalization_Master.
+	(Build_Finalization_Collection): Renamed to Build_Finalization_Master.
+	Replace the call to Associated_Collection with Finalization_Master.
+	Rename local variable Coll_Id to Fin_Mas_Id and update its occurrences.
+	Update the way finalization master names are generated. Update the
+	retrieval of the correct access type which will carry the pool and
+	master attributes.
+	(Make_Final_Call): Reimplement the way [Deep_]Finalize is retrieved.
+	(Make_Finalize_Address_Body): Abstract types do not need
+	Finalize_Address. Code reformatting.
+	(Make_Finalize_Address_Stmts): Update comment on usage.
+	(Make_Set_Finalize_Address_Ptr_Call): Removed.
+	(Process_Declarations): Update comments.
+	* exp_ch7.ads (Build_Finalization_Collection): Renamed to
+	Build_Finalization_Master. Update associated comment.
+	(Make_Set_Finalize_Address_Ptr_Call): Removed.
+	* exp_ch13.adb: Update comments which mention finalization collections.
+	(Expand_N_Free_Statement): Replace the call to Associated_Collection
+	with Finalization_Master.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Reimplemented to
+	create calls to routines Allocate_Any_Controlled and
+	Deallocate_Any_Controlled.
+	(Find_Finalize_Address): New routine.
+	(Is_Allocate_Deallocate_Proc): Update the RTE entities used in the
+	comparison.
+	(Requires_Cleanup_Actions): Update the comment on freeze node
+	inspection.
+	* exp_util.ads: Remove comment on generated code for
+	Build_Allocate_Deallocate_Proc. The code is now quite complex and it
+	is better to simply look in the body.
+	* freeze.adb (Freeze_All): Update the comment of finalization
+	collections. Replace the call to Associated_Collection with
+	Finalization_Master. Replace the call to Build_Finalization_Collection
+	with Build_Finalization_Master.
+	* impunit.adb: Add a-undesu and s-stposu to the list of units.
+	* Makefile.rtl: Add files a-undesu, s-finmas and s-stposu. Remove file
+	a-fihema.
+	* rtsfind.adb (Get_Unit_Name): Remove the processing for children of
+	Ada.Finalization. Add processing for children of System.Storage_Pools.
+	* rtsfind.ads: Remove the naming of second level children of
+	Ada.Finalization.
+	Remove Ada_Finalization_Heap_Management from the list of units.
+	Remove subtype Ada_Finalization_Child.
+	Remove the following subprogram entities:
+	
+	   RE_Allocate
+	   RE_Deallocate
+	   RE_Finalization_Collection
+	   RE_Finalization_Collection_Ptr
+	   RE_Set_Finalize_Address_Ptr
+	
+	Add the naming of second level children of System.Storage_Pools.
+	Add System_Finalization_Masters and System_Storage_Pools_Subpools to
+	the list of units.
+	Add subtype System_Storage_Pools_Child.
+	Add the following subprogram entities to System.Finalization_Masters:
+	
+	   RE_Finalization_Master
+	   RE_Finalization_Master_Ptr
+	
+	Add the following subprogram entities to System.Storage_Pools.Subpools:
+	
+	   RE_Allocate_Any_Controlled
+	   RE_Deallocate_Any_Controlled
+	   RE_Root_Storage_Pool_With_Subpools
+	   RE_Root_Subpool
+	   RE_Subpool_Handle
+	
+	Move the following subprogram entities from
+	Ada.Finalization.Heap_Management to System.Finalization_Masters:
+	
+	   RE_Add_Offset_To_Address
+	   RE_Attach
+	   RE_Base_Pool
+	   RE_Detach
+	
+	* sem_ch3.adb (Access_Type_Declaration): Replace the call to
+	Set_Associated_Collection with Set_Finalization_Master.
+	* sem_ch6.adb (Create_Extra_Formals): Update the way extra formal
+	BIP_Finalization_Master is created.
+	* s-finmas.adb: New unit System.Finalization_Masters.
+	* s-finmas.ads: New unit System.Finalization_Masters.
+	* s-stopoo.ads, s-stopoo.adb: Minor code reformatting.
+	* s-stposu.ads, s-stposu.adb: New unit implementing
+	System.Storage_Pools.Subpools.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* tbuild.adb: Add assertion.
+
 2011-08-29  Thomas Quinot  <quinot@adacore.com>
 
 	* s-pooglo.adb: Minor reformatting.

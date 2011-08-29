@@ -68,9 +68,9 @@ package Exp_Ch6 is
       --  caller or callee, and if the callee, whether to use the secondary
       --  stack or the heap. See Create_Extra_Formals.
 
-      BIP_Collection,
+      BIP_Finalization_Master,
       --  Present if result type needs finalization. Pointer to caller's
-      --  finalization collection.
+      --  finalization master.
 
       BIP_Master,
       --  Present if result type contains tasks. Master associated with
@@ -163,8 +163,8 @@ package Exp_Ch6 is
    --  for which Is_Build_In_Place_Call is True, or an N_Qualified_Expression
    --  node applied to such a function call.
 
-   function Needs_BIP_Collection (Func_Id : Entity_Id) return Boolean;
+   function Needs_BIP_Finalization_Master (Func_Id : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Return True if the function needs a finalization
-   --  collection implicit parameter.
+   --  master implicit parameter.
 
 end Exp_Ch6;

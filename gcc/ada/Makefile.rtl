@@ -154,7 +154,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-envvar$(objext) \
   a-except$(objext) \
   a-exctra$(objext) \
-  a-fihema$(objext) \
   a-finali$(objext) \
   a-flteio$(objext) \
   a-fwteio$(objext) \
@@ -290,6 +289,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-tiunio$(objext) \
   a-unccon$(objext) \
   a-uncdea$(objext) \
+  a-undesu$(objext) \
   a-wichha$(objext) \
   a-wichun$(objext) \
   a-widcha$(objext) \
@@ -495,6 +495,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-ficobl$(objext) \
   s-fileio$(objext) \
   s-filofl$(objext) \
+  s-finmas$(objext) \
   s-finroo$(objext) \
   s-fishfl$(objext) \
   s-flocon$(objext) \
@@ -611,6 +612,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-stchop$(objext) \
   s-stoele$(objext) \
   s-stopoo$(objext) \
+  s-stposu$(objext) \
   s-stratt$(objext) \
   s-strhas$(objext) \
   s-string$(objext) \
