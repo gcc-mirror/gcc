@@ -5482,12 +5482,13 @@ package body Exp_Ch3 is
                   Build_Slice_Assignment (Typ);
                end if;
 
-            --  ??? This may not be necessary after all
+            --  ??? Now that masters acts as heterogeneous lists, it might be
+            --  worthed to revisit the global master approach.
 
             elsif Ekind (Comp_Typ) = E_Anonymous_Access_Type
               and then Needs_Finalization (Directly_Designated_Type (Comp_Typ))
             then
-               Build_Finalization_Collection (Comp_Typ);
+               Build_Finalization_Master (Comp_Typ);
             end if;
          end if;
 
@@ -5581,8 +5582,8 @@ package body Exp_Ch3 is
          return;
       end if;
 
-      --  Generate the body of Finalize_Address. This routine is accessible
-      --  through the TSS mechanism.
+      --  Create the body of TSS primitive Finalize_Address. This automatically
+      --  sets the TSS entry for the class-wide type.
 
       Make_Finalize_Address_Body (Typ);
    end Expand_Freeze_Class_Wide_Type;
@@ -6310,13 +6311,17 @@ package body Exp_Ch3 is
          --  compiling a CPP tagged type.
 
          elsif not Restriction_Active (No_Dispatching_Calls) then
-            Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
-            Append_Freeze_Actions (Def_Id, Predef_List);
 
-            --  Create the body of Finalize_Address, a helper routine used in
-            --  conjunction with controlled objects on the heap.
+            --  Create the body of TSS primitive Finalize_Address. This must
+            --  be done before the bodies of all predefined primitives are
+            --  created. If Def_Id is limited, Stream_Input and Streap_Read
+            --  may produce build-in-place allocations and for that the
+            --  expander needs Finalize_Address.
 
             Make_Finalize_Address_Body (Def_Id);
+
+            Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
+            Append_Freeze_Actions (Def_Id, Predef_List);
          end if;
 
          --  Ada 2005 (AI-391): If any wrappers were created for nonoverridden
@@ -6364,7 +6369,7 @@ package body Exp_Ch3 is
 
            and then Directly_Designated_Type (Comp_Typ) /= Def_Id
          then
-            Build_Finalization_Collection
+            Build_Finalization_Master
              (Typ        => Comp_Typ,
               Ins_Node   => Parent (Def_Id),
               Encl_Scope => Scope (Def_Id));
@@ -6652,7 +6657,7 @@ package body Exp_Ch3 is
                   and then not Is_Frozen (Desig_Type)
                   and then Needs_Finalization (Component_Type (Desig_Type)))
             then
-               Build_Finalization_Collection (Def_Id);
+               Build_Finalization_Master (Def_Id);
             end if;
          end;
 
@@ -8399,7 +8404,7 @@ package body Exp_Ch3 is
       end if;
 
       --  All tagged types receive their own Deep_Adjust and Deep_Finalize
-      --  regardless of whether they are controlled or contain controlled
+      --  regardless of whether they are controlled or may contain controlled
       --  components.
 
       --  Do not generate the routines if finalization is disabled
@@ -8414,12 +8419,10 @@ package body Exp_Ch3 is
 
       else
          if not Is_Limited_Type (Tag_Typ) then
-            Append_To (Res,
-              Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Adjust));
+            Append_To (Res, Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Adjust));
          end if;
 
-         Append_To (Res,
-           Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Finalize));
+         Append_To (Res, Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Finalize));
       end if;
 
       Predef_List := Res;
@@ -9028,9 +9031,9 @@ package body Exp_Ch3 is
       --  to be (implicitly) inherited in that case because it can lead to a VM
       --  exception.
 
-      --  Do not generate stream routines for type Finalization_Collection
-      --  because collection may never appear in types and therefore cannot be
-      --  read or written.
+      --  Do not generate stream routines for type Finalization_Master because
+      --  a master may never appear in types and therefore cannot be read or
+      --  written.
 
       return
           (not Is_Limited_Type (Typ)
@@ -9053,7 +9056,7 @@ package body Exp_Ch3 is
         and then RTE_Available (RE_Tag)
         and then No (Type_Without_Stream_Operation (Typ))
         and then RTE_Available (RE_Root_Stream_Type)
-        and then not Is_RTE (Typ, RE_Finalization_Collection);
+        and then not Is_RTE (Typ, RE_Finalization_Master);
    end Stream_Operation_OK;
 
 end Exp_Ch3;

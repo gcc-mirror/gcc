@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2009 Free Software Foundation, Inc.            --
+--          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,13 +37,12 @@ package body System.Storage_Pools is
 
    procedure Allocate_Any
     (Pool                     : in out Root_Storage_Pool'Class;
-     Storage_Address          : out Address;
+     Storage_Address          : out System.Address;
      Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
      Alignment                : System.Storage_Elements.Storage_Count)
    is
    begin
-      Allocate
-        (Pool, Storage_Address, Size_In_Storage_Elements, Alignment);
+      Allocate (Pool, Storage_Address, Size_In_Storage_Elements, Alignment);
    end Allocate_Any;
 
    --------------------
@@ -52,12 +51,12 @@ package body System.Storage_Pools is
 
    procedure Deallocate_Any
     (Pool                     : in out Root_Storage_Pool'Class;
-     Storage_Address          : Address;
+     Storage_Address          : System.Address;
      Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
      Alignment                : System.Storage_Elements.Storage_Count)
    is
    begin
-      Deallocate
-        (Pool, Storage_Address, Size_In_Storage_Elements, Alignment);
+      Deallocate (Pool, Storage_Address, Size_In_Storage_Elements, Alignment);
    end Deallocate_Any;
+
 end System.Storage_Pools;

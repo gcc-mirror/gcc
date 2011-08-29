@@ -6080,14 +6080,13 @@ package body Sem_Ch6 is
             end if;
 
             --  In the case of functions whose result type needs finalization,
-            --  add an extra formal of type Ada.Finalization.Heap_Management.
-            --  Finalization_Collection_Ptr.
+            --  add an extra formal which represents the finalization master.
 
-            if Needs_BIP_Collection (E) then
+            if Needs_BIP_Finalization_Master (E) then
                Discard :=
                  Add_Extra_Formal
-                   (E, RTE (RE_Finalization_Collection_Ptr),
-                    E, BIP_Formal_Suffix (BIP_Collection));
+                   (E, RTE (RE_Finalization_Master_Ptr),
+                    E, BIP_Formal_Suffix (BIP_Finalization_Master));
             end if;
 
             --  If the result type contains tasks, we have two extra formals:

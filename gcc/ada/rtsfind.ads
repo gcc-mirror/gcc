@@ -48,9 +48,6 @@ package Rtsfind is
    --    eventually, packages implementing delays will be found relative to
    --    the package that declares the time type.
 
-   --    Names of the form Ada_Finalization_xxx are second level children of
-   --    Ada.Finalization.
-
    --    Names of the form Ada_Interrupts_xxx are second level children of
    --    Ada.Interrupts. This is needed for Ada.Interrupts.Names which is used
    --    by pragma Interrupt_State.
@@ -79,6 +76,9 @@ package Rtsfind is
    --    Names of the form System_xxx are first level children of System, whose
    --    name is System.xxx. For example, the name System_Str_Concat refers to
    --    package System.Str_Concat.
+
+   --    Names of the form System_Storage_Pools_xxx are second level children
+   --    of the package System.Storage_Pools.
 
    --    Names of the form System_Strings_xxx are second level children of the
    --    package System.Strings.
@@ -139,10 +139,6 @@ package Rtsfind is
       --  Children of Ada.Dispatching
 
       Ada_Dispatching_EDF,
-
-      --  Children of Ada.Finalization
-
-      Ada_Finalization_Heap_Management,
 
       --  Children of Ada.Interrupts
 
@@ -249,6 +245,7 @@ package Rtsfind is
       System_Fat_VAX_D_Float,
       System_Fat_VAX_F_Float,
       System_Fat_VAX_G_Float,
+      System_Finalization_Masters,
       System_Finalization_Root,
       System_Fore,
       System_Img_Bool,
@@ -374,6 +371,10 @@ package Rtsfind is
       System_WWd_Enum,
       System_WWd_Wchar,
 
+      --  Children of System.Storage_Pools
+
+      System_Storage_Pools_Subpools,
+
       --  Children of System.Strings
 
       System_Strings_Stream_Ops,
@@ -402,10 +403,6 @@ package Rtsfind is
    subtype Ada_Dispatching_Child is RTU_Id
      range Ada_Dispatching_EDF .. Ada_Dispatching_EDF;
    --  Range of values for children of Ada.Dispatching
-
-   subtype Ada_Finalization_Child is Ada_Child range
-     Ada_Finalization_Heap_Management .. Ada_Finalization_Heap_Management;
-   --  Range of values for children of Ada.Finalization
 
    subtype Ada_Interrupts_Child is Ada_Child range
      Ada_Interrupts_Names .. Ada_Interrupts_Names;
@@ -442,6 +439,9 @@ package Rtsfind is
    subtype System_Child is RTU_Id
      range System_Address_Image .. System_Tasking_Stages;
    --  Range of values for children or grandchildren of System
+
+   subtype System_Storage_Pools_Child is RTU_Id
+     range System_Storage_Pools_Subpools .. System_Storage_Pools_Subpools;
 
    subtype System_Strings_Child is RTU_Id
      range System_Strings_Stream_Ops .. System_Strings_Stream_Ops;
@@ -520,17 +520,6 @@ package Rtsfind is
      RE_Reraise_Occurrence_Always,       -- Ada.Exceptions
      RE_Reraise_Occurrence_No_Defer,     -- Ada.Exceptions
      RE_Save_Occurrence,                 -- Ada.Exceptions
-
-     RE_Add_Offset_To_Address,           -- Ada.Finalization.Heap_Management
-     RE_Allocate,                        -- Ada.Finalization.Heap_Management
-     RE_Attach,                          -- Ada.Finalization.Heap_Management
-     RE_Base_Pool,                       -- Ada.Finalization.Heap_Management
-     RE_Deallocate,                      -- Ada.Finalization.Heap_Management
-     RE_Detach,                          -- Ada.Finalization.Heap_Management
-     RE_Finalization_Collection,         -- Ada.Finalization.Heap_Management
-     RE_Finalization_Collection_Ptr,     -- Ada.Finalization.Heap_Management
-     RE_Set_Finalize_Address_Ptr,        -- Ada.Finalization.Heap_Management
-     RE_Set_Storage_Pool_Ptr,            -- Ada.Finalization.Heap_Management
 
      RE_Interrupt_ID,                    -- Ada.Interrupts
      RE_Is_Reserved,                     -- Ada.Interrupts
@@ -804,6 +793,14 @@ package Rtsfind is
 
      RE_Attr_VAX_G_Float,                -- System.Fat_VAX_G_Float
      RE_Fat_VAX_G,                       -- System.Fat_VAX_G_Float
+
+     RE_Add_Offset_To_Address,           -- System.Finalization_Masters
+     RE_Attach,                          -- System.Finalization_Masters
+     RE_Base_Pool,                       -- System.Finalization_Masters
+     RE_Detach,                          -- System.Finalization_Masters
+     RE_Finalization_Master,             -- System.Finalization_Masters
+     RE_Finalization_Master_Ptr,         -- System.Finalization_Masters
+     RE_Set_Base_Pool,                   -- System.Finalization_Masters
 
      RE_Root_Controlled,                 -- System.Finalization_Root
      RE_Root_Controlled_Ptr,             -- System.Finalization_Root
@@ -1327,9 +1324,15 @@ package Rtsfind is
      RE_Storage_Offset,                  -- System.Storage_Elements
      RE_To_Address,                      -- System.Storage_Elements
 
+     RE_Allocate_Any,                    -- System.Storage_Pools
+     RE_Deallocate_Any,                  -- System.Storage_Pools
      RE_Root_Storage_Pool,               -- System.Storage_Pools
-     RE_Allocate_Any,                    -- System.Storage_Pools,
-     RE_Deallocate_Any,                  -- System.Storage_Pools,
+
+     RE_Allocate_Any_Controlled,         -- System.Storage_Pools.Subpools
+     RE_Deallocate_Any_Controlled,       -- System.Storage_Pools.Subpools
+     RE_Root_Storage_Pool_With_Subpools, -- System.Storage_Pools.Subpools
+     RE_Root_Subpool,                    -- System.Storage_Pools.Subpools
+     RE_Subpool_Handle,                  -- System.Storage_Pools.Subpools
 
      RE_I_AD,                            -- System.Stream_Attributes
      RE_I_AS,                            -- System.Stream_Attributes
@@ -1704,17 +1707,6 @@ package Rtsfind is
      RE_Reraise_Occurrence_No_Defer      => Ada_Exceptions,
      RE_Save_Occurrence                  => Ada_Exceptions,
 
-     RE_Add_Offset_To_Address            => Ada_Finalization_Heap_Management,
-     RE_Allocate                         => Ada_Finalization_Heap_Management,
-     RE_Attach                           => Ada_Finalization_Heap_Management,
-     RE_Base_Pool                        => Ada_Finalization_Heap_Management,
-     RE_Deallocate                       => Ada_Finalization_Heap_Management,
-     RE_Detach                           => Ada_Finalization_Heap_Management,
-     RE_Finalization_Collection          => Ada_Finalization_Heap_Management,
-     RE_Finalization_Collection_Ptr      => Ada_Finalization_Heap_Management,
-     RE_Set_Finalize_Address_Ptr         => Ada_Finalization_Heap_Management,
-     RE_Set_Storage_Pool_Ptr             => Ada_Finalization_Heap_Management,
-
      RE_Interrupt_ID                     => Ada_Interrupts,
      RE_Is_Reserved                      => Ada_Interrupts,
      RE_Is_Attached                      => Ada_Interrupts,
@@ -1987,6 +1979,14 @@ package Rtsfind is
 
      RE_Attr_VAX_G_Float                 => System_Fat_VAX_G_Float,
      RE_Fat_VAX_G                        => System_Fat_VAX_G_Float,
+
+     RE_Add_Offset_To_Address            => System_Finalization_Masters,
+     RE_Attach                           => System_Finalization_Masters,
+     RE_Base_Pool                        => System_Finalization_Masters,
+     RE_Detach                           => System_Finalization_Masters,
+     RE_Finalization_Master              => System_Finalization_Masters,
+     RE_Finalization_Master_Ptr          => System_Finalization_Masters,
+     RE_Set_Base_Pool                    => System_Finalization_Masters,
 
      RE_Root_Controlled                  => System_Finalization_Root,
      RE_Root_Controlled_Ptr              => System_Finalization_Root,
@@ -2510,9 +2510,15 @@ package Rtsfind is
      RE_Storage_Offset                   => System_Storage_Elements,
      RE_To_Address                       => System_Storage_Elements,
 
-     RE_Root_Storage_Pool                => System_Storage_Pools,
      RE_Allocate_Any                     => System_Storage_Pools,
      RE_Deallocate_Any                   => System_Storage_Pools,
+     RE_Root_Storage_Pool                => System_Storage_Pools,
+
+     RE_Allocate_Any_Controlled          => System_Storage_Pools_Subpools,
+     RE_Deallocate_Any_Controlled        => System_Storage_Pools_Subpools,
+     RE_Root_Storage_Pool_With_Subpools  => System_Storage_Pools_Subpools,
+     RE_Root_Subpool                     => System_Storage_Pools_Subpools,
+     RE_Subpool_Handle                   => System_Storage_Pools_Subpools,
 
      RE_I_AD                             => System_Stream_Attributes,
      RE_I_AS                             => System_Stream_Attributes,

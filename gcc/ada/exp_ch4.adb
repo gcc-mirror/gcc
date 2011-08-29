@@ -444,12 +444,15 @@ package body Exp_Ch4 is
          return;
       end if;
 
+      --  ??? Now that finalization masters act as heterogeneous lists, it
+      --  might be worthed to revisit the global master approach.
+
       --  Processing for anonymous access-to-controlled types. These access
-      --  types receive a special collection which appears on the declarations
-      --  of the enclosing semantic unit.
+      --  types receive a special finalization master which appears in the
+      --  declarations of the enclosing semantic unit.
 
       if Ekind (Ptr_Typ) = E_Anonymous_Access_Type
-        and then No (Associated_Collection (Ptr_Typ))
+        and then No (Finalization_Master (Ptr_Typ))
         and then
           (not Restriction_Active (No_Nested_Finalization)
              or else Is_Library_Level_Entity (Ptr_Typ))
@@ -466,7 +469,7 @@ package body Exp_Ch4 is
                Scop := Corresponding_Spec (Parent (Parent (Parent (Scop))));
             end if;
 
-            Build_Finalization_Collection
+            Build_Finalization_Master
               (Typ        => Ptr_Typ,
                Ins_Node   => First_Declaration_Of_Current_Unit,
                Encl_Scope => Scop);
@@ -481,7 +484,7 @@ package body Exp_Ch4 is
       --  Since the temporary object reuses the original allocator, generate a
       --  custom Allocate routine for the temporary.
 
-      if Present (Associated_Collection (Ptr_Typ)) then
+      if Present (Finalization_Master (Ptr_Typ)) then
          Build_Allocate_Deallocate_Proc
            (N           => Temp_Decl,
             Is_Allocate => True);
@@ -858,14 +861,14 @@ package body Exp_Ch4 is
                Complete_Controlled_Allocation (Temp_Decl);
                Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
 
-               --  Attach the object to the associated finalization collection.
+               --  Attach the object to the associated finalization master.
                --  This is done manually on .NET/JVM since those compilers do
                --  no support pools and can't benefit from internally generated
                --  Allocate / Deallocate procedures.
 
                if VM_Target /= No_VM
                  and then Is_Controlled (DesigT)
-                 and then Present (Associated_Collection (PtrT))
+                 and then Present (Finalization_Master (PtrT))
                then
                   Insert_Action (N,
                     Make_Attach_Call (
@@ -888,14 +891,14 @@ package body Exp_Ch4 is
                Insert_Action (N, Temp_Decl);
                Complete_Controlled_Allocation (Temp_Decl);
 
-               --  Attach the object to the associated finalization collection.
+               --  Attach the object to the associated finalization master.
                --  This is done manually on .NET/JVM since those compilers do
                --  no support pools and can't benefit from internally generated
                --  Allocate / Deallocate procedures.
 
                if VM_Target /= No_VM
                  and then Is_Controlled (DesigT)
-                 and then Present (Associated_Collection (PtrT))
+                 and then Present (Finalization_Master (PtrT))
                then
                   Insert_Action (N,
                     Make_Attach_Call (
@@ -931,8 +934,7 @@ package body Exp_Ch4 is
                --  Inherit the allocation-related attributes from the original
                --  access type.
 
-               Set_Associated_Collection (Def_Id,
-                 Associated_Collection (PtrT));
+               Set_Finalization_Master (Def_Id, Finalization_Master (PtrT));
 
                Set_Associated_Storage_Pool (Def_Id,
                  Associated_Storage_Pool (PtrT));
@@ -1083,25 +1085,6 @@ package body Exp_Ch4 is
                          Prefix => New_Reference_To (Temp, Loc))),
                    Typ => T));
             end if;
-
-            --  Generate:
-            --    Set_Finalize_Address_Ptr
-            --      (Collection, <Finalize_Address>'Unrestricted_Access)
-
-            --  Since .NET/JVM compilers do not support address arithmetic,
-            --  this call is skipped. The same is done for CodePeer because
-            --  Finalize_Address is never generated.
-
-            if VM_Target = No_VM
-              and then not CodePeer_Mode
-              and then Present (Associated_Collection (PtrT))
-            then
-               Insert_Action (N,
-                 Make_Set_Finalize_Address_Ptr_Call
-                   (Loc     => Loc,
-                    Typ     => T,
-                    Ptr_Typ => PtrT));
-            end if;
          end if;
 
          Rewrite (N, New_Reference_To (Temp, Loc));
@@ -1139,14 +1122,14 @@ package body Exp_Ch4 is
          Complete_Controlled_Allocation (Temp_Decl);
          Convert_Aggr_In_Allocator (N, Temp_Decl, Exp);
 
-         --  Attach the object to the associated finalization collection. This
-         --  is done manually on .NET/JVM since those compilers do no support
+         --  Attach the object to the associated finalization master. Thisis
+         --  done manually on .NET/JVM since those compilers do no support
          --  pools and cannot benefit from internally generated Allocate and
          --  Deallocate procedures.
 
          if VM_Target /= No_VM
            and then Is_Controlled (DesigT)
-           and then Present (Associated_Collection (PtrT))
+           and then Present (Finalization_Master (PtrT))
          then
             Insert_Action (N,
               Make_Attach_Call
@@ -3564,7 +3547,7 @@ package body Exp_Ch4 is
             --  do not support pools, this step is skipped.
 
             if VM_Target = No_VM
-              and then Present (Associated_Collection (PtrT))
+              and then Present (Finalization_Master (PtrT))
             then
                Build_Allocate_Deallocate_Proc
                  (N           => Parent (N),
@@ -3858,39 +3841,22 @@ package body Exp_Ch4 is
                       (Obj_Ref => New_Copy_Tree (Init_Arg1),
                        Typ     => T));
 
-                  if Present (Associated_Collection (PtrT)) then
+                  --  Special processing for .NET/JVM, the allocated object is
+                  --  attached to the finalization master. Generate:
 
-                     --  Special processing for .NET/JVM, the allocated object
-                     --  is attached to the finalization collection. Generate:
+                  --    Attach (<PtrT>FM, Root_Controlled_Ptr (Init_Arg1));
 
-                     --    Attach (<PtrT>FC, Root_Controlled_Ptr (Init_Arg1));
+                  --  Types derived from [Limited_]Controlled are the only
+                  --  ones considered since they have fields Prev and Next.
 
-                     --  Types derived from [Limited_]Controlled are the only
-                     --  ones considered since they have fields Prev and Next.
-
-                     if VM_Target /= No_VM then
-                        if Is_Controlled (T) then
-                           Insert_Action (N,
-                             Make_Attach_Call
-                               (Obj_Ref => New_Copy_Tree (Init_Arg1),
-                                Ptr_Typ => PtrT));
-                        end if;
-
-                     --  Default case, generate:
-
-                     --    Set_Finalize_Address_Ptr
-                     --      (Pool, <Finalize_Address>'Unrestricted_Access)
-
-                     --  Do not generate the above for CodePeer compilations
-                     --  because Finalize_Address is never built.
-
-                     elsif not CodePeer_Mode then
-                        Insert_Action (N,
-                          Make_Set_Finalize_Address_Ptr_Call
-                            (Loc     => Loc,
-                             Typ     => T,
-                             Ptr_Typ => PtrT));
-                     end if;
+                  if VM_Target /= No_VM
+                    and then Present (Finalization_Master (PtrT))
+                    and then Is_Controlled (T)
+                  then
+                     Insert_Action (N,
+                       Make_Attach_Call
+                         (Obj_Ref => New_Copy_Tree (Init_Arg1),
+                          Ptr_Typ => PtrT));
                   end if;
                end if;
 

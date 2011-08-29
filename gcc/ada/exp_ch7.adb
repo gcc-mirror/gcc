@@ -431,8 +431,8 @@ package body Exp_Ch7 is
    --  whether the inner logic should be dictated by state counters.
 
    function Make_Finalize_Address_Stmts (Typ : Entity_Id) return List_Id;
-   --  Subsidiary to Make_Finalize_Address_Body and Make_Deep_Array_Body.
-   --  Generate the following statements:
+   --  Subsidiary to Make_Finalize_Address_Body, Make_Deep_Array_Body and
+   --  Make_Deep_Record_Body. Generate the following statements:
    --
    --    declare
    --       type Acc_Typ is access all Typ;
@@ -797,11 +797,11 @@ package body Exp_Ch7 is
                   Parameter_Associations => Actuals)))));
    end Build_Exception_Handler;
 
-   -----------------------------------
-   -- Build_Finalization_Collection --
-   -----------------------------------
+   -------------------------------
+   -- Build_Finalization_Master --
+   -------------------------------
 
-   procedure Build_Finalization_Collection
+   procedure Build_Finalization_Master
      (Typ        : Entity_Id;
       Ins_Node   : Node_Id := Empty;
       Encl_Scope : Entity_Id := Empty)
@@ -837,7 +837,7 @@ package body Exp_Ch7 is
          return False;
       end In_Deallocation_Instance;
 
-   --  Start of processing for Build_Finalization_Collection
+   --  Start of processing for Build_Finalization_Master
 
    begin
       --  Certain run-time configurations and targets do not provide support
@@ -847,15 +847,12 @@ package body Exp_Ch7 is
          return;
 
       --  Various machinery such as freezing may have already created a
-      --  collection.
+      --  finalization master.
 
-      elsif Present (Associated_Collection (Typ)) then
+      elsif Present (Finalization_Master (Typ)) then
          return;
 
       --  Do not process types that return on the secondary stack
-
-      --  ??? The need for a secondary stack should be revisited and perhaps
-      --  changed.
 
       elsif Present (Associated_Storage_Pool (Typ))
         and then Is_RTE (Associated_Storage_Pool (Typ), RE_SS_Pool)
@@ -875,7 +872,7 @@ package body Exp_Ch7 is
          return;
 
       --  Ignore the general use of anonymous access types unless the context
-      --  requires a collection.
+      --  requires a finalization master.
 
       elsif Ekind (Typ) = E_Anonymous_Access_Type
         and then No (Ins_Node)
@@ -883,7 +880,7 @@ package body Exp_Ch7 is
          return;
 
       --  Do not process non-library access types when restriction No_Nested_
-      --  Finalization is in effect since collections are controlled objects.
+      --  Finalization is in effect since masters are controlled objects.
 
       elsif Restriction_Active (No_Nested_Finalization)
         and then not Is_Library_Level_Entity (Typ)
@@ -901,87 +898,85 @@ package body Exp_Ch7 is
       end if;
 
       declare
-         Loc     : constant Source_Ptr := Sloc (Typ);
-         Actions : constant List_Id := New_List;
-         Coll_Id : Entity_Id;
-         Pool_Id : Entity_Id;
+         Loc        : constant Source_Ptr := Sloc (Typ);
+         Actions    : constant List_Id := New_List;
+         Fin_Mas_Id : Entity_Id;
+         Pool_Id    : Entity_Id;
+         Ptr_Typ    : Entity_Id := Typ;
 
       begin
+         --  Access subtypes must use the storage pool of their base type
+
+         if Ekind (Ptr_Typ) = E_Access_Subtype then
+            Ptr_Typ := Base_Type (Ptr_Typ);
+         end if;
+
          --  Generate:
-         --    Fnn : Finalization_Collection;
+         --    Fnn : aliased Finalization_Master;
 
-         --  Source access types use fixed names for their collections since
-         --  the collection is inserted only once in the same source unit and
-         --  there is no possible name overlap. Internally-generated access
-         --  types on the other hand use temporaries as collection names due
-         --  to possible name collisions.
+         --  Source access types use fixed master names since the master is
+         --  inserted in the same source unit only once. The only exception to
+         --  this are instances using the same access type as generic actual.
 
-         if Comes_From_Source (Typ) then
-            Coll_Id :=
+         if Comes_From_Source (Ptr_Typ)
+           and then not Inside_A_Generic
+         then
+            Fin_Mas_Id :=
               Make_Defining_Identifier (Loc,
-                Chars => New_External_Name (Chars (Typ), "FC"));
+                Chars => New_External_Name (Chars (Ptr_Typ), "FM"));
+
+         --  Internally generated access types use temporaries as their names
+         --  due to possible collision with identical names coming from other
+         --  packages.
+
          else
-            Coll_Id := Make_Temporary (Loc, 'F');
+            Fin_Mas_Id := Make_Temporary (Loc, 'F');
          end if;
 
          Append_To (Actions,
            Make_Object_Declaration (Loc,
-             Defining_Identifier => Coll_Id,
+             Defining_Identifier => Fin_Mas_Id,
+             Aliased_Present     => True,
              Object_Definition   =>
-               New_Reference_To (RTE (RE_Finalization_Collection), Loc)));
+               New_Reference_To (RTE (RE_Finalization_Master), Loc)));
 
          --  Storage pool selection and attribute decoration of the generated
-         --  collection. Since .NET/JVM compilers do not support pools, this
-         --  step is skipped.
+         --  master. Since .NET/JVM compilers do not support pools, this step
+         --  is skipped.
 
          if VM_Target = No_VM then
 
             --  If the access type has a user-defined pool, use it as the base
             --  storage medium for the finalization pool.
 
-            if Present (Associated_Storage_Pool (Typ)) then
-               Pool_Id := Associated_Storage_Pool (Typ);
-
-            --  Access subtypes must use the storage pool of their base type
-
-            elsif Ekind (Typ) = E_Access_Subtype then
-               declare
-                  Base_Typ : constant Entity_Id := Base_Type (Typ);
-
-               begin
-                  if No (Associated_Storage_Pool (Base_Typ)) then
-                     Pool_Id := Get_Global_Pool_For_Access_Type (Base_Typ);
-                     Set_Associated_Storage_Pool (Base_Typ, Pool_Id);
-                  else
-                     Pool_Id := Associated_Storage_Pool (Base_Typ);
-                  end if;
-               end;
+            if Present (Associated_Storage_Pool (Ptr_Typ)) then
+               Pool_Id := Associated_Storage_Pool (Ptr_Typ);
 
             --  The default choice is the global pool
 
             else
-               Pool_Id := Get_Global_Pool_For_Access_Type (Typ);
-               Set_Associated_Storage_Pool (Typ, Pool_Id);
+               Pool_Id := Get_Global_Pool_For_Access_Type (Ptr_Typ);
+               Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
             end if;
 
             --  Generate:
-            --    Set_Storage_Pool_Ptr (Fnn, Pool_Id'Unchecked_Access);
+            --    Set_Base_Pool (Fnn, Pool_Id'Unchecked_Access);
 
             Append_To (Actions,
               Make_Procedure_Call_Statement (Loc,
                 Name                   =>
-                  New_Reference_To (RTE (RE_Set_Storage_Pool_Ptr), Loc),
+                  New_Reference_To (RTE (RE_Set_Base_Pool), Loc),
                 Parameter_Associations => New_List (
-                  New_Reference_To (Coll_Id, Loc),
+                  New_Reference_To (Fin_Mas_Id, Loc),
                   Make_Attribute_Reference (Loc,
                     Prefix         => New_Reference_To (Pool_Id, Loc),
                     Attribute_Name => Name_Unrestricted_Access))));
          end if;
 
-         Set_Associated_Collection (Typ, Coll_Id);
+         Set_Finalization_Master (Ptr_Typ, Fin_Mas_Id);
 
-         --  A finalization collection created for an anonymous access type
-         --  must be inserted before a context-dependent node.
+         --  A finalization master created for an anonymous access type must be
+         --  inserted before a context-dependent node.
 
          if Present (Ins_Node) then
             Push_Scope (Encl_Scope);
@@ -1024,12 +1019,12 @@ package body Exp_Ch7 is
             Append_Freeze_Actions (Typ, Actions);
 
          --  If there's a pool created locally for the access type, then we
-         --  need to ensure that the collection gets created after the pool
-         --  object, because otherwise we can have a forward reference, so
-         --  we force the collection actions to be inserted and analyzed after
-         --  the pool entity. Note that both the access type and its designated
-         --  type may have already been frozen and had their freezing actions
-         --  analyzed at this point. (This seems a little unclean.???)
+         --  need to ensure that the master gets created after the pool object,
+         --  because otherwise we can have a forward reference, so we force the
+         --  master actions to be inserted and analyzed after the pool entity.
+         --  Note that both the access type and its designated type may have
+         --  already been frozen and had their freezing actions analyzed at
+         --  this point. (This seems a little unclean.???)
 
          elsif VM_Target = No_VM
            and then Scope (Pool_Id) = Scope (Typ)
@@ -1040,7 +1035,7 @@ package body Exp_Ch7 is
             Insert_Actions (Parent (Typ), Actions);
          end if;
       end;
-   end Build_Finalization_Collection;
+   end Build_Finalization_Master;
 
    ---------------------
    -- Build_Finalizer --
@@ -1933,15 +1928,15 @@ package body Exp_Ch7 is
                end if;
 
             --  Inspect the freeze node of an access-to-controlled type and
-            --  look for a delayed finalization collection. This case arises
-            --  when the freeze actions are inserted at a later time than the
+            --  look for a delayed finalization master. This case arises when
+            --  the freeze actions are inserted at a later time than the
             --  expansion of the context. Since Build_Finalizer is never called
-            --  on a single construct twice, the collection will be ultimately
+            --  on a single construct twice, the master will be ultimately
             --  left out and never finalized. This is also needed for freeze
             --  actions of designated types themselves, since in some cases the
-            --  finalization collection is associated with a designated type's
+            --  finalization master is associated with a designated type's
             --  freeze node rather than that of the access type (see handling
-            --  for freeze actions in Build_Finalization_Collection).
+            --  for freeze actions in Build_Finalization_Master).
 
             elsif Nkind (Decl) = N_Freeze_Entity
               and then Present (Actions (Decl))
@@ -1958,12 +1953,12 @@ package body Exp_Ch7 is
 
                   --  Freeze nodes are considered to be identical to packages
                   --  and blocks in terms of nesting. The difference is that
-                  --  a finalization collection created inside the freeze node
-                  --  is at the same nesting level as the node itself.
+                  --  a finalization master created inside the freeze node is
+                  --  at the same nesting level as the node itself.
 
                   Process_Declarations (Actions (Decl), Preprocess);
 
-                  --  The freeze node contains a finalization collection
+                  --  The freeze node contains a finalization master
 
                   if Preprocess
                     and then Top_Level
@@ -2086,11 +2081,12 @@ package body Exp_Ch7 is
          --  following cleanup code:
          --
          --    if BIPallocfrom > Secondary_Stack'Pos
-         --      and then BIPcollection /= null
+         --      and then BIPfinalizationmaster /= null
          --    then
          --       declare
          --          type Ptr_Typ is access Obj_Typ;
-         --          for Ptr_Typ'Storage_Pool use Base_Pool (BIPcollection);
+         --          for Ptr_Typ'Storage_Pool
+         --            use Base_Pool (BIPfinalizationmaster);
          --
          --       begin
          --          Free (Ptr_Typ (Temp));
@@ -2118,12 +2114,13 @@ package body Exp_Ch7 is
          function Build_BIP_Cleanup_Stmts
            (Func_Id : Entity_Id) return Node_Id
          is
-            Collect : constant Entity_Id :=
-                        Build_In_Place_Formal (Func_Id, BIP_Collection);
-            Decls   : constant List_Id := New_List;
-            Obj_Typ : constant Entity_Id := Etype (Func_Id);
-            Temp_Id : constant Entity_Id :=
-                        Entity (Prefix (Name (Parent (Obj_Id))));
+            Decls      : constant List_Id := New_List;
+            Fin_Mas_Id : constant Entity_Id :=
+                           Build_In_Place_Formal
+                             (Func_Id, BIP_Finalization_Master);
+            Obj_Typ    : constant Entity_Id := Etype (Func_Id);
+            Temp_Id    : constant Entity_Id :=
+                           Entity (Prefix (Name (Parent (Obj_Id))));
 
             Cond      : Node_Id;
             Free_Blk  : Node_Id;
@@ -2133,7 +2130,7 @@ package body Exp_Ch7 is
 
          begin
             --  Generate:
-            --    Pool_Id renames Base_Pool (BIPcollection.all).all;
+            --    Pool_Id renames Base_Pool (BIPfinalizationmaster.all).all;
 
             Pool_Id := Make_Temporary (Loc, 'P');
 
@@ -2150,10 +2147,10 @@ package body Exp_Ch7 is
                           New_Reference_To (RTE (RE_Base_Pool), Loc),
                         Parameter_Associations => New_List (
                           Make_Explicit_Dereference (Loc,
-                            Prefix => New_Reference_To (Collect, Loc)))))));
+                            Prefix => New_Reference_To (Fin_Mas_Id, Loc)))))));
 
             --  Create an access type which uses the storage pool of the
-            --  caller's collection.
+            --  caller's finalization master.
 
             --  Generate:
             --    type Ptr_Typ is access Obj_Typ;
@@ -2167,11 +2164,11 @@ package body Exp_Ch7 is
                   Make_Access_To_Object_Definition (Loc,
                     Subtype_Indication => New_Reference_To (Obj_Typ, Loc))));
 
-            --  Perform minor decoration in order to set the collection and the
+            --  Perform minor decoration in order to set the master and the
             --  storage pool attributes.
 
             Set_Ekind (Ptr_Typ, E_Access_Type);
-            Set_Associated_Collection   (Ptr_Typ, Collect);
+            Set_Finalization_Master     (Ptr_Typ, Fin_Mas_Id);
             Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
 
             --  Create an explicit free statement. Note that the free uses the
@@ -2203,18 +2200,18 @@ package body Exp_Ch7 is
                     Statements => New_List (Free_Stmt)));
 
             --  Generate:
-            --    if BIPcollection /= null then
+            --    if BIPfinalizationmaster /= null then
 
             Cond :=
               Make_Op_Ne (Loc,
-                Left_Opnd  => New_Reference_To (Collect, Loc),
+                Left_Opnd  => New_Reference_To (Fin_Mas_Id, Loc),
                 Right_Opnd => Make_Null (Loc));
 
             --  For constrained or tagged results escalate the condition to
             --  include the allocation format. Generate:
             --
             --    if BIPallocform > Secondary_Stack'Pos
-            --      and then BIPcollection /= null
+            --      and then BIPfinalizationmaster /= null
             --    then
 
             if not Is_Constrained (Obj_Typ)
@@ -2590,11 +2587,13 @@ package body Exp_Ch7 is
             --  If we are dealing with a return object of a build-in-place
             --  function, generate the following cleanup statements:
             --
-            --    if BIPallocfrom > Secondary_Stack'Pos then
+            --    if BIPallocfrom > Secondary_Stack'Pos
+            --      and then BIPfinalizationmaster /= null
+            --    then
             --       declare
             --          type Ptr_Typ is access Obj_Typ;
             --          for Ptr_Typ'Storage_Pool use
-            --                Base_Pool (BIPcollection.all).all;
+            --                Base_Pool (BIPfinalizationmaster.all).all;
             --
             --       begin
             --          Free (Ptr_Typ (Temp));
@@ -2602,17 +2601,15 @@ package body Exp_Ch7 is
             --    end if;
             --
             --  The generated code effectively detaches the temporary from the
-            --  caller finalization chain and deallocates the object. This is
+            --  caller finalization master and deallocates the object. This is
             --  disabled on .NET/JVM because pools are not supported.
-
-            --  H505-021 This needs to be revisited on .NET/JVM
 
             if VM_Target = No_VM and then Is_Return_Object (Obj_Id) then
                declare
                   Func_Id : constant Entity_Id := Enclosing_Function (Obj_Id);
                begin
                   if Is_Build_In_Place_Function (Func_Id)
-                    and then Needs_BIP_Collection (Func_Id)
+                    and then Needs_BIP_Finalization_Master (Func_Id)
                   then
                      Append_To (Fin_Stmts, Build_BIP_Cleanup_Stmts (Func_Id));
                   end if;
@@ -4632,7 +4629,7 @@ package body Exp_Ch7 is
           Name                   =>
             New_Reference_To (RTE (RE_Attach), Loc),
           Parameter_Associations => New_List (
-            New_Reference_To (Associated_Collection (Ptr_Typ), Loc),
+            New_Reference_To (Finalization_Master (Ptr_Typ), Loc),
             Unchecked_Convert_To (RTE (RE_Root_Controlled_Ptr), Obj_Ref)));
    end Make_Attach_Call;
 
@@ -6849,17 +6846,16 @@ package body Exp_Ch7 is
             Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
          end if;
 
-      --  For types that are both controlled and have controlled components,
-      --  generate a call to Deep_Finalize.
+      --  Derivations from [Limited_]Controlled
 
-      elsif Is_Controlled (Utyp)
-        and then Has_Controlled_Component (Utyp)
-      then
-         Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
+      elsif Is_Controlled (Utyp) then
+         if Has_Controlled_Component (Utyp) then
+            Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
+         else
+            Fin_Id := Find_Prim_Op (Utyp, Name_Of (Finalize_Case));
+         end if;
 
-      --  For types that are not controlled themselves, but contain controlled
-      --  components or can be extended by types with controlled components,
-      --  create a call to Deep_Finalize.
+      --  Class-wide types, interfaces and types with controlled components
 
       elsif Is_Class_Wide_Type (Typ)
         or else Is_Interface (Typ)
@@ -6871,11 +6867,13 @@ package body Exp_Ch7 is
             Fin_Id := TSS (Utyp, TSS_Deep_Finalize);
          end if;
 
-      --  For types that are derived from Controlled and do not have controlled
-      --  components, build a call to Finalize.
+      --  Tagged types
+
+      elsif Is_Tagged_Type (Utyp) then
+         Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
 
       else
-         Fin_Id := Find_Prim_Op (Utyp, Name_Of (Finalize_Case));
+         raise Program_Error;
       end if;
 
       if Present (Fin_Id) then
@@ -6927,6 +6925,9 @@ package body Exp_Ch7 is
    --------------------------------
 
    procedure Make_Finalize_Address_Body (Typ : Entity_Id) is
+      Loc     : constant Source_Ptr := Sloc (Typ);
+      Proc_Id : Entity_Id;
+
    begin
       --  Nothing to do if the type is not controlled or it already has a
       --  TSS entry for Finalize_Address. Skip class-wide subtypes which do not
@@ -6934,6 +6935,7 @@ package body Exp_Ch7 is
       --  do not need the Finalize_Address primitive.
 
       if not Needs_Finalization (Typ)
+        or else Is_Abstract_Type (Typ)
         or else Present (TSS (Typ, TSS_Finalize_Address))
         or else
           (Is_Class_Wide_Type (Typ)
@@ -6943,48 +6945,42 @@ package body Exp_Ch7 is
          return;
       end if;
 
-      declare
-         Loc     : constant Source_Ptr := Sloc (Typ);
-         Proc_Id : Entity_Id;
+      Proc_Id :=
+        Make_Defining_Identifier (Loc,
+          Make_TSS_Name (Typ, TSS_Finalize_Address));
 
-      begin
-         Proc_Id :=
-           Make_Defining_Identifier (Loc,
-             Make_TSS_Name (Typ, TSS_Finalize_Address));
+      --  Generate:
+      --    procedure <Typ>FD (V : System.Address) is
+      --    begin
+      --       declare
+      --          type Pnn is access all Typ;
+      --          for Pnn'Storage_Size use 0;
+      --       begin
+      --          [Deep_]Finalize (Pnn (V).all);
+      --       end;
+      --    end TypFD;
 
-         --  Generate:
-         --    procedure TypFD (V : System.Address) is
-         --    begin
-         --       declare
-         --          type Pnn is access all Typ;
-         --          for Pnn'Storage_Size use 0;
-         --       begin
-         --          [Deep_]Finalize (Pnn (V).all);
-         --       end;
-         --    end TypFD;
+      Discard_Node (
+        Make_Subprogram_Body (Loc,
+          Specification =>
+            Make_Procedure_Specification (Loc,
+              Defining_Unit_Name => Proc_Id,
 
-         Discard_Node (
-           Make_Subprogram_Body (Loc,
-             Specification =>
-               Make_Procedure_Specification (Loc,
-                 Defining_Unit_Name => Proc_Id,
+              Parameter_Specifications => New_List (
+                Make_Parameter_Specification (Loc,
+                  Defining_Identifier =>
+                    Make_Defining_Identifier (Loc, Name_V),
+                  Parameter_Type =>
+                    New_Reference_To (RTE (RE_Address), Loc)))),
 
-                 Parameter_Specifications => New_List (
-                   Make_Parameter_Specification (Loc,
-                     Defining_Identifier =>
-                       Make_Defining_Identifier (Loc, Name_V),
-                     Parameter_Type =>
-                       New_Reference_To (RTE (RE_Address), Loc)))),
+          Declarations => No_List,
 
-             Declarations => No_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements =>
+                Make_Finalize_Address_Stmts (Typ))));
 
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements =>
-                   Make_Finalize_Address_Stmts (Typ))));
-
-         Set_TSS (Typ, Proc_Id);
-      end;
+      Set_TSS (Typ, Proc_Id);
    end Make_Finalize_Address_Body;
 
    ---------------------------------
@@ -7414,86 +7410,6 @@ package body Exp_Ch7 is
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => Make_Deep_Record_Body (Finalize_Case, Typ, True)));
    end Make_Local_Deep_Finalize;
-
-   ----------------------------------------
-   -- Make_Set_Finalize_Address_Ptr_Call --
-   ----------------------------------------
-
-   function Make_Set_Finalize_Address_Ptr_Call
-     (Loc     : Source_Ptr;
-      Typ     : Entity_Id;
-      Ptr_Typ : Entity_Id) return Node_Id
-   is
-      Desig_Typ : constant Entity_Id :=
-                    Available_View (Designated_Type (Ptr_Typ));
-      Utyp      : Entity_Id;
-
-   begin
-      --  If the context is a class-wide allocator, we use the class-wide type
-      --  to obtain the proper Finalize_Address routine.
-
-      if Is_Class_Wide_Type (Desig_Typ) then
-         Utyp := Desig_Typ;
-
-      else
-         Utyp := Typ;
-
-         if Is_Private_Type (Utyp) and then Present (Full_View (Utyp)) then
-            Utyp := Full_View (Utyp);
-         end if;
-
-         if Is_Concurrent_Type (Utyp) then
-            Utyp := Corresponding_Record_Type (Utyp);
-         end if;
-      end if;
-
-      Utyp := Underlying_Type (Base_Type (Utyp));
-
-      --  Deal with non-tagged derivation of private views. If the parent is
-      --  now known to be protected, the finalization routine is the one
-      --  defined on the corresponding record of the ancestor (corresponding
-      --  records do not automatically inherit operations, but maybe they
-      --  should???)
-
-      if Is_Untagged_Derivation (Typ) then
-         if Is_Protected_Type (Typ) then
-            Utyp := Corresponding_Record_Type (Root_Type (Base_Type (Typ)));
-         else
-            Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
-
-            if Is_Protected_Type (Utyp) then
-               Utyp := Corresponding_Record_Type (Utyp);
-            end if;
-         end if;
-      end if;
-
-      --  If the underlying_type is a subtype, we are dealing with the
-      --  completion of a private type. We need to access the base type and
-      --  generate a conversion to it.
-
-      if Utyp /= Base_Type (Utyp) then
-         pragma Assert (Is_Private_Type (Typ));
-
-         Utyp := Base_Type (Utyp);
-      end if;
-
-      --  Generate:
-      --    Set_Finalize_Address_Ptr
-      --      (<Ptr_Typ>FC, <Utyp>FD'Unrestricted_Access);
-
-      return
-        Make_Procedure_Call_Statement (Loc,
-          Name                   =>
-            New_Reference_To (RTE (RE_Set_Finalize_Address_Ptr), Loc),
-
-          Parameter_Associations => New_List (
-            New_Reference_To (Associated_Collection (Ptr_Typ), Loc),
-
-            Make_Attribute_Reference (Loc,
-              Prefix         =>
-                New_Reference_To (TSS (Utyp, TSS_Finalize_Address), Loc),
-              Attribute_Name => Name_Unrestricted_Access)));
-   end Make_Set_Finalize_Address_Ptr_Call;
 
    --------------------------
    -- Make_Transient_Block --
