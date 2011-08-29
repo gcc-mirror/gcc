@@ -175,6 +175,11 @@ package ALFA is
    --        r = reference
    --        s = subprogram reference in a static call
 
+   --  Special entries for reads and writes to memory reference a special
+   --  variable called "HEAP". These special entries are present in every scope
+   --  where reads and writes to memory are present. Line and column for this
+   --  special variable are always 0.
+
    --    Examples: ??? add examples here
 
    ----------------
@@ -326,6 +331,14 @@ package ALFA is
      Table_Low_Bound      => 1,
      Table_Initial        => 20,
      Table_Increment      => 200);
+
+   ---------------
+   -- Constants --
+   ---------------
+
+   Name_Of_Heap_Variable : constant String := "HEAP";
+   --  Name of special variable used in effects to denote reads and writes
+   --  through explicit dereference.
 
    -----------------
    -- Subprograms --

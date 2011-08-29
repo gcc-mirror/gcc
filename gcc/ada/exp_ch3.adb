@@ -6607,10 +6607,12 @@ package body Exp_Ch3 is
 
             --  When compiling in Ada 2012 mode, ensure that the accessibility
             --  level of the subpool access type is not deeper than that of the
-            --  pool_with_subpools.
+            --  pool_with_subpools. This check is not performed on .NET/JVM
+            --  since those targets do not support pools.
 
             elsif Ada_Version >= Ada_2012
               and then Present (Associated_Storage_Pool (Def_Id))
+              and then VM_Target = No_VM
             then
                declare
                   Loc   : constant Source_Ptr := Sloc (Def_Id);
@@ -6642,7 +6644,7 @@ package body Exp_Ch3 is
                      --  Dynamic case: when the pool is of a class-wide type,
                      --  it may or may not support subpools depending on the
                      --  path of derivation. Generate:
-                     --
+
                      --    if Def_Id in RSPWS'Class then
                      --       raise Program_Error;
                      --    end if;

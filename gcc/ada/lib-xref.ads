@@ -590,6 +590,15 @@ package Lib.Xref is
 
    package ALFA is
 
+      function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id;
+      --  Return the closest enclosing subprogram of package
+
+      procedure Generate_Dereference
+        (N   : Node_Id;
+         Typ : Character := 'r');
+      --  This procedure is called to record a dereference. N is the location
+      --  of the dereference.
+
       type Node_Processing is access procedure (N : Node_Id);
 
       procedure Traverse_Compilation_Unit

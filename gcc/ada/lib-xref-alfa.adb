@@ -25,6 +25,7 @@
 
 with ALFA;        use ALFA;
 with Einfo;       use Einfo;
+with Nmake;       use Nmake;
 with Put_ALFA;
 with GNAT.HTable;
 
@@ -142,6 +143,22 @@ package body ALFA is
 
    type Entity_Hashed_Range is range 0 .. 255;
    --  Size of hash table headers
+
+   ---------------------
+   -- Local Variables --
+   ---------------------
+
+   package Drefs is new Table.Table (
+     Table_Component_Type => Xref_Entry,
+     Table_Index_Type     => Xref_Entry_Number,
+     Table_Low_Bound      => 1,
+     Table_Initial        => Alloc.Xrefs_Initial,
+     Table_Increment      => Alloc.Xrefs_Increment,
+     Table_Name           => "Drefs");
+   --  Table of cross-references for reads and writes through explicit
+   --  dereferences, that are output as reads/writes to the special variable
+   --  "HEAP". These references are added to the regular references when
+   --  computing ALFA cross-references.
 
    -----------------------
    -- Local Subprograms --
@@ -400,7 +417,9 @@ package body ALFA is
       --  when we eliminate duplicate reference entries as well as references
       --  not suitable for local cross-references.
 
-      Rnums : array (0 .. Nrefs) of Nat;
+      Nrefs_Add : constant Nat := Drefs.Last;
+
+      Rnums : array (0 .. Nrefs + Nrefs_Add) of Nat;
       --  This array contains numbers of references in the Xrefs table. This
       --  list is sorted in output order. The extra 0'th entry is convenient
       --  for the call to sort. When we sort the table, we move the entries in
@@ -506,6 +525,8 @@ package body ALFA is
          Rnums (Nat (To)) := Rnums (Nat (From));
       end Move;
 
+      Heap : Entity_Id;
+
       --  Start of processing for Add_ALFA_Xrefs
    begin
 
@@ -518,6 +539,31 @@ package body ALFA is
 
       for J in 1 .. Nrefs loop
          Rnums (J) := J;
+      end loop;
+
+      --  Add dereferences to the set of regular references, by creating a
+      --  special "HEAP" variable for these special references.
+
+      Name_Len := Name_Of_Heap_Variable'Length;
+      Name_Buffer (1 .. Name_Len) := Name_Of_Heap_Variable;
+
+      Atree.Unlock;
+      Nlists.Unlock;
+      Heap := Make_Defining_Identifier (Standard_Location, Name_Enter);
+      Atree.Lock;
+      Nlists.Lock;
+
+      Set_Ekind         (Heap, E_Variable);
+      Set_Is_Internal   (Heap, True);
+      Set_Has_Fully_Qualified_Name (Heap);
+
+      for J in Drefs.First .. Drefs.Last loop
+         Xrefs.Increment_Last;
+         Xrefs.Table (Xrefs.Last)     := Drefs.Table (J);
+         Xrefs.Table (Xrefs.Last).Ent := Heap;
+
+         Nrefs         := Nrefs + 1;
+         Rnums (Nrefs) := Xrefs.Last;
       end loop;
 
       --  Eliminate entries not appropriate for ALFA. Done prior to sorting
@@ -762,16 +808,29 @@ package body ALFA is
                  new String'(Unique_Name (XE.Ent));
             end if;
 
-            ALFA_Xref_Table.Append (
-              (Entity_Name => Cur_Entity_Name,
-               Entity_Line => Int (Get_Logical_Line_Number (XE.Def)),
-               Etype       => Get_Entity_Type (XE.Ent),
-               Entity_Col  => Int (Get_Column_Number (XE.Def)),
-               File_Num    => Dependency_Num (XE.Lun),
-               Scope_Num   => Get_Scope_Num (XE.Ref_Scope),
-               Line        => Int (Get_Logical_Line_Number (XE.Loc)),
-               Rtype       => XE.Typ,
-               Col         => Int (Get_Column_Number (XE.Loc))));
+            if XE.Ent = Heap then
+               ALFA_Xref_Table.Append (
+                 (Entity_Name => Cur_Entity_Name,
+                  Entity_Line => 0,
+                  Etype       => Get_Entity_Type (XE.Ent),
+                  Entity_Col  => 0,
+                  File_Num    => Dependency_Num (XE.Lun),
+                  Scope_Num   => Get_Scope_Num (XE.Ref_Scope),
+                  Line        => Int (Get_Logical_Line_Number (XE.Loc)),
+                  Rtype       => XE.Typ,
+                  Col         => Int (Get_Column_Number (XE.Loc))));
+            else
+               ALFA_Xref_Table.Append (
+                 (Entity_Name => Cur_Entity_Name,
+                  Entity_Line => Int (Get_Logical_Line_Number (XE.Def)),
+                  Etype       => Get_Entity_Type (XE.Ent),
+                  Entity_Col  => Int (Get_Column_Number (XE.Def)),
+                  File_Num    => Dependency_Num (XE.Lun),
+                  Scope_Num   => Get_Scope_Num (XE.Ref_Scope),
+                  Line        => Int (Get_Logical_Line_Number (XE.Loc)),
+                  Rtype       => XE.Typ,
+                  Col         => Int (Get_Column_Number (XE.Loc))));
+            end if;
          end Add_One_Xref;
       end loop;
 
@@ -877,6 +936,84 @@ package body ALFA is
       end if;
    end Detect_And_Add_ALFA_Scope;
 
+   -------------------------------------
+   -- Enclosing_Subprogram_Or_Package --
+   -------------------------------------
+
+   function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id is
+      Result : Entity_Id;
+
+   begin
+      --  If N is the defining identifier for a subprogram, then return the
+      --  enclosing subprogram or package, not this subprogram.
+
+      if Nkind_In (N, N_Defining_Identifier, N_Defining_Operator_Symbol)
+        and then Nkind (Parent (N)) in N_Subprogram_Specification
+      then
+         Result := Parent (Parent (Parent (N)));
+      else
+         Result := N;
+      end if;
+
+      loop
+         exit when No (Result);
+
+         case Nkind (Result) is
+            when N_Package_Specification =>
+               Result := Defining_Unit_Name (Result);
+               exit;
+
+            when N_Package_Body =>
+               Result := Defining_Unit_Name (Result);
+               exit;
+
+            when N_Subprogram_Specification =>
+               Result := Defining_Unit_Name (Result);
+               exit;
+
+            when N_Subprogram_Declaration =>
+               Result := Defining_Unit_Name (Specification (Result));
+               exit;
+
+            when N_Subprogram_Body =>
+               Result := Defining_Unit_Name (Specification (Result));
+               exit;
+
+            --  The enclosing subprogram for a pre- or postconditions should be
+            --  the subprogram to which the pragma is attached. This is not
+            --  always the case in the AST, as the pragma may be declared after
+            --  the declaration of the subprogram. Return Empty in this case.
+
+            when N_Pragma =>
+               if Get_Pragma_Id (Result) = Pragma_Precondition
+                    or else
+                  Get_Pragma_Id (Result) = Pragma_Postcondition
+               then
+                  return Empty;
+               else
+                  Result := Parent (Result);
+               end if;
+
+            when others =>
+               Result := Parent (Result);
+         end case;
+      end loop;
+
+      if Nkind (Result) = N_Defining_Program_Unit_Name then
+         Result := Defining_Identifier (Result);
+      end if;
+
+      --  Do no return a scope without a proper location
+
+      if Present (Result)
+        and then Sloc (Result) = No_Location
+      then
+         return Empty;
+      end if;
+
+      return Result;
+   end Enclosing_Subprogram_Or_Package;
+
    -----------------
    -- Entity_Hash --
    -----------------
@@ -886,6 +1023,47 @@ package body ALFA is
       return
         Entity_Hashed_Range (E mod (Entity_Id (Entity_Hashed_Range'Last) + 1));
    end Entity_Hash;
+
+   --------------------------
+   -- Generate_Dereference --
+   --------------------------
+
+   procedure Generate_Dereference
+     (N   : Node_Id;
+      Typ : Character := 'r')
+   is
+      Indx      : Nat;
+      Ref       : Source_Ptr;
+      Ref_Scope : Entity_Id;
+
+   begin
+      Ref := Original_Location (Sloc (N));
+
+      if Ref > No_Location then
+         Drefs.Increment_Last;
+         Indx := Drefs.Last;
+
+         Ref_Scope := Enclosing_Subprogram_Or_Package (N);
+
+         --  Entity is filled later on with the special "HEAP" variable
+
+         Drefs.Table (Indx).Ent := Empty;
+
+         Drefs.Table (Indx).Def := No_Location;
+         Drefs.Table (Indx).Loc := Ref;
+         Drefs.Table (Indx).Typ := Typ;
+
+         --  It is as if the special "HEAP" was defined in every scope where it
+         --  is referenced.
+
+         Drefs.Table (Indx).Eun := Get_Source_Unit (Ref);
+         Drefs.Table (Indx).Lun := Get_Source_Unit (Ref);
+
+         Drefs.Table (Indx).Ref_Scope := Ref_Scope;
+         Drefs.Table (Indx).Ent_Scope := Ref_Scope;
+         Drefs.Table (Indx).Ent_Scope_File := Get_Source_Unit (Ref_Scope);
+      end if;
+   end Generate_Dereference;
 
    ------------------------------------
    -- Traverse_All_Compilation_Units --
