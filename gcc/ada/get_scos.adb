@@ -160,6 +160,7 @@ procedure Get_SCOs is
       Check ('-');
       Get_Source_Location (Loc2);
    end Get_Source_Location_Range;
+
    --------------
    -- Skip_EOL --
    --------------

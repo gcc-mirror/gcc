@@ -1,3 +1,27 @@
+2011-08-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* opt.ads: Minor editing.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Remove options for ALFA mode
+	that only made sense for CodePeer mode.
+
+2011-08-29  Jose Ruiz  <ruiz@adacore.com>
+
+	* targparm.ads (Support_64_Bit_Divides_On_Target): Remove this flag
+	which is no longer used.
+	* targparm.adb (S64, S64_Str, Get_Target_Parameters): Remove the
+	handling of the 64-bit division check.
+	* exp_ch4.adb (Expand_N_Op_Divide): Remove the check for 64-bit
+	division available.
+	* system*.ads (Support_64_Bit_Divides): Remove this flag which is no
+	longer used.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* get_scos.adb: Minor reformatting.
+
 2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb (Process_Statements_For_Controlled_Objects): Whenever a

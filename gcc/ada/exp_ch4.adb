@@ -5545,25 +5545,6 @@ package body Exp_Ch4 is
       elsif Is_Integer_Type (Typ) then
          Apply_Divide_Check (N);
 
-         --  Check for 64-bit division available, or long shifts if the divisor
-         --  is a small power of 2 (since such divides will be converted into
-         --  long shifts).
-
-         if Esize (Ltyp) > 32
-           and then not Support_64_Bit_Divides_On_Target
-           and then
-             (not Rknow
-                or else not Support_Long_Shifts_On_Target
-                or else (Rval /= Uint_2  and then
-                         Rval /= Uint_4  and then
-                         Rval /= Uint_8  and then
-                         Rval /= Uint_16 and then
-                         Rval /= Uint_32 and then
-                         Rval /= Uint_64))
-         then
-            Error_Msg_CRT ("64-bit division", N);
-         end if;
-
       --  Deal with Vax_Float
 
       elsif Vax_Float (Typ) then

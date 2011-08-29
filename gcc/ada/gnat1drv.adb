@@ -467,12 +467,6 @@ procedure Gnat1drv is
          --  Suppress the generation of name tables for enumerations
 
          Global_Discard_Names := True;
-
-         --  Always perform semantics and generate ALI files in ALFA mode,
-         --  so that a gnatmake -c -k will proceed further when possible.
-
-         Force_ALI_Tree_File := True;
-         Try_Semantics := True;
       end if;
    end Adjust_Global_Switches;
 
