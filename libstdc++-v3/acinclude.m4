@@ -1794,7 +1794,9 @@ AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
 m4_pushdef([n_syserr], [1])dnl
 m4_foreach([syserr], [EOWNERDEAD, ENOTRECOVERABLE, ENOLINK, EPROTO, ENODATA,
 		      ENOSR, ENOSTR, ETIME, EBADMSG, ECANCELED,
-		      EOVERFLOW, ENOTSUP, EIDRM, ETXTBSY],
+		      EOVERFLOW, ENOTSUP, EIDRM, ETXTBSY,
+		      ECHILD, ENOSPC, EPERM,
+		      ETIMEDOUT, EWOULDBLOCK],
 [m4_pushdef([SYSERR], m4_toupper(syserr))dnl
 AC_MSG_CHECKING([for syserr])
 AC_CACHE_VAL([glibcxx_cv_system_error[]n_syserr], [
