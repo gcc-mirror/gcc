@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---       A D A . C O N T A I N E R S . B O U N D E D _ V E C T O R S        --
+--    A D A . C O N T A I N E R S . I N D E F I N I T E _ H O L D E R S     --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

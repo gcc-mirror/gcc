@@ -32,7 +32,8 @@
 ------------------------------------------------------------------------------
 
 with Ada.Iterator_Interfaces;
-with Ada.Streams; use Ada.Streams;
+with Ada.Streams;             use Ada.Streams;
+
 private with Ada.Finalization;
 
 generic
@@ -45,8 +46,7 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
    pragma Preelaborate;
    pragma Remote_Types;
 
-   type List is tagged private
-   with
+   type List is tagged private with
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
@@ -60,6 +60,7 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
    Empty_List : constant List;
 
    No_Element : constant Cursor;
+
    function Has_Element (Position : Cursor) return Boolean;
 
    package List_Iterator_Interfaces is new
@@ -189,10 +190,13 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
      (Container : List;
       Process   : not null access procedure (Position : Cursor));
 
-   function Iterate (Container : List)
+   function Iterate
+     (Container : List)
       return List_Iterator_Interfaces.Reversible_Iterator'class;
 
-   function Iterate (Container : List; Start : Cursor)
+   function Iterate
+     (Container : List;
+      Start     : Cursor)
       return List_Iterator_Interfaces.Reversible_Iterator'class;
 
    type Constant_Reference_Type
@@ -230,12 +234,14 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
    for Reference_Type'Read use Read;
 
    function Constant_Reference
-     (Container : List; Position : Cursor)    --  SHOULD BE ALIASED
-   return Constant_Reference_Type;
+     (Container : List;
+      Position  : Cursor)    --  SHOULD BE ALIASED ???
+      return Constant_Reference_Type;
 
    function Reference
-     (Container : List; Position : Cursor)    --  SHOULD BE ALIASED
-   return Reference_Type;
+     (Container : List;
+      Position  : Cursor)    --  SHOULD BE ALIASED ???
+      return Reference_Type;
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;

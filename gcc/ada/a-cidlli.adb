@@ -39,14 +39,19 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
      List_Iterator_Interfaces.Reversible_Iterator with record
         Container : List_Access;
         Node      : Node_Access;
-   end record;
+     end record;
 
-   overriding function First    (Object : Iterator) return Cursor;
-   overriding function Last     (Object : Iterator) return Cursor;
-   overriding function Next     (Object : Iterator; Position : Cursor)
-     return Cursor;
-   overriding function Previous (Object : Iterator; Position : Cursor)
-     return Cursor;
+   overriding function First (Object : Iterator) return Cursor;
+
+   overriding function Last (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --
@@ -838,16 +843,19 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       B := B - 1;
    end Iterate;
 
-   function Iterate (Container : List)
-     return List_Iterator_Interfaces.Reversible_Iterator'class
+   function Iterate
+     (Container : List)
+      return List_Iterator_Interfaces.Reversible_Iterator'class
    is
       It : constant Iterator := (Container'Unchecked_Access, Container.First);
    begin
       return It;
    end Iterate;
 
-   function Iterate (Container : List; Start : Cursor)
-     return List_Iterator_Interfaces.Reversible_Iterator'class
+   function Iterate
+     (Container : List;
+      Start     : Cursor)
+      return List_Iterator_Interfaces.Reversible_Iterator'class
    is
       It : constant Iterator := (Container'Unchecked_Access, Start.Node);
    begin
@@ -1008,7 +1016,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    begin
       if Position.Node = Position.Container.First then
          return No_Element;
-
       else
          return (Object.Container, Position.Node.Prev);
       end if;

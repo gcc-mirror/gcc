@@ -1276,7 +1276,6 @@ package body Ada.Exceptions is
 
    function Triggered_By_Abort return Boolean is
       Ex : constant Exception_Occurrence_Access := Get_Current_Excep.all;
-
    begin
       return Ex /= null
         and then Exception_Identity (Ex.all) = Standard'Abort_Signal'Identity;

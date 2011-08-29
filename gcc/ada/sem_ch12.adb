@@ -2574,7 +2574,7 @@ package body Sem_Ch12 is
 
             if Subp /= Any_Id then
 
-               --  Subprogram found, generate reference to it.
+               --  Subprogram found, generate reference to it
 
                Set_Entity (Def, Subp);
                Generate_Reference (Subp, Def);

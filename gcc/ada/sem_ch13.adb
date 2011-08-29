@@ -5767,8 +5767,8 @@ package body Sem_Ch13 is
             A_Id = Aspect_Default_Iterator  or else
             A_Id = Aspect_Iterator_Element
       then
-         --  Make type unfrozen before analysis, to prevent spurious
-         --  errors about late attributes.
+         --  Make type unfrozen before analysis, to prevent spurious errors
+         --  about late attributes.
 
          Set_Is_Frozen (Ent, False);
          Analyze (End_Decl_Expr);

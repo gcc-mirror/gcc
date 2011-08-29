@@ -48,8 +48,7 @@ package Ada.Containers.Indefinite_Hashed_Maps is
    pragma Preelaborate;
    pragma Remote_Types;
 
-   type Map is tagged private
-   with
+   type Map is tagged private with
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
@@ -60,7 +59,7 @@ package Ada.Containers.Indefinite_Hashed_Maps is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
-   Empty_Map  : constant Map;
+   Empty_Map : constant Map;
    --  Map objects declared without an initialization expression are
    --  initialized to the value Empty_Map.
 
@@ -286,8 +285,9 @@ package Ada.Containers.Indefinite_Hashed_Maps is
    for Reference_Type'Read use Read;
 
    function Constant_Reference
-     (Container : Map; Key : Key_Type)    --  SHOULD BE ALIASED
-   return Constant_Reference_Type;
+     (Container : Map;
+      Key       : Key_Type)    --  SHOULD BE ALIASED ???
+      return Constant_Reference_Type;
 
    function Reference (Container : Map; Key : Key_Type)
    return Reference_Type;

@@ -48,12 +48,11 @@ package Ada.Containers.Indefinite_Ordered_Sets is
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
 
-   type Set is tagged private
-   with
-     Constant_Indexing => Constant_Reference,
-     Variable_Indexing => Reference,
-     Default_Iterator  => Iterate,
-     Iterator_Element  => Element_Type;
+   type Set is tagged private with
+      Constant_Indexing => Constant_Reference,
+      Variable_Indexing => Reference,
+      Default_Iterator  => Iterate,
+      Iterator_Element  => Element_Type;
 
    pragma Preelaborable_Initialization (Set);
 
@@ -63,15 +62,15 @@ package Ada.Containers.Indefinite_Ordered_Sets is
    Empty_Set : constant Set;
 
    No_Element : constant Cursor;
+
    function Has_Element (Position : Cursor) return Boolean;
 
    package Ordered_Set_Iterator_Interfaces is new
      Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is
-   private
-   with
+     (Element : not null access constant Element_Type) is
+   private with
       Implicit_Dereference => Element;
 
    procedure Read
@@ -87,8 +86,8 @@ package Ada.Containers.Indefinite_Ordered_Sets is
    for Constant_Reference_Type'Write use Write;
 
    function Constant_Reference
-     (Container : Set; Position : Cursor)
-   return Constant_Reference_Type;
+     (Container : Set;
+      Position  : Cursor) return Constant_Reference_Type;
 
    type Reference_Type (Element : not null access Element_Type) is private
    with
@@ -241,10 +240,13 @@ package Ada.Containers.Indefinite_Ordered_Sets is
      (Container : Set;
       Process   : not null access procedure (Position : Cursor));
 
-   function Iterate (Container : Set)
+   function Iterate
+     (Container : Set)
       return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class;
 
-   function Iterate (Container : Set; Start : Cursor)
+   function Iterate
+     (Container : Set;
+      Start     : Cursor)
       return Ordered_Set_Iterator_Interfaces.Reversible_Iterator'class;
 
    generic

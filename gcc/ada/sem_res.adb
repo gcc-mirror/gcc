@@ -4381,7 +4381,7 @@ package body Sem_Res is
          end if;
       end if;
 
-      --  Report a simple error:  if the designated object is a local task,
+      --  Report a simple error: if the designated object is a local task,
       --  its body has not been seen yet, and its activation will fail an
       --  elaboration check.
 

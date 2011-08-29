@@ -479,7 +479,7 @@ procedure Gnat1drv is
          --  We would prefer to suppress the expansion of tagged types and
          --  dispatching calls, so that one day GNATprove can handle them
          --  directly. Unfortunately, this is causing problems on H513-015, so
-         --  keep this expansion for the time being.
+         --  keep this expansion for the time being. ???
 
          Tagged_Type_Expansion := True;
       end if;

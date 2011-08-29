@@ -45,13 +45,15 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
    type Iterator is new
      Map_Iterator_Interfaces.Forward_Iterator with record
-      Container : Map_Access;
-      Node      : Node_Access;
-   end record;
+        Container : Map_Access;
+        Node      : Node_Access;
+     end record;
 
    overriding function First (Object : Iterator) return Cursor;
-   overriding function Next  (Object : Iterator; Position : Cursor)
-     return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --
@@ -414,9 +416,9 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    begin
       if N = null then
          return No_Element;
+      else
+         return Cursor'(Object.Container.all'Unchecked_Access, N);
       end if;
-
-      return Cursor'(Object.Container.all'Unchecked_Access, N);
    end First;
 
    ----------
@@ -426,6 +428,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    procedure Free (X : in out Node_Access) is
       procedure Deallocate is
          new Ada.Unchecked_Deallocation (Node_Type, Node_Access);
+
    begin
       if X = null then
          return;
@@ -743,7 +746,6 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    begin
       if Position.Node = null then
          return No_Element;
-
       else
          return (Object.Container, Next (Position).Node);
       end if;
@@ -874,15 +876,19 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    -- Reference --
    ---------------
 
-   function Constant_Reference (Container : Map; Key : Key_Type)
-   return Constant_Reference_Type is
+   function Constant_Reference
+     (Container : Map;
+      Key       : Key_Type) return Constant_Reference_Type
+   is
    begin
       return (Element =>
         Container.Find (Key).Node.Element.all'Unrestricted_Access);
    end Constant_Reference;
 
-   function Reference (Container : Map; Key : Key_Type)
-   return Reference_Type is
+   function Reference
+     (Container : Map;
+      Key       : Key_Type) return Reference_Type
+   is
    begin
       return (Element =>
          Container.Find (Key).Node.Element.all'Unrestricted_Access);

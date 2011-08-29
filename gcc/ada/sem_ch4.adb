@@ -3345,6 +3345,9 @@ package body Sem_Ch4 is
       Iterator : Node_Id;
 
    begin
+      --  Analyze construct with expansion disabled, because it will be
+      --  rewritten as a loop during expansion.
+
       Expander_Mode_Save_And_Set (False);
       Check_SPARK_Restriction ("quantified expression is not allowed", N);
 
@@ -3367,9 +3370,9 @@ package body Sem_Ch4 is
       Set_Parent (Iterator, N);
       Analyze_Iteration_Scheme (Iterator);
 
-      --  The loop specification may have been converted into an
-      --  iterator specification during its analysis. Update the
-      --  quantified node accordingly.
+      --  The loop specification may have been converted into an iterator
+      --  specification during its analysis. Update the quantified node
+      --  accordingly.
 
       if Present (Iterator_Specification (Iterator)) then
          Set_Iterator_Specification
