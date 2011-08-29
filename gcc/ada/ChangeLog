@@ -1,3 +1,9 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, mlib-prj.adb, prj.adb, prj.ads, ttypes.ads, sem_ch4.adb,
+	makeutl.adb, makeutl.ads, atree.ads, snames.adb-tmpl,
+	snames.ads-tmpl: Minor reformatting.
+
 2011-08-29  Philippe Gil  <gil@adacore.com>
 
 	* prj.adb (Reset_Units_In_Table): New procedure.

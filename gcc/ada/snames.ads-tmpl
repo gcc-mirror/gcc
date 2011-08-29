@@ -880,6 +880,9 @@ package Snames is
 
    --  Remaining attributes are ones that return entities
 
+   --  Note that Elab_Subp_Body is not considered to be a valid attribute
+   --  name unless we are operating in CodePeer mode.
+
    First_Entity_Attribute_Name         : constant Name_Id := N + $;
    Name_Elab_Body                      : constant Name_Id := N + $; -- GNAT
    Name_Elab_Spec                      : constant Name_Id := N + $; -- GNAT
@@ -1714,7 +1717,10 @@ package Snames is
    --  Called to initialize the preset names in the names table
 
    function Is_Attribute_Name (N : Name_Id) return Boolean;
-   --  Test to see if the name N is the name of a recognized attribute
+   --  Test to see if the name N is the name of a recognized attribute. Note
+   --  that Name_Elab_Subp_Body returns False if not operating in CodePeer
+   --  mode. This is the mechanism for considering this pragma illegal in
+   --  normal GNAT programs.
 
    function Is_Entity_Attribute_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized entity attribute,

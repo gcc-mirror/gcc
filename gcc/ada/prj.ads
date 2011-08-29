@@ -1599,8 +1599,7 @@ package Prj is
    --  Call Setenv, after calling To_Host_File_Spec
 
    function Current_Source_Path_File_Of
-     (Shared : Shared_Project_Tree_Data_Access)
-      return Path_Name_Type;
+     (Shared : Shared_Project_Tree_Data_Access) return Path_Name_Type;
    --  Get the current include path file name
 
    procedure Set_Current_Source_Path_File_Of
@@ -1609,8 +1608,7 @@ package Prj is
    --  Record the current include path file name
 
    function Current_Object_Path_File_Of
-     (Shared : Shared_Project_Tree_Data_Access)
-      return Path_Name_Type;
+     (Shared : Shared_Project_Tree_Data_Access) return Path_Name_Type;
    --  Get the current object path file name
 
    procedure Set_Current_Object_Path_File_Of
@@ -1699,7 +1697,7 @@ package Prj is
    --  resolved will simply be ignored. However, in such a case, the flag
    --  Incomplete_With in the project tree will be set to True.
    --  This is meant for use by tools so that they can properly set the
-   --  project path in such a case:Shared_
+   --  project path in such a case:
    --       * no "gnatls" found (so no default project path)
    --       * user project sets Project.IDE'gnatls attribute to a cross gnatls
    --       * user project also includes a "with" that can only be resolved

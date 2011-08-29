@@ -175,6 +175,7 @@ package Makeutl is
    No_Names : constant Name_Ids := (1 .. 0 => No_Name);
    --  Name_Ids is used for list of language names in procedure Get_Directories
    --  below.
+
    Ada_Only : constant Name_Ids := (1 => Name_Ada);
    --  Used to invoke Get_Directories in gnatmake
 

@@ -3324,8 +3324,9 @@ package body Makeutl is
    ---------------------
 
    procedure Write_Path_File (FD : File_Descriptor) is
-      Last : Natural;
+      Last   : Natural;
       Status : Boolean;
+
    begin
       Name_Len := 0;
 
@@ -3338,7 +3339,6 @@ package body Makeutl is
 
       if Last = Name_Len then
          Close (FD, Status);
-
       else
          Status := False;
       end if;
