@@ -569,6 +569,39 @@ package body Sem_Type is
       Ent          : constant Entity_Id := Entity (N);
       H            : Entity_Id;
       First_Interp : Interp_Index;
+      function Within_Instance (E : Entity_Id) return Boolean;
+      --  Within an instance there can be spurious ambiguities between a local
+      --  entity and one declared outside of the instance. This can only
+      --  happen for subprograms, because otherwise the local entity hides the
+      --  outer one. For overloadable entities, this predicate determines
+      --  whether it is a candidate within the instance, or must be ignored.
+
+      function Within_Instance (E : Entity_Id) return Boolean is
+         Inst : Entity_Id;
+         Scop : Entity_Id;
+      begin
+         if not In_Instance then
+            return False;
+         end if;
+         Inst := Current_Scope;
+         while Present (Inst)
+           and then not Is_Generic_Instance (Inst)
+         loop
+            Inst := Scope (Inst);
+         end loop;
+         Scop := Scope (E);
+
+         while Present (Scop)
+           and then Scop /= Standard_Standard
+         loop
+            if Scop = Inst then
+               return True;
+            end if;
+            Scop := Scope (Scop);
+         end loop;
+
+         return False;
+      end Within_Instance;
 
    begin
       New_Interps (N);
@@ -626,9 +659,7 @@ package body Sem_Type is
                      --  levels within the instance. The renaming of an actual
                      --  within the instance must not be included.
 
-                     if (Scope (H) = Scope (Ent)
-                          or else Scope (H) = Scope (Scope (Ent)))
-                        and then In_Instance
+                     if Within_Instance (H)
                         and then H /= Renamed_Entity (Ent)
                         and then not Is_Inherited_Operation (H)
                      then

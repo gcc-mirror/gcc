@@ -1439,27 +1439,27 @@ package body Freeze is
                end loop;
             end;
 
-         --  We add finalization masters to access types whose designated types
-         --  require finalization. This is normally done when freezing the
-         --  type, but this misses recursive type definitions where the later
-         --  members of the recursion introduce controlled components (such as
-         --  can happen when incomplete types are involved), as well cases
-         --  where a component type is private and the controlled full type
-         --  occurs after the access type is frozen. Cases that don't need a
-         --  finalization master are generic formal types (the actual type will
-         --  have it) and types with Java and CIL conventions, since those are
-         --  used for API bindings. (Are there any other cases that should be
-         --  excluded here???)
+         --  We add finalization collections to access types whose designated
+         --  types require finalization. This is normally done when freezing
+         --  the type, but this misses recursive type definitions where the
+         --  later members of the recursion introduce controlled components
+         --  (such as can happen when incomplete types are involved), as well
+         --  cases where a component type is private and the controlled full
+         --  type occurs after the access type is frozen. Cases that don't
+         --  need a finalization collection are generic formal types (the
+         --  actual type will have it) and types with Java and CIL conventions,
+         --  since those are used for API bindings. (Are there any other cases
+         --  that should be excluded here???)
 
          elsif Is_Access_Type (E)
            and then Comes_From_Source (E)
            and then not Is_Generic_Type (E)
            and then Needs_Finalization (Designated_Type (E))
-           and then No (Finalization_Master (E))
+           and then No (Associated_Collection (E))
            and then Convention (Designated_Type (E)) /= Convention_Java
            and then Convention (Designated_Type (E)) /= Convention_CIL
          then
-            Build_Finalization_Master (E);
+            Build_Finalization_Collection (E);
          end if;
 
          Next_Entity (E);
@@ -2036,7 +2036,7 @@ package body Freeze is
             Next_Entity (Comp);
          end loop;
 
-         --  Deal with pragma Bit_Order setting non-standard bit order
+         --  Deal with Bit_Order aspect specifying a non-default bit order
 
          if Reverse_Bit_Order (Rec) and then Base_Type (Rec) = Rec then
             if not Placed_Component then
@@ -2304,9 +2304,8 @@ package body Freeze is
       elsif Inside_A_Generic and then External_Ref_In_Generic (Test_E) then
          return No_List;
 
-      --  AI05-0213: a formal incomplete type does not freeze the actual.
-      --  In the instance, the same applies to the subtype that renames
-      --  the actual.
+      --  AI05-0213: A formal incomplete type does not freeze the actual. In
+      --  the instance, the same applies to the subtype renaming the actual.
 
       elsif Is_Private_Type (E)
         and then Is_Generic_Actual_Type (E)

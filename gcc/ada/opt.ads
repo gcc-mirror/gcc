@@ -537,8 +537,8 @@ package Opt is
                            Front_End_Setjmp_Longjmp_Exceptions;
    --  GNAT
    --  Set to the appropriate value depending on the default as given in
-   --  system.ads (ZCX_By_Default, GCC_ZCX_Support). The C convention is there
-   --  to make this variable accessible to gigi.
+   --  system.ads (ZCX_By_Default). The C convention is there to make this
+   --  variable accessible to gigi.
 
    Exception_Tracebacks : Boolean := False;
    --  GNATBIND

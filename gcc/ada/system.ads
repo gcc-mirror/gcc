@@ -162,7 +162,6 @@ private
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := False;
-   GCC_ZCX_Support           : constant Boolean := False;
 
    --  Obsolete entries, to be removed eventually (bootstrap issues!)
 
@@ -171,5 +170,6 @@ private
    Long_Shifts_Inlined       : constant Boolean := True;
    Functions_Return_By_DSP   : constant Boolean := False;
    Support_64_Bit_Divides    : constant Boolean := True;
+   GCC_ZCX_Support           : constant Boolean := False;
 
 end System;

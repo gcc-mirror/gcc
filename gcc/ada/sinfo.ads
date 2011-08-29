@@ -6275,12 +6275,11 @@ package Sinfo is
       --  Synchronized_Present (Flag7)
       --  Interface_List (List2) (set to No_List if none)
 
-      ------------------------------------------------
-      -- 12.5.1  Formal Incomplete  Type Definition --
-      ------------------------------------------------
+      -----------------------------------------------
+      -- 12.5.1  Formal Incomplete Type Definition --
+      -----------------------------------------------
 
-      --  FORMAL_INCOMPLETE_TYPE_DEFINITION ::=
-      --  [tagged]
+      --  FORMAL_INCOMPLETE_TYPE_DEFINITION ::= [tagged]
 
       --  N_Formal_Incomplete_Type_Definition
       --  Sloc points to identifier of parent

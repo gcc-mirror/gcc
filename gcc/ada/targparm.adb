@@ -66,8 +66,7 @@ package body Targparm is
       SSL,  --   Suppress_Standard_Library
       UAM,  --   Use_Ada_Main_Program_Name
       VMS,  --   OpenVMS
-      ZCD,  --   ZCX_By_Default
-      ZCG); --   GCC_ZCX_Support
+      ZCD); --   ZCX_By_Default
 
    Targparm_Flags : array (Targparm_Tags) of Boolean := (others => False);
    --  Flag is set True if corresponding parameter is scanned
@@ -103,7 +102,6 @@ package body Targparm is
    UAM_Str : aliased constant Source_Buffer := "Use_Ada_Main_Program_Name";
    VMS_Str : aliased constant Source_Buffer := "OpenVMS";
    ZCD_Str : aliased constant Source_Buffer := "ZCX_By_Default";
-   ZCG_Str : aliased constant Source_Buffer := "GCC_ZCX_Support";
 
    --  The following defines a set of pointers to the above strings,
    --  indexed by the tag values.
@@ -138,8 +136,7 @@ package body Targparm is
       SSL_Str'Access,
       UAM_Str'Access,
       VMS_Str'Access,
-      ZCD_Str'Access,
-      ZCG_Str'Access);
+      ZCD_Str'Access);
 
    -----------------------
    -- Local Subprograms --
@@ -588,7 +585,6 @@ package body Targparm is
                      when UAM => Use_Ada_Main_Program_Name_On_Target := Result;
                      when VMS => OpenVMS_On_Target                   := Result;
                      when ZCD => ZCX_By_Default_On_Target            := Result;
-                     when ZCG => GCC_ZCX_Support_On_Target           := Result;
 
                      goto Line_Loop_Continue;
                   end case;

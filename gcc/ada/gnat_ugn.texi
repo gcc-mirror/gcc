@@ -7,7 +7,7 @@
 @c                                                                            o
 @c                             G N A T _ U G N                                o
 @c                                                                            o
-@c                     Copyright (C) 1992-2011, AdaCore                       o
+@c           Copyright (C) 1992-2011, Free Software Foundation, Inc.          o
 @c                                                                            o
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
@@ -7758,11 +7758,11 @@ found in the GCC documentation.
 Use of these @option{-m} switches may in some cases result in improved
 code performance.
 
-The GNAT Pro technology is tested and qualified without any
+The @value{EDITION} technology is tested and qualified without any
 @option{-m} switches,
 so generally the most reliable approach is to avoid the use of these
 switches. However, we generally expect most of these switches to work
-successfully with GNAT Pro, and many customers have reported successful
+successfully with @value{EDITION}, and many customers have reported successful
 use of these options.
 
 Our general advice is to avoid the use of @option{-m} switches unless
@@ -18944,7 +18944,7 @@ program, in which case the execution of that program is simply suspended
 until the connection between the debugger and gdbserver is established.
 
 For more information on how to use gdbserver, @ref{Top, Server, Using
-the gdbserver Program, gdb, Debugging with GDB}.  GNAT Pro provides support
+the gdbserver Program, gdb, Debugging with GDB}.  @value{EDITION} provides support
 for gdbserver on x86-linux, x86-windows and x86_64-linux.
 
 @node GNAT Abnormal Termination or Failure to Terminate
@@ -21110,7 +21110,7 @@ of the DECset package.
    &\cr
 \+\it Tool
    &\it Product with HP Ada
-   & \it Product with GNAT Pro\cr
+   & \it Product with @value{EDITION}\cr
 \smallskip
 \+Code Management System
    &HP CMS
@@ -21167,7 +21167,7 @@ of the DECset package.
 @c the TeX version above for the printed version
 @flushleft
 @c @multitable @columnfractions .3 .4 .4
-@multitable {Source Code Analyzer /}{Tool with HP Ada}{Tool with GNAT Pro}
+@multitable {Source Code Analyzer /}{Tool with HP Ada}{Tool with @value{EDITION}}
 @item @i{Tool}
 @tab @i{Tool with HP Ada}
 @tab @i{Tool with @value{EDITION}}
@@ -26435,7 +26435,7 @@ in 64-bit address space are acceptable.
 @noindent
 64-bit @value{EDITION} for Open VMS takes advantage of the freedom given in the
 Ada standard with respect to the type of @code{System.Address}. Previous
-versions of GNAT Pro have defined this type as private and implemented it as a
+versions of @value{EDITION} have defined this type as private and implemented it as a
 modular type.
 
 In order to allow defining @code{System.Short_Address} as a proper subtype,

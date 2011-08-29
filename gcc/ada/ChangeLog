@@ -1,3 +1,48 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, sinfo.ads, make.adb, s-pooglo.adb, sem_ch12.adb,
+	freeze.adb, sem_ch6.adb, par-ch12.adb: Minor reformatting.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* system-darwin-x86.ads, system-linux-s390x.ads, system-linux-alpha.ads,
+	system-tru64.ads, system-irix-n32.ads, system-vxworks-arm.ads,
+	system-linux-hppa.ads, system-linux-s390.ads,
+	system-solaris-sparcv9.ads, system-mingw.ads, system-linux-ia64.ads,
+	system-vms_64.ads, system-vxworks-sparcv9.ads, system-linux-ppc.ads,
+	system-aix64.ads, system-lynxos-ppc.ads, system-linux-sh4.ads,
+	system-solaris-x86.ads, system-linux-x86_64.ads, system-linux-x86.ads,
+	system-vxworks-ppc.ads, system-hpux.ads, system-darwin-ppc.ads,
+	system-solaris-sparc.ads, system-lynxos-x86.ads,
+	system-vxworks-m68k.ads, system-hpux-ia64.ads, system-irix-o32.ads,
+	system-solaris-x86_64.ads, system-mingw-x86_64.ads,
+	system-vxworks-mips.ads, system-linux-sparc.ads, system-vms-ia64.ads,
+	system-freebsd-x86.ads, system-aix.ads, system-darwin-x86_64.ads,
+	system-vxworks-x86.ads: Remove GCC_ZCX_Support
+	* s-taprop-posix.adb, s-taprop-irix.adb, s-taprop-vxworks.adb,
+	s-taprop-tru64.adb, s-taprop-linux.adb, s-taprop-solaris.adb: Ditto.
+	* opt.ads: Adjust comment.
+	* targparm.ads, targparm.adb: Remove GCC_ZCX_Support_On_Target.
+	* gnat1drv.adb: Do not check for GCC_ZCX_Support_On_Target.
+	* system.ads: Move GCC_ZCX_Support to obsolete entries.
+
+2011-08-29  Emmanuel Briot  <briot@adacore.com>
+
+	* makeutl.adb (Do_Complete): Resolve symbolic links when a relative
+	file name is specified on the gnatmake or gprbuild command line, and
+	before we search for that file in the project.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Within_Instance): New predicate in Collect_Interps,
+	used to determine whether a possible interpretation for an overloadable
+	entity is declared within the current instantiation and should be
+	included in the candidate set.
+
+2011-08-29  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi: Clean ups.
+
 2011-08-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Actuals): Use base type to determine whether an

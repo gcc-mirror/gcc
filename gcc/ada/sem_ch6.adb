@@ -2340,16 +2340,15 @@ package body Sem_Ch6 is
          --  In general, the spec will be frozen when we start analyzing the
          --  body. However, for internally generated operations, such as
          --  wrapper functions for inherited operations with controlling
-         --  results, the spec may not have been frozen by the time we
-         --  expand the freeze actions that include the bodies. In particular,
-         --  extra formals for accessibility or for return-in-place may need
-         --  to be generated. Freeze nodes, if any, are inserted before the
-         --  current body. These freeze actions are also needed in ASIS mode
-         --  to enable the proper back-annotations.
+         --  results, the spec may not have been frozen by the time we expand
+         --  the freeze actions that include the bodies. In particular, extra
+         --  formals for accessibility or for return-in-place may need to be
+         --  generated. Freeze nodes, if any, are inserted before the current
+         --  body. These freeze actions are also needed in ASIS mode to enable
+         --  the proper back-annotations.
 
          if not Is_Frozen (Spec_Id)
-           and then
-             (Expander_Active or else ASIS_Mode)
+           and then (Expander_Active or ASIS_Mode)
          then
             --  Force the generation of its freezing node to ensure proper
             --  management of access types in the backend.
@@ -6082,13 +6081,14 @@ package body Sem_Ch6 is
             end if;
 
             --  In the case of functions whose result type needs finalization,
-            --  add an extra formal which represents the finalization master.
+            --  add an extra formal of type Ada.Finalization.Heap_Management.
+            --  Finalization_Collection_Ptr.
 
-            if Needs_BIP_Finalization_Master (E) then
+            if Needs_BIP_Collection (E) then
                Discard :=
                  Add_Extra_Formal
-                   (E, RTE (RE_Finalization_Master_Ptr),
-                    E, BIP_Formal_Suffix (BIP_Finalization_Master));
+                   (E, RTE (RE_Finalization_Collection_Ptr),
+                    E, BIP_Formal_Suffix (BIP_Collection));
             end if;
 
             --  If the result type contains tasks, we have two extra formals:
