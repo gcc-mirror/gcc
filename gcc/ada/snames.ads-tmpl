@@ -631,8 +631,8 @@ package Snames is
    Name_Entry_Count                    : constant Name_Id := N + $;
    Name_External_Name                  : constant Name_Id := N + $;
    Name_First_Optional_Parameter       : constant Name_Id := N + $;
+   Name_Force                          : constant Name_Id := N + $;
    Name_Form                           : constant Name_Id := N + $;
-   Name_Formal_Proof                   : constant Name_Id := N + $;
    Name_G_Float                        : constant Name_Id := N + $;
    Name_Gcc                            : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;

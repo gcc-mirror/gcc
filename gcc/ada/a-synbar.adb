@@ -36,6 +36,7 @@
 package body Ada.Synchronous_Barriers is
 
    protected body Synchronous_Barrier is
+
       --  The condition "Wait'Count = Release_Threshold" opens the barrier when
       --  the required number of tasks is reached. The condition "Keep_Open"
       --  leaves the barrier open while there are queued tasks. While there are
@@ -43,19 +44,21 @@ package body Ada.Synchronous_Barriers is
       --  barrier will remain open only for those tasks already inside.
 
       entry Wait (Notified : out Boolean)
-        when Wait'Count = Release_Threshold or else Keep_Open is
+        when Wait'Count = Release_Threshold or else Keep_Open
+      is
       begin
-         --  If we are executing the entry it means that the required number
-         --  of tasks have been queued in the entry. Keep_Open barrier will
-         --  remain true until all queued tasks are out.
+         --  If we are executing the entry it means that the required number of
+         --  tasks have been queued in the entry. Keep_Open barrier will remain
+         --  true until all queued tasks are out.
 
          Keep_Open := Wait'Count > 0;
 
-         --  The last released task will close the barrier and get the
-         --  Notified token.
+         --  The last released task will close the barrier and get the Notified
+         --  token.
 
          Notified := Wait'Count = 0;
       end Wait;
+
    end Synchronous_Barrier;
 
    ----------------------
@@ -64,8 +67,10 @@ package body Ada.Synchronous_Barriers is
 
    procedure Wait_For_Release
      (The_Barrier : in out Synchronous_Barrier;
-      Notified    : out    Boolean) is
+      Notified    : out Boolean)
+   is
    begin
       The_Barrier.Wait (Notified);
    end Wait_For_Release;
+
 end Ada.Synchronous_Barriers;
