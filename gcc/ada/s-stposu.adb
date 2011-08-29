@@ -91,17 +91,18 @@ package body System.Storage_Pools.Subpools is
       Alignment       : System.Storage_Elements.Storage_Count;
       Is_Controlled   : Boolean := True)
    is
-      --  ??? This membership test gives the wrong result when Pool has
-      --  subpools.
-
       Is_Subpool_Allocation : constant Boolean :=
-                                Pool in Root_Storage_Pool_With_Subpools;
+                                Pool in Root_Storage_Pool_With_Subpools'Class;
 
       Master  : Finalization_Master_Ptr := null;
       N_Addr  : Address;
       N_Ptr   : FM_Node_Ptr;
       N_Size  : Storage_Count;
       Subpool : Subpool_Handle := null;
+
+      Header_And_Padding : Storage_Offset;
+      --  This offset includes the size of a FM_Node plus any additional
+      --  padding due to a larger alignment.
 
    begin
       --  Step 1: Pool-related runtime checks
@@ -165,7 +166,7 @@ package body System.Storage_Pools.Subpools is
          Master := Context_Master;
       end if;
 
-      --  Step 2: Master-related runtime checks
+      --  Step 2: Master-related runtime checks and size calculations
 
       --  Allocation of a descendant from [Limited_]Controlled, a class-wide
       --  object or a record with controlled components.
@@ -179,9 +180,17 @@ package body System.Storage_Pools.Subpools is
             raise Program_Error with "allocation after finalization started";
          end if;
 
-         --  The size must acount for the hidden header preceding the object
+         --  The size must acount for the hidden header preceding the object.
+         --  Account for possible padding space before the header due to a
+         --  larger alignment.
 
-         N_Size := Storage_Size + Header_Size;
+         if Alignment > Header_Size then
+            Header_And_Padding := Alignment;
+         else
+            Header_And_Padding := Header_Size;
+         end if;
+
+         N_Size := Storage_Size + Header_And_Padding;
 
       --  Non-controlled allocation
 
@@ -211,9 +220,23 @@ package body System.Storage_Pools.Subpools is
       if Is_Controlled then
 
          --  Map the allocated memory into a FM_Node record. This converts the
-         --  top of the allocated bits into a list header.
+         --  top of the allocated bits into a list header. If there is padding
+         --  due to larger alignment, the header is placed right next to the
+         --  object:
 
-         N_Ptr := Address_To_FM_Node_Ptr (N_Addr);
+         --    N_Addr  N_Ptr
+         --    |       |
+         --    V       V
+         --    +-------+---------------+----------------------+
+         --    |Padding|    Header     |        Object        |
+         --    +-------+---------------+----------------------+
+         --    ^       ^               ^
+         --    |       +- Header_Size -+
+         --    |                       |
+         --    +- Header_And_Padding --+
+
+         N_Ptr :=
+           Address_To_FM_Node_Ptr (N_Addr + Header_And_Padding - Header_Size);
 
          --  Check whether primitive Finalize_Address is available. If it is
          --  not, then either the expansion of the designated type failed or
@@ -233,7 +256,7 @@ package body System.Storage_Pools.Subpools is
          --  Move the address from the hidden list header to the start of the
          --  object. This operation effectively hides the list header.
 
-         Addr := N_Addr + Header_Offset;
+         Addr := N_Addr + Header_And_Padding;
       else
          Addr := N_Addr;
       end if;
@@ -273,19 +296,34 @@ package body System.Storage_Pools.Subpools is
       N_Ptr  : FM_Node_Ptr;
       N_Size : Storage_Count;
 
+      Header_And_Padding : Storage_Offset;
+      --  This offset includes the size of a FM_Node plus any additional
+      --  padding due to a larger alignment.
+
    begin
       --  Step 1: Detachment
 
       if Is_Controlled then
+         if Alignment > Header_Size then
+            Header_And_Padding := Alignment;
+         else
+            Header_And_Padding := Header_Size;
+         end if;
 
-         --  Move the address from the object to the beginning of the list
-         --  header.
-
-         N_Addr := Addr - Header_Offset;
+         --    N_Addr  N_Ptr           Addr (from input)
+         --    |       |               |
+         --    V       V               V
+         --    +-------+---------------+----------------------+
+         --    |Padding|    Header     |        Object        |
+         --    +-------+---------------+----------------------+
+         --    ^       ^               ^
+         --    |       +- Header_Size -+
+         --    |                       |
+         --    +- Header_And_Padding --+
 
          --  Convert the bits preceding the object into a list header
 
-         N_Ptr := Address_To_FM_Node_Ptr (N_Addr);
+         N_Ptr := Address_To_FM_Node_Ptr (Addr - Header_Size);
 
          --  Detach the object from the related finalization master. This
          --  action does not need to know the prior context used during
@@ -293,10 +331,15 @@ package body System.Storage_Pools.Subpools is
 
          Detach (N_Ptr);
 
+         --  Move the address from the object to the beginning of the list
+         --  header.
+
+         N_Addr := Addr - Header_And_Padding;
+
          --  The size of the deallocated object must include the size of the
          --  hidden list header.
 
-         N_Size := Storage_Size + Header_Size;
+         N_Size := Storage_Size + Header_And_Padding;
       else
          N_Addr := Addr;
          N_Size := Storage_Size;

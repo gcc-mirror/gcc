@@ -1259,6 +1259,13 @@ package body Freeze is
 
                End_Package_Scope (E);
 
+               if Is_Generic_Instance (E)
+                 and then Has_Delayed_Freeze (E)
+               then
+                  Set_Has_Delayed_Freeze (E, False);
+                  Expand_N_Package_Declaration (Unit_Declaration_Node (E));
+               end if;
+
             elsif Ekind (E) in Task_Kind
               and then
                 (Nkind (Parent (E)) = N_Task_Type_Declaration
@@ -2297,6 +2304,17 @@ package body Freeze is
       elsif Inside_A_Generic and then External_Ref_In_Generic (Test_E) then
          return No_List;
 
+      --  AI05-0213: a formal incomplete type does not freeze the actual.
+      --  In the instance, the same applies to the subtype that renames
+      --  the actual.
+
+      elsif Is_Private_Type (E)
+        and then Is_Generic_Actual_Type (E)
+        and then No (Full_View (Base_Type (E)))
+        and then Ada_Version >= Ada_2012
+      then
+         return No_List;
+
       --  Do not freeze a global entity within an inner scope created during
       --  expansion. A call to subprogram E within some internal procedure
       --  (a stream attribute for example) might require freezing E, but the
@@ -2385,6 +2403,7 @@ package body Freeze is
                if Nkind (Ritem) = N_Aspect_Specification
                  and then Entity (Ritem) = E
                  and then Is_Delayed_Aspect (Ritem)
+                 and then Scope (E) = Current_Scope
                then
                   Aitem := Aspect_Rep_Item (Ritem);
 

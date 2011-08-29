@@ -2344,10 +2344,12 @@ package body Sem_Ch6 is
          --  expand the freeze actions that include the bodies. In particular,
          --  extra formals for accessibility or for return-in-place may need
          --  to be generated. Freeze nodes, if any, are inserted before the
-         --  current body.
+         --  current body. These freeze actions are also needed in ASIS mode
+         --  to enable the proper back-annotations.
 
          if not Is_Frozen (Spec_Id)
-           and then Expander_Active
+           and then
+             (Expander_Active or else ASIS_Mode)
          then
             --  Force the generation of its freezing node to ensure proper
             --  management of access types in the backend.

@@ -6209,6 +6209,7 @@ package Sinfo is
       --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART]
       --      is FORMAL_TYPE_DEFINITION
       --        [ASPECT_SPECIFICATIONS];
+      --  | type DEFINING_IDENTIFIER [DISCRIMINANT_PART] [is tagged]
 
       --  N_Formal_Type_Declaration
       --  Sloc points to TYPE
@@ -6234,6 +6235,12 @@ package Sinfo is
       --  | FORMAL_ARRAY_TYPE_DEFINITION
       --  | FORMAL_ACCESS_TYPE_DEFINITION
       --  | FORMAL_INTERFACE_TYPE_DEFINITION
+      --  | FORMAL_INCOMPLETE_TYPE_DEFINITION
+
+      --  The Ada2012 syntax introduces two new non-terminals;
+      --  Formal_[Complete_| Incomplete_] Type_Declaration just to introduce
+      --  the later category. Here we introduce an incomplete type definition
+      --  in order to preserve as much as possible the existing structure.
 
       ---------------------------------------------
       -- 12.5.1  Formal Private Type Definition --
@@ -6267,6 +6274,17 @@ package Sinfo is
       --  Limited_Present (Flag17)
       --  Synchronized_Present (Flag7)
       --  Interface_List (List2) (set to No_List if none)
+
+      ------------------------------------------------
+      -- 12.5.1  Formal Incomplete  Type Definition --
+      ------------------------------------------------
+
+      --  FORMAL_INCOMPLETE_TYPE_DEFINITION ::=
+      --  [tagged]
+
+      --  N_Formal_Incomplete_Type_Definition
+      --  Sloc points to identifier of parent
+      --  Tagged_Present (Flag15)
 
       ---------------------------------------------
       -- 12.5.2  Formal Discrete Type Definition --
@@ -7805,6 +7823,7 @@ package Sinfo is
       N_Formal_Ordinary_Fixed_Point_Definition,
       N_Formal_Package_Declaration,
       N_Formal_Private_Type_Definition,
+      N_Formal_Incomplete_Type_Definition,
       N_Formal_Signed_Integer_Type_Definition,
       N_Freeze_Entity,
       N_Generic_Association,
@@ -11314,6 +11333,13 @@ package Sinfo is
         5 => False),  --  unused
 
      N_Formal_Private_Type_Definition =>
+       (1 => False,   --  unused
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  unused
+        5 => False),  --  unused
+
+     N_Formal_Incomplete_Type_Definition =>
        (1 => False,   --  unused
         2 => False,   --  unused
         3 => False,   --  unused

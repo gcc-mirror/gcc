@@ -1,3 +1,57 @@
+2011-08-29  Matthew Heaney  <heaney@adacore.com>
+
+	* a-comutr.adb, a-cimutr.adb, a-cbmutr.adb (Splice_Subtree): Only check
+	for sibling when common parent.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* get_scos.adb: Literals of Pragma_Id are pragma names prefixed with
+	"pragma_".
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Enable freeze actions
+	for the return type when in ASIS mode.
+
+2011-08-29  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Gnatmake): Get the default search dirs, then the target
+	parameters after getting the Builder switches, as the Builder switches
+	may include --RTS= and that could change the default search dirs.
+
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Make_Adjust_Call): Rewrite to mimic the structure of
+	Make_Final_Call. Move the processing for class-wide types before the
+	processing for derivations from [Limited_]Controlled.
+	(Make_Final_Call): Move the processing for class-wide types before the
+	processing for derivations from [Limited_]Controlled.
+	* s-stposu.adb (Allocate_Any_Controlled): Correct the membership check.
+	Add code to account for alignments larger than the list header. Add a
+	comment illustrating the structure of the allocated object + padding +
+	header.
+	(Deallocate_Any_Controlled): Add code to account for alignments larger
+	than the list header.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb: New node kind
+	N_Formal_Incomplete_Type_Definition, related flags.
+	par-ch12.adb (P_Formal_Type_Declaration, G_Formal_Type_Definition):
+	Parse formal incomplete types.
+	* sem.adb (Analyze): Formal_Incomplete_Type_Definitions are handled in
+	sem_ch12.
+	* sem_ch7.adb (Analyze_Package_Specification, Unit_Requires_Body):
+	Formal incomplete types do not need completion.
+	* sem_ch12.adb (Analyze_Formal_Incomplete_Type,
+	Validate_Incomplete_Type_Instance): New procedures to handle formal
+	incomplete types.
+	* freeze.adb (Freeze_Entity): Do not freeze the subtype of an actual
+	that corresponds to a formal incomplete type.
+	* sprint.adb: Handle formal incomplete type declarations.
+	* exp_util.adb (Insert_Actions): An incomplete_type_definition is not
+	an insertion point.
+
 2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* a-fihema.ads, a-fihema.adb: Unit removed.

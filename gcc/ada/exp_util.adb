@@ -3349,6 +3349,7 @@ package body Exp_Util is
                N_Formal_Ordinary_Fixed_Point_Definition |
                N_Formal_Package_Declaration             |
                N_Formal_Private_Type_Definition         |
+               N_Formal_Incomplete_Type_Definition      |
                N_Formal_Signed_Integer_Type_Definition  |
                N_Function_Call                          |
                N_Function_Specification                 |
