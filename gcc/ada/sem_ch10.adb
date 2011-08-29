@@ -2585,6 +2585,13 @@ package body Sem_Ch10 is
             if Par_Name /= Standard_Standard then
                Par_Name := Scope (Par_Name);
             end if;
+
+            --  Abandon processing in case of previous errors
+
+            if No (Par_Name) then
+               pragma Assert (Serious_Errors_Detected /= 0);
+               return;
+            end if;
          end loop;
 
          if Present (Entity (Pref))
@@ -5034,6 +5041,13 @@ package body Sem_Ch10 is
               ("instantiation depends on itself", Name (With_Clause));
 
          elsif not Is_Visible_Child_Unit (Uname) then
+            --  Abandon processing in case of previous errors
+
+            if No (Scope (Uname)) then
+               pragma Assert (Serious_Errors_Detected /= 0);
+               return;
+            end if;
+
             Set_Is_Visible_Child_Unit (Uname);
 
             --  If the child unit appears in the context of its parent, it is

@@ -524,9 +524,9 @@ package body Impunit is
      "a-synbar",    -- Ada.Synchronous_Barriers
      "a-undesu",    -- Ada.Unchecked_Deallocate_Subpool
 
-   -----------------------------------------
-   -- GNAT Defined Additions to Ada 20012 --
-   -----------------------------------------
+   ----------------------------------------
+   -- GNAT Defined Additions to Ada 2012 --
+   ----------------------------------------
 
      "a-cofove",    -- Ada.Containers.Formal_Vectors
      "a-cfdlli",    -- Ada.Containers.Formal_Doubly_Linked_Lists

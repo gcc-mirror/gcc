@@ -2084,8 +2084,7 @@ package body Exp_Dist is
    is
       N : constant Name_Id := Chars (Def);
 
-      Overload_Order : constant Int :=
-                         Overload_Counter_Table.Get (N) + 1;
+      Overload_Order : constant Int := Overload_Counter_Table.Get (N) + 1;
 
    begin
       Overload_Counter_Table.Set (N, Overload_Order);
@@ -10429,7 +10428,7 @@ package body Exp_Dist is
 
                   --  A variant part
 
-                  declare
+                  Variant_Part : declare
                      Disc_Type : constant Entity_Id := Etype (Name (Field));
 
                      Is_Enum : constant Boolean :=
@@ -10451,6 +10450,8 @@ package body Exp_Dist is
                      Dummy_Counter : Int := 0;
 
                      Choice_Index : Int := 0;
+                     --  Index of current choice in TypeCode, used to identify
+                     --  it as the default choice if it is a "when others".
 
                      procedure Add_Params_For_Variant_Components;
                      --  Add a struct TypeCode and a corresponding member name
@@ -10488,6 +10489,8 @@ package body Exp_Dist is
 
                         Add_String_Parameter (Name_Str, Union_TC_Params);
                      end Add_Params_For_Variant_Components;
+
+                  --  Start of processing for Variant_Part
 
                   begin
                      Get_Name_String (U_Name);
@@ -10547,6 +10550,8 @@ package body Exp_Dist is
                                        Add_Params_For_Variant_Components;
                                        J := J + Uint_1;
                                     end loop;
+                                    Choice_Index :=
+                                      Choice_Index + UI_To_Int (H - L) + 1;
                                  end;
 
                               when N_Others_Choice =>
@@ -10556,26 +10561,16 @@ package body Exp_Dist is
                                  --  current choice index. This parameter is by
                                  --  construction the 4th in Union_TC_Params.
 
-                                 declare
-                                    Default_Node : constant Node_Id :=
-                                                     Pick (Union_TC_Params, 4);
-
-                                    New_Default_Node : constant Node_Id :=
-                                      Make_Function_Call (Loc,
-                                       Name =>
-                                         New_Occurrence_Of
-                                           (RTE (RE_TA_I32), Loc),
-                                       Parameter_Associations =>
-                                         New_List (
-                                           Make_Integer_Literal (Loc,
-                                             Intval => Choice_Index)));
-
-                                 begin
-                                    Insert_Before
-                                      (Default_Node, New_Default_Node);
-
-                                    Remove (Default_Node);
-                                 end;
+                                 Replace
+                                   (Pick (Union_TC_Params, 4),
+                                    Make_Function_Call (Loc,
+                                      Name =>
+                                        New_Occurrence_Of
+                                          (RTE (RE_TA_I32), Loc),
+                                      Parameter_Associations =>
+                                        New_List (
+                                          Make_Integer_Literal (Loc,
+                                            Intval => Choice_Index))));
 
                                  --  Add a placeholder member label for the
                                  --  default case, which must have the
@@ -10594,6 +10589,7 @@ package body Exp_Dist is
                                  end;
 
                                  Add_Params_For_Variant_Components;
+                                 Choice_Index := Choice_Index + 1;
 
                               when others =>
 
@@ -10608,15 +10604,15 @@ package body Exp_Dist is
                                  end;
 
                                  Add_Params_For_Variant_Components;
+                                 Choice_Index := Choice_Index + 1;
                            end case;
 
                            Next (Choice);
-                           Choice_Index := Choice_Index + 1;
                         end loop;
 
                         Next_Non_Pragma (Variant);
                      end loop;
-                  end;
+                  end Variant_Part;
                end if;
             end TC_Rec_Add_Process_Element;
 
