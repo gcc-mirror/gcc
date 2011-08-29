@@ -1535,9 +1535,7 @@ package body Exp_Ch7 is
 
          --  Generate:
          --    procedure Fin_Id is
-         --       Abort  : constant Boolean :=
-         --                  Exception_Occurrence (Get_Current_Excep.all.all) =
-         --                    Standard'Abort_Signal'Identity;
+         --       Abort  : constant Boolean := Triggered_By_Abort;
          --         <or>
          --       Abort  : constant Boolean := False;  --  no abort
 
@@ -3003,58 +3001,9 @@ package body Exp_Ch7 is
         and then VM_Target = No_VM
         and then not For_Package
       then
-         declare
-            Temp_Id : constant Entity_Id := Make_Temporary (Loc, 'E');
+         A_Expr := New_Reference_To (RTE (RE_Triggered_By_Abort), Loc);
 
-         begin
-            --  Generate:
-            --    Temp : constant Exception_Occurrence_Access :=
-            --             Get_Current_Excep.all;
-
-            Append_To (Result,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Temp_Id,
-                Constant_Present    => True,
-                Object_Definition   =>
-                  New_Reference_To (RTE (RE_Exception_Occurrence_Access), Loc),
-                Expression          =>
-                  Make_Function_Call (Loc,
-                    Name =>
-                      Make_Explicit_Dereference (Loc,
-                        Prefix =>
-                          New_Reference_To
-                            (RTE (RE_Get_Current_Excep), Loc)))));
-
-            --  Generate:
-            --    Temp /= null
-            --      and then Exception_Identity (Temp.all) =
-            --                 Standard'Abort_Signal'Identity;
-
-            A_Expr :=
-              Make_And_Then (Loc,
-                Left_Opnd  =>
-                  Make_Op_Ne (Loc,
-                    Left_Opnd  => New_Reference_To (Temp_Id, Loc),
-                    Right_Opnd => Make_Null (Loc)),
-
-                Right_Opnd =>
-                  Make_Op_Eq (Loc,
-                    Left_Opnd =>
-                      Make_Function_Call (Loc,
-                        Name                   =>
-                          New_Reference_To (RTE (RE_Exception_Identity), Loc),
-                        Parameter_Associations => New_List (
-                          Make_Explicit_Dereference (Loc,
-                            Prefix => New_Reference_To (Temp_Id, Loc)))),
-
-                    Right_Opnd =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix         =>
-                          New_Reference_To (Stand.Abort_Signal, Loc),
-                        Attribute_Name => Name_Identity)));
-         end;
-
-      --  No abort or .NET/JVM
+      --  No abort, .NET/JVM or library-level finalizers
 
       else
          A_Expr := New_Reference_To (Standard_False, Loc);
@@ -3107,32 +3056,33 @@ package body Exp_Ch7 is
       Stmt : Node_Id;
 
    begin
-      --  Standard run-time, .NET/JVM targets
-      --  Call Raise_From_Controlled_Operation (E_Id).
+      --  Standard run-time and .NET/JVM targets use the specialized routine
+      --  Raise_From_Controlled_Operation.
 
       if RTE_Available (RE_Raise_From_Controlled_Operation) then
          Stmt :=
            Make_Procedure_Call_Statement (Loc,
-              Name                   =>
-                New_Reference_To (RTE (RE_Raise_From_Controlled_Operation),
-                                  Loc),
+              Name =>
+                New_Reference_To
+                  (RTE (RE_Raise_From_Controlled_Operation), Loc),
               Parameter_Associations =>
                 New_List (New_Reference_To (E_Id, Loc)));
 
       --  Restricted runtime: exception messages are not supported and hence
-      --  Raise_From_Controlled_Operation is not supported.
-      --  Simply raise Program_Error.
+      --  Raise_From_Controlled_Operation is not supported. Raise Program_Error
+      --  instead.
 
       else
          Stmt :=
            Make_Raise_Program_Error (Loc,
              Reason => PE_Finalize_Raised_Exception);
-
       end if;
 
       --  Generate:
       --    if Raised_Id and then not Abort_Id then
       --       Raise_From_Controlled_Operation (E_Id);
+      --         <or>
+      --       raise Program_Error;  --  restricted runtime
       --    end if;
 
       return
@@ -4717,12 +4667,7 @@ package body Exp_Ch7 is
       --  controlled elements. Generate:
       --
       --    declare
-      --       Temp   : constant Exception_Occurrence_Access :=
-      --                  Get_Current_Excep.all;
-      --       Abort  : constant Boolean :=
-      --                  Temp /= null
-      --                    and then Exception_Identity (Temp_Id.all) =
-      --                               Standard'Abort_Signal'Identity;
+      --       Abort  : constant Boolean := Triggered_By_Abort;
       --         <or>
       --       Abort  : constant Boolean := False;  --  no abort
       --
@@ -4773,12 +4718,7 @@ package body Exp_Ch7 is
       --             exception
       --                when others =>
       --                   declare
-      --                      Temp   : constant Exception_Occurrence_Access :=
-      --                                 Get_Current_Excep.all;
-      --                      Abort  : constant Boolean :=
-      --                        Temp /= null
-      --                          and then Exception_Identity (Temp_Id.all) =
-      --                                     Standard'Abort_Signal'Identity;
+      --                      Abort  : constant Boolean := Triggered_By_Abort;
       --                        <or>
       --                      Abort  : constant Boolean := False; --  no abort
       --                      E      : Exception_Occurence;
@@ -4970,9 +4910,7 @@ package body Exp_Ch7 is
          --  the conditional raise:
 
          --    declare
-         --       Abort  : constant Boolean :=
-         --                  Exception_Occurrence (Get_Current_Excep.all.all) =
-         --                    Standard'Abort_Signal'Identity;
+         --       Abort  : constant Boolean := Triggered_By_Abort;
          --         <or>
          --       Abort  : constant Boolean := False;  --  no abort
 
@@ -5257,9 +5195,7 @@ package body Exp_Ch7 is
          --  raised flag and the conditional raise.
 
          --    declare
-         --       Abort  : constant Boolean :=
-         --                  Exception_Occurrence (Get_Current_Excep.all.all) =
-         --                    Standard'Abort_Signal'Identity;
+         --       Abort  : constant Boolean := Triggered_By_Abort;
          --         <or>
          --       Abort  : constant Boolean := False;  --  no abort
 
@@ -5572,12 +5508,7 @@ package body Exp_Ch7 is
       --  may have discriminants and contain variant parts. Generate:
       --
       --    declare
-      --       Temp   : constant Exception_Occurrence_Access :=
-      --                  Get_Current_Excep.all;
-      --       Abort  : constant Boolean :=
-      --                  Temp /= null
-      --                    and then Exception_Identity (Temp_Id.all) =
-      --                               Standard'Abort_Signal'Identity;
+      --       Abort  : constant Boolean := Triggered_By_Abort;
       --         <or>
       --       Abort  : constant Boolean := False;  --  no abort
       --       E      : Exception_Occurence;
@@ -6049,9 +5980,7 @@ package body Exp_Ch7 is
 
          --  Generate:
          --    declare
-         --       Abort  : constant Boolean :=
-         --                  Exception_Occurrence (Get_Current_Excep.all.all) =
-         --                    Standard'Abort_Signal'Identity;
+         --       Abort  : constant Boolean := Triggered_By_Abort;
          --         <or>
          --       Abort  : constant Boolean := False;  --  no abort
 
@@ -6633,9 +6562,7 @@ package body Exp_Ch7 is
 
          --  Generate:
          --    declare
-         --       Abort  : constant Boolean :=
-         --                  Exception_Occurrence (Get_Current_Excep.all.all) =
-         --                    Standard'Abort_Signal'Identity;
+         --       Abort  : constant Boolean := Triggered_By_Abort;
          --         <or>
          --       Abort  : constant Boolean := False;  --  no abort
 

@@ -721,6 +721,12 @@ package body Sem_Ch8 is
             then
                null;
 
+            --  A renaming of an unchecked union does not have an
+            --  actual subtype.
+
+            elsif Is_Unchecked_Union (Etype (Nam)) then
+               null;
+
             else
                Subt := Make_Temporary (Loc, 'T');
                Remove_Side_Effects (Nam);

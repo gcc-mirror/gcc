@@ -807,6 +807,22 @@ package body Ada.Exceptions is
       Raise_Current_Excep (E);
    end Raise_Exception_Always;
 
+   ------------------------------
+   -- Raise_Exception_No_Defer --
+   ------------------------------
+
+   procedure Raise_Exception_No_Defer
+     (E       : Exception_Id;
+      Message : String := "")
+   is
+   begin
+      Exception_Data.Set_Exception_Msg (E, Message);
+
+      --  Do not call Abort_Defer.all, as specified by the spec
+
+      Raise_Current_Excep (E);
+   end Raise_Exception_No_Defer;
+
    -------------------------------------
    -- Raise_From_Controlled_Operation --
    -------------------------------------
@@ -1205,18 +1221,6 @@ package body Ada.Exceptions is
       return Target;
    end Save_Occurrence;
 
-   -------------------------
-   -- Transfer_Occurrence --
-   -------------------------
-
-   procedure Transfer_Occurrence
-     (Target : Exception_Occurrence_Access;
-      Source : Exception_Occurrence)
-   is
-   begin
-      Save_Occurrence (Target.all, Source);
-   end Transfer_Occurrence;
-
    -------------------
    -- String_To_EId --
    -------------------
@@ -1230,22 +1234,6 @@ package body Ada.Exceptions is
 
    function String_To_EO (S : String) return Exception_Occurrence
      renames Stream_Attributes.String_To_EO;
-
-   ------------------------------
-   -- Raise_Exception_No_Defer --
-   ------------------------------
-
-   procedure Raise_Exception_No_Defer
-     (E       : Exception_Id;
-      Message : String := "")
-   is
-   begin
-      Exception_Data.Set_Exception_Msg (E, Message);
-
-      --  Do not call Abort_Defer.all, as specified by the spec
-
-      Raise_Current_Excep (E);
-   end Raise_Exception_No_Defer;
 
    ---------------
    -- To_Stderr --
@@ -1269,5 +1257,29 @@ package body Ada.Exceptions is
          end if;
       end loop;
    end To_Stderr;
+
+   -------------------------
+   -- Transfer_Occurrence --
+   -------------------------
+
+   procedure Transfer_Occurrence
+     (Target : Exception_Occurrence_Access;
+      Source : Exception_Occurrence)
+   is
+   begin
+      Save_Occurrence (Target.all, Source);
+   end Transfer_Occurrence;
+
+   ------------------------
+   -- Triggered_By_Abort --
+   ------------------------
+
+   function Triggered_By_Abort return Boolean is
+      Ex : constant Exception_Occurrence_Access := Get_Current_Excep.all;
+
+   begin
+      return Ex /= null
+        and then Exception_Identity (Ex.all) = Standard'Abort_Signal'Identity;
+   end Triggered_By_Abort;
 
 end Ada.Exceptions;

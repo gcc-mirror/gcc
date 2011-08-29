@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -2920,12 +2921,21 @@ package body Exp_Ch5 is
 
          declare
             Element_Type : constant Entity_Id := Etype (Id);
+            Iter_Type    : Entity_Id;
             Pack         : Entity_Id;
             Decl         : Node_Id;
             Name_Init    : Name_Id;
             Name_Step    : Name_Id;
 
          begin
+
+            --  The type of the iterator is the return type of the Iterate
+            --  function used. For the "of" form this is the default iterator
+            --  for the type, otherwise it is the type of the explicit
+            --  function used in the loop.
+
+            Iter_Type := Etype (Name (I_Spec));
+
             if Is_Entity_Name (Container) then
                Pack := Scope (Etype (Container));
 
@@ -2934,14 +2944,43 @@ package body Exp_Ch5 is
             end if;
 
             --  The "of" case uses an internally generated cursor whose type
-            --  is found in the container package.
+            --  is found in the container package. The domain of iteration
+            --  is expanded into a call to the default Iterator function, but
+            --  this expansion does not take place in a quantifier expressions
+            --  that are analyzed with expansion disabled, and in that case the
+            --  type of the iterator must be obtained from the aspect.
 
             if Of_Present (I_Spec) then
-               Cursor := Make_Temporary (Loc, 'I');
-
                declare
+                  Default_Iter : constant Entity_Id :=
+                    Find_Aspect (Etype (Container), Aspect_Default_Iterator);
                   Ent : Entity_Id;
+
                begin
+                  Cursor := Make_Temporary (Loc, 'I');
+
+                  if Is_Iterator (Iter_Type) then
+                     null;
+
+                  else
+                     Iter_Type :=
+                        Etype
+                         (Find_Aspect
+                              (Etype (Container), Aspect_Default_Iterator));
+
+                     --  Rewrite domain of iteration as a call to the default
+                     --  iterator for the container type.
+
+                     Rewrite (Name (I_Spec),
+                       Make_Function_Call (Loc,
+                         Name => Default_Iter,
+                         Parameter_Associations =>
+                           New_List (Relocate_Node (Name (I_Spec)))));
+                     Analyze_And_Resolve (Name (I_Spec));
+                  end if;
+
+                  --  Find cursor type in container package.
+
                   Ent := First_Entity (Pack);
                   while Present (Ent) loop
                      if Chars (Ent) = Name_Cursor then
@@ -2950,59 +2989,60 @@ package body Exp_Ch5 is
                      end if;
                      Next_Entity (Ent);
                   end loop;
+
+                  --  Generate:
+                  --    Id : Element_Type renames Pack.Element (Cursor);
+
+                  Decl :=
+                    Make_Object_Renaming_Declaration (Loc,
+                      Defining_Identifier => Id,
+                         Subtype_Mark =>
+                        New_Reference_To (Element_Type, Loc),
+                      Name =>
+                        Make_Indexed_Component (Loc,
+                          Prefix => Make_Selected_Component (Loc,
+                              Prefix        => New_Reference_To (Pack, Loc),
+                              Selector_Name =>
+                                Make_Identifier (Loc, Chars => Name_Element)),
+                          Expressions =>
+                            New_List (New_Occurrence_Of (Cursor, Loc))));
+
+                  --  If the container holds controlled objects, wrap the loop
+                  --  statements and element renaming declaration with a block.
+                  --  This ensures that the result of Element (Iterator) is
+                  --  cleaned up after each iteration of the loop.
+
+                  if Needs_Finalization (Element_Type) then
+
+                     --  Generate:
+                     --    declare
+                     --       Id : Element_Type := Pack.Element (Iterator);
+                     --    begin
+                     --       <original loop statements>
+                     --    end;
+
+                     Stats := New_List (
+                       Make_Block_Statement (Loc,
+                         Declarations => New_List (Decl),
+                         Handled_Statement_Sequence =>
+                           Make_Handled_Sequence_Of_Statements (Loc,
+                              Statements => Stats)));
+
+                  --  Elements do not need finalization
+
+                  else
+                     Prepend_To (Stats, Decl);
+                  end if;
                end;
+
+            --  X in Iterate (S) : type of iterator is type of explicitly
+            --  given Iterate function.
 
             else
                Cursor := Id;
             end if;
 
             Iterator := Make_Temporary (Loc, 'I');
-
-            if Of_Present (I_Spec) then
-
-               --  Generate:
-               --    Id : Element_Type renames Pack.Element (Cursor);
-
-               Decl :=
-                 Make_Object_Renaming_Declaration (Loc,
-                   Defining_Identifier => Id,
-                   Subtype_Mark =>
-                     New_Reference_To (Element_Type, Loc),
-                   Name =>
-                     Make_Indexed_Component (Loc,
-                       Prefix =>
-                         Make_Selected_Component (Loc,
-                           Prefix =>
-                             New_Reference_To (Pack, Loc),
-                           Selector_Name =>
-                             Make_Identifier (Loc, Chars => Name_Element)),
-                       Expressions => New_List (
-                          New_Occurrence_Of (Cursor, Loc))));
-
-               --  When the container holds controlled objects, wrap the loop
-               --  statements and element renaming declaration with a block.
-               --  This ensures that the transient result of Element (Iterator)
-               --  is cleaned up after each iteration of the loop.
-
-               if Needs_Finalization (Element_Type) then
-
-                  --  Generate:
-                  --    declare
-                  --       Id : Element_Type := Pack.Element (Iterator);
-                  --    begin
-                  --       <original loop statements>
-                  --    end;
-
-                  Stats := New_List (
-                    Make_Block_Statement (Loc,
-                      Declarations => New_List (Decl),
-                      Handled_Statement_Sequence =>
-                        Make_Handled_Sequence_Of_Statements (Loc,
-                          Statements => Stats)));
-               else
-                  Prepend_To (Stats, Decl);
-               end if;
-            end if;
 
             --  Determine the advancement and initialization steps for the
             --  cursor.
@@ -3026,23 +3066,16 @@ package body Exp_Ch5 is
 
             declare
                Rhs : Node_Id;
+
             begin
-               if Of_Present (I_Spec) then
-                  Rhs :=
-                    Make_Function_Call (Loc,
-                      Name => Make_Identifier (Loc, Name_Step),
-                      Parameter_Associations =>
-                        New_List (New_Reference_To (Cursor, Loc)));
-               else
-                  Rhs :=
-                    Make_Function_Call (Loc,
-                      Name =>
-                        Make_Selected_Component (Loc,
-                          Prefix => New_Reference_To (Iterator, Loc),
-                          Selector_Name => Make_Identifier (Loc, Name_Step)),
-                      Parameter_Associations => New_List (
-                         New_Reference_To (Cursor, Loc)));
-               end if;
+               Rhs :=
+                 Make_Function_Call (Loc,
+                   Name =>
+                     Make_Selected_Component (Loc,
+                       Prefix => New_Reference_To (Iterator, Loc),
+                       Selector_Name => Make_Identifier (Loc, Name_Step)),
+                   Parameter_Associations => New_List (
+                      New_Reference_To (Cursor, Loc)));
 
                Append_To (Stats,
                  Make_Assignment_Statement (Loc,
@@ -3082,14 +3115,13 @@ package body Exp_Ch5 is
             declare
                Decl1 : Node_Id;
                Decl2 : Node_Id;
+
             begin
                Decl1 :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Iterator,
-                 Object_Definition =>
-                   New_Occurrence_Of (Etype (Name (I_Spec)), Loc),
-
-                 Expression => Relocate_Node (Name (I_Spec)));
+                   Object_Definition   => New_Occurrence_Of (Iter_Type, Loc),
+                   Expression          => Relocate_Node (Name (I_Spec)));
                Set_Assignment_OK (Decl1);
 
                Decl2 :=

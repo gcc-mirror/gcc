@@ -4382,8 +4382,8 @@ package body Sem_Res is
       end if;
 
       --  Report a simple error:  if the designated object is a local task,
-      --  its body has not been seen yet, and its activation will fail
-      --  an elaboration check.
+      --  its body has not been seen yet, and its activation will fail an
+      --  elaboration check.
 
       if Is_Task_Type (Desig_T)
         and then Scope (Base_Type (Desig_T)) = Current_Scope
@@ -4391,9 +4391,20 @@ package body Sem_Res is
         and then Ekind (Current_Scope) = E_Package
         and then not In_Package_Body (Current_Scope)
       then
-         Error_Msg_N
-           ("cannot activate task before body seen?", N);
+         Error_Msg_N ("cannot activate task before body seen?", N);
          Error_Msg_N ("\Program_Error will be raised at run time?", N);
+      end if;
+
+      --  Ada 2012 (AI05-0111-3): Issue a warning whenever allocating a task
+      --  or a type containing tasks on a subpool since the deallocation of
+      --  the subpool may lead to undefined task behavior.
+
+      if Ada_Version >= Ada_2012
+        and then Present (Subpool_Handle_Name (N))
+        and then Has_Task (Desig_T)
+      then
+         Error_Msg_N ("?allocation of task on subpool may lead to " &
+                      "undefined behavior", N);
       end if;
    end Resolve_Allocator;
 

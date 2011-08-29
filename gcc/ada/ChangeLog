@@ -1,3 +1,63 @@
+2011-08-29  Pascal Obry  <obry@adacore.com>
+
+	* exp_disp.adb: Minor comment fix.
+	(Make_Disp_Asynchronous_Select_Body): Properly initialize out parameters
+	to avoid warnings when compiling with -Wall.
+	(Make_Disp_Conditional_Select_Body): Likewise.
+	(Make_Disp_Timed_Select_Body): Likewise.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Formal_Subprogram_Declaration): If default is
+	an entity name, generate reference for it.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop): Uniform handling of "X of S"
+	iterator form.
+	* sem_util.adb (Is_Iterator, Is_Reversible_Iterator): Yield True for
+	the class-wide type.
+	* sem_ch5.adb: Move some rewriting to the expander, where it belongs.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Check_Constrained_Object): Do not create an actual
+	subtype for an object whose type is an unconstrained union.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch3.adb (P_Array_Type_Definiation, P_Component_Items): "aliased"
+	is allowed in a component definition, by AI95-406.
+
+2011-08-29  Matthew Heaney  <heaney@adacore.com>
+
+	* a-chtgbo.adb (Generic_Iteration): Use correct overloading of Next.
+
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-except-2005.adb: Alphabetize all routines.
+	(Triggered_By_Abort): New routine.
+	* a-except-2005.ads (Triggered_By_Abort): New routine.
+	* a-except.adb Alphabetize all routines.
+	(Triggered_By_Abort): New routine.
+	* a-except.ads (Triggered_By_Abort): New routine.
+	* exp_ch7.adb: Update all comments involving the detection of aborts in
+	finalization code.
+	(Build_Object_Declarations): Do not generate code to detect the
+	presence of an abort at the start of finalization code, use a runtime
+	routine istead.
+	* rtsfind.ads: Add RE_Triggered_By_Abort to tables RE_Id and
+	RE_Unit_Table.
+	* sem_res.adb (Resolve_Allocator): Emit a warning when attempting to
+	allocate a task on a subpool.
+	* s-stposu.adb: Add library-level flag Finalize_Address_Table_In_Use.
+	The flag disables all actions related to the maintenance of
+	Finalize_Address_Table when subpools are not in use.
+	(Allocate_Any_Controlled): Signal the machinery that subpools are in
+	use.
+	(Deallocate_Any_Controlled): Do not call Delete_Finalize_Address which
+	performs costly task locking when subpools are not in use.
+
 2011-08-29  Yannick Moy  <moy@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): Restore expansion of tagged

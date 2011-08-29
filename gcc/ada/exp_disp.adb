@@ -2051,7 +2051,8 @@ package body Exp_Disp is
    --        F : out Boolean)
    --     is
    --     begin
-   --        null;
+   --        F := False;
+   --        C := Ada.Tags.POK_Function;
    --     end _Disp_Asynchronous_Select;
 
    --  For protected types, generate:
@@ -2122,7 +2123,9 @@ package body Exp_Disp is
                New_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 New_List (Make_Null_Statement (Loc))));
+                 New_List (Make_Assignment_Statement (Loc,
+                   Name => Make_Identifier (Loc, Name_uF),
+                   Expression => New_Reference_To (Standard_False, Loc)))));
       end if;
 
       if Is_Concurrent_Record_Type (Typ) then
@@ -2262,6 +2265,14 @@ package body Exp_Disp is
                     Expression =>
                       New_Reference_To (Com_Block, Loc))));
 
+            --  Generate:
+            --    F := False;
+
+            Append_To (Stmts,
+              Make_Assignment_Statement (Loc,
+                Name => Make_Identifier (Loc, Name_uF),
+                Expression => New_Reference_To (Standard_False, Loc)));
+
          else
             pragma Assert (Ekind (Conc_Typ) = E_Task_Type);
 
@@ -2300,7 +2311,10 @@ package body Exp_Disp is
       else
          --  Ensure that the statements list is non-empty
 
-         Append_To (Stmts, Make_Null_Statement (Loc));
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name => Make_Identifier (Loc, Name_uF),
+             Expression => New_Reference_To (Standard_False, Loc)));
       end if;
 
       return
@@ -2391,7 +2405,8 @@ package body Exp_Disp is
    --        F : out Boolean)
    --     is
    --     begin
-   --        null;
+   --        F := False;
+   --        C := Ada.Tags.POK_Function;
    --     end _Disp_Conditional_Select;
 
    --  For protected types, generate:
@@ -2474,7 +2489,9 @@ package body Exp_Disp is
                No_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 New_List (Make_Null_Statement (Loc))));
+                 New_List (Make_Assignment_Statement (Loc,
+                   Name => Make_Identifier (Loc, Name_uF),
+                   Expression => New_Reference_To (Standard_False, Loc)))));
       end if;
 
       if Is_Concurrent_Record_Type (Typ) then
@@ -2675,9 +2692,16 @@ package body Exp_Disp is
          end if;
 
       else
-         --  Ensure that the statements list is non-empty
+         --  Initialize out parameters
 
-         Append_To (Stmts, Make_Null_Statement (Loc));
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name => Make_Identifier (Loc, Name_uF),
+             Expression => New_Reference_To (Standard_False, Loc)));
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name => Make_Identifier (Loc, Name_uC),
+             Expression => New_Reference_To (RTE (RE_POK_Function), Loc)));
       end if;
 
       return
@@ -3235,7 +3259,8 @@ package body Exp_Disp is
    --        F : out Boolean)
    --     is
    --     begin
-   --        null;
+   --        F := False;
+   --        C := Ada.Tags.POK_Function;
    --     end _Disp_Timed_Select;
 
    --  For protected types, generate:
@@ -3294,7 +3319,7 @@ package body Exp_Disp is
    --           P,
    --           D,
    --           M,
-   --           D);
+   --           F);
    --     end _Disp_Time_Select;
 
    function Make_Disp_Timed_Select_Body
@@ -3321,7 +3346,9 @@ package body Exp_Disp is
                New_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 New_List (Make_Null_Statement (Loc))));
+                 New_List (Make_Assignment_Statement (Loc,
+                   Name => Make_Identifier (Loc, Name_uF),
+                   Expression => New_Reference_To (Standard_False, Loc)))));
       end if;
 
       if Is_Concurrent_Record_Type (Typ) then
@@ -3500,9 +3527,16 @@ package body Exp_Disp is
          end if;
 
       else
-         --  Ensure that the statements list is non-empty
+         --  Initialize out parameters
 
-         Append_To (Stmts, Make_Null_Statement (Loc));
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name => Make_Identifier (Loc, Name_uF),
+             Expression => New_Reference_To (Standard_False, Loc)));
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name => Make_Identifier (Loc, Name_uC),
+             Expression => New_Reference_To (RTE (RE_POK_Function), Loc)));
       end if;
 
       return

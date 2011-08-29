@@ -2342,42 +2342,17 @@ package body Sem_Ch5 is
          Set_Ekind (Def_Id, E_Loop_Parameter);
 
          if Of_Present (N) then
-            --  If the container has already been rewritten as a
-            --  call to the default iterator, nothing to do. This
-            --  is the case with the expansion of a quantified
-            --  expression.
 
-            if Nkind (Name (N)) = N_Function_Call
-              and then not Comes_From_Source (Name (N))
-            then
-               null;
+            --  The type of the loop variable is the Iterator_Element
+            --  aspect of the container type.
 
-            elsif Expander_Active then
-
-               --  Find the Iterator_Element and the default_iterator
-               --   of the container type.
-
-               Set_Etype (Def_Id,
-                 Entity (
-                   Find_Aspect (Typ, Aspect_Iterator_Element)));
-
-               declare
-                  Default_Iter : constant Entity_Id :=
-                    Find_Aspect (Typ, Aspect_Default_Iterator);
-               begin
-                  Rewrite (Name (N),
-                    Make_Function_Call (Loc,
-                      Name => Default_Iter,
-                      Parameter_Associations =>
-                        New_List (Relocate_Node (Iter_Name))));
-                  Analyze_And_Resolve (Name (N));
-               end;
-            end if;
+            Set_Etype (Def_Id,
+              Entity (Find_Aspect (Typ, Aspect_Iterator_Element)));
 
          else
-            --  result type of Iterate function is the classwide
-            --  type of the interface parent. We need the specific
-            --  Cursor type defined in the package.
+            --  The result type of Iterate function is the classwide type
+            --  of the interface parent. We need the specific Cursor type
+            --  defined in the container package.
 
             Ent := First_Entity (Scope (Typ));
             while Present (Ent) loop

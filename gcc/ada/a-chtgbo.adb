@@ -350,7 +350,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
          Node := HT.Buckets (Indx);
          while Node /= 0 loop
             Process (Node);
-            Node := Next (HT, Node);
+            Node := Next (HT.Nodes (Node));
          end loop;
       end loop;
    end Generic_Iteration;
