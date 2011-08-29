@@ -1,3 +1,11 @@
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* s-stposu.adb (Allocate_Any_Controlled): Reimplement the mechanism
+	which accounts for size vs alignment issues and calculates the size of
+	the list header.
+	(Deallocate_Any_Controlled): Ditto.
+	(Nearest_Multiple_Rounded_Up): New routine.
+
 2011-08-29  Tristan Gingold  <gingold@adacore.com>
 
 	* a-exstat.adb (String_To_EO): Do no set Cleanup_Flag.
