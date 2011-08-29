@@ -953,12 +953,8 @@ package Snames is
    Name_All_Checks                     : constant Name_Id := N + $;
    Last_Check_Name                     : constant Name_Id := N + $;
 
-   --  Names corresponding to reserved keywords, excluding those already
-   --  declared in the attribute list (Access, Delta, Digits, Mod, Range).
-
-   --  Note: Name_Some is here even though for now we do not treat it as being
-   --  reserved. We treat it instead as an unreserved keyword. This may change
-   --  in the future, but in any case it belongs in the following list.
+   --  Ada 83 reserved words, excluding those already declared in the attribute
+   --  list (Access, Delta, Digits, Mod, Range).
 
    Name_Abort                            : constant Name_Id := N + $;
    Name_Abs                              : constant Name_Id := N + $;
@@ -1008,7 +1004,6 @@ package Snames is
    Name_Reverse                          : constant Name_Id := N + $;
    Name_Select                           : constant Name_Id := N + $;
    Name_Separate                         : constant Name_Id := N + $;
-   Name_Some                             : constant Name_Id := N + $;
    Name_Subtype                          : constant Name_Id := N + $;
    Name_Task                             : constant Name_Id := N + $;
    Name_Terminate                        : constant Name_Id := N + $;
@@ -1053,7 +1048,7 @@ package Snames is
 
    Name_Free                             : constant Name_Id := N + $;
 
-   --  Reserved words used only in Ada 95
+   --  Ada 95 reserved words
 
    First_95_Reserved_Word                : constant Name_Id := N + $;
    Name_Abstract                         : constant Name_Id := N + $;
@@ -1227,7 +1222,7 @@ package Snames is
    Name_No_Element                       : constant Name_Id := N + $;
    Name_Previous                         : constant Name_Id := N + $;
 
-   --  Ada 05 reserved words
+   --  Ada 2005 reserved words
 
    First_2005_Reserved_Word              : constant Name_Id := N + $;
    Name_Interface                        : constant Name_Id := N + $;
@@ -1237,6 +1232,15 @@ package Snames is
 
    subtype Ada_2005_Reserved_Words is
      Name_Id range First_2005_Reserved_Word .. Last_2005_Reserved_Word;
+
+   --  Ada 2012 reserved words
+
+   First_2012_Reserved_Word              : constant Name_Id := N + $;
+   Name_Some                             : constant Name_Id := N + $;
+   Last_2012_Reserved_Word               : constant Name_Id := N + $;
+
+   subtype Ada_2012_Reserved_Words is
+     Name_Id range First_2012_Reserved_Word .. Last_2012_Reserved_Word;
 
    --  Mark last defined name for consistency check in Snames body
 

@@ -47,7 +47,7 @@ package Scans is
 
    --  Note: Namet.Is_Keyword_Name depends on the fact that the first entry in
    --  this type declaration is *not* for a reserved word. For details on why
-   --  there is this requirement, see Scans.Initialize_Ada_Keywords.
+   --  there is this requirement, see Initialize_Ada_Keywords below.
 
    type Token_Type is (
 
@@ -341,7 +341,9 @@ package Scans is
    --  Flag array used to test for reserved word
 
    procedure Initialize_Ada_Keywords;
-   --  Set up Token_Type values in Names table entries for Ada reserved words
+   --  Set up Token_Type values in Names table entries for Ada reserved
+   --  words. This ignores Ada_Version; Ada_Version is taken into account in
+   --  Snames.Is_Keyword_Name.
 
    --------------------------
    -- Scan State Variables --

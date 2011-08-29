@@ -2425,9 +2425,11 @@ package body Sem_Ch8 is
 
       if Old_S /= Any_Id then
          if Is_Actual and then From_Default (N) then
+
             --  This is an implicit reference to the default actual
 
             Generate_Reference (Old_S, Nam, Typ => 'i', Force => True);
+
          else
             Generate_Reference (Old_S, Nam);
          end if;

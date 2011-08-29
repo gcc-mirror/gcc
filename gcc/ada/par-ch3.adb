@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -226,6 +226,16 @@ package body Ch3 is
                         and then Prev_Token /= Tok_Pragma)
             then
                Error_Msg_N ("& is a reserved word in Ada 2005?", Token_Node);
+            end if;
+         end if;
+
+         --  Similarly, warn about Ada 2012 reserved words
+
+         if Ada_Version in Ada_95 .. Ada_2005
+           and then Warn_On_Ada_2012_Compatibility
+         then
+            if Token_Name = Name_Some then
+               Error_Msg_N ("& is a reserved word in Ada 2012?", Token_Node);
             end if;
          end if;
 
@@ -1124,16 +1134,6 @@ package body Ch3 is
          Error_Msg_SC ("anonymous array definition not allowed here");
          Discard_Junk_Node (P_Array_Type_Definition);
          return Error;
-
-      --  If Some becomes a keyword, the following is needed to make it
-      --  acceptable in older versions of Ada.
-
-      elsif Token = Tok_Some
-        and then Ada_Version < Ada_2012
-      then
-         Scan_Reserved_Identifier (False);
-         Scan;
-         return Token_Node;
 
       else
          Type_Node := P_Qualified_Simple_Name_Resync;

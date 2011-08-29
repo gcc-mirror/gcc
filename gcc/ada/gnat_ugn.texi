@@ -5780,12 +5780,14 @@ This switch disables warnings for exception usage when pragma Restrictions
 (No_Exception_Propagation) is in effect.
 
 @item -gnatwy
-@emph{Activate warnings for Ada 2005 compatibility issues.}
+@emph{Activate warnings for Ada compatibility issues.}
 @cindex @option{-gnatwy} (@command{gcc})
-@cindex Ada 2005 compatibility issues warnings
-For the most part Ada 2005 is upwards compatible with Ada 95,
-but there are some exceptions (for example the fact that
-@code{interface} is now a reserved word in Ada 2005). This
+@cindex Ada compatibility issues warnings
+For the most part, newer versions of Ada are upwards compatible
+with older versions. For example, Ada 2005 programs will almost
+always work when compiled as Ada 2012.
+However there are some exceptions (for example the fact that
+@code{some} is now a reserved word in Ada 2012). This
 switch activates several warnings to help in identifying
 and correcting such incompatibilities. The default is that
 these warnings are generated. Note that at one point Ada 2005
@@ -5793,11 +5795,11 @@ was called Ada 0Y, hence the choice of character.
 This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwY
-@emph{Disable warnings for Ada 2005 compatibility issues.}
+@emph{Disable warnings for Ada compatibility issues.}
 @cindex @option{-gnatwY} (@command{gcc})
-@cindex Ada 2005 compatibility issues warnings
-This switch suppresses several warnings intended to help in identifying
-incompatibilities between Ada 95 and Ada 2005.
+@cindex Ada compatibility issues warnings
+This switch suppresses the warnings intended to help in identifying
+incompatibilities between Ada language versions.
 
 @item -gnatwz
 @emph{Activate warnings on unchecked conversions.}
