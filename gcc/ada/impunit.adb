@@ -346,6 +346,7 @@ package body Impunit is
 
      "s-addima",    -- System.Address_Image
      "s-assert",    -- System.Assertions
+     "s-finmas",    -- System.Finalization_Masters
      "s-memory",    -- System.Memory
      "s-parint",    -- System.Partition_Interface
      "s-pooglo",    -- System.Pool_Global
@@ -508,6 +509,7 @@ package body Impunit is
    Non_Imp_File_Names_12 : constant File_List := (
      "s-multip",    -- System.Multiprocessors
      "s-mudido",    -- System.Multiprocessors.Dispatching_Domains
+     "s-stposu",    -- System.Storage_Pools.Subpools
      "a-cobove",    -- Ada.Containers.Bounded_Vectors
      "a-cbdlli",    -- Ada.Containers.Bounded_Doubly_Linked_Lists
      "a-cborse",    -- Ada.Containers.Bounded_Ordered_Sets
@@ -521,11 +523,13 @@ package body Impunit is
      "a-extiin",    -- Ada.Execution_Time.Interrupts
      "a-iteint",    -- Ada.Iterator_Interfaces
      "a-synbar",    -- Ada.Synchronous_Barriers
+     "a-undesu",    -- Ada.Unchecked_Deallocate_Subpool
 
    -----------------------------------------
    -- GNAT Defined Additions to Ada 20012 --
    -----------------------------------------
 
+     "s-spsufi",    -- System.Storage_Pools.Subpools.Finalization
      "a-cofove",    -- Ada.Containers.Formal_Vectors
      "a-cfdlli",    -- Ada.Containers.Formal_Doubly_Linked_Lists
      "a-cforse",    -- Ada.Containers.Formal_Ordered_Sets

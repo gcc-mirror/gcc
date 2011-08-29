@@ -35,6 +35,8 @@ with Ada.Unchecked_Conversion;
 with System.Storage_Elements;
 with System.Storage_Pools;
 
+pragma Compiler_Unit;
+
 package System.Finalization_Masters is
    pragma Preelaborate (System.Finalization_Masters);
 

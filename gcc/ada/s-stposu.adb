@@ -61,10 +61,6 @@ package body System.Storage_Pools.Subpools is
       Alignment                : System.Storage_Elements.Storage_Count)
    is
    begin
-      --  ??? The use of Allocate is very dangerous as it does not handle
-      --  controlled objects properly. Perhaps we should provide an
-      --  implementation which raises Program_Error instead.
-
       --  Dispatch to the user-defined implementations of Allocate_From_Subpool
       --  and Default_Subpool_For_Pool.
 
@@ -83,13 +79,14 @@ package body System.Storage_Pools.Subpools is
 
    procedure Allocate_Any_Controlled
      (Pool            : in out Root_Storage_Pool'Class;
-      Context_Subpool : Subpool_Handle := null;
-      Context_Master  : Finalization_Masters.Finalization_Master_Ptr := null;
-      Fin_Address     : Finalization_Masters.Finalize_Address_Ptr := null;
+      Context_Subpool : Subpool_Handle;
+      Context_Master  : Finalization_Masters.Finalization_Master_Ptr;
+      Fin_Address     : Finalization_Masters.Finalize_Address_Ptr;
       Addr            : out System.Address;
       Storage_Size    : System.Storage_Elements.Storage_Count;
       Alignment       : System.Storage_Elements.Storage_Count;
-      Is_Controlled   : Boolean := True)
+      Is_Controlled   : Boolean;
+      On_Subpool      : Boolean)
    is
       Is_Subpool_Allocation : constant Boolean :=
                                 Pool in Root_Storage_Pool_With_Subpools'Class;
@@ -108,7 +105,7 @@ package body System.Storage_Pools.Subpools is
       --  Step 1: Pool-related runtime checks
 
       --  Allocation on a pool_with_subpools. In this scenario there is a
-      --  master for each subpool.
+      --  master for each subpool. The master of the access type is ignored.
 
       if Is_Subpool_Allocation then
 
@@ -120,26 +117,21 @@ package body System.Storage_Pools.Subpools is
               Default_Subpool_For_Pool
                 (Root_Storage_Pool_With_Subpools'Class (Pool));
 
-            --  Ensure proper ownership
-
-            if Subpool.Owner /=
-                 Root_Storage_Pool_With_Subpools'Class (Pool)'Unchecked_Access
-            then
-               raise Program_Error with "incorrect owner of default subpool";
-            end if;
-
          --  Allocation with a Subpool_Handle
 
          else
             Subpool := Context_Subpool;
+         end if;
 
-            --  Ensure proper ownership
+         --  Ensure proper ownership and chaining of the subpool
 
-            if Subpool.Owner /=
-                 Root_Storage_Pool_With_Subpools'Class (Pool)'Unchecked_Access
-            then
-               raise Program_Error with "incorrect owner of subpool";
-            end if;
+         if Subpool.Owner /=
+              Root_Storage_Pool_With_Subpools'Class (Pool)'Unchecked_Access
+           or else Subpool.Node = null
+           or else Subpool.Node.Prev = null
+           or else Subpool.Node.Next = null
+         then
+            raise Program_Error with "incorrect owner of subpool";
          end if;
 
          Master := Subpool.Master'Unchecked_Access;
@@ -148,25 +140,35 @@ package body System.Storage_Pools.Subpools is
       --  each access-to-controlled type. No context subpool should be present.
 
       else
-
          --  If the master is missing, then the expansion of the access type
          --  failed to create one. This is a serious error.
 
          if Context_Master = null then
             raise Program_Error with "missing master in pool allocation";
+         end if;
 
          --  If a subpool is present, then this is the result of erroneous
          --  allocator expansion. This is not a serious error, but it should
          --  still be detected.
 
-         elsif Context_Subpool /= null then
+         if Context_Subpool /= null then
             raise Program_Error with "subpool not required in pool allocation";
+         end if;
+
+         --  If the allocation is intended to be on a subpool, but the access
+         --  type's pool does not support subpools, then this is the result of
+         --  erroneous end-user code.
+
+         if On_Subpool then
+            raise Program_Error
+              with "pool of access type does not support subpools";
          end if;
 
          Master := Context_Master;
       end if;
 
-      --  Step 2: Master-related runtime checks and size calculations
+      --  Step 2: Master and Finalize_Address-related runtime checks and size
+      --  calculations.
 
       --  Allocation of a descendant from [Limited_]Controlled, a class-wide
       --  object or a record with controlled components.
@@ -178,6 +180,15 @@ package body System.Storage_Pools.Subpools is
 
          if Master.Finalization_Started then
             raise Program_Error with "allocation after finalization started";
+         end if;
+
+         --  Check whether primitive Finalize_Address is available. If it is
+         --  not, then either the expansion of the designated type failed or
+         --  the expansion of the allocator failed. This is a serious error.
+
+         if Fin_Address = null then
+            raise Program_Error
+              with "primitive Finalize_Address not available";
          end if;
 
          --  The size must acount for the hidden header preceding the object.
@@ -224,28 +235,19 @@ package body System.Storage_Pools.Subpools is
          --  due to larger alignment, the header is placed right next to the
          --  object:
 
-         --    N_Addr  N_Ptr
-         --    |       |
-         --    V       V
-         --    +-------+---------------+----------------------+
-         --    |Padding|    Header     |        Object        |
-         --    +-------+---------------+----------------------+
-         --    ^       ^               ^
-         --    |       +- Header_Size -+
-         --    |                       |
-         --    +- Header_And_Padding --+
+         --     N_Addr  N_Ptr
+         --     |       |
+         --     V       V
+         --     +-------+---------------+----------------------+
+         --     |Padding|    Header     |        Object        |
+         --     +-------+---------------+----------------------+
+         --     ^       ^               ^
+         --     |       +- Header_Size -+
+         --     |                       |
+         --     +- Header_And_Padding --+
 
          N_Ptr :=
            Address_To_FM_Node_Ptr (N_Addr + Header_And_Padding - Header_Size);
-
-         --  Check whether primitive Finalize_Address is available. If it is
-         --  not, then either the expansion of the designated type failed or
-         --  the expansion of the allocator failed. This is a serious error.
-
-         if Fin_Address = null then
-            raise Program_Error
-              with "primitive Finalize_Address not available";
-         end if;
 
          N_Ptr.Finalize_Address := Fin_Address;
 
@@ -268,6 +270,10 @@ package body System.Storage_Pools.Subpools is
 
    procedure Attach (N : not null SP_Node_Ptr; L : not null SP_Node_Ptr) is
    begin
+      --  Ensure that the node has not been attached already
+
+      pragma Assert (N.Prev = null and then N.Next = null);
+
       Lock_Task.all;
 
       L.Next.Prev := N;
@@ -290,7 +296,7 @@ package body System.Storage_Pools.Subpools is
       Addr          : System.Address;
       Storage_Size  : System.Storage_Elements.Storage_Count;
       Alignment     : System.Storage_Elements.Storage_Count;
-      Is_Controlled : Boolean := True)
+      Is_Controlled : Boolean)
    is
       N_Addr : Address;
       N_Ptr  : FM_Node_Ptr;
@@ -360,7 +366,7 @@ package body System.Storage_Pools.Subpools is
 
    procedure Detach (N : not null SP_Node_Ptr) is
    begin
-      --  N must be attached to some list
+      --  Ensure that the node is attached to some list
 
       pragma Assert (N.Next /= null and then N.Prev /= null);
 
@@ -379,22 +385,22 @@ package body System.Storage_Pools.Subpools is
    -- Finalize --
    --------------
 
-   overriding procedure Finalize
-     (Pool : in out Root_Storage_Pool_With_Subpools)
-   is
+   overriding procedure Finalize (Controller : in out Pool_Controller) is
+   begin
+      Finalize_Pool (Controller.Enclosing_Pool.all);
+   end Finalize;
+
+   -------------------
+   -- Finalize_Pool --
+   -------------------
+
+   procedure Finalize_Pool (Pool : in out Root_Storage_Pool_With_Subpools) is
       Curr_Ptr : SP_Node_Ptr;
       Ex_Occur : Exception_Occurrence;
       Next_Ptr : SP_Node_Ptr;
       Raised   : Boolean := False;
 
    begin
-      --  Uninitialized pools do not have subpools and do not contain objects
-      --  of any kind.
-
-      if not Pool.Initialized then
-         return;
-      end if;
-
       --  It is possible for multiple tasks to cause the finalization of a
       --  common pool. Allow only one task to finalize the contents.
 
@@ -415,11 +421,12 @@ package body System.Storage_Pools.Subpools is
       while Curr_Ptr /= Pool.Subpools'Unchecked_Access loop
          Next_Ptr := Curr_Ptr.Next;
 
-         --  Remove the subpool node from the subpool list
+         --  Perform the following actions:
 
-         Detach (Curr_Ptr);
-
-         --  Finalize the current subpool
+         --    1) Finalize all objects chained on the subpool's master
+         --    2) Remove the the subpool from the owner's list of subpools
+         --    3) Deallocate the doubly linked list node associated with the
+         --       subpool.
 
          begin
             Finalize_Subpool (Curr_Ptr.Subpool);
@@ -432,11 +439,6 @@ package body System.Storage_Pools.Subpools is
                end if;
          end;
 
-         --  Since subpool nodes are not allocated on the owner pool, they must
-         --  be explicitly destroyed.
-
-         Free (Curr_Ptr);
-
          Curr_Ptr := Next_Ptr;
       end loop;
 
@@ -446,7 +448,7 @@ package body System.Storage_Pools.Subpools is
       if Raised then
          Reraise_Occurrence (Ex_Occur);
       end if;
-   end Finalize;
+   end Finalize_Pool;
 
    ----------------------
    -- Finalize_Subpool --
@@ -454,8 +456,48 @@ package body System.Storage_Pools.Subpools is
 
    procedure Finalize_Subpool (Subpool : not null Subpool_Handle) is
    begin
+      --  Do nothing if the subpool was never used
+
+      if Subpool.Owner = null
+        or else Subpool.Node = null
+      then
+         return;
+      end if;
+
+      --  Clean up all controlled objects chained on the subpool's master
+
       Finalize (Subpool.Master);
+
+      --  Remove the subpool from its owner's list of subpools
+
+      Detach (Subpool.Node);
+
+      --  Destroy the associated doubly linked list node which was created in
+      --  Set_Pool_Of_Subpool.
+
+      Free (Subpool.Node);
    end Finalize_Subpool;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   overriding procedure Initialize (Controller : in out Pool_Controller) is
+   begin
+      Initialize_Pool (Controller.Enclosing_Pool.all);
+   end Initialize;
+
+   ---------------------
+   -- Initialize_Pool --
+   ---------------------
+
+   procedure Initialize_Pool (Pool : in out Root_Storage_Pool_With_Subpools) is
+   begin
+      --  The dummy head must point to itself in both directions
+
+      Pool.Subpools.Next := Pool.Subpools'Unchecked_Access;
+      Pool.Subpools.Prev := Pool.Subpools'Unchecked_Access;
+   end Initialize_Pool;
 
    ---------------------
    -- Pool_Of_Subpool --
@@ -478,15 +520,6 @@ package body System.Storage_Pools.Subpools is
       N_Ptr : SP_Node_Ptr;
 
    begin
-      if not Pool.Initialized then
-
-         --  The dummy head must point to itself in both directions
-
-         Pool.Subpools.Next := Pool.Subpools'Unchecked_Access;
-         Pool.Subpools.Prev := Pool.Subpools'Unchecked_Access;
-         Pool.Initialized   := True;
-      end if;
-
       --  If the subpool is already owned, raise Program_Error. This is a
       --  direct violation of the RM rules.
 
@@ -502,13 +535,15 @@ package body System.Storage_Pools.Subpools is
            with "subpool creation after finalization started";
       end if;
 
-      --  Create a subpool node, decorate it and associate it with the subpool
-      --  list of Pool.
+      Subpool.Owner := Pool'Unchecked_Access;
+
+      --  Create a subpool node and decorate it. Since this node is not
+      --  allocated on the owner's pool, it must be explicitly destroyed by
+      --  Finalize_And_Detach.
 
       N_Ptr := new SP_Node;
-
-      Subpool.Owner := Pool'Unchecked_Access;
       N_Ptr.Subpool := Subpool;
+      Subpool.Node := N_Ptr;
 
       Attach (N_Ptr, Pool.Subpools'Unchecked_Access);
    end Set_Pool_Of_Subpool;

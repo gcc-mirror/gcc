@@ -198,8 +198,13 @@ package Exp_Util is
      (N           : Node_Id;
       Is_Allocate : Boolean);
    --  Create a custom Allocate/Deallocate to be associated with an allocation
-   --  or deallocation of a controlled or class-wide object. In the case of
-   --  allocation, N is the declaration of the temporary variable which
+   --  or deallocation:
+   --
+   --    1) controlled objects
+   --    2) class-wide objects
+   --    3) any kind of object on a subpool
+   --
+   --  N must be an allocator or the declaration of a temporary variable which
    --  represents the expression of the original allocator node, otherwise N
    --  must be a free statement. If flag Is_Allocate is set, the generated
    --  routine is allocate, deallocate otherwise.

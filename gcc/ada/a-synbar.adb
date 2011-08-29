@@ -61,7 +61,6 @@ package body Ada.Synchronous_Barriers is
 
          Notified := Wait'Count = 0;
       end Wait;
-
    end Synchronous_Barrier;
 
    ----------------------

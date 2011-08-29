@@ -777,9 +777,8 @@ package body Exp_Ch7 is
 
       return
         Make_Exception_Handler (Loc,
-          Exception_Choices => New_List (
-            Make_Others_Choice (Loc)),
-
+          Exception_Choices =>
+            New_List (Make_Others_Choice (Loc)),
           Statements => New_List (
             Make_If_Statement (Loc,
               Condition       =>
@@ -807,6 +806,7 @@ package body Exp_Ch7 is
       Encl_Scope : Entity_Id := Empty)
    is
       Desig_Typ : constant Entity_Id := Directly_Designated_Type (Typ);
+      Ptr_Typ   : Entity_Id := Root_Type (Base_Type (Typ));
 
       function In_Deallocation_Instance (E : Entity_Id) return Boolean;
       --  Determine whether entity E is inside a wrapper package created for
@@ -840,41 +840,57 @@ package body Exp_Ch7 is
    --  Start of processing for Build_Finalization_Master
 
    begin
+      if Is_Private_Type (Ptr_Typ)
+        and then Present (Full_View (Ptr_Typ))
+      then
+         Ptr_Typ := Full_View (Ptr_Typ);
+      end if;
+
       --  Certain run-time configurations and targets do not provide support
       --  for controlled types.
 
       if Restriction_Active (No_Finalization) then
          return;
 
+      --  Do not process C, C++, CIL and Java types since it is assumend that
+      --  the non-Ada side will handle their clean up.
+
+      elsif Convention (Desig_Typ) = Convention_C
+        or else Convention (Desig_Typ) = Convention_CIL
+        or else Convention (Desig_Typ) = Convention_CPP
+        or else Convention (Desig_Typ) = Convention_Java
+      then
+         return;
+
       --  Various machinery such as freezing may have already created a
       --  finalization master.
 
-      elsif Present (Finalization_Master (Typ)) then
+      elsif Present (Finalization_Master (Ptr_Typ)) then
          return;
 
       --  Do not process types that return on the secondary stack
 
-      elsif Present (Associated_Storage_Pool (Typ))
-        and then Is_RTE (Associated_Storage_Pool (Typ), RE_SS_Pool)
+      elsif Present (Associated_Storage_Pool (Ptr_Typ))
+        and then Is_RTE (Associated_Storage_Pool (Ptr_Typ), RE_SS_Pool)
       then
          return;
 
       --  Do not process types which may never allocate an object
 
-      elsif No_Pool_Assigned (Typ) then
+      elsif No_Pool_Assigned (Ptr_Typ) then
          return;
 
       --  Do not process access types coming from Ada.Unchecked_Deallocation
       --  instances. Even though the designated type may be controlled, the
       --  access type will never participate in allocation.
 
-      elsif In_Deallocation_Instance (Typ) then
+      elsif In_Deallocation_Instance (Ptr_Typ) then
          return;
 
       --  Ignore the general use of anonymous access types unless the context
       --  requires a finalization master.
 
-      elsif Ekind (Typ) = E_Anonymous_Access_Type
+      elsif Ekind (Ptr_Typ) = E_Anonymous_Access_Type
         and then No (Ins_Node)
       then
          return;
@@ -883,7 +899,7 @@ package body Exp_Ch7 is
       --  Finalization is in effect since masters are controlled objects.
 
       elsif Restriction_Active (No_Nested_Finalization)
-        and then not Is_Library_Level_Entity (Typ)
+        and then not Is_Library_Level_Entity (Ptr_Typ)
       then
          return;
 
@@ -898,19 +914,12 @@ package body Exp_Ch7 is
       end if;
 
       declare
-         Loc        : constant Source_Ptr := Sloc (Typ);
+         Loc        : constant Source_Ptr := Sloc (Ptr_Typ);
          Actions    : constant List_Id := New_List;
          Fin_Mas_Id : Entity_Id;
          Pool_Id    : Entity_Id;
-         Ptr_Typ    : Entity_Id := Typ;
 
       begin
-         --  Access subtypes must use the storage pool of their base type
-
-         if Ekind (Ptr_Typ) = E_Access_Subtype then
-            Ptr_Typ := Base_Type (Ptr_Typ);
-         end if;
-
          --  Generate:
          --    Fnn : aliased Finalization_Master;
 
@@ -994,11 +1003,10 @@ package body Exp_Ch7 is
 
             Pop_Scope;
 
-         elsif Ekind (Typ) = E_Access_Subtype
-           or else (Ekind (Desig_Typ) = E_Incomplete_Type
-                     and then Has_Completion_In_Body (Desig_Typ))
+         elsif Ekind (Desig_Typ) = E_Incomplete_Type
+           and then Has_Completion_In_Body (Desig_Typ)
          then
-            Insert_Actions (Parent (Typ), Actions);
+            Insert_Actions (Parent (Ptr_Typ), Actions);
 
          --  If the designated type is not yet frozen, then append the actions
          --  to that type's freeze actions. The actions need to be appended to
@@ -1013,10 +1021,10 @@ package body Exp_Ch7 is
          then
             Append_Freeze_Actions (Desig_Typ, Actions);
 
-         elsif Present (Freeze_Node (Typ))
-           and then not Analyzed (Freeze_Node (Typ))
+         elsif Present (Freeze_Node (Ptr_Typ))
+           and then not Analyzed (Freeze_Node (Ptr_Typ))
          then
-            Append_Freeze_Actions (Typ, Actions);
+            Append_Freeze_Actions (Ptr_Typ, Actions);
 
          --  If there's a pool created locally for the access type, then we
          --  need to ensure that the master gets created after the pool object,
@@ -1027,12 +1035,12 @@ package body Exp_Ch7 is
          --  this point. (This seems a little unclean.???)
 
          elsif VM_Target = No_VM
-           and then Scope (Pool_Id) = Scope (Typ)
+           and then Scope (Pool_Id) = Scope (Ptr_Typ)
          then
             Insert_List_After_And_Analyze (Parent (Pool_Id), Actions);
 
          else
-            Insert_Actions (Parent (Typ), Actions);
+            Insert_Actions (Parent (Ptr_Typ), Actions);
          end if;
       end;
    end Build_Finalization_Master;
@@ -1448,8 +1456,8 @@ package body Exp_Ch7 is
             --  The local exception does not need to be reraised for library-
             --  level finalizers. Generate:
             --
-            --    if Raised then
-            --       Raise_From_Controlled_Operation (E, Abort);
+            --    if Raised and then not Abort then
+            --       Raise_From_Controlled_Operation (E);
             --    end if;
 
             if not For_Package
@@ -2297,6 +2305,10 @@ package body Exp_Ch7 is
 
                      if Is_Controlled (Typ) then
                         Init := Find_Prim_Op (Typ, Name_Initialize);
+
+                        if Present (Init) then
+                           Init := Ultimate_Alias (Init);
+                        end if;
                      end if;
 
                      return
@@ -2347,6 +2359,12 @@ package body Exp_Ch7 is
                Utyp := Corresponding_Record_Type (Typ);
             else
                Utyp := Typ;
+            end if;
+
+            if Is_Private_Type (Utyp)
+              and then Present (Full_View (Utyp))
+            then
+               Utyp := Full_View (Utyp);
             end if;
 
             --  The init procedures are arranged as follows:
@@ -3086,20 +3104,13 @@ package body Exp_Ch7 is
       E_Id      : Entity_Id;
       Raised_Id : Entity_Id) return Node_Id
    is
-      Params  : List_Id;
       Proc_Id : Entity_Id;
 
    begin
-      --  The default parameter is the local exception occurrence
-
-      Params := New_List (New_Reference_To (E_Id, Loc));
-
-      --  Standard run-time, .NET/JVM targets, this case handles finalization
-      --  exceptions raised during an abort.
+      --  Standard run-time, .NET/JVM targets
 
       if RTE_Available (RE_Raise_From_Controlled_Operation) then
          Proc_Id := RTE (RE_Raise_From_Controlled_Operation);
-         Append_To (Params, New_Reference_To (Abort_Id, Loc));
 
       --  Restricted runtime: exception messages are not supported and hence
       --  Raise_From_Controlled_Operation is not supported.
@@ -3109,17 +3120,24 @@ package body Exp_Ch7 is
       end if;
 
       --  Generate:
-      --    if Raised_Id then
+      --    if Raised_Id and then not Abort_Id then
       --       <Proc_Id> (<Params>);
       --    end if;
 
       return
         Make_If_Statement (Loc,
-          Condition       => New_Reference_To (Raised_Id, Loc),
+          Condition =>
+            Make_And_Then (Loc,
+              Left_Opnd  => New_Reference_To (Raised_Id, Loc),
+              Right_Opnd =>
+                Make_Op_Not (Loc,
+                  Right_Opnd => New_Reference_To (Abort_Id, Loc))),
+
           Then_Statements => New_List (
             Make_Procedure_Call_Statement (Loc,
               Name                   => New_Reference_To (Proc_Id, Loc),
-              Parameter_Associations => Params)));
+              Parameter_Associations =>
+                New_List (New_Reference_To (E_Id, Loc)))));
    end Build_Raise_Statement;
 
    -----------------------------
@@ -4325,8 +4343,8 @@ package body Exp_Ch7 is
 
                --    exception
                --       when others =>
-               --          if not Rnn then
-               --             Rnn := True;
+               --          if not Raised then
+               --             Raised := True;
                --             Save_Occurrence
                --               (Enn, Get_Current_Excep.all.all);
                --          end if;
@@ -4405,8 +4423,8 @@ package body Exp_Ch7 is
          end loop;
 
          --  Generate:
-         --    if Rnn then
-         --       Raise_From_Controlled_Operation (E, Abort);
+         --    if Raised and then not Abort then
+         --       Raise_From_Controlled_Operation (E);
          --    end if;
 
          if Built
@@ -4723,8 +4741,8 @@ package body Exp_Ch7 is
       --          ...
       --       end loop;
       --
-      --       if Raised then
-      --          Raise_From_Controlled_Operation (E, Abort);
+      --       if Raised and then not Abort then
+      --          Raise_From_Controlled_Operation (E);
       --       end if;
       --    end;
 
@@ -4789,8 +4807,8 @@ package body Exp_Ch7 is
       --                      end loop;
       --                   end;
 
-      --                   if Raised then
-      --                      Raise_From_Controlled_Operation (E, Abort);
+      --                   if Raised and then not Abort then
+      --                      Raise_From_Controlled_Operation (E);
       --                   end if;
 
       --                   raise;
@@ -4957,8 +4975,8 @@ package body Exp_Ch7 is
          --    begin
          --       <core loop>
 
-         --       if Raised then  --  Expection handlers allowed
-         --          Raise_From_Controlled_Operation (E, Abort);
+         --       if Raised and then not Abort then  --  Expection handlers OK
+         --          Raise_From_Controlled_Operation (E);
          --       end if;
          --    end;
 
@@ -5249,11 +5267,11 @@ package body Exp_Ch7 is
 
          --       <final loop>
 
-         --       if Raised then  --  Exception handlers allowed
-         --          Raise_From_Controlled_Operation (E, Abort);
+         --       if Raised and then not Abort then  --  Exception handlers OK
+         --          Raise_From_Controlled_Operation (E);
          --       end if;
 
-         --       raise;          --  Exception handlers allowed
+         --       raise;  --  Exception handlers OK
          --    end;
 
          Stmts := New_List (Build_Counter_Assignment, Final_Loop);
@@ -5537,8 +5555,8 @@ package body Exp_Ch7 is
       --          end;
       --       end if;
       --
-      --       if Raised then
-      --          Raise_From_Controlled_Object (E, Abort);
+      --       if Raised and then not Abort then
+      --          Raise_From_Controlled_Operation (E);
       --       end if;
       --    end;
 
@@ -5622,8 +5640,8 @@ package body Exp_Ch7 is
       --             end if;
       --       end;
       --
-      --       if Raised then
-      --          Raise_From_Controlled_Object (E, Abort);
+      --       if Raised and then not Abort then
+      --          Raise_From_Controlled_Operation (E);
       --       end if;
       --    end;
 
@@ -6036,8 +6054,8 @@ package body Exp_Ch7 is
          --    begin
          --       <adjust statements>
 
-         --       if Raised then
-         --          Raise_From_Controlled_Operation (E, Abort);
+         --       if Raised and then not Abort then
+         --          Raise_From_Controlled_Operation (E);
          --       end if;
          --    end;
 
@@ -6618,15 +6636,10 @@ package body Exp_Ch7 is
          --       Raised : Boolean := False;
 
          --    begin
-         --       if V.Finalized then
-         --          return;
-         --       end if;
-
          --       <finalize statements>
-         --       V.Finalized := True;
 
-         --       if Raised then
-         --          Raise_From_Controlled_Operation (E, Abort);
+         --       if Raised and then not Abort then
+         --          Raise_From_Controlled_Operation (E);
          --       end if;
          --    end;
 
@@ -6917,16 +6930,29 @@ package body Exp_Ch7 is
    --------------------------------
 
    procedure Make_Finalize_Address_Body (Typ : Entity_Id) is
+      Is_Task : constant Boolean :=
+                  Ekind (Typ) = E_Record_Type
+                    and then Is_Concurrent_Record_Type (Typ)
+                    and then Ekind (Corresponding_Concurrent_Type (Typ)) =
+                               E_Task_Type;
       Loc     : constant Source_Ptr := Sloc (Typ);
       Proc_Id : Entity_Id;
+      Stmts   : List_Id;
 
    begin
+      --  The corresponding records of task types are not controlled by design.
+      --  For the sake of completeness, create an empty Finalize_Address to be
+      --  used in task class-wide allocations.
+
+      if Is_Task then
+         null;
+
       --  Nothing to do if the type is not controlled or it already has a
       --  TSS entry for Finalize_Address. Skip class-wide subtypes which do not
       --  come from source. These are usually generated for completeness and
       --  do not need the Finalize_Address primitive.
 
-      if not Needs_Finalization (Typ)
+      elsif not Needs_Finalization (Typ)
         or else Is_Abstract_Type (Typ)
         or else Present (TSS (Typ, TSS_Finalize_Address))
         or else
@@ -6944,13 +6970,21 @@ package body Exp_Ch7 is
       --  Generate:
       --    procedure <Typ>FD (V : System.Address) is
       --    begin
-      --       declare
+      --       null;                            --  for tasks
+      --
+      --       declare                          --  for all other types
       --          type Pnn is access all Typ;
       --          for Pnn'Storage_Size use 0;
       --       begin
       --          [Deep_]Finalize (Pnn (V).all);
       --       end;
       --    end TypFD;
+
+      if Is_Task then
+         Stmts := New_List (Make_Null_Statement (Loc));
+      else
+         Stmts := Make_Finalize_Address_Stmts (Typ);
+      end if;
 
       Discard_Node (
         Make_Subprogram_Body (Loc,
@@ -6969,8 +7003,7 @@ package body Exp_Ch7 is
 
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
-              Statements =>
-                Make_Finalize_Address_Stmts (Typ))));
+              Statements => Stmts)));
 
       Set_TSS (Typ, Proc_Id);
    end Make_Finalize_Address_Body;
@@ -7218,7 +7251,7 @@ package body Exp_Ch7 is
    --  Generate:
 
    --    when E : others =>
-   --      Raise_From_Controlled_Operation (E, False);
+   --      Raise_From_Controlled_Operation (E);
 
    --  or:
 
@@ -7250,8 +7283,7 @@ package body Exp_Ch7 is
                New_Reference_To
                  (RTE (RE_Raise_From_Controlled_Operation), Loc),
              Parameter_Associations => New_List (
-               New_Reference_To (E_Occ, Loc),
-               New_Reference_To (Standard_False, Loc)));
+               New_Reference_To (E_Occ, Loc)));
 
       --  Restricted runtime: exception messages are not supported
 

@@ -327,10 +327,11 @@ package body Exp_Util is
      (N           : Node_Id;
       Is_Allocate : Boolean)
    is
-      Expr      : constant Node_Id   := Expression (N);
-      Ptr_Typ   : constant Entity_Id := Etype (Expr);
-      Desig_Typ : constant Entity_Id :=
-                    Available_View (Designated_Type (Ptr_Typ));
+      Desig_Typ    : Entity_Id;
+      Expr         : Node_Id;
+      Pool_Id      : Entity_Id;
+      Proc_To_Call : Node_Id := Empty;
+      Ptr_Typ      : Entity_Id;
 
       function Find_Finalize_Address (Typ : Entity_Id) return Entity_Id;
       --  Locate TSS primitive Finalize_Address in type Typ
@@ -351,13 +352,33 @@ package body Exp_Util is
          Utyp : Entity_Id := Typ;
 
       begin
+         --  Handle protected class-wide or task class-wide types
+
+         if Is_Class_Wide_Type (Utyp) then
+            if Is_Concurrent_Type (Root_Type (Utyp)) then
+               Utyp := Root_Type (Utyp);
+
+            elsif Is_Private_Type (Root_Type (Utyp))
+              and then Present (Full_View (Root_Type (Utyp)))
+              and then Is_Concurrent_Type (Full_View (Root_Type (Utyp)))
+            then
+               Utyp := Full_View (Root_Type (Utyp));
+            end if;
+         end if;
+
+         --  Handle private types
+
          if Is_Private_Type (Utyp)
            and then Present (Full_View (Utyp))
          then
             Utyp := Full_View (Utyp);
          end if;
 
-         if Is_Concurrent_Type (Utyp) then
+         --  Handle protected and task types
+
+         if Is_Concurrent_Type (Utyp)
+           and then Present (Corresponding_Record_Type (Utyp))
+         then
             Utyp := Corresponding_Record_Type (Utyp);
          end if;
 
@@ -459,18 +480,91 @@ package body Exp_Util is
    --  Start of processing for Build_Allocate_Deallocate_Proc
 
    begin
-      --  The allocation / deallocation of a non-controlled object does not
-      --  need the machinery created by this routine.
+      --  Obtain the attributes of the allocation / deallocation
 
-      if not Needs_Finalization (Desig_Typ) then
+      if Nkind (N) = N_Free_Statement then
+         Expr := Expression (N);
+         Ptr_Typ := Base_Type (Etype (Expr));
+         Proc_To_Call := Procedure_To_Call (N);
+
+      else
+         if Nkind (N) = N_Object_Declaration then
+            Expr := Expression (N);
+         else
+            Expr := N;
+         end if;
+
+         Ptr_Typ := Base_Type (Etype (Expr));
+
+         --  The allocator may have been rewritten into something else
+
+         if Nkind (Expr) = N_Allocator then
+            Proc_To_Call := Procedure_To_Call (Expr);
+         end if;
+      end if;
+
+      Pool_Id := Associated_Storage_Pool (Ptr_Typ);
+      Desig_Typ := Available_View (Designated_Type (Ptr_Typ));
+
+      --  Handle concurrent types
+
+      if Is_Concurrent_Type (Desig_Typ)
+        and then Present (Corresponding_Record_Type (Desig_Typ))
+      then
+         Desig_Typ := Corresponding_Record_Type (Desig_Typ);
+      end if;
+
+      --  Do not process allocations / deallocations without a pool
+
+      if No (Pool_Id) then
          return;
 
-      --  The allocator or free statement has already been expanded and already
-      --  has a custom Allocate / Deallocate routine.
+      --  Do not process allocations on / deallocations from the secondary
+      --  stack.
+
+      elsif Is_RTE (Pool_Id, RE_SS_Pool) then
+         return;
+
+      --  Do not replicate the machinery if the allocator / free has already
+      --  been expanded and has a custom Allocate / Deallocate.
+
+      elsif Present (Proc_To_Call)
+        and then Is_Allocate_Deallocate_Proc (Proc_To_Call)
+      then
+         return;
+      end if;
+
+      if Needs_Finalization (Desig_Typ) then
+
+         --  Certain run-time configurations and targets do not provide support
+         --  for controlled types.
+
+         if Restriction_Active (No_Finalization) then
+            return;
+
+         --  Do nothing if the access type may never allocate / deallocate
+         --  objects.
+
+         elsif No_Pool_Assigned (Ptr_Typ) then
+            return;
+
+         --  Access-to-controlled types are not supported on .NET/JVM since
+         --  these targets cannot support pools and address arithmetic.
+
+         elsif VM_Target /= No_VM then
+            return;
+         end if;
+
+         --  The allocation / deallocation of a controlled object must be
+         --  chained on / detached from a finalization master.
+
+         pragma Assert (Present (Finalization_Master (Ptr_Typ)));
+
+      --  The only other kind of allocation / deallocation supported by this
+      --  routine is on / from a subpool.
 
       elsif Nkind (Expr) = N_Allocator
-        and then Present (Procedure_To_Call (Expr))
-        and then Is_Allocate_Deallocate_Proc (Procedure_To_Call (Expr))
+        and then No (Subpool_Handle_Name (Expr))
       then
          return;
       end if;
@@ -486,36 +580,27 @@ package body Exp_Util is
          Fin_Addr_Id  : Entity_Id;
          Fin_Mas_Act  : Node_Id;
          Fin_Mas_Id   : Entity_Id;
-         Fin_Mas_Typ  : Entity_Id;
          Proc_To_Call : Entity_Id;
+         Subpool      : Node_Id := Empty;
 
       begin
-         --  When dealing with an access subtype, always use the base type
-         --  since it carries all the attributes.
-
-         if Ekind (Ptr_Typ) = E_Access_Subtype then
-            Fin_Mas_Typ := Base_Type (Ptr_Typ);
-         else
-            Fin_Mas_Typ := Ptr_Typ;
-         end if;
-
-         Actuals := New_List;
-
          --  Step 1: Construct all the actuals for the call to library routine
          --  Allocate_Any_Controlled / Deallocate_Any_Controlled.
 
          --  a) Storage pool
 
-         Append_To (Actuals,
-           New_Reference_To (Associated_Storage_Pool (Fin_Mas_Typ), Loc));
+         Actuals := New_List (New_Reference_To (Pool_Id, Loc));
 
          if Is_Allocate then
 
             --  b) Subpool
 
-            if Present (Subpool_Handle_Name (Expr)) then
-               Append_To (Actuals,
-                 New_Reference_To (Entity (Subpool_Handle_Name (Expr)), Loc));
+            if Nkind (Expr) = N_Allocator then
+               Subpool := Subpool_Handle_Name (Expr);
+            end if;
+
+            if Present (Subpool) then
+               Append_To (Actuals, New_Reference_To (Entity (Subpool), Loc));
             else
                Append_To (Actuals, Make_Null (Loc));
             end if;
@@ -523,7 +608,7 @@ package body Exp_Util is
             --  c) Finalization master
 
             if Needs_Finalization (Desig_Typ) then
-               Fin_Mas_Id  := Finalization_Master (Fin_Mas_Typ);
+               Fin_Mas_Id  := Finalization_Master (Ptr_Typ);
                Fin_Mas_Act := New_Reference_To (Fin_Mas_Id, Loc);
 
                --  Handle the case where the master is actually a pointer to a
@@ -545,7 +630,9 @@ package body Exp_Util is
 
             Fin_Addr_Id := Find_Finalize_Address (Desig_Typ);
 
-            if Present (Fin_Addr_Id) then
+            if Needs_Finalization (Desig_Typ) then
+               pragma Assert (Present (Fin_Addr_Id));
+
                Append_To (Actuals,
                  Make_Attribute_Reference (Loc,
                    Prefix         => New_Reference_To (Fin_Addr_Id, Loc),
@@ -654,9 +741,21 @@ package body Exp_Util is
 
                   Append_To (Actuals, New_Reference_To (Flag_Id, Loc));
                end;
+
+            --  The object is statically known to be controlled
+
+            else
+               Append_To (Actuals, New_Reference_To (Standard_True, Loc));
             end if;
          else
             Append_To (Actuals, New_Reference_To (Standard_False, Loc));
+         end if;
+
+         --  i) On_Subpool
+
+         if Is_Allocate then
+            Append_To (Actuals,
+              New_Reference_To (Boolean_Literals (Present (Subpool)), Loc));
          end if;
 
          --  Step 2: Build a wrapper Allocate / Deallocate which internally
@@ -5294,6 +5393,16 @@ package body Exp_Util is
       --  for controlled types.
 
       if Restriction_Active (No_Finalization) then
+         return False;
+
+      --  C, C++, CIL and Java types are not considered controlled. It is
+      --  assumed that the non-Ada side will handle their clean up.
+
+      elsif Convention (T) = Convention_C
+        or else Convention (T) = Convention_CIL
+        or else Convention (T) = Convention_CPP
+        or else Convention (T) = Convention_Java
+      then
          return False;
 
       else

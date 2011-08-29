@@ -84,8 +84,8 @@ package Exp_Ch7 is
    --  Subsidiary to routines Build_Finalizer, Make_Deep_Array_Body and Make_
    --  Deep_Record_Body. Generate the following conditional raise statement:
    --
-   --    if Raised_Id then
-   --       Raise_From_Controlled_Operation (E_Id, Abort_Id);
+   --    if Raised_Id and then not Abort_Id then
+   --       Raise_From_Controlled_Operation (E_Id);
    --    end if;
    --
    --  Abort_Id is a local boolean flag which is set when the finalization was

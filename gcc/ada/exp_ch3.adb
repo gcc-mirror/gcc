@@ -6626,35 +6626,31 @@ package body Exp_Ch3 is
             --  finalization support if not needed.
 
             if not Comes_From_Source (Def_Id)
-               and then not Has_Private_Declaration (Def_Id)
+              and then not Has_Private_Declaration (Def_Id)
             then
                null;
 
-            elsif (Needs_Finalization (Desig_Type)
-                    and then Convention (Desig_Type) /= Convention_Java
-                    and then Convention (Desig_Type) /= Convention_CIL)
+            --  An exception is made for types defined in the run-time because
+            --  Ada.Tags.Tag itself is such a type and cannot afford this
+            --  unnecessary overhead that would generates a loop in the
+            --  expansion scheme. Another exception is if Restrictions
+            --  (No_Finalization) is active, since then we know nothing is
+            --  controlled.
+
+            elsif Restriction_Active (No_Finalization)
+              or else In_Runtime (Def_Id)
+            then
+               null;
+
+            --  The machinery assumes that incomplete or private types are
+            --  always completed by a controlled full vies.
+
+            elsif Needs_Finalization (Desig_Type)
               or else
                 (Is_Incomplete_Or_Private_Type (Desig_Type)
-                  and then No (Full_View (Desig_Type))
-
-                  --  An exception is made for types defined in the run-time
-                  --  because Ada.Tags.Tag itself is such a type and cannot
-                  --  afford this unnecessary overhead that would generates a
-                  --  loop in the expansion scheme...
-
-                   and then not In_Runtime (Def_Id)
-
-                  --  Another exception is if Restrictions (No_Finalization)
-                  --  is active, since then we know nothing is controlled.
-
-                   and then not Restriction_Active (No_Finalization))
-
-               --  If the designated type is not frozen yet, its controlled
-               --  status must be retrieved explicitly.
-
+                  and then No (Full_View (Desig_Type)))
               or else
                 (Is_Array_Type (Desig_Type)
-                  and then not Is_Frozen (Desig_Type)
                   and then Needs_Finalization (Component_Type (Desig_Type)))
             then
                Build_Finalization_Master (Def_Id);
