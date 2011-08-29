@@ -351,10 +351,9 @@ procedure Gnat1drv is
       if Debug_Flag_Dot_XX then
          Use_Expression_With_Actions := True;
 
-      --  Debug flag -gnatd.Y and -gnatd.F (Alfa Mode) decisively set usage
-      --  off
+      --  Debug flag -gnatd.Y decisively set usage off
 
-      elsif Debug_Flag_Dot_YY or Debug_Flag_Dot_FF then
+      elsif Debug_Flag_Dot_YY then
          Use_Expression_With_Actions := False;
 
       --  Otherwise this feature is implemented, so we allow its use
@@ -444,6 +443,17 @@ procedure Gnat1drv is
          --  Skip call to gigi
 
          Debug_Flag_HH := True;
+
+         --  Disable Expressions_With_Actions nodes
+         --  The gnat2why backend does not deal with Expressions_With_Actions
+         --  in all places (in particular assertions). It is difficult to
+         --  determine in the frontend which cases are allowed, so we disable
+         --  Expressions_With_Actions entirely. Even in the cases where
+         --  gnat2why deals with Expressions_With_Actions, it is easier to
+         --  deal with the original constructs (quantified, conditional and
+         --  case expressions) instead of the rewritten ones.
+
+         Use_Expression_With_Actions := False;
 
          --  Enable assertions and debug pragmas, since they give valuable
          --  extra information for formal verification.
