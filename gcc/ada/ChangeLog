@@ -1,3 +1,7 @@
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* par-endh.adb: Minor reformatting.
+z
 2011-08-29  Tristan Gingold  <gingold@adacore.com>
 
 	* a-exexpr-gcc.adb (Unwind_Action) Rewrite as an integer with constants.
