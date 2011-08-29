@@ -5041,6 +5041,7 @@ package body Sem_Ch10 is
               ("instantiation depends on itself", Name (With_Clause));
 
          elsif not Is_Visible_Child_Unit (Uname) then
+
             --  Abandon processing in case of previous errors
 
             if No (Scope (Uname)) then

@@ -10550,6 +10550,7 @@ package body Exp_Dist is
                                        Add_Params_For_Variant_Components;
                                        J := J + Uint_1;
                                     end loop;
+
                                     Choice_Index :=
                                       Choice_Index + UI_To_Int (H - L) + 1;
                                  end;
@@ -10591,10 +10592,9 @@ package body Exp_Dist is
                                  Add_Params_For_Variant_Components;
                                  Choice_Index := Choice_Index + 1;
 
+                              --  Case of an explicit choice
+
                               when others =>
-
-                                 --  Case of an explicit choice
-
                                  declare
                                     Exp : constant Node_Id :=
                                             New_Copy_Tree (Choice);

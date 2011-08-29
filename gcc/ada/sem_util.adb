@@ -10506,6 +10506,13 @@ package body Sem_Util is
                P : constant Node_Id := Prefix (Exp);
 
             begin
+               --  In formal verification mode, keep track of all reads and
+               --  writes through explicit dereferences.
+
+               if ALFA_Mode then
+                  ALFA.Generate_Dereference (N, 'm');
+               end if;
+
                if Nkind (P) = N_Selected_Component
                  and then Present (
                    Entry_Formal (Entity (Selector_Name (P))))

@@ -535,9 +535,10 @@ package body Ada.Containers.Ordered_Sets is
       if Object.Container = null then
          return No_Element;
       else
-         return Cursor'(
-          Object.Container.all'Unrestricted_Access,
-            Object.Container.Tree.First);
+         return
+           Cursor'(
+             Object.Container.all'Unrestricted_Access,
+             Object.Container.Tree.First);
       end if;
    end First;
 
@@ -1171,19 +1172,20 @@ package body Ada.Containers.Ordered_Sets is
    begin
       if Container.Tree.Last = null then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Container.Tree.Last);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Container.Tree.Last);
    end Last;
 
    function Last (Object : Iterator) return Cursor is
    begin
       if Object.Container = null then
          return No_Element;
+      else
+         return Cursor'(
+           Object.Container.all'Unrestricted_Access,
+                        Object.Container.Tree.Last);
       end if;
-
-      return Cursor'(
-        Object.Container.all'Unrestricted_Access, Object.Container.Tree.Last);
    end Last;
 
    ------------------
@@ -1194,9 +1196,9 @@ package body Ada.Containers.Ordered_Sets is
    begin
       if Container.Tree.Last = null then
          raise Constraint_Error with "set is empty";
+      else
+         return Container.Tree.Last.Element;
       end if;
-
-      return Container.Tree.Last.Element;
    end Last_Element;
 
    ----------
@@ -1300,13 +1302,12 @@ package body Ada.Containers.Ordered_Sets is
       declare
          Node : constant Node_Access :=
                   Tree_Operations.Previous (Position.Node);
-
       begin
          if Node = null then
             return No_Element;
+         else
+            return Cursor'(Position.Container, Node);
          end if;
-
-         return Cursor'(Position.Container, Node);
       end;
    end Previous;
 

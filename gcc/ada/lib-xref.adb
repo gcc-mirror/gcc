@@ -112,9 +112,6 @@ package body Lib.Xref is
    --  Local Subprograms --
    ------------------------
 
-   function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id;
-   --  Return the closest enclosing subprogram of package
-
    procedure Generate_Prim_Op_References (Typ : Entity_Id);
    --  For a tagged type, generate implicit references to its primitive
    --  operations, for source navigation. This is done right before emitting
@@ -123,84 +120,6 @@ package body Lib.Xref is
 
    function Lt (T1, T2 : Xref_Entry) return Boolean;
    --  Order cross-references
-
-   -------------------------------------
-   -- Enclosing_Subprogram_Or_Package --
-   -------------------------------------
-
-   function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id is
-      Result : Entity_Id;
-
-   begin
-      --  If N is the defining identifier for a subprogram, then return the
-      --  enclosing subprogram or package, not this subprogram.
-
-      if Nkind_In (N, N_Defining_Identifier, N_Defining_Operator_Symbol)
-        and then Nkind (Parent (N)) in N_Subprogram_Specification
-      then
-         Result := Parent (Parent (Parent (N)));
-      else
-         Result := N;
-      end if;
-
-      loop
-         exit when No (Result);
-
-         case Nkind (Result) is
-            when N_Package_Specification =>
-               Result := Defining_Unit_Name (Result);
-               exit;
-
-            when N_Package_Body =>
-               Result := Defining_Unit_Name (Result);
-               exit;
-
-            when N_Subprogram_Specification =>
-               Result := Defining_Unit_Name (Result);
-               exit;
-
-            when N_Subprogram_Declaration =>
-               Result := Defining_Unit_Name (Specification (Result));
-               exit;
-
-            when N_Subprogram_Body =>
-               Result := Defining_Unit_Name (Specification (Result));
-               exit;
-
-            --  The enclosing subprogram for a pre- or postconditions should be
-            --  the subprogram to which the pragma is attached. This is not
-            --  always the case in the AST, as the pragma may be declared after
-            --  the declaration of the subprogram. Return Empty in this case.
-
-            when N_Pragma =>
-               if Get_Pragma_Id (Result) = Pragma_Precondition
-                    or else
-                  Get_Pragma_Id (Result) = Pragma_Postcondition
-               then
-                  return Empty;
-               else
-                  Result := Parent (Result);
-               end if;
-
-            when others =>
-               Result := Parent (Result);
-         end case;
-      end loop;
-
-      if Nkind (Result) = N_Defining_Program_Unit_Name then
-         Result := Defining_Identifier (Result);
-      end if;
-
-      --  Do no return a scope without a proper location
-
-      if Present (Result)
-        and then Sloc (Result) = No_Location
-      then
-         return Empty;
-      end if;
-
-      return Result;
-   end Enclosing_Subprogram_Or_Package;
 
    -------------------------
    -- Generate_Definition --
@@ -946,8 +865,8 @@ package body Lib.Xref is
          Ref := Original_Location (Sloc (Nod));
          Def := Original_Location (Sloc (Ent));
 
-         Ref_Scope := Enclosing_Subprogram_Or_Package (N);
-         Ent_Scope := Enclosing_Subprogram_Or_Package (Ent);
+         Ref_Scope := ALFA.Enclosing_Subprogram_Or_Package (N);
+         Ent_Scope := ALFA.Enclosing_Subprogram_Or_Package (Ent);
 
          Xrefs.Increment_Last;
          Indx := Xrefs.Last;

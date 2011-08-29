@@ -1761,6 +1761,13 @@ package body Sem_Ch4 is
    begin
       Check_SPARK_Restriction ("explicit dereference is not allowed", N);
 
+      --  In formal verification mode, keep track of all reads and writes
+      --  through explicit dereferences.
+
+      if ALFA_Mode then
+         ALFA.Generate_Dereference (N);
+      end if;
+
       Analyze (P);
       Set_Etype (N, Any_Type);
 

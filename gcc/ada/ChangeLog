@@ -1,3 +1,26 @@
+2011-08-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch10.adb, a-coorse.adb, exp_dist.adb, exp_ch3.adb: Minor
+	reformatting.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* alfa.ads (Name_Of_Heap_Variable): New constant name.
+	* lib-xref-alfa.adb, lib-xref.adb, lib-xref.ads (Drefs): New global
+	table to hold dereferences.
+	(Add_ALFA_Xrefs): Take into account dereferences as special
+	reads/writes to the variable "HEAP".
+	(Enclosing_Subprogram_Or_Package): Move subprogram here.
+	(Generate_Dereference): New procedure to store a read/write dereferencew
+	in the table Drefs.
+	* put_alfa.adb (Put_ALFA): Use different default than (0,0) used for
+	the special "HEAP" var.
+	* sem_ch4.adb (Analyze_Explicit_Dereference): Store read dereference
+	in ALFA mode.
+	* sem_util.adb (Note_Possible_Modification): Store write dereference
+	in ALFA mode.
+
 2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Freeze_Type): Generate an accessibility check which
