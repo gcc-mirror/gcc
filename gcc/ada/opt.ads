@@ -1877,7 +1877,7 @@ package Opt is
    ALFA_Mode : Boolean := False;
    --  Specific compiling mode targeting formal verification through the
    --  generation of Why code for those parts of the input code that belong to
-   --  the ALFA subset of Ada. Set by debuf flag -gnatd.F.
+   --  the ALFA subset of Ada. Set by debug flag -gnatd.F.
 
 private
 
