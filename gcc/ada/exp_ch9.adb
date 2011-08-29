@@ -5290,6 +5290,12 @@ package body Exp_Ch9 is
       Tasknm : Node_Id;
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       Aggr := Make_Aggregate (Loc, Component_Associations => New_List);
       Count := 0;
 
@@ -5421,6 +5427,12 @@ package body Exp_Ch9 is
    --  Start of processing for Expand_N_Accept_Statement
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       --  If accept statement is not part of a list, then its parent must be
       --  an accept alternative, and, as described above, we do not do any
       --  expansion for such accept statements at this level.
@@ -5871,6 +5883,12 @@ package body Exp_Ch9 is
       T   : Entity_Id;  --  Additional status flag
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       Process_Statements_For_Controlled_Objects (Trig);
       Process_Statements_For_Controlled_Objects (Abrt);
 
@@ -6820,6 +6838,12 @@ package body Exp_Ch9 is
       S : Entity_Id;  --  Primitive operation slot
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       Process_Statements_For_Controlled_Objects (N);
 
       if Ada_Version >= Ada_2005
@@ -7136,6 +7160,12 @@ package body Exp_Ch9 is
    procedure Expand_N_Delay_Relative_Statement (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       Rewrite (N,
         Make_Procedure_Call_Statement (Loc,
           Name => New_Reference_To (RTE (RO_CA_Delay_For), Loc),
@@ -7155,6 +7185,12 @@ package body Exp_Ch9 is
       Typ : Entity_Id;
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       if Is_RTE (Base_Type (Etype (Expression (N))), RO_CA_Time) then
          Typ := RTE (RO_CA_Delay_Until);
       else
@@ -7175,6 +7211,12 @@ package body Exp_Ch9 is
 
    procedure Expand_N_Entry_Body (N : Node_Id) is
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       --  Associate discriminals with the next protected operation body to be
       --  expanded.
 
@@ -7196,6 +7238,12 @@ package body Exp_Ch9 is
       Index   : Node_Id;
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       if No_Run_Time_Mode then
          Error_Msg_CRT ("entry call", N);
          return;
@@ -7252,6 +7300,12 @@ package body Exp_Ch9 is
       Acc_Ent    : Entity_Id;
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       Formal := First_Formal (Entry_Ent);
       Last_Decl := N;
 
@@ -7520,6 +7574,12 @@ package body Exp_Ch9 is
    --  Start of processing for Expand_N_Protected_Body
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       if No_Run_Time_Mode then
          Error_Msg_CRT ("protected body", N);
          return;
@@ -7870,6 +7930,12 @@ package body Exp_Ch9 is
    --  Start of processing for Expand_N_Protected_Type_Declaration
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       if Present (Corresponding_Record_Type (Prot_Typ)) then
          return;
       else
@@ -9072,6 +9138,12 @@ package body Exp_Ch9 is
    --  Start of processing for Expand_N_Requeue_Statement
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       --  Extract the components of the entry call
 
       Extract_Entry (N, Concval, Ename, Index);
@@ -9658,6 +9730,12 @@ package body Exp_Ch9 is
    --  Start of processing for Expand_N_Selective_Accept
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       Process_Statements_For_Controlled_Objects (N);
 
       --  First insert some declarations before the select. The first is:
@@ -10288,6 +10366,12 @@ package body Exp_Ch9 is
       --  Used to determine the proper location of wrapper body insertions
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       --  Add renaming declarations for discriminals and a declaration for the
       --  entry family index (if applicable).
 
@@ -10493,6 +10577,12 @@ package body Exp_Ch9 is
       Decl_Stack : Node_Id;
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       --  If already expanded, nothing to do
 
       if Present (Corresponding_Record_Type (Tasktyp)) then
@@ -11034,6 +11124,12 @@ package body Exp_Ch9 is
       S : Entity_Id;  --  Primitive operation slot
 
    begin
+      --  Do not expand tasking constructs in formal verification mode
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       --  Under the Ravenscar profile, timed entry calls are excluded. An error
       --  was already reported on spec, so do not attempt to expand the call.
 

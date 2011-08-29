@@ -596,6 +596,7 @@ package Lib.Xref is
         (CU           : Node_Id;
          Process      : Node_Processing;
          Inside_Stubs : Boolean);
+      --  This procedure is undocumented ???
 
       procedure Traverse_All_Compilation_Units (Process : Node_Processing);
       --  Call Process on all declarations through all compilation units

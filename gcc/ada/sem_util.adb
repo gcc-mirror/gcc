@@ -7953,8 +7953,8 @@ package body Sem_Util is
    --------------------------------------------------
 
    function Is_Subprogram_Stub_Without_Prior_Declaration
-     (N : Node_Id) return Boolean is
-
+     (N : Node_Id) return Boolean
+   is
    begin
       --  A subprogram stub without prior declaration serves as declaration for
       --  the actual subprogram body. As such, it has an attached defining

@@ -307,6 +307,13 @@ package body Exp_Ch13 is
       Delete         : Boolean := False;
 
    begin
+      --  In formal verification mode, do not generate useless and confusing
+      --  expansion for freeze nodes.
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       --  If there are delayed aspect specifications, we insert them just
       --  before the freeze node. They are already analyzed so we don't need
       --  to reanalyze them (they were analyzed before the type was frozen),

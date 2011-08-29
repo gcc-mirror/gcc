@@ -184,6 +184,9 @@ GNATRTL_NONTASKING_OBJS= \
   a-ngcoty$(objext) \
   a-ngelfu$(objext) \
   a-ngrear$(objext) \
+  a-nllrar$(objext) \
+  a-nlrear$(objext) \
+  a-nurear$(objext) \
   a-nlcefu$(objext) \
   a-nlcoty$(objext) \
   a-nlelfu$(objext) \

@@ -7052,8 +7052,13 @@ package body Sem_Ch6 is
       function Controlling_Formal (Prim : Entity_Id) return Entity_Id;
       --  Return the controlling formal of Prim
 
+      ------------------------
+      -- Controlling_Formal --
+      ------------------------
+
       function Controlling_Formal (Prim : Entity_Id) return Entity_Id is
          E : Entity_Id := First_Entity (Prim);
+
       begin
          while Present (E) loop
             if Is_Formal (E) and then Is_Controlling_Formal (E) then
