@@ -496,8 +496,10 @@ package body Inline is
          return;
       end if;
 
-      --  If the instance appears within a generic subprogram there is nothing
-      --  to finalize either.
+      --  If the instance is within a generic unit, no finalization code
+      --  can be generated. Note that at this point all bodies have been
+      --  analyzed, and the scope stack itself is not present, and the flag
+      --  Inside_A_Generic is not set.
 
       declare
          S : Entity_Id;
@@ -505,7 +507,7 @@ package body Inline is
       begin
          S := Scope (Inst);
          while Present (S) and then S /= Standard_Standard loop
-            if Is_Generic_Subprogram (S) then
+            if Is_Generic_Unit (S) then
                return;
             end if;
 

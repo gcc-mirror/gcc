@@ -3104,24 +3104,35 @@ package body Exp_Ch7 is
       E_Id      : Entity_Id;
       Raised_Id : Entity_Id) return Node_Id
    is
-      Proc_Id : Entity_Id;
+      Stmt : Node_Id;
 
    begin
       --  Standard run-time, .NET/JVM targets
+      --  Call Raise_From_Controlled_Operation (E_Id).
 
       if RTE_Available (RE_Raise_From_Controlled_Operation) then
-         Proc_Id := RTE (RE_Raise_From_Controlled_Operation);
+         Stmt :=
+           Make_Procedure_Call_Statement (Loc,
+              Name                   =>
+                New_Reference_To (RTE (RE_Raise_From_Controlled_Operation),
+                                  Loc),
+              Parameter_Associations =>
+                New_List (New_Reference_To (E_Id, Loc)));
 
       --  Restricted runtime: exception messages are not supported and hence
       --  Raise_From_Controlled_Operation is not supported.
+      --  Simply raise Program_Error.
 
       else
-         Proc_Id := RTE (RE_Reraise_Occurrence);
+         Stmt :=
+           Make_Raise_Program_Error (Loc,
+             Reason => PE_Finalize_Raised_Exception);
+
       end if;
 
       --  Generate:
       --    if Raised_Id and then not Abort_Id then
-      --       <Proc_Id> (<Params>);
+      --       Raise_From_Controlled_Operation (E_Id);
       --    end if;
 
       return
@@ -3133,11 +3144,7 @@ package body Exp_Ch7 is
                 Make_Op_Not (Loc,
                   Right_Opnd => New_Reference_To (Abort_Id, Loc))),
 
-          Then_Statements => New_List (
-            Make_Procedure_Call_Statement (Loc,
-              Name                   => New_Reference_To (Proc_Id, Loc),
-              Parameter_Associations =>
-                New_List (New_Reference_To (E_Id, Loc)))));
+          Then_Statements => New_List (Stmt));
    end Build_Raise_Statement;
 
    -----------------------------

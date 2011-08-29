@@ -1,3 +1,49 @@
+2011-08-29  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Scan_Make_Arg): Take any option as is in packages Compiler,
+	Binder or Linker of the main project file.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Add_Scopes_To_Clean): Exclude any entity within a generic
+	unit.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch9.adb: Partial revert of previous change for Alfa mode
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch11.adb: Minor expansion of comment.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Add_ALFA_Scope): Treat generic entities.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Arithmetic_Op): If the node has a universal
+	interpretation, set the type before resolving the operands, because
+	legality checks on an exponention operand need to know the type of the
+	context.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): Do not set delayed
+	cleanups on a master if the instance is within a generic unit.
+	Complement to the corresponding fix to inline.adb for K520-030.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch7.adb (Build_Raise_Statement): Raise PE instead of the current
+	occurrence.
+	* exp_intr.adb: Minor comment fix.
+
+2011-08-29  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Fix cases where
+	Delay_Required was used as an uninitialized variable.
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* a-cdlili.adb, a-cdlili.ads, a-coinve.adb, a-coinve.ads,

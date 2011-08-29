@@ -4878,6 +4878,12 @@ package body Exp_Ch9 is
       Ldecl2 : Node_Id;
 
    begin
+      --  In formal verification mode, do not expand tasking constructs
+
+      if ALFA_Mode then
+         return;
+      end if;
+
       if Expander_Active then
 
          --  If we have no handled statement sequence, we may need to build
@@ -10571,12 +10577,6 @@ package body Exp_Ch9 is
       Decl_Stack : Node_Id;
 
    begin
-      --  Do not expand tasking constructs in formal verification mode
-
-      if ALFA_Mode then
-         return;
-      end if;
-
       --  If already expanded, nothing to do
 
       if Present (Corresponding_Record_Type (Tasktyp)) then
