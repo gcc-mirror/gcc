@@ -130,7 +130,7 @@ extern void __gnat_setup_current_excep (_Unwind_Exception *);
 typedef struct
 {
   _Unwind_Action phase;
-  char * description;
+  const char * description;
 } phase_descriptor;
 
 static const phase_descriptor phase_descriptors[]
@@ -511,8 +511,11 @@ typedef struct
 
 } region_descriptor;
 
-static void
-db_region_for (region_descriptor *region, _Unwind_Context *uw_context)
+/* Extract and adjust the IP (instruction pointer) from an exception
+   context.  */
+
+static _Unwind_Ptr
+get_ip_from_context (_Unwind_Context *uw_context)
 {
   int ip_before_insn = 0;
 #ifdef HAVE_GETIPINFO
@@ -520,11 +523,25 @@ db_region_for (region_descriptor *region, _Unwind_Context *uw_context)
 #else
   _Unwind_Ptr ip = _Unwind_GetIP (uw_context);
 #endif
+  /* Subtract 1 if necessary because GetIPInfo yields a call return address
+     in this case, while we are interested in information for the call point.
+     This does not always yield the exact call instruction address but always
+     brings the IP back within the corresponding region.  */
   if (!ip_before_insn)
     ip--;
 
+  return ip;
+}
+
+static void
+db_region_for (region_descriptor *region, _Unwind_Context *uw_context)
+{
+  _Unwind_Ptr ip;
+
   if (! (db_accepted_codes () & DB_REGIONS))
     return;
+
+  ip = get_ip_from_context (uw_context);
 
   db (DB_REGIONS, "For ip @ 0x%08x => ", ip);
 
@@ -651,14 +668,7 @@ typedef struct
 static void
 db_action_for (action_descriptor *action, _Unwind_Context *uw_context)
 {
-  int ip_before_insn = 0;
-#ifdef HAVE_GETIPINFO
-  _Unwind_Ptr ip = _Unwind_GetIPInfo (uw_context, &ip_before_insn);
-#else
-  _Unwind_Ptr ip = _Unwind_GetIP (uw_context);
-#endif
-  if (!ip_before_insn)
-    ip--;
+  _Unwind_Ptr ip = get_ip_from_context (uw_context);
 
   db (DB_ACTIONS, "For ip @ 0x%08x => ", ip);
 
@@ -706,16 +716,7 @@ get_call_site_action_for (_Unwind_Context *uw_context,
                           region_descriptor *region,
                           action_descriptor *action)
 {
-  int ip_before_insn = 0;
-#ifdef HAVE_GETIPINFO
-  _Unwind_Ptr call_site = _Unwind_GetIPInfo (uw_context, &ip_before_insn);
-#else
-  _Unwind_Ptr call_site = _Unwind_GetIP (uw_context);
-#endif
-  /* Subtract 1 if necessary because GetIPInfo returns the actual call site
-     value + 1 in this case.  */
-  if (!ip_before_insn)
-    call_site--;
+  _Unwind_Ptr call_site = get_ip_from_context (uw_context);
 
   /* call_site is a direct index into the call-site table, with two special
      values : -1 for no-action and 0 for "terminate".  The latter should never
@@ -772,18 +773,7 @@ get_call_site_action_for (_Unwind_Context *uw_context,
                           action_descriptor *action)
 {
   const unsigned char *p = region->call_site_table;
-  int ip_before_insn = 0;
-#ifdef HAVE_GETIPINFO
-  _Unwind_Ptr ip = _Unwind_GetIPInfo (uw_context, &ip_before_insn);
-#else
-  _Unwind_Ptr ip = _Unwind_GetIP (uw_context);
-#endif
-  /* Subtract 1 if necessary because GetIPInfo yields a call return address
-     in this case, while we are interested in information for the call point.
-     This does not always yield the exact call instruction address but always
-     brings the IP back within the corresponding region.  */
-  if (!ip_before_insn)
-    ip--;
+  _Unwind_Ptr ip = get_ip_from_context (uw_context);
 
   /* Unless we are able to determine otherwise...  */
   action->kind = nothing;

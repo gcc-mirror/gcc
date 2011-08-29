@@ -7155,6 +7155,33 @@ package body Exp_Ch6 is
            (Func_Call, Function_Id, Return_Object => Empty);
       end if;
 
+      --  If the build-in-place function call returns a controlled object,
+      --  the finalization master will require a reference to routine
+      --  Finalize_Address of the designated type. Setting this attribute
+      --  is done in the same manner to expansion of allocators.
+
+      if Needs_Finalization (Result_Subt) then
+
+         --  Controlled types with supressed finalization do not need to
+         --  associate the address of their Finalize_Address primitives with
+         --  a master since they do not need a master to begin with.
+
+         if Is_Library_Level_Entity (Acc_Type)
+           and then Finalize_Storage_Only (Result_Subt)
+         then
+            null;
+
+         --  Do not generate the call to Make_Set_Finalize_Address for
+         --  CodePeer compilations because Finalize_Address is never built.
+
+         elsif not CodePeer_Mode then
+            Insert_Action (Allocator,
+              Make_Set_Finalize_Address_Call (Loc,
+                Typ     => Etype (Function_Id),
+                Ptr_Typ => Acc_Type));
+         end if;
+      end if;
+
       --  Finally, replace the allocator node with a reference to the result
       --  of the function call itself (which will effectively be an access
       --  to the object created by the allocator).

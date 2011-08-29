@@ -136,9 +136,6 @@ package body System.Task_Primitives.Operations is
      new Ada.Unchecked_Conversion
        (Task_Id, System.Task_Primitives.Task_Address);
 
-   function Get_Exc_Stack_Addr return Address;
-   --  Replace System.Soft_Links.Get_Exc_Stack_Addr_NT
-
    procedure Timer_Sleep_AST (ID : Address);
    pragma Convention (C, Timer_Sleep_AST);
    --  Signal the condition variable when AST fires
@@ -755,7 +752,6 @@ package body System.Task_Primitives.Operations is
 
       if Result = 0 then
          Succeeded := True;
-         Self_ID.Common.LL.Exc_Stack_Ptr := new Exc_Stack_T;
 
       else
          if not Single_Lock then
@@ -769,15 +765,6 @@ package body System.Task_Primitives.Operations is
       Result := pthread_condattr_destroy (Cond_Attr'Access);
       pragma Assert (Result = 0);
    end Initialize_TCB;
-
-   ------------------------
-   -- Get_Exc_Stack_Addr --
-   ------------------------
-
-   function Get_Exc_Stack_Addr return Address is
-   begin
-      return Self.Common.LL.Exc_Stack_Ptr (Exc_Stack_T'Last)'Address;
-   end Get_Exc_Stack_Addr;
 
    -----------------
    -- Create_Task --
@@ -859,9 +846,6 @@ package body System.Task_Primitives.Operations is
       procedure Free is new
         Ada.Unchecked_Deallocation (Ada_Task_Control_Block, Task_Id);
 
-      procedure Free is new Ada.Unchecked_Deallocation
-       (Exc_Stack_T, Exc_Stack_Ptr_T);
-
    begin
       if not Single_Lock then
          Result := pthread_mutex_destroy (T.Common.LL.L'Access);
@@ -875,7 +859,6 @@ package body System.Task_Primitives.Operations is
          Known_Tasks (T.Known_Tasks_Index) := null;
       end if;
 
-      Free (T.Common.LL.Exc_Stack_Ptr);
       Free (Tmp);
 
       if Is_Self then
@@ -1246,8 +1229,6 @@ package body System.Task_Primitives.Operations is
       pragma Import (C, Debug_Register, "CMA$DEBUG_REGISTER");
    begin
       Environment_Task_Id := Environment_Task;
-
-      SSL.Get_Exc_Stack_Addr := Get_Exc_Stack_Addr'Access;
 
       --  Initialize the lock used to synchronize chain of all ATCBs
 

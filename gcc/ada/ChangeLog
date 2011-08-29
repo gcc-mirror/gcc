@@ -1,5 +1,92 @@
 2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_ch4.adb (Expand_Allocator_Expression): Add code to set attribute
+	Finalize_Address of the access type's finalization master.
+	(Expand_N_Allocator): Add code to set attribute Finalize_Address of the
+	access type's finalization master. Add a guard to prevent
+	Associated_Storage_Pool from being set on .NET/JVM.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Add code to set
+	attribute Finalize_Address of the access type's finalization master.
+	* exp_ch7.adb (Make_Finalize_Address_Call): New routine.
+	* exp_ch7.ads (Make_Finalize_Address_Call): New routine.
+	* rtsfind.ads: Add RE_Set_Finalize_Address to tables RE_Id and
+	RE_Unit_Table.
+	* s-finmas.adb: Add with clause for System.Address_Image. Add with and
+	use clause for System.IO
+	(Detach): Relax the assertion, to be reinstated later.
+	(Finalize): Rewrite the iteration loop to avoid pointer comparison.
+	Relax the assertion on Finalize_Address, to be reinstated later.
+	(Is_Empty_List): New routine.
+	(pm): New debug routine.
+	(Set_Finalize_Address): New routine.
+	* s-finmas.ads (pm): New debug routine.
+	(Set_Finalize_Address): New routine.
+	* s-stposu.adb (Allocate_Any_Controlled): Code reformatting.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb (GCC_Exception_Access, GNAT_GCC_Exception_Access):
+	Remove convention C.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* s-taprop-vms.adb (Get_Exc_Stack_Addr): Remove.
+	(Initialize_TCB): Remove Exc_Stack_Ptr initialization.
+	(Finalize_TCB): Remove its finalization.
+	(Initialize): Remove assignment of GET_Exc_Stack_Addr
+	* s-soflin.adb (NT_Exc_Stack): Remove
+	(Get_Exc_Stack_Addr_NT): Likewise.
+	(Get_Exc_Stack_Addr_Soft): Likewise.
+	* s-soflin.ads (Get_Exc_Stack_Addr_NT): Remove.
+	(Get_Exc_Stack_Addr): Likewise.
+	(Get_Exc_Stack_Addr_Soft): Likewise
+	* s-taspri-vms.ads (Exc_Stack_T): Remove.
+	(Exc_Stack_Ptr_T): Likewise.
+	(Private_Data): Remove Exc_Stack_Ptr component.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c (get_ip_from_context): New function. Factorize code.
+
+2011-08-29  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat_ugn.texi: Fix aix and x86-solaris info for run-time.
+
+2011-08-29  Geert Bosch  <bosch@adacore.com>
+
+	* s-gearop.ads (Back_Substitute, Diagonal, Forward_Eliminate,
+	L2_Norm, Swap_Column): New generic subprograms
+	* s-gearop.adb (Back_Substitute, Diagonal, Forward_Eliminate,
+	L2_Norm, Swap_Column): Implement new subprograms in order to
+	eliminate dependency on BLAS and LAPACK libraries in
+	Ada.Numerics.Generic_Real_Arrays and eventually also the complex
+	version. Forward_Eliminate/Back_Substitute can be used to put a
+	matrix in row echelon or reduced row echelon form using partial
+	pivoting.
+	* a-ngrear.adb: (Back_Substitute, Diagonal, Forward_Eleminate,
+	Swap_Column): Instantiate from System.Generic_Array_Operations.
+	("*", "abs"): Implement by instantiation from Generic_Array_Operations.
+	(Sqrt): Local function for simple computation of square root without
+	adding dependencies on Generic_Elementary_Functions.
+	(Swap): New subprogram to exchange floating point numbers.
+	(Inverse): Reimplement using Jordan-Gauss elimination.
+	(Jacobi): New procedure implementing Jacobi's method for computation
+	of eigensystems, based on Rutishauser's implementation.
+	(L2_Norm): Implement directly using the inner product.
+	(Sort_Eigensystem): Sort eigenvalue/eigenvector pairs in order of
+	decreasing eigenvalue as required by the Ada RM.
+	(Swap_Column): New helper procedure for Sort_Eigensystem.
+	Remove with of System.Generic_Real_BLAS and System.Generic_Real_LAPACK.
+	Add with of Ada.Containers.Generic_Anonymous_Array_Sort, for
+	Sort_Eigensystems.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* put_scos.adb (Put_SCOs): Do not emit a newline for an empty
+	statements line.
+
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* s-finmas.adb (Finalize): Check Finalize_Address of the master rather
 	than the current node.
 	* s-finmas.ads: Move field Finalize_Address from type FM_Node to

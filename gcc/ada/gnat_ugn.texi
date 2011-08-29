@@ -21324,6 +21324,10 @@ information about several specific platforms.
 @item @b{ppc-aix}
 @item @code{@ @ }@i{rts-native (default)}
 @item @code{@ @ @ @ }Tasking    @tab native AIX threads
+@item @code{@ @ @ @ }Exceptions @tab ZCX
+@*
+@item @code{@ @ }@i{rts-sjlj}
+@item @code{@ @ @ @ }Tasking    @tab native AIX threads
 @item @code{@ @ @ @ }Exceptions @tab SJLJ
 @*
 @item @b{ppc-darwin}
@@ -21366,6 +21370,10 @@ information about several specific platforms.
 @item @b{x86-solaris}
 @item @code{@ @ }@i{rts-native (default)}
 @item @code{@ @ @ @ }Tasking    @tab native Solaris threads
+@item @code{@ @ @ @ }Exceptions @tab ZCX
+@*
+@item @code{@ @ }@i{rts-sjlj}
+@item @code{@ @ @ @ }Tasking    @tab native Solaris threads library
 @item @code{@ @ @ @ }Exceptions @tab SJLJ
 @*
 @item @b{x86-windows}

@@ -250,13 +250,13 @@ package body System.Storage_Pools.Subpools is
          N_Ptr := Address_To_FM_Node_Ptr
                    (N_Addr + Header_And_Padding - Header_Offset);
 
-         if Master.Finalize_Address = null then
-            Master.Finalize_Address := Fin_Address;
-         end if;
-
          --  Prepend the allocated object to the finalization master
 
          Attach (N_Ptr, Master.Objects'Unchecked_Access);
+
+         if Master.Finalize_Address = null then
+            Master.Finalize_Address := Fin_Address;
+         end if;
 
          --  Move the address from the hidden list header to the start of the
          --  object. This operation effectively hides the list header.

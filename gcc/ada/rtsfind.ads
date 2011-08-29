@@ -801,6 +801,7 @@ package Rtsfind is
      RE_Finalization_Master,             -- System.Finalization_Masters
      RE_Finalization_Master_Ptr,         -- System.Finalization_Masters
      RE_Set_Base_Pool,                   -- System.Finalization_Masters
+     RE_Set_Finalize_Address,            -- System.Finalization_Masters
 
      RE_Root_Controlled,                 -- System.Finalization_Root
      RE_Root_Controlled_Ptr,             -- System.Finalization_Root
@@ -1987,6 +1988,7 @@ package Rtsfind is
      RE_Finalization_Master              => System_Finalization_Masters,
      RE_Finalization_Master_Ptr          => System_Finalization_Masters,
      RE_Set_Base_Pool                    => System_Finalization_Masters,
+     RE_Set_Finalize_Address             => System_Finalization_Masters,
 
      RE_Root_Controlled                  => System_Finalization_Root,
      RE_Root_Controlled_Ptr              => System_Finalization_Root,

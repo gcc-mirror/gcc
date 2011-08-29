@@ -173,6 +173,18 @@ package Exp_Ch7 is
    --  Create a special version of Deep_Finalize with identifier Nam. The
    --  routine has state information and can parform partial finalization.
 
+   function Make_Set_Finalize_Address_Call
+     (Loc     : Source_Ptr;
+      Typ     : Entity_Id;
+      Ptr_Typ : Entity_Id) return Node_Id;
+   --  Generate the following call:
+   --
+   --    Set_Finalize_Address (<Ptr_Typ>FM, <Typ>FD'Unrestricted_Access);
+   --
+   --  where Finalize_Address is the corresponding TSS primitive of type Typ
+   --  and Ptr_Typ is the access type of the related allocation. Loc is the
+   --  source location of the related allocator.
+
    --------------------------------------------
    -- Task and Protected Object finalization --
    --------------------------------------------

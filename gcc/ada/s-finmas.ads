@@ -131,9 +131,17 @@ package System.Finalization_Masters is
    overriding procedure Initialize (Master : in out Finalization_Master);
    --  Initialize the dummy head of a finalization master
 
+   procedure pm (Master : Finalization_Master);
+   --  Debug routine, outputs the contents of a master
+
    procedure Set_Base_Pool
      (Master   : in out Finalization_Master;
       Pool_Ptr : Any_Storage_Pool_Ptr);
    --  Set the underlying pool of a finalization master
+
+   procedure Set_Finalize_Address
+     (Master       : in out Finalization_Master;
+      Fin_Addr_Ptr : Finalize_Address_Ptr);
+   --  Set the clean up routine of a finalization master
 
 end System.Finalization_Masters;
