@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2005-2010, Free Software Foundation, Inc.        --
+--           Copyright (C) 2005-2011, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -281,12 +281,15 @@ package body Ada.Real_Time.Timing_Events is
       Remove_From_Queue (Event'Unchecked_Access);
       Event.Handler := null;
 
-      --  RM D.15(15/2) requires that at this point, we check whether the time
+      --  RM D.15(15/2) required that at this point, we check whether the time
       --  has already passed, and if so, call Handler.all directly from here
-      --  instead of doing the enqueuing below. However, this causes a nasty
+      --  instead of doing the enqueuing below. However, this caused a nasty
       --  race condition and potential deadlock. If the current task has
       --  already locked the protected object of Handler.all, and the time has
-      --  passed, deadlock would occur. Therefore, we ignore the requirement.
+      --  passed, deadlock would occur. It has been fixed by AI05-0094-1, which
+      --  says that the handler should be executed as soon as possible, meaning
+      --  that the timing event will be executed after the protected action
+      --  finishes (Handler.all should not be called directly from here).
       --  The same comment applies to the other Set_Handler below.
 
       if Handler /= null then

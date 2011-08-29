@@ -4058,6 +4058,7 @@ package body Sem_Res is
    -----------------------
 
    procedure Resolve_Allocator (N : Node_Id; Typ : Entity_Id) is
+      Desig_T  : constant Entity_Id := Designated_Type (Typ);
       E        : constant Node_Id := Expression (N);
       Subtyp   : Entity_Id;
       Discrim  : Entity_Id;
@@ -4160,7 +4161,7 @@ package body Sem_Res is
 
       if Nkind (E) = N_Qualified_Expression then
          if Is_Class_Wide_Type (Etype (E))
-           and then not Is_Class_Wide_Type (Designated_Type (Typ))
+           and then not Is_Class_Wide_Type (Desig_T)
            and then not In_Dispatching_Context
          then
             Error_Msg_N
@@ -4304,7 +4305,7 @@ package body Sem_Res is
       --  Expand_Allocator_Expression).
 
       if Ada_Version >= Ada_2005
-        and then Is_Class_Wide_Type (Designated_Type (Typ))
+        and then Is_Class_Wide_Type (Desig_T)
       then
          declare
             Exp_Typ : Entity_Id;
@@ -4366,7 +4367,7 @@ package body Sem_Res is
       --  type when restriction No_Task_Hierarchy applies.
 
       if not Is_Library_Level_Entity (Base_Type (Typ))
-        and then Has_Task (Base_Type (Designated_Type (Typ)))
+        and then Has_Task (Base_Type (Desig_T))
       then
          Check_Restriction (No_Task_Hierarchy, N);
       end if;
@@ -4383,6 +4384,26 @@ package body Sem_Res is
            and then Nkind (Associated_Node_For_Itype (Typ)) =
                       N_Discriminant_Specification
          then
+            declare
+               Discr : constant Entity_Id :=
+                         Defining_Identifier (Associated_Node_For_Itype (Typ));
+            begin
+               --  Ada2012-B052: If the designated type of the allocator is
+               --  limited, then the allocator shall not be used to define the
+               --  value of an access discriminant, unless the discriminated
+               --  type is immutably limited.
+
+               if Ada_Version >= Ada_2012
+                 and then Is_Limited_Type (Desig_T)
+                 and then not Is_Immutably_Limited_Type (Scope (Discr))
+               then
+                  Error_Msg_N
+                    ("only immutably limited types can have anonymous ", N);
+                  Error_Msg_N
+                    ("\discriminants of limited designated type", N);
+               end if;
+            end;
+
             --  Avoid marking an allocator as a dynamic coextension if it is
             --  within a static construct.
 
@@ -4402,8 +4423,8 @@ package body Sem_Res is
       --  its body has not been seen yet, and its activation will fail
       --  an elaboration check.
 
-      if Is_Task_Type (Designated_Type (Typ))
-        and then Scope (Base_Type (Designated_Type (Typ))) = Current_Scope
+      if Is_Task_Type (Desig_T)
+        and then Scope (Base_Type (Desig_T)) = Current_Scope
         and then Is_Compilation_Unit (Current_Scope)
         and then Ekind (Current_Scope) = E_Package
         and then not In_Package_Body (Current_Scope)

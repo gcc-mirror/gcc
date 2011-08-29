@@ -1,3 +1,17 @@
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Implement Ada2012-B052. Detect cases
+	where an anonymous access discriminant of a limited designated type
+	appears in a non-immutably limited discriminated type and issue an
+	error message. Add local variable Desig_T and replace all occurrences
+	of Designated_Type.
+
+2011-08-29  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-rttiev.adb (Set_Handler): Update comment to indicate that our
+	implementation is compliant to RM D.15(15/2) after the modification
+	imposed by AI05-0094-1 (binding interpretation).
+
 2011-08-29  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch9.adb, s-tasren.adb, exp_sel.adb, exp_sel.ads, exp_ch11.adb,
