@@ -19771,14 +19771,14 @@ package body Sem_Ch3 is
       if ALFA_Mode then
 
          --  If the range of the type is already symmetric with a possible
-         --  extra negative value, just make the type its own base type.
+         --  extra negative value, leave it this way.
 
          if UI_Le (Lo_Val, Hi_Val)
            and then (UI_Eq (Lo_Val, UI_Negate (Hi_Val))
                       or else
                         UI_Eq (Lo_Val, UI_Sub (UI_Negate (Hi_Val), Uint_1)))
          then
-            Set_Etype (T, T);
+            null;
 
          else
             declare
@@ -19830,7 +19830,8 @@ package body Sem_Ch3 is
                      High_Bound => Ubound));
 
                Analyze (Decl);
-               Set_Etype (Implicit_Base, Implicit_Base);
+               Set_Etype (Implicit_Base, Base_Type (Implicit_Base));
+               Set_Etype (T, Base_Type (Implicit_Base));
                Insert_Before (Parent (Def), Decl);
             end;
          end if;

@@ -1165,7 +1165,8 @@ package body Exp_Ch4 is
                Insert_Action (Exp,
                  Make_Subtype_Declaration (Loc,
                    Defining_Identifier => ConstrT,
-                   Subtype_Indication  => Make_Subtype_From_Expr (Exp, T)));
+                   Subtype_Indication  =>
+                     Make_Subtype_From_Expr (Internal_Exp, T)));
                Freeze_Itype (ConstrT, Exp);
                Rewrite (Exp, OK_Convert_To (ConstrT, Internal_Exp));
             end;

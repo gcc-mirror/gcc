@@ -223,10 +223,6 @@ package body Exp_Ch6 is
    --  reference to the object itself, and the call becomes a call to the
    --  corresponding protected subprogram.
 
-   function Is_Null_Procedure (Subp : Entity_Id) return Boolean;
-   --  Predicate to recognize stubbed procedures and null procedures, which
-   --  can be inlined unconditionally in all cases.
-
    procedure Expand_Simple_Function_Return (N : Node_Id);
    --  Expand simple return from function. In the case where we are returning
    --  from a function body this is called by Expand_N_Simple_Return_Statement.

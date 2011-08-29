@@ -350,11 +350,9 @@ package body Exception_Propagation is
 
          Excep.Id := Foreign_Exception'Access;
          Excep.Msg_Length := 0;
-         Excep.Cleanup_Flag := False;
          Excep.Exception_Raised := True;
          Excep.Pid := Local_Partition_ID;
          Excep.Num_Tracebacks := 0;
-         Excep.Private_Data := System.Null_Address;
       end if;
    end Setup_Current_Excep;
 

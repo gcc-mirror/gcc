@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -144,8 +144,6 @@ package body Stream_Attributes is
          return Null_Occurrence;
 
       else
-         X.Cleanup_Flag := False;
-
          To := S'First - 2;
          Next_String;
 

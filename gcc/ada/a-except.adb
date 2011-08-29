@@ -341,18 +341,6 @@ package body Ada.Exceptions is
    --  (all fields of this exception occurrence are set). Abort is deferred
    --  before the reraise operation.
 
-   --  Save_Occurrence variations: As the management of the private data
-   --  attached to occurrences is delicate, whether or not pointers to such
-   --  data has to be copied in various situations is better made explicit.
-   --  The following procedures provide an internal interface to help making
-   --  this explicit.
-
-   procedure Save_Occurrence_No_Private
-     (Target : out Exception_Occurrence;
-      Source : Exception_Occurrence);
-   --  Copy all the components of Source to Target, except the
-   --  Private_Data pointer.
-
    procedure Transfer_Occurrence
      (Target : Exception_Occurrence_Access;
       Source : Exception_Occurrence);
@@ -959,7 +947,6 @@ package body Ada.Exceptions is
       Excep.Exception_Raised := False;
       Excep.Id               := E;
       Excep.Num_Tracebacks   := 0;
-      Excep.Cleanup_Flag     := False;
       Excep.Pid              := Local_Partition_ID;
       Abort_Defer.all;
       Raise_Current_Excep (E);
@@ -1164,7 +1151,7 @@ package body Ada.Exceptions is
    begin
       if X.Id /= null then
          Abort_Defer.all;
-         Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
+         Save_Occurrence (Get_Current_Excep.all.all, X);
          Raise_Current_Excep (X.Id);
       end if;
    end Reraise_Occurrence;
@@ -1176,7 +1163,7 @@ package body Ada.Exceptions is
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence) is
    begin
       Abort_Defer.all;
-      Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
+      Save_Occurrence (Get_Current_Excep.all.all, X);
       Raise_Current_Excep (X.Id);
    end Reraise_Occurrence_Always;
 
@@ -1186,7 +1173,7 @@ package body Ada.Exceptions is
 
    procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence) is
    begin
-      Save_Occurrence_No_Private (Get_Current_Excep.all.all, X);
+      Save_Occurrence (Get_Current_Excep.all.all, X);
       Raise_Current_Excep (X.Id);
    end Reraise_Occurrence_No_Defer;
 
@@ -1199,7 +1186,16 @@ package body Ada.Exceptions is
       Source : Exception_Occurrence)
    is
    begin
-      Save_Occurrence_No_Private (Target, Source);
+      Target.Id             := Source.Id;
+      Target.Msg_Length     := Source.Msg_Length;
+      Target.Num_Tracebacks := Source.Num_Tracebacks;
+      Target.Pid            := Source.Pid;
+
+      Target.Msg (1 .. Target.Msg_Length) :=
+        Source.Msg (1 .. Target.Msg_Length);
+
+      Target.Tracebacks (1 .. Target.Num_Tracebacks) :=
+        Source.Tracebacks (1 .. Target.Num_Tracebacks);
    end Save_Occurrence;
 
    function Save_Occurrence (Source : Exception_Occurrence) return EOA is
@@ -1208,28 +1204,6 @@ package body Ada.Exceptions is
       Save_Occurrence (Target.all, Source);
       return Target;
    end Save_Occurrence;
-
-   --------------------------------
-   -- Save_Occurrence_No_Private --
-   --------------------------------
-
-   procedure Save_Occurrence_No_Private
-     (Target : out Exception_Occurrence;
-      Source : Exception_Occurrence)
-   is
-   begin
-      Target.Id             := Source.Id;
-      Target.Msg_Length     := Source.Msg_Length;
-      Target.Num_Tracebacks := Source.Num_Tracebacks;
-      Target.Pid            := Source.Pid;
-      Target.Cleanup_Flag   := Source.Cleanup_Flag;
-
-      Target.Msg (1 .. Target.Msg_Length) :=
-        Source.Msg (1 .. Target.Msg_Length);
-
-      Target.Tracebacks (1 .. Target.Num_Tracebacks) :=
-        Source.Tracebacks (1 .. Target.Num_Tracebacks);
-   end Save_Occurrence_No_Private;
 
    -------------------------
    -- Transfer_Occurrence --
@@ -1240,13 +1214,7 @@ package body Ada.Exceptions is
       Source : Exception_Occurrence)
    is
    begin
-      --  Setup Target as an exception to be propagated in the calling task
-      --  (rendezvous-wise), taking care not to clobber the associated private
-      --  data. Target is expected to be a pointer to the calling task's fixed
-      --  TSD occurrence, which is very different from Get_Current_Excep here
-      --  because this subprogram is called from the called task.
-
-      Save_Occurrence_No_Private (Target.all, Source);
+      Save_Occurrence (Target.all, Source);
    end Transfer_Occurrence;
 
    -------------------
