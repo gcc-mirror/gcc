@@ -161,6 +161,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-fzteio$(objext) \
   a-inteio$(objext) \
   a-ioexce$(objext) \
+  a-iteint$(objext) \
   a-iwteio$(objext) \
   a-izteio$(objext) \
   a-lcteio$(objext) \

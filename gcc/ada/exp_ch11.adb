@@ -1666,9 +1666,11 @@ package body Exp_Ch11 is
 
       else
 
-         --  Don't expand if back end exception handling active
+         --  Bypass expansion to a run-time call when back-end exception
+         --  handling is active, unless the target is a VM or CodePeer.
 
          if VM_Target = No_VM
+           and then not CodePeer_Mode
            and then Exception_Mechanism = Back_End_Exceptions
          then
             return;

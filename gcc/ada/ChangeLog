@@ -1,5 +1,65 @@
 2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* s-finmas.adb (Finalize): Check Finalize_Address of the master rather
+	than the current node.
+	* s-finmas.ads: Move field Finalize_Address from type FM_Node to
+	Finalization_Master. The list headers have two fields instead of three.
+	This should fix alignment issue but subpool allocations are now
+	unusable. Alphabetize subprograms.
+	* s-stposu.adb (Allocate_Any_Controlled): Use the offset rather than
+	the size of the header when converting the beginning of the object to
+	a FM_Node. Set the master's Finalize_Address attribute if not already
+	set.
+	(Deallocate_Any_Controlled): Use the offset rather than the size of the
+	header when converting the beginning of the object to a FM_Node.
+
+2011-08-29  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Raise_Statement): Don't suppress expansion of
+	reraise when compiling for CodePeer.
+
+2011-08-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-iteint.ads, Makefile.rtl: Add missing compilation of a-iteint.ads,
+	now needed by a-convec.adb. Fix warning.
+
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Add a guard for the
+	processing of TSS routine Finalize_Address when compiling in
+	CodePeer_Mode.
+
+2011-08-29  Thomas Quinot  <quinot@adacore.com>
+
+	* a-strunb.ads, einfo.ads, g-comlin.ads, sem_ch6.adb,
+	sem_warn.adb: Minor reformatting.
+
+2011-08-29  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-conf.adb (Get_Config_Switches): Also collect the list of
+	languages from aggregated projects.
+
+2011-08-29  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb, lib-xref.ads (Traverse_Declarations_Or_Statements,
+	Traverse_Handled_Statement_Sequence, Traverse_Package_Body,
+	Traverse_Package_Declaration, Traverse_Subprogram_Body,
+	Traverse_Compilation_Unit): Add a parameter Inside_Stubs so that bodies
+	for stubs are traversed too when parameter is set
+	(Traverse_All_Compilation_Units): Traverse without going inside stubs
+	(Traverse_Declarations_Or_Statements): Do the special traversing for
+	stubs when required.
+	* sem_util.adb, sem_util.ads (Get_Body_From_Stub): New function to
+	return subprogram or package body from stub.
+	(Is_Subprogram_Stub_Without_Prior_Declaration): New function to detect
+	stubs without prior subprogram decl.
+
+2011-08-29  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* gnat_ugn.texi: Fix typo.
+
+2011-08-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* s-stposu.adb (Allocate_Any_Controlled): Reimplement the mechanism
 	which accounts for size vs alignment issues and calculates the size of
 	the list header.

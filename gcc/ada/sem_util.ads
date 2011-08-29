@@ -479,6 +479,9 @@ package Sem_Util is
    --  Actual_Subtype field of the corresponding entity is set, then it is
    --  returned. Otherwise the Etype of the node is returned.
 
+   function Get_Body_From_Stub (N : Node_Id) return Node_Id;
+   --  Return the body node for a stub (subprogram or package)
+
    function Get_Default_External_Name (E : Node_Or_Entity_Id) return Node_Id;
    --  This is used to construct the string literal node representing a
    --  default external name, i.e. one that is constructed from the name of an
@@ -883,6 +886,11 @@ package Sem_Util is
    --  the case of procedure call statements (unlike the direct use of
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
+
+   function Is_Subprogram_Stub_Without_Prior_Declaration
+     (N : Node_Id) return Boolean;
+   --  Return True if N is a subprogram stub with no prior subprogram
+   --  declaration.
 
    function Is_Synchronized_Tagged_Type (E : Entity_Id) return Boolean;
    --  Returns True if E is a synchronized tagged type (AARM 3.9.4 (6/2))
