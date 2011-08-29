@@ -342,6 +342,9 @@ package body Sem_Ch12 is
       Def : Node_Id);
    --  Creates a new private type, which does not require completion
 
+   procedure Analyze_Formal_Incomplete_Type (T   : Entity_Id; Def : Node_Id);
+   --  Ada2012 : Creates a new incomplete type, whose actual does not freeze.
+
    procedure Analyze_Generic_Formal_Part (N : Node_Id);
 
    procedure Analyze_Generic_Access_Type (T : Entity_Id; Def : Node_Id);
@@ -1300,9 +1303,14 @@ package body Sem_Ch12 is
                        Assoc);
 
                      --  An instantiation is a freeze point for the actuals,
-                     --  unless this is a rewritten formal package.
+                     --  unless this is a rewritten formal package, and
+                     --  unless it is an Ada2012 formal incomplete type.
 
-                     if Nkind (I_Node) /= N_Formal_Package_Declaration then
+                     if Nkind (I_Node) /= N_Formal_Package_Declaration
+                       and then
+                         Ekind (Defining_Identifier (Analyzed_Formal)) /=
+                           E_Incomplete_Type
+                     then
                         Append_Elmt (Entity (Match), Actual_Types);
                      end if;
                   end if;
@@ -2361,6 +2369,26 @@ package body Sem_Ch12 is
       Set_RM_Size   (T, RM_Size (Standard_Integer));
    end Analyze_Formal_Private_Type;
 
+   ------------------------------------
+   -- Analyze_Formal_Incomplete_Type --
+   ------------------------------------
+
+   procedure Analyze_Formal_Incomplete_Type
+     (T   : Entity_Id;
+      Def : Node_Id)
+   is
+   begin
+      Enter_Name (T);
+      Set_Ekind (T, E_Incomplete_Type);
+      Set_Etype (T, T);
+
+      if Tagged_Present (Def) then
+         Set_Is_Tagged_Type (T);
+         Make_Class_Wide_Type (T);
+         Set_Direct_Primitive_Operations (T, New_Elmt_List);
+      end if;
+   end Analyze_Formal_Incomplete_Type;
+
    ----------------------------------------
    -- Analyze_Formal_Signed_Integer_Type --
    ----------------------------------------
@@ -2593,6 +2621,9 @@ package body Sem_Ch12 is
 
          when N_Formal_Derived_Type_Definition         =>
             Analyze_Formal_Derived_Type (N, T, Def);
+
+         when N_Formal_Incomplete_Type_Definition         =>
+            Analyze_Formal_Incomplete_Type (T, Def);
 
          when N_Formal_Discrete_Type_Definition        =>
             Analyze_Formal_Discrete_Type (T, Def);
@@ -9447,9 +9478,13 @@ package body Sem_Ch12 is
       procedure Validate_Access_Type_Instance;
       procedure Validate_Derived_Type_Instance;
       procedure Validate_Derived_Interface_Type_Instance;
+      procedure Validate_Discriminated_Formal_Type;
       procedure Validate_Interface_Type_Instance;
       procedure Validate_Private_Type_Instance;
+      procedure Validate_Incomplete_Type_Instance;
       --  These procedures perform validation tests for the named case
+      --  Validate_Discriminated_Formal_Type is shared by formal private
+      --  types and Ada2012 formal incomplete types.
 
       function Subtypes_Match (Gen_T, Act_T : Entity_Id) return Boolean;
       --  Check that base types are the same and that the subtypes match
@@ -10272,73 +10307,17 @@ package body Sem_Ch12 is
          end if;
       end Validate_Derived_Type_Instance;
 
-      --------------------------------------
-      -- Validate_Interface_Type_Instance --
-      --------------------------------------
+      ----------------------------------------
+      -- Validate_Discriminated_Formal_Type --
+      ----------------------------------------
 
-      procedure Validate_Interface_Type_Instance is
-      begin
-         if not Is_Interface (Act_T) then
-            Error_Msg_NE
-              ("actual for formal interface type must be an interface",
-                Actual, Gen_T);
-
-         elsif Is_Limited_Type (Act_T) /= Is_Limited_Type (A_Gen_T)
-           or else
-             Is_Task_Interface (A_Gen_T) /= Is_Task_Interface (Act_T)
-           or else
-             Is_Protected_Interface (A_Gen_T) /=
-               Is_Protected_Interface (Act_T)
-           or else
-             Is_Synchronized_Interface (A_Gen_T) /=
-               Is_Synchronized_Interface (Act_T)
-         then
-            Error_Msg_NE
-              ("actual for interface& does not match (RM 12.5.5(4))",
-               Actual, Gen_T);
-         end if;
-      end Validate_Interface_Type_Instance;
-
-      ------------------------------------
-      -- Validate_Private_Type_Instance --
-      ------------------------------------
-
-      procedure Validate_Private_Type_Instance is
+      procedure Validate_Discriminated_Formal_Type is
          Formal_Discr : Entity_Id;
          Actual_Discr : Entity_Id;
          Formal_Subt  : Entity_Id;
 
       begin
-         if Is_Limited_Type (Act_T)
-           and then not Is_Limited_Type (A_Gen_T)
-         then
-            Error_Msg_NE
-              ("actual for non-limited & cannot be a limited type", Actual,
-               Gen_T);
-            Explain_Limited_Type (Act_T, Actual);
-            Abandon_Instantiation (Actual);
-
-         elsif Known_To_Have_Preelab_Init (A_Gen_T)
-           and then not Has_Preelaborable_Initialization (Act_T)
-         then
-            Error_Msg_NE
-              ("actual for & must have preelaborable initialization", Actual,
-               Gen_T);
-
-         elsif Is_Indefinite_Subtype (Act_T)
-            and then not Is_Indefinite_Subtype (A_Gen_T)
-            and then Ada_Version >= Ada_95
-         then
-            Error_Msg_NE
-              ("actual for & must be a definite subtype", Actual, Gen_T);
-
-         elsif not Is_Tagged_Type (Act_T)
-           and then Is_Tagged_Type (A_Gen_T)
-         then
-            Error_Msg_NE
-              ("actual for & must be a tagged type", Actual, Gen_T);
-
-         elsif Has_Discriminants (A_Gen_T) then
+         if Has_Discriminants (A_Gen_T) then
             if not Has_Discriminants (Act_T) then
                Error_Msg_NE
                  ("actual for & must have discriminants", Actual, Gen_T);
@@ -10403,9 +10382,89 @@ package body Sem_Ch12 is
                   Abandon_Instantiation (Actual);
                end if;
             end if;
+         end if;
+      end Validate_Discriminated_Formal_Type;
 
+      ---------------------------------------
+      -- Validate_Incomplete_Type_Instance --
+      ---------------------------------------
+
+      procedure Validate_Incomplete_Type_Instance is
+      begin
+         if not Is_Tagged_Type (Act_T)
+           and then Is_Tagged_Type (A_Gen_T)
+         then
+            Error_Msg_NE
+              ("actual for & must be a tagged type", Actual, Gen_T);
          end if;
 
+         Validate_Discriminated_Formal_Type;
+      end Validate_Incomplete_Type_Instance;
+
+      --------------------------------------
+      -- Validate_Interface_Type_Instance --
+      --------------------------------------
+
+      procedure Validate_Interface_Type_Instance is
+      begin
+         if not Is_Interface (Act_T) then
+            Error_Msg_NE
+              ("actual for formal interface type must be an interface",
+                Actual, Gen_T);
+
+         elsif Is_Limited_Type (Act_T) /= Is_Limited_Type (A_Gen_T)
+           or else
+             Is_Task_Interface (A_Gen_T) /= Is_Task_Interface (Act_T)
+           or else
+             Is_Protected_Interface (A_Gen_T) /=
+               Is_Protected_Interface (Act_T)
+           or else
+             Is_Synchronized_Interface (A_Gen_T) /=
+               Is_Synchronized_Interface (Act_T)
+         then
+            Error_Msg_NE
+              ("actual for interface& does not match (RM 12.5.5(4))",
+               Actual, Gen_T);
+         end if;
+      end Validate_Interface_Type_Instance;
+
+      ------------------------------------
+      -- Validate_Private_Type_Instance --
+      ------------------------------------
+
+      procedure Validate_Private_Type_Instance is
+      begin
+         if Is_Limited_Type (Act_T)
+           and then not Is_Limited_Type (A_Gen_T)
+         then
+            Error_Msg_NE
+              ("actual for non-limited & cannot be a limited type", Actual,
+               Gen_T);
+            Explain_Limited_Type (Act_T, Actual);
+            Abandon_Instantiation (Actual);
+
+         elsif Known_To_Have_Preelab_Init (A_Gen_T)
+           and then not Has_Preelaborable_Initialization (Act_T)
+         then
+            Error_Msg_NE
+              ("actual for & must have preelaborable initialization", Actual,
+               Gen_T);
+
+         elsif Is_Indefinite_Subtype (Act_T)
+            and then not Is_Indefinite_Subtype (A_Gen_T)
+            and then Ada_Version >= Ada_95
+         then
+            Error_Msg_NE
+              ("actual for & must be a definite subtype", Actual, Gen_T);
+
+         elsif not Is_Tagged_Type (Act_T)
+           and then Is_Tagged_Type (A_Gen_T)
+         then
+            Error_Msg_NE
+              ("actual for & must be a tagged type", Actual, Gen_T);
+         end if;
+
+         Validate_Discriminated_Formal_Type;
          Ancestor := Gen_T;
       end Validate_Private_Type_Instance;
 
@@ -10463,7 +10522,13 @@ package body Sem_Ch12 is
                       and then
                          Ekind (Root_Type (Act_T)) = E_Incomplete_Type)
          then
-            if Is_Class_Wide_Type (Act_T)
+            --  If the formal is an incomplete type, the actual can be
+            --  incomplete as well.
+
+            if Ekind (A_Gen_T) = E_Incomplete_Type then
+               null;
+
+            elsif Is_Class_Wide_Type (Act_T)
               or else No (Full_View (Act_T))
             then
                Error_Msg_N ("premature use of incomplete type", Actual);
@@ -10486,7 +10551,14 @@ package body Sem_Ch12 is
            and then not Is_Derived_Type (Act_T)
            and then No (Full_View (Root_Type (Act_T)))
          then
-            Error_Msg_N ("premature use of private type", Actual);
+            --  If the formal is an incomplete type, the actual can be
+            --  private or incomplete as well.
+
+            if Ekind (A_Gen_T) = E_Incomplete_Type then
+               null;
+            else
+               Error_Msg_N ("premature use of private type", Actual);
+            end if;
 
          elsif Has_Private_Component (Act_T) then
             Error_Msg_N
@@ -10527,6 +10599,9 @@ package body Sem_Ch12 is
          case Nkind (Def) is
             when N_Formal_Private_Type_Definition =>
                Validate_Private_Type_Instance;
+
+            when N_Formal_Incomplete_Type_Definition =>
+               Validate_Incomplete_Type_Instance;
 
             when N_Formal_Derived_Type_Definition =>
                Validate_Derived_Type_Instance;
@@ -10642,7 +10717,10 @@ package body Sem_Ch12 is
             Set_Generic_Parent_Type (Decl_Node, Ancestor);
          end if;
 
-      elsif Nkind (Def) = N_Formal_Private_Type_Definition then
+      elsif Nkind_In (Def,
+        N_Formal_Private_Type_Definition,
+        N_Formal_Incomplete_Type_Definition)
+      then
          Set_Generic_Parent_Type (Decl_Node, A_Gen_T);
       end if;
 

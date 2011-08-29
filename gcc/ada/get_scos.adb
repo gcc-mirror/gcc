@@ -306,7 +306,8 @@ begin
                            Skipc;
 
                            begin
-                              Pid := Pragma_Id'Value (Buf (1 .. N));
+                              Pid :=
+                                Pragma_Id'Value ("pragma_" & Buf (1 .. N));
                            exception
                               when Constraint_Error =>
 

@@ -1195,9 +1195,11 @@ package body Sem_Ch7 is
       while Present (E) loop
 
          --  Check on incomplete types
+         --  AI05-213 : a formal incomplete type has no completion.
 
          if Ekind (E) = E_Incomplete_Type
            and then No (Full_View (E))
+           and then not Is_Generic_Type (E)
          then
             Error_Msg_N ("no declaration in visible part for incomplete}", E);
          end if;
@@ -2585,7 +2587,9 @@ package body Sem_Ch7 is
                and then Unit_Requires_Body (E))
 
            or else
-             (Ekind (E) = E_Incomplete_Type and then No (Full_View (E)))
+             (Ekind (E) = E_Incomplete_Type
+               and then No (Full_View (E))
+               and then not Is_Generic_Type (E))
 
            or else
             ((Ekind (E) = E_Task_Type or else

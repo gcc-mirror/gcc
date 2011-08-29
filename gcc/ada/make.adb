@@ -5908,7 +5908,7 @@ package body Make is
          --  are not supposed to change.
 
          Osint.Source_File_Data (Cache => True);
-         Osint.Add_Default_Search_Dirs;
+
          Queue_Library_Project_Sources;
       end if;
 
@@ -5930,17 +5930,6 @@ package body Make is
          Make_Failed
            ("nothing to do for a main project that is externally built");
       end if;
-
-      --  Get the target parameters, which are only needed for a couple of
-      --  cases in gnatmake. Protect against an exception, such as the case of
-      --  system.ads missing from the library, and fail gracefully.
-
-      begin
-         Targparm.Get_Target_Parameters;
-      exception
-         when Unrecoverable_Error =>
-            Make_Failed ("*** make failed.");
-      end;
 
       --  Special processing for VM targets
 
@@ -6116,7 +6105,28 @@ package body Make is
             Compute_Builder  => Is_First_Main,
             Current_Work_Dir => Current_Work_Dir.all);
 
-         Is_First_Main := False;
+         if Is_First_Main then
+            --  Put the default source dirs in the source path only now,
+            --  so that we take the correct ones in the case when --RTS= is
+            --  specified in the Builder switches.
+
+            Osint.Add_Default_Search_Dirs;
+
+            --  Get the target parameters, which are only needed for a couple
+            --  of cases in gnatmake. Protect against an exception, such as the
+            --  case of system.ads missing from the library, and fail
+            --  gracefully.
+
+            begin
+               Targparm.Get_Target_Parameters;
+            exception
+               when Unrecoverable_Error =>
+                  Make_Failed ("*** make failed.");
+            end;
+
+            Is_First_Main := False;
+         end if;
+
          Executable_Obsolete := False;
 
          Compute_Executable

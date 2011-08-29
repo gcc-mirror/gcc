@@ -2676,13 +2676,18 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       if Target'Address = Source'Address then
-         if Before = No_Element then
-            if Target.Nodes (Position.Node).Next <= 0 then  -- last child
+         if Target.Nodes (Position.Node).Parent = Parent.Node then
+            if Before = No_Element then
+               if Target.Nodes (Position.Node).Next <= 0 then  -- last child
+                  return;
+               end if;
+
+            elsif Position.Node = Before.Node then
+               return;
+
+            elsif Target.Nodes (Position.Node).Next = Before.Node then
                return;
             end if;
-
-         elsif Position.Node = Before.Node then
-            return;
          end if;
 
          if Target.Busy > 0 then
@@ -2769,13 +2774,18 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          raise Constraint_Error with "Position cursor designates root";
       end if;
 
-      if Before = No_Element then
-         if Container.Nodes (Position.Node).Next <= 0 then  -- last child
+      if Container.Nodes (Position.Node).Parent = Parent.Node then
+         if Before = No_Element then
+            if Container.Nodes (Position.Node).Next <= 0 then  -- last child
+               return;
+            end if;
+
+         elsif Position.Node = Before.Node then
+            return;
+
+         elsif Container.Nodes (Position.Node).Next = Before.Node then
             return;
          end if;
-
-      elsif Position.Node = Before.Node then
-         return;
       end if;
 
       if Container.Busy > 0 then
@@ -2809,6 +2819,11 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Target_Count   : Count_Type;
 
    begin
+      --  This is a utility operation to do the heavy lifting associated with
+      --  splicing a subtree from one tree to another. Note that "splicing"
+      --  is a bit of a misnomer here in the case of a bounded tree, because
+      --  the elements must be copied from the source to the target.
+
       if Target.Count > Target.Capacity - Source_Count then
          raise Capacity_Error  -- ???
            with "Source count exceeds available storage on Target";
@@ -2830,6 +2845,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
       pragma Assert (Target_Count = Source_Count);
 
+      --  Now link the newly-allocated subtree into the target.
+
       Insert_Subtree_Node
         (Container => Target,
          Subtree   => Target_Subtree,
@@ -2838,6 +2855,11 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
       Target.Count := Target.Count + Target_Count;
 
+      --  The manipulation of the Target container is complete. Now we remove
+      --  the subtree from the Source container.
+
+      Remove_Subtree (Source, Position);  -- unlink the subtree
+
       --  As with Copy_Subtree, operation Deallocate_Subtree returns a count of
       --  the number of nodes it deallocates, but it works by incrementing the
       --  value passed in. We must therefore initialize the count before
@@ -2845,7 +2867,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
 
       Source_Count := 0;
 
-      Deallocate_Children (Source, Position, Source_Count);
+      Deallocate_Subtree (Source, Position, Source_Count);
       pragma Assert (Source_Count = Target_Count);
 
       Source.Count := Source.Count - Source_Count;

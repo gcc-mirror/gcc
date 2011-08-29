@@ -4560,19 +4560,10 @@ package body Exp_Ch7 is
             Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
          end if;
 
-      --  For types that are both controlled and have controlled components,
-      --  generate a call to Deep_Adjust.
-
-      elsif Is_Controlled (Utyp)
-        and then Has_Controlled_Component (Utyp)
-      then
-         Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
-
-      --  For types that are not controlled themselves, but contain controlled
-      --  components or can be extended by types with controlled components,
-      --  create a call to Deep_Adjust.
+      --  Class-wide types, interfaces and types with controlled components
 
       elsif Is_Class_Wide_Type (Typ)
+        or else Is_Interface (Typ)
         or else Has_Controlled_Component (Utyp)
       then
          if Is_Tagged_Type (Utyp) then
@@ -4581,11 +4572,22 @@ package body Exp_Ch7 is
             Adj_Id := TSS (Utyp, TSS_Deep_Adjust);
          end if;
 
-      --  For types that are derived from Controlled and do not have controlled
-      --  components, build a call to Adjust.
+      --  Derivations from [Limited_]Controlled
+
+      elsif Is_Controlled (Utyp) then
+         if Has_Controlled_Component (Utyp) then
+            Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
+         else
+            Adj_Id := Find_Prim_Op (Utyp, Name_Of (Adjust_Case));
+         end if;
+
+      --  Tagged types
+
+      elsif Is_Tagged_Type (Utyp) then
+         Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
 
       else
-         Adj_Id := Find_Prim_Op (Utyp, Name_Of (Adjust_Case));
+         raise Program_Error;
       end if;
 
       if Present (Adj_Id) then
@@ -5493,8 +5495,6 @@ package body Exp_Ch7 is
       --  have discriminants and contain variant parts. Generate:
       --
       --    begin
-      --       Root_Controlled (V).Finalized := False;
-      --
       --       begin
       --          [Deep_]Adjust (V.Comp_1);
       --       exception
@@ -5559,10 +5559,6 @@ package body Exp_Ch7 is
       --       Raised : Boolean := False;
       --
       --    begin
-      --       if Root_Controlled (V).Finalized then
-      --          return;
-      --       end if;
-      --
       --       if F then
       --          begin
       --             Finalize (V);  --  If applicable
@@ -5625,8 +5621,6 @@ package body Exp_Ch7 is
       --                Save_Occurrence (E, Get_Current_Excep.all.all);
       --             end if;
       --       end;
-      --
-      --       Root_Controlled (V).Finalized := True;
       --
       --       if Raised then
       --          Raise_From_Controlled_Object (E, Abort);
@@ -6040,8 +6034,6 @@ package body Exp_Ch7 is
          --       Raised : Boolean := False;
 
          --    begin
-         --       Root_Controlled (V).Finalized := False;
-
          --       <adjust statements>
 
          --       if Raised then
@@ -6846,15 +6838,6 @@ package body Exp_Ch7 is
             Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
          end if;
 
-      --  Derivations from [Limited_]Controlled
-
-      elsif Is_Controlled (Utyp) then
-         if Has_Controlled_Component (Utyp) then
-            Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
-         else
-            Fin_Id := Find_Prim_Op (Utyp, Name_Of (Finalize_Case));
-         end if;
-
       --  Class-wide types, interfaces and types with controlled components
 
       elsif Is_Class_Wide_Type (Typ)
@@ -6865,6 +6848,15 @@ package body Exp_Ch7 is
             Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
          else
             Fin_Id := TSS (Utyp, TSS_Deep_Finalize);
+         end if;
+
+      --  Derivations from [Limited_]Controlled
+
+      elsif Is_Controlled (Utyp) then
+         if Has_Controlled_Component (Utyp) then
+            Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
+         else
+            Fin_Id := Find_Prim_Op (Utyp, Name_Of (Finalize_Case));
          end if;
 
       --  Tagged types

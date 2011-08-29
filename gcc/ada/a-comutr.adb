@@ -2147,10 +2147,14 @@ package body Ada.Containers.Multiway_Trees is
       end if;
 
       if Target'Address = Source'Address then
-         if Position.Node = Before.Node
-           or else Position.Node.Next = Before.Node
-         then
-            return;
+         if Position.Node.Parent = Parent.Node then
+            if Position.Node = Before.Node then
+               return;
+            end if;
+
+            if Position.Node.Next = Before.Node then
+               return;
+            end if;
          end if;
 
          if Target.Busy > 0 then
@@ -2245,10 +2249,14 @@ package body Ada.Containers.Multiway_Trees is
          raise Constraint_Error with "Position cursor designates root";
       end if;
 
-      if Position.Node = Before.Node
-        or else Position.Node.Next = Before.Node
-      then
-         return;
+      if Position.Node.Parent = Parent.Node then
+         if Position.Node = Before.Node then
+            return;
+         end if;
+
+         if Position.Node.Next = Before.Node then
+            return;
+         end if;
       end if;
 
       if Container.Busy > 0 then
