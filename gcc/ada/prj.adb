@@ -71,6 +71,10 @@ package body Prj is
    procedure Free_List (Languages : in out Language_List);
    --  Free memory allocated for the list of languages or sources
 
+   procedure Reset_Units_In_Table (Table : in out Units_Htable.Instance);
+   --  reset to No_Unit_Index Unit.File_Names (Spec).Unit &
+   --  Unit.File_Names (Impl).Unit for all Unis of the Table
+
    procedure Free_Units (Table : in out Units_Htable.Instance);
    --  Free memory allocated for unit information in the project
 
@@ -941,6 +945,29 @@ package body Prj is
       end loop;
    end Free_List;
 
+   --------------------------
+   -- Reset_Units_In_Table --
+   --------------------------
+
+   procedure Reset_Units_In_Table (Table : in out Units_Htable.Instance) is
+      Unit : Unit_Index;
+
+   begin
+      Unit := Units_Htable.Get_First (Table);
+      while Unit /= No_Unit_Index loop
+         if Unit.File_Names (Spec) /= null then
+            Unit.File_Names (Spec).Unit := No_Unit_Index;
+         end if;
+
+         if Unit.File_Names (Impl) /= null then
+            Unit.File_Names (Impl).Unit := No_Unit_Index;
+         end if;
+
+         Unit := Units_Htable.Get_Next (Table);
+      end loop;
+
+   end Reset_Units_In_Table;
+
    ----------------
    -- Free_Units --
    ----------------
@@ -954,13 +981,10 @@ package body Prj is
    begin
       Unit := Units_Htable.Get_First (Table);
       while Unit /= No_Unit_Index loop
-         if Unit.File_Names (Spec) /= null then
-            Unit.File_Names (Spec).Unit := No_Unit_Index;
-         end if;
 
-         if Unit.File_Names (Impl) /= null then
-            Unit.File_Names (Impl).Unit := No_Unit_Index;
-         end if;
+         --  we cannot reset Unit.File_Names (Impl or Spec).Unit here as
+         --  Source_Data buffer is freed by the following instruction
+         --  Free_List (Tree.Projects, Free_Project => True);
 
          Unchecked_Free (Unit);
          Unit := Units_Htable.Get_Next (Table);
@@ -1003,6 +1027,7 @@ package body Prj is
          Source_Paths_Htable.Reset (Tree.Source_Paths_HT);
          Source_Files_Htable.Reset (Tree.Source_Files_HT);
 
+         Reset_Units_In_Table (Tree.Units_HT);
          Free_List (Tree.Projects, Free_Project => True);
          Free_Units (Tree.Units_HT);
 
@@ -1048,6 +1073,7 @@ package body Prj is
 
       Tree.Replaced_Source_Number := 0;
 
+      Reset_Units_In_Table (Tree.Units_HT);
       Free_List (Tree.Projects, Free_Project => True);
       Free_Units (Tree.Units_HT);
    end Reset;

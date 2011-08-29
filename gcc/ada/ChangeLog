@@ -1,3 +1,8 @@
+2011-08-29  Philippe Gil  <gil@adacore.com>
+
+	* prj.adb (Reset_Units_In_Table): New procedure.
+	Reset units to avoid access to freed memory.
+
 2011-08-29  Thomas Quinot  <quinot@adacore.com>
 
 	* get_scos.adb: When reading a P statement SCO without a pragma name
