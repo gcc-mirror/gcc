@@ -1283,72 +1283,97 @@ package body Prj is
    -- Compute_All_Imported_Projects --
    -----------------------------------
 
-   procedure Compute_All_Imported_Projects (Tree : Project_Tree_Ref) is
-      Project : Project_Id;
+   procedure Compute_All_Imported_Projects
+     (Root_Project : Project_Id;
+      Tree         : Project_Tree_Ref)
+   is
+      procedure Analyze_Tree
+        (Local_Root : Project_Id; Local_Tree : Project_Tree_Ref);
+      --  Process Project and all its aggregated project to analyze their own
+      --  imported projects.
 
-      procedure Recursive_Add
-        (Prj   : Project_Id;
-         Tree  : Project_Tree_Ref;
-         Dummy : in out Boolean);
-      --  Recursively add the projects imported by project Project, but not
-      --  those that are extended.
+      ------------------
+      -- Analyze_Tree --
+      ------------------
 
-      -------------------
-      -- Recursive_Add --
-      -------------------
-
-      procedure Recursive_Add
-        (Prj   : Project_Id;
-         Tree  : Project_Tree_Ref;
-         Dummy : in out Boolean)
+      procedure Analyze_Tree
+        (Local_Root : Project_Id; Local_Tree : Project_Tree_Ref)
       is
-         pragma Unreferenced (Dummy, Tree);
+         pragma Unreferenced (Local_Root);
+
+         Project : Project_Id;
+
+         procedure Recursive_Add
+           (Prj   : Project_Id;
+            Tree  : Project_Tree_Ref;
+            Dummy : in out Boolean);
+         --  Recursively add the projects imported by project Project, but not
+         --  those that are extended.
+
+         -------------------
+         -- Recursive_Add --
+         -------------------
+
+         procedure Recursive_Add
+           (Prj   : Project_Id;
+            Tree  : Project_Tree_Ref;
+            Dummy : in out Boolean)
+         is
+            pragma Unreferenced (Dummy, Tree);
+            List    : Project_List;
+            Prj2    : Project_Id;
+
+         begin
+            --  A project is not importing itself
+
+            Prj2 := Ultimate_Extending_Project_Of (Prj);
+
+            if Project /= Prj2 then
+
+               --  Check that the project is not already in the list. We know
+               --  the one passed to Recursive_Add have never been visited
+               --  before, but the one passed it are the extended projects.
+
+               List := Project.All_Imported_Projects;
+               while List /= null loop
+                  if List.Project = Prj2 then
+                     return;
+                  end if;
+
+                  List := List.Next;
+               end loop;
+
+               --  Add it to the list
+
+               Project.All_Imported_Projects :=
+                 new Project_List_Element'
+                   (Project => Prj2,
+                    Next    => Project.All_Imported_Projects);
+            end if;
+         end Recursive_Add;
+
+         procedure For_All_Projects is
+           new For_Every_Project_Imported (Boolean, Recursive_Add);
+
+         Dummy   : Boolean := False;
          List    : Project_List;
-         Prj2    : Project_Id;
-
       begin
-         --  A project is not importing itself
+         List := Local_Tree.Projects;
+         while List /= null loop
+            Project := List.Project;
+            Free_List
+              (Project.All_Imported_Projects, Free_Project => False);
+            For_All_Projects
+              (Project, Local_Tree, Dummy, Include_Aggregated => False);
+            List := List.Next;
+         end loop;
+      end Analyze_Tree;
 
-         Prj2 := Ultimate_Extending_Project_Of (Prj);
-
-         if Project /= Prj2 then
-
-            --  Check that the project is not already in the list. We know the
-            --  one passed to Recursive_Add have never been visited before, but
-            --  the one passed it are the extended projects.
-
-            List := Project.All_Imported_Projects;
-            while List /= null loop
-               if List.Project = Prj2 then
-                  return;
-               end if;
-
-               List := List.Next;
-            end loop;
-
-            --  Add it to the list
-
-            Project.All_Imported_Projects :=
-              new Project_List_Element'
-                (Project => Prj2,
-                 Next    => Project.All_Imported_Projects);
-         end if;
-      end Recursive_Add;
-
-      procedure For_All_Projects is
-        new For_Every_Project_Imported (Boolean, Recursive_Add);
-
-      Dummy : Boolean := False;
-      List  : Project_List;
+      procedure For_Aggregates is
+        new For_Project_And_Aggregated (Analyze_Tree);
 
    begin
-      List := Tree.Projects;
-      while List /= null loop
-         Project := List.Project;
-         Free_List (Project.All_Imported_Projects, Free_Project => False);
-         For_All_Projects (Project, Tree, Dummy, Include_Aggregated => False);
-         List := List.Next;
-      end loop;
+      For_Aggregates (Root_Project, Tree);
    end Compute_All_Imported_Projects;
 
    -------------------

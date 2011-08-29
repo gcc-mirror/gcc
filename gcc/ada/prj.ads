@@ -909,9 +909,11 @@ package Prj is
    --  If Only_If_Ada is True, then No_Name will be returned when the project
    --  doesn't Ada sources.
 
-   procedure Compute_All_Imported_Projects (Tree : Project_Tree_Ref);
+   procedure Compute_All_Imported_Projects
+     (Root_Project : Project_Id;
+      Tree         : Project_Tree_Ref);
    --  For all projects in the tree, compute the list of the projects imported
-   --  directly or indirectly by project Project. The result is stored in
+   --  directly or indirectly by project Root_Project. The result is stored in
    --  Project.All_Imported_Projects for each project
 
    function Ultimate_Extending_Project_Of

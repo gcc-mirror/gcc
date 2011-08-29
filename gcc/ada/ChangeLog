@@ -1,3 +1,14 @@
+2011-08-29  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb, prj.adb, prj.ads (Compute_All_Imported_Projects): Also
+	initialize aggregated projects.
+
+2011-08-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Renamed_Entity): Within an instance, use scope
+	depth of candidates to resolve a potentially spurious ambiguity between
+	two visible subprograms.
+
 2011-08-29  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Allow Test_Case pragma without
