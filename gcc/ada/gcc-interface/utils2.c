@@ -544,7 +544,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
     operation_type = TREE_TYPE (TYPE_FIELDS (operation_type));
 
   if (operation_type
-      && !AGGREGATE_TYPE_P (operation_type)
+      && TREE_CODE (operation_type) == INTEGER_TYPE
       && TYPE_EXTRA_SUBTYPE_P (operation_type))
     operation_type = get_base_type (operation_type);
 
@@ -1002,7 +1002,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
     operation_type = TREE_TYPE (TYPE_FIELDS (operation_type));
 
   if (operation_type
-      && !AGGREGATE_TYPE_P (operation_type)
+      && TREE_CODE (operation_type) == INTEGER_TYPE
       && TYPE_EXTRA_SUBTYPE_P (operation_type))
     operation_type = get_base_type (operation_type);
 
