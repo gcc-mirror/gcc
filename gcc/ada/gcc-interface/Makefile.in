@@ -543,6 +543,7 @@ ifeq ($(strip $(filter-out e500% powerpc% wrs vxworks,$(targ))),)
   else
     ifeq ($(strip $(filter-out rtp-smp,$(THREAD_KIND))),)
       LIBGNAT_TARGET_PAIRS += \
+      s-mudido.adb<s-mudido-affinity.adb \
       s-vxwext.ads<s-vxwext-rtp.ads \
       s-vxwext.adb<s-vxwext-rtp-smp.adb \
       s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
@@ -555,6 +556,7 @@ ifeq ($(strip $(filter-out e500% powerpc% wrs vxworks,$(targ))),)
       ifeq ($(strip $(filter-out kernel-smp,$(THREAD_KIND))),)
         LIBGNAT_TARGET_PAIRS += \
         s-interr.adb<s-interr-hwint.adb \
+        s-mudido.adb<s-mudido-affinity.adb \
         s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
         s-vxwext.ads<s-vxwext-kernel.ads \
         s-vxwext.adb<s-vxwext-kernel-smp.adb \
@@ -863,6 +865,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
   else
     ifeq ($(strip $(filter-out rtp-smp, $(THREAD_KIND))),)
       LIBGNAT_TARGET_PAIRS += \
+      s-mudido.adb<s-mudido-affinity.adb \
       s-vxwext.ads<s-vxwext-rtp.ads \
       s-vxwext.adb<s-vxwext-rtp-smp.adb \
       s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
@@ -875,6 +878,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
       ifeq ($(strip $(filter-out kernel-smp, $(THREAD_KIND))),)
         LIBGNAT_TARGET_PAIRS += \
         s-interr.adb<s-interr-hwint.adb \
+        s-mudido.adb<s-mudido-affinity.adb \
         s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
         s-vxwext.ads<s-vxwext-kernel.ads \
         s-vxwext.adb<s-vxwext-kernel-smp.adb \
@@ -987,6 +991,7 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
   a-intnam.ads<a-intnam-solaris.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-solaris.adb \
+  s-mudido.adb<s-mudido-affinity.adb \
   s-osinte.adb<s-osinte-solaris.adb \
   s-osinte.ads<s-osinte-solaris.ads \
   s-osprim.adb<s-osprim-solaris.adb \
@@ -1062,6 +1067,7 @@ ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(arch) $(osys))),)
   a-intnam.ads<a-intnam-solaris.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-solaris.adb \
+  s-mudido.adb<s-mudido-affinity.adb \
   s-osinte.adb<s-osinte-solaris.adb \
   s-osinte.ads<s-osinte-solaris.ads \
   s-osprim.adb<s-osprim-solaris.adb \
@@ -1146,6 +1152,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
       EH_MECHANISM=-gcc
     else
       LIBGNAT_TARGET_PAIRS += \
+      s-mudido.adb<s-mudido-affinity.adb \
       s-osinte.ads<s-osinte-linux.ads \
       s-osprim.adb<s-osprim-posix.adb \
       s-taprop.adb<s-taprop-linux.adb \
@@ -1639,6 +1646,7 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
     g-sercom.adb<g-sercom-mingw.adb \
     s-interr.adb<s-interr-sigaction.adb \
     s-intman.adb<s-intman-mingw.adb \
+    s-mudido.adb<s-mudido-affinity.adb \
     s-osinte.ads<s-osinte-mingw.ads \
     s-osprim.adb<s-osprim-mingw.adb \
     s-taprop.adb<s-taprop-mingw.adb
@@ -1838,6 +1846,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
     endif
 
     LIBGNAT_TARGET_PAIRS += \
+    s-mudido.adb<s-mudido-affinity.adb \
     s-osinte.ads<s-osinte-linux.ads \
     s-osprim.adb<s-osprim-posix.adb \
     s-taprop.adb<s-taprop-linux.adb \
@@ -2006,6 +2015,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
   s-linux.ads<s-linux.ads \
+  s-mudido.adb<s-mudido-affinity.adb \
   s-osinte.ads<s-osinte-linux.ads \
   s-osinte.adb<s-osinte-posix.adb \
   s-osprim.adb<s-osprim-posix.adb \
@@ -2103,6 +2113,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
   s-linux.ads<s-linux.ads \
+  s-mudido.adb<s-mudido-affinity.adb \
   s-osinte.ads<s-osinte-linux.ads \
   s-osinte.adb<s-osinte-posix.adb \
   s-osprim.adb<s-osprim-posix.adb \
