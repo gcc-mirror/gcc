@@ -1,5 +1,8 @@
 2011-08-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50220
+	* semantics.c (add_capture): Call complete_type for copy.
+
 	PR c++/50234
 	* semantics.c (cxx_eval_component_reference): Handle
 	value-initialization for omitted initializers.
