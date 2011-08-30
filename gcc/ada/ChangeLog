@@ -1,3 +1,16 @@
+2011-08-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Check_Private_View): Exchange the private and full view
+	of a designated type when the related access type is an actual in an
+	instance. This ensures that the full view of designated type is
+	available when inside the body of the instance.
+
+2011-08-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (May_Be_Lvalue): To determine whether a reference may be
+	in a position to be modified, a slice is treated like an indexed
+	component.
+
 2011-08-30  Thomas Quinot  <quinot@adacore.com>
 
 	* s-oscons-tmplt.c, g-socket.ads: Adjust maximum allowed value for

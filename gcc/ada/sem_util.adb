@@ -9044,7 +9044,7 @@ package body Sem_Util is
          --  or slice is an lvalue, except if it is an access type, where we
          --  have an implicit dereference.
 
-         when N_Indexed_Component    =>
+         when N_Indexed_Component | N_Slice    =>
             if N /= Prefix (P)
               or else (Present (Etype (N)) and then Is_Access_Type (Etype (N)))
             then
