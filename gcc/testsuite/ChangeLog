@@ -1,5 +1,8 @@
 2011-08-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50220
+	* g++.dg/cpp0x/lambda/lambda-50220.C: New.
+
 	PR c++/50234
 	* g++.dg/cpp0x/constexpr-value3.C: New.
 
