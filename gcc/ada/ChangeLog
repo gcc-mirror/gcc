@@ -1,5 +1,18 @@
 2011-08-30  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch9.adb, s-tassta.adb, s-secsta.adb: Minor reformatting.
+
+2011-08-30  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch6_light.adb, exp_ch6_light.ads, exp_attr_light.adb,
+	exp_attr_light.ads, exp_ch7_light.adb, exp_ch7_light.ads,
+	exp_light.adb, exp_light.ads, exp_prag.adb, expander.adb,
+	gnat1drv.adb, exp_ch11.adb, exp_ch6.adb, exp_ch6.ads, exp_aggr.adb:
+	Revert change which introduced files for "light"
+	expansion, to be replaced by a single file for Alfa expansion.
+
+2011-08-30  Robert Dewar  <dewar@adacore.com>
+
 	* opt.ads, s-soflin.adb, exp_ch9.adb, sem_res.adb: Update comment.
 	Minor code reorg/reformatting.
 
