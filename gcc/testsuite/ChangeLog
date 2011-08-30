@@ -1,3 +1,8 @@
+2011-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50234
+	* g++.dg/cpp0x/constexpr-value3.C: New.
+
 2011-08-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48571

@@ -1,3 +1,9 @@
+2011-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50234
+	* semantics.c (cxx_eval_component_reference): Handle
+	value-initialization for omitted initializers.
+
 2011-08-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50224
