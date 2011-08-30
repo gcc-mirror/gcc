@@ -6518,7 +6518,8 @@ cxx_eval_component_reference (const constexpr_call *call, tree t,
       if (field == part)
         return value;
     }
-  if (TREE_CODE (TREE_TYPE (whole)) == UNION_TYPE)
+  if (TREE_CODE (TREE_TYPE (whole)) == UNION_TYPE
+      && CONSTRUCTOR_NELTS (whole) > 0)
     {
       /* DR 1188 says we don't have to deal with this.  */
       if (!allow_non_constant)
@@ -6527,8 +6528,12 @@ cxx_eval_component_reference (const constexpr_call *call, tree t,
       *non_constant_p = true;
       return t;
     }
-  gcc_unreachable();
-  return error_mark_node;
+
+  /* If there's no explicit init for this field, it's value-initialized.  */
+  value = build_value_init (TREE_TYPE (t), tf_warning_or_error);
+  return cxx_eval_constant_expression (call, value,
+				       allow_non_constant, addr,
+				       non_constant_p);
 }
 
 /* Subroutine of cxx_eval_constant_expression.
