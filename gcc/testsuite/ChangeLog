@@ -1,3 +1,9 @@
+2011-08-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45044
+	* gfortran.dg/common_14.f90: New.
+	* gfortran.dg/common_resize_1.f: Add two dg-warning.
+
 2011-08-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50084

@@ -1,3 +1,9 @@
+2011-08-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45044
+	* trans-common.c (build_common_decl): Warn if named common
+	block's size is not everywhere the same.
+
 2011-08-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/45170
