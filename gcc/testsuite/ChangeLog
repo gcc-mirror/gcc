@@ -1,3 +1,8 @@
+2011-08-30  Christian Bruel  <christian.bruel@st.com>
+
+	* g++.dg/bprob/bprob.exp (feedback_options): Set -fbranch-probabilities.
+	* gcc.misc-tests/bprob.exp (feedback_options): Likewise.
+	
 2011-08-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50224
