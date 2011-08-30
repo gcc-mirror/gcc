@@ -1,5 +1,8 @@
 2011-08-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50089
+	* g++.dg/cpp0x/lambda/lambda-qualified.C: New.
+
 	PR c++/50114
 	* g++.dg/cpp0x/lambda/lambda-for.C: New.
 
