@@ -1,3 +1,9 @@
+2011-08-30  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR testsuite/50185
+	* gcc.target/i386/avx2-vmovmskb-2.c: Rename to ...
+	* gcc.target/i386/avx2-vpmovmskb-2.c: ... this. Update.
+
 2011-08-30  Christian Bruel  <christian.bruel@st.com>
 
 	* g++.dg/bprob/bprob.exp (feedback_options): Set -fbranch-probabilities.
