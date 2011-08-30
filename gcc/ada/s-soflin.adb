@@ -120,11 +120,8 @@ package body System.Soft_Links is
    ----------------
 
    procedure Create_TSD (New_TSD : in out TSD) is
-      use type Parameters.Size_Type;
-
-      SS_Ratio_Dynamic : constant Boolean :=
-                          Parameters.Sec_Stack_Percentage = Parameters.Dynamic;
-
+      use Parameters;
+      SS_Ratio_Dynamic : constant Boolean := Sec_Stack_Percentage = Dynamic;
    begin
       if SS_Ratio_Dynamic then
          SST.SS_Init

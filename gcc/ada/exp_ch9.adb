@@ -4905,6 +4905,7 @@ package body Exp_Ch9 is
 
    begin
       if Full_Expander_Active then
+
          --  If we have no handled statement sequence, we may need to build
          --  a dummy sequence consisting of a null statement. This can be
          --  skipped if the trivial accept optimization is permitted.
@@ -11504,6 +11505,7 @@ package body Exp_Ch9 is
          return;
 
       elsif Full_Expander_Active then
+
          --  Associate discriminals with the first subprogram or entry body to
          --  be expanded.
 
