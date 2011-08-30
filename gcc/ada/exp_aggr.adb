@@ -4664,12 +4664,6 @@ package body Exp_Aggr is
          Check_Same_Aggr_Bounds (N, 1);
       end if;
 
-      --  In formal verification mode, leave the aggregate non-expanded
-
-      if ALFA_Mode then
-         return;
-      end if;
-
       --  STEP 2
 
       --  Here we test for is packed array aggregate that we can handle at

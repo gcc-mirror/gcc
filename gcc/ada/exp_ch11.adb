@@ -1673,7 +1673,6 @@ package body Exp_Ch11 is
 
          if VM_Target = No_VM
            and then not CodePeer_Mode
-           and then not ALFA_Mode
            and then Exception_Mechanism = Back_End_Exceptions
          then
             return;

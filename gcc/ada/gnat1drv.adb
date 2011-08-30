@@ -435,8 +435,9 @@ procedure Gnat1drv is
 
          Polling_Required := False;
 
-         --  Set operating mode to Generate_Code to benefit from full front-end
-         --  expansion (e.g. default arguments).
+         --  Set operating mode to Generate_Code, but full front-end expansion
+         --  is not desirable in ALFA mode, so a light expansion is performed
+         --  instead.
 
          Operating_Mode := Generate_Code;
 
