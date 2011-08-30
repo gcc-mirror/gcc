@@ -27,6 +27,7 @@ with Atree;     use Atree;
 with Debug_A;   use Debug_A;
 with Errout;    use Errout;
 with Exp_Aggr;  use Exp_Aggr;
+with Exp_Alfa;  use Exp_Alfa;
 with Exp_Attr;  use Exp_Attr;
 with Exp_Ch2;   use Exp_Ch2;
 with Exp_Ch3;   use Exp_Ch3;
@@ -131,7 +132,12 @@ package body Expander is
          --  routines.
 
          begin
-            case Nkind (N) is
+            if ALFA_Mode then
+               Expand_Alfa (N);
+
+            else
+
+               case Nkind (N) is
 
                when N_Abort_Statement =>
                   Expand_N_Abort_Statement (N);
@@ -449,7 +455,9 @@ package body Expander is
 
                when others => null;
 
-            end case;
+               end case;
+
+            end if;
 
          exception
             when RE_Not_Available =>

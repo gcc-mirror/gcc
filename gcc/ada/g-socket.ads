@@ -427,17 +427,16 @@ package GNAT.Sockets is
 
    --  Timeval_Duration is a subtype of Standard.Duration because the full
    --  range of Standard.Duration cannot be represented in the equivalent C
-   --  structure. Moreover, negative values are not allowed to avoid system
-   --  incompatibilities.
+   --  structure (struct timeval). Moreover, negative values are not allowed
+   --  to avoid system incompatibilities.
 
    Immediate : constant Duration := 0.0;
 
-   Timeval_Forever : constant := 1.0 * SOSC.MAX_tv_sec;
    Forever         : constant Duration :=
-                       Duration'Min (Duration'Last, Timeval_Forever);
+                       Duration'Min (Duration'Last, 1.0 * SOSC.MAX_tv_sec);
+   --  Largest possible Duration that is also a valid value for struct timeval
+
    subtype Timeval_Duration is Duration range Immediate .. Forever;
-   --  These needs commenting, in particular we should explain what these is
-   --  used for, and how the Timeval_Forever value is chosen (see r176463) ???
 
    subtype Selector_Duration is Timeval_Duration;
    --  Timeout value for selector operations

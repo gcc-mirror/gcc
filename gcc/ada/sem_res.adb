@@ -8094,8 +8094,8 @@ package body Sem_Res is
          Resolve (Condition (N), Typ);
          Expander_Mode_Restore;
 
-      --  In ALFA_Mode, no magic needed, we just resolve the underlying nodes
-      --  But why is this special handling for ALFA_Mode required ???
+      --  In ALFA mode, we need expansion in order to introduce properly the
+      --  necessary transient scopes.
 
       else
          Resolve (Condition (N), Typ);
