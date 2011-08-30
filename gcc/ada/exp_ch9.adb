@@ -5206,7 +5206,9 @@ package body Exp_Ch9 is
       --  barrier just as a protected function, and discard the protected
       --  version of it because it is never called.
 
-      if Expander_Active then
+      if Expander_Active
+        and then not ALFA_Mode
+      then
          B_F := Build_Barrier_Function (N, Ent, Prot);
          Func := Barrier_Function (Ent);
          Set_Corresponding_Spec (B_F, Func);
@@ -5245,6 +5247,7 @@ package body Exp_Ch9 is
          --  within the function.
 
          if Expander_Active
+           and then not ALFA_Mode
            and then Scope (Entity (Cond)) /= Func
          then
             Set_Declarations (B_F, Empty_List);

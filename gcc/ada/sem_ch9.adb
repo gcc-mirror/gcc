@@ -728,6 +728,7 @@ package body Sem_Ch9 is
       --  entry family index (if applicable).
 
       if Expander_Active
+        and then not ALFA_Mode
         and then Is_Protected_Type (P_Type)
       then
          Install_Private_Data_Declarations

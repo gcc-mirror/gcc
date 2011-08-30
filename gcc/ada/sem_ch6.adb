@@ -2700,6 +2700,7 @@ package body Sem_Ch6 is
       --  references entities which were created during regular expansion.
 
       if Expander_Active
+        and then not ALFA_Mode
         and then Comes_From_Source (N)
         and then Present (Prot_Typ)
         and then Present (Spec_Id)

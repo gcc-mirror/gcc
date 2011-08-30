@@ -1,3 +1,45 @@
+2011-08-30  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Add_Internal_Interface_Entities): If serious errors have
+	been reported and a subprogram covering an interface primitive is not
+	found then skip generating the internal entity. Done to avoid crashing
+	the frontend.
+	(Check_Abstract_Overriding): Change text of error of wrong formal of
+	protected subprogram or entry. Done for consistency to emit exactly the
+	same error reported by Check_Synchronized_Overriding. In addition, the
+	error is restricted to protected types (bug found working on AI05-0090)
+
+2011-08-30  Yannick Moy  <moy@adacore.com>
+
+	* exp_aggr.adb, exp_ch11.adb, exp_prag.adb: Remove early exit during
+	expansion in Alfa mode.
+	* exp_ch6.adb, exp_ch6.ads (Expand_Actuals): Make subprogram public.
+	* exp_light.adb, exp_light.ads: New package defining light expansion.
+	* expander.adb (Expand): Call light expansion in Alfa mode
+	* exp_ch6_light.adb, exp_ch6_light.ads: Light expansion of chapter 6
+	constructs.
+	* exp_ch7_light.adb, exp_ch7_light.ads: Light expansion of chapter 7
+	constructs.
+	* exp_attr_light.adb, exp_attr_light.ads: Light expansion of attributes
+	* gnat1drv.adb (Adjust_Global_Switches): Comment
+
+2011-08-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb: Minor refactoring.
+
+2011-08-30  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch9.adb (Expand_Entry_Barrier): Do not perform expansion in Alfa
+	mode.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not perform
+	expansion in Alfa mode.
+	* sem_ch9.adb (Analyze_Entry_Body): Do not perform expansion in Alfa
+	mode.
+
+2011-08-30  Robert Dewar  <dewar@adacore.com>
+
+	* debug_a.adb: Update comment.
+
 2011-08-30  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, sem_ch3.adb, sem_ch5.adb, einfo.adb, checks.adb,
