@@ -435,8 +435,9 @@ package GNAT.Sockets is
    Timeval_Forever : constant := 1.0 * SOSC.MAX_tv_sec;
    Forever         : constant Duration :=
                        Duration'Min (Duration'Last, Timeval_Forever);
-
    subtype Timeval_Duration is Duration range Immediate .. Forever;
+   --  These needs commenting, in particular we should explain what these is
+   --  used for, and how the Timeval_Forever value is chosen (see r176463) ???
 
    subtype Selector_Duration is Timeval_Duration;
    --  Timeout value for selector operations
