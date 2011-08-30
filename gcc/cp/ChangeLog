@@ -1,5 +1,9 @@
 2011-08-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50089
+	* semantics.c (finish_id_expression): Use
+	current_nonlambda_class_type for qualified-ids.
+
 	PR c++/50114
 	* decl.c (poplevel): Disable for scope compatibility hack
 	in C++11 mode.
