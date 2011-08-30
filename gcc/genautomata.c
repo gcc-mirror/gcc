@@ -253,6 +253,7 @@ static arc_t next_out_arc              (arc_t);
 #define W_OPTION "-w"
 #define NDFA_OPTION "-ndfa"
 #define COLLAPSE_OPTION "-collapse-ndfa"
+#define NO_COMB_OPTION "-no-comb-vect"
 #define PROGRESS_OPTION "-progress"
 
 /* The following flags are set up by function `initiate_automaton_gen'.  */
@@ -267,6 +268,9 @@ static int collapse_flag;
 
 /* Do not make minimization of DFA (`-no-minimization').  */
 static int no_minimization_flag;
+
+/* Do not try to generate a comb vector (`-no-comb-vect').  */
+static int no_comb_flag;
 
 /* Value of this variable is number of automata being generated.  The
    actual number of automata may be less this value if there is not
@@ -1539,6 +1543,8 @@ gen_automata_option (rtx def)
     ndfa_flag = 1;
   else if (strcmp (XSTR (def, 0), COLLAPSE_OPTION + 1) == 0)
     collapse_flag = 1;
+  else if (strcmp (XSTR (def, 0), NO_COMB_OPTION + 1) == 0)
+    no_comb_flag = 1;
   else if (strcmp (XSTR (def, 0), PROGRESS_OPTION + 1) == 0)
     progress_flag = 1;
   else
@@ -7251,6 +7257,8 @@ static int undefined_vect_el_value;
 static int
 comb_vect_p (state_ainsn_table_t tab)
 {
+  if (no_comb_flag)
+    return false;
   return  (2 * VEC_length (vect_el_t, tab->full_vect)
            > 5 * VEC_length (vect_el_t, tab->comb_vect));
 }
@@ -7369,6 +7377,22 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
       VEC_replace (vect_el_t, tab->full_vect, full_base + i,
 		   VEC_index (vect_el_t, vect, i));
   }
+
+  /* The comb_vect min/max values are also used for the full vector, so
+     compute them now.  */
+  for (vect_index = 0; vect_index < vect_length; vect_index++)
+    if (VEC_index (vect_el_t, vect, vect_index) != undefined_vect_el_value)
+      {
+	vect_el_t x = VEC_index (vect_el_t, vect, vect_index);
+        gcc_assert (x >= 0);
+        if (tab->max_comb_vect_el_value < x)
+          tab->max_comb_vect_el_value = x;
+        if (tab->min_comb_vect_el_value > x)
+          tab->min_comb_vect_el_value = x;
+      }
+  if (no_comb_flag)
+    return;
+
   /* Form comb vector in the table: */
   gcc_assert (VEC_length (vect_el_t, tab->comb_vect)
 	      == VEC_length (vect_el_t, tab->check_vect));
@@ -7478,10 +7502,6 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
 			       comb_vect_index + vect_index)
 		    == undefined_vect_el_value);
         gcc_assert (x >= 0);
-        if (tab->max_comb_vect_el_value < x)
-          tab->max_comb_vect_el_value = x;
-        if (tab->min_comb_vect_el_value > x)
-          tab->min_comb_vect_el_value = x;
 	VEC_replace (vect_el_t, tab->comb_vect,
 		     comb_vect_index + vect_index, x);
 	VEC_replace (vect_el_t, tab->check_vect,
