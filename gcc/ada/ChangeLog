@@ -17,8 +17,8 @@
 
 	* s-parame-vms-alpha.ads, s-parame-hpux.ads, s-tassta.adb,
 	s-tarest.adb, s-parame-vms-ia64.ads, s-soflin.adb, s-secsta.adb,
-	s-secsta.ads, s-parame.ads, s-parame-vxworks.ads: Renames Ratio to
-	Percentage, and Sec_Stack_Ratio to Sec_Stack_Percentage.
+	s-secsta.ads, s-parame.ads, s-parame-vxworks.ads, s-parame-ae653.ads:
+	Renames Ratio to Percentage, and Sec_Stack_Ratio to Sec_Stack_Percentage
 
 2011-08-30  Gary Dismukes  <dismukes@adacore.com>
 
