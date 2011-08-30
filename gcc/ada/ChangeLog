@@ -1,5 +1,11 @@
 2011-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (TYPE_EXTRA_SUBTYPE_P): Add internal check.
+	* gcc-interface/utils2.c (build_binary_op): Tighten condition.
+	(build_unary_op): Likewise.
+
+2011-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* raise-gcc.c: Do not include coretypes.h and tm.h.
 	(setup_to_install): Remove test for compiler macro.
 	* targext.c: Document use for the library.
