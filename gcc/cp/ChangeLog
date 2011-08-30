@@ -1,3 +1,10 @@
+2011-08-29  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/50207
+	* class.c (finish_struct_1): Complain if the first field is
+	artificial.
+
 2011-08-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50089

@@ -1,3 +1,8 @@
+2011-08-29  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/dfp/base.C: New test.
+
 2011-08-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50089
