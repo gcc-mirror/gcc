@@ -1,5 +1,12 @@
 2011-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* raise-gcc.c: Do not include coretypes.h and tm.h.
+	(setup_to_install): Remove test for compiler macro.
+	* targext.c: Document use for the library.
+	* gcc-interface/Makefile.in: Fix comment on the use of IN_GCC.
+
+2011-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Do not convert
 	the expression to the nominal type if the latter is a record type with
 	a variant part and the type of the former is a record type without one.
