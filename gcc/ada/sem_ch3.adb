@@ -1609,6 +1609,10 @@ package body Sem_Ch3 is
                    (Tagged_Type => Tagged_Type,
                     Iface_Prim  => Iface_Prim);
 
+               if No (Prim) and then Serious_Errors_Detected > 0 then
+                  goto Continue;
+               end if;
+
                pragma Assert (Present (Prim));
 
                --  Ada 2012 (AI05-0197): If the name of the covering primitive
@@ -1669,6 +1673,7 @@ package body Sem_Ch3 is
                Set_Has_Delayed_Freeze (New_Subp);
             end if;
 
+            <<Continue>>
             Next_Elmt (Elmt);
          end loop;
 
@@ -9163,13 +9168,16 @@ package body Sem_Ch3 is
                   if Ekind (First_Formal (Subp)) = E_In_Parameter
                     and then Ekind (Subp) /= E_Function
                   then
-                     if not Is_Predefined_Dispatching_Operation (Subp) then
+                     if not Is_Predefined_Dispatching_Operation (Subp)
+                       and then Is_Protected_Type
+                                  (Corresponding_Concurrent_Type (T))
+                     then
                         Error_Msg_NE
                           ("first formal of & must be of mode `OUT`, " &
                            "`IN OUT` or access-to-variable", T, Subp);
                         Error_Msg_N
-                          ("\to be overridden by protected procedure or " &
-                           "entry (RM 9.4(11.9/2))", T);
+                          ("\in order to be overridden by protected procedure "
+                           & "or entry (RM 9.4(11.9/2))", T);
                      end if;
 
                   --  Some other kind of overriding failure
@@ -17437,7 +17445,7 @@ package body Sem_Ch3 is
 
             --  Ada 2005 (AI-251): The partial view shall be a descendant of
             --  an interface type if and only if the full type is descendant
-            --  of the interface type (AARM 7.3 (7.3/2).
+            --  of the interface type (AARM 7.3 (7.3/2)).
 
             Iface := Find_Hidden_Interface (Priv_T_Ifaces, Full_T_Ifaces);
 

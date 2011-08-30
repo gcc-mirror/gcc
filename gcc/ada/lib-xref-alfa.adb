@@ -158,7 +158,7 @@ package body ALFA is
      Table_Name           => "Drefs");
    --  Table of cross-references for reads and writes through explicit
    --  dereferences, that are output as reads/writes to the special variable
-   --  "HEAP". These references are added to the regular references when
+   --  "Heap". These references are added to the regular references when
    --  computing ALFA cross-references.
 
    -----------------------
@@ -543,7 +543,7 @@ package body ALFA is
       end loop;
 
       --  Add dereferences to the set of regular references, by creating a
-      --  special "HEAP" variable for these special references.
+      --  special "Heap" variable for these special references.
 
       Name_Len := Name_Of_Heap_Variable'Length;
       Name_Buffer (1 .. Name_Len) := Name_Of_Heap_Variable;
@@ -559,8 +559,10 @@ package body ALFA is
       Set_Has_Fully_Qualified_Name (Heap);
 
       for J in Drefs.First .. Drefs.Last loop
-         Xrefs.Increment_Last;
-         Xrefs.Table (Xrefs.Last)     := Drefs.Table (J);
+         Xrefs.Append (Drefs.Table (J));
+
+         --  Set entity at this point with newly created "Heap" variable
+
          Xrefs.Table (Xrefs.Last).Ent := Heap;
 
          Nrefs         := Nrefs + 1;
@@ -1047,7 +1049,7 @@ package body ALFA is
 
          Ref_Scope := Enclosing_Subprogram_Or_Package (N);
 
-         --  Entity is filled later on with the special "HEAP" variable
+         --  Entity is filled later on with the special "Heap" variable
 
          Drefs.Table (Indx).Ent := Empty;
 
@@ -1055,7 +1057,7 @@ package body ALFA is
          Drefs.Table (Indx).Loc := Ref;
          Drefs.Table (Indx).Typ := Typ;
 
-         --  It is as if the special "HEAP" was defined in every scope where it
+         --  It is as if the special "Heap" was defined in every scope where it
          --  is referenced.
 
          Drefs.Table (Indx).Eun := Get_Source_Unit (Ref);
