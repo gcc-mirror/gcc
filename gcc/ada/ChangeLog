@@ -1,3 +1,13 @@
+2011-08-30  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor change.
+	* exp_attr_light.adb: Minor reformatting.
+
+2011-08-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Patch inheritance of aspects in
+	Complete_Private_Subtype, to avoid infinite loop.
+
 2011-08-30  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Add_Internal_Interface_Entities): If serious errors have

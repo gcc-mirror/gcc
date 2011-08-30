@@ -35,10 +35,11 @@ package body Exp_Attr_Light is
 
    procedure Expand_Light_N_Attribute_Reference (N : Node_Id) is
       Id : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
+
    begin
       case Id is
-         when Attribute_Old  |
-            Attribute_Result =>
+         when Attribute_Old    |
+              Attribute_Result =>
             Expand_N_Attribute_Reference (N);
 
          when others =>
