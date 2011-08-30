@@ -4783,6 +4783,10 @@ gfc_trans_allocate (gfc_code * code)
 			|| code->expr3->expr_type == EXPR_CONSTANT)
 		    {
 		      gfc_conv_expr (&se_sz, code->expr3);
+		      gfc_add_block_to_block (&se.pre, &se_sz.pre);
+		      se_sz.string_length
+			= gfc_evaluate_now (se_sz.string_length, &se.pre);
+		      gfc_add_block_to_block (&se.pre, &se_sz.post);
 		      memsz = se_sz.string_length;
 		    }
 		  else if (code->expr3->mold
