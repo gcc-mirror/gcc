@@ -1023,9 +1023,10 @@ package body System.Tasking.Stages is
       Secondary_Stack_Size :
         constant SSE.Storage_Offset :=
           Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size *
-          SSE.Storage_Offset (Parameters.Sec_Stack_Percentage) / 100;
+            SSE.Storage_Offset (Parameters.Sec_Stack_Percentage) / 100;
 
       Secondary_Stack : aliased SSE.Storage_Array (1 .. Secondary_Stack_Size);
+      --  Actual area allocated for secondary stack
 
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
       --  Address of secondary stack. In the fixed secondary stack case, this
@@ -1085,6 +1086,8 @@ package body System.Tasking.Stages is
             return;
          end if;
       end Search_Fall_Back_Handler;
+
+   --  Start of processing for Task_Wrapper
 
    begin
       pragma Assert (Self_ID.Deferral_Level = 1);
