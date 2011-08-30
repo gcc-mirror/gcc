@@ -4735,7 +4735,7 @@ extern tree handle_dll_attribute (tree *, tree, tree, int, bool *);
 /* Check whether CAND is suitable to be returned from get_qualified_type
    (BASE, TYPE_QUALS, LAYOUT_QUALIFER).  */
 
-extern bool check_qualified_type (const_tree, const_tree, int, tree);
+extern bool check_qualified_type (tree, tree, int, tree);
 
 /* Return a version of the TYPE, qualified as indicated by the
    TYPE_QUALS and LAYOUT_QUALIFIER, if one exists.

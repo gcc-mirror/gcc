@@ -110,7 +110,7 @@ static tree find_init_member (tree, struct obstack *);
 static void readonly_warning (tree, enum lvalue_use);
 static int lvalue_or_else (location_t, const_tree, enum lvalue_use);
 static void record_maybe_used_decl (tree);
-static int comptypes_internal (const_tree, const_tree, bool *, bool *);
+static int comptypes_internal (tree, tree, bool *, bool *);
 
 /* Return true if EXP is a null pointer constant, false otherwise.  */
 
@@ -1056,11 +1056,11 @@ comptypes_check_different_types (tree type1, tree type2,
    types.  */
 
 static int
-comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
+comptypes_internal (tree type1, tree type2, bool *enum_and_int_p,
 		    bool *different_types_p)
 {
-  const_tree t1 = type1;
-  const_tree t2 = type2;
+  tree t1 = type1;
+  tree t2 = type2;
   int attrval, val;
 
   /* Suppress errors caused by previously reported errors.  */

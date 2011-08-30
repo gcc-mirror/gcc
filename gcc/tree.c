@@ -5677,7 +5677,7 @@ set_type_quals (tree type, int type_quals, tree layout_qualifier)
    TYPE_QUALS and LAYOUT_QUALIFIER.  */
 
 bool
-check_qualified_type (const_tree cand, const_tree base,
+check_qualified_type (tree cand, tree base,
                       int type_quals, tree layout_qualifier)
 {
   return (TYPE_QUALS (cand) == type_quals
@@ -5694,7 +5694,7 @@ check_qualified_type (const_tree cand, const_tree base,
 /* Returns true iff CAND is equivalent to BASE with ALIGN.  */
 
 static bool
-check_aligned_type (const_tree cand, const_tree base, unsigned int align)
+check_aligned_type (tree cand, tree base, unsigned int align)
 {
   return (TYPE_QUALS (cand) == TYPE_QUALS (base)
 	  && TYPE_BLOCK_FACTOR (cand) == TYPE_BLOCK_FACTOR (base)
