@@ -35,14 +35,6 @@
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
-/* In the top-of-tree GCC, tconfig does not include tm.h, but in GCC 3.2
-   it does.  To avoid branching raise.c just for that purpose, we kludge by
-   looking for a symbol always defined by tm.h and if it's not defined,
-   we include it.  */
-#ifndef FIRST_PSEUDO_REGISTER
-#include "coretypes.h"
-#include "tm.h"
-#endif
 #include <sys/stat.h>
 #include <stdarg.h>
 typedef char bool;
@@ -1007,11 +999,6 @@ setup_to_install (_Unwind_Context *uw_context,
                   _Unwind_Ptr uw_landing_pad,
                   int uw_filter)
 {
-#ifndef EH_RETURN_DATA_REGNO
-  /* We should not be called if the appropriate underlying support is not
-     there.  */
-  abort ();
-#else
   /* 1/ exception object pointer, which might be provided back to
      _Unwind_Resume (and thus to this personality routine) if we are jumping
      to a cleanup.  */
@@ -1026,7 +1013,6 @@ setup_to_install (_Unwind_Context *uw_context,
   /* Setup the address we should jump at to reach the code where there is the
      "something" we found.  */
   _Unwind_SetIP (uw_context, uw_landing_pad);
-#endif
 }
 
 /* The following is defined from a-except.adb. Its purpose is to enable
