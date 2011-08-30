@@ -8040,14 +8040,20 @@ package body Exp_Ch3 is
             Field_Name := Chars (Defining_Identifier (C));
 
             --  The tags must not be compared: they are not part of the value.
-            --  Ditto for the controller component, if present.
+            --  Ditto for parent interfaces because their equality operator is
+            --  abstract.
 
             --  Note also that in the following, we use Make_Identifier for
             --  the component names. Use of New_Reference_To to identify the
             --  components would be incorrect because the wrong entities for
             --  discriminants could be picked up in the private type case.
 
-            if Field_Name /= Name_uTag then
+            if Field_Name = Name_uParent
+              and then Is_Interface (Etype (Defining_Identifier (C)))
+            then
+               null;
+
+            elsif Field_Name /= Name_uTag then
                Evolve_Or_Else (Cond,
                  Make_Op_Ne (Loc,
                    Left_Opnd =>

@@ -1,3 +1,10 @@
+2011-08-30  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Make_Eq_If): If the etype of the _parent component is an
+	interface type then do not generate code to compare this component.
+	Required since they have no components and their equality operator is
+	abstract.
+
 2011-08-30  Steve Baird  <baird@adacore.com>
 
 	* sem_util.ads (Deepest_Type_Access_Level): New function; for the type
