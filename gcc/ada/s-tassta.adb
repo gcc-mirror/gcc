@@ -539,6 +539,10 @@ package body System.Tasking.Stages is
             else System.Multiprocessors.CPU_Range (CPU));
       end if;
 
+      --  ??? If we want to handle the interaction between pragma CPU and
+      --  dispatching domains we would need to signal that this task is being
+      --  allocated to a processor.
+
       --  Find parent P of new Task, via master level number
 
       P := Self_ID;
@@ -636,6 +640,17 @@ package body System.Tasking.Stages is
          end loop;
 
          T.Common.Task_Image_Len := Len;
+      end if;
+
+      --  ??? For the moment the task inherits the dispatching domain of the
+      --  parent. It will change when support for the Dispatching_Domain
+      --  aspect will be added, because that will allow setting the domain
+      --  in the spec of the task.
+
+      if T.Common.Activator /= null then
+         T.Common.Domain := T.Common.Activator.Common.Domain;
+      else
+         T.Common.Domain := System.Tasking.System_Domain;
       end if;
 
       Unlock (Self_ID);

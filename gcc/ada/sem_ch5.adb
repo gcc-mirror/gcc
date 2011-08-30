@@ -2250,15 +2250,11 @@ package body Sem_Ch5 is
          Analyze (Subt);
       end if;
 
-      --  If it is an expression, the name is pre-analyzed in the caller.
-      --  If it it of a controlled type we need a block for the finalization
-      --  actions. As for loop bounds that need finalization, we create a
-      --  declaration and an assignment to trigger these actions.
+      --  If the domain of iteration is an expression, create a declaration
+      --  for it, so that finalization actions are introduced outside of the
+      --  loop.
 
-      if Present (Etype (Iter_Name))
-        and then Is_Controlled (Etype (Iter_Name))
-        and then not Is_Entity_Name (Iter_Name)
-      then
+      if not Is_Entity_Name (Iter_Name) then
          declare
             Id : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
 

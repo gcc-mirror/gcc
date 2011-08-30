@@ -691,8 +691,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  semicolon or comma, but does not consume this terminating token.
 
       function P_Expression_If_OK return Node_Id;
-      --  Scans out an expression in a context where a conditional expression
-      --  is permitted to appear without surrounding parentheses.
+      --  Scans out an expression allowing an unparenthesized case expression,
+      --  conditional expression, or quantified expression to appear without
+      --  enclosing parentheses. However, if such an expression is not preceded
+      --  by a left paren, and followed by a right paren, an error message will
+      --  be output noting that parenthesization is required.
 
       function P_Expression_No_Right_Paren return Node_Id;
       --  Scans out an expression in contexts where the expression cannot be
@@ -702,6 +705,9 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Expression_Or_Range_Attribute_If_OK return Node_Id;
       --  Scans out an expression or range attribute where a conditional
       --  expression is permitted to appear without surrounding parentheses.
+      --  However, if such an expression is not preceded by a left paren, and
+      --  followed by a right paren, an error message will be output noting
+      --  that parenthesization is required.
 
       function P_Qualified_Expression (Subtype_Mark : Node_Id) return Node_Id;
       --  This routine scans out a qualified expression when the caller has

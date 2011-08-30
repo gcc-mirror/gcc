@@ -2956,14 +2956,17 @@ package body Exp_Ch5 is
       --  Processing for containers
 
       else
-         --  For an iterator of the form "Of" then name is some expression,
-         --  which is transformed into a call to the default iterator.
+         --  For an "of" iterator the name is a container expression, which
+         --  is transformed into a call to the default iterator.
 
-         --  For an iterator of the form "in" then name is a function call
-         --  that delivers an iterator.
+         --  For an iterator of the form "in" the name is a function call
+         --  that delivers an iterator type.
+
+         --  In both cases, analysis of the iterator has introduced an object
+         --  declaration to capture the domain, so that Container is an entity.
 
          --  The for loop is expanded into a while loop which uses a container
-         --  specific cursor to examine each element.
+         --  specific cursor to desgnate each element.
 
          --    Iter : Iterator_Type := Container.Iterate;
          --    Cursor : Cursor_type := First (Iter);
@@ -2997,15 +3000,20 @@ package body Exp_Ch5 is
             --  The type of the iterator is the return type of the Iterate
             --  function used. For the "of" form this is the default iterator
             --  for the type, otherwise it is the type of the explicit
-            --  function used in the loop.
+            --  function used in the iterator specification. The most common
+            --  case will be an Iterate function in the container package.
+
+            --  The primitive operations of the container type may not be
+            --  use-visible, so we introduce the name of the enclosing package
+            --  in the declarations below. The Iterator type is declared in a
+            --  an instance within the container package itself.
 
             Iter_Type := Etype (Name (I_Spec));
 
-            if Is_Entity_Name (Container) then
-               Pack := Scope (Etype (Container));
-
+            if Is_Iterator (Iter_Type) then
+               Pack := Scope (Scope (Etype (Container)));
             else
-               Pack := Scope (Entity (Name (Container)));
+               Pack := Scope (Etype (Container));
             end if;
 
             --  The "of" case uses an internally generated cursor whose type
@@ -3047,8 +3055,6 @@ package body Exp_Ch5 is
                         Container_Arg := New_Copy_Tree (Container);
 
                      else
-                        Pack := Scope (Default_Iter);
-
                         Container_Arg :=
                           Make_Type_Conversion (Loc,
                             Subtype_Mark =>
@@ -3195,9 +3201,12 @@ package body Exp_Ch5 is
                 End_Label  => Empty);
 
             --  Create the declarations for Iterator and cursor and insert then
-            --  before the source loop. Generate:
+            --  before the source loop. Given that the domain of iteration is
+            --  already an entity, the iterator is just a renaming of that
+            --  entity. Possible optimization ???
+            --  Generate:
 
-            --    I : Iterator_Type := Iterate (Container);
+            --    I : Iterator_Type renames Container;
             --    C : Pack.Cursor_Type := Container.[First | Last];
 
             declare
@@ -3206,11 +3215,10 @@ package body Exp_Ch5 is
 
             begin
                Decl1 :=
-                 Make_Object_Declaration (Loc,
+                 Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Iterator,
-                   Object_Definition   => New_Occurrence_Of (Iter_Type, Loc),
-                   Expression          => Relocate_Node (Name (I_Spec)));
-               Set_Assignment_OK (Decl1);
+                   Subtype_Mark  => New_Occurrence_Of (Iter_Type, Loc),
+                   Name          => Relocate_Node (Name (I_Spec)));
 
                Decl2 :=
                  Make_Object_Declaration (Loc,
@@ -3225,8 +3233,7 @@ package body Exp_Ch5 is
 
                Set_Assignment_OK (Decl2);
 
-               Insert_Actions (N,
-                 New_List (Decl1, Decl2));
+               Insert_Actions (N, New_List (Decl1, Decl2));
             end;
 
             --  The Iterator is not modified in the source, but of course will

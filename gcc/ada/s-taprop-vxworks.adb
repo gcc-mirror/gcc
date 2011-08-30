@@ -67,8 +67,10 @@ package body System.Task_Primitives.Operations is
    use System.Parameters;
    use type System.VxWorks.Ext.t_id;
    use type Interfaces.C.int;
+   use type System.OS_Interface.unsigned;
 
    subtype int is System.OS_Interface.int;
+   subtype unsigned is System.OS_Interface.unsigned;
 
    Relative : constant := 0;
 
@@ -883,10 +885,6 @@ package body System.Task_Primitives.Operations is
       Succeeded  : out Boolean)
    is
       Adjusted_Stack_Size : size_t;
-      Result : int := 0;
-
-      use System.Task_Info;
-      use type System.Multiprocessors.CPU_Range;
 
    begin
       --  Ask for four extra bytes of stack space so that the ATCB pointer can
@@ -952,26 +950,9 @@ package body System.Task_Primitives.Operations is
 
       --  Set processor affinity
 
-      if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
-         --  Ada 2012 pragma CPU uses CPU numbers starting from 1, while
-         --  on VxWorks the first CPU is identified by a 0, so we need to
-         --  adjust.
+      Set_Task_Affinity (T);
 
-         Result :=
-           taskCpuAffinitySet
-             (T.Common.LL.Thread, int (T.Common.Base_CPU) - 1);
-
-      elsif T.Common.Task_Info /= Unspecified_Task_Info then
-         Result :=
-           taskCpuAffinitySet (T.Common.LL.Thread, T.Common.Task_Info);
-      end if;
-
-      if Result = -1 then
-         taskDelete (T.Common.LL.Thread);
-         T.Common.LL.Thread := -1;
-      end if;
-
-      if T.Common.LL.Thread = -1 then
+      if T.Common.LL.Thread <= 0 then
          Succeeded := False;
       else
          Succeeded := True;
@@ -1371,8 +1352,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Initialize (Environment_Task : Task_Id) is
       Result : int;
-
-      use type System.Multiprocessors.CPU_Range;
+      pragma Unreferenced (Result);
 
    begin
       Environment_Task_Id := Environment_Task;
@@ -1413,19 +1393,64 @@ package body System.Task_Primitives.Operations is
 
       --  Set processor affinity
 
-      if Environment_Task.Common.Base_CPU /=
-         System.Multiprocessors.Not_A_Specific_CPU
-      then
+      Set_Task_Affinity (Environment_Task);
+   end Initialize;
+
+   -----------------------
+   -- Set_Task_Affinity --
+   -----------------------
+
+   procedure Set_Task_Affinity (T : ST.Task_Id) is
+      Result : int := 0;
+      pragma Unreferenced (Result);
+
+      use System.Task_Info;
+      use type System.Multiprocessors.CPU_Range;
+
+   begin
+      --  pragma CPU
+
+      if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
          --  Ada 2012 pragma CPU uses CPU numbers starting from 1, while
          --  on VxWorks the first CPU is identified by a 0, so we need to
          --  adjust.
 
          Result :=
            taskCpuAffinitySet
-             (Environment_Task.Common.LL.Thread,
-              int (Environment_Task.Common.Base_CPU) - 1);
-         pragma Assert (Result /= -1);
+             (T.Common.LL.Thread, int (T.Common.Base_CPU) - 1);
+
+      --  Task_Info
+
+      elsif T.Common.Task_Info /= Unspecified_Task_Info then
+         Result :=
+           taskCpuAffinitySet (T.Common.LL.Thread, T.Common.Task_Info);
+
+      --  Handle dispatching domains
+
+      elsif T.Common.Domain /= null and then
+              (T.Common.Domain /= ST.System_Domain or else
+               T.Common.Domain.all /= (Multiprocessors.CPU'First ..
+                                       Multiprocessors.Number_Of_CPUs => True))
+      then
+         declare
+            CPU_Set : unsigned := 0;
+         begin
+            --  Set the affinity to all the processors belonging to the
+            --  dispatching domain.
+
+            for Proc in T.Common.Domain'Range loop
+               if T.Common.Domain (Proc) then
+                  --  The thread affinity mask is a bit vector in which each
+                  --  bit represents a logical processor.
+
+                  CPU_Set := CPU_Set + 2 ** (Integer (Proc) - 1);
+               end if;
+            end loop;
+
+            Result :=
+              taskMaskAffinitySet (T.Common.LL.Thread, CPU_Set);
+         end;
       end if;
-   end Initialize;
+   end Set_Task_Affinity;
 
 end System.Task_Primitives.Operations;

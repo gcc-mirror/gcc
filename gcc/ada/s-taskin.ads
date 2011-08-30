@@ -375,6 +375,29 @@ package System.Tasking is
    --  terminates.
 
    ------------------------------------
+   -- Dispatching domain definitions --
+   ------------------------------------
+
+   --  We need to redefine here these types (already defined in
+   --  System.Multiprocessor.Dispatching_Domains) for avoiding circular
+   --  dependencies.
+
+   type Dispatching_Domain is
+     array (System.Multiprocessors.CPU range <>) of Boolean;
+   --  A dispatching domain needs to contain the set of processors belonging
+   --  to it. This is a processor mask where a True indicates that the
+   --  processor belongs to the dispatching domain.
+   --  Do not use the full range of CPU_Range because it would create a very
+   --  long array. This way we can use the exact range of processors available
+   --  in the system.
+
+   type Dispatching_Domain_Access is access Dispatching_Domain;
+
+   System_Domain : Dispatching_Domain_Access;
+   --  All processors belong to the default system dispatching domain at start
+   --  up.
+
+   ------------------------------------
    -- Task related other definitions --
    ------------------------------------
 
@@ -637,6 +660,16 @@ package System.Tasking is
       Debug_Events : Debug_Event_Array;
       --  Word length array of per task debug events, of which 11 kinds are
       --  currently defined in System.Tasking.Debugging package.
+
+      Domain : Dispatching_Domain_Access;
+      --  Domain is the dispatching domain to which the task belongs. It is
+      --  only changed via dispatching domains package. This field is made
+      --  part of the Common_ATCB, even when restricted run-times (namely
+      --  Ravenscar) do not use it, because this way the field is always
+      --  available to the underlying layers to set the affinity and we do not
+      --  need to do different things depending on the situation.
+      --
+      --  Protection: Self.L
    end record;
 
    ---------------------------------------

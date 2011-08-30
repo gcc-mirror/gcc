@@ -1799,6 +1799,16 @@ package body VMS_Conv is
                          (Arg (Arg'First .. SwP),
                           Command.Switches,
                           Quiet => False);
+
+                     --  Special case for GNAT COMPILE /UNCHECKED...
+                     --  because the corresponding switch --unchecked... is
+                     --  for gnatmake, not for the compiler.
+
+                     if Cargs and then
+                       Sw.Name.all = "/UNCHECKED_SHARED_LIB_IMPORTS"
+                     then
+                        Cargs := False;
+                     end if;
                   end if;
 
                   if Sw /= null then
