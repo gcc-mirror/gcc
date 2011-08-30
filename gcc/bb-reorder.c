@@ -1965,8 +1965,11 @@ insert_section_boundary_note (void)
   rtx new_note;
   int first_partition = 0;
 
-  if (flag_reorder_blocks_and_partition)
-    FOR_EACH_BB (bb)
+  if (!flag_reorder_blocks_and_partition
+      || !optimize_function_for_speed_p (cfun))
+    return;
+
+  FOR_EACH_BB (bb)
     {
       if (!first_partition)
 	first_partition = BB_PARTITION (bb);
