@@ -16535,6 +16535,7 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
   tree default_argument = NULL_TREE;
   bool saved_greater_than_is_operator_p;
   bool saved_local_variables_forbidden_p;
+  bool non_constant_p;
 
   /* Make sure that PARSER->GREATER_THAN_IS_OPERATOR_P is
      set correctly.  */
@@ -16548,7 +16549,9 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
   if (template_parm_p)
     push_deferring_access_checks (dk_no_deferred);
   default_argument
-    = cp_parser_assignment_expression (parser, /*cast_p=*/false, NULL);
+    = cp_parser_initializer_clause (parser, &non_constant_p);
+  if (BRACE_ENCLOSED_INITIALIZER_P (default_argument))
+    maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
   if (template_parm_p)
     pop_deferring_access_checks ();
   parser->greater_than_is_operator_p = saved_greater_than_is_operator_p;
@@ -20731,6 +20734,7 @@ static void
 cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 {
   bool saved_local_variables_forbidden_p;
+  bool non_constant_p;
   tree parm, parmdecl;
 
   /* While we're parsing the default args, we might (due to the
@@ -20775,12 +20779,14 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       start_lambda_scope (parmdecl);
 
       /* Parse the assignment-expression.  */
-      parsed_arg = cp_parser_assignment_expression (parser, /*cast_p=*/false, NULL);
+      parsed_arg = cp_parser_initializer_clause (parser, &non_constant_p);
       if (parsed_arg == error_mark_node)
 	{
 	  cp_parser_pop_lexer (parser);
 	  continue;
 	}
+      if (BRACE_ENCLOSED_INITIALIZER_P (parsed_arg))
+	maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 
       if (!processing_template_decl)
 	parsed_arg = check_default_argument (TREE_VALUE (parm), parsed_arg);
