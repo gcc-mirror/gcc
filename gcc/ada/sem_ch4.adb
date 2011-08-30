@@ -30,7 +30,6 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
-with Expander; use Expander;
 with Fname;    use Fname;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
@@ -3352,14 +3351,19 @@ package body Sem_Ch4 is
       Iterator : Node_Id;
 
    begin
-      --  Analyze construct with expansion disabled, because it will be
-      --  rewritten as a loop during expansion.
+      Set_Etype  (Ent,  Standard_Void_Type);
+      Set_Scope  (Ent, Current_Scope);
+      Set_Parent (Ent, N);
 
-      Expander_Mode_Save_And_Set (False);
       Check_SPARK_Restriction ("quantified expression is not allowed", N);
 
-      Set_Etype  (Ent,  Standard_Void_Type);
-      Set_Parent (Ent, N);
+      --  If expansion is enabled, the condition is analyzed after rewritten
+      --  as a loop. Otherwise we only need to set the type.
+
+      if Operating_Mode /= Check_Semantics then
+         Set_Etype (N, Standard_Boolean);
+         return;
+      end if;
 
       if Present (Loop_Parameter_Specification (N)) then
          Iterator :=
@@ -3390,7 +3394,6 @@ package body Sem_Ch4 is
       Analyze (Condition (N));
       End_Scope;
       Set_Etype (N, Standard_Boolean);
-      Expander_Mode_Restore;
    end Analyze_Quantified_Expression;
 
    -------------------

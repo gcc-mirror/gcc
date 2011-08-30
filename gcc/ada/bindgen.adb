@@ -71,6 +71,13 @@ package body Bindgen is
    --  to do this unconditionally, since it drags in the System.Restrictions
    --  unit unconditionally, which is unpleasand, especially for ZFP etc.)
 
+   Dispatching_Domains_Used : Boolean;
+   --  Flag indicating whether multiprocessor dispatching domains are used in
+   --  the closure of the partition. This is set by
+   --  Check_Dispatching_Domains_Used, and is used to call the routine to
+   --  disallow the creation of new dispatching domains just before calling
+   --  the main procedure from the environment task.
+
    Lib_Final_Built : Boolean := False;
    --  Flag indicating whether the finalize_library rountine has been built
 
@@ -233,9 +240,18 @@ package body Bindgen is
    -- Local Subprograms --
    -----------------------
 
+   procedure Check_File_In_Partition (File_Name : String; Flag : out Boolean);
+   --  If the file indicated by File_Name is in the partition the Flag is set
+   --  to True, False otherwise.
+
    procedure Check_System_Restrictions_Used;
    --  Sets flag System_Restrictions_Used (Set to True if and only if the unit
    --  System.Restrictions is present in the partition, otherwise False).
+
+   procedure Check_Dispatching_Domains_Used;
+   --  Sets flag Dispatching_Domains_Used to True when using the unit
+   --  System.Multiprocessors.Dispatching_Domains is present in the partition,
+   --  otherwise set to False.
 
    procedure Gen_Adainit;
    --  Generates the Adainit procedure
@@ -372,19 +388,38 @@ package body Bindgen is
    --  contents of statement buffer up to Last, and reset Last to 0
 
    ------------------------------------
+   -- Check_Dispatching_Domains_Used --
+   ------------------------------------
+
+   procedure Check_Dispatching_Domains_Used is
+   begin
+      Check_File_In_Partition ("s-mudido.ads", Dispatching_Domains_Used);
+   end Check_Dispatching_Domains_Used;
+
+   -----------------------------
+   -- Check_File_In_Partition --
+   -----------------------------
+
+   procedure Check_File_In_Partition
+     (File_Name : String; Flag : out Boolean) is
+   begin
+      for J in Units.First .. Units.Last loop
+         if Get_Name_String (Units.Table (J).Sfile) = File_Name then
+            Flag := True;
+            return;
+         end if;
+      end loop;
+
+      Flag := False;
+   end Check_File_In_Partition;
+
+   ------------------------------------
    -- Check_System_Restrictions_Used --
    ------------------------------------
 
    procedure Check_System_Restrictions_Used is
    begin
-      for J in Units.First .. Units.Last loop
-         if Get_Name_String (Units.Table (J).Sfile) = "s-restri.ads" then
-            System_Restrictions_Used := True;
-            return;
-         end if;
-      end loop;
-
-      System_Restrictions_Used := False;
+      Check_File_In_Partition ("s-restri.ads", System_Restrictions_Used);
    end Check_System_Restrictions_Used;
 
    ------------------
@@ -664,6 +699,16 @@ package body Bindgen is
                  & Get_Main_Unit_Name (Name_Buffer (1 .. Name_Len)) & """);");
          end if;
 
+         --  When dispatching domains are used then we need to signal it
+         --  before calling the main procedure.
+
+         if Dispatching_Domains_Used then
+            WBI ("      procedure Freeze_Dispatching_Domains;");
+            WBI ("      pragma Import");
+            WBI ("        (Ada, Freeze_Dispatching_Domains, " &
+                 """__gnat_freeze_dispatching_domains"");");
+         end if;
+
          WBI ("   begin");
          WBI ("      if Is_Elaborated then");
          WBI ("         return;");
@@ -899,6 +944,12 @@ package body Bindgen is
       end if;
 
       Gen_Elab_Calls;
+
+      --  From this point, no new dispatching domain can be created.
+
+      if Dispatching_Domains_Used then
+         WBI ("      Freeze_Dispatching_Domains;");
+      end if;
 
       --  Case of main program is CIL function or procedure
 
@@ -2037,6 +2088,7 @@ package body Bindgen is
       --  Generate output file in appropriate language
 
       Check_System_Restrictions_Used;
+      Check_Dispatching_Domains_Used;
 
       Gen_Output_File_Ada (Filename);
    end Gen_Output_File;

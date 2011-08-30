@@ -1254,4 +1254,15 @@ package body System.Task_Primitives.Operations is
       Enter_Task (Environment_Task);
    end Initialize;
 
+   -----------------------
+   -- Set_Task_Affinity --
+   -----------------------
+
+   procedure Set_Task_Affinity (T : ST.Task_Id) is
+      pragma Unreferenced (T);
+   begin
+      --  Setting task affinity is not supported by the underlying system
+
+      null;
+   end Set_Task_Affinity;
 end System.Task_Primitives.Operations;

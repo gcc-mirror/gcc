@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -217,6 +217,21 @@ package body System.Tasking is
       T.Common.State := Runnable;
       T.Common.Task_Image_Len := Main_Task_Image'Length;
       T.Common.Task_Image (Main_Task_Image'Range) := Main_Task_Image;
+
+      --  At program start-up the environment task is allocated to the default
+      --  system dispatching domain.
+      --  Make sure that the processors which are not available are not taken
+      --  into account. Use Number_Of_CPUs to know the exact number of
+      --  processors in the system at execution time.
+
+      System_Domain := new Dispatching_Domain'
+        (Multiprocessors.CPU'First .. Multiprocessors.Number_Of_CPUs => True);
+
+      T.Common.Domain := System_Domain;
+
+      --  ??? If we want to handle the interaction between pragma CPU and
+      --  dispatching domains we would need to signal that this task is being
+      --  allocated to a processor.
 
       --  Only initialize the first element since others are not relevant
       --  in ravenscar mode. Rest of the initialization is done in Init_RTS.

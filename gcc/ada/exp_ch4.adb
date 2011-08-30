@@ -7764,11 +7764,6 @@ package body Exp_Ch4 is
           Statements       => New_List (Test),
           End_Label        => Empty));
 
-      --  The components of the scheme have already been analyzed, and the loop
-      --  parameter declaration has been processed.
-
-      Set_Analyzed (Iteration_Scheme (Last (Actions)));
-
       Rewrite (N,
         Make_Expression_With_Actions (Loc,
           Expression => New_Occurrence_Of (Tnn, Loc),

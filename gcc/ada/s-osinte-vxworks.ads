@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --            Copyright (C) 1991-1994, Florida State University             --
---          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,7 @@ package System.OS_Interface is
    pragma Preelaborate;
 
    subtype int             is Interfaces.C.int;
+   subtype unsigned        is Interfaces.C.unsigned;
    subtype short           is Short_Integer;
    type unsigned_int       is mod 2 ** int'Size;
    type long               is new Long_Integer;
@@ -491,6 +492,11 @@ package System.OS_Interface is
    function taskCpuAffinitySet (tid : t_id; CPU : int) return int
      renames System.VxWorks.Ext.taskCpuAffinitySet;
    --  For SMP run-times the affinity to CPU.
+   --  For uniprocessor systems return ERROR status.
+
+   function taskMaskAffinitySet (tid : t_id; CPU_Set : unsigned) return int
+     renames System.VxWorks.Ext.taskMaskAffinitySet;
+   --  For SMP run-times the affinity to CPU_Set.
    --  For uniprocessor systems return ERROR status.
 
    ---------------------

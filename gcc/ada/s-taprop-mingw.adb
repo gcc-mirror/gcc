@@ -954,21 +954,7 @@ package body System.Task_Primitives.Operations is
 
       --  Step 4: Handle pragma CPU and Task_Info
 
-      if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
-
-         --  The CPU numbering in pragma CPU starts at 1 while the subprogram
-         --  to set the affinity starts at 0, therefore we must subtract 1.
-
-         Result := SetThreadIdealProcessor
-           (hTask, ProcessorId (T.Common.Base_CPU) - 1);
-         pragma Assert (Result = 1);
-
-      elsif T.Common.Task_Info /= null then
-         if T.Common.Task_Info.CPU /= Task_Info.Any_CPU then
-            Result := SetThreadIdealProcessor (hTask, T.Common.Task_Info.CPU);
-            pragma Assert (Result = 1);
-         end if;
-      end if;
+      Set_Task_Affinity (T);
 
       --  Step 5: Now, start it for good
 
@@ -1074,10 +1060,6 @@ package body System.Task_Primitives.Operations is
       Discard : BOOL;
       pragma Unreferenced (Discard);
 
-      Result : DWORD;
-
-      use type System.Multiprocessors.CPU_Range;
-
    begin
       Environment_Task_Id := Environment_Task;
       OS_Primitives.Initialize;
@@ -1109,20 +1091,9 @@ package body System.Task_Primitives.Operations is
 
       Enter_Task (Environment_Task);
 
-      --  pragma CPU for the environment task
+      --  pragma CPU and dispatching domains for the environment task
 
-      if Environment_Task.Common.Base_CPU /=
-         System.Multiprocessors.Not_A_Specific_CPU
-      then
-         --  The CPU numbering in pragma CPU starts at 1 while the subprogram
-         --  to set the affinity starts at 0, therefore we must subtract 1.
-
-         Result :=
-           SetThreadIdealProcessor
-             (Environment_Task.Common.LL.Thread,
-              ProcessorId (Environment_Task.Common.Base_CPU) - 1);
-         pragma Assert (Result = 1);
-      end if;
+      Set_Task_Affinity (Environment_Task);
    end Initialize;
 
    ---------------------
@@ -1376,5 +1347,62 @@ package body System.Task_Primitives.Operations is
    begin
       return False;
    end Continue_Task;
+
+   -----------------------
+   -- Set_Task_Affinity --
+   -----------------------
+
+   procedure Set_Task_Affinity (T : ST.Task_Id) is
+      Result : DWORD;
+
+      use type System.Multiprocessors.CPU_Range;
+
+   begin
+      --  pragma CPU
+
+      if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+
+         --  The CPU numbering in pragma CPU starts at 1 while the subprogram
+         --  to set the affinity starts at 0, therefore we must substract 1.
+
+         Result := SetThreadIdealProcessor
+           (T.Common.LL.Thread, ProcessorId (T.Common.Base_CPU) - 1);
+         pragma Assert (Result = 1);
+
+      --  Task_Info
+
+      elsif T.Common.Task_Info /= null then
+         if T.Common.Task_Info.CPU /= Task_Info.Any_CPU then
+            Result :=
+              SetThreadIdealProcessor
+                (T.Common.LL.Thread, T.Common.Task_Info.CPU);
+            pragma Assert (Result = 1);
+         end if;
+
+      --  Dispatching domains
+
+      elsif T.Common.Domain /= null and then
+              (T.Common.Domain /= ST.System_Domain or else
+               T.Common.Domain.all /= (Multiprocessors.CPU'First ..
+                                       Multiprocessors.Number_Of_CPUs => True))
+      then
+         declare
+            CPU_Set : DWORD := 0;
+
+         begin
+            for Proc in T.Common.Domain'Range loop
+               if T.Common.Domain (Proc) then
+                  --  The thread affinity mask is a bit vector in which each
+                  --  bit represents a logical processor.
+
+                  CPU_Set := CPU_Set + 2 ** (Integer (Proc) - 1);
+               end if;
+            end loop;
+
+            Result := SetThreadAffinityMask (T.Common.LL.Thread, CPU_Set);
+            pragma Assert (Result = 1);
+         end;
+      end if;
+   end Set_Task_Affinity;
 
 end System.Task_Primitives.Operations;

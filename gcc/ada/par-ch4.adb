@@ -91,6 +91,12 @@ package body Ch4 is
    --  prefix. The current token is known to be an apostrophe and the
    --  following token is known to be RANGE.
 
+   function P_Unparen_Cond_Case_Quant_Expression return Node_Id;
+   --  This function is called with Token pointing to IF, CASE, or FOR, in a
+   --  context that allows a case, conditional, or quantified expression if
+   --  it is surrounded by parentheses. If not surrounded by parentheses, the
+   --  expression is still returned, but an error message is issued.
+
    -------------------------
    -- Bad_Range_Attribute --
    -------------------------
@@ -470,8 +476,8 @@ package body Ch4 is
                end if;
             end if;
 
-            --  We come here with an OK attribute scanned, and the
-            --  corresponding Attribute identifier node stored in Ident_Node.
+            --  We come here with an OK attribute scanned, and corresponding
+            --  Attribute identifier node stored in Ident_Node.
 
             Prefix_Node := Name_Node;
             Name_Node := New_Node (N_Attribute_Reference, Prev_Token_Ptr);
@@ -658,7 +664,7 @@ package body Ch4 is
             Error_Msg
               ("expect identifier in parameter association",
                 Sloc (Expr_Node));
-            Scan;  --   past arrow
+            Scan;  -- past arrow
 
          elsif not Comma_Present then
             T_Right_Paren;
@@ -1640,18 +1646,18 @@ package body Ch4 is
 
    --  This function is identical to the normal P_Expression, except that it
    --  also permits the appearance of a case, conditional, or quantified
-   --  expression without the usual surrounding parentheses.
+   --  expression if the call immediately follows a left paren, and followed
+   --  by a right parenthesis. These forms are allowed if these conditions
+   --  are not met, but an error message will be issued.
 
    function P_Expression_If_OK return Node_Id is
    begin
-      if Token = Tok_Case then
-         return P_Case_Expression;
+      --  Case of conditional, case or quantified expression
 
-      elsif Token = Tok_If then
-         return P_Conditional_Expression;
+      if Token = Tok_Case or else Token = Tok_If or else Token = Tok_For then
+         return P_Unparen_Cond_Case_Quant_Expression;
 
-      elsif Token = Tok_For then
-         return P_Quantified_Expression;
+      --  Normal case, not case/conditional/quantified expression
 
       else
          return P_Expression;
@@ -1749,18 +1755,18 @@ package body Ch4 is
    end P_Expression_Or_Range_Attribute;
 
    --  Version that allows a non-parenthesized case, conditional, or quantified
-   --  expression
+   --  expression if the call immediately follows a left paren, and followed
+   --  by a right parenthesis. These forms are allowed if these conditions
+   --  are not met, but an error message will be issued.
 
    function P_Expression_Or_Range_Attribute_If_OK return Node_Id is
    begin
-      if Token = Tok_Case then
-         return P_Case_Expression;
+      --  Case of conditional, case or quantified expression
 
-      elsif Token = Tok_If then
-         return P_Conditional_Expression;
+      if Token = Tok_Case or else Token = Tok_If or else Token = Tok_For then
+         return P_Unparen_Cond_Case_Quant_Expression;
 
-      elsif Token = Tok_For then
-         return P_Quantified_Expression;
+      --  Normal case, not one of the above expression types
 
       else
          return P_Expression_Or_Range_Attribute;
@@ -3058,5 +3064,55 @@ package body Ch4 is
          Set_Alternatives (N, No_List);
       end if;
    end P_Membership_Test;
+
+   ------------------------------------------
+   -- P_Unparen_Cond_Case_Quant_Expression --
+   ------------------------------------------
+
+   function P_Unparen_Cond_Case_Quant_Expression return Node_Id is
+      Lparen : constant Boolean := Prev_Token = Tok_Left_Paren;
+      Result : Node_Id;
+
+   begin
+      --  Case expression
+
+      if Token = Tok_Case then
+         Result := P_Case_Expression;
+
+         if not (Lparen and then Token = Tok_Right_Paren) then
+            Error_Msg_N
+              ("case expression must be parenthesized!", Result);
+         end if;
+
+      --  Conditional expression
+
+      elsif Token = Tok_If then
+         Result := P_Conditional_Expression;
+
+         if not (Lparen and then Token = Tok_Right_Paren) then
+            Error_Msg_N
+              ("conditional expression must be parenthesized!", Result);
+         end if;
+
+      --  Quantified expression
+
+      elsif Token = Tok_For then
+         Result := P_Quantified_Expression;
+
+         if not (Lparen and then Token = Tok_Right_Paren) then
+            Error_Msg_N
+              ("quantified expression must be parenthesized!", Result);
+         end if;
+
+      --  No other possibility should exist (caller was supposed to check)
+
+      else
+         raise Program_Error;
+      end if;
+
+      --  Return expression (possibly after having given message)
+
+      return Result;
+   end P_Unparen_Cond_Case_Quant_Expression;
 
 end Ch4;
