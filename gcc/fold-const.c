@@ -7705,12 +7705,15 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	                      && upc_shared_type_p (TREE_TYPE (inter_type));
 	      int inside_pts = inside_ptr
 	                      && upc_shared_type_p (TREE_TYPE (inside_type));
-	      if (!((final_pts && inter_pts)
-	             && TREE_TYPE (type) == TREE_TYPE (inter_type))
-                    || ((inter_pts && inside_pts)
-		         && (TREE_TYPE (inter_type)
-			     == TREE_TYPE (inside_type))))
-	        return NULL;
+	      if (final_pts || inter_pts || inside_pts)
+	        {
+		  if (!((final_pts && inter_pts)
+			 && TREE_TYPE (type) == TREE_TYPE (inter_type))
+			|| ((inter_pts && inside_pts)
+			     && (TREE_TYPE (inter_type)
+				 == TREE_TYPE (inside_type))))
+		    return NULL;
+	        }
 	    }
 
 	  /* In addition to the cases of two conversions in a row

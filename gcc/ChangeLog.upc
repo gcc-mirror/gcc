@@ -1,5 +1,17 @@
 2011-08-29  Gary Funck  <gary@intrepid.com>
 
+	Fixes for regressions noted running "make check"
+	versus GCC trunk.
+	* fold-const.c (fold_unary_loc): Execute UPC-specific
+	checks for a cast-of-a-cast, only if one of the
+	operands is a UPC pointer-to-shared value.
+	* opts.c (print_specific_help):  Fix a comparison
+	in an assert that checks that there are enough
+	bits reserved for the number of languages defined
+	in the .opt files.
+ 
+2011-08-29  Gary Funck  <gary@intrepid.com>
+
 	Implement a hash table to record UPC block factors.
 	* c-family/stub-upc.c (upc_block_factor_insert,
 	upc_block_factor_lookup): New dummy stub procedures.

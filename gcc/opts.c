@@ -1125,7 +1125,7 @@ print_specific_help (unsigned int include_flags,
 
   /* Sanity check: Make sure that we do not have more
      languages than we have bits available to enumerate them.  */
-  gcc_assert ((1U << cl_lang_count) < CL_MIN_OPTION_CLASS);
+  gcc_assert ((1U << cl_lang_count) <= CL_MIN_OPTION_CLASS);
 
   /* If we have not done so already, obtain
      the desired maximum width of the output.  */
