@@ -1719,6 +1719,89 @@
   operands[4] = CONST0_RTX (<MODE>mode);
 })
 
+(define_expand "fmai_vmfmadd_<mode>"
+  [(set (match_operand:VF_128 0 "register_operand")
+	(vec_merge:VF_128
+	  (fma:VF_128
+	    (match_operand:VF_128 1 "nonimmediate_operand")
+	    (match_operand:VF_128 2 "nonimmediate_operand")
+	    (match_operand:VF_128 3 "nonimmediate_operand"))
+	  (match_dup 0)
+	  (const_int 1)))]
+  "TARGET_FMA")
+
+(define_insn "*fmai_fmadd_<mode>"
+  [(set (match_operand:VF_128 0 "register_operand" "=x,x,x")
+        (vec_merge:VF_128
+	  (fma:VF_128
+	    (match_operand:VF_128 1 "nonimmediate_operand" "%0, 0,x")
+	    (match_operand:VF_128 2 "nonimmediate_operand" "xm, x,xm")
+	    (match_operand:VF_128 3 "nonimmediate_operand" " x,xm,0"))
+	  (match_dup 0)
+	  (const_int 1)))]
+  "TARGET_FMA"
+  "@
+   vfmadd132<ssescalarmodesuffix>\t{%2, %3, %0|%0, %3, %2}
+   vfmadd213<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   vfmadd231<ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*fmai_fmsub_<mode>"
+  [(set (match_operand:VF_128 0 "register_operand" "=x,x,x")
+        (vec_merge:VF_128
+	  (fma:VF_128
+	    (match_operand:VF_128   1 "nonimmediate_operand" "%0, 0,x")
+	    (match_operand:VF_128   2 "nonimmediate_operand" "xm, x,xm")
+	    (neg:VF_128
+	      (match_operand:VF_128 3 "nonimmediate_operand" " x,xm,0")))
+	  (match_dup 0)
+	  (const_int 1)))]
+  "TARGET_FMA"
+  "@
+   vfmsub132<ssescalarmodesuffix>\t{%2, %3, %0|%0, %3, %2}
+   vfmsub213<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   vfmsub231<ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*fmai_fnmadd_<mode>"
+  [(set (match_operand:VF_128 0 "register_operand" "=x,x,x")
+        (vec_merge:VF_128
+	  (fma:VF_128
+	    (neg:VF_128
+	      (match_operand:VF_128 1 "nonimmediate_operand" "%0, 0,x"))
+	    (match_operand:VF_128   2 "nonimmediate_operand" "xm, x,xm")
+	    (match_operand:VF_128   3 "nonimmediate_operand" " x,xm,0"))
+	  (match_dup 0)
+	  (const_int 1)))]
+  "TARGET_FMA"
+  "@
+   vfnmadd132<ssescalarmodesuffix>\t{%2, %3, %0|%0, %3, %2}
+   vfnmadd213<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   vfnmadd231<ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*fmai_fnmsub_<mode>"
+  [(set (match_operand:VF_128 0 "register_operand" "=x,x,x")
+        (vec_merge:VF_128
+	  (fma:VF_128
+	    (neg:VF_128
+	      (match_operand:VF_128 1 "nonimmediate_operand" "%0, 0,x"))
+	    (match_operand:VF_128   2 "nonimmediate_operand" "xm, x,xm")
+	    (neg:VF_128
+	      (match_operand:VF_128 3 "nonimmediate_operand" " x,xm,0")))
+	  (match_dup 0)
+	  (const_int 1)))]
+  "TARGET_FMA"
+  "@
+   vfnmsub132<ssescalarmodesuffix>\t{%2, %3, %0|%0, %3, %2}
+   vfnmsub213<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   vfnmsub231<ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "*fma4i_vmfmadd_<mode>"
   [(set (match_operand:VF_128 0 "register_operand" "=x,x")
 	(vec_merge:VF_128

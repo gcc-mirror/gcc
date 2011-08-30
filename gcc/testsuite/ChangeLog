@@ -1,3 +1,28 @@
+2011-08-30  Ilya Tocar <ilya.tocar@intel.com>
+
+	* gcc.target/i386/fma-check.h: New.
+	* gcc.target/i386/fma-256-fmaddXX.c: New testcase.
+	* gcc.target/i386/fma-256-fmaddsubXX.c: Likewise.
+	* gcc.target/i386/fma-256-fmsubXX.c: Likewise.
+	* gcc.target/i386/fma-256-fmsubaddXX.c: Likewise.
+	* gcc.target/i386/fma-256-fnmaddXX.c: Likewise.
+	* gcc.target/i386/fma-256-fnmsubXX.c: Likewise.
+	* gcc.target/i386/fma-fmaddXX.c: Likewise.
+	* gcc.target/i386/fma-fmaddsubXX.c: Likewise.
+	* gcc.target/i386/fma-fmsubXX.c: Likewise.
+	* gcc.target/i386/fma-fmsubaddXX.c: Likewise.
+	* gcc.target/i386/fma-fnmaddXX.c: Likewise.
+	* gcc.target/i386/fma-fnmsubXX.c: Likewise.
+	* gcc.target/i386/fma-compile.c: Likewise.
+	* gcc.target/i386/i386.exp (check_effective_target_fma): New.
+	* gcc.target/i386/sse-12.c: Add -mfma.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
+	* g++.dg/other/i386-2.C: Likewise.
+	* g++.dg/other/i386-3.C: Likewise.
+
 2011-08-30  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR testsuite/50185

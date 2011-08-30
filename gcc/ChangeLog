@@ -1,3 +1,17 @@
+2011-08-30  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/fmaintrin.h: New.
+	* config.gcc: Add fmaintrin.h.
+	* config/i386/i386.c
+	(enum ix86_builtins) <IX86_BUILTIN_VFMADDSS3>: New.
+	<IX86_BUILTIN_VFMADDSD3>: Likewise.
+	* config/i386/sse.md (fmai_vmfmadd_<mode>): New.
+	(*fmai_fmadd_<mode>): Likewise.
+	(*fmai_fmsub_<mode>): Likewise.
+	(*fmai_fnmadd_<mode>): Likewise.
+	(*fmai_fnmsub_<mode>): Likewise.
+	* config/i386/immintrin.h: Add fmaintrin.h.
+
 2011-08-30  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* genautomata.c (NO_COMB_OPTION): New macro.

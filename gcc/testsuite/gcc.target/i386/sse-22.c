@@ -7,8 +7,8 @@
 /* Test that the intrinsics compile with optimization.  All of them
    are defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h,
    mm3dnow.h, fma4intrin.h, xopintrin.h, abmintrin.h, bmiintrin.h,
-   tbmintrin.h, lwpintrin.h, popcntintrin.h and mm_malloc.h that
-   reference the proper builtin functions.
+   tbmintrin.h, lwpintrin.h, popcntintrin.h, fmaintrin.h and mm_malloc.h 
+   that reference the proper builtin functions.
 
    Defining away "extern" and "__inline" results in all of them being
    compiled as proper functions.  */
@@ -255,9 +255,9 @@ test_2 (_mm_clmulepi64_si128, __m128i, __m128i, __m128i, 1)
 #endif
 #include <popcntintrin.h>
 
-/* x86intrin.h (FMA4/XOP/LWP/BMI/BMI2/TBM/LZCNT). */
+/* x86intrin.h (FMA4/XOP/LWP/BMI/BMI2/TBM/LZCNT/FMA). */
 #ifdef DIFFERENT_PRAGMAS
-#pragma GCC target ("fma4,xop,lwp,bmi,bmi2,tbm,lzcnt")
+#pragma GCC target ("fma4,xop,lwp,bmi,bmi2,tbm,lzcnt,fma")
 #endif
 #include <x86intrin.h>
 /* xopintrin.h */
