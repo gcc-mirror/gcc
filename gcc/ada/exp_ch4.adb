@@ -31,6 +31,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Atag; use Exp_Atag;
+with Exp_Ch2;  use Exp_Ch2;
 with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
@@ -4954,6 +4955,121 @@ package body Exp_Ch4 is
 
                Rewrite (N, Cond);
                Analyze_And_Resolve (N, Restyp);
+            end if;
+
+            --  Ada 2012 (AI05-0149): Handle membership tests applied to an
+            --  expression of an anonymous access type. This can involve an
+            --  accessibility test and a tagged type membership test in the
+            --  case of tagged designated types.
+
+            if Ada_Version >= Ada_2012
+              and then Is_Acc
+              and then Ekind (Ltyp) = E_Anonymous_Access_Type
+            then
+               declare
+                  Expr_Entity : Entity_Id := Empty;
+                  New_N       : Node_Id;
+                  Param_Level : Node_Id;
+                  Type_Level  : Node_Id;
+               begin
+                  if Is_Entity_Name (Lop) then
+                     Expr_Entity := Param_Entity (Lop);
+                     if not Present (Expr_Entity) then
+                        Expr_Entity := Entity (Lop);
+                     end if;
+                  end if;
+
+                  --  If a conversion of the anonymous access value to the
+                  --  tested type would be illegal, then the result is False.
+
+                  if not Valid_Conversion
+                           (Lop, Rtyp, Lop, Report_Errs => False)
+                  then
+                     Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+                     Analyze_And_Resolve (N, Restyp);
+
+                  --  Apply an accessibility check if the access object has an
+                  --  associated access level and when the level of the type is
+                  --  less deep than the level of the access parameter. This
+                  --  only occur for access parameters and stand-alone objects
+                  --  of an anonymous access type.
+
+                  else
+                     if Present (Expr_Entity)
+                       and then Present (Extra_Accessibility (Expr_Entity))
+                       and then UI_Gt
+                                  (Object_Access_Level (Lop),
+                                   Type_Access_Level (Rtyp))
+                     then
+                        Param_Level :=
+                          New_Occurrence_Of
+                            (Extra_Accessibility (Expr_Entity), Loc);
+
+                        Type_Level :=
+                          Make_Integer_Literal (Loc, Type_Access_Level (Rtyp));
+
+                        --  Return True only if the accessibility level of the
+                        --  expression entity is not deeper than the level of
+                        --  the tested access type.
+
+                        Rewrite (N,
+                          Make_And_Then (Loc,
+                            Left_Opnd  => Relocate_Node (N),
+                            Right_Opnd => Make_Op_Le (Loc,
+                                            Left_Opnd  => Param_Level,
+                                            Right_Opnd => Type_Level)));
+
+                        Analyze_And_Resolve (N);
+                     end if;
+
+                     --  If the designated type is tagged, do tagged membership
+                     --  operation.
+
+                     --  *** NOTE: we have to check not null before doing the
+                     --  tagged membership test (but maybe that can be done
+                     --  inside Tagged_Membership?).
+
+                     if Is_Tagged_Type (Typ) then
+                        Rewrite (N,
+                          Make_And_Then (Loc,
+                            Left_Opnd  => Relocate_Node (N),
+                            Right_Opnd =>
+                              Make_Op_Ne (Loc,
+                                Left_Opnd  => Obj,
+                                Right_Opnd => Make_Null (Loc))));
+
+                        --  No expansion will be performed when VM_Target, as
+                        --  the VM back-ends will handle the membership tests
+                        --  directly (tags are not explicitly represented in
+                        --  Java objects, so the normal tagged membership
+                        --  expansion is not what we want).
+
+                        if Tagged_Type_Expansion then
+
+                           --  Note that we have to pass Original_Node, because
+                           --  the membership test might already have been
+                           --  rewritten by earlier parts of membership test.
+
+                           Tagged_Membership
+                             (Original_Node (N), SCIL_Node, New_N);
+
+                           --  Update decoration of relocated node referenced
+                           --  by the SCIL node.
+
+                           if Generate_SCIL and then Present (SCIL_Node) then
+                              Set_SCIL_Node (New_N, SCIL_Node);
+                           end if;
+
+                           Rewrite (N,
+                             Make_And_Then (Loc,
+                               Left_Opnd  => Relocate_Node (N),
+                               Right_Opnd => New_N));
+
+                           Analyze_And_Resolve (N, Restyp);
+                        end if;
+                     end if;
+                  end if;
+               end;
             end if;
          end;
       end if;
@@ -10908,6 +11024,15 @@ package body Exp_Ch4 is
 
       Left_Type  := Available_View (Etype (Left));
       Right_Type := Available_View (Etype (Right));
+
+      --  In the case where the type is an access type, the test is applied
+      --  using the designated types (needed in Ada 2012 for implicit anonymous
+      --  access conversions, for AI05-0149).
+
+      if Is_Access_Type (Right_Type) then
+         Left_Type  := Designated_Type (Left_Type);
+         Right_Type := Designated_Type (Right_Type);
+      end if;
 
       if Is_Class_Wide_Type (Left_Type) then
          Left_Type := Root_Type (Left_Type);

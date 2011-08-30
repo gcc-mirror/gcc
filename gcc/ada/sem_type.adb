@@ -967,6 +967,19 @@ package body Sem_Type is
       then
          return True;
 
+      --  Ada 2012 (AI05-0149): Allow an anonymous access type in the context
+      --  of a named general access type. An implicit conversion will be
+      --  applied. For the resolution, one designated type must cover the
+      --  other.
+
+      elsif Ada_Version >= Ada_2012
+        and then Ekind (BT1) = E_General_Access_Type
+        and then Ekind (BT2) = E_Anonymous_Access_Type
+        and then (Covers (Designated_Type (T1), Designated_Type (T2))
+                   or else Covers (Designated_Type (T2), Designated_Type (T1)))
+      then
+         return True;
+
       --  An Access_To_Subprogram is compatible with itself, or with an
       --  anonymous type created for an attribute reference Access.
 
