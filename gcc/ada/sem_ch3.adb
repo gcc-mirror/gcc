@@ -15123,9 +15123,11 @@ package body Sem_Ch3 is
       elsif Def_Kind = N_Access_Definition then
          T := Access_Definition (Related_Nod, Obj_Def);
 
-         Set_Is_Local_Anonymous_Access (T, V => (Ada_Version < Ada_2012)
-           or else (Nkind (P) /= N_Object_Declaration)
-           or else Is_Library_Level_Entity (Defining_Identifier (P)));
+         Set_Is_Local_Anonymous_Access
+           (T,
+            V => (Ada_Version < Ada_2012)
+                   or else (Nkind (P) /= N_Object_Declaration)
+                   or else Is_Library_Level_Entity (Defining_Identifier (P)));
 
       --  Otherwise, the object definition is just a subtype_mark
 

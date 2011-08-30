@@ -2382,11 +2382,14 @@ package body Sem_Util is
         and then not Is_Local_Anonymous_Access (Typ)
         and then Nkind (Associated_Node_For_Itype (Typ)) = N_Object_Declaration
       then
-         --  Typ is the type of an Ada 2012 stand-alone object of an
-         --  anonymous access type.
+         --  Typ is the type of an Ada 2012 stand-alone object of an anonymous
+         --  access type.
 
-         return Scope_Depth (Enclosing_Dynamic_Scope (Defining_Identifier (
-           Associated_Node_For_Itype (Typ))));
+         return
+           Scope_Depth (Enclosing_Dynamic_Scope
+                         (Defining_Identifier
+                           (Associated_Node_For_Itype (Typ))));
+
       else
          return Type_Access_Level (Typ);
       end if;

@@ -293,13 +293,12 @@ package Sem_Util is
    --  from a library package which is not within any subprogram.
 
    function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint;
-   --  Same as Type_Access_Level, except that if the
-   --  type is the type of an Ada 2012 stand-alone object of an
-   --  anonymous access type, then return the static accesssibility level
-   --  of the object. In that case, the dynamic accessibility level
-   --  of the object may take on values in a range. The low bound of
-   --  of that range is returned by Type_Access_Level; this
-   --  function yields the high bound of that range.
+   --  Same as Type_Access_Level, except that if the type is the type of an Ada
+   --  2012 stand-alone object of an anonymous access type, then return the
+   --  static accesssibility level of the object. In that case, the dynamic
+   --  accessibility level of the object may take on values in a range. The low
+   --  bound of of that range is returned by Type_Access_Level; this function
+   --  yields the high bound of that range.
 
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the
@@ -342,10 +341,10 @@ package Sem_Util is
    --  name, a defining program unit name or an identifier.
 
    function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id;
-   --  Expr should be an expression of an access type.
-   --  Builds an integer literal except in cases involving anonymous
-   --  access types where accessibility levels are tracked at runtime
-   --  (access parameters and Ada 2012 stand-alone objects).
+   --  Expr should be an expression of an access type. Builds an integer
+   --  literal except in cases involving anonymous access types where
+   --  accessibility levels are tracked at runtime (access parameters and Ada
+   --  2012 stand-alone objects).
 
    function Effective_Extra_Accessibility (Id : Entity_Id) return Entity_Id;
    --  Same as Einfo.Extra_Accessibility except thtat object renames

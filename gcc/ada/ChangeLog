@@ -1,3 +1,15 @@
+2011-08-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, sem_ch3.adb, sem_ch5.adb, einfo.adb, checks.adb,
+	sem_util.adb, sem_util.ads, sem_res.adb, s-stposu.adb, sem_attr.adb,
+	exp_ch4.adb, exp_ch6.adb, lib-xref-alfa.adb,
+	sem_ch8.adb, sem_disp.adb, exp_ch3.adb: Minor reformatting
+
+2011-08-30  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Add section on C.6(16) implementation advice for pragma
+	volatile.
+
 2011-08-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Expand_Freeze_Array_Type): Correct the call to

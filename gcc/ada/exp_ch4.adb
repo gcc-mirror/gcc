@@ -4971,9 +4971,11 @@ package body Exp_Ch4 is
                   New_N       : Node_Id;
                   Param_Level : Node_Id;
                   Type_Level  : Node_Id;
+
                begin
                   if Is_Entity_Name (Lop) then
                      Expr_Entity := Param_Entity (Lop);
+
                      if not Present (Expr_Entity) then
                         Expr_Entity := Entity (Lop);
                      end if;
@@ -4996,11 +4998,11 @@ package body Exp_Ch4 is
 
                   else
                      if Present (Expr_Entity)
-                       and then Present
-                         (Effective_Extra_Accessibility (Expr_Entity))
-                       and then UI_Gt
-                                  (Object_Access_Level (Lop),
-                                   Type_Access_Level (Rtyp))
+                       and then
+                         Present
+                           (Effective_Extra_Accessibility (Expr_Entity))
+                       and then UI_Gt (Object_Access_Level (Lop),
+                                       Type_Access_Level (Rtyp))
                      then
                         Param_Level :=
                           New_Occurrence_Of

@@ -5461,29 +5461,6 @@ package body Einfo is
       Set_Uint14 (Id, No_Uint);  -- Normalized_Position
    end Init_Component_Location;
 
-   ---------------
-   -- Init_Size --
-   ---------------
-
-   procedure Init_Size (Id : E; V : Int) is
-   begin
-      Set_Uint12 (Id, UI_From_Int (V));  -- Esize
-      pragma Assert (not Is_Object (Id));
-      Set_Uint13 (Id, UI_From_Int (V));  -- RM_Size
-   end Init_Size;
-
-   ---------------------
-   -- Init_Size_Align --
-   ---------------------
-
-   procedure Init_Size_Align (Id : E) is
-   begin
-      Set_Uint12 (Id, Uint_0);  -- Esize
-      pragma Assert (not Is_Object (Id));
-      Set_Uint13 (Id, Uint_0);  -- RM_Size
-      Set_Uint14 (Id, Uint_0);  -- Alignment
-   end Init_Size_Align;
-
    ----------------------------
    -- Init_Object_Size_Align --
    ----------------------------
@@ -5493,6 +5470,29 @@ package body Einfo is
       Set_Uint12 (Id, Uint_0);  -- Esize
       Set_Uint14 (Id, Uint_0);  -- Alignment
    end Init_Object_Size_Align;
+
+   ---------------
+   -- Init_Size --
+   ---------------
+
+   procedure Init_Size (Id : E; V : Int) is
+   begin
+      pragma Assert (not Is_Object (Id));
+      Set_Uint12 (Id, UI_From_Int (V));  -- Esize
+      Set_Uint13 (Id, UI_From_Int (V));  -- RM_Size
+   end Init_Size;
+
+   ---------------------
+   -- Init_Size_Align --
+   ---------------------
+
+   procedure Init_Size_Align (Id : E) is
+   begin
+      pragma Assert (not Is_Object (Id));
+      Set_Uint12 (Id, Uint_0);  -- Esize
+      Set_Uint13 (Id, Uint_0);  -- RM_Size
+      Set_Uint14 (Id, Uint_0);  -- Alignment
+   end Init_Size_Align;
 
    ----------------------------------------------
    -- Type Representation Attribute Predicates --

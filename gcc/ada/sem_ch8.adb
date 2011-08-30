@@ -1137,6 +1137,11 @@ package body Sem_Ch8 is
       end if;
 
       Set_Ekind (Id, E_Variable);
+
+      --  Initialize the object size and alignment. Note that we used to call
+      --  Init_Size_Align here, but that's wrong for objects which have only
+      --  an Esize, not an RM_Size field!
+
       Init_Object_Size_Align (Id);
 
       if T = Any_Type or else Etype (Nam) = Any_Type then

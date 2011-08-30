@@ -270,7 +270,7 @@ package body System.Storage_Pools.Subpools is
          Addr := N_Addr + Header_And_Padding;
 
          --  Homogeneous masters service the following:
-         --
+
          --    1) Allocations on / Deallocations from regular pools
          --    2) Named access types
          --    3) Most cases of anonymous access types usage
@@ -281,7 +281,7 @@ package body System.Storage_Pools.Subpools is
             end if;
 
          --  Heterogeneous masters service the following:
-         --
+
          --    1) Allocations on / Deallocations from subpools
          --    2) Certain cases of anonymous access types usage
 

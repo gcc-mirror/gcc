@@ -23,10 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with ALFA;        use ALFA;
-with Einfo;       use Einfo;
-with Nmake;       use Nmake;
+with ALFA;     use ALFA;
+with Einfo;    use Einfo;
+with Nmake;    use Nmake;
 with Put_ALFA;
+
 with GNAT.HTable;
 
 separate (Lib.Xref)
@@ -527,9 +528,9 @@ package body ALFA is
 
       Heap : Entity_Id;
 
-      --  Start of processing for Add_ALFA_Xrefs
-   begin
+   --  Start of processing for Add_ALFA_Xrefs
 
+   begin
       for J in ALFA_Scope_Table.First .. ALFA_Scope_Table.Last loop
          Set_Scope_Num (N   => ALFA_Scope_Table.Table (J).Scope_Entity,
                         Num => ALFA_Scope_Table.Table (J).Scope_Num);
@@ -819,6 +820,7 @@ package body ALFA is
                   Line        => Int (Get_Logical_Line_Number (XE.Loc)),
                   Rtype       => XE.Typ,
                   Col         => Int (Get_Column_Number (XE.Loc))));
+
             else
                ALFA_Xref_Table.Append (
                  (Entity_Name => Cur_Entity_Name,
