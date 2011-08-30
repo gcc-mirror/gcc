@@ -8339,7 +8339,7 @@ get_pc_thunk_name (char name[32], unsigned int regno)
   gcc_assert (!TARGET_64BIT);
 
   if (USE_HIDDEN_LINKONCE)
-    sprintf (name, "__i686.get_pc_thunk.%s", reg_names[regno]);
+    sprintf (name, "__x86.get_pc_thunk.%s", reg_names[regno]);
   else
     ASM_GENERATE_INTERNAL_LABEL (name, "LPR", regno);
 }

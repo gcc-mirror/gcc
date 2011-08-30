@@ -8,6 +8,9 @@
 	no_comb_flag.
 	* doc/md.texi (automata_option): Document no-comb-vect.
 
+	* config/i386/i386.c (get_pc_thunk_name): Change prefix to
+	"__x86.get_pc_thunk".
+
 2011-08-30  Christian Bruel  <christian.bruel@st.com>
 
 	* coverage.c (coverage_init): Check flag_branch_probabilities instead of
