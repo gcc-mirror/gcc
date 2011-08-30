@@ -1,5 +1,12 @@
 2011-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* system-irix-n64.ads, system-linux-armeb.ads, system-linux-armel.ads,
+	system-linux-mips.ads, system-linux-mipsel.ads,
+	system-linux-mips64el.ads, system-linux-ppc64.ads,
+	system-linux-sparcv9.ads, system-rtems.ads: Remove GCC_ZCX_Support.
+
+2011-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (TYPE_EXTRA_SUBTYPE_P): Add internal check.
 	* gcc-interface/utils2.c (build_binary_op): Tighten condition.
 	(build_unary_op): Likewise.
@@ -1603,7 +1610,7 @@
 	system-solaris-x86_64.ads, system-mingw-x86_64.ads,
 	system-vxworks-mips.ads, system-linux-sparc.ads, system-vms-ia64.ads,
 	system-freebsd-x86.ads, system-aix.ads, system-darwin-x86_64.ads,
-	system-vxworks-x86.ads: Remove GCC_ZCX_Support
+	system-vxworks-x86.ads: Remove GCC_ZCX_Support.
 	* s-taprop-posix.adb, s-taprop-irix.adb, s-taprop-vxworks.adb,
 	s-taprop-tru64.adb, s-taprop-linux.adb, s-taprop-solaris.adb: Ditto.
 	* opt.ads: Adjust comment.
