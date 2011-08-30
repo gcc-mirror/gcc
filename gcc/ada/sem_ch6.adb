@@ -1596,6 +1596,17 @@ package body Sem_Ch6 is
                           Designator, Typ);
                   end if;
 
+                  --  The type must be completed in the current package. This
+                  --  is checked at the end of the package declaraton, when
+                  --  Taft amemdment types are identified.
+
+                  if Ekind (Scope (Current_Scope)) = E_Package
+                    and then
+                      In_Private_Part (Scope (Current_Scope))
+                  then
+                     Append_Elmt (Designator, Private_Dependents (Typ));
+                  end if;
+
                else
                   Error_Msg_NE
                     ("invalid use of incomplete type&", Designator, Typ);
