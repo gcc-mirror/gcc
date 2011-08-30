@@ -199,23 +199,23 @@ check_mm256_fmsubadd_ps (__m256 a, __m256 b, __m256 c)
 }
 
 
-/* { dg-final { scan-assembler-times "vfmadd[^s]..ps" 2 } } */
-/* { dg-final { scan-assembler-times "vfmsub[^s]..ps" 2 } } */
+/* { dg-final { scan-assembler-times "vfmadd\[^s\]..ps" 2 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[^s\]..ps" 2 } } */
 /* { dg-final { scan-assembler-times "vfnmadd...ps" 2 } } */
 /* { dg-final { scan-assembler-times "vfnmsub...ps" 2 } } */
 /* { dg-final { scan-assembler-times "vfmaddsub...ps" 2 } } */
 /* { dg-final { scan-assembler-times "vfmsubadd...ps" 2 } } */
-/* { dg-final { scan-assembler-times "vfmadd[^s]..pd" 2 } } */
-/* { dg-final { scan-assembler-times "vfmsub[^s]..pd" 2 } } */
+/* { dg-final { scan-assembler-times "vfmadd\[^s\]..pd" 2 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[^s\]..pd" 2 } } */
 /* { dg-final { scan-assembler-times "vfnmadd...pd" 2 } } */
 /* { dg-final { scan-assembler-times "vfnmsub...pd" 2 } } */
 /* { dg-final { scan-assembler-times "vfmaddsub...pd" 2 } } */
 /* { dg-final { scan-assembler-times "vfmsubadd...pd" 2 } } */
-/* { dg-final { scan-assembler-times "vfmadd[^s]..ss" 1 } } */
-/* { dg-final { scan-assembler-times "vfmsub[^s]..ss" 1 } } */
+/* { dg-final { scan-assembler-times "vfmadd\[^s\]..ss" 1 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[^s\]..ss" 1 } } */
 /* { dg-final { scan-assembler-times "vfnmadd...ss" 1 } } */
 /* { dg-final { scan-assembler-times "vfnmsub...ss" 1 } } */
-/* { dg-final { scan-assembler-times "vfmadd[^s]..sd" 1 } } */
-/* { dg-final { scan-assembler-times "vfmsub[^s]..sd" 1 } } */
+/* { dg-final { scan-assembler-times "vfmadd\[^s\]..sd" 1 } } */
+/* { dg-final { scan-assembler-times "vfmsub\[^s\]..sd" 1 } } */
 /* { dg-final { scan-assembler-times "vfnmadd...sd" 1 } } */
 /* { dg-final { scan-assembler-times "vfnmsub...sd" 1 } } */
