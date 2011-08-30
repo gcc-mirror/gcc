@@ -7968,6 +7968,13 @@ verification and debugging.
 non-critical errors.
 
 @item
+@dfn{no-comb-vect} prevents the automaton generator from generating
+two data structures and comparing them for space efficiency.  Using
+a comb vector to represent transitions may be better, but it can be
+very expensive to construct.  This option is useful if the build
+process spends an unacceptably long time in genautomata.
+
+@item
 @dfn{ndfa} makes nondeterministic finite state automata.  This affects
 the treatment of operator @samp{|} in the regular expressions.  The
 usual treatment of the operator is to try the first alternative and,

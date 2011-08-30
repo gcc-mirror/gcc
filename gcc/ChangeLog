@@ -1,3 +1,13 @@
+2011-08-30  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* genautomata.c (NO_COMB_OPTION): New macro.
+	(no_comb_flag): New static variable.
+	(gen_automata_option): Handle NO_COMB_OPTION.
+	(comb_vect_p): False if no_comb_flag.
+	(add_vect): Move computation of min/max values.  Return early if
+	no_comb_flag.
+	* doc/md.texi (automata_option): Document no-comb-vect.
+
 2011-08-30  Christian Bruel  <christian.bruel@st.com>
 
 	* coverage.c (coverage_init): Check flag_branch_probabilities instead of
