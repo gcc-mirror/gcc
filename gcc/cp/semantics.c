@@ -3206,7 +3206,7 @@ finish_id_expression (tree id_expression,
       if (scope)
 	{
 	  decl = (adjust_result_of_qualified_name_lookup
-		  (decl, scope, current_class_type));
+		  (decl, scope, current_nonlambda_class_type()));
 
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    mark_used (decl);

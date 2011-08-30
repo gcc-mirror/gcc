@@ -1,5 +1,9 @@
 2011-08-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50089
+	* semantics.c (finish_id_expression): Use
+	current_nonlambda_class_type for qualified-ids.
+
 	PR c++/50220
 	* semantics.c (add_capture): Call complete_type for copy.
 
