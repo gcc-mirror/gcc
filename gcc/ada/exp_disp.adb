@@ -702,6 +702,7 @@ package body Exp_Disp is
       --  of this restriction.
 
       if not Expander_Active
+        or else ALFA_Mode
         or else Restriction_Active (No_Dispatching_Calls)
       then
          return;

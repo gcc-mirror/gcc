@@ -2381,6 +2381,7 @@ package body Sem_Ch12 is
       Enter_Name (T);
       Set_Ekind (T, E_Incomplete_Type);
       Set_Etype (T, T);
+      Set_Private_Dependents (T, New_Elmt_List);
 
       if Tagged_Present (Def) then
          Set_Is_Tagged_Type (T);

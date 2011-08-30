@@ -1,3 +1,24 @@
+2011-08-30  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, g-socket.ads: Adjust maximum allowed value for
+	field tv_sec in struct timeval.
+
+2011-08-30  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch9.adb, exp_disp.adb, sem_ch9.adb, sem_res.adb: Protect several
+	blocks of code doing full expansion, previously only guarded by
+	Expander_Active, by anding the test that ALFA_Mode is not set
+
+2011-08-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Return_Type): If the return type is incomplete,
+	add the function to the list of private dependents, for subsequent
+	legality check on Taft amendment types.
+	* sem_ch12.adb (Analyze_Formal_Incomplete_Type): Initialize
+	Private_Dependents, as for other incomplete types.
+	* sem_util.adb (Wrong_Type): Avoid cascaded errors when a
+	Taft-amendment type is used as the return type of a function.
+
 2011-08-30  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Check_Abstract_Overriding): Code cleanup: replace code

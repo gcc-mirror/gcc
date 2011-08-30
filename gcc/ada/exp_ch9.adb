@@ -4906,13 +4906,9 @@ package body Exp_Ch9 is
       Ldecl2 : Node_Id;
 
    begin
-      --  In formal verification mode, do not expand tasking constructs
-
-      if ALFA_Mode then
-         return;
-      end if;
-
-      if Expander_Active then
+      if Expander_Active
+        and then not ALFA_Mode
+      then
 
          --  If we have no handled statement sequence, we may need to build
          --  a dummy sequence consisting of a null statement. This can be
@@ -11599,7 +11595,9 @@ package body Exp_Ch9 is
          Error_Msg_CRT ("protected body", N);
          return;
 
-      elsif Expander_Active then
+      elsif Expander_Active
+        and then not ALFA_Mode
+      then
 
          --  Associate discriminals with the first subprogram or entry body to
          --  be expanded.

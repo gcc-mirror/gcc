@@ -13096,6 +13096,22 @@ package body Sem_Util is
       then
          return;
 
+      --  If one of the types is a Taft-Amendment type and the other it its
+      --  completion, it must be an illegal use of a TAT in the spec, for
+      --  which an error was already emitted. Avoid cascaded errors.
+
+      elsif Is_Incomplete_Type (Expec_Type)
+        and then Has_Completion_In_Body (Expec_Type)
+        and then Full_View (Expec_Type) = Etype (Expr)
+      then
+         return;
+
+      elsif Is_Incomplete_Type (Etype (Expr))
+        and then Has_Completion_In_Body (Etype (Expr))
+        and then Full_View (Etype (Expr)) = Expec_Type
+      then
+         return;
+
       --  In  an instance, there is an ongoing problem with completion of
       --  type derived from private types. Their structure is what Gigi
       --  expects, but the  Etype is the parent type rather than the

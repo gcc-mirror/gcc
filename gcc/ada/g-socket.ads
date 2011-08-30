@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2010, AdaCore                     --
+--                     Copyright (C) 2001-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -432,7 +432,7 @@ package GNAT.Sockets is
 
    Immediate : constant Duration := 0.0;
 
-   Timeval_Forever : constant := 2.0 ** (SOSC.SIZEOF_tv_sec * 8 - 1) - 1.0;
+   Timeval_Forever : constant := 1.0 * SOSC.MAX_tv_sec;
    Forever         : constant Duration :=
                        Duration'Min (Duration'Last, Timeval_Forever);
 

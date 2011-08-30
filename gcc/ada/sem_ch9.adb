@@ -1280,6 +1280,7 @@ package body Sem_Ch9 is
 
          if Serious_Errors_Detected = 0
            and then Expander_Active
+           and then not ALFA_Mode
          then
             Expand_N_Protected_Type_Declaration (N);
             Process_Full_View (N, T, Def_Id);
@@ -2083,6 +2084,7 @@ package body Sem_Ch9 is
 
          if Serious_Errors_Detected = 0
            and then Expander_Active
+           and then not ALFA_Mode
          then
             Expand_N_Task_Type_Declaration (N);
             Process_Full_View (N, T, Def_Id);
