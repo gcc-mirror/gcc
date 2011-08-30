@@ -2263,14 +2263,42 @@ package body Exp_Ch9 is
          end loop Search;
       end if;
 
-      --  If the subprogram to be wrapped is not overriding anything or is not
-      --  a primitive declared between two views, do not produce anything. This
-      --  avoids spurious errors involving overriding.
+      --  Ada 2012 (AI05-0090-1): If no interface primitive is covered by
+      --  this subprogram and this is not a primitive declared between two
+      --  views then force the generation of a wrapper. As an optimization,
+      --  previous versions of the frontend avoid generating the wrapper;
+      --  however, the wrapper facilitates locating and reporting an error
+      --  when a duplicate declaration is found later. See example in
+      --  AI05-0090-1.
 
       if No (First_Param)
         and then not Is_Private_Primitive_Subprogram (Subp_Id)
       then
-         return Empty;
+         if Is_Task_Type
+              (Corresponding_Concurrent_Type (Obj_Typ))
+         then
+            First_Param :=
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc,
+                    Chars => Name_uO),
+                In_Present     => True,
+                Out_Present    => False,
+                Parameter_Type => New_Reference_To (Obj_Typ, Loc));
+
+         --  For entries and procedures of protected types the mode of
+         --  the controlling argument must be in-out.
+
+         else
+            First_Param :=
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc,
+                    Chars => Name_uO),
+                In_Present     => True,
+                Out_Present    => (Ekind (Subp_Id) /= E_Function),
+                Parameter_Type => New_Reference_To (Obj_Typ, Loc));
+         end if;
       end if;
 
       declare

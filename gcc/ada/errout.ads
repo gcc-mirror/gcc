@@ -801,6 +801,10 @@ package Errout is
    --  run-time mode or no run-time mode (as appropriate). In the former case,
    --  the name of the library is output if available.
 
+   procedure Error_Msg_PT (Typ : Node_Id; Subp : Node_Id);
+   --  Posts an error on the protected type declaration Typ indicating wrong
+   --  mode of the first formal of protected type primitive Subp.
+
    procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message
 

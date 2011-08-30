@@ -4226,7 +4226,26 @@ package body Sem_Ch6 is
 
          if Ctype >= Mode_Conformant then
             if Parameter_Mode (Old_Formal) /= Parameter_Mode (New_Formal) then
-               Conformance_Error ("\mode of & does not match!", New_Formal);
+               if not Ekind_In (New_Id, E_Function, E_Procedure)
+                 or else not Is_Primitive_Wrapper (New_Id)
+               then
+                  Conformance_Error ("\mode of & does not match!", New_Formal);
+               else
+                  declare
+                     T : constant  Entity_Id :=
+                           Find_Dispatching_Type (New_Id);
+                  begin
+                     if Is_Protected_Type
+                          (Corresponding_Concurrent_Type (T))
+                     then
+                        Error_Msg_PT (T, New_Id);
+                     else
+                        Conformance_Error
+                          ("\mode of & does not match!", New_Formal);
+                     end if;
+                  end;
+               end if;
+
                return;
 
             --  Part of mode conformance for access types is having the same
@@ -7971,6 +7990,7 @@ package body Sem_Ch6 is
             --  to retrieve the corresponding concurrent type.
 
             elsif Is_Concurrent_Record_Type (Typ)
+              and then not Is_Class_Wide_Type (Typ)
               and then Present (Corresponding_Concurrent_Type (Typ))
             then
                Typ := Corresponding_Concurrent_Type (Typ);
@@ -8102,12 +8122,7 @@ package body Sem_Ch6 is
                       or else Is_Synchronized_Interface (Iface_Typ)
                       or else Is_Task_Interface (Iface_Typ))
                then
-                  Error_Msg_NE
-                    ("first formal of & must be of mode `OUT`, `IN OUT`"
-                      & " or access-to-variable", Typ, Candidate);
-                  Error_Msg_N
-                    ("\in order to be overridden by protected procedure or "
-                      & "entry (RM 9.4(11.9/2))", Typ);
+                  Error_Msg_PT (Parent (Typ), Candidate);
                end if;
             end if;
 
