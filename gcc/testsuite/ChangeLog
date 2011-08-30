@@ -1,3 +1,9 @@
+2011-08-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR libfortran/50192
+	* gfortran.dg/widechar_compare_1.f90:  New test.
+
 2011-08-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50163
