@@ -1,3 +1,8 @@
+2011-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50114
+	* g++.dg/cpp0x/lambda/lambda-for.C: New.
+
 2011-08-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/fma-compile.c: Escape [ and ] in scan strings.
