@@ -2289,7 +2289,7 @@ package body Sem_Ch10 is
          --  expansion is active, because the context may be generic and the
          --  flag not defined yet.
 
-         if Expander_Active then
+         if Full_Expander_Active then
             Insert_After (N,
               Make_Assignment_Statement (Loc,
                 Name =>

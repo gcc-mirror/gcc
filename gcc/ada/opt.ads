@@ -1832,6 +1832,14 @@ package Opt is
    --  behavior can be disabled using switch -gnatd.t which will set this flag
    --  to False and revert to the previous dynamic behavior.
 
+   function Full_Expander_Active return Boolean;
+   --  Returns the value of (Expander_Active and not ALFA_Mode). This "flag"
+   --  indicates that expansion is fully active, that is, not in the reduced
+   --  mode for Alfa (True) or that expansion is either deactivated, or active
+   --  in the reduced mode for Alfa (False). For more information on full
+   --  expansion, see package Expander. For more information on reduced
+   --  Alfa expansion, see package Exp_Alfa.
+
    -----------------------
    -- Tree I/O Routines --
    -----------------------

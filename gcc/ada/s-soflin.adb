@@ -123,7 +123,7 @@ package body System.Soft_Links is
       use type Parameters.Size_Type;
 
       SS_Ratio_Dynamic : constant Boolean :=
-                           Parameters.Sec_Stack_Ratio = Parameters.Dynamic;
+                          Parameters.Sec_Stack_Percentage = Parameters.Dynamic;
 
    begin
       if SS_Ratio_Dynamic then

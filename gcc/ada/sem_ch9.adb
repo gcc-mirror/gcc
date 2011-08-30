@@ -727,8 +727,7 @@ package body Sem_Ch9 is
       --  for the discriminals and privals and finally a declaration for the
       --  entry family index (if applicable).
 
-      if Expander_Active
-        and then not ALFA_Mode
+      if Full_Expander_Active
         and then Is_Protected_Type (P_Type)
       then
          Install_Private_Data_Declarations
@@ -1283,11 +1282,7 @@ package body Sem_Ch9 is
 
            --  Also skip if expander is not active
 
-           and then Expander_Active
-
-           --  Also skip if in ALFA mode, this expansion is not needed
-
-           and then not ALFA_Mode
+           and then Full_Expander_Active
          then
             Expand_N_Protected_Type_Declaration (N);
             Process_Full_View (N, T, Def_Id);
@@ -2094,10 +2089,7 @@ package body Sem_Ch9 is
 
            --  Also skip if expander is not active
 
-           and then Expander_Active
-
-           --  Or if in ALFA mode, this expansion is not needed
-           and then not ALFA_Mode
+           and then Full_Expander_Active
          then
             Expand_N_Task_Type_Declaration (N);
             Process_Full_View (N, T, Def_Id);
