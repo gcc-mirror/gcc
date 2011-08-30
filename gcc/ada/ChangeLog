@@ -1,3 +1,102 @@
+2011-08-30  Steve Baird  <baird@adacore.com>
+
+	* sem_util.ads (Deepest_Type_Access_Level): New function; for the type
+	of a saooaaat (i.e, a stand-alone object of an anonymous access type),
+	returns the (static) accessibility level of the object. Otherwise, the
+	same as Type_Access_Level.
+	(Dynamic_Accessibility_Level): New function; given an expression which
+	could occur as the rhs of an assignment to a saooaaat (i.e., an
+	expression of an access-to-object type), return the new value for the
+	saooaaat's associated Extra_Accessibility object.
+	(Effective_Extra_Accessibility): New function; same as
+	Einfo.Extra_Accessibility except that object renames are looked through.
+	* sem_util.adb 
+	(Deepest_Type_Access_Level): New function; see sem_util.ads description.
+	(Dynamic_Accessibility_Level): New function; see sem_util.ads
+	description.
+	(Effective_Extra_Accessibility): New function; see sem_util.ads
+	description.
+	* einfo.ads (Is_Local_Anonymous_Access): Update comments.
+	(Extra_Accessibility): Update comments.
+	(Init_Object_Size_Align): New procedure; same as Init_Size_Align
+	except RM_Size field (which is only for types) is unaffected.
+	* einfo.adb
+	(Extra_Accessibility): Expand domain to allow objects, not just formals.
+	(Set_Extra_Accessibility): Expand domain to allow objects, not just
+	formals.
+	(Init_Size): Add assertion that we are not trashing the
+	Extra_Accessibility attribute of an object.
+	(Init_Size_Align): Add assertion that we are not trashing the
+	Extra_Accessibility attribute of an object.
+	(Init_Object_Size_Align): New procedure; see einfo.ads description.
+	* sem_ch3.adb (Find_Type_Of_Object): Set Is_Local_Anonymous_Access
+	differently for the type of a (non-library-level) saooaaat depending
+	whether Ada_Version < Ada_2012. This is the only point where Ada_Version
+	is queried in this set of changes - everything else (in particular,
+	setting of the Extra_Accessibility attribute in exp_ch3.adb) is
+	driven off of the setting of the Is_Local_Anonymous_Access attribute.
+	The special treatment of library-level saooaaats is an optimization,
+	not required for correctnesss. This is based on the observation that the
+	Ada2012 rules (static and dynamic) for saooaaats turn out to be
+	equivalent to the Ada2005 rules in the case of a library-level saooaaat.
+	* exp_ch3.adb
+	(Expand_N_Object_Declaration): If Is_Local_Anonymous_Access is
+	false for the type of a saooaaat, declare and initialize its
+	accessibility level object and set the Extra_Accessibility attribute
+	of the saooaaat to refer to this object.
+	* checks.adb (Apply_Accessibility_Check): Add Ada 2012 saooaaat support.
+	* exp_ch4.adb (Expand_N_In): Replace some Extra_Accessibility calls with
+	calls to Effective_Extra_Accessibility in order to support
+	renames of saooaaats.
+	(Expand_N_Type_Conversion): Add new local function,
+	Has_Extra_Accessibility, and call it when determining whether an
+	accessibility check is needed.
+	It returns True iff Present (Effective_Extra_Accessibility (Id)) would
+	evaluate to True (without raising an exception).
+	* exp_ch5.adb
+	(Expand_N_Assignment_Statement): When assigning to an Ada2012
+	saooaaat, update its associated Extra_Accessibility object (if
+	it has one). This includes an accessibility check.
+	* exp_ch6.adb (Add_Call_By_Copy_Code): When parameter copy-back updates
+	a saooaaat, update its Extra_Accessibility object too (if it
+	has one).
+	(Expand_Call): Replace a couple of calls to Type_Access_Level
+	with calls to Dynamic_Access_Level to handle cases where
+	passing a literal (any literal) is incorrect.
+	* sem_attr.adb (Resolve_Attribute): Handle the static accessibility
+	checks associated with "Saooaat := Some_Object'Access;"; this must
+	be rejected if Some_Object is declared in a more nested scope
+	than Saooaat.
+	* sem_ch5.adb (Analyze_Assignment): Force accessibility checking for an
+	assignment to a saooaaat even if Is_Local_Anonymous_Access
+	returns False for its type (indicating a 2012-style saooaaat).
+	* sem_ch8.adb
+	(Analyze_Object_Renaming): Replace a call to Init_Size_Align
+	(which is only appropriate for objects, not types) with a call
+	of Init_Object_Size_Align in order to avoid trashing the
+	Extra_Accessibility attribute of a rename (the two attributes
+	share storage).
+	* sem_res.adb
+	(Valid_Conversion) Replace six calls to Type_Access_Level with
+	calls to Deepest_Type_Access_Level. This is a bit tricky. For an
+	Ada2012 non-library-level saooaaat, the former returns library level
+	while the latter returns the (static) accessibility level of the
+	saooaaat. A type conversion to the anonymous type of a saooaaat
+	can only occur as part of an assignment to the saooaaat, so we
+	know that such a conversion must be in a lhs context, so Deepest
+	yields the result that we need. If such a conversion could occur,
+	say, as the operand of an equality operator, then this might not
+	be right. Also add a test so that static accessibilty checks are
+	performed for converting to a saooaaat's type even if
+	Is_Local_Anonymous_Access yields False for the type.
+
+2011-08-30  Javier Miranda  <miranda@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Operation): Complete condition that
+	controls generation of a warning associated with late declaration of
+	dispatching functions. Required to avoid generating spurious
+	warnings.
+
 2011-08-30  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch6.adb (Check_Return_Subtype_Indication): Issue error if the

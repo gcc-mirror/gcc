@@ -2372,6 +2372,26 @@ package body Sem_Util is
       end if;
    end Current_Subprogram;
 
+   ----------------------------------
+   -- Deepest_Type_Access_Level --
+   ----------------------------------
+
+   function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint is
+   begin
+      if Ekind (Typ) = E_Anonymous_Access_Type
+        and then not Is_Local_Anonymous_Access (Typ)
+        and then Nkind (Associated_Node_For_Itype (Typ)) = N_Object_Declaration
+      then
+         --  Typ is the type of an Ada 2012 stand-alone object of an
+         --  anonymous access type.
+
+         return Scope_Depth (Enclosing_Dynamic_Scope (Defining_Identifier (
+           Associated_Node_For_Itype (Typ))));
+      else
+         return Type_Access_Level (Typ);
+      end if;
+   end Deepest_Type_Access_Level;
+
    ---------------------
    -- Defining_Entity --
    ---------------------
@@ -2847,6 +2867,99 @@ package body Sem_Util is
          return False;
       end if;
    end Designate_Same_Unit;
+
+   ------------------------------------------
+   -- function Dynamic_Accessibility_Level --
+   ------------------------------------------
+
+   function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id is
+      E : Entity_Id;
+      Loc : constant Source_Ptr := Sloc (Expr);
+   begin
+      if Is_Entity_Name (Expr) then
+         E := Entity (Expr);
+
+         if Present (Renamed_Object (E)) then
+            return Dynamic_Accessibility_Level (Renamed_Object (E));
+         end if;
+
+         if Is_Formal (E) or else Ekind_In (E, E_Variable, E_Constant) then
+            if Present (Extra_Accessibility (E)) then
+               return New_Occurrence_Of (Extra_Accessibility (E), Loc);
+            end if;
+         end if;
+      end if;
+
+      --  unimplemented: Ptr.all'Access, where Ptr has Extra_Accessibility ???
+
+      case Nkind (Expr) is
+         --  for access discriminant, the level of the enclosing object
+
+         when N_Selected_Component =>
+            if Ekind (Entity (Selector_Name (Expr))) = E_Discriminant
+              and then Ekind (Etype (Entity (Selector_Name (Expr)))) =
+              E_Anonymous_Access_Type then
+
+               return Make_Integer_Literal (Loc, Object_Access_Level (Expr));
+            end if;
+
+         when N_Attribute_Reference =>
+            case Get_Attribute_Id (Attribute_Name (Expr)) is
+
+               --  For X'Access, the level of the prefix X
+
+               when Attribute_Access =>
+                  return Make_Integer_Literal (Loc,
+                    Object_Access_Level (Prefix (Expr)));
+
+               --  Treat the unchecked attributes as library-level
+
+               when Attribute_Unchecked_Access |
+                 Attribute_Unrestricted_Access =>
+                  return Make_Integer_Literal (Loc,
+                    Scope_Depth (Standard_Standard));
+
+               --  No other access-valued attributes
+
+               when others =>
+                  raise Program_Error;
+            end case;
+
+         when N_Allocator =>
+            --  Unimplemented: depends on context. As an actual
+            --  parameter where formal type is anonymous, use
+            --    Scope_Depth (Current_Scope) + 1.
+            --  For other cases, see 3.10.2(14/3) and following. ???
+            null;
+
+         when N_Type_Conversion =>
+            if not Is_Local_Anonymous_Access (Etype (Expr)) then
+               --  Handle type conversions introduced for a
+               --  rename of an Ada2012 stand-alone object of an
+               --  anonymous access type.
+               return Dynamic_Accessibility_Level (Expression (Expr));
+            end if;
+
+         when others =>
+            null;
+      end case;
+
+      return Make_Integer_Literal (Loc, Type_Access_Level (Etype (Expr)));
+   end Dynamic_Accessibility_Level;
+
+   -----------------------------------
+   -- Effective_Extra_Accessibility --
+   -----------------------------------
+
+   function Effective_Extra_Accessibility (Id : Entity_Id) return Entity_Id is
+   begin
+      if Present (Renamed_Object (Id))
+        and then Is_Entity_Name (Renamed_Object (Id)) then
+         return Effective_Extra_Accessibility (Entity (Renamed_Object (Id)));
+      end if;
+
+      return Extra_Accessibility (Id);
+   end Effective_Extra_Accessibility;
 
    --------------------------
    -- Enclosing_CPP_Parent --

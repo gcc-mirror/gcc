@@ -5261,6 +5261,47 @@ package body Exp_Ch3 is
          end if;
       end if;
 
+      if Nkind (N) = N_Object_Declaration
+        and then Nkind (Object_Definition (N)) = N_Access_Definition
+        and then not Is_Local_Anonymous_Access (Etype (Def_Id))
+      then
+         --  An Ada 2012 stand-alone object of an anonymous access type
+
+         declare
+            Loc : constant Source_Ptr := Sloc (N);
+
+            Level : constant Entity_Id :=
+              Make_Defining_Identifier (Sloc (N),
+                Chars  => New_External_Name (Chars (Def_Id),
+                                             Suffix => "L"));
+            Level_Expr : Node_Id;
+            Level_Decl : Node_Id;
+         begin
+            Set_Ekind (Level, Ekind (Def_Id));
+            Set_Etype (Level, Standard_Natural);
+            Set_Scope (Level, Scope (Def_Id));
+
+            if No (Expr) then
+               Level_Expr := Make_Integer_Literal (Loc,
+                 -- accessibility level of null
+                 Intval => Scope_Depth (Standard_Standard));
+            else
+               Level_Expr := Dynamic_Accessibility_Level (Expr);
+            end if;
+
+            Level_Decl := Make_Object_Declaration (Loc,
+             Defining_Identifier => Level,
+             Object_Definition => New_Occurrence_Of (Standard_Natural, Loc),
+             Expression => Level_Expr,
+             Constant_Present => Constant_Present (N),
+             Has_Init_Expression => True);
+
+            Insert_Action_After (Init_After, Level_Decl);
+
+            Set_Extra_Accessibility (Def_Id, Level);
+         end;
+      end if;
+
    --  Exception on library entity not available
 
    exception

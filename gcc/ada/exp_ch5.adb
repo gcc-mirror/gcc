@@ -1885,6 +1885,57 @@ package body Exp_Ch5 is
          Apply_Constraint_Check (Rhs, Etype (Lhs));
       end if;
 
+      --  Ada 2012 (AI05-148): Update current accessibility level if
+      --  Rhs is a stand-alone obj of an anonymous access type.
+
+      if Is_Access_Type (Typ)
+        and then Is_Entity_Name (Lhs)
+        and then Present (Effective_Extra_Accessibility (Entity (Lhs))) then
+         declare
+            function Lhs_Entity return Entity_Id;
+            --  Look through renames to find the underlying entity.
+            --  For assignment to a rename, we don't care about the
+            --  Enclosing_Dynamic_Scope of the rename declaration.
+
+            ----------------
+            -- Lhs_Entity --
+            ----------------
+
+            function Lhs_Entity return Entity_Id is
+               Result : Entity_Id := Entity (Lhs);
+            begin
+               while Present (Renamed_Object (Result)) loop
+                  --  Renamed_Object must return an Entity_Name here
+                  --  because of preceding "Present (E_E_A (...))" test.
+
+                  Result := Entity (Renamed_Object (Result));
+               end loop;
+               return Result;
+            end Lhs_Entity;
+
+            Access_Check : constant Node_Id :=
+              Make_Raise_Program_Error (Loc,
+                Condition =>
+                  Make_Op_Gt (Loc,
+                    Left_Opnd => Dynamic_Accessibility_Level (Rhs),
+                    Right_Opnd =>
+                      Make_Integer_Literal (Loc,
+                        Scope_Depth (Enclosing_Dynamic_Scope (Lhs_Entity)))),
+                Reason => PE_Accessibility_Check_Failed);
+
+            Access_Level_Update : constant Node_Id :=
+              Make_Assignment_Statement (Loc,
+                Name => New_Occurrence_Of (
+                  Effective_Extra_Accessibility (Entity (Lhs)), Loc),
+                Expression => Dynamic_Accessibility_Level (Rhs));
+         begin
+            if not Accessibility_Checks_Suppressed (Entity (Lhs)) then
+               Insert_Action (N, Access_Check);
+            end if;
+            Insert_Action (N, Access_Level_Update);
+         end;
+      end if;
+
       --  Case of assignment to a bit packed array element. If there is a
       --  change of representation this must be expanded into components,
       --  otherwise this is a bit-field assignment.

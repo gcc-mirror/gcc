@@ -601,6 +601,14 @@ package body Sem_Ch5 is
       then
          if Is_Local_Anonymous_Access (T1)
            or else Ekind (T2) = E_Anonymous_Access_Subprogram_Type
+
+           --  Handle assignment to an Ada 2012 stand-alone object
+           --  of an anonymous access type.
+
+           or else (Ekind (T1) = E_Anonymous_Access_Type
+             and then Nkind (Associated_Node_For_Itype (T1))
+               = N_Object_Declaration)
+
          then
             Rewrite (Rhs, Convert_To (T1, Relocate_Node (Rhs)));
             Analyze_And_Resolve (Rhs, T1);
