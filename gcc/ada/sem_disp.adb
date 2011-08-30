@@ -850,6 +850,9 @@ package body Sem_Disp is
                   Typ := Etype (Subp);
                end if;
 
+               --  The following should be better commented, especially since
+               --  we just added several new conditions here ???
+
                if Comes_From_Source (Subp)
                  and then Is_Interface (Typ)
                  and then not Is_Class_Wide_Type (Typ)

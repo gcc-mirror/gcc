@@ -5271,20 +5271,25 @@ package body Exp_Ch3 is
             Loc : constant Source_Ptr := Sloc (N);
 
             Level : constant Entity_Id :=
-              Make_Defining_Identifier (Sloc (N),
-                Chars  => New_External_Name (Chars (Def_Id),
-                                             Suffix => "L"));
+                      Make_Defining_Identifier (Sloc (N),
+                        Chars =>
+                          New_External_Name (Chars (Def_Id), Suffix => "L"));
+
             Level_Expr : Node_Id;
             Level_Decl : Node_Id;
+
          begin
             Set_Ekind (Level, Ekind (Def_Id));
             Set_Etype (Level, Standard_Natural);
             Set_Scope (Level, Scope (Def_Id));
 
             if No (Expr) then
-               Level_Expr := Make_Integer_Literal (Loc,
-                 -- accessibility level of null
-                 Intval => Scope_Depth (Standard_Standard));
+
+               --  Set accessibility level of null
+
+               Level_Expr :=
+                 Make_Integer_Literal (Loc, Scope_Depth (Standard_Standard));
+
             else
                Level_Expr := Dynamic_Accessibility_Level (Expr);
             end if;
@@ -6019,6 +6024,7 @@ package body Exp_Ch3 is
       --  declaration. Detect anonymous access-to-controlled components.
 
       Has_AACC := False;
+
       Comp := First_Component (Def_Id);
       while Present (Comp) loop
          Comp_Typ := Etype (Comp);
@@ -6036,7 +6042,7 @@ package body Exp_Ch3 is
          then
             Set_Has_Controlled_Component (Def_Id);
 
-         --  Non self-referential anonymous access-to-controlled component
+         --  Non-self-referential anonymous access-to-controlled component
 
          elsif Ekind (Comp_Typ) = E_Anonymous_Access_Type
            and then Needs_Finalization (Designated_Type (Comp_Typ))
@@ -6430,7 +6436,7 @@ package body Exp_Ch3 is
             while Present (Comp) loop
                Comp_Typ := Etype (Comp);
 
-               --  A non self-referential anonymous access-to-controlled
+               --  A non-self-referential anonymous access-to-controlled
                --  component.
 
                if Ekind (Comp_Typ) = E_Anonymous_Access_Type
@@ -6799,16 +6805,16 @@ package body Exp_Ch3 is
             end if;
 
             --  For access-to-controlled types (including class-wide types and
-            --  Taft-amendment types which potentially have controlled
+            --  Taft-amendment types, which potentially have controlled
             --  components), expand the list controller object that will store
-            --  the dynamically allocated objects. Do not do this
-            --  transformation for expander-generated access types, but do it
-            --  for types that are the full view of types derived from other
-            --  private types. Also suppress the list controller in the case
-            --  of a designated type with convention Java, since this is used
-            --  when binding to Java API specs, where there's no equivalent of
-            --  a finalization list and we don't want to pull in the
-            --  finalization support if not needed.
+            --  the dynamically allocated objects. Don't do this transformation
+            --  for expander-generated access types, but do it for types that
+            --  are the full view of types derived from other private types.
+            --  Also suppress the list controller in the case of a designated
+            --  type with convention Java, since this is used when binding to
+            --  Java API specs, where there's no equivalent of a finalization
+            --  list and we don't want to pull in the finalization support if
+            --  not needed.
 
             if not Comes_From_Source (Def_Id)
               and then not Has_Private_Declaration (Def_Id)

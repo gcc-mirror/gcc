@@ -606,8 +606,8 @@ package body Sem_Ch5 is
            --  of an anonymous access type.
 
            or else (Ekind (T1) = E_Anonymous_Access_Type
-             and then Nkind (Associated_Node_For_Itype (T1))
-               = N_Object_Declaration)
+                     and then Nkind (Associated_Node_For_Itype (T1)) =
+                                                       N_Object_Declaration)
 
          then
             Rewrite (Rhs, Convert_To (T1, Relocate_Node (Rhs)));

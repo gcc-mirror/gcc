@@ -8314,12 +8314,12 @@ package body Sem_Attr is
                if Ada_Version >= Ada_2005
                  and then (Is_Local_Anonymous_Access (Btyp)
 
-                           --  Handle cases where Btyp is the
-                           --  anonymous access type of an Ada 2012
-                           --  stand-alone object.
+                            --  Handle cases where Btyp is the
+                            --  anonymous access type of an Ada 2012
+                            --  stand-alone object.
 
-                           or else Nkind (Associated_Node_For_Itype
-                             (Btyp)) = N_Object_Declaration)
+                            or else Nkind (Associated_Node_For_Itype (Btyp)) =
+                                                        N_Object_Declaration)
                  and then Object_Access_Level (P)
                           > Deepest_Type_Access_Level (Btyp)
                  and then Attr_Id = Attribute_Access

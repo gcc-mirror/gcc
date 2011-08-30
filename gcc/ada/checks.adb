@@ -479,7 +479,7 @@ package body Checks is
       Insert_Node : Node_Id)
    is
       Loc         : constant Source_Ptr := Sloc (N);
-      Param_Ent   : Entity_Id  := Param_Entity (N);
+      Param_Ent   : Entity_Id           := Param_Entity (N);
       Param_Level : Node_Id;
       Type_Level  : Node_Id;
 
@@ -492,6 +492,7 @@ package body Checks is
       then
          Param_Ent := Entity (N);
          while Present (Renamed_Object (Param_Ent)) loop
+
             --  Renamed_Object must return an Entity_Name here
             --  because of preceding "Present (E_E_A (...))" test.
 
@@ -510,15 +511,15 @@ package body Checks is
       elsif Present (Param_Ent)
          and then Present (Extra_Accessibility (Param_Ent))
          and then UI_Gt (Object_Access_Level (N),
-           Deepest_Type_Access_Level (Typ))
+                         Deepest_Type_Access_Level (Typ))
          and then not Accessibility_Checks_Suppressed (Param_Ent)
          and then not Accessibility_Checks_Suppressed (Typ)
       then
          Param_Level :=
            New_Occurrence_Of (Extra_Accessibility (Param_Ent), Loc);
 
-         Type_Level := Make_Integer_Literal (Loc,
-           Deepest_Type_Access_Level (Typ));
+         Type_Level :=
+           Make_Integer_Literal (Loc, Deepest_Type_Access_Level (Typ));
 
          --  Raise Program_Error if the accessibility level of the access
          --  parameter is deeper than the level of the target access type.
