@@ -1275,11 +1275,18 @@ package body Sem_Ch9 is
          end if;
 
          --  Create corresponding record now, because some private dependents
-         --  may be subtypes of the partial view. Skip if errors are present,
-         --  to prevent cascaded messages.
+         --  may be subtypes of the partial view.
+
+         --  Skip if errors are present, to prevent cascaded messages
 
          if Serious_Errors_Detected = 0
+
+           --  Also skip if expander is not active
+
            and then Expander_Active
+
+           --  Also skip if in ALFA mode, this expansion is not needed
+
            and then not ALFA_Mode
          then
             Expand_N_Protected_Type_Declaration (N);
@@ -2079,11 +2086,17 @@ package body Sem_Ch9 is
          end if;
 
          --  Create corresponding record now, because some private dependents
-         --  may be subtypes of the partial view. Skip if errors are present,
-         --  to prevent cascaded messages.
+         --  may be subtypes of the partial view.
+
+         --  Skip if errors are present, to prevent cascaded messages
 
          if Serious_Errors_Detected = 0
+
+           --  Also skip if expander is not active
+
            and then Expander_Active
+
+           --  Or if in ALFA mode, this expansion is not needed
            and then not ALFA_Mode
          then
             Expand_N_Task_Type_Declaration (N);

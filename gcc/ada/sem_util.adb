@@ -8470,7 +8470,7 @@ package body Sem_Util is
               or else  K = E_In_Out_Parameter
               or else  K = E_Generic_In_Out_Parameter
 
-               --  Current instance of type:
+               --  Current instance of type
 
               or else (Is_Type (E) and then In_Open_Scopes (E))
               or else (Is_Incomplete_Or_Private_Type (E)
@@ -8714,8 +8714,8 @@ package body Sem_Util is
 
          Kill_Current_Values_For_Entity_Chain (First_Entity (S));
 
-         --  If scope is a package, also clear current values of all
-         --  private entities in the scope.
+         --  If scope is a package, also clear current values of all private
+         --  entities in the scope.
 
          if Is_Package_Or_Generic_Package (S)
            or else Is_Concurrent_Type (S)
@@ -9016,7 +9016,7 @@ package body Sem_Util is
          --  is an lvalue, but the prefix is never an lvalue, since it is just
          --  the scope where the name is found.
 
-         when N_Expanded_Name        =>
+         when N_Expanded_Name =>
             if N = Prefix (P) then
                return May_Be_Lvalue (P);
             else
@@ -9029,7 +9029,7 @@ package body Sem_Util is
          --  it is. Note however that A is not an lvalue if it is of an access
          --  type since this is an implicit dereference.
 
-         when N_Selected_Component   =>
+         when N_Selected_Component =>
             if N = Prefix (P)
               and then Present (Etype (N))
               and then Is_Access_Type (Etype (N))
@@ -9044,7 +9044,7 @@ package body Sem_Util is
          --  or slice is an lvalue, except if it is an access type, where we
          --  have an implicit dereference.
 
-         when N_Indexed_Component | N_Slice    =>
+         when N_Indexed_Component | N_Slice =>
             if N /= Prefix (P)
               or else (Present (Etype (N)) and then Is_Access_Type (Etype (N)))
             then
@@ -9055,7 +9055,7 @@ package body Sem_Util is
 
          --  Prefix of a reference is an lvalue if the reference is an lvalue
 
-         when N_Reference            =>
+         when N_Reference =>
             return May_Be_Lvalue (P);
 
          --  Prefix of explicit dereference is never an lvalue
@@ -9072,14 +9072,12 @@ package body Sem_Util is
               N_Entry_Call_Statement     |
               N_Accept_Statement
          =>
-            if Nkind (P) = N_Function_Call
-              and then Ada_Version < Ada_2012
-            then
+            if Nkind (P) = N_Function_Call and then Ada_Version < Ada_2012 then
                return False;
             end if;
 
-            --  The following mechanism is clumsy and fragile. A single
-            --  flag set in Resolve_Actuals would be preferable ???
+            --  The following mechanism is clumsy and fragile. A single flag
+            --  set in Resolve_Actuals would be preferable ???
 
             declare
                Proc : Entity_Id;
@@ -9093,8 +9091,8 @@ package body Sem_Util is
                   return True;
                end if;
 
-               --  If we are not a list member, something is strange, so
-               --  be conservative and return True.
+               --  If we are not a list member, something is strange, so be
+               --  conservative and return True.
 
                if not Is_List_Member (N) then
                   return True;
@@ -9106,8 +9104,8 @@ package body Sem_Util is
                Form := First_Formal (Proc);
                Act  := N;
                loop
-                  --  If no formal, something is weird, so be conservative
-                  --  and return True.
+                  --  If no formal, something is weird, so be conservative and
+                  --  return True.
 
                   if No (Form) then
                      return True;

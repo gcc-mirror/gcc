@@ -1601,8 +1601,7 @@ package body Sem_Ch6 is
                   --  Taft amemdment types are identified.
 
                   if Ekind (Scope (Current_Scope)) = E_Package
-                    and then
-                      In_Private_Part (Scope (Current_Scope))
+                    and then In_Private_Part (Scope (Current_Scope))
                   then
                      Append_Elmt (Designator, Private_Dependents (Typ));
                   end if;
@@ -4241,10 +4240,10 @@ package body Sem_Ch6 is
                  or else not Is_Primitive_Wrapper (New_Id)
                then
                   Conformance_Error ("\mode of & does not match!", New_Formal);
+
                else
                   declare
-                     T : constant  Entity_Id :=
-                           Find_Dispatching_Type (New_Id);
+                     T : constant  Entity_Id := Find_Dispatching_Type (New_Id);
                   begin
                      if Is_Protected_Type
                           (Corresponding_Concurrent_Type (T))
@@ -8129,9 +8128,9 @@ package body Sem_Ch6 is
                  and then Is_Protected_Type (Typ)
                  and then
                    (Is_Limited_Interface (Iface_Typ)
-                      or else Is_Protected_Interface (Iface_Typ)
-                      or else Is_Synchronized_Interface (Iface_Typ)
-                      or else Is_Task_Interface (Iface_Typ))
+                     or else Is_Protected_Interface (Iface_Typ)
+                     or else Is_Synchronized_Interface (Iface_Typ)
+                     or else Is_Task_Interface (Iface_Typ))
                then
                   Error_Msg_PT (Parent (Typ), Candidate);
                end if;

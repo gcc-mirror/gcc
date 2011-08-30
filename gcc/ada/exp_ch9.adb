@@ -2279,12 +2279,10 @@ package body Exp_Ch9 is
          then
             First_Param :=
               Make_Parameter_Specification (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc,
-                    Chars => Name_uO),
-                In_Present     => True,
-                Out_Present    => False,
-                Parameter_Type => New_Reference_To (Obj_Typ, Loc));
+                Defining_Identifier => Make_Defining_Identifier (Loc, Name_uO),
+                In_Present          => True,
+                Out_Present         => False,
+                Parameter_Type      => New_Reference_To (Obj_Typ, Loc));
 
          --  For entries and procedures of protected types the mode of
          --  the controlling argument must be in-out.
@@ -4909,7 +4907,6 @@ package body Exp_Ch9 is
       if Expander_Active
         and then not ALFA_Mode
       then
-
          --  If we have no handled statement sequence, we may need to build
          --  a dummy sequence consisting of a null statement. This can be
          --  skipped if the trivial accept optimization is permitted.
@@ -4920,7 +4917,7 @@ package body Exp_Ch9 is
          then
             Set_Handled_Statement_Sequence (N,
               Make_Handled_Sequence_Of_Statements (Loc,
-                New_List (Make_Null_Statement (Loc))));
+                Statements => New_List (Make_Null_Statement (Loc))));
          end if;
 
          --  Create and declare two labels to be placed at the end of the
@@ -11598,7 +11595,6 @@ package body Exp_Ch9 is
       elsif Expander_Active
         and then not ALFA_Mode
       then
-
          --  Associate discriminals with the first subprogram or entry body to
          --  be expanded.
 

@@ -1,3 +1,24 @@
+2011-08-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_res.adb (Valid_Conversion): Revise test for implicit anonymous
+	access conversions to check that the conversion is a rewritten node,
+	rather than just having Comes_From_Source set to False, which wasn't
+	sufficient.
+
+2011-08-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, sem_ch9.adb, sem_ch6.adb, exp_disp.adb,
+	g-socket.ads: Minor reformatting.
+
+2011-08-30  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb: Minor reformatting.
+
+2011-08-30  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c: Never catch exception if _UA_FORCE_UNWIND flag is set,
+	to be compliant with the ABI.
+
 2011-08-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch12.adb (Check_Private_View): Exchange the private and full view

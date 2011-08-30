@@ -10648,10 +10648,16 @@ package body Sem_Res is
             --  conversions from an anonymous access type to a named general
             --  access type. Such conversions are not allowed in the case of
             --  access parameters and stand-alone objects of an anonymous
-            --  access type.
+            --  access type. The implicit conversion case is recognized by
+            --  testing that Comes_From_Source is False and that it's been
+            --  rewritten. The Comes_From_Source test isn't sufficient because
+            --  nodes in inlined calls to predefined library routines can have
+            --  Comes_From_Source set to False. (Is there a better way to test
+            --  for implicit conversions???)
 
             if Ada_Version >= Ada_2012
               and then not Comes_From_Source (N)
+              and then N /= Original_Node (N)
               and then Ekind (Target_Type) = E_General_Access_Type
               and then Ekind (Opnd_Type) = E_Anonymous_Access_Type
             then
