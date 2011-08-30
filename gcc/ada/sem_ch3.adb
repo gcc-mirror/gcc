@@ -10312,6 +10312,7 @@ package body Sem_Ch3 is
       --  type, so we must be sure not to overwrite these entries.
 
       declare
+         Append    : Boolean;
          Item      : Node_Id;
          Next_Item : Node_Id;
 
@@ -10330,15 +10331,29 @@ package body Sem_Ch3 is
          --  is not done, as that would create a circularity.
 
          elsif Item /= First_Rep_Item (Priv) then
+            Append := True;
+
             loop
                Next_Item := Next_Rep_Item (Item);
                exit when No (Next_Item);
                Item := Next_Item;
+
+               --  If the private view has aspect specifications, the full view
+               --  inherits them. Since these aspects may already have been
+               --  attached to the full view during derivation, do not append
+               --  them if already present.
+
+               if Item = First_Rep_Item (Priv) then
+                  Append := False;
+                  exit;
+               end if;
             end loop;
 
             --  And link the private type items at the end of the chain
 
-            Set_Next_Rep_Item (Item, First_Rep_Item (Priv));
+            if Append then
+               Set_Next_Rep_Item (Item, First_Rep_Item (Priv));
+            end if;
          end if;
       end;
 

@@ -7865,20 +7865,6 @@ entity.
 @end cartouche
 Followed.
 
-@cindex pragma Volatile
-@findex Volatile
-@unnumberedsec C.6(16): Definition of effect of pragma Volatile
-@sp 1
-@cartouche
-All tasks of the program (on all processors) that read or update volatile
-variables see the same order of updates to the variables.
-@end cartouche
-
-The semantics for pragma volatile is that provided by the gcc back-end for
-implementation of volatile in C or C++. On some targets this may meet the
-serialization requirement stated above. On other targets this implementation
-advice is not followed.
-
 @cindex Package @code{Task_Attributes}
 @findex Task_Attributes
 @unnumberedsec C.7.2(30): The Package Task_Attributes
