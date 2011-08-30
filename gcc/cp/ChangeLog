@@ -1,3 +1,11 @@
+2011-08-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50209
+	Core DR 994
+	* parser.c (cp_parser_default_argument): Use
+	cp_parser_initializer_clause.
+	(cp_parser_late_parsing_default_args): Likewise.
+
 2011-08-26  Jason Merrill  <jason@redhat.com>
 
 	Core DR 342
