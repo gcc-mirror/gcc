@@ -6,8 +6,8 @@
 /* Test that the intrinsics compile with optimization.  All of them
    are defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h,
    mm3dnow.h, fma4intrin.h, xopintrin.h, abmintrin.h, bmiintrin.h,
-   tbmintrin.h, lwpintrin.h, popcntintrin.h and mm_malloc.h that
-   reference the proper builtin functions.
+   tbmintrin.h, lwpintrin.h, popcntintrin.h, fmaintrin.h and mm_malloc.h 
+   that reference the proper builtin functions.
 
    Defining away "extern" and "__inline" results in all of them being
    compiled as proper functions.  */
@@ -180,7 +180,7 @@
 #define __builtin_ia32_gatherdiv4si(X, Y, Z, K, M) __builtin_ia32_gatherdiv4si(X, Y, Z, K, 1)
 #define __builtin_ia32_gatherdiv4si256(X, Y, Z, K, M) __builtin_ia32_gatherdiv4si256(X, Y, Z, K, 1)
 
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma")
 #include <wmmintrin.h>
 #include <smmintrin.h>
 #include <mm3dnow.h>

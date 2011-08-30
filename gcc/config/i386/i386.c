@@ -24055,7 +24055,7 @@ enum ix86_builtins
   IX86_BUILTIN_VEC_PERM_V4DF,
   IX86_BUILTIN_VEC_PERM_V8SF,
 
-  /* FMA4 and XOP instructions.  */
+  /* FMA4 instructions.  */
   IX86_BUILTIN_VFMADDSS,
   IX86_BUILTIN_VFMADDSD,
   IX86_BUILTIN_VFMADDPS,
@@ -24067,6 +24067,11 @@ enum ix86_builtins
   IX86_BUILTIN_VFMADDSUBPS256,
   IX86_BUILTIN_VFMADDSUBPD256,
 
+  /* FMA3 instructions.  */
+  IX86_BUILTIN_VFMADDSS3,
+  IX86_BUILTIN_VFMADDSD3,
+
+  /* XOP instructions.  */
   IX86_BUILTIN_VPCMOV,
   IX86_BUILTIN_VPCMOV_V2DI,
   IX86_BUILTIN_VPCMOV_V4SI,
@@ -25448,6 +25453,13 @@ static const struct builtin_description bdesc_multi_arg[] =
     UNKNOWN, (int)MULTI_ARG_3_SF },
   { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_vmfmadd_v2df,
     "__builtin_ia32_vfmaddsd", IX86_BUILTIN_VFMADDSD,
+    UNKNOWN, (int)MULTI_ARG_3_DF },
+
+  { OPTION_MASK_ISA_FMA, CODE_FOR_fmai_vmfmadd_v4sf,
+    "__builtin_ia32_vfmaddss3", IX86_BUILTIN_VFMADDSS3,
+    UNKNOWN, (int)MULTI_ARG_3_SF },
+  { OPTION_MASK_ISA_FMA, CODE_FOR_fmai_vmfmadd_v2df,
+    "__builtin_ia32_vfmaddsd3", IX86_BUILTIN_VFMADDSD3,
     UNKNOWN, (int)MULTI_ARG_3_DF },
 
   { OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmadd_v4sf,

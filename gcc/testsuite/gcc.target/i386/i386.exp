@@ -172,6 +172,20 @@ proc check_effective_target_fma4 { } {
     } "-O2 -mfma4" ]
 }
 
+# Return 1 if fma instructions can be compiled.
+proc check_effective_target_fma { } {
+    return [check_no_compiler_messages fma object {
+        typedef float __m128 __attribute__ ((__vector_size__ (16)));
+	typedef float __v4sf __attribute__ ((__vector_size__ (16)));
+	__m128 _mm_macc_ps(__m128 __A, __m128 __B, __m128 __C)
+	{
+	    return (__m128) __builtin_ia32_vfmaddps ((__v4sf)__A,
+						     (__v4sf)__B,
+						     (__v4sf)__C);
+	}
+    } "-O2 -mfma" ]
+}
+
 # Return 1 if xop instructions can be compiled.
 proc check_effective_target_xop { } {
     return [check_no_compiler_messages xop object {
