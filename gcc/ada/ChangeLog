@@ -1,3 +1,49 @@
+2011-08-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Check_Return_Subtype_Indication): Issue error if the
+	return object has an anonymous access type and the function's type is
+	a named access type.
+	* sem_ch8.adb (Analyze_Object_Renaming): Suppress error about renaming
+	conversions on implicit conversions, since such conversions can occur
+	for anonymous access cases due to expansion. Issue error for attempt
+	to rename an anonymous expression as an object of a named access type.
+	* sem_res.ads (Valid_Conversion): Add defaulted parameter Report_Errs,
+	to indicate whether this function should report errors on invalid
+	conversions.
+	* sem_res.adb (Resolve): For Ada 2012, in the case where the type of
+	the expression is of an anonymous access type and the expected type is
+	a named general access type, rewrite the expression as a type
+	conversion, unless this is an expression of a membership test.
+	(Valid_Conversion.Error_Msg_N): New procedure that conditions the
+	calling of Error_Msg_N on new formal Report_Errs.
+	(Valid_Conversion.Error_Msg_NE): New procedure that conditions the
+	calling of Error_Msg_NE on new formal Report_Errs.
+	(Valid_Conversion): Move declaration of this function to the package
+	spec, to allow calls from membership test processing. For Ada 2012,
+	enforce legality restrictions on implicit conversions of anonymous
+	access values to general access types, disallowing such conversions in
+	cases where the expression has a dynamic accessibility level (access
+	parameters, stand-alone anonymous access objects, or a component of a
+	dereference of one of the first two cases).
+	* sem_type.adb (Covers): For Ada 2012, allow an anonymous access type
+	in the context of a named general access expected type.
+	* exp_ch4.adb Add with and use of Exp_Ch2.
+	(Expand_N_In): Add processing for membership tests applied to
+	expressions of an anonymous access type. First, Valid_Conversion is
+	called to check whether the test is statically False, and then the
+	conversion is expanded to test that the expression's accessibility
+	level is no deeper than that of the tested type. In the case of
+	anonymous access-to-tagged types, a tagged membership test is applied
+	as well.
+	(Tagged_Membership): Extend to handle access type cases, applying the
+	test to the designated types.
+	* exp_ch6.adb (Expand_Call): When creating an extra actual for an
+	accessibility level, and the actual is a 'Access applied to a current
+	instance, pass the accessibility level of the type of the current
+	instance rather than applying Object_Access_Level to the prefix. Add a
+	??? comment, since this level isn't quite right either (will eventually
+	need to pass an implicit level parameter to init procs).
+
 2011-08-30  Bob Duff  <duff@adacore.com>
 
 	* s-taskin.ads: Minor comment fix.

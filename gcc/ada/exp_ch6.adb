@@ -2436,12 +2436,39 @@ package body Exp_Ch6 is
                         --  For X'Access, pass on the level of the prefix X
 
                         when Attribute_Access =>
-                           Add_Extra_Actual
-                             (Make_Integer_Literal (Loc,
-                               Intval =>
-                                 Object_Access_Level
-                                   (Prefix (Prev_Orig))),
-                                    Extra_Accessibility (Formal));
+                           --  If this is an Access attribute applied to the
+                           --  the current instance object passed to a type
+                           --  initialization procedure, then use the level
+                           --  of the type itself. This is not really correct,
+                           --  as there should be an extra level parameter
+                           --  passed in with _init formals (only in the case
+                           --  where the type is immutably limited), but we
+                           --  don't have an easy way currently to create such
+                           --  an extra formal (init procs aren't ever frozen).
+                           --  For now we just use the level of the type,
+                           --  which may be too shallow, but that works better
+                           --  than passing Object_Access_Level of the type,
+                           --  which can be one level too deep in some cases.
+                           --  ???
+
+                           if Is_Entity_Name (Prefix (Prev_Orig))
+                             and then Is_Type (Entity (Prefix (Prev_Orig)))
+                           then
+                              Add_Extra_Actual
+                                (Make_Integer_Literal (Loc,
+                                   Intval =>
+                                     Type_Access_Level
+                                       (Entity (Prefix (Prev_Orig)))),
+                                 Extra_Accessibility (Formal));
+
+                           else
+                              Add_Extra_Actual
+                                (Make_Integer_Literal (Loc,
+                                   Intval =>
+                                     Object_Access_Level
+                                       (Prefix (Prev_Orig))),
+                                 Extra_Accessibility (Formal));
+                           end if;
 
                         --  Treat the unchecked attributes as library-level
 

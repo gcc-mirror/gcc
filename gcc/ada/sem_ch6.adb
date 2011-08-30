@@ -564,6 +564,15 @@ package body Sem_Ch6 is
                Error_Msg_N ("must use anonymous access type", Subtype_Ind);
             end if;
 
+         --  If the return object is of an anonymous access type, then report
+         --  an error if the function's result type is not also anonymous.
+
+         elsif R_Stm_Type_Is_Anon_Access
+           and then not R_Type_Is_Anon_Access
+         then
+            Error_Msg_N ("anonymous access not allowed for function with " &
+                         "named access result", Subtype_Ind);
+
          --  Subtype indication case: check that the return object's type is
          --  covered by the result type, and that the subtypes statically match
          --  when the result subtype is constrained. Also handle record types
