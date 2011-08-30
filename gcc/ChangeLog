@@ -11,6 +11,9 @@
 	* config/i386/i386.c (get_pc_thunk_name): Change prefix to
 	"__x86.get_pc_thunk".
 
+	* bb-reorder.c (insert_section_boundary_note): Only do it if
+	we reordered the blocks; i.e. not if !optimize_function_for_speed_p.
+
 2011-08-30  Christian Bruel  <christian.bruel@st.com>
 
 	* coverage.c (coverage_init): Check flag_branch_probabilities instead of
