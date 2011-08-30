@@ -1115,6 +1115,20 @@ package body Sem_Res is
          if Nkind (Parent (N)) /= N_Function_Call
            or else N /= Name (Parent (N))
          then
+
+            --  This may be a prefixed call that was not fully analyzed, e.g.
+            --  an actual in an instance.
+
+            if Ada_Version >= Ada_2005
+              and then Nkind (N) = N_Selected_Component
+              and then Is_Dispatching_Operation (Entity (Selector_Name (N)))
+            then
+               Analyze_Selected_Component (N);
+               if Nkind (N) /= N_Selected_Component then
+                  return;
+               end if;
+            end if;
+
             Nam := New_Copy (N);
 
             --  If overloaded, overload set belongs to new copy

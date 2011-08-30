@@ -1,3 +1,13 @@
+2011-08-30  Bob Duff  <duff@adacore.com>
+
+	* s-taskin.ads: Minor comment fix.
+
+2011-08-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Check_Parameterless_Call): If the node is a selected
+	component and the selector is a dispatching operation, check if it is
+	a prefixed call before rewriting as a parameterless function call.
+
 2011-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/Makefile.in (../stamp-gnatlib1-$(RTSDIR)): Copy
