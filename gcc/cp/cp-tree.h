@@ -4551,8 +4551,8 @@ typedef struct cp_decl_specifier_seq {
   /* The storage class specified -- or sc_none if no storage class was
      explicitly specified.  */
   cp_storage_class storage_class;
-  /* True iff TYPE_SPEC indicates a user-defined type.  */
-  BOOL_BITFIELD user_defined_type_p : 1;
+  /* True iff TYPE_SPEC defines a class or enum.  */
+  BOOL_BITFIELD type_definition_p : 1;
   /* True iff multiple types were (erroneously) specified for this
      decl-specifier-seq.  */
   BOOL_BITFIELD multiple_types_p : 1;
