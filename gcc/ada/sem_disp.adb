@@ -850,9 +850,12 @@ package body Sem_Disp is
                   Typ := Etype (Subp);
                end if;
 
-               if not Is_Class_Wide_Type (Typ)
+               if Comes_From_Source (Subp)
                  and then Is_Interface (Typ)
+                 and then not Is_Class_Wide_Type (Typ)
                  and then not Is_Derived_Type (Typ)
+                 and then not Is_Generic_Type (Typ)
+                 and then not In_Instance
                then
                   Error_Msg_N ("?declaration of& is too late!", Subp);
                   Error_Msg_NE

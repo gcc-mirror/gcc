@@ -4996,14 +4996,15 @@ package body Exp_Ch4 is
 
                   else
                      if Present (Expr_Entity)
-                       and then Present (Extra_Accessibility (Expr_Entity))
+                       and then Present
+                         (Effective_Extra_Accessibility (Expr_Entity))
                        and then UI_Gt
                                   (Object_Access_Level (Lop),
                                    Type_Access_Level (Rtyp))
                      then
                         Param_Level :=
                           New_Occurrence_Of
-                            (Extra_Accessibility (Expr_Entity), Loc);
+                            (Effective_Extra_Accessibility (Expr_Entity), Loc);
 
                         Type_Level :=
                           Make_Integer_Literal (Loc, Type_Access_Level (Rtyp));
@@ -8279,6 +8280,10 @@ package body Exp_Ch4 is
       procedure Real_Range_Check;
       --  Handles generation of range check for real target value
 
+      function Has_Extra_Accessibility (Id : Entity_Id) return Boolean;
+      --  True iff Present (Effective_Extra_Accessibility (Id)) successfully
+      --  evaluates to True.
+
       -----------------------------------
       -- Handle_Changed_Representation --
       -----------------------------------
@@ -8578,6 +8583,22 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Btyp);
       end Real_Range_Check;
 
+      -----------------------------
+      -- Has_Extra_Accessibility --
+      -----------------------------
+
+      --  Returns true for a formal of an anonymous access type or for
+      --  an Ada 2012-style stand-alone object of an anonymous access type.
+
+      function Has_Extra_Accessibility (Id : Entity_Id) return Boolean is
+      begin
+         if Is_Formal (Id) or else Ekind_In (Id, E_Constant, E_Variable) then
+            return Present (Effective_Extra_Accessibility (Id));
+         else
+            return False;
+         end if;
+      end Has_Extra_Accessibility;
+
    --  Start of processing for Expand_N_Type_Conversion
 
    begin
@@ -8736,13 +8757,7 @@ package body Exp_Ch4 is
          --  as tagged type checks).
 
          if Is_Entity_Name (Operand)
-           and then
-             (Is_Formal (Entity (Operand))
-               or else
-                 (Present (Renamed_Object (Entity (Operand)))
-                   and then Is_Entity_Name (Renamed_Object (Entity (Operand)))
-                   and then Is_Formal
-                              (Entity (Renamed_Object (Entity (Operand))))))
+           and then Has_Extra_Accessibility (Entity (Operand))
            and then Ekind (Etype (Operand)) = E_Anonymous_Access_Type
            and then (Nkind (Original_Node (N)) /= N_Attribute_Reference
                       or else Attribute_Name (Original_Node (N)) = Name_Access)

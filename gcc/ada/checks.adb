@@ -479,11 +479,26 @@ package body Checks is
       Insert_Node : Node_Id)
    is
       Loc         : constant Source_Ptr := Sloc (N);
-      Param_Ent   : constant Entity_Id  := Param_Entity (N);
+      Param_Ent   : Entity_Id  := Param_Entity (N);
       Param_Level : Node_Id;
       Type_Level  : Node_Id;
 
    begin
+      if Ada_Version >= Ada_2012
+         and then not Present (Param_Ent)
+         and then Is_Entity_Name (N)
+         and then Ekind_In (Entity (N), E_Constant, E_Variable)
+         and then Present (Effective_Extra_Accessibility (Entity (N)))
+      then
+         Param_Ent := Entity (N);
+         while Present (Renamed_Object (Param_Ent)) loop
+            --  Renamed_Object must return an Entity_Name here
+            --  because of preceding "Present (E_E_A (...))" test.
+
+            Param_Ent := Entity (Renamed_Object (Param_Ent));
+         end loop;
+      end if;
+
       if Inside_A_Generic then
          return;
 
@@ -494,15 +509,16 @@ package body Checks is
 
       elsif Present (Param_Ent)
          and then Present (Extra_Accessibility (Param_Ent))
-         and then UI_Gt (Object_Access_Level (N), Type_Access_Level (Typ))
+         and then UI_Gt (Object_Access_Level (N),
+           Deepest_Type_Access_Level (Typ))
          and then not Accessibility_Checks_Suppressed (Param_Ent)
          and then not Accessibility_Checks_Suppressed (Typ)
       then
          Param_Level :=
            New_Occurrence_Of (Extra_Accessibility (Param_Ent), Loc);
 
-         Type_Level :=
-           Make_Integer_Literal (Loc, Type_Access_Level (Typ));
+         Type_Level := Make_Integer_Literal (Loc,
+           Deepest_Type_Access_Level (Typ));
 
          --  Raise Program_Error if the accessibility level of the access
          --  parameter is deeper than the level of the target access type.

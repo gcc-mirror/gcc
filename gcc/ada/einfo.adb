@@ -1038,7 +1038,8 @@ package body Einfo is
 
    function Extra_Accessibility (Id : E) return E is
    begin
-      pragma Assert (Is_Formal (Id) or else Ekind (Id) = E_Variable);
+      pragma Assert
+        (Is_Formal (Id) or else Ekind_In (Id, E_Variable, E_Constant));
       return Node13 (Id);
    end Extra_Accessibility;
 
@@ -3506,7 +3507,8 @@ package body Einfo is
 
    procedure Set_Extra_Accessibility (Id : E; V : E) is
    begin
-      pragma Assert (Is_Formal (Id) or else Ekind (Id) = E_Variable);
+      pragma Assert
+        (Is_Formal (Id) or else Ekind_In (Id, E_Variable, E_Constant));
       Set_Node13 (Id, V);
    end Set_Extra_Accessibility;
 
@@ -5466,6 +5468,7 @@ package body Einfo is
    procedure Init_Size (Id : E; V : Int) is
    begin
       Set_Uint12 (Id, UI_From_Int (V));  -- Esize
+      pragma Assert (not Is_Object (Id));
       Set_Uint13 (Id, UI_From_Int (V));  -- RM_Size
    end Init_Size;
 
@@ -5476,9 +5479,20 @@ package body Einfo is
    procedure Init_Size_Align (Id : E) is
    begin
       Set_Uint12 (Id, Uint_0);  -- Esize
+      pragma Assert (not Is_Object (Id));
       Set_Uint13 (Id, Uint_0);  -- RM_Size
       Set_Uint14 (Id, Uint_0);  -- Alignment
    end Init_Size_Align;
+
+   ----------------------------
+   -- Init_Object_Size_Align --
+   ----------------------------
+
+   procedure Init_Object_Size_Align (Id : E) is
+   begin
+      Set_Uint12 (Id, Uint_0);  -- Esize
+      Set_Uint14 (Id, Uint_0);  -- Alignment
+   end Init_Object_Size_Align;
 
    ----------------------------------------------
    -- Type Representation Attribute Predicates --
