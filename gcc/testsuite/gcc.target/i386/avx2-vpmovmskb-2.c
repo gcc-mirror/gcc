@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx2 -O2" } */
-/* { dg-final { scan-assembler "vmovmskb" } } */
+/* { dg-final { scan-assembler "vpmovmskb\[ \\t\]+\[^\n\]*%ymm\[0-9\]" } } */
 
 #include "avx2-check.h"
 
