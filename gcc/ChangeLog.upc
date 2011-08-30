@@ -1,3 +1,14 @@
+2011-08-30  Gary Funck  <gary@intrepid.com>
+
+	* tree.h (check_qualified_type): Change 'const_tree'
+	argument types back to 'tree' to avoid complaints
+	of assignment drops qualifiers for invocations of the
+	newly implemented TYPE_BLOCK_FACTOR() macro, which
+	invokes hash functions with 'tree' pointer values that
+	are not const qualified.
+	* tree.c (check_qualified_type, check_aligned_type): Ditto.
+	* c-typeck.c (comptypes_internal): Ditto.
+
 2011-08-29  Gary Funck  <gary@intrepid.com>
 
 	Fixes for regressions noted running "make check"
