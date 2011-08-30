@@ -1,3 +1,7 @@
+2011-08-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/fma-compile.c: Escape [ and ] in scan strings.
+
 2011-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/aggr3.ads: New test.
@@ -60,9 +64,10 @@
 
 2011-08-30  Christian Bruel  <christian.bruel@st.com>
 
-	* g++.dg/bprob/bprob.exp (feedback_options): Set -fbranch-probabilities.
+	* g++.dg/bprob/bprob.exp (feedback_options): Set
+	-fbranch-probabilities.
 	* gcc.misc-tests/bprob.exp (feedback_options): Likewise.
-	
+
 2011-08-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50224
@@ -1097,7 +1102,7 @@
 	* gcc.dg/pr49860.c: New.
 
 2011-08-06  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	PR libobjc/49882
 	* objc.dg/gnu-api-2-class.m (main): Test class_getSuperclass()
 	with classes that are in construction.
