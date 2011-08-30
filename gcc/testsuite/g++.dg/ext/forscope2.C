@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options -fpermissive }
+// { dg-options "-fpermissive -std=c++98" }
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 4 Sept 2001 <nathan@codesourcery.com>

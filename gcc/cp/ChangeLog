@@ -1,5 +1,9 @@
 2011-08-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50114
+	* decl.c (poplevel): Disable for scope compatibility hack
+	in C++11 mode.
+
 	PR c++/50220
 	* semantics.c (add_capture): Call complete_type for copy.
 
