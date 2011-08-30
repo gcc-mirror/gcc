@@ -1799,7 +1799,6 @@ canonicalize_addr_expr (tree *expr_p)
 static enum gimplify_status
 gimplify_conversion (tree *expr_p)
 {
-  tree tem;
   location_t loc = EXPR_LOCATION (*expr_p);
   gcc_assert (CONVERT_EXPR_P (*expr_p));
 
@@ -1809,17 +1808,6 @@ gimplify_conversion (tree *expr_p)
   /* And remove the outermost conversion if it's useless.  */
   if (tree_ssa_useless_type_conversion (*expr_p))
     *expr_p = TREE_OPERAND (*expr_p, 0);
-
-  /* Attempt to avoid NOP_EXPR by producing reference to a subtype.
-     For example this fold (subclass *)&A into &A->subclass avoiding
-     a need for statement.  */
-  if (CONVERT_EXPR_P (*expr_p)
-      && POINTER_TYPE_P (TREE_TYPE (*expr_p))
-      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (*expr_p, 0)))
-      && (tem = maybe_fold_offset_to_address
-	  (EXPR_LOCATION (*expr_p), TREE_OPERAND (*expr_p, 0),
-	   integer_zero_node, TREE_TYPE (*expr_p))) != NULL_TREE)
-    *expr_p = tem;
 
   /* If we still have a conversion at the toplevel,
      then canonicalize some constructs.  */
@@ -7302,36 +7290,33 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  goto expr_3;
 
 	case POINTER_PLUS_EXPR:
-          /* Convert ((type *)A)+offset into &A->field_of_type_and_offset.
-	     The second is gimple immediate saving a need for extra statement.
-	   */
-	  if (TREE_CODE (TREE_OPERAND (*expr_p, 1)) == INTEGER_CST
-	      && (tmp = maybe_fold_offset_to_address
-		  (EXPR_LOCATION (*expr_p),
-		   TREE_OPERAND (*expr_p, 0), TREE_OPERAND (*expr_p, 1),
-		   TREE_TYPE (*expr_p))))
-	    {
-	      *expr_p = tmp;
-	      ret = GS_OK;
-	      break;
-	    }
-	  /* Convert (void *)&a + 4 into (void *)&a[1].  */
-	  if (TREE_CODE (TREE_OPERAND (*expr_p, 0)) == NOP_EXPR
-	      && TREE_CODE (TREE_OPERAND (*expr_p, 1)) == INTEGER_CST
-	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*expr_p,
-									0),0)))
-	      && (tmp = maybe_fold_offset_to_address
-		  (EXPR_LOCATION (*expr_p),
-		   TREE_OPERAND (TREE_OPERAND (*expr_p, 0), 0),
-		   TREE_OPERAND (*expr_p, 1),
-		   TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*expr_p, 0),
-					    0)))))
-	     {
-               *expr_p = fold_convert (TREE_TYPE (*expr_p), tmp);
-	       ret = GS_OK;
-	       break;
-	     }
-          /* FALLTHRU */
+	  {
+	    enum gimplify_status r0, r1;
+	    r0 = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p,
+				post_p, is_gimple_val, fb_rvalue);
+	    r1 = gimplify_expr (&TREE_OPERAND (*expr_p, 1), pre_p,
+				post_p, is_gimple_val, fb_rvalue);
+	    recalculate_side_effects (*expr_p);
+	    ret = MIN (r0, r1);
+	    /* Convert &X + CST to invariant &MEM[&X, CST].  Do this
+	       after gimplifying operands - this is similar to how
+	       it would be folding all gimplified stmts on creation
+	       to have them canonicalized, which is what we eventually
+	       should do anyway.  */
+	    if (TREE_CODE (TREE_OPERAND (*expr_p, 1)) == INTEGER_CST
+		&& is_gimple_min_invariant (TREE_OPERAND (*expr_p, 0)))
+	      {
+		*expr_p = build_fold_addr_expr_with_type_loc
+		   (input_location,
+		    fold_build2 (MEM_REF, TREE_TYPE (TREE_TYPE (*expr_p)),
+				 TREE_OPERAND (*expr_p, 0),
+				 fold_convert (ptr_type_node,
+					       TREE_OPERAND (*expr_p, 1))),
+		    TREE_TYPE (*expr_p));
+		ret = MIN (ret, GS_OK);
+	      }
+	    break;
+	  }
 
 	default:
 	  switch (TREE_CODE_CLASS (TREE_CODE (*expr_p)))
