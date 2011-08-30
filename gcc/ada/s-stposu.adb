@@ -269,25 +269,25 @@ package body System.Storage_Pools.Subpools is
 
          Addr := N_Addr + Header_And_Padding;
 
-         --  Subpool allocations use heterogeneous masters to manage various
-         --  controlled objects. Associate a Finalize_Address with the object.
-         --  This relation pair is deleted when the object is deallocated or
-         --  when the associated master is finalized.
+         --  Homogeneous masters service the following:
+         --
+         --    1) Allocations on / Deallocations from regular pools
+         --    2) Named access types
+         --    3) Most cases of anonymous access types usage
 
-         if Is_Subpool_Allocation then
-            pragma Assert (not Master.Is_Homogeneous);
-
-            Set_Finalize_Address (Addr, Fin_Address);
-            Finalize_Address_Table_In_Use := True;
-
-         --  Normal allocations chain objects on homogeneous collections
-
-         else
-            pragma Assert (Master.Is_Homogeneous);
-
+         if Master.Is_Homogeneous then
             if Finalize_Address (Master.all) = null then
                Set_Finalize_Address (Master.all, Fin_Address);
             end if;
+
+         --  Heterogeneous masters service the following:
+         --
+         --    1) Allocations on / Deallocations from subpools
+         --    2) Certain cases of anonymous access types usage
+
+         else
+            Set_Finalize_Address (Addr, Fin_Address);
+            Finalize_Address_Table_In_Use := True;
          end if;
 
       --  Non-controlled allocation
