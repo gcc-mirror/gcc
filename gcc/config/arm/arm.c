@@ -2624,7 +2624,7 @@ optimal_immediate_sequence_1 (enum rtx_code code, unsigned HOST_WIDE_INT val,
   do
     {
       int end;
-      int b1, b2, b3, b4;
+      unsigned int b1, b2, b3, b4;
       unsigned HOST_WIDE_INT result;
       int loc;
 
