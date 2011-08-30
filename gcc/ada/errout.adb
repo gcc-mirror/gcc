@@ -617,6 +617,23 @@ package body Errout is
       Configurable_Run_Time_Violations := Configurable_Run_Time_Violations + 1;
    end Error_Msg_CRT;
 
+   ------------------
+   -- Error_Msg_PT --
+   ------------------
+
+   procedure Error_Msg_PT (Typ : Node_Id; Subp : Node_Id) is
+   begin
+      --  Error message below needs rewording (remember comma in -gnatj
+      --  mode) ???
+
+      Error_Msg_NE
+        ("first formal of & must be of mode `OUT`, `IN OUT` or " &
+         "access-to-variable", Typ, Subp);
+      Error_Msg_N
+        ("\in order to be overridden by protected procedure or entry " &
+         "(RM 9.4(11.9/2))", Typ);
+   end Error_Msg_PT;
+
    -----------------
    -- Error_Msg_F --
    -----------------

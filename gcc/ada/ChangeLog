@@ -1,3 +1,16 @@
+2011-08-30  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Check_Abstract_Overriding): Code cleanup: replace code
+	which emits an error by a call to a new routine which report the error.
+	* exp_ch9.adb (Build_Wrapper_Spec): Build the wrapper even if the
+	entity does not cover an existing interface.
+	* errout.ads, errout.adb (Error_Msg_PT): New routine. Used to factorize
+	code.
+	* sem_ch6.adb (Check_Conformance): Add specific error for wrappers of
+	protected procedures or entries whose mode is not conformant.
+	(Check_Synchronized_Overriding): Code cleanup: replace code which emits
+	an error by a call to a new routine which report the error.
+
 2011-08-30  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Minor change.

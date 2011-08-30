@@ -9162,9 +9162,6 @@ package body Sem_Ch3 is
                   --  The controlling formal of Subp must be of mode "out",
                   --  "in out" or an access-to-variable to be overridden.
 
-                  --  Error message below needs rewording (remember comma
-                  --  in -gnatj mode) ???
-
                   if Ekind (First_Formal (Subp)) = E_In_Parameter
                     and then Ekind (Subp) /= E_Function
                   then
@@ -9172,12 +9169,7 @@ package body Sem_Ch3 is
                        and then Is_Protected_Type
                                   (Corresponding_Concurrent_Type (T))
                      then
-                        Error_Msg_NE
-                          ("first formal of & must be of mode `OUT`, " &
-                           "`IN OUT` or access-to-variable", T, Subp);
-                        Error_Msg_N
-                          ("\in order to be overridden by protected procedure "
-                           & "or entry (RM 9.4(11.9/2))", T);
+                        Error_Msg_PT (T, Subp);
                      end if;
 
                   --  Some other kind of overriding failure
