@@ -1,3 +1,28 @@
+2011-08-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48571
+	* gimple.h (maybe_fold_offset_to_address): Remove.
+	(maybe_fold_offset_to_reference): Likewise.
+	(maybe_fold_stmt_addition): Likewise.
+	(may_propagate_address_into_dereference): Likewise.
+	* tree-inline.c (remap_gimple_op_r): Do not reconstruct
+	array references.
+	* gimple-fold.c (canonicalize_constructor_val): Likewise.
+	Canonicalize invariant POINTER_PLUS_EXPRs to invariant MEM_REF
+	addresses instead.
+	(may_propagate_address_into_dereference): Remove.
+	(maybe_fold_offset_to_array_ref): Likewise.
+	(maybe_fold_offset_to_reference): Likewise.
+	(maybe_fold_offset_to_address): Likewise.
+	(maybe_fold_stmt_addition): Likewise.
+	(fold_gimple_assign): Do not reconstruct array references but
+	instead canonicalize invariant POINTER_PLUS_EXPRs to invariant
+	MEM_REF addresses.
+	(gimple_fold_stmt_to_constant_1): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Likewise.
+	* gimplify.c (gimplify_conversion): Likewise.
+	(gimplify_expr): Likewise.
+
 2011-08-30  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/fmaintrin.h: New.
