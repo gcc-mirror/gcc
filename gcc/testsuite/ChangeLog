@@ -1,3 +1,8 @@
+2011-08-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50224
+	* g++.dg/cpp0x/lambda/lambda-use2.C: New.
+
 2011-08-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk

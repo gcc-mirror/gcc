@@ -2897,6 +2897,9 @@ finish_id_expression (tree id_expression,
 	  tree lambda_expr = NULL_TREE;
 	  tree initializer = convert_from_reference (decl);
 
+	  /* Mark it as used now even if the use is ill-formed.  */
+	  mark_used (decl);
+
 	  /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
 	     support for an approach in which a reference to a local
 	     [constant] automatic variable in a nested class or lambda body
