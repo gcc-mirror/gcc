@@ -7,6 +7,7 @@
 	Alfa mode.
 	* gnat1drv.adb (Adjust_Global_Switches): Update Comment.
 	* sem_res.adb: Ditto.
+	* gcc-interface/Make-lang.in: Update dependencies.
 
 2011-08-30  Thomas Quinot  <quinot@adacore.com>
 
