@@ -1,3 +1,7 @@
+2011-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/os/mingw32/error_constants.h: Fix commas.
+
 2011-08-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/20_util/duration/arithmetic/constexpr.cc: Add.
@@ -9,7 +13,7 @@
 	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR)  Add
 	checks for ECHILD, ENOSPC, EPERM, ETIMEDOUT, and
 	EWOULDBLOCK.
-	*  config/os/mingw32/error_constants.h (errc): Add
+	* config/os/mingw32/error_constants.h (errc): Add
 	enumerator values no_child_process, no_space_on_device,
 	not_supported, operation_not_permitted, operation_would_block,
 	timed_out, and value_too_large,
