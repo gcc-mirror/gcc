@@ -1,3 +1,8 @@
+2011-08-30  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads, s-soflin.adb, exp_ch9.adb, sem_res.adb: Update comment.
+	Minor code reorg/reformatting.
+
 2011-08-30  Yannick Moy  <moy@adacore.com>
 
 	* opt.adb, opt.ads (Full_Expander_Active): New function defines a

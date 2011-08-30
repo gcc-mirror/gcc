@@ -8095,6 +8095,7 @@ package body Sem_Res is
          Expander_Mode_Restore;
 
       --  In ALFA_Mode, no magic needed, we just resolve the underlying nodes
+      --  But why is this special handling for ALFA_Mode required ???
 
       else
          Resolve (Condition (N), Typ);
