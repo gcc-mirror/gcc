@@ -1,5 +1,10 @@
 2011-08-30  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/arm/arm.c (optimal_immediate_sequence_1): Make b1, b2,
+	b3 and b4 unsigned.
+
+2011-08-30  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/arm/arm.c (arm_gen_constant): Set can_negate correctly
 	when code is SET.
 
