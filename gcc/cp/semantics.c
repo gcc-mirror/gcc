@@ -8651,6 +8651,9 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
       if (!real_lvalue_p (initializer))
 	error ("cannot capture %qE by reference", initializer);
     }
+  else
+    /* Capture by copy requires a complete type.  */
+    type = complete_type (type);
 
   /* Add __ to the beginning of the field name so that user code
      won't find the field with name lookup.  We can't just leave the name
