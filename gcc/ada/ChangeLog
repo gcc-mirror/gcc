@@ -1,3 +1,20 @@
+2011-08-30  Yannick Moy  <moy@adacore.com>
+
+	* opt.adb, opt.ads (Full_Expander_Active): New function defines a
+	common shorthand for (Expander_Active and not ALFA_Mode) that can be
+	used for testing full expansion, that is active expansion not in the
+	reduced mode for Alfa
+	* exp_ch4.adb, exp_ch9.adb, exp_disp.adb, sem_ch10.adb, sem_ch12.adb,
+	sem_ch6.adb, sem_ch9.adb, sem_res.adb: Use newly defined "flag" instead
+	of the verbose (Expander_Active and not ALFA_Mode)
+
+2011-08-30  Tristan Gingold  <gingold@adacore.com>
+
+	* s-parame-vms-alpha.ads, s-parame-hpux.ads, s-tassta.adb,
+	s-tarest.adb, s-parame-vms-ia64.ads, s-soflin.adb, s-secsta.adb,
+	s-secsta.ads, s-parame.ads, s-parame-vxworks.ads: Renames Ratio to
+	Percentage, and Sec_Stack_Ratio to Sec_Stack_Percentage.
+
 2011-08-30  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_res.adb (Valid_Conversion): Revise test for implicit anonymous

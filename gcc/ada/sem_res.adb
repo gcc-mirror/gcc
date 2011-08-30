@@ -3442,8 +3442,7 @@ package body Sem_Res is
             elsif Nkind (A) = N_Function_Call
               and then Is_Limited_Record (Etype (F))
               and then not Is_Constrained (Etype (F))
-              and then Expander_Active
-              and then not ALFA_Mode
+              and then Full_Expander_Active
               and then (Is_Controlled (Etype (F)) or else Has_Task (Etype (F)))
             then
                Establish_Transient_Scope (A, False);
@@ -3458,8 +3457,7 @@ package body Sem_Res is
 
             elsif Nkind (A) = N_Op_Concat
               and then Nkind (N) = N_Procedure_Call_Statement
-              and then Expander_Active
-              and then not ALFA_Mode
+              and then Full_Expander_Active
               and then
                 not (Is_Intrinsic_Subprogram (Nam)
                       and then Chars (Nam) = Name_Asm)
@@ -3522,8 +3520,7 @@ package body Sem_Res is
                      --  be removed in the expansion of the wrapped construct.
 
                      if (Is_Controlled (DDT) or else Has_Task (DDT))
-                       and then Expander_Active
-                       and then not ALFA_Mode
+                       and then Full_Expander_Active
                      then
                         Establish_Transient_Scope (A, False);
                      end if;
@@ -5494,8 +5491,7 @@ package body Sem_Res is
       then
          null;
 
-      elsif Expander_Active
-        and then not ALFA_Mode
+      elsif Full_Expander_Active
         and then Is_Type (Etype (Nam))
         and then Requires_Transient_Scope (Etype (Nam))
         and then
@@ -6616,8 +6612,7 @@ package body Sem_Res is
       --  Protected functions can return on the secondary stack, in which
       --  case we must trigger the transient scope mechanism.
 
-      elsif Expander_Active
-        and then not ALFA_Mode
+      elsif Full_Expander_Active
         and then Requires_Transient_Scope (Etype (Nam))
       then
          Establish_Transient_Scope (N, Sec_Stack => True);
@@ -8088,8 +8083,6 @@ package body Sem_Res is
 
    procedure Resolve_Quantified_Expression (N : Node_Id; Typ : Entity_Id) is
    begin
-      --  Normal mode (not ALFA)
-
       if not ALFA_Mode then
 
          --  The loop structure is already resolved during its analysis, only

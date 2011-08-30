@@ -1023,7 +1023,7 @@ package body System.Tasking.Stages is
       Secondary_Stack_Size :
         constant SSE.Storage_Offset :=
           Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size *
-          SSE.Storage_Offset (Parameters.Sec_Stack_Ratio) / 100;
+          SSE.Storage_Offset (Parameters.Sec_Stack_Percentage) / 100;
 
       Secondary_Stack : aliased SSE.Storage_Array (1 .. Secondary_Stack_Size);
 

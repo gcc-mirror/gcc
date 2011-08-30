@@ -2709,8 +2709,7 @@ package body Sem_Ch6 is
       --  when the Expander is active because Install_Private_Data_Declarations
       --  references entities which were created during regular expansion.
 
-      if Expander_Active
-        and then not ALFA_Mode
+      if Full_Expander_Active
         and then Comes_From_Source (N)
         and then Present (Prot_Typ)
         and then Present (Spec_Id)
@@ -9787,10 +9786,9 @@ package body Sem_Ch6 is
                --  If expansion is active, the formal is replaced by a local
                --  variable that renames the corresponding entry of the
                --  parameter block, and it is this local variable that may
-               --  require an actual subtype. In ALFA mode, expansion of accept
-               --  statements is skipped.
+               --  require an actual subtype.
 
-               if Expander_Active and not ALFA_Mode then
+               if Full_Expander_Active then
                   Decl := Build_Actual_Subtype (T, Renamed_Object (Formal));
                else
                   Decl := Build_Actual_Subtype (T, Formal);
@@ -9829,8 +9827,7 @@ package body Sem_Ch6 is
             end if;
 
             if Nkind (N) = N_Accept_Statement
-              and then Expander_Active
-              and then not ALFA_Mode
+              and then Full_Expander_Active
             then
                Set_Actual_Subtype (Renamed_Object (Formal),
                  Defining_Identifier (Decl));

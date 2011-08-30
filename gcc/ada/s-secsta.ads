@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,17 +47,17 @@ package System.Secondary_Stack is
       Size : Natural := Default_Secondary_Stack_Size);
    --  Initialize the secondary stack with a main stack of the given Size.
    --
-   --  If System.Parameters.Sec_Stack_Ratio equals Dynamic, Stk is really an
-   --  OUT parameter that will be allocated on the heap. Then all further
+   --  If System.Parameters.Sec_Stack_Percentage equals Dynamic, Stk is really
+   --  an OUT parameter that will be allocated on the heap. Then all further
    --  allocations which do not overflow the main stack will not generate
    --  dynamic (de)allocation calls. If the main Stack overflows, a new
    --  chuck of at least the same size will be allocated and linked to the
    --  previous chunk.
    --
-   --  Otherwise (Sec_Stack_Ratio between 0 and 100), Stk is an IN parameter
-   --  that is already pointing to a Stack_Id. The secondary stack in this case
-   --  is fixed, and any attempt to allocate more than the initial size will
-   --  result in a Storage_Error being raised.
+   --  Otherwise (Sec_Stack_Percentage between 0 and 100), Stk is an IN
+   --  parameter that is already pointing to a Stack_Id. The secondary stack
+   --  in this case is fixed, and any attempt to allocate more than the initial
+   --  size will result in a Storage_Error being raised.
    --
    --  Note: the reason that Stk is passed is that SS_Init is called before
    --  the proper interface is established to obtain the address of the

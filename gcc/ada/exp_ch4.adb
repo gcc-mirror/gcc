@@ -7258,10 +7258,9 @@ package body Exp_Ch4 is
          end;
       end if;
 
-      --  Only array types need any other processing. In formal verification
-      --  mode, no other processing is done.
+      --  Only array types need any other processing
 
-      if not Is_Array_Type (Typ) or else ALFA_Mode then
+      if not Is_Array_Type (Typ) then
          return;
       end if;
 
@@ -7717,13 +7716,6 @@ package body Exp_Ch4 is
       Test         : Node_Id;
 
    begin
-      --  Do not expand quantified expressions in ALFA mode
-      --  why not???
-
-      if ALFA_Mode then
-         return;
-      end if;
-
       Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Tnn,
