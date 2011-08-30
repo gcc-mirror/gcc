@@ -1,3 +1,23 @@
+2011-08-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Correct the call to
+	Build_Finalization_Master by supplying an insertion node and enclosing
+	scope. In its old version, the call did not generate a finalization
+	master.
+	(Expand_Freeze_Record_Type): Add local variable Has_AACC. Add code to
+	recognize anonymous access-to-controlled components. Rewrite the
+	machinery which creates finalization masters to service anonymous
+	access-to-controlled components of a record type. In its current state,
+	only one heterogeneous master is necessary to handle multiple anonymous
+	components.
+	(Freeze_Type): Comment reformatting.
+	* rtsfind.ads: Add RE_Set_Is_Heterogeneous to tables RE_Id and
+	RE_Unit_Table.
+	* s-stposu.adb (Allocate_Any_Controlled): Rewrite the machinery which
+	associates TSS primitive Finalize_Address with either the master itself
+	or with the internal hash table depending on the mode of operation of
+	the master.
+
 2011-08-30  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch3.adb (Make_Eq_If): If the etype of the _parent component is an
