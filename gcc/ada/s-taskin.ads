@@ -585,8 +585,8 @@ package System.Tasking is
       --  Master_Completion_Sleep (phase 1)
 
       --  This is the number dependent tasks of a master being completed by
-      --  Self that are not activated, not terminated, and not waiting on a
-      --  terminate alternative.
+      --  Self that are activated, but have not yet terminated, and are not
+      --  waiting on a terminate alternative.
 
       --  Master_Completion_2_Sleep (phase 2)
 
