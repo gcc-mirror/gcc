@@ -12577,7 +12577,7 @@ cp_parser_type_specifier (cp_parser* parser,
 	    cp_parser_set_decl_spec_type (decl_specs,
 					  type_spec,
 					  token->location,
-					  /*user_defined_p=*/true);
+					  /*type_definition_p=*/true);
 	  return type_spec;
 	}
       else
@@ -12606,7 +12606,7 @@ cp_parser_type_specifier (cp_parser* parser,
 	    cp_parser_set_decl_spec_type (decl_specs,
 					  type_spec,
 					  token->location,
-					  /*user_defined_p=*/true);
+					  /*type_definition_p=*/true);
 	  return type_spec;
 	}
 
@@ -12628,7 +12628,7 @@ cp_parser_type_specifier (cp_parser* parser,
 	cp_parser_set_decl_spec_type (decl_specs,
 				      type_spec,
 				      token->location,
-				      /*user_defined_p=*/true);
+				      /*type_definition_p=*/false);
       return type_spec;
 
     case RID_CONST:
@@ -12821,7 +12821,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
 				      token->location,
-				      /*user_defined_p=*/true);
+				      /*type_definition_p=*/false);
 
       return type;
 
@@ -12831,7 +12831,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
 				      token->location,
-				      /*user_defined_p=*/true);
+				      /*type_definition_p=*/false);
 
       return type;
 
@@ -12848,7 +12848,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
 				      token->location,
-				      /*user_defined_p=*/true);
+				      /*type_definition_p=*/false);
       cp_lexer_consume_token (parser->lexer);
       return type;
     }
@@ -12865,7 +12865,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	cp_parser_set_decl_spec_type (decl_specs,
 				      type,
 				      token->location,
-				      /*user_defined=*/false);
+				      /*type_definition_p=*/false);
       if (decl_specs)
 	decl_specs->any_specifiers_p = true;
 
@@ -12940,7 +12940,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       if (type && decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
 				      token->location,
-				      /*user_defined=*/true);
+				      /*type_definition_p=*/false);
     }
 
   /* If we didn't get a type-name, issue an error message.  */
@@ -21004,15 +21004,14 @@ cp_parser_set_storage_class (cp_parser *parser,
     decl_specs->conflicting_specifiers_p = true;
 }
 
-/* Update the DECL_SPECS to reflect the TYPE_SPEC.  If USER_DEFINED_P
-   is true, the type is a user-defined type; otherwise it is a
-   built-in type specified by a keyword.  */
+/* Update the DECL_SPECS to reflect the TYPE_SPEC.  If TYPE_DEFINITION_P
+   is true, the type is a class or enum definition.  */
 
 static void
 cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
 			      tree type_spec,
 			      location_t location,
-			      bool user_defined_p)
+			      bool type_definition_p)
 {
   decl_specs->any_specifiers_p = true;
 
@@ -21022,7 +21021,7 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
      declarations so that G++ can work with system headers that are not
      C++-safe.  */
   if (decl_specs->specs[(int) ds_typedef]
-      && !user_defined_p
+      && !type_definition_p
       && (type_spec == boolean_type_node
 	  || type_spec == char16_type_node
 	  || type_spec == char32_type_node
@@ -21037,7 +21036,7 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
       if (!decl_specs->type)
 	{
 	  decl_specs->type = type_spec;
-	  decl_specs->user_defined_type_p = false;
+	  decl_specs->type_definition_p = false;
 	  decl_specs->type_location = location;
 	}
     }
@@ -21046,7 +21045,7 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
   else
     {
       decl_specs->type = type_spec;
-      decl_specs->user_defined_type_p = user_defined_p;
+      decl_specs->type_definition_p = type_definition_p;
       decl_specs->redefined_builtin_type = NULL_TREE;
       decl_specs->type_location = location;
     }

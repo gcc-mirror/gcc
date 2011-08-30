@@ -1,5 +1,8 @@
 2011-08-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50084
+	* g++.dg/cpp0x/decltype33.C: New.
+
 	PR c++/50089
 	* g++.dg/cpp0x/lambda/lambda-qualified.C: New.
 

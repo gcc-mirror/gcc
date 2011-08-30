@@ -1,5 +1,11 @@
 2011-08-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50084
+	* cp-tree.h (cp_decl_specifier_seq): Rename user_defined_type_p
+	to type_definition_p.
+	* parser.c (cp_parser_set_decl_spec_type): Likewise.
+	* decl.c (grokdeclarator): Check it.
+
 	PR c++/50089
 	* semantics.c (finish_id_expression): Use
 	current_nonlambda_class_type for qualified-ids.
