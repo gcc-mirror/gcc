@@ -1,3 +1,11 @@
+2011-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr3.ads: New test.
+	* gnat.dg/specs/aggr3_pkg.ads: New helper.
+
+	* gnat.dg/specs/aggr1.ads: Remove superfluous space.
+	* gnat.dg/specs/aggr2.ads: Likewise.
+
 2011-08-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/45170
@@ -3742,7 +3750,7 @@
 	* gcc.dg/pie-link.c: Use target pie.
 
 2011-06-10  Eric Botcazou  <ebotcazou@adacore.com>
-	    Laurent Rougé  <laurent.rouge@menta.fr>
+	    Laurent Rougï¿½  <laurent.rouge@menta.fr>
 
 	* gcc.dg/20020503-1.c: Add back -mflat option on the SPARC.
 	* gcc.target/sparc/sparc-ret.c: Skip if -mflat is passed.

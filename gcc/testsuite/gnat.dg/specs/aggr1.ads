@@ -1,4 +1,4 @@
---  { dg-do compile }
+-- { dg-do compile }
 
 package aggr1 is
    type Buffer_Array is array (1 .. 2 ** 23) of Integer;
