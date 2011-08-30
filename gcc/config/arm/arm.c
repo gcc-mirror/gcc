@@ -3367,8 +3367,8 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 
 	  if (code == SET)
 	    {
+	      can_negate = can_invert;
 	      can_invert = 0;
-	      can_negate = 1;
 	      code = PLUS;
 	    }
 	  else if (code == MINUS)

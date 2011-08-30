@@ -1,3 +1,8 @@
+2011-08-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm.c (arm_gen_constant): Set can_negate correctly
+	when code is SET.
+
 2011-08-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48571
