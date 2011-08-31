@@ -1164,7 +1164,9 @@ package body Sem_Ch13 is
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Pname),
                       Pragma_Argument_Associations =>
-                        New_List (Relocate_Node (Expr)));
+                        New_List
+                          (Make_Pragma_Argument_Association
+                            (Sloc (Id), Expression => Relocate_Node (Expr))));
 
                   Set_From_Aspect_Specification (Aitem, True);
 
@@ -1526,6 +1528,12 @@ package body Sem_Ch13 is
                            end if;
 
                            Prepend (Aitem, To => L);
+
+                           --  Analyze rewritten pragma. Otherwise, its
+                           --  analysis is done too late, after the task or
+                           --  protected object has been created.
+
+                           Analyze (Aitem);
                         end;
 
                      --  For all other cases, insert in sequence

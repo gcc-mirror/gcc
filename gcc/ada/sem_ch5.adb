@@ -1965,7 +1965,6 @@ package body Sem_Ch5 is
 
             begin
                Enter_Name (Id);
-               Set_Ekind (Id, E_Constant);
 
                --  We always consider the loop variable to be referenced, since
                --  the loop may be used just for counting purposes.
@@ -2058,6 +2057,11 @@ package body Sem_Ch5 is
                            Analyze (DS);
                         end if;
 
+                        --  Set kind of loop parameter, which may be used in
+                        --  the subsequent analysis of of the condition in a
+                        --  quantified expression.
+
+                        Set_Ekind (Id, E_Loop_Parameter);
                         return;
                      end;
 
