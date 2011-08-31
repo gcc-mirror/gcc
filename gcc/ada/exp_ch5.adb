@@ -3012,7 +3012,6 @@ package body Exp_Ch5 is
             Name_Step    : Name_Id;
 
          begin
-
             --  The type of the iterator is the return type of the Iterate
             --  function used. For the "of" form this is the default iterator
             --  for the type, otherwise it is the type of the explicit
@@ -3023,6 +3022,7 @@ package body Exp_Ch5 is
             --  use-visible, so we introduce the name of the enclosing package
             --  in the declarations below. The Iterator type is declared in a
             --  an instance within the container package itself.
+
             --  If the container type is a derived type, the cursor type is
             --  found in the package of the parent type.
 
@@ -3034,6 +3034,7 @@ package body Exp_Ch5 is
                else
                   Pack := Scope (Scope (Container_Typ));
                end if;
+
             else
                if Is_Derived_Type (Container_Typ) then
                   Pack := Scope (Root_Type (Container_Typ));

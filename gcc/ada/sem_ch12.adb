@@ -519,19 +519,11 @@ package body Sem_Ch12 is
    procedure Insert_Freeze_Node_For_Instance
      (N      : Node_Id;
       F_Node : Node_Id);
-   --  N is an instance and F_Node is its corresponding freeze node. Insert
-   --  F_Node depending on the enclosing context and placement of N in the
-   --  following manner:
-   --
-   --    1) N is a package instance - Attempt to insert the freeze node before
-   --    a source package or subprogram body which follows immediately after N.
-   --    If no such body is found, perform the actions in 2).
-   --
-   --    2) N is a subprogram instance or a package instance not followed by
-   --    a source body - Insert the freeze node at the end of the declarations
-   --    list which contains N. If N is in the visible part of an enclosing
-   --    package declaration, the freeze node is inserted at the end of the
-   --    private declarations.
+   --  N denotes a package or a subprogram instantiation and F_Node is the
+   --  associated freeze node. Insert the freeze node before the first source
+   --  body which follows immediately after N. If no such body is found, the
+   --  freeze node is inserted at the end of the declarative region which
+   --  contains N.
 
    procedure Freeze_Subprogram_Body
      (Inst_Node : Node_Id;
@@ -7586,7 +7578,6 @@ package body Sem_Ch12 is
             elsif Nkind (Parent (N)) = N_Package_Body
               and then In_Same_Declarative_Part (Freeze_Node (Par), Parent (N))
             then
-
                declare
                   Enclosing : constant Entity_Id :=
                                 Corresponding_Spec (Parent (N));
@@ -7596,7 +7587,30 @@ package body Sem_Ch12 is
                   Ensure_Freeze_Node (Enclosing);
 
                   if not Is_List_Member (Freeze_Node (Enclosing)) then
-                     Insert_After (Freeze_Node (Par), Freeze_Node (Enclosing));
+
+                     --  The enclosing context is a subunit, insert the freeze
+                     --  node after the stub.
+
+                     if Nkind (Parent (Parent (N))) = N_Subunit then
+                        Insert_Freeze_Node_For_Instance
+                          (Corresponding_Stub (Parent (Parent (N))),
+                           Freeze_Node (Enclosing));
+
+                     --  The parent instance has been frozen before the body of
+                     --  the enclosing package, insert the freeze node after
+                     --  the body.
+
+                     elsif List_Containing (Freeze_Node (Par)) =
+                           List_Containing (Parent (N))
+                       and then Sloc (Freeze_Node (Par)) < Sloc (Parent (N))
+                     then
+                        Insert_Freeze_Node_For_Instance
+                          (Parent (N), Freeze_Node (Enclosing));
+
+                     else
+                        Insert_After
+                          (Freeze_Node (Par), Freeze_Node (Enclosing));
+                     end if;
                   end if;
                end;
 

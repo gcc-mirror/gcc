@@ -580,8 +580,10 @@ package Prj is
                            Include_Compatible_Languages => No_Name_List,
                            Compiler_Driver              => No_File,
                            Compiler_Driver_Path         => null,
-                           Compiler_Leading_Required_Switches  => No_Name_List,
-                           Compiler_Trailing_Required_Switches => No_Name_List,
+                           Compiler_Leading_Required_Switches
+                                                        => No_Name_List,
+                           Compiler_Trailing_Required_Switches
+                                                        => No_Name_List,
                            Multi_Unit_Switches          => No_Name_List,
                            Multi_Unit_Object_Separator  => ' ',
                            Path_Syntax                  => Canonical,
