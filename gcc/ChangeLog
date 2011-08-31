@@ -1,5 +1,13 @@
 2011-08-31  Martin Jambor  <mjambor@suse.cz>
 
+	PR middle-end/49886
+	* ipa-inline-analysis.c (compute_inline_parameters): Set
+	can_change_signature of noes with typde attributes.
+	* ipa-split.c (split_function): Do not skip any arguments if
+	can_change_signature is set.
+
+2011-08-31  Martin Jambor  <mjambor@suse.cz>
+
 	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Alias
 	check removed.
 
