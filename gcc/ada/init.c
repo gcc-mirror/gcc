@@ -358,7 +358,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 	  ((volatile char *)
 	   ((long) si->si_addr & - getpagesize ()))[getpagesize ()];
 	  exception = &storage_error;
-	  msg = "stack overflow (or erroneous memory access)";
+	  msg = "stack overflow or erroneous memory access";
 	}
       break;
 
@@ -644,7 +644,7 @@ __gnat_error_handler (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *ucontext)
 	 that this is quite acceptable, since a "real" SIGSEGV can only
 	 occur as the result of an erroneous program.  */
       exception = &storage_error;
-      msg = "stack overflow (or erroneous memory access)";
+      msg = "stack overflow or erroneous memory access";
       break;
 
     case SIGBUS:
@@ -824,7 +824,7 @@ __gnat_error_handler (int sig, siginfo_t *reason, void *uc ATTRIBUTE_UNUSED)
 		 the stack into a guard page, not an attempt to
 		 write to .text or something.  */
 	  exception = &storage_error;
-	  msg = "SIGSEGV: (stack overflow or erroneous memory access)";
+	  msg = "SIGSEGV: stack overflow or erroneous memory access";
 	}
       else
 	{
@@ -1022,7 +1022,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext ATTRIBUTE_UNUSED)
 	  ((volatile char *)
 	   ((long) si->si_addr & - getpagesize ()))[getpagesize ()];
 	  exception = &storage_error;
-	  msg = "stack overflow (or erroneous memory access)";
+	  msg = "stack overflow or erroneous memory access";
 	}
       break;
 
@@ -1421,7 +1421,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 	else
 	  {
 	    exception = &storage_error;
-	    msg = "stack overflow (or erroneous memory access)";
+	    msg = "stack overflow or erroneous memory access";
 	  }
 	__gnat_adjust_context_for_raise (SS$_ACCVIO, (void *)mechargs);
 	break;

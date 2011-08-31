@@ -44,8 +44,7 @@ package Ada.Containers.Bounded_Doubly_Linked_Lists is
    pragma Pure;
    pragma Remote_Types;
 
-   type List (Capacity : Count_Type) is tagged private
-   with
+   type List (Capacity : Count_Type) is tagged private with
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
@@ -59,6 +58,7 @@ package Ada.Containers.Bounded_Doubly_Linked_Lists is
    Empty_List : constant List;
 
    No_Element : constant Cursor;
+
    function Has_Element (Position : Cursor) return Boolean;
 
    package List_Iterator_Interfaces is new
@@ -140,10 +140,13 @@ package Ada.Containers.Bounded_Doubly_Linked_Lists is
 
    procedure Reverse_Elements (Container : in out List);
 
-   function Iterate (Container : List)
+   function Iterate
+     (Container : List)
       return List_Iterator_Interfaces.Reversible_Iterator'class;
 
-   function Iterate (Container : List; Start : Cursor)
+   function Iterate
+     (Container : List;
+      Start     : Cursor)
       return List_Iterator_Interfaces.Reversible_Iterator'class;
 
    procedure Swap

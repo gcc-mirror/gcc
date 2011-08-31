@@ -3249,7 +3249,7 @@ package body Exp_Ch5 is
                    Subtype_Mark  => New_Occurrence_Of (Iter_Type, Loc),
                    Name          => Relocate_Node (Name (I_Spec)));
 
-               --  Create declaration for cursor.
+               --  Create declaration for cursor
 
                Decl2 :=
                  Make_Object_Declaration (Loc,

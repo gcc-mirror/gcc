@@ -82,6 +82,7 @@ procedure Put_SCOs is
 
    procedure Write_SCO_Initiate (SU : SCO_Unit_Index) is
       SUT : SCO_Unit_Table_Entry renames SCO_Unit_Table.Table (SU);
+
    begin
       if Current_SCO_Unit /= SU then
          Write_Info_Initiate ('C');
@@ -126,7 +127,7 @@ begin
                T            : SCO_Table_Entry renames SCO_Table.Table (Start);
                Continuation : Boolean;
 
-               Ctr          : Nat;
+               Ctr : Nat;
                --  Counter for statement entries
 
             begin

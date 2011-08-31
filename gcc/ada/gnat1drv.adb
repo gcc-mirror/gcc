@@ -842,6 +842,10 @@ begin
             Tree_Gen;
          end if;
 
+         if CodePeer_Mode then
+            Comperr.Delete_SCIL_Files;
+         end if;
+
          Errout.Finalize (Last_Call => True);
          Exit_Program (E_Errors);
       end if;

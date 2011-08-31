@@ -3949,13 +3949,13 @@ package body Exp_Ch4 is
                      --  Types derived from [Limited_]Controlled are the only
                      --  ones considered since they have fields Prev and Next.
 
-                     if VM_Target /= No_VM
-                       and then Is_Controlled (T)
-                     then
-                        Insert_Action (N,
-                          Make_Attach_Call
-                            (Obj_Ref => New_Copy_Tree (Init_Arg1),
-                             Ptr_Typ => PtrT));
+                     if VM_Target /= No_VM then
+                        if Is_Controlled (T) then
+                           Insert_Action (N,
+                             Make_Attach_Call
+                               (Obj_Ref => New_Copy_Tree (Init_Arg1),
+                                Ptr_Typ => PtrT));
+                        end if;
 
                      --  Default case, generate:
 

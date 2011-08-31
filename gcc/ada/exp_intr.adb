@@ -964,19 +964,15 @@ package body Exp_Intr is
            Make_Block_Statement (Loc,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (
-                   Make_Final_Call (
-                     Obj_Ref => Deref,
-                     Typ     => Desig_T)),
+                 Statements         => New_List (
+                   Make_Final_Call (Obj_Ref => Deref, Typ => Desig_T)),
                  Exception_Handlers => New_List (
                    Build_Exception_Handler (Finalizer_Data)))));
 
          --  For .NET/JVM, detach the object from the containing finalization
          --  collection before finalizing it.
 
-         if VM_Target /= No_VM
-           and then Is_Controlled (Desig_T)
-         then
+         if VM_Target /= No_VM and then Is_Controlled (Desig_T) then
             Prepend_To (Final_Code,
               Make_Detach_Call (New_Copy_Tree (Arg)));
          end if;

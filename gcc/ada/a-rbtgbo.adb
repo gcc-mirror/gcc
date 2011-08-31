@@ -63,8 +63,11 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
       Tree.Last   := 0;
       Tree.Root   := 0;
       Tree.Length := 0;
+
+      --  Why are the following commented out with no explanation ???
       --  Tree.Busy
       --  Tree.Lock
+
       Tree.Free   := -1;
    end Clear_Tree;
 
@@ -76,7 +79,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
      (Tree : in out Tree_Type'Class;
       Node : Count_Type)
    is
-
       --  CLR p. 274
 
       X : Count_Type;
@@ -143,7 +145,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
             end if;
 
             if (Left (N (W))  = 0 or else Color (N (Left (N (W)))) = Black)
-                  and then
+                 and then
                (Right (N (W)) = 0 or else Color (N (Right (N (W)))) = Black)
             then
                Set_Color (N (W), Red);
