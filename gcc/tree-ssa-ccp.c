@@ -133,6 +133,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "dbgcnt.h"
 #include "gimple-fold.h"
+#include "params.h"
 
 
 /* Possible lattice values.  */
@@ -1684,6 +1685,51 @@ evaluate_stmt (gimple stmt)
   return val;
 }
 
+/* Detects a vla-related alloca with a constant argument.  Declares fixed-size
+   array and return the address, if found, otherwise returns NULL_TREE.  */
+
+static tree
+fold_builtin_alloca_for_var (gimple stmt)
+{
+  unsigned HOST_WIDE_INT size, threshold, n_elem;
+  tree lhs, arg, block, var, elem_type, array_type;
+  unsigned int align;
+
+  /* Get lhs.  */
+  lhs = gimple_call_lhs (stmt);
+  if (lhs == NULL_TREE)
+    return NULL_TREE;
+
+  /* Detect constant argument.  */
+  arg = get_constant_value (gimple_call_arg (stmt, 0));
+  if (arg == NULL_TREE || TREE_CODE (arg) != INTEGER_CST
+      || !host_integerp (arg, 1))
+    return NULL_TREE;
+  size = TREE_INT_CST_LOW (arg);
+
+  /* Heuristic: don't fold large vlas.  */
+  threshold = (unsigned HOST_WIDE_INT)PARAM_VALUE (PARAM_LARGE_STACK_FRAME);
+  /* In case a vla is declared at function scope, it has the same lifetime as a
+     declared array, so we allow a larger size.  */
+  block = gimple_block (stmt);
+  if (!(cfun->after_inlining
+        && TREE_CODE (BLOCK_SUPERCONTEXT (block)) == FUNCTION_DECL))
+    threshold /= 10;
+  if (size > threshold)
+    return NULL_TREE;
+
+  /* Declare array.  */
+  elem_type = build_nonstandard_integer_type (BITS_PER_UNIT, 1);
+  n_elem = size * 8 / BITS_PER_UNIT;
+  align = MIN (size * 8, BIGGEST_ALIGNMENT);
+  array_type = build_array_type_nelts (elem_type, n_elem);
+  var = create_tmp_var (array_type, NULL);
+  DECL_ALIGN (var) = align;
+
+  /* Fold alloca to the address of the array.  */
+  return fold_convert (TREE_TYPE (lhs), build_fold_addr_expr (var));
+}
+
 /* Fold the stmt at *GSI with CCP specific information that propagating
    and regular folding does not catch.  */
 
@@ -1751,6 +1797,20 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	   for normal calls does not apply.  */
 	if (gimple_call_internal_p (stmt))
 	  return false;
+
+        /* The heuristic of fold_builtin_alloca_for_var differs before and after
+           inlining, so we don't require the arg to be changed into a constant
+           for folding, but just to be constant.  */
+        if (gimple_call_alloca_for_var_p (stmt))
+          {
+            tree new_rhs = fold_builtin_alloca_for_var (stmt);
+            bool res;
+            if (new_rhs == NULL_TREE)
+              return false;
+            res = update_call_from_tree (gsi, new_rhs);
+            gcc_assert (res);
+            return true;
+          }
 
 	/* Propagate into the call arguments.  Compared to replace_uses_in
 	   this can use the argument slot types for type verification

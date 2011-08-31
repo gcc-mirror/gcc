@@ -1,3 +1,11 @@
+2011-08-31  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/43513
+	* Makefile.in (tree-ssa-ccp.o): Add $(PARAMS_H) to rule.
+	* tree-ssa-ccp.c (params.h): Include.
+	(fold_builtin_alloca_for_var): New function.
+	(ccp_fold_stmt): Use fold_builtin_alloca_for_var.
+
 2011-08-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_valid_target_attribute_inner_p):
