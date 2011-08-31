@@ -99,6 +99,7 @@ package body System.Tasking is
       Elaborated       : Access_Boolean;
       Base_Priority    : System.Any_Priority;
       Base_CPU         : System.Multiprocessors.CPU_Range;
+      Domain           : Dispatching_Domain_Access;
       Task_Info        : System.Task_Info.Task_Info_Type;
       Stack_Size       : System.Parameters.Size_Type;
       T                : Task_Id;
@@ -121,6 +122,7 @@ package body System.Tasking is
       T.Common.Parent                   := Parent;
       T.Common.Base_Priority            := Base_Priority;
       T.Common.Base_CPU                 := Base_CPU;
+      T.Common.Domain                   := Domain;
       T.Common.Current_Priority         := 0;
       T.Common.Protected_Action_Nesting := 0;
       T.Common.Call                     := null;
@@ -209,7 +211,7 @@ package body System.Tasking is
       T := STPO.New_ATCB (0);
       Initialize_ATCB
         (null, null, Null_Address, Null_Task, null, Base_Priority, Base_CPU,
-         Task_Info.Unspecified_Task_Info, 0, T, Success);
+         null, Task_Info.Unspecified_Task_Info, 0, T, Success);
       pragma Assert (Success);
 
       STPO.Initialize (T);

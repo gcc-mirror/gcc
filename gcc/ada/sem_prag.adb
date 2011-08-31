@@ -7866,6 +7866,54 @@ package body Sem_Prag is
             end if;
          end Discard_Names;
 
+         ------------------------
+         -- Dispatching_Domain --
+         ------------------------
+
+         --  pragma Dispatching_Domain (EXPRESSION);
+
+         when Pragma_Dispatching_Domain => Dispatching_Domain : declare
+            P   : constant Node_Id := Parent (N);
+            Arg : Node_Id;
+
+         begin
+            Ada_2012_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+
+            --  This pragma is born obsolete, but not the aspect
+
+            if not From_Aspect_Specification (N) then
+               Check_Restriction
+                 (No_Obsolescent_Features, Pragma_Identifier (N));
+            end if;
+
+            if Nkind (P) = N_Task_Definition then
+               Arg := Get_Pragma_Arg (Arg1);
+
+               --  The expression must be analyzed in the special manner
+               --  described in "Handling of Default and Per-Object
+               --  Expressions" in sem.ads.
+
+               Preanalyze_Spec_Expression (Arg, RTE (RE_Dispatching_Domain));
+
+            --  Anything else is incorrect
+
+            else
+               Pragma_Misplaced;
+            end if;
+
+            if Has_Pragma_Dispatching_Domain (P) then
+               Error_Pragma ("duplicate pragma% not allowed");
+            else
+               Set_Has_Pragma_Dispatching_Domain (P, True);
+
+               if Nkind (P) = N_Task_Definition then
+                  Record_Rep_Item (Defining_Identifier (Parent (P)), N);
+               end if;
+            end if;
+         end Dispatching_Domain;
+
          ---------------
          -- Elaborate --
          ---------------
@@ -14462,6 +14510,7 @@ package body Sem_Prag is
       Pragma_Default_Storage_Pool          => -1,
       Pragma_Dimension                     => -1,
       Pragma_Discard_Names                 =>  0,
+      Pragma_Dispatching_Domain            => -1,
       Pragma_Elaborate                     => -1,
       Pragma_Elaborate_All                 => -1,
       Pragma_Elaborate_Body                => -1,

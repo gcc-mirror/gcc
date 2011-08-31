@@ -891,6 +891,18 @@ package body System.Task_Primitives.Operations is
       Adjusted_Stack_Size : size_t;
 
    begin
+      --  Check whether both Dispatching_Domain and CPU are specified for the
+      --  task, and the CPU value is not contained within the range of
+      --  processors for the domain.
+
+      if T.Common.Domain /= null and then
+        (T.Common.Base_CPU not in T.Common.Domain'Range
+         or else not T.Common.Domain (T.Common.Base_CPU))
+      then
+         Succeeded := False;
+         return;
+      end if;
+
       --  Ask for four extra bytes of stack space so that the ATCB pointer can
       --  be stored below the stack limit, plus extra space for the frame of
       --  Task_Wrapper. This is so the user gets the amount of stack requested

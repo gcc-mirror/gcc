@@ -1149,29 +1149,36 @@ package body Sem_Ch13 is
 
                   pragma Assert (not Delay_Required);
 
-               when Aspect_Priority | Aspect_Interrupt_Priority => declare
-                  Pname : Name_Id;
+               when Aspect_Priority           |
+                    Aspect_Interrupt_Priority |
+                    Aspect_Dispatching_Domain =>
+                  declare
+                     Pname : Name_Id;
+                  begin
+                     if A_Id = Aspect_Priority then
+                        Pname := Name_Priority;
 
-               begin
-                  if A_Id = Aspect_Priority then
-                     Pname := Name_Priority;
-                  else
-                     Pname := Name_Interrupt_Priority;
-                  end if;
+                     elsif A_Id = Aspect_Interrupt_Priority then
+                        Pname := Name_Interrupt_Priority;
 
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Pname),
-                      Pragma_Argument_Associations =>
-                        New_List
-                          (Make_Pragma_Argument_Association
-                            (Sloc (Id), Expression => Relocate_Node (Expr))));
+                     else
+                        Pname := Name_Dispatching_Domain;
+                     end if;
 
-                  Set_From_Aspect_Specification (Aitem, True);
+                     Aitem :=
+                       Make_Pragma (Loc,
+                           Pragma_Identifier            =>
+                             Make_Identifier (Sloc (Id), Pname),
+                           Pragma_Argument_Associations =>
+                             New_List
+                               (Make_Pragma_Argument_Association
+                                  (Sloc       => Sloc (Id),
+                                   Expression => Relocate_Node (Expr))));
 
-                  pragma Assert (not Delay_Required);
-               end;
+                     Set_From_Aspect_Specification (Aitem, True);
+
+                     pragma Assert (not Delay_Required);
+                  end;
 
                --  Aspects Pre/Post generate Precondition/Postcondition pragmas
                --  with a first argument that is the expression, and a second
@@ -1490,7 +1497,9 @@ package body Sem_Ch13 is
                      --  protected definition, which we need to create if it's
                      --  not there.
 
-                     when Aspect_Priority | Aspect_Interrupt_Priority =>
+                     when Aspect_Priority           |
+                          Aspect_Interrupt_Priority |
+                          Aspect_Dispatching_Domain =>
                         declare
                            T : Node_Id; -- the type declaration
                            L : List_Id; -- list of decls of task/protected
@@ -1503,7 +1512,9 @@ package body Sem_Ch13 is
                               T := N;
                            end if;
 
-                           if Nkind (T) = N_Protected_Type_Declaration then
+                           if Nkind (T) = N_Protected_Type_Declaration
+                             and then A_Id /= Aspect_Dispatching_Domain
+                           then
                               pragma Assert
                                 (Present (Protected_Definition (T)));
 
@@ -1520,8 +1531,7 @@ package body Sem_Ch13 is
                                        End_Label => Empty));
                               end if;
 
-                              L := Visible_Declarations
-                                     (Task_Definition (T));
+                              L := Visible_Declarations (Task_Definition (T));
 
                            else
                               raise Program_Error;
@@ -5879,6 +5889,9 @@ package body Sem_Ch13 is
 
          when Aspect_Bit_Order =>
             T := RTE (RE_Bit_Order);
+
+         when Aspect_Dispatching_Domain =>
+            T := RTE (RE_Dispatching_Domain);
 
          when Aspect_External_Tag =>
             T := Standard_String;

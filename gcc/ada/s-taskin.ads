@@ -1136,6 +1136,7 @@ package System.Tasking is
       Elaborated       : Access_Boolean;
       Base_Priority    : System.Any_Priority;
       Base_CPU         : System.Multiprocessors.CPU_Range;
+      Domain           : Dispatching_Domain_Access;
       Task_Info        : System.Task_Info.Task_Info_Type;
       Stack_Size       : System.Parameters.Size_Type;
       T                : Task_Id;

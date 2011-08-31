@@ -156,6 +156,7 @@ package Snames is
    Name_uChain                         : constant Name_Id := N + $;
    Name_uController                    : constant Name_Id := N + $;
    Name_uCPU                           : constant Name_Id := N + $;
+   Name_uDispatching_Domain            : constant Name_Id := N + $;
    Name_uEntry_Bodies                  : constant Name_Id := N + $;
    Name_uExpunge                       : constant Name_Id := N + $;
    Name_uFinalizer                     : constant Name_Id := N + $;
@@ -360,6 +361,7 @@ package Snames is
    Name_Detect_Blocking                : constant Name_Id := N + $; -- Ada 05
    Name_Default_Storage_Pool           : constant Name_Id := N + $; -- Ada 12
    Name_Discard_Names                  : constant Name_Id := N + $;
+   Name_Dispatching_Domain             : constant Name_Id := N + $; -- Ada 12
    Name_Elaboration_Checks             : constant Name_Id := N + $; -- GNAT
    Name_Eliminate                      : constant Name_Id := N + $; -- GNAT
    Name_Extend_System                  : constant Name_Id := N + $; -- GNAT
@@ -1523,6 +1525,7 @@ package Snames is
       Pragma_Detect_Blocking,
       Pragma_Default_Storage_Pool,
       Pragma_Discard_Names,
+      Pragma_Dispatching_Domain,
       Pragma_Elaboration_Checks,
       Pragma_Eliminate,
       Pragma_Extend_System,

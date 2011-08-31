@@ -475,6 +475,7 @@ package body System.Tasking.Stages is
       Task_Info         : System.Task_Info.Task_Info_Type;
       CPU               : Integer;
       Relative_Deadline : Ada.Real_Time.Time_Span;
+      Domain            : Dispatching_Domain_Access;
       Num_Entries       : Task_Entry_Index;
       Master            : Master_Level;
       State             : Task_Procedure_Access;
@@ -591,7 +592,7 @@ package body System.Tasking.Stages is
       end if;
 
       Initialize_ATCB (Self_ID, State, Discriminants, P, Elaborated,
-        Base_Priority, Base_CPU, Task_Info, Size, T, Success);
+        Base_Priority, Base_CPU, Domain, Task_Info, Size, T, Success);
 
       if not Success then
          Free (T);
@@ -642,12 +643,13 @@ package body System.Tasking.Stages is
          T.Common.Task_Image_Len := Len;
       end if;
 
-      --  ??? For the moment the task inherits the dispatching domain of the
-      --  parent. It will change when support for the Dispatching_Domain
-      --  aspect will be added, because that will allow setting the domain
-      --  in the spec of the task.
+      --  The task inherits the dispatching domain of the parent only if no
+      --  specific domain has been defined in the spec of the task (using the
+      --  dispatching domain pragma or aspect).
 
-      if T.Common.Activator /= null then
+      if T.Common.Domain /= null then
+         null;
+      elsif T.Common.Activator /= null then
          T.Common.Domain := T.Common.Activator.Common.Domain;
       else
          T.Common.Domain := System.Tasking.System_Domain;

@@ -10422,12 +10422,14 @@ package body Exp_Ch9 is
    --  values of this task. The general form of this type declaration is
 
    --    type taskV (discriminants) is record
-   --      _Task_Id     : Task_Id;
-   --      entry_family : array (bounds) of Void;
-   --      _Priority    : Integer         := priority_expression;
-   --      _Size        : Size_Type       := Size_Type (size_expression);
-   --      _Task_Info   : Task_Info_Type  := task_info_expression;
-   --      _CPU         : Integer         := cpu_range_expression;
+   --      _Task_Id           : Task_Id;
+   --      entry_family       : array (bounds) of Void;
+   --      _Priority          : Integer            := priority_expression;
+   --      _Size              : Size_Type          := size_expression;
+   --      _Task_Info         : Task_Info_Type     := task_info_expression;
+   --      _CPU               : Integer            := cpu_range_expression;
+   --      _Relative_Deadline : Time_Span          := time_span_expression;
+   --      _Domain            : Dispatching_Domain := dd_expression;
    --    end record;
 
    --  The discriminants are present only if the corresponding task type has
@@ -10470,6 +10472,11 @@ package body Exp_Ch9 is
    --  pragma appears in the task definition. The expression captures the
    --  argument that was present in the pragma, and is used to provide the
    --  Relative_Deadline parameter to the call to Create_Task.
+
+   --  The _Domain field is present only if a Dispatching_Domain pragma or
+   --  aspect appears in the task definition. The expression captures the
+   --  argument that was present in the pragma or aspect, and is used to
+   --  provide the Dispatching_Domain parameter to the call to Create_Task.
 
    --  When a task is declared, an instance of the task value record is
    --  created. The elaboration of this declaration creates the correct bounds
@@ -10831,6 +10838,36 @@ package body Exp_Ch9 is
                      Pragma_Argument_Associations (
                        Find_Task_Or_Protected_Pragma
                          (Taskdef, Name_Relative_Deadline))))))));
+      end if;
+
+      --  Add the _Dispatching_Domain component if a Dispatching_Domain pragma
+      --  or aspect is present. If we are using a restricted run time this
+      --  component will not be added (dispatching domains are not allowed by
+      --  the Ravenscar profile).
+
+      if not Restricted_Profile
+        and then Present (Taskdef)
+        and then Has_Pragma_Dispatching_Domain (Taskdef)
+      then
+         Append_To (Cdecls,
+           Make_Component_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier (Loc, Name_uDispatching_Domain),
+
+             Component_Definition =>
+               Make_Component_Definition (Loc,
+                 Aliased_Present    => False,
+                 Subtype_Indication =>
+                   New_Reference_To
+                     (RTE (RE_Dispatching_Domain_Access), Loc)),
+
+             Expression =>
+               Unchecked_Convert_To (RTE (RE_Dispatching_Domain_Access),
+                 Relocate_Node (
+                   Expression (First (
+                     Pragma_Argument_Associations (
+                       Find_Task_Or_Protected_Pragma
+                         (Taskdef, Name_Dispatching_Domain))))))));
       end if;
 
       Insert_After (Size_Decl, Rec_Decl);
@@ -12780,6 +12817,31 @@ package body Exp_Ch9 is
          else
             Append_To (Args,
               New_Reference_To (RTE (RE_Time_Span_Zero), Loc));
+         end if;
+
+         --  Dispatching_Domain parameter. If no Dispatching_Domain pragma or
+         --  aspect is present, then the dispatching domain is null. If a
+         --  pragma or aspect is present, then the dispatching domain is taken
+         --  from the _Dispatching_Domain field of the task value record,
+         --  which was set from the pragma value. Note that this parameter
+         --  must not be generated for the restricted profiles since Ravenscar
+         --  does not allow dispatching domains.
+
+         --  Case where pragma or aspect Dispatching_Domain applies: use given
+         --  value.
+
+         if Present (Tdef) and then Has_Pragma_Dispatching_Domain (Tdef) then
+            Append_To (Args,
+              Make_Selected_Component (Loc,
+                Prefix        =>
+                  Make_Identifier (Loc, Name_uInit),
+                Selector_Name =>
+                  Make_Identifier (Loc, Name_uDispatching_Domain)));
+
+         --  No pragma or aspect Dispatching_Domain apply to the task
+
+         else
+            Append_To (Args, Make_Null (Loc));
          end if;
 
          --  Number of entries. This is an expression of the form:

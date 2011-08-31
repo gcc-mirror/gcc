@@ -2058,7 +2058,7 @@ package body Sem_Ch5 is
                         end if;
 
                         --  Set kind of loop parameter, which may be used in
-                        --  the subsequent analysis of of the condition in a
+                        --  the subsequent analysis of the condition in a
                         --  quantified expression.
 
                         Set_Ekind (Id, E_Loop_Parameter);

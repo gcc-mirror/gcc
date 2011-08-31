@@ -976,6 +976,18 @@ package body System.Task_Primitives.Operations is
       use System.Task_Info;
 
    begin
+      --  Check whether both Dispatching_Domain and CPU are specified for the
+      --  task, and the CPU value is not contained within the range of
+      --  processors for the domain.
+
+      if T.Common.Domain /= null and then
+        (T.Common.Base_CPU not in T.Common.Domain'Range
+         or else not T.Common.Domain (T.Common.Base_CPU))
+      then
+         Succeeded := False;
+         return;
+      end if;
+
       Adjusted_Stack_Size := Interfaces.C.size_t (Stack_Size + Page_Size);
 
       --  Since the initial signal mask of a thread is inherited from the
