@@ -1,3 +1,8 @@
+2011-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/chrono (operator*(const _Rep1&, const duration<>&)):
+	Fix order of template parameters per LWG 2004.
+
 2011-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_iterator.h (make_move_iterator): Implement DR2061.
