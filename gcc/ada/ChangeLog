@@ -8,7 +8,14 @@
 
 	* sem_ch8.adb (Analyze_Subprogram_Renaming): Refine expander test in
 	full-expander test.
-	Minor reformatting, renaming ALFA in Alfa (we dropped acronym)
+	* alfa.adb, alfa.ads, alfa_test.adb, ali.adb, debug.adb, errout.adb,
+	errout.ads, erroutc.adb, expander.adb, exp_ch4.adb, exp_ch7.adb,
+	freeze.adb, get_alfa.adb, get_alfa.ads, gnat1drv.adb, lib-writ.adb,
+	lib-writ.ads, lib-xref.adb, lib-xref.ads, lib-xref-alfa.adb, opt.adb,
+	opt.ads, put_alfa.adb, put_alfa.ads, restrict.adb, sem_ch12.adb,
+	sem_ch13.adb, sem_ch3.adb, sem_ch4.adb, sem_ch5.adb, sem_ch6.adb,
+	sem_prag.adb, sem_res.adb, sem_util.adb: Minor reformatting, renaming
+	ALFA in Alfa (we dropped acronym).
 	* einfo.adb (Primitive_Operations): Correctly return list of primitive
 	operations in a case where it returned previously No_Elist.
 
