@@ -162,12 +162,12 @@ package body Prj.Conf is
                --  configuration list.
 
                declare
-                  Conf_List : String_List_Id := Conf_Attr.Value.Values;
-                  Conf_Elem : String_Element;
                   User_List : constant String_List_Id :=
                                 User_Attr.Value.Values;
-                  New_List : String_List_Id;
-                  New_Elem : String_Element;
+                  Conf_List : String_List_Id := Conf_Attr.Value.Values;
+                  Conf_Elem : String_Element;
+                  New_List  : String_List_Id;
+                  New_Elem  : String_Element;
 
                begin
                   --  Create new list
@@ -525,7 +525,7 @@ package body Prj.Conf is
             if Proj.Project.Qualifier = Aggregate then
                declare
                   List : Aggregated_Project_List :=
-                    Proj.Project.Aggregated_Projects;
+                           Proj.Project.Aggregated_Projects;
                begin
                   while List /= null loop
                      Debug_Output
@@ -549,12 +549,13 @@ package body Prj.Conf is
    ------------------
 
    function Check_Target
-     (Config_File  : Project_Id;
+     (Config_File        : Project_Id;
       Autoconf_Specified : Boolean;
-      Project_Tree : Prj.Project_Tree_Ref;
-      Target       : String := "") return Boolean
+      Project_Tree       : Prj.Project_Tree_Ref;
+      Target             : String := "") return Boolean
    is
-      Shared : constant Shared_Project_Tree_Data_Access := Project_Tree.Shared;
+      Shared   : constant Shared_Project_Tree_Data_Access :=
+                   Project_Tree.Shared;
       Variable : constant Variable_Value :=
                    Value_Of
                      (Name_Target, Config_File.Decl.Attributes, Shared);
@@ -712,6 +713,7 @@ package body Prj.Conf is
       -------------------------
 
       function Get_Config_Switches return Argument_List_Access is
+
          package Language_Htable is new GNAT.HTable.Simple_HTable
            (Header_Num => Prj.Header_Num,
             Element    => Name_Id,
@@ -730,6 +732,10 @@ package body Prj.Conf is
             With_State : in out Integer);
          --  Add all --config switches for this project. This is also called
          --  for aggregate projects.
+
+         -------------------------------------
+         -- Add_Config_Switches_For_Project --
+         -------------------------------------
 
          procedure Add_Config_Switches_For_Project
            (Project    : Project_Id;
@@ -828,9 +834,9 @@ package body Prj.Conf is
 
       begin
          For_Every_Imported_Project
-           (By         => Project,
-            Tree       => Project_Tree,
-            With_State => Dummy,
+           (By                 => Project,
+            Tree               => Project_Tree,
+            With_State         => Dummy,
             Include_Aggregated => True);
 
          Name  := Language_Htable.Get_First;
@@ -859,10 +865,10 @@ package body Prj.Conf is
 
             declare
                Config_Command : constant String :=
-                 "--config=" & Get_Name_String (Name);
+                                  "--config=" & Get_Name_String (Name);
 
                Runtime_Name   : constant String :=
-                 Runtime_Name_For (Name);
+                                  Runtime_Name_For (Name);
 
             begin
                if Variable = Nil_Variable_Value
@@ -876,7 +882,7 @@ package body Prj.Conf is
 
                   declare
                      Compiler_Command : constant String :=
-                       Get_Name_String (Variable.Value);
+                                          Get_Name_String (Variable.Value);
 
                   begin
                      if Is_Absolute_Path (Compiler_Command) then
@@ -1245,8 +1251,8 @@ package body Prj.Conf is
       end if;
 
       if Config_File_Path = null then
-         if (not Allow_Automatic_Generation) and then
-            Config_File_Name /= ""
+         if (not Allow_Automatic_Generation)
+           and then Config_File_Name /= ""
          then
             Raise_Invalid_Config
               ("could not locate main configuration project "
@@ -1386,18 +1392,18 @@ package body Prj.Conf is
 
       Prj.Initialize (Project_Tree);
 
-      Main_Project      := No_Project;
+      Main_Project := No_Project;
       Automatically_Generated := False;
 
       Prj.Part.Parse
-        (In_Tree                => Project_Node_Tree,
-         Project                => User_Project_Node,
-         Project_File_Name      => Project_File_Name,
-         Errout_Handling        => Prj.Part.Finalize_If_Error,
-         Packages_To_Check      => Packages_To_Check,
-         Current_Directory      => Current_Directory,
-         Is_Config_File         => False,
-         Env                    => Env);
+        (In_Tree           => Project_Node_Tree,
+         Project           => User_Project_Node,
+         Project_File_Name => Project_File_Name,
+         Errout_Handling   => Prj.Part.Finalize_If_Error,
+         Packages_To_Check => Packages_To_Check,
+         Current_Directory => Current_Directory,
+         Is_Config_File    => False,
+         Env               => Env);
 
       if User_Project_Node = Empty_Node then
          User_Project_Node := Empty_Node;
@@ -1442,9 +1448,10 @@ package body Prj.Conf is
       On_Load_Config             : Config_File_Hook := null;
       Reset_Tree                 : Boolean := True)
    is
-      Shared : constant Shared_Project_Tree_Data_Access := Project_Tree.Shared;
+      Shared              : constant Shared_Project_Tree_Data_Access :=
+                              Project_Tree.Shared;
       Main_Config_Project : Project_Id;
-      Success : Boolean;
+      Success             : Boolean;
 
    begin
       Main_Project := No_Project;
@@ -1468,10 +1475,10 @@ package body Prj.Conf is
          if not Is_Absolute_Path (Project_Tree.Source_Info_File_Name.all) then
             declare
                Obj_Dir : constant Variable_Value :=
-                 Value_Of
-                   (Name_Object_Dir,
-                    Main_Project.Decl.Attributes,
-                    Shared);
+                           Value_Of
+                             (Name_Object_Dir,
+                              Main_Project.Decl.Attributes,
+                              Shared);
 
             begin
                if Obj_Dir = Nil_Variable_Value or else Obj_Dir.Default then
@@ -1523,16 +1530,16 @@ package body Prj.Conf is
       --  Finish processing the user's project
 
       Prj.Proc.Process_Project_Tree_Phase_2
-        (In_Tree                    => Project_Tree,
-         Project                    => Main_Project,
-         Success                    => Success,
-         From_Project_Node          => User_Project_Node,
-         From_Project_Node_Tree     => Project_Node_Tree,
-         Env                        => Env);
+        (In_Tree                => Project_Tree,
+         Project                => Main_Project,
+         Success                => Success,
+         From_Project_Node      => User_Project_Node,
+         From_Project_Node_Tree => Project_Node_Tree,
+         Env                    => Env);
 
       if Success then
-         if Project_Tree.Source_Info_File_Name /= null and then
-            not Project_Tree.Source_Info_File_Exists
+         if Project_Tree.Source_Info_File_Name /= null
+           and then not Project_Tree.Source_Info_File_Exists
          then
             Write_Source_Info_File (Project_Tree);
          end if;

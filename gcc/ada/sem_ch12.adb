@@ -10418,11 +10418,15 @@ package body Sem_Ch12 is
            and then not Is_Limited_Type (A_Gen_T)
            and then Ada_Version >= Ada_2012
          then
-            Error_Msg_NE
-              ("actual for non-limited & cannot be a limited type", Actual,
-               Gen_T);
-            Explain_Limited_Type (Act_T, Actual);
-            Abandon_Instantiation (Actual);
+            if In_Instance then
+               null;
+            else
+               Error_Msg_NE
+                 ("actual for non-limited & cannot be a limited type", Actual,
+                  Gen_T);
+               Explain_Limited_Type (Act_T, Actual);
+               Abandon_Instantiation (Actual);
+            end if;
          end if;
       end Validate_Derived_Type_Instance;
 
@@ -10556,11 +10560,15 @@ package body Sem_Ch12 is
          if Is_Limited_Type (Act_T)
            and then not Is_Limited_Type (A_Gen_T)
          then
-            Error_Msg_NE
-              ("actual for non-limited & cannot be a limited type", Actual,
-               Gen_T);
-            Explain_Limited_Type (Act_T, Actual);
-            Abandon_Instantiation (Actual);
+            if In_Instance then
+               null;
+            else
+               Error_Msg_NE
+                 ("actual for non-limited & cannot be a limited type", Actual,
+                  Gen_T);
+               Explain_Limited_Type (Act_T, Actual);
+               Abandon_Instantiation (Actual);
+            end if;
 
          elsif Known_To_Have_Preelab_Init (A_Gen_T)
            and then not Has_Preelaborable_Initialization (Act_T)

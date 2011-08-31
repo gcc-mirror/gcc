@@ -890,12 +890,15 @@ package body System.Task_Primitives.Operations is
    is
       Adjusted_Stack_Size : size_t;
 
+      use type System.Multiprocessors.CPU_Range;
+
    begin
       --  Check whether both Dispatching_Domain and CPU are specified for the
       --  task, and the CPU value is not contained within the range of
       --  processors for the domain.
 
       if T.Common.Domain /= null and then
+        T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU and then
         (T.Common.Base_CPU not in T.Common.Domain'Range
          or else not T.Common.Domain (T.Common.Base_CPU))
       then

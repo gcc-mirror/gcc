@@ -1,5 +1,42 @@
 2011-08-31  Jose Ruiz  <ruiz@adacore.com>
 
+	* s-taprop-vxworks.adb, s-taprop-mingw.adb, s-taprop-linux.adb,
+	s-taprop-solaris.adb (Create_Task): Not_A_Specific_CPU can be assigned
+	to any dispatching domain.
+
+2011-08-31  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
+2011-08-31  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Get_Generic_Parent_Type): Don't query Subtype_Indication
+	on nodes for which it is not defined.
+	(Is_Non_Overriding_Operation): Exit the loop when we find a generic
+	parent type.
+
+2011-08-31  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Process_Full_View): Disable legality check if
+	In_Instance, to avoid spurious errors.
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Disable legality check
+	if In_Instance, to avoid spurious errors.
+
+2011-08-31  Pascal Obry  <obry@adacore.com>
+
+	* a-direct.adb: Use Dir_Seps everywhere to properly handle all
+	directory speparators.
+	(Compose): Use Dir_Seps to handle both forms.
+	(Create_Path): Use Dir_Seps instead of explicit check, no semantic
+	changes.
+	(Extension): Use Dir_Seps to handle both forms.
+
+2011-08-31  Pascal Obry  <obry@adacore.com>
+
+	* prj-conf.adb: Minor reformatting.
+
+2011-08-31  Jose Ruiz  <ruiz@adacore.com>
+
 	* aspects.ads (Aspect_Id, Aspect_Argument, Aspect_Names): Add the
 	dispatching domain aspect.
 	* aspects.adb (Canonical_Aspect): Add entry for the dispatching domain
