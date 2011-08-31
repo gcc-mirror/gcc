@@ -1,3 +1,8 @@
+2011-08-31  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (extract_muldiv_1): Remove bogus TYPE_IS_SIZETYPE
+	special-casing.
+
 2011-08-31  Marc Glisse  <marc.glisse@inria.fr>
 
 	* doc/generic.texi (Types for C++): CP_TYPE_QUALS -> cp_type_quals.
