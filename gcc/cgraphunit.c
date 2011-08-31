@@ -2373,9 +2373,7 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 #endif
 
   if (e->indirect_unknown_callee
-      || decl == e->callee->decl
-      /* Don't update call from same body alias to the real function.  */
-      || (decl && cgraph_get_node (decl) == cgraph_get_node (e->callee->decl)))
+      || decl == e->callee->decl)
     return e->call_stmt;
 
 #ifdef ENABLE_CHECKING

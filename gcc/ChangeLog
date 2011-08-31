@@ -1,3 +1,8 @@
+2011-08-31  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Alias
+	check removed.
+
 2011-08-31  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (extract_muldiv_1): Remove bogus TYPE_IS_SIZETYPE
