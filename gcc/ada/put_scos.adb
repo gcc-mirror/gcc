@@ -28,7 +28,11 @@ with SCOs;    use SCOs;
 with Snames;  use Snames;
 
 procedure Put_SCOs is
-   Ctr : Nat;
+   Current_SCO_Unit : SCO_Unit_Index := 0;
+   --  Initial value must not be a valid unit index
+
+   procedure Write_SCO_Initiate (SU : SCO_Unit_Index);
+   --  Start SCO line for unit SU, also emitting SCO unit header if necessary
 
    procedure Output_Range (T : SCO_Table_Entry);
    --  Outputs T.From and T.To in line:col-line:col format
@@ -72,10 +76,34 @@ procedure Put_SCOs is
       end loop;
    end Output_String;
 
+   ------------------------
+   -- Write_SCO_Initiate --
+   ------------------------
+
+   procedure Write_SCO_Initiate (SU : SCO_Unit_Index) is
+      SUT : SCO_Unit_Table_Entry renames SCO_Unit_Table.Table (SU);
+   begin
+      if Current_SCO_Unit /= SU then
+         Write_Info_Initiate ('C');
+         Write_Info_Char (' ');
+         Write_Info_Nat (SUT.Dep_Num);
+         Write_Info_Char (' ');
+
+         Output_String (SUT.File_Name.all);
+
+         Write_Info_Terminate;
+
+         Current_SCO_Unit := SU;
+      end if;
+
+      Write_Info_Initiate ('C');
+   end Write_SCO_Initiate;
+
 --  Start of processing for Put_SCOs
 
 begin
-   --  Loop through entries in SCO_Unit_Table
+   --  Loop through entries in SCO_Unit_Table. Note that entry 0 is by
+   --  convention present but unused.
 
    for U in 1 .. SCO_Unit_Table.Last loop
       declare
@@ -88,19 +116,6 @@ begin
          Start := SUT.From;
          Stop  := SUT.To;
 
-         --  Write unit header (omitted if no SCOs are generated for this unit)
-
-         if Start <= Stop then
-            Write_Info_Initiate ('C');
-            Write_Info_Char (' ');
-            Write_Info_Nat (SUT.Dep_Num);
-            Write_Info_Char (' ');
-
-            Output_String (SUT.File_Name.all);
-
-            Write_Info_Terminate;
-         end if;
-
          --  Loop through SCO entries for this unit
 
          loop
@@ -110,6 +125,9 @@ begin
             Output_SCO_Line : declare
                T            : SCO_Table_Entry renames SCO_Table.Table (Start);
                Continuation : Boolean;
+
+               Ctr          : Nat;
+               --  Counter for statement entries
 
             begin
                case T.C1 is
@@ -127,7 +145,7 @@ begin
                         end if;
 
                         if Ctr = 0 then
-                           Write_Info_Initiate ('C');
+                           Write_SCO_Initiate (U);
                            if not Continuation then
                               Write_Info_Char ('S');
                               Continuation := True;
@@ -204,7 +222,7 @@ begin
                      --  For all other cases output decision line
 
                      else
-                        Write_Info_Initiate ('C');
+                        Write_SCO_Initiate (U);
                         Write_Info_Char (T.C1);
 
                         if T.C1 /= 'X' then
