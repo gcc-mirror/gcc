@@ -1,5 +1,14 @@
 2011-08-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/i386/i386.md: Use (match_test ...) for attribute tests.
+	* config/i386/mmx.md: Likewise.
+	* config/i386/sse.md: Likewise.
+	* config/i386/predicates.md (call_insn_operand): Use
+	(not (match_test "...")) instead of (match_test "!...")
+	* config/i386/constraints.md (w): Likewise.
+
+2011-08-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/md.texi: Describe the use of match_tests in attribute tests.
 	* rtl.def (MATCH_TEST): Update commentary.
 	* genattrtab.c (attr_copy_rtx, check_attr_test, clear_struct_flag)
