@@ -38,7 +38,6 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during tasking
 --  operations. It causes infinite loops and other problems.
 
-with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 
 with Interfaces.C;
@@ -113,6 +112,10 @@ package body System.Task_Primitives.Operations is
    Abort_Handler_Installed : Boolean := False;
    --  True if a handler for the abort signal is installed
 
+   Null_Thread_Id : constant pthread_t := pthread_t'Last;
+   --  Constant to indicate that the thread identifier has not yet been
+   --  initialized.
+
    --------------------
    -- Local Packages --
    --------------------
@@ -154,12 +157,7 @@ package body System.Task_Primitives.Operations is
    -- Local Subprograms --
    -----------------------
 
-   subtype unsigned_long is Interfaces.C.unsigned_long;
-
    procedure Abort_Handler (signo : Signal);
-
-   function To_pthread_t is new Ada.Unchecked_Conversion
-     (unsigned_long, System.OS_Interface.pthread_t);
 
    -------------------
    -- Abort_Handler --
@@ -773,7 +771,7 @@ package body System.Task_Primitives.Operations is
       Next_Serial_Number := Next_Serial_Number + 1;
       pragma Assert (Next_Serial_Number /= 0);
 
-      Self_ID.Common.LL.Thread := To_pthread_t (-1);
+      Self_ID.Common.LL.Thread := Null_Thread_Id;
 
       if not Single_Lock then
          Result := pthread_mutex_init (Self_ID.Common.LL.L'Access,
@@ -1363,7 +1361,14 @@ package body System.Task_Primitives.Operations is
       use type System.Multiprocessors.CPU_Range;
 
    begin
-      if pthread_setaffinity_np'Address /= System.Null_Address then
+      --  Do nothing if there is no support for setting affinities or the
+      --  underlying thread has not yet been created. If the thread has not
+      --  yet been created then the proper affinity will be set during its
+      --  creation.
+
+      if pthread_setaffinity_np'Address /= System.Null_Address
+        and then T.Common.LL.Thread /= Null_Thread_Id
+      then
          declare
             type cpu_set_t_ptr is access all cpu_set_t;
 

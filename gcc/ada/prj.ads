@@ -447,6 +447,11 @@ package Prj is
       --  Value may be Canonical (Unix style) or Host (host syntax, for example
       --  on VMS for DEC C).
 
+      Source_File_Switches : Name_List_Index := No_Name_List;
+      --  Optional switches to be put before the source file. The source file
+      --  path name is appended to the last switch in the list.
+      --  Example: ("-i", "");
+
       Object_File_Suffix : Name_Id := No_Name;
       --  Optional alternate object file suffix
 
@@ -580,6 +585,7 @@ package Prj is
                            Multi_Unit_Switches          => No_Name_List,
                            Multi_Unit_Object_Separator  => ' ',
                            Path_Syntax                  => Canonical,
+                           Source_File_Switches         => No_Name_List,
                            Object_File_Suffix           => No_Name,
                            Object_File_Switches         => No_Name_List,
                            Compilation_PIC_Option       => No_Name_List,

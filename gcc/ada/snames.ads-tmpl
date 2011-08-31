@@ -1193,6 +1193,7 @@ package Snames is
    Name_Shared_Library_Suffix            : constant Name_Id := N + $;
    Name_Separate_Suffix                  : constant Name_Id := N + $;
    Name_Source_Dirs                      : constant Name_Id := N + $;
+   Name_Source_File_Switches             : constant Name_Id := N + $;
    Name_Source_Files                     : constant Name_Id := N + $;
    Name_Source_List_File                 : constant Name_Id := N + $;
    Name_Spec                             : constant Name_Id := N + $;

@@ -1939,7 +1939,7 @@ package body Sem_Attr is
       --  Analyze prefix and exit if error in analysis. If the prefix is an
       --  incomplete type, use full view if available. Note that there are
       --  some attributes for which we do not analyze the prefix, since the
-      --  prefix is not a normal name.
+      --  prefix is not a normal name, or else needs special handling.
 
       if Aname /= Name_Elab_Body
            and then
@@ -1950,6 +1950,8 @@ package body Sem_Attr is
          Aname /= Name_UET_Address
            and then
          Aname /= Name_Enabled
+           and then
+         Aname /= Name_Old
       then
          Analyze (P);
          P_Type := Etype (P);
@@ -3772,6 +3774,12 @@ package body Sem_Attr is
          end if;
 
          Check_E0;
+
+         --  Prefix has not been analyzed yet, and its full analysis will take
+         --  place during expansion (see below).
+
+         Preanalyze_And_Resolve (P);
+         P_Type := Etype (P);
          Set_Etype (N, P_Type);
 
          if No (Current_Subprogram) then
@@ -3851,6 +3859,24 @@ package body Sem_Attr is
                end if;
             end if;
          end Check_Local;
+
+         --  The attribute ppears within a pre/postcondition, but refers to
+         --  an entity in the enclosing subprogram. If it is a component of a
+         --  formal its expansion might generate actual subtypes that may be
+         --  referenced in an inner context, and which must be elaborated
+         --  within the subprogram itself. As a result we create a declaration
+         --  for it and insert it at the start of the enclosing subprogram
+         --  This is properly an expansion activity but it has to be performed
+         --  now to prevent out-of-order issues.
+
+         if Nkind (P) = N_Selected_Component
+           and then Has_Discriminants (Etype (Prefix (P)))
+         then
+            P_Type := Base_Type (P_Type);
+            Set_Etype (N, P_Type);
+            Set_Etype (P, P_Type);
+            Expand (N);
+         end if;
 
       ------------
       -- Output --

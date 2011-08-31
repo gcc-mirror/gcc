@@ -337,7 +337,7 @@ package body System.Multiprocessors.Dispatching_Domains is
          not Target.Common.Domain (CPU))
       then
          raise Dispatching_Domain_Error with
-           "CPU does not belong to the task's dispatching domain";
+           "processor does not belong to the task's dispatching domain";
       end if;
 
       Unchecked_Set_Affinity (Target.Common.Domain, CPU, Target);

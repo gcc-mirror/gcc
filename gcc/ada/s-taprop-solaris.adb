@@ -101,6 +101,10 @@ package body System.Task_Primitives.Operations is
    Abort_Handler_Installed : Boolean := False;
    --  True if a handler for the abort signal is installed
 
+   Null_Thread_Id : constant Thread_Id := Thread_Id'Last;
+   --  Constant to indicate that the thread identifier has not yet been
+   --  initialized.
+
    ----------------------
    -- Priority Support --
    ----------------------
@@ -917,7 +921,7 @@ package body System.Task_Primitives.Operations is
       Next_Serial_Number := Next_Serial_Number + 1;
       pragma Assert (Next_Serial_Number /= 0);
 
-      Self_ID.Common.LL.Thread := To_thread_t (-1);
+      Self_ID.Common.LL.Thread := Null_Thread_Id;
 
       if not Single_Lock then
          Result :=
@@ -1021,7 +1025,7 @@ package body System.Task_Primitives.Operations is
         Ada.Unchecked_Deallocation (Ada_Task_Control_Block, Task_Id);
 
    begin
-      T.Common.LL.Thread := To_thread_t (0);
+      T.Common.LL.Thread := Null_Thread_Id;
 
       if not Single_Lock then
          Result := mutex_destroy (T.Common.LL.L.L'Access);
@@ -1944,9 +1948,16 @@ package body System.Task_Primitives.Operations is
       use type System.Multiprocessors.CPU_Range;
 
    begin
+      --  Do nothing if the underlying thread has not yet been created. If the
+      --  thread has not yet been created then the proper affinity will be set
+      --  during its creation.
+
+      if T.Common.LL.Thread = Null_Thread_Id then
+         null;
+
       --  pragma CPU
 
-      if T.Common.Base_CPU /=
+      elsif T.Common.Base_CPU /=
            System.Multiprocessors.Not_A_Specific_CPU
       then
          --  The CPU numbering in pragma CPU starts at 1 while the subprogram

@@ -131,6 +131,10 @@ package body System.Task_Primitives.Operations is
    Annex_D : Boolean := False;
    --  Set to True if running with Annex-D semantics
 
+   Null_Thread_Id : constant Thread_Id := 0;
+   --  Constant to indicate that the thread identifier has not yet been
+   --  initialized.
+
    ------------------------------------
    -- The thread local storage index --
    ------------------------------------
@@ -853,7 +857,7 @@ package body System.Task_Primitives.Operations is
       --  Initialize thread ID to 0, this is needed to detect threads that
       --  are not yet activated.
 
-      Self_ID.Common.LL.Thread := 0;
+      Self_ID.Common.LL.Thread := Null_Thread_Id;
 
       Initialize_Cond (Self_ID.Common.LL.CV'Access);
 
@@ -1362,9 +1366,16 @@ package body System.Task_Primitives.Operations is
       use type System.Multiprocessors.CPU_Range;
 
    begin
+      --  Do nothing if the underlying thread has not yet been created. If the
+      --  thread has not yet been created then the proper affinity will be set
+      --  during its creation.
+
+      if T.Common.LL.Thread = Null_Thread_Id then
+         null;
+
       --  pragma CPU
 
-      if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+      elsif T.Common.Base_CPU /= Multiprocessors.Not_A_Specific_CPU then
 
          --  The CPU numbering in pragma CPU starts at 1 while the subprogram
          --  to set the affinity starts at 0, therefore we must substract 1.
