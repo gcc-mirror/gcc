@@ -1,3 +1,76 @@
+2011-08-31  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch7.ads, exp_ch7.adb (Finalization_Exception_Data): New type to
+	hold variables between these following subprograms.
+	(Build_Exception_Handler, Build_Object_Declarations,
+	Build_Raise_Statement): Use the above type as parameter.
+	Make the above adjustments.
+	* exp_intr.adb (Expand_Unc_Deallocation): Adjust.
+
+2011-08-31  Pascal Obry  <obry@adacore.com>
+
+	* projects.texi: Minor reformatting.
+
+2011-08-31  Tristan Gingold  <gingold@adacore.com>
+
+	* s-ransee.ads, s-ransee.adb: Add system.random_seed unit.
+	* s-rannum.adb (Reset): Use Get_Seed from s-ransee.
+
+2011-08-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb: Minor code cleanup.
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Set ekind of loop variable to
+	prevent cascaded errors.
+	(Analyze_Loop_Statement): In semantics-only mode, introduce loop
+	variable of an iterator specification in current scope.
+	* sem_ch6.adb (Analyze_Return_Statement, Find_what_It_Apples_To): Skip
+	postconditions on the stack, as they contain no return statements.
+
+2011-08-31  Yannick Moy  <moy@adacore.com>
+
+	* exp_alfa.adb (Expand_Alfa_N_Package_Declaration,
+	Expand_Alfa_N_Subprogram_Body): Remove useless procedures which simply
+	call Qualify_Entity_Names.
+	(Expand_Alfa): call Qualify_Entity_Names in more cases
+	* lib-xref-alfa.adb: Take into account system package.
+	* sem_prag.adb Take into account restrictions in Alfa mode, contrary to
+	CodePeer mode in which we are interested in finding bugs even if
+	compiler cannot compile source.
+	* sem_util.adb, sem_util.ads (Unique_Entity): Take into account case of
+	deferred constant.
+
+2011-08-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Constrain_Concurrent): Retrieve Base_Type of the subtype
+	denoted by the subtype mark to ensure getting the concurrent type in
+	the case where the subtype mark denotes a private subtype of a
+	concurrent type (needed when using -gnatc).
+	(Process_Subtype): For the processing specific to type kinds, case on
+	the Base_Type kind of the Subtype_Mark_Id, to handle cases where the
+	subtype denotes a private subtype whose base type is nonprivate (needed
+	for subtypes of private fulfilled by task types when compiling with
+	-gnatc).
+
+2011-08-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Operation): Bypass registration of
+	late primitives that override interface operations when the full
+	expander is not active, to avoid blowups in Register_Primitive when
+	types don't have associated secondary dispatch tables.
+
+2011-08-31  Yannick Moy  <moy@adacore.com>
+
+	* alfa_test.adb: Code clean up.
+
+2011-08-31  Marc Sango  <sango@adacore.com>
+
+	* restrict.adb (Check_SPARK_Restriction): Change Comes_From_Source (N)
+	by Comes_From_Source (Original_Node (N)) in order to treat also the
+	nodes which have been rewritten.
+	* sem_ch4.adb (Analyze_Explicit_Dereference, Analyze_Slice): Guard the
+	explicit dereference and slice violation in spark mode on the nodes 
+	coming only from the source code.
+
 2011-08-31  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, exp_alfa.ads, prj.ads, sem_attr.adb,

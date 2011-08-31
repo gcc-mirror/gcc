@@ -886,14 +886,7 @@ package body Alfa is
       --  Generate file and scope Alfa information
 
       for D in 1 .. Num_Sdep loop
-
-         --  Ignore file for System
-
-         if Units.Table (Sdep_Table (D)).Source_Index /=
-           System_Source_File_Index
-         then
-            Add_Alfa_File (U => Sdep_Table (D), D => D);
-         end if;
+         Add_Alfa_File (U => Sdep_Table (D), D => D);
       end loop;
 
       --  Fill in the spec information when relevant

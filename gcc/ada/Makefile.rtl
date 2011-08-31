@@ -603,6 +603,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-powtab$(objext) \
   s-purexc$(objext) \
   s-rannum$(objext) \
+  s-ransee$(objext) \
   s-regexp$(objext) \
   s-regpat$(objext) \
   s-restri$(objext) \

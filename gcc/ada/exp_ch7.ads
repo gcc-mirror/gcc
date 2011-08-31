@@ -40,10 +40,39 @@ package Exp_Ch7 is
    --  Create the procedures Deep_Initialize, Deep_Adjust and Deep_Finalize
    --  that take care of finalization management at run-time.
 
-   function Build_Exception_Handler
-     (Loc         : Source_Ptr;
+   --  Support of exceptions from user finalization procedures
+   --
+   --  There is a specific mechanism to handle these exceptions, continue
+   --  finalization and then raise PE.
+   --  This mechanism is used by this package but also by exp_intr for
+   --  Ada.Unchecked_Deallocation.
+   --  There are 3 subprograms to use this mechanism, and the type
+   --  Finalization_Exception_Data carries internal data between these
+   --  subprograms:
+   --
+   --  1. Build_Object_Declaration: create the variables for the next two
+   --  subprograms.
+   --  2. Build_Exception_Handler: create the exception handler for a call to
+   --  a user finalization procedure.
+   --  3. Build_Raise_Stmt: create the code to potentially raise a PE exception
+   --  if am exception was raise in a user finalization procedure.
+   type Finalization_Exception_Data is record
+      Loc         : Source_Ptr;
+      --  Sloc for the added nodes
+
+      Abort_Id    : Entity_Id;
+      --  Boolean variable set to true if the finalization was triggered by
+      --  an abort.
+
       E_Id        : Entity_Id;
+      --  Variable containing the exception occurrence raised by user code
+
       Raised_Id   : Entity_Id;
+      --  Boolean variable set to true if an exception was raised in user code
+   end record;
+
+   function Build_Exception_Handler
+     (Data        : Finalization_Exception_Data;
       For_Library : Boolean := False) return Node_Id;
    --  Subsidiary to Build_Finalizer, Make_Deep_Array_Body and Make_Deep_Record
    --  _Body. Create an exception handler of the following form:
@@ -84,15 +113,14 @@ package Exp_Ch7 is
    --  Build one controlling procedure when a late body overrides one of
    --  the controlling operations.
 
-   function Build_Object_Declarations
-     (Loc         : Source_Ptr;
-      Abort_Id    : Entity_Id;
-      E_Id        : Entity_Id;
-      Raised_Id   : Entity_Id;
-      For_Package : Boolean := False) return List_Id;
-   --  Subsidiary to Make_Deep_Array_Body and Make_Deep_Record_Body. Return a
-   --  list containing the object declarations of boolean flag Abort_Id, the
-   --  exception occurrence E_Id and boolean flag Raised_Id.
+   procedure Build_Object_Declarations
+     (Data        : out Finalization_Exception_Data;
+      Decls       : List_Id;
+      Loc         : Source_Ptr;
+      For_Package : Boolean := False);
+   --  Subsidiary to Make_Deep_Array_Body and Make_Deep_Record_Body. Create the
+   --  list List containing the object declarations of boolean flag Abort_Id,
+   --  the exception occurrence E_Id and boolean flag Raised_Id.
    --
    --    Abort_Id  : constant Boolean :=
    --                  Exception_Identity (Get_Current_Excep.all) =
@@ -104,10 +132,7 @@ package Exp_Ch7 is
    --    Raised_Id : Boolean := False;
 
    function Build_Raise_Statement
-     (Loc       : Source_Ptr;
-      Abort_Id  : Entity_Id;
-      E_Id      : Entity_Id;
-      Raised_Id : Entity_Id) return Node_Id;
+     (Data : Finalization_Exception_Data) return Node_Id;
    --  Subsidiary to routines Build_Finalizer, Make_Deep_Array_Body and Make_
    --  Deep_Record_Body. Generate the following conditional raise statement:
    --

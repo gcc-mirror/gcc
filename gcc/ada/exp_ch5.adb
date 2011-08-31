@@ -2905,7 +2905,7 @@ package body Exp_Ch5 is
       Loc    : constant Source_Ptr := Sloc (N);
 
       Container     : constant Node_Id   := Name (I_Spec);
-      Container_Typ : constant Entity_Id := Etype (Container);
+      Container_Typ : constant Entity_Id := Base_Type (Etype (Container));
       Cursor        : Entity_Id;
       Iterator      : Entity_Id;
       New_Loop      : Node_Id;
@@ -2990,7 +2990,7 @@ package body Exp_Ch5 is
          --       declare
          --       --  the block is added when Element_Type is controlled
 
-         --          Obj : Pack.Element_Type := Element (Iterator);
+         --          Obj : Pack.Element_Type := Element (Cursor);
          --          --  for the "of" loop form
          --       begin
          --          <original loop statements>
@@ -3156,9 +3156,11 @@ package body Exp_Ch5 is
 
             --  X in Iterate (S) : type of iterator is type of explicitly
             --  given Iterate function, and the loop variable is the cursor.
+            --  It will be assigned in the loop and must be a variable.
 
             else
                Cursor := Id;
+               Set_Ekind (Cursor, E_Variable);
             end if;
 
             Iterator := Make_Temporary (Loc, 'I');
@@ -3246,6 +3248,8 @@ package body Exp_Ch5 is
                    Defining_Identifier => Iterator,
                    Subtype_Mark  => New_Occurrence_Of (Iter_Type, Loc),
                    Name          => Relocate_Node (Name (I_Spec)));
+
+               --  Create declaration for cursor.
 
                Decl2 :=
                  Make_Object_Declaration (Loc,

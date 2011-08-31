@@ -985,7 +985,6 @@ The following attributes can be defined in package @code{Naming}:
   other than Ada. They are indexed on the language name, and contain
   a list of file names respectively for headers and source code.
 
-
 @end table
 
 @ifclear vms
@@ -1314,7 +1313,6 @@ There are two main approaches to avoiding this duplication:
   intend this project to have sources (@pxref{Qualified Projects} for
   more qualifiers).
 @end itemize
-
 
 @c ---------------------------------------------
 @node Global Attributes
@@ -1649,7 +1647,6 @@ Other library-related attributes can be used to change the defaults:
   upon this subsystem.
 @end table
 
-
 @c ---------------------------------------------
 @node Using Library Projects
 @subsection Using Library Projects
@@ -1872,7 +1869,6 @@ included in the library.
   such as VMS. When symbol policy is "direct", then a file with this name
   must exist in the object directory.
 @end table
-
 
 @c ---------------------------------------------
 @node Installing a library with project files
@@ -2269,7 +2265,6 @@ aggregate project Agg is
     for Project_Path use (external("SETUP") % "path");
     for Project_Files use ("myproject.gpr");
 end Agg;
-
 
 with "prj.gpr";  --  searched on Agg'Project_Path
 project MyProject is
@@ -2777,7 +2772,6 @@ The current list of qualifiers is:
   It describes compilers and other tools to @code{gprbuild}.
 @end table
 
-
 @c ---------------------------------------------
 @node Declarations
 @subsection Declarations
@@ -3226,7 +3220,6 @@ A @b{context} may be one of the following:
   whose selector is a package name in that project.
 @end itemize
 
-
 @c ---------------------------------------------
 @node Attributes
 @subsection Attributes
@@ -3546,7 +3539,6 @@ end MyProj;
 @c ---------------------------------------------
 
 @noindent
-
 
 @menu
 * gnatmake and Project Files::
@@ -4049,7 +4041,6 @@ When a library project file is specified, switches ^-b^/ACTION=BIND^ and
   (in the case of a stand-alone library) and that the library should be built.
 @end itemize
 
-
 @c ---------------------------------------------
 @node The GNAT Driver and Project Files
 @section The GNAT Driver and Project Files
@@ -4490,6 +4481,3 @@ The switches for GPRclean are:
 @item @option{-Xnm=val} : Specify an external reference for Project Files.
 
 @end itemize
-
-
-
