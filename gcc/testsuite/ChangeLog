@@ -1,3 +1,8 @@
+2011-08-31  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/43513
+	* gcc.dg/pr43513.c: New test.
+
 2011-08-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45044
