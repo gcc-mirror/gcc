@@ -1470,6 +1470,12 @@ package body Prj.Nmsc is
                                     Element.Value.Location, Project);
                            end;
 
+                        when Name_Source_File_Switches =>
+                           Put (Into_List =>
+                                  Lang_Index.Config.Source_File_Switches,
+                                From_List => Element.Value.Values,
+                                In_Tree   => Data.Tree);
+
                         when Name_Object_File_Suffix =>
                            if Get_Name_String (Element.Value.Value) = "" then
                               Error_Msg

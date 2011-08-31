@@ -434,21 +434,26 @@ package body Exp_Ch7 is
               Stmts => Make_Deep_Array_Body (Adjust_Case, Typ)));
       end if;
 
-      Set_TSS (Typ,
-        Make_Deep_Proc
-          (Prim  => Finalize_Case,
-           Typ   => Typ,
-           Stmts => Make_Deep_Array_Body (Finalize_Case, Typ)));
+      --  Do not generate Deep_Finalize and Finalize_Address if finalization is
+      --  suppressed since these routine will not be used.
 
-      --  Create TSS primitive Finalize_Address for non-VM targets. JVM and
-      --  .NET do not support address arithmetic and unchecked conversions.
-
-      if VM_Target = No_VM then
+      if not Restriction_Active (No_Finalization) then
          Set_TSS (Typ,
            Make_Deep_Proc
-             (Prim  => Address_Case,
+             (Prim  => Finalize_Case,
               Typ   => Typ,
-              Stmts => Make_Deep_Array_Body (Address_Case, Typ)));
+              Stmts => Make_Deep_Array_Body (Finalize_Case, Typ)));
+
+         --  Create TSS primitive Finalize_Address for non-VM targets. JVM and
+         --  .NET do not support address arithmetic and unchecked conversions.
+
+         if VM_Target = No_VM then
+            Set_TSS (Typ,
+              Make_Deep_Proc
+                (Prim  => Address_Case,
+                 Typ   => Typ,
+                 Stmts => Make_Deep_Array_Body (Address_Case, Typ)));
+         end if;
       end if;
    end Build_Array_Deep_Procs;
 
@@ -3090,21 +3095,26 @@ package body Exp_Ch7 is
               Stmts => Make_Deep_Record_Body (Adjust_Case, Typ)));
       end if;
 
-      Set_TSS (Typ,
-        Make_Deep_Proc
-          (Prim  => Finalize_Case,
-           Typ   => Typ,
-           Stmts => Make_Deep_Record_Body (Finalize_Case, Typ)));
+      --  Do not generate Deep_Finalize and Finalize_Address if finalization is
+      --  suppressed since these routine will not be used.
 
-      --  Create TSS primitive Finalize_Address for non-VM targets. JVM and
-      --  .NET do not support address arithmetic and unchecked conversions.
-
-      if VM_Target = No_VM then
+      if not Restriction_Active (No_Finalization) then
          Set_TSS (Typ,
            Make_Deep_Proc
-             (Prim  => Address_Case,
+             (Prim  => Finalize_Case,
               Typ   => Typ,
-              Stmts => Make_Deep_Record_Body (Address_Case, Typ)));
+              Stmts => Make_Deep_Record_Body (Finalize_Case, Typ)));
+
+         --  Create TSS primitive Finalize_Address for non-VM targets. JVM and
+         --  .NET do not support address arithmetic and unchecked conversions.
+
+         if VM_Target = No_VM then
+            Set_TSS (Typ,
+              Make_Deep_Proc
+                (Prim  => Address_Case,
+                 Typ   => Typ,
+                 Stmts => Make_Deep_Record_Body (Address_Case, Typ)));
+         end if;
       end if;
    end Build_Record_Deep_Procs;
 

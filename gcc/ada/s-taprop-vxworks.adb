@@ -105,6 +105,10 @@ package body System.Task_Primitives.Operations is
    Time_Slice_Val : Integer;
    pragma Import (C, Time_Slice_Val, "__gl_time_slice_val");
 
+   Null_Thread_Id : constant Thread_Id := 0;
+   --  Constant to indicate that the thread identifier has not yet been
+   --  initialized.
+
    --------------------
    -- Local Packages --
    --------------------
@@ -859,7 +863,7 @@ package body System.Task_Primitives.Operations is
    procedure Initialize_TCB (Self_ID : Task_Id; Succeeded : out Boolean) is
    begin
       Self_ID.Common.LL.CV := semBCreate (SEM_Q_PRIORITY, SEM_EMPTY);
-      Self_ID.Common.LL.Thread := 0;
+      Self_ID.Common.LL.Thread := Null_Thread_Id;
 
       if Self_ID.Common.LL.CV = 0 then
          Succeeded := False;
@@ -952,7 +956,7 @@ package body System.Task_Primitives.Operations is
 
       Set_Task_Affinity (T);
 
-      if T.Common.LL.Thread <= 0 then
+      if T.Common.LL.Thread <= Null_Thread_Id then
          Succeeded := False;
       else
          Succeeded := True;
@@ -979,7 +983,7 @@ package body System.Task_Primitives.Operations is
          pragma Assert (Result = 0);
       end if;
 
-      T.Common.LL.Thread := 0;
+      T.Common.LL.Thread := Null_Thread_Id;
 
       Result := semDelete (T.Common.LL.CV);
       pragma Assert (Result = 0);
@@ -1254,7 +1258,7 @@ package body System.Task_Primitives.Operations is
       Thread_Self : Thread_Id) return Boolean
    is
    begin
-      if T.Common.LL.Thread /= 0
+      if T.Common.LL.Thread /= Null_Thread_Id
         and then T.Common.LL.Thread /= Thread_Self
       then
          return taskSuspend (T.Common.LL.Thread) = 0;
@@ -1272,7 +1276,7 @@ package body System.Task_Primitives.Operations is
       Thread_Self : Thread_Id) return Boolean
    is
    begin
-      if T.Common.LL.Thread /= 0
+      if T.Common.LL.Thread /= Null_Thread_Id
         and then T.Common.LL.Thread /= Thread_Self
       then
          return taskResume (T.Common.LL.Thread) = 0;
@@ -1298,7 +1302,7 @@ package body System.Task_Primitives.Operations is
 
       C := All_Tasks_List;
       while C /= null loop
-         if C.Common.LL.Thread /= 0
+         if C.Common.LL.Thread /= Null_Thread_Id
            and then C.Common.LL.Thread /= Thread_Self
          then
             Dummy := Task_Stop (C.Common.LL.Thread);
@@ -1316,7 +1320,7 @@ package body System.Task_Primitives.Operations is
 
    function Stop_Task (T : ST.Task_Id) return Boolean is
    begin
-      if T.Common.LL.Thread /= 0 then
+      if T.Common.LL.Thread /= Null_Thread_Id then
          return Task_Stop (T.Common.LL.Thread) = 0;
       else
          return True;
@@ -1330,7 +1334,7 @@ package body System.Task_Primitives.Operations is
    function Continue_Task (T : ST.Task_Id) return Boolean
    is
    begin
-      if T.Common.LL.Thread /= 0 then
+      if T.Common.LL.Thread /= Null_Thread_Id then
          return Task_Cont (T.Common.LL.Thread) = 0;
       else
          return True;
@@ -1408,9 +1412,16 @@ package body System.Task_Primitives.Operations is
       use type System.Multiprocessors.CPU_Range;
 
    begin
+      --  Do nothing if the underlying thread has not yet been created. If the
+      --  thread has not yet been created then the proper affinity will be set
+      --  during its creation.
+
+      if T.Common.LL.Thread = Null_Thread_Id then
+         null;
+
       --  pragma CPU
 
-      if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+      elsif T.Common.Base_CPU /= Multiprocessors.Not_A_Specific_CPU then
 
          --  Ada 2012 pragma CPU uses CPU numbers starting from 1, while on
          --  VxWorks the first CPU is identified by a 0, so we need to adjust.

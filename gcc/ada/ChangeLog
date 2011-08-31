@@ -1,3 +1,61 @@
+2011-08-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch4.adb: Code clean up.
+
+2011-08-31  Yannick Moy  <moy@adacore.com>
+
+	* exp_alfa.adb, exp_alfa.ads: Minor correction of copyright notice.
+
+2011-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Build_Array_Deep_Procs): Do not generate Deep_Finalize
+	and TSS primitive Finalize_Address if finalization is suppressed.
+	(Build_Record_Deep_Procs): Do not generate Deep_Finalize and TSS
+	primitive Finalize_Address if finalization is suppressed.
+
+2011-08-31  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-mudido-affinity.adb, s-taprop-linux.adb, s-taprop-mingw.adb,
+	s-taprop-solaris.adb, s-taprop-vxworks.adb (Set_Task_Affinity): Make
+	sure that the underlying task has already been created before trying
+	to change its affinity.
+	(Set_CPU): Use the term processor instead of CPU, as we do in
+	Assign_Task.
+
+2011-08-31  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New Compiler attribute Source_File_Switches.
+	* prj-nmsc.adb (Process_Compiler): Process attribute
+	Source_File_Switches.
+	* prj.ads (Language_Config): New name list component
+	Name_Source_File_Switches.
+	* snames.ads-tmpl (Name_Source_File_Switches): New standard name.
+
+2011-08-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Old): If prefix may be a
+	discriminated component of an actual, expand at once to prevent
+	ouf-of-order references with generated subtypes.
+
+2011-08-31  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Add_Alfa_Xrefs): Do not take into account read
+	reference to operator in Alfa xrefs.
+
+2011-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Freeze_Subprogram_Body): Add code to handle the case
+	where the parent instance was frozen before the current instance due to
+	the presence of a source body. Update calls to Insert_After_Last_Decl.
+	(Insert_After_Last_Decl): Renamed to Insert_Freeze_Node_For_Instance.
+	Update the comment which illustrates the purpose of the routine.
+	Package instances are now frozen by source bodies which appear after
+	the instance. This ensures that entities coming from within the
+	instance are available for use in the said bodies.
+	(Install_Body): Add code to handle the case where the parent instance
+	was frozen before the current instance due to the presence of a source
+	body. Update calls to Insert_After_Last_Decl.
+
 2011-08-31  Jose Ruiz  <ruiz@adacore.com>
 
 	* s-taprop-linux.adb (Set_Task_Affinity): Avoid the use of anonymous

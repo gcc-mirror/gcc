@@ -576,12 +576,36 @@ package body Alfa is
       Eliminate_Before_Sort : declare
          NR : Nat;
 
+         function Is_Alfa_Reference
+           (E   : Entity_Id;
+            Typ : Character) return Boolean;
+         --  Return whether the reference is adequate for this entity
+
          function Is_Alfa_Scope (E : Entity_Id) return Boolean;
          --  Return whether the entity or reference scope is adequate
 
          function Is_Global_Constant (E : Entity_Id) return Boolean;
          --  Return True if E is a global constant for which we should ignore
          --  reads in Alfa.
+
+         -----------------------
+         -- Is_Alfa_Reference --
+         -----------------------
+
+         function Is_Alfa_Reference
+           (E   : Entity_Id;
+            Typ : Character) return Boolean is
+         begin
+            --  The only references of interest on callable entities are calls.
+            --  On non-callable entities, the only references of interest are
+            --  reads and writes.
+
+            if Ekind (E) in Overloadable_Kind then
+               return Typ = 's';
+            else
+               return Typ = 'r' or else Typ = 'm';
+            end if;
+         end Is_Alfa_Reference;
 
          -------------------
          -- Is_Alfa_Scope --
@@ -617,6 +641,8 @@ package body Alfa is
               and then Is_Alfa_Scope (Xrefs.Table (Rnums (J)).Ent_Scope)
               and then Is_Alfa_Scope (Xrefs.Table (Rnums (J)).Ref_Scope)
               and then not Is_Global_Constant (Xrefs.Table (Rnums (J)).Ent)
+              and then Is_Alfa_Reference (Xrefs.Table (Rnums (J)).Ent,
+                                          Xrefs.Table (Rnums (J)).Typ)
             then
                Nrefs         := Nrefs + 1;
                Rnums (Nrefs) := Rnums (J);

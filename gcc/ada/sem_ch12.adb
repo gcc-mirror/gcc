@@ -516,11 +516,22 @@ package body Sem_Ch12 is
    --  of packages that are early instantiations are delayed, and their freeze
    --  node appears after the generic body.
 
-   procedure Insert_After_Last_Decl (N : Node_Id; F_Node : Node_Id);
-   --  Insert freeze node at the end of the declarative part that includes the
-   --  instance node N. If N is in the visible part of an enclosing package
-   --  declaration, the freeze node has to be inserted at the end of the
-   --  private declarations, if any.
+   procedure Insert_Freeze_Node_For_Instance
+     (N      : Node_Id;
+      F_Node : Node_Id);
+   --  N is an instance and F_Node is its corresponding freeze node. Insert
+   --  F_Node depending on the enclosing context and placement of N in the
+   --  following manner:
+   --
+   --    1) N is a package instance - Attempt to insert the freeze node before
+   --    a source package or subprogram body which follows immediately after N.
+   --    If no such body is found, perform the actions in 2).
+   --
+   --    2) N is a subprogram instance or a package instance not followed by
+   --    a source body - Insert the freeze node at the end of the declarations
+   --    list which contains N. If N is in the visible part of an enclosing
+   --    package declaration, the freeze node is inserted at the end of the
+   --    private declarations.
 
    procedure Freeze_Subprogram_Body
      (Inst_Node : Node_Id;
@@ -6698,12 +6709,12 @@ package body Sem_Ch12 is
       Gen_Body  : Node_Id;
       Pack_Id   : Entity_Id)
   is
-      F_Node   : Node_Id;
       Gen_Unit : constant Entity_Id := Get_Generic_Entity (Inst_Node);
       Par      : constant Entity_Id := Scope (Gen_Unit);
+      E_G_Id   : Entity_Id;
       Enc_G    : Entity_Id;
       Enc_I    : Node_Id;
-      E_G_Id   : Entity_Id;
+      F_Node   : Node_Id;
 
       function Earlier (N1, N2 : Node_Id) return Boolean;
       --  Yields True if N1 and N2 appear in the same compilation unit,
@@ -6881,15 +6892,37 @@ package body Sem_Ch12 is
 
       if Is_Generic_Instance (Par)
         and then Present (Freeze_Node (Par))
-        and then
-          In_Same_Declarative_Part (Freeze_Node (Par), Inst_Node)
+        and then In_Same_Declarative_Part (Freeze_Node (Par), Inst_Node)
       then
+         --  The parent was a premature instantiation. Insert freeze node at
+         --  the end the current declarative part.
+
          if ABE_Is_Certain (Get_Package_Instantiation_Node (Par)) then
+            Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
 
-            --  The parent was a premature instantiation. Insert freeze node at
-            --  the end the current declarative part.
+         --  Handle the following case:
+         --
+         --    package Parent_Inst is new ...
+         --    Parent_Inst []
+         --
+         --    procedure P ...  --  this body freezes Parent_Inst
+         --
+         --    package Inst is new ...
+         --
+         --  In this particular scenario, the freeze node for Inst must be
+         --  inserted in the same manner as that of Parent_Inst - before the
+         --  next source body or at the end of the declarative list (body not
+         --  available). If body P did not exist and Parent_Inst was frozen
+         --  after Inst, either by a body following Inst or at the end of the
+         --  declarative region, the freeze node for Inst must be inserted
+         --  after that of Parent_Inst. This relation is established by
+         --  comparing the Slocs of Parent_Inst freeze node and Inst.
 
-            Insert_After_Last_Decl (Inst_Node, F_Node);
+         elsif List_Containing (Get_Package_Instantiation_Node (Par)) =
+               List_Containing (Inst_Node)
+           and then Sloc (Freeze_Node (Par)) < Sloc (Inst_Node)
+         then
+            Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
 
          else
             Insert_After (Freeze_Node (Par), F_Node);
@@ -6917,11 +6950,11 @@ package body Sem_Ch12 is
             --  node, we place it at the end of the declarative part of the
             --  parent of the generic.
 
-            Insert_After_Last_Decl
+            Insert_Freeze_Node_For_Instance
               (Freeze_Node (Par), Package_Freeze_Node (Enc_I));
          end if;
 
-         Insert_After_Last_Decl (Inst_Node, F_Node);
+         Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
 
       elsif Present (Enc_G)
         and then Present (Enc_I)
@@ -6955,7 +6988,8 @@ package body Sem_Ch12 is
             end if;
 
             if Parent (List_Containing (Enc_G)) /= Enclosing_Body then
-               Insert_After_Last_Decl (Enc_G, Package_Freeze_Node (Enc_I));
+               Insert_Freeze_Node_For_Instance
+                 (Enc_G, Package_Freeze_Node (Enc_I));
             end if;
          end;
 
@@ -6967,13 +7001,13 @@ package body Sem_Ch12 is
             Insert_After (Enc_G, Freeze_Node (E_G_Id));
          end if;
 
-         Insert_After_Last_Decl (Inst_Node, F_Node);
+         Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
 
       else
          --  If none of the above, insert freeze node at the end of the current
          --  declarative part.
 
-         Insert_After_Last_Decl (Inst_Node, F_Node);
+         Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
       end if;
    end Freeze_Subprogram_Body;
 
@@ -7197,7 +7231,7 @@ package body Sem_Ch12 is
             return False;
 
          elsif Nkind (Nod) = N_Subunit then
-            Nod :=  Corresponding_Stub (Nod);
+            Nod := Corresponding_Stub (Nod);
 
          elsif Nkind (Nod) = N_Compilation_Unit then
             return False;
@@ -7319,27 +7353,69 @@ package body Sem_Ch12 is
       Hidden_Entities      := No_Elist;
    end Initialize;
 
-   ----------------------------
-   -- Insert_After_Last_Decl --
-   ----------------------------
+   -------------------------------------
+   -- Insert_Freeze_Node_For_Instance --
+   -------------------------------------
 
-   procedure Insert_After_Last_Decl (N : Node_Id; F_Node : Node_Id) is
-      L : List_Id          := List_Containing (N);
-      P : constant Node_Id := Parent (L);
+   procedure Insert_Freeze_Node_For_Instance
+     (N      : Node_Id;
+      F_Node : Node_Id)
+   is
+      Inst  : constant Entity_Id := Entity (F_Node);
+      Decl  : Node_Id;
+      Decls : List_Id;
+      Par_N : Node_Id;
 
    begin
       if not Is_List_Member (F_Node) then
-         if Nkind (P) = N_Package_Specification
-           and then L = Visible_Declarations (P)
-           and then Present (Private_Declarations (P))
-           and then not Is_Empty_List (Private_Declarations (P))
+         Decls := List_Containing (N);
+         Par_N := Parent (Decls);
+         Decl  := N;
+
+         --  When the instantiation occurs in a package declaration, append the
+         --  freeze node to the private declarations (if any).
+
+         if Nkind (Par_N) = N_Package_Specification
+           and then Decls = Visible_Declarations (Par_N)
+           and then Present (Private_Declarations (Par_N))
+           and then not Is_Empty_List (Private_Declarations (Par_N))
          then
-            L := Private_Declarations (P);
+            Decls := Private_Declarations (Par_N);
+            Decl  := First (Decls);
          end if;
 
-         Insert_After (Last (L), F_Node);
+         --  Determine the proper freeze point of a package instantiation. We
+         --  adhere to the general rule of a package or subprogram body causing
+         --  freezing of anything before it in the same declarative region. In
+         --  this case, the proper freeze point of a package instantiation is
+         --  before the first source body which follows. This ensures that
+         --  entities coming from the instance are already frozen and usable
+         --  in source bodies.
+
+         if Nkind (Par_N) /= N_Package_Declaration
+           and then Ekind (Inst) = E_Package
+           and then Is_Generic_Instance (Inst)
+           and then
+             not In_Same_Source_Unit (Generic_Parent (Parent (Inst)), Inst)
+         then
+            while Present (Decl) loop
+               if Nkind_In (Decl, N_Package_Body, N_Subprogram_Body)
+                 and then Comes_From_Source (Decl)
+               then
+                  Insert_Before (Decl, F_Node);
+                  return;
+               end if;
+
+               Next (Decl);
+            end loop;
+         end if;
+
+         --  In a package declaration, or if no previous body, insert at end
+         --  of list.
+
+         Insert_After (Last (Decls), F_Node);
       end if;
-   end Insert_After_Last_Decl;
+   end Insert_Freeze_Node_For_Instance;
 
    ------------------
    -- Install_Body --
@@ -7475,7 +7551,34 @@ package body Sem_Ch12 is
             --  generic.
 
             if In_Same_Declarative_Part (Freeze_Node (Par), N) then
-               Insert_After (Freeze_Node (Par), F_Node);
+
+               --  Handle the following case:
+               --
+               --    package Parent_Inst is new ...
+               --    Parent_Inst []
+               --
+               --    procedure P ...  --  this body freezes Parent_Inst
+               --
+               --    package Inst is new ...
+               --
+               --  In this particular scenario, the freeze node for Inst must
+               --  be inserted in the same manner as that of Parent_Inst -
+               --  before the next source body or at the end of the declarative
+               --  list (body not available). If body P did not exist and
+               --  Parent_Inst was frozen after Inst, either by a body
+               --  following Inst or at the end of the declarative region, the
+               --  freeze node for Inst must be inserted after that of
+               --  Parent_Inst. This relation is established by comparing the
+               --  Slocs of Parent_Inst freeze node and Inst.
+
+               if List_Containing (Get_Package_Instantiation_Node (Par)) =
+                  List_Containing (N)
+                 and then Sloc (Freeze_Node (Par)) < Sloc (N)
+               then
+                  Insert_Freeze_Node_For_Instance (N, F_Node);
+               else
+                  Insert_After (Freeze_Node (Par), F_Node);
+               end if;
 
             --  Freeze package enclosing instance of inner generic after
             --  instance of enclosing generic.
@@ -7489,7 +7592,7 @@ package body Sem_Ch12 is
                                 Corresponding_Spec (Parent (N));
 
                begin
-                  Insert_After_Last_Decl (N, F_Node);
+                  Insert_Freeze_Node_For_Instance (N, F_Node);
                   Ensure_Freeze_Node (Enclosing);
 
                   if not Is_List_Member (Freeze_Node (Enclosing)) then
@@ -7498,11 +7601,11 @@ package body Sem_Ch12 is
                end;
 
             else
-               Insert_After_Last_Decl (N, F_Node);
+               Insert_Freeze_Node_For_Instance (N, F_Node);
             end if;
 
          else
-            Insert_After_Last_Decl (N, F_Node);
+            Insert_Freeze_Node_For_Instance (N, F_Node);
          end if;
       end if;
 
