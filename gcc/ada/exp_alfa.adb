@@ -51,14 +51,8 @@ package body Exp_Alfa is
    procedure Expand_Alfa_N_Attribute_Reference (N : Node_Id);
    --  Expand attributes 'Old and 'Result only
 
-   procedure Expand_Alfa_N_Package_Declaration (N : Node_Id);
-   --  Fully qualify names of enclosed entities
-
    procedure Expand_Alfa_N_Simple_Return_Statement (N : Node_Id);
    --  Insert conversion on function return if necessary
-
-   procedure Expand_Alfa_N_Subprogram_Body (N : Node_Id);
-   --  Fully qualify names of enclosed entities
 
    procedure Expand_Alfa_Simple_Function_Return (N : Node_Id);
    --  Expand simple return from function
@@ -71,14 +65,14 @@ package body Exp_Alfa is
    begin
       case Nkind (N) is
 
-         when N_Package_Declaration =>
-            Expand_Alfa_N_Package_Declaration (N);
+         when N_Package_Body        |
+              N_Package_Declaration |
+              N_Subprogram_Body     |
+              N_Block_Statement     =>
+            Qualify_Entity_Names (N);
 
          when N_Simple_Return_Statement =>
             Expand_Alfa_N_Simple_Return_Statement (N);
-
-         when N_Subprogram_Body =>
-            Expand_Alfa_N_Subprogram_Body (N);
 
          when N_Function_Call            |
               N_Procedure_Call_Statement =>
@@ -173,15 +167,6 @@ package body Exp_Alfa is
       end case;
    end Expand_Alfa_N_Attribute_Reference;
 
-   ---------------------------------------
-   -- Expand_Alfa_N_Package_Declaration --
-   ---------------------------------------
-
-   procedure Expand_Alfa_N_Package_Declaration (N : Node_Id) is
-   begin
-      Qualify_Entity_Names (N);
-   end Expand_Alfa_N_Package_Declaration;
-
    -------------------------------------------
    -- Expand_Alfa_N_Simple_Return_Statement --
    -------------------------------------------
@@ -221,15 +206,6 @@ package body Exp_Alfa is
       when RE_Not_Available =>
          return;
    end Expand_Alfa_N_Simple_Return_Statement;
-
-   -----------------------------------
-   -- Expand_Alfa_N_Subprogram_Body --
-   -----------------------------------
-
-   procedure Expand_Alfa_N_Subprogram_Body (N : Node_Id) is
-   begin
-      Qualify_Entity_Names (N);
-   end Expand_Alfa_N_Subprogram_Body;
 
    ----------------------------------------
    -- Expand_Alfa_Simple_Function_Return --

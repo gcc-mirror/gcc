@@ -876,23 +876,23 @@ package body Exp_Intr is
    --  structures to find and terminate those components.
 
    procedure Expand_Unc_Deallocation (N : Node_Id) is
-      Arg     : constant Node_Id    := First_Actual (N);
-      Loc     : constant Source_Ptr := Sloc (N);
-      Typ     : constant Entity_Id  := Etype (Arg);
-      Desig_T : constant Entity_Id  := Designated_Type (Typ);
-      Rtyp    : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
-      Pool    : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
-      Stmts   : constant List_Id    := New_List;
+      Arg       : constant Node_Id    := First_Actual (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Typ       : constant Entity_Id  := Etype (Arg);
+      Desig_T   : constant Entity_Id  := Designated_Type (Typ);
+      Rtyp      : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
+      Pool      : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
+      Stmts     : constant List_Id    := New_List;
+      Needs_Fin : constant Boolean    := Needs_Finalization (Desig_T);
 
-      Abort_Id   : Entity_Id := Empty;
+      Finalizer_Data  : Finalization_Exception_Data;
+
       Blk        : Node_Id := Empty;
       Deref      : Node_Id;
-      E_Id       : Entity_Id := Empty;
       Final_Code : List_Id;
       Free_Arg   : Node_Id;
       Free_Node  : Node_Id;
       Gen_Code   : Node_Id;
-      Raised_Id  : Entity_Id := Empty;
 
       Arg_Known_Non_Null : constant Boolean := Known_Non_Null (N);
       --  This captures whether we know the argument to be non-null so that
@@ -909,7 +909,7 @@ package body Exp_Intr is
 
       --  Processing for pointer to controlled type
 
-      if Needs_Finalization (Desig_T) then
+      if Needs_Fin then
          Deref :=
            Make_Explicit_Dereference (Loc,
              Prefix => Duplicate_Subexpr_No_Checks (Arg));
@@ -958,12 +958,7 @@ package body Exp_Intr is
          --          Save_Occurrence (E, Get_Current_Excep.all.all);
          --    end;
 
-         Abort_Id  := Make_Temporary (Loc, 'A');
-         E_Id      := Make_Temporary (Loc, 'E');
-         Raised_Id := Make_Temporary (Loc, 'R');
-
-         Append_List_To (Stmts,
-            Build_Object_Declarations (Loc, Abort_Id, E_Id, Raised_Id));
+         Build_Object_Declarations (Finalizer_Data, Stmts, Loc);
 
          Final_Code := New_List (
            Make_Block_Statement (Loc,
@@ -974,7 +969,7 @@ package body Exp_Intr is
                      Obj_Ref => Deref,
                      Typ     => Desig_T)),
                  Exception_Handlers => New_List (
-                   Build_Exception_Handler (Loc, E_Id, Raised_Id)))));
+                   Build_Exception_Handler (Finalizer_Data)))));
 
          --  For .NET/JVM, detach the object from the containing finalization
          --  collection before finalizing it.
@@ -1216,9 +1211,8 @@ package body Exp_Intr is
       --       Raise_From_Controlled_Operation (E);  --  all other cases
       --    end if;
 
-      if Present (Raised_Id) then
-         Append_To (Stmts,
-           Build_Raise_Statement (Loc, Abort_Id, E_Id, Raised_Id));
+      if Needs_Fin then
+         Append_To (Stmts, Build_Raise_Statement (Finalizer_Data));
       end if;
 
       --  If we know the argument is non-null, then make a block statement

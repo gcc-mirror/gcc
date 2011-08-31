@@ -5090,9 +5090,9 @@ package body Sem_Prag is
       --  Start of processing for Process_Restrictions_Or_Restriction_Warnings
 
       begin
-         --  Ignore all Restrictions pragma in CodePeer and Alfa modes
+         --  Ignore all Restrictions pragma in CodePeer mode
 
-         if CodePeer_Mode or Alfa_Mode then
+         if CodePeer_Mode then
             return;
          end if;
 

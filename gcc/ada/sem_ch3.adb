@@ -11340,7 +11340,10 @@ package body Sem_Ch3 is
       Related_Id  : Entity_Id;
       Suffix      : Character)
    is
-      T_Ent : Entity_Id := Entity (Subtype_Mark (SI));
+      --  Retrieve Base_Type to ensure getting to the concurrent type in the
+      --  case of a private subtype (needed when only doing semantic analysis).
+
+      T_Ent : Entity_Id := Base_Type (Entity (Subtype_Mark (SI)));
       T_Val : Entity_Id;
 
    begin
@@ -18570,9 +18573,11 @@ package body Sem_Ch3 is
             return Process_Subtype (S, Related_Nod, Related_Id, Suffix);
          end if;
 
-         --  Remaining processing depends on type
+         --  Remaining processing depends on type. Select on Base_Type kind to
+         --  ensure getting to the concrete type kind in the case of a private
+         --  subtype (needed when only doing semantic analysis).
 
-         case Ekind (Subtype_Mark_Id) is
+         case Ekind (Base_Type (Subtype_Mark_Id)) is
             when Access_Kind =>
                Constrain_Access (Def_Id, S, Related_Nod);
 

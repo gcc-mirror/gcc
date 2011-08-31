@@ -12656,6 +12656,11 @@ package body Sem_Util is
 
    begin
       case Ekind (E) is
+         when E_Constant =>
+            if Present (Full_View (E)) then
+               U := Full_View (E);
+            end if;
+
          when Type_Kind =>
             if Present (Full_View (E)) then
                U := Full_View (E);

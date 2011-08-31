@@ -1156,11 +1156,14 @@ package body Sem_Disp is
             --  Ada 2005 (AI-251): In case of late overriding of a primitive
             --  that covers abstract interface subprograms we must register it
             --  in all the secondary dispatch tables associated with abstract
-            --  interfaces. We do this now only if not building static tables.
-            --  Otherwise the patch code is emitted after those tables are
-            --  built, to prevent access_before_elaboration in gigi.
+            --  interfaces. We do this now only if not building static tables,
+            --  nor when the expander is inactive (we avoid trying to register
+            --  primitives in semantics-only mode, since the type may not have
+            --  an associated dispatch table). Otherwise the patch code is
+            --  emitted after those tables are built, to prevent access before
+            --  elaboration in gigi.
 
-            if Body_Is_Last_Primitive then
+            if Body_Is_Last_Primitive and then Full_Expander_Active then
                declare
                   Subp_Body : constant Node_Id := Unit_Declaration_Node (Subp);
                   Elmt      : Elmt_Id;

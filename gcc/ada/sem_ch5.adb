@@ -1965,6 +1965,7 @@ package body Sem_Ch5 is
 
             begin
                Enter_Name (Id);
+               Set_Ekind (Id, E_Constant);
 
                --  We always consider the loop variable to be referenced, since
                --  the loop may be used just for counting purposes.
@@ -2243,7 +2244,14 @@ package body Sem_Ch5 is
       Typ : Entity_Id;
 
    begin
-      Enter_Name (Def_Id);
+      --  In semantics mode, introduce loop variable so that
+      --  loop body can be properly analyzed. Otherwise this
+      --  is one after expansion.
+
+      if Operating_Mode = Check_Semantics then
+         Enter_Name (Def_Id);
+      end if;
+
       Set_Ekind (Def_Id, E_Variable);
 
       if Present (Subt) then
@@ -2326,6 +2334,10 @@ package body Sem_Ch5 is
          else
             Error_Msg_N
               ("to iterate over the elements of an array, use OF", N);
+
+            --  Prevent cascaded errors.
+
+            Set_Ekind (Def_Id, E_Constant);
             Set_Etype (Def_Id, Etype (First_Index (Typ)));
          end if;
 
@@ -2476,12 +2488,26 @@ package body Sem_Ch5 is
 
       --  If the expander is not active, then we want to analyze the loop body
       --  now even in the Ada 2012 iterator case, since the rewriting will not
-      --  be done.
+      --  be done. Insert the loop variable in the current scope, if not done
+      --  when analysing the iteration scheme.
 
       if No (Iter)
         or else No (Iterator_Specification (Iter))
         or else not Expander_Active
       then
+         if Present (Iter)
+           and then  Present (Iterator_Specification (Iter))
+         then
+            declare
+               Id : constant Entity_Id :=
+                  Defining_Identifier (Iterator_Specification (Iter));
+            begin
+               if Scope (Id) /= Current_Scope then
+                  Enter_Name (Id);
+               end if;
+            end;
+         end if;
+
          Analyze_Statements (Statements (Loop_Statement));
       end if;
 

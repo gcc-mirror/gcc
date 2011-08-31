@@ -39,22 +39,29 @@
 with Get_Alfa;
 with Put_Alfa;
 
-with Alfa;  use Alfa;
-with Types; use Types;
+with Alfa;                  use Alfa;
+with Types;                 use Types;
 
 with Ada.Command_Line;      use Ada.Command_Line;
 with Ada.Streams;           use Ada.Streams;
 with Ada.Streams.Stream_IO; use Ada.Streams.Stream_IO;
 with Ada.Text_IO;
 
+with GNAT.OS_Lib;           use GNAT.OS_Lib;
+
 procedure Alfa_Test is
    Infile    : File_Type;
+   Name1     : String_Access;
    Outfile_1 : File_Type;
+   Name2     : String_Access;
    Outfile_2 : File_Type;
    C         : Character;
 
    Stop : exception;
    --  Terminate execution
+
+   Diff_Exec   : constant String_Access := Locate_Exec_On_Path ("diff");
+   Diff_Result : Integer;
 
    use ASCII;
 
@@ -64,9 +71,12 @@ begin
       raise Stop;
    end if;
 
-   Create (Outfile_1, Out_File, "log1");
-   Create (Outfile_2, Out_File, "log2");
+   Name1 := new String'(Argument (1) & ".1");
+   Name2 := new String'(Argument (1) & ".2");
+
    Open   (Infile,    In_File,  Argument (1));
+   Create (Outfile_1, Out_File, Name1.all);
+   Create (Outfile_2, Out_File, Name2.all);
 
    --  Read input file till we get to first 'F' line
 
@@ -281,49 +291,24 @@ begin
 
       Write_Info_Terminate;
 
+      --  Flush to disk
+
+      Close (Outfile_1);
+      Close (Outfile_2);
+
       --  Now Outfile_1 and Outfile_2 should be identical
 
-      Compare_Files : declare
-         Line : Natural;
-         Col  : Natural;
-         C1   : Character;
-         C2   : Character;
+      Diff_Result :=
+        Spawn (Diff_Exec.all,
+               Argument_String_To_List
+                 ("-u " & Name1.all & " " & Name2.all).all);
 
-      begin
-         Reset (Outfile_1, In_File);
-         Reset (Outfile_2, In_File);
+      if Diff_Result /= 0 then
+         Ada.Text_IO.Put_Line ("diff(1) exit status" & Diff_Result'Img);
+      end if;
 
-         --  Loop to compare the two files
+      OS_Exit (Diff_Result);
 
-         Line := 1;
-         Col  := 1;
-         loop
-            C1 := Get_Char (Outfile_1);
-            C2 := Get_Char (Outfile_2);
-            exit when C1 = EOF or else C1 /= C2;
-
-            if C1 = LF then
-               Line := Line + 1;
-               Col  := 1;
-            else
-               Col := Col + 1;
-            end if;
-         end loop;
-
-         --  If we reached the end of file, then the files were identical,
-         --  otherwise, we have a failure in the comparison.
-
-         if C1 = EOF then
-            --  Success: exit silently
-
-            null;
-
-         else
-            Ada.Text_IO.Put_Line
-              (Argument (1) & ": failure, files log1 and log2 differ at line"
-               & Line'Img & " column" & Col'Img);
-         end if;
-      end Compare_Files;
    end Process;
 
 exception

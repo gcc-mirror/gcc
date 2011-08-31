@@ -1763,7 +1763,9 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Explicit_Dereference
 
    begin
-      Check_SPARK_Restriction ("explicit dereference is not allowed", N);
+      if Comes_From_Source (N) then
+         Check_SPARK_Restriction ("explicit dereference is not allowed", N);
+      end if;
 
       --  In formal verification mode, keep track of all reads and writes
       --  through explicit dereferences.
@@ -4417,7 +4419,9 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Slice
 
    begin
-      Check_SPARK_Restriction ("slice is not allowed", N);
+      if Comes_From_Source (N) then
+         Check_SPARK_Restriction ("slice is not allowed", N);
+      end if;
 
       Analyze (P);
       Analyze (D);
