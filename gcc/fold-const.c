@@ -5888,11 +5888,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	 multiple of the other, in which case we replace this with either an
 	 operation or CODE or TCODE.
 
-	 If we have an unsigned type that is not a sizetype, we cannot do
-	 this since it will change the result if the original computation
-	 overflowed.  */
-      if ((TYPE_OVERFLOW_UNDEFINED (ctype)
-	   || (TREE_CODE (ctype) == INTEGER_TYPE && TYPE_IS_SIZETYPE (ctype)))
+	 If we have an unsigned type, we cannot do this since it will change
+	 the result if the original computation overflowed.  */
+      if (TYPE_OVERFLOW_UNDEFINED (ctype)
 	  && ((code == MULT_EXPR && tcode == EXACT_DIV_EXPR)
 	      || (tcode == MULT_EXPR
 		  && code != TRUNC_MOD_EXPR && code != CEIL_MOD_EXPR
