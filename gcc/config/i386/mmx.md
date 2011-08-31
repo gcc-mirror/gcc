@@ -159,13 +159,13 @@
      (if_then_else
        (ior (eq_attr "alternative" "4,5")
 	    (and (eq_attr "alternative" "7")
-		 (eq (symbol_ref "TARGET_AVX") (const_int 0))))
+		 (not (match_test "TARGET_AVX"))))
        (const_string "1")
        (const_string "*")))
    (set (attr "prefix_data16")
      (if_then_else
        (and (eq_attr "alternative" "8")
-	    (eq (symbol_ref "TARGET_AVX") (const_int 0)))
+	    (not (match_test "TARGET_AVX")))
        (const_string "1")
        (const_string "*")))
    (set (attr "prefix")
@@ -224,7 +224,7 @@
    (set (attr "length_vex")
      (if_then_else
        (and (eq_attr "alternative" "12,13")
-	    (ne (symbol_ref "TARGET_AVX") (const_int 0)))
+	    (match_test "TARGET_AVX"))
        (const_string "4")
        (const_string "*")))
    (set (attr "prefix")
@@ -1563,7 +1563,8 @@
   [(set_attr "type" "mmxshft")
    (set (attr "prefix_extra")
      (if_then_else
-       (eq (symbol_ref "(TARGET_SSE || TARGET_3DNOW_A)") (const_int 0))
+       (not (ior (match_test "TARGET_SSE")
+		 (match_test "TARGET_3DNOW_A")))
        (const_string "1")
        (const_string "*")))
    (set_attr "mode" "DI")])

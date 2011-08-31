@@ -565,7 +565,7 @@
 (define_predicate "call_insn_operand"
   (ior (match_operand 0 "constant_call_address_operand")
        (match_operand 0 "call_register_no_elim_operand")
-       (and (match_test "!TARGET_X32")
+       (and (not (match_test "TARGET_X32"))
 	    (match_operand 0 "memory_operand"))))
 
 ;; Similarly, but for tail calls, in which we cannot allow memory references.
