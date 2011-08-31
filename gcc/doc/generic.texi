@@ -2504,7 +2504,7 @@ should submit your patches for inclusion in GCC@.
 @tindex UNKNOWN_TYPE
 @tindex TYPENAME_TYPE
 @tindex TYPEOF_TYPE
-@findex CP_TYPE_QUALS
+@findex cp_type_quals
 @findex TYPE_UNQUALIFIED
 @findex TYPE_QUAL_CONST
 @findex TYPE_QUAL_VOLATILE
@@ -2536,8 +2536,8 @@ the type @code{const int ()[7]}, denoting an array of seven @code{int}s.
 
 The following functions and macros deal with cv-qualification of types:
 @ftable @code
-@item CP_TYPE_QUALS
-This macro returns the set of type qualifiers applied to this type.
+@item cp_type_quals
+This function returns the set of type qualifiers applied to this type.
 This value is @code{TYPE_UNQUALIFIED} if no qualifiers have been
 applied.  The @code{TYPE_QUAL_CONST} bit is set if the type is
 @code{const}-qualified.  The @code{TYPE_QUAL_VOLATILE} bit is set if the
