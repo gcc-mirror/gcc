@@ -394,8 +394,7 @@ package System.Tasking is
    type Dispatching_Domain_Access is access Dispatching_Domain;
 
    System_Domain : Dispatching_Domain_Access;
-   --  All processors belong to the default system dispatching domain at start
-   --  up.
+   --  All processors belong to default system dispatching domain at start up
 
    ------------------------------------
    -- Task related other definitions --
@@ -419,9 +418,8 @@ package System.Tasking is
 
    function Storage_Size (T : Task_Id) return System.Parameters.Size_Type;
    --  Retrieve from the TCB of the task the allocated size of its stack,
-   --  either the system default or the size specified by a pragma. This
-   --  is in general a non-static value that can depend on discriminants
-   --  of the task.
+   --  either the system default or the size specified by a pragma. This is in
+   --  general a non-static value that can depend on discriminants of the task.
 
    type Bit_Array is array (Integer range <>) of Boolean;
    pragma Pack (Bit_Array);
@@ -429,8 +427,8 @@ package System.Tasking is
    subtype Debug_Event_Array is Bit_Array (1 .. 16);
 
    Global_Task_Debug_Event_Set : Boolean := False;
-   --  Set True when running under debugger control and a task debug
-   --  event signal has been requested.
+   --  Set True when running under debugger control and a task debug event
+   --  signal has been requested.
 
    ----------------------------------------------
    -- Ada_Task_Control_Block (ATCB) definition --

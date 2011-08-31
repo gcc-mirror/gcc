@@ -1,3 +1,13 @@
+2011-08-31  Robert Dewar  <dewar@adacore.com>
+
+	* s-taprop-vxworks.adb, sem_ch5.adb, s-taprop-tru64.adb, exp_alfa.adb,
+	s-taprop-vms.adb, bindgen.adb, s-mudido.adb, s-mudido.ads,
+	sem_res.adb, expander.adb, s-taprop-mingw.adb, s-taprop-linux.adb,
+	s-taprop-solaris.adb, s-mudido-affinity.adb, vms_conv.adb,
+	s-taprop-irix.adb, s-taprop.ads, s-taskin.adb, s-taskin.ads,
+	s-taprop-hpux-dce.adb, a-chtgbo.adb, s-taprop-posix.adb: Minor
+	reformatting.
+
 2011-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch12 (Check_Private_View): Revert previous change.

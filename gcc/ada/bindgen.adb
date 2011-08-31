@@ -240,7 +240,9 @@ package body Bindgen is
    -- Local Subprograms --
    -----------------------
 
-   procedure Check_File_In_Partition (File_Name : String; Flag : out Boolean);
+   procedure Check_File_In_Partition
+     (File_Name : String;
+      Flag      : out Boolean);
    --  If the file indicated by File_Name is in the partition the Flag is set
    --  to True, False otherwise.
 
@@ -401,7 +403,9 @@ package body Bindgen is
    -----------------------------
 
    procedure Check_File_In_Partition
-     (File_Name : String; Flag : out Boolean) is
+     (File_Name : String;
+      Flag      : out Boolean)
+   is
    begin
       for J in Units.First .. Units.Last loop
          if Get_Name_String (Units.Table (J).Sfile) = File_Name then

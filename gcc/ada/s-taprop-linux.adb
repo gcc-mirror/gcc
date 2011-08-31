@@ -885,6 +885,7 @@ package body System.Task_Primitives.Operations is
       elsif T.Common.Domain /= null then
          declare
             CPU_Set : aliased cpu_set_t := (bits => (others => False));
+
          begin
             --  Set the affinity to all the processors belonging to the
             --  dispatching domain.
@@ -1365,7 +1366,6 @@ package body System.Task_Primitives.Operations is
       if pthread_setaffinity_np'Address /= System.Null_Address then
          declare
             CPU_Set : access cpu_set_t := null;
-
             Result  : Interfaces.C.int;
 
          begin
@@ -1374,6 +1374,7 @@ package body System.Task_Primitives.Operations is
             --  domain, if any.
 
             if T.Common.Base_CPU /= Multiprocessors.Not_A_Specific_CPU then
+
                --  Set the affinity to an unique CPU
 
                CPU_Set := new cpu_set_t'(bits => (others => False));
@@ -1389,9 +1390,10 @@ package body System.Task_Primitives.Operations is
             --  Handle dispatching domains
 
             elsif T.Common.Domain /= null and then
-              (T.Common.Domain /= ST.System_Domain or else
-               T.Common.Domain.all /= (Multiprocessors.CPU'First ..
-                                       Multiprocessors.Number_Of_CPUs => True))
+              (T.Common.Domain /= ST.System_Domain
+                or else T.Common.Domain.all /=
+                          (Multiprocessors.CPU'First ..
+                           Multiprocessors.Number_Of_CPUs => True))
             then
                --  Set the affinity to all the processors belonging to the
                --  dispatching domain. To avoid changing CPU affinities when
@@ -1414,9 +1416,7 @@ package body System.Task_Primitives.Operations is
             if CPU_Set /= null then
                Result :=
                  pthread_setaffinity_np
-                   (T.Common.LL.Thread,
-                    CPU_SETSIZE / 8,
-                    CPU_Set);
+                   (T.Common.LL.Thread, CPU_SETSIZE / 8, CPU_Set);
                pragma Assert (Result = 0);
             end if;
          end;

@@ -1187,6 +1187,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Set_True (S : in out Suspension_Object) is
       Result : BOOL;
+
    begin
       SSL.Abort_Defer.all;
 
@@ -1203,6 +1204,7 @@ package body System.Task_Primitives.Operations is
 
          Result := SetEvent (S.CV);
          pragma Assert (Result = Win32.TRUE);
+
       else
          S.State := True;
       end if;
@@ -1226,6 +1228,7 @@ package body System.Task_Primitives.Operations is
       EnterCriticalSection (S.L'Access);
 
       if S.Waiting then
+
          --  Program_Error must be raised upon calling Suspend_Until_True
          --  if another task is already waiting on that suspension object
          --  (ARM D.10 par. 10).
@@ -1235,6 +1238,7 @@ package body System.Task_Primitives.Operations is
          SSL.Abort_Undefer.all;
 
          raise Program_Error;
+
       else
          --  Suspend the task if the state is False. Otherwise, the task
          --  continues its execution, and the state of the suspension object
@@ -1246,6 +1250,7 @@ package body System.Task_Primitives.Operations is
             LeaveCriticalSection (S.L'Access);
 
             SSL.Abort_Undefer.all;
+
          else
             S.Waiting := True;
 
@@ -1268,8 +1273,7 @@ package body System.Task_Primitives.Operations is
    -- Check_Exit --
    ----------------
 
-   --  Dummy versions.  The only currently working versions is for solaris
-   --  (native).
+   --  Dummy versions, currently this only works for solaris (native)
 
    function Check_Exit (Self_ID : ST.Task_Id) return Boolean is
       pragma Unreferenced (Self_ID);
@@ -1365,8 +1369,9 @@ package body System.Task_Primitives.Operations is
          --  The CPU numbering in pragma CPU starts at 1 while the subprogram
          --  to set the affinity starts at 0, therefore we must substract 1.
 
-         Result := SetThreadIdealProcessor
-           (T.Common.LL.Thread, ProcessorId (T.Common.Base_CPU) - 1);
+         Result :=
+           SetThreadIdealProcessor
+             (T.Common.LL.Thread, ProcessorId (T.Common.Base_CPU) - 1);
          pragma Assert (Result = 1);
 
       --  Task_Info
@@ -1381,10 +1386,12 @@ package body System.Task_Primitives.Operations is
 
       --  Dispatching domains
 
-      elsif T.Common.Domain /= null and then
-              (T.Common.Domain /= ST.System_Domain or else
-               T.Common.Domain.all /= (Multiprocessors.CPU'First ..
-                                       Multiprocessors.Number_Of_CPUs => True))
+      elsif T.Common.Domain /= null
+        and then (T.Common.Domain /= ST.System_Domain
+                   or else
+                     T.Common.Domain.all /=
+                       (Multiprocessors.CPU'First ..
+                        Multiprocessors.Number_Of_CPUs => True))
       then
          declare
             CPU_Set : DWORD := 0;
@@ -1392,6 +1399,7 @@ package body System.Task_Primitives.Operations is
          begin
             for Proc in T.Common.Domain'Range loop
                if T.Common.Domain (Proc) then
+
                   --  The thread affinity mask is a bit vector in which each
                   --  bit represents a logical processor.
 
