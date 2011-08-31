@@ -7214,6 +7214,7 @@ package body Sem_Ch6 is
 
       function Get_Generic_Parent_Type (F_Typ : Entity_Id) return Entity_Id is
          G_Typ : Entity_Id;
+         Defn  : Node_Id;
          Indic : Node_Id;
 
       begin
@@ -7226,19 +7227,21 @@ package body Sem_Ch6 is
             --  is needed for cases where a full derived type has been
             --  rewritten.)
 
-            Indic := Subtype_Indication
-                       (Type_Definition (Original_Node (Parent (F_Typ))));
+            Defn := Type_Definition (Original_Node (Parent (F_Typ)));
+            if Nkind (Defn) = N_Derived_Type_Definition then
+               Indic := Subtype_Indication (Defn);
 
-            if Nkind (Indic) = N_Subtype_Indication then
-               G_Typ := Entity (Subtype_Mark (Indic));
-            else
-               G_Typ := Entity (Indic);
-            end if;
+               if Nkind (Indic) = N_Subtype_Indication then
+                  G_Typ := Entity (Subtype_Mark (Indic));
+               else
+                  G_Typ := Entity (Indic);
+               end if;
 
-            if Nkind (Parent (G_Typ)) = N_Subtype_Declaration
-              and then Present (Generic_Parent_Type (Parent (G_Typ)))
-            then
-               return Generic_Parent_Type (Parent (G_Typ));
+               if Nkind (Parent (G_Typ)) = N_Subtype_Declaration
+                 and then Present (Generic_Parent_Type (Parent (G_Typ)))
+               then
+                  return Generic_Parent_Type (Parent (G_Typ));
+               end if;
             end if;
          end if;
 
@@ -7295,9 +7298,10 @@ package body Sem_Ch6 is
         and then In_Private_Part (Current_Scope)
         and then Comes_From_Source (New_E)
       then
-         --  We examine the formals and result subtype of the inherited
-         --  operation, to determine whether their type is derived from (the
-         --  instance of) a generic type.
+         --  We examine the formals and result type of the inherited operation,
+         --  to determine whether their type is derived from (the instance of)
+         --  a generic type. The first such formal or result type is the one
+         --  tested.
 
          Formal := First_Formal (Prev_E);
          while Present (Formal) loop
@@ -7308,6 +7312,7 @@ package body Sem_Ch6 is
             end if;
 
             G_Typ := Get_Generic_Parent_Type (F_Typ);
+            exit when Present (G_Typ);
 
             Next_Formal (Formal);
          end loop;

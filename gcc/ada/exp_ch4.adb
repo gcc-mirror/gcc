@@ -7920,7 +7920,12 @@ package body Exp_Ch4 is
       --  Insert explicit dereference if required
 
       if Is_Access_Type (Ptyp) then
-         Set_Etype (P, Ptyp); -- in case it's private
+
+         --  First set prefix type to proper access type, in case it currently
+         --  has a private (non-access) view of this type.
+
+         Set_Etype (P, Ptyp);
+
          Insert_Explicit_Dereference (P);
          Analyze_And_Resolve (P, Designated_Type (Ptyp));
 
