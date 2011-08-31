@@ -1788,9 +1788,8 @@ package body Exp_Ch5 is
 
       --  If the type is private without discriminants, and the full type
       --  has discriminants (necessarily with defaults) a check may still be
-      --  necessary if the Lhs is aliased. The private determinants must be
+      --  necessary if the Lhs is aliased. The private discriminants must be
       --  visible to build the discriminant constraints.
-      --  What is a "determinant"???
 
       --  Only an explicit dereference that comes from source indicates
       --  aliasing. Access to formals of protected operations and entries
@@ -1802,11 +1801,28 @@ package body Exp_Ch5 is
         and then Comes_From_Source (Lhs)
       then
          declare
-            Lt : constant Entity_Id := Etype (Lhs);
+            Lt  : constant Entity_Id := Etype (Lhs);
+            Ubt : Entity_Id          := Base_Type (Typ);
+
          begin
-            Set_Etype (Lhs, Typ);
-            Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
-            Apply_Discriminant_Check (Rhs, Typ, Lhs);
+            --  In the case of an expander-generated record subtype whose base
+            --  type still appears private, Typ will have been set to that
+            --  private type rather than the underlying record type (because
+            --  Underlying type will have returned the record subtype), so it's
+            --  necessary to apply Underlying_Type again to the base type to
+            --  get the record type we need for the discriminant check. Such
+            --  subtypes can be created for assignments in certain cases, such
+            --  as within an instantiation passed this kind of private type.
+            --  It would be good to avoid this special test, but making changes
+            --  to prevent this odd form of record subtype seems difficult. ???
+
+            if Is_Private_Type (Ubt) then
+               Ubt := Underlying_Type (Ubt);
+            end if;
+
+            Set_Etype (Lhs, Ubt);
+            Rewrite (Rhs, OK_Convert_To (Base_Type (Ubt), Rhs));
+            Apply_Discriminant_Check (Rhs, Ubt, Lhs);
             Set_Etype (Lhs, Lt);
          end;
 

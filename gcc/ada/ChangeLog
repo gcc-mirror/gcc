@@ -1,3 +1,12 @@
+2011-08-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): When a discriminant
+	check is needed for a left-hand side that is a dereference, and the
+	base type is private without discriminants (whereas the full type does
+	have discriminants), an extra retrieval of the underlying type may be
+	needed in the case where the subtype is a record subtype whose base
+	type is private. Update comments.
+
 2011-08-31  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch4.adb (Try_Object_Operation): When a dispatching primitive is
