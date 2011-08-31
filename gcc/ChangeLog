@@ -1,5 +1,12 @@
 2011-08-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* doc/md.texi: Describe the use of match_tests in attribute tests.
+	* rtl.def (MATCH_TEST): Update commentary.
+	* genattrtab.c (attr_copy_rtx, check_attr_test, clear_struct_flag)
+	(write_test_expr, walk_attr_value): Handle MATCH_TEST.
+
+2011-08-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* genattrtab.c (attr_rtx_1): Hash SYMBOL_REFs.
 	(attr_string): Use copy_md_ptr_loc.
 

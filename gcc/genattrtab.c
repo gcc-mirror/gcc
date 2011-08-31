@@ -658,6 +658,7 @@ attr_copy_rtx (rtx orig)
     case CONST_DOUBLE:
     case CONST_VECTOR:
     case SYMBOL_REF:
+    case MATCH_TEST:
     case CODE_LABEL:
     case PC:
     case CC0:
@@ -839,6 +840,11 @@ check_attr_test (rtx exp, int is_const, int lineno)
 
     case NOT:
       XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, lineno);
+      break;
+
+    case MATCH_TEST:
+      exp = attr_rtx (MATCH_TEST, XSTR (exp, 0));
+      ATTR_IND_SIMPLIFIED_P (exp) = 1;
       break;
 
     case MATCH_OPERAND:
@@ -2907,6 +2913,7 @@ clear_struct_flag (rtx x)
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:
+    case MATCH_TEST:
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
@@ -3571,6 +3578,12 @@ write_test_expr (rtx exp, unsigned int attrs_cached, int flags)
       printf (HOST_WIDE_INT_PRINT_DEC, XWINT (exp, 0));
       break;
 
+    case MATCH_TEST:
+      print_c_condition (XSTR (exp, 0));
+      if (flags & FLG_BITWISE)
+	printf (" != 0");
+      break;
+
     /* A random C expression.  */
     case SYMBOL_REF:
       print_c_condition (XSTR (exp, 0));
@@ -3765,6 +3778,7 @@ walk_attr_value (rtx exp)
       must_extract = 1;
       return;
 
+    case MATCH_TEST:
     case EQ_ATTR_ALT:
       must_extract = must_constrain = 1;
       break;

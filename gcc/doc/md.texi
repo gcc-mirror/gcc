@@ -7045,6 +7045,30 @@ string).
 
 The @var{constraints} operand is ignored and should be the null string.
 
+@cindex @code{match_test} and attributes
+@item (match_test @var{c-expr})
+The test is true if C expression @var{c-expr} is true.  In non-constant
+attributes, @var{c-expr} has access to the following variables:
+
+@table @var
+@item insn
+The rtl instruction under test.
+@item which_alternative
+The @code{define_insn} alternative that @var{insn} matches.
+@xref{Output Statement}.
+@item operands
+An array of @var{insn}'s rtl operands.
+@end table
+
+@var{c-expr} behaves like the condition in a C @code{if} statement,
+so there is no need to explicitly convert the expression into a boolean
+0 or 1 value.  For example, the following two tests are equivalent:
+
+@smallexample
+(match_test "x & 2")
+(match_test "(x & 2) != 0")
+@end smallexample
+
 @cindex @code{le} and attributes
 @cindex @code{leu} and attributes
 @cindex @code{lt} and attributes

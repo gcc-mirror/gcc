@@ -819,9 +819,8 @@ DEF_RTL_EXPR(MATCH_PAR_DUP, "match_par_dup", "iE", RTX_MATCH)
    the result of the one before it.  */
 DEF_RTL_EXPR(MATCH_CODE, "match_code", "ss", RTX_MATCH)
 
-/* Appears only in define_predicate/define_special_predicate
-    expressions.  The argument is a C expression to be injected at this
-    point in the predicate formula.  */
+/* Used to inject a C conditional expression into an .md file.  It can
+   appear in a predicate definition or an attribute expression.  */
 DEF_RTL_EXPR(MATCH_TEST, "match_test", "s", RTX_MATCH)
 
 /* Insn (and related) definitions.  */
