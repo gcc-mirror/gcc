@@ -3504,7 +3504,7 @@ package body Exp_Ch7 is
       --  this node and enclosed expression are not expanded, so do not apply
       --  any transformations here.
 
-      elsif ALFA_Mode
+      elsif Alfa_Mode
         and then Nkind (Wrap_Node) = N_Pragma
         and then Get_Pragma_Id (Wrap_Node) = Pragma_Check
       then

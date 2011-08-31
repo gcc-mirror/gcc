@@ -23,8 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the function used to read ALFA information from the
---  internal tables defined in package ALFA, and output text information for
+--  This package contains the function used to read Alfa information from the
+--  internal tables defined in package Alfa, and output text information for
 --  the ALI file. The interface allows control over the destination of the
 --  output, so that this routine can also be used for debugging purposes.
 
@@ -52,7 +52,7 @@ generic
    with procedure Write_Info_Terminate is <>;
    --  Terminate current info line and output lines built in Info_Buffer
 
-procedure Put_ALFA;
---  Read information from ALFA tables (ALFA.ALFA_Xref_Table,
---  ALFA.ALFA_Scope_Table and ALFA.ALFA_File_Table) and output corresponding
+procedure Put_Alfa;
+--  Read information from Alfa tables (Alfa.Alfa_Xref_Table,
+--  Alfa.Alfa_Scope_Table and Alfa.Alfa_File_Table) and output corresponding
 --  information in ALI format using the Write_Info procedures.

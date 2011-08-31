@@ -56,7 +56,7 @@ package body ALI is
       'S'    => True,   -- specific dispatching
       'Y'    => True,   -- limited_with
       'C'    => True,   -- SCO information
-      'F'    => True,   -- ALFA information
+      'F'    => True,   -- Alfa information
       others => False);
 
    --------------------
@@ -2442,7 +2442,7 @@ package body ALI is
       --  Here after dealing with xref sections
 
       --  Ignore remaining lines, which belong to an additional section of the
-      --  ALI file not considered here (like SCO or ALFA).
+      --  ALI file not considered here (like SCO or Alfa).
 
       Check_Unknown_Line;
 

@@ -28,7 +28,7 @@
 
 with Einfo;    use Einfo;
 with Lib.Util; use Lib.Util;
-with Put_ALFA;
+with Put_Alfa;
 
 package Lib.Xref is
 
@@ -582,13 +582,13 @@ package Lib.Xref is
    --  in the pragma is "there".
 
    ----------------------
-   -- ALFA Information --
+   -- Alfa Information --
    ----------------------
 
-   --  This package defines procedures for collecting ALFA information and
+   --  This package defines procedures for collecting Alfa information and
    --  printing in ALI files.
 
-   package ALFA is
+   package Alfa is
 
       function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id;
       --  Return the closest enclosing subprogram of package
@@ -610,17 +610,17 @@ package Lib.Xref is
       procedure Traverse_All_Compilation_Units (Process : Node_Processing);
       --  Call Process on all declarations through all compilation units
 
-      procedure Collect_ALFA (Sdep_Table : Unit_Ref_Table; Num_Sdep : Nat);
-      --  Collect ALFA information from library units (for files and scopes)
+      procedure Collect_Alfa (Sdep_Table : Unit_Ref_Table; Num_Sdep : Nat);
+      --  Collect Alfa information from library units (for files and scopes)
       --  and from cross-references. Fill in the tables in library package
-      --  called ALFA.
+      --  called Alfa.
 
-      procedure Output_ALFA is new Put_ALFA;
-      --  Output ALFA information to the ALI files, based on the information
-      --  collected in the tables in library package called ALFA, and using
+      procedure Output_Alfa is new Put_Alfa;
+      --  Output Alfa information to the ALI files, based on the information
+      --  collected in the tables in library package called Alfa, and using
       --  routines in Lib.Util.
 
-   end ALFA;
+   end Alfa;
 
    -----------------
    -- Subprograms --

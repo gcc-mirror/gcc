@@ -128,13 +128,13 @@ package body Expander is
          Debug_A_Entry ("expanding  ", N);
 
          begin
-            --  In ALFA mode we only need a very limited subset of the usual
+            --  In Alfa mode we only need a very limited subset of the usual
             --  expansions. This limited subset is implemented in Expand_Alfa.
 
-            if ALFA_Mode then
+            if Alfa_Mode then
                Expand_Alfa (N);
 
-            --  Here for normal non-ALFA mode
+            --  Here for normal non-Alfa mode
 
             else
                --  Processing depends on node kind. For full details on the

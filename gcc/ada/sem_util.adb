@@ -10632,8 +10632,8 @@ package body Sem_Util is
                --  In formal verification mode, keep track of all reads and
                --  writes through explicit dereferences.
 
-               if ALFA_Mode then
-                  ALFA.Generate_Dereference (N, 'm');
+               if Alfa_Mode then
+                  Alfa.Generate_Dereference (N, 'm');
                end if;
 
                if Nkind (P) = N_Selected_Component

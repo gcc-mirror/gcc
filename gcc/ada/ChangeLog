@@ -1,3 +1,17 @@
+2011-08-31  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-taprop-linux.adb (Set_Task_Affinity): Avoid the use of anonymous
+	access types.
+	* affinity.c (__gnat_set_affinity_mask): Declare index variable.
+
+2011-08-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Refine expander test in
+	full-expander test.
+	Minor reformatting, renaming ALFA in Alfa (we dropped acronym)
+	* einfo.adb (Primitive_Operations): Correctly return list of primitive
+	operations in a case where it returned previously No_Elist.
+
 2011-08-31  Robert Dewar  <dewar@adacore.com>
 
 	* s-taprop-vxworks.adb, sem_ch5.adb, s-taprop-tru64.adb, exp_alfa.adb,

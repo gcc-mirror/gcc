@@ -2023,7 +2023,7 @@ package body Sem_Ch5 is
 
                   if Nkind (D_Copy) = N_Function_Call
                     or else
-                      (ALFA_Mode
+                      (Alfa_Mode
                         and then (Nkind (D_Copy) = N_Attribute_Reference
                         and then
                           (Attribute_Name (D_Copy) = Name_Result

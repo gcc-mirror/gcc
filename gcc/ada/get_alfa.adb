@@ -23,12 +23,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with ALFA;  use ALFA;
+with Alfa;  use Alfa;
 with Types; use Types;
 
 with Ada.IO_Exceptions; use Ada.IO_Exceptions;
 
-procedure Get_ALFA is
+procedure Get_Alfa is
    C : Character;
 
    use ASCII;
@@ -41,10 +41,10 @@ procedure Get_ALFA is
    --  Scope number for the current scope entity
 
    Cur_File_Idx : File_Index;
-   --  Index in ALFA_File_Table of the current file
+   --  Index in Alfa_File_Table of the current file
 
    Cur_Scope_Idx : Scope_Index;
-   --  Index in ALFA_Scope_Table of the current scope
+   --  Index in Alfa_Scope_Table of the current scope
 
    Name_Str : String (1 .. 32768);
    Name_Len : Natural := 0;
@@ -193,17 +193,17 @@ procedure Get_ALFA is
       end loop;
    end Skip_Spaces;
 
---  Start of processing for Get_ALFA
+--  Start of processing for Get_Alfa
 
 begin
-   Initialize_ALFA_Tables;
+   Initialize_Alfa_Tables;
 
    Cur_File      := 0;
    Cur_Scope     := 0;
    Cur_File_Idx  := 1;
    Cur_Scope_Idx := 0;
 
-   --  Loop through lines of ALFA information
+   --  Loop through lines of Alfa information
 
    while Nextc = 'F' loop
       Skipc;
@@ -212,7 +212,7 @@ begin
 
       --  Make sure first line is a File line
 
-      if ALFA_File_Table.Last = 0 and then C /= 'D' then
+      if Alfa_File_Table.Last = 0 and then C /= 'D' then
          raise Data_Error;
       end if;
 
@@ -226,9 +226,9 @@ begin
 
             --  Complete previous entry if any
 
-            if ALFA_File_Table.Last /= 0 then
-               ALFA_File_Table.Table (ALFA_File_Table.Last).To_Scope :=
-                 ALFA_Scope_Table.Last;
+            if Alfa_File_Table.Last /= 0 then
+               Alfa_File_Table.Table (Alfa_File_Table.Last).To_Scope :=
+                 Alfa_Scope_Table.Last;
             end if;
 
             --  Scan out dependency number and file name
@@ -240,10 +240,10 @@ begin
 
             --  Make new File table entry (will fill in To_Scope later)
 
-            ALFA_File_Table.Append (
+            Alfa_File_Table.Append (
               (File_Name  => new String'(Name_Str (1 .. Name_Len)),
                File_Num   => Cur_File,
-               From_Scope => ALFA_Scope_Table.Last + 1,
+               From_Scope => Alfa_Scope_Table.Last + 1,
                To_Scope   => 0));
 
             --  Initialize counter for scopes
@@ -300,7 +300,7 @@ begin
                --  To_Xref later). Initial range (From_Xref .. To_Xref) is
                --  empty for scopes without entities.
 
-               ALFA_Scope_Table.Append (
+               Alfa_Scope_Table.Append (
                  (Scope_Entity   => Empty,
                   Scope_Name     => new String'(Name_Str (1 .. Name_Len)),
                   File_Num       => Cur_File,
@@ -332,7 +332,7 @@ begin
             --  Update component From_Xref of current file if first reference
             --  in this file.
 
-            while ALFA_File_Table.Table (Cur_File_Idx).File_Num /= Cur_File
+            while Alfa_File_Table.Table (Cur_File_Idx).File_Num /= Cur_File
             loop
                Cur_File_Idx := Cur_File_Idx + 1;
             end loop;
@@ -348,21 +348,21 @@ begin
             --  Update component To_Xref of previous scope
 
             if Cur_Scope_Idx /= 0 then
-               ALFA_Scope_Table.Table (Cur_Scope_Idx).To_Xref :=
-                 ALFA_Xref_Table.Last;
+               Alfa_Scope_Table.Table (Cur_Scope_Idx).To_Xref :=
+                 Alfa_Xref_Table.Last;
             end if;
 
             --  Update component From_Xref of current scope
 
-            Cur_Scope_Idx := ALFA_File_Table.Table (Cur_File_Idx).From_Scope;
+            Cur_Scope_Idx := Alfa_File_Table.Table (Cur_File_Idx).From_Scope;
 
-            while ALFA_Scope_Table.Table (Cur_Scope_Idx).Scope_Num /= Cur_Scope
+            while Alfa_Scope_Table.Table (Cur_Scope_Idx).Scope_Num /= Cur_Scope
             loop
                Cur_Scope_Idx := Cur_Scope_Idx + 1;
             end loop;
 
-            ALFA_Scope_Table.Table (Cur_Scope_Idx).From_Xref :=
-              ALFA_Xref_Table.Last + 1;
+            Alfa_Scope_Table.Table (Cur_Scope_Idx).From_Xref :=
+              Alfa_Xref_Table.Last + 1;
 
          --  Cross reference entry
 
@@ -437,7 +437,7 @@ begin
                               Rtype = 'm' or else
                               Rtype = 's');
 
-                           ALFA_Xref_Table.Append (
+                           Alfa_Xref_Table.Append (
                              (Entity_Name => XR_Entity,
                               Entity_Line => XR_Entity_Line,
                               Etype       => XR_Entity_Typ,
@@ -453,7 +453,7 @@ begin
                end loop;
             end;
 
-         --  No other ALFA lines are possible
+         --  No other Alfa lines are possible
 
          when others =>
             raise Data_Error;
@@ -468,12 +468,12 @@ begin
 
    --  Here with all Xrefs stored, complete last entries in File/Scope tables
 
-   if ALFA_File_Table.Last /= 0 then
-      ALFA_File_Table.Table (ALFA_File_Table.Last).To_Scope :=
-        ALFA_Scope_Table.Last;
+   if Alfa_File_Table.Last /= 0 then
+      Alfa_File_Table.Table (Alfa_File_Table.Last).To_Scope :=
+        Alfa_Scope_Table.Last;
    end if;
 
    if Cur_Scope_Idx /= 0 then
-      ALFA_Scope_Table.Table (Cur_Scope_Idx).To_Xref := ALFA_Xref_Table.Last;
+      Alfa_Scope_Table.Table (Cur_Scope_Idx).To_Xref := Alfa_Xref_Table.Last;
    end if;
-end Get_ALFA;
+end Get_Alfa;

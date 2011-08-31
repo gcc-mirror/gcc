@@ -1872,14 +1872,14 @@ package Opt is
    -- Modes for Formal Verification --
    -----------------------------------
 
-   ALFA_Mode : Boolean := False;
+   Alfa_Mode : Boolean := False;
    --  Specific compiling mode targeting formal verification through the
    --  generation of Why code for those parts of the input code that belong to
-   --  the ALFA subset of Ada. Set by debug flag -gnatd.F.
+   --  the Alfa subset of Ada. Set by debug flag -gnatd.F.
 
    function Full_Expander_Active return Boolean;
    pragma Inline (Full_Expander_Active);
-   --  Returns the value of (Expander_Active and not ALFA_Mode). This "flag"
+   --  Returns the value of (Expander_Active and not Alfa_Mode). This "flag"
    --  indicates that expansion is fully active, that is, not in the reduced
    --  mode for Alfa (True) or that expansion is either deactivated, or active
    --  in the reduced mode for Alfa (False). For more information on full

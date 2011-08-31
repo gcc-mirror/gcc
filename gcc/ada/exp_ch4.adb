@@ -6292,7 +6292,7 @@ package body Exp_Ch4 is
 
       --  CodePeer and GNATprove want to see the unexpanded N_Op_Expon node
 
-      if CodePeer_Mode or ALFA_Mode then
+      if CodePeer_Mode or Alfa_Mode then
          return;
       end if;
 
