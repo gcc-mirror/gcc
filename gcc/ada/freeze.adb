@@ -1839,11 +1839,16 @@ package body Freeze is
                   --  since the component type has to be frozen for us to know
                   --  if it is variable length. We omit this test in a generic
                   --  context, it will be applied at instantiation time.
+                  --  We also omit this test in CodePeer mode, since we do not
+                  --  have sufficient info on size and representation clauses.
 
                   if Present (CC) then
                      Placed_Component := True;
 
                      if Inside_A_Generic then
+                        null;
+
+                     elsif CodePeer_Mode then
                         null;
 
                      elsif not

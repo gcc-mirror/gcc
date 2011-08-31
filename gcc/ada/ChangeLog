@@ -1,3 +1,39 @@
+2011-08-31  Pascal Obry  <obry@adacore.com>
+
+	* a-direct.adb: Do not try to create an UNC path on Windows.
+	(Create_Path): Skip leading computer name in UNC path if any.
+
+2011-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_strm.adb (Build_Record_Or_Elementary_Input_Function): Remove the
+	version-dependent generation of the return statement. The Ada 2005 tree
+	is now the default.
+
+2011-08-31  Thomas Quinot  <quinot@adacore.com>
+
+	* rtsfind.ads, exp_dist.adb (Find_Numeric_Representation): Predefined
+	types Stream_Element_Offset and Storage_Offset have a different native
+	type depending on whether the platform is 32 or 64 bits. When
+	exchanging them, always convert to 64 bits.
+
+2011-08-31  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb: Reserve debug option -gnatd.E for passing gnatprove option
+	--force-alfa to gnat2why.
+
+2011-08-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Save_References): If the node has aspects, save
+	references within the corresponding expressions in a separate step,
+	because the aspects are not directly in the tree for the declaration
+	to which they belong.
+
+2011-08-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Omit test on variable size component
+	in CodePeer mode, since representation clauses are partially ignored.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2011-08-31  Jose Ruiz  <ruiz@adacore.com>
 
 	* s-taprop-vxworks.adb, s-taprop-mingw.adb, s-taprop-linux.adb,

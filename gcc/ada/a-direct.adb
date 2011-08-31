@@ -435,6 +435,7 @@ package body Ada.Directories is
 
       New_Dir : String (1 .. New_Directory'Length + 1);
       Last    : Positive := 1;
+      Start   : Positive := 1;
 
    begin
       --  First, the invalid case
@@ -450,9 +451,24 @@ package body Ada.Directories is
          New_Dir (1 .. New_Directory'Length) := New_Directory;
          New_Dir (New_Dir'Last) := Directory_Separator;
 
+         if Directory_Separator = '\'
+           and then New_Dir'Length > 2
+           and then Is_In (New_Dir (1), Dir_Seps)
+           and then Is_In (New_Dir (2), Dir_Seps)
+         then
+            Start := 2;
+            --  If the first two characters are directory separators and host
+            --  is windows, we have an UNC path. Skip it.
+            loop
+               Start := Start + 1;
+               exit when Start = New_Dir'Last
+                 or else Is_In (New_Dir (Start), Dir_Seps);
+            end loop;
+         end if;
+
          --  Create, if necessary, each directory in the path
 
-         for J in 2 .. New_Dir'Last loop
+         for J in Start + 1 .. New_Dir'Last loop
 
             --  Look for the end of an intermediate directory
 
