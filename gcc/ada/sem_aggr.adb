@@ -1052,8 +1052,14 @@ package body Sem_Aggr is
       end if;
 
       --  Ada 2005 (AI-287): Limited aggregates allowed
+      --  In an instance, ignore aggregate subcomponents tnat may be limited,
+      --  because they originate in view conflicts. If the original aggregate
+      --  is legal and the actuals are legal, the aggregate itself is legal.
 
-      if Is_Limited_Type (Typ) and then Ada_Version < Ada_2005 then
+      if Is_Limited_Type (Typ)
+        and then Ada_Version < Ada_2005
+        and then not In_Instance
+      then
          Error_Msg_N ("aggregate type cannot be limited", N);
          Explain_Limited_Type (Typ, N);
 

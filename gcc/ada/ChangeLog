@@ -1,3 +1,70 @@
+2011-08-31  Jose Ruiz  <ruiz@adacore.com>
+
+	* aspects.ads (Aspect_Id, Aspect_Argument, Aspect_Names): Add the
+	dispatching domain aspect.
+	* aspects.adb (Canonical_Aspect): Add entry for the dispatching domain
+	aspect.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Analyze the
+	Dispatching_Domain aspect in a similar way as we do for the Priority
+	aspect.
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration): Add the
+	Dispatching_Domain component if a Dispatching_Domain pragma or aspect
+	is present.
+	(Make_Task_Create_Call): Add the Dispatching_Domain when creating a task
+	* par-prag.adb (Prag): Add Pragma_Dispatching_Domain as a known pragma.
+	* sem_prag.adb (Analyze_Pragma): Check the correctness of a pragma
+	Dispatching_Domain and add it to the task definition.
+	(Sig_Flags): Add Pragma_Dispatching_Domain.
+	* rtsfind.ads, rtsfind.adb (RTU_Id, RE_Id, Get_Unit_Name): Add the
+	support to find the types Dispatching_Domain and
+	Dispatching_Domain_Access.
+	* sinfo.ads, sinfo.adb (Has_Pragma_Dispatching_Domain,
+	Set_Has_Pragma_Dispatching_Domain): Add these subprograms to set and
+	query the availability of a pragma Dispatching_Domain.
+	* snames.ads-tmpl (Name_uDispatching_Domain): Add this name required by
+	the expander to pass the Dispatching_Domain when creating a task.
+	(Name_Dispatching_Domain): Add this new name for a pragma.
+	(Pragma_Id): Add the new Pragma_Dispatching_Domain.
+	* s-tassta.ads, s-tassta.adb (Create_Task): Set the domain to which the
+	task has been allocated at creation time.
+	* s-tarest.adb (Create_Restricted_Task): The dispatching domain using
+	Ravenscar is always null.
+	* s-taskin.ads, s-taskin.adb (Initialize_ATCB): Set the domain to which
+	the task has been allocated at creation time.
+	* s-tporft.adb (Register_Foreign_Thread): A foreign task will not have
+	a specific dispatching domain.
+	* s-taprop-linux.adb, s-taprop-solaris.adb, s-taprop-vxworks.adb,
+	s-taprop-mingw.adb (Create_Task): Check whether both Dispatching_Domain
+	and CPU are specified for the task, and the CPU value is not contained
+	within the range of processors for the domain.
+
+2011-08-31  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Original_Gcc) : New constant String_Access.
+	(Gnatmake): For VM targets, do not use VM version of the compiler if
+	--GCC= has been specified.
+
+2011-08-31  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch5.adb: Minor reformatting.
+
+2011-08-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_pakd.adb (Convert_To_PAT_Type): If prefix is a function call, do
+	not reanalyze it.
+
+2011-08-31  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Selected_Component): Use the full type, in case
+	the access type is private; we don't care about privacy in expansion.
+
+2011-08-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate): In an instance, ignore aggregate
+	subcomponents tnat may be limited, because they originate in view
+	conflicts. If the original aggregate is legal and the actuals are
+	legal, the aggregate itself is legal.
+
 2011-08-31  Matthew Heaney  <heaney@adacore.com>
 
 	* a-rbtgbo.adb (Clear_Tree): Assert representation invariant for lock

@@ -1471,6 +1471,14 @@ package body Sinfo is
       return Flag14 (N);
    end Has_Pragma_CPU;
 
+   function Has_Pragma_Dispatching_Domain
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Task_Definition);
+      return Flag15 (N);
+   end Has_Pragma_Dispatching_Domain;
+
    function Has_Pragma_Priority
       (N : Node_Id) return Boolean is
    begin
@@ -4512,6 +4520,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Task_Definition);
       Set_Flag14 (N, Val);
    end Set_Has_Pragma_CPU;
+
+   procedure Set_Has_Pragma_Dispatching_Domain
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Task_Definition);
+      Set_Flag15 (N, Val);
+   end Set_Has_Pragma_Dispatching_Domain;
 
    procedure Set_Has_Pragma_Priority
       (N : Node_Id; Val : Boolean := True) is

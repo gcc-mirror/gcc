@@ -505,11 +505,13 @@ package body System.Tasking.Restricted.Stages is
       Write_Lock (Self_ID);
 
       --  With no task hierarchy, the parent of all non-Environment tasks that
-      --  are created must be the Environment task
+      --  are created must be the Environment task. Dispatching domains are
+      --  not allowed in Ravenscar, so the dispatching domain parameter will
+      --  always be null.
 
       Initialize_ATCB
         (Self_ID, State, Discriminants, Self_ID, Elaborated, Base_Priority,
-         Base_CPU, Task_Info, Size, Created_Task, Success);
+         Base_CPU, null, Task_Info, Size, Created_Task, Success);
 
       --  If we do our job right then there should never be any failures, which
       --  was probably said about the Titanic; so just to be safe, let's retain

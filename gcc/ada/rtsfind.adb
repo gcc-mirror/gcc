@@ -321,6 +321,10 @@ package body Rtsfind is
       elsif U_Id in System_Child then
          Name_Buffer (7) := '.';
 
+         if U_Id in System_Multiprocessors_Child then
+            Name_Buffer (23) := '.';
+         end if;
+
          if U_Id in System_Storage_Pools_Child then
             Name_Buffer (21) := '.';
          end if;

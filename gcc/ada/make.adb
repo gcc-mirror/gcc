@@ -671,7 +671,12 @@ package body Make is
    -- Compiler, Binder & Linker Data and Subprograms --
    ----------------------------------------------------
 
-   Gcc      : String_Access := Program_Name ("gcc", "gnatmake");
+   Gcc          : String_Access := Program_Name ("gcc", "gnatmake");
+   Original_Gcc : constant String_Access := Gcc;
+   --  Original_Gcc is used to check if Gcc has been modified by a switch
+   --  --GCC=, so that for VM platforms, it is not modified again, as it can
+   --  result in incorrect error messages if the compiler cannot be found.
+
    Gnatbind : String_Access := Program_Name ("gnatbind", "gnatmake");
    Gnatlink : String_Access := Program_Name ("gnatlink", "gnatmake");
    --  Default compiler, binder, linker programs
@@ -5973,10 +5978,6 @@ package body Make is
          Gnatlink := Saved_Gnatlink;
       end if;
 
-      Gcc_Path       := GNAT.OS_Lib.Locate_Exec_On_Path (Gcc.all);
-      Gnatbind_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatbind.all);
-      Gnatlink_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatlink.all);
-
       Bad_Compilation.Init;
 
       --  If project files are used, create the mapping of all the sources, so
@@ -6068,15 +6069,28 @@ package body Make is
                      --  instead.
 
                      Check_Object_Consistency := False;
-                     Gcc := new String'("jvm-gnatcompile");
+
+                     --  Do not modify Gcc is --GCC= was specified
+
+                     if Gcc = Original_Gcc then
+                        Gcc := new String'("jvm-gnatcompile");
+                     end if;
 
                   when Targparm.CLI_Target =>
-                     Gcc := new String'("dotnet-gnatcompile");
+                     --  Do not modify Gcc is --GCC= was specified
+
+                     if Gcc = Original_Gcc then
+                        Gcc := new String'("dotnet-gnatcompile");
+                     end if;
 
                   when Targparm.No_VM =>
                      raise Program_Error;
                end case;
             end if;
+
+            Gcc_Path       := GNAT.OS_Lib.Locate_Exec_On_Path (Gcc.all);
+            Gnatbind_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatbind.all);
+            Gnatlink_Path  := GNAT.OS_Lib.Locate_Exec_On_Path (Gnatlink.all);
 
             --  If we have specified -j switch both from the project file
             --  and on the command line, the one from the command line takes
