@@ -1120,13 +1120,13 @@ package body Exp_Strm is
       Fnam : out Entity_Id)
    is
       Cn       : Name_Id;
-      J        : Pos;
-      Decls    : List_Id;
       Constr   : List_Id;
-      Obj_Decl : Node_Id;
-      Stms     : List_Id;
+      Decls    : List_Id;
       Discr    : Entity_Id;
+      J        : Pos;
+      Obj_Decl : Node_Id;
       Odef     : Node_Id;
+      Stms     : List_Id;
 
    begin
       Decls  := New_List;
@@ -1183,12 +1183,10 @@ package body Exp_Strm is
          Odef := New_Occurrence_Of (Typ, Loc);
       end if;
 
-      --  For Ada 2005 we create an extended return statement encapsulating
-      --  the result object and 'Read call, which is needed in general for
-      --  proper handling of build-in-place results (such as when the result
-      --  type is inherently limited).
-
-      --  Perhaps we should just generate an extended return in all cases???
+      --  Create an extended return statement encapsulating the result object
+      --  and 'Read call, which is needed in general for proper handling of
+      --  build-in-place results (such as when the result type is inherently
+      --  limited).
 
       Obj_Decl :=
         Make_Object_Declaration (Loc,
@@ -1203,33 +1201,18 @@ package body Exp_Strm is
          Set_No_Initialization (Obj_Decl);
       end if;
 
-      if Ada_Version >= Ada_2005 then
-         Stms := New_List (
-           Make_Extended_Return_Statement (Loc,
-             Return_Object_Declarations => New_List (Obj_Decl),
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of (Typ, Loc),
-                     Attribute_Name => Name_Read,
-                     Expressions    => New_List (
-                       Make_Identifier (Loc, Name_S),
-                       Make_Identifier (Loc, Name_V)))))));
-      else
-         Append_To (Decls, Obj_Decl);
-
-         Stms := New_List (
-            Make_Attribute_Reference (Loc,
-              Prefix => New_Occurrence_Of (Typ, Loc),
-              Attribute_Name => Name_Read,
-              Expressions => New_List (
-                Make_Identifier (Loc, Name_S),
-                Make_Identifier (Loc, Name_V))),
-
-            Make_Simple_Return_Statement (Loc,
-              Expression => Make_Identifier (Loc, Name_V)));
-      end if;
+      Stms := New_List (
+        Make_Extended_Return_Statement (Loc,
+          Return_Object_Declarations => New_List (Obj_Decl),
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (
+                Make_Attribute_Reference (Loc,
+                  Prefix         => New_Occurrence_Of (Typ, Loc),
+                  Attribute_Name => Name_Read,
+                  Expressions    => New_List (
+                    Make_Identifier (Loc, Name_S),
+                    Make_Identifier (Loc, Name_V)))))));
 
       Fnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Input);
 

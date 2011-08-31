@@ -12737,6 +12737,23 @@ package body Sem_Ch12 is
                end if;
             end;
          end if;
+
+         --  If a node has aspects, references within their expressions must
+         --  be saved separately, given that they are not directly in the
+         --  tree.
+
+         if Has_Aspects (N) then
+            declare
+               Aspect : Node_Id;
+
+            begin
+               Aspect := First (Aspect_Specifications (N));
+               while Present (Aspect) loop
+                  Save_Global_References (Expression (Aspect));
+                  Next (Aspect);
+               end loop;
+            end;
+         end if;
       end Save_References;
 
    --  Start of processing for Save_Global_References

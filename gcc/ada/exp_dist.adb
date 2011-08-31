@@ -10842,6 +10842,15 @@ package body Exp_Dist is
             P_Size : constant Uint      := Esize (FST);
 
          begin
+            --  Special case: for Stream_Element_Offset and Storage_Offset,
+            --  always force transmission as a 64-bit value.
+
+            if Is_RTE (FST, RE_Stream_Element_Offset)
+                 or else Is_RTE (FST, RE_Storage_Offset)
+            then
+               return RTE (RE_Unsigned_64);
+            end if;
+
             if Is_Unsigned_Type (Typ) then
                if P_Size <= 8 then
                   return RTE (RE_Unsigned_8);
