@@ -1046,6 +1046,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
             Process (Cursor'(Container'Unrestricted_Access, Node));
             Node := Container.Nodes (Node).Next;
          end loop;
+
       exception
          when others =>
             B := B - 1;
@@ -1055,8 +1056,9 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       B := B - 1;
    end Iterate;
 
-   function Iterate (Container : List)
-     return List_Iterator_Interfaces.Reversible_Iterator'class
+   function Iterate
+     (Container : List)
+      return List_Iterator_Interfaces.Reversible_Iterator'class
    is
    begin
       if Container.Length = 0 then
@@ -1066,8 +1068,10 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       end if;
    end Iterate;
 
-   function Iterate (Container : List; Start : Cursor)
-     return List_Iterator_Interfaces.Reversible_Iterator'class
+   function Iterate
+     (Container : List;
+      Start     : Cursor)
+      return List_Iterator_Interfaces.Reversible_Iterator'class
    is
       It : constant Iterator := (Container'Unrestricted_Access, Start.Node);
    begin

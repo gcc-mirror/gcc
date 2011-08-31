@@ -1,5 +1,40 @@
 2011-08-31  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch5.adb, exp_ch7.ads, sem_ch5.adb, put_scos.adb, s-rannum.adb,
+	a-rbtgbo.adb, exp_intr.adb, a-cbdlli.adb, a-cbdlli.ads: Minor
+	reformatting.
+
+2011-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Find_Protection_Type): Do not look for fields _object
+	if the corresponding type is malformed due to restriction violations.
+
+2011-08-31  Robert Dewar  <dewar@adacore.com>
+
+	* s-ransee.ads, s-ransee.adb: Minor reformatting.
+
+2011-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Correct faulty condition which
+	would cause the generation of Set_Finalize_Address if the target is a
+	VM and the designated type is not derived from [Limited_]Controlled.
+
+2011-08-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* comperr.adb, comperr.ads, gnat1drv.adb (Delete_SCIL_Files): New
+	subprogram.
+	(Compiler_Abort, Gnat1drv): Call Delete_SCIL_Files in codepeer mode in
+	case of a compilation error.
+
+2011-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* init.c (__gnat_error_handler): Standardize the stack overflow or
+	erroneous memory access message.
+	* seh_init.c (__gnat_SEH_error_handler): Standardize the stack overflow
+	or erroneous memory access message.
+
+2011-08-31  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch4.adb: Minor reformatting.
 	* sem_ch6.adb: Minor code reorganization (use Ekind_In).
 

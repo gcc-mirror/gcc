@@ -29,6 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Version used on all systems except Ravenscar where Calendar is unavailable
+
 with Ada.Calendar; use Ada.Calendar;
 
 package body System.Random_Seed is

@@ -87,6 +87,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Conversion;
+
 with System.Random_Seed;
 
 with Interfaces; use Interfaces;
@@ -480,7 +481,7 @@ package body System.Random_Numbers is
 
    procedure Reset (Gen : Generator) is
       X : constant Unsigned_32 :=
-           Unsigned_32'Mod (Unsigned_64 (Random_Seed.Get_Seed) * 64);
+            Unsigned_32'Mod (Unsigned_64 (Random_Seed.Get_Seed) * 64);
       --  Why * 64 ???
 
    begin

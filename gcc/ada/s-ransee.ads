@@ -31,11 +31,13 @@
 
 --  This package provide a seed for pseudo-random number generation using
 --  the clock.
+
 --  There are two separate implementations of this package:
 --  o  one based on Ada.Calendar
 --  o  one based on Ada.Real_Time
+
 --  This is required because Ada.Calendar cannot be used on ravenscar, but
---  Ada.Real_Time drags the tasking runtime on regular platforms.
+--  Ada.Real_Time drags in the whole tasking runtime on regular platforms.
 
 package System.Random_Seed is
 

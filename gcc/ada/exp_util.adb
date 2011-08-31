@@ -2313,6 +2313,15 @@ package body Exp_Util is
          Typ := Corresponding_Record_Type (Typ);
       end if;
 
+      --  Since restriction violations are not considered serious errors, the
+      --  expander remains active, but may leave the corresponding record type
+      --  malformed. In such cases, component _object is not available so do
+      --  not look for it.
+
+      if not Analyzed (Typ) then
+         return Empty;
+      end if;
+
       Comp := First_Component (Typ);
       while Present (Comp) loop
          if Chars (Comp) = Name_uObject then

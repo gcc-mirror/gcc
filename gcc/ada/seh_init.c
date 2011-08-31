@@ -99,7 +99,7 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
 	{
 	  /* otherwise it is a stack overflow  */
 	  exception = &storage_error;
-	  msg = "stack overflow (or erroneous memory access)";
+	  msg = "stack overflow or erroneous memory access";
 	}
       break;
 

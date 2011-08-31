@@ -2244,9 +2244,8 @@ package body Sem_Ch5 is
       Typ : Entity_Id;
 
    begin
-      --  In semantics mode, introduce loop variable so that
-      --  loop body can be properly analyzed. Otherwise this
-      --  is one after expansion.
+      --  In semantics mode, introduce loop variable so that loop body can be
+      --  properly analyzed. Otherwise this is one after expansion.
 
       if Operating_Mode = Check_Semantics then
          Enter_Name (Def_Id);
@@ -2335,7 +2334,7 @@ package body Sem_Ch5 is
             Error_Msg_N
               ("to iterate over the elements of an array, use OF", N);
 
-            --  Prevent cascaded errors.
+            --  Prevent cascaded errors
 
             Set_Ekind (Def_Id, E_Constant);
             Set_Etype (Def_Id, Etype (First_Index (Typ)));
@@ -2496,11 +2495,11 @@ package body Sem_Ch5 is
         or else not Expander_Active
       then
          if Present (Iter)
-           and then  Present (Iterator_Specification (Iter))
+           and then Present (Iterator_Specification (Iter))
          then
             declare
                Id : constant Entity_Id :=
-                  Defining_Identifier (Iterator_Specification (Iter));
+                      Defining_Identifier (Iterator_Specification (Iter));
             begin
                if Scope (Id) /= Current_Scope then
                   Enter_Name (Id);
