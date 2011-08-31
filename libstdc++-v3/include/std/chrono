@@ -395,7 +395,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	return __cd(__cd(__d).count() * __s);
       }
 
-    template<typename _Rep1, typename _Period, typename _Rep2>
+    template<typename _Rep1, typename _Rep2, typename _Period>
       constexpr
       duration<typename __common_rep_type<_Rep2, _Rep1>::type, _Period>
       operator*(const _Rep1& __s, const duration<_Rep2, _Period>& __d)
