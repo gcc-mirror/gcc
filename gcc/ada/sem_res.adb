@@ -1725,7 +1725,7 @@ package body Sem_Res is
    --  Start of processing for Replace_Actual_Discriminants
 
    begin
-      if not Expander_Active then
+      if not Full_Expander_Active then
          return;
       end if;
 
@@ -1970,7 +1970,7 @@ package body Sem_Res is
                if (Attr = Attribute_Access           or else
                    Attr = Attribute_Unchecked_Access or else
                    Attr = Attribute_Unrestricted_Access)
-                 and then Expander_Active
+                 and then Full_Expander_Active
                  and then Get_PCS_Name /= Name_No_DSA
                then
                   Check_Subtype_Conformant
@@ -6833,7 +6833,7 @@ package body Sem_Res is
 
          --  Why the Expander_Active test here ???
 
-         if Expander_Active
+         if Full_Expander_Active
            and then
              (Ekind_In (T, E_Anonymous_Access_Type,
                            E_Anonymous_Access_Subprogram_Type)
@@ -7148,7 +7148,7 @@ package body Sem_Res is
       --  We must preserve the original entity in a generic setting, so that
       --  the legality of the operation can be verified in an instance.
 
-      if not Expander_Active then
+      if not Full_Expander_Active then
          return;
       end if;
 
@@ -8197,7 +8197,7 @@ package body Sem_Res is
       --  transformation while analyzing generic units, as type information
       --  would be lost when reanalyzing the constant node in the instance.
 
-      if Is_Discrete_Type (Typ) and then Expander_Active then
+      if Is_Discrete_Type (Typ) and then Full_Expander_Active then
          if Is_OK_Static_Expression (L) then
             Fold_Uint  (L, Expr_Value (L), Is_Static_Expression (L));
          end if;
@@ -9345,7 +9345,7 @@ package body Sem_Res is
       --  expression coincides with the target type.
 
       if Ada_Version >= Ada_2005
-        and then Expander_Active
+        and then Full_Expander_Active
         and then Operand_Typ /= Target_Typ
       then
          declare
@@ -9844,7 +9844,7 @@ package body Sem_Res is
       --  premature (e.g. if the slice is within a transient scope). This needs
       --  to be done only if expansion is enabled.
 
-      elsif Expander_Active then
+      elsif Full_Expander_Active then
          Ensure_Defined (Typ => Slice_Subtype, N => N);
       end if;
    end Set_Slice_Subtype;

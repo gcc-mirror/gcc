@@ -58,6 +58,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
@@ -92,13 +93,11 @@ package body Exp_Ch4 is
    --  If a boolean array assignment can be done in place, build call to
    --  corresponding library procedure.
 
-   function Current_Unit_First_Declaration return Node_Id;
-   --  Return the current unit's first declaration. If the declaration list is
-   --  empty, the routine generates a null statement and returns it.
-
-   function Current_Unit_Scope return Entity_Id;
-   --  Return the scope of the current unit. If the current unit is a body,
-   --  return the scope of the spec.
+   function Current_Anonymous_Master return Entity_Id;
+   --  Return the entity of the heterogeneous finalization master belonging to
+   --  the current unit (either function, package or procedure). This master
+   --  services all anonymous access-to-controlled types. If the current unit
+   --  does not have such master, create one.
 
    procedure Displace_Allocator_Pointer (N : Node_Id);
    --  Ada 2005 (AI-251): Subsidiary procedure to Expand_N_Allocator and
@@ -376,79 +375,166 @@ package body Exp_Ch4 is
          return;
    end Build_Boolean_Array_Proc_Call;
 
-   ------------------------------------
-   -- Current_Unit_First_Declaration --
-   ------------------------------------
+   ------------------------------
+   -- Current_Anonymous_Master --
+   ------------------------------
 
-   function Current_Unit_First_Declaration return Node_Id is
-      Sem_U : Node_Id := Unit (Cunit (Current_Sem_Unit));
-      Decl  : Node_Id;
-      Decls : List_Id;
+   function Current_Anonymous_Master return Entity_Id is
+      Decls      : List_Id;
+      Fin_Mas_Id : Entity_Id;
+      Loc        : Source_Ptr;
+      Subp_Body  : Node_Id;
+      Unit_Decl  : Node_Id;
+      Unit_Id    : Entity_Id;
 
    begin
-      if Nkind (Sem_U) = N_Package_Declaration then
-         Sem_U := Specification (Sem_U);
-         Decls := Visible_Declarations (Sem_U);
+      Unit_Id := Cunit_Entity (Current_Sem_Unit);
+
+      --  Find the entity of the current unit
+
+      if Ekind (Unit_Id) = E_Subprogram_Body then
+
+         --  When processing subprogram bodies, the proper scope is always that
+         --  of the spec.
+
+         Subp_Body := Unit_Id;
+         while Present (Subp_Body)
+           and then Nkind (Subp_Body) /= N_Subprogram_Body
+         loop
+            Subp_Body := Parent (Subp_Body);
+         end loop;
+
+         Unit_Id := Corresponding_Spec (Subp_Body);
+      end if;
+
+      Loc := Sloc (Unit_Id);
+      Unit_Decl := Unit (Cunit (Current_Sem_Unit));
+
+      --  Find the declarations list of the current unit
+
+      if Nkind (Unit_Decl) = N_Package_Declaration then
+         Unit_Decl := Specification (Unit_Decl);
+         Decls := Visible_Declarations (Unit_Decl);
 
          if No (Decls) then
-            Decl := Make_Null_Statement (Sloc (Sem_U));
-            Decls := New_List (Decl);
-            Set_Visible_Declarations (Sem_U, Decls);
+            Decls := New_List (Make_Null_Statement (Loc));
+            Set_Visible_Declarations (Unit_Decl, Decls);
 
          elsif Is_Empty_List (Decls) then
-            Decl := Make_Null_Statement (Sloc (Sem_U));
-            Append_To (Decls, Decl);
-
-         else
-            Decl := First (Decls);
+            Append_To (Decls, Make_Null_Statement (Loc));
          end if;
 
       else
-         Decls := Declarations (Sem_U);
+         Decls := Declarations (Unit_Decl);
 
          if No (Decls) then
-            Decl := Make_Null_Statement (Sloc (Sem_U));
-            Decls := New_List (Decl);
-            Set_Declarations (Sem_U, Decls);
+            Decls := New_List (Make_Null_Statement (Loc));
+            Set_Declarations (Unit_Decl, Decls);
 
          elsif Is_Empty_List (Decls) then
-            Decl := Make_Null_Statement (Sloc (Sem_U));
-            Append_To (Decls, Decl);
-
-         else
-            Decl := First (Decls);
+            Append_To (Decls, Make_Null_Statement (Loc));
          end if;
       end if;
 
-      return Decl;
-   end Current_Unit_First_Declaration;
+      --  The current unit has an existing anonymous master, traverse its
+      --  declarations and locate the entity.
 
-   ------------------------
-   -- Current_Unit_Scope --
-   ------------------------
+      if Has_Anonymous_Master (Unit_Id) then
+         Fin_Mas_Id := First_Entity (Unit_Id);
+         while Present (Fin_Mas_Id) loop
 
-   function Current_Unit_Scope return Entity_Id is
-      Scop_Id  : Entity_Id := Cunit_Entity (Current_Sem_Unit);
-      Subp_Bod : Node_Id;
+            --  Look for the first variable whose type is Finalization_Master
 
-   begin
-      if Ekind (Scop_Id) = E_Subprogram_Body then
+            if Ekind (Fin_Mas_Id) = E_Variable
+              and then Etype (Fin_Mas_Id) = RTE (RE_Finalization_Master)
+            then
+               return Fin_Mas_Id;
+            end if;
 
-         --  When processing subprogram bodies, the proper scope is always
-         --  that of the spec.
-
-         Subp_Bod := Scop_Id;
-         while Present (Subp_Bod)
-           and then Nkind (Subp_Bod) /= N_Subprogram_Body
-         loop
-            Subp_Bod := Parent (Subp_Bod);
+            Next_Entity (Fin_Mas_Id);
          end loop;
 
-         Scop_Id := Corresponding_Spec (Subp_Bod);
-      end if;
+         raise Program_Error;
 
-      return Scop_Id;
-   end Current_Unit_Scope;
+      --  Create a new anonymous master
+
+      else
+         declare
+            First_Decl : constant Node_Id := First (Decls);
+            Action     : Node_Id;
+
+         begin
+            --  Since the master and its associated initialization is inserted
+            --  at top level, use the scope of the unit when analyzing.
+
+            Push_Scope (Unit_Id);
+
+            --  Create the finalization master
+
+            Fin_Mas_Id :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_External_Name (Chars (Unit_Id), "AM"));
+
+            --  Generate:
+            --    <Fin_Mas_Id> : Finalization_Master;
+
+            Action :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Fin_Mas_Id,
+                Object_Definition =>
+                  New_Reference_To (RTE (RE_Finalization_Master), Loc));
+
+            Insert_Before_And_Analyze (First_Decl, Action);
+
+            --  Mark the unit to prevent the generation of multiple masters
+
+            Set_Has_Anonymous_Master (Unit_Id);
+
+            --  Do not set the base pool and mode of operation on .NET/JVM
+            --  since those targets do not support pools and all VM masters
+            --  are heterogeneous by default.
+
+            if VM_Target = No_VM then
+
+               --  Generate:
+               --    Set_Base_Pool
+               --      (<Fin_Mas_Id>, Global_Pool_Object'Unrestricted_Access);
+
+               Action :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name =>
+                     New_Reference_To (RTE (RE_Set_Base_Pool), Loc),
+
+                   Parameter_Associations => New_List (
+                     New_Reference_To (Fin_Mas_Id, Loc),
+                     Make_Attribute_Reference (Loc,
+                       Prefix =>
+                         New_Reference_To (RTE (RE_Global_Pool_Object), Loc),
+                       Attribute_Name => Name_Unrestricted_Access)));
+
+               Insert_Before_And_Analyze (First_Decl, Action);
+
+               --  Generate:
+               --    Set_Is_Heterogeneous (<Fin_Mas_Id>);
+
+               Action :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name =>
+                     New_Reference_To (RTE (RE_Set_Is_Heterogeneous), Loc),
+                   Parameter_Associations => New_List (
+                     New_Reference_To (Fin_Mas_Id, Loc)));
+
+               Insert_Before_And_Analyze (First_Decl, Action);
+            end if;
+
+            --  Restore the original state of the scope stack
+
+            Pop_Scope;
+
+            return Fin_Mas_Id;
+         end;
+      end if;
+   end Current_Anonymous_Master;
 
    --------------------------------
    -- Displace_Allocator_Pointer --
@@ -3373,18 +3459,15 @@ package body Exp_Ch4 is
          if No (Associated_Storage_Pool (PtrT))
            and then VM_Target = No_VM
          then
-            Set_Associated_Storage_Pool (PtrT,
-              Get_Global_Pool_For_Access_Type (PtrT));
+            Set_Associated_Storage_Pool
+              (PtrT, Get_Global_Pool_For_Access_Type (PtrT));
          end if;
 
          --  The finalization master must be inserted and analyzed as part of
          --  the current semantic unit.
 
          if No (Finalization_Master (PtrT)) then
-            Build_Finalization_Master
-              (Typ        => PtrT,
-               Ins_Node   => Current_Unit_First_Declaration,
-               Encl_Scope => Current_Unit_Scope);
+            Set_Finalization_Master (PtrT, Current_Anonymous_Master);
          end if;
       end if;
 

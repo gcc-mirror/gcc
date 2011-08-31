@@ -2262,6 +2262,14 @@ package body Sem_Disp is
       then
          return;
 
+      --  When expansion is suppressed, an unexpanded call to 'Input can occur,
+      --  and in that case we can simply return.
+
+      elsif Nkind (Actual) = N_Attribute_Reference then
+         pragma Assert (Attribute_Name (Actual) = Name_Input);
+
+         return;
+
       --  Only other possibilities are parenthesized or qualified expression,
       --  or an expander-generated unchecked conversion of a function call to
       --  a stream Input attribute.

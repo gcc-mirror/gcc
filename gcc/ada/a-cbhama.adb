@@ -513,6 +513,11 @@ package body Ada.Containers.Bounded_Hashed_Maps is
       procedure Assign_Key (Node : in out Node_Type) is
       begin
          Node.Key := Key;
+
+         --  Note that we do not also assign the element component of the node
+         --  here, because this version of Insert does not accept an element
+         --  parameter.
+
          --  Node.Element := New_Item;
       end Assign_Key;
 
@@ -530,20 +535,17 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    --  Start of processing for Insert
 
    begin
-      --  ???
-      --  if HT_Ops.Capacity (HT) = 0 then
-      --     HT_Ops.Reserve_Capacity (HT, 1);
-      --  end if;
+      --  The buckets array length is specified by the user as a discriminant
+      --  of the container type, so it is possible for the buckets array to
+      --  have a length of zero. We must check for this case specifically, in
+      --  order to prevent divide-by-zero errors later, when we compute the
+      --  buckets array index value for a key, given its hash value.
+
+      if Container.Buckets'Length = 0 then
+         raise Capacity_Error with "No capacity for insertion";
+      end if;
 
       Local_Insert (Container, Key, Position.Node, Inserted);
-
-      --  ???
-      --  if Inserted
-      --    and then HT.Length > HT_Ops.Capacity (HT)
-      --  then
-      --     HT_Ops.Reserve_Capacity (HT, HT.Length);
-      --  end if;
-
       Position.Container := Container'Unchecked_Access;
    end Insert;
 
@@ -590,20 +592,17 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    --  Start of processing for Insert
 
    begin
-      --  ??
-      --  if HT_Ops.Capacity (HT) = 0 then
-      --     HT_Ops.Reserve_Capacity (HT, 1);
-      --  end if;
+      --  The buckets array length is specified by the user as a discriminant
+      --  of the container type, so it is possible for the buckets array to
+      --  have a length of zero. We must check for this case specifically, in
+      --  order to prevent divide-by-zero errors later, when we compute the
+      --  buckets array index value for a key, given its hash value.
+
+      if Container.Buckets'Length = 0 then
+         raise Capacity_Error with "No capacity for insertion";
+      end if;
 
       Local_Insert (Container, Key, Position.Node, Inserted);
-
-      --  ???
-      --  if Inserted
-      --    and then HT.Length > HT_Ops.Capacity (HT)
-      --  then
-      --     HT_Ops.Reserve_Capacity (HT, HT.Length);
-      --  end if;
-
       Position.Container := Container'Unchecked_Access;
    end Insert;
 

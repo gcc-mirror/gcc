@@ -880,7 +880,16 @@ package body System.Task_Primitives.Operations is
 
       --  Handle dispatching domains
 
-      elsif T.Common.Domain /= null then
+      --  To avoid changing CPU affinities when not needed, we set the
+      --  affinity only when assigning to a domain other than the default
+      --  one, or when the default one has been modified.
+
+      elsif T.Common.Domain /= null and then
+        (T.Common.Domain /= ST.System_Domain
+          or else T.Common.Domain.all /=
+                    (Multiprocessors.CPU'First ..
+                     Multiprocessors.Number_Of_CPUs => True))
+      then
          declare
             CPU_Set : aliased cpu_set_t := (bits => (others => False));
 

@@ -6638,7 +6638,7 @@ package body Sem_Ch4 is
          Call    : Node_Id;
          Subp    : Entity_Id) return Entity_Id;
       --  If the subprogram is a valid interpretation, record it, and add
-      --  to the list of interpretations of Subprog.
+      --  to the list of interpretations of Subprog. Otherwise return Empty.
 
       procedure Complete_Object_Operation
         (Call_Node       : Node_Id;
@@ -7104,6 +7104,14 @@ package body Sem_Ch4 is
                     and then N = Name (Parent (N))
                   then
                      goto Next_Hom;
+
+                  --  If the context is a function call, ignore procedures
+                  --  in the name of the call.
+
+                  elsif Ekind (Hom) = E_Procedure
+                    and then Nkind (Parent (N)) /= N_Procedure_Call_Statement
+                  then
+                     goto Next_Hom;
                   end if;
 
                   Set_Etype (Call_Node, Any_Type);
@@ -7271,16 +7279,39 @@ package body Sem_Ch4 is
             return;
          end if;
 
-         if Try_Primitive_Operation
-              (Call_Node       => New_Call_Node,
-               Node_To_Replace => Node_To_Replace)
-           or else
-             Try_Class_Wide_Operation
-               (Call_Node       => New_Call_Node,
-                Node_To_Replace => Node_To_Replace)
-         then
-            null;
-         end if;
+         declare
+            Dup_Call_Node : constant Node_Id := New_Copy (New_Call_Node);
+            CW_Result     : Boolean;
+            Prim_Result   : Boolean;
+            pragma Unreferenced (CW_Result);
+
+         begin
+            Prim_Result :=
+              Try_Primitive_Operation
+                (Call_Node       => New_Call_Node,
+                 Node_To_Replace => Node_To_Replace);
+
+            --  Check if there is a class-wide subprogram covering the
+            --  primitive. This check must be done even if a candidate
+            --  was found in order to report ambiguous calls.
+
+            if not (Prim_Result) then
+               CW_Result :=
+                 Try_Class_Wide_Operation
+                   (Call_Node       => New_Call_Node,
+                    Node_To_Replace => Node_To_Replace);
+
+            --  If we found a primitive we search for class-wide subprograms
+            --  using a duplicate of the call node (done to avoid missing its
+            --  decoration if there is no ambiguity).
+
+            else
+               CW_Result :=
+                 Try_Class_Wide_Operation
+                   (Call_Node       => Dup_Call_Node,
+                    Node_To_Replace => Node_To_Replace);
+            end if;
+         end;
       end Try_One_Prefix_Interpretation;
 
       -----------------------------

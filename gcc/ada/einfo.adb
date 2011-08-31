@@ -521,8 +521,8 @@ package body Einfo is
 
    --    Has_Implicit_Dereference        Flag251
    --    Is_Processed_Transient          Flag252
+   --    Has_Anonymous_Master            Flag253
 
-   --    (unused)                        Flag253
    --    (unused)                        Flag254
 
    -----------------------
@@ -1182,6 +1182,13 @@ package body Einfo is
    begin
       return Flag201 (Id);
    end Has_Anon_Block_Suffix;
+
+   function Has_Anonymous_Master (Id : E) return B is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Function, E_Package, E_Package_Body, E_Procedure));
+      return Flag253 (Id);
+   end Has_Anonymous_Master;
 
    function Has_Atomic_Components (Id : E) return B is
    begin
@@ -3661,6 +3668,13 @@ package body Einfo is
    begin
       Set_Flag201 (Id, V);
    end Set_Has_Anon_Block_Suffix;
+
+   procedure Set_Has_Anonymous_Master (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Function, E_Package, E_Package_Body, E_Procedure));
+      Set_Flag253 (Id, V);
+   end Set_Has_Anonymous_Master;
 
    procedure Set_Has_Atomic_Components (Id : E; V : B := True) is
    begin
@@ -7418,6 +7432,7 @@ package body Einfo is
       W ("Has_Alignment_Clause",            Flag46  (Id));
       W ("Has_All_Calls_Remote",            Flag79  (Id));
       W ("Has_Anon_Block_Suffix",           Flag201 (Id));
+      W ("Has_Anonymous_Master",            Flag253 (Id));
       W ("Has_Atomic_Components",           Flag86  (Id));
       W ("Has_Biased_Representation",       Flag139 (Id));
       W ("Has_Completion",                  Flag26  (Id));
