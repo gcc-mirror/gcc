@@ -1,3 +1,8 @@
+2011-08-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* genattrtab.c (attr_rtx_1): Hash SYMBOL_REFs.
+	(attr_string): Use copy_md_ptr_loc.
+
 2011-08-31  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/49886

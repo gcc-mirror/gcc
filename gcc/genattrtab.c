@@ -434,8 +434,9 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 	  XEXP (rt_val, 1) = arg1;
 	}
     }
-  else if (GET_RTX_LENGTH (code) == 1
-	   && GET_RTX_FORMAT (code)[0] == 's')
+  else if (code == SYMBOL_REF
+	   || (GET_RTX_LENGTH (code) == 1
+	       && GET_RTX_FORMAT (code)[0] == 's'))
     {
       char *arg0 = va_arg (p, char *);
 
@@ -453,6 +454,11 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 	  rtl_obstack = hash_obstack;
 	  rt_val = rtx_alloc (code);
 	  XSTR (rt_val, 0) = arg0;
+	  if (code == SYMBOL_REF)
+	    {
+	      X0EXP (rt_val, 1) = NULL_RTX;
+	      X0EXP (rt_val, 2) = NULL_RTX;
+	    }
 	}
     }
   else if (GET_RTX_LENGTH (code) == 2
@@ -611,6 +617,7 @@ attr_string (const char *str, int len)
   memcpy (new_str, str, len);
   new_str[len] = '\0';
   attr_hash_add_string (hashcode, new_str);
+  copy_md_ptr_loc (new_str, str);
 
   return new_str;			/* Return the new string.  */
 }
