@@ -1,3 +1,24 @@
+2011-08-31  Matthew Heaney  <heaney@adacore.com>
+
+	* a-rbtgbo.adb (Clear_Tree): Assert representation invariant for lock
+	status.
+
+2011-08-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: Set kind of loop parameter properly, to preserve all
+	errors in B tests.
+
+2011-08-31  Jose Ruiz  <ruiz@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): For the Priority and
+	Interrupt_Priority aspects, force the analysis of the aspect expression
+	(when building the equivalent pragma). Otherwise, its analysis is done
+	too late, after the task or protected object has been created.
+	* sem_ch9.adb (Analyze_Single_Protected_Declaration,
+	Analyze_Single_Task_Declaration): Remove the code to move the aspects
+	to the object declaration because they are needed in the type
+	declaration.
+
 2011-08-31  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, exp_ch7.ads, sem_ch5.adb, put_scos.adb, s-rannum.adb,

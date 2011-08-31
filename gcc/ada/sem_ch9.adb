@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
@@ -1726,7 +1725,6 @@ package body Sem_Ch9 is
           Defining_Identifier => O_Name,
           Object_Definition   => Make_Identifier (Loc,  Chars (T)));
 
-      Move_Aspects (N, O_Decl);
       Rewrite (N, T_Decl);
       Insert_After (N, O_Decl);
       Mark_Rewrite_Insertion (O_Decl);
@@ -1796,7 +1794,6 @@ package body Sem_Ch9 is
           Defining_Identifier => O_Name,
           Object_Definition   => Make_Identifier (Loc, Chars (T)));
 
-      Move_Aspects (N, O_Decl);
       Rewrite (N, T_Decl);
       Insert_After (N, O_Decl);
       Mark_Rewrite_Insertion (O_Decl);
