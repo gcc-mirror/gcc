@@ -1,3 +1,25 @@
+2011-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12 (Check_Private_View): Revert previous change.
+	* sem_res.adb (Conversion_Check): Do not emit the error message if the
+	conversion is in a generic instance.
+
+2011-08-31  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cbhase.adb (Symmetric_Difference): Dereference correct node array.
+	* a-chtgbo.adb (Free): Allow 0 as index value.
+
+2011-08-31  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cborma.adb (Insert): Add comment to explain why no element
+	assignment.
+
+2011-08-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Find_Body_Discriminal): Test whether the scope of the
+	spec discriminant is already a concurrent type, in which case just use
+	it, otherwise fetch the Corresponding_Concurrent_Type as before.
+
 2011-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system-irix-n64.ads, system-linux-armeb.ads, system-linux-armel.ads,

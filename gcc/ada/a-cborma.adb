@@ -773,7 +773,16 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       begin
          Node.Key := Key;
 
-         --  Why is the following commented out ???
+         --  Were this insertion operation to accept an element parameter, this
+         --  is the point where the element value would be used, to update the
+         --  element component of the new node. However, this insertion
+         --  operation is special, in the sense that it does not accept an
+         --  element parameter. Rather, this version of Insert allocates a node
+         --  (inserting it among the active nodes of the container in the
+         --  normal way, with the node's position being determined by the Key),
+         --  and passes back a cursor designating the node. It is then up to
+         --  the caller to assign a value to the node's element.
+
          --  Node.Element := New_Item;
       end Assign;
 

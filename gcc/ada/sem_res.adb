@@ -10155,7 +10155,19 @@ package body Sem_Res is
          Msg   : String) return Boolean
       is
       begin
-         if not Valid then
+         if not Valid
+
+            --  A generic unit has already been analyzed and we have verified
+            --  that a particular conversion is OK in that context. Since the
+            --  instance is reanalyzed without relying on the relationships
+            --  established during the analysis of the generic, it is possible
+            --  to end up with inconsistent views of private types. Do not emit
+            --  the error message in such cases. The rest of the machinery in
+            --  Valid_Conversion still ensures the proper compatibility of
+            --  target and operand types.
+
+           and then not In_Instance
+         then
             Error_Msg_N (Msg, Operand);
          end if;
 
