@@ -1763,8 +1763,8 @@ package body Sem_Ch4 is
       --  In formal verification mode, keep track of all reads and writes
       --  through explicit dereferences.
 
-      if ALFA_Mode then
-         ALFA.Generate_Dereference (N);
+      if Alfa_Mode then
+         Alfa.Generate_Dereference (N);
       end if;
 
       Analyze (P);

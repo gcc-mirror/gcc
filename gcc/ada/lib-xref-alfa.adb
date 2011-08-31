@@ -23,23 +23,23 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with ALFA;     use ALFA;
+with Alfa;     use Alfa;
 with Einfo;    use Einfo;
 with Nmake;    use Nmake;
-with Put_ALFA;
+with Put_Alfa;
 
 with GNAT.HTable;
 
 separate (Lib.Xref)
-package body ALFA is
+package body Alfa is
 
    ---------------------
    -- Local Constants --
    ---------------------
 
-   --  Table of ALFA_Entities, True for each entity kind used in ALFA
+   --  Table of Alfa_Entities, True for each entity kind used in Alfa
 
-   ALFA_Entities : constant array (Entity_Kind) of Boolean :=
+   Alfa_Entities : constant array (Entity_Kind) of Boolean :=
      (E_Void                                       => False,
       E_Variable                                   => True,
       E_Component                                  => False,
@@ -135,8 +135,8 @@ package body ALFA is
       E_Task_Body                                  => False,
       E_Subprogram_Body                            => False);
 
-   --  True for each reference type used in ALFA
-   ALFA_References : constant array (Character) of Boolean :=
+   --  True for each reference type used in Alfa
+   Alfa_References : constant array (Character) of Boolean :=
      ('m' => True,
       'r' => True,
       's' => True,
@@ -159,25 +159,25 @@ package body ALFA is
    --  Table of cross-references for reads and writes through explicit
    --  dereferences, that are output as reads/writes to the special variable
    --  "Heap". These references are added to the regular references when
-   --  computing ALFA cross-references.
+   --  computing Alfa cross-references.
 
    -----------------------
    -- Local Subprograms --
    -----------------------
 
-   procedure Add_ALFA_File (U : Unit_Number_Type; D : Nat);
-   --  Add file U and all scopes in U to the tables ALFA_File_Table and
-   --  ALFA_Scope_Table.
+   procedure Add_Alfa_File (U : Unit_Number_Type; D : Nat);
+   --  Add file U and all scopes in U to the tables Alfa_File_Table and
+   --  Alfa_Scope_Table.
 
-   procedure Add_ALFA_Scope (N : Node_Id);
-   --  Add scope N to the table ALFA_Scope_Table
+   procedure Add_Alfa_Scope (N : Node_Id);
+   --  Add scope N to the table Alfa_Scope_Table
 
-   procedure Add_ALFA_Xrefs;
-   --  Filter table Xrefs to add all references used in ALFA to the table
-   --  ALFA_Xref_Table.
+   procedure Add_Alfa_Xrefs;
+   --  Filter table Xrefs to add all references used in Alfa to the table
+   --  Alfa_Xref_Table.
 
-   procedure Detect_And_Add_ALFA_Scope (N : Node_Id);
-   --  Call Add_ALFA_Scope on scopes
+   procedure Detect_And_Add_Alfa_Scope (N : Node_Id);
+   --  Call Add_Alfa_Scope on scopes
 
    function Entity_Hash (E : Entity_Id) return Entity_Hashed_Range;
    --  Hash function for hash table
@@ -206,10 +206,10 @@ package body ALFA is
    --  declarations.
 
    -------------------
-   -- Add_ALFA_File --
+   -- Add_Alfa_File --
    -------------------
 
-   procedure Add_ALFA_File (U : Unit_Number_Type; D : Nat) is
+   procedure Add_Alfa_File (U : Unit_Number_Type; D : Nat) is
       From : Scope_Index;
 
       S : constant Source_File_Index := Source_Index (U);
@@ -222,9 +222,9 @@ package body ALFA is
          return;
       end if;
 
-      From := ALFA_Scope_Table.Last + 1;
+      From := Alfa_Scope_Table.Last + 1;
 
-      Traverse_Compilation_Unit (Cunit (U), Detect_And_Add_ALFA_Scope'Access,
+      Traverse_Compilation_Unit (Cunit (U), Detect_And_Add_Alfa_Scope'Access,
                                  Inside_Stubs => False);
 
       --  Update scope numbers
@@ -234,14 +234,14 @@ package body ALFA is
 
       begin
          Count := 1;
-         for S in From .. ALFA_Scope_Table.Last loop
+         for S in From .. Alfa_Scope_Table.Last loop
             declare
-               E : Entity_Id renames ALFA_Scope_Table.Table (S).Scope_Entity;
+               E : Entity_Id renames Alfa_Scope_Table.Table (S).Scope_Entity;
 
             begin
                if Lib.Get_Source_Unit (E) = U then
-                  ALFA_Scope_Table.Table (S).Scope_Num := Count;
-                  ALFA_Scope_Table.Table (S).File_Num  := D;
+                  Alfa_Scope_Table.Table (S).Scope_Num := Count;
+                  Alfa_Scope_Table.Table (S).File_Num  := D;
                   Count                                := Count + 1;
 
                else
@@ -249,7 +249,7 @@ package body ALFA is
                   --  U, for example for scope inside generics that get
                   --  instantiated.
 
-                  ALFA_Scope_Table.Table (S).Scope_Num := 0;
+                  Alfa_Scope_Table.Table (S).Scope_Num := 0;
                end if;
             end;
          end loop;
@@ -260,34 +260,34 @@ package body ALFA is
 
       begin
          Snew := From;
-         for S in From .. ALFA_Scope_Table.Last loop
+         for S in From .. Alfa_Scope_Table.Last loop
             --  Remove those scopes previously marked for removal
 
-            if ALFA_Scope_Table.Table (S).Scope_Num /= 0 then
-               ALFA_Scope_Table.Table (Snew) := ALFA_Scope_Table.Table (S);
+            if Alfa_Scope_Table.Table (S).Scope_Num /= 0 then
+               Alfa_Scope_Table.Table (Snew) := Alfa_Scope_Table.Table (S);
                Snew := Snew + 1;
             end if;
          end loop;
 
-         ALFA_Scope_Table.Set_Last (Snew - 1);
+         Alfa_Scope_Table.Set_Last (Snew - 1);
       end;
 
       --  Make entry for new file in file table
 
       Get_Name_String (Reference_Name (S));
 
-      ALFA_File_Table.Append (
+      Alfa_File_Table.Append (
         (File_Name  => new String'(Name_Buffer (1 .. Name_Len)),
          File_Num   => D,
          From_Scope => From,
-         To_Scope   => ALFA_Scope_Table.Last));
-   end Add_ALFA_File;
+         To_Scope   => Alfa_Scope_Table.Last));
+   end Add_Alfa_File;
 
    --------------------
-   -- Add_ALFA_Scope --
+   -- Add_Alfa_Scope --
    --------------------
 
-   procedure Add_ALFA_Scope (N : Node_Id) is
+   procedure Add_Alfa_Scope (N : Node_Id) is
       E   : constant Entity_Id  := Defining_Entity (N);
       Loc : constant Source_Ptr := Sloc (E);
       Typ : Character;
@@ -344,7 +344,7 @@ package body ALFA is
       --  File_Num and Scope_Num are filled later. From_Xref and To_Xref are
       --  filled even later, but are initialized to represent an empty range.
 
-      ALFA_Scope_Table.Append (
+      Alfa_Scope_Table.Append (
         (Scope_Name     => new String'(Unique_Name (E)),
          File_Num       => 0,
          Scope_Num      => 0,
@@ -356,13 +356,13 @@ package body ALFA is
          From_Xref      => 1,
          To_Xref        => 0,
          Scope_Entity   => E));
-   end Add_ALFA_Scope;
+   end Add_Alfa_Scope;
 
    --------------------
-   -- Add_ALFA_Xrefs --
+   -- Add_Alfa_Xrefs --
    --------------------
 
-   procedure Add_ALFA_Xrefs is
+   procedure Add_Alfa_Xrefs is
       Cur_Scope_Idx   : Scope_Index;
       From_Xref_Idx   : Xref_Index;
       Cur_Entity      : Entity_Id;
@@ -528,12 +528,12 @@ package body ALFA is
 
       Heap : Entity_Id;
 
-   --  Start of processing for Add_ALFA_Xrefs
+   --  Start of processing for Add_Alfa_Xrefs
 
    begin
-      for J in ALFA_Scope_Table.First .. ALFA_Scope_Table.Last loop
-         Set_Scope_Num (N   => ALFA_Scope_Table.Table (J).Scope_Entity,
-                        Num => ALFA_Scope_Table.Table (J).Scope_Num);
+      for J in Alfa_Scope_Table.First .. Alfa_Scope_Table.Last loop
+         Set_Scope_Num (N   => Alfa_Scope_Table.Table (J).Scope_Entity,
+                        Num => Alfa_Scope_Table.Table (J).Scope_Num);
       end loop;
 
       --  Set up the pointer vector for the sort
@@ -569,31 +569,31 @@ package body ALFA is
          Rnums (Nrefs) := Xrefs.Last;
       end loop;
 
-      --  Eliminate entries not appropriate for ALFA. Done prior to sorting
+      --  Eliminate entries not appropriate for Alfa. Done prior to sorting
       --  cross-references, as it discards useless references which do not have
       --  a proper format for the comparison function (like no location).
 
       Eliminate_Before_Sort : declare
          NR : Nat;
 
-         function Is_ALFA_Scope (E : Entity_Id) return Boolean;
+         function Is_Alfa_Scope (E : Entity_Id) return Boolean;
          --  Return whether the entity or reference scope is adequate
 
          function Is_Global_Constant (E : Entity_Id) return Boolean;
          --  Return True if E is a global constant for which we should ignore
-         --  reads in ALFA.
+         --  reads in Alfa.
 
          -------------------
-         -- Is_ALFA_Scope --
+         -- Is_Alfa_Scope --
          -------------------
 
-         function Is_ALFA_Scope (E : Entity_Id) return Boolean is
+         function Is_Alfa_Scope (E : Entity_Id) return Boolean is
          begin
             return Present (E)
               and then not Is_Generic_Unit (E)
               and then Renamed_Entity (E) = Empty
               and then Get_Scope_Num (E) /= No_Scope;
-         end Is_ALFA_Scope;
+         end Is_Alfa_Scope;
 
          ------------------------
          -- Is_Global_Constant --
@@ -612,10 +612,10 @@ package body ALFA is
          Nrefs := 0;
 
          for J in 1 .. NR loop
-            if ALFA_Entities (Ekind (Xrefs.Table (Rnums (J)).Ent))
-              and then ALFA_References (Xrefs.Table (Rnums (J)).Typ)
-              and then Is_ALFA_Scope (Xrefs.Table (Rnums (J)).Ent_Scope)
-              and then Is_ALFA_Scope (Xrefs.Table (Rnums (J)).Ref_Scope)
+            if Alfa_Entities (Ekind (Xrefs.Table (Rnums (J)).Ent))
+              and then Alfa_References (Xrefs.Table (Rnums (J)).Typ)
+              and then Is_Alfa_Scope (Xrefs.Table (Rnums (J)).Ent_Scope)
+              and then Is_Alfa_Scope (Xrefs.Table (Rnums (J)).Ref_Scope)
               and then not Is_Global_Constant (Xrefs.Table (Rnums (J)).Ent)
             then
                Nrefs         := Nrefs + 1;
@@ -686,7 +686,7 @@ package body ALFA is
       From_Xref_Idx  := 1;
       Cur_Entity     := Empty;
 
-      if ALFA_Scope_Table.Last = 0 then
+      if Alfa_Scope_Table.Last = 0 then
          return;
       end if;
 
@@ -701,17 +701,17 @@ package body ALFA is
 
             function Cur_Scope return Node_Id;
             --  Return scope entity which corresponds to index Cur_Scope_Idx in
-            --  table ALFA_Scope_Table.
+            --  table Alfa_Scope_Table.
 
             function Get_Entity_Type (E : Entity_Id) return Character;
             --  Return a character representing the type of entity
 
             function Is_Future_Scope_Entity (E : Entity_Id) return Boolean;
-            --  Check whether entity E is in ALFA_Scope_Table at index
+            --  Check whether entity E is in Alfa_Scope_Table at index
             --  Cur_Scope_Idx or higher.
 
             function Is_Past_Scope_Entity (E : Entity_Id) return Boolean;
-            --  Check whether entity E is in ALFA_Scope_Table at index strictly
+            --  Check whether entity E is in Alfa_Scope_Table at index strictly
             --  lower than Cur_Scope_Idx.
 
             ---------------
@@ -720,7 +720,7 @@ package body ALFA is
 
             function Cur_Scope return Node_Id is
             begin
-               return ALFA_Scope_Table.Table (Cur_Scope_Idx).Scope_Entity;
+               return Alfa_Scope_Table.Table (Cur_Scope_Idx).Scope_Entity;
             end Cur_Scope;
 
             ---------------------
@@ -745,8 +745,8 @@ package body ALFA is
 
             function Is_Future_Scope_Entity (E : Entity_Id) return Boolean is
             begin
-               for J in Cur_Scope_Idx .. ALFA_Scope_Table.Last loop
-                  if E = ALFA_Scope_Table.Table (J).Scope_Entity then
+               for J in Cur_Scope_Idx .. Alfa_Scope_Table.Last loop
+                  if E = Alfa_Scope_Table.Table (J).Scope_Entity then
                      return True;
                   end if;
                end loop;
@@ -766,8 +766,8 @@ package body ALFA is
 
             function Is_Past_Scope_Entity (E : Entity_Id) return Boolean is
             begin
-               for J in ALFA_Scope_Table.First .. Cur_Scope_Idx - 1 loop
-                  if E = ALFA_Scope_Table.Table (J).Scope_Entity then
+               for J in Alfa_Scope_Table.First .. Cur_Scope_Idx - 1 loop
+                  if E = Alfa_Scope_Table.Table (J).Scope_Entity then
                      return True;
                   end if;
                end loop;
@@ -783,7 +783,7 @@ package body ALFA is
 
          begin
             --  If this assertion fails, the scope which we are looking for is
-            --  not in ALFA scope table, which reveals either a problem in the
+            --  not in Alfa scope table, which reveals either a problem in the
             --  construction of the scope table, or an erroneous scope for the
             --  current cross-reference.
 
@@ -794,16 +794,16 @@ package body ALFA is
             --  considered.
 
             if XE.Ent_Scope /= Cur_Scope then
-               ALFA_Scope_Table.Table (Cur_Scope_Idx).From_Xref :=
+               Alfa_Scope_Table.Table (Cur_Scope_Idx).From_Xref :=
                  From_Xref_Idx;
-               ALFA_Scope_Table.Table (Cur_Scope_Idx).To_Xref :=
-                 ALFA_Xref_Table.Last;
-               From_Xref_Idx := ALFA_Xref_Table.Last + 1;
+               Alfa_Scope_Table.Table (Cur_Scope_Idx).To_Xref :=
+                 Alfa_Xref_Table.Last;
+               From_Xref_Idx := Alfa_Xref_Table.Last + 1;
             end if;
 
             while XE.Ent_Scope /= Cur_Scope loop
                Cur_Scope_Idx := Cur_Scope_Idx + 1;
-               pragma Assert (Cur_Scope_Idx <= ALFA_Scope_Table.Last);
+               pragma Assert (Cur_Scope_Idx <= Alfa_Scope_Table.Last);
             end loop;
 
             if XE.Ent /= Cur_Entity then
@@ -812,7 +812,7 @@ package body ALFA is
             end if;
 
             if XE.Ent = Heap then
-               ALFA_Xref_Table.Append (
+               Alfa_Xref_Table.Append (
                  (Entity_Name => Cur_Entity_Name,
                   Entity_Line => 0,
                   Etype       => Get_Entity_Type (XE.Ent),
@@ -824,7 +824,7 @@ package body ALFA is
                   Col         => Int (Get_Column_Number (XE.Loc))));
 
             else
-               ALFA_Xref_Table.Append (
+               Alfa_Xref_Table.Append (
                  (Entity_Name => Cur_Entity_Name,
                   Entity_Line => Int (Get_Logical_Line_Number (XE.Def)),
                   Etype       => Get_Entity_Type (XE.Ent),
@@ -840,23 +840,23 @@ package body ALFA is
 
       --  Update the range of cross references to which the scope refers to
 
-      ALFA_Scope_Table.Table (Cur_Scope_Idx).From_Xref := From_Xref_Idx;
-      ALFA_Scope_Table.Table (Cur_Scope_Idx).To_Xref   := ALFA_Xref_Table.Last;
-   end Add_ALFA_Xrefs;
+      Alfa_Scope_Table.Table (Cur_Scope_Idx).From_Xref := From_Xref_Idx;
+      Alfa_Scope_Table.Table (Cur_Scope_Idx).To_Xref   := Alfa_Xref_Table.Last;
+   end Add_Alfa_Xrefs;
 
    ------------------
-   -- Collect_ALFA --
+   -- Collect_Alfa --
    ------------------
 
-   procedure Collect_ALFA (Sdep_Table : Unit_Ref_Table; Num_Sdep : Nat) is
+   procedure Collect_Alfa (Sdep_Table : Unit_Ref_Table; Num_Sdep : Nat) is
    begin
       --  Cross-references should have been computed first
 
       pragma Assert (Xrefs.Last /= 0);
 
-      Initialize_ALFA_Tables;
+      Initialize_Alfa_Tables;
 
-      --  Generate file and scope ALFA information
+      --  Generate file and scope Alfa information
 
       for D in 1 .. Num_Sdep loop
 
@@ -865,7 +865,7 @@ package body ALFA is
          if Units.Table (Sdep_Table (D)).Source_Index /=
            System_Source_File_Index
          then
-            Add_ALFA_File (U => Sdep_Table (D), D => D);
+            Add_Alfa_File (U => Sdep_Table (D), D => D);
          end if;
       end loop;
 
@@ -884,9 +884,9 @@ package body ALFA is
       begin
          --  Fill in the hash-table
 
-         for S in ALFA_Scope_Table.First .. ALFA_Scope_Table.Last loop
+         for S in Alfa_Scope_Table.First .. Alfa_Scope_Table.Last loop
             declare
-               Srec : ALFA_Scope_Record renames ALFA_Scope_Table.Table (S);
+               Srec : Alfa_Scope_Record renames Alfa_Scope_Table.Table (S);
             begin
                Entity_Hash_Table.Set (Srec.Scope_Entity, S);
             end;
@@ -894,9 +894,9 @@ package body ALFA is
 
          --  Use the hash-table to locate spec entities
 
-         for S in ALFA_Scope_Table.First .. ALFA_Scope_Table.Last loop
+         for S in Alfa_Scope_Table.First .. Alfa_Scope_Table.Last loop
             declare
-               Srec : ALFA_Scope_Record renames ALFA_Scope_Table.Table (S);
+               Srec : Alfa_Scope_Record renames Alfa_Scope_Table.Table (S);
 
                Spec_Entity : constant Entity_Id :=
                                Unique_Entity (Srec.Scope_Entity);
@@ -911,24 +911,24 @@ package body ALFA is
                  and then Spec_Scope /= 0
                then
                   Srec.Spec_File_Num :=
-                    ALFA_Scope_Table.Table (Spec_Scope).File_Num;
+                    Alfa_Scope_Table.Table (Spec_Scope).File_Num;
                   Srec.Spec_Scope_Num :=
-                    ALFA_Scope_Table.Table (Spec_Scope).Scope_Num;
+                    Alfa_Scope_Table.Table (Spec_Scope).Scope_Num;
                end if;
             end;
          end loop;
       end;
 
-      --  Generate cross reference ALFA information
+      --  Generate cross reference Alfa information
 
-      Add_ALFA_Xrefs;
-   end Collect_ALFA;
+      Add_Alfa_Xrefs;
+   end Collect_Alfa;
 
    -------------------------------
-   -- Detect_And_Add_ALFA_Scope --
+   -- Detect_And_Add_Alfa_Scope --
    -------------------------------
 
-   procedure Detect_And_Add_ALFA_Scope (N : Node_Id) is
+   procedure Detect_And_Add_Alfa_Scope (N : Node_Id) is
    begin
       if Nkind_In (N, N_Subprogram_Declaration,
                       N_Subprogram_Body,
@@ -936,9 +936,9 @@ package body ALFA is
                       N_Package_Declaration,
                       N_Package_Body)
       then
-         Add_ALFA_Scope (N);
+         Add_Alfa_Scope (N);
       end if;
-   end Detect_And_Add_ALFA_Scope;
+   end Detect_And_Add_Alfa_Scope;
 
    -------------------------------------
    -- Enclosing_Subprogram_Or_Package --
@@ -1376,4 +1376,4 @@ package body ALFA is
         (Handled_Statement_Sequence (N), Process, Inside_Stubs);
    end Traverse_Subprogram_Body;
 
-end ALFA;
+end Alfa;

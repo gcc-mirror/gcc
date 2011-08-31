@@ -1365,7 +1365,9 @@ package body System.Task_Primitives.Operations is
    begin
       if pthread_setaffinity_np'Address /= System.Null_Address then
          declare
-            CPU_Set : access cpu_set_t := null;
+            type cpu_set_t_ptr is access all cpu_set_t;
+
+            CPU_Set : cpu_set_t_ptr := null;
             Result  : Interfaces.C.int;
 
          begin

@@ -50,6 +50,7 @@ int
 int
 __gnat_set_affinity_mask (int tid, unsigned mask)
 {
+  int index;
   cpuset_t cpuset;
 
   CPUSET_ZERO(cpuset);

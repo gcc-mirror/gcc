@@ -32,7 +32,7 @@ with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Lib.Util; use Lib.Util;
 with Lib.Xref; use Lib.Xref;
-               use Lib.Xref.ALFA;
+               use Lib.Xref.Alfa;
 with Nlists;   use Nlists;
 with Gnatvsn;  use Gnatvsn;
 with Opt;      use Opt;
@@ -1317,11 +1317,11 @@ package body Lib.Writ is
          SCO_Output;
       end if;
 
-      --  Output ALFA information if needed
+      --  Output Alfa information if needed
 
-      if Opt.Xref_Active and then ALFA_Mode then
-         Collect_ALFA (Sdep_Table => Sdep_Table, Num_Sdep => Num_Sdep);
-         Output_ALFA;
+      if Opt.Xref_Active and then Alfa_Mode then
+         Collect_Alfa (Sdep_Table => Sdep_Table, Num_Sdep => Num_Sdep);
+         Output_Alfa;
       end if;
 
       --  Output final blank line and we are done. This final blank line is

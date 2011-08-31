@@ -6921,7 +6921,14 @@ package body Einfo is
       if Is_Concurrent_Type (Id) then
          if Present (Corresponding_Record_Type (Id)) then
             return Direct_Primitive_Operations
-                     (Corresponding_Record_Type (Id));
+              (Corresponding_Record_Type (Id));
+
+         --  If expansion is disabled the corresponding record type is absent,
+         --  but if the type has ancestors it may have primitive operations.
+
+         elsif Is_Tagged_Type (Id) then
+            return Direct_Primitive_Operations (Id);
+
          else
             return No_Elist;
          end if;

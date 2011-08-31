@@ -4006,12 +4006,12 @@ package body Sem_Res is
 
             --  If it is a named association, treat the selector_name as a
             --  proper identifier, and mark the corresponding entity. Ignore
-            --  this reference in ALFA mode, as it refers to an entity not in
+            --  this reference in Alfa mode, as it refers to an entity not in
             --  scope at the point of reference, so the reference should be
             --  ignored for computing effects of subprograms.
 
             if Nkind (Parent (A)) = N_Parameter_Association
-              and then not ALFA_Mode
+              and then not Alfa_Mode
             then
                Set_Entity (Selector_Name (Parent (A)), F);
                Generate_Reference (F, Selector_Name (Parent (A)));
@@ -8083,7 +8083,7 @@ package body Sem_Res is
 
    procedure Resolve_Quantified_Expression (N : Node_Id; Typ : Entity_Id) is
    begin
-      if not ALFA_Mode then
+      if not Alfa_Mode then
 
          --  If expansion is enabled, analysis is delayed until the expresssion
          --  is rewritten as a loop.
@@ -8101,7 +8101,7 @@ package body Sem_Res is
          Resolve (Condition (N), Typ);
          Expander_Mode_Restore;
 
-      --  In ALFA mode, we need normal expansion in order to properly introduce
+      --  In Alfa mode, we need normal expansion in order to properly introduce
       --  the necessary transient scopes.
 
       else

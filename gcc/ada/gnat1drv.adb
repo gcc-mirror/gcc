@@ -390,7 +390,7 @@ procedure Gnat1drv is
 
       if Debug_Flag_Dot_FF then
 
-         ALFA_Mode := True;
+         Alfa_Mode := True;
 
          --  Turn off inlining, which would confuse formal verification output
          --  and gain nothing.
@@ -406,7 +406,7 @@ procedure Gnat1drv is
 
          --  Enable some restrictions systematically to simplify the generated
          --  code (and ease analysis). Note that restriction checks are also
-         --  disabled in ALFA mode, see Restrict.Check_Restriction, and user
+         --  disabled in Alfa mode, see Restrict.Check_Restriction, and user
          --  specified Restrictions pragmas are ignored, see
          --  Sem_Prag.Process_Restrictions_Or_Restriction_Warnings.
 
@@ -436,7 +436,7 @@ procedure Gnat1drv is
          Polling_Required := False;
 
          --  Set operating mode to Generate_Code, but full front-end expansion
-         --  is not desirable in ALFA mode, so a light expansion is performed
+         --  is not desirable in Alfa mode, so a light expansion is performed
          --  instead.
 
          Operating_Mode := Generate_Code;
@@ -464,7 +464,7 @@ procedure Gnat1drv is
          Debug_Pragmas_Enabled := True;
 
          --  Turn off style check options since we are not interested in any
-         --  front-end warnings when we are getting ALFA output.
+         --  front-end warnings when we are getting Alfa output.
 
          Reset_Style_Check_Options;
 

@@ -19722,7 +19722,7 @@ package body Sem_Ch3 is
       --  and First_Rep_Item info, which should not be relied upon in formal
       --  verification.
 
-      if ALFA_Mode then
+      if Alfa_Mode then
 
          --  If the range of the type is already symmetric with a possible
          --  extra negative value, leave it this way.

@@ -23,15 +23,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with ALFA; use ALFA;
+with Alfa; use Alfa;
 
-procedure Put_ALFA is
+procedure Put_Alfa is
 begin
-   --  Loop through entries in ALFA_File_Table
+   --  Loop through entries in Alfa_File_Table
 
-   for J in 1 .. ALFA_File_Table.Last loop
+   for J in 1 .. Alfa_File_Table.Last loop
       declare
-         F     : ALFA_File_Record renames ALFA_File_Table.Table (J);
+         F     : Alfa_File_Record renames Alfa_File_Table.Table (J);
          Start : Scope_Index;
          Stop  : Scope_Index;
 
@@ -60,7 +60,7 @@ begin
             pragma Assert (Start <= Stop);
 
             declare
-               S : ALFA_Scope_Record renames ALFA_Scope_Table.Table (Start);
+               S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Start);
 
             begin
                Write_Info_Initiate ('F');
@@ -98,11 +98,11 @@ begin
       end;
    end loop;
 
-   --  Loop through entries in ALFA_File_Table
+   --  Loop through entries in Alfa_File_Table
 
-   for J in 1 .. ALFA_File_Table.Last loop
+   for J in 1 .. Alfa_File_Table.Last loop
       declare
-         F           : ALFA_File_Record renames ALFA_File_Table.Table (J);
+         F           : Alfa_File_Record renames Alfa_File_Table.Table (J);
          Start       : Scope_Index;
          Stop        : Scope_Index;
          File        : Nat;
@@ -121,7 +121,7 @@ begin
             pragma Assert (Start <= Stop);
 
             Output_One_Scope : declare
-               S : ALFA_Scope_Record renames ALFA_Scope_Table.Table (Start);
+               S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Start);
 
                XStart : Xref_Index;
                XStop  : Xref_Index;
@@ -166,8 +166,8 @@ begin
                   pragma Assert (XStart <= XStop);
 
                   Output_One_Xref : declare
-                     R : ALFA_Xref_Record renames
-                           ALFA_Xref_Table.Table (XStart);
+                     R : Alfa_Xref_Record renames
+                           Alfa_Xref_Table.Table (XStart);
 
                   begin
                      if R.Entity_Line /= Entity_Line
@@ -229,4 +229,4 @@ begin
          end loop;
       end;
    end loop;
-end Put_ALFA;
+end Put_Alfa;

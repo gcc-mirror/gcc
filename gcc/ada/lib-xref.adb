@@ -81,7 +81,7 @@ package body Lib.Xref is
       --  Unit number corresponding to Loc. Value is undefined and not
       --  referenced if Loc is set to No_Location.
 
-      --  The following components are only used for ALFA cross-references
+      --  The following components are only used for Alfa cross-references
 
       Ref_Scope : Entity_Id;
       --  Entity of the closest subprogram or package enclosing the reference
@@ -103,10 +103,10 @@ package body Lib.Xref is
      Table_Name           => "Xrefs");
 
    ----------------------
-   -- ALFA Information --
+   -- Alfa Information --
    ----------------------
 
-   package body ALFA is separate;
+   package body Alfa is separate;
 
    ------------------------
    --  Local Subprograms --
@@ -865,8 +865,8 @@ package body Lib.Xref is
          Ref := Original_Location (Sloc (Nod));
          Def := Original_Location (Sloc (Ent));
 
-         Ref_Scope := ALFA.Enclosing_Subprogram_Or_Package (N);
-         Ent_Scope := ALFA.Enclosing_Subprogram_Or_Package (Ent);
+         Ref_Scope := Alfa.Enclosing_Subprogram_Or_Package (N);
+         Ent_Scope := Alfa.Enclosing_Subprogram_Or_Package (Ent);
 
          Xrefs.Increment_Last;
          Indx := Xrefs.Last;
