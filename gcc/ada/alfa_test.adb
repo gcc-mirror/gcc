@@ -39,15 +39,15 @@
 with Get_Alfa;
 with Put_Alfa;
 
-with Alfa;                  use Alfa;
-with Types;                 use Types;
+with Alfa;  use Alfa;
+with Types; use Types;
 
 with Ada.Command_Line;      use Ada.Command_Line;
 with Ada.Streams;           use Ada.Streams;
 with Ada.Streams.Stream_IO; use Ada.Streams.Stream_IO;
 with Ada.Text_IO;
 
-with GNAT.OS_Lib;           use GNAT.OS_Lib;
+with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 procedure Alfa_Test is
    Infile    : File_Type;
