@@ -136,15 +136,19 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
      (HT : in out Hash_Table_Type'Class;
       X  : Count_Type)
    is
-      pragma Assert (X > 0);
+      N : Nodes_Type renames HT.Nodes;
+
+   begin
+      if X = 0 then
+         return;
+      end if;
+
       pragma Assert (X <= HT.Capacity);
 
-      N : Nodes_Type renames HT.Nodes;
       --  pragma Assert (N (X).Prev >= 0);  -- node is active
       --  Find a way to mark a node as active vs. inactive; we could
       --  use a special value in Color_Type for this.  ???
 
-   begin
       --  The hash table actually contains two data structures: a list for
       --  the "active" nodes that contain elements that have been inserted
       --  onto the container, and another for the "inactive" nodes of the free

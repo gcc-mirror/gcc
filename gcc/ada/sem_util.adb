@@ -3701,13 +3701,22 @@ package body Sem_Util is
    function Find_Body_Discriminal
      (Spec_Discriminant : Entity_Id) return Entity_Id
    is
-      pragma Assert (Is_Concurrent_Record_Type (Scope (Spec_Discriminant)));
-
-      Tsk  : constant Entity_Id :=
-               Corresponding_Concurrent_Type (Scope (Spec_Discriminant));
+      Tsk  : Entity_Id;
       Disc : Entity_Id;
 
    begin
+      --  If expansion is suppressed, then the scope can be the concurrent type
+      --  itself rather than a corresponding concurrent record type.
+
+      if Is_Concurrent_Type (Scope (Spec_Discriminant)) then
+         Tsk := Scope (Spec_Discriminant);
+
+      else
+         pragma Assert (Is_Concurrent_Record_Type (Scope (Spec_Discriminant)));
+
+         Tsk := Corresponding_Concurrent_Type (Scope (Spec_Discriminant));
+      end if;
+
       --  Find discriminant of original concurrent type, and use its current
       --  discriminal, which is the renaming within the task/protected body.
 

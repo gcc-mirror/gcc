@@ -1274,7 +1274,7 @@ package body Ada.Containers.Bounded_Hashed_Sets is
             -------------
 
             procedure Process (R_Node : Count_Type) is
-               N : Node_Type renames Left.Nodes (R_Node);
+               N : Node_Type renames Right.Nodes (R_Node);
                X : Count_Type;
                B : Boolean;
 
