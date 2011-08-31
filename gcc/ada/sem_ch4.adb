@@ -277,7 +277,8 @@ package body Sem_Ch4 is
    --  the call may be overloaded with both interpretations.
 
    function Try_Object_Operation
-     (N : Node_Id; CW_Test_Only : Boolean := False) return Boolean;
+     (N            : Node_Id;
+      CW_Test_Only : Boolean := False) return Boolean;
    --  Ada 2005 (AI-252): Support the object.operation notation. If node N
    --  is a call in this notation, it is transformed into a normal subprogram
    --  call where the prefix is a parameter, and True is returned. If node
@@ -1763,6 +1764,9 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Explicit_Dereference
 
    begin
+      --  If source node, check SPARK restriction. We guard this with the
+      --  source node check, because ???
+
       if Comes_From_Source (N) then
          Check_SPARK_Restriction ("explicit dereference is not allowed", N);
       end if;
@@ -4185,15 +4189,17 @@ package body Sem_Ch4 is
                --  Duplicate the call. This is required to avoid problems with
                --  the tree transformations performed by Try_Object_Operation.
 
-              and then Try_Object_Operation
-                         (N => Sinfo.Name (New_Copy_Tree (Parent (N))),
-                          CW_Test_Only => True)
+              and then
+                Try_Object_Operation
+                  (N            => Sinfo.Name (New_Copy_Tree (Parent (N))),
+                   CW_Test_Only => True)
             then
                return;
             end if;
          end if;
 
          if Etype (N) = Any_Type and then Is_Protected_Type (Prefix_Type) then
+
             --  Case of a prefix of a protected type: selector might denote
             --  an invisible private component.
 

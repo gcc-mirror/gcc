@@ -1,5 +1,16 @@
 2011-08-31  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch4.adb: Minor reformatting.
+	* sem_ch6.adb: Minor code reorganization (use Ekind_In).
+
+2011-08-31  Thomas Quinot  <quinot@adacore.com>
+
+	* scos.ads: Minor documentation clarification.
+	* put_scos.adb: Do not generate SCO unit header line for a unit that
+	has no SCO lines.
+
+2011-08-31  Robert Dewar  <dewar@adacore.com>
+
 	* a-rbtgbo.adb, alfa_test.adb: Minor reformatting.
 
 2011-08-31  Tristan Gingold  <gingold@adacore.com>

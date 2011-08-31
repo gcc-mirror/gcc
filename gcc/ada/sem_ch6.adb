@@ -1355,9 +1355,8 @@ package body Sem_Ch6 is
 
          for J in reverse 0 .. Scope_Stack.Last loop
             Result := Scope_Stack.Table (J).Entity;
-            exit when Ekind (Result) /= E_Block
-              and then Ekind (Result) /= E_Loop
-            and then Chars (Result) /= Name_uPostconditions;
+            exit when not Ekind_In (Result, E_Block, E_Loop)
+              and then Chars (Result) /= Name_uPostconditions;
          end loop;
 
          pragma Assert (Present (Result));

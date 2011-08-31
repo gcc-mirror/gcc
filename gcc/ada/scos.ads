@@ -458,8 +458,8 @@ package SCOs is
 
    --  This table keeps track of the units and the corresponding starting and
    --  ending indexes (From, To) in the SCO table. Note that entry zero is
-   --  unused, it is for convenience in calling the sort routine. Thus the
-   --  real lower bound for active entries is 1.
+   --  present but unused, it is for convenience in calling the sort routine.
+   --  Thus the lower bound for real entries is 1.
 
    type SCO_Unit_Index is new Int;
    --  Used to index values in this table. Values start at 1 and are assigned
