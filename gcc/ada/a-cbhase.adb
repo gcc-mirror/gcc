@@ -710,19 +710,17 @@ package body Ada.Containers.Bounded_Hashed_Sets is
    --  Start of processing for Insert
 
    begin
-      --  ???
-      --  if HT_Ops.Capacity (HT) = 0 then
-      --     HT_Ops.Reserve_Capacity (HT, 1);
-      --  end if;
+      --  The buckets array length is specified by the user as a discriminant
+      --  of the container type, so it is possible for the buckets array to
+      --  have a length of zero. We must check for this case specifically, in
+      --  order to prevent divide-by-zero errors later, when we compute the
+      --  buckets array index value for an element, given its hash value.
+
+      if Container.Buckets'Length = 0 then
+         raise Capacity_Error with "No capacity for insertion";
+      end if;
 
       Local_Insert (Container, New_Item, Node, Inserted);
-
-      --  ???
-      --  if Inserted
-      --    and then HT.Length > HT_Ops.Capacity (HT)
-      --  then
-      --     HT_Ops.Reserve_Capacity (HT, HT.Length);
-      --  end if;
    end Insert;
 
    ------------------

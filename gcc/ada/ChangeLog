@@ -1,3 +1,49 @@
+2011-08-31  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Try_Object_Operation): When a dispatching primitive is
+	found check if there is a class-wide subprogram covering the primitive.
+	
+2011-08-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb: Further cases where full expansion test is needed,
+	rather than expansion test.
+
+2011-08-31  Pascal Obry  <obry@adacore.com>
+
+	* prj-attr.adb: Fix Source_File_Switches attribute kind (must be a list)
+
+2011-08-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb: Handle iterators over derived container types.
+
+2011-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.ads, einfo.adb: Add new flag Has_Anonymous_Master.
+	(Has_Anonymous_Master): New routine.
+	(Set_Has_Anonymous_Master): New routine.
+	(Write_Entity_Flags): Add an entry for Has_Anonymous_Master.
+	* exp_ch4.adb: Add with and use clause for Sem_Ch8.
+	(Current_Anonymous_Master): New routine.
+	(Current_Unit_First_Declaration): Removed.
+	(Current_Unit_Scope): Removed.
+	(Expand_N_Allocator): Anonymous access-to-controlled types now chain
+	their objects on a per-unit heterogeneous finalization master.
+
+2011-08-31  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cbhama.adb, a-cbhase.adb (Insert): Check for zero-length buckets
+	array.
+
+2011-08-31  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-taprop-linux.adb (Create_Task): Avoid changing the affinity mask
+	when not needed.
+
+2011-08-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_disp.adb (Propagate_Tag): Return without propagating in the case
+	where the actual is an unexpanded call to 'Input.
+
 2011-08-31  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch4.adb: Code clean up.

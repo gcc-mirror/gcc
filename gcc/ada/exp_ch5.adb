@@ -2985,7 +2985,7 @@ package body Exp_Ch5 is
 
          --  If "reverse" is present, then the initialization of the cursor
          --  uses Last and the step becomes Prev. Pack is the name of the
-         --  package which instantiates the container.
+         --  scope where the container package is instantiated.
 
          declare
             Element_Type : constant Entity_Id := Etype (Id);
@@ -3007,13 +3007,23 @@ package body Exp_Ch5 is
             --  use-visible, so we introduce the name of the enclosing package
             --  in the declarations below. The Iterator type is declared in a
             --  an instance within the container package itself.
+            --  If the container type is a derived type, the cursor type is
+            --  found in the package of the parent type.
 
             Iter_Type := Etype (Name (I_Spec));
 
             if Is_Iterator (Iter_Type) then
-               Pack := Scope (Scope (Etype (Container)));
+               if Is_Derived_Type (Container_Typ) then
+                  Pack := Scope (Scope (Root_Type (Container_Typ)));
+               else
+                  Pack := Scope (Scope (Container_Typ));
+               end if;
             else
-               Pack := Scope (Etype (Container));
+               if Is_Derived_Type (Container_Typ) then
+                  Pack := Scope (Root_Type (Container_Typ));
+               else
+                  Pack := Scope (Container_Typ);
+               end if;
             end if;
 
             --  The "of" case uses an internally generated cursor whose type
@@ -3128,7 +3138,7 @@ package body Exp_Ch5 is
                end;
 
             --  X in Iterate (S) : type of iterator is type of explicitly
-            --  given Iterate function.
+            --  given Iterate function, and the loop variable is the cursor.
 
             else
                Cursor := Id;

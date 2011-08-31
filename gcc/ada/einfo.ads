@@ -1341,6 +1341,13 @@ package Einfo is
 --       more anonymous blocks and the Chars field contains a name with an
 --       anonymous block suffix (see Exp_Dbug for further details).
 
+--    Has_Anonymous_Master (Flag253)
+--       Present in units (top-level functions and procedures, library-level
+--       packages). Set to True if the associated unit contains a heterogeneous
+--       finalization master. The master's name is of the form <unit>AM and it
+--       services anonymous access-to-controlled types with an undetermined
+--       lifetime.
+
 --    Has_Atomic_Components (Flag86) [implementation base type only]
 --       Present in all types and objects. Set only for an array type or
 --       an array object if a valid pragma Atomic_Components applies to the
@@ -5239,6 +5246,7 @@ package Einfo is
    --    Delay_Cleanups                      (Flag114)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Discard_Names                       (Flag88)
+   --    Has_Anonymous_Master                (Flag253)
    --    Has_Completion                      (Flag26)
    --    Has_Controlling_Result              (Flag98)
    --    Has_Invariants                      (Flag232)
@@ -5429,6 +5437,7 @@ package Einfo is
    --    Elaborate_Body_Desirable            (Flag210)  (non-generic case only)
    --    From_With_Type                      (Flag159)
    --    Has_All_Calls_Remote                (Flag79)
+   --    Has_Anonymous_Master                (Flag253)
    --    Has_Completion                      (Flag26)
    --    Has_Forward_Instantiation           (Flag175)
    --    Has_Master_Entity                   (Flag21)
@@ -5439,10 +5448,10 @@ package Einfo is
    --    Is_Instantiated                     (Flag126)
    --    Is_Private_Descendant               (Flag53)
    --    Is_Visible_Child_Unit               (Flag116)
-   --    Is_Wrapper_Package                  (synth)    (non-generic case only)
    --    Renamed_In_Spec                     (Flag231)  (non-generic case only)
-   --    Scope_Depth                         (synth)
    --    Static_Elaboration_Desired          (Flag77)   (non-generic case only)
+   --    Is_Wrapper_Package                  (synth)    (non-generic case only)
+   --    Scope_Depth                         (synth)
 
    --  E_Package_Body
    --    Handler_Records                     (List10)   (non-generic case only)
@@ -5452,9 +5461,10 @@ package Einfo is
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
    --    Finalizer                           (Node24)   (non-generic case only)
-   --    Scope_Depth                         (synth)
    --    Delay_Subprogram_Descriptors        (Flag50)
+   --    Has_Anonymous_Master                (Flag253)
    --    Has_Subprogram_Descriptor           (Flag93)
+   --    Scope_Depth                         (synth)
 
    --  E_Private_Type
    --  E_Private_Subtype
@@ -5505,6 +5515,7 @@ package Einfo is
    --    Delay_Cleanups                      (Flag114)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Discard_Names                       (Flag88)
+   --    Has_Anonymous_Master                (Flag253)
    --    Has_Completion                      (Flag26)
    --    Has_Invariants                      (Flag232)
    --    Has_Master_Entity                   (Flag21)
@@ -6073,6 +6084,7 @@ package Einfo is
    function Has_Alignment_Clause                (Id : E) return B;
    function Has_All_Calls_Remote                (Id : E) return B;
    function Has_Anon_Block_Suffix               (Id : E) return B;
+   function Has_Anonymous_Master                (Id : E) return B;
    function Has_Atomic_Components               (Id : E) return B;
    function Has_Biased_Representation           (Id : E) return B;
    function Has_Completion                      (Id : E) return B;
@@ -6660,6 +6672,7 @@ package Einfo is
    procedure Set_Has_Alignment_Clause            (Id : E; V : B := True);
    procedure Set_Has_All_Calls_Remote            (Id : E; V : B := True);
    procedure Set_Has_Anon_Block_Suffix           (Id : E; V : B := True);
+   procedure Set_Has_Anonymous_Master            (Id : E; V : B := True);
    procedure Set_Has_Atomic_Components           (Id : E; V : B := True);
    procedure Set_Has_Biased_Representation       (Id : E; V : B := True);
    procedure Set_Has_Completion                  (Id : E; V : B := True);
@@ -7360,6 +7373,7 @@ package Einfo is
    pragma Inline (Has_Alignment_Clause);
    pragma Inline (Has_All_Calls_Remote);
    pragma Inline (Has_Anon_Block_Suffix);
+   pragma Inline (Has_Anonymous_Master);
    pragma Inline (Has_Atomic_Components);
    pragma Inline (Has_Biased_Representation);
    pragma Inline (Has_Completion);
@@ -7803,6 +7817,7 @@ package Einfo is
    pragma Inline (Set_Has_Alignment_Clause);
    pragma Inline (Set_Has_All_Calls_Remote);
    pragma Inline (Set_Has_Anon_Block_Suffix);
+   pragma Inline (Set_Has_Anonymous_Master);
    pragma Inline (Set_Has_Atomic_Components);
    pragma Inline (Set_Has_Biased_Representation);
    pragma Inline (Set_Has_Completion);

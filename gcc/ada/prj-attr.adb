@@ -190,7 +190,7 @@ package body Prj.Attr is
    "Latrailing_required_switches#" &
    "Lapic_option#" &
    "Sapath_syntax#" &
-   "Sasource_file_switches#" &
+   "Lasource_file_switches#" &
    "Saobject_file_suffix#" &
    "Laobject_file_switches#" &
    "Lamulti_unit_switches#" &
