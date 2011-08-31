@@ -45,8 +45,8 @@ package body System.Multiprocessors.Dispatching_Domains is
    -- Local data --
    ----------------
 
-   Dispatching_Domain_Tasks :
-     array (CPU'First .. Number_Of_CPUs) of Natural := (others => 0);
+   Dispatching_Domain_Tasks : array (CPU'First .. Number_Of_CPUs) of Natural :=
+                                (others => 0);
    --  We need to store whether there are tasks allocated to concrete
    --  processors in the default system dispatching domain because we need to
    --  check it before creating a new dispatching domain.
@@ -88,7 +88,7 @@ package body System.Multiprocessors.Dispatching_Domains is
      (Domain : in out Dispatching_Domain;
       CPU    : CPU_Range := Not_A_Specific_CPU;
       T      : Ada.Task_Identification.Task_Id :=
-        Ada.Task_Identification.Current_Task)
+                 Ada.Task_Identification.Current_Task)
    is
       Target : constant ST.Task_Id := Convert_Ids (T);
 
@@ -135,13 +135,15 @@ package body System.Multiprocessors.Dispatching_Domains is
       use type System.Tasking.Task_Id;
 
       Valid_System_Domain : constant Boolean :=
-        (First > CPU'First and then
-           not (System_Dispatching_Domain (CPU'First .. First - 1) =
-                (CPU'First .. First - 1 => False)))
-          or else
-        (Last < Number_Of_CPUs and then
-           not (System_Dispatching_Domain (Last + 1 .. Number_Of_CPUs) =
-                (Last + 1 .. Number_Of_CPUs => False)));
+        (First > CPU'First
+          and then
+            not (System_Dispatching_Domain (CPU'First .. First - 1) =
+                                         (CPU'First .. First - 1 => False)))
+                  or else (Last < Number_Of_CPUs
+                            and then not
+                              (System_Dispatching_Domain
+                                (Last + 1 .. Number_Of_CPUs) =
+                                  (Last + 1 .. Number_Of_CPUs => False)));
       --  Constant that indicates whether there would exist a non-empty system
       --  dispatching domain after the creation of this dispatching domain.
 
@@ -231,7 +233,9 @@ package body System.Multiprocessors.Dispatching_Domains is
    -----------------------------
 
    procedure Delay_Until_And_Set_CPU
-     (Delay_Until_Time : Ada.Real_Time.Time; CPU : CPU_Range) is
+     (Delay_Until_Time : Ada.Real_Time.Time;
+      CPU              : CPU_Range)
+   is
    begin
       --  Not supported atomically by the underlying operating systems.
       --  Operating systems use to migrate the task immediately after the call
@@ -258,8 +262,8 @@ package body System.Multiprocessors.Dispatching_Domains is
 
    function Get_CPU
      (T : Ada.Task_Identification.Task_Id :=
-        Ada.Task_Identification.Current_Task)
-      return CPU_Range is
+            Ada.Task_Identification.Current_Task) return CPU_Range
+   is
    begin
       return Convert_Ids (T).Common.Base_CPU;
    end Get_CPU;
@@ -270,8 +274,8 @@ package body System.Multiprocessors.Dispatching_Domains is
 
    function Get_Dispatching_Domain
      (T : Ada.Task_Identification.Task_Id :=
-        Ada.Task_Identification.Current_Task)
-      return Dispatching_Domain is
+            Ada.Task_Identification.Current_Task) return Dispatching_Domain
+   is
    begin
       return Dispatching_Domain (Convert_Ids (T).Common.Domain);
    end Get_Dispatching_Domain;
@@ -317,7 +321,7 @@ package body System.Multiprocessors.Dispatching_Domains is
    procedure Set_CPU
      (CPU : CPU_Range;
       T   : Ada.Task_Identification.Task_Id :=
-        Ada.Task_Identification.Current_Task)
+              Ada.Task_Identification.Current_Task)
    is
       Target : constant ST.Task_Id := Convert_Ids (T);
 
@@ -366,8 +370,8 @@ package body System.Multiprocessors.Dispatching_Domains is
       --  Change the number of tasks attached to a given task in the system
       --  domain if needed.
 
-      if not Dispatching_Domains_Frozen and then
-        (Domain = null or else Domain = ST.System_Domain)
+      if not Dispatching_Domains_Frozen
+        and then (Domain = null or else Domain = ST.System_Domain)
       then
          --  Reduce the number of tasks attached to the CPU from which this
          --  task is being moved, if needed.

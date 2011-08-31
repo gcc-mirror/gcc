@@ -2250,15 +2250,13 @@ package body Sem_Ch5 is
          Analyze (Subt);
       end if;
 
-      --  If the domain of iteration is an expression, create a declaration
-      --  for it, so that finalization actions are introduced outside of the
-      --  loop.
+      --  If domain of iteration is an expression, create a declaration for it,
+      --  so that finalization actions are introduced outside of the loop.
 
       if not Is_Entity_Name (Iter_Name) then
          declare
-            Id : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
-
-            Decl   : Node_Id;
+            Id   : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
+            Decl : Node_Id;
 
          begin
             Typ := Etype (Iter_Name);

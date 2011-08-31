@@ -224,8 +224,10 @@ package body System.Tasking is
       --  into account. Use Number_Of_CPUs to know the exact number of
       --  processors in the system at execution time.
 
-      System_Domain := new Dispatching_Domain'
-        (Multiprocessors.CPU'First .. Multiprocessors.Number_Of_CPUs => True);
+      System_Domain :=
+        new Dispatching_Domain'
+          (Multiprocessors.CPU'First .. Multiprocessors.Number_Of_CPUs =>
+             True);
 
       T.Common.Domain := System_Domain;
 

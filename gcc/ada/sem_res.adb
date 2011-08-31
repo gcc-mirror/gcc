@@ -8101,8 +8101,8 @@ package body Sem_Res is
          Resolve (Condition (N), Typ);
          Expander_Mode_Restore;
 
-      --  In ALFA mode, we need expansion in order to introduce properly the
-      --  necessary transient scopes.
+      --  In ALFA mode, we need normal expansion in order to properly introduce
+      --  the necessary transient scopes.
 
       else
          Resolve (Condition (N), Typ);

@@ -549,6 +549,7 @@ package System.Task_Primitives.Operations is
 
    procedure Set_Task_Affinity (T : ST.Task_Id);
    --  Enforce at the operating system level the task affinity defined in the
-   --  Ada Task Control Block.
+   --  Ada Task Control Block. Has no effect if the underlying operating system
+   --  does not support this capability.
 
 end System.Task_Primitives.Operations;

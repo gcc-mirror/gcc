@@ -1361,6 +1361,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Set_Task_Affinity (T : ST.Task_Id) is
       pragma Unreferenced (T);
+
    begin
       --  Setting task affinity is not supported by the underlying system
 

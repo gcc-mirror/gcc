@@ -139,6 +139,14 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
       N : Nodes_Type renames HT.Nodes;
 
    begin
+      --  This subprogram "deallocates" a node by relinking the node off of the
+      --  active list and onto the free list. Previously it would flag index
+      --  value 0 as an error. The precondition was weakened, so that index
+      --  value 0 is now allowed, and this value is interpreted to mean "do
+      --  nothing". This makes its behavior analogous to the behavior of
+      --  Ada.Unchecked_Conversion, and allows callers to avoid having to add
+      --  special-case checks at the point of call.
+
       if X = 0 then
          return;
       end if;

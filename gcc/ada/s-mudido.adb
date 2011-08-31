@@ -54,10 +54,9 @@ package body System.Multiprocessors.Dispatching_Domains is
      (Domain : in out Dispatching_Domain;
       CPU    : CPU_Range := Not_A_Specific_CPU;
       T      : Ada.Task_Identification.Task_Id :=
-        Ada.Task_Identification.Current_Task)
+                 Ada.Task_Identification.Current_Task)
    is
       pragma Unreferenced (Domain, CPU, T);
-
    begin
       raise Dispatching_Domain_Error with "dispatching domains not supported";
    end Assign_Task;
@@ -68,7 +67,6 @@ package body System.Multiprocessors.Dispatching_Domains is
 
    function Create (First, Last : CPU) return Dispatching_Domain is
       pragma Unreferenced (First, Last);
-
    begin
       raise Dispatching_Domain_Error with "dispatching domains not supported";
       return System_Dispatching_Domain;
@@ -79,10 +77,10 @@ package body System.Multiprocessors.Dispatching_Domains is
    -----------------------------
 
    procedure Delay_Until_And_Set_CPU
-     (Delay_Until_Time : Ada.Real_Time.Time; CPU : CPU_Range)
+     (Delay_Until_Time : Ada.Real_Time.Time;
+      CPU              : CPU_Range)
    is
       pragma Unreferenced (Delay_Until_Time, CPU);
-
    begin
       raise Dispatching_Domain_Error with "dispatching domains not supported";
    end Delay_Until_And_Set_CPU;
@@ -102,11 +100,9 @@ package body System.Multiprocessors.Dispatching_Domains is
 
    function Get_CPU
      (T : Ada.Task_Identification.Task_Id :=
-        Ada.Task_Identification.Current_Task)
-      return CPU_Range
+            Ada.Task_Identification.Current_Task) return CPU_Range
    is
       pragma Unreferenced (T);
-
    begin
       return Not_A_Specific_CPU;
    end Get_CPU;
@@ -117,11 +113,9 @@ package body System.Multiprocessors.Dispatching_Domains is
 
    function Get_Dispatching_Domain
      (T : Ada.Task_Identification.Task_Id :=
-        Ada.Task_Identification.Current_Task)
-      return Dispatching_Domain
+            Ada.Task_Identification.Current_Task) return Dispatching_Domain
    is
       pragma Unreferenced (T);
-
    begin
       return System_Dispatching_Domain;
    end Get_Dispatching_Domain;
@@ -132,7 +126,6 @@ package body System.Multiprocessors.Dispatching_Domains is
 
    function Get_First_CPU (Domain : Dispatching_Domain) return CPU is
       pragma Unreferenced (Domain);
-
    begin
       return CPU'First;
    end Get_First_CPU;
@@ -143,7 +136,6 @@ package body System.Multiprocessors.Dispatching_Domains is
 
    function Get_Last_CPU (Domain : Dispatching_Domain) return CPU is
       pragma Unreferenced (Domain);
-
    begin
       return Number_Of_CPUs;
    end Get_Last_CPU;
@@ -155,10 +147,9 @@ package body System.Multiprocessors.Dispatching_Domains is
    procedure Set_CPU
      (CPU : CPU_Range;
       T   : Ada.Task_Identification.Task_Id :=
-        Ada.Task_Identification.Current_Task)
+              Ada.Task_Identification.Current_Task)
    is
       pragma Unreferenced (CPU, T);
-
    begin
       raise Dispatching_Domain_Error with "dispatching domains not supported";
    end Set_CPU;

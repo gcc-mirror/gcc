@@ -45,8 +45,8 @@ package body Exp_Alfa is
    procedure Expand_Alfa_Call (N : Node_Id);
    --  This procedure contains common processing for function and procedure
    --  calls:
-   --  * expansion of actuals to introduce necessary temporaries
-   --  * replacement of renaming by subprogram renamed
+   --    * expansion of actuals to introduce necessary temporaries
+   --    * replacement of renaming by subprogram renamed
 
    procedure Expand_Alfa_N_Attribute_Reference (N : Node_Id);
    --  Expand attributes 'Old and 'Result only
@@ -89,7 +89,6 @@ package body Exp_Alfa is
 
          when others =>
             null;
-
       end case;
    end Expand_Alfa;
 

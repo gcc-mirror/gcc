@@ -1947,7 +1947,7 @@ package body System.Task_Primitives.Operations is
       --  pragma CPU
 
       if T.Common.Base_CPU /=
-        System.Multiprocessors.Not_A_Specific_CPU
+           System.Multiprocessors.Not_A_Specific_CPU
       then
          --  The CPU numbering in pragma CPU starts at 1 while the subprogram
          --  to set the affinity starts at 0, therefore we must substract 1.
@@ -1968,6 +1968,7 @@ package body System.Task_Primitives.Operations is
 
             if T.Common.Task_Info.CPU = ANY_CPU then
                Result := 0;
+
                Proc := 0;
                while Proc < Last_Proc loop
                   Result := p_online (Proc, PR_STATUS);
@@ -1988,6 +1989,7 @@ package body System.Task_Primitives.Operations is
                then
                   raise Invalid_CPU_Number;
                end if;
+
                Result :=
                  processor_bind
                    (P_LWPID, id_t (T.Common.LL.LWP),
@@ -1998,15 +2000,15 @@ package body System.Task_Primitives.Operations is
 
       --  Handle dispatching domains
 
-      elsif T.Common.Domain /= null and then
-              (T.Common.Domain /= ST.System_Domain or else
-               T.Common.Domain.all /= (Multiprocessors.CPU'First ..
-                                       Multiprocessors.Number_Of_CPUs => True))
+      elsif T.Common.Domain /= null
+        and then (T.Common.Domain /= ST.System_Domain
+                   or else T.Common.Domain.all /=
+                             (Multiprocessors.CPU'First ..
+                              Multiprocessors.Number_Of_CPUs => True))
       then
          declare
             CPU_Set : aliased psetid_t;
-
-            Result : int;
+            Result  : int;
 
          begin
             Result := pset_create (CPU_Set'Access);
@@ -2016,9 +2018,9 @@ package body System.Task_Primitives.Operations is
             --  dispatching domain.
 
             for Proc in T.Common.Domain'Range loop
+
                --  The Ada CPU numbering starts at 1 while the subprogram to
-               --  set the affinity starts at 0, therefore we must substract
-               --  1.
+               --  set the affinity starts at 0, therefore we must substract 1.
 
                if T.Common.Domain (Proc) then
                   Result :=
