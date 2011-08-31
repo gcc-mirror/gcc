@@ -3860,7 +3860,7 @@ package body Sem_Attr is
             end if;
          end Check_Local;
 
-         --  The attribute ppears within a pre/postcondition, but refers to
+         --  The attribute appears within a pre/postcondition, but refers to
          --  an entity in the enclosing subprogram. If it is a component of a
          --  formal its expansion might generate actual subtypes that may be
          --  referenced in an inner context, and which must be elaborated

@@ -594,7 +594,8 @@ package body Alfa is
 
          function Is_Alfa_Reference
            (E   : Entity_Id;
-            Typ : Character) return Boolean is
+            Typ : Character) return Boolean
+         is
          begin
             --  The only references of interest on callable entities are calls.
             --  On non-callable entities, the only references of interest are

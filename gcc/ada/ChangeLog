@@ -1,3 +1,33 @@
+2011-08-31  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, exp_alfa.ads, prj.ads, sem_attr.adb,
+	lib-xref-alfa.adb: Minor reformatting.
+
+2011-08-31  Matthew Heaney  <heaney@adacore.com>
+
+	* a-crbltr.ads (Tree_Type): Default-initialize the Nodes component.
+
+2011-08-31  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Try_Object_Operation): Addition of one formal to search
+	only for class-wide subprograms conflicting with entities of concurrent
+	tagged types.
+
+2011-08-31  Matthew Heaney  <heaney@adacore.com>
+
+	* a-rbtgbo.adb (Generic_Allocate): Initialize pointer components of
+	node to null value.
+
+2011-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Insert_Freeze_Node_For_Instance): Provide a more
+	general description of the routine.
+
+2011-08-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cbdlli.adb, a-cbdlli.ads: Add iterator machinery to bounded
+	doubly-linked lists.
+
 2011-08-31  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch5.adb (Expand_N_Assignment_Statement): When a discriminant

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -586,6 +586,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
          Set_Element (N (Node));
          Tree.Free := Tree.Free - 1;
       end if;
+
+      Set_Parent (N (Node), Parent => 0);
+      Set_Left (N (Node), Left => 0);
+      Set_Right (N (Node), Right => 0);
    end Generic_Allocate;
 
    -------------------

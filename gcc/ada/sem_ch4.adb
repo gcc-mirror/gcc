@@ -276,11 +276,16 @@ package body Sem_Ch4 is
    --  subprogram, and the call F (X) interpreted as F.all (X). In this case
    --  the call may be overloaded with both interpretations.
 
-   function Try_Object_Operation (N : Node_Id) return Boolean;
+   function Try_Object_Operation
+     (N : Node_Id; CW_Test_Only : Boolean := False) return Boolean;
    --  Ada 2005 (AI-252): Support the object.operation notation. If node N
    --  is a call in this notation, it is transformed into a normal subprogram
    --  call where the prefix is a parameter, and True is returned. If node
-   --  N is not of this form, it is unchanged, and False is returned.
+   --  N is not of this form, it is unchanged, and False is returned. if
+   --  CW_Test_Only is true then N is an N_Selected_Component node which
+   --  is part of a call to an entry or procedure of a tagged concurrent
+   --  type and this routine is invoked to search for class-wide subprograms
+   --  conflicting with the target entity.
 
    procedure wpo (T : Entity_Id);
    pragma Warnings (Off, wpo);
@@ -4165,6 +4170,25 @@ package body Sem_Ch4 is
             then
                return;
             end if;
+
+            --  Ada 2012 (AI05-0090-1): If we found a candidate of a call to an
+            --  entry or procedure of a tagged concurrent type we must check
+            --  if there are class-wide subprograms covering the primitive. If
+            --  true then Try_Object_Operation reports the error.
+
+            if Has_Candidate
+              and then Is_Concurrent_Type (Prefix_Type)
+              and then Nkind (Parent (N)) = N_Procedure_Call_Statement
+
+               --  Duplicate the call. This is required to avoid problems with
+               --  the tree transformations performed by Try_Object_Operation.
+
+              and then Try_Object_Operation
+                         (N => Sinfo.Name (New_Copy_Tree (Parent (N))),
+                          CW_Test_Only => True)
+            then
+               return;
+            end if;
          end if;
 
          if Etype (N) = Any_Type and then Is_Protected_Type (Prefix_Type) then
@@ -6609,7 +6633,9 @@ package body Sem_Ch4 is
    -- Try_Object_Operation --
    --------------------------
 
-   function Try_Object_Operation (N : Node_Id) return Boolean is
+   function Try_Object_Operation
+     (N : Node_Id; CW_Test_Only : Boolean := False) return Boolean
+   is
       K              : constant Node_Kind  := Nkind (Parent (N));
       Is_Subprg_Call : constant Boolean    := Nkind_In
                                                (K, N_Procedure_Call_Statement,
@@ -6898,13 +6924,16 @@ package body Sem_Ch4 is
       ----------------------
 
       procedure Report_Ambiguity (Op : Entity_Id) is
-         Access_Formal : constant Boolean :=
-                           Is_Access_Type (Etype (First_Formal (Op)));
          Access_Actual : constant Boolean :=
                            Is_Access_Type (Etype (Prefix (N)));
+         Access_Formal : Boolean := False;
 
       begin
          Error_Msg_Sloc := Sloc (Op);
+
+         if Present (First_Formal (Op)) then
+            Access_Formal := Is_Access_Type (Etype (First_Formal (Op)));
+         end if;
 
          if Access_Formal and then not Access_Actual then
             if Nkind (Parent (Op)) = N_Full_Type_Declaration then
@@ -7205,6 +7234,13 @@ package body Sem_Ch4 is
       --  Start of processing for Try_Class_Wide_Operation
 
       begin
+         --  If we are searching only for conflicting class-wide subprograms
+         --  then initialize directly Matching_Op with the target entity.
+
+         if CW_Test_Only then
+            Matching_Op := Entity (Selector_Name (N));
+         end if;
+
          --  Loop through ancestor types (including interfaces), traversing
          --  the homonym chain of the subprogram, trying out those homonyms
          --  whose first formal has the class-wide type of the ancestor, or
@@ -7286,10 +7322,12 @@ package body Sem_Ch4 is
             pragma Unreferenced (CW_Result);
 
          begin
-            Prim_Result :=
-              Try_Primitive_Operation
-                (Call_Node       => New_Call_Node,
-                 Node_To_Replace => Node_To_Replace);
+            if not CW_Test_Only then
+               Prim_Result :=
+                  Try_Primitive_Operation
+                   (Call_Node       => New_Call_Node,
+                    Node_To_Replace => Node_To_Replace);
+            end if;
 
             --  Check if there is a class-wide subprogram covering the
             --  primitive. This check must be done even if a candidate
@@ -7663,10 +7701,18 @@ package body Sem_Ch4 is
       end if;
 
       if Etype (New_Call_Node) /= Any_Type then
-         Complete_Object_Operation
-           (Call_Node       => New_Call_Node,
-            Node_To_Replace => Node_To_Replace);
-         return True;
+
+         --  No need to complete the tree transformations if we are only
+         --  searching for conflicting class-wide subprograms
+
+         if CW_Test_Only then
+            return False;
+         else
+            Complete_Object_Operation
+              (Call_Node       => New_Call_Node,
+               Node_To_Replace => Node_To_Replace);
+            return True;
+         end if;
 
       elsif Present (Candidate) then
 
