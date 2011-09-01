@@ -3668,7 +3668,8 @@ verify_gimple_assign_ternary (gimple stmt)
       return true;
     }
 
-  if (!is_gimple_val (rhs1)
+  if (((rhs_code == VEC_COND_EXPR || rhs_code == COND_EXPR)
+       ? !is_gimple_condexpr (rhs1) : !is_gimple_val (rhs1))
       || !is_gimple_val (rhs2)
       || !is_gimple_val (rhs3))
     {
@@ -3705,6 +3706,19 @@ verify_gimple_assign_ternary (gimple stmt)
 	  error ("type mismatch in fused multiply-add expression");
 	  debug_generic_expr (lhs_type);
 	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+      break;
+
+    case COND_EXPR:
+    case VEC_COND_EXPR:
+      if (!useless_type_conversion_p (lhs_type, rhs2_type)
+	  || !useless_type_conversion_p (lhs_type, rhs3_type))
+	{
+	  error ("type mismatch in conditional expression");
+	  debug_generic_expr (lhs_type);
 	  debug_generic_expr (rhs2_type);
 	  debug_generic_expr (rhs3_type);
 	  return true;
@@ -3827,26 +3841,10 @@ verify_gimple_assign_single (gimple stmt)
 	}
       return res;
 
-    case COND_EXPR:
-      if (!is_gimple_reg (lhs)
-	  || (!is_gimple_reg (TREE_OPERAND (rhs1, 0))
-	      && !COMPARISON_CLASS_P (TREE_OPERAND (rhs1, 0)))
-	  || (!is_gimple_reg (TREE_OPERAND (rhs1, 1))
-	      && !is_gimple_min_invariant (TREE_OPERAND (rhs1, 1)))
-	  || (!is_gimple_reg (TREE_OPERAND (rhs1, 2))
-	      && !is_gimple_min_invariant (TREE_OPERAND (rhs1, 2))))
-	{
-	  error ("invalid COND_EXPR in gimple assignment");
-	  debug_generic_stmt (rhs1);
-	  return true;
-	}
-      return res;
-
     case CONSTRUCTOR:
     case OBJ_TYPE_REF:
     case ASSERT_EXPR:
     case WITH_SIZE_EXPR:
-    case VEC_COND_EXPR:
       /* FIXME.  */
       return res;
 

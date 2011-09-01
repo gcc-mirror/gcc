@@ -294,42 +294,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
       {
         tree rhs = gimple_assign_rhs1 (stmt);
 
-        /* Try to fold a conditional expression.  */
-        if (TREE_CODE (rhs) == COND_EXPR)
-          {
-	    tree op0 = COND_EXPR_COND (rhs);
-	    tree tem;
-	    bool set = false;
-	    location_t cond_loc = EXPR_LOCATION (rhs);
-
-	    if (COMPARISON_CLASS_P (op0))
-	      {
-		fold_defer_overflow_warnings ();
-		tem = fold_binary_loc (cond_loc,
-				   TREE_CODE (op0), TREE_TYPE (op0),
-				   TREE_OPERAND (op0, 0),
-				   TREE_OPERAND (op0, 1));
-		/* This is actually a conditional expression, not a GIMPLE
-		   conditional statement, however, the valid_gimple_rhs_p
-		   test still applies.  */
-		set = (tem && is_gimple_condexpr (tem)
-		       && valid_gimple_rhs_p (tem));
-		fold_undefer_overflow_warnings (set, stmt, 0);
-	      }
-	    else if (is_gimple_min_invariant (op0))
-	      {
-		tem = op0;
-		set = true;
-	      }
-	    else
-	      return NULL_TREE;
-
-	    if (set)
-	      result = fold_build3_loc (cond_loc, COND_EXPR, TREE_TYPE (rhs), tem,
-				    COND_EXPR_THEN (rhs), COND_EXPR_ELSE (rhs));
-          }
-
-	else if (REFERENCE_CLASS_P (rhs))
+	if (REFERENCE_CLASS_P (rhs))
 	  return maybe_fold_reference (rhs, false);
 
 	else if (TREE_CODE (rhs) == ADDR_EXPR)
@@ -469,11 +434,49 @@ fold_gimple_assign (gimple_stmt_iterator *si)
       break;
 
     case GIMPLE_TERNARY_RHS:
-      result = fold_ternary_loc (loc, subcode,
-				 TREE_TYPE (gimple_assign_lhs (stmt)),
-				 gimple_assign_rhs1 (stmt),
-				 gimple_assign_rhs2 (stmt),
-				 gimple_assign_rhs3 (stmt));
+      /* Try to fold a conditional expression.  */
+      if (gimple_assign_rhs_code (stmt) == COND_EXPR)
+	{
+	  tree op0 = gimple_assign_rhs1 (stmt);
+	  tree tem;
+	  bool set = false;
+	  location_t cond_loc = gimple_location (stmt);
+
+	  if (COMPARISON_CLASS_P (op0))
+	    {
+	      fold_defer_overflow_warnings ();
+	      tem = fold_binary_loc (cond_loc,
+				     TREE_CODE (op0), TREE_TYPE (op0),
+				     TREE_OPERAND (op0, 0),
+				     TREE_OPERAND (op0, 1));
+	      /* This is actually a conditional expression, not a GIMPLE
+		 conditional statement, however, the valid_gimple_rhs_p
+		 test still applies.  */
+	      set = (tem && is_gimple_condexpr (tem)
+		     && valid_gimple_rhs_p (tem));
+	      fold_undefer_overflow_warnings (set, stmt, 0);
+	    }
+	  else if (is_gimple_min_invariant (op0))
+	    {
+	      tem = op0;
+	      set = true;
+	    }
+	  else
+	    return NULL_TREE;
+
+	  if (set)
+	    result = fold_build3_loc (cond_loc, COND_EXPR,
+				      TREE_TYPE (gimple_assign_lhs (stmt)), tem,
+				      gimple_assign_rhs2 (stmt),
+				      gimple_assign_rhs3 (stmt));
+	}
+
+      if (!result)
+	result = fold_ternary_loc (loc, subcode,
+				   TREE_TYPE (gimple_assign_lhs (stmt)),
+				   gimple_assign_rhs1 (stmt),
+				   gimple_assign_rhs2 (stmt),
+				   gimple_assign_rhs3 (stmt));
 
       if (result)
         {

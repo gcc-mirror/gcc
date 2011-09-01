@@ -225,24 +225,7 @@ fold_assignment_stmt (gimple stmt)
   switch (get_gimple_rhs_class (subcode))
     {
     case GIMPLE_SINGLE_RHS:
-      {
-        tree rhs = gimple_assign_rhs1 (stmt);
-
-        if (TREE_CODE (rhs) == COND_EXPR)
-          {
-            /* Sadly, we have to handle conditional assignments specially
-               here, because fold expects all the operands of an expression
-               to be folded before the expression itself is folded, but we
-               can't just substitute the folded condition here.  */
-            tree cond = fold (COND_EXPR_COND (rhs));
-            if (cond == boolean_true_node)
-              rhs = COND_EXPR_THEN (rhs);
-            else if (cond == boolean_false_node)
-              rhs = COND_EXPR_ELSE (rhs);
-          }
-
-        return fold (rhs);
-      }
+      return fold (gimple_assign_rhs1 (stmt));
 
     case GIMPLE_UNARY_RHS:
       {
@@ -265,6 +248,14 @@ fold_assignment_stmt (gimple stmt)
         tree op0 = gimple_assign_rhs1 (stmt);
         tree op1 = gimple_assign_rhs2 (stmt);
         tree op2 = gimple_assign_rhs3 (stmt);
+
+	/* Sadly, we have to handle conditional assignments specially
+	   here, because fold expects all the operands of an expression
+	   to be folded before the expression itself is folded, but we
+	   can't just substitute the folded condition here.  */
+        if (gimple_assign_rhs_code (stmt) == COND_EXPR)
+	  op0 = fold (op0);
+
         return fold_ternary (subcode, TREE_TYPE (lhs), op0, op1, op2);
       }
 

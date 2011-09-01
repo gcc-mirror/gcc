@@ -1,3 +1,31 @@
+2011-08-31  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (expand_expr_real_2): Move COND_EXPR and VEC_COND_EXPR
+	handling here, from ...
+	(expand_expr_real_1): ... here.
+	* gimple-pretty-print.c (dump_ternary_rhs): Handle COND_EXPR
+	and VEC_COND_EXPR.
+	* gimple.c (gimple_rhs_class_table): Make COND_EXPR and VEC_COND_EXPR
+	a GIMPLE_TERNARY_RHS.
+	* tree-cfg.c (verify_gimple_assign_ternary): Handle COND_EXPR
+	and VEC_COND_EXPR here ...
+	(verify_gimple_assign_single): ... not here.
+	* gimple-fold.c (fold_gimple_assign): Move COND_EXPR folding.
+	* tree-object-size.c (cond_expr_object_size): Adjust.
+	(collect_object_sizes_for): Likewise.
+	* tree-scalar-evolution.c (interpret_expr): Don't handle
+	ternary RHSs.
+	* tree-ssa-forwprop.c (forward_propagate_into_cond): Fix and
+	simplify.
+	(ssa_forward_propagate_and_combine): Adjust.
+	* tree-ssa-loop-im.c (move_computations_stmt): Build the COND_EXPR
+	as ternary.
+	* tree-ssa-threadedge.c (fold_assignment_stmt): Adjust.
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Likewise.
+	* tree-vect-stmt.c (vectorizable_condition): Likewise.
+	* tree-vrp.c (extract_range_from_cond_expr): Likewise.
+	(extract_range_from_assignment): Likewise.
+
 2011-08-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/i386/i386.md: Use (match_test ...) for attribute tests.

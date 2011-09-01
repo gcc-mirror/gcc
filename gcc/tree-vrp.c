@@ -3190,11 +3190,11 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 }
 
 
-/* Extract range information from a conditional expression EXPR based on
+/* Extract range information from a conditional expression STMT based on
    the ranges of each of its operands and the expression code.  */
 
 static void
-extract_range_from_cond_expr (value_range_t *vr, tree expr)
+extract_range_from_cond_expr (value_range_t *vr, gimple stmt)
 {
   tree op0, op1;
   value_range_t vr0 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
@@ -3202,7 +3202,7 @@ extract_range_from_cond_expr (value_range_t *vr, tree expr)
 
   /* Get value ranges for each operand.  For constant operands, create
      a new value range with the operand to simplify processing.  */
-  op0 = COND_EXPR_THEN (expr);
+  op0 = gimple_assign_rhs2 (stmt);
   if (TREE_CODE (op0) == SSA_NAME)
     vr0 = *(get_value_range (op0));
   else if (is_gimple_min_invariant (op0))
@@ -3210,7 +3210,7 @@ extract_range_from_cond_expr (value_range_t *vr, tree expr)
   else
     set_value_range_to_varying (&vr0);
 
-  op1 = COND_EXPR_ELSE (expr);
+  op1 = gimple_assign_rhs3 (stmt);
   if (TREE_CODE (op1) == SSA_NAME)
     vr1 = *(get_value_range (op1));
   else if (is_gimple_min_invariant (op1))
@@ -3302,7 +3302,7 @@ extract_range_from_assignment (value_range_t *vr, gimple stmt)
 				   gimple_expr_type (stmt),
 				   gimple_assign_rhs1 (stmt));
   else if (code == COND_EXPR)
-    extract_range_from_cond_expr (vr, gimple_assign_rhs1 (stmt));
+    extract_range_from_cond_expr (vr, stmt);
   else if (TREE_CODE_CLASS (code) == tcc_comparison)
     extract_range_from_comparison (vr, gimple_assign_rhs_code (stmt),
 				   gimple_expr_type (stmt),
