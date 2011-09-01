@@ -824,12 +824,6 @@ procedure Gnatls is
    procedure Output_License_Information is
    begin
       case Build_Type is
-         when Gnatpro =>
-            Write_Str ("Please refer to the section ""Software License"" on"
-                     & " GNAT Tracker at http://www.adacore.com/"
-                     & " for license terms.");
-            Write_Eol;
-
          when others =>
             Write_Str ("Please refer to file COPYING in your distribution"
                      & " for license terms.");
