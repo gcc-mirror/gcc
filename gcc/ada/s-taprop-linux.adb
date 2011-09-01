@@ -870,7 +870,8 @@ package body System.Task_Primitives.Operations is
       elsif T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
          declare
             CPUs    : constant size_t :=
-              Interfaces.C.size_t (System.Multiprocessors.Number_Of_CPUs);
+                        Interfaces.C.size_t
+                          (System.Multiprocessors.Number_Of_CPUs);
             CPU_Set : constant cpu_set_t_ptr := CPU_ALLOC (CPUs);
             Size    : constant size_t := CPU_ALLOC_SIZE (CPUs);
 
@@ -909,7 +910,8 @@ package body System.Task_Primitives.Operations is
       then
          declare
             CPUs    : constant size_t :=
-              Interfaces.C.size_t (System.Multiprocessors.Number_Of_CPUs);
+                        Interfaces.C.size_t
+                          (System.Multiprocessors.Number_Of_CPUs);
             CPU_Set : constant cpu_set_t_ptr := CPU_ALLOC (CPUs);
             Size    : constant size_t := CPU_ALLOC_SIZE (CPUs);
 
@@ -943,6 +945,7 @@ package body System.Task_Primitives.Operations is
          Attributes'Access,
          Thread_Body_Access (Wrapper),
          To_Address (T));
+
       pragma Assert
         (Result = 0 or else Result = EAGAIN or else Result = ENOMEM);
 
@@ -985,6 +988,7 @@ package body System.Task_Primitives.Operations is
       if T.Known_Tasks_Index /= -1 then
          Known_Tasks (T.Known_Tasks_Index) := null;
       end if;
+
       SC.Invalidate_Stack_Cache (T.Common.Compiler_Data.Pri_Stack_Info'Access);
       Free (Tmp);
 
@@ -1403,7 +1407,8 @@ package body System.Task_Primitives.Operations is
       then
          declare
             CPUs    : constant size_t :=
-              Interfaces.C.size_t (System.Multiprocessors.Number_Of_CPUs);
+                        Interfaces.C.size_t
+                          (System.Multiprocessors.Number_Of_CPUs);
             CPU_Set : cpu_set_t_ptr := null;
             Size    : constant size_t := CPU_ALLOC_SIZE (CPUs);
 

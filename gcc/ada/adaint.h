@@ -254,7 +254,7 @@ extern void   *__gnat_lwp_self			   (void);
 
 extern cpu_set_t *__gnat_cpu_alloc                 (size_t);
 extern size_t __gnat_cpu_alloc_size                (size_t);
-extern void   __gnat_cpu_set_free                  (cpu_set_t *);
+extern void   __gnat_cpu_free                  (cpu_set_t *);
 extern void   __gnat_cpu_zero                      (size_t, cpu_set_t *);
 extern void   __gnat_cpu_set                       (int, size_t, cpu_set_t *);
 #endif

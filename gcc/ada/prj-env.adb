@@ -529,7 +529,7 @@ package body Prj.Env is
             if not Source.Locally_Removed
               and then Source.Unit /= null
               and then
-                (Source.Index >= 1 or else Source.Naming_Exception)
+                (Source.Index >= 1 or else Source.Naming_Exception /= No)
             then
                Put (Source);
             end if;
@@ -1344,6 +1344,7 @@ package body Prj.Env is
 
          while Unit /= null loop
             if Unit.File_Names (Spec) /= null
+              and then not Unit.File_Names (Spec).Locally_Removed
               and then Unit.File_Names (Spec).File /= No_File
               and then
                 (Namet.Get_Name_String
@@ -1368,6 +1369,7 @@ package body Prj.Env is
 
             elsif Unit.File_Names (Impl) /= null
               and then Unit.File_Names (Impl).File /= No_File
+              and then not Unit.File_Names (Impl).Locally_Removed
               and then
                 (Namet.Get_Name_String
                    (Unit.File_Names (Impl).File) = Original_Name

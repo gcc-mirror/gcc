@@ -3790,6 +3790,14 @@ void *__gnat_lwp_self (void)
 
 #include <sched.h>
 
+/* glibc versions earlier than 2.7 do not define the routines to handle
+   dynamically allocated CPU sets. For these targets, we use the static
+   versions. */
+
+#ifdef CPU_ALLOC
+
+/* Dynamic cpu sets */
+
 cpu_set_t *__gnat_cpu_alloc (size_t count)
 {
   return CPU_ALLOC (count);
@@ -3815,6 +3823,37 @@ void __gnat_cpu_set (int cpu, size_t count, cpu_set_t *set)
   /* Ada handles CPU numbers starting from 1, while C identifies the first
      CPU by a 0, so we need to adjust. */
   CPU_SET_S (cpu - 1, count, set);
+}
+
+#else
+
+/* Static cpu sets */
+
+cpu_set_t *__gnat_cpu_alloc (size_t count ATTRIBUTE_UNUSED)
+{
+  return (cpu_set_t *) xmalloc (sizeof (cpu_set_t));
+}
+
+size_t __gnat_cpu_alloc_size (size_t count ATTRIBUTE_UNUSED)
+{
+  return sizeof (cpu_set_t);
+}
+
+void __gnat_cpu_free (cpu_set_t *set)
+{
+  free (set);
+}
+
+void __gnat_cpu_zero (size_t count ATTRIBUTE_UNUSED, cpu_set_t *set)
+{
+  CPU_ZERO (set);
+}
+
+void __gnat_cpu_set (int cpu, size_t count ATTRIBUTE_UNUSED, cpu_set_t *set)
+{
+  /* Ada handles CPU numbers starting from 1, while C identifies the first
+     CPU by a 0, so we need to adjust. */
+  CPU_SET (cpu - 1, set);
 }
 #endif
 
