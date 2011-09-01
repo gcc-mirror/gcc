@@ -526,9 +526,10 @@ package body Prj.Env is
          while Element (Iter) /= No_Source loop
             Source := Element (Iter);
 
-            if Source.Index >= 1
-              and then not Source.Locally_Removed
+            if not Source.Locally_Removed
               and then Source.Unit /= null
+              and then
+                (Source.Index >= 1 or else Source.Naming_Exception)
             then
                Put (Source);
             end if;

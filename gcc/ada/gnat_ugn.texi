@@ -17267,6 +17267,15 @@ A consequence of the @option{/p0image} qualifier is also to makes RMS buffers
 be placed in P0 space.  Refer to @cite{HP OpenVMS Linker Utility Manual} for
 more details about the @option{/p0image} qualifier and the @option{stack}
 option.
+
+@noindent
+On Itanium platforms, you can instead assign the @samp{GNAT_STACK_SIZE} and
+@samp{GNAT_RBS_SIZE} logicals to the size of the primary and register
+stack in kilobytes.  For example:
+
+@smallexample
+$ define GNAT_RBS_SIZE 1024 ! Limit the RBS size to 1MB.
+@end smallexample
 @end ifset
 
 @node Static Stack Usage Analysis
