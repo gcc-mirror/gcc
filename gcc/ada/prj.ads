@@ -1479,7 +1479,7 @@ package Prj is
       --  Unit name to Unit_Index (and from there to Source_Id)
 
       Source_Files_HT : Source_Files_Htable.Instance;
-      --  Base source file names to Source_Id list.
+      --  Base source file names to Source_Id list
 
       Source_Paths_HT : Source_Paths_Htable.Instance;
       --  Full path to Source_Id
@@ -1493,7 +1493,7 @@ package Prj is
       --  True when a source info file has been successfully read
 
       Shared : Shared_Project_Tree_Data_Access;
-      --  The shared data for this tree and all aggregated trees.
+      --  The shared data for this tree and all aggregated trees
 
       Appdata : Project_Tree_Appdata_Access;
       --  Application-specific data for this tree
@@ -1501,7 +1501,7 @@ package Prj is
       case Is_Root_Tree is
          when True =>
             Shared_Data : aliased Shared_Project_Tree_Data;
-            --  Do not access directly, only through Shared.
+            --  Do not access directly, only through Shared
 
          when False =>
             null;
