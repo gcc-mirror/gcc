@@ -1,3 +1,37 @@
+2011-09-01  Robert Dewar  <dewar@adacore.com>
+
+	* a-cbprqu.adb, a-cbprqu.ads, a-cuprqu.adb, a-cuprqu.ads,
+	a-cbsyqu.adb, a-cbsyqu.ads: Minor reformatting.
+
+2011-09-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: Conditionalize aliasing predicates to Ada2012.
+
+2011-09-01  Jose Ruiz  <ruiz@adacore.com>
+
+	* aspects.ads (Aspect_Id, Aspect_Argument, Aspect_Names): Add the CPU
+	aspect.
+	* aspects.adb (Canonical_Aspect): Add entry for the CPU aspect.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Analyze the CPU aspect
+	in a similar way as we do for the Priority or Dispatching_Domain aspect.
+	* s-mudido-affinity.adb (Dispatching_Domain_Tasks,
+	Dispatching_Domains_Frozen): Move this local data to package
+	System.Tasking because with the CPU aspect we need to have access
+	to this data when creating the task in System.Tasking.Stages.Create_Task
+	* s-taskin.ads (Dispatching_Domain_Tasks, Dispatching_Domains_Frozen):
+	Move these variables from the body of
+	System.Multiprocessors.Dispatching_Domains because with the CPU aspect
+	we need to have access to this data when creating the task in
+	System.Tasking.Stages.Create_Task.
+	* s-taskin.adb (Initialize): Signal the allocation of the environment
+	task to a CPU, if any, so that we know whether the CPU can be
+	transferred to a different dispatching domain.
+	* s-tassta.adb (Create_Task): Check whether the CPU to which this task
+	is being allocated belongs to the dispatching domain where the task
+	lives. Signal the allocation of the task to a CPU, if any, so that we
+	know whether the CPU can be transferred to a different dispatching
+	domain.
+
 2011-09-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_attr.adb, sem_attr.adb, snames.ads-tmpl: Implementation of

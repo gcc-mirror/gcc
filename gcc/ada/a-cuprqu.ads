@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---               ADA.CONTAINERS.UNBOUNDED_PRIORITY_QUEUES                   --
+--                 ADA.CONTAINERS.UNBOUNDED_PRIORITY_QUEUES                 --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---               ADA.CONTAINERS.BOUNDED_PRIORITY_QUEUES                     --
+--                  ADA.CONTAINERS.BOUNDED_PRIORITY_QUEUES                  --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --

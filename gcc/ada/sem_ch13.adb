@@ -1151,7 +1151,8 @@ package body Sem_Ch13 is
 
                when Aspect_Priority           |
                     Aspect_Interrupt_Priority |
-                    Aspect_Dispatching_Domain =>
+                    Aspect_Dispatching_Domain |
+                    Aspect_CPU                  =>
                   declare
                      Pname : Name_Id;
                   begin
@@ -1160,6 +1161,9 @@ package body Sem_Ch13 is
 
                      elsif A_Id = Aspect_Interrupt_Priority then
                         Pname := Name_Interrupt_Priority;
+
+                     elsif A_Id = Aspect_CPU then
+                        Pname := Name_CPU;
 
                      else
                         Pname := Name_Dispatching_Domain;
@@ -1495,11 +1499,13 @@ package body Sem_Ch13 is
 
                      --  For Priority aspects, insert into the task or
                      --  protected definition, which we need to create if it's
-                     --  not there.
+                     --  not there. The same applies to CPU and
+                     --  Dispatching_Domain but only to tasks.
 
                      when Aspect_Priority           |
                           Aspect_Interrupt_Priority |
-                          Aspect_Dispatching_Domain =>
+                          Aspect_Dispatching_Domain |
+                          Aspect_CPU                  =>
                         declare
                            T : Node_Id; -- the type declaration
                            L : List_Id; -- list of decls of task/protected
@@ -1514,6 +1520,7 @@ package body Sem_Ch13 is
 
                            if Nkind (T) = N_Protected_Type_Declaration
                              and then A_Id /= Aspect_Dispatching_Domain
+                             and then A_Id /= Aspect_CPU
                            then
                               pragma Assert
                                 (Present (Protected_Definition (T)));
@@ -5889,6 +5896,9 @@ package body Sem_Ch13 is
 
          when Aspect_Bit_Order =>
             T := RTE (RE_Bit_Order);
+
+         when Aspect_CPU =>
+            T := RTE (RE_CPU_Range);
 
          when Aspect_Dispatching_Domain =>
             T := RTE (RE_Dispatching_Domain);

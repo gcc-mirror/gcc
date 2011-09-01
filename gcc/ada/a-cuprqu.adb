@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---               ADA.CONTAINERS.UNBOUNDED_PRIORITY_QUEUES                   --
+--                 ADA.CONTAINERS.UNBOUNDED_PRIORITY_QUEUES                 --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -124,7 +124,6 @@ package body Ada.Containers.Unbounded_Priority_Queues is
 
       procedure Finalize (List : in out List_Type) is
          X : Node_Access;
-
       begin
          while List.First /= null loop
             X := List.First;

@@ -41,21 +41,6 @@ package body System.Multiprocessors.Dispatching_Domains is
 
    package ST renames System.Tasking;
 
-   ----------------
-   -- Local data --
-   ----------------
-
-   Dispatching_Domain_Tasks : array (CPU'First .. Number_Of_CPUs) of Natural :=
-                                (others => 0);
-   --  We need to store whether there are tasks allocated to concrete
-   --  processors in the default system dispatching domain because we need to
-   --  check it before creating a new dispatching domain.
-   --  ??? Tasks allocated with pragma CPU are not taken into account here.
-
-   Dispatching_Domains_Frozen : Boolean := False;
-   --  True when the main procedure has been called. Hence, no new dispatching
-   --  domains can be created when this flag is True.
-
    -----------------------
    -- Local subprograms --
    -----------------------
@@ -132,6 +117,7 @@ package body System.Multiprocessors.Dispatching_Domains is
    function Create (First, Last : CPU) return Dispatching_Domain is
       use type System.Tasking.Dispatching_Domain;
       use type System.Tasking.Dispatching_Domain_Access;
+      use type System.Tasking.Array_Allocated_Tasks;
       use type System.Tasking.Task_Id;
 
       Valid_System_Domain : constant Boolean :=
@@ -177,7 +163,7 @@ package body System.Multiprocessors.Dispatching_Domains is
            "CPU range not currently in System_Dispatching_Domain";
 
       elsif
-        Dispatching_Domain_Tasks (First .. Last) /= (First .. Last => 0)
+        ST.Dispatching_Domain_Tasks (First .. Last) /= (First .. Last => 0)
       then
          raise Dispatching_Domain_Error with "CPU range has tasks assigned";
 
@@ -189,7 +175,7 @@ package body System.Multiprocessors.Dispatching_Domains is
          raise Dispatching_Domain_Error with
            "only the environment task can create dispatching domains";
 
-      elsif Dispatching_Domains_Frozen then
+      elsif ST.Dispatching_Domains_Frozen then
          raise Dispatching_Domain_Error with
            "cannot create dispatching domain after call to main program";
       end if;
@@ -253,7 +239,7 @@ package body System.Multiprocessors.Dispatching_Domains is
    begin
       --  Signal the end of the elaboration code
 
-      Dispatching_Domains_Frozen := True;
+      ST.Dispatching_Domains_Frozen := True;
    end Freeze_Dispatching_Domains;
 
    -------------
@@ -370,23 +356,23 @@ package body System.Multiprocessors.Dispatching_Domains is
       --  Change the number of tasks attached to a given task in the system
       --  domain if needed.
 
-      if not Dispatching_Domains_Frozen
+      if not ST.Dispatching_Domains_Frozen
         and then (Domain = null or else Domain = ST.System_Domain)
       then
          --  Reduce the number of tasks attached to the CPU from which this
          --  task is being moved, if needed.
 
          if Source_CPU /= Not_A_Specific_CPU then
-            Dispatching_Domain_Tasks (Source_CPU) :=
-              Dispatching_Domain_Tasks (Source_CPU) - 1;
+            ST.Dispatching_Domain_Tasks (Source_CPU) :=
+              ST.Dispatching_Domain_Tasks (Source_CPU) - 1;
          end if;
 
          --  Increase the number of tasks attached to the CPU to which this
          --  task is being moved, if needed.
 
          if CPU /= Not_A_Specific_CPU then
-            Dispatching_Domain_Tasks (CPU) :=
-              Dispatching_Domain_Tasks (CPU) + 1;
+            ST.Dispatching_Domain_Tasks (CPU) :=
+              ST.Dispatching_Domain_Tasks (CPU) + 1;
          end if;
       end if;
 
