@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2010, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2011, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -68,6 +68,16 @@ extern struct tm *localtime_r(const time_t *, struct tm *);
 #endif
 
 #include "adaint.h"
+
+/* Don't use macros versions of this functions on VxWorks since they cause
+   imcompatible changes in some VxWorks versions */
+#ifdef __vxworks
+#undef getchar
+#undef putchar
+#undef feof
+#undef ferror
+#undef fileno
+#endif
 
 /*
    mode_read_text

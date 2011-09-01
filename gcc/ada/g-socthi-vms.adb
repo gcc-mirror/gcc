@@ -41,9 +41,8 @@ package body GNAT.Sockets.Thin is
    type VMS_Msghdr is new Msghdr;
    pragma Pack (VMS_Msghdr);
    --  On VMS 8.x (unlike other platforms), struct msghdr is packed, so a
-   --  specific derived type is required.
-   --  This structure was not packed on VMS 7.3, so sendmsg and recvmsg fail on
-   --  earlier VMS versions.
+   --  specific derived type is required. This structure was not packed on
+   --  VMS 7.3, so sendmsg and recvmsg fail on earlier VMS versions.
 
    Non_Blocking_Sockets : aliased Fd_Set;
    --  When this package is initialized with Process_Blocking_IO set to True,

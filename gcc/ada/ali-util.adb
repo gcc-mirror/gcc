@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -212,7 +212,10 @@ package body ALI.Util is
    -- Read_Withed_ALIs --
    ----------------------
 
-   procedure Read_Withed_ALIs (Id : ALI_Id) is
+   procedure Read_Withed_ALIs
+     (Id            : ALI_Id;
+      Ignore_Errors : Boolean := False)
+   is
       Afile  : File_Name_Type;
       Text   : Text_Buffer_Ptr;
       Idread : ALI_Id;
@@ -234,59 +237,67 @@ package body ALI.Util is
             then
                Text := Read_Library_Info (Afile);
 
-               --  Return with an error if source cannot be found. We used to
-               --  skip this check when we did not compile library generics
-               --  separately, but we now always do, so there is no special
-               --  case here anymore.
+               --  Unless Ignore_Errors is true, return with an error if source
+               --  cannot be found. We used to skip this check when we did not
+               --  compile library generics separately, but we now always do,
+               --  so there is no special case here anymore.
 
                if Text = null then
-                  Error_Msg_File_1 := Afile;
-                  Error_Msg_File_2 := Withs.Table (W).Sfile;
-                  Error_Msg ("{ not found, { must be compiled");
-                  Set_Name_Table_Info (Afile, Int (No_Unit_Id));
-                  return;
-               end if;
 
-               --  Enter in ALIs table
-
-               Idread :=
-                 Scan_ALI
-                   (F         => Afile,
-                    T         => Text,
-                    Ignore_ED => False,
-                    Err       => False);
-
-               Free (Text);
-
-               if ALIs.Table (Idread).Compile_Errors then
-                  Error_Msg_File_1 := Withs.Table (W).Sfile;
-                  Error_Msg ("{ had errors, must be fixed, and recompiled");
-                  Set_Name_Table_Info (Afile, Int (No_Unit_Id));
-
-               elsif ALIs.Table (Idread).No_Object then
-                  Error_Msg_File_1 := Withs.Table (W).Sfile;
-                  Error_Msg ("{ must be recompiled");
-                  Set_Name_Table_Info (Afile, Int (No_Unit_Id));
-               end if;
-
-               --  If the Unit is an Interface to a Stand-Alone Library,
-               --  set the Interface flag in the Withs table, so that its
-               --  dependant are not considered for elaboration order.
-
-               if ALIs.Table (Idread).SAL_Interface then
-                  Withs.Table (W).SAL_Interface  := True;
-                  Interface_Library_Unit := True;
-
-                  --  Set the entry in the Interfaces hash table, so that other
-                  --  units that import this unit will set the flag in their
-                  --  entry in the Withs table.
-
-                  Interfaces.Set (Afile, True);
+                  if not Ignore_Errors then
+                     Error_Msg_File_1 := Afile;
+                     Error_Msg_File_2 := Withs.Table (W).Sfile;
+                     Error_Msg ("{ not found, { must be compiled");
+                     Set_Name_Table_Info (Afile, Int (No_Unit_Id));
+                     return;
+                  end if;
 
                else
-                  --  Otherwise, recurse to get new dependents
+                  --  Enter in ALIs table
 
-                  Read_Withed_ALIs (Idread);
+                  Idread :=
+                    Scan_ALI
+                      (F         => Afile,
+                       T         => Text,
+                       Ignore_ED => False,
+                       Err       => False);
+
+                  Free (Text);
+
+                  if ALIs.Table (Idread).Compile_Errors
+                    and then not Ignore_Errors
+                  then
+                     Error_Msg_File_1 := Withs.Table (W).Sfile;
+                     Error_Msg ("{ had errors, must be fixed, and recompiled");
+                     Set_Name_Table_Info (Afile, Int (No_Unit_Id));
+
+                  elsif ALIs.Table (Idread).No_Object
+                    and then not Ignore_Errors
+                  then
+                     Error_Msg_File_1 := Withs.Table (W).Sfile;
+                     Error_Msg ("{ must be recompiled");
+                     Set_Name_Table_Info (Afile, Int (No_Unit_Id));
+                  end if;
+
+                  --  If the Unit is an Interface to a Stand-Alone Library,
+                  --  set the Interface flag in the Withs table, so that its
+                  --  dependant are not considered for elaboration order.
+
+                  if ALIs.Table (Idread).SAL_Interface then
+                     Withs.Table (W).SAL_Interface := True;
+                     Interface_Library_Unit := True;
+
+                     --  Set the entry in the Interfaces hash table, so that
+                     --  other units that import this unit will set the flag
+                     --  in their entry in the Withs table.
+
+                     Interfaces.Set (Afile, True);
+
+                  else
+                     --  Otherwise, recurse to get new dependents
+
+                     Read_Withed_ALIs (Idread);
+                  end if;
                end if;
 
             --  If the ALI file has already been processed and is an interface,

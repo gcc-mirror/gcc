@@ -5129,9 +5129,13 @@ package body Exp_Ch3 is
                              Loc))));
                end;
 
-            elsif Is_Tagged_Type (Typ)
-              and then Is_CPP_Constructor_Call (Expr)
-            then
+            --  Handle C++ constructor calls. Note that we do not check that
+            --  Typ is a tagged type since the equivalent Ada type of a C++
+            --  class that has no virtual methods is a non-tagged limited
+            --  record type.
+
+            elsif Is_CPP_Constructor_Call (Expr) then
+
                --  The call to the initialization procedure does NOT freeze the
                --  object being initialized.
 

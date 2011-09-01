@@ -1,3 +1,31 @@
+2011-09-01  Yannick Moy  <moy@adacore.com>
+
+	* ali-util.adb, ali-util.ads (Read_Withed_ALIs): Add parameter
+	Ignore_Errors to ignore failures to read ALI files when True.
+
+2011-09-01  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Handle non-default
+	constructor calls associated with non-tagged record types.
+
+2011-09-01  Robert Dewar  <dewar@adacore.com>
+
+	* g-socthi-vms.adb: Minor reformatting.
+
+2011-09-01  Nicolas Roche  <roche@adacore.com>
+
+	* sysdep.c: Don't use macro functions for stdio functions on VxWorks
+	in order to avoid impact of imcompatible changes.
+	* cstreams.c: Likewise
+	* cio.c: Likewise
+	* aux-io.c: Likewise
+
+2011-09-01  Yannick Moy  <moy@adacore.com>
+
+	* lib-writ.adb (Write_With_Lines): Always output complete information
+	on "with" line in Alfa mode, as this is required by formal verification
+	back-end.
+
 2011-09-01  Tristan Gingold  <gingold@adacore.com>
 
 	* g-socthi-vms.adb: Add comments.

@@ -70,6 +70,16 @@ extern "C" {
 
 #endif
 
+/* Don't use macros versions of this functions on VxWorks since they cause
+   imcompatible changes in some VxWorks versions */
+#ifdef __vxworks
+#undef getchar
+#undef putchar
+#undef feof
+#undef ferror
+#undef fileno
+#endif
+
 /* The _IONBF value in MINGW32 stdio.h is wrong.  */
 #if defined (WINNT) || defined (_WINNT)
 #if OLD_MINGW
