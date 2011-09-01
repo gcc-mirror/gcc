@@ -1,5 +1,9 @@
 2011-09-01  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch4.adb, a-exexda.adb: Minor reformatting.
+
+2011-09-01  Robert Dewar  <dewar@adacore.com>
+
 	* s-taskin.ads, s-tassta.adb, sem_ch13.adb: Minor reformatting.
 
 2011-09-01  Thomas Quinot  <quinot@adacore.com>
