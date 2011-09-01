@@ -3790,16 +3790,31 @@ void *__gnat_lwp_self (void)
 
 #include <sched.h>
 
-void __gnat_cpu_zero (cpu_set_t *set)
+cpu_set_t *__gnat_cpu_alloc (size_t count)
 {
-  CPU_ZERO (set);
+  return CPU_ALLOC (count);
 }
 
-void __gnat_cpu_set (int cpu, cpu_set_t *set)
+size_t __gnat_cpu_alloc_size (size_t count)
+{
+  return CPU_ALLOC_SIZE (count);
+}
+
+void __gnat_cpu_free (cpu_set_t *set)
+{
+  CPU_FREE (set);
+}
+
+void __gnat_cpu_zero (size_t count, cpu_set_t *set)
+{
+  CPU_ZERO_S (count, set);
+}
+
+void __gnat_cpu_set (int cpu, size_t count, cpu_set_t *set)
 {
   /* Ada handles CPU numbers starting from 1, while C identifies the first
      CPU by a 0, so we need to adjust. */
-  CPU_SET (cpu - 1, set);
+  CPU_SET_S (cpu - 1, count, set);
 }
 #endif
 

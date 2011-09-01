@@ -1,3 +1,27 @@
+2011-09-01  Jose Ruiz  <ruiz@adacore.com>
+
+	* adaint.c, adaint.h (__gnat_cpu_alloc, __gnat_cpu_alloc_size,
+	__gnat_cpu_set_free): Create these wrappers around the CPU_ALLOC,
+	CPU_ALLOC_SIZE and CPU_FREE linux macros.
+	(__gnat_cpu_zero, __gnat_cpu_set): Use the CPU_ZERO_S and
+	CPU_SET_S respectively because we are now using dynamically allocated
+	CPU sets which are more portable across different glibc versions.
+	* s-osinte-linux.ads (cpu_set_t_ptr, CPU_ALLOC, CPU_ALLOC_SIZE,
+	CPU_FREE): Add this type and subprograms to be able to create cpu_set_t
+	masks dynamically according to the number of processors in the target
+	platform.
+	(CPU_ZERO, CPU_SET): They are now mapped to the CPU_ZERO_S and CPU_SET_S
+	respectively, so we need to pass the size of the masks as
+	parameters.
+	* s-taprop-linux.adb (Create_Task, Set_Task_Affinity): Use dynamically
+	created cpu_set_t masks
+	with the number of processors available in the target platform,
+	instead of static bit arrays. It enhances portability because
+	it uses the information from the target platform.
+	* sem_ch8.adb: (Attribute_Renaming): When checking whether we
+	are using a restricted run-time library, use the flag
+	Configurable_Run_Time_Mode instead of Restricted_Profile.
+
 2011-09-01  Vincent Celier  <celier@adacore.com>
 
 	* ug_words: Add /MULTI_UNIT_INDEX= -> -gnateI
