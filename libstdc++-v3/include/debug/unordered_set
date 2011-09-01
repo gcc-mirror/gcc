@@ -104,8 +104,6 @@ namespace __debug
       : _Base(__x) { }
 
       unordered_set(unordered_set&& __x)
-      noexcept(__and_<is_nothrow_copy_constructible<_Hash>,
-	              is_nothrow_copy_constructible<_Pred>>::value)
       : _Base(std::move(__x)) { }
 
       unordered_set(initializer_list<value_type> __l,
@@ -480,8 +478,6 @@ namespace __debug
       : _Base(__x) { }
 
       unordered_multiset(unordered_multiset&& __x)
-      noexcept(__and_<is_nothrow_copy_constructible<_Hash>,
-	              is_nothrow_copy_constructible<_Pred>>::value)
       : _Base(std::move(__x)) { }
 
       unordered_multiset(initializer_list<value_type> __l,

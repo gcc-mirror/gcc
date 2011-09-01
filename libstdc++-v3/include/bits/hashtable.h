@@ -674,8 +674,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
     _Hashtable(_Hashtable&& __ht)
-    noexcept(__and_<is_nothrow_copy_constructible<_Equal>,
-	            is_nothrow_copy_constructible<_H1>>::value)
     : __detail::_Rehash_base<_RehashPolicy, _Hashtable>(__ht),
       __detail::_Hash_code_base<_Key, _Value, _ExtractKey, _Equal,
 				_H1, _H2, _Hash, __chc>(__ht),
@@ -687,12 +685,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)
     {
-      size_type __n_bkt = __ht._M_rehash_policy._M_next_bkt(0);
-      __ht._M_buckets = __ht._M_allocate_buckets(__n_bkt);
-      __ht._M_bucket_count = __n_bkt;
+      __ht._M_rehash_policy = _RehashPolicy();
+      __ht._M_bucket_count = __ht._M_rehash_policy._M_next_bkt(0);
+      __ht._M_buckets = __ht._M_allocate_buckets(__ht._M_bucket_count);
       __ht._M_begin_bucket_index = __ht._M_bucket_count;
       __ht._M_element_count = 0;
-      __ht._M_rehash_policy = _RehashPolicy();
     }
 
   template<typename _Key, typename _Value,
