@@ -1,3 +1,22 @@
+2011-09-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable.h (_Hashtable<>::_Hashtable(_Hashtable&&)):
+	Remove noexcept, the move constructor allocates memory; rearrange
+	the code in the body to consistently update __ht._M_rehash_policy
+	before using _M_next_bkt on it.
+	* include/debug/unordered_map: Adjust.
+	* include/debug/unordered_set: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* testsuite/23_containers/unordered_map/cons/
+	noexcept_move_construct.cc: Remove.
+	* testsuite/23_containers/unordered_set/cons/
+	noexcept_move_construct.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/
+	noexcept_move_construct.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/
+	noexcept_move_construct.cc: Likewise.
+
 2011-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/chrono (operator*(const _Rep1&, const duration<>&)):

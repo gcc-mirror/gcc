@@ -103,8 +103,6 @@ namespace __profile
       }
 
       unordered_set(unordered_set&& __x)
-      noexcept(__and_<is_nothrow_copy_constructible<_Hash>,
-	              is_nothrow_copy_constructible<_Pred>>::value)
       : _Base(std::move(__x)) 
       { 
         __profcxx_hashtable_construct(this, _Base::bucket_count());
@@ -348,8 +346,6 @@ namespace __profile
       }
 
       unordered_multiset(unordered_multiset&& __x)
-      noexcept(__and_<is_nothrow_copy_constructible<_Hash>,
-	              is_nothrow_copy_constructible<_Pred>>::value)
       : _Base(std::move(__x))
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
