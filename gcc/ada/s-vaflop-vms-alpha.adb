@@ -35,11 +35,6 @@ with System.Machine_Code; use System.Machine_Code;
 
 package body System.Vax_Float_Operations is
 
-   --  Ensure this gets compiled with -O to avoid extra (and possibly
-   --  improper) memory stores.
-
-   pragma Optimize (Time);
-
    --  Declare the functions that do the conversions between floating-point
    --  formats.  Call the operands IEEE float so they get passed in
    --  FP registers.

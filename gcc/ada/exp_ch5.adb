@@ -62,17 +62,17 @@ with Validsw;  use Validsw;
 package body Exp_Ch5 is
 
    function Change_Of_Representation (N : Node_Id) return Boolean;
-   --  Determine if the right hand side of the assignment N is a type
-   --  conversion which requires a change of representation. Called
-   --  only for the array and record cases.
+   --  Determine if the right hand side of assignment N is a type conversion
+   --  which requires a change of representation. Called only for the array
+   --  and record cases.
 
    procedure Expand_Assign_Array (N : Node_Id; Rhs : Node_Id);
    --  N is an assignment which assigns an array value. This routine process
    --  the various special cases and checks required for such assignments,
    --  including change of representation. Rhs is normally simply the right
-   --  hand side of the assignment, except that if the right hand side is
-   --  a type conversion or a qualified expression, then the Rhs is the
-   --  actual expression inside any such type conversions or qualifications.
+   --  hand side of the assignment, except that if the right hand side is a
+   --  type conversion or a qualified expression, then the RHS is the actual
+   --  expression inside any such type conversions or qualifications.
 
    function Expand_Assign_Array_Loop
      (N      : Node_Id;
@@ -3026,21 +3026,16 @@ package body Exp_Ch5 is
             --  If the container type is a derived type, the cursor type is
             --  found in the package of the parent type.
 
+            if Is_Derived_Type (Container_Typ) then
+               Pack := Scope (Root_Type (Container_Typ));
+            else
+               Pack := Scope (Container_Typ);
+            end if;
+
             Iter_Type := Etype (Name (I_Spec));
 
             if Is_Iterator (Iter_Type) then
-               if Is_Derived_Type (Container_Typ) then
-                  Pack := Scope (Scope (Root_Type (Container_Typ)));
-               else
-                  Pack := Scope (Scope (Container_Typ));
-               end if;
-
-            else
-               if Is_Derived_Type (Container_Typ) then
-                  Pack := Scope (Root_Type (Container_Typ));
-               else
-                  Pack := Scope (Container_Typ);
-               end if;
+               Pack := Scope (Pack);
             end if;
 
             --  The "of" case uses an internally generated cursor whose type

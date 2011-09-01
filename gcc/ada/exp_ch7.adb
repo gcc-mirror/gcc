@@ -4198,32 +4198,6 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         function Find_Insertion_List return List_Id;
-         --  Return the statement list of the enclosing sequence of statements
-
-         -------------------------
-         -- Find_Insertion_List --
-         -------------------------
-
-         function Find_Insertion_List return List_Id is
-            Par : Node_Id;
-
-         begin
-            --  Climb up the tree looking for the enclosing sequence of
-            --  statements.
-
-            Par := N;
-            while Present (Par)
-              and then Nkind (Par) /= N_Handled_Sequence_Of_Statements
-            loop
-               Par := Parent (Par);
-            end loop;
-
-            return Statements (Par);
-         end Find_Insertion_List;
-
-         --  Local variables
-
          Requires_Hooking : constant Boolean :=
                               Nkind_In (N, N_Function_Call,
                                            N_Procedure_Call_Statement);
@@ -4241,8 +4215,6 @@ package body Exp_Ch7 is
          Stmt      : Node_Id;
          Stmts     : List_Id;
          Temp_Id   : Entity_Id;
-
-      --  Start of processing for Process_Transient_Objects
 
       begin
          --  Examine all objects in the list First_Object .. Last_Object
@@ -4296,11 +4268,8 @@ package body Exp_Ch7 is
 
                if Requires_Hooking then
                   declare
-                     Ins_List  : constant List_Id := Find_Insertion_List;
-                     Expr      : Node_Id;
-                     Ptr_Decl  : Node_Id;
-                     Ptr_Id    : Entity_Id;
-                     Temp_Decl : Node_Id;
+                     Expr   : Node_Id;
+                     Ptr_Id : Entity_Id;
 
                   begin
                      --  Step 1: Create an access type which provides a
@@ -4310,7 +4279,7 @@ package body Exp_Ch7 is
 
                      Ptr_Id := Make_Temporary (Loc, 'A');
 
-                     Ptr_Decl :=
+                     Insert_Action (Stmt,
                        Make_Full_Type_Declaration (Loc,
                          Defining_Identifier => Ptr_Id,
                          Type_Definition     =>
@@ -4318,7 +4287,7 @@ package body Exp_Ch7 is
                              All_Present        =>
                                Ekind (Obj_Typ) = E_General_Access_Type,
                              Subtype_Indication =>
-                               New_Reference_To (Desig_Typ, Loc)));
+                               New_Reference_To (Desig_Typ, Loc))));
 
                      --  Step 2: Create a temporary which acts as a hook to
                      --  the transient object. Generate:
@@ -4327,19 +4296,11 @@ package body Exp_Ch7 is
 
                      Temp_Id := Make_Temporary (Loc, 'T');
 
-                     Temp_Decl :=
+                     Insert_Action (Stmt,
                        Make_Object_Declaration (Loc,
                          Defining_Identifier => Temp_Id,
                          Object_Definition   =>
-                           New_Reference_To (Ptr_Id, Loc));
-
-                     --  Analyze the access type and the hook declarations
-
-                     Prepend_To (Ins_List, Temp_Decl);
-                     Prepend_To (Ins_List, Ptr_Decl);
-
-                     Analyze (Ptr_Decl);
-                     Analyze (Temp_Decl);
+                           New_Reference_To (Ptr_Id, Loc)));
 
                      --  Mark the temporary as a transient hook. This signals
                      --  the machinery in Build_Finalizer to recognize this

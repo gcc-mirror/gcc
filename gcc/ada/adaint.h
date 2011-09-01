@@ -247,6 +247,13 @@ extern void   __gnat_os_filename                   (char *, char *, char *,
 						    int *, char *, int *);
 #if defined (linux)
 extern void   *__gnat_lwp_self			   (void);
+
+/* Routines for interface to required CPU set primitives */
+
+#include <sched.h>
+
+extern void   __gnat_cpu_zero                      (cpu_set_t *);
+extern void   __gnat_cpu_set                       (int, cpu_set_t *);
 #endif
 
 #if defined (_WIN32)
