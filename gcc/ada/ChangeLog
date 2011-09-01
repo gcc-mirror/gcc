@@ -1,3 +1,13 @@
+2011-09-01  Vincent Celier  <celier@adacore.com>
+
+	* ug_words: Add /MULTI_UNIT_INDEX= -> -gnateI
+	* vms_data.ads: Add new VMS qualifier equivalent for -gnateInnn
+
+2011-09-01  Nicolas Roche  <roche@adacore.com>
+
+	* adaint.c (__gnat_tmp_name): Don't use tmpnam function from the system
+	on VxWorks in kernel mode.
+
 2011-09-01  Jose Ruiz  <ruiz@adacore.com>
 
 	* s-taprop-linux.adb (Create_Task, Set_Task_Affinity): Use the linux

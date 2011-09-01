@@ -1240,6 +1240,23 @@ __gnat_tmp_name (char *tmp_filename)
     sprintf (tmp_filename, "%s/gnat-XXXXXX", tmpdir);
 
   close (mkstemp(tmp_filename));
+#elif defined (__vxworks) && !(defined (__RTP__) || defined (VTHREADS))
+  int             index;
+  char *          pos;
+  ushort_t        t;
+  static ushort_t seed = 0; /* used to generate unique name */
+
+  /* generate unique name */
+  strcpy (tmp_filename, "tmp");
+
+  /* fill up the name buffer from the last position */
+  index = 5;
+  pos = tmp_filename + strlen (tmp_filename) + index;
+  *pos = '\0';
+
+  seed++;
+  for (t = seed; 0 <= --index; t >>= 3)
+      *--pos = '0' + (t & 07);
 #else
   tmpnam (tmp_filename);
 #endif
