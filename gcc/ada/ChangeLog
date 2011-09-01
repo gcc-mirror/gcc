@@ -1,3 +1,17 @@
+2011-09-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Find_Insertion_List): New routine.
+	(Process_Transient_Objects): Add code to handle the abnormal
+	finalization of a controlled transient associated with a subprogram
+	call. Since transients are cleaned up right after the associated
+	context, an exception raised during a subprogram call may bypass the
+	finalization code.
+
+2011-09-01  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Check actual for aliased parameter is
+	aliased.
+
 2011-09-01  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb, a-exexda.adb: Minor reformatting.

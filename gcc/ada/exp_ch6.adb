@@ -2208,8 +2208,8 @@ package body Exp_Ch6 is
       --  as we go through the loop, since this is a convenient place to do it.
       --  (Though it seems that this would be better done in Expand_Actuals???)
 
-      Formal      := First_Formal (Subp);
-      Actual      := First_Actual (Call_Node);
+      Formal := First_Formal (Subp);
+      Actual := First_Actual (Call_Node);
       Param_Count := 1;
       while Present (Formal) loop
 
@@ -2235,7 +2235,7 @@ package body Exp_Ch6 is
            CW_Interface_Formals_Present
              or else
                (Ekind (Etype (Formal)) = E_Class_Wide_Type
-                  and then Is_Interface (Etype (Etype (Formal))))
+                 and then Is_Interface (Etype (Etype (Formal))))
              or else
                (Ekind (Etype (Formal)) = E_Anonymous_Access_Type
                  and then Is_Interface (Directly_Designated_Type
@@ -2616,6 +2616,15 @@ package body Exp_Ch6 is
             end if;
          end if;
 
+         --  For Ada 2012, if a parameter is aliased, the actual must be an
+         --  aliased object.
+
+         if Is_Aliased (Formal) and then not Is_Aliased_View (Actual) then
+            Error_Msg_NE
+              ("actual for aliased formal& must be aliased object",
+               Actual, Formal);
+         end if;
+
          --  For IN OUT and OUT parameters, ensure that subscripts are valid
          --  since this is a left side reference. We only do this for calls
          --  from the source program since we assume that compiler generated
@@ -2667,9 +2676,7 @@ package body Exp_Ch6 is
                --  or IN OUT parameter! We do reset the Is_Known_Valid flag
                --  since the subprogram could have returned in invalid value.
 
-               if (Ekind (Formal) = E_Out_Parameter
-                     or else
-                   Ekind (Formal) = E_In_Out_Parameter)
+               if Ekind_In (Formal, E_Out_Parameter, E_In_Out_Parameter)
                  and then Is_Assignable (Ent)
                then
                   Sav := Last_Assignment (Ent);
