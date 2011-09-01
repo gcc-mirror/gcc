@@ -29,7 +29,6 @@ with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
-with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Util; use Sem_Util;
@@ -222,23 +221,11 @@ package body Exp_Strm is
             Make_Identifier (Loc, Name_S),
             Make_Identifier (Loc, Name_V)));
 
-      if Ada_Version >= Ada_2005 then
-         Stms := New_List (
-            Make_Extended_Return_Statement (Loc,
-              Return_Object_Declarations => New_List (Odecl),
-              Handled_Statement_Sequence =>
-                Make_Handled_Sequence_Of_Statements (Loc, New_List (Rstmt))));
-      else
-         --  pragma Assert (not Is_Limited_Type (Typ));
-         --  Returning a local object, shouldn't happen in the case of a
-         --  limited type, but currently occurs in DSA stubs in Ada 95 mode???
-
-         Stms := New_List (
-                   Odecl,
-                   Rstmt,
-                   Make_Simple_Return_Statement (Loc,
-                     Expression => Make_Identifier (Loc, Name_V)));
-      end if;
+      Stms := New_List (
+         Make_Extended_Return_Statement (Loc,
+           Return_Object_Declarations => New_List (Odecl),
+           Handled_Statement_Sequence =>
+             Make_Handled_Sequence_Of_Statements (Loc, New_List (Rstmt))));
 
       Fnam :=
         Make_Defining_Identifier (Loc,

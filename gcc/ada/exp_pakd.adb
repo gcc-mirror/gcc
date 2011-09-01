@@ -703,10 +703,10 @@ package body Exp_Pakd is
       --  array reference, reanalysis can produce spurious type errors when the
       --  PAT type is replaced again with the original type of the array. Same
       --  for the case of a dereference. Ditto for function calls: expansion
-      --  may introduce additional actuals which will trigger errors if call
-      --  is reanalyzed. The following is correct and minimal,
-      --  but the handling of more complex packed expressions in actuals is
-      --  confused. Probably the problem only remains for actuals in calls.
+      --  may introduce additional actuals which will trigger errors if call is
+      --  reanalyzed. The following is correct and minimal, but the handling of
+      --  more complex packed expressions in actuals is confused. Probably the
+      --  problem only remains for actuals in calls.
 
       Set_Etype (Aexp, Packed_Array_Type (Act_ST));
 
@@ -714,8 +714,7 @@ package body Exp_Pakd is
         or else
            (Nkind (Aexp) = N_Indexed_Component
              and then Is_Entity_Name (Prefix (Aexp)))
-        or else Nkind (Aexp) = N_Explicit_Dereference
-        or else Nkind (Aexp) = N_Function_Call
+        or else Nkind_In (Aexp, N_Explicit_Dereference, N_Function_Call)
       then
          Set_Analyzed (Aexp);
       end if;

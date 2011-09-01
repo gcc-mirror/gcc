@@ -12745,7 +12745,6 @@ package body Sem_Ch12 is
          if Has_Aspects (N) then
             declare
                Aspect : Node_Id;
-
             begin
                Aspect := First (Aspect_Specifications (N));
                while Present (Aspect) loop

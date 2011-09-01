@@ -10851,7 +10851,7 @@ package body Exp_Ch9 is
       then
          Append_To (Cdecls,
            Make_Component_Declaration (Loc,
-             Defining_Identifier =>
+             Defining_Identifier  =>
                Make_Defining_Identifier (Loc, Name_uDispatching_Domain),
 
              Component_Definition =>
@@ -10861,13 +10861,14 @@ package body Exp_Ch9 is
                    New_Reference_To
                      (RTE (RE_Dispatching_Domain_Access), Loc)),
 
-             Expression =>
+             Expression           =>
                Unchecked_Convert_To (RTE (RE_Dispatching_Domain_Access),
-                 Relocate_Node (
-                   Expression (First (
-                     Pragma_Argument_Associations (
-                       Find_Task_Or_Protected_Pragma
-                         (Taskdef, Name_Dispatching_Domain))))))));
+                 Relocate_Node
+                   (Expression
+                      (First
+                         (Pragma_Argument_Associations
+                            (Find_Task_Or_Protected_Pragma
+                               (Taskdef, Name_Dispatching_Domain))))))));
       end if;
 
       Insert_After (Size_Decl, Rec_Decl);

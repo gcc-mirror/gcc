@@ -39,19 +39,17 @@ begin
          Start := F.From_Scope;
          Stop  := F.To_Scope;
 
-         if Start <= Stop then
-            Write_Info_Initiate ('F');
-            Write_Info_Char ('D');
-            Write_Info_Char (' ');
-            Write_Info_Nat (F.File_Num);
-            Write_Info_Char (' ');
+         Write_Info_Initiate ('F');
+         Write_Info_Char ('D');
+         Write_Info_Char (' ');
+         Write_Info_Nat (F.File_Num);
+         Write_Info_Char (' ');
 
-            for N in F.File_Name'Range loop
-               Write_Info_Char (F.File_Name (N));
-            end loop;
+         for N in F.File_Name'Range loop
+            Write_Info_Char (F.File_Name (N));
+         end loop;
 
-            Write_Info_Terminate;
-         end if;
+         Write_Info_Terminate;
 
          --  Loop through scope entries for this file
 

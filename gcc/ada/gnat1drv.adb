@@ -842,6 +842,8 @@ begin
             Tree_Gen;
          end if;
 
+         --  In CodePeer mode we delete SCIL files if there is an error
+
          if CodePeer_Mode then
             Comperr.Delete_SCIL_Files;
          end if;

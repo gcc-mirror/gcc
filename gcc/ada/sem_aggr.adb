@@ -1052,6 +1052,7 @@ package body Sem_Aggr is
       end if;
 
       --  Ada 2005 (AI-287): Limited aggregates allowed
+
       --  In an instance, ignore aggregate subcomponents tnat may be limited,
       --  because they originate in view conflicts. If the original aggregate
       --  is legal and the actuals are legal, the aggregate itself is legal.

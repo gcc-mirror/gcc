@@ -519,6 +519,11 @@ package body Impunit is
      "a-comutr",    -- Ada.Containers.Multiway_Trees
      "a-cimutr",    -- Ada.Containers.Indefinite_Multiway_Trees
      "a-cbmutr",    -- Ada.Containers.Bounded_Multiway_Trees
+     "a-csquin",    -- Ada.Containers.Synchronized_Queue_Interfaces
+     "a-cusyqu",    -- Ada.Containers.Unbounded_Synchronized_Queues
+     "a-cuprqu",    -- Ada.Containers.Unbounded_Priority_Queues
+     "a-cbsyqu",    -- Ada.Containers.Bounded_Synchronized_Queues
+     "a-cbprqu",    -- Ada.Containers.Bounded_Priority_Queues
      "a-extiin",    -- Ada.Execution_Time.Interrupts
      "a-iteint",    -- Ada.Iterator_Interfaces
      "a-synbar",    -- Ada.Synchronous_Barriers
