@@ -341,10 +341,12 @@ package body Inline is
                if Is_Generic_Instance (Pack) then
                   null;
 
+               --  Do not inline the package if the subprogram is an init. proc
+               --  because in that case the body appears in the same unit that
+               --  declares the type, which will be compiled in any case.
+
                elsif not Is_Inlined (Pack)
-                 and then
-                   (not Has_Completion (E)
-                     or else Is_Expression_Function (E))
+                 and then not Is_Init_Proc (E)
                then
                   Set_Is_Inlined (Pack);
                   Inlined_Bodies.Increment_Last;

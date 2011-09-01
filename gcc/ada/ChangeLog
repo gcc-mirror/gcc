@@ -1,3 +1,17 @@
+2011-09-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb: Minor code and comment reformatting.
+
+2011-09-01  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch6.adb (Expand_Inlined_Call): Remove redundant tests
+	for Is_Limited_Type and Is_Tagged_Type in condition checking
+	for by-reference type.
+	* inline.adb (Add_Inlined_Body): Only exclude init_procs. Other
+	subprograms may have a completion because of a previous
+	Inline_Always clause, but the enclosing package must be marked
+	inlined for the subprogram body to become visible to the backend.
+
 2011-09-01  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_aux.adb, exp_ch4.adb: Minor reformatting

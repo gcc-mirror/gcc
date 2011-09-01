@@ -4186,8 +4186,6 @@ package body Exp_Ch6 is
             --  code will have the same semantics.
 
             if Ekind (F) = E_In_Parameter
-              and then not Is_Limited_Type (Etype (A))
-              and then not Is_Tagged_Type  (Etype (A))
               and then not Is_By_Reference_Type (Etype (A))
               and then
                (not Is_Array_Type (Etype (A))
@@ -4197,9 +4195,10 @@ package body Exp_Ch6 is
                Decl :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Temp,
-                   Constant_Present => True,
-                   Object_Definition => New_Occurrence_Of (Temp_Typ, Loc),
-                   Expression => New_A);
+                   Constant_Present    => True,
+                   Object_Definition   => New_Occurrence_Of (Temp_Typ, Loc),
+                   Expression          => New_A);
+
             else
                Decl :=
                  Make_Object_Renaming_Declaration (Loc,
@@ -4217,10 +4216,10 @@ package body Exp_Ch6 is
       end loop;
 
       --  Establish target of function call. If context is not assignment or
-      --  declaration, create a temporary as a target. The declaration for
-      --  the temporary may be subsequently optimized away if the body is a
-      --  single expression, or if the left-hand side of the assignment is
-      --  simple enough, i.e. an entity or an explicit dereference of one.
+      --  declaration, create a temporary as a target. The declaration for the
+      --  temporary may be subsequently optimized away if the body is a single
+      --  expression, or if the left-hand side of the assignment is simple
+      --  enough, i.e. an entity or an explicit dereference of one.
 
       if Ekind (Subp) = E_Function then
          if Nkind (Parent (N)) = N_Assignment_Statement
