@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2010, AdaCore                     --
+--                     Copyright (C) 2001-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,8 +40,10 @@ package body GNAT.Sockets.Thin is
 
    type VMS_Msghdr is new Msghdr;
    pragma Pack (VMS_Msghdr);
-   --  On VMS (unlike other platforms), struct msghdr is packed, so a specific
-   --  derived type is required.
+   --  On VMS 8.x (unlike other platforms), struct msghdr is packed, so a
+   --  specific derived type is required.
+   --  This structure was not packed on VMS 7.3, so sendmsg and recvmsg fail on
+   --  earlier VMS versions.
 
    Non_Blocking_Sockets : aliased Fd_Set;
    --  When this package is initialized with Process_Blocking_IO set to True,
