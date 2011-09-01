@@ -3856,6 +3856,7 @@ void __gnat_cpu_set (int cpu, size_t count ATTRIBUTE_UNUSED, cpu_set_t *set)
   CPU_SET (cpu - 1, set);
 }
 #endif
+#endif
 
 #ifdef __cplusplus
 }
