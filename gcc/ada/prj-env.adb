@@ -836,7 +836,24 @@ package body Prj.Env is
                   or else Source.Unit /= No_Unit_Index)
             then
                if Source.Unit /= No_Unit_Index then
-                  Get_Name_String (Source.Unit.Name);
+                  --  Put the encoded unit name in the name buffer
+
+                  declare
+                     Uname : constant String :=
+                       Get_Name_String (Source.Unit.Name);
+
+                  begin
+                     Name_Len := 0;
+
+                     for J in Uname'Range loop
+                        if Uname (J) in Upper_Half_Character then
+                           Store_Encoded_Character (Get_Char_Code (Uname (J)));
+
+                        else
+                           Add_Char_To_Name_Buffer (Uname (J));
+                        end if;
+                     end loop;
+                  end;
 
                   if Source.Language.Config.Kind = Unit_Based then
 

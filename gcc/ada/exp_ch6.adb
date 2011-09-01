@@ -4198,7 +4198,6 @@ package body Exp_Ch6 is
                    Constant_Present    => True,
                    Object_Definition   => New_Occurrence_Of (Temp_Typ, Loc),
                    Expression          => New_A);
-
             else
                Decl :=
                  Make_Object_Renaming_Declaration (Loc,
@@ -7579,54 +7578,26 @@ package body Exp_Ch6 is
 
       Result_Subt := Etype (Function_Id);
 
-      --  In the constrained case, add an implicit actual to the function call
-      --  that provides access to the declared object. An unchecked conversion
-      --  to the (specific) result type of the function is inserted to handle
-      --  the case where the object is declared with a class-wide type.
+      --  If the the object is a return object of an enclosing build-in-place
+      --  function, then the implicit build-in-place parameters of the
+      --  enclosing function are simply passed along to the called function.
+      --  (Unfortunately, this won't cover the case of extension aggregates
+      --  where the ancestor part is a build-in-place unconstrained function
+      --  call that should be passed along the caller's parameters. Currently
+      --  those get mishandled by reassigning the result of the call to the
+      --  aggregate return object, when the call result should really be
+      --  directly built in place in the aggregate and not in a temporary. ???)
 
-      if Is_Constrained (Underlying_Type (Result_Subt)) then
-         Caller_Object :=
-            Make_Unchecked_Type_Conversion (Loc,
-              Subtype_Mark => New_Reference_To (Result_Subt, Loc),
-              Expression   => New_Reference_To (Obj_Def_Id, Loc));
-
-         --  When the function has a controlling result, an allocation-form
-         --  parameter must be passed indicating that the caller is allocating
-         --  the result object. This is needed because such a function can be
-         --  called as a dispatching operation and must be treated similarly
-         --  to functions with unconstrained result subtypes.
-
-         Add_Alloc_Form_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
-
-      --  If the function's result subtype is unconstrained and the object is
-      --  a return object of an enclosing build-in-place function, then the
-      --  implicit build-in-place parameters of the enclosing function must be
-      --  passed along to the called function. (Unfortunately, this won't cover
-      --  the case of extension aggregates where the ancestor part is a build-
-      --  in-place unconstrained function call that should be passed along the
-      --  caller's parameters. Currently those get mishandled by reassigning
-      --  the result of the call to the aggregate return object, when the call
-      --  result should really be directly built in place in the aggregate and
-      --  not built in a temporary. ???)
-
-      elsif Is_Return_Object (Defining_Identifier (Object_Decl)) then
+      if Is_Return_Object (Defining_Identifier (Object_Decl)) then
          Pass_Caller_Acc := True;
 
          Enclosing_Func := Enclosing_Subprogram (Obj_Def_Id);
 
-         --  If the enclosing function has a constrained result type, then
-         --  caller allocation will be used.
+         --  When the enclosing function has a BIP_Alloc_Form formal then we
+         --  pass it along to the callee (such as when the enclosing function
+         --  has an unconstrained or tagged result type).
 
-         if Is_Constrained (Etype (Enclosing_Func)) then
-            Add_Alloc_Form_Actual_To_Build_In_Place_Call
-              (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
-
-         --  Otherwise, when the enclosing function has an unconstrained result
-         --  type, the BIP_Alloc_Form formal of the enclosing function must be
-         --  passed along to the callee.
-
-         else
+         if Needs_BIP_Alloc_Form (Enclosing_Func) then
             Add_Alloc_Form_Actual_To_Build_In_Place_Call
               (Func_Call,
                Function_Id,
@@ -7634,6 +7605,13 @@ package body Exp_Ch6 is
                  New_Reference_To
                    (Build_In_Place_Formal (Enclosing_Func, BIP_Alloc_Form),
                     Loc));
+
+         --  Otherwise, if enclosing function has a constrained result subtype,
+         --  then caller allocation will be used.
+
+         else
+            Add_Alloc_Form_Actual_To_Build_In_Place_Call
+              (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
          end if;
 
          --  Retrieve the BIPacc formal from the enclosing function and convert
@@ -7650,6 +7628,26 @@ package body Exp_Ch6 is
                 New_Reference_To
                   (Build_In_Place_Formal (Enclosing_Func, BIP_Object_Access),
                    Loc));
+
+      --  In the constrained case, add an implicit actual to the function call
+      --  that provides access to the declared object. An unchecked conversion
+      --  to the (specific) result type of the function is inserted to handle
+      --  the case where the object is declared with a class-wide type.
+
+      elsif Is_Constrained (Underlying_Type (Result_Subt)) then
+         Caller_Object :=
+            Make_Unchecked_Type_Conversion (Loc,
+              Subtype_Mark => New_Reference_To (Result_Subt, Loc),
+              Expression   => New_Reference_To (Obj_Def_Id, Loc));
+
+         --  When the function has a controlling result, an allocation-form
+         --  parameter must be passed indicating that the caller is allocating
+         --  the result object. This is needed because such a function can be
+         --  called as a dispatching operation and must be treated similarly
+         --  to functions with unconstrained result subtypes.
+
+         Add_Alloc_Form_Actual_To_Build_In_Place_Call
+           (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
 
       --  In other unconstrained cases, pass an indication to do the allocation
       --  on the secondary stack and set Caller_Object to Empty so that a null
@@ -7710,11 +7708,14 @@ package body Exp_Ch6 is
       --  The access type and its accompanying object must be inserted after
       --  the object declaration in the constrained case, so that the function
       --  call can be passed access to the object. In the unconstrained case,
-      --  the access type and object must be inserted before the object, since
-      --  the object declaration is rewritten to be a renaming of a dereference
-      --  of the access object.
+      --  or if the object declaration is for a return object, the access type
+      --  and object must be inserted before the object, since the object
+      --  declaration is rewritten to be a renaming of a dereference of the
+      --  access object.
 
-      if Is_Constrained (Underlying_Type (Result_Subt)) then
+      if Is_Constrained (Underlying_Type (Result_Subt))
+        and then not Is_Return_Object (Defining_Identifier (Object_Decl))
+      then
          Insert_After_And_Analyze (Object_Decl, Ptr_Typ_Decl);
       else
          Insert_Action (Object_Decl, Ptr_Typ_Decl);
@@ -7734,11 +7735,18 @@ package body Exp_Ch6 is
           Object_Definition   => New_Reference_To (Ref_Type, Loc),
           Expression          => New_Expr));
 
-      if Is_Constrained (Underlying_Type (Result_Subt)) then
+      --  If the result subtype of the called function is constrained and
+      --  is not itself the return expression of an enclosing BIP function,
+      --  then mark the object as having no initialization.
+
+      if Is_Constrained (Underlying_Type (Result_Subt))
+        and then not Is_Return_Object (Defining_Identifier (Object_Decl))
+      then
          Set_Expression (Object_Decl, Empty);
          Set_No_Initialization (Object_Decl);
 
-      --  In case of an unconstrained result subtype, rewrite the object
+      --  In case of an unconstrained result subtype, or if the call is the
+      --  return expression of an enclosing BIP function, rewrite the object
       --  declaration as an object renaming where the renamed object is a
       --  dereference of <function_Call>'reference:
       --
@@ -7829,5 +7837,17 @@ package body Exp_Ch6 is
         not Restriction_Active (No_Finalization)
           and then Needs_Finalization (Func_Typ);
    end Needs_BIP_Finalization_Master;
+
+   --------------------------
+   -- Needs_BIP_Alloc_Form --
+   --------------------------
+
+   function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean is
+      pragma Assert (Is_Build_In_Place_Function (Func_Id));
+      Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
+
+   begin
+      return not Is_Constrained (Func_Typ) or else Is_Tagged_Type (Func_Typ);
+   end Needs_BIP_Alloc_Form;
 
 end Exp_Ch6;

@@ -1037,8 +1037,8 @@ package body Prj.Part is
                Proj_Qualifier := Aggregate;
                Scan (In_Tree);
 
-               if Token = Tok_Identifier and then
-                 Token_Name = Snames.Name_Library
+               if Token = Tok_Identifier
+                 and then Token_Name = Snames.Name_Library
                then
                   Proj_Qualifier := Aggregate_Library;
                   Scan (In_Tree);

@@ -6120,9 +6120,7 @@ package body Sem_Ch6 is
             --  dispatching context and such calls must be handled like calls
             --  to a class-wide function.
 
-            if not Is_Constrained (Underlying_Type (Result_Subt))
-              or else Is_Tagged_Type (Underlying_Type (Result_Subt))
-            then
+            if Needs_BIP_Alloc_Form (E) then
                Discard :=
                  Add_Extra_Formal
                    (E, Standard_Natural,
