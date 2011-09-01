@@ -800,9 +800,12 @@ package body Ada.Containers.Vectors is
    end First;
 
    function First (Object : Iterator) return Cursor is
-      C : constant Cursor := (Object.Container, Index_Type'First);
    begin
-      return C;
+      if Is_Empty (Object.Container.all) then
+         return No_Element;
+      end if;
+
+      return Cursor'(Object.Container, Index_Type'First);
    end First;
 
    -------------------
@@ -2044,8 +2047,7 @@ package body Ada.Containers.Vectors is
    function Iterate (Container : Vector; Start : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'class
    is
-      It : constant Iterator :=
-             (Container'Unchecked_Access, Start.Index);
+      It : constant Iterator := (Container'Unchecked_Access, Start.Index);
    begin
       return It;
    end Iterate;
@@ -2064,9 +2066,12 @@ package body Ada.Containers.Vectors is
    end Last;
 
    function Last (Object : Iterator) return Cursor is
-      C : constant Cursor := (Object.Container, Object.Container.Last);
    begin
-      return C;
+      if Is_Empty (Object.Container.all) then
+         return No_Element;
+      end if;
+
+      return Cursor'(Object.Container, Object.Container.Last);
    end Last;
 
    ------------------

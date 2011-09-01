@@ -1,5 +1,13 @@
 2011-09-01  Robert Dewar  <dewar@adacore.com>
 
+	* inline.adb, sem_aggr.adb: Minor reformatting.
+
+2011-09-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-convec.adb: Proper handling of cursors for Ada2012 iterators.
+
+2011-09-01  Robert Dewar  <dewar@adacore.com>
+
 	* prj-proc.adb, exp_ch6.adb, prj-env.adb: Minor reformatting.
 
 2011-09-01  Bob Duff  <duff@adacore.com>
