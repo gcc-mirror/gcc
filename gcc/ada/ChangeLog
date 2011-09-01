@@ -1,3 +1,8 @@
+2011-09-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb, sem_attr.adb, snames.ads-tmpl: Implementation of
+	attributes Same_Storage and Overlaps_Storage.
+
 2011-09-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_strm.adb: Remove with and use clause for Opt.
