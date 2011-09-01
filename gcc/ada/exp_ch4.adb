@@ -4183,8 +4183,8 @@ package body Exp_Ch4 is
 
          if Present (Actions) then
 
-            --  If we are not allowed to use Expression_With_Actions, just
-            --  skip the optimization, it is not critical for correctness.
+            --  If we are not allowed to use Expression_With_Actions, just skip
+            --  the optimization, it is not critical for correctness.
 
             if not Use_Expression_With_Actions then
                goto Skip_Optimization;
@@ -4453,6 +4453,8 @@ package body Exp_Ch4 is
          Ptr_Id    : Entity_Id;
          Temp_Decl : Node_Id;
          Temp_Id   : Node_Id;
+
+      --  Start of processing for Process_Transient_Object
 
       begin
          --  Step 1: Create the access type which provides a reference to the
