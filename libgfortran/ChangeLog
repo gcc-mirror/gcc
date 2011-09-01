@@ -1,3 +1,10 @@
+2011-09-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* generated/bessel_r4.c: Regenerated.
+	* generated/bessel_r8.c: Regenerated.
+	* generated/bessel_r10.c: Regenerated.
+	* generated/bessel_r16.c: Regenerated.
+
 2011-08-29  Tobias Burnus  <burnus@net-b.de>
 
 	* caf/libcaf.h (_gfortran_caf_deregister): Update prototype.
