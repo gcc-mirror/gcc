@@ -94,6 +94,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-cbdlli$(objext) \
   a-cbmutr$(objext) \
   a-cborma$(objext) \
+  a-cbprqu$(objext) \
+  a-cbsyqu$(objext) \
   a-cdlili$(objext) \
   a-cfdlli$(objext) \
   a-cfhama$(objext) \
@@ -144,6 +146,9 @@ GNATRTL_NONTASKING_OBJS= \
   a-crdlli$(objext) \
   a-comutr$(objext) \
   a-cimutr$(objext) \
+  a-csquin$(objext) \
+  a-cuprqu$(objext) \
+  a-cusyqu$(objext) \
   a-cwila1$(objext) \
   a-cwila9$(objext) \
   a-decima$(objext) \

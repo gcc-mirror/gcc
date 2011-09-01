@@ -23,30 +23,30 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains routines called when a fatal internal compiler
---  error is detected. Calls to these routines cause termination of the
---  current compilation with appropriate error output.
+--  This package contains routines called when a fatal internal compiler error
+--  is detected. Calls to these routines cause termination of the current
+--  compilation with appropriate error output.
 
-with Atree;         use Atree;
-with Debug;         use Debug;
-with Errout;        use Errout;
-with Gnatvsn;       use Gnatvsn;
-with Lib;           use Lib;
-with Namet;         use Namet;
-with Opt;           use Opt;
-with Osint;         use Osint;
-with Output;        use Output;
-with Sinfo;         use Sinfo;
-with Sinput;        use Sinput;
-with Sprint;        use Sprint;
-with Sdefault;      use Sdefault;
-with System.OS_Lib; use System.OS_Lib;
-with Targparm;      use Targparm;
-with Treepr;        use Treepr;
-with Types;         use Types;
+with Atree;    use Atree;
+with Debug;    use Debug;
+with Errout;   use Errout;
+with Gnatvsn;  use Gnatvsn;
+with Lib;      use Lib;
+with Namet;    use Namet;
+with Opt;      use Opt;
+with Osint;    use Osint;
+with Output;   use Output;
+with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
+with Sprint;   use Sprint;
+with Sdefault; use Sdefault;
+with Targparm; use Targparm;
+with Treepr;   use Treepr;
+with Types;    use Types;
 
 with Ada.Exceptions; use Ada.Exceptions;
 
+with System.OS_Lib;     use System.OS_Lib;
 with System.Soft_Links; use System.Soft_Links;
 
 package body Comperr is
@@ -146,6 +146,8 @@ package body Comperr is
             Error_Msg_N ("cannot generate 'S'C'I'L", Current_Error_Node);
          end if;
       end if;
+
+      --  If we are in CodePeer mode, we must also delete SCIL files
 
       if CodePeer_Mode then
          Delete_SCIL_Files;
@@ -439,6 +441,7 @@ package body Comperr is
       Main    : Node_Id;
       Success : Boolean;
       pragma Unreferenced (Success);
+
    begin
       --  If parsing was not successful, no Main_Unit is available, so return
       --  immediately.
@@ -458,7 +461,8 @@ package body Comperr is
          Get_Name_String (Chars (Defining_Unit_Name (Main)));
       end if;
 
-      Delete_File ("SCIL/" & Name_Buffer (1 .. Name_Len) & ".scil", Success);
+      Delete_File
+        ("SCIL/" & Name_Buffer (1 .. Name_Len) & ".scil", Success);
       Delete_File
         ("SCIL/" & Name_Buffer (1 .. Name_Len) & "__body.scil", Success);
    end Delete_SCIL_Files;

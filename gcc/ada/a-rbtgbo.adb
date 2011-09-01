@@ -63,6 +63,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
       --  that the busy status (which monitors "cursor tampering") is set too;
       --  this is a representation invariant. Thus if the busy bit is not set,
       --  then the lock bit must not be set either.
+
       pragma Assert (Tree.Lock = 0);
 
       Tree.First  := 0;

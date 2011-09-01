@@ -10846,7 +10846,8 @@ package body Exp_Dist is
             --  always force transmission as a 64-bit value.
 
             if Is_RTE (FST, RE_Stream_Element_Offset)
-                 or else Is_RTE (FST, RE_Storage_Offset)
+                 or else
+               Is_RTE (FST, RE_Storage_Offset)
             then
                return RTE (RE_Unsigned_64);
             end if;

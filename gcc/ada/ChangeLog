@@ -1,3 +1,35 @@
+2011-09-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_strm.adb: Remove with and use clause for Opt.
+	(Build_Array_Input_Function): Remove the version-dependent generation
+	of the return statement. The Ada 2005 tree is now the default.
+
+2011-09-01  Yannick Moy  <moy@adacore.com>
+
+	* put_alfa.adb: Unconditionnally write files in Alfa section, so that
+	it is never empty when compiling in Alfa mode.
+
+2011-09-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb, sem_ch3.adb, a-direct.adb, s-taprop-vxworks.adb,
+	comperr.adb, exp_ch9.adb, exp_pakd.adb, sem_ch12.adb, freeze.adb,
+	s-taprop-mingw.adb, s-taprop-linux.adb, s-taprop-solaris.adb,
+	gnat1drv.adb, a-rbtgbo.adb, exp_dist.adb: Minor reformatting
+
+2011-09-01  Matthew Heaney  <heaney@adacore.com>
+
+	* Makefile.rtl, impunit.adb: Add a-csquin.ads, a-cusyqu.ad[sb],
+	a-cuprqu.ad[sb], a-cbsyqu.ad[sb], a-cbprqu.ad[sb]
+	* a-csquin.ads: New Ada 2012 unit that specifies the queue interface
+	* a-cusyqu.ads, a-cusyqu.adb: New Ada 2012 unit that specifies the
+	unbounded queue container.
+	* a-cbsyqu.ads, a-cbsyqu.adb: New Ada 2012 unit that specifies the
+	bounded queue container.
+	* a-cuprqu.ads, a-cuprqu.adb: New Ada 2012 unit that specifies the
+	unbounded priority queue container.
+	* a-cbprqu.ads, a-cbprqu.adb: New Ada 2012 unit that specifies the
+	bounded priority queue container.
+
 2011-08-31  Pascal Obry  <obry@adacore.com>
 
 	* a-direct.adb: Do not try to create an UNC path on Windows.

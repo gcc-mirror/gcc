@@ -32,7 +32,7 @@
 with Ada.Calendar;               use Ada.Calendar;
 with Ada.Calendar.Formatting;    use Ada.Calendar.Formatting;
 with Ada.Directories.Validity;   use Ada.Directories.Validity;
-with Ada.Strings.Maps;           use Ada; use Ada.Strings.Maps;
+with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
 with Ada.Unchecked_Conversion;
@@ -451,14 +451,15 @@ package body Ada.Directories is
          New_Dir (1 .. New_Directory'Length) := New_Directory;
          New_Dir (New_Dir'Last) := Directory_Separator;
 
+         --  If host is windows, and the first two characters are directory
+         --  separators, we have an UNC path. Skip it.
+
          if Directory_Separator = '\'
            and then New_Dir'Length > 2
            and then Is_In (New_Dir (1), Dir_Seps)
            and then Is_In (New_Dir (2), Dir_Seps)
          then
             Start := 2;
-            --  If the first two characters are directory separators and host
-            --  is windows, we have an UNC path. Skip it.
             loop
                Start := Start + 1;
                exit when Start = New_Dir'Last
