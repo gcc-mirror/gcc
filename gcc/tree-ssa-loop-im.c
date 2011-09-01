@@ -1251,11 +1251,9 @@ move_computations_stmt (struct dom_walk_data *dw_data,
 	  gcc_assert (arg0 && arg1);
 	  t = build2 (gimple_cond_code (cond), boolean_type_node,
 		      gimple_cond_lhs (cond), gimple_cond_rhs (cond));
-	  t = build3 (COND_EXPR, TREE_TYPE (gimple_phi_result (stmt)),
-		      t, arg0, arg1);
-	  new_stmt = gimple_build_assign_with_ops (COND_EXPR,
-						   gimple_phi_result (stmt),
-						   t, NULL_TREE);
+	  new_stmt = gimple_build_assign_with_ops3 (COND_EXPR,
+						    gimple_phi_result (stmt),
+						    t, arg0, arg1);
 	  SSA_NAME_DEF_STMT (gimple_phi_result (stmt)) = new_stmt;
 	  *((unsigned int *)(dw_data->global_data)) |= TODO_cleanup_cfg;
 	}

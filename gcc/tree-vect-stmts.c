@@ -4740,7 +4740,6 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 {
   tree scalar_dest = NULL_TREE;
   tree vec_dest = NULL_TREE;
-  tree op = NULL_TREE;
   tree cond_expr, then_clause, else_clause;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -4794,11 +4793,9 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   if (code != COND_EXPR)
     return false;
 
-  gcc_assert (gimple_assign_single_p (stmt));
-  op = gimple_assign_rhs1 (stmt);
-  cond_expr = TREE_OPERAND (op, 0);
-  then_clause = TREE_OPERAND (op, 1);
-  else_clause = TREE_OPERAND (op, 2);
+  cond_expr = gimple_assign_rhs1 (stmt);
+  then_clause = gimple_assign_rhs2 (stmt);
+  else_clause = gimple_assign_rhs3 (stmt);
 
   if (!vect_is_simple_cond (cond_expr, loop_vinfo))
     return false;
@@ -4839,7 +4836,8 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   if (!vec_stmt)
     {
       STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
-      return expand_vec_cond_expr_p (TREE_TYPE (op), vec_mode);
+      return expand_vec_cond_expr_p (TREE_TYPE (gimple_assign_lhs (stmt)),
+				     vec_mode);
     }
 
   /* Transform */

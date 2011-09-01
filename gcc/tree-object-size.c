@@ -53,7 +53,7 @@ static void expr_object_size (struct object_size_info *, tree, tree);
 static bool merge_object_sizes (struct object_size_info *, tree, tree,
 				unsigned HOST_WIDE_INT);
 static bool plus_stmt_object_size (struct object_size_info *, tree, gimple);
-static bool cond_expr_object_size (struct object_size_info *, tree, tree);
+static bool cond_expr_object_size (struct object_size_info *, tree, gimple);
 static unsigned int compute_object_sizes (void);
 static void init_offset_limit (void);
 static void check_for_plus_in_loops (struct object_size_info *, tree);
@@ -827,25 +827,25 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple stmt)
 }
 
 
-/* Compute object_sizes for VAR, defined to VALUE, which is
+/* Compute object_sizes for VAR, defined at STMT, which is
    a COND_EXPR.  Return true if the object size might need reexamination
    later.  */
 
 static bool
-cond_expr_object_size (struct object_size_info *osi, tree var, tree value)
+cond_expr_object_size (struct object_size_info *osi, tree var, gimple stmt)
 {
   tree then_, else_;
   int object_size_type = osi->object_size_type;
   unsigned int varno = SSA_NAME_VERSION (var);
   bool reexamine = false;
 
-  gcc_assert (TREE_CODE (value) == COND_EXPR);
+  gcc_assert (gimple_assign_rhs_code (stmt) == COND_EXPR);
 
   if (object_sizes[object_size_type][varno] == unknown[object_size_type])
     return false;
 
-  then_ = COND_EXPR_THEN (value);
-  else_ = COND_EXPR_ELSE (value);
+  then_ = gimple_assign_rhs2 (stmt);
+  else_ = gimple_assign_rhs3 (stmt);
 
   if (TREE_CODE (then_) == SSA_NAME)
     reexamine |= merge_object_sizes (osi, var, then_, 0);
@@ -932,14 +932,14 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
 	    || (gimple_assign_rhs_code (stmt) == ADDR_EXPR
 		&& TREE_CODE (TREE_OPERAND (rhs, 0)) == MEM_REF))
           reexamine = plus_stmt_object_size (osi, var, stmt);
+	else if (gimple_assign_rhs_code (stmt) == COND_EXPR)
+	  reexamine = cond_expr_object_size (osi, var, stmt);
         else if (gimple_assign_single_p (stmt)
                  || gimple_assign_unary_nop_p (stmt))
           {
             if (TREE_CODE (rhs) == SSA_NAME
                 && POINTER_TYPE_P (TREE_TYPE (rhs)))
               reexamine = merge_object_sizes (osi, var, rhs, 0);
-            else if (TREE_CODE (rhs) == COND_EXPR)
-              reexamine = cond_expr_object_size (osi, var, rhs);
             else
               expr_object_size (osi, var, rhs);
           }
@@ -956,8 +956,6 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
             if (TREE_CODE (arg) == SSA_NAME
                 && POINTER_TYPE_P (TREE_TYPE (arg)))
               reexamine = merge_object_sizes (osi, var, arg, 0);
-            else if (TREE_CODE (arg) == COND_EXPR)
-              reexamine = cond_expr_object_size (osi, var, arg);
             else
               expr_object_size (osi, var, arg);
           }
