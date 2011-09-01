@@ -1583,6 +1583,14 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
   new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
 				  build_zero_cst (type));
   set_vinfo_for_stmt (new_stmt, stmt_info);
+  /* For pattern statements make the related statement to point to
+     NEW_STMT in order to be able to retrieve the original statement
+     information later.  */
+  if (is_pattern_stmt_p (stmt_info))
+    {
+      gimple related = STMT_VINFO_RELATED_STMT (stmt_info);
+      STMT_VINFO_RELATED_STMT (vinfo_for_stmt (related)) = new_stmt;
+    }
   set_vinfo_for_stmt (stmt, NULL);
   STMT_VINFO_STMT (stmt_info) = new_stmt;
   gsi_replace (gsi, new_stmt, false);
@@ -4957,11 +4965,7 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
 	     the stmt_info of ORIG_STMT_IN_PATTERN.  See more details in the
 	     documentation of vect_pattern_recog.  */
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-	    {
-	      gcc_assert (STMT_VINFO_RELATED_STMT (stmt_vinfo)
-                           == orig_scalar_stmt);
-	      STMT_VINFO_VEC_STMT (stmt_vinfo) = vec_stmt;
-	    }
+	    STMT_VINFO_VEC_STMT (stmt_vinfo) = vec_stmt;
 	}
     }
 

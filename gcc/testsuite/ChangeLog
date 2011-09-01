@@ -1,3 +1,8 @@
+2011-09-01  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/50178
+	* gfortran.dg/vect/pr50178.f90: New test.
+
 2011-08-29  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
