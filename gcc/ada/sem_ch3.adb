@@ -7980,28 +7980,6 @@ package body Sem_Ch3 is
          Set_Last_Entity
            (Class_Wide_Type (Derived_Type), Last_Entity (Derived_Type));
       end if;
-
-      --  Update the scope of anonymous access types of discriminants and other
-      --  components, to prevent scope anomalies in gigi, when the derivation
-      --  appears in a scope nested within that of the parent.
-
-      declare
-         D : Entity_Id;
-
-      begin
-         D := First_Entity (Derived_Type);
-         while Present (D) loop
-            if Ekind_In (D, E_Discriminant, E_Component) then
-               if Is_Itype (Etype (D))
-                  and then Ekind (Etype (D)) = E_Anonymous_Access_Type
-               then
-                  Set_Scope (Etype (D), Current_Scope);
-               end if;
-            end if;
-
-            Next_Entity (D);
-         end loop;
-      end;
    end Build_Derived_Record_Type;
 
    ------------------------
@@ -15702,10 +15680,42 @@ package body Sem_Ch3 is
          Plain_Discrim  : Boolean := False;
          Stored_Discrim : Boolean := False)
       is
+         procedure Set_Anonymous_Type (Id : Entity_Id);
+         --  Id denotes the entity of an access discriminant or anonymous
+         --  access component. Set the type of Id to either the same type of
+         --  Old_C or create a new one depending on whether the parent and
+         --  the child types are in the same scope.
+
+         ------------------------
+         -- Set_Anonymous_Type --
+         ------------------------
+
+         procedure Set_Anonymous_Type (Id : Entity_Id) is
+            Typ : constant Entity_Id := Etype (Old_C);
+
+         begin
+            if Scope (Parent_Base) = Scope (Derived_Base) then
+               Set_Etype (Id, Typ);
+
+            --  The parent and the derived type are in two different scopes.
+            --  Reuse the type of the original discriminant / component by
+            --  copying it in order to preserve all attributes and update the
+            --  scope.
+
+            else
+               Set_Etype (Id, New_Copy (Typ));
+               Set_Scope (Etype (Id), Current_Scope);
+            end if;
+         end Set_Anonymous_Type;
+
+         --  Local variables and constants
+
          New_C : constant Entity_Id := New_Copy (Old_C);
 
-         Discrim      : Entity_Id;
          Corr_Discrim : Entity_Id;
+         Discrim      : Entity_Id;
+
+      --  Start of processing for Inherit_Component
 
       begin
          pragma Assert (not Is_Tagged or else not Stored_Discrim);
@@ -15727,6 +15737,14 @@ package body Sem_Ch3 is
             Set_Original_Record_Component (New_C, New_C);
          end if;
 
+         --  Set the proper type of an access discriminant
+
+         if Ekind (New_C) = E_Discriminant
+           and then Ekind (Etype (New_C)) = E_Anonymous_Access_Type
+         then
+            Set_Anonymous_Type (New_C);
+         end if;
+
          --  If we have inherited a component then see if its Etype contains
          --  references to Parent_Base discriminants. In this case, replace
          --  these references with the constraints given in Discs. We do not
@@ -15736,10 +15754,16 @@ package body Sem_Ch3 is
          --  transformation in some error situations.
 
          if Ekind (New_C) = E_Component then
-            if (Is_Private_Type (Derived_Base)
-                 and then not Is_Generic_Type (Derived_Base))
+
+            --  Set the proper type of an anonymous access component
+
+            if Ekind (Etype (New_C)) = E_Anonymous_Access_Type then
+               Set_Anonymous_Type (New_C);
+
+            elsif (Is_Private_Type (Derived_Base)
+                     and then not Is_Generic_Type (Derived_Base))
               or else (Is_Empty_Elmt_List (Discs)
-                        and then  not Expander_Active)
+                         and then not Expander_Active)
             then
                Set_Etype (New_C, Etype (Old_C));
 
@@ -15760,10 +15784,9 @@ package body Sem_Ch3 is
                --        type T_2 is new Pack_1.T_1 with ...;
                --     end Pack_2;
 
-               Set_Etype
-                 (New_C,
-                  Constrain_Component_Type
-                  (Old_C, Derived_Base, N, Parent_Base, Discs));
+               Set_Etype (New_C,
+                 Constrain_Component_Type
+                   (Old_C, Derived_Base, N, Parent_Base, Discs));
             end if;
          end if;
 
