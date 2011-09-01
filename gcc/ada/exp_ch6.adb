@@ -4188,6 +4188,7 @@ package body Exp_Ch6 is
             if Ekind (F) = E_In_Parameter
               and then not Is_Limited_Type (Etype (A))
               and then not Is_Tagged_Type  (Etype (A))
+              and then not Is_By_Reference_Type (Etype (A))
               and then
                (not Is_Array_Type (Etype (A))
                  or else not Is_Object_Reference (A)

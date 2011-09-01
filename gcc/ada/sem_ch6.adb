@@ -2565,10 +2565,14 @@ package body Sem_Ch6 is
             Set_Contract (Body_Id, Make_Contract (Sloc (Body_Id)));
             Generate_Reference
               (Body_Id, Body_Id, 'b', Set_Ref => False, Force => True);
-            Generate_Reference_To_Formals (Body_Id);
             Install_Formals (Body_Id);
             Push_Scope (Body_Id);
          end if;
+
+         --  For stubs and bodies with no previous spec, generate references to
+         --  formals.
+
+         Generate_Reference_To_Formals (Body_Id);
       end if;
 
       --  If the return type is an anonymous access type whose designated type
@@ -2600,7 +2604,7 @@ package body Sem_Ch6 is
 
       --  If this is the proper body of a stub, we must verify that the stub
       --  conforms to the body, and to the previous spec if one was present.
-      --  we know already that the body conforms to that spec. This test is
+      --  We know already that the body conforms to that spec. This test is
       --  only required for subprograms that come from source.
 
       if Nkind (Parent (N)) = N_Subunit
@@ -2626,8 +2630,8 @@ package body Sem_Ch6 is
 
                if not Conformant then
 
-                  --  The stub was taken to be a new declaration. Indicate
-                  --  that it lacks a body.
+                  --  The stub was taken to be a new declaration. Indicate that
+                  --  it lacks a body.
 
                   Set_Has_Completion (Old_Id, False);
                end if;
@@ -2651,7 +2655,7 @@ package body Sem_Ch6 is
       end if;
 
       --  Ada 2005 (AI-262): In library subprogram bodies, after the analysis
-      --  if its specification we have to install the private withed units.
+      --  of the specification we have to install the private withed units.
       --  This holds for child units as well.
 
       if Is_Compilation_Unit (Body_Id)
@@ -2763,8 +2767,8 @@ package body Sem_Ch6 is
 
          if Present (Last_Real_Spec_Entity) then
 
-            --  No body entities (happens when the only real spec entities
-            --  come from precondition and postcondition pragmas)
+            --  No body entities (happens when the only real spec entities come
+            --  from precondition and postcondition pragmas).
 
             if No (Last_Entity (Body_Id)) then
                Set_First_Entity
@@ -2781,8 +2785,8 @@ package body Sem_Ch6 is
             Set_Last_Entity (Body_Id, Last_Entity (Spec_Id));
             Set_Last_Entity (Spec_Id, Last_Real_Spec_Entity);
 
-         --  Case where there are no spec entities, in this case there can
-         --  be no body entities either, so just move everything.
+         --  Case where there are no spec entities, in this case there can be
+         --  no body entities either, so just move everything.
 
          else
             pragma Assert (No (Last_Entity (Body_Id)));
@@ -2804,7 +2808,7 @@ package body Sem_Ch6 is
       --  might be the following common idiom for a stubbed function:
       --  statement of the procedure raises an exception. In particular this
       --  deals with the common idiom of a stubbed function, which might
-      --  appear as something like
+      --  appear as something like:
 
       --     function F (A : Integer) return Some_Type;
       --        X : Some_Type;

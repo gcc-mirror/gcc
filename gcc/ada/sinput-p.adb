@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,7 +97,7 @@ package body Sinput.P is
    -----------------------
 
    function Load_Project_File (Path : String) return Source_File_Index is
-      X    : Source_File_Index;
+      X : Source_File_Index;
 
    begin
       X := Sinput.C.Load_File (Path);

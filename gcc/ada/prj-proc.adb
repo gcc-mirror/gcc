@@ -1992,7 +1992,7 @@ package body Prj.Proc is
          Var  : Variable_Id := No_Variable;
 
       begin
-         --  First, find the list where to find the variable or attribute.
+         --  First, find the list where to find the variable or attribute
 
          if Is_Attribute then
             if Pkg /= No_Package then
@@ -2009,7 +2009,7 @@ package body Prj.Proc is
             end if;
          end if;
 
-         --  Loop through the list, to find if it has already been declared.
+         --  Loop through the list, to find if it has already been declared
 
          while Var /= No_Variable
            and then Shared.Variable_Elements.Table (Var).Name /= Name
@@ -2496,7 +2496,7 @@ package body Prj.Proc is
       Extended_By            : Project_Id)
    is
       Shared : constant Shared_Project_Tree_Data_Access :=
-        In_Tree.Shared;
+                 In_Tree.Shared;
 
       Child_Env              : Prj.Tree.Environment;
       --  Only used for the root aggregate project (if any). This is left
@@ -2765,7 +2765,6 @@ package body Prj.Proc is
             Project := Processed_Projects.Get (Name);
 
             if Project /= No_Project then
-
                --  Make sure that, when a project is extended, the project id
                --  of the project extending it is recorded in its data, even
                --  when it has already been processed as an imported project.
