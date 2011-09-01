@@ -341,7 +341,7 @@ package body Inline is
                if Is_Generic_Instance (Pack) then
                   null;
 
-               --  Do not inline the package if the subprogram is an init. proc
+               --  Do not inline the package if the subprogram is an init proc
                --  or other internally generated subprogram, because in that
                --  case the subprogram body appears in the same unit that
                --  declares the type, and that body is visible to the back end.
