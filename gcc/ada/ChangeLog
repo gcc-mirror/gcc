@@ -1,5 +1,36 @@
 2011-09-01  Robert Dewar  <dewar@adacore.com>
 
+	* s-taskin.ads, s-tassta.adb, sem_ch13.adb: Minor reformatting.
+
+2011-09-01  Thomas Quinot  <quinot@adacore.com>
+
+	* Makefile.rtl: Move s-oscons.o from GNATRTL_TASKING_OBJS to
+	GNATRTL_NONTASKING_OBJS.
+
+2011-09-01  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads (Is_Aliased): Fix existing documentation and add note on
+	possibility of this flag being set for formals in Ada 2012 mode.
+	* par-ch6.adb (P_Formal_Part): Handle aliased for parameters for Ada
+	2012.
+	* sem_ch6.adb (Process_Formals): Handle aliased parameters in Ada 2012
+	mode.
+	* sinfo.adb (Aliased_Present): Allowed in N_Parameter_Specification for
+	Ada 2012.
+	* sinfo.ads (Aliased_Present): Allowed in N_Parameter_Specification for
+	Ada 2012.
+
+2011-09-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Find_Insertion_Node): New routine. Determines the proper
+	insertion node in a tree of nested Expression_With_Actions nodes.
+	(Process_Transient_Object): In the case where a complex if statement
+	has been converted into nested Expression_With_Actions nodes, the
+	"hook" object and the associated access type must be inserted before
+	the top most Expression_With_Actions.
+
+2011-09-01  Robert Dewar  <dewar@adacore.com>
+
 	* a-cbprqu.adb, a-cbprqu.ads, a-cuprqu.adb, a-cuprqu.ads,
 	a-cbsyqu.adb, a-cbsyqu.ads: Minor reformatting.
 

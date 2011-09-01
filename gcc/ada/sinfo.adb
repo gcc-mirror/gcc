@@ -206,7 +206,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Component_Definition
-        or else NT (N).Nkind = N_Object_Declaration);
+        or else NT (N).Nkind = N_Object_Declaration
+        or else NT (N).Nkind = N_Parameter_Specification);
       return Flag4 (N);
    end Aliased_Present;
 
@@ -3265,7 +3266,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Component_Definition
-        or else NT (N).Nkind = N_Object_Declaration);
+        or else NT (N).Nkind = N_Object_Declaration
+        or else NT (N).Nkind = N_Parameter_Specification);
       Set_Flag4 (N, Val);
    end Set_Aliased_Present;
 
