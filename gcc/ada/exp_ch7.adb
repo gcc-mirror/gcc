@@ -4198,17 +4198,51 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         Finalizer_Data  : Finalization_Exception_Data;
-         Finalizer_Decls : List_Id;
-         Built           : Boolean := False;
-         Desig           : Entity_Id;
-         Fin_Block       : Node_Id;
-         Last_Fin        : Node_Id := Empty;
-         Loc             : Source_Ptr;
-         Obj_Id          : Entity_Id;
-         Obj_Ref         : Node_Id;
-         Obj_Typ         : Entity_Id;
-         Stmt            : Node_Id;
+         function Find_Insertion_List return List_Id;
+         --  Return the statement list of the enclosing sequence of statements
+
+         -------------------------
+         -- Find_Insertion_List --
+         -------------------------
+
+         function Find_Insertion_List return List_Id is
+            Par : Node_Id;
+
+         begin
+            --  Climb up the tree looking for the enclosing sequence of
+            --  statements.
+
+            Par := N;
+            while Present (Par)
+              and then Nkind (Par) /= N_Handled_Sequence_Of_Statements
+            loop
+               Par := Parent (Par);
+            end loop;
+
+            return Statements (Par);
+         end Find_Insertion_List;
+
+         --  Local variables
+
+         Requires_Hooking : constant Boolean :=
+                              Nkind_In (N, N_Function_Call,
+                                           N_Procedure_Call_Statement);
+
+         Built     : Boolean := False;
+         Desig_Typ : Entity_Id;
+         Fin_Block : Node_Id;
+         Fin_Data  : Finalization_Exception_Data;
+         Fin_Decls : List_Id;
+         Last_Fin  : Node_Id := Empty;
+         Loc       : Source_Ptr;
+         Obj_Id    : Entity_Id;
+         Obj_Ref   : Node_Id;
+         Obj_Typ   : Entity_Id;
+         Stmt      : Node_Id;
+         Stmts     : List_Id;
+         Temp_Id   : Entity_Id;
+
+      --  Start of processing for Process_Transient_Objects
 
       begin
          --  Examine all objects in the list First_Object .. Last_Object
@@ -4224,34 +4258,151 @@ package body Exp_Ch7 is
 
               and then Stmt /= Related_Node
             then
-               Loc     := Sloc (Stmt);
-               Obj_Id  := Defining_Identifier (Stmt);
-               Obj_Typ := Base_Type (Etype (Obj_Id));
-               Desig   := Obj_Typ;
+               Loc       := Sloc (Stmt);
+               Obj_Id    := Defining_Identifier (Stmt);
+               Obj_Typ   := Base_Type (Etype (Obj_Id));
+               Desig_Typ := Obj_Typ;
 
                Set_Is_Processed_Transient (Obj_Id);
 
                --  Handle access types
 
-               if Is_Access_Type (Desig) then
-                  Desig := Available_View (Designated_Type (Desig));
+               if Is_Access_Type (Desig_Typ) then
+                  Desig_Typ := Available_View (Designated_Type (Desig_Typ));
                end if;
 
                --  Create the necessary entities and declarations the first
                --  time around.
 
                if not Built then
-                  Finalizer_Decls := New_List;
-                  Build_Object_Declarations
-                      (Finalizer_Data, Finalizer_Decls, Loc);
+                  Fin_Decls := New_List;
 
-                  Insert_List_Before_And_Analyze
-                    (First_Object, Finalizer_Decls);
+                  Build_Object_Declarations (Fin_Data, Fin_Decls, Loc);
+                  Insert_List_Before_And_Analyze (First_Object, Fin_Decls);
 
                   Built := True;
                end if;
 
+               --  Transient variables associated with subprogram calls need
+               --  extra processing. These variables are usually created right
+               --  before the call and finalized immediately after the call.
+               --  If an exception occurs during the call, the clean up code
+               --  is skipped due to the sudden change in control and the
+               --  transient is never finalized.
+
+               --  To handle this case, such variables are "exported" to the
+               --  enclosing sequence of statements where their corresponding
+               --  "hooks" are picked up by the finalization machinery.
+
+               if Requires_Hooking then
+                  declare
+                     Ins_List  : constant List_Id := Find_Insertion_List;
+                     Expr      : Node_Id;
+                     Ptr_Decl  : Node_Id;
+                     Ptr_Id    : Entity_Id;
+                     Temp_Decl : Node_Id;
+
+                  begin
+                     --  Step 1: Create an access type which provides a
+                     --  reference to the transient object. Generate:
+
+                     --    Ann : access [all] <Desig_Typ>;
+
+                     Ptr_Id := Make_Temporary (Loc, 'A');
+
+                     Ptr_Decl :=
+                       Make_Full_Type_Declaration (Loc,
+                         Defining_Identifier => Ptr_Id,
+                         Type_Definition     =>
+                           Make_Access_To_Object_Definition (Loc,
+                             All_Present        =>
+                               Ekind (Obj_Typ) = E_General_Access_Type,
+                             Subtype_Indication =>
+                               New_Reference_To (Desig_Typ, Loc)));
+
+                     --  Step 2: Create a temporary which acts as a hook to
+                     --  the transient object. Generate:
+
+                     --    Temp : Ptr_Id := null;
+
+                     Temp_Id := Make_Temporary (Loc, 'T');
+
+                     Temp_Decl :=
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Temp_Id,
+                         Object_Definition   =>
+                           New_Reference_To (Ptr_Id, Loc));
+
+                     --  Analyze the access type and the hook declarations
+
+                     Prepend_To (Ins_List, Temp_Decl);
+                     Prepend_To (Ins_List, Ptr_Decl);
+
+                     Analyze (Ptr_Decl);
+                     Analyze (Temp_Decl);
+
+                     --  Mark the temporary as a transient hook. This signals
+                     --  the machinery in Build_Finalizer to recognize this
+                     --  special case.
+
+                     Set_Return_Flag_Or_Transient_Decl (Temp_Id, Stmt);
+
+                     --  Step 3: Hook the transient object to the temporary
+
+                     if Is_Access_Type (Obj_Typ) then
+                        Expr :=
+                          Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
+                     else
+                        Expr :=
+                          Make_Attribute_Reference (Loc,
+                            Prefix         => New_Reference_To (Obj_Id, Loc),
+                            Attribute_Name => Name_Unrestricted_Access);
+                     end if;
+
+                     --  Generate:
+                     --    Temp := Ptr_Id (Obj_Id);
+                     --      <or>
+                     --    Temp := Obj_Id'Unrestricted_Access;
+
+                     Insert_After_And_Analyze (Stmt,
+                       Make_Assignment_Statement (Loc,
+                         Name       => New_Reference_To (Temp_Id, Loc),
+                         Expression => Expr));
+                  end;
+               end if;
+
+               Stmts := New_List;
+
+               --  The transient object is about to be finalized by the clean
+               --  up code following the subprogram call. In order to avoid
+               --  double finalization, clear the hook.
+
                --  Generate:
+               --    Temp := null;
+
+               if Requires_Hooking then
+                  Append_To (Stmts,
+                    Make_Assignment_Statement (Loc,
+                      Name       => New_Reference_To (Temp_Id, Loc),
+                      Expression => Make_Null (Loc)));
+               end if;
+
+               --  Generate:
+               --    [Deep_]Finalize (Obj_Ref);
+
+               Obj_Ref := New_Reference_To (Obj_Id, Loc);
+
+               if Is_Access_Type (Obj_Typ) then
+                  Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
+               end if;
+
+               Append_To (Stmts,
+                 Make_Final_Call
+                   (Obj_Ref => Obj_Ref,
+                    Typ     => Desig_Typ));
+
+               --  Generate:
+               --    [Temp := null;]
                --    begin
                --       [Deep_]Finalize (Obj_Ref);
 
@@ -4264,23 +4415,14 @@ package body Exp_Ch7 is
                --          end if;
                --    end;
 
-               Obj_Ref := New_Reference_To (Obj_Id, Loc);
-
-               if Is_Access_Type (Obj_Typ) then
-                  Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
-               end if;
-
                Fin_Block :=
                  Make_Block_Statement (Loc,
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements => New_List (
-                         Make_Final_Call
-                           (Obj_Ref => Obj_Ref,
-                            Typ     => Desig)),
-
+                       Statements => Stmts,
                        Exception_Handlers => New_List (
-                         Build_Exception_Handler (Finalizer_Data))));
+                         Build_Exception_Handler (Fin_Data))));
+
                Insert_After_And_Analyze (Last_Object, Fin_Block);
 
                --  The raise statement must be inserted after all the
@@ -4345,7 +4487,7 @@ package body Exp_Ch7 is
            and then Present (Last_Fin)
          then
             Insert_After_And_Analyze (Last_Fin,
-              Build_Raise_Statement (Finalizer_Data));
+              Build_Raise_Statement (Fin_Data));
          end if;
       end Process_Transient_Objects;
 
