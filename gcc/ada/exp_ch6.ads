@@ -198,7 +198,11 @@ package Exp_Ch6 is
    --  node applied to such a function call.
 
    function Needs_BIP_Finalization_Master (Func_Id : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-318-02): Return True if the function needs a finalization
-   --  master implicit parameter.
+   --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
+   --  finalization master implicit parameter.
+
+   function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
+   --  BIP_Alloc_Form parameter (see type BIP_Formal_Kind).
 
 end Exp_Ch6;
