@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---               ADA.CONTAINERS.BOUNDED_PRIORITY_QUEUES                     --
+--                  ADA.CONTAINERS.BOUNDED_PRIORITY_QUEUES                  --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with System;
+
 with Ada.Containers.Synchronized_Queue_Interfaces;
 with Ada.Containers.Bounded_Doubly_Linked_Lists;
 

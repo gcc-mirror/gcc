@@ -189,6 +189,8 @@ package body System.Tasking is
       Base_CPU      : System.Multiprocessors.CPU_Range;
       Success       : Boolean;
 
+      use type System.Multiprocessors.CPU_Range;
+
    begin
       if Initialized then
          return;
@@ -233,9 +235,20 @@ package body System.Tasking is
 
       T.Common.Domain := System_Domain;
 
-      --  ??? If we want to handle the interaction between pragma CPU and
-      --  dispatching domains we would need to signal that this task is being
-      --  allocated to a processor.
+      Dispatching_Domain_Tasks :=
+        new Array_Allocated_Tasks'
+          (Multiprocessors.CPU'First .. Multiprocessors.Number_Of_CPUs => 0);
+
+      --  Signal that this task is being allocated to a processor
+
+      if Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+
+         --  Increase the number of tasks attached to the CPU to which this
+         --  task is allocated.
+
+         Dispatching_Domain_Tasks (Base_CPU) :=
+           Dispatching_Domain_Tasks (Base_CPU) + 1;
+      end if;
 
       --  Only initialize the first element since others are not relevant
       --  in ravenscar mode. Rest of the initialization is done in Init_RTS.

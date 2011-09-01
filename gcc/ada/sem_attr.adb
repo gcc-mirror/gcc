@@ -3883,6 +3883,12 @@ package body Sem_Attr is
       ----------------------
 
       when Attribute_Overlaps_Storage =>
+         if Ada_Version < Ada_2012 then
+            Error_Msg_N
+              ("attribute Overlaps_Storage is an Ada 2012 feature", N);
+            Error_Msg_N
+              ("\unit must be compiled with -gnat2012 switch", N);
+         end if;
          Check_E1;
 
          --  Both arguments must be objects of any type
@@ -4374,6 +4380,13 @@ package body Sem_Attr is
       ------------------
 
       when Attribute_Same_Storage =>
+         if Ada_Version < Ada_2012 then
+            Error_Msg_N
+              ("attribute Same_Storage is an Ada 2012 feature", N);
+            Error_Msg_N
+              ("\unit must be compiled with -gnat2012 switch", N);
+         end if;
+
          Check_E1;
 
          --  The arguments must be objects of any type
