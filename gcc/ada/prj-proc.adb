@@ -2765,6 +2765,7 @@ package body Prj.Proc is
             Project := Processed_Projects.Get (Name);
 
             if Project /= No_Project then
+
                --  Make sure that, when a project is extended, the project id
                --  of the project extending it is recorded in its data, even
                --  when it has already been processed as an imported project.
@@ -2777,13 +2778,16 @@ package body Prj.Proc is
                return;
             end if;
 
-            Project := new Project_Data'
-              (Empty_Project
-                 (Project_Qualifier_Of
+            Project :=
+              new Project_Data'
+                (Empty_Project
+                  (Project_Qualifier_Of
                     (From_Project_Node, From_Project_Node_Tree)));
-            In_Tree.Projects := new Project_List_Element'
-              (Project => Project,
-               Next    => In_Tree.Projects);
+
+            In_Tree.Projects :=
+              new Project_List_Element'
+                    (Project => Project,
+                     Next    => In_Tree.Projects);
 
             Processed_Projects.Set (Name, Project);
 
@@ -2833,10 +2837,12 @@ package body Prj.Proc is
               and then In_Tree.Is_Root_Tree
             then
                Initialize_And_Copy (Child_Env, Copy_From => Env);
+
             else
                --  No need to initialize Child_Env, since it will not be
                --  used anyway by Process_Declarative_Items (only the root
                --  aggregate can modify it, and it is never read anyway).
+
                null;
             end if;
 

@@ -836,19 +836,18 @@ package body Prj.Env is
                   or else Source.Unit /= No_Unit_Index)
             then
                if Source.Unit /= No_Unit_Index then
+
                   --  Put the encoded unit name in the name buffer
 
                   declare
                      Uname : constant String :=
-                       Get_Name_String (Source.Unit.Name);
+                               Get_Name_String (Source.Unit.Name);
 
                   begin
                      Name_Len := 0;
-
                      for J in Uname'Range loop
                         if Uname (J) in Upper_Half_Character then
                            Store_Encoded_Character (Get_Char_Code (Uname (J)));
-
                         else
                            Add_Char_To_Name_Buffer (Uname (J));
                         end if;
@@ -879,8 +878,7 @@ package body Prj.Env is
                      end case;
 
                      if Suffix /= No_File then
-                        Add_Str_To_Name_Buffer
-                          (Get_Name_String (Suffix));
+                        Add_Str_To_Name_Buffer (Get_Name_String (Suffix));
                      end if;
                   end if;
 
@@ -906,6 +904,8 @@ package body Prj.Env is
 
       procedure For_Every_Imported_Project is new
         For_Every_Project_Imported (State => Integer, Action => Process);
+
+      --  Local variables
 
       Dummy : Integer := 0;
 

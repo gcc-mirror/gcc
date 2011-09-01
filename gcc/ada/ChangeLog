@@ -1,3 +1,17 @@
+2011-09-01  Robert Dewar  <dewar@adacore.com>
+
+	* prj-proc.adb, exp_ch6.adb, prj-env.adb: Minor reformatting.
+
+2011-09-01  Bob Duff  <duff@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate): Need to treat "in instance
+	body" the same as "in inlined body", because visibility shouldn't
+	apply there.
+
+2011-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Add_Inlined_Body): Refine previous change.
+
 2011-09-01  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch6.ads (Needs_BIP_Alloc_Form): New utility function.
