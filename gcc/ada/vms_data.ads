@@ -1926,6 +1926,12 @@ package VMS_Data is
    --   When using a project file, GNAT MAKE creates a temporary mapping file
    --   and communicates it to the compiler using this switch.
 
+   S_GCC_Multi   : aliased constant S := "/MULTI_UNIT_INDEX=#"             &
+                                            "-gnateI#";
+   --        /MULTI_UNIT_INDEX=nnn
+   --
+   --   Specify the index of the unit to compile in a multi-unit source file.
+
    S_GCC_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="         &
                                             "DEFAULT "                     &
                                                "-vP0 "                     &
@@ -3391,12 +3397,6 @@ package VMS_Data is
    --
    --   Inhibit all warning messages of the GCC back-end.
 
-   S_GCC_All_Back : aliased constant S := "/ALL_BACK_END_WARNINGS "        &
-                                            "-Wall";
-   --        /ALL_BACK_END_WARNINGS
-   --
-   --   Activate all warning messages of the GCC back-end.
-
    S_GCC_Wide    : aliased constant S := "/WIDE_CHARACTER_ENCODING="       &
                                              "BRACKETS "                   &
                                                 "-gnatWb "                 &
@@ -3585,6 +3585,7 @@ package VMS_Data is
                      S_GCC_Output  'Access,
                      S_GCC_Machine 'Access,
                      S_GCC_Mapping 'Access,
+                     S_GCC_Multi   'Access,
                      S_GCC_Mess    'Access,
                      S_GCC_Nesting 'Access,
                      S_GCC_Noadc   'Access,
@@ -3627,7 +3628,6 @@ package VMS_Data is
                      S_GCC_Wide    'Access,
                      S_GCC_WideX   'Access,
                      S_GCC_No_Back 'Access,
-                     S_GCC_All_Back'Access,
                      S_GCC_Xdebug  'Access,
                      S_GCC_Lxdebug 'Access,
                      S_GCC_Xref    'Access);
