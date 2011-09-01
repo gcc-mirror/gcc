@@ -792,6 +792,7 @@ package Snames is
    Name_Null_Parameter                 : constant Name_Id := N + $; -- GNAT
    Name_Object_Size                    : constant Name_Id := N + $; -- GNAT
    Name_Old                            : constant Name_Id := N + $; -- GNAT
+   Name_Overlaps_Storage               : constant Name_Id := N + $; -- GNAT
    Name_Partition_ID                   : constant Name_Id := N + $;
    Name_Passed_By_Reference            : constant Name_Id := N + $; -- GNAT
    Name_Pool_Address                   : constant Name_Id := N + $;
@@ -808,6 +809,7 @@ package Snames is
    Name_Safe_Large                     : constant Name_Id := N + $; -- Ada 83
    Name_Safe_Last                      : constant Name_Id := N + $;
    Name_Safe_Small                     : constant Name_Id := N + $; -- Ada 83
+   Name_Same_Storage                   : constant Name_Id := N + $; -- Ada 12
    Name_Scale                          : constant Name_Id := N + $;
    Name_Scaling                        : constant Name_Id := N + $;
    Name_Signed_Zeros                   : constant Name_Id := N + $;
@@ -1344,6 +1346,7 @@ package Snames is
       Attribute_Null_Parameter,
       Attribute_Object_Size,
       Attribute_Old,
+      Attribute_Overlaps_Storage,
       Attribute_Partition_ID,
       Attribute_Passed_By_Reference,
       Attribute_Pool_Address,
@@ -1360,6 +1363,7 @@ package Snames is
       Attribute_Safe_Large,
       Attribute_Safe_Last,
       Attribute_Safe_Small,
+      Attribute_Same_Storage,
       Attribute_Scale,
       Attribute_Scaling,
       Attribute_Signed_Zeros,

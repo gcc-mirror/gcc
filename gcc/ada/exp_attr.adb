@@ -3091,6 +3091,100 @@ package body Exp_Attr is
          Rewrite (N, New_Occurrence_Of (Tnn, Loc));
       end Old;
 
+      ----------------------
+      -- Overlaps_Storage --
+      ----------------------
+
+      when Attribute_Overlaps_Storage => Overlaps_Storage : declare
+         Loc : constant Source_Ptr := Sloc (N);
+
+         X   : constant Node_Id := Prefix (N);
+         Y   : constant Node_Id := First (Expressions (N));
+         --  The argumens
+
+         X_Addr, Y_Addr : Node_Id;
+         --  the expressions for their integer addresses
+
+         X_Size, Y_Size : Node_Id;
+         --  the expressions for their sizes
+
+         Cond : Node_Id;
+
+      begin
+         --  Attribute expands into:
+
+         --    if X'Address < Y'address then
+         --      (X'address + X'Size - 1) >= Y'address
+         --    else
+         --      (Y'address + Y'size - 1) >= X'Address
+         --    end if;
+
+         --  with the proper address operations. We convert addresses to
+         --  integer addresses to use predefined arithmetic. The size is
+         --  expressed in storage units.
+
+         X_Addr :=
+           Unchecked_Convert_To (RTE (RE_Integer_Address),
+             Make_Attribute_Reference (Loc,
+               Attribute_Name => Name_Address,
+               Prefix         => New_Copy_Tree (X)));
+
+         Y_Addr :=
+           Unchecked_Convert_To (RTE (RE_Integer_Address),
+             Make_Attribute_Reference (Loc,
+               Attribute_Name => Name_Address,
+               Prefix         => New_Copy_Tree (Y)));
+
+         X_Size :=
+           Make_Op_Divide (Loc,
+             Left_Opnd  =>
+               Make_Attribute_Reference (Loc,
+                 Attribute_Name => Name_Size,
+                 Prefix         => New_Copy_Tree (X)),
+             Right_Opnd =>
+               Make_Integer_Literal (Loc, System_Storage_Unit));
+
+         Y_Size :=
+           Make_Op_Divide (Loc,
+             Left_Opnd  =>
+               Make_Attribute_Reference (Loc,
+                 Attribute_Name => Name_Size,
+                 Prefix         => New_Copy_Tree (Y)),
+             Right_Opnd =>
+               Make_Integer_Literal (Loc, System_Storage_Unit));
+
+         Cond :=
+            Make_Op_Le (Loc,
+              Left_Opnd  => X_Addr,
+              Right_Opnd => Y_Addr);
+
+         Rewrite (N,
+           Make_Conditional_Expression (Loc,
+             New_List (
+               Cond,
+
+               Make_Op_Ge (Loc,
+                  Left_Opnd   =>
+                   Make_Op_Add (Loc,
+                     Left_Opnd  => X_Addr,
+                     Right_Opnd =>
+                       Make_Op_Subtract (Loc,
+                         Left_Opnd  => X_Size,
+                         Right_Opnd => Make_Integer_Literal (Loc, 1))),
+                  Right_Opnd => Y_Addr),
+
+               Make_Op_Ge (Loc,
+                   Make_Op_Add (Loc,
+                     Left_Opnd  => Y_Addr,
+                     Right_Opnd =>
+                       Make_Op_Subtract (Loc,
+                         Left_Opnd  => Y_Size,
+                         Right_Opnd => Make_Integer_Literal (Loc, 1))),
+                  Right_Opnd => X_Addr))));
+
+         Analyze_And_Resolve (N, Standard_Boolean);
+      end Overlaps_Storage;
+
       ------------
       -- Output --
       ------------
@@ -3915,6 +4009,73 @@ package body Exp_Attr is
 
       when Attribute_Rounding =>
          Expand_Fpt_Attribute_R (N);
+
+      ------------------
+      -- Same_Storage --
+      ------------------
+
+      when Attribute_Same_Storage => Same_Storage : declare
+         Loc : constant Source_Ptr := Sloc (N);
+
+         X   : constant Node_Id := Prefix (N);
+         Y   : constant Node_Id := First (Expressions (N));
+         --  The argumens
+
+         X_Addr, Y_Addr : Node_Id;
+         --  the expressions for their addresses
+
+         X_Size, Y_Size : Node_Id;
+         --  the expressions for their sizes
+
+      begin
+         --  The attribute is expanded as:
+
+         --    (X'address = Y'address)
+         --      and then (X'Size = Y'Size)
+
+         --  If both arguments have the same Etype the second conjunct can be
+         --  omitted.
+
+         X_Addr :=
+           Make_Attribute_Reference (Loc,
+             Attribute_Name => Name_Address,
+             Prefix         => New_Copy_Tree (X));
+
+         Y_Addr :=
+           Make_Attribute_Reference (Loc,
+             Attribute_Name => Name_Address,
+             Prefix         => New_Copy_Tree (Y));
+
+         X_Size :=
+           Make_Attribute_Reference (Loc,
+             Attribute_Name => Name_Size,
+             Prefix         => New_Copy_Tree (X));
+
+         Y_Size :=
+           Make_Attribute_Reference (Loc,
+             Attribute_Name => Name_Size,
+             Prefix         => New_Copy_Tree (Y));
+
+         if Etype (X) = Etype (Y) then
+            Rewrite (N,
+              (Make_Op_Eq (Loc,
+                 Left_Opnd  => X_Addr,
+                 Right_Opnd => Y_Addr)));
+         else
+            Rewrite (N,
+              Make_Op_And (Loc,
+                Left_Opnd  =>
+                  Make_Op_Eq (Loc,
+                    Left_Opnd  => X_Addr,
+                    Right_Opnd => Y_Addr),
+                Right_Opnd =>
+                  Make_Op_Eq (Loc,
+                    Left_Opnd  => X_Size,
+                    Right_Opnd => Y_Size)));
+         end if;
+
+         Analyze_And_Resolve (N, Standard_Boolean);
+      end Same_Storage;
 
       -------------
       -- Scaling --
