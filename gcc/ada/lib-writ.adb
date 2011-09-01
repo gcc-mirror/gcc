@@ -796,6 +796,12 @@ package body Lib.Writ is
                       or else
                      Nkind (Unit (Cunit)) in N_Generic_Renaming_Declaration)
                     and then Generic_May_Lack_ALI (Fname))
+
+              --  In Alfa mode, always generate the dependencies on ALI
+              --  files, which are required to compute frame conditions
+              --  of subprograms.
+
+              or else Alfa_Mode
             then
                Write_Info_Tab (25);
 
