@@ -235,10 +235,10 @@ package Prj is
    --  packages) for a project or a package in a project.
 
    No_Declarations : constant Declarations :=
-     (Variables  => No_Variable,
-      Attributes => No_Variable,
-      Arrays     => No_Array,
-      Packages   => No_Package);
+                       (Variables  => No_Variable,
+                        Attributes => No_Variable,
+                        Arrays     => No_Array,
+                        Packages   => No_Package);
    --  Default value of Declarations: indicates that there is no declarations
 
    type Package_Element is record
@@ -1861,39 +1861,39 @@ private
    end record;
 
    Gprbuild_Flags : constant Processing_Flags :=
-     (Report_Error               => null,
-      When_No_Sources            => Warning,
-      Require_Sources_Other_Lang => True,
-      Allow_Duplicate_Basenames  => False,
-      Compiler_Driver_Mandatory  => True,
-      Error_On_Unknown_Language  => True,
-      Require_Obj_Dirs           => Error,
-      Allow_Invalid_External     => Error,
-      Missing_Source_Files       => Error,
-      Ignore_Missing_With        => False);
+                      (Report_Error               => null,
+                       When_No_Sources            => Warning,
+                       Require_Sources_Other_Lang => True,
+                       Allow_Duplicate_Basenames  => False,
+                       Compiler_Driver_Mandatory  => True,
+                       Error_On_Unknown_Language  => True,
+                       Require_Obj_Dirs           => Error,
+                       Allow_Invalid_External     => Error,
+                       Missing_Source_Files       => Error,
+                       Ignore_Missing_With        => False);
 
    Gprclean_Flags : constant Processing_Flags :=
-     (Report_Error               => null,
-      When_No_Sources            => Warning,
-      Require_Sources_Other_Lang => True,
-      Allow_Duplicate_Basenames  => False,
-      Compiler_Driver_Mandatory  => True,
-      Error_On_Unknown_Language  => True,
-      Require_Obj_Dirs           => Warning,
-      Allow_Invalid_External     => Error,
-      Missing_Source_Files       => Error,
-      Ignore_Missing_With        => False);
+                      (Report_Error               => null,
+                       When_No_Sources            => Warning,
+                       Require_Sources_Other_Lang => True,
+                       Allow_Duplicate_Basenames  => False,
+                       Compiler_Driver_Mandatory  => True,
+                       Error_On_Unknown_Language  => True,
+                       Require_Obj_Dirs           => Warning,
+                       Allow_Invalid_External     => Error,
+                       Missing_Source_Files       => Error,
+                       Ignore_Missing_With        => False);
 
    Gnatmake_Flags : constant Processing_Flags :=
-     (Report_Error               => null,
-      When_No_Sources            => Error,
-      Require_Sources_Other_Lang => False,
-      Allow_Duplicate_Basenames  => False,
-      Compiler_Driver_Mandatory  => False,
-      Error_On_Unknown_Language  => False,
-      Require_Obj_Dirs           => Error,
-      Allow_Invalid_External     => Error,
-      Missing_Source_Files       => Error,
-      Ignore_Missing_With        => False);
+                      (Report_Error               => null,
+                       When_No_Sources            => Error,
+                       Require_Sources_Other_Lang => False,
+                       Allow_Duplicate_Basenames  => False,
+                       Compiler_Driver_Mandatory  => False,
+                       Error_On_Unknown_Language  => False,
+                       Require_Obj_Dirs           => Error,
+                       Allow_Invalid_External     => Error,
+                       Missing_Source_Files       => Error,
+                       Ignore_Missing_With        => False);
 
 end Prj;
