@@ -3770,6 +3770,20 @@ void *__gnat_lwp_self (void)
 {
    return (void *) syscall (__NR_gettid);
 }
+
+#include <sched.h>
+
+void __gnat_cpu_zero (cpu_set_t *set)
+{
+  CPU_ZERO (set);
+}
+
+void __gnat_cpu_set (int cpu, cpu_set_t *set)
+{
+  /* Ada handles CPU numbers starting from 1, while C identifies the first
+     CPU by a 0, so we need to adjust. */
+  CPU_SET (cpu - 1, set);
+}
 #endif
 
 #ifdef __cplusplus

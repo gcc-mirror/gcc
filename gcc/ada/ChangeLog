@@ -1,3 +1,40 @@
+2011-09-01  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-taprop-linux.adb (Create_Task, Set_Task_Affinity): Use the linux
+	macros for handling CPU sets (CPU_ZERO, CPU_SET) instead of modifying
+	directly the bit array.
+	* s-osinte-linux.ads (CPU_ZERO, CPU_SET): Import these wrappers around
+	the linux macros with the same name.
+	* adaint.h, adaint.c (__gnat_cpu_zero, __gnat_cpu_set): Create these
+	wrappers around the CPU_ZERO and CPU_SET linux macros.
+
+2011-09-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Find_Insertion_List): Removed.
+	(Process_Transient_Objects): Insert the declarations of the hook
+	access type and the hook object before the associated transient object.
+
+2011-09-01  Jose Ruiz  <ruiz@adacore.com>
+
+	* sem_ch8.adb (Attribute_Renaming): Add missing check to avoid loading
+	package System.Aux_Dec when using restricted run-time libraries which
+	do not have this package.
+
+2011-09-01  Tristan Gingold  <gingold@adacore.com>
+
+	* s-vaflop-vms-alpha.adb: Remove pragma optimize, useless.
+
+2011-09-01  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Analyze_Access_Attribute): Do not call
+	Kill_Current_Values for P'Unrestricted_Access, where P is library level
+
+2011-09-01  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch5.adb: Minor reformatting
+	* gnat_ugn.texi: Fix minor typos.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2011-09-01  Robert Dewar  <dewar@adacore.com>
 
 	* inline.adb, sem_aggr.adb: Minor reformatting.

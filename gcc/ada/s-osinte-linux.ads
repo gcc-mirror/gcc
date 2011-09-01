@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -481,6 +481,14 @@ package System.OS_Interface is
       bits : bit_field;
    end record;
    pragma Convention (C, cpu_set_t);
+
+   procedure CPU_ZERO (cpuset : access cpu_set_t);
+   pragma Import (C, CPU_ZERO, "__gnat_cpu_zero");
+   --  Wrapper around the CPU_ZERO C macro
+
+   procedure CPU_SET (cpu : int; cpuset : access cpu_set_t);
+   pragma Import (C, CPU_SET, "__gnat_cpu_set");
+   --  Wrapper around the CPU_SET C macro
 
    function pthread_setaffinity_np
      (thread     : pthread_t;
