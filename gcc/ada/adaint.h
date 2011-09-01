@@ -245,6 +245,11 @@ extern int    __gnat_number_of_cpus                (void);
 
 extern void   __gnat_os_filename                   (char *, char *, char *,
 						    int *, char *, int *);
+
+extern char * __gnat_locate_executable_file        (char *, char *);
+extern char * __gnat_locate_file_with_predicate    (char *, char *,
+						    int (*)(char*));
+
 #if defined (linux)
 extern void   *__gnat_lwp_self			   (void);
 
