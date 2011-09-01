@@ -1,3 +1,7 @@
+2011-09-01  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_aux.adb, exp_ch4.adb: Minor reformatting
+
 2011-09-01  Pascal Obry  <obry@adacore.com>
 
 	* prj-proc.adb, prj.ads, sinput-p.adb: Minor reformatting.
