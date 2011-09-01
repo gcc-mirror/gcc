@@ -4417,11 +4417,11 @@ package body Exp_Ch4 is
       procedure Process_Transient_Object (Decl : Node_Id) is
 
          function Find_Insertion_Node return Node_Id;
-         --  Complex if statements may be converted into nested EWAs. In this
-         --  case, any generated code must be inserted before the if statement
-         --  to ensure proper visibility of the "hook" objects. This routine
-         --  returns the top most short circuit operator or the parent of the
-         --  EWA if no nesting was detected.
+         --  Complex conditions in if statements may be converted into nested
+         --  EWAs. In this case, any generated code must be inserted before the
+         --  if statement to ensure proper visibility of the hook objects. This
+         --  routine returns the top most short circuit operator or the parent
+         --  of the EWA if no nesting was detected.
 
          -------------------------
          -- Find_Insertion_Node --
@@ -4431,7 +4431,7 @@ package body Exp_Ch4 is
             Par : Node_Id;
 
          begin
-            --  Climb up the branches of a complex if statement
+            --  Climb up the branches of a complex condition
 
             Par := N;
             while Nkind_In (Parent (Par), N_And_Then, N_Op_Not, N_Or_Else) loop
@@ -4443,7 +4443,7 @@ package body Exp_Ch4 is
 
          --  Local variables
 
-         Ins_Nod   : constant Node_Id    := Find_Insertion_Node;
+         Ins_Node  : constant Node_Id    := Find_Insertion_Node;
          Loc       : constant Source_Ptr := Sloc (Decl);
          Obj_Id    : constant Entity_Id  := Defining_Identifier (Decl);
          Obj_Typ   : constant Entity_Id  := Etype (Obj_Id);
@@ -4480,7 +4480,7 @@ package body Exp_Ch4 is
                    Ekind (Obj_Typ) = E_General_Access_Type,
                  Subtype_Indication => New_Reference_To (Desig_Typ, Loc)));
 
-         Insert_Action (Ins_Nod, Ptr_Decl);
+         Insert_Action (Ins_Node, Ptr_Decl);
          Analyze (Ptr_Decl);
 
          --  Step 2: Create a temporary which acts as a hook to the transient
@@ -4495,16 +4495,16 @@ package body Exp_Ch4 is
              Defining_Identifier => Temp_Id,
              Object_Definition   => New_Reference_To (Ptr_Id, Loc));
 
-         Insert_Action (Ins_Nod, Temp_Decl);
+         Insert_Action (Ins_Node, Temp_Decl);
          Analyze (Temp_Decl);
 
-         --  Mark this temporary as created for the purposes of "exporting" the
+         --  Mark this temporary as created for the purposes of exporting the
          --  transient declaration out of the Actions list. This signals the
          --  machinery in Build_Finalizer to recognize this special case.
 
          Set_Return_Flag_Or_Transient_Decl (Temp_Id, Decl);
 
-         --  Step 3: "Hook" the transient object to the temporary
+         --  Step 3: Hook the transient object to the temporary
 
          if Is_Access_Type (Obj_Typ) then
             Expr := Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
@@ -4525,6 +4525,8 @@ package body Exp_Ch4 is
              Name       => New_Reference_To (Temp_Id, Loc),
              Expression => Expr));
       end Process_Transient_Object;
+
+      --  Local variables
 
       Decl : Node_Id;
 
