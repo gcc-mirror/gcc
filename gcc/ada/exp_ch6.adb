@@ -7845,7 +7845,6 @@ package body Exp_Ch6 is
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean is
       pragma Assert (Is_Build_In_Place_Function (Func_Id));
       Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
-
    begin
       return not Is_Constrained (Func_Typ) or else Is_Tagged_Type (Func_Typ);
    end Needs_BIP_Alloc_Form;

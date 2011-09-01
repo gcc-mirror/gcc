@@ -342,11 +342,12 @@ package body Inline is
                   null;
 
                --  Do not inline the package if the subprogram is an init. proc
-               --  because in that case the body appears in the same unit that
-               --  declares the type, which will be compiled in any case.
+               --  or other internally generated subprogram, because in that
+               --  case the subprogram body appears in the same unit that
+               --  declares the type, and that body is visible to the back end.
 
                elsif not Is_Inlined (Pack)
-                 and then not Is_Init_Proc (E)
+                 and then Comes_From_Source (E)
                then
                   Set_Is_Inlined (Pack);
                   Inlined_Bodies.Increment_Last;
