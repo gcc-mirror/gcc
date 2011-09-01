@@ -2322,7 +2322,7 @@ package Sinfo is
       --  N_Object_Declaration
       --  Sloc points to first identifier
       --  Defining_Identifier (Node1)
-      --  Aliased_Present (Flag4) set if ALIASED appears
+      --  Aliased_Present (Flag4)
       --  Constant_Present (Flag17) set if CONSTANT appears
       --  Null_Exclusion_Present (Flag11)
       --  Object_Definition (Node4) subtype indic./array type def./access def.
@@ -4514,8 +4514,8 @@ package Sinfo is
       ----------------------------------
 
       --  PARAMETER_SPECIFICATION ::=
-      --    DEFINING_IDENTIFIER_LIST : MODE [NULL_EXCLUSION] SUBTYPE_MARK
-      --      [:= DEFAULT_EXPRESSION]
+      --    DEFINING_IDENTIFIER_LIST : [ALIASED] MODE [NULL_EXCLUSION]
+      --      SUBTYPE_MARK [:= DEFAULT_EXPRESSION]
       --  | DEFINING_IDENTIFIER_LIST : ACCESS_DEFINITION
       --      [:= DEFAULT_EXPRESSION]
 
@@ -4527,9 +4527,12 @@ package Sinfo is
       --  Prev_Ids flags to preserve the original source form as described
       --  in the section on "Handling of Defining Identifier Lists".
 
+      --  ALIASED can only be present in Ada 2012 mode
+
       --  N_Parameter_Specification
       --  Sloc points to first identifier
       --  Defining_Identifier (Node1)
+      --  Aliased_Present (Flag4)
       --  In_Present (Flag15)
       --  Out_Present (Flag17)
       --  Null_Exclusion_Present (Flag11)

@@ -8900,7 +8900,6 @@ package body Sem_Ch6 is
                elsif not Nkind_In (Parent (T), N_Access_Function_Definition,
                                                N_Access_Procedure_Definition)
                then
-
                   --  AI05-0151: Tagged incomplete types are allowed in all
                   --  formal parts. Untagged incomplete types are not allowed
                   --  in bodies.
@@ -8933,6 +8932,14 @@ package body Sem_Ch6 is
                Error_Msg_NE
                  ("premature use of&",
                   Parameter_Type (Param_Spec), Formal_Type);
+            end if;
+
+            --  Ada 2012 (AI-142): Handle aliased parameters
+
+            if Ada_Version >= Ada_2012
+              and then Aliased_Present (Param_Spec)
+            then
+               Set_Is_Aliased (Formal);
             end if;
 
             --  Ada 2005 (AI-231): Create and decorate an internal subtype
@@ -9004,6 +9011,8 @@ package body Sem_Ch6 is
          end if;
 
          Set_Etype (Formal, Formal_Type);
+
+         --  Deal with default expression if present
 
          Default := Expression (Param_Spec);
 
@@ -9116,6 +9125,12 @@ package body Sem_Ch6 is
 
          elsif Ekind (Formal) = E_In_Out_Parameter then
             Num_Out_Params := Num_Out_Params + 1;
+         end if;
+
+         --  Force call by reference if aliased
+
+         if Is_Aliased (Formal) then
+            Set_Mechanism (Formal, By_Reference);
          end if;
 
          Next (Param_Spec);
@@ -9579,8 +9594,7 @@ package body Sem_Ch6 is
          if Ekind (Designator) /= E_Procedure then
             declare
                Rent : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => Name_uResult);
+                        Make_Defining_Identifier (Loc, Name_uResult);
                Ftyp : constant Entity_Id := Etype (Designator);
 
             begin

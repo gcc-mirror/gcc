@@ -415,22 +415,24 @@ package System.Tasking is
    --  We need to store whether there are tasks allocated to concrete
    --  processors in the default system dispatching domain because we need to
    --  check it before creating a new dispatching domain. Two comments about
-   --  the reason why we use a pointer here and not in package
-   --  Dispatching_Domains.
-   --  1) We use an array created dynamically in procedure Initialize which is
-   --  called at the beginning of the initialization of the run-time library.
-   --  Declaring a static array here in the spec would not work across
-   --  different installations because it would get the value of Number_Of_CPUs
-   --  from the machine where the run-time library is built, and not from the
-   --  machine where the application is executed. That is the reason why we
-   --  create the array (CPU'First .. Number_Of_CPUs) at execution time in the
-   --  procedure body, ensuring that the function Number_Of_CPUs is executed at
-   --  execution time (the same trick as we use for System_Domain).
-   --  2) We have moved this declaration from package Dispatching_Domains
-   --  because when we use a pragma CPU, the affinity is passed through the
-   --  call to Create_Task. Hence, at this point, we may need to update the
-   --  number of tasks associated to the processor, but we do not want to force
-   --  a dependency from this package on Dispatching_Domains.
+   --  why we use a pointer here and not in package Dispatching_Domains:
+   --
+   --    1) We use an array created dynamically in procedure Initialize which
+   --    is called at the beginning of the initialization of the run-time
+   --    library. Declaring a static array here in the spec would not work
+   --    across different installations because it would get the value of
+   --    Number_Of_CPUs from the machine where the run-time library is built,
+   --    and not from the machine where the application is executed. That is
+   --    the reason why we create the array (CPU'First .. Number_Of_CPUs) at
+   --    execution time in the procedure body, ensuring that the function
+   --    Number_Of_CPUs is executed at execution time (the same trick as we
+   --    use for System_Domain).
+   --
+   --    2) We have moved this declaration from package Dispatching_Domains
+   --    because when we use a pragma CPU, the affinity is passed through the
+   --    call to Create_Task. Hence, at this point, we may need to update the
+   --    number of tasks associated to the processor, but we do not want to
+   --    force a dependency from this package on Dispatching_Domains.
 
    ------------------------------------
    -- Task related other definitions --

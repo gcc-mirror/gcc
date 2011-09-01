@@ -49,7 +49,6 @@ GNATRTL_TASKING_OBJS= \
   s-interr$(objext) \
   s-intman$(objext) \
   s-mudido$(objext) \
-  s-oscons$(objext) \
   s-osinte$(objext) \
   s-proinf$(objext) \
   s-solita$(objext) \
@@ -542,6 +541,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-memory$(objext) \
   s-multip$(objext) \
   s-os_lib$(objext) \
+  s-oscons$(objext) \
   s-osprim$(objext) \
   s-pack03$(objext) \
   s-pack05$(objext) \

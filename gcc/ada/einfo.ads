@@ -1997,8 +1997,9 @@ package Einfo is
 --       of pragma Ada_12 or Ada_2012.
 
 --    Is_Aliased (Flag15)
---       Present in objects whose declarations carry the keyword aliased,
---       and on record components that have the keyword.
+--       Present in all entities. Set for objects and types whose declarations
+--       carry the keyword aliased, and on record components that have the
+--       keyword. For Ada 2012, also applies to formal parameters.
 
 --    Is_AST_Entry (Flag132)
 --       Present in entry entities. Set if a valid pragma AST_Entry applies
@@ -4773,6 +4774,7 @@ package Einfo is
    --    Is_Ada_2005_Only                    (Flag185)
    --    Is_Ada_2012_Only                    (Flag199)
    --    Is_Bit_Packed_Array                 (Flag122)  (base type only)
+   --    Is_Aliased                          (Flag15)
    --    Is_Character_Type                   (Flag63)
    --    Is_Child_Unit                       (Flag73)
    --    Is_Compilation_Unit                 (Flag149)
@@ -4994,7 +4996,6 @@ package Einfo is
    --    Component_Alignment                 (special)  (base type only)
    --    Has_Component_Size_Clause           (Flag68)   (base type only)
    --    Has_Pragma_Pack                     (Flag121)  (impl base type only)
-   --    Is_Aliased                          (Flag15)
    --    Is_Constrained                      (Flag12)
    --    Next_Index                          (synth)
    --    Number_Dimensions                   (synth)

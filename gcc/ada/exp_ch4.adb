@@ -4415,10 +4415,32 @@ package body Exp_Ch4 is
       ------------------------------
 
       procedure Process_Transient_Object (Decl : Node_Id) is
-         Ins_Nod : constant Node_Id := Parent (N);
-         --  To avoid the insertion of generated code in the list of Actions,
-         --  Insert_Action must look at the parent field of the EWA.
 
+         function Find_Insertion_Node return Node_Id;
+         --  Complex if statements may be converted into nested EWAs. In this
+         --  case, any generated code must be inserted before the if statement
+         --  to ensure proper visibility of the "hook" objects. This routine
+         --  returns the top most short circuit operator or the parent of the
+         --  EWA if no nesting was detected.
+
+         -------------------------
+         -- Find_Insertion_Node --
+         -------------------------
+
+         function Find_Insertion_Node return Node_Id is
+            Par : Node_Id := N;
+
+         begin
+            --  Climb up the branches of a complex if statement
+
+            while Nkind_In (Parent (Par), N_And_Then, N_Op_Not, N_Or_Else) loop
+               Par := Parent (Par);
+            end loop;
+
+            return Par;
+         end Find_Insertion_Node;
+
+         Ins_Nod   : constant Node_Id    := Find_Insertion_Node;
          Loc       : constant Source_Ptr := Sloc (Decl);
          Obj_Id    : constant Entity_Id  := Defining_Identifier (Decl);
          Obj_Typ   : constant Entity_Id  := Etype (Obj_Id);

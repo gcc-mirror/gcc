@@ -659,21 +659,21 @@ package body System.Tasking.Stages is
       --  The CPU associated to the task (if any) must belong to the
       --  dispatching domain.
 
-      if Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU and then
-        (Base_CPU not in T.Common.Domain'Range
-         or else not T.Common.Domain (Base_CPU))
+      if Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU
+        and then
+          (Base_CPU not in T.Common.Domain'Range
+            or else not T.Common.Domain (Base_CPU))
       then
          Initialization.Undefer_Abort_Nestable (Self_ID);
          raise Tasking_Error with "CPU not in dispatching domain";
       end if;
 
-      --  In order to handle the interaction between pragma CPU and
-      --  dispatching domains we need to signal that this task is being
-      --  allocated to a processor. This is needed only for tasks belonging to
-      --  the system domain (the creation of new dispatching domains can only
-      --  take processors from the system domain) and only before the
-      --  environment task calls the main procedure (dispatching domains cannot
-      --  be created after this).
+      --  To handle the interaction between pragma CPU and dispatching domains
+      --  we need to signal that this task is being allocated to a processor.
+      --  This is needed only for tasks belonging to the system domain (the
+      --  creation of new dispatching domains can only take processors from the
+      --  system domain) and only before the environment task calls the main
+      --  procedure (dispatching domains cannot be created after this).
 
       if Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU
         and then T.Common.Domain = System.Tasking.System_Domain
@@ -686,9 +686,8 @@ package body System.Tasking.Stages is
            Dispatching_Domain_Tasks (Base_CPU) + 1;
       end if;
 
-      --  Note: we should not call 'new' while holding locks since new
-      --  may use locks (e.g. RTS_Lock under Windows) itself and cause a
-      --  deadlock.
+      --  Note: we should not call 'new' while holding locks since new may use
+      --  locks (e.g. RTS_Lock under Windows) itself and cause a deadlock.
 
       if Build_Entry_Names then
          T.Entry_Names :=

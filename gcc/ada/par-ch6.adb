@@ -1186,14 +1186,16 @@ package body Ch6 is
    --  FORMAL_PART ::= (PARAMETER_SPECIFICATION {; PARAMETER_SPECIFICATION})
 
    --  PARAMETER_SPECIFICATION ::=
-   --    DEFINING_IDENTIFIER_LIST : MODE [NULL_EXCLUSION] SUBTYPE_MARK
-   --      [:= DEFAULT_EXPRESSION]
+   --    DEFINING_IDENTIFIER_LIST : [ALIASED] MODE [NULL_EXCLUSION]
+   --      SUBTYPE_MARK [:= DEFAULT_EXPRESSION]
    --  | DEFINING_IDENTIFIER_LIST : ACCESS_DEFINITION
    --      [:= DEFAULT_EXPRESSION]
 
    --  This scans the construct Formal_Part. The caller has already checked
    --  that the initial token is a left parenthesis, and skipped past it, so
    --  that on entry Token is the first token following the left parenthesis.
+
+   --  Note: The ALIASED keyword is allowed only in Ada 2012 mode (AI 142)
 
    --  Error recovery: cannot raise Error_Resync
 
@@ -1235,9 +1237,11 @@ package body Ch6 is
 
                if Token /= Tok_Comma then
 
-                  --  Assume colon if IN or OUT keyword found
+                  --  Assume colon if ALIASED, IN or OUT keyword found
 
-                  exit Ident_Loop when Token = Tok_In or else Token = Tok_Out;
+                  exit Ident_Loop when Token = Tok_Aliased or else
+                                       Token = Tok_In      or else
+                                       Token = Tok_Out;
 
                   --  Otherwise scan ahead
 
@@ -1302,6 +1306,18 @@ package body Ch6 is
                Specification_Node :=
                  New_Node (N_Parameter_Specification, Ident_Sloc);
                Set_Defining_Identifier (Specification_Node, Idents (Ident));
+
+               --  Scan possible ALIASED for Ada 2012 (AI-142)
+
+               if Token = Tok_Aliased then
+                  if Ada_Version < Ada_2012 then
+                     Error_Msg_SC ("ALIASED parameter is an Ada2012 feature");
+                  else
+                     Set_Aliased_Present (Specification_Node);
+                  end if;
+
+                  Scan; -- past ALIASED
+               end if;
 
                --  Scan possible NOT NULL for Ada 2005 (AI-231, AI-447)
 

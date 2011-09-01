@@ -1152,9 +1152,10 @@ package body Sem_Ch13 is
                when Aspect_Priority           |
                     Aspect_Interrupt_Priority |
                     Aspect_Dispatching_Domain |
-                    Aspect_CPU                  =>
+                    Aspect_CPU                =>
                   declare
                      Pname : Name_Id;
+
                   begin
                      if A_Id = Aspect_Priority then
                         Pname := Name_Priority;
@@ -1505,7 +1506,7 @@ package body Sem_Ch13 is
                      when Aspect_Priority           |
                           Aspect_Interrupt_Priority |
                           Aspect_Dispatching_Domain |
-                          Aspect_CPU                  =>
+                          Aspect_CPU                =>
                         declare
                            T : Node_Id; -- the type declaration
                            L : List_Id; -- list of decls of task/protected
@@ -1513,7 +1514,6 @@ package body Sem_Ch13 is
                         begin
                            if Nkind (N) = N_Object_Declaration then
                               T := Parent (Etype (Defining_Identifier (N)));
-
                            else
                               T := N;
                            end if;
