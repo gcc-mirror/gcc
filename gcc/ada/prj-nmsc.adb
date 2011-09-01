@@ -252,13 +252,13 @@ package body Prj.Nmsc is
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
       Display_File        : File_Name_Type;
-      Naming_Exception    : Boolean          := False;
-      Path                : Path_Information := No_Path_Information;
-      Alternate_Languages : Language_List    := null;
-      Unit                : Name_Id          := No_Name;
-      Index               : Int              := 0;
-      Locally_Removed     : Boolean          := False;
-      Location            : Source_Ptr       := No_Location);
+      Naming_Exception    : Naming_Exception_Type := No;
+      Path                : Path_Information      := No_Path_Information;
+      Alternate_Languages : Language_List         := null;
+      Unit                : Name_Id               := No_Name;
+      Index               : Int                   := 0;
+      Locally_Removed     : Boolean               := False;
+      Location            : Source_Ptr            := No_Location);
    --  Add a new source to the different lists: list of all sources in the
    --  project tree, list of source of a project and list of sources of a
    --  language. If Path is specified, the file is also added to
@@ -628,13 +628,13 @@ package body Prj.Nmsc is
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
       Display_File        : File_Name_Type;
-      Naming_Exception    : Boolean          := False;
-      Path                : Path_Information := No_Path_Information;
-      Alternate_Languages : Language_List    := null;
-      Unit                : Name_Id          := No_Name;
-      Index               : Int              := 0;
-      Locally_Removed     : Boolean          := False;
-      Location            : Source_Ptr       := No_Location)
+      Naming_Exception    : Naming_Exception_Type := No;
+      Path                : Path_Information      := No_Path_Information;
+      Alternate_Languages : Language_List         := null;
+      Unit                : Name_Id               := No_Name;
+      Index               : Int                   := 0;
+      Locally_Removed     : Boolean               := False;
+      Location            : Source_Ptr            := No_Location)
    is
       Config    : constant Language_Config := Lang_Id.Config;
       UData     : Unit_Index;
@@ -725,7 +725,7 @@ package body Prj.Nmsc is
             --  file name in unrelated projects.
 
          elsif Is_Extending (Project, Source.Project) then
-            if not Locally_Removed then
+            if not Locally_Removed and then Naming_Exception /= Inherited then
                Source_To_Replace := Source;
             end if;
 
@@ -854,14 +854,19 @@ package body Prj.Nmsc is
          if UData = No_Unit_Index then
             UData := new Unit_Data;
             UData.Name := Unit;
-            Units_Htable.Set (Data.Tree.Units_HT, Unit, UData);
+
+            if Naming_Exception /= Inherited then
+               Units_Htable.Set (Data.Tree.Units_HT, Unit, UData);
+            end if;
          end if;
 
          Id.Unit := UData;
 
          --  Note that this updates Unit information as well
 
-         Override_Kind (Id, Kind);
+         if Naming_Exception /= Inherited then
+            Override_Kind (Id, Kind);
+         end if;
       end if;
 
       if Path /= No_Path_Information then
@@ -2329,7 +2334,7 @@ package body Prj.Nmsc is
 
                      when Name_Runtime_Source_Dir =>
 
-                        --  Attribute Runtime_Library_Dir (<language>)
+                        --  Attribute Runtime_Source_Dir (<language>)
 
                         Lang_Index.Config.Runtime_Source_Dir :=
                           Element.Value.Value;
@@ -3714,7 +3719,7 @@ package body Prj.Nmsc is
                      Kind             => Kind,
                      File_Name        => File_Name,
                      Display_File     => File_Name_Type (Element.Value),
-                     Naming_Exception => True,
+                     Naming_Exception => Yes,
                      Location         => Element.Location);
 
                else
@@ -3760,6 +3765,8 @@ package body Prj.Nmsc is
          File_Name  : File_Name_Type;
          Source     : Source_Id;
 
+         Naming_Exception : Naming_Exception_Type;
+
       begin
          case Kind is
             when Impl | Sep =>
@@ -3787,7 +3794,7 @@ package body Prj.Nmsc is
                if Exceptions = No_Array_Element then
                   Exceptions :=
                     Value_Of
-                      (Name_Spec,
+                      (Name_Specification,
                        In_Arrays => Naming.Decl.Arrays,
                        Shared    => Shared);
                end if;
@@ -3795,6 +3802,13 @@ package body Prj.Nmsc is
 
          while Exceptions /= No_Array_Element loop
             Element   := Shared.Array_Elements.Table (Exceptions);
+
+            if Element.Restricted then
+               Naming_Exception := Inherited;
+            else
+               Naming_Exception := Yes;
+            end if;
+
             File_Name := Canonical_Case_File_Name (Element.Value.Value);
 
             Get_Name_String (Element.Index);
@@ -3827,7 +3841,7 @@ package body Prj.Nmsc is
                   Unit             => Unit,
                   Index            => Index,
                   Location         => Element.Value.Location,
-                  Naming_Exception => True);
+                  Naming_Exception => Naming_Exception);
             end if;
 
             Exceptions := Element.Next;
@@ -6326,7 +6340,7 @@ package body Prj.Nmsc is
                   Source := Prj.Element (Iter);
                   exit Source_Loop when Source = No_Source;
 
-                  if Source.Naming_Exception then
+                  if Source.Naming_Exception /= No then
                      NL := Source_Names_Htable.Get
                        (Project.Source_Names, Source.File);
 
@@ -6383,51 +6397,54 @@ package body Prj.Nmsc is
             --      the same file has received the full path, so we need to
             --      propagate it.
 
-            if Source.Naming_Exception
-              and then Source.Path = No_Path_Information
-            then
-               if Source.Unit /= No_Unit_Index then
-                  Found := False;
+            if Source.Path = No_Path_Information then
+               if Source.Naming_Exception = Yes then
+                  if Source.Unit /= No_Unit_Index then
+                     Found := False;
 
-                  if Source.Index /= 0 then  --  Only multi-unit files
-                     declare
-                        S : Source_Id :=
-                          Source_Files_Htable.Get
-                            (Data.Tree.Source_Files_HT, Source.File);
-                     begin
-                        while S /= null loop
-                           if S.Path /= No_Path_Information then
-                              Source.Path := S.Path;
-                              Found := True;
+                     if Source.Index /= 0 then  --  Only multi-unit files
+                        declare
+                           S : Source_Id :=
+                             Source_Files_Htable.Get
+                               (Data.Tree.Source_Files_HT, Source.File);
+                        begin
+                           while S /= null loop
+                              if S.Path /= No_Path_Information then
+                                 Source.Path := S.Path;
+                                 Found := True;
 
-                              if Current_Verbosity = High then
-                                 Debug_Output
-                                   ("setting full path for "
-                                    & Get_Name_String (Source.File)
-                                    & " at" & Source.Index'Img
-                                    & " to "
-                                    & Get_Name_String (Source.Path.Name));
+                                 if Current_Verbosity = High then
+                                    Debug_Output
+                                      ("setting full path for "
+                                       & Get_Name_String (Source.File)
+                                       & " at" & Source.Index'Img
+                                       & " to "
+                                       & Get_Name_String (Source.Path.Name));
+                                 end if;
+
+                                 exit;
                               end if;
 
-                              exit;
-                           end if;
+                              S := S.Next_With_File_Name;
+                           end loop;
+                        end;
+                     end if;
 
-                           S := S.Next_With_File_Name;
-                        end loop;
-                     end;
+                     if not Found then
+                        Error_Msg_Name_1 := Name_Id (Source.Display_File);
+                        Error_Msg_Name_2 := Source.Unit.Name;
+                        Error_Or_Warning
+                          (Data.Flags, Data.Flags.Missing_Source_Files,
+                           "source file %% for unit %% not found",
+                           No_Location, Project.Project);
+                     end if;
                   end if;
 
-                  if not Found then
-                     Error_Msg_Name_1 := Name_Id (Source.Display_File);
-                     Error_Msg_Name_2 := Source.Unit.Name;
-                     Error_Or_Warning
-                       (Data.Flags, Data.Flags.Missing_Source_Files,
-                        "source file %% for unit %% not found",
-                        No_Location, Project.Project);
+                  if Source.Path = No_Path_Information then
+                     Remove_Source (Data.Tree, Source, No_Source);
                   end if;
-               end if;
 
-               if Source.Path = No_Path_Information then
+               elsif Source.Naming_Exception = Inherited then
                   Remove_Source (Data.Tree, Source, No_Source);
                end if;
             end if;
@@ -6660,6 +6677,8 @@ package body Prj.Nmsc is
          --  If we had another file referencing the same unit (for instance it
          --  was in an extended project), that source file is in fact invisible
          --  from now on, and in particular doesn't belong to the same unit.
+         --  If the source is an inherited naming exception, then it may not
+         --  really exist: the source potentially replaced is left untouched.
 
          if Source.Unit.File_Names (Source.Kind) /= Source then
             Source.Unit.File_Names (Source.Kind).Unit := No_Unit_Index;
@@ -6773,6 +6792,50 @@ package body Prj.Nmsc is
                      Override_Kind (Name_Loc.Source, Sep);
                   end if;
                end if;
+
+               --  If this is an inherited naming exception, make sure that
+               --  the naming exception it replaces is no longer a source.
+
+               if Name_Loc.Source.Naming_Exception = Inherited then
+                  declare
+                     Proj  : Project_Id := Name_Loc.Source.Project.Extends;
+                     Iter  : Source_Iterator;
+                     Src   : Source_Id;
+                  begin
+                     while Proj /= No_Project loop
+                        Iter := For_Each_Source (Data.Tree, Proj);
+                        Src := Prj.Element (Iter);
+                        while Src /= No_Source loop
+                           if Src.File = Name_Loc.Source.File then
+                              Src.Replaced_By := Name_Loc.Source;
+                              exit;
+                           end if;
+
+                           Next (Iter);
+                           Src := Prj.Element (Iter);
+                        end loop;
+
+                        Proj := Proj.Extends;
+                     end loop;
+                  end;
+
+                  if Name_Loc.Source.Unit /= No_Unit_Index then
+                     if Name_Loc.Source.Kind = Spec then
+                        Name_Loc.Source.Unit.File_Names (Spec) :=
+                          Name_Loc.Source;
+
+                     elsif Name_Loc.Source.Kind = Impl then
+                        Name_Loc.Source.Unit.File_Names (Impl) :=
+                          Name_Loc.Source;
+                     end if;
+
+                     Units_Htable.Set
+                       (Data.Tree.Units_HT,
+                        Name_Loc.Source.Unit.Name,
+                        Name_Loc.Source.Unit);
+                  end if;
+
+               end if;
             end if;
          end if;
       end if;
@@ -6825,7 +6888,15 @@ package body Prj.Nmsc is
                Name_Loc.Source := Source;
                Source_Names_Htable.Set
                  (Project.Source_Names, File_Name, Name_Loc);
+
             end if;
+
+--            if Source /= No_Source and then Source.Unit /= No_Unit_Index then
+--               Units_Htable.Set
+--                 (Data.Tree.Units_HT,
+--                  Source.Unit.Name,
+--                  Source.Unit);
+--            end if;
          end if;
       end if;
 
@@ -7518,6 +7589,7 @@ package body Prj.Nmsc is
 
          if Source /= No_Source
            and then Source.Path /= Src.Path
+           and then Src.Project = Source.Project
          then
             Error_Msg_File_1 := Src.File;
             Error_Msg_File_2 := Source.File;

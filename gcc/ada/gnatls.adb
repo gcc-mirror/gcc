@@ -829,6 +829,7 @@ procedure Gnatls is
                      & " GNAT Tracker at http://www.adacore.com/"
                      & " for license terms.");
             Write_Eol;
+
          when others =>
             Write_Str ("Please refer to file COPYING in your distribution"
                      & " for license terms.");

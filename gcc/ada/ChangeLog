@@ -1,3 +1,21 @@
+2011-09-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, s-taprop-linux.adb, gnatls.adb: Minor reformatting.
+
+2011-09-01  Jose Ruiz  <ruiz@adacore.com>
+
+	* adaint.h (__gnat_cpu_free): Fix the name of this profile.
+	* adaint.c (__gnat_cpu_alloc, __gnat_cpu_alloc_size, __gnat_cpu_free,
+	__gnat_cpu_zero, __gnat_cpu_set): Create version of these subprograms
+	specific for systems where their glibc version does not define the
+	routines to handle dynamically allocated CPU sets.
+
+2011-09-01  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb, prj.ads, prj-nmsc.adb, prj-util.adb, prj-util.ads,
+	prj-env.adb: Implement inheritance of naming exceptions in extending
+	projects.
+
 2011-09-01  Romain Berrendonner  <berrendo@adacore.com>
 
 	* gnatls.adb: Display simple message instead of content of

@@ -15761,7 +15761,7 @@ package body Sem_Ch3 is
                Set_Anonymous_Type (New_C);
 
             elsif (Is_Private_Type (Derived_Base)
-                     and then not Is_Generic_Type (Derived_Base))
+                    and then not Is_Generic_Type (Derived_Base))
               or else (Is_Empty_Elmt_List (Discs)
                          and then not Expander_Active)
             then
@@ -15784,9 +15784,10 @@ package body Sem_Ch3 is
                --        type T_2 is new Pack_1.T_1 with ...;
                --     end Pack_2;
 
-               Set_Etype (New_C,
-                 Constrain_Component_Type
-                   (Old_C, Derived_Base, N, Parent_Base, Discs));
+               Set_Etype
+                 (New_C,
+                  Constrain_Component_Type
+                    (Old_C, Derived_Base, N, Parent_Base, Discs));
             end if;
          end if;
 

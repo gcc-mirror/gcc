@@ -187,6 +187,7 @@ package Prj is
    No_Array_Element : constant Array_Element_Id := 0;
    type Array_Element is record
       Index                : Name_Id;
+      Restricted : Boolean := False;
       Src_Index            : Int := 0;
       Index_Case_Sensitive : Boolean := True;
       Value                : Variable_Value;
@@ -679,6 +680,8 @@ package Prj is
    --  corresponding to an Ada file). In general, these are dependencies that
    --  cannot be computed automatically by the builder.
 
+   type Naming_Exception_Type is (No, Yes, Inherited);
+
    --  Structure to define source data
 
    type Source_Data is record
@@ -791,7 +794,7 @@ package Prj is
       Switches_TS : Time_Stamp_Type := Empty_Time_Stamp;
       --  Switches file time stamp
 
-      Naming_Exception : Boolean := False;
+      Naming_Exception : Naming_Exception_Type := No;
       --  True if the source has an exceptional name
 
       Duplicate_Unit : Boolean := False;
@@ -840,7 +843,7 @@ package Prj is
                        Switches               => No_File,
                        Switches_Path          => No_Path,
                        Switches_TS            => Empty_Time_Stamp,
-                       Naming_Exception       => False,
+                       Naming_Exception       => No,
                        Duplicate_Unit         => False,
                        Next_In_Lang           => No_Source,
                        Next_With_File_Name    => No_Source,
@@ -863,14 +866,6 @@ package Prj is
       Hash       => Hash,
       Equal      => "=");
    --  Mapping of source paths to source ids
-
-   package Unit_Sources_Htable is new Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Source_Id,
-      No_Element => No_Source,
-      Key        => Name_Id,
-      Hash       => Hash,
-      Equal      => "=");
 
    type Lib_Kind is (Static, Dynamic, Relocatable);
 
