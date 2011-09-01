@@ -869,25 +869,25 @@ package body System.Task_Primitives.Operations is
 
       elsif T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
          declare
-            CPU_Set : aliased cpu_set_t;
+            CPUs    : constant size_t :=
+              Interfaces.C.size_t (System.Multiprocessors.Number_Of_CPUs);
+            CPU_Set : constant cpu_set_t_ptr := CPU_ALLOC (CPUs);
+            Size    : constant size_t := CPU_ALLOC_SIZE (CPUs);
 
          begin
-            System.OS_Interface.CPU_ZERO (CPU_Set'Access);
+            CPU_ZERO (Size, CPU_Set);
             System.OS_Interface.CPU_SET
-              (int (T.Common.Base_CPU), CPU_Set'Access);
+              (int (T.Common.Base_CPU), Size, CPU_Set);
             Result :=
-              pthread_attr_setaffinity_np
-                (Attributes'Access,
-                 CPU_SETSIZE / 8,
-                 CPU_Set'Access);
+              pthread_attr_setaffinity_np (Attributes'Access, Size, CPU_Set);
             pragma Assert (Result = 0);
+
+            CPU_FREE (CPU_Set);
          end;
 
       --  Handle Task_Info
 
-      elsif T.Common.Task_Info /= null
-        and then T.Common.Task_Info.CPU_Affinity /= Task_Info.Any_CPU
-      then
+      elsif T.Common.Task_Info /= null then
          Result :=
            pthread_attr_setaffinity_np
              (Attributes'Access,
@@ -908,26 +908,28 @@ package body System.Task_Primitives.Operations is
                      Multiprocessors.Number_Of_CPUs => True))
       then
          declare
-            CPU_Set : aliased cpu_set_t;
+            CPUs    : constant size_t :=
+              Interfaces.C.size_t (System.Multiprocessors.Number_Of_CPUs);
+            CPU_Set : constant cpu_set_t_ptr := CPU_ALLOC (CPUs);
+            Size    : constant size_t := CPU_ALLOC_SIZE (CPUs);
 
          begin
-            System.OS_Interface.CPU_ZERO (CPU_Set'Access);
+            CPU_ZERO (Size, CPU_Set);
 
             --  Set the affinity to all the processors belonging to the
             --  dispatching domain.
 
             for Proc in T.Common.Domain'Range loop
                if T.Common.Domain (Proc) then
-                  System.OS_Interface.CPU_SET (int (Proc), CPU_Set'Access);
+                  System.OS_Interface.CPU_SET (int (Proc), Size, CPU_Set);
                end if;
             end loop;
 
             Result :=
-              pthread_attr_setaffinity_np
-                (Attributes'Access,
-                 CPU_SETSIZE / 8,
-                 CPU_Set'Access);
+              pthread_attr_setaffinity_np (Attributes'Access, Size, CPU_Set);
             pragma Assert (Result = 0);
+
+            CPU_FREE (CPU_Set);
          end;
       end if;
 
@@ -1400,9 +1402,10 @@ package body System.Task_Primitives.Operations is
         and then T.Common.LL.Thread /= Null_Thread_Id
       then
          declare
-            type cpu_set_t_ptr is access all cpu_set_t;
-            CPU_Set : aliased cpu_set_t;
-            CPU_Set_Ptr : cpu_set_t_ptr := null;
+            CPUs    : constant size_t :=
+              Interfaces.C.size_t (System.Multiprocessors.Number_Of_CPUs);
+            CPU_Set : cpu_set_t_ptr := null;
+            Size    : constant size_t := CPU_ALLOC_SIZE (CPUs);
 
             Result  : Interfaces.C.int;
 
@@ -1414,17 +1417,16 @@ package body System.Task_Primitives.Operations is
             if T.Common.Base_CPU /= Multiprocessors.Not_A_Specific_CPU then
 
                --  Set the affinity to an unique CPU
-               System.OS_Interface.CPU_ZERO (CPU_Set'Access);
+
+               CPU_Set := CPU_ALLOC (CPUs);
+               System.OS_Interface.CPU_ZERO (Size, CPU_Set);
                System.OS_Interface.CPU_SET
-                 (int (T.Common.Base_CPU), CPU_Set'Access);
-               CPU_Set_Ptr := CPU_Set'Access;
+                 (int (T.Common.Base_CPU), Size, CPU_Set);
 
             --  Handle Task_Info
 
-            elsif T.Common.Task_Info /= null
-              and then T.Common.Task_Info.CPU_Affinity /= Task_Info.Any_CPU
-            then
-               CPU_Set_Ptr := T.Common.Task_Info.CPU_Affinity'Access;
+            elsif T.Common.Task_Info /= null then
+               CPU_Set := T.Common.Task_Info.CPU_Affinity'Access;
 
             --  Handle dispatching domains
 
@@ -1440,13 +1442,12 @@ package body System.Task_Primitives.Operations is
                --  domain other than the default one, or when the default one
                --  has been modified.
 
-               System.OS_Interface.CPU_ZERO (CPU_Set'Access);
+               CPU_Set := CPU_ALLOC (CPUs);
+               System.OS_Interface.CPU_ZERO (Size, CPU_Set);
 
                for Proc in T.Common.Domain'Range loop
-                  System.OS_Interface.CPU_SET (int (Proc), CPU_Set'Access);
+                  System.OS_Interface.CPU_SET (int (Proc), Size, CPU_Set);
                end loop;
-
-               CPU_Set_Ptr := CPU_Set'Access;
             end if;
 
             --  We set the new affinity if needed. Otherwise, the new task
@@ -1454,11 +1455,12 @@ package body System.Task_Primitives.Operations is
             --  the documentation of pthread_setaffinity_np), which is
             --  consistent with Ada's required semantics.
 
-            if CPU_Set_Ptr /= null then
+            if CPU_Set /= null then
                Result :=
-                 pthread_setaffinity_np
-                   (T.Common.LL.Thread, CPU_SETSIZE / 8, CPU_Set_Ptr);
+                 pthread_setaffinity_np (T.Common.LL.Thread, Size, CPU_Set);
                pragma Assert (Result = 0);
+
+               CPU_FREE (CPU_Set);
             end if;
          end;
       end if;

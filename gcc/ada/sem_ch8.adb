@@ -3292,10 +3292,13 @@ package body Sem_Ch8 is
 
       --  We must exclude VM targets and restricted run-time libraries because
       --  entity AST_Handler is defined in package System.Aux_Dec which is not
-      --  available in those platforms.
+      --  available in those platforms. Note that we cannot use the function
+      --  Restricted_Profile (instead of Configurable_Run_Time_Mode) because
+      --  the ZFP run-time library is not defined as a profile, and we do not
+      --  want to deal with AST_Handler in ZFP mode.
 
       if VM_Target = No_VM
-        and then not Restricted_Profile
+        and then not Configurable_Run_Time_Mode
         and then not Present (Corresponding_Formal_Spec (N))
         and then Etype (Nam) /= RTE (RE_AST_Handler)
       then
