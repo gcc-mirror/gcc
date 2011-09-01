@@ -4428,17 +4428,20 @@ package body Exp_Ch4 is
          -------------------------
 
          function Find_Insertion_Node return Node_Id is
-            Par : Node_Id := N;
+            Par : Node_Id;
 
          begin
             --  Climb up the branches of a complex if statement
 
+            Par := N;
             while Nkind_In (Parent (Par), N_And_Then, N_Op_Not, N_Or_Else) loop
                Par := Parent (Par);
             end loop;
 
             return Par;
          end Find_Insertion_Node;
+
+         --  Local variables
 
          Ins_Nod   : constant Node_Id    := Find_Insertion_Node;
          Loc       : constant Source_Ptr := Sloc (Decl);
@@ -4452,8 +4455,8 @@ package body Exp_Ch4 is
          Temp_Id   : Node_Id;
 
       begin
-         --  Step 1: Create the access type which provides a reference to
-         --  the transient object.
+         --  Step 1: Create the access type which provides a reference to the
+         --  transient object.
 
          if Is_Access_Type (Obj_Typ) then
             Desig_Typ := Directly_Designated_Type (Obj_Typ);
@@ -4469,11 +4472,11 @@ package body Exp_Ch4 is
          Ptr_Decl :=
            Make_Full_Type_Declaration (Loc,
              Defining_Identifier => Ptr_Id,
-               Type_Definition =>
-                 Make_Access_To_Object_Definition (Loc,
-                   All_Present        =>
-                     Ekind (Obj_Typ) = E_General_Access_Type,
-                   Subtype_Indication => New_Reference_To (Desig_Typ, Loc)));
+             Type_Definition     =>
+               Make_Access_To_Object_Definition (Loc,
+                 All_Present        =>
+                   Ekind (Obj_Typ) = E_General_Access_Type,
+                 Subtype_Indication => New_Reference_To (Desig_Typ, Loc)));
 
          Insert_Action (Ins_Nod, Ptr_Decl);
          Analyze (Ptr_Decl);
