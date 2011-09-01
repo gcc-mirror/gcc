@@ -5180,10 +5180,19 @@ expr_to_initialize (gfc_expr *e)
 	for (i = 0; i < ref->u.ar.dimen; i++)
 	  ref->u.ar.start[i] = ref->u.ar.end[i] = ref->u.ar.stride[i] = NULL;
 
-	result->rank = ref->u.ar.dimen;
 	break;
       }
 
+  if (result->shape != NULL)
+    {
+      for (i = 0; i < result->rank; i++)
+	mpz_clear (result->shape[i]);
+      gfc_free (result->shape);
+      result->shape = NULL;
+    }
+
+  /* Recalculate rank, shape, etc.  */
+  gfc_resolve_expr (result);
   return result;
 }
 
