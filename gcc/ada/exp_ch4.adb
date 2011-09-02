@@ -1137,11 +1137,14 @@ package body Exp_Ch4 is
 
             --  Since .NET/JVM compilers do not support address arithmetic,
             --  this call is skipped. The same is done for CodePeer because
-            --  primitive Finalize_Address is never generated.
+            --  primitive Finalize_Address is never generated. Do not create
+            --  this call if there is no allocator available any more.
 
             if VM_Target = No_VM
               and then not CodePeer_Mode
               and then Present (Finalization_Master (PtrT))
+              and then Present (Temp_Decl)
+              and then Nkind (Expression (Temp_Decl)) = N_Allocator
             then
                Insert_Action (N,
                  Make_Set_Finalize_Address_Call

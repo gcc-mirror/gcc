@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 1995-2010, AdaCore                      --
+--                    Copyright (C) 1995-2011, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,6 +121,15 @@ package body System.HTable is
          return Iterator_Ptr;
       end Get_Non_Null;
 
+      -------------
+      -- Present --
+      -------------
+
+      function Present (K : Key) return Boolean is
+      begin
+         return Get (K) /= Null_Ptr;
+      end Present;
+
       ------------
       -- Remove --
       ------------
@@ -180,6 +189,32 @@ package body System.HTable is
          Set_Next (E, Table (Index));
          Table (Index) := E;
       end Set;
+
+      ------------------------
+      -- Set_If_Not_Present --
+      ------------------------
+
+      function Set_If_Not_Present (E : Elmt_Ptr) return Boolean is
+         K     : constant Key := Get_Key (E);
+         Index : constant Header_Num := Hash (K);
+         Elmt  : Elmt_Ptr := Table (Index);
+
+      begin
+         loop
+            if Elmt = Null_Ptr then
+               Set_Next (E, Table (Index));
+               Table (Index) := E;
+
+               return True;
+
+            elsif Equal (Get_Key (Elmt), K) then
+               return False;
+
+            else
+               Elmt := Next (Elmt);
+            end if;
+         end loop;
+      end Set_If_Not_Present;
 
    end Static_HTable;
 
