@@ -10711,6 +10711,18 @@ package body Sem_Util is
                then
                   Exp := Renamed_Object (Ent);
                   goto Continue;
+
+               --  The expression may be the renaming of a subcomponent of an
+               --  array or container. The assignment to the subcomponent is
+               --  a modification of the container.
+
+               elsif Comes_From_Source (Original_Node (Exp))
+                 and then
+                   Nkind_In (Original_Node (Exp),
+                     N_Selected_Component, N_Indexed_Component)
+               then
+                  Exp := Prefix (Original_Node (Exp));
+                  goto Continue;
                end if;
 
                --  Generate a reference only if the assignment comes from

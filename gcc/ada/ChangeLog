@@ -1,3 +1,20 @@
+2011-09-02  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb: (Find_Sources): When the list of sources is
+	explicitly declared in an extending project, do not warn if a source
+	for an inherited naming exception is not found.
+
+2011-09-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb: (Is_Build_In_Place_Function_Call): Return False if
+	expansion is inactive.
+
+2011-09-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Note_Possible_Modification): If the entity
+	being modified is the renaming generated for an Ada2012 iterator
+	element, the enclosing container or array is modified as well.
+
 2011-09-02  Jose Ruiz  <ruiz@adacore.com>
 
 	* s-taprop-linux.adb (Initialize_Lock, Initialize_TCB,

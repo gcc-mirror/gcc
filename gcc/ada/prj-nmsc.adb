@@ -6352,12 +6352,14 @@ package body Prj.Nmsc is
                            No_Name_Location);
                         Remove_Source (Data.Tree, Source, No_Source);
 
-                        Error_Msg_Name_1 := Name_Id (Source.File);
-                        Error_Msg
-                          (Data.Flags,
-                           "? unknown source file %%",
-                           NL.Location,
-                           Project.Project);
+                        if Source.Naming_Exception = Yes then
+                           Error_Msg_Name_1 := Name_Id (Source.File);
+                           Error_Msg
+                             (Data.Flags,
+                              "? unknown source file %%",
+                              NL.Location,
+                              Project.Project);
+                        end if;
 
                         Again := True;
                         exit Source_Loop;

@@ -6779,6 +6779,18 @@ package body Exp_Ch6 is
       Function_Id : Entity_Id;
 
    begin
+      --  Return False when the expander is inactive, since awareness of
+      --  build-in-place treatment is only relevant during expansion. Note that
+      --  Is_Build_In_Place_Function, which is called as part of this function,
+      --  is also conditioned this way, but we need to check here as well to
+      --  avoid blowing up on processing protected calls when expansion is
+      --  disabled (such as with -gnatc) since those would trip over the raise
+      --  of Program_Error below.
+
+      if not Expander_Active then
+         return False;
+      end if;
+
       --  Step past qualification or unchecked conversion (the latter can occur
       --  in cases of calls to 'Input).
 
