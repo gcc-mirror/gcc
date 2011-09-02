@@ -1057,7 +1057,11 @@ package body Lib.Xref is
 
       XE : Xref_Entry renames Xrefs.Table (F);
       type M is mod 2**32;
-      H : constant M := M'Mod (XE.Key.Ent) + 2**7 * M'Mod (XE.Key.Loc);
+
+      H : constant M := M (XE.Key.Ent) + 2**7 * M (abs XE.Key.Loc);
+      --  We can't use M'Mod above, because it prevents bootstrapping with
+      --  older compilers. Loc can be negative, so we do "abs" before
+      --  converting.
    begin
       return Header_Num (H mod Num_Buckets);
    end Hash;

@@ -2531,8 +2531,12 @@ package body Exp_Attr is
                   return;
                end if;
 
+               --  Build the type's Input function, passing the subtype rather
+               --  than its base type, because checks are needed in the case of
+               --  constrained discriminants (see Ada 2012 AI05-0192).
+
                Build_Record_Or_Elementary_Input_Function
-                 (Loc, Base_Type (U_Type), Decl, Fname);
+                 (Loc, U_Type, Decl, Fname);
                Insert_Action (N, Decl);
 
                if Nkind (Parent (N)) = N_Object_Declaration
