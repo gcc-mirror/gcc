@@ -1269,10 +1269,7 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   /* 2) Create a temporary where we can store the old content
         of the memory touched by the store, if we need to.  */
   if (!condstoretemp || TREE_TYPE (lhs) != TREE_TYPE (condstoretemp))
-    {
-      condstoretemp = create_tmp_reg (TREE_TYPE (lhs), "cstore");
-      get_var_ann (condstoretemp);
-    }
+    condstoretemp = create_tmp_reg (TREE_TYPE (lhs), "cstore");
   add_referenced_var (condstoretemp);
 
   /* 3) Insert a load from the memory of the store to the temporary
@@ -1355,10 +1352,7 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   /* 2) Create a temporary where we can store the old content
 	of the memory touched by the store, if we need to.  */
   if (!condstoretemp || TREE_TYPE (lhs) != TREE_TYPE (condstoretemp))
-    {
-      condstoretemp = create_tmp_reg (TREE_TYPE (lhs), "cstore");
-      get_var_ann (condstoretemp);
-    }
+    condstoretemp = create_tmp_reg (TREE_TYPE (lhs), "cstore");
   add_referenced_var (condstoretemp);
 
   /* 3) Create a PHI node at the join block, with one argument

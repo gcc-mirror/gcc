@@ -1399,7 +1399,7 @@ get_representative_for (const pre_expr e)
   if (!pretemp || exprtype != TREE_TYPE (pretemp))
     {
       pretemp = create_tmp_reg (exprtype, "pretmp");
-      get_var_ann (pretemp);
+      add_referenced_var (pretemp);
     }
 
   name = make_ssa_name (pretemp, gimple_build_nop ());
@@ -3178,10 +3178,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
   /* Build and insert the assignment of the end result to the temporary
      that we will return.  */
   if (!pretemp || exprtype != TREE_TYPE (pretemp))
-    {
-      pretemp = create_tmp_reg (exprtype, "pretmp");
-      get_var_ann (pretemp);
-    }
+    pretemp = create_tmp_reg (exprtype, "pretmp");
 
   temp = pretemp;
   add_referenced_var (temp);
@@ -3441,10 +3438,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 
   /* Now build a phi for the new variable.  */
   if (!prephitemp || TREE_TYPE (prephitemp) != type)
-    {
-      prephitemp = create_tmp_var (type, "prephitmp");
-      get_var_ann (prephitemp);
-    }
+    prephitemp = create_tmp_var (type, "prephitmp");
 
   temp = prephitemp;
   add_referenced_var (temp);

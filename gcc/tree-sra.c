@@ -1825,7 +1825,6 @@ create_access_replacement (struct access *access, bool rename)
   tree repl;
 
   repl = create_tmp_var (access->type, "SR");
-  get_var_ann (repl);
   add_referenced_var (repl);
   if (rename)
     mark_sym_for_renaming (repl);
@@ -4106,7 +4105,6 @@ get_replaced_param_substitute (struct ipa_parm_adjustment *adj)
       DECL_NAME (repl) = get_identifier (pretty_name);
       obstack_free (&name_obstack, pretty_name);
 
-      get_var_ann (repl);
       add_referenced_var (repl);
       adj->new_ssa_base = repl;
     }
