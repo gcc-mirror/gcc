@@ -1,4 +1,8 @@
 2011-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/bitset: Trivial formatting fixes.
+
+2011-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Marc Glisse  <marc.glisse@normalesup.org>
 
 	* include/std/bitset (_Base_bitset<>::_M_are_all_aux): Remove.
