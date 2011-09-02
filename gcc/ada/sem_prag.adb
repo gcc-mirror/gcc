@@ -262,6 +262,11 @@ package body Sem_Prag is
       Preanalyze_Spec_Expression
         (Get_Pragma_Arg (Arg1), Standard_Boolean);
 
+      --  For a class-wide condition, a reference to a controlling formal must
+      --  be interpreted as having the class-wide type (or an access to such)
+      --  so that the inherited condition can be properly applied to any
+      --  overriding operation (see ARM12 6.6.1 (7)).
+
       if Class_Present (N) then
          declare
             T   : constant Entity_Id := Find_Dispatching_Type (S);
