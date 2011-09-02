@@ -1,3 +1,46 @@
+2011-09-02  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb, sem_ch10.adb, sem_attr.adb, s-htable.adb,
+	g-comlin.adb, g-comlin.ads, lib-xref-alfa.adb, lib-xref.adb: Minor
+	reformatting.
+
+2011-09-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb: (Set_Anonymous_Type): Associate the itype of an
+	inherited component with the enclosing derived type. Code reformatting.
+
+2011-09-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb: (Determine_Range): Add test of OK1 to prevent the early
+	return done when overflow checks are enabled, since comparisons against
+	Lor and Hir should not be done when OK1 is False.
+
+2011-09-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Add_Finalization_Master_Actual_To_Build_In_Place_Call):
+	Add new formal Master_Exp. When present, add that expression to the
+	call as an extra actual.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Add variable
+	Fmaster_Actual and in the case of a BIP call initializing a return
+	object of an enclosing BIP function set it to a
+	new reference to the implicit finalization master
+	formal of the enclosing function. Fmaster_Actual is
+	then passed to the new formal Master_Exp on the call to
+	Add_Finalization_Master_Actual_To_Build_ In_Place_Call. Move
+	initializations of Enclosing_Func to its declaration.
+
+2011-09-02  Thomas Quinot  <quinot@adacore.com>
+
+	* csets.ads: Minor reformatting
+
+2011-09-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb: (Get_Constraint_Association): Add code to retrieve
+	the full view of a private type coming from an instantiation.
+	* exp_ch4.adb: (Current_Anonymous_Master): Reimplement the search
+	loop to iterate over the declarations rather than use the
+	First_Entity / Next_Entity scheme.
+
 2011-09-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb: (Analyze_Attribute, case 'Range): when expanding

@@ -8892,8 +8892,8 @@ package body Sem_Attr is
                LB :=
                  Make_Attribute_Reference (Loc,
                    Prefix          => P,
-                   Attribute_Name => Name_First,
-                   Expressions => (Dims));
+                   Attribute_Name  => Name_First,
+                   Expressions     => (Dims));
 
                --  Do not share the dimension indicator, if present. Even
                --  though it is a static constant, its source location

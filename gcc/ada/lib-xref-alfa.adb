@@ -457,7 +457,7 @@ package body Alfa is
          --  the entity definition.
 
          elsif Get_Scope_Num (T1.Key.Ent_Scope) /=
-           Get_Scope_Num (T2.Key.Ent_Scope)
+               Get_Scope_Num (T2.Key.Ent_Scope)
          then
             return Get_Scope_Num (T1.Key.Ent_Scope) <
               Get_Scope_Num (T2.Key.Ent_Scope);
@@ -503,7 +503,7 @@ package body Alfa is
          --  Seventh test: for same entity, sort by reference location scope
 
          elsif Get_Scope_Num (T1.Key.Ref_Scope) /=
-           Get_Scope_Num (T2.Key.Ref_Scope)
+               Get_Scope_Num (T2.Key.Ref_Scope)
          then
             return Get_Scope_Num (T1.Key.Ref_Scope) <
               Get_Scope_Num (T2.Key.Ref_Scope);

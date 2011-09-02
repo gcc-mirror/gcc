@@ -3479,10 +3479,11 @@ package body Checks is
       --  to restrict the possible range of results.
 
       --  If one of the computed bounds is outside the range of the base type,
-      --  the expression may raise an exception and we better indicate that
+      --  the expression may raise an exception and we had better indicate that
       --  the evaluation has failed, at least if checks are enabled.
 
-      if Enable_Overflow_Checks
+      if OK1
+        and then Enable_Overflow_Checks
         and then not Is_Entity_Name (N)
         and then (Lor < Lo or else Hir > Hi)
       then

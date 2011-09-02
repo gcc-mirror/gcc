@@ -3901,7 +3901,6 @@ package body Exp_Util is
          begin
             Change  := True;
             Ren_Obj := Renamed_Object (Defining_Identifier (Ren_Decl));
-
             while Change loop
                Change := False;
 
@@ -3971,7 +3970,6 @@ package body Exp_Util is
 
       function Is_Allocated (Trans_Id : Entity_Id) return Boolean is
          Expr : constant Node_Id := Expression (Parent (Trans_Id));
-
       begin
          return
            Is_Access_Type (Etype (Trans_Id))
@@ -3994,30 +3992,30 @@ package body Exp_Util is
           and then Requires_Transient_Scope (Desig)
           and then Nkind (Rel_Node) /= N_Simple_Return_Statement
 
-         --  Do not consider renamed or 'reference-d transient objects because
-         --  the act of renaming extends the object's lifetime.
+          --  Do not consider renamed or 'reference-d transient objects because
+          --  the act of renaming extends the object's lifetime.
 
           and then not Is_Aliased (Obj_Id, Decl)
 
-         --  Do not consider transient objects allocated on the heap since they
-         --  are attached to a finalization master.
+          --  Do not consider transient objects allocated on the heap since
+          --  they are attached to a finalization master.
 
           and then not Is_Allocated (Obj_Id)
 
-         --  If the transient object is a pointer, check that it is not
-         --  initialized by a function which returns a pointer or acts as a
-         --  renaming of another pointer.
+          --  If the transient object is a pointer, check that it is not
+          --  initialized by a function which returns a pointer or acts as a
+          --  renaming of another pointer.
 
           and then
             (not Is_Access_Type (Obj_Typ)
                or else not Initialized_By_Access (Obj_Id))
 
-         --  Do not consider transient objects which act as indirect aliases of
-         --  build-in-place function results.
+          --  Do not consider transient objects which act as indirect aliases
+          --  of build-in-place function results.
 
           and then not Initialized_By_Aliased_BIP_Func_Call (Obj_Id)
 
-         --  Do not consider conversions of tags to class-wide types
+          --  Do not consider conversions of tags to class-wide types
 
           and then not Is_Tag_To_CW_Conversion (Obj_Id);
    end Is_Finalizable_Transient;
@@ -4200,8 +4198,7 @@ package body Exp_Util is
          begin
             --  If component reference is for an array with non-static bounds,
             --  then it is always aligned: we can only process unaligned arrays
-            --  with static bounds (more accurately bounds known at compile
-            --  time).
+            --  with static bounds (more precisely compile time known bounds).
 
             if Is_Array_Type (T)
               and then not Compile_Time_Known_Bounds (T)
@@ -4261,6 +4258,8 @@ package body Exp_Util is
             --  If the component reference is for a record that has a specified
             --  alignment, and we either know it is too small, or cannot tell,
             --  then the component may be unaligned.
+
+            --  What is the following commented out code ???
 
             --  if Known_Alignment (Etype (P))
             --    and then Alignment (Etype (P)) < Ttypes.Maximum_Alignment

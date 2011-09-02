@@ -205,7 +205,7 @@ package body Lib.Xref is
 
    function Equal (F1, F2 : Xref_Entry_Number) return Boolean is
       Result : constant Boolean :=
-        Xrefs.Table (F1).Key = Xrefs.Table (F2).Key;
+                 Xrefs.Table (F1).Key = Xrefs.Table (F2).Key;
    begin
       return Result;
    end Equal;
@@ -373,12 +373,12 @@ package body Lib.Xref is
       Set_Ref : Boolean   := True;
       Force   : Boolean   := False)
    is
-      Nod  : Node_Id;
-      Ref  : Source_Ptr;
-      Def  : Source_Ptr;
-      Ent  : Entity_Id;
+      Nod : Node_Id;
+      Ref : Source_Ptr;
+      Def : Source_Ptr;
+      Ent : Entity_Id;
 
-      Actual_Typ  : Character := Typ;
+      Actual_Typ : Character := Typ;
 
       Ref_Scope      : Entity_Id;
       Ent_Scope      : Entity_Id;
@@ -1882,10 +1882,10 @@ package body Lib.Xref is
 
                if XE.Key.Typ = 'e'
                  and then Ent /= Curent
-                 and then (Refno = Nrefs or else
-                             Ent /= Xrefs.Table (Rnums (Refno + 1)).Key.Ent)
-                 and then
-                   not In_Extended_Main_Source_Unit (Ent)
+                 and then (Refno = Nrefs
+                            or else
+                              Ent /= Xrefs.Table (Rnums (Refno + 1)).Key.Ent)
+                 and then not In_Extended_Main_Source_Unit (Ent)
                then
                   goto Continue;
                end if;
