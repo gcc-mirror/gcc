@@ -1,3 +1,44 @@
+2011-09-02  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/c6x/c6x.md (collapse-ndfa, no-comb-vect): New
+	automata_options.
+	(d1, l1, s1, m1, d2, l2, s2, m2): Changed to define_query_cpu_unit.
+	(l1w, s1w, l2w, s2w): Define in the main automaton.
+	(fps1, fpl1, adddps1, adddpl1, fps2, fpl2, adddps2, adddpl2): New
+	units.
+	* config/c6x/c6x.c (c6x_sched_insn_info): Add unit_mask member.
+	(c6x_unit_names): Add the new units.
+	(c6x_unit_codes): New static array.
+	(UNIT_QID_D1, UNIT_QID_L1, UNIT_QID_S1, UNIT_QID_M1, UNIT_QID_FPS1,
+	UNIT_QID_FPL1, UNIT_QID_ADDDPS1, UNIT_QID_ADDDPL1,
+	UNIT_QID_SIDE_OFFSET): New macros.
+	(RESERVATION_S2): Adjust value.
+	(c6x_option_override): Compute c6x_unit_codes.
+	(assign_reservations): Take the unit_mask of the last instruction
+	into account.  Detect floating point reservations by looking for
+	the new units.  Don't assign reservations if the field is already
+	nonzero.
+	(struct c6x_sched_context): Add member prev_cycle_state_ctx.
+	(init_sched_state): Initialize it.
+	(c6x_clear_sched_context): Free it.
+	(insn_set_clock): Clear reservation.
+	(prev_cycle_state): New static variable.
+	(c6x_init_sched_context): Save it.
+	(c6x_sched_init): Allocate space for it and clear it.
+	(c6x_sched_dfa_pre_cycle_insn): New static function.
+	(c6x_dfa_new_cycle): Save state at the start of a new cycle.
+	(c6x_variable_issue): Only record units in the unit_mask that
+	were not set at the start of the cycle.
+	(c6x_variable_issue): Compute and store the unit_mask from the
+	current state.
+	(reorg_split_calls): Ensure the new information remains correct.
+	(TARGET_SCHED_DFA_NEW_CYCLE, TARGET_SCHED_CLEAR_SCHED_CONTEXT,
+	TARGET_SCHED_DFA_PRE_CYCLE_INSN): Define.
+	* config/c6x/c6x.h (CPU_UNITS_QUERY): Define.
+	* config/c6x/c6x-sched.md.in (fp4_ls_N__CROSS_, adddp_ls_N__CROSS_):
+	Add special reservations.
+	* config/c6x/c6x-sched.md: Regenerate.
+
 2011-09-02  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (ipa_node_params): Removed fields

@@ -178,14 +178,14 @@
        (and (eq_attr "cross" "_CROSS_")
 	    (and (eq_attr "units" "ls")
 		 (eq_attr "dest_regfile" "_RF_"))))
-  "(s_N__CUNIT_,nothing*2,s_N_w)|(l_N__CUNIT_,nothing*2,l_N_w)")
+  "(fps_N_+s_N__CUNIT_,nothing*2,s_N_w)|(fpl_N_+l_N__CUNIT_,nothing*2,l_N_w)")
 
 (define_insn_reservation "adddp_ls_N__CROSS_" 7
   (and (eq_attr "type" "adddp")
        (and (eq_attr "cross" "_CROSS_")
 	    (and (eq_attr "units" "ls")
 		 (eq_attr "dest_regfile" "_RF_"))))
-  "((s_N__CUNIT_)*2,nothing*3,s_N_w*2)|((l_N__CUNIT_)*2,nothing*3,l_N_w*2)")
+  "(adddps_N_+(s_N__CUNIT_)*2,nothing*3,s_N_w*2)|(adddpl_N_+(l_N__CUNIT_)*2,nothing*3,l_N_w*2)")
 
 (define_insn_reservation "single_dls_N__CROSS_" 1
   (and (eq_attr "type" "single")

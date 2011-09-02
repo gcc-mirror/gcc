@@ -111,6 +111,10 @@ typedef struct
   rtx new_cond;
   /* True for the first insn that was scheduled in an ebb.  */
   bool ebb_start;
+  /* The scheduler state after the insn, transformed into a mask of UNIT_QID
+     bits rather than storing the state.  Meaningful only for the last
+     insn in a cycle.  */
+  unsigned int unit_mask;
 } c6x_sched_insn_info;
 
 DEF_VEC_O(c6x_sched_insn_info);
@@ -124,13 +128,6 @@ static VEC(c6x_sched_insn_info, heap) *insn_info;
 
 static bool done_cfi_sections;
 
-/* The DFA names of the units, in packet order.  */
-static const char *const c6x_unit_names[] =
-{
-  "d1", "l1", "s1", "m1",
-  "d2", "l2", "s2", "m2",
-};
-
 #define RESERVATION_FLAG_D 1
 #define RESERVATION_FLAG_L 2
 #define RESERVATION_FLAG_S 4
@@ -140,8 +137,29 @@ static const char *const c6x_unit_names[] =
 #define RESERVATION_FLAG_LS (RESERVATION_FLAG_L | RESERVATION_FLAG_S)
 #define RESERVATION_FLAG_DLS (RESERVATION_FLAG_D | RESERVATION_FLAG_LS)
 
+/* The DFA names of the units.  */
+static const char *const c6x_unit_names[] =
+{
+  "d1", "l1", "s1", "m1", "fps1", "fpl1", "adddps1", "adddpl1",
+  "d2", "l2", "s2", "m2", "fps2", "fpl2", "adddps2", "adddpl2"
+};
+
+/* The DFA unit number for each unit in c6x_unit_names[].  */
+static int c6x_unit_codes[ARRAY_SIZE (c6x_unit_names)];
+
+/* Unit query IDs.  */
+#define UNIT_QID_D1 0
+#define UNIT_QID_L1 1
+#define UNIT_QID_S1 2
+#define UNIT_QID_M1 3
+#define UNIT_QID_FPS1 4
+#define UNIT_QID_FPL1 5
+#define UNIT_QID_ADDDPS1 6
+#define UNIT_QID_ADDDPL1 7
+#define UNIT_QID_SIDE_OFFSET 8
+
 #define RESERVATION_S1 2
-#define RESERVATION_S2 6
+#define RESERVATION_S2 10
 
 /* Register map for debugging.  */
 int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
@@ -169,6 +187,8 @@ c6x_init_machine_status (void)
 static void
 c6x_option_override (void)
 {
+  unsigned i;
+
   if (global_options_set.x_c6x_arch_option)
     {
       c6x_arch = all_isas[c6x_arch_option].type;
@@ -183,6 +203,9 @@ c6x_option_override (void)
   flag_modulo_sched = 0;
 
   init_machine_status = c6x_init_machine_status;
+
+  for (i = 0; i < ARRAY_SIZE (c6x_unit_names); i++)
+    c6x_unit_codes[i] = get_cpu_unit_code (c6x_unit_names[i]);
 
   if (flag_pic && !TARGET_DSBT)
     {
@@ -2990,16 +3013,56 @@ assign_reservations (rtx head, rtx end)
   rtx insn;
   for (insn = head; insn != NEXT_INSN (end); insn = NEXT_INSN (insn))
     {
-      rtx within;
+      unsigned int sched_mask, reserved;
+      rtx within, last;
       int pass;
       int rsrv[2];
       int rsrv_count[2][4];
+      int i;
 
       if (GET_MODE (insn) != TImode)
 	continue;
 
-      rsrv[0] = rsrv[1] = 0;
+      reserved = 0;
+      last = NULL_RTX;
+      /* Find the last insn in the packet.  It has a state recorded for it,
+	 which we can use to determine the units we should be using.  */
+      for (within = insn;
+	   (within != NEXT_INSN (end)
+	    && (within == insn || GET_MODE (within) != TImode));
+	   within = NEXT_INSN (within))
+	{
+	  int icode;
+	  if (!NONDEBUG_INSN_P (within))
+	    continue;
+	  icode = recog_memoized (within);
+	  if (icode < 0)
+	    continue;
+	  if (shadow_p (within))
+	    continue;
+	  if (INSN_INFO_ENTRY (INSN_UID (within)).reservation != 0)
+	    reserved |= 1 << INSN_INFO_ENTRY (INSN_UID (within)).reservation;
+	  last = within;
+	}
+      if (last == NULL_RTX)
+	continue;
+
+      sched_mask = INSN_INFO_ENTRY (INSN_UID (last)).unit_mask;
+      sched_mask &= ~reserved;
+
       memset (rsrv_count, 0, sizeof rsrv_count);
+      rsrv[0] = rsrv[1] = ~0;
+      for (i = 0; i < 8; i++)
+	{
+	  int side = i / 4;
+	  int unit = i & 3;
+	  unsigned unit_bit = 1 << (unit + side * UNIT_QID_SIDE_OFFSET);
+	  /* Clear the bits which we expect to reserve in the following loop,
+	     leaving the ones set which aren't present in the scheduler's
+	     state and shouldn't be reserved.  */
+	  if (sched_mask & unit_bit)
+	    rsrv[i / 4] &= ~(1 << unit);
+	}
 
       /* Walk through the insns that occur in the same cycle.  We use multiple
 	 passes to assign units, assigning for insns with the most specific
@@ -3010,9 +3073,11 @@ assign_reservations (rtx head, rtx end)
 	      && (within == insn || GET_MODE (within) != TImode));
 	     within = NEXT_INSN (within))
 	  {
+	    int uid = INSN_UID (within);
 	    int this_rsrv, side;
 	    int icode;
 	    enum attr_units units;
+	    enum attr_type type;
 	    int j;
 
 	    if (!NONDEBUG_INSN_P (within))
@@ -3020,17 +3085,44 @@ assign_reservations (rtx head, rtx end)
 	    icode = recog_memoized (within);
 	    if (icode < 0)
 	      continue;
+	    if (INSN_INFO_ENTRY (uid).reservation != 0)
+	      continue;
 	    units = get_attr_units (within);
+	    type = get_attr_type (within);
 	    this_rsrv = get_reservation_flags (units);
 	    if (this_rsrv == 0)
 	      continue;
 	    side = get_insn_side (within, units);
 
+	    /* Certain floating point instructions are treated specially.  If
+	       an insn can choose between units it can reserve, and its
+	       reservation spans more than one cycle, the reservation contains
+	       special markers in the first cycle to help us reconstruct what
+	       the automaton chose.  */
+	    if ((type == TYPE_ADDDP || type == TYPE_FP4)
+		&& units == UNITS_LS)
+	      {
+		int test1_code = ((type == TYPE_FP4 ? UNIT_QID_FPL1 : UNIT_QID_ADDDPL1)
+				  + side * UNIT_QID_SIDE_OFFSET);
+		int test2_code = ((type == TYPE_FP4 ? UNIT_QID_FPS1 : UNIT_QID_ADDDPS1)
+				  + side * UNIT_QID_SIDE_OFFSET);
+		if ((sched_mask & (1 << test1_code)) != 0)
+		  {
+		    this_rsrv = RESERVATION_FLAG_L;
+		    sched_mask &= ~(1 << test1_code);
+		  }
+		else if ((sched_mask & (1 << test2_code)) != 0)
+		  {
+		    this_rsrv = RESERVATION_FLAG_S;
+		    sched_mask &= ~(1 << test2_code);
+		  }
+	      }
+
 	    if ((this_rsrv & (this_rsrv - 1)) == 0)
 	      {
-		int t = exact_log2 (this_rsrv) + side * 4;
+		int t = exact_log2 (this_rsrv) + side * UNIT_QID_SIDE_OFFSET;
 		rsrv[side] |= this_rsrv;
-		INSN_INFO_ENTRY (INSN_UID (within)).reservation = t;
+		INSN_INFO_ENTRY (uid).reservation = t;
 		continue;
 	      }
 
@@ -3059,8 +3151,8 @@ assign_reservations (rtx head, rtx end)
 		  if ((this_rsrv & (1 << j)) && j != best)
 		    rsrv_count[side][j]--;
 
-		INSN_INFO_ENTRY (INSN_UID (within)).reservation
-		  = best + side * 4;
+		INSN_INFO_ENTRY (uid).reservation
+		  = best + side * UNIT_QID_SIDE_OFFSET;
 	      }
 	  }
     }
@@ -3098,6 +3190,12 @@ typedef struct c6x_sched_context
   /* The following variable value is the last issued insn.  */
   rtx last_scheduled_insn;
 
+  /* The following variable value is DFA state before issuing the
+     first insn in the current clock cycle.  We do not use this member
+     of the structure directly; we copy the data in and out of
+     prev_cycle_state.  */
+  state_t prev_cycle_state_ctx;
+  
   int reg_n_accesses[FIRST_PSEUDO_REGISTER];
   int reg_n_xaccesses[FIRST_PSEUDO_REGISTER];
   int reg_set_in_cycle[FIRST_PSEUDO_REGISTER];
@@ -3108,6 +3206,11 @@ typedef struct c6x_sched_context
 
 /* The current scheduling state.  */
 static struct c6x_sched_context ss;
+
+/* The following variable value is DFA state before issueing the first insn
+   in the current clock cycle.  This is used in c6x_variable_issue for
+   comparison with the state after issuing the last insn in a cycle.  */
+static state_t prev_cycle_state;
 
 /* Set when we discover while processing an insn that it would lead to too
    many accesses of the same register.  */
@@ -3181,6 +3284,7 @@ insn_set_clock (rtx insn, int cycle)
 
   INSN_INFO_ENTRY (uid).clock = cycle;
   INSN_INFO_ENTRY (uid).new_cond = NULL;
+  INSN_INFO_ENTRY (uid).reservation = 0;
   INSN_INFO_ENTRY (uid).ebb_start = false;
 }
 
@@ -3317,9 +3421,13 @@ init_sched_state (c6x_sched_context_t sc)
   sc->delays_finished_at = 0;
   sc->curr_sched_clock = 0;
 
+  sc->prev_cycle_state_ctx = xmalloc (dfa_state_size);
+
   memset (sc->reg_n_accesses, 0, sizeof sc->reg_n_accesses);
   memset (sc->reg_n_xaccesses, 0, sizeof sc->reg_n_xaccesses);
   memset (sc->reg_set_in_cycle, 0, sizeof sc->reg_set_in_cycle);
+
+  state_reset (sc->prev_cycle_state_ctx);
 }
 
 /* Allocate store for new scheduling context.  */
@@ -3341,7 +3449,11 @@ c6x_init_sched_context (void *_sc, bool clean_p)
       init_sched_state (sc);
     }
   else
-    *sc = ss;
+    {
+      *sc = ss;
+      sc->prev_cycle_state_ctx = xmalloc (dfa_state_size);
+      memcpy (sc->prev_cycle_state_ctx, prev_cycle_state, dfa_state_size);
+    }
 }
 
 /* Sets the global scheduling context to the one pointed to by _SC.  */
@@ -3352,6 +3464,17 @@ c6x_set_sched_context (void *_sc)
 
   gcc_assert (sc != NULL);
   ss = *sc;
+  memcpy (prev_cycle_state, sc->prev_cycle_state_ctx, dfa_state_size);
+}
+
+/* Clear data in _SC.  */
+static void
+c6x_clear_sched_context (void *_sc)
+{
+  c6x_sched_context_t sc = (c6x_sched_context_t) _sc;
+  gcc_assert (_sc != NULL);
+
+  free (sc->prev_cycle_state_ctx); 
 }
 
 /* Free _SC.  */
@@ -3384,6 +3507,17 @@ c6x_issue_rate (void)
   return 8;
 }
 
+/* Used together with the collapse_ndfa option, this ensures that we reach a
+   deterministic automaton state before trying to advance a cycle.
+   With collapse_ndfa, genautomata creates advance cycle arcs only for
+   such deterministic states.  */
+
+static rtx
+c6x_sched_dfa_pre_cycle_insn (void)
+{
+  return const0_rtx;
+}
+
 /* We're beginning a new block.  Initialize data structures as necessary.  */
 
 static void
@@ -3391,7 +3525,28 @@ c6x_sched_init (FILE *dump ATTRIBUTE_UNUSED,
 		int sched_verbose ATTRIBUTE_UNUSED,
 		int max_ready ATTRIBUTE_UNUSED)
 {
+  if (prev_cycle_state == NULL)
+    {
+      prev_cycle_state = xmalloc (dfa_state_size);
+    }
   init_sched_state (&ss);
+  state_reset (prev_cycle_state);
+}
+
+/* We are about to being issuing INSN.  Return nonzero if we cannot
+   issue it on given cycle CLOCK and return zero if we should not sort
+   the ready queue on the next clock start.
+   For C6X, we use this function just to copy the previous DFA state
+   for comparison purposes.  */
+
+static int
+c6x_dfa_new_cycle (FILE *dump ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
+		   rtx insn ATTRIBUTE_UNUSED, int last_clock ATTRIBUTE_UNUSED,
+		   int clock ATTRIBUTE_UNUSED, int *sort_p ATTRIBUTE_UNUSED)
+{
+  if (clock != last_clock)
+    memcpy (prev_cycle_state, curr_state, dfa_state_size);
+  return 0;
 }
 
 static void
@@ -3766,11 +3921,14 @@ c6x_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
     ss.issued_this_cycle++;
   if (insn_info)
     {
+      state_t st_after = alloca (dfa_state_size);
       int curr_clock = ss.curr_sched_clock;
       int uid = INSN_UID (insn);
       int icode = recog_memoized (insn);
       rtx first_cond;
       int first, first_cycle;
+      unsigned int mask;
+      int i;
 
       insn_set_clock (insn, curr_clock);
       INSN_INFO_ENTRY (uid).ebb_start
@@ -3794,6 +3952,16 @@ c6x_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
 	      || get_attr_type (insn) == TYPE_BRANCH
 	      || get_attr_type (insn) == TYPE_CALL))
 	INSN_INFO_ENTRY (uid).new_cond = first_cond;
+
+      memcpy (st_after, curr_state, dfa_state_size);
+      state_transition (st_after, const0_rtx);
+
+      mask = 0;
+      for (i = 0; i < 2 * UNIT_QID_SIDE_OFFSET; i++)
+	if (cpu_unit_reservation_p (st_after, c6x_unit_codes[i])
+	    && !cpu_unit_reservation_p (prev_cycle_state, c6x_unit_codes[i]))
+	  mask |= 1 << i;
+      INSN_INFO_ENTRY (uid).unit_mask = mask;
 
       maybe_clobber_cond (insn, curr_clock);
 
@@ -4323,15 +4491,19 @@ reorg_split_calls (rtx *call_labels)
 	      if (can_use_callp (insn))
 		{
 		  /* Find the first insn of the next execute packet.  If it
-		     is outside the branch delay slots of this call, we may
+		     is the shadow insn corresponding to this call, we may
 		     use a CALLP insn.  */
-		  rtx next_cycle_start = next_nonnote_nondebug_insn (last_same_clock);
+		  rtx shadow = next_nonnote_nondebug_insn (last_same_clock);
 
-		  if (CALL_P (next_cycle_start)
-		      && (insn_get_clock (next_cycle_start) == this_clock + 5))
+		  if (CALL_P (shadow)
+		      && insn_get_clock (shadow) == this_clock + 5)
 		    {
-		      convert_to_callp (next_cycle_start);
-		      insn_set_clock (next_cycle_start, this_clock);
+		      convert_to_callp (shadow);
+		      insn_set_clock (shadow, this_clock);
+		      INSN_INFO_ENTRY (INSN_UID (shadow)).reservation
+			= RESERVATION_S2;
+		      INSN_INFO_ENTRY (INSN_UID (shadow)).unit_mask
+			= INSN_INFO_ENTRY (INSN_UID (last_same_clock)).unit_mask;
 		      if (GET_MODE (insn) == TImode)
 			{
 			  rtx new_cycle_first = NEXT_INSN (insn);
@@ -4340,13 +4512,13 @@ reorg_split_calls (rtx *call_labels)
 				 || GET_CODE (PATTERN (new_cycle_first)) == CLOBBER)
 			    new_cycle_first = NEXT_INSN (new_cycle_first);
 			  PUT_MODE (new_cycle_first, TImode);
-			  if (new_cycle_first != next_cycle_start)
-			    PUT_MODE (next_cycle_start, VOIDmode);
+			  if (new_cycle_first != shadow)
+			    PUT_MODE (shadow, VOIDmode);
 			  INSN_INFO_ENTRY (INSN_UID (new_cycle_first)).ebb_start
 			    = INSN_INFO_ENTRY (INSN_UID (insn)).ebb_start;
 			}
 		      else
-			PUT_MODE (next_cycle_start, VOIDmode);
+			PUT_MODE (shadow, VOIDmode);
 		      delete_insn (insn);
 		      goto done;
 		    }
@@ -4364,6 +4536,9 @@ reorg_split_calls (rtx *call_labels)
 		  INSN_INFO_ENTRY (INSN_UID (x1)).reservation = RESERVATION_S2;
 		  if (after1 == last_same_clock)
 		    PUT_MODE (x1, TImode);
+		  else
+		    INSN_INFO_ENTRY (INSN_UID (x1)).unit_mask
+		      = INSN_INFO_ENTRY (INSN_UID (after1)).unit_mask;
 		}
 	      else
 		{
@@ -4381,8 +4556,14 @@ reorg_split_calls (rtx *call_labels)
 		  INSN_INFO_ENTRY (INSN_UID (x2)).reservation = RESERVATION_S2;
 		  if (after1 == last_same_clock)
 		    PUT_MODE (x1, TImode);
+		  else
+		    INSN_INFO_ENTRY (INSN_UID (x1)).unit_mask
+		      = INSN_INFO_ENTRY (INSN_UID (after1)).unit_mask;
 		  if (after1 == after2)
 		    PUT_MODE (x2, TImode);
+		  else
+		    INSN_INFO_ENTRY (INSN_UID (x2)).unit_mask
+		      = INSN_INFO_ENTRY (INSN_UID (after2)).unit_mask;
 		}
 	    }
 	}
@@ -5524,6 +5705,10 @@ c6x_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 #define TARGET_SCHED_REORDER c6x_sched_reorder
 #undef TARGET_SCHED_REORDER2
 #define TARGET_SCHED_REORDER2 c6x_sched_reorder2
+#undef TARGET_SCHED_DFA_NEW_CYCLE
+#define TARGET_SCHED_DFA_NEW_CYCLE c6x_dfa_new_cycle
+#undef TARGET_SCHED_DFA_PRE_CYCLE_INSN
+#define TARGET_SCHED_DFA_PRE_CYCLE_INSN c6x_sched_dfa_pre_cycle_insn
 #undef TARGET_SCHED_EXPOSED_PIPELINE
 #define TARGET_SCHED_EXPOSED_PIPELINE true
 
@@ -5533,6 +5718,8 @@ c6x_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 #define TARGET_SCHED_INIT_SCHED_CONTEXT c6x_init_sched_context
 #undef TARGET_SCHED_SET_SCHED_CONTEXT
 #define TARGET_SCHED_SET_SCHED_CONTEXT c6x_set_sched_context
+#undef TARGET_SCHED_CLEAR_SCHED_CONTEXT
+#define TARGET_SCHED_CLEAR_SCHED_CONTEXT c6x_clear_sched_context
 #undef TARGET_SCHED_FREE_SCHED_CONTEXT
 #define TARGET_SCHED_FREE_SCHED_CONTEXT c6x_free_sched_context
 
