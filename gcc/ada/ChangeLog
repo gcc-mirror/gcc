@@ -1,5 +1,37 @@
 2011-09-02  Robert Dewar  <dewar@adacore.com>
 
+	* s-rident.ads: Add new restriction No_Implicit_Aliasing
+	* sem_attr.adb: (Analyze_Access_Attribute): Deal with
+	No_Implicit_Aliasing
+	(Analyze_Attribute, case Address): ditto
+	(Analyze_Attribute, case Unrestricted_Access): ditto
+	* sem_util.ads, sem_util.adb: (Is_Aliased_View): Handle
+	No_Implicit_Aliasing restriction.
+	* gnat_rm.texi: Add documentation for No_Implicit_Aliasing
+
+2011-09-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb: (Possible_Bit_Aligned_Object): If the object
+	is an unchecked conversion, apply test to its expression.
+
+2011-09-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Check_Abstract_Overriding): When
+	traversing the chain of aliased subprograms avoid reporting a
+	redundant error on the current entity.
+
+2011-09-02  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Minor clean up.
+
+2011-09-02  Bob Duff  <duff@adacore.com>
+
+	* s-htable.adb (Set_If_Not_Present): Use renaming
+	instead of ":=", because the type Key is limited in the generic (even
+	if not in the instances).
+
+2011-09-02  Robert Dewar  <dewar@adacore.com>
+
 	* exp_util.adb, sem_ch10.adb, sem_attr.adb, s-htable.adb,
 	g-comlin.adb, g-comlin.ads, lib-xref-alfa.adb, lib-xref.adb: Minor
 	reformatting.

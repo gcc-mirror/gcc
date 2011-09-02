@@ -9105,9 +9105,16 @@ package body Sem_Ch3 is
                         begin
                            E := Subp;
                            while Present (Alias (E)) loop
-                              Error_Msg_Sloc := Sloc (E);
-                              Error_Msg_NE
-                                ("\& has been inherited #", T, Subp);
+
+                              --  Avoid reporting redundant errors on entities
+                              --  inherited from interfaces
+
+                              if Sloc (E) /= Sloc (T) then
+                                 Error_Msg_Sloc := Sloc (E);
+                                 Error_Msg_NE
+                                   ("\& has been inherited #", T, Subp);
+                              end if;
+
                               E := Alias (E);
                            end loop;
 

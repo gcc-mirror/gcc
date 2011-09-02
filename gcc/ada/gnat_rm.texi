@@ -8988,6 +8988,17 @@ in a distributed environment. If this exception is active, then the generated
 code is simplified by omitting the otherwise-required global registration
 of exceptions when they are declared.
 
+@item No_Implicit_Aliasing
+@findex No_Implicit_Aliasing
+
+This restriction, which is not required to be partition-wide consistent,
+requires an explicit aliased keyword for an object to which 'Access,
+'Unchecked_Access, or 'Address is applied, and forbids entirely the use of
+the 'Unrestricted_Access attribute for objects. Note: the reason that
+Unrestricted_Access is forbidden is that it would require the prefix
+to be aliased, and in such cases, it can always be replaced by
+the standard attribute Unchecked_Access which is preferable.
+
 @item No_Implicit_Conditionals
 @findex No_Implicit_Conditionals
 This restriction ensures that the generated code does not contain any
