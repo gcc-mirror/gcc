@@ -4130,11 +4130,11 @@ Display full source path name in brief error messages.
 @cindex @option{-gnateG} (@command{gcc})
 Save result of preprocessing in a text file.
 
-@item -gnateInnn
+@item ^-gnateI^/MULTI_UNIT_INDEX=^@var{nnn}
 @cindex @option{-gnateI} (@command{gcc})
 Indicates that the source is a multi-unit source and that the index of the
-unit to compile is nnn. nnn needs to be a positive number and need to
-be a valid index in the multi-unit source.
+unit to compile is @var{nnn}. @var{nnn} needs to be a positive number and need
+to be a valid index in the multi-unit source.
 
 @item -gnatem=@var{path}
 @cindex @option{-gnatem} (@command{gcc})

@@ -1,3 +1,20 @@
+2011-09-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_With_Clause): If the library unit
+	is the generated subprogram declaration for a child unit body
+	that acts as spec, use the original body in the with_clause,
+	to prevent binding errors.
+
+2011-09-02  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Adapt documentation of -gnateInnn to new VMS
+	qualifier /MULTI_UNIT_INDEX=
+
+2011-09-02  Johannes Kanig  <kanig@adacore.com>
+
+	* g-comlin.adb (Getopt): Return when switch is dealt with automatically,
+	instead of calling the callback function
+
 2011-09-02  Robert Dewar  <dewar@adacore.com>
 
 	* prj-proc.adb, prj.ads, sem_util.adb, s-taprop-linux.adb,

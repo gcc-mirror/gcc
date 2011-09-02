@@ -3290,11 +3290,14 @@ package body GNAT.Command_Line is
                           with "Expected integer parameter for '"
                             & Switch & "'";
                   end;
+                  return;
 
                when Switch_String =>
                   Free (Config.Switches (Index).String_Output.all);
                   Config.Switches (Index).String_Output.all :=
                     new String'(Parameter);
+                  return;
+
             end case;
          end if;
 
