@@ -1348,16 +1348,16 @@ package body Prj.Env is
               and then Unit.File_Names (Spec).File /= No_File
               and then
                 (Namet.Get_Name_String
-                     (Unit.File_Names (Spec).File) = Original_Name
-                 or else (Unit.File_Names (Spec).Path /=
-                            No_Path_Information
+                   (Unit.File_Names (Spec).File) = Original_Name
+                 or else (Unit.File_Names (Spec).Path /= No_Path_Information
                           and then
                             Namet.Get_Name_String
-                              (Unit.File_Names (Spec).Path.Name) =
-                            Original_Name))
+                               (Unit.File_Names (Spec).Path.Name) =
+                                                           Original_Name))
             then
-               Project := Ultimate_Extending_Project_Of
-                          (Unit.File_Names (Spec).Project);
+               Project :=
+                 Ultimate_Extending_Project_Of
+                   (Unit.File_Names (Spec).Project);
                Path := Unit.File_Names (Spec).Path.Display_Name;
 
                if Current_Verbosity > Default then
@@ -1373,14 +1373,14 @@ package body Prj.Env is
               and then
                 (Namet.Get_Name_String
                    (Unit.File_Names (Impl).File) = Original_Name
-                 or else (Unit.File_Names (Impl).Path /=
-                            No_Path_Information
-                          and then Namet.Get_Name_String
-                            (Unit.File_Names (Impl).Path.Name) =
-                            Original_Name))
+                  or else (Unit.File_Names (Impl).Path /= No_Path_Information
+                            and then Namet.Get_Name_String
+                                       (Unit.File_Names (Impl).Path.Name) =
+                                                              Original_Name))
             then
-               Project := Ultimate_Extending_Project_Of
-                            (Unit.File_Names (Impl).Project);
+               Project :=
+                 Ultimate_Extending_Project_Of
+                   (Unit.File_Names (Impl).Project);
                Path := Unit.File_Names (Impl).Path.Display_Name;
 
                if Current_Verbosity > Default then

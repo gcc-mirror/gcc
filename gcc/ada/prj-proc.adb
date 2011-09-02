@@ -432,6 +432,7 @@ package body Prj.Proc is
             Elm.Next := No_Array_Element;
 
             Elm.Restricted := Restricted;
+
             --  Change the location
 
             Elm.Value.Location := New_Loc;
@@ -440,8 +441,7 @@ package body Prj.Proc is
             --  Create new array element
 
             if Arr.Value = No_Array_Element then
-               Arr.Value :=
-                 Array_Element_Table.Last (Shared.Array_Elements);
+               Arr.Value := Array_Element_Table.Last (Shared.Array_Elements);
             else
                Shared.Array_Elements.Table (E2).Next :=
                  Array_Element_Table.Last (Shared.Array_Elements);

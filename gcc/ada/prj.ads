@@ -187,9 +187,9 @@ package Prj is
    No_Array_Element : constant Array_Element_Id := 0;
    type Array_Element is record
       Index                : Name_Id;
-      Restricted : Boolean := False;
-      Src_Index            : Int := 0;
-      Index_Case_Sensitive : Boolean := True;
+      Restricted           : Boolean          := False;
+      Src_Index            : Int              := 0;
+      Index_Case_Sensitive : Boolean          := True;
       Value                : Variable_Value;
       Next                 : Array_Element_Id := No_Array_Element;
    end record;

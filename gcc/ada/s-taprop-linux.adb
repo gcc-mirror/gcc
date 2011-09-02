@@ -781,8 +781,8 @@ package body System.Task_Primitives.Operations is
          Result := pthread_mutexattr_init (Mutex_Attr'Access);
          pragma Assert (Result = 0);
 
-         Result := pthread_mutex_init (Self_ID.Common.LL.L'Access,
-           Mutex_Attr'Access);
+         Result :=
+           pthread_mutex_init (Self_ID.Common.LL.L'Access, Mutex_Attr'Access);
          pragma Assert (Result = 0 or else Result = ENOMEM);
 
          if Result /= 0 then
@@ -794,8 +794,8 @@ package body System.Task_Primitives.Operations is
       Result := pthread_condattr_init (Cond_Attr'Access);
       pragma Assert (Result = 0);
 
-      Result := pthread_cond_init (Self_ID.Common.LL.CV'Access,
-        Cond_Attr'Access);
+      Result :=
+        pthread_cond_init (Self_ID.Common.LL.CV'Access, Cond_Attr'Access);
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
       if Result = 0 then
@@ -828,8 +828,8 @@ package body System.Task_Primitives.Operations is
       use type System.Multiprocessors.CPU_Range;
 
    begin
-      --  Check whether both Dispatching_Domain and CPU are specified for the
-      --  task, and the CPU value is not contained within the range of
+      --  Check whether both Dispatching_Domain and CPU are specified for
+      --  the task, and the CPU value is not contained within the range of
       --  processors for the domain.
 
       if T.Common.Domain /= null
@@ -854,8 +854,7 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Result :=
-        pthread_attr_setstacksize
-          (Attributes'Access, Adjusted_Stack_Size);
+        pthread_attr_setstacksize (Attributes'Access, Adjusted_Stack_Size);
       pragma Assert (Result = 0);
 
       Result :=
