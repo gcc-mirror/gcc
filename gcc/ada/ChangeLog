@@ -1,3 +1,30 @@
+2011-09-02  Robert Dewar  <dewar@adacore.com>
+
+	* prj-dect.adb, prj-env.adb, prj-nmsc.adb, prj-proc.adb, prj-tree.adb,
+	prj.adb, prj.ads, sem_ch5.adb: Minor reformatting.
+
+2011-09-02  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case Unrestriced_Access):
+	Guard against a prefix that is an N_Has_Entity but has no
+	associated entity.
+
+2011-09-02  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-alfa.adb (Is_Alfa_Reference): Ignore IN parameters in Alfa
+	references.
+
+2011-09-02  Yannick Moy  <moy@adacore.com>
+
+	* opt.ads (Warn_On_Suspicious_Contract): New warning flag.
+	* sem_ch3.adb (Analyze_Declarations): Call checker for suspicious
+	contracts.
+	* sem_ch6.adb, sem_ch6.ads (Check_Subprogram_Contract): New
+	procedure looking for suspicious postconditions.
+	* usage.adb (Usage): New options -gnatw.t and -gnatw.T.
+	* warnsw.adb (Set_Dot_Warning_Switch): Take into account new
+	options -gnatw.t and -gnatw.T.
+
 2011-09-02  Pascal Obry  <obry@adacore.com>
 
 	* prj.adb: Minor code refactoring. Move check for null project in

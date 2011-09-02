@@ -2192,6 +2192,8 @@ package body Sem_Ch3 is
                   Prag := Next_Pragma (Prag);
                end loop;
 
+               Check_Subprogram_Contract (Sent);
+
                Prag := Spec_TC_List (Contract (Sent));
                while Present (Prag) loop
                   Analyze_TC_In_Decl_Part (Prag, Sent);

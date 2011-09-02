@@ -77,8 +77,8 @@ package Prj is
    --    Aggregate_Library:    aggregate library project is ...
    --    Configuration:        configuration project is ...
 
-   subtype Aggregate_Project
-     is Project_Qualifier range Aggregate .. Aggregate_Library;
+   subtype Aggregate_Project is
+     Project_Qualifier range Aggregate .. Aggregate_Library;
 
    All_Packages : constant String_List_Access;
    --  Default value of parameter Packages of procedures Parse, in Prj.Pars and

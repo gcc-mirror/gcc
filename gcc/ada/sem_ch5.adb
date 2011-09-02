@@ -2261,9 +2261,9 @@ package body Sem_Ch5 is
          Analyze (Subt);
       end if;
 
-      --  If domain of iteration is an expression, create a declaration for it,
-      --  so that finalization actions are introduced outside of the loop.
-      --  The declaration must be a renaming because the  body of the loop may
+      --  If domain of iteration is an expression, create a declaration for
+      --  it, so that finalization actions are introduced outside of the loop.
+      --  The declaration must be a renaming because the body of the loop may
       --  assign to elements.
 
       if not Is_Entity_Name (Iter_Name) then

@@ -778,10 +778,9 @@ package body Prj.Env is
       In_Tree  : Project_Tree_Ref;
       Name     : out Path_Name_Type)
    is
-      File   : File_Descriptor := Invalid_FD;
-
-      Buffer      : String_Access := new String (1 .. Buffer_Initial);
-      Buffer_Last : Natural := 0;
+      File        : File_Descriptor := Invalid_FD;
+      Buffer      : String_Access   := new String (1 .. Buffer_Initial);
+      Buffer_Last : Natural         := 0;
 
       procedure Put_Name_Buffer;
       --  Put the line contained in the Name_Buffer in the global buffer
@@ -833,7 +832,7 @@ package body Prj.Env is
             if Source.Replaced_By = No_Source
               and then Source.Path.Name /= No_Path
               and then (Source.Language.Config.Kind = File_Based
-                        or else Source.Unit /= No_Unit_Index)
+                         or else Source.Unit /= No_Unit_Index)
             then
                if Source.Unit /= No_Unit_Index then
 
@@ -1141,7 +1140,7 @@ package body Prj.Env is
 
             if not Main_Project_Only
               or else (Unit.File_Names (Spec) /= null
-                       and then Unit.File_Names (Spec).Project = The_Project)
+                        and then Unit.File_Names (Spec).Project = The_Project)
             then
                declare
                   Current_Name : File_Name_Type;
@@ -1668,7 +1667,7 @@ package body Prj.Env is
       --  For the object path, we make a distinction depending on
       --  Including_Libraries.
 
-      if Objects_Path and then Including_Libraries then
+      if Objects_Path and Including_Libraries then
          if Project.Objects_Path_File_With_Libs = No_Path then
             Object_Path_Table.Init (Object_Paths);
             Process_Object_Dirs := True;
@@ -1688,7 +1687,7 @@ package body Prj.Env is
       --  If there is something to do, set Seen to False for all projects,
       --  then call the recursive procedure Add for Project.
 
-      if Process_Source_Dirs or else Process_Object_Dirs then
+      if Process_Source_Dirs or Process_Object_Dirs then
          For_All_Projects (Project, In_Tree, Dummy);
       end if;
 

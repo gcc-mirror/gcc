@@ -36,8 +36,9 @@ with Sinput.P;
 with Snames;   use Snames;
 with Targparm; use Targparm;
 
+with Ada;                        use Ada;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
-with Ada.Directories;            use Ada, Ada.Directories;
+with Ada.Directories;            use Ada.Directories;
 with Ada.Strings;                use Ada.Strings;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
 with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
@@ -5194,13 +5195,13 @@ package body Prj.Nmsc is
 
       No_Sources : constant Boolean :=
                      ((not Source_Files.Default
-                       and then Source_Files.Values = Nil_String)
+                        and then Source_Files.Values = Nil_String)
                       or else
                         (not Source_Dirs.Default
-                         and then Source_Dirs.Values = Nil_String)
+                          and then Source_Dirs.Values = Nil_String)
                       or else
                         (not Languages.Default
-                         and then Languages.Values = Nil_String))
+                          and then Languages.Values = Nil_String))
                      and then Project.Extends = No_Project;
 
    --  Start of processing for Get_Directories
@@ -5248,6 +5249,7 @@ package body Prj.Nmsc is
                Externally_Built => Project.Externally_Built);
 
             if not Dir_Exists and then not Project.Externally_Built then
+
                --  The object directory does not exist, report an error if the
                --  project is not externally built.
 
@@ -7270,9 +7272,9 @@ package body Prj.Nmsc is
 
       --  Loop through subdirectories
 
-      Source_Dir := Project.Project.Source_Dirs;
       Src_Dir_Rank := Project.Project.Source_Dir_Ranks;
 
+      Source_Dir := Project.Project.Source_Dirs;
       while Source_Dir /= Nil_String loop
          begin
             Num_Nod := Shared.Number_Lists.Table (Src_Dir_Rank);
@@ -7322,7 +7324,7 @@ package body Prj.Nmsc is
 
                      if not Opt.Follow_Links_For_Files
                        or else Is_Regular_File
-                         (Display_Source_Directory & Name (1 .. Last))
+                                 (Display_Source_Directory & Name (1 .. Last))
                      then
                         Name_Len := Last;
                         Name_Buffer (1 .. Name_Len) := Name (1 .. Last);
