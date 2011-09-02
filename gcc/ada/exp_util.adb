@@ -1526,14 +1526,14 @@ package body Exp_Util is
            or else Present (Interface_List (Parent (Typ)))
            or else
              (((Has_Attach_Handler (Typ) and then not Restricted_Profile)
-                  or else Has_Interrupt_Handler (Typ))
+                 or else Has_Interrupt_Handler (Typ))
                and then not Restriction_Active (No_Dynamic_Attachment))
          then
             if Abort_Allowed
               or else Restriction_Active (No_Entry_Queue) = False
               or else Number_Entries (Typ) > 1
               or else (Has_Attach_Handler (Typ)
-                         and then not Restricted_Profile)
+                        and then not Restricted_Profile)
             then
                Pkg_Id := System_Tasking_Protected_Objects_Entries;
             else
@@ -1560,10 +1560,8 @@ package body Exp_Util is
 
       if Act_ST = Etype (Exp) then
          return;
-
       else
-         Rewrite (Exp,
-           Convert_To (Act_ST, Relocate_Node (Exp)));
+         Rewrite (Exp, Convert_To (Act_ST, Relocate_Node (Exp)));
          Analyze_And_Resolve (Exp, Act_ST);
       end if;
    end Convert_To_Actual_Subtype;
@@ -1644,7 +1642,6 @@ package body Exp_Util is
       Name_Req : Boolean := False) return Node_Id
    is
       New_Exp : Node_Id;
-
    begin
       Remove_Side_Effects (Exp, Name_Req);
       New_Exp := New_Copy_Tree (Exp);

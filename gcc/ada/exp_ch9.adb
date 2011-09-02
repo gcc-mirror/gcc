@@ -12481,11 +12481,11 @@ package body Exp_Ch9 is
         or else Has_Interfaces (Protect_Rec)
         or else
           ((Has_Attach_Handler (Ptyp) or else Has_Interrupt_Handler (Ptyp))
-              and then not Restriction_Active (No_Dynamic_Attachment))
+             and then not Restriction_Active (No_Dynamic_Attachment))
       then
          declare
-            Pkg_Id      : constant RTU_Id  :=
-                            Corresponding_Runtime_Package (Ptyp);
+            Pkg_Id : constant RTU_Id  := Corresponding_Runtime_Package (Ptyp);
+
             Called_Subp : RE_Id;
 
          begin
@@ -12536,8 +12536,7 @@ package body Exp_Ch9 is
 
                   Append_To (Args,
                     Make_Attribute_Reference (Loc,
-                      Prefix =>
-                        New_Reference_To (P_Arr, Loc),
+                      Prefix         => New_Reference_To (P_Arr, Loc),
                       Attribute_Name => Name_Unrestricted_Access));
 
                   --  Build_Entry_Names generation flag. When set to true, the
