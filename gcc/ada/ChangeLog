@@ -1,3 +1,13 @@
+2011-09-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: (Analyze_Attribute, case 'Range): when expanding
+	X'range (N) into X'First (N) ..  X'Last (N), do not share the
+	dimension indicator N, if present. Even though it is a static
+	constant, its source location may be modified when printing
+	expanded code under -gnatDL, and node sharing will lead to chaos
+	in Sprint on large files, by generating a sloc value that does
+	not correspond to any source file.
+
 2011-09-02  Bob Duff  <duff@adacore.com>
 
 	* einfo.adb: (Has_Xref_Entry): Do not call

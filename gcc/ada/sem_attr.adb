@@ -8871,6 +8871,7 @@ package body Sem_Attr is
             declare
                LB   : Node_Id;
                HB   : Node_Id;
+               Dims : List_Id;
 
             begin
                if not Is_Entity_Name (P)
@@ -8879,18 +8880,30 @@ package body Sem_Attr is
                   Resolve (P);
                end if;
 
+               Dims := Expressions (N);
+
                HB :=
                  Make_Attribute_Reference (Loc,
                    Prefix         =>
                      Duplicate_Subexpr (P, Name_Req => True),
                    Attribute_Name => Name_Last,
-                   Expressions    => Expressions (N));
+                   Expressions    => Dims);
 
                LB :=
                  Make_Attribute_Reference (Loc,
-                   Prefix         => P,
+                   Prefix          => P,
                    Attribute_Name => Name_First,
-                   Expressions    => Expressions (N));
+                   Expressions => (Dims));
+
+               --  Do not share the dimension indicator, if present. Even
+               --  though it is a static constant, its source location
+               --  may be modified when printing expanded code and node
+               --  sharing will lead to chaos in Sprint.
+
+               if Present (Dims) then
+                  Set_Expressions (LB,
+                    New_List (New_Copy_Tree (First (Dims))));
+               end if;
 
                --  If the original was marked as Must_Not_Freeze (see code
                --  in Sem_Ch3.Make_Index), then make sure the rewriting
