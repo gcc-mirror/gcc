@@ -6407,8 +6407,9 @@ package body Prj.Nmsc is
                      if Source.Index /= 0 then  --  Only multi-unit files
                         declare
                            S : Source_Id :=
-                             Source_Files_Htable.Get
-                               (Data.Tree.Source_Files_HT, Source.File);
+                                 Source_Files_Htable.Get
+                                   (Data.Tree.Source_Files_HT, Source.File);
+
                         begin
                            while S /= null loop
                               if S.Path /= No_Path_Information then
@@ -6890,15 +6891,7 @@ package body Prj.Nmsc is
                Name_Loc.Source := Source;
                Source_Names_Htable.Set
                  (Project.Source_Names, File_Name, Name_Loc);
-
             end if;
-
---            if Source /= No_Source and then Source.Unit /= No_Unit_Index then
---               Units_Htable.Set
---                 (Data.Tree.Units_HT,
---                  Source.Unit.Name,
---                  Source.Unit);
---            end if;
          end if;
       end if;
 

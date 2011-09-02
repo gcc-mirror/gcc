@@ -1,3 +1,8 @@
+2011-09-02  Robert Dewar  <dewar@adacore.com>
+
+	* prj-proc.adb, prj.ads, sem_util.adb, s-taprop-linux.adb,
+	prj-nmsc.adb, prj-util.ads, prj-env.adb: Minor reformatting.
+
 2011-09-02  Vincent Celier  <celier@adacore.com>
 
 	* prj-nmsc.adb: (Find_Sources): When the list of sources is

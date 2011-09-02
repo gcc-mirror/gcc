@@ -10717,9 +10717,8 @@ package body Sem_Util is
                --  a modification of the container.
 
                elsif Comes_From_Source (Original_Node (Exp))
-                 and then
-                   Nkind_In (Original_Node (Exp),
-                     N_Selected_Component, N_Indexed_Component)
+                 and then Nkind_In (Original_Node (Exp), N_Selected_Component,
+                                                         N_Indexed_Component)
                then
                   Exp := Prefix (Original_Node (Exp));
                   goto Continue;
