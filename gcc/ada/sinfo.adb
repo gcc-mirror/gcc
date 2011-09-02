@@ -2459,6 +2459,14 @@ package body Sinfo is
       return Node3 (N);
    end Prefix;
 
+   function Premature_Use
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Incomplete_Type_Declaration);
+      return Node5 (N);
+   end Premature_Use;
+
    function Present_Expr
       (N : Node_Id) return Uint is
    begin
@@ -5509,6 +5517,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Slice);
       Set_Node3_With_Parent (N, Val);
    end Set_Prefix;
+
+   procedure Set_Premature_Use
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Incomplete_Type_Declaration);
+      Set_Node5 (N, Val);
+   end Set_Premature_Use;
 
    procedure Set_Present_Expr
       (N : Node_Id; Val : Uint) is
