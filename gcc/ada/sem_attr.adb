@@ -4939,12 +4939,15 @@ package body Sem_Attr is
       --  all scope checks and checks for aliased views are omitted.
 
       when Attribute_Unrestricted_Access =>
+
+         --  If from source, deal with relevant restrictions
+
          if Comes_From_Source (N) then
             Check_Restriction (No_Unchecked_Access, N);
 
             if Nkind (P) in N_Has_Entity
-                 and then Present (Entity (P))
-                 and then Is_Object (Entity (P))
+              and then Present (Entity (P))
+              and then Is_Object (Entity (P))
             then
                Check_Restriction (No_Implicit_Aliasing, N);
             end if;

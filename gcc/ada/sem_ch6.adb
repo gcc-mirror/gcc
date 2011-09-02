@@ -5462,23 +5462,25 @@ package body Sem_Ch6 is
 
 --        Inherited : constant Subprogram_List :=
 --                      Inherited_Subprograms (Spec_Id);
-      --  List of subprograms inherited by this subprogram
+--        --  List of subprograms inherited by this subprogram
+      --  Code is currently commented out as, in some cases, it causes crashes
+      --  because Direct_Primitive_Operations is not available for a private
+      --  type???
 
-      Last_Postcondition         : Node_Id := Empty;
+      Last_Postcondition : Node_Id := Empty;
       --  Last postcondition on the subprogram, or else Empty if either no
       --  postcondition or only inherited postconditions.
 
       Attribute_Result_Mentioned : Boolean := False;
       --  Whether attribute 'Result is mentioned in a postcondition
 
-      Post_State_Mentioned       : Boolean := False;
+      Post_State_Mentioned : Boolean := False;
       --  Whether some expression mentioned in a postcondition can have a
       --  different value in the post-state than in the pre-state.
 
       function Check_Attr_Result (N : Node_Id) return Traverse_Result;
-      --  Check whether N is a reference to the attribute 'Result, and if so
-      --  set Attribute_Result_Mentioned and return Abandon. Otherwise return
-      --  OK.
+      --  Check if N is a reference to the attribute 'Result, and if so set
+      --  Attribute_Result_Mentioned and return Abandon. Otherwise return OK.
 
       function Check_Post_State (N : Node_Id) return Traverse_Result;
       --  Check whether the value of evaluating N can be different in the
@@ -5487,9 +5489,7 @@ package body Sem_Ch6 is
       --  reference to attribute 'Old, in order to ignore its prefix, which
       --  is precisely evaluated in the pre-state. Otherwise return OK.
 
-      procedure Process_Post_Conditions
-        (Spec  : Node_Id;
-         Class : Boolean);
+      procedure Process_Post_Conditions (Spec : Node_Id; Class : Boolean);
       --  This processes the Spec_PPC_List from Spec, processing any
       --  postconditions from the list. If Class is True, then only
       --  postconditions marked with Class_Present are considered. The
@@ -5506,8 +5506,7 @@ package body Sem_Ch6 is
       function Check_Attr_Result (N : Node_Id) return Traverse_Result is
       begin
          if Nkind (N) = N_Attribute_Reference
-           and then
-             Get_Attribute_Id (Attribute_Name (N)) = Attribute_Result
+           and then Get_Attribute_Id (Attribute_Name (N)) = Attribute_Result
          then
             Attribute_Result_Mentioned := True;
             return Abandon;
@@ -5531,6 +5530,7 @@ package body Sem_Ch6 is
 
             when N_Identifier    |
                  N_Expanded_Name =>
+
                declare
                   E : constant Entity_Id := Entity (N);
                begin
@@ -5583,7 +5583,7 @@ package body Sem_Ch6 is
          loop
             Arg := First (Pragma_Argument_Associations (Prag));
 
-            --  Since pre- and postconditions are listed in reverse order, the
+            --  Since pre- and post-conditions are listed in reverse order, the
             --  first postcondition in the list is the last in the source.
 
             if Pragma_Name (Prag) = Name_Postcondition
@@ -5607,7 +5607,7 @@ package body Sem_Ch6 is
               and then not Class
             then
                Post_State_Mentioned := False;
-               Ignored              := Find_Post_State (Arg);
+               Ignored := Find_Post_State (Arg);
 
                if not Post_State_Mentioned then
                   Error_Msg_N ("?postcondition only refers to pre-state",
@@ -5635,7 +5635,7 @@ package body Sem_Ch6 is
 
       --  Code is currently commented out as, in some cases, it causes crashes
       --  because Direct_Primitive_Operations is not available for a private
-      --  type. This may cause more warnings to be issued than necessary.
+      --  type. This may cause more warnings to be issued than necessary. ???
 
 --        for J in Inherited'Range loop
 --           if Present (Spec_PPC_List (Contract (Inherited (J)))) then
@@ -5662,8 +5662,8 @@ package body Sem_Ch6 is
    procedure Check_Subprogram_Order (N : Node_Id) is
 
       function Subprogram_Name_Greater (S1, S2 : String) return Boolean;
-      --  This is used to check if S1 > S2 in the sense required by this
-      --  test, for example nameab < namec, but name2 < name10.
+      --  This is used to check if S1 > S2 in the sense required by this test,
+      --  for example nameab < namec, but name2 < name10.
 
       -----------------------------
       -- Subprogram_Name_Greater --
