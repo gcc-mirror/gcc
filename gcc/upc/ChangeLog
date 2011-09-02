@@ -1,3 +1,13 @@
+2011-09-02  Gary Funck  <gary@intrepid.com>
+
+	Align UPC pointers-to-shared, only if the target enforces
+	strict alignment.
+	* upc-pts-struct.c (upc_pts_struct_init_type): Align a
+	UPC pointer-to-shared type, only if the target requires
+	strict alignment.
+	* upc-act.c (upc_cpp_builtins): Output pre-defined macro,
+	__UPC_PTS_ALIGN__, only if the target requires strict alignment.
+
 2011-08-29  Gary Funck  <gary@intrepid.com>
 
 	Implement a hash table to record UPC block factors.

@@ -58,8 +58,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GUPCR_PTS_PHASE_TYPE u_intHI_t
 #endif
 
-#define GUPCR_PTS_ALIGN	(2*sizeof(void *))
-
 #if !__GCC_UPC__
 /* The UPC compiler pre-defines upc_shared_ptr_t to be the
    representation of a shared pointer.  Since most of the
@@ -77,7 +75,10 @@ typedef struct shared_ptr_struct
     GUPCR_PTS_VADDR_TYPE  vaddr;
 #endif
   } upc_shared_ptr_t
-  __attribute__ ((aligned (GUPCR_PTS_ALIGN)));
+#ifdef GUPCR_PTS_ALIGN
+  __attribute__ ((aligned (GUPCR_PTS_ALIGN)))
+#endif
+  ;
 typedef upc_shared_ptr_t *upc_shared_ptr_p;
 /* upc_dbg_shared_ptr_t is used by debugger to figure out
    shared pointer layout */

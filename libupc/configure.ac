@@ -391,6 +391,9 @@ GUPCR_PTS_THREAD_SIZE=_STR(__UPC_THREAD_SIZE__)
   GUPCR_PTS_VADDR_TYPE=_STR(__UPC_VADDR_TYPE__)
   GUPCR_PTS_PHASE_TYPE=_STR(__UPC_PHASE_TYPE__)
   GUPCR_PTS_THREAD_TYPE=_STR(__UPC_THREAD_TYPE__)
+  #if __UPC_PTS_ALIGN__
+    GUPCR_PTS_ALIGN=_STR(__UPC_PTS_ALIGN__)
+  #endif
 #else
   GUPCR_PTS_REP="packed"
   GUPCR_PTS_PACKED_REP=1
@@ -408,6 +411,7 @@ for cfg in \
      GUPCR_PTS_PHASE_TYPE \
      GUPCR_PTS_REP \
      GUPCR_PTS_STRUCT_REP \
+     GUPCR_PTS_ALIGN \
      GUPCR_PTS_THREAD_SIZE \
      GUPCR_PTS_THREAD_TYPE \
      GUPCR_PTS_VADDR_FIRST \
@@ -438,6 +442,10 @@ if test "$GUPCR_PTS_REP" = "struct"; then
     [The data type of the 'thread' field in a UPC shared pointer])
   AC_DEFINE_UNQUOTED(GUPCR_PTS_PHASE_TYPE,[$GUPCR_PTS_PHASE_TYPE],
     [The data type of the 'phase' field in a UPC shared pointer])
+  if test -n "$GUPCR_PTS_ALIGN"; then
+    AC_DEFINE_UNQUOTED(GUPCR_PTS_ALIGN,[$GUPCR_PTS_ALIGN],
+      [The required alignment for the UPC struct shared pointer representation])
+  fi
 else
   AC_DEFINE(GUPCR_PTS_PACKED_REP,[1],
     [Whether UPC pointers-to-shared use the 'packed' representation])

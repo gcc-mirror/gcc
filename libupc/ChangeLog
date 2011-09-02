@@ -1,3 +1,13 @@
+2011-09-02  Gary Funck  <gary@intrepid.com>
+
+	Align UPC pointers-to-shared, only if the target enforces
+	strict alignment.
+	* configure.ac: Derive GUPCR_PTS_ALIGN from __UPC_PTS_ALIGN__,
+	  if present.  Define GUPCR_PTS_ALIGN as a config.h variable.
+	* smp/upc_pts.h (GUPCR_PTS_ALIGN): Use only if defined.
+	* config.h.in: Re-generate.
+	* configure: Re-generate.
+
 2011-08-23  Nenad Vukicevic <nenad@intrepid.com>
 
 	* configure.ac: Enable detection of large file support on

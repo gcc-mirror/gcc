@@ -35,6 +35,9 @@
 /* Define if UPC GUM debug server is supported */
 #undef GUPCR_HAVE_GUM_DEBUG
 
+/* The required alignment for the UPC struct shared pointer representation */
+#undef GUPCR_PTS_ALIGN
+
 /* Whether UPC pointers-to-shared use the 'packed' representation */
 #undef GUPCR_PTS_PACKED_REP
 
@@ -291,6 +294,12 @@
 /* Version number of package */
 #undef VERSION
 
+/* Number of bits in a file offset, on hosts where this is settable. */
+#undef _FILE_OFFSET_BITS
+
+/* Define for large files, on AIX-style hosts. */
+#undef _LARGE_FILES
+
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
 
@@ -322,8 +331,6 @@
    code using `volatile' can become incorrect without. Disable with care. */
 #undef volatile
 
-/* Number of bits in a file offset, on hosts where this is settable. */
-#undef _FILE_OFFSET_BITS
 
 #ifndef ARG_UNUSED
 # define ARG_UNUSED(NAME) NAME __attribute__ ((__unused__))
