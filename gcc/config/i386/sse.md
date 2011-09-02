@@ -1402,15 +1402,34 @@
 		      (const_string "0")))
    (set_attr "mode" "<MODE>")])
 
-(define_expand "vcond<mode>"
-  [(set (match_operand:VF 0 "register_operand" "")
-	(if_then_else:VF
+(define_expand "vcond<V_256:mode><VF_256:mode>"
+  [(set (match_operand:V_256 0 "register_operand" "")
+	(if_then_else:V_256
 	  (match_operator 3 ""
-	    [(match_operand:VF 4 "nonimmediate_operand" "")
-	     (match_operand:VF 5 "nonimmediate_operand" "")])
-	  (match_operand:VF 1 "general_operand" "")
-	  (match_operand:VF 2 "general_operand" "")))]
-  "TARGET_SSE"
+	    [(match_operand:VF_256 4 "nonimmediate_operand" "")
+	     (match_operand:VF_256 5 "nonimmediate_operand" "")])
+	  (match_operand:V_256 1 "general_operand" "")
+	  (match_operand:V_256 2 "general_operand" "")))]
+  "TARGET_AVX
+   && (GET_MODE_NUNITS (<V_256:MODE>mode)
+       == GET_MODE_NUNITS (<VF_256:MODE>mode))"
+{
+  bool ok = ix86_expand_fp_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcond<V_128:mode><VF_128:mode>"
+  [(set (match_operand:V_128 0 "register_operand" "")
+	(if_then_else:V_128
+	  (match_operator 3 ""
+	    [(match_operand:VF_128 4 "nonimmediate_operand" "")
+	     (match_operand:VF_128 5 "nonimmediate_operand" "")])
+	  (match_operand:V_128 1 "general_operand" "")
+	  (match_operand:V_128 2 "general_operand" "")))]
+  "TARGET_SSE
+   && (GET_MODE_NUNITS (<V_128:MODE>mode)
+       == GET_MODE_NUNITS (<VF_128:MODE>mode))"
 {
   bool ok = ix86_expand_fp_vcond (operands);
   gcc_assert (ok);
@@ -6171,29 +6190,31 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_expand "vcond<mode>"
-  [(set (match_operand:VI124_128 0 "register_operand" "")
-	(if_then_else:VI124_128
+(define_expand "vcond<V_128:mode><VI124_128:mode>"
+  [(set (match_operand:V_128 0 "register_operand" "")
+	(if_then_else:V_128
 	  (match_operator 3 ""
 	    [(match_operand:VI124_128 4 "nonimmediate_operand" "")
 	     (match_operand:VI124_128 5 "nonimmediate_operand" "")])
-	  (match_operand:VI124_128 1 "general_operand" "")
-	  (match_operand:VI124_128 2 "general_operand" "")))]
-  "TARGET_SSE2"
+	  (match_operand:V_128 1 "general_operand" "")
+	  (match_operand:V_128 2 "general_operand" "")))]
+  "TARGET_SSE2
+   && (GET_MODE_NUNITS (<V_128:MODE>mode)
+       == GET_MODE_NUNITS (<VI124_128:MODE>mode))"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
   DONE;
 })
 
-(define_expand "vcondv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(if_then_else:V2DI
+(define_expand "vcond<VI8F_128:mode>v2di"
+  [(set (match_operand:VI8F_128 0 "register_operand" "")
+	(if_then_else:VI8F_128
 	  (match_operator 3 ""
 	    [(match_operand:V2DI 4 "nonimmediate_operand" "")
 	     (match_operand:V2DI 5 "nonimmediate_operand" "")])
-	  (match_operand:V2DI 1 "general_operand" "")
-	  (match_operand:V2DI 2 "general_operand" "")))]
+	  (match_operand:VI8F_128 1 "general_operand" "")
+	  (match_operand:VI8F_128 2 "general_operand" "")))]
   "TARGET_SSE4_2"
 {
   bool ok = ix86_expand_int_vcond (operands);
@@ -6201,29 +6222,31 @@
   DONE;
 })
 
-(define_expand "vcondu<mode>"
-  [(set (match_operand:VI124_128 0 "register_operand" "")
-	(if_then_else:VI124_128
+(define_expand "vcondu<V_128:mode><VI124_128:mode>"
+  [(set (match_operand:V_128 0 "register_operand" "")
+	(if_then_else:V_128
 	  (match_operator 3 ""
 	    [(match_operand:VI124_128 4 "nonimmediate_operand" "")
 	     (match_operand:VI124_128 5 "nonimmediate_operand" "")])
-	  (match_operand:VI124_128 1 "general_operand" "")
-	  (match_operand:VI124_128 2 "general_operand" "")))]
-  "TARGET_SSE2"
+	  (match_operand:V_128 1 "general_operand" "")
+	  (match_operand:V_128 2 "general_operand" "")))]
+  "TARGET_SSE2
+   && (GET_MODE_NUNITS (<V_128:MODE>mode)
+       == GET_MODE_NUNITS (<VI124_128:MODE>mode))"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
   DONE;
 })
 
-(define_expand "vconduv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-	(if_then_else:V2DI
+(define_expand "vcondu<VI8F_128:mode>v2di"
+  [(set (match_operand:VI8F_128 0 "register_operand" "")
+	(if_then_else:VI8F_128
 	  (match_operator 3 ""
 	    [(match_operand:V2DI 4 "nonimmediate_operand" "")
 	     (match_operand:V2DI 5 "nonimmediate_operand" "")])
-	  (match_operand:V2DI 1 "general_operand" "")
-	  (match_operand:V2DI 2 "general_operand" "")))]
+	  (match_operand:VI8F_128 1 "general_operand" "")
+	  (match_operand:VI8F_128 2 "general_operand" "")))]
   "TARGET_SSE4_2"
 {
   bool ok = ix86_expand_int_vcond (operands);

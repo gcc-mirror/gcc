@@ -661,7 +661,7 @@
   DONE;
 })
 
-(define_expand "vcond<mode>"
+(define_expand "vcond<mode><mode>"
   [(set (match_operand:VECINT 0 "gr_register_operand" "")
 	(if_then_else:VECINT
 	  (match_operator 3 "" 
@@ -675,7 +675,7 @@
   DONE;
 })
 
-(define_expand "vcondu<mode>"
+(define_expand "vcondu<mode><mode>"
   [(set (match_operand:VECINT 0 "gr_register_operand" "")
 	(if_then_else:VECINT
 	  (match_operator 3 "" 
@@ -1382,7 +1382,7 @@
   DONE;
 })
 
-(define_expand "vcondv2sf"
+(define_expand "vcondv2sfv2sf"
   [(set (match_operand:V2SF 0 "fr_register_operand" "")
 	(if_then_else:V2SF
 	  (match_operator 3 "" 

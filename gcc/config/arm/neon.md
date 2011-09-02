@@ -1600,7 +1600,7 @@
 ;; where op3 is <, <=, ==, !=, >= or >.  Operations are performed
 ;; element-wise.
 
-(define_expand "vcond<mode>"
+(define_expand "vcond<mode><mode>"
   [(set (match_operand:VDQW 0 "s_register_operand" "")
 	(if_then_else:VDQW
 	  (match_operator 3 "arm_comparison_operator"
@@ -1680,7 +1680,7 @@
   DONE;
 })
 
-(define_expand "vcondu<mode>"
+(define_expand "vcondu<mode><mode>"
   [(set (match_operand:VDQIW 0 "s_register_operand" "")
 	(if_then_else:VDQIW
 	  (match_operator 3 "arm_comparison_operator"
