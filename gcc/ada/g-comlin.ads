@@ -707,7 +707,8 @@ package GNAT.Command_Line is
       Callback : Switch_Handler := null;
       Parser   : Opt_Parser := Command_Line_Parser);
    --  Similar to the standard Getopt function.
-   --  For each switch found on the command line, this calls Callback.
+   --  For each switch found on the command line, this calls Callback, if the
+   --  switch is not handled automatically.
    --
    --  The list of valid switches are the ones from the configuration. The
    --  switches that were declared through Define_Switch with an Output

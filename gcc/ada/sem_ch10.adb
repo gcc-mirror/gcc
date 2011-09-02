@@ -2536,6 +2536,21 @@ package body Sem_Ch10 is
          --  Child unit in a with clause
 
          Change_Selected_Component_To_Expanded_Name (Name (N));
+
+         --  If this is a child unit without a spec, and it has benn analyzed
+         --  already, a declaration has been created for it. The with_clause
+         --  must reflect the actual body, and not the generated declaration,
+         --  to prevent spurious binding errors involving an out-of-date spec.
+         --  Note that this can only happen if the unit includes more than one
+         --  with_clause for the child unit (e.g. in separate subunits).
+
+         if Unit_Kind = N_Subprogram_Declaration
+           and then Analyzed (Library_Unit (N))
+           and then not Comes_From_Source (Library_Unit (N))
+         then
+            Set_Library_Unit (N,
+               Cunit (Get_Source_Unit (Corresponding_Body (U))));
+         end if;
       end if;
 
       --  Restore style checks and restrictions
