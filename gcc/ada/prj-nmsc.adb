@@ -7588,8 +7588,9 @@ package body Prj.Nmsc is
          --  the same file it is expected that it has the same object)
 
          if Source /= No_Source
+           and then Source.Replaced_By = No_Source
            and then Source.Path /= Src.Path
-           and then Src.Project = Source.Project
+           and then Is_Extending (Src.Project, Source.Project)
          then
             Error_Msg_File_1 := Src.File;
             Error_Msg_File_2 := Source.File;

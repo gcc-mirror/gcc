@@ -6084,7 +6084,7 @@ package body Exp_Ch6 is
 
          Build_Protected_Subprogram_Call (N,
            Name     => New_Occurrence_Of (Subp, Sloc (N)),
-           Rec      =>  Convert_Concurrent (Rec, Etype (Rec)),
+           Rec      => Convert_Concurrent (Rec, Etype (Rec)),
            External => True);
 
       else
@@ -6797,6 +6797,16 @@ package body Exp_Ch6 is
 
          elsif Nkind (Name (Exp_Node)) = N_Explicit_Dereference then
             Function_Id := Etype (Name (Exp_Node));
+
+         --  In Alfa mode, protected subprogram calls are not expanded, so that
+         --  we may end up with a call that is neither resolved to an entity,
+         --  nor an indirect call.
+
+         elsif Alfa_Mode then
+            return False;
+
+         else
+            raise Program_Error;
          end if;
 
          return Is_Build_In_Place_Function (Function_Id);
