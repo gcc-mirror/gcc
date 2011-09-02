@@ -1,3 +1,10 @@
+2011-09-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (fold_builtin_alloca_for_var): Do not
+	fold alloca (0).
+	(ccp_fold_stmt): Continue replacing args when folding
+	alloca fails.
+
 2011-08-31  Richard Guenther  <rguenther@suse.de>
 
 	* expr.c (expand_expr_real_2): Move COND_EXPR and VEC_COND_EXPR
