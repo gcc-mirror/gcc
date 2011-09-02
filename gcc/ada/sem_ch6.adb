@@ -5454,6 +5454,207 @@ package body Sem_Ch6 is
       end if;
    end Check_Returns;
 
+   -------------------------------
+   -- Check_Subprogram_Contract --
+   -------------------------------
+
+   procedure Check_Subprogram_Contract (Spec_Id : Entity_Id) is
+
+--        Inherited : constant Subprogram_List :=
+--                      Inherited_Subprograms (Spec_Id);
+      --  List of subprograms inherited by this subprogram
+
+      Last_Postcondition         : Node_Id := Empty;
+      --  Last postcondition on the subprogram, or else Empty if either no
+      --  postcondition or only inherited postconditions.
+
+      Attribute_Result_Mentioned : Boolean := False;
+      --  Whether attribute 'Result is mentioned in a postcondition
+
+      Post_State_Mentioned       : Boolean := False;
+      --  Whether some expression mentioned in a postcondition can have a
+      --  different value in the post-state than in the pre-state.
+
+      function Check_Attr_Result (N : Node_Id) return Traverse_Result;
+      --  Check whether N is a reference to the attribute 'Result, and if so
+      --  set Attribute_Result_Mentioned and return Abandon. Otherwise return
+      --  OK.
+
+      function Check_Post_State (N : Node_Id) return Traverse_Result;
+      --  Check whether the value of evaluating N can be different in the
+      --  post-state, compared to the same evaluation in the pre-state, and
+      --  if so set Post_State_Mentioned and return Abandon. Return Skip on
+      --  reference to attribute 'Old, in order to ignore its prefix, which
+      --  is precisely evaluated in the pre-state. Otherwise return OK.
+
+      procedure Process_Post_Conditions
+        (Spec  : Node_Id;
+         Class : Boolean);
+      --  This processes the Spec_PPC_List from Spec, processing any
+      --  postconditions from the list. If Class is True, then only
+      --  postconditions marked with Class_Present are considered. The
+      --  caller has checked that Spec_PPC_List is non-Empty.
+
+      function Find_Attribute_Result is new Traverse_Func (Check_Attr_Result);
+
+      function Find_Post_State is new Traverse_Func (Check_Post_State);
+
+      -----------------------
+      -- Check_Attr_Result --
+      -----------------------
+
+      function Check_Attr_Result (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) = N_Attribute_Reference
+           and then
+             Get_Attribute_Id (Attribute_Name (N)) = Attribute_Result
+         then
+            Attribute_Result_Mentioned := True;
+            return Abandon;
+         else
+            return OK;
+         end if;
+      end Check_Attr_Result;
+
+      ----------------------
+      -- Check_Post_State --
+      ----------------------
+
+      function Check_Post_State (N : Node_Id) return Traverse_Result is
+         Found : Boolean := False;
+
+      begin
+         case Nkind (N) is
+            when N_Function_Call        |
+                 N_Explicit_Dereference =>
+               Found := True;
+
+            when N_Identifier    |
+                 N_Expanded_Name =>
+               declare
+                  E : constant Entity_Id := Entity (N);
+               begin
+                  if Is_Entity_Name (N)
+                    and then Present (E)
+                    and then Ekind (E) in Assignable_Kind
+                  then
+                     Found := True;
+                  end if;
+               end;
+
+            when N_Attribute_Reference =>
+               case Get_Attribute_Id (Attribute_Name (N)) is
+                  when Attribute_Old =>
+                     return Skip;
+                  when Attribute_Result =>
+                     Found := True;
+                  when others =>
+                     null;
+               end case;
+
+            when others =>
+               null;
+         end case;
+
+         if Found then
+            Post_State_Mentioned := True;
+            return Abandon;
+         else
+            return OK;
+         end if;
+      end Check_Post_State;
+
+      -----------------------------
+      -- Process_Post_Conditions --
+      -----------------------------
+
+      procedure Process_Post_Conditions
+        (Spec  : Node_Id;
+         Class : Boolean)
+      is
+         Prag    : Node_Id;
+         Arg     : Node_Id;
+         Ignored : Traverse_Final_Result;
+         pragma Unreferenced (Ignored);
+
+      begin
+         Prag := Spec_PPC_List (Contract (Spec));
+
+         loop
+            Arg := First (Pragma_Argument_Associations (Prag));
+
+            --  Since pre- and postconditions are listed in reverse order, the
+            --  first postcondition in the list is the last in the source.
+
+            if Pragma_Name (Prag) = Name_Postcondition
+              and then not Class
+              and then No (Last_Postcondition)
+            then
+               Last_Postcondition := Prag;
+            end if;
+
+            --  For functions, look for presence of 'Result in postcondition
+
+            if Ekind_In (Spec_Id, E_Function, E_Generic_Function) then
+               Ignored := Find_Attribute_Result (Arg);
+            end if;
+
+            --  For each individual non-inherited postcondition, look for
+            --  presence of an expression that could be evaluated differently
+            --  in post-state.
+
+            if Pragma_Name (Prag) = Name_Postcondition
+              and then not Class
+            then
+               Post_State_Mentioned := False;
+               Ignored              := Find_Post_State (Arg);
+
+               if not Post_State_Mentioned then
+                  Error_Msg_N ("?postcondition only refers to pre-state",
+                               Prag);
+               end if;
+            end if;
+
+            Prag := Next_Pragma (Prag);
+            exit when No (Prag);
+         end loop;
+      end Process_Post_Conditions;
+
+   --  Start of processing for Check_Subprogram_Contract
+
+   begin
+      if not Warn_On_Suspicious_Contract then
+         return;
+      end if;
+
+      if Present (Spec_PPC_List (Contract (Spec_Id))) then
+         Process_Post_Conditions (Spec_Id, Class => False);
+      end if;
+
+      --  Process inherited postconditions
+
+      --  Code is currently commented out as, in some cases, it causes crashes
+      --  because Direct_Primitive_Operations is not available for a private
+      --  type. This may cause more warnings to be issued than necessary.
+
+--        for J in Inherited'Range loop
+--           if Present (Spec_PPC_List (Contract (Inherited (J)))) then
+--              Process_Post_Conditions (Inherited (J), Class => True);
+--           end if;
+--        end loop;
+
+      --  Issue warning for functions whose postcondition does not mention
+      --  'Result after all postconditions have been processed.
+
+      if Ekind_In (Spec_Id, E_Function, E_Generic_Function)
+        and then Present (Last_Postcondition)
+        and then not Attribute_Result_Mentioned
+      then
+         Error_Msg_N ("?function postcondition does not mention result",
+                      Last_Postcondition);
+      end if;
+   end Check_Subprogram_Contract;
+
    ----------------------------
    -- Check_Subprogram_Order --
    ----------------------------

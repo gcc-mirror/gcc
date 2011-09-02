@@ -104,6 +104,7 @@ package body Prj.Tree is
       Zone := In_Tree.Project_Nodes.Table (To).Comments;
 
       if No (Zone) then
+
          --  Create new N_Comment_Zones node
 
          Project_Node_Table.Increment_Last (In_Tree.Project_Nodes);

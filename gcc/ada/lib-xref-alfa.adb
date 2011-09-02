@@ -608,11 +608,20 @@ package body Alfa is
             --  On non-callable entities, the only references of interest are
             --  reads and writes.
 
-            if Ekind (E) in Overloadable_Kind then
-               return Typ = 's';
-            else
-               return Typ = 'r' or else Typ = 'm';
-            end if;
+            case Ekind (E) is
+               when Overloadable_Kind =>
+                  return Typ = 's';
+
+               --  References to IN parameters are not considered in Alfa
+               --  section, as these will be translated as constants in the
+               --  intermediate language for formal verification.
+
+               when E_In_Parameter =>
+                  return False;
+
+               when others =>
+                  return Typ = 'r' or else Typ = 'm';
+            end case;
          end Is_Alfa_Reference;
 
          -------------------

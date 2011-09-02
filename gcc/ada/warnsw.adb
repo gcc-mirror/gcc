@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -142,6 +142,12 @@ package body Warnsw is
 
          when 'S' =>
             Warn_On_Overridden_Size             := False;
+
+         when 't' =>
+            Warn_On_Suspicious_Contract         := True;
+
+         when 'T' =>
+            Warn_On_Suspicious_Contract         := False;
 
          when 'u' =>
             Warn_On_Unordered_Enumeration_Type  := True;

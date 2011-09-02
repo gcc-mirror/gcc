@@ -1364,7 +1364,7 @@ package body Prj.Proc is
          Reset_Tree             => Reset_Tree);
 
       if Project_Qualifier_Of
-        (From_Project_Node, From_Project_Node_Tree) /= Configuration
+           (From_Project_Node, From_Project_Node_Tree) /= Configuration
       then
          Process_Project_Tree_Phase_2
            (In_Tree                => In_Tree,
@@ -1566,8 +1566,8 @@ package body Prj.Proc is
                      --  declaration.
 
                      Copy_Package_Declarations
-                       (From       =>
-                          Shared.Packages.Table (Renamed_Package).Decl,
+                       (From       => Shared.Packages.Table
+                                        (Renamed_Package).Decl,
                         To         => Shared.Packages.Table (New_Pkg).Decl,
                         New_Loc    => Location_Of (Current_Item, Node_Tree),
                         Restricted => False,
@@ -2577,6 +2577,7 @@ package body Prj.Proc is
          Loaded_Project : Prj.Tree.Project_Node_Id;
          Success        : Boolean := True;
          Tree           : Project_Tree_Ref;
+
       begin
          if Project.Qualifier not in Aggregate_Project then
             return;
@@ -2711,6 +2712,7 @@ package body Prj.Proc is
          end loop;
 
          if Attribute1 = No_Variable or else Attr_Value1.Value.Default then
+
             --  Attribute Languages is not declared in the extending project.
             --  Check if it is declared in the project being extended.
 
@@ -2754,8 +2756,8 @@ package body Prj.Proc is
             Imported         : Project_List;
             Declaration_Node : Project_Node_Id  := Empty_Node;
 
-            Name      : constant Name_Id :=
-                          Name_Of (From_Project_Node, From_Project_Node_Tree);
+            Name : constant Name_Id :=
+                     Name_Of (From_Project_Node, From_Project_Node_Tree);
 
             Name_Node : constant Tree_Private_Part.Project_Name_And_Node :=
                           Tree_Private_Part.Projects_Htable.Get
@@ -2837,7 +2839,9 @@ package body Prj.Proc is
                Initialize_And_Copy (Child_Env, Copy_From => Env);
 
             elsif Project.Qualifier = Aggregate_Library then
+
                --  The child environment is the same as the current one
+
                Child_Env := Env;
 
             else
@@ -2888,9 +2892,9 @@ package body Prj.Proc is
 
                if Project.Qualifier = Aggregate_Library then
                   declare
-                     L : Aggregated_Project_List :=
-                           Project.Aggregated_Projects;
+                     L : Aggregated_Project_List;
                   begin
+                     L := Project.Aggregated_Projects;
                      while L /= null loop
                         Project.Imported_Projects :=
                           new Project_List_Element'

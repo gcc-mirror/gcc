@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,6 +112,10 @@ package Sem_Ch6 is
    --  if the scope where we are introducing the subprogram contains a
    --  type-conformant subprogram that becomes hidden by the new subprogram.
    --  Is_Primitive indicates whether the subprogram is primitive.
+
+   procedure Check_Subprogram_Contract (Spec_Id : Entity_Id);
+   --  Spec_Id is the spec entity for a subprogram. This routine issues
+   --  warnings on suspicious contracts if Warn_On_Suspicious_Contract is set.
 
    procedure Check_Subtype_Conformant
      (New_Id                   : Entity_Id;

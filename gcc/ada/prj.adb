@@ -393,9 +393,7 @@ package body Prj is
       if Iter.Language = No_Language_Index then
          if Iter.All_Projects then
             Iter.Project := Iter.Project.Next;
-
             Project_Changed (Iter);
-
          else
             Iter.Project := null;
          end if;
@@ -582,7 +580,6 @@ package body Prj is
 
       begin
          Iterator := For_Each_Source (In_Tree => Tree, Project => Proj);
-
          while Element (Iterator) /= No_Source loop
             if Element (Iterator).File = Base_Name
               and then (Index = 0 or else Element (Iterator).Index = Index)
@@ -1662,6 +1659,7 @@ package body Prj is
       Root_Tree    : Project_Tree_Ref)
    is
       Agg : Aggregated_Project_List;
+
    begin
       Action (Root_Project, Root_Tree);
 
@@ -1673,6 +1671,8 @@ package body Prj is
          end loop;
       end if;
    end For_Project_And_Aggregated;
+
+--  Package initialization for Prj
 
 begin
    --  Make sure that the standard config and user project file extensions are

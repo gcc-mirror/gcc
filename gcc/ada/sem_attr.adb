@@ -4942,7 +4942,10 @@ package body Sem_Attr is
          if Comes_From_Source (N) then
             Check_Restriction (No_Unchecked_Access, N);
 
-            if Nkind (P) in N_Has_Entity and then Is_Object (Entity (P)) then
+            if Nkind (P) in N_Has_Entity
+                 and then Present (Entity (P))
+                 and then Is_Object (Entity (P))
+            then
                Check_Restriction (No_Implicit_Aliasing, N);
             end if;
          end if;
