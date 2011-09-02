@@ -1,3 +1,9 @@
+2011-09-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/49886
+	* ipa-split.c (split_function): Do not skip any arguments if
+	can_change_signature is set or there are function type attributes.
+
 2011-09-01  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50178
