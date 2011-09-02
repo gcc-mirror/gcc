@@ -522,7 +522,7 @@ package body Prj is
             --  Visit all aggregated projects
 
             if Include_Aggregated
-              and then Project.Qualifier = Aggregate
+              and then Project.Qualifier in Aggregate_Project
             then
                declare
                   Agg : Aggregated_Project_List;
@@ -857,7 +857,7 @@ package body Prj is
          Free_List (Project.Languages);
 
          case Project.Qualifier is
-            when Aggregate =>
+            when Aggregate | Aggregate_Library =>
                Free (Project.Aggregated_Projects);
 
             when others =>
@@ -1665,7 +1665,7 @@ package body Prj is
    begin
       Action (Root_Project, Root_Tree);
 
-      if Root_Project.Qualifier = Aggregate then
+      if Root_Project.Qualifier in Aggregate_Project then
          Agg := Root_Project.Aggregated_Projects;
          while Agg /= null loop
             For_Project_And_Aggregated (Agg.Project, Agg.Tree);

@@ -2576,8 +2576,9 @@ package body Prj.Proc is
          List           : Aggregated_Project_List;
          Loaded_Project : Prj.Tree.Project_Node_Id;
          Success        : Boolean := True;
+         Tree           : Project_Tree_Ref;
       begin
-         if Project.Qualifier /= Aggregate then
+         if Project.Qualifier not in Aggregate_Project then
             return;
          end if;
 
@@ -2607,6 +2608,15 @@ package body Prj.Proc is
                Prj.Initialize (List.Tree);
                List.Tree.Shared := In_Tree.Shared;
 
+               --  In aggregate library, aggregated projects are parsed using
+               --  the aggregate library tree.
+
+               if Project.Qualifier = Aggregate_Library then
+                  Tree := In_Tree;
+               else
+                  Tree := List.Tree;
+               end if;
+
                --  We can only do the phase 1 of the processing, since we do
                --  not have access to the configuration file yet (this is
                --  called when doing phase 1 of the processing for the root
@@ -2614,7 +2624,7 @@ package body Prj.Proc is
 
                if In_Tree.Is_Root_Tree then
                   Process_Project_Tree_Phase_1
-                    (In_Tree                => List.Tree,
+                    (In_Tree                => Tree,
                      Project                => List.Project,
                      Success                => Success,
                      From_Project_Node      => Loaded_Project,
@@ -2625,7 +2635,7 @@ package body Prj.Proc is
                   --  use the same environment as the rest of the aggregated
                   --  projects, ie the one that was setup by the root aggregate
                   Process_Project_Tree_Phase_1
-                    (In_Tree                => List.Tree,
+                    (In_Tree                => Tree,
                      Project                => List.Project,
                      Success                => Success,
                      From_Project_Node      => Loaded_Project,
@@ -2826,6 +2836,10 @@ package body Prj.Proc is
             if Project.Qualifier = Aggregate and then In_Tree.Is_Root_Tree then
                Initialize_And_Copy (Child_Env, Copy_From => Env);
 
+            elsif Project.Qualifier = Aggregate_Library then
+               --  The child environment is the same as the current one
+               Child_Env := Env;
+
             else
                --  No need to initialize Child_Env, since it will not be
                --  used anyway by Process_Declarative_Items (only the root
@@ -2866,6 +2880,26 @@ package body Prj.Proc is
 
             if Err_Vars.Total_Errors_Detected = 0 then
                Process_Aggregated_Projects;
+
+               --  For an aggregate library we add the aggregated projects as
+               --  imported ones. This is necessary to give visibility to all
+               --  sources from the aggregates from the aggregated library
+               --  projects.
+
+               if Project.Qualifier = Aggregate_Library then
+                  declare
+                     L : Aggregated_Project_List :=
+                           Project.Aggregated_Projects;
+                  begin
+                     while L /= null loop
+                        Project.Imported_Projects :=
+                          new Project_List_Element'
+                            (Project => L.Project,
+                             Next    => Project.Imported_Projects);
+                        L := L.Next;
+                     end loop;
+                  end;
+               end if;
             end if;
 
             if Project.Qualifier = Aggregate and then In_Tree.Is_Root_Tree then

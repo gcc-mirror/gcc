@@ -474,7 +474,8 @@ package Makeutl is
       procedure Initialize
         (Queue_Per_Obj_Dir : Boolean;
          Force             : Boolean := False);
-      --  Initialize the queue.
+      --  Initialize the queue
+      --
       --  Queue_Per_Obj_Dir matches the --single-compile-per-obj-dir switch:
       --  when True, there cannot be simultaneous compilations with the object
       --  files in the same object directory when project files are used.
@@ -483,11 +484,10 @@ package Makeutl is
       --  initialized.
 
       procedure Remove_Marks;
-      --  Remove all marks set for the files.
-      --  This means that the files will be handed to the compiler if they are
-      --  added to the queue, and is mostly useful when recompiling several
-      --  executables in non-project mode, as the switches may be different
-      --  and -s may be in use.
+      --  Remove all marks set for the files. This means that the files will be
+      --  handed to the compiler if they are added to the queue, and is mostly
+      --  useful when recompiling several executables in non-project mode, as
+      --  the switches may be different and -s may be in use.
 
       function Is_Empty return Boolean;
       --  Returns True if the queue is empty

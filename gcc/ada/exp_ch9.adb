@@ -7991,7 +7991,9 @@ package body Exp_Ch9 is
                           Make_Integer_Literal (Loc, Num_Attach_Handler))));
             end if;
 
-         elsif Has_Interrupt_Handler (Prot_Typ) then
+         elsif Has_Interrupt_Handler (Prot_Typ)
+           and then not Restriction_Active (No_Dynamic_Attachment)
+         then
             Protection_Subtype :=
                Make_Subtype_Indication (
                  Sloc => Loc,
