@@ -1,3 +1,31 @@
+2011-09-02  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (cgraph_indirect_call_info): Removed field thunk_delta.
+	* gimple-fold.c (gimple_get_virt_method_for_binfo): Rewritten to use
+	BINFO_VTABLE.  Parameter delta removed, all callers updated.
+	* tree.c (free_lang_data_in_binfo): Clear BINFO_VIRTUALs instead
+	BINFO_VTABLE.
+	* cgraph.c (cgraph_make_edge_direct): Removed parameter delta, updated
+	all calls.
+	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Removed
+	handling of thunk_delta.
+	* ipa-cp.c (get_indirect_edge_target): Removed parameter delta.
+	(devirtualization_time_bonus): Do not handle thunk deltas.
+	(ipcp_discover_new_direct_edges): Likewise.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Likewise.
+	(try_make_edge_direct_simple_call): Likewise.
+	(try_make_edge_direct_virtual_call): Likewise.
+	* lto-cgraph.c (output_cgraph_opt_summary_p): Likewise.  Mark
+	parameter set as unused.
+	(output_edge_opt_summary): Likewise.  Mark both parameters as unused.
+	* lto-cgraph.c (output_cgraph_opt_summary_p): Likewise.  Mark
+	parameter set as unused.
+	(output_edge_opt_summary): Likewise.  Mark both parameters as unused.
+	(input_edge_opt_summary): Likewise.
+	* lto-streamer-out.c (lto_output_ts_binfo_tree_pointers): Do not stream
+	BINFO_VIRTUALS at all.
+	* lto-streamer-in.c (lto_input_ts_binfo_tree_pointers): Likewise.
+
 2011-09-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c (fold_builtin_alloca_for_var): Do not

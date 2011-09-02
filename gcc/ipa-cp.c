@@ -1110,11 +1110,10 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
 
 /* If an indirect edge IE can be turned into a direct one based on KNOWN_VALS
    (which can contain both constants and binfos) or KNOWN_BINFOS (which can be
-   NULL) return the destination.  If simple thunk delta must be applied too,
-   store it to DELTA.  */
+   NULL) return the destination.  */
 
 static tree
-get_indirect_edge_target (struct cgraph_edge *ie, tree *delta,
+get_indirect_edge_target (struct cgraph_edge *ie,
 			  VEC (tree, heap) *known_vals,
 			  VEC (tree, heap) *known_binfos)
 {
@@ -1132,10 +1131,7 @@ get_indirect_edge_target (struct cgraph_edge *ie, tree *delta,
       if (t &&
 	  TREE_CODE (t) == ADDR_EXPR
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL)
-	{
-	  *delta = NULL_TREE;
-	  return TREE_OPERAND (t, 0);
-	}
+	return TREE_OPERAND (t, 0);
       else
 	return NULL_TREE;
     }
@@ -1159,7 +1155,7 @@ get_indirect_edge_target (struct cgraph_edge *ie, tree *delta,
       binfo = get_binfo_at_offset (binfo, anc_offset, otr_type);
       if (!binfo)
 	return NULL_TREE;
-      return gimple_get_virt_method_for_binfo (token, binfo, delta);
+      return gimple_get_virt_method_for_binfo (token, binfo);
     }
   else
     {
@@ -1168,7 +1164,7 @@ get_indirect_edge_target (struct cgraph_edge *ie, tree *delta,
       binfo = get_binfo_at_offset (t, anc_offset, otr_type);
       if (!binfo)
 	return NULL_TREE;
-      return gimple_get_virt_method_for_binfo (token, binfo, delta);
+      return gimple_get_virt_method_for_binfo (token, binfo);
     }
 }
 
@@ -1187,9 +1183,9 @@ devirtualization_time_bonus (struct cgraph_node *node,
     {
       struct cgraph_node *callee;
       struct inline_summary *isummary;
-      tree delta, target;
+      tree target;
 
-      target = get_indirect_edge_target (ie, &delta, known_csts, known_binfos);
+      target = get_indirect_edge_target (ie, known_csts, known_binfos);
       if (!target)
 	continue;
 
@@ -1674,12 +1670,12 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
 
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {
-      tree delta, target;
+      tree target;
 
       next_ie = ie->next_callee;
-      target = get_indirect_edge_target (ie, &delta, known_vals, NULL);
+      target = get_indirect_edge_target (ie, known_vals, NULL);
       if (target)
-	ipa_make_edge_direct_to_target (ie, target, delta);
+	ipa_make_edge_direct_to_target (ie, target);
     }
 }
 

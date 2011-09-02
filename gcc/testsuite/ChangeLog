@@ -1,3 +1,10 @@
+2011-09-02  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/devirt-3.C: Added a distraction method.
+	* g++.dg/ipa/ivinline-7.C: Added a test for direct call discovery,
+	xfailed test for inlining.
+	* g++.dg/ipa/ivinline-9.C: Likewise.
+
 2011-09-01  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/50178

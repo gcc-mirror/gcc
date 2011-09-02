@@ -4397,7 +4397,7 @@ free_lang_data_in_one_sizepos (tree *expr_p)
 
 
 /* Reset all the fields in a binfo node BINFO.  We only keep
-   BINFO_VIRTUALS, which is used by gimple_fold_obj_type_ref.  */
+   BINFO_VTABLE, which is used by gimple_fold_obj_type_ref.  */
 
 static void
 free_lang_data_in_binfo (tree binfo)
@@ -4407,7 +4407,7 @@ free_lang_data_in_binfo (tree binfo)
 
   gcc_assert (TREE_CODE (binfo) == TREE_BINFO);
 
-  BINFO_VTABLE (binfo) = NULL_TREE;
+  BINFO_VIRTUALS (binfo) = NULL_TREE;
   BINFO_BASE_ACCESSES (binfo) = NULL;
   BINFO_INHERITANCE_CHAIN (binfo) = NULL_TREE;
   BINFO_SUBVTT_INDEX (binfo) = NULL_TREE;

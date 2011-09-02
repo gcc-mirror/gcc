@@ -835,7 +835,7 @@ cgraph_set_call_stmt (struct cgraph_edge *e, gimple new_stmt)
       struct cgraph_node *new_callee = cgraph_get_node (decl);
 
       gcc_checking_assert (new_callee);
-      cgraph_make_edge_direct (e, new_callee, 0);
+      cgraph_make_edge_direct (e, new_callee);
     }
 
   push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
@@ -1161,11 +1161,9 @@ cgraph_redirect_edge_callee (struct cgraph_edge *e, struct cgraph_node *n)
    pointer (first parameter) to compensate for skipping a thunk adjustment.  */
 
 void
-cgraph_make_edge_direct (struct cgraph_edge *edge, struct cgraph_node *callee,
-			 HOST_WIDE_INT delta)
+cgraph_make_edge_direct (struct cgraph_edge *edge, struct cgraph_node *callee)
 {
   edge->indirect_unknown_callee = 0;
-  edge->indirect_info->thunk_delta = delta;
 
   /* Get the edge out of the indirect edge list. */
   if (edge->prev_callee)
