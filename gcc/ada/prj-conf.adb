@@ -510,8 +510,8 @@ package body Prj.Conf is
                   Add_Attributes
                     (Project_Tree => Project_Tree,
                      Conf_Decl    => Conf_Pack.Decl,
-                     User_Decl    =>
-                       Shared.Packages.Table (User_Pack_Id).Decl);
+                     User_Decl    => Shared.Packages.Table
+                                       (User_Pack_Id).Decl);
                end if;
 
                Conf_Pack_Id := Conf_Pack.Next;
@@ -522,11 +522,11 @@ package body Prj.Conf is
             --  For aggregate projects, we need to apply the config to all
             --  their aggregated trees as well.
 
-            if Proj.Project.Qualifier = Aggregate then
+            if Proj.Project.Qualifier in Aggregate_Project then
                declare
-                  List : Aggregated_Project_List :=
-                           Proj.Project.Aggregated_Projects;
+                  List : Aggregated_Project_List;
                begin
+                  List := Proj.Project.Aggregated_Projects;
                   while List /= null loop
                      Debug_Output
                        ("Recursively apply config to aggregated tree",

@@ -980,7 +980,7 @@ package body Prj.Nmsc is
    --  Start of processing for Check_Aggregate_Project
 
    begin
-      pragma Assert (Project.Qualifier = Aggregate);
+      pragma Assert (Project.Qualifier in Aggregate_Project);
 
       if Project_Files.Default then
          Error_Msg_Name_1 := Snames.Name_Project_Files;
@@ -1032,18 +1032,26 @@ package body Prj.Nmsc is
 
       Check_If_Externally_Built (Project, Data);
 
-      if Project.Qualifier /= Aggregate then
-         Get_Directories             (Project, Data);
-         Check_Programming_Languages (Project, Data);
-
-         if Current_Verbosity = High then
-            Show_Source_Dirs (Project, Shared);
-         end if;
-      end if;
-
       case Project.Qualifier is
-         when Dry    => Check_Abstract_Project (Project, Data);
-         when others => null;
+         when Aggregate =>
+            null;
+
+         when Aggregate_Library =>
+            if Project.Object_Directory = No_Path_Information then
+               Project.Object_Directory := Project.Directory;
+            end if;
+
+         when others =>
+            Get_Directories (Project, Data);
+            Check_Programming_Languages (Project, Data);
+
+            if Current_Verbosity = High then
+               Show_Source_Dirs (Project, Shared);
+            end if;
+
+            if Project.Qualifier = Dry then
+               Check_Abstract_Project (Project, Data);
+            end if;
       end case;
 
       --  Check configuration. This must be done even for gnatmake (even though
@@ -1055,7 +1063,13 @@ package body Prj.Nmsc is
       if Project.Qualifier /= Aggregate then
          Check_Library_Attributes (Project, Data);
          Check_Package_Naming (Project, Data);
-         Look_For_Sources (Prj_Data, Data);
+
+         --  An aggregate library has no source, no need to look for them
+
+         if Project.Qualifier /= Aggregate_Library then
+            Look_For_Sources (Prj_Data, Data);
+         end if;
+
          Check_Interfaces (Project, Data);
 
          if Project.Library then
@@ -3378,7 +3392,9 @@ package body Prj.Nmsc is
                end;
             end if;
 
-            if Project.Library then
+            if Project.Library
+              and then Project.Qualifier /= Aggregate_Library
+            then
                Debug_Output ("this is a library project file");
 
                Check_Library (Project.Extends, Extends => True);
@@ -6214,8 +6230,10 @@ package body Prj.Nmsc is
                --  need for an object directory, if not specified.
 
                if Project.Project.Extends = No_Project
-                 and then Project.Project.Object_Directory =
-                   Project.Project.Directory
+                 and then
+                   Project.Project.Object_Directory = Project.Project.Directory
+                 and then
+                   not (Project.Project.Qualifier = Aggregate_Library)
                then
                   Project.Project.Object_Directory := No_Path_Information;
                end if;

@@ -216,7 +216,7 @@ package body Prj.Dect is
                  Project_Qualifier_Of (Project, In_Tree);
       Name   : constant Name_Id := Name_Of (Current_Package, In_Tree);
    begin
-      if Qualif = Aggregate
+      if Qualif in Aggregate_Project
         and then Name /= Snames.Name_Builder
       then
          Error_Msg_Name_1 := Name;
@@ -243,7 +243,7 @@ package body Prj.Dect is
 
    begin
       case Qualif is
-         when Aggregate =>
+         when Aggregate | Aggregate_Library =>
             if Name = Snames.Name_Languages
               or else Name = Snames.Name_Source_Files
               or else Name = Snames.Name_Source_List_File

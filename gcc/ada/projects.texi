@@ -19,6 +19,7 @@
 * Library Projects::
 * Project Extension::
 * Aggregate Projects::
+* Aggregate Library Projects::
 * Project File Reference::
 @end menu
 
@@ -2606,6 +2607,106 @@ For projects that are build through the aggregate, the package Builder
 is ignored, except for the Executable attribute which specifies the
 name of the executables resulting from the link of the main units, and
 for the Executable_Suffix.
+
+@c ---------------------------------------------
+@node Aggregate Library Projects
+@section Aggregate Library Projects
+@c ---------------------------------------------
+
+@noindent
+
+Aggregate library projects make it possible to build a single library
+using object files built using other standard or library
+projects. This gives the flexibility to describe an application as
+having multiple modules (a GUI, database access, ...) using different
+project files (so possibly built with different compiler options) and
+yet create a single library (static or relocatable) out of the
+corresponding object files.
+
+@subsection Building aggregate library projects
+
+For example, we can define an aggregate project Agg that groups A, B
+and C:
+
+@smallexample @c projectfile
+   aggregate library project Agg is
+      for Project_Files use ("a.gpr", "b.gpr", "c.gpr");
+      for Library_Name use ("agg");
+      for Library_Dir use ("lagg");
+   end Agg;
+@end smallexample
+
+Then, when you build with:
+
+@smallexample
+    gprbuild agg.gpr
+@end smallexample
+
+This will build all units from projects A, B and C and will create a
+static library named @file{libagg.a} into the @file{lagg}
+directory. An aggregate library project has the same set of
+restriction as a standard library project.
+
+Note that a shared aggregate library project cannot aggregates a
+static library project. In platforms where a compiler option is
+required to create relocatable object files, a Builder package in the
+aggregate library project may be used:
+
+@smallexample @c projectfile
+   aggregate library project Agg is
+      for Project_Files use ("a.gpr", "b.gpr", "c.gpr");
+      for Library_Name use ("agg");
+      for Library_Dir use ("lagg");
+      for Library_Kind use "relocatable";
+
+      package Builder is
+         for Global_Compilation_Switches ("Ada") use ("-fPIC");
+      end Builder;
+   end Agg;
+@end smallexample
+
+With the above aggregate library Builder package, the @code{-fPIC}
+option will be passed to the compiler when building any source code
+from projects @file{a.gpr}, @file{b.gpr} and @file{c.gpr}.
+
+@subsection Syntax of aggregate library projects
+
+An aggregate library project follows the general syntax of project
+files. The recommended extension is still @file{.gpr}. However, a special
+@code{aggregate library} qualifier must be put before the keyword
+@code{project}.
+
+An aggregate library project cannot @code{with} any other project
+(standard or aggregate), except an abstract project which can be used
+to share attribute values.
+
+An aggregate library project does not have any source files directly (only
+through other standard projects). Therefore a number of the standard
+attributes and packages are forbidden in an aggregate library
+project. Here is the (non exhaustive) list:
+
+@itemize @bullet
+@item Languages
+@item Source_Files, Source_List_File and other attributes dealing with
+  list of sources.
+@item Source_Dirs, Exec_Dir and Object_Dir
+@item Library_Dir, Library_Name and other library-related attributes
+@item Main
+@item Roots
+@item Externally_Built
+@item Inherit_Source_Path
+@item Excluded_Source_Dirs
+@item Locally_Removed_Files
+@item Excluded_Source_Files
+@item Excluded_Source_List_File
+@item Interfaces
+@end itemize
+
+The only package that is authorized (albeit optional) is Builder.
+
+The Project_Files attribute (See @pxref{Aggregate Projects}) is used to
+described the aggregated projects whose object files have to be
+included into the aggregate library.
 
 @c ---------------------------------------------
 @node Project File Reference
