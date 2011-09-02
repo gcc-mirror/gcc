@@ -1,3 +1,25 @@
+2011-09-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Class_Wide_Type): Do not create
+	TSS routine Finalize_Address when compiling in Alfa mode.
+	(Expand_Freeze_Record_Type): Do not create TSS routine
+	Finalize_Address when compiling in Alfa mode.
+	* exp_ch4.adb (Expand_Allocator_Expression): Do not produce a
+	call to Set_Finalize_Address in Alfa mode because Finalize_Address is
+	not built.
+	(Expand_N_Allocator): Do not produce a call to
+	Set_Finalize_Address in Alfa mode because Finalize_Address is not built.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Do not
+	produce a call to primitive Set_Finalize_Address in Alfa mode because
+	Finalize_Address is not built.
+	* exp_ch7.adb (Build_Finalization_Master): Do not create
+	finalization masters in Afa mode since they are not needed.
+	(Build_Finalizer): Do not create scope and library-level
+	finalizers in Alfa mode since they are not needed.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Do not expand
+	"new" and "free" when applied to controlled objects in Alfa mode since
+	this is not needed.
+
 2011-09-02  Vincent Celier  <celier@adacore.com>
 
 	* prj-nmsc.db: (Check_Stand_Alone_Library): For SALs, allow

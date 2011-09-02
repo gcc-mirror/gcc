@@ -6519,7 +6519,7 @@ package body Exp_Ch6 is
 
          begin
             --  Ada 2005 (AI-251): In class-wide interface objects we displace
-            --  "this" to reference the base of the object --- required to get
+            --  "this" to reference the base of the object required to get
             --  access to the TSD of the object.
 
             if Is_Class_Wide_Type (Etype (Exp))
@@ -7245,10 +7245,14 @@ package body Exp_Ch6 is
          then
             null;
 
-         --  Do not generate the call to Make_Set_Finalize_Address for
-         --  CodePeer compilations because Finalize_Address is never built.
+         --  Do not generate the call to Set_Finalize_Address in Alfa mode
+         --  because it is not necessary and results in unwanted expansion.
+         --  This expansion is also not carried out in CodePeer mode because
+         --  Finalize_Address is never built.
 
-         elsif not CodePeer_Mode then
+         elsif not Alfa_Mode
+           and then not CodePeer_Mode
+         then
             Insert_Action (Allocator,
               Make_Set_Finalize_Address_Call (Loc,
                 Typ     => Etype (Function_Id),

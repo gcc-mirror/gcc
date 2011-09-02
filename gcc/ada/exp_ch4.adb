@@ -1149,12 +1149,19 @@ package body Exp_Ch4 is
             --  Generate:
             --    Set_Finalize_Address (<PtrT>FM, <T>FD'Unrestricted_Access);
 
-            --  Since .NET/JVM compilers do not support address arithmetic,
-            --  this call is skipped. The same is done for CodePeer because
-            --  primitive Finalize_Address is never generated. Do not create
-            --  this call if there is no allocator available any more.
+            --  Do not generate this call in the following cases:
+            --
+            --    * .NET/JVM - these targets do not support address arithmetic
+            --    and unchecked conversion, key elements of Finalize_Address.
+            --
+            --    * Alfa mode - the call is useless and results in unwanted
+            --    expansion.
+            --
+            --    * CodePeer mode - TSS primitive Finalize_Address is not
+            --    created in this mode.
 
             if VM_Target = No_VM
+              and then not Alfa_Mode
               and then not CodePeer_Mode
               and then Present (Finalization_Master (PtrT))
               and then Present (Temp_Decl)
@@ -3481,9 +3488,12 @@ package body Exp_Ch4 is
          end if;
 
          --  The finalization master must be inserted and analyzed as part of
-         --  the current semantic unit.
+         --  the current semantic unit. This form of expansion is not carried
+         --  out in Alfa mode because it is useless.
 
-         if No (Finalization_Master (PtrT)) then
+         if No (Finalization_Master (PtrT))
+           and then not Alfa_Mode
+         then
             Set_Finalization_Master (PtrT, Current_Anonymous_Master);
          end if;
       end if;
@@ -3979,10 +3989,17 @@ package body Exp_Ch4 is
                      --    Set_Finalize_Address
                      --      (<PtrT>FM, <T>FD'Unrestricted_Access);
 
-                     --  Do not generate the above for CodePeer compilations
-                     --  because primitive Finalize_Address is never built.
+                     --  Do not generate this call in the following cases:
+                     --
+                     --    * Alfa mode - the call is useless and results in
+                     --    unwanted expansion.
+                     --
+                     --    * CodePeer mode - TSS primitive Finalize_Address is
+                     --    not created in this mode.
 
-                     elsif not CodePeer_Mode then
+                     elsif not Alfa_Mode
+                       and then not CodePeer_Mode
+                     then
                         Insert_Action (N,
                           Make_Set_Finalize_Address_Call
                             (Loc     => Loc,

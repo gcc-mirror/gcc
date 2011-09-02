@@ -888,6 +888,12 @@ package body Exp_Ch7 is
         and then not Is_Controlled (Desig_Typ)
       then
          return;
+
+      --  Do not create finalization masters in Alfa mode because they result
+      --  in unwanted expansion.
+
+      elsif Alfa_Mode then
+         return;
       end if;
 
       declare
@@ -2689,6 +2695,13 @@ package body Exp_Ch7 is
    begin
       Fin_Id := Empty;
 
+      --  Do not perform this expansion in Alfa mode because it is not
+      --  necessary.
+
+      if Alfa_Mode then
+         return;
+      end if;
+
       --  Step 1: Extract all lists which may contain controlled objects or
       --  library-level tagged types.
 
@@ -2844,6 +2857,13 @@ package body Exp_Ch7 is
       --  which belongs to a protected type.
 
    begin
+      --  Do not perform this expansion in Alfa mode because we do not create
+      --  finalizers in the first place.
+
+      if Alfa_Mode then
+         return;
+      end if;
+
       --  The At_End handler should have been assimilated by the finalizer
 
       pragma Assert (No (At_End_Proc (HSS)));
