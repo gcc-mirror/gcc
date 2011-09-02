@@ -168,11 +168,6 @@ struct ipa_node_params
   /* If this node is an ipa-cp clone, these are the known values that describe
      what it has been specialized for.  */
   VEC (tree, heap) *known_vals;
-  /* Whether this function is called with variable number of actual
-     arguments.  */
-  unsigned called_with_var_arguments : 1;
-  /* Set when it is possible to create specialized versions of this node.  */
-  unsigned node_versionable : 1;
   /* Whether the param uses analysis has already been performed.  */
   unsigned uses_analysis_done : 1;
   /* Whether the function is enqueued in ipa-cp propagation stack.  */
@@ -222,22 +217,6 @@ static inline bool
 ipa_is_param_used (struct ipa_node_params *info, int i)
 {
   return VEC_index (ipa_param_descriptor_t, info->descriptors, i)->used;
-}
-
-/* Flag this node as having callers with variable number of arguments.  */
-
-static inline void
-ipa_set_called_with_variable_arg (struct ipa_node_params *info)
-{
-  info->called_with_var_arguments = 1;
-}
-
-/* Have we detected this node was called with variable number of arguments? */
-
-static inline bool
-ipa_is_called_with_var_arguments (struct ipa_node_params *info)
-{
-  return info->called_with_var_arguments;
 }
 
 /* ipa_edge_args stores information related to a callsite and particularly its

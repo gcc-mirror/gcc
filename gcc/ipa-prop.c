@@ -1032,19 +1032,13 @@ ipa_compute_jump_functions (struct cgraph_node *node,
 
   for (cs = node->callees; cs; cs = cs->next_callee)
     {
-      struct cgraph_node *callee = cgraph_function_or_thunk_node (cs->callee, NULL);
+      struct cgraph_node *callee = cgraph_function_or_thunk_node (cs->callee,
+								  NULL);
       /* We do not need to bother analyzing calls to unknown
 	 functions unless they may become known during lto/whopr.  */
-      if (!cs->callee->analyzed && !flag_lto)
+      if (!callee->analyzed && !flag_lto)
 	continue;
       ipa_count_arguments (cs);
-      /* If the descriptor of the callee is not initialized yet, we have to do
-	 it now. */
-      if (callee->analyzed)
-	ipa_initialize_node_params (callee);
-      if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
-	  != ipa_get_param_count (IPA_NODE_REF (callee)))
-	ipa_set_called_with_variable_arg (IPA_NODE_REF (callee));
       ipa_compute_jump_functions_for_edge (parms_info, cs);
     }
 
@@ -1649,10 +1643,6 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
     }
   callee = cgraph_function_or_thunk_node (callee, NULL);
 
-  if (ipa_get_cs_argument_count (IPA_EDGE_REF (ie))
-      != ipa_get_param_count (IPA_NODE_REF (callee)))
-    ipa_set_called_with_variable_arg (IPA_NODE_REF (callee));
-
   return ie;
 }
 
@@ -1964,7 +1954,6 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
   new_info->lattices = NULL;
   new_info->ipcp_orig_node = old_info->ipcp_orig_node;
 
-  new_info->called_with_var_arguments = old_info->called_with_var_arguments;
   new_info->uses_analysis_done = old_info->uses_analysis_done;
   new_info->node_enqueued = old_info->node_enqueued;
 }
@@ -2949,7 +2938,6 @@ void
 ipa_update_after_lto_read (void)
 {
   struct cgraph_node *node;
-  struct cgraph_edge *cs;
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
@@ -2957,17 +2945,4 @@ ipa_update_after_lto_read (void)
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed)
       ipa_initialize_node_params (node);
-
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
-      for (cs = node->callees; cs; cs = cs->next_callee)
-	{
-	  struct cgraph_node *callee;
-
-	  callee = cgraph_function_or_thunk_node (cs->callee, NULL);
-	  if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
-	      != ipa_get_param_count (IPA_NODE_REF (callee)))
-	    ipa_set_called_with_variable_arg (IPA_NODE_REF (callee));
-	}
 }
-
