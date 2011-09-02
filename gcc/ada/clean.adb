@@ -1893,6 +1893,8 @@ package body Clean is
          Put_Line ("Usage: gnatclean [switches] {[-innn] name}");
          New_Line;
 
+         Display_Usage_Version_And_Help;
+
          Put_Line ("  names is one or more file names from which " &
                    "the .adb or .ads suffix may be omitted");
          Put_Line ("  names may be omitted if -P<project> is specified");

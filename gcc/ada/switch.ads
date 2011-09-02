@@ -64,6 +64,9 @@ package Switch is
       Version_String : String := Gnatvsn.Gnat_Version_String);
    --  Display version of a tool when switch --version is used
 
+   procedure Display_Usage_Version_And_Help;
+   --  Output the two lines of usage for switches --version and --help
+
    function Is_Switch (Switch_Chars : String) return Boolean;
    --  Returns True iff Switch_Chars is at least two characters long, and the
    --  first character is an hyphen ('-').

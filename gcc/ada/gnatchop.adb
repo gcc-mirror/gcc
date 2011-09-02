@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1361,6 +1361,9 @@ procedure Gnatchop is
          "[-r] [-p] [-q] [-v] [-w] [-x] [--GCC=xx] file [file ...] [dir]");
 
       New_Line;
+
+      Display_Usage_Version_And_Help;
+
       Put_Line
         ("  -c       compilation mode, configuration pragmas " &
          "follow RM rules");

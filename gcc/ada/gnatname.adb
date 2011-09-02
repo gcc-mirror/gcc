@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -511,6 +511,8 @@ procedure Gnatname is
          Write_Line ("   {--and [switches] naming-pattern [naming-patterns]}");
          Write_Eol;
          Write_Line ("switches:");
+
+         Display_Usage_Version_And_Help;
 
          Write_Line ("  --subdirs=dir real obj/lib/exec dirs are subdirs");
          Write_Eol;
