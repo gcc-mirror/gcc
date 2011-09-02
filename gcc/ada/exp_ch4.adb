@@ -1150,13 +1150,13 @@ package body Exp_Ch4 is
             --    Set_Finalize_Address (<PtrT>FM, <T>FD'Unrestricted_Access);
 
             --  Do not generate this call in the following cases:
-            --
+
             --    * .NET/JVM - these targets do not support address arithmetic
             --    and unchecked conversion, key elements of Finalize_Address.
-            --
+
             --    * Alfa mode - the call is useless and results in unwanted
             --    expansion.
-            --
+
             --    * CodePeer mode - TSS primitive Finalize_Address is not
             --    created in this mode.
 

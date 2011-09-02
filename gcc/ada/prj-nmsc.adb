@@ -4364,8 +4364,10 @@ package body Prj.Nmsc is
 
          declare
             Name : constant String := Get_Name_String (Project.Library_Name);
-            OK   : Boolean := Is_Letter (Name (Name'First));
+            OK   : Boolean         := Is_Letter (Name (Name'First));
+
             Underline : Boolean := False;
+
          begin
             for J in Name'First + 1 .. Name'Last loop
                exit when not OK;
@@ -4385,7 +4387,7 @@ package body Prj.Nmsc is
                end if;
             end loop;
 
-            OK := OK and then not Underline;
+            OK := OK and not Underline;
 
             if not OK then
                Error_Msg
@@ -4489,13 +4491,13 @@ package body Prj.Nmsc is
 
                      Shared.String_Elements.Table
                        (String_Element_Table.Last (Shared.String_Elements)) :=
-                       (Value         => Name_Id (Source.Dep_Name),
-                        Index         => 0,
-                        Display_Value => Name_Id (Source.Dep_Name),
-                        Location      =>
-                          Shared.String_Elements.Table (Interfaces).Location,
-                        Flag          => False,
-                        Next          => Interface_ALIs);
+                         (Value         => Name_Id (Source.Dep_Name),
+                          Index         => 0,
+                          Display_Value => Name_Id (Source.Dep_Name),
+                          Location      =>
+                            Shared.String_Elements.Table (Interfaces).Location,
+                          Flag          => False,
+                          Next          => Interface_ALIs);
 
                      Interface_ALIs :=
                        String_Element_Table.Last (Shared.String_Elements);

@@ -3887,49 +3887,61 @@ package body Exp_Util is
         (Trans_Id   : Entity_Id;
          First_Stmt : Node_Id) return Boolean
       is
-         function Extract_Renamed_Object
-           (Ren_Decl : Node_Id) return Entity_Id;
+         function Find_Renamed_Object (Ren_Decl : Node_Id) return Entity_Id;
          --  Given an object renaming declaration, retrieve the entity of the
          --  renamed name. Return Empty if the renamed name is anything other
          --  than a variable or a constant.
 
-         ----------------------------
-         -- Extract_Renamed_Object --
-         ----------------------------
+         -------------------------
+         -- Find_Renamed_Object --
+         -------------------------
 
-         function Extract_Renamed_Object
-           (Ren_Decl : Node_Id) return Entity_Id
-         is
-            Change  : Boolean;
-            Ren_Obj : Node_Id;
+         function Find_Renamed_Object (Ren_Decl : Node_Id) return Entity_Id is
+            Ren_Obj : Node_Id := Empty;
+
+            function Find_Object (N : Node_Id) return Traverse_Result;
+            --  Try to detect an object which is either a constant or a
+            --  variable.
+
+            -----------------
+            -- Find_Object --
+            -----------------
+
+            function Find_Object (N : Node_Id) return Traverse_Result is
+            begin
+               --  Stop the search once a constant or a variable has been
+               --  detected.
+
+               if Nkind (N) = N_Identifier
+                 and then Present (Entity (N))
+                 and then Ekind_In (Entity (N), E_Constant, E_Variable)
+               then
+                  Ren_Obj := Entity (N);
+                  return Abandon;
+               end if;
+
+               return OK;
+            end Find_Object;
+
+            procedure Search is new Traverse_Proc (Find_Object);
+
+            --  Local variables
+
+            Typ : constant Entity_Id := Etype (Defining_Identifier (Ren_Decl));
+
+         --  Start of processing for Find_Renamed_Object
 
          begin
-            Change  := True;
-            Ren_Obj := Renamed_Object (Defining_Identifier (Ren_Decl));
-            while Change loop
-               Change := False;
+            --  Actions related to dispatching calls may appear as renamings of
+            --  tags. Do not process this type of renaming because it does not
+            --  use the actual value of the object.
 
-               if Nkind_In (Ren_Obj, N_Explicit_Dereference,
-                                     N_Indexed_Component,
-                                     N_Selected_Component)
-               then
-                  Ren_Obj := Prefix (Ren_Obj);
-                  Change := True;
-
-               elsif Nkind_In (Ren_Obj, N_Type_Conversion,
-                                        N_Unchecked_Type_Conversion)
-               then
-                  Ren_Obj := Expression (Ren_Obj);
-                  Change := True;
-               end if;
-            end loop;
-
-            if Nkind (Ren_Obj) in N_Has_Entity then
-               return Entity (Ren_Obj);
+            if not Is_RTE (Typ, RE_Tag_Ptr) then
+               Search (Name (Ren_Decl));
             end if;
 
-            return Empty;
-         end Extract_Renamed_Object;
+            return Ren_Obj;
+         end Find_Renamed_Object;
 
          --  Local variables
 
@@ -3954,7 +3966,7 @@ package body Exp_Util is
                end if;
 
             elsif Nkind (Stmt) = N_Object_Renaming_Declaration then
-               Ren_Obj := Extract_Renamed_Object (Stmt);
+               Ren_Obj := Find_Renamed_Object (Stmt);
 
                if Present (Ren_Obj)
                  and then Ren_Obj = Trans_Id

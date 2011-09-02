@@ -6519,8 +6519,8 @@ package body Exp_Ch6 is
 
          begin
             --  Ada 2005 (AI-251): In class-wide interface objects we displace
-            --  "this" to reference the base of the object required to get
-            --  access to the TSD of the object.
+            --  "this" to reference the base of the object. This is required to
+            --  get access to the TSD of the object.
 
             if Is_Class_Wide_Type (Etype (Exp))
               and then Is_Interface (Etype (Exp))
