@@ -52,10 +52,12 @@
 #include <iosfwd>
 #include <bits/cxxabi_forced.h>
 
-#define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * sizeof(unsigned long))
+#define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * __SIZEOF_LONG__)
 #define _GLIBCXX_BITSET_WORDS(__n) \
   ((__n) / _GLIBCXX_BITSET_BITS_PER_WORD + \
    ((__n) % _GLIBCXX_BITSET_BITS_PER_WORD == 0 ? 0 : 1))
+
+#define _GLIBCXX_BITSET_BITS_PER_ULL (__CHAR_BIT__ * __SIZEOF_LONG_LONG__)
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -654,6 +656,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _S_do_sanitize(_WordT) { } 
     };
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<size_t _Nb, bool = _Nb < _GLIBCXX_BITSET_BITS_PER_ULL>
+    struct _Sanitize_val
+    {
+      static constexpr unsigned long long
+      _S_do_sanitize_val(unsigned long long __val)
+      { return __val; }
+    };
+
+  template<size_t _Nb>
+    struct _Sanitize_val<_Nb, true>
+    {
+      static constexpr unsigned long long
+      _S_do_sanitize_val(unsigned long long __val)
+      { return __val & ~((~static_cast<unsigned long long>(0)) << _Nb); }
+    };
+#endif
+
   /**
    *  @brief  The %bitset class represents a @e fixed-size sequence of bits.
    *
@@ -819,7 +839,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// Initial bits bitwise-copied from a single word (others set to zero).
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       constexpr bitset(unsigned long long __val)
-      : _Base(__val) { }
+      : _Base(_Sanitize_val<_Nb>::_S_do_sanitize_val(__val)) { }
 #else
       bitset(unsigned long __val)
       : _Base(__val)
@@ -1509,6 +1529,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
 #undef _GLIBCXX_BITSET_WORDS
 #undef _GLIBCXX_BITSET_BITS_PER_WORD
+#undef _GLIBCXX_BITSET_BITS_PER_ULL
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 
