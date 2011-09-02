@@ -6769,7 +6769,6 @@ package body Prj.Nmsc is
       if Source.Unit /= null then
          if Source.Kind = Spec then
             Source.Unit.File_Names (Spec) := Source;
-
          else
             Source.Unit.File_Names (Impl) := Source;
          end if;

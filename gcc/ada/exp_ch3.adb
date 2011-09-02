@@ -4982,7 +4982,7 @@ package body Exp_Ch3 is
                         Insert_Action (N,
                           Make_Object_Declaration (Loc,
                             Defining_Identifier => Obj_Id,
-                            Object_Definition =>
+                            Object_Definition   =>
                               New_Occurrence_Of
                                 (Etype (Object_Definition (N)), Loc),
                             Expression => New_Expr));
@@ -4992,14 +4992,13 @@ package body Exp_Ch3 is
                      --  has been previously expanded into a temporary object.
 
                      else pragma Assert (not Comes_From_Source (Expr_Q));
-
                         Insert_Action (N,
                           Make_Object_Renaming_Declaration (Loc,
                             Defining_Identifier => Obj_Id,
-                            Subtype_Mark =>
+                            Subtype_Mark        =>
                               New_Occurrence_Of
                                 (Etype (Object_Definition (N)), Loc),
-                            Name =>
+                            Name                =>
                               Unchecked_Convert_To
                                 (Etype (Object_Definition (N)), New_Expr)));
                      end if;
