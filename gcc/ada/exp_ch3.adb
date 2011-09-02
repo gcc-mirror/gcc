@@ -5634,6 +5634,12 @@ package body Exp_Ch3 is
 
       elsif CodePeer_Mode then
          return;
+
+      --  Do not create TSS routine Finalize_Address when compiling in Alfa
+      --  mode because it is not necessary and results in useless expansion.
+
+      elsif Alfa_Mode then
+         return;
       end if;
 
       --  Create the body of TSS primitive Finalize_Address. This automatically
@@ -6379,11 +6385,14 @@ package body Exp_Ch3 is
 
             --  Create the body of TSS primitive Finalize_Address. This must
             --  be done before the bodies of all predefined primitives are
-            --  created. If Def_Id is limited, Stream_Input and Streap_Read
-            --  may produce build-in-place allocations and for that the
-            --  expander needs Finalize_Address.
+            --  created. If Def_Id is limited, Stream_Input and Stream_Read
+            --  may produce build-in-place allocations and for those the
+            --  expander needs Finalize_Address. Do not create the body of
+            --  Finalize_Address in Alfa mode since it is not needed.
 
-            Make_Finalize_Address_Body (Def_Id);
+            if not Alfa_Mode then
+               Make_Finalize_Address_Body (Def_Id);
+            end if;
 
             Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
             Append_Freeze_Actions (Def_Id, Predef_List);
