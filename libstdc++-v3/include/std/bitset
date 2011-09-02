@@ -185,15 +185,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return true;
       }
 
-      size_t
-      _M_are_all_aux() const _GLIBCXX_NOEXCEPT
-      {
-	for (size_t __i = 0; __i < _Nw - 1; __i++)
-	  if (_M_w[__i] != ~static_cast<_WordT>(0))
-	    return 0;
-	return ((_Nw - 1) * _GLIBCXX_BITSET_BITS_PER_WORD
-		+ __builtin_popcountl(_M_hiword()));
-      }
+      template<size_t _Nb>
+        bool
+        _M_are_all() const _GLIBCXX_NOEXCEPT
+        {
+	  for (size_t __i = 0; __i < _Nw - 1; __i++)
+	    if (_M_w[__i] != ~static_cast<_WordT>(0))
+	      return false;
+	  return _M_hiword() == (~static_cast<_WordT>(0)
+				 >> (_Nw * _GLIBCXX_BITSET_BITS_PER_WORD
+				     - _Nb));
+	}
 
       bool
       _M_is_any() const _GLIBCXX_NOEXCEPT
@@ -460,9 +462,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_is_equal(const _Base_bitset<1>& __x) const _GLIBCXX_NOEXCEPT
       { return _M_w == __x._M_w; }
 
-      size_t
-      _M_are_all_aux() const _GLIBCXX_NOEXCEPT
-      { return __builtin_popcountl(_M_w); }
+      template<size_t _Nb>
+        bool
+        _M_are_all() const _GLIBCXX_NOEXCEPT
+        { return _M_w == (~static_cast<_WordT>(0)
+			  >> (_GLIBCXX_BITSET_BITS_PER_WORD - _Nb)); }
 
       bool
       _M_is_any() const _GLIBCXX_NOEXCEPT
@@ -605,9 +609,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_is_equal(const _Base_bitset<0>&) const _GLIBCXX_NOEXCEPT
       { return true; }
 
-      size_t
-      _M_are_all_aux() const _GLIBCXX_NOEXCEPT
-      { return 0; }
+      template<size_t _Nb>
+        bool
+        _M_are_all() const _GLIBCXX_NOEXCEPT
+        { return true; }
 
       bool
       _M_is_any() const _GLIBCXX_NOEXCEPT
@@ -1312,7 +1317,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       bool
       all() const _GLIBCXX_NOEXCEPT
-      { return this->_M_are_all_aux() == _Nb; }
+      { return this->template _M_are_all<_Nb>(); }
 
       /**
        *  @brief Tests whether any of the bits are on.
