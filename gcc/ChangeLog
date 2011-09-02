@@ -1,3 +1,13 @@
+2011-09-02  Gary Funck <gary@intrepid.com>
+
+	* opts.c (print_specific_help): Fix off-by-one compare in
+	assertion check.
+	* opts.h (CL_PARAMS, CL_WARNING, CL_OPTIMIZATION, CL_DRIVER,
+	CL_TARGET, CL_COMMON, CL_JOINED, CL_SEPARATE, CL_UNDOCUMENTED):
+	Increase by +5 to allow for more languages.
+	* optc-gen.awk: Generate #if that ensures that the number of
+	languages is within the implementation-defined limit.
+
 2011-09-02  Michael Matz  <matz@suse.de>
 
 	PR middle-end/50260
