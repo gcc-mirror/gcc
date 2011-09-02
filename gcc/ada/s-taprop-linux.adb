@@ -97,12 +97,6 @@ package body System.Task_Primitives.Operations is
    Dispatching_Policy : Character;
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
-   --  The following are effectively constants, but they need to be initialized
-   --  by calling a pthread_ function.
-
-   Mutex_Attr   : aliased pthread_mutexattr_t;
-   Cond_Attr    : aliased pthread_condattr_t;
-
    Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads)
 
@@ -261,9 +255,13 @@ package body System.Task_Primitives.Operations is
    is
       pragma Unreferenced (Prio);
 
-      Result : Interfaces.C.int;
+      Mutex_Attr : aliased pthread_mutexattr_t;
+      Result     : Interfaces.C.int;
 
    begin
+      Result := pthread_mutexattr_init (Mutex_Attr'Access);
+      pragma Assert (Result = 0);
+
       Result := pthread_mutex_init (L, Mutex_Attr'Access);
 
       pragma Assert (Result = 0 or else Result = ENOMEM);
@@ -279,9 +277,13 @@ package body System.Task_Primitives.Operations is
    is
       pragma Unreferenced (Level);
 
-      Result : Interfaces.C.int;
+      Mutex_Attr : aliased pthread_mutexattr_t;
+      Result     : Interfaces.C.int;
 
    begin
+      Result := pthread_mutexattr_init (Mutex_Attr'Access);
+      pragma Assert (Result = 0);
+
       Result := pthread_mutex_init (L, Mutex_Attr'Access);
 
       pragma Assert (Result = 0 or else Result = ENOMEM);
@@ -762,7 +764,9 @@ package body System.Task_Primitives.Operations is
    --------------------
 
    procedure Initialize_TCB (Self_ID : Task_Id; Succeeded : out Boolean) is
-      Result : Interfaces.C.int;
+      Mutex_Attr : aliased pthread_mutexattr_t;
+      Cond_Attr  : aliased pthread_condattr_t;
+      Result     : Interfaces.C.int;
 
    begin
       --  Give the task a unique serial number
@@ -774,6 +778,9 @@ package body System.Task_Primitives.Operations is
       Self_ID.Common.LL.Thread := Null_Thread_Id;
 
       if not Single_Lock then
+         Result := pthread_mutexattr_init (Mutex_Attr'Access);
+         pragma Assert (Result = 0);
+
          Result := pthread_mutex_init (Self_ID.Common.LL.L'Access,
            Mutex_Attr'Access);
          pragma Assert (Result = 0 or else Result = ENOMEM);
@@ -783,6 +790,9 @@ package body System.Task_Primitives.Operations is
             return;
          end if;
       end if;
+
+      Result := pthread_condattr_init (Cond_Attr'Access);
+      pragma Assert (Result = 0);
 
       Result := pthread_cond_init (Self_ID.Common.LL.CV'Access,
         Cond_Attr'Access);
@@ -1027,7 +1037,9 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Initialize (S : in out Suspension_Object) is
-      Result : Interfaces.C.int;
+      Mutex_Attr : aliased pthread_mutexattr_t;
+      Cond_Attr  : aliased pthread_condattr_t;
+      Result     : Interfaces.C.int;
 
    begin
       --  Initialize internal state (always to False (RM D.10(6)))
@@ -1036,6 +1048,9 @@ package body System.Task_Primitives.Operations is
       S.Waiting := False;
 
       --  Initialize internal mutex
+
+      Result := pthread_mutexattr_init (Mutex_Attr'Access);
+      pragma Assert (Result = 0);
 
       Result := pthread_mutex_init (S.L'Access, Mutex_Attr'Access);
 
@@ -1046,6 +1061,9 @@ package body System.Task_Primitives.Operations is
       end if;
 
       --  Initialize internal condition variable
+
+      Result := pthread_condattr_init (Cond_Attr'Access);
+      pragma Assert (Result = 0);
 
       Result := pthread_cond_init (S.CV'Access, Cond_Attr'Access);
 
@@ -1339,12 +1357,6 @@ package body System.Task_Primitives.Operations is
             pragma Assert (Result = 0);
          end if;
       end loop;
-
-      Result := pthread_mutexattr_init (Mutex_Attr'Access);
-      pragma Assert (Result = 0);
-
-      Result := pthread_condattr_init (Cond_Attr'Access);
-      pragma Assert (Result = 0);
 
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
 

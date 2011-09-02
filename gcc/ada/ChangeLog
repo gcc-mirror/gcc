@@ -1,3 +1,20 @@
+2011-09-02  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-taprop-linux.adb (Initialize_Lock, Initialize_TCB,
+	Initialize): Define and initialize the
+	mutex attributes and condition variable attributes locally.
+
+2011-09-02  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_File): Mark as Locally_Removed a naming
+	exception replaced in an extending project.
+	(Check_Object): No error when the other source is locally removed.
+
+2011-09-02  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch6.adb (Is_Build_In_Place_Function_Call): in Alfa mode, allow
+	unresolved calls.
+
 2011-08-31  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in: Clean up handling of x86 and x86-64
