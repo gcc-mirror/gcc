@@ -4956,6 +4956,20 @@ package body Sem_Ch6 is
                  ("subprogram & overrides inherited operation #", Spec, Subp);
             end if;
 
+         --  Special-case to fix a GNAT oddity:  Limited_Controlled is declared
+         --  as an extension of Root_Controlled, and thus has a useless Adjust
+         --  operation. This operation should not be inherited by other limited
+         --  controlled types. An explicit Adjust for them is not overriding.
+
+         elsif Must_Override (Spec)
+           and then Chars (Overridden_Subp) = Name_Adjust
+           and then Is_Limited_Type (Etype (First_Formal (Subp)))
+           and then Present (Alias (Overridden_Subp))
+           and then Is_Predefined_File_Name
+             (Unit_File_Name (Get_Source_Unit (Alias (Overridden_Subp))))
+         then
+            Error_Msg_NE ("subprogram & is not overriding", Spec, Subp);
+
          elsif Is_Subprogram (Subp) then
             if Is_Init_Proc (Subp) then
                null;

@@ -1,3 +1,57 @@
+2011-09-02  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Add_Default_GNAT_Naming_Scheme): Declare "gcc"
+	as the compiler driver so Is_Compilable returns True for sources.
+	* prj-nmsc.adb (Override_Kind): When Kind is Sep, set the source
+	for the body.
+
+2011-09-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_PPC_In_Decl_Part): for a class-wide
+	condition, a reference to a controlling formal must be interpreted
+	as having the class-wide type (or an access to such) so that the
+	inherited condition can be properly applied to any overriding
+	operation (see ARM12 6.6.1 (7)).
+
+2011-09-02  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c (__gnat_is_vms_v7): Fix case and add prototype
+	for LIB$GETSYI.
+
+2011-09-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Do not copy the
+	initializing expression of a class-wide interface object declaration
+	if its type is limited.
+
+2011-09-02  Johannes Kanig  <kanig@adacore.com>
+
+	* sem_util.adb (Unique_Name): To obtain a unique name for enumeration
+	literals, take into account the type name; the type is *not*
+	the scope for an enumeration literal.
+
+2011-09-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Overriding_Indicator): add special check
+	to reject an overriding indicator on a user-defined Adjust
+	subprogram for a limited controlled type.
+
+2011-09-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): add missing call to Resolve
+	for an actual that is a function call returning an unconstrained
+	limited controlled type.
+
+2011-09-02  Tristan Gingold  <gingold@adacore.com>
+
+	* g-socthi-vms.adb (c_sendmsg, c_recvmsg): Use unpacked msg if on vms 7
+
+2011-09-02  Johannes Kanig  <kanig@adacore.com>
+
+	* alfa.ads (Name_Of_Heap_Variable): Change value of the HEAP variable
+	from "HEAP" to __HEAP Change comment that refers to that variable
+	* put_alfa.adb: Change comment that refers to that variable
+
 2011-09-02  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb, exp_ch6.adb, prj-nmsc.adb: Minor reformatting.

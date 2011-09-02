@@ -6766,8 +6766,13 @@ package body Prj.Nmsc is
                        & " kind=" & Source.Kind'Img);
       end if;
 
-      if Source.Kind in Spec_Or_Body and then Source.Unit /= null then
-         Source.Unit.File_Names (Source.Kind) := Source;
+      if Source.Unit /= null then
+         if Source.Kind = Spec then
+            Source.Unit.File_Names (Spec) := Source;
+
+         else
+            Source.Unit.File_Names (Impl) := Source;
+         end if;
       end if;
    end Override_Kind;
 

@@ -436,6 +436,8 @@ package body Prj.Conf is
 
          Compiler := Create_Package (Project_Tree, Config_File, "compiler");
          Create_Attribute
+           (Name_Driver, "gcc", "ada", Pkg => Compiler);
+         Create_Attribute
            (Name_Language_Kind, "unit_based", "ada", Pkg => Compiler);
          Create_Attribute
            (Name_Dependency_Kind, "ALI_File", "ada", Pkg => Compiler);

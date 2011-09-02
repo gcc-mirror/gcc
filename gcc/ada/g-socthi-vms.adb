@@ -42,7 +42,15 @@ package body GNAT.Sockets.Thin is
    pragma Pack (VMS_Msghdr);
    --  On VMS 8.x (unlike other platforms), struct msghdr is packed, so a
    --  specific derived type is required. This structure was not packed on
-   --  VMS 7.3, so sendmsg and recvmsg fail on earlier VMS versions.
+   --  VMS 7.3.
+
+   function Is_VMS_V7 return Integer;
+   pragma Import (C, Is_VMS_V7, "__gnat_is_vms_v7");
+   --  Helper (defined in init.c) that returns a non-zero value if the VMS
+   --  version is 7.x.
+
+   VMS_V7 : constant Boolean := Is_VMS_V7 /= 0;
+   --  True if VMS version is 7.x.
 
    Non_Blocking_Sockets : aliased Fd_Set;
    --  When this package is initialized with Process_Blocking_IO set to True,
@@ -295,15 +303,24 @@ package body GNAT.Sockets.Thin is
    is
       Res : C.int;
 
+      Msg_Addr : System.Address;
+
       GNAT_Msg : Msghdr;
       for GNAT_Msg'Address use Msg;
       pragma Import (Ada, GNAT_Msg);
 
-      VMS_Msg : aliased VMS_Msghdr := VMS_Msghdr (GNAT_Msg);
+      VMS_Msg : aliased VMS_Msghdr;
 
    begin
+      if VMS_V7 then
+         Msg_Addr := Msg;
+      else
+         VMS_Msg := VMS_Msghdr (GNAT_Msg);
+         Msg_Addr := VMS_Msg'Address;
+      end if;
+
       loop
-         Res := Syscall_Recvmsg (S, VMS_Msg'Address, Flags);
+         Res := Syscall_Recvmsg (S, Msg_Addr, Flags);
          exit when SOSC.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
@@ -311,7 +328,9 @@ package body GNAT.Sockets.Thin is
          delay Quantum;
       end loop;
 
-      GNAT_Msg := Msghdr (VMS_Msg);
+      if not VMS_V7 then
+         GNAT_Msg := Msghdr (VMS_Msg);
+      end if;
 
       return System.CRTL.ssize_t (Res);
    end C_Recvmsg;
@@ -327,15 +346,24 @@ package body GNAT.Sockets.Thin is
    is
       Res : C.int;
 
+      Msg_Addr : System.Address;
+
       GNAT_Msg : Msghdr;
       for GNAT_Msg'Address use Msg;
       pragma Import (Ada, GNAT_Msg);
 
-      VMS_Msg : aliased VMS_Msghdr := VMS_Msghdr (GNAT_Msg);
+      VMS_Msg : aliased VMS_Msghdr;
 
    begin
+      if VMS_V7 then
+         Msg_Addr := Msg;
+      else
+         VMS_Msg := VMS_Msghdr (GNAT_Msg);
+         Msg_Addr := VMS_Msg'Address;
+      end if;
+
       loop
-         Res := Syscall_Sendmsg (S, VMS_Msg'Address, Flags);
+         Res := Syscall_Sendmsg (S, Msg_Addr, Flags);
          exit when SOSC.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
@@ -343,7 +371,9 @@ package body GNAT.Sockets.Thin is
          delay Quantum;
       end loop;
 
-      GNAT_Msg := Msghdr (VMS_Msg);
+      if not VMS_V7 then
+         GNAT_Msg := Msghdr (VMS_Msg);
+      end if;
 
       return System.CRTL.ssize_t (Res);
    end C_Sendmsg;

@@ -151,8 +151,8 @@ begin
                   Write_Info_Char (S.Scope_Name (N));
                end loop;
 
-               --  Default value of (0,0) is used for the special HEAP variable
-               --  so use another default value.
+               --  Default value of (0,0) is used for the special __HEAP
+               --  variable so use another default value.
 
                Entity_Line := 0;
                Entity_Col  := 1;
