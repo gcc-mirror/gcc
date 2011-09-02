@@ -94,19 +94,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichword(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichword(size_t __pos) _GLIBCXX_NOEXCEPT
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbyte(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbyte(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbit(size_t __pos) _GLIBCXX_NOEXCEPT
       { return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR _WordT
-      _S_maskbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_maskbit(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
       _WordT&
@@ -389,19 +389,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichword(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichword(size_t __pos) _GLIBCXX_NOEXCEPT
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbyte(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbyte(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbit(size_t __pos) _GLIBCXX_NOEXCEPT
       {  return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR _WordT
-      _S_maskbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_maskbit(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
       _WordT&
@@ -533,19 +533,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichword(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichword(size_t __pos) _GLIBCXX_NOEXCEPT
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbyte(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbyte(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_whichbit(size_t __pos) _GLIBCXX_NOEXCEPT
       {  return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR _WordT
-      _S_maskbit(size_t __pos ) _GLIBCXX_NOEXCEPT
+      _S_maskbit(size_t __pos) _GLIBCXX_NOEXCEPT
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
       // This would normally give access to the data.  The bounds-checking
@@ -650,17 +650,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       typedef unsigned long _WordT;
 
-      static void 
+      static void
       _S_do_sanitize(_WordT& __val) _GLIBCXX_NOEXCEPT
       { __val &= ~((~static_cast<_WordT>(0)) << _Extrabits); }
     };
 
   template<>
     struct _Sanitize<0>
-    { 
+    {
       typedef unsigned long _WordT;
 
-      static void 
+      static void
       _S_do_sanitize(_WordT) _GLIBCXX_NOEXCEPT { } 
     };
 
@@ -1364,7 +1364,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @sa  _Find_first
        */
       size_t
-      _Find_next(size_t __prev ) const _GLIBCXX_NOEXCEPT
+      _Find_next(size_t __prev) const _GLIBCXX_NOEXCEPT
       { return this->_M_do_find_next(__prev, _Nb); }
     };
 
