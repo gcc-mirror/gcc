@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-06-21 10:27+0000\n"
-"PO-Revision-Date: 2011-08-28 15:06+0900\n"
+"PO-Revision-Date: 2011-09-02 18:40+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -20088,7 +20088,7 @@ msgstr "~で反転された格上げ符号無し型と定数との比較です"
 #: c-family/c-common.c:9425
 #, gcc-internal-format
 msgid "comparison of promoted ~unsigned with unsigned"
-msgstr "~で反転された格上げ符号無し型と符合無し型との比較です"
+msgstr "~で反転された格上げ符号無し型と符号無し型との比較です"
 
 #: c-family/c-format.c:127 c-family/c-format.c:314
 #, gcc-internal-format
