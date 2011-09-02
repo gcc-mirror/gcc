@@ -1,4 +1,10 @@
 2011-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable.h (_Hashtable<>::_Hashtable(_Hashtable&&)):
+	rearrange to consistently update __ht._M_rehash_policy before using
+	_M_next_bkt on it.
+
+2011-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Marc Glisse  <marc.glisse@normalesup.org>
 
 	PR libstdc++/50268
