@@ -12747,6 +12747,8 @@ package body Sem_Util is
       then
          return Get_Name_String (Name_Standard) & "__" &
            Get_Name_String (Chars (E));
+      elsif Ekind (E) = E_Enumeration_Literal then
+         return Unique_Name (Etype (E)) & "__" & Get_Name_String (Chars (E));
 
       else
          return Get_Scoped_Name (E);

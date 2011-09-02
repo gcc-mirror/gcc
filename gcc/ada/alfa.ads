@@ -91,8 +91,7 @@ package Alfa is
 
    --    FS . scope line type col entity (-> spec-file . spec-scope)?
 
-   --      What is the ? marke here, is it part of the actual syntax, or is
-   --      it a query about a problem, in which case it should be ???
+   --      (The ? mark stands for an optional entry in the syntax)
 
    --      scope is the ones-origin scope number for the current file (e.g. 2 =
    --      reference to the second FS line in this FD block).
@@ -176,9 +175,9 @@ package Alfa is
    --        s = subprogram reference in a static call
 
    --  Special entries for reads and writes to memory reference a special
-   --  variable called "HEAP". These special entries are present in every scope
-   --  where reads and writes to memory are present. Line and column for this
-   --  special variable are always 0.
+   --  variable called "__HEAP". These special entries are present in every
+   --  scope where reads and writes to memory are present. Line and column for
+   --  this special variable are always 0.
 
    --    Examples: ??? add examples here
 
@@ -336,7 +335,7 @@ package Alfa is
    -- Constants --
    ---------------
 
-   Name_Of_Heap_Variable : constant String := "HEAP";
+   Name_Of_Heap_Variable : constant String := "__HEAP";
    --  Name of special variable used in effects to denote reads and writes
    --  through explicit dereference.
 

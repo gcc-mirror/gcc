@@ -3446,6 +3446,7 @@ package body Sem_Res is
               and then (Is_Controlled (Etype (F)) or else Has_Task (Etype (F)))
             then
                Establish_Transient_Scope (A, False);
+               Resolve (A, Etype (F));
 
             --  A small optimization: if one of the actuals is a concatenation
             --  create a block around a procedure call to recover stack space.

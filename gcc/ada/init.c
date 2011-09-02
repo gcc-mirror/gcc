@@ -1749,6 +1749,8 @@ __gnat_set_features (void)
 
 /* Return true if the VMS version is 7.x.  */
 
+extern unsigned int LIB$GETSYI (int *, ...);
+
 #define SYI$_VERSION 0x1000
 
 int
@@ -1763,7 +1765,7 @@ __gnat_is_vms_v7 (void)
   desc.mbz = 0;
   desc.adr = version;
 
-  status = lib$getsyi (&code, 0, &desc);
+  status = LIB$GETSYI (&code, 0, &desc);
   if ((status & 1) == 1 && version[1] == '7' && version[2] == '.')
     return 1;
   else
