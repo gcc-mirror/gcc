@@ -2307,7 +2307,7 @@ attributes and packages are forbidden in an aggregate project. Here is the
 
 @itemize @bullet
 @item Languages
-@item Source_files, Source_List_File and other attributes dealing with
+@item Source_Files, Source_List_File and other attributes dealing with
   list of sources.
 @item Source_Dirs, Exec_Dir and Object_Dir
 @item Library_Dir, Library_Name and other library-related attributes
@@ -2317,7 +2317,7 @@ attributes and packages are forbidden in an aggregate project. Here is the
 @item Inherit_Source_Path
 @item Excluded_Source_Dirs
 @item Locally_Removed_Files
-@item Excluded_Source_Fies
+@item Excluded_Source_Files
 @item Excluded_Source_List_File
 @item Interfaces
 @end itemize
