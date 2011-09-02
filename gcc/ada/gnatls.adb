@@ -1386,6 +1386,8 @@ procedure Gnatls is
       Write_Str ("switches:");
       Write_Eol;
 
+      Display_Usage_Version_And_Help;
+
       --  Line for -a
 
       Write_Str ("  -a         also output relevant predefined units");

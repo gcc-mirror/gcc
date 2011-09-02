@@ -25,6 +25,7 @@
 
 with Osint;  use Osint;
 with Output; use Output;
+with Switch; use Switch;
 
 with System.WCh_Con; use System.WCh_Con;
 
@@ -54,6 +55,8 @@ package body Bindusg is
       Write_Str ("switches lfile");
       Write_Eol;
       Write_Eol;
+
+      Display_Usage_Version_And_Help;
 
       --  Line for @response_file
 

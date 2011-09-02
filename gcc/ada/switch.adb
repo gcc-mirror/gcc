@@ -98,6 +98,20 @@ package body Switch is
       end if;
    end Check_Version_And_Help_G;
 
+   ------------------------------------
+   -- Display_Usage_Version_And_Help --
+   ------------------------------------
+
+   procedure Display_Usage_Version_And_Help is
+   begin
+      Write_Str ("  --version   Display version and exit");
+      Write_Eol;
+
+      Write_Str ("  --help      Display usage and exit");
+      Write_Eol;
+      Write_Eol;
+   end Display_Usage_Version_And_Help;
+
    ---------------------
    -- Display_Version --
    ---------------------

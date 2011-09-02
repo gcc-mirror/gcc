@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -299,6 +299,7 @@ procedure Gnatfind is
                 & "references. This parameters are optional");
       New_Line;
       Put_Line ("gnatfind switches:");
+      Display_Usage_Version_And_Help;
       Put_Line ("   -a        Consider all files, even when the ali file is "
                 & "readonly");
       Put_Line ("   -aIdir    Specify source files search path");
