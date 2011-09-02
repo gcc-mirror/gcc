@@ -12031,10 +12031,13 @@ package body Exp_Ch9 is
 
             if Has_Attach_Handler (Conc_Typ)
               and then not Restricted_Profile
+              and then not Restriction_Active (No_Dynamic_Attachment)
             then
                Prot_Typ := RE_Static_Interrupt_Protection;
 
-            elsif Has_Interrupt_Handler (Conc_Typ) then
+            elsif Has_Interrupt_Handler (Conc_Typ)
+              and then not Restriction_Active (No_Dynamic_Attachment)
+            then
                Prot_Typ := RE_Dynamic_Interrupt_Protection;
 
             --  The type has explicit entries or generated primitive entry
@@ -12451,8 +12454,8 @@ package body Exp_Ch9 is
       --  When no priority is specified but an xx_Handler pragma is, we default
       --  to System.Interrupts.Default_Interrupt_Priority, see D.3(10).
 
-      elsif Has_Interrupt_Handler (Ptyp)
-        or else Has_Attach_Handler (Ptyp)
+      elsif (Has_Attach_Handler (Ptyp) or else Has_Interrupt_Handler (Ptyp))
+        and then not Restriction_Active (No_Dynamic_Attachment)
       then
          Append_To (Args,
            New_Reference_To (RTE (RE_Default_Interrupt_Priority), Loc));
@@ -12475,9 +12478,10 @@ package body Exp_Ch9 is
       --  context of dispatching select statements.
 
       if Has_Entry
-        or else Has_Interrupt_Handler (Ptyp)
-        or else Has_Attach_Handler (Ptyp)
         or else Has_Interfaces (Protect_Rec)
+        or else
+          ((Has_Attach_Handler (Ptyp) or else Has_Interrupt_Handler (Ptyp))
+              and then not Restriction_Active (No_Dynamic_Attachment))
       then
          declare
             Pkg_Id      : constant RTU_Id  :=
