@@ -5550,17 +5550,20 @@ package body Sem_Ch6 is
 
                declare
                   E : constant Entity_Id := Entity (N);
+
                begin
-                  --  ???Quantified expressions get analyzed later, so E can be
-                  --  empty at this point. In this case, we suppress the
+                  --  ???Quantified expressions get analyzed later, so E can
+                  --  be empty at this point. In this case, we suppress the
                   --  warning, just in case E is assignable. It seems better to
                   --  have false negatives than false positives. At some point,
                   --  we should make the warning more accurate, either by
-                  --  analyzing quantified expressions earlier, or moving this
-                  --  processing later.
+                  --  analyzing quantified expressions earlier, or moving
+                  --  this processing later.
 
-                  if No (E) or else
-                    (Is_Entity_Name (N) and then Ekind (E) in Assignable_Kind)
+                  if No (E)
+                    or else
+                      (Is_Entity_Name (N)
+                        and then Ekind (E) in Assignable_Kind)
                   then
                      Found := True;
                   end if;

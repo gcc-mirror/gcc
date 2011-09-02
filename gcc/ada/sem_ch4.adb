@@ -4322,7 +4322,8 @@ package body Sem_Ch4 is
             Error_Msg_Node_2 := First_Subtype (Prefix_Type);
             Error_Msg_NE ("no selector& for}", N, Sel);
 
-            --  If prefix is incomplete, dd information.
+            --  If prefix is incomplete, dd information
+            --  What is dd???
 
             if Is_Incomplete_Type (Type_To_Use) then
                declare
@@ -4332,11 +4333,13 @@ package body Sem_Ch4 is
                   if From_With_Type (Scope (Type_To_Use)) then
                      Error_Msg_NE
                        ("\limited view of& has no components", N, Inc);
+
                   else
                      Error_Msg_NE
                        ("\premature usage of incomplete type&", N, Inc);
-                     if
-                       Nkind (Parent (Inc)) = N_Incomplete_Type_Declaration
+
+                     if Nkind (Parent (Inc)) =
+                                          N_Incomplete_Type_Declaration
                      then
                         Set_Premature_Use (Parent (Inc), N);
                      end if;
