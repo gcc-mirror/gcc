@@ -3320,12 +3320,11 @@ package body Sem_Ch3 is
                --  In SPARK, a declaration of unconstrained type is allowed
                --  only for constants of type string.
 
-               --  Why no check for Comes_From_Source here, seems wrong ???
-               --  Where is check to differentiate string case ???
-
-               Check_SPARK_Restriction
-                 ("declaration of object of unconstrained type not allowed",
-                  E);
+               if Nkind (E) = N_String_Literal then
+                  Check_SPARK_Restriction
+                    ("declaration of object of unconstrained type not allowed",
+                     E);
+               end if;
 
                --  Unconstrained variables not allowed in Ada 83 mode
 
