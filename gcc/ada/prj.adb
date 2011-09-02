@@ -366,8 +366,10 @@ package body Prj is
 
    procedure Project_Changed (Iter : in out Source_Iterator) is
    begin
-      Iter.Language := Iter.Project.Project.Languages;
-      Language_Changed (Iter);
+      if Iter.Project /= null then
+         Iter.Language := Iter.Project.Project.Languages;
+         Language_Changed (Iter);
+      end if;
    end Project_Changed;
 
    ----------------------
@@ -392,9 +394,7 @@ package body Prj is
          if Iter.All_Projects then
             Iter.Project := Iter.Project.Next;
 
-            if Iter.Project /= null then
-               Project_Changed (Iter);
-            end if;
+            Project_Changed (Iter);
 
          else
             Iter.Project := null;
@@ -493,7 +493,6 @@ package body Prj is
          Tree    : Project_Tree_Ref)
       is
          List : Project_List;
-         Agg  : Aggregated_Project_List;
 
       begin
          if not Get (Seen, Project) then
@@ -525,12 +524,16 @@ package body Prj is
             if Include_Aggregated
               and then Project.Qualifier = Aggregate
             then
-               Agg := Project.Aggregated_Projects;
-               while Agg /= null loop
-                  pragma Assert (Agg.Project /= No_Project);
-                  Recursive_Check (Agg.Project, Agg.Tree);
-                  Agg := Agg.Next;
-               end loop;
+               declare
+                  Agg : Aggregated_Project_List;
+               begin
+                  Agg := Project.Aggregated_Projects;
+                  while Agg /= null loop
+                     pragma Assert (Agg.Project /= No_Project);
+                     Recursive_Check (Agg.Project, Agg.Tree);
+                     Agg := Agg.Next;
+                  end loop;
+               end;
             end if;
 
             if Imported_First then
