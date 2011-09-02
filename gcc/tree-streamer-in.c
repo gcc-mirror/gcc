@@ -841,7 +841,6 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
 
   BINFO_OFFSET (expr) = stream_read_tree (ib, data_in);
   BINFO_VTABLE (expr) = stream_read_tree (ib, data_in);
-  BINFO_VIRTUALS (expr) = stream_read_tree (ib, data_in);
   BINFO_VPTR_FIELD (expr) = stream_read_tree (ib, data_in);
 
   len = streamer_read_uhwi (ib);

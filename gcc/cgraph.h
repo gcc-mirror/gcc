@@ -314,9 +314,6 @@ struct GTY(()) cgraph_indirect_call_info
   HOST_WIDE_INT anc_offset;
   /* OBJ_TYPE_REF_TOKEN of a polymorphic call (if polymorphic is set).  */
   HOST_WIDE_INT otr_token;
-  /* Delta by which must be added to this parameter to compensate for a skipped
-     this adjusting thunk.  */
-  HOST_WIDE_INT thunk_delta;
   /* Type of the object from OBJ_TYPE_REF_OBJECT. */
   tree otr_type;
   /* Index of the parameter that is called.  */
@@ -507,8 +504,7 @@ struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
 struct cgraph_node *cgraph_create_function_alias (tree, tree);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
-void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *,
-			      HOST_WIDE_INT);
+void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *);
 bool cgraph_only_called_directly_p (struct cgraph_node *);
 
 struct cgraph_asm_node *cgraph_add_asm_node (tree);

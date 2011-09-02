@@ -982,51 +982,6 @@ gimple_fold_builtin (gimple stmt)
   return result;
 }
 
-/* Return a declaration of a function which an OBJ_TYPE_REF references. TOKEN
-   is integer form of OBJ_TYPE_REF_TOKEN of the reference expression.
-   KNOWN_BINFO carries the binfo describing the true type of
-   OBJ_TYPE_REF_OBJECT(REF).  If a call to the function must be accompanied
-   with a this adjustment, the constant which should be added to this pointer
-   is stored to *DELTA.  If REFUSE_THUNKS is true, return NULL if the function
-   is a thunk (other than a this adjustment which is dealt with by DELTA). */
-
-tree
-gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo,
-				  tree *delta)
-{
-  HOST_WIDE_INT i;
-  tree v, fndecl;
-
-  v = BINFO_VIRTUALS (known_binfo);
-  /* If there is no virtual methods leave the OBJ_TYPE_REF alone.  */
-  if (!v)
-    return NULL_TREE;
-  i = 0;
-  while (i != token)
-    {
-      i += (TARGET_VTABLE_USES_DESCRIPTORS
-	    ? TARGET_VTABLE_USES_DESCRIPTORS : 1);
-      v = TREE_CHAIN (v);
-    }
-
-  /* If BV_VCALL_INDEX is non-NULL, give up.  */
-  if (TREE_TYPE (v))
-    return NULL_TREE;
-
-  fndecl = TREE_VALUE (v);
-
-  /* When cgraph node is missing and function is not public, we cannot
-     devirtualize.  This can happen in WHOPR when the actual method
-     ends up in other partition, because we found devirtualization
-     possibility too late.  */
-  if (!can_refer_decl_in_current_unit_p (TREE_VALUE (v)))
-    return NULL_TREE;
-
-  *delta = TREE_PURPOSE (v);
-  gcc_checking_assert (host_integerp (*delta, 0));
-  return fndecl;
-}
-
 /* Generate code adjusting the first parameter of a call statement determined
    by GSI by DELTA.  */
 
@@ -1149,7 +1104,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
   callee = gimple_call_fn (stmt);
   if (callee && TREE_CODE (callee) == OBJ_TYPE_REF)
     {
-      tree binfo, fndecl, delta, obj;
+      tree binfo, fndecl, obj;
       HOST_WIDE_INT token;
 
       if (gimple_call_addr_fndecl (OBJ_TYPE_REF_EXPR (callee)) != NULL_TREE)
@@ -1163,10 +1118,9 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
       if (!binfo)
 	return false;
       token = TREE_INT_CST_LOW (OBJ_TYPE_REF_TOKEN (callee));
-      fndecl = gimple_get_virt_method_for_binfo (token, binfo, &delta);
+      fndecl = gimple_get_virt_method_for_binfo (token, binfo);
       if (!fndecl)
 	return false;
-      gcc_assert (integer_zerop (delta));
       gimple_call_set_fndecl (stmt, fndecl);
       return true;
     }
@@ -3062,6 +3016,60 @@ tree
 fold_const_aggregate_ref (tree t)
 {
   return fold_const_aggregate_ref_1 (t, NULL);
+}
+
+/* Return a declaration of a function which an OBJ_TYPE_REF references. TOKEN
+   is integer form of OBJ_TYPE_REF_TOKEN of the reference expression.
+   KNOWN_BINFO carries the binfo describing the true type of
+   OBJ_TYPE_REF_OBJECT(REF).  */
+
+tree
+gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
+{
+  unsigned HOST_WIDE_INT offset, size;
+  tree v, fn;
+
+  v = BINFO_VTABLE (known_binfo);
+  /* If there is no virtual methods table, leave the OBJ_TYPE_REF alone.  */
+  if (!v)
+    return NULL_TREE;
+
+  if (TREE_CODE (v) == POINTER_PLUS_EXPR)
+    {
+      offset = tree_low_cst (TREE_OPERAND (v, 1), 1) * BITS_PER_UNIT;
+      v = TREE_OPERAND (v, 0);
+    }
+  else
+    offset = 0;
+
+  if (TREE_CODE (v) != ADDR_EXPR)
+    return NULL_TREE;
+  v = TREE_OPERAND (v, 0);
+
+  if (TREE_CODE (v) != VAR_DECL
+      || !DECL_VIRTUAL_P (v)
+      || !DECL_INITIAL (v))
+    return NULL_TREE;
+  gcc_checking_assert (TREE_CODE (TREE_TYPE (v)) == ARRAY_TYPE);
+  size = tree_low_cst (TYPE_SIZE (TREE_TYPE (TREE_TYPE (v))), 1);
+  offset += token * size;
+  fn = fold_ctor_reference (TREE_TYPE (TREE_TYPE (v)), DECL_INITIAL (v),
+			    offset, size);
+  if (!fn)
+    return NULL_TREE;
+  gcc_assert (TREE_CODE (fn) == ADDR_EXPR
+	      || TREE_CODE (fn) == FDESC_EXPR);
+  fn = TREE_OPERAND (fn, 0);
+  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
+
+  /* When cgraph node is missing and function is not public, we cannot
+     devirtualize.  This can happen in WHOPR when the actual method
+     ends up in other partition, because we found devirtualization
+     possibility too late.  */
+  if (!can_refer_decl_in_current_unit_p (fn))
+    return NULL_TREE;
+
+  return fn;
 }
 
 /* Return true iff VAL is a gimple expression that is known to be

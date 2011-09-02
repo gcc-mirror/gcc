@@ -1614,12 +1614,10 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 }
 
 /* If TARGET is an addr_expr of a function declaration, make it the destination
-   of an indirect edge IE and return the edge.  Otherwise, return NULL.  Delta,
-   if non-NULL, is an integer constant that must be added to this pointer
-   (first parameter).  */
+   of an indirect edge IE and return the edge.  Otherwise, return NULL.  */
 
 struct cgraph_edge *
-ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target, tree delta)
+ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 {
   struct cgraph_node *callee;
 
@@ -1632,11 +1630,11 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target, tree delta)
     return NULL;
   ipa_check_create_node_params ();
 
-  /* We can not make edges to inline clones.  It is bug that someone removed the cgraph
-     node too early.  */
+  /* We can not make edges to inline clones.  It is bug that someone removed
+     the cgraph node too early.  */
   gcc_assert (!callee->global.inlined_to);
 
-  cgraph_make_edge_direct (ie, callee, delta ? tree_low_cst (delta, 0) : 0);
+  cgraph_make_edge_direct (ie, callee);
   if (dump_file)
     {
       fprintf (dump_file, "ipa-prop: Discovered %s call to a known target "
@@ -1648,13 +1646,6 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target, tree delta)
 	print_gimple_stmt (dump_file, ie->call_stmt, 2, TDF_SLIM);
       else
 	fprintf (dump_file, "with uid %i\n", ie->lto_stmt_uid);
-
-      if (delta)
-	{
-	  fprintf (dump_file, "          Thunk delta is ");
-	  print_generic_expr (dump_file, delta, 0);
-	  fprintf (dump_file, "\n");
-	}
     }
   callee = cgraph_function_or_thunk_node (callee, NULL);
 
@@ -1683,7 +1674,7 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
   else
     return NULL;
 
-  return ipa_make_edge_direct_to_target (ie, target, NULL_TREE);
+  return ipa_make_edge_direct_to_target (ie, target);
 }
 
 /* Try to find a destination for indirect edge IE that corresponds to a
@@ -1695,7 +1686,7 @@ static struct cgraph_edge *
 try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 				   struct ipa_jump_func *jfunc)
 {
-  tree binfo, type, target, delta;
+  tree binfo, type, target;
   HOST_WIDE_INT token;
 
   if (jfunc->type == IPA_JF_KNOWN_TYPE)
@@ -1710,12 +1701,12 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
   type = ie->indirect_info->otr_type;
   binfo = get_binfo_at_offset (binfo, ie->indirect_info->anc_offset, type);
   if (binfo)
-    target = gimple_get_virt_method_for_binfo (token, binfo, &delta);
+    target = gimple_get_virt_method_for_binfo (token, binfo);
   else
     return NULL;
 
   if (target)
-    return ipa_make_edge_direct_to_target (ie, target, delta);
+    return ipa_make_edge_direct_to_target (ie, target);
   else
     return NULL;
 }
