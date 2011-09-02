@@ -2263,6 +2263,8 @@ package body Sem_Ch5 is
 
       --  If domain of iteration is an expression, create a declaration for it,
       --  so that finalization actions are introduced outside of the loop.
+      --  The declaration must be a renaming because the  body of the loop may
+      --  assign to elements.
 
       if not Is_Entity_Name (Iter_Name) then
          declare
@@ -2273,10 +2275,10 @@ package body Sem_Ch5 is
             Typ := Etype (Iter_Name);
 
             Decl :=
-              Make_Object_Declaration (Loc,
+              Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Id,
-                Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                Expression          => Relocate_Node (Iter_Name));
+                Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
+                Name                => Relocate_Node (Iter_Name));
 
             Insert_Actions (Parent (Parent (N)), New_List (Decl));
             Rewrite (Name (N), New_Occurrence_Of (Id, Loc));

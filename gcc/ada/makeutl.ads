@@ -336,7 +336,7 @@ package Makeutl is
       Need_Compilation : Boolean := True;
       Need_Binding     : Boolean := True;
       Need_Linking     : Boolean := True;
-      --  Which of the compilation phases are needed for this project tree.
+      --  Which of the compilation phases are needed for this project tree
    end record;
    type Builder_Data_Access is access all Builder_Project_Tree_Data;
 
@@ -459,10 +459,10 @@ package Makeutl is
                   Id   : Source_Id        := null;
 
                when Format_Gnatmake =>
-                  File      : File_Name_Type := No_File;
-                  Unit      : Unit_Name_Type := No_Unit_Name;
-                  Index     : Int            := 0;
-                  Project   : Project_Id     := No_Project;
+                  File    : File_Name_Type := No_File;
+                  Unit    : Unit_Name_Type := No_Unit_Name;
+                  Index   : Int            := 0;
+                  Project : Project_Id     := No_Project;
             end case;
          end record;
       --  Information about files stored in the queue. The exact information
@@ -473,7 +473,7 @@ package Makeutl is
 
       procedure Initialize
         (Queue_Per_Obj_Dir : Boolean;
-         Force : Boolean := False);
+         Force             : Boolean := False);
       --  Initialize the queue.
       --  Queue_Per_Obj_Dir matches the --single-compile-per-obj-dir switch:
       --  when True, there cannot be simultaneous compilations with the object

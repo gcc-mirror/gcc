@@ -37,7 +37,7 @@ with Snames;   use Snames;
 with Targparm; use Targparm;
 
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
-with Ada.Directories;            use Ada.Directories;
+with Ada.Directories;            use Ada, Ada.Directories;
 with Ada.Strings;                use Ada.Strings;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
 with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
@@ -217,8 +217,8 @@ package body Prj.Nmsc is
 
    generic
       with procedure Callback
-        (Path            : Path_Information;
-         Pattern_Index   : Natural);
+        (Path          : Path_Information;
+         Pattern_Index : Natural);
    procedure Expand_Subdirectory_Pattern
      (Project       : Project_Id;
       Data          : in out Tree_Processing_Data;
@@ -392,8 +392,8 @@ package body Prj.Nmsc is
    --  the same value.
 
    procedure Get_Directories
-     (Project     : Project_Id;
-      Data        : in out Tree_Processing_Data);
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data);
    --  Get the object directory, the exec directory and the source directories
    --  of a project.
 
@@ -636,11 +636,11 @@ package body Prj.Nmsc is
       Locally_Removed     : Boolean               := False;
       Location            : Source_Ptr            := No_Location)
    is
-      Config    : constant Language_Config := Lang_Id.Config;
-      UData     : Unit_Index;
-      Add_Src   : Boolean;
-      Source    : Source_Id;
-      Prev_Unit : Unit_Index := No_Unit_Index;
+      Config            : constant Language_Config := Lang_Id.Config;
+      UData             : Unit_Index;
+      Add_Src           : Boolean;
+      Source            : Source_Id;
+      Prev_Unit         : Unit_Index := No_Unit_Index;
       Source_To_Replace : Source_Id := No_Source;
 
    begin
@@ -665,9 +665,7 @@ package body Prj.Nmsc is
          Source := Source_Files_Htable.Get
            (Data.Tree.Source_Files_HT, File_Name);
 
-         if Source /= No_Source
-           and then Source.Index = Index
-         then
+         if Source /= No_Source and then Source.Index = Index then
             Add_Src := False;
          end if;
       end if;
@@ -891,9 +889,10 @@ package body Prj.Nmsc is
          Remove_Source (Data.Tree, Source_To_Replace, Id);
       end if;
 
-      if Data.Tree.Replaced_Source_Number > 0 and then
-         Replaced_Source_HTable.Get (Data.Tree.Replaced_Sources, Id.File) /=
-           No_File
+      if Data.Tree.Replaced_Source_Number > 0
+        and then
+          Replaced_Source_HTable.Get
+            (Data.Tree.Replaced_Sources, Id.File) /= No_File
       then
          Replaced_Source_HTable.Remove (Data.Tree.Replaced_Sources, Id.File);
          Data.Tree.Replaced_Source_Number :=
@@ -1023,7 +1022,7 @@ package body Prj.Nmsc is
      (Project : Project_Id;
       Data    : in out Tree_Processing_Data)
    is
-      Shared : constant Shared_Project_Tree_Data_Access := Data.Tree.Shared;
+      Shared   : constant Shared_Project_Tree_Data_Access := Data.Tree.Shared;
       Prj_Data : Project_Processing_Data;
 
    begin
@@ -1031,7 +1030,7 @@ package body Prj.Nmsc is
 
       Initialize (Prj_Data, Project);
 
-      Check_If_Externally_Built   (Project, Data);
+      Check_If_Externally_Built (Project, Data);
 
       if Project.Qualifier /= Aggregate then
          Get_Directories             (Project, Data);
@@ -1043,8 +1042,8 @@ package body Prj.Nmsc is
       end if;
 
       case Project.Qualifier is
-         when Dry       => Check_Abstract_Project  (Project, Data);
-         when others    => null;
+         when Dry    => Check_Abstract_Project (Project, Data);
+         when others => null;
       end case;
 
       --  Check configuration. This must be done even for gnatmake (even though
@@ -1125,8 +1124,8 @@ package body Prj.Nmsc is
      (Project : Project_Id;
       Data    : in out Tree_Processing_Data)
    is
-      Shared       : constant Shared_Project_Tree_Data_Access :=
-        Data.Tree.Shared;
+      Shared          : constant Shared_Project_Tree_Data_Access :=
+                          Data.Tree.Shared;
 
       Dot_Replacement : File_Name_Type := No_File;
       Casing          : Casing_Type    := All_Lower_Case;
@@ -1418,8 +1417,9 @@ package body Prj.Nmsc is
                            Lang_Index.Config.Compiler_Driver :=
                              File_Name_Type (Element.Value.Value);
 
-                        when Name_Required_Switches |
-                             Name_Leading_Required_Switches =>
+                        when Name_Required_Switches
+                           | Name_Leading_Required_Switches
+                           =>
                            Put (Into_List =>
                                   Lang_Index.Config.
                                     Compiler_Leading_Required_Switches,
@@ -2951,8 +2951,8 @@ package body Prj.Nmsc is
 
       if Project.Library_Name /= No_Name then
          if Current_Verbosity = High then
-            Write_Attr ("Library name: ",
-                        Get_Name_String (Project.Library_Name));
+            Write_Attr
+              ("Library name: ", Get_Name_String (Project.Library_Name));
          end if;
 
          pragma Assert (Lib_Dir.Kind = Single);
@@ -3096,7 +3096,7 @@ package body Prj.Nmsc is
 
       Project.Library :=
         Project.Library_Dir /= No_Path_Information
-          and then Project.Library_Name /= No_Name;
+        and then Project.Library_Name /= No_Name;
 
       if Project.Extends = No_Project then
          case Project.Qualifier is
@@ -5178,13 +5178,13 @@ package body Prj.Nmsc is
 
       No_Sources : constant Boolean :=
                      ((not Source_Files.Default
-                        and then Source_Files.Values = Nil_String)
-                       or else
-                         (not Source_Dirs.Default
-                           and then Source_Dirs.Values = Nil_String)
-                       or else
-                         (not Languages.Default
-                           and then Languages.Values = Nil_String))
+                       and then Source_Files.Values = Nil_String)
+                      or else
+                        (not Source_Dirs.Default
+                         and then Source_Dirs.Values = Nil_String)
+                      or else
+                        (not Languages.Default
+                         and then Languages.Values = Nil_String))
                      and then Project.Extends = No_Project;
 
    --  Start of processing for Get_Directories
@@ -5231,9 +5231,7 @@ package body Prj.Nmsc is
                Must_Exist       => False,
                Externally_Built => Project.Externally_Built);
 
-            if not Dir_Exists
-              and then not Project.Externally_Built
-            then
+            if not Dir_Exists and then not Project.Externally_Built then
                --  The object directory does not exist, report an error if the
                --  project is not externally built.
 
@@ -5273,7 +5271,7 @@ package body Prj.Nmsc is
 
       --  We set the object directory to its default
 
-      Project.Exec_Directory   := Project.Object_Directory;
+      Project.Exec_Directory := Project.Object_Directory;
 
       if Exec_Dir.Value /= Empty_String then
          Get_Name_String (Exec_Dir.Value);
@@ -5342,19 +5340,19 @@ package body Prj.Nmsc is
 
          Remove_Source_Dirs := False;
          Add_To_Or_Remove_From_Source_Dirs
-           (Path  => (Name         => Project.Directory.Name,
-                      Display_Name => Project.Directory.Display_Name),
-            Rank  => 1);
+           (Path => (Name         => Project.Directory.Name,
+                     Display_Name => Project.Directory.Display_Name),
+            Rank => 1);
 
       else
          Remove_Source_Dirs := False;
          Find_Source_Dirs
-           (Project         => Project,
-            Data            => Data,
-            Patterns        => Source_Dirs.Values,
-            Ignore          => Ignore_Source_Sub_Dirs.Values,
-            Search_For      => Search_Directories,
-            Resolve_Links   => Opt.Follow_Links_For_Dirs);
+           (Project       => Project,
+            Data          => Data,
+            Patterns      => Source_Dirs.Values,
+            Ignore        => Ignore_Source_Sub_Dirs.Values,
+            Search_For    => Search_Directories,
+            Resolve_Links => Opt.Follow_Links_For_Dirs);
 
          if Project.Source_Dirs = Nil_String
            and then Project.Qualifier = Standard
@@ -5371,12 +5369,12 @@ package body Prj.Nmsc is
       then
          Remove_Source_Dirs := True;
          Find_Source_Dirs
-           (Project         => Project,
-            Data            => Data,
-            Patterns        => Excluded_Source_Dirs.Values,
-            Ignore          => Nil_String,
-            Search_For      => Search_Directories,
-            Resolve_Links   => Opt.Follow_Links_For_Dirs);
+           (Project       => Project,
+            Data          => Data,
+            Patterns      => Excluded_Source_Dirs.Values,
+            Ignore        => Nil_String,
+            Search_For    => Search_Directories,
+            Resolve_Links => Opt.Follow_Links_For_Dirs);
       end if;
 
       Debug_Output ("putting source directories in canonical cases");
@@ -6291,9 +6289,11 @@ package body Prj.Nmsc is
 
          declare
             Source_File_Path_Name : constant String :=
-              Path_Name_Of
-                (File_Name_Type (Source_List_File.Value),
-                 Project.Project.Directory.Display_Name);
+                                      Path_Name_Of
+                                        (File_Name_Type
+                                           (Source_List_File.Value),
+                                         Project.Project.
+                                           Directory.Display_Name);
 
          begin
             Has_Explicit_Sources := True;
@@ -7254,6 +7254,7 @@ package body Prj.Nmsc is
 
       Source_Dir := Project.Project.Source_Dirs;
       Src_Dir_Rank := Project.Project.Source_Dir_Ranks;
+
       while Source_Dir /= Nil_String loop
          begin
             Num_Nod := Shared.Number_Lists.Table (Src_Dir_Rank);
@@ -7303,7 +7304,7 @@ package body Prj.Nmsc is
 
                      if not Opt.Follow_Links_For_Files
                        or else Is_Regular_File
-                                 (Display_Source_Directory & Name (1 .. Last))
+                         (Display_Source_Directory & Name (1 .. Last))
                      then
                         Name_Len := Last;
                         Name_Buffer (1 .. Name_Len) := Name (1 .. Last);
@@ -7459,8 +7460,8 @@ package body Prj.Nmsc is
          if Source.Unit /= No_Unit_Index then
             declare
                Unit_Except : Unit_Exception :=
-                 Unit_Exceptions_Htable.Get
-                   (Project.Unit_Exceptions, Source.Unit.Name);
+                               Unit_Exceptions_Htable.Get
+                                 (Project.Unit_Exceptions, Source.Unit.Name);
 
             begin
                Unit_Except.Name := Source.Unit.Name;
@@ -7516,7 +7517,7 @@ package body Prj.Nmsc is
 
       procedure Check_Missing_Sources is
          Extending    : constant Boolean :=
-           Project.Project.Extends /= No_Project;
+                          Project.Project.Extends /= No_Project;
          Language     : Language_Ptr;
          Source       : Source_Id;
          Alt_Lang     : Language_List;
@@ -7787,8 +7788,8 @@ package body Prj.Nmsc is
             Id.Project := Project.Project;
 
             Lang_Id := Project.Project.Languages;
-            while Lang_Id /= No_Language_Index and then
-            Lang_Id.Name /= Src.Language
+            while Lang_Id /= No_Language_Index
+              and then Lang_Id.Name /= Src.Language
             loop
                Lang_Id := Lang_Id.Next;
             end loop;
@@ -7802,9 +7803,9 @@ package body Prj.Nmsc is
                   " in source info file");
             end if;
 
-            Id.Language            := Lang_Id;
-            Id.Kind                := Src.Kind;
-            Id.Index               := Src.Index;
+            Id.Language := Lang_Id;
+            Id.Kind     := Src.Kind;
+            Id.Index    := Src.Index;
 
             Id.Path :=
               (Path_Name_Type (Src.Display_Path_Name),
@@ -7812,8 +7813,7 @@ package body Prj.Nmsc is
 
             Name_Len := 0;
             Add_Str_To_Name_Buffer
-              (Ada.Directories.Simple_Name
-                 (Get_Name_String (Src.Path_Name)));
+              (Directories.Simple_Name (Get_Name_String (Src.Path_Name)));
             Id.File := Name_Find;
 
             Id.Next_With_File_Name :=
@@ -7822,16 +7822,16 @@ package body Prj.Nmsc is
 
             Name_Len := 0;
             Add_Str_To_Name_Buffer
-              (Ada.Directories.Simple_Name
+              (Directories.Simple_Name
                  (Get_Name_String (Src.Display_Path_Name)));
             Id.Display_File := Name_Find;
 
-            Id.Dep_Name            := Dependency_Name
-              (Id.File, Id.Language.Config.Dependency_Kind);
-            Id.Naming_Exception    := Src.Naming_Exception;
-            Id.Object              := Object_Name
-              (Id.File, Id.Language.Config.Object_File_Suffix);
-            Id.Switches            := Switches_Name (Id.File);
+            Id.Dep_Name         :=
+              Dependency_Name (Id.File, Id.Language.Config.Dependency_Kind);
+            Id.Naming_Exception := Src.Naming_Exception;
+            Id.Object           :=
+              Object_Name (Id.File, Id.Language.Config.Object_File_Suffix);
+            Id.Switches         := Switches_Name (Id.File);
 
             --  Add the source id to the Unit_Sources_HT hash table, if the
             --  unit name is not null.
@@ -7840,7 +7840,8 @@ package body Prj.Nmsc is
 
                declare
                   UData : Unit_Index :=
-                    Units_Htable.Get (Data.Tree.Units_HT, Src.Unit_Name);
+                            Units_Htable.Get
+                              (Data.Tree.Units_HT, Src.Unit_Name);
                begin
                   if UData = No_Unit_Index then
                      UData := new Unit_Data;
@@ -8014,9 +8015,8 @@ package body Prj.Nmsc is
          when Warning | Error =>
             declare
                Msg : constant String :=
-                       "<there are no " &
-                       Lang_Name &
-                       " sources in this project";
+                       "<there are no "
+                       & Lang_Name & " sources in this project";
 
             begin
                Error_Msg_Warn := Data.Flags.When_No_Sources = Warning;

@@ -128,8 +128,8 @@ package body Prj.Util is
    ---------------
 
    procedure Duplicate
-     (This    : in out Name_List_Index;
-      Shared  : Shared_Project_Tree_Data_Access)
+     (This   : in out Name_List_Index;
+      Shared : Shared_Project_Tree_Data_Access)
    is
       Old_Current : Name_List_Index;
       New_Current : Name_List_Index;

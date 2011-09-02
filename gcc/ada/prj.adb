@@ -358,7 +358,6 @@ package body Prj is
 
       Name_Len := Name_Len - 1;
       return Name_Find;
-
    end Extend_Name;
 
    ---------------------
@@ -377,7 +376,7 @@ package body Prj is
 
    procedure Language_Changed (Iter : in out Source_Iterator) is
    begin
-      Iter.Current  := No_Source;
+      Iter.Current := No_Source;
 
       if Iter.Language_Name /= No_Name then
          while Iter.Language /= null
@@ -580,6 +579,7 @@ package body Prj is
 
       begin
          Iterator := For_Each_Source (In_Tree => Tree, Project => Proj);
+
          while Element (Iterator) /= No_Source loop
             if Element (Iterator).File = Base_Name
               and then (Index = 0 or else Element (Iterator).Index = Index)
@@ -626,6 +626,7 @@ package body Prj is
                Include_Aggregated => False,
                With_State         => Result);
          end if;
+
       else
          Look_For_Sources (No_Project, In_Tree, Result);
       end if;
@@ -1363,8 +1364,8 @@ package body Prj is
          procedure For_All_Projects is
            new For_Every_Project_Imported (Boolean, Recursive_Add);
 
-         Dummy   : Boolean := False;
-         List    : Project_List;
+         Dummy : Boolean := False;
+         List  : Project_List;
 
       begin
          List := Local_Tree.Projects;
