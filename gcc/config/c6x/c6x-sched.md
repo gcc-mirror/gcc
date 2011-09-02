@@ -183,14 +183,14 @@
        (and (eq_attr "cross" "n")
 	    (and (eq_attr "units" "ls")
 		 (eq_attr "dest_regfile" "a"))))
-  "(s1,nothing*2,s1w)|(l1,nothing*2,l1w)")
+  "(fps1+s1,nothing*2,s1w)|(fpl1+l1,nothing*2,l1w)")
 
 (define_insn_reservation "adddp_ls1n" 7
   (and (eq_attr "type" "adddp")
        (and (eq_attr "cross" "n")
 	    (and (eq_attr "units" "ls")
 		 (eq_attr "dest_regfile" "a"))))
-  "((s1)*2,nothing*3,s1w*2)|((l1)*2,nothing*3,l1w*2)")
+  "(adddps1+(s1)*2,nothing*3,s1w*2)|(adddpl1+(l1)*2,nothing*3,l1w*2)")
 
 (define_insn_reservation "single_dls1n" 1
   (and (eq_attr "type" "single")
@@ -416,14 +416,14 @@
        (and (eq_attr "cross" "n")
 	    (and (eq_attr "units" "ls")
 		 (eq_attr "dest_regfile" "b"))))
-  "(s2,nothing*2,s2w)|(l2,nothing*2,l2w)")
+  "(fps2+s2,nothing*2,s2w)|(fpl2+l2,nothing*2,l2w)")
 
 (define_insn_reservation "adddp_ls2n" 7
   (and (eq_attr "type" "adddp")
        (and (eq_attr "cross" "n")
 	    (and (eq_attr "units" "ls")
 		 (eq_attr "dest_regfile" "b"))))
-  "((s2)*2,nothing*3,s2w*2)|((l2)*2,nothing*3,l2w*2)")
+  "(adddps2+(s2)*2,nothing*3,s2w*2)|(adddpl2+(l2)*2,nothing*3,l2w*2)")
 
 (define_insn_reservation "single_dls2n" 1
   (and (eq_attr "type" "single")
@@ -649,14 +649,14 @@
        (and (eq_attr "cross" "y")
 	    (and (eq_attr "units" "ls")
 		 (eq_attr "dest_regfile" "a"))))
-  "(s1+x1,nothing*2,s1w)|(l1+x1,nothing*2,l1w)")
+  "(fps1+s1+x1,nothing*2,s1w)|(fpl1+l1+x1,nothing*2,l1w)")
 
 (define_insn_reservation "adddp_ls1y" 7
   (and (eq_attr "type" "adddp")
        (and (eq_attr "cross" "y")
 	    (and (eq_attr "units" "ls")
 		 (eq_attr "dest_regfile" "a"))))
-  "((s1+x1)*2,nothing*3,s1w*2)|((l1+x1)*2,nothing*3,l1w*2)")
+  "(adddps1+(s1+x1)*2,nothing*3,s1w*2)|(adddpl1+(l1+x1)*2,nothing*3,l1w*2)")
 
 (define_insn_reservation "single_dls1y" 1
   (and (eq_attr "type" "single")
@@ -882,14 +882,14 @@
        (and (eq_attr "cross" "y")
 	    (and (eq_attr "units" "ls")
 		 (eq_attr "dest_regfile" "b"))))
-  "(s2+x2,nothing*2,s2w)|(l2+x2,nothing*2,l2w)")
+  "(fps2+s2+x2,nothing*2,s2w)|(fpl2+l2+x2,nothing*2,l2w)")
 
 (define_insn_reservation "adddp_ls2y" 7
   (and (eq_attr "type" "adddp")
        (and (eq_attr "cross" "y")
 	    (and (eq_attr "units" "ls")
 		 (eq_attr "dest_regfile" "b"))))
-  "((s2+x2)*2,nothing*3,s2w*2)|((l2+x2)*2,nothing*3,l2w*2)")
+  "(adddps2+(s2+x2)*2,nothing*3,s2w*2)|(adddpl2+(l2+x2)*2,nothing*3,l2w*2)")
 
 (define_insn_reservation "single_dls2y" 1
   (and (eq_attr "type" "single")

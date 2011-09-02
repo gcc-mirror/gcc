@@ -612,6 +612,8 @@ do {									\
 #define Pmode SImode
 #define FUNCTION_MODE QImode
 
+#define CPU_UNITS_QUERY 1
+
 extern int c6x_initial_flag_pic;
 
 #endif /* GCC_C6X_H */
