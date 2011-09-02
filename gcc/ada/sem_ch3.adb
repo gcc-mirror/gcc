@@ -3313,9 +3313,18 @@ package body Sem_Ch3 is
          --  Case of initialization present
 
          else
+
             --  Not allowed in Ada 83
 
             if not Constant_Present (N) then
+
+               --  A declaration of unconstrained type in SPARK is limited,
+               --  the only exception to this is the admission of declaration
+               --  of constants of type string.
+
+               Check_SPARK_Restriction
+                 ("declaration of unconstrained type is limited", E);
+
                if Ada_Version = Ada_83
                  and then Comes_From_Source (Object_Definition (N))
                then

@@ -1,3 +1,20 @@
+2011-09-02  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb: (Check_Post_State): Suppress warning
+	"postcondition refers only to pre-state" when the expression has not
+	yet been analyzed, because it causes false alarms. This can happen when
+	the postcondition contains a quantified expression, because those are
+	analyzed later. This is a temporary/partial fix.
+	(Process_Post_Conditions): Minor: change wording of warning.
+
+2011-09-02  Marc Sango  <sango@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Detect the violation of
+	illegal use of unconstrained string type in SPARK mode.
+	* sem_res.adb (Analyze_Operator_Symbol): Set the
+	right place where the string operand of concatenation should be
+	violate in SPARK mode.
+
 2011-09-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb, sem_util.adb, sem_ch6.adb, prj-nmsc.adb,

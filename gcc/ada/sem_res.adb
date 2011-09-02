@@ -7741,7 +7741,7 @@ package body Sem_Res is
       if Is_Character_Type (Etype (Arg)) then
          if not Is_Static_Expression (Arg) then
             Check_SPARK_Restriction
-              ("character operand for concatenation should be static", N);
+              ("character operand for concatenation should be static", Arg);
          end if;
 
       elsif Is_String_Type (Etype (Arg)) then
@@ -7750,7 +7750,7 @@ package body Sem_Res is
            and then not Is_Static_Expression (Arg)
          then
             Check_SPARK_Restriction
-              ("string operand for concatenation should be static", N);
+              ("string operand for concatenation should be static", Arg);
          end if;
 
       --  Do not issue error on an operand that is neither a character nor a
