@@ -1002,7 +1002,11 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
 	  pp_string (buffer, "B"); /* pseudo-unit */
 	}
-      else if (! host_integerp (node, 0))
+      else if (host_integerp (node, 0))
+	pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
+      else if (host_integerp (node, 1))
+	pp_unsigned_wide_integer (buffer, TREE_INT_CST_LOW (node));
+      else
 	{
 	  tree val = node;
 	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (val);
@@ -1021,8 +1025,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		   (unsigned HOST_WIDE_INT) high, low);
 	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);
 	}
-      else
-	pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
       break;
 
     case REAL_CST:
