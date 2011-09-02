@@ -484,8 +484,8 @@ begin
    Write_Line ("        .S*  turn off warnings for overridden size clause");
    Write_Line ("        t    turn on warnings for tracking deleted code");
    Write_Line ("        T*   turn off warnings for tracking deleted code");
-   Write_Line ("        .t*  turn on warnings for suspicious contract");
-   Write_Line ("        .T   turn off warnings for suspicious contract");
+   Write_Line ("        .t+  turn on warnings for suspicious contract");
+   Write_Line ("        .T*  turn off warnings for suspicious contract");
    Write_Line ("        u+   turn on warnings for unused entity");
    Write_Line ("        U*   turn off warnings for unused entity");
    Write_Line ("        .u   turn on warnings for unordered enumeration");

@@ -86,6 +86,7 @@ package body Warnsw is
             Warn_On_Record_Holes                := True;
             Warn_On_Redundant_Constructs        := True;
             Warn_On_Reverse_Bit_Order           := True;
+            Warn_On_Suspicious_Contract         := True;
             Warn_On_Unchecked_Conversion        := True;
             Warn_On_Unordered_Enumeration_Type  := True;
             Warn_On_Unrecognized_Pragma         := True;
@@ -256,6 +257,7 @@ package body Warnsw is
             Warn_On_Questionable_Missing_Parens := True;
             Warn_On_Redundant_Constructs        := True;
             Warn_On_Reverse_Bit_Order           := True;
+            Warn_On_Suspicious_Contract         := True;
             Warn_On_Unchecked_Conversion        := True;
             Warn_On_Unrecognized_Pragma         := True;
             Warn_On_Unrepped_Components         := True;
@@ -294,6 +296,7 @@ package body Warnsw is
             Warn_On_Questionable_Missing_Parens := False;
             Warn_On_Redundant_Constructs        := False;
             Warn_On_Reverse_Bit_Order           := False;
+            Warn_On_Suspicious_Contract         := False;
             Warn_On_Unchecked_Conversion        := False;
             Warn_On_Unordered_Enumeration_Type  := False;
             Warn_On_Unrecognized_Pragma         := False;

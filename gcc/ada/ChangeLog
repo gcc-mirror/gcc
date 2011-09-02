@@ -1,3 +1,8 @@
+2011-09-02  Yannick Moy  <moy@adacore.com>
+
+	* usage.adb, warnsw.adb, sem_ch6.adb, opt.ads: Disable by default
+	warnings on suspicious contracts, and enable them with -gnatwa.
+
 2011-09-02  Robert Dewar  <dewar@adacore.com>
 
 	* exp_util.adb, exp_ch9.adb, sem_attr.adb, sem_ch6.adb: Minor

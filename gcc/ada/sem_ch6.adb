@@ -5460,12 +5460,14 @@ package body Sem_Ch6 is
 
    procedure Check_Subprogram_Contract (Spec_Id : Entity_Id) is
 
+      --  Code is currently commented out as, in some cases, it causes crashes
+      --  because Direct_Primitive_Operations is not available for a private
+      --  type. This may cause more warnings to be issued than necessary. See
+      --  below for the intended use of this variable. ???
+
 --        Inherited : constant Subprogram_List :=
 --                      Inherited_Subprograms (Spec_Id);
 --        --  List of subprograms inherited by this subprogram
-      --  Code is currently commented out as, in some cases, it causes crashes
-      --  because Direct_Primitive_Operations is not available for a private
-      --  type???
 
       Last_Postcondition : Node_Id := Empty;
       --  Last postcondition on the subprogram, or else Empty if either no
