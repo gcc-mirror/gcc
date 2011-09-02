@@ -1598,6 +1598,12 @@ package Sinfo is
    --    package specification. This field is Empty for library bodies (the
    --    parent spec in this case can be found from the corresponding spec).
 
+   --  Premature_Use (Node5-Sem)
+   --    Present in N_Incomplete_Type_Declaration node. Used for improved
+   --    error diagnostics: if there is a premature usage of an incomplete
+   --    type, a subsequently generated error message indicates the position
+   --    of its full declaration.
+
    --  Present_Expr (Uint3-Sem)
    --    Present in an N_Variant node. This has a meaningful value only after
    --    Gigi has back annotated the tree with representation information. At
@@ -3091,6 +3097,7 @@ package Sinfo is
       --  Discriminant_Specifications (List4) (set to No_List if no
       --   discriminant part, or if the discriminant part is an
       --   unknown discriminant part)
+      --  Premature_Use (Node5-Sem) used for improved diagnostics.
       --  Unknown_Discriminants_Present (Flag13) set if (<>) discriminant
       --  Tagged_Present (Flag15)
 
@@ -8814,6 +8821,9 @@ package Sinfo is
    function Prefix
      (N : Node_Id) return Node_Id;    -- Node3
 
+   function Premature_Use
+     (N : Node_Id) return Node_Id;    -- Node5
+
    function Present_Expr
      (N : Node_Id) return Uint;       -- Uint3
 
@@ -9786,6 +9796,9 @@ package Sinfo is
    procedure Set_Prefix
      (N : Node_Id; Val : Node_Id);            -- Node3
 
+   procedure Set_Premature_Use
+     (N : Node_Id; Val : Node_Id);            -- Node5
+
    procedure Set_Present_Expr
      (N : Node_Id; Val : Uint);               -- Uint3
 
@@ -10420,7 +10433,7 @@ package Sinfo is
         2 => False,   --  unused
         3 => False,   --  unused
         4 => True,    --  Discriminant_Specifications (List4)
-        5 => False),  --  unused
+        5 => False),  --  Premature_Use
 
      N_Explicit_Dereference =>
        (1 => False,   --  unused
@@ -11993,6 +12006,7 @@ package Sinfo is
    pragma Inline (Pragmas_After);
    pragma Inline (Pragmas_Before);
    pragma Inline (Prefix);
+   pragma Inline (Premature_Use);
    pragma Inline (Present_Expr);
    pragma Inline (Prev_Ids);
    pragma Inline (Print_In_Hex);
@@ -12314,6 +12328,7 @@ package Sinfo is
    pragma Inline (Set_Pragmas_After);
    pragma Inline (Set_Pragmas_Before);
    pragma Inline (Set_Prefix);
+   pragma Inline (Set_Premature_Use);
    pragma Inline (Set_Present_Expr);
    pragma Inline (Set_Prev_Ids);
    pragma Inline (Set_Print_In_Hex);

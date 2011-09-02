@@ -1,3 +1,14 @@
+2011-09-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb: New semantic attribute Premature_Use,
+	present in incomplete type declarations to refine the error
+	message the full declaration is in the same unit.
+	* sem_ch4.adb (Analyze_Selected_Component): If the prefix is of
+	an incomplete type, set the Premature_Use for additional message.
+	* sem_ch3.adb (Find_Type_Name): If partial view is incomplete
+	and Premature_Use is set, place additional information at the
+	point of premature use.
+
 2011-09-02  Bob Duff  <duff@adacore.com>
 
 	* sem_ch6.adb: (Check_Post_State): Suppress warning

@@ -3313,17 +3313,21 @@ package body Sem_Ch3 is
          --  Case of initialization present
 
          else
-
-            --  Not allowed in Ada 83
+            --  Check restrictions in Ada 83 and SPARK modes
 
             if not Constant_Present (N) then
 
-               --  A declaration of unconstrained type in SPARK is limited,
-               --  the only exception to this is the admission of declaration
-               --  of constants of type string.
+               --  In SPARK, a declaration of unconstrained type is allowed
+               --  only for constants of type string.
+
+               --  Why no check for Comes_From_Source here, seems wrong ???
+               --  Where is check to differentiate string case ???
 
                Check_SPARK_Restriction
-                 ("declaration of unconstrained type is limited", E);
+                 ("declaration of object of unconstrained type not allowed",
+                  E);
+
+               --  Unconstrained variables not allowed in Ada 83 mode
 
                if Ada_Version = Ada_83
                  and then Comes_From_Source (Object_Definition (N))
@@ -15055,6 +15059,14 @@ package body Sem_Ch3 is
             else
                Tag_Mismatch;
             end if;
+         end if;
+         if Present (Prev)
+           and then Nkind (Parent (Prev)) = N_Incomplete_Type_Declaration
+           and then Present (Premature_Use (Parent (Prev)))
+         then
+            Error_Msg_Sloc := Sloc (N);
+            Error_Msg_N
+              ("\full declaration #", Premature_Use (Parent (Prev)));
          end if;
 
          return New_Id;
