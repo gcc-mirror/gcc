@@ -276,6 +276,8 @@ struct pretty_print_info
     }						              \
   while (0)
 #define pp_decimal_int(PP, I)  pp_scalar (PP, "%d", I)
+#define pp_unsigned_wide_integer(PP, I) \
+   pp_scalar (PP, HOST_WIDE_INT_PRINT_UNSIGNED, (unsigned HOST_WIDE_INT) I)
 #define pp_wide_integer(PP, I) \
    pp_scalar (PP, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) I)
 #define pp_widest_integer(PP, I) \

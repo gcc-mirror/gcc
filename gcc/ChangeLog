@@ -1,3 +1,9 @@
+2011-09-02  Richard Guenther  <rguenther@suse.de>
+
+	* pretty-print.h (pp_unsigned_wide_integer): New.
+	* tree-pretty-print.c (dump_generic_node): Print unsigned
+	host-wide-int fitting INTEGER_CSTs with pp_unsigned_wide_integer.
+
 2011-09-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR target/49987
