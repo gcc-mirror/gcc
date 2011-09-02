@@ -1747,6 +1747,29 @@ __gnat_set_features (void)
   __gnat_features_set = 1;
 }
 
+/* Return true if the VMS version is 7.x.  */
+
+#define SYI$_VERSION 0x1000
+
+int
+__gnat_is_vms_v7 (void)
+{
+  struct descriptor_s desc;
+  char version[8];
+  int status;
+  int code = SYI$_VERSION;
+
+  desc.len = sizeof (version);
+  desc.mbz = 0;
+  desc.adr = version;
+
+  status = lib$getsyi (&code, 0, &desc);
+  if ((status & 1) == 1 && version[1] == '7' && version[2] == '.')
+    return 1;
+  else
+    return 0;
+}
+
 /*******************/
 /* FreeBSD Section */
 /*******************/

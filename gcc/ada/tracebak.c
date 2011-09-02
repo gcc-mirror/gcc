@@ -259,7 +259,13 @@ struct layout
 
 #define FRAME_OFFSET(FP) 0
 #define PC_ADJUST -4
-#define STOP_FRAME(CURRENT, TOP_STACK) ((CURRENT)->next == 0)
+
+/* According to the base PPC ABI, a toplevel frame entry should feature
+   a null backchain.  What happens at signal handler frontiers isn't so
+   well specified, so we add a safety guard on top.  */
+
+#define STOP_FRAME(CURRENT, TOP_STACK) \
+ ((CURRENT)->next == 0 || ((long)(CURRENT)->next % __alignof__(void*)) != 0)
 
 #define BASE_SKIP 1
 
