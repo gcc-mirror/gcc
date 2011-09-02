@@ -1,3 +1,20 @@
+2011-09-02  Bob Duff  <duff@adacore.com>
+
+	* lib-xref.adb: (Hash): Avoid use of 'Mod attribute, because old
+	compilers don't understand it.
+
+2011-09-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Pass the
+	underlying subtype rather than its base type on the call to
+	Build_Record_Or_Elementary_Input_Function, so that any
+	constraints on a discriminated subtype will be available for
+	doing the check required by AI05-0192.
+	* exp_strm.adb (Build_Record_Or_Elementary_Input_Function):
+	If the prefix subtype of the 'Input attribute is a constrained
+	discriminated subtype, then check each constrained discriminant value
+	against the corresponding value read from the stream.
+
 2011-09-02  Yannick Moy  <moy@adacore.com>
 
 	* usage.adb, warnsw.adb, sem_ch6.adb, opt.ads: Disable by default
