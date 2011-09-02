@@ -1,3 +1,26 @@
+2011-09-02  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_node_params): Removed fields
+	called_with_var_arguments and node_versionable.
+	(ipa_set_called_with_variable_arg): Removed.
+	(ipa_is_called_with_var_arguments): Likewise.
+	* ipa-cp.c (ipa_get_lattice): Fixed index check in an assert.
+	(determine_versionability): Do not check for type attributes and va
+	builtins.  Record versionability into inline summary.
+	(initialize_node_lattices): Do not check
+	ipa_is_called_with_var_arguments.
+	(propagate_constants_accross_call): Likewise, ignore arguments we do
+	not have PARM_DECLs for, set variable flag for parameters that were
+	not passed a value.
+	(create_specialized_node): Dump info that we cannot change signature.
+	* ipa-prop.c (ipa_compute_jump_functions): Do not care about variable
+	number of arguments.
+	(ipa_make_edge_direct_to_target): Likewise.
+	(ipa_update_after_lto_read): Likewise.
+	(ipa_node_duplication_hook): Do not copy called_with_var_arguments flag.
+	* tree-inline.c (copy_arguments_for_versioning): Copy PARM_DECLs if
+	they were remapped.
+
 2011-09-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27460

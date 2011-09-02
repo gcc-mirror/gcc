@@ -4840,6 +4840,8 @@ copy_arguments_for_versioning (tree orig_parm, copy_body_data * id,
     if (!args_to_skip || !bitmap_bit_p (args_to_skip, i))
       {
         tree new_tree = remap_decl (arg, id);
+	if (TREE_CODE (new_tree) != PARM_DECL)
+	  new_tree = id->copy_decl (arg, id);
         lang_hooks.dup_lang_specific_decl (new_tree);
         *parg = new_tree;
 	parg = &DECL_CHAIN (new_tree);
