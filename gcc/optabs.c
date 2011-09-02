@@ -6620,27 +6620,33 @@ vector_compare_rtx (tree cond, bool unsignedp, enum insn_code icode)
   return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
 }
 
-/* Return insn code for TYPE, the type of a VEC_COND_EXPR.  */
+/* Return insn code for a conditional operator with a comparison in
+   mode CMODE, unsigned if UNS is true, resulting in a value of mode VMODE.  */
 
 static inline enum insn_code
-get_vcond_icode (tree type, enum machine_mode mode)
+get_vcond_icode (enum machine_mode vmode, enum machine_mode cmode, bool uns)
 {
   enum insn_code icode = CODE_FOR_nothing;
-
-  if (TYPE_UNSIGNED (type))
-    icode = direct_optab_handler (vcondu_optab, mode);
+  if (uns)
+    icode = convert_optab_handler (vcondu_optab, vmode, cmode);
   else
-    icode = direct_optab_handler (vcond_optab, mode);
+    icode = convert_optab_handler (vcond_optab, vmode, cmode);
   return icode;
 }
 
 /* Return TRUE iff, appropriate vector insns are available
-   for vector cond expr with type TYPE in VMODE mode.  */
+   for vector cond expr with vector type VALUE_TYPE and a comparison
+   with operand vector types in CMP_OP_TYPE.  */
 
 bool
-expand_vec_cond_expr_p (tree type, enum machine_mode vmode)
+expand_vec_cond_expr_p (tree value_type, tree cmp_op_type)
 {
-  if (get_vcond_icode (type, vmode) == CODE_FOR_nothing)
+  enum machine_mode value_mode = TYPE_MODE (value_type);
+  enum machine_mode cmp_op_mode = TYPE_MODE (cmp_op_type);
+  if (GET_MODE_SIZE (value_mode) != GET_MODE_SIZE (cmp_op_mode)
+      || GET_MODE_NUNITS (value_mode) != GET_MODE_NUNITS (cmp_op_mode)
+      || get_vcond_icode (TYPE_MODE (value_type), TYPE_MODE (cmp_op_type),
+			  TYPE_UNSIGNED (cmp_op_type)) == CODE_FOR_nothing)
     return false;
   return true;
 }
@@ -6656,9 +6662,18 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   enum insn_code icode;
   rtx comparison, rtx_op1, rtx_op2;
   enum machine_mode mode = TYPE_MODE (vec_cond_type);
-  bool unsignedp = TYPE_UNSIGNED (vec_cond_type);
+  enum machine_mode cmp_op_mode;
+  bool unsignedp;
 
-  icode = get_vcond_icode (vec_cond_type, mode);
+  gcc_assert (COMPARISON_CLASS_P (op0));
+
+  unsignedp = TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0)));
+  cmp_op_mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (op0, 0)));
+
+  gcc_assert (GET_MODE_SIZE (mode) == GET_MODE_SIZE (cmp_op_mode)
+	      && GET_MODE_NUNITS (mode) == GET_MODE_NUNITS (cmp_op_mode));
+
+  icode = get_vcond_icode (mode, cmp_op_mode, unsignedp);
   if (icode == CODE_FOR_nothing)
     return 0;
 

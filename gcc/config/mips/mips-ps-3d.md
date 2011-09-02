@@ -597,7 +597,7 @@
   [(set_attr "type" "frdiv2")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_expand "vcondv2sf"
+(define_expand "vcondv2sfv2sf"
   [(set (match_operand:V2SF 0 "register_operand")
 	(if_then_else:V2SF
 	  (match_operator 3 ""

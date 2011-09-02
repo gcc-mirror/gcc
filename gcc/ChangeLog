@@ -1,5 +1,44 @@
 2011-09-02  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/27460
+	PR middle-end/29269
+	* doc/md.texi (vcond): Document.
+	* genopinit.c (optabs): Turn vcond{,u}_optab into a conversion
+	optab with two modes.
+	* optabs.h (enum convert_optab_index): Add COI_vcond, COI_vcondu.
+	(enum direct_optab_index): Remove DOI_vcond, DOI_vcondu.
+	(vcond_optab): Adjust.
+	(vcondu_optab): Likewise.
+	(expand_vec_cond_expr_p): Adjust prototype.
+	* optabs.c (get_vcond_icode): Adjust.
+	(expand_vec_cond_expr_p): Likewise.
+	(expand_vec_cond_expr): Likewise.
+	* tree-vect-stmts.c (vect_is_simple_cond): Return the comparison
+	vector type.
+	(vectorizable_condition): Allow differing types for comparison
+	and result.
+	* config/i386/i386.c (ix86_expand_sse_cmp): Use proper mode
+	for the comparison.
+	* config/i386/sse.md (vcond<mode>): Split to
+	vcond<V_256:mode><VF_256:mode>, vcond<V_128:mode><VF_128:mode>,
+	vcond<V_128:mode><VI124_128:mode> and
+	vcondu<V_128:mode><VI124_128:mode>.
+	(vcondv2di): Change to vcond<VI8F_128:mode>v2di.
+	(vconduv2di): Likewise.
+	* config/arm/neon.md (vcond<mode>): Change to vcond*<mode><mode>.
+	(vcondu<mode>): Likewise.
+	* config/ia64/vect.md (vcond<mode>): Likewise.
+	(vcondu<mode>): Likewise.
+	(vcondv2sf): Likewise.
+	* config/mips/mips-ps-3d.md (vcondv2sf): Likewise.
+	* config/rs6000/paired.md (vcondv2sf): Likewise.
+	* config/rs6000/vector.md (vcond<mode>): Likewise.
+	(vcondu<mode>): Likewise.
+	* config/spu/spu.md (vcond<mode>): Likewise.
+	(vcondu<mode>): Likewise.
+
+2011-09-02  Richard Guenther  <rguenther@suse.de>
+
 	* pretty-print.h (pp_unsigned_wide_integer): New.
 	* tree-pretty-print.c (dump_generic_node): Print unsigned
 	host-wide-int fitting INTEGER_CSTs with pp_unsigned_wide_integer.

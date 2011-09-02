@@ -589,6 +589,10 @@ enum convert_optab_index
   COI_vec_load_lanes,
   COI_vec_store_lanes,
 
+  /* Vector conditional operations.  */
+  COI_vcond,
+  COI_vcondu,
+
   COI_MAX
 };
 
@@ -611,6 +615,8 @@ enum convert_optab_index
 #define satfractuns_optab (&convert_optab_table[COI_satfractuns])
 #define vec_load_lanes_optab (&convert_optab_table[COI_vec_load_lanes])
 #define vec_store_lanes_optab (&convert_optab_table[COI_vec_store_lanes])
+#define vcond_optab (&convert_optab_table[(int) COI_vcond])
+#define vcondu_optab (&convert_optab_table[(int) COI_vcondu])
 
 /* Contains the optab used for each rtx code.  */
 extern optab code_to_optab[NUM_RTX_CODE + 1];
@@ -631,10 +637,6 @@ enum direct_optab_index
      reloads of special objects.  */
   DOI_reload_in,
   DOI_reload_out,
-
-  /* Vector conditional operations.  */
-  DOI_vcond,
-  DOI_vcondu,
 
   /* Block move operation.  */
   DOI_movmem,
@@ -699,8 +701,6 @@ typedef struct direct_optab_d *direct_optab;
 #endif
 #define reload_in_optab (&direct_optab_table[(int) DOI_reload_in])
 #define reload_out_optab (&direct_optab_table[(int) DOI_reload_out])
-#define vcond_optab (&direct_optab_table[(int) DOI_vcond])
-#define vcondu_optab (&direct_optab_table[(int) DOI_vcondu])
 #define movmem_optab (&direct_optab_table[(int) DOI_movmem])
 #define setmem_optab (&direct_optab_table[(int) DOI_setmem])
 #define cmpstr_optab (&direct_optab_table[(int) DOI_cmpstr])
@@ -877,7 +877,7 @@ extern bool expand_sfix_optab (rtx, rtx, convert_optab);
 extern rtx expand_widening_mult (enum machine_mode, rtx, rtx, rtx, int, optab);
 
 /* Return tree if target supports vector operations for COND_EXPR.  */
-bool expand_vec_cond_expr_p (tree, enum machine_mode);
+bool expand_vec_cond_expr_p (tree, tree);
 
 /* Generate code for VEC_COND_EXPR.  */
 extern rtx expand_vec_cond_expr (tree, tree, tree, tree, rtx);

@@ -370,7 +370,7 @@
 
 
 ;; Vector comparisons
-(define_expand "vcond<mode>"
+(define_expand "vcond<mode><mode>"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(if_then_else:VEC_F
 	 (match_operator 3 "comparison_operator"
@@ -388,7 +388,7 @@
     FAIL;
 }")
 
-(define_expand "vcond<mode>"
+(define_expand "vcond<mode><mode>"
   [(set (match_operand:VEC_I 0 "vint_operand" "")
 	(if_then_else:VEC_I
 	 (match_operator 3 "comparison_operator"
@@ -406,7 +406,7 @@
     FAIL;
 }")
 
-(define_expand "vcondu<mode>"
+(define_expand "vcondu<mode><mode>"
   [(set (match_operand:VEC_I 0 "vint_operand" "")
 	(if_then_else:VEC_I
 	 (match_operator 3 "comparison_operator"

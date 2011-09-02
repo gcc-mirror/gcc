@@ -1,3 +1,9 @@
+2011-09-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27460
+	PR middle-end/29269
+	* gcc.dg/vect/vect-cond-7.c: New testcase.
+
 2011-09-02  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/ipa/devirt-3.C: Added a distraction method.

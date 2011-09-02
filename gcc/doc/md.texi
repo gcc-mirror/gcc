@@ -4017,6 +4017,17 @@ and input vectors should have the same modes (@code{N} elements). The low
 Initialize the vector to given values.  Operand 0 is the vector to initialize
 and operand 1 is parallel containing values for individual fields.
 
+@cindex @code{vcond@var{m}@var{n}} instruction pattern
+@item @samp{vcond@var{m}@var{n}}
+Output a conditional vector move.  Operand 0 is the destination to
+receive a combination of operand 1 and operand 2, which are of mode @var{m},
+dependent on the outcome of the predicate in operand 3 which is a
+vector comparison with operands of mode @var{n} in operands 4 and 5.  The
+modes @var{m} and @var{n} should have the same size.  Operand 0
+will be set to the value @var{op1} & @var{msk} | @var{op2} & ~@var{msk}
+where @var{msk} is computed by element-wise evaluation of the vector
+comparison with a truth value of all-ones and a false value of all-zeros.
+
 @cindex @code{push@var{m}1} instruction pattern
 @item @samp{push@var{m}1}
 Output a push instruction.  Operand 0 is value to push.  Used only when
