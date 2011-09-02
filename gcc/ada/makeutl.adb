@@ -850,9 +850,7 @@ package body Makeutl is
             Allow_Wildcards         => True);
       end if;
 
-      if Value = Nil_Variable_Value
-        and then Test_Without_Suffix
-      then
+      if Value = Nil_Variable_Value and then Test_Without_Suffix then
          Lang :=
            Get_Language_From_Name (Project, Get_Name_String (Source_Lang));
 
@@ -872,8 +870,8 @@ package body Makeutl is
                Name (1 .. Last) := SF_Name;
 
                if Last > Body_Suffix'Length
-                 and then Name (Last - Body_Suffix'Length + 1 .. Last) =
-                   Body_Suffix
+                 and then
+                   Name (Last - Body_Suffix'Length + 1 .. Last) = Body_Suffix
                then
                   Truncated := True;
                   Last := Last - Body_Suffix'Length;
@@ -881,8 +879,8 @@ package body Makeutl is
 
                if not Truncated
                  and then Last > Spec_Suffix'Length
-                 and then Name (Last - Spec_Suffix'Length + 1 .. Last) =
-                   Spec_Suffix
+                 and then
+                   Name (Last - Spec_Suffix'Length + 1 .. Last) = Spec_Suffix
                then
                   Truncated := True;
                   Last := Last - Spec_Suffix'Length;
@@ -900,9 +898,7 @@ package body Makeutl is
                      Allow_Wildcards         => True);
                end if;
 
-               if Value = Nil_Variable_Value
-                 and then Check_ALI_Suffix
-               then
+               if Value = Nil_Variable_Value and then Check_ALI_Suffix then
                   Last := SF_Name'Length;
                   while Name (Last) /= '.' loop
                      Last := Last - 1;
@@ -994,9 +990,12 @@ package body Makeutl is
    ------------------------------
 
    procedure Initialize_Source_Record (Source : Prj.Source_Id) is
+
       procedure Set_Object_Project
-        (Obj_Dir : String; Obj_Proj : Project_Id; Obj_Path : Path_Name_Type;
-         Stamp   : Time_Stamp_Type);
+        (Obj_Dir  : String;
+         Obj_Proj : Project_Id;
+         Obj_Path : Path_Name_Type;
+         Stamp    : Time_Stamp_Type);
       --  Update information about object file, switches file,...
 
       ------------------------
@@ -1004,8 +1003,10 @@ package body Makeutl is
       ------------------------
 
       procedure Set_Object_Project
-        (Obj_Dir : String; Obj_Proj : Project_Id; Obj_Path : Path_Name_Type;
-         Stamp   : Time_Stamp_Type) is
+        (Obj_Dir  : String;
+         Obj_Proj : Project_Id;
+         Obj_Path : Path_Name_Type;
+         Stamp    : Time_Stamp_Type) is
       begin
          Source.Object_Project := Obj_Proj;
          Source.Object_Path    := Obj_Path;
@@ -1031,10 +1032,11 @@ package body Makeutl is
 
          declare
             Switches_Path : constant String :=
-              Normalize_Pathname
-                (Name          => Get_Name_String (Source.Switches),
-                 Resolve_Links => Opt.Follow_Links_For_Files,
-                 Directory     => Obj_Dir);
+                              Normalize_Pathname
+                                (Name          =>
+                                   Get_Name_String (Source.Switches),
+                                 Resolve_Links => Opt.Follow_Links_For_Files,
+                                 Directory     => Obj_Dir);
          begin
             Source.Switches_Path := Create_Name (Switches_Path);
 
@@ -1093,21 +1095,22 @@ package body Makeutl is
          --  elsewhere that's where we'll expect to find it).
 
          Obj_Proj := Source.Project;
+
          while Obj_Proj /= No_Project loop
             declare
-               Dir  : constant String := Get_Name_String
-                 (Obj_Proj.Object_Directory.Display_Name);
+               Dir  : constant String :=
+                        Get_Name_String
+                          (Obj_Proj.Object_Directory.Display_Name);
 
-               Object_Path     : constant String :=
-                                   Normalize_Pathname
-                                     (Name          =>
-                                        Get_Name_String (Source.Object),
-                                      Resolve_Links =>
-                                        Opt.Follow_Links_For_Files,
-                                      Directory     => Dir);
+               Object_Path : constant String :=
+                               Normalize_Pathname
+                                 (Name          =>
+                                    Get_Name_String (Source.Object),
+                                  Resolve_Links => Opt.Follow_Links_For_Files,
+                                  Directory     => Dir);
 
                Obj_Path : constant Path_Name_Type := Create_Name (Object_Path);
-               Stamp : Time_Stamp_Type := Empty_Time_Stamp;
+               Stamp    : Time_Stamp_Type := Empty_Time_Stamp;
 
             begin
                --  For specs, we do not check object files if there is a body.
@@ -1286,10 +1289,10 @@ package body Makeutl is
 
       for Index in reverse 1 .. Linker_Opts.Last loop
          declare
-            Options : String_List_Id;
-            Proj    : constant Project_Id :=
-                        Linker_Opts.Table (Index).Project;
-            Option  : Name_Id;
+            Options  : String_List_Id;
+            Proj     : constant Project_Id :=
+                         Linker_Opts.Table (Index).Project;
+            Option   : Name_Id;
             Dir_Path : constant String :=
                          Get_Name_String (Proj.Directory.Name);
 
@@ -1397,12 +1400,12 @@ package body Makeutl is
          procedure Add_Multi_Unit_Sources
            (Tree   : Project_Tree_Ref;
             Source : Prj.Source_Id);
-         --  Add all units from the same file as the multi-unit Source.
+         --  Add all units from the same file as the multi-unit Source
 
          function Find_File_Add_Extension
-           (Tree         : Project_Tree_Ref;
-            Base_Main    : String) return Prj.Source_Id;
-         --  Search for Main in the project, adding body or spec extensions.
+           (Tree      : Project_Tree_Ref;
+            Base_Main : String) return Prj.Source_Id;
+         --  Search for Main in the project, adding body or spec extensions
 
          ----------------------------
          -- Add_Multi_Unit_Sources --
@@ -1455,8 +1458,8 @@ package body Makeutl is
          -----------------------------
 
          function Find_File_Add_Extension
-           (Tree         : Project_Tree_Ref;
-            Base_Main    : String) return Prj.Source_Id
+           (Tree      : Project_Tree_Ref;
+            Base_Main : String) return Prj.Source_Id
          is
             Spec_Source : Prj.Source_Id := No_Source;
             Source      : Prj.Source_Id;
@@ -1464,7 +1467,7 @@ package body Makeutl is
             Suffix      : File_Name_Type;
 
          begin
-            Source  := No_Source;
+            Source := No_Source;
             Iter := For_Each_Source (Tree);  --  In all projects
             loop
                Source := Prj.Element (Iter);
@@ -1611,10 +1614,10 @@ package body Makeutl is
                         --  check later that we found the correct file.
 
                         Source := Find_Source
-                          (In_Tree   => File.Tree,
-                           Project   => File.Project,
-                           Base_Name => Main_Id,
-                           Index     => File.Index,
+                          (In_Tree          => File.Tree,
+                           Project          => File.Project,
+                           Base_Name        => Main_Id,
+                           Index            => File.Index,
                            In_Imported_Only => True);
 
                         if Source = No_Source then
@@ -1624,8 +1627,8 @@ package body Makeutl is
 
                         if Is_Absolute
                           and then Source /= No_Source
-                          and then File_Name_Type (Source.Path.Name) /=
-                          File.File
+                          and then
+                            File_Name_Type (Source.Path.Name) /= File.File
                         then
                            Debug_Output
                              ("Found a non-matching file",
@@ -2192,7 +2195,7 @@ package body Makeutl is
       --  processed, if it hasn't already been processed.
 
       function Insert_No_Roots (Source  : Source_Info) return Boolean;
-      --  Insert Source, but do not look for its roots (see doc for Insert).
+      --  Insert Source, but do not look for its roots (see doc for Insert)
 
       -------------------
       -- Was_Processed --
@@ -2506,6 +2509,7 @@ package body Makeutl is
 
             if Roots = Nil_Variable_Value then
                Debug_Output ("   -> no roots declared");
+
             else
                List := Roots.Values;
 
@@ -2596,7 +2600,7 @@ package body Makeutl is
                            Initialize_Source_Record (Other_Part (Root_Source));
                         end if;
 
-                        --  Save the root for the binder.
+                        --  Save the root for the binder
 
                         Source.Id.Roots := new Source_Roots'
                           (Root => Root_Source,
@@ -2745,6 +2749,11 @@ package body Makeutl is
          Unique_Compile : Boolean)
       is
          procedure Do_Insert (Project : Project_Id; Tree : Project_Tree_Ref);
+
+         ---------------
+         -- Do_Insert --
+         ---------------
+
          procedure Do_Insert (Project : Project_Id; Tree : Project_Tree_Ref) is
             Unit_Based : constant Boolean :=
                            Unique_Compile
@@ -2775,7 +2784,7 @@ package body Makeutl is
                if Is_Compilable (Source)
                  and then
                    (All_Projects
-                     or else Is_Extending (Project, Source.Project))
+                    or else Is_Extending (Project, Source.Project))
                  and then not Source.Locally_Removed
                  and then Source.Replaced_By = No_Source
                  and then
@@ -2855,25 +2864,25 @@ package body Makeutl is
                        and then Src_Id.Dep_Name = Afile
                      then
                         case Src_Id.Kind is
-                        when Spec =>
-                           declare
-                              Bdy : constant Prj.Source_Id :=
-                                      Other_Part (Src_Id);
-                           begin
-                              if Bdy /= No_Source
-                                and then not Bdy.Locally_Removed
-                              then
-                                 Src_Id := Other_Part (Src_Id);
+                           when Spec =>
+                              declare
+                                 Bdy : constant Prj.Source_Id :=
+                                         Other_Part (Src_Id);
+                              begin
+                                 if Bdy /= No_Source
+                                   and then not Bdy.Locally_Removed
+                                 then
+                                    Src_Id := Other_Part (Src_Id);
+                                 end if;
+                              end;
+
+                           when Impl =>
+                              if Is_Subunit (Src_Id) then
+                                 Src_Id := No_Source;
                               end if;
-                           end;
 
-                        when Impl =>
-                           if Is_Subunit (Src_Id) then
+                           when Sep =>
                               Src_Id := No_Source;
-                           end if;
-
-                        when Sep =>
-                           Src_Id := No_Source;
                         end case;
 
                         exit;
@@ -2899,6 +2908,7 @@ package body Makeutl is
             end loop;
          end loop;
       end Insert_Withed_Sources_For;
+
    end Queue;
 
    ----------
@@ -2947,6 +2957,10 @@ package body Makeutl is
       Option_Link_Only      : Boolean := False)
    is
       procedure Do_Compute (Project : Project_Id; Tree : Project_Tree_Ref);
+
+      ----------------
+      -- Do_Compute --
+      ----------------
 
       procedure Do_Compute (Project : Project_Id; Tree : Project_Tree_Ref) is
          Data       : constant Builder_Data_Access := Builder_Data (Tree);
@@ -3008,8 +3022,8 @@ package body Makeutl is
       Only_For_Lang       : Name_Id := No_Name)
    is
       Builder_Package  : constant Package_Id :=
-        Value_Of (Name_Builder, Main_Project.Decl.Packages,
-                  Project_Tree.Shared);
+                           Value_Of (Name_Builder, Main_Project.Decl.Packages,
+                                     Project_Tree.Shared);
 
       Global_Compilation_Array    : Array_Element_Id;
       Global_Compilation_Elem     : Array_Element;
@@ -3029,7 +3043,7 @@ package body Makeutl is
       Switches_For_Lang : Variable_Value := Nil_Variable_Value;
       --  Value of Builder'Default_Switches(lang)
 
-      Name             : Name_Id := No_Name;  --  main file index for Switches
+      Name              : Name_Id := No_Name;  --  main file index for Switches
       Switches_For_Main : Variable_Value := Nil_Variable_Value;
       --  Switches for a specific main. When there are several mains, Name is
       --  set to No_Name, and Switches_For_Main might be left with an actual
@@ -3052,7 +3066,6 @@ package body Makeutl is
          --  use this language as the switches index.
 
          if Mains.Number_Of_Mains (Project_Tree) = 0 then
-
             if Only_For_Lang = No_Name then
                declare
                   Language : Language_Ptr := Main_Project.Languages;
@@ -3079,8 +3092,8 @@ package body Makeutl is
          else
             for Index in 1 .. Mains.Number_Of_Mains (Project_Tree) loop
                Source := Mains.Next_Main.Source;
-               if Source /= No_Source then
 
+               if Source /= No_Source then
                   if Switches_For_Main = Nil_Variable_Value then
                      Switches_For_Main := Value_Of
                        (Name                    => Name_Id (Source.File),
@@ -3130,9 +3143,10 @@ package body Makeutl is
          Default_Switches_Array :=
            Project_Tree.Shared.Packages.Table (Builder_Package).Decl.Arrays;
 
-         while Default_Switches_Array /= No_Array and then
-           Project_Tree.Shared.Arrays.Table (Default_Switches_Array).Name /=
-           Name_Default_Switches
+         while Default_Switches_Array /= No_Array
+           and then
+             Project_Tree.Shared.Arrays.Table (Default_Switches_Array).Name /=
+               Name_Default_Switches
          loop
             Default_Switches_Array :=
               Project_Tree.Shared.Arrays.Table (Default_Switches_Array).Next;
@@ -3243,8 +3257,7 @@ package body Makeutl is
                   declare
                      --  Add_Switch might itself be using the name_buffer, so
                      --  we make a temporary here.
-                     Switch : constant String :=
-                       Name_Buffer (1 .. Name_Len);
+                     Switch : constant String := Name_Buffer (1 .. Name_Len);
                   begin
                      Success := Add_Switch
                        (Switch      => Switch,

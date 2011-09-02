@@ -23,11 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Err_Vars; use Err_Vars;
-
 with GNAT.Case_Util;        use GNAT.Case_Util;
 with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
+with GNAT.Strings;
 
+with Err_Vars;    use Err_Vars;
 with Opt;         use Opt;
 with Prj.Attr;    use Prj.Attr;
 with Prj.Attr.PM; use Prj.Attr.PM;
@@ -36,8 +36,6 @@ with Prj.Strt;    use Prj.Strt;
 with Prj.Tree;    use Prj.Tree;
 with Snames;
 with Uintp;       use Uintp;
-
-with GNAT.Strings;
 
 package body Prj.Dect is
 
@@ -58,10 +56,10 @@ package body Prj.Dect is
    --  new name, so that the code does not have to check both names forever.
 
    procedure Check_Attribute_Allowed
-     (In_Tree         : Project_Node_Tree_Ref;
-      Project         : Project_Node_Id;
-      Attribute       : Project_Node_Id;
-      Flags           : Processing_Flags);
+     (In_Tree   : Project_Node_Tree_Ref;
+      Project   : Project_Node_Id;
+      Attribute : Project_Node_Id;
+      Flags     : Processing_Flags);
    --  Check whether the attribute is valid in this project.
    --  In particular, depending on the type of project (qualifier), some
    --  attributes might be disabled.
@@ -186,20 +184,20 @@ package body Prj.Dect is
         and then Expression_Kind_Of (Current_Package, In_Tree) /= Ignored
       then
          case Name_Of (Attribute, In_Tree) is
-         when Snames.Name_Specification =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec);
+            when Snames.Name_Specification =>
+               Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec);
 
-         when Snames.Name_Specification_Suffix =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec_Suffix);
+            when Snames.Name_Specification_Suffix =>
+               Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec_Suffix);
 
-         when Snames.Name_Implementation =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body);
+            when Snames.Name_Implementation =>
+               Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body);
 
-         when Snames.Name_Implementation_Suffix =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body_Suffix);
+            when Snames.Name_Implementation_Suffix =>
+               Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body_Suffix);
 
-         when others =>
-            null;
+            when others =>
+               null;
          end case;
       end if;
    end Rename_Obsolescent_Attributes;
@@ -234,10 +232,10 @@ package body Prj.Dect is
    -----------------------------
 
    procedure Check_Attribute_Allowed
-     (In_Tree         : Project_Node_Tree_Ref;
-      Project         : Project_Node_Id;
-      Attribute       : Project_Node_Id;
-      Flags           : Processing_Flags)
+     (In_Tree   : Project_Node_Tree_Ref;
+      Project   : Project_Node_Id;
+      Attribute : Project_Node_Id;
+      Flags     : Processing_Flags)
    is
       Qualif : constant Project_Qualifier :=
                  Project_Qualifier_Of (Project, In_Tree);

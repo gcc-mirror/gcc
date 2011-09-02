@@ -1,3 +1,16 @@
+2011-09-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): If the domain
+	of iteration is an expression, its value must be captured in a
+	renaming declaration, so that modification of the elements is
+	propagated to the original container.
+
+2011-09-02  Pascal Obry  <obry@adacore.com>
+
+	* prj-proc.adb, prj.adb, makeutl.adb, makeutl.ads, prj-dect.adb,
+	prj-nmsc.adb, prj-util.adb, prj-conf.adb, prj-env.adb,
+	prj-tree.adb: Minor reformatting and style fixes.
+
 2011-09-02  Robert Dewar  <dewar@adacore.com>
 
 	* s-rident.ads: Add new restriction No_Implicit_Aliasing
