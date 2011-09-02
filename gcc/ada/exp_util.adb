@@ -1515,9 +1515,6 @@ package body Exp_Util is
 
       if Ekind (Typ) in Protected_Kind then
          if Has_Entries (Typ)
-           or else Has_Interrupt_Handler (Typ)
-           or else (Has_Attach_Handler (Typ)
-                      and then not Restricted_Profile)
 
             --  A protected type without entries that covers an interface and
             --  overrides the abstract routines with protected procedures is
@@ -1527,6 +1524,10 @@ package body Exp_Util is
             --  node to recognize this case.
 
            or else Present (Interface_List (Parent (Typ)))
+           or else
+             (((Has_Attach_Handler (Typ) and then not Restricted_Profile)
+                  or else Has_Interrupt_Handler (Typ))
+               and then not Restriction_Active (No_Dynamic_Attachment))
          then
             if Abort_Allowed
               or else Restriction_Active (No_Entry_Queue) = False
