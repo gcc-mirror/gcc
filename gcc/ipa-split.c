@@ -988,6 +988,9 @@ split_function (struct split_point *split_point)
 	arg = gimple_default_def (cfun, parm);
 	if (!arg)
 	  {
+	    /* This parm wasn't used up to now, but is going to be used,
+	       hence register it.  */
+	    add_referenced_var (parm);
 	    arg = make_ssa_name (parm, gimple_build_nop ());
 	    set_default_def (parm, arg);
 	  }

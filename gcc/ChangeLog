@@ -1,3 +1,16 @@
+2011-09-02  Michael Matz  <matz@suse.de>
+
+	PR middle-end/50260
+	* ipa-split.c (split_function): Call add_referenced_var.
+
+	* tree-ssa-phiopt.c (cond_store_replacement): Don't call get_var_ann.
+	(cond_if_else_store_replacement_1): Ditto.
+	* tree-ssa-pre.c (get_representative_for): Ditto.
+	(create_expression_by_pieces): Ditto.
+	(insert_into_preds_of_block): Ditto.
+	* tree-sra.c (create_access_replacement): Ditto.
+	(get_replaced_param_substitute): Ditto.
+
 2011-09-02  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/c6x/c6x.md (collapse-ndfa, no-comb-vect): New
