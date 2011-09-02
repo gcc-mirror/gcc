@@ -1599,7 +1599,7 @@ package body Einfo is
 
    function Has_Xref_Entry (Id : E) return B is
    begin
-      return Flag182 (Implementation_Base_Type (Id));
+      return Flag182 (Id);
    end Has_Xref_Entry;
 
    function Hiding_Loop_Variable (Id : E) return E is

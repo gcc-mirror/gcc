@@ -456,10 +456,11 @@ package body Alfa is
          --  Second test: within same unit, sort by location of the scope of
          --  the entity definition.
 
-         elsif Get_Scope_Num (T1.Ent_Scope) /=
-           Get_Scope_Num (T2.Ent_Scope)
+         elsif Get_Scope_Num (T1.Key.Ent_Scope) /=
+           Get_Scope_Num (T2.Key.Ent_Scope)
          then
-            return Get_Scope_Num (T1.Ent_Scope) < Get_Scope_Num (T2.Ent_Scope);
+            return Get_Scope_Num (T1.Key.Ent_Scope) <
+              Get_Scope_Num (T2.Key.Ent_Scope);
 
          --  Third test: within same unit and scope, sort by location of
          --  entity definition.
@@ -470,41 +471,47 @@ package body Alfa is
          --  Fourth test: if reference is in same unit as entity definition,
          --  sort first.
 
-         elsif T1.Lun /= T2.Lun and then T1.Ent_Scope_File = T1.Lun then
+         elsif
+           T1.Key.Lun /= T2.Key.Lun and then T1.Ent_Scope_File = T1.Key.Lun
+         then
             return True;
-         elsif T1.Lun /= T2.Lun and then T2.Ent_Scope_File = T2.Lun then
+
+         elsif
+           T1.Key.Lun /= T2.Key.Lun and then T2.Ent_Scope_File = T2.Key.Lun
+         then
             return False;
 
          --  Fifth test: if reference is in same unit and same scope as entity
          --  definition, sort first.
 
-         elsif T1.Ent_Scope_File = T1.Lun
-           and then T1.Ref_Scope /= T2.Ref_Scope
-           and then T1.Ent_Scope = T1.Ref_Scope
+         elsif T1.Ent_Scope_File = T1.Key.Lun
+           and then T1.Key.Ref_Scope /= T2.Key.Ref_Scope
+           and then T1.Key.Ent_Scope = T1.Key.Ref_Scope
          then
             return True;
-         elsif T1.Ent_Scope_File = T1.Lun
-           and then T1.Ref_Scope /= T2.Ref_Scope
-           and then T2.Ent_Scope = T2.Ref_Scope
+         elsif T1.Ent_Scope_File = T1.Key.Lun
+           and then T1.Key.Ref_Scope /= T2.Key.Ref_Scope
+           and then T2.Key.Ent_Scope = T2.Key.Ref_Scope
          then
             return False;
 
          --  Sixth test: for same entity, sort by reference location unit
 
-         elsif T1.Lun /= T2.Lun then
-            return Dependency_Num (T1.Lun) < Dependency_Num (T2.Lun);
+         elsif T1.Key.Lun /= T2.Key.Lun then
+            return Dependency_Num (T1.Key.Lun) < Dependency_Num (T2.Key.Lun);
 
          --  Seventh test: for same entity, sort by reference location scope
 
-         elsif Get_Scope_Num (T1.Ref_Scope) /=
-           Get_Scope_Num (T2.Ref_Scope)
+         elsif Get_Scope_Num (T1.Key.Ref_Scope) /=
+           Get_Scope_Num (T2.Key.Ref_Scope)
          then
-            return Get_Scope_Num (T1.Ref_Scope) < Get_Scope_Num (T2.Ref_Scope);
+            return Get_Scope_Num (T1.Key.Ref_Scope) <
+              Get_Scope_Num (T2.Key.Ref_Scope);
 
          --  Eighth test: order of location within referencing unit
 
-         elsif T1.Loc /= T2.Loc then
-            return T1.Loc < T2.Loc;
+         elsif T1.Key.Loc /= T2.Key.Loc then
+            return T1.Key.Loc < T2.Key.Loc;
 
          --  Finally, for two locations at the same address prefer the one that
          --  does NOT have the type 'r', so that a modification or extension
@@ -513,7 +520,7 @@ package body Alfa is
          --  in-out actuals, the read reference follows the modify reference.
 
          else
-            return T2.Typ = 'r';
+            return T2.Key.Typ = 'r';
          end if;
       end Lt;
 
@@ -563,7 +570,7 @@ package body Alfa is
 
          --  Set entity at this point with newly created "Heap" variable
 
-         Xrefs.Table (Xrefs.Last).Ent := Heap;
+         Xrefs.Table (Xrefs.Last).Key.Ent := Heap;
 
          Nrefs         := Nrefs + 1;
          Rnums (Nrefs) := Xrefs.Last;
@@ -637,13 +644,13 @@ package body Alfa is
          Nrefs := 0;
 
          for J in 1 .. NR loop
-            if Alfa_Entities (Ekind (Xrefs.Table (Rnums (J)).Ent))
-              and then Alfa_References (Xrefs.Table (Rnums (J)).Typ)
-              and then Is_Alfa_Scope (Xrefs.Table (Rnums (J)).Ent_Scope)
-              and then Is_Alfa_Scope (Xrefs.Table (Rnums (J)).Ref_Scope)
-              and then not Is_Global_Constant (Xrefs.Table (Rnums (J)).Ent)
-              and then Is_Alfa_Reference (Xrefs.Table (Rnums (J)).Ent,
-                                          Xrefs.Table (Rnums (J)).Typ)
+            if Alfa_Entities (Ekind (Xrefs.Table (Rnums (J)).Key.Ent))
+              and then Alfa_References (Xrefs.Table (Rnums (J)).Key.Typ)
+              and then Is_Alfa_Scope (Xrefs.Table (Rnums (J)).Key.Ent_Scope)
+              and then Is_Alfa_Scope (Xrefs.Table (Rnums (J)).Key.Ref_Scope)
+              and then not Is_Global_Constant (Xrefs.Table (Rnums (J)).Key.Ent)
+              and then Is_Alfa_Reference (Xrefs.Table (Rnums (J)).Key.Ent,
+                                          Xrefs.Table (Rnums (J)).Key.Typ)
             then
                Nrefs         := Nrefs + 1;
                Rnums (Nrefs) := Rnums (J);
@@ -695,12 +702,12 @@ package body Alfa is
          Prevt := 'm';
 
          for J in 1 .. NR loop
-            if Xrefs.Table (Rnums (J)).Loc /= Crloc
+            if Xrefs.Table (Rnums (J)).Key.Loc /= Crloc
               or else (Prevt = 'm'
-                        and then Xrefs.Table (Rnums (J)).Typ = 'r')
+                        and then Xrefs.Table (Rnums (J)).Key.Typ = 'r')
             then
-               Crloc         := Xrefs.Table (Rnums (J)).Loc;
-               Prevt         := Xrefs.Table (Rnums (J)).Typ;
+               Crloc         := Xrefs.Table (Rnums (J)).Key.Loc;
+               Prevt         := Xrefs.Table (Rnums (J)).Key.Typ;
                Nrefs         := Nrefs + 1;
                Rnums (Nrefs) := Rnums (J);
             end if;
@@ -814,13 +821,13 @@ package body Alfa is
             --  construction of the scope table, or an erroneous scope for the
             --  current cross-reference.
 
-            pragma Assert (Is_Future_Scope_Entity (XE.Ent_Scope));
+            pragma Assert (Is_Future_Scope_Entity (XE.Key.Ent_Scope));
 
             --  Update the range of cross references to which the current scope
             --  refers to. This may be the empty range only for the first scope
             --  considered.
 
-            if XE.Ent_Scope /= Cur_Scope then
+            if XE.Key.Ent_Scope /= Cur_Scope then
                Alfa_Scope_Table.Table (Cur_Scope_Idx).From_Xref :=
                  From_Xref_Idx;
                Alfa_Scope_Table.Table (Cur_Scope_Idx).To_Xref :=
@@ -828,39 +835,39 @@ package body Alfa is
                From_Xref_Idx := Alfa_Xref_Table.Last + 1;
             end if;
 
-            while XE.Ent_Scope /= Cur_Scope loop
+            while XE.Key.Ent_Scope /= Cur_Scope loop
                Cur_Scope_Idx := Cur_Scope_Idx + 1;
                pragma Assert (Cur_Scope_Idx <= Alfa_Scope_Table.Last);
             end loop;
 
-            if XE.Ent /= Cur_Entity then
+            if XE.Key.Ent /= Cur_Entity then
                Cur_Entity_Name :=
-                 new String'(Unique_Name (XE.Ent));
+                 new String'(Unique_Name (XE.Key.Ent));
             end if;
 
-            if XE.Ent = Heap then
+            if XE.Key.Ent = Heap then
                Alfa_Xref_Table.Append (
                  (Entity_Name => Cur_Entity_Name,
                   Entity_Line => 0,
-                  Etype       => Get_Entity_Type (XE.Ent),
+                  Etype       => Get_Entity_Type (XE.Key.Ent),
                   Entity_Col  => 0,
-                  File_Num    => Dependency_Num (XE.Lun),
-                  Scope_Num   => Get_Scope_Num (XE.Ref_Scope),
-                  Line        => Int (Get_Logical_Line_Number (XE.Loc)),
-                  Rtype       => XE.Typ,
-                  Col         => Int (Get_Column_Number (XE.Loc))));
+                  File_Num    => Dependency_Num (XE.Key.Lun),
+                  Scope_Num   => Get_Scope_Num (XE.Key.Ref_Scope),
+                  Line        => Int (Get_Logical_Line_Number (XE.Key.Loc)),
+                  Rtype       => XE.Key.Typ,
+                  Col         => Int (Get_Column_Number (XE.Key.Loc))));
 
             else
                Alfa_Xref_Table.Append (
                  (Entity_Name => Cur_Entity_Name,
                   Entity_Line => Int (Get_Logical_Line_Number (XE.Def)),
-                  Etype       => Get_Entity_Type (XE.Ent),
+                  Etype       => Get_Entity_Type (XE.Key.Ent),
                   Entity_Col  => Int (Get_Column_Number (XE.Def)),
-                  File_Num    => Dependency_Num (XE.Lun),
-                  Scope_Num   => Get_Scope_Num (XE.Ref_Scope),
-                  Line        => Int (Get_Logical_Line_Number (XE.Loc)),
-                  Rtype       => XE.Typ,
-                  Col         => Int (Get_Column_Number (XE.Loc))));
+                  File_Num    => Dependency_Num (XE.Key.Lun),
+                  Scope_Num   => Get_Scope_Num (XE.Key.Ref_Scope),
+                  Line        => Int (Get_Logical_Line_Number (XE.Key.Loc)),
+                  Rtype       => XE.Key.Typ,
+                  Col         => Int (Get_Column_Number (XE.Key.Loc))));
             end if;
          end Add_One_Xref;
       end loop;
@@ -1071,20 +1078,20 @@ package body Alfa is
 
          --  Entity is filled later on with the special "Heap" variable
 
-         Drefs.Table (Indx).Ent := Empty;
+         Drefs.Table (Indx).Key.Ent := Empty;
 
          Drefs.Table (Indx).Def := No_Location;
-         Drefs.Table (Indx).Loc := Ref;
-         Drefs.Table (Indx).Typ := Typ;
+         Drefs.Table (Indx).Key.Loc := Ref;
+         Drefs.Table (Indx).Key.Typ := Typ;
 
          --  It is as if the special "Heap" was defined in every scope where it
          --  is referenced.
 
-         Drefs.Table (Indx).Eun := Get_Source_Unit (Ref);
-         Drefs.Table (Indx).Lun := Get_Source_Unit (Ref);
+         Drefs.Table (Indx).Key.Eun := Get_Source_Unit (Ref);
+         Drefs.Table (Indx).Key.Lun := Get_Source_Unit (Ref);
 
-         Drefs.Table (Indx).Ref_Scope := Ref_Scope;
-         Drefs.Table (Indx).Ent_Scope := Ref_Scope;
+         Drefs.Table (Indx).Key.Ref_Scope := Ref_Scope;
+         Drefs.Table (Indx).Key.Ent_Scope := Ref_Scope;
          Drefs.Table (Indx).Ent_Scope_File := Get_Source_Unit (Ref_Scope);
       end if;
    end Generate_Dereference;

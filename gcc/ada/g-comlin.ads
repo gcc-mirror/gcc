@@ -703,9 +703,10 @@ package GNAT.Command_Line is
    --  switch.
 
    procedure Getopt
-     (Config   : Command_Line_Configuration;
-      Callback : Switch_Handler := null;
-      Parser   : Opt_Parser := Command_Line_Parser);
+     (Config      : Command_Line_Configuration;
+      Callback    : Switch_Handler := null;
+      Parser      : Opt_Parser := Command_Line_Parser;
+      Concatenate : Boolean := True);
    --  Similar to the standard Getopt function.
    --  For each switch found on the command line, this calls Callback, if the
    --  switch is not handled automatically.
@@ -715,6 +716,9 @@ package GNAT.Command_Line is
    --  parameter are never returned (and result in a modification of the Output
    --  variable). This function will in fact never call [Callback] if all
    --  switches were handled automatically and there is nothing left to do.
+   --
+   --  The option Concatenate is identical to the one of the standard Getopt
+   --  function.
    --
    --  This procedure automatically adds -h and --help to the valid switches,
    --  to display the help message and raises Exit_From_Command_Line.

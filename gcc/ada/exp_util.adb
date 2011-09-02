@@ -494,13 +494,39 @@ package body Exp_Util is
             Expr := N;
          end if;
 
-         Ptr_Typ := Base_Type (Etype (Expr));
+         --  In certain cases an allocator with a qualified expression may
+         --  be relocated and used as the initialization expression of a
+         --  temporary:
 
-         --  The allocator may have been rewritten into something else
+         --    before:
+         --       Obj : Ptr_Typ := new Desig_Typ'(...);
 
-         if Nkind (Expr) = N_Allocator then
-            Proc_To_Call := Procedure_To_Call (Expr);
+         --    after:
+         --       Tmp : Ptr_Typ := new Desig_Typ'(...);
+         --       Obj : Ptr_Typ := Tmp;
+
+         --  Since the allocator is always marked as analyzed to avoid infinite
+         --  expansion, it will never be processed by this routine given that
+         --  the designated type needs finalization actions. Detect this case
+         --  and complete the expansion of the allocator.
+
+         if Nkind (Expr) = N_Identifier
+           and then Nkind (Parent (Entity (Expr))) = N_Object_Declaration
+           and then Nkind (Expression (Parent (Entity (Expr)))) = N_Allocator
+         then
+            Build_Allocate_Deallocate_Proc (Parent (Entity (Expr)), True);
+            return;
          end if;
+
+         --  The allocator may have been rewritten into something else in which
+         --  case the expansion performed by this routine does not apply.
+
+         if Nkind (Expr) /= N_Allocator then
+            return;
+         end if;
+
+         Ptr_Typ := Base_Type (Etype (Expr));
+         Proc_To_Call := Procedure_To_Call (Expr);
       end if;
 
       Pool_Id := Associated_Storage_Pool (Ptr_Typ);
@@ -3723,11 +3749,9 @@ package body Exp_Util is
      (Decl     : Node_Id;
       Rel_Node : Node_Id) return Boolean
    is
-      Obj_Id   : constant Entity_Id := Defining_Identifier (Decl);
-      Obj_Typ  : constant Entity_Id := Base_Type (Etype (Obj_Id));
-      Desig    : Entity_Id := Obj_Typ;
-      Has_Rens : Boolean   := True;
-      Ren_Obj  : Entity_Id;
+      Obj_Id  : constant Entity_Id := Defining_Identifier (Decl);
+      Obj_Typ : constant Entity_Id := Base_Type (Etype (Obj_Id));
+      Desig   : Entity_Id := Obj_Typ;
 
       function Initialized_By_Access (Trans_Id : Entity_Id) return Boolean;
       --  Determine whether transient object Trans_Id is initialized either
@@ -3741,14 +3765,15 @@ package body Exp_Util is
       --  value 1 and BIPaccess is not null. This case creates an aliasing
       --  between the returned value and the value denoted by BIPaccess.
 
-      function Is_Allocated (Trans_Id : Entity_Id) return Boolean;
-      --  Determine whether transient object Trans_Id is allocated on the heap
-
-      function Is_Renamed
+      function Is_Aliased
         (Trans_Id   : Entity_Id;
          First_Stmt : Node_Id) return Boolean;
-      --  Determine whether transient object Trans_Id has been renamed in the
-      --  statement list starting from First_Stmt.
+      --  Determine whether transient object Trans_Id has been renamed or
+      --  aliased through 'reference in the statement list starting from
+      --  First_Stmt.
+
+      function Is_Allocated (Trans_Id : Entity_Id) return Boolean;
+      --  Determine whether transient object Trans_Id is allocated on the heap
 
       ---------------------------
       -- Initialized_By_Access --
@@ -3849,30 +3874,14 @@ package body Exp_Util is
          return False;
       end Initialized_By_Aliased_BIP_Func_Call;
 
-      ------------------
-      -- Is_Allocated --
-      ------------------
-
-      function Is_Allocated (Trans_Id : Entity_Id) return Boolean is
-         Expr : constant Node_Id := Expression (Parent (Trans_Id));
-
-      begin
-         return
-           Is_Access_Type (Etype (Trans_Id))
-             and then Present (Expr)
-             and then Nkind (Expr) = N_Allocator;
-      end Is_Allocated;
-
       ----------------
-      -- Is_Renamed --
+      -- Is_Aliased --
       ----------------
 
-      function Is_Renamed
+      function Is_Aliased
         (Trans_Id   : Entity_Id;
          First_Stmt : Node_Id) return Boolean
       is
-         Stmt : Node_Id;
-
          function Extract_Renamed_Object
            (Ren_Decl : Node_Id) return Entity_Id;
          --  Given an object renaming declaration, retrieve the entity of the
@@ -3918,26 +3927,30 @@ package body Exp_Util is
             return Empty;
          end Extract_Renamed_Object;
 
-      --  Start of processing for Is_Renamed
+         --  Local variables
+
+         Expr    : Node_Id;
+         Ren_Obj : Entity_Id;
+         Stmt    : Node_Id;
+
+      --  Start of processing for Is_Aliased
 
       begin
-         --  If a previous invocation of this routine has determined that a
-         --  list has no renamings, then no point in repeating the same scan.
-
-         if not Has_Rens then
-            return False;
-         end if;
-
-         --  Assume that the statement list does not have a renaming. This is a
-         --  minor optimization.
-
-         Has_Rens := False;
-
          Stmt := First_Stmt;
          while Present (Stmt) loop
-            if Nkind (Stmt) = N_Object_Renaming_Declaration then
-               Has_Rens := True;
-               Ren_Obj  := Extract_Renamed_Object (Stmt);
+            if Nkind (Stmt) = N_Object_Declaration then
+               Expr := Expression (Stmt);
+
+               if Present (Expr)
+                 and then Nkind (Expr) = N_Reference
+                 and then Nkind (Prefix (Expr)) = N_Identifier
+                 and then Entity (Prefix (Expr)) = Trans_Id
+               then
+                  return True;
+               end if;
+
+            elsif Nkind (Stmt) = N_Object_Renaming_Declaration then
+               Ren_Obj := Extract_Renamed_Object (Stmt);
 
                if Present (Ren_Obj)
                  and then Ren_Obj = Trans_Id
@@ -3950,7 +3963,21 @@ package body Exp_Util is
          end loop;
 
          return False;
-      end Is_Renamed;
+      end Is_Aliased;
+
+      ------------------
+      -- Is_Allocated --
+      ------------------
+
+      function Is_Allocated (Trans_Id : Entity_Id) return Boolean is
+         Expr : constant Node_Id := Expression (Parent (Trans_Id));
+
+      begin
+         return
+           Is_Access_Type (Etype (Trans_Id))
+             and then Present (Expr)
+             and then Nkind (Expr) = N_Allocator;
+      end Is_Allocated;
 
    --  Start of processing for Is_Finalizable_Transient
 
@@ -3966,6 +3993,11 @@ package body Exp_Util is
           and then Needs_Finalization (Desig)
           and then Requires_Transient_Scope (Desig)
           and then Nkind (Rel_Node) /= N_Simple_Return_Statement
+
+         --  Do not consider renamed or 'reference-d transient objects because
+         --  the act of renaming extends the object's lifetime.
+
+          and then not Is_Aliased (Obj_Id, Decl)
 
          --  Do not consider transient objects allocated on the heap since they
          --  are attached to a finalization master.
@@ -3984,11 +4016,6 @@ package body Exp_Util is
          --  build-in-place function results.
 
           and then not Initialized_By_Aliased_BIP_Func_Call (Obj_Id)
-
-         --  Do not consider renamed transient objects because the act of
-         --  renaming extends the object's lifetime.
-
-          and then not Is_Renamed (Obj_Id, Decl)
 
          --  Do not consider conversions of tags to class-wide types
 
