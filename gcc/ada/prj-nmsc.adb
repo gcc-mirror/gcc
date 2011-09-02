@@ -82,8 +82,7 @@ package body Prj.Nmsc is
       Hash       => Hash,
       Equal      => "=");
    --  File name information found in string list attribute (Source_Files or
-   --  Source_List_File). Except is set to True if source is a naming exception
-   --  in the project. Used to check that all referenced files were indeed
+   --  Source_List_File). Used to check that all referenced files were indeed
    --  found on the disk.
 
    type Unit_Exception is record
@@ -4302,6 +4301,12 @@ package body Prj.Nmsc is
    is
       Shared : constant Shared_Project_Tree_Data_Access := Data.Tree.Shared;
 
+      Lib_Name            : constant Prj.Variable_Value :=
+                              Prj.Util.Value_Of
+                               (Snames.Name_Library_Name,
+                                Project.Decl.Attributes,
+                                Shared);
+
       Lib_Interfaces      : constant Prj.Variable_Value :=
                               Prj.Util.Value_Of
                                 (Snames.Name_Library_Interface,
@@ -4353,6 +4358,44 @@ package body Prj.Nmsc is
       --  Library_Interface is defined.
 
       if not Lib_Interfaces.Default then
+
+         --  The name of a stand-alone library needs to have the syntax of an
+         --  Ada identifier.
+
+         declare
+            Name : constant String := Get_Name_String (Project.Library_Name);
+            OK   : Boolean := Is_Letter (Name (Name'First));
+            Underline : Boolean := False;
+         begin
+            for J in Name'First + 1 .. Name'Last loop
+               exit when not OK;
+
+               if Is_Alphanumeric (Name (J)) then
+                  Underline := False;
+
+               elsif Name (J) = '_' then
+                  if Underline then
+                     OK := False;
+                  else
+                     Underline := True;
+                  end if;
+
+               else
+                  OK := False;
+               end if;
+            end loop;
+
+            OK := OK and then not Underline;
+
+            if not OK then
+               Error_Msg
+                 (Data.Flags,
+                  "Incorrect library name for a Stand-Alone Library",
+                  Lib_Name.Location, Project);
+               return;
+            end if;
+         end;
+
          declare
             Interfaces     : String_List_Id := Lib_Interfaces.Values;
             Interface_ALIs : String_List_Id := Nil_String;

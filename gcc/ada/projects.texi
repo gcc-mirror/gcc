@@ -1,6 +1,7 @@
 @set gprconfig GPRconfig
 
 @c ------ projects.texi
+@c Copyright (C) 2002-2011, Free Software Foundation, Inc.
 @c This file is shared between the GNAT user's guide and gprbuild. It is not
 @c compilable on its own, you should instead compile the other two manuals.
 @c For that reason, there is no toplevel @menu
@@ -1525,10 +1526,11 @@ front of the @code{project} keyword.
 @item @b{Library_Name}:
 @cindex @code{Library_Name}
   This attribute is the name of the library to be built. There is no
-  restriction on the name of a library imposed by the project manager;
-  however, there may be system specific restrictions on the name.
-  In general, it is recommended to stick to alphanumeric characters
-  (and possibly underscores) to help portability.
+  restriction on the name of a library imposed by the project manager, except
+  for stand-alone libraries whose names must follow the syntax of Ada
+  identifiers; however, there may be system specific restrictions on the name.
+  In general, it is recommended to stick to alphanumeric characters (and
+  possibly single underscores) to help portability.
 
 @item @b{Library_Dir}:
 @cindex @code{Library_Dir}
@@ -1748,6 +1750,9 @@ whose main is not in Ada since it makes the elaboration of the Ada part mostly
 transparent. However, stand-alone libraries are also useful when the main is in
 Ada: they provide a means for minimizing relinking & redeployment of complex
 systems when localized changes are made.
+
+The name of a stand-alone library, specified with attribute
+@code{Library_Name}, must have the syntax of an Ada identifier.
 
 The most prominent characteristic of a stand-alone library is that it offers a
 distinction between interface units and implementation units. Only the former
