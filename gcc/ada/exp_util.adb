@@ -5687,6 +5687,12 @@ package body Exp_Util is
          when N_Slice =>
             return Possible_Bit_Aligned_Component (Prefix (N));
 
+         --  For an unchecked conversion, check whether the expression may
+         --  be bit-aligned.
+
+         when N_Unchecked_Type_Conversion =>
+            return Possible_Bit_Aligned_Component (Expression (N));
+
          --  If we have none of the above, it means that we have fallen off the
          --  top testing prefixes recursively, and we now have a stand alone
          --  object, where we don't have a problem.

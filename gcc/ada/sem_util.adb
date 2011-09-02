@@ -6489,8 +6489,11 @@ package body Sem_Util is
 
    begin
       if Is_Entity_Name (Obj) then
-
          E := Entity (Obj);
+
+         if Is_Object (E) and then not Is_Aliased (E) then
+            Check_Restriction (No_Implicit_Aliasing, Obj);
+         end if;
 
          return
            (Is_Object (E)
@@ -6526,13 +6529,10 @@ package body Sem_Util is
          return Has_Aliased_Components (Etype (Prefix (Obj)))
            or else
              (Is_Access_Type (Etype (Prefix (Obj)))
-               and then
-              Has_Aliased_Components
-                (Designated_Type (Etype (Prefix (Obj)))));
+               and then Has_Aliased_Components
+                          (Designated_Type (Etype (Prefix (Obj)))));
 
-      elsif Nkind (Obj) = N_Unchecked_Type_Conversion
-        or else Nkind (Obj) = N_Type_Conversion
-      then
+      elsif Nkind_In (Obj, N_Unchecked_Type_Conversion, N_Type_Conversion) then
          return Is_Tagged_Type (Etype (Obj))
            and then Is_Aliased_View (Expression (Obj));
 

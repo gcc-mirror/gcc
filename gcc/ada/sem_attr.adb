@@ -837,7 +837,13 @@ package body Sem_Attr is
            and then not In_Instance
            and then not In_Inlined_Body
          then
-            Error_Attr_P ("prefix of % attribute must be aliased");
+            if Restriction_Check_Required (No_Implicit_Aliasing) then
+               Error_Attr_P
+                 ("prefix of % attribute must be explicitly aliased");
+            else
+               Error_Attr_P
+                 ("prefix of % attribute must be aliased");
+            end if;
          end if;
       end Analyze_Access_Attribute;
 
@@ -2221,11 +2227,19 @@ package body Sem_Attr is
                then
                   Set_Address_Taken (Ent);
 
-               --  If we have an address of an object, and the attribute
-               --  comes from source, then set the object as potentially
-               --  source modified. We do this because the resulting address
-               --  can potentially be used to modify the variable and we
-               --  might not detect this, leading to some junk warnings.
+                  --  Deal with No_Implicit_Aliasing restriction
+
+                  if Restriction_Check_Required (No_Implicit_Aliasing) then
+                     if not Is_Aliased_View (P) then
+                        Check_Restriction (No_Implicit_Aliasing, P);
+                     end if;
+                  end if;
+
+                  --  If we have an address of an object, and the attribute
+                  --  comes from source, then set the object as potentially
+                  --  source modified. We do this because the resulting address
+                  --  can potentially be used to modify the variable and we
+                  --  might not detect this, leading to some junk warnings.
 
                   Set_Never_Set_In_Source (Ent, False);
 
@@ -4927,6 +4941,10 @@ package body Sem_Attr is
       when Attribute_Unrestricted_Access =>
          if Comes_From_Source (N) then
             Check_Restriction (No_Unchecked_Access, N);
+
+            if Nkind (P) in N_Has_Entity and then Is_Object (Entity (P)) then
+               Check_Restriction (No_Implicit_Aliasing, N);
+            end if;
          end if;
 
          if Is_Entity_Name (P) then

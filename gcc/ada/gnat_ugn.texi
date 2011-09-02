@@ -13071,8 +13071,6 @@ Reformat comment blocks
 @item ^-c5^/COMMENTS_LAYOUT=KEEP_SPECIAL^
 Keep unchanged special form comments
 
-Reformat comment blocks
-
 @cindex @option{^-l@var{n}^/CONSTRUCT_LAYOUT^} (@command{gnatpp})
 @item ^-l1^/CONSTRUCT_LAYOUT=GNAT^
 GNAT-style layout (this is the default)
