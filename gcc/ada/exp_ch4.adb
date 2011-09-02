@@ -380,12 +380,11 @@ package body Exp_Ch4 is
    ------------------------------
 
    function Current_Anonymous_Master return Entity_Id is
-      Decls      : List_Id;
-      Fin_Mas_Id : Entity_Id;
-      Loc        : Source_Ptr;
-      Subp_Body  : Node_Id;
-      Unit_Decl  : Node_Id;
-      Unit_Id    : Entity_Id;
+      Decls     : List_Id;
+      Loc       : Source_Ptr;
+      Subp_Body : Node_Id;
+      Unit_Decl : Node_Id;
+      Unit_Id   : Entity_Id;
 
    begin
       Unit_Id := Cunit_Entity (Current_Sem_Unit);
@@ -440,21 +439,35 @@ package body Exp_Ch4 is
       --  declarations and locate the entity.
 
       if Has_Anonymous_Master (Unit_Id) then
-         Fin_Mas_Id := First_Entity (Unit_Id);
-         while Present (Fin_Mas_Id) loop
+         declare
+            Decl       : Node_Id;
+            Fin_Mas_Id : Entity_Id;
 
-            --  Look for the first variable whose type is Finalization_Master
+         begin
+            Decl := First (Decls);
+            while Present (Decl) loop
 
-            if Ekind (Fin_Mas_Id) = E_Variable
-              and then Etype (Fin_Mas_Id) = RTE (RE_Finalization_Master)
-            then
-               return Fin_Mas_Id;
-            end if;
+               --  Look for the first variable in the declarations whole type
+               --  is Finalization_Master.
 
-            Next_Entity (Fin_Mas_Id);
-         end loop;
+               if Nkind (Decl) = N_Object_Declaration then
+                  Fin_Mas_Id := Defining_Identifier (Decl);
 
-         raise Program_Error;
+                  if Ekind (Fin_Mas_Id) = E_Variable
+                    and then Etype (Fin_Mas_Id) = RTE (RE_Finalization_Master)
+                  then
+                     return Fin_Mas_Id;
+                  end if;
+               end if;
+
+               Next (Decl);
+            end loop;
+
+            --  The master was not found even though the unit was labeled as
+            --  having one.
+
+            raise Program_Error;
+         end;
 
       --  Create a new anonymous master
 
@@ -462,6 +475,7 @@ package body Exp_Ch4 is
          declare
             First_Decl : constant Node_Id := First (Decls);
             Action     : Node_Id;
+            Fin_Mas_Id : Entity_Id;
 
          begin
             --  Since the master and its associated initialization is inserted

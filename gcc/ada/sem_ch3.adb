@@ -15691,20 +15691,30 @@ package body Sem_Ch3 is
          ------------------------
 
          procedure Set_Anonymous_Type (Id : Entity_Id) is
-            Typ : constant Entity_Id := Etype (Old_C);
+            Old_Typ : constant Entity_Id := Etype (Old_C);
 
          begin
             if Scope (Parent_Base) = Scope (Derived_Base) then
-               Set_Etype (Id, Typ);
+               Set_Etype (Id, Old_Typ);
 
             --  The parent and the derived type are in two different scopes.
             --  Reuse the type of the original discriminant / component by
-            --  copying it in order to preserve all attributes and update the
-            --  scope.
+            --  copying it in order to preserve all attributes.
 
             else
-               Set_Etype (Id, New_Copy (Typ));
-               Set_Scope (Etype (Id), Current_Scope);
+               declare
+                  Typ : constant Entity_Id := New_Copy (Old_Typ);
+
+               begin
+                  Set_Etype (Id, Typ);
+
+                  --  Since we do not generate component declarations for
+                  --  inherited components, associate the itype with the
+                  --  derived type.
+
+                  Set_Associated_Node_For_Itype (Typ, Parent (Derived_Base));
+                  Set_Scope                     (Typ, Derived_Base);
+               end;
             end if;
          end Set_Anonymous_Type;
 

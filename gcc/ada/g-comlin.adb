@@ -3291,6 +3291,7 @@ package body GNAT.Command_Line is
                           with "Expected integer parameter for '"
                             & Switch & "'";
                   end;
+
                   return;
 
                when Switch_String =>

@@ -2537,7 +2537,7 @@ package body Sem_Ch10 is
 
          Change_Selected_Component_To_Expanded_Name (Name (N));
 
-         --  If this is a child unit without a spec, and it has benn analyzed
+         --  If this is a child unit without a spec, and it has been analyzed
          --  already, a declaration has been created for it. The with_clause
          --  must reflect the actual body, and not the generated declaration,
          --  to prevent spurious binding errors involving an out-of-date spec.

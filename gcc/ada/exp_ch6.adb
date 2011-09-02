@@ -111,13 +111,15 @@ package body Exp_Ch6 is
    --  Extra_Formal in Subprogram_Call.
 
    procedure Add_Finalization_Master_Actual_To_Build_In_Place_Call
-     (Func_Call : Node_Id;
-      Func_Id   : Entity_Id;
-      Ptr_Typ   : Entity_Id := Empty);
+     (Func_Call  : Node_Id;
+      Func_Id    : Entity_Id;
+      Ptr_Typ    : Entity_Id := Empty;
+      Master_Exp : Node_Id   := Empty);
    --  Ada 2005 (AI-318-02): If the result type of a build-in-place call needs
    --  finalization actions, add an actual parameter which is a pointer to the
-   --  finalization master of the caller. If Ptr_Typ is left Empty, this will
-   --  result in an automatic "null" value for the actual.
+   --  finalization master of the caller. If Master_Exp is not Empty, then that
+   --  will be passed as the actual. Otherwise, if Ptr_Typ is left Empty, this
+   --  will result in an automatic "null" value for the actual.
 
    procedure Add_Task_Actuals_To_Build_In_Place_Call
      (Function_Call : Node_Id;
@@ -311,9 +313,10 @@ package body Exp_Ch6 is
    -----------------------------------------------------------
 
    procedure Add_Finalization_Master_Actual_To_Build_In_Place_Call
-     (Func_Call : Node_Id;
-      Func_Id   : Entity_Id;
-      Ptr_Typ   : Entity_Id := Empty)
+     (Func_Call  : Node_Id;
+      Func_Id    : Entity_Id;
+      Ptr_Typ    : Entity_Id := Empty;
+      Master_Exp : Node_Id   := Empty)
    is
    begin
       if not Needs_BIP_Finalization_Master (Func_Id) then
@@ -329,9 +332,16 @@ package body Exp_Ch6 is
          Desig_Typ : Entity_Id;
 
       begin
+         --  If there is a finalization master actual, such as the implicit
+         --  finalization master of an enclosing build-in-place function,
+         --  then this must be added as an extra actual of the call.
+
+         if Present (Master_Exp) then
+            Actual := Master_Exp;
+
          --  Case where the context does not require an actual master
 
-         if No (Ptr_Typ) then
+         elsif No (Ptr_Typ) then
             Actual := Make_Null (Loc);
 
          else
@@ -7561,7 +7571,9 @@ package body Exp_Ch6 is
       Ptr_Typ_Decl    : Node_Id;
       Def_Id          : Entity_Id;
       New_Expr        : Node_Id;
-      Enclosing_Func  : Entity_Id;
+      Enclosing_Func  : constant Entity_Id :=
+                          Enclosing_Subprogram (Obj_Def_Id);
+      Fmaster_Actual  : Node_Id := Empty;
       Pass_Caller_Acc : Boolean := False;
 
    begin
@@ -7613,8 +7625,6 @@ package body Exp_Ch6 is
       if Is_Return_Object (Defining_Identifier (Object_Decl)) then
          Pass_Caller_Acc := True;
 
-         Enclosing_Func := Enclosing_Subprogram (Obj_Def_Id);
-
          --  When the enclosing function has a BIP_Alloc_Form formal then we
          --  pass it along to the callee (such as when the enclosing function
          --  has an unconstrained or tagged result type).
@@ -7634,6 +7644,13 @@ package body Exp_Ch6 is
          else
             Add_Alloc_Form_Actual_To_Build_In_Place_Call
               (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
+         end if;
+
+         if Needs_BIP_Finalization_Master (Enclosing_Func) then
+            Fmaster_Actual :=
+              New_Reference_To
+                (Build_In_Place_Formal
+                   (Enclosing_Func, BIP_Finalization_Master), Loc);
          end if;
 
          --  Retrieve the BIPacc formal from the enclosing function and convert
@@ -7686,14 +7703,18 @@ package body Exp_Ch6 is
          Establish_Transient_Scope (Object_Decl, Sec_Stack => True);
       end if;
 
+      --  Pass along any finalization master actual, which is needed in the
+      --  case where the called function initializes a return object of an
+      --  enclosing build-in-place function.
+
       Add_Finalization_Master_Actual_To_Build_In_Place_Call
-        (Func_Call, Function_Id);
+        (Func_Call  => Func_Call,
+         Func_Id    => Function_Id,
+         Master_Exp => Fmaster_Actual);
 
       if Nkind (Parent (Object_Decl)) = N_Extended_Return_Statement
         and then Has_Task (Result_Subt)
       then
-         Enclosing_Func := Enclosing_Subprogram (Obj_Def_Id);
-
          --  Here we're passing along the master that was passed in to this
          --  function.
 
