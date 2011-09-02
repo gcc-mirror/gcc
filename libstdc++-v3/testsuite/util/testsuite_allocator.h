@@ -37,14 +37,15 @@ namespace __gnu_test
   {
   public:
     typedef std::size_t    size_type; 
-    
+
     static void*
     allocate(size_type blocksize)
     {
+      void* p = ::operator new(blocksize);
       allocationCount_ += blocksize;
-      return ::operator new(blocksize);
+      return p;
     }
-    
+
     static void
     construct() { constructCount_++; }
 
@@ -57,19 +58,19 @@ namespace __gnu_test
       ::operator delete(p);
       deallocationCount_ += blocksize;
     }
-    
+
     static size_type
     get_allocation_count() { return allocationCount_; }
-    
+
     static size_type
     get_deallocation_count() { return deallocationCount_; }
-    
+
     static int
     get_construct_count() { return constructCount_; }
 
     static int
     get_destruct_count() { return destructCount_; }
-    
+
     static void
     reset()
     {
