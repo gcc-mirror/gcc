@@ -1702,10 +1702,14 @@ fold_builtin_alloca_for_var (gimple stmt)
 
   /* Detect constant argument.  */
   arg = get_constant_value (gimple_call_arg (stmt, 0));
-  if (arg == NULL_TREE || TREE_CODE (arg) != INTEGER_CST
+  if (arg == NULL_TREE
+      || TREE_CODE (arg) != INTEGER_CST
       || !host_integerp (arg, 1))
     return NULL_TREE;
+
   size = TREE_INT_CST_LOW (arg);
+  if (size == 0)
+    return NULL_TREE;
 
   /* Heuristic: don't fold large vlas.  */
   threshold = (unsigned HOST_WIDE_INT)PARAM_VALUE (PARAM_LARGE_STACK_FRAME);
@@ -1804,12 +1808,12 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
         if (gimple_call_alloca_for_var_p (stmt))
           {
             tree new_rhs = fold_builtin_alloca_for_var (stmt);
-            bool res;
-            if (new_rhs == NULL_TREE)
-              return false;
-            res = update_call_from_tree (gsi, new_rhs);
-            gcc_assert (res);
-            return true;
+            if (new_rhs)
+	      {
+		bool res = update_call_from_tree (gsi, new_rhs);
+		gcc_assert (res);
+		return true;
+	      }
           }
 
 	/* Propagate into the call arguments.  Compared to replace_uses_in
