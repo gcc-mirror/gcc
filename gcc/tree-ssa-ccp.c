@@ -1708,8 +1708,6 @@ fold_builtin_alloca_for_var (gimple stmt)
     return NULL_TREE;
 
   size = TREE_INT_CST_LOW (arg);
-  if (size == 0)
-    return NULL_TREE;
 
   /* Heuristic: don't fold large vlas.  */
   threshold = (unsigned HOST_WIDE_INT)PARAM_VALUE (PARAM_LARGE_STACK_FRAME);
@@ -1726,6 +1724,8 @@ fold_builtin_alloca_for_var (gimple stmt)
   elem_type = build_nonstandard_integer_type (BITS_PER_UNIT, 1);
   n_elem = size * 8 / BITS_PER_UNIT;
   align = MIN (size * 8, BIGGEST_ALIGNMENT);
+  if (align < BITS_PER_UNIT)
+    align = BITS_PER_UNIT;
   array_type = build_array_type_nelts (elem_type, n_elem);
   var = create_tmp_var (array_type, NULL);
   DECL_ALIGN (var) = align;
