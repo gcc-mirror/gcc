@@ -271,6 +271,8 @@ add_stack_var (tree decl)
   if (v->size == 0)
     v->size = 1;
   v->alignb = align_local_variable (SSAVAR (decl));
+  /* An alignment of zero can mightily confuse us later.  */
+  gcc_assert (v->alignb != 0);
 
   /* All variables are initially in their own partition.  */
   v->representative = stack_vars_num;

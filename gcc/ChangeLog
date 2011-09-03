@@ -1,3 +1,9 @@
+2011-09-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgexpand.c (add_stack_var): Assert that the alignment is not zero.
+	* tree-ssa-ccp.c (fold_builtin_alloca_for_var): Revert latest change.
+	Force at least BITS_PER_UNIT alignment on the new variable.
+
 2011-09-02  Gary Funck <gary@intrepid.com>
 
 	* opts.c (print_specific_help): Fix off-by-one compare in
