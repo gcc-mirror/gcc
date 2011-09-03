@@ -1,3 +1,23 @@
+2011-09-03  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_jump_func_t): New typedef.
+	(struct ipa_edge_args): Removed field argument_count, field
+	jump_functions turned into a vector.
+	(ipa_set_cs_argument_count): Removed.
+	(ipa_get_cs_argument_count): Updated to work on vectors.
+	(ipa_get_ith_jump_func): Likewise.
+	* ipa-prop.c (ipa_count_arguments): Removed.
+	(compute_scalar_jump_functions): Use ipa_get_ith_jump_func to access
+	jump functions.  Update caller.
+	(compute_pass_through_member_ptrs): Likewise.
+	(compute_cst_member_ptr_arguments): Likewise.
+	(ipa_compute_jump_functions_for_edge): Get number of arguments from
+	the statement, allocate vector.
+	(ipa_compute_jump_functions): Do not call ipa_count_arguments.
+	(duplicate_ipa_jump_func_array): Removed.
+	(ipa_edge_duplication_hook): Use VEC_copy, do not copy argument count.
+	(ipa_read_node_info): Allocate vector.
+
 2011-09-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/50232
