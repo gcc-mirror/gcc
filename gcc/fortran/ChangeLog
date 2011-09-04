@@ -1,3 +1,8 @@
+2011-09-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/50227
+	* trans-types.c (gfc_sym_type): Check for proc_name.
+
 2011-08-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45044
