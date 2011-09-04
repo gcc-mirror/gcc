@@ -1,3 +1,9 @@
+2011-09-04  Ira Rosen  <ira.rosen@linaro.org>
+
+	* tree-vectorizer.c (vect_print_dump_info): Print line
+	number when dumping to a file.
+	(vectorize_loops): Add new messages to dump file.
+
 2011-09-03  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (ipa_jump_func_t): New typedef.
