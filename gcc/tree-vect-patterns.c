@@ -344,12 +344,14 @@ vect_recog_dot_prod_pattern (VEC (gimple, heap) **stmts, tree *type_in,
    replace a_T = (TYPE) a_t; with a_it - (interm_type) a_t;  */
 
 static bool
-vect_handle_widen_mult_by_const (tree const_oprnd, tree *oprnd,
+vect_handle_widen_mult_by_const (gimple stmt, tree const_oprnd, tree *oprnd,
    			         VEC (gimple, heap) **stmts, tree type,
 			         tree *half_type, gimple def_stmt)
 {
   tree new_type, new_oprnd, tmp;
   gimple new_stmt;
+  loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (vinfo_for_stmt (stmt));
+  struct loop *loop = LOOP_VINFO_LOOP (loop_info);
 
   if (int_fits_type_p (const_oprnd, *half_type))
     {
@@ -359,6 +361,8 @@ vect_handle_widen_mult_by_const (tree const_oprnd, tree *oprnd,
     }
 
   if (TYPE_PRECISION (type) < (TYPE_PRECISION (*half_type) * 4)
+      || !gimple_bb (def_stmt)
+      || !flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
       || !vinfo_for_stmt (def_stmt))
     return false;
 
@@ -527,7 +531,8 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
     {
       if (TREE_CODE (oprnd0) == INTEGER_CST
 	  && TREE_CODE (half_type1) == INTEGER_TYPE
-          && vect_handle_widen_mult_by_const (oprnd0, &oprnd1, stmts, type,
+          && vect_handle_widen_mult_by_const (last_stmt, oprnd0, &oprnd1,
+                                              stmts, type,
 				 	      &half_type1, def_stmt1))
         half_type0 = half_type1;
       else
@@ -537,7 +542,8 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
     {
       if (TREE_CODE (oprnd1) == INTEGER_CST
           && TREE_CODE (half_type0) == INTEGER_TYPE
-          && vect_handle_widen_mult_by_const (oprnd1, &oprnd0, stmts, type,
+          && vect_handle_widen_mult_by_const (last_stmt, oprnd1, &oprnd0,
+                                              stmts, type,
 					      &half_type0, def_stmt0))
         half_type1 = half_type0;
       else
@@ -868,6 +874,8 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
   tree interm_type = NULL_TREE, half_type, tmp, new_oprnd, type;
   gimple def_stmt, new_stmt;
   bool first = false;
+  loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (vinfo_for_stmt (stmt));
+  struct loop *loop = LOOP_VINFO_LOOP (loop_info);
 
   *new_def_stmt = NULL;
 
@@ -898,6 +906,8 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
     {
       first = true;
       if (!widened_name_p (oprnd, stmt, &half_type, &def_stmt, false)
+          || !gimple_bb (def_stmt)
+          || !flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
           || !vinfo_for_stmt (def_stmt))
         return false;
     }
