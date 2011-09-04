@@ -534,7 +534,7 @@ L_ffi_closure_helper_DARWIN$stub:
 	.lazy_symbol_pointer
 L_ffi_closure_helper_DARWIN$lazy_ptr:
 	.indirect_symbol _ffi_closure_helper_DARWIN
-	.long	dyld_stub_binding_helper
+	.g_long	dyld_stub_binding_helper
 
 #if defined(__ppc64__)
 	.section __TEXT,__picsymbolstub1,symbol_stubs,pure_instructions,32
@@ -553,7 +553,8 @@ L_darwin64_struct_ret_by_value_p$stub:
 	.lazy_symbol_pointer
 L_darwin64_struct_ret_by_value_p$lazy_ptr:
 	.indirect_symbol _darwin64_struct_ret_by_value_p
-	.long	dyld_stub_binding_helper
+	.g_long	dyld_stub_binding_helper
+
 	.section __TEXT,__picsymbolstub1,symbol_stubs,pure_instructions,32
 	.align 5
 L_darwin64_pass_struct_floats$stub:
@@ -570,6 +571,6 @@ L_darwin64_pass_struct_floats$stub:
 	.lazy_symbol_pointer
 L_darwin64_pass_struct_floats$lazy_ptr:
 	.indirect_symbol _darwin64_pass_struct_floats
-	.long	dyld_stub_binding_helper
+	.g_long	dyld_stub_binding_helper
 #  endif
 #endif
