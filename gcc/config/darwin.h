@@ -413,6 +413,7 @@ extern GTY(()) int darwin_ms_struct;
 #define DEBUG_PUBTYPES_SECTION	"__DWARF,__debug_pubtypes,regular,debug"
 #define DEBUG_STR_SECTION	"__DWARF,__debug_str,regular,debug"
 #define DEBUG_RANGES_SECTION	"__DWARF,__debug_ranges,regular,debug"
+#define DEBUG_MACRO_SECTION    "__DWARF,__debug_macro,regular,debug"
 
 #define TARGET_WANT_DEBUG_PUB_SECTIONS true
 
