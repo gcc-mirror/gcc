@@ -1,3 +1,9 @@
+2011-09-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49267
+	* call.c (compare_ics): rvaluedness_matches_p can differ
+	based on the source type, not just target.
+
 2011-08-29  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
