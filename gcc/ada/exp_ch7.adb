@@ -3042,7 +3042,7 @@ package body Exp_Ch7 is
               Parameter_Associations =>
                 New_List (New_Reference_To (Data.E_Id, Data.Loc)));
 
-      --  Restricted runtime: exception messages are not supported and hence
+      --  Restricted run-time: exception messages are not supported and hence
       --  Raise_From_Controlled_Operation is not supported. Raise Program_Error
       --  instead.
 
@@ -3890,10 +3890,10 @@ package body Exp_Ch7 is
          No_Body := True;
       end if;
 
-      --  For a nested instance, delay processing until freeze point.
+      --  For a nested instance, delay processing until freeze point
 
       if Has_Delayed_Freeze (Id)
-       and then Nkind (Parent (N)) /= N_Compilation_Unit
+        and then Nkind (Parent (N)) /= N_Compilation_Unit
       then
          return;
       end if;
@@ -7284,7 +7284,7 @@ package body Exp_Ch7 is
       --  Procedure call or raise statement
 
    begin
-      --  Standard runtime, .NET/JVM targets: add choice parameter E and pass
+      --  Standard run-time, .NET/JVM targets: add choice parameter E and pass
       --  it to Raise_From_Controlled_Operation so that the original exception
       --  name and message can be recorded in the exception message for
       --  Program_Error.
@@ -7299,7 +7299,7 @@ package body Exp_Ch7 is
              Parameter_Associations => New_List (
                New_Reference_To (E_Occ, Loc)));
 
-      --  Restricted runtime: exception messages are not supported
+      --  Restricted run-time: exception messages are not supported
 
       else
          E_Occ := Empty;
@@ -7538,7 +7538,7 @@ package body Exp_Ch7 is
               Attribute_Name => Name_Unrestricted_Access)));
 
       --  In the case of build-in-place functions, protect the call to ensure
-      --  we have a master at runtime. Generate:
+      --  we have a master at run time. Generate:
 
       --    if <Ptr_Typ>FM /= null then
       --       <Call>;

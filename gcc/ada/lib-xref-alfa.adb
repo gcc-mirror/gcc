@@ -612,11 +612,11 @@ package body Alfa is
                when Overloadable_Kind =>
                   return Typ = 's';
 
-               --  References to IN parameters are not considered in Alfa
-               --  section, as these will be translated as constants in the
-               --  intermediate language for formal verification.
-
-               --  Above comment is incomplete??? what about E_Constant case
+               --  References to IN parameters and constants are not
+               --  considered in Alfa section, as these will be translated
+               --  as constants in the intermediate language for formal
+               --  verification, and should therefore never appear in frame
+               --  conditions.
 
                when E_In_Parameter | E_Constant =>
                   return False;
