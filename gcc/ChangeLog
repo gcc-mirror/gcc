@@ -1,3 +1,8 @@
+2011-09-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_gimplify_va_arg_expr): Unshare off.
+	Fix the type of the BIT_AND_EXPR.
+
 2011-09-05  David S. Miller  <davem@davemloft.net>
 
 	* config.host: Add driver-sparc.o and sparc/x-sparc on
