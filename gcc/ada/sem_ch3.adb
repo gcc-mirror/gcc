@@ -772,10 +772,16 @@ package body Sem_Ch3 is
             Anon_Scope := Scope (Defining_Entity (Related_Nod));
          end if;
 
-      else
-         --  For access formals, access components, and access discriminants,
-         --  the scope is that of the enclosing declaration,
+         --  For an access type definition, if the current scope is a child
+         --  unit it is the scope of the type.
 
+      elsif Is_Compilation_Unit (Current_Scope) then
+         Anon_Scope := Current_Scope;
+
+      --  For access formals, access components, and access discriminants, the
+      --  scope is that of the enclosing declaration,
+
+      else
          Anon_Scope := Scope (Current_Scope);
       end if;
 
