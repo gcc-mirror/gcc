@@ -1,3 +1,10 @@
+2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/50289
+	Backport from mainline r178528
+	* config/avr/avr.c (sequent_regs_live): Don't recognize sequences
+	that contain global register variable.
+
 2011-09-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/49886
