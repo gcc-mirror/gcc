@@ -627,7 +627,7 @@ package body Alfa is
                   --  references.
 
                   if Present (Etype (E))
-                    and then Ekind (Etype (E)) in E_Concurrent_Kind
+                    and then Ekind (Etype (E)) in Concurrent_Kind
                   then
                      return False;
                   end if;
