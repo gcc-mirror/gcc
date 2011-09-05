@@ -8844,7 +8844,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	    {
 	      if (pedantic)
 		failure = 3;
-	      maxindex = integer_minus_one_node;
+	      maxindex = ssize_int (-1);
 	    }
 	  else
 	    {

@@ -1,3 +1,8 @@
+2011-09-05  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (complete_array_type): Use ssize_int (-1) instead
+	of integer_minus_one_node for empty array upper bounds.
+
 2011-08-28  Dodji Seketeli  <dodji@redhat.com>
 
 	* c-pch.c (c_common_read_pch): Call linemap_add with LC_ENTER as
