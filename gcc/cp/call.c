@@ -1576,9 +1576,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 
   if (TREE_CODE (from) == REFERENCE_TYPE)
     {
-      /* Anything with reference type is an lvalue.  */
-      is_lvalue = clk_ordinary;
       from = TREE_TYPE (from);
+      if (!TYPE_REF_IS_RVALUE (rfrom)
+	  || TREE_CODE (from) == FUNCTION_TYPE)
+	is_lvalue = clk_ordinary;
     }
 
   if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
