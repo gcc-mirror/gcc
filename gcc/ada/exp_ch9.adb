@@ -12503,8 +12503,8 @@ package body Exp_Ch9 is
       --  When no priority is specified but an xx_Handler pragma is, we default
       --  to System.Interrupts.Default_Interrupt_Priority, see D.3(10).
 
-      elsif (Has_Attach_Handler (Ptyp) or else Has_Interrupt_Handler (Ptyp))
-        and then not Restriction_Active (No_Dynamic_Attachment)
+      elsif Has_Attach_Handler (Ptyp)
+        or else Has_Interrupt_Handler (Ptyp)
       then
          Append_To (Args,
            New_Reference_To (RTE (RE_Default_Interrupt_Priority), Loc));

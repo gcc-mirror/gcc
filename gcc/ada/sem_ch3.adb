@@ -3270,11 +3270,7 @@ package body Sem_Ch3 is
          --  In SPARK, a declaration of unconstrained type is allowed
          --  only for constants of type string.
 
-         --  Why do we need to test Original_Node here ???
-
-         if Is_String_Type (T)
-           and then not Constant_Present (Original_Node (N))
-         then
+         if Is_String_Type (T) and then not Constant_Present (N) then
             Check_SPARK_Restriction
               ("declaration of object of unconstrained type not allowed",
                N);

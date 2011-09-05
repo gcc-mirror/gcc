@@ -959,6 +959,13 @@ package body Prj.Conf is
             end if;
          end loop;
 
+         --  Make sure that Obj_Dir ends with a directory separator
+
+         if Name_Buffer (Name_Len) /= Directory_Separator then
+            Name_Len := Name_Len + 1;
+            Name_Buffer (Name_Len) := Directory_Separator;
+         end if;
+
          declare
             Obj_Dir         : constant String := Name_Buffer (1 .. Name_Len);
             Config_Switches : Argument_List_Access;

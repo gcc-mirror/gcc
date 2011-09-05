@@ -2337,9 +2337,13 @@ package body Sem_Ch5 is
          if Of_Present (N) then
             Set_Etype (Def_Id, Component_Type (Typ));
 
+         --  Here we have a missing Range attribute
+
          else
             Error_Msg_N
               ("missing Range attribute in iteration over an array", N);
+
+            --  In Ada 2012 mode, this may be an attempt at an iterator
 
             if Ada_Version >= Ada_2012 then
                Error_Msg_NE
