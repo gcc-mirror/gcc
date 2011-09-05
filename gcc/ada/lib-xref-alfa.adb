@@ -616,7 +616,9 @@ package body Alfa is
                --  section, as these will be translated as constants in the
                --  intermediate language for formal verification.
 
-               when E_In_Parameter =>
+               --  Above comment is incomplete??? what about E_Constant case
+
+               when E_In_Parameter | E_Constant =>
                   return False;
 
                when others =>
@@ -624,18 +626,13 @@ package body Alfa is
                   --  Objects of Task type or protected type are not Alfa
                   --  references.
 
-                  if Present (Etype (E)) then
-                     case Ekind (Etype (E)) is
-                        when E_Task_Type | E_Protected_Type =>
-                           return False;
-
-                        when others =>
-                           null;
-                     end case;
+                  if Present (Etype (E))
+                    and then Ekind (Etype (E)) in E_Concurrent_Kind
+                  then
+                     return False;
                   end if;
 
                   return Typ = 'r' or else Typ = 'm';
-
             end case;
          end Is_Alfa_Reference;
 

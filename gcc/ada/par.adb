@@ -466,14 +466,21 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  control heuristic error recovery actions.
 
       Labl : Node_Id;
-      --  This field is used only for the LOOP and BEGIN cases, and is the
-      --  Node_Id value of the label name. For all cases except child units,
-      --  this value is an entity whose Chars field contains the name pointer
-      --  that identifies the label uniquely. For the child unit case the Labl
-      --  field references an N_Defining_Program_Unit_Name node for the name.
-      --  For cases other than LOOP or BEGIN, the Label field is set to Error,
-      --  indicating that it is an error to have a label on the end line.
+      --  This field is used to provide the name of the construct being parsed
+      --  and indirectly its kind. For loops and blocks, the field contains the
+      --  source name or the generated one. For package specifications, bodies,
+      --  subprogram specifications and bodies the field holds the correponding
+      --  program unit name. For task declarations and bodies, protected types
+      --  and bodies, and accept statements the field hold the name of the type
+      --  or operation. For if-statements, case-statements, and selects, the
+      --  field is initialized to Error, indicating that it is an error to have
+      --  a label on the end line.
       --  (this is really a misuse of Error since there is no Error ???)
+
+      --  Whenever the field is a name, it is attached to the parent node of
+      --  the construct being parsed. Thus the parent node indicates the kind
+      --  of construct whose parse tree is being built. This is used in error
+      --  recovery.
 
       Decl : List_Id;
       --  Points to the list of declarations (i.e. the declarative part)
