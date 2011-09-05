@@ -17052,13 +17052,16 @@ package body Sem_Ch3 is
 
          --  The Base_Type is already completed, we can complete the subtype
          --  now. We have to create a new entity with the same name, Thus we
-         --  can't use Create_Itype.
+         --  can't use Create_Itype. The entity may be exchanged when entering
+         --  exiting a package body, so it has to have a proper parent field,
+         --  so that the tree is always properly formatted for ASIS.
 
          --  This is messy, should be fixed ???
 
          Full := Make_Defining_Identifier (Sloc (Id), Chars (Id));
          Set_Is_Itype (Full);
          Set_Associated_Node_For_Itype (Full, Related_Nod);
+         Set_Parent (Full, Parent (Id));
          Complete_Private_Subtype (Id, Full, Full_B, Related_Nod);
       end if;
 

@@ -1616,6 +1616,32 @@ package body Sem_Disp is
       then
          return Controlling_Argument (Orig_Node);
 
+      --  Type conversions are dynamically tagged if the target type, or its
+      --  designated type, are classwide. An interface conversion expands into
+      --  a dereference, so test must be performed on the original node.
+
+      elsif Nkind (Orig_Node) = N_Type_Conversion
+        and then Nkind (N) = N_Explicit_Dereference
+        and then Is_Controlling_Actual (N)
+      then
+         declare
+            Target_Type : constant Entity_Id :=
+                             Entity (Subtype_Mark (Orig_Node));
+
+         begin
+            if Is_Class_Wide_Type (Target_Type) then
+               return N;
+
+            elsif Is_Access_Type (Target_Type)
+              and then Is_Class_Wide_Type (Designated_Type (Target_Type))
+            then
+               return N;
+
+            else
+               return Empty;
+            end if;
+         end;
+
       --  Normal case
 
       elsif Is_Controlling_Actual (N)

@@ -1,3 +1,23 @@
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Find_Controlling_Arg): Add checks for
+	interface type conversions, that are expanded into dereferences.
+
+2011-09-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper):
+	Examine the parameter and return profile of a subprogram and swap
+	any incomplete types coming from a limited context with their
+	corresponding non-limited views.
+	(Exchange_Limited_Views): New routine.
+
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Prepare_Private_Subtype_Completion): Set parent
+	of internal entity to the subtype declaration, so that when
+	entities are subsequently exchanged in a package body, the tree
+	remains properly formatted for ASIS.
+
 2011-09-05  Johannes Kanig  <kanig@adacore.com>
 
 	* g-comlin.adb (Set_Usage): Additional optional argument to set help

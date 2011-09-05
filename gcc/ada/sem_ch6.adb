@@ -1727,6 +1727,11 @@ package body Sem_Ch6 is
       --  mechanism is used to find the corresponding spec of the primitive
       --  body.
 
+      procedure Exchange_Limited_Views (Subp_Id : Entity_Id);
+      --  Ada 2012 (AI05-0151): Detect whether the profile of Subp_Id contains
+      --  incomplete types coming from a limited context and swap their limited
+      --  views with the non-limited ones.
+
       function Is_Private_Concurrent_Primitive
         (Subp_Id : Entity_Id) return Boolean;
       --  Determine whether subprogram Subp_Id is a primitive of a concurrent
@@ -2091,6 +2096,65 @@ package body Sem_Ch6 is
 
          return Spec_N;
       end Disambiguate_Spec;
+
+      ----------------------------
+      -- Exchange_Limited_Views --
+      ----------------------------
+
+      procedure Exchange_Limited_Views (Subp_Id : Entity_Id) is
+         procedure Detect_And_Exchange (Id : Entity_Id);
+         --  Determine whether Id's type denotes an incomplete type associated
+         --  with a limited with clause and exchange the limited view with the
+         --  non-limited one.
+
+         -------------------------
+         -- Detect_And_Exchange --
+         -------------------------
+
+         procedure Detect_And_Exchange (Id : Entity_Id) is
+            Typ : constant Entity_Id := Etype (Id);
+
+         begin
+            if Ekind (Typ) = E_Incomplete_Type
+              and then From_With_Type (Typ)
+              and then Present (Non_Limited_View (Typ))
+            then
+               Set_Etype (Id, Non_Limited_View (Typ));
+            end if;
+         end Detect_And_Exchange;
+
+         --  Local variables
+
+         Formal : Entity_Id;
+
+      --  Start of processing for Exchange_Limited_Views
+
+      begin
+         if No (Subp_Id) then
+            return;
+
+         --  Do not process subprogram bodies as they already use the non-
+         --  limited view of types.
+
+         elsif not Ekind_In (Subp_Id, E_Function, E_Procedure) then
+            return;
+         end if;
+
+         --  Examine all formals and swap views when applicable
+
+         Formal := First_Formal (Subp_Id);
+         while Present (Formal) loop
+            Detect_And_Exchange (Formal);
+
+            Next_Formal (Formal);
+         end loop;
+
+         --  Process the return type of a function
+
+         if Ekind (Subp_Id) = E_Function then
+            Detect_And_Exchange (Subp_Id);
+         end if;
+      end Exchange_Limited_Views;
 
       -------------------------------------
       -- Is_Private_Concurrent_Primitive --
@@ -2724,6 +2788,15 @@ package body Sem_Ch6 is
       then
          Install_Private_Data_Declarations
            (Sloc (N), Spec_Id, Prot_Typ, N, Declarations (N));
+      end if;
+
+      --  Ada 2012 (AI05-0151): Incomplete types coming from a limited context
+      --  may now appear in parameter and result profiles. Since the analysis
+      --  of a subprogram body may use the parameter and result profile of the
+      --  spec, swap any limited views with their non-limited counterpart.
+
+      if Ada_Version >= Ada_2012 then
+         Exchange_Limited_Views (Spec_Id);
       end if;
 
       --  Analyze the declarations (this call will analyze the precondition
