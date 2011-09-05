@@ -1,3 +1,8 @@
+2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/ipa/ipcp-3.c (mark_cell): Use mask 1 << 14 instead of 1
+	<< 18 to avoid warning on int=16 platforms..
+
 2011-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/compat/struct-layout-1_test.h: Decrease bitfield size
