@@ -3866,7 +3866,7 @@
    (set_attr "mode" "<MODE>")])
 
 ;; Convenience expander that generates the rhs of a load_got<mode> insn.
-(define_expand "unspec_got<mode>"
+(define_expand "unspec_got_<mode>"
   [(unspec:P [(match_operand:P 0)
 	      (match_operand:P 1)] UNSPEC_LOAD_GOT)])
 
@@ -4783,10 +4783,10 @@
 ;; Initialize the global pointer for MIPS16 code.  Operand 0 is the
 ;; global pointer and operand 1 is the MIPS16 register that holds
 ;; the required value.
-(define_insn_and_split "copygp_mips16"
-  [(set (match_operand:SI 0 "register_operand" "=y")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "d")]
-		   UNSPEC_COPYGP))]
+(define_insn_and_split "copygp_mips16_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=y")
+	(unspec:P [(match_operand:P 1 "register_operand" "d")]
+		  UNSPEC_COPYGP))]
   "TARGET_MIPS16"
   { return mips_must_initialize_gp_p () ? "#" : ""; }
   "&& mips_must_initialize_gp_p ()"
@@ -4800,12 +4800,12 @@
 ;;
 ;; The "cprestore" pattern requires operand 2 to be pic_offset_table_rtx,
 ;; otherwise any register that holds the correct value will do.
-(define_insn_and_split "potential_cprestore"
-  [(set (match_operand:SI 0 "cprestore_save_slot_operand" "=X,X")
-	(unspec:SI [(match_operand:SI 1 "const_int_operand" "I,i")
-		    (match_operand:SI 2 "register_operand" "d,d")]
-		   UNSPEC_POTENTIAL_CPRESTORE))
-   (clobber (match_operand:SI 3 "scratch_operand" "=X,&d"))]
+(define_insn_and_split "potential_cprestore_<mode>"
+  [(set (match_operand:P 0 "cprestore_save_slot_operand" "=X,X")
+	(unspec:P [(match_operand:P 1 "const_int_operand" "I,i")
+		   (match_operand:P 2 "register_operand" "d,d")]
+		  UNSPEC_POTENTIAL_CPRESTORE))
+   (clobber (match_operand:P 3 "scratch_operand" "=X,&d"))]
   "!TARGET_CPRESTORE_DIRECTIVE || operands[2] == pic_offset_table_rtx"
   { return mips_must_initialize_gp_p () ? "#" : ""; }
   "mips_must_initialize_gp_p ()"
@@ -4822,11 +4822,11 @@
 ;; for the cprestore slot.  Operand 1 is the offset of the slot from
 ;; the stack pointer.  (This is redundant with operand 0, but it makes
 ;; things a little simpler.)
-(define_insn "cprestore"
-  [(set (match_operand:SI 0 "cprestore_save_slot_operand" "=X,X")
-	(unspec:SI [(match_operand:SI 1 "const_int_operand" "I,i")
-		    (reg:SI 28)]
-		   UNSPEC_CPRESTORE))]
+(define_insn "cprestore_<mode>"
+  [(set (match_operand:P 0 "cprestore_save_slot_operand" "=X,X")
+	(unspec:P [(match_operand:P 1 "const_int_operand" "I,i")
+		   (reg:P 28)]
+		  UNSPEC_CPRESTORE))]
   "TARGET_CPRESTORE_DIRECTIVE"
 {
   if (mips_nomacro.nesting_level > 0 && which_alternative == 1)
@@ -4837,9 +4837,9 @@
   [(set_attr "type" "store")
    (set_attr "length" "4,12")])
 
-(define_insn "use_cprestore"
-  [(set (reg:SI CPRESTORE_SLOT_REGNUM)
-	(match_operand:SI 0 "cprestore_load_slot_operand"))]
+(define_insn "use_cprestore_<mode>"
+  [(set (reg:P CPRESTORE_SLOT_REGNUM)
+	(match_operand:P 0 "cprestore_load_slot_operand"))]
   ""
   ""
   [(set_attr "type" "ghost")])
@@ -4856,9 +4856,7 @@
     {
       mips_expand_synci_loop (operands[0], operands[1]);
       emit_insn (gen_sync ());
-      emit_insn (Pmode == SImode
-		 ? gen_clear_hazard_si ()
-		 : gen_clear_hazard_di ());
+      emit_insn (PMODE_INSN (gen_clear_hazard, ()));
     }
   else if (mips_cache_flush_func && mips_cache_flush_func[0])
     {
@@ -5567,14 +5565,11 @@
   ""
 {
   operands[0] = force_reg (Pmode, operands[0]);
-  if (Pmode == SImode)
-    emit_jump_insn (gen_indirect_jumpsi (operands[0]));
-  else
-    emit_jump_insn (gen_indirect_jumpdi (operands[0]));
+  emit_jump_insn (PMODE_INSN (gen_indirect_jump, (operands[0])));
   DONE;
 })
 
-(define_insn "indirect_jump<mode>"
+(define_insn "indirect_jump_<mode>"
   [(set (pc) (match_operand:P 0 "register_operand" "d"))]
   ""
   "%*j\t%0%/"
@@ -5605,14 +5600,11 @@
 				  start, 0, 0, OPTAB_WIDEN);
     }
 
-  if (Pmode == SImode)
-    emit_jump_insn (gen_tablejumpsi (operands[0], operands[1]));
-  else
-    emit_jump_insn (gen_tablejumpdi (operands[0], operands[1]));
+  emit_jump_insn (PMODE_INSN (gen_tablejump, (operands[0], operands[1])));
   DONE;
 })
 
-(define_insn "tablejump<mode>"
+(define_insn "tablejump_<mode>"
   [(set (pc)
 	(match_operand:P 0 "register_operand" "d"))
    (use (label_ref (match_operand 1 "" "")))]
@@ -5844,8 +5836,10 @@
   emit_insn (gen_set_got_version ());
 
   /* If we have a call-clobbered $gp, restore it from its save slot.  */
-  if (HAVE_restore_gp)
-    emit_insn (gen_restore_gp ());
+  if (HAVE_restore_gp_si)
+    emit_insn (gen_restore_gp_si ());
+  else if (HAVE_restore_gp_di)
+    emit_insn (gen_restore_gp_di ());
   DONE;
 })
 
@@ -5860,10 +5854,10 @@
 
 ;; Restore $gp from its .cprestore stack slot.  The instruction remains
 ;; volatile until all uses of $28 are exposed.
-(define_insn_and_split "restore_gp"
-  [(set (reg:SI 28)
-	(unspec_volatile:SI [(const_int 0)] UNSPEC_RESTORE_GP))
-   (clobber (match_scratch:SI 0 "=&d"))]
+(define_insn_and_split "restore_gp_<mode>"
+  [(set (reg:P 28)
+	(unspec_volatile:P [(const_int 0)] UNSPEC_RESTORE_GP))
+   (clobber (match_scratch:P 0 "=&d"))]
   "TARGET_CALL_CLOBBERED_GP"
   "#"
   "&& epilogue_completed"

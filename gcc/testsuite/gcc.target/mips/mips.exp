@@ -850,6 +850,7 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mrelax-pic-calls" "-mexplicit-relocs"
     mips_option_dependency options "-fpic" "-mshared"
     mips_option_dependency options "-mshared" "-mno-plt"
+    mips_option_dependency options "-mshared" "-mabicalls"
     mips_option_dependency options "-mno-plt" "addressing=unknown"
     mips_option_dependency options "-mabicalls" "-G0"
     mips_option_dependency options "-mno-gpopt" "-mexplicit-relocs"
