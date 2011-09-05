@@ -1,5 +1,11 @@
 2011-09-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49267
+	* g++.dg/cpp0x/rv-conv1.C: New.
+
+	DR 1328
+	* g++.dg/cpp0x/rv-func3.C: New.
+
 	* g++.dg/cpp0x/constexpr-default-ctor.C: New.
 
 	PR c++/50248
