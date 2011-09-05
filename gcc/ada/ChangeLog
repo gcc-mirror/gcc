@@ -1,3 +1,21 @@
+2011-09-05  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_intr.adb, s-tasini.adb: Minor reformatting.
+
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Definition): If an access type declaration
+	appears in a child unit, the scope of whatever anonymous type
+	may be generated is the child unit itself.
+
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Do not set
+	Comes_From_Source on rewritten body.
+	(Analyze_Subprogram_Body_Helper): Check that the original node for
+	the body comes from source, when determining whether expansion
+	of a protected operation is needed.
+
 2011-09-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_aggr.adb (Replace_Type): If the target of the assignment is

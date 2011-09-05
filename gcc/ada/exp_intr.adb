@@ -1006,9 +1006,8 @@ package body Exp_Intr is
             Nam2 : Node_Id;
 
          begin
-            --  An Abort followed by a Free will not do what the user
-            --  expects, because the abort is not immediate. This is
-            --  worth a friendly warning.
+            --  An Abort followed by a Free will not do what the user expects,
+            --  because the abort is not immediate. This is worth a warning.
 
             while Present (Stat)
               and then not Comes_From_Source (Original_Node (Stat))
@@ -1101,9 +1100,9 @@ package body Exp_Intr is
 
       if Present (Procedure_To_Call (Free_Node)) then
 
-         --  For all cases of a Deallocate call, the back-end needs to be
-         --  able to compute the size of the object being freed. This may
-         --  require some adjustments for objects of dynamic size.
+         --  For all cases of a Deallocate call, the back-end needs to be able
+         --  to compute the size of the object being freed. This may require
+         --  some adjustments for objects of dynamic size.
          --
          --  If the type is class wide, we generate an implicit type with the
          --  right dynamic size, so that the deallocate call gets the right
@@ -1175,8 +1174,8 @@ package body Exp_Intr is
          Set_Expression (Free_Node, Free_Arg);
       end if;
 
-      --  Only remaining step is to set result to null, or generate a
-      --  raise of constraint error if the target object is "not null".
+      --  Only remaining step is to set result to null, or generate a raise of
+      --  Constraint_Error if the target object is "not null".
 
       if Can_Never_Be_Null (Etype (Arg)) then
          Append_To (Stmts,

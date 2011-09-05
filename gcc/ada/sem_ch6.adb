@@ -298,12 +298,6 @@ package body Sem_Ch6 is
                 Make_Simple_Return_Statement (LocX,
                   Expression => Expression (N)))));
 
-      --  If the expression function comes from source, indicate that so does
-      --  its rewriting, so it is compatible with any subsequent expansion of
-      --  the subprogram body (e.g. when it is a protected operation).
-
-      Set_Comes_From_Source (New_Body, Comes_From_Source (N));
-
       if Present (Prev)
         and then Ekind (Prev) = E_Generic_Function
       then
@@ -2719,9 +2713,11 @@ package body Sem_Ch6 is
       --  family index (if applicable). This form of early expansion is done
       --  when the Expander is active because Install_Private_Data_Declarations
       --  references entities which were created during regular expansion.
+      --  The body may be the rewritting of an expression function, and we need
+      --  to verify that the original node is in the source.
 
       if Full_Expander_Active
-        and then Comes_From_Source (N)
+        and then Comes_From_Source (Original_Node (N))
         and then Present (Prot_Typ)
         and then Present (Spec_Id)
         and then not Is_Eliminated (Spec_Id)
