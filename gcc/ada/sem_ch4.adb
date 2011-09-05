@@ -4322,7 +4322,7 @@ package body Sem_Ch4 is
             Error_Msg_Node_2 := First_Subtype (Prefix_Type);
             Error_Msg_NE ("no selector& for}", N, Sel);
 
-            --  If prefix is incomplete, add information
+            --  Add information in the case of an incomplete prefix
 
             if Is_Incomplete_Type (Type_To_Use) then
                declare
@@ -4340,6 +4340,10 @@ package body Sem_Ch4 is
                      if Nkind (Parent (Inc)) =
                                           N_Incomplete_Type_Declaration
                      then
+                        --  Record location of premature use in entity so that
+                        --  a continuation message is generated when the
+                        --  completion is seen.
+
                         Set_Premature_Use (Parent (Inc), N);
                      end if;
                   end if;

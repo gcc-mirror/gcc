@@ -7461,7 +7461,6 @@ package body Exp_Ch7 is
       Desig_Typ   : constant Entity_Id :=
                       Available_View (Designated_Type (Ptr_Typ));
       Fin_Mas_Id  : constant Entity_Id := Finalization_Master (Ptr_Typ);
-      Call        : Node_Id;
       Fin_Mas_Ref : Node_Id;
       Utyp        : Entity_Id;
 
@@ -7526,7 +7525,7 @@ package body Exp_Ch7 is
       --  Generate:
       --    Set_Finalize_Address (<Ptr_Typ>FM, <Utyp>FD'Unrestricted_Access);
 
-      Call :=
+      return
         Make_Procedure_Call_Statement (Loc,
           Name                   =>
             New_Reference_To (RTE (RE_Set_Finalize_Address), Loc),
@@ -7536,25 +7535,6 @@ package body Exp_Ch7 is
               Prefix         =>
                 New_Reference_To (TSS (Utyp, TSS_Finalize_Address), Loc),
               Attribute_Name => Name_Unrestricted_Access)));
-
-      --  In the case of build-in-place functions, protect the call to ensure
-      --  we have a master at run time. Generate:
-
-      --    if <Ptr_Typ>FM /= null then
-      --       <Call>;
-      --    end if;
-
-      if Is_Access_Type (Etype (Fin_Mas_Id)) then
-         Call :=
-           Make_If_Statement (Loc,
-             Condition       =>
-               Make_Op_Ne (Loc,
-                 Left_Opnd  => New_Reference_To (Fin_Mas_Id, Loc),
-                 Right_Opnd => Make_Null (Loc)),
-             Then_Statements => New_List (Call));
-      end if;
-
-      return Call;
    end Make_Set_Finalize_Address_Call;
 
    --------------------------

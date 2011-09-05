@@ -5137,6 +5137,7 @@ package Einfo is
    --    Protection_Object                   (Node23)   (protected kind)
    --    Contract                            (Node24)   (for entry only)
    --    PPC_Wrapper                         (Node25)
+   --    Extra_Formals                       (Node28)
    --    Default_Expressions_Processed       (Flag108)
    --    Entry_Accepted                      (Flag152)
    --    Is_AST_Entry                        (Flag132)  (for entry only)
@@ -5670,10 +5671,12 @@ package Einfo is
    --    Corresponding_Protected_Entry       (Node18)
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
+   --    Extra_Formals                       (Node28)
    --    Scope_Depth                         (synth)
 
    --  E_Subprogram_Type
    --    Directly_Designated_Type            (Node20)
+   --    Extra_Formals                       (Node28)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
    --    Last_Formal                         (synth)
