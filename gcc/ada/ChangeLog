@@ -1,3 +1,18 @@
+2011-09-05  Marc Sango  <sango@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Remove
+	the wrong test and add the correct test to detect the violation
+	of illegal use of unconstrained string type in SPARK mode.
+
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iteration_Specification): Improve error
+	message on an iterator over an array.
+
+2011-09-05  Robert Dewar  <dewar@adacore.com>
+
+	* lib-xref-alfa.adb: Minor reformatting.
+
 2011-09-05  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_res.adb, par.adb, par-ch6.adb, g-comlin.adb,

@@ -2336,13 +2336,18 @@ package body Sem_Ch5 is
       if Is_Array_Type (Typ) then
          if Of_Present (N) then
             Set_Etype (Def_Id, Component_Type (Typ));
+
+         elsif Ada_Version < Ada_2012 then
+            Error_Msg_N
+              ("missing Range attribute in iteration over an array", N);
+
          else
             Error_Msg_N
               ("to iterate over the elements of an array, use OF", N);
 
             --  Prevent cascaded errors
 
-            Set_Ekind (Def_Id, E_Constant);
+            Set_Ekind (Def_Id, E_Loop_Parameter);
             Set_Etype (Def_Id, Etype (First_Index (Typ)));
          end if;
 
