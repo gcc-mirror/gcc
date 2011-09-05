@@ -1,5 +1,7 @@
 2011-09-04  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-default-ctor.C: New.
+
 	PR c++/50248
 	Core 1358
 	* g++.dg/cpp0x/constexpr-template1.C: New.
