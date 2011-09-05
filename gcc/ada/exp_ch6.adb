@@ -562,6 +562,16 @@ package body Exp_Ch6 is
       --  Maybe it would be better for each implicit formal of a build-in-place
       --  function to have a flag or a Uint attribute to identify it. ???
 
+      --  The return type in the function declaration may have been a limited
+      --  view, and the extra formals for the function were not generated at
+      --  that point.  At the point of call the full view must be available and
+      --  the extra formals can be created.
+
+      if No (Extra_Formal) then
+         Create_Extra_Formals (Func);
+         Extra_Formal := Extra_Formals (Func);
+      end if;
+
       loop
          pragma Assert (Present (Extra_Formal));
          exit when
@@ -7127,6 +7137,13 @@ package body Exp_Ch6 is
 
       Result_Subt := Etype (Function_Id);
 
+      --  Check whether return type includes tasks. This may not have been done
+      --  previously, if the type was a limited view.
+
+      if Has_Task (Result_Subt) then
+         Build_Activation_Chain_Entity (Allocator);
+      end if;
+
       --  When the result subtype is constrained, the return object must be
       --  allocated on the caller side, and access to it is passed to the
       --  function.
@@ -7219,8 +7236,17 @@ package body Exp_Ch6 is
          Add_Finalization_Master_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, Acc_Type);
 
-         Add_Task_Actuals_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Master_Actual => Master_Id (Acc_Type));
+         --  Is access type has a master entity, pass a reference to it.
+
+         if Present (Master_Id (Acc_Type)) then
+            Add_Task_Actuals_To_Build_In_Place_Call
+              (Func_Call, Function_Id,
+               Master_Actual =>
+                 New_Occurrence_Of (Master_Id (Acc_Type), Loc));
+         else
+            Add_Task_Actuals_To_Build_In_Place_Call
+              (Func_Call, Function_Id, Empty);
+         end if;
 
          --  The caller does not provide the return object in this case, so we
          --  have to pass null for the object access actual.

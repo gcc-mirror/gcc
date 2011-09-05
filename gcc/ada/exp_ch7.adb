@@ -3890,6 +3890,14 @@ package body Exp_Ch7 is
          No_Body := True;
       end if;
 
+      --  For a nested instance, delay processing until freeze point.
+
+      if Has_Delayed_Freeze (Id)
+       and then Nkind (Parent (N)) /= N_Compilation_Unit
+      then
+         return;
+      end if;
+
       --  For a package declaration that implies no associated body, generate
       --  task activation call and RACW supporting bodies now (since we won't
       --  have a specific separate compilation unit for that).
@@ -7450,9 +7458,12 @@ package body Exp_Ch7 is
       Typ     : Entity_Id;
       Ptr_Typ : Entity_Id) return Node_Id
    is
-      Desig_Typ : constant Entity_Id :=
-                    Available_View (Designated_Type (Ptr_Typ));
-      Utyp      : Entity_Id;
+      Desig_Typ   : constant Entity_Id :=
+                      Available_View (Designated_Type (Ptr_Typ));
+      Fin_Mas_Id  : constant Entity_Id := Finalization_Master (Ptr_Typ);
+      Call        : Node_Id;
+      Fin_Mas_Ref : Node_Id;
+      Utyp        : Entity_Id;
 
    begin
       --  If the context is a class-wide allocator, we use the class-wide type
@@ -7503,19 +7514,47 @@ package body Exp_Ch7 is
          Utyp := Base_Type (Utyp);
       end if;
 
+      Fin_Mas_Ref := New_Occurrence_Of (Fin_Mas_Id, Loc);
+
+      --  If the call is from a build-in-place function, the Master parameter
+      --  is actually a pointer. Dereference it for the call.
+
+      if Is_Access_Type (Etype (Fin_Mas_Id)) then
+         Fin_Mas_Ref := Make_Explicit_Dereference (Loc, Fin_Mas_Ref);
+      end if;
+
       --  Generate:
       --    Set_Finalize_Address (<Ptr_Typ>FM, <Utyp>FD'Unrestricted_Access);
 
-      return
+      Call :=
         Make_Procedure_Call_Statement (Loc,
           Name                   =>
             New_Reference_To (RTE (RE_Set_Finalize_Address), Loc),
           Parameter_Associations => New_List (
-            New_Reference_To (Finalization_Master (Ptr_Typ), Loc),
+            Fin_Mas_Ref,
             Make_Attribute_Reference (Loc,
               Prefix         =>
                 New_Reference_To (TSS (Utyp, TSS_Finalize_Address), Loc),
               Attribute_Name => Name_Unrestricted_Access)));
+
+      --  In the case of build-in-place functions, protect the call to ensure
+      --  we have a master at runtime. Generate:
+
+      --    if <Ptr_Typ>FM /= null then
+      --       <Call>;
+      --    end if;
+
+      if Is_Access_Type (Etype (Fin_Mas_Id)) then
+         Call :=
+           Make_If_Statement (Loc,
+             Condition       =>
+               Make_Op_Ne (Loc,
+                 Left_Opnd  => New_Reference_To (Fin_Mas_Id, Loc),
+                 Right_Opnd => Make_Null (Loc)),
+             Then_Statements => New_List (Call));
+      end if;
+
+      return Call;
    end Make_Set_Finalize_Address_Call;
 
    --------------------------

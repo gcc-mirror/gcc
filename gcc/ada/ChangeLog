@@ -1,3 +1,18 @@
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Build_In_Place_Formal): If extra formals are not
+	present, create them now.  Needed in case the return type was
+	a limited view in the function declaration.
+	(Make_Build_In_Place_Call_In_Allocator): If return type contains
+	tasks, build the activation chain for it.  Pass a reference to
+	the Master_Id in call to Add_Task_Actuals_To_Build_In_Place call.
+	* exp_ch7.adb (Make_Set_Finalize_Address_Call): Clean up interface
+	with build_in_place calls.
+	* sem_ch9.adb (Analyze_Task_Type_Declaration): If partial view was
+	incomplete, inatialize its Corresponding_Record_Type component.
+	* sem_ch10.adb (Build_Chain): Initialize Private_Dependents field
+	of limited views.
+
 2011-09-05  Johannes Kanig  <kanig@adacore.com>
 
 	* lib-xref-alfa.adb (Is_Alfa_Reference): Filter constants from effect

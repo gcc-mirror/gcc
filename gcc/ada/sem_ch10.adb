@@ -5393,6 +5393,7 @@ package body Sem_Ch10 is
                end if;
 
                Set_Non_Limited_View (Lim_Typ, Comp_Typ);
+               Set_Private_Dependents (Lim_Typ, New_Elmt_List);
 
             elsif Nkind_In (Decl, N_Private_Type_Declaration,
                                   N_Incomplete_Type_Declaration,
@@ -5431,6 +5432,11 @@ package body Sem_Ch10 is
                end if;
 
                Set_Non_Limited_View (Lim_Typ, Comp_Typ);
+
+               --  Initialize Private_Depedents, so the field has the proper
+               --  type, even though the list will remain empty.
+
+               Set_Private_Dependents (Lim_Typ, New_Elmt_List);
 
             elsif Nkind (Decl) = N_Private_Extension_Declaration then
                Comp_Typ := Defining_Identifier (Decl);
