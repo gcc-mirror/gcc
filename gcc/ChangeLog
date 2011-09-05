@@ -67,6 +67,14 @@
 	* config.gcc: Recognize niagara3 and niagara4 in --with-cpu
 	and --with-tune options.
 
+	* config/sparc/sol2-64.h: Move ...
+	* config/sparc/default-64.h: ... to here.  Update comment.
+	* config.gcc: Update Solaris sparc to use default-64.h, also
+	prefix this header into the list on sparc64-*-linux.
+	* config/sparc/linux64.h (TARGET_DEFAULT): Only override if
+	TARGET_64BIT_DEFAULT is defined.  Remove commented out reference
+	to MASK_HARD_QUAD.
+
 2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50289
