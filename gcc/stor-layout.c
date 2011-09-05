@@ -1959,16 +1959,15 @@ layout_type (tree type)
 	    if (integer_zerop (element_size))
 	      length = size_zero_node;
 
-	    /* The computation should happen in the original type so
-	       that (possible) negative values are handled appropriately.  */
+	    /* The computation should happen in the original signedness so
+	       that (possible) negative values are handled appropriately
+	       when determining overflow.  */
 	    else
 	      length
 		= fold_convert (sizetype,
-				fold_build2 (PLUS_EXPR, TREE_TYPE (lb),
-					     build_int_cst (TREE_TYPE (lb), 1),
-					     fold_build2 (MINUS_EXPR,
-							  TREE_TYPE (lb),
-							  ub, lb)));
+				size_binop (PLUS_EXPR,
+					    build_int_cst (TREE_TYPE (lb), 1),
+					    size_binop (MINUS_EXPR, ub, lb)));
 
 	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size,
 					   fold_convert (bitsizetype,
