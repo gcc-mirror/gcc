@@ -1,5 +1,35 @@
 2011-09-05  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/49606
+	* config/mips/mips.h (ABI_HAS_64BIT_SYMBOLS): Check Pmode.
+	(PMODE_INSN): New macro.
+	* config/mips/mips.c (gen_load_const_gp): Use PMODE_INSN.
+	(mips_got_load, mips_expand_synci_loop): Likewise.
+	(mips_save_gp_to_cprestore_slot): Handle SImode and DImode
+	cprestore patterns.
+	(mips_emit_loadgp): Use PMODE_INSN.  Handle SImode and DImode
+	copygp_mips16 patterns.
+	(mips_expand_prologue): Handle SImode and DImode potential_cprestore
+	and use_cprestore patterns.
+	(mips_override_options): Check for incompatible -mabi and -mlong
+	combinations.
+	* config/mips/mips.md (unspec_got<mode>): Rename to...
+	(unspec_got_<mode>): ...this.
+	(copygp_mips16): Use the Pmode iterator.
+	(potential_cprestore, cprestore, use_cprestore): Likewise.
+	(clear_cache, indirect_jump): Use PMODE_INSN.
+	(indirect_jump<mode>): Rename to...
+	(indirect_jump_<mode>): ...this.
+	(tablejump): Use PMODE_INSN.
+	(tablejump<mode>): Rename to...
+	(tablejump_<mode>): ...this.
+	(exception_receiver): Handle restore_gp_si and restore_gp_di.
+	(restore_gp): Use the Pmode iterator.
+	* config/mips/mips-dsp.md (mips_lbux, mips_lhx, mips_lwx): Use
+	PMODE_INSN.
+
+2011-09-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.c (mips_gimplify_va_arg_expr): Unshare off.
 	Fix the type of the BIT_AND_EXPR.
 

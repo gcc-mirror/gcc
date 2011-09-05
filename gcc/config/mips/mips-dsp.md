@@ -1105,10 +1105,8 @@
   "ISA_HAS_DSP"
 {
   operands[2] = convert_to_mode (Pmode, operands[2], false);
-  if (Pmode == SImode)
-    emit_insn (gen_mips_lbux_si (operands[0], operands[1], operands[2]));
-  else
-    emit_insn (gen_mips_lbux_di (operands[0], operands[1], operands[2]));
+  emit_insn (PMODE_INSN (gen_mips_lbux,
+			 (operands[0], operands[1], operands[2])));
   DONE;
 })
 
@@ -1129,10 +1127,8 @@
   "ISA_HAS_DSP"
 {
   operands[2] = convert_to_mode (Pmode, operands[2], false);
-  if (Pmode == SImode)
-    emit_insn (gen_mips_lhx_si (operands[0], operands[1], operands[2]));
-  else
-    emit_insn (gen_mips_lhx_di (operands[0], operands[1], operands[2]));
+  emit_insn (PMODE_INSN (gen_mips_lhx,
+			 (operands[0], operands[1], operands[2])));
   DONE;
 })
 
@@ -1153,10 +1149,8 @@
   "ISA_HAS_DSP"
 {
   operands[2] = convert_to_mode (Pmode, operands[2], false);
-  if (Pmode == SImode)
-    emit_insn (gen_mips_lwx_si (operands[0], operands[1], operands[2]));
-  else
-    emit_insn (gen_mips_lwx_di (operands[0], operands[1], operands[2]));
+  emit_insn (PMODE_INSN (gen_mips_lwx,
+			 (operands[0], operands[1], operands[2])));
   DONE;
 })
 

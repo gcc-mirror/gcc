@@ -2522,9 +2522,7 @@ mips_unspec_offset_high (rtx temp, rtx base, rtx addr,
 static rtx
 gen_load_const_gp (rtx reg)
 {
-  return (Pmode == SImode
-	  ? gen_load_const_gp_si (reg)
-	  : gen_load_const_gp_di (reg));
+  return PMODE_INSN (gen_load_const_gp, (reg));
 }
 
 /* Return a pseudo register that contains the value of $gp throughout
@@ -2626,9 +2624,7 @@ mips_got_load (rtx temp, rtx addr, enum mips_symbol_type type)
   if (type == SYMBOL_GOTOFF_CALL)
     return mips_unspec_call (high, lo_sum_symbol);
   else
-    return (Pmode == SImode
-	    ? gen_unspec_gotsi (high, lo_sum_symbol)
-	    : gen_unspec_gotdi (high, lo_sum_symbol));
+    return PMODE_INSN (gen_unspec_got, (high, lo_sum_symbol));
 }
 
 /* If MODE is MAX_MACHINE_MODE, ADDR appears as a move operand, otherwise
@@ -6676,9 +6672,7 @@ mips_expand_synci_loop (rtx begin, rtx end)
 
   /* Load INC with the cache line size (rdhwr INC,$1).  */
   inc = gen_reg_rtx (Pmode);
-  emit_insn (Pmode == SImode
-	     ? gen_rdhwr_synci_step_si (inc)
-	     : gen_rdhwr_synci_step_di (inc));
+  emit_insn (PMODE_INSN (gen_rdhwr_synci_step, (inc)));
 
   /* Check if inc is 0.  */
   cmp_result = gen_rtx_EQ (VOIDmode, inc, const0_rtx);
@@ -9526,7 +9520,7 @@ mips_save_gp_to_cprestore_slot (rtx mem, rtx offset, rtx gp, rtx temp)
   if (TARGET_CPRESTORE_DIRECTIVE)
     {
       gcc_assert (gp == pic_offset_table_rtx);
-      emit_insn (gen_cprestore (mem, offset));
+      emit_insn (PMODE_INSN (gen_cprestore, (mem, offset)));
     }
   else
     mips_emit_move (mips_cprestore_slot (temp, false), gp);
@@ -9913,9 +9907,8 @@ mips_emit_loadgp (void)
 	  mips_gnu_local_gp = gen_rtx_SYMBOL_REF (Pmode, "__gnu_local_gp");
 	  SYMBOL_REF_FLAGS (mips_gnu_local_gp) |= SYMBOL_FLAG_LOCAL;
 	}
-      emit_insn (Pmode == SImode
-		 ? gen_loadgp_absolute_si (pic_reg, mips_gnu_local_gp)
-		 : gen_loadgp_absolute_di (pic_reg, mips_gnu_local_gp));
+      emit_insn (PMODE_INSN (gen_loadgp_absolute,
+			     (pic_reg, mips_gnu_local_gp)));
       break;
 
     case LOADGP_OLDABI:
@@ -9926,17 +9919,14 @@ mips_emit_loadgp (void)
       addr = XEXP (DECL_RTL (current_function_decl), 0);
       offset = mips_unspec_address (addr, SYMBOL_GOTOFF_LOADGP);
       incoming_address = gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM);
-      emit_insn (Pmode == SImode
-		 ? gen_loadgp_newabi_si (pic_reg, offset, incoming_address)
-		 : gen_loadgp_newabi_di (pic_reg, offset, incoming_address));
+      emit_insn (PMODE_INSN (gen_loadgp_newabi,
+			     (pic_reg, offset, incoming_address)));
       break;
 
     case LOADGP_RTP:
       base = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (VXWORKS_GOTT_BASE));
       index = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (VXWORKS_GOTT_INDEX));
-      emit_insn (Pmode == SImode
-		 ? gen_loadgp_rtp_si (pic_reg, base, index)
-		 : gen_loadgp_rtp_di (pic_reg, base, index));
+      emit_insn (PMODE_INSN (gen_loadgp_rtp, (pic_reg, base, index)));
       break;
 
     default:
@@ -9944,7 +9934,8 @@ mips_emit_loadgp (void)
     }
 
   if (TARGET_MIPS16)
-    emit_insn (gen_copygp_mips16 (pic_offset_table_rtx, pic_reg));
+    emit_insn (PMODE_INSN (gen_copygp_mips16,
+			   (pic_offset_table_rtx, pic_reg)));
 
   /* Emit a blockage if there are implicit uses of the GP register.
      This includes profiled functions, because FUNCTION_PROFILE uses
@@ -10200,11 +10191,12 @@ mips_expand_prologue (void)
       temp = (SMALL_OPERAND (offset)
 	      ? gen_rtx_SCRATCH (Pmode)
 	      : MIPS_PROLOGUE_TEMP (Pmode));
-      emit_insn (gen_potential_cprestore (mem, GEN_INT (offset), gp, temp));
+      emit_insn (PMODE_INSN (gen_potential_cprestore,
+			     (mem, GEN_INT (offset), gp, temp)));
 
       mips_get_cprestore_base_and_offset (&base, &offset, true);
       mem = gen_frame_mem (Pmode, plus_constant (base, offset));
-      emit_insn (gen_use_cprestore (mem));
+      emit_insn (PMODE_INSN (gen_use_cprestore, (mem)));
     }
 
   /* We need to search back to the last use of K0 or K1.  */
@@ -15400,8 +15392,32 @@ mips_option_override (void)
 
   /* End of code shared with GAS.  */
 
-  /* If no -mlong* option was given, infer it from the other options.  */
-  if ((target_flags_explicit & MASK_LONG64) == 0)
+  /* If a -mlong* option was given, check that it matches the ABI,
+     otherwise infer the -mlong* setting from the other options.  */
+  if ((target_flags_explicit & MASK_LONG64) != 0)
+    {
+      if (TARGET_LONG64)
+	{
+	  if (mips_abi == ABI_N32)
+	    error ("%qs is incompatible with %qs", "-mabi=n32", "-mlong64");
+	  else if (mips_abi == ABI_32)
+	    error ("%qs is incompatible with %qs", "-mabi=32", "-mlong64");
+	  else if (mips_abi == ABI_O64 && TARGET_ABICALLS)
+	    /* We have traditionally allowed non-abicalls code to use
+	       an LP64 form of o64.  However, it would take a bit more
+	       effort to support the combination of 32-bit GOT entries
+	       and 64-bit pointers, so we treat the abicalls case as
+	       an error.  */
+	    error ("the combination of %qs and %qs is incompatible with %qs",
+		   "-mabi=o64", "-mabicalls", "-mlong64");
+	}
+      else
+	{
+	  if (mips_abi == ABI_64)
+	    error ("%qs is incompatible with %qs", "-mabi=64", "-mlong32");
+	}
+    }
+  else
     {
       if ((mips_abi == ABI_EABI && TARGET_64BIT) || mips_abi == ABI_64)
 	target_flags |= MASK_LONG64;

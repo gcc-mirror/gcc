@@ -1,3 +1,50 @@
+2011-09-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/49606
+	* gcc.target/mips/abi-main.h: New file.
+	* gcc.target/mips/abi-o32-long32.c: New test.
+	* gcc.target/mips/abi-o32-long64.c: Likewise.
+	* gcc.target/mips/abi-o64-long32.c: Likewise.
+	* gcc.target/mips/abi-o64-long64.c: Likewise.
+	* gcc.target/mips/abi-n32-long32.c: Likewise.
+	* gcc.target/mips/abi-n32-long64.c: Likewise.
+	* gcc.target/mips/abi-n64-long32.c: Likewise.
+	* gcc.target/mips/abi-n64-long64.c: Likewise.
+	* gcc.target/mips/abi-o32-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o32-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o64-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o64-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n32-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n32-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n64-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n64-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o32-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-o32-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-o64-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-o64-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-n32-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-n32-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-n64-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-n64-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-eabi32-long32.c: Likewise.
+	* gcc.target/mips/abi-eabi32-long64.c: Likewise.
+	* gcc.target/mips/abi-eabi64-long32.c: Likewise.
+	* gcc.target/mips/abi-eabi64-long64.c: Likewise.
+	* gcc.target/mips/mips.exp: Make -mshared implied -mabicalls.
+	* gcc.target/mips/branch-2.c: Remove -mabicalls.
+	* gcc.target/mips/branch-3.c: Likewise.
+	* gcc.target/mips/branch-4.c: Likewise.
+	* gcc.target/mips/branch-5.c: Likewise.
+	* gcc.target/mips/branch-6.c: Likewise.
+	* gcc.target/mips/branch-7.c: Likewise.
+	* gcc.target/mips/branch-8.c: Likewise.
+	* gcc.target/mips/branch-9.c: Likewise.
+	* gcc.target/mips/branch-10.c: Likewise.
+	* gcc.target/mips/branch-11.c: Likewise.
+	* gcc.target/mips/branch-12.c: Likewise.
+	* gcc.target/mips/branch-13.c: Likewise.
+	* gcc.target/mips/lazy-binding-1.c: Likewise.
+
 2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.dg/ipa/ipcp-3.c (mark_cell): Use mask 1 << 14 instead of 1

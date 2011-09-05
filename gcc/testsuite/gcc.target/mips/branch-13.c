@@ -1,4 +1,4 @@
-/* { dg-options "-mabicalls -mshared -mabi=64" } */
+/* { dg-options "-mshared -mabi=64" } */
 /* { dg-final { scan-assembler "\tsd\t\\\$28," } } */
 /* { dg-final { scan-assembler "\tld\t\\\$28," } } */
 /* { dg-final { scan-assembler "\tdaddiu\t\\\$28,\\\$28,%lo\\(%neg\\(%gp_rel\\(foo\\)\\)\\)\n" } } */

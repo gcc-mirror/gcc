@@ -792,7 +792,9 @@ struct mips_cpu_info {
    the ABI's file format, but it can be overridden by -msym32.  Note that
    overriding the size with -msym32 changes the ABI of relocatable objects,
    although it doesn't change the ABI of a fully-linked object.  */
-#define ABI_HAS_64BIT_SYMBOLS	(FILE_HAS_64BIT_SYMBOLS && !TARGET_SYM32)
+#define ABI_HAS_64BIT_SYMBOLS	(FILE_HAS_64BIT_SYMBOLS \
+				 && Pmode == DImode	\
+				 && !TARGET_SYM32)
 
 /* ISA has instructions for managing 64-bit fp and gp regs (e.g. mips3).  */
 #define ISA_HAS_64BIT_REGS	(ISA_MIPS3				\
@@ -2916,3 +2918,10 @@ extern GTY(()) struct target_globals *mips16_globals;
 
 /* For switching between MIPS16 and non-MIPS16 modes.  */
 #define SWITCHABLE_TARGET 1
+
+/* Several named MIPS patterns depend on Pmode.  These patterns have the
+   form <NAME>_si for Pmode == SImode and <NAME>_di for Pmode == DImode.
+   Add the appropriate suffix to generator function NAME and invoke it
+   with arguments ARGS.  */
+#define PMODE_INSN(NAME, ARGS) \
+  (Pmode == SImode ? NAME ## _si ARGS : NAME ## _di ARGS)
