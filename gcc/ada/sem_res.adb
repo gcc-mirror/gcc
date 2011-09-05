@@ -7145,7 +7145,7 @@ package body Sem_Res is
          return Res;
       end Convert_Operand;
 
-      --  Start of processing for Resolve_Intrinsic_Operator
+   --  Start of processing for Resolve_Intrinsic_Operator
 
    begin
       --  We must preserve the original entity in a generic setting, so that

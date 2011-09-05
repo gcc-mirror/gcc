@@ -7236,7 +7236,7 @@ package body Exp_Ch6 is
          Add_Finalization_Master_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, Acc_Type);
 
-         --  Is access type has a master entity, pass a reference to it.
+         --  If access type has a master entity, pass a reference to it
 
          if Present (Master_Id (Acc_Type)) then
             Add_Task_Actuals_To_Build_In_Place_Call
