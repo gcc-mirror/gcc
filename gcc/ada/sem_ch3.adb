@@ -3267,6 +3267,16 @@ package body Sem_Ch3 is
 
       if Is_Indefinite_Subtype (T) then
 
+         --  In SPARK, a declaration of unconstrained type is allowed
+         --  only for constants of type string.
+
+         if Is_String_Type (T)
+           and then not Constant_Present (Original_Node (N)) then
+            Check_SPARK_Restriction
+              ("declaration of object of unconstrained type not allowed",
+               N);
+         end if;
+
          --  Nothing to do in deferred constant case
 
          if Constant_Present (N) and then No (E) then
@@ -3313,20 +3323,9 @@ package body Sem_Ch3 is
          --  Case of initialization present
 
          else
-            --  Check restrictions in Ada 83 and SPARK modes
+            --  Check restrictions in Ada 83
 
             if not Constant_Present (N) then
-
-               --  In SPARK, a declaration of unconstrained type is allowed
-               --  only for constants of type string.
-
-               --  Isn't following check the wrong way round???
-
-               if Nkind (E) = N_String_Literal then
-                  Check_SPARK_Restriction
-                    ("declaration of object of unconstrained type not allowed",
-                     E);
-               end if;
 
                --  Unconstrained variables not allowed in Ada 83 mode
 

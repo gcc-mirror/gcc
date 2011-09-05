@@ -586,10 +586,12 @@ package body Alfa is
          function Is_Alfa_Reference
            (E   : Entity_Id;
             Typ : Character) return Boolean;
-         --  Return whether the reference is adequate for this entity
+         --  Return whether entity reference E meets Alfa requirements. Typ
+         --  is the reference type.
 
          function Is_Alfa_Scope (E : Entity_Id) return Boolean;
-         --  Return whether the entity or reference scope is adequate
+         --  Return whether the entity or reference scope meets requirements
+         --  for being an Alfa scope.
 
          function Is_Global_Constant (E : Entity_Id) return Boolean;
          --  Return True if E is a global constant for which we should ignore
@@ -604,35 +606,33 @@ package body Alfa is
             Typ : Character) return Boolean
          is
          begin
+            --  The only references of interest on callable entities are calls.
+            --  On non-callable entities, the only references of interest are
+            --  reads and writes.
 
             if Ekind (E) in Overloadable_Kind then
-
-               --  The only references of interest on callable entities are
-               --  calls.  On non-callable entities, the only references of
-               --  interest are reads and writes.
-
                return Typ = 's';
 
+            --  References to constant objects are not considered in Alfa
+            --  section, as these will be translated as constants in the
+            --  intermediate language for formal verification, and should
+            --  therefore never appear in frame conditions.
+
             elsif Is_Constant_Object (E) then
-
-               --  References to constant objects are not considered in Alfa
-               --  section, as these will be translated as constants in the
-               --  intermediate language for formal verification, and should
-               --  therefore never appear in frame conditions.
-
                   return False;
 
-            elsif Present (Etype (E)) and then
-               Ekind (Etype (E)) in Concurrent_Kind then
+            --  Objects of Task type or protected type are not Alfa references
 
-               --  Objects of Task type or protected type are not Alfa
-               --  references.
-
+            elsif Present (Etype (E))
+              and then Ekind (Etype (E)) in Concurrent_Kind
+            then
                return False;
+
+            --  In all other cases, result is true for reference/modify cases,
+            --  and false for all other cases.
 
             else
                return Typ = 'r' or else Typ = 'm';
-
             end if;
          end Is_Alfa_Reference;
 
