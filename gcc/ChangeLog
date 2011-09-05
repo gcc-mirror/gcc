@@ -1,3 +1,13 @@
+2011-09-05  David S. Miller  <davem@davemloft.net>
+
+	* config.host: Add driver-sparc.o and sparc/x-sparc on
+	native sparc*-*-linux* builds.
+	* config/sparc/driver-sparc.c: Correct Linux strings.
+	* config/sparc/linux.h: Add DRIVER_SELF_SPECS.
+	* config/sparc/linux64.h: Likewise.
+	* doc/invoke.texi: Document that Linux also supports
+	-mcpu=native and -mtune=native on sparc.
+
 2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50289
@@ -14,7 +24,7 @@
 	calculations.
 
 2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/avr.h (progmem_section): Remove Declaration.
 	* config/avr/avr.c (progmem_section): Make static and rename to
 	progmem_swtable_section.
