@@ -32,6 +32,7 @@ with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Util; use Exp_Util;
 with Exp_Ch3;  use Exp_Ch3;
+with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Disp; use Exp_Disp;
@@ -4602,6 +4603,21 @@ package body Exp_Aggr is
 
       if Is_RTE (Ctyp, RE_Asm_Input_Operand)
         or else Is_RTE (Ctyp, RE_Asm_Output_Operand)
+      then
+         return;
+
+      --  Do not expand an aggregate for an array type which contains tasks if
+      --  the aggregate is associated with an unexpanded return statement of a
+      --  build-in-place function. The aggregate is expanded when the related
+      --  return statement (rewritten into an extended return) is processed.
+      --  This delay ensures that any temporaries and initialization code
+      --  generated for the aggregate appear in the proper return block and
+      --  use the correct _chain and _master.
+
+      elsif Has_Task (Base_Type (Etype (N)))
+        and then Nkind (Parent (N)) = N_Simple_Return_Statement
+        and then Is_Build_In_Place_Function
+                   (Return_Applies_To (Return_Statement_Entity (Parent (N))))
       then
          return;
       end if;

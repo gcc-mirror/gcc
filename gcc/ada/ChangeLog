@@ -1,3 +1,26 @@
+2011-09-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting.
+
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: Better error message.
+
+2011-09-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb: Add with and use clause for Exp_Ch6.
+	(Expand_Array_Aggregate): Detect a special case of an aggregate
+	which contains tasks in the context of an unexpanded return
+	statement of a build-in-place function.
+	* exp_ch6.adb: Add with and use clause for Exp_Aggr.
+	(Expand_N_Extended_Return_Statement): Detect a delayed aggregate
+	which contains tasks and expand it now that the original simple
+	return statement has been rewritten.
+	* exp_ch9.adb (Build_Activation_Chain_Entity): Code
+	reformatting. Do not create a chain for an extended return
+	statement if one is already available.
+	(Has_Activation_Chain): New routine.
+
 2011-09-05  Marc Sango  <sango@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): Remove
