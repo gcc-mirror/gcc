@@ -1,3 +1,11 @@
+2011-09-04  Richard Guenther  <rguenther@suse.de>
+
+	Revert
+	2011-08-31  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (extract_muldiv_1): Remove bogus TYPE_IS_SIZETYPE
+	special-casing.
+
 2011-09-04  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR debug/49901
