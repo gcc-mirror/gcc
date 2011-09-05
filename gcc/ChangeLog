@@ -1,3 +1,17 @@
+2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr.h (progmem_section): Remove Declaration.
+	* config/avr/avr.c (progmem_section): Make static and rename to
+	progmem_swtable_section.
+	(avr_output_addr_vec_elt): No need to switch sections.
+	(avr_asm_init_sections): Use output_section_asm_op as section
+	callback for progmem_swtable_section.
+	(avr_output_progmem_section_asm_op): Remove Function.
+	(TARGET_ASM_FUNCTION_RODATA_SECTION): New Define.
+	(avr_asm_function_rodata_section): New static Function.
+	* config/avr/elf.h (ASM_OUTPUT_BEFORE_CASE_LABEL): Output
+	alignment 2**1 for jump tables.
+
 2011-09-04  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c (set_cond_stmt_execution_predicate): Check that

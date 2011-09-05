@@ -127,10 +127,6 @@ extern const struct base_arch_s avr_arch_types[];
 
 #define TARGET_CPU_CPP_BUILTINS()	avr_cpu_cpp_builtins (pfile)
 
-#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS)
-extern GTY(()) section *progmem_section;
-#endif
-
 #define AVR_HAVE_JMP_CALL (avr_current_arch->have_jmp_call && !TARGET_SHORT_CALLS)
 #define AVR_HAVE_MUL (avr_current_arch->have_mul)
 #define AVR_HAVE_MOVW (avr_current_arch->have_movw_lpmx)
