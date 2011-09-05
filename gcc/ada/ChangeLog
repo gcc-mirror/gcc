@@ -1,5 +1,24 @@
 2011-09-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* s-finmas.adb (Set_Finalize_Address (Address,
+	Finalize_Address_Ptr)): Renamed to Set_Heterogeneous_Finalize_Address.
+	(Set_Finalize_Address (in out Finalization_Master,
+	Finalize_Address_Ptr): Add synchronization code.
+	* s-finmas.ads (Set_Finalize_Address (Address,
+	Finalize_Address_Ptr)): Renamed to Set_Heterogeneous_Finalize_Address.
+	* s-stposu.adb (Allocate_Any_Controlled): Update the call to
+	Set_Finalize_Address for the heterogeneous case.
+
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Undo previous change, not suitable after all.
+
+2011-09-05  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads: Minor comment clarification.
+
+2011-09-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_ch6.adb (Move_Activation_Chain): Rewritten. The routine
 	no longer needs to search through the entities of the return
 	statement scope to find the _chain.

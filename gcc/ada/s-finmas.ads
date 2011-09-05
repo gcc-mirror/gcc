@@ -119,10 +119,9 @@ package System.Finalization_Masters is
    procedure Set_Finalize_Address
      (Master       : in out Finalization_Master;
       Fin_Addr_Ptr : Finalize_Address_Ptr);
-   --  Set the clean up routine of a finalization master. Note: this routine
-   --  must precede the one below since RTSfind needs to match this one.
+   --  Set the clean up routine of a finalization master
 
-   procedure Set_Finalize_Address
+   procedure Set_Heterogeneous_Finalize_Address
      (Obj          : System.Address;
       Fin_Addr_Ptr : Finalize_Address_Ptr);
    --  Add a relation pair object - Finalize_Address to the internal hash table

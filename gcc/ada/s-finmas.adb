@@ -463,14 +463,16 @@ package body System.Finalization_Masters is
       Fin_Addr_Ptr : Finalize_Address_Ptr)
    is
    begin
+      Lock_Task.all;
       Master.Finalize_Address := Fin_Addr_Ptr;
+      Unlock_Task.all;
    end Set_Finalize_Address;
 
-   --------------------------
-   -- Set_Finalize_Address --
-   --------------------------
+   ----------------------------------------
+   -- Set_Heterogeneous_Finalize_Address --
+   ----------------------------------------
 
-   procedure Set_Finalize_Address
+   procedure Set_Heterogeneous_Finalize_Address
      (Obj          : System.Address;
       Fin_Addr_Ptr : Finalize_Address_Ptr)
    is
@@ -478,7 +480,7 @@ package body System.Finalization_Masters is
       Lock_Task.all;
       Finalize_Address_Table.Set (Obj, Fin_Addr_Ptr);
       Unlock_Task.all;
-   end Set_Finalize_Address;
+   end Set_Heterogeneous_Finalize_Address;
 
    --------------------------
    -- Set_Is_Heterogeneous --
