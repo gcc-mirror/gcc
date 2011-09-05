@@ -2168,7 +2168,7 @@ package body Exp_Aggr is
                Rewrite (Expr,
                  Make_Attribute_Reference (Loc,
                    Attribute_Name => Name_Unrestricted_Access,
-                   Prefix         => New_Copy_Tree (Prefix (Lhs))));
+                   Prefix         => New_Copy_Tree (Lhs)));
                Set_Analyzed (Parent (Expr), False);
 
             else

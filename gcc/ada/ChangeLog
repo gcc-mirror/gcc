@@ -1,3 +1,36 @@
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Replace_Type): If the target of the assignment is
+	a selected component and the right-hand side is a self-referential
+	access, the proper prefix of the rewritten attribute is a copy
+	of the left-hand side, not of its prefix.
+
+2011-09-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb: Minor reformatting.
+	* sem_ch3.adb: Minor code clean up.
+
+2011-09-05  Jose Ruiz  <ruiz@adacore.com>
+
+	* exp_ch9.adb (Make_Initialize_Protection): The fact that
+	restriction No_Dynamic_Attachment is in effect or not should
+	not influence the default priority associated to a protected
+	object. With this change, when the restriction is in effect (as
+	is the case for the Ravenscar profile) the default priority of
+	a protected object with an interrupt handler is in the range of
+	interrupt priorities (Default_Interrupt_Priority) as required
+	by D.3(10).
+
+2011-09-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-iteint.ads: Fix header.
+
+2011-09-05  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Do_Autoconf): Make sure Obj_Dir always ends
+	with a directory separator to avoid output such as:
+	  "/path/to/objauto.cgpr" has been deleted.
+
 2011-09-05  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb: Minor reformatting.
