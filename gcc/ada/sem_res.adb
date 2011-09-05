@@ -7174,6 +7174,7 @@ package body Sem_Res is
       then
          Arg1 := Convert_Operand (Left_Opnd (N));
          --  Unchecked_Convert_To (Btyp, Left_Opnd  (N));
+         --  What on earth is this commented out fragment of code???
 
          if Nkind (N) = N_Op_Expon then
             Arg2 := Unchecked_Convert_To (Standard_Integer, Right_Opnd (N));

@@ -618,6 +618,8 @@ package body Alfa is
                --  verification, and should therefore never appear in frame
                --  conditions.
 
+               --  What about E_Loop_Parameter???
+
                when E_In_Parameter | E_Constant =>
                   return False;
 

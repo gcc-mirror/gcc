@@ -179,7 +179,7 @@ package body Exp_Ch6 is
    procedure Expand_Non_Function_Return (N : Node_Id);
    --  Called by Expand_N_Simple_Return_Statement in case we're returning from
    --  a procedure body, entry body, accept statement, or extended return
-   --  statement.  Note that all non-function returns are simple return
+   --  statement. Note that all non-function returns are simple return
    --  statements.
 
    function Expand_Protected_Object_Reference
@@ -564,7 +564,7 @@ package body Exp_Ch6 is
 
       --  The return type in the function declaration may have been a limited
       --  view, and the extra formals for the function were not generated at
-      --  that point.  At the point of call the full view must be available and
+      --  that point. At the point of call the full view must be available and
       --  the extra formals can be created.
 
       if No (Extra_Formal) then

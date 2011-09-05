@@ -1,3 +1,8 @@
+2011-09-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_res.adb, par.adb, par-ch6.adb, g-comlin.adb,
+	exp_ch6.adb, lib-xref-alfa.adb: Minor reformatting.
+
 2011-09-05  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch7.adb, exp_ch6.adb: Minor reformatting.

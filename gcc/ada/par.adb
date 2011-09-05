@@ -473,9 +473,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  program unit name. For task declarations and bodies, protected types
       --  and bodies, and accept statements the field hold the name of the type
       --  or operation. For if-statements, case-statements, and selects, the
-      --  field is initialized to Error, indicating that it is an error to have
-      --  a label on the end line.
-      --  (this is really a misuse of Error since there is no Error ???)
+      --  field is initialized to Error.
+
+      --  Note: this is a bit of an odd (mis)use of Error, since there is no
+      --  Error, but we use this value as a place holder to indicate that it
+      --  is an error to have a label on the end line.
 
       --  Whenever the field is a name, it is attached to the parent node of
       --  the construct being parsed. Thus the parent node indicates the kind
