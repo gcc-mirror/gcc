@@ -7145,6 +7145,8 @@ package body Sem_Res is
          return Res;
       end Convert_Operand;
 
+      --  Start of processing for Resolve_Intrinsic_Operator
+
    begin
       --  We must preserve the original entity in a generic setting, so that
       --  the legality of the operation can be verified in an instance.
@@ -7162,11 +7164,14 @@ package body Sem_Res is
       Set_Entity (N, Op);
       Set_Is_Overloaded (N, False);
 
-      --  If the operand type is private, rewrite with suitable conversions on
-      --  the operands and the result, to expose the proper underlying numeric
-      --  type.
+      --  If the result or operand types are private, rewrite with unchecked
+      --  conversions on the operands and the result, to expose the proper
+      --  underlying numeric type.
 
-      if Is_Private_Type (Typ) then
+      if Is_Private_Type (Typ)
+        or else Is_Private_Type (Etype (Left_Opnd (N)))
+        or else Is_Private_Type (Etype (Right_Opnd (N)))
+      then
          Arg1 := Convert_Operand (Left_Opnd (N));
          --  Unchecked_Convert_To (Btyp, Left_Opnd  (N));
 

@@ -620,7 +620,22 @@ package body Alfa is
                   return False;
 
                when others =>
+
+                  --  Objects of Task type or protected type are not Alfa
+                  --  references.
+
+                  if Present (Etype (E)) then
+                     case Ekind (Etype (E)) is
+                        when E_Task_Type | E_Protected_Type =>
+                           return False;
+
+                        when others =>
+                           null;
+                     end case;
+                  end if;
+
                   return Typ = 'r' or else Typ = 'm';
+
             end case;
          end Is_Alfa_Reference;
 
