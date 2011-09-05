@@ -113,6 +113,7 @@ static void avr_function_arg_advance (cumulative_args_t, enum machine_mode,
 static bool avr_function_ok_for_sibcall (tree, tree);
 static void avr_asm_named_section (const char *name, unsigned int flags, tree decl);
 static void avr_encode_section_info (tree, rtx, int);
+static section* avr_asm_function_rodata_section (tree);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -135,7 +136,8 @@ const struct base_arch_s *avr_current_arch;
 /* Current device.  */
 const struct mcu_type_s *avr_current_device;
 
-section *progmem_section;
+/* Section to put switch tables in.  */
+static GTY(()) section *progmem_swtable_section;
 
 /* To track if code will use .bss and/or .data.  */
 bool avr_need_clear_bss_p = false;
@@ -263,6 +265,8 @@ static const struct attribute_spec avr_attribute_table[] =
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN avr_expand_builtin
 
+#undef TARGET_ASM_FUNCTION_RODATA_SECTION
+#define TARGET_ASM_FUNCTION_RODATA_SECTION avr_asm_function_rodata_section
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5036,18 +5040,6 @@ avr_insert_attributes (tree node, tree *attributes)
     }
 }
 
-/* A get_unnamed_section callback for switching to progmem_section.  */
-
-static void
-avr_output_progmem_section_asm_op (const void *arg ATTRIBUTE_UNUSED)
-{
-  fprintf (asm_out_file,
-	   "\t.section .progmem.gcc_sw_table, \"%s\", @progbits\n",
-	   AVR_HAVE_JMP_CALL ? "a" : "ax");
-  /* Should already be aligned, this is just to be safe if it isn't.  */
-  fprintf (asm_out_file, "\t.p2align 1\n");
-}
-
 
 /* Implement `ASM_OUTPUT_ALIGNED_DECL_LOCAL'.  */
 /* Implement `ASM_OUTPUT_ALIGNED_DECL_COMMON'.  */
@@ -5098,9 +5090,23 @@ avr_output_bss_section_asm_op (const void *data)
 static void
 avr_asm_init_sections (void)
 {
-  progmem_section = get_unnamed_section (AVR_HAVE_JMP_CALL ? 0 : SECTION_CODE,
-					 avr_output_progmem_section_asm_op,
-					 NULL);
+  /* Set up a section for jump tables.  Alignment is handled by
+     ASM_OUTPUT_BEFORE_CASE_LABEL.  */
+  
+  if (AVR_HAVE_JMP_CALL)
+    {
+      progmem_swtable_section
+        = get_unnamed_section (0, output_section_asm_op,
+                               "\t.section\t.progmem.gcc_sw_table"
+                               ",\"a\",@progbits");
+    }
+  else
+    {
+      progmem_swtable_section
+        = get_unnamed_section (SECTION_CODE, output_section_asm_op,
+                               "\t.section\t.progmem.gcc_sw_table"
+                               ",\"ax\",@progbits");
+    }
 
   /* Override section callbacks to keep track of `avr_need_clear_bss_p'
      resp. `avr_need_copy_data_p'.  */
@@ -5108,6 +5114,69 @@ avr_asm_init_sections (void)
   readonly_data_section->unnamed.callback = avr_output_data_section_asm_op;
   data_section->unnamed.callback = avr_output_data_section_asm_op;
   bss_section->unnamed.callback = avr_output_bss_section_asm_op;
+}
+
+
+/* Implement `TARGET_ASM_FUNCTION_RODATA_SECTION'.  */
+
+static section*
+avr_asm_function_rodata_section (tree decl)
+{
+  /* If a function is unused and optimized out by -ffunction-sections
+     and --gc-sections, ensure that the same will happen for its jump
+     tables by putting them into individual sections.  */
+
+  unsigned int flags;
+  section * frodata;
+
+  /* Get the frodata section from the default function in varasm.c
+     but treat function-associated data-like jump tables as code
+     rather than as user defined data.  AVR has no constant pools.  */
+  {
+    int fdata = flag_data_sections;
+
+    flag_data_sections = flag_function_sections;
+    frodata = default_function_rodata_section (decl);
+    flag_data_sections = fdata;
+    flags = frodata->common.flags;
+  }
+
+  if (frodata != readonly_data_section
+      && flags & SECTION_NAMED)
+    {
+      /* Adjust section flags and replace section name prefix.  */
+
+      unsigned int i;
+
+      static const char* const prefix[] =
+        {
+          ".rodata",          ".progmem.gcc_sw_table",
+          ".gnu.linkonce.r.", ".gnu.linkonce.t."
+        };
+
+      for (i = 0; i < sizeof (prefix) / sizeof (*prefix); i += 2)
+        {
+          const char * old_prefix = prefix[i];
+          const char * new_prefix = prefix[i+1];
+          const char * name = frodata->named.name;
+
+          if (STR_PREFIX_P (name, old_prefix))
+            {
+              char *rname = (char*) alloca (1 + strlen (name)
+                                            + strlen (new_prefix)
+                                            - strlen (old_prefix));
+              
+              strcat (stpcpy (rname, new_prefix), name + strlen (old_prefix));
+
+              flags &= ~SECTION_CODE;
+              flags |= AVR_HAVE_JMP_CALL ? 0 : SECTION_CODE;
+              
+              return get_section (rname, flags, frodata->named.decl);
+            }
+        }
+    }
+        
+  return progmem_swtable_section;
 }
 
 
@@ -6693,7 +6762,6 @@ avr_output_bld (rtx operands[], int bit_nr)
 void
 avr_output_addr_vec_elt (FILE *stream, int value)
 {
-  switch_to_section (progmem_section);
   if (AVR_HAVE_JMP_CALL)
     fprintf (stream, "\t.word gs(.L%d)\n", value);
   else
