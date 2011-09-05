@@ -1,5 +1,12 @@
 2011-09-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49267
+	PR c++/49458
+	DR 1328
+	* call.c (reference_binding): Set rvaluedness_matches_p properly
+	for reference to function conversion ops.
+	(compare_ics): Adjust.
+
 	* class.c (trivial_default_constructor_is_constexpr): Rename from
 	synthesized_default_constructor_is_constexpr.
 	(type_has_constexpr_default_constructor): Adjust.
