@@ -1,5 +1,5 @@
-/* Definitions of target machine for GCC, for bi-arch SPARC
-   running Solaris 2, defaulting to 64-bit code generation.
+/* Definitions of target machine for GCC, for bi-arch SPARC,
+   defaulting to 64-bit code generation.
 
    Copyright (C) 1999, 2010, 2011 Free Software Foundation, Inc.
 
