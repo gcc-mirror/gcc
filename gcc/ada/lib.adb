@@ -293,10 +293,14 @@ package body Lib is
 
       Sloc1 := S1;
       Sloc2 := S2;
-      Unum1 := Get_Code_Unit (Sloc1);
-      Unum2 := Get_Code_Unit (Sloc2);
+
+      Unum1 := Get_Source_Unit (Sloc1);
+      Unum2 := Get_Source_Unit (Sloc2);
 
       loop
+         --  Step 1: Check whether the two locations are in the same source
+         --  file.
+
          Sind1 := Get_Source_File_Index (Sloc1);
          Sind2 := Get_Source_File_Index (Sloc2);
 
@@ -310,28 +314,27 @@ package body Lib is
             end if;
          end if;
 
-         --  OK, the two nodes are in separate source elements, but this is not
-         --  decisive, because of the issue of subunits and instantiations.
-
-         --  First we deal with subunits, since if the subunit is in an
-         --  instantiation, we know that the parent is in the corresponding
-         --  instantiation, since that is the only way we can have a subunit
-         --  that is part of an instantiation.
+         --  Step 2: Check subunits. If a subunit is instantiated, follow the
+         --  instantiation chain rather than the stub chain.
 
          Unit1 := Unit (Cunit (Unum1));
          Unit2 := Unit (Cunit (Unum2));
+         Inst1 := Instantiation (Sind1);
+         Inst2 := Instantiation (Sind2);
 
          if Nkind (Unit1) = N_Subunit
            and then Present (Corresponding_Stub (Unit1))
+           and then Inst1 = No_Location
          then
-            --  Both in subunits. They could have a common ancestor. If they
-            --  do, then the deeper one must have a longer unit name. Replace
-            --  the deeper one with its corresponding stub, in order to find
-            --  nearest common ancestor, if any.
-
             if Nkind (Unit2) = N_Subunit
               and then Present (Corresponding_Stub (Unit2))
+              and then Inst2 = No_Location
             then
+               --  Both locations refer to subunits which may have a common
+               --  ancestor. If they do, the deeper subunit must have a longer
+               --  unit name. Replace the deeper one with its corresponding
+               --  stub in order to find the nearest ancestor.
+
                if Length_Of_Name (Unit_Name (Unum1)) <
                   Length_Of_Name (Unit_Name (Unum2))
                then
@@ -345,7 +348,7 @@ package body Lib is
                   goto Continue;
                end if;
 
-            --  Nod1 in subunit, Nod2 not
+            --  Sloc1 in subunit, Sloc2 not
 
             else
                Sloc1 := Sloc (Corresponding_Stub (Unit1));
@@ -353,27 +356,24 @@ package body Lib is
                goto Continue;
             end if;
 
-         --  Nod2 in subunit, Nod1 not
+         --  Sloc2 in subunit, Sloc1 not
 
          elsif Nkind (Unit2) = N_Subunit
            and then Present (Corresponding_Stub (Unit2))
+           and then Inst2 = No_Location
          then
             Sloc2 := Sloc (Corresponding_Stub (Unit2));
             Unum2 := Get_Source_Unit (Sloc2);
             goto Continue;
          end if;
 
-         --  At this stage we know that neither is a subunit, so we deal
-         --  with instantiations, since we could have a common ancestor
-
-         Inst1 := Instantiation (Sind1);
-         Inst2 := Instantiation (Sind2);
+         --  Step 3: Check instances. The two locations may yield a common
+         --  ancestor.
 
          if Inst1 /= No_Location then
-
-            --  Both are instantiations
-
             if Inst2 /= No_Location then
+
+               --  Both locations denote instantiations
 
                Depth1 := Instantiation_Depth (Sloc1);
                Depth2 := Instantiation_Depth (Sloc2);
@@ -396,7 +396,7 @@ package body Lib is
                   goto Continue;
                end if;
 
-            --  Only first node is in instantiation
+            --  Sloc1 is an instantiation
 
             else
                Sloc1 := Inst1;
@@ -404,7 +404,7 @@ package body Lib is
                goto Continue;
             end if;
 
-         --  Only second node is instantiation
+         --  Sloc2 is an instantiation
 
          elsif Inst2 /= No_Location then
             Sloc2 := Inst2;
@@ -412,10 +412,9 @@ package body Lib is
             goto Continue;
          end if;
 
-         --  No instantiations involved, so we are not in the same unit
-         --  However, there is one case still to check, namely the case
-         --  where one location is in the spec, and the other in the
-         --  corresponding body (the spec location is earlier).
+         --  Step 4: One location in the spec, the other in the corresponding
+         --  body of the same unit. The location in the spec is considered
+         --  earlier.
 
          if Nkind (Unit1) = N_Subprogram_Body
               or else
@@ -434,8 +433,8 @@ package body Lib is
             end if;
          end if;
 
-         --  If that special case does not occur, then we are certain that
-         --  the two locations are really in separate units.
+         --  At this point it is certain that the two locations denote two
+         --  entirely separate units.
 
          return No;
 

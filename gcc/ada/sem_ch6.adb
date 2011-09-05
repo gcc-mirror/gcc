@@ -298,6 +298,12 @@ package body Sem_Ch6 is
                 Make_Simple_Return_Statement (LocX,
                   Expression => Expression (N)))));
 
+      --  If the expression function comes from source, indicate that so does
+      --  its rewriting, so it is compatible with any subsequent expansion of
+      --  the subprogram body (e.g. when it is a protected operation).
+
+      Set_Comes_From_Source (New_Body, Comes_From_Source (N));
+
       if Present (Prev)
         and then Ekind (Prev) = E_Generic_Function
       then

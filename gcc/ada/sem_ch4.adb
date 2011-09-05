@@ -4322,8 +4322,7 @@ package body Sem_Ch4 is
             Error_Msg_Node_2 := First_Subtype (Prefix_Type);
             Error_Msg_NE ("no selector& for}", N, Sel);
 
-            --  If prefix is incomplete, dd information
-            --  What is dd???
+            --  If prefix is incomplete, add information
 
             if Is_Incomplete_Type (Type_To_Use) then
                declare
