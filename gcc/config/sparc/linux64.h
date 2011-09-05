@@ -35,7 +35,9 @@ along with GCC; see the file COPYING3.  If not see
     || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
     || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3 \
     || TARGET_CPU_DEFAULT == TARGET_CPU_niagara \
-    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara2
+    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara2 \
+    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara3 \
+    || TARGET_CPU_DEFAULT == TARGET_CPU_niagara4
 /* A 64 bit v9 compiler with stack-bias,
    in a Medium/Low code model environment.  */
 

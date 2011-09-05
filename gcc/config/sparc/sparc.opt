@@ -154,6 +154,12 @@ Enum(sparc_processor_type) String(niagara) Value(PROCESSOR_NIAGARA)
 EnumValue
 Enum(sparc_processor_type) String(niagara2) Value(PROCESSOR_NIAGARA2)
 
+EnumValue
+Enum(sparc_processor_type) String(niagara3) Value(PROCESSOR_NIAGARA3)
+
+EnumValue
+Enum(sparc_processor_type) String(niagara4) Value(PROCESSOR_NIAGARA4)
+
 mcmodel=
 Target RejectNegative Joined Var(sparc_cmodel_string)
 Use given SPARC-V9 code model

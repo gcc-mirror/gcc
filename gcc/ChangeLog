@@ -8,6 +8,28 @@
 	* doc/invoke.texi: Document that Linux also supports
 	-mcpu=native and -mtune=native on sparc.
 
+	* config/sparc/sparc-opts.h (PROCESSOR_NIAGARA3,
+	PROCESSOR_NIAGARA4): New.
+	* config/sparc/sparc.opt: Handle new processor types.
+	* config/sparc/sparc.md: Add to "cpu" attribute.
+	* config/sparc/sparc.h (TARGET_CPU_niagara3,
+	TARGET_CPU_niagara4): New, treat as niagara2.
+	* config/sparc/linux64.h: Handle niagara3 and niagara4
+	like niagara2.
+	* config/sparc/sol2.h: Likewise.
+	* config/sparc/niagara2.md: Schedule niagara3 like
+	niagara2.
+	* config/sparc/sparc.c (sparc_option_override): Add
+	niagara3 and niagara4 handling.
+	(sparc32_initialize_trampoline): Likewise.
+	(sparc64_initialize_trampoline): Likewise.
+	(sparc_use_sched_lookahead): Likewise.
+	(sparc_issue_rate): Likewise.
+	(sparc_register_move_cost): Likewise.
+	* config/sparc/driver-sparc.c (cpu_names): Use niagara3
+	and niagara4 as appropriate.
+	* doc/invoke.texi: Document new processor types.
+
 2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/50289
