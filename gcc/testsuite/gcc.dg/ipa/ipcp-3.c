@@ -34,7 +34,7 @@ static void
 mark_cell(int * interp, Pcc_cell *c)
 {
   if (c && c->type == 4 && c->p
-      && !(c->p->flags & (1<<18)))
+      && !(c->p->flags & (1<<14)))
     never_ever(interp, c->p);
 }
 
