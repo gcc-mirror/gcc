@@ -1187,7 +1187,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       && (!copy_arg_p || cxx_dialect < cxx0x))
     {
       if (constexpr_p && sfk == sfk_constructor)
-	*constexpr_p = synthesized_default_constructor_is_constexpr (ctype);
+	*constexpr_p = trivial_default_constructor_is_constexpr (ctype);
       return;
     }
 

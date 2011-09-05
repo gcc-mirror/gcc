@@ -5881,8 +5881,9 @@ explain_invalid_constexpr_fn (tree fun)
   static struct pointer_set_t *diagnosed;
   tree body;
   location_t save_loc;
-  /* Only diagnose instantiations of constexpr templates.  */
-  if (!is_instantiation_of_constexpr (fun))
+  /* Only diagnose defaulted functions or instantiations.  */
+  if (!DECL_DEFAULTED_FN (fun)
+      && !is_instantiation_of_constexpr (fun))
     return;
   if (diagnosed == NULL)
     diagnosed = pointer_set_create ();
