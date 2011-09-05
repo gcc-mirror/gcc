@@ -463,8 +463,17 @@ package body System.Finalization_Masters is
       Fin_Addr_Ptr : Finalize_Address_Ptr)
    is
    begin
+      --  TSS primitive Finalize_Address is set at the point of allocation,
+      --  either through Allocate_Any_Controlled or through this routine.
+      --  Since multiple tasks can allocate on the same finalization master,
+      --  access to this attribute must be protected.
+
       Lock_Task.all;
-      Master.Finalize_Address := Fin_Addr_Ptr;
+
+      if Master.Finalize_Address = null then
+         Master.Finalize_Address := Fin_Addr_Ptr;
+      end if;
+
       Unlock_Task.all;
    end Set_Finalize_Address;
 
@@ -477,6 +486,9 @@ package body System.Finalization_Masters is
       Fin_Addr_Ptr : Finalize_Address_Ptr)
    is
    begin
+      --  Protected access is required in this case because
+      --  Finalize_Address_Table is a global data structure.
+
       Lock_Task.all;
       Finalize_Address_Table.Set (Obj, Fin_Addr_Ptr);
       Unlock_Task.all;

@@ -628,7 +628,7 @@ package body System.Tasking.Rendezvous is
                --  Requeue to a protected entry
 
                Called_PO := POE.To_Protection (Entry_Call.Called_PO);
-               STPE.Lock_Entries (Called_PO, Ceiling_Violation);
+               STPE.Lock_Entries_With_Status (Called_PO, Ceiling_Violation);
 
                if Ceiling_Violation then
                   pragma Assert (Ex = Ada.Exceptions.Null_Id);

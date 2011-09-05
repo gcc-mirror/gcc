@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -183,7 +183,7 @@ package System.Tasking.Protected_Objects.Entries is
    --  Unlock has been made by the caller. Program_Error is raised in case of
    --  ceiling violation.
 
-   procedure Lock_Entries
+   procedure Lock_Entries_With_Status
      (Object            : Protection_Entries_Access;
       Ceiling_Violation : out Boolean);
    --  Same as above, but return the ceiling violation status instead of

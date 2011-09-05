@@ -1,5 +1,31 @@
 2011-09-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* s-finmas.adb (Set_Finalize_Address): Explain the reason
+	for the synchronization. Move the test for null from
+	s-stposu.Allocate_Any_Controlled to this routine since the check
+	needs to be protected too.
+	(Set_Heterogeneous_Finalize_Address): Explain the reason for the
+	synchronization code.
+	* s-finmas.ads (Set_Heterogeneous_Finalize_Address): Add comment
+	explaining the context in which this routine is used.
+	* s-stposu.adb (Allocate_Any_Controlled): Move the test for null
+	to s-finmas.Set_Finalize_Address.
+
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: Document that itypes have no parent field.
+
+2011-09-05  Robert Dewar  <dewar@adacore.com>
+
+	* rtsfind.adb (Check_CRT): Check for overloaded entity
+	* rtsfind.ads: Document that entities to be found by rtsfind
+	cannot be overloaded
+	* s-taenca.adb, s-tasren.adb, s-tpobop.adb, s-tpoben.ads, s-tpoben.adb
+	(Lock_Entries_With_Status): New name for Lock_Entries with two
+	arguments (changed to meet rtsfind no overloading rule).
+
+2011-09-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* s-finmas.adb (Set_Finalize_Address (Address,
 	Finalize_Address_Ptr)): Renamed to Set_Heterogeneous_Finalize_Address.
 	(Set_Finalize_Address (in out Finalization_Master,

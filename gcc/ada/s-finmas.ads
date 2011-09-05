@@ -124,7 +124,10 @@ package System.Finalization_Masters is
    procedure Set_Heterogeneous_Finalize_Address
      (Obj          : System.Address;
       Fin_Addr_Ptr : Finalize_Address_Ptr);
-   --  Add a relation pair object - Finalize_Address to the internal hash table
+   --  Add a relation pair object - Finalize_Address to the internal hash
+   --  table. This is done in the context of allocation on a heterogeneous
+   --  finalization master where a single master services multiple anonymous
+   --  access-to-controlled types.
 
    procedure Set_Is_Heterogeneous (Master : in out Finalization_Master);
    --  Mark the master as being a heterogeneous collection of objects
