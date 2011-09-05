@@ -843,72 +843,121 @@ package body Exp_Ch9 is
    -----------------------------------
 
    procedure Build_Activation_Chain_Entity (N : Node_Id) is
-      P     : Node_Id;
+      function Has_Activation_Chain (Stmt : Node_Id) return Boolean;
+      --  Determine whether an extended return statement has an activation
+      --  chain.
+
+      --------------------------
+      -- Has_Activation_Chain --
+      --------------------------
+
+      function Has_Activation_Chain (Stmt : Node_Id) return Boolean is
+         Decl : Node_Id;
+
+      begin
+         Decl := First (Return_Object_Declarations (Stmt));
+         while Present (Decl) loop
+            if Nkind (Decl) = N_Object_Declaration
+              and then Chars (Defining_Identifier (Decl)) = Name_uChain
+            then
+               return True;
+            end if;
+
+            Next (Decl);
+         end loop;
+
+         return False;
+      end Has_Activation_Chain;
+
+      --  Local variables
+
       Decls : List_Id;
-      Chain : Entity_Id;
+      Par   : Node_Id;
+
+   --  Start of processing for Build_Activation_Chain_Entity
 
    begin
-      --  Loop to find enclosing construct containing activation chain variable
-      --  The construct is a body, a block, or an extended return.
+      --  Traverse the parent chain looking for an enclosing construct which
+      --  contains an activation chain variable. The construct is either a
+      --  body, a block, or an extended return.
 
-      P := Parent (N);
+      Par := Parent (N);
 
-      while not Nkind_In (P, N_Subprogram_Body,
-                             N_Entry_Body,
-                             N_Package_Declaration,
-                             N_Package_Body,
-                             N_Block_Statement,
-                             N_Task_Body,
-                             N_Extended_Return_Statement)
+      while not Nkind_In (Par, N_Block_Statement,
+                               N_Entry_Body,
+                               N_Extended_Return_Statement,
+                               N_Package_Body,
+                               N_Package_Declaration,
+                               N_Subprogram_Body,
+                               N_Task_Body)
       loop
-         P := Parent (P);
+         Par := Parent (Par);
       end loop;
 
-      --  If we are in a package body, the activation chain variable is
-      --  declared in the body, but the Activation_Chain_Entity is attached
-      --  to the spec.
+      --  When the enclosing construct is a package body, the activation chain
+      --  variable is declared in the body, but the Activation_Chain_Entity is
+      --  attached to the spec.
 
-      if Nkind (P) = N_Package_Body then
-         Decls := Declarations (P);
-         P := Unit_Declaration_Node (Corresponding_Spec (P));
+      if Nkind (Par) = N_Package_Body then
+         Decls := Declarations (Par);
+         Par   := Unit_Declaration_Node (Corresponding_Spec (Par));
 
-      elsif Nkind (P) = N_Package_Declaration then
-         Decls := Visible_Declarations (Specification (P));
+      elsif Nkind (Par) = N_Package_Declaration then
+         Decls := Visible_Declarations (Specification (Par));
 
-      elsif Nkind (P) = N_Extended_Return_Statement then
-         Decls := Return_Object_Declarations (P);
+      elsif Nkind (Par) = N_Extended_Return_Statement then
+         Decls := Return_Object_Declarations (Par);
 
       else
-         Decls := Declarations (P);
+         Decls := Declarations (Par);
       end if;
 
-      --  If activation chain entity not already declared, declare it
+      --  If an activation chain entity has not been declared already, create
+      --  one.
 
-      if Nkind (P) = N_Extended_Return_Statement
-        or else No (Activation_Chain_Entity (P))
+      if Nkind (Par) = N_Extended_Return_Statement
+        or else No (Activation_Chain_Entity (Par))
       then
-         Chain := Make_Defining_Identifier (Sloc (N), Name_uChain);
+         --  Since extended return statements do not store the entity of the
+         --  chain, examine the return object declarations to avoid creating
+         --  a duplicate.
 
-         --  Note: An extended return statement is not really a task activator,
-         --  but it does have an activation chain on which to store the tasks
-         --  temporarily. On successful return, the tasks on this chain are
-         --  moved to the chain passed in by the caller. We do not build an
-         --  Activation_Chain_Entity for an N_Extended_Return_Statement,
-         --  because we do not want to build a call to Activate_Tasks. Task
-         --  activation is the responsibility of the caller.
-
-         if Nkind (P) /= N_Extended_Return_Statement then
-            Set_Activation_Chain_Entity (P, Chain);
+         if Nkind (Par) = N_Extended_Return_Statement
+           and then Has_Activation_Chain (Par)
+         then
+            return;
          end if;
 
-         Prepend_To (Decls,
-           Make_Object_Declaration (Sloc (P),
-             Defining_Identifier => Chain,
-             Aliased_Present => True,
-             Object_Definition =>
-               New_Reference_To (RTE (RE_Activation_Chain), Sloc (P))));
+         declare
+            Chain : Entity_Id;
+            Decl  : Node_Id;
 
-         Analyze (First (Decls));
+         begin
+            Chain := Make_Defining_Identifier (Sloc (N), Name_uChain);
+
+            --  Note: An extended return statement is not really a task
+            --  activator, but it does have an activation chain on which to
+            --  store the tasks temporarily. On successful return, the tasks
+            --  on this chain are moved to the chain passed in by the caller.
+            --  We do not build an Activation_Chain_Entity for an extended
+            --  return statement, because we do not want to build a call to
+            --  Activate_Tasks. Task activation is the responsibility of the
+            --  caller.
+
+            if Nkind (Par) /= N_Extended_Return_Statement then
+               Set_Activation_Chain_Entity (Par, Chain);
+            end if;
+
+            Decl :=
+              Make_Object_Declaration (Sloc (Par),
+                Defining_Identifier => Chain,
+                Aliased_Present     => True,
+                Object_Definition   =>
+                  New_Reference_To (RTE (RE_Activation_Chain), Sloc (Par)));
+
+            Prepend_To (Decls, Decl);
+            Analyze (Decl);
+         end;
       end if;
    end Build_Activation_Chain_Entity;
 

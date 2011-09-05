@@ -29,6 +29,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Elists;   use Elists;
+with Exp_Aggr; use Exp_Aggr;
 with Exp_Atag; use Exp_Atag;
 with Exp_Ch2;  use Exp_Ch2;
 with Exp_Ch3;  use Exp_Ch3;
@@ -4768,6 +4769,15 @@ package body Exp_Ch6 is
          if Is_Build_In_Place
            and then Has_Task (Etype (Par_Func))
          then
+            --  The return expression is an aggregate for a complex type which
+            --  contains tasks. This particular case is left unexpanded since
+            --  the regular expansion would insert all temporaries and
+            --  initialization code in the wrong block.
+
+            if Nkind (Exp) = N_Aggregate then
+               Expand_N_Aggregate (Exp);
+            end if;
+
             Append_To (Stmts, Move_Activation_Chain);
          end if;
 
