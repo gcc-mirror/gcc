@@ -135,7 +135,7 @@ package body Rtsfind is
    --  Check entity Eid to ensure that configurable run-time restrictions are
    --  met. May generate an error message (if RTE_Available_Call is false) and
    --  raise RE_Not_Available if entity E does not exist (e.g. Eid is Empty).
-   --  Above documentation not clear ???
+   --  Also check that entity is not overloaded.
 
    procedure Entity_Not_Defined (Id : RE_Id);
    --  Outputs error messages for an entity that is not defined in the run-time
@@ -231,6 +231,22 @@ package body Rtsfind is
          then
             Entity_Not_Defined (E);
             raise RE_Not_Available;
+         end if;
+
+         --  Check entity is not overloaded, checking for special exceptions
+
+         if Has_Homonym (Eid)
+           and then E /= RE_Save_Occurrence
+         then
+            Set_Standard_Error;
+            Write_Str ("Run-time configuration error (");
+            Write_Str ("rtsfind entity """);
+            Get_Decoded_Name_String (Chars (Eid));
+            Set_Casing (Mixed_Case);
+            Write_Str (Name_Buffer (1 .. Name_Len));
+            Write_Str (""" is overloaded)");
+            Write_Eol;
+            raise Unrecoverable_Error;
          end if;
 
          --  Otherwise entity is accessible
@@ -414,8 +430,8 @@ package body Rtsfind is
          return E1 = E2;
       end if;
 
-      --  If the unit containing E is not loaded, we already know that
-      --  the entity we have cannot have come from this unit.
+      --  If the unit containing E is not loaded, we already know that the
+      --  entity we have cannot have come from this unit.
 
       E_Unit_Name := Get_Unit_Name (RE_Unit_Table (E));
 

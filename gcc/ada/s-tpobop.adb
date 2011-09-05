@@ -568,7 +568,7 @@ package body System.Tasking.Protected_Objects.Operations is
       --  where abort is already deferred.
 
       Initialization.Defer_Abort_Nestable (Self_ID);
-      Lock_Entries (Object, Ceiling_Violation);
+      Lock_Entries_With_Status (Object, Ceiling_Violation);
 
       if Ceiling_Violation then
 
@@ -722,7 +722,7 @@ package body System.Tasking.Protected_Objects.Operations is
 
             --  Requeue is to different PO
 
-            Lock_Entries (New_Object, Ceiling_Violation);
+            Lock_Entries_With_Status (New_Object, Ceiling_Violation);
 
             if Ceiling_Violation then
                Object.Call_In_Progress := null;
@@ -966,7 +966,7 @@ package body System.Tasking.Protected_Objects.Operations is
       end if;
 
       Initialization.Defer_Abort_Nestable (Self_Id);
-      Lock_Entries (Object, Ceiling_Violation);
+      Lock_Entries_With_Status (Object, Ceiling_Violation);
 
       if Ceiling_Violation then
          Initialization.Undefer_Abort (Self_Id);

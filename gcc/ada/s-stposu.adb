@@ -276,9 +276,7 @@ package body System.Storage_Pools.Subpools is
          --    3) Most cases of anonymous access types usage
 
          if Master.Is_Homogeneous then
-            if Finalize_Address (Master.all) = null then
-               Set_Finalize_Address (Master.all, Fin_Address);
-            end if;
+            Set_Finalize_Address (Master.all, Fin_Address);
 
          --  Heterogeneous masters service the following:
 
