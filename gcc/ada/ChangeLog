@@ -1,3 +1,15 @@
+2011-09-05  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve_Intrinsic_Operator): Use unchecked
+	conversions instead of normal type conversions in all cases where a
+	type conversion would be illegal. In particular, use unchecked
+	conversions when the operand types are private.
+
+2011-09-05  Johannes Kanig  <kanig@adacore.com>
+
+	* lib-xref-alfa.adb (Is_Alfa_Reference): Never declare effects on
+	objects of task type or protected type.
+
 2011-09-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Expression_Function): If the expression
