@@ -1187,6 +1187,8 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
       || gimple_call_num_args (set_stmt) != 1)
     return;
   op2 = gimple_call_arg (set_stmt, 0);
+  if (TREE_CODE (op2) != SSA_NAME)
+    return;
   if (!SSA_NAME_IS_DEFAULT_DEF (op2))
     return;
   index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op2));
