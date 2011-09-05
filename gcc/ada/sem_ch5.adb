@@ -29,6 +29,7 @@ with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Expander; use Expander;
+with Exp_Ch6;  use Exp_Ch6;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Lib;      use Lib;
@@ -44,6 +45,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Case; use Sem_Case;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
 with Sem_Elab; use Sem_Elab;
@@ -836,9 +838,43 @@ package body Sem_Ch5 is
    -----------------------------
 
    procedure Analyze_Block_Statement (N : Node_Id) is
+      procedure Install_Return_Entities (Scop : Entity_Id);
+      --  Install all entities of return statement scope Scop in the visibility
+      --  chain except for the return object since its entity is reused in a
+      --  renaming.
+
+      -----------------------------
+      -- Install_Return_Entities --
+      -----------------------------
+
+      procedure Install_Return_Entities (Scop : Entity_Id) is
+         Id : Entity_Id;
+
+      begin
+         Id := First_Entity (Scop);
+         while Present (Id) loop
+
+            --  Do not install the return object
+
+            if not Ekind_In (Id, E_Constant, E_Variable)
+              or else not Is_Return_Object (Id)
+            then
+               Install_Entity (Id);
+            end if;
+
+            Next_Entity (Id);
+         end loop;
+      end Install_Return_Entities;
+
+      --  Local constants and variables
+
       Decls : constant List_Id := Declarations (N);
       Id    : constant Node_Id := Identifier (N);
       HSS   : constant Node_Id := Handled_Statement_Sequence (N);
+
+      Is_BIP_Return_Statement : Boolean;
+
+   --  Start of processing for Analyze_Block_Statement
 
    begin
       --  In SPARK mode, we reject block statements. Note that the case of
@@ -854,6 +890,16 @@ package body Sem_Ch5 is
       if No (HSS) then
          return;
       end if;
+
+      --  Detect whether the block is actually a rewritten return statement of
+      --  a build-in-place function.
+
+      Is_BIP_Return_Statement :=
+        Present (Id)
+          and then Present (Entity (Id))
+          and then Ekind (Entity (Id)) = E_Return_Statement
+          and then Is_Build_In_Place_Function
+                     (Return_Applies_To (Entity (Id)));
 
       --  Normal processing with HSS present
 
@@ -914,6 +960,14 @@ package body Sem_Ch5 is
          Set_Etype (Ent, Standard_Void_Type);
          Set_Block_Node (Ent, Identifier (N));
          Push_Scope (Ent);
+
+         --  The block served as an extended return statement. Ensure that any
+         --  entities created during the analysis and expansion of the return
+         --  object declaration are once again visible.
+
+         if Is_BIP_Return_Statement then
+            Install_Return_Entities (Ent);
+         end if;
 
          if Present (Decls) then
             Analyze_Declarations (Decls);

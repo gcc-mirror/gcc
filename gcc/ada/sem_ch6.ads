@@ -179,6 +179,9 @@ package Sem_Ch6 is
    --  Determines if two subtype definitions are fully conformant. Used
    --  for entry family conformance checks (RM 6.3.1 (24)).
 
+   procedure Install_Entity (E : Entity_Id);
+   --  Place a single entity on the visibility chain
+
    procedure Install_Formals (Id : Entity_Id);
    --  On entry to a subprogram body, make the formals visible. Note that
    --  simply placing the subprogram on the scope stack is not sufficient:

@@ -181,9 +181,6 @@ package body Sem_Ch6 is
    --  This procedure makes S, a new overloaded entity, into the first visible
    --  entity with that name.
 
-   procedure Install_Entity (E : Entity_Id);
-   --  Make single entity visible (used for generic formals as well)
-
    function Is_Non_Overriding_Operation
      (Prev_E : Entity_Id;
       New_E  : Entity_Id) return Boolean;
