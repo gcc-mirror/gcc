@@ -772,8 +772,8 @@ package body Sem_Ch3 is
             Anon_Scope := Scope (Defining_Entity (Related_Nod));
          end if;
 
-         --  For an access type definition, if the current scope is a child
-         --  unit it is the scope of the type.
+      --  For an access type definition, if the current scope is a child
+      --  unit it is the scope of the type.
 
       elsif Is_Compilation_Unit (Current_Scope) then
          Anon_Scope := Current_Scope;
@@ -821,7 +821,7 @@ package body Sem_Ch3 is
          Set_Can_Use_Internal_Rep
            (Anon_Type, not Always_Compatible_Rep_On_Target);
 
-         --  If the anonymous access is associated with a protected operation
+         --  If the anonymous access is associated with a protected operation,
          --  create a reference to it after the enclosing protected definition
          --  because the itype will be used in the subsequent bodies.
 
@@ -908,10 +908,10 @@ package body Sem_Ch3 is
                  Make_Object_Declaration (Loc,
                    Defining_Identifier =>
                      Make_Defining_Identifier (Loc, Name_uMaster),
-                   Constant_Present => True,
-                   Object_Definition =>
+                   Constant_Present    => True,
+                   Object_Definition   =>
                      New_Reference_To (RTE (RE_Master_Id), Loc),
-                   Expression =>
+                   Expression          =>
                      Make_Explicit_Dereference (Loc,
                        New_Reference_To (RTE (RE_Current_Master), Loc)));
 
@@ -16866,11 +16866,16 @@ package body Sem_Ch3 is
       --  function calls. The function call may have been given in prefixed
       --  notation, in which case the original node is an indexed component.
       --  If the function is parameterless, the original node was an explicit
-      --  dereference.
+      --  dereference. The function may also be parameterless, in which case
+      --  the source node is just an identifier.
 
       case Nkind (Original_Node (Exp)) is
          when N_Aggregate | N_Extension_Aggregate | N_Function_Call | N_Op =>
             return True;
+
+         when N_Identifier =>
+            return Present (Entity (Original_Node (Exp)))
+              and then Ekind (Entity (Original_Node (Exp))) = E_Function;
 
          when N_Qualified_Expression =>
             return

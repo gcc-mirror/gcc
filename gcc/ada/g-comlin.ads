@@ -664,11 +664,14 @@ package GNAT.Command_Line is
    --  Output is always initialized to the empty string.
 
    procedure Set_Usage
-     (Config : in out Command_Line_Configuration;
-      Usage  : String := "[switches] [arguments]";
-      Help   : String := "");
+     (Config   : in out Command_Line_Configuration;
+      Usage    : String := "[switches] [arguments]";
+      Help     : String := "";
+      Help_Msg : String := "");
    --  Defines the general format of the call to the application, and a short
-   --  help text. These are both displayed by Display_Help
+   --  help text. These are both displayed by Display_Help. When a non-empty
+   --  Help_Msg is given, it is used by Display_Help instead of the
+   --  automatically generated list of supported switches.
 
    procedure Display_Help (Config : Command_Line_Configuration);
    --  Display the help for the tool (ie its usage, and its supported switches)
@@ -1134,6 +1137,7 @@ private
       Aliases  : Alias_Definitions_List;
       Usage    : GNAT.OS_Lib.String_Access;
       Help     : GNAT.OS_Lib.String_Access;
+      Help_Msg : GNAT.OS_Lib.String_Access;
       Switches : Switch_Definitions_List;
       --  List of expected switches (Used when expanding switch groups)
    end record;

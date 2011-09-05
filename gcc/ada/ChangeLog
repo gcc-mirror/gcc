@@ -1,3 +1,15 @@
+2011-09-05  Johannes Kanig  <kanig@adacore.com>
+
+	* g-comlin.adb (Set_Usage): Additional optional argument to set help
+	message.
+	(Display_Help): display the user given help message, if available.
+
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (OK_For_Limited_Init_In_05): The expression
+	is legal if the original node is an identifier that is a
+	parameterless function call.
+
 2011-09-05  Pascal Obry  <obry@adacore.com>
 
 	* prj-nmsc.adb: Minor reformatting.
