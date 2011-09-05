@@ -1,3 +1,18 @@
+2011-09-05  Johannes Kanig  <kanig@adacore.com>
+
+	* lib-xref-alfa.adb (Is_Alfa_Reference): Filter constants from effect
+	information.
+
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch6.adb (P_Subprogram): In Ada2012 mode, if the subprogram
+	appears within a package specification and the token after "IS"
+	is not a parenthesis, assume that this is an unparenthesized
+	expression function, even if the token appears in a line by
+	itself.
+	* par.adb: Clarify use of Labl field of scope stack in error
+	recovery.
+
 2011-09-05  Bob Duff  <duff@adacore.com>
 
 	* sem_res.adb (Resolve_Intrinsic_Operator): Use unchecked
