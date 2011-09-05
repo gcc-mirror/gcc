@@ -1,3 +1,13 @@
+2011-09-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb: Minor reformatting.
+
+2011-09-05  Matthew Gingell  <gingell@adacore.com>
+
+	* s-tassta.adb (Task_Wrapper): Ensure that we don't try to write the
+	stack guard page on PPC Linux. This patch ensures the 64K guard page at
+	the bottom of the stack is not overwritten.
+
 2011-09-05  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_intr.adb, s-tasini.adb: Minor reformatting.

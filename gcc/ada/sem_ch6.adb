@@ -2712,9 +2712,9 @@ package body Sem_Ch6 is
       --  for discriminals and privals and finally a declaration for the entry
       --  family index (if applicable). This form of early expansion is done
       --  when the Expander is active because Install_Private_Data_Declarations
-      --  references entities which were created during regular expansion.
-      --  The body may be the rewritting of an expression function, and we need
-      --  to verify that the original node is in the source.
+      --  references entities which were created during regular expansion. The
+      --  body may be the rewritting of an expression function, and we need to
+      --  verify that the original node is in the source.
 
       if Full_Expander_Active
         and then Comes_From_Source (Original_Node (N))
