@@ -115,7 +115,9 @@
    ultrasparc,
    ultrasparc3,
    niagara,
-   niagara2"
+   niagara2,
+   niagara3,
+   niagara4"
   (const (symbol_ref "sparc_cpu_attr")))
 
 ;; Attribute for the instruction set.

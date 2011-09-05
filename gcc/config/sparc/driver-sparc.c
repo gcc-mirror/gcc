@@ -55,8 +55,8 @@ static const struct cpu_names {
   { "UltraSPARC-T2",	"niagara2" },
   { "UltraSPARC-T2",	"niagara2" },
   { "UltraSPARC-T2+",	"niagara2" },
-  { "SPARC-T3",		"niagara2" },
-  { "SPARC-T4",		"niagara2" },
+  { "SPARC-T3",		"niagara3" },
+  { "SPARC-T4",		"niagara4" },
 #else
   { "SuperSPARC",	"supersparc" },
   { "HyperSparc",	"hypersparc" },
@@ -71,8 +71,8 @@ static const struct cpu_names {
   { "Serrano",		"ultrasparc3" },
   { "UltraSparc T1",	"niagara" },
   { "UltraSparc T2",	"niagara2" },
-  { "UltraSparc T3",	"niagara2" },
-  { "UltraSparc T4",	"niagara2" },
+  { "UltraSparc T3",	"niagara3" },
+  { "UltraSparc T4",	"niagara4" },
 #endif
   { NULL,	NULL }
   };
