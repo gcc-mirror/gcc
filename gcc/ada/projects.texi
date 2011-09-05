@@ -2695,7 +2695,6 @@ project. Here is the (non exhaustive) list:
 @item Source_Files, Source_List_File and other attributes dealing with
   list of sources.
 @item Source_Dirs, Exec_Dir and Object_Dir
-@item Library_Dir, Library_Name and other library-related attributes
 @item Main
 @item Roots
 @item Externally_Built

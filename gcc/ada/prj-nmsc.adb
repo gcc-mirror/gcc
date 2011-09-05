@@ -2717,8 +2717,8 @@ package body Prj.Nmsc is
                   Source := Prj.Element (Iter);
                   exit when Source = No_Source;
 
-                  if Source.Unit /= No_Unit_Index and then
-                     Source.Unit.Name = Name_Id (Name)
+                  if Source.Unit /= No_Unit_Index
+                    and then Source.Unit.Name = Name_Id (Name)
                   then
                      if not Source.Locally_Removed then
                         Source.In_Interfaces := True;
@@ -2870,8 +2870,8 @@ package body Prj.Nmsc is
                   end if;
                end if;
 
-            elsif Project.Library_Kind /= Static and then
-                  Proj.Library_Kind = Static
+            elsif Project.Library_Kind /= Static
+              and then Proj.Library_Kind = Static
             then
                Error_Msg_Name_1 := Project.Name;
                Error_Msg_Name_2 := Proj.Name;
@@ -3193,8 +3193,8 @@ package body Prj.Nmsc is
                      Lib_ALI_Dir.Location, Project);
                end if;
 
-               if (not Project.Externally_Built) and then
-                  Project.Library_ALI_Dir /= Project.Library_Dir
+               if not Project.Externally_Built
+                 and then Project.Library_ALI_Dir /= Project.Library_Dir
                then
                   --  The library ALI directory cannot be the same as the
                   --  Object directory.
@@ -4435,7 +4435,18 @@ package body Prj.Nmsc is
                   Error_Msg_Name_1 := Unit;
 
                   Next_Proj := Project.Extends;
-                  Iter := For_Each_Source (Data.Tree, Project);
+
+                  if Project.Qualifier = Aggregate_Library then
+
+                     --  For an aggregate library we want to consider sources
+                     --  of all aggregated projects.
+
+                     Iter := For_Each_Source (Data.Tree);
+
+                  else
+                     Iter := For_Each_Source (Data.Tree, Project);
+                  end if;
+
                   loop
                      while Prj.Element (Iter) /= No_Source
                        and then
@@ -4467,6 +4478,7 @@ package body Prj.Nmsc is
                   if Source /= No_Source then
                      if Source.Project /= Project
                        and then not Is_Extending (Project, Source.Project)
+                       and then Project.Qualifier /= Aggregate_Library
                      then
                         Source := No_Source;
                      end if;
@@ -4952,10 +4964,10 @@ package body Prj.Nmsc is
         and then Name_Len > 3
         and then Name_Buffer (2 .. 3) = "__"
         and then
-          ((Name_Buffer (1) = 'a') or else
-           (Name_Buffer (1) = 'g') or else
-           (Name_Buffer (1) = 'i') or else
-           (Name_Buffer (1) = 's'))
+          (Name_Buffer (1) = 'a' or else
+           Name_Buffer (1) = 'g' or else
+           Name_Buffer (1) = 'i' or else
+           Name_Buffer (1) = 's')
       then
          Name_Buffer (2) := '.';
          Name_Buffer (3 .. Name_Len - 1) := Name_Buffer (4 .. Name_Len);
@@ -5054,8 +5066,8 @@ package body Prj.Nmsc is
       OK := OK and then not Need_Letter and then not Last_Underscore;
 
       if OK then
-         if First /= Name'First and then
-           Is_Reserved (The_Name (First .. The_Name'Last))
+         if First /= Name'First
+           and then Is_Reserved (The_Name (First .. The_Name'Last))
          then
             return;
          end if;

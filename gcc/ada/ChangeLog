@@ -1,3 +1,10 @@
+2011-09-05  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb: Minor reformatting.
+	Add support for standalone aggregate library.
+	(Check_Stand_Alone_Library): Handle standalone aggregate library.
+	* projects.texi: Fix documentation for aggregate library projects.
+
 2011-09-05  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb: Minor reformatting.
