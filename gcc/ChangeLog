@@ -29,6 +29,8 @@
 	* config/sparc/driver-sparc.c (cpu_names): Use niagara3
 	and niagara4 as appropriate.
 	* doc/invoke.texi: Document new processor types.
+	* config.gcc: Recognize niagara3 and niagara4 in --with-cpu
+	and --with-tune options.
 
 2011-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
