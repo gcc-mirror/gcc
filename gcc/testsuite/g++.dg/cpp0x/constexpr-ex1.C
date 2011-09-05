@@ -89,6 +89,6 @@ struct resource {
 };
 constexpr resource f(resource d)
 { return d; }                  // { dg-error "non-constexpr" }
-constexpr resource d = f(9);   // { dg-error "resource" }
+constexpr resource d = f(9);   // { dg-message "constexpr" }
 
 // 4.4 floating-point constant expressions
