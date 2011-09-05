@@ -4645,38 +4645,29 @@ package body Exp_Ch6 is
       ---------------------------
 
       function Move_Activation_Chain return Node_Id is
-         Chain_Formal  : constant Entity_Id :=
-                           Build_In_Place_Formal
-                            (Par_Func, BIP_Activation_Chain);
-         To            : constant Node_Id :=
-                           New_Reference_To (Chain_Formal, Loc);
-         Master_Formal : constant Entity_Id :=
-                           Build_In_Place_Formal (Par_Func, BIP_Master);
-         New_Master    : constant Node_Id :=
-                           New_Reference_To (Master_Formal, Loc);
-
-         Chain_Id : Entity_Id;
-         From     : Node_Id;
-
       begin
-         Chain_Id := First_Entity (Return_Statement_Entity (N));
-         while Chars (Chain_Id) /= Name_uChain loop
-            Chain_Id := Next_Entity (Chain_Id);
-         end loop;
-
-         From :=
-           Make_Attribute_Reference (Loc,
-             Prefix =>
-               New_Reference_To (Chain_Id, Loc),
-             Attribute_Name => Name_Unrestricted_Access);
-         --  ??? Not clear why "Make_Identifier (Loc, Name_uChain)" doesn't
-         --  work, instead of "New_Reference_To (Chain_Id, Loc)" above.
-
          return
            Make_Procedure_Call_Statement (Loc,
              Name                   =>
                New_Reference_To (RTE (RE_Move_Activation_Chain), Loc),
-             Parameter_Associations => New_List (From, To, New_Master));
+
+             Parameter_Associations => New_List (
+
+               --  Source chain
+
+               Make_Attribute_Reference (Loc,
+                 Prefix         => Make_Identifier (Loc, Name_uChain),
+                 Attribute_Name => Name_Unrestricted_Access),
+
+               --  Destination chain
+
+               New_Reference_To
+                 (Build_In_Place_Formal (Par_Func, BIP_Activation_Chain), Loc),
+
+               --  New master
+
+               New_Reference_To
+                 (Build_In_Place_Formal (Par_Func, BIP_Master), Loc)));
       end Move_Activation_Chain;
 
    --  Start of processing for Expand_N_Extended_Return_Statement
@@ -4708,6 +4699,7 @@ package body Exp_Ch6 is
             --  Recover the function body
 
             Func_Bod := Unit_Declaration_Node (Par_Func);
+
             if Nkind (Func_Bod) = N_Subprogram_Declaration then
                Func_Bod := Parent (Parent (Corresponding_Body (Func_Bod)));
             end if;

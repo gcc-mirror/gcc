@@ -1650,6 +1650,16 @@ package body Sem_Ch10 is
 
          if Present (Library_Unit (N)) then
             Set_Corresponding_Stub (Unit (Library_Unit (N)), N);
+
+            --  If the subunit has severe errors, the spec of the enclosing
+            --  body may not be available, in which case do not try analysis.
+
+            if Serious_Errors_Detected > 0
+              and then  No (Library_Unit (Library_Unit (N)))
+            then
+               return;
+            end if;
+
             Analyze_Subunit (Library_Unit (N));
 
          --  Otherwise we must load the subunit and link to it
@@ -1990,6 +2000,16 @@ package body Sem_Ch10 is
                      null;
 
                   else
+                     --  If a subunits has serious syntax errors, the context
+                     --  may not have been loaded. Add a harmless unit name to
+                     --  attempt processing.
+
+                     if Serious_Errors_Detected > 0
+                       and then  No (Entity (Name (Item)))
+                     then
+                        Set_Entity (Name (Item), Standard_Standard);
+                     end if;
+
                      Unit_Name := Entity (Name (Item));
                      while Is_Child_Unit (Unit_Name) loop
                         Set_Is_Visible_Child_Unit (Unit_Name);

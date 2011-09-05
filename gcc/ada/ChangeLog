@@ -1,3 +1,22 @@
+2011-09-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Move_Activation_Chain): Rewritten. The routine
+	no longer needs to search through the entities of the return
+	statement scope to find the _chain.
+	* sem_ch5.adb: Add with and use clauses for Exp_Ch6 and Sem_Ch6.
+	(Analyze_Block_Statement): Add local variable
+	Is_BIP_Return_Statement. Add machinery to install all entities
+	produced by the expansion of the return object declaration.
+	(Install_Return_Entities): New routine.
+	* sem_ch6.ads, sem_ch6.adb (Install_Entity): Moved from body to spec.
+
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_Context): Apply simple fixup if context
+	of subunit is incomplete.
+	(Analyze_Proper_Body): If parent spec is not available, do not
+	attempt analysis.
+
 2011-09-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_disp.adb (Find_Controlling_Arg): Add checks for
