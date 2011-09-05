@@ -1,3 +1,19 @@
+2011-09-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): If the expression
+	function comes from source, indicate that so does its rewriting,
+	so it is compatible with any subsequent expansion of the
+	subprogram body (e.g. when it is a protected operation).
+	* sem_ch4.adb: minor reformatting
+
+2011-09-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib.adb (Check_Same_Extended_Unit): Comment rewriting. Use
+	Get_Source_Unit rather than Get_Code_Unit as instantiation unfolding
+	may lead to wrong ancestor package in the case of instantiated subunit
+	bodies. If a subunit is instantiated, follow the chain of instantiations
+	rather than the stub structure.
+
 2011-09-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch4.adb, sem_ch6.adb: Minor reformatting.
