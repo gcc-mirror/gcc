@@ -469,7 +469,7 @@ package body Exp_Ch6 is
    begin
       --  No such extra parameters are needed if there are no tasks
 
-      if not Has_Task (Etype (Function_Id)) then
+      if not Has_Task (Available_View (Etype (Function_Id))) then
          return;
       end if;
 
@@ -477,6 +477,12 @@ package body Exp_Ch6 is
 
       if Restriction_Active (No_Task_Hierarchy) then
          Actual := New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc);
+
+      --  In the case where we use the master associated with an access type,
+      --  the actual is an entity and requires an explicit reference.
+
+      elsif Nkind (Actual) = N_Defining_Identifier then
+         Actual := New_Reference_To (Actual, Loc);
       end if;
 
       --  The master
@@ -493,8 +499,7 @@ package body Exp_Ch6 is
          --  Build the parameter association for the new actual and add it to
          --  the end of the function's actuals.
 
-         Add_Extra_Actual_To_Call
-           (Function_Call, Master_Formal, Actual);
+         Add_Extra_Actual_To_Call (Function_Call, Master_Formal, Actual);
       end;
 
       --  The activation chain
@@ -506,8 +511,8 @@ package body Exp_Ch6 is
       begin
          --  Locate implicit activation chain parameter in the called function
 
-         Activation_Chain_Formal := Build_In_Place_Formal
-           (Function_Id, BIP_Activation_Chain);
+         Activation_Chain_Formal :=
+           Build_In_Place_Formal (Function_Id, BIP_Activation_Chain);
 
          --  Create the actual which is a pointer to the current activation
          --  chain
@@ -6814,8 +6819,8 @@ package body Exp_Ch6 is
       --  Step past qualification or unchecked conversion (the latter can occur
       --  in cases of calls to 'Input).
 
-      if Nkind_In
-           (Exp_Node, N_Qualified_Expression, N_Unchecked_Type_Conversion)
+      if Nkind_In (Exp_Node, N_Qualified_Expression,
+                             N_Unchecked_Type_Conversion)
       then
          Exp_Node := Expression (N);
       end if;
@@ -6824,18 +6829,21 @@ package body Exp_Ch6 is
          return False;
 
       else
-         if Is_Entity_Name (Name (Exp_Node)) then
+         --  In Alfa mode, build-in-place calls are not expanded, so that we
+         --  may end up with a call that is neither resolved to an entity, nor
+         --  an indirect call.
+
+         if Alfa_Mode then
+            return False;
+
+         elsif Is_Entity_Name (Name (Exp_Node)) then
             Function_Id := Entity (Name (Exp_Node));
+
+         --  In the case of an explicitly dereferenced call, use the subprogram
+         --  type generated for the dereference.
 
          elsif Nkind (Name (Exp_Node)) = N_Explicit_Dereference then
             Function_Id := Etype (Name (Exp_Node));
-
-         --  In Alfa mode, protected subprogram calls are not expanded, so that
-         --  we may end up with a call that is neither resolved to an entity,
-         --  nor an indirect call.
-
-         elsif Alfa_Mode then
-            return False;
 
          else
             raise Program_Error;
@@ -7092,11 +7100,11 @@ package body Exp_Ch6 is
      (Allocator     : Node_Id;
       Function_Call : Node_Id)
    is
+      Acc_Type          : constant Entity_Id := Etype (Allocator);
       Loc               : Source_Ptr;
       Func_Call         : Node_Id := Function_Call;
       Function_Id       : Entity_Id;
       Result_Subt       : Entity_Id;
-      Acc_Type          : constant Entity_Id := Etype (Allocator);
       New_Allocator     : Node_Id;
       Return_Obj_Access : Entity_Id;
 
@@ -7135,7 +7143,7 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
 
-      Result_Subt := Etype (Function_Id);
+      Result_Subt := Available_View (Etype (Function_Id));
 
       --  Check whether return type includes tasks. This may not have been done
       --  previously, if the type was a limited view.
@@ -7236,17 +7244,8 @@ package body Exp_Ch6 is
          Add_Finalization_Master_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, Acc_Type);
 
-         --  If access type has a master entity, pass a reference to it
-
-         if Present (Master_Id (Acc_Type)) then
-            Add_Task_Actuals_To_Build_In_Place_Call
-              (Func_Call, Function_Id,
-               Master_Actual =>
-                 New_Occurrence_Of (Master_Id (Acc_Type), Loc));
-         else
-            Add_Task_Actuals_To_Build_In_Place_Call
-              (Func_Call, Function_Id, Empty);
-         end if;
+         Add_Task_Actuals_To_Build_In_Place_Call
+           (Func_Call, Function_Id, Master_Actual => Master_Id (Acc_Type));
 
          --  The caller does not provide the return object in this case, so we
          --  have to pass null for the object access actual.

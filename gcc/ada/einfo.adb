@@ -8686,9 +8686,12 @@ package body Einfo is
    procedure Write_Field28_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Procedure                                  |
+         when E_Entry                                      |
+              E_Entry_Family                               |
               E_Function                                   |
-              E_Entry                                      =>
+              E_Procedure                                  |
+              E_Subprogram_Body                            |
+              E_Subprogram_Type                            =>
             Write_Str ("Extra_Formals");
 
          when E_Record_Type =>

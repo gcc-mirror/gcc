@@ -6371,11 +6371,11 @@ package body Sem_Ch6 is
                     E, BIP_Formal_Suffix (BIP_Finalization_Master));
             end if;
 
-            --  If the result type contains tasks, we have two extra formals:
-            --  the master of the tasks to be created, and the caller's
-            --  activation chain.
+            --  When the result type contains tasks, add two extra formals: the
+            --  master of the tasks to be created, and the caller's activation
+            --  chain.
 
-            if Has_Task (Result_Subt) then
+            if Has_Task (Available_View (Result_Subt)) then
                Discard :=
                  Add_Extra_Formal
                    (E, RTE (RE_Master_Id),

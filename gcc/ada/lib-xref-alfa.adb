@@ -604,38 +604,36 @@ package body Alfa is
             Typ : Character) return Boolean
          is
          begin
-            --  The only references of interest on callable entities are calls.
-            --  On non-callable entities, the only references of interest are
-            --  reads and writes.
 
-            case Ekind (E) is
-               when Overloadable_Kind =>
-                  return Typ = 's';
+            if Ekind (E) in Overloadable_Kind then
 
-               --  References to IN parameters and constants are not
-               --  considered in Alfa section, as these will be translated
-               --  as constants in the intermediate language for formal
-               --  verification, and should therefore never appear in frame
-               --  conditions.
+               --  The only references of interest on callable entities are
+               --  calls.  On non-callable entities, the only references of
+               --  interest are reads and writes.
 
-               --  What about E_Loop_Parameter???
+               return Typ = 's';
 
-               when E_In_Parameter | E_Constant =>
+            elsif Is_Constant_Object (E) then
+
+               --  References to constant objects are not considered in Alfa
+               --  section, as these will be translated as constants in the
+               --  intermediate language for formal verification, and should
+               --  therefore never appear in frame conditions.
+
                   return False;
 
-               when others =>
+            elsif Present (Etype (E)) and then
+               Ekind (Etype (E)) in Concurrent_Kind then
 
-                  --  Objects of Task type or protected type are not Alfa
-                  --  references.
+               --  Objects of Task type or protected type are not Alfa
+               --  references.
 
-                  if Present (Etype (E))
-                    and then Ekind (Etype (E)) in Concurrent_Kind
-                  then
-                     return False;
-                  end if;
+               return False;
 
-                  return Typ = 'r' or else Typ = 'm';
-            end case;
+            else
+               return Typ = 'r' or else Typ = 'm';
+
+            end if;
          end Is_Alfa_Reference;
 
          -------------------

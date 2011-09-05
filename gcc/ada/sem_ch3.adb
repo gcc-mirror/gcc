@@ -15061,6 +15061,7 @@ package body Sem_Ch3 is
                Tag_Mismatch;
             end if;
          end if;
+
          if Present (Prev)
            and then Nkind (Parent (Prev)) = N_Incomplete_Type_Declaration
            and then Present (Premature_Use (Parent (Prev)))

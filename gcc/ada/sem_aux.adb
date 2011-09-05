@@ -597,7 +597,7 @@ package body Sem_Aux is
    -------------------------------
 
    function Is_Immutably_Limited_Type (Ent : Entity_Id) return Boolean is
-      Btype : constant Entity_Id := Base_Type (Ent);
+      Btype : constant Entity_Id := Available_View (Base_Type (Ent));
 
    begin
       if Is_Limited_Record (Btype) then
@@ -607,9 +607,8 @@ package body Sem_Aux is
         and then Nkind (Parent (Btype)) = N_Formal_Type_Declaration
       then
          return not In_Package_Body (Scope ((Btype)));
-      end if;
 
-      if Is_Private_Type (Btype) then
+      elsif Is_Private_Type (Btype) then
 
          --  AI05-0063: A type derived from a limited private formal type is
          --  not immutably limited in a generic body.
