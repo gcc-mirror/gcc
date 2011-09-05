@@ -286,7 +286,7 @@ package body System.Storage_Pools.Subpools is
          --    2) Certain cases of anonymous access types usage
 
          else
-            Set_Finalize_Address (Addr, Fin_Address);
+            Set_Heterogeneous_Finalize_Address (Addr, Fin_Address);
             Finalize_Address_Table_In_Use := True;
          end if;
 

@@ -391,7 +391,7 @@ package Einfo is
 --       that holds value of the Aft attribute for the type.
 
 --    Alias (Node18)
---       Present in overloaded entities (literals, subprograms, entries) and
+--       Present in overloadable entities (literals, subprograms, entries) and
 --       subprograms that cover a primitive operation of an abstract interface
 --       (that is, subprograms with the Interface_Alias attribute). In case of
 --       overloaded entities it points to the parent subprogram of a derived
