@@ -3026,9 +3026,10 @@ package body GNAT.Command_Line is
    ---------------
 
    procedure Set_Usage
-     (Config : in out Command_Line_Configuration;
-      Usage  : String := "[switches] [arguments]";
-      Help   : String := "")
+     (Config   : in out Command_Line_Configuration;
+      Usage    : String := "[switches] [arguments]";
+      Help     : String := "";
+      Help_Msg : String := "")
    is
    begin
       if Config = null then
@@ -3036,8 +3037,9 @@ package body GNAT.Command_Line is
       end if;
 
       Free (Config.Usage);
-      Config.Usage := new String'(Usage);
-      Config.Help  := new String'(Help);
+      Config.Usage    := new String'(Usage);
+      Config.Help     := new String'(Help);
+      Config.Help_Msg := new String'(Help_Msg);
    end Set_Usage;
 
    ------------------
@@ -3222,12 +3224,15 @@ package body GNAT.Command_Line is
                    & " [switches] [arguments]");
       end if;
 
-      Display_Section_Help ("");
-
-      if Config.Sections /= null and then Config.Switches /= null then
-         for S in Config.Sections'Range loop
-            Display_Section_Help (Config.Sections (S).all);
-         end loop;
+      if Config.Help_Msg /= null and then Config.Help_Msg.all /= "" then
+         Put_Line (Config.Help_Msg.all);
+      else
+         Display_Section_Help ("");
+         if Config.Sections /= null and then Config.Switches /= null then
+            for S in Config.Sections'Range loop
+               Display_Section_Help (Config.Sections (S).all);
+            end loop;
+         end if;
       end if;
    end Display_Help;
 
