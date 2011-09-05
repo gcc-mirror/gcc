@@ -3320,6 +3320,8 @@ package body Sem_Ch3 is
                --  In SPARK, a declaration of unconstrained type is allowed
                --  only for constants of type string.
 
+               --  Isn't following check the wrong way round???
+
                if Nkind (E) = N_String_Literal then
                   Check_SPARK_Restriction
                     ("declaration of object of unconstrained type not allowed",

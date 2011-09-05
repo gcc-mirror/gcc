@@ -682,15 +682,14 @@ package body Ch6 is
 
                      if Token_Is_At_Start_Of_Line then
                         declare
-
-                           --  The enclosing scope entry is a subprogram spec.
+                           --  The enclosing scope entry is a subprogram spec
 
                            Spec_Node : constant Node_Id :=
-                            Parent (Scope.Table (Scope.Last).Labl);
+                                         Parent
+                                           (Scope.Table (Scope.Last).Labl);
                            Lib_Node : Node_Id := Spec_Node;
 
                         begin
-
                            --  Check whether there is an enclosing scope that
                            --  is a package declaration.
 
@@ -706,7 +705,6 @@ package body Ch6 is
                                Nkind (Spec_Node) = N_Function_Specification
                            then
                               null;
-
                            else
                               return False;
                            end if;

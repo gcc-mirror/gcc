@@ -902,7 +902,7 @@ package body GNAT.Command_Line is
                  Parser.Section (Parser.Current_Argument);
             end if;
 
-            --  Until we have the start of another section
+            --  Exit from loop if we have the start of another section
 
             if Index = Parser.Section'Last
                or else Parser.Section (Index + 1) /= 0
