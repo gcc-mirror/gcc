@@ -118,6 +118,25 @@ init_recog (void)
 }
 
 
+/* Return true if labels in asm operands BODY are LABEL_REFs.  */
+
+static bool
+asm_labels_ok (rtx body)
+{
+  rtx asmop;
+  int i;
+
+  asmop = extract_asm_operands (body);
+  if (asmop == NULL_RTX)
+    return true;
+
+  for (i = 0; i < ASM_OPERANDS_LABEL_LENGTH (asmop); i++)
+    if (GET_CODE (ASM_OPERANDS_LABEL (asmop, i)) != LABEL_REF)
+      return false;
+
+  return true;
+}
+
 /* Check that X is an insn-body for an `asm' with operands
    and that the operands mentioned in it are legitimate.  */
 
@@ -128,6 +147,9 @@ check_asm_operands (rtx x)
   rtx *operands;
   const char **constraints;
   int i;
+
+  if (!asm_labels_ok (x))
+    return 0;
 
   /* Post-reload, be more strict with things.  */
   if (reload_completed)

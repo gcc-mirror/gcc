@@ -1,3 +1,8 @@
+2011-09-06  Tom de Vries  <tom@codesourcery.com>
+
+	* recog.c (asm_labels_ok): New function.
+	(check_asm_operands): Use asm_labels_ok.
+
 2011-09-05  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/49606
