@@ -1,3 +1,27 @@
+2011-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48317
+	* tree-ssa-sccvn.h (struct vn_nary_op_s): Make op a true
+	trailing array.
+	(sizeof_vn_nary_op): New inline function.
+	(vn_nary_op_lookup_pieces): Adjust.
+	(vn_nary_op_insert_pieces): Likewise.
+	* tree-ssa-sccvn.c (vn_nary_op_eq): Also compare the length.
+	(init_vn_nary_op_from_pieces): Adjust signature.  Deal with
+	any number of operands.
+	(vn_nary_length_from_stmt): New function.
+	(init_vn_nary_op_from_stmt): Adjust for CONSTRUCTOR handling.
+	(vn_nary_op_lookup_pieces): Adjust signature and allocate properly
+	sized temporary.
+	(vn_nary_op_lookup): Likewise.
+	(vn_nary_op_lookup_stmt): Likewise.
+	(vn_nary_op_insert_into): Likewise.
+	(vn_nary_op_insert_stmt): Likewise.
+	(visit_use): Handle CONSTRUCTOR as nary.
+	* tree-ssa-pre.c (phi_translate_1): Adjust.
+	(create_expression_by_pieces): Likewise.
+	(compute_avail): Likewise.
+
 2011-09-06  Ira Rosen  <ira.rosen@linaro.org>
 
 	 * config/arm/arm.c (arm_preferred_simd_mode): Check
