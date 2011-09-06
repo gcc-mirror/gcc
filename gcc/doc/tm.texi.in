@@ -6774,6 +6774,8 @@ in its second parameter.
 
 @hook TARGET_SCHED_EXPOSED_PIPELINE
 
+@hook TARGET_SCHED_REASSOCIATION_WIDTH
+
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})
 @c the above section title is WAY too long.  maybe cut the part between

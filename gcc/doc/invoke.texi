@@ -9076,6 +9076,11 @@ The smallest number of different values for which it is best to use a
 jump-table instead of a tree of conditional branches.  If the value is
 0, use the default for the machine.  The default is 0.
 
+@item tree-reassoc-width
+Set the maximum number of instructions executed in parallel in
+reassociated tree. This parameter overrides target dependent
+heuristics used by default if has non zero value.
+
 @end table
 @end table
 

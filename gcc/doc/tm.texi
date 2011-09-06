@@ -6840,6 +6840,11 @@ the order of instructions is important for correctness when scheduling, but
 also the latencies of operations.
 @end deftypevr
 
+@deftypefn {Target Hook} int TARGET_SCHED_REASSOCIATION_WIDTH (unsigned int @var{opc}, enum machine_mode @var{mode})
+This hook is called by tree reassociator to determine a level of
+parallelism required in output calculations chain.
+@end deftypefn
+
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})
 @c the above section title is WAY too long.  maybe cut the part between
