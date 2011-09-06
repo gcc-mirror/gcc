@@ -1,3 +1,14 @@
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-osinte-linux.ads, a-iteint.ads, exp_ch6.adb, s-solita.adb: Minor
+	reformatting.
+
+2011-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-linux-alpha.ads: Minor reformatting
+	* s-oscons-tmplt.c: Fix generated comments in s-oscons template.
+	Use sizeof instead of corresponding C defines in s-oscons template.
+
 2011-09-06  Vadim Godunko  <godunko@adacore.com>
 
 	* a-convec.ads, a-iteint.ads: Minor reformatting.

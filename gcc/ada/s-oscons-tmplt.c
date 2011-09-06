@@ -1358,7 +1358,7 @@ CND(WSAEDISCON,         "Disconnected")
 #if defined (__APPLE__) || defined (__linux__) || defined (DUMMY)
 /*
 
-   --  Sizes of pthread data types
+   --  Sizes of pthread data types (on Darwin these are padding)
 */
 
 #if defined (__APPLE__) || defined (DUMMY)
@@ -1372,34 +1372,34 @@ CND(WSAEDISCON,         "Disconnected")
 #define PTHREAD_RWLOCK_SIZE     __PTHREAD_RWLOCK_SIZE__
 #define PTHREAD_ONCE_SIZE       __PTHREAD_ONCE_SIZE__
 #else
-#define PTHREAD_SIZE           (sizeof (pthread_t))
-#define PTHREAD_ATTR_SIZE       __SIZEOF_PTHREAD_ATTR_T
-#define PTHREAD_MUTEXATTR_SIZE  __SIZEOF_PTHREAD_MUTEXATTR_T
-#define PTHREAD_MUTEX_SIZE      __SIZEOF_PTHREAD_MUTEX_T
-#define PTHREAD_CONDATTR_SIZE   __SIZEOF_PTHREAD_CONDATTR_T
-#define PTHREAD_COND_SIZE       __SIZEOF_PTHREAD_COND_T
-#define PTHREAD_RWLOCKATTR_SIZE __SIZEOF_PTHREAD_RWLOCKATTR_T
-#define PTHREAD_RWLOCK_SIZE     __SIZEOF_PTHREAD_RWLOCK_T
+#define PTHREAD_SIZE            (sizeof (pthread_t))
+#define PTHREAD_ATTR_SIZE       (sizeof (pthread_attr_t))
+#define PTHREAD_MUTEXATTR_SIZE  (sizeof (pthread_mutexattr_t))
+#define PTHREAD_MUTEX_SIZE      (sizeof (pthread_mutex_t))
+#define PTHREAD_CONDATTR_SIZE   (sizeof (pthread_condattr_t))
+#define PTHREAD_COND_SIZE       (sizeof (pthread_cond_t))
+#define PTHREAD_RWLOCKATTR_SIZE (sizeof (pthread_rwlockattr_t))
+#define PTHREAD_RWLOCK_SIZE     (sizeof (pthread_rwlock_t))
 #define PTHREAD_ONCE_SIZE       (sizeof (pthread_once_t))
 #endif
 
-CND(PTHREAD_SIZE, "Pad in pthread_t")
+CND(PTHREAD_SIZE, "pthread_t")
 
-CND(PTHREAD_ATTR_SIZE, "Pad in pthread_attr_t")
+CND(PTHREAD_ATTR_SIZE, "pthread_attr_t")
 
-CND(PTHREAD_MUTEXATTR_SIZE, "Pad in pthread_mutexattr_t")
+CND(PTHREAD_MUTEXATTR_SIZE, "pthread_mutexattr_t")
 
-CND(PTHREAD_MUTEX_SIZE, "Pad in pthread_mutex_t")
+CND(PTHREAD_MUTEX_SIZE, "pthread_mutex_t")
 
-CND(PTHREAD_CONDATTR_SIZE, "Pad in pthread_condattr_t")
+CND(PTHREAD_CONDATTR_SIZE, "pthread_condattr_t")
 
-CND(PTHREAD_COND_SIZE, "Pad in pthread_cond_t")
+CND(PTHREAD_COND_SIZE, "pthread_cond_t")
 
-CND(PTHREAD_RWLOCKATTR_SIZE, "Pad in pthread_rwlockattr_t")
+CND(PTHREAD_RWLOCKATTR_SIZE, "pthread_rwlockattr_t")
 
-CND(PTHREAD_RWLOCK_SIZE, "Pad in pthread_rwlock_t")
+CND(PTHREAD_RWLOCK_SIZE, "pthread_rwlock_t")
 
-CND(PTHREAD_ONCE_SIZE, "Pad in pthread_once_t")
+CND(PTHREAD_ONCE_SIZE, "pthread_once_t")
 
 #endif
 

@@ -559,7 +559,7 @@ private
    pragma Convention (C, timespec);
 
    type unsigned_long_long_t is mod 2 ** 64;
-   --  Local type only used to get it's 'Alignment below
+   --  Local type only used to get the alignment of this type below
 
    type pthread_attr_t is
      array (1 .. OS_Constants.PTHREAD_ATTR_SIZE) of unsigned_char;
