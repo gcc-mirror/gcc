@@ -4187,27 +4187,32 @@ find_func_aliases_for_builtin_call (gimple t)
 	 mode as well.  */
       case BUILT_IN_VA_START:
 	{
+	  tree valist = gimple_call_arg (t, 0);
+	  struct constraint_expr rhs, *lhsp;
+	  unsigned i;
+	  get_constraint_for (valist, &lhsc);
+	  do_deref (&lhsc);
+	  /* The va_list gets access to pointers in variadic
+	     arguments.  Which we know in the case of IPA analysis
+	     and otherwise are just all nonlocal variables.  */
 	  if (in_ipa_mode)
 	    {
-	      tree valist = gimple_call_arg (t, 0);
-	      struct constraint_expr rhs, *lhsp;
-	      unsigned i;
-	      /* The va_list gets access to pointers in variadic
-		 arguments.  */
 	      fi = lookup_vi_for_tree (cfun->decl);
-	      gcc_assert (fi != NULL);
-	      get_constraint_for (valist, &lhsc);
-	      do_deref (&lhsc);
 	      rhs = get_function_part_constraint (fi, ~0);
 	      rhs.type = ADDRESSOF;
-	      FOR_EACH_VEC_ELT (ce_s, lhsc, i, lhsp)
-		  process_constraint (new_constraint (*lhsp, rhs));
-	      VEC_free (ce_s, heap, lhsc);
-	      /* va_list is clobbered.  */
-	      make_constraint_to (get_call_clobber_vi (t)->id, valist);
-	      return true;
 	    }
-	  break;
+	  else
+	    {
+	      rhs.var = nonlocal_id;
+	      rhs.type = ADDRESSOF;
+	      rhs.offset = 0;
+	    }
+	  FOR_EACH_VEC_ELT (ce_s, lhsc, i, lhsp)
+	    process_constraint (new_constraint (*lhsp, rhs));
+	  VEC_free (ce_s, heap, lhsc);
+	  /* va_list is clobbered.  */
+	  make_constraint_to (get_call_clobber_vi (t)->id, valist);
+	  return true;
 	}
       /* va_end doesn't have any effect that matters.  */
       case BUILT_IN_VA_END:

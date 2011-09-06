@@ -836,6 +836,7 @@ propagate_necessity (struct edge_list *el)
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_MALLOC
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_CALLOC
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_FREE
+		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_VA_END
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_SAVE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE
