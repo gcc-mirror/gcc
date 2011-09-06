@@ -4031,12 +4031,20 @@ package body Exp_Ch6 is
 
             Insert_After (Parent (Entity (N)), Blk);
 
+         --  If the context is an assignment, and the left-hand side is
+         --  free of side-effects, the replacement is also safe.
+         --  Can this be generalized further???
+
          elsif Nkind (Parent (N)) = N_Assignment_Statement
            and then
             (Is_Entity_Name (Name (Parent (N)))
                or else
                   (Nkind (Name (Parent (N))) = N_Explicit_Dereference
-                    and then Is_Entity_Name (Prefix (Name (Parent (N))))))
+                   and then Is_Entity_Name (Prefix (Name (Parent (N)))))
+
+               or else
+               (Nkind (Name (Parent (N))) = N_Selected_Component
+                   and then Is_Entity_Name (Prefix (Name (Parent (N))))))
          then
             --  Replace assignment with the block
 
@@ -4201,14 +4209,19 @@ package body Exp_Ch6 is
          Set_Declarations (Blk, New_List);
       end if;
 
-      --  For the unconstrained case, capture the name of the local
-      --  variable that holds the result. This must be the first declaration
+      --  For the unconstrained case, capture the name of the local variable
+      --  that holds the result. This must be the first declaration
       --  in the block, because its bounds cannot depend on local variables.
       --  Otherwise there is no way to declare the result outside of the
       --  block. Needless to say, in general the bounds will depend on the
       --  actuals in the call.
+      --  If the context is an assignment statement, as is the case for the
+      --  expansion of an extended return, the left-hand side provides bounds
+      --  even if the return type is unconstrained.
 
-      if Is_Unc then
+      if Is_Unc
+        and then Nkind (Parent (N)) /= N_Assignment_Statement
+      then
          Targ1 := Defining_Identifier (First (Declarations (Blk)));
       end if;
 
@@ -4372,6 +4385,12 @@ package body Exp_Ch6 is
          then
             Targ := Name (Parent (N));
 
+         elsif Nkind (Parent (N)) = N_Assignment_Statement
+           and then Nkind (Name (Parent (N))) = N_Selected_Component
+           and then Is_Entity_Name (Prefix (Name (Parent (N))))
+         then
+            Targ := New_Copy_Tree (Name (Parent (N)));
+
          elsif Nkind (Parent (N)) = N_Object_Declaration
            and then Is_Limited_Type (Etype (Subp))
          then
@@ -4388,7 +4407,9 @@ package body Exp_Ch6 is
             --  eventually be possible to remove that temporary and use the
             --  result variable directly.
 
-            if Is_Unc then
+            if Is_Unc
+              and then Nkind (Parent (N)) /= N_Assignment_Statement
+            then
                Decl :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Temp,

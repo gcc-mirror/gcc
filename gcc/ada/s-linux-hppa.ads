@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 2008-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,27 +102,5 @@ package System.Linux is
 
    SA_SIGINFO : constant := 16#10#;
    SA_ONSTACK : constant := 16#01#;
-
-   type lock_array is array (1 .. 4) of Integer;
-   type atomic_lock_t is record
-      lock : lock_array;
-   end record;
-   pragma Convention (C, atomic_lock_t);
-   for atomic_lock_t'Alignment use 16;
-
-   type struct_pthread_fast_lock is record
-      spinlock : atomic_lock_t;
-      status   : Long_Integer;
-   end record;
-   pragma Convention (C, struct_pthread_fast_lock);
-
-   type pthread_mutex_t is record
-      m_reserved : Integer;
-      m_count    : Integer;
-      m_owner    : System.Address;
-      m_kind     : Integer;
-      m_lock     : struct_pthread_fast_lock;
-   end record;
-   pragma Convention (C, pthread_mutex_t);
 
 end System.Linux;

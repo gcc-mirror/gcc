@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -153,6 +153,10 @@ package body System.Soft_Links.Tasking is
       --  We can only be here because we are terminating the environment task.
       --  Task termination for the rest of the tasks is handled in the
       --  Task_Wrapper.
+      --  We do not want to enable this check and e.g. call System.OS_Lib.Abort
+      --  here because some restricted run-times may not have system.os_lib
+      --  (e.g. JVM), and calling abort may do more harm than good to the
+      --  main application.
 
       pragma Assert (Self_Id = STPO.Environment_Task);
 
@@ -212,7 +216,7 @@ package body System.Soft_Links.Tasking is
          SSL.Task_Termination_Handler := Task_Termination_Handler_T'Access;
 
          --  No need to create a new Secondary Stack, since we will use the
-         --  default one created in s-secsta.adb
+         --  default one created in s-secsta.adb.
 
          SSL.Set_Sec_Stack_Addr     (SSL.Get_Sec_Stack_Addr_NT);
          SSL.Set_Jmpbuf_Address     (SSL.Get_Jmpbuf_Address_NT);

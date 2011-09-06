@@ -2131,7 +2131,19 @@ meant to solve a few specific use cases that cannot be solved directly
 using standard projects. This section will go over a few of these use
 cases to try and explain what you can use aggregate projects for.
 
+@menu
+* Building all main units from a single project tree::
+* Building a set of projects with a single command::
+* Define a build environment::
+* Performance improvements in builder::
+* Syntax of aggregate projects::
+* package Builder in aggregate projects::
+@end menu
+
+@c -----------------------------------------------------------
+@node Building all main units from a single project tree
 @subsection Building all main units from a single project tree
+@c -----------------------------------------------------------
 
 Most often, an application is organized into modules and submodules,
 which are very conveniently represented as a project tree or graph
@@ -2184,7 +2196,10 @@ aggregate project, you will need to add "p.gpr" in the list of project
 files for the aggregate project, or the main unit will not be built when
 building the aggregate project.
 
+@c ---------------------------------------------------------
+@node Building a set of projects with a single command
 @subsection Building a set of projects with a single command
+@c ---------------------------------------------------------
 
 One other case is when you have multiple applications and libraries
 that are build independently from each other (but they can be build in
@@ -2223,7 +2238,10 @@ with Annex E.
    Aggregate projects can be used to build multiple partitions
 @end smallexample
 
+@c ---------------------------------------------
+@node Define a build environment
 @subsection Define a build environment
+@c ---------------------------------------------
 
 The environment variables at the time you launch gprbuild or gprbuild
 will influence the view these tools have of the project (PATH to find
@@ -2278,7 +2296,10 @@ project MyProject is
 end MyProject;
 @end smallexample
 
+@c --------------------------------------------
+@node Performance improvements in builder
 @subsection Performance improvements in builder
+@c --------------------------------------------
 
 The loading of aggregate projects is optimized in gprbuild and
 gnatmake, so that all files are searched for only once on the disk
@@ -2294,7 +2315,10 @@ can be compiled in parallel (through the usual -j switch) and this can
 be done while maximizing the use of CPUs (compared to launching
 multiple gprbuild and gnatmake commands in parallel).
 
+@c -------------------------------------
+@node Syntax of aggregate projects
 @subsection Syntax of aggregate projects
+@c -------------------------------------
 
 An aggregate project follows the general syntax of project files. The
 recommended extension is still @file{.gpr}. However, a special
@@ -2492,7 +2516,10 @@ P, which in particular might impact the list of source files in P.
 
 @end table
 
+@c ----------------------------------------------
+@node package Builder in aggregate projects
 @subsection package Builder in aggregate projects
+@c ----------------------------------------------
 
 As we mentioned before, only the package Builder can be specified in
 an aggregate project. In this package, only the following attributes
@@ -2628,7 +2655,15 @@ project files (so possibly built with different compiler options) and
 yet create a single library (static or relocatable) out of the
 corresponding object files.
 
+@menu
+* Building aggregate library projects::
+* Syntax of aggregate library projects::
+@end menu
+
+@c ---------------------------------------------
+@node Building aggregate library projects
 @subsection Building aggregate library projects
+@c ---------------------------------------------
 
 For example, we can define an aggregate project Agg that groups A, B
 and C:
@@ -2674,7 +2709,10 @@ With the above aggregate library Builder package, the @code{-fPIC}
 option will be passed to the compiler when building any source code
 from projects @file{a.gpr}, @file{b.gpr} and @file{c.gpr}.
 
+@c ---------------------------------------------
+@node Syntax of aggregate library projects
 @subsection Syntax of aggregate library projects
+@c ---------------------------------------------
 
 An aggregate library project follows the general syntax of project
 files. The recommended extension is still @file{.gpr}. However, a special
