@@ -7023,99 +7023,6 @@ package body Exp_Ch7 is
       Desg_Typ : Entity_Id;
       Obj_Expr : Node_Id;
 
-      function Double_Size_Of (Typ : Entity_Id) return Node_Id;
-      --  Subsidiary routine, produces an expression which calculates double
-      --  the size of Typ as the nearest multiple of its alignment rounded up.
-
-      function Nearest_Multiple_Rounded_Up
-        (Size_Expr : Node_Id;
-         Typ       : Entity_Id) return Node_Id;
-      --  Subsidiary routine, generate the following expression:
-      --    ((Size_Expr + Typ'Alignment - 1) / Typ'Alignment) * Typ'Alignment
-
-      function Size_Of (Typ : Entity_Id) return Node_Id;
-      --  Subsidiary routine, produces an expression which calculates the size
-      --  of Typ as the nearest multiple of its alignment rounded up.
-
-      --------------------
-      -- Double_Size_Of --
-      --------------------
-
-      function Double_Size_Of (Typ : Entity_Id) return Node_Id is
-      begin
-         return
-           Make_Op_Multiply (Loc,
-             Left_Opnd  => Make_Integer_Literal (Loc, 2),
-             Right_Opnd => Size_Of (Typ));
-      end Double_Size_Of;
-
-      ---------------------------------
-      -- Nearest_Multiple_Rounded_Up --
-      ---------------------------------
-
-      function Nearest_Multiple_Rounded_Up
-        (Size_Expr : Node_Id;
-         Typ       : Entity_Id) return Node_Id
-      is
-         function Alignment_Of (Typ : Entity_Id) return Node_Id;
-         --  Subsidiary routine, generate the following attribute reference:
-         --    Typ'Alignment
-
-         ------------------
-         -- Alignment_Of --
-         ------------------
-
-         function Alignment_Of (Typ : Entity_Id) return Node_Id is
-         begin
-            return
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Reference_To (Typ, Loc),
-                Attribute_Name => Name_Alignment);
-         end Alignment_Of;
-
-      --  Start of processing for Nearest_Multiple_Rounded_Up
-
-      begin
-         --  Generate:
-         --    ((Size_Expr + Typ'Alignment - 1) / Typ'Alignment) *
-         --                                           Typ'Alignment
-
-         return
-           Make_Op_Multiply (Loc,
-             Left_Opnd  =>
-               Make_Op_Divide (Loc,
-                 Left_Opnd  =>
-                   Make_Op_Add (Loc,
-                     Left_Opnd  => Size_Expr,
-                     Right_Opnd =>
-                       Make_Op_Subtract (Loc,
-                         Left_Opnd  => Alignment_Of (Typ),
-                         Right_Opnd => Make_Integer_Literal (Loc, 1))),
-                 Right_Opnd => Alignment_Of (Typ)),
-             Right_Opnd => Alignment_Of (Typ));
-      end Nearest_Multiple_Rounded_Up;
-
-      -------------
-      -- Size_Of --
-      -------------
-
-      function Size_Of (Typ : Entity_Id) return Node_Id is
-      begin
-         return
-           Nearest_Multiple_Rounded_Up
-             (Size_Expr =>
-                Make_Op_Divide (Loc,
-                  Left_Opnd  =>
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => New_Reference_To (Typ, Loc),
-                      Attribute_Name => Name_Size),
-                  Right_Opnd =>
-                    Make_Integer_Literal (Loc, System_Storage_Unit)),
-              Typ => Typ);
-      end Size_Of;
-
-   --  Start of processing for Make_Finalize_Address_Stmts
-
    begin
       if Is_Array_Type (Typ) then
          if Is_Constrained (First_Subtype (Typ)) then
@@ -7190,11 +7097,7 @@ package body Exp_Ch7 is
         and then not Is_Constrained (First_Subtype (Typ))
       then
          declare
-            Dope_Expr : Node_Id;
-            Dope_Id   : Entity_Id;
-            For_First : Boolean := True;
-            Index     : Node_Id;
-            Index_Typ : Entity_Id;
+            Dope_Id : Entity_Id;
 
          begin
             --  Ensure that Ptr_Typ a thin pointer, generate:
@@ -7207,40 +7110,9 @@ package body Exp_Ch7 is
                 Expression =>
                   Make_Integer_Literal (Loc, System_Address_Size)));
 
-            --  For unconstrained arrays, create the expression which computes
-            --  the size of the dope vector.
-
-            Index := First_Index (Typ);
-            while Present (Index) loop
-               Index_Typ := Etype (Index);
-
-               --  Each bound has two values and a potential hole added to
-               --  compensate for alignment differences.
-
-               if For_First then
-                  For_First := False;
-                  Dope_Expr := Double_Size_Of (Index_Typ);
-
-               else
-                  Dope_Expr :=
-                    Make_Op_Add (Loc,
-                      Left_Opnd  => Dope_Expr,
-                      Right_Opnd => Double_Size_Of (Index_Typ));
-               end if;
-
-               Next_Index (Index);
-            end loop;
-
-            --  Dope_Expr calculates the size of the dope, acounting for
-            --  individual alignment holes on the index type level. Since the
-            --  alignment of the component type dictates the underlying layout
-            --  of the array, round the size of the dope to the next higher
-            --  multiple of the component alignment.
-
-            Dope_Expr := Nearest_Multiple_Rounded_Up (Dope_Expr, Typ);
-
             --  Generate:
-            --    Dnn : Storage_Offset := Dope_Expr;
+            --    Dnn : constant Storage_Offset :=
+            --            Desg_Typ'Descriptor_Size / Storage_Unit;
 
             Dope_Id := Make_Temporary (Loc, 'D');
 
@@ -7250,7 +7122,14 @@ package body Exp_Ch7 is
                 Constant_Present    => True,
                 Object_Definition   =>
                   New_Reference_To (RTE (RE_Storage_Offset), Loc),
-                Expression          => Dope_Expr));
+                Expression          =>
+                  Make_Op_Divide (Loc,
+                    Left_Opnd  =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => New_Reference_To (Desg_Typ, Loc),
+                        Attribute_Name => Name_Descriptor_Size),
+                    Right_Opnd =>
+                      Make_Integer_Literal (Loc, System_Storage_Unit))));
 
             --  Shift the address from the start of the dope vector to the
             --  start of the elements:

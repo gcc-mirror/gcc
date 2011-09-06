@@ -1799,6 +1799,15 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Typ);
       end Count;
 
+      ---------------------
+      -- Descriptor_Size --
+      ---------------------
+
+      --  This attribute is handled entirely by the back end
+
+      when Attribute_Descriptor_Size =>
+         Apply_Universal_Integer_Attribute_Checks (N);
+
       ---------------
       -- Elab_Body --
       ---------------

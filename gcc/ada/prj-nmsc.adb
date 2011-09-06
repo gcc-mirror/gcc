@@ -6718,11 +6718,11 @@ package body Prj.Nmsc is
 
                if not Header_File then
                   Compute_Unit_Name
-                    (File_Name       => File_Name,
-                     Naming          => Config.Naming_Data,
-                     Kind            => Kind,
-                     Unit            => Unit,
-                     Project         => Project);
+                    (File_Name => File_Name,
+                     Naming    => Config.Naming_Data,
+                     Kind      => Kind,
+                     Unit      => Unit,
+                     Project   => Project);
 
                   if Unit /= No_Name then
                      Language    := Tmp_Lang;
