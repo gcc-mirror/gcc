@@ -11,7 +11,7 @@
  
 /* { dg-do run { xfail { ! *-*-darwin* } } } */
 /* { dg-options "-O2 -mmmx" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 
 #include "mmx-check.h"
 

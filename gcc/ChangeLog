@@ -1,3 +1,8 @@
+2011-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_function_value_regno_p): Use AX_REG.
+	(function_value_32): Do not check TARGET_MMX, TARGET_SSE or TARGET_AVX.
+
 2011-09-06  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin10.h Remove duplicate LIB_SPEC.
@@ -473,10 +478,8 @@
 
 2011-09-02  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-ccp.c (fold_builtin_alloca_for_var): Do not
-	fold alloca (0).
-	(ccp_fold_stmt): Continue replacing args when folding
-	alloca fails.
+	* tree-ssa-ccp.c (fold_builtin_alloca_for_var): Do not fold alloca (0).
+	(ccp_fold_stmt): Continue replacing args when folding alloca fails.
 
 2011-08-31  Richard Guenther  <rguenther@suse.de>
 
@@ -495,8 +498,7 @@
 	(collect_object_sizes_for): Likewise.
 	* tree-scalar-evolution.c (interpret_expr): Don't handle
 	ternary RHSs.
-	* tree-ssa-forwprop.c (forward_propagate_into_cond): Fix and
-	simplify.
+	* tree-ssa-forwprop.c (forward_propagate_into_cond): Fix and simplify.
 	(ssa_forward_propagate_and_combine): Adjust.
 	* tree-ssa-loop-im.c (move_computations_stmt): Build the COND_EXPR
 	as ternary.
@@ -643,8 +645,8 @@
 	* gthr-posix.h (__gthread_active_p): Do not use preprocessor
 	conditionals and comments inside macro arguments.
 
-20011-08-29  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
-	     Richard Guenther  <rguenther@suse.de>
+2011-08-29  Artjoms Sinkarovs  <artyom.shinkaroff@gmail.com>
+	    Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (constant_boolean_node): Adjust prototype.
 	* fold-const.c (fold_convert_loc): Move aggregate conversion
