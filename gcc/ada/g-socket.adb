@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2010, AdaCore                     --
+--                     Copyright (C) 2001-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -194,6 +194,11 @@ package body GNAT.Sockets is
 
    procedure Narrow (Item : in out Socket_Set_Type);
    --  Update Last as it may be greater than the real last socket
+
+   procedure Check_For_Fd_Set (Fd : Socket_Type);
+   pragma Inline (Check_For_Fd_Set);
+   --  Raise Constraint_Error if Fd is less than 0 or greater than or equal to
+   --  FD_SETSIZE.
 
    --  Types needed for Datagram_Socket_Stream_Type
 
@@ -568,6 +573,18 @@ package body GNAT.Sockets is
       Narrow (E_Socket_Set);
    end Check_Selector;
 
+   ----------------------
+   -- Check_For_Fd_Set --
+   ----------------------
+
+   procedure Check_For_Fd_Set (Fd : Socket_Type) is
+   begin
+      if Fd < 0 or else Fd >= SOSC.FD_SETSIZE then
+         raise Constraint_Error with "invalid value for socket set: "
+                                       & Image (Fd);
+      end if;
+   end Check_For_Fd_Set;
+
    -----------
    -- Clear --
    -----------
@@ -578,6 +595,7 @@ package body GNAT.Sockets is
    is
       Last : aliased C.int := C.int (Item.Last);
    begin
+      Check_For_Fd_Set (Socket);
       if Item.Last /= No_Socket then
          Remove_Socket_From_Set (Item.Set'Access, C.int (Socket));
          Last_Socket_In_Set (Item.Set'Access, Last'Unchecked_Access);
@@ -1454,6 +1472,7 @@ package body GNAT.Sockets is
       Socket : Socket_Type) return Boolean
    is
    begin
+      Check_For_Fd_Set (Socket);
       return Item.Last /= No_Socket
         and then Socket <= Item.Last
         and then Is_Socket_In_Set (Item.Set'Access, C.int (Socket)) /= 0;
@@ -2100,6 +2119,7 @@ package body GNAT.Sockets is
 
    procedure Set (Item : in out Socket_Set_Type; Socket : Socket_Type) is
    begin
+      Check_For_Fd_Set (Socket);
       if Item.Last = No_Socket then
 
          --  Uninitialized socket set, make sure it is properly zeroed out

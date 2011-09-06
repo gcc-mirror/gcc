@@ -1260,6 +1260,7 @@ CND(SIZEOF_sockaddr_in6, "struct sockaddr_in6")
 
 #define SIZEOF_fd_set (sizeof (fd_set))
 CND(SIZEOF_fd_set, "fd_set");
+CND(FD_SETSIZE, "Max fd value");
 
 #define SIZEOF_struct_hostent (sizeof (struct hostent))
 CND(SIZEOF_struct_hostent, "struct hostent");
