@@ -12,5 +12,5 @@ typedef vector__ bool__ int bool_simd_type;
 
 void Foo (bool_simd_type const &a)
 {
-  simd_type const &v = a; // { dg-error "'const simd_type&' from expression of type 'const bool_simd_type'" }
+  simd_type const &v = a; // { dg-error "invalid initialization of reference of type" }
 }
