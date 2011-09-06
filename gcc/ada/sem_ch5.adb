@@ -2430,6 +2430,21 @@ package body Sem_Ch5 is
               Entity (Find_Aspect (Typ, Aspect_Iterator_Element)));
 
          else
+            --  For an iteration of the form IN, the name must denote an
+            --  iterator, typically the result of a call to Iterate. Give a
+            --  useful error message when the name is a container by itself.
+
+            if Is_Entity_Name (Original_Node (Name (N)))
+              and then not Is_Iterator (Typ)
+            then
+               Error_Msg_N
+                 ("name must be an iterator, not a container", Name (N));
+
+               Error_Msg_NE
+                 ("\to iterate directly over a container, write `of &`",
+                    Name (N), Original_Node (Name (N)));
+            end if;
+
             --  The result type of Iterate function is the classwide type of
             --  the interface parent. We need the specific Cursor type defined
             --  in the container package.

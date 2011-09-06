@@ -1563,7 +1563,21 @@ package body Exp_Ch3 is
                    Discriminant_Constraint (Full_Type));
             end;
 
-            if In_Init_Proc then
+            --  If the target has access discriminants, and is constrained by
+            --  an access to the enclosing construct, i.e. a current instance,
+            --  replace the reference to the type by a reference to the object.
+
+            if Nkind (Arg) = N_Attribute_Reference
+              and then Is_Access_Type (Etype (Arg))
+              and then Is_Entity_Name (Prefix (Arg))
+              and then Is_Type (Entity (Prefix (Arg)))
+            then
+               Arg :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Copy (Prefix (Id_Ref)),
+                   Attribute_Name => Name_Unrestricted_Access);
+
+            elsif In_Init_Proc then
 
                --  Replace any possible references to the discriminant in the
                --  call to the record initialization procedure with references
@@ -1573,19 +1587,6 @@ package body Exp_Ch3 is
                   and then Ekind (Entity (Arg)) = E_Discriminant
                then
                   Arg := New_Reference_To (Discriminal (Entity (Arg)), Loc);
-
-               --  Case of access discriminants. We replace the reference
-               --  to the type by a reference to the actual object
-
-               elsif Nkind (Arg) = N_Attribute_Reference
-                 and then Is_Access_Type (Etype (Arg))
-                 and then Is_Entity_Name (Prefix (Arg))
-                 and then Is_Type (Entity (Prefix (Arg)))
-               then
-                  Arg :=
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => New_Copy (Prefix (Id_Ref)),
-                      Attribute_Name => Name_Unrestricted_Access);
 
                --  Otherwise make a copy of the default expression. Note that
                --  we use the current Sloc for this, because we do not want the

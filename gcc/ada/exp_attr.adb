@@ -1814,11 +1814,12 @@ package body Exp_Attr is
             Apply_Universal_Integer_Attribute_Checks (N);
 
          --  For any other type, the descriptor size is 0 because there is no
-         --  actual descriptor.
+         --  actual descriptor, but the result is not formally static.
 
          else
             Rewrite (N, Make_Integer_Literal (Loc, 0));
             Analyze (N);
+            Set_Is_Static_Expression (N, False);
          end if;
 
       ---------------
