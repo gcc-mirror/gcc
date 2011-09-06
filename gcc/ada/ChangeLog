@@ -1,3 +1,22 @@
+2011-09-06  Jerome Guitton  <guitton@adacore.com>
+
+	* sysdep.c (__gnat_get_task_options): Disable VX_SPE_TASK
+	on vThreads.
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-solita.adb: Minor reformatting.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): The body that
+	is a rewriting of an expression function does not freeze previous
+	entities.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.adb (Is_Known_Unit): Fix bad handling of Ada 2012 case
+
 2011-09-06  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/Makefile.in: Handle e500v2-wrs-vxworksae like

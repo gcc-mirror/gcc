@@ -761,6 +761,12 @@ package body Impunit is
          end if;
       end loop;
 
+      for J in Non_Imp_File_Names_12'Range loop
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_12 (J) then
+            return True;
+         end if;
+      end loop;
+
       --  If not found, not known
 
       return False;

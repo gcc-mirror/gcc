@@ -150,12 +150,11 @@ package body System.Soft_Links.Tasking is
       EO      : Ada.Exceptions.Exception_Occurrence;
 
    begin
-      --  We can only be here because we are terminating the environment
-      --  task. Task termination for the rest of the tasks is handled in
-      --  the Task_Wrapper.
+      --  We can only be here because we are terminating the environment task.
+      --  Task termination for all other tasks is handled in the Task_Wrapper.
 
       --  We do not want to enable this check and e.g. call System.OS_Lib.Abort
-      --  here because some restricted run-times may not have system.os_lib
+      --  here because some restricted run-times may not have System.OS_Lib
       --  (e.g. JVM), and calling abort may do more harm than good to the
       --  main application.
 
@@ -216,7 +215,7 @@ package body System.Soft_Links.Tasking is
          SSL.Timed_Delay              := Timed_Delay_T'Access;
          SSL.Task_Termination_Handler := Task_Termination_Handler_T'Access;
 
-         --  No need to create a new Secondary Stack, since we will use the
+         --  No need to create a new secondary stack, since we will use the
          --  default one created in s-secsta.adb.
 
          SSL.Set_Sec_Stack_Addr     (SSL.Get_Sec_Stack_Addr_NT);
