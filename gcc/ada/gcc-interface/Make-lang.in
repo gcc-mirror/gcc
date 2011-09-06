@@ -545,6 +545,39 @@ gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target
 gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) ggc-none.o libcommon-target.a $(LIBDEPS)
 	+$(GCC_LINK) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) ggc-none.o libcommon-target.a $(LIBS) $(SYSLIBS) $(CFLAGS)
 
+# use target-gcc target-gnatmake target-gnatbind target-gnatlink
+gnattools: $(GCC_PARTS) $(CONFIG_H) prefix.o force
+	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
+	  ADA_INCLUDES="-I- -I../rts"\
+	  CC="../../xgcc -B../../" GNATBIND="../../gnatbind"  gnattools1
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
+
+regnattools:
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
+
+cross-gnattools: force
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools4
+
+canadian-gnattools: force
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
+
+gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: ada/s-oscons.ads force
+	$(MAKE) -C ada $(FLAGS_TO_PASS)  \
+	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
+	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
+	   THREAD_KIND="$(THREAD_KIND)" \
+	   TRACE="$(TRACE)" \
+	   FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
+	   $@
+
+# use only for native compiler
+gnatlib_and_tools: gnatlib gnattools
+
 # use cross-gcc
 gnat-cross: force
 	make $(GNAT1_ADA_OBJS) CC="gcc -B../stage1/" CFLAGS="-S -gnatp" \

@@ -1,3 +1,12 @@
+2011-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in
+	(gnattools, regnattools, cross-gnattools, canadian-gnattools,
+	gnatlib, gnatlib-sjlj, gnatlib-zcx, gnatlib-shared, gnatlib_and_tools):
+	New targets.
+	(TOOLS_FLAGS_TO_PASS): New.
+	(../stamp-tools): Reintroduce, to avoid merge conflicts.
+
 2011-09-06  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch10.adb, impunit.ads, impunit.adb (Not_Impl_Defined_Unit): New

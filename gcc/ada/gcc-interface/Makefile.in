@@ -2315,7 +2315,31 @@ ADA_INCLUDE_SRCS =\
 
 LIBGNAT=../$(RTSDIR)/libgnat.a
 
+TOOLS_FLAGS_TO_PASS=		\
+	"CC=$(CC)" 		\
+	"CFLAGS=$(CFLAGS)"	\
+	"LDFLAGS=$(LDFLAGS)"	\
+	"ADAFLAGS=$(ADAFLAGS)"	\
+	"INCLUDES=$(INCLUDES_FOR_SUBDIR)"\
+	"ADA_INCLUDES=$(ADA_INCLUDES) $(ADA_INCLUDES_FOR_SUBDIR)"\
+	"libsubdir=$(libsubdir)"	\
+	"exeext=$(exeext)"	\
+	"fsrcdir=$(fsrcdir)"	\
+	"srcdir=$(fsrcdir)"	\
+	"TOOLS_LIBS=$(TOOLS_LIBS) $(TGT_LIB)"	\
+	"GNATMAKE=$(GNATMAKE)"	\
+	"GNATLINK=$(GNATLINK)"	\
+	"GNATBIND=$(GNATBIND)"
+
 GCC_LINK=$(CC) $(GCC_LINK_FLAGS) $(ADA_INCLUDES)
+
+# Build directory for the tools. Let's copy the target-dependent
+# sources using the same mechanism as for gnatlib. The other sources are
+# accessed using the vpath directive below
+# Note: dummy target, stamp-tools is mainly handled by gnattools.
+
+../stamp-tools:
+	touch ../stamp-tools
 
 # when compiling the tools, the runtime has to be first on the path so that
 # it hides the runtime files lying with the rest of the sources
@@ -2335,7 +2359,38 @@ ifeq ($(TOOLSCASE),cross)
   vpath %.h   ../
 endif
 
-common-tools:
+# gnatmake/link tools cannot always be built with gnatmake/link for bootstrap
+# reasons: gnatmake should be built with a recent compiler, a recent compiler
+# may not generate ALI files compatible with an old gnatmake so it is important
+# to be able to build gnatmake without a version of gnatmake around. Once
+# everything has been compiled once, gnatmake can be recompiled with itself
+# (see target gnattools1-re)
+gnattools1: ../stamp-tools ../stamp-gnatlib-$(RTSDIR)
+	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
+	  TOOLSCASE=native \
+	  ../../gnatmake$(exeext) ../../gnatlink$(exeext)
+
+# gnatmake/link can be built with recent gnatmake/link if they are available.
+# This is especially convenient for building cross tools or for rebuilding
+# the tools when the original bootstrap has already be done.
+gnattools1-re: ../stamp-tools
+	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
+	  TOOLSCASE=cross INCLUDES="" gnatmake-re gnatlink-re
+
+# these tools are built with gnatmake & are common to native and cross
+gnattools2: ../stamp-tools
+	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
+	  TOOLSCASE=native common-tools $(EXTRA_GNATTOOLS)
+
+# those tools are only built for the cross version
+gnattools4: ../stamp-tools
+ifeq ($(ENABLE_VXADDR2LINE),true)
+	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
+	  TOOLSCASE=cross top_buildir=../../.. \
+	  ../../vxaddr2line$(exeext)
+endif
+
+common-tools: ../stamp-tools
 	$(GNATMAKE) -j0 -c -b $(ADA_INCLUDES) \
 	  --GNATBIND="$(GNATBIND)" --GCC="$(CC) $(ALL_ADAFLAGS)" \
 	  gnatchop gnatcmd gnatkr gnatls gnatprep gnatxref gnatfind gnatname \
@@ -2359,22 +2414,22 @@ common-tools:
 	$(GNATLINK) -v gnatclean -o ../../gnatclean$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
-../../gnatsym$(exeext): 
+../../gnatsym$(exeext): ../stamp-tools
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatsym --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatsym
 	$(GNATLINK) -v gnatsym -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
-../../gnatdll$(exeext): 
+../../gnatdll$(exeext): ../stamp-tools
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatdll --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatdll
 	$(GNATLINK) -v gnatdll -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
-../../vxaddr2line$(exeext): targext.o
+../../vxaddr2line$(exeext): ../stamp-tools targext.o
 	$(GNATMAKE) -c  $(ADA_INCLUDES) vxaddr2line --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vxaddr2line
 	$(GNATLINK) -v vxaddr2line -o $@ --GCC="$(GCC_LINK)" targext.o $(CLIB)
 
-gnatmake-re:  link.o targext.o
+gnatmake-re: ../stamp-tools link.o targext.o
 	$(GNATMAKE) -j0 $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(MOST_ADA_FLAGS)"
 	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatmake --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatmake
@@ -2385,7 +2440,7 @@ gnatmake-re:  link.o targext.o
 # with the former version of gnatlink itself which cannot override itself.
 # gnatlink-re cannot be run at the same time as gnatmake-re, hence the
 # dependency
-gnatlink-re: link.o targext.o gnatmake-re
+gnatlink-re: ../stamp-tools link.o targext.o gnatmake-re
 	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatlink --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatlink
 	$(GNATLINK) -v gnatlink -o ../../gnatlinknew$(exeext) \
