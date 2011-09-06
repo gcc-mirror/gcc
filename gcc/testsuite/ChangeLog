@@ -1,3 +1,8 @@
+2011-09-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from trunk
+	* g++.dg/ext/altivec-17.C: Fix dg-error to match current compiler.
+
 2011-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20110906-1.c: New test.
