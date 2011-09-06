@@ -41,7 +41,6 @@ with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
-with Get_Targ; use Get_Targ;
 with Lib;      use Lib;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -1808,10 +1807,10 @@ package body Exp_Ch7 is
                             (Available_View (Designated_Type (Obj_Typ)))
                  and then Present (Expr)
                  and then
-                   (Is_Null_Access_BIP_Func_Call (Expr)
-                     or else (Is_Non_BIP_Func_Call (Expr)
-                               and then not
-                                 Is_Related_To_Func_Return (Obj_Id)))
+                     (Is_Null_Access_BIP_Func_Call (Expr)
+                   or else
+                     (Is_Non_BIP_Func_Call (Expr)
+                        and then not Is_Related_To_Func_Return (Obj_Id)))
                then
                   Processing_Actions (Has_No_Init => True);
 
@@ -7039,10 +7038,15 @@ package body Exp_Ch7 is
       --
       --    Typ'Alignment
 
-      function Double_Alignment_Of (Typ : Entity_Id) return Node_Id;
+      function Size_Of (Typ : Entity_Id) return Node_Id;
+      --  Subsidiary routine, generate the following attribute reference:
+      --
+      --    Typ'Size / Storage_Unit
+
+      function Double_Size_Of (Typ : Entity_Id) return Node_Id;
       --  Subsidiary routine, generate the following expression:
       --
-      --    2 * Typ'Alignment
+      --    2 * Typ'Size / Storage_Unit
 
       ------------------
       -- Alignment_Of --
@@ -7050,31 +7054,39 @@ package body Exp_Ch7 is
 
       function Alignment_Of (Typ : Entity_Id) return Node_Id is
       begin
-         --  Strict alignment targets such as SPARC ignore the alignment of the
-         --  index type and use the system allocator alignment instead.
-
-         if Target_Strict_Alignment then
-            return Make_Integer_Literal (Loc, Get_System_Allocator_Alignment);
-
-         else
-            return
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Reference_To (Typ, Loc),
-                Attribute_Name => Name_Alignment);
-         end if;
+         return
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Reference_To (Typ, Loc),
+             Attribute_Name => Name_Alignment);
       end Alignment_Of;
 
-      -------------------------
-      -- Double_Alignment_Of --
-      -------------------------
+      -------------
+      -- Size_Of --
+      -------------
 
-      function Double_Alignment_Of (Typ : Entity_Id) return Node_Id is
+      function Size_Of (Typ : Entity_Id) return Node_Id is
+      begin
+         return
+           Make_Op_Divide (Loc,
+             Left_Opnd  =>
+               Make_Attribute_Reference (Loc,
+                 Prefix         => New_Reference_To (Typ, Loc),
+                 Attribute_Name => Name_Size),
+             Right_Opnd =>
+               Make_Integer_Literal (Loc, System_Storage_Unit));
+      end Size_Of;
+
+      --------------------
+      -- Double_Size_Of --
+      --------------------
+
+      function Double_Size_Of (Typ : Entity_Id) return Node_Id is
       begin
          return
            Make_Op_Multiply (Loc,
              Left_Opnd  => Make_Integer_Literal (Loc, 2),
-             Right_Opnd => Alignment_Of (Typ));
-      end Double_Alignment_Of;
+             Right_Opnd => Size_Of (Typ));
+      end Double_Size_Of;
 
    --  Start of processing for Make_Finalize_Address_Stmts
 
@@ -7183,28 +7195,31 @@ package body Exp_Ch7 is
                   For_First := False;
 
                   --  Generate:
-                  --    2 * Index_Typ'Alignment
+                  --    2 * Index_Typ'Size / Storage_Unit
 
-                  Dope_Expr := Double_Alignment_Of (Index_Typ);
+                  Dope_Expr := Double_Size_Of (Index_Typ);
 
                else
                   --  Generate:
-                  --    Dope_Expr + 2 * Index_Typ'Alignment
+                  --    Dope_Expr + 2 * Index_Typ'Size / Storage_Unit
 
                   Dope_Expr :=
                     Make_Op_Add (Loc,
                       Left_Opnd  => Dope_Expr,
-                      Right_Opnd => Double_Alignment_Of (Index_Typ));
+                      Right_Opnd => Double_Size_Of (Index_Typ));
                end if;
 
                Next_Index (Index);
             end loop;
 
-            --  Round the cumulative alignment to the next higher multiple of
-            --  the array alignment. Generate:
+            --  Dope_Expr calculates the optimum size of the dope, as if the
+            --  dope was "packed". Since the alignment of the component type
+            --  dictates the underlying layout of the array, round the size
+            --  of the dope to the next higher multiple of the component
+            --  alignment. Generate:
 
-            --    ((Dope_Expr + Typ'Alignment - 1) / Typ'Alignment)
-            --        * Typ'Alignment
+            --    ((Dope_Expr + Typ'Alignment - 1) / Typ'Alignment) *
+            --        Typ'Alignment
 
             Dope_Expr :=
               Make_Op_Multiply (Loc,
