@@ -18,9 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef LIB_SPEC
-#define LIB_SPEC "%{!static: -lSystem }"
-
 /* Fix PR41260 by passing -no_compact_unwind on darwin10 and later until
    unwinder in libSystem is fixed to digest new epilog unwinding notes.
 
