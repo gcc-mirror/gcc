@@ -12659,10 +12659,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	maybe_apply_pragma_weak (decl1);
     }
 
-  /* constexpr functions must have literal argument types and
-     literal return type.  */
-  validate_constexpr_fundecl (decl1);
-
   /* Reset this in case the call to pushdecl changed it.  */
   current_function_decl = decl1;
 
