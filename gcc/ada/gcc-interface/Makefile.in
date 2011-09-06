@@ -2205,15 +2205,16 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
     g-trasym.ads<g-trasym-unimplemented.ads \
     g-trasym.adb<g-trasym-unimplemented.adb \
-    $(ATOMICS_TARGET_PAIRS) \
-    $(X86_64_TARGET_PAIRS) \
-    system.ads<system-darwin-x86_64.ads
+    $(ATOMICS_TARGET_PAIRS)
+
     ifeq ($(strip $(MULTISUBDIR)),/i386)
       LIBGNAT_TARGET_PAIRS += \
-      system.ads<system-darwin-x86.ads
+        $(X86_TARGET_PAIRS) \
+        system.ads<system-darwin-x86.ads
     else
       LIBGNAT_TARGET_PAIRS += \
-      system.ads<system-darwin-x86_64.ads
+        $(X86_64_TARGET_PAIRS) \
+        system.ads<system-darwin-x86_64.ads
     endif
   endif
 
