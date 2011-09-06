@@ -1,5 +1,14 @@
 2011-09-06  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch8.ads: Minor reformatting
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, g-socket.adb (GNAT.Sockets.Clear,Set,Is_Set):
+	Guard against socket values that are not in [0;FD_SETSIZE[
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
 	* s-osinte-linux.ads, a-iteint.ads, exp_ch6.adb, s-solita.adb: Minor
 	reformatting.
 
