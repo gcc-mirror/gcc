@@ -1,3 +1,7 @@
+2011-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/builtin-apply-mmx.c: Require ia32 effective target.
+
 2011-09-06  Enkovich Ilya  <ilya.enkovich@intel.com>
 
 	* gcc.dg/tree-ssa/pr38533.c (dg-options): Added option
@@ -224,7 +228,7 @@
 	* gcc.dg/tree-ssa/ssa-ccp-26.c: Likewise.
 	* gcc.dg/pr36902.c: XFAIL.
 
-2011-08-30  Ilya Tocar <ilya.tocar@intel.com>
+2011-08-30  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/fma-check.h: New.
 	* gcc.target/i386/fma-256-fmaddXX.c: New testcase.
