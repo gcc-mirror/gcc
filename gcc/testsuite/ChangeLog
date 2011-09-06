@@ -1,3 +1,8 @@
+2011-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.c-torture/execute/pr49886.c: Move to...
+	* gcc.dg/torture/pr49886.c: ...here. Xfail run test for -O2 and above.
+
 2011-09-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49267
