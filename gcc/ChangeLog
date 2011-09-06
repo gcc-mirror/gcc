@@ -1,3 +1,8 @@
+2011-09-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* doc/configfiles.texi (Configuration Files): Update documentation
+	about tm_p.h and remove FIXME comment.
+
 2011-09-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_function_value_regno_p): Use AX_REG.
