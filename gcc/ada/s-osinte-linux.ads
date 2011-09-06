@@ -41,6 +41,7 @@
 with Ada.Unchecked_Conversion;
 with Interfaces.C;
 with System.Linux;
+with System.OS_Constants;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -557,35 +558,31 @@ private
    end record;
    pragma Convention (C, timespec);
 
-   type pthread_attr_t is record
-      detachstate   : int;
-      schedpolicy   : int;
-      schedparam    : struct_sched_param;
-      inheritsched  : int;
-      scope         : int;
-      guardsize     : size_t;
-      stackaddr_set : int;
-      stackaddr     : System.Address;
-      stacksize     : size_t;
-   end record;
-   pragma Convention (C, pthread_attr_t);
-
-   type pthread_condattr_t is record
-      dummy : int;
-   end record;
-   pragma Convention (C, pthread_condattr_t);
-
-   type pthread_mutexattr_t is record
-      mutexkind : int;
-   end record;
-   pragma Convention (C, pthread_mutexattr_t);
-
-   type pthread_mutex_t is new System.Linux.pthread_mutex_t;
-
    type unsigned_long_long_t is mod 2 ** 64;
    --  Local type only used to get it's 'Alignment below
 
-   type pthread_cond_t is array (0 .. 47) of unsigned_char;
+   type pthread_attr_t is
+     array (1 .. OS_Constants.PTHREAD_ATTR_SIZE) of unsigned_char;
+   pragma Convention (C, pthread_attr_t);
+   for pthread_attr_t'Alignment use Interfaces.C.unsigned_long'Alignment;
+
+   type pthread_condattr_t is
+     array (1 .. OS_Constants.PTHREAD_CONDATTR_SIZE) of unsigned_char;
+   pragma Convention (C, pthread_condattr_t);
+   for pthread_condattr_t'Alignment use Interfaces.C.int'Alignment;
+
+   type pthread_mutexattr_t is
+     array (1 .. OS_Constants.PTHREAD_MUTEXATTR_SIZE) of unsigned_char;
+   pragma Convention (C, pthread_mutexattr_t);
+   for pthread_mutexattr_t'Alignment use Interfaces.C.int'Alignment;
+
+   type pthread_mutex_t is
+     array (1 .. OS_Constants.PTHREAD_MUTEX_SIZE) of unsigned_char;
+   pragma Convention (C, pthread_mutex_t);
+   for pthread_mutex_t'Alignment use Interfaces.C.unsigned_long'Alignment;
+
+   type pthread_cond_t is
+     array (1 .. OS_Constants.PTHREAD_COND_SIZE) of unsigned_char;
    pragma Convention (C, pthread_cond_t);
    for pthread_cond_t'Alignment use unsigned_long_long_t'Alignment;
 
