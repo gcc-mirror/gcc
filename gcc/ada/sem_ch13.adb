@@ -1289,25 +1289,9 @@ package body Sem_Ch13 is
                when Aspect_Invariant      |
                     Aspect_Type_Invariant =>
 
-                  --  Check placement legality: An invariant must apply to a
-                  --  private type, or appear in the private part of a spec.
-                  --  Analysis of the pragma will verify that in the private
-                  --  part it applies to a completion.
-
-                  if Nkind_In (N, N_Private_Type_Declaration,
-                                  N_Private_Extension_Declaration)
-                  then
-                     null;
-
-                  elsif Nkind (N) = N_Full_Type_Declaration
-                    and then In_Private_Part (Current_Scope)
-                  then
-                     null;
-
-                  else
-                     Error_Msg_N
-                       ("invariant aspect must apply to a private type", N);
-                  end if;
+                  --  Analysis of the pragma will verify placement legality:
+                  --  an invariant must apply to a private type, or appear in
+                  --  the private part of a spec and apply to a completion.
 
                   --  Construct the pragma
 

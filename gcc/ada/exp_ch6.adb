@@ -3740,8 +3740,15 @@ package body Exp_Ch6 is
       New_A    : Node_Id;
       Num_Ret  : Int := 0;
       Ret_Type : Entity_Id;
-      Targ     : Node_Id;
-      Targ1    : Node_Id;
+
+      Targ : Node_Id;
+      --  The target of the call. If context is an assignment statement then
+      --  this is the left-hand side of the assignment. else it is a temporary
+      --  to which the return value is assigned prior to rewriting the call.
+
+      Targ1 : Node_Id;
+      --  A separate target used when the return type is unconstrained
+
       Temp     : Entity_Id;
       Temp_Typ : Entity_Id;
 
@@ -3749,8 +3756,8 @@ package body Exp_Ch6 is
       --  Entity in declaration in an extended_return_statement
 
       Is_Unc : constant Boolean :=
-                    Is_Array_Type (Etype (Subp))
-                      and then not Is_Constrained (Etype (Subp));
+                 Is_Array_Type (Etype (Subp))
+                   and then not Is_Constrained (Etype (Subp));
       --  If the type returned by the function is unconstrained and the call
       --  can be inlined, special processing is required.
 
@@ -3841,6 +3848,7 @@ package body Exp_Ch6 is
                   Rewrite (N, New_Copy (A));
                end if;
             end if;
+
             return Skip;
 
          elsif Is_Entity_Name (N)
@@ -3891,8 +3899,8 @@ package body Exp_Ch6 is
                if Nkind_In (Expression (N), N_Aggregate, N_Null) then
                   Ret :=
                     Make_Qualified_Expression (Sloc (N),
-                       Subtype_Mark => New_Occurrence_Of (Ret_Type, Sloc (N)),
-                       Expression => Relocate_Node (Expression (N)));
+                      Subtype_Mark => New_Occurrence_Of (Ret_Type, Sloc (N)),
+                      Expression => Relocate_Node (Expression (N)));
                else
                   Ret :=
                     Unchecked_Convert_To
@@ -3902,12 +3910,12 @@ package body Exp_Ch6 is
                if Nkind (Targ) = N_Defining_Identifier then
                   Rewrite (N,
                     Make_Assignment_Statement (Loc,
-                      Name => New_Occurrence_Of (Targ, Loc),
+                      Name       => New_Occurrence_Of (Targ, Loc),
                       Expression => Ret));
                else
                   Rewrite (N,
                     Make_Assignment_Statement (Loc,
-                      Name => New_Copy (Targ),
+                      Name       => New_Copy (Targ),
                       Expression => Ret));
                end if;
 
@@ -3915,19 +3923,17 @@ package body Exp_Ch6 is
 
                if Present (Exit_Lab) then
                   Insert_After (N,
-                    Make_Goto_Statement (Loc,
-                      Name => New_Copy (Lab_Id)));
+                    Make_Goto_Statement (Loc, Name => New_Copy (Lab_Id)));
                end if;
             end if;
 
             return OK;
 
+         --  An extended return becomes a block whose first statement is the
+         --  assignment of the initial expression of the return object to the
+         --  target of the call itself.
+
          elsif Nkind (N) = N_Extended_Return_Statement then
-
-            --  An extended return becomes a block whose first statement is
-            --  the assignment of the initial expression of the return object
-            --  to the target of the call itself.
-
             declare
                Return_Decl : constant Entity_Id :=
                                First (Return_Object_Declarations (N));
@@ -3940,12 +3946,12 @@ package body Exp_Ch6 is
                   if Nkind (Targ) = N_Defining_Identifier then
                      Assign :=
                        Make_Assignment_Statement (Loc,
-                         Name => New_Occurrence_Of (Targ, Loc),
+                         Name       => New_Occurrence_Of (Targ, Loc),
                          Expression => Expression (Return_Decl));
                   else
                      Assign :=
                        Make_Assignment_Statement (Loc,
-                         Name => New_Copy (Targ),
+                         Name       => New_Copy (Targ),
                          Expression => Expression (Return_Decl));
                   end if;
 
@@ -4011,7 +4017,6 @@ package body Exp_Ch6 is
            and then Nkind (Fst) = N_Assignment_Statement
            and then No (Next (Fst))
          then
-
             --  The function call may have been rewritten as the temporary
             --  that holds the result of the call, in which case remove the
             --  now useless declaration.
@@ -4080,6 +4085,7 @@ package body Exp_Ch6 is
 
       procedure Rewrite_Procedure_Call (N : Node_Id; Blk : Node_Id) is
          HSS  : constant Node_Id := Handled_Statement_Sequence (Blk);
+
       begin
          --  If there is a transient scope for N, this will be the scope of the
          --  actions for N, and the statements in Blk need to be within this
@@ -4161,7 +4167,6 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_Inlined_Call
 
    begin
-
       --  Check for an illegal attempt to inline a recursive procedure. If the
       --  subprogram has parameters this is detected when trying to supply a
       --  binding for parameters that already have one. For parameterless
@@ -4219,8 +4224,12 @@ package body Exp_Ch6 is
       --  expansion of an extended return, the left-hand side provides bounds
       --  even if the return type is unconstrained.
 
-      if Is_Unc and then Nkind (Parent (N)) /= N_Assignment_Statement then
-         Targ1 := Defining_Identifier (First (Declarations (Blk)));
+      if Is_Unc then
+         if Nkind (Parent (N)) /= N_Assignment_Statement then
+            Targ1 := Defining_Identifier (First (Declarations (Blk)));
+         else
+            Targ1 := Name (Parent (N));
+         end if;
       end if;
 
       --  If this is a derived function, establish the proper return type
@@ -4250,8 +4259,7 @@ package body Exp_Ch6 is
 
          if Is_Class_Wide_Type (Etype (F))
            or else (Is_Access_Type (Etype (F))
-                      and then
-                    Is_Class_Wide_Type (Designated_Type (Etype (F))))
+                     and then Is_Class_Wide_Type (Designated_Type (Etype (F))))
          then
             Temp_Typ := Etype (F);
 
@@ -4259,7 +4267,6 @@ package body Exp_Ch6 is
            and then Etype (F) /= Base_Type (Etype (F))
          then
             Temp_Typ := Etype (F);
-
          else
             Temp_Typ := Etype (A);
          end if;
@@ -4285,13 +4292,13 @@ package body Exp_Ch6 is
 
            or else
              (Nkind_In (A, N_Real_Literal,
-                            N_Integer_Literal,
-                            N_Character_Literal)
-                and then not Address_Taken (F))
+                           N_Integer_Literal,
+                           N_Character_Literal)
+               and then not Address_Taken (F))
          then
             if Etype (F) /= Etype (A) then
                Set_Renamed_Object
-                (F, Unchecked_Convert_To (Etype (F), Relocate_Node (A)));
+                 (F, Unchecked_Convert_To (Etype (F), Relocate_Node (A)));
             else
                Set_Renamed_Object (F, A);
             end if;
@@ -4337,9 +4344,9 @@ package body Exp_Ch6 is
             if Ekind (F) = E_In_Parameter
               and then not Is_By_Reference_Type (Etype (A))
               and then
-               (not Is_Array_Type (Etype (A))
-                 or else not Is_Object_Reference (A)
-                 or else Is_Bit_Packed_Array (Etype (A)))
+                (not Is_Array_Type (Etype (A))
+                  or else not Is_Object_Reference (A)
+                  or else Is_Bit_Packed_Array (Etype (A)))
             then
                Decl :=
                  Make_Object_Declaration (Loc,
@@ -4698,7 +4705,6 @@ package body Exp_Ch6 is
                Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
 
                --  Create the temporary, generate:
-               --
                --    Local_Id : Ptr_Typ;
 
                Local_Id := Make_Temporary (Loc, 'T');
@@ -4710,7 +4716,6 @@ package body Exp_Ch6 is
                      New_Reference_To (Ptr_Typ, Loc)));
 
                --  Allocate the object, generate:
-               --
                --    Local_Id := <Alloc_Expr>;
 
                Append_To (Stmts,
@@ -4758,7 +4763,6 @@ package body Exp_Ch6 is
             end;
 
          --  For all other cases, generate:
-         --
          --    Temp_Id := <Alloc_Expr>;
 
          else

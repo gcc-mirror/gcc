@@ -1,3 +1,61 @@
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Inlined_Call): Fix use of uninitialized
+	variable for type of return value when return type is
+	unconstrained and context is an assignment.
+
+2011-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Check_Class_Wide_Actual): Do not generate body of
+	class-wide operation if expansion is not enabled.
+
+2011-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): Deal with access
+	type prefix.
+
+2011-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications, case
+	Aspect_Invariant): Do not issue error at this point on illegal
+	pragma placement, as this is checked later on when analyzing
+	the corresponding pragma.
+	* sem_prag.adb (Error_Pragma_Arg_Alternate_Name): New procedure
+	similar to Error_Pragma_Arg, except the source name of the
+	aspect/pragma to use in warnings may be equal to parameter
+	Alt_Name (Analyze_Pragma, case Pragma_Invariant): refine error
+	message to distinguish source name of pragma/aspect, and whether
+	the illegality resides in the type being public, or being private
+	without a public declaration
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb (Check_For_Fd_Set): On Windows, no need for bitmap
+	size check (fd_set is implemented differently on that platform).
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-taprop-vxworks.adb, s-taprop-tru64.adb, s-taprop-vms.adb,
+	s-tpoaal.adb, s-taprop-mingw.adb, s-taprop-linux.adb,
+	s-taprop-solaris.adb, s-taprop-irix.adb, s-taprop.ads,
+	s-taprop-hpux-dce.adb, s-taprop-dummy.adb, s-taprop-posix.adb
+	(ATCB_Allocation): New subpackage of
+	System.Tasking.Primitive_Operations, shared across all targets
+	with full tasking runtime.
+	(ATCB_Allocation.New_ATCB): Moved there (from target specific
+	s-taprop bodies).
+	(ATCB_Allocation.Free_ATCB): New subprogram. Deallocate an ATCB,
+	taking care of establishing a local temporary ATCB if the one
+	being deallocated is Self, to avoid a reference to the freed
+	ATCB in Abort_Undefer.
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-tassta.adb, s-taskin.ads (Free_Task): If the task is not
+	terminated, mark it for deallocation upon termination.
+	(Terminate_Task): Call Free_Task again if the task is marked
+	for automatic deallocation upon termination.
+
 2011-09-06  Robert Dewar  <dewar@adacore.com>
 
 	* a-cbprqu.ads, a-cbsyqu.ads, a-cuprqu.ads, a-cusyqu.ads,

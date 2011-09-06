@@ -46,6 +46,13 @@ package body System.Task_Primitives.Operations is
    pragma Warnings (Off);
    --  Turn off warnings since so many unreferenced parameters
 
+   ----------------------------------
+   -- ATCB allocation/deallocation --
+   ----------------------------------
+
+   package body ATCB_Allocation is separate;
+   --  The body of this package is shared across several targets
+
    ----------------
    -- Abort_Task --
    ----------------
@@ -251,15 +258,6 @@ package body System.Task_Primitives.Operations is
    begin
       return 0.0;
    end Monotonic_Clock;
-
-   --------------
-   -- New_ATCB --
-   --------------
-
-   function New_ATCB (Entry_Num : Task_Entry_Index) return Task_Id is
-   begin
-      return new Ada_Task_Control_Block (Entry_Num);
-   end New_ATCB;
 
    ---------------
    -- Read_Lock --
