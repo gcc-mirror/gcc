@@ -1859,9 +1859,12 @@ package body Sem_Ch8 is
               Statements (Handled_Statement_Sequence (New_Body)));
 
             --  The generated body does not freeze. It is analyzed when the
-            --  generated operation is frozen.
+            --  generated operation is frozen. This body is only needed if
+            --  expansion is enabled.
 
-            Append_Freeze_Action (Defining_Entity (New_Decl), New_Body);
+            if Expander_Active then
+               Append_Freeze_Action (Defining_Entity (New_Decl), New_Body);
+            end if;
 
             Result := Defining_Entity (New_Decl);
          end if;

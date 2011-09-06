@@ -87,9 +87,24 @@ package System.Task_Primitives.Operations is
    --  The effects of further calls to operations defined below on the task
    --  are undefined thereafter.
 
-   function New_ATCB (Entry_Num : ST.Task_Entry_Index) return ST.Task_Id;
-   pragma Inline (New_ATCB);
-   --  Allocate a new ATCB with the specified number of entries
+   ----------------------------------
+   -- ATCB allocation/deallocation --
+   ----------------------------------
+
+   package ATCB_Allocation is
+
+      function New_ATCB (Entry_Num : ST.Task_Entry_Index) return ST.Task_Id;
+      pragma Inline (New_ATCB);
+      --  Allocate a new ATCB with the specified number of entries
+
+      procedure Free_ATCB (T : ST.Task_Id);
+      pragma Inline (Free_ATCB);
+      --  Deallocate an ATCB previously allocated by New_ATCB
+
+   end ATCB_Allocation;
+
+   function New_ATCB (Entry_Num : ST.Task_Entry_Index) return ST.Task_Id
+     renames ATCB_Allocation.New_ATCB;
 
    procedure Initialize_TCB (Self_ID : ST.Task_Id; Succeeded : out Boolean);
    pragma Inline (Initialize_TCB);

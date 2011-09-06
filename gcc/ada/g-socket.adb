@@ -198,7 +198,7 @@ package body GNAT.Sockets is
    procedure Check_For_Fd_Set (Fd : Socket_Type);
    pragma Inline (Check_For_Fd_Set);
    --  Raise Constraint_Error if Fd is less than 0 or greater than or equal to
-   --  FD_SETSIZE.
+   --  FD_SETSIZE, on platforms where fd_set is a bitmap.
 
    --  Types needed for Datagram_Socket_Stream_Type
 
@@ -468,6 +468,32 @@ package body GNAT.Sockets is
       end if;
    end Bind_Socket;
 
+   ----------------------
+   -- Check_For_Fd_Set --
+   ----------------------
+
+   procedure Check_For_Fd_Set (Fd : Socket_Type) is
+      use SOSC;
+   begin
+      --  On Windows, fd_set is a FD_SETSIZE array of socket ids:
+      --  no check required. Warnings suppressed because condition
+      --  is known at compile time.
+
+      pragma Warnings (Off);
+      if Target_OS = Windows then
+         pragma Warnings (On);
+
+         return;
+
+      --  On other platforms, fd_set is an FD_SETSIZE bitmap: check
+      --  that Fd is within range (otherwise behaviour is undefined).
+
+      elsif Fd < 0 or else Fd >= SOSC.FD_SETSIZE then
+         raise Constraint_Error with "invalid value for socket set: "
+                                       & Image (Fd);
+      end if;
+   end Check_For_Fd_Set;
+
    --------------------
    -- Check_Selector --
    --------------------
@@ -572,18 +598,6 @@ package body GNAT.Sockets is
       Narrow (W_Socket_Set);
       Narrow (E_Socket_Set);
    end Check_Selector;
-
-   ----------------------
-   -- Check_For_Fd_Set --
-   ----------------------
-
-   procedure Check_For_Fd_Set (Fd : Socket_Type) is
-   begin
-      if Fd < 0 or else Fd >= SOSC.FD_SETSIZE then
-         raise Constraint_Error with "invalid value for socket set: "
-                                       & Image (Fd);
-      end if;
-   end Check_For_Fd_Set;
 
    -----------
    -- Clear --
