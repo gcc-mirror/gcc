@@ -1,5 +1,20 @@
 2011-09-06  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch6.adb: Fix minor typo.
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb: Remove with and use clauses for Get_Targ.
+	(Alignment_Of): Moved to the body of Nearest_Multiple_Rounded_Up.
+	(Double_Size_Of): Alphabetized. Update the comment on usage.
+	(Make_Finalize_Address_Stmts): Update comments and reformat code.
+	(Nearest_Multiple_Rounded_Up): New routine.
+	(Size_Of): Update comment on usage. The generated expression now
+	accounts for alignment gaps by rounding the size of the type to the
+	nearest multiple rounded up of the type's alignment.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch7.adb, g-comlin.adb: Minor reformatting.
 
 2011-09-06  Steve Baird  <baird@adacore.com>
