@@ -1,3 +1,33 @@
+2011-09-06  Ira Rosen  <ira.rosen@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_vect_multiple_sizes):
+	New procedure.
+	(add_options_for_quad_vectors): Replace with ...
+	(add_options_for_double_vectors): ... this.
+	* gfortran.dg/vect/pr19049.f90: Expect more printings on targets that
+	support multiple vector sizes since the vectorizer attempts to
+	vectorize with both vector sizes.
+	* gcc.dg/vect/no-vfa-vect-79.c,
+	gcc.dg/vect/no-vfa-vect-102a.c, gcc.dg/vect/vect-outer-1a.c,
+	gcc.dg/vect/vect-outer-1b.c, gcc.dg/vect/vect-outer-2b.c,
+	gcc.dg/vect/vect-outer-3a.c, gcc.dg/vect/no-vfa-vect-37.c,
+	gcc.dg/vect/vect-outer-3b.c, gcc.dg/vect/no-vfa-vect-101.c,
+	gcc.dg/vect/no-vfa-vect-102.c, gcc.dg/vect/vect-reduc-dot-s8b.c,
+	gcc.dg/vect/vect-outer-1.c, gcc.dg/vect/vect-104.c: Likewise.
+	* gcc.dg/vect/vect-42.c: Run with 64 bit vectors if applicable.
+	* gcc.dg/vect/vect-multitypes-6.c, gcc.dg/vect/vect-52.c,
+	gcc.dg/vect/vect-54.c, gcc.dg/vect/vect-46.c, gcc.dg/vect/vect-48.c,
+	gcc.dg/vect/vect-96.c, gcc.dg/vect/vect-multitypes-3.c,
+	gcc.dg/vect/vect-40.c: Likewise.
+	* gcc.dg/vect/vect-outer-5.c: Remove quad-vectors option as
+	redundant.
+	* gcc.dg/vect/vect-109.c, gcc.dg/vect/vect-peel-1.c,
+	gcc.dg/vect/vect-peel-2.c, gcc.dg/vect/slp-25.c,
+	gcc.dg/vect/vect-multitypes-1.c, gcc.dg/vect/slp-3.c,
+	gcc.dg/vect/no-vfa-pr29145.c, gcc.dg/vect/vect-multitypes-4.c:
+	Likewise.
+	* gcc.dg/vect/vect-peel-4.c: Make ia global.
+
 2011-09-05  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/49606

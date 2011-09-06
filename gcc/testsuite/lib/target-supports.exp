@@ -3375,6 +3375,24 @@ foreach N {2 3 4 8} {
     }]
 }
 
+# Return 1 if the target supports multiple vector sizes
+
+proc check_effective_target_vect_multiple_sizes { } {
+    global et_vect_multiple_sizes
+
+    if [info exists et_vect_multiple_sizes_saved] {
+        verbose "check_effective_target_vect_multiple_sizes: using cached result" 2
+    } else {
+        set et_vect_multiple_sizes_saved 0
+        if { ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
+           set et_vect_multiple_sizes_saved 1
+        }
+    }
+
+    verbose "check_effective_target_vect_multiple_sizes: returning $et_vect_multiple_sizes_saved" 2
+    return $et_vect_multiple_sizes_saved
+}
+
 # Return 1 if the target supports section-anchors
 
 proc check_effective_target_section_anchors { } {
@@ -3758,11 +3776,11 @@ proc add_options_for_bind_pic_locally { flags } {
     return $flags
 }
 
-# Add to FLAGS the flags needed to enable 128-bit vectors.
+# Add to FLAGS the flags needed to enable 64-bit vectors.
 
-proc add_options_for_quad_vectors { flags } {
+proc add_options_for_double_vectors { flags } {
     if [is-effective-target arm_neon_ok] {
-	return "$flags -mvectorize-with-neon-quad"
+	return "$flags -mvectorize-with-neon-double"
     }
 
     return $flags

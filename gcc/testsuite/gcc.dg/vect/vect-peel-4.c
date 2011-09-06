@@ -6,12 +6,12 @@
 #define N 128
 
 int ib[N+7];
+int ia[N+1];
 
 __attribute__ ((noinline))
 int main1 ()
 {
   int i;
-  int ia[N+1];
 
   /* Don't peel keeping one load and the store aligned.  */
   for (i = 0; i <= N; i++)

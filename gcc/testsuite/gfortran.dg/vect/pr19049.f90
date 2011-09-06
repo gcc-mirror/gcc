@@ -19,6 +19,7 @@ subroutine s111 (ntimes,ld,n,ctime,dtime,a,b,c,d,e,aa,bb,cc)
       end
 
 ! { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" } }
-! { dg-final { scan-tree-dump-times "complicated access pattern" 1 "vect" } }
+! { dg-final { scan-tree-dump-times "complicated access pattern" 1 "vect" { xfail vect_multiple_sizes } } }
+! { dg-final { scan-tree-dump-times "complicated access pattern" 2 "vect" { target vect_multiple_sizes } } }
 ! { dg-final { cleanup-tree-dump "vect" } }
 
