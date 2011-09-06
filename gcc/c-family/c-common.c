@@ -1264,7 +1264,20 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       STRIP_TYPE_NOPS (op0);
       if (code != ADDR_EXPR && code != REALPART_EXPR && code != IMAGPART_EXPR)
 	op0 = decl_constant_value_for_optimization (op0);
-      if (op0 != orig_op0 || in_init)
+      /* ??? Cope with user tricks that amount to offsetof.  The middle-end is
+	 not prepared to deal with them if they occur in initializers.  */
+      if (op0 != orig_op0
+	  && code == ADDR_EXPR
+	  && (op1 = get_base_address (op0)) != NULL_TREE
+	  && TREE_CODE (op1) == INDIRECT_REF
+	  && TREE_CONSTANT (TREE_OPERAND (op1, 0)))
+	{
+	  tree offset = fold_offsetof (op0, op1);
+	  op1
+	    = fold_convert_loc (loc, TREE_TYPE (expr), TREE_OPERAND (op1, 0));
+	  ret = fold_build_pointer_plus_loc (loc, op1, offset);
+	}
+      else if (op0 != orig_op0 || in_init)
 	ret = in_init
 	  ? fold_build1_initializer_loc (loc, code, TREE_TYPE (expr), op0)
 	  : fold_build1_loc (loc, code, TREE_TYPE (expr), op0);
