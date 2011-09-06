@@ -986,8 +986,6 @@ dump_inline_summary (FILE * f, struct cgraph_node *node)
 	fprintf (f, " always_inline");
       if (s->inlinable)
 	fprintf (f, " inlinable");
-      if (s->versionable)
-	fprintf (f, " versionable");
       fprintf (f, "\n  self time:       %i\n",
 	       s->self_time);
       fprintf (f, "  global time:     %i\n", s->time);
@@ -1644,7 +1642,7 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
       struct inline_edge_summary *es = inline_edge_summary (node->callees);
       struct predicate t = true_predicate ();
 
-      info->inlinable = info->versionable = 0;
+      info->inlinable = 0;
       node->callees->call_stmt_cannot_inline_p = true;
       node->local.can_change_signature = false;
       es->call_stmt_time = 1;
@@ -2410,7 +2408,6 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 
       bp = streamer_read_bitpack (&ib);
       info->inlinable = bp_unpack_value (&bp, 1);
-      info->versionable = bp_unpack_value (&bp, 1);
 
       count2 = streamer_read_uhwi (&ib);
       gcc_assert (!info->conds);
@@ -2541,7 +2538,6 @@ inline_write_summary (cgraph_node_set set,
 	  int i;
 	  size_time_entry *e;
 	  struct condition *c;
-	  
 
 	  streamer_write_uhwi (ob, lto_cgraph_encoder_encode (encoder, node));
 	  streamer_write_hwi (ob, info->estimated_self_stack_size);
@@ -2549,7 +2545,6 @@ inline_write_summary (cgraph_node_set set,
 	  streamer_write_hwi (ob, info->self_time);
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, info->inlinable, 1);
-	  bp_pack_value (&bp, info->versionable, 1);
 	  streamer_write_bitpack (&bp);
 	  streamer_write_uhwi (ob, VEC_length (condition, info->conds));
 	  for (i = 0; VEC_iterate (condition, info->conds, i, c); i++)

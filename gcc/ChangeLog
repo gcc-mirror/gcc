@@ -1,3 +1,19 @@
+2011-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-inline.h (struct inline_summary): Move versionable flag...
+	* cgraph.h (struct cgraph_local_info): ...here
+	* ipa-cp.c (determine_versionability): Use the new versionable flag.
+	(determine_versionability): Likewise.
+	(ipcp_versionable_function_p): Likewise.
+	(ipcp_generate_summary): Likewise.
+	* ipa-inline-analysis.c (dump_inline_summary): Do not dump the
+	versionable flag.
+	(compute_inline_parameters): Do not clear the versionable flag.
+	(inline_read_section): Do not stream the versionable flag.
+	(inline_write_summary): Likewise.
+	* lto-cgraph.c (lto_output_node): Stream the versionable flag.
+	(input_overwrite_node): Likewise.
+
 2011-09-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48149
