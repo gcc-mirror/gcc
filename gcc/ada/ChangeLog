@@ -1,3 +1,27 @@
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb, g-comlin.adb: Minor reformatting.
+
+2011-09-06  Steve Baird  <baird@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Look through
+	derived subprograms in checking for presence of an
+	Extra_Accessibility_Of_Result formal parameter.
+	* exp_ch6.adb (Expand_Call): Look through derived subprograms in
+	checking for presence of an Extra_Accessibility_Of_Result formal
+	parameter.
+	(Expand_Call.Add_Actual_Parameter): Fix a bug in the
+	case where the Parameter_Associatiations attribute is already set,
+	but set to an empty list.
+	(Needs_Result_Accessibility_Level):
+	Unconditionally return False. This is a temporary
+	change, disabling the Extra_Accessibility_Of_Result
+	mechanism.
+	(Expand_Simple_Function_Return): Check for
+	Extra_Accessibility_Of_Result parameter's presence instead of
+	testing Ada_Version when generating a runtime accessibility
+	check which makes use of the parameter.
+
 2011-09-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Case_Expression): Actions created for the

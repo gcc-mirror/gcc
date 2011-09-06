@@ -119,9 +119,9 @@ package body GNAT.Command_Line is
      (Config : in out Command_Line_Configuration;
       Switch : Switch_Definition);
    procedure Add
-     (Def : in out Alias_Definitions_List;
-      Alias  : Alias_Definition);
-   --  Add a new element to Def.
+     (Def   : in out Alias_Definitions_List;
+      Alias : Alias_Definition);
+   --  Add a new element to Def
 
    procedure Initialize_Switch_Def
      (Def         : out Switch_Definition;
@@ -226,9 +226,8 @@ package body GNAT.Command_Line is
          for J in S'Range loop
             if S (J) in 'A' .. 'Z' then
                S (J) := Character'Val
-                         (Character'Pos (S (J)) +
-                          Character'Pos ('a')   -
-                          Character'Pos ('A'));
+                          (Character'Pos (S (J)) +
+                            (Character'Pos ('a') - Character'Pos ('A')));
             end if;
          end loop;
       end if;
@@ -277,7 +276,8 @@ package body GNAT.Command_Line is
          --  go to the next level.
 
          elsif Is_Directory
-           (It.Dir_Name (1 .. It.Levels (Current).Name_Last) & S (1 .. Last))
+                 (It.Dir_Name (1 .. It.Levels (Current).Name_Last) &
+                    S (1 .. Last))
              and then S (1 .. Last) /= "."
              and then S (1 .. Last) /= ".."
          then
@@ -402,6 +402,7 @@ package body GNAT.Command_Line is
             loop
                Parser.Current_Argument := Parser.Current_Argument + 1;
             end loop;
+
          else
             return String'(1 .. 0 => ' ');
          end if;
@@ -533,8 +534,8 @@ package body GNAT.Command_Line is
             Length := Length + 1;
          end loop;
 
-         --  Length now marks the separator after the current switch
-         --  Last will mark the last character of the name of the switch
+         --  Length now marks the separator after the current switch. Last will
+         --  mark the last character of the name of the switch.
 
          if Length = Index + 1 then
             P := Parameter_None;
@@ -584,7 +585,7 @@ package body GNAT.Command_Line is
 
       --  If we have finished parsing the current command line item (there
       --  might be multiple switches in a single item), then go to the next
-      --  element
+      --  element.
 
       if Parser.Current_Argument > Parser.Arg_Count
         or else (Parser.Current_Index >
@@ -615,7 +616,7 @@ package body GNAT.Command_Line is
 
                --  If it isn't a switch, return it immediately. We also know it
                --  isn't the parameter to a previous switch, since that has
-               --  already been handled
+               --  already been handled.
 
                if Switches (Switches'First) = '*' then
                   Set_Parameter
@@ -754,6 +755,7 @@ package body GNAT.Command_Line is
                         First   => End_Index + 2,
                         Last    => Arg'Last);
                      Dummy := Goto_Next_Argument_In_Section (Parser);
+
                   else
                      Parser.Current_Index := End_Index + 1;
                      raise Invalid_Parameter;
@@ -993,9 +995,9 @@ package body GNAT.Command_Line is
       Parser.Stop_At_First    := Stop_At_First_Non_Switch;
       Parser.Section          := (others => 1);
 
-      --  If we are using sections, we have to preprocess the command line
-      --  to delimit them. A section can be repeated, so we just give each
-      --  item on the command line a section number
+      --  If we are using sections, we have to preprocess the command line to
+      --  delimit them. A section can be repeated, so we just give each item
+      --  on the command line a section number
 
       Section_Num   := 1;
       Section_Index := Section_Delimiters'First;
@@ -1014,8 +1016,8 @@ package body GNAT.Command_Line is
             if Argument (Parser, Index)(1) = Parser.Switch_Character
               and then
                 Argument (Parser, Index) = Parser.Switch_Character &
-                                        Section_Delimiters
-                                          (Section_Index .. Last - 1)
+                                             Section_Delimiters
+                                               (Section_Index .. Last - 1)
             then
                Parser.Section (Index) := 0;
                Delimiter_Found := True;
@@ -1164,8 +1166,8 @@ package body GNAT.Command_Line is
    ----------
 
    procedure Free (Parser : in out Opt_Parser) is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
-        (Opt_Parser_Data, Opt_Parser);
+      procedure Unchecked_Free is new
+        Ada.Unchecked_Deallocation (Opt_Parser_Data, Opt_Parser);
    begin
       if Parser /= null
         and then Parser /= Command_Line_Parser
@@ -1217,11 +1219,13 @@ package body GNAT.Command_Line is
    -- Add --
    ---------
 
-   procedure Add (Config : in out Command_Line_Configuration;
-                  Switch : Switch_Definition)
+   procedure Add
+     (Config : in out Command_Line_Configuration;
+      Switch : Switch_Definition)
    is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Switch_Definitions, Switch_Definitions_List);
+
       Tmp : Switch_Definitions_List;
 
    begin
@@ -1253,8 +1257,10 @@ package body GNAT.Command_Line is
    procedure Add (Def : in out Alias_Definitions_List;
                   Alias : Alias_Definition)
    is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
-        (Alias_Definitions, Alias_Definitions_List);
+      procedure Unchecked_Free is new
+        Ada.Unchecked_Deallocation
+          (Alias_Definitions, Alias_Definitions_List);
+
       Tmp : Alias_Definitions_List := Def;
 
    begin
@@ -1433,7 +1439,7 @@ package body GNAT.Command_Line is
             if (Section = "" and then Config.Switches (J).Section = null)
               or else
                 (Config.Switches (J).Section /= null
-                 and then Config.Switches (J).Section.all = Section)
+                  and then Config.Switches (J).Section.all = Section)
             then
                exit when Config.Switches (J).Switch /= null
                  and then not Callback (Config.Switches (J).Switch.all, J);
@@ -1475,6 +1481,7 @@ package body GNAT.Command_Line is
          else
             Append (Ret, " " & S);
          end if;
+
          return True;
       end Add_Switch;
 
@@ -1768,12 +1775,12 @@ package body GNAT.Command_Line is
       function Is_In_Config
         (Config_Switch : String; Index : Integer) return Boolean;
       --  If Switch is the same as Config_Switch, run the callback and sets
-      --  Found_In_Config to True
+      --  Found_In_Config to True.
 
       function Starts_With
         (Config_Switch : String; Index : Integer) return Boolean;
       --  if Switch starts with Config_Switch, sets Found_In_Config to True.
-      --  The return value is for the Foreach_Switch iterator
+      --  The return value is for the Foreach_Switch iterator.
 
       --------------------
       -- Group_Analysis --
@@ -1832,9 +1839,7 @@ package body GNAT.Command_Line is
                   end loop;
                end if;
 
-               if not Require_Parameter (Switch)
-                 or else Last >= Param
-               then
+               if not Require_Parameter (Switch) or else Last >= Param then
                   if Idx = Group'First
                     and then Last = Group'Last
                     and then Last < Param
@@ -1860,6 +1865,7 @@ package body GNAT.Command_Line is
                         Section,
                         Prefix & Group (Idx .. Param - 1),
                         Group (Param .. Last));
+
                   else
                      For_Each_Simple_Switch
                        (Config, Section, Prefix & Group (Idx .. Last), "");
@@ -1881,7 +1887,6 @@ package body GNAT.Command_Line is
          Idx := Group'First;
          while Idx <= Group'Last loop
             Found := False;
-
             Foreach (Config, Section);
 
             if not Found then
@@ -1960,7 +1965,8 @@ package body GNAT.Command_Line is
          Decompose_Switch (Config_Switch, P, Last);
 
          if Looking_At
-           (Switch, Switch'First, Config_Switch (Config_Switch'First .. Last))
+              (Switch, Switch'First,
+               Config_Switch (Config_Switch'First .. Last))
          then
             --  Set first char of Param, and last char of Switch
 
@@ -2546,7 +2552,9 @@ package body GNAT.Command_Line is
             if Result (C) /= null
               and then Compatible_Parameter (Params (C))
               and then Looking_At
-                (Result (C).all, Result (C)'First, Cmd.Config.Prefixes (P).all)
+                         (Result (C).all,
+                          Result (C)'First,
+                          Cmd.Config.Prefixes (P).all)
             then
                --  If we are still in the same section, group the switches
 
@@ -2589,8 +2597,8 @@ package body GNAT.Command_Line is
                   Group :=
                     Ada.Strings.Unbounded.To_Unbounded_String
                       (Result (C)
-                       (Result (C)'First + Cmd.Config.Prefixes (P)'Length ..
-                            Result (C)'Last));
+                         (Result (C)'First + Cmd.Config.Prefixes (P)'Length ..
+                          Result (C)'Last));
                   First := C;
                end if;
             end if;
@@ -2642,8 +2650,8 @@ package body GNAT.Command_Line is
                if Result (E) /= null
                  and then
                    (Params (E) = null
-                    or else Params (E) (Params (E)'First + 1
-                                            .. Params (E)'Last) = Param)
+                     or else Params (E) (Params (E)'First + 1 ..
+                                         Params (E)'Last) = Param)
                  and then Result (E).all = Switch
                then
                   return;
@@ -2866,16 +2874,19 @@ package body GNAT.Command_Line is
 
    function Is_New_Section    (Iter : Command_Line_Iterator) return Boolean is
       Section : constant String := Current_Section (Iter);
+
    begin
       if Iter.Sections = null then
          return False;
+
       elsif Iter.Current = Iter.Sections'First
         or else Iter.Sections (Iter.Current - 1) = null
       then
          return Section /= "";
-      end if;
 
-      return Section /= Iter.Sections (Iter.Current - 1).all;
+      else
+         return Section /= Iter.Sections (Iter.Current - 1).all;
+      end if;
    end Is_New_Section;
 
    ---------------------
@@ -2933,12 +2944,11 @@ package body GNAT.Command_Line is
          return "";
 
       else
+         --  Return result, skipping separator
+
          declare
             P : constant String := Iter.Params (Iter.Current).all;
-
          begin
-            --  Skip separator
-
             return P (P'First + 1 .. P'Last);
          end;
       end if;
@@ -2972,10 +2982,14 @@ package body GNAT.Command_Line is
    ----------
 
    procedure Free (Config : in out Command_Line_Configuration) is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
-        (Switch_Definitions, Switch_Definitions_List);
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
-        (Alias_Definitions, Alias_Definitions_List);
+      procedure Unchecked_Free is new
+        Ada.Unchecked_Deallocation
+          (Switch_Definitions, Switch_Definitions_List);
+
+      procedure Unchecked_Free is new
+        Ada.Unchecked_Deallocation
+          (Alias_Definitions, Alias_Definitions_List);
+
    begin
       if Config /= null then
          Free (Config.Prefixes);
@@ -2990,6 +3004,7 @@ package body GNAT.Command_Line is
                Free (Config.Aliases (A).Expansion);
                Free (Config.Aliases (A).Section);
             end loop;
+
             Unchecked_Free (Config.Aliases);
          end if;
 
@@ -3040,6 +3055,7 @@ package body GNAT.Command_Line is
       Free (Config.Usage);
       Free (Config.Help);
       Free (Config.Help_Msg);
+
       Config.Usage    := new String'(Usage);
       Config.Help     := new String'(Help);
       Config.Help_Msg := new String'(Help_Msg);
@@ -3070,6 +3086,7 @@ package body GNAT.Command_Line is
 
       procedure Display_Section_Help (Section : String) is
          Max_Len : Natural := 0;
+
       begin
          --  ??? Special display for "*"
 
@@ -3100,7 +3117,8 @@ package body GNAT.Command_Line is
          for S in Config.Switches'Range loop
             declare
                N : constant String :=
-                 Switch_Name (Config.Switches (S), Section);
+                     Switch_Name (Config.Switches (S), Section);
+
             begin
                if N /= "" then
                   Put (" ");
@@ -3176,9 +3194,7 @@ package body GNAT.Command_Line is
          if (Section = "" and then Def.Section = null)
            or else (Def.Section /= null and then Def.Section.all = Section)
          then
-            if Def.Switch /= null
-              and then Def.Switch.all = "*"
-            then
+            if Def.Switch /= null and then Def.Switch.all = "*" then
                return "[any switch]";
             end if;
 
@@ -3229,8 +3245,10 @@ package body GNAT.Command_Line is
 
       if Config.Help_Msg /= null and then Config.Help_Msg.all /= "" then
          Put_Line (Config.Help_Msg.all);
+
       else
          Display_Section_Help ("");
+
          if Config.Sections /= null and then Config.Switches /= null then
             for S in Config.Sections'Range loop
                Display_Section_Help (Config.Sections (S).all);
@@ -3395,13 +3413,15 @@ package body GNAT.Command_Line is
 
          elsif C /= ASCII.NUL then
             if Full_Switch (Parser) = "h"
-              or else Full_Switch (Parser) = "-help"
+                 or else
+               Full_Switch (Parser) = "-help"
             then
                Display_Help (Config);
                raise Exit_From_Command_Line;
             end if;
 
             --  Do switch expansion if needed
+
             For_Each_Simple
               (Config,
                Section   => Section_Name.all,
@@ -3482,8 +3502,7 @@ package body GNAT.Command_Line is
       Start (Line, Iter, Expanded => Expanded);
       while Has_More (Iter) loop
          if Is_New_Section (Iter) then
-            Args (Count) := new String'
-              (Switch_Char & Current_Section (Iter));
+            Args (Count) := new String'(Switch_Char & Current_Section (Iter));
             Count := Count + 1;
          end if;
 
