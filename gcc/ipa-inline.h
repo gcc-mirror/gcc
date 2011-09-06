@@ -85,9 +85,6 @@ struct GTY(()) inline_summary
 
   /* False when there something makes inlining impossible (such as va_arg).  */
   unsigned inlinable : 1;
-  /* False when there something makes versioning impossible.
-     Currently computed and used only by ipa-cp.  */
-  unsigned versionable : 1;
 
   /* Information about function that will result after applying all the
      inline decisions present in the callgraph.  Generally kept up to

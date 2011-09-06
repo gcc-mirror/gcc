@@ -367,7 +367,7 @@ determine_versionability (struct cgraph_node *node)
      present.  */
   if (node->alias || node->thunk.thunk_p)
     reason = "alias or thunk";
-  else if (!inline_summary (node)->versionable)
+  else if (!node->local.versionable)
     reason = "not a tree_versionable_function";
   else if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
     reason = "insufficient body availability";
@@ -376,7 +376,7 @@ determine_versionability (struct cgraph_node *node)
     fprintf (dump_file, "Function %s/%i is not versionable, reason: %s.\n",
 	     cgraph_node_name (node), node->uid, reason);
 
-  inline_summary (node)->versionable = (reason == NULL);
+  node->local.versionable = (reason == NULL);
 }
 
 /* Return true if it is at all technically possible to create clones of a
@@ -385,7 +385,7 @@ determine_versionability (struct cgraph_node *node)
 static bool
 ipcp_versionable_function_p (struct cgraph_node *node)
 {
-  return inline_summary (node)->versionable;
+  return node->local.versionable;
 }
 
 /* Structure holding accumulated information about callers of a node.  */
@@ -2449,14 +2449,11 @@ ipcp_generate_summary (void)
     fprintf (dump_file, "\nIPA constant propagation start:\n");
   ipa_register_cgraph_hooks ();
 
-  /* FIXME: We could propagate through thunks happily and we could be
-     even able to clone them, if needed.  Do that later.  */
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
       {
 	/* Unreachable nodes should have been eliminated before ipcp.  */
 	gcc_assert (node->needed || node->reachable);
-
-	inline_summary (node)->versionable = tree_versionable_function_p (node->decl);
+	node->local.versionable = tree_versionable_function_p (node->decl);
 	ipa_analyze_node (node);
       }
 }
