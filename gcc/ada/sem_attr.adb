@@ -3024,8 +3024,10 @@ package body Sem_Attr is
          --  Attribute Descriptor_Size is relevant only in the context of an
          --  unconstrained array type.
 
+         --  Shouldn't it just return zero for types other than arrays or
+         --  constrained arrays ???
+
          if Is_Entity_Name (P)
-           and then Is_Type (Entity (P))
            and then Is_Array_Type (Entity (P))
            and then not Is_Constrained (Entity (P))
          then
