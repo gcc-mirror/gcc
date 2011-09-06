@@ -2104,6 +2104,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
 endif
 
 ifeq ($(strip $(filter-out darwin%,$(osys))),)
+  SO_OPTS = -Wl,-flat_namespace -shared-libgcc
   ifeq ($(strip $(filter-out %86,$(arch))),)
     LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \
@@ -2123,6 +2124,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     ifeq ($(strip $(MULTISUBDIR)),/x86_64)
       LIBGNAT_TARGET_PAIRS += \
       system.ads<system-darwin-x86_64.ads
+      SO_OPTS += -m64
     else
       LIBGNAT_TARGET_PAIRS += \
       system.ads<system-darwin-x86.ads
@@ -2149,6 +2151,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     ifeq ($(strip $(MULTISUBDIR)),/i386)
       LIBGNAT_TARGET_PAIRS += \
       system.ads<system-darwin-x86.ads
+      SO_OPTS += -m32
     else
       LIBGNAT_TARGET_PAIRS += \
       system.ads<system-darwin-x86_64.ads
@@ -2179,7 +2182,6 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
 
   EH_MECHANISM=-gcc
   GNATLIB_SHARED = gnatlib-shared-darwin
-  SO_OPTS = -Wl,-flat_namespace -shared-libgcc
   RANLIB = ranlib -c
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
