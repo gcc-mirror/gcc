@@ -59,6 +59,10 @@ package body ATCB_Allocation is
 
             Specific.Set (Local_ATCB'Unchecked_Access);
             Free (Tmp);
+
+            --  Note: it is assumed here that for all platforms, Specific.Set
+            --  deletes the task specific information if passed a null value.
+
             Specific.Set (null);
          end;
 

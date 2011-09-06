@@ -124,11 +124,8 @@ package body System.Task_Primitives.Operations is
 
       procedure Set (Self_Id : Task_Id);
       pragma Inline (Set);
-      --  Set the self id for the current task
-
-      procedure Delete;
-      pragma Inline (Delete);
-      --  Delete the task specific data associated with the current task
+      --  Set the self id for the current task, unless Self_Id is null, in
+      --  which case the task specific data is deleted.
 
       function Self return Task_Id;
       pragma Inline (Self);

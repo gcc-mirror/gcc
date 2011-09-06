@@ -997,7 +997,7 @@ package body System.Task_Primitives.Operations is
          Known_Tasks (T.Known_Tasks_Index) := null;
       end if;
 
-      if Self_ID.Common.LL.Thread /= 0 then
+      if T.Common.LL.Thread /= 0 then
 
          --  This task has been activated. Wait for the thread to terminate
          --  then close it. This is needed to release system resources.
