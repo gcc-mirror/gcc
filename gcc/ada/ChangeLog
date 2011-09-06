@@ -1,5 +1,29 @@
 2011-09-06  Robert Dewar  <dewar@adacore.com>
 
+	* a-cbprqu.ads, a-cbsyqu.ads, a-cuprqu.ads, a-cusyqu.ads,
+	a-intnam-aix.ads, a-intnam-darwin.ads, a-intnam-dummy.ads,
+	a-intnam-freebsd.ads, a-intnam-hpux.ads, a-intnam-irix.ads,
+	a-intnam-linux.ads, a-intnam-lynxos.ads, a-intnam-mingw.ads,
+	a-intnam-solaris.ads, a-intnam-tru64.ads,
+	a-intnam-vms.ads, a-intnam-vxworks.ads, a-intnam.ads, interfac.ads,
+	cstand.adb, s-maccod.ads: Mark all entities as Implementation_Defined
+	* einfo.ads, einfo.adb (Is_Implementation_Defined): New flag
+	* par-prag.adb: Add dummy entry for pragma Implementation_Defined
+	* s-rident.ads: Add new restriction No_Implementation_Identifiers
+	Add new profile No_Implementation_Extensions
+	* sem_prag.adb: Implement pragma Implementation_Defined Implement
+	profile No_Implementation_Extensions
+	* sem_util.adb: Minor reformatting (Set_Entity_With_Style_Check):
+	Check violation of restriction No_Implementation_Identifiers
+	* snames.ads-tmpl: Add entries for pragma Implementation_Defined
+	Add entry for Name_No_Implementation_Extensions
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.ads: Minor reformatting.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
 	* ali.adb, sem_ch13.adb, lib-xref.adb: Minor reformatting.
 
 2011-09-06  Pascal Obry  <obry@adacore.com>
