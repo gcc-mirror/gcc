@@ -1,6 +1,6 @@
 2011-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
-        * gcc.c-torture/compile/20110906-1.c: New test.
+	* gcc.c-torture/compile/20110906-1.c: New test.
 
 2011-09-06  Uros Bizjak  <ubizjak@gmail.com>
 
