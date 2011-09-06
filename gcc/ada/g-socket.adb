@@ -474,6 +474,7 @@ package body GNAT.Sockets is
 
    procedure Check_For_Fd_Set (Fd : Socket_Type) is
       use SOSC;
+
    begin
       --  On Windows, fd_set is a FD_SETSIZE array of socket ids:
       --  no check required. Warnings suppressed because condition

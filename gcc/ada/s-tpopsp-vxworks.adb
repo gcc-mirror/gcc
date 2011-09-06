@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,17 +44,6 @@ package body Specific is
    --  implementation. This mechanism is used to minimize impact on other
    --  targets.
 
-   ------------
-   -- Delete --
-   ------------
-
-   procedure Delete is
-      Result : STATUS;
-   begin
-      Result := taskVarDelete (taskIdSelf, ATCB_Key'Access);
-      pragma Assert (Result /= ERROR);
-   end Delete;
-
    ----------------
    -- Initialize --
    ----------------
@@ -81,6 +70,14 @@ package body Specific is
       Result : STATUS;
 
    begin
+      --  If Self_Id is null, delete task specific data
+
+      if Self_Id = null then
+         Result := taskVarDelete (taskIdSelf, ATCB_Key'Access);
+         pragma Assert (Result /= ERROR);
+         return;
+      end if;
+
       if taskVarGet (0, ATCB_Key'Access) = ERROR then
          Result := taskVarAdd (0, ATCB_Key'Access);
          pragma Assert (Result = OK);

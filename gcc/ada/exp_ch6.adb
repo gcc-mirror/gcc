@@ -4651,10 +4651,10 @@ package body Exp_Ch6 is
                               Build_In_Place_Formal
                                 (Func_Id, BIP_Finalization_Master);
                Stmts      : constant List_Id := New_List;
-
-               Local_Id : Entity_Id;
-               Pool_Id  : Entity_Id;
-               Ptr_Typ  : Entity_Id;
+               Desig_Typ  : Entity_Id;
+               Local_Id   : Entity_Id;
+               Pool_Id    : Entity_Id;
+               Ptr_Typ    : Entity_Id;
 
             begin
                --  Generate:
@@ -4684,8 +4684,19 @@ package body Exp_Ch6 is
                --  of the temporary. Otherwise the secondary stack allocation
                --  will fail.
 
+               Desig_Typ := Ret_Typ;
+
+               --  Ensure that the build-in-place machinery uses a fat pointer
+               --  when allocating an unconstrained array on the heap. In this
+               --  case the result object type is a constrained array type even
+               --  though the function type is unconstrained.
+
+               if Ekind (Desig_Typ) = E_Array_Subtype then
+                  Desig_Typ := Base_Type (Desig_Typ);
+               end if;
+
                --  Generate:
-               --    type Ptr_Typ is access Ret_Typ;
+               --    type Ptr_Typ is access Desig_Typ;
 
                Ptr_Typ := Make_Temporary (Loc, 'P');
 
@@ -4695,7 +4706,7 @@ package body Exp_Ch6 is
                    Type_Definition     =>
                      Make_Access_To_Object_Definition (Loc,
                        Subtype_Indication =>
-                         New_Reference_To (Ret_Typ, Loc))));
+                         New_Reference_To (Desig_Typ, Loc))));
 
                --  Perform minor decoration in order to set the master and the
                --  storage pool attributes.

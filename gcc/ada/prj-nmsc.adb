@@ -426,8 +426,7 @@ package body Prj.Nmsc is
       Naming    : Lang_Naming_Data;
       Kind      : out Source_Kind;
       Unit      : out Name_Id;
-      Project   : Project_Processing_Data;
-      In_Tree   : Project_Tree_Ref);
+      Project   : Project_Processing_Data);
    --  Check whether the file matches the naming scheme. If it does,
    --  compute its unit name. If Unit is set to No_Name on exit, none of the
    --  other out parameters are relevant.
@@ -5627,8 +5626,7 @@ package body Prj.Nmsc is
       Naming    : Lang_Naming_Data;
       Kind      : out Source_Kind;
       Unit      : out Name_Id;
-      Project   : Project_Processing_Data;
-      In_Tree   : Project_Tree_Ref)
+      Project   : Project_Processing_Data)
    is
       Filename : constant String  := Get_Name_String (File_Name);
       Last     : Integer          := Filename'Last;
@@ -6724,8 +6722,7 @@ package body Prj.Nmsc is
                      Naming          => Config.Naming_Data,
                      Kind            => Kind,
                      Unit            => Unit,
-                     Project         => Project,
-                     In_Tree         => In_Tree);
+                     Project         => Project);
 
                   if Unit /= No_Name then
                      Language    := Tmp_Lang;

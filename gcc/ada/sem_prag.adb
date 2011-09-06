@@ -29,65 +29,63 @@
 --  to complete the syntax checks. Certain pragmas are handled partially or
 --  completely by the parser (see Par.Prag for further details).
 
-with System.Case_Util;
-
-with Atree;            use Atree;
-with Casing;           use Casing;
-with Checks;           use Checks;
-with Csets;            use Csets;
-with Debug;            use Debug;
-with Einfo;            use Einfo;
-with Elists;           use Elists;
-with Errout;           use Errout;
-with Exp_Dist;         use Exp_Dist;
-with Exp_Util;         use Exp_Util;
-with Freeze;           use Freeze;
-with Lib;              use Lib;
-with Lib.Writ;         use Lib.Writ;
-with Lib.Xref;         use Lib.Xref;
-with Namet.Sp;         use Namet.Sp;
-with Nlists;           use Nlists;
-with Nmake;            use Nmake;
-with Opt;              use Opt;
-with Output;           use Output;
-with Par_SCO;          use Par_SCO;
-with Restrict;         use Restrict;
-with Rident;           use Rident;
-with Rtsfind;          use Rtsfind;
-with Sem;              use Sem;
-with Sem_Aux;          use Sem_Aux;
-with Sem_Ch3;          use Sem_Ch3;
-with Sem_Ch6;          use Sem_Ch6;
-with Sem_Ch8;          use Sem_Ch8;
-with Sem_Ch12;         use Sem_Ch12;
-with Sem_Ch13;         use Sem_Ch13;
-with Sem_Disp;         use Sem_Disp;
-with Sem_Dist;         use Sem_Dist;
-with Sem_Elim;         use Sem_Elim;
-with Sem_Eval;         use Sem_Eval;
-with Sem_Intr;         use Sem_Intr;
-with Sem_Mech;         use Sem_Mech;
-with Sem_Res;          use Sem_Res;
-with Sem_Type;         use Sem_Type;
-with Sem_Util;         use Sem_Util;
-with Sem_VFpt;         use Sem_VFpt;
-with Sem_Warn;         use Sem_Warn;
-with Stand;            use Stand;
-with Sinfo;            use Sinfo;
-with Sinfo.CN;         use Sinfo.CN;
-with Sinput;           use Sinput;
-with Snames;           use Snames;
-with Stringt;          use Stringt;
-with Stylesw;          use Stylesw;
+with Atree;    use Atree;
+with Casing;   use Casing;
+with Checks;   use Checks;
+with Csets;    use Csets;
+with Debug;    use Debug;
+with Einfo;    use Einfo;
+with Elists;   use Elists;
+with Errout;   use Errout;
+with Exp_Dist; use Exp_Dist;
+with Exp_Util; use Exp_Util;
+with Freeze;   use Freeze;
+with Lib;      use Lib;
+with Lib.Writ; use Lib.Writ;
+with Lib.Xref; use Lib.Xref;
+with Namet.Sp; use Namet.Sp;
+with Nlists;   use Nlists;
+with Nmake;    use Nmake;
+with Opt;      use Opt;
+with Output;   use Output;
+with Par_SCO;  use Par_SCO;
+with Restrict; use Restrict;
+with Rident;   use Rident;
+with Rtsfind;  use Rtsfind;
+with Sem;      use Sem;
+with Sem_Aux;  use Sem_Aux;
+with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch6;  use Sem_Ch6;
+with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch12; use Sem_Ch12;
+with Sem_Ch13; use Sem_Ch13;
+with Sem_Disp; use Sem_Disp;
+with Sem_Dist; use Sem_Dist;
+with Sem_Elim; use Sem_Elim;
+with Sem_Eval; use Sem_Eval;
+with Sem_Intr; use Sem_Intr;
+with Sem_Mech; use Sem_Mech;
+with Sem_Res;  use Sem_Res;
+with Sem_Type; use Sem_Type;
+with Sem_Util; use Sem_Util;
+with Sem_VFpt; use Sem_VFpt;
+with Sem_Warn; use Sem_Warn;
+with Stand;    use Stand;
+with Sinfo;    use Sinfo;
+with Sinfo.CN; use Sinfo.CN;
+with Sinput;   use Sinput;
+with Snames;   use Snames;
+with Stringt;  use Stringt;
+with Stylesw;  use Stylesw;
 with Table;
-with Targparm;         use Targparm;
-with Tbuild;           use Tbuild;
+with Targparm; use Targparm;
+with Tbuild;   use Tbuild;
 with Ttypes;
-with Uintp;            use Uintp;
-with Uname;            use Uname;
-with Urealp;           use Urealp;
-with Validsw;          use Validsw;
-with Warnsw;           use Warnsw;
+with Uintp;    use Uintp;
+with Uname;    use Uname;
+with Urealp;   use Urealp;
+with Validsw;  use Validsw;
+with Warnsw;   use Warnsw;
 
 package body Sem_Prag is
 
@@ -374,8 +372,12 @@ package body Sem_Prag is
 
    procedure Analyze_Pragma (N : Node_Id) is
       Loc     : constant Source_Ptr := Sloc (N);
-      Pname   : constant Name_Id    := Pragma_Name (N);
       Prag_Id : Pragma_Id;
+
+      Pname : Name_Id;
+      --  Name of the source pragma, or name of the corresponding aspect for
+      --  pragmas which originate in a source aspect. In the latter case, the
+      --  name may be different from the pragma name.
 
       Pragma_Exit : exception;
       --  This exception is used to exit pragma processing completely. It is
@@ -647,17 +649,6 @@ package body Sem_Prag is
       pragma No_Return (Error_Pragma_Arg);
       --  Similar to above form of Error_Pragma_Arg except that two messages
       --  are provided, the second is a continuation comment starting with \.
-
-      procedure Error_Pragma_Arg_Alternate_Name
-        (Msg      : String;
-         Arg      : Node_Id;
-         Alt_Name : Name_Id);
-      pragma No_Return (Error_Pragma_Arg_Alternate_Name);
-      --  Outputs error message for current pragma, similar to
-      --  Error_Pragma_Arg, except the source name of the aspect/pragma to use
-      --  in warnings may be equal to Alt_Name (which should be equivalent to
-      --  the name used in pragma). The location for the source name should be
-      --  pointed to by Arg.
 
       procedure Error_Pragma_Arg_Ident (Msg : String; Arg : Node_Id);
       pragma No_Return (Error_Pragma_Arg_Ident);
@@ -2439,34 +2430,6 @@ package body Sem_Prag is
          Error_Msg_N (MsgF, Get_Pragma_Arg (Arg));
          Error_Pragma_Arg (Msg2, Arg);
       end Error_Pragma_Arg;
-
-      -------------------------------------
-      -- Error_Pragma_Arg_Alternate_Name --
-      -------------------------------------
-
-      procedure Error_Pragma_Arg_Alternate_Name
-        (Msg      : String;
-         Arg      : Node_Id;
-         Alt_Name : Name_Id)
-      is
-         MsgF        : String := Msg;
-         Source_Name : String := Exact_Source_Name (Sloc (Arg));
-         Alter_Name  : String := Get_Name_String (Alt_Name);
-
-      begin
-         System.Case_Util.To_Lower (Source_Name);
-         System.Case_Util.To_Lower (Alter_Name);
-
-         if Source_Name = Alter_Name then
-            Error_Msg_Name_1 := Alt_Name;
-         else
-            Error_Msg_Name_1 := Pname;
-         end if;
-
-         Fix_Error (MsgF);
-         Error_Msg_N (MsgF, Get_Pragma_Arg (Arg));
-         raise Pragma_Exit;
-      end Error_Pragma_Arg_Alternate_Name;
 
       ----------------------------
       -- Error_Pragma_Arg_Ident --
@@ -6212,6 +6175,8 @@ package body Sem_Prag is
 
       --  Deal with unrecognized pragma
 
+      Pname := Pragma_Name (N);
+
       if not Is_Pragma_Name (Pname) then
          if Warn_On_Unrecognized_Pragma then
             Error_Msg_Name_1 := Pname;
@@ -6233,6 +6198,10 @@ package body Sem_Prag is
       --  Here to start processing for recognized pragma
 
       Prag_Id := Get_Pragma_Id (Pname);
+
+      if Present (Corresponding_Aspect (N)) then
+         Pname := Chars (Identifier (Corresponding_Aspect (N)));
+      end if;
 
       --  Preset arguments
 
@@ -10182,15 +10151,13 @@ package body Sem_Prag is
                null;
 
             elsif In_Private_Part (Current_Scope) then
-               Error_Pragma_Arg_Alternate_Name
+               Error_Pragma_Arg
                  ("pragma% only allowed for private type " &
-                  "declared in visible part", Arg1,
-                  Alt_Name => Name_Type_Invariant);
+                  "declared in visible part", Arg1);
 
             else
-               Error_Pragma_Arg_Alternate_Name
-                 ("pragma% only allowed for private type", Arg1,
-                  Alt_Name => Name_Type_Invariant);
+               Error_Pragma_Arg
+                 ("pragma% only allowed for private type", Arg1);
             end if;
 
             --  Note that the type has at least one invariant, and also that

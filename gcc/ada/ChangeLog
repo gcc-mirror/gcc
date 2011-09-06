@@ -1,3 +1,49 @@
+2011-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Call
+	Set_Corresponding_Aspect when creating pragma from aspect.
+	(Add_Predicates): Use new field Corresponding_Aspect.
+	* sem_prag.adb (Analyze_Pragma): Make Pname hold source aspect
+	name when present, for the purpose of issuing error messages;
+	remove local procedure Error_Pragma_Arg_Alternate_Name.
+	* sinfo.adb, sinfo.ads (Corresponding_Aspect): New field in
+	N_Pragma node.
+	(From_Dynamic_Predicate, From_Static_Predicate): Remove fields from
+	N_Pragma node.
+
+2011-09-06  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb, s-except.ads, g-socket.adb: Minor reformatting.
+
+2011-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Build_Heap_Allocator): Add new
+	local variable Desig_Typ. Code and comment reformatting. Add
+	machinery to ensure that the allocation uses a fat pointer when
+	the type of the return object is a constrained array and the
+	function return type is an unconstrained array.
+
+2011-09-06  Vincent Celier  <celier@adacore.com>
+
+	* make.adb, prj-part.adb, prj-nmsc.adb: Remove unused formal
+	parameters in subprograms.
+
+2011-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taprop-mingw.adb (Finalize_TCB): Fix typo.
+
+2011-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-taprop-vxworks.adb, s-tpoaal.adb, s-tpopsp-vxworks.adb
+	(System.Tasking.Primitive_Operations.Specific.Delete): Remove
+	subprogram.
+	(System.Tasking.Primitive_Operations.Specific.Set): If argument
+	is null, destroy task specific data, to make API consistent with
+	other platforms, and thus compatible with the shared version
+	of s-tpoaal.adb.
+	(System.Tasking.Primitive_Operations.ATCB_Allocation.Free_ATCB):
+	Document the above assumption.
+
 2011-09-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Expand_Inlined_Call): Fix use of uninitialized
